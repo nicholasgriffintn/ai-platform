@@ -19,17 +19,17 @@ export const getReplicatePredictionDetails = async ({
 	const serviceContext = resolveServiceContext({ context, env });
 
 	const prediction = projectId
-		? await serviceContext.repositories.appData.getAppDataByProjectAndId(projectId, predictionId)
-		: await serviceContext.repositories.appData.getAppDataByUserAndId(userId, predictionId);
+		? await serviceContext.repositories.outputs.getProjectOutput(projectId, predictionId)
+		: await serviceContext.repositories.outputs.getPersonalOutput(userId, predictionId);
 
 	if (!prediction) {
 		throw new AssistantError("Prediction not found", ErrorType.NOT_FOUND);
 	}
 
-	const data = safeParseJson(prediction.data);
+	const data = safeParseJson<Record<string, unknown>>(prediction.content) ?? {};
 
 	return {
-		id: prediction.item_id || prediction.id,
+		id: prediction.group_id || prediction.id,
 		modelId: data.modelId,
 		modelName: data.modelName,
 		status: data.status,
@@ -38,6 +38,6 @@ export const getReplicatePredictionDetails = async ({
 		output: data.output,
 		error: data.error,
 		predictionData: data.predictionData,
-		...prediction,
+		outputRecord: prediction,
 	};
 };

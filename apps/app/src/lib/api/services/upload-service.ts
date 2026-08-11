@@ -37,7 +37,7 @@ export class UploadService {
 			conversionOptions?: MarkdownConversionOptions;
 		},
 	): Promise<{
-		assetId: string;
+		sourceId: string;
 		key: string;
 		url: string;
 		type: string;

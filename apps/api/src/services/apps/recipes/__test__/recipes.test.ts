@@ -5,7 +5,7 @@ import {
 	type RecipeConnectorsResponse,
 } from "@assistant/schemas";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { AppDataRepository, RepositoryManager } from "~/repositories";
+import { RepositoryManager, TemplateRepository } from "~/repositories";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import type { IEnv, IUser } from "~/types";
 
@@ -267,43 +267,52 @@ function createTestServiceContext(): ServiceContext {
 	const repositories = new RepositoryManager(env);
 	const storedRecords: Array<{
 		id: string;
-		user_id: number;
-		app_id: string;
-		item_id: string;
-		item_type: string;
-		data: string;
+		created_by_user_id: number;
+		workspace_id: string | null;
+		kind: "project" | "recipe" | "capability";
+		capability_id: string | null;
+		name: string;
+		description: string;
+		configuration: string;
+		status: "active" | "paused" | "archived";
 		created_at: string;
 		updated_at: string;
 	}> = [];
 
-	const appDataRepository: AppDataRepository = Object.assign(
-		Object.create(AppDataRepository.prototype),
+	const templateRepository: TemplateRepository = Object.assign(
+		Object.create(TemplateRepository.prototype),
 		{
-			getAppDataByUserAppAndItem: vi.fn(
-				async (userId: number, appId: string, itemId: string, itemType: string) =>
-					storedRecords.filter(
+			getPersonalTemplate: vi.fn(
+				async (userId: number, kind: "project" | "recipe" | "capability", capabilityId: string) =>
+					storedRecords.find(
 						(record) =>
-							record.user_id === userId &&
-							record.app_id === appId &&
-							record.item_id === itemId &&
-							record.item_type === itemType,
-					),
+							record.created_by_user_id === userId &&
+							record.workspace_id === null &&
+							record.kind === kind &&
+							record.capability_id === capabilityId,
+					) ?? null,
 			),
-			createAppDataWithItem: vi.fn(
-				async (
-					userId: number,
-					appId: string,
-					itemId: string,
-					itemType: string,
-					data: Record<string, unknown>,
-				) => {
+			createTemplate: vi.fn(
+				async (input: {
+					createdByUserId: number;
+					workspaceId?: string | null;
+					kind: "project" | "recipe" | "capability";
+					capabilityId?: string | null;
+					name: string;
+					description?: string;
+					configuration?: unknown;
+					status?: "active" | "paused" | "archived";
+				}) => {
 					const record = {
 						id: `record-${storedRecords.length + 1}`,
-						user_id: userId,
-						app_id: appId,
-						item_id: itemId,
-						item_type: itemType,
-						data: JSON.stringify(data),
+						created_by_user_id: input.createdByUserId,
+						workspace_id: input.workspaceId ?? null,
+						kind: input.kind,
+						capability_id: input.capabilityId ?? null,
+						name: input.name,
+						description: input.description ?? "",
+						configuration: JSON.stringify(input.configuration ?? {}),
+						status: input.status ?? "active",
 						created_at: "2026-06-07T10:00:00.000Z",
 						updated_at: "2026-06-07T10:00:00.000Z",
 					};
@@ -311,29 +320,42 @@ function createTestServiceContext(): ServiceContext {
 					return record;
 				},
 			),
-			getAppDataById: vi.fn(
+			getTemplateById: vi.fn(
 				async (id: string) => storedRecords.find((record) => record.id === id) ?? null,
 			),
-			getAppDataByUserAndApp: vi.fn(async (userId: number, appId: string) =>
-				storedRecords.filter((record) => record.user_id === userId && record.app_id === appId),
-			),
-			getAppDataByUserAndId: vi.fn(
-				async (userId: number, id: string, itemType?: string) =>
-					storedRecords.find(
+			listPersonalTemplates: vi.fn(
+				async (userId: number, kind?: "project" | "recipe" | "capability") =>
+					storedRecords.filter(
 						(record) =>
-							record.user_id === userId &&
-							record.id === id &&
-							(itemType === undefined || record.item_type === itemType),
-					) ?? null,
+							record.created_by_user_id === userId &&
+							record.workspace_id === null &&
+							(kind === undefined || record.kind === kind),
+					),
 			),
-			updateAppData: vi.fn(async (id: string, data: Record<string, unknown>) => {
-				const record = storedRecords.find((item) => item.id === id);
-				if (record) {
-					record.data = JSON.stringify(data);
-					record.updated_at = "2026-06-07T10:05:00.000Z";
-				}
-			}),
-			deleteAppData: vi.fn(async (id: string) => {
+			updateTemplate: vi.fn(
+				async (
+					id: string,
+					updates: {
+						name?: string;
+						description?: string;
+						configuration?: unknown;
+						status?: "active" | "paused" | "archived";
+					},
+				) => {
+					const record = storedRecords.find((item) => item.id === id);
+					if (record) {
+						if (updates.name !== undefined) record.name = updates.name;
+						if (updates.description !== undefined) record.description = updates.description;
+						if (updates.configuration !== undefined) {
+							record.configuration = JSON.stringify(updates.configuration);
+						}
+						if (updates.status !== undefined) record.status = updates.status;
+						record.updated_at = "2026-06-07T10:05:00.000Z";
+					}
+					return record ?? null;
+				},
+			),
+			deleteTemplate: vi.fn(async (id: string) => {
 				const index = storedRecords.findIndex((record) => record.id === id);
 				if (index >= 0) {
 					storedRecords.splice(index, 1);
@@ -344,7 +366,7 @@ function createTestServiceContext(): ServiceContext {
 	const taskRepository: TaskRepository = Object.assign(Object.create(TaskRepository.prototype), {});
 
 	vi.spyOn(context, "repositories", "get").mockReturnValue(repositories);
-	vi.spyOn(repositories, "appData", "get").mockReturnValue(appDataRepository);
+	vi.spyOn(repositories, "templates", "get").mockReturnValue(templateRepository);
 	vi.spyOn(repositories, "tasks", "get").mockReturnValue(taskRepository);
 
 	return context;
@@ -1538,17 +1560,19 @@ describe("assistant recipes", () => {
 				},
 			});
 
-			const updateAppData = vi.mocked(context.repositories.appData.updateAppData);
-			expect(updateAppData).toHaveBeenLastCalledWith(
+			const updateTemplate = vi.mocked(context.repositories.templates.updateTemplate);
+			expect(updateTemplate).toHaveBeenLastCalledWith(
 				setup?.installation?.id,
 				expect.objectContaining({
-					scheduleState: {
-						"1": {
-							cronExpression: "0 17 * * 5",
-							enabled: true,
-							activatedAt: "2026-06-07T10:01:00.000Z",
+					configuration: expect.objectContaining({
+						scheduleState: {
+							"1": {
+								cronExpression: "0 17 * * 5",
+								enabled: true,
+								activatedAt: "2026-06-07T10:01:00.000Z",
+							},
 						},
-					},
+					}),
 				}),
 			);
 
@@ -1570,16 +1594,18 @@ describe("assistant recipes", () => {
 				},
 			});
 
-			expect(updateAppData).toHaveBeenLastCalledWith(
+			expect(updateTemplate).toHaveBeenLastCalledWith(
 				setup?.installation?.id,
 				expect.objectContaining({
-					scheduleState: {
-						"1": {
-							cronExpression: "30 17 * * 5",
-							enabled: true,
-							activatedAt: "2026-06-07T10:20:00.000Z",
+					configuration: expect.objectContaining({
+						scheduleState: {
+							"1": {
+								cronExpression: "30 17 * * 5",
+								enabled: true,
+								activatedAt: "2026-06-07T10:20:00.000Z",
+							},
 						},
-					},
+					}),
 				}),
 			);
 		} finally {

@@ -119,20 +119,23 @@ export const handleTextToSpeech = async (
 
 	const audioKey = synthesisResult.key;
 	const normalizedKey = audioKey?.replace(/^\//, "");
-	let audioAssetId: string | undefined;
+	let audioOutputId: string | undefined;
 	let audioUrl = synthesisResult.url;
 
 	if (store !== false && normalizedKey && !audioUrl) {
 		const storedAsset = await StorageService.forPrivateAssets(
 			resolveServiceContext({ context: req.context, env, user }),
-		).recordPrivateAsset({
+		).recordOutputFile({
 			key: normalizedKey,
-			ownerUserId: user.id,
-			purpose: "speech",
+			createdByUserId: user.id,
+			capabilityId: "speech",
+			kind: "speech",
+			title: "Generated speech",
+			content: { provider: speechSettings.provider, model: speechSettings.model },
 			mimeType: synthesisResult.audioMimeType || "audio/mpeg",
 			filename: normalizedKey.split("/").at(-1) ?? null,
 		});
-		audioAssetId = storedAsset.assetId;
+		audioOutputId = storedAsset.outputId;
 		audioUrl = storedAsset.url;
 	}
 	const responseText = synthesisResult.response;
@@ -164,7 +167,7 @@ export const handleTextToSpeech = async (
 		data: {
 			provider: speechSettings.provider,
 			model: speechSettings.model,
-			audioAssetId,
+			audioOutputId,
 			audioKey,
 			audioUrl,
 			audioBase64: synthesisResult.audioBase64,

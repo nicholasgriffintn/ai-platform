@@ -7,9 +7,13 @@ import {
 	createWorkspaceSchema,
 	projectDetailSchema,
 	updateWorkspaceSchema,
+	updateWorkspaceMemberSchema,
+	transferWorkspaceOwnershipSchema,
 	workspaceDetailSchema,
 	workspaceInvitationDeliverySchema,
 	workspaceListResponseSchema,
+	workspaceAuditListQuerySchema,
+	workspaceAuditListResponseSchema,
 } from "@assistant/schemas";
 import { addRoute } from "~/lib/http/routeBuilder";
 import {
@@ -20,11 +24,19 @@ import {
 	inviteWorkspaceMember,
 	listWorkspaces,
 	revokeWorkspaceInvitation,
+	leaveWorkspace,
+	removeWorkspaceMember,
+	transferWorkspaceOwnership,
+	updateWorkspaceMember,
 	updateWorkspace,
 } from "~/services/workspaces";
+import { listWorkspaceAudit } from "~/services/audit";
 
 const app = new Hono();
 const workspaceParams = z.object({ workspaceId: z.string().min(1) });
+const workspaceMemberParams = workspaceParams.extend({
+	userId: z.coerce.number().int().positive(),
+});
 
 addRoute(app, "get", "/", {
 	auth: true,
@@ -50,6 +62,19 @@ addRoute(app, "get", "/:workspaceId", {
 	paramSchema: workspaceParams,
 	responses: { 200: { description: "Workspace details", schema: workspaceDetailSchema } },
 	handler: ({ serviceContext, params }) => getWorkspace(serviceContext, params.workspaceId),
+});
+
+addRoute(app, "get", "/:workspaceId/audit", {
+	auth: true,
+	tags: ["workspaces"],
+	summary: "List workspace audit records",
+	paramSchema: workspaceParams,
+	querySchema: workspaceAuditListQuerySchema,
+	responses: {
+		200: { description: "Workspace audit records", schema: workspaceAuditListResponseSchema },
+	},
+	handler: ({ serviceContext, params, query }) =>
+		listWorkspaceAudit(serviceContext, params.workspaceId, query),
 });
 
 addRoute(app, "put", "/:workspaceId", {
@@ -91,6 +116,46 @@ addRoute(app, "delete", "/:workspaceId/invitations/:invitationId", {
 	paramSchema: workspaceParams.extend({ invitationId: z.string().min(1) }),
 	handler: ({ serviceContext, params }) =>
 		revokeWorkspaceInvitation(serviceContext, params.workspaceId, params.invitationId),
+});
+
+addRoute(app, "put", "/:workspaceId/members/:userId", {
+	auth: true,
+	tags: ["workspaces"],
+	summary: "Change a workspace member role",
+	paramSchema: workspaceMemberParams,
+	bodySchema: updateWorkspaceMemberSchema,
+	responses: { 200: { description: "Updated workspace", schema: workspaceDetailSchema } },
+	handler: ({ serviceContext, params, body }) =>
+		updateWorkspaceMember(serviceContext, params.workspaceId, params.userId, body.role),
+});
+
+addRoute(app, "delete", "/:workspaceId/members/:userId", {
+	auth: true,
+	tags: ["workspaces"],
+	summary: "Remove a workspace member",
+	paramSchema: workspaceMemberParams,
+	responses: { 200: { description: "Updated workspace", schema: workspaceDetailSchema } },
+	handler: ({ serviceContext, params }) =>
+		removeWorkspaceMember(serviceContext, params.workspaceId, params.userId),
+});
+
+addRoute(app, "post", "/:workspaceId/leave", {
+	auth: true,
+	tags: ["workspaces"],
+	summary: "Leave a workspace",
+	paramSchema: workspaceParams,
+	handler: ({ serviceContext, params }) => leaveWorkspace(serviceContext, params.workspaceId),
+});
+
+addRoute(app, "post", "/:workspaceId/transfer-ownership", {
+	auth: true,
+	tags: ["workspaces"],
+	summary: "Transfer workspace ownership",
+	paramSchema: workspaceParams,
+	bodySchema: transferWorkspaceOwnershipSchema,
+	responses: { 200: { description: "Updated workspace", schema: workspaceDetailSchema } },
+	handler: ({ serviceContext, params, body }) =>
+		transferWorkspaceOwnership(serviceContext, params.workspaceId, body.newOwnerUserId),
 });
 
 addRoute(app, "post", "/:workspaceId/projects", {

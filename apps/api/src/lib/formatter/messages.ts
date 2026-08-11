@@ -835,6 +835,17 @@ export class MessageFormatter {
 			};
 		}
 		if (item.type === "image_url" && item.image_url?.url) {
+			if (item.image_url.url.startsWith("data:")) {
+				return {
+					type: "image",
+					source: {
+						type: "base64",
+						media_type: MessageFormatter.resolveType(item.image_url.url),
+						data: MessageFormatter.getBase64FromUrl(item.image_url.url),
+					},
+				};
+			}
+
 			return {
 				type: "image",
 				source: {

@@ -8,7 +8,7 @@ import { getFeaturedApps, type FeaturedAppCatalogDefinition } from "~/services/d
 import { handleFunctions } from "~/services/functions";
 import type { IRequest } from "~/types";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { AppData } from "~/repositories/AppDataRepository";
+import type { OutputRecord } from "~/repositories/OutputRepository";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { createDynamicAppCapabilityDescriptor } from "./capabilities";
@@ -207,7 +207,7 @@ const executeDynamicAppRuntime = async (
 				conversationManager,
 			});
 
-			let response_id: string | undefined;
+			let output_id: string | undefined;
 			if (user?.id) {
 				const resultData = (functionResult?.data ?? {}) as Record<string, any>;
 				const runId =
@@ -225,7 +225,7 @@ const executeDynamicAppRuntime = async (
 					runId,
 					projectId,
 				);
-				response_id = saved.id;
+				output_id = saved.id;
 
 				const asyncInvocation = resultData?.asyncInvocation;
 				if (asyncInvocation) {
@@ -245,16 +245,17 @@ const executeDynamicAppRuntime = async (
 
 					functionResult = augmentedResult;
 
-					await serviceContext.repositories.dynamicAppResponses.updateResponseData(saved.id, {
-						formData,
-						result: augmentedResult,
+					await serviceContext.repositories.outputs.updateOutput(saved.id, {
+						content: { formData, result: augmentedResult },
+						expectedRevision: saved.revision,
+						updatedByUserId: user.id,
 					});
 				}
 			}
 
 			return {
 				success: true,
-				response_id,
+				output_id,
 				data: {
 					message: `Successfully executed ${app.name}`,
 					timestamp: new Date().toISOString(),
@@ -302,50 +303,14 @@ export const createDynamicAppResponse = async (
 	payload: Record<string, any>,
 	itemId?: string,
 	projectId?: string,
-): Promise<AppData> => {
-	return projectId
-		? context.repositories.dynamicAppResponses.createResponse(
-				userId,
-				appId,
-				payload,
-				itemId,
-				projectId,
-			)
-		: context.repositories.dynamicAppResponses.createResponse(userId, appId, payload, itemId);
-};
-
-/**
- * Get a dynamic app response by ID
- * @param context The request service context
- * @param userId The user ID that owns the response
- * @param responseId The response ID
- * @returns The response data or null if not found
- */
-export const getDynamicAppResponseById = async (
-	context: ServiceContext,
-	userId: number,
-	responseId: string,
-	projectId?: string,
-): Promise<AppData | null> => {
-	return projectId
-		? context.repositories.dynamicAppResponses.getResponseByIdForProject(responseId, projectId)
-		: context.repositories.dynamicAppResponses.getResponseByIdForUser(responseId, userId);
-};
-
-/**
- * List dynamic app responses for a user
- * @param context The request service context
- * @param userId The user ID
- * @param appId Optional app ID to filter by
- * @returns Array of response data
- */
-export const listDynamicAppResponsesForUser = async (
-	context: ServiceContext,
-	userId: number,
-	appId?: string,
-	projectId?: string,
-): Promise<AppData[]> => {
-	return projectId
-		? context.repositories.dynamicAppResponses.listResponsesForProject(projectId, appId)
-		: context.repositories.dynamicAppResponses.listResponsesForUser(userId, appId);
+): Promise<OutputRecord> => {
+	return context.repositories.outputs.createOutput({
+		createdByUserId: userId,
+		projectId,
+		capabilityId: appId,
+		groupId: itemId,
+		kind: "dynamic_app_response",
+		title: `App output: ${appId}`,
+		content: payload,
+	});
 };

@@ -88,7 +88,7 @@ export function ArticleSourceArticles({ sourceIds, projectId }: ArticleSourceArt
 					) : sourceArticles && sourceArticles.length > 0 ? (
 						<div className="space-y-4">
 							{sourceArticles.map((article, index) => {
-								const articleData = article.data as SourceArticleData;
+								const articleData: SourceArticleData = article.content;
 								const isExpanded = !!expandedArticleIds[article.id];
 								const articleTitle =
 									articleData?.title?.replace("Analysis: ", "") || `Source Article ${index + 1}`;
@@ -115,7 +115,7 @@ export function ArticleSourceArticles({ sourceIds, projectId }: ArticleSourceArt
 														{articleTitle}
 													</h4>
 													<p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-														{new Date(article.created_at).toLocaleString()}
+														{new Date(article.createdAt).toLocaleString()}
 													</p>
 												</div>
 											</div>

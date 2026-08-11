@@ -437,14 +437,14 @@ describe("messaging credentials", () => {
 					},
 				],
 				{
-					mediaUrls: ["https://api.polychat.test/assets/generated-image"],
+					mediaUrls: ["https://api.polychat.test/outputs/generated-image/content"],
 					apiBaseUrl: "https://api.polychat.test",
 				},
 			),
 		).toEqual({
 			id: "aws-row",
 			providerId: "aws-sms",
-			mediaUrls: ["https://api.polychat.test/assets/generated-image"],
+			mediaUrls: ["https://api.polychat.test/outputs/generated-image/content"],
 		});
 	});
 

@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
+import { resolvePrivateAssetImageUrls } from "~/lib/providers/utils/privateAssetImages";
+import { StorageService } from "~/lib/storage";
+import type { ChatCompletionParameters, IEnv } from "~/types";
 import { isRecord } from "~/utils/objects";
 import {
 	calculateReasoningBudget,
@@ -37,6 +40,10 @@ vi.mock("~/lib/providers/models", () => ({
 	getModelConfigByMatchingModel: vi.fn(),
 }));
 
+vi.mock("~/lib/providers/utils/privateAssetImages", () => ({
+	resolvePrivateAssetImageUrls: vi.fn(),
+}));
+
 vi.mock("~/utils/parameters", () => ({
 	createCommonParameters: vi.fn(),
 	shouldEnableStreaming: vi.fn(),
@@ -47,6 +54,7 @@ vi.mock("~/utils/parameters", () => ({
 
 beforeEach(() => {
 	vi.clearAllMocks();
+	vi.mocked(resolvePrivateAssetImageUrls).mockImplementation(async ({ params }) => params);
 });
 
 function countCacheControlBlocks(value: unknown): number {
@@ -135,6 +143,58 @@ describe("AnthropicProvider", () => {
 	});
 
 	describe("mapParameters", () => {
+		it("resolves private image URLs before mapping Anthropic messages", async () => {
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "claude-opus-4-6",
+				matchingModel: "claude-opus-4-6",
+				provider: "anthropic",
+			});
+			vi.mocked(createCommonParameters).mockImplementation((params) => ({
+				model: params.model,
+				messages: params.messages,
+				max_tokens: 1024,
+			}));
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+			vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
+
+			const provider = new AnthropicProvider();
+			const privateUrl = "http://localhost:8787/sources/source-1/content";
+			const dataUrl = "data:image/png;base64,aW1hZ2U=";
+			const env: IEnv = Object.assign(Object.create(null), {
+				AI_GATEWAY_TOKEN: "test-token",
+			});
+			const params: ChatCompletionParameters = {
+				model: "claude-opus-4-6",
+				messages: [
+					{
+						role: "user",
+						content: [{ type: "image_url", image_url: { url: privateUrl } }],
+					},
+				],
+				env,
+			};
+			const resolvedParams: ChatCompletionParameters = {
+				...params,
+				messages: [
+					{
+						role: "user",
+						content: [{ type: "image_url", image_url: { url: dataUrl } }],
+					},
+				],
+			};
+			const storageService = new StorageService(undefined);
+			vi.mocked(resolvePrivateAssetImageUrls).mockResolvedValue(resolvedParams);
+
+			const result = await provider.mapParameters(params, storageService, "http://localhost:8787");
+
+			expect(resolvePrivateAssetImageUrls).toHaveBeenCalledWith({
+				params,
+				storageService,
+				assetsUrl: "http://localhost:8787",
+			});
+			expect(result.messages).toEqual(resolvedParams.messages);
+		});
+
 		it("should add web search tool in mapParameters when search grounding enabled", async () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({

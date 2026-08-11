@@ -35,8 +35,8 @@ export const handlePodcastDetail = async (req: IPodcastDetailRequest): Promise<P
 	const repositories = serviceContext.repositories;
 
 	const appDataItems = projectId
-		? await repositories.appData.getAppDataByProjectAppAndItem(projectId, "podcasts", podcastId)
-		: await repositories.appData.getAppDataByUserAppAndItem(user.id, "podcasts", podcastId);
+		? await repositories.outputs.listProjectOutputGroup(projectId, "podcasts", podcastId)
+		: await repositories.outputs.listPersonalOutputGroup(user.id, "podcasts", podcastId);
 
 	if (!appDataItems || appDataItems.length === 0) {
 		throw new AssistantError("Podcast not found", ErrorType.NOT_FOUND);
@@ -45,10 +45,8 @@ export const handlePodcastDetail = async (req: IPodcastDetailRequest): Promise<P
 	const podcastData: PodcastItem = { id: podcastId, items: {} };
 
 	for (const appData of appDataItems) {
-		if (!appData.item_type) continue;
-
-		const itemType = appData.item_type;
-		let data = safeParseJson(appData.data);
+		const itemType = appData.kind;
+		const data = safeParseJson<Record<string, any>>(appData.content) ?? {};
 
 		if (!podcastData.items) podcastData.items = {};
 		if (!podcastData.items[itemType]) podcastData.items[itemType] = [];

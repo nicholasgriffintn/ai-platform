@@ -34,14 +34,14 @@ export async function updatePattern({
 
 	try {
 		const existing = projectId
-			? await repositories.dynamicAppResponses.getResponseByIdForProject(patternId, projectId)
-			: await repositories.dynamicAppResponses.getResponseByIdForUser(patternId, user.id);
+			? await repositories.outputs.getProjectOutput(projectId, patternId)
+			: await repositories.outputs.getPersonalOutput(user.id, patternId);
 
 		if (!existing) {
 			throw new AssistantError("Pattern not found", ErrorType.NOT_FOUND);
 		}
 
-		const current = extractStoredPattern(existing.data);
+		const current = extractStoredPattern(existing.content);
 
 		const mergedPayload = normalizePatternPayload({
 			name: request.name ?? current.name,
@@ -50,11 +50,12 @@ export async function updatePattern({
 			tags: request.tags ?? current.tags,
 		});
 
-		await repositories.dynamicAppResponses.updateResponseData(patternId, mergedPayload);
-
-		const updated = projectId
-			? await repositories.dynamicAppResponses.getResponseByIdForProject(patternId, projectId)
-			: await repositories.dynamicAppResponses.getResponseByIdForUser(patternId, user.id);
+		const updated = await repositories.outputs.updateOutput(patternId, {
+			title: mergedPayload.name,
+			content: mergedPayload,
+			expectedRevision: existing.revision,
+			updatedByUserId: user.id,
+		});
 
 		if (!updated) {
 			throw new AssistantError("Failed to load pattern after update", ErrorType.UNKNOWN_ERROR);

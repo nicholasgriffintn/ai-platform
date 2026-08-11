@@ -12,7 +12,7 @@ const mockHasUserProviderApiKey = vi.hoisted(() => vi.fn());
 const mockGenerateId = vi.hoisted(() => vi.fn(() => "test-uuid-123"));
 const mockStorageService = vi.hoisted(() => ({
 	uploadObject: vi.fn(),
-	storePrivateAsset: vi.fn(),
+	storeOutputFile: vi.fn(),
 }));
 
 vi.mock("~/utils/logger", () => ({
@@ -107,10 +107,10 @@ describe("MistralOcrProvider", () => {
 		mockResolveProviderApiKey.mockResolvedValue("resolved-key");
 		mockHasUserProviderApiKey.mockResolvedValue(false);
 		mockFetchAIResponse.mockResolvedValue(ocrResponse);
-		mockStorageService.storePrivateAsset.mockImplementation(async (request) => ({
-			assetId: "ocr-asset-123",
+		mockStorageService.storeOutputFile.mockImplementation(async (request) => ({
+			outputId: "ocr-asset-123",
 			key: request.key,
-			url: `${env.API_BASE_URL}/assets/ocr-asset-123`,
+			url: `${env.API_BASE_URL}/outputs/ocr-asset-123/content`,
 		}));
 	});
 
@@ -140,11 +140,15 @@ describe("MistralOcrProvider", () => {
 				maxAttempts: 2,
 			}),
 		);
-		expect(mockStorageService.storePrivateAsset).toHaveBeenCalledWith({
+		expect(mockStorageService.storeOutputFile).toHaveBeenCalledWith({
 			key: "ocr/test-uuid-123/output.md",
 			data: expect.stringContaining("# Page 1"),
-			ownerUserId: 123,
-			purpose: "ocr_output",
+			createdByUserId: 123,
+			capabilityId: "ocr",
+			groupId: "test-uuid-123",
+			kind: "ocr_output",
+			title: "OCR result (Markdown)",
+			content: { outputFormat: "markdown" },
 			mimeType: "text/markdown",
 			filename: "output.md",
 			byteSize: expect.any(Number),
@@ -152,7 +156,7 @@ describe("MistralOcrProvider", () => {
 		expect(result).toEqual({
 			model: "mistral-ocr-latest",
 			key: "ocr/test-uuid-123/output.md",
-			url: "https://api.test.com/assets/ocr-asset-123",
+			url: "https://api.test.com/outputs/ocr-asset-123/content",
 			outputFormat: "markdown",
 		});
 	});
@@ -194,16 +198,20 @@ describe("MistralOcrProvider", () => {
 			output_format: "json",
 		});
 
-		expect(mockStorageService.storePrivateAsset).toHaveBeenCalledWith({
+		expect(mockStorageService.storeOutputFile).toHaveBeenCalledWith({
 			key: "ocr/test-uuid-123/output.json",
 			data: JSON.stringify(ocrResponse),
-			ownerUserId: 123,
-			purpose: "ocr_output",
+			createdByUserId: 123,
+			capabilityId: "ocr",
+			groupId: "test-uuid-123",
+			kind: "ocr_output",
+			title: "OCR result (JSON)",
+			content: { outputFormat: "json" },
 			mimeType: "application/json",
 			filename: "output.json",
-			byteSize: JSON.stringify(ocrResponse).length,
+			byteSize: expect.any(Number),
 		});
-		expect(result.url).toBe("https://api.test.com/assets/ocr-asset-123");
+		expect(result.url).toBe("https://api.test.com/outputs/ocr-asset-123/content");
 		expect(result.outputFormat).toBe("json");
 	});
 
@@ -215,11 +223,15 @@ describe("MistralOcrProvider", () => {
 			output_format: "html",
 		});
 
-		expect(mockStorageService.storePrivateAsset).toHaveBeenCalledWith({
+		expect(mockStorageService.storeOutputFile).toHaveBeenCalledWith({
 			key: "ocr/test-uuid-123/output.html",
 			data: expect.stringContaining("<!DOCTYPE html>"),
-			ownerUserId: 123,
-			purpose: "ocr_output",
+			createdByUserId: 123,
+			capabilityId: "ocr",
+			groupId: "test-uuid-123",
+			kind: "ocr_output",
+			title: "OCR result (HTML)",
+			content: { outputFormat: "html" },
 			mimeType: "text/html",
 			filename: "output.html",
 			byteSize: expect.any(Number),
@@ -245,7 +257,7 @@ describe("MistralOcrProvider", () => {
 
 		await provider.extractText(baseRequest);
 
-		expect(mockStorageService.storePrivateAsset).toHaveBeenCalledWith(
+		expect(mockStorageService.storeOutputFile).toHaveBeenCalledWith(
 			expect.objectContaining({
 				data: expect.stringContaining("![img.1](data:image/png;base64,testdata123)"),
 			}),
@@ -340,6 +352,6 @@ describe("MistralOcrProvider", () => {
 			},
 		});
 
-		expect(result.url).toBe("https://api.test.com/assets/ocr-asset-123");
+		expect(result.url).toBe("https://api.test.com/outputs/ocr-asset-123/content");
 	});
 });

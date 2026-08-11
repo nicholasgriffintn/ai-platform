@@ -6,11 +6,9 @@ describe("mapCanvasGenerationRecord", () => {
 	it("maps stored canvas generation data with normalized status", () => {
 		const result = mapCanvasGenerationRecord({
 			id: "record-1",
-			user_id: 1,
-			app_id: "canvas",
-			item_id: "invoke-1",
-			item_type: "generation",
-			data: JSON.stringify({
+			created_by_user_id: 1,
+			group_id: "invoke-1",
+			content: JSON.stringify({
 				modelId: "model-a",
 				modelName: "Model A",
 				provider: "bedrock",
@@ -44,11 +42,9 @@ describe("mapCanvasGenerationRecord", () => {
 	it("falls back to record metadata when stored payload is missing fields", () => {
 		const result = mapCanvasGenerationRecord({
 			id: "record-2",
-			user_id: 1,
-			app_id: "canvas",
-			item_id: "invoke-2",
-			item_type: "generation",
-			data: JSON.stringify({
+			created_by_user_id: 1,
+			group_id: "invoke-2",
+			content: JSON.stringify({
 				status: "completed",
 			}),
 			created_at: "2026-04-04T10:00:00.000Z",

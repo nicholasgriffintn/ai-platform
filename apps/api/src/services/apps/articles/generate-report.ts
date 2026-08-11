@@ -20,7 +20,7 @@ export interface Params {
 export interface GenerateReportSuccessResponse {
 	status: "success";
 	message?: string;
-	appDataId?: string;
+	outputId?: string;
 	itemId?: string;
 }
 
@@ -63,24 +63,25 @@ export async function generateArticlesReport({
 		}
 
 		serviceContext.ensureDatabase();
-		const appDataRepo = serviceContext.repositories.appData;
+		const outputRepo = serviceContext.repositories.outputs;
 
 		const relatedItems = projectId
-			? await appDataRepo.getAppDataByProjectAppAndItem(projectId, "articles", args.itemId)
-			: await appDataRepo.getAppDataByUserAppAndItem(user.id, "articles", args.itemId);
+			? await outputRepo.listProjectOutputGroup(projectId, "articles", args.itemId)
+			: await outputRepo.listPersonalOutputGroup(user.id, "articles", args.itemId);
 
-		const analysisItems = relatedItems.filter((item) => item.item_type === "analysis");
+		const analysisItems = relatedItems.filter((item) => item.kind === "analysis");
 
 		if (analysisItems.length === 0) {
 			throw new AssistantError(
 				`No analysis data found for itemId: ${args.itemId}`,
 				ErrorType.NOT_FOUND,
+				404,
 			);
 		}
 
 		const combinedArticles = analysisItems
 			.map((item) => {
-				let parsed = safeParseJson(item.data || "{}") ?? {};
+				const parsed = safeParseJson<Record<string, unknown>>(item.content) ?? {};
 				return parsed.originalArticle;
 			})
 			.filter((content): content is string => !!content)
@@ -138,33 +139,26 @@ export async function generateArticlesReport({
 			verifiedQuotes: verifiedQuotes,
 		};
 
-		const reportAppData = {
+		const reportContent = {
 			sourceItemIds: analysisItems.map((item) => item.id),
 			report: reportResult,
 			title: `Report for Analysis Session ${args.itemId} (${analysisItems.length} articles)`,
 		};
 
-		const savedReport = projectId
-			? await appDataRepo.createAppDataWithItem(
-					user.id,
-					"articles",
-					args.itemId,
-					"report",
-					reportAppData,
-					projectId,
-				)
-			: await appDataRepo.createAppDataWithItem(
-					user.id,
-					"articles",
-					args.itemId,
-					"report",
-					reportAppData,
-				);
+		const savedReport = await outputRepo.createOutput({
+			createdByUserId: user.id,
+			projectId,
+			capabilityId: "articles",
+			groupId: args.itemId,
+			kind: "report",
+			title: reportContent.title,
+			content: reportContent,
+		});
 
 		return {
 			status: "success",
 			message: "Article report generated and saved.",
-			appDataId: savedReport.id,
+			outputId: savedReport.id,
 			itemId: args.itemId,
 		};
 	} catch (error) {

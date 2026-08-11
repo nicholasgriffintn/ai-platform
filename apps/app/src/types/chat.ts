@@ -193,7 +193,7 @@ export interface MessageData {
 		modelIds: string[];
 	};
 	speech?: {
-		audioAssetId?: string;
+		audioOutputId?: string;
 		audioKey?: string;
 		audioUrl?: string;
 		audioDataUrl?: string;

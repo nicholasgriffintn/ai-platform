@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { connectorProviders } from "~/lib/providers/capabilities/connectors";
-import { AppDataRepository, RepositoryManager } from "~/repositories";
+import { ProviderConnectionRepository, RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
 
 const listGitHubAppConnectionsForUserMock = vi.hoisted(() => vi.fn());
@@ -30,41 +30,60 @@ function createTestServiceContext(env: Record<string, string | undefined> = {}):
 	const storedRecords: Array<{
 		id: string;
 		user_id: number;
-		app_id: string;
-		item_id: string;
-		item_type: string;
-		data: string;
+		provider: string;
+		kind: string;
+		external_id: string;
+		status: "connected" | "invalid" | "revoked";
+		encrypted_data: string;
+		metadata: string;
 		created_at: string;
-		updated_at: string;
+		updated_at: string | null;
 	}> = [];
-	const appDataRepository: AppDataRepository = Object.assign(
-		Object.create(AppDataRepository.prototype),
+	const providerConnectionRepository: ProviderConnectionRepository = Object.assign(
+		Object.create(ProviderConnectionRepository.prototype),
 		{
-			getAppDataByUserAppAndItem: vi.fn(
-				async (userId: number, appId: string, itemId: string, itemType: string) =>
-					storedRecords.filter(
+			getConnection: vi.fn(
+				async (userId: number, provider: string, kind: string, externalId = "") =>
+					storedRecords.find(
 						(record) =>
 							record.user_id === userId &&
-							record.app_id === appId &&
-							record.item_id === itemId &&
-							record.item_type === itemType,
-					),
+							record.provider === provider &&
+							record.kind === kind &&
+							record.external_id === externalId,
+					) ?? null,
 			),
-			createAppDataWithItem: vi.fn(
-				async (
-					userId: number,
-					appId: string,
-					itemId: string,
-					itemType: string,
-					data: Record<string, unknown>,
-				) => {
+			upsertConnection: vi.fn(
+				async (input: {
+					userId: number;
+					provider: string;
+					kind: string;
+					externalId?: string | null;
+					encryptedData: Record<string, unknown>;
+					metadata?: Record<string, unknown>;
+				}) => {
+					const externalId = input.externalId ?? "";
+					const existing = storedRecords.find(
+						(record) =>
+							record.user_id === input.userId &&
+							record.provider === input.provider &&
+							record.kind === input.kind &&
+							record.external_id === externalId,
+					);
+					if (existing) {
+						existing.encrypted_data = JSON.stringify(input.encryptedData);
+						existing.metadata = JSON.stringify(input.metadata ?? {});
+						existing.updated_at = new Date().toISOString();
+						return existing;
+					}
 					const record = {
 						id: `record-${storedRecords.length + 1}`,
-						user_id: userId,
-						app_id: appId,
-						item_id: itemId,
-						item_type: itemType,
-						data: JSON.stringify(data),
+						user_id: input.userId,
+						provider: input.provider,
+						kind: input.kind,
+						external_id: externalId,
+						status: "connected" as const,
+						encrypted_data: JSON.stringify(input.encryptedData),
+						metadata: JSON.stringify(input.metadata ?? {}),
 						created_at: new Date().toISOString(),
 						updated_at: new Date().toISOString(),
 					};
@@ -72,18 +91,25 @@ function createTestServiceContext(env: Record<string, string | undefined> = {}):
 					return record;
 				},
 			),
-			updateAppData: vi.fn(async (id: string, data: Record<string, unknown>) => {
-				const record = storedRecords.find((item) => item.id === id);
-				if (record) {
-					record.data = JSON.stringify(data);
-					record.updated_at = new Date().toISOString();
-				}
-			}),
+			deleteConnection: vi.fn(
+				async (userId: number, provider: string, kind: string, externalId = "") => {
+					const index = storedRecords.findIndex(
+						(record) =>
+							record.user_id === userId &&
+							record.provider === provider &&
+							record.kind === kind &&
+							record.external_id === externalId,
+					);
+					if (index >= 0) storedRecords.splice(index, 1);
+				},
+			),
 		},
 	);
 
 	vi.spyOn(context, "repositories", "get").mockReturnValue(repositories);
-	vi.spyOn(repositories, "appData", "get").mockReturnValue(appDataRepository);
+	vi.spyOn(repositories, "providerConnections", "get").mockReturnValue(
+		providerConnectionRepository,
+	);
 
 	return context;
 }

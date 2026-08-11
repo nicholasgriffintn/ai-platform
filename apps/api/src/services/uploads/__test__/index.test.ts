@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createServiceContext } from "~/lib/context/serviceContext";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv } from "~/types";
 import { handleFileUpload } from "../index";
 
 const mockStorageService = {
 	uploadObject: vi.fn(),
-	storePrivateAsset: vi.fn(),
+	storeSourceFile: vi.fn(),
 };
 
 vi.mock("~/lib/storage", () => ({
@@ -38,34 +38,25 @@ const mockEnv: IEnv = {
 
 describe("handleFileUpload", () => {
 	let mockConvertBlobToMarkdownViaCloudflare: any;
-	const mockStoredAssets = {
-		createAsset: vi.fn(),
-	};
-	const mockContext = createServiceContext({ env: mockEnv });
+	const mockContext = {
+		env: mockEnv,
+		repositories: {
+			sources: { updateSource: vi.fn().mockResolvedValue(undefined) },
+		},
+	} as unknown as ServiceContext;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
-		mockStoredAssets.createAsset.mockResolvedValue({ id: mockUUID });
-		mockContext.repositories.storedAssets.createAsset = mockStoredAssets.createAsset;
-		mockStorageService.storePrivateAsset.mockImplementation(async (request) => {
+		mockStorageService.storeSourceFile.mockImplementation(async (request) => {
 			await mockStorageService.uploadObject(request.key, request.data, {
 				contentType: request.mimeType,
 			});
-			await mockStoredAssets.createAsset({
-				id: mockUUID,
-				key: request.key,
-				ownerUserId: request.ownerUserId,
-				purpose: request.purpose,
-				mimeType: request.mimeType,
-				filename: request.filename,
-				byteSize: request.byteSize,
-			});
 			return {
-				assetId: mockUUID,
+				sourceId: mockUUID,
 				key: request.key,
 				url: mockContext.env.API_BASE_URL
-					? `${mockContext.env.API_BASE_URL}/assets/${mockUUID}`
-					: `/assets/${mockUUID}`,
+					? `${mockContext.env.API_BASE_URL}/sources/${mockUUID}/content`
+					: `/sources/${mockUUID}/content`,
 			};
 		});
 		const converterModule = await import("~/lib/documentConverter");
@@ -256,9 +247,9 @@ describe("handleFileUpload", () => {
 			);
 
 			expect(result).toEqual({
-				assetId: mockUUID,
+				sourceId: mockUUID,
 				key: `uploads/1/images/${mockUUID}.jpeg`,
-				url: `https://api.example.com/assets/${mockUUID}`,
+				url: `https://api.example.com/sources/${mockUUID}/content`,
 				type: "image",
 				name: "test.jpg",
 			});
@@ -283,9 +274,9 @@ describe("handleFileUpload", () => {
 			);
 
 			expect(result).toEqual({
-				assetId: mockUUID,
+				sourceId: mockUUID,
 				key: `uploads/1/documents/${mockUUID}.pdf`,
-				url: `https://api.example.com/assets/${mockUUID}`,
+				url: `https://api.example.com/sources/${mockUUID}/content`,
 				type: "document",
 				name: "test.pdf",
 			});
@@ -321,9 +312,9 @@ describe("handleFileUpload", () => {
 			);
 
 			expect(result).toEqual({
-				assetId: mockUUID,
+				sourceId: mockUUID,
 				key: `uploads/1/documents/${mockUUID}.html`,
-				url: `https://api.example.com/assets/${mockUUID}`,
+				url: `https://api.example.com/sources/${mockUUID}/content`,
 				type: "markdown_document",
 				name: "test.html",
 				markdown: "# Converted Markdown",
@@ -397,9 +388,9 @@ describe("handleFileUpload", () => {
 				},
 			);
 			expect(result).toEqual({
-				assetId: mockUUID,
+				sourceId: mockUUID,
 				key: `uploads/1/images/${mockUUID}.png`,
-				url: `https://api.example.com/assets/${mockUUID}`,
+				url: `https://api.example.com/sources/${mockUUID}/content`,
 				type: "markdown_document",
 				name: "diagram.png",
 				markdown: "![description](diagram)",
@@ -462,9 +453,9 @@ describe("handleFileUpload", () => {
 			);
 
 			expect(result).toEqual({
-				assetId: mockUUID,
+				sourceId: mockUUID,
 				key: `uploads/1/audios/${mockUUID}.mpeg`,
-				url: `https://api.example.com/assets/${mockUUID}`,
+				url: `https://api.example.com/sources/${mockUUID}/content`,
 				type: "audio",
 				name: "test.mp3",
 			});
@@ -491,9 +482,9 @@ describe("handleFileUpload", () => {
 			);
 
 			expect(result).toEqual({
-				assetId: mockUUID,
+				sourceId: mockUUID,
 				key: `uploads/1/audios/${mockUUID}.wav`,
-				url: `https://api.example.com/assets/${mockUUID}`,
+				url: `https://api.example.com/sources/${mockUUID}/content`,
 				type: "audio",
 				name: "test.wav",
 			});
@@ -657,30 +648,23 @@ describe("handleFileUpload", () => {
 
 			const result = await handleFileUpload(mockContext, 1, formData);
 
-			expect(result.url).toBe(`https://api.example.com/assets/${mockUUID}`);
+			expect(result.url).toBe(`https://api.example.com/sources/${mockUUID}/content`);
 		});
 
 		it("should handle missing API_BASE_URL", async () => {
 			const envWithoutApiBaseUrl = { ...mockEnv, API_BASE_URL: undefined };
-			const contextWithoutApiBaseUrl = createServiceContext({ env: envWithoutApiBaseUrl });
-			contextWithoutApiBaseUrl.repositories.storedAssets.createAsset = mockStoredAssets.createAsset;
-			mockStorageService.storePrivateAsset.mockImplementationOnce(async (request) => {
+			const contextWithoutApiBaseUrl = {
+				...mockContext,
+				env: envWithoutApiBaseUrl,
+			} as unknown as ServiceContext;
+			mockStorageService.storeSourceFile.mockImplementationOnce(async (request) => {
 				await mockStorageService.uploadObject(request.key, request.data, {
 					contentType: request.mimeType,
 				});
-				await mockStoredAssets.createAsset({
-					id: mockUUID,
-					key: request.key,
-					ownerUserId: request.ownerUserId,
-					purpose: request.purpose,
-					mimeType: request.mimeType,
-					filename: request.filename,
-					byteSize: request.byteSize,
-				});
 				return {
-					assetId: mockUUID,
+					sourceId: mockUUID,
 					key: request.key,
-					url: "/assets/test-uuid-123",
+					url: "/sources/test-uuid-123/content",
 				};
 			});
 			const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
@@ -692,7 +676,7 @@ describe("handleFileUpload", () => {
 
 			const result = await handleFileUpload(contextWithoutApiBaseUrl, 1, formData);
 
-			expect(result.url).toBe(`/assets/${mockUUID}`);
+			expect(result.url).toBe(`/sources/${mockUUID}/content`);
 		});
 	});
 });

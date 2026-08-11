@@ -58,6 +58,7 @@ export function useTasks({ shouldRefetch = true }) {
 		isLoadingTasks,
 
 		triggerSynthesis: triggerSynthesisMutation.mutate,
+		triggerSynthesisAsync: triggerSynthesisMutation.mutateAsync,
 		isTriggeringSynthesis: triggerSynthesisMutation.isPending,
 
 		cancelTask: cancelTaskMutation.mutate,
@@ -73,6 +74,7 @@ export function useMemorySynthesis(namespace = "global") {
 			queryKey: TASK_QUERY_KEYS.synthesis(namespace),
 			queryFn: () => taskService.getActiveSynthesis(namespace),
 			staleTime: 1000 * 60 * 5, // 5 minutes
+			refetchInterval: 1000 * 30,
 		});
 
 	const { data: historyData, isLoading: isLoadingHistory } =
@@ -80,6 +82,7 @@ export function useMemorySynthesis(namespace = "global") {
 			queryKey: TASK_QUERY_KEYS.synthesisHistory(namespace),
 			queryFn: () => taskService.getSynthesisHistory(namespace, 10),
 			staleTime: 1000 * 60 * 5, // 5 minutes
+			refetchInterval: 1000 * 30,
 		});
 
 	return {

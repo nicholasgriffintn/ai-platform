@@ -19,7 +19,7 @@ export interface Params {
 export interface AnalyseSuccessResponse {
 	status: "success";
 	message?: string;
-	appDataId?: string;
+	outputId?: string;
 	itemId?: string;
 	analysis?: { content: string; data: any };
 }
@@ -112,33 +112,26 @@ export async function analyseArticle({
 		};
 
 		serviceContext.ensureDatabase();
-		const appDataRepo = serviceContext.repositories.appData;
-		const appData = {
+		const outputRepo = serviceContext.repositories.outputs;
+		const outputContent = {
 			originalArticle: args.article,
 			analysis: analysisResult,
 			title: `Analysis: ${args.article.substring(0, 80)}...`,
 		};
-		const savedData = projectId
-			? await appDataRepo.createAppDataWithItem(
-					user.id,
-					"articles",
-					args.itemId,
-					"analysis",
-					appData,
-					projectId,
-				)
-			: await appDataRepo.createAppDataWithItem(
-					user.id,
-					"articles",
-					args.itemId,
-					"analysis",
-					appData,
-				);
+		const savedData = await outputRepo.createOutput({
+			createdByUserId: user.id,
+			projectId,
+			capabilityId: "articles",
+			groupId: args.itemId,
+			kind: "analysis",
+			title: outputContent.title,
+			content: outputContent,
+		});
 
 		return {
 			status: "success",
 			message: "Article analysed and saved.",
-			appDataId: savedData.id,
+			outputId: savedData.id,
 			itemId: args.itemId,
 			analysis: {
 				content: analysisResult.content,

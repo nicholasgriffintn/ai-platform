@@ -42,13 +42,13 @@ export const handlePodcastGenerateImage = async (
 		const runtimeEnv = serviceContext.env as IEnv;
 
 		const existingImages = projectId
-			? await repositories.appData.getAppDataByProjectAppAndItem(
+			? await repositories.outputs.listProjectOutputGroup(
 					projectId,
 					"podcasts",
 					request.podcastId,
 					"image",
 				)
-			: await repositories.appData.getAppDataByUserAppAndItem(
+			: await repositories.outputs.listPersonalOutputGroup(
 					user.id,
 					"podcasts",
 					request.podcastId,
@@ -56,7 +56,7 @@ export const handlePodcastGenerateImage = async (
 				);
 
 		if (existingImages.length > 0) {
-			let imageData = safeParseJson(existingImages[0].data);
+			const imageData = safeParseJson<Record<string, any>>(existingImages[0].content) ?? {};
 			return {
 				status: "success",
 				content: `Podcast Featured Image: [${imageData.imageId}](${imageData.imageUrl})`,
@@ -68,13 +68,13 @@ export const handlePodcastGenerateImage = async (
 		}
 
 		const summaryData = projectId
-			? await repositories.appData.getAppDataByProjectAppAndItem(
+			? await repositories.outputs.listProjectOutputGroup(
 					projectId,
 					"podcasts",
 					request.podcastId,
 					"summary",
 				)
-			: await repositories.appData.getAppDataByUserAppAndItem(
+			: await repositories.outputs.listPersonalOutputGroup(
 					user.id,
 					"podcasts",
 					request.podcastId,
@@ -85,7 +85,7 @@ export const handlePodcastGenerateImage = async (
 			throw new AssistantError("Podcast summary not found. Please summarize podcast first");
 		}
 
-		let parsedSummaryData = safeParseJson(summaryData[0].data);
+		const parsedSummaryData = safeParseJson<Record<string, any>>(summaryData[0].content) ?? {};
 		const summaryContent = parsedSummaryData.summary || parsedSummaryData.description;
 		const summary = `I need a featured image for my latest podcast episode, this is the summary: ${summaryContent}`;
 
@@ -128,44 +128,41 @@ export const handlePodcastGenerateImage = async (
 		).buffer;
 		const length = arrayBuffer.byteLength;
 
-		const storedImage = await StorageService.forPrivateAssets(serviceContext).storePrivateAsset({
-			key: imageKey,
-			data: arrayBuffer,
-			ownerUserId: user.id,
-			purpose: "app_artifact",
-			mimeType: "image/png",
-			filename: "featured.png",
-			byteSize: length,
-		});
-
-		const appData = {
+		const appData: Record<string, unknown> = {
 			imageId,
-			imageAssetId: storedImage.assetId,
 			imageKey,
-			imageUrl: storedImage.url,
 			summary: summaryContent,
 			status: "complete",
 			createdAt: new Date().toISOString(),
 		};
 
-		if (projectId) {
-			const created = await repositories.appData.createAppDataWithItem(
-				user.id,
-				"podcasts",
-				request.podcastId,
-				"image",
-				appData,
-				projectId,
-			);
-			await repositories.storedAssets.linkAssetToAppData(storedImage.assetId, created.id);
-		} else {
-			await repositories.appData.createAppDataWithItem(
-				user.id,
-				"podcasts",
-				request.podcastId,
-				"image",
-				appData,
-			);
+		const storedImage = await StorageService.forPrivateAssets(serviceContext).storeOutputFile({
+			key: imageKey,
+			data: arrayBuffer,
+			createdByUserId: user.id,
+			projectId,
+			capabilityId: "podcasts",
+			groupId: request.podcastId,
+			kind: "image",
+			title: "Podcast featured image",
+			content: appData,
+			mimeType: "image/png",
+			filename: "featured.png",
+			byteSize: length,
+		});
+
+		Object.assign(appData, {
+			imageOutputId: storedImage.outputId,
+			imageKey,
+			imageUrl: storedImage.url,
+		});
+		const imageOutput = await repositories.outputs.getOutput(storedImage.outputId);
+		if (imageOutput) {
+			await repositories.outputs.updateOutput(imageOutput.id, {
+				content: appData,
+				expectedRevision: imageOutput.revision,
+				updatedByUserId: user.id,
+			});
 		}
 
 		return {

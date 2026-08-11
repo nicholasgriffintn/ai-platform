@@ -614,21 +614,21 @@ export const passkey = sqliteTable(
 
 export type Passkey = typeof passkey.$inferSelect;
 
-export const appData = sqliteTable(
-	"app_data",
+export const providerConnection = sqliteTable(
+	"provider_connection",
 	{
 		id: text().primaryKey(),
 		user_id: integer()
 			.notNull()
-			.references(() => user.id),
-		app_id: text().notNull(),
-		item_id: text(),
-		item_type: text(),
-		project_id: text().references(() => project.id, { onDelete: "cascade" }),
-		data: text({
-			mode: "json",
-		}),
-		share_id: text().unique(),
+			.references(() => user.id, { onDelete: "cascade" }),
+		provider: text().notNull(),
+		kind: text().notNull(),
+		external_id: text().default("").notNull(),
+		status: text({ enum: ["connected", "invalid", "revoked"] })
+			.default("connected")
+			.notNull(),
+		encrypted_data: text({ mode: "json" }).$type<Record<string, unknown>>().notNull(),
+		metadata: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
 		created_at: text()
 			.default(sql`(CURRENT_TIMESTAMP)`)
 			.notNull(),
@@ -637,45 +637,43 @@ export const appData = sqliteTable(
 			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 	},
 	(table) => ({
-		userIdIdx: index("app_data_user_id_idx").on(table.user_id),
-		appIdIdx: index("app_data_app_id_idx").on(table.app_id),
-		itemIdIdx: index("app_data_item_id_idx").on(table.item_id),
-		itemTypeIdx: index("app_data_item_type_idx").on(table.item_type),
-		projectIdIdx: index("app_data_project_id_idx").on(table.project_id),
-		shareIdIdx: index("app_data_share_id_idx").on(table.share_id),
-		lookupIdx: index("app_data_lookup_idx").on(
+		userProviderIdx: index("provider_connection_user_provider_idx").on(
 			table.user_id,
-			table.app_id,
-			table.item_id,
-			table.item_type,
+			table.provider,
+		),
+		uniqueConnection: uniqueIndex("provider_connection_unique_idx").on(
+			table.user_id,
+			table.provider,
+			table.kind,
+			table.external_id,
 		),
 	}),
 );
 
-export type AppData = typeof appData.$inferSelect;
+export type ProviderConnection = typeof providerConnection.$inferSelect;
 
-export const storedAsset = sqliteTable(
-	"stored_asset",
+export const source = sqliteTable(
+	"source",
 	{
 		id: text().primaryKey(),
-		key: text().notNull().unique(),
-		owner_user_id: integer()
+		created_by_user_id: integer()
 			.notNull()
 			.references(() => user.id),
-		conversation_id: text().references(() => conversation.id),
-		message_id: text().references(() => message.id),
-		app_data_id: text().references(() => appData.id),
-		purpose: text({
-			enum: [
-				"chat_upload",
-				"speech",
-				"generated_media",
-				"ocr_output",
-				"app_artifact",
-				"sandbox_artifact",
-			],
-		}).notNull(),
-		mime_type: text().notNull(),
+		project_id: text().references(() => project.id, { onDelete: "cascade" }),
+		conversation_id: text().references(() => conversation.id, { onDelete: "set null" }),
+		connection_id: text().references(() => providerConnection.id, { onDelete: "set null" }),
+		kind: text({ enum: ["file", "memory", "text", "url", "connector", "repository"] }).notNull(),
+		title: text().notNull(),
+		status: text({ enum: ["processing", "available", "failed", "archived"] })
+			.default("available")
+			.notNull(),
+		content: text(),
+		provider: text(),
+		external_uri: text(),
+		vector_id: text(),
+		metadata: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
+		storage_key: text().unique(),
+		mime_type: text(),
 		filename: text(),
 		byte_size: integer(),
 		created_at: text()
@@ -686,15 +684,274 @@ export const storedAsset = sqliteTable(
 			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 	},
 	(table) => ({
-		ownerUserIdx: index("stored_asset_owner_user_id_idx").on(table.owner_user_id),
-		conversationIdx: index("stored_asset_conversation_id_idx").on(table.conversation_id),
-		messageIdx: index("stored_asset_message_id_idx").on(table.message_id),
-		appDataIdx: index("stored_asset_app_data_id_idx").on(table.app_data_id),
-		purposeIdx: index("stored_asset_purpose_idx").on(table.purpose),
+		creatorIdx: index("source_created_by_user_id_idx").on(table.created_by_user_id),
+		projectIdx: index("source_project_id_idx").on(table.project_id),
+		conversationIdx: index("source_conversation_id_idx").on(table.conversation_id),
+		connectionIdx: index("source_connection_id_idx").on(table.connection_id),
+		kindIdx: index("source_kind_idx").on(table.kind),
+		vectorIdx: index("source_vector_id_idx").on(table.vector_id),
 	}),
 );
 
-export type StoredAsset = typeof storedAsset.$inferSelect;
+export type Source = typeof source.$inferSelect;
+
+export const sourceCollection = sqliteTable(
+	"source_collection",
+	{
+		id: text().primaryKey(),
+		created_by_user_id: integer()
+			.notNull()
+			.references(() => user.id),
+		project_id: text().references(() => project.id, { onDelete: "cascade" }),
+		title: text().notNull(),
+		description: text(),
+		kind: text({ enum: ["general", "memory"] })
+			.default("general")
+			.notNull(),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+	},
+	(table) => ({
+		creatorIdx: index("source_collection_created_by_user_id_idx").on(table.created_by_user_id),
+		projectIdx: index("source_collection_project_id_idx").on(table.project_id),
+	}),
+);
+
+export type SourceCollection = typeof sourceCollection.$inferSelect;
+
+export const sourceCollectionMember = sqliteTable(
+	"source_collection_member",
+	{
+		collection_id: text()
+			.notNull()
+			.references(() => sourceCollection.id, { onDelete: "cascade" }),
+		source_id: text()
+			.notNull()
+			.references(() => source.id, { onDelete: "cascade" }),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+	},
+	(table) => ({
+		pk: primaryKey({ columns: [table.collection_id, table.source_id] }),
+		sourceIdx: index("source_collection_member_source_id_idx").on(table.source_id),
+	}),
+);
+
+export const output = sqliteTable(
+	"output",
+	{
+		id: text().primaryKey(),
+		created_by_user_id: integer()
+			.notNull()
+			.references(() => user.id),
+		project_id: text().references(() => project.id, { onDelete: "cascade" }),
+		conversation_id: text().references(() => conversation.id, { onDelete: "set null" }),
+		parent_output_id: text(),
+		capability_id: text().notNull(),
+		group_id: text(),
+		kind: text().notNull(),
+		title: text().notNull(),
+		status: text({ enum: ["pending", "ready", "failed", "archived"] })
+			.default("ready")
+			.notNull(),
+		sensitivity: text({ enum: ["personal", "internal", "confidential"] }).notNull(),
+		content: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
+		storage_key: text().unique(),
+		mime_type: text(),
+		filename: text(),
+		byte_size: integer(),
+		revision: integer().default(1).notNull(),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+	},
+	(table) => ({
+		creatorIdx: index("output_created_by_user_id_idx").on(table.created_by_user_id),
+		projectIdx: index("output_project_id_idx").on(table.project_id),
+		conversationIdx: index("output_conversation_id_idx").on(table.conversation_id),
+		parentIdx: index("output_parent_output_id_idx").on(table.parent_output_id),
+		capabilityIdx: index("output_capability_id_idx").on(table.capability_id),
+		groupIdx: index("output_group_id_idx").on(table.group_id),
+		lookupIdx: index("output_lookup_idx").on(
+			table.created_by_user_id,
+			table.capability_id,
+			table.group_id,
+			table.kind,
+		),
+	}),
+);
+
+export type Output = typeof output.$inferSelect;
+
+export const outputRevision = sqliteTable(
+	"output_revision",
+	{
+		output_id: text()
+			.notNull()
+			.references(() => output.id, { onDelete: "cascade" }),
+		revision: integer().notNull(),
+		title: text().notNull(),
+		status: text({ enum: ["pending", "ready", "failed", "archived"] }).notNull(),
+		sensitivity: text({ enum: ["personal", "internal", "confidential"] }).notNull(),
+		content: text({ mode: "json" }).$type<Record<string, unknown>>().notNull(),
+		created_by_user_id: integer()
+			.notNull()
+			.references(() => user.id),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+	},
+	(table) => ({
+		pk: primaryKey({ columns: [table.output_id, table.revision] }),
+	}),
+);
+
+export type OutputRevision = typeof outputRevision.$inferSelect;
+
+export const outputSource = sqliteTable(
+	"output_source",
+	{
+		output_id: text()
+			.notNull()
+			.references(() => output.id, { onDelete: "cascade" }),
+		source_id: text()
+			.notNull()
+			.references(() => source.id, { onDelete: "cascade" }),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+	},
+	(table) => ({
+		pk: primaryKey({ columns: [table.output_id, table.source_id] }),
+		sourceIdx: index("output_source_source_id_idx").on(table.source_id),
+	}),
+);
+
+export const outputShare = sqliteTable(
+	"output_share",
+	{
+		id: text().primaryKey(),
+		output_id: text()
+			.notNull()
+			.references(() => output.id, { onDelete: "cascade" }),
+		token_hash: text().notNull().unique(),
+		permission: text({ enum: ["view"] })
+			.default("view")
+			.notNull(),
+		created_by_user_id: integer()
+			.notNull()
+			.references(() => user.id),
+		expires_at: text(),
+		revoked_at: text(),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+	},
+	(table) => ({
+		outputIdx: index("output_share_output_id_idx").on(table.output_id),
+	}),
+);
+
+export type OutputShare = typeof outputShare.$inferSelect;
+
+export const template = sqliteTable(
+	"template",
+	{
+		id: text().primaryKey(),
+		created_by_user_id: integer()
+			.notNull()
+			.references(() => user.id),
+		workspace_id: text().references(() => workspace.id, { onDelete: "cascade" }),
+		kind: text({ enum: ["project", "recipe", "capability"] }).notNull(),
+		capability_id: text(),
+		name: text().notNull(),
+		description: text().default("").notNull(),
+		configuration: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
+		status: text({ enum: ["active", "paused", "archived"] })
+			.default("active")
+			.notNull(),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+	},
+	(table) => ({
+		creatorIdx: index("template_created_by_user_id_idx").on(table.created_by_user_id),
+		workspaceIdx: index("template_workspace_id_idx").on(table.workspace_id),
+		capabilityIdx: index("template_capability_id_idx").on(table.capability_id),
+	}),
+);
+
+export type Template = typeof template.$inferSelect;
+
+export const activityRecord = sqliteTable(
+	"activity_record",
+	{
+		id: text().primaryKey(),
+		created_by_user_id: integer()
+			.notNull()
+			.references(() => user.id),
+		project_id: text().references(() => project.id, { onDelete: "cascade" }),
+		conversation_id: text().references(() => conversation.id, { onDelete: "set null" }),
+		capability_id: text().notNull(),
+		group_id: text(),
+		kind: text().notNull(),
+		status: text({
+			enum: ["queued", "running", "waiting", "succeeded", "failed", "cancelled"],
+		}).notNull(),
+		summary: text().notNull(),
+		data: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+	},
+	(table) => ({
+		creatorIdx: index("activity_record_created_by_user_id_idx").on(table.created_by_user_id),
+		projectIdx: index("activity_record_project_id_idx").on(table.project_id),
+		conversationIdx: index("activity_record_conversation_id_idx").on(table.conversation_id),
+		groupIdx: index("activity_record_group_id_idx").on(table.group_id),
+	}),
+);
+
+export type ActivityRecord = typeof activityRecord.$inferSelect;
+
+export const workspaceAuditRecord = sqliteTable(
+	"workspace_audit_record",
+	{
+		id: text().primaryKey(),
+		workspace_id: text()
+			.notNull()
+			.references(() => workspace.id, { onDelete: "cascade" }),
+		actor_user_id: integer().references(() => user.id),
+		action: text().notNull(),
+		target_type: text().notNull(),
+		target_id: text(),
+		metadata: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+	},
+	(table) => ({
+		workspaceIdx: index("workspace_audit_record_workspace_id_idx").on(table.workspace_id),
+		actorIdx: index("workspace_audit_record_actor_user_id_idx").on(table.actor_user_id),
+		createdIdx: index("workspace_audit_record_created_at_idx").on(table.created_at),
+	}),
+);
+
+export type WorkspaceAuditRecord = typeof workspaceAuditRecord.$inferSelect;
 
 export const agents = sqliteTable(
 	"agents",
@@ -827,94 +1084,6 @@ export const agentRatings = sqliteTable(
 );
 
 export type AgentRating = typeof agentRatings.$inferSelect;
-
-export const memories = sqliteTable(
-	"memories",
-	{
-		id: text().primaryKey(),
-		user_id: integer()
-			.notNull()
-			.references(() => user.id),
-		text: text().notNull(),
-		category: text({
-			enum: ["fact", "preference", "schedule", "general", "snapshot"],
-		}).notNull(),
-		conversation_id: text(),
-		metadata: text(),
-		vector_id: text(),
-		namespace: text().default("global"),
-		importance_score: integer().default(5),
-		last_accessed: text(),
-		is_active: integer({ mode: "boolean" }).default(true),
-		created_at: text()
-			.default(sql`(CURRENT_TIMESTAMP)`)
-			.notNull(),
-		updated_at: text()
-			.default(sql`(CURRENT_TIMESTAMP)`)
-			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
-	},
-	(table) => ({
-		userIdIdx: index("memories_user_id_idx").on(table.user_id),
-		categoryIdx: index("memories_category_idx").on(table.category),
-		conversationIdIdx: index("memories_conversation_id_idx").on(table.conversation_id),
-		vectorIdIdx: index("memories_vector_id_idx").on(table.vector_id),
-		namespaceIdx: index("memories_namespace_idx").on(table.namespace),
-		isActiveIdx: index("memories_is_active_idx").on(table.is_active),
-	}),
-);
-
-export type Memory = typeof memories.$inferSelect;
-
-export const memoryGroups = sqliteTable(
-	"memory_groups",
-	{
-		id: text().primaryKey(),
-		user_id: integer()
-			.notNull()
-			.references(() => user.id),
-		title: text().notNull(),
-		description: text(),
-		category: text({
-			enum: ["fact", "preference", "schedule", "general", "snapshot"],
-		}),
-		created_at: text()
-			.default(sql`(CURRENT_TIMESTAMP)`)
-			.notNull(),
-		updated_at: text()
-			.default(sql`(CURRENT_TIMESTAMP)`)
-			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
-	},
-	(table) => ({
-		userIdIdx: index("memory_groups_user_id_idx").on(table.user_id),
-		categoryIdx: index("memory_groups_category_idx").on(table.category),
-	}),
-);
-
-export type MemoryGroup = typeof memoryGroups.$inferSelect;
-
-export const memoryGroupMembers = sqliteTable(
-	"memory_group_members",
-	{
-		id: text().primaryKey(),
-		group_id: text()
-			.notNull()
-			.references(() => memoryGroups.id, { onDelete: "cascade" }),
-		memory_id: text()
-			.notNull()
-			.references(() => memories.id, { onDelete: "cascade" }),
-		similarity_score: text(),
-		created_at: text()
-			.default(sql`(CURRENT_TIMESTAMP)`)
-			.notNull(),
-	},
-	(table) => ({
-		groupIdIdx: index("memory_group_members_group_id_idx").on(table.group_id),
-		memoryIdIdx: index("memory_group_members_memory_id_idx").on(table.memory_id),
-		uniqueMember: index("memory_group_members_unique_idx").on(table.group_id, table.memory_id),
-	}),
-);
-
-export type MemoryGroupMember = typeof memoryGroupMembers.$inferSelect;
 
 export const artificialAnalysisModels = sqliteTable(
 	"artificial_analysis_models",

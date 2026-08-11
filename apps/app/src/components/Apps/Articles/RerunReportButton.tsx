@@ -80,8 +80,8 @@ export function RerunReportButton({
 			const articlesWithContent = sourceArticles
 				.map((article) => ({
 					id: article.id,
-					content: isRecord(article.data)
-						? getStringProperty(article.data, "originalArticle")
+					content: isRecord(article.content)
+						? getStringProperty(article.content, "originalArticle")
 						: undefined,
 				}))
 				.filter((article): article is { id: string; content: string } => Boolean(article.content));
@@ -141,8 +141,8 @@ export function RerunReportButton({
 				completed: totalSteps,
 			}));
 
-			if (reportResult.appDataId) {
-				navigate(`${basePath ?? "/work"}/${reportResult.appDataId}`);
+			if (reportResult.outputId) {
+				navigate(`${basePath ?? "/work"}/${reportResult.outputId}`);
 			} else {
 				throw new Error("Failed to generate report");
 			}

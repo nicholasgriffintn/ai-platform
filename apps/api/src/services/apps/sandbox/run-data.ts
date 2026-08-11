@@ -12,6 +12,19 @@ export function parseSandboxRunData(value: unknown): SandboxRunData | null {
 	return parsed.success ? parsed.data : null;
 }
 
+export function getSandboxActivityStatus(
+	status: SandboxRunStatus,
+): "queued" | "running" | "waiting" | "succeeded" | "failed" | "cancelled" {
+	switch (status) {
+		case "paused":
+			return "waiting";
+		case "completed":
+			return "succeeded";
+		default:
+			return status;
+	}
+}
+
 export function appendSandboxRunEvent(
 	events: SandboxRunEvent[] | undefined,
 	event: SandboxRunEvent,

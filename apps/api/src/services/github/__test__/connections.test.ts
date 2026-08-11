@@ -3,11 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import { getGitHubAppInstallationToken } from "~/lib/github";
 import { githubApiRequest } from "~/lib/github/api-client";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { AppData } from "~/repositories/AppDataRepository";
+import type { ProviderConnectionRecord } from "~/repositories/ProviderConnectionRepository";
 import { ErrorType } from "~/utils/errors";
 import { encryptGitHubConnectionPayload } from "../connection-crypto";
 import {
-	GITHUB_CONNECTION_APP_ID,
 	getGitHubAppConnectionForInstallation,
 	getGitHubAppConnectionForUserInstallation,
 	getGitHubAppConnectionForUserRepo,
@@ -33,7 +32,7 @@ async function createEncryptedRecord(params: {
 	repositories?: string[];
 	webhookSecret?: string;
 	jwtSecret?: string;
-}): Promise<AppData> {
+}): Promise<ProviderConnectionRecord> {
 	const encrypted = await encryptGitHubConnectionPayload({
 		jwtSecret: params.jwtSecret ?? JWT_SECRET,
 		userId: USER_ID,
@@ -49,10 +48,12 @@ async function createEncryptedRecord(params: {
 	return {
 		id: params.recordId,
 		user_id: USER_ID,
-		app_id: GITHUB_CONNECTION_APP_ID,
-		item_id: params.itemId ?? String(params.installationId),
-		item_type: "github_installation",
-		data: JSON.stringify({ encrypted }),
+		provider: "github",
+		kind: "github_app",
+		external_id: params.itemId ?? String(params.installationId),
+		status: "connected",
+		encrypted_data: JSON.stringify({ encrypted }),
+		metadata: "{}",
 		created_at: "2026-01-01T00:00:00.000Z",
 		updated_at: "2026-01-01T00:00:00.000Z",
 	};
@@ -60,7 +61,7 @@ async function createEncryptedRecord(params: {
 
 describe("github connections", () => {
 	it("returns the matching user connection for a repository", async () => {
-		const getAppDataByUserAndApp = vi.fn().mockResolvedValue([
+		const listConnections = vi.fn().mockResolvedValue([
 			await createEncryptedRecord({
 				recordId: "record-1",
 				installationId: 1001,
@@ -76,15 +77,15 @@ describe("github connections", () => {
 		const context = {
 			env: { JWT_SECRET },
 			repositories: {
-				appData: {
-					getAppDataByUserAndApp,
+				providerConnections: {
+					listConnections,
 				},
 			},
 		} as unknown as ServiceContext;
 
 		const connection = await getGitHubAppConnectionForUserRepo(context, USER_ID, "owner/repo");
 
-		expect(getAppDataByUserAndApp).toHaveBeenCalledWith(USER_ID, GITHUB_CONNECTION_APP_ID);
+		expect(listConnections).toHaveBeenCalledWith(USER_ID, "github");
 		expect(connection).toMatchObject({
 			appId: "123456",
 			privateKey: "line1\nline2",
@@ -93,7 +94,7 @@ describe("github connections", () => {
 	});
 
 	it("returns the connection by installation id", async () => {
-		const getAppDataByAppAndItemId = vi.fn().mockResolvedValue(
+		const getConnectionByExternalId = vi.fn().mockResolvedValue(
 			await createEncryptedRecord({
 				recordId: "record-installation",
 				installationId: 3001,
@@ -104,15 +105,15 @@ describe("github connections", () => {
 		const context = {
 			env: { JWT_SECRET },
 			repositories: {
-				appData: {
-					getAppDataByAppAndItemId,
+				providerConnections: {
+					getConnectionByExternalId,
 				},
 			},
 		} as unknown as ServiceContext;
 
 		const connection = await getGitHubAppConnectionForInstallation(context, 3001);
 
-		expect(getAppDataByAppAndItemId).toHaveBeenCalledWith(GITHUB_CONNECTION_APP_ID, "3001");
+		expect(getConnectionByExternalId).toHaveBeenCalledWith("github", "github_app", "3001");
 		expect(connection).toMatchObject({
 			appId: "123456",
 			installationId: 3001,
@@ -121,30 +122,25 @@ describe("github connections", () => {
 	});
 
 	it("returns the user-scoped connection by installation id", async () => {
-		const getAppDataByUserAppAndItem = vi.fn().mockResolvedValue([
+		const getConnection = vi.fn().mockResolvedValue(
 			await createEncryptedRecord({
 				recordId: "record-installation-user",
 				installationId: 8001,
 			}),
-		]);
+		);
 
 		const context = {
 			env: { JWT_SECRET },
 			repositories: {
-				appData: {
-					getAppDataByUserAppAndItem,
+				providerConnections: {
+					getConnection,
 				},
 			},
 		} as unknown as ServiceContext;
 
 		const connection = await getGitHubAppConnectionForUserInstallation(context, USER_ID, 8001);
 
-		expect(getAppDataByUserAppAndItem).toHaveBeenCalledWith(
-			USER_ID,
-			GITHUB_CONNECTION_APP_ID,
-			"8001",
-			"github_installation",
-		);
+		expect(getConnection).toHaveBeenCalledWith(USER_ID, "github", "github_app", "8001");
 		expect(connection).toMatchObject({
 			appId: "123456",
 			installationId: 8001,
@@ -152,7 +148,7 @@ describe("github connections", () => {
 	});
 
 	it("lists user connections in updated order", async () => {
-		const getAppDataByUserAndApp = vi.fn().mockResolvedValue([
+		const listConnections = vi.fn().mockResolvedValue([
 			{
 				...(await createEncryptedRecord({
 					recordId: "record-old",
@@ -175,8 +171,8 @@ describe("github connections", () => {
 		const context = {
 			env: { JWT_SECRET },
 			repositories: {
-				appData: {
-					getAppDataByUserAndApp,
+				providerConnections: {
+					listConnections,
 				},
 			},
 		} as unknown as ServiceContext;
@@ -197,12 +193,12 @@ describe("github connections", () => {
 	});
 
 	it("lists repositories available to a user installation", async () => {
-		const getAppDataByUserAppAndItem = vi.fn().mockResolvedValue([
+		const getConnection = vi.fn().mockResolvedValue(
 			await createEncryptedRecord({
 				recordId: "record-installation-user",
 				installationId: 8002,
 			}),
-		]);
+		);
 		vi.mocked(getGitHubAppInstallationToken).mockResolvedValue("installation-token");
 		vi.mocked(githubApiRequest)
 			.mockResolvedValueOnce(
@@ -223,8 +219,8 @@ describe("github connections", () => {
 		const context = {
 			env: { JWT_SECRET },
 			repositories: {
-				appData: {
-					getAppDataByUserAppAndItem,
+				providerConnections: {
+					getConnection,
 				},
 			},
 		} as unknown as ServiceContext;
@@ -245,7 +241,7 @@ describe("github connections", () => {
 	});
 
 	it("throws a reconnect error when a stored connection cannot be decrypted", async () => {
-		const getAppDataByUserAndApp = vi.fn().mockResolvedValue([
+		const listConnections = vi.fn().mockResolvedValue([
 			await createEncryptedRecord({
 				recordId: "record-old-secret",
 				installationId: 9201,
@@ -256,8 +252,8 @@ describe("github connections", () => {
 		const context = {
 			env: { JWT_SECRET },
 			repositories: {
-				appData: {
-					getAppDataByUserAndApp,
+				providerConnections: {
+					listConnections,
 				},
 			},
 		} as unknown as ServiceContext;
@@ -271,7 +267,7 @@ describe("github connections", () => {
 	});
 
 	it("rejects when JWT secret is not configured", async () => {
-		const getAppDataByAppAndItemId = vi.fn().mockResolvedValue(
+		const getConnectionByExternalId = vi.fn().mockResolvedValue(
 			await createEncryptedRecord({
 				recordId: "record-installation",
 				installationId: 3001,
@@ -281,8 +277,8 @@ describe("github connections", () => {
 		const context = {
 			env: {},
 			repositories: {
-				appData: {
-					getAppDataByAppAndItemId,
+				providerConnections: {
+					getConnectionByExternalId,
 				},
 			},
 		} as unknown as ServiceContext;

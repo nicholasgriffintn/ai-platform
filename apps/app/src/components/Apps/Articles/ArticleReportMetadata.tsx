@@ -46,18 +46,18 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
 							</h4>
 							<div className="space-y-1 text-sm">
 								<MetadataItem label="Report ID">{report.id}</MetadataItem>
-								<MetadataItem label="Session ID">{report.item_id || "N/A"}</MetadataItem>
+								<MetadataItem label="Session ID">{report.groupId || "N/A"}</MetadataItem>
 								<MetadataItem label="Created">
-									{new Date(report.created_at).toLocaleString()}
+									{new Date(report.createdAt).toLocaleString()}
 								</MetadataItem>
 								<MetadataItem label="Updated">
-									{new Date(report.updated_at).toLocaleString()}
+									{report.updatedAt ? new Date(report.updatedAt).toLocaleString() : "N/A"}
 								</MetadataItem>
-								{report.data?.report?.model && (
-									<MetadataItem label="Model">{report.data.report.model}</MetadataItem>
+								{report.content.report?.model && (
+									<MetadataItem label="Model">{report.content.report.model}</MetadataItem>
 								)}
-								{report.data?.report?.log_id && (
-									<MetadataItem label="Log ID">{report.data.report.log_id}</MetadataItem>
+								{report.content.report?.log_id && (
+									<MetadataItem label="Log ID">{report.content.report.log_id}</MetadataItem>
 								)}
 							</div>
 						</div>
@@ -67,13 +67,13 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
 								<ExternalLink size={14} className="mr-2 text-blue-500 dark:text-blue-400" />
 								Citation Information
 							</h4>
-							{report.data?.report?.citations?.length ? (
+							{report.content.report?.citations?.length ? (
 								<div className="space-y-2">
 									<span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 block mb-1">
 										Citations:
 									</span>
 									<ul className="text-sm list-none pl-0 space-y-1.5">
-										{report.data.report.citations.map((citation: string, i: number) => (
+										{report.content.report.citations.map((citation: string, i: number) => (
 											<li
 												key={`citation-${report.id}-${i}`}
 												className="break-all bg-white dark:bg-zinc-800 p-2 rounded border border-zinc-200 dark:border-zinc-700"
@@ -97,7 +97,7 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
 								</p>
 							)}
 
-							{report.data?.report?.verifiedQuotes && (
+							{report.content.report?.verifiedQuotes && (
 								<div className="mt-4">
 									<span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 block mb-2">
 										Quotes Verification:
@@ -110,22 +110,24 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
 											<span
 												className={cn(
 													"px-2 py-0.5 rounded-full text-xs font-medium",
-													report.data.report.verifiedQuotes.verified
+													report.content.report.verifiedQuotes.verified
 														? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"
 														: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300",
 												)}
 											>
-												{report.data.report.verifiedQuotes.verified ? "Verified" : "Not Verified"}
+												{report.content.report.verifiedQuotes.verified
+													? "Verified"
+													: "Not Verified"}
 											</span>
 										</div>
 
-										{report.data.report.verifiedQuotes.missingQuotes?.length > 0 && (
+										{report.content.report.verifiedQuotes.missingQuotes.length > 0 && (
 											<div className="pt-2 border-t border-zinc-200 dark:border-zinc-700">
 												<span className="font-medium text-zinc-700 dark:text-zinc-300">
 													Missing Quotes:
 												</span>
 												<ul className="list-disc pl-5 mt-2 space-y-1.5">
-													{report.data.report.verifiedQuotes.missingQuotes.map(
+													{report.content.report.verifiedQuotes.missingQuotes.map(
 														(quote: string, i: number) => (
 															<li
 																key={`missing-quote-${report.id}-${i}`}

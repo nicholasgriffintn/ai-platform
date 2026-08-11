@@ -9,7 +9,7 @@ import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import type { AppData } from "~/repositories/AppDataRepository";
+import type { OutputRecord } from "~/repositories/OutputRepository";
 import type { ChatRole, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -19,14 +19,14 @@ import { safeParseJson } from "../../../utils/json";
 
 const logger = getLogger();
 
-function mapAppDataToNote(entry: AppData): Note {
-	const data = safeParseJson<Record<string, unknown>>(entry.data) ?? {};
+function mapOutputToNote(entry: OutputRecord): Note {
+	const data = safeParseJson<Record<string, unknown>>(entry.content) ?? {};
 	return {
 		id: entry.id,
 		title: typeof data.title === "string" ? data.title : "",
 		content: typeof data.content === "string" ? data.content : "",
 		createdAt: entry.created_at,
-		updatedAt: entry.updated_at,
+		updatedAt: entry.updated_at ?? entry.created_at,
 		metadata: isRecord(data.metadata) ? data.metadata : undefined,
 	};
 }
@@ -48,12 +48,12 @@ export async function listNotes({
 
 	const serviceContext = resolveServiceContext({ context, env });
 	serviceContext.ensureDatabase();
-	const repo = serviceContext.repositories.appData;
+	const repo = serviceContext.repositories.outputs;
 	const list = projectId
-		? await repo.getAppDataByProjectAndApp(projectId, "notes")
-		: await repo.getAppDataByUserAndApp(userId, "notes");
+		? await repo.listProjectOutputs(projectId, "notes")
+		: await repo.listPersonalOutputs(userId, "notes");
 
-	return list.map(mapAppDataToNote);
+	return list.map(mapOutputToNote);
 }
 
 export async function getNote({
@@ -75,16 +75,16 @@ export async function getNote({
 
 	const serviceContext = resolveServiceContext({ context, env });
 	serviceContext.ensureDatabase();
-	const repo = serviceContext.repositories.appData;
+	const repo = serviceContext.repositories.outputs;
 	const entry = projectId
-		? await repo.getAppDataByProjectAndId(projectId, noteId)
-		: await repo.getAppDataById(noteId);
+		? await repo.getProjectOutput(projectId, noteId)
+		: await repo.getPersonalOutput(userId, noteId);
 
-	if (!entry || entry.app_id !== "notes" || (!projectId && entry.user_id !== userId)) {
-		throw new AssistantError("Note not found", ErrorType.NOT_FOUND);
+	if (!entry || entry.capability_id !== "notes" || entry.kind !== "note") {
+		throw new AssistantError("Note not found", ErrorType.NOT_FOUND, 404);
 	}
 
-	return mapAppDataToNote(entry);
+	return mapOutputToNote(entry);
 }
 
 export async function createNote({
@@ -105,7 +105,7 @@ export async function createNote({
 	}
 	const serviceContext = resolveServiceContext({ context, env, user });
 	serviceContext.ensureDatabase();
-	const repo = serviceContext.repositories.appData;
+	const repo = serviceContext.repositories.outputs;
 	const noteId = generateId();
 
 	const sanitisedTitle = sanitiseInput(data.title);
@@ -125,16 +125,18 @@ export async function createNote({
 		metadata: { ...generatedMetadata, ...data.metadata },
 	};
 
-	const entry = projectId
-		? await repo.createAppDataWithItem(user.id, "notes", noteId, "note", appData, projectId)
-		: await repo.createAppDataWithItem(user.id, "notes", noteId, "note", appData);
+	const entry = await repo.createOutput({
+		id: noteId,
+		createdByUserId: user.id,
+		projectId,
+		capabilityId: "notes",
+		groupId: noteId,
+		kind: "note",
+		title: sanitisedTitle,
+		content: appData,
+	});
 
-	const full = await repo.getAppDataById(entry.id);
-	if (!full) {
-		throw new AssistantError("Created note could not be loaded", ErrorType.UNKNOWN_ERROR);
-	}
-
-	return mapAppDataToNote(full);
+	return mapOutputToNote(entry);
 }
 
 export async function updateNote({
@@ -158,16 +160,16 @@ export async function updateNote({
 
 	const serviceContext = resolveServiceContext({ context, env, user });
 	serviceContext.ensureDatabase();
-	const repo = serviceContext.repositories.appData;
+	const repo = serviceContext.repositories.outputs;
 	const existing = projectId
-		? await repo.getAppDataByProjectAndId(projectId, noteId)
-		: await repo.getAppDataById(noteId);
+		? await repo.getProjectOutput(projectId, noteId)
+		: await repo.getPersonalOutput(user.id, noteId);
 
-	if (!existing || existing.app_id !== "notes" || (!projectId && existing.user_id !== user.id)) {
-		throw new AssistantError("Note not found", ErrorType.NOT_FOUND);
+	if (!existing || existing.capability_id !== "notes" || existing.kind !== "note") {
+		throw new AssistantError("Note not found", ErrorType.NOT_FOUND, 404);
 	}
 
-	const parsedExistingData = safeParseJson<Record<string, unknown>>(existing.data) ?? {};
+	const parsedExistingData = safeParseJson<Record<string, unknown>>(existing.content) ?? {};
 	const existingMetadata = isRecord(parsedExistingData.metadata) ? parsedExistingData.metadata : {};
 
 	const sanitisedTitle = sanitiseInput(data.title);
@@ -223,15 +225,14 @@ export async function updateNote({
 		metadata: mergedMetadata,
 	};
 
-	await repo.updateAppData(noteId, finalData);
-	const updated = projectId
-		? await repo.getAppDataByProjectAndId(projectId, noteId)
-		: await repo.getAppDataById(noteId);
-	if (!updated) {
-		throw new AssistantError("Updated note could not be loaded", ErrorType.UNKNOWN_ERROR);
-	}
+	const updated = await repo.updateOutput(noteId, {
+		title: sanitisedTitle,
+		content: finalData,
+		expectedRevision: existing.revision,
+		updatedByUserId: user.id,
+	});
 
-	return mapAppDataToNote(updated);
+	return mapOutputToNote(updated);
 }
 
 export async function deleteNote({
@@ -253,16 +254,16 @@ export async function deleteNote({
 
 	const serviceContext = resolveServiceContext({ context, env, user });
 	serviceContext.ensureDatabase();
-	const repo = serviceContext.repositories.appData;
+	const repo = serviceContext.repositories.outputs;
 	const existing = projectId
-		? await repo.getAppDataByProjectAndId(projectId, noteId)
-		: await repo.getAppDataById(noteId);
+		? await repo.getProjectOutput(projectId, noteId)
+		: await repo.getPersonalOutput(user.id, noteId);
 
-	if (!existing || existing.app_id !== "notes" || (!projectId && existing.user_id !== user.id)) {
-		throw new AssistantError("Note not found", ErrorType.NOT_FOUND);
+	if (!existing || existing.capability_id !== "notes" || existing.kind !== "note") {
+		throw new AssistantError("Note not found", ErrorType.NOT_FOUND, 404);
 	}
 
-	await repo.deleteAppData(noteId);
+	await repo.deleteOutput(noteId);
 }
 
 export async function formatNote({

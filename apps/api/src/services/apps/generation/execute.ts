@@ -153,7 +153,7 @@ export const executeModelGeneration = async (
 	const generationOutput = providerResponse?.response ?? providerResponse?.output ?? undefined;
 	const generationError = resolveGenerationError(providerResponse);
 
-	const appDataPayload: Record<string, unknown> = {
+	const outputContent: Record<string, unknown> = {
 		...storage.extraData,
 		modelId: params.modelId,
 		modelName: modelConfig.name,
@@ -166,22 +166,16 @@ export const executeModelGeneration = async (
 		createdAt: new Date().toISOString(),
 	};
 
-	const stored = storage.projectId
-		? await serviceContext.repositories.appData.createAppDataWithItem(
-				user.id,
-				storage.appId,
-				invocationId,
-				storage.itemType,
-				appDataPayload,
-				storage.projectId,
-			)
-		: await serviceContext.repositories.appData.createAppDataWithItem(
-				user.id,
-				storage.appId,
-				invocationId,
-				storage.itemType,
-				appDataPayload,
-			);
+	const stored = await serviceContext.repositories.outputs.createOutput({
+		createdByUserId: user.id,
+		projectId: storage.projectId,
+		capabilityId: storage.appId,
+		groupId: invocationId,
+		kind: storage.itemType,
+		title: `${modelConfig.name || params.modelId} generation`,
+		status: status === "processing" ? "pending" : status === "failed" ? "failed" : "ready",
+		content: outputContent,
+	});
 
 	if (!stored?.id) {
 		throw new AssistantError("Failed to store generation data", ErrorType.STORAGE_ERROR);

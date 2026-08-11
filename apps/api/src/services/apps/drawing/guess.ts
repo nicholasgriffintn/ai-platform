@@ -65,10 +65,14 @@ export async function guessDrawingFromImage({
 
 	const guessId = generateId();
 
-	const repo = serviceContext.repositories.appData;
-	await repo.createAppDataWithItem(user.id, "drawings", guessId, "guess", {
-		guess,
-		timestamp: new Date().toISOString(),
+	const repo = serviceContext.repositories.outputs;
+	await repo.createOutput({
+		createdByUserId: user.id,
+		capabilityId: "drawings",
+		groupId: guessId,
+		kind: "guess",
+		title: guess,
+		content: { guess, timestamp: new Date().toISOString() },
 	});
 
 	return {

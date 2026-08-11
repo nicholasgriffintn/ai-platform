@@ -8,6 +8,9 @@ import { PageTitle } from "~/components/Core/PageTitle";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, Card, ConfirmationDialog } from "~/components/ui";
 import { useArchiveProject } from "~/hooks/useWorkspaces";
+import { useTemplateMutations } from "~/hooks/useGovernance";
+import { toast } from "sonner";
+import { LayoutTemplate } from "lucide-react";
 import { isAuthenticationError } from "~/lib/errors";
 import { useWorkData } from "./WorkContext";
 import { ProjectBriefCard } from "./ProjectBriefCard";
@@ -24,6 +27,7 @@ export function ProjectOverview({
 }) {
 	const [isArchiveOpen, setIsArchiveOpen] = useState(false);
 	const archiveProject = useArchiveProject();
+	const templates = useTemplateMutations(workspaceId);
 	const navigate = useNavigate();
 	const { projectQuery, workspaceQuery } = useWorkData();
 	const { data: project, isLoading, error } = projectQuery;
@@ -54,6 +58,38 @@ export function ProjectOverview({
 							</p>
 						</div>
 						<div className="flex shrink-0 gap-2">
+							{canManage && (
+								<Button
+									variant="outline"
+									icon={<LayoutTemplate size={16} />}
+									onClick={async () => {
+										await templates.create.mutateAsync({
+											workspaceId,
+											kind: "project",
+											name: project.name,
+											description: project.description,
+											configuration: {
+												project: {
+													name: project.name,
+													description: project.description,
+													instructions: project.instructions,
+													colour: project.colour,
+													codingEnvironment: project.codingEnvironment,
+												},
+												capabilities: project.capabilities.map((capability) => ({
+													kind: capability.kind,
+													capabilityId: capability.capabilityId,
+													configuration: capability.configuration,
+												})),
+											},
+											status: "active",
+										});
+										toast.success("Project template saved");
+									}}
+								>
+									Save template
+								</Button>
+							)}
 							{canManage && (
 								<Button
 									variant="outline"

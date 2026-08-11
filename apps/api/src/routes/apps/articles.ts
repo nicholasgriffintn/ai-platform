@@ -218,7 +218,7 @@ addRoute(app, "post", "/analyse", {
 			description: "Analysis saved",
 			schema: z.object({
 				status: z.string(),
-				appDataId: z.string(),
+				outputId: z.string(),
 				itemId: z.string(),
 				analysis: z.any(),
 			}),
@@ -283,7 +283,7 @@ addRoute(app, "post", "/summarise", {
 			description: "Summary saved",
 			schema: z.object({
 				status: z.string(),
-				appDataId: z.string(),
+				outputId: z.string(),
 				itemId: z.string(),
 				summary: z.any(),
 			}),
@@ -348,7 +348,7 @@ addRoute(app, "post", "/generate-report", {
 			description: "Report generated and saved",
 			schema: z.object({
 				status: z.string(),
-				appDataId: z.string(),
+				outputId: z.string(),
 				itemId: z.string(),
 			}),
 		},

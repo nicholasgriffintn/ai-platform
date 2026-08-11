@@ -41,9 +41,9 @@ Create AI agents with custom configurations, tools, and MCP server integrations.
 
 Secure your API access with GitHub OAuth, magic links, passkeys, JWT tokens, or API keys.
 
-### Memories & RAG
+### Sources, outputs & RAG
 
-Store and retrieve context using vector embeddings for enhanced conversations.
+Store personal or project source material, retrieve relevant context with vector embeddings, and manage generated outputs.
 
 ### Guardrails
 

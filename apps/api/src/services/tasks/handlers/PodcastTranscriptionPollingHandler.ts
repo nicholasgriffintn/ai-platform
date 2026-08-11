@@ -2,7 +2,7 @@ import type { IEnv } from "~/types";
 import type { TaskMessage } from "../TaskService";
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import { getLogger } from "~/utils/logger";
-import { AppDataRepository } from "~/repositories/AppDataRepository";
+import { OutputRepository } from "~/repositories/OutputRepository";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { safeParseJson } from "~/utils/json";
@@ -17,6 +17,7 @@ const logger = getLogger({
 interface PodcastTranscriptionPollingData {
 	podcastId: string;
 	userId: number;
+	projectId?: string;
 	startedAt: string;
 	pollAttempt?: number;
 }
@@ -33,13 +34,20 @@ export class PodcastTranscriptionPollingHandler implements TaskHandler {
 				};
 			}
 
-			const appDataRepo = new AppDataRepository(env);
-			const records = await appDataRepo.getAppDataByUserAppAndItem(
-				data.userId,
-				"podcasts",
-				data.podcastId,
-				"transcribe",
-			);
+			const outputRepo = new OutputRepository(env);
+			const records = data.projectId
+				? await outputRepo.listProjectOutputGroup(
+						data.projectId,
+						"podcasts",
+						data.podcastId,
+						"transcribe",
+					)
+				: await outputRepo.listPersonalOutputGroup(
+						data.userId,
+						"podcasts",
+						data.podcastId,
+						"transcribe",
+					);
 			const transcriptionRecord = records[0];
 
 			if (!transcriptionRecord) {
@@ -49,7 +57,7 @@ export class PodcastTranscriptionPollingHandler implements TaskHandler {
 				};
 			}
 
-			const transcriptionData = safeParseJson(transcriptionRecord.data);
+			const transcriptionData = safeParseJson<Record<string, any>>(transcriptionRecord.content);
 			if (!transcriptionData) {
 				return {
 					status: "error",
@@ -97,7 +105,12 @@ export class PodcastTranscriptionPollingHandler implements TaskHandler {
 				transcriptionData.status = "complete";
 				transcriptionData.transcriptionData = result.result;
 				transcriptionData.output = result.result.response;
-				await appDataRepo.updateAppData(transcriptionRecord.id, transcriptionData);
+				await outputRepo.updateOutput(transcriptionRecord.id, {
+					status: "ready",
+					content: transcriptionData,
+					expectedRevision: transcriptionRecord.revision,
+					updatedByUserId: data.userId,
+				});
 				return {
 					status: "success",
 					message: "Podcast transcription completed",
@@ -108,7 +121,12 @@ export class PodcastTranscriptionPollingHandler implements TaskHandler {
 			if (result.status === "failed") {
 				transcriptionData.status = "failed";
 				transcriptionData.error = result.raw?.error || "Transcription failed";
-				await appDataRepo.updateAppData(transcriptionRecord.id, transcriptionData);
+				await outputRepo.updateOutput(transcriptionRecord.id, {
+					status: "failed",
+					content: transcriptionData,
+					expectedRevision: transcriptionRecord.revision,
+					updatedByUserId: data.userId,
+				});
 				return {
 					status: "success",
 					message: "Podcast transcription failed",

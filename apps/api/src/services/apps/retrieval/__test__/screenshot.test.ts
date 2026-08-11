@@ -5,7 +5,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 
 const mockStorageService = vi.hoisted(() => ({
 	uploadObject: vi.fn(),
-	storePrivateAsset: vi.fn(),
+	storeOutputFile: vi.fn(),
 }));
 
 const mockGenerateId = vi.hoisted(() => vi.fn(() => "generated-id-123"));
@@ -50,15 +50,15 @@ describe("captureScreenshot", () => {
 		vi.clearAllMocks();
 		mockFetch.mockResolvedValue(mockFetchResponse);
 		mockStorageService.uploadObject.mockResolvedValue(undefined);
-		mockStorageService.storePrivateAsset.mockImplementation(async (request) => {
+		mockStorageService.storeOutputFile.mockImplementation(async (request) => {
 			await mockStorageService.uploadObject(request.key, request.data, {
 				contentType: request.mimeType,
 			});
 
 			return {
-				assetId: "screenshot-asset-123",
+				outputId: "screenshot-output-123",
 				key: request.key,
-				url: "https://api.test.com/assets/screenshot-asset-123",
+				url: "https://api.test.com/outputs/screenshot-output-123/content",
 			};
 		});
 		mockGenerateId.mockReturnValue("generated-id-123");
@@ -130,7 +130,10 @@ describe("captureScreenshot", () => {
 			);
 
 			expect(result.status).toBe("success");
-			expect(result.data?.screenshotUrl).toBe("https://api.test.com/assets/screenshot-asset-123");
+			expect(result.data?.screenshotUrl).toBe(
+				"https://api.test.com/outputs/screenshot-output-123/content",
+			);
+			expect(result.data?.outputId).toBe("screenshot-output-123");
 			expect(result.data?.key).toContain("screenshots/");
 		});
 
@@ -151,7 +154,9 @@ describe("captureScreenshot", () => {
 			);
 
 			expect(result.status).toBe("success");
-			expect(result.data?.screenshotUrl).toBe("https://api.test.com/assets/screenshot-asset-123");
+			expect(result.data?.screenshotUrl).toBe(
+				"https://api.test.com/outputs/screenshot-output-123/content",
+			);
 		});
 
 		it("should handle screenshot options", async () => {
@@ -425,7 +430,9 @@ describe("captureScreenshot", () => {
 			const result = await captureScreenshot(params, reqWithoutAssetsUrl);
 
 			expect(result.status).toBe("success");
-			expect(result.data?.screenshotUrl).toBe("https://api.test.com/assets/screenshot-asset-123");
+			expect(result.data?.screenshotUrl).toBe(
+				"https://api.test.com/outputs/screenshot-output-123/content",
+			);
 		});
 
 		it("should handle both URL and HTML provided", async () => {
@@ -472,7 +479,8 @@ describe("captureScreenshot", () => {
 			expect(result).toMatchObject({
 				status: "success",
 				data: {
-					screenshotUrl: "https://api.test.com/assets/screenshot-asset-123",
+					outputId: "screenshot-output-123",
+					screenshotUrl: "https://api.test.com/outputs/screenshot-output-123/content",
 					key: expect.stringContaining("screenshots/"),
 				},
 			});

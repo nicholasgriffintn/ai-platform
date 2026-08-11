@@ -3,7 +3,7 @@ import type { TaskMessage } from "../TaskService";
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import { getLogger } from "~/utils/logger";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { AppDataRepository } from "~/repositories/AppDataRepository";
+import { OutputRepository } from "~/repositories/OutputRepository";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { safeParseJson } from "~/utils/json";
 import { TaskService } from "../TaskService";
@@ -32,8 +32,8 @@ export class ReplicatePollingHandler implements TaskHandler {
 				};
 			}
 
-			const appDataRepo = new AppDataRepository(env);
-			const prediction = await appDataRepo.getAppDataById(data.predictionId);
+			const outputRepo = new OutputRepository(env);
+			const prediction = await outputRepo.getOutput(data.predictionId);
 
 			if (!prediction) {
 				return {
@@ -42,14 +42,14 @@ export class ReplicatePollingHandler implements TaskHandler {
 				};
 			}
 
-			if (prediction.user_id !== data.userId) {
+			if (prediction.created_by_user_id !== data.userId) {
 				return {
 					status: "error",
 					message: "Unauthorized access to prediction",
 				};
 			}
 
-			const predictionData = safeParseJson(prediction.data);
+			const predictionData = safeParseJson<Record<string, any>>(prediction.content);
 
 			if (!predictionData) {
 				return {
@@ -104,7 +104,12 @@ export class ReplicatePollingHandler implements TaskHandler {
 				predictionData.predictionData = result.result;
 				predictionData.output = result.result.response;
 
-				await appDataRepo.updateAppData(data.predictionId, predictionData);
+				await outputRepo.updateOutput(data.predictionId, {
+					status: "ready",
+					content: predictionData,
+					expectedRevision: prediction.revision,
+					updatedByUserId: data.userId,
+				});
 
 				return {
 					status: "success",
@@ -122,7 +127,12 @@ export class ReplicatePollingHandler implements TaskHandler {
 				predictionData.status = "failed";
 				predictionData.error = result.raw?.error || "Generation failed";
 
-				await appDataRepo.updateAppData(data.predictionId, predictionData);
+				await outputRepo.updateOutput(data.predictionId, {
+					status: "failed",
+					content: predictionData,
+					expectedRevision: prediction.revision,
+					updatedByUserId: data.userId,
+				});
 
 				return {
 					status: "success",

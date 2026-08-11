@@ -1,11 +1,13 @@
 import type { IEnv } from "~/types";
 import type { TaskMessage } from "../TaskService";
 import type { TaskHandler, TaskResult } from "../TaskHandler";
-import { MemoryRepository } from "~/repositories/MemoryRepository";
+import { SourceRepository, type SourceRecord } from "~/repositories/SourceRepository";
 import { MemorySynthesisRepository } from "~/repositories/MemorySynthesisRepository";
 import { getLogger } from "~/utils/logger";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getAuxiliaryModel } from "~/lib/providers/models";
+import { safeParseJson } from "~/utils/json";
+import { isRecord } from "~/utils/objects";
 
 const logger = getLogger({ prefix: "services/tasks/memory-synthesis" });
 
@@ -25,16 +27,17 @@ export class MemorySynthesisHandler implements TaskHandler {
 				};
 			}
 
-			const memoryRepository = new MemoryRepository(env);
+			const sourceRepository = new SourceRepository(env);
 			const memorySynthesisRepository = new MemorySynthesisRepository(env);
 
-			const memories = await memoryRepository.getMemoriesByUserId(message.user_id);
+			const memories = await sourceRepository.listPersonalSources(message.user_id, "memory");
 
-			const activeMemories = memories.filter(
-				(m) =>
-					(m.namespace === namespace || !m.namespace) &&
-					(m.is_active === true || m.is_active == null),
-			);
+			const activeMemories = memories.filter((memory) => {
+				const metadata = this.readMetadata(memory);
+				const sourceNamespace =
+					typeof metadata.namespace === "string" ? metadata.namespace : "global";
+				return sourceNamespace === namespace && memory.status !== "archived";
+			});
 
 			if (activeMemories.length === 0) {
 				return {
@@ -48,7 +51,16 @@ export class MemorySynthesisHandler implements TaskHandler {
 				namespace,
 			);
 
-			const categorized = this.categorizeMemories(activeMemories);
+			const categorized = this.categorizeMemories(
+				activeMemories.map((memory) => {
+					const metadata = this.readMetadata(memory);
+					return {
+						id: memory.id,
+						text: memory.content ?? "",
+						category: typeof metadata.category === "string" ? metadata.category : "general",
+					};
+				}),
+			);
 
 			const synthesis = await this.generateSynthesis(categorized, existingSynthesis, env);
 
@@ -92,6 +104,12 @@ export class MemorySynthesisHandler implements TaskHandler {
 				message: (error as Error).message,
 			};
 		}
+	}
+
+	private readMetadata(memory: Pick<SourceRecord, "metadata">): Record<string, unknown> {
+		const value =
+			typeof memory.metadata === "string" ? safeParseJson(memory.metadata) : memory.metadata;
+		return isRecord(value) ? value : {};
 	}
 
 	private categorizeMemories(

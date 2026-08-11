@@ -1,24 +1,26 @@
 import type { IEnv } from "~/types";
 
 import { AgentRepository } from "./AgentRepository";
+import { ActivityRepository } from "./ActivityRepository";
 import { AnonymousUserRepository } from "./AnonymousUserRepository";
 import { ApiKeyRepository } from "./ApiKeyRepository";
-import { AppDataRepository } from "./AppDataRepository";
 import { ArtificialAnalysisRepository } from "./ArtificialAnalysisRepository";
 import { AuthChallengeRepository } from "./AuthChallengeRepository";
+import { AuditRepository } from "./AuditRepository";
 import { BaseRepository } from "./BaseRepository";
 import { ConversationRepository } from "./ConversationRepository";
-import { DynamicAppResponseRepository } from "./DynamicAppResponseRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
-import { MemoryRepository } from "./MemoryRepository";
 import { MemorySynthesisRepository } from "./MemorySynthesisRepository";
 import { MessageRepository } from "./MessageRepository";
 import { OAuthStateRepository } from "./OAuthStateRepository";
+import { OutputRepository } from "./OutputRepository";
 import { PlanRepository } from "./PlanRepository";
+import { ProviderConnectionRepository } from "./ProviderConnectionRepository";
 import { SessionRepository } from "./SessionRepository";
 import { SharedAgentRepository } from "./SharedAgentRepository";
-import { StoredAssetRepository } from "./StoredAssetRepository";
+import { SourceRepository } from "./SourceRepository";
 import { TaskRepository } from "./TaskRepository";
+import { TemplateRepository } from "./TemplateRepository";
 import { TrainingExampleRepository } from "./TrainingExampleRepository";
 import { UserRepository } from "./UserRepository";
 import { UserSettingsRepository } from "./UserSettingsRepository";
@@ -27,32 +29,35 @@ import { WorkspaceRepository } from "./WorkspaceRepository";
 
 export {
 	AgentRepository,
+	ActivityRepository,
 	AnonymousUserRepository,
 	ApiKeyRepository,
-	AppDataRepository,
 	ArtificialAnalysisRepository,
 	AuthChallengeRepository,
+	AuditRepository,
 	BaseRepository,
 	ConversationRepository,
-	DynamicAppResponseRepository,
 	EmbeddingRepository,
-	MemoryRepository,
 	MemorySynthesisRepository,
 	MessageRepository,
 	OAuthStateRepository,
+	OutputRepository,
 	SessionRepository,
 	TaskRepository,
+	TemplateRepository,
 	TrainingExampleRepository,
 	UserRepository,
 	UserSettingsRepository,
 	WebAuthnRepository,
 	PlanRepository,
+	ProviderConnectionRepository,
 	SharedAgentRepository,
-	StoredAssetRepository,
+	SourceRepository,
 	WorkspaceRepository,
 };
 
 export class RepositoryManager {
+	private activityRepo: ActivityRepository;
 	private agentRepo: AgentRepository;
 	private planRepo: PlanRepository;
 	private userRepo: UserRepository;
@@ -63,21 +68,23 @@ export class RepositoryManager {
 	private messageRepo: MessageRepository;
 	private embeddingRepo: EmbeddingRepository;
 	private webAuthnRepo: WebAuthnRepository;
-	private memoryRepo: MemoryRepository;
 	private apiKeyRepo: ApiKeyRepository;
-	private appDataRepo: AppDataRepository;
 	private artificialAnalysisRepo: ArtificialAnalysisRepository;
 	private authChallengeRepo: AuthChallengeRepository;
+	private auditRepo: AuditRepository;
 	private oauthStateRepo: OAuthStateRepository;
+	private outputRepo: OutputRepository;
+	private providerConnectionRepo: ProviderConnectionRepository;
 	private sharedAgentRepo: SharedAgentRepository;
-	private storedAssetRepo: StoredAssetRepository;
-	private dynamicAppResponseRepo: DynamicAppResponseRepository;
+	private sourceRepo: SourceRepository;
 	private taskRepo: TaskRepository;
+	private templateRepo: TemplateRepository;
 	private memorySynthesisRepo: MemorySynthesisRepository;
 	private trainingExampleRepo: TrainingExampleRepository;
 	private workspaceRepo: WorkspaceRepository;
 
 	constructor(env: IEnv) {
+		this.activityRepo = new ActivityRepository(env);
 		this.agentRepo = new AgentRepository(env);
 		this.planRepo = new PlanRepository(env);
 		this.userRepo = new UserRepository(env);
@@ -88,16 +95,17 @@ export class RepositoryManager {
 		this.messageRepo = new MessageRepository(env);
 		this.embeddingRepo = new EmbeddingRepository(env);
 		this.webAuthnRepo = new WebAuthnRepository(env);
-		this.memoryRepo = new MemoryRepository(env);
 		this.apiKeyRepo = new ApiKeyRepository(env);
-		this.appDataRepo = new AppDataRepository(env);
 		this.artificialAnalysisRepo = new ArtificialAnalysisRepository(env);
 		this.authChallengeRepo = new AuthChallengeRepository(env);
+		this.auditRepo = new AuditRepository(env);
 		this.oauthStateRepo = new OAuthStateRepository(env);
+		this.outputRepo = new OutputRepository(env);
+		this.providerConnectionRepo = new ProviderConnectionRepository(env);
 		this.sharedAgentRepo = new SharedAgentRepository(env);
-		this.storedAssetRepo = new StoredAssetRepository(env);
-		this.dynamicAppResponseRepo = new DynamicAppResponseRepository(env);
+		this.sourceRepo = new SourceRepository(env);
 		this.taskRepo = new TaskRepository(env);
+		this.templateRepo = new TemplateRepository(env);
 		this.memorySynthesisRepo = new MemorySynthesisRepository(env);
 		this.trainingExampleRepo = new TrainingExampleRepository(env);
 		this.workspaceRepo = new WorkspaceRepository(env);
@@ -109,6 +117,10 @@ export class RepositoryManager {
 
 	public get plans(): PlanRepository {
 		return this.planRepo;
+	}
+
+	public get activities(): ActivityRepository {
+		return this.activityRepo;
 	}
 
 	public get users(): UserRepository {
@@ -125,6 +137,10 @@ export class RepositoryManager {
 
 	public get authChallenges(): AuthChallengeRepository {
 		return this.authChallengeRepo;
+	}
+
+	public get audit(): AuditRepository {
+		return this.auditRepo;
 	}
 
 	public get oauthStates(): OAuthStateRepository {
@@ -155,16 +171,20 @@ export class RepositoryManager {
 		return this.apiKeyRepo;
 	}
 
-	public get appData(): AppDataRepository {
-		return this.appDataRepo;
-	}
-
 	public get artificialAnalysis(): ArtificialAnalysisRepository {
 		return this.artificialAnalysisRepo;
 	}
 
-	public get memories(): MemoryRepository {
-		return this.memoryRepo;
+	public get outputs(): OutputRepository {
+		return this.outputRepo;
+	}
+
+	public get providerConnections(): ProviderConnectionRepository {
+		return this.providerConnectionRepo;
+	}
+
+	public get templates(): TemplateRepository {
+		return this.templateRepo;
 	}
 
 	public get agents(): AgentRepository {
@@ -175,12 +195,8 @@ export class RepositoryManager {
 		return this.sharedAgentRepo;
 	}
 
-	public get storedAssets(): StoredAssetRepository {
-		return this.storedAssetRepo;
-	}
-
-	public get dynamicAppResponses(): DynamicAppResponseRepository {
-		return this.dynamicAppResponseRepo;
+	public get sources(): SourceRepository {
+		return this.sourceRepo;
 	}
 
 	public get tasks(): TaskRepository {

@@ -5,15 +5,16 @@ import { persistSandboxRunArtifact } from "../run-artifacts";
 describe("run artifacts", () => {
 	it("persists manifest and file artifacts and strips large inline result fields", async () => {
 		const put = vi.fn().mockResolvedValue(undefined);
-		const createAsset = vi.fn(async (asset) => ({ id: asset.id }));
+		let outputNumber = 0;
+		const createOutput = vi.fn(async () => ({ id: `output-${++outputNumber}` }));
 		const context = {
 			env: {
 				PRIVATE_ASSETS_BUCKET: { put },
 				API_BASE_URL: "https://api.example.com",
 			},
 			repositories: {
-				storedAssets: {
-					createAsset,
+				outputs: {
+					createOutput,
 				},
 			},
 		} as any;
@@ -45,12 +46,14 @@ describe("run artifacts", () => {
 		});
 
 		expect(put).toHaveBeenCalledTimes(5);
-		expect(createAsset).toHaveBeenCalledTimes(5);
+		expect(createOutput).toHaveBeenCalledTimes(5);
 		expect(persisted.artifactKey).toMatch(/sandbox\/runs\/run-123\/manifest\.json$/);
 		expect(persisted.result?.logs).toBeUndefined();
 		expect(persisted.result?.diff).toBeUndefined();
 		expect(persisted.result?.artifactItems).toHaveLength(4);
-		expect(persisted.result?.logsArtifactUrl).toMatch(/^https:\/\/api\.example\.com\/assets\//);
+		expect(persisted.result?.logsArtifactUrl).toMatch(
+			/^https:\/\/api\.example\.com\/outputs\/output-\d+\/content$/,
+		);
 	});
 
 	it("returns input unchanged when there is nothing to persist", async () => {

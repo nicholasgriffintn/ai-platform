@@ -1,6 +1,6 @@
 import type { IEnv, IUser } from "~/types";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { getAssetIdFromUrl } from "~/lib/storage/asset-urls";
+import { getPrivateFileResourceFromUrl } from "~/lib/storage/resource-urls";
 import { isPashiQrPngUrl } from "~/utils/qr";
 import { getBooleanRecordValue, getStringRecordValue, isRecord } from "~/utils/objects";
 import { providerLibrary } from "../../library";
@@ -72,7 +72,7 @@ function normaliseMessagingMediaUrlsForProvider(
 
 	const firstPartyMediaUrl = urls.find(
 		(url) =>
-			url.startsWith("https://") && typeof getAssetIdFromUrl(url, options.apiBaseUrl) === "string",
+			url.startsWith("https://") && Boolean(getPrivateFileResourceFromUrl(url, options.apiBaseUrl)),
 	);
 	if (firstPartyMediaUrl) {
 		return [firstPartyMediaUrl];

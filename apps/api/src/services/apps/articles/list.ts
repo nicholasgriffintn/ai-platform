@@ -1,5 +1,5 @@
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { type AppData } from "~/repositories/AppDataRepository";
+import { type OutputRecord } from "~/repositories/OutputRepository";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -8,11 +8,11 @@ import { safeParseJson } from "../../../utils/json";
 const logger = getLogger({ prefix: "services/apps/articles/list" });
 
 export interface ArticleSessionSummary {
-	item_id: string;
+	groupId: string;
 	id?: string;
 	title: string;
-	created_at: string;
-	source_article_count?: number;
+	createdAt: string;
+	sourceCount?: number;
 	status: "processing" | "complete";
 }
 
@@ -23,7 +23,7 @@ export interface ListSuccessResponse {
 
 interface SessionItemGroup {
 	itemId: string;
-	items: AppData[];
+	items: OutputRecord[];
 }
 
 export async function listArticles({
@@ -56,28 +56,28 @@ export async function listArticles({
 		}
 
 		serviceContext.ensureDatabase();
-		const appDataRepo = serviceContext.repositories.appData;
+		const outputRepo = serviceContext.repositories.outputs;
 		const allArticleData = projectId
-			? await appDataRepo.getAppDataByProjectAndApp(projectId, "articles")
-			: await appDataRepo.getAppDataByUserAndApp(userId, "articles");
+			? await outputRepo.listProjectOutputs(projectId, "articles")
+			: await outputRepo.listPersonalOutputs(userId, "articles");
 
 		if (!allArticleData || allArticleData.length === 0) {
 			return { status: "success", sessions: [] };
 		}
 
 		const sessionMap = new Map<string, SessionItemGroup>();
-		for (const appData of allArticleData) {
-			if (!appData.item_id) continue;
+		for (const output of allArticleData) {
+			if (!output.group_id) continue;
 
-			const itemId = appData.item_id;
+			const itemId = output.group_id;
 			if (!sessionMap.has(itemId)) {
 				sessionMap.set(itemId, { itemId: itemId, items: [] });
 			}
-			sessionMap.get(itemId)!.items.push(appData);
+			sessionMap.get(itemId)!.items.push(output);
 		}
 
 		const sessions: ArticleSessionSummary[] = Array.from(sessionMap.values()).map((group) => {
-			const reportItem = group.items.find((item) => item.item_type === "report");
+			const reportItem = group.items.find((item) => item.kind === "report");
 			const earliestItem = group.items.reduce((earliest, current) => {
 				return new Date(current.created_at) < new Date(earliest.created_at) ? current : earliest;
 			});
@@ -88,11 +88,13 @@ export async function listArticles({
 			const status: ArticleSessionSummary["status"] = reportItem ? "complete" : "processing";
 			const createdAt = reportItem?.created_at || earliestItem.created_at;
 
-			if (reportItem?.data) {
+			if (reportItem?.content) {
 				try {
-					let reportData = safeParseJson(reportItem.data);
-					title = reportData.title || title;
-					sourceArticleCount = reportData.sourceItemIds?.length || 0;
+					const reportData = safeParseJson<Record<string, unknown>>(reportItem.content) ?? {};
+					title = typeof reportData.title === "string" ? reportData.title : title;
+					sourceArticleCount = Array.isArray(reportData.sourceItemIds)
+						? reportData.sourceItemIds.length
+						: 0;
 					reportId = reportItem.id;
 				} catch (e) {
 					logger.error(`Failed to parse report data for itemId ${group.itemId}`, e);
@@ -100,20 +102,20 @@ export async function listArticles({
 			}
 
 			return {
-				item_id: group.itemId,
+				groupId: group.itemId,
 				id: reportId,
-				title: title,
-				created_at: createdAt,
-				source_article_count: sourceArticleCount,
-				status: status,
+				title,
+				createdAt,
+				sourceCount: sourceArticleCount,
+				status,
 			};
 		});
 
-		sessions.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+		sessions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
 		return {
 			status: "success",
-			sessions: sessions,
+			sessions,
 		};
 	} catch (error) {
 		logger.error("Error listing article sessions:", {

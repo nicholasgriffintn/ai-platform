@@ -37,8 +37,8 @@ vi.mock("~/services/tasks/TaskService", () => ({
 }));
 
 const mockGetUserById = vi.fn();
-const mockGetAppDataById = vi.fn();
-const mockUpdateAppData = vi.fn();
+const mockGetActivityById = vi.fn();
+const mockUpdateActivity = vi.fn();
 
 const mockServiceContext = {
 	env: {},
@@ -46,9 +46,9 @@ const mockServiceContext = {
 		users: {
 			getUserById: mockGetUserById,
 		},
-		appData: {
-			getAppDataById: mockGetAppDataById,
-			updateAppData: mockUpdateAppData,
+		activities: {
+			getActivityById: mockGetActivityById,
+			updateActivity: mockUpdateActivity,
 		},
 		tasks: {},
 	},
@@ -78,11 +78,11 @@ describe("sandbox dispatch", () => {
 			email: "dev@example.com",
 			name: "Dev",
 		});
-		mockGetAppDataById.mockResolvedValue({
+		mockGetActivityById.mockResolvedValue({
 			data: JSON.stringify(baseRunRecord),
 		});
 		mockEnqueueTask.mockResolvedValue("task-123");
-		mockUpdateAppData.mockResolvedValue(undefined);
+		mockUpdateActivity.mockResolvedValue(undefined);
 		vi.mocked(executeSandboxWorker).mockResolvedValue(
 			Response.json({
 				success: true,
@@ -199,7 +199,7 @@ describe("sandbox dispatch", () => {
 				repo: "owner/repo",
 			}),
 		);
-		expect(mockUpdateAppData).toHaveBeenCalled();
+		expect(mockUpdateActivity).toHaveBeenCalled();
 		expect(updateRunCoordinatorControl).toHaveBeenCalledWith(
 			expect.objectContaining({
 				runId: "run-123",
@@ -244,12 +244,15 @@ describe("sandbox dispatch", () => {
 			},
 		});
 
-		expect(mockUpdateAppData).toHaveBeenLastCalledWith(
+		expect(mockUpdateActivity).toHaveBeenLastCalledWith(
 			"record-1",
 			expect.objectContaining({
 				status: "failed",
-				workflowPhase: "failed",
-				error: "worker startup failed",
+				data: expect.objectContaining({
+					status: "failed",
+					workflowPhase: "failed",
+					error: "worker startup failed",
+				}),
 			}),
 		);
 		expect(appendRunCoordinatorEvent).toHaveBeenCalledWith(

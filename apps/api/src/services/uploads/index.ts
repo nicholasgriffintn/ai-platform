@@ -8,7 +8,8 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { generateId } from "~/utils/id";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { StorageService, type StoredAssetResult } from "~/lib/storage";
+import { StorageService, type StoredSourceFileResult } from "~/lib/storage";
+import { requireProjectAccess } from "~/services/workspaces/access";
 
 const logger = getLogger({ prefix: "services/uploads" });
 
@@ -117,7 +118,7 @@ export async function handleFileUpload(
 	userId: number,
 	formData: FormData,
 ): Promise<{
-	assetId: string;
+	sourceId: string;
 	url: string;
 	key: string;
 	type: string;
@@ -126,6 +127,10 @@ export async function handleFileUpload(
 }> {
 	const file = formData.get("file") as File | null;
 	const fileType = formData.get("file_type") as "image" | "document" | "audio" | "code" | null;
+	const projectIdValue = formData.get("project_id");
+	const projectId =
+		typeof projectIdValue === "string" && projectIdValue.trim() ? projectIdValue.trim() : undefined;
+	if (projectId) await requireProjectAccess(context, projectId);
 
 	if (!file) {
 		throw new AssistantError("No file uploaded", ErrorType.PARAMS_ERROR, 400);
@@ -234,13 +239,14 @@ export async function handleFileUpload(
 		throw new AssistantError("Failed to process file data", ErrorType.UNKNOWN_ERROR, 500);
 	}
 
-	let storedAsset: StoredAssetResult;
+	let storedSource: StoredSourceFileResult;
 	try {
-		storedAsset = await StorageService.forPrivateAssets(context).storePrivateAsset({
+		storedSource = await StorageService.forPrivateAssets(context).storeSourceFile({
 			key,
 			data: arrayBuffer,
-			ownerUserId: userId,
-			purpose: "chat_upload",
+			createdByUserId: userId,
+			projectId,
+			title: file.name,
 			mimeType: file.type,
 			filename: file.name,
 			byteSize: file.size,
@@ -254,7 +260,7 @@ export async function handleFileUpload(
 		throw new AssistantError("Failed to store file", ErrorType.EXTERNAL_API_ERROR, 500);
 	}
 
-	const fileUrl = storedAsset.url;
+	const fileUrl = storedSource.url;
 	const effectiveConversionOptions = shouldConvert
 		? buildMarkdownConversionOptions(file.type, fileUrl, conversionOptions)
 		: undefined;
@@ -294,17 +300,22 @@ export async function handleFileUpload(
 		}
 	}
 
+	await context.repositories.sources.updateSource(storedSource.sourceId, {
+		content: markdownContent || null,
+		metadata: { uploadType: fileType, convertedToMarkdown: Boolean(markdownContent) },
+	});
+
 	const response: {
-		assetId: string;
+		sourceId: string;
 		url: string;
 		key: string;
 		type: string;
 		name: string;
 		markdown?: string;
 	} = {
-		assetId: storedAsset.assetId,
+		sourceId: storedSource.sourceId,
 		url: fileUrl,
-		key: storedAsset.key,
+		key: storedSource.key,
 		type: markdownContent ? "markdown_document" : fileType,
 		name: file.name,
 	};

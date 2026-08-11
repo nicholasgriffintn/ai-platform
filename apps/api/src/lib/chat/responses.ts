@@ -1,5 +1,7 @@
 import { findModelConfig } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { resolvePrivateAssetImageUrls } from "~/lib/providers/utils/privateAssetImages";
+import { StorageService } from "~/lib/storage";
 import { toProviderMessages } from "~/lib/chat/providerMessages";
 import type { AssistantMessageData, ChatCompletionParameters, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -104,21 +106,22 @@ export function formatAssistantMessage({
 	};
 }
 
-export async function getAIResponse({
-	app_url,
-	system_prompt,
-	env,
-	context,
-	mode,
-	model,
-	models,
-	provider: requestedProvider,
-	messages,
-	message,
-	enabled_tools,
-	tools,
-	...params
-}: ChatCompletionParameters) {
+export async function getAIResponse(request: ChatCompletionParameters) {
+	const {
+		app_url,
+		system_prompt,
+		env,
+		context,
+		mode,
+		model,
+		models,
+		provider: requestedProvider,
+		messages,
+		message,
+		enabled_tools,
+		tools,
+		...params
+	} = request;
 	const user = context?.user;
 	const requestedModel = model || models?.[0];
 	if (!requestedModel) {
@@ -185,12 +188,18 @@ export async function getAIResponse({
 		throw new AssistantError("No valid messages after filtering", ErrorType.PARAMS_ERROR);
 	}
 
+	const resolvedImageParams = await resolvePrivateAssetImageUrls({
+		params: { ...request, messages: filteredMessages },
+		storageService: StorageService.forPrivateAssetsEnv(env),
+		assetsUrl: env.API_BASE_URL || "",
+	});
+
 	let formattedMessages;
 	const resolvedModel = modelConfig.matchingModel;
 	try {
 		formattedMessages = formatMessages(
 			provider.name,
-			filteredMessages,
+			resolvedImageParams.messages,
 			system_prompt,
 			resolvedModel,
 		);

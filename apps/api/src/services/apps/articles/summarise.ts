@@ -19,7 +19,7 @@ export interface Params {
 export interface SummariseSuccessResponse {
 	status: "success";
 	message?: string;
-	appDataId?: string;
+	outputId?: string;
 	itemId?: string;
 	summary?: { content: string; data: any };
 }
@@ -113,34 +113,27 @@ export async function summariseArticle({
 		};
 
 		serviceContext.ensureDatabase();
-		const appDataRepo = serviceContext.repositories.appData;
-		const appData = {
+		const outputRepo = serviceContext.repositories.outputs;
+		const outputContent = {
 			originalArticle: args.article,
 			summary: summaryResult,
 			title: `Summary: ${args.article.substring(0, 80)}...`,
 		};
 
-		const savedData = projectId
-			? await appDataRepo.createAppDataWithItem(
-					user.id,
-					"articles",
-					args.itemId,
-					"summary",
-					appData,
-					projectId,
-				)
-			: await appDataRepo.createAppDataWithItem(
-					user.id,
-					"articles",
-					args.itemId,
-					"summary",
-					appData,
-				);
+		const savedData = await outputRepo.createOutput({
+			createdByUserId: user.id,
+			projectId,
+			capabilityId: "articles",
+			groupId: args.itemId,
+			kind: "summary",
+			title: outputContent.title,
+			content: outputContent,
+		});
 
 		return {
 			status: "success",
 			message: "Article summarised and saved.",
-			appDataId: savedData.id,
+			outputId: savedData.id,
 			itemId: args.itemId,
 			summary: {
 				content: summaryResult.content,
@@ -170,14 +163,14 @@ export const cleanupArticleSession = async (
 	projectId?: string,
 ): Promise<void> => {
 	context.ensureDatabase();
-	const appDataRepo = context.repositories.appData;
+	const outputRepo = context.repositories.outputs;
 
 	if (projectId) {
-		await appDataRepo.deleteAppDataByProjectAppAndItem(projectId, "articles", itemId, "analysis");
-		await appDataRepo.deleteAppDataByProjectAppAndItem(projectId, "articles", itemId, "summary");
+		await outputRepo.deleteProjectOutputGroup(projectId, "articles", itemId, "analysis");
+		await outputRepo.deleteProjectOutputGroup(projectId, "articles", itemId, "summary");
 		return;
 	}
 
-	await appDataRepo.deleteAppDataByUserAppAndItem(userId, "articles", itemId, "analysis");
-	await appDataRepo.deleteAppDataByUserAppAndItem(userId, "articles", itemId, "summary");
+	await outputRepo.deletePersonalOutputGroup(userId, "articles", itemId, "analysis");
+	await outputRepo.deletePersonalOutputGroup(userId, "articles", itemId, "summary");
 };

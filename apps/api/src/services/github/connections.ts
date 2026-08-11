@@ -1,7 +1,7 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { githubApiRequest } from "~/lib/github/api-client";
 import { getGitHubAppInstallationToken } from "~/lib/github";
-import type { AppData } from "~/repositories/AppDataRepository";
+import type { ProviderConnectionRecord } from "~/repositories/ProviderConnectionRepository";
 import type { SandboxConnection } from "@assistant/schemas";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import {
@@ -17,6 +17,7 @@ import {
 import { safeParseJson } from "~/utils/json";
 
 export const GITHUB_CONNECTION_APP_ID = "github_app_connection";
+export const GITHUB_CONNECTION_KIND = "github_app";
 
 export type GitHubAppConnectionSummary = SandboxConnection;
 
@@ -24,9 +25,9 @@ const GITHUB_API_BASE = "https://api.github.com";
 
 async function decodeConnectionRecord(
 	context: ServiceContext,
-	record: AppData,
+	record: ProviderConnectionRecord,
 ): Promise<ReturnType<typeof parseGitHubConnectionData> | null> {
-	const parsedRecord = safeParseJson(record.data) as {
+	const parsedRecord = safeParseJson(record.encrypted_data) as {
 		encrypted?: EncryptedGitHubConnectionPayload;
 	} | null;
 
@@ -45,13 +46,13 @@ async function decodeConnectionRecord(
 
 	return parseGitHubConnectionData({
 		data: decryptedData,
-		recordItemId: record.item_id,
+		recordItemId: record.external_id,
 	});
 }
 
 async function decodeConnectionRecordOrThrow(
 	context: ServiceContext,
-	record: AppData,
+	record: ProviderConnectionRecord,
 ): Promise<{
 	data: GitHubConnectionRecordData;
 	connection: GitHubAppConnection;
@@ -69,10 +70,9 @@ export async function getGitHubAppConnectionForUserRepo(
 	userId: number,
 	repo: string,
 ): Promise<GitHubAppConnection> {
-	const records = await context.repositories.appData.getAppDataByUserAndApp(
-		userId,
-		GITHUB_CONNECTION_APP_ID,
-	);
+	const records = (
+		await context.repositories.providerConnections.listConnections(userId, "github")
+	).filter((record) => record.kind === GITHUB_CONNECTION_KIND);
 
 	for (const record of records) {
 		const parsed = await decodeConnectionRecord(context, record);
@@ -96,21 +96,21 @@ export async function getGitHubAppConnectionForUserInstallation(
 	installationId: number,
 ): Promise<GitHubAppConnection> {
 	const installationKey = String(installationId);
-	const byItemId = await context.repositories.appData.getAppDataByUserAppAndItem(
+	const connection = await context.repositories.providerConnections.getConnection(
 		userId,
-		GITHUB_CONNECTION_APP_ID,
+		"github",
+		GITHUB_CONNECTION_KIND,
 		installationKey,
-		"github_installation",
 	);
 
-	if (!byItemId.length) {
+	if (!connection) {
 		throw new AssistantError(
 			"GitHub App connection not found for installation",
 			ErrorType.NOT_FOUND,
 		);
 	}
 
-	const parsed = await decodeConnectionRecordOrThrow(context, byItemId[0]);
+	const parsed = await decodeConnectionRecordOrThrow(context, connection);
 	if (parsed.connection.installationId !== installationId) {
 		throw new AssistantError(
 			"GitHub App connection is invalid for installation",
@@ -126,19 +126,20 @@ export async function getGitHubAppConnectionForInstallation(
 	installationId: number,
 ): Promise<GitHubAppConnection> {
 	const installationKey = String(installationId);
-	const byItemId = await context.repositories.appData.getAppDataByAppAndItemId(
-		GITHUB_CONNECTION_APP_ID,
+	const connection = await context.repositories.providerConnections.getConnectionByExternalId(
+		"github",
+		GITHUB_CONNECTION_KIND,
 		installationKey,
 	);
 
-	if (!byItemId) {
+	if (!connection) {
 		throw new AssistantError(
 			"GitHub App connection not found for installation",
 			ErrorType.NOT_FOUND,
 		);
 	}
 
-	const parsed = await decodeConnectionRecordOrThrow(context, byItemId);
+	const parsed = await decodeConnectionRecordOrThrow(context, connection);
 
 	if (parsed.connection.installationId !== installationId) {
 		throw new AssistantError(
@@ -154,10 +155,9 @@ export async function listGitHubAppConnectionsForUser(
 	context: ServiceContext,
 	userId: number,
 ): Promise<GitHubAppConnectionSummary[]> {
-	const records = await context.repositories.appData.getAppDataByUserAndApp(
-		userId,
-		GITHUB_CONNECTION_APP_ID,
-	);
+	const records = (
+		await context.repositories.providerConnections.listConnections(userId, "github")
+	).filter((record) => record.kind === GITHUB_CONNECTION_KIND);
 
 	const summaries: GitHubAppConnectionSummary[] = [];
 

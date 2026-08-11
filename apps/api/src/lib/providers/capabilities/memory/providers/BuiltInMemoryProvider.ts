@@ -1,5 +1,6 @@
 import { getEmbeddingProvider } from "~/lib/providers/capabilities/embedding/helpers";
 import type { IEnv, IUser, IUserSettings } from "~/types";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
@@ -24,8 +25,13 @@ export class BuiltInMemoryProvider extends BaseMemoryProvider {
 		deletion: true,
 	};
 
-	constructor(env: IEnv, user?: IUser, userSettings?: IUserSettings | null) {
-		super({ env, user, userSettings });
+	constructor(
+		env: IEnv,
+		user?: IUser,
+		userSettings?: IUserSettings | null,
+		serviceContext?: ServiceContext,
+	) {
+		super({ env, user, userSettings, serviceContext });
 	}
 
 	async storeMemory(input: MemoryStoreInput): Promise<MemoryStoreResult> {

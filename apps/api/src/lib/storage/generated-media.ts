@@ -17,7 +17,7 @@ export interface GeneratedMediaContext {
 }
 
 export interface PersistedGeneratedAsset {
-	assetId: string;
+	outputId: string;
 	key: string;
 	url: string;
 }
@@ -152,11 +152,15 @@ export async function persistGeneratedAsset({
 	const userId = requireUserId(mediaContext);
 	const key = buildGeneratedAssetKey(mediaContext, extension);
 
-	return await StorageService.forPrivateAssets(context).storePrivateAsset({
+	return await StorageService.forPrivateAssets(context).storeOutputFile({
 		key,
 		data,
-		ownerUserId: userId,
-		purpose: "generated_media",
+		createdByUserId: userId,
+		capabilityId: mediaContext.model || "generated_media",
+		groupId: mediaContext.completionId,
+		kind: "generated_media",
+		title: filename,
+		content: { model: mediaContext.model, modalities: mediaContext.modalities },
 		mimeType,
 		filename,
 		byteSize:

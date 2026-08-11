@@ -50,11 +50,15 @@ async function putArtifact(params: {
 	const contentSize = new TextEncoder().encode(params.content).byteLength;
 	const storedArtifact = await StorageService.forPrivateAssets(
 		params.serviceContext,
-	).storePrivateAsset({
+	).storeOutputFile({
 		key,
 		data: params.content,
-		ownerUserId: params.ownerUserId,
-		purpose: "sandbox_artifact",
+		createdByUserId: params.ownerUserId,
+		capabilityId: "sandbox",
+		groupId: params.runId,
+		kind: "sandbox_artifact",
+		title: params.fileName,
+		content: { runId: params.runId },
 		mimeType: params.contentType,
 		filename: params.fileName,
 		byteSize: contentSize,

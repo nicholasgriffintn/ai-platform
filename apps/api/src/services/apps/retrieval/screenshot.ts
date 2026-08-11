@@ -33,7 +33,7 @@ export interface CaptureScreenshotResult {
 	status: "success" | "error";
 	error?: string;
 	data?: {
-		assetId: string;
+		outputId: string;
 		screenshotUrl: string;
 		key: string;
 	};
@@ -121,13 +121,15 @@ export const captureScreenshot = async (
 			env: req.env,
 			user: req.user,
 		});
-		const storedScreenshot = await StorageService.forPrivateAssets(
-			serviceContext,
-		).storePrivateAsset({
+		const storedScreenshot = await StorageService.forPrivateAssets(serviceContext).storeOutputFile({
 			key: imageKey,
 			data: imageBuffer,
-			ownerUserId: req.user.id,
-			purpose: "app_artifact",
+			createdByUserId: req.user.id,
+			capabilityId: "retrieval",
+			groupId: screenshotId,
+			kind: "screenshot",
+			title: params.url ? `Screenshot: ${params.url}` : "Rendered HTML screenshot",
+			content: { sourceUrl: params.url ?? null },
 			mimeType: "image/png",
 			filename: "screenshot.png",
 			byteSize: imageBuffer.byteLength,
@@ -136,7 +138,7 @@ export const captureScreenshot = async (
 		return {
 			status: "success",
 			data: {
-				assetId: storedScreenshot.assetId,
+				outputId: storedScreenshot.outputId,
 				screenshotUrl: storedScreenshot.url,
 				key: imageKey,
 			},

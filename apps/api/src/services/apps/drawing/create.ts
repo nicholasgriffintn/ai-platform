@@ -2,7 +2,11 @@ import { gatewayId } from "~/constants/app";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { drawingDescriptionPrompt } from "~/lib/prompts";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { StorageService, type StoredAssetResult } from "~/lib/storage";
+import {
+	StorageService,
+	type StoredOutputFileResult,
+	type StoredSourceFileResult,
+} from "~/lib/storage";
 import type { ChatRole, IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -44,13 +48,13 @@ export async function generateImageFromDrawing({
 	const drawingId = request.drawingId || existingDrawingId || generateId();
 	const drawingImageKey = `drawings/${drawingId}/image.png`;
 
-	let storedDrawing: StoredAssetResult;
+	let storedDrawing: StoredSourceFileResult;
 	try {
-		storedDrawing = await storage.storePrivateAsset({
+		storedDrawing = await storage.storeSourceFile({
 			key: drawingImageKey,
 			data: arrayBuffer,
-			ownerUserId: user.id,
-			purpose: "app_artifact",
+			createdByUserId: user.id,
+			title: "Original drawing",
 			mimeType: "image/png",
 			filename: "image.png",
 			byteSize: length,
@@ -105,13 +109,17 @@ export async function generateImageFromDrawing({
 	const paintingLength = paintingArrayBuffer.byteLength;
 
 	const paintingImageKey = `drawings/${drawingId}/painting.png`;
-	let storedPainting: StoredAssetResult;
+	let storedPainting: StoredOutputFileResult;
 	try {
-		storedPainting = await storage.storePrivateAsset({
+		storedPainting = await storage.storeOutputFile({
 			key: paintingImageKey,
 			data: paintingArrayBuffer,
-			ownerUserId: user.id,
-			purpose: "app_artifact",
+			createdByUserId: user.id,
+			capabilityId: "drawings",
+			groupId: drawingId,
+			kind: "painting",
+			title: descriptionRequest?.description || "Generated painting",
+			content: { description: descriptionRequest?.description },
 			mimeType: "image/png",
 			filename: "painting.png",
 			byteSize: paintingLength,
@@ -134,10 +142,10 @@ export async function generateImageFromDrawing({
 			name: "drawing_generate",
 			content: descriptionRequest?.description,
 			data: {
-				drawingAssetId: storedDrawing.assetId,
+				drawingSourceId: storedDrawing.sourceId,
 				drawingUrl: storedDrawing.url,
 				drawingKey: drawingImageKey,
-				paintingAssetId: storedPainting.assetId,
+				paintingOutputId: storedPainting.outputId,
 				paintingUrl: storedPainting.url,
 				paintingKey: paintingImageKey,
 			},
@@ -145,36 +153,37 @@ export async function generateImageFromDrawing({
 		conversationResponse = await conversationManager.add(drawingId, message);
 	}
 
-	const repo = serviceContext.repositories.appData;
+	const repo = serviceContext.repositories.outputs;
 
-	const appDataResponse = await repo.createAppDataWithItem(
-		user.id,
-		"drawings",
-		drawingId,
-		"drawing",
-		{
+	const output = await repo.createOutput({
+		createdByUserId: user.id,
+		capabilityId: "drawings",
+		groupId: drawingId,
+		kind: "drawing",
+		title: descriptionRequest?.description || "Untitled drawing",
+		content: {
 			description: descriptionRequest?.description || "Untitled drawing",
-			drawingAssetId: storedDrawing.assetId,
+			drawingSourceId: storedDrawing.sourceId,
 			drawingUrl: storedDrawing.url,
-			paintingAssetId: storedPainting.assetId,
+			paintingOutputId: storedPainting.outputId,
 			paintingUrl: storedPainting.url,
 			drawingKey: drawingImageKey,
 			paintingKey: paintingImageKey,
 		},
-	);
-
-	const appDataId = appDataResponse.id;
+	});
+	await repo.attachSources(output.id, [storedDrawing.sourceId]);
+	await repo.attachSources(storedPainting.outputId, [storedDrawing.sourceId]);
 
 	return {
 		...conversationResponse,
-		app_data_id: appDataId,
+		output_id: output.id,
 		completion_id: drawingId,
 		status: "success",
 		data: {
-			drawingAssetId: storedDrawing.assetId,
+			drawingSourceId: storedDrawing.sourceId,
 			drawingUrl: storedDrawing.url,
 			drawingKey: drawingImageKey,
-			paintingAssetId: storedPainting.assetId,
+			paintingOutputId: storedPainting.outputId,
 			paintingUrl: storedPainting.url,
 			paintingKey: paintingImageKey,
 			description: descriptionRequest?.description || "Untitled drawing",

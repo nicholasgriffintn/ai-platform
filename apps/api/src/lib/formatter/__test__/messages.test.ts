@@ -370,8 +370,9 @@ describe("MessageFormatter", () => {
 			expect(result[0].content[1]).toEqual({
 				type: "image",
 				source: {
-					type: "url",
-					url: "data:image/png;base64,test",
+					type: "base64",
+					media_type: "image/png",
+					data: "test",
 				},
 				cache_control: {
 					type: "ephemeral",

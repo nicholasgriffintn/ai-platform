@@ -4,7 +4,7 @@ export interface SpeechGenerationResponse {
 	status: "success" | "error";
 	content: string;
 	data: {
-		audioAssetId?: string;
+		audioOutputId?: string;
 		audioKey?: string;
 		audioUrl?: string;
 		audioBase64?: string;

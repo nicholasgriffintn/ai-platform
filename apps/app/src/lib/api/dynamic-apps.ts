@@ -12,7 +12,6 @@ import type {
 	PodcastDetailResponse,
 	PodcastListItem,
 } from "@assistant/schemas";
-import type { AppDataItem } from "~/components/Apps/ContentRenderers";
 import type {
 	AnalyseArticleParams,
 	AnalyseArticleResponse,
@@ -33,7 +32,7 @@ import { withProjectScope } from "./project-scope";
 
 export interface DynamicAppExecutionResult {
 	success: boolean;
-	response_id?: string;
+	output_id?: string;
 	data: {
 		message: string;
 		timestamp: string;
@@ -89,70 +88,6 @@ export const fetchDynamicAppById = async (id: string): Promise<AppSchema> => {
 		return data;
 	} catch (error) {
 		console.error(`Error fetching dynamic app ${id}:`, error);
-		throw error;
-	}
-};
-
-export const fetchDynamicAppResponseById = async (
-	responseId: string,
-	projectId?: string,
-): Promise<AppDataItem> => {
-	try {
-		let headers: Record<string, string> = {};
-		try {
-			headers = await apiService.getHeaders();
-		} catch (error) {
-			console.error("Error fetching dynamic app response:", error);
-		}
-
-		const response = await fetchApi(
-			withProjectScope(`/dynamic-apps/responses/${responseId}`, projectId),
-			{
-				method: "GET",
-				headers,
-			},
-		);
-
-		if (!response.ok) {
-			throw new Error(`Failed to fetch dynamic app response: ${response.statusText}`);
-		}
-
-		const data = await returnFetchedData<{ response: AppDataItem }>(response);
-		return data.response;
-	} catch (error) {
-		console.error(`Error fetching dynamic app response ${responseId}:`, error);
-		throw error;
-	}
-};
-
-export const fetchDynamicAppResponses = async (
-	appId?: string,
-	projectId?: string,
-): Promise<AppDataItem[]> => {
-	try {
-		let headers: Record<string, string> = {};
-		try {
-			headers = await apiService.getHeaders();
-		} catch (error) {
-			console.error("Error fetching dynamic app responses:", error);
-		}
-
-		const url = appId
-			? `/dynamic-apps/responses?appId=${encodeURIComponent(appId)}`
-			: "/dynamic-apps/responses";
-
-		const response = await fetchApi(withProjectScope(url, projectId), {
-			method: "GET",
-			headers,
-		});
-
-		if (!response.ok) {
-			throw new Error(`Failed to fetch dynamic app responses: ${response.statusText}`);
-		}
-
-		return await returnFetchedData<AppDataItem[]>(response);
-	} catch (error) {
-		console.error("Error fetching dynamic app responses:", error);
 		throw error;
 	}
 };
@@ -419,7 +354,7 @@ export const fetchSourceArticlesByIds = async (
 	ids: string[],
 	projectId?: string,
 ): Promise<FetchMultipleArticlesResponse> => {
-	if (!ids.length) return { status: "success", articles: [] };
+	if (!ids.length) return { articles: [] };
 
 	const queryString = ids.map((id) => `ids[]=${encodeURIComponent(id)}`).join("&");
 	let headers = {};

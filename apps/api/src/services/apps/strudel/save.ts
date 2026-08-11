@@ -38,13 +38,14 @@ export async function savePattern({
 		const payload = buildPatternPayload(request);
 
 		const record = user.id
-			? await repositories.dynamicAppResponses.createResponse(
-					user.id,
-					STRUDEL_APP_ID,
-					payload,
-					undefined,
+			? await repositories.outputs.createOutput({
+					createdByUserId: user.id,
 					projectId,
-				)
+					capabilityId: STRUDEL_APP_ID,
+					kind: "strudel_pattern",
+					title: payload.name,
+					content: payload,
+				})
 			: null;
 
 		if (!record) {
@@ -53,7 +54,7 @@ export async function savePattern({
 
 		logger.info("Saved Strudel pattern", {
 			userId: user.id,
-			patternId: record?.id,
+			patternId: record.id,
 			name: payload.name,
 		});
 

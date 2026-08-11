@@ -198,6 +198,60 @@ describe("RequestPreparer", () => {
 			});
 		});
 
+		it("restores stored image attachments before building provider messages", async () => {
+			const imageUrl = "http://localhost:8787/sources/source-1/content";
+			const incomingMessage: Message = {
+				id: "incoming-image",
+				role: "user",
+				content: [
+					{ type: "text", text: "what is this" },
+					{ type: "image_url", image_url: { url: imageUrl } },
+				],
+			};
+			const storedTextMessage: Message = {
+				id: "stored-text",
+				role: "user",
+				content: "what is this",
+			};
+			const storedAttachmentMessage: Message = {
+				id: "stored-attachment",
+				role: "user",
+				content: "Attachments",
+				data: { attachments: [{ type: "image", url: imageUrl }] },
+			};
+
+			vi.mocked(getAllAttachments).mockReturnValue({
+				allAttachments: [{ type: "image", url: imageUrl }],
+				imageAttachments: [{ type: "image", url: imageUrl }],
+				documentAttachments: [],
+				markdownAttachments: [],
+			});
+			mockConversationManager.get
+				.mockResolvedValueOnce([])
+				.mockResolvedValueOnce([storedTextMessage, storedAttachmentMessage]);
+
+			const result = await preparer.prepare(
+				{ ...baseOptions, messages: [incomingMessage] },
+				{
+					...baseValidationContext,
+					sanitizedMessages: [incomingMessage],
+					lastMessage: incomingMessage,
+					messageWithContext: "what is this",
+				},
+			);
+
+			expect(result.messages).toEqual([
+				expect.objectContaining({
+					id: "stored-text",
+					role: "user",
+					content: [
+						{ type: "text", text: "what is this" },
+						{ type: "image_url", image_url: { url: imageUrl } },
+					],
+				}),
+			]);
+		});
+
 		it("should preserve requested tools while enabling memory tools from user settings", async () => {
 			const result = await preparer.prepare(
 				{ ...baseOptions, enabled_tools: ["get_weather"] },

@@ -1,6 +1,6 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { GITHUB_CONNECTION_APP_ID } from "./connections";
+import { GITHUB_CONNECTION_KIND } from "./connections";
 import { encryptGitHubConnectionPayload } from "./connection-crypto";
 import { validateGitHubPrivateKey } from "~/lib/github/app-jwt";
 
@@ -73,29 +73,13 @@ export async function upsertGitHubConnectionForUser(
 		},
 	});
 
-	const itemId = String(input.installationId);
-	const existing = await context.repositories.appData.getAppDataByUserAppAndItem(
+	await context.repositories.providerConnections.upsertConnection({
 		userId,
-		GITHUB_CONNECTION_APP_ID,
-		itemId,
-		"github_installation",
-	);
-
-	const data = {
-		encrypted,
-	};
-
-	if (existing.length > 0) {
-		await context.repositories.appData.updateAppData(existing[0].id, data);
-	} else {
-		await context.repositories.appData.createAppDataWithItem(
-			userId,
-			GITHUB_CONNECTION_APP_ID,
-			itemId,
-			"github_installation",
-			data,
-		);
-	}
+		provider: "github",
+		kind: GITHUB_CONNECTION_KIND,
+		externalId: String(input.installationId),
+		encryptedData: { encrypted },
+	});
 
 	return { installationId: input.installationId };
 }
@@ -124,11 +108,10 @@ export async function deleteGitHubConnectionForUser(
 	userId: number,
 	installationId: number,
 ): Promise<void> {
-	const itemId = String(installationId);
-	await context.repositories.appData.deleteAppDataByUserAppAndItem(
+	await context.repositories.providerConnections.deleteConnection(
 		userId,
-		GITHUB_CONNECTION_APP_ID,
-		itemId,
-		"github_installation",
+		"github",
+		GITHUB_CONNECTION_KIND,
+		String(installationId),
 	);
 }

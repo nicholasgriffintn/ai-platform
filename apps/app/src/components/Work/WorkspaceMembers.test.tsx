@@ -1,9 +1,23 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
 import { describe, expect, it, vi } from "vitest";
 
 import { WorkspaceMembers } from "./WorkspaceMembers";
 
 const revoke = vi.fn();
+
+vi.mock("~/hooks/useAuth", () => ({
+	useAuthStatus: () => ({ user: { id: "1" } }),
+}));
+
+vi.mock("~/hooks/useGovernance", () => ({
+	useWorkspaceMemberMutations: () => ({
+		leave: { isPending: false, mutateAsync: vi.fn() },
+		remove: { isPending: false, mutateAsync: vi.fn() },
+		transfer: { isPending: false, mutateAsync: vi.fn() },
+		updateRole: { mutate: vi.fn() },
+	}),
+}));
 
 vi.mock("~/hooks/useWorkspaces", () => ({
 	useInviteWorkspaceMember: () => ({
@@ -46,7 +60,11 @@ vi.mock("./WorkContext", () => ({
 
 describe("WorkspaceMembers", () => {
 	it("revokes a pending invitation through the workspace interface", () => {
-		render(<WorkspaceMembers workspaceId="workspace-1" />);
+		render(
+			<MemoryRouter>
+				<WorkspaceMembers workspaceId="workspace-1" />
+			</MemoryRouter>,
+		);
 
 		fireEvent.click(screen.getByRole("button", { name: "Revoke" }));
 

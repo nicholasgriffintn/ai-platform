@@ -3,6 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { findModelConfig } from "~/lib/providers/models";
 import * as chatCapability from "~/lib/providers/capabilities/chat";
+import { resolvePrivateAssetImageUrls } from "~/lib/providers/utils/privateAssetImages";
+import { StorageService } from "~/lib/storage";
+import type { ChatCompletionParameters, Message } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { formatMessages } from "~/utils/messages";
 import { mergeParametersWithDefaults, shouldEnableStreaming } from "~/utils/parameters";
@@ -15,6 +19,10 @@ vi.mock("~/lib/providers/models", () => ({
 
 vi.mock("~/lib/providers/capabilities/chat", () => ({
 	getChatProvider: vi.fn(),
+}));
+
+vi.mock("~/lib/providers/utils/privateAssetImages", () => ({
+	resolvePrivateAssetImageUrls: vi.fn(),
 }));
 
 vi.mock("~/utils/messages", () => ({
@@ -65,6 +73,7 @@ describe("responses", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 		vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+		vi.mocked(resolvePrivateAssetImageUrls).mockImplementation(async ({ params }) => params);
 	});
 
 	describe("formatAssistantMessage", () => {
@@ -191,7 +200,7 @@ describe("responses", () => {
 
 	describe("getAIResponse", () => {
 		const baseEnv: any = {};
-		const baseParams = {
+		const baseParams: ChatCompletionParameters = {
 			app_url: "https://test.com",
 			system_prompt: "You are helpful",
 			env: baseEnv,
@@ -213,7 +222,7 @@ describe("responses", () => {
 			matchingModel: "gpt-4",
 			modalities: { input: ["text"], output: ["text"] },
 			supportsStreaming: true,
-		};
+		} satisfies ModelConfigItem;
 
 		const mockProvider = {
 			name: "openai",
@@ -222,13 +231,9 @@ describe("responses", () => {
 		};
 
 		beforeEach(() => {
-			vi.mocked(findModelConfig).mockResolvedValue(
-				// @ts-expect-error - mock implementation
-				mockModelConfig,
-			);
+			vi.mocked(findModelConfig).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 			vi.mocked(formatMessages).mockReturnValue([{ role: "user", content: "Hello" }]);
-			// @ts-expect-error - mock implementation
 			vi.mocked(mergeParametersWithDefaults).mockReturnValue({ ...baseParams });
 			vi.mocked(withRetry).mockImplementation((fn) => Promise.resolve(fn()));
 			mockProvider.getResponse.mockResolvedValue({
@@ -238,7 +243,6 @@ describe("responses", () => {
 		});
 
 		it("should successfully get AI response", async () => {
-			// @ts-expect-error - test data
 			const result = await getAIResponse(baseParams);
 
 			expect(findModelConfig).toHaveBeenCalledWith(
@@ -261,6 +265,55 @@ describe("responses", () => {
 				content: "Hello back",
 				usage: { total_tokens: 10 },
 			});
+		});
+
+		it("resolves private images before Anthropic message formatting", async () => {
+			const privateUrl = "http://localhost:8787/sources/source-1/content";
+			const dataUrl = "data:image/png;base64,aW1hZ2U=";
+			const imageMessages: Message[] = [
+				{
+					role: "user",
+					content: [{ type: "image_url", image_url: { url: privateUrl } }],
+				},
+			];
+			const resolvedMessages: Message[] = [
+				{
+					role: "user",
+					content: [{ type: "image_url", image_url: { url: dataUrl } }],
+				},
+			];
+			vi.mocked(findModelConfig).mockResolvedValueOnce({
+				...mockModelConfig,
+				provider: "anthropic",
+				matchingModel: "claude-opus-4-6",
+			});
+			vi.mocked(chatCapability.getChatProvider).mockReturnValueOnce({
+				...mockProvider,
+				name: "anthropic",
+			});
+			vi.mocked(resolvePrivateAssetImageUrls).mockImplementationOnce(async ({ params }) => ({
+				...params,
+				messages: resolvedMessages,
+			}));
+
+			await getAIResponse({
+				...baseParams,
+				model: "claude-opus-4-6",
+				provider: "anthropic",
+				messages: imageMessages,
+			});
+
+			expect(resolvePrivateAssetImageUrls).toHaveBeenCalledWith({
+				params: expect.objectContaining({ messages: imageMessages }),
+				storageService: expect.any(StorageService),
+				assetsUrl: "",
+			});
+			expect(formatMessages).toHaveBeenCalledWith(
+				"anthropic",
+				resolvedMessages,
+				"You are helpful",
+				"claude-opus-4-6",
+			);
 		});
 
 		it("does not send compaction status messages to the provider", async () => {
@@ -297,7 +350,6 @@ describe("responses", () => {
 		});
 
 		it("should configure retryable provider error handling", async () => {
-			// @ts-expect-error - test data
 			await getAIResponse(baseParams);
 
 			expect(withRetry).toHaveBeenCalledWith(
@@ -353,10 +405,7 @@ describe("responses", () => {
 		});
 
 		it("should throw error when model is missing", async () => {
-			await expect(
-				// @ts-expect-error - test data
-				getAIResponse({ ...baseParams, model: "" }),
-			).rejects.toMatchObject({
+			await expect(getAIResponse({ ...baseParams, model: "" })).rejects.toMatchObject({
 				message: "Model is required",
 				type: ErrorType.PARAMS_ERROR,
 				name: "AssistantError",
@@ -384,7 +433,6 @@ describe("responses", () => {
 		it("should handle model configuration not found", async () => {
 			vi.mocked(findModelConfig).mockResolvedValue(null);
 
-			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
 				"Invalid model configuration for gpt-4: Model configuration not found for gpt-4",
 			);
@@ -393,7 +441,6 @@ describe("responses", () => {
 		it("should handle model configuration error", async () => {
 			vi.mocked(findModelConfig).mockRejectedValue(new Error("Config error"));
 
-			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
 				new AssistantError(
 					"Invalid model configuration for gpt-4: Config error",
@@ -407,7 +454,6 @@ describe("responses", () => {
 				throw new Error("Provider error");
 			});
 
-			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
 				new AssistantError(
 					"Failed to initialize provider openai: Provider error",
@@ -461,7 +507,6 @@ describe("responses", () => {
 				throw new Error("Format error");
 			});
 
-			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
 				new AssistantError("Failed to format messages: Format error", ErrorType.PARAMS_ERROR),
 			);
@@ -469,7 +514,6 @@ describe("responses", () => {
 
 		it("should enable streaming when conditions are met", async () => {
 			vi.mocked(shouldEnableStreaming).mockReturnValue(true);
-			// @ts-expect-error - test data
 			await getAIResponse({
 				...baseParams,
 				stream: true,
@@ -489,7 +533,6 @@ describe("responses", () => {
 				modalities: { input: ["text"], output: ["image"] },
 			});
 
-			// @ts-expect-error - test data
 			await getAIResponse({
 				...baseParams,
 				stream: true,
@@ -507,7 +550,6 @@ describe("responses", () => {
 				throw new Error("Parameter error");
 			});
 
-			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
 				new AssistantError(
 					"Failed to prepare request parameters: Parameter error",
@@ -522,7 +564,6 @@ describe("responses", () => {
 				status: 429,
 			});
 
-			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
 				new AssistantError("openai error: rate limit exceeded", ErrorType.RATE_LIMIT_ERROR, 429),
 			);
@@ -538,7 +579,6 @@ describe("responses", () => {
 				object: "error",
 			});
 
-			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
 				new AssistantError("openai error: Rate limit exceeded", ErrorType.RATE_LIMIT_ERROR, 429),
 			);
@@ -549,7 +589,6 @@ describe("responses", () => {
 				new AssistantError("Rate limit exceeded", ErrorType.RATE_LIMIT_ERROR),
 			);
 
-			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
 				new AssistantError("openai error: Rate limit exceeded", ErrorType.RATE_LIMIT_ERROR, 429),
 			);
@@ -561,7 +600,6 @@ describe("responses", () => {
 			);
 
 			try {
-				// @ts-expect-error - test data
 				await getAIResponse(baseParams);
 				throw new Error("Expected getAIResponse to throw");
 			} catch (error) {
@@ -578,7 +616,6 @@ describe("responses", () => {
 				status: 401,
 			});
 
-			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
 				new AssistantError("openai error: unauthorized", ErrorType.AUTHENTICATION_ERROR, 401),
 			);
@@ -590,7 +627,6 @@ describe("responses", () => {
 				status: 500,
 			});
 
-			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
 				new AssistantError("openai error: internal server error", ErrorType.PROVIDER_ERROR, 500),
 			);
@@ -599,7 +635,6 @@ describe("responses", () => {
 		it("should handle empty response from provider", async () => {
 			mockProvider.getResponse.mockResolvedValue(null);
 
-			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
 				new AssistantError("Provider returned empty response", ErrorType.PROVIDER_ERROR),
 			);
@@ -612,7 +647,6 @@ describe("responses", () => {
 			};
 			mockProvider.getResponse.mockResolvedValue(responseWithUsage);
 
-			// @ts-expect-error - test data
 			await getAIResponse(baseParams);
 
 			expect(responseWithUsage).toEqual({

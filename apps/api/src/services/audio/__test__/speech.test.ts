@@ -33,7 +33,7 @@ const mockProviderLibrary = vi.hoisted(() => ({
 
 const mockStorageService = vi.hoisted(() => ({
 	uploadObject: vi.fn(),
-	recordPrivateAsset: vi.fn(),
+	recordOutputFile: vi.fn(),
 }));
 
 const mockGenerateId = vi.hoisted(() => vi.fn(() => "test-id-123"));
@@ -41,7 +41,6 @@ const mockGenerateId = vi.hoisted(() => vi.fn(() => "test-id-123"));
 const mockSanitiseInput = vi.hoisted(() => vi.fn((input: string) => input));
 const mockGetUserSettings = vi.hoisted(() => vi.fn());
 const mockHasProviderApiKey = vi.hoisted(() => vi.fn());
-const mockCreateAsset = vi.hoisted(() => vi.fn());
 
 vi.mock("~/lib/storage", () => ({
 	StorageService: class {
@@ -71,9 +70,6 @@ vi.mock("~/repositories", () => ({
 	RepositoryManager: class {
 		userSettings = {
 			getUserSettings: mockGetUserSettings,
-		};
-		storedAssets = {
-			createAsset: mockCreateAsset,
 		};
 	},
 }));
@@ -111,11 +107,10 @@ describe("handleTextToSpeech", () => {
 		});
 		mockGetUserSettings.mockResolvedValue(null);
 		mockHasProviderApiKey.mockResolvedValue(false);
-		mockCreateAsset.mockResolvedValue({ id: "test-id-123" });
-		mockStorageService.recordPrivateAsset.mockResolvedValue({
-			assetId: "test-id-123",
+		mockStorageService.recordOutputFile.mockResolvedValue({
+			outputId: "test-id-123",
 			key: "tts/test-id-123/audio.mp3",
-			url: "https://api.test.com/assets/test-id-123",
+			url: "https://api.test.com/outputs/test-id-123/content",
 		});
 
 		for (const provider of Object.values(mockAudioProviders)) {
@@ -502,9 +497,9 @@ describe("handleTextToSpeech", () => {
 				data: {
 					provider: "polly",
 					model: "Ruth",
-					audioAssetId: "test-id-123",
+					audioOutputId: "test-id-123",
 					audioKey: "audio-key-123",
-					audioUrl: "https://api.test.com/assets/test-id-123",
+					audioUrl: "https://api.test.com/outputs/test-id-123/content",
 				},
 			});
 		});
@@ -540,10 +535,10 @@ describe("handleTextToSpeech", () => {
 			mockAudioProviders.polly.synthesize.mockResolvedValue({
 				key: "audio-key-123",
 			});
-			mockStorageService.recordPrivateAsset.mockResolvedValueOnce({
-				assetId: "test-id-123",
+			mockStorageService.recordOutputFile.mockResolvedValueOnce({
+				outputId: "test-id-123",
 				key: "tts/test-id-123/audio.mp3",
-				url: "/assets/test-id-123",
+				url: "/outputs/test-id-123/content",
 			});
 
 			const result = await handleTextToSpeech({
@@ -555,7 +550,7 @@ describe("handleTextToSpeech", () => {
 
 			expect(result).toMatchObject({
 				data: {
-					audioUrl: "/assets/test-id-123",
+					audioUrl: "/outputs/test-id-123/content",
 				},
 			});
 		});

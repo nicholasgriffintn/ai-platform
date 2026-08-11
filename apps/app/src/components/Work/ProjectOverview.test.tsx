@@ -15,6 +15,11 @@ vi.mock("~/hooks/useWorkspaces", () => ({
 		mutateAsync: mocks.archiveProject,
 	}),
 }));
+vi.mock("~/hooks/useGovernance", () => ({
+	useTemplateMutations: () => ({
+		create: { isPending: false, mutateAsync: vi.fn() },
+	}),
+}));
 vi.mock("./WorkContext", () => ({
 	useWorkData: () => ({
 		projectQuery: {

@@ -136,6 +136,14 @@ export const createWorkspaceInvitationSchema = z.object({
 	role: workspaceRoleSchema.exclude(["owner"]).default("member"),
 });
 
+export const updateWorkspaceMemberSchema = z.object({
+	role: workspaceRoleSchema.exclude(["owner"]),
+});
+
+export const transferWorkspaceOwnershipSchema = z.object({
+	newOwnerUserId: z.number().int().positive(),
+});
+
 export const workspaceInvitationDeliverySchema = z.object({
 	invitation: workspaceInvitationSchema,
 	inviteUrl: z.url(),

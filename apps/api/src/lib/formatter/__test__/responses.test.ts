@@ -4,13 +4,13 @@ import type { IEnv } from "~/types";
 
 const { mockStorageService, mockBucket, mockStorePrivateAsset } = vi.hoisted(() => {
 	const mockStorePrivateAsset = vi.fn().mockResolvedValue({
-		assetId: "asset-123",
+		outputId: "asset-123",
 		key: "generations/completion/model/test.png",
-		url: "https://api.example.com/assets/asset-123",
+		url: "https://api.example.com/outputs/asset-123/content",
 	});
 	const mockStorageService = {
 		uploadObject: vi.fn().mockResolvedValue("test-key"),
-		storePrivateAsset: mockStorePrivateAsset,
+		storeOutputFile: mockStorePrivateAsset,
 		getObject: vi.fn(),
 	};
 	const mockBucket = {
@@ -53,9 +53,9 @@ describe("ResponseFormatter", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mockStorePrivateAsset.mockResolvedValue({
-			assetId: "asset-123",
+			outputId: "asset-123",
 			key: "generations/completion/model/test.png",
-			url: "https://api.example.com/assets/asset-123",
+			url: "https://api.example.com/outputs/asset-123/content",
 		});
 	});
 
@@ -99,7 +99,7 @@ describe("ResponseFormatter", () => {
 				{ type: "text", text: "Spoken response" },
 				{
 					type: "audio_url",
-					audio_url: { url: "https://api.example.com/assets/asset-123" },
+					audio_url: { url: "https://api.example.com/outputs/asset-123/content" },
 				},
 			]);
 			expect(result.data.audio).toMatchObject({
@@ -319,15 +319,18 @@ describe("ResponseFormatter", () => {
 
 			expect(mockStorePrivateAsset).toHaveBeenCalledWith(
 				expect.objectContaining({
+					createdByUserId: 1,
+					capabilityId: "gpt-image-1.5",
+					kind: "generated_media",
 					mimeType: "image/png",
 					filename: "image.png",
-					ownerUserId: 1,
-					purpose: "generated_media",
 				}),
 			);
 
 			expect(result.response).toHaveLength(1);
-			expect(result.response[0].image_url.url).toBe("https://api.example.com/assets/asset-123");
+			expect(result.response[0].image_url.url).toBe(
+				"https://api.example.com/outputs/asset-123/content",
+			);
 			expect(result.data.assets).toHaveLength(1);
 			expect(result.data.revised_prompt).toBe("Refined hamster prompt");
 			expect(JSON.stringify(result).includes(base64Image)).toBe(false);
@@ -613,7 +616,7 @@ describe("ResponseFormatter", () => {
 			expect(mockFetch).toHaveBeenCalledWith("https://replicate.delivery/example/output-0.png");
 			expect(mockStorePrivateAsset).toHaveBeenCalled();
 			const responseUrl = (result.response as any)[0].image_url.url as string;
-			expect(responseUrl).toBe("https://api.example.com/assets/asset-123");
+			expect(responseUrl).toBe("https://api.example.com/outputs/asset-123/content");
 			expect(result.data.assets[0].originalUrl).toBe(
 				"https://replicate.delivery/example/output-0.png",
 			);

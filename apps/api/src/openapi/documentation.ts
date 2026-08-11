@@ -3,7 +3,6 @@ import { codeTagDescription } from "./content/tags/codeTagDescription.js";
 import { modelsTagDescription } from "./content/tags/modelsTagDescription.js";
 import { agentsTagDescription } from "./content/tags/agentsTagDescription.js";
 import { authTagDescription } from "./content/tags/authTagDescription.js";
-import { memoriesTagDescription } from "./content/tags/memoriesTagDescription.js";
 import { guardrailsTagDescription } from "./content/tags/guardrailsTagDescription.js";
 import { adminTagDescription } from "./content/tags/adminTagDescription.js";
 import { appsTagDescription } from "./content/tags/appsTagDescription.js";
@@ -28,7 +27,6 @@ export const tagDescriptions = {
 	chat: chatTagDescription,
 	code: codeTagDescription,
 	guardrails: guardrailsTagDescription,
-	memories: memoriesTagDescription,
 	models: modelsTagDescription,
 	plans: plansTagDescription,
 	realtime: realtimeTagDescription,

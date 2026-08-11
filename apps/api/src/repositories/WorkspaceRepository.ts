@@ -5,6 +5,7 @@ import type {
 } from "@assistant/schemas";
 
 import { BaseRepository } from "./BaseRepository";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 export interface WorkspaceRow {
 	id: string;
@@ -157,6 +158,55 @@ export class WorkspaceRepository extends BaseRepository {
 		);
 	}
 
+	async updateMemberRole(
+		workspaceId: string,
+		userId: number,
+		role: Exclude<WorkspaceRole, "owner">,
+	): Promise<void> {
+		await this.executeRun(
+			"UPDATE workspace_member SET role = ? WHERE workspace_id = ? AND user_id = ?",
+			[role, workspaceId, userId],
+		);
+	}
+
+	async removeMember(workspaceId: string, userId: number): Promise<void> {
+		await this.executeRun("DELETE FROM workspace_member WHERE workspace_id = ? AND user_id = ?", [
+			workspaceId,
+			userId,
+		]);
+	}
+
+	async transferOwnership(
+		workspaceId: string,
+		currentOwnerUserId: number,
+		newOwnerUserId: number,
+	): Promise<void> {
+		const result = await this.executeRun(
+			`UPDATE workspace_member
+			 SET role = CASE WHEN user_id = ? THEN 'admin' ELSE 'owner' END
+			 WHERE workspace_id = ? AND user_id IN (?, ?)
+			 AND (SELECT role FROM workspace_member WHERE workspace_id = ? AND user_id = ?) = 'owner'
+			 AND (SELECT role FROM workspace_member WHERE workspace_id = ? AND user_id = ?) IN ('admin', 'member')`,
+			[
+				currentOwnerUserId,
+				workspaceId,
+				currentOwnerUserId,
+				newOwnerUserId,
+				workspaceId,
+				currentOwnerUserId,
+				workspaceId,
+				newOwnerUserId,
+			],
+		);
+		if (result.meta.changes !== 2) {
+			throw new AssistantError(
+				"Workspace ownership changed; reload and try again",
+				ErrorType.CONFLICT_ERROR,
+				409,
+			);
+		}
+	}
+
 	async updateWorkspace(workspaceId: string, updates: Record<string, unknown>): Promise<void> {
 		const result = this.buildUpdateQuery(
 			"workspace",
@@ -226,25 +276,42 @@ export class WorkspaceRepository extends BaseRepository {
 
 	async acceptInvitation(invitation: WorkspaceInvitationRow, userId: number): Promise<void> {
 		const database = this.env.DB;
-		if (!database) return;
+		if (!database) {
+			throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
+		}
 
-		await database.batch([
-			database
-				.prepare(
-					`INSERT INTO workspace_member (workspace_id, user_id, role)
-					 VALUES (?, ?, ?)
-					 ON CONFLICT(workspace_id, user_id) DO UPDATE SET role = excluded.role`,
-				)
-				.bind(invitation.workspace_id, userId, invitation.role),
+		const [acceptResult, membershipResult] = await database.batch([
 			database
 				.prepare(
 					`UPDATE workspace_invitation
 					 SET status = 'accepted', accepted_by = ?, accepted_at = CURRENT_TIMESTAMP,
 					     token_hash = 'consumed:' || id, updated_at = CURRENT_TIMESTAMP
-					 WHERE id = ? AND status = 'pending'`,
+					 WHERE id = ? AND status = 'pending' AND token_hash = ?`,
 				)
-				.bind(userId, invitation.id),
+				.bind(userId, invitation.id, invitation.token_hash),
+			database
+				.prepare(
+					`INSERT INTO workspace_member (workspace_id, user_id, role)
+					 SELECT workspace_id, ?, role
+					 FROM workspace_invitation
+					 WHERE id = ? AND status = 'accepted' AND accepted_by = ?
+					 ON CONFLICT(workspace_id, user_id) DO UPDATE SET role = excluded.role`,
+				)
+				.bind(userId, invitation.id, userId),
 		]);
+
+		if (
+			!acceptResult.success ||
+			acceptResult.meta.changes !== 1 ||
+			!membershipResult.success ||
+			membershipResult.meta.changes !== 1
+		) {
+			throw new AssistantError(
+				"Invitation is invalid or has already been used",
+				ErrorType.CONFLICT_ERROR,
+				409,
+			);
+		}
 	}
 
 	async revokeInvitation(workspaceId: string, invitationId: string): Promise<void> {
@@ -288,6 +355,60 @@ export class WorkspaceRepository extends BaseRepository {
 				params.createdBy,
 			],
 		);
+	}
+
+	async createProjectWithCapabilities(
+		params: Parameters<WorkspaceRepository["createProject"]>[0],
+		capabilities: Array<{
+			id: string;
+			kind: ProjectCapabilityKind;
+			capabilityId: string;
+			configuration: Record<string, unknown>;
+		}>,
+	): Promise<void> {
+		const database = this.env.DB;
+		if (!database) return;
+		await database.batch([
+			database
+				.prepare(
+					`INSERT INTO project
+					 (id, workspace_id, name, description, instructions, colour,
+					  coding_enabled, coding_installation_id, coding_repository,
+					  coding_prompt_strategy, coding_should_commit, coding_timeout_seconds, created_by)
+					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				)
+				.bind(
+					params.id,
+					params.workspaceId,
+					params.name,
+					params.description,
+					params.instructions,
+					params.colour,
+					params.codingEnvironment ? 1 : 0,
+					params.codingEnvironment?.installationId ?? null,
+					params.codingEnvironment?.repository ?? null,
+					params.codingEnvironment?.promptStrategy ?? "auto",
+					params.codingEnvironment?.shouldCommit ?? true,
+					params.codingEnvironment?.timeoutSeconds ?? 900,
+					params.createdBy,
+				),
+			...capabilities.map((capability) =>
+				database
+					.prepare(
+						`INSERT INTO project_capability
+						 (id, project_id, kind, capability_id, configuration, created_by)
+						 VALUES (?, ?, ?, ?, ?, ?)`,
+					)
+					.bind(
+						capability.id,
+						params.id,
+						capability.kind,
+						capability.capabilityId,
+						JSON.stringify(capability.configuration),
+						params.createdBy,
+					),
+			),
+		]);
 	}
 
 	async listProjects(workspaceId: string): Promise<ProjectRow[]> {

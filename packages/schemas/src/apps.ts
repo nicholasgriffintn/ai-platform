@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { appDataSchema } from "./app-data";
+import { outputSchema } from "./outputs";
 
 export const insertEmbeddingSchema = z.object({
 	type: z.string(),
@@ -650,19 +650,13 @@ export const dynamicAppExecutionUnauthorizedResponseSchema = z.object({
 
 export const dynamicAppExecutionResponseSchema = z.object({
 	success: z.boolean(),
-	response_id: z.string().optional(),
+	output_id: z.string().optional(),
 	data: z.object({
 		message: z.string(),
 		timestamp: z.iso.datetime(),
 		input: z.record(z.string(), z.unknown()),
 		result: z.unknown(),
 	}),
-});
-
-export const dynamicAppStoredResponsesResponseSchema = z.array(appDataSchema);
-
-export const dynamicAppStoredResponseResponseSchema = z.object({
-	response: z.any(),
 });
 
 export type AppTheme = z.infer<typeof dynamicAppThemeSchema>;
@@ -913,11 +907,11 @@ export const weatherResponseSchema = z.object({
 });
 
 export const articleSessionSummarySchema = z.object({
-	item_id: z.string(),
+	groupId: z.string(),
 	id: z.string().optional(),
 	title: z.string(),
-	created_at: z.string(),
-	source_article_count: z.number().optional(),
+	createdAt: z.string(),
+	sourceCount: z.number().optional(),
 	status: z.enum(["processing", "complete"]),
 });
 
@@ -926,34 +920,11 @@ export const listArticlesResponseSchema = z.object({
 });
 
 export const sourceArticlesResponseSchema = z.object({
-	status: z.string(),
-	articles: z.array(
-		z.object({
-			id: z.string(),
-			user_id: z.number(),
-			app_id: z.string(),
-			item_id: z.string().optional(),
-			item_type: z.string().optional(),
-			data: z.string(),
-			share_id: z.string().optional(),
-			created_at: z.string(),
-			updated_at: z.string(),
-		}),
-	),
+	articles: z.array(outputSchema),
 });
 
 export const articleDetailResponseSchema = z.object({
-	article: z.object({
-		id: z.string(),
-		user_id: z.number(),
-		app_id: z.string(),
-		item_id: z.string().optional(),
-		item_type: z.string().optional(),
-		data: z.string(),
-		share_id: z.string().optional(),
-		created_at: z.string(),
-		updated_at: z.string(),
-	}),
+	article: outputSchema,
 });
 
 export const podcastStatusSchema = z.enum([
@@ -1090,38 +1061,6 @@ export type NoteDetailResponse = z.infer<typeof noteDetailResponseSchema>;
 export type NoteFormatRequest = z.infer<typeof noteFormatSchema>;
 export type NoteFormatResponse = z.infer<typeof noteFormatResponseSchema>;
 
-export const shareItemSchema = z
-	.object({
-		app_id: z.string().meta({
-			description: "The ID of the app",
-		}),
-	})
-	.meta({
-		description: "Schema for sharing an app item",
-	});
-
-export const sharedItemResponseSchema = z
-	.object({
-		status: z.enum(["success", "error"]),
-		share_id: z.string().optional(),
-		message: z.string().optional(),
-		item: z
-			.object({
-				id: z.string(),
-				app_id: z.string(),
-				item_id: z.string().optional(),
-				item_type: z.string().optional(),
-				data: z.any(),
-				share_id: z.string().optional(),
-				created_at: z.string(),
-				updated_at: z.string(),
-			})
-			.optional(),
-	})
-	.meta({
-		description: "Response for shared item operations",
-	});
-
 export const generateNotesFromMediaSchema = z.object({
 	url: z.string().url().describe("The audio/video URL to transcribe and analyze."),
 	outputs: z
@@ -1177,11 +1116,6 @@ export const generateNotesFromMediaSchema = z.object({
 
 export const generateNotesFromMediaResponseSchema = z.object({
 	content: z.string().describe("Generated notes content in Markdown."),
-});
-
-export const listDynamicAppResponsesQuerySchema = z.object({
-	appId: z.string().optional(),
-	projectId: z.string().min(1).optional(),
 });
 
 export const strudelGenerateSchema = z.object({

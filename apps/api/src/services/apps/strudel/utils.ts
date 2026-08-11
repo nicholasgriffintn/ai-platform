@@ -1,7 +1,7 @@
 import { strudelPatternSchema } from "@assistant/schemas";
 import type { z } from "zod";
 
-import type { AppData } from "~/repositories/AppDataRepository";
+import type { OutputRecord } from "~/repositories/OutputRepository";
 
 export type StrudelPattern = z.infer<typeof strudelPatternSchema>;
 
@@ -59,8 +59,8 @@ export const normalizePatternPayload = (
 	tags: sanitizeTags(payload.tags),
 });
 
-export const mapResponseToPattern = (response: AppData): StrudelPattern => {
-	const normalized = normalizePatternPayload(parseStoredPayload(response.data));
+export const mapResponseToPattern = (response: OutputRecord): StrudelPattern => {
+	const normalized = normalizePatternPayload(parseStoredPayload(response.content));
 
 	return strudelPatternSchema.parse({
 		id: response.id,

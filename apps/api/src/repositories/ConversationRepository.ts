@@ -193,13 +193,6 @@ export class ConversationRepository extends BaseRepository {
 				.bind(userId),
 			database
 				.prepare(
-					`UPDATE stored_asset
-					 SET conversation_id = NULL, message_id = NULL
-					 WHERE conversation_id IN (${personalConversationIds})`,
-				)
-				.bind(userId),
-			database
-				.prepare(
 					`DELETE FROM training_examples
 					 WHERE conversation_id IN (${personalConversationIds})`,
 				)

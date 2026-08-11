@@ -1,9 +1,9 @@
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { type AppData } from "~/repositories/AppDataRepository";
+import type { Output } from "@assistant/schemas";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { safeParseJson } from "../../../utils/json";
+import { formatOutput } from "~/services/outputs";
 
 const logger = getLogger({
 	prefix: "SERVICES:APPS:ARTICLES:GET_SOURCE_ARTICLES",
@@ -11,7 +11,7 @@ const logger = getLogger({
 
 export interface GetSourceArticlesSuccessResponse {
 	status: "success";
-	articles: AppData[];
+	articles: Output[];
 }
 
 export async function getSourceArticles({
@@ -49,22 +49,17 @@ export async function getSourceArticles({
 		}
 
 		serviceContext.ensureDatabase();
-		const appDataRepo = serviceContext.repositories.appData;
-		const articles: AppData[] = [];
+		const outputRepo = serviceContext.repositories.outputs;
+		const articles: Output[] = [];
 
 		const articlePromises = ids.map(async (id) => {
 			try {
 				const article = projectId
-					? await appDataRepo.getAppDataByProjectAndId(projectId, id)
-					: await appDataRepo.getAppDataById(id);
+					? await outputRepo.getProjectOutput(projectId, id)
+					: await outputRepo.getPersonalOutput(userId, id);
 
-				if (article && (projectId || article.user_id === userId)) {
-					let parsedArticleData = safeParseJson(article.data || "{}") ?? {};
-
-					return {
-						...article,
-						data: parsedArticleData,
-					};
+				if (article) {
+					return formatOutput(article);
 				}
 				return null;
 			} catch (error) {

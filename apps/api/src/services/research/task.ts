@@ -14,7 +14,7 @@ import type {
 	ResearchResult,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
+import { OutputRepository } from "~/repositories/OutputRepository";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { TaskService } from "~/services/tasks/TaskService";
 import { safeParseJson } from "../../utils/json";
@@ -144,8 +144,10 @@ export const getResearchTaskStatus = async (
 		user,
 		provider,
 	);
-	const responseRepo = env.DB && user?.id ? new DynamicAppResponseRepository(env) : null;
-	const existingResponse = responseRepo ? await responseRepo.getResponseByItemId(runId) : null;
+	const responseRepo = env.DB && user?.id ? new OutputRepository(env) : null;
+	const existingResponse = responseRepo
+		? await responseRepo.getPersonalOutputByGroup(user!.id, runId, "dynamic_app_response")
+		: null;
 
 	const parsePayload = (payload: string | null | undefined) => {
 		if (!payload) {
@@ -189,7 +191,7 @@ export const getResearchTaskStatus = async (
 		return undefined;
 	};
 
-	let storedPayload = existingResponse ? parsePayload(existingResponse.data) : undefined;
+	let storedPayload = existingResponse ? parsePayload(existingResponse.content) : undefined;
 	let storedResult = extractStoredResult(storedPayload);
 
 	if (
@@ -204,7 +206,7 @@ export const getResearchTaskStatus = async (
 	const canPersist =
 		Boolean(responseRepo) &&
 		Boolean(existingResponse) &&
-		existingResponse?.user_id === (user?.id ?? existingResponse?.user_id);
+		existingResponse?.created_by_user_id === (user?.id ?? existingResponse?.created_by_user_id);
 
 	const persistResult = async (
 		merged: ParallelResearchResult | ResearchResult,
@@ -265,7 +267,13 @@ export const getResearchTaskStatus = async (
 			lastSyncedAt: new Date().toISOString(),
 		};
 
-		await responseRepo.updateResponseData(existingResponse.id, nextPayload);
+		await responseRepo.updateOutput(existingResponse.id, {
+			content: nextPayload,
+			status:
+				statusLabel === "error" ? "failed" : statusLabel === "completed" ? "ready" : "pending",
+			expectedRevision: existingResponse.revision,
+			updatedByUserId: existingResponse.created_by_user_id,
+		});
 		storedPayload = nextPayload;
 		storedResult = merged;
 	};

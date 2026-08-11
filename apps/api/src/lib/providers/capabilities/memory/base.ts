@@ -1,7 +1,6 @@
 import { fetchProviderJson } from "~/lib/providers/lib/fetch";
 import { getRecipeConnectorAccessToken } from "~/services/apps/connectors";
-import { MemoryRepository } from "~/repositories/MemoryRepository";
-import type { Memory } from "~/lib/database/schema";
+import { SourceRepository, type SourceRecord } from "~/repositories/SourceRepository";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser, IUserSettings } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -105,26 +104,28 @@ export abstract class BaseMemoryProvider implements MemoryProvider {
 			return null;
 		}
 
-		const repository = new MemoryRepository(this.config.env);
-		const memory = await repository.createMemory(
-			this.config.user.id,
-			input.text,
-			input.metadata.category || "general",
+		const repository = this.getSourceRepository();
+		const memory = await repository.createSource({
+			createdByUserId: this.config.user.id,
+			conversationId: input.conversationId,
+			kind: "memory",
+			title: input.text.slice(0, 120) || "Memory",
+			content: input.text,
 			vectorId,
-			input.conversationId,
-			{
+			metadata: {
 				...input.metadata,
+				category: input.metadata.category || "general",
 				memory_provider: this.name,
 				external_id: vectorId,
 				stored_at: Date.now().toString(),
 			},
-		);
+		});
 
 		return memory?.id ?? null;
 	}
 
 	protected async getLocalMemoryForDelete(memoryId: string): Promise<{
-		memory: Memory;
+		memory: SourceRecord;
 		vectorId?: string;
 	} | null> {
 		if (!this.config.user?.id) {
@@ -134,9 +135,14 @@ export abstract class BaseMemoryProvider implements MemoryProvider {
 			);
 		}
 
-		const repository = new MemoryRepository(this.config.env);
-		const memory = await repository.getMemoryById(memoryId);
-		if (!memory || memory.user_id !== this.config.user.id) {
+		const repository = this.getSourceRepository();
+		const memory = await repository.getSource(memoryId);
+		if (
+			!memory ||
+			memory.kind !== "memory" ||
+			memory.created_by_user_id !== this.config.user.id ||
+			memory.project_id
+		) {
 			return null;
 		}
 
@@ -153,9 +159,15 @@ export abstract class BaseMemoryProvider implements MemoryProvider {
 	}
 
 	protected async removeLocalMemory(memoryId: string): Promise<void> {
-		const repository = new MemoryRepository(this.config.env);
-		await repository.deleteMemory(memoryId);
-		await repository.removeMemoryFromGroups(memoryId);
+		const repository = this.getSourceRepository();
+		await repository.removeSourceFromCollections(memoryId);
+		await repository.deleteSource(memoryId);
+	}
+
+	private getSourceRepository(): SourceRepository {
+		return (
+			this.config.serviceContext?.repositories.sources ?? new SourceRepository(this.config.env)
+		);
 	}
 
 	protected getUserTag(): string | undefined {

@@ -90,10 +90,10 @@ export function useArticleAnalysisSession(projectId: string) {
 			setProcessingArticles(false);
 			setReportGenerating(true);
 			const result = await generateReport.mutateAsync({ itemId });
-			if (!result.appDataId) {
+			if (!result.outputId) {
 				throw new Error("Report generated but no saved report was returned.");
 			}
-			return result.appDataId;
+			return result.outputId;
 		} catch (error) {
 			setProcessingError(getErrorMessage(error, "Article processing failed."));
 			return undefined;

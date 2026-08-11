@@ -39,9 +39,9 @@ const baseApp: Omit<AppSchema, "id"> = {
 	},
 };
 
-const dynamicAppResponseRepository = {
-	createResponse: vi.fn(),
-	updateResponseData: vi.fn(),
+const outputRepository = {
+	createOutput: vi.fn(),
+	updateOutput: vi.fn(),
 };
 
 const anonymousUser = {
@@ -64,7 +64,7 @@ function createRequest(overrides: Partial<IRequest> = {}): IRequest {
 			database: {},
 			env,
 			repositories: {
-				dynamicAppResponses: dynamicAppResponseRepository,
+				outputs: outputRepository,
 			},
 			requestCache: new Map(),
 		} as any,
@@ -97,8 +97,8 @@ describe("executeDynamicApp", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		dynamicAppResponseRepository.createResponse.mockReset();
-		dynamicAppResponseRepository.updateResponseData.mockReset();
+		outputRepository.createOutput.mockReset();
+		outputRepository.updateOutput.mockReset();
 
 		const { ConversationManager } = await import("~/lib/conversationManager");
 		vi.mocked(ConversationManager.getInstance).mockReturnValue({} as any);
@@ -122,35 +122,40 @@ describe("executeDynamicApp", () => {
 
 		vi.mocked(handleFunctions).mockResolvedValue(functionResult as any);
 
-		const createResponseSpy = dynamicAppResponseRepository.createResponse.mockResolvedValue({
+		const createOutputSpy = outputRepository.createOutput.mockResolvedValue({
 			id: "response-123",
+			revision: 1,
 		} as any);
-		const updateResponseDataSpy =
-			dynamicAppResponseRepository.updateResponseData.mockResolvedValue(undefined);
+		const updateOutputSpy = outputRepository.updateOutput.mockResolvedValue(undefined);
 
 		const result = await executeDynamicApp(appId, formData, createRequest());
 
-		expect(createResponseSpy).toHaveBeenCalledWith(
-			42,
-			appId,
-			{
+		expect(createOutputSpy).toHaveBeenCalledWith({
+			createdByUserId: 42,
+			projectId: undefined,
+			capabilityId: appId,
+			groupId: "async-123",
+			kind: "dynamic_app_response",
+			title: `App output: ${appId}`,
+			content: {
 				formData,
 				result: functionResult,
 			},
-			"async-123",
-		);
-		expect(updateResponseDataSpy).toHaveBeenCalledWith(
+		});
+		expect(updateOutputSpy).toHaveBeenCalledWith(
 			"response-123",
 			expect.objectContaining({
-				formData,
-				result: expect.objectContaining({
-					data: expect.objectContaining({
-						asyncInvocation: expect.objectContaining({
-							id: "async-123",
-							context: {
-								source: "queue",
-								responseId: "response-123",
-							},
+				content: expect.objectContaining({
+					formData,
+					result: expect.objectContaining({
+						data: expect.objectContaining({
+							asyncInvocation: expect.objectContaining({
+								id: "async-123",
+								context: {
+									source: "queue",
+									responseId: "response-123",
+								},
+							}),
 						}),
 					}),
 				}),
@@ -158,7 +163,7 @@ describe("executeDynamicApp", () => {
 		);
 		expect(result).toMatchObject({
 			success: true,
-			response_id: "response-123",
+			output_id: "response-123",
 			data: {
 				input: formData,
 				result: {
@@ -193,8 +198,8 @@ describe("executeDynamicApp", () => {
 
 		vi.mocked(handleFunctions).mockResolvedValue(functionResult as any);
 
-		const createResponseSpy = dynamicAppResponseRepository.createResponse;
-		const updateResponseDataSpy = dynamicAppResponseRepository.updateResponseData;
+		const createResponseSpy = outputRepository.createOutput;
+		const updateResponseDataSpy = outputRepository.updateOutput;
 
 		const result = await executeDynamicApp(
 			appId,

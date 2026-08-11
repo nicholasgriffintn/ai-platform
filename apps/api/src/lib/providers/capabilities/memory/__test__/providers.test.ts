@@ -5,10 +5,10 @@ import { providerLibrary } from "~/lib/providers/library";
 import { BuiltInMemoryProvider, HindsightMemoryProvider, HonchoMemoryProvider } from "../providers";
 
 const getRecipeConnectorAccessTokenMock = vi.hoisted(() => vi.fn());
-const createMemoryMock = vi.hoisted(() => vi.fn());
-const deleteMemoryMock = vi.hoisted(() => vi.fn());
-const getMemoryByIdMock = vi.hoisted(() => vi.fn());
-const removeMemoryFromGroupsMock = vi.hoisted(() => vi.fn());
+const createSourceMock = vi.hoisted(() => vi.fn());
+const deleteSourceMock = vi.hoisted(() => vi.fn());
+const getSourceMock = vi.hoisted(() => vi.fn());
+const removeSourceFromCollectionsMock = vi.hoisted(() => vi.fn());
 const embeddingDeleteMock = vi.hoisted(() => vi.fn());
 
 vi.mock("~/lib/providers/capabilities/embedding/helpers", () => ({
@@ -21,33 +21,35 @@ vi.mock("~/services/apps/connectors", () => ({
 	getRecipeConnectorAccessToken: getRecipeConnectorAccessTokenMock,
 }));
 
-vi.mock("~/repositories/MemoryRepository", () => ({
-	MemoryRepository: class {
-		createMemory = createMemoryMock;
-		deleteMemory = deleteMemoryMock;
-		getMemoryById = getMemoryByIdMock;
-		removeMemoryFromGroups = removeMemoryFromGroupsMock;
-	},
-}));
-
 describe("external memory providers", () => {
 	const env = { JWT_SECRET: "secret" } as any;
 	const user = { id: 42 } as any;
-	const serviceContext = {} as any;
+	const serviceContext = {
+		repositories: {
+			sources: {
+				createSource: createSourceMock,
+				deleteSource: deleteSourceMock,
+				getSource: getSourceMock,
+				removeSourceFromCollections: removeSourceFromCollectionsMock,
+			},
+		},
+	} as any;
 
 	beforeEach(() => {
 		vi.unstubAllGlobals();
 		vi.clearAllMocks();
 		getRecipeConnectorAccessTokenMock.mockResolvedValue({ accessToken: "provider-key" });
-		createMemoryMock.mockResolvedValue({ id: "local-memory-id" });
-		getMemoryByIdMock.mockResolvedValue({
+		createSourceMock.mockResolvedValue({ id: "local-memory-id" });
+		getSourceMock.mockResolvedValue({
 			id: "local-memory-id",
-			user_id: 42,
+			created_by_user_id: 42,
+			kind: "memory",
+			project_id: null,
 			vector_id: "remote-message-id",
 			metadata: JSON.stringify({ conversationId: "conversation-1" }),
 		});
-		deleteMemoryMock.mockResolvedValue(undefined);
-		removeMemoryFromGroupsMock.mockResolvedValue(undefined);
+		deleteSourceMock.mockResolvedValue(undefined);
+		removeSourceFromCollectionsMock.mockResolvedValue(undefined);
 		embeddingDeleteMock.mockResolvedValue(undefined);
 		vi.mocked(embeddingHelpers.getEmbeddingProvider).mockReturnValue({
 			delete: embeddingDeleteMock,
@@ -234,8 +236,13 @@ describe("external memory providers", () => {
 		expect(sessionUrls[0]).toMatch(
 			/^https:\/\/api\.honcho\.dev\/v3\/workspaces\/assistant_user_42\/sessions\/honcho_memory_[^/]+\/messages$/,
 		);
-		expect(createMemoryMock.mock.calls[0]?.[3]).toMatch(/^honcho_memory_/);
-		expect(createMemoryMock.mock.calls[0]?.[4]).toBe("conversation-1");
+		expect(createSourceMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				conversationId: "conversation-1",
+				kind: "memory",
+				vectorId: expect.stringMatching(/^honcho_memory_/),
+			}),
+		);
 	});
 
 	it("deletes Honcho memory sessions before removing local rows", async () => {
@@ -260,8 +267,8 @@ describe("external memory providers", () => {
 				}),
 			}),
 		);
-		expect(deleteMemoryMock).toHaveBeenCalledWith("local-memory-id");
-		expect(removeMemoryFromGroupsMock).toHaveBeenCalledWith("local-memory-id");
+		expect(deleteSourceMock).toHaveBeenCalledWith("local-memory-id");
+		expect(removeSourceFromCollectionsMock).toHaveBeenCalledWith("local-memory-id");
 	});
 
 	it("does not remove local Hindsight memory when remote deletion fails", async () => {
@@ -279,20 +286,20 @@ describe("external memory providers", () => {
 
 		await expect(provider.deleteMemory("local-memory-id")).resolves.toBe(false);
 
-		expect(getMemoryByIdMock).toHaveBeenCalledWith("local-memory-id");
-		expect(deleteMemoryMock).not.toHaveBeenCalled();
-		expect(removeMemoryFromGroupsMock).not.toHaveBeenCalled();
+		expect(getSourceMock).toHaveBeenCalledWith("local-memory-id");
+		expect(deleteSourceMock).not.toHaveBeenCalled();
+		expect(removeSourceFromCollectionsMock).not.toHaveBeenCalled();
 	});
 
 	it("does not remove local built-in memory when vector deletion fails", async () => {
 		embeddingDeleteMock.mockRejectedValue(new Error("vector delete failed"));
 
-		const provider = new BuiltInMemoryProvider(env, user, null);
+		const provider = new BuiltInMemoryProvider(env, user, null, serviceContext);
 
 		await expect(provider.deleteMemory("local-memory-id")).resolves.toBe(false);
 
 		expect(embeddingDeleteMock).toHaveBeenCalledWith(["remote-message-id"]);
-		expect(deleteMemoryMock).not.toHaveBeenCalled();
-		expect(removeMemoryFromGroupsMock).not.toHaveBeenCalled();
+		expect(deleteSourceMock).not.toHaveBeenCalled();
+		expect(removeSourceFromCollectionsMock).not.toHaveBeenCalled();
 	});
 });

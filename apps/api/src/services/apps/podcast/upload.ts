@@ -1,6 +1,6 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { StorageService, type StoredAssetResult } from "~/lib/storage";
+import { StorageService, type StoredSourceFileResult } from "~/lib/storage";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -44,19 +44,21 @@ export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastU
 			throw new AssistantError("Missing audio", ErrorType.PARAMS_ERROR);
 		}
 
-		let storedAudio: StoredAssetResult;
+		let storedAudio: StoredSourceFileResult;
+		let audioByteSize = 0;
 		try {
 			const arrayBuffer = await request.audio.arrayBuffer();
-			const length = arrayBuffer.byteLength;
+			audioByteSize = arrayBuffer.byteLength;
 
-			storedAudio = await StorageService.forPrivateAssets(serviceContext).storePrivateAsset({
+			storedAudio = await StorageService.forPrivateAssets(serviceContext).storeSourceFile({
 				key: podcastAudioKey,
 				data: arrayBuffer,
-				ownerUserId: user.id,
-				purpose: "app_artifact",
+				createdByUserId: user.id,
+				projectId,
+				title: sanitisedTitle || request.audio.name || "Podcast recording",
 				mimeType: "audio/mpeg",
 				filename: "recording.mp3",
-				byteSize: length,
+				byteSize: audioByteSize,
 			});
 		} catch {
 			throw new AssistantError("Failed to upload podcast", ErrorType.UNKNOWN_ERROR);
@@ -65,32 +67,27 @@ export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastU
 		const appData = {
 			title: sanitisedTitle || "Untitled Podcast",
 			description: sanitisedDescription,
-			audioAssetId: storedAudio.assetId,
+			audioSourceId: storedAudio.sourceId,
 			audioUrl: storedAudio.url,
 			audioKey: podcastAudioKey,
 			status: "ready",
 			createdAt: new Date().toISOString(),
 		};
 
-		if (projectId) {
-			const created = await repositories.appData.createAppDataWithItem(
-				user.id,
-				"podcasts",
-				podcastId,
-				"upload",
-				appData,
-				projectId,
-			);
-			await repositories.storedAssets.linkAssetToAppData(storedAudio.assetId, created.id);
-		} else {
-			await repositories.appData.createAppDataWithItem(
-				user.id,
-				"podcasts",
-				podcastId,
-				"upload",
-				appData,
-			);
-		}
+		const output = await repositories.outputs.createOutput({
+			createdByUserId: user.id,
+			projectId,
+			capabilityId: "podcasts",
+			groupId: podcastId,
+			kind: "upload",
+			title: appData.title,
+			content: appData,
+			storageKey: podcastAudioKey,
+			mimeType: "audio/mpeg",
+			filename: "recording.mp3",
+			byteSize: audioByteSize,
+		});
+		await repositories.outputs.attachSources(output.id, [storedAudio.sourceId]);
 
 		return {
 			status: "success",
@@ -108,24 +105,15 @@ export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastU
 		createdAt: new Date().toISOString(),
 	};
 
-	if (projectId) {
-		await repositories.appData.createAppDataWithItem(
-			user.id,
-			"podcasts",
-			podcastId,
-			"upload",
-			appData,
-			projectId,
-		);
-	} else {
-		await repositories.appData.createAppDataWithItem(
-			user.id,
-			"podcasts",
-			podcastId,
-			"upload",
-			appData,
-		);
-	}
+	await repositories.outputs.createOutput({
+		createdByUserId: user.id,
+		projectId,
+		capabilityId: "podcasts",
+		groupId: podcastId,
+		kind: "upload",
+		title: appData.title,
+		content: appData,
+	});
 
 	return {
 		status: "success",

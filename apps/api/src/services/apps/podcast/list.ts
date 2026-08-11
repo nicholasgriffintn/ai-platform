@@ -33,8 +33,8 @@ export const handlePodcastList = async (req: IPodcastListRequest): Promise<Podca
 	const repositories = serviceContext.repositories;
 
 	const appDataList = projectId
-		? await repositories.appData.getAppDataByProjectAndApp(projectId, "podcasts")
-		: await repositories.appData.getAppDataByUserAndApp(user.id, "podcasts");
+		? await repositories.outputs.listProjectOutputs(projectId, "podcasts")
+		: await repositories.outputs.listPersonalOutputs(user.id, "podcasts");
 
 	if (!appDataList || appDataList.length === 0) {
 		return [];
@@ -43,11 +43,11 @@ export const handlePodcastList = async (req: IPodcastListRequest): Promise<Podca
 	const podcastMap = new Map<string, PodcastItem>();
 
 	for (const appData of appDataList) {
-		if (!appData.item_id) continue;
+		if (!appData.group_id) continue;
 
-		const itemId = appData.item_id;
-		const itemType = appData.item_type || "unknown";
-		let data = safeParseJson(appData.data);
+		const itemId = appData.group_id;
+		const itemType = appData.kind;
+		const data = safeParseJson<Record<string, any>>(appData.content) ?? {};
 
 		if (!podcastMap.has(itemId)) {
 			podcastMap.set(itemId, { id: itemId, items: {} });

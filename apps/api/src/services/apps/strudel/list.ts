@@ -19,8 +19,8 @@ export async function listPatterns({
 		const { repositories } = context;
 
 		const responses = projectId
-			? await repositories.dynamicAppResponses.listResponsesForProject(projectId, STRUDEL_APP_ID)
-			: await repositories.dynamicAppResponses.listResponsesForUser(userId, STRUDEL_APP_ID);
+			? await repositories.outputs.listProjectOutputs(projectId, STRUDEL_APP_ID)
+			: await repositories.outputs.listPersonalOutputs(userId, STRUDEL_APP_ID);
 
 		const patterns = responses.map(mapResponseToPattern);
 

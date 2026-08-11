@@ -1,14 +1,13 @@
 import type { RecipeInstallationTrigger } from "@assistant/schemas";
 
 import { RepositoryManager } from "~/repositories";
-import type { AppData } from "~/repositories/AppDataRepository";
+import type { TemplateRecord } from "~/repositories/TemplateRepository";
 import { TaskService } from "~/services/tasks/TaskService";
 import { doesCronMatchDate, getCronMatchingDatesInRange } from "~/utils/cron";
 import { sha256Hex } from "~/utils/crypto";
 import type { IEnv } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
-import { RECIPE_INSTALLATION_APP_ID, RECIPE_INSTALLATION_ITEM_TYPE } from "./index";
 import {
 	buildRecipeScheduleState,
 	getRecipeScheduleTriggerState,
@@ -29,16 +28,18 @@ interface StoredRecipeInstallationData {
 	scheduleState?: RecipeScheduleState;
 }
 
-function parseStoredInstallation(record: AppData): StoredRecipeInstallationData | null {
+function parseStoredInstallation(record: TemplateRecord): StoredRecipeInstallationData | null {
 	const parsed =
-		typeof record.data === "string" ? safeParseJson(record.data) : (record.data as unknown);
+		typeof record.configuration === "string"
+			? safeParseJson(record.configuration)
+			: (record.configuration as unknown);
 
 	if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
 		return null;
 	}
 
 	const installation = parsed as StoredRecipeInstallationData;
-	return installation.recipeId === record.item_id ? installation : null;
+	return installation.recipeId === record.capability_id ? installation : null;
 }
 
 function getScheduleRunKey(triggerIndex: number, cronExpression: string, date: Date): string {
@@ -84,7 +85,7 @@ function getScheduleEvaluationWindow(now: Date): { start: Date; end: Date } {
 	};
 }
 
-function getCreatedAtDate(record: AppData): Date | null {
+function getCreatedAtDate(record: TemplateRecord): Date | null {
 	const createdAt = new Date(record.created_at);
 	return Number.isNaN(createdAt.getTime()) ? null : createdAt;
 }
@@ -114,15 +115,11 @@ function getScheduleEvaluationDates(params: {
 export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): Promise<number> {
 	const repositories = RepositoryManager.getInstance(env);
 	const taskService = new TaskService(env, repositories.tasks);
-	const records = await repositories.appData.getAppDataByApp(RECIPE_INSTALLATION_APP_ID);
+	const records = await repositories.templates.listTemplatesByKind("recipe");
 	const evaluationWindow = getScheduleEvaluationWindow(now);
 	let scheduledCount = 0;
 
 	for (const record of records) {
-		if (record.item_type !== RECIPE_INSTALLATION_ITEM_TYPE || !record.user_id) {
-			continue;
-		}
-
 		const installation = parseStoredInstallation(record);
 		const createdAt = getCreatedAtDate(record);
 		if (
@@ -181,11 +178,11 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
 					id: await getScheduleTaskId({
 						installationId: record.id,
 						recipeId: installation.recipeId,
-						userId: record.user_id,
+						userId: record.created_by_user_id,
 						runKey,
 					}),
 					task_type: "recipe_execution",
-					user_id: record.user_id,
+					user_id: record.created_by_user_id,
 					task_data: {
 						recipeId: installation.recipeId,
 						installationId: record.id,
@@ -217,9 +214,9 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
 		}
 
 		if (changed) {
-			await repositories.appData.updateAppData(record.id, {
-				...installation,
-				scheduleState,
+			await repositories.templates.updateTemplate(record.id, {
+				configuration: { ...installation, scheduleState },
+				status: installation.status ?? "active",
 			});
 		}
 	}

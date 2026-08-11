@@ -10,12 +10,10 @@ import {
 	canStartOAuthConnectorAuthorization,
 	getConnectorProviderOperationAccess,
 	getGitHubAppInstallUrl,
-	RECIPE_CONNECTOR_APP_ID,
-	RECIPE_CONNECTOR_ITEM_TYPE,
 	type ConnectorProviderConfig,
 	type OAuthConnectorConfig,
 } from "~/lib/providers/capabilities/connectors";
-import type { AppData } from "~/repositories/AppDataRepository";
+import type { ProviderConnectionRecord } from "~/repositories/ProviderConnectionRepository";
 import { listGitHubAppConnectionsForUser } from "~/services/github/connections";
 import {
 	getRecipeConnectorProviderConfig,
@@ -37,6 +35,7 @@ import { redactSensitiveTokens } from "~/utils/redaction";
 const CONNECTOR_STATE_AUDIENCE = "assistant-recipe-connectors";
 const CONNECTOR_STATE_EXPIRY_SECONDS = 10 * 60;
 const TOKEN_EXPIRY_SKEW_SECONDS = 60;
+const RECIPE_CONNECTOR_CONNECTION_KIND = "recipe_connector";
 
 export interface ConnectorTokenPayload {
 	accessToken: string;
@@ -233,14 +232,14 @@ async function getConnectorStateCodeVerifier(params: {
 	return decrypted.codeVerifier;
 }
 
-function parseStoredConnector(record: AppData | undefined): {
+function parseStoredConnector(record: ProviderConnectionRecord | undefined): {
 	encrypted?: EncryptedJsonPayload;
 } | null {
 	if (!record) {
 		return null;
 	}
 
-	const parsed = safeParseJson(record.data);
+	const parsed = safeParseJson(record.encrypted_data);
 	if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
 		return null;
 	}
@@ -252,15 +251,13 @@ async function readStoredToken(
 	context: ServiceContext,
 	userId: number,
 	providerId: RecipeConnectorProvider,
-): Promise<{ record: AppData; token: ConnectorTokenPayload } | null> {
-	const records = await context.repositories.appData.getAppDataByUserAppAndItem(
+): Promise<{ record: ProviderConnectionRecord; token: ConnectorTokenPayload } | null> {
+	const record = await context.repositories.providerConnections.getConnection(
 		userId,
-		RECIPE_CONNECTOR_APP_ID,
 		providerId,
-		RECIPE_CONNECTOR_ITEM_TYPE,
+		RECIPE_CONNECTOR_CONNECTION_KIND,
 	);
-	const record = records[0];
-	const stored = parseStoredConnector(record);
+	const stored = parseStoredConnector(record ?? undefined);
 	if (!record || !stored?.encrypted) {
 		return null;
 	}
@@ -309,26 +306,12 @@ async function writeStoredToken(params: {
 		}),
 		payload: { ...params.payload },
 	});
-	const data = { encrypted };
-	const existing = await params.context.repositories.appData.getAppDataByUserAppAndItem(
-		params.userId,
-		RECIPE_CONNECTOR_APP_ID,
-		params.providerId,
-		RECIPE_CONNECTOR_ITEM_TYPE,
-	);
-
-	if (existing[0]) {
-		await params.context.repositories.appData.updateAppData(existing[0].id, data);
-		return existing[0].id;
-	}
-
-	const created = await params.context.repositories.appData.createAppDataWithItem(
-		params.userId,
-		RECIPE_CONNECTOR_APP_ID,
-		params.providerId,
-		RECIPE_CONNECTOR_ITEM_TYPE,
-		data,
-	);
+	const created = await params.context.repositories.providerConnections.upsertConnection({
+		userId: params.userId,
+		provider: params.providerId,
+		kind: RECIPE_CONNECTOR_CONNECTION_KIND,
+		encryptedData: { encrypted },
+	});
 	return created.id;
 }
 
@@ -729,11 +712,10 @@ export async function deleteRecipeConnectorConnection(params: {
 		);
 	}
 
-	await params.context.repositories.appData.deleteAppDataByUserAppAndItem(
+	await params.context.repositories.providerConnections.deleteConnection(
 		params.userId,
-		RECIPE_CONNECTOR_APP_ID,
 		params.provider,
-		RECIPE_CONNECTOR_ITEM_TYPE,
+		RECIPE_CONNECTOR_CONNECTION_KIND,
 	);
 
 	return { success: true };

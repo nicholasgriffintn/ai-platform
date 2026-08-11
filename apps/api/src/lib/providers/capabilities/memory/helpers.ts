@@ -3,6 +3,10 @@ import { providerLibrary } from "~/lib/providers/library";
 import type { IEnv, IUser, IUserSettings } from "~/types";
 import type { MemoryProvider, MemoryProviderId } from "./types";
 
+export function isMemoryProviderId(value: unknown): value is MemoryProviderId {
+	return value === "built-in" || value === "hindsight" || value === "honcho";
+}
+
 export interface GetMemoryProviderContext {
 	env: IEnv;
 	user?: IUser;

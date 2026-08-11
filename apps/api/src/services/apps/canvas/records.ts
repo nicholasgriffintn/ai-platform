@@ -1,4 +1,4 @@
-import type { AppData } from "~/repositories/AppDataRepository";
+import type { OutputRecord } from "~/repositories/OutputRepository";
 import { safeParseJson } from "~/utils/json";
 import type { CanvasGenerationListItem, CanvasGenerationStatus, CanvasMode } from "./types";
 
@@ -36,8 +36,8 @@ function normalizeStatus(value: unknown): CanvasGenerationStatus {
 	}
 }
 
-export function mapCanvasGenerationRecord(record: AppData): CanvasGenerationListItem {
-	const data = safeParseJson(record.data) as Record<string, unknown> | null;
+export function mapCanvasGenerationRecord(record: OutputRecord): CanvasGenerationListItem {
+	const data = safeParseJson(record.content) as Record<string, unknown> | null;
 	const predictionData =
 		data?.predictionData && typeof data.predictionData === "object"
 			? (data.predictionData as Record<string, unknown>)
@@ -51,14 +51,14 @@ export function mapCanvasGenerationRecord(record: AppData): CanvasGenerationList
 
 	return {
 		id: record.id,
-		itemId: record.item_id,
-		modelId: typeof data?.modelId === "string" ? data.modelId : record.item_id || record.id,
+		itemId: record.group_id,
+		modelId: typeof data?.modelId === "string" ? data.modelId : record.group_id || record.id,
 		modelName: typeof data?.modelName === "string" ? data.modelName : undefined,
 		provider: typeof data?.provider === "string" ? data.provider : undefined,
 		mode,
 		status,
 		createdAt: typeof data?.createdAt === "string" ? data.createdAt : record.created_at,
-		updatedAt: record.updated_at,
+		updatedAt: record.updated_at ?? record.created_at,
 		input,
 		output: data?.output,
 		error: typeof data?.error === "string" ? data.error : undefined,

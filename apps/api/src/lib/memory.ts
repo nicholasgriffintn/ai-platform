@@ -2,6 +2,7 @@ import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { toProviderMessages } from "~/lib/chat/providerMessages";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { getMemoryProvider } from "~/lib/providers/capabilities/memory";
+import type { MemoryProviderId } from "~/lib/providers/capabilities/memory/types";
 import type { IEnv, IUser, IUserSettings, Message } from "~/types";
 import { parseAIResponseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
@@ -69,14 +70,22 @@ export class MemoryManager {
 	 * Delete a memory from both vector and transactional databases
 	 * @param memoryId - The memory ID from the transactional database
 	 */
-	public async deleteMemory(memoryId: string): Promise<boolean> {
+	public async deleteMemory(memoryId: string, providerId?: MemoryProviderId): Promise<boolean> {
 		const userSettings = this.serviceContext
 			? await this.serviceContext.getUserSettings()
 			: undefined;
+		if (providerId && !userSettings && providerId !== "built-in") {
+			throw new AssistantError(
+				"User settings are required to delete memory from its recorded provider",
+				ErrorType.CONFIGURATION_ERROR,
+			);
+		}
+		const providerSettings =
+			providerId && userSettings ? { ...userSettings, memory_provider: providerId } : userSettings;
 		const provider = getMemoryProvider({
 			env: this.env,
 			user: this.user,
-			userSettings,
+			userSettings: providerSettings,
 			serviceContext: this.serviceContext,
 		});
 		if (!provider.capabilities.deletion) {

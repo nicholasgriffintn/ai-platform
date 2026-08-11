@@ -88,13 +88,14 @@ function createHarness(params?: {
 		listProjectCapabilities: vi.fn().mockResolvedValue([]),
 		listProjectConversations: vi.fn().mockResolvedValue([]),
 	};
+	const audit = { createRecord: vi.fn().mockResolvedValue(undefined) };
 	const context = {
 		env: { APP_BASE_URL: "https://work.polychat.test/" },
 		requireUser: vi.fn().mockReturnValue(user),
-		repositories: { workspaces: repositories },
+		repositories: { workspaces: repositories, audit },
 	} as unknown as ServiceContext;
 
-	return { context, repositories };
+	return { context, repositories, audit };
 }
 
 describe("Work entitlement", () => {

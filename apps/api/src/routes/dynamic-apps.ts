@@ -6,10 +6,7 @@ import {
 	dynamicAppExecutionResponseSchema,
 	dynamicAppExecutionUnauthorizedResponseSchema,
 	dynamicAppSchema,
-	dynamicAppStoredResponseResponseSchema,
-	dynamicAppStoredResponsesResponseSchema,
 	dynamicAppsResponseSchema,
-	listDynamicAppResponsesQuerySchema,
 	errorResponseSchema,
 } from "@assistant/schemas";
 
@@ -19,8 +16,6 @@ import {
 	executeProjectDynamicApp,
 	getDynamicAppById,
 	getDynamicAppCatalog,
-	getDynamicAppResponseById,
-	listDynamicAppResponsesForUser,
 } from "~/services/dynamic-apps";
 import {
 	getProjectExperienceCatalog,
@@ -29,13 +24,11 @@ import {
 import type { IRequest } from "~/types/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { requireProjectAccess } from "~/services/workspaces/access";
 
 const dynamicApps = new Hono();
 const routeLogger = createRouteLogger("dynamic-apps");
 
 const dynamicAppParamsSchema = z.object({ id: z.string().min(1) });
-const dynamicAppResponseParamsSchema = z.object({ responseId: z.string().min(1) });
 const dynamicAppExecutionBodySchema = z.record(z.string(), z.any());
 const dynamicAppExecutionQuerySchema = z.object({ projectId: z.string().min(1) });
 
@@ -64,24 +57,6 @@ addRoute(dynamicApps, "get", "/", {
 		experiences: getProjectExperienceCatalog(),
 		tools: PROJECT_TOOL_DEFINITIONS,
 	}),
-});
-
-addRoute(dynamicApps, "get", "/responses", {
-	tags: ["dynamic-apps"],
-	summary: "List stored dynamic-app responses for user",
-	auth: true,
-	querySchema: listDynamicAppResponsesQuerySchema,
-	responses: {
-		200: { description: "Array of responses", schema: dynamicAppStoredResponsesResponseSchema },
-		401: {
-			description: "Authentication required",
-			schema: errorResponseSchema,
-		},
-	},
-	handler: async ({ query, serviceContext, user }) => {
-		if (query.projectId) await requireProjectAccess(serviceContext, query.projectId);
-		return listDynamicAppResponsesForUser(serviceContext, user.id, query.appId, query.projectId);
-	},
 });
 
 addRoute(dynamicApps, "get", "/:id", {
@@ -146,41 +121,6 @@ addRoute(dynamicApps, "post", "/:id/execute", {
 		};
 
 		return executeProjectDynamicApp(params.id, body, req, query.projectId);
-	},
-});
-
-addRoute(dynamicApps, "get", "/responses/:responseId", {
-	tags: ["dynamic-apps"],
-	summary: "Get stored dynamic-app response",
-	description: "Retrieve a stored dynamic-app response by its `id` (response_id)",
-	auth: true,
-	paramSchema: dynamicAppResponseParamsSchema,
-	querySchema: z.object({ projectId: z.string().min(1).optional() }),
-	responses: {
-		200: {
-			description: "Stored dynamic-app response",
-			schema: dynamicAppStoredResponseResponseSchema,
-		},
-		400: { description: "Bad request", schema: dynamicAppErrorResponseSchema },
-		401: {
-			description: "Authentication required",
-			schema: errorResponseSchema,
-		},
-		404: { description: "Response not found", schema: dynamicAppErrorResponseSchema },
-	},
-	handler: async ({ params, query, serviceContext, user }) => {
-		if (query.projectId) await requireProjectAccess(serviceContext, query.projectId);
-		const data = await getDynamicAppResponseById(
-			serviceContext,
-			user.id,
-			params.responseId,
-			query.projectId,
-		);
-		if (!data) {
-			throw new AssistantError("Response not found", ErrorType.NOT_FOUND, 404);
-		}
-
-		return { response: data };
 	},
 });
 

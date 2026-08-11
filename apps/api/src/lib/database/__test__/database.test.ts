@@ -84,31 +84,15 @@ describe("Database", () => {
 		it("should expose the configured connection and repository groups", () => {
 			expect(database.connection).toBeDefined();
 			expect(database.connection).toBe(mockEnv.DB);
-			expect(Object.keys(database.repositories).sort()).toEqual([
-				"agentRepo",
-				"anonymousUserRepo",
-				"apiKeyRepo",
-				"appDataRepo",
-				"artificialAnalysisRepo",
-				"authChallengeRepo",
-				"conversationRepo",
-				"dynamicAppResponseRepo",
-				"embeddingRepo",
-				"memoryRepo",
-				"memorySynthesisRepo",
-				"messageRepo",
-				"oauthStateRepo",
-				"planRepo",
-				"sessionRepo",
-				"sharedAgentRepo",
-				"storedAssetRepo",
-				"taskRepo",
-				"trainingExampleRepo",
-				"userRepo",
-				"userSettingsRepo",
-				"webAuthnRepo",
-				"workspaceRepo",
-			]);
+			expect(database.repositories.outputs).toBeDefined();
+			expect(database.repositories.sources).toBeDefined();
+			expect(database.repositories.activities).toBeDefined();
+			expect(database.repositories.templates).toBeDefined();
+			expect(database.repositories.providerConnections).toBeDefined();
+			expect(database.repositories.audit).toBeDefined();
+			expect("appData" in database.repositories).toBe(false);
+			expect("storedAssets" in database.repositories).toBe(false);
+			expect("memories" in database.repositories).toBe(false);
 		});
 	});
 });

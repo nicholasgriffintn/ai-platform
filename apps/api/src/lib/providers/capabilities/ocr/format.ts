@@ -121,11 +121,15 @@ export async function persistOcrOutput({
 
 	if (outputFormat === "json") {
 		const content = JSON.stringify(response);
-		const storedOutput = await storage.storePrivateAsset({
+		const storedOutput = await storage.storeOutputFile({
 			key: `ocr/${requestId}/output.json`,
 			data: content,
-			ownerUserId,
-			purpose: "ocr_output",
+			createdByUserId: ownerUserId,
+			capabilityId: "ocr",
+			groupId: requestId,
+			kind: "ocr_output",
+			title: "OCR result (JSON)",
+			content: { outputFormat },
 			mimeType: "application/json",
 			filename: "output.json",
 			byteSize: content.length,
@@ -142,11 +146,15 @@ export async function persistOcrOutput({
 
 	if (outputFormat === "html") {
 		const html = buildHtmlDocument(markdown);
-		const storedOutput = await storage.storePrivateAsset({
+		const storedOutput = await storage.storeOutputFile({
 			key: `ocr/${requestId}/output.html`,
 			data: html,
-			ownerUserId,
-			purpose: "ocr_output",
+			createdByUserId: ownerUserId,
+			capabilityId: "ocr",
+			groupId: requestId,
+			kind: "ocr_output",
+			title: "OCR result (HTML)",
+			content: { outputFormat },
 			mimeType: "text/html",
 			filename: "output.html",
 			byteSize: html.length,
@@ -159,11 +167,15 @@ export async function persistOcrOutput({
 		};
 	}
 
-	const storedOutput = await storage.storePrivateAsset({
+	const storedOutput = await storage.storeOutputFile({
 		key: `ocr/${requestId}/output.md`,
 		data: markdown,
-		ownerUserId,
-		purpose: "ocr_output",
+		createdByUserId: ownerUserId,
+		capabilityId: "ocr",
+		groupId: requestId,
+		kind: "ocr_output",
+		title: "OCR result (Markdown)",
+		content: { outputFormat },
 		mimeType: "text/markdown",
 		filename: "output.md",
 		byteSize: markdown.length,

@@ -26,7 +26,7 @@ export interface GenerateImageResponse {
 	status: string;
 	content?: string;
 	completion_id?: string;
-	app_data_id?: string;
+	output_id?: string;
 	data?: {
 		drawingUrl: string;
 		drawingKey: string;

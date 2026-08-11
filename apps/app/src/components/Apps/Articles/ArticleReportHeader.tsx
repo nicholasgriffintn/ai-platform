@@ -18,14 +18,14 @@ export function ArticleReportHeader({
 		<div className="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 p-5 shadow-sm">
 			<div className="flex flex-col md:flex-row justify-between md:items-center gap-3">
 				<h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-					{report.data?.title || `Report (ID: ${report.id})`}
+					{report.content.title || report.title || `Report (ID: ${report.id})`}
 				</h2>
 				{!isShared && (
 					<RerunReportButton
 						basePath={basePath}
 						projectId={projectId}
-						sourceIds={report.data?.sourceItemIds || []}
-						itemId={report.item_id || ""}
+						sourceIds={report.content.sourceItemIds || []}
+						itemId={report.groupId || ""}
 					/>
 				)}
 			</div>

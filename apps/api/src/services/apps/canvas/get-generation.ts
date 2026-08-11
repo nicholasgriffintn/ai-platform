@@ -16,14 +16,10 @@ export const getCanvasGenerationDetails = async ({
 	userId: number;
 }): Promise<CanvasGenerationListItem> => {
 	const serviceContext = resolveServiceContext({ context, env });
-	const record = await serviceContext.repositories.appData.getAppDataById(generationId);
+	const record = await serviceContext.repositories.outputs.getPersonalOutput(userId, generationId);
 
-	if (!record || record.app_id !== "canvas") {
+	if (!record || record.capability_id !== "canvas") {
 		throw new AssistantError("Generation not found", ErrorType.NOT_FOUND);
-	}
-
-	if (record.user_id !== userId) {
-		throw new AssistantError("Unauthorized", ErrorType.UNAUTHORIZED);
 	}
 
 	return mapCanvasGenerationRecord(record);

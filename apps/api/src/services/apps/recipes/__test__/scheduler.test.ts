@@ -4,16 +4,16 @@ import type { IEnv } from "~/types";
 
 const mocks = vi.hoisted(() => ({
 	enqueueTask: vi.fn(),
-	getAppDataByApp: vi.fn(),
-	updateAppData: vi.fn(),
+	listTemplatesByKind: vi.fn(),
+	updateTemplate: vi.fn(),
 }));
 
 vi.mock("~/repositories", () => ({
 	RepositoryManager: {
 		getInstance: vi.fn(() => ({
-			appData: {
-				getAppDataByApp: mocks.getAppDataByApp,
-				updateAppData: mocks.updateAppData,
+			templates: {
+				listTemplatesByKind: mocks.listTemplatesByKind,
+				updateTemplate: mocks.updateTemplate,
 			},
 			tasks: {},
 		})),
@@ -67,14 +67,12 @@ describe("recipe scheduler", () => {
 	});
 
 	it("enqueues due recipe executions and records the scheduled run key", async () => {
-		mocks.getAppDataByApp.mockResolvedValue([
+		mocks.listTemplatesByKind.mockResolvedValue([
 			{
 				id: "installation-1",
-				user_id: 42,
-				app_id: "assistant_recipe_installation",
-				item_id: "morning-briefing",
-				item_type: "recipe_installation",
-				data: JSON.stringify({
+				created_by_user_id: 42,
+				capability_id: "morning-briefing",
+				configuration: JSON.stringify({
 					recipeId: "morning-briefing",
 					status: "active",
 					triggers: [
@@ -121,30 +119,30 @@ describe("recipe scheduler", () => {
 				}),
 			}),
 		);
-		expect(mocks.updateAppData).toHaveBeenCalledWith(
+		expect(mocks.updateTemplate).toHaveBeenCalledWith(
 			"installation-1",
 			expect.objectContaining({
-				scheduleState: {
-					"1": {
-						cronExpression: "15 9 * * *",
-						enabled: true,
-						activatedAt: "2026-06-07T08:00:00.000Z",
-						lastRunKey: "1:15 9 * * *:2026-06-07T09:15",
+				configuration: expect.objectContaining({
+					scheduleState: {
+						"1": {
+							cronExpression: "15 9 * * *",
+							enabled: true,
+							activatedAt: "2026-06-07T08:00:00.000Z",
+							lastRunKey: "1:15 9 * * *:2026-06-07T09:15",
+						},
 					},
-				},
+				}),
 			}),
 		);
 	});
 
 	it("enqueues cron minutes that fell between recipe scheduler polls", async () => {
-		mocks.getAppDataByApp.mockResolvedValue([
+		mocks.listTemplatesByKind.mockResolvedValue([
 			{
 				id: "installation-1",
-				user_id: 42,
-				app_id: "assistant_recipe_installation",
-				item_id: "daily-weather",
-				item_type: "recipe_installation",
-				data: JSON.stringify({
+				created_by_user_id: 42,
+				capability_id: "daily-weather",
+				configuration: JSON.stringify({
 					recipeId: "daily-weather",
 					status: "active",
 					triggers: [
@@ -181,30 +179,30 @@ describe("recipe scheduler", () => {
 				}),
 			}),
 		);
-		expect(mocks.updateAppData).toHaveBeenCalledWith(
+		expect(mocks.updateTemplate).toHaveBeenCalledWith(
 			"installation-1",
 			expect.objectContaining({
-				scheduleState: {
-					"0": {
-						cronExpression: "5 9 * * *",
-						enabled: true,
-						activatedAt: "2026-06-07T08:00:00.000Z",
-						lastRunKey: "0:5 9 * * *:2026-06-07T09:05",
+				configuration: expect.objectContaining({
+					scheduleState: {
+						"0": {
+							cronExpression: "5 9 * * *",
+							enabled: true,
+							activatedAt: "2026-06-07T08:00:00.000Z",
+							lastRunKey: "0:5 9 * * *:2026-06-07T09:05",
+						},
 					},
-				},
+				}),
 			}),
 		);
 	});
 
 	it("catches the previous poll boundary when the earlier poll did not record a run", async () => {
-		mocks.getAppDataByApp.mockResolvedValue([
+		mocks.listTemplatesByKind.mockResolvedValue([
 			{
 				id: "installation-1",
-				user_id: 42,
-				app_id: "assistant_recipe_installation",
-				item_id: "daily-weather",
-				item_type: "recipe_installation",
-				data: JSON.stringify({
+				created_by_user_id: 42,
+				capability_id: "daily-weather",
+				configuration: JSON.stringify({
 					recipeId: "daily-weather",
 					status: "active",
 					triggers: [
@@ -234,30 +232,30 @@ describe("recipe scheduler", () => {
 				}),
 			}),
 		);
-		expect(mocks.updateAppData).toHaveBeenCalledWith(
+		expect(mocks.updateTemplate).toHaveBeenCalledWith(
 			"installation-1",
 			expect.objectContaining({
-				scheduleState: {
-					"0": {
-						cronExpression: "0 9 * * *",
-						enabled: true,
-						activatedAt: "2026-06-07T08:00:00.000Z",
-						lastRunKey: "0:0 9 * * *:2026-06-07T09:00",
+				configuration: expect.objectContaining({
+					scheduleState: {
+						"0": {
+							cronExpression: "0 9 * * *",
+							enabled: true,
+							activatedAt: "2026-06-07T08:00:00.000Z",
+							lastRunKey: "0:0 9 * * *:2026-06-07T09:00",
+						},
 					},
-				},
+				}),
 			}),
 		);
 	});
 
 	it("does not enqueue a due minute from before the recipe installation existed", async () => {
-		mocks.getAppDataByApp.mockResolvedValue([
+		mocks.listTemplatesByKind.mockResolvedValue([
 			{
 				id: "installation-1",
-				user_id: 42,
-				app_id: "assistant_recipe_installation",
-				item_id: "daily-weather",
-				item_type: "recipe_installation",
-				data: JSON.stringify({
+				created_by_user_id: 42,
+				capability_id: "daily-weather",
+				configuration: JSON.stringify({
 					recipeId: "daily-weather",
 					status: "active",
 					triggers: [
@@ -281,18 +279,16 @@ describe("recipe scheduler", () => {
 
 		expect(scheduled).toBe(0);
 		expect(mocks.enqueueTask).not.toHaveBeenCalled();
-		expect(mocks.updateAppData).not.toHaveBeenCalled();
+		expect(mocks.updateTemplate).not.toHaveBeenCalled();
 	});
 
 	it("does not enqueue a due minute before the schedule state activation instant", async () => {
-		mocks.getAppDataByApp.mockResolvedValue([
+		mocks.listTemplatesByKind.mockResolvedValue([
 			{
 				id: "installation-1",
-				user_id: 42,
-				app_id: "assistant_recipe_installation",
-				item_id: "daily-weather",
-				item_type: "recipe_installation",
-				data: JSON.stringify({
+				created_by_user_id: 42,
+				capability_id: "daily-weather",
+				configuration: JSON.stringify({
 					recipeId: "daily-weather",
 					status: "active",
 					triggers: [
@@ -323,18 +319,16 @@ describe("recipe scheduler", () => {
 
 		expect(scheduled).toBe(0);
 		expect(mocks.enqueueTask).not.toHaveBeenCalled();
-		expect(mocks.updateAppData).not.toHaveBeenCalled();
+		expect(mocks.updateTemplate).not.toHaveBeenCalled();
 	});
 
 	it("does not enqueue duplicate work for an already recorded run key", async () => {
-		mocks.getAppDataByApp.mockResolvedValue([
+		mocks.listTemplatesByKind.mockResolvedValue([
 			{
 				id: "installation-1",
-				user_id: 42,
-				app_id: "assistant_recipe_installation",
-				item_id: "morning-briefing",
-				item_type: "recipe_installation",
-				data: JSON.stringify({
+				created_by_user_id: 42,
+				capability_id: "morning-briefing",
+				configuration: JSON.stringify({
 					recipeId: "morning-briefing",
 					status: "active",
 					triggers: [
@@ -365,6 +359,6 @@ describe("recipe scheduler", () => {
 
 		expect(scheduled).toBe(0);
 		expect(mocks.enqueueTask).not.toHaveBeenCalled();
-		expect(mocks.updateAppData).not.toHaveBeenCalled();
+		expect(mocks.updateTemplate).not.toHaveBeenCalled();
 	});
 });

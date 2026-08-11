@@ -52,13 +52,13 @@ export const handlePodcastTranscribe = async (
 		const runtimeEnv = serviceContext.env as IEnv;
 
 		const existingTranscriptions = projectId
-			? await repositories.appData.getAppDataByProjectAppAndItem(
+			? await repositories.outputs.listProjectOutputGroup(
 					projectId,
 					"podcasts",
 					request.podcastId,
 					"transcribe",
 				)
-			: await repositories.appData.getAppDataByUserAppAndItem(
+			: await repositories.outputs.listPersonalOutputGroup(
 					user.id,
 					"podcasts",
 					request.podcastId,
@@ -66,7 +66,9 @@ export const handlePodcastTranscribe = async (
 				);
 
 		if (existingTranscriptions.length > 0) {
-			let transcriptionData = safeParseJson(existingTranscriptions[0].data)?.transcriptionData;
+			const transcriptionData = safeParseJson<Record<string, any>>(
+				existingTranscriptions[0].content,
+			)?.transcriptionData;
 
 			return {
 				status: "success",
@@ -76,13 +78,13 @@ export const handlePodcastTranscribe = async (
 		}
 
 		const uploadData = projectId
-			? await repositories.appData.getAppDataByProjectAppAndItem(
+			? await repositories.outputs.listProjectOutputGroup(
 					projectId,
 					"podcasts",
 					request.podcastId,
 					"upload",
 				)
-			: await repositories.appData.getAppDataByUserAppAndItem(
+			: await repositories.outputs.listPersonalOutputGroup(
 					user.id,
 					"podcasts",
 					request.podcastId,
@@ -96,7 +98,7 @@ export const handlePodcastTranscribe = async (
 			);
 		}
 
-		let parsedUploadData = safeParseJson(uploadData?.[0]?.data || "{}");
+		const parsedUploadData = safeParseJson<Record<string, any>>(uploadData[0].content) ?? {};
 		const title = parsedUploadData.title;
 		const description = parsedUploadData.description;
 		const audioUrl = parsedUploadData.audioUrl;
@@ -159,24 +161,16 @@ export const handlePodcastTranscribe = async (
 			createdAt: new Date().toISOString(),
 		};
 
-		if (projectId) {
-			await repositories.appData.createAppDataWithItem(
-				user.id,
-				"podcasts",
-				request.podcastId,
-				"transcribe",
-				appData,
-				projectId,
-			);
-		} else {
-			await repositories.appData.createAppDataWithItem(
-				user.id,
-				"podcasts",
-				request.podcastId,
-				"transcribe",
-				appData,
-			);
-		}
+		await repositories.outputs.createOutput({
+			createdByUserId: user.id,
+			projectId,
+			capabilityId: "podcasts",
+			groupId: request.podcastId,
+			kind: "transcribe",
+			title: `Transcript: ${title || "Untitled podcast"}`,
+			status: isAsync ? "pending" : "ready",
+			content: appData,
+		});
 
 		if (isAsync) {
 			const taskService = new TaskService(runtimeEnv, new TaskRepository(runtimeEnv));
@@ -186,6 +180,7 @@ export const handlePodcastTranscribe = async (
 				task_data: {
 					podcastId: request.podcastId,
 					userId: user.id,
+					projectId,
 					startedAt: new Date().toISOString(),
 					pollAttempt: 0,
 				},

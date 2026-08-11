@@ -45,7 +45,7 @@ export function ArticlesExperience({ basePath, projectId, subpath }: ExperienceP
 					message={reportError?.message ?? "Article report not found"}
 				/>
 			);
-		const sourceIds = report.data?.sourceItemIds ?? report.source_item_ids ?? [];
+		const sourceIds = report.content.sourceItemIds ?? [];
 		return (
 			<ArticleView
 				report={report}
@@ -100,16 +100,15 @@ export function ArticlesExperience({ basePath, projectId, subpath }: ExperienceP
 					>
 						<Card className="h-full gap-3 p-5 shadow-none hover:border-zinc-400 dark:hover:border-zinc-600">
 							<h2 className="font-semibold text-zinc-950 group-hover:underline dark:text-white">
-								{item.data?.title || item.title || "Article report"}
+								{item.title || "Article report"}
 							</h2>
 							<p className="line-clamp-3 text-sm leading-6 text-zinc-500">
-								{item.data?.report?.content ||
-									item.summary?.content ||
-									"Open this report to review its analysis."}
+								{item.status === "complete"
+									? "Open this report to review its analysis."
+									: "This report is still being generated."}
 							</p>
 							<p className="mt-auto pt-3 text-xs text-zinc-400">
-								{item.data?.sourceArticleCount ?? item.source_article_count ?? 0} sources ·{" "}
-								{new Date(item.updated_at).toLocaleDateString()}
+								{item.sourceCount ?? 0} sources · {new Date(item.createdAt).toLocaleDateString()}
 							</p>
 						</Card>
 					</Link>

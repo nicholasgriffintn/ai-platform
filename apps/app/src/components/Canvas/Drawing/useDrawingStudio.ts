@@ -178,8 +178,8 @@ export function useDrawingStudio(enabled: boolean) {
 				: { drawing: file };
 			const result = await generateMutation.mutateAsync(payload);
 
-			if (result?.app_data_id) {
-				setSelectedDrawingId(result.app_data_id);
+			if (result?.output_id) {
+				setSelectedDrawingId(result.output_id);
 				setIsEditorOpen(false);
 			} else {
 				setGuessResult("Error: Could not show your drawing");

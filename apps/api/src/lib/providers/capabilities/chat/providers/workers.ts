@@ -411,7 +411,7 @@ export class WorkersProvider extends BaseProvider {
 								attachments: [
 									{
 										type: "image",
-										assetId: storedImage.assetId,
+										outputId: storedImage.outputId,
 										url: storedImage.url,
 										key: storedImage.key,
 									},
@@ -464,7 +464,7 @@ export class WorkersProvider extends BaseProvider {
 								attachments: [
 									{
 										type: "audio",
-										assetId: storedAudio.assetId,
+										outputId: storedAudio.outputId,
 										url: storedAudio.url,
 										key: storedAudio.key,
 									},

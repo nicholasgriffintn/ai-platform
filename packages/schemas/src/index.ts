@@ -59,8 +59,9 @@ export type {
 	AssistantLegacyRecipeContextPayload,
 	AssistantRecipeActionContext,
 } from "./assistant-actions";
-export * from "./app-data";
 export * from "./apps";
+export * from "./activity";
+export * from "./audit";
 export * from "./audio";
 export * from "./auth";
 export * from "./chat";
@@ -76,7 +77,7 @@ export * from "./magicLink";
 export * from "./message-parts";
 export * from "./model-router-modes";
 export * from "./models";
-export * from "./memories";
+export * from "./outputs";
 export * from "./plans";
 export * from "./workspaces";
 export * from "./provider-messages";
@@ -88,8 +89,10 @@ export * from "./sandbox";
 export * from "./search";
 export * from "./shared-agents";
 export * from "./shared";
+export * from "./sources";
 export * from "./stripe";
 export * from "./tasks";
+export * from "./templates";
 export * from "./tool-registry";
 export * from "./tools";
 export * from "./uploads";

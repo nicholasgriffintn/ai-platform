@@ -21,22 +21,25 @@ export async function getDrawingDetails({
 
 	const serviceContext = resolveServiceContext({ context, env });
 	serviceContext.ensureDatabase();
-	const repo = serviceContext.repositories.appData;
-	const entry = await repo.getAppDataById(drawingId);
+	const repo = serviceContext.repositories.outputs;
+	const entry = await repo.getPersonalOutput(userId, drawingId);
 
-	if (!entry || entry.user_id !== userId || entry.app_id !== "drawings") {
+	if (!entry || entry.capability_id !== "drawings" || entry.kind !== "drawing") {
 		throw new AssistantError("Drawing not found", ErrorType.NOT_FOUND);
 	}
 
-	let data = safeParseJson(entry.data) ?? {};
+	const data = safeParseJson<Record<string, unknown>>(entry.content) ?? {};
 
 	return {
 		id: entry.id,
-		description: data.description,
-		drawingUrl: data.drawingUrl,
-		paintingUrl: data.paintingUrl,
+		description: typeof data.description === "string" ? data.description : "",
+		drawingUrl: typeof data.drawingUrl === "string" ? data.drawingUrl : "",
+		paintingUrl: typeof data.paintingUrl === "string" ? data.paintingUrl : "",
 		createdAt: entry.created_at,
-		updatedAt: entry.updated_at,
-		metadata: data.metadata,
+		updatedAt: entry.updated_at ?? entry.created_at,
+		metadata:
+			data.metadata && typeof data.metadata === "object"
+				? (data.metadata as Record<string, unknown>)
+				: undefined,
 	};
 }

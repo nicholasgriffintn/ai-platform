@@ -8,11 +8,7 @@ import {
 	type SandboxRunStatus,
 } from "@assistant/schemas";
 
-import {
-	MAX_STORED_STREAM_EVENTS,
-	SANDBOX_RUN_ITEM_TYPE,
-	SANDBOX_RUNS_APP_ID,
-} from "~/constants/app";
+import { MAX_STORED_STREAM_EVENTS, SANDBOX_RUNS_APP_ID } from "~/constants/app";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { executeSandboxWorker } from "~/services/sandbox/worker";
 import type { IEnv } from "~/types";
@@ -22,6 +18,7 @@ import { parseSseBuffer } from "~/utils/streaming";
 import { TaskService } from "~/services/tasks/TaskService";
 import {
 	appendSandboxRunEvent,
+	getSandboxActivityStatus,
 	parseSandboxRunData,
 	type SandboxRunData as PersistedSandboxRunData,
 } from "./run-data";
@@ -85,7 +82,7 @@ async function loadRunData(params: {
 	const context = createServiceContext({
 		env: params.env,
 	});
-	const record = await context.repositories.appData.getAppDataById(params.recordId);
+	const record = await context.repositories.activities.getActivityById(params.recordId);
 	if (!record?.data) {
 		return null;
 	}
@@ -109,7 +106,10 @@ async function persistRunData(params: {
 		ownerUserId: params.userId,
 		run: runData,
 	});
-	await context.repositories.appData.updateAppData(params.recordId, runData);
+	await context.repositories.activities.updateActivity(params.recordId, {
+		status: getSandboxActivityStatus(runData.status),
+		data: runData,
+	});
 	return runData;
 }
 
@@ -152,7 +152,10 @@ export async function processSandboxRunDispatch(params: {
 		processingStartedAt: startedAt,
 		workflowPhase: "executing",
 	};
-	await context.repositories.appData.updateAppData(message.recordId, runData);
+	await context.repositories.activities.updateActivity(message.recordId, {
+		status: getSandboxActivityStatus(runData.status),
+		data: runData,
+	});
 	await updateRunCoordinatorControl({
 		env,
 		runId: message.runId,
@@ -459,21 +462,20 @@ export async function getSandboxRunRecordForDispatch(params: {
 	userId: number;
 }): Promise<{ id: string; run: PersistedSandboxRunData } | null> {
 	const context = createServiceContext({ env: params.env });
-	const records = await context.repositories.appData.getAppDataByUserAppAndItem(
+	const record = await context.repositories.activities.getPersonalActivityByGroup(
 		params.userId,
 		SANDBOX_RUNS_APP_ID,
 		params.runId,
-		SANDBOX_RUN_ITEM_TYPE,
 	);
-	if (!records.length) {
+	if (!record) {
 		return null;
 	}
-	const parsed = parseSandboxRunData(safeParseJson(records[0].data));
+	const parsed = parseSandboxRunData(safeParseJson(record.data));
 	if (!parsed) {
 		return null;
 	}
 	return {
-		id: records[0].id,
+		id: record.id,
 		run: parsed,
 	};
 }

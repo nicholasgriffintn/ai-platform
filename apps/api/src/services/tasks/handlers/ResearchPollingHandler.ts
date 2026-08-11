@@ -1,7 +1,7 @@
 import type { TaskMessage } from "../TaskService";
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import { getLogger } from "~/utils/logger";
-import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
+import { OutputRepository } from "~/repositories/OutputRepository";
 import type {
 	IEnv,
 	IUser,
@@ -129,12 +129,16 @@ export class ResearchPollingHandler implements TaskHandler {
 	): Promise<void> {
 		if (!env.DB) return;
 
-		const responseRepo = new DynamicAppResponseRepository(env);
-		const response = await responseRepo.getResponseByItemId(data.runId);
+		const responseRepo = new OutputRepository(env);
+		const response = await responseRepo.getPersonalOutputByGroup(
+			data.userId,
+			data.runId,
+			"dynamic_app_response",
+		);
 
-		if (!response || response.user_id !== data.userId) return;
+		if (!response) return;
 
-		const existingData = safeParseJson(response.data) || {};
+		const existingData = safeParseJson<Record<string, unknown>>(response.content) || {};
 		const updatedData = {
 			...existingData,
 			result: {
@@ -150,7 +154,12 @@ export class ResearchPollingHandler implements TaskHandler {
 			lastSyncedAt: new Date().toISOString(),
 		};
 
-		await responseRepo.updateResponseData(response.id, updatedData);
+		await responseRepo.updateOutput(response.id, {
+			status: "ready",
+			content: updatedData,
+			expectedRevision: response.revision,
+			updatedByUserId: data.userId,
+		});
 	}
 
 	private async persistError(
@@ -160,12 +169,16 @@ export class ResearchPollingHandler implements TaskHandler {
 	): Promise<void> {
 		if (!env.DB) return;
 
-		const responseRepo = new DynamicAppResponseRepository(env);
-		const response = await responseRepo.getResponseByItemId(data.runId);
+		const responseRepo = new OutputRepository(env);
+		const response = await responseRepo.getPersonalOutputByGroup(
+			data.userId,
+			data.runId,
+			"dynamic_app_response",
+		);
 
-		if (!response || response.user_id !== data.userId) return;
+		if (!response) return;
 
-		const existingData = safeParseJson(response.data) || {};
+		const existingData = safeParseJson<Record<string, unknown>>(response.content) || {};
 		const now = new Date().toISOString();
 
 		const errorRun =
@@ -204,6 +217,11 @@ export class ResearchPollingHandler implements TaskHandler {
 			lastSyncedAt: now,
 		};
 
-		await responseRepo.updateResponseData(response.id, updatedData);
+		await responseRepo.updateOutput(response.id, {
+			status: "failed",
+			content: updatedData,
+			expectedRevision: response.revision,
+			updatedByUserId: data.userId,
+		});
 	}
 }

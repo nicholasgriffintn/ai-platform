@@ -17,6 +17,7 @@ import {
 import { messagesMatchStoredPrefix } from "~/lib/chat/messageComparison";
 import { hasSnapshotPart } from "~/lib/chat/messageParts";
 import { toProviderMessages } from "~/lib/chat/providerMessages";
+import { restoreStoredAttachmentContent } from "~/lib/chat/storedAttachments";
 import { findModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
 import type { ChatHostedToolSettings, ModelConfigInfo } from "@assistant/schemas";
@@ -563,9 +564,10 @@ export class RequestPreparer {
 		messageWithContext: string,
 		modelConfig: any,
 	): Message[] {
+		const messagesWithAttachments = restoreStoredAttachmentContent(sanitizedMessages);
 		const prunedWithAttachments =
-			sanitizedMessages.length > 0
-				? pruneMessagesToFitContext(sanitizedMessages, messageWithContext, modelConfig)
+			messagesWithAttachments.length > 0
+				? pruneMessagesToFitContext(messagesWithAttachments, messageWithContext, modelConfig)
 				: [];
 
 		const chatMessages = prunedWithAttachments.map((msg, index) => {

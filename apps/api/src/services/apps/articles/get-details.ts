@@ -1,15 +1,15 @@
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { type AppData } from "~/repositories/AppDataRepository";
+import type { Output } from "@assistant/schemas";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { safeParseJson } from "../../../utils/json";
+import { formatOutput } from "~/services/outputs";
 
 const logger = getLogger({ prefix: "services/apps/articles/get-details" });
 
 export interface GetDetailsSuccessResponse {
 	status: "success";
-	article: AppData;
+	article: Output;
 }
 
 export async function getArticleDetails({
@@ -47,28 +47,17 @@ export async function getArticleDetails({
 		}
 
 		serviceContext.ensureDatabase();
-		const appDataRepo = serviceContext.repositories.appData;
+		const outputRepo = serviceContext.repositories.outputs;
 		const article = projectId
-			? await appDataRepo.getAppDataByProjectAndId(projectId, id)
-			: await appDataRepo.getAppDataById(id);
+			? await outputRepo.getProjectOutput(projectId, id)
+			: await outputRepo.getPersonalOutput(userId, id);
 
 		if (!article) {
-			throw new AssistantError("Article data not found", ErrorType.NOT_FOUND);
+			throw new AssistantError("Article data not found", ErrorType.NOT_FOUND, 404);
 		}
-		if (!projectId && article.user_id !== userId) {
-			throw new AssistantError("Forbidden", ErrorType.FORBIDDEN);
-		}
-
-		let parsedArticleData = safeParseJson(article.data || "{}") ?? {};
-
-		const parsedArticle: AppData = {
-			...article,
-			data: parsedArticleData,
-		};
-
 		return {
 			status: "success",
-			article: parsedArticle,
+			article: formatOutput(article),
 		};
 	} catch (error) {
 		logger.error("Error fetching article details:", {

@@ -18,7 +18,7 @@ Publish experience and model-tool definitions from `/dynamic-apps`, and keep rec
 
 Treat model tools as default project capabilities. Definitions marked `requiresConfiguration` stay inactive until their API-declared configuration runtime has valid stored project settings; project chat resolves those settings into provider tool options on the backend.
 
-Persist Notes, Articles, Podcasts, Replicate predictions, Strudel patterns, and dynamic app responses with `app_data.project_id`. Keep `user_id` as creator attribution, and authorise every project-scoped API operation through current workspace membership before reading or mutating those rows. Keep personal app-data behaviour when no project ID is supplied.
+Persist Notes, Articles, Podcasts, Replicate predictions, Strudel patterns, and dynamic app results as outputs. Keep the creating user as attribution, assign collaborative results to a project, and authorise every project-scoped operation through current workspace membership. ADR 0009 replaces the original `app_data` implementation described by this decision.
 
 Training remains provider-account scoped because provider jobs and deployments are not portable app-data records. A project capability controls access to the Training experience, but the underlying provider account still determines the visible jobs and deployments.
 

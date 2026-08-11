@@ -20,14 +20,14 @@ export async function deletePattern({
 		const { repositories } = context;
 
 		const existing = projectId
-			? await repositories.dynamicAppResponses.getResponseByIdForProject(patternId, projectId)
-			: await repositories.dynamicAppResponses.getResponseByIdForUser(patternId, userId);
+			? await repositories.outputs.getProjectOutput(projectId, patternId)
+			: await repositories.outputs.getPersonalOutput(userId, patternId);
 
 		if (!existing) {
 			throw new AssistantError("Pattern not found", ErrorType.NOT_FOUND);
 		}
 
-		await repositories.dynamicAppResponses.deleteResponse(patternId);
+		await repositories.outputs.deleteOutput(patternId);
 
 		logger.info("Deleted Strudel pattern", {
 			userId,

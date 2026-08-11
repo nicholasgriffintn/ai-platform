@@ -9,14 +9,14 @@ vi.mock("~/lib/providers/capabilities/chat", () => ({
 	getChatProvider: vi.fn(),
 }));
 
-let appDataRepoImpl: any;
+let outputRepoImpl: any;
 let taskRepositoryImpl: any;
 let taskServiceImpl: any;
 
-vi.mock("~/repositories/AppDataRepository", () => ({
-	AppDataRepository: class {
+vi.mock("~/repositories/OutputRepository", () => ({
+	OutputRepository: class {
 		constructor() {
-			return appDataRepoImpl;
+			return outputRepoImpl;
 		}
 	},
 }));
@@ -59,7 +59,7 @@ describe("PodcastTranscriptionPollingHandler", () => {
 
 	beforeEach(() => {
 		vi.resetAllMocks();
-		appDataRepoImpl = undefined;
+		outputRepoImpl = undefined;
 		taskRepositoryImpl = undefined;
 		taskServiceImpl = undefined;
 		handler = new PodcastTranscriptionPollingHandler();
@@ -80,10 +80,11 @@ describe("PodcastTranscriptionPollingHandler", () => {
 
 	it("completes transcription when provider result is completed", async () => {
 		const mockRepo = {
-			getAppDataByUserAppAndItem: vi.fn().mockResolvedValue([
+			listPersonalOutputGroup: vi.fn().mockResolvedValue([
 				{
 					id: "record-1",
-					data: JSON.stringify({
+					revision: 1,
+					content: JSON.stringify({
 						status: "pending",
 						transcriptionData: {
 							data: {
@@ -96,9 +97,9 @@ describe("PodcastTranscriptionPollingHandler", () => {
 					}),
 				},
 			]),
-			updateAppData: vi.fn().mockResolvedValue(undefined),
+			updateOutput: vi.fn().mockResolvedValue(undefined),
 		};
-		appDataRepoImpl = mockRepo;
+		outputRepoImpl = mockRepo;
 
 		vi.mocked(chatCapability.getChatProvider).mockReturnValue({
 			getAsyncInvocationStatus: vi.fn().mockResolvedValue({
@@ -111,20 +112,22 @@ describe("PodcastTranscriptionPollingHandler", () => {
 
 		expect(result.status).toBe("success");
 		expect(result.message).toBe("Podcast transcription completed");
-		expect(mockRepo.updateAppData).toHaveBeenCalledWith(
+		expect(mockRepo.updateOutput).toHaveBeenCalledWith(
 			"record-1",
 			expect.objectContaining({
-				status: "complete",
+				status: "ready",
+				content: expect.objectContaining({ status: "complete" }),
 			}),
 		);
 	});
 
 	it("re-queues transcription when still in progress", async () => {
 		const mockRepo = {
-			getAppDataByUserAppAndItem: vi.fn().mockResolvedValue([
+			listPersonalOutputGroup: vi.fn().mockResolvedValue([
 				{
 					id: "record-1",
-					data: JSON.stringify({
+					revision: 1,
+					content: JSON.stringify({
 						status: "pending",
 						transcriptionData: {
 							data: {
@@ -138,7 +141,7 @@ describe("PodcastTranscriptionPollingHandler", () => {
 				},
 			]),
 		};
-		appDataRepoImpl = mockRepo;
+		outputRepoImpl = mockRepo;
 
 		vi.mocked(chatCapability.getChatProvider).mockReturnValue({
 			getAsyncInvocationStatus: vi.fn().mockResolvedValue({

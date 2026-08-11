@@ -34,17 +34,17 @@ vi.mock("~/services/tasks/TaskService", () => ({
 	},
 }));
 
-const mockCreateAppDataWithItem = vi.fn();
-const mockUpdateAppData = vi.fn();
-const mockGetAppDataByUserAndApp = vi.fn();
+const mockCreateActivity = vi.fn();
+const mockUpdateActivity = vi.fn();
+const mockListPersonalActivities = vi.fn();
 
 const mockContext = {
 	env: {},
 	repositories: {
-		appData: {
-			createAppDataWithItem: mockCreateAppDataWithItem,
-			updateAppData: mockUpdateAppData,
-			getAppDataByUserAndApp: mockGetAppDataByUserAndApp,
+		activities: {
+			createActivity: mockCreateActivity,
+			updateActivity: mockUpdateActivity,
+			listPersonalActivities: mockListPersonalActivities,
 		},
 	},
 } as any;
@@ -54,9 +54,9 @@ const mockUser = { id: 42 } as any;
 describe("executeSandboxRunStream", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockCreateAppDataWithItem.mockResolvedValue({ id: "record-1" });
-		mockUpdateAppData.mockResolvedValue(undefined);
-		mockGetAppDataByUserAndApp.mockResolvedValue([]);
+		mockCreateActivity.mockResolvedValue({ id: "record-1" });
+		mockUpdateActivity.mockResolvedValue(undefined);
+		mockListPersonalActivities.mockResolvedValue([]);
 		mockEnqueueTask.mockResolvedValue("task-123");
 		mockContext.env = { TASK_QUEUE: { send: vi.fn() } };
 		vi.mocked(resolveSandboxModel).mockResolvedValue("mistral-large");
@@ -111,14 +111,17 @@ describe("executeSandboxRunStream", () => {
 				}),
 			}),
 		);
-		expect(mockCreateAppDataWithItem).toHaveBeenCalledWith(
-			42,
-			SANDBOX_RUNS_APP_ID,
-			"run-123",
-			SANDBOX_RUN_ITEM_TYPE,
+		expect(mockCreateActivity).toHaveBeenCalledWith(
 			expect.objectContaining({
+				createdByUserId: 42,
+				capabilityId: SANDBOX_RUNS_APP_ID,
+				groupId: "run-123",
+				kind: SANDBOX_RUN_ITEM_TYPE,
 				status: "queued",
-				workflowPhase: "queued",
+				data: expect.objectContaining({
+					status: "queued",
+					workflowPhase: "queued",
+				}),
 			}),
 		);
 		expect(initRunCoordinatorControl).toHaveBeenCalledWith(
@@ -157,11 +160,14 @@ describe("executeSandboxRunStream", () => {
 		expect(await response.json()).toEqual({
 			error: "TASK_QUEUE binding is not configured for sandbox run dispatch",
 		});
-		expect(mockUpdateAppData).toHaveBeenCalledWith(
+		expect(mockUpdateActivity).toHaveBeenCalledWith(
 			"record-1",
 			expect.objectContaining({
 				status: "failed",
-				workflowPhase: "failed",
+				data: expect.objectContaining({
+					status: "failed",
+					workflowPhase: "failed",
+				}),
 			}),
 		);
 		expect(updateRunCoordinatorControl).toHaveBeenCalledWith(

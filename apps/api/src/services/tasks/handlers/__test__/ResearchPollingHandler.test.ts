@@ -8,15 +8,15 @@ vi.mock("~/lib/providers/capabilities/research", () => ({
 	getResearchProvider: vi.fn(),
 }));
 
-let dynamicResponseRepoImpl: any;
+let outputRepoImpl: any;
 let taskRepositoryImpl: any;
 let taskServiceImpl: any;
 let repositoryManagerImpl: any;
 
-vi.mock("~/repositories/DynamicAppResponseRepository", () => ({
-	DynamicAppResponseRepository: class {
+vi.mock("~/repositories/OutputRepository", () => ({
+	OutputRepository: class {
 		constructor() {
-			return dynamicResponseRepoImpl;
+			return outputRepoImpl;
 		}
 	},
 }));
@@ -75,7 +75,7 @@ describe("ResearchPollingHandler", () => {
 
 	beforeEach(() => {
 		vi.resetAllMocks();
-		dynamicResponseRepoImpl = undefined;
+		outputRepoImpl = undefined;
 		taskRepositoryImpl = undefined;
 		taskServiceImpl = undefined;
 		repositoryManagerImpl = {
@@ -121,14 +121,14 @@ describe("ResearchPollingHandler", () => {
 		} as any);
 
 		const mockRepo = {
-			getResponseByItemId: vi.fn().mockResolvedValue({
+			getPersonalOutputByGroup: vi.fn().mockResolvedValue({
 				id: "response-1",
-				user_id: 1,
-				data: JSON.stringify({}),
+				revision: 1,
+				content: JSON.stringify({}),
 			}),
-			updateResponseData: vi.fn().mockResolvedValue(undefined),
+			updateOutput: vi.fn().mockResolvedValue(undefined),
 		};
-		dynamicResponseRepoImpl = mockRepo;
+		outputRepoImpl = mockRepo;
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -153,9 +153,9 @@ describe("ResearchPollingHandler", () => {
 				error: "Research failed",
 			}),
 		} as any);
-		dynamicResponseRepoImpl = {
-			getResponseByItemId: vi.fn().mockResolvedValue(null),
-			updateResponseData: vi.fn(),
+		outputRepoImpl = {
+			getPersonalOutputByGroup: vi.fn().mockResolvedValue(null),
+			updateOutput: vi.fn(),
 		};
 
 		await handler.handle(baseMessage, baseEnv);
@@ -184,14 +184,14 @@ describe("ResearchPollingHandler", () => {
 		} as any);
 
 		const mockRepo = {
-			getResponseByItemId: vi.fn().mockResolvedValue({
+			getPersonalOutputByGroup: vi.fn().mockResolvedValue({
 				id: "response-1",
-				user_id: 1,
-				data: JSON.stringify({}),
+				revision: 1,
+				content: JSON.stringify({}),
 			}),
-			updateResponseData: vi.fn().mockResolvedValue(undefined),
+			updateOutput: vi.fn().mockResolvedValue(undefined),
 		};
-		dynamicResponseRepoImpl = mockRepo;
+		outputRepoImpl = mockRepo;
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -201,7 +201,7 @@ describe("ResearchPollingHandler", () => {
 			runId: "test-run-id",
 			output: { content: "Research results" },
 		});
-		expect(mockRepo.updateResponseData).toHaveBeenCalled();
+		expect(mockRepo.updateOutput).toHaveBeenCalled();
 	});
 
 	it("handles failed research task", async () => {
@@ -219,14 +219,14 @@ describe("ResearchPollingHandler", () => {
 		} as any);
 
 		const mockRepo = {
-			getResponseByItemId: vi.fn().mockResolvedValue({
+			getPersonalOutputByGroup: vi.fn().mockResolvedValue({
 				id: "response-1",
-				user_id: 1,
-				data: JSON.stringify({}),
+				revision: 1,
+				content: JSON.stringify({}),
 			}),
-			updateResponseData: vi.fn().mockResolvedValue(undefined),
+			updateOutput: vi.fn().mockResolvedValue(undefined),
 		};
-		dynamicResponseRepoImpl = mockRepo;
+		outputRepoImpl = mockRepo;
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -284,17 +284,13 @@ describe("ResearchPollingHandler", () => {
 		} as any);
 
 		const mockRepo = {
-			getResponseByItemId: vi.fn().mockResolvedValue({
-				id: "response-1",
-				user_id: 999,
-				data: JSON.stringify({}),
-			}),
-			updateResponseData: vi.fn().mockResolvedValue(undefined),
+			getPersonalOutputByGroup: vi.fn().mockResolvedValue(null),
+			updateOutput: vi.fn().mockResolvedValue(undefined),
 		};
-		dynamicResponseRepoImpl = mockRepo;
+		outputRepoImpl = mockRepo;
 
 		await handler.handle(baseMessage, baseEnv);
 
-		expect(mockRepo.updateResponseData).not.toHaveBeenCalled();
+		expect(mockRepo.updateOutput).not.toHaveBeenCalled();
 	});
 });

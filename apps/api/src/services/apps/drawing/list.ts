@@ -28,19 +28,22 @@ export async function listDrawings({
 
 	const serviceContext = resolveServiceContext({ context, env });
 	serviceContext.ensureDatabase();
-	const repo = serviceContext.repositories.appData;
-	const list = await repo.getAppDataByUserAndApp(userId, "drawings");
+	const repo = serviceContext.repositories.outputs;
+	const list = await repo.listPersonalOutputs(userId, "drawings");
 
 	return list.map((entry) => {
-		let data = safeParseJson(entry.data) ?? {};
+		const data = safeParseJson<Record<string, unknown>>(entry.content) ?? {};
 		return {
 			id: entry.id,
-			description: data.description,
-			drawingUrl: data.drawingUrl,
-			paintingUrl: data.paintingUrl,
+			description: typeof data.description === "string" ? data.description : "",
+			drawingUrl: typeof data.drawingUrl === "string" ? data.drawingUrl : "",
+			paintingUrl: typeof data.paintingUrl === "string" ? data.paintingUrl : "",
 			createdAt: entry.created_at,
-			updatedAt: entry.updated_at,
-			metadata: data.metadata,
+			updatedAt: entry.updated_at ?? entry.created_at,
+			metadata:
+				data.metadata && typeof data.metadata === "object"
+					? (data.metadata as Record<string, unknown>)
+					: undefined,
 		};
 	});
 }

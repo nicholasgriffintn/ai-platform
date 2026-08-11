@@ -6,6 +6,7 @@ import type {
 	UpdateProjectInput,
 	UpdateWorkspaceInput,
 	WorkspaceDetail,
+	WorkspaceRole,
 } from "@assistant/schemas";
 import { deriveProjectColour } from "@assistant/schemas";
 
@@ -37,6 +38,13 @@ export async function createWorkspace(context: ServiceContext, input: CreateWork
 	const user = requireWorkAccess(context);
 	const id = generateId();
 	await context.repositories.workspaces.createWorkspace({ id, ...input, userId: user.id });
+	await context.repositories.audit.createRecord({
+		workspaceId: id,
+		actorUserId: user.id,
+		action: "workspace.created",
+		targetType: "workspace",
+		targetId: id,
+	});
 	return getWorkspace(context, id);
 }
 
@@ -69,13 +77,139 @@ export async function getWorkspace(
 	};
 }
 
+export async function updateWorkspaceMember(
+	context: ServiceContext,
+	workspaceId: string,
+	memberUserId: number,
+	role: Exclude<WorkspaceRole, "owner">,
+) {
+	const actor = context.requireUser();
+	const access = await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
+	const target = await context.repositories.workspaces.getMembership(workspaceId, memberUserId);
+	if (!target || target.role === "owner") {
+		throw new AssistantError("Workspace member not found", ErrorType.NOT_FOUND, 404);
+	}
+	if (access.role === "admin" && (target.role === "admin" || role === "admin")) {
+		throw new AssistantError(
+			"Only the workspace owner can manage administrators",
+			ErrorType.FORBIDDEN,
+			403,
+		);
+	}
+	if (actor.id === memberUserId && role !== target.role) {
+		throw new AssistantError(
+			"Use the leave workspace action for your own membership",
+			ErrorType.PARAMS_ERROR,
+			400,
+		);
+	}
+	await context.repositories.workspaces.updateMemberRole(workspaceId, memberUserId, role);
+	await context.repositories.audit.createRecord({
+		workspaceId,
+		actorUserId: actor.id,
+		action: "workspace.member.role_changed",
+		targetType: "user",
+		targetId: String(memberUserId),
+		metadata: { previousRole: target.role, role },
+	});
+	return getWorkspace(context, workspaceId);
+}
+
+export async function removeWorkspaceMember(
+	context: ServiceContext,
+	workspaceId: string,
+	memberUserId: number,
+) {
+	const actor = context.requireUser();
+	const access = await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
+	const target = await context.repositories.workspaces.getMembership(workspaceId, memberUserId);
+	if (!target || target.role === "owner") {
+		throw new AssistantError("Workspace member not found", ErrorType.NOT_FOUND, 404);
+	}
+	if (actor.id === memberUserId) {
+		throw new AssistantError("Use the leave workspace action", ErrorType.PARAMS_ERROR, 400);
+	}
+	if (access.role === "admin" && target.role === "admin") {
+		throw new AssistantError(
+			"Only the workspace owner can remove administrators",
+			ErrorType.FORBIDDEN,
+			403,
+		);
+	}
+	await context.repositories.workspaces.removeMember(workspaceId, memberUserId);
+	await context.repositories.audit.createRecord({
+		workspaceId,
+		actorUserId: actor.id,
+		action: "workspace.member.removed",
+		targetType: "user",
+		targetId: String(memberUserId),
+		metadata: { role: target.role },
+	});
+	return getWorkspace(context, workspaceId);
+}
+
+export async function leaveWorkspace(context: ServiceContext, workspaceId: string) {
+	const user = context.requireUser();
+	const { role } = await requireWorkspaceAccess(context, workspaceId);
+	if (role === "owner") {
+		throw new AssistantError(
+			"Transfer ownership before leaving the workspace",
+			ErrorType.CONFLICT_ERROR,
+			409,
+		);
+	}
+	await context.repositories.workspaces.removeMember(workspaceId, user.id);
+	await context.repositories.audit.createRecord({
+		workspaceId,
+		actorUserId: user.id,
+		action: "workspace.member.left",
+		targetType: "user",
+		targetId: String(user.id),
+		metadata: { role },
+	});
+	return { success: true };
+}
+
+export async function transferWorkspaceOwnership(
+	context: ServiceContext,
+	workspaceId: string,
+	newOwnerUserId: number,
+) {
+	const owner = context.requireUser();
+	await requireWorkspaceAccess(context, workspaceId, ["owner"]);
+	if (owner.id === newOwnerUserId) {
+		throw new AssistantError("You already own this workspace", ErrorType.PARAMS_ERROR, 400);
+	}
+	const target = await context.repositories.workspaces.getMembership(workspaceId, newOwnerUserId);
+	if (!target) throw new AssistantError("Workspace member not found", ErrorType.NOT_FOUND, 404);
+	await context.repositories.workspaces.transferOwnership(workspaceId, owner.id, newOwnerUserId);
+	await context.repositories.audit.createRecord({
+		workspaceId,
+		actorUserId: owner.id,
+		action: "workspace.ownership.transferred",
+		targetType: "user",
+		targetId: String(newOwnerUserId),
+		metadata: { previousOwnerUserId: owner.id },
+	});
+	return getWorkspace(context, workspaceId);
+}
+
 export async function updateWorkspace(
 	context: ServiceContext,
 	workspaceId: string,
 	input: UpdateWorkspaceInput,
 ) {
+	const user = context.requireUser();
 	await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
 	await context.repositories.workspaces.updateWorkspace(workspaceId, input);
+	await context.repositories.audit.createRecord({
+		workspaceId,
+		actorUserId: user.id,
+		action: "workspace.updated",
+		targetType: "workspace",
+		targetId: workspaceId,
+		metadata: { fields: Object.keys(input) },
+	});
 	return getWorkspace(context, workspaceId);
 }
 
@@ -135,6 +269,14 @@ export async function inviteWorkspaceMember(
 		role: input.role,
 		workspaceName: workspace.name,
 	});
+	await context.repositories.audit.createRecord({
+		workspaceId,
+		actorUserId: user.id,
+		action: "workspace.invitation.created",
+		targetType: "workspace_invitation",
+		targetId: invitation.id,
+		metadata: { email: input.email, role: input.role },
+	});
 	return {
 		invitation: formatWorkspaceInvitation(invitation),
 		inviteUrl,
@@ -165,6 +307,14 @@ export async function acceptWorkspaceInvitation(context: ServiceContext, token: 
 	}
 
 	await context.repositories.workspaces.acceptInvitation(invitation, user.id);
+	await context.repositories.audit.createRecord({
+		workspaceId: invitation.workspace_id,
+		actorUserId: user.id,
+		action: "workspace.invitation.accepted",
+		targetType: "workspace_invitation",
+		targetId: invitation.id,
+		metadata: { role: invitation.role },
+	});
 	return getWorkspace(context, invitation.workspace_id);
 }
 
@@ -173,8 +323,16 @@ export async function revokeWorkspaceInvitation(
 	workspaceId: string,
 	invitationId: string,
 ) {
+	const user = context.requireUser();
 	await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
 	await context.repositories.workspaces.revokeInvitation(workspaceId, invitationId);
+	await context.repositories.audit.createRecord({
+		workspaceId,
+		actorUserId: user.id,
+		action: "workspace.invitation.revoked",
+		targetType: "workspace_invitation",
+		targetId: invitationId,
+	});
 	return { success: true };
 }
 
@@ -196,6 +354,13 @@ export async function createProject(
 		codingEnvironment: input.codingEnvironment,
 		createdBy: user.id,
 	});
+	await context.repositories.audit.createRecord({
+		workspaceId,
+		actorUserId: user.id,
+		action: "project.created",
+		targetType: "project",
+		targetId: id,
+	});
 	return getProject(context, id);
 }
 
@@ -213,7 +378,8 @@ export async function updateProject(
 	projectId: string,
 	input: UpdateProjectInput,
 ) {
-	await requireProjectAccess(context, projectId, ["owner", "admin"]);
+	const user = context.requireUser();
+	const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
 	const { codingEnvironment, ...projectFields } = input;
 	const codingUpdates =
 		codingEnvironment === undefined
@@ -230,13 +396,29 @@ export async function updateProject(
 		...projectFields,
 		...codingUpdates,
 	});
+	await context.repositories.audit.createRecord({
+		workspaceId: project.workspace_id,
+		actorUserId: user.id,
+		action: "project.updated",
+		targetType: "project",
+		targetId: projectId,
+		metadata: { fields: Object.keys(input) },
+	});
 	return getProject(context, projectId);
 }
 
 export async function archiveProject(context: ServiceContext, projectId: string) {
-	await requireProjectAccess(context, projectId, ["owner", "admin"]);
+	const user = context.requireUser();
+	const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
 	await context.repositories.workspaces.updateProject(projectId, {
 		archived_at: new Date().toISOString(),
+	});
+	await context.repositories.audit.createRecord({
+		workspaceId: project.workspace_id,
+		actorUserId: user.id,
+		action: "project.archived",
+		targetType: "project",
+		targetId: projectId,
 	});
 	return { success: true };
 }
@@ -247,7 +429,7 @@ export async function addProjectCapability(
 	input: AddProjectCapabilityInput,
 ) {
 	const user = context.requireUser();
-	await requireProjectAccess(context, projectId, ["owner", "admin"]);
+	const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
 	await validateProjectCapabilityReference(input.kind, input.capabilityId);
 	const configuration =
 		input.kind === "tool"
@@ -261,6 +443,14 @@ export async function addProjectCapability(
 		configuration,
 		createdBy: user.id,
 	});
+	await context.repositories.audit.createRecord({
+		workspaceId: project.workspace_id,
+		actorUserId: user.id,
+		action: "project.capability.added",
+		targetType: "project_capability",
+		targetId: input.capabilityId,
+		metadata: { projectId, kind: input.kind },
+	});
 	return getProject(context, projectId);
 }
 
@@ -269,7 +459,16 @@ export async function removeProjectCapability(
 	projectId: string,
 	capabilityId: string,
 ) {
-	await requireProjectAccess(context, projectId, ["owner", "admin"]);
+	const user = context.requireUser();
+	const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
 	await context.repositories.workspaces.removeProjectCapability(projectId, capabilityId);
+	await context.repositories.audit.createRecord({
+		workspaceId: project.workspace_id,
+		actorUserId: user.id,
+		action: "project.capability.removed",
+		targetType: "project_capability",
+		targetId: capabilityId,
+		metadata: { projectId },
+	});
 	return getProject(context, projectId);
 }

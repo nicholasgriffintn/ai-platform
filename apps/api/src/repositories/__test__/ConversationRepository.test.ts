@@ -59,7 +59,7 @@ describe("ConversationRepository", () => {
 		await repository.deleteAllPersonalConversations(123);
 
 		expect(batch).toHaveBeenCalledOnce();
-		expect(calls).toHaveLength(5);
+		expect(calls).toHaveLength(4);
 		for (const call of calls) {
 			expect(call.query).toContain("project_id IS NULL");
 			expect(call.params).toEqual([123]);

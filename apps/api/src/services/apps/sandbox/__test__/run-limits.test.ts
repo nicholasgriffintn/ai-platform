@@ -19,11 +19,11 @@ function toRunData(overrides: Record<string, unknown> = {}) {
 
 describe("assertSandboxRunCanStart", () => {
 	it("allows starts when under quota and rate limits", async () => {
-		const getAppDataByUserAndApp = vi.fn().mockResolvedValue([]);
+		const listPersonalActivities = vi.fn().mockResolvedValue([]);
 		const context = {
 			env: {},
 			repositories: {
-				appData: { getAppDataByUserAndApp },
+				activities: { listPersonalActivities },
 			},
 		} as any;
 
@@ -37,13 +37,15 @@ describe("assertSandboxRunCanStart", () => {
 	});
 
 	it("rejects when concurrent active run limit is reached", async () => {
-		const getAppDataByUserAndApp = vi.fn().mockResolvedValue([
+		const listPersonalActivities = vi.fn().mockResolvedValue([
 			{
+				created_at: "2026-02-17T11:59:00.000Z",
 				data: toRunData({
 					status: "running",
 				}),
 			},
 			{
+				created_at: "2026-02-17T11:59:00.000Z",
 				data: toRunData({
 					status: "paused",
 				}),
@@ -52,7 +54,7 @@ describe("assertSandboxRunCanStart", () => {
 		const context = {
 			env: {},
 			repositories: {
-				appData: { getAppDataByUserAndApp },
+				activities: { listPersonalActivities },
 			},
 		} as any;
 
@@ -67,26 +69,30 @@ describe("assertSandboxRunCanStart", () => {
 
 	it("rejects when per-minute start rate is exceeded", async () => {
 		const now = new Date("2026-02-17T12:00:00.000Z");
-		const getAppDataByUserAndApp = vi.fn().mockResolvedValue([
+		const listPersonalActivities = vi.fn().mockResolvedValue([
 			{
+				created_at: "2026-02-17T11:59:40.000Z",
 				data: toRunData({
 					status: "completed",
 					startedAt: "2026-02-17T11:59:40.000Z",
 				}),
 			},
 			{
+				created_at: "2026-02-17T11:59:45.000Z",
 				data: toRunData({
 					status: "failed",
 					startedAt: "2026-02-17T11:59:45.000Z",
 				}),
 			},
 			{
+				created_at: "2026-02-17T11:59:50.000Z",
 				data: toRunData({
 					status: "cancelled",
 					startedAt: "2026-02-17T11:59:50.000Z",
 				}),
 			},
 			{
+				created_at: "2026-02-17T11:59:55.000Z",
 				data: toRunData({
 					status: "completed",
 					startedAt: "2026-02-17T11:59:55.000Z",
@@ -96,7 +102,7 @@ describe("assertSandboxRunCanStart", () => {
 		const context = {
 			env: {},
 			repositories: {
-				appData: { getAppDataByUserAndApp },
+				activities: { listPersonalActivities },
 			},
 		} as any;
 

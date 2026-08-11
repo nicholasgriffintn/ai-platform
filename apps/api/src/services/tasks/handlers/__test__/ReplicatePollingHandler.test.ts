@@ -8,14 +8,14 @@ vi.mock("~/lib/providers/capabilities/chat", () => ({
 	getChatProvider: vi.fn(),
 }));
 
-let appDataRepoImpl: any;
+let outputRepoImpl: any;
 let taskRepositoryImpl: any;
 let taskServiceImpl: any;
 
-vi.mock("~/repositories/AppDataRepository", () => ({
-	AppDataRepository: class {
+vi.mock("~/repositories/OutputRepository", () => ({
+	OutputRepository: class {
 		constructor() {
-			return appDataRepoImpl;
+			return outputRepoImpl;
 		}
 	},
 }));
@@ -58,7 +58,7 @@ describe("ReplicatePollingHandler", () => {
 
 	beforeEach(() => {
 		vi.resetAllMocks();
-		appDataRepoImpl = undefined;
+		outputRepoImpl = undefined;
 		taskRepositoryImpl = undefined;
 		taskServiceImpl = undefined;
 		handler = new ReplicatePollingHandler();
@@ -78,9 +78,9 @@ describe("ReplicatePollingHandler", () => {
 
 	it("returns error when prediction not found", async () => {
 		const mockRepo = {
-			getAppDataById: vi.fn().mockResolvedValue(null),
+			getOutput: vi.fn().mockResolvedValue(null),
 		};
-		appDataRepoImpl = mockRepo;
+		outputRepoImpl = mockRepo;
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -90,13 +90,13 @@ describe("ReplicatePollingHandler", () => {
 
 	it("returns error when user is unauthorized", async () => {
 		const mockRepo = {
-			getAppDataById: vi.fn().mockResolvedValue({
+			getOutput: vi.fn().mockResolvedValue({
 				id: "pred-123",
-				user_id: 999,
-				data: JSON.stringify({}),
+				created_by_user_id: 999,
+				content: JSON.stringify({}),
 			}),
 		};
-		appDataRepoImpl = mockRepo;
+		outputRepoImpl = mockRepo;
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -106,10 +106,11 @@ describe("ReplicatePollingHandler", () => {
 
 	it("handles completed prediction", async () => {
 		const mockRepo = {
-			getAppDataById: vi.fn().mockResolvedValue({
+			getOutput: vi.fn().mockResolvedValue({
 				id: "pred-123",
-				user_id: 1,
-				data: JSON.stringify({
+				created_by_user_id: 1,
+				revision: 1,
+				content: JSON.stringify({
 					status: "processing",
 					predictionData: {
 						data: {
@@ -121,9 +122,9 @@ describe("ReplicatePollingHandler", () => {
 					},
 				}),
 			}),
-			updateAppData: vi.fn().mockResolvedValue(undefined),
+			updateOutput: vi.fn().mockResolvedValue(undefined),
 		};
-		appDataRepoImpl = mockRepo;
+		outputRepoImpl = mockRepo;
 
 		const mockProvider = {
 			getAsyncInvocationStatus: vi.fn().mockResolvedValue({
@@ -143,20 +144,22 @@ describe("ReplicatePollingHandler", () => {
 			predictionId: "pred-123",
 			output: "Generated output",
 		});
-		expect(mockRepo.updateAppData).toHaveBeenCalledWith(
+		expect(mockRepo.updateOutput).toHaveBeenCalledWith(
 			"pred-123",
 			expect.objectContaining({
-				status: "succeeded",
+				status: "ready",
+				content: expect.objectContaining({ status: "succeeded" }),
 			}),
 		);
 	});
 
 	it("handles failed prediction", async () => {
 		const mockRepo = {
-			getAppDataById: vi.fn().mockResolvedValue({
+			getOutput: vi.fn().mockResolvedValue({
 				id: "pred-123",
-				user_id: 1,
-				data: JSON.stringify({
+				created_by_user_id: 1,
+				revision: 1,
+				content: JSON.stringify({
 					status: "processing",
 					predictionData: {
 						data: {
@@ -168,9 +171,9 @@ describe("ReplicatePollingHandler", () => {
 					},
 				}),
 			}),
-			updateAppData: vi.fn().mockResolvedValue(undefined),
+			updateOutput: vi.fn().mockResolvedValue(undefined),
 		};
-		appDataRepoImpl = mockRepo;
+		outputRepoImpl = mockRepo;
 
 		const mockProvider = {
 			getAsyncInvocationStatus: vi.fn().mockResolvedValue({
@@ -186,21 +189,25 @@ describe("ReplicatePollingHandler", () => {
 
 		expect(result.status).toBe("success");
 		expect(result.message).toBe("Prediction failed");
-		expect(mockRepo.updateAppData).toHaveBeenCalledWith(
+		expect(mockRepo.updateOutput).toHaveBeenCalledWith(
 			"pred-123",
 			expect.objectContaining({
 				status: "failed",
-				error: "Generation failed",
+				content: expect.objectContaining({
+					status: "failed",
+					error: "Generation failed",
+				}),
 			}),
 		);
 	});
 
 	it("re-queues task when prediction is still in progress", async () => {
 		const mockRepo = {
-			getAppDataById: vi.fn().mockResolvedValue({
+			getOutput: vi.fn().mockResolvedValue({
 				id: "pred-123",
-				user_id: 1,
-				data: JSON.stringify({
+				created_by_user_id: 1,
+				revision: 1,
+				content: JSON.stringify({
 					status: "processing",
 					predictionData: {
 						data: {
@@ -213,7 +220,7 @@ describe("ReplicatePollingHandler", () => {
 				}),
 			}),
 		};
-		appDataRepoImpl = mockRepo;
+		outputRepoImpl = mockRepo;
 
 		const mockProvider = {
 			getAsyncInvocationStatus: vi.fn().mockResolvedValue({
@@ -240,15 +247,15 @@ describe("ReplicatePollingHandler", () => {
 
 	it("skips processing when prediction not in processing state", async () => {
 		const mockRepo = {
-			getAppDataById: vi.fn().mockResolvedValue({
+			getOutput: vi.fn().mockResolvedValue({
 				id: "pred-123",
-				user_id: 1,
-				data: JSON.stringify({
+				created_by_user_id: 1,
+				content: JSON.stringify({
 					status: "succeeded",
 				}),
 			}),
 		};
-		appDataRepoImpl = mockRepo;
+		outputRepoImpl = mockRepo;
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -258,10 +265,10 @@ describe("ReplicatePollingHandler", () => {
 
 	it("returns error when provider does not support async status", async () => {
 		const mockRepo = {
-			getAppDataById: vi.fn().mockResolvedValue({
+			getOutput: vi.fn().mockResolvedValue({
 				id: "pred-123",
-				user_id: 1,
-				data: JSON.stringify({
+				created_by_user_id: 1,
+				content: JSON.stringify({
 					status: "processing",
 					predictionData: {
 						data: {
@@ -274,7 +281,7 @@ describe("ReplicatePollingHandler", () => {
 				}),
 			}),
 		};
-		appDataRepoImpl = mockRepo;
+		outputRepoImpl = mockRepo;
 
 		const mockProvider = {};
 		vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider as any);

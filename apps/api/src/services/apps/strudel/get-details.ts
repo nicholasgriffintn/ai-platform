@@ -21,8 +21,8 @@ export async function getPatternDetails({
 		const { repositories } = context;
 
 		const response = projectId
-			? await repositories.dynamicAppResponses.getResponseByIdForProject(patternId, projectId)
-			: await repositories.dynamicAppResponses.getResponseByIdForUser(patternId, userId);
+			? await repositories.outputs.getProjectOutput(projectId, patternId)
+			: await repositories.outputs.getPersonalOutput(userId, patternId);
 
 		if (!response) {
 			throw new AssistantError("Pattern not found", ErrorType.NOT_FOUND);

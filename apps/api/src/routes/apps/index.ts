@@ -16,7 +16,6 @@ import embeddings from "./embeddings";
 import notes from "./notes";
 import podcasts from "./podcasts";
 import retrieval from "./retrieval";
-import shared from "./shared";
 import replicate from "./replicate";
 import canvas from "./canvas";
 import strudel from "./strudel";
@@ -82,8 +81,6 @@ addRoute(app, "post", "/prompt-coach", {
 			prompt: body.prompt,
 		}),
 });
-
-app.route("/shared", shared);
 
 app.route("/recipes", recipes);
 

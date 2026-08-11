@@ -27,14 +27,14 @@ function buildRunData(overrides: Record<string, unknown> = {}) {
 }
 
 describe("sandbox runs service", () => {
-	const mockGetAppDataByUserAppAndItem = vi.fn();
+	const mockGetPersonalActivityByGroup = vi.fn();
 	const mockGetRunCoordinatorControl = vi.mocked(getRunCoordinatorControl);
 
 	const context = {
 		env: {},
 		repositories: {
-			appData: {
-				getAppDataByUserAppAndItem: mockGetAppDataByUserAppAndItem,
+			activities: {
+				getPersonalActivityByGroup: mockGetPersonalActivityByGroup,
 			},
 		},
 	} as any;
@@ -45,16 +45,14 @@ describe("sandbox runs service", () => {
 
 	it("returns paused control state for paused runs", async () => {
 		mockGetRunCoordinatorControl.mockResolvedValue(null);
-		mockGetAppDataByUserAppAndItem.mockResolvedValue([
-			{
-				id: "record-1",
-				data: buildRunData({
-					status: "paused",
-					pauseReason: "Paused from dashboard",
-					timeoutSeconds: 1200,
-				}),
-			},
-		]);
+		mockGetPersonalActivityByGroup.mockResolvedValue({
+			id: "record-1",
+			data: buildRunData({
+				status: "paused",
+				pauseReason: "Paused from dashboard",
+				timeoutSeconds: 1200,
+			}),
+		});
 
 		const control = await getSandboxRunControlState({
 			context,
@@ -89,6 +87,6 @@ describe("sandbox runs service", () => {
 			state: "running",
 			timeoutSeconds: 1200,
 		});
-		expect(mockGetAppDataByUserAppAndItem).not.toHaveBeenCalled();
+		expect(mockGetPersonalActivityByGroup).not.toHaveBeenCalled();
 	});
 });

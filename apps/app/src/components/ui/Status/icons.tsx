@@ -3,6 +3,7 @@ import { Loader2, CheckCircle2, XCircle, Clock, AlertCircle } from "lucide-react
 export function getStatusIcon(status: string): React.ReactNode {
 	switch (status) {
 		case "completed":
+		case "succeeded":
 			return <CheckCircle2 size={16} className="text-green-600" />;
 		case "running":
 			return <Loader2 size={16} className="text-blue-600 animate-spin" />;

@@ -20,14 +20,14 @@ describe("QueryBuilder", () => {
 			const builder = new QueryBuilder();
 			const result = builder
 				.select(["COUNT(*) AS total"])
-				.from("memory_group_members")
-				.where("group_id = ?", ["group_1"])
+				.from("source_collection_member")
+				.where("collection_id = ?", ["collection_1"])
 				.build();
 
 			expect(result?.query).toBe(
-				"SELECT COUNT(*) AS total FROM memory_group_members WHERE group_id = ?",
+				"SELECT COUNT(*) AS total FROM source_collection_member WHERE collection_id = ?",
 			);
-			expect(result?.values).toEqual(["group_1"]);
+			expect(result?.values).toEqual(["collection_1"]);
 		});
 
 		it("rejects dangerous column identifiers", () => {

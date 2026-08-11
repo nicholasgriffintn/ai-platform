@@ -7,7 +7,7 @@ import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { assertSandboxRunCanStart } from "./run-limits";
 import { buildSandboxTimeoutConfig } from "./config";
-import { type SandboxRunData } from "./run-data";
+import { getSandboxActivityStatus, type SandboxRunData } from "./run-data";
 import { createCoordinatorEventSseStream } from "./streaming";
 import { SSE_HEADERS } from "~/lib/http/streaming";
 import {
@@ -69,13 +69,15 @@ export async function executeSandboxRunStream(
 		workflowPhase: "queued",
 	};
 
-	const createdRecord = await serviceContext.repositories.appData.createAppDataWithItem(
-		user.id,
-		SANDBOX_RUNS_APP_ID,
-		runId,
-		SANDBOX_RUN_ITEM_TYPE,
-		runData,
-	);
+	const createdRecord = await serviceContext.repositories.activities.createActivity({
+		createdByUserId: user.id,
+		capabilityId: SANDBOX_RUNS_APP_ID,
+		groupId: runId,
+		kind: SANDBOX_RUN_ITEM_TYPE,
+		status: getSandboxActivityStatus(runData.status),
+		summary: `${payload.repo}: ${payload.task}`,
+		data: runData,
+	});
 
 	await initRunCoordinatorControl(env, {
 		runId,
@@ -132,11 +134,15 @@ export async function executeSandboxRunStream(
 				message: "Run dispatch enqueued via shared task system",
 			},
 		});
-		await serviceContext.repositories.appData.updateAppData(createdRecord.id, {
+		const queuedRun: SandboxRunData = {
 			...runData,
 			queueDispatchedAt: dispatchedAt,
 			updatedAt: dispatchedAt,
 			workflowPhase: "dispatching",
+		};
+		await serviceContext.repositories.activities.updateActivity(createdRecord.id, {
+			status: getSandboxActivityStatus(queuedRun.status),
+			data: queuedRun,
 		});
 	} catch (error) {
 		const failedAt = new Date().toISOString();
@@ -157,7 +163,10 @@ export async function executeSandboxRunStream(
 			],
 			workflowPhase: "failed",
 		};
-		await serviceContext.repositories.appData.updateAppData(createdRecord.id, failedRun);
+		await serviceContext.repositories.activities.updateActivity(createdRecord.id, {
+			status: getSandboxActivityStatus(failedRun.status),
+			data: failedRun,
+		});
 		await appendRunCoordinatorEvent({
 			env,
 			runId,

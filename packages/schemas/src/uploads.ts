@@ -31,7 +31,7 @@ export const uploadRequestSchema = z.object({
 });
 
 export const uploadResponseSchema = z.object({
-	assetId: z.string(),
+	sourceId: z.string(),
 	key: z.string(),
 	url: z.string(),
 	type: z.enum(["image", "document", "audio", "code", "markdown_document"]),

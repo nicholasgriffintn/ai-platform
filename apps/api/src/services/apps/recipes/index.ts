@@ -11,6 +11,7 @@ import type {
 import { recipeConfigurationSchema } from "@assistant/schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { TemplateRecord } from "~/repositories/TemplateRepository";
 import { TaskService } from "~/services/tasks/TaskService";
 import { isSupportedCronExpression } from "~/utils/cron";
 import { safeParseJson } from "~/utils/json";
@@ -56,16 +57,7 @@ interface StoredRecipeInstallationData {
 	scheduleState?: RecipeScheduleState;
 }
 
-interface RecipeInstallationRecord {
-	id: string;
-	user_id: number;
-	app_id?: string;
-	item_id?: string;
-	item_type?: string;
-	data: string;
-	created_at: string;
-	updated_at: string;
-}
+type RecipeInstallationRecord = TemplateRecord;
 
 export function getRecipeById(id: string) {
 	return assistantRecipes.find((recipe) => recipe.id === id);
@@ -293,13 +285,8 @@ function normaliseRecipeConfigurationForRecipe(
 function parseStoredRecipeInstallationData(
 	record: RecipeInstallationRecord,
 ): StoredRecipeInstallationData | null {
-	const parsed = safeParseJson(record.data) as StoredRecipeInstallationData | null;
-	if (
-		(record.app_id !== undefined && record.app_id !== RECIPE_INSTALLATION_APP_ID) ||
-		(record.item_type !== undefined && record.item_type !== RECIPE_INSTALLATION_ITEM_TYPE) ||
-		!parsed?.recipeId ||
-		parsed.recipeId !== record.item_id
-	) {
+	const parsed = safeParseJson(record.configuration) as StoredRecipeInstallationData | null;
+	if (record.kind !== "recipe" || !parsed?.recipeId || parsed.recipeId !== record.capability_id) {
 		return null;
 	}
 
@@ -317,7 +304,7 @@ export function parseRecipeInstallationRecord(
 	return {
 		id: record.id,
 		recipeId: parsed.recipeId,
-		userId: record.user_id,
+		userId: record.created_by_user_id,
 		status: parsed.status ?? "active",
 		triggers: Array.isArray(parsed.triggers) ? parsed.triggers : [],
 		configuration: normaliseRecipeConfigurationForRecipe(
@@ -334,12 +321,8 @@ async function getRecipeInstallationRecord(params: {
 	userId: number;
 	installationId: string;
 }): Promise<{ record: RecipeInstallationRecord; data: StoredRecipeInstallationData } | null> {
-	const record = await params.context.repositories.appData.getAppDataByUserAndId(
-		params.userId,
-		params.installationId,
-		RECIPE_INSTALLATION_ITEM_TYPE,
-	);
-	if (!record || record.app_id !== RECIPE_INSTALLATION_APP_ID) {
+	const record = await params.context.repositories.templates.getTemplateById(params.installationId);
+	if (!record || record.created_by_user_id !== params.userId || record.kind !== "recipe") {
 		return null;
 	}
 
@@ -359,13 +342,12 @@ async function upsertRecipeInstallation(params: {
 	configuration?: RecipeConfiguration;
 }): Promise<RecipeInstallation> {
 	params.context.ensureDatabase();
-	const existing = await params.context.repositories.appData.getAppDataByUserAppAndItem(
+	const existing = await params.context.repositories.templates.getPersonalTemplate(
 		params.userId,
-		RECIPE_INSTALLATION_APP_ID,
+		"recipe",
 		params.recipe.id,
-		RECIPE_INSTALLATION_ITEM_TYPE,
 	);
-	const existingData = existing[0] ? parseStoredRecipeInstallationData(existing[0]) : null;
+	const existingData = existing ? parseStoredRecipeInstallationData(existing) : null;
 	const now = new Date().toISOString();
 	const triggers =
 		params.triggers && params.triggers.length > 0
@@ -400,9 +382,12 @@ async function upsertRecipeInstallation(params: {
 		}),
 	};
 
-	if (existing[0]) {
-		await params.context.repositories.appData.updateAppData(existing[0].id, data);
-		const updated = await params.context.repositories.appData.getAppDataById(existing[0].id);
+	if (existing) {
+		const updated = await params.context.repositories.templates.updateTemplate(existing.id, {
+			name: params.recipe.title,
+			configuration: data,
+			status: data.status,
+		});
 		if (updated) {
 			const parsed = parseRecipeInstallationRecord(updated);
 			if (parsed) {
@@ -411,13 +396,15 @@ async function upsertRecipeInstallation(params: {
 		}
 	}
 
-	const created = await params.context.repositories.appData.createAppDataWithItem(
-		params.userId,
-		RECIPE_INSTALLATION_APP_ID,
-		params.recipe.id,
-		RECIPE_INSTALLATION_ITEM_TYPE,
-		data,
-	);
+	const created = await params.context.repositories.templates.createTemplate({
+		createdByUserId: params.userId,
+		kind: "recipe",
+		capabilityId: params.recipe.id,
+		name: params.recipe.title,
+		description: params.recipe.description,
+		configuration: data,
+		status: data.status,
+	});
 	const parsed = parseRecipeInstallationRecord(created);
 	if (!parsed) {
 		throw new AssistantError("Recipe installation could not be created", ErrorType.INTERNAL_ERROR);
@@ -431,14 +418,13 @@ async function getRecipeInstallation(params: {
 	userId: number;
 	recipeId: string;
 }): Promise<RecipeInstallation | null> {
-	const records = await params.context.repositories.appData.getAppDataByUserAppAndItem(
+	const record = await params.context.repositories.templates.getPersonalTemplate(
 		params.userId,
-		RECIPE_INSTALLATION_APP_ID,
+		"recipe",
 		params.recipeId,
-		RECIPE_INSTALLATION_ITEM_TYPE,
 	);
 
-	return records[0] ? parseRecipeInstallationRecord(records[0]) : null;
+	return record ? parseRecipeInstallationRecord(record) : null;
 }
 
 export async function listRecipeInstallations(params: {
@@ -446,9 +432,9 @@ export async function listRecipeInstallations(params: {
 	userId: number;
 }): Promise<{ installations: RecipeInstallation[] }> {
 	params.context.ensureDatabase();
-	const records = await params.context.repositories.appData.getAppDataByUserAndApp(
+	const records = await params.context.repositories.templates.listPersonalTemplates(
 		params.userId,
-		RECIPE_INSTALLATION_APP_ID,
+		"recipe",
 	);
 
 	return {
@@ -538,8 +524,10 @@ export async function updateRecipeInstallation(params: {
 		});
 	}
 
-	await params.context.repositories.appData.updateAppData(existing.record.id, data);
-	const updated = await params.context.repositories.appData.getAppDataById(existing.record.id);
+	const updated = await params.context.repositories.templates.updateTemplate(existing.record.id, {
+		configuration: data,
+		status: data.status,
+	});
 
 	return updated ? parseRecipeInstallationRecord(updated) : null;
 }
@@ -560,7 +548,7 @@ export async function deleteRecipeInstallation(params: {
 		return false;
 	}
 
-	await params.context.repositories.appData.deleteAppData(existing.record.id);
+	await params.context.repositories.templates.deleteTemplate(existing.record.id);
 	return true;
 }
 

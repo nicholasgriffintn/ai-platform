@@ -1,482 +1,134 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { resolveServiceContext } from "~/lib/context/serviceContext";
-import { getAuxiliaryModel } from "~/lib/providers/models";
-import { AssistantError } from "~/utils/errors";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { OutputRecord } from "~/repositories/OutputRepository";
 import { createNote, deleteNote, getNote, listNotes, updateNote } from "../list";
 
-const mockRepo = {
-	getAppDataByUserAndApp: vi.fn(),
-	getAppDataById: vi.fn(),
-	createAppDataWithItem: vi.fn(),
-	updateAppData: vi.fn(),
-	deleteAppData: vi.fn(),
-};
-
-const mockChatProviderResponse = vi.fn().mockResolvedValue({ response: JSON.stringify({}) });
-
-vi.mock("~/lib/context/serviceContext", () => ({
-	resolveServiceContext: vi.fn(),
-}));
-
-vi.mock("~/utils/id", () => ({
-	generateId: vi.fn(() => "test-note-id-123"),
-}));
-
-vi.mock("~/lib/chat/utils", () => ({
-	sanitiseInput: vi.fn((input) => input),
-}));
-
+const provider = { getResponse: vi.fn() };
+vi.mock("~/lib/chat/utils", () => ({ sanitiseInput: (input: string) => input }));
 vi.mock("~/lib/providers/models", () => ({
-	getAuxiliaryModel: vi.fn(() =>
-		Promise.resolve({ model: "test-model", provider: "test-provider" }),
-	),
+	getAuxiliaryModel: vi.fn().mockResolvedValue({ model: "test-model", provider: "test-provider" }),
 }));
+vi.mock("~/lib/providers/capabilities/chat", () => ({ getChatProvider: () => provider }));
+vi.mock("~/utils/id", () => ({ generateId: () => "note-1" }));
 
-vi.mock("~/lib/providers/capabilities/chat", () => ({
-	getChatProvider: vi.fn(() => ({
-		getResponse: mockChatProviderResponse,
-	})),
-}));
-
-describe("notes service", () => {
-	const mockEnv = {} as any;
-	const mockUser = {
-		id: 123,
-		name: "Test User",
-		avatar_url: null,
-		email: "test@example.com",
-		github_username: null,
-		company: null,
-		site: null,
-		location: null,
-		bio: null,
-		twitter_username: null,
-		role: null,
-		created_at: "2023-01-01T00:00:00Z",
-		updated_at: "2023-01-01T00:00:00Z",
-		setup_at: null,
-		terms_accepted_at: null,
-		plan_id: null,
+function output(overrides: Partial<OutputRecord> = {}): OutputRecord {
+	return {
+		id: "note-1",
+		created_by_user_id: 7,
+		project_id: null,
+		conversation_id: null,
+		parent_output_id: null,
+		capability_id: "notes",
+		group_id: "note-1",
+		kind: "note",
+		title: "Test note",
+		status: "ready",
+		sensitivity: "personal",
+		content: '{"title":"Test note","content":"Body","metadata":{"tags":["test"]}}',
+		storage_key: null,
+		mime_type: null,
+		filename: null,
+		byte_size: null,
+		revision: 1,
+		created_at: "2026-08-11T10:00:00Z",
+		updated_at: null,
+		...overrides,
 	};
+}
 
-	let mockContext: any;
+function context(outputs: Record<string, unknown>): ServiceContext {
+	return {
+		env: { DB: {} },
+		ensureDatabase: () => undefined,
+		repositories: { outputs },
+	} as unknown as ServiceContext;
+}
 
+const user = { id: 7, email: "writer@example.com" } as never;
+
+describe("notes outputs", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockChatProviderResponse.mockReset();
-		mockChatProviderResponse.mockResolvedValue({
-			response: JSON.stringify({
-				tags: ["ai"],
-				summary: "Generated summary",
-				keyTopics: ["topic"],
-				wordCount: 2,
-				readingTime: 1,
-				contentType: "text",
-				sentiment: "neutral",
-			}),
-		});
-		mockContext = {
-			ensureDatabase: vi.fn(),
-			repositories: {
-				appData: mockRepo,
-			},
-			env: mockEnv,
+		provider.getResponse.mockResolvedValue({ response: '{"summary":"Generated","tags":["ai"]}' });
+	});
+
+	it("lists and reads personal note outputs", async () => {
+		const outputs = {
+			listPersonalOutputs: vi.fn().mockResolvedValue([output()]),
+			getPersonalOutput: vi.fn().mockResolvedValue(output()),
 		};
-		mockRepo.getAppDataByUserAndApp.mockReset();
-		mockRepo.getAppDataById.mockReset();
-		mockRepo.createAppDataWithItem.mockReset();
-		mockRepo.updateAppData.mockReset();
-		mockRepo.deleteAppData.mockReset();
-		vi.mocked(resolveServiceContext).mockReturnValue(mockContext);
-	});
+		const serviceContext = context(outputs);
 
-	describe("listNotes", () => {
-		it("should return list of notes for user", async () => {
-			const mockNoteData = [
-				{
-					id: "note-1",
-					data: '{"title": "Test Note 1", "content": "Content 1"}',
-					created_at: "2023-01-01T00:00:00Z",
-					updated_at: "2023-01-01T00:00:00Z",
-				},
-				{
-					id: "note-2",
-					data: '{"title": "Test Note 2", "content": "Content 2"}',
-					created_at: "2023-01-02T00:00:00Z",
-					updated_at: "2023-01-02T00:00:00Z",
-				},
-			];
-
-			mockRepo.getAppDataByUserAndApp.mockResolvedValue(mockNoteData);
-
-			const result = await listNotes({ env: mockEnv, userId: 123 });
-			expect(mockContext.ensureDatabase).toHaveBeenCalled();
-
-			expect(result).toHaveLength(2);
-			expect(result[0]).toEqual({
-				id: "note-1",
-				title: "Test Note 1",
-				content: "Content 1",
-				createdAt: "2023-01-01T00:00:00Z",
-				updatedAt: "2023-01-01T00:00:00Z",
-				metadata: undefined,
-			});
-		});
-
-		it("should throw error if user ID is missing", async () => {
-			await expect(listNotes({ env: mockEnv, userId: 0 })).rejects.toThrow(AssistantError);
-		});
-
-		it("should handle invalid JSON gracefully", async () => {
-			const mockNoteData = [
-				{
-					id: "note-1",
-					data: "invalid-json",
-					created_at: "2023-01-01T00:00:00Z",
-					updated_at: "2023-01-01T00:00:00Z",
-				},
-			];
-
-			mockRepo.getAppDataByUserAndApp.mockResolvedValue(mockNoteData);
-
-			const result = await listNotes({ env: mockEnv, userId: 123 });
-
-			expect(result[0].title).toBe("");
-			expect(result[0].content).toBe("");
+		expect(await listNotes({ context: serviceContext, userId: 7 })).toEqual([
+			expect.objectContaining({ id: "note-1", title: "Test note", content: "Body" }),
+		]);
+		expect(await getNote({ context: serviceContext, userId: 7, noteId: "note-1" })).toMatchObject({
+			metadata: { tags: ["test"] },
 		});
 	});
 
-	describe("getNote", () => {
-		it("should return note by ID", async () => {
-			const mockNoteData = {
-				id: "note-1",
-				user_id: 123,
-				app_id: "notes",
-				data: '{"title": "Test Note", "content": "Test content"}',
-				created_at: "2023-01-01T00:00:00Z",
-				updated_at: "2023-01-01T00:00:00Z",
-			};
+	it("creates a note as a canonical output", async () => {
+		const outputs = { createOutput: vi.fn().mockResolvedValue(output()) };
 
-			mockRepo.getAppDataById.mockResolvedValue(mockNoteData);
-
-			const result = await getNote({
-				env: mockEnv,
-				userId: 123,
-				noteId: "note-1",
-			});
-
-			expect(result).toEqual({
-				id: "note-1",
-				title: "Test Note",
-				content: "Test content",
-				createdAt: "2023-01-01T00:00:00Z",
-				updatedAt: "2023-01-01T00:00:00Z",
-				metadata: undefined,
-			});
+		const result = await createNote({
+			context: context(outputs),
+			user,
+			data: { title: "Test note", content: "Body" },
 		});
 
-		it("should throw error if note not found", async () => {
-			mockRepo.getAppDataById.mockResolvedValue(null);
-
-			await expect(getNote({ env: mockEnv, userId: 123, noteId: "non-existent" })).rejects.toThrow(
-				expect.any(AssistantError),
-			);
-		});
-
-		it("should throw error if note doesn't belong to user", async () => {
-			const mockNoteData = {
+		expect(result.id).toBe("note-1");
+		expect(outputs.createOutput).toHaveBeenCalledWith(
+			expect.objectContaining({
 				id: "note-1",
-				user_id: 456,
-				app_id: "notes",
-				data: '{"title": "Test Note", "content": "Test content"}',
-				created_at: "2023-01-01T00:00:00Z",
-				updated_at: "2023-01-01T00:00:00Z",
-			};
-
-			mockRepo.getAppDataById.mockResolvedValue(mockNoteData);
-
-			await expect(getNote({ env: mockEnv, userId: 123, noteId: "note-1" })).rejects.toThrow(
-				expect.any(AssistantError),
-			);
-		});
+				createdByUserId: 7,
+				capabilityId: "notes",
+				kind: "note",
+			}),
+		);
 	});
 
-	describe("createNote", () => {
-		it("should create a new note", async () => {
-			const mockCreatedEntry = { id: "created-id" };
-			const mockFullEntry = {
-				id: "created-id",
-				data: '{"title": "New Note", "content": "New content"}',
-				created_at: "2023-01-01T00:00:00Z",
-				updated_at: "2023-01-01T00:00:00Z",
-			};
-
-			mockRepo.createAppDataWithItem.mockResolvedValue(mockCreatedEntry);
-			mockRepo.getAppDataById.mockResolvedValue(mockFullEntry);
-
-			const result = await createNote({
-				env: mockEnv,
-				user: mockUser,
-				data: { title: "New Note", content: "New content" },
-			});
-
-			expect(result.title).toBe("New Note");
-			expect(result.content).toBe("New content");
-			expect(mockRepo.createAppDataWithItem).toHaveBeenCalledWith(
-				123,
-				"notes",
-				"test-note-id-123",
-				"note",
-				{
-					title: "New Note",
-					content: "New content",
-					metadata: {
-						contentType: "text",
-						keyTopics: ["topic"],
-						readingTime: 1,
-						sentiment: "neutral",
-						summary: "Generated summary",
-						tags: ["ai"],
-						wordCount: 2,
-					},
-				},
-			);
-		});
-
-		it("should throw error if user data is missing", async () => {
-			await expect(
-				createNote({
-					env: mockEnv,
-					user: { id: 0 } as any,
-					data: { title: "Test", content: "Test" },
+	it("updates with optimistic revision control", async () => {
+		const outputs = {
+			getPersonalOutput: vi.fn().mockResolvedValue(output()),
+			updateOutput: vi.fn().mockResolvedValue(
+				output({
+					revision: 2,
+					content: '{"title":"Changed","content":"New body","metadata":{"tags":["test"]}}',
 				}),
-			).rejects.toThrow(expect.any(AssistantError));
+			),
+		};
+
+		const result = await updateNote({
+			context: context(outputs),
+			user,
+			noteId: "note-1",
+			data: { title: "Changed", content: "New body" },
 		});
+
+		expect(result.title).toBe("Changed");
+		expect(outputs.updateOutput).toHaveBeenCalledWith(
+			"note-1",
+			expect.objectContaining({ expectedRevision: 1, updatedByUserId: 7 }),
+		);
 	});
 
-	describe("updateNote", () => {
-		it("should update existing note", async () => {
-			const mockExistingNote = {
-				id: "note-1",
-				user_id: 123,
-				app_id: "notes",
-				data: '{"title": "Old Note", "content": "Old content", "metadata": {"summary": "Old summary"}}',
-			};
-			const mockUpdatedNote = {
-				id: "note-1",
-				data: '{"title": "Updated Note", "content": "Updated content", "metadata": {"summary": "Old summary"}}',
-				created_at: "2023-01-01T00:00:00Z",
-				updated_at: "2023-01-02T00:00:00Z",
-			};
+	it("deletes only an authorised personal note", async () => {
+		const outputs = {
+			getPersonalOutput: vi.fn().mockResolvedValue(output()),
+			deleteOutput: vi.fn().mockResolvedValue(undefined),
+		};
 
-			mockRepo.getAppDataById
-				.mockResolvedValueOnce(mockExistingNote)
-				.mockResolvedValueOnce(mockUpdatedNote);
+		await deleteNote({ context: context(outputs), user, noteId: "note-1" });
 
-			const result = await updateNote({
-				context: mockContext,
-				env: mockEnv,
-				user: mockUser,
-				noteId: "note-1",
-				data: { title: "Updated Note", content: "Updated content" },
-			});
-
-			expect(result.title).toBe("Updated Note");
-			expect(result.content).toBe("Updated content");
-		});
-
-		it("should throw error if note doesn't exist", async () => {
-			mockRepo.getAppDataById.mockResolvedValue(null);
-
-			await expect(
-				updateNote({
-					context: mockContext,
-					env: mockEnv,
-					user: mockUser,
-					noteId: "non-existent",
-					data: { title: "Test", content: "Test" },
-				}),
-			).rejects.toThrow(expect.any(AssistantError));
-		});
-
-		it("should skip metadata regeneration when note already has metadata", async () => {
-			const mockExistingNote = {
-				id: "note-1",
-				user_id: 123,
-				app_id: "notes",
-				data: JSON.stringify({
-					title: "Existing Note",
-					content: "Existing content",
-					metadata: {
-						summary: "Existing summary",
-						tags: ["existing"],
-						themeMode: "serif",
-					},
-				}),
-			};
-			const mockUpdatedNote = {
-				id: "note-1",
-				data: JSON.stringify({
-					title: "Updated Note",
-					content: "Updated content",
-					metadata: {
-						summary: "Existing summary",
-						tags: ["existing"],
-						themeMode: "sans",
-					},
-				}),
-				created_at: "2023-01-01T00:00:00Z",
-				updated_at: "2023-01-02T00:00:00Z",
-			};
-
-			mockRepo.getAppDataById
-				.mockResolvedValueOnce(mockExistingNote)
-				.mockResolvedValueOnce(mockUpdatedNote);
-
-			const result = await updateNote({
-				context: mockContext,
-				env: mockEnv,
-				user: mockUser,
-				noteId: "note-1",
-				data: {
-					title: "Updated Note",
-					content: "Updated content",
-					metadata: { themeMode: "sans" },
-				},
-			});
-
-			expect(getAuxiliaryModel).not.toHaveBeenCalled();
-			expect(mockRepo.updateAppData).toHaveBeenCalledWith("note-1", {
-				title: "Updated Note",
-				content: "Updated content",
-				metadata: {
-					contentType: "text",
-					keyTopics: [],
-					wordCount: 2,
-					readingTime: 1,
-					summary: "Existing summary",
-					tags: ["existing"],
-					themeMode: "sans",
-				},
-			});
-			expect(result.metadata).toEqual({
-				summary: "Existing summary",
-				tags: ["existing"],
-				themeMode: "sans",
-			});
-		});
-
-		it("should regenerate metadata when forced", async () => {
-			const mockExistingNote = {
-				id: "note-1",
-				user_id: 123,
-				app_id: "notes",
-				data: JSON.stringify({
-					title: "Existing Note",
-					content: "Existing content",
-					metadata: {
-						summary: "Existing summary",
-						tags: ["existing"],
-					},
-				}),
-			};
-			const mockUpdatedNote = {
-				id: "note-1",
-				data: JSON.stringify({
-					title: "Updated Note",
-					content: "Updated content",
-					metadata: {
-						contentType: "text",
-						keyTopics: ["topic"],
-						readingTime: 1,
-						sentiment: "neutral",
-						summary: "Generated summary",
-						tags: ["ai"],
-						themeMode: "sans",
-						wordCount: 2,
-					},
-				}),
-				created_at: "2023-01-01T00:00:00Z",
-				updated_at: "2023-01-02T00:00:00Z",
-			};
-
-			mockRepo.getAppDataById
-				.mockResolvedValueOnce(mockExistingNote)
-				.mockResolvedValueOnce(mockUpdatedNote);
-
-			const result = await updateNote({
-				context: mockContext,
-				env: mockEnv,
-				user: mockUser,
-				noteId: "note-1",
-				data: {
-					title: "Updated Note",
-					content: "Updated content",
-					metadata: { themeMode: "sans" },
-					options: { refreshMetadata: true },
-				},
-			});
-
-			expect(getAuxiliaryModel).toHaveBeenCalledTimes(1);
-			expect(mockRepo.updateAppData).toHaveBeenCalledWith("note-1", {
-				title: "Updated Note",
-				content: "Updated content",
-				metadata: {
-					contentType: "text",
-					keyTopics: ["topic"],
-					readingTime: 1,
-					sentiment: "neutral",
-					summary: "Generated summary",
-					tags: ["ai"],
-					themeMode: "sans",
-					wordCount: 2,
-				},
-			});
-			expect(result.metadata).toEqual({
-				contentType: "text",
-				keyTopics: ["topic"],
-				readingTime: 1,
-				sentiment: "neutral",
-				summary: "Generated summary",
-				tags: ["ai"],
-				themeMode: "sans",
-				wordCount: 2,
-			});
-		});
+		expect(outputs.deleteOutput).toHaveBeenCalledWith("note-1");
 	});
 
-	describe("deleteNote", () => {
-		it("should delete existing note", async () => {
-			const mockExistingNote = {
-				id: "note-1",
-				user_id: 123,
-				app_id: "notes",
-			};
+	it("rejects a missing note instead of falling back to an unscoped record", async () => {
+		const outputs = { getPersonalOutput: vi.fn().mockResolvedValue(null) };
 
-			mockRepo.getAppDataById.mockResolvedValue(mockExistingNote);
-
-			await deleteNote({
-				context: mockContext,
-				env: mockEnv,
-				user: mockUser,
-				noteId: "note-1",
-			});
-
-			expect(mockRepo.deleteAppData).toHaveBeenCalledWith("note-1");
-		});
-
-		it("should throw error if note doesn't exist", async () => {
-			mockRepo.getAppDataById.mockResolvedValue(null);
-
-			await expect(
-				deleteNote({
-					context: mockContext,
-					env: mockEnv,
-					user: mockUser,
-					noteId: "non-existent",
-				}),
-			).rejects.toThrow(expect.any(AssistantError));
-		});
+		await expect(
+			getNote({ context: context(outputs), userId: 7, noteId: "missing" }),
+		).rejects.toMatchObject({ type: "NOT_FOUND", statusCode: 404 });
 	});
 });

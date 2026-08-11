@@ -5,6 +5,7 @@ import { shouldEnableProviderThinking } from "~/lib/providers/models/reasoning";
 import { limitAnthropicCacheControlBlocks } from "~/lib/providers/utils/anthropicCacheControl";
 import { buildAnthropicHostedTools } from "~/lib/providers/utils/anthropicTools";
 import { formatProviderError } from "~/lib/providers/utils/errors";
+import { resolvePrivateAssetImageUrls } from "~/lib/providers/utils/privateAssetImages";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
@@ -49,23 +50,26 @@ export class AnthropicProvider extends BaseProvider {
 
 	async mapParameters(
 		params: ChatCompletionParameters,
-		_storageService?: StorageService,
-		_assetsUrl?: string,
+		storageService?: StorageService,
+		assetsUrl?: string,
 	): Promise<Record<string, any>> {
+		const providerParams = storageService
+			? await resolvePrivateAssetImageUrls({ params, storageService, assetsUrl })
+			: params;
 		const modelConfig = await getModelConfigByMatchingModel(
-			params.model || "",
-			params.env,
-			params.provider || this.name,
+			providerParams.model || "",
+			providerParams.env,
+			providerParams.provider || this.name,
 		);
 		if (!modelConfig) {
 			throw new AssistantError(
-				`Model configuration not found for ${params.model}`,
+				`Model configuration not found for ${providerParams.model}`,
 				ErrorType.CONFIGURATION_ERROR,
 			);
 		}
 
 		const commonParams = createCommonParameters(
-			params,
+			providerParams,
 			modelConfig,
 			this.name,
 			this.isOpenAiCompatible,
@@ -74,13 +78,13 @@ export class AnthropicProvider extends BaseProvider {
 		const streamingParams = shouldEnableStreaming(
 			modelConfig,
 			this.supportsStreaming,
-			params.stream,
+			providerParams.stream,
 		)
 			? { stream: true }
 			: {};
 
-		const toolsParams = getToolsForProvider(params, modelConfig, this.name);
-		const tools = buildAnthropicHostedTools(params, modelConfig);
+		const toolsParams = getToolsForProvider(providerParams, modelConfig, this.name);
+		const tools = buildAnthropicHostedTools(providerParams, modelConfig);
 		const allTools = mergeToolDefinitionsByName(tools, toolsParams.tools || []);
 
 		if (allTools.length > 0) {
@@ -91,7 +95,10 @@ export class AnthropicProvider extends BaseProvider {
 		const anthropicSpecificTools =
 			modelConfig?.supportsToolCalls && allTools.length > 0 ? { tools: allTools } : {};
 
-		const shouldEnableThinking = shouldEnableProviderThinking(modelConfig, params.reasoning_effort);
+		const shouldEnableThinking = shouldEnableProviderThinking(
+			modelConfig,
+			providerParams.reasoning_effort,
+		);
 		const thinkingParams = shouldEnableThinking
 			? {
 					thinking: {
@@ -104,12 +111,12 @@ export class AnthropicProvider extends BaseProvider {
 				}
 			: {};
 
-		const systemPromptParams = params.system_prompt
+		const systemPromptParams = providerParams.system_prompt
 			? {
 					system: [
 						{
 							type: "text" as const,
-							text: params.system_prompt,
+							text: providerParams.system_prompt,
 							cache_control: { type: "ephemeral" },
 						},
 					],
@@ -123,7 +130,7 @@ export class AnthropicProvider extends BaseProvider {
 			...anthropicSpecificTools,
 			...thinkingParams,
 			...systemPromptParams,
-			stop_sequences: params.stop,
+			stop_sequences: providerParams.stop,
 		});
 	}
 

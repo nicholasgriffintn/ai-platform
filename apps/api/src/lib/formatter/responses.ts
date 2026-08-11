@@ -816,7 +816,7 @@ export class ResponseFormatter {
 							image_url: { url: storedImage.url },
 						},
 					],
-					data: { url: storedImage.url, key: storedImage.key, assetId: storedImage.assetId },
+					data: { url: storedImage.url, key: storedImage.key, outputId: storedImage.outputId },
 				};
 			}
 			return { ...data, response: imageContent };
@@ -845,7 +845,7 @@ export class ResponseFormatter {
 							audio_url: { url: storedAudio.url },
 						},
 					],
-					data: { url: storedAudio.url, key: storedAudio.key, assetId: storedAudio.assetId },
+					data: { url: storedAudio.url, key: storedAudio.key, outputId: storedAudio.outputId },
 				};
 			}
 			return { ...data, response: audioContent };
@@ -905,7 +905,7 @@ export class ResponseFormatter {
 						},
 					],
 					data: {
-						assetId: storedImage.assetId,
+						outputId: storedImage.outputId,
 						url: storedImage.url,
 						key: storedImage.key,
 					},

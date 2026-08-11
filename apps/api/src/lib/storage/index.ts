@@ -3,42 +3,64 @@ import type { R2Bucket, R2ObjectBody } from "@cloudflare/workers-types";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
-import type { CreateStoredAsset, StoredAsset, StoredAssetPurpose } from "./asset-types";
-import { buildAssetUrl, getAssetIdFromUrl } from "./asset-urls";
+import { buildPrivateFileUrl, getPrivateFileResourceFromUrl } from "./resource-urls";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/storage" });
 const SUPPORTED_IMAGE_MIME_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
 
-export interface StorePrivateAssetRequest {
+interface StorePrivateFileRequest {
 	key: string;
 	data: string | ArrayBuffer | Uint8Array;
-	ownerUserId: number;
-	purpose: StoredAssetPurpose;
 	mimeType: string;
 	filename?: string | null;
 	byteSize?: number | null;
-	conversationId?: string | null;
-	messageId?: string | null;
-	appDataId?: string | null;
 }
 
-export interface RecordPrivateAssetRequest {
+export interface StoreSourceFileRequest extends StorePrivateFileRequest {
+	createdByUserId: number;
+	projectId?: string | null;
+	conversationId?: string | null;
+	title: string;
+	content?: string | null;
+	metadata?: Record<string, unknown>;
+}
+
+export interface StoreOutputFileRequest extends StorePrivateFileRequest {
+	createdByUserId: number;
+	projectId?: string | null;
+	conversationId?: string | null;
+	capabilityId: string;
+	groupId?: string | null;
+	kind: string;
+	title: string;
+	content?: unknown;
+}
+
+export interface RecordOutputFileRequest {
 	key: string;
-	ownerUserId: number;
-	purpose: StoredAssetPurpose;
+	createdByUserId: number;
+	projectId?: string | null;
+	conversationId?: string | null;
+	capabilityId: string;
+	groupId?: string | null;
+	kind: string;
+	title: string;
+	content?: unknown;
 	mimeType: string;
 	filename?: string | null;
 	byteSize?: number | null;
-	conversationId?: string | null;
-	messageId?: string | null;
-	appDataId?: string | null;
 }
 
-export interface StoredAssetResult {
-	assetId: string;
+export interface StoredSourceFileResult {
+	sourceId: string;
+	key: string;
+	url: string;
+}
+
+export interface StoredOutputFileResult {
+	outputId: string;
 	key: string;
 	url: string;
 }
@@ -101,70 +123,77 @@ export class StorageService {
 		return key;
 	}
 
-	async storePrivateAsset({
+	async storeSourceFile({
 		key,
 		data,
-		ownerUserId,
-		purpose,
+		createdByUserId,
 		mimeType,
 		filename,
 		byteSize,
+		projectId,
 		conversationId,
-		messageId,
-		appDataId,
-	}: StorePrivateAssetRequest): Promise<StoredAssetResult> {
+		title,
+		content,
+		metadata,
+	}: StoreSourceFileRequest): Promise<StoredSourceFileResult> {
 		await this.uploadObject(key, data, {
 			contentType: mimeType,
 		});
-
-		return await this.recordPrivateAsset({
-			key,
-			ownerUserId,
-			purpose,
+		const context = this.requireResourceContext();
+		const source = await context.repositories.sources.createSource({
+			createdByUserId,
+			projectId,
+			conversationId,
+			kind: "file",
+			title,
+			content,
+			metadata,
+			storageKey: key,
 			mimeType,
 			filename,
 			byteSize,
-			conversationId,
-			messageId,
-			appDataId,
 		});
+		return { sourceId: source.id, key, url: buildPrivateFileUrl(context.env, "source", source.id) };
 	}
 
-	async recordPrivateAsset({
+	async storeOutputFile(input: StoreOutputFileRequest): Promise<StoredOutputFileResult> {
+		await this.uploadObject(input.key, input.data, { contentType: input.mimeType });
+		return this.recordOutputFile(input);
+	}
+
+	async recordOutputFile({
 		key,
-		ownerUserId,
-		purpose,
+		createdByUserId,
+		projectId,
+		conversationId,
+		capabilityId,
+		groupId,
+		kind,
+		title,
+		content,
 		mimeType,
 		filename,
 		byteSize,
-		conversationId,
-		messageId,
-		appDataId,
-	}: RecordPrivateAssetRequest): Promise<StoredAssetResult> {
-		const context = this.requireAssetContext();
-		const assetId = generateId();
-		const asset: CreateStoredAsset = {
-			id: assetId,
-			key,
-			ownerUserId,
+	}: RecordOutputFileRequest): Promise<StoredOutputFileResult> {
+		const context = this.requireResourceContext();
+		const output = await context.repositories.outputs.createOutput({
+			createdByUserId,
+			projectId,
 			conversationId,
-			messageId,
-			appDataId,
-			purpose,
+			capabilityId,
+			groupId,
+			kind,
+			title,
+			content,
+			storageKey: key,
 			mimeType,
 			filename,
 			byteSize,
-		};
-		const stored = await context.repositories.storedAssets.createAsset(asset);
-
-		if (!stored) {
-			throw new AssistantError("Failed to record stored asset", ErrorType.STORAGE_ERROR, 500);
-		}
-
+		});
 		return {
-			assetId,
+			outputId: output.id,
 			key,
-			url: buildAssetUrl(context.env, assetId),
+			url: buildPrivateFileUrl(context.env, "output", output.id),
 		};
 	}
 
@@ -276,10 +305,10 @@ export class StorageService {
 		ownerUserId?: number,
 		assetsUrl?: string,
 		options?: GetPrivateAssetBlobOptions & { errorLabel?: string },
-	): Promise<StoredAsset | null> {
+	): Promise<{ key: string; mime_type: string } | null> {
 		const assetEnv = this.context?.env ?? this.env;
-		const assetId = getAssetIdFromUrl(url, assetsUrl || assetEnv?.API_BASE_URL);
-		if (!assetId) {
+		const resource = getPrivateFileResourceFromUrl(url, assetsUrl || assetEnv?.API_BASE_URL);
+		if (!resource) {
 			return null;
 		}
 
@@ -295,18 +324,21 @@ export class StorageService {
 		}
 
 		const repositories = this.context?.repositories ?? new RepositoryManager(assetEnv);
-		const asset = await repositories.storedAssets.getAsset(assetId);
-		if (!asset) {
+		const record =
+			resource.kind === "source"
+				? await repositories.sources.getSource(resource.id)
+				: await repositories.outputs.getOutput(resource.id);
+		if (!record || !record.storage_key || !record.mime_type) {
 			throw new AssistantError("Private asset not found", ErrorType.NOT_FOUND, 404);
 		}
 
-		if (asset.owner_user_id !== ownerUserId) {
+		if (record.created_by_user_id !== ownerUserId) {
 			throw new AssistantError("Access denied for private asset", ErrorType.FORBIDDEN, 403);
 		}
 
 		const allowedMimeTypes = options?.allowedMimeTypes?.map((type) => type.toLowerCase());
 		const allowedMimePrefixes = options?.allowedMimePrefixes?.map((prefix) => prefix.toLowerCase());
-		const mimeType = asset.mime_type.toLowerCase();
+		const mimeType = record.mime_type.toLowerCase();
 		const isAllowedMimeType =
 			(!allowedMimeTypes?.length || allowedMimeTypes.includes(mimeType)) &&
 			(!allowedMimePrefixes?.length ||
@@ -315,15 +347,15 @@ export class StorageService {
 		if (!isAllowedMimeType) {
 			const label = options?.errorLabel ?? "asset";
 			throw new AssistantError(
-				`Unsupported ${label} type: ${asset.mime_type}`,
+				`Unsupported ${label} type: ${record.mime_type}`,
 				ErrorType.PARAMS_ERROR,
 			);
 		}
 
-		return asset;
+		return { key: record.storage_key, mime_type: record.mime_type };
 	}
 
-	private requireAssetContext(): ServiceContext {
+	private requireResourceContext(): ServiceContext {
 		if (!this.context) {
 			throw new AssistantError(
 				"Storage service asset context is not configured",

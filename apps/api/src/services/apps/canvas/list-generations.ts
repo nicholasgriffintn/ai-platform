@@ -16,10 +16,7 @@ export const listCanvasGenerations = async ({
 }): Promise<CanvasGenerationListItem[]> => {
 	const serviceContext = resolveServiceContext({ context, env });
 
-	const records = await serviceContext.repositories.appData.getAppDataByUserAndApp(
-		userId,
-		"canvas",
-	);
+	const records = await serviceContext.repositories.outputs.listPersonalOutputs(userId, "canvas");
 
 	const mapped = records.map(mapCanvasGenerationRecord);
 

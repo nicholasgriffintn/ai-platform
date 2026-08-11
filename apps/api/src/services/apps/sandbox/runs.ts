@@ -1,6 +1,6 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { SandboxRunInstruction } from "@assistant/schemas";
-import { SANDBOX_RUN_ITEM_TYPE, SANDBOX_RUNS_APP_ID } from "~/constants/app";
+import { SANDBOX_RUNS_APP_ID } from "~/constants/app";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";
 import { parseSandboxRunData, type SandboxRunData } from "./run-data";
@@ -46,18 +46,17 @@ async function getSandboxRunRecordForUser(params: {
 	runId: string;
 }): Promise<SandboxRunRecord> {
 	const { context, userId, runId } = params;
-	const records = await context.repositories.appData.getAppDataByUserAppAndItem(
+	const record = await context.repositories.activities.getPersonalActivityByGroup(
 		userId,
 		SANDBOX_RUNS_APP_ID,
 		runId,
-		SANDBOX_RUN_ITEM_TYPE,
 	);
 
-	if (!records.length) {
+	if (!record) {
 		throw new AssistantError("Sandbox run not found", ErrorType.NOT_FOUND);
 	}
 
-	const parsed = parseSandboxRunRecordData(records[0].data);
+	const parsed = parseSandboxRunRecordData(record.data);
 	if (!parsed) {
 		throw new AssistantError("Sandbox run payload is invalid", ErrorType.NOT_FOUND);
 	}

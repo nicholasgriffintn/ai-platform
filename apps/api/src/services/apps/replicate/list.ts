@@ -16,15 +16,15 @@ export const listReplicatePredictions = async ({
 	const serviceContext = resolveServiceContext({ context, env });
 
 	const predictions = projectId
-		? await serviceContext.repositories.appData.getAppDataByProjectAndApp(projectId, "replicate")
-		: await serviceContext.repositories.appData.getAppDataByUserAndApp(userId, "replicate");
+		? await serviceContext.repositories.outputs.listProjectOutputs(projectId, "replicate")
+		: await serviceContext.repositories.outputs.listPersonalOutputs(userId, "replicate");
 
 	const results = await Promise.all(
 		predictions.map(async (prediction) => {
-			const data = safeParseJson(prediction.data);
+			const data = safeParseJson<Record<string, unknown>>(prediction.content) ?? {};
 
 			return {
-				id: prediction.item_id || prediction.id,
+				id: prediction.group_id || prediction.id,
 				modelId: data.modelId,
 				modelName: data.modelName,
 				status: data.status,
@@ -33,7 +33,7 @@ export const listReplicatePredictions = async ({
 				output: data.output,
 				error: data.error,
 				predictionData: data.predictionData,
-				...prediction,
+				outputRecord: prediction,
 			};
 		}),
 	);

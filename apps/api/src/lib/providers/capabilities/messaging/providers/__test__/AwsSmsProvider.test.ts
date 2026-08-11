@@ -143,20 +143,12 @@ describe("AwsSmsProvider", () => {
 				arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer,
 			})),
 		};
-		const storedAssets = {
-			getAsset: vi.fn(async (assetId: string) => ({
-				id: assetId,
-				key: "generations/completion/model/image.png",
-				owner_user_id: 42,
-				conversation_id: null,
-				message_id: null,
-				app_data_id: null,
-				purpose: "generated_media",
+		const outputs = {
+			getOutput: vi.fn(async (outputId: string) => ({
+				id: outputId,
+				storage_key: "generations/completion/model/image.png",
+				created_by_user_id: 42,
 				mime_type: "image/png",
-				filename: "image.png",
-				byte_size: 3,
-				created_at: "2026-06-08T10:00:00.000Z",
-				updated_at: null,
 			})),
 		};
 		const serviceContext = {
@@ -166,7 +158,7 @@ describe("AwsSmsProvider", () => {
 			},
 			user: { id: 42 },
 			requireUser: () => ({ id: 42 }),
-			repositories: { storedAssets },
+			repositories: { outputs },
 		} as unknown as ServiceContext;
 		const provider = new AwsSmsProvider(
 			{
@@ -183,10 +175,10 @@ describe("AwsSmsProvider", () => {
 		await provider.send({
 			to: "+15551234567",
 			body: "image attached",
-			mediaUrls: ["https://api.polychat.test/assets/asset-1"],
+			mediaUrls: ["https://api.polychat.test/outputs/output-1/content"],
 		});
 
-		expect(storedAssets.getAsset).toHaveBeenCalledWith("asset-1");
+		expect(outputs.getOutput).toHaveBeenCalledWith("output-1");
 		expect(privateAssetsBucket.get).toHaveBeenCalledWith("generations/completion/model/image.png");
 		expect(mocks.awsClient).toHaveBeenNthCalledWith(1, {
 			accessKeyId: "AKIA123",

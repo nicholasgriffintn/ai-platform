@@ -1,0 +1,82 @@
+import type { Output } from "@assistant/schemas";
+import { FileQuestion, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router";
+
+import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
+import { PageShell } from "~/components/Core/PageShell";
+import { PageStatus } from "~/components/Core/PageStatus";
+import { Card } from "~/components/ui";
+import { API_BASE_URL } from "~/constants";
+import { getSharedOutput } from "~/lib/api/outputs";
+
+export function meta() {
+	return [
+		{ title: "Shared output - Polychat" },
+		{ name: "description", content: "An output shared from Polychat" },
+	];
+}
+
+export default function SharedOutputPage() {
+	const { token } = useParams<{ token: string }>();
+	const [output, setOutput] = useState<Output | null>(null);
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (!token) {
+			setError("Invalid share link");
+			return;
+		}
+		getSharedOutput(token)
+			.then(setOutput)
+			.catch((cause: unknown) => {
+				setError(cause instanceof Error ? cause.message : "This output is unavailable");
+			});
+	}, [token]);
+
+	if (error) {
+		return (
+			<PageShell title="Shared output unavailable" displayNavBar={false}>
+				<PageStatus message={error}>
+					<Link to="/">Return home</Link>
+				</PageStatus>
+			</PageShell>
+		);
+	}
+
+	if (!output || !token) {
+		return (
+			<PageShell className="flex min-h-screen items-center justify-center" displayNavBar={false}>
+				<Loader2 size={40} className="animate-spin text-zinc-400" />
+			</PageShell>
+		);
+	}
+
+	return (
+		<PageShell title={output.title} displayNavBar={false}>
+			<div className="mx-auto w-full max-w-4xl py-8">
+				<Card className="gap-5 p-6 shadow-none">
+					<div className="flex items-center gap-3">
+						<FileQuestion size={20} className="text-zinc-400" />
+						<div>
+							<p className="text-xs font-medium uppercase tracking-wide text-zinc-400">
+								{output.capabilityId}
+							</p>
+							<h1 className="text-xl font-semibold">{output.title}</h1>
+						</div>
+					</div>
+					{output.file ? (
+						<a
+							href={`${API_BASE_URL}/outputs/shared/${encodeURIComponent(token)}/content`}
+							target="_blank"
+							rel="noreferrer"
+						>
+							Open {output.file.filename || "shared file"}
+						</a>
+					) : null}
+					<ResponseRenderer result={output.content} />
+				</Card>
+			</div>
+		</PageShell>
+	);
+}

@@ -1,9 +1,13 @@
 import {
 	ChevronRight,
+	Activity,
+	Database,
 	FolderKanban,
 	Grid2X2,
 	LayoutDashboard,
+	ClipboardList,
 	MessageSquareText,
+	PanelsTopLeft,
 	Settings2,
 	SquarePen,
 	Users,
@@ -84,6 +88,15 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
 						>
 							<Users size={16} /> People
 						</NavLink>
+						{(workspace.role === "owner" || workspace.role === "admin") && (
+							<NavLink
+								to={`/work/${workspace.id}/governance`}
+								className={linkClass}
+								onClick={closeOnMobile}
+							>
+								<ClipboardList size={16} /> Governance
+							</NavLink>
+						)}
 					</div>
 				)}
 
@@ -134,6 +147,27 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
 							onClick={closeOnMobile}
 						>
 							<Grid2X2 size={16} /> Experiences
+						</NavLink>
+						<NavLink
+							to={`/work/${workspaceId}/projects/${projectId}/outputs`}
+							className={linkClass}
+							onClick={closeOnMobile}
+						>
+							<PanelsTopLeft size={16} /> Outputs
+						</NavLink>
+						<NavLink
+							to={`/work/${workspaceId}/projects/${projectId}/sources`}
+							className={linkClass}
+							onClick={closeOnMobile}
+						>
+							<Database size={16} /> Sources
+						</NavLink>
+						<NavLink
+							to={`/work/${workspaceId}/projects/${projectId}/activity`}
+							className={linkClass}
+							onClick={closeOnMobile}
+						>
+							<Activity size={16} /> Activity
 						</NavLink>
 						<NavLink
 							to={`/work/${workspaceId}/projects/${projectId}/library`}

@@ -69,7 +69,7 @@ export class MemorySynthesisRepository extends BaseRepository {
 		limit = 10,
 	): Promise<MemorySynthesis[]> {
 		let query: string;
-		let values: any[];
+		let values: unknown[];
 
 		if (namespace) {
 			query = `SELECT * FROM memory_syntheses
@@ -133,12 +133,14 @@ export class MemorySynthesisRepository extends BaseRepository {
 		let values: any[];
 
 		if (since) {
-			query = `SELECT COUNT(*) as count FROM memories
-               WHERE user_id = ? AND namespace = ? AND is_active = 1 AND created_at > ?`;
+			query = `SELECT COUNT(*) as count FROM source
+               WHERE created_by_user_id = ? AND kind = 'memory' AND status != 'archived'
+				 AND COALESCE(json_extract(metadata, '$.namespace'), 'global') = ? AND created_at > ?`;
 			values = [userId, namespace, since];
 		} else {
-			query = `SELECT COUNT(*) as count FROM memories
-               WHERE user_id = ? AND namespace = ? AND is_active = 1`;
+			query = `SELECT COUNT(*) as count FROM source
+               WHERE created_by_user_id = ? AND kind = 'memory' AND status != 'archived'
+				 AND COALESCE(json_extract(metadata, '$.namespace'), 'global') = ?`;
 			values = [userId, namespace];
 		}
 
