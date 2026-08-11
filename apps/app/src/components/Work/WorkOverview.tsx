@@ -9,6 +9,7 @@ import { Button, Card } from "~/components/ui";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 import { useWorkData } from "./WorkContext";
+import { WorkAccessEmptyState } from "./WorkAccessEmptyState";
 import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog";
 import { WorkCardGridSkeleton } from "./WorkLoadingSkeletons";
 
@@ -17,25 +18,26 @@ export function WorkOverview() {
 	const { workspacesQuery } = useWorkData();
 	const { data, isLoading } = workspacesQuery;
 	const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+	const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
+	const isPro = useChatStore((state) => state.isPro);
 	const setShowLoginModal = useUIStore((state) => state.setShowLoginModal);
+	const canAccessWork = isAuthenticated && isPro;
 
 	return (
 		<>
 			<main className="container mx-auto max-w-6xl px-4 py-8">
 				<PageHeader
-					actions={[
-						isAuthenticated
-							? {
-									label: "New workspace",
-									icon: <Plus size={17} />,
-									onClick: () => setIsCreateOpen(true),
-								}
-							: {
-									label: "Sign in",
-									icon: <BriefcaseBusiness size={17} />,
-									onClick: () => setShowLoginModal(true),
-								},
-					]}
+					actions={
+						canAccessWork
+							? [
+									{
+										label: "New workspace",
+										icon: <Plus size={17} />,
+										onClick: () => setIsCreateOpen(true),
+									},
+								]
+							: undefined
+					}
 				>
 					<PageTitle title="Workspaces" />
 					<p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
@@ -43,15 +45,26 @@ export function WorkOverview() {
 					</p>
 				</PageHeader>
 
-				{isAuthenticated && isLoading && (
+				{isAuthenticationLoading ? (
 					<WorkCardGridSkeleton
 						count={6}
 						label="Loading workspaces"
 						gridClassName="grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
 					/>
-				)}
+				) : !canAccessWork ? (
+					<WorkAccessEmptyState
+						access={isAuthenticated ? "upgrade" : "sign-in"}
+						onSignIn={() => setShowLoginModal(true)}
+					/>
+				) : isLoading ? (
+					<WorkCardGridSkeleton
+						count={6}
+						label="Loading workspaces"
+						gridClassName="grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+					/>
+				) : null}
 
-				{isAuthenticated && data?.workspaces.length === 0 && (
+				{canAccessWork && data?.workspaces.length === 0 && (
 					<EmptyState
 						icon={<BriefcaseBusiness className="text-zinc-400" size={24} />}
 						title="No workspaces yet"
@@ -61,7 +74,7 @@ export function WorkOverview() {
 					/>
 				)}
 
-				{data?.workspaces.length ? (
+				{canAccessWork && data?.workspaces.length ? (
 					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 						{data.workspaces.map((workspace) => (
 							<Link
