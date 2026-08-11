@@ -56,9 +56,7 @@ export const SampleQuestions = ({
 	const { trackEvent } = useTrackEvent();
 
 	const { isMobileLoading } = useUIStore();
-	const [questions, setQuestions] = useState<Question[]>(() =>
-		questionsOverride === undefined ? selectSampleQuestions(false) : [],
-	);
+	const [questions, setQuestions] = useState<Question[]>([]);
 	const [showChallenging, setShowChallenging] = useState(false);
 	const displayedQuestions = questionsOverride ?? questions;
 	const hasQuestionOverride = questionsOverride !== undefined;

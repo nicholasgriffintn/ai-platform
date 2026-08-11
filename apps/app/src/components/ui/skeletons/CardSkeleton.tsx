@@ -39,7 +39,7 @@ export function CardSkeleton({
 								key={lineIndex}
 								className="h-4"
 								style={{
-									width: `${Math.max(60, Math.random() * 40 + 60)}%`,
+									width: `${[82, 68, 94, 74][lineIndex % 4]}%`,
 								}}
 							/>
 						))}

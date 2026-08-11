@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { ConversationThread } from "~/components/ConversationThread";
 import type { ConversationThreadModeConfig } from "~/components/ConversationThread";
@@ -15,7 +15,10 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
 	const userSettings = useChatStore((state) => state.userSettings);
 	const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
 	const { data: conversations = [], isLoading: areConversationsLoading } = useChats();
-	const [welcomeSeed] = useState(() => Math.random());
+	const [welcomeSeed, setWelcomeSeed] = useState<number | null>(null);
+	useEffect(() => {
+		setWelcomeSeed(Math.random());
+	}, []);
 	const welcome = useMemo(
 		() =>
 			createChatWelcome(
@@ -25,7 +28,7 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
 					jobRole: userSettings?.job_role,
 					hasPreviousChats: Boolean(user?.message_count || conversations.length),
 				},
-				welcomeSeed,
+				welcomeSeed ?? 0,
 			),
 		[
 			conversations.length,
@@ -37,7 +40,8 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
 		],
 	);
 	const hasModeWelcome = Boolean(urlModeConfig?.welcomeTitle || urlModeConfig?.welcomeDescription);
-	const isWelcomeLoading = !hasModeWelcome && (isAuthenticationLoading || areConversationsLoading);
+	const isWelcomeLoading =
+		!hasModeWelcome && (welcomeSeed === null || isAuthenticationLoading || areConversationsLoading);
 
 	return (
 		<ConversationThread
