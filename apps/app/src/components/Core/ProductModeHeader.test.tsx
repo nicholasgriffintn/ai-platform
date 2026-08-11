@@ -54,4 +54,34 @@ describe("ProductModeHeader", () => {
 		expect(header.children[1]).toContainElement(screen.getByRole("link", { name: "Chat" }));
 		expect(header.children[2]).toContainElement(screen.getByRole("button", { name: "Trace" }));
 	});
+
+	it("eases in the lower blur only after the content pane has meaningfully scrolled", () => {
+		const { container } = render(
+			<MemoryRouter initialEntries={["/chat"]}>
+				<div>
+					<ProductModeHeader />
+					<div data-header-scroll-source>Pane content</div>
+				</div>
+			</MemoryRouter>,
+		);
+
+		const header = screen.getByRole("banner");
+		const scrollSource = screen.getByText("Pane content");
+		const blurEdge = container.querySelector("[data-scroll-blur-edge]");
+
+		expect(header).not.toHaveAttribute("data-content-scrolled");
+		expect(blurEdge).toHaveClass("opacity-0");
+
+		Object.defineProperty(scrollSource, "scrollTop", { configurable: true, value: 12 });
+		fireEvent.scroll(scrollSource);
+
+		expect(header).toHaveAttribute("data-content-scrolled", "true");
+		expect(blurEdge).toHaveClass("opacity-70");
+
+		Object.defineProperty(scrollSource, "scrollTop", { configurable: true, value: 0 });
+		fireEvent.scroll(scrollSource);
+
+		expect(header).not.toHaveAttribute("data-content-scrolled");
+		expect(blurEdge).toHaveClass("opacity-0");
+	});
 });

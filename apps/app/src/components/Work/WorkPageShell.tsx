@@ -50,7 +50,9 @@ export function WorkPageShell({
 		>
 			<div className="flex h-full min-h-0 flex-col overflow-hidden">
 				{isProjectConversation ? <ConversationProductHeader /> : <ProductModeHeader />}
-				<div className="min-h-0 flex-1 overflow-y-auto">{content}</div>
+				<div data-header-scroll-source className="min-h-0 flex-1 overflow-y-auto">
+					{content}
+				</div>
 			</div>
 		</PageShell>
 	);

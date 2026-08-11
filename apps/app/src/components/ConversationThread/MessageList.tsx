@@ -205,6 +205,7 @@ export const MessageList = ({
 		>
 			<VList
 				ref={virtualRef}
+				data-header-scroll-source
 				className="flex-1 pt-4 pr-2 h-full overflow-auto w-full"
 				onScroll={handleScroll}
 			>

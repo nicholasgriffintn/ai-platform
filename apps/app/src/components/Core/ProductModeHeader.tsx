@@ -1,8 +1,11 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useRef } from "react";
 import { Cloud, CloudOff, Menu, PanelLeftOpen } from "lucide-react";
+import { useLocation } from "react-router";
 
 import { Button } from "~/components/ui";
+import { useHeaderScrollEdge } from "~/hooks/useHeaderScrollEdge";
 import { useTrackEvent } from "~/hooks/use-track-event";
+import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 import { ProductModeSwitch } from "./ProductModeSwitch";
@@ -18,6 +21,9 @@ export function ProductModeHeader({
 	context,
 	showCloudToggle = false,
 }: ProductModeHeaderProps) {
+	const { pathname } = useLocation();
+	const headerRef = useRef<HTMLElement>(null);
+	const isScrolled = useHeaderScrollEdge(headerRef, pathname);
 	const { trackEvent } = useTrackEvent();
 	const { isMobile, sidebarVisible, setSidebarVisible } = useUIStore();
 	const { isAuthenticated, localOnlyMode, setLocalOnlyMode } = useChatStore();
@@ -35,7 +41,11 @@ export function ProductModeHeader({
 	};
 
 	return (
-		<header className="flex h-[53px] shrink-0 items-center gap-1 px-4 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-2">
+		<header
+			ref={headerRef}
+			data-content-scrolled={isScrolled || undefined}
+			className="relative z-20 flex h-[53px] shrink-0 items-center gap-1 bg-off-white px-4 dark:bg-zinc-900 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-2"
+		>
 			<div className="flex min-w-0 flex-1 items-center gap-1 sm:justify-self-stretch sm:gap-2">
 				{!sidebarVisible && (
 					<Button
@@ -63,6 +73,14 @@ export function ProductModeHeader({
 					/>
 				)}
 			</div>
+			<div
+				aria-hidden="true"
+				data-scroll-blur-edge
+				className={cn(
+					"pointer-events-none absolute inset-x-0 top-full h-3 bg-gradient-to-b from-zinc-950/[0.035] via-transparent to-transparent opacity-0 backdrop-blur-[2px] transition-opacity duration-300 ease-out [-webkit-mask-image:linear-gradient(to_bottom,black_0%,transparent_100%)] [mask-image:linear-gradient(to_bottom,black_0%,transparent_100%)] motion-reduce:transition-none dark:from-black/15",
+					isScrolled && "opacity-70",
+				)}
+			/>
 		</header>
 	);
 }

@@ -519,7 +519,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 			className={`relative flex h-full min-h-0 w-full flex-col ${isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""}`}
 		>
 			{showWelcomeScreen ? (
-				<div className="flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-0 py-6 sm:py-8">
+				<div
+					data-header-scroll-source
+					className="flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-0 py-6 sm:py-8"
+				>
 					<div className="my-auto w-full">
 						<WelcomeScreen
 							setInput={setChatInput}

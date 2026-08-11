@@ -14,7 +14,7 @@ export function CanvasGenerationsView({
 }) {
 	if (canvas.mode === "drawing") {
 		return (
-			<section className={cn("h-full overflow-auto p-4", className)}>
+			<section data-header-scroll-source className={cn("h-full overflow-auto p-4", className)}>
 				<div className="mx-auto max-w-[1400px]">
 					<div className="mb-4 flex items-center gap-2">
 						<div className="rounded-lg bg-zinc-900 p-2 text-white dark:bg-zinc-100 dark:text-zinc-900">
@@ -34,7 +34,7 @@ export function CanvasGenerationsView({
 	}
 
 	return (
-		<section className={cn("h-full overflow-auto p-4", className)}>
+		<section data-header-scroll-source className={cn("h-full overflow-auto p-4", className)}>
 			<div className="mx-auto max-w-[1400px]">
 				<div className="mb-4 flex items-center justify-between">
 					<div className="flex items-center gap-2">
