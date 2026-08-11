@@ -1,4 +1,4 @@
-import { GitBranch, Loader2, MessagesSquare, ScrollText } from "lucide-react";
+import { Loader2, ScrollText } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { VList, type VListHandle } from "virtua";
 
@@ -7,7 +7,6 @@ import { useChatManager } from "~/hooks/useChatManager";
 import { useCanAccessProFeatures } from "~/hooks/useCanAccessProFeatures";
 import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
-import { buildAgentTraceEntries } from "~/lib/agent-trace";
 import {
 	getCompactionMessageLabel,
 	isCompactionLoadingMessage,
@@ -31,12 +30,10 @@ import {
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Message } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
-import { AgentTraceButton } from "./AgentTracePanel";
 import { ChatMessage } from "./ChatMessage";
 import { getMessageListScrollKey } from "./messageListScroll";
 import { MessageSkeleton } from "./MessageSkeleton";
 import { ScrollButton } from "./ScrollButton";
-import { ShareButton } from "./ShareButton";
 
 interface MessageListProps {
 	onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
@@ -91,8 +88,7 @@ export const MessageList = ({
 	onRequestOpinion,
 	isRequestingOpinion = false,
 }: MessageListProps) => {
-	const { chatMode, currentConversationId, isAuthenticated, setCurrentConversationId } =
-		useChatStore();
+	const { chatMode, currentConversationId } = useChatStore();
 
 	const { data: conversation, isLoading: isLoadingConversation } = useChat(
 		!isSharedView ? currentConversationId : undefined,
@@ -111,7 +107,6 @@ export const MessageList = ({
 	} = useChatManager();
 
 	const messages = propMessages || conversation?.messages || [];
-	const traceEntries = useMemo(() => buildAgentTraceEntries(messages), [messages]);
 	const availableModels = useMemo(
 		() => getAvailableModels(apiModels, chatMode === "local", webLLMModels),
 		[apiModels, chatMode, webLLMModels],
@@ -213,38 +208,6 @@ export const MessageList = ({
 				className="flex-1 pt-4 pr-2 h-full overflow-auto w-full"
 				onScroll={handleScroll}
 			>
-				{!isSharedView && (
-					<div className="mb-3">
-						<div className="flex items-center">
-							<h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-2 min-w-0 truncate flex-grow">
-								{conversation?.parent_conversation_id && (
-									<GitBranch
-										size={16}
-										className="flex-shrink-0 text-zinc-600 dark:text-zinc-400 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100"
-										aria-label="Go to original conversation"
-										onClick={() => setCurrentConversationId(conversation.parent_conversation_id!)}
-									/>
-								)}
-								<MessagesSquare size={16} className="flex-shrink-0" />
-								<span className="truncate">{conversation?.title || "New conversation"}</span>
-							</h2>
-							<div className="flex flex-shrink-0 items-center gap-1">
-								<AgentTraceButton entries={traceEntries} />
-								{!conversation?.isLocalOnly &&
-									!isLoadingConversation &&
-									currentConversationId &&
-									isAuthenticated && (
-										<ShareButton
-											conversationId={currentConversationId}
-											isPublic={conversation?.is_public}
-											shareId={conversation?.share_id}
-											className="flex-shrink-0"
-										/>
-									)}
-							</div>
-						</div>
-					</div>
-				)}
 				<div className="py-4 space-y-4">
 					{!isSharedView && isLoadingConversation ? (
 						<>

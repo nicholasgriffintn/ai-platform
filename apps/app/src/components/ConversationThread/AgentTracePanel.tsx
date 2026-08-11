@@ -13,7 +13,11 @@ interface AgentTracePanelProps {
 	entries: AgentTraceEntry[];
 }
 
-export function AgentTraceButton({ entries }: AgentTracePanelProps) {
+interface AgentTraceButtonProps extends AgentTracePanelProps {
+	compactOnMobile?: boolean;
+}
+
+export function AgentTraceButton({ entries, compactOnMobile = false }: AgentTraceButtonProps) {
 	if (entries.length === 0) {
 		return null;
 	}
@@ -24,12 +28,18 @@ export function AgentTraceButton({ entries }: AgentTracePanelProps) {
 				<Button
 					variant="ghost"
 					size="sm"
-					className="flex-shrink-0 text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+					className={cn(
+						"flex-shrink-0 text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200",
+						compactOnMobile &&
+							"px-2 [&>div>span:first-child]:mr-0 sm:px-3 sm:[&>div>span:first-child]:mr-2",
+					)}
 					title="View conversation trace"
 					aria-label="View conversation trace"
 					icon={<Activity className="h-3.5 w-3.5" />}
 				>
-					<span className="whitespace-nowrap">Trace</span>
+					<span className={cn("whitespace-nowrap", compactOnMobile && "hidden sm:inline")}>
+						Trace
+					</span>
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent

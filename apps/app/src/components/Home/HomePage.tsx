@@ -6,6 +6,7 @@ import { ChatSidebar } from "~/components/ChatSidebar";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
+import { ConversationProductHeader } from "~/components/ConversationThread/ConversationProductHeader";
 import { SearchDialog } from "~/components/Search/SearchDialog";
 import { useChatStore } from "~/state/stores/chatStore";
 import { HomeConversationThread } from "./HomeConversationThread";
@@ -43,7 +44,11 @@ export function HomePage() {
 			headerContent={<PageTitle title="Conversation" className="sr-only" />}
 		>
 			<div className="flex h-full min-h-0 flex-col overflow-hidden">
-				<ProductModeHeader showCloudToggle />
+				{isCanvasMode ? (
+					<ProductModeHeader showCloudToggle />
+				) : (
+					<ConversationProductHeader showCloudToggle />
+				)}
 				<div className="flex min-h-0 flex-1 flex-row overflow-hidden">
 					<div className="flex min-h-0 w-full flex-1 flex-col">
 						<div className="relative min-h-0 flex-1 overflow-hidden">

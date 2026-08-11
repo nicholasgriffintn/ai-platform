@@ -36,4 +36,22 @@ describe("ProductModeHeader", () => {
 		expect(window.localStorage.getItem("localOnlyMode")).toBe("true");
 		expect(screen.getByRole("button", { name: "Switch to cloud mode" })).toBeInTheDocument();
 	});
+
+	it("packs mobile navigation beside the actions and leaves the remaining width to context", () => {
+		render(
+			<MemoryRouter initialEntries={["/chat"]}>
+				<ProductModeHeader
+					context={<span>Conversation title</span>}
+					actions={<button type="button">Trace</button>}
+				/>
+			</MemoryRouter>,
+		);
+
+		const header = screen.getByRole("banner");
+		expect(header).toHaveClass("flex", "px-4", "sm:grid");
+		expect(header).not.toHaveClass("border-b");
+		expect(header.children[0]).toContainElement(screen.getByText("Conversation title"));
+		expect(header.children[1]).toContainElement(screen.getByRole("link", { name: "Chat" }));
+		expect(header.children[2]).toContainElement(screen.getByRole("button", { name: "Trace" }));
+	});
 });

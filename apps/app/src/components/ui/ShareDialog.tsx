@@ -138,6 +138,7 @@ export function ShareDialog({
 					className,
 				)}
 				title={currentIsPublic ? `Manage shared ${type}` : `Share ${type}`}
+				aria-label={currentIsPublic ? `Manage shared ${type}` : `Share ${type}`}
 				icon={<Share2 className="h-3.5 w-3.5" />}
 			>
 				<span className="whitespace-nowrap">

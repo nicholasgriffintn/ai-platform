@@ -42,7 +42,12 @@ vi.mock("~/components/Core/PageShell", () => ({
 		</div>
 	),
 }));
-vi.mock("~/components/Core/ProductModeHeader", () => ({ ProductModeHeader: () => null }));
+vi.mock("~/components/Core/ProductModeHeader", () => ({
+	ProductModeHeader: () => <div>Product header</div>,
+}));
+vi.mock("~/components/ConversationThread/ConversationProductHeader", () => ({
+	ConversationProductHeader: () => <div>Conversation header</div>,
+}));
 vi.mock("~/components/Search/SearchDialog", () => ({ SearchDialog: () => null }));
 vi.mock("~/state/stores/chatStore", () => ({
 	useChatStore: () => ({
@@ -69,11 +74,13 @@ describe("HomePage", () => {
 				<HomePage />
 			</MemoryRouter>,
 		);
+		expect(screen.getByText("Conversation header")).toBeInTheDocument();
 
 		fireEvent.click(screen.getByRole("button", { name: "Switch to image generation" }));
 
 		expect(screen.getByRole("button", { name: "Switch to chat" })).toBeInTheDocument();
 		expect(screen.getByText("Canvas generations")).toBeInTheDocument();
+		expect(screen.getByText("Product header")).toBeInTheDocument();
 		expect(screen.queryByText("Conversation")).not.toBeInTheDocument();
 	});
 });

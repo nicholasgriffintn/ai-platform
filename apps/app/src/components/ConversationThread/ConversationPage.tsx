@@ -4,7 +4,6 @@ import { useLocation } from "react-router";
 import { ChatSidebar } from "~/components/ChatSidebar";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
-import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
 import { SearchDialog } from "~/components/Search/SearchDialog";
 import {
 	type AssistantActionLaunchState,
@@ -16,6 +15,7 @@ import { useToolsStore } from "~/state/stores/toolsStore";
 import { mergeChatRequestOptions } from "~/lib/chat/request-options";
 import type { ChatRequestOptions } from "~/types";
 import { ConversationThread, type ConversationThreadModeConfig } from ".";
+import { ConversationProductHeader } from "./ConversationProductHeader";
 
 interface ConversationPageProps {
 	embedded?: boolean;
@@ -107,7 +107,7 @@ export function ConversationPage({
 
 	const content = (
 		<div className="flex h-full min-h-0 flex-col overflow-hidden">
-			{!embedded && <ProductModeHeader />}
+			{!embedded && <ConversationProductHeader />}
 			<div className="relative flex min-h-0 flex-1 flex-grow flex-row overflow-hidden">
 				<div className="flex min-h-0 w-full flex-grow flex-col">
 					<div className="relative min-h-0 flex-1 overflow-hidden">

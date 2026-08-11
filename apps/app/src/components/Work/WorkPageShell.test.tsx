@@ -12,7 +12,11 @@ vi.mock("~/components/Core/PageShell", () => ({
 }));
 
 vi.mock("~/components/Core/ProductModeHeader", () => ({
-	ProductModeHeader: () => null,
+	ProductModeHeader: () => <div>Product header</div>,
+}));
+
+vi.mock("~/components/ConversationThread/ConversationProductHeader", () => ({
+	ConversationProductHeader: () => <div>Conversation header</div>,
 }));
 
 vi.mock("./WorkSidebar", () => ({
@@ -31,9 +35,11 @@ describe("WorkPageShell", () => {
 
 	it("shows the shared sign-in state on protected Work routes", () => {
 		render(
-			<WorkPageShell workspaceId="workspace-1">
-				<div>Private workspace content</div>
-			</WorkPageShell>,
+			<MemoryRouter>
+				<WorkPageShell workspaceId="workspace-1">
+					<div>Private workspace content</div>
+				</WorkPageShell>
+			</MemoryRouter>,
 		);
 
 		expect(screen.getByRole("heading", { name: "Sign in to continue" })).toBeInTheDocument();
@@ -56,5 +62,20 @@ describe("WorkPageShell", () => {
 
 		expect(screen.getByRole("heading", { name: "Unlock shared workspaces." })).toBeInTheDocument();
 		expect(screen.queryByText("Private workspace content")).not.toBeInTheDocument();
+	});
+
+	it("uses the conversation header on project chat routes", () => {
+		useChatStore.setState({ isAuthenticated: true, isPro: true });
+
+		render(
+			<MemoryRouter initialEntries={["/work/workspace-1/projects/project-1/chat"]}>
+				<WorkPageShell workspaceId="workspace-1" projectId="project-1">
+					<div>Project conversation</div>
+				</WorkPageShell>
+			</MemoryRouter>,
+		);
+
+		expect(screen.getByText("Conversation header")).toBeInTheDocument();
+		expect(screen.queryByText("Product header")).not.toBeInTheDocument();
 	});
 });

@@ -19,6 +19,7 @@ vi.mock("~/components/Core/PageShell", () => ({
 	PageShell: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 vi.mock("~/components/Core/ProductModeHeader", () => ({ ProductModeHeader: () => null }));
+vi.mock("./ConversationProductHeader", () => ({ ConversationProductHeader: () => null }));
 vi.mock("~/components/Search/SearchDialog", () => ({ SearchDialog: () => null }));
 vi.mock("~/state/stores/chatStore", () => ({
 	useChatStore: () => ({
