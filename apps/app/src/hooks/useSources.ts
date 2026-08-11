@@ -29,6 +29,7 @@ export function useSources(
 		kind?: SourceKind;
 		collectionId?: string | null;
 	} = {},
+	options: { enabled?: boolean } = {},
 ) {
 	return useQuery({
 		queryKey: SOURCE_QUERY_KEYS.list(filters.projectId, filters.kind, filters.collectionId),
@@ -36,6 +37,7 @@ export function useSources(
 			filters.collectionId
 				? listCollectionSources(filters.collectionId)
 				: listSources({ projectId: filters.projectId, kind: filters.kind }),
+		enabled: options.enabled,
 	});
 }
 

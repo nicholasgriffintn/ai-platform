@@ -1,6 +1,7 @@
 import type { MarkdownConversionOptions } from "@assistant/schemas";
 
 import { apiService } from "~/lib/api/api-service";
+import type { UploadFileOptions } from "~/lib/api/services/upload-service";
 import type { AttachmentData } from "~/lib/chat/attachments";
 
 const SUPPORTED_MARKDOWN_IMAGE_LANGUAGES = [
@@ -25,6 +26,7 @@ export interface ComposerAttachmentUploadContext {
 	isTextToImageOnlyModel: boolean;
 	supportsAudio: boolean;
 	supportsDocuments: boolean;
+	projectId?: string;
 }
 
 export type ComposerAttachmentUploadResult =
@@ -59,6 +61,25 @@ function isCodeLikeFile(file: File) {
 			file.type === "application/typescript" ||
 			CODE_LIKE_EXTENSION_PATTERN.test(file.name))
 	);
+}
+
+function getUploadOptions(
+	context: ComposerAttachmentUploadContext,
+	options?: UploadFileOptions,
+): UploadFileOptions | undefined {
+	return context.projectId ? { ...options, projectId: context.projectId } : options;
+}
+
+function uploadFile(
+	file: File,
+	fileType: "image" | "document" | "audio" | "code",
+	context: ComposerAttachmentUploadContext,
+	options?: UploadFileOptions,
+) {
+	const uploadOptions = getUploadOptions(context, options);
+	return uploadOptions
+		? apiService.uploadFile(file, fileType, uploadOptions)
+		: apiService.uploadFile(file, fileType);
 }
 
 function markdownDocumentAttachment({
@@ -99,7 +120,7 @@ export async function uploadComposerAttachment(
 			}
 
 			const descriptionLanguage = getPreferredMarkdownImageLanguage();
-			const { url, name, markdown, type } = await apiService.uploadFile(file, "image", {
+			const { url, name, markdown, type } = await uploadFile(file, "image", context, {
 				convertToMarkdown: true,
 				conversionOptions: descriptionLanguage
 					? {
@@ -119,7 +140,7 @@ export async function uploadComposerAttachment(
 			return { error: "This model does not support image uploads and conversion failed" };
 		}
 
-		const { url } = await apiService.uploadFile(file, "image");
+		const { url } = await uploadFile(file, "image", context);
 
 		return {
 			attachment: {
@@ -135,7 +156,7 @@ export async function uploadComposerAttachment(
 			return { error: "This model does not support audio uploads" };
 		}
 
-		const { url } = await apiService.uploadFile(file, "audio");
+		const { url } = await uploadFile(file, "audio", context);
 
 		return {
 			attachment: {
@@ -147,7 +168,7 @@ export async function uploadComposerAttachment(
 	}
 
 	if (isCodeLikeFile(file)) {
-		const { url, name, markdown, type } = await apiService.uploadFile(file, "code");
+		const { url, name, markdown, type } = await uploadFile(file, "code", context);
 
 		if (type === "markdown_document" && markdown) {
 			return {
@@ -158,7 +179,7 @@ export async function uploadComposerAttachment(
 
 	if (file.type === "application/pdf") {
 		if (context.supportsDocuments) {
-			const { url, name } = await apiService.uploadFile(file, "document");
+			const { url, name } = await uploadFile(file, "document", context);
 			return {
 				attachment: {
 					type: "document",
@@ -168,7 +189,7 @@ export async function uploadComposerAttachment(
 			};
 		}
 
-		const { url, name, markdown, type } = await apiService.uploadFile(file, "document", {
+		const { url, name, markdown, type } = await uploadFile(file, "document", context, {
 			convertToMarkdown: true,
 		});
 
@@ -181,7 +202,7 @@ export async function uploadComposerAttachment(
 		return { error: "This model does not support document uploads and conversion failed" };
 	}
 
-	const { url, name, markdown, type } = await apiService.uploadFile(file, "document", {
+	const { url, name, markdown, type } = await uploadFile(file, "document", context, {
 		convertToMarkdown: true,
 	});
 

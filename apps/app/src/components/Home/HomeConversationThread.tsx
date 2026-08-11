@@ -10,7 +10,6 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
 		<ConversationThread
 			modeConfig={{
 				...urlModeConfig,
-				hideComposerActionMenu: true,
 				modeControls: {
 					...urlModeConfig?.modeControls,
 					includeSettingCommands: false,

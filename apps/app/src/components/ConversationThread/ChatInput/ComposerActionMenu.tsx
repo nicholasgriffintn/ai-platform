@@ -1,8 +1,10 @@
-import { Loader2, Mic, Plus, Square, Volume1, Volume2, VolumeX } from "lucide-react";
+import type { SourceSummary } from "@assistant/schemas";
+import { Database, Loader2, Mic, Plus, Square, Volume1, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
 import { cn } from "~/lib/utils";
+import { ComposerSourceMenu } from "./ComposerSourceMenu";
 
 interface ComposerActionMenuProps {
 	autoPlayResponses?: {
@@ -11,15 +13,21 @@ interface ComposerActionMenuProps {
 		isPlaying: boolean;
 		onToggle: () => void;
 	};
+	attachingSourceId?: string | null;
+	canAttachSources?: boolean;
 	canUseVoice: boolean;
 	canUploadFiles: boolean;
 	isDisabled?: boolean;
+	isLoadingSources?: boolean;
 	isRecording: boolean;
 	isTranscribing: boolean;
 	isUploading: boolean;
 	onStartRecording: () => void;
 	onStopRecording: () => void;
 	onUploadClick: () => void;
+	onAttachSource?: (sourceId: string) => boolean | Promise<boolean>;
+	sourceScopeLabel?: string;
+	sources?: SourceSummary[];
 	tools?: ReactNode;
 	uploadIcon: ReactNode;
 	uploadLabel: string;
@@ -73,22 +81,30 @@ function ComposerActionButton({
 
 export function ComposerActionMenu({
 	autoPlayResponses,
+	attachingSourceId,
+	canAttachSources = false,
 	canUploadFiles,
 	canUseVoice,
 	isDisabled = false,
+	isLoadingSources = false,
 	isRecording,
 	isTranscribing,
 	isUploading,
 	onStartRecording,
 	onStopRecording,
 	onUploadClick,
+	onAttachSource,
+	sourceScopeLabel = "Sources",
+	sources = [],
 	tools,
 	uploadIcon,
 	uploadLabel,
 }: ComposerActionMenuProps) {
 	const [isOpen, setIsOpen] = useState(false);
+	const [view, setView] = useState<"actions" | "sources">("actions");
 	const wasTranscribing = useRef(isTranscribing);
-	const hasActions = canUploadFiles || canUseVoice || Boolean(autoPlayResponses) || tools;
+	const hasActions =
+		canUploadFiles || canAttachSources || canUseVoice || Boolean(autoPlayResponses) || tools;
 
 	useEffect(() => {
 		if (wasTranscribing.current && !isTranscribing) {
@@ -105,9 +121,18 @@ export function ComposerActionMenu({
 		setIsOpen(false);
 		onUploadClick();
 	};
+	const handleOpenChange = (open: boolean) => {
+		setIsOpen(open);
+		if (!open) setView("actions");
+	};
+	const handleSourceSelect = async (sourceId: string) => {
+		if (!onAttachSource) return;
+		const didAttach = await onAttachSource(sourceId);
+		if (didAttach) handleOpenChange(false);
+	};
 
 	return (
-		<Popover open={isOpen} onOpenChange={setIsOpen}>
+		<Popover open={isOpen} onOpenChange={handleOpenChange}>
 			<PopoverTrigger asChild>
 				<Button
 					type="button"
@@ -124,62 +149,88 @@ export function ComposerActionMenu({
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent side="top" align="start" sideOffset={10} className="w-80 rounded-xl p-2">
-				<div className="space-y-1">
-					{canUploadFiles && (
-						<ComposerActionButton
-							icon={isUploading ? <Loader2 className="h-5 w-5 animate-spin" /> : uploadIcon}
-							onClick={handleUploadClick}
-							disabled={isDisabled || isUploading}
-							title={uploadLabel}
-							description="Images, documents, audio, and code when supported"
-						>
-							Attach file
-						</ComposerActionButton>
-					)}
-					{canUseVoice && (
-						<ComposerActionButton
-							icon={
-								isRecording ? (
-									<Square className="h-5 w-5 text-red-500" />
-								) : isTranscribing ? (
-									<Loader2 className="h-5 w-5 animate-spin" />
-								) : (
-									<Mic className="h-5 w-5" />
-								)
-							}
-							onClick={isRecording ? onStopRecording : onStartRecording}
-							disabled={isDisabled || isTranscribing}
-							title={isRecording ? "Stop recording" : "Start recording"}
-							description={isTranscribing ? "Transcribing voice input" : "Dictate a message"}
-							isActive={isRecording}
-						>
-							{isRecording ? "Stop voice input" : "Voice input"}
-						</ComposerActionButton>
-					)}
-					{autoPlayResponses && (
-						<ComposerActionButton
-							icon={
-								autoPlayResponses.isPlaying ? (
-									<Volume1 className="h-5 w-5" />
-								) : autoPlayResponses.isGenerating ? (
-									<Loader2 className="h-5 w-5 animate-spin" />
-								) : autoPlayResponses.enabled ? (
-									<Volume2 className="h-5 w-5" />
-								) : (
-									<VolumeX className="h-5 w-5" />
-								)
-							}
-							onClick={autoPlayResponses.onToggle}
-							disabled={isDisabled}
-							title={autoPlayResponses.enabled ? "Disable response audio" : "Enable response audio"}
-							description="Play assistant replies automatically"
-							isActive={autoPlayResponses.enabled}
-						>
-							Response audio
-						</ComposerActionButton>
-					)}
-				</div>
-				{tools && <div className="mt-2">{tools}</div>}
+				{view === "sources" ? (
+					<ComposerSourceMenu
+						attachingSourceId={attachingSourceId}
+						isLoading={isLoadingSources}
+						onBack={() => setView("actions")}
+						onSelect={(sourceId) => void handleSourceSelect(sourceId)}
+						scopeLabel={sourceScopeLabel}
+						sources={sources}
+					/>
+				) : (
+					<>
+						<div className="space-y-1">
+							{canUploadFiles && (
+								<ComposerActionButton
+									icon={isUploading ? <Loader2 className="h-5 w-5 animate-spin" /> : uploadIcon}
+									onClick={handleUploadClick}
+									disabled={isDisabled || isUploading}
+									title={uploadLabel}
+									description="Images, documents, audio, and code when supported"
+								>
+									Attach file
+								</ComposerActionButton>
+							)}
+							{canAttachSources && (
+								<ComposerActionButton
+									icon={<Database className="h-5 w-5" />}
+									onClick={() => setView("sources")}
+									disabled={isDisabled}
+									title="Attach an existing source"
+									description={sourceScopeLabel}
+								>
+									Attach source
+								</ComposerActionButton>
+							)}
+							{canUseVoice && (
+								<ComposerActionButton
+									icon={
+										isRecording ? (
+											<Square className="h-5 w-5 text-red-500" />
+										) : isTranscribing ? (
+											<Loader2 className="h-5 w-5 animate-spin" />
+										) : (
+											<Mic className="h-5 w-5" />
+										)
+									}
+									onClick={isRecording ? onStopRecording : onStartRecording}
+									disabled={isDisabled || isTranscribing}
+									title={isRecording ? "Stop recording" : "Start recording"}
+									description={isTranscribing ? "Transcribing voice input" : "Dictate a message"}
+									isActive={isRecording}
+								>
+									{isRecording ? "Stop voice input" : "Voice input"}
+								</ComposerActionButton>
+							)}
+							{autoPlayResponses && (
+								<ComposerActionButton
+									icon={
+										autoPlayResponses.isPlaying ? (
+											<Volume1 className="h-5 w-5" />
+										) : autoPlayResponses.isGenerating ? (
+											<Loader2 className="h-5 w-5 animate-spin" />
+										) : autoPlayResponses.enabled ? (
+											<Volume2 className="h-5 w-5" />
+										) : (
+											<VolumeX className="h-5 w-5" />
+										)
+									}
+									onClick={autoPlayResponses.onToggle}
+									disabled={isDisabled}
+									title={
+										autoPlayResponses.enabled ? "Disable response audio" : "Enable response audio"
+									}
+									description="Play assistant replies automatically"
+									isActive={autoPlayResponses.enabled}
+								>
+									Response audio
+								</ComposerActionButton>
+							)}
+						</div>
+						{tools && <div className="mt-2">{tools}</div>}
+					</>
+				)}
 			</PopoverContent>
 		</Popover>
 	);

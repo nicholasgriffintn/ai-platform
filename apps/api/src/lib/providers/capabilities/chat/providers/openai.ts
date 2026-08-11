@@ -28,7 +28,7 @@ import {
 	OPENAI_IMAGE_PARAMETER_NAMES,
 	type OpenAIImageParams,
 } from "./openaiImage";
-import { resolvePrivateAssetImageUrls } from "~/lib/providers/utils/privateAssetImages";
+import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 
 const DEFAULT_IMAGE_SIZE = "1024x1024";
 const DEFAULT_IMAGE_COUNT = 1;
@@ -393,7 +393,7 @@ export class OpenAIProvider extends BaseProvider {
 		}
 
 		const providerParams = _storageService
-			? await resolvePrivateAssetImageUrls({
+			? await resolvePrivateAssetUrls({
 					params,
 					storageService: _storageService,
 					assetsUrl: _assetsUrl,

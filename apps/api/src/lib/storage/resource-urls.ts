@@ -16,16 +16,19 @@ export function getPrivateFileResourceFromUrl(
 	url: string,
 	apiBaseUrl?: string,
 ): { kind: PrivateFileResourceKind; id: string } | undefined {
-	let path = url;
+	const fallbackBaseUrl = "https://polychat.local";
 	try {
-		path = new URL(url, apiBaseUrl || "https://polychat.local").pathname;
+		const baseUrl = new URL(apiBaseUrl || fallbackBaseUrl);
+		const parsedUrl = new URL(url, baseUrl);
+		if (parsedUrl.origin !== baseUrl.origin) return undefined;
+
+		const match = parsedUrl.pathname.match(/^\/(sources|outputs)\/([^/]+)\/content$/);
+		if (!match) return undefined;
+		return {
+			kind: match[1] === "sources" ? "source" : "output",
+			id: decodeURIComponent(match[2]),
+		};
 	} catch {
 		return undefined;
 	}
-	const match = path.match(/^\/(sources|outputs)\/([^/]+)\/content$/);
-	if (!match) return undefined;
-	return {
-		kind: match[1] === "sources" ? "source" : "output",
-		id: decodeURIComponent(match[2]),
-	};
 }

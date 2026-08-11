@@ -46,6 +46,23 @@ describe("uploadComposerAttachment", () => {
 		});
 	});
 
+	it("scopes project chat attachments to the active project", async () => {
+		mocks.uploadFile.mockResolvedValue({
+			url: "https://files.test/screenshot.png",
+			name: "screenshot.png",
+		});
+
+		await uploadComposerAttachment(new File(["image"], "screenshot.png", { type: "image/png" }), {
+			...defaultContext,
+			isMultimodalModel: true,
+			projectId: "project-1",
+		});
+
+		expect(mocks.uploadFile).toHaveBeenCalledWith(expect.any(File), "image", {
+			projectId: "project-1",
+		});
+	});
+
 	it("converts code-like files into markdown document attachments", async () => {
 		mocks.uploadFile.mockResolvedValue({
 			url: "https://files.test/app.ts",

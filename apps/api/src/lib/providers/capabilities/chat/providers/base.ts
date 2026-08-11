@@ -20,7 +20,7 @@ import {
 	buildAiGatewayHeaders,
 	buildMetricsSettings,
 } from "../../../utils/helpers";
-import { resolvePrivateAssetImageUrls } from "~/lib/providers/utils/privateAssetImages";
+import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 
 const logger = getLogger({ prefix: "lib/providers/base" });
 
@@ -72,7 +72,7 @@ export abstract class BaseProvider implements AIProvider {
 		}
 
 		const providerParams = storageService
-			? await resolvePrivateAssetImageUrls({
+			? await resolvePrivateAssetUrls({
 					params,
 					storageService,
 					assetsUrl,

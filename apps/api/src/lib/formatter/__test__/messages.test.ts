@@ -344,6 +344,25 @@ describe("MessageFormatter", () => {
 			]);
 		});
 
+		it("formats resolved audio URLs as OpenAI input audio", () => {
+			const messages: Message[] = [
+				{
+					role: "user",
+					content: [
+						{ type: "text", text: "Transcribe this" },
+						{ type: "audio_url", audio_url: { url: "data:audio/wav;base64,YXVkaW8=" } },
+					],
+				},
+			];
+
+			const result = MessageFormatter.formatMessages(messages, { provider: "openai" });
+
+			expect(result[0].content).toEqual([
+				{ type: "text", text: "Transcribe this" },
+				{ type: "input_audio", input_audio: { data: "YXVkaW8=", format: "wav" } },
+			]);
+		});
+
 		it("should handle array content for anthropic provider", () => {
 			const messages: Message[] = [
 				{
@@ -376,6 +395,35 @@ describe("MessageFormatter", () => {
 				},
 				cache_control: {
 					type: "ephemeral",
+				},
+			});
+		});
+
+		it("formats private PDF data for Anthropic without an HTTP URL", () => {
+			const result = MessageFormatter.formatMessages(
+				[
+					{
+						role: "user",
+						content: [
+							{
+								type: "document_url",
+								document_url: {
+									url: "data:application/pdf;base64,cGRm",
+									name: "brief.pdf",
+								},
+							},
+						],
+					},
+				],
+				{ provider: "anthropic" },
+			);
+
+			expect(result[0].content[0]).toMatchObject({
+				type: "document",
+				source: {
+					type: "base64",
+					media_type: "application/pdf",
+					data: "cGRm",
 				},
 			});
 		});
@@ -482,6 +530,34 @@ describe("MessageFormatter", () => {
 					],
 				},
 			]);
+		});
+
+		it("uses file data for private PDF content in OpenAI Responses", () => {
+			const result = MessageFormatter.formatOpenAIResponsesInput([
+				{
+					role: "user",
+					content: [
+						{
+							type: "document_url",
+							document_url: {
+								url: "data:application/pdf;base64,cGRm",
+								name: "brief.pdf",
+							},
+						},
+					],
+				},
+			]);
+
+			expect(result[0]).toMatchObject({
+				type: "message",
+				content: [
+					{
+						type: "input_file",
+						file_data: "data:application/pdf;base64,cGRm",
+						filename: "brief.pdf",
+					},
+				],
+			});
 		});
 
 		it("should preserve assistant function calls before tool outputs", () => {

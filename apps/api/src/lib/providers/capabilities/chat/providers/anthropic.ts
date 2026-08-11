@@ -5,7 +5,7 @@ import { shouldEnableProviderThinking } from "~/lib/providers/models/reasoning";
 import { limitAnthropicCacheControlBlocks } from "~/lib/providers/utils/anthropicCacheControl";
 import { buildAnthropicHostedTools } from "~/lib/providers/utils/anthropicTools";
 import { formatProviderError } from "~/lib/providers/utils/errors";
-import { resolvePrivateAssetImageUrls } from "~/lib/providers/utils/privateAssetImages";
+import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
@@ -54,7 +54,7 @@ export class AnthropicProvider extends BaseProvider {
 		assetsUrl?: string,
 	): Promise<Record<string, any>> {
 		const providerParams = storageService
-			? await resolvePrivateAssetImageUrls({ params, storageService, assetsUrl })
+			? await resolvePrivateAssetUrls({ params, storageService, assetsUrl })
 			: params;
 		const modelConfig = await getModelConfigByMatchingModel(
 			providerParams.model || "",

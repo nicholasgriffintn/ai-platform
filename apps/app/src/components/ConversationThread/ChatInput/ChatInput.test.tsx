@@ -3,6 +3,7 @@ import type { AssistantActionSelection } from "@assistant/schemas";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { AttachmentData } from "~/lib/chat/attachments";
 import { ChatInput } from ".";
 
 const mocks = vi.hoisted(() => ({
@@ -14,6 +15,23 @@ const mocks = vi.hoisted(() => ({
 		setChatInput: vi.fn(),
 	},
 	uploadComposerAttachment: vi.fn(),
+	useComposerSources: vi.fn(),
+	composerSources: {
+		attachments: [] as AttachmentData[],
+		attachingSourceId: null,
+		attachSource: vi.fn(),
+		availableSources: [
+			{
+				id: "source-1",
+				title: "Launch brief",
+				status: "available",
+				kind: "text",
+			},
+		],
+		clearAttachments: vi.fn(),
+		isLoading: false,
+		removeAttachment: vi.fn(),
+	},
 }));
 
 const store = {
@@ -42,6 +60,8 @@ vi.mock("~/hooks/useModels", () => ({
 				name: "GPT Realtime 2",
 				provider: "openai",
 				multimodal: true,
+				supportsAudio: true,
+				supportsDocuments: true,
 				modalities: {
 					input: ["text", "image"],
 					output: ["text"],
@@ -84,9 +104,24 @@ vi.mock("./ChatSettings", () => ({
 }));
 
 vi.mock("./ComposerActionMenu", () => ({
-	ComposerActionMenu: ({ tools }: { tools?: ReactNode }) => (
+	ComposerActionMenu: ({
+		onAttachSource,
+		sourceScopeLabel,
+		tools,
+		uploadIcon,
+	}: {
+		onAttachSource?: (sourceId: string) => void;
+		sourceScopeLabel?: string;
+		tools?: ReactNode;
+		uploadIcon?: ReactNode;
+	}) => (
 		<div>
 			<button type="button">Actions</button>
+			<button type="button" onClick={() => onAttachSource?.("source-1")}>
+				Attach source
+			</button>
+			<span>{sourceScopeLabel}</span>
+			<span data-testid="upload-action-icon">{uploadIcon}</span>
 			{tools}
 		</div>
 	),
@@ -147,9 +182,21 @@ vi.mock("./uploadAttachment", () => ({
 	uploadComposerAttachment: mocks.uploadComposerAttachment,
 }));
 
+vi.mock("./useComposerSources", () => ({
+	useComposerSources: (options: unknown) => {
+		mocks.useComposerSources(options);
+		return mocks.composerSources;
+	},
+}));
+
 describe("ChatInput", () => {
 	beforeEach(() => {
 		mocks.uploadComposerAttachment.mockReset();
+		mocks.useComposerSources.mockReset();
+		mocks.composerSources.attachSource.mockReset();
+		mocks.composerSources.clearAttachments.mockReset();
+		mocks.composerSources.removeAttachment.mockReset();
+		mocks.composerSources.attachments = [];
 		store.chatInput = "";
 		store.currentConversationId = undefined;
 		store.isAuthenticationLoading = false;
@@ -202,6 +249,81 @@ describe("ChatInput", () => {
 		fireEvent.click(toggle);
 
 		expect(store.setUseMultiModel).toHaveBeenCalledWith(true);
+	});
+
+	it("uses one familiar icon for the attach-file action", () => {
+		store.isPro = true;
+
+		render(
+			<ChatInput
+				controller={new AbortController()}
+				handleSubmit={vi.fn()}
+				isLoading={false}
+				onTranscribe={vi.fn()}
+				streamStarted={false}
+			/>,
+		);
+
+		const icon = screen.getByTestId("upload-action-icon");
+		expect(icon.querySelectorAll("svg")).toHaveLength(1);
+		expect(icon.querySelector("svg")).toHaveClass("lucide-paperclip");
+	});
+
+	it("uses the shared source action with personal or project scope", () => {
+		store.isPro = true;
+		const { rerender } = render(
+			<ChatInput
+				controller={new AbortController()}
+				handleSubmit={vi.fn()}
+				isLoading={false}
+				onTranscribe={vi.fn()}
+				streamStarted={false}
+			/>,
+		);
+
+		expect(screen.getByText("Personal sources")).toBeInTheDocument();
+		fireEvent.click(screen.getByRole("button", { name: "Attach source" }));
+		expect(mocks.composerSources.attachSource).toHaveBeenCalledWith("source-1");
+
+		rerender(
+			<ChatInput
+				attachmentProjectId="project-1"
+				controller={new AbortController()}
+				handleSubmit={vi.fn()}
+				isLoading={false}
+				onTranscribe={vi.fn()}
+				streamStarted={false}
+			/>,
+		);
+		expect(screen.getByText("Project sources")).toBeInTheDocument();
+	});
+
+	it("submits and clears an attached source with the message", () => {
+		const handleSubmit = vi.fn();
+		store.chatInput = "Use this brief";
+		mocks.composerSources.attachments = [
+			{
+				type: "markdown_document",
+				data: "https://api.test/sources/source-1/content",
+				name: "Launch brief",
+				markdown: "# Launch brief\n\nLaunch in October.",
+			},
+		];
+
+		render(
+			<ChatInput
+				controller={new AbortController()}
+				handleSubmit={handleSubmit}
+				isLoading={false}
+				onTranscribe={vi.fn()}
+				streamStarted={false}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "Send message" }));
+
+		expect(handleSubmit).toHaveBeenCalledWith(mocks.composerSources.attachments);
+		expect(mocks.composerSources.clearAttachments).toHaveBeenCalledOnce();
 	});
 
 	it("uses the hidden textarea space for mode controls", () => {
@@ -368,6 +490,38 @@ describe("ChatInput", () => {
 
 		expect(screen.getByAltText("Selected")).toHaveAttribute("src", privateAssetUrl);
 		expect(screen.getByAltText("Selected")).toHaveAttribute("crossorigin", "use-credentials");
+	});
+
+	it("passes the project scope into attachment uploads", async () => {
+		mocks.uploadComposerAttachment.mockResolvedValue({
+			attachment: {
+				type: "image",
+				data: "https://files.test/selected.png",
+			},
+		});
+
+		render(
+			<ChatInput
+				controller={new AbortController()}
+				handleSubmit={vi.fn()}
+				isLoading={false}
+				onTranscribe={vi.fn()}
+				streamStarted={false}
+				attachmentProjectId="project-1"
+			/>,
+		);
+
+		const file = new File(["image"], "selected.png", { type: "image/png" });
+		fireEvent.change(screen.getByLabelText("Upload a file (images, documents, audio, and code)"), {
+			target: { files: [file] },
+		});
+
+		await waitFor(() =>
+			expect(mocks.uploadComposerAttachment).toHaveBeenCalledWith(
+				file,
+				expect.objectContaining({ projectId: "project-1" }),
+			),
+		);
 	});
 
 	it("shows artifact selection context as an attachment chip and submits it with the prompt", () => {

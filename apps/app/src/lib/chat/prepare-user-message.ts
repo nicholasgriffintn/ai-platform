@@ -49,11 +49,8 @@ export function prepareUserMessage(
 			});
 		} else if (attachment.type === "audio") {
 			contentItems.push({
-				type: "input_audio",
-				input_audio: {
-					data: attachment.data,
-					format: attachment.name?.toLowerCase().endsWith(".wav") ? "wav" : "mp3",
-				},
+				type: "audio_url",
+				audio_url: { url: attachment.data },
 			});
 		} else if (attachment.type === "markdown_document" && attachment.markdown) {
 			contentItems.push({

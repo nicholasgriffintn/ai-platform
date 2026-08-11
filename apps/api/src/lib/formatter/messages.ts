@@ -361,6 +361,28 @@ export class MessageFormatter {
 		].join("\n");
 	}
 
+	private static formatOpenAIChatContent(item: MessageContent): MessageContent {
+		if (item.type === "audio_url" && item.audio_url?.url.startsWith("data:")) {
+			const mimeType = MessageFormatter.resolveType(item.audio_url.url);
+			return {
+				type: "input_audio",
+				input_audio: {
+					data: MessageFormatter.getBase64FromUrl(item.audio_url.url),
+					format: mimeType === "audio/wav" || mimeType === "audio/x-wav" ? "wav" : "mp3",
+				},
+			};
+		}
+
+		if (item.type === "artifact_selection") {
+			return {
+				type: "text",
+				text: MessageFormatter.formatArtifactSelectionText(item),
+			};
+		}
+
+		return item;
+	}
+
 	private static escapeAttribute(value: string): string {
 		return value
 			.replace(/&/g, "&amp;")
@@ -387,6 +409,11 @@ export class MessageFormatter {
 				return content
 					.map((item) => MessageFormatter.formatBedrockContent(item))
 					.filter((item) => item !== null);
+			case "openai":
+			case "compat":
+				return content
+					.filter((item) => item.type !== "markdown_document" && item.type !== "thinking")
+					.map((item) => MessageFormatter.formatOpenAIChatContent(item));
 			case "workers-ai":
 			case "ollama":
 			case "github-models": {
@@ -631,6 +658,13 @@ export class MessageFormatter {
 		}
 
 		if (part.type === "document_url" && part.document_url?.url) {
+			if (part.document_url.url.startsWith("data:")) {
+				return {
+					type: "input_file",
+					file_data: part.document_url.url,
+					filename: part.document_url.name ?? "document.pdf",
+				};
+			}
 			return {
 				type: "input_file",
 				file_url: part.document_url.url,
@@ -855,6 +889,16 @@ export class MessageFormatter {
 			};
 		}
 		if (item.type === "document_url" && item.document_url?.url) {
+			if (item.document_url.url.startsWith("data:")) {
+				return {
+					type: "document",
+					source: {
+						type: "base64",
+						media_type: MessageFormatter.resolveType(item.document_url.url),
+						data: MessageFormatter.getBase64FromUrl(item.document_url.url),
+					},
+				};
+			}
 			return {
 				type: "document",
 				source: {

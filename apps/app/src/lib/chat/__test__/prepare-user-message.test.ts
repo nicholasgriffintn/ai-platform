@@ -85,7 +85,7 @@ describe("prepareUserMessage", () => {
 		]);
 	});
 
-	it("builds audio content with the expected format", () => {
+	it("keeps uploaded audio as a URL for server-side private asset resolution", () => {
 		const message = prepareUserMessage(
 			"transcribe",
 			[
@@ -101,11 +101,8 @@ describe("prepareUserMessage", () => {
 		expect(message.content).toEqual([
 			{ type: "text", text: "transcribe" },
 			{
-				type: "input_audio",
-				input_audio: {
-					data: "https://files.test/audio.wav",
-					format: "wav",
-				},
+				type: "audio_url",
+				audio_url: { url: "https://files.test/audio.wav" },
 			},
 		]);
 	});

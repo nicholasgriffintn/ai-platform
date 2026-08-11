@@ -1,12 +1,6 @@
 import { useToolsStore } from "~/state/stores/toolsStore";
 import { useChatStore } from "~/state/stores/chatStore";
-import type {
-	CreateAgentInput,
-	MarkdownConversionOptions,
-	ModelConfig,
-	Tool,
-	UpdateAgentInput,
-} from "@assistant/schemas";
+import type { CreateAgentInput, ModelConfig, Tool, UpdateAgentInput } from "@assistant/schemas";
 import type { Conversation, ConversationListOptions, ConversationListPage, Message } from "~/types";
 import { formatMessageContent } from "../messages";
 import { AgentService } from "./services/agent-service";
@@ -18,7 +12,7 @@ import {
 } from "./services/chat-service";
 import { ResearchService } from "./services/research-service";
 import { SubscriptionService } from "./services/subscription-service";
-import { UploadService } from "./services/upload-service";
+import { UploadService, type UploadFileOptions } from "./services/upload-service";
 import type { ProviderSetting } from "./services/user-service";
 import { UserService } from "./services/user-service";
 import { getHeaders } from "./utils/headers";
@@ -315,10 +309,7 @@ class ApiService {
 	uploadFile = (
 		file: File,
 		fileType: "image" | "document" | "audio" | "code",
-		options?: {
-			convertToMarkdown?: boolean;
-			conversionOptions?: MarkdownConversionOptions;
-		},
+		options?: UploadFileOptions,
 	): Promise<{
 		url: string;
 		type: string;

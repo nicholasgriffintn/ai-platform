@@ -65,6 +65,176 @@ describe("StorageService", () => {
 		});
 	});
 
+	describe("private assets", () => {
+		it("allows a project member to read a project source created by another member", async () => {
+			mockBucket.get.mockResolvedValue({
+				arrayBuffer: vi.fn().mockResolvedValue(new TextEncoder().encode("pdf").buffer),
+			});
+			const repositories = {
+				sources: {
+					getSource: vi.fn().mockResolvedValue({
+						created_by_user_id: 7,
+						project_id: "project-1",
+						storage_key: "sources/brief.pdf",
+						mime_type: "application/pdf",
+					}),
+				},
+				outputs: { getOutput: vi.fn() },
+				users: { getUserById: vi.fn().mockResolvedValue({ plan_id: "pro" }) },
+				workspaces: {
+					getProject: vi.fn().mockResolvedValue({ workspace_id: "workspace-1" }),
+					getMembership: vi.fn().mockResolvedValue({ role: "member" }),
+				},
+			};
+			const service = new StorageService(
+				mockBucket as any,
+				{
+					env: { API_BASE_URL: "http://localhost:8787" },
+					repositories,
+				} as any,
+			);
+
+			await expect(
+				service.getPrivateAssetDataUrl(
+					"http://localhost:8787/sources/source-1/content",
+					42,
+					"http://localhost:8787",
+					{ allowedMimeTypes: ["application/pdf"] },
+				),
+			).resolves.toBe("data:application/pdf;base64,cGRm");
+			expect(repositories.workspaces.getMembership).toHaveBeenCalledWith("workspace-1", 42);
+		});
+
+		it("denies another user's personal source", async () => {
+			const service = new StorageService(
+				mockBucket as any,
+				{
+					env: { API_BASE_URL: "http://localhost:8787" },
+					repositories: {
+						sources: {
+							getSource: vi.fn().mockResolvedValue({
+								created_by_user_id: 7,
+								project_id: null,
+								storage_key: "sources/private.pdf",
+								mime_type: "application/pdf",
+							}),
+						},
+						outputs: { getOutput: vi.fn() },
+						users: { getUserById: vi.fn().mockResolvedValue({ plan_id: "pro" }) },
+						workspaces: { getProject: vi.fn(), getMembership: vi.fn() },
+					},
+				} as any,
+			);
+
+			await expect(
+				service.getPrivateAssetDataUrl(
+					"http://localhost:8787/sources/source-1/content",
+					42,
+					"http://localhost:8787",
+				),
+			).rejects.toMatchObject({ statusCode: 403 });
+		});
+
+		it("denies project assets when the requester no longer has Work access", async () => {
+			const getMembership = vi.fn().mockResolvedValue({ role: "member" });
+			const service = new StorageService(
+				mockBucket as any,
+				{
+					env: { API_BASE_URL: "http://localhost:8787" },
+					repositories: {
+						sources: {
+							getSource: vi.fn().mockResolvedValue({
+								created_by_user_id: 7,
+								project_id: "project-1",
+								storage_key: "sources/brief.pdf",
+								mime_type: "application/pdf",
+							}),
+						},
+						outputs: { getOutput: vi.fn() },
+						users: { getUserById: vi.fn().mockResolvedValue({ plan_id: "free" }) },
+						workspaces: {
+							getProject: vi.fn().mockResolvedValue({ workspace_id: "workspace-1" }),
+							getMembership,
+						},
+					},
+				} as any,
+			);
+
+			await expect(
+				service.getPrivateAssetDataUrl(
+					"http://localhost:8787/sources/source-1/content",
+					42,
+					"http://localhost:8787",
+				),
+			).rejects.toMatchObject({ statusCode: 403 });
+			expect(getMembership).not.toHaveBeenCalled();
+		});
+
+		it("requires current project access from the original uploader", async () => {
+			const service = new StorageService(
+				mockBucket as any,
+				{
+					env: { API_BASE_URL: "http://localhost:8787" },
+					repositories: {
+						sources: {
+							getSource: vi.fn().mockResolvedValue({
+								created_by_user_id: 42,
+								project_id: "project-1",
+								storage_key: "sources/brief.pdf",
+								mime_type: "application/pdf",
+							}),
+						},
+						outputs: { getOutput: vi.fn() },
+						users: { getUserById: vi.fn().mockResolvedValue({ plan_id: "pro" }) },
+						workspaces: {
+							getProject: vi.fn().mockResolvedValue({ workspace_id: "workspace-1" }),
+							getMembership: vi.fn().mockResolvedValue(null),
+						},
+					},
+				} as any,
+			);
+
+			await expect(
+				service.getPrivateAssetDataUrl(
+					"http://localhost:8787/sources/source-1/content",
+					42,
+					"http://localhost:8787",
+				),
+			).rejects.toMatchObject({ statusCode: 403 });
+		});
+
+		it("rejects private assets outside the requested media allowlist", async () => {
+			const service = new StorageService(
+				mockBucket as any,
+				{
+					env: { API_BASE_URL: "http://localhost:8787" },
+					repositories: {
+						sources: {
+							getSource: vi.fn().mockResolvedValue({
+								created_by_user_id: 42,
+								project_id: null,
+								storage_key: "sources/image.png",
+								mime_type: "image/png",
+							}),
+						},
+						outputs: { getOutput: vi.fn() },
+						users: { getUserById: vi.fn() },
+						workspaces: { getProject: vi.fn(), getMembership: vi.fn() },
+					},
+				} as any,
+			);
+
+			await expect(
+				service.getPrivateAssetDataUrl(
+					"http://localhost:8787/sources/source-1/content",
+					42,
+					"http://localhost:8787",
+					{ allowedMimeTypes: ["application/pdf"] },
+				),
+			).rejects.toThrow("Unsupported asset type: image/png");
+		});
+	});
+
 	describe("uploadObject", () => {
 		it("should upload string data successfully", async () => {
 			const testData = "Hello, World!";

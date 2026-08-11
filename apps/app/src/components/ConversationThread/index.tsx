@@ -83,6 +83,9 @@ export interface ConversationThreadModeConfig {
 	hideChatSettings?: boolean;
 	forceAutoPlayResponses?: boolean;
 	analyticsSource?: string;
+	contextAttachments?: AttachmentData[];
+	onRemoveContextAttachment?: (index: number) => void;
+	onClearContextAttachments?: () => void;
 	councilDebate?: {
 		enabled: boolean;
 		memberIds: CouncilMemberId[];
@@ -230,6 +233,25 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 	const handleClearArtifactContextAttachments = useCallback(() => {
 		setArtifactContextAttachments([]);
 	}, []);
+	const modeContextAttachments = modeConfig?.contextAttachments ?? [];
+	const contextAttachments = useMemo(
+		() => [...modeContextAttachments, ...artifactContextAttachments],
+		[artifactContextAttachments, modeContextAttachments],
+	);
+	const handleRemoveContextAttachment = useCallback(
+		(indexToRemove: number) => {
+			if (indexToRemove < modeContextAttachments.length) {
+				modeConfig?.onRemoveContextAttachment?.(indexToRemove);
+				return;
+			}
+			handleRemoveArtifactContextAttachment(indexToRemove - modeContextAttachments.length);
+		},
+		[handleRemoveArtifactContextAttachment, modeConfig, modeContextAttachments.length],
+	);
+	const handleClearContextAttachments = useCallback(() => {
+		modeConfig?.onClearContextAttachments?.();
+		handleClearArtifactContextAttachments();
+	}, [handleClearArtifactContextAttachments, modeConfig]);
 
 	useEffect(() => {
 		if (isPanelVisible) {
@@ -532,9 +554,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						hideTextInput={modeConfig?.hideTextInput}
 						hideInlineResponseControls={modeConfig?.hideInlineResponseControls}
 						hideChatSettings={modeConfig?.hideChatSettings}
-						contextAttachments={artifactContextAttachments}
-						onRemoveContextAttachment={handleRemoveArtifactContextAttachment}
-						onClearContextAttachments={handleClearArtifactContextAttachments}
+						contextAttachments={contextAttachments}
+						attachmentProjectId={modeConfig?.requestOptions?.metadata?.project_id ?? undefined}
+						onRemoveContextAttachment={handleRemoveContextAttachment}
+						onClearContextAttachments={handleClearContextAttachments}
 						autoPlayResponses={{
 							enabled: effectiveAutoPlayResponsesEnabled,
 							isGenerating: isGeneratingAutoResponseSpeech,

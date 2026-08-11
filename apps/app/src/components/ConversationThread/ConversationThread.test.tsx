@@ -127,13 +127,31 @@ vi.mock("./useAutoPlayResponses", () => ({
 
 vi.mock("./ChatInput", () => ({
 	ChatInput: ({
+		attachmentProjectId,
+		contextAttachments,
 		handleSubmit,
+		onRemoveContextAttachment,
 	}: {
+		attachmentProjectId?: string;
+		contextAttachments?: AttachmentData[];
 		handleSubmit: (attachments?: AttachmentData[]) => void | Promise<unknown>;
+		onRemoveContextAttachment?: (index: number) => void;
 	}) => (
-		<button type="button" onClick={() => void handleSubmit(mocks.submitAttachments.current)}>
-			Send
-		</button>
+		<>
+			<button
+				type="button"
+				data-attachment-project-id={attachmentProjectId}
+				data-context-attachment-count={contextAttachments?.length ?? 0}
+				onClick={() => void handleSubmit(mocks.submitAttachments.current)}
+			>
+				Send
+			</button>
+			{contextAttachments?.length ? (
+				<button type="button" onClick={() => onRemoveContextAttachment?.(0)}>
+					Remove first context attachment
+				</button>
+			) : null}
+		</>
 	),
 }));
 
@@ -296,6 +314,47 @@ describe("ConversationThread assistant action submit", () => {
 				options: { recipe: { id: "daily-weather" } },
 			}),
 		);
+	});
+
+	it("uses the Work request scope for attachment uploads", () => {
+		render(
+			<ConversationThread
+				modeConfig={{
+					requestOptions: { metadata: { project_id: "project-1" } },
+				}}
+			/>,
+		);
+
+		expect(screen.getByRole("button", { name: "Send" })).toHaveAttribute(
+			"data-attachment-project-id",
+			"project-1",
+		);
+	});
+
+	it("passes mode context attachments through the shared composer", () => {
+		const onRemoveContextAttachment = vi.fn();
+		render(
+			<ConversationThread
+				modeConfig={{
+					contextAttachments: [
+						{
+							type: "markdown_document",
+							data: "source:launch-brief",
+							name: "Launch brief",
+							markdown: "Launch in October.",
+						},
+					],
+					onRemoveContextAttachment,
+				}}
+			/>,
+		);
+
+		expect(screen.getByRole("button", { name: "Send" })).toHaveAttribute(
+			"data-context-attachment-count",
+			"1",
+		);
+		fireEvent.click(screen.getByRole("button", { name: "Remove first context attachment" }));
+		expect(onRemoveContextAttachment).toHaveBeenCalledWith(0);
 	});
 
 	it("passes mode request options to an initial auto-submit", async () => {

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { findModelConfig } from "~/lib/providers/models";
 import * as chatCapability from "~/lib/providers/capabilities/chat";
-import { resolvePrivateAssetImageUrls } from "~/lib/providers/utils/privateAssetImages";
+import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 import { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters, Message } from "~/types";
 import type { ModelConfigItem } from "@assistant/schemas";
@@ -21,8 +21,8 @@ vi.mock("~/lib/providers/capabilities/chat", () => ({
 	getChatProvider: vi.fn(),
 }));
 
-vi.mock("~/lib/providers/utils/privateAssetImages", () => ({
-	resolvePrivateAssetImageUrls: vi.fn(),
+vi.mock("~/lib/providers/utils/privateAssets", () => ({
+	resolvePrivateAssetUrls: vi.fn(),
 }));
 
 vi.mock("~/utils/messages", () => ({
@@ -73,7 +73,7 @@ describe("responses", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 		vi.mocked(shouldEnableStreaming).mockReturnValue(false);
-		vi.mocked(resolvePrivateAssetImageUrls).mockImplementation(async ({ params }) => params);
+		vi.mocked(resolvePrivateAssetUrls).mockImplementation(async ({ params }) => params);
 	});
 
 	describe("formatAssistantMessage", () => {
@@ -291,7 +291,7 @@ describe("responses", () => {
 				...mockProvider,
 				name: "anthropic",
 			});
-			vi.mocked(resolvePrivateAssetImageUrls).mockImplementationOnce(async ({ params }) => ({
+			vi.mocked(resolvePrivateAssetUrls).mockImplementationOnce(async ({ params }) => ({
 				...params,
 				messages: resolvedMessages,
 			}));
@@ -303,7 +303,7 @@ describe("responses", () => {
 				messages: imageMessages,
 			});
 
-			expect(resolvePrivateAssetImageUrls).toHaveBeenCalledWith({
+			expect(resolvePrivateAssetUrls).toHaveBeenCalledWith({
 				params: expect.objectContaining({ messages: imageMessages }),
 				storageService: expect.any(StorageService),
 				assetsUrl: "",

@@ -67,6 +67,18 @@ vi.mock("~/state/stores/uiStore", () => ({
 	useUIStore: () => ({ isMobile: false }),
 }));
 
+vi.mock("./useComposerSources", () => ({
+	useComposerSources: () => ({
+		attachments: [],
+		attachingSourceId: null,
+		attachSource: vi.fn(),
+		availableSources: [],
+		clearAttachments: vi.fn(),
+		isLoading: false,
+		removeAttachment: vi.fn(),
+	}),
+}));
+
 function setTextSelection(element: HTMLElement, offset: number) {
 	const textNode = element.firstChild;
 	if (!textNode) {

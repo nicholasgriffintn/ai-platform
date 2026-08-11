@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
-import { resolvePrivateAssetImageUrls } from "~/lib/providers/utils/privateAssetImages";
+import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 import { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters, IEnv } from "~/types";
 import { isRecord } from "~/utils/objects";
@@ -40,8 +40,8 @@ vi.mock("~/lib/providers/models", () => ({
 	getModelConfigByMatchingModel: vi.fn(),
 }));
 
-vi.mock("~/lib/providers/utils/privateAssetImages", () => ({
-	resolvePrivateAssetImageUrls: vi.fn(),
+vi.mock("~/lib/providers/utils/privateAssets", () => ({
+	resolvePrivateAssetUrls: vi.fn(),
 }));
 
 vi.mock("~/utils/parameters", () => ({
@@ -54,7 +54,7 @@ vi.mock("~/utils/parameters", () => ({
 
 beforeEach(() => {
 	vi.clearAllMocks();
-	vi.mocked(resolvePrivateAssetImageUrls).mockImplementation(async ({ params }) => params);
+	vi.mocked(resolvePrivateAssetUrls).mockImplementation(async ({ params }) => params);
 });
 
 function countCacheControlBlocks(value: unknown): number {
@@ -183,11 +183,11 @@ describe("AnthropicProvider", () => {
 				],
 			};
 			const storageService = new StorageService(undefined);
-			vi.mocked(resolvePrivateAssetImageUrls).mockResolvedValue(resolvedParams);
+			vi.mocked(resolvePrivateAssetUrls).mockResolvedValue(resolvedParams);
 
 			const result = await provider.mapParameters(params, storageService, "http://localhost:8787");
 
-			expect(resolvePrivateAssetImageUrls).toHaveBeenCalledWith({
+			expect(resolvePrivateAssetUrls).toHaveBeenCalledWith({
 				params,
 				storageService,
 				assetsUrl: "http://localhost:8787",

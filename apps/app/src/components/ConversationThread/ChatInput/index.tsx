@@ -1,14 +1,4 @@
-import {
-	File,
-	FileText,
-	Image as ImageIcon,
-	Loader2,
-	Paperclip,
-	Pause,
-	Send,
-	Volume2,
-	FileCode,
-} from "lucide-react";
+import { File, FileText, Loader2, Paperclip, Pause, Send, Volume2 } from "lucide-react";
 import {
 	type ChangeEvent,
 	type KeyboardEvent,
@@ -51,6 +41,7 @@ import {
 } from "./TokenizedComposerInput";
 import { useComposerCommandController } from "./useComposerCommandController";
 import { uploadComposerAttachment } from "./uploadAttachment";
+import { useComposerSources } from "./useComposerSources";
 
 export interface ChatInputHandle {
 	focus: () => void;
@@ -95,6 +86,7 @@ interface ChatInputProps {
 	contextAttachments?: AttachmentData[];
 	onRemoveContextAttachment?: (index: number) => void;
 	onClearContextAttachments?: () => void;
+	attachmentProjectId?: string;
 }
 
 export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
@@ -125,6 +117,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			contextAttachments = [],
 			onRemoveContextAttachment,
 			onClearContextAttachments,
+			attachmentProjectId,
 		},
 		ref,
 	) => {
@@ -157,10 +150,18 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			isMultimodalModel,
 			isTextToImageOnlyModel,
 			supportsAudio,
-			supportsCode,
 			supportsDocuments,
 			supportsToolCalls,
 		} = modelCapabilities;
+		const composerSources = useComposerSources({
+			enabled: isPro,
+			projectId: attachmentProjectId,
+			capabilities: {
+				supportsAudio,
+				supportsDocuments,
+				supportsImages: isImageModel || isMultimodalModel,
+			},
+		});
 
 		const composerInputRef = useRef<TokenizedComposerInputHandle>(null);
 		const fileInputRef = useRef<HTMLInputElement>(null);
@@ -320,6 +321,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 							isTextToImageOnlyModel,
 							supportsAudio,
 							supportsDocuments,
+							projectId: attachmentProjectId,
 						}),
 					),
 				);
@@ -358,6 +360,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
 		const clearSelectedAttachments = () => {
 			setSelectedAttachments([]);
+			composerSources.clearAttachments();
 			if (fileInputRef.current) {
 				fileInputRef.current.value = "";
 			}
@@ -370,7 +373,11 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 		};
 
 		const submitSelectedAttachments = async () => {
-			const combinedAttachments = [...contextAttachments, ...selectedAttachments];
+			const combinedAttachments = [
+				...contextAttachments,
+				...composerSources.attachments,
+				...selectedAttachments,
+			];
 			const attachments = combinedAttachments.length > 0 ? combinedAttachments : undefined;
 			const submitResult = handleSubmit(attachments);
 			if (submitResult && typeof submitResult.then === "function") {
@@ -445,28 +452,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			return fileTypes.join(",");
 		};
 
-		const getUploadButtonIcon = () => {
-			if (isImageModel) {
-				return <ImageIcon className="h-4 w-4" />;
-			}
-			if (isMultimodalModel || supportsAudio) {
-				return (
-					<span className="flex space-x-1">
-						{isMultimodalModel && <ImageIcon className="h-4 w-4" />}
-						{supportsDocuments && <File className="h-4 w-4" />}
-						{supportsCode && <FileCode className="h-4 w-4" />}
-						{supportsAudio && <Volume2 className="h-4 w-4" />}
-						{!supportsDocuments && !supportsAudio && <Paperclip className="h-4 w-4" />}
-					</span>
-				);
-			}
-			if (supportsDocuments) {
-				return supportsCode ? <FileCode className="h-4 w-4" /> : <File className="h-4 w-4" />;
-			}
-
-			return <Paperclip className="h-4 w-4" />;
-		};
-
 		const getAttachmentIconAndLabel = (attachment: AttachmentData) => {
 			if (attachment.type === "image") {
 				return {
@@ -532,7 +517,23 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 					]
 				: [];
 		});
-		const attachmentChips = [...contextAttachmentChips, ...selectedAttachmentChips];
+		const sourceAttachmentChips = composerSources.attachments.flatMap((attachment, index) => {
+			const { preview, label } = getAttachmentIconAndLabel(attachment);
+			return preview
+				? [
+						{
+							label,
+							onClear: () => composerSources.removeAttachment(index),
+							preview,
+						},
+					]
+				: [];
+		});
+		const attachmentChips = [
+			...contextAttachmentChips,
+			...sourceAttachmentChips,
+			...selectedAttachmentChips,
+		];
 
 		const isToolSelectionLocked =
 			toolSelectionLocked || (chatMode === "agent" && selectedAgentId !== null);
@@ -546,6 +547,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			(!chatInput?.trim() &&
 				!selectedAssistantAction?.item &&
 				selectedAttachments.length === 0 &&
+				composerSources.attachments.length === 0 &&
 				contextAttachments.length === 0) ||
 			isLoading ||
 			isUploading ||
@@ -631,21 +633,29 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 													autoPlayResponses={
 														canUseProComposerActions ? autoPlayResponses : undefined
 													}
+													attachingSourceId={composerSources.attachingSourceId}
+													canAttachSources={canUseProComposerActions}
 													canUseVoice={canUseProComposerActions}
 													canUploadFiles={canUseProComposerActions && canUploadFiles}
 													isDisabled={isLoading}
+													isLoadingSources={composerSources.isLoading}
 													isRecording={isRecording}
 													isTranscribing={isTranscribing}
 													isUploading={isUploading}
 													onStartRecording={startRecording}
 													onStopRecording={stopRecording}
 													onUploadClick={() => fileInputRef.current?.click()}
+													onAttachSource={composerSources.attachSource}
+													sourceScopeLabel={
+														attachmentProjectId ? "Project sources" : "Personal sources"
+													}
+													sources={composerSources.availableSources}
 													tools={
 														canShowToolMenu ? (
 															<ToolToggles isDisabled={isLoading || isToolSelectionLocked} />
 														) : undefined
 													}
-													uploadIcon={getUploadButtonIcon()}
+													uploadIcon={<Paperclip className="h-4 w-4" aria-hidden="true" />}
 													uploadLabel={`Upload ${isMultimodalModel || supportsAudio ? "files (images, audio, documents, code)" : "a Document or Code file"}`}
 												/>
 											)}

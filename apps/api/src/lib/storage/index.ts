@@ -243,9 +243,20 @@ export class StorageService {
 		ownerUserId?: number,
 		assetsUrl?: string,
 	): Promise<string | null> {
-		const asset = await this.getPrivateAsset(url, ownerUserId, assetsUrl, {
+		return this.getPrivateAssetDataUrl(url, ownerUserId, assetsUrl, {
 			allowedMimeTypes: SUPPORTED_IMAGE_MIME_TYPES,
-			errorLabel: "image",
+		});
+	}
+
+	async getPrivateAssetDataUrl(
+		url: string,
+		userId?: number,
+		assetsUrl?: string,
+		options?: GetPrivateAssetBlobOptions,
+	): Promise<string | null> {
+		const asset = await this.getPrivateAsset(url, userId, assetsUrl, {
+			...options,
+			errorLabel: "asset",
 		});
 		if (!asset) {
 			return null;
@@ -253,7 +264,7 @@ export class StorageService {
 
 		const base64Data = await this.getObject(asset.key);
 		if (!base64Data) {
-			throw new AssistantError("Image asset object not found", ErrorType.NOT_FOUND, 404);
+			throw new AssistantError("Private asset object not found", ErrorType.NOT_FOUND, 404);
 		}
 
 		return `data:${asset.mime_type};base64,${base64Data}`;
@@ -320,7 +331,7 @@ export class StorageService {
 		}
 
 		if (ownerUserId === undefined) {
-			throw new AssistantError("User data required for private image assets", ErrorType.FORBIDDEN);
+			throw new AssistantError("User data required for private assets", ErrorType.FORBIDDEN);
 		}
 
 		const repositories = this.context?.repositories ?? new RepositoryManager(assetEnv);
@@ -332,7 +343,17 @@ export class StorageService {
 			throw new AssistantError("Private asset not found", ErrorType.NOT_FOUND, 404);
 		}
 
-		if (record.created_by_user_id !== ownerUserId) {
+		if (record.project_id) {
+			const accessUser = await repositories.users.getUserById(ownerUserId);
+			const project = await repositories.workspaces.getProject(record.project_id);
+			const membership =
+				accessUser?.plan_id === "pro" && project
+					? await repositories.workspaces.getMembership(project.workspace_id, ownerUserId)
+					: null;
+			if (!membership) {
+				throw new AssistantError("Access denied for private asset", ErrorType.FORBIDDEN, 403);
+			}
+		} else if (record.created_by_user_id !== ownerUserId) {
 			throw new AssistantError("Access denied for private asset", ErrorType.FORBIDDEN, 403);
 		}
 
