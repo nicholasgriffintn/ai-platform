@@ -71,7 +71,7 @@ export default function Root() {
 export function HydrateFallback() {
 	return (
 		<div className="flex flex-col items-center justify-center h-[calc(100vh-10rem)]">
-			<LoadingSpinner />
+			<LoadingSpinner message="Ruffling feathers, finding perches..." />
 		</div>
 	);
 }
@@ -86,7 +86,9 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 	if (isRouteErrorResponse(error)) {
 		message = error.status === 404 ? "404" : "Error";
 		details =
-			error.status === 404 ? "The requested page could not be found." : error.statusText || details;
+			error.status === 404
+				? "This page seems to have flown off. Check the address, or head back home."
+				: error.statusText || details;
 	} else if (shouldShowDevTools() && error && error instanceof Error) {
 		details = error.message;
 		stack = error.stack;

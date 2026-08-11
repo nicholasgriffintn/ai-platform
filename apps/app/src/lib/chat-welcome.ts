@@ -26,6 +26,10 @@ const GENERIC_WELCOMES: ChatWelcome[] = [
 		description:
 			"The constructive kind: test an idea, challenge an assumption, or make something new.",
 	},
+	{
+		title: "Heard anything good lately?",
+		description: "Repeat it here. We’ll see what it turns into.",
+	},
 ];
 
 const RETURNING_WELCOMES: ChatWelcome[] = [
@@ -40,6 +44,10 @@ const RETURNING_WELCOMES: ChatWelcome[] = [
 	{
 		title: "What should we work through?",
 		description: "Continue where you left off, or start somewhere new.",
+	},
+	{
+		title: "Back so soon?",
+		description: "Good. The perch was getting quiet.",
 	},
 ];
 

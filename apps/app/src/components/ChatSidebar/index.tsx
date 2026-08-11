@@ -384,7 +384,7 @@ export const ChatSidebar = ({
 							</div>
 						) : conversations.length === 0 ? (
 							<div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
-								{searchQuery.trim() ? "No matching conversations" : "No conversations yet"}
+								{searchQuery.trim() ? "No conversations match that search." : ""}
 							</div>
 						) : (
 							<div className="p-2">

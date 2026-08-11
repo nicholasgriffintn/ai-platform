@@ -472,7 +472,7 @@ export function useHomeChatModeConfig(): {
 				analyticsSource: "council",
 				welcomeTitle: "What should the council debate?",
 				welcomeDescription:
-					"Pick council members, describe the problem, and the backend chat pipeline will run a structured debate before answering.",
+					"Pick the council, give them a problem, and let them argue it out properly before answering.",
 				inputPlaceholder: {
 					newConversation: "Give the council a problem to debate...",
 					followUp: "Ask the council to refine its decision...",

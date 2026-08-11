@@ -7,12 +7,12 @@ export const MessageSkeleton = () => {
 						<div className="flex items-start gap-2">
 							<div className="flex-1 overflow-x-auto">
 								<div className="space-y-3">
-									<div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
+									<div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-1/4" />
 									<div className="space-y-2">
-										<div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full" />
-										<div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
-										<div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6" />
-										<div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+										<div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded w-full" />
+										<div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded w-3/4" />
+										<div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded w-5/6" />
+										<div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded w-2/3" />
 									</div>
 								</div>
 							</div>
@@ -20,8 +20,8 @@ export const MessageSkeleton = () => {
 
 						<div className="flex justify-end items-center gap-2 mt-2">
 							<div className="flex items-center space-x-1">
-								<div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-lg" />
-								<div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+								<div className="w-6 h-6 bg-zinc-200 dark:bg-zinc-700 rounded-lg" />
+								<div className="w-6 h-6 bg-zinc-200 dark:bg-zinc-700 rounded-lg" />
 							</div>
 						</div>
 					</div>

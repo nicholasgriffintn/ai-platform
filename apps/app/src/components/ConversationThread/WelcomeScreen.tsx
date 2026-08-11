@@ -22,13 +22,14 @@ export const WelcomeScreen = ({
 	isLoading = false,
 	sampleQuestions,
 }: WelcomeScreenProps) => {
-	const resolvedTitle = title ?? "What would you like to know?";
+	const resolvedTitle = title ?? "What shall we get into?";
 	const resolvedDescription =
-		description ?? "I'm a helpful assistant that can answer questions about basically anything.";
+		description ??
+		"Questions, ideas, or problems: bring what you have and we’ll take it from there.";
 
 	return (
 		<div className="w-full px-4 pt-4 pb-2 text-center" aria-busy={isLoading} aria-live="polite">
-			<div className="w-32 h-32 mx-auto">
+			<div className="w-32 h-32 mx-auto hover:animate-flutter motion-reduce:animate-none">
 				<Logo variant="logo_control" />
 			</div>
 			<h2 className="flex min-h-16 items-end justify-center text-2xl font-semibold text-zinc-800 md:min-h-12 md:text-4xl dark:text-zinc-200">

@@ -4,6 +4,7 @@ import {
 	type KeyboardEvent,
 	type ReactNode,
 	forwardRef,
+	useEffect,
 	useId,
 	useImperativeHandle,
 	useMemo,
@@ -46,6 +47,19 @@ import { useComposerSources } from "./useComposerSources";
 export interface ChatInputHandle {
 	focus: () => void;
 }
+
+const NEW_CONVERSATION_PLACEHOLDERS = [
+	"Ask me anything...",
+	"Say the word...",
+	"Start with the messy version...",
+	"Type it the way you’d say it...",
+];
+
+const FOLLOW_UP_PLACEHOLDERS = [
+	"Ask follow-up questions...",
+	"Keep the thread going...",
+	"Push back, dig deeper, or change tack...",
+];
 
 interface ChatInputProps {
 	handleSubmit: (attachments?: AttachmentData[]) => void | Promise<boolean>;
@@ -139,6 +153,10 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			onTranscribe,
 		});
 		const [selectedAttachments, setSelectedAttachments] = useState<AttachmentData[]>([]);
+		const [placeholderSeed, setPlaceholderSeed] = useState(0);
+		useEffect(() => {
+			setPlaceholderSeed(Math.floor(Math.random() * 12));
+		}, []);
 		const { data: apiModels } = useModels();
 		const [isUploading, setIsUploading] = useState(false);
 		const modelCapabilities = useMemo(
@@ -598,8 +616,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 										onKeyDown={handleKeyDown}
 										placeholder={
 											!currentConversationId
-												? (placeholder?.newConversation ?? "Ask me anything...")
-												: (placeholder?.followUp ?? "Ask follow-up questions...")
+												? (placeholder?.newConversation ??
+													NEW_CONVERSATION_PLACEHOLDERS[
+														placeholderSeed % NEW_CONVERSATION_PLACEHOLDERS.length
+													])
+												: (placeholder?.followUp ??
+													FOLLOW_UP_PLACEHOLDERS[placeholderSeed % FOLLOW_UP_PLACEHOLDERS.length])
 										}
 										disabled={isRecording || isTranscribing || isLoading || isAuthenticationLoading}
 										ariaLabel="Message input"

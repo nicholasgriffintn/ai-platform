@@ -13,7 +13,7 @@ export class HomePage extends BasePage {
 		super(page);
 		this.chatInput = page.locator("#message-input");
 		this.sendButton = page.getByRole("button", { name: /send message/i });
-		this.welcomeMessage = page.getByText(/What would you like to know/i).first();
+		this.welcomeMessage = page.getByText(/What shall we get into/i).first();
 		this.modelSelector = page.getByRole("button", { name: /select model/i });
 		this.newChatButton = page.getByRole("button", { name: /New Chat/i });
 		this.assistantMessages = page.locator('[data-role="assistant"]');

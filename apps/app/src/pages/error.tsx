@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 
+import { Logo } from "~/components/Core/Logo";
 import { PageShell } from "~/components/Core/PageShell";
 import { shouldShowDevTools } from "~/constants";
 
@@ -22,6 +23,9 @@ export default function ErrorRoute({ message, details, stack }: ErrorRouteProps)
 	return (
 		<PageShell className="flex h-dvh w-full max-w-full overflow-hidden bg-off-white dark:bg-zinc-900">
 			<div className="flex-1 overflow-auto w-full space-y-3 p-4">
+				<div className="h-16 w-16">
+					<Logo variant="logo_minimalist" />
+				</div>
 				<div className="text-base font-semibold text-zinc-600 dark:text-zinc-200 truncate">
 					{message}
 				</div>
@@ -33,15 +37,15 @@ export default function ErrorRoute({ message, details, stack }: ErrorRouteProps)
 					<button
 						type="button"
 						onClick={() => window.location.reload()}
-						className="rounded bg-black px-3 py-2 text-sm text-white"
+						className="rounded bg-black px-3 py-2 text-sm text-white transition-colors hover:bg-zinc-800"
 					>
-						Retry
+						Try again
 					</button>
 					<Link
 						to="/"
-						className="rounded border border-zinc-300 px-3 py-2 text-sm text-zinc-700 dark:border-zinc-700 dark:text-zinc-200"
+						className="rounded border border-zinc-300 px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
 					>
-						Go Home
+						Back to the nest
 					</Link>
 				</div>
 			</div>
