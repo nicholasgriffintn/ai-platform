@@ -25,10 +25,10 @@
 	},
 	"routes": [
 		{
-			"pattern": "api.polychat.app",
-			"zone_name": "polychat.app",
-			"custom_domain": true,
-		},
+			"pattern": "REPLACE_ME",
+			"zone_name": "REPLACE_ME",
+			"custom_domain": true
+		}
 	],
 	"dev": {
 		"port": 8787
@@ -37,15 +37,17 @@
 		"ACCOUNT_ID": "REPLACE_ME",
 		"API_BASE_URL": "REPLACE_ME",
 		"APP_BASE_URL": "REPLACE_ME",
-		"APPLE_IOS_CLIENT_ID": "com.polychat-app.app",
-		"APPLE_WEB_CLIENT_ID": "com.polychat.web",
+		"APPLE_IOS_CLIENT_ID": "REPLACE_ME",
+		"APPLE_WEB_CLIENT_ID": "REPLACE_ME",
 		"SES_EMAIL_FROM": "REPLACE_ME",
 		"PUBLIC_ASSETS_URL": "REPLACE_ME",
 		"PUBLIC_ASSETS_BUCKET": "assistant-assets",
 		"REQUIRE_CAPTCHA_SECRET_KEY": "false",
-		"ALWAYS_ENABLED_PROVIDERS": "workers-ai",
-		"LOG_LEVEL": "warn",
-		"ENV": "production"
+		"ALWAYS_ENABLED_PROVIDERS": "workers-ai,mistral,deepseek,google-ai-studio,cohere,groq,openrouter,cerebras",
+		"LOG_LEVEL": "error",
+		"SENTRY_DSN": "REPLACE_ME",
+		"ENV": "production",
+		"MEMORY_SYNTHESIS_ENABLED": "true"
 	},
 	"ai": {
 		"binding": "AI",
@@ -59,10 +61,10 @@
 		}
 	],
 	"send_email": [
-    {
-      "name": "SEND_EMAIL"
-    }
-  ],
+		{
+			"name": "SEND_EMAIL"
+		}
+	],
 	"services": [
 		{
 			"binding": "SANDBOX_WORKER",
@@ -81,6 +83,14 @@
 			}
 		]
 	},
+	"migrations": [
+		{
+			"tag": "v2",
+			"new_sqlite_classes": [
+				"SandboxRunCoordinator"
+			]
+		}
+	],
 	"analytics_engine_datasets": [
 		{
 			"binding": "ANALYTICS",
@@ -106,12 +116,14 @@
 			"binding": "DB",
 			"database_name": "personal-assistant",
 			"database_id": "REPLACE_ME",
-			"preview_database_id": "REPLACE_ME"
+			"preview_database_id": "REPLACE_ME",
+			"remote": false
 		},
 		{
 			"binding": "PREVIEW_DB",
 			"database_name": "personal-assistant-preview",
-			"database_id": "REPLACE_ME"
+			"database_id": "REPLACE_ME",
+			"remote": false
 		}
 	],
 	"kv_namespaces": [
@@ -122,34 +134,43 @@
 		}
 	],
 	"ratelimits": [
-			{
-				"name": "FREE_RATE_LIMITER",
-				"namespace_id": "1001",
-				"simple": {
-					"limit": 60,
-					"period": 60,
-				},
-			},
-			{
-				"name": "PRO_RATE_LIMITER",
-				"namespace_id": "1002",
-				"simple": {
-					"limit": 120,
-					"period": 60,
-				},
-			},
-  ],
+		{
+			"name": "FREE_RATE_LIMITER",
+			"namespace_id": "1001",
+			"simple": {
+				"limit": 60,
+				"period": 60
+			}
+		},
+		{
+			"name": "PRO_RATE_LIMITER",
+			"namespace_id": "1002",
+			"simple": {
+				"limit": 120,
+				"period": 60
+			}
+		}
+	],
 	"triggers": {
-		"crons": ["*/15 * * * *", "0 0 * * *", "0 2 * * *", "0 3 * * *"],
+		"crons": [
+			"*/15 * * * *",
+			"0 2 * * *",
+			"0 3 * * *"
+		]
 	},
 	"queues": {
-		"producers": [{ "binding": "TASK_QUEUE", "queue": "polychat-task-queue" }],
+		"producers": [
+			{
+				"binding": "TASK_QUEUE",
+				"queue": "polychat-task-queue"
+			}
+		],
 		"consumers": [
 			{
 				"queue": "polychat-task-queue",
 				"max_batch_size": 10,
-				"dead_letter_queue": "polychat-task-queue-dlq",
-			},
+				"dead_letter_queue": "polychat-task-queue-dlq"
+			}
 		]
 	}
 }

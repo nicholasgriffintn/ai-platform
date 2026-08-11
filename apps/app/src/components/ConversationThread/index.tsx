@@ -52,6 +52,7 @@ export interface ConversationThreadModeConfig {
 	conversationMode?: ConversationModeMetadata;
 	welcomeTitle?: string;
 	welcomeDescription?: string;
+	welcomeLoading?: boolean;
 	welcomeSampleQuestions?: Array<{
 		id: string;
 		text: string;
@@ -524,6 +525,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 							setInput={setChatInput}
 							title={modeConfig?.welcomeTitle}
 							description={modeConfig?.welcomeDescription}
+							isLoading={modeConfig?.welcomeLoading}
 							sampleQuestions={modeConfig?.welcomeSampleQuestions}
 						/>
 					</div>

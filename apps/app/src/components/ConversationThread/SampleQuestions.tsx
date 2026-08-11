@@ -11,9 +11,9 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
-import { Button } from "~/components/ui";
-import { questionPool } from "~/data-model/sampleQuestions";
+import { Button, Skeleton } from "~/components/ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
+import { selectSampleQuestions } from "~/lib/sample-questions";
 import { useUIStore } from "~/state/stores/uiStore";
 import type { Question } from "~/types/sampleQuestions";
 
@@ -42,58 +42,30 @@ function getQuestionIcon(category: string) {
 	}
 }
 
-const baseCategories = [
-	"creative",
-	"productivity",
-	"technical",
-	"practical",
-	"analytical",
-	"ethical",
-	"humor",
-	"coding",
-];
-
 interface SampleQuestionsProps {
 	setInput: (text: string) => void;
 	questionsOverride?: Question[] | null;
+	isLoading?: boolean;
 }
 
-export const SampleQuestions = ({ setInput, questionsOverride }: SampleQuestionsProps) => {
+export const SampleQuestions = ({
+	setInput,
+	questionsOverride,
+	isLoading = false,
+}: SampleQuestionsProps) => {
 	const { trackEvent } = useTrackEvent();
 
-	const { isMobile, isMobileLoading } = useUIStore();
-	const [questions, setQuestions] = useState<Question[]>([]);
+	const { isMobileLoading } = useUIStore();
+	const [questions, setQuestions] = useState<Question[]>(() =>
+		questionsOverride === undefined ? selectSampleQuestions(false) : [],
+	);
 	const [showChallenging, setShowChallenging] = useState(false);
 	const displayedQuestions = questionsOverride ?? questions;
 	const hasQuestionOverride = questionsOverride !== undefined;
 
 	const refreshQuestions = useCallback(
 		(force = false) => {
-			const numQuestions = 4;
-			let selected: Question[] = [];
-
-			let selectedCategories: string[] = [];
-
-			if (showChallenging) {
-				const challengingQuestions = questionPool.challenging;
-				const shuffledQuestions = [...challengingQuestions].sort(() => Math.random() - 0.5);
-				const selectedQuestions = shuffledQuestions.slice(0, numQuestions);
-				selected = selectedQuestions.map((q) => ({
-					...q,
-					category: "challenging",
-				}));
-			} else {
-				const shuffledCategories = [...baseCategories].sort(() => Math.random() - 0.5);
-				selectedCategories = shuffledCategories.slice(0, numQuestions);
-				selected = selectedCategories.map((category) => {
-					const categoryQuestions = questionPool[category];
-					const randomIndex = Math.floor(Math.random() * categoryQuestions.length);
-					return {
-						...categoryQuestions[randomIndex],
-						category,
-					};
-				});
-			}
+			const selected = selectSampleQuestions(showChallenging);
 
 			if (force) {
 				trackEvent({
@@ -101,7 +73,7 @@ export const SampleQuestions = ({ setInput, questionsOverride }: SampleQuestions
 					category: "conversation",
 					properties: {
 						action: "refresh",
-						count: String(selectedCategories.length),
+						count: String(selected.length),
 						challenging_enabled: String(showChallenging),
 					},
 				});
@@ -112,11 +84,10 @@ export const SampleQuestions = ({ setInput, questionsOverride }: SampleQuestions
 	);
 
 	useEffect(() => {
-		if (hasQuestionOverride) {
-			return;
+		if (!hasQuestionOverride && questions.length === 0) {
+			setQuestions(selectSampleQuestions(showChallenging));
 		}
-		refreshQuestions(false);
-	}, [hasQuestionOverride, refreshQuestions]);
+	}, [hasQuestionOverride, questions.length, showChallenging]);
 
 	const handleClick = (question: Question) => {
 		trackEvent({
@@ -134,6 +105,7 @@ export const SampleQuestions = ({ setInput, questionsOverride }: SampleQuestions
 	const handleToggleChallenging = () => {
 		const newValue = !showChallenging;
 		setShowChallenging(newValue);
+		setQuestions(selectSampleQuestions(newValue));
 		trackEvent({
 			name: "toggle_challenging_questions",
 			category: "conversation",
@@ -143,12 +115,13 @@ export const SampleQuestions = ({ setInput, questionsOverride }: SampleQuestions
 		});
 	};
 
-	if (isMobileLoading) {
-		return null;
+	if (questionsOverride === null || displayedQuestions.length === 0) {
+		if (hasQuestionOverride) return null;
+		return <SampleQuestionsSkeleton />;
 	}
 
-	if (questionsOverride === null || displayedQuestions.length === 0) {
-		return null;
+	if (isLoading || isMobileLoading) {
+		return <SampleQuestionsSkeleton />;
 	}
 
 	return (
@@ -171,18 +144,12 @@ export const SampleQuestions = ({ setInput, questionsOverride }: SampleQuestions
 					)}
 				</div>
 			</div>
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-				{isMobile ? (
-					<QuestionOption
-						key={displayedQuestions[0].id}
-						questionData={displayedQuestions[0]}
-						onClick={() => handleClick(displayedQuestions[0])}
-					/>
-				) : (
-					displayedQuestions.map((q) => (
-						<QuestionOption key={q.id} questionData={q} onClick={() => handleClick(q)} />
-					))
-				)}
+			<div className="grid grid-cols-1 gap-3 md:grid-cols-2" aria-label="Suggested questions">
+				{displayedQuestions.map((question, index) => (
+					<div key={question.id} className={index === 0 ? undefined : "hidden md:block"}>
+						<QuestionOption questionData={question} onClick={() => handleClick(question)} />
+					</div>
+				))}
 			</div>
 			{!hasQuestionOverride && (
 				<div className="flex items-center justify-end gap-3 w-full mt-3">
@@ -215,6 +182,26 @@ export const SampleQuestions = ({ setInput, questionsOverride }: SampleQuestions
 	);
 };
 
+const SampleQuestionsSkeleton = () => (
+	<div className="mx-auto mt-8 max-w-xl" role="status" aria-label="Loading suggested questions">
+		<div className="mb-3 flex h-8 items-center justify-between" aria-hidden="true">
+			<Skeleton className="h-4 w-28" />
+			<Skeleton className="h-4 w-16" />
+		</div>
+		<div className="grid grid-cols-1 gap-3 md:grid-cols-2" aria-hidden="true">
+			{Array.from({ length: 4 }, (_, index) => (
+				<Skeleton
+					key={index}
+					className={`h-12 rounded-lg ${index === 0 ? "" : "hidden md:block"}`}
+				/>
+			))}
+		</div>
+		<div className="mt-3 flex h-4 justify-end" aria-hidden="true">
+			<Skeleton className="h-4 w-16" />
+		</div>
+	</div>
+);
+
 interface QuestionOptionProps {
 	questionData: Question;
 	onClick: () => void;
@@ -227,7 +214,7 @@ const QuestionOption = ({ questionData, onClick }: QuestionOptionProps) => {
 		<Button
 			variant="secondary"
 			onClick={onClick}
-			className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors h-full text-left w-full ${
+			className={`flex min-h-12 items-center p-3 rounded-lg cursor-pointer transition-colors h-full text-left w-full ${
 				isChallengingQuestion
 					? "bg-orange-50 dark:bg-orange-950/20 hover:bg-orange-100 dark:hover:bg-orange-950/30 border border-orange-200 dark:border-orange-800"
 					: "bg-off-white-highlight dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700"

@@ -1,11 +1,44 @@
+import { useMemo, useState } from "react";
+
 import { ConversationThread } from "~/components/ConversationThread";
 import type { ConversationThreadModeConfig } from "~/components/ConversationThread";
+import { useChats } from "~/hooks/useChat";
+import { createChatWelcome } from "~/lib/chat-welcome";
+import { useChatStore } from "~/state/stores/chatStore";
 
 interface HomeConversationThreadProps {
 	urlModeConfig?: ConversationThreadModeConfig;
 }
 
 export function HomeConversationThread({ urlModeConfig }: HomeConversationThreadProps) {
+	const user = useChatStore((state) => state.user);
+	const userSettings = useChatStore((state) => state.userSettings);
+	const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
+	const { data: conversations = [], isLoading: areConversationsLoading } = useChats();
+	const [welcomeSeed] = useState(() => Math.random());
+	const welcome = useMemo(
+		() =>
+			createChatWelcome(
+				{
+					preferredName: userSettings?.nickname,
+					accountName: user?.name,
+					jobRole: userSettings?.job_role,
+					hasPreviousChats: Boolean(user?.message_count || conversations.length),
+				},
+				welcomeSeed,
+			),
+		[
+			conversations.length,
+			user?.message_count,
+			user?.name,
+			userSettings?.job_role,
+			userSettings?.nickname,
+			welcomeSeed,
+		],
+	);
+	const hasModeWelcome = Boolean(urlModeConfig?.welcomeTitle || urlModeConfig?.welcomeDescription);
+	const isWelcomeLoading = !hasModeWelcome && (isAuthenticationLoading || areConversationsLoading);
+
 	return (
 		<ConversationThread
 			modeConfig={{
@@ -14,8 +47,11 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
 					...urlModeConfig?.modeControls,
 					includeSettingCommands: false,
 				},
-				welcomeTitle: "How can I help?",
-				welcomeDescription: "A clean conversation, separate from your shared project work.",
+				welcomeTitle: hasModeWelcome ? urlModeConfig?.welcomeTitle : welcome.title,
+				welcomeDescription: hasModeWelcome
+					? urlModeConfig?.welcomeDescription
+					: welcome.description,
+				welcomeLoading: isWelcomeLoading,
 			}}
 		/>
 	);
