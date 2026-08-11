@@ -116,7 +116,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
 				)}
 
 				{projectId && workspaceId && (
-					<div className="space-y-1 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+					<div className="space-y-1">
 						<Link
 							to={projectChatPath}
 							aria-current={isProjectChatRoute && !activeConversationId ? "page" : undefined}

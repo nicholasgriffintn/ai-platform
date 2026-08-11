@@ -2,7 +2,6 @@ import {
 	conversationModeMetadataSchema,
 	type ConversationModeMetadata,
 	type HomeChatModeId,
-	type SandboxChatModeSettings,
 } from "@assistant/schemas";
 
 import type { ChatRequestOptions, Conversation } from "~/types";
@@ -10,9 +9,8 @@ import type { ChatRequestOptions, Conversation } from "~/types";
 export function buildConversationModeMetadata(params: {
 	mode: HomeChatModeId;
 	requestOptions?: ChatRequestOptions;
-	sandboxSettings?: SandboxChatModeSettings;
 }): ConversationModeMetadata | undefined {
-	const { mode, requestOptions, sandboxSettings } = params;
+	const { mode, requestOptions } = params;
 	if (mode === "chat") {
 		return { mode };
 	}
@@ -20,7 +18,6 @@ export function buildConversationModeMetadata(params: {
 	const parsed = conversationModeMetadataSchema.safeParse({
 		mode,
 		requestOptions: mode === "background" ? undefined : requestOptions?.options,
-		sandboxSettings: mode === "sandbox" ? sandboxSettings : undefined,
 		smsSettings:
 			mode === "sms" && requestOptions?.options?.sms?.enabled
 				? {

@@ -286,6 +286,12 @@ export const project = sqliteTable(
 		description: text().default("").notNull(),
 		instructions: text().default("").notNull(),
 		colour: text().default("#2563EB").notNull(),
+		coding_enabled: integer({ mode: "boolean" }).default(false).notNull(),
+		coding_installation_id: integer(),
+		coding_repository: text(),
+		coding_prompt_strategy: text().default("auto").notNull(),
+		coding_should_commit: integer({ mode: "boolean" }).default(true).notNull(),
+		coding_timeout_seconds: integer().default(900).notNull(),
 		created_by: integer()
 			.notNull()
 			.references(() => user.id),

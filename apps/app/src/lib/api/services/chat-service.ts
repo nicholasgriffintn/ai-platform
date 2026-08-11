@@ -19,7 +19,7 @@ import type {
 	ModelConfigItem,
 	ModelRouterMode,
 } from "@assistant/schemas";
-import { getSandboxModeToolNames } from "~/lib/sandbox/chat-mode";
+import { getSandboxTaskToolNames } from "~/lib/sandbox/task-tools";
 import { readCompactionStatusMessage } from "~/lib/chat/compaction-status";
 import { filterUnavailableModelToolSelections } from "~/lib/model-tools";
 import { isRecord } from "~/lib/objects";
@@ -459,11 +459,11 @@ export class ChatService {
 		const requestEnabledTools = sandboxOptions
 			? normaliseToolIds([
 					...(selectedToolIds ?? []),
-					...getSandboxModeToolNames(sandboxOptions.taskType),
+					...getSandboxTaskToolNames(sandboxOptions.taskType),
 				])
 			: selectedToolIds;
 		const requestApprovedTools = sandboxOptions
-			? getSandboxModeToolNames(sandboxOptions.taskType)
+			? getSandboxTaskToolNames(sandboxOptions.taskType)
 			: undefined;
 
 		const {

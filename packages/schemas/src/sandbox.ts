@@ -258,6 +258,23 @@ export const sandboxRunDataSchema = z.object({
 export const sandboxTaskTypeSchema = z.enum(SANDBOX_TASK_TYPES);
 export const sandboxTrustLevelSchema = z.enum(SANDBOX_TRUST_LEVELS);
 
+export const sandboxRequestOptionsSchema = z
+	.object({
+		enabled: z.boolean(),
+		repo: z.string().trim().optional(),
+		installationId: z.number().int().positive().optional(),
+		model: z.string().trim().min(1).optional(),
+		taskType: sandboxTaskTypeSchema.optional(),
+		promptStrategy: sandboxPromptStrategySchema.optional(),
+		shouldCommit: z.boolean().optional(),
+		timeoutSeconds: z.number().int().positive().optional(),
+		maxSteps: z.number().int().positive().optional(),
+		modelSettings: sandboxModelSettingsSchema.optional(),
+	})
+	.passthrough();
+
+export type SandboxRequestOptions = z.infer<typeof sandboxRequestOptionsSchema>;
+
 export const sandboxRunControlStateSchema = z.enum(["queued", "running", "paused", "cancelled"]);
 
 export const sandboxRunControlSchema = z.object({

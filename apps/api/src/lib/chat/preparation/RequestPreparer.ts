@@ -8,10 +8,7 @@ import {
 } from "~/lib/providers/capabilities/embedding/helpers";
 import { MemoryManager } from "~/lib/memory";
 import { shouldSkipCouncilInputStorage } from "~/lib/chat/council";
-import {
-	buildConversationModeMetadataFromRequestOptions,
-	resolveChatPromptMode,
-} from "~/lib/chat/mode-metadata";
+import { buildUserMessageData, resolveChatPromptMode } from "~/lib/chat/mode-metadata";
 import {
 	buildMemoryPromptContext,
 	mergeEnabledMemoryToolNames,
@@ -31,6 +28,7 @@ import { getAllAttachments, pruneMessagesToFitContext, sanitiseInput } from "../
 import type { ValidationContext } from "../validation/ValidationPipeline";
 import { memoizeRequest } from "~/utils/requestCache";
 import {
+	applyProjectCodingEnvironment,
 	resolveProjectChatContext,
 	type ProjectChatContext,
 } from "~/services/workspaces/chatContext";
@@ -126,6 +124,8 @@ export class RequestPreparer {
 		const projectContext = options.context
 			? await resolveProjectChatContext(options.context, options)
 			: null;
+		// Project coding settings are authoritative; conversation options may only refine the task.
+		options = { ...options, ...applyProjectCodingEnvironment(options, projectContext) };
 
 		const isProUser = user?.plan_id === "pro";
 
@@ -336,15 +336,12 @@ export class RequestPreparer {
 		if (shouldSkipCouncilInputStorage(options.options?.council)) {
 			return;
 		}
-		const conversationMode = buildConversationModeMetadataFromRequestOptions(
-			options.options,
-			options.background,
-		);
+		const messageData = buildUserMessageData(options.options, options.background);
 
 		const messageToStore: Message = {
 			role: lastMessage.role,
 			content: finalMessage,
-			data: conversationMode ? { conversationMode } : undefined,
+			data: messageData,
 			id: generateId(),
 			timestamp: Date.now(),
 			model: primaryModel,

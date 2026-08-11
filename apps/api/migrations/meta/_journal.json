@@ -351,6 +351,20 @@
       "when": 1786364191260,
       "tag": "0049_workspace_projects",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "6",
+      "when": 1786405235353,
+      "tag": "0050_jittery_franklin_richards",
+      "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "6",
+      "when": 1786405469487,
+      "tag": "0051_cold_iron_lad",
+      "breakpoints": true
     }
   ]
 }

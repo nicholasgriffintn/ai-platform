@@ -10,7 +10,6 @@ const setSearchParams = vi.fn();
 const setChatMode = vi.fn();
 const setHomeChatMode = vi.fn();
 const setModel = vi.fn();
-const setSandboxModeSettings = vi.fn();
 const setSelectedAgentId = vi.fn();
 const setLiveProvider = vi.fn();
 const stopLiveSession = vi.fn();
@@ -53,13 +52,11 @@ const chatStoreState: {
 	currentConversationId?: string;
 	homeChatMode: HomeChatModeId;
 	model: string | null;
-	sandboxModeSettings: Record<string, unknown>;
 } = {
 	chatSettings: {},
 	currentConversationId: undefined,
 	homeChatMode: "live",
 	model: "voxtral-mini-transcribe-realtime",
-	sandboxModeSettings: {},
 };
 const liveSessionState = {
 	provider: "mistral",
@@ -124,25 +121,12 @@ vi.mock("~/hooks/useRealtimeLiveSession", () => ({
 	}),
 }));
 
-vi.mock("~/hooks/useSandbox", () => ({
-	useSandboxConnections: () => ({ data: [] }),
-	useSandboxRepositoryOptions: () => ({
-		isLoading: false,
-		repoOptions: [],
-	}),
-	useUpdateSandboxConnectionRepositories: () => ({
-		isPending: false,
-		mutate: vi.fn(),
-	}),
-}));
-
 vi.mock("~/state/stores/chatStore", () => ({
 	useChatStore: () => ({
 		...chatStoreState,
 		setChatMode,
 		setHomeChatMode,
 		setModel,
-		setSandboxModeSettings,
 		setSelectedAgentId,
 	}),
 }));

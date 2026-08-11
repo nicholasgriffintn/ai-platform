@@ -2,15 +2,13 @@ import z from "zod/v4";
 
 import { chatRequestModeSchema } from "./agent-modes";
 import { recipeChatRequestOptionsSchema, type RecipeChatRequestOptions } from "./apps";
-import {
-	conversationSandboxRequestOptionsSchema,
-	conversationSmsRequestOptionsSchema,
-} from "./chat-mode";
+import { conversationSmsRequestOptionsSchema } from "./chat-mode";
 import { councilChatOptionsSchema } from "./council";
 import { hasCompactionPart, messagePartsSchema } from "./message-parts";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
 import { messageSchema } from "./shared";
 import { toolIdsSchema } from "./tools";
+import { sandboxRequestOptionsSchema } from "./sandbox";
 
 const recordSchema = z.record(z.string(), z.unknown());
 
@@ -300,11 +298,9 @@ export const chatRequestOptionsSchema = z
 		agent: agentCompletionOptionsSchema
 			.optional()
 			.describe("Settings for agent mode, which enables multi-step reasoning and tool usage."),
-		sandbox: conversationSandboxRequestOptionsSchema
+		sandbox: sandboxRequestOptionsSchema
 			.optional()
-			.describe(
-				"Settings for sandbox mode, which enables code execution and tool usage in a secure environment.",
-			),
+			.describe("Settings for sandbox execution in a project coding conversation."),
 	})
 	.strict();
 

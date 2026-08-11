@@ -32,7 +32,7 @@ export function CreateProjectDialog({
 		event.preventDefault();
 		const project = await createProject.mutateAsync({
 			workspaceId,
-			input: { name, description, instructions, colour: "#2563EB" },
+			input: { name, description, instructions, colour: "#2563EB", codingEnvironment: null },
 		});
 		onOpenChange(false);
 		navigate(`/work/${workspaceId}/projects/${project.id}`);

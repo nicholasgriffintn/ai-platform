@@ -176,7 +176,11 @@ export async function createProject(
 	await context.repositories.workspaces.createProject({
 		id,
 		workspaceId,
-		...input,
+		name: input.name,
+		description: input.description,
+		instructions: input.instructions,
+		colour: input.colour,
+		codingEnvironment: input.codingEnvironment,
 		createdBy: user.id,
 	});
 	return getProject(context, id);
@@ -197,7 +201,22 @@ export async function updateProject(
 	input: UpdateProjectInput,
 ) {
 	await requireProjectAccess(context, projectId, ["owner", "admin"]);
-	await context.repositories.workspaces.updateProject(projectId, input);
+	const { codingEnvironment, ...projectFields } = input;
+	const codingUpdates =
+		codingEnvironment === undefined
+			? {}
+			: {
+					coding_enabled: codingEnvironment ? 1 : 0,
+					coding_installation_id: codingEnvironment?.installationId ?? null,
+					coding_repository: codingEnvironment?.repository ?? null,
+					coding_prompt_strategy: codingEnvironment?.promptStrategy ?? "auto",
+					coding_should_commit: codingEnvironment?.shouldCommit ?? true,
+					coding_timeout_seconds: codingEnvironment?.timeoutSeconds ?? 900,
+				};
+	await context.repositories.workspaces.updateProject(projectId, {
+		...projectFields,
+		...codingUpdates,
+	});
 	return getProject(context, projectId);
 }
 

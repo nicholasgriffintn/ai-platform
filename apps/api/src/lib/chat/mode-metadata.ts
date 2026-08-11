@@ -4,7 +4,7 @@ import type { ChatMode, ChatRequestOptions } from "~/types";
 
 const AGENT_EXECUTION_MODES = new Set<ChatMode>(["agent", "plan", "build", "explore"]);
 
-export type ChatPromptMode = "council" | "sandbox" | "sms";
+export type ChatPromptMode = "council" | "sms";
 export type ChatConversationMode = ChatPromptMode | "background";
 
 export function isAgentExecutionMode(mode: ChatMode): boolean {
@@ -14,9 +14,6 @@ export function isAgentExecutionMode(mode: ChatMode): boolean {
 export function resolveChatPromptMode(
 	options: ChatRequestOptions | undefined,
 ): ChatPromptMode | undefined {
-	if (options?.sandbox?.enabled) {
-		return "sandbox";
-	}
 	if (options?.council?.enabled) {
 		return "council";
 	}
@@ -60,6 +57,21 @@ export function buildAssistantMessageData(params: {
 	return councilData ? { ...responseData, ...councilData } : responseData;
 }
 
+export function buildUserMessageData(
+	options: ChatRequestOptions | undefined,
+	background?: boolean,
+): Record<string, unknown> | undefined {
+	const conversationMode = buildConversationModeMetadataFromRequestOptions(options, background);
+	const codingTaskType = options?.sandbox?.enabled ? options.sandbox.taskType : undefined;
+
+	if (!conversationMode && !codingTaskType) return undefined;
+
+	return {
+		...(conversationMode ? { conversationMode } : {}),
+		...(codingTaskType ? { codingTaskType } : {}),
+	};
+}
+
 export function buildConversationModeMetadataFromRequestOptions(
 	options: ChatRequestOptions | undefined,
 	background?: boolean,
@@ -76,21 +88,6 @@ export function buildConversationModeMetadataFromRequestOptions(
 			? {
 					from: options.sms.from,
 					to: options.sms.to,
-				}
-			: undefined,
-		sandboxSettings: options?.sandbox?.enabled
-			? {
-					repoKey:
-						typeof options.sandbox.installationId === "number" && options.sandbox.repo
-							? `${options.sandbox.installationId}:${options.sandbox.repo}`
-							: undefined,
-					taskType: options.sandbox.taskType,
-					promptStrategy: options.sandbox.promptStrategy,
-					timeoutSecondsInput:
-						typeof options.sandbox.timeoutSeconds === "number"
-							? String(options.sandbox.timeoutSeconds)
-							: undefined,
-					shouldCommit: options.sandbox.shouldCommit,
 				}
 			: undefined,
 	});

@@ -31,6 +31,9 @@ vi.mock("./WorkContext", () => ({
 	}),
 }));
 vi.mock("./ProjectBriefCard", () => ({ ProjectBriefCard: () => null }));
+vi.mock("./ProjectCodingEnvironmentCard", () => ({
+	ProjectCodingEnvironmentCard: () => null,
+}));
 
 describe("ProjectOverview", () => {
 	it("presents new conversation as the primary project action", () => {

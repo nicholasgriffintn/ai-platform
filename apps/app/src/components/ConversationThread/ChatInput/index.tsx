@@ -695,6 +695,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 										/>
 									</div>
 									{!hideInlineResponseControls && <InlineResponseControls isDisabled={isLoading} />}
+									{!hideTextInput && controls && <div className="shrink-0">{controls}</div>}
 								</div>
 								<div className="flex-shrink-0 flex items-center gap-2">
 									{!hideChatSettings && (

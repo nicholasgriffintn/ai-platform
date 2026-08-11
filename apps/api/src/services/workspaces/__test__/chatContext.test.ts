@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ErrorType } from "~/utils/errors";
-import { resolveProjectChatContext } from "../chatContext";
+import { applyProjectCodingEnvironment, resolveProjectChatContext } from "../chatContext";
 
 function createContext({
 	conversation = null,
@@ -38,6 +38,42 @@ function createContext({
 }
 
 describe("project chat context", () => {
+	it("keeps the project repository fixed while allowing a conversation task type", () => {
+		const options = applyProjectCodingEnvironment(
+			{
+				options: {
+					sandbox: {
+						enabled: true,
+						installationId: 999,
+						repo: "other/repository",
+						taskType: "bug-fix",
+					},
+				},
+			},
+			{
+				projectId: "project-1",
+				instructions: "",
+				enabledTools: [],
+				sandboxOptions: {
+					enabled: true,
+					installationId: 123,
+					repo: "owner/repository",
+					taskType: "feature-implementation",
+					promptStrategy: "auto",
+					shouldCommit: true,
+					timeoutSeconds: 900,
+				},
+			},
+		);
+
+		expect(options.options?.sandbox).toMatchObject({
+			enabled: true,
+			installationId: 123,
+			repo: "owner/repository",
+			taskType: "bug-fix",
+		});
+	});
+
 	it("resolves instructions and tools from the authorised project", async () => {
 		const { context } = createContext();
 

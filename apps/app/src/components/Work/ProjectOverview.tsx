@@ -8,6 +8,7 @@ import { Button, Card } from "~/components/ui";
 import { useWorkData } from "./WorkContext";
 import { ProjectBriefCard } from "./ProjectBriefCard";
 import { ProjectOverviewSkeleton } from "./WorkLoadingSkeletons";
+import { ProjectCodingEnvironmentCard } from "./ProjectCodingEnvironmentCard";
 
 export function ProjectOverview({
 	workspaceId,
@@ -50,7 +51,7 @@ export function ProjectOverview({
 					</div>
 				</PageHeader>
 
-				<div className="grid gap-5 lg:grid-cols-[1.45fr_0.75fr]">
+				<div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_420px]">
 					<section>
 						<div className="mb-3 flex items-center justify-between">
 							<h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
@@ -105,6 +106,7 @@ export function ProjectOverview({
 							instructions={project.instructions}
 							projectId={projectId}
 						/>
+						<ProjectCodingEnvironmentCard canManage={canManage} project={project} />
 						<Card className="p-6 shadow-none">
 							<Settings2 size={20} className="text-zinc-500" />
 							<h2 className="text-sm font-semibold">Project capabilities</h2>

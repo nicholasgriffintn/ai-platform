@@ -31,7 +31,7 @@ interface InlineSettingSelectProps<T extends string> {
 	onChange: (value: T | "") => void;
 }
 
-function InlineSettingSelect<T extends string>({
+export function InlineSettingSelect<T extends string>({
 	id,
 	label,
 	icon,

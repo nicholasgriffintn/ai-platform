@@ -49,6 +49,7 @@ function projectSummaryFromDetail(project: ProjectDetail): ProjectSummary {
 		updatedAt: project.updatedAt,
 		conversationCount: project.conversationCount,
 		capabilityCount: project.capabilityCount,
+		codingEnvironment: project.codingEnvironment,
 	};
 }
 

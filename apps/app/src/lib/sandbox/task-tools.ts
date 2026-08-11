@@ -1,6 +1,6 @@
 import type { SandboxTaskType } from "@assistant/schemas/sandbox-constants";
 
-export const SANDBOX_MODE_TOOL_NAMES = [
+export const SANDBOX_TASK_TOOL_NAMES = [
 	"run_feature_implementation",
 	"run_code_review",
 	"run_test_suite",
@@ -10,7 +10,7 @@ export const SANDBOX_MODE_TOOL_NAMES = [
 	"run_migration",
 ] as const;
 
-export const SANDBOX_TASK_TYPE_TOOL_MAP = {
+export const SANDBOX_TASK_TOOL_MAP = {
 	"feature-implementation": "run_feature_implementation",
 	"code-review": "run_code_review",
 	"test-suite": "run_test_suite",
@@ -18,8 +18,8 @@ export const SANDBOX_TASK_TYPE_TOOL_MAP = {
 	refactoring: "run_refactoring",
 	documentation: "run_documentation",
 	migration: "run_migration",
-} as const satisfies Record<SandboxTaskType, (typeof SANDBOX_MODE_TOOL_NAMES)[number]>;
+} as const satisfies Record<SandboxTaskType, (typeof SANDBOX_TASK_TOOL_NAMES)[number]>;
 
-export function getSandboxModeToolNames(taskType?: SandboxTaskType): string[] {
-	return taskType ? [SANDBOX_TASK_TYPE_TOOL_MAP[taskType]] : [...SANDBOX_MODE_TOOL_NAMES];
+export function getSandboxTaskToolNames(taskType?: SandboxTaskType): string[] {
+	return taskType ? [SANDBOX_TASK_TOOL_MAP[taskType]] : [...SANDBOX_TASK_TOOL_NAMES];
 }

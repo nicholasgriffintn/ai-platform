@@ -9,7 +9,6 @@ describe("returnSandboxPrompt", () => {
 			input: "Fix the bug",
 			date: "2026-05-23",
 			mode: "normal",
-			promptMode: "sandbox",
 			options: {
 				sandbox: {
 					enabled: true,

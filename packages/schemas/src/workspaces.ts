@@ -2,6 +2,25 @@ import z from "zod/v4";
 
 export const workspaceRoleSchema = z.enum(["owner", "admin", "member"]);
 export const projectCapabilityKindSchema = z.enum(["app", "recipe", "tool"]);
+export const projectCodingPromptStrategySchema = z.enum([
+	"auto",
+	"feature-delivery",
+	"bug-fix",
+	"refactor",
+	"test-hardening",
+]);
+
+export const projectCodingEnvironmentSchema = z.object({
+	installationId: z.number().int().positive(),
+	repository: z
+		.string()
+		.trim()
+		.min(1)
+		.regex(/^[\w.-]+\/[\w.-]+$/, "Repository must be in owner/repository format"),
+	promptStrategy: projectCodingPromptStrategySchema.default("auto"),
+	shouldCommit: z.boolean().default(true),
+	timeoutSeconds: z.number().int().min(30).max(7200).default(900),
+});
 
 export const workspaceMemberSchema = z.object({
 	userId: z.number().int().positive(),
@@ -43,6 +62,7 @@ export const projectSummarySchema = z.object({
 	updatedAt: z.string().nullable(),
 	conversationCount: z.number().int().nonnegative().default(0),
 	capabilityCount: z.number().int().nonnegative().default(0),
+	codingEnvironment: projectCodingEnvironmentSchema.nullable(),
 });
 
 export const workspaceSummarySchema = z.object({
@@ -98,10 +118,14 @@ export const createProjectSchema = z.object({
 	description: projectFields.description.default(""),
 	instructions: projectFields.instructions.default(""),
 	colour: projectFields.colour.default("#2563EB"),
+	codingEnvironment: projectCodingEnvironmentSchema.nullable().optional(),
 });
 
 export const updateProjectSchema = z
-	.object(projectFields)
+	.object({
+		...projectFields,
+		codingEnvironment: projectCodingEnvironmentSchema.nullable().optional(),
+	})
 	.partial()
 	.refine((value) => Object.keys(value).length > 0, {
 		error: "At least one project field must be provided",
@@ -167,6 +191,7 @@ export type WorkspaceMember = z.infer<typeof workspaceMemberSchema>;
 export type WorkspaceInvitation = z.infer<typeof workspaceInvitationSchema>;
 export type WorkspaceInvitationDelivery = z.infer<typeof workspaceInvitationDeliverySchema>;
 export type ProjectCapability = z.infer<typeof projectCapabilitySchema>;
+export type ProjectCodingEnvironment = z.infer<typeof projectCodingEnvironmentSchema>;
 export type ProjectConversation = z.infer<typeof projectConversationSchema>;
 export type ProjectSummary = z.infer<typeof projectSummarySchema>;
 export type ProjectDetail = z.infer<typeof projectDetailSchema>;

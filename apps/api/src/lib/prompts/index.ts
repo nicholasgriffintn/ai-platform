@@ -10,7 +10,7 @@ import { returnStandardPrompt } from "./standard";
 import { emptyPrompt } from "./utils";
 import { buildAssistantMetadataSection, type PromptModelMetadata } from "./sections/metadata";
 
-export type PromptMode = "council" | "sandbox" | "sms";
+export type PromptMode = "council" | "sms";
 export type PromptRequest = IBody & { promptMode?: PromptMode };
 
 export async function getSystemPrompt(
@@ -27,7 +27,7 @@ export async function getSystemPrompt(
 	const promptMode = request.promptMode;
 	const modelMetadata = modelConfig ? { modelId: model, modelConfig } : { modelId: model };
 
-	if (promptMode === "sandbox" || request.options?.sandbox?.enabled) {
+	if (request.options?.sandbox?.enabled) {
 		return trimTemplateWhitespace(returnSandboxPrompt(request, userSettings, modelMetadata));
 	}
 

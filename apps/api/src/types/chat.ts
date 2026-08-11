@@ -133,6 +133,7 @@ export interface AsyncInvocationData {
 }
 
 export interface MessageDataPayload extends Record<string, any> {
+	codingTaskType?: string;
 	asyncInvocation?: AsyncInvocationData;
 	error?: string;
 }

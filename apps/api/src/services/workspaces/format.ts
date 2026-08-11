@@ -7,6 +7,7 @@ import type {
 	WorkspaceMember,
 	WorkspaceSummary,
 } from "@assistant/schemas";
+import { projectCodingEnvironmentSchema } from "@assistant/schemas";
 
 import type {
 	ProjectCapabilityRow,
@@ -59,6 +60,13 @@ export function formatWorkspaceInvitation(row: WorkspaceInvitationRow): Workspac
 }
 
 export function formatProjectSummary(row: ProjectRow): ProjectSummary {
+	const codingEnvironment = projectCodingEnvironmentSchema.safeParse({
+		installationId: row.coding_installation_id,
+		repository: row.coding_repository,
+		promptStrategy: row.coding_prompt_strategy,
+		shouldCommit: Boolean(row.coding_should_commit),
+		timeoutSeconds: row.coding_timeout_seconds,
+	});
 	return {
 		id: row.id,
 		workspaceId: row.workspace_id,
@@ -71,6 +79,8 @@ export function formatProjectSummary(row: ProjectRow): ProjectSummary {
 		updatedAt: row.updated_at,
 		conversationCount: Number(row.conversation_count),
 		capabilityCount: Number(row.capability_count),
+		codingEnvironment:
+			row.coding_enabled === 1 && codingEnvironment.success ? codingEnvironment.data : null,
 	};
 }
 

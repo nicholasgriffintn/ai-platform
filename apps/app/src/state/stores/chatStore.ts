@@ -1,9 +1,4 @@
-import type {
-	AssistantActionSelection,
-	HomeChatModeId,
-	ModelRouterMode,
-	SandboxChatModeSettings,
-} from "@assistant/schemas";
+import type { AssistantActionSelection, HomeChatModeId, ModelRouterMode } from "@assistant/schemas";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -62,8 +57,6 @@ export interface ChatStore {
 	setChatMode: (mode: ChatMode) => void;
 	homeChatMode: HomeChatModeId;
 	setHomeChatMode: (mode: HomeChatModeId) => void;
-	sandboxModeSettings: SandboxChatModeSettings;
-	setSandboxModeSettings: (settings: SandboxChatModeSettings) => void;
 	model: string | null;
 	setModel: (model: string | null) => void;
 	autoMode: ModelRouterMode;
@@ -147,8 +140,6 @@ export const useChatStore = create<ChatStore>()(
 			setChatMode: (mode) => set({ chatMode: mode }),
 			homeChatMode: "chat",
 			setHomeChatMode: (mode) => set({ homeChatMode: mode }),
-			sandboxModeSettings: {},
-			setSandboxModeSettings: (settings) => set({ sandboxModeSettings: settings }),
 			model: null,
 			setModel: (model) => set({ model }),
 			autoMode: "auto",
@@ -244,7 +235,6 @@ export const useChatStore = create<ChatStore>()(
 				localOnlyMode: state.localOnlyMode,
 				chatMode: state.chatMode,
 				homeChatMode: state.homeChatMode,
-				sandboxModeSettings: state.sandboxModeSettings,
 				model: state.model,
 				autoMode: state.autoMode,
 				useMultiModel: state.useMultiModel,

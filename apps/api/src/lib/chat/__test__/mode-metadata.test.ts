@@ -3,12 +3,13 @@ import { describe, expect, it } from "vitest";
 import {
 	buildAssistantMessageData,
 	buildConversationModeMetadataFromRequestOptions,
+	buildUserMessageData,
 	resolveChatConversationMode,
 	resolveChatPromptMode,
 } from "../mode-metadata";
 
 describe("buildConversationModeMetadataFromRequestOptions", () => {
-	it("builds sandbox metadata from request options", () => {
+	it("does not turn coding execution into a conversation mode", () => {
 		const metadata = buildConversationModeMetadataFromRequestOptions({
 			sandbox: {
 				enabled: true,
@@ -21,22 +22,16 @@ describe("buildConversationModeMetadataFromRequestOptions", () => {
 			},
 		});
 
-		expect(metadata).toMatchObject({
-			mode: "sandbox",
-			requestOptions: {
+		expect(metadata).toBeUndefined();
+		expect(
+			buildUserMessageData({
 				sandbox: {
+					enabled: true,
 					repo: "owner/repo",
-					installationId: 123,
+					taskType: "bug-fix",
 				},
-			},
-			sandboxSettings: {
-				repoKey: "123:owner/repo",
-				taskType: "bug-fix",
-				promptStrategy: "bug-fix",
-				timeoutSecondsInput: "900",
-				shouldCommit: false,
-			},
-		});
+			}),
+		).toEqual({ codingTaskType: "bug-fix" });
 	});
 
 	it("builds council metadata from request options", () => {
@@ -66,8 +61,8 @@ describe("buildConversationModeMetadataFromRequestOptions", () => {
 			sandbox: { enabled: true, repo: "owner/repo" },
 		};
 
-		expect(resolveChatPromptMode(options as any)).toBe("sandbox");
-		expect(buildConversationModeMetadataFromRequestOptions(options as any)?.mode).toBe("sandbox");
+		expect(resolveChatPromptMode(options as any)).toBe("council");
+		expect(buildConversationModeMetadataFromRequestOptions(options as any)?.mode).toBe("council");
 	});
 
 	it("builds sms metadata from request options", () => {

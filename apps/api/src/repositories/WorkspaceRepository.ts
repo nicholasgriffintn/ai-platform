@@ -1,4 +1,8 @@
-import type { ProjectCapabilityKind, WorkspaceRole } from "@assistant/schemas";
+import type {
+	ProjectCapabilityKind,
+	ProjectCodingEnvironment,
+	WorkspaceRole,
+} from "@assistant/schemas";
 
 import { BaseRepository } from "./BaseRepository";
 
@@ -49,6 +53,12 @@ export interface ProjectRow {
 	description: string;
 	instructions: string;
 	colour: string;
+	coding_enabled?: number;
+	coding_installation_id?: number | null;
+	coding_repository?: string | null;
+	coding_prompt_strategy?: string;
+	coding_should_commit?: number;
+	coding_timeout_seconds?: number;
 	created_by: number;
 	archived_at: string | null;
 	created_at: string;
@@ -253,12 +263,15 @@ export class WorkspaceRepository extends BaseRepository {
 		description: string;
 		instructions: string;
 		colour: string;
+		codingEnvironment?: ProjectCodingEnvironment | null;
 		createdBy: number;
 	}): Promise<void> {
 		await this.executeRun(
 			`INSERT INTO project
-				(id, workspace_id, name, description, instructions, colour, created_by)
-			 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+				(id, workspace_id, name, description, instructions, colour,
+				 coding_enabled, coding_installation_id, coding_repository,
+				 coding_prompt_strategy, coding_should_commit, coding_timeout_seconds, created_by)
+				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			[
 				params.id,
 				params.workspaceId,
@@ -266,6 +279,12 @@ export class WorkspaceRepository extends BaseRepository {
 				params.description,
 				params.instructions,
 				params.colour,
+				params.codingEnvironment ? 1 : 0,
+				params.codingEnvironment?.installationId ?? null,
+				params.codingEnvironment?.repository ?? null,
+				params.codingEnvironment?.promptStrategy ?? "auto",
+				params.codingEnvironment?.shouldCommit ?? true,
+				params.codingEnvironment?.timeoutSeconds ?? 900,
 				params.createdBy,
 			],
 		);
@@ -305,7 +324,19 @@ export class WorkspaceRepository extends BaseRepository {
 		const result = this.buildUpdateQuery(
 			"project",
 			updates,
-			["name", "description", "instructions", "colour", "archived_at"],
+			[
+				"name",
+				"description",
+				"instructions",
+				"colour",
+				"coding_enabled",
+				"coding_installation_id",
+				"coding_repository",
+				"coding_prompt_strategy",
+				"coding_should_commit",
+				"coding_timeout_seconds",
+				"archived_at",
+			],
 			"id = ?",
 			[projectId],
 		);

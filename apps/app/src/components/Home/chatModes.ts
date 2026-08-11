@@ -1,11 +1,4 @@
-import {
-	Clock3,
-	GitBranch,
-	MessageCircle,
-	RadioTower,
-	UsersRound,
-	type LucideIcon,
-} from "lucide-react";
+import { Clock3, MessageCircle, RadioTower, UsersRound, type LucideIcon } from "lucide-react";
 import type { HomeChatModeId } from "@assistant/schemas";
 
 export type { HomeChatModeId };
@@ -36,13 +29,6 @@ export const HOME_CHAT_MODE_OPTIONS: HomeChatModeOption[] = [
 		exclusiveGroup: "chat-orchestration",
 	},
 	{
-		id: "sandbox",
-		label: "Sandbox",
-		description: "Run repository tasks in an isolated sandbox worker.",
-		icon: GitBranch,
-		exclusiveGroup: "chat-orchestration",
-	},
-	{
 		id: "background",
 		label: "Background",
 		description: "Start resumable work that can continue outside the active chat stream.",
@@ -59,19 +45,11 @@ export const HOME_CHAT_MODE_OPTIONS: HomeChatModeOption[] = [
 ];
 
 export function resolveHomeChatModeId(value: string | null): HomeChatModeId {
-	return value === "background" || value === "council" || value === "sandbox" || value === "live"
-		? value
-		: "chat";
+	return value === "background" || value === "council" || value === "live" ? value : "chat";
 }
 
 export function isSelectableHomeChatModeId(value: string): value is SelectableHomeChatModeId {
-	return (
-		value === "background" ||
-		value === "chat" ||
-		value === "council" ||
-		value === "sandbox" ||
-		value === "live"
-	);
+	return value === "background" || value === "chat" || value === "council" || value === "live";
 }
 
 export function getHomeChatModeAvailability(

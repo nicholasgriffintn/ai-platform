@@ -72,7 +72,7 @@ export function returnSandboxPrompt(
 		.addLine(
 			"- Use the enabled sandbox tool for implementation, bug fixing, tests, refactors, reviews, documentation, and migration work.",
 		)
-		.addLine("- Do not answer coding-work requests manually when sandbox mode is enabled.")
+		.addLine("- Do not answer coding-work requests manually when sandbox execution is enabled.")
 		.addLine("- Do not use unrelated tools for sandbox work.")
 		.addLine(
 			"- Pass the user's task crisply, preserving constraints, repo, task type, commit preference, prompt strategy, timeout, and installation ID from sandbox context.",

@@ -1,4 +1,8 @@
-import type { ChatHostedToolSettings } from "@assistant/schemas";
+import {
+	projectCodingEnvironmentSchema,
+	type ChatHostedToolSettings,
+	type SandboxRequestOptions,
+} from "@assistant/schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { CoreChatOptions } from "~/types";
@@ -16,6 +20,37 @@ export interface ProjectChatContext {
 	instructions: string;
 	enabledTools: string[];
 	toolOptions?: ChatHostedToolSettings;
+	sandboxOptions?: SandboxRequestOptions;
+}
+
+const PROJECT_CODING_TOOL_IDS = [
+	"run_feature_implementation",
+	"run_code_review",
+	"run_test_suite",
+	"run_bug_fix",
+	"run_refactoring",
+	"run_documentation",
+	"run_migration",
+];
+
+export function applyProjectCodingEnvironment(
+	options: Pick<CoreChatOptions, "options">,
+	projectContext: ProjectChatContext | null,
+): Pick<CoreChatOptions, "options"> {
+	if (!projectContext?.sandboxOptions) return options;
+
+	return {
+		...options,
+		options: {
+			...options.options,
+			sandbox: {
+				...options.options?.sandbox,
+				...projectContext.sandboxOptions,
+				taskType: options.options?.sandbox?.taskType ?? projectContext.sandboxOptions.taskType,
+				enabled: true,
+			},
+		},
+	};
 }
 
 export async function resolveProjectChatContext(
@@ -51,7 +86,17 @@ export async function resolveProjectChatContext(
 	const { project } = await requireProjectAccess(context, projectId);
 	const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
 	const projectTools = resolveProjectTools(capabilities);
-	const toolIds = [...projectTools.enabledTools];
+	const codingEnvironment = projectCodingEnvironmentSchema.safeParse({
+		installationId: project.coding_installation_id,
+		repository: project.coding_repository,
+		promptStrategy: project.coding_prompt_strategy,
+		shouldCommit: Boolean(project.coding_should_commit),
+		timeoutSeconds: project.coding_timeout_seconds,
+	});
+	const toolIds = [
+		...projectTools.enabledTools,
+		...(project.coding_enabled === 1 && codingEnvironment.success ? PROJECT_CODING_TOOL_IDS : []),
+	];
 	const recipeId = options.options?.recipe?.id;
 	const hasRecipe =
 		recipeId &&
@@ -73,5 +118,17 @@ export async function resolveProjectChatContext(
 		instructions: project.instructions,
 		enabledTools: [...new Set(toolIds)],
 		toolOptions: projectTools.toolOptions,
+		sandboxOptions:
+			project.coding_enabled === 1 && codingEnvironment.success
+				? {
+						enabled: true,
+						installationId: codingEnvironment.data.installationId,
+						repo: codingEnvironment.data.repository,
+						taskType: "feature-implementation",
+						promptStrategy: codingEnvironment.data.promptStrategy,
+						shouldCommit: codingEnvironment.data.shouldCommit,
+						timeoutSeconds: codingEnvironment.data.timeoutSeconds,
+					}
+				: undefined,
 	};
 }

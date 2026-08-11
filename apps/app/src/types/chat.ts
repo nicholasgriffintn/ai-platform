@@ -1,4 +1,4 @@
-import type { MessagePart as SchemaMessagePart } from "@assistant/schemas";
+import type { MessagePart as SchemaMessagePart, SandboxTaskType } from "@assistant/schemas";
 import type {
 	ChatCompletionRequestBody as SchemaChatCompletionRequestBody,
 	ChatHostedToolSettings as SchemaHostedToolSettings,
@@ -117,6 +117,7 @@ export interface Attachment {
 
 export interface MessageData {
 	conversationMode?: ConversationModeMetadata;
+	codingTaskType?: SandboxTaskType;
 	responseType?: "table" | "json" | "text" | "template" | "custom";
 	responseDisplay?: {
 		fields?: {
