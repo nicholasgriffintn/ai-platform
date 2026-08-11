@@ -46,7 +46,13 @@ export function InvitationAcceptPage() {
 						<p className="text-sm leading-6 text-zinc-500">
 							Sign in with the email address that received this secure invitation.
 						</p>
-						<Button icon={<LogIn size={16} />} onClick={() => setShowLoginModal(true)}>
+						<Button
+							variant="primary"
+							size="lg"
+							fullWidth
+							icon={<LogIn size={18} />}
+							onClick={() => setShowLoginModal(true)}
+						>
 							Sign in to accept
 						</Button>
 					</>

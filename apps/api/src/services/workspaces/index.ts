@@ -15,6 +15,7 @@ import { generateId, randomHex } from "~/utils/id";
 import { requireProjectAccess, requireWorkspaceAccess } from "./access";
 import { validateProjectCapabilityReference } from "./capabilities";
 import { validateProjectToolConfiguration } from "./projectTools";
+import { sendWorkspaceInvitationEmail } from "./invitation-email";
 import {
 	formatProjectDetail,
 	formatProjectSummary,
@@ -89,7 +90,10 @@ export async function inviteWorkspaceMember(
 	input: CreateWorkspaceInvitationInput,
 ) {
 	const user = context.requireUser();
-	const { role } = await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
+	const { role, workspace } = await requireWorkspaceAccess(context, workspaceId, [
+		"owner",
+		"admin",
+	]);
 	if (input.role === "admin" && role !== "owner") {
 		throw new AssistantError(
 			"Only workspace owners can invite administrators",
@@ -122,9 +126,17 @@ export async function inviteWorkspaceMember(
 	}
 
 	const baseUrl = (context.env.APP_BASE_URL ?? "https://polychat.app").replace(/\/$/, "");
+	const inviteUrl = `${baseUrl}/work/invitations?token=${encodeURIComponent(token)}`;
+	await sendWorkspaceInvitationEmail(context.env, {
+		email: input.email,
+		inviteUrl,
+		inviterName: user.name,
+		role: input.role,
+		workspaceName: workspace.name,
+	});
 	return {
 		invitation: formatWorkspaceInvitation(invitation),
-		inviteUrl: `${baseUrl}/work/invitations?token=${encodeURIComponent(token)}`,
+		inviteUrl,
 	};
 }
 

@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("~/services/email", () => ({
+	sendEmail: vi.fn().mockResolvedValue(undefined),
+}));
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type {
 	ProjectRow,
@@ -9,6 +13,7 @@ import type {
 } from "~/repositories/WorkspaceRepository";
 import { sha256Hex } from "~/utils/crypto";
 import { ErrorType } from "~/utils/errors";
+import { sendEmail } from "~/services/email";
 import {
 	acceptWorkspaceInvitation,
 	createProject,
@@ -137,6 +142,13 @@ describe("workspace invitation lifecycle", () => {
 		expect(persisted.tokenHash).not.toBe(rawToken);
 		expect(persisted.expiresAt).toBe("2026-08-17T12:00:00.000Z");
 		expect(result.invitation).not.toHaveProperty("token_hash");
+		expect(sendEmail).toHaveBeenCalledWith(
+			context.env,
+			"invitee@example.com",
+			expect.stringContaining("You’re invited to join Product"),
+			expect.stringContaining("https://work.polychat.test/work/invitations?token="),
+			expect.stringContaining("Accept invitation"),
+		);
 	});
 
 	it("binds acceptance to the invited email address", async () => {
