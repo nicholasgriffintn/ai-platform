@@ -2577,8 +2577,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 		contextWindow: 1050000,
 		maxTokens: 128000,
-		costPer1kInputTokens: 0.0011,
-		costPer1kOutputTokens: 0.0066,
+		costPer1kInputTokens: 0.00022,
+		costPer1kOutputTokens: 0.00132,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -2629,8 +2629,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 		contextWindow: 1050000,
 		maxTokens: 128000,
-		costPer1kInputTokens: 0.00275,
-		costPer1kOutputTokens: 0.0165,
+		costPer1kInputTokens: 0.0022,
+		costPer1kOutputTokens: 0.0132,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
