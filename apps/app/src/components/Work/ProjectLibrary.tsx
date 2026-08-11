@@ -5,7 +5,9 @@ import { RecipeScheduleDialog } from "~/components/Apps/Recipes/RecipeScheduleDi
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { ConfirmationDialog } from "~/components/ui";
+import { isAuthenticationError } from "~/lib/errors";
 import { ProjectCapabilityFilters } from "./ProjectCapabilityFilters";
 import { ProjectCapabilityGroups } from "./ProjectCapabilityGroups";
 import { ProjectToolConfigurationDialog } from "./ProjectToolConfigurationDialog";
@@ -16,6 +18,11 @@ export function ProjectLibrary({ workspaceId, projectId }: ProjectLibraryProps) 
 	const controller = useProjectLibraryController(workspaceId, projectId);
 	const isLoading = controller.isLoadingProject || controller.catalog.isLoading;
 	const recipeWorkflows = controller.recipes.workflows;
+	const mutationError = controller.mutations.add.error ?? controller.mutations.remove.error;
+	const hasAuthenticationError =
+		isAuthenticationError(controller.projectError) ||
+		isAuthenticationError(controller.catalog.error) ||
+		isAuthenticationError(mutationError);
 
 	return (
 		<>
@@ -37,13 +44,19 @@ export function ProjectLibrary({ workspaceId, projectId }: ProjectLibraryProps) 
 					onQueryChange={controller.filters.setQuery}
 					query={controller.filters.query}
 				/>
-				{(controller.mutations.add.error || controller.mutations.remove.error) && (
+				{mutationError && !isAuthenticationError(mutationError) && (
 					<p role="alert" className="mb-4 text-sm text-red-700 dark:text-red-400">
-						{(controller.mutations.add.error ?? controller.mutations.remove.error)?.message}
+						{mutationError.message}
 					</p>
 				)}
 
-				{isLoading ? (
+				{hasAuthenticationError ? (
+					<SignInEmptyState
+						title="Sign in to manage capabilities"
+						message="Sign in to access this project's capabilities."
+						className="min-h-[300px]"
+					/>
+				) : isLoading ? (
 					<WorkCardGridSkeleton count={6} label="Loading project capabilities" />
 				) : controller.catalog.error ? (
 					<EmptyState title="Capabilities unavailable" message={controller.catalog.error.message} />

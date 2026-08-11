@@ -43,10 +43,10 @@ describe("WorkOverview", () => {
 		expect(
 			screen.getByRole("heading", { name: "Bring your projects together." }),
 		).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "Sign in to unlock Work" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "New workspace" })).not.toBeInTheDocument();
 
-		fireEvent.click(screen.getByRole("button", { name: "Sign in to unlock Work" }));
+		fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
 		expect(useUIStore.getState().showLoginModal).toBe(true);
 	});

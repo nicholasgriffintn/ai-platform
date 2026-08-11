@@ -5,6 +5,7 @@ import { EmptyState } from "~/components/Core/EmptyState";
 import { BackLink } from "~/components/Core/BackLink";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { ReplicateModelDetail } from "~/components/Replicate/ReplicateModelDetail";
 import { ReplicateModels } from "~/components/Replicate/ReplicateModels";
 import { ReplicatePredictionDetail } from "~/components/Replicate/ReplicatePredictionDetail";
@@ -19,6 +20,7 @@ import {
 } from "~/lib/project-experiences";
 import { useWorkData } from "./WorkContext";
 import { ProjectOverviewSkeleton } from "./WorkLoadingSkeletons";
+import { isAuthenticationError } from "~/lib/errors";
 import { ArticlesExperience } from "./Experiences/ArticlesExperience";
 import { NotesExperience } from "./Experiences/NotesExperience";
 import { PodcastsExperience } from "./Experiences/PodcastsExperience";
@@ -89,6 +91,12 @@ export function ProjectExperienceRoute({
 
 				{isLoading || isCatalogLoading ? (
 					<ProjectOverviewSkeleton />
+				) : isAuthenticationError(pageError) ? (
+					<SignInEmptyState
+						title="Sign in to open this experience"
+						message="Sign in to access this project experience."
+						className="min-h-[300px]"
+					/>
 				) : pageError || !project ? (
 					<EmptyState
 						title="Experience unavailable"

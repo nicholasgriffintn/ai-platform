@@ -1,6 +1,8 @@
 import { useReplicatePrediction } from "~/hooks/useReplicate";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Card } from "~/components/ui";
 import { formatUnknownValue, getStringProperty, isRecord } from "~/lib/unknown-values";
+import { isAuthenticationError } from "~/lib/errors";
 
 interface ReplicatePredictionDetailProps {
 	predictionId: string;
@@ -22,6 +24,16 @@ export function ReplicatePredictionDetail({
 	}
 
 	if (error || !prediction) {
+		if (isAuthenticationError(error)) {
+			return (
+				<SignInEmptyState
+					title="Sign in to view this prediction"
+					message="Sign in to access this Replicate prediction."
+					className="min-h-[300px]"
+				/>
+			);
+		}
+
 		return (
 			<div className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800">
 				<h3 className="font-semibold mb-2">Failed to load prediction</h3>

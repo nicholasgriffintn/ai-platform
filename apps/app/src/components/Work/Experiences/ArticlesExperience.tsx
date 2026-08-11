@@ -4,9 +4,11 @@ import { Link } from "react-router";
 import { ArticleAnalysisSession } from "~/components/Apps/Articles/ArticleAnalysisSession";
 import { ArticleView } from "~/components/Apps/Articles/View";
 import { EmptyState } from "~/components/Core/EmptyState";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, Card } from "~/components/ui";
 import { useFetchArticleReport, useFetchArticleReports } from "~/hooks/useArticles";
 import { WorkCardGridSkeleton } from "../WorkLoadingSkeletons";
+import { isAuthenticationError } from "~/lib/errors";
 
 export function ArticlesExperience({ basePath, projectId, subpath }: ExperienceProps) {
 	const segments = subpath.split("/").filter(Boolean);
@@ -28,6 +30,14 @@ export function ArticlesExperience({ basePath, projectId, subpath }: ExperienceP
 	if (isNew) return <ArticleAnalysisSession basePath={basePath} projectId={projectId} />;
 	if (articleId) {
 		if (isReportLoading) return <WorkCardGridSkeleton count={1} label="Loading article report" />;
+		if (isAuthenticationError(reportError)) {
+			return (
+				<SignInEmptyState
+					title="Sign in to view this report"
+					message="Sign in to access this project report."
+				/>
+			);
+		}
 		if (reportError || !report)
 			return (
 				<EmptyState
@@ -46,6 +56,14 @@ export function ArticlesExperience({ basePath, projectId, subpath }: ExperienceP
 		);
 	}
 	if (isLoading) return <WorkCardGridSkeleton count={4} label="Loading article reports" />;
+	if (isAuthenticationError(error)) {
+		return (
+			<SignInEmptyState
+				title="Sign in to view project reports"
+				message="Sign in to access the reports in this project."
+			/>
+		);
+	}
 	if (error) return <EmptyState title="Article reports unavailable" message={error.message} />;
 	if (!reports?.length) {
 		return (

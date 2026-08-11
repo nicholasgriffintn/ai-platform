@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { EmptyState } from "~/components/Core/EmptyState";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import {
 	Button,
 	ConfirmationDialog,
@@ -19,6 +20,7 @@ import { Card } from "~/components/ui/Card";
 import { useApiKeys } from "~/hooks/useApiKeys";
 import { PageHeader } from "../../Core/PageHeader";
 import { PageTitle } from "../../Core/PageTitle";
+import { isAuthenticationError } from "~/lib/errors";
 
 function GeneratedApiKeyModal({
 	isOpen,
@@ -189,6 +191,12 @@ export function ProfileApiKeysTab() {
 								<Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
 								<span className="ml-2 text-zinc-500 dark:text-zinc-400">Loading keys...</span>
 							</div>
+						) : isAuthenticationError(errorLoadingApiKeys) ? (
+							<SignInEmptyState
+								title="Sign in to view API keys"
+								message="Sign in to manage the API keys connected to your account."
+								className="bg-transparent dark:bg-transparent py-6 px-0"
+							/>
 						) : errorLoadingApiKeys ? (
 							<p className="text-center text-red-600 dark:text-red-400 py-6">
 								Error loading API keys: {errorLoadingApiKeys.message}

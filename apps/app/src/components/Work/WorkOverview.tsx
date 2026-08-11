@@ -5,9 +5,9 @@ import { Link } from "react-router";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, Card } from "~/components/ui";
 import { useChatStore } from "~/state/stores/chatStore";
-import { useUIStore } from "~/state/stores/uiStore";
 import { useWorkData } from "./WorkContext";
 import { WorkAccessEmptyState } from "./WorkAccessEmptyState";
 import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog";
@@ -20,7 +20,6 @@ export function WorkOverview() {
 	const isAuthenticated = useChatStore((state) => state.isAuthenticated);
 	const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
 	const isPro = useChatStore((state) => state.isPro);
-	const setShowLoginModal = useUIStore((state) => state.setShowLoginModal);
 	const canAccessWork = isAuthenticated && isPro;
 
 	return (
@@ -52,10 +51,15 @@ export function WorkOverview() {
 						gridClassName="grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
 					/>
 				) : !canAccessWork ? (
-					<WorkAccessEmptyState
-						access={isAuthenticated ? "upgrade" : "sign-in"}
-						onSignIn={() => setShowLoginModal(true)}
-					/>
+					isAuthenticated ? (
+						<WorkAccessEmptyState />
+					) : (
+						<SignInEmptyState
+							title="Bring your projects together."
+							message="Sign in to create a shared home for projects, conversations, and the people you work with."
+							className="min-h-[300px]"
+						/>
+					)
 				) : isLoading ? (
 					<WorkCardGridSkeleton
 						count={6}

@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router";
 import { StrudelPlayer } from "~/components/Strudel/StrudelPlayer";
 import { StrudelCreateStudio } from "~/components/Apps/Strudel/StrudelCreateStudio";
 import { EmptyState } from "~/components/Core/EmptyState";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Badge, Button, Card, Input, Label, Textarea } from "~/components/ui";
 import {
 	useDeleteStrudelPattern,
@@ -16,6 +17,7 @@ import {
 } from "~/hooks/useStrudel";
 import { WorkCardGridSkeleton } from "../WorkLoadingSkeletons";
 import { parseCommaSeparatedTags } from "~/lib/tags";
+import { isAuthenticationError } from "~/lib/errors";
 
 const STARTER_PATTERN = 's("bd sd, hh*8").bank("RolandTR909").gain(0.8)';
 
@@ -35,6 +37,14 @@ export function StrudelExperience({ basePath, projectId, subpath }: ExperiencePr
 	if (patternId)
 		return <PatternEditor basePath={basePath} patternId={patternId} projectId={projectId} />;
 	if (isLoading) return <WorkCardGridSkeleton count={4} label="Loading music patterns" />;
+	if (isAuthenticationError(error)) {
+		return (
+			<SignInEmptyState
+				title="Sign in to view project patterns"
+				message="Sign in to access the patterns in this project."
+			/>
+		);
+	}
 	if (error) return <EmptyState title="Patterns unavailable" message={error.message} />;
 	if (!patterns?.length) {
 		return (
@@ -140,6 +150,14 @@ function PatternEditor({
 
 	if (patternId && isLoading)
 		return <WorkCardGridSkeleton count={1} label="Loading music pattern" />;
+	if (patternId && isAuthenticationError(error)) {
+		return (
+			<SignInEmptyState
+				title="Sign in to view this pattern"
+				message="Sign in to access this project pattern."
+			/>
+		);
+	}
 	if (patternId && (error || !pattern))
 		return (
 			<EmptyState title="Pattern unavailable" message={error?.message ?? "Pattern not found"} />
@@ -202,7 +220,14 @@ function PatternEditor({
 						Generate pattern
 					</Button>
 				</div>
-				{mutationError && <p className="text-sm text-red-700">{mutationError.message}</p>}
+				{isAuthenticationError(mutationError) ? (
+					<SignInEmptyState
+						title="Sign in to save patterns"
+						message="Sign in to save and update patterns in this project."
+					/>
+				) : (
+					mutationError && <p className="text-sm text-red-700">{mutationError.message}</p>
+				)}
 				<div className="flex gap-2">
 					<Button
 						variant="primary"

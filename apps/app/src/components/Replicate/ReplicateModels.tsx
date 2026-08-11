@@ -6,10 +6,12 @@ import { useNavigate } from "react-router";
 import { AppCard } from "~/components/Apps/AppCard";
 import { groupAppsByCategory } from "~/components/Apps/utils";
 import { EmptyState } from "~/components/Core/EmptyState";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, SearchInput } from "~/components/ui";
 import { CardSkeleton } from "~/components/ui/skeletons";
 import { useReplicateModels } from "~/hooks/useReplicate";
 import { cn } from "~/lib/utils";
+import { isAuthenticationError } from "~/lib/errors";
 
 const DEFAULT_CATEGORY = "Creative Tools";
 
@@ -108,6 +110,16 @@ export function ReplicateModels({ basePath, projectId }: { basePath: string; pro
 	}
 
 	if (error) {
+		if (isAuthenticationError(error)) {
+			return (
+				<SignInEmptyState
+					title="Sign in to view Replicate models"
+					message="Sign in to access the models available to this project."
+					className="min-h-[300px]"
+				/>
+			);
+		}
+
 		return (
 			<div className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800">
 				<h3 className="font-semibold mb-2">Failed to load models</h3>

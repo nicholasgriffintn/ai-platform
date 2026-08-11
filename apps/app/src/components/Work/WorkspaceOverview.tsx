@@ -5,7 +5,9 @@ import { Link } from "react-router";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, Card } from "~/components/ui";
+import { isAuthenticationError } from "~/lib/errors";
 import { useWorkData } from "./WorkContext";
 import { CreateProjectDialog } from "./CreateProjectDialog";
 import { InviteMemberDialog } from "./InviteMemberDialog";
@@ -18,6 +20,15 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 	const [isInviteOpen, setIsInviteOpen] = useState(false);
 
 	if (isLoading) return <WorkspaceOverviewSkeleton />;
+	if (isAuthenticationError(error)) {
+		return (
+			<SignInEmptyState
+				title="Sign in to view this workspace"
+				message="Sign in to access this workspace and its projects."
+				className="mx-4 my-8 min-h-[300px]"
+			/>
+		);
+	}
 	if (error || !workspace)
 		return (
 			<div className="p-10 text-sm text-red-700">{error?.message ?? "Workspace not found"}</div>

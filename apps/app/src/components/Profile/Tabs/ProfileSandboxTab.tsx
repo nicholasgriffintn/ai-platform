@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { SandboxAddGitHubConnection } from "~/components/Models/SandboxAddGitHubConnection";
 import {
 	Alert,
@@ -26,6 +27,7 @@ import {
 	useSandboxInstallConfig,
 } from "~/hooks/useSandbox";
 import { formatRelativeTime } from "~/lib/dates";
+import { isAuthenticationError } from "~/lib/errors";
 
 interface ConnectionFormState {
 	installationId: string;
@@ -164,6 +166,12 @@ export function ProfileSandboxTab() {
 				<CardContent>
 					{isLoading ? (
 						<div className="text-sm text-muted-foreground">Loading connections...</div>
+					) : isAuthenticationError(error) ? (
+						<SignInEmptyState
+							title="Sign in to view sandbox connections"
+							message="Sign in to manage the GitHub connections used by Sandbox."
+							className="border-0 bg-transparent dark:bg-transparent"
+						/>
 					) : error ? (
 						<Alert variant="destructive">
 							<AlertTitle>Unable to load connections</AlertTitle>

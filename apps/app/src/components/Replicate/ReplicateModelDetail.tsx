@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router";
 import { useReplicateModels, useExecuteReplicateModel } from "~/hooks/useReplicate";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
+import { isAuthenticationError } from "~/lib/errors";
 import { ReplicateModelForm } from "./ReplicateModelForm";
 
 interface ReplicateModelDetailProps {
@@ -24,6 +26,16 @@ export function ReplicateModelDetail({ basePath, modelId, projectId }: Replicate
 	}
 
 	if (error || !model) {
+		if (isAuthenticationError(error)) {
+			return (
+				<SignInEmptyState
+					title="Sign in to use this model"
+					message="Sign in to run Replicate models for this project."
+					className="min-h-[300px]"
+				/>
+			);
+		}
+
 		return (
 			<div>
 				<div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">

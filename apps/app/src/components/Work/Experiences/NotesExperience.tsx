@@ -5,6 +5,7 @@ import type { NoteMetadata } from "@assistant/schemas";
 
 import { NoteEditor } from "~/components/Apps/Notes/NoteEditor";
 import { EmptyState } from "~/components/Core/EmptyState";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, Card, SearchInput } from "~/components/ui";
 import {
 	useCreateNote,
@@ -15,6 +16,7 @@ import {
 } from "~/hooks/useNotes";
 import { WorkCardGridSkeleton } from "../WorkLoadingSkeletons";
 import { cn } from "~/lib/utils";
+import { isAuthenticationError } from "~/lib/errors";
 
 export function NotesExperience({ basePath, projectId, subpath }: ExperienceProps) {
 	const navigate = useNavigate();
@@ -74,6 +76,14 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
 		if (noteId && isNoteLoading) {
 			return <WorkCardGridSkeleton count={1} label="Loading note" />;
 		}
+		if (noteId && isAuthenticationError(noteError)) {
+			return (
+				<SignInEmptyState
+					title="Sign in to view this note"
+					message="Sign in to access this project note."
+				/>
+			);
+		}
 		if (noteId && (noteError || !note)) {
 			return (
 				<EmptyState title="Note unavailable" message={noteError?.message ?? "Note not found"} />
@@ -117,6 +127,14 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
 	}
 
 	if (isLoading) return <WorkCardGridSkeleton count={4} label="Loading notes" />;
+	if (isAuthenticationError(error)) {
+		return (
+			<SignInEmptyState
+				title="Sign in to view project notes"
+				message="Sign in to access the notes in this project."
+			/>
+		);
+	}
 	if (error) return <EmptyState title="Notes unavailable" message={error.message} />;
 	if (!notes?.length) {
 		return (

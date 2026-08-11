@@ -3,10 +3,9 @@ import { useSearchParams } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { PageStatus } from "~/components/Core/PageStatus";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { ProfileSidebar, profileSidebarItems } from "~/components/Profile/ProfileSidebar";
-import { Button } from "~/components/ui/Button";
 import { useAuthStatus } from "~/hooks/useAuth";
-import { useUIStore } from "~/state/stores/uiStore";
 
 export function meta() {
 	return [
@@ -18,7 +17,6 @@ export function meta() {
 export default function ProfilePage() {
 	const { isAuthenticated, isLoading } = useAuthStatus();
 	const [searchParams, setSearchParams] = useSearchParams();
-	const { setShowLoginModal } = useUIStore();
 
 	const activeTabId = searchParams.get("tab") || profileSidebarItems[0].id;
 
@@ -39,19 +37,11 @@ export default function ProfilePage() {
 					className="h-auto min-h-[200px]"
 				/>
 			) : !isAuthenticated ? (
-				<PageStatus
-					message="You need to log in to view your profile."
+				<SignInEmptyState
+					title="Sign in to view your profile"
+					message="Sign in to manage your account, preferences, and Polychat settings."
 					className="h-auto min-h-[200px]"
-				>
-					<Button
-						type="button"
-						variant="primary"
-						onClick={() => setShowLoginModal(true)}
-						className="bg-blue-600 hover:bg-blue-700"
-					>
-						Login
-					</Button>
-				</PageStatus>
+				/>
 			) : ActiveComponent ? (
 				<ActiveComponent />
 			) : (

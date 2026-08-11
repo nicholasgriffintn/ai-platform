@@ -5,9 +5,11 @@ import type { Podcast } from "@assistant/schemas";
 import { PodcastView } from "~/components/Apps/Podcasts/View";
 import { PodcastWorkflow } from "~/components/Apps/Podcasts/PodcastWorkflow";
 import { EmptyState } from "~/components/Core/EmptyState";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, Card } from "~/components/ui";
 import { useFetchPodcast, useFetchPodcasts, useProcessPodcast } from "~/hooks/usePodcasts";
 import { WorkCardGridSkeleton } from "../WorkLoadingSkeletons";
+import { isAuthenticationError } from "~/lib/errors";
 
 export function PodcastsExperience({ basePath, projectId, subpath }: ExperienceProps) {
 	const segments = subpath.split("/").filter(Boolean);
@@ -29,6 +31,14 @@ export function PodcastsExperience({ basePath, projectId, subpath }: ExperienceP
 	if (isNew) return <PodcastWorkflow basePath={basePath} projectId={projectId} />;
 	if (podcastId) {
 		if (isPodcastLoading) return <WorkCardGridSkeleton count={1} label="Loading podcast" />;
+		if (isAuthenticationError(podcastError)) {
+			return (
+				<SignInEmptyState
+					title="Sign in to view this podcast"
+					message="Sign in to access this project podcast."
+				/>
+			);
+		}
 		if (podcastError || !podcast)
 			return (
 				<EmptyState
@@ -39,6 +49,14 @@ export function PodcastsExperience({ basePath, projectId, subpath }: ExperienceP
 		return <PodcastDetail podcast={podcast} projectId={projectId} />;
 	}
 	if (isLoading) return <WorkCardGridSkeleton count={4} label="Loading podcasts" />;
+	if (isAuthenticationError(error)) {
+		return (
+			<SignInEmptyState
+				title="Sign in to view project podcasts"
+				message="Sign in to access the podcasts in this project."
+			/>
+		);
+	}
 	if (error) return <EmptyState title="Podcasts unavailable" message={error.message} />;
 	if (!podcasts?.length) {
 		return (
@@ -134,7 +152,14 @@ function PodcastDetail({ podcast, projectId }: { podcast: Podcast; projectId: st
 					</Button>
 				</Card>
 			)}
-			{process.error && <p className="text-sm text-red-700">{process.error.message}</p>}
+			{isAuthenticationError(process.error) ? (
+				<SignInEmptyState
+					title="Sign in to continue processing"
+					message="Sign in to process this project podcast."
+				/>
+			) : (
+				process.error && <p className="text-sm text-red-700">{process.error.message}</p>
+			)}
 			<PodcastView podcast={podcast} />
 		</div>
 	);

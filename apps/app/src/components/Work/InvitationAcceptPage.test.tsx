@@ -9,11 +9,6 @@ vi.mock("~/state/stores/chatStore", () => ({
 		selector({ isAuthenticated: false }),
 }));
 
-vi.mock("~/state/stores/uiStore", () => ({
-	useUIStore: (selector: (state: { setShowLoginModal: () => void }) => unknown) =>
-		selector({ setShowLoginModal: vi.fn() }),
-}));
-
 vi.mock("~/hooks/useWorkspaces", () => ({
 	useAcceptWorkspaceInvitation: () => ({
 		data: undefined,
@@ -24,16 +19,13 @@ vi.mock("~/hooks/useWorkspaces", () => ({
 }));
 
 describe("InvitationAcceptPage", () => {
-	it("makes the sign-in action a primary full-width button", () => {
+	it("gives guests a sign-in action", () => {
 		render(
 			<MemoryRouter initialEntries={["/work/invitations?token=token"]}>
 				<InvitationAcceptPage />
 			</MemoryRouter>,
 		);
 
-		expect(screen.getByRole("button", { name: "Sign in to accept" })).toHaveClass(
-			"bg-blue-600",
-			"w-full",
-		);
+		expect(screen.getByRole("button", { name: "Sign in" })).toHaveClass("bg-blue-600");
 	});
 });

@@ -9,15 +9,6 @@ import {
 } from "lucide-react";
 import { Link } from "react-router";
 
-import { Button } from "~/components/ui";
-
-type WorkAccessState = "sign-in" | "upgrade";
-
-interface WorkAccessEmptyStateProps {
-	access: WorkAccessState;
-	onSignIn: () => void;
-}
-
 const features = [
 	{ label: "Organise projects", icon: FolderKanban },
 	{ label: "Keep context together", icon: MessageSquareText },
@@ -30,9 +21,7 @@ const workspacePreviewItems = [
 	{ label: "Project brief", detail: "Updated today", colour: "bg-emerald-400" },
 ] as const;
 
-export function WorkAccessEmptyState({ access, onSignIn }: WorkAccessEmptyStateProps) {
-	const isSignIn = access === "sign-in";
-
+export function WorkAccessEmptyState() {
 	return (
 		<section
 			aria-labelledby="work-access-title"
@@ -50,34 +39,21 @@ export function WorkAccessEmptyState({ access, onSignIn }: WorkAccessEmptyStateP
 						id="work-access-title"
 						className="max-w-lg text-3xl font-semibold tracking-[-0.03em] text-zinc-950 sm:text-4xl dark:text-white"
 					>
-						{isSignIn ? "Bring your projects together." : "Unlock shared workspaces."}
+						Unlock shared workspaces.
 					</h2>
 					<p className="mt-4 max-w-xl text-base leading-7 text-zinc-600 dark:text-zinc-300">
-						{isSignIn
-							? "Sign in to create a shared home for projects, conversations, and the people you work with."
-							: "Workspaces are included with Pro. Upgrade to organise projects, keep decisions in one place, and collaborate with your team."}
+						Workspaces are included with Pro. Upgrade to organise projects, keep decisions in one
+						place, and collaborate with your team.
 					</p>
 
 					<div className="mt-7 flex flex-wrap items-center gap-3">
-						{isSignIn ? (
-							<Button
-								type="button"
-								variant="primary"
-								size="lg"
-								icon={<ArrowUpRight size={17} />}
-								onClick={onSignIn}
-							>
-								Sign in to unlock Work
-							</Button>
-						) : (
-							<Link
-								to="/profile?tab=billing"
-								className="inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 px-5 py-2.5 text-base font-medium text-white no-underline shadow-sm transition-colors hover:bg-blue-700 hover:!no-underline focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-2"
-							>
-								<Crown size={17} />
-								Upgrade to Pro
-							</Link>
-						)}
+						<Link
+							to="/profile?tab=billing"
+							className="inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 px-5 py-2.5 text-base font-medium text-white no-underline shadow-sm transition-colors hover:bg-blue-700 hover:!no-underline focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-2"
+						>
+							<Crown size={17} />
+							Upgrade to Pro
+						</Link>
 						<Link
 							to="/chat"
 							className="inline-flex items-center gap-1.5 rounded-md px-3 py-2.5 text-sm font-medium text-zinc-600 no-underline transition-colors hover:bg-zinc-100 hover:text-zinc-950 hover:!no-underline dark:text-zinc-300 dark:hover:bg-zinc-900 dark:hover:text-white"
@@ -120,7 +96,7 @@ export function WorkAccessEmptyState({ access, onSignIn }: WorkAccessEmptyStateP
 									</p>
 								</div>
 								<span className="rounded-full bg-blue-500/10 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-300">
-									{isSignIn ? "Ready" : "Pro"}
+									Pro
 								</span>
 							</div>
 

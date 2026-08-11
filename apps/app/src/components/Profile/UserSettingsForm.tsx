@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useState } from "react";
 
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, FormInput, FormSelect, Switch, Textarea } from "~/components/ui";
 import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useAuthStatus } from "~/hooks/useAuth";
@@ -244,9 +245,11 @@ export function UserSettingsForm({
 
 	if (!isAuthenticated) {
 		return (
-			<div className="text-zinc-500 dark:text-zinc-400">
-				Please login to customize your settings.
-			</div>
+			<SignInEmptyState
+				title="Sign in to customise your settings"
+				message="Sign in to manage your Polychat preferences."
+				className="bg-transparent px-0 py-6 dark:bg-transparent"
+			/>
 		);
 	}
 

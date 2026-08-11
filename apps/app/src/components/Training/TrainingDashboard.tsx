@@ -10,6 +10,7 @@ import type {
 import { Activity, Boxes, ListChecks, RefreshCcw, Server } from "lucide-react";
 
 import { EmptyState } from "~/components/Core/EmptyState";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import {
 	Alert,
 	AlertDescription,
@@ -33,7 +34,7 @@ import {
 	useTrainingModels,
 	useStartTrainingJob,
 } from "~/hooks/useTraining";
-import { getErrorMessage } from "~/lib/errors";
+import { getErrorMessage, isAuthenticationError } from "~/lib/errors";
 import { DeploymentsPanel } from "./DeploymentsPanel";
 import { JobsPanel } from "./JobsPanel";
 import { ModelCatalog } from "./ModelCatalog";
@@ -208,6 +209,15 @@ export function TrainingDashboard() {
 	}
 
 	if (dashboardError) {
+		if (isAuthenticationError(dashboardError)) {
+			return (
+				<SignInEmptyState
+					title="Sign in to view training"
+					message="Sign in to access training jobs, deployments, and models."
+				/>
+			);
+		}
+
 		return (
 			<Alert variant="destructive" className="flex flex-col gap-3">
 				<AlertTitle>Unable to load training data</AlertTitle>

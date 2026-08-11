@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { Button } from "~/components/ui/Button";
 import { Card } from "~/components/ui/Card";
@@ -14,6 +15,7 @@ import {
 	useSubscription,
 } from "~/hooks/useBilling";
 import { formatDate } from "~/lib/dates";
+import { isAuthenticationError } from "~/lib/errors";
 
 type PageAction = {
 	label: string;
@@ -134,6 +136,11 @@ export function ProfileBillingTab() {
 
 			{isSubLoading ? (
 				<EmptyState message="Loading billing information..." />
+			) : isAuthenticationError(subError) ? (
+				<SignInEmptyState
+					title="Sign in to view billing"
+					message="Sign in to manage your subscription and billing details."
+				/>
 			) : subError ? (
 				<EmptyState message="Error loading billing data." />
 			) : sub?.items?.data?.[0] ? (

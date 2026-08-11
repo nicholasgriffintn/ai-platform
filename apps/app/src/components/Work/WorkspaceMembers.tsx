@@ -3,7 +3,9 @@ import { useState } from "react";
 
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Card } from "~/components/ui";
+import { isAuthenticationError } from "~/lib/errors";
 import { useWorkData } from "./WorkContext";
 import { InviteMemberDialog } from "./InviteMemberDialog";
 import { WorkspaceMembersSkeleton } from "./WorkLoadingSkeletons";
@@ -14,6 +16,15 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
 	const [isInviteOpen, setIsInviteOpen] = useState(false);
 
 	if (isLoading) return <WorkspaceMembersSkeleton />;
+	if (isAuthenticationError(error)) {
+		return (
+			<SignInEmptyState
+				title="Sign in to view workspace people"
+				message="Sign in to manage workspace access and members."
+				className="mx-4 my-8 min-h-[300px]"
+			/>
+		);
+	}
 	if (error || !workspace)
 		return (
 			<div className="p-10 text-sm text-red-700">{error?.message ?? "Workspace not found"}</div>

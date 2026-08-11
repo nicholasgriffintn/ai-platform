@@ -141,6 +141,7 @@ export function useProjectLibraryController(workspaceId: string, projectId: stri
 			workflows: recipeWorkflows,
 		},
 		project: projectQuery.data,
+		projectError: projectQuery.error,
 		isLoadingProject: projectQuery.isLoading,
 		canManage: workspaceQuery.data?.role === "owner" || workspaceQuery.data?.role === "admin",
 		actions: {

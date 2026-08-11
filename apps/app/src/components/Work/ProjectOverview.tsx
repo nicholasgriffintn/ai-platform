@@ -4,7 +4,9 @@ import { Link } from "react-router";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, Card } from "~/components/ui";
+import { isAuthenticationError } from "~/lib/errors";
 import { useWorkData } from "./WorkContext";
 import { ProjectBriefCard } from "./ProjectBriefCard";
 import { ProjectOverviewSkeleton } from "./WorkLoadingSkeletons";
@@ -21,6 +23,15 @@ export function ProjectOverview({
 	const { data: project, isLoading, error } = projectQuery;
 	const { data: workspace } = workspaceQuery;
 	if (isLoading) return <ProjectOverviewSkeleton />;
+	if (isAuthenticationError(error)) {
+		return (
+			<SignInEmptyState
+				title="Sign in to view this project"
+				message="Sign in to access this project and its conversations."
+				className="mx-4 my-8 min-h-[300px]"
+			/>
+		);
+	}
 	if (error || !project)
 		return <div className="p-10 text-sm text-red-700">{error?.message ?? "Project not found"}</div>;
 	const canManage = workspace?.role === "owner" || workspace?.role === "admin";

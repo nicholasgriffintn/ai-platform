@@ -3,10 +3,12 @@ import { useState } from "react";
 import { DynamicForm } from "~/components/Apps/DynamicForm";
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import { BackLink } from "~/components/Core/BackLink";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Card } from "~/components/ui";
 import { useDynamicApp, useExecuteDynamicApp } from "~/hooks/useDynamicApps";
 import { useWorkData } from "./WorkContext";
 import { ProjectAppSkeleton } from "./WorkLoadingSkeletons";
+import { isAuthenticationError } from "~/lib/errors";
 
 export function ProjectApp({
 	workspaceId,
@@ -18,7 +20,7 @@ export function ProjectApp({
 	appId: string;
 }) {
 	const { projectQuery } = useWorkData();
-	const { data: project, isLoading: isProjectLoading } = projectQuery;
+	const { data: project, isLoading: isProjectLoading, error: projectError } = projectQuery;
 	const { data: app, isLoading: isAppLoading, error } = useDynamicApp(appId);
 	const executeApp = useExecuteDynamicApp();
 	const [result, setResult] = useState<Record<string, unknown> | null>(null);
@@ -28,6 +30,16 @@ export function ProjectApp({
 
 	if (isProjectLoading || isAppLoading) {
 		return <ProjectAppSkeleton />;
+	}
+
+	if (isAuthenticationError(projectError) || isAuthenticationError(error)) {
+		return (
+			<SignInEmptyState
+				title="Sign in to open this app"
+				message="Sign in to use this project app."
+				className="mx-4 my-8 min-h-[300px]"
+			/>
+		);
 	}
 
 	if (error || !app || !hasCapability) {

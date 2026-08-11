@@ -2,9 +2,8 @@ import type { ReactNode } from "react";
 import { Loader2 } from "lucide-react";
 
 import { PageStatus } from "~/components/Core/PageStatus";
-import { Button } from "~/components/ui/Button";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { useAuthStatus } from "~/hooks/useAuth";
-import { useUIStore } from "~/state/stores/uiStore";
 
 interface RequireAppSignInProps {
 	children: ReactNode;
@@ -12,7 +11,6 @@ interface RequireAppSignInProps {
 
 export function RequireAppSignIn({ children }: RequireAppSignInProps) {
 	const { isAuthenticated, isLoading } = useAuthStatus();
-	const { setShowLoginModal } = useUIStore();
 
 	if (isLoading) {
 		return (
@@ -26,11 +24,11 @@ export function RequireAppSignIn({ children }: RequireAppSignInProps) {
 
 	if (!isAuthenticated) {
 		return (
-			<PageStatus message="Sign in to use this app." className="h-auto min-h-[200px]">
-				<Button type="button" variant="primary" onClick={() => setShowLoginModal(true)}>
-					Login
-				</Button>
-			</PageStatus>
+			<SignInEmptyState
+				title="Sign in to use this app"
+				message="Sign in to continue using this app."
+				className="h-auto min-h-[200px]"
+			/>
 		);
 	}
 

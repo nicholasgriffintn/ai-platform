@@ -1,7 +1,9 @@
 import { Link } from "react-router";
 import { useReplicatePredictions } from "~/hooks/useReplicate";
 import { EmptyState } from "~/components/Core/EmptyState";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Card } from "~/components/ui";
+import { isAuthenticationError } from "~/lib/errors";
 
 export function ReplicatePredictions({
 	basePath,
@@ -21,6 +23,16 @@ export function ReplicatePredictions({
 	}
 
 	if (error) {
+		if (isAuthenticationError(error)) {
+			return (
+				<SignInEmptyState
+					title="Sign in to view predictions"
+					message="Sign in to access your Replicate predictions."
+					className="min-h-[300px]"
+				/>
+			);
+		}
+
 		return (
 			<div className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800">
 				<h3 className="font-semibold mb-2">Failed to load predictions</h3>

@@ -5,11 +5,13 @@ import { getIcon, getIconContainerClass } from "~/components/Apps/utils";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, Card } from "~/components/ui";
 import { useDynamicApps } from "~/hooks/useDynamicApps";
 import { getEnabledProjectExperiences, getProjectExperiencePath } from "~/lib/project-experiences";
 import { useWorkData } from "./WorkContext";
 import { cn } from "~/lib/utils";
+import { isAuthenticationError } from "~/lib/errors";
 import { WorkCardGridSkeleton } from "./WorkLoadingSkeletons";
 
 export function ProjectExperiences({
@@ -52,6 +54,12 @@ export function ProjectExperiences({
 						count={6}
 						gridClassName="grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
 						label="Loading project experiences"
+					/>
+				) : isAuthenticationError(pageError) ? (
+					<SignInEmptyState
+						title="Sign in to view project experiences"
+						message="Sign in to access the experiences enabled for this project."
+						className="min-h-[300px]"
 					/>
 				) : pageError ? (
 					<EmptyState title="Experiences unavailable" message={pageError.message} />

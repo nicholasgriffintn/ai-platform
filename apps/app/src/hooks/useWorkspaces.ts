@@ -132,20 +132,22 @@ export function useWorkspaces() {
 }
 
 export function useWorkspace(workspaceId?: string) {
+	const isAuthenticated = useChatStore((state) => state.isAuthenticated);
 	return useQuery({
 		queryKey: workspaceQueryKey(workspaceId ?? ""),
 		queryFn: () => getWorkspace(workspaceId!),
-		enabled: Boolean(workspaceId),
+		enabled: Boolean(workspaceId) && isAuthenticated,
 		staleTime: WORK_QUERY_STALE_TIME,
 		gcTime: WORK_QUERY_GC_TIME,
 	});
 }
 
 export function useProject(projectId?: string) {
+	const isAuthenticated = useChatStore((state) => state.isAuthenticated);
 	return useQuery({
 		queryKey: projectQueryKey(projectId ?? ""),
 		queryFn: () => getProject(projectId!),
-		enabled: Boolean(projectId),
+		enabled: Boolean(projectId) && isAuthenticated,
 		staleTime: WORK_QUERY_STALE_TIME,
 		gcTime: WORK_QUERY_GC_TIME,
 	});

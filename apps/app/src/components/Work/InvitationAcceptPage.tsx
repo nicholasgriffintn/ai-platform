@@ -1,17 +1,17 @@
-import { CheckCircle2, Link2, LogIn } from "lucide-react";
+import { CheckCircle2, Link2 } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, Card } from "~/components/ui";
 import { useAcceptWorkspaceInvitation } from "~/hooks/useWorkspaces";
+import { isAuthenticationError } from "~/lib/errors";
 import { useChatStore } from "~/state/stores/chatStore";
-import { useUIStore } from "~/state/stores/uiStore";
 
 export function InvitationAcceptPage() {
 	const [searchParams] = useSearchParams();
 	const token = searchParams.get("token");
 	const isAuthenticated = useChatStore((state) => state.isAuthenticated);
-	const setShowLoginModal = useUIStore((state) => state.setShowLoginModal);
 	const acceptInvitation = useAcceptWorkspaceInvitation();
 	const navigate = useNavigate();
 
@@ -27,6 +27,30 @@ export function InvitationAcceptPage() {
 		}
 	}, [acceptInvitation, isAuthenticated, token]);
 
+	if (token && !isAuthenticated) {
+		return (
+			<main className="mx-auto flex min-h-full max-w-xl items-center px-6 py-16">
+				<SignInEmptyState
+					title="Sign in to accept your invitation"
+					message="Sign in with the email address that received this secure invitation."
+					className="w-full"
+				/>
+			</main>
+		);
+	}
+
+	if (isAuthenticationError(acceptInvitation.error)) {
+		return (
+			<main className="mx-auto flex min-h-full max-w-xl items-center px-6 py-16">
+				<SignInEmptyState
+					title="Sign in to accept your invitation"
+					message="Your session has expired. Sign in with the invited email address to continue."
+					className="w-full"
+				/>
+			</main>
+		);
+	}
+
 	return (
 		<main className="mx-auto flex min-h-full max-w-xl items-center px-6 py-16">
 			<Card className="w-full p-8 text-center">
@@ -41,22 +65,6 @@ export function InvitationAcceptPage() {
 						: "Workspace invitation"}
 				</h1>
 				{!token && <p className="text-sm text-red-700">This invitation link is incomplete.</p>}
-				{token && !isAuthenticated && (
-					<>
-						<p className="text-sm leading-6 text-zinc-500">
-							Sign in with the email address that received this secure invitation.
-						</p>
-						<Button
-							variant="primary"
-							size="lg"
-							fullWidth
-							icon={<LogIn size={18} />}
-							onClick={() => setShowLoginModal(true)}
-						>
-							Sign in to accept
-						</Button>
-					</>
-				)}
 				{acceptInvitation.isPending && (
 					<p className="text-sm text-zinc-500">Checking your invitation…</p>
 				)}

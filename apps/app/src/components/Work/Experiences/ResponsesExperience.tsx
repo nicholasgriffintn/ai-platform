@@ -3,9 +3,11 @@ import { Link } from "react-router";
 
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import { EmptyState } from "~/components/Core/EmptyState";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Card } from "~/components/ui";
 import { useDynamicAppResponse, useDynamicAppResponses } from "~/hooks/useDynamicApps";
 import { parseRecordValue } from "~/lib/unknown-values";
+import { isAuthenticationError } from "~/lib/errors";
 import { WorkCardGridSkeleton } from "../WorkLoadingSkeletons";
 
 export function ResponsesExperience({ basePath, projectId, subpath }: ExperienceProps) {
@@ -25,6 +27,14 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
 
 	if (responseId) {
 		if (isResponseLoading) return <WorkCardGridSkeleton count={1} label="Loading app response" />;
+		if (isAuthenticationError(responseError)) {
+			return (
+				<SignInEmptyState
+					title="Sign in to view this response"
+					message="Sign in to access this project app response."
+				/>
+			);
+		}
 		if (responseError || !response)
 			return (
 				<EmptyState
@@ -39,6 +49,14 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
 		);
 	}
 	if (isLoading) return <WorkCardGridSkeleton count={4} label="Loading app responses" />;
+	if (isAuthenticationError(error)) {
+		return (
+			<SignInEmptyState
+				title="Sign in to view project responses"
+				message="Sign in to access the app responses in this project."
+			/>
+		);
+	}
 	if (error) return <EmptyState title="Responses unavailable" message={error.message} />;
 	if (!responses?.length)
 		return (
