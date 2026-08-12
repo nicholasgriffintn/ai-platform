@@ -1898,4 +1898,28 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 	}),
+	createModelConfig("ByteDance/Seed-2.0-code", PROVIDER, {
+		name: "Seed 2.0 Code",
+		matchingModel: "ByteDance/Seed-2.0-code",
+		family: "seed",
+		openWeights: false,
+		releaseDate: "February 14, 2026",
+		lastUpdated: "February 14, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 256000,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.0005,
+		costPer1kOutputTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);

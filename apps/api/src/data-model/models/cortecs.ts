@@ -3628,8 +3628,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 1048576,
 		maxTokens: 1048576,
-		costPer1kInputTokens: 0.00025,
-		costPer1kOutputTokens: 0.0003,
+		costPer1kInputTokens: 0.00013,
+		costPer1kOutputTokens: 0.00028,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

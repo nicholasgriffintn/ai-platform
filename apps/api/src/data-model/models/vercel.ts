@@ -10091,4 +10091,42 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 	}),
+	createModelConfig("sakana/namazu", PROVIDER, {
+		name: "Sakana Namazu",
+		matchingModel: "sakana/namazu",
+		openWeights: false,
+		releaseDate: "August 3, 2026",
+		lastUpdated: "August 3, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsToolCalls: true,
+		contextWindow: 256000,
+		maxTokens: 256000,
+		costPer1kInputTokens: 0.00095,
+		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("xai/grok-imagine-image-2.0", PROVIDER, {
+		name: "Grok Imagine Image 2.0",
+		matchingModel: "xai/grok-imagine-image-2.0",
+		family: "grok",
+		openWeights: false,
+		releaseDate: "August 7, 2026",
+		lastUpdated: "August 7, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["image"],
+		},
+		supportsAttachments: false,
+		supportsToolCalls: false,
+		contextWindow: 0,
+		maxTokens: 0,
+	}),
 ]);
