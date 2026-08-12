@@ -7,7 +7,9 @@ export interface ComposerAssistantActionCapability {
 }
 
 export interface ComposerActionCatalogConfig {
+	includeAgents?: boolean;
 	includeTools?: boolean;
+	projectId?: string;
 }
 
 export interface ComposerCommandAction {

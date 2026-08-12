@@ -7,6 +7,7 @@ import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, Card } from "~/components/ui";
+import { isAuthenticationError } from "~/lib/errors";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useWorkData } from "./WorkContext";
 import { WorkAccessEmptyState } from "./WorkAccessEmptyState";
@@ -16,7 +17,7 @@ import { WorkCardGridSkeleton } from "./WorkLoadingSkeletons";
 export function WorkOverview() {
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
 	const { workspacesQuery } = useWorkData();
-	const { data, isLoading } = workspacesQuery;
+	const { data, isLoading, error } = workspacesQuery;
 	const isAuthenticated = useChatStore((state) => state.isAuthenticated);
 	const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
 	const isPro = useChatStore((state) => state.isPro);
@@ -65,6 +66,18 @@ export function WorkOverview() {
 						count={6}
 						label="Loading workspaces"
 						gridClassName="grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+					/>
+				) : isAuthenticationError(error) ? (
+					<SignInEmptyState
+						title="Sign in to view your workspaces"
+						message="Sign in to access your shared workspaces."
+						className="min-h-[300px]"
+					/>
+				) : error ? (
+					<EmptyState
+						title="Workspaces unavailable"
+						message={error.message}
+						className="min-h-[260px]"
 					/>
 				) : null}
 

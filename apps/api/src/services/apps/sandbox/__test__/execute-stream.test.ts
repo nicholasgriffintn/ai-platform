@@ -44,7 +44,7 @@ const mockContext = {
 		activities: {
 			createActivity: mockCreateActivity,
 			updateActivity: mockUpdateActivity,
-			listPersonalActivities: mockListPersonalActivities,
+			listRecentUserActivities: mockListPersonalActivities,
 		},
 	},
 } as any;
@@ -78,6 +78,8 @@ describe("executeSandboxRunStream", () => {
 			env: {} as any,
 			context: mockContext,
 			user: mockUser,
+			projectId: "project-1",
+			conversationId: "conversation-1",
 			payload: {
 				installationId: 99,
 				repo: "owner/repo",
@@ -114,6 +116,8 @@ describe("executeSandboxRunStream", () => {
 		expect(mockCreateActivity).toHaveBeenCalledWith(
 			expect.objectContaining({
 				createdByUserId: 42,
+				projectId: "project-1",
+				conversationId: "conversation-1",
 				capabilityId: SANDBOX_RUNS_APP_ID,
 				groupId: "run-123",
 				kind: SANDBOX_RUN_ITEM_TYPE,

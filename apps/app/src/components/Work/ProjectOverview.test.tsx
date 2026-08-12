@@ -6,6 +6,16 @@ import { ProjectOverview } from "./ProjectOverview";
 
 const mocks = vi.hoisted(() => ({
 	archiveProject: vi.fn(async () => undefined),
+	createTemplate: vi.fn(async () => undefined),
+	toastError: vi.fn(),
+	toastSuccess: vi.fn(),
+}));
+
+vi.mock("sonner", () => ({
+	toast: {
+		error: mocks.toastError,
+		success: mocks.toastSuccess,
+	},
 }));
 
 vi.mock("~/hooks/useWorkspaces", () => ({
@@ -17,7 +27,7 @@ vi.mock("~/hooks/useWorkspaces", () => ({
 }));
 vi.mock("~/hooks/useGovernance", () => ({
 	useTemplateMutations: () => ({
-		create: { isPending: false, mutateAsync: vi.fn() },
+		create: { isPending: false, mutateAsync: mocks.createTemplate },
 	}),
 }));
 vi.mock("./WorkContext", () => ({
@@ -115,5 +125,18 @@ describe("ProjectOverview", () => {
 				projectId: "project-1",
 			}),
 		);
+	});
+
+	it("reports template creation failures", async () => {
+		mocks.createTemplate.mockRejectedValueOnce(new Error("Template already exists"));
+		render(
+			<MemoryRouter>
+				<ProjectOverview workspaceId="workspace-1" projectId="project-1" />
+			</MemoryRouter>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "Save template" }));
+
+		await waitFor(() => expect(mocks.toastError).toHaveBeenCalledWith("Template already exists"));
 	});
 });

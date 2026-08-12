@@ -23,7 +23,7 @@ export function WorkDataProvider({
 }) {
 	const workspacesQuery = useWorkspaces();
 	const workspaceQuery = useWorkspace(workspaceId);
-	const projectQuery = useProject(projectId);
+	const projectQuery = useProject(projectId, workspaceId);
 	const value = useMemo(
 		() => ({
 			projectId,

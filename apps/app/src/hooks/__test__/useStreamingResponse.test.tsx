@@ -174,6 +174,49 @@ describe("useStreamingResponse", () => {
 		]);
 	});
 
+	it("stores project conversations remotely even when personal Chat is in local mode", async () => {
+		const queryClient = createQueryClient();
+		useChatStore.setState({
+			chatMode: "local",
+			chatSettings: { localOnly: true } as any,
+			localOnlyMode: true,
+		});
+		const userMessage: Message = {
+			id: "user-1",
+			role: "user",
+			content: "Project update",
+		};
+		queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"], {
+			id: "conversation-1",
+			title: "Project conversation",
+			messages: [userMessage],
+		});
+		mocks.streamChatCompletions.mockResolvedValue({
+			id: "assistant-1",
+			role: "assistant",
+			content: "Saved to the project.",
+		});
+
+		const { result } = renderHook(
+			() =>
+				useStreamingResponse(undefined, undefined, {
+					metadata: { project_id: "project-1" },
+				}),
+			{ wrapper: wrapper(queryClient) },
+		);
+
+		await act(async () => {
+			await result.current.streamResponse([userMessage], "conversation-1");
+		});
+
+		expect(mocks.streamChatCompletions).toHaveBeenCalledWith(
+			expect.objectContaining({
+				requestOptions: { metadata: { project_id: "project-1" } },
+				store: true,
+			}),
+		);
+	});
+
 	it("marks a locally-created conversation as remote after a stored stream succeeds", async () => {
 		const queryClient = createQueryClient();
 		const userMessage: Message = {

@@ -21,7 +21,6 @@ import type { ApiToolDefinition } from "../../types/functions";
 interface SandboxFunctionArgs {
 	repo: string;
 	task: string;
-	model?: string;
 	promptStrategy?: string;
 	shouldCommit?: boolean;
 	timeoutSeconds?: number;
@@ -45,10 +44,6 @@ const sandboxFunctionParameters = {
 		task: {
 			type: "string",
 			description: "Task to run against the repository",
-		},
-		model: {
-			type: "string",
-			description: "Model to use (required if not configured in settings)",
 		},
 		promptStrategy: {
 			type: "string",
@@ -125,11 +120,11 @@ async function executeSandboxFunction(params: {
 		throw new Error("User context is required for sandbox execution");
 	}
 	const sandboxOptions = getSandboxRequestOptions(request);
-	const repo = args.repo || sandboxOptions?.repo;
+	const repo = sandboxOptions?.repo || args.repo;
 	if (!repo) {
 		throw new Error("Repository is required for sandbox execution");
 	}
-	const installationId = parseInstallationId(args) ?? sandboxOptions?.installationId;
+	const installationId = sandboxOptions?.installationId ?? parseInstallationId(args);
 	if (!installationId) {
 		throw new Error("Sandbox GitHub installation is required for sandbox execution");
 	}
@@ -139,13 +134,13 @@ async function executeSandboxFunction(params: {
 		repo,
 		task: args.task,
 		taskType,
-		model: args.model || sandboxOptions?.model || request.request?.model,
-		promptStrategy: parsePromptStrategy(args.promptStrategy || sandboxOptions?.promptStrategy),
+		model: sandboxOptions?.model,
+		promptStrategy: parsePromptStrategy(sandboxOptions?.promptStrategy || args.promptStrategy),
 		shouldCommit:
 			typeof forceShouldCommit === "boolean"
 				? forceShouldCommit
-				: (args.shouldCommit ?? sandboxOptions?.shouldCommit),
-		timeoutSeconds: args.timeoutSeconds ?? sandboxOptions?.timeoutSeconds,
+				: (sandboxOptions?.shouldCommit ?? args.shouldCommit),
+		timeoutSeconds: sandboxOptions?.timeoutSeconds ?? args.timeoutSeconds,
 		modelSettings: getSandboxModelSettings(request),
 	};
 
@@ -154,6 +149,11 @@ async function executeSandboxFunction(params: {
 		context: request.context,
 		user: request.user,
 		payload,
+		projectId:
+			typeof request.request?.metadata?.project_id === "string"
+				? request.request.metadata.project_id
+				: undefined,
+		conversationId: request.request?.completion_id,
 	});
 	if (!response.ok) {
 		const errorText = await response.text();

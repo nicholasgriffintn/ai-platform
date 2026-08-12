@@ -195,6 +195,23 @@ describe("assistant action launch URL contract", () => {
 		expect(() => createAppAssistantActionLaunch({})).toThrow("This app cannot open");
 	});
 
+	it("rejects unsafe catalogue navigation and connector URLs", () => {
+		expect(() =>
+			createAppAssistantActionLaunch({
+				appId: "unsafe",
+				appKind: "frontend",
+				href: "javascript:alert(1)",
+			}),
+		).toThrow("unsafe");
+		expect(() =>
+			createConnectorAssistantActionLaunch({
+				provider: "gmail",
+				authType: "oauth2",
+				authorizationUrl: "data:text/html,unsafe",
+			}),
+		).toThrow("unsafe");
+	});
+
 	it("creates connector launch payloads for API-key and OAuth connectors", () => {
 		expect(
 			createConnectorAssistantActionLaunch({

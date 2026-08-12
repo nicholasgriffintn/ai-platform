@@ -126,10 +126,8 @@ const REACT_SANDBOX_TEMPLATE = `
 </head>
 <body>
   <div id="root"></div>
-  
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/19.2.8/umd/react.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/19.2.8/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
   <script>
     (function() {
       try {

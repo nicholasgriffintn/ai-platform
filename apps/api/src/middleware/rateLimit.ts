@@ -18,18 +18,17 @@ export async function rateLimit(context: Context, next: Next) {
 		return next();
 	}
 
-	const formattedPathname = pathname.replace(/\//g, "_");
-
 	const user = context.get("user");
 	const anonymousUser = context.get("anonymousUser");
 	const userId: string = user?.id;
 	const anonymousUserId: string = anonymousUser?.id;
+	const clientAddress = context.req.header?.("CF-Connecting-IP") ?? "unknown";
 
 	const key = userId
-		? `authenticated-${userId}-${formattedPathname}`
+		? `authenticated-${userId}`
 		: anonymousUserId
-			? `unauthenticated-${anonymousUserId}-${formattedPathname}`
-			: `unauthenticated-${formattedPathname}`;
+			? `unauthenticated-${anonymousUserId}`
+			: `unauthenticated-${clientAddress}`;
 
 	const rateLimiter = userId ? context.env.PRO_RATE_LIMITER : context.env.FREE_RATE_LIMITER;
 

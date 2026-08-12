@@ -215,7 +215,7 @@ describe("ChatOrchestrator", () => {
 					context: { modelConfig: { matchingModel: "test-model" } },
 				});
 
-				mockPreparer.prepare.mockResolvedValue({
+				mockPreparer.prepare.mockImplementation(async (options: CoreChatOptions) => ({
 					modelConfigs: [{ model: "test-model" }],
 					primaryModel: "test-model",
 					primaryProvider: "test-provider",
@@ -225,7 +225,8 @@ describe("ChatOrchestrator", () => {
 					messageWithContext: "Hello with context",
 					userSettings: {},
 					currentMode: "chat",
-				});
+					requestOptions: options.options,
+				}));
 
 				mockConversationManager.checkUsageLimits.mockResolvedValue(undefined);
 			});

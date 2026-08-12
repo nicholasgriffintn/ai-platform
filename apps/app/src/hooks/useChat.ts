@@ -3,6 +3,7 @@ import { useMemo } from "react";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
+import { ApiError } from "~/lib/api/fetch-wrapper";
 import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
 import {
 	removeConversationFromChatCaches,
@@ -12,7 +13,8 @@ import { filterConversationsByListOptions } from "~/lib/conversation-list";
 import { isLocallyCreatedConversation, preserveOptimisticMessages } from "~/lib/conversations";
 import { localChatService } from "~/lib/local/local-chat-service";
 import { useChatStore } from "~/state/stores/chatStore";
-import type { Conversation, ConversationListOptions, Message } from "~/types";
+import type { ChatRequestOptions, Conversation, ConversationListOptions, Message } from "~/types";
+import { useConversationStorage } from "./useConversationStorage";
 
 const DEFAULT_CHAT_LIST_LIMIT = 30;
 const CHAT_LIST_STALE_TIME = 2 * 60 * 1000;
@@ -68,20 +70,16 @@ export function useChats(options: ConversationListOptions = {}) {
 
 	return {
 		data: allChats,
+		error: remoteChatsQuery.error ?? localChatsQuery.error,
 		fetchNextPage: remoteChatsQuery.fetchNextPage,
 		hasNextPage: remoteChatsQuery.hasNextPage && !localOnlyMode && isAuthenticated && isPro,
 		isFetchingNextPage: remoteChatsQuery.isFetchingNextPage,
 		isLoading: remoteChatsQuery.isLoading || localChatsQuery.isLoading,
+		refetch: () => {
+			void localChatsQuery.refetch();
+			void remoteChatsQuery.refetch();
+		},
 	};
-}
-
-export function useLocalChats() {
-	return useQuery({
-		queryKey: [CHATS_QUERY_KEY, "local"],
-		queryFn: async () => await localChatService.listLocalChats(),
-		staleTime: CHAT_LIST_STALE_TIME,
-		gcTime: CHAT_QUERY_GC_TIME,
-	});
 }
 
 export function useChat(completion_id: string | undefined) {
@@ -122,7 +120,8 @@ export function useChat(completion_id: string | undefined) {
 				}
 				return preserveOptimisticMessages(remoteChat || localChat, getCachedConversation());
 			} catch (error) {
-				console.error("Failed to fetch remote chat, falling back to local:", error);
+				if (error instanceof ApiError || !localChat) throw error;
+				console.warn("Remote chat is temporarily unavailable; using the local copy.", error);
 				return preserveOptimisticMessages(localChat, getCachedConversation());
 			}
 		},
@@ -176,11 +175,11 @@ export function useDeleteChat() {
 			const localChat = await localChatService.getLocalChat(completion_id);
 			const isLocalOnly = localChat?.isLocalOnly || false;
 
-			await localChatService.deleteLocalChat(completion_id);
-
 			if (isAuthenticated && isPro && !localOnlyMode && !isLocalOnly) {
 				await apiService.deleteConversation(completion_id);
 			}
+
+			await localChatService.deleteLocalChat(completion_id);
 		},
 		onSuccess: (_, completion_id) => {
 			if (currentConversationId === completion_id) {
@@ -243,9 +242,9 @@ export function useUpdateChatTitle() {
 	});
 }
 
-export function useGenerateTitle() {
+export function useGenerateTitle(requestOptions?: ChatRequestOptions) {
 	const queryClient = useQueryClient();
-	const { localOnlyMode } = useChatStore();
+	const { determineStorageMode } = useConversationStorage(requestOptions);
 
 	return useMutation({
 		mutationFn: async ({
@@ -258,8 +257,9 @@ export function useGenerateTitle() {
 			const localChat = await localChatService.getLocalChat(completion_id);
 			const isLocalOnly = localChat?.isLocalOnly || false;
 
+			const storageMode = determineStorageMode();
 			let newTitle;
-			if (isLocalOnly || localOnlyMode) {
+			if (!storageMode.shouldSyncRemote || (isLocalOnly && !storageMode.isProjectScoped)) {
 				newTitle = createTemporaryConversationTitle(messages);
 			} else {
 				newTitle = await apiService.generateTitle(completion_id, messages);

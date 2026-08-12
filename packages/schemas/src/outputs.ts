@@ -89,6 +89,24 @@ export const outputListQuerySchema = z
 		projectId: z.string().min(1).optional(),
 		capabilityId: z.string().trim().min(1).max(160).optional(),
 		kind: outputKindSchema.optional(),
+		limit: z.coerce.number().int().min(1).max(200).default(100),
+		offset: z.coerce.number().int().min(0).default(0),
+	})
+	.strict();
+
+export const sharedOutputFileSchema = outputFileSchema.omit({ key: true });
+
+export const sharedOutputSchema = z
+	.object({
+		id: z.string().min(1),
+		capabilityId: z.string().trim().min(1).max(160),
+		kind: outputKindSchema,
+		title: z.string().trim().min(1).max(200),
+		status: outputStatusSchema,
+		content: z.record(z.string(), z.unknown()),
+		file: sharedOutputFileSchema.nullable(),
+		createdAt: z.string(),
+		updatedAt: z.string().nullable(),
 	})
 	.strict();
 
@@ -134,6 +152,7 @@ export type OutputSensitivity = z.infer<typeof outputSensitivitySchema>;
 export type OutputFile = z.infer<typeof outputFileSchema>;
 export type Output = z.infer<typeof outputSchema>;
 export type OutputSummary = z.infer<typeof outputSummarySchema>;
+export type SharedOutput = z.infer<typeof sharedOutputSchema>;
 export type CreateOutputInput = z.infer<typeof createOutputSchema>;
 export type UpdateOutputInput = z.infer<typeof updateOutputSchema>;
 export type OutputRevision = z.infer<typeof outputRevisionSchema>;

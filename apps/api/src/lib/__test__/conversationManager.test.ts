@@ -1,15 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Message } from "~/types";
 import { ConversationManager } from "../conversationManager";
 
 const mockDatabase = {
 	getConversation: vi.fn(),
 	createConversation: vi.fn(),
 	createMessage: vi.fn(),
+	createMessagesAndUpdateConversation: vi.fn(),
 	upsertMessage: vi.fn(),
 	archiveMessages: vi.fn(),
 	deleteMessage: vi.fn(),
 	deleteMessages: vi.fn(),
 	deleteMessagesExcept: vi.fn(),
+	countMessagesOwnedByOtherConversations: vi.fn(),
 	getConversationMessageMetadata: vi.fn(),
 	updateConversationAfterMessage: vi.fn(),
 	getConversationMessages: vi.fn(),
@@ -30,11 +33,13 @@ const mockDatabase = {
 		},
 		messages: {
 			createMessage: vi.fn(),
+			createMessagesAndUpdateConversation: vi.fn(),
 			upsertMessage: vi.fn(),
 			archiveMessages: vi.fn(),
 			deleteMessage: vi.fn(),
 			deleteMessages: vi.fn(),
 			deleteMessagesExcept: vi.fn(),
+			countMessagesOwnedByOtherConversations: vi.fn(),
 			getConversationMessageMetadata: vi.fn(),
 			getConversationMessages: vi.fn(),
 			updateMessage: vi.fn(),
@@ -92,6 +97,27 @@ describe("ConversationManager", () => {
 		mockDatabase.repositories.messages.createMessage.mockImplementation((...args) =>
 			mockDatabase.createMessage(...args),
 		);
+		mockDatabase.repositories.messages.createMessagesAndUpdateConversation.mockImplementation(
+			async (conversationId, messages) => {
+				for (const message of messages) {
+					await mockDatabase.createMessage(
+						message.id,
+						conversationId,
+						message.role,
+						message.content,
+						message.data,
+					);
+				}
+				const lastMessage = messages.at(-1);
+				if (lastMessage) {
+					await mockDatabase.updateConversationAfterMessage(
+						conversationId,
+						lastMessage.id,
+						messages.length,
+					);
+				}
+			},
+		);
 		mockDatabase.repositories.messages.upsertMessage.mockImplementation((...args) =>
 			mockDatabase.upsertMessage(...args),
 		);
@@ -106,6 +132,9 @@ describe("ConversationManager", () => {
 		);
 		mockDatabase.repositories.messages.deleteMessagesExcept.mockImplementation((...args) =>
 			mockDatabase.deleteMessagesExcept(...args),
+		);
+		mockDatabase.repositories.messages.countMessagesOwnedByOtherConversations.mockImplementation(
+			(...args) => mockDatabase.countMessagesOwnedByOtherConversations(...args),
 		);
 		mockDatabase.repositories.messages.getConversationMessageMetadata.mockImplementation(
 			(...args) => mockDatabase.getConversationMessageMetadata(...args),
@@ -127,6 +156,7 @@ describe("ConversationManager", () => {
 		mockDatabase.deleteMessage.mockResolvedValue(undefined);
 		mockDatabase.deleteMessages.mockResolvedValue(undefined);
 		mockDatabase.deleteMessagesExcept.mockResolvedValue(undefined);
+		mockDatabase.countMessagesOwnedByOtherConversations.mockResolvedValue(0);
 		mockDatabase.getConversationMessageMetadata.mockResolvedValue({
 			last_message_id: null,
 			message_count: 0,
@@ -648,6 +678,25 @@ describe("ConversationManager", () => {
 		});
 	});
 
+	describe("update messages", () => {
+		it("scopes every message update to the authorised conversation", async () => {
+			mockDatabase.getConversation.mockResolvedValue({ id: "conv-123", user_id: mockUser.id });
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: mockUser,
+			});
+
+			await manager.update("conv-123", [
+				{ id: "message-1", role: "user", content: "Updated" } satisfies Message,
+			]);
+
+			expect(mockDatabase.updateMessage).toHaveBeenCalledWith("conv-123", "message-1", {
+				role: "user",
+				content: "Updated",
+			});
+		});
+	});
+
 	describe("updateConversation", () => {
 		it("should update conversation title", async () => {
 			const conversationId = "conv-123";
@@ -879,6 +928,20 @@ describe("ConversationManager", () => {
 	});
 
 	describe("getPublicConversation", () => {
+		it("never exposes a legacy public share after it belongs to a project", async () => {
+			mockDatabase.getConversationByShareId.mockResolvedValue({
+				id: "project-conversation-1",
+				is_public: 1,
+				project_id: "project-1",
+			});
+			const manager = ConversationManager.getInstance({ database: mockDatabase as any });
+
+			await expect(manager.getPublicConversation("legacy-share")).rejects.toMatchObject({
+				type: "NOT_FOUND",
+			});
+			expect(mockDatabase.getMessages).not.toHaveBeenCalled();
+		});
+
 		it("hides snapshot messages from shared conversation messages", async () => {
 			mockDatabase.getConversationByShareId.mockResolvedValue({
 				id: "conv-123",

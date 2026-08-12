@@ -38,19 +38,13 @@ export function useConversationActions(
 		assistantMessage: Message,
 	) => Promise<void>,
 	setStreamStarted?: (started: boolean) => void,
+	requestOptions?: ChatRequestOptions,
 ) {
 	const queryClient = useQueryClient();
-	const {
-		currentConversationId,
-		model,
-		chatSettings,
-		isAuthenticated,
-		isPro,
-		localOnlyMode,
-		setCurrentConversationId,
-	} = useChatStore();
+	const { currentConversationId, model, isAuthenticated, isPro, setCurrentConversationId } =
+		useChatStore();
 
-	const { updateConversation } = useConversationStorage();
+	const { determineStorageMode, updateConversation } = useConversationStorage(requestOptions);
 	const { startLoading, stopLoading } = useLoadingActions();
 
 	const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -215,7 +209,7 @@ export function useConversationActions(
 				setIsBranching(true);
 
 				const newConversationId = createConversationId();
-				const shouldStore = isAuthenticated && isPro && !localOnlyMode && !chatSettings.localOnly;
+				const shouldStore = determineStorageMode().shouldSyncRemote;
 				let branchConversation = createBranchConversation({
 					conversation,
 					conversationId: newConversationId,
@@ -280,10 +274,7 @@ export function useConversationActions(
 		[
 			queryClient,
 			currentConversationId,
-			isAuthenticated,
-			isPro,
-			localOnlyMode,
-			chatSettings,
+			determineStorageMode,
 			model,
 			updateConversation,
 			setCurrentConversationId,
@@ -377,8 +368,6 @@ export function useConversationActions(
 			model,
 			isAuthenticated,
 			isPro,
-			localOnlyMode,
-			chatSettings.localOnly,
 			updateConversation,
 			generateResponseWithLoading,
 		],

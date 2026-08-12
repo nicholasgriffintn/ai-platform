@@ -209,22 +209,6 @@ export class ConversationRepository extends BaseRepository {
 		]);
 	}
 
-	public async updateConversationAfterMessage(
-		conversationId: string,
-		messageId: string,
-	): Promise<void> {
-		await this.executeRun(
-			`UPDATE conversation 
-       SET 
-         last_message_id = ?,
-         last_message_at = datetime('now'),
-         message_count = message_count + 1,
-         updated_at = datetime('now')
-       WHERE id = ?`,
-			[messageId, conversationId],
-		);
-	}
-
 	public async searchConversations(
 		userId: number,
 		query: string,

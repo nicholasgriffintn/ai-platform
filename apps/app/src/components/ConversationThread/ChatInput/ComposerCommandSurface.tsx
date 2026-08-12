@@ -191,7 +191,7 @@ function ChipRemoveButton({
 
 interface ComposerAttachmentChipState {
 	label: string;
-	onClear: () => void;
+	onClear?: () => void;
 	preview: ReactNode;
 }
 
@@ -225,11 +225,13 @@ export function ComposerCommandChips(
 						{attachment.preview}
 					</span>
 					<span className="truncate">{attachment.label}</span>
-					<ChipRemoveButton
-						onClick={attachment.onClear}
-						className="rounded-sm text-amber-700 hover:text-amber-950 dark:text-amber-200 dark:hover:text-amber-50"
-						label="Remove attachment"
-					/>
+					{attachment.onClear ? (
+						<ChipRemoveButton
+							onClick={attachment.onClear}
+							className="rounded-sm text-amber-700 hover:text-amber-950 dark:text-amber-200 dark:hover:text-amber-50"
+							label="Remove attachment"
+						/>
+					) : null}
 				</ContextChip>
 			))}
 			{activeMode && (

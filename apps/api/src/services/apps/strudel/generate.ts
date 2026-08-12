@@ -118,7 +118,7 @@ export async function generateStrudelCode({
 			max_tokens: 8192,
 			stream: false,
 			store: false,
-			completion_id: `strudel-${Date.now()}`,
+			completion_id: `strudel-${generateId()}`,
 			enabled_tools: [],
 			tools: [],
 			mode: "normal",

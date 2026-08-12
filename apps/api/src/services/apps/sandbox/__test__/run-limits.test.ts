@@ -19,11 +19,11 @@ function toRunData(overrides: Record<string, unknown> = {}) {
 
 describe("assertSandboxRunCanStart", () => {
 	it("allows starts when under quota and rate limits", async () => {
-		const listPersonalActivities = vi.fn().mockResolvedValue([]);
+		const listRecentUserActivities = vi.fn().mockResolvedValue([]);
 		const context = {
 			env: {},
 			repositories: {
-				activities: { listPersonalActivities },
+				activities: { listRecentUserActivities },
 			},
 		} as any;
 
@@ -37,7 +37,7 @@ describe("assertSandboxRunCanStart", () => {
 	});
 
 	it("rejects when concurrent active run limit is reached", async () => {
-		const listPersonalActivities = vi.fn().mockResolvedValue([
+		const listRecentUserActivities = vi.fn().mockResolvedValue([
 			{
 				created_at: "2026-02-17T11:59:00.000Z",
 				data: toRunData({
@@ -54,7 +54,7 @@ describe("assertSandboxRunCanStart", () => {
 		const context = {
 			env: {},
 			repositories: {
-				activities: { listPersonalActivities },
+				activities: { listRecentUserActivities },
 			},
 		} as any;
 
@@ -69,7 +69,7 @@ describe("assertSandboxRunCanStart", () => {
 
 	it("rejects when per-minute start rate is exceeded", async () => {
 		const now = new Date("2026-02-17T12:00:00.000Z");
-		const listPersonalActivities = vi.fn().mockResolvedValue([
+		const listRecentUserActivities = vi.fn().mockResolvedValue([
 			{
 				created_at: "2026-02-17T11:59:40.000Z",
 				data: toRunData({
@@ -102,7 +102,7 @@ describe("assertSandboxRunCanStart", () => {
 		const context = {
 			env: {},
 			repositories: {
-				activities: { listPersonalActivities },
+				activities: { listRecentUserActivities },
 			},
 		} as any;
 

@@ -3,13 +3,20 @@ import { Activity } from "lucide-react";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
-import { Card } from "~/components/ui";
+import { Button, Card } from "~/components/ui";
 import { getStatusIcon } from "~/components/ui/Status/icons";
 import { useActivity } from "~/hooks/useActivity";
 import { formatDate } from "~/lib/dates";
 
 export function ProjectActivity({ projectId }: { projectId: string }) {
-	const { data: activities, isLoading, error } = useActivity(projectId);
+	const {
+		data: activities,
+		isLoading,
+		error,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useActivity(projectId);
 
 	return (
 		<main className="container mx-auto max-w-6xl px-4 py-8">
@@ -33,25 +40,38 @@ export function ProjectActivity({ projectId }: { projectId: string }) {
 				/>
 			) : null}
 			{!error && !isLoading && activities?.length ? (
-				<Card className="gap-0 overflow-hidden py-0 shadow-none">
-					{activities.map((item) => (
-						<div
-							key={item.id}
-							className="flex items-center gap-4 border-b border-zinc-100 px-5 py-4 last:border-0 dark:border-zinc-800"
-						>
-							<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
-								{getStatusIcon(item.status)}
+				<div className="space-y-4">
+					<Card className="gap-0 overflow-hidden py-0 shadow-none">
+						{activities.map((item) => (
+							<div
+								key={item.id}
+								className="flex items-center gap-4 border-b border-zinc-100 px-5 py-4 last:border-0 dark:border-zinc-800"
+							>
+								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+									{getStatusIcon(item.status)}
+								</div>
+								<div className="min-w-0 flex-1">
+									<h2 className="truncate text-sm font-medium">{item.summary}</h2>
+									<p className="text-xs text-zinc-500">
+										{item.capabilityId} · {formatDate(item.updatedAt ?? item.createdAt)}
+									</p>
+								</div>
+								<span className="text-xs capitalize text-zinc-500">{item.status}</span>
 							</div>
-							<div className="min-w-0 flex-1">
-								<h2 className="truncate text-sm font-medium">{item.summary}</h2>
-								<p className="text-xs text-zinc-500">
-									{item.capabilityId} · {formatDate(item.updatedAt ?? item.createdAt)}
-								</p>
-							</div>
-							<span className="text-xs capitalize text-zinc-500">{item.status}</span>
+						))}
+					</Card>
+					{hasNextPage ? (
+						<div className="flex justify-center">
+							<Button
+								variant="secondary"
+								disabled={isFetchingNextPage}
+								onClick={() => void fetchNextPage()}
+							>
+								{isFetchingNextPage ? "Loading…" : "Load more activity"}
+							</Button>
 						</div>
-					))}
-				</Card>
+					) : null}
+				</div>
 			) : null}
 		</main>
 	);

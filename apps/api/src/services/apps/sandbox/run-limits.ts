@@ -25,7 +25,7 @@ export async function assertSandboxRunCanStart(params: {
 	const nowMs = (params.now ?? new Date()).getTime();
 	const config = resolveSandboxExecutionQuotaConfig(context.env);
 
-	const records = await context.repositories.activities.listPersonalActivities(
+	const records = await context.repositories.activities.listRecentUserActivities(
 		userId,
 		SANDBOX_RUNS_APP_ID,
 	);

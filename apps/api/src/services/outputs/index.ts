@@ -4,6 +4,7 @@ import type {
 	OutputRevision,
 	OutputShare,
 	OutputSummary,
+	SharedOutput,
 	UpdateOutputInput,
 } from "@assistant/schemas";
 
@@ -19,6 +20,7 @@ import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId, randomHex } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
+import { requireConversationScope, requireOutputAccess } from "./access";
 
 function parseContent(value: string): Record<string, unknown> {
 	return safeParseJson<Record<string, unknown>>(value) ?? {};
@@ -55,6 +57,27 @@ export function formatOutput(record: OutputRecord): Output {
 	};
 }
 
+export function formatSharedOutput(record: OutputRecord): SharedOutput {
+	const output = formatOutput(record);
+	return {
+		id: output.id,
+		capabilityId: output.capabilityId,
+		kind: output.kind,
+		title: output.title,
+		status: output.status,
+		content: output.content,
+		file: output.file
+			? {
+					mimeType: output.file.mimeType,
+					filename: output.file.filename,
+					byteSize: output.file.byteSize,
+				}
+			: null,
+		createdAt: output.createdAt,
+		updatedAt: output.updatedAt,
+	};
+}
+
 function formatOutputSummary(record: OutputRecord): OutputSummary {
 	const { content: _content, ...summary } = formatOutput(record);
 	return summary;
@@ -82,53 +105,6 @@ function formatShare(record: OutputShareRecord): OutputShare {
 		revokedAt: record.revoked_at,
 		createdAt: record.created_at,
 	};
-}
-
-async function requireConversationScope(
-	context: ServiceContext,
-	userId: number,
-	conversationId: string,
-	projectId?: string | null,
-): Promise<void> {
-	const conversation = await context.repositories.conversations.getConversation(conversationId);
-	if (!conversation) {
-		throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND, 404);
-	}
-	if (projectId) {
-		if (conversation.project_id !== projectId) {
-			throw new AssistantError("Conversation is outside this project", ErrorType.PARAMS_ERROR, 400);
-		}
-		return;
-	}
-	if (conversation.project_id !== null || conversation.user_id !== userId) {
-		throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND, 404);
-	}
-}
-
-async function requireOutputAccess(
-	context: ServiceContext,
-	userId: number,
-	outputId: string,
-	mutate = false,
-): Promise<OutputRecord> {
-	const output = await context.repositories.outputs.getOutput(outputId);
-	if (!output) throw new AssistantError("Output not found", ErrorType.NOT_FOUND, 404);
-	if (!output.project_id) {
-		if (output.created_by_user_id !== userId) {
-			throw new AssistantError("Output not found", ErrorType.NOT_FOUND, 404);
-		}
-		return output;
-	}
-
-	const { role } = await requireProjectAccess(context, output.project_id);
-	if (mutate && role === "member" && output.created_by_user_id !== userId) {
-		throw new AssistantError(
-			"Only the output creator or a project admin can change it",
-			ErrorType.FORBIDDEN,
-			403,
-		);
-	}
-	return output;
 }
 
 export async function createOutput(
@@ -187,19 +163,33 @@ export async function getOutput(
 export async function listOutputs(
 	context: ServiceContext,
 	userId: number,
-	filters: { projectId?: string; capabilityId?: string; kind?: string },
+	filters: {
+		projectId?: string;
+		capabilityId?: string;
+		kind?: string;
+		limit?: number;
+		offset?: number;
+	},
 ): Promise<{ outputs: OutputSummary[] }> {
+	const pagination = {
+		kind: filters.kind,
+		limit: filters.limit ?? 100,
+		offset: filters.offset ?? 0,
+	};
 	const records = filters.projectId
 		? (await requireProjectAccess(context, filters.projectId),
 			await context.repositories.outputs.listProjectOutputs(
 				filters.projectId,
 				filters.capabilityId,
+				pagination,
 			))
-		: await context.repositories.outputs.listPersonalOutputs(userId, filters.capabilityId);
+		: await context.repositories.outputs.listPersonalOutputs(
+				userId,
+				filters.capabilityId,
+				pagination,
+			);
 	return {
-		outputs: records
-			.filter((record) => !filters.kind || record.kind === filters.kind)
-			.map(formatOutputSummary),
+		outputs: records.map(formatOutputSummary),
 	};
 }
 
@@ -314,8 +304,11 @@ export async function revokeOutputShare(
 	}
 }
 
-export async function getSharedOutput(context: ServiceContext, token: string): Promise<Output> {
-	return formatOutput(await getSharedOutputRecord(context, token));
+export async function getSharedOutput(
+	context: ServiceContext,
+	token: string,
+): Promise<SharedOutput> {
+	return formatSharedOutput(await getSharedOutputRecord(context, token));
 }
 
 export async function getSharedOutputRecord(

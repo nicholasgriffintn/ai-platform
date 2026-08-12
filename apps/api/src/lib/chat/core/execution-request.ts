@@ -63,7 +63,12 @@ class ChatExecutionRequest {
 			current_agent_id: chatOptions.current_agent_id,
 			delegation_stack: chatOptions.delegation_stack,
 			max_delegation_depth: chatOptions.max_delegation_depth,
-			requestOptions: chatOptions.options || {},
+			requestOptions: prepared.requestOptions || {},
+			continuationRequest: {
+				...this.providerRequest(),
+				model,
+				provider,
+			},
 		};
 	}
 
@@ -141,7 +146,7 @@ class ChatExecutionRequest {
 			tool_choice: chatOptions.tool_choice,
 			current_step: chatOptions.current_step,
 			max_steps: resolvedMaxSteps,
-			options: chatOptions.options || {},
+			options: prepared.requestOptions || {},
 			current_agent_id: chatOptions.current_agent_id,
 			delegation_stack: chatOptions.delegation_stack,
 			max_delegation_depth: chatOptions.max_delegation_depth,

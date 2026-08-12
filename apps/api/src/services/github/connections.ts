@@ -94,6 +94,7 @@ export async function getGitHubAppConnectionForUserInstallation(
 	context: ServiceContext,
 	userId: number,
 	installationId: number,
+	repo?: string,
 ): Promise<GitHubAppConnection> {
 	const installationKey = String(installationId);
 	const connection = await context.repositories.providerConnections.getConnection(
@@ -115,6 +116,13 @@ export async function getGitHubAppConnectionForUserInstallation(
 		throw new AssistantError(
 			"GitHub App connection is invalid for installation",
 			ErrorType.NOT_FOUND,
+		);
+	}
+	if (repo && !recordAllowsRepo(parsed.data, repo)) {
+		throw new AssistantError(
+			"GitHub App connection does not allow this repository",
+			ErrorType.FORBIDDEN,
+			403,
 		);
 	}
 

@@ -10,6 +10,7 @@ import { getAuxiliaryModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { OutputRecord } from "~/repositories/OutputRepository";
+import { requireOutputRecordAccess } from "~/services/outputs/access";
 import type { ChatRole, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -168,6 +169,7 @@ export async function updateNote({
 	if (!existing || existing.capability_id !== "notes" || existing.kind !== "note") {
 		throw new AssistantError("Note not found", ErrorType.NOT_FOUND, 404);
 	}
+	await requireOutputRecordAccess(serviceContext, user.id, existing, true);
 
 	const parsedExistingData = safeParseJson<Record<string, unknown>>(existing.content) ?? {};
 	const existingMetadata = isRecord(parsedExistingData.metadata) ? parsedExistingData.metadata : {};
@@ -262,6 +264,7 @@ export async function deleteNote({
 	if (!existing || existing.capability_id !== "notes" || existing.kind !== "note") {
 		throw new AssistantError("Note not found", ErrorType.NOT_FOUND, 404);
 	}
+	await requireOutputRecordAccess(serviceContext, user.id, existing, true);
 
 	await repo.deleteOutput(noteId);
 }

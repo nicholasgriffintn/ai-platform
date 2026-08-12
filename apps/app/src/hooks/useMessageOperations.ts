@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import type { Message } from "~/types";
+import type { ChatRequestOptions, Message } from "~/types";
 import { normalizeSelectedModel } from "~/lib/chat/model-selection";
 import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
 import { normalizeMessage } from "~/lib/messages";
@@ -10,8 +10,8 @@ import { useChatStore } from "~/state/stores/chatStore";
  * Hook for managing message operations within conversations.
  * Handles adding, updating, and deleting messages.
  */
-export function useMessageOperations() {
-	const { updateConversation } = useConversationStorage();
+export function useMessageOperations(requestOptions?: ChatRequestOptions) {
+	const { updateConversation } = useConversationStorage(requestOptions);
 	const { model } = useChatStore();
 
 	const addMessageToConversation = useCallback(

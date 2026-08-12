@@ -6,11 +6,6 @@ import { BackLink } from "~/components/Core/BackLink";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { ReplicateModelDetail } from "~/components/Replicate/ReplicateModelDetail";
-import { ReplicateModels } from "~/components/Replicate/ReplicateModels";
-import { ReplicatePredictionDetail } from "~/components/Replicate/ReplicatePredictionDetail";
-import { ReplicatePredictions } from "~/components/Replicate/ReplicatePredictions";
-import { TrainingDashboard } from "~/components/Training/TrainingDashboard";
 import { Button } from "~/components/ui";
 import { useDynamicApps } from "~/hooks/useDynamicApps";
 import {
@@ -20,36 +15,8 @@ import {
 } from "~/lib/project-experiences";
 import { useWorkData } from "./WorkContext";
 import { ProjectOverviewSkeleton } from "./WorkLoadingSkeletons";
+import { ProjectExperienceRenderer } from "./ProjectExperienceRenderer";
 import { isAuthenticationError } from "~/lib/errors";
-import { ArticlesExperience } from "./Experiences/ArticlesExperience";
-import { NotesExperience } from "./Experiences/NotesExperience";
-import { PodcastsExperience } from "./Experiences/PodcastsExperience";
-import { ResponsesExperience } from "./Experiences/ResponsesExperience";
-import { StrudelExperience } from "./Experiences/StrudelExperience";
-
-function ReplicateExperience({
-	workspaceId,
-	projectId,
-	subpath,
-}: {
-	workspaceId: string;
-	projectId: string;
-	subpath: string;
-}) {
-	const basePath = getProjectExperiencePath(workspaceId, projectId, "replicate");
-	const segments = subpath.split("/").filter(Boolean);
-
-	if (segments[0] === "predictions" && segments[1]) {
-		return <ReplicatePredictionDetail predictionId={segments[1]} projectId={projectId} />;
-	}
-	if (segments[0] === "predictions") {
-		return <ReplicatePredictions basePath={basePath} projectId={projectId} />;
-	}
-	if (segments[0]) {
-		return <ReplicateModelDetail basePath={basePath} modelId={segments[0]} projectId={projectId} />;
-	}
-	return <ReplicateModels basePath={basePath} projectId={projectId} />;
-}
 
 export function ProjectExperienceRoute({
 	experienceId,
@@ -118,24 +85,13 @@ export function ProjectExperienceRoute({
 							</Link>
 						}
 					/>
-				) : definition.runtime === "replicate" ? (
-					<ReplicateExperience workspaceId={workspaceId} projectId={projectId} subpath={subpath} />
-				) : definition.runtime === "finetuning" ? (
-					<TrainingDashboard />
-				) : definition.runtime === "articles" ? (
-					<ArticlesExperience basePath={basePath} projectId={projectId} subpath={subpath} />
-				) : definition.runtime === "podcasts" ? (
-					<PodcastsExperience basePath={basePath} projectId={projectId} subpath={subpath} />
-				) : definition.runtime === "notes" ? (
-					<NotesExperience basePath={basePath} projectId={projectId} subpath={subpath} />
-				) : definition.runtime === "strudel" ? (
-					<StrudelExperience basePath={basePath} projectId={projectId} subpath={subpath} />
-				) : definition.runtime === "responses" ? (
-					<ResponsesExperience basePath={basePath} projectId={projectId} subpath={subpath} />
 				) : (
-					<EmptyState
-						title="Experience unavailable"
-						message="This project experience is not supported."
+					<ProjectExperienceRenderer
+						basePath={basePath}
+						projectId={projectId}
+						runtime={definition.runtime}
+						subpath={subpath}
+						workspaceId={workspaceId}
 					/>
 				)}
 			</main>

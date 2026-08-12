@@ -60,7 +60,7 @@ vi.mock("./Experiences/NotesExperience", () => ({
 }));
 
 describe("ProjectExperienceRoute", () => {
-	it("mounts an enabled rich experience inside its project path", () => {
+	it("mounts an enabled rich experience inside its project path", async () => {
 		render(
 			<MemoryRouter>
 				<ProjectExperienceRoute
@@ -71,7 +71,7 @@ describe("ProjectExperienceRoute", () => {
 			</MemoryRouter>,
 		);
 
-		const experience = screen.getByTestId("notes-experience");
+		const experience = await screen.findByTestId("notes-experience");
 		expect(screen.getByRole("link", { name: "Back to experiences" })).toHaveAttribute(
 			"href",
 			"/work/workspace-1/projects/project-1/experiences",

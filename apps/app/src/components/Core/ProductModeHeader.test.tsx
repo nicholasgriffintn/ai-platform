@@ -33,7 +33,6 @@ describe("ProductModeHeader", () => {
 		fireEvent.click(screen.getByRole("button", { name: "Switch to local-only mode" }));
 
 		expect(useChatStore.getState().localOnlyMode).toBe(true);
-		expect(window.localStorage.getItem("localOnlyMode")).toBe("true");
 		expect(screen.getByRole("button", { name: "Switch to cloud mode" })).toBeInTheDocument();
 	});
 

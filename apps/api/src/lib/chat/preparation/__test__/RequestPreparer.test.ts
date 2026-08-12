@@ -1064,6 +1064,20 @@ describe("RequestPreparer", () => {
 			expect(result).toBe("");
 		});
 
+		it("keeps authoritative project instructions in no_system mode", async () => {
+			const result = await (preparer as any).buildSystemPrompt(
+				{ ...baseOptions, mode: "no_system" },
+				[],
+				"test message",
+				"claude-3-sonnet",
+				{},
+				false,
+				{ instructions: "Use the shared launch brief." },
+			);
+
+			expect(result).toBe("Project instructions:\nUse the shared launch brief.");
+		});
+
 		it("should use provided system_prompt", async () => {
 			const systemPromptOptions = {
 				...baseOptions,

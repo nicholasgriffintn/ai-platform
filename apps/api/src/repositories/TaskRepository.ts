@@ -10,6 +10,7 @@ export interface CreateTaskParams {
 	id?: string;
 	task_type: TaskType;
 	user_id?: number;
+	project_id?: string;
 	task_data?: Record<string, any>;
 	schedule_type?: ScheduleType;
 	scheduled_at?: string;
@@ -44,6 +45,7 @@ export class TaskRepository extends BaseRepository {
 				id,
 				task_type: params.task_type,
 				user_id: params.user_id ?? null,
+				project_id: params.project_id ?? null,
 				task_data: params.task_data ? JSON.stringify(params.task_data) : null,
 				schedule_type: params.schedule_type ?? "immediate",
 				scheduled_at: params.scheduled_at ?? null,
@@ -70,13 +72,14 @@ export class TaskRepository extends BaseRepository {
 	): Promise<{ task: Task | null; created: boolean }> {
 		const result = await this.executeRun(
 			`INSERT OR IGNORE INTO tasks (
-				id, task_type, user_id, task_data, schedule_type, scheduled_at,
+				id, task_type, user_id, project_id, task_data, schedule_type, scheduled_at,
 				cron_expression, priority, metadata, created_by, status, attempts, max_attempts
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, 3)`,
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, 3)`,
 			[
 				params.id,
 				params.task_type,
 				params.user_id ?? null,
+				params.project_id ?? null,
 				params.task_data ? JSON.stringify(params.task_data) : null,
 				params.schedule_type ?? "immediate",
 				params.scheduled_at ?? null,

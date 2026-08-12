@@ -29,6 +29,7 @@ import {
 	updateWorkspace,
 } from "~/lib/api/workspaces";
 import { useChatStore } from "~/state/stores/chatStore";
+import { requireProjectRouteScope } from "~/lib/work/project-route-scope";
 
 export const WORKSPACES_QUERY_KEY = ["workspaces"] as const;
 export const workspaceQueryKey = (workspaceId: string) => ["workspace", workspaceId] as const;
@@ -178,12 +179,12 @@ export function useWorkspace(workspaceId?: string) {
 	});
 }
 
-export function useProject(projectId?: string) {
+export function useProject(projectId?: string, workspaceId?: string) {
 	const isAuthenticated = useChatStore((state) => state.isAuthenticated);
 	const isPro = useChatStore((state) => state.isPro);
 	return useQuery({
-		queryKey: projectQueryKey(projectId ?? ""),
-		queryFn: () => getProject(projectId!),
+		queryKey: [...projectQueryKey(projectId ?? ""), workspaceId],
+		queryFn: async () => requireProjectRouteScope(await getProject(projectId!), workspaceId),
 		enabled: Boolean(projectId) && isAuthenticated && isPro,
 		staleTime: WORK_QUERY_STALE_TIME,
 		gcTime: WORK_QUERY_GC_TIME,

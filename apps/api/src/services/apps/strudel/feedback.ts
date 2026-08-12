@@ -6,6 +6,7 @@ const logger = getLogger({ prefix: "services/strudel/feedback" });
 
 export interface StrudelFeedbackRequest {
 	context: ServiceContext;
+	userId: number;
 	generationId: string;
 	score?: number;
 	feedback?: string;
@@ -14,7 +15,7 @@ export interface StrudelFeedbackRequest {
 export async function submitStrudelFeedback(
 	request: StrudelFeedbackRequest,
 ): Promise<{ success: boolean; message: string }> {
-	const { context, generationId, score, feedback } = request;
+	const { context, userId, generationId, score, feedback } = request;
 
 	if (!generationId) {
 		throw new AssistantError("Generation ID is required", ErrorType.PARAMS_ERROR);
@@ -26,6 +27,7 @@ export async function submitStrudelFeedback(
 
 	try {
 		const trainingExamples = await context.repositories.trainingExamples.findMany({
+			userId,
 			conversationId: generationId,
 			source: "app",
 			appName: "strudel",

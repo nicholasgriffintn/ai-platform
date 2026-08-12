@@ -1,7 +1,7 @@
 import { SANDBOX_RUN_DISPATCH_TASK_TYPE, type TaskType } from "@assistant/schemas";
 import { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
-import { TaskMessage } from "./TaskService";
+import { MAX_QUEUE_DELAY_SECONDS, TaskMessage } from "./TaskService";
 import { TaskHandler } from "./TaskHandler";
 import { MemorySynthesisHandler } from "./handlers/MemorySynthesisHandler";
 import { ResearchPollingHandler } from "./handlers/ResearchPollingHandler";
@@ -48,8 +48,9 @@ export class QueueExecutor {
 				if (message.body.scheduled_at) {
 					const scheduledAtMs = Date.parse(message.body.scheduled_at);
 					if (Number.isFinite(scheduledAtMs) && scheduledAtMs > Date.now()) {
+						const remainingSeconds = Math.ceil((scheduledAtMs - Date.now()) / 1000);
 						logger.info(`Task ${message.body.taskId} is scheduled for later, retrying delivery`);
-						message.retry();
+						message.retry({ delaySeconds: Math.min(remainingSeconds, MAX_QUEUE_DELAY_SECONDS) });
 						continue;
 					}
 				}

@@ -50,15 +50,19 @@ export function ConversationProductHeader({
 			actions={
 				<div className="flex shrink-0 items-center gap-0.5">
 					<AgentTraceButton entries={traceEntries} compactOnMobile />
-					{!conversation?.isLocalOnly && !isLoading && currentConversationId && isAuthenticated && (
-						<ShareButton
-							conversationId={currentConversationId}
-							isPublic={conversation?.is_public}
-							shareId={conversation?.share_id}
-							className="shrink-0"
-							compactOnMobile
-						/>
-					)}
+					{!conversation?.isLocalOnly &&
+						!conversation?.project_id &&
+						!isLoading &&
+						currentConversationId &&
+						isAuthenticated && (
+							<ShareButton
+								conversationId={currentConversationId}
+								isPublic={conversation?.is_public}
+								shareId={conversation?.share_id}
+								className="shrink-0"
+								compactOnMobile
+							/>
+						)}
 				</div>
 			}
 		/>

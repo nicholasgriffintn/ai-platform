@@ -10,6 +10,7 @@ import {
 
 export const OUTPUT_QUERY_KEYS = {
 	all: ["outputs"] as const,
+	listsByProject: (projectId?: string) => ["outputs", "list", projectId] as const,
 	list: (projectId?: string, capabilityId?: string) =>
 		["outputs", "list", projectId, capabilityId] as const,
 	detail: (outputId: string | null) => ["outputs", "detail", outputId] as const,
@@ -63,12 +64,4 @@ export function useRevokeOutputShare() {
 		onSuccess: (_result, variables) =>
 			queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.shares(variables.outputId) }),
 	});
-}
-
-export function useInvalidateOutputs() {
-	const queryClient = useQueryClient();
-	return (projectId?: string) =>
-		queryClient.invalidateQueries({
-			queryKey: projectId ? ["outputs", "list", projectId] : OUTPUT_QUERY_KEYS.all,
-		});
 }

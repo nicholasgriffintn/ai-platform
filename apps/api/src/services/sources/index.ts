@@ -304,6 +304,26 @@ export async function listProjectContextSources(
 	};
 }
 
+export async function listProjectConversationSources(
+	context: ServiceContext,
+	userId: number,
+	projectId: string,
+): Promise<{ sources: Source[] }> {
+	await requireProjectAccess(context, projectId);
+	const collection = await context.repositories.sources.getProjectContextCollection(projectId);
+	const [memories, contextSources] = await Promise.all([
+		context.repositories.sources.listProjectSources(projectId, "memory"),
+		collection
+			? context.repositories.sources.listCollectionSources(collection.id)
+			: Promise.resolve([]),
+	]);
+	const availableSources = new Map<string, SourceRecord>();
+	for (const source of [...memories, ...contextSources]) {
+		if (source.status === "available") availableSources.set(source.id, source);
+	}
+	return { sources: [...availableSources.values()].map(formatSource) };
+}
+
 export async function setProjectContextSources(
 	context: ServiceContext,
 	userId: number,
@@ -311,6 +331,9 @@ export async function setProjectContextSources(
 	sourceIds: string[],
 ): Promise<{ sources: SourceSummary[] }> {
 	await requireProjectAccess(context, projectId, ["owner", "admin"]);
+	if (new Set(sourceIds).size !== sourceIds.length) {
+		throw new AssistantError("Project context sources must be unique", ErrorType.PARAMS_ERROR, 400);
+	}
 	for (const sourceId of sourceIds) {
 		const source = await requireSourceAccess(context, userId, sourceId);
 		if (source.project_id !== projectId || source.status !== "available") {

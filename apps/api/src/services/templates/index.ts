@@ -17,6 +17,19 @@ import { validateProjectCapabilityReference } from "~/services/workspaces/capabi
 import { validateProjectToolConfiguration } from "~/services/workspaces/projectTools";
 import { getProject } from "~/services/workspaces";
 
+function parseProjectTemplateConfiguration(value: unknown, message: string) {
+	const parsed = projectTemplateConfigurationSchema.safeParse(value);
+	if (!parsed.success) {
+		throw new AssistantError(message, ErrorType.PARAMS_ERROR, 400, {
+			validationErrors: parsed.error.issues.map((issue) => ({
+				path: issue.path.join("."),
+				message: issue.message,
+			})),
+		});
+	}
+	return parsed.data;
+}
+
 function formatTemplate(record: TemplateRecord): Template {
 	return {
 		id: record.id,
@@ -78,11 +91,21 @@ export async function createTemplate(
 	userId: number,
 	input: CreateTemplateInput,
 ): Promise<Template> {
+	if (input.kind === "recipe") {
+		throw new AssistantError(
+			"Recipe templates are managed through the recipe installation flow",
+			ErrorType.PARAMS_ERROR,
+			400,
+		);
+	}
 	if (input.workspaceId)
 		await requireWorkspaceAccess(context, input.workspaceId, ["owner", "admin"]);
 	const configuration =
 		input.kind === "project"
-			? projectTemplateConfigurationSchema.parse(input.configuration)
+			? parseProjectTemplateConfiguration(
+					input.configuration,
+					"Project template configuration is invalid",
+				)
 			: input.configuration;
 	const created = await context.repositories.templates.createTemplate({
 		createdByUserId: userId,
@@ -119,8 +142,9 @@ export async function instantiateProjectTemplate(
 	if (template.kind !== "project" || template.status !== "active") {
 		throw new AssistantError("Project template is unavailable", ErrorType.PARAMS_ERROR, 400);
 	}
-	const configuration = projectTemplateConfigurationSchema.parse(
+	const configuration = parseProjectTemplateConfiguration(
 		safeParseJson(template.configuration),
+		"Stored project template configuration is invalid",
 	);
 	const capabilities = [];
 	for (const capability of configuration.capabilities) {
@@ -174,6 +198,19 @@ export async function updateTemplate(
 	input: UpdateTemplateInput,
 ): Promise<Template> {
 	const existing = await requireTemplateAccess(context, userId, templateId, true);
+	if (existing.kind === "recipe" && input.configuration !== undefined) {
+		throw new AssistantError(
+			"Recipe template configuration is managed through the recipe installation flow",
+			ErrorType.PARAMS_ERROR,
+			400,
+		);
+	}
+	if (existing.kind === "project" && input.configuration !== undefined) {
+		parseProjectTemplateConfiguration(
+			input.configuration,
+			"Project template configuration is invalid",
+		);
+	}
 	const updated = await context.repositories.templates.updateTemplate(templateId, input);
 	if (!updated) throw new AssistantError("Template not found", ErrorType.NOT_FOUND, 404);
 	if (existing.workspace_id) {

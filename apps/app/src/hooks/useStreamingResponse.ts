@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
 import { readCompactionStatusMessage } from "~/lib/chat/compaction-status";
+import { resolveConversationStorageMode } from "~/lib/chat/conversation-storage-policy";
 import { normalizeSelectedModel } from "~/lib/chat/model-selection";
 import { getChatStreamLoadingMessage } from "~/lib/chat/stream-state";
 import { EMPTY_MODEL_CONFIG, getModelProvider } from "~/lib/models";
@@ -61,7 +62,7 @@ export function useStreamingResponse(
 		insertMessageBeforeConversationMessage,
 		addAssistantMessage,
 		updateAssistantMessage,
-	} = useMessageOperations();
+	} = useMessageOperations(requestOptions);
 
 	const generateResponse = useCallback(
 		async (
@@ -76,7 +77,18 @@ export function useStreamingResponse(
 			messages?: Message[];
 			toolResponses?: Message[];
 		}> => {
-			const isLocal = chatMode === "local";
+			const effectiveRequestOptions = overrideRequestOptions ?? requestOptions;
+			const storageMode = resolveConversationStorageMode(
+				{
+					chatMode,
+					isAuthenticated,
+					isPro,
+					localOnlyMode,
+					settingsLocalOnly: chatSettings.localOnly === true,
+				},
+				effectiveRequestOptions,
+			);
+			const isLocal = !storageMode.shouldSyncRemote && chatMode === "local";
 			let response = "";
 			let generatedMessage: Message | undefined;
 			const generatedMessages: Message[] = [];
@@ -242,7 +254,7 @@ export function useStreamingResponse(
 						handleProgress,
 					);
 				} else {
-					const shouldStore = isAuthenticated && isPro && !localOnlyMode && !chatSettings.localOnly;
+					const shouldStore = storageMode.shouldSyncRemote;
 
 					const normalizedMessages = messages.map(normalizeMessage);
 
@@ -297,7 +309,7 @@ export function useStreamingResponse(
 						onProgress: handleMessageUpdate,
 						onStateChange: handleStateChange,
 						provider: providerToSend,
-						requestOptions: overrideRequestOptions ?? requestOptions,
+						requestOptions: effectiveRequestOptions,
 						signal: controller.signal,
 						store: shouldStore,
 						streamingEnabled: true,

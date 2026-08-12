@@ -1,17 +1,23 @@
-import { Archive, ArrowRight, MessageSquareText, Settings2, SquarePen } from "lucide-react";
+import {
+	Archive,
+	ArrowRight,
+	LayoutTemplate,
+	MessageSquareText,
+	Settings2,
+	SquarePen,
+} from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
+import { toast } from "sonner";
 
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, Card, ConfirmationDialog } from "~/components/ui";
-import { useArchiveProject } from "~/hooks/useWorkspaces";
 import { useTemplateMutations } from "~/hooks/useGovernance";
-import { toast } from "sonner";
-import { LayoutTemplate } from "lucide-react";
-import { isAuthenticationError } from "~/lib/errors";
+import { useArchiveProject } from "~/hooks/useWorkspaces";
+import { getErrorMessage, isAuthenticationError } from "~/lib/errors";
 import { useWorkData } from "./WorkContext";
 import { ProjectBriefCard } from "./ProjectBriefCard";
 import { ProjectCapabilitiesCard } from "./ProjectCapabilitiesCard";
@@ -70,29 +76,34 @@ export function ProjectOverview({
 									variant="outline"
 									icon={<LayoutTemplate size={16} />}
 									className="whitespace-nowrap"
+									isLoading={templates.create.isPending}
 									onClick={async () => {
-										await templates.create.mutateAsync({
-											workspaceId,
-											kind: "project",
-											name: project.name,
-											description: project.description,
-											configuration: {
-												project: {
-													name: project.name,
-													description: project.description,
-													instructions: project.instructions,
-													colour: project.colour,
-													codingEnvironment: project.codingEnvironment,
+										try {
+											await templates.create.mutateAsync({
+												workspaceId,
+												kind: "project",
+												name: project.name,
+												description: project.description,
+												configuration: {
+													project: {
+														name: project.name,
+														description: project.description,
+														instructions: project.instructions,
+														colour: project.colour,
+														codingEnvironment: project.codingEnvironment,
+													},
+													capabilities: project.capabilities.map((capability) => ({
+														kind: capability.kind,
+														capabilityId: capability.capabilityId,
+														configuration: capability.configuration,
+													})),
 												},
-												capabilities: project.capabilities.map((capability) => ({
-													kind: capability.kind,
-													capabilityId: capability.capabilityId,
-													configuration: capability.configuration,
-												})),
-											},
-											status: "active",
-										});
-										toast.success("Project template saved");
+												status: "active",
+											});
+											toast.success("Project template saved");
+										} catch (error) {
+											toast.error(getErrorMessage(error, "Unable to save project template"));
+										}
 									}}
 								>
 									Save template

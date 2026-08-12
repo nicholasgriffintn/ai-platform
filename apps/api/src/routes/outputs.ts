@@ -10,6 +10,7 @@ import {
 	outputSchema,
 	outputShareDeliverySchema,
 	outputShareListResponseSchema,
+	sharedOutputSchema,
 	updateOutputSchema,
 } from "@assistant/schemas";
 
@@ -171,7 +172,7 @@ addRoute(app, "get", "/shared/:token", {
 	tags: ["outputs"],
 	paramSchema: sharedOutputParams,
 	responses: {
-		200: { description: "Shared output", schema: outputSchema },
+		200: { description: "Shared output", schema: sharedOutputSchema },
 		404: { description: "Shared output not found", schema: errorResponseSchema },
 	},
 	handler: ({ params, serviceContext }) => getSharedOutput(serviceContext, params.token),

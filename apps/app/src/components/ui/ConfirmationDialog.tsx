@@ -47,7 +47,11 @@ export function ConfirmationDialog({
 	children,
 }: ConfirmationDialogProps) {
 	const handleConfirm = async () => {
-		await onConfirm();
+		try {
+			await onConfirm();
+		} catch {
+			return;
+		}
 		if (!isLoading) {
 			onOpenChange(false);
 		}

@@ -18,6 +18,7 @@ import { requireProjectAccess, requireWorkAccess, requireWorkspaceAccess } from 
 import { validateProjectCapabilityReference } from "./capabilities";
 import { validateProjectToolConfiguration } from "./projectTools";
 import { sendWorkspaceInvitationEmail } from "./invitation-email";
+import { getGitHubAppConnectionForUserInstallation } from "~/services/github/connections";
 import {
 	formatProjectDetail,
 	formatProjectSummary,
@@ -27,6 +28,20 @@ import {
 } from "./format";
 
 const INVITATION_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
+
+async function validateProjectCodingEnvironment(
+	context: ServiceContext,
+	userId: number,
+	codingEnvironment: CreateProjectInput["codingEnvironment"],
+): Promise<void> {
+	if (!codingEnvironment) return;
+	await getGitHubAppConnectionForUserInstallation(
+		context,
+		userId,
+		codingEnvironment.installationId,
+		codingEnvironment.repository,
+	);
+}
 
 export async function listWorkspaces(context: ServiceContext) {
 	const user = requireWorkAccess(context);
@@ -214,7 +229,15 @@ export async function updateWorkspace(
 }
 
 export async function deleteWorkspace(context: ServiceContext, workspaceId: string) {
+	const user = context.requireUser();
 	await requireWorkspaceAccess(context, workspaceId, ["owner"]);
+	await context.repositories.audit.createRecord({
+		workspaceId,
+		actorUserId: user.id,
+		action: "workspace.deletion.requested",
+		targetType: "workspace",
+		targetId: workspaceId,
+	});
 	await context.repositories.workspaces.deleteWorkspace(workspaceId);
 	return { success: true };
 }
@@ -262,13 +285,18 @@ export async function inviteWorkspaceMember(
 
 	const baseUrl = (context.env.APP_BASE_URL ?? "https://polychat.app").replace(/\/$/, "");
 	const inviteUrl = `${baseUrl}/work/invitations?token=${encodeURIComponent(token)}`;
-	await sendWorkspaceInvitationEmail(context.env, {
-		email: input.email,
-		inviteUrl,
-		inviterName: user.name,
-		role: input.role,
-		workspaceName: workspace.name,
-	});
+	try {
+		await sendWorkspaceInvitationEmail(context.env, {
+			email: input.email,
+			inviteUrl,
+			inviterName: user.name,
+			role: input.role,
+			workspaceName: workspace.name,
+		});
+	} catch (error) {
+		await context.repositories.workspaces.revokeInvitation(workspaceId, invitation.id);
+		throw error;
+	}
 	await context.repositories.audit.createRecord({
 		workspaceId,
 		actorUserId: user.id,
@@ -325,7 +353,10 @@ export async function revokeWorkspaceInvitation(
 ) {
 	const user = context.requireUser();
 	await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
-	await context.repositories.workspaces.revokeInvitation(workspaceId, invitationId);
+	const revoked = await context.repositories.workspaces.revokeInvitation(workspaceId, invitationId);
+	if (!revoked) {
+		throw new AssistantError("Workspace invitation not found", ErrorType.NOT_FOUND, 404);
+	}
 	await context.repositories.audit.createRecord({
 		workspaceId,
 		actorUserId: user.id,
@@ -343,6 +374,7 @@ export async function createProject(
 ) {
 	const user = context.requireUser();
 	await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
+	await validateProjectCodingEnvironment(context, user.id, input.codingEnvironment);
 	const id = generateId();
 	await context.repositories.workspaces.createProject({
 		id,
@@ -381,6 +413,9 @@ export async function updateProject(
 	const user = context.requireUser();
 	const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
 	const { codingEnvironment, ...projectFields } = input;
+	if (codingEnvironment !== undefined) {
+		await validateProjectCodingEnvironment(context, user.id, codingEnvironment);
+	}
 	const codingUpdates =
 		codingEnvironment === undefined
 			? {}
@@ -441,7 +476,7 @@ export async function addProjectCapability(
 		(capability) =>
 			capability.kind === input.kind && capability.capability_id === input.capabilityId,
 	);
-	if (existing && existing.created_by !== user.id) {
+	if (existing && input.kind !== "tool" && existing.created_by !== user.id) {
 		throw new AssistantError(
 			"Only the member who attached this capability can manage it",
 			ErrorType.FORBIDDEN,
@@ -453,8 +488,9 @@ export async function addProjectCapability(
 		input.kind === "tool"
 			? validateProjectToolConfiguration(input.capabilityId, input.configuration)
 			: input.configuration;
+	const capabilityRowId = existing?.id ?? generateId();
 	await context.repositories.workspaces.addProjectCapability({
-		id: generateId(),
+		id: capabilityRowId,
 		projectId,
 		kind: input.kind,
 		capabilityId: input.capabilityId,
@@ -466,8 +502,8 @@ export async function addProjectCapability(
 		actorUserId: user.id,
 		action: "project.capability.added",
 		targetType: "project_capability",
-		targetId: input.capabilityId,
-		metadata: { projectId, kind: input.kind },
+		targetId: capabilityRowId,
+		metadata: { projectId, kind: input.kind, capabilityId: input.capabilityId },
 	});
 	return getProject(context, projectId);
 }
@@ -507,7 +543,7 @@ export async function removeProjectCapability(
 		action: "project.capability.removed",
 		targetType: "project_capability",
 		targetId: capabilityId,
-		metadata: { projectId },
+		metadata: { projectId, kind: capability.kind, capabilityId: capability.capability_id },
 	});
 	return getProject(context, projectId);
 }

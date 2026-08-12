@@ -31,7 +31,6 @@ export function ProductModeHeader({
 	const toggleLocalOnlyMode = () => {
 		const nextMode = !localOnlyMode;
 		setLocalOnlyMode(nextMode);
-		window.localStorage.setItem("localOnlyMode", String(nextMode));
 		trackEvent({
 			name: "toggle_local_only_mode",
 			category: "header",

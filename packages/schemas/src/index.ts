@@ -78,6 +78,7 @@ export * from "./magicLink";
 export * from "./message-parts";
 export * from "./model-router-modes";
 export * from "./models";
+export * from "./navigation";
 export * from "./outputs";
 export * from "./plans";
 export * from "./workspaces";

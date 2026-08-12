@@ -2,6 +2,8 @@ import type { IDBPDatabase } from "idb";
 
 import { getDatabase, isIndexedDBSupported, storeName } from "~/hooks/useIndexedDB";
 import type { Conversation, Message } from "~/types/chat";
+import { useChatStore } from "~/state/stores/chatStore";
+import { getLocalChatScope, isConversationInLocalScope } from "./local-chat-scope";
 
 const LS_PREFIX = "polychat_conversation_";
 
@@ -26,6 +28,10 @@ class LocalChatService {
 		}
 	}
 
+	private getCurrentScope(): string {
+		return getLocalChatScope(useChatStore.getState().user?.id);
+	}
+
 	/**
 	 * Get the singleton instance of the LocalChatService.
 	 */
@@ -44,6 +50,7 @@ class LocalChatService {
 			window.localStorage.setItem(`${LS_PREFIX}${chat.id}`, JSON.stringify(chat));
 		} catch (error) {
 			console.error("Error saving to LocalStorage:", error);
+			throw error;
 		}
 	}
 
@@ -53,7 +60,8 @@ class LocalChatService {
 	private getFromLocalStorage(chatId: string): Conversation | null {
 		try {
 			const chatJson = window.localStorage.getItem(`${LS_PREFIX}${chatId}`);
-			return chatJson ? JSON.parse(chatJson) : null;
+			const chat = chatJson ? (JSON.parse(chatJson) as Conversation) : null;
+			return chat && isConversationInLocalScope(chat, this.getCurrentScope()) ? chat : null;
 		} catch (error) {
 			console.error("Error retrieving from LocalStorage:", error);
 			return null;
@@ -75,7 +83,7 @@ class LocalChatService {
 					}
 				}
 			}
-			return chats;
+			return chats.filter((chat) => isConversationInLocalScope(chat, this.getCurrentScope()));
 		} catch (error) {
 			console.error("Error retrieving all chats from LocalStorage:", error);
 			return [];
@@ -114,10 +122,12 @@ class LocalChatService {
 		try {
 			const db = await this.getDB();
 			const allChats = await db.getAll(storeName);
-			return allChats || [];
+			return (allChats || []).filter((chat) =>
+				isConversationInLocalScope(chat, this.getCurrentScope()),
+			);
 		} catch (error) {
 			console.error("Error retrieving local chats from IndexedDB:", error);
-			return [];
+			throw error;
 		}
 	}
 
@@ -129,6 +139,7 @@ class LocalChatService {
 		const chatWithFlag = {
 			...chat,
 			isLocalOnly: true,
+			localOwnerScope: this.getCurrentScope(),
 			parent_conversation_id: chat.parent_conversation_id,
 			parent_message_id: chat.parent_message_id,
 		};
@@ -147,6 +158,7 @@ class LocalChatService {
 			await db.put(storeName, chatWithFlag);
 		} catch (error) {
 			console.error("Error saving chat to IndexedDB:", error);
+			throw error;
 		}
 	}
 
@@ -169,7 +181,7 @@ class LocalChatService {
 		try {
 			const db = await this.getDB();
 			const chat = await db.get(storeName, chatId);
-			return chat || null;
+			return chat && isConversationInLocalScope(chat, this.getCurrentScope()) ? chat : null;
 		} catch (error) {
 			console.error("Error retrieving chat from IndexedDB:", error);
 			return null;
@@ -191,6 +203,7 @@ class LocalChatService {
 			}
 		} catch (error) {
 			console.error("Error updating chat messages:", error);
+			throw error;
 		}
 	}
 
@@ -209,6 +222,7 @@ class LocalChatService {
 			}
 		} catch (error) {
 			console.error("Error updating chat title:", error);
+			throw error;
 		}
 	}
 
@@ -217,6 +231,7 @@ class LocalChatService {
 	 * @param chatId The ID of the chat to delete
 	 */
 	public async deleteLocalChat(chatId: string): Promise<void> {
+		if (!(await this.getLocalChat(chatId))) return;
 		if (!this.isDBSupported) {
 			this.deleteFromLocalStorage(chatId);
 			return;
@@ -227,6 +242,7 @@ class LocalChatService {
 			await db.delete(storeName, chatId);
 		} catch (error) {
 			console.error("Error deleting chat from IndexedDB:", error);
+			throw error;
 		}
 	}
 
@@ -237,7 +253,8 @@ class LocalChatService {
 		if (!this.isDBSupported) {
 			const keys = Object.keys(window.localStorage);
 			for (const key of keys) {
-				if (key.startsWith(LS_PREFIX)) {
+				const chatId = key.startsWith(LS_PREFIX) ? key.slice(LS_PREFIX.length) : null;
+				if (chatId && this.getFromLocalStorage(chatId)) {
 					window.localStorage.removeItem(key);
 				}
 			}
@@ -248,10 +265,13 @@ class LocalChatService {
 			const db = await this.getDB();
 			const allChats = await db.getAll(storeName);
 			for (const chat of allChats) {
-				await db.delete(storeName, chat.id);
+				if (isConversationInLocalScope(chat, this.getCurrentScope())) {
+					await db.delete(storeName, chat.id);
+				}
 			}
 		} catch (error) {
 			console.error("Error deleting all chats from IndexedDB:", error);
+			throw error;
 		}
 	}
 }

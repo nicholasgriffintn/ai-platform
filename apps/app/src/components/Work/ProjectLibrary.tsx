@@ -19,6 +19,12 @@ export function ProjectLibrary({ workspaceId, projectId }: ProjectLibraryProps) 
 	const isLoading = controller.isLoadingProject || controller.catalog.isLoading;
 	const recipeWorkflows = controller.recipes.workflows;
 	const mutationError = controller.mutations.add.error ?? controller.mutations.remove.error;
+	const pendingAddCapabilityId = controller.mutations.add.isPending
+		? controller.mutations.add.variables?.input.capabilityId
+		: undefined;
+	const pendingRemoveId = controller.mutations.remove.isPending
+		? controller.mutations.remove.variables?.capabilityId
+		: undefined;
 	const hasAuthenticationError =
 		isAuthenticationError(controller.projectError) ||
 		isAuthenticationError(controller.catalog.error) ||
@@ -75,8 +81,8 @@ export function ProjectLibrary({ workspaceId, projectId }: ProjectLibraryProps) 
 						currentUserId={controller.currentUserId}
 						experiences={controller.catalog.experiences}
 						groups={controller.catalog.groups}
-						isAdding={controller.mutations.add.isPending}
-						isRemoving={controller.mutations.remove.isPending}
+						pendingAddCapabilityId={pendingAddCapabilityId}
+						pendingRemoveId={pendingRemoveId}
 						onAdd={controller.actions.addItem}
 						onConfigureTool={controller.toolConfigurationDialog.open}
 						onRemove={controller.actions.removeCapability}

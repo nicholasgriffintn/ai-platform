@@ -82,4 +82,19 @@ describe("ConversationProductHeader", () => {
 		).not.toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "Share conversation" })).not.toBeInTheDocument();
 	});
+
+	it("does not offer public sharing for a project conversation", () => {
+		mocks.conversation = {
+			...mocks.conversation!,
+			project_id: "project-1",
+		};
+
+		render(
+			<MemoryRouter initialEntries={["/work/workspace-1/projects/project-1/chat"]}>
+				<ConversationProductHeader />
+			</MemoryRouter>,
+		);
+
+		expect(screen.queryByRole("button", { name: "Share conversation" })).not.toBeInTheDocument();
+	});
 });

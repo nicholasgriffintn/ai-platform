@@ -15,7 +15,7 @@ import { formatDate } from "~/lib/dates";
 
 export function MemorySynthesisPanel() {
 	const { synthesis, history, isLoadingSynthesis, isLoadingHistory } = useMemorySynthesis("global");
-	const { triggerSynthesisAsync, isTriggeringSynthesis } = useTasks({ shouldRefetch: true });
+	const { triggerSynthesisAsync, isTriggeringSynthesis } = useTasks({ shouldRefetch: false });
 	const previousSyntheses = history.filter((item) => item.id !== synthesis?.id);
 
 	const generateSynthesis = async () => {

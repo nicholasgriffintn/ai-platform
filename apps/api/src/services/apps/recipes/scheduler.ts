@@ -117,107 +117,130 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
 	const taskService = new TaskService(env, repositories.tasks);
 	const records = await repositories.templates.listTemplatesByKind("recipe");
 	const evaluationWindow = getScheduleEvaluationWindow(now);
+	const enabledProjectRecipes = new Map<string, Set<string>>();
 	let scheduledCount = 0;
 
 	for (const record of records) {
-		const installation = parseStoredInstallation(record);
-		const createdAt = getCreatedAtDate(record);
-		if (
-			!installation ||
-			installation.status === "paused" ||
-			!Array.isArray(installation.triggers)
-		) {
-			continue;
-		}
-
-		const scheduleState = buildRecipeScheduleState({
-			triggers: installation.triggers,
-			existingState: installation.scheduleState,
-			activatedAt: record.created_at,
-		});
-		let changed = false;
-
-		for (const [index, trigger] of installation.triggers.entries()) {
-			if (trigger.type !== "schedule" || trigger.enabled === false || !trigger.cronExpression) {
+		try {
+			const installation = parseStoredInstallation(record);
+			const createdAt = getCreatedAtDate(record);
+			if (
+				!installation ||
+				installation.status === "paused" ||
+				!Array.isArray(installation.triggers)
+			) {
 				continue;
 			}
-
-			const triggerState = getRecipeScheduleTriggerState({
-				state: scheduleState,
-				triggerIndex: index,
-				trigger,
-			});
-			if (!triggerState) {
-				changed = true;
-				continue;
+			if (record.project_id) {
+				let enabledRecipes = enabledProjectRecipes.get(record.project_id);
+				if (!enabledRecipes) {
+					const capabilities = await repositories.workspaces.listProjectCapabilities(
+						record.project_id,
+					);
+					enabledRecipes = new Set(
+						capabilities
+							.filter((capability) => capability.kind === "recipe")
+							.map((capability) => capability.capability_id),
+					);
+					enabledProjectRecipes.set(record.project_id, enabledRecipes);
+				}
+				if (!enabledRecipes.has(installation.recipeId)) continue;
 			}
 
-			const activatedAt = new Date(triggerState.activatedAt);
-			const activationBoundary = Number.isNaN(activatedAt.getTime()) ? createdAt : activatedAt;
-			const lastScheduledMinuteKey = getLastScheduledMinuteKey(
-				triggerState.lastRunKey,
-				index,
-				trigger.cronExpression,
-			);
-			const evaluationDates = getScheduleEvaluationDates({
-				cronExpression: trigger.cronExpression,
-				windowStart: evaluationWindow.start,
-				windowEnd: evaluationWindow.end,
-				notBefore: activationBoundary,
+			const scheduleState = buildRecipeScheduleState({
+				triggers: installation.triggers,
+				existingState: installation.scheduleState,
+				activatedAt: record.created_at,
 			});
+			let changed = false;
 
-			for (const evaluationDate of evaluationDates) {
-				const scheduledMinuteKey = getScheduleMinuteKey(evaluationDate);
-				if (lastScheduledMinuteKey && scheduledMinuteKey <= lastScheduledMinuteKey) {
+			for (const [index, trigger] of installation.triggers.entries()) {
+				if (trigger.type !== "schedule" || trigger.enabled === false || !trigger.cronExpression) {
 					continue;
 				}
 
-				const runKey = getScheduleRunKey(index, trigger.cronExpression, evaluationDate);
-
-				await taskService.enqueueTask({
-					id: await getScheduleTaskId({
-						installationId: record.id,
-						recipeId: installation.recipeId,
-						userId: record.created_by_user_id,
-						runKey,
-					}),
-					task_type: "recipe_execution",
-					user_id: record.created_by_user_id,
-					task_data: {
-						recipeId: installation.recipeId,
-						installationId: record.id,
-						projectId: record.project_id,
-						input: trigger.prompt,
-						channel: "scheduled",
-						configuration: installation.configuration,
-						notificationChannel: trigger.notificationChannel,
-						notificationTarget: trigger.notificationTarget,
-					},
-					priority: 5,
-					metadata: {
-						recipeId: installation.recipeId,
-						installationId: record.id,
-						triggerIndex: index,
-						runKey,
-					},
-				});
-
-				setRecipeScheduleLastRun({
+				const triggerState = getRecipeScheduleTriggerState({
 					state: scheduleState,
 					triggerIndex: index,
-					cronExpression: trigger.cronExpression,
-					activatedAt: triggerState.activatedAt,
-					runKey,
+					trigger,
 				});
-				changed = true;
-				scheduledCount++;
-			}
-		}
+				if (!triggerState) {
+					changed = true;
+					continue;
+				}
 
-		if (changed) {
-			await repositories.templates.updateTemplate(record.id, {
-				configuration: { ...installation, scheduleState },
-				status: installation.status ?? "active",
+				const activatedAt = new Date(triggerState.activatedAt);
+				const activationBoundary = Number.isNaN(activatedAt.getTime()) ? createdAt : activatedAt;
+				const lastScheduledMinuteKey = getLastScheduledMinuteKey(
+					triggerState.lastRunKey,
+					index,
+					trigger.cronExpression,
+				);
+				const evaluationDates = getScheduleEvaluationDates({
+					cronExpression: trigger.cronExpression,
+					windowStart: evaluationWindow.start,
+					windowEnd: evaluationWindow.end,
+					notBefore: activationBoundary,
+				});
+
+				for (const evaluationDate of evaluationDates) {
+					const scheduledMinuteKey = getScheduleMinuteKey(evaluationDate);
+					if (lastScheduledMinuteKey && scheduledMinuteKey <= lastScheduledMinuteKey) {
+						continue;
+					}
+
+					const runKey = getScheduleRunKey(index, trigger.cronExpression, evaluationDate);
+
+					await taskService.enqueueTask({
+						id: await getScheduleTaskId({
+							installationId: record.id,
+							recipeId: installation.recipeId,
+							userId: record.created_by_user_id,
+							runKey,
+						}),
+						task_type: "recipe_execution",
+						user_id: record.created_by_user_id,
+						project_id: record.project_id ?? undefined,
+						task_data: {
+							recipeId: installation.recipeId,
+							installationId: record.id,
+							projectId: record.project_id,
+							input: trigger.prompt,
+							channel: "scheduled",
+							configuration: installation.configuration,
+							notificationChannel: trigger.notificationChannel,
+							notificationTarget: trigger.notificationTarget,
+						},
+						priority: 5,
+						metadata: {
+							recipeId: installation.recipeId,
+							installationId: record.id,
+							triggerIndex: index,
+							runKey,
+						},
+					});
+
+					setRecipeScheduleLastRun({
+						state: scheduleState,
+						triggerIndex: index,
+						cronExpression: trigger.cronExpression,
+						activatedAt: triggerState.activatedAt,
+						runKey,
+					});
+					changed = true;
+					scheduledCount++;
+				}
+			}
+
+			if (changed) {
+				await repositories.templates.updateTemplate(record.id, {
+					configuration: { ...installation, scheduleState },
+					status: installation.status ?? "active",
+				});
+			}
+		} catch (error) {
+			logger.error(`Failed to schedule recipe executions for installation ${record.id}`, {
+				error: error instanceof Error ? error.message : String(error),
 			});
 		}
 	}

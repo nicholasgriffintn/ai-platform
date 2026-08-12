@@ -219,7 +219,41 @@ export class WorkspaceRepository extends BaseRepository {
 	}
 
 	async deleteWorkspace(workspaceId: string): Promise<void> {
-		await this.executeRun("DELETE FROM workspace WHERE id = ?", [workspaceId]);
+		const database = this.env.DB;
+		if (!database) {
+			throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
+		}
+
+		const projectIds = "SELECT id FROM project WHERE workspace_id = ?";
+		const conversationIds = `SELECT id FROM conversation WHERE project_id IN (${projectIds})`;
+		const taskIds = `SELECT id FROM tasks WHERE project_id IN (${projectIds})`;
+
+		await database.batch([
+			database
+				.prepare(
+					`UPDATE conversation
+					 SET parent_conversation_id = NULL, parent_message_id = NULL
+					 WHERE parent_conversation_id IN (${conversationIds})`,
+				)
+				.bind(workspaceId),
+			database
+				.prepare(`DELETE FROM training_examples WHERE conversation_id IN (${conversationIds})`)
+				.bind(workspaceId),
+			database
+				.prepare(`DELETE FROM message WHERE conversation_id IN (${conversationIds})`)
+				.bind(workspaceId),
+			database
+				.prepare(`DELETE FROM conversation WHERE project_id IN (${projectIds})`)
+				.bind(workspaceId),
+			database
+				.prepare(`DELETE FROM task_executions WHERE task_id IN (${taskIds})`)
+				.bind(workspaceId),
+			database.prepare(`DELETE FROM tasks WHERE project_id IN (${projectIds})`).bind(workspaceId),
+			database
+				.prepare(`DELETE FROM template WHERE project_id IN (${projectIds})`)
+				.bind(workspaceId),
+			database.prepare("DELETE FROM workspace WHERE id = ?").bind(workspaceId),
+		]);
 	}
 
 	async upsertInvitation(params: {
@@ -295,17 +329,12 @@ export class WorkspaceRepository extends BaseRepository {
 					 SELECT workspace_id, ?, role
 					 FROM workspace_invitation
 					 WHERE id = ? AND status = 'accepted' AND accepted_by = ?
-					 ON CONFLICT(workspace_id, user_id) DO UPDATE SET role = excluded.role`,
+					 ON CONFLICT(workspace_id, user_id) DO NOTHING`,
 				)
 				.bind(userId, invitation.id, userId),
 		]);
 
-		if (
-			!acceptResult.success ||
-			acceptResult.meta.changes !== 1 ||
-			!membershipResult.success ||
-			membershipResult.meta.changes !== 1
-		) {
+		if (!acceptResult.success || acceptResult.meta.changes !== 1 || !membershipResult.success) {
 			throw new AssistantError(
 				"Invitation is invalid or has already been used",
 				ErrorType.CONFLICT_ERROR,
@@ -314,13 +343,14 @@ export class WorkspaceRepository extends BaseRepository {
 		}
 	}
 
-	async revokeInvitation(workspaceId: string, invitationId: string): Promise<void> {
-		await this.executeRun(
+	async revokeInvitation(workspaceId: string, invitationId: string): Promise<boolean> {
+		const result = await this.executeRun(
 			`UPDATE workspace_invitation
 			 SET status = 'revoked', token_hash = 'revoked:' || id, updated_at = CURRENT_TIMESTAMP
 			 WHERE id = ? AND workspace_id = ? AND status = 'pending'`,
 			[invitationId, workspaceId],
 		);
+		return result.meta.changes > 0;
 	}
 
 	async createProject(params: {
@@ -479,12 +509,13 @@ export class WorkspaceRepository extends BaseRepository {
 		configuration: Record<string, unknown>;
 		createdBy: number;
 	}): Promise<void> {
-		await this.executeRun(
+		const result = await this.executeRun(
 			`INSERT INTO project_capability
 				(id, project_id, kind, capability_id, configuration, created_by)
 			 VALUES (?, ?, ?, ?, ?, ?)
 			 ON CONFLICT(project_id, kind, capability_id) DO UPDATE SET
-				configuration = excluded.configuration`,
+				configuration = excluded.configuration
+			 WHERE project_capability.created_by = excluded.created_by`,
 			[
 				params.id,
 				params.projectId,
@@ -494,6 +525,13 @@ export class WorkspaceRepository extends BaseRepository {
 				params.createdBy,
 			],
 		);
+		if (result.meta.changes === 0) {
+			throw new AssistantError(
+				"Only the member who attached this capability can manage it",
+				ErrorType.FORBIDDEN,
+				403,
+			);
+		}
 	}
 
 	async removeProjectCapability(projectId: string, capabilityId: string): Promise<void> {
@@ -510,7 +548,8 @@ export class WorkspaceRepository extends BaseRepository {
 			 FROM conversation c
 			 JOIN user u ON u.id = c.user_id
 			 WHERE c.project_id = ? AND c.is_archived = 0
-			 ORDER BY COALESCE(c.last_message_at, c.updated_at, c.created_at) DESC`,
+			 ORDER BY COALESCE(c.last_message_at, c.updated_at, c.created_at) DESC
+			 LIMIT 50`,
 			[projectId],
 		);
 	}

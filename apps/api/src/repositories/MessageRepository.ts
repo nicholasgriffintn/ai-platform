@@ -1,6 +1,7 @@
 import { BaseRepository } from "./BaseRepository";
 import { nonEmptyToolCallsOrNull } from "~/utils/toolCalls";
 import type { Message } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 const MESSAGE_INSERT_COLUMNS = [
 	"id",
@@ -43,6 +44,54 @@ export interface ConversationMessageMetadata {
 }
 
 export class MessageRepository extends BaseRepository {
+	public async createMessagesAndUpdateConversation(
+		conversationId: string,
+		messages: Array<{
+			id: string;
+			role: string;
+			content: string | Record<string, unknown>;
+			data?: Partial<Message>;
+		}>,
+	): Promise<void> {
+		if (messages.length === 0) return;
+		const database = this.env.DB;
+		if (!database) {
+			throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
+		}
+		const columns = MESSAGE_INSERT_COLUMNS.join(", ");
+		const placeholders = MESSAGE_INSERT_COLUMNS.map(() => "?").join(", ");
+		const insertSql = `INSERT INTO message (
+			${columns}, created_at, updated_at
+		) VALUES (${placeholders}, datetime('now'), datetime('now'))`;
+		const lastMessage = messages[messages.length - 1];
+
+		await database.batch([
+			...messages.map((message) =>
+				database
+					.prepare(insertSql)
+					.bind(
+						...this.buildMessageValues(
+							message.id,
+							conversationId,
+							message.role,
+							message.content,
+							message.data,
+						),
+					),
+			),
+			database
+				.prepare(
+					`UPDATE conversation
+					 SET last_message_id = ?,
+					     last_message_at = datetime('now'),
+					     message_count = message_count + ?,
+					     updated_at = datetime('now')
+					 WHERE id = ?`,
+				)
+				.bind(lastMessage.id, messages.length, conversationId),
+		]);
+	}
+
 	private buildMessageValues(
 		messageId: string,
 		conversationId: string,
@@ -245,7 +294,11 @@ export class MessageRepository extends BaseRepository {
 		);
 	}
 
-	public async updateMessage(messageId: string, updates: Record<string, unknown>): Promise<void> {
+	public async updateMessage(
+		conversationId: string,
+		messageId: string,
+		updates: Record<string, unknown>,
+	): Promise<void> {
 		const allowedFields = [
 			"is_archived",
 			"content",
@@ -267,15 +320,22 @@ export class MessageRepository extends BaseRepository {
 			"parts",
 		];
 
-		const result = this.buildUpdateQuery("message", updates, allowedFields, "id = ?", [messageId], {
-			jsonFields: ["tool_calls", "citations", "data", "usage", "parts"],
-			transformer: (field, value) => {
-				if (field === "content" && typeof value === "object") {
-					return JSON.stringify(value);
-				}
-				return value;
+		const result = this.buildUpdateQuery(
+			"message",
+			updates,
+			allowedFields,
+			"id = ? AND conversation_id = ?",
+			[messageId, conversationId],
+			{
+				jsonFields: ["tool_calls", "citations", "data", "usage", "parts"],
+				transformer: (field, value) => {
+					if (field === "content" && typeof value === "object") {
+						return JSON.stringify(value);
+					}
+					return value;
+				},
 			},
-		});
+		);
 		if (!result) {
 			return;
 		}
@@ -346,6 +406,28 @@ export class MessageRepository extends BaseRepository {
 			return;
 		}
 		await this.executeRun(query, values);
+	}
+
+	public async countMessagesOwnedByOtherConversations(
+		conversationId: string,
+		messageIds: string[],
+	): Promise<number> {
+		const uniqueMessageIds = Array.from(new Set(messageIds.filter(Boolean)));
+		if (uniqueMessageIds.length === 0) {
+			return 0;
+		}
+
+		const placeholders = uniqueMessageIds.map(() => "?").join(", ");
+		const result = await this.runQuery<{ foreign_count: number }>(
+			`SELECT COUNT(*) AS foreign_count
+			 FROM message
+			 WHERE id IN (${placeholders})
+			   AND conversation_id != ?`,
+			[...uniqueMessageIds, conversationId],
+			true,
+		);
+
+		return Number(result?.foreign_count ?? 0);
 	}
 
 	public async deleteMessagesExcept(conversationId: string, messageIds: string[]): Promise<void> {

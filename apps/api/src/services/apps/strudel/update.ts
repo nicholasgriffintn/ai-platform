@@ -1,8 +1,14 @@
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
+import { requireOutputRecordAccess } from "~/services/outputs/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { extractStoredPattern, mapResponseToPattern, normalizePatternPayload } from "./utils";
+import {
+	STRUDEL_APP_ID,
+	extractStoredPattern,
+	mapResponseToPattern,
+	normalizePatternPayload,
+} from "./utils";
 
 const logger = getLogger({ prefix: "services/strudel/update" });
 
@@ -37,9 +43,14 @@ export async function updatePattern({
 			? await repositories.outputs.getProjectOutput(projectId, patternId)
 			: await repositories.outputs.getPersonalOutput(user.id, patternId);
 
-		if (!existing) {
+		if (
+			!existing ||
+			existing.capability_id !== STRUDEL_APP_ID ||
+			existing.kind !== "strudel_pattern"
+		) {
 			throw new AssistantError("Pattern not found", ErrorType.NOT_FOUND);
 		}
+		await requireOutputRecordAccess(serviceContext, user.id, existing, true);
 
 		const current = extractStoredPattern(existing.content);
 

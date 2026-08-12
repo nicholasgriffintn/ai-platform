@@ -147,6 +147,24 @@ describe("github connections", () => {
 		});
 	});
 
+	it("rejects a repository outside the installation allowlist", async () => {
+		const getConnection = vi.fn().mockResolvedValue(
+			await createEncryptedRecord({
+				recordId: "record-installation-user",
+				installationId: 8001,
+				repositories: ["owner/allowed"],
+			}),
+		);
+		const context = {
+			env: { JWT_SECRET },
+			repositories: { providerConnections: { getConnection } },
+		} as unknown as ServiceContext;
+
+		await expect(
+			getGitHubAppConnectionForUserInstallation(context, USER_ID, 8001, "owner/forged"),
+		).rejects.toMatchObject({ statusCode: 403 });
+	});
+
 	it("lists user connections in updated order", async () => {
 		const listConnections = vi.fn().mockResolvedValue([
 			{

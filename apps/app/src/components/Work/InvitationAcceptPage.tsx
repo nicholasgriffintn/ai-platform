@@ -1,16 +1,20 @@
 import { CheckCircle2, Link2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, Card } from "~/components/ui";
 import { useAcceptWorkspaceInvitation } from "~/hooks/useWorkspaces";
 import { isAuthenticationError } from "~/lib/errors";
+import {
+	clearWorkspaceInvitationToken,
+	consumeWorkspaceInvitationToken,
+} from "~/lib/work/invitation-token";
 import { useChatStore } from "~/state/stores/chatStore";
 
 export function InvitationAcceptPage() {
 	const [searchParams] = useSearchParams();
-	const token = searchParams.get("token");
+	const [token] = useState(() => consumeWorkspaceInvitationToken(searchParams.get("token")));
 	const isAuthenticated = useChatStore((state) => state.isAuthenticated);
 	const acceptInvitation = useAcceptWorkspaceInvitation();
 	const navigate = useNavigate();
@@ -26,6 +30,10 @@ export function InvitationAcceptPage() {
 			acceptInvitation.mutate(token);
 		}
 	}, [acceptInvitation, isAuthenticated, token]);
+
+	useEffect(() => {
+		if (acceptInvitation.data) clearWorkspaceInvitationToken();
+	}, [acceptInvitation.data]);
 
 	if (token && !isAuthenticated) {
 		return (

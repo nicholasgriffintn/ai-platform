@@ -41,6 +41,8 @@ function shouldPersistArtifact(run: SandboxRunData): boolean {
 async function putArtifact(params: {
 	serviceContext: ServiceContext;
 	ownerUserId: number;
+	projectId?: string | null;
+	conversationId?: string | null;
 	runId: string;
 	fileName: string;
 	contentType: string;
@@ -54,6 +56,8 @@ async function putArtifact(params: {
 		key,
 		data: params.content,
 		createdByUserId: params.ownerUserId,
+		projectId: params.projectId,
+		conversationId: params.conversationId,
 		capabilityId: "sandbox",
 		groupId: params.runId,
 		kind: "sandbox_artifact",
@@ -75,6 +79,8 @@ async function putArtifact(params: {
 export async function persistSandboxRunArtifact(params: {
 	serviceContext: ServiceContext;
 	ownerUserId: number;
+	projectId?: string | null;
+	conversationId?: string | null;
 	run: SandboxRunData;
 }): Promise<SandboxRunData> {
 	const { serviceContext, run } = params;
@@ -83,6 +89,10 @@ export async function persistSandboxRunArtifact(params: {
 	}
 
 	const items: RunArtifactDescriptor[] = [];
+	const resourceScope = {
+		projectId: params.projectId,
+		conversationId: params.conversationId,
+	};
 	const logs = run.result?.logs;
 	const diff = run.result?.diff;
 	const events = run.events ?? [];
@@ -90,6 +100,7 @@ export async function persistSandboxRunArtifact(params: {
 	if (typeof logs === "string" && logs.length > 0) {
 		items.push(
 			await putArtifact({
+				...resourceScope,
 				serviceContext,
 				ownerUserId: params.ownerUserId,
 				runId: run.runId,
@@ -103,6 +114,7 @@ export async function persistSandboxRunArtifact(params: {
 	if (typeof diff === "string" && diff.trim().length > 0) {
 		items.push(
 			await putArtifact({
+				...resourceScope,
 				serviceContext,
 				ownerUserId: params.ownerUserId,
 				runId: run.runId,
@@ -117,6 +129,7 @@ export async function persistSandboxRunArtifact(params: {
 		const content = events.map((event) => JSON.stringify(event)).join("\n");
 		items.push(
 			await putArtifact({
+				...resourceScope,
 				serviceContext,
 				ownerUserId: params.ownerUserId,
 				runId: run.runId,
@@ -130,6 +143,7 @@ export async function persistSandboxRunArtifact(params: {
 	if (run.result) {
 		items.push(
 			await putArtifact({
+				...resourceScope,
 				serviceContext,
 				ownerUserId: params.ownerUserId,
 				runId: run.runId,
@@ -151,6 +165,7 @@ export async function persistSandboxRunArtifact(params: {
 		items,
 	};
 	const manifestArtifact = await putArtifact({
+		...resourceScope,
 		serviceContext,
 		ownerUserId: params.ownerUserId,
 		runId: run.runId,

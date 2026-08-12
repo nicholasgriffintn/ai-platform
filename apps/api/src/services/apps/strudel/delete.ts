@@ -1,6 +1,8 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { requireOutputRecordAccess } from "~/services/outputs/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { STRUDEL_APP_ID } from "./utils";
 
 const logger = getLogger({ prefix: "services/strudel/delete" });
 
@@ -23,9 +25,14 @@ export async function deletePattern({
 			? await repositories.outputs.getProjectOutput(projectId, patternId)
 			: await repositories.outputs.getPersonalOutput(userId, patternId);
 
-		if (!existing) {
+		if (
+			!existing ||
+			existing.capability_id !== STRUDEL_APP_ID ||
+			existing.kind !== "strudel_pattern"
+		) {
 			throw new AssistantError("Pattern not found", ErrorType.NOT_FOUND);
 		}
+		await requireOutputRecordAccess(context, userId, existing, true);
 
 		await repositories.outputs.deleteOutput(patternId);
 

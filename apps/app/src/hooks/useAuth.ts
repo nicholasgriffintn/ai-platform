@@ -72,7 +72,11 @@ export function useAuthStatus() {
 			}
 			return false;
 		},
-		onSuccess: () => {
+		onSuccess: (didLogout) => {
+			if (didLogout) {
+				queryClient.clear();
+				return;
+			}
 			queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.authStatus });
 		},
 	});

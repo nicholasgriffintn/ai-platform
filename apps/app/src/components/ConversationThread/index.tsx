@@ -153,6 +153,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 	const chatInputRef = useRef<ChatInputHandle>(null);
 	const autoSubmittedKeyRef = useRef<string | null>(null);
 	const { resolveAssistantActionSubmit } = useAssistantActionSubmit({
+		...(modeConfig?.requestOptions?.metadata?.project_id
+			? { projectId: modeConfig.requestOptions.metadata.project_id }
+			: {}),
 		recipeManagementPath: modeConfig?.assistantActionRoutes?.recipes,
 	});
 	const {
@@ -576,6 +579,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						hideInlineResponseControls={modeConfig?.hideInlineResponseControls}
 						hideChatSettings={modeConfig?.hideChatSettings}
 						contextAttachments={contextAttachments}
+						readonlyContextAttachmentCount={modeContextAttachments.length}
 						attachmentProjectId={modeConfig?.requestOptions?.metadata?.project_id ?? undefined}
 						onRemoveContextAttachment={handleRemoveContextAttachment}
 						onClearContextAttachments={handleClearContextAttachments}

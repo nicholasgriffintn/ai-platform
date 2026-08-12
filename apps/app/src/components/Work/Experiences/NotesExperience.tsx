@@ -39,10 +39,13 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
 	const updateNote = useUpdateNote(noteId ?? "", projectId);
 	const deleteNote = useDeleteNote(projectId);
 	const [isFullBleed, setIsFullBleed] = useState(false);
-	const [themeMode, setThemeMode] = useState("sepia");
+	const [themeMode, setThemeMode] = useState<string | null>(null);
 	const [fontFamily, setFontFamily] = useState("Sans");
 	const [fontSize, setFontSize] = useState(25);
 	const [searchQuery, setSearchQuery] = useState("");
+	const [createdNoteId, setCreatedNoteId] = useState<string | null>(null);
+	const isLocallyCreatedNote = Boolean(noteId) && noteId === createdNoteId;
+	const activeThemeMode = themeMode ?? note?.metadata?.themeMode ?? "sepia";
 	const filteredNotes = useMemo(() => {
 		const availableNotes = notes ?? [];
 		const query = searchQuery.trim().toLowerCase();
@@ -60,20 +63,21 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
 			additionalMetadata?: NoteMetadata,
 			options?: { refreshMetadata?: boolean },
 		) => {
-			const metadata = { themeMode, fontFamily, fontSize, ...additionalMetadata };
+			const metadata = { themeMode: activeThemeMode, fontFamily, fontSize, ...additionalMetadata };
 			if (noteId) {
 				await updateNote.mutateAsync({ title, content, metadata, options });
 				return noteId;
 			}
 			const created = await createNote.mutateAsync({ title, content, metadata });
+			setCreatedNoteId(created.id);
 			navigate(`${basePath}/${created.id}`, { replace: true });
 			return created.id;
 		},
-		[basePath, createNote, fontFamily, fontSize, navigate, noteId, themeMode, updateNote],
+		[activeThemeMode, basePath, createNote, fontFamily, fontSize, navigate, noteId, updateNote],
 	);
 
 	if (isNew || noteId) {
-		if (noteId && isNoteLoading) {
+		if (noteId && isNoteLoading && !isLocallyCreatedNote) {
 			return <WorkCardGridSkeleton count={1} label="Loading note" />;
 		}
 		if (noteId && isAuthenticationError(noteError)) {
@@ -84,7 +88,7 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
 				/>
 			);
 		}
-		if (noteId && (noteError || !note)) {
+		if (noteId && !isNoteLoading && (noteError || !note)) {
 			return (
 				<EmptyState title="Note unavailable" message={noteError?.message ?? "Note not found"} />
 			);
@@ -94,12 +98,12 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
 			<div
 				className={cn(
 					"flex min-h-[calc(100vh-9rem)] flex-col overflow-hidden",
-					themeMode === "sepia" ? "bg-[#f8f2e3] text-[#333]" : "bg-white dark:bg-zinc-900",
+					activeThemeMode === "sepia" ? "bg-[#f8f2e3] text-[#333]" : "bg-white dark:bg-zinc-900",
 					isFullBleed && "fixed inset-0 z-50 h-screen w-screen",
 				)}
 			>
 				<NoteEditor
-					key={note?.id ?? "new-note"}
+					key={isLocallyCreatedNote ? "new-note" : (note?.id ?? "new-note")}
 					noteId={note?.id}
 					projectId={projectId}
 					initialText={note ? `${note.title}\n${note.content}` : ""}
@@ -115,7 +119,7 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
 					}
 					isFullBleed={isFullBleed}
 					onToggleFullBleed={() => setIsFullBleed((current) => !current)}
-					initialThemeMode={note?.metadata?.themeMode ?? themeMode}
+					initialThemeMode={activeThemeMode}
 					onThemeChange={setThemeMode}
 					initialFontFamily={note?.metadata?.fontFamily ?? fontFamily}
 					onFontFamilyChange={setFontFamily}

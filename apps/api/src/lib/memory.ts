@@ -290,7 +290,7 @@ export class MemoryManager {
 			try {
 				const userCount = messages.filter((m) => m.role === "user").length;
 				if (userCount > 0 && userCount % 5 === 0) {
-					const recent = await conversationManager.get(completionId, undefined, 10);
+					const recent = (await conversationManager.get(completionId)).slice(-10);
 					const snippet = toProviderMessages(recent)
 						.map(
 							(m) =>

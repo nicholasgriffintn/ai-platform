@@ -16,6 +16,7 @@ import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { MemoryManager } from "~/lib/memory";
 import { findModelConfig } from "~/lib/providers/models";
 import {
+	type ChatCompletionParameters,
 	type ChatMode,
 	type IEnv,
 	type IUserSettings,
@@ -137,6 +138,7 @@ export interface StreamPostProcessingOptions {
 	delegation_stack?: string[];
 	max_delegation_depth?: number;
 	requestOptions?: Record<string, any>;
+	continuationRequest?: ChatCompletionParameters;
 }
 
 export async function createStreamWithPostProcessing(
@@ -532,13 +534,20 @@ export async function createStreamWithPostProcessing(
 				} else {
 					try {
 						const history = await conversationManager.get(completion_id);
+						const continuationBase = options.continuationRequest ?? options;
 						const nextStream = await getAIResponse({
-							...options,
+							...continuationBase,
+							env,
+							completion_id,
+							model,
+							provider: options.provider,
 							messages: history,
+							message: undefined,
 							tools,
 							enabled_tools,
+							current_step: current_step + 1,
 							stream: true,
-						});
+						} as ChatCompletionParameters);
 						const nextTransformed = await createStreamWithPostProcessing(
 							nextStream,
 							{ ...options, current_step: current_step + 1 },
@@ -568,344 +577,393 @@ export async function createStreamWithPostProcessing(
 			logger.error("Error in stream post-processing:", {
 				error_message: error instanceof Error ? error.message : "Unknown error",
 			});
+			try {
+				emitEvent(controller, "error", {
+					error: {
+						message: "Failed to finalise the response",
+					},
+				});
+				emitDoneEvent(controller);
+			} catch {}
 		}
 	}
 
-	return providerStream.pipeThrough(
-		new TransformStream({
-			async start(controller) {
-				try {
-					emitEvent(controller, "state", {
-						state: StreamState.INIT,
-					});
-					const usageLimits = await conversationManager.getUsageLimits();
-					if (usageLimits) {
-						emitEvent(controller, "usage_limits", {
-							usage_limits: usageLimits,
+	return wrapStreamWithErrorEvent(
+		providerStream.pipeThrough(
+			new TransformStream({
+				async start(controller) {
+					try {
+						emitEvent(controller, "state", {
+							state: StreamState.INIT,
+						});
+						const usageLimits = await conversationManager.getUsageLimits();
+						if (usageLimits) {
+							emitEvent(controller, "usage_limits", {
+								usage_limits: usageLimits,
+							});
+						}
+						emitEvent(controller, "message_start", {
+							id: completion_id,
+							created: Date.now(),
+							model,
+							provider: options.provider,
+							platform,
+						});
+						emitEvent(controller, "state", {
+							state: StreamState.THINKING,
+						});
+					} catch (error) {
+						logger.error("Failed in stream start:", {
+							error_message: error instanceof Error ? error.message : "Unknown error",
 						});
 					}
-					emitEvent(controller, "message_start", {
-						id: completion_id,
-						created: Date.now(),
-						model,
-						provider: options.provider,
-						platform,
-					});
-					emitEvent(controller, "state", {
-						state: StreamState.THINKING,
-					});
-				} catch (error) {
-					logger.error("Failed in stream start:", {
-						error_message: error instanceof Error ? error.message : "Unknown error",
-					});
-				}
-			},
-			async transform(chunk, controller) {
-				if (streamFailed) {
-					return;
-				}
-
-				let text: string;
-				try {
-					text = new TextDecoder().decode(chunk);
-				} catch (error) {
-					logger.error("Failed to decode chunk:", {
-						error_message: error instanceof Error ? error.message : "Unknown error",
-					});
-					return;
-				}
-
-				logger.trace("Incoming chunk", {
-					chunkSize: chunk.byteLength,
-					bufferBefore: totalBufferLength,
-				});
-
-				addToBuffer(text);
-
-				const buffer = getBuffer();
-				const lines = buffer.split("\n");
-				setBuffer(lines.pop() || "");
-
-				for (const line of lines) {
-					if (!line.trim()) {
-						continue;
+				},
+				async transform(chunk, controller) {
+					if (streamFailed) {
+						return;
 					}
 
-					if (line.startsWith("event: ")) {
-						currentEventType = line.substring(7).trim();
-						logger.trace("Received SSE event", { currentEventType });
-						continue;
+					let text: string;
+					try {
+						text = new TextDecoder().decode(chunk);
+					} catch (error) {
+						logger.error("Failed to decode chunk:", {
+							error_message: error instanceof Error ? error.message : "Unknown error",
+						});
+						return;
 					}
 
-					if (line.startsWith("data: ")) {
-						const dataStr = line.substring(6).trim();
+					logger.trace("Incoming chunk", {
+						chunkSize: chunk.byteLength,
+						bufferBefore: totalBufferLength,
+					});
 
-						if (dataStr === "[DONE]") {
-							if (!streamFailed && !postProcessingDone) {
-								finalizePendingToolCalls();
+					addToBuffer(text);
 
-								await handlePostProcessing(controller);
-							}
+					const buffer = getBuffer();
+					const lines = buffer.split("\n");
+					setBuffer(lines.pop() || "");
+
+					for (const line of lines) {
+						if (!line.trim()) {
 							continue;
 						}
 
-						try {
-							const data = safeParseJson(dataStr);
-							if (!data) {
-								throw new AssistantError("Failed to parse data", ErrorType.PARAMS_ERROR);
-							}
-							logger.trace("Parsed SSE data", { currentEventType, data });
+						if (line.startsWith("event: ")) {
+							currentEventType = line.substring(7).trim();
+							logger.trace("Received SSE event", { currentEventType });
+							continue;
+						}
 
-							const streamError =
-								data.error || (data.type === "response.failed" ? data.response?.error : null);
-							if (streamError) {
-								streamFailed = true;
-								postProcessingDone = true;
-								emitEvent(controller, "error", {
-									error: streamError,
-								});
-								emitDoneEvent(controller);
-								logger.error("Error in data", { error: streamError });
-								return;
+						if (line.startsWith("data: ")) {
+							const dataStr = line.substring(6).trim();
+
+							if (dataStr === "[DONE]") {
+								if (!streamFailed && !postProcessingDone) {
+									finalizePendingToolCalls();
+
+									await handlePostProcessing(controller);
+								}
+								continue;
 							}
 
-							const formattedData = await ResponseFormatter.formatResponse(data, options.provider, {
-								model,
-								modalities: modelConfig?.modalities,
-								env,
-								is_streaming: true,
-								userId: context?.user?.id,
-							});
+							try {
+								const data = safeParseJson(dataStr);
+								if (!data) {
+									throw new AssistantError("Failed to parse data", ErrorType.PARAMS_ERROR);
+								}
+								logger.trace("Parsed SSE data", { currentEventType, data });
 
-							let contentDelta = "";
+								const streamError =
+									data.error || (data.type === "response.failed" ? data.response?.error : null);
+								if (streamError) {
+									streamFailed = true;
+									postProcessingDone = true;
+									emitEvent(controller, "error", {
+										error: streamError,
+									});
+									emitDoneEvent(controller);
+									logger.error("Error in data", { error: streamError });
+									return;
+								}
 
-							if (data.choices?.[0]?.delta?.content !== undefined) {
-								contentDelta = data.choices[0].delta.content;
-							} else {
-								contentDelta = StreamingFormatter.extractContentFromChunk(
-									formattedData,
+								const formattedData = await ResponseFormatter.formatResponse(
+									data,
+									options.provider,
+									{
+										model,
+										modalities: modelConfig?.modalities,
+										env,
+										is_streaming: true,
+										userId: context?.user?.id,
+									},
+								);
+
+								let contentDelta = "";
+
+								if (data.choices?.[0]?.delta?.content !== undefined) {
+									contentDelta = data.choices[0].delta.content;
+								} else {
+									contentDelta = StreamingFormatter.extractContentFromChunk(
+										formattedData,
+										currentEventType,
+									);
+								}
+
+								if (contentDelta) {
+									// Handle QwQ models: add <think> tag if needed on first content chunk
+									const isQwQModel = model.toLowerCase().includes("qwq");
+									if (isQwQModel && isFirstContentChunk && !qwqThinkTagAdded) {
+										const contentStartsWithThink = contentDelta.trim().startsWith("<think>");
+										if (!contentStartsWithThink) {
+											emitEvent(controller, "content_block_delta", {
+												content: "<think>\n",
+											});
+											addToFullContent("<think>\n");
+											qwqThinkTagAdded = true;
+										}
+									}
+
+									addToFullContent(contentDelta);
+									appendTextPart(streamedParts, contentDelta, Date.now());
+									isFirstContentChunk = false;
+
+									emitEvent(controller, "content_block_delta", {
+										content: contentDelta,
+									});
+								}
+
+								const thinkingData = StreamingFormatter.extractThinkingFromChunk(
+									data,
 									currentEventType,
 								);
-							}
 
-							if (contentDelta) {
-								// Handle QwQ models: add <think> tag if needed on first content chunk
-								const isQwQModel = model.toLowerCase().includes("qwq");
-								if (isQwQModel && isFirstContentChunk && !qwqThinkTagAdded) {
-									const contentStartsWithThink = contentDelta.trim().startsWith("<think>");
-									if (!contentStartsWithThink) {
-										emitEvent(controller, "content_block_delta", {
-											content: "<think>\n",
+								if (thinkingData) {
+									if (typeof thinkingData === "string") {
+										addToFullThinking(thinkingData);
+										appendReasoningPart(streamedParts, thinkingData, Date.now());
+
+										emitEvent(controller, "thinking_delta", {
+											thinking: thinkingData,
 										});
-										addToFullContent("<think>\n");
-										qwqThinkTagAdded = true;
+									} else if (thinkingData.type === "signature") {
+										signature = thinkingData.signature;
+
+										emitEvent(controller, "signature_delta", {
+											signature: thinkingData.signature,
+										});
 									}
 								}
 
-								addToFullContent(contentDelta);
-								appendTextPart(streamedParts, contentDelta, Date.now());
-								isFirstContentChunk = false;
+								const toolCallData = StreamingFormatter.extractToolCall(data, currentEventType);
 
-								emitEvent(controller, "content_block_delta", {
-									content: contentDelta,
-								});
-							}
+								if (toolCallData) {
+									if (toolCallData.format === "openai") {
+										const deltaToolCalls = toolCallData.toolCalls;
 
-							const thinkingData = StreamingFormatter.extractThinkingFromChunk(
-								data,
-								currentEventType,
-							);
+										for (const toolCall of deltaToolCalls) {
+											const index = toolCall.index;
 
-							if (thinkingData) {
-								if (typeof thinkingData === "string") {
-									addToFullThinking(thinkingData);
-									appendReasoningPart(streamedParts, thinkingData, Date.now());
+											if (!currentToolCalls[index]) {
+												currentToolCalls[index] = {
+													id: toolCall.id,
+													type: toolCall.type || "function",
+													function: {
+														name: toolCall.function?.name || "",
+														arguments: "",
+													},
+												};
+											}
 
-									emitEvent(controller, "thinking_delta", {
-										thinking: thinkingData,
-									});
-								} else if (thinkingData.type === "signature") {
-									signature = thinkingData.signature;
-
-									emitEvent(controller, "signature_delta", {
-										signature: thinkingData.signature,
-									});
+											if (toolCall.function) {
+												if (toolCall.function.name) {
+													currentToolCalls[index].function.name = toolCall.function.name;
+												}
+												if (toolCall.function.arguments) {
+													currentToolCalls[index].function.arguments += toolCall.function.arguments;
+												}
+											}
+										}
+									} else if (toolCallData.format === "anthropic") {
+										currentToolCalls[toolCallData.index] = {
+											id: toolCallData.id,
+											name: toolCallData.name,
+											accumulatedInput: "",
+											isComplete: false,
+										};
+									} else if (toolCallData.format === "anthropic_delta") {
+										if (currentToolCalls[toolCallData.index] && toolCallData.partial_json) {
+											currentToolCalls[toolCallData.index].accumulatedInput +=
+												toolCallData.partial_json;
+										}
+									} else if (toolCallData.format === "nova") {
+										currentToolCalls[toolCallData.index] = {
+											id: toolCallData.id,
+											name: toolCallData.name,
+											accumulatedInput: "",
+											isComplete: false,
+										};
+									} else if (toolCallData.format === "nova_delta") {
+										if (currentToolCalls[toolCallData.index] && toolCallData.partial_json) {
+											currentToolCalls[toolCallData.index].accumulatedInput +=
+												toolCallData.partial_json;
+										}
+									} else if (toolCallData.format === "direct") {
+										const seenToolCallIds = new Set(
+											toolCallsData.map((toolCall) => toolCall.id).filter(Boolean),
+										);
+										for (const toolCall of toolCallData.toolCalls) {
+											if (toolCall.id && seenToolCallIds.has(toolCall.id)) {
+												continue;
+											}
+											if (toolCall.id) {
+												seenToolCallIds.add(toolCall.id);
+											}
+											toolCallsData.push(toolCall);
+										}
+									}
 								}
-							}
 
-							const toolCallData = StreamingFormatter.extractToolCall(data, currentEventType);
+								if (
+									currentEventType === "content_block_start" ||
+									currentEventType === "content_block_stop"
+								) {
+									emitEvent(controller, currentEventType, data);
 
-							if (toolCallData) {
-								if (toolCallData.format === "openai") {
-									const deltaToolCalls = toolCallData.toolCalls;
+									if (
+										currentEventType === "content_block_stop" &&
+										data.index !== undefined &&
+										Object.hasOwn(currentToolCalls, data.index) &&
+										currentToolCalls[data.index] &&
+										!currentToolCalls[data.index].isComplete
+									) {
+										currentToolCalls[data.index].isComplete = true;
 
-									for (const toolCall of deltaToolCalls) {
-										const index = toolCall.index;
+										const toolState = currentToolCalls[data.index];
+										let parsedInput = {};
+										try {
+											if (toolState.accumulatedInput) {
+												parsedInput = safeParseJson(toolState.accumulatedInput);
 
-										if (!currentToolCalls[index]) {
-											currentToolCalls[index] = {
-												id: toolCall.id,
-												type: toolCall.type || "function",
-												function: {
-													name: toolCall.function?.name || "",
-													arguments: "",
-												},
-											};
-										}
-
-										if (toolCall.function) {
-											if (toolCall.function.name) {
-												currentToolCalls[index].function.name = toolCall.function.name;
+												if (
+													parsedInput === null ||
+													typeof parsedInput !== "object" ||
+													Array.isArray(parsedInput)
+												) {
+													logger.warn("Tool input parsed to non-object value", {
+														toolId: toolState.id,
+														toolName: toolState.name,
+														parsed: typeof parsedInput,
+													});
+													parsedInput = {};
+												}
 											}
-											if (toolCall.function.arguments) {
-												currentToolCalls[index].function.arguments += toolCall.function.arguments;
-											}
+										} catch (e) {
+											logger.error("Failed to parse tool input:", {
+												error: e,
+												toolId: toolState.id,
+												toolName: toolState.name,
+												input:
+													toolState.accumulatedInput?.substring(0, 100) +
+													(toolState.accumulatedInput?.length > 100 ? "..." : ""),
+											});
 										}
-									}
-								} else if (toolCallData.format === "anthropic") {
-									currentToolCalls[toolCallData.index] = {
-										id: toolCallData.id,
-										name: toolCallData.name,
-										accumulatedInput: "",
-										isComplete: false,
-									};
-								} else if (toolCallData.format === "anthropic_delta") {
-									if (currentToolCalls[toolCallData.index] && toolCallData.partial_json) {
-										currentToolCalls[toolCallData.index].accumulatedInput +=
-											toolCallData.partial_json;
-									}
-								} else if (toolCallData.format === "nova") {
-									currentToolCalls[toolCallData.index] = {
-										id: toolCallData.id,
-										name: toolCallData.name,
-										accumulatedInput: "",
-										isComplete: false,
-									};
-								} else if (toolCallData.format === "nova_delta") {
-									if (currentToolCalls[toolCallData.index] && toolCallData.partial_json) {
-										currentToolCalls[toolCallData.index].accumulatedInput +=
-											toolCallData.partial_json;
-									}
-								} else if (toolCallData.format === "direct") {
-									const seenToolCallIds = new Set(
-										toolCallsData.map((toolCall) => toolCall.id).filter(Boolean),
-									);
-									for (const toolCall of toolCallData.toolCalls) {
-										if (toolCall.id && seenToolCallIds.has(toolCall.id)) {
-											continue;
-										}
-										if (toolCall.id) {
-											seenToolCallIds.add(toolCall.id);
-										}
+
+										const toolCall = {
+											id: toolState.id,
+											type: toolState.type || "function",
+											function: {
+												name: toolState.name,
+												arguments: JSON.stringify(parsedInput),
+											},
+										};
+
 										toolCallsData.push(toolCall);
 									}
 								}
-							}
 
-							if (
-								currentEventType === "content_block_start" ||
-								currentEventType === "content_block_stop"
-							) {
-								emitEvent(controller, currentEventType, data);
-
-								if (
-									currentEventType === "content_block_stop" &&
-									data.index !== undefined &&
-									Object.hasOwn(currentToolCalls, data.index) &&
-									currentToolCalls[data.index] &&
-									!currentToolCalls[data.index].isComplete
-								) {
-									currentToolCalls[data.index].isComplete = true;
-
-									const toolState = currentToolCalls[data.index];
-									let parsedInput = {};
-									try {
-										if (toolState.accumulatedInput) {
-											parsedInput = safeParseJson(toolState.accumulatedInput);
-
-											if (
-												parsedInput === null ||
-												typeof parsedInput !== "object" ||
-												Array.isArray(parsedInput)
-											) {
-												logger.warn("Tool input parsed to non-object value", {
-													toolId: toolState.id,
-													toolName: toolState.name,
-													parsed: typeof parsedInput,
-												});
-												parsedInput = {};
-											}
-										}
-									} catch (e) {
-										logger.error("Failed to parse tool input:", {
-											error: e,
-											toolId: toolState.id,
-											toolName: toolState.name,
-											input:
-												toolState.accumulatedInput?.substring(0, 100) +
-												(toolState.accumulatedInput?.length > 100 ? "..." : ""),
-										});
-									}
-
-									const toolCall = {
-										id: toolState.id,
-										type: toolState.type || "function",
-										function: {
-											name: toolState.name,
-											arguments: JSON.stringify(parsedInput),
-										},
-									};
-
-									toolCallsData.push(toolCall);
+								const extractedCitations = StreamingFormatter.extractCitations(data);
+								if (extractedCitations.length > 0) {
+									citationsResponse = extractedCitations;
 								}
-							}
 
-							const extractedCitations = StreamingFormatter.extractCitations(data);
-							if (extractedCitations.length > 0) {
-								citationsResponse = extractedCitations;
-							}
+								const extractedUsage = StreamingFormatter.extractUsageData(data);
+								if (extractedUsage) {
+									usageData = extractedUsage;
+								}
 
-							const extractedUsage = StreamingFormatter.extractUsageData(data);
-							if (extractedUsage) {
-								usageData = extractedUsage;
-							}
+								const extractedStructuredData = StreamingFormatter.extractStructuredData(data);
+								if (extractedStructuredData) {
+									structuredData = extractedStructuredData;
+								}
 
-							const extractedStructuredData = StreamingFormatter.extractStructuredData(data);
-							if (extractedStructuredData) {
-								structuredData = extractedStructuredData;
-							}
+								const refusalDelta = StreamingFormatter.extractRefusalFromChunk(data);
+								if (typeof refusalDelta === "string") {
+									refusalData = refusalDelta;
+								}
 
-							const refusalDelta = StreamingFormatter.extractRefusalFromChunk(data);
-							if (typeof refusalDelta === "string") {
-								refusalData = refusalDelta;
-							}
+								const annotationsDelta = StreamingFormatter.extractAnnotationsFromChunk(data);
+								if (annotationsDelta !== null && annotationsDelta !== undefined) {
+									annotationsData = annotationsDelta;
+								}
 
-							const annotationsDelta = StreamingFormatter.extractAnnotationsFromChunk(data);
-							if (annotationsDelta !== null && annotationsDelta !== undefined) {
-								annotationsData = annotationsDelta;
+								if (StreamingFormatter.isCompletionIndicated(data) && !postProcessingDone) {
+									finalizePendingToolCalls();
+									await handlePostProcessing(controller);
+								}
+							} catch (parseError) {
+								logger.error("Parse error on data", {
+									error: parseError,
+									data: dataStr,
+								});
 							}
-
-							if (StreamingFormatter.isCompletionIndicated(data) && !postProcessingDone) {
-								finalizePendingToolCalls();
-								await handlePostProcessing(controller);
-							}
-						} catch (parseError) {
-							logger.error("Parse error on data", {
-								error: parseError,
-								data: dataStr,
-							});
 						}
 					}
-				}
-			},
-			async flush(controller) {
-				if (streamFailed || postProcessingDone) {
+				},
+				async flush(controller) {
+					if (streamFailed || postProcessingDone) {
+						return;
+					}
+
+					finalizePendingToolCalls();
+					await handlePostProcessing(controller);
+				},
+			}),
+		),
+	);
+}
+
+function wrapStreamWithErrorEvent(stream: ReadableStream): ReadableStream {
+	const reader = stream.getReader();
+
+	return new ReadableStream({
+		async pull(controller) {
+			try {
+				const { done, value } = await reader.read();
+				if (done) {
+					controller.close();
 					return;
 				}
-
-				finalizePendingToolCalls();
-				await handlePostProcessing(controller);
-			},
-		}),
-	);
+				controller.enqueue(value);
+			} catch (error) {
+				logger.error("Provider stream failed mid-flight", {
+					error_message: error instanceof Error ? error.message : "Unknown error",
+				});
+				try {
+					const streamController = controller as unknown as TransformStreamDefaultController;
+					emitEvent(streamController, "error", {
+						error: {
+							message: error instanceof Error ? error.message : "Stream failed",
+						},
+					});
+					emitDoneEvent(streamController);
+				} finally {
+					controller.close();
+				}
+			}
+		},
+		cancel(reason) {
+			return reader.cancel(reason);
+		},
+	});
 }

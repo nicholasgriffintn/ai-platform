@@ -1,4 +1,4 @@
-import type { Output } from "@assistant/schemas";
+import type { SharedOutput } from "@assistant/schemas";
 import { FileQuestion, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
@@ -19,7 +19,7 @@ export function meta() {
 
 export default function SharedOutputPage() {
 	const { token } = useParams<{ token: string }>();
-	const [output, setOutput] = useState<Output | null>(null);
+	const [output, setOutput] = useState<SharedOutput | null>(null);
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {

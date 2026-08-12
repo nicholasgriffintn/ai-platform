@@ -25,19 +25,27 @@ function formatActivity(record: ActivityRecord): Activity {
 export async function listActivity(
 	context: ServiceContext,
 	userId: number,
-	filters: { projectId?: string; capabilityId?: string; status?: ActivityStatus },
-): Promise<{ activities: Activity[] }> {
+	filters: {
+		projectId?: string;
+		capabilityId?: string;
+		status?: ActivityStatus;
+		limit: number;
+		offset: number;
+	},
+): Promise<{ activities: Activity[]; hasMore: boolean }> {
+	const pageOptions = {
+		capabilityId: filters.capabilityId,
+		status: filters.status,
+		limit: filters.limit + 1,
+		offset: filters.offset,
+	};
 	const records = filters.projectId
 		? (await requireProjectAccess(context, filters.projectId),
-			await context.repositories.activities.listProjectActivities(
-				filters.projectId,
-				filters.capabilityId,
-			))
-		: await context.repositories.activities.listPersonalActivities(userId, filters.capabilityId);
+			await context.repositories.activities.listProjectActivities(filters.projectId, pageOptions))
+		: await context.repositories.activities.listPersonalActivities(userId, pageOptions);
 	return {
-		activities: records
-			.filter((record) => !filters.status || record.status === filters.status)
-			.map(formatActivity),
+		activities: records.slice(0, filters.limit).map(formatActivity),
+		hasMore: records.length > filters.limit,
 	};
 }
 

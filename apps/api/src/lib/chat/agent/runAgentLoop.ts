@@ -189,6 +189,11 @@ export async function runAgentLoop(
 			createToolCallActionHandler<ApiAgentSharedContext, ApiAgentLoopState>({
 				onToolCalls: async (decision, context) => {
 					const providerToolCalls = providerIO.providerToolCalls(decision.toolCalls);
+					await context.shared.conversationManager.add(context.shared.completionId, {
+						role: "assistant",
+						content: decision.responseText || "",
+						tool_calls: providerToolCalls,
+					});
 					const toolResults = await handleToolCalls(
 						context.shared.completionId,
 						{

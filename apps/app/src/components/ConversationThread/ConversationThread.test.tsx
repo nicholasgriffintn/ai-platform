@@ -206,6 +206,18 @@ describe("ConversationThread assistant action submit", () => {
 		});
 	});
 
+	it("passes project scope to assistant actions", () => {
+		render(
+			<ConversationThread
+				modeConfig={{ requestOptions: { metadata: { project_id: "project-1" } } }}
+			/>,
+		);
+
+		expect(mocks.useAssistantActionSubmitOptions).toHaveBeenCalledWith({
+			projectId: "project-1",
+		});
+	});
+
 	it("compacts the current conversation without sending a chat message", async () => {
 		mocks.chatStore.chatInput = "/compact";
 		mocks.chatStore.currentConversationId = "conversation-1";

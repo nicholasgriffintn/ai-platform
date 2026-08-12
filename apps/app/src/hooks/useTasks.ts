@@ -20,6 +20,8 @@ type MemorySynthesisHistoryResponse = {
 	total: number;
 };
 
+const ACTIVE_TASK_STATUSES = new Set(["pending", "queued", "running"]);
+
 export function useTasks({ shouldRefetch = true }) {
 	const queryClient = useQueryClient();
 
@@ -27,7 +29,21 @@ export function useTasks({ shouldRefetch = true }) {
 		queryKey: TASK_QUERY_KEYS.tasks,
 		queryFn: () => taskService.listTasks(),
 		staleTime: 1000 * 10, // 10 seconds
-		refetchInterval: shouldRefetch ? 1000 * 30 : undefined, // 30 seconds
+		refetchInterval: (query) => {
+			if (!shouldRefetch) {
+				return false;
+			}
+
+			const data = query.state.data as ListTasksResponse | undefined;
+			if (!data) {
+				return false;
+			}
+
+			const hasActiveTasks = data.tasks.some((task) =>
+				ACTIVE_TASK_STATUSES.has(String(task.status)),
+			);
+			return hasActiveTasks ? 1000 * 30 : false;
+		},
 	});
 
 	const triggerSynthesisMutation = useMutation<

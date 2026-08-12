@@ -44,7 +44,8 @@ export function useComposerCommandController({
 		selectedAgentTokenPosition,
 		selectedAssistantAction,
 	} = useChatStore();
-	const { chatAgents } = useAgents();
+	const includeAgents = assistantActionCatalog?.includeAgents !== false;
+	const { chatAgents } = useAgents({ enabled: includeAgents });
 	const [textareaCursorPosition, setTextareaCursorPosition] = useState(0);
 	const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
 	const selectedAgent = chatAgents.find((agent) => agent.id === selectedAgentId);

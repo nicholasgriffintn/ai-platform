@@ -7,6 +7,8 @@ import {
 	createAssistantRecipeActionContext,
 	normaliseAssistantActionToolIds,
 	readAssistantActionRequestOptions,
+	requireExternalHttpUrl,
+	requireInternalNavigationPath,
 } from "@assistant/schemas";
 
 import type { ChatRequestOptions } from "~/types";
@@ -190,7 +192,7 @@ export function createAppAssistantActionLaunch(
 	}
 
 	if (source.appKind === "frontend" && source.href) {
-		return { navigationPath: source.href };
+		return { navigationPath: requireInternalNavigationPath(source.href) };
 	}
 
 	return {
@@ -222,6 +224,6 @@ export function createConnectorAssistantActionLaunch(
 	}
 
 	return {
-		externalUrl: source.authorizationUrl,
+		externalUrl: requireExternalHttpUrl(source.authorizationUrl),
 	};
 }

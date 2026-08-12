@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { OutputRecord, OutputShareRecord } from "~/repositories/OutputRepository";
-import { listOutputShares } from "..";
+import { formatSharedOutput, listOutputShares, listOutputs } from "..";
 
 const output: OutputRecord = {
 	id: "output-1",
@@ -41,6 +41,33 @@ function share(overrides: Partial<OutputShareRecord> = {}): OutputShareRecord {
 }
 
 describe("output shares", () => {
+	it("removes private scope and storage fields from public output responses", () => {
+		const shared = formatSharedOutput({
+			...output,
+			project_id: "project-1",
+			conversation_id: "conversation-1",
+			storage_key: "private/project-1/output-1.pdf",
+			mime_type: "application/pdf",
+			filename: "launch.pdf",
+			byte_size: 100,
+		});
+
+		expect(shared).toEqual(
+			expect.objectContaining({
+				id: "output-1",
+				file: {
+					mimeType: "application/pdf",
+					filename: "launch.pdf",
+					byteSize: 100,
+				},
+			}),
+		);
+		expect(shared).not.toHaveProperty("createdByUserId");
+		expect(shared).not.toHaveProperty("projectId");
+		expect(shared).not.toHaveProperty("conversationId");
+		expect(shared.file).not.toHaveProperty("key");
+	});
+
 	it("lists only active shares for management", async () => {
 		const listShares = vi
 			.fn()
@@ -73,5 +100,27 @@ describe("output shares", () => {
 			],
 		});
 		expect(listShares).toHaveBeenCalledWith(output.id);
+	});
+});
+
+describe("output listing", () => {
+	it("passes kind and pagination to persistence instead of filtering an unbounded list", async () => {
+		const listPersonalOutputs = vi.fn().mockResolvedValue([output]);
+		const context = {
+			repositories: { outputs: { listPersonalOutputs } },
+		} as unknown as ServiceContext;
+
+		await listOutputs(context, 42, {
+			capabilityId: "notes",
+			kind: "document",
+			limit: 20,
+			offset: 40,
+		});
+
+		expect(listPersonalOutputs).toHaveBeenCalledWith(42, "notes", {
+			kind: "document",
+			limit: 20,
+			offset: 40,
+		});
 	});
 });

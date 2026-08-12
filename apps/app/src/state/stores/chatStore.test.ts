@@ -12,6 +12,7 @@ describe("chatStore user configuration", () => {
 			isAuthenticated: false,
 			isPro: false,
 			localOnlyMode: false,
+			locallyCreatedConversationIds: {},
 			temporaryChatsDefault: false,
 			user: null,
 			userSettings: null,
@@ -65,5 +66,28 @@ describe("chatStore user configuration", () => {
 		});
 
 		expect(useChatStore.getState().localOnlyMode).toBe(false);
+	});
+
+	it("preserves an explicit local-only choice when the first message starts a conversation", () => {
+		useChatStore.getState().setLocalOnlyMode(true);
+
+		useChatStore.getState().startNewConversation("conversation-1");
+
+		expect(useChatStore.getState()).toMatchObject({
+			currentConversationId: "conversation-1",
+			localOnlyMode: true,
+		});
+	});
+
+	it("preserves an explicit local-only choice when clearing for a new chat", () => {
+		useChatStore.setState({ currentConversationId: "conversation-1" });
+		useChatStore.getState().setLocalOnlyMode(true);
+
+		useChatStore.getState().clearCurrentConversation();
+
+		expect(useChatStore.getState()).toMatchObject({
+			currentConversationId: undefined,
+			localOnlyMode: true,
+		});
 	});
 });

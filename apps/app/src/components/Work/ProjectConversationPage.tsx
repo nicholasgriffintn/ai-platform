@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { sandboxTaskTypeSchema, type SandboxTaskType } from "@assistant/schemas";
+import { toast } from "sonner";
 
 import { ConversationPage } from "~/components/ConversationThread/ConversationPage";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
@@ -11,6 +12,7 @@ import { useProjectConversationSources } from "~/hooks/useProjectConversationSou
 import { getProjectLibraryPath } from "~/lib/project-experiences";
 import { getProjectCodingPresentation } from "~/lib/project-coding-presentation";
 import { getModelInteractionCapabilities } from "~/lib/models";
+import { getErrorMessage } from "~/lib/errors";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useWorkData } from "./WorkContext";
 import { ProjectCodingTaskControl } from "./ProjectCodingTaskControl";
@@ -36,8 +38,11 @@ export function ProjectConversationPage({
 			supportsImages: modelCapabilities.isImageModel || modelCapabilities.isMultimodalModel,
 		};
 	}, [model, models]);
-	const projectSources = useProjectConversationSources(projectId, sourceCapabilities);
 	const { data: currentConversation } = useChat(currentConversationId);
+	const isNewConversation = !currentConversationId;
+	const projectSources = useProjectConversationSources(projectId, sourceCapabilities, {
+		enabled: isNewConversation,
+	});
 	const setChatMode = useChatStore((state) => state.setChatMode);
 	const setSelectedAgentId = useChatStore((state) => state.setSelectedAgentId);
 	const setSelectedAgentTokenPosition = useChatStore(
@@ -110,6 +115,14 @@ export function ProjectConversationPage({
 	}, [setChatMode, setSelectedAgentId, setSelectedAgentTokenPosition, setSelectedAssistantAction]);
 
 	useEffect(() => {
+		if (!projectSources.error) return;
+		toast.error(
+			getErrorMessage(projectSources.error, "Project sources could not be attached to this chat"),
+			{ id: `project-source-error-${projectId}` },
+		);
+	}, [projectId, projectSources.error]);
+
+	useEffect(() => {
 		if (isStreamLoading) {
 			refreshedConversationIdRef.current = null;
 			return;
@@ -130,13 +143,15 @@ export function ProjectConversationPage({
 			embedded
 			title={project?.name ?? "Project conversation"}
 			modeConfig={{
-				contextAttachments: projectSources.attachments,
-				contextAttachmentsReady: !projectSources.isLoading,
+				contextAttachments: isNewConversation ? projectSources.attachments : [],
+				contextAttachmentsReady: !isNewConversation || !projectSources.isLoading,
 				assistantActionRoutes: {
 					recipes: recipeManagementPath,
 				},
 				assistantActionCatalog: {
+					includeAgents: false,
 					includeTools: false,
+					projectId,
 				},
 				allowedAssistantActionCapabilities: capabilities,
 				toolSelectionLocked: true,

@@ -51,7 +51,11 @@ export function FormDialog({
 }: FormDialogProps) {
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
-		await onSubmit();
+		try {
+			await onSubmit();
+		} catch {
+			return;
+		}
 	};
 
 	return (

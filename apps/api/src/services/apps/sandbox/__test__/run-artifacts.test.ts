@@ -42,11 +42,19 @@ describe("run artifacts", () => {
 		const persisted = await persistSandboxRunArtifact({
 			serviceContext: context,
 			ownerUserId: 42,
+			projectId: "project-1",
+			conversationId: "conversation-1",
 			run,
 		});
 
 		expect(put).toHaveBeenCalledTimes(5);
 		expect(createOutput).toHaveBeenCalledTimes(5);
+		expect(createOutput).toHaveBeenCalledWith(
+			expect.objectContaining({
+				projectId: "project-1",
+				conversationId: "conversation-1",
+			}),
+		);
 		expect(persisted.artifactKey).toMatch(/sandbox\/runs\/run-123\/manifest\.json$/);
 		expect(persisted.result?.logs).toBeUndefined();
 		expect(persisted.result?.diff).toBeUndefined();

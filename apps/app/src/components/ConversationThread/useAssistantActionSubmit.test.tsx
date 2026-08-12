@@ -113,6 +113,39 @@ describe("useAssistantActionSubmit", () => {
 		expect(mocks.installRecipe.mutateAsync).not.toHaveBeenCalled();
 	});
 
+	it("keeps recipe invocation inside the current project", async () => {
+		mocks.chatStore.selectedAssistantAction = {
+			item: {
+				id: "installed_recipe:installation-1",
+				kind: "installed_recipe",
+				label: "Daily Weather",
+				metadata: { recipeId: "daily-weather" },
+			},
+		};
+		mocks.invokeRecipe.mutateAsync.mockResolvedValue({
+			recipeId: "daily-weather",
+			installationId: "installation-1",
+			channel: "web",
+			status: "ready",
+			conversationStarter: "Run the daily weather recipe.",
+			messageUrl: "/?query=Run+the+daily+weather+recipe.",
+			missingConnections: [],
+			enabledTools: ["get_weather"],
+			allowedConnectorProviders: [],
+			allowedConnectorOperations: {},
+			configuration: {},
+		});
+
+		const { result } = renderHook(() => useAssistantActionSubmit({ projectId: "project-1" }));
+		await result.current.resolveAssistantActionSubmit("@Daily Weather today");
+
+		expect(mocks.invokeRecipe.mutateAsync).toHaveBeenCalledWith({
+			recipeId: "daily-weather",
+			input: "@Daily Weather today",
+			projectId: "project-1",
+		});
+	});
+
 	it("does not treat compact as a chat request option", async () => {
 		const { result } = renderHook(() => useAssistantActionSubmit());
 

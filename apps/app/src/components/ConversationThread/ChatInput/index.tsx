@@ -98,6 +98,7 @@ interface ChatInputProps {
 		onToggle: () => void;
 	};
 	contextAttachments?: AttachmentData[];
+	readonlyContextAttachmentCount?: number;
 	onRemoveContextAttachment?: (index: number) => void;
 	onClearContextAttachments?: () => void;
 	attachmentProjectId?: string;
@@ -129,6 +130,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			hideChatSettings = false,
 			autoPlayResponses,
 			contextAttachments = [],
+			readonlyContextAttachmentCount = 0,
 			onRemoveContextAttachment,
 			onClearContextAttachments,
 			attachmentProjectId,
@@ -516,7 +518,10 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 				? [
 						{
 							label,
-							onClear: () => onRemoveContextAttachment?.(index),
+							onClear:
+								index < readonlyContextAttachmentCount
+									? undefined
+									: () => onRemoveContextAttachment?.(index),
 							preview,
 						},
 					]
@@ -565,8 +570,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			(!chatInput?.trim() &&
 				!selectedAssistantAction?.item &&
 				selectedAttachments.length === 0 &&
-				composerSources.attachments.length === 0 &&
-				contextAttachments.length === 0) ||
+				composerSources.attachments.length === 0) ||
 			isLoading ||
 			isUploading ||
 			isAuthenticationLoading;

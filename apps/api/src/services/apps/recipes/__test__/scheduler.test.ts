@@ -5,6 +5,7 @@ import type { IEnv } from "~/types";
 const mocks = vi.hoisted(() => ({
 	enqueueTask: vi.fn(),
 	listTemplatesByKind: vi.fn(),
+	listProjectCapabilities: vi.fn(),
 	updateTemplate: vi.fn(),
 }));
 
@@ -14,6 +15,9 @@ vi.mock("~/repositories", () => ({
 			templates: {
 				listTemplatesByKind: mocks.listTemplatesByKind,
 				updateTemplate: mocks.updateTemplate,
+			},
+			workspaces: {
+				listProjectCapabilities: mocks.listProjectCapabilities,
 			},
 			tasks: {},
 		})),
@@ -38,6 +42,9 @@ function createTestEnv(): IEnv {
 describe("recipe scheduler", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mocks.listProjectCapabilities.mockResolvedValue([
+			{ kind: "recipe", capability_id: "morning-briefing" },
+		]);
 	});
 
 	it("matches five-field cron expressions in UTC", () => {
@@ -107,6 +114,7 @@ describe("recipe scheduler", () => {
 				id: expect.stringMatching(/^recipe_schedule_[a-f0-9]{40}$/),
 				task_type: "recipe_execution",
 				user_id: 42,
+				project_id: "project-1",
 				task_data: expect.objectContaining({
 					recipeId: "morning-briefing",
 					installationId: "installation-1",
@@ -136,6 +144,33 @@ describe("recipe scheduler", () => {
 				}),
 			}),
 		);
+	});
+
+	it("does not schedule a project recipe after its capability is removed", async () => {
+		mocks.listProjectCapabilities.mockResolvedValue([]);
+		mocks.listTemplatesByKind.mockResolvedValue([
+			{
+				id: "installation-1",
+				created_by_user_id: 42,
+				project_id: "project-1",
+				capability_id: "morning-briefing",
+				configuration: JSON.stringify({
+					recipeId: "morning-briefing",
+					status: "active",
+					triggers: [{ type: "schedule", enabled: true, cronExpression: "15 9 * * *" }],
+				}),
+				created_at: "2026-06-07T08:00:00.000Z",
+				updated_at: "2026-06-07T08:00:00.000Z",
+			},
+		]);
+
+		const scheduled = await scheduleDueRecipeExecutions(
+			createTestEnv(),
+			new Date("2026-06-07T09:15:00.000Z"),
+		);
+
+		expect(scheduled).toBe(0);
+		expect(mocks.enqueueTask).not.toHaveBeenCalled();
 	});
 
 	it("enqueues cron minutes that fell between recipe scheduler polls", async () => {

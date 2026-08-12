@@ -28,9 +28,14 @@ export const activityListQuerySchema = z.object({
 	projectId: z.string().min(1).optional(),
 	capabilityId: z.string().min(1).optional(),
 	status: activityStatusSchema.optional(),
+	limit: z.coerce.number().int().min(1).max(100).default(50),
+	offset: z.coerce.number().int().min(0).default(0),
 });
 
-export const activityListResponseSchema = z.object({ activities: z.array(activityRecordSchema) });
+export const activityListResponseSchema = z.object({
+	activities: z.array(activityRecordSchema),
+	hasMore: z.boolean(),
+});
 
 export type ActivityStatus = z.infer<typeof activityStatusSchema>;
 export type ActivityRecord = z.infer<typeof activityRecordSchema>;

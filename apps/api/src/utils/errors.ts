@@ -82,18 +82,31 @@ export class AssistantError extends Error {
 	 * Get user-safe error message (strips sensitive information)
 	 */
 	getUserMessage(): string {
-		const userSafeMessages: Partial<Record<ErrorType, string>> = {
+		const fallbackMessages: Partial<Record<ErrorType, string>> = {
 			[ErrorType.AUTHENTICATION_ERROR]: "Authentication failed. Please check your credentials.",
-			[ErrorType.RATE_LIMIT_ERROR]: this.message,
 			[ErrorType.PARAMS_ERROR]: "Invalid request parameters.",
 			[ErrorType.NOT_FOUND]: "Requested resource not found.",
 			[ErrorType.FORBIDDEN]: "Access denied.",
+			[ErrorType.AUTHORISATION_ERROR]: "Access denied.",
 			[ErrorType.UNAUTHORIZED]: "Authentication required.",
-			[ErrorType.USAGE_LIMIT_ERROR]: this.message,
 			[ErrorType.CONFLICT_ERROR]: "Resource conflict occurred.",
 		};
 
-		return userSafeMessages[this.type] || "An internal error occurred. Please try again later.";
+		const passthroughTypes = new Set([
+			ErrorType.RATE_LIMIT_ERROR,
+			ErrorType.USAGE_LIMIT_ERROR,
+			ErrorType.PARAMS_ERROR,
+			ErrorType.NOT_FOUND,
+			ErrorType.FORBIDDEN,
+			ErrorType.AUTHORISATION_ERROR,
+			ErrorType.CONFLICT_ERROR,
+		]);
+
+		if (passthroughTypes.has(this.type) && this.message.trim().length > 0) {
+			return this.message;
+		}
+
+		return fallbackMessages[this.type] || "An internal error occurred. Please try again later.";
 	}
 }
 
@@ -130,6 +143,10 @@ function authErrorResponse(code: AuthErrorCode): readonly [ErrorType, number] {
 }
 
 export function handleAIServiceError(error: AssistantError): Response {
+	const clientStatus = (fallback: number) =>
+		error.statusCode && error.statusCode >= 400 && error.statusCode < 500
+			? error.statusCode
+			: fallback;
 	const logContext = {
 		errorType: error.type,
 		statusCode: error.statusCode,
@@ -195,7 +212,7 @@ export function handleAIServiceError(error: AssistantError): Response {
 					details: error.context.validationErrors,
 					requestId: error.context.requestId,
 				},
-				{ status: 400 },
+				{ status: clientStatus(400) },
 			);
 		case ErrorType.NOT_FOUND:
 		case ErrorType.USER_NOT_FOUND:
@@ -204,7 +221,7 @@ export function handleAIServiceError(error: AssistantError): Response {
 					error: error.getUserMessage(),
 					requestId: error.context.requestId,
 				},
-				{ status: 404 },
+				{ status: clientStatus(404) },
 			);
 		case ErrorType.CONFLICT_ERROR:
 			return Response.json(
@@ -212,7 +229,7 @@ export function handleAIServiceError(error: AssistantError): Response {
 					error: error.getUserMessage(),
 					requestId: error.context.requestId,
 				},
-				{ status: 409 },
+				{ status: clientStatus(409) },
 			);
 		case ErrorType.CONTEXT_WINDOW_EXCEEDED:
 			return Response.json(
@@ -273,25 +290,13 @@ export function handleAIServiceError(error: AssistantError): Response {
 		default:
 			logger.error("Unknown error occurred", logContext);
 
-			const errorResponse: {
-				error: string;
-				requestId?: string;
-				details?: string;
-				context?: any;
-			} = {
-				error: "An unexpected error occurred",
-				requestId: error.context?.requestId,
-				details: error.message,
-			};
-
-			if (error.context && Object.keys(error.context).length > 0) {
-				const { requestId: _requestId, ...safeContext } = error.context;
-				if (Object.keys(safeContext).length > 0) {
-					errorResponse.context = safeContext;
-				}
-			}
-
-			return Response.json(errorResponse, { status: 500 });
+			return Response.json(
+				{
+					error: "An unexpected error occurred",
+					requestId: error.context?.requestId,
+				},
+				{ status: 500 },
+			);
 	}
 }
 

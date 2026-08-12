@@ -56,8 +56,9 @@ export function isSandboxRunDispatchMessage(
 export async function enqueueSandboxRunDispatchTask(params: {
 	context: ServiceContext;
 	message: SandboxRunDispatchMessage;
+	projectId?: string;
 }): Promise<string> {
-	const { context, message } = params;
+	const { context, message, projectId } = params;
 	if (!context.env.TASK_QUEUE) {
 		throw new Error("TASK_QUEUE binding is not configured for sandbox run dispatch");
 	}
@@ -65,6 +66,7 @@ export async function enqueueSandboxRunDispatchTask(params: {
 	return taskService.enqueueTask({
 		task_type: SANDBOX_RUN_DISPATCH_TASK_TYPE,
 		user_id: message.userId,
+		project_id: projectId,
 		task_data: message,
 		priority: 8,
 		metadata: {
@@ -100,10 +102,13 @@ async function persistRunData(params: {
 	const context = createServiceContext({
 		env: params.env,
 	});
+	const record = await context.repositories.activities.getActivityById(params.recordId);
 	let runData = params.runData;
 	runData = await persistSandboxRunArtifact({
 		serviceContext: context,
 		ownerUserId: params.userId,
+		projectId: record?.project_id,
+		conversationId: record?.conversation_id,
 		run: runData,
 	});
 	await context.repositories.activities.updateActivity(params.recordId, {
@@ -462,12 +467,11 @@ export async function getSandboxRunRecordForDispatch(params: {
 	userId: number;
 }): Promise<{ id: string; run: PersistedSandboxRunData } | null> {
 	const context = createServiceContext({ env: params.env });
-	const record = await context.repositories.activities.getPersonalActivityByGroup(
-		params.userId,
+	const record = await context.repositories.activities.getActivityByGroup(
 		SANDBOX_RUNS_APP_ID,
 		params.runId,
 	);
-	if (!record) {
+	if (!record || record.created_by_user_id !== params.userId) {
 		return null;
 	}
 	const parsed = parseSandboxRunData(safeParseJson(record.data));

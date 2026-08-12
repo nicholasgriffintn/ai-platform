@@ -24,8 +24,8 @@ interface ProjectCapabilityGroupsProps {
 	currentUserId?: string | number;
 	groups: ProjectCapabilityKindGroup[];
 	experiences: ProjectExperienceDefinition[];
-	isAdding: boolean;
-	isRemoving: boolean;
+	pendingAddCapabilityId?: string;
+	pendingRemoveId?: string;
 	onAdd: (item: AssistantActionItem, kind: ProjectCapabilityKind) => void;
 	onConfigureTool: (tool: ProjectToolDefinition, capability?: ProjectCapability) => void;
 	onRemove: (capability: ProjectCapability) => void;
@@ -44,8 +44,8 @@ export function ProjectCapabilityGroups({
 	currentUserId,
 	groups,
 	experiences,
-	isAdding,
-	isRemoving,
+	pendingAddCapabilityId,
+	pendingRemoveId,
 	onAdd,
 	onConfigureTool,
 	onRemove,
@@ -83,6 +83,8 @@ export function ProjectCapabilityGroups({
 												capability.kind === itemKind &&
 												capability.capabilityId === item.capability.id,
 										);
+										const isAdding = pendingAddCapabilityId === item.capability.id;
+										const isRemoving = Boolean(existing) && pendingRemoveId === existing?.id;
 										const recipe =
 											itemKind === "recipe" ? recipeById.get(item.capability.id) : undefined;
 										const canManageCapability = existing

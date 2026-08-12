@@ -9,6 +9,7 @@ const logger = getLogger({
 });
 
 interface FeedbackParams {
+	authorise: () => Promise<void>;
 	request: SubmitChatCompletionFeedbackInput;
 	completion_id: string;
 }
@@ -40,8 +41,9 @@ export interface ChatFeedbackContext {
 
 export const handleChatCompletionFeedbackSubmission = async (
 	context: ChatFeedbackContext,
-	{ request, completion_id }: FeedbackParams,
+	{ request, completion_id, authorise }: FeedbackParams,
 ): Promise<{ success: boolean; message: string; completion_id: string }> => {
+	await authorise();
 	const { env, user } = context;
 
 	if (env.AI_GATEWAY_TOKEN && env.ACCOUNT_ID) {

@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
 	getAIResponse: vi.fn(),
 	handleToolCalls: vi.fn(),
 	generateId: vi.fn(),
+	conversationManagerAdd: vi.fn(),
 }));
 
 vi.mock("~/lib/chat/responses", () => ({
@@ -25,7 +26,9 @@ import { runAgentLoop } from "../runAgentLoop";
 function createParams(overrides: Partial<AgentLoopExecutionParams> = {}): AgentLoopExecutionParams {
 	return {
 		completionId: "agent-conversation-1",
-		conversationManager: {} as AgentLoopExecutionParams["conversationManager"],
+		conversationManager: {
+			add: mocks.conversationManagerAdd,
+		} as unknown as AgentLoopExecutionParams["conversationManager"],
 		toolRequestContext: {
 			env: { AI: { aiGatewayLogId: "log-1" } },
 			request: {

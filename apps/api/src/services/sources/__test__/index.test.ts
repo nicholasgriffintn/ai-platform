@@ -3,7 +3,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryManager } from "~/lib/memory";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { SourceCollectionRecord, SourceRecord } from "~/repositories/SourceRepository";
-import { deleteSource, deleteSourceCollection, setProjectContextSources } from "..";
+import {
+	deleteSource,
+	deleteSourceCollection,
+	listProjectConversationSources,
+	setProjectContextSources,
+} from "..";
 
 const deleteMemoryMock = vi.hoisted(() => vi.fn());
 const requireProjectAccessMock = vi.hoisted(() => vi.fn());
@@ -168,6 +173,44 @@ describe("project conversation context", () => {
 			expect.objectContaining({ action: "project.context.updated" }),
 		);
 		expect(result.sources).toEqual([expect.objectContaining({ id: projectSource.id })]);
+	});
+
+	it("loads available memories and context details in one project-scoped operation", async () => {
+		const memorySource = {
+			...projectSource,
+			id: "memory-project-1",
+			kind: "memory" as const,
+			title: "Launch fact",
+		};
+		const context = {
+			repositories: {
+				sources: {
+					getProjectContextCollection: vi.fn().mockResolvedValue(contextCollection),
+					listProjectSources: vi.fn().mockResolvedValue([memorySource]),
+					listCollectionSources: vi
+						.fn()
+						.mockResolvedValue([projectSource, { ...projectSource, status: "failed" }]),
+				},
+			},
+		} as unknown as ServiceContext;
+
+		const result = await listProjectConversationSources(context, 42, "project-1");
+
+		expect(result.sources).toEqual([
+			expect.objectContaining({ id: memorySource.id, content: memorySource.content }),
+			expect.objectContaining({ id: projectSource.id, content: projectSource.content }),
+		]);
+		expect(requireProjectAccessMock).toHaveBeenCalledWith(context, "project-1");
+	});
+
+	it("rejects duplicate project context source identifiers", async () => {
+		const context = {
+			repositories: { sources: { getSource: vi.fn() } },
+		} as unknown as ServiceContext;
+
+		await expect(
+			setProjectContextSources(context, 42, "project-1", [projectSource.id, projectSource.id]),
+		).rejects.toMatchObject({ statusCode: 400 });
 	});
 
 	it("rejects a source outside the project", async () => {

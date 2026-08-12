@@ -73,4 +73,21 @@ describe("createChatExecutionRequest", () => {
 			file_search: { vector_store_ids: ["vs_project"] },
 		});
 	});
+
+	it("uses the prepared server-authoritative request options downstream", () => {
+		const input = createInput();
+		input.chatOptions.options = {
+			sandbox: { enabled: true, repo: "attacker/repository", installationId: 1 },
+		};
+		input.prepared.requestOptions = {
+			sandbox: { enabled: true, repo: "project/repository", installationId: 42 },
+		};
+
+		const request = createChatExecutionRequest(input);
+
+		expect(request.providerRequest().options).toEqual(input.prepared.requestOptions);
+		expect(request.streamOptions("test-model", "test-provider").requestOptions).toEqual(
+			input.prepared.requestOptions,
+		);
+	});
 });

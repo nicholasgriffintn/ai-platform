@@ -27,14 +27,14 @@ function buildRunData(overrides: Record<string, unknown> = {}) {
 }
 
 describe("sandbox runs service", () => {
-	const mockGetPersonalActivityByGroup = vi.fn();
+	const mockGetActivityByGroup = vi.fn();
 	const mockGetRunCoordinatorControl = vi.mocked(getRunCoordinatorControl);
 
 	const context = {
 		env: {},
 		repositories: {
 			activities: {
-				getPersonalActivityByGroup: mockGetPersonalActivityByGroup,
+				getActivityByGroup: mockGetActivityByGroup,
 			},
 		},
 	} as any;
@@ -45,8 +45,10 @@ describe("sandbox runs service", () => {
 
 	it("returns paused control state for paused runs", async () => {
 		mockGetRunCoordinatorControl.mockResolvedValue(null);
-		mockGetPersonalActivityByGroup.mockResolvedValue({
+		mockGetActivityByGroup.mockResolvedValue({
 			id: "record-1",
+			created_by_user_id: 42,
+			project_id: null,
 			data: buildRunData({
 				status: "paused",
 				pauseReason: "Paused from dashboard",
@@ -69,6 +71,12 @@ describe("sandbox runs service", () => {
 	});
 
 	it("uses coordinator control when available", async () => {
+		mockGetActivityByGroup.mockResolvedValue({
+			id: "record-1",
+			created_by_user_id: 42,
+			project_id: null,
+			data: buildRunData(),
+		});
 		mockGetRunCoordinatorControl.mockResolvedValue({
 			runId: "run-123",
 			state: "running",
@@ -87,6 +95,32 @@ describe("sandbox runs service", () => {
 			state: "running",
 			timeoutSeconds: 1200,
 		});
-		expect(mockGetPersonalActivityByGroup).not.toHaveBeenCalled();
+		expect(mockGetActivityByGroup).toHaveBeenCalled();
+	});
+
+	it("allows a project member to read a collaborator's run control", async () => {
+		mockGetRunCoordinatorControl.mockResolvedValue(null);
+		mockGetActivityByGroup.mockResolvedValue({
+			id: "record-1",
+			created_by_user_id: 7,
+			project_id: "project-1",
+			data: buildRunData(),
+		});
+		const projectContext = {
+			...context,
+			requireUser: vi.fn().mockReturnValue({ id: 42, plan_id: "pro" }),
+			repositories: {
+				...context.repositories,
+				workspaces: {
+					getProject: vi.fn().mockResolvedValue({ id: "project-1", workspace_id: "workspace-1" }),
+					getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
+					getMembership: vi.fn().mockResolvedValue({ role: "member" }),
+				},
+			},
+		};
+
+		await expect(
+			getSandboxRunControlState({ context: projectContext as any, userId: 42, runId: "run-123" }),
+		).resolves.toMatchObject({ runId: "run-123", state: "running" });
 	});
 });

@@ -50,6 +50,7 @@ describe("project chat context", () => {
 						enabled: true,
 						installationId: 999,
 						repo: "other/repository",
+						model: "untrusted-model",
 						taskType: "bug-fix",
 					},
 				},
@@ -76,6 +77,7 @@ describe("project chat context", () => {
 			repo: "owner/repository",
 			taskType: "bug-fix",
 		});
+		expect(options.options?.sandbox?.model).toBeUndefined();
 	});
 
 	it("resolves instructions and tools from the authorised project", async () => {

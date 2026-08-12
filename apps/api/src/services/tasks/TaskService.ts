@@ -11,6 +11,7 @@ export interface TaskDefinition {
 	id?: string;
 	task_type: TaskType;
 	user_id?: number;
+	project_id?: string;
 	task_data: Record<string, any>;
 	schedule_type?: ScheduleType;
 	scheduled_at?: string;
@@ -23,6 +24,7 @@ export interface TaskMessage {
 	taskId: string;
 	task_type: TaskType;
 	user_id?: number;
+	project_id?: string;
 	task_data: Record<string, any>;
 	priority: number;
 	schedule_type?: ScheduleType;
@@ -30,7 +32,7 @@ export interface TaskMessage {
 	max_attempts?: number;
 }
 
-const MAX_QUEUE_DELAY_SECONDS = 60 * 60 * 12;
+export const MAX_QUEUE_DELAY_SECONDS = 60 * 60 * 12;
 
 export class TaskService {
 	private env: IEnv;
@@ -48,6 +50,7 @@ export class TaskService {
 				id: taskDef.id,
 				task_type: taskDef.task_type,
 				user_id: taskDef.user_id,
+				project_id: taskDef.project_id,
 				task_data: taskDef.task_data,
 				schedule_type: taskDef.schedule_type ?? "immediate",
 				scheduled_at: taskDef.scheduled_at,
@@ -83,6 +86,7 @@ export class TaskService {
 				taskId: task.id,
 				task_type: taskDef.task_type,
 				user_id: taskDef.user_id,
+				project_id: taskDef.project_id,
 				task_data: taskDef.task_data,
 				priority: taskDef.priority ?? 5,
 				schedule_type: taskDef.schedule_type ?? "immediate",
@@ -133,6 +137,7 @@ export class TaskService {
 		const task = await this.taskRepository.createTask({
 			task_type: taskDef.task_type,
 			user_id: taskDef.user_id,
+			project_id: taskDef.project_id,
 			task_data: taskDef.task_data,
 			schedule_type: "recurring",
 			cron_expression: cronExpression,

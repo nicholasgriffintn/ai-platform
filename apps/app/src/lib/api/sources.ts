@@ -8,15 +8,14 @@ import type {
 } from "@assistant/schemas";
 
 import { apiService } from "./api-service";
-import { fetchApi, returnFetchedData } from "./fetch-wrapper";
+import { fetchApiOrThrow, returnFetchedData } from "./fetch-wrapper";
 
 async function request<T>(path: string, init: { method?: string; body?: object } = {}): Promise<T> {
-	const response = await fetchApi(path, {
+	const response = await fetchApiOrThrow(path, {
 		method: init.method ?? "GET",
 		headers: await apiService.getHeaders(),
 		body: init.body,
 	});
-	if (!response.ok) throw new Error(`Source request failed: ${response.statusText}`);
 	return returnFetchedData<T>(response);
 }
 
@@ -83,6 +82,14 @@ export async function listProjectContextSources(projectId: string): Promise<Sour
 	return (
 		await request<{ sources: SourceSummary[] }>(
 			`/sources/project-context?projectId=${encodeURIComponent(projectId)}`,
+		)
+	).sources;
+}
+
+export async function listProjectConversationSources(projectId: string): Promise<Source[]> {
+	return (
+		await request<{ sources: Source[] }>(
+			`/sources/project-conversation?projectId=${encodeURIComponent(projectId)}`,
 		)
 	).sources;
 }

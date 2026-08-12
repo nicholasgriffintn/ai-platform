@@ -21,6 +21,7 @@ function createMockContext(overrides: any = {}): Context {
 	const mockContext = {
 		req: {
 			url: "http://example.com/chat/completions",
+			header: vi.fn().mockReturnValue(undefined),
 		},
 		env: {
 			FREE_RATE_LIMITER: {
@@ -81,7 +82,7 @@ describe("Rate Limit Middleware", () => {
 			await rateLimit(context, mockNext);
 
 			expect(context.env.PRO_RATE_LIMITER.limit).toHaveBeenCalledWith({
-				key: "authenticated-user-123-_chat_completions",
+				key: "authenticated-user-123",
 			});
 			expect(mockNext).toHaveBeenCalled();
 		});
@@ -96,7 +97,7 @@ describe("Rate Limit Middleware", () => {
 			await rateLimit(context, mockNext);
 
 			expect(context.env.FREE_RATE_LIMITER.limit).toHaveBeenCalledWith({
-				key: "unauthenticated-_chat_completions",
+				key: "unauthenticated-unknown",
 			});
 			expect(mockNext).toHaveBeenCalled();
 		});
@@ -177,10 +178,11 @@ describe("Rate Limit Middleware", () => {
 			);
 		});
 
-		it("should handle different URL paths correctly", async () => {
+		it("uses one identity bucket across paths so dynamic IDs cannot evade limits", async () => {
 			const context = createMockContext({
 				req: {
 					url: "http://example.com/chat/audio/speech",
+					header: vi.fn().mockReturnValue("203.0.113.10"),
 				},
 			});
 			// @ts-expect-error - mock implementation
@@ -191,7 +193,7 @@ describe("Rate Limit Middleware", () => {
 			await rateLimit(context, mockNext);
 
 			expect(context.env.FREE_RATE_LIMITER.limit).toHaveBeenCalledWith({
-				key: "unauthenticated-_chat_audio_speech",
+				key: "unauthenticated-203.0.113.10",
 			});
 
 			await new Promise((resolve) => setTimeout(resolve, 0));

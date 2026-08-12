@@ -78,6 +78,12 @@ export interface OutputRevisionRecord {
 	created_at: string;
 }
 
+interface OutputListOptions {
+	kind?: string;
+	limit?: number;
+	offset?: number;
+}
+
 const OUTPUT_CACHE_TTL = 900;
 
 export class OutputRepository extends BaseRepository {
@@ -163,16 +169,48 @@ export class OutputRepository extends BaseRepository {
 		return this.selectOne({ capability_id: capabilityId, group_id: groupId });
 	}
 
-	async listPersonalOutputs(userId: number, capabilityId?: string): Promise<OutputRecord[]> {
-		return this.selectMany({
-			created_by_user_id: userId,
-			project_id: null,
-			capability_id: capabilityId,
-		});
+	async listPersonalOutputs(
+		userId: number,
+		capabilityId?: string,
+		options: OutputListOptions = {},
+	): Promise<OutputRecord[]> {
+		return this.listScopedOutputs("created_by_user_id", userId, capabilityId, options, true);
 	}
 
-	async listProjectOutputs(projectId: string, capabilityId?: string): Promise<OutputRecord[]> {
-		return this.selectMany({ project_id: projectId, capability_id: capabilityId });
+	async listProjectOutputs(
+		projectId: string,
+		capabilityId?: string,
+		options: OutputListOptions = {},
+	): Promise<OutputRecord[]> {
+		return this.listScopedOutputs("project_id", projectId, capabilityId, options, false);
+	}
+
+	private async listScopedOutputs(
+		scopeField: "created_by_user_id" | "project_id",
+		scopeValue: number | string,
+		capabilityId: string | undefined,
+		options: OutputListOptions,
+		personal: boolean,
+	): Promise<OutputRecord[]> {
+		const conditions = [`${scopeField} = ?`];
+		const values: unknown[] = [scopeValue];
+		if (personal) conditions.push("project_id IS NULL");
+		if (capabilityId) {
+			conditions.push("capability_id = ?");
+			values.push(capabilityId);
+		}
+		if (options.kind) {
+			conditions.push("kind = ?");
+			values.push(options.kind);
+		}
+		const limit = options.limit ?? 100;
+		const offset = options.offset ?? 0;
+		values.push(limit, offset);
+		return this.runQuery<OutputRecord>(
+			`SELECT * FROM output WHERE ${conditions.join(" AND ")} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+			values,
+			false,
+		);
 	}
 
 	async listPersonalOutputGroup(

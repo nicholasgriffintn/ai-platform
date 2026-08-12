@@ -325,10 +325,12 @@ addRoute(app, "post", "/feedback", {
 		400: { description: "Bad request", schema: errorResponseSchema },
 		404: { description: "Generation not found", schema: errorResponseSchema },
 	},
-	handler: async ({ body, serviceContext }) => {
+	auth: true,
+	handler: async ({ body, serviceContext, user }) => {
 		try {
 			const result = await submitStrudelFeedback({
 				context: serviceContext,
+				userId: user.id,
 				generationId: body.generationId,
 				score: body.score,
 				feedback: body.feedback,

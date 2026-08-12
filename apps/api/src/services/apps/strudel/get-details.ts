@@ -1,7 +1,7 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { mapResponseToPattern } from "./utils";
+import { STRUDEL_APP_ID, mapResponseToPattern } from "./utils";
 
 const logger = getLogger({ prefix: "services/strudel/get-details" });
 
@@ -24,7 +24,11 @@ export async function getPatternDetails({
 			? await repositories.outputs.getProjectOutput(projectId, patternId)
 			: await repositories.outputs.getPersonalOutput(userId, patternId);
 
-		if (!response) {
+		if (
+			!response ||
+			response.capability_id !== STRUDEL_APP_ID ||
+			response.kind !== "strudel_pattern"
+		) {
 			throw new AssistantError("Pattern not found", ErrorType.NOT_FOUND);
 		}
 

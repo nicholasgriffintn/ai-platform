@@ -27,12 +27,14 @@ interface ExecuteSandboxRunStreamParams {
 	context: ServiceContext;
 	user: IUser;
 	payload: ExecuteSandboxRunStreamPayload;
+	projectId?: string;
+	conversationId?: string;
 }
 
 export async function executeSandboxRunStream(
 	params: ExecuteSandboxRunStreamParams,
 ): Promise<Response> {
-	const { env, context: serviceContext, user, payload } = params;
+	const { env, context: serviceContext, user, payload, projectId, conversationId } = params;
 	await assertSandboxRunCanStart({
 		context: serviceContext,
 		userId: user.id,
@@ -71,6 +73,8 @@ export async function executeSandboxRunStream(
 
 	const createdRecord = await serviceContext.repositories.activities.createActivity({
 		createdByUserId: user.id,
+		projectId,
+		conversationId,
 		capabilityId: SANDBOX_RUNS_APP_ID,
 		groupId: runId,
 		kind: SANDBOX_RUN_ITEM_TYPE,
@@ -122,6 +126,7 @@ export async function executeSandboxRunStream(
 		await enqueueSandboxRunDispatchTask({
 			context: serviceContext,
 			message: dispatchMessage,
+			projectId,
 		});
 		const dispatchedAt = new Date().toISOString();
 		await appendRunCoordinatorEvent({

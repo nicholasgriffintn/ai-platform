@@ -65,6 +65,8 @@ export function NoteEditor({
 	const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
 	const [isMetadataRefreshing, setIsMetadataRefreshing] = useState(false);
 	const saveOptionsRef = useRef<{ refreshMetadata?: boolean } | null>(null);
+	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const appliedInitialTextRef = useRef(initialText);
 
 	const tabCapture = useTabAudioCapture();
 
@@ -149,7 +151,10 @@ export function NoteEditor({
 	const charCount = getCharCount(text);
 
 	useEffect(() => {
-		setText(initialText);
+		const lastApplied = appliedInitialTextRef.current;
+		appliedInitialTextRef.current = initialText;
+		if (document.activeElement === textareaRef.current) return;
+		setText((current) => (current === lastApplied ? initialText : current));
 	}, [initialText]);
 
 	useEffect(() => {
@@ -273,6 +278,7 @@ export function NoteEditor({
 				</div>
 			)}
 			<textarea
+				ref={textareaRef}
 				value={text}
 				onChange={(e) => setText(e.target.value)}
 				placeholder="Start typing..."

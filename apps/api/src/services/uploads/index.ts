@@ -13,6 +13,16 @@ import { requireProjectAccess } from "~/services/workspaces/access";
 
 const logger = getLogger({ prefix: "services/uploads" });
 
+const UPLOAD_SIZE_LIMITS: Record<
+	"image" | "document" | "audio" | "code",
+	{ maxBytes: number; message: string }
+> = {
+	image: { maxBytes: 10 * 1024 * 1024, message: "Image files must be 10MB or smaller" },
+	document: { maxBytes: 25 * 1024 * 1024, message: "Document files must be 25MB or smaller" },
+	audio: { maxBytes: 50 * 1024 * 1024, message: "Audio files must be 50MB or smaller" },
+	code: { maxBytes: 200 * 1024, message: "Code files must be 200KB or smaller" },
+};
+
 const CODE_EXTENSION_TO_LANG: Record<string, string> = {
 	ts: "typescript",
 	tsx: "tsx",
@@ -210,11 +220,20 @@ export async function handleFileUpload(
 		}
 	}
 
-	if (fileType === "code") {
-		const maxCodeSizeBytes = 200 * 1024;
-		if (file.size > maxCodeSizeBytes) {
-			throw new AssistantError("Code files must be 200KB or smaller", ErrorType.PARAMS_ERROR, 400);
-		}
+	let arrayBuffer: ArrayBuffer;
+	try {
+		arrayBuffer = await file.arrayBuffer();
+	} catch (bufferError) {
+		logger.error("Failed to convert file to arrayBuffer", {
+			error: bufferError instanceof Error ? bufferError.message : String(bufferError),
+			stack: bufferError instanceof Error ? bufferError.stack : undefined,
+		});
+		throw new AssistantError("Failed to process file data", ErrorType.UNKNOWN_ERROR, 500);
+	}
+
+	const sizeLimit = UPLOAD_SIZE_LIMITS[fileType];
+	if (arrayBuffer.byteLength > sizeLimit.maxBytes) {
+		throw new AssistantError(sizeLimit.message, ErrorType.PARAMS_ERROR, 400);
 	}
 
 	const isPdf = file.type === "application/pdf";
@@ -228,17 +247,6 @@ export async function handleFileUpload(
 	const fileExtension = fileType === "code" ? inferredExtension || mimeExtension : mimeExtension;
 	const key = `uploads/${userId}/${fileType}s/${generateId()}.${fileExtension}`;
 
-	let arrayBuffer: ArrayBuffer;
-	try {
-		arrayBuffer = await file.arrayBuffer();
-	} catch (bufferError) {
-		logger.error("Failed to convert file to arrayBuffer", {
-			error: bufferError instanceof Error ? bufferError.message : String(bufferError),
-			stack: bufferError instanceof Error ? bufferError.stack : undefined,
-		});
-		throw new AssistantError("Failed to process file data", ErrorType.UNKNOWN_ERROR, 500);
-	}
-
 	let storedSource: StoredSourceFileResult;
 	try {
 		storedSource = await StorageService.forPrivateAssets(context).storeSourceFile({
@@ -249,7 +257,7 @@ export async function handleFileUpload(
 			title: file.name,
 			mimeType: file.type,
 			filename: file.name,
-			byteSize: file.size,
+			byteSize: arrayBuffer.byteLength,
 		});
 	} catch (storageError) {
 		logger.error("Failed to upload file to storage", {

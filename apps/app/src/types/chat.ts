@@ -274,6 +274,7 @@ export interface Conversation {
 	parent_message_id?: string;
 	project_id?: string | null;
 	isLocalOnly?: boolean;
+	localOwnerScope?: string;
 	is_public?: boolean;
 	share_id?: string;
 	is_archived?: boolean;

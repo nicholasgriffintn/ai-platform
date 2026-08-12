@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
 	setSelectedTools: vi.fn(),
 	setShowSearch: vi.fn(),
 	startNewConversation: vi.fn(),
+	threadModeConfig: vi.fn(),
 }));
 
 vi.mock("~/components/ChatSidebar", () => ({ ChatSidebar: () => null }));
@@ -34,7 +35,12 @@ vi.mock("~/state/stores/chatStore", () => ({
 vi.mock("~/state/stores/toolsStore", () => ({
 	useToolsStore: () => ({ setSelectedTools: mocks.setSelectedTools }),
 }));
-vi.mock(".", () => ({ ConversationThread: () => null }));
+vi.mock(".", () => ({
+	ConversationThread: ({ modeConfig }: { modeConfig?: unknown }) => {
+		mocks.threadModeConfig(modeConfig);
+		return null;
+	},
+}));
 
 describe("ConversationPage", () => {
 	beforeEach(() => vi.clearAllMocks());
@@ -69,6 +75,28 @@ describe("ConversationPage", () => {
 
 		await waitFor(() => expect(mocks.startNewConversation).toHaveBeenCalled());
 		expect(mocks.startNewConversation).toHaveBeenCalledOnce();
+	});
+
+	it("passes a plain project prompt to the conversation for automatic submission", async () => {
+		render(
+			<MemoryRouter
+				initialEntries={[
+					"/work/workspace-1/projects/project-1/chat?query=Prepare+the+launch+brief&auto_submit=1&enabled_tools=",
+				]}
+			>
+				<ConversationPage title="Project" />
+			</MemoryRouter>,
+		);
+
+		await waitFor(() =>
+			expect(mocks.threadModeConfig).toHaveBeenLastCalledWith(
+				expect.objectContaining({
+					initialAutoSubmit: expect.objectContaining({
+						input: "Prepare the launch brief",
+					}),
+				}),
+			),
+		);
 	});
 
 	it("does not restore a consumed recipe prompt after refresh", async () => {

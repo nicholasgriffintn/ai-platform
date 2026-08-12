@@ -8,15 +8,18 @@ function createRepository() {
 	const run = vi.fn().mockResolvedValue({ success: true });
 	const bind = vi.fn().mockReturnValue({ all, first, run });
 	const prepare = vi.fn().mockReturnValue({ bind });
+	const batch = vi.fn().mockResolvedValue([]);
 
 	const repository = new MessageRepository({
 		DB: {
+			batch,
 			prepare,
 		},
 	} as any);
 
 	return {
 		all,
+		batch,
 		bind,
 		first,
 		prepare,
@@ -26,6 +29,20 @@ function createRepository() {
 }
 
 describe("MessageRepository", () => {
+	it("inserts a message batch and updates conversation metadata atomically", async () => {
+		const { batch, bind, prepare, repository } = createRepository();
+
+		await repository.createMessagesAndUpdateConversation("conversation-1", [
+			{ id: "message-1", role: "user", content: "Hello" },
+			{ id: "message-2", role: "assistant", content: "Hi" },
+		]);
+
+		expect(batch).toHaveBeenCalledWith(expect.any(Array));
+		expect(batch.mock.calls[0][0]).toHaveLength(3);
+		expect(prepare.mock.calls.at(-1)?.[0]).toContain("message_count = message_count + ?");
+		expect(bind).toHaveBeenLastCalledWith("message-2", 2, "conversation-1");
+	});
+
 	it("orders conversation messages by persisted message timestamp before insert time", async () => {
 		const { prepare, repository } = createRepository();
 

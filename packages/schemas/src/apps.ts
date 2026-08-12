@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { outputSchema } from "./outputs";
+import { externalHttpUrlSchema } from "./navigation";
 
 export const insertEmbeddingSchema = z.object({
 	type: z.string(),
@@ -1355,7 +1356,7 @@ export const recipeConnectorManifestSchema = z.object({
 	authType: z.enum(["oauth2", "github_app", "api_key"]),
 	status: recipeConnectorStatusSchema,
 	setupUrl: z.string().optional(),
-	authorizationUrl: z.string().optional(),
+	authorizationUrl: externalHttpUrlSchema.optional(),
 	credentialLabel: z.string().optional(),
 	connectedAt: z.string().optional(),
 	updatedAt: z.string().optional(),
@@ -1370,7 +1371,7 @@ export const recipeConnectorsResponseSchema = z.object({
 
 export const recipeConnectorStartResponseSchema = z.object({
 	provider: recipeConnectorProviderSchema,
-	authorizationUrl: z.string(),
+	authorizationUrl: externalHttpUrlSchema,
 });
 
 export const recipeConnectorStartRequestSchema = z.object({

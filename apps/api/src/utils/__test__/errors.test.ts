@@ -248,9 +248,7 @@ describe("errors", () => {
 			const data = await response.json();
 
 			expect(data).toEqual({
-				error: "Invalid request parameters.",
-				details: undefined,
-				requestId: undefined,
+				error: "Test error",
 			});
 		});
 

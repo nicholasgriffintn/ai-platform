@@ -4,6 +4,7 @@ import { SANDBOX_RUNS_APP_ID } from "~/constants/app";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";
 import { parseSandboxRunData, type SandboxRunData } from "./run-data";
+import { requireProjectAccess } from "~/services/workspaces/access";
 import {
 	appendRunCoordinatorEvent,
 	getRunCoordinatorControl,
@@ -46,13 +47,17 @@ async function getSandboxRunRecordForUser(params: {
 	runId: string;
 }): Promise<SandboxRunRecord> {
 	const { context, userId, runId } = params;
-	const record = await context.repositories.activities.getPersonalActivityByGroup(
-		userId,
+	const record = await context.repositories.activities.getActivityByGroup(
 		SANDBOX_RUNS_APP_ID,
 		runId,
 	);
 
 	if (!record) {
+		throw new AssistantError("Sandbox run not found", ErrorType.NOT_FOUND);
+	}
+	if (record.project_id) {
+		await requireProjectAccess(context, record.project_id);
+	} else if (record.created_by_user_id !== userId) {
 		throw new AssistantError("Sandbox run not found", ErrorType.NOT_FOUND);
 	}
 
@@ -167,12 +172,12 @@ export async function getSandboxRunControlState(params: {
 	userId: number;
 	runId: string;
 }) {
+	const runRecord = await getSandboxRunRecordForUser(params);
 	const coordinator = await getRunCoordinatorControl(params.context.env, params.runId);
 	if (coordinator) {
 		return coordinator;
 	}
 
-	const runRecord = await getSandboxRunRecordForUser(params);
 	const run = runRecord.run;
 
 	return {

@@ -8,7 +8,12 @@ import type {
 	RecipeConnectorStartResponse,
 	RecipeInvocationResponse,
 } from "@assistant/schemas";
-import { mergeAssistantActionToolIds, recipeConnectorProviderSchema } from "@assistant/schemas";
+import {
+	mergeAssistantActionToolIds,
+	recipeConnectorProviderSchema,
+	requireExternalHttpUrl,
+	requireInternalNavigationPath,
+} from "@assistant/schemas";
 
 import {
 	createAppAssistantActionLaunch,
@@ -193,7 +198,7 @@ export async function executeAssistantAction(
 		return {
 			kind: "navigation",
 			input: action.input,
-			path: launch.path,
+			path: requireInternalNavigationPath(launch.path),
 		};
 	}
 
@@ -202,7 +207,7 @@ export async function executeAssistantAction(
 			return {
 				kind: "external",
 				input: action.input,
-				url: launch.url,
+				url: requireExternalHttpUrl(launch.url),
 			};
 		}
 

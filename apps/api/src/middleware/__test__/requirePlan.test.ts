@@ -77,7 +77,7 @@ describe("requirePlan", () => {
 
 		expect(response.status).toBe(403);
 		await expect(response.json()).resolves.toMatchObject({
-			error: "An internal error occurred. Please try again later.",
+			error: "This feature requires a pro plan. Your current plan is free.",
 		});
 	});
 });

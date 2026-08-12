@@ -15,6 +15,7 @@ import {
 import { partialChatCompletionsJsonSchema } from "./chat";
 import { mergeToolIds, normaliseToolIds } from "./tool-ids";
 import { toolIdsSchema, toolIdSchema, type Tool } from "./tools";
+import { externalHttpUrlSchema, internalNavigationPathSchema } from "./navigation";
 
 export const assistantActionVerbIdSchema = z.enum([
 	"run",
@@ -48,7 +49,7 @@ export const assistantActionItemMetadataSchema = z.object({
 	appKind: z.enum(["dynamic", "frontend"]).optional(),
 	authType: z.enum(["oauth2", "github_app", "api_key"]).optional(),
 	category: z.string().optional(),
-	href: z.string().optional(),
+	href: internalNavigationPathSchema.optional(),
 	installationId: z.string().optional(),
 	provider: recipeConnectorProviderSchema.optional(),
 	recipeId: z.string().optional(),
@@ -65,14 +66,14 @@ export const assistantActionConversationLaunchSchema = z.object({
 
 export const assistantActionNavigationLaunchSchema = z.object({
 	kind: z.literal("navigation"),
-	path: z.string(),
+	path: internalNavigationPathSchema,
 });
 
 export const assistantActionExternalLaunchSchema = z.object({
 	kind: z.literal("external"),
 	authType: z.enum(["oauth2", "github_app"]).optional(),
 	provider: recipeConnectorProviderSchema.optional(),
-	url: z.string().optional(),
+	url: externalHttpUrlSchema.optional(),
 });
 
 export const assistantActionToolToggleLaunchSchema = z.object({
@@ -161,17 +162,17 @@ export const assistantActionSubmitResultSchema = assistantActionResultBaseSchema
 export const assistantActionConversationResultSchema = assistantActionResultBaseSchema.extend({
 	kind: z.literal("conversation"),
 	requestOptions: partialChatCompletionsJsonSchema.optional(),
-	url: z.string(),
+	url: internalNavigationPathSchema,
 });
 
 export const assistantActionNavigationResultSchema = assistantActionResultBaseSchema.extend({
 	kind: z.literal("navigation"),
-	path: z.string(),
+	path: internalNavigationPathSchema,
 });
 
 export const assistantActionExternalResultSchema = assistantActionResultBaseSchema.extend({
 	kind: z.literal("external"),
-	url: z.string(),
+	url: externalHttpUrlSchema,
 });
 
 export const assistantActionResultSchema = z.discriminatedUnion("kind", [

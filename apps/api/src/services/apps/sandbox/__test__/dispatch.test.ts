@@ -124,6 +124,7 @@ describe("sandbox dispatch", () => {
 					tasks: {},
 				},
 			} as any,
+			projectId: "project-1",
 			message: {
 				kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
 				runId: "run-1",
@@ -142,6 +143,7 @@ describe("sandbox dispatch", () => {
 			expect.objectContaining({
 				task_type: SANDBOX_RUN_DISPATCH_TASK_TYPE,
 				user_id: 1,
+				project_id: "project-1",
 				task_data: expect.objectContaining({
 					kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
 					runId: "run-1",

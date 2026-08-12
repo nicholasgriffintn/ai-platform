@@ -97,22 +97,24 @@ export function ConversationPage({
 	]);
 
 	const effectiveModeConfig = useMemo<ConversationThreadModeConfig | undefined>(() => {
-		if (!urlRequestOptions) {
+		const initialAutoSubmit =
+			urlState?.autoSubmit && urlState.query
+				? {
+						key: `${location.pathname}${location.search}`,
+						input: urlState.query,
+					}
+				: modeConfig?.initialAutoSubmit;
+
+		if (!urlRequestOptions && !initialAutoSubmit) {
 			return modeConfig;
 		}
 
 		return {
 			...modeConfig,
 			requestOptions: mergeChatRequestOptions(modeConfig?.requestOptions, urlRequestOptions),
-			initialAutoSubmit:
-				urlState?.autoSubmit && urlState.query
-					? {
-							key: window.location.search,
-							input: urlState.query,
-						}
-					: modeConfig?.initialAutoSubmit,
+			initialAutoSubmit,
 		};
-	}, [modeConfig, urlRequestOptions, urlState]);
+	}, [location.pathname, location.search, modeConfig, urlRequestOptions, urlState]);
 
 	const content = (
 		<div className="flex h-full min-h-0 flex-col overflow-hidden">

@@ -77,6 +77,8 @@ export const sourceListResponseSchema = z
 	.object({ sources: z.array(sourceSummarySchema) })
 	.strict();
 
+export const sourceDetailListResponseSchema = z.object({ sources: z.array(sourceSchema) }).strict();
+
 export const sourceListQuerySchema = z
 	.object({
 		projectId: z.string().min(1).optional(),

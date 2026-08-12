@@ -429,23 +429,15 @@ export class ConversationManager {
 			normalisedMessages,
 		);
 
-		const createPromises = normalisedMessages.map((message) => {
-			return this.database.repositories.messages.createMessage(
-				message.id as string,
-				conversation_id,
-				message.role,
-				this.serializeMessageContent(message.content),
-				message,
-			);
-		});
-
-		await Promise.all(createPromises);
-
 		if (normalisedMessages.length > 0) {
-			const lastMessage = normalisedMessages[normalisedMessages.length - 1];
-			await this.database.repositories.conversations.updateConversationAfterMessage(
+			await this.database.repositories.messages.createMessagesAndUpdateConversation(
 				conversation_id,
-				lastMessage.id as string,
+				normalisedMessages.map((message) => ({
+					id: message.id as string,
+					role: message.role,
+					content: this.serializeMessageContent(message.content),
+					data: message,
+				})),
 			);
 		}
 
@@ -480,6 +472,18 @@ export class ConversationManager {
 		);
 
 		const messageIds = normalisedMessages.map((message) => message.id as string);
+		const foreignCount =
+			await this.database.repositories.messages.countMessagesOwnedByOtherConversations(
+				conversation_id,
+				messageIds,
+			);
+		if (foreignCount > 0) {
+			throw new AssistantError(
+				"Unable to replace messages because one or more message IDs already belong to another conversation",
+				ErrorType.PARAMS_ERROR,
+			);
+		}
+
 		await this.database.repositories.messages.deleteMessagesExcept(conversation_id, messageIds);
 
 		const upsertedMessages = await Promise.all(
@@ -564,7 +568,11 @@ export class ConversationManager {
 			}
 
 			if (Object.keys(updates).length > 0) {
-				await this.database.repositories.messages.updateMessage(message.id, updates);
+				await this.database.repositories.messages.updateMessage(
+					conversation_id,
+					message.id,
+					updates,
+				);
 			}
 		}
 	}
@@ -612,7 +620,7 @@ export class ConversationManager {
 
 		const messages = await this.database.repositories.messages.getConversationMessages(
 			conversation_id,
-			limit,
+			limit ?? 0,
 			after,
 			{
 				includeArchived: options?.includeArchived ?? false,
@@ -1130,7 +1138,7 @@ export class ConversationManager {
 		const conversation =
 			await this.database.repositories.conversations.getConversationByShareId(share_id);
 
-		if (!conversation) {
+		if (!conversation || conversation.project_id) {
 			throw new AssistantError("Shared conversation not found", ErrorType.NOT_FOUND);
 		}
 

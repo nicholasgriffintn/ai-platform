@@ -102,7 +102,6 @@ export const useChatStore = create<ChatStore>()(
 							...state.locallyCreatedConversationIds,
 							[conversationId]: true,
 						},
-						localOnlyMode: state.temporaryChatsDefault,
 					};
 				}),
 			markConversationRemoteAvailable: (id: string) =>
@@ -114,11 +113,7 @@ export const useChatStore = create<ChatStore>()(
 					const { [id]: _removed, ...remainingIds } = state.locallyCreatedConversationIds;
 					return { locallyCreatedConversationIds: remainingIds };
 				}),
-			clearCurrentConversation: () =>
-				set((state) => ({
-					currentConversationId: undefined,
-					localOnlyMode: state.temporaryChatsDefault,
-				})),
+			clearCurrentConversation: () => set({ currentConversationId: undefined }),
 
 			hasApiKey: false,
 			setHasApiKey: (hasApiKey) => set({ hasApiKey }),
@@ -196,9 +191,6 @@ export const useChatStore = create<ChatStore>()(
 			initializeStore: async (completionId?: string) => {
 				const apiKey = await apiKeyService.getApiKey();
 				set({ hasApiKey: !!apiKey });
-
-				const localOnlyMode = window.localStorage.getItem("localOnlyMode") === "true";
-				set({ localOnlyMode });
 
 				const checkAuthAndSetConversation = async () => {
 					if (completionId) {

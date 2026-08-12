@@ -65,6 +65,7 @@ export interface PreparedRequest {
 	isProUser: boolean;
 	enabledTools: string[];
 	toolOptions?: ChatHostedToolSettings;
+	requestOptions: CoreChatOptions["options"];
 }
 
 export class RequestPreparer {
@@ -226,6 +227,7 @@ export class RequestPreparer {
 				store: options.store,
 			}),
 			toolOptions: projectContext ? projectContext.toolOptions : options.tool_options,
+			requestOptions: options.options,
 		};
 	}
 
@@ -448,7 +450,7 @@ export class RequestPreparer {
 		const promptMode = resolveChatPromptMode(options.options);
 
 		if (currentMode === "no_system") {
-			return "";
+			return this.appendProjectInstructions("", projectContext);
 		}
 
 		if (system_prompt) {

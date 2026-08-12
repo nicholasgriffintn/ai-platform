@@ -64,34 +64,64 @@ export class ActivityRepository extends BaseRepository {
 		return this.runQuery<ActivityRecord>(query, values, true);
 	}
 
-	async getPersonalActivityByGroup(
-		userId: number,
-		capabilityId: string,
-		groupId: string,
-	): Promise<ActivityRecord | null> {
+	async getActivityByGroup(capabilityId: string, groupId: string): Promise<ActivityRecord | null> {
 		const { query, values } = this.buildSelectQuery("activity_record", {
-			created_by_user_id: userId,
-			project_id: null,
 			capability_id: capabilityId,
 			group_id: groupId,
 		});
 		return this.runQuery<ActivityRecord>(query, values, true);
 	}
 
-	async listPersonalActivities(userId: number, capabilityId?: string): Promise<ActivityRecord[]> {
+	async listRecentUserActivities(userId: number, capabilityId: string): Promise<ActivityRecord[]> {
+		return this.runQuery<ActivityRecord>(
+			`SELECT * FROM activity_record
+			 WHERE created_by_user_id = ?
+			   AND capability_id = ?
+			   AND (status IN ('queued', 'running', 'waiting') OR created_at >= datetime('now', '-1 day'))
+			 ORDER BY created_at DESC`,
+			[userId, capabilityId],
+		);
+	}
+
+	async listPersonalActivities(
+		userId: number,
+		options: {
+			capabilityId?: string;
+			status?: ActivityStatus;
+			limit: number;
+			offset: number;
+		},
+	): Promise<ActivityRecord[]> {
 		const { query, values } = this.buildSelectQuery(
 			"activity_record",
-			{ created_by_user_id: userId, project_id: null, capability_id: capabilityId },
-			{ orderBy: "created_at DESC" },
+			{
+				created_by_user_id: userId,
+				project_id: null,
+				capability_id: options.capabilityId,
+				status: options.status,
+			},
+			{ orderBy: "created_at DESC", limit: options.limit, offset: options.offset },
 		);
 		return this.runQuery<ActivityRecord>(query, values);
 	}
 
-	async listProjectActivities(projectId: string, capabilityId?: string): Promise<ActivityRecord[]> {
+	async listProjectActivities(
+		projectId: string,
+		options: {
+			capabilityId?: string;
+			status?: ActivityStatus;
+			limit: number;
+			offset: number;
+		},
+	): Promise<ActivityRecord[]> {
 		const { query, values } = this.buildSelectQuery(
 			"activity_record",
-			{ project_id: projectId, capability_id: capabilityId },
-			{ orderBy: "created_at DESC" },
+			{
+				project_id: projectId,
+				capability_id: options.capabilityId,
+				status: options.status,
+			},
+			{ orderBy: "created_at DESC", limit: options.limit, offset: options.offset },
 		);
 		return this.runQuery<ActivityRecord>(query, values);
 	}

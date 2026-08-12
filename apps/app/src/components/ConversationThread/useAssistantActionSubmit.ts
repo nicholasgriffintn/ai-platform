@@ -8,6 +8,7 @@ import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
 
 interface UseAssistantActionSubmitOptions {
+	projectId?: string;
 	recipeManagementPath?: string;
 }
 
@@ -39,9 +40,17 @@ export function useAssistantActionSubmit(options: UseAssistantActionSubmitOption
 				...(verb ? { verb: { command: verb, id: verb } } : {}),
 			},
 			{
-				installRecipe: (recipeId) => installRecipe.mutateAsync({ recipeId }),
+				installRecipe: (recipeId) =>
+					installRecipe.mutateAsync({
+						recipeId,
+						...(options.projectId ? { projectId: options.projectId } : {}),
+					}),
 				invokeRecipe: (recipeId, recipeInput) =>
-					invokeRecipe.mutateAsync({ recipeId, input: recipeInput }),
+					invokeRecipe.mutateAsync({
+						recipeId,
+						input: recipeInput,
+						...(options.projectId ? { projectId: options.projectId } : {}),
+					}),
 				startConnector: (provider, returnTo) => startConnector.mutateAsync({ provider, returnTo }),
 			},
 		);

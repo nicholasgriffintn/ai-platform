@@ -236,6 +236,38 @@ describe("useChatManager", () => {
 		);
 	});
 
+	it("responds to an existing cached conversation", async () => {
+		const queryClient = createQueryClient();
+		const conversationId = "live-conversation";
+		queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, conversationId], {
+			id: conversationId,
+			title: "Live conversation",
+			messages: [
+				{
+					id: "user-1",
+					role: "user",
+					content: "What did I just say?",
+				} as Message,
+			],
+		});
+		mocks.streamChatCompletions.mockResolvedValue({
+			id: "assistant-1",
+			role: "assistant",
+			content: "You asked what you just said.",
+		});
+
+		const { result } = renderHook(() => useChatManager(), {
+			wrapper: wrapper(queryClient),
+		});
+
+		const response = await act(async () =>
+			result.current.respondToExistingConversation(conversationId),
+		);
+
+		expect(response.status).toBe("success");
+		expect(mocks.streamChatCompletions).toHaveBeenCalled();
+	});
+
 	it("updates the cached conversation when manual compaction is a no-op", async () => {
 		const queryClient = createQueryClient();
 		useChatStore.setState({

@@ -54,6 +54,15 @@ export class ChatOrchestrator {
 					completion_id: options.completion_id,
 				});
 
+				if (validationResult.validation.validationType === "auth") {
+					throw new AssistantError(
+						validationResult.validation.error || "Authentication required",
+						validationResult.validation.error === "Missing DB binding"
+							? ErrorType.CONFIGURATION_ERROR
+							: ErrorType.AUTHENTICATION_ERROR,
+					);
+				}
+
 				return {
 					selectedModel: validationResult.context.modelConfig?.matchingModel || "unknown",
 					validation: validationResult.validation.validationType || "input",
@@ -175,6 +184,7 @@ export class ChatOrchestrator {
 			chatOptions: {
 				...chatOptions,
 				approved_tools,
+				options: prepared.requestOptions,
 			},
 			input: messageWithContext,
 			mode: currentMode,
@@ -193,7 +203,7 @@ export class ChatOrchestrator {
 				mode: currentMode,
 				model: primaryModel,
 				platform: platform || "api",
-				requestOptions: chatOptions.options,
+				requestOptions: prepared.requestOptions,
 			});
 
 			return {
@@ -237,7 +247,7 @@ export class ChatOrchestrator {
 							mode: currentMode,
 							model: primaryModel,
 							platform: platform || "api",
-							requestOptions: chatOptions.options,
+							requestOptions: prepared.requestOptions,
 						}),
 				});
 				response = toolStepResult.response;
@@ -289,7 +299,7 @@ export class ChatOrchestrator {
 
 		const councilTurn = extractCouncilTurnRouting(
 			response.response || "",
-			chatOptions.options?.council,
+			prepared.requestOptions?.council,
 		);
 		if (!responseAlreadyStored) {
 			await conversationManager.add(
@@ -301,7 +311,7 @@ export class ChatOrchestrator {
 					mode: currentMode,
 					model: primaryModel,
 					platform: platform || "api",
-					requestOptions: chatOptions.options,
+					requestOptions: prepared.requestOptions,
 					councilRouting: councilTurn.routing,
 				}),
 			);

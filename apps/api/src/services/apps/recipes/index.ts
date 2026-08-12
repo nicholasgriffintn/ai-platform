@@ -65,6 +65,26 @@ export function getRecipeById(id: string) {
 	return assistantRecipes.find((recipe) => recipe.id === id);
 }
 
+async function requireEnabledProjectRecipe(
+	context: ServiceContext,
+	projectId: string,
+	recipeId: string,
+): Promise<void> {
+	await requireProjectAccess(context, projectId);
+	const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
+	if (
+		!capabilities.some(
+			(capability) => capability.kind === "recipe" && capability.capability_id === recipeId,
+		)
+	) {
+		throw new AssistantError(
+			"This recipe is not enabled for the project",
+			ErrorType.FORBIDDEN,
+			403,
+		);
+	}
+}
+
 async function getRecipeConnectionContext({
 	context,
 	userId,
@@ -609,21 +629,7 @@ export async function installAssistantRecipe(id: string, options: RecipeInstallO
 		);
 	}
 	if (options.projectId) {
-		await requireProjectAccess(options.context, options.projectId);
-		const capabilities = await options.context.repositories.workspaces.listProjectCapabilities(
-			options.projectId,
-		);
-		if (
-			!capabilities.some(
-				(capability) => capability.kind === "recipe" && capability.capability_id === recipe.id,
-			)
-		) {
-			throw new AssistantError(
-				"This recipe is not enabled for the project",
-				ErrorType.FORBIDDEN,
-				403,
-			);
-		}
+		await requireEnabledProjectRecipe(options.context, options.projectId, recipe.id);
 	}
 
 	const connections = buildRecipeConnections(recipe);
@@ -680,7 +686,7 @@ export async function invokeAssistantRecipe(
 		return null;
 	}
 	if (options.projectId) {
-		await requireProjectAccess(options.context, options.projectId);
+		await requireEnabledProjectRecipe(options.context, options.projectId, recipe.id);
 	}
 
 	const connections = buildRecipeConnections(recipe);
@@ -755,6 +761,7 @@ export async function invokeAssistantRecipe(
 		taskId = await taskService.enqueueTask({
 			task_type: "recipe_execution",
 			user_id: options.userId,
+			project_id: installation.projectId ?? undefined,
 			task_data: {
 				recipeId: recipe.id,
 				installationId: installation.id,

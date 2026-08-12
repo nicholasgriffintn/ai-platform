@@ -41,9 +41,9 @@ export const useUpdateNote = (id: string, projectId?: string) => {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: (data: NoteUpdateRequest) => updateNote({ id, ...data }, projectId),
-		onSuccess: () => {
+		onSuccess: (note) => {
 			queryClient.invalidateQueries({ queryKey: ["notes", projectId] });
-			queryClient.invalidateQueries({ queryKey: ["note", projectId, id] });
+			queryClient.setQueryData(["note", projectId, id], note);
 		},
 	});
 };

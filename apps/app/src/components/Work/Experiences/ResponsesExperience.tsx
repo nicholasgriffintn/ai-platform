@@ -1,5 +1,5 @@
 import { Check, Link2, Puzzle, Share2, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router";
 
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
@@ -18,7 +18,9 @@ import { isAuthenticationError } from "~/lib/errors";
 import { WorkCardGridSkeleton } from "../WorkLoadingSkeletons";
 
 export function ResponsesExperience({ basePath, projectId, subpath }: ExperienceProps) {
-	const [shareCopied, setShareCopied] = useState(false);
+	const [copiedOutputId, setCopiedOutputId] = useState<string | null>(null);
+	const [shareError, setShareError] = useState<{ outputId: string; message: string } | null>(null);
+	const mintedShareTokens = useRef(new Map<string, string>());
 	const createShare = useCreateOutputShare();
 	const revokeShare = useRevokeOutputShare();
 	const outputId = subpath.split("/").filter(Boolean)[0];
@@ -68,15 +70,33 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
 						variant="outline"
 						disabled={createShare.isPending}
 						onClick={async () => {
-							const { token } = await createShare.mutateAsync({ outputId: output.id });
-							await navigator.clipboard.writeText(`${window.location.origin}/o/${token}`);
-							setShareCopied(true);
+							setShareError(null);
+							try {
+								let token = mintedShareTokens.current.get(output.id);
+								if (!token) {
+									({ token } = await createShare.mutateAsync({ outputId: output.id }));
+									mintedShareTokens.current.set(output.id, token);
+								}
+								await navigator.clipboard.writeText(`${window.location.origin}/o/${token}`);
+								setCopiedOutputId(output.id);
+							} catch (error) {
+								setCopiedOutputId(null);
+								setShareError({
+									outputId: output.id,
+									message: error instanceof Error ? error.message : "Could not copy the share link",
+								});
+							}
 						}}
 					>
-						{shareCopied ? <Check size={16} /> : <Share2 size={16} />}
-						{shareCopied ? "Link copied" : "Share"}
+						{copiedOutputId === output.id ? <Check size={16} /> : <Share2 size={16} />}
+						{copiedOutputId === output.id ? "Link copied" : "Share"}
 					</Button>
 				</div>
+				{shareError?.outputId === output.id && (
+					<p role="alert" className="text-sm text-red-700 dark:text-red-400">
+						{shareError.message}
+					</p>
+				)}
 				<ResponseRenderer result={output.content} />
 				{shares?.length ? (
 					<section className="border-t border-zinc-200 pt-5 dark:border-zinc-800">
@@ -105,7 +125,11 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
 										variant="outline"
 										icon={<Trash2 size={14} />}
 										isLoading={revokeShare.isPending && revokeShare.variables?.shareId === share.id}
-										onClick={() => revokeShare.mutate({ outputId: output.id, shareId: share.id })}
+										onClick={() => {
+											mintedShareTokens.current.delete(output.id);
+											if (copiedOutputId === output.id) setCopiedOutputId(null);
+											revokeShare.mutate({ outputId: output.id, shareId: share.id });
+										}}
 									>
 										Revoke
 									</Button>

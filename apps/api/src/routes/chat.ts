@@ -39,6 +39,7 @@ import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireCloudflareExecutionContext } from "~/lib/cloudflare/execution-context";
+import { ConversationManager } from "~/lib/conversationManager";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { sseResponse } from "~/lib/http/streaming";
 import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
@@ -64,6 +65,7 @@ import { handleUnshareConversation } from "~/services/completions/unshareConvers
 import { handleUpdateChatCompletion } from "~/services/completions/updateChatCompletion";
 import type { SubmitChatCompletionFeedbackInput } from "@assistant/schemas";
 import type { ChatRole, IEnv, IUser, Message } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { readNumericField, readRecordObjectField } from "~/utils/recordFields";
 
 const app = new Hono();
@@ -661,6 +663,7 @@ addRoute(app, "post", "/completions/:completion_id/check", {
 addRoute(app, "post", "/completions/:completion_id/feedback", {
 	tags: ["chat"],
 	summary: "Submit feedback about a chat completion",
+	auth: true,
 	bodySchema: submitChatCompletionFeedbackJsonSchema,
 	paramSchema: submitChatCompletionFeedbackParamsSchema,
 	responses: {
@@ -692,6 +695,18 @@ addRoute(app, "post", "/completions/:completion_id/feedback", {
 			const response = await handleChatCompletionFeedbackSubmission(serviceContext, {
 				request: body,
 				completion_id,
+				authorise: async () => {
+					const user = serviceContext.requireUser();
+					serviceContext.ensureDatabase();
+					const conversationManager = ConversationManager.getInstance({
+						database: serviceContext.database,
+						user,
+					});
+					const conversation = await conversationManager.getConversationDetails(completion_id);
+					if (!conversation.messages.some((message) => message.log_id === body.log_id)) {
+						throw new AssistantError("Feedback target not found", ErrorType.NOT_FOUND, 404);
+					}
+				},
 			});
 
 			return ResponseFactory.success(context, {

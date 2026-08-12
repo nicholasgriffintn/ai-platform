@@ -6,6 +6,7 @@ import {
 	createSourceSchema,
 	sourceCollectionListResponseSchema,
 	sourceCollectionSchema,
+	sourceDetailListResponseSchema,
 	sourceListQuerySchema,
 	sourceListResponseSchema,
 	sourceSchema,
@@ -23,6 +24,7 @@ import {
 	getSource,
 	listCollectionSources,
 	listProjectContextSources,
+	listProjectConversationSources,
 	listSourceCollections,
 	listSources,
 	setProjectContextSources,
@@ -119,6 +121,17 @@ addRoute(app, "get", "/project-context", {
 	responses: { 200: { description: "Project context sources", schema: sourceListResponseSchema } },
 	handler: ({ query, serviceContext, user }) =>
 		listProjectContextSources(serviceContext, user.id, query.projectId),
+});
+
+addRoute(app, "get", "/project-conversation", {
+	tags: ["sources"],
+	auth: true,
+	querySchema: requiredProjectQuery,
+	responses: {
+		200: { description: "Project conversation sources", schema: sourceDetailListResponseSchema },
+	},
+	handler: ({ query, serviceContext, user }) =>
+		listProjectConversationSources(serviceContext, user.id, query.projectId),
 });
 
 addRoute(app, "put", "/project-context", {

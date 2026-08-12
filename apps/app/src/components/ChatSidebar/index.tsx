@@ -67,10 +67,12 @@ export const ChatSidebar = ({
 	const debouncedSearchQuery = useDebouncedValue(searchQuery, 250);
 	const {
 		data: conversations = [],
+		error: conversationsError,
 		fetchNextPage,
 		hasNextPage,
 		isFetchingNextPage,
 		isLoading,
+		refetch: refetchConversations,
 	} = useChats({
 		archived: archiveFilter,
 		query: debouncedSearchQuery,
@@ -381,6 +383,18 @@ export const ChatSidebar = ({
 						{isLoading ? (
 							<div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
 								Loading conversations...
+							</div>
+						) : conversationsError && conversations.length === 0 ? (
+							<div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
+								<p>Could not load conversations.</p>
+								<Button
+									type="button"
+									variant="secondary"
+									className="mt-2"
+									onClick={() => refetchConversations()}
+								>
+									Retry
+								</Button>
 							</div>
 						) : conversations.length === 0 ? (
 							<div className="p-4 text-center text-zinc-500 dark:text-zinc-400">

@@ -1,12 +1,11 @@
 import type { ReactNode } from "react";
-import { useCallback, useEffect } from "react";
 
 import { NotificationBar } from "~/components/ui/NotificationBar";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
+import { useResponsiveSidebar } from "~/hooks/useResponsiveSidebar";
 import { SidebarLayout } from "~/layouts/SidebarLayout";
 import { cn } from "~/lib/utils";
-import { useUIStore } from "~/state/stores/uiStore";
 
 interface PageShellProps {
 	title?: string;
@@ -31,20 +30,7 @@ export function PageShell({
 	displayNavBar = true,
 	bgClassName,
 }: PageShellProps) {
-	const { setSidebarVisible, setIsMobile, setIsMobileLoading } = useUIStore();
-
-	const checkMobile = useCallback(() => {
-		const isMobile = window.matchMedia("(max-width: 768px)").matches;
-		setIsMobile(isMobile);
-		setSidebarVisible(!isMobile);
-		setIsMobileLoading(false);
-	}, [setSidebarVisible, setIsMobile, setIsMobileLoading]);
-
-	useEffect(() => {
-		checkMobile();
-		window.addEventListener("resize", checkMobile);
-		return () => window.removeEventListener("resize", checkMobile);
-	}, [checkMobile]);
+	useResponsiveSidebar();
 
 	const header =
 		headerContent ||

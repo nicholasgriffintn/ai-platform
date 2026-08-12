@@ -9,6 +9,7 @@ const patchLog = vi.fn(async () => undefined);
 const gateway = vi.fn(() => ({ patchLog }));
 const findMany = vi.fn(async () => [{ id: "training-example-1" }]);
 const updateById = vi.fn(async () => true);
+const authorise = vi.fn(async () => undefined);
 
 function createContext(overrides: Partial<ChatFeedbackContext> = {}): ChatFeedbackContext {
 	return {
@@ -28,6 +29,7 @@ function createContext(overrides: Partial<ChatFeedbackContext> = {}): ChatFeedba
 describe("handleChatCompletionFeedbackSubmission", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		authorise.mockResolvedValue(undefined);
 		findMany.mockResolvedValue([{ id: "training-example-1" }]);
 		updateById.mockResolvedValue(true);
 		patchLog.mockResolvedValue(undefined);
@@ -35,6 +37,7 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 
 	it("records positive feedback at both external and local seams", async () => {
 		const result = await handleChatCompletionFeedbackSubmission(createContext(), {
+			authorise,
 			completion_id: "completion-1",
 			request: { log_id: "log-1", feedback: 1, score: 80 },
 		});
@@ -68,6 +71,7 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 		});
 
 		await handleChatCompletionFeedbackSubmission(context, {
+			authorise,
 			completion_id: "completion-2",
 			request: { log_id: "log-2", feedback: -1 },
 		});
@@ -83,6 +87,7 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 
 		await expect(
 			handleChatCompletionFeedbackSubmission(createContext(), {
+				authorise,
 				completion_id: "completion-3",
 				request: { log_id: "log-3", feedback: 1 },
 			}),
@@ -96,10 +101,25 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 		findMany.mockResolvedValueOnce([]);
 
 		await handleChatCompletionFeedbackSubmission(createContext(), {
+			authorise,
 			completion_id: "completion-4",
 			request: { log_id: "log-4", feedback: -1 },
 		});
 
 		expect(updateById).not.toHaveBeenCalled();
+	});
+
+	it("does not mutate feedback when conversation authorisation fails", async () => {
+		authorise.mockRejectedValueOnce(new Error("Conversation not found"));
+
+		await expect(
+			handleChatCompletionFeedbackSubmission(createContext(), {
+				authorise,
+				completion_id: "completion-other-user",
+				request: { log_id: "log-other-user", feedback: 1 },
+			}),
+		).rejects.toThrow("Conversation not found");
+		expect(patchLog).not.toHaveBeenCalled();
+		expect(findMany).not.toHaveBeenCalled();
 	});
 });

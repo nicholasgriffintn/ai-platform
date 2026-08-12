@@ -39,25 +39,16 @@ export function useChatManager(
 	conversationMode?: ConversationModeMetadata,
 ) {
 	const queryClient = useQueryClient();
-	const generateTitleMutation = useGenerateTitle();
+	const generateTitleMutation = useGenerateTitle(requestOptions);
 	const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
 	const { startLoading, stopLoading } = useLoadingActions();
 
-	const {
-		chatMode,
-		chatSettings,
-		currentConversationId,
-		isAuthenticated,
-		isPro,
-		localOnlyMode,
-		model,
-		startNewConversation,
-	} = useChatStore();
+	const { currentConversationId, model, startNewConversation } = useChatStore();
 
 	const { webLLMService } = useWebLLMInitialization(apiModels);
-	const { updateConversation } = useConversationStorage();
+	const { determineStorageMode, updateConversation } = useConversationStorage(requestOptions);
 	const { addMessageToConversation, addAssistantMessage, updateAssistantMessage } =
-		useMessageOperations();
+		useMessageOperations(requestOptions);
 
 	const cancelConversationQueries = useCallback(
 		async (conversationId: string) => {
@@ -143,7 +134,12 @@ export function useChatManager(
 		branchConversation,
 		isRequestingOpinion,
 		requestOpinion,
-	} = useConversationActions(streamResponse, generateConversationTitle, setStreamStarted);
+	} = useConversationActions(
+		streamResponse,
+		generateConversationTitle,
+		setStreamStarted,
+		requestOptions,
+	);
 
 	const sendMessage = useCallback(
 		async (
@@ -221,8 +217,7 @@ export function useChatManager(
 			};
 		}
 
-		const isRemoteStoredConversation =
-			isAuthenticated && isPro && !localOnlyMode && !chatSettings.localOnly && chatMode !== "local";
+		const isRemoteStoredConversation = determineStorageMode().shouldSyncRemote;
 
 		if (!isRemoteStoredConversation) {
 			return {
@@ -258,12 +253,8 @@ export function useChatManager(
 			stopLoading("stream-response");
 		}
 	}, [
-		chatMode,
-		chatSettings.localOnly,
 		currentConversationId,
-		isAuthenticated,
-		isPro,
-		localOnlyMode,
+		determineStorageMode,
 		queryClient,
 		cancelConversationQueries,
 		startLoading,

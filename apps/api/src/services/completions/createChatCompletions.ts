@@ -22,6 +22,7 @@ import type {
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { generateId } from "~/utils/id";
 import { normaliseChatCompletionRequest } from "./normaliseChatCompletionRequest";
 
 const logger = getLogger({
@@ -47,7 +48,7 @@ export const handleCreateChatCompletions = async (req: {
 		throw new AssistantError("Missing required parameter: messages", ErrorType.PARAMS_ERROR);
 	}
 
-	const completionIdWithFallback = request.completion_id || `chat_${Date.now()}`;
+	const completionIdWithFallback = request.completion_id || `chat_${generateId()}`;
 
 	const result = await processChatRequest({
 		...chatRequest,

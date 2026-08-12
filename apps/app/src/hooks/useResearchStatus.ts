@@ -65,7 +65,7 @@ export function useResearchStatus({
 
 			const pollCount = (query.state.dataUpdateCount || 0) + 1;
 			if (pollCount > 10) {
-				return Math.min(15000, effectiveInterval * 1.5);
+				return Math.max(effectiveInterval, Math.min(60000, effectiveInterval * 1.5));
 			}
 
 			return effectiveInterval;

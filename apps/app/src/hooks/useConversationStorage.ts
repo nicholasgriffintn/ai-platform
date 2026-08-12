@@ -3,38 +3,40 @@ import { useCallback } from "react";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { upsertConversationInChatCaches } from "~/lib/conversation-cache";
+import { resolveConversationStorageMode } from "~/lib/chat/conversation-storage-policy";
 import { localChatService } from "~/lib/local/local-chat-service";
-import type { Conversation } from "~/types";
+import type { ChatRequestOptions, Conversation } from "~/types";
 import { useChatStore } from "~/state/stores/chatStore";
 
 /**
  * Hook for managing conversation storage across local and remote storage.
  * Handles query cache updates and IndexedDB persistence.
  */
-export function useConversationStorage() {
+export function useConversationStorage(requestOptions?: ChatRequestOptions) {
 	const queryClient = useQueryClient();
 	const { isAuthenticated, isPro, localOnlyMode, chatSettings, chatMode } = useChatStore();
 
-	const determineStorageMode = useCallback(() => {
-		const isLocalOnly =
-			!isAuthenticated ||
-			!isPro ||
-			localOnlyMode ||
-			chatSettings.localOnly === true ||
-			chatMode === "local";
-
-		return {
-			isLocalOnly,
-			shouldSyncRemote: !isLocalOnly,
-		};
-	}, [isAuthenticated, isPro, localOnlyMode, chatSettings.localOnly, chatMode]);
+	const determineStorageMode = useCallback(
+		() =>
+			resolveConversationStorageMode(
+				{
+					chatMode,
+					isAuthenticated,
+					isPro,
+					localOnlyMode,
+					settingsLocalOnly: chatSettings.localOnly === true,
+				},
+				requestOptions,
+			),
+		[chatMode, chatSettings.localOnly, isAuthenticated, isPro, localOnlyMode, requestOptions],
+	);
 
 	const updateConversation = useCallback(
 		async (
 			conversationId: string,
 			updater: (conversation: Conversation | undefined) => Conversation,
 		) => {
-			const { isLocalOnly } = determineStorageMode();
+			const { isLocalOnly, isProjectScoped } = determineStorageMode();
 
 			const currentConversation = queryClient.getQueryData<Conversation>([
 				CHATS_QUERY_KEY,
@@ -45,7 +47,7 @@ export function useConversationStorage() {
 			const nextConversation = updater(currentConversation);
 			const updatedConversation = {
 				...nextConversation,
-				isLocalOnly: nextConversation.isLocalOnly || isLocalOnly,
+				isLocalOnly: isProjectScoped ? false : nextConversation.isLocalOnly || isLocalOnly,
 				created_at: nextConversation.created_at || now,
 				updated_at: now,
 				last_message_at: now,

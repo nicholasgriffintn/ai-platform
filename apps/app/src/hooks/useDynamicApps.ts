@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { executeDynamicApp, fetchDynamicAppById, fetchDynamicApps } from "~/lib/api/dynamic-apps";
+import { OUTPUT_QUERY_KEYS } from "~/hooks/useOutputs";
 
 export const DYNAMIC_APPS_QUERY_KEYS = {
 	all: ["dynamicApps"],
@@ -44,7 +45,7 @@ export function useExecuteDynamicApp() {
 		}) => executeDynamicApp(id, formData, projectId),
 		onSuccess: (_, { projectId }) => {
 			queryClient.invalidateQueries({
-				queryKey: ["outputs", "list", projectId],
+				queryKey: OUTPUT_QUERY_KEYS.listsByProject(projectId),
 			});
 		},
 	});

@@ -115,7 +115,8 @@ export function useComposerCommandActions({
 		setUseMultiModel,
 		useMultiModel,
 	} = useChatStore();
-	const { chatAgents, isLoadingAgents } = useAgents();
+	const includeAgents = assistantActionCatalog?.includeAgents !== false;
+	const { chatAgents, isLoadingAgents } = useAgents({ enabled: includeAgents });
 	const agents = chatAgents as AgentCommand[];
 	const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
 	const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
@@ -146,7 +147,9 @@ export function useComposerCommandActions({
 		[modelToolOptions],
 	);
 	const actionCatalog = useAssistantActionCatalog({
+		includeAgents,
 		modelTools: assistantActionCatalog?.includeTools === false ? [] : availableModelTools,
+		projectId: assistantActionCatalog?.projectId,
 	});
 	const canUseAgents =
 		modeCommands.length === 0 ||

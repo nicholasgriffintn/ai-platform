@@ -94,6 +94,24 @@ describe("ChatService streaming", () => {
 		);
 	});
 
+	it("preserves structured API errors when a conversation cannot be accessed", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () =>
+				Response.json(
+					{ error: "Conversation not found" },
+					{ status: 404, statusText: "Not Found" },
+				),
+			),
+		);
+		const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+
+		await expect(service.getChat("conversation-other-user")).rejects.toMatchObject({
+			message: "Conversation not found",
+			status: 404,
+		});
+	});
+
 	it("accepts compact responses containing stored database message rows", async () => {
 		vi.stubGlobal(
 			"fetch",

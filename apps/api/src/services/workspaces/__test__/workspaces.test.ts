@@ -21,6 +21,7 @@ import {
 	acceptWorkspaceInvitation,
 	addProjectCapability,
 	createProject,
+	deleteWorkspace,
 	getProject,
 	getWorkspace,
 	inviteWorkspaceMember,
@@ -85,9 +86,11 @@ function createHarness(params?: {
 		listMembers: vi.fn().mockResolvedValue([owner]),
 		listInvitations: vi.fn().mockResolvedValue([]),
 		upsertInvitation: vi.fn(),
+		revokeInvitation: vi.fn().mockResolvedValue(true),
 		getInvitationByTokenHash: vi.fn(),
 		acceptInvitation: vi.fn().mockResolvedValue(undefined),
 		createProject: vi.fn().mockResolvedValue(undefined),
+		deleteWorkspace: vi.fn().mockResolvedValue(undefined),
 		getProject: vi.fn().mockResolvedValue(project),
 		listProjectCapabilities: vi.fn().mockResolvedValue([]),
 		addProjectCapability: vi.fn().mockResolvedValue(undefined),
@@ -112,6 +115,26 @@ describe("Work entitlement", () => {
 
 		await expect(listWorkspaces(context)).rejects.toMatchObject({ statusCode: 403 });
 		expect(repositories.listWorkspaces).not.toHaveBeenCalled();
+	});
+});
+
+describe("workspace deletion", () => {
+	it("records the deletion request before removing the workspace", async () => {
+		const { context, repositories, audit } = createHarness();
+
+		await deleteWorkspace(context, WORKSPACE_ID);
+
+		expect(audit.createRecord).toHaveBeenCalledWith({
+			workspaceId: WORKSPACE_ID,
+			actorUserId: 1,
+			action: "workspace.deletion.requested",
+			targetType: "workspace",
+			targetId: WORKSPACE_ID,
+		});
+		expect(repositories.deleteWorkspace).toHaveBeenCalledWith(WORKSPACE_ID);
+		expect(audit.createRecord.mock.invocationCallOrder[0]).toBeLessThan(
+			repositories.deleteWorkspace.mock.invocationCallOrder[0],
+		);
 	});
 });
 
@@ -175,6 +198,20 @@ describe("workspace invitation lifecycle", () => {
 			expect.stringContaining("https://work.polychat.test/work/invitations?token="),
 			expect.stringContaining("Accept invitation"),
 		);
+	});
+
+	it("revokes an invitation when its email cannot be delivered", async () => {
+		const { context, repositories } = createHarness();
+		repositories.upsertInvitation.mockResolvedValue(invitation());
+		vi.mocked(sendEmail).mockRejectedValueOnce(new Error("Email provider unavailable"));
+
+		await expect(
+			inviteWorkspaceMember(context, WORKSPACE_ID, {
+				email: "invitee@example.com",
+				role: "member",
+			}),
+		).rejects.toThrow("Email provider unavailable");
+		expect(repositories.revokeInvitation).toHaveBeenCalledWith(WORKSPACE_ID, "invitation-1");
 	});
 
 	it("binds acceptance to the invited email address", async () => {
@@ -415,5 +452,33 @@ describe("project capability ownership", () => {
 			}),
 		).rejects.toMatchObject({ statusCode: 403 });
 		expect(repositories.addProjectCapability).not.toHaveBeenCalled();
+	});
+
+	it("lets project admins update a tool attached by another admin", async () => {
+		const { context, repositories } = createHarness({
+			user: { id: 3, email: "admin@example.com" },
+			role: "admin",
+		});
+		repositories.listProjectCapabilities.mockResolvedValue([
+			{
+				...recipeCapability,
+				id: "tool-capability-1",
+				kind: "tool",
+				capability_id: "web_fetch",
+			},
+		]);
+
+		await addProjectCapability(context, PROJECT_ID, {
+			kind: "tool",
+			capabilityId: "web_fetch",
+			configuration: {},
+		});
+
+		expect(repositories.addProjectCapability).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: "tool-capability-1",
+				createdBy: 3,
+			}),
+		);
 	});
 });

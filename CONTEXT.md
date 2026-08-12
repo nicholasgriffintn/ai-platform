@@ -36,7 +36,7 @@ Use this file as the domain context for architecture reviews. Keep new terms her
 - **Provider connection**: encrypted user-owned authority for an external provider account. Connections are referenced by sources and capability runtimes but are never promoted to workspace-owned credentials implicitly.
 - **Template**: reusable personal or workspace configuration. Project templates capture project fields and capability configuration and instantiate a project atomically after current catalogue validation.
 - **Activity record**: a user-visible execution projection, including sandbox runs, whose lifecycle is useful in personal or project history.
-- **Workspace audit record**: an immutable project/workspace governance event for membership, invitations, projects, capabilities, templates, outputs, sources, and sharing changes.
+- **Workspace audit record**: an immutable project/workspace governance event for membership, invitations, projects, capabilities, templates, outputs, sources, and sharing changes. Audit history is retained after a workspace is deleted.
 - **Agent trace**: a derived view of model calls, tool calls, tool results, approvals, provider errors, usage, latency, and final synthesis for a conversation.
 - **Async invocation**: provider or app work that returns before final output is ready. Messages carry `data.asyncInvocation`, the backend polls through provider handlers, and the frontend refreshes pending conversations until the message completes or fails.
 - **Sandbox run**: an automated coding task executed by the sandbox Worker and streamed back as task events.

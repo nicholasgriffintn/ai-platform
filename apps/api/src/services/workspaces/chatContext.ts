@@ -46,6 +46,7 @@ export function applyProjectCodingEnvironment(
 			sandbox: {
 				...options.options?.sandbox,
 				...projectContext.sandboxOptions,
+				model: projectContext.sandboxOptions.model,
 				taskType: options.options?.sandbox?.taskType ?? projectContext.sandboxOptions.taskType,
 				enabled: true,
 			},

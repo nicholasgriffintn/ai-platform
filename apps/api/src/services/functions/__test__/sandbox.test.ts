@@ -120,7 +120,7 @@ describe("sandbox function tools", () => {
 				repo: "owner/repo",
 				task: "Add tests",
 				taskType: "feature-implementation",
-				model: "gpt-5.4",
+				model: undefined,
 				promptStrategy: "auto",
 				shouldCommit: true,
 				timeoutSeconds: 900,
@@ -199,6 +199,60 @@ describe("sandbox function tools", () => {
 			taskType: "test-suite",
 			shouldCommit: false,
 		});
+	});
+
+	it("keeps configured sandbox execution settings authoritative over tool arguments", async () => {
+		await run_feature_implementation.execute(
+			{
+				repo: "attacker/selected-repository",
+				task: "Add tests",
+				promptStrategy: "bug-fix",
+				shouldCommit: false,
+				timeoutSeconds: 30,
+				installationId: 123,
+			},
+			{
+				...createToolContext(),
+				request: {
+					...request,
+					request: {
+						...request.request,
+						options: {
+							sandbox: {
+								enabled: true,
+								repo: "project/approved-repository",
+								installationId: 78910,
+								model: "project-model",
+								promptStrategy: "feature-delivery",
+								shouldCommit: true,
+								timeoutSeconds: 900,
+							},
+						},
+					} as any,
+				},
+			},
+		);
+
+		expect(vi.mocked(executeSandboxRunStream).mock.calls[0]?.[0].payload).toMatchObject({
+			repo: "project/approved-repository",
+			installationId: 78910,
+			model: "project-model",
+			promptStrategy: "feature-delivery",
+			shouldCommit: true,
+			timeoutSeconds: 900,
+		});
+	});
+
+	it("does not let model-generated tool arguments select the sandbox model", async () => {
+		await run_feature_implementation.execute(
+			{
+				task: "Add tests",
+				model: "tool-selected-model",
+			},
+			createToolContext(),
+		);
+
+		expect(vi.mocked(executeSandboxRunStream).mock.calls[0]?.[0].payload.model).toBeUndefined();
 	});
 
 	it("requires a configured GitHub installation", async () => {
