@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ProfileProvidersTab } from "./ProfileProvidersTab";
 
@@ -79,6 +79,11 @@ describe("ProfileProvidersTab", () => {
 			deleteProviderApiKey: vi.fn().mockResolvedValue(undefined),
 			isDeletingProviderApiKey: false,
 		});
+	});
+
+	afterEach(() => {
+		window.name = "";
+		Object.defineProperty(window, "opener", { configurable: true, value: null });
 	});
 
 	it("stores API-key connector credentials from the connector setup modal", async () => {
@@ -177,6 +182,12 @@ describe("ProfileProvidersTab", () => {
 	});
 
 	it("asks for the exact auth config when a toolkit has more than one", async () => {
+		vi.spyOn(window, "open").mockReturnValue({
+			closed: false,
+			close: vi.fn(),
+			focus: vi.fn(),
+			location: { replace: vi.fn() },
+		} as unknown as Window);
 		recipeConnectorsMock.mockReturnValue([
 			{
 				id: "whatsapp",
@@ -223,8 +234,14 @@ describe("ProfileProvidersTab", () => {
 		});
 	});
 
-	it("opens Composio setup in a separate window", async () => {
-		const openMock = vi.spyOn(window, "open").mockImplementation(() => null);
+	it("waits for Composio setup in a popup and refreshes after its verified callback", async () => {
+		const popup = {
+			closed: false,
+			close: vi.fn(),
+			focus: vi.fn(),
+			location: { replace: vi.fn() },
+		};
+		const openMock = vi.spyOn(window, "open").mockImplementation(() => popup as unknown as Window);
 		startRecipeConnectorMock.mockResolvedValue({
 			authorizationUrl: "https://connect.composio.dev/link/token",
 		});
@@ -258,10 +275,69 @@ describe("ProfileProvidersTab", () => {
 
 		await waitFor(() => {
 			expect(openMock).toHaveBeenCalledWith(
-				"https://connect.composio.dev/link/token",
-				"_blank",
-				"noopener,noreferrer",
+				"",
+				"polychat-connector-auth",
+				expect.stringContaining("popup=yes"),
 			);
+			expect(popup.location.replace).toHaveBeenCalledWith(
+				"https://connect.composio.dev/link/token",
+			);
+		});
+		expect(screen.getByText("Waiting for connection in the popup…")).toBeInTheDocument();
+
+		window.dispatchEvent(
+			new MessageEvent("message", {
+				data: {
+					type: "polychat:connector-auth:completed",
+					provider: "airtable",
+				},
+				origin: window.location.origin,
+				source: popup as unknown as MessageEventSource,
+			}),
+		);
+
+		await waitFor(() => {
+			expect(popup.close).toHaveBeenCalled();
+			expect(screen.queryByText("Waiting for connection in the popup…")).not.toBeInTheDocument();
+		});
+	});
+
+	it("notifies the providers page and closes after the verified popup callback", async () => {
+		const postMessage = vi.fn();
+		const close = vi.spyOn(window, "close").mockImplementation(() => undefined);
+		window.name = "polychat-connector-auth";
+		Object.defineProperty(window, "opener", {
+			configurable: true,
+			value: { postMessage },
+		});
+		recipeConnectorsMock.mockReturnValue([
+			{
+				id: "airtable",
+				name: "Airtable",
+				description: "Manage Airtable bases.",
+				authType: "composio",
+				status: "connected",
+				scopes: [],
+				categories: [{ id: "productivity", name: "Productivity" }],
+				toolCount: 24,
+				readToolCount: 12,
+				writeToolCount: 12,
+			},
+		]);
+
+		renderProfileProvidersTab(
+			"/profile?tab=providers&type=connector&connector=airtable&connected=1",
+		);
+
+		await waitFor(() => {
+			expect(postMessage).toHaveBeenCalledWith(
+				{
+					type: "polychat:connector-auth:completed",
+					provider: "airtable",
+				},
+				window.location.origin,
+			);
+			expect(close).toHaveBeenCalled();
 		});
 	});
 

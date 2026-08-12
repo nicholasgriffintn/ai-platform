@@ -1,6 +1,6 @@
 import { RefreshCcw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { recipeConnectorProviderSchema } from "@assistant/schemas";
@@ -23,7 +23,12 @@ import { useUser } from "~/hooks/useUser";
 import { formatProviderLabel } from "~/lib/provider-display";
 import { ApiError } from "~/lib/api/fetch-wrapper";
 import type { ProviderSetting } from "~/lib/api/services/user-service";
-import { openExternalUrl } from "~/lib/external-navigation";
+import {
+	completeConnectorAuthPopup,
+	navigateConnectorAuthPopup,
+	openConnectorAuthPopup,
+	waitForConnectorAuthPopup,
+} from "~/lib/connector-auth-popup";
 import { ConnectorDetailsModal } from "../Connectors/ConnectorDetailsModal";
 import { ConnectorLogo } from "../Connectors/ConnectorLogo";
 import { ConnectorApiKeyModal } from "../Modals/ConnectorApiKeyModal";
@@ -101,6 +106,12 @@ export function ProfileProvidersTab() {
 			providerName: "",
 			configs: [],
 		});
+	const [connectingProviderId, setConnectingProviderId] = useState<RecipeConnectorProvider | null>(
+		null,
+	);
+	const connectorPopupRef = useRef<Window | null>(null);
+	const connectorPopupAbortRef = useRef<AbortController | null>(null);
+	const isMountedRef = useRef(true);
 	const providerType = readProviderTypeFilter(searchParams.get("type"));
 	const [providerSearch, setProviderSearch] = useState("");
 	const { data: connectorsData, isLoading: isLoadingConnectors } = useRecipeConnectors();
@@ -125,6 +136,21 @@ export function ProfileProvidersTab() {
 		() => providerSettings.find((provider) => provider.provider_id === modalState.providerId),
 		[modalState.providerId, providerSettings],
 	);
+
+	useEffect(() => {
+		completeConnectorAuthPopup(searchParams);
+	}, [searchParams]);
+
+	useEffect(() => {
+		isMountedRef.current = true;
+		return () => {
+			isMountedRef.current = false;
+			connectorPopupAbortRef.current?.abort();
+			if (connectorPopupRef.current && !connectorPopupRef.current.closed) {
+				connectorPopupRef.current.close();
+			}
+		};
+	}, []);
 
 	useEffect(() => {
 		const requestedConnectorId = searchParams.get("connector");
@@ -194,16 +220,66 @@ export function ProfileProvidersTab() {
 		connector: RecipeConnectorManifest,
 		authConfigId?: string,
 	) => {
+		if (connectorPopupRef.current && !connectorPopupRef.current.closed) {
+			connectorPopupRef.current.focus();
+			toast.info("Finish the current connector setup before starting another.");
+			return;
+		}
+
+		const popup = openConnectorAuthPopup();
+		if (!popup) {
+			toast.error("Allow popups for Polychat to connect this provider.");
+			return;
+		}
+		const abortController = new AbortController();
+		connectorPopupRef.current = popup;
+		connectorPopupAbortRef.current = abortController;
+		setConnectingProviderId(connector.id);
+		const toastId = toast.loading(`Waiting for ${connector.name}`, {
+			description: "Complete the connection in the popup window.",
+		});
+
 		try {
+			const completion = waitForConnectorAuthPopup({
+				popup,
+				provider: connector.id,
+				signal: abortController.signal,
+			});
 			const response = await startConnector.mutateAsync({
 				provider: connector.id,
 				authConfigId,
 				returnTo: "/profile?tab=providers&type=connector",
 			});
-			openExternalUrl(response.authorizationUrl);
+			if (!popup.closed) navigateConnectorAuthPopup(popup, response.authorizationUrl);
+			const outcome = await completion;
+			if (outcome === "aborted") {
+				toast.dismiss(toastId);
+				return;
+			}
+			if (outcome === "connected") {
+				await queryClient.invalidateQueries({ queryKey: RECIPE_CONNECTORS_QUERY_KEY });
+				toast.success(`${connector.name} connected`, { id: toastId });
+				return;
+			}
+			toast.error(
+				outcome === "timed_out"
+					? `${connector.name} connection timed out.`
+					: `${connector.name} connection window was closed.`,
+				{ id: toastId },
+			);
 		} catch (error) {
+			abortController.abort();
+			if (!popup.closed) popup.close();
 			console.error(error);
-			toast.error(error instanceof ApiError ? error.message : "Could not start connector setup.");
+			toast.error(error instanceof ApiError ? error.message : "Could not start connector setup.", {
+				id: toastId,
+			});
+		} finally {
+			if (connectorPopupRef.current === popup) connectorPopupRef.current = null;
+			if (connectorPopupAbortRef.current === abortController) {
+				connectorPopupAbortRef.current = null;
+			}
+			if (isMountedRef.current) setConnectingProviderId(null);
 		}
 	};
 
@@ -290,9 +366,13 @@ export function ProfileProvidersTab() {
 		...connectors.map((connector): ProviderCatalogueItem & { type: ProviderTypeFilter } => ({
 			id: `connector:${connector.id}`,
 			name: connector.name,
-			description: connector.description,
+			description:
+				connectingProviderId === connector.id
+					? "Waiting for connection in the popup…"
+					: connector.description,
 			category: connector.categories?.[0]?.name ?? "Integrations",
 			connected: connector.status === "connected",
+			connecting: connectingProviderId === connector.id,
 			type: "connector",
 			icon: <ConnectorLogo connector={connector} />,
 			onSelect: () => setSelectedConnector(connector),
@@ -414,7 +494,10 @@ export function ProfileProvidersTab() {
 					const connector = connectors.find(
 						(item) => item.id === connectorAuthConfigModal.providerId,
 					);
-					if (connector) void startComposioConnector(connector, authConfigId);
+					if (connector) {
+						setConnectorAuthConfigModal({ providerId: null, providerName: "", configs: [] });
+						void startComposioConnector(connector, authConfigId);
+					}
 				}}
 			/>
 			<ConnectorDetailsModal

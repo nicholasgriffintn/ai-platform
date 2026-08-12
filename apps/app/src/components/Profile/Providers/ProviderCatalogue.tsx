@@ -1,4 +1,4 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
 
 export interface ProviderCatalogueItem {
@@ -7,6 +7,7 @@ export interface ProviderCatalogueItem {
 	description?: string;
 	category: string;
 	connected: boolean;
+	connecting?: boolean;
 	icon: ReactNode;
 	onSelect: () => void;
 }
@@ -45,12 +46,17 @@ export function ProviderCatalogue({ items }: { items: ProviderCatalogueItem[] })
 									<span className="min-w-0 flex-1">
 										<span className="flex items-center gap-2 font-medium text-zinc-950 dark:text-zinc-100">
 											<span className="truncate">{item.name}</span>
-											{item.connected && (
+											{item.connecting ? (
+												<Loader2
+													className="size-3.5 shrink-0 animate-spin text-zinc-400"
+													aria-label="Connection in progress"
+												/>
+											) : item.connected ? (
 												<span
 													className="size-1.5 shrink-0 rounded-full bg-emerald-500"
 													aria-label="Connected"
 												/>
-											)}
+											) : null}
 										</span>
 										{item.description && (
 											<span className="mt-0.5 block truncate text-sm text-zinc-500 dark:text-zinc-400">
