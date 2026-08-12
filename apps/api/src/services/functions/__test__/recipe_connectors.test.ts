@@ -39,7 +39,10 @@ vi.mock("~/services/apps/recipes/conversationContext", () => ({
 import { configure_recipe } from "../recipes/configure_recipe";
 import { get_recipe } from "../recipes/get_recipe";
 import { trigger_recipe } from "../recipes/trigger_recipe";
-import { use_recipe_connector } from "../recipes/use_recipe_connector";
+import {
+	createUseRecipeConnectorInputSchema,
+	use_recipe_connector,
+} from "../recipes/use_recipe_connector";
 
 function createToolContext(
 	params: {
@@ -180,6 +183,16 @@ describe("recipe connector tools", () => {
 			enum: expect.arrayContaining(["airtable", "nasa", "zeplin", "zoho", "zoom"]),
 		});
 		expect(providerSchema).not.toHaveProperty("anyOf");
+	});
+
+	it("publishes only the exact composer-selected provider in a scoped schema", () => {
+		const inputSchema = z.toJSONSchema(createUseRecipeConnectorInputSchema(["googleslides"]));
+
+		expect(inputSchema.properties?.provider).toMatchObject({
+			type: "string",
+			const: "googleslides",
+			description: "Use the connector selected by the user: googleslides.",
+		});
 	});
 
 	it("rejects connector operations outside the active recipe scope", async () => {

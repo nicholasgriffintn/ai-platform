@@ -1,4 +1,4 @@
-import { recipeConnectorProviderSchema } from "@assistant/schemas";
+import { recipeConnectorProviderSchema, type RecipeConnectorProvider } from "@assistant/schemas";
 import {
 	getConnectorProviderConfig,
 	isConnectorOperationWrite,
@@ -64,20 +64,19 @@ function mergeRecipeConfigurationIntoParams(
 	};
 }
 
-export const use_recipe_connector: ApiToolDefinition = {
-	name: "use_recipe_connector",
-	description:
-		"Discover and use the exact tools available from a connector. Start with useCase to receive authoritative Composio schemas and a sessionId, then call again with an exact operation, its params, and that sessionId. Treat identifiers as operation-specific: never pass an ID returned by one operation to another unless their schemas explicitly describe the same identifier. Recipe configuration is merged into execution params as defaults.",
-	type: "premium",
-	costPerCall: 0,
-	permissions: ["network", "read", "write"],
-	inputSchema: jsonSchemaToZod({
+export function createUseRecipeConnectorInputSchema(
+	providers: readonly RecipeConnectorProvider[] = recipeConnectorProviderSchema.options,
+) {
+	return jsonSchemaToZod({
 		type: "object",
 		properties: {
 			provider: {
 				type: "string",
-				enum: recipeConnectorProviderSchema.options,
-				description: "The connected provider to use.",
+				enum: [...providers],
+				description:
+					providers.length === 1
+						? `Use the connector selected by the user: ${providers[0]}.`
+						: "The connected provider to use.",
 			},
 			operation: {
 				type: "string",
@@ -102,7 +101,17 @@ export const use_recipe_connector: ApiToolDefinition = {
 			},
 		},
 		required: ["provider"],
-	}),
+	});
+}
+
+export const use_recipe_connector: ApiToolDefinition = {
+	name: "use_recipe_connector",
+	description:
+		"Discover and use the exact tools available from a connector. Start with useCase to receive authoritative Composio schemas and a sessionId, then call again with an exact operation, its params, and that sessionId. Treat identifiers as operation-specific: never pass an ID returned by one operation to another unless their schemas explicitly describe the same identifier. Recipe configuration is merged into execution params as defaults.",
+	type: "premium",
+	costPerCall: 0,
+	permissions: ["network", "read", "write"],
+	inputSchema: createUseRecipeConnectorInputSchema(),
 	execute: async (args, context) => {
 		const request = context.request;
 		if (!request.context || !request.user?.id) {

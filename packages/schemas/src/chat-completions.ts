@@ -1,7 +1,11 @@
 import z from "zod/v4";
 
 import { chatRequestModeSchema } from "./agent-modes";
-import { recipeChatRequestOptionsSchema, type RecipeChatRequestOptions } from "./apps";
+import {
+	recipeChatRequestOptionsSchema,
+	recipeConnectorProviderSchema,
+	type RecipeChatRequestOptions,
+} from "./apps";
 import { conversationSmsRequestOptionsSchema } from "./chat-mode";
 import { councilChatOptionsSchema } from "./council";
 import { hasCompactionPart, messagePartsSchema } from "./message-parts";
@@ -283,6 +287,14 @@ const agentCompletionOptionsSchema = z.object({
 		.describe("Minimum number of tool calls to make before responding"),
 });
 
+export const connectorChatRequestOptionsSchema = z
+	.object({
+		provider: recipeConnectorProviderSchema.describe(
+			"Exact connector provider selected by the user in the composer.",
+		),
+	})
+	.strict();
+
 export const chatRequestOptionsSchema = z
 	.object({
 		source: z.string().optional().describe("Request source marker for server-created flows."),
@@ -295,6 +307,9 @@ export const chatRequestOptionsSchema = z
 		recipe: recipeChatRequestOptionsSchema
 			.optional()
 			.describe("Settings for recipe mode, which enables connector-backed workflows."),
+		connector: connectorChatRequestOptionsSchema
+			.optional()
+			.describe("The exact connector selected for this chat turn."),
 		agent: agentCompletionOptionsSchema
 			.optional()
 			.describe("Settings for agent mode, which enables multi-step reasoning and tool usage."),

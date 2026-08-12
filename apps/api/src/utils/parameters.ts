@@ -276,7 +276,9 @@ export function getToolsForProvider(
 			}
 		}
 		let tools: any[] = [];
-		const availableTools = listFunctionTools();
+		const availableTools = listFunctionTools({
+			selectedConnectorProvider: params.options?.connector?.provider,
+		});
 
 		if (params.tools) {
 			const providedTools = params.tools;

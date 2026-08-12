@@ -187,9 +187,24 @@ export async function executeAssistantAction(
 	}
 
 	if (launch.kind === "tool_toggle") {
+		const connectorProvider =
+			item.kind === "connector"
+				? recipeConnectorProviderSchema.safeParse(item.metadata?.provider)
+				: undefined;
+		if (connectorProvider && !connectorProvider.success) {
+			throw new Error("This connector cannot open because its provider is missing.");
+		}
+
 		return {
 			kind: "submit",
 			input: action.input,
+			...(connectorProvider?.success
+				? {
+						requestOptions: {
+							options: { connector: { provider: connectorProvider.data } },
+						},
+					}
+				: {}),
 			selectedTools: mergeAssistantActionToolIds(action.selectedTools ?? [], launch.toolId),
 		};
 	}

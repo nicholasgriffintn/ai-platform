@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
+import { listFunctionTools } from "~/services/functions";
 import type { ChatCompletionParameters } from "~/types";
 import {
 	calculateReasoningBudget,
@@ -21,6 +22,7 @@ vi.mock("~/services/functions", () => ({
 		{ name: "get_weather", description: "Get weather info" },
 		{ name: "create_image", description: "Generate an image" },
 		{ name: "trigger_recipe", description: "Trigger an installed recipe", type: "premium" },
+		{ name: "use_recipe_connector", description: "Use a selected connector", type: "premium" },
 	]),
 }));
 
@@ -599,6 +601,23 @@ describe("parameters", () => {
 	});
 
 	describe("getToolsForProvider", () => {
+		it("requests connector-scoped tool definitions for the composer selection", () => {
+			const result = getToolsForProvider(
+				{
+					...baseParams,
+					enabled_tools: ["use_recipe_connector"],
+					options: { connector: { provider: "googleslides" } },
+				},
+				modelConfig,
+				"openai",
+			);
+
+			expect(result.tools?.map((tool) => tool.function?.name)).toContain("use_recipe_connector");
+			expect(listFunctionTools).toHaveBeenCalledWith({
+				selectedConnectorProvider: "googleslides",
+			});
+		});
+
 		const baseParams = {
 			model: "gpt-4",
 			enabled_tools: ["web_search", "get_weather"],

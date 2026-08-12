@@ -1,4 +1,5 @@
 import type { ConversationManager } from "~/lib/conversationManager";
+import type { RecipeConnectorProvider } from "@assistant/schemas";
 import { PermissionChecker, resolveToolPermissions } from "~/lib/permissions/PermissionChecker";
 import { ToolRegistry } from "~/lib/tools/ToolRegistry";
 import type { IFunctionResponse, IRequest } from "~/types";
@@ -36,7 +37,10 @@ import { extract_text_from_document } from "./ocr";
 import { configure_recipe } from "./recipes/configure_recipe";
 import { get_recipe } from "./recipes/get_recipe";
 import { trigger_recipe } from "./recipes/trigger_recipe";
-import { use_recipe_connector } from "./recipes/use_recipe_connector";
+import {
+	createUseRecipeConnectorInputSchema,
+	use_recipe_connector,
+} from "./recipes/use_recipe_connector";
 import { compose_functions, if_then_else, parallel_execute } from "./workflow";
 import {
 	run_bug_fix,
@@ -48,6 +52,7 @@ import {
 	run_test_suite,
 } from "./sandbox";
 import type { ApiToolDefinition } from "../../types/functions";
+import { applyFunctionRequestContext } from "./request-context";
 
 const logger = getLogger({ prefix: "services/functions" });
 const FUNCTIONS_TOOL_CATEGORY = "functions";
@@ -135,8 +140,26 @@ for (const fn of functionDefinitions) {
 	});
 }
 
-export const listFunctionTools = (): RegisteredFunctionTool[] =>
-	toolRegistry.listDefinitions(FUNCTIONS_TOOL_CATEGORY) as RegisteredFunctionTool[];
+export const listFunctionTools = (options?: {
+	selectedConnectorProvider?: RecipeConnectorProvider;
+}): RegisteredFunctionTool[] => {
+	const definitions = toolRegistry.listDefinitions(
+		FUNCTIONS_TOOL_CATEGORY,
+	) as RegisteredFunctionTool[];
+	if (!options?.selectedConnectorProvider) {
+		return definitions;
+	}
+	const selectedConnectorProvider = options.selectedConnectorProvider;
+
+	return definitions.map((definition) =>
+		definition.name === use_recipe_connector.name
+			? {
+					...definition,
+					inputSchema: createUseRecipeConnectorInputSchema([selectedConnectorProvider]),
+				}
+			: definition,
+	);
+};
 
 export const resolveFunctionTool = (functionName: string): RegisteredFunctionTool =>
 	toolRegistry.resolve(FUNCTIONS_TOOL_CATEGORY, functionName) as RegisteredFunctionTool;
@@ -263,7 +286,12 @@ export const handleFunctions = async ({
 		);
 	}
 
-	const validatedArgs = validateFunctionArgs(foundFunction, args);
+	const contextualArgs = applyFunctionRequestContext({
+		args,
+		functionName,
+		requestOptions: request.request?.options,
+	});
+	const validatedArgs = validateFunctionArgs(foundFunction, contextualArgs);
 	const isProUser = request.user?.plan_id === "pro";
 	const isByokTool = foundFunction.type === "byok";
 	const functionType = isByokTool

@@ -125,13 +125,13 @@ describe("assistant action execution", () => {
 		expect(installRecipe).not.toHaveBeenCalled();
 	});
 
-	it("uses connected connectors in chat without starting setup again", async () => {
+	it("preserves the exact connected connector ID in chat without starting setup again", async () => {
 		const catalog = buildAssistantActionCatalog({
 			connectors: [
 				{
-					id: "nasa",
-					name: "Nasa",
-					description: "Explore NASA data",
+					id: "googleslides",
+					name: "Google Slides",
+					description: "Create and edit presentations",
 					authType: "composio",
 					status: "connected",
 					scopes: [],
@@ -142,7 +142,7 @@ describe("assistant action execution", () => {
 				},
 			],
 		});
-		const item = catalog.items.find((catalogItem) => catalogItem.id === "connector:nasa");
+		const item = catalog.items.find((catalogItem) => catalogItem.id === "connector:googleslides");
 		if (!item) {
 			throw new Error("Expected connector item");
 		}
@@ -151,7 +151,7 @@ describe("assistant action execution", () => {
 		await expect(
 			executeAssistantAction(
 				{
-					input: "@Nasa show me something cool from space",
+					input: "@Google Slides make a presentation about Polychat",
 					item,
 					selectedTools: [],
 				},
@@ -163,7 +163,14 @@ describe("assistant action execution", () => {
 			),
 		).resolves.toEqual({
 			kind: "submit",
-			input: "@Nasa show me something cool from space",
+			input: "@Google Slides make a presentation about Polychat",
+			requestOptions: {
+				options: {
+					connector: {
+						provider: "googleslides",
+					},
+				},
+			},
 			selectedTools: ["use_recipe_connector"],
 		});
 		expect(startConnector).not.toHaveBeenCalled();

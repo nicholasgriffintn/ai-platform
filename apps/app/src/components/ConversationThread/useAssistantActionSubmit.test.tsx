@@ -235,6 +235,13 @@ describe("useAssistantActionSubmit", () => {
 		).resolves.toEqual({
 			kind: "submit",
 			input: "@Nasa show me something cool from space",
+			requestOptions: {
+				options: {
+					connector: {
+						provider: "nasa",
+					},
+				},
+			},
 			selectedTools: ["use_recipe_connector"],
 		});
 		expect(mocks.toolsStore.setSelectedTools).toHaveBeenCalledWith(["use_recipe_connector"]);
