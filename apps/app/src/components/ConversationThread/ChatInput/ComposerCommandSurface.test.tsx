@@ -217,12 +217,13 @@ describe("ComposerCommandSurface", () => {
 				kind: "connector",
 				label: "PostHog",
 				launch: {
-					kind: "navigation",
-					path: "/profile?tab=providers&type=connector&connector=posthog",
+					kind: "tool_toggle",
+					toolId: "use_recipe_connector",
 				},
-				metadata: expect.objectContaining({
+				metadata: {
+					authType: "api_key",
 					provider: "posthog",
-				}),
+				},
 			},
 			tokenPosition: 4,
 		});

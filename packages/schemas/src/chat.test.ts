@@ -232,6 +232,53 @@ describe("chat schemas", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("accepts assistant tool-call messages without a content field in title requests", () => {
+		const result = generateChatCompletionTitleJsonSchema.safeParse({
+			messages: [
+				{
+					id: "59f62376-5b25-417f-8c2c-5678c65fca2f",
+					role: "user",
+					content: "@Nasa show me something cool",
+				},
+				{
+					id: "c99fd508-ce31-4c65-91f5-fcc59439f44e",
+					role: "assistant",
+					parts: [
+						{
+							timestamp: 1786572694195,
+							type: "reasoning",
+							text: "The user wants to see something cool from NASA.",
+							collapsed: true,
+						},
+						{
+							timestamp: 1786572694654,
+							type: "tool_use",
+							name: "use_recipe_connector",
+							toolCallId: "call_f53af7dbb39d43dcb55da5d8",
+							input: {
+								provider: "nasa",
+								useCase: "Show me an astronomy picture or Mars rover photos",
+							},
+						},
+					],
+					tool_calls: [
+						{
+							id: "call_f53af7dbb39d43dcb55da5d8",
+							type: "function",
+							function: {
+								name: "use_recipe_connector",
+								arguments:
+									'{"provider":"nasa","useCase":"Show me an astronomy picture or Mars rover photos"}',
+							},
+						},
+					],
+				},
+			],
+		});
+
+		expect(result.success).toBe(true);
+	});
+
 	it("accepts visible compaction messages in single message responses", () => {
 		const result = getMessageResponseSchema.safeParse({
 			id: "snapshot-1-compaction",

@@ -206,7 +206,7 @@ describe("assistant action launch URL contract", () => {
 		expect(() =>
 			createConnectorAssistantActionLaunch({
 				provider: "gmail",
-				authType: "oauth2",
+				authType: "composio",
 				authorizationUrl: "data:text/html,unsafe",
 			}),
 		).toThrow("unsafe");
@@ -225,7 +225,7 @@ describe("assistant action launch URL contract", () => {
 		expect(
 			createConnectorAssistantActionLaunch({
 				provider: "gmail",
-				authType: "oauth2",
+				authType: "composio",
 				authorizationUrl: "https://accounts.google.com/oauth",
 			}),
 		).toEqual({

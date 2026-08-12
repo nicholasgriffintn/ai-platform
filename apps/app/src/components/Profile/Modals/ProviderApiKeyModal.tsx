@@ -28,6 +28,8 @@ interface ProviderApiKeyModalProps {
 	configurationValues?: Record<string, string>;
 	hasStoredCredentials?: boolean;
 	webhookUrl?: string;
+	onDelete?: () => void;
+	isDeleting?: boolean;
 }
 
 const EMPTY_CONFIGURATION_VALUES: Record<string, string> = {};
@@ -41,6 +43,8 @@ export function ProviderApiKeyModal({
 	configurationValues: initialConfigurationValues = EMPTY_CONFIGURATION_VALUES,
 	hasStoredCredentials = false,
 	webhookUrl,
+	onDelete,
+	isDeleting = false,
 }: ProviderApiKeyModalProps) {
 	const { trackEvent } = useTrackEvent();
 	const [apiKey, setApiKey] = useState("");
@@ -202,6 +206,18 @@ export function ProviderApiKeyModal({
 					)}
 
 					<DialogFooter>
+						{hasStoredCredentials && onDelete && (
+							<Button
+								type="button"
+								variant="ghost"
+								className="text-red-600 hover:text-red-700 dark:text-red-400"
+								onClick={onDelete}
+								disabled={isStoringProviderApiKey || isDeleting}
+								isLoading={isDeleting}
+							>
+								Remove key
+							</Button>
+						)}
 						<Button
 							type="button"
 							variant="secondary"

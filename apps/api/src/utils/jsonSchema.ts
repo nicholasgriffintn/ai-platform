@@ -10,17 +10,27 @@ type JsonSchemaProperty = {
 	default?: unknown;
 	minimum?: number;
 	maximum?: number;
+	exclusiveMinimum?: number;
 	multipleOf?: number;
-	enum?: string[];
+	minLength?: number;
+	maxLength?: number;
+	minItems?: number;
+	maxItems?: number;
+	format?: string;
+	const?: string | number | boolean | null;
+	enum?: Array<string | number>;
+	anyOf?: JsonSchemaProperty[];
 	properties?: Record<string, JsonSchemaProperty>;
 	required?: readonly string[];
 	items?: JsonSchemaProperty;
+	additionalProperties?: boolean | JsonSchemaProperty;
 };
 
 type JsonObjectSchema = {
 	type: "object";
 	properties: Record<string, JsonSchemaProperty>;
 	required?: readonly string[];
+	additionalProperties?: boolean | JsonSchemaProperty;
 };
 
 function applyDescription<TSchema extends z.ZodTypeAny>(
@@ -57,6 +67,10 @@ function applyNumericRules(schema: z.ZodNumber, property: JsonSchemaProperty): z
 		next = next.max(property.maximum);
 	}
 
+	if (typeof property.exclusiveMinimum === "number") {
+		next = next.gt(property.exclusiveMinimum);
+	}
+
 	if (typeof property.multipleOf === "number") {
 		next = next.multipleOf(property.multipleOf);
 	}
@@ -64,23 +78,62 @@ function applyNumericRules(schema: z.ZodNumber, property: JsonSchemaProperty): z
 	return next;
 }
 
+function literalSchema(values: Array<string | number | boolean | null>): z.ZodTypeAny {
+	if (values.length === 0) return z.never();
+	return z.literal(values);
+}
+
+function applyStringRules(schema: z.ZodString, property: JsonSchemaProperty): z.ZodTypeAny {
+	let next: z.ZodTypeAny = schema;
+	if (typeof property.minLength === "number") next = (next as z.ZodString).min(property.minLength);
+	if (typeof property.maxLength === "number") next = (next as z.ZodString).max(property.maxLength);
+	if (property.pattern) {
+		const regex = safePattern(property.pattern);
+		if (regex) next = (next as z.ZodString).regex(regex);
+	}
+	if (property.format === "date") {
+		next = next.refine(
+			(value) => typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value),
+			"Invalid date",
+		);
+	} else if (property.format === "date-time") {
+		next = next.refine(
+			(value) => typeof value === "string" && Number.isFinite(Date.parse(value)),
+			"Invalid date-time",
+		);
+	} else if (property.format === "uri") {
+		next = next.refine((value) => {
+			if (typeof value !== "string") return false;
+			try {
+				new URL(value);
+				return true;
+			} catch {
+				return false;
+			}
+		}, "Invalid URI");
+	}
+	return next;
+}
+
 function toZodSchema(property: JsonSchemaProperty): z.ZodTypeAny {
+	if (property.const !== undefined) {
+		return applyDescription(z.literal(property.const), property.description);
+	}
+	if (property.enum?.length) {
+		return applyDescription(literalSchema(property.enum), property.description);
+	}
+	if (property.anyOf?.length) {
+		const [first, ...rest] = property.anyOf.map(toZodSchema);
+		const schema = rest.reduce<z.ZodTypeAny>(
+			(combined, option) => combined.or(option),
+			first ?? z.never(),
+		);
+		return applyDescription(schema, property.description);
+	}
+
 	switch (property.type) {
 		case "string": {
-			if (property.enum?.length) {
-				const enumValues = property.enum as [string, ...string[]];
-				return applyDescription(z.enum(enumValues), property.description);
-			}
-
-			let schema: z.ZodTypeAny = z.string();
-			if (property.pattern) {
-				const regex = safePattern(property.pattern);
-				if (regex) {
-					schema = (schema as z.ZodString).regex(regex);
-				}
-			}
-
-			return applyDescription(schema, property.description);
+			return applyDescription(applyStringRules(z.string(), property), property.description);
 		}
 		case "number":
 			return applyDescription(applyNumericRules(z.number(), property), property.description);
@@ -90,7 +143,10 @@ function toZodSchema(property: JsonSchemaProperty): z.ZodTypeAny {
 			return applyDescription(z.boolean(), property.description);
 		case "array": {
 			const itemSchema = property.items ? toZodSchema(property.items) : z.unknown();
-			return applyDescription(z.array(itemSchema), property.description);
+			let schema = z.array(itemSchema);
+			if (typeof property.minItems === "number") schema = schema.min(property.minItems);
+			if (typeof property.maxItems === "number") schema = schema.max(property.maxItems);
+			return applyDescription(schema, property.description);
 		}
 		case "object":
 			return applyDescription(
@@ -98,9 +154,12 @@ function toZodSchema(property: JsonSchemaProperty): z.ZodTypeAny {
 					type: "object",
 					properties: property.properties ?? {},
 					required: property.required,
+					additionalProperties: property.additionalProperties,
 				}),
 				property.description,
 			);
+		case "null":
+			return applyDescription(z.null(), property.description);
 		default:
 			if (property.properties) {
 				return applyDescription(
@@ -108,6 +167,7 @@ function toZodSchema(property: JsonSchemaProperty): z.ZodTypeAny {
 						type: "object",
 						properties: property.properties,
 						required: property.required,
+						additionalProperties: property.additionalProperties,
 					}),
 					property.description,
 				);
@@ -126,5 +186,9 @@ export function jsonSchemaToZod(parameters: JsonObjectSchema, strict = false): z
 	}
 
 	const schema = z.object(shape);
-	return strict ? schema.strict() : schema.passthrough();
+	if (strict || parameters.additionalProperties === false) return schema.strict();
+	if (parameters.additionalProperties && typeof parameters.additionalProperties === "object") {
+		return schema.catchall(toZodSchema(parameters.additionalProperties));
+	}
+	return schema.passthrough();
 }

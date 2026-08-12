@@ -42,10 +42,16 @@ describe("getSentryOptions", () => {
 		const eventWithException: Parameters<BeforeSend>[0] = {
 			type: undefined,
 			exception: { values: [{}] },
+			request: {
+				url: "https://api.example.com/verify?session_uri=single-use-secret&keep=visible",
+				query_string: "session_uri=single-use-secret&keep=visible",
+			},
 		};
 		const eventWithoutException: Parameters<BeforeSend>[0] = { type: undefined };
 
 		expect(options?.beforeSend?.(eventWithException, {})).toBe(eventWithException);
+		expect(eventWithException.request?.url).not.toContain("single-use-secret");
+		expect(eventWithException.request?.query_string).toBeUndefined();
 		expect(options?.beforeSend?.(eventWithoutException, {})).toBeNull();
 		expect(options?.beforeSendTransaction?.({ type: "transaction" }, {})).toBeNull();
 	});

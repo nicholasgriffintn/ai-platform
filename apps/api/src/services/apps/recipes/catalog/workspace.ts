@@ -20,7 +20,11 @@ export const workspaceRecipes: CatalogRecipe[] = [
 				name: "Asana",
 				description: "Lists projects and creates reviewed Asana tasks.",
 				requiresConnection: true,
-				operationIds: ["list_projects", "list_tasks", "create_task"],
+				operationIds: [
+					"ASANA_GET_MULTIPLE_PROJECTS",
+					"ASANA_GET_MULTIPLE_TASKS",
+					"ASANA_CREATE_A_TASK",
+				],
 			},
 		],
 		triggers: [
@@ -71,7 +75,12 @@ export const workspaceRecipes: CatalogRecipe[] = [
 				name: "Notion",
 				description: "Searches pages and creates or appends reviewed Notion content.",
 				requiresConnection: true,
-				operationIds: ["search", "retrieve_page", "create_page", "append_block_children"],
+				operationIds: [
+					"NOTION_SEARCH_NOTION_PAGE",
+					"NOTION_RETRIEVE_PAGE",
+					"NOTION_CREATE_NOTION_PAGE",
+					"NOTION_ADD_MULTIPLE_PAGE_CONTENT",
+				],
 			},
 		],
 		triggers: [
@@ -116,7 +125,11 @@ export const workspaceRecipes: CatalogRecipe[] = [
 				name: "Notion",
 				description: "Creates or appends action-log notes in a selected Notion page or database.",
 				requiresConnection: true,
-				operationIds: ["search", "create_page", "append_block_children"],
+				operationIds: [
+					"NOTION_SEARCH_NOTION_PAGE",
+					"NOTION_CREATE_NOTION_PAGE",
+					"NOTION_ADD_MULTIPLE_PAGE_CONTENT",
+				],
 			},
 		],
 		triggers: [

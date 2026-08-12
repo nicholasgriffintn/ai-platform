@@ -32,10 +32,12 @@ export function useStartRecipeConnector() {
 		mutationFn: ({
 			provider,
 			returnTo,
+			authConfigId,
 		}: {
 			provider: Parameters<typeof startRecipeConnector>[0];
 			returnTo?: string;
-		}) => startRecipeConnector(provider, returnTo),
+			authConfigId?: string;
+		}) => startRecipeConnector(provider, returnTo, authConfigId),
 	});
 }
 

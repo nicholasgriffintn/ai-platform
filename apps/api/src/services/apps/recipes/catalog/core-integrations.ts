@@ -12,14 +12,20 @@ export const coreIntegrationRecipes: CatalogRecipe[] = [
 		category: "Developer",
 		featured: true,
 		estimatedSetupMinutes: 3,
-		enabledTools: ["run_code_review"],
+		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
 				id: "github",
 				providerId: "github",
-				name: "GitHub App",
-				description: "Uses the existing GitHub App installation connection.",
+				name: "GitHub",
+				description: "Reads repository, commit, pull-request, and source content through Composio.",
 				requiresConnection: true,
+				operationIds: [
+					"GITHUB_GET_A_REPOSITORY",
+					"GITHUB_GET_REPOSITORY_CONTENT",
+					"GITHUB_LIST_COMMITS",
+					"GITHUB_LIST_PULL_REQUESTS_FILES",
+				],
 			},
 		],
 		triggers: [
@@ -76,7 +82,7 @@ export const coreIntegrationRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches Gmail messages and creates draft replies.",
 				requiresConnection: true,
-				operationIds: ["search_messages", "create_draft"],
+				operationIds: ["GMAIL_FETCH_EMAILS", "GMAIL_CREATE_EMAIL_DRAFT"],
 			},
 		],
 		triggers: [
@@ -127,7 +133,7 @@ export const coreIntegrationRecipes: CatalogRecipe[] = [
 				name: "Outlook Mail",
 				description: "Searches Outlook messages and creates draft replies.",
 				requiresConnection: true,
-				operationIds: ["search_messages", "create_draft"],
+				operationIds: ["OUTLOOK_SEARCH_MESSAGES", "OUTLOOK_CREATE_DRAFT"],
 			},
 		],
 		triggers: [
@@ -173,12 +179,12 @@ export const coreIntegrationRecipes: CatalogRecipe[] = [
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
-				id: "calendar",
-				providerId: "calendar",
+				id: "googlecalendar",
+				providerId: "googlecalendar",
 				name: "Google Calendar",
 				description: "Lists upcoming events and creates confirmed events.",
 				requiresConnection: true,
-				operationIds: ["list_events", "create_event"],
+				operationIds: ["GOOGLECALENDAR_EVENTS_LIST", "GOOGLECALENDAR_CREATE_EVENT"],
 			},
 		],
 		triggers: [
@@ -229,7 +235,7 @@ export const coreIntegrationRecipes: CatalogRecipe[] = [
 				name: "Outlook Calendar",
 				description: "Creates confirmed Outlook calendar events.",
 				requiresConnection: true,
-				operationIds: ["create_calendar_event"],
+				operationIds: ["OUTLOOK_CALENDAR_CREATE_EVENT"],
 			},
 		],
 		triggers: [

@@ -47,7 +47,8 @@
 		"LOG_LEVEL": "error",
 		"SENTRY_DSN": "REPLACE_ME",
 		"ENV": "production",
-		"MEMORY_SYNTHESIS_ENABLED": "true"
+		"MEMORY_SYNTHESIS_ENABLED": "true",
+		"COMPOSIO_USER_NAMESPACE": "production"
 	},
 	"ai": {
 		"binding": "AI",

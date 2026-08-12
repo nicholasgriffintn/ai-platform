@@ -1,11 +1,12 @@
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { fetchConnectorJson } from "./http";
+import { createConnectorJsonClient } from "./http";
 import { getNumberParam, getStringParam, limitPositiveInteger } from "./params";
 
 const NETLIFY_API_BASE_URL = "https://api.netlify.com/api/v1";
+const fetchNetlifyJson = createConnectorJsonClient(NETLIFY_API_BASE_URL);
 
 function requireNetlifySiteId(params: Record<string, unknown>): string {
-	const siteId = getStringParam(params, "siteId") ?? getStringParam(params, "site_id");
+	const siteId = getStringParam(params, "siteId");
 	if (!siteId) {
 		throw new AssistantError("siteId is required", ErrorType.PARAMS_ERROR, 400);
 	}
@@ -14,7 +15,7 @@ function requireNetlifySiteId(params: Record<string, unknown>): string {
 }
 
 function requireNetlifyDeployId(params: Record<string, unknown>): string {
-	const deployId = getStringParam(params, "deployId") ?? getStringParam(params, "deploy_id");
+	const deployId = getStringParam(params, "deployId");
 	if (!deployId) {
 		throw new AssistantError("deployId is required", ErrorType.PARAMS_ERROR, 400);
 	}
@@ -39,24 +40,27 @@ export async function executeNetlifyOperation(
 	params: Record<string, unknown>,
 ) {
 	if (operation === "list_sites") {
-		const url = new URL(`${NETLIFY_API_BASE_URL}/sites`);
+		const url = new URL("/api/v1/sites", NETLIFY_API_BASE_URL);
 		addNetlifyPagination(url, params);
 
-		return fetchConnectorJson({ url: url.toString(), token });
+		return fetchNetlifyJson({ path: `${url.pathname}${url.search}`, token });
 	}
 
 	if (operation === "list_deploys") {
 		const siteId = requireNetlifySiteId(params);
-		const url = new URL(`${NETLIFY_API_BASE_URL}/sites/${encodeURIComponent(siteId)}/deploys`);
+		const url = new URL(
+			`/api/v1/sites/${encodeURIComponent(siteId)}/deploys`,
+			NETLIFY_API_BASE_URL,
+		);
 		addNetlifyPagination(url, params);
 
-		return fetchConnectorJson({ url: url.toString(), token });
+		return fetchNetlifyJson({ path: `${url.pathname}${url.search}`, token });
 	}
 
 	if (operation === "get_deploy") {
 		const deployId = requireNetlifyDeployId(params);
-		return fetchConnectorJson({
-			url: `${NETLIFY_API_BASE_URL}/deploys/${encodeURIComponent(deployId)}`,
+		return fetchNetlifyJson({
+			path: `/api/v1/deploys/${encodeURIComponent(deployId)}`,
 			token,
 		});
 	}

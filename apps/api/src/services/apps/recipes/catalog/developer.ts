@@ -12,14 +12,19 @@ export const developerRecipes: CatalogRecipe[] = [
 		category: "Developer",
 		featured: false,
 		estimatedSetupMinutes: 5,
-		enabledTools: [RECIPE_CONNECTOR_TOOL, "run_code_review"],
+		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
 				id: "github",
 				providerId: "github",
 				name: "GitHub",
-				description: "Uses the existing GitHub App installation connection.",
+				description: "Reads repository commits and pull requests through Composio.",
 				requiresConnection: true,
+				operationIds: [
+					"GITHUB_GET_A_REPOSITORY",
+					"GITHUB_LIST_COMMITS",
+					"GITHUB_LIST_PULL_REQUESTS",
+				],
 			},
 			{
 				id: "linear",
@@ -27,7 +32,7 @@ export const developerRecipes: CatalogRecipe[] = [
 				name: "Linear",
 				description: "Searches Linear issues and projects.",
 				requiresConnection: true,
-				operationIds: ["search_issues"],
+				operationIds: ["LINEAR_SEARCH_ISSUES"],
 			},
 		],
 		triggers: [
@@ -88,7 +93,7 @@ export const developerRecipes: CatalogRecipe[] = [
 				name: "Linear",
 				description: "Reads and creates Linear issues after confirmation.",
 				requiresConnection: true,
-				operationIds: ["search_issues", "create_issue"],
+				operationIds: ["LINEAR_SEARCH_ISSUES", "LINEAR_CREATE_LINEAR_ISSUE"],
 			},
 		],
 		triggers: [
@@ -136,7 +141,7 @@ export const developerRecipes: CatalogRecipe[] = [
 				name: "Todoist",
 				description: "Lists, creates, and completes Todoist tasks.",
 				requiresConnection: true,
-				operationIds: ["list_tasks", "create_task", "complete_task"],
+				operationIds: ["TODOIST_GET_ALL_TASKS", "TODOIST_CREATE_TASK", "TODOIST_CLOSE_TASK_V1"],
 			},
 		],
 		triggers: [
@@ -176,64 +181,6 @@ export const developerRecipes: CatalogRecipe[] = [
 		],
 	},
 	{
-		id: "sentry",
-		title: "Sentry",
-		summary: "Review Sentry projects and unresolved issues from chat.",
-		description:
-			"Uses a connected Sentry organization to list projects, review unresolved issues, and inspect issue details without mutating incidents.",
-		kind: "integrate",
-		category: "Developer",
-		featured: false,
-		estimatedSetupMinutes: 4,
-		enabledTools: [RECIPE_CONNECTOR_TOOL],
-		integrations: [
-			{
-				id: "sentry",
-				providerId: "sentry",
-				name: "Sentry",
-				description: "Lists organizations, projects, and issue details.",
-				requiresConnection: true,
-				operationIds: ["list_organizations", "list_projects", "list_issues", "retrieve_issue"],
-			},
-		],
-		triggers: [
-			{
-				type: "message",
-				label: "Ask about Sentry incidents",
-				description: "Ask Polychat to review Sentry projects and unresolved issues.",
-			},
-		],
-		actions: [
-			"List connected Sentry organizations",
-			"List projects for a configured organization",
-			"Review unresolved issues and retrieve issue details",
-		],
-		setupPrompt:
-			"Set up the Sentry recipe. Ask which Sentry organization slug and projects to use, list organizations or projects when needed, and review unresolved issues using only read-only Sentry operations. Do not resolve, assign, comment on, delete, or otherwise mutate issues because this connector is read-only.",
-		configurationFields: [
-			{
-				key: "organizationSlug",
-				label: "Organization slug",
-				type: "text",
-				required: true,
-				placeholder: "acme",
-			},
-			{
-				key: "projectIds",
-				label: "Project IDs",
-				type: "string_list",
-				placeholder: "12345, 67890",
-			},
-			{
-				key: "issueQuery",
-				label: "Issue query",
-				type: "text",
-				placeholder: "is:unresolved level:error",
-			},
-			reviewInstructionsField,
-		],
-	},
-	{
 		id: "posthog",
 		title: "PostHog",
 		summary: "Query product analytics and project data from chat.",
@@ -251,7 +198,10 @@ export const developerRecipes: CatalogRecipe[] = [
 				name: "PostHog",
 				description: "Lists projects and runs read-only HogQL queries.",
 				requiresConnection: true,
-				operationIds: ["list_projects", "query"],
+				operationIds: [
+					"POSTHOG_LIST_ORGANIZATION_PROJECTS",
+					"POSTHOG_CREATE_QUERY_IN_PROJECT_BY_ID",
+				],
 			},
 		],
 		triggers: [
@@ -375,75 +325,6 @@ export const developerRecipes: CatalogRecipe[] = [
 		],
 	},
 	{
-		id: "vercel",
-		title: "Vercel",
-		summary: "Inspect Vercel projects, deployments, and build events from chat.",
-		description:
-			"Uses a connected Vercel access token to list projects, review deployments, and inspect deployment events without changing Vercel resources.",
-		kind: "integrate",
-		category: "Developer",
-		featured: false,
-		estimatedSetupMinutes: 3,
-		enabledTools: [RECIPE_CONNECTOR_TOOL],
-		integrations: [
-			{
-				id: "vercel",
-				providerId: "vercel",
-				name: "Vercel",
-				description: "Lists projects, deployments, and deployment events.",
-				requiresConnection: true,
-				operationIds: ["list_projects", "list_deployments", "get_deployment_events"],
-			},
-		],
-		triggers: [
-			{
-				type: "message",
-				label: "Ask about deployments",
-				description: "Ask Polychat to inspect Vercel projects, deployments, or build events.",
-			},
-		],
-		actions: [
-			"List accessible Vercel projects",
-			"Review recent deployments by project, branch, target, state, or team",
-			"Inspect deployment events and build output for a selected deployment",
-		],
-		setupPrompt:
-			"Set up the Vercel recipe. Ask which team, project, branch, and environment to monitor. Use only read-only Vercel operations to list projects, review deployments, and inspect deployment events. Do not create deployments, edit projects, update domains, change environment variables, or mutate Vercel resources because this connector is read-only.",
-		configurationFields: [
-			{
-				key: "teamId",
-				label: "Team ID",
-				type: "text",
-				placeholder: "team_...",
-			},
-			{
-				key: "teamSlug",
-				label: "Team slug",
-				type: "text",
-				placeholder: "my-team",
-			},
-			{
-				key: "projectId",
-				label: "Project ID or name",
-				type: "text",
-				placeholder: "prj_... or project-name",
-			},
-			{
-				key: "defaultTarget",
-				label: "Default target",
-				type: "text",
-				placeholder: "production or preview",
-			},
-			{
-				key: "defaultBranch",
-				label: "Default branch",
-				type: "text",
-				placeholder: "main",
-			},
-			reviewInstructionsField,
-		],
-	},
-	{
 		id: "netlify",
 		title: "Netlify",
 		summary: "Inspect Netlify sites, deploys, and deployment status from chat.",
@@ -518,13 +399,7 @@ export const developerRecipes: CatalogRecipe[] = [
 				name: "Cloudflare",
 				description: "Lists accounts, zones, Workers, and Worker deployments.",
 				requiresConnection: true,
-				operationIds: [
-					"list_accounts",
-					"list_zones",
-					"list_workers",
-					"list_worker_deployments",
-					"get_worker_deployment",
-				],
+				operationIds: ["CLOUDFLARE_LIST_ACCOUNTS", "CLOUDFLARE_LIST_ZONES"],
 			},
 		],
 		triggers: [
@@ -570,70 +445,6 @@ export const developerRecipes: CatalogRecipe[] = [
 		],
 	},
 	{
-		id: "supabase",
-		title: "Supabase",
-		summary: "Inspect Supabase organizations, projects, Edge Functions, and branches from chat.",
-		description:
-			"Uses a connected Supabase Management API access token to list organizations, projects, Edge Functions, and database branches without changing Supabase resources.",
-		kind: "integrate",
-		category: "Developer",
-		featured: false,
-		estimatedSetupMinutes: 3,
-		enabledTools: [RECIPE_CONNECTOR_TOOL],
-		integrations: [
-			{
-				id: "supabase",
-				providerId: "supabase",
-				name: "Supabase",
-				description: "Lists organizations, projects, Edge Functions, and database branches.",
-				requiresConnection: true,
-				operationIds: ["list_organizations", "list_projects", "list_functions", "list_branches"],
-			},
-		],
-		triggers: [
-			{
-				type: "message",
-				label: "Ask about Supabase",
-				description:
-					"Ask Polychat to inspect Supabase organizations, projects, Edge Functions, or database branches.",
-			},
-		],
-		actions: [
-			"List accessible Supabase organizations and projects",
-			"Review Edge Functions for a selected project",
-			"Review database branches for a selected project",
-		],
-		setupPrompt:
-			"Set up the Supabase recipe. Ask which organization slug, project ref, branch focus, and Edge Function focus to use. Use only read-only Supabase Management API operations to list organizations, projects, Edge Functions, and branches. Do not create projects, deploy functions, change branches, update settings, rotate keys, run SQL, or mutate Supabase resources because this connector is read-only.",
-		configurationFields: [
-			{
-				key: "organizationSlug",
-				label: "Organization slug",
-				type: "text",
-				placeholder: "my-org",
-			},
-			{
-				key: "projectRef",
-				label: "Project ref",
-				type: "text",
-				placeholder: "abcdefghijklmnopqrst",
-			},
-			{
-				key: "defaultBranch",
-				label: "Default branch",
-				type: "text",
-				placeholder: "main, preview branch name, or production",
-			},
-			{
-				key: "defaultFunctionFocus",
-				label: "Default function focus",
-				type: "textarea",
-				placeholder: "Failed functions, recently updated functions, JWT settings, or deploy review",
-			},
-			reviewInstructionsField,
-		],
-	},
-	{
 		id: "webflow",
 		title: "Webflow",
 		summary: "Inspect Webflow sites, CMS collections, and CMS items from chat.",
@@ -651,7 +462,11 @@ export const developerRecipes: CatalogRecipe[] = [
 				name: "Webflow",
 				description: "Lists sites, CMS collections, and CMS items.",
 				requiresConnection: true,
-				operationIds: ["list_sites", "list_collections", "list_items"],
+				operationIds: [
+					"WEBFLOW_LIST_WEBFLOW_SITES",
+					"WEBFLOW_LIST_COLLECTIONS",
+					"WEBFLOW_LIST_COLLECTION_ITEMS",
+				],
 			},
 		],
 		triggers: [

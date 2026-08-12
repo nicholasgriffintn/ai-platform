@@ -229,6 +229,7 @@ describe("fetchAIResponse", () => {
 						status: 503,
 						headers: {
 							"content-type": "application/json",
+							"x-request-id": "req_provider_123",
 						},
 					},
 				),
@@ -259,6 +260,7 @@ describe("fetchAIResponse", () => {
 				name: "AssistantError",
 				statusCode: 503,
 				context: {
+					requestId: "req_provider_123",
 					responseJson: {
 						error: "Model test/model is currently loading",
 						estimated_time: 3,

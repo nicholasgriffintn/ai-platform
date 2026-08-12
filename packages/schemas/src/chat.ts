@@ -87,16 +87,14 @@ export const generateChatCompletionTitleParamsSchema = z.object({
 	}),
 });
 
+const titleCompactionMessageSchema = z.object({
+	role: z.literal("compaction"),
+	content: z.union([z.string(), z.array(z.unknown())]),
+	parts: messagePartsSchema.optional(),
+});
+
 export const generateChatCompletionTitleJsonSchema = z.object({
-	messages: z
-		.array(
-			z.object({
-				role: messageRoleSchema,
-				content: z.union([z.string(), z.array(z.any())]),
-				parts: messagePartsSchema.optional(),
-			}),
-		)
-		.optional(),
+	messages: z.array(z.union([messageSchema, titleCompactionMessageSchema])).optional(),
 	store: z.boolean().optional(),
 });
 

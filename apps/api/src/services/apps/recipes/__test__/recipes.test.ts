@@ -2,12 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
 	recipeInstallationUpdateRequestSchema,
+	type RecipeConnectorManifest,
 	type RecipeConnectorsResponse,
 } from "@assistant/schemas";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { RepositoryManager, TemplateRepository } from "~/repositories";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import type { IEnv, IUser } from "~/types";
+import { configuredComposioToolkits } from "~/lib/providers/capabilities/connectors/composio/configured-toolkit-manifest";
 
 const { executeRecipeInvocationChatMock, listRecipeConnectorsMock } = vi.hoisted(() => ({
 	executeRecipeInvocationChatMock: vi.fn(),
@@ -32,202 +34,190 @@ import {
 	resolveInstalledAssistantRecipe,
 	updateRecipeInstallation,
 } from "../index";
-import { getRecipeCatalogValidationIssues } from "../catalog";
+import { assistantRecipes, getRecipeCatalogValidationIssues } from "../catalog";
 import { trigger_recipe } from "~/services/functions/recipes/trigger_recipe";
 
+type ConnectorFixture = Omit<
+	RecipeConnectorManifest,
+	"categories" | "toolCount" | "readToolCount" | "writeToolCount"
+> & { operations: string[] };
+
+function connectorFixture(connector: ConnectorFixture): RecipeConnectorManifest {
+	const { operations, ...manifest } = connector;
+	return {
+		...manifest,
+		categories: [],
+		toolCount: operations.length,
+		readToolCount: operations.length,
+		writeToolCount: 0,
+	};
+}
+
 const connectedConnectors: RecipeConnectorsResponse = {
-	connectors: [
-		{
-			id: "cloudflare",
-			name: "Cloudflare",
-			description: "Cloudflare",
-			authType: "api_key",
-			status: "connected",
-			setupUrl: "/profile?tab=providers&type=connector&connector=cloudflare",
-			credentialLabel: "API token",
-			scopes: ["Account:read", "Zone:read", "Workers Scripts:read"],
-			operations: [
-				"list_accounts",
-				"list_zones",
-				"list_workers",
-				"list_worker_deployments",
-				"get_worker_deployment",
-			],
-		},
-		{
-			id: "github",
-			name: "GitHub",
-			description: "GitHub App",
-			authType: "github_app",
-			status: "connected",
-			setupUrl: "/profile?tab=sandbox",
-			scopes: ["GitHub App installation"],
-			operations: [],
-		},
-		{
-			id: "devin",
-			name: "Devin",
-			description: "Devin",
-			authType: "api_key",
-			status: "connected",
-			setupUrl: "/profile?tab=providers&type=connector&connector=devin",
-			credentialLabel: "Service user API key",
-			scopes: ["sessions:read", "sessions:write"],
-			operations: [
-				"list_sessions",
-				"get_session",
-				"create_session",
-				"list_messages",
-				"send_message",
-			],
-		},
-		{
-			id: "linear",
-			name: "Linear",
-			description: "Linear workspace",
-			authType: "oauth2",
-			status: "disconnected",
-			setupUrl: "/profile?tab=providers&type=connector&connector=linear",
-			authorizationUrl: "https://linear.app/oauth/authorize",
-			scopes: ["read", "write"],
-			operations: ["search_issues", "create_issue"],
-		},
-		{
-			id: "gmail",
-			name: "Gmail",
-			description: "Gmail",
-			authType: "oauth2",
-			status: "connected",
-			setupUrl: "/profile?tab=providers&type=connector&connector=gmail",
-			scopes: ["gmail"],
-			operations: ["search_messages", "create_draft"],
-		},
-		{
-			id: "calendar",
-			name: "Google Calendar",
-			description: "Calendar",
-			authType: "oauth2",
-			status: "unconfigured",
-			setupUrl: "/profile?tab=providers&type=connector&connector=calendar",
-			scopes: ["calendar"],
-			operations: ["list_events", "create_event"],
-		},
-		{
-			id: "notion",
-			name: "Notion",
-			description: "Notion",
-			authType: "oauth2",
-			status: "connected",
-			setupUrl: "/profile?tab=providers&type=connector&connector=notion",
-			scopes: [],
-			operations: ["search", "retrieve_page", "create_page", "append_block_children"],
-		},
-		{
-			id: "todoist",
-			name: "Todoist",
-			description: "Todoist",
-			authType: "oauth2",
-			status: "connected",
-			setupUrl: "/profile?tab=providers&type=connector&connector=todoist",
-			scopes: ["data:read_write"],
-			operations: ["list_tasks", "create_task", "complete_task"],
-		},
-		{
-			id: "asana",
-			name: "Asana",
-			description: "Asana",
-			authType: "oauth2",
-			status: "connected",
-			setupUrl: "/profile?tab=providers&type=connector&connector=asana",
-			scopes: ["tasks:read", "tasks:write", "projects:read"],
-			operations: ["list_projects", "list_tasks", "create_task"],
-		},
-		{
-			id: "sentry",
-			name: "Sentry",
-			description: "Sentry",
-			authType: "oauth2",
-			status: "connected",
-			setupUrl: "/profile?tab=providers&type=connector&connector=sentry",
-			scopes: ["org:read", "project:read", "event:read"],
-			operations: ["list_organizations", "list_projects", "list_issues", "retrieve_issue"],
-		},
-		{
-			id: "posthog",
-			name: "PostHog",
-			description: "PostHog",
-			authType: "api_key",
-			status: "connected",
-			setupUrl: "/profile?tab=providers&type=connector&connector=posthog",
-			credentialLabel: "Personal API key",
-			scopes: ["project:read", "query:read"],
-			operations: ["list_projects", "query"],
-		},
-		{
-			id: "fitbit",
-			name: "Fitbit",
-			description: "Fitbit",
-			authType: "oauth2",
-			status: "connected",
-			setupUrl: "/profile?tab=providers&type=connector&connector=fitbit",
-			scopes: ["profile", "activity", "sleep", "heartrate"],
-			operations: ["profile", "daily_activity", "sleep_logs", "heart_rate"],
-		},
-		{
-			id: "withings",
-			name: "Withings",
-			description: "Withings",
-			authType: "oauth2",
-			status: "connected",
-			setupUrl: "/profile?tab=providers&type=connector&connector=withings",
-			scopes: ["user.info", "user.metrics", "user.activity"],
-			operations: ["profile", "devices", "measurements", "activity", "sleep_summary"],
-		},
-		{
-			id: "netlify",
-			name: "Netlify",
-			description: "Netlify",
-			authType: "api_key",
-			status: "connected",
-			setupUrl: "/profile?tab=providers&type=connector&connector=netlify",
-			credentialLabel: "Personal access token",
-			scopes: ["sites:read", "deploys:read"],
-			operations: ["list_sites", "list_deploys", "get_deploy"],
-		},
-		{
-			id: "supabase",
-			name: "Supabase",
-			description: "Supabase",
-			authType: "api_key",
-			status: "connected",
-			setupUrl: "/profile?tab=providers&type=connector&connector=supabase",
-			credentialLabel: "Management API access token",
-			scopes: ["organizations:read", "projects:read", "edge_functions:read", "environment:read"],
-			operations: ["list_organizations", "list_projects", "list_functions", "list_branches"],
-		},
-		{
-			id: "webflow",
-			name: "Webflow",
-			description: "Webflow",
-			authType: "api_key",
-			status: "connected",
-			setupUrl: "/profile?tab=providers&type=connector&connector=webflow",
-			credentialLabel: "Data API token",
-			scopes: ["sites:read", "cms:read"],
-			operations: ["list_sites", "list_collections", "list_items"],
-		},
-		{
-			id: "vercel",
-			name: "Vercel",
-			description: "Vercel",
-			authType: "api_key",
-			status: "connected",
-			setupUrl: "/profile?tab=providers&type=connector&connector=vercel",
-			credentialLabel: "Access token",
-			scopes: ["projects:read", "deployments:read"],
-			operations: ["list_projects", "list_deployments", "get_deployment_events"],
-		},
-	],
+	connectors: (
+		[
+			{
+				id: "cloudflare",
+				name: "Cloudflare",
+				description: "Cloudflare",
+				authType: "api_key",
+				status: "connected",
+				setupUrl: "/profile?tab=providers&type=connector&connector=cloudflare",
+				credentialLabel: "API token",
+				scopes: ["Account:read", "Zone:read", "Workers Scripts:read"],
+				operations: [
+					"list_accounts",
+					"list_zones",
+					"list_workers",
+					"list_worker_deployments",
+					"get_worker_deployment",
+				],
+			},
+			{
+				id: "github",
+				name: "GitHub",
+				description: "GitHub App",
+				authType: "composio",
+				status: "connected",
+				setupUrl: "/profile?tab=sandbox",
+				scopes: ["GitHub App installation"],
+				operations: [],
+			},
+			{
+				id: "devin",
+				name: "Devin",
+				description: "Devin",
+				authType: "api_key",
+				status: "connected",
+				setupUrl: "/profile?tab=providers&type=connector&connector=devin",
+				credentialLabel: "Service user API key",
+				scopes: ["sessions:read", "sessions:write"],
+				operations: [
+					"list_sessions",
+					"get_session",
+					"create_session",
+					"list_messages",
+					"send_message",
+				],
+			},
+			{
+				id: "linear",
+				name: "Linear",
+				description: "Linear workspace",
+				authType: "composio",
+				status: "disconnected",
+				setupUrl: "/profile?tab=providers&type=connector&connector=linear",
+				authorizationUrl: "https://linear.app/oauth/authorize",
+				scopes: ["read", "write"],
+				operations: ["LINEAR_SEARCH_ISSUES", "LINEAR_CREATE_LINEAR_ISSUE"],
+			},
+			{
+				id: "gmail",
+				name: "Gmail",
+				description: "Gmail",
+				authType: "composio",
+				status: "connected",
+				setupUrl: "/profile?tab=providers&type=connector&connector=gmail",
+				scopes: ["gmail"],
+				operations: ["GMAIL_FETCH_EMAILS", "GMAIL_CREATE_EMAIL_DRAFT"],
+			},
+			{
+				id: "googlecalendar",
+				name: "Google Calendar",
+				description: "Calendar",
+				authType: "composio",
+				status: "unconfigured",
+				setupUrl: "/profile?tab=providers&type=connector&connector=googlecalendar",
+				scopes: ["calendar"],
+				operations: ["GOOGLECALENDAR_EVENTS_LIST", "GOOGLECALENDAR_CREATE_EVENT"],
+			},
+			{
+				id: "notion",
+				name: "Notion",
+				description: "Notion",
+				authType: "composio",
+				status: "connected",
+				setupUrl: "/profile?tab=providers&type=connector&connector=notion",
+				scopes: [],
+				operations: [
+					"NOTION_SEARCH_NOTION_PAGE",
+					"NOTION_RETRIEVE_PAGE",
+					"NOTION_CREATE_NOTION_PAGE",
+					"NOTION_ADD_MULTIPLE_PAGE_CONTENT",
+				],
+			},
+			{
+				id: "todoist",
+				name: "Todoist",
+				description: "Todoist",
+				authType: "composio",
+				status: "connected",
+				setupUrl: "/profile?tab=providers&type=connector&connector=todoist",
+				scopes: ["data:read_write"],
+				operations: ["TODOIST_GET_ALL_TASKS", "TODOIST_CREATE_TASK", "TODOIST_CLOSE_TASK_V1"],
+			},
+			{
+				id: "asana",
+				name: "Asana",
+				description: "Asana",
+				authType: "composio",
+				status: "connected",
+				setupUrl: "/profile?tab=providers&type=connector&connector=asana",
+				scopes: ["tasks:read", "tasks:write", "projects:read"],
+				operations: [
+					"ASANA_GET_MULTIPLE_PROJECTS",
+					"ASANA_GET_MULTIPLE_TASKS",
+					"ASANA_CREATE_A_TASK",
+				],
+			},
+			{
+				id: "posthog",
+				name: "PostHog",
+				description: "PostHog",
+				authType: "composio",
+				status: "connected",
+				setupUrl: "/profile?tab=providers&type=connector&connector=posthog",
+				scopes: ["project:read", "query:read"],
+				operations: ["POSTHOG_LIST_ORGANIZATION_PROJECTS", "POSTHOG_CREATE_QUERY_IN_PROJECT_BY_ID"],
+			},
+			{
+				id: "netlify",
+				name: "Netlify",
+				description: "Netlify",
+				authType: "composio",
+				status: "connected",
+				setupUrl: "/profile?tab=providers&type=connector&connector=netlify",
+				credentialLabel: "Personal access token",
+				scopes: ["sites:read", "deploys:read"],
+				operations: ["list_sites", "list_deploys", "get_deploy"],
+			},
+			{
+				id: "webflow",
+				name: "Webflow",
+				description: "Webflow",
+				authType: "api_key",
+				status: "connected",
+				setupUrl: "/profile?tab=providers&type=connector&connector=webflow",
+				scopes: ["sites:read", "cms:read"],
+				operations: [
+					"WEBFLOW_LIST_WEBFLOW_SITES",
+					"WEBFLOW_LIST_COLLECTIONS",
+					"WEBFLOW_LIST_COLLECTION_ITEMS",
+				],
+			},
+			{
+				id: "vercel",
+				name: "Vercel",
+				description: "Vercel",
+				authType: "api_key",
+				status: "connected",
+				setupUrl: "/profile?tab=providers&type=connector&connector=vercel",
+				credentialLabel: "Access token",
+				scopes: ["projects:read", "deployments:read"],
+				operations: ["list_projects", "list_deployments", "get_deployment_events"],
+			},
+		] satisfies ConnectorFixture[]
+	).map(connectorFixture),
 };
 
 function withConnectorStatus(
@@ -410,7 +400,7 @@ describe("assistant recipes", () => {
 				requiredConnectors: [
 					{ provider: "gmail", state: "unknown" },
 					{ provider: "outlook", state: "unknown" },
-					{ provider: "calendar", state: "unknown" },
+					{ provider: "googlecalendar", state: "unknown" },
 				],
 				requiredModelCapabilities: [],
 			}),
@@ -428,8 +418,8 @@ describe("assistant recipes", () => {
 				connectionStatus: "unknown",
 			}),
 			expect.objectContaining({
-				id: "calendar",
-				providerId: "calendar",
+				id: "googlecalendar",
+				providerId: "googlecalendar",
 				connectionStatus: "unconfigured",
 			}),
 		]);
@@ -445,7 +435,7 @@ describe("assistant recipes", () => {
 		expect(setup).toMatchObject({
 			allowedConnectorProviders: ["gmail"],
 			allowedConnectorOperations: {
-				gmail: ["search_messages", "create_draft"],
+				gmail: ["GMAIL_FETCH_EMAILS", "GMAIL_CREATE_EMAIL_DRAFT"],
 			},
 			enabledTools: ["use_recipe_connector", "get_recipe", "configure_recipe"],
 		});
@@ -462,7 +452,7 @@ describe("assistant recipes", () => {
 			status: "ready",
 			allowedConnectorProviders: ["gmail"],
 			allowedConnectorOperations: {
-				gmail: ["search_messages", "create_draft"],
+				gmail: ["GMAIL_FETCH_EMAILS", "GMAIL_CREATE_EMAIL_DRAFT"],
 			},
 			enabledTools: ["use_recipe_connector"],
 		});
@@ -497,7 +487,7 @@ describe("assistant recipes", () => {
 
 	it("includes Outlook calendar reads in morning briefing connector scope", async () => {
 		const context = createTestServiceContext();
-		listRecipeConnectorsMock.mockResolvedValue(withConnectorStatus("calendar", "connected"));
+		listRecipeConnectorsMock.mockResolvedValue(withConnectorStatus("googlecalendar", "connected"));
 
 		await installAssistantRecipe("morning-briefing", {
 			context,
@@ -515,16 +505,16 @@ describe("assistant recipes", () => {
 		expect(invocation).toMatchObject({
 			recipeId: "morning-briefing",
 			allowedConnectorOperations: {
-				gmail: ["search_messages"],
-				outlook: ["search_messages", "list_events"],
-				calendar: ["list_events"],
+				gmail: ["GMAIL_FETCH_EMAILS"],
+				outlook: ["OUTLOOK_SEARCH_MESSAGES", "OUTLOOK_GET_CALENDAR_VIEW"],
+				googlecalendar: ["GOOGLECALENDAR_EVENTS_LIST"],
 			},
 		});
 	});
 
 	it("scopes flight calendar recipe connector operations to mail reads and calendar creates", async () => {
 		const context = createTestServiceContext();
-		listRecipeConnectorsMock.mockResolvedValue(withConnectorStatus("calendar", "connected"));
+		listRecipeConnectorsMock.mockResolvedValue(withConnectorStatus("googlecalendar", "connected"));
 
 		await installAssistantRecipe("add-flights-to-calendar", {
 			context,
@@ -546,11 +536,11 @@ describe("assistant recipes", () => {
 
 		expect(invocation).toMatchObject({
 			recipeId: "add-flights-to-calendar",
-			allowedConnectorProviders: ["gmail", "outlook", "calendar"],
+			allowedConnectorProviders: ["gmail", "outlook", "googlecalendar"],
 			allowedConnectorOperations: {
-				gmail: ["search_messages"],
-				outlook: ["search_messages", "create_calendar_event"],
-				calendar: ["create_event"],
+				gmail: ["GMAIL_FETCH_EMAILS"],
+				outlook: ["OUTLOOK_SEARCH_MESSAGES", "OUTLOOK_CALENDAR_CREATE_EVENT"],
+				googlecalendar: ["GOOGLECALENDAR_CREATE_EVENT"],
 			},
 			enabledTools: ["use_recipe_connector"],
 			configuration: {
@@ -584,48 +574,12 @@ describe("assistant recipes", () => {
 			status: "ready",
 			allowedConnectorProviders: ["asana"],
 			allowedConnectorOperations: {
-				asana: ["list_projects", "list_tasks", "create_task"],
+				asana: ["ASANA_GET_MULTIPLE_PROJECTS", "ASANA_GET_MULTIPLE_TASKS", "ASANA_CREATE_A_TASK"],
 			},
 			enabledTools: ["use_recipe_connector"],
 			configuration: {
 				workspaceId: "workspace-1",
 				projectIds: ["project-1"],
-			},
-		});
-	});
-
-	it("derives Sentry read-only connector operations for the Sentry integration recipe", async () => {
-		const context = createTestServiceContext();
-		await installAssistantRecipe("sentry", {
-			context,
-			userId: 42,
-			channel: "web",
-			configuration: {
-				organizationSlug: "acme",
-				projectIds: ["123"],
-				issueQuery: "is:unresolved level:error",
-			},
-		});
-
-		const invocation = await invokeAssistantRecipe("sentry", {
-			context,
-			userId: 42,
-			channel: "tool",
-			requireInstalled: true,
-		});
-
-		expect(invocation).toMatchObject({
-			recipeId: "sentry",
-			status: "ready",
-			allowedConnectorProviders: ["sentry"],
-			allowedConnectorOperations: {
-				sentry: ["list_organizations", "list_projects", "list_issues", "retrieve_issue"],
-			},
-			enabledTools: ["use_recipe_connector"],
-			configuration: {
-				organizationSlug: "acme",
-				projectIds: ["123"],
-				issueQuery: "is:unresolved level:error",
 			},
 		});
 	});
@@ -655,53 +609,13 @@ describe("assistant recipes", () => {
 			status: "ready",
 			allowedConnectorProviders: ["posthog"],
 			allowedConnectorOperations: {
-				posthog: ["list_projects", "query"],
+				posthog: ["POSTHOG_LIST_ORGANIZATION_PROJECTS", "POSTHOG_CREATE_QUERY_IN_PROJECT_BY_ID"],
 			},
 			enabledTools: ["use_recipe_connector"],
 			configuration: {
 				region: "eu",
 				organizationId: "org-1",
 				projectId: "123",
-			},
-		});
-	});
-
-	it("derives Vercel read-only connector operations for the Vercel integration recipe", async () => {
-		const context = createTestServiceContext();
-		await installAssistantRecipe("vercel", {
-			context,
-			userId: 42,
-			channel: "web",
-			configuration: {
-				teamId: "team_123",
-				teamSlug: "acme",
-				projectId: "prj_123",
-				defaultTarget: "production",
-				defaultBranch: "main",
-			},
-		});
-
-		const invocation = await invokeAssistantRecipe("vercel", {
-			context,
-			userId: 42,
-			channel: "tool",
-			requireInstalled: true,
-		});
-
-		expect(invocation).toMatchObject({
-			recipeId: "vercel",
-			status: "ready",
-			allowedConnectorProviders: ["vercel"],
-			allowedConnectorOperations: {
-				vercel: ["list_projects", "list_deployments", "get_deployment_events"],
-			},
-			enabledTools: ["use_recipe_connector"],
-			configuration: {
-				teamId: "team_123",
-				teamSlug: "acme",
-				projectId: "prj_123",
-				defaultTarget: "production",
-				defaultBranch: "main",
 			},
 		});
 	});
@@ -807,57 +721,13 @@ describe("assistant recipes", () => {
 			status: "ready",
 			allowedConnectorProviders: ["cloudflare"],
 			allowedConnectorOperations: {
-				cloudflare: [
-					"list_accounts",
-					"list_zones",
-					"list_workers",
-					"list_worker_deployments",
-					"get_worker_deployment",
-				],
+				cloudflare: ["CLOUDFLARE_LIST_ACCOUNTS", "CLOUDFLARE_LIST_ZONES"],
 			},
 			enabledTools: ["use_recipe_connector"],
 			configuration: {
 				accountId: "account_123",
 				zoneName: "polychat.app",
 				scriptName: "assistant-api",
-			},
-		});
-	});
-
-	it("derives Supabase read-only connector operations for the Supabase integration recipe", async () => {
-		const context = createTestServiceContext();
-		await installAssistantRecipe("supabase", {
-			context,
-			userId: 42,
-			channel: "web",
-			configuration: {
-				organizationSlug: "acme",
-				projectRef: "abcdefghijklmnopqrst",
-				defaultBranch: "main",
-				defaultFunctionFocus: "Recently updated Edge Functions",
-			},
-		});
-
-		const invocation = await invokeAssistantRecipe("supabase", {
-			context,
-			userId: 42,
-			channel: "tool",
-			requireInstalled: true,
-		});
-
-		expect(invocation).toMatchObject({
-			recipeId: "supabase",
-			status: "ready",
-			allowedConnectorProviders: ["supabase"],
-			allowedConnectorOperations: {
-				supabase: ["list_organizations", "list_projects", "list_functions", "list_branches"],
-			},
-			enabledTools: ["use_recipe_connector"],
-			configuration: {
-				organizationSlug: "acme",
-				projectRef: "abcdefghijklmnopqrst",
-				defaultBranch: "main",
-				defaultFunctionFocus: "Recently updated Edge Functions",
 			},
 		});
 	});
@@ -888,7 +758,11 @@ describe("assistant recipes", () => {
 			status: "ready",
 			allowedConnectorProviders: ["webflow"],
 			allowedConnectorOperations: {
-				webflow: ["list_sites", "list_collections", "list_items"],
+				webflow: [
+					"WEBFLOW_LIST_WEBFLOW_SITES",
+					"WEBFLOW_LIST_COLLECTIONS",
+					"WEBFLOW_LIST_COLLECTION_ITEMS",
+				],
 			},
 			enabledTools: ["use_recipe_connector"],
 			configuration: {
@@ -900,81 +774,7 @@ describe("assistant recipes", () => {
 		});
 	});
 
-	it("derives Fitbit read-only connector operations for the Fitbit integration recipe", async () => {
-		const context = createTestServiceContext();
-		await installAssistantRecipe("fitbit", {
-			context,
-			userId: 42,
-			channel: "web",
-			configuration: {
-				defaultDate: "today",
-				metricFocus: ["activity", "sleep"],
-				summaryStyle: "Concise morning check-in",
-			},
-		});
-
-		const invocation = await invokeAssistantRecipe("fitbit", {
-			context,
-			userId: 42,
-			channel: "tool",
-			requireInstalled: true,
-		});
-
-		expect(invocation).toMatchObject({
-			recipeId: "fitbit",
-			status: "ready",
-			allowedConnectorProviders: ["fitbit"],
-			allowedConnectorOperations: {
-				fitbit: ["profile", "daily_activity", "sleep_logs", "heart_rate"],
-			},
-			enabledTools: ["use_recipe_connector"],
-			configuration: {
-				defaultDate: "today",
-				metricFocus: ["activity", "sleep"],
-				summaryStyle: "Concise morning check-in",
-			},
-		});
-	});
-
-	it("derives Withings read-only connector operations for the Withings integration recipe", async () => {
-		const context = createTestServiceContext();
-		await installAssistantRecipe("withings", {
-			context,
-			userId: 42,
-			channel: "web",
-			configuration: {
-				startDate: "2026-06-01",
-				endDate: "2026-06-08",
-				metricFocus: ["weight", "sleep"],
-				summaryStyle: "Weekly trend summary",
-			},
-		});
-
-		const invocation = await invokeAssistantRecipe("withings", {
-			context,
-			userId: 42,
-			channel: "tool",
-			requireInstalled: true,
-		});
-
-		expect(invocation).toMatchObject({
-			recipeId: "withings",
-			status: "ready",
-			allowedConnectorProviders: ["withings"],
-			allowedConnectorOperations: {
-				withings: ["profile", "devices", "measurements", "activity", "sleep_summary"],
-			},
-			enabledTools: ["use_recipe_connector"],
-			configuration: {
-				startDate: "2026-06-01",
-				endDate: "2026-06-08",
-				metricFocus: ["weight", "sleep"],
-				summaryStyle: "Weekly trend summary",
-			},
-		});
-	});
-
-	it("keeps GitHub App integrations out of the OAuth connector tool scope", async () => {
+	it("scopes developer standup to the configured GitHub and Linear tools", async () => {
 		const context = createTestServiceContext();
 		await installAssistantRecipe("developer-standup", {
 			context,
@@ -991,16 +791,33 @@ describe("assistant recipes", () => {
 
 		expect(invocation).toMatchObject({
 			recipeId: "developer-standup",
-			enabledTools: ["use_recipe_connector", "run_code_review"],
-			allowedConnectorProviders: ["linear"],
+			enabledTools: ["use_recipe_connector"],
+			allowedConnectorProviders: ["github", "linear"],
 			allowedConnectorOperations: {
-				linear: ["search_issues"],
+				github: ["GITHUB_GET_A_REPOSITORY", "GITHUB_LIST_COMMITS", "GITHUB_LIST_PULL_REQUESTS"],
+				linear: ["LINEAR_SEARCH_ISSUES"],
 			},
 		});
 	});
 
 	it("keeps catalogue connector operations supported and scheduled recipes read-only", () => {
 		expect(getRecipeCatalogValidationIssues()).toEqual([]);
+	});
+
+	it("provides purpose-built recipes for every explicitly configured Composio toolkit", () => {
+		for (const [provider, toolkit] of Object.entries(configuredComposioToolkits)) {
+			const completeIntegration = assistantRecipes
+				.flatMap((recipe) => recipe.integrations)
+				.find(
+					(integration) =>
+						integration.providerId === provider &&
+						integration.operationIds?.length === toolkit.operations.length,
+				);
+			expect(completeIntegration, provider).toBeDefined();
+			expect(new Set(completeIntegration?.operationIds), provider).toEqual(
+				new Set(toolkit.operations.map((operation) => operation.id)),
+			);
+		}
 	});
 
 	it("exposes Pashi discovery and ordered execution through its recipe", () => {
@@ -1169,7 +986,7 @@ describe("assistant recipes", () => {
 				connectionStatus: "unknown",
 			}),
 			expect.objectContaining({
-				providerId: "calendar",
+				providerId: "googlecalendar",
 				connectionStatus: "unknown",
 			}),
 		]);
@@ -1211,7 +1028,7 @@ describe("assistant recipes", () => {
 					providerId: "linear",
 				}),
 			],
-			enabledTools: ["use_recipe_connector", "run_code_review"],
+			enabledTools: ["use_recipe_connector"],
 		});
 	});
 

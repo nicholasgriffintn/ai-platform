@@ -1,9 +1,12 @@
 import { recipeConnectorProviderSchema } from "@assistant/schemas";
 import {
+	getConnectorProviderConfig,
 	isConnectorOperationWrite,
-	recipeConnectorOperationIds,
 } from "~/lib/providers/capabilities/connectors";
-import { executeRecipeConnectorOperation } from "~/services/apps/connectors/operations";
+import {
+	discoverRecipeConnectorTools,
+	executeRecipeConnectorOperation,
+} from "~/services/apps/connectors/operations";
 import {
 	getRecipeConfiguration,
 	getRecipeAllowedConnectorOperations,
@@ -64,7 +67,7 @@ function mergeRecipeConfigurationIntoParams(
 export const use_recipe_connector: ApiToolDefinition = {
 	name: "use_recipe_connector",
 	description:
-		"Use a connected recipe provider such as Cloudflare, Fitbit, Gmail, Outlook, Google Calendar, Linear, Netlify, Notion, Oura, PostHog, Sentry, Supabase, Todoist, Vercel, Webflow, or Withings. Only use this when the user has asked for a recipe or connector-backed workflow. In recipe chats, saved recipe configuration is automatically merged into params as defaults; explicit params override saved values.",
+		"Discover and use the exact tools available from a connector. Start with useCase to receive authoritative Composio schemas and a sessionId, then call again with an exact operation, its params, and that sessionId. Treat identifiers as operation-specific: never pass an ID returned by one operation to another unless their schemas explicitly describe the same identifier. Recipe configuration is merged into execution params as defaults.",
 	type: "premium",
 	costPerCall: 0,
 	permissions: ["network", "read", "write"],
@@ -78,8 +81,19 @@ export const use_recipe_connector: ApiToolDefinition = {
 			},
 			operation: {
 				type: "string",
-				enum: recipeConnectorOperationIds,
-				description: "Provider operation supported by the selected connector.",
+				description: "The exact operation ID returned by connector discovery.",
+			},
+			useCase: {
+				type: "string",
+				minLength: 3,
+				maxLength: 1000,
+				description:
+					"Describe the connector task to discover the best exact tools and their current schemas.",
+			},
+			sessionId: {
+				type: "string",
+				pattern: "^trs_[A-Za-z0-9_-]+$",
+				description: "The scoped sessionId returned by a preceding discovery call.",
 			},
 			params: {
 				type: "object",
@@ -87,7 +101,7 @@ export const use_recipe_connector: ApiToolDefinition = {
 					"Provider operation parameters. For PostHog query, pass query as a HogQL string or { kind: 'HogQLQuery', query: string }; projectId, organizationId, and region come from saved recipe configuration when omitted.",
 			},
 		},
-		required: ["provider", "operation"],
+		required: ["provider"],
 	}),
 	execute: async (args, context) => {
 		const request = context.request;
@@ -124,26 +138,61 @@ export const use_recipe_connector: ApiToolDefinition = {
 			request.request?.options,
 			provider,
 		);
-		if (
-			allowedConnectorOperations &&
-			(typeof args.operation !== "string" || !allowedConnectorOperations.includes(args.operation))
-		) {
+		const providerConfig = getConnectorProviderConfig(provider);
+		const effectiveAllowedOperations =
+			allowedConnectorOperations ??
+			providerConfig?.operations.map((operation) => operation.id) ??
+			[];
+		const operation = typeof args.operation === "string" ? args.operation.trim() : "";
+		const useCase = typeof args.useCase === "string" ? args.useCase.trim() : "";
+		if (!operation && !useCase) {
+			return {
+				status: "error",
+				name: "use_recipe_connector",
+				content: "Provide useCase to discover tools, or operation to execute a discovered tool.",
+				data: { provider },
+			};
+		}
+		if (operation && !effectiveAllowedOperations.includes(operation)) {
 			return {
 				status: "error",
 				name: "use_recipe_connector",
 				content: `The ${provider || "requested"} connector operation is not enabled for this recipe.`,
 				data: {
 					provider,
-					operation: args.operation,
-					allowedConnectorOperations,
+					operation,
+					allowedConnectorOperations: effectiveAllowedOperations,
 				},
 			};
 		}
 
+		if (!operation) {
+			try {
+				const discovery = await discoverRecipeConnectorTools({
+					context: request.context,
+					userId: request.user.id,
+					provider,
+					useCase,
+					allowedOperations: effectiveAllowedOperations,
+				});
+				return {
+					status: "success",
+					name: "use_recipe_connector",
+					content:
+						"Connector tools discovered. Choose the exact operation and pass its schema-valid params with this sessionId. Identifiers are operation-specific unless the schemas explicitly describe the same identifier.",
+					data: discovery,
+				};
+			} catch (error) {
+				if (error instanceof AssistantError) {
+					return buildConnectorToolError({ provider, operation: "discover", error });
+				}
+				throw error;
+			}
+		}
+
 		if (
 			getRecipeExecutionChannel(request.request?.options) === "scheduled" &&
-			typeof args.operation === "string" &&
-			isConnectorOperationWrite(provider, args.operation)
+			isConnectorOperationWrite(provider, operation)
 		) {
 			return {
 				status: "error",
@@ -152,7 +201,7 @@ export const use_recipe_connector: ApiToolDefinition = {
 					"Scheduled recipe runs cannot perform connector write operations. Ask the user to run this recipe in chat if an external change is required.",
 				data: {
 					provider,
-					operation: args.operation,
+					operation,
 					channel: "scheduled",
 				},
 			};
@@ -166,15 +215,16 @@ export const use_recipe_connector: ApiToolDefinition = {
 				userId: request.user.id,
 				request: {
 					provider,
-					operation: args.operation,
+					operation,
 					params,
+					sessionId: typeof args.sessionId === "string" ? args.sessionId : undefined,
 				},
 			});
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				return buildConnectorToolError({
 					provider,
-					operation: args.operation,
+					operation,
 					error,
 					savedConfiguration,
 				});

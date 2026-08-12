@@ -17,6 +17,8 @@ import { mergeToolIds, normaliseToolIds } from "./tool-ids";
 import { toolIdsSchema, toolIdSchema, type Tool } from "./tools";
 import { externalHttpUrlSchema, internalNavigationPathSchema } from "./navigation";
 
+export const RECIPE_CONNECTOR_TOOL_ID = "use_recipe_connector";
+
 export const assistantActionVerbIdSchema = z.enum([
 	"run",
 	"setup",
@@ -47,7 +49,7 @@ export const assistantActionItemMetadataSchema = z.object({
 	agentId: z.string().optional(),
 	appId: z.string().optional(),
 	appKind: z.enum(["dynamic", "frontend"]).optional(),
-	authType: z.enum(["oauth2", "github_app", "api_key"]).optional(),
+	authType: z.enum(["github_app", "api_key", "composio"]).optional(),
 	category: z.string().optional(),
 	href: internalNavigationPathSchema.optional(),
 	installationId: z.string().optional(),
@@ -71,7 +73,7 @@ export const assistantActionNavigationLaunchSchema = z.object({
 
 export const assistantActionExternalLaunchSchema = z.object({
 	kind: z.literal("external"),
-	authType: z.enum(["oauth2", "github_app"]).optional(),
+	authType: z.enum(["github_app", "composio"]).optional(),
 	provider: recipeConnectorProviderSchema.optional(),
 	url: externalHttpUrlSchema.optional(),
 });
@@ -431,6 +433,7 @@ function createConnectorCapabilityDescriptor(
 	connector: RecipeConnectorManifest,
 ): AssistantCapabilityDescriptor {
 	const operationAccess = connector.operationAccess ?? "mixed";
+	const connected = connector.status === "connected";
 	return {
 		id: connector.id,
 		kind: "connector",
@@ -438,8 +441,12 @@ function createConnectorCapabilityDescriptor(
 		description: connector.description,
 		availability: connector.status === "connected" ? "connected" : connector.status,
 		launch: {
-			method: connector.authType === "api_key" ? "navigation" : "external",
-			href: connector.setupUrl,
+			method: connected
+				? "tool_toggle"
+				: connector.authType === "api_key"
+					? "navigation"
+					: "external",
+			...(connected ? { action: RECIPE_CONNECTOR_TOOL_ID } : { href: connector.setupUrl }),
 		},
 		executionMode: "connector_operation",
 		authRequirement: "connector",
@@ -546,19 +553,24 @@ export function createConnectorAssistantActionItem(
 			connector.description,
 			connector.id,
 			connector.status,
-			...connector.operations,
+			...(connector.categories ?? []).map((category) => category.name),
 		],
 		launch:
-			connector.authType === "api_key"
+			connector.status === "connected"
 				? {
-						kind: "navigation",
-						path: `/profile?tab=providers&type=connector&connector=${connector.id}`,
+						kind: "tool_toggle",
+						toolId: RECIPE_CONNECTOR_TOOL_ID,
 					}
-				: {
-						kind: "external",
-						authType: connector.authType,
-						provider: connector.id,
-					},
+				: connector.authType === "api_key"
+					? {
+							kind: "navigation",
+							path: `/profile?tab=providers&type=connector&connector=${connector.id}`,
+						}
+					: {
+							kind: "external",
+							authType: connector.authType,
+							provider: connector.id,
+						},
 		capability: createConnectorCapabilityDescriptor(connector),
 		metadata: {
 			authType: connector.authType,

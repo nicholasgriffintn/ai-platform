@@ -30,7 +30,7 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches Gmail for birthday context when connected.",
 				requiresConnection: true,
-				operationIds: ["search_messages"],
+				operationIds: ["GMAIL_FETCH_EMAILS"],
 			},
 			{
 				id: "outlook",
@@ -39,15 +39,15 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 				description:
 					"Searches Outlook mail and calendar events for birthday context when connected.",
 				requiresConnection: true,
-				operationIds: ["search_messages", "list_events"],
+				operationIds: ["OUTLOOK_SEARCH_MESSAGES", "OUTLOOK_GET_CALENDAR_VIEW"],
 			},
 			{
-				id: "calendar",
-				providerId: "calendar",
+				id: "googlecalendar",
+				providerId: "googlecalendar",
 				name: "Google Calendar",
 				description: "Reads upcoming birthday events when connected.",
 				requiresConnection: true,
-				operationIds: ["list_events"],
+				operationIds: ["GOOGLECALENDAR_EVENTS_LIST"],
 			},
 		],
 		triggers: [
@@ -103,7 +103,7 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches Gmail for subscription and billing messages.",
 				requiresConnection: true,
-				operationIds: ["search_messages"],
+				operationIds: ["GMAIL_FETCH_EMAILS"],
 			},
 			{
 				id: "outlook",
@@ -111,7 +111,7 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 				name: "Outlook",
 				description: "Searches Outlook for subscription and billing messages.",
 				requiresConnection: true,
-				operationIds: ["search_messages"],
+				operationIds: ["OUTLOOK_SEARCH_MESSAGES"],
 			},
 		],
 		triggers: [
@@ -173,7 +173,7 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches newsletters and reading-related Gmail messages.",
 				requiresConnection: true,
-				operationIds: ["search_messages"],
+				operationIds: ["GMAIL_FETCH_EMAILS"],
 			},
 			{
 				id: "outlook",
@@ -181,7 +181,7 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 				name: "Outlook",
 				description: "Searches newsletters and reading-related Outlook messages.",
 				requiresConnection: true,
-				operationIds: ["search_messages"],
+				operationIds: ["OUTLOOK_SEARCH_MESSAGES"],
 			},
 		],
 		triggers: [

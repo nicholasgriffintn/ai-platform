@@ -24,6 +24,7 @@ import {
 	useUpdateRecipeInstallation,
 } from "~/hooks/useRecipes";
 import { launchAssistantAction } from "~/lib/assistant-action-flow";
+import { openExternalUrl } from "~/lib/external-navigation";
 import {
 	buildRecipeConfigurationFromFields,
 	type ConfigurationFormValues,
@@ -95,7 +96,7 @@ export function useRecipeWorkflows({
 				return;
 			}
 			if (result.kind === "external") {
-				window.location.href = result.url;
+				openExternalUrl(result.url);
 				return;
 			}
 			if (result.kind === "navigation") {
@@ -343,7 +344,7 @@ export function useRecipeWorkflows({
 				return;
 			}
 			if (result.kind === "external") {
-				window.location.href = result.url;
+				openExternalUrl(result.url);
 				return;
 			}
 			if (result.kind === "navigation") {

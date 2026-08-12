@@ -1,6 +1,7 @@
 import type { Message } from "~/types";
 
 const SUCCESSFUL_TOOL_STATUSES = new Set(["success", "completed"]);
+const FOLLOW_UP_REQUIRED_TOOL_NAMES = new Set(["use_recipe_connector"]);
 
 export interface ToolCallResultReference {
 	id?: string;
@@ -19,6 +20,10 @@ export function isSuccessfulToolStatus(status: string | null | undefined): boole
 }
 
 function isContinuableToolResult(message: Message): boolean {
+	if (message.name && FOLLOW_UP_REQUIRED_TOOL_NAMES.has(message.name)) {
+		return true;
+	}
+
 	if (isSuccessfulToolStatus(message.status)) {
 		return true;
 	}

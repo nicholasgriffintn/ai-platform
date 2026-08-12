@@ -591,6 +591,26 @@ describe("ChatOrchestrator", () => {
 				);
 			});
 
+			it("should give connector streaming chats enough steps to discover, execute, and respond", async () => {
+				const mockStream = new ReadableStream();
+				const transformedStream = new ReadableStream();
+
+				mockGetAIResponse.mockResolvedValue(mockStream);
+				mockCreateStreamWithPostProcessing.mockResolvedValue(transformedStream);
+
+				await orchestrator.process({
+					...mockOptions,
+					stream: true,
+					enabled_tools: ["use_recipe_connector"],
+				});
+
+				expect(mockCreateStreamWithPostProcessing).toHaveBeenCalledWith(
+					mockStream,
+					expect.objectContaining({ max_steps: 8 }),
+					mockConversationManager,
+				);
+			});
+
 			it("should preserve explicit max steps for recipe streaming chats", async () => {
 				const mockStream = new ReadableStream();
 				const transformedStream = new ReadableStream();

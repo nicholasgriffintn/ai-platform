@@ -36,8 +36,8 @@ describe("executeDevinOperation", () => {
 
 	it("gets a specific session", async () => {
 		await executeDevinOperation("token", "get_session", {
-			orgId: "org_123",
-			devinId: "devin_123",
+			organizationId: "org_123",
+			sessionId: "devin_123",
 		});
 
 		const [url] = vi.mocked(fetch).mock.calls[0];

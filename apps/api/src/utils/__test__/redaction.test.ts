@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { redactSensitiveTokens } from "../redaction";
+import { redactSensitiveTokens, redactSensitiveUrl } from "../redaction";
 
 describe("redactSensitiveTokens", () => {
 	it("redacts labelled credential fields in objects", () => {
@@ -36,5 +36,15 @@ describe("redactSensitiveTokens", () => {
 		);
 
 		expect(redacted).toBe("provider echoed [redacted] in the error body");
+	});
+
+	it("redacts callback bearer values from request URLs", () => {
+		const redacted = redactSensitiveUrl(
+			"https://api.example.com/connectors/verify?session_uri=one-time-value&keep=visible",
+		);
+
+		expect(redacted).not.toContain("one-time-value");
+		expect(new URL(redacted).searchParams.get("session_uri")).toBe("[redacted]");
+		expect(new URL(redacted).searchParams.get("keep")).toBe("visible");
 	});
 });

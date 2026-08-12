@@ -1,12 +1,12 @@
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { fetchConnectorJson } from "./http";
+import { createConnectorJsonClient } from "./http";
 import { getNumberParam, getStringParam, limitPositiveInteger } from "./params";
 
 const DEVIN_API_BASE_URL = "https://api.devin.ai/v3";
+const fetchDevinJson = createConnectorJsonClient(DEVIN_API_BASE_URL);
 
 function requireOrganizationId(params: Record<string, unknown>): string {
-	const organizationId =
-		getStringParam(params, "organizationId") ?? getStringParam(params, "orgId");
+	const organizationId = getStringParam(params, "organizationId");
 	if (!organizationId) {
 		throw new AssistantError("organizationId is required", ErrorType.PARAMS_ERROR, 400);
 	}
@@ -14,7 +14,7 @@ function requireOrganizationId(params: Record<string, unknown>): string {
 }
 
 function requireSessionId(params: Record<string, unknown>): string {
-	const sessionId = getStringParam(params, "sessionId") ?? getStringParam(params, "devinId");
+	const sessionId = getStringParam(params, "sessionId");
 	if (!sessionId) {
 		throw new AssistantError("sessionId is required", ErrorType.PARAMS_ERROR, 400);
 	}
@@ -136,17 +136,18 @@ export async function executeDevinOperation(
 
 	if (operation === "list_sessions") {
 		const url = new URL(
-			`${DEVIN_API_BASE_URL}/organizations/${encodeURIComponent(organizationId)}/sessions`,
+			`/v3/organizations/${encodeURIComponent(organizationId)}/sessions`,
+			DEVIN_API_BASE_URL,
 		);
 		addDevinPagination(url, params);
 		addSessionFilters(url, params);
-		return fetchConnectorJson({ url: url.toString(), token });
+		return fetchDevinJson({ path: `${url.pathname}${url.search}`, token });
 	}
 
 	if (operation === "get_session") {
 		const sessionId = requireSessionId(params);
-		return fetchConnectorJson({
-			url: `${DEVIN_API_BASE_URL}/organizations/${encodeURIComponent(
+		return fetchDevinJson({
+			path: `/v3/organizations/${encodeURIComponent(
 				organizationId,
 			)}/sessions/${encodeURIComponent(sessionId)}`,
 			token,
@@ -154,8 +155,8 @@ export async function executeDevinOperation(
 	}
 
 	if (operation === "create_session") {
-		return fetchConnectorJson({
-			url: `${DEVIN_API_BASE_URL}/organizations/${encodeURIComponent(organizationId)}/sessions`,
+		return fetchDevinJson({
+			path: `/v3/organizations/${encodeURIComponent(organizationId)}/sessions`,
 			token,
 			method: "POST",
 			body: buildSessionCreateBody(params),
@@ -165,12 +166,13 @@ export async function executeDevinOperation(
 	if (operation === "list_messages") {
 		const sessionId = requireSessionId(params);
 		const url = new URL(
-			`${DEVIN_API_BASE_URL}/organizations/${encodeURIComponent(
+			`/v3/organizations/${encodeURIComponent(
 				organizationId,
 			)}/sessions/${encodeURIComponent(sessionId)}/messages`,
+			DEVIN_API_BASE_URL,
 		);
 		addDevinPagination(url, params);
-		return fetchConnectorJson({ url: url.toString(), token });
+		return fetchDevinJson({ path: `${url.pathname}${url.search}`, token });
 	}
 
 	if (operation === "send_message") {
@@ -179,8 +181,8 @@ export async function executeDevinOperation(
 		if (!message) {
 			throw new AssistantError("message is required", ErrorType.PARAMS_ERROR, 400);
 		}
-		return fetchConnectorJson({
-			url: `${DEVIN_API_BASE_URL}/organizations/${encodeURIComponent(
+		return fetchDevinJson({
+			path: `/v3/organizations/${encodeURIComponent(
 				organizationId,
 			)}/sessions/${encodeURIComponent(sessionId)}/messages`,
 			token,

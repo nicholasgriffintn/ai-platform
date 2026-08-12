@@ -243,7 +243,7 @@ export async function getAIResponse(request: ChatCompletionParameters) {
 	let response;
 	try {
 		response = await withRetry(() => provider.getResponse(parameters, user?.id), {
-			retryCount: 0,
+			retryCount: 1,
 			baseDelayMs: 1000,
 			isRetryableError: isRetryableProviderError,
 			onRetry: (attempt, error, delayMs) => {
@@ -284,6 +284,7 @@ export async function getAIResponse(request: ChatCompletionParameters) {
 			`${provider.name} error: ${err.message || "Unknown error"}`,
 			errorType,
 			statusCode,
+			err instanceof AssistantError ? err.context : {},
 		);
 	}
 	const durationMs = Date.now() - startTime;

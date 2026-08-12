@@ -10,18 +10,35 @@ import {
 	recipeConnectorStartResponseSchema,
 } from "@assistant/schemas";
 import { addRoute } from "~/lib/http/routeBuilder";
-import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {
-	completeRecipeConnectorAuthorization,
 	deleteRecipeConnectorConnection,
 	listRecipeConnectors,
 	startRecipeConnectorAuthorization,
 	storeRecipeConnectorApiKey,
+	verifyComposioConnectorAuthorization,
 } from "~/services/apps/connectors";
 
 const app = new Hono();
 
+app.use("/composio/verify", async (context, next) => {
+	context.header("Cache-Control", "no-store");
+	await next();
+	context.header("Cache-Control", "no-store");
+});
+
 const providerParamSchema = z.object({ provider: recipeConnectorProviderSchema });
+const composioVerificationQuerySchema = z.union([
+	z.object({ session_uri: z.string().min(1).max(4096) }),
+	z
+		.object({
+			status: z.enum(["success", "failed"]),
+			connected_account_id: z.string().min(1).max(256).optional(),
+		})
+		.refine((query) => query.status !== "success" || query.connected_account_id != null, {
+			message: "connected_account_id is required for a successful connection",
+			path: ["connected_account_id"],
+		}),
+]);
 
 addRoute(app, "get", "/", {
 	auth: true,
@@ -56,40 +73,32 @@ addRoute(app, "post", "/:provider/start", {
 			context: serviceContext,
 			userId: user.id,
 			provider: params.provider,
+			authConfigId: body.authConfigId,
 			returnTo: body.returnTo,
 			requestUrl: raw.req.url,
 		}),
 });
 
-addRoute(app, "get", "/:provider/callback", {
+addRoute(app, "get", "/composio/verify", {
+	auth: true,
 	tags: ["apps"],
-	summary: "Complete connector authorization",
-	paramSchema: providerParamSchema,
-	querySchema: z.object({
-		code: z.string().optional(),
-		state: z.string().optional(),
-		error: z.string().optional(),
-	}),
+	summary: "Complete a Composio connector callback",
+	querySchema: composioVerificationQuerySchema,
 	responses: {
-		302: { description: "Redirects to the app after authorization" },
-		400: { description: "Invalid callback", schema: errorResponseSchema },
+		302: { description: "Redirects to the app after verification" },
+		400: { description: "Invalid or expired verification", schema: errorResponseSchema },
 	},
-	handler: async ({ raw, params, query, serviceContext }) => {
-		if (query.error) {
-			return ResponseFactory.error(raw, `Connector authorization failed: ${query.error}`, 400);
-		}
-		if (!query.code || !query.state) {
-			return ResponseFactory.error(raw, "Connector callback is missing code or state", 400);
-		}
-
-		const redirectUrl = await completeRecipeConnectorAuthorization({
+	handler: async ({ raw, query, serviceContext, user }) => {
+		const redirectUrl = await verifyComposioConnectorAuthorization({
 			context: serviceContext,
-			provider: params.provider,
-			code: query.code,
-			state: query.state,
-			requestUrl: raw.req.url,
+			userId: user.id,
+			...("session_uri" in query
+				? { sessionUri: query.session_uri }
+				: {
+						status: query.status,
+						connectedAccountId: query.connected_account_id,
+					}),
 		});
-
 		return raw.redirect(redirectUrl);
 	},
 });

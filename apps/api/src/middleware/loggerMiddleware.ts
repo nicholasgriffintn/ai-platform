@@ -3,6 +3,7 @@ import type { Context, Next } from "hono";
 import type { IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { generateId } from "~/utils/id";
+import { redactSensitiveUrl } from "~/utils/redaction";
 
 const logger = getLogger({ prefix: "middleware/loggerMiddleware" });
 
@@ -15,7 +16,7 @@ const logger = getLogger({ prefix: "middleware/loggerMiddleware" });
  */
 export const loggerMiddleware = async (c: Context, next: Next) => {
 	const method = c.req.method;
-	const url = c.req.url;
+	const url = redactSensitiveUrl(c.req.url);
 	const userAgent = c.req.header("user-agent") || "unknown";
 
 	const requestIdHeader = c.req.header("x-request-id");

@@ -109,6 +109,33 @@ describe("tool result continuation", () => {
 		expect(shouldContinueAfterToolResults([connectorCall], toolResults)).toBe(true);
 	});
 
+	it("continues after connector failures so the model can recover or explain", () => {
+		const connectorCall: ToolCall = {
+			id: "call-4",
+			type: ToolCallType.FUNCTION,
+			function: {
+				name: "use_recipe_connector",
+				arguments: JSON.stringify({
+					provider: "nasa",
+					operation: "NASA_GET_IMAGE_ASSET",
+					params: { nasa_id: "31393" },
+				}),
+			},
+		};
+		const toolResults = [
+			{
+				role: "tool",
+				name: "use_recipe_connector",
+				tool_call_id: "call-4",
+				status: "error",
+				content: "Composio request failed",
+				data: { errorType: "NOT_FOUND", statusCode: 404 },
+			},
+		] as Message[];
+
+		expect(shouldContinueAfterToolResults([connectorCall], toolResults)).toBe(true);
+	});
+
 	it("does not continue after non-recipe correction statuses", () => {
 		const toolResults = [
 			{

@@ -21,7 +21,11 @@ export const wellbeingRecipes: CatalogRecipe[] = [
 				description:
 					"Creates or appends private cycle log entries in a selected Notion page or database.",
 				requiresConnection: true,
-				operationIds: ["search", "create_page", "append_block_children"],
+				operationIds: [
+					"NOTION_SEARCH_NOTION_PAGE",
+					"NOTION_CREATE_NOTION_PAGE",
+					"NOTION_ADD_MULTIPLE_PAGE_CONTENT",
+				],
 			},
 		],
 		triggers: [
@@ -51,61 +55,6 @@ export const wellbeingRecipes: CatalogRecipe[] = [
 				label: "Privacy notes",
 				type: "textarea",
 				placeholder: "Anything the assistant should avoid storing or summarising",
-			},
-		],
-	},
-	{
-		id: "oura-recovery-check",
-		title: "Oura Recovery Check",
-		summary: "Review readiness, sleep, and activity trends from Oura.",
-		description:
-			"Uses connected Oura data to summarise recovery signals and practical non-medical next steps.",
-		kind: "integrate",
-		category: "Health",
-		featured: false,
-		estimatedSetupMinutes: 3,
-		enabledTools: [RECIPE_CONNECTOR_TOOL],
-		integrations: [
-			{
-				id: "oura",
-				providerId: "oura",
-				name: "Oura",
-				description: "Reads daily readiness, sleep, and activity data.",
-				requiresConnection: true,
-				operationIds: ["daily_readiness", "daily_sleep", "daily_activity"],
-			},
-		],
-		triggers: [
-			{
-				type: "message",
-				label: "Ask for recovery",
-				description: "Ask Polychat to review recent Oura data.",
-			},
-			{
-				type: "schedule",
-				label: "Daily check",
-				description: "Run a recurring recovery summary.",
-			},
-		],
-		actions: [
-			"Read recent readiness and sleep data",
-			"Summarise trends and uncertainty",
-			"Suggest practical non-medical adjustments",
-		],
-		setupPrompt:
-			"Set up the Oura Recovery Check recipe. Review recent readiness, sleep, and activity data, flag uncertainty clearly, and avoid medical claims or diagnoses.",
-		configurationFields: [
-			{
-				key: "dateRange",
-				label: "Date range",
-				type: "text",
-				placeholder: "Last 7 days, yesterday, this week",
-			},
-			{
-				key: "recoveryFocus",
-				label: "Recovery focus",
-				type: "textarea",
-				placeholder: "Sleep consistency, readiness, activity balance, or practical next steps",
 			},
 		],
 	},

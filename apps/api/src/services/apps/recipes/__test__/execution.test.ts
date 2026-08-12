@@ -47,7 +47,7 @@ describe("executeRecipeInvocationChat", () => {
 		enabledTools: ["use_recipe_connector"],
 		allowedConnectorProviders: ["notion"],
 		allowedConnectorOperations: {
-			notion: ["search", "append_block_children"],
+			notion: ["NOTION_SEARCH_NOTION_PAGE", "NOTION_ADD_MULTIPLE_PAGE_CONTENT"],
 		},
 		configuration: { target: "Action log" },
 	};
@@ -99,7 +99,7 @@ describe("executeRecipeInvocationChat", () => {
 						channel: "scheduled",
 						allowedConnectorProviders: ["notion"],
 						allowedConnectorOperations: {
-							notion: ["search", "append_block_children"],
+							notion: ["NOTION_SEARCH_NOTION_PAGE", "NOTION_ADD_MULTIPLE_PAGE_CONTENT"],
 						},
 						configuration: { target: "Action log" },
 					},

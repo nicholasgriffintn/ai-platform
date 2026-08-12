@@ -39,6 +39,7 @@ import { useAutoPlayResponses } from "./useAutoPlayResponses";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { findLatestArtifactByIdentifier } from "~/lib/artifacts";
 import { mergeChatRequestOptions } from "~/lib/chat/request-options";
+import { openExternalUrl } from "~/lib/external-navigation";
 
 export interface ConversationThreadModeConfig {
 	assistantActionRoutes?: {
@@ -343,7 +344,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 				});
 
 				if (actionSubmit.kind === "external") {
-					window.location.href = actionSubmit.url;
+					openExternalUrl(actionSubmit.url);
 					return true;
 				}
 

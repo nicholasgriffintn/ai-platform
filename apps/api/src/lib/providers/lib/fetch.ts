@@ -111,6 +111,12 @@ export async function fetchAIResponse<
 		});
 	}
 
+	const requestId =
+		response.headers.get("x-request-id") ??
+		response.headers.get("request-id") ??
+		response.headers.get("cf-aig-event-id") ??
+		undefined;
+
 	if (!response.ok) {
 		let responseText: string;
 		try {
@@ -124,6 +130,8 @@ export async function fetchAIResponse<
 			throw new AssistantError(
 				`Failed to get response for ${provider} from ${endpointOrUrl}: ${response.statusText}`,
 				ErrorType.PROVIDER_ERROR,
+				response.status,
+				{ requestId },
 			);
 		}
 
@@ -141,6 +149,7 @@ export async function fetchAIResponse<
 				ErrorType.RATE_LIMIT_ERROR,
 				response.status,
 				{
+					requestId,
 					provider,
 					upstreamStatus: responseJson?.raw_status_code ?? response.status,
 					responseJson: redactedResponseJson,
@@ -154,6 +163,7 @@ export async function fetchAIResponse<
 			ErrorType.PROVIDER_ERROR,
 			response.status,
 			{
+				requestId,
 				provider,
 				endpoint: endpointOrUrl,
 				responseStatus: response.status,
@@ -189,6 +199,8 @@ export async function fetchAIResponse<
 		throw new AssistantError(
 			`${provider} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
 			ErrorType.PROVIDER_ERROR,
+			502,
+			{ requestId },
 		);
 	}
 

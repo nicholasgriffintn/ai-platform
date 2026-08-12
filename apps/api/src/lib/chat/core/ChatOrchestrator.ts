@@ -25,10 +25,16 @@ import { isAbortError } from "~/utils/abort";
 
 const logger = getLogger({ prefix: "lib/chat/core/ChatOrchestrator" });
 const RECIPE_CHAT_DEFAULT_MAX_STEPS = 4;
+const RECIPE_CONNECTOR_DEFAULT_MAX_STEPS = 8;
+const RECIPE_CONNECTOR_TOOL_NAME = "use_recipe_connector";
 
 function resolveChatMaxSteps(chatOptions: CoreChatOptions): number | undefined {
 	if (typeof chatOptions.max_steps === "number") {
 		return chatOptions.max_steps;
+	}
+
+	if (chatOptions.enabled_tools?.includes(RECIPE_CONNECTOR_TOOL_NAME)) {
+		return RECIPE_CONNECTOR_DEFAULT_MAX_STEPS;
 	}
 
 	return chatOptions.options?.recipe ? RECIPE_CHAT_DEFAULT_MAX_STEPS : undefined;

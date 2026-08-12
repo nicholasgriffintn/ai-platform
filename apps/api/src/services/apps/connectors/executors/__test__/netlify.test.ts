@@ -18,15 +18,14 @@ describe("executeNetlifyOperation", () => {
 			}),
 		).resolves.toEqual([]);
 
-		expect(fetchMock).toHaveBeenCalledWith(
-			"https://api.netlify.com/api/v1/sites?page=2&per_page=100",
-			expect.objectContaining({
-				method: "GET",
-				headers: expect.objectContaining({
-					Authorization: "Bearer token",
-				}),
+		const [url, init] = fetchMock.mock.calls[0];
+		expect(String(url)).toBe("https://api.netlify.com/api/v1/sites?page=2&per_page=100");
+		expect(init).toMatchObject({
+			method: "GET",
+			headers: expect.objectContaining({
+				Authorization: "Bearer token",
 			}),
-		);
+		});
 	});
 
 	it("lists deploys for a selected site", async () => {

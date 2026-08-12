@@ -138,6 +138,22 @@ describe("Logger Middleware", () => {
 			});
 		});
 
+		it("redacts callback bearer values from every request log", async () => {
+			const context = createMockContext({
+				req: {
+					url: "https://api.example.com/apps/connectors/composio/verify?session_uri=single-use-secret",
+				},
+			});
+			// @ts-expect-error - mock implementation
+			context.get.mockReturnValue(null);
+
+			await loggerMiddleware(context, mockNext as Next);
+
+			const loggedValues = JSON.stringify(mockLogger.info.mock.calls);
+			expect(loggedValues).not.toContain("single-use-secret");
+			expect(loggedValues).toContain("%5Bredacted%5D");
+		});
+
 		it("should log errors when middleware throws", async () => {
 			const context = createMockContext();
 			const mockUser = { id: "user-123" };

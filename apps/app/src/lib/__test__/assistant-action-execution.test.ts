@@ -125,21 +125,24 @@ describe("assistant action execution", () => {
 		expect(installRecipe).not.toHaveBeenCalled();
 	});
 
-	it("opens API-key connectors from catalogue items without starting OAuth setup", async () => {
+	it("uses connected connectors in chat without starting setup again", async () => {
 		const catalog = buildAssistantActionCatalog({
 			connectors: [
 				{
-					id: "posthog",
-					name: "PostHog",
-					description: "Query product analytics",
-					authType: "api_key",
+					id: "nasa",
+					name: "Nasa",
+					description: "Explore NASA data",
+					authType: "composio",
 					status: "connected",
-					scopes: ["project:read"],
-					operations: ["query"],
+					scopes: [],
+					categories: [],
+					toolCount: 1,
+					readToolCount: 1,
+					writeToolCount: 0,
 				},
 			],
 		});
-		const item = catalog.items.find((catalogItem) => catalogItem.id === "connector:posthog");
+		const item = catalog.items.find((catalogItem) => catalogItem.id === "connector:nasa");
 		if (!item) {
 			throw new Error("Expected connector item");
 		}
@@ -148,7 +151,7 @@ describe("assistant action execution", () => {
 		await expect(
 			executeAssistantAction(
 				{
-					input: "@PostHog",
+					input: "@Nasa show me something cool from space",
 					item,
 					selectedTools: [],
 				},
@@ -159,9 +162,9 @@ describe("assistant action execution", () => {
 				},
 			),
 		).resolves.toEqual({
-			kind: "navigation",
-			input: "@PostHog",
-			path: "/profile?tab=providers&type=connector&connector=posthog",
+			kind: "submit",
+			input: "@Nasa show me something cool from space",
+			selectedTools: ["use_recipe_connector"],
 		});
 		expect(startConnector).not.toHaveBeenCalled();
 	});

@@ -18,12 +18,12 @@ export function getRecipeAllowedConnectorOperations(
 	options: unknown,
 	provider: string,
 ): string[] | null {
-	const operations = readRecipeChatRequestOptions(options)?.allowedConnectorOperations;
-	if (!operations || !(provider in operations)) {
+	const recipe = readRecipeChatRequestOptions(options);
+	if (!recipe) {
 		return null;
 	}
 
-	return operations[provider] ?? [];
+	return recipe.allowedConnectorOperations?.[provider] ?? [];
 }
 
 export function getRecipeExecutionChannel(options: unknown): string | undefined {

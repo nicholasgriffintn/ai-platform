@@ -20,7 +20,7 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Reads relevant recent messages when Gmail is connected.",
 				requiresConnection: true,
-				operationIds: ["search_messages"],
+				operationIds: ["GMAIL_FETCH_EMAILS"],
 			},
 			{
 				id: "outlook",
@@ -29,15 +29,15 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				description:
 					"Reads relevant recent mail and upcoming calendar events when Outlook is connected.",
 				requiresConnection: true,
-				operationIds: ["search_messages", "list_events"],
+				operationIds: ["OUTLOOK_SEARCH_MESSAGES", "OUTLOOK_GET_CALENDAR_VIEW"],
 			},
 			{
-				id: "calendar",
-				providerId: "calendar",
+				id: "googlecalendar",
+				providerId: "googlecalendar",
 				name: "Google Calendar",
 				description: "Reads upcoming calendar events when Google Calendar is connected.",
 				requiresConnection: true,
-				operationIds: ["list_events"],
+				operationIds: ["GOOGLECALENDAR_EVENTS_LIST"],
 			},
 		],
 		triggers: [
@@ -98,7 +98,7 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches Gmail for deadline messages.",
 				requiresConnection: true,
-				operationIds: ["search_messages"],
+				operationIds: ["GMAIL_FETCH_EMAILS"],
 			},
 			{
 				id: "outlook",
@@ -107,15 +107,15 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				description:
 					"Searches Outlook mail for deadline messages and creates reviewed Outlook events.",
 				requiresConnection: true,
-				operationIds: ["search_messages", "create_calendar_event"],
+				operationIds: ["OUTLOOK_SEARCH_MESSAGES", "OUTLOOK_CALENDAR_CREATE_EVENT"],
 			},
 			{
-				id: "calendar",
-				providerId: "calendar",
+				id: "googlecalendar",
+				providerId: "googlecalendar",
 				name: "Google Calendar",
 				description: "Creates reviewed deadline events.",
 				requiresConnection: true,
-				operationIds: ["create_event"],
+				operationIds: ["GOOGLECALENDAR_CREATE_EVENT"],
 			},
 		],
 		triggers: [
@@ -173,7 +173,7 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches Gmail for flight confirmation and itinerary messages.",
 				requiresConnection: true,
-				operationIds: ["search_messages"],
+				operationIds: ["GMAIL_FETCH_EMAILS"],
 			},
 			{
 				id: "outlook",
@@ -182,15 +182,15 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				description:
 					"Searches Outlook mail for flight itineraries and creates reviewed Outlook calendar events.",
 				requiresConnection: true,
-				operationIds: ["search_messages", "create_calendar_event"],
+				operationIds: ["OUTLOOK_SEARCH_MESSAGES", "OUTLOOK_CALENDAR_CREATE_EVENT"],
 			},
 			{
-				id: "calendar",
-				providerId: "calendar",
+				id: "googlecalendar",
+				providerId: "googlecalendar",
 				name: "Google Calendar",
 				description: "Creates reviewed flight calendar events.",
 				requiresConnection: true,
-				operationIds: ["create_event"],
+				operationIds: ["GOOGLECALENDAR_CREATE_EVENT"],
 			},
 		],
 		triggers: [
@@ -248,7 +248,7 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches sent Gmail conversations.",
 				requiresConnection: true,
-				operationIds: ["search_messages", "create_draft"],
+				operationIds: ["GMAIL_FETCH_EMAILS", "GMAIL_CREATE_EMAIL_DRAFT"],
 			},
 			{
 				id: "outlook",
@@ -256,7 +256,7 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				name: "Outlook",
 				description: "Searches sent Outlook conversations.",
 				requiresConnection: true,
-				operationIds: ["search_messages", "create_draft"],
+				operationIds: ["OUTLOOK_SEARCH_MESSAGES", "OUTLOOK_CREATE_DRAFT"],
 			},
 		],
 		triggers: [
@@ -314,7 +314,7 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches Gmail for renewal and trial messages.",
 				requiresConnection: true,
-				operationIds: ["search_messages"],
+				operationIds: ["GMAIL_FETCH_EMAILS"],
 			},
 			{
 				id: "outlook",
@@ -322,7 +322,7 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				name: "Outlook",
 				description: "Searches Outlook for renewal and trial messages.",
 				requiresConnection: true,
-				operationIds: ["search_messages"],
+				operationIds: ["OUTLOOK_SEARCH_MESSAGES"],
 			},
 		],
 		triggers: [

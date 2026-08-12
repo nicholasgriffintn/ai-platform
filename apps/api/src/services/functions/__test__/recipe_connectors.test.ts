@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import z from "zod/v4";
 
 import type { ToolExecutionContext } from "~/lib/tools/ToolExecutionContext";
 import type { IEnv, IRequest, IUser } from "~/types";
@@ -6,6 +7,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 
 const mocks = vi.hoisted(() => ({
 	executeRecipeConnectorOperation: vi.fn(),
+	discoverRecipeConnectorTools: vi.fn(),
 	resolveInstalledAssistantRecipe: vi.fn(),
 	invokeAssistantRecipe: vi.fn(),
 	updateRecipeInstallation: vi.fn(),
@@ -16,6 +18,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("~/services/apps/connectors/operations", () => ({
 	executeRecipeConnectorOperation: mocks.executeRecipeConnectorOperation,
+	discoverRecipeConnectorTools: mocks.discoverRecipeConnectorTools,
 }));
 
 vi.mock("~/services/apps/recipes", () => ({
@@ -131,6 +134,16 @@ describe("recipe connector tools", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mocks.executeRecipeConnectorOperation.mockResolvedValue({ ok: true });
+		mocks.discoverRecipeConnectorTools.mockResolvedValue({
+			sessionId: "trs_gmail",
+			tools: [
+				{
+					slug: "GMAIL_FETCH_EMAILS",
+					access: "read",
+					inputSchema: { type: "object", properties: {} },
+				},
+			],
+		});
 		mocks.getRecipeConversationContext.mockResolvedValue([]);
 		mocks.getAssistantRecipe.mockResolvedValue({
 			id: "bad-weather-alerts",
@@ -158,6 +171,17 @@ describe("recipe connector tools", () => {
 		});
 	});
 
+	it("publishes the full connector provider list as a flat JSON Schema enum", () => {
+		const inputSchema = z.toJSONSchema(use_recipe_connector.inputSchema);
+		const providerSchema = inputSchema.properties?.provider;
+
+		expect(providerSchema).toMatchObject({
+			type: "string",
+			enum: expect.arrayContaining(["airtable", "nasa", "zeplin", "zoho", "zoom"]),
+		});
+		expect(providerSchema).not.toHaveProperty("anyOf");
+	});
+
 	it("rejects connector operations outside the active recipe scope", async () => {
 		const result = await use_recipe_connector.execute(
 			{
@@ -165,7 +189,10 @@ describe("recipe connector tools", () => {
 				operation: "search_messages",
 				params: { query: "from:example" },
 			},
-			createToolContext({ allowedConnectorProviders: ["notion"] }),
+			createToolContext({
+				allowedConnectorProviders: ["notion"],
+				allowedConnectorOperations: { notion: ["search"] },
+			}),
 		);
 
 		expect(result).toEqual({
@@ -215,7 +242,10 @@ describe("recipe connector tools", () => {
 				operation: "search",
 				params: { query: "Action log" },
 			},
-			createToolContext({ allowedConnectorProviders: ["notion"] }),
+			createToolContext({
+				allowedConnectorProviders: ["notion"],
+				allowedConnectorOperations: { notion: ["search"] },
+			}),
 		);
 
 		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
@@ -263,6 +293,31 @@ describe("recipe connector tools", () => {
 		expect(mocks.executeRecipeConnectorOperation).not.toHaveBeenCalled();
 	});
 
+	it.each([undefined, {}])(
+		"fails closed when an enabled connector has no operation allowlist",
+		async (allowedConnectorOperations) => {
+			const result = await use_recipe_connector.execute(
+				{ provider: "gmail", operation: "search_messages", params: {} },
+				createToolContext({
+					allowedConnectorProviders: ["gmail"],
+					allowedConnectorOperations,
+				}),
+			);
+
+			expect(result).toEqual({
+				status: "error",
+				name: "use_recipe_connector",
+				content: "The gmail connector operation is not enabled for this recipe.",
+				data: {
+					provider: "gmail",
+					operation: "search_messages",
+					allowedConnectorOperations: [],
+				},
+			});
+			expect(mocks.executeRecipeConnectorOperation).not.toHaveBeenCalled();
+		},
+	);
+
 	it("returns reconnect-safe connector errors as tool results", async () => {
 		mocks.executeRecipeConnectorOperation.mockRejectedValue(
 			new AssistantError(
@@ -278,7 +333,10 @@ describe("recipe connector tools", () => {
 				operation: "search_messages",
 				params: { query: "from:example" },
 			},
-			createToolContext({ allowedConnectorProviders: ["gmail"] }),
+			createToolContext({
+				allowedConnectorProviders: ["gmail"],
+				allowedConnectorOperations: { gmail: ["search_messages"] },
+			}),
 		);
 
 		expect(result).toEqual({
@@ -304,7 +362,10 @@ describe("recipe connector tools", () => {
 					operation: "search_messages",
 					params: { query: "from:example" },
 				},
-				createToolContext({ allowedConnectorProviders: ["gmail"] }),
+				createToolContext({
+					allowedConnectorProviders: ["gmail"],
+					allowedConnectorOperations: { gmail: ["search_messages"] },
+				}),
 			),
 		).rejects.toThrow("unexpected failure");
 	});
@@ -316,7 +377,10 @@ describe("recipe connector tools", () => {
 				operation: "create_task",
 				params: { content: "Follow up with finance", dueString: "tomorrow" },
 			},
-			createToolContext({ allowedConnectorProviders: ["todoist"] }),
+			createToolContext({
+				allowedConnectorProviders: ["todoist"],
+				allowedConnectorOperations: { todoist: ["create_task"] },
+			}),
 		);
 
 		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
@@ -343,7 +407,10 @@ describe("recipe connector tools", () => {
 				operation: "create_task",
 				params: { name: "Prepare launch plan", projectIds: ["project-1"] },
 			},
-			createToolContext({ allowedConnectorProviders: ["asana"] }),
+			createToolContext({
+				allowedConnectorProviders: ["asana"],
+				allowedConnectorOperations: { asana: ["create_task"] },
+			}),
 		);
 
 		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
@@ -353,38 +420,6 @@ describe("recipe connector tools", () => {
 				provider: "asana",
 				operation: "create_task",
 				params: { name: "Prepare launch plan", projectIds: ["project-1"] },
-			},
-		});
-		expect(result).toEqual({
-			status: "success",
-			name: "use_recipe_connector",
-			content: "Connector operation completed",
-			data: { ok: true },
-		});
-	});
-
-	it("allows Sentry read operations inside a Sentry recipe scope", async () => {
-		const result = await use_recipe_connector.execute(
-			{
-				provider: "sentry",
-				operation: "list_issues",
-				params: { organizationSlug: "acme", query: "is:unresolved" },
-			},
-			createToolContext({
-				allowedConnectorProviders: ["sentry"],
-				allowedConnectorOperations: {
-					sentry: ["list_organizations", "list_projects", "list_issues", "retrieve_issue"],
-				},
-			}),
-		);
-
-		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
-			context: {},
-			userId: 42,
-			request: {
-				provider: "sentry",
-				operation: "list_issues",
-				params: { organizationSlug: "acme", query: "is:unresolved" },
 			},
 		});
 		expect(result).toEqual({
@@ -527,21 +562,20 @@ describe("recipe connector tools", () => {
 		});
 	});
 
-	it("allows Vercel read operations inside a Vercel recipe scope", async () => {
+	it("allows exact Composio read operations inside a configured recipe scope", async () => {
 		const result = await use_recipe_connector.execute(
 			{
-				provider: "vercel",
-				operation: "list_deployments",
+				provider: "posthog",
+				operation: "POSTHOG_LIST_ORGANIZATION_PROJECTS",
 				params: {
-					projectId: "prj_123",
-					target: "production",
-					state: "READY,ERROR",
+					organization_id: "org_123",
+					limit: 25,
 				},
 			},
 			createToolContext({
-				allowedConnectorProviders: ["vercel"],
+				allowedConnectorProviders: ["posthog"],
 				allowedConnectorOperations: {
-					vercel: ["list_projects", "list_deployments", "get_deployment_events"],
+					posthog: ["POSTHOG_LIST_ORGANIZATION_PROJECTS"],
 				},
 			}),
 		);
@@ -550,12 +584,11 @@ describe("recipe connector tools", () => {
 			context: {},
 			userId: 42,
 			request: {
-				provider: "vercel",
-				operation: "list_deployments",
+				provider: "posthog",
+				operation: "POSTHOG_LIST_ORGANIZATION_PROJECTS",
 				params: {
-					projectId: "prj_123",
-					target: "production",
-					state: "READY,ERROR",
+					organization_id: "org_123",
+					limit: 25,
 				},
 			},
 		});
@@ -636,42 +669,6 @@ describe("recipe connector tools", () => {
 				params: {
 					accountId: "account_123",
 					scriptName: "assistant-api",
-				},
-			},
-		});
-		expect(result).toEqual({
-			status: "success",
-			name: "use_recipe_connector",
-			content: "Connector operation completed",
-			data: { ok: true },
-		});
-	});
-
-	it("allows Supabase read operations inside a Supabase recipe scope", async () => {
-		const result = await use_recipe_connector.execute(
-			{
-				provider: "supabase",
-				operation: "list_functions",
-				params: {
-					projectRef: "abcdefghijklmnopqrst",
-				},
-			},
-			createToolContext({
-				allowedConnectorProviders: ["supabase"],
-				allowedConnectorOperations: {
-					supabase: ["list_organizations", "list_projects", "list_functions", "list_branches"],
-				},
-			}),
-		);
-
-		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
-			context: {},
-			userId: 42,
-			request: {
-				provider: "supabase",
-				operation: "list_functions",
-				params: {
-					projectRef: "abcdefghijklmnopqrst",
 				},
 			},
 		});
@@ -767,79 +764,16 @@ describe("recipe connector tools", () => {
 		});
 	});
 
-	it("allows Fitbit read operations inside a Fitbit recipe scope", async () => {
-		const result = await use_recipe_connector.execute(
-			{
-				provider: "fitbit",
-				operation: "sleep_logs",
-				params: { date: "today" },
-			},
-			createToolContext({
-				allowedConnectorProviders: ["fitbit"],
-				allowedConnectorOperations: {
-					fitbit: ["profile", "daily_activity", "sleep_logs", "heart_rate"],
-				},
-			}),
-		);
-
-		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
-			context: {},
-			userId: 42,
-			request: {
-				provider: "fitbit",
-				operation: "sleep_logs",
-				params: { date: "today" },
-			},
-		});
-		expect(result).toEqual({
-			status: "success",
-			name: "use_recipe_connector",
-			content: "Connector operation completed",
-			data: { ok: true },
-		});
-	});
-
-	it("allows Withings read operations inside a Withings recipe scope", async () => {
-		const result = await use_recipe_connector.execute(
-			{
-				provider: "withings",
-				operation: "sleep_summary",
-				params: { startDate: "2026-06-01", endDate: "2026-06-08" },
-			},
-			createToolContext({
-				allowedConnectorProviders: ["withings"],
-				allowedConnectorOperations: {
-					withings: ["profile", "devices", "measurements", "activity", "sleep_summary"],
-				},
-			}),
-		);
-
-		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
-			context: {},
-			userId: 42,
-			request: {
-				provider: "withings",
-				operation: "sleep_summary",
-				params: { startDate: "2026-06-01", endDate: "2026-06-08" },
-			},
-		});
-		expect(result).toEqual({
-			status: "success",
-			name: "use_recipe_connector",
-			content: "Connector operation completed",
-			data: { ok: true },
-		});
-	});
-
 	it("blocks connector write operations during scheduled recipe runs", async () => {
 		const result = await use_recipe_connector.execute(
 			{
 				provider: "todoist",
-				operation: "create_task",
+				operation: "TODOIST_CREATE_TASK",
 				params: { content: "Follow up with finance" },
 			},
 			createToolContext({
 				allowedConnectorProviders: ["todoist"],
+				allowedConnectorOperations: { todoist: ["TODOIST_CREATE_TASK"] },
 				recipeChannel: "scheduled",
 			}),
 		);
@@ -851,7 +785,7 @@ describe("recipe connector tools", () => {
 				"Scheduled recipe runs cannot perform connector write operations. Ask the user to run this recipe in chat if an external change is required.",
 			data: {
 				provider: "todoist",
-				operation: "create_task",
+				operation: "TODOIST_CREATE_TASK",
 				channel: "scheduled",
 			},
 		});
@@ -867,6 +801,7 @@ describe("recipe connector tools", () => {
 			},
 			createToolContext({
 				allowedConnectorProviders: ["todoist"],
+				allowedConnectorOperations: { todoist: ["list_tasks"] },
 				recipeChannel: "scheduled",
 			}),
 		);
@@ -888,11 +823,11 @@ describe("recipe connector tools", () => {
 		});
 	});
 
-	it("keeps manually enabled connector tools unrestricted when no recipe scope is present", async () => {
+	it("uses exact connector operations when no recipe scope is present", async () => {
 		await use_recipe_connector.execute(
 			{
 				provider: "gmail",
-				operation: "search_messages",
+				operation: "GMAIL_FETCH_EMAILS",
 			},
 			createToolContext(),
 		);
@@ -904,6 +839,28 @@ describe("recipe connector tools", () => {
 				}),
 			}),
 		);
+	});
+
+	it("discovers current Composio schemas within the active recipe scope", async () => {
+		const result = await use_recipe_connector.execute(
+			{ provider: "gmail", useCase: "Find unread invoices" },
+			createToolContext({
+				allowedConnectorProviders: ["gmail"],
+				allowedConnectorOperations: { gmail: ["GMAIL_FETCH_EMAILS"] },
+			}),
+		);
+
+		expect(mocks.discoverRecipeConnectorTools).toHaveBeenCalledWith({
+			context: {},
+			userId: 42,
+			provider: "gmail",
+			useCase: "Find unread invoices",
+			allowedOperations: ["GMAIL_FETCH_EMAILS"],
+		});
+		expect(result).toMatchObject({
+			status: "success",
+			data: { sessionId: "trs_gmail" },
+		});
 	});
 
 	it("saves active recipe setup configuration and schedule triggers", async () => {

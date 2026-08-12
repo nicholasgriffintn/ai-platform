@@ -211,58 +211,34 @@ describe("useAssistantActionSubmit", () => {
 		expect(mocks.chatStore.setSelectedAssistantAction).toHaveBeenCalledWith(null);
 	});
 
-	it("opens API-key connector setup through the assistant action launch path", async () => {
+	it("uses a connected connector without starting setup again", async () => {
 		mocks.chatStore.selectedAssistantAction = {
 			item: {
-				id: "connector:posthog",
+				id: "connector:nasa",
 				kind: "connector",
-				label: "PostHog",
+				label: "Nasa",
+				launch: {
+					kind: "tool_toggle",
+					toolId: "use_recipe_connector",
+				},
 				metadata: {
-					authType: "api_key",
-					provider: "posthog",
+					authType: "composio",
+					provider: "nasa",
 				},
 			},
 		};
 
 		const { result } = renderHook(() => useAssistantActionSubmit());
 
-		await expect(result.current.resolveAssistantActionSubmit("@PostHog")).resolves.toEqual({
-			kind: "navigation",
-			input: "@PostHog",
-			path: "/profile?tab=providers&type=connector&connector=posthog",
+		await expect(
+			result.current.resolveAssistantActionSubmit("@Nasa show me something cool from space"),
+		).resolves.toEqual({
+			kind: "submit",
+			input: "@Nasa show me something cool from space",
+			selectedTools: ["use_recipe_connector"],
 		});
+		expect(mocks.toolsStore.setSelectedTools).toHaveBeenCalledWith(["use_recipe_connector"]);
 		expect(mocks.startConnector.mutateAsync).not.toHaveBeenCalled();
-		expect(mocks.chatStore.setSelectedAssistantAction).toHaveBeenCalledWith(null);
-	});
-
-	it("starts OAuth connector setup through the assistant action launch path", async () => {
-		mocks.startConnector.mutateAsync.mockResolvedValue({
-			provider: "gmail",
-			authorizationUrl: "https://accounts.google.com/oauth",
-		});
-		mocks.chatStore.selectedAssistantAction = {
-			item: {
-				id: "connector:gmail",
-				kind: "connector",
-				label: "Gmail",
-				metadata: {
-					authType: "oauth2",
-					provider: "gmail",
-				},
-			},
-		};
-
-		const { result } = renderHook(() => useAssistantActionSubmit());
-
-		await expect(result.current.resolveAssistantActionSubmit("@Gmail")).resolves.toEqual({
-			kind: "external",
-			input: "@Gmail",
-			url: "https://accounts.google.com/oauth",
-		});
-		expect(mocks.startConnector.mutateAsync).toHaveBeenCalledWith({
-			provider: "gmail",
-			returnTo: "/profile?tab=providers&type=connector",
-		});
 		expect(mocks.chatStore.setSelectedAssistantAction).toHaveBeenCalledWith(null);
 	});
 });

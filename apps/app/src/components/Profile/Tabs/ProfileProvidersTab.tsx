@@ -1,16 +1,16 @@
-import { KeyRound, Loader2, Plus, RefreshCcw, Trash2 } from "lucide-react";
+import { RefreshCcw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { recipeConnectorProviderSchema } from "@assistant/schemas";
-import type { RecipeConnectorProvider } from "@assistant/schemas";
+import type { RecipeConnectorManifest, RecipeConnectorProvider } from "@assistant/schemas";
 
 import { EmptyState } from "~/components/Core/EmptyState";
 import { ModelIcon } from "~/components/ModelIcon";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
-import { ConfirmationDialog, HoverActions, ListItem } from "~/components/ui";
+import { ConfirmationDialog, SearchInput } from "~/components/ui";
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import {
@@ -21,9 +21,15 @@ import {
 } from "~/hooks/useConnectors";
 import { useUser } from "~/hooks/useUser";
 import { formatProviderLabel } from "~/lib/provider-display";
+import { ApiError } from "~/lib/api/fetch-wrapper";
 import type { ProviderSetting } from "~/lib/api/services/user-service";
+import { openExternalUrl } from "~/lib/external-navigation";
+import { ConnectorDetailsModal } from "../Connectors/ConnectorDetailsModal";
+import { ConnectorLogo } from "../Connectors/ConnectorLogo";
 import { ConnectorApiKeyModal } from "../Modals/ConnectorApiKeyModal";
+import { ConnectorAuthConfigModal } from "../Modals/ConnectorAuthConfigModal";
 import { ProviderApiKeyModal } from "../Modals/ProviderApiKeyModal";
+import { ProviderCatalogue, type ProviderCatalogueItem } from "../Providers/ProviderCatalogue";
 
 interface ProviderModalState {
 	open: boolean;
@@ -43,10 +49,17 @@ interface ConnectorApiKeyModalState {
 	credentialLabel?: string;
 }
 
-type ProviderTypeFilter = "all" | "chat" | "messaging" | "connector";
+interface ConnectorAuthConfigModalState {
+	providerId: RecipeConnectorProvider | null;
+	providerName: string;
+	configs: NonNullable<RecipeConnectorManifest["authConfigs"]>;
+}
+
+type ProviderTypeFilter = "all" | "connected" | "chat" | "messaging" | "connector";
 
 function readProviderTypeFilter(value: string | null): ProviderTypeFilter {
 	switch (value) {
+		case "connected":
 		case "chat":
 		case "messaging":
 		case "connector":
@@ -76,14 +89,20 @@ export function ProfileProvidersTab() {
 	});
 	const [providerToDelete, setProviderToDelete] = useState<ProviderDeleteState | null>(null);
 	const [connectorToDelete, setConnectorToDelete] = useState<ProviderDeleteState | null>(null);
+	const [selectedConnector, setSelectedConnector] = useState<RecipeConnectorManifest | null>(null);
 	const [connectorApiKeyModal, setConnectorApiKeyModal] = useState<ConnectorApiKeyModalState>({
 		open: false,
 		providerId: null,
 		providerName: "",
 	});
-	const [providerType, setProviderType] = useState<ProviderTypeFilter>(() =>
-		readProviderTypeFilter(searchParams.get("type")),
-	);
+	const [connectorAuthConfigModal, setConnectorAuthConfigModal] =
+		useState<ConnectorAuthConfigModalState>({
+			providerId: null,
+			providerName: "",
+			configs: [],
+		});
+	const providerType = readProviderTypeFilter(searchParams.get("type"));
+	const [providerSearch, setProviderSearch] = useState("");
 	const { data: connectorsData, isLoading: isLoadingConnectors } = useRecipeConnectors();
 	const startConnector = useStartRecipeConnector();
 	const disconnectConnector = useDisconnectRecipeConnector();
@@ -95,34 +114,17 @@ export function ProfileProvidersTab() {
 	const providerCounts = useMemo(
 		() => ({
 			all: providerSettings.length + connectors.length,
+			connected: configuredProviderCount,
 			chat: providerSettings.filter((provider) => provider.type === "chat").length,
 			messaging: providerSettings.filter((provider) => provider.type === "messaging").length,
 			connector: connectors.length,
 		}),
-		[connectors.length, providerSettings],
-	);
-	const filteredProviderSettings = useMemo(
-		() =>
-			providerSettings.filter((provider) => {
-				if (providerType === "all") return true;
-				if (providerType === "chat") return provider.type === "chat";
-				if (providerType === "messaging") return provider.type === "messaging";
-				return false;
-			}),
-		[providerSettings, providerType],
-	);
-	const filteredConnectors = useMemo(
-		() => (providerType === "chat" || providerType === "messaging" ? [] : connectors),
-		[connectors, providerType],
+		[configuredProviderCount, connectors.length, providerSettings],
 	);
 	const modalProvider = useMemo(
 		() => providerSettings.find((provider) => provider.provider_id === modalState.providerId),
 		[modalState.providerId, providerSettings],
 	);
-
-	useEffect(() => {
-		setProviderType(readProviderTypeFilter(searchParams.get("type")));
-	}, [searchParams]);
 
 	useEffect(() => {
 		const requestedConnectorId = searchParams.get("connector");
@@ -131,33 +133,20 @@ export function ProfileProvidersTab() {
 		}
 
 		const connector = connectors.find((item) => item.id === requestedConnectorId);
-		if (!connector || connector.authType !== "api_key") {
+		if (!connector) {
 			return;
 		}
 
-		setProviderType("connector");
-		setConnectorApiKeyModal({
-			open: true,
-			providerId: connector.id,
-			providerName: connector.name,
-			credentialLabel: connector.credentialLabel,
-		});
+		setSelectedConnector(connector);
 
 		const nextSearchParams = new URLSearchParams(searchParams);
 		nextSearchParams.delete("connector");
+		nextSearchParams.set("type", "connector");
 		setSearchParams(nextSearchParams, { replace: true });
 	}, [connectors, isLoadingConnectors, searchParams, setSearchParams]);
 
 	const getProviderName = (provider: ProviderSetting) =>
 		provider.name || formatProviderLabel(provider.provider_id);
-	const getProviderActionLabel = (provider: ProviderSetting, isConfigured: boolean) => {
-		if (provider.configurationFields?.length) {
-			return isConfigured ? "Update configuration" : "Configure";
-		}
-
-		return isConfigured ? "Update key" : "Add key";
-	};
-
 	const handleEnableProvider = (providerId: string, providerName: string) => {
 		trackEvent({
 			name: "open_enable_provider_modal",
@@ -201,7 +190,24 @@ export function ProfileProvidersTab() {
 		setProviderToDelete(null);
 	};
 
-	const handleConnectConnector = async (connector: (typeof connectors)[number]) => {
+	const startComposioConnector = async (
+		connector: RecipeConnectorManifest,
+		authConfigId?: string,
+	) => {
+		try {
+			const response = await startConnector.mutateAsync({
+				provider: connector.id,
+				authConfigId,
+				returnTo: "/profile?tab=providers&type=connector",
+			});
+			openExternalUrl(response.authorizationUrl);
+		} catch (error) {
+			console.error(error);
+			toast.error(error instanceof ApiError ? error.message : "Could not start connector setup.");
+		}
+	};
+
+	const handleConnectConnector = async (connector: RecipeConnectorManifest) => {
 		if (connector.authType === "api_key") {
 			setConnectorApiKeyModal({
 				open: true,
@@ -211,17 +217,16 @@ export function ProfileProvidersTab() {
 			});
 			return;
 		}
-
-		try {
-			const response = await startConnector.mutateAsync({
-				provider: connector.id,
-				returnTo: "/profile?tab=providers&type=connector",
+		const authConfigs = connector.authConfigs ?? [];
+		if (authConfigs.length > 1) {
+			setConnectorAuthConfigModal({
+				providerId: connector.id,
+				providerName: connector.name,
+				configs: authConfigs,
 			});
-			window.location.href = response.authorizationUrl;
-		} catch (error) {
-			console.error(error);
-			toast.error("Could not start connector setup.");
+			return;
 		}
+		await startComposioConnector(connector, authConfigs[0]?.id);
 	};
 
 	const handleDisconnectConnector = async () => {
@@ -250,6 +255,57 @@ export function ProfileProvidersTab() {
 		});
 	};
 
+	const handleProviderTypeChange = (value: string) => {
+		const nextType = value as ProviderTypeFilter;
+		const nextSearchParams = new URLSearchParams(searchParams);
+		if (nextType === "all") nextSearchParams.delete("type");
+		else nextSearchParams.set("type", nextType);
+		setSearchParams(nextSearchParams, { replace: true });
+	};
+
+	const normalisedSearch = providerSearch.trim().toLowerCase();
+	const catalogueItems: ProviderCatalogueItem[] = [
+		...providerSettings.map((provider): ProviderCatalogueItem & { type: ProviderTypeFilter } => {
+			const providerName = getProviderName(provider);
+			const isConfigured = Boolean(provider.hasApiKey);
+			return {
+				id: `provider:${provider.provider_id}`,
+				name: providerName,
+				description: provider.webhookUrl ?? provider.description,
+				category: provider.type === "messaging" ? "Messaging" : "AI models",
+				connected: isConfigured,
+				type: provider.type === "messaging" ? "messaging" : "chat",
+				icon: (
+					<ModelIcon
+						modelName={providerName}
+						provider={provider.provider_id}
+						size={28}
+						showFallback
+						mono
+					/>
+				),
+				onSelect: () => handleEnableProvider(provider.provider_id, providerName),
+			};
+		}),
+		...connectors.map((connector): ProviderCatalogueItem & { type: ProviderTypeFilter } => ({
+			id: `connector:${connector.id}`,
+			name: connector.name,
+			description: connector.description,
+			category: connector.categories?.[0]?.name ?? "Integrations",
+			connected: connector.status === "connected",
+			type: "connector",
+			icon: <ConnectorLogo connector={connector} />,
+			onSelect: () => setSelectedConnector(connector),
+		})),
+	].filter((item) => {
+		if (providerType === "connected" && !item.connected) return false;
+		if (!["all", "connected"].includes(providerType) && item.type !== providerType) return false;
+		if (!normalisedSearch) return true;
+		return `${item.name} ${item.description ?? ""} ${item.category}`
+			.toLowerCase()
+			.includes(normalisedSearch);
+	});
+
 	return (
 		<div>
 			<PageHeader
@@ -270,25 +326,28 @@ export function ProfileProvidersTab() {
 				<PageTitle title="Available Providers" />
 			</PageHeader>
 
-			<div className="space-y-4">
-				{!isLoadingProviderSettings && providerSettings.length > 0 && (
-					<div className="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-						{configuredProviderCount} of {totalProviderCount} providers configured
-					</div>
-				)}
-
+			<div className="space-y-5">
 				{!isLoadingProviderSettings && totalProviderCount > 0 && (
-					<Tabs
-						value={providerType}
-						onValueChange={(value) => setProviderType(value as ProviderTypeFilter)}
-					>
-						<TabsList>
-							<TabsTrigger value="all">All ({providerCounts.all})</TabsTrigger>
-							<TabsTrigger value="chat">Chat ({providerCounts.chat})</TabsTrigger>
-							<TabsTrigger value="messaging">Messaging ({providerCounts.messaging})</TabsTrigger>
-							<TabsTrigger value="connector">Connectors ({providerCounts.connector})</TabsTrigger>
-						</TabsList>
-					</Tabs>
+					<div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+						<Tabs value={providerType} onValueChange={handleProviderTypeChange}>
+							<TabsList className="max-w-full justify-start overflow-x-auto">
+								<TabsTrigger value="all">All ({providerCounts.all})</TabsTrigger>
+								<TabsTrigger value="connected">Connected ({providerCounts.connected})</TabsTrigger>
+								<TabsTrigger value="chat">Chat ({providerCounts.chat})</TabsTrigger>
+								<TabsTrigger value="messaging">Messaging ({providerCounts.messaging})</TabsTrigger>
+								<TabsTrigger value="connector">
+									Integrations ({providerCounts.connector})
+								</TabsTrigger>
+							</TabsList>
+						</Tabs>
+						<SearchInput
+							aria-label="Search providers"
+							placeholder="Search providers"
+							value={providerSearch}
+							onChange={setProviderSearch}
+							className="w-full xl:max-w-xs"
+						/>
+					</div>
 				)}
 
 				{isLoadingProviderSettings || isLoadingConnectors ? (
@@ -300,157 +359,15 @@ export function ProfileProvidersTab() {
 						message="No providers available"
 						className="bg-transparent dark:bg-transparent border-none py-10 px-0"
 					/>
-				) : filteredProviderSettings.length === 0 && filteredConnectors.length === 0 ? (
+				) : catalogueItems.length === 0 ? (
 					<EmptyState
-						message="No providers in this type"
+						message={
+							providerSearch ? "No providers match your search" : "No providers in this view"
+						}
 						className="bg-transparent dark:bg-transparent border-none py-10 px-0"
 					/>
 				) : (
-					<ul className="space-y-2">
-						{providerType !== "connector" &&
-							filteredProviderSettings.map((provider: ProviderSetting) => {
-								const providerName = getProviderName(provider);
-								const isConfigured = Boolean(provider.hasApiKey);
-
-								return (
-									<ListItem
-										key={provider.id}
-										className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-750"
-										icon={
-											<ModelIcon
-												modelName={providerName}
-												provider={provider.provider_id}
-												size={22}
-												showFallback
-												mono
-											/>
-										}
-										label={providerName}
-										sublabel={provider.webhookUrl ?? provider.description}
-										badge={
-											isConfigured ? (
-												<span className="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs text-emerald-800 dark:text-emerald-300">
-													<KeyRound className="h-3 w-3 mr-1" /> Configured
-												</span>
-											) : undefined
-										}
-										actions={
-											<HoverActions
-												alwaysVisible
-												actions={[
-													{
-														id: "configure",
-														icon: isConfigured ? <KeyRound size={14} /> : <Plus size={14} />,
-														label: getProviderActionLabel(provider, isConfigured),
-														onClick: (e) => {
-															e.stopPropagation();
-															handleEnableProvider(provider.provider_id, providerName);
-														},
-													},
-													...(isConfigured
-														? [
-																{
-																	id: "delete",
-																	icon:
-																		isDeletingProviderApiKey &&
-																		providerToDelete?.providerId === provider.provider_id ? (
-																			<Loader2 size={14} className="animate-spin" />
-																		) : (
-																			<Trash2 size={14} />
-																		),
-																	label: `Delete provider ${providerName}`,
-																	onClick: (e: React.MouseEvent) => {
-																		e.stopPropagation();
-																		setProviderToDelete({
-																			providerId: provider.provider_id,
-																			providerName,
-																		});
-																	},
-																	disabled:
-																		isDeletingProviderApiKey &&
-																		providerToDelete?.providerId === provider.provider_id,
-																},
-															]
-														: []),
-												]}
-											/>
-										}
-									/>
-								);
-							})}
-						{filteredConnectors.map((connector) => {
-							const isConnected = connector.status === "connected";
-							const isUnavailable = connector.status === "unconfigured";
-
-							return (
-								<ListItem
-									key={`connector-${connector.id}`}
-									className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-750"
-									icon={
-										<ModelIcon
-											modelName={connector.name}
-											provider={connector.id}
-											size={22}
-											showFallback
-											mono
-										/>
-									}
-									label={connector.name}
-									sublabel={connector.description}
-									badge={
-										<span className="inline-flex items-center rounded-full bg-zinc-100 dark:bg-zinc-900/30 px-2 py-0.5 text-xs text-zinc-700 dark:text-zinc-300">
-											<KeyRound className="h-3 w-3 mr-1" />
-											{isConnected ? "Connected" : isUnavailable ? "Unavailable" : "Not connected"}
-										</span>
-									}
-									actions={
-										<HoverActions
-											alwaysVisible
-											actions={[
-												{
-													id: "connect",
-													icon: startConnector.isPending ? (
-														<Loader2 size={14} className="animate-spin" />
-													) : (
-														<Plus size={14} />
-													),
-													label: isConnected ? "Reconnect" : "Connect",
-													onClick: (e) => {
-														e.stopPropagation();
-														handleConnectConnector(connector);
-													},
-													disabled: isUnavailable || startConnector.isPending,
-												},
-												...(isConnected && connector.authType !== "github_app"
-													? [
-															{
-																id: "delete",
-																icon:
-																	disconnectConnector.isPending &&
-																	connectorToDelete?.providerId === connector.id ? (
-																		<Loader2 size={14} className="animate-spin" />
-																	) : (
-																		<Trash2 size={14} />
-																	),
-																label: `Disconnect ${connector.name}`,
-																onClick: (e: React.MouseEvent) => {
-																	e.stopPropagation();
-																	setConnectorToDelete({
-																		providerId: connector.id,
-																		providerName: connector.name,
-																	});
-																},
-																disabled: disconnectConnector.isPending,
-															},
-														]
-													: []),
-											]}
-										/>
-									}
-								/>
-							);
-						})}
-					</ul>
+					<ProviderCatalogue items={catalogueItems} />
 				)}
 			</div>
 
@@ -463,6 +380,18 @@ export function ProfileProvidersTab() {
 				configurationValues={modalProvider?.configurationValues}
 				hasStoredCredentials={modalProvider?.hasApiKey}
 				webhookUrl={modalProvider?.webhookUrl}
+				onDelete={
+					modalProvider?.hasApiKey
+						? () => {
+								setProviderToDelete({
+									providerId: modalProvider.provider_id,
+									providerName: getProviderName(modalProvider),
+								});
+								handleCloseModal(false);
+							}
+						: undefined
+				}
+				isDeleting={isDeletingProviderApiKey}
 			/>
 			<ConnectorApiKeyModal
 				open={connectorApiKeyModal.open}
@@ -471,6 +400,36 @@ export function ProfileProvidersTab() {
 				providerName={connectorApiKeyModal.providerName}
 				credentialLabel={connectorApiKeyModal.credentialLabel}
 				onStored={() => queryClient.invalidateQueries({ queryKey: RECIPE_CONNECTORS_QUERY_KEY })}
+			/>
+			<ConnectorAuthConfigModal
+				configs={connectorAuthConfigModal.configs}
+				providerName={connectorAuthConfigModal.providerName}
+				isLoading={startConnector.isPending}
+				onOpenChange={(open) => {
+					if (!open) {
+						setConnectorAuthConfigModal({ providerId: null, providerName: "", configs: [] });
+					}
+				}}
+				onSelect={(authConfigId) => {
+					const connector = connectors.find(
+						(item) => item.id === connectorAuthConfigModal.providerId,
+					);
+					if (connector) void startComposioConnector(connector, authConfigId);
+				}}
+			/>
+			<ConnectorDetailsModal
+				connector={selectedConnector}
+				onOpenChange={(open) => !open && setSelectedConnector(null)}
+				onConnect={(connector) => {
+					setSelectedConnector(null);
+					void handleConnectConnector(connector);
+				}}
+				onDisconnect={(connector) => {
+					setSelectedConnector(null);
+					setConnectorToDelete({ providerId: connector.id, providerName: connector.name });
+				}}
+				isStarting={startConnector.isPending}
+				isDisconnecting={disconnectConnector.isPending}
 			/>
 			<ConfirmationDialog
 				open={providerToDelete !== null}

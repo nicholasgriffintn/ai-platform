@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/cloudflare";
 
 import type { IEnv } from "~/types";
 import { type AssistantError, ErrorType } from "./errors";
+import { redactSensitiveUrl } from "./redaction";
 
 const NON_REPORTABLE_AUTH_ERROR_TYPES = new Set<ErrorType>([
 	ErrorType.AUTHENTICATION_ERROR,
@@ -30,7 +31,14 @@ export function getSentryOptions(
 		enableLogs: false,
 		tracesSampleRate: 0,
 		beforeSend(event) {
-			return event.exception?.values?.length ? event : null;
+			if (!event.exception?.values?.length) return null;
+			if (event.request?.url) {
+				event.request.url = redactSensitiveUrl(event.request.url);
+			}
+			if (event.request) {
+				delete event.request.query_string;
+			}
+			return event;
 		},
 		beforeSendTransaction() {
 			return null;

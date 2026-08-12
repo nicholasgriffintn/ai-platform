@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ErrorType } from "~/utils/errors";
-import { fetchConnectorJson } from "../http";
+import { createConnectorJsonClient } from "../http";
 
-describe("fetchConnectorJson", () => {
+describe("createConnectorJsonClient", () => {
+	const fetchConnectorJson = createConnectorJsonClient("https://api.example.test/api/v1");
 	afterEach(() => {
 		vi.unstubAllGlobals();
 	});
@@ -25,13 +26,13 @@ describe("fetchConnectorJson", () => {
 
 		await expect(
 			fetchConnectorJson({
-				url: "https://api.todoist.com/api/v1/tasks",
+				path: "/api/v1/tasks",
 				token: "provider-token",
 			}),
 		).rejects.toThrow(/"access_token":"\[redacted\]"/);
 		await expect(
 			fetchConnectorJson({
-				url: "https://api.todoist.com/api/v1/tasks",
+				path: "/api/v1/tasks",
 				token: "provider-token",
 			}),
 		).rejects.not.toThrow("Abcdef1234567890Ghijklm_Nopqrs");
@@ -47,7 +48,7 @@ describe("fetchConnectorJson", () => {
 
 		await expect(
 			fetchConnectorJson({
-				url: "https://us.posthog.com/api/projects/123/query/",
+				path: "/api/v1/projects/123/query/",
 				token: "provider-token",
 				method: "POST",
 				body: {
@@ -63,16 +64,16 @@ describe("fetchConnectorJson", () => {
 		});
 	});
 
-	it("rejects connector HTTP calls outside supported provider hosts", async () => {
+	it("rejects absolute and cross-origin request paths", async () => {
 		const fetchMock = vi.fn(async () => new Response("{}"));
 		vi.stubGlobal("fetch", fetchMock);
 
 		await expect(
 			fetchConnectorJson({
-				url: "https://example.com/api",
+				path: "https://attacker.example/api",
 				token: "provider-token",
 			}),
-		).rejects.toThrow("Connector API URL is not supported");
+		).rejects.toThrow("Connector API path is invalid");
 
 		expect(fetchMock).not.toHaveBeenCalled();
 	});

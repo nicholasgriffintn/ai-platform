@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json";
 import { outputSchema } from "./outputs";
 import { externalHttpUrlSchema } from "./navigation";
 
@@ -1211,30 +1212,12 @@ export const recipeConnectionStatusSchema = z.enum([
 	"unknown",
 ]);
 
+const nonComposioRecipeConnectorProviders = ["devin", "hindsight", "honcho", "netlify"];
+
 export const recipeConnectorProviderSchema = z.enum([
-	"asana",
-	"cloudflare",
-	"devin",
-	"fitbit",
-	"gmail",
-	"hindsight",
-	"honcho",
-	"outlook",
-	"calendar",
-	"github",
-	"linear",
-	"netlify",
-	"notion",
-	"oura",
-	"posthog",
-	"ramp",
-	"sentry",
-	"supabase",
-	"todoist",
-	"vercel",
-	"webflow",
-	"withings",
-]);
+	...composioRecipeConnectorProviders,
+	...nonComposioRecipeConnectorProviders,
+] as [string, ...string[]]);
 
 export const recipeIntegrationSchema = z.object({
 	id: z.string(),
@@ -1349,11 +1332,22 @@ export type RecipeConfiguration = z.infer<typeof recipeConfigurationSchema>;
 
 export const recipeConnectorStatusSchema = z.enum(["connected", "disconnected", "unconfigured"]);
 
+export const recipeConnectorAuthConfigSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	authScheme: z.string(),
+	isManaged: z.boolean(),
+	status: recipeConnectorStatusSchema,
+});
+
 export const recipeConnectorManifestSchema = z.object({
 	id: recipeConnectorProviderSchema,
 	name: z.string(),
 	description: z.string(),
-	authType: z.enum(["oauth2", "github_app", "api_key"]),
+	logoUrl: externalHttpUrlSchema.optional(),
+	appUrl: externalHttpUrlSchema.optional(),
+	categories: z.array(z.object({ id: z.string(), name: z.string() })).default([]),
+	authType: z.enum(["api_key", "composio"]),
 	status: recipeConnectorStatusSchema,
 	setupUrl: z.string().optional(),
 	authorizationUrl: externalHttpUrlSchema.optional(),
@@ -1361,8 +1355,11 @@ export const recipeConnectorManifestSchema = z.object({
 	connectedAt: z.string().optional(),
 	updatedAt: z.string().optional(),
 	scopes: z.array(z.string()),
-	operations: z.array(z.string()).default([]),
+	toolCount: z.number().int().nonnegative(),
+	readToolCount: z.number().int().nonnegative(),
+	writeToolCount: z.number().int().nonnegative(),
 	operationAccess: assistantCapabilityOperationAccessSchema.optional(),
+	authConfigs: z.array(recipeConnectorAuthConfigSchema).optional(),
 });
 
 export const recipeConnectorsResponseSchema = z.object({
@@ -1376,6 +1373,7 @@ export const recipeConnectorStartResponseSchema = z.object({
 
 export const recipeConnectorStartRequestSchema = z.object({
 	returnTo: z.string().optional(),
+	authConfigId: z.string().min(1).optional(),
 });
 
 export const recipeConnectorApiKeyRequestSchema = z.object({

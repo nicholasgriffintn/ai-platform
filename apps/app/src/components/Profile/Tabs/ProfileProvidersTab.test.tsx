@@ -9,6 +9,7 @@ const useUserMock = vi.fn();
 const trackEventMock = vi.fn();
 const recipeConnectorsMock = vi.fn();
 const storeRecipeConnectorApiKeyMock = vi.fn();
+const startRecipeConnectorMock = vi.fn();
 
 vi.mock("~/hooks/useUser", () => ({
 	useUser: () => useUserMock(),
@@ -25,7 +26,7 @@ vi.mock("~/hooks/useConnectors", () => ({
 		isLoading: false,
 	}),
 	useStartRecipeConnector: () => ({
-		mutateAsync: vi.fn(),
+		mutateAsync: startRecipeConnectorMock,
 		isPending: false,
 	}),
 	useStoreRecipeConnectorApiKey: () => ({
@@ -57,9 +58,11 @@ function renderProfileProvidersTab(route = "/profile") {
 
 describe("ProfileProvidersTab", () => {
 	beforeEach(() => {
+		vi.restoreAllMocks();
 		vi.clearAllMocks();
 		recipeConnectorsMock.mockReturnValue([]);
 		storeRecipeConnectorApiKeyMock.mockResolvedValue({ success: true });
+		startRecipeConnectorMock.mockReturnValue(new Promise(() => undefined));
 		useUserMock.mockReturnValue({
 			providerSettings: [
 				{
@@ -89,13 +92,17 @@ describe("ProfileProvidersTab", () => {
 				setupUrl: "/profile?tab=providers&type=connector&connector=posthog",
 				credentialLabel: "Personal API key",
 				scopes: ["project:read", "query:read"],
-				operations: ["list_projects", "query"],
+				categories: [{ id: "analytics", name: "Analytics" }],
+				toolCount: 2,
+				readToolCount: 2,
+				writeToolCount: 0,
 			},
 		]);
 
 		renderProfileProvidersTab();
 
-		fireEvent.click(screen.getByLabelText("Connect"));
+		fireEvent.click(screen.getByRole("button", { name: /PostHog/ }));
+		fireEvent.click(screen.getByRole("button", { name: "Connect" }));
 		expect(screen.getByRole("heading", { name: "Connect PostHog" })).toBeInTheDocument();
 
 		fireEvent.change(screen.getByLabelText("Personal API key"), {
@@ -111,6 +118,38 @@ describe("ProfileProvidersTab", () => {
 		});
 	});
 
+	it("searches and navigates across the complete providers catalogue", async () => {
+		recipeConnectorsMock.mockReturnValue([
+			{
+				id: "posthog",
+				name: "PostHog",
+				description: "Query product analytics.",
+				authType: "api_key",
+				status: "disconnected",
+				scopes: [],
+				categories: [{ id: "analytics", name: "Analytics" }],
+				toolCount: 2,
+				readToolCount: 2,
+				writeToolCount: 0,
+			},
+		]);
+
+		renderProfileProvidersTab();
+
+		fireEvent.change(screen.getByLabelText("Search providers"), {
+			target: { value: "analytics" },
+		});
+		expect(screen.getByText("PostHog")).toBeInTheDocument();
+		expect(screen.queryByText("Cartesia")).not.toBeInTheDocument();
+
+		fireEvent.click(screen.getByLabelText("Clear search"));
+		fireEvent.mouseDown(screen.getByRole("tab", { name: /Connected/ }), { button: 0 });
+		await waitFor(() => {
+			expect(screen.getByText("Cartesia")).toBeInTheDocument();
+			expect(screen.queryByText("PostHog")).not.toBeInTheDocument();
+		});
+	});
+
 	it("opens the requested API-key connector from the profile query", async () => {
 		recipeConnectorsMock.mockReturnValue([
 			{
@@ -122,14 +161,108 @@ describe("ProfileProvidersTab", () => {
 				setupUrl: "/profile?tab=providers&type=connector&connector=posthog",
 				credentialLabel: "Personal API key",
 				scopes: ["project:read", "query:read"],
-				operations: ["list_projects", "query"],
+				categories: [{ id: "analytics", name: "Analytics" }],
+				toolCount: 2,
+				readToolCount: 2,
+				writeToolCount: 0,
 			},
 		]);
 
 		renderProfileProvidersTab("/profile?tab=providers&type=connector&connector=posthog");
 
+		expect(screen.getByRole("heading", { name: "PostHog" })).toBeInTheDocument();
+		fireEvent.click(screen.getByRole("button", { name: "Connect" }));
 		expect(screen.getByRole("heading", { name: "Connect PostHog" })).toBeInTheDocument();
 		expect(screen.getByLabelText("Personal API key")).toBeInTheDocument();
+	});
+
+	it("asks for the exact auth config when a toolkit has more than one", async () => {
+		recipeConnectorsMock.mockReturnValue([
+			{
+				id: "whatsapp",
+				name: "WhatsApp",
+				description: "Manage WhatsApp Business.",
+				authType: "composio",
+				status: "disconnected",
+				scopes: [],
+				categories: [{ id: "communication", name: "Communication" }],
+				toolCount: 1,
+				readToolCount: 0,
+				writeToolCount: 1,
+				authConfigs: [
+					{
+						id: "ac_first",
+						name: "WhatsApp primary",
+						authScheme: "OAUTH2",
+						isManaged: true,
+						status: "disconnected",
+					},
+					{
+						id: "ac_second",
+						name: "WhatsApp secondary",
+						authScheme: "OAUTH2",
+						isManaged: true,
+						status: "disconnected",
+					},
+				],
+			},
+		]);
+
+		renderProfileProvidersTab();
+		fireEvent.click(screen.getByRole("button", { name: /WhatsApp/ }));
+		fireEvent.click(screen.getByRole("button", { name: "Connect" }));
+		expect(screen.getByRole("heading", { name: "Connect WhatsApp" })).toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole("button", { name: /WhatsApp secondary/ }));
+		await waitFor(() => {
+			expect(startRecipeConnectorMock).toHaveBeenCalledWith({
+				provider: "whatsapp",
+				authConfigId: "ac_second",
+				returnTo: "/profile?tab=providers&type=connector",
+			});
+		});
+	});
+
+	it("opens Composio setup in a separate window", async () => {
+		const openMock = vi.spyOn(window, "open").mockImplementation(() => null);
+		startRecipeConnectorMock.mockResolvedValue({
+			authorizationUrl: "https://connect.composio.dev/link/token",
+		});
+		recipeConnectorsMock.mockReturnValue([
+			{
+				id: "airtable",
+				name: "Airtable",
+				description: "Manage Airtable bases.",
+				authType: "composio",
+				status: "disconnected",
+				scopes: [],
+				categories: [{ id: "productivity", name: "Productivity" }],
+				toolCount: 24,
+				readToolCount: 12,
+				writeToolCount: 12,
+				authConfigs: [
+					{
+						id: "ac_airtable",
+						name: "Airtable",
+						authScheme: "OAUTH2",
+						isManaged: true,
+						status: "disconnected",
+					},
+				],
+			},
+		]);
+
+		renderProfileProvidersTab();
+		fireEvent.click(screen.getByText("Airtable"));
+		fireEvent.click(screen.getByRole("button", { name: "Connect" }));
+
+		await waitFor(() => {
+			expect(openMock).toHaveBeenCalledWith(
+				"https://connect.composio.dev/link/token",
+				"_blank",
+				"noopener,noreferrer",
+			);
+		});
 	});
 
 	it("lets users delete a configured provider", async () => {
@@ -153,7 +286,8 @@ describe("ProfileProvidersTab", () => {
 
 		renderProfileProvidersTab();
 
-		fireEvent.click(screen.getByLabelText("Delete provider Cartesia"));
+		fireEvent.click(screen.getByText("Cartesia"));
+		fireEvent.click(screen.getByRole("button", { name: "Remove key" }));
 		fireEvent.click(screen.getByRole("button", { name: "Delete Provider" }));
 
 		await waitFor(() => {
@@ -186,8 +320,9 @@ describe("ProfileProvidersTab", () => {
 
 		renderProfileProvidersTab();
 
-		expect(screen.queryByLabelText("Delete provider Cartesia")).not.toBeInTheDocument();
-		expect(screen.getByLabelText("Add key")).toBeInTheDocument();
+		fireEvent.click(screen.getByText("Cartesia"));
+		expect(screen.queryByRole("button", { name: "Remove key" })).not.toBeInTheDocument();
+		expect(screen.getByRole("heading", { name: "Configure Cartesia" })).toBeInTheDocument();
 	});
 
 	it("prefills saved messaging configuration without requiring stored secrets again", async () => {
@@ -244,7 +379,7 @@ describe("ProfileProvidersTab", () => {
 
 		renderProfileProvidersTab();
 
-		fireEvent.click(screen.getByLabelText("Update configuration"));
+		fireEvent.click(screen.getByText("AWS End User Messaging"));
 		expect(screen.getByLabelText("AWS Region")).toHaveValue("eu-west-2");
 		expect(screen.getByLabelText("Origination Identity")).toHaveValue("pool-abc123");
 		expect(screen.getByLabelText("AWS Access Key ID")).not.toBeRequired();

@@ -27,11 +27,12 @@ export async function listRecipeConnectors(): Promise<RecipeConnectorsResponse> 
 export async function startRecipeConnector(
 	provider: RecipeConnectorProvider,
 	returnTo?: string,
+	authConfigId?: string,
 ): Promise<RecipeConnectorStartResponse> {
 	const response = await fetchApiOrThrow(`/apps/connectors/${provider}/start`, {
 		method: "POST",
 		headers: await getAuthHeaders(),
-		body: { returnTo },
+		body: { returnTo, authConfigId },
 	});
 	return returnFetchedData<RecipeConnectorStartResponse>(response);
 }

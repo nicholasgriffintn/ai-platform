@@ -1,987 +1,520 @@
-import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { connectorProviders } from "~/lib/providers/capabilities/connectors";
 import { ProviderConnectionRepository, RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
-
-const listGitHubAppConnectionsForUserMock = vi.hoisted(() => vi.fn());
-
-vi.mock("~/services/github/connections", () => ({
-	listGitHubAppConnectionsForUser: listGitHubAppConnectionsForUserMock,
-}));
+import { ErrorType } from "~/utils/errors";
+import { configuredComposioToolkits } from "~/lib/providers/capabilities/connectors/composio/configured-toolkit-manifest";
 
 import {
-	completeRecipeConnectorAuthorization,
-	getRecipeConnectorAccessToken,
+	deleteRecipeConnectorConnection,
 	listRecipeConnectors,
 	startRecipeConnectorAuthorization,
-	storeRecipeConnectorApiKey,
+	verifyComposioConnectorAuthorization,
 } from "../index";
 
 function createTestServiceContext(env: Record<string, string | undefined> = {}): ServiceContext {
 	const testEnv: IEnv = Object.assign(Object.create(null), {
 		DB: Object.create(null),
+		COMPOSIO_USER_NAMESPACE: "test",
 		...env,
 	});
 	const context = createServiceContext({ env: testEnv });
 	const repositories = new RepositoryManager(testEnv);
-	const storedRecords: Array<{
-		id: string;
-		user_id: number;
-		provider: string;
-		kind: string;
-		external_id: string;
-		status: "connected" | "invalid" | "revoked";
-		encrypted_data: string;
-		metadata: string;
-		created_at: string;
-		updated_at: string | null;
-	}> = [];
-	const providerConnectionRepository: ProviderConnectionRepository = Object.assign(
+	const providerConnections: ProviderConnectionRepository = Object.assign(
 		Object.create(ProviderConnectionRepository.prototype),
 		{
-			getConnection: vi.fn(
-				async (userId: number, provider: string, kind: string, externalId = "") =>
-					storedRecords.find(
-						(record) =>
-							record.user_id === userId &&
-							record.provider === provider &&
-							record.kind === kind &&
-							record.external_id === externalId,
-					) ?? null,
-			),
-			upsertConnection: vi.fn(
-				async (input: {
-					userId: number;
-					provider: string;
-					kind: string;
-					externalId?: string | null;
-					encryptedData: Record<string, unknown>;
-					metadata?: Record<string, unknown>;
-				}) => {
-					const externalId = input.externalId ?? "";
-					const existing = storedRecords.find(
-						(record) =>
-							record.user_id === input.userId &&
-							record.provider === input.provider &&
-							record.kind === input.kind &&
-							record.external_id === externalId,
-					);
-					if (existing) {
-						existing.encrypted_data = JSON.stringify(input.encryptedData);
-						existing.metadata = JSON.stringify(input.metadata ?? {});
-						existing.updated_at = new Date().toISOString();
-						return existing;
-					}
-					const record = {
-						id: `record-${storedRecords.length + 1}`,
-						user_id: input.userId,
-						provider: input.provider,
-						kind: input.kind,
-						external_id: externalId,
-						status: "connected" as const,
-						encrypted_data: JSON.stringify(input.encryptedData),
-						metadata: JSON.stringify(input.metadata ?? {}),
-						created_at: new Date().toISOString(),
-						updated_at: new Date().toISOString(),
-					};
-					storedRecords.push(record);
-					return record;
-				},
-			),
-			deleteConnection: vi.fn(
-				async (userId: number, provider: string, kind: string, externalId = "") => {
-					const index = storedRecords.findIndex(
-						(record) =>
-							record.user_id === userId &&
-							record.provider === provider &&
-							record.kind === kind &&
-							record.external_id === externalId,
-					);
-					if (index >= 0) storedRecords.splice(index, 1);
-				},
-			),
+			getConnection: vi.fn(async () => null),
+			upsertConnection: vi.fn(),
+			deleteConnection: vi.fn(),
 		},
 	);
-
 	vi.spyOn(context, "repositories", "get").mockReturnValue(repositories);
-	vi.spyOn(repositories, "providerConnections", "get").mockReturnValue(
-		providerConnectionRepository,
-	);
-
+	vi.spyOn(repositories, "providerConnections", "get").mockReturnValue(providerConnections);
 	return context;
+}
+
+function jsonResponse(body: unknown, status = 200) {
+	return new Response(JSON.stringify(body), {
+		status,
+		headers: { "Content-Type": "application/json" },
+	});
+}
+
+const authConfigIds = {
+	gmail: "ac_uRCWNPtnTpEw",
+	posthog: "ac_jQVn4kRgdLDa",
+} as const;
+
+function activeAccount(toolkitSlug: keyof typeof authConfigIds, id = `ca_${toolkitSlug}`) {
+	return {
+		id,
+		user_id: "polychat:test:user:42",
+		toolkit: { slug: toolkitSlug },
+		auth_config: { id: authConfigIds[toolkitSlug] },
+		status: "ACTIVE",
+		status_reason: null,
+		is_disabled: false,
+		created_at: "2026-08-12T10:00:00.000Z",
+		updated_at: "2026-08-12T11:00:00.000Z",
+	};
 }
 
 describe("recipe connectors", () => {
 	beforeEach(() => {
 		vi.unstubAllGlobals();
-		listGitHubAppConnectionsForUserMock.mockResolvedValue([]);
 	});
 
-	it("marks OAuth connectors as unconfigured when deployment credentials are missing", async () => {
+	it("marks Composio connectors unconfigured without the project API key", async () => {
 		const response = await listRecipeConnectors({
 			context: createTestServiceContext(),
 			userId: 42,
-			requestUrl: "https://api.polychat.test/apps/connectors",
 		});
 
-		expect(response.connectors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					id: "gmail",
-					status: "unconfigured",
-					authorizationUrl: undefined,
-				}),
-				expect.objectContaining({
-					id: "github",
-					status: "disconnected",
-				}),
-			]),
+		expect(response.connectors.find((connector) => connector.id === "gmail")).toMatchObject({
+			authType: "composio",
+			status: "unconfigured",
+			authorizationUrl: undefined,
+		});
+		expect(response.connectors.find((connector) => connector.id === "cloudflare")).toMatchObject({
+			authType: "composio",
+			status: "unconfigured",
+		});
+	});
+
+	it("derives migrated connection state from the user's active Composio accounts", async () => {
+		const fetchMock = vi.fn(async (_input: RequestInfo | URL) =>
+			jsonResponse({ items: [activeAccount("gmail")], next_cursor: null }),
 		);
-	});
-
-	it("documents deployment connector credentials in the example env file", () => {
-		const exampleEnv = readFileSync(
-			new URL("../../../../../.dev.vars.example", import.meta.url),
-			"utf8",
-		);
-		const requiredEnvNames = new Set([
-			"GITHUB_APP_ID",
-			"GITHUB_APP_PRIVATE_KEY",
-			"GITHUB_APP_WEBHOOK_SECRET",
-			"GITHUB_APP_INSTALL_URL",
-			"GITHUB_APP_SLUG",
-		]);
-
-		for (const provider of connectorProviders) {
-			if (provider.auth.authType !== "oauth2") {
-				continue;
-			}
-			requiredEnvNames.add(provider.auth.clientIdEnv);
-			requiredEnvNames.add(provider.auth.clientSecretEnv);
-		}
-
-		for (const envName of requiredEnvNames) {
-			expect(exampleEnv).toContain(`${envName}=<${envName}>`);
-		}
-	});
-
-	it("returns authorization URLs for configured OAuth connectors", async () => {
-		const response = await listRecipeConnectors({
-			context: createTestServiceContext({
-				JWT_SECRET: "secret",
-				API_BASE_URL: "https://api.polychat.test",
-				GOOGLE_OAUTH_CLIENT_ID: "google-client",
-				GOOGLE_OAUTH_CLIENT_SECRET: "google-secret",
-			}),
-			userId: 42,
-			requestUrl: "https://api.polychat.test/apps/connectors",
-		});
-
-		const gmail = response.connectors.find((connector) => connector.id === "gmail");
-
-		expect(gmail).toMatchObject({
-			status: "disconnected",
-		});
-		expect(gmail?.authorizationUrl).toContain("https://accounts.google.com/o/oauth2/v2/auth");
-		expect(gmail?.authorizationUrl).toContain("client_id=google-client");
-		expect(gmail?.operations).toEqual(["search_messages", "create_draft"]);
-	});
-
-	it("lists API-key connectors without OAuth authorization URLs", async () => {
-		const response = await listRecipeConnectors({
-			context: createTestServiceContext({
-				JWT_SECRET: "secret",
-				API_BASE_URL: "https://api.polychat.test",
-			}),
-			userId: 42,
-			requestUrl: "https://api.polychat.test/apps/connectors",
-		});
-
-		const posthog = response.connectors.find((connector) => connector.id === "posthog");
-		const vercel = response.connectors.find((connector) => connector.id === "vercel");
-		const netlify = response.connectors.find((connector) => connector.id === "netlify");
-		const cloudflare = response.connectors.find((connector) => connector.id === "cloudflare");
-		const devin = response.connectors.find((connector) => connector.id === "devin");
-		const supabase = response.connectors.find((connector) => connector.id === "supabase");
-		const webflow = response.connectors.find((connector) => connector.id === "webflow");
-		const hindsight = response.connectors.find((connector) => connector.id === "hindsight");
-		const honcho = response.connectors.find((connector) => connector.id === "honcho");
-
-		expect(posthog).toMatchObject({
-			status: "disconnected",
-			authType: "api_key",
-			authorizationUrl: undefined,
-			credentialLabel: "Personal API key",
-			scopes: ["project:read", "query:read"],
-			operations: ["list_projects", "query"],
-		});
-		expect(vercel).toMatchObject({
-			status: "disconnected",
-			authType: "api_key",
-			authorizationUrl: undefined,
-			credentialLabel: "Access token",
-			scopes: ["projects:read", "deployments:read"],
-			operations: ["list_projects", "list_deployments", "get_deployment_events"],
-		});
-		expect(netlify).toMatchObject({
-			status: "disconnected",
-			authType: "api_key",
-			authorizationUrl: undefined,
-			credentialLabel: "Personal access token",
-			scopes: ["sites:read", "deploys:read"],
-			operations: ["list_sites", "list_deploys", "get_deploy"],
-		});
-		expect(cloudflare).toMatchObject({
-			status: "disconnected",
-			authType: "api_key",
-			authorizationUrl: undefined,
-			credentialLabel: "API token",
-			scopes: ["Account:read", "Zone:read", "Workers Scripts:read"],
-			operations: [
-				"list_accounts",
-				"list_zones",
-				"list_workers",
-				"list_worker_deployments",
-				"get_worker_deployment",
-			],
-		});
-		expect(devin).toMatchObject({
-			status: "disconnected",
-			authType: "api_key",
-			authorizationUrl: undefined,
-			credentialLabel: "Service user API key",
-			scopes: ["sessions:read", "sessions:write"],
-			operations: [
-				"list_sessions",
-				"get_session",
-				"create_session",
-				"list_messages",
-				"send_message",
-			],
-		});
-		expect(supabase).toMatchObject({
-			status: "disconnected",
-			authType: "api_key",
-			authorizationUrl: undefined,
-			credentialLabel: "Management API access token",
-			scopes: ["organizations:read", "projects:read", "edge_functions:read", "environment:read"],
-			operations: ["list_organizations", "list_projects", "list_functions", "list_branches"],
-		});
-		expect(webflow).toMatchObject({
-			status: "disconnected",
-			authType: "api_key",
-			authorizationUrl: undefined,
-			credentialLabel: "Data API token",
-			scopes: ["sites:read", "cms:read"],
-			operations: ["list_sites", "list_collections", "list_items"],
-		});
-		expect(hindsight).toMatchObject({
-			status: "disconnected",
-			authType: "api_key",
-			authorizationUrl: undefined,
-			credentialLabel: "API key",
-			scopes: ["memory:retain", "memory:recall", "memory:reflect"],
-			operations: [],
-		});
-		expect(honcho).toMatchObject({
-			status: "disconnected",
-			authType: "api_key",
-			authorizationUrl: undefined,
-			credentialLabel: "API key",
-			scopes: ["workspaces:write", "sessions:write", "messages:write", "peers:read"],
-			operations: [],
-		});
-	});
-
-	it("stores API-key connector credentials in the connector credential store", async () => {
-		const context = createTestServiceContext({
-			JWT_SECRET: "secret",
-			API_BASE_URL: "https://api.polychat.test",
-		});
-
-		await expect(
-			storeRecipeConnectorApiKey({
-				context,
-				userId: 42,
-				provider: "posthog",
-				apiKey: " phx_test ",
-			}),
-		).resolves.toEqual({ success: true });
-
-		await expect(
-			getRecipeConnectorAccessToken({
-				context,
-				userId: 42,
-				provider: "posthog",
-			}),
-		).resolves.toMatchObject({
-			accessToken: "phx_test",
-			scope: "project:read query:read",
-		});
+		vi.stubGlobal("fetch", fetchMock);
 
 		const response = await listRecipeConnectors({
-			context,
+			context: createTestServiceContext({ COMPOSIO_API_KEY: "composio-secret" }),
 			userId: 42,
-			requestUrl: "https://api.polychat.test/apps/connectors",
 		});
-		expect(response.connectors.find((connector) => connector.id === "posthog")).toMatchObject({
+
+		expect(response.connectors.find((connector) => connector.id === "gmail")).toMatchObject({
+			authType: "composio",
 			status: "connected",
-			authType: "api_key",
+			connectedAt: "2026-08-12T10:00:00.000Z",
+			updatedAt: "2026-08-12T11:00:00.000Z",
+		});
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+		expect(String(fetchMock.mock.calls[0]?.[0])).toContain("user_ids=polychat%3Atest%3Auser%3A42");
+	});
+
+	it("creates a managed OAuth link from the configured auth config", async () => {
+		const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+			const url = String(input);
+			if (url.endsWith(`/auth_configs/${authConfigIds.gmail}`)) {
+				return jsonResponse({
+					id: authConfigIds.gmail,
+					name: "polychat-gmail",
+					toolkit: { slug: "gmail" },
+					auth_scheme: "OAUTH2",
+					is_composio_managed: true,
+					status: "ENABLED",
+					restrict_to_following_tools: null,
+				});
+			}
+			if (url.endsWith("/connected_accounts/link")) {
+				const body = JSON.parse(String(init?.body));
+				expect(body).toMatchObject({
+					user_id: "polychat:test:user:42",
+					auth_config_id: authConfigIds.gmail,
+					allow_multiple: false,
+				});
+				return jsonResponse(
+					{
+						redirect_url: "https://app.composio.dev/link/link-token",
+						id: "ca_gmail",
+					},
+					201,
+				);
+			}
+			throw new Error(`Unexpected request: ${url}`);
+		});
+		vi.stubGlobal("fetch", fetchMock);
+
+		const result = await startRecipeConnectorAuthorization({
+			context: createTestServiceContext({
+				COMPOSIO_API_KEY: "composio-secret",
+				API_BASE_URL: "https://api.polychat.test",
+			}),
+			userId: 42,
+			provider: "gmail",
+			returnTo: "/projects/17",
+		});
+
+		expect(result).toEqual({
+			provider: "gmail",
+			authorizationUrl: "https://app.composio.dev/link/link-token",
+		});
+		const linkBody = JSON.parse(String(fetchMock.mock.calls.at(-1)?.[1]?.body));
+		expect(linkBody.callback_url).toBe("https://api.polychat.test/apps/connectors/composio/verify");
+	});
+
+	it("uses the configured API-key auth config without handling the user's key", async () => {
+		const requestBodies: Array<Record<string, unknown>> = [];
+		const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+			const url = String(input);
+			if (init?.body) requestBodies.push(JSON.parse(String(init.body)));
+			if (url.endsWith(`/auth_configs/${authConfigIds.posthog}`)) {
+				return jsonResponse({
+					id: authConfigIds.posthog,
+					name: "posthog-k4nf99",
+					toolkit: { slug: "posthog" },
+					auth_scheme: "API_KEY",
+					is_composio_managed: false,
+					status: "ENABLED",
+					restrict_to_following_tools: null,
+				});
+			}
+			if (url.endsWith("/tool_router/session")) {
+				return jsonResponse({ session_id: "trs_posthog" }, 201);
+			}
+			return jsonResponse(
+				{
+					redirect_url: "https://app.composio.dev/link/posthog",
+					connected_account_id: "ca_posthog",
+				},
+				201,
+			);
+		});
+		vi.stubGlobal("fetch", fetchMock);
+
+		await startRecipeConnectorAuthorization({
+			context: createTestServiceContext({
+				COMPOSIO_API_KEY: "composio-secret",
+				APP_BASE_URL: "https://polychat.test",
+			}),
+			userId: 42,
+			provider: "posthog",
+			returnTo: "https://attacker.test/steal",
+		});
+
+		expect(requestBodies[0]).toMatchObject({
+			user_id: "polychat:test:user:42",
+			auth_configs: { posthog: authConfigIds.posthog },
+		});
+		expect(requestBodies.at(-1)).toMatchObject({
+			callback_url: "https://polychat.test/profile?tab=providers&type=connector",
 		});
 	});
 
-	it("does not start OAuth for API-key connectors", async () => {
+	it("keeps duplicate auth configs under one exact toolkit connector and requires an explicit choice", async () => {
+		const whatsapp = configuredComposioToolkits.whatsapp;
+		expect(whatsapp.providerId).toBe("whatsapp");
+		expect(whatsapp.authConfigs).toHaveLength(2);
+
+		await expect(
+			startRecipeConnectorAuthorization({
+				context: createTestServiceContext({ COMPOSIO_API_KEY: "composio-secret" }),
+				userId: 42,
+				provider: "whatsapp",
+			}),
+		).rejects.toMatchObject({
+			message: "Connector auth config is required",
+			statusCode: 400,
+		});
+
+		const selected = whatsapp.authConfigs[1];
+		const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+			const url = String(input);
+			if (url.endsWith(`/auth_configs/${selected.id}`)) {
+				return jsonResponse({
+					id: selected.id,
+					name: selected.name,
+					toolkit: { slug: "whatsapp" },
+					auth_scheme: selected.authScheme,
+					is_composio_managed: selected.isManaged,
+					status: "ENABLED",
+					restrict_to_following_tools: null,
+				});
+			}
+			if (url.endsWith("/tool_router/session")) {
+				expect(JSON.parse(String(init?.body))).toMatchObject({
+					auth_configs: { whatsapp: selected.id },
+				});
+				return jsonResponse({ session_id: "trs_whatsapp" }, 201);
+			}
+			return jsonResponse(
+				{
+					redirect_url: "https://app.composio.dev/link/whatsapp",
+					connected_account_id: "ca_whatsapp",
+				},
+				201,
+			);
+		});
+		vi.stubGlobal("fetch", fetchMock);
+
 		await expect(
 			startRecipeConnectorAuthorization({
 				context: createTestServiceContext({
-					JWT_SECRET: "secret",
+					COMPOSIO_API_KEY: "composio-secret",
 					API_BASE_URL: "https://api.polychat.test",
 				}),
 				userId: 42,
-				provider: "posthog",
+				provider: "whatsapp",
+				authConfigId: selected.id,
 			}),
-		).rejects.toThrow("Connector uses API-key setup");
+		).resolves.toMatchObject({ provider: "whatsapp" });
 	});
 
-	it("marks OAuth connectors as unconfigured when state signing is unavailable", async () => {
-		const response = await listRecipeConnectors({
-			context: createTestServiceContext({
-				API_BASE_URL: "https://api.polychat.test",
-				GOOGLE_OAUTH_CLIENT_ID: "google-client",
-				GOOGLE_OAUTH_CLIENT_SECRET: "google-secret",
-			}),
-			userId: 42,
-			requestUrl: "https://api.polychat.test/apps/connectors",
+	it("completes callback identity verification with the authenticated user", async () => {
+		const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+			const url = String(input);
+			if (url.endsWith("/connected_accounts/complete_auth")) {
+				expect(JSON.parse(String(init?.body))).toEqual({
+					session_uri: "session-uri-once",
+					user_id: "polychat:test:user:42",
+				});
+				return jsonResponse({ connected_account_id: "ca_gmail", toolkit_slug: "gmail" });
+			}
+			return jsonResponse({ items: [activeAccount("gmail")], next_cursor: null });
 		});
-
-		const gmail = response.connectors.find((connector) => connector.id === "gmail");
-		const calendar = response.connectors.find((connector) => connector.id === "calendar");
-
-		expect(gmail).toMatchObject({
-			status: "unconfigured",
-			authorizationUrl: undefined,
-		});
-		expect(calendar).toMatchObject({
-			status: "unconfigured",
-			authorizationUrl: undefined,
-		});
-	});
-
-	it("requests least-privilege scopes for implemented mail connector operations", async () => {
-		const response = await listRecipeConnectors({
-			context: createTestServiceContext({
-				JWT_SECRET: "secret",
-				API_BASE_URL: "https://api.polychat.test",
-				GOOGLE_OAUTH_CLIENT_ID: "google-client",
-				GOOGLE_OAUTH_CLIENT_SECRET: "google-secret",
-				MICROSOFT_OAUTH_CLIENT_ID: "microsoft-client",
-				MICROSOFT_OAUTH_CLIENT_SECRET: "microsoft-secret",
-			}),
-			userId: 42,
-			requestUrl: "https://api.polychat.test/apps/connectors",
-		});
-
-		const gmail = response.connectors.find((connector) => connector.id === "gmail");
-		const outlook = response.connectors.find((connector) => connector.id === "outlook");
-
-		expect(gmail?.scopes).toEqual([
-			"https://www.googleapis.com/auth/gmail.readonly",
-			"https://www.googleapis.com/auth/gmail.compose",
-		]);
-		expect(outlook?.scopes).toEqual([
-			"offline_access",
-			"User.Read",
-			"Mail.ReadWrite",
-			"Calendars.ReadWrite",
-		]);
-		expect(outlook?.operations).toEqual([
-			"search_messages",
-			"list_events",
-			"create_draft",
-			"create_calendar_event",
-		]);
-	});
-
-	it("builds Notion OAuth URLs without an empty scope parameter", async () => {
-		const response = await listRecipeConnectors({
-			context: createTestServiceContext({
-				JWT_SECRET: "secret",
-				API_BASE_URL: "https://api.polychat.test",
-				NOTION_OAUTH_CLIENT_ID: "notion-client",
-				NOTION_OAUTH_CLIENT_SECRET: "notion-secret",
-			}),
-			userId: 42,
-			requestUrl: "https://api.polychat.test/apps/connectors",
-		});
-
-		const notion = response.connectors.find((connector) => connector.id === "notion");
-		const authorizationUrl = new URL(notion?.authorizationUrl ?? "");
-
-		expect(notion).toMatchObject({
-			status: "disconnected",
-			scopes: [],
-		});
-		expect(`${authorizationUrl.origin}${authorizationUrl.pathname}`).toBe(
-			"https://api.notion.com/v1/oauth/authorize",
-		);
-		expect(authorizationUrl.searchParams.get("client_id")).toBe("notion-client");
-		expect(authorizationUrl.searchParams.get("owner")).toBe("user");
-		expect(authorizationUrl.searchParams.has("scope")).toBe(false);
-	});
-
-	it("builds Todoist OAuth URLs with comma-separated data scopes", async () => {
-		const response = await listRecipeConnectors({
-			context: createTestServiceContext({
-				JWT_SECRET: "secret",
-				API_BASE_URL: "https://api.polychat.test",
-				TODOIST_OAUTH_CLIENT_ID: "todoist-client",
-				TODOIST_OAUTH_CLIENT_SECRET: "todoist-secret",
-			}),
-			userId: 42,
-			requestUrl: "https://api.polychat.test/apps/connectors",
-		});
-
-		const todoist = response.connectors.find((connector) => connector.id === "todoist");
-		const authorizationUrl = new URL(todoist?.authorizationUrl ?? "");
-
-		expect(todoist).toMatchObject({
-			status: "disconnected",
-			scopes: ["data:read_write"],
-			operations: ["list_tasks", "create_task", "complete_task"],
-		});
-		expect(`${authorizationUrl.origin}${authorizationUrl.pathname}`).toBe(
-			"https://app.todoist.com/oauth/authorize",
-		);
-		expect(authorizationUrl.searchParams.get("client_id")).toBe("todoist-client");
-		expect(authorizationUrl.searchParams.get("scope")).toBe("data:read_write");
-	});
-
-	it("builds Asana OAuth URLs with task and project scopes", async () => {
-		const response = await listRecipeConnectors({
-			context: createTestServiceContext({
-				JWT_SECRET: "secret",
-				API_BASE_URL: "https://api.polychat.test",
-				ASANA_OAUTH_CLIENT_ID: "asana-client",
-				ASANA_OAUTH_CLIENT_SECRET: "asana-secret",
-			}),
-			userId: 42,
-			requestUrl: "https://api.polychat.test/apps/connectors",
-		});
-
-		const asana = response.connectors.find((connector) => connector.id === "asana");
-		const authorizationUrl = new URL(asana?.authorizationUrl ?? "");
-
-		expect(asana).toMatchObject({
-			status: "disconnected",
-			scopes: ["tasks:read", "tasks:write", "projects:read"],
-			operations: ["list_projects", "list_tasks", "create_task"],
-		});
-		expect(`${authorizationUrl.origin}${authorizationUrl.pathname}`).toBe(
-			"https://app.asana.com/-/oauth_authorize",
-		);
-		expect(authorizationUrl.searchParams.get("client_id")).toBe("asana-client");
-		expect(authorizationUrl.searchParams.get("scope")).toBe("tasks:read tasks:write projects:read");
-	});
-
-	it("builds Sentry OAuth URLs with PKCE and read-only scopes", async () => {
-		const response = await listRecipeConnectors({
-			context: createTestServiceContext({
-				JWT_SECRET: "secret",
-				API_BASE_URL: "https://api.polychat.test",
-				SENTRY_OAUTH_CLIENT_ID: "sentry-client",
-				SENTRY_OAUTH_CLIENT_SECRET: "sentry-secret",
-			}),
-			userId: 42,
-			requestUrl: "https://api.polychat.test/apps/connectors",
-		});
-
-		const sentry = response.connectors.find((connector) => connector.id === "sentry");
-		const authorizationUrl = new URL(sentry?.authorizationUrl ?? "");
-
-		expect(sentry).toMatchObject({
-			status: "disconnected",
-			scopes: ["org:read", "project:read", "event:read"],
-			operations: ["list_organizations", "list_projects", "list_issues", "retrieve_issue"],
-		});
-		expect(`${authorizationUrl.origin}${authorizationUrl.pathname}`).toBe(
-			"https://sentry.io/oauth/authorize/",
-		);
-		expect(authorizationUrl.searchParams.get("client_id")).toBe("sentry-client");
-		expect(authorizationUrl.searchParams.get("scope")).toBe("org:read project:read event:read");
-		expect(authorizationUrl.searchParams.get("code_challenge_method")).toBe("S256");
-		expect(authorizationUrl.searchParams.get("code_challenge")).toMatch(/^[A-Za-z0-9_-]{43}$/);
-	});
-
-	it("builds Fitbit OAuth URLs with read-only health scopes", async () => {
-		const response = await listRecipeConnectors({
-			context: createTestServiceContext({
-				JWT_SECRET: "secret",
-				API_BASE_URL: "https://api.polychat.test",
-				FITBIT_OAUTH_CLIENT_ID: "fitbit-client",
-				FITBIT_OAUTH_CLIENT_SECRET: "fitbit-secret",
-			}),
-			userId: 42,
-			requestUrl: "https://api.polychat.test/apps/connectors",
-		});
-
-		const fitbit = response.connectors.find((connector) => connector.id === "fitbit");
-		const authorizationUrl = new URL(fitbit?.authorizationUrl ?? "");
-
-		expect(fitbit).toMatchObject({
-			status: "disconnected",
-			scopes: ["profile", "activity", "sleep", "heartrate"],
-			operations: ["profile", "daily_activity", "sleep_logs", "heart_rate"],
-		});
-		expect(`${authorizationUrl.origin}${authorizationUrl.pathname}`).toBe(
-			"https://www.fitbit.com/oauth2/authorize",
-		);
-		expect(authorizationUrl.searchParams.get("client_id")).toBe("fitbit-client");
-		expect(authorizationUrl.searchParams.get("scope")).toBe("profile activity sleep heartrate");
-	});
-
-	it("builds Withings OAuth URLs with comma-separated health scopes", async () => {
-		const response = await listRecipeConnectors({
-			context: createTestServiceContext({
-				JWT_SECRET: "secret",
-				API_BASE_URL: "https://api.polychat.test",
-				WITHINGS_OAUTH_CLIENT_ID: "withings-client",
-				WITHINGS_OAUTH_CLIENT_SECRET: "withings-secret",
-			}),
-			userId: 42,
-			requestUrl: "https://api.polychat.test/apps/connectors",
-		});
-
-		const withings = response.connectors.find((connector) => connector.id === "withings");
-		const authorizationUrl = new URL(withings?.authorizationUrl ?? "");
-
-		expect(withings).toMatchObject({
-			status: "disconnected",
-			scopes: ["user.info", "user.metrics", "user.activity"],
-			operations: ["profile", "devices", "measurements", "activity", "sleep_summary"],
-		});
-		expect(`${authorizationUrl.origin}${authorizationUrl.pathname}`).toBe(
-			"https://account.withings.com/oauth2_user/authorize2",
-		);
-		expect(authorizationUrl.searchParams.get("client_id")).toBe("withings-client");
-		expect(authorizationUrl.searchParams.get("scope")).toBe("user.info,user.metrics,user.activity");
-	});
-
-	it("completes Asana OAuth with a form token exchange", async () => {
-		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-			Response.json({
-				access_token: "asana-access-token",
-				refresh_token: "asana-refresh-token",
-				token_type: "bearer",
-				expires_in: 3600,
-				scope: "tasks:read tasks:write projects:read",
-			}),
-		);
 		vi.stubGlobal("fetch", fetchMock);
 
-		const context = createTestServiceContext({
-			JWT_SECRET: "secret",
-			API_BASE_URL: "https://api.polychat.test",
-			APP_BASE_URL: "https://app.polychat.test",
-			ASANA_OAUTH_CLIENT_ID: "asana-client",
-			ASANA_OAUTH_CLIENT_SECRET: "asana-secret",
-		});
-		const start = await startRecipeConnectorAuthorization({
-			context,
-			userId: 42,
-			provider: "asana",
-			returnTo: "/profile?tab=providers&type=connector&connector=asana",
-			requestUrl: "https://api.polychat.test/apps/connectors/asana/start",
-		});
-		const state = new URL(start.authorizationUrl).searchParams.get("state");
-
-		const redirectUrl = await completeRecipeConnectorAuthorization({
-			context,
-			provider: "asana",
-			code: "asana-oauth-code",
-			state: state ?? "",
-			requestUrl: "https://api.polychat.test/apps/connectors/asana/callback",
-		});
-
-		expect(fetchMock).toHaveBeenCalledWith(
-			"https://app.asana.com/-/oauth_token",
-			expect.objectContaining({
-				method: "POST",
-				headers: expect.objectContaining({
-					Accept: "application/json",
-					"Content-Type": "application/x-www-form-urlencoded",
-				}),
+		const redirect = await verifyComposioConnectorAuthorization({
+			context: createTestServiceContext({
+				COMPOSIO_API_KEY: "composio-secret",
+				APP_BASE_URL: "https://polychat.test",
 			}),
-		);
-
-		const tokenBody = fetchMock.mock.calls[0]?.[1]?.body;
-		if (!(tokenBody instanceof URLSearchParams)) {
-			throw new Error("Expected Asana token exchange body to be URLSearchParams");
-		}
-		expect(tokenBody.get("grant_type")).toBe("authorization_code");
-		expect(tokenBody.get("client_id")).toBe("asana-client");
-		expect(tokenBody.get("client_secret")).toBe("asana-secret");
-		expect(tokenBody.get("code")).toBe("asana-oauth-code");
-		expect(tokenBody.get("redirect_uri")).toBe(
-			"https://api.polychat.test/apps/connectors/asana/callback",
-		);
-		expect(redirectUrl).toBe(
-			"https://app.polychat.test/profile?tab=providers&type=connector&connector=asana&connected=1",
-		);
-
-		const storedToken = await getRecipeConnectorAccessToken({
-			context,
 			userId: 42,
-			provider: "asana",
+			sessionUri: "session-uri-once",
 		});
-		expect(storedToken).toMatchObject({
-			accessToken: "asana-access-token",
-			refreshToken: "asana-refresh-token",
-			tokenType: "bearer",
-			scope: "tasks:read tasks:write projects:read",
-		});
+
+		expect(redirect).toBe(
+			"https://polychat.test/profile?tab=providers&type=connector&connector=gmail&connected=1",
+		);
+		expect(fetchMock).toHaveBeenCalledTimes(2);
 	});
 
-	it("completes Fitbit OAuth with Basic token authentication", async () => {
-		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-			Response.json({
-				access_token: "fitbit-access-token",
-				refresh_token: "fitbit-refresh-token",
-				token_type: "Bearer",
-				expires_in: 28800,
-				scope: "profile activity sleep heartrate",
-			}),
-		);
+	it("verifies an ordinary Connect Link callback against the authenticated user", async () => {
+		const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+			expect(String(input)).toContain("connected_account_ids=ca_googleslides");
+			expect(String(input)).toContain("user_ids=polychat%3Atest%3Auser%3A42");
+			return jsonResponse({
+				items: [
+					{
+						...activeAccount("gmail", "ca_googleslides"),
+						toolkit: { slug: "googleslides" },
+						auth_config: { id: configuredComposioToolkits.googleslides.authConfigs[0].id },
+					},
+				],
+				next_cursor: null,
+			});
+		});
 		vi.stubGlobal("fetch", fetchMock);
-
-		const context = createTestServiceContext({
-			JWT_SECRET: "secret",
-			API_BASE_URL: "https://api.polychat.test",
-			APP_BASE_URL: "https://app.polychat.test",
-			FITBIT_OAUTH_CLIENT_ID: "fitbit-client",
-			FITBIT_OAUTH_CLIENT_SECRET: "fitbit-secret",
-		});
-		const start = await startRecipeConnectorAuthorization({
-			context,
-			userId: 42,
-			provider: "fitbit",
-			returnTo: "/profile?tab=providers&type=connector&connector=fitbit",
-			requestUrl: "https://api.polychat.test/apps/connectors/fitbit/start",
-		});
-		const state = new URL(start.authorizationUrl).searchParams.get("state");
-
-		const redirectUrl = await completeRecipeConnectorAuthorization({
-			context,
-			provider: "fitbit",
-			code: "fitbit-oauth-code",
-			state: state ?? "",
-			requestUrl: "https://api.polychat.test/apps/connectors/fitbit/callback",
-		});
-
-		expect(fetchMock).toHaveBeenCalledWith(
-			"https://api.fitbit.com/oauth2/token",
-			expect.objectContaining({
-				method: "POST",
-				headers: expect.objectContaining({
-					Accept: "application/json",
-					Authorization: "Basic Zml0Yml0LWNsaWVudDpmaXRiaXQtc2VjcmV0",
-					"Content-Type": "application/x-www-form-urlencoded",
-				}),
-			}),
-		);
-
-		const tokenBody = fetchMock.mock.calls[0]?.[1]?.body;
-		if (!(tokenBody instanceof URLSearchParams)) {
-			throw new Error("Expected Fitbit token exchange body to be URLSearchParams");
-		}
-		expect(tokenBody.get("grant_type")).toBe("authorization_code");
-		expect(tokenBody.get("client_id")).toBeNull();
-		expect(tokenBody.get("client_secret")).toBeNull();
-		expect(tokenBody.get("code")).toBe("fitbit-oauth-code");
-		expect(tokenBody.get("redirect_uri")).toBe(
-			"https://api.polychat.test/apps/connectors/fitbit/callback",
-		);
-		expect(redirectUrl).toBe(
-			"https://app.polychat.test/profile?tab=providers&type=connector&connector=fitbit&connected=1",
-		);
 
 		await expect(
-			getRecipeConnectorAccessToken({
-				context,
-				userId: 42,
-				provider: "fitbit",
-			}),
-		).resolves.toMatchObject({
-			accessToken: "fitbit-access-token",
-			refreshToken: "fitbit-refresh-token",
-			tokenType: "Bearer",
-			scope: "profile activity sleep heartrate",
-		});
-	});
-
-	it("completes Withings OAuth with requesttoken action and body-wrapped tokens", async () => {
-		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-			Response.json({
-				status: 0,
-				body: {
-					access_token: "withings-access-token",
-					refresh_token: "withings-refresh-token",
-					token_type: "Bearer",
-					expires_in: 10800,
-					scope: "user.info,user.metrics,user.activity",
-				},
-			}),
-		);
-		vi.stubGlobal("fetch", fetchMock);
-
-		const context = createTestServiceContext({
-			JWT_SECRET: "secret",
-			API_BASE_URL: "https://api.polychat.test",
-			APP_BASE_URL: "https://app.polychat.test",
-			WITHINGS_OAUTH_CLIENT_ID: "withings-client",
-			WITHINGS_OAUTH_CLIENT_SECRET: "withings-secret",
-		});
-		const start = await startRecipeConnectorAuthorization({
-			context,
-			userId: 42,
-			provider: "withings",
-			returnTo: "/profile?tab=providers&type=connector&connector=withings",
-			requestUrl: "https://api.polychat.test/apps/connectors/withings/start",
-		});
-		const state = new URL(start.authorizationUrl).searchParams.get("state");
-
-		const redirectUrl = await completeRecipeConnectorAuthorization({
-			context,
-			provider: "withings",
-			code: "withings-oauth-code",
-			state: state ?? "",
-			requestUrl: "https://api.polychat.test/apps/connectors/withings/callback",
-		});
-
-		expect(fetchMock).toHaveBeenCalledWith(
-			"https://wbsapi.withings.net/v2/oauth2",
-			expect.objectContaining({
-				method: "POST",
-				headers: expect.objectContaining({
-					Accept: "application/json",
-					"Content-Type": "application/x-www-form-urlencoded",
+			verifyComposioConnectorAuthorization({
+				context: createTestServiceContext({
+					COMPOSIO_API_KEY: "composio-secret",
+					APP_BASE_URL: "https://polychat.test",
 				}),
-			}),
-		);
-
-		const tokenBody = fetchMock.mock.calls[0]?.[1]?.body;
-		if (!(tokenBody instanceof URLSearchParams)) {
-			throw new Error("Expected Withings token exchange body to be URLSearchParams");
-		}
-		expect(tokenBody.get("action")).toBe("requesttoken");
-		expect(tokenBody.get("grant_type")).toBe("authorization_code");
-		expect(tokenBody.get("client_id")).toBe("withings-client");
-		expect(tokenBody.get("client_secret")).toBe("withings-secret");
-		expect(tokenBody.get("code")).toBe("withings-oauth-code");
-		expect(tokenBody.get("redirect_uri")).toBe(
-			"https://api.polychat.test/apps/connectors/withings/callback",
-		);
-		expect(redirectUrl).toBe(
-			"https://app.polychat.test/profile?tab=providers&type=connector&connector=withings&connected=1",
-		);
-
-		await expect(
-			getRecipeConnectorAccessToken({
-				context,
 				userId: 42,
-				provider: "withings",
+				status: "success",
+				connectedAccountId: "ca_googleslides",
 			}),
-		).resolves.toMatchObject({
-			accessToken: "withings-access-token",
-			refreshToken: "withings-refresh-token",
-			tokenType: "Bearer",
-			scope: "user.info,user.metrics,user.activity",
-		});
-	});
-
-	it("completes Sentry OAuth with the encrypted PKCE verifier", async () => {
-		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-			Response.json({
-				access_token: "sentry-access-token",
-				refresh_token: "sentry-refresh-token",
-				token_type: "bearer",
-				expires_in: 2591999,
-				scope: "org:read project:read event:read",
-			}),
-		);
-		vi.stubGlobal("fetch", fetchMock);
-
-		const context = createTestServiceContext({
-			JWT_SECRET: "secret",
-			API_BASE_URL: "https://api.polychat.test",
-			APP_BASE_URL: "https://app.polychat.test",
-			SENTRY_OAUTH_CLIENT_ID: "sentry-client",
-			SENTRY_OAUTH_CLIENT_SECRET: "sentry-secret",
-		});
-		const start = await startRecipeConnectorAuthorization({
-			context,
-			userId: 42,
-			provider: "sentry",
-			returnTo: "/profile?tab=providers&type=connector&connector=sentry",
-			requestUrl: "https://api.polychat.test/apps/connectors/sentry/start",
-		});
-		const authorizationUrl = new URL(start.authorizationUrl);
-		const state = authorizationUrl.searchParams.get("state");
-
-		const redirectUrl = await completeRecipeConnectorAuthorization({
-			context,
-			provider: "sentry",
-			code: "sentry-oauth-code",
-			state: state ?? "",
-			requestUrl: "https://api.polychat.test/apps/connectors/sentry/callback",
-		});
-
-		expect(fetchMock).toHaveBeenCalledWith(
-			"https://sentry.io/oauth/token/",
-			expect.objectContaining({
-				method: "POST",
-				headers: expect.objectContaining({
-					Accept: "application/json",
-					"Content-Type": "application/x-www-form-urlencoded",
-				}),
-			}),
-		);
-
-		const tokenBody = fetchMock.mock.calls[0]?.[1]?.body;
-		if (!(tokenBody instanceof URLSearchParams)) {
-			throw new Error("Expected Sentry token exchange body to be URLSearchParams");
-		}
-		expect(tokenBody.get("grant_type")).toBe("authorization_code");
-		expect(tokenBody.get("client_id")).toBe("sentry-client");
-		expect(tokenBody.get("client_secret")).toBe("sentry-secret");
-		expect(tokenBody.get("code")).toBe("sentry-oauth-code");
-		expect(tokenBody.get("redirect_uri")).toBe(
-			"https://api.polychat.test/apps/connectors/sentry/callback",
-		);
-		expect(tokenBody.get("code_verifier")).toMatch(/^[A-Za-z0-9_-]{43}$/);
-		expect(tokenBody.get("code_verifier")).not.toBe(
-			authorizationUrl.searchParams.get("code_challenge"),
-		);
-		expect(redirectUrl).toBe(
-			"https://app.polychat.test/profile?tab=providers&type=connector&connector=sentry&connected=1",
+		).resolves.toBe(
+			"https://polychat.test/profile?tab=providers&type=connector&connector=googleslides&connected=1",
 		);
 	});
 
-	it("redacts sensitive OAuth token exchange errors", async () => {
+	it("rejects an ordinary Connect Link callback for another Composio user", async () => {
 		vi.stubGlobal(
 			"fetch",
-			vi.fn(
-				async () =>
-					new Response(
-						JSON.stringify({
-							error: "invalid_grant",
-							access_token: "Abcdef1234567890Ghijklm_Nopqrs",
-							refresh_token: "Refresh1234567890Secret",
-						}),
-						{ status: 400 },
-					),
+			vi.fn(async () =>
+				jsonResponse({
+					items: [
+						{
+							...activeAccount("gmail", "ca_googleslides"),
+							user_id: "polychat:test:user:7",
+							toolkit: { slug: "googleslides" },
+							auth_config: {
+								id: configuredComposioToolkits.googleslides.authConfigs[0].id,
+							},
+						},
+					],
+					next_cursor: null,
+				}),
 			),
 		);
-		const context = createTestServiceContext({
-			JWT_SECRET: "secret",
-			API_BASE_URL: "https://api.polychat.test",
-			GOOGLE_OAUTH_CLIENT_ID: "google-client",
-			GOOGLE_OAUTH_CLIENT_SECRET: "google-secret",
-		});
-		const start = await startRecipeConnectorAuthorization({
-			context,
-			userId: 42,
-			provider: "gmail",
-			requestUrl: "https://api.polychat.test/apps/connectors/gmail/start",
-		});
-		const state = new URL(start.authorizationUrl).searchParams.get("state");
 
 		await expect(
-			completeRecipeConnectorAuthorization({
-				context,
-				provider: "gmail",
-				code: "oauth-code",
-				state: state ?? "",
-				requestUrl: "https://api.polychat.test/apps/connectors/gmail/callback",
+			verifyComposioConnectorAuthorization({
+				context: createTestServiceContext({ COMPOSIO_API_KEY: "composio-secret" }),
+				userId: 42,
+				status: "success",
+				connectedAccountId: "ca_googleslides",
 			}),
-		).rejects.toThrow(/"access_token":"\[redacted\]"/);
-		await expect(
-			completeRecipeConnectorAuthorization({
-				context,
-				provider: "gmail",
-				code: "oauth-code",
-				state: state ?? "",
-				requestUrl: "https://api.polychat.test/apps/connectors/gmail/callback",
-			}),
-		).rejects.not.toThrow("Abcdef1234567890Ghijklm_Nopqrs");
+		).rejects.toMatchObject({
+			message: "Composio connection verification failed",
+			type: ErrorType.AUTHORISATION_ERROR,
+			statusCode: 403,
+		});
 	});
 
-	it("fails expired connector token refresh with a reconnect-safe redacted error", async () => {
-		vi.useFakeTimers();
-		try {
-			vi.setSystemTime(new Date("2026-06-07T10:00:00.000Z"));
-			const fetchMock = vi.fn(async () =>
-				Response.json({
-					access_token: "initial-access-token",
-					refresh_token: "refresh-token-secret",
-					token_type: "Bearer",
-					expires_in: 1,
+	it("rejects a callback account that belongs to a different Composio user", async () => {
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce(
+				jsonResponse({ connected_account_id: "ca_gmail", toolkit_slug: "gmail" }),
+			)
+			.mockResolvedValueOnce(
+				jsonResponse({
+					items: [{ ...activeAccount("gmail"), user_id: "polychat:test:user:7" }],
+					next_cursor: null,
 				}),
 			);
+		vi.stubGlobal("fetch", fetchMock);
+
+		await expect(
+			verifyComposioConnectorAuthorization({
+				context: createTestServiceContext({ COMPOSIO_API_KEY: "composio-secret" }),
+				userId: 42,
+				sessionUri: "session-uri-once",
+			}),
+		).rejects.toMatchObject({
+			message: "Composio connection verification failed",
+			type: ErrorType.AUTHORISATION_ERROR,
+			statusCode: 403,
+		});
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+	});
+
+	it("rejects a callback when the completed account is not in the user's account list", async () => {
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce(
+				jsonResponse({ connected_account_id: "ca_gmail", toolkit_slug: "gmail" }),
+			)
+			.mockResolvedValueOnce(
+				jsonResponse({ items: [activeAccount("gmail", "ca_other")], next_cursor: null }),
+			);
+		vi.stubGlobal("fetch", fetchMock);
+
+		await expect(
+			verifyComposioConnectorAuthorization({
+				context: createTestServiceContext({ COMPOSIO_API_KEY: "composio-secret" }),
+				userId: 42,
+				sessionUri: "session-uri-once",
+			}),
+		).rejects.toMatchObject({ statusCode: 403 });
+	});
+
+	it.each([
+		{
+			name: "replayed",
+			status: 409,
+			body: { message: "session URI has already been consumed" },
+			type: ErrorType.CONFLICT_ERROR,
+		},
+		{
+			name: "expired",
+			status: 400,
+			body: { error: { message: "session URI has expired" } },
+			type: ErrorType.EXTERNAL_API_ERROR,
+		},
+	])(
+		"surfaces a $name callback error without attempting account verification",
+		async (testCase) => {
+			const fetchMock = vi.fn(async () => jsonResponse(testCase.body, testCase.status));
 			vi.stubGlobal("fetch", fetchMock);
-			const context = createTestServiceContext({
-				JWT_SECRET: "secret",
-				API_BASE_URL: "https://api.polychat.test",
-				GOOGLE_OAUTH_CLIENT_ID: "google-client",
-				GOOGLE_OAUTH_CLIENT_SECRET: "google-secret",
+
+			await expect(
+				verifyComposioConnectorAuthorization({
+					context: createTestServiceContext({ COMPOSIO_API_KEY: "composio-secret" }),
+					userId: 42,
+					sessionUri: "session-uri-once",
+				}),
+			).rejects.toMatchObject({
+				message: "Composio request failed",
+				type: testCase.type,
+				statusCode: testCase.status,
 			});
-			const start = await startRecipeConnectorAuthorization({
-				context,
+			expect(fetchMock).toHaveBeenCalledTimes(1);
+		},
+	);
+
+	it("rejects a verified toolkit outside the generated registry", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi
+				.fn()
+				.mockResolvedValueOnce(
+					jsonResponse({ connected_account_id: "ca_unknown", toolkit_slug: "unknown" }),
+				)
+				.mockResolvedValueOnce(jsonResponse({ items: [], next_cursor: null })),
+		);
+
+		await expect(
+			verifyComposioConnectorAuthorization({
+				context: createTestServiceContext({ COMPOSIO_API_KEY: "composio-secret" }),
+				userId: 42,
+				sessionUri: "session-uri-once",
+			}),
+		).rejects.toMatchObject({ statusCode: 403 });
+	});
+
+	it("revokes a user's explicit account before deleting it", async () => {
+		const requests: Array<{ url: string; method: string }> = [];
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+				requests.push({ url: String(input), method: init?.method ?? "GET" });
+				if (String(input).includes("/connected_accounts?")) {
+					return jsonResponse({ items: [activeAccount("gmail")], next_cursor: null });
+				}
+				return jsonResponse({ success: true });
+			}),
+		);
+
+		await expect(
+			deleteRecipeConnectorConnection({
+				context: createTestServiceContext({ COMPOSIO_API_KEY: "composio-secret" }),
 				userId: 42,
 				provider: "gmail",
-				requestUrl: "https://api.polychat.test/apps/connectors/gmail/start",
-			});
-			const state = new URL(start.authorizationUrl).searchParams.get("state");
-			await completeRecipeConnectorAuthorization({
-				context,
-				provider: "gmail",
-				code: "oauth-code",
-				state: state ?? "",
-				requestUrl: "https://api.polychat.test/apps/connectors/gmail/callback",
-			});
+			}),
+		).resolves.toEqual({ success: true });
+		expect(requests.slice(1)).toEqual([
+			{
+				url: "https://backend.composio.dev/api/v3.1/connected_accounts/ca_gmail/revoke",
+				method: "POST",
+			},
+			{
+				url: "https://backend.composio.dev/api/v3.1/connected_accounts/ca_gmail",
+				method: "DELETE",
+			},
+		]);
+	});
 
-			vi.setSystemTime(new Date("2026-06-07T10:05:00.000Z"));
-			fetchMock.mockResolvedValueOnce(
-				Response.json(
-					{
-						error: "invalid_grant",
-						refresh_token: "refresh-token-secret",
-						access_token: "leaked-access-token",
-					},
-					{ status: 401 },
-				),
-			);
+	it("revokes an inactive OAuth account before deleting it", async () => {
+		const requests: Array<{ url: string; method: string }> = [];
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+				requests.push({ url: String(input), method: init?.method ?? "GET" });
+				if (String(input).includes("/connected_accounts?")) {
+					return jsonResponse({
+						items: [{ ...activeAccount("gmail"), status: "INACTIVE", is_disabled: true }],
+						next_cursor: null,
+					});
+				}
+				return jsonResponse({ success: true });
+			}),
+		);
 
-			let error: unknown;
-			try {
-				await getRecipeConnectorAccessToken({
-					context,
-					userId: 42,
-					provider: "gmail",
-				});
-			} catch (thrown) {
-				error = thrown;
-			}
+		await deleteRecipeConnectorConnection({
+			context: createTestServiceContext({ COMPOSIO_API_KEY: "composio-secret" }),
+			userId: 42,
+			provider: "gmail",
+		});
 
-			expect(error).toBeInstanceOf(Error);
-			const message = error instanceof Error ? error.message : "";
-			expect(message).toContain("Reconnect this provider");
-			expect(message).not.toContain("refresh-token-secret");
-			expect(message).not.toContain("leaked-access-token");
-		} finally {
-			vi.useRealTimers();
-		}
+		expect(requests.slice(1).map((request) => request.url)).toEqual([
+			"https://backend.composio.dev/api/v3.1/connected_accounts/ca_gmail/revoke",
+			"https://backend.composio.dev/api/v3.1/connected_accounts/ca_gmail",
+		]);
 	});
 });

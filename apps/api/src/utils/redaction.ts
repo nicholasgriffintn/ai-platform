@@ -19,6 +19,8 @@ const UNQUOTED_FIELD_PATTERN = new RegExp(
 );
 const LIKELY_SECRET_TOKEN_PATTERN = /\b[A-Za-z0-9._~+=/-]{24,}\b/g;
 const SENSITIVE_OBJECT_KEY_PATTERN = new RegExp(`^${SENSITIVE_FIELD_NAMES}$`, "i");
+const SENSITIVE_QUERY_PARAMETER_PATTERN =
+	/^(?:api[-_]?key|code|password|secret|session[-_]?uri|signature|state|token|access[-_]?token|refresh[-_]?token)$/i;
 
 function calculateEntropy(value: string): number {
 	const counts = new Map<string, number>();
@@ -96,4 +98,18 @@ function redactValue(value: unknown, seen: WeakSet<object>): unknown {
 
 export function redactSensitiveTokens<T>(value: T): T {
 	return redactValue(value, new WeakSet<object>()) as T;
+}
+
+export function redactSensitiveUrl(value: string): string {
+	try {
+		const url = new URL(value);
+		for (const key of Array.from(url.searchParams.keys())) {
+			if (SENSITIVE_QUERY_PARAMETER_PATTERN.test(key)) {
+				url.searchParams.set(key, REDACTED);
+			}
+		}
+		return redactSensitiveTokens(url.toString());
+	} catch {
+		return redactSensitiveTokens(value);
+	}
 }

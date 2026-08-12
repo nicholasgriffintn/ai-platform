@@ -136,7 +136,7 @@ describe("RecipeExecutionHandler", () => {
 			status: "blocked",
 			conversationStarter: "Connect calendar",
 			messageUrl: "/?query=Connect",
-			missingConnections: [{ providerId: "calendar" }],
+			missingConnections: [{ providerId: "googlecalendar" }],
 			enabledTools: ["use_recipe_connector"],
 			configuration: {},
 		});

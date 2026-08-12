@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
-import { createCommonParameters } from "~/utils/parameters";
+import type { ChatCompletionParameters, IEnv } from "~/types";
+import { createCommonParameters, getToolsForProvider } from "~/utils/parameters";
 import { WorkersProvider } from "../workers";
 
 vi.mock("../base", () => ({
@@ -62,6 +63,49 @@ describe("WorkersProvider", () => {
 	});
 
 	describe("mapParameters", () => {
+		it("passes function tools using the Workers AI binding contract", async () => {
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "GLM 5.2",
+				matchingModel: "@cf/zai-org/glm-5.2",
+				provider: "workers-ai",
+				modalities: { input: ["text"], output: ["text"] },
+				supportsToolCalls: true,
+			});
+			vi.mocked(createCommonParameters).mockReturnValue({
+				messages: [{ role: "user", content: "Use NASA" }],
+			});
+			vi.mocked(getToolsForProvider).mockReturnValue({
+				tools: [
+					{
+						type: "function",
+						function: {
+							name: "use_recipe_connector",
+							description: "Use a connected provider",
+							parameters: { type: "object", properties: {} },
+						},
+					},
+				],
+			});
+
+			const env: IEnv = Object.assign(Object.create(null), {});
+			const params: ChatCompletionParameters = {
+				model: "@cf/zai-org/glm-5.2",
+				messages: [{ role: "user", content: "Use NASA" }],
+				env,
+			};
+			const result = await new WorkersProvider().mapParameters(params);
+
+			expect(result).toMatchObject({
+				tools: [
+					{
+						type: "function",
+						function: { name: "use_recipe_connector" },
+					},
+				],
+			});
+			expect(result).not.toHaveProperty("toolConfig");
+		});
+
 		it("should keep text-only requests on the chat payload for multimodal text models", async () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({

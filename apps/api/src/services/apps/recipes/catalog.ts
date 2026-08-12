@@ -6,6 +6,8 @@ import {
 } from "~/lib/providers/capabilities/connectors";
 import { mailCalendarRecipes } from "./catalog/mail-calendar";
 import { coreIntegrationRecipes } from "./catalog/core-integrations";
+import { configuredComposioRecipes } from "./catalog/configured-composio";
+import { composioWorkflowRecipes } from "./catalog/composio-workflows";
 import { developerRecipes } from "./catalog/developer";
 import { healthConnectorRecipes } from "./catalog/health-connectors";
 import { workspaceRecipes } from "./catalog/workspace";
@@ -28,6 +30,8 @@ export {
 const catalogRecipes: CatalogRecipe[] = [
 	...mailCalendarRecipes,
 	...coreIntegrationRecipes,
+	...configuredComposioRecipes,
+	...composioWorkflowRecipes,
 	...developerRecipes,
 	...healthConnectorRecipes,
 	...workspaceRecipes,
@@ -53,7 +57,7 @@ export function getRecipeCatalogValidationIssues(
 
 		for (const integration of recipe.integrations) {
 			const provider = recipeConnectorProviderSchema.safeParse(integration.providerId);
-			if (!provider.success || provider.data === "github") {
+			if (!provider.success) {
 				continue;
 			}
 

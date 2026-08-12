@@ -1,28 +1,11 @@
 import type { RecipeConnectorProvider } from "@assistant/schemas";
 
 import {
-	getConnectorProviderConfig,
+	connectorProviders,
 	type ConnectorProviderConfig,
 } from "~/lib/providers/capabilities/connectors";
-import { executeAsanaOperation } from "./executors/asana";
-import { executeCalendarOperation } from "./executors/calendar";
-import { executeCloudflareOperation } from "./executors/cloudflare";
 import { executeDevinOperation } from "./executors/devin";
-import { executeFitbitOperation } from "./executors/fitbit";
-import { executeGmailOperation } from "./executors/gmail";
-import { executeLinearOperation } from "./executors/linear";
 import { executeNetlifyOperation } from "./executors/netlify";
-import { executeNotionOperation } from "./executors/notion";
-import { executeOuraOperation } from "./executors/oura";
-import { executeOutlookOperation } from "./executors/outlook";
-import { executePostHogOperation } from "./executors/posthog";
-import { executeRampOperation } from "./executors/ramp";
-import { executeSentryOperation } from "./executors/sentry";
-import { executeSupabaseOperation } from "./executors/supabase";
-import { executeTodoistOperation } from "./executors/todoist";
-import { executeVercelOperation } from "./executors/vercel";
-import { executeWebflowOperation } from "./executors/webflow";
-import { executeWithingsOperation } from "./executors/withings";
 
 export type ConnectorOperationExecutor = (
 	token: string,
@@ -35,111 +18,22 @@ export interface RecipeConnectorAdapter {
 	executeOperation?: ConnectorOperationExecutor;
 }
 
-function requireConnectorProviderConfig(
-	providerId: RecipeConnectorProvider,
-): ConnectorProviderConfig {
-	const provider = getConnectorProviderConfig(providerId);
-	if (!provider) {
-		throw new Error(`Recipe connector provider is not registered: ${providerId}`);
-	}
+const localExecutors: Partial<Record<RecipeConnectorProvider, ConnectorOperationExecutor>> = {
+	devin: executeDevinOperation,
+	netlify: executeNetlifyOperation,
+};
 
-	return provider;
-}
-
-const connectorAdapters = [
-	{
-		provider: requireConnectorProviderConfig("cloudflare"),
-		executeOperation: executeCloudflareOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("devin"),
-		executeOperation: executeDevinOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("gmail"),
-		executeOperation: executeGmailOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("hindsight"),
-	},
-	{
-		provider: requireConnectorProviderConfig("honcho"),
-	},
-	{
-		provider: requireConnectorProviderConfig("calendar"),
-		executeOperation: executeCalendarOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("outlook"),
-		executeOperation: executeOutlookOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("linear"),
-		executeOperation: executeLinearOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("oura"),
-		executeOperation: executeOuraOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("fitbit"),
-		executeOperation: executeFitbitOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("webflow"),
-		executeOperation: executeWebflowOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("withings"),
-		executeOperation: executeWithingsOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("todoist"),
-		executeOperation: executeTodoistOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("asana"),
-		executeOperation: executeAsanaOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("sentry"),
-		executeOperation: executeSentryOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("posthog"),
-		executeOperation: executePostHogOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("ramp"),
-		executeOperation: executeRampOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("supabase"),
-		executeOperation: executeSupabaseOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("vercel"),
-		executeOperation: executeVercelOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("netlify"),
-		executeOperation: executeNetlifyOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("notion"),
-		executeOperation: executeNotionOperation,
-	},
-	{
-		provider: requireConnectorProviderConfig("github"),
-	},
-] satisfies RecipeConnectorAdapter[];
+const connectorAdapters: RecipeConnectorAdapter[] = connectorProviders.map((provider) => ({
+	provider,
+	...(localExecutors[provider.id] ? { executeOperation: localExecutors[provider.id] } : {}),
+}));
 
 export function getRecipeConnectorAdapters(): readonly RecipeConnectorAdapter[] {
 	return connectorAdapters;
 }
 
 export function getRecipeConnectorProviderConfigs(): readonly ConnectorProviderConfig[] {
-	return connectorAdapters.map((adapter) => adapter.provider);
+	return connectorProviders;
 }
 
 export function getRecipeConnectorAdapter(

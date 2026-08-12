@@ -54,10 +54,17 @@ vi.mock("~/utils/errors", () => ({
 	AssistantError: class extends Error {
 		type: string;
 		statusCode?: number;
-		constructor(message: string, type?: string, statusCode?: number) {
+		context: Record<string, unknown>;
+		constructor(
+			message: string,
+			type?: string,
+			statusCode?: number,
+			context: Record<string, unknown> = {},
+		) {
 			super(message);
 			this.type = type || "UNKNOWN";
 			this.statusCode = statusCode;
+			this.context = context;
 			this.name = "AssistantError";
 		}
 	},
@@ -355,7 +362,7 @@ describe("responses", () => {
 			expect(withRetry).toHaveBeenCalledWith(
 				expect.any(Function),
 				expect.objectContaining({
-					retryCount: 0,
+					retryCount: 1,
 					baseDelayMs: 1000,
 					isRetryableError: expect.any(Function),
 					onRetry: expect.any(Function),
@@ -596,7 +603,10 @@ describe("responses", () => {
 
 		it("should preserve provider error status codes", async () => {
 			mockProvider.getResponse.mockRejectedValue(
-				new AssistantError("runtime failed", ErrorType.PROVIDER_ERROR, 424),
+				new AssistantError("runtime failed", ErrorType.PROVIDER_ERROR, 424, {
+					requestId: "req_provider_123",
+					responseStatus: 424,
+				}),
 			);
 
 			try {
@@ -607,6 +617,10 @@ describe("responses", () => {
 				expect((error as AssistantError).message).toBe("openai error: runtime failed");
 				expect((error as AssistantError).statusCode).toBe(424);
 				expect((error as AssistantError).type).toBe(ErrorType.PROVIDER_ERROR);
+				expect((error as AssistantError).context).toEqual({
+					requestId: "req_provider_123",
+					responseStatus: 424,
+				});
 			}
 		});
 

@@ -2,3 +2,4 @@ migrations/meta/*.json
 dist/*
 .wrangler/*
 coverage/*
+src/lib/providers/capabilities/connectors/composio/configured-toolkit-manifest.generated.json

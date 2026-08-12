@@ -123,7 +123,7 @@ function buildAllowedConnectorProviders(recipe: AssistantRecipe): RecipeConnecto
 	const providers = new Set<RecipeConnectorProvider>();
 	for (const integration of recipe.integrations) {
 		const parsed = recipeConnectorProviderSchema.safeParse(integration.providerId);
-		if (parsed.success && parsed.data !== "github") {
+		if (parsed.success) {
 			providers.add(parsed.data);
 		}
 	}
@@ -136,7 +136,7 @@ function buildAllowedConnectorOperations(recipe: AssistantRecipe): Record<string
 
 	for (const integration of recipe.integrations) {
 		const parsed = recipeConnectorProviderSchema.safeParse(integration.providerId);
-		if (!parsed.success || parsed.data === "github") {
+		if (!parsed.success) {
 			continue;
 		}
 
