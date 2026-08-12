@@ -1,6 +1,6 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { providerLibrary } from "~/lib/providers/library";
-import type { IEnv, IUser, IUserSettings } from "~/types";
+import type { IEnv, IUser, IUserSettings, MemoryScope } from "~/types";
 import type { MemoryProvider, MemoryProviderId } from "./types";
 
 export function isMemoryProviderId(value: unknown): value is MemoryProviderId {
@@ -12,6 +12,7 @@ export interface GetMemoryProviderContext {
 	user?: IUser;
 	userSettings?: IUserSettings | null;
 	serviceContext?: ServiceContext;
+	memoryScope?: MemoryScope;
 }
 
 export function getMemoryProvider({
@@ -19,13 +20,18 @@ export function getMemoryProvider({
 	user,
 	userSettings,
 	serviceContext,
+	memoryScope = { type: "personal" },
 }: GetMemoryProviderContext): MemoryProvider {
-	const providerName = (userSettings?.memory_provider || "built-in") as MemoryProviderId;
+	// User-owned provider connections cannot become workspace credentials implicitly.
+	const providerName = (
+		memoryScope.type === "project" ? "built-in" : userSettings?.memory_provider || "built-in"
+	) as MemoryProviderId;
 
 	return providerLibrary.memory(providerName, {
 		env,
 		user,
 		userSettings,
 		serviceContext,
+		memoryScope,
 	});
 }

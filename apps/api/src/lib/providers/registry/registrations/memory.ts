@@ -22,6 +22,7 @@ const memoryProviders: ProviderRegistration<MemoryProvider>[] = [
 				ensureUser(context, { optional: true }),
 				context.userSettings,
 				context.serviceContext,
+				context.memoryScope,
 			),
 		metadata: {
 			vendor: "Polychat",

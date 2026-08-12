@@ -8,6 +8,7 @@ import type {
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { ServiceContext } from "../lib/context/serviceContext";
 import type { AnonymousUser } from "./anonymous-user";
+import type { MemoryScope } from "./memory";
 import type { IEnv, ReasoningEffortLevel, VerbosityLevel } from "./shared";
 import type { IUser } from "./user";
 
@@ -216,6 +217,7 @@ export interface IRequest {
 	use_rag?: boolean;
 	rag_options?: RagOptions;
 	context?: ServiceContext;
+	memoryScope?: MemoryScope;
 }
 
 type InternalExecutionParams = {

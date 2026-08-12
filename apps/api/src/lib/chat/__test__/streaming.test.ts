@@ -307,4 +307,44 @@ describe("createStreamWithPostProcessing", () => {
 		expect(memoryMocks.getInstance).not.toHaveBeenCalled();
 		expect(memoryMocks.handleMemory).not.toHaveBeenCalled();
 	});
+
+	it("stores automatically classified memories in the project scope", async () => {
+		memoryMocks.handleMemory.mockResolvedValue([]);
+		const context = createServiceContext({
+			env: { AI: {} } as any,
+			user: { id: 42, plan_id: "pro" } as any,
+		});
+		const conversationManager = {
+			getUsageLimits: vi.fn().mockResolvedValue(null),
+			add: vi.fn(),
+			get: vi
+				.fn()
+				.mockResolvedValue([{ role: "user", content: "The launch is scheduled for Friday" }]),
+		};
+
+		const stream = await createStreamWithPostProcessing(
+			createProviderStream([
+				`data: ${JSON.stringify({ choices: [{ delta: { content: "Noted" } }] })}\n\n`,
+				"data: [DONE]\n\n",
+			]),
+			{
+				env: { AI: {} } as any,
+				completion_id: "completion-1",
+				model: "gpt-5.4-mini",
+				provider: "openai",
+				context,
+				userSettings: { memories_save_enabled: true } as any,
+				memoryScope: { type: "project", projectId: "project-1" },
+			},
+			conversationManager as any,
+		);
+
+		await readStream(stream);
+
+		expect(memoryMocks.getInstance).toHaveBeenCalledWith(expect.anything(), context.user, context, {
+			type: "project",
+			projectId: "project-1",
+		});
+		expect(memoryMocks.handleMemory).toHaveBeenCalledOnce();
+	});
 });

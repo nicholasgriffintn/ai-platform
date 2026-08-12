@@ -5,6 +5,7 @@ export * from "./database";
 export * from "./embeddings";
 export * from "./guardrails";
 export * from "./metrics";
+export * from "./memory";
 export * from "./research";
 export * from "./search";
 export * from "./shared";

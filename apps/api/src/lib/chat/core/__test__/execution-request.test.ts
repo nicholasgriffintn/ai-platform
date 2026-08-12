@@ -90,4 +90,15 @@ describe("createChatExecutionRequest", () => {
 			input.prepared.requestOptions,
 		);
 	});
+
+	it("passes the prepared memory scope to stream post-processing", () => {
+		const input = createInput();
+		input.prepared.memoryScope = { type: "project", projectId: "project-1" };
+
+		expect(createChatExecutionRequest(input).streamOptions("test-model", "test-provider")).toEqual(
+			expect.objectContaining({
+				memoryScope: { type: "project", projectId: "project-1" },
+			}),
+		);
+	});
 });

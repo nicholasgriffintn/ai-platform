@@ -21,7 +21,7 @@ import { restoreStoredAttachmentContent } from "~/lib/chat/storedAttachments";
 import { findModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
 import type { ChatHostedToolSettings, ModelConfigInfo } from "@assistant/schemas";
-import type { ChatMode, CoreChatOptions, Message, Platform } from "~/types";
+import type { ChatMode, CoreChatOptions, MemoryScope, Message, Platform } from "~/types";
 import { generateId } from "~/utils/id";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -66,6 +66,7 @@ export interface PreparedRequest {
 	enabledTools: string[];
 	toolOptions?: ChatHostedToolSettings;
 	requestOptions: CoreChatOptions["options"];
+	memoryScope: MemoryScope;
 }
 
 export class RequestPreparer {
@@ -126,6 +127,9 @@ export class RequestPreparer {
 		const projectContext = options.context
 			? await resolveProjectChatContext(options.context, options)
 			: null;
+		const memoryScope: MemoryScope = projectContext
+			? { type: "project", projectId: projectContext.projectId }
+			: { type: "personal" };
 		// Project coding settings are authoritative; conversation options may only refine the task.
 		options = { ...options, ...applyProjectCodingEnvironment(options, projectContext) };
 
@@ -191,6 +195,7 @@ export class RequestPreparer {
 			userSettings,
 			memoriesEnabled,
 			projectContext,
+			memoryScope,
 		);
 
 		if (storeMessagesTask) {
@@ -228,6 +233,7 @@ export class RequestPreparer {
 			}),
 			toolOptions: projectContext ? projectContext.toolOptions : options.tool_options,
 			requestOptions: options.options,
+			memoryScope,
 		};
 	}
 
@@ -435,6 +441,7 @@ export class RequestPreparer {
 		userSettings: any,
 		memoriesEnabled: boolean,
 		projectContext: ProjectChatContext | null,
+		memoryScope: MemoryScope = { type: "personal" },
 	): Promise<string> {
 		const {
 			system_prompt,
@@ -461,6 +468,7 @@ export class RequestPreparer {
 				memoriesEnabled,
 				userSettings,
 				options.context,
+				memoryScope,
 			);
 			return this.appendProjectInstructions(prompt, projectContext);
 		}
@@ -475,6 +483,7 @@ export class RequestPreparer {
 				memoriesEnabled,
 				userSettings,
 				options.context,
+				memoryScope,
 			);
 			return this.appendProjectInstructions(prompt, projectContext);
 		}
@@ -505,6 +514,7 @@ export class RequestPreparer {
 			memoriesEnabled,
 			userSettings,
 			options.context,
+			memoryScope,
 		);
 		return this.appendProjectInstructions(prompt, projectContext);
 	}
@@ -526,14 +536,22 @@ export class RequestPreparer {
 		memoriesEnabled: boolean,
 		userSettings: any,
 		serviceContext?: ServiceContext,
+		memoryScope: MemoryScope = { type: "personal" },
 	): Promise<string> {
 		const isProUser = user?.plan_id === "pro";
 
 		if (memoriesEnabled && isProUser && finalMessage && user?.id) {
 			try {
-				const memoryManager = MemoryManager.getInstance(this.env, user, serviceContext);
+				const memoryManager = MemoryManager.getInstance(
+					this.env,
+					user,
+					serviceContext,
+					memoryScope,
+				);
 				const [synthesis, recentMemories] = await Promise.all([
-					this.repositories.memorySyntheses.getActiveSynthesis(user.id, "global"),
+					memoryScope.type === "personal"
+						? this.repositories.memorySyntheses.getActiveSynthesis(user.id, "global")
+						: Promise.resolve(null),
 					memoryManager.retrieveMemories(finalMessage, {
 						topK: 3,
 						scoreThreshold: 0.5,

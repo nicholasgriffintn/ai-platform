@@ -4,6 +4,7 @@ import { getAllAttachments, pruneMessagesToFitContext, sanitiseInput } from "~/l
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { findModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
+import { MemoryManager } from "~/lib/memory";
 import type { CoreChatOptions, Message } from "~/types";
 import { generateId } from "~/utils/id";
 import type { ValidationContext } from "../../validation/ValidationPipeline";
@@ -195,6 +196,7 @@ describe("RequestPreparer", () => {
 				currentMode: "normal",
 				isProUser: true,
 				enabledTools: ["search_memories", "store_memory"],
+				memoryScope: { type: "personal" },
 			});
 		});
 
@@ -301,6 +303,13 @@ describe("RequestPreparer", () => {
 				"search_memories",
 				"store_memory",
 			]);
+			expect(MemoryManager.getInstance).toHaveBeenCalledWith(
+				mockEnv,
+				baseOptions.context?.user,
+				baseOptions.context,
+				{ type: "project", projectId: "project-1" },
+			);
+			expect(mockRepositories.memorySyntheses.getActiveSynthesis).not.toHaveBeenCalled();
 		});
 
 		it("should only enable memory search when chat history memories are enabled", async () => {

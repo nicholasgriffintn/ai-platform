@@ -50,4 +50,10 @@ describe("SourcesLibrary", () => {
 		fireEvent.click(screen.getByRole("button", { name: "Delete source" }));
 		expect(mocks.deleteSource).toHaveBeenCalledWith("source-1");
 	});
+
+	it("does not add a second source creation flow to project pages", () => {
+		render(<SourcesLibrary projectId="project-1" title="Sources" />);
+
+		expect(screen.queryByRole("button", { name: "Add source" })).not.toBeInTheDocument();
+	});
 });

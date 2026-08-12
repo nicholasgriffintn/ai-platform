@@ -53,4 +53,24 @@ describe("memory provider helpers", () => {
 			}),
 		);
 	});
+
+	it("keeps workspace memory in the built-in project scope", () => {
+		const provider = { name: "built-in" };
+		vi.mocked(providerLibrary.memory).mockReturnValue(provider as any);
+
+		expect(
+			getMemoryProvider({
+				...context,
+				userSettings: { memory_provider: "hindsight" },
+				memoryScope: { type: "project", projectId: "project-1" },
+			}),
+		).toBe(provider);
+
+		expect(providerLibrary.memory).toHaveBeenCalledWith(
+			"built-in",
+			expect.objectContaining({
+				memoryScope: { type: "project", projectId: "project-1" },
+			}),
+		);
+	});
 });

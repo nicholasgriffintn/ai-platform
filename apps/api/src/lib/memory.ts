@@ -3,7 +3,7 @@ import { toProviderMessages } from "~/lib/chat/providerMessages";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { getMemoryProvider } from "~/lib/providers/capabilities/memory";
 import type { MemoryProviderId } from "~/lib/providers/capabilities/memory/types";
-import type { IEnv, IUser, IUserSettings, Message } from "~/types";
+import type { IEnv, IUser, IUserSettings, MemoryScope, Message } from "~/types";
 import { parseAIResponseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 import type { ConversationManager } from "./conversationManager";
@@ -12,6 +12,7 @@ import { getMemoryClassifierPrompt } from "~/lib/prompts/memoryClassifier";
 import { getMemoryNormaliserPrompt } from "./prompts/memoryNormaliser";
 import { getMemorySummariserPrompt } from "./prompts/memorySummariser";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { recordProjectAudit } from "~/services/audit";
 
 const logger = getLogger({ prefix: "lib/memory" });
 
@@ -25,19 +26,27 @@ export class MemoryManager {
 	private env: IEnv;
 	private user?: IUser;
 	private serviceContext?: ServiceContext;
+	private memoryScope: MemoryScope;
 
-	constructor(env: IEnv, user?: IUser, serviceContext?: ServiceContext) {
+	constructor(
+		env: IEnv,
+		user?: IUser,
+		serviceContext?: ServiceContext,
+		memoryScope: MemoryScope = { type: "personal" },
+	) {
 		this.env = env;
 		this.user = user;
 		this.serviceContext = serviceContext;
+		this.memoryScope = memoryScope;
 	}
 
 	public static getInstance(
 		env: IEnv,
 		user?: IUser,
 		serviceContext?: ServiceContext,
+		memoryScope?: MemoryScope,
 	): MemoryManager {
-		return new MemoryManager(env, user, serviceContext);
+		return new MemoryManager(env, user, serviceContext, memoryScope);
 	}
 
 	/**
@@ -56,6 +65,7 @@ export class MemoryManager {
 			user: this.user,
 			userSettings,
 			serviceContext: this.serviceContext,
+			memoryScope: this.memoryScope,
 		});
 		const result = await provider.storeMemory({
 			text,
@@ -63,6 +73,15 @@ export class MemoryManager {
 			conversationId,
 			userSettings,
 		});
+		if (result.id && this.memoryScope.type === "project" && this.serviceContext && this.user?.id) {
+			await recordProjectAudit(this.serviceContext, this.memoryScope.projectId, {
+				actorUserId: this.user.id,
+				action: "source.created",
+				targetType: "source",
+				targetId: result.id,
+				metadata: { kind: "memory", provider: result.provider },
+			});
+		}
 		return result.id;
 	}
 
@@ -87,6 +106,7 @@ export class MemoryManager {
 			user: this.user,
 			userSettings: providerSettings,
 			serviceContext: this.serviceContext,
+			memoryScope: this.memoryScope,
 		});
 		if (!provider.capabilities.deletion) {
 			throw new AssistantError(
@@ -129,6 +149,7 @@ export class MemoryManager {
 			user: this.user,
 			userSettings,
 			serviceContext: this.serviceContext,
+			memoryScope: this.memoryScope,
 		});
 
 		return provider.retrieveMemories(query, {

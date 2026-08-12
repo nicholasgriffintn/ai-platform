@@ -40,6 +40,7 @@ describe("chat request context helpers", () => {
 			mode: "build",
 			model: "model-1",
 			provider: "provider-1",
+			memoryScope: { type: "personal" },
 		});
 
 		expect(context).toMatchObject({
@@ -64,5 +65,26 @@ describe("chat request context helpers", () => {
 			},
 		});
 		expect(context.request.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+	});
+
+	it("passes only the prepared memory scope to tool execution", () => {
+		const context = buildToolRequestContext({
+			chatOptions: {
+				env: { AI: {} },
+				completion_id: "completion-1",
+				messages: [{ role: "user", content: "hello" }],
+				metadata: { project_id: "untrusted-project" },
+			} as any,
+			input: "hello",
+			mode: "normal",
+			model: "model-1",
+			provider: "provider-1",
+			memoryScope: { type: "project", projectId: "validated-project" },
+		});
+
+		expect(context.memoryScope).toEqual({
+			type: "project",
+			projectId: "validated-project",
+		});
 	});
 });

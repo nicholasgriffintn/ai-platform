@@ -47,7 +47,7 @@ function errorResponse(name: string, content: string) {
 export const search_memories: ApiToolDefinition = {
 	name: MEMORY_SEARCH_TOOL_NAME,
 	description:
-		"Searches the user's long-term memory for relevant preferences, facts, or prior context. Use when personal context would improve the answer (or the user asks you to directly) and the user has memory enabled.",
+		"Searches long-term memory in the current personal or workspace-project scope. Use when durable context would improve the answer and memory is enabled.",
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
@@ -87,6 +87,7 @@ export const search_memories: ApiToolDefinition = {
 			context.env,
 			context.user,
 			context.request.context,
+			context.request.memoryScope,
 		);
 		const memories = await memoryManager.retrieveMemories(query, {
 			topK,
@@ -109,7 +110,7 @@ export const search_memories: ApiToolDefinition = {
 export const store_memory: ApiToolDefinition = {
 	name: MEMORY_STORE_TOOL_NAME,
 	description:
-		"Stores a concise, durable memory about the user. Use only for stable user facts, preferences, or important context that should be remembered in future conversations, or if the user asks you to directly.",
+		"Stores concise, durable context in the current personal or workspace-project scope. Use only for stable facts, preferences, schedules, or important context that should be remembered in future conversations.",
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {
@@ -149,6 +150,7 @@ export const store_memory: ApiToolDefinition = {
 			context.env,
 			context.user,
 			context.request.context,
+			context.request.memoryScope,
 		);
 		const id = await memoryManager.storeMemory(
 			text,

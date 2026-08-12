@@ -8,6 +8,7 @@ export const sourceKindSchema = z.enum([
 	"connector",
 	"repository",
 ]);
+const creatableSourceKindSchema = z.enum(["file", "text", "url", "connector", "repository"]);
 export const sourceStatusSchema = z.enum(["processing", "available", "failed", "archived"]);
 export const sourceScopeSchema = z.enum(["personal", "project"]);
 export const sourceCollectionKindSchema = z.enum(["general", "memory", "context"]);
@@ -49,7 +50,7 @@ export const createSourceSchema = z
 		projectId: z.string().min(1).nullable().optional(),
 		conversationId: z.string().min(1).nullable().optional(),
 		connectionId: z.string().min(1).nullable().optional(),
-		kind: sourceKindSchema,
+		kind: creatableSourceKindSchema,
 		title: z.string().trim().min(1).max(200),
 		status: sourceStatusSchema.default("available"),
 		content: z.string().max(500_000).nullable().optional(),

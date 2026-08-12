@@ -6,6 +6,12 @@ import { ErrorType } from "~/utils/errors";
 import { parseAIResponseJson } from "~/utils/json";
 import { MemoryManager } from "../memory";
 
+const recordProjectAuditMock = vi.hoisted(() => vi.fn());
+
+vi.mock("~/services/audit", () => ({
+	recordProjectAudit: recordProjectAuditMock,
+}));
+
 const mockEmbeddingProvider = {
 	generate: vi.fn(),
 	getMatches: vi.fn(),
@@ -125,6 +131,37 @@ describe("MemoryManager", () => {
 				message: "Selected memory provider does not support deleting individual memories",
 			});
 			expect(mockMemoryProvider.deleteMemory).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("project scope", () => {
+		it("stores and audits memory in the validated project scope", async () => {
+			const serviceContext = {} as any;
+			const manager = MemoryManager.getInstance(mockEnv, mockUser, serviceContext, {
+				type: "project",
+				projectId: "project-1",
+			});
+
+			await manager.storeMemory(
+				"The launch is scheduled for Friday",
+				{ category: "schedule" },
+				"completion-1",
+				{ memories_save_enabled: true } as any,
+			);
+
+			expect(memoryCapability.getMemoryProvider).toHaveBeenCalledWith(
+				expect.objectContaining({
+					memoryScope: { type: "project", projectId: "project-1" },
+				}),
+			);
+			expect(recordProjectAuditMock).toHaveBeenCalledWith(
+				serviceContext,
+				"project-1",
+				expect.objectContaining({
+					action: "source.created",
+					targetId: "mock-id",
+				}),
+			);
 		});
 	});
 

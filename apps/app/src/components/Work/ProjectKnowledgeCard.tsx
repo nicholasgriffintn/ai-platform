@@ -1,13 +1,12 @@
-import { Brain, Database, Plus } from "lucide-react";
+import { Brain, Database } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 
-import { Button, Card, Checkbox, FormDialog, FormInput, Textarea } from "~/components/ui";
+import { Button, Card, Checkbox, FormDialog } from "~/components/ui";
 import {
 	useProjectContextSources,
 	useSetProjectContextSources,
-	useSourceMutations,
 	useSources,
 } from "~/hooks/useSources";
 
@@ -26,11 +25,7 @@ export function ProjectKnowledgeCard({
 	const allSources = useSources({ projectId });
 	const context = useProjectContextSources(projectId);
 	const setContext = useSetProjectContextSources(projectId);
-	const sourceMutations = useSourceMutations();
-	const [isMemoryOpen, setIsMemoryOpen] = useState(false);
 	const [isContextOpen, setIsContextOpen] = useState(false);
-	const [memoryTitle, setMemoryTitle] = useState("");
-	const [memoryContent, setMemoryContent] = useState("");
 	const [selectedContextIds, setSelectedContextIds] = useState<string[]>([]);
 	const contextCandidates = (allSources.data ?? []).filter(
 		(source) => source.kind !== "memory" && source.status === "available",
@@ -54,17 +49,10 @@ export function ProjectKnowledgeCard({
 						<div>
 							<h2 className="text-sm font-semibold">Project memory</h2>
 							<p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-								Shared facts automatically included in project conversations.
+								Shared facts are recalled when relevant in project conversations.
 							</p>
 						</div>
 					</div>
-					<Button
-						variant="icon"
-						size="icon"
-						icon={<Plus size={16} />}
-						aria-label="Add project memory"
-						onClick={() => setIsMemoryOpen(true)}
-					/>
 				</div>
 				{memories.data?.length ? (
 					<ul className="space-y-1.5 pl-11 text-sm text-zinc-700 dark:text-zinc-300">
@@ -128,49 +116,6 @@ export function ProjectKnowledgeCard({
 			)}
 
 			<FormDialog
-				open={isMemoryOpen}
-				onOpenChange={setIsMemoryOpen}
-				title="Add project memory"
-				description="Save a durable fact that should inform every project conversation."
-				submitText="Add memory"
-				isLoading={sourceMutations.createSource.isPending}
-				submitDisabled={!memoryTitle.trim() || !memoryContent.trim()}
-				onSubmit={async () => {
-					await sourceMutations.createSource.mutateAsync({
-						projectId,
-						kind: "memory",
-						title: memoryTitle.trim(),
-						content: memoryContent.trim(),
-						status: "available",
-						metadata: { category: "project" },
-					});
-					setMemoryTitle("");
-					setMemoryContent("");
-					setIsMemoryOpen(false);
-					toast.success("Project memory added");
-				}}
-			>
-				<FormInput
-					label="Title"
-					value={memoryTitle}
-					onChange={(event) => setMemoryTitle(event.target.value)}
-					required
-				/>
-				<div className="space-y-1">
-					<label htmlFor="project-memory-content" className="text-sm font-medium">
-						Memory
-					</label>
-					<Textarea
-						id="project-memory-content"
-						value={memoryContent}
-						onChange={(event) => setMemoryContent(event.target.value)}
-						className="min-h-28"
-						required
-					/>
-				</div>
-			</FormDialog>
-
-			<FormDialog
 				open={isContextOpen}
 				onOpenChange={setIsContextOpen}
 				title="Manage conversation context"
@@ -209,7 +154,7 @@ export function ProjectKnowledgeCard({
 					</div>
 				) : (
 					<p className="text-sm text-zinc-500">
-						Add a project source before selecting persistent context.
+						Upload a source in project chat before selecting persistent context.
 					</p>
 				)}
 			</FormDialog>

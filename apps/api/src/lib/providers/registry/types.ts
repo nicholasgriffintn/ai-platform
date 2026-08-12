@@ -11,6 +11,7 @@ import type {
 	EmbeddingProvider,
 	GuardrailsProvider,
 	IEnv,
+	MemoryScope,
 	IUser,
 	IUserSettings,
 	ResearchProvider,
@@ -44,6 +45,7 @@ export interface ProviderFactoryContext {
 	config?: unknown;
 	options?: Record<string, unknown>;
 	userSettings?: IUserSettings | null;
+	memoryScope?: MemoryScope;
 }
 
 export interface ProviderMetadata {

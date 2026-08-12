@@ -73,7 +73,9 @@ describe("source deletion", () => {
 
 		await deleteSource(context, 42, memory.id);
 
-		expect(MemoryManager.getInstance).toHaveBeenCalledWith(context.env, context.user, context);
+		expect(MemoryManager.getInstance).toHaveBeenCalledWith(context.env, context.user, context, {
+			type: "personal",
+		});
 		expect(deleteMemoryMock).toHaveBeenCalledWith(memory.id, "honcho");
 		expect(deleteSourceRow).not.toHaveBeenCalled();
 	});
@@ -115,6 +117,37 @@ describe("source deletion", () => {
 		await deleteSource(context, 42, migratedMemory.id);
 
 		expect(deleteMemoryMock).toHaveBeenCalledWith(migratedMemory.id, "built-in");
+	});
+
+	it("deletes project memories through the shared memory provider scope", async () => {
+		const projectMemory = {
+			...memory,
+			id: "project-memory-1",
+			project_id: "project-1",
+			metadata: JSON.stringify({ memory_provider: "built-in" }),
+		};
+		const context = {
+			env: {},
+			user: { id: 42 },
+			repositories: {
+				sources: {
+					getSource: vi.fn().mockResolvedValue(projectMemory),
+				},
+			},
+		} as unknown as ServiceContext;
+
+		await deleteSource(context, 42, projectMemory.id);
+
+		expect(MemoryManager.getInstance).toHaveBeenCalledWith(context.env, context.user, context, {
+			type: "project",
+			projectId: "project-1",
+		});
+		expect(deleteMemoryMock).toHaveBeenCalledWith(projectMemory.id, "built-in");
+		expect(recordProjectAuditMock).toHaveBeenCalledWith(
+			context,
+			"project-1",
+			expect.objectContaining({ action: "source.deleted", targetId: projectMemory.id }),
+		);
 	});
 });
 
@@ -175,7 +208,7 @@ describe("project conversation context", () => {
 		expect(result.sources).toEqual([expect.objectContaining({ id: projectSource.id })]);
 	});
 
-	it("loads available memories and context details in one project-scoped operation", async () => {
+	it("loads only curated context because project memories use memory retrieval", async () => {
 		const memorySource = {
 			...projectSource,
 			id: "memory-project-1",
@@ -197,7 +230,6 @@ describe("project conversation context", () => {
 		const result = await listProjectConversationSources(context, 42, "project-1");
 
 		expect(result.sources).toEqual([
-			expect.objectContaining({ id: memorySource.id, content: memorySource.content }),
 			expect.objectContaining({ id: projectSource.id, content: projectSource.content }),
 		]);
 		expect(requireProjectAccessMock).toHaveBeenCalledWith(context, "project-1");

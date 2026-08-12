@@ -302,4 +302,41 @@ describe("external memory providers", () => {
 		expect(deleteSourceMock).not.toHaveBeenCalled();
 		expect(removeSourceFromCollectionsMock).not.toHaveBeenCalled();
 	});
+
+	it("stores project memories in a shared built-in namespace", async () => {
+		const embedding = {
+			generate: vi.fn().mockResolvedValue([{ id: "vector-1", values: [0.1, 0.2] }]),
+			getMatches: vi.fn().mockResolvedValue({ matches: [] }),
+			insert: vi.fn().mockResolvedValue(undefined),
+		};
+		vi.mocked(embeddingHelpers.getEmbeddingProvider).mockReturnValue(embedding as any);
+		const provider = new BuiltInMemoryProvider(
+			env,
+			user,
+			{ embedding_provider: "bedrock" } as any,
+			serviceContext,
+			{ type: "project", projectId: "project-1" },
+		);
+
+		await provider.storeMemory({
+			text: "The launch is scheduled for Friday.",
+			metadata: { category: "schedule" },
+			conversationId: "conversation-1",
+			userSettings: { embedding_provider: "bedrock" } as any,
+		});
+
+		expect(embeddingHelpers.getEmbeddingProvider).toHaveBeenCalledWith(env, user, undefined);
+		expect(embedding.getMatches).toHaveBeenCalledWith(
+			expect.any(Float64Array),
+			expect.objectContaining({ namespace: "memory_project_project-1" }),
+		);
+		expect(createSourceMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				projectId: "project-1",
+				kind: "memory",
+				provider: "built-in",
+				vectorId: expect.any(String),
+			}),
+		);
+	});
 });

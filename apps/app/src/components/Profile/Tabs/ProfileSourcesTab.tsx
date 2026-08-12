@@ -62,17 +62,23 @@ export function SourcesLibrary({ projectId, title = "Sources" }: SourcesLibraryP
 	return (
 		<>
 			<PageHeader
-				actions={[
-					{
-						label: "Add source",
-						icon: <Plus size={16} />,
-						onClick: () => setIsCreateSourceOpen(true),
-					},
-				]}
+				actions={
+					projectId
+						? []
+						: [
+								{
+									label: "Add source",
+									icon: <Plus size={16} />,
+									onClick: () => setIsCreateSourceOpen(true),
+								},
+							]
+				}
 			>
 				<PageTitle title={title} />
 				<p className="mt-1 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
-					Files, memories, links, repositories, and connected records available to Polychat.
+					{projectId
+						? "Memories and sources available to this project."
+						: "Files, memories, links, repositories, and connected records available to Polychat."}
 				</p>
 			</PageHeader>
 
@@ -238,48 +244,50 @@ export function SourcesLibrary({ projectId, title = "Sources" }: SourcesLibraryP
 				</section>
 			</div>
 
-			<FormDialog
-				open={isCreateSourceOpen}
-				onOpenChange={setIsCreateSourceOpen}
-				title="Add source"
-				description="Add text that Polychat can use as source material."
-				submitText="Add source"
-				isLoading={mutations.createSource.isPending}
-				submitDisabled={!sourceTitle.trim() || !sourceContent.trim()}
-				onSubmit={async () => {
-					await mutations.createSource.mutateAsync({
-						projectId,
-						kind: "text",
-						title: sourceTitle.trim(),
-						content: sourceContent.trim(),
-						status: "available",
-						metadata: {},
-					});
-					setSourceTitle("");
-					setSourceContent("");
-					setIsCreateSourceOpen(false);
-					toast.success("Source added");
-				}}
-			>
-				<FormInput
-					label="Title"
-					value={sourceTitle}
-					onChange={(event) => setSourceTitle(event.target.value)}
-					required
-				/>
-				<div className="space-y-1">
-					<label htmlFor="source-content" className="text-sm font-medium">
-						Content
-					</label>
-					<Textarea
-						id="source-content"
-						value={sourceContent}
-						onChange={(event) => setSourceContent(event.target.value)}
-						className="min-h-32"
+			{!projectId ? (
+				<FormDialog
+					open={isCreateSourceOpen}
+					onOpenChange={setIsCreateSourceOpen}
+					title="Add source"
+					description="Add text that Polychat can use as source material."
+					submitText="Add source"
+					isLoading={mutations.createSource.isPending}
+					submitDisabled={!sourceTitle.trim() || !sourceContent.trim()}
+					onSubmit={async () => {
+						await mutations.createSource.mutateAsync({
+							projectId,
+							kind: "text",
+							title: sourceTitle.trim(),
+							content: sourceContent.trim(),
+							status: "available",
+							metadata: {},
+						});
+						setSourceTitle("");
+						setSourceContent("");
+						setIsCreateSourceOpen(false);
+						toast.success("Source added");
+					}}
+				>
+					<FormInput
+						label="Title"
+						value={sourceTitle}
+						onChange={(event) => setSourceTitle(event.target.value)}
 						required
 					/>
-				</div>
-			</FormDialog>
+					<div className="space-y-1">
+						<label htmlFor="source-content" className="text-sm font-medium">
+							Content
+						</label>
+						<Textarea
+							id="source-content"
+							value={sourceContent}
+							onChange={(event) => setSourceContent(event.target.value)}
+							className="min-h-32"
+							required
+						/>
+					</div>
+				</FormDialog>
+			) : null}
 
 			<FormDialog
 				open={isCreateCollectionOpen}

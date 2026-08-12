@@ -75,6 +75,22 @@ describe("memory function tools", () => {
 		expect(result.data).toEqual({ id: "memory-1" });
 	});
 
+	it("stores project chat memories in the validated project scope", async () => {
+		mocks.storeMemory.mockResolvedValue("memory-1");
+		const context = createToolContext({ memories_save_enabled: true });
+		context.request.memoryScope = { type: "project", projectId: "project-1" };
+
+		await store_memory.execute(
+			{ text: "The launch is scheduled for Friday", category: "schedule" },
+			context,
+		);
+
+		expect(mocks.getInstance).toHaveBeenCalledWith(context.env, user, context.request.context, {
+			type: "project",
+			projectId: "project-1",
+		});
+	});
+
 	it("does not store memories when memory saving is disabled", async () => {
 		const result = await store_memory.execute(
 			{ text: "User prefers concise replies" },

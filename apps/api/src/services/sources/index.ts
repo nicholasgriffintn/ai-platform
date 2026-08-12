@@ -217,7 +217,7 @@ export async function deleteSource(
 	sourceId: string,
 ): Promise<void> {
 	const source = await requireSourceAccess(context, userId, sourceId, true);
-	if (source.kind === "memory" && !source.project_id) {
+	if (source.kind === "memory") {
 		const metadata = safeParseJson<Record<string, unknown>>(source.metadata);
 		const recordedProvider = metadata?.memory_provider ?? source.provider;
 		const providerId = isMemoryProviderId(recordedProvider) ? recordedProvider : "built-in";
@@ -225,6 +225,7 @@ export async function deleteSource(
 			context.env,
 			context.user ?? undefined,
 			context,
+			source.project_id ? { type: "project", projectId: source.project_id } : { type: "personal" },
 		);
 		const deleted = await memoryManager.deleteMemory(sourceId, providerId);
 		if (!deleted) {
@@ -233,6 +234,14 @@ export async function deleteSource(
 				ErrorType.PROVIDER_ERROR,
 				502,
 			);
+		}
+		if (source.project_id) {
+			await recordProjectAudit(context, source.project_id, {
+				actorUserId: userId,
+				action: "source.deleted",
+				targetType: "source",
+				targetId: sourceId,
+			});
 		}
 		return;
 	}
@@ -311,14 +320,11 @@ export async function listProjectConversationSources(
 ): Promise<{ sources: Source[] }> {
 	await requireProjectAccess(context, projectId);
 	const collection = await context.repositories.sources.getProjectContextCollection(projectId);
-	const [memories, contextSources] = await Promise.all([
-		context.repositories.sources.listProjectSources(projectId, "memory"),
-		collection
-			? context.repositories.sources.listCollectionSources(collection.id)
-			: Promise.resolve([]),
-	]);
+	const contextSources = collection
+		? await context.repositories.sources.listCollectionSources(collection.id)
+		: [];
 	const availableSources = new Map<string, SourceRecord>();
-	for (const source of [...memories, ...contextSources]) {
+	for (const source of contextSources) {
 		if (source.status === "available") availableSources.set(source.id, source);
 	}
 	return { sources: [...availableSources.values()].map(formatSource) };

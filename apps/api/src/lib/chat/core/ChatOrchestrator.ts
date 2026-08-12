@@ -190,6 +190,7 @@ export class ChatOrchestrator {
 			mode: currentMode,
 			model: primaryModel,
 			provider: primaryProvider,
+			memoryScope: prepared.memoryScope,
 		});
 
 		if (isAgentExecutionMode(currentMode) && stream) {

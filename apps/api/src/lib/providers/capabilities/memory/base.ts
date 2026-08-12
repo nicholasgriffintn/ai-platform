@@ -2,7 +2,7 @@ import { fetchProviderJson } from "~/lib/providers/lib/fetch";
 import { getRecipeConnectorAccessToken } from "~/services/apps/connectors";
 import { SourceRepository, type SourceRecord } from "~/repositories/SourceRepository";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { IEnv, IUser, IUserSettings } from "~/types";
+import type { IEnv, IUser, IUserSettings, MemoryScope } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
@@ -26,6 +26,7 @@ export interface BaseMemoryProviderConfig {
 	serviceContext?: ServiceContext;
 	baseUrl?: string;
 	connectorProvider?: MemoryConnectorProvider;
+	memoryScope?: MemoryScope;
 }
 
 export abstract class BaseMemoryProvider implements MemoryProvider {
@@ -51,6 +52,10 @@ export abstract class BaseMemoryProvider implements MemoryProvider {
 
 	protected get userSettings(): IUserSettings | null | undefined {
 		return this.config.userSettings;
+	}
+
+	protected get memoryScope(): MemoryScope {
+		return this.config.memoryScope ?? { type: "personal" };
 	}
 
 	protected async getConnectorApiKey(provider = this.config.connectorProvider): Promise<string> {
@@ -107,10 +112,12 @@ export abstract class BaseMemoryProvider implements MemoryProvider {
 		const repository = this.getSourceRepository();
 		const memory = await repository.createSource({
 			createdByUserId: this.config.user.id,
+			projectId: this.memoryScope.type === "project" ? this.memoryScope.projectId : undefined,
 			conversationId: input.conversationId,
 			kind: "memory",
 			title: input.text.slice(0, 120) || "Memory",
 			content: input.text,
+			provider: this.name,
 			vectorId,
 			metadata: {
 				...input.metadata,
@@ -137,12 +144,11 @@ export abstract class BaseMemoryProvider implements MemoryProvider {
 
 		const repository = this.getSourceRepository();
 		const memory = await repository.getSource(memoryId);
-		if (
-			!memory ||
-			memory.kind !== "memory" ||
-			memory.created_by_user_id !== this.config.user.id ||
-			memory.project_id
-		) {
+		const belongsToScope =
+			this.memoryScope.type === "project"
+				? memory?.project_id === this.memoryScope.projectId
+				: memory?.created_by_user_id === this.config.user.id && !memory?.project_id;
+		if (!memory || memory.kind !== "memory" || !belongsToScope) {
 			return null;
 		}
 

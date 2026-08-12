@@ -1,5 +1,5 @@
 import { getEmbeddingProvider } from "~/lib/providers/capabilities/embedding/helpers";
-import type { IEnv, IUser, IUserSettings } from "~/types";
+import type { IEnv, IUser, IUserSettings, MemoryScope } from "~/types";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -30,16 +30,13 @@ export class BuiltInMemoryProvider extends BaseMemoryProvider {
 		user?: IUser,
 		userSettings?: IUserSettings | null,
 		serviceContext?: ServiceContext,
+		memoryScope?: MemoryScope,
 	) {
-		super({ env, user, userSettings, serviceContext });
+		super({ env, user, userSettings, serviceContext, memoryScope });
 	}
 
 	async storeMemory(input: MemoryStoreInput): Promise<MemoryStoreResult> {
-		const embedding = getEmbeddingProvider(
-			this.env,
-			this.user,
-			input.userSettings ?? this.userSettings ?? undefined,
-		);
+		const embedding = this.getEmbeddingProvider(input.userSettings);
 		const vectorId = generateId();
 
 		const vectors = await embedding.generate("memory", input.text, vectorId, {
@@ -75,11 +72,7 @@ export class BuiltInMemoryProvider extends BaseMemoryProvider {
 		query: string,
 		options: MemoryRetrieveOptions = {},
 	): Promise<MemoryRetrieveResult[]> {
-		const embedding = getEmbeddingProvider(
-			this.env,
-			this.user,
-			options.userSettings ?? this.userSettings ?? undefined,
-		);
+		const embedding = this.getEmbeddingProvider(options.userSettings);
 		const topK = options.topK ?? 3;
 		const scoreThreshold = options.scoreThreshold ?? 0.3;
 
@@ -124,7 +117,7 @@ export class BuiltInMemoryProvider extends BaseMemoryProvider {
 			}
 
 			if (localMemory.vectorId) {
-				const embedding = getEmbeddingProvider(this.env, this.user, this.userSettings ?? undefined);
+				const embedding = this.getEmbeddingProvider();
 				await embedding.delete([localMemory.vectorId]);
 			}
 
@@ -137,6 +130,18 @@ export class BuiltInMemoryProvider extends BaseMemoryProvider {
 	}
 
 	private getNamespace(): string {
-		return `memory_user_${this.user?.id ?? "global"}`;
+		return this.memoryScope.type === "project"
+			? `memory_project_${this.memoryScope.projectId}`
+			: `memory_user_${this.user?.id ?? "global"}`;
+	}
+
+	private getEmbeddingProvider(userSettings?: IUserSettings | null) {
+		return getEmbeddingProvider(
+			this.env,
+			this.user,
+			this.memoryScope.type === "project"
+				? undefined
+				: (userSettings ?? this.userSettings ?? undefined),
+		);
 	}
 }

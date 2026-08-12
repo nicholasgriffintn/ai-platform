@@ -21,6 +21,7 @@ import {
 	type IEnv,
 	type IUserSettings,
 	type Message,
+	type MemoryScope,
 	type MessagePart,
 	type Platform,
 	StreamState,
@@ -139,6 +140,7 @@ export interface StreamPostProcessingOptions {
 	max_delegation_depth?: number;
 	requestOptions?: Record<string, any>;
 	continuationRequest?: ChatCompletionParameters;
+	memoryScope?: MemoryScope;
 }
 
 export async function createStreamWithPostProcessing(
@@ -160,6 +162,7 @@ export async function createStreamWithPostProcessing(
 		tools,
 		enabled_tools,
 		approved_tools,
+		memoryScope = { type: "personal" },
 	} = options;
 	const user = context?.user;
 
@@ -289,7 +292,7 @@ export async function createStreamWithPostProcessing(
 								: "";
 
 					if (lastUserText.trim()) {
-						const memMgr = MemoryManager.getInstance(env, user, context);
+						const memMgr = MemoryManager.getInstance(env, user, context, memoryScope);
 						const memEvents = await memMgr.handleMemory(
 							lastUserText,
 							history,
@@ -492,6 +495,7 @@ export async function createStreamWithPostProcessing(
 						app_url,
 						user: user?.id ? user : undefined,
 						context,
+						memoryScope,
 					},
 					{
 						persistResults: "immediate",

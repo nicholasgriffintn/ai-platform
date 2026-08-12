@@ -64,6 +64,7 @@ class ChatExecutionRequest {
 			delegation_stack: chatOptions.delegation_stack,
 			max_delegation_depth: chatOptions.max_delegation_depth,
 			requestOptions: prepared.requestOptions || {},
+			memoryScope: prepared.memoryScope,
 			continuationRequest: {
 				...this.providerRequest(),
 				model,

@@ -1,4 +1,4 @@
-import type { CoreChatOptions, IRequest, ChatMode } from "~/types";
+import type { CoreChatOptions, IRequest, ChatMode, MemoryScope } from "~/types";
 import { getToolDefinitionName, type ToolDefinitionLike } from "~/utils/toolNames";
 import { resolveRequestUser } from "~/utils/requestUser";
 
@@ -31,8 +31,9 @@ export function buildToolRequestContext(params: {
 	mode: ChatMode;
 	model: string;
 	provider: string;
+	memoryScope: MemoryScope;
 }): IRequest {
-	const { chatOptions, input, mode, model, provider } = params;
+	const { chatOptions, input, mode, model, provider, memoryScope } = params;
 	const user = resolveRequestUser(chatOptions);
 
 	return {
@@ -55,5 +56,6 @@ export function buildToolRequestContext(params: {
 		app_url: chatOptions.app_url,
 		user,
 		context: chatOptions.context,
+		memoryScope,
 	};
 }
