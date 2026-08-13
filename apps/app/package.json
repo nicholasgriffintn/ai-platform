@@ -18,6 +18,7 @@
 		"deploy": "pnpm run build && wrangler deploy --minify",
 		"sync": "npx cap sync",
 		"test": "vitest run",
+		"test:watch": "vitest",
 		"coverage": "vitest run --coverage",
 		"ci:test": "pnpm run coverage"
 	},

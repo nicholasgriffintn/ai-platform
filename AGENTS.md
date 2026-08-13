@@ -58,6 +58,12 @@ Start from the user's global agent contract. These instructions make that contra
 - Prefer integration-style tests that cover validation, state transitions, and error handling.
 - Avoid tests that only prove language or framework behaviour.
 - Cover edge cases and failure paths when changing parsing, auth, persistence, external API, or Worker boundary logic.
+- Treat test-suite runtime and file count as maintenance costs. Prefer extending an existing behavioural suite at the same seam over creating another test file.
+- Add a test only when it protects user-visible behaviour, a security or authorisation boundary, a validation rule, a state transition, a persistence contract, an external integration contract, or a previously observed regression.
+- Do not add tests for static copy, CSS classes, standard headings, simple delegation, framework behaviour, type-level guarantees, or direct getters and setters unless they previously caused a real regression.
+- Do not add tests solely to increase a coverage percentage. Use coverage reports to inform review, not to manufacture low-value assertions.
+- When a change adds several test files or materially expands a web or API suite, measure the relevant workspace test command before and after. Consolidate or remove low-value coverage if runtime regresses noticeably.
+- Do not introduce global coverage thresholds. Review uncovered high-risk boundaries directly instead of using a percentage target as a proxy for test quality.
 - Run the narrowest meaningful validation first, then broader checks when risk justifies it.
 - If validation cannot run, state the blocker clearly.
 

@@ -198,7 +198,6 @@ export class RequestPreparer {
 			memoriesEnabled,
 			projectContext,
 			memoryScope,
-			primaryModelConfig.supportsArtifacts,
 		);
 
 		if (storeMessagesTask) {
@@ -445,7 +444,6 @@ export class RequestPreparer {
 		memoriesEnabled: boolean,
 		projectContext: ProjectChatContext | null,
 		memoryScope: MemoryScope = { type: "personal" },
-		supportsArtifacts = false,
 	): Promise<string> {
 		const {
 			system_prompt,
@@ -465,7 +463,7 @@ export class RequestPreparer {
 		}
 
 		if (system_prompt) {
-			await this.enhanceSystemPromptWithMemory(
+			const enhancedPrompt = await this.enhanceSystemPromptWithMemory(
 				system_prompt,
 				finalMessage,
 				user,
@@ -474,12 +472,13 @@ export class RequestPreparer {
 				options.context,
 				memoryScope,
 			);
+			return this.appendProjectInstructions(enhancedPrompt, projectContext);
 		}
 
 		const systemPromptFromMessages = sanitizedMessages.find((message) => message.role === "system");
 
 		if (systemPromptFromMessages?.content && typeof systemPromptFromMessages.content === "string") {
-			await this.enhanceSystemPromptWithMemory(
+			const enhancedPrompt = await this.enhanceSystemPromptWithMemory(
 				systemPromptFromMessages.content,
 				finalMessage,
 				user,
@@ -488,6 +487,7 @@ export class RequestPreparer {
 				options.context,
 				memoryScope,
 			);
+			return this.appendProjectInstructions(enhancedPrompt, projectContext);
 		}
 
 		const generatedPrompt = await getSystemPrompt(
@@ -509,7 +509,7 @@ export class RequestPreparer {
 			userSettings,
 		);
 
-		await this.enhanceSystemPromptWithMemory(
+		const enhancedPrompt = await this.enhanceSystemPromptWithMemory(
 			generatedPrompt,
 			finalMessage,
 			user,
@@ -518,6 +518,7 @@ export class RequestPreparer {
 			options.context,
 			memoryScope,
 		);
+		return this.appendProjectInstructions(enhancedPrompt, projectContext);
 	}
 
 	private appendProjectInstructions(
