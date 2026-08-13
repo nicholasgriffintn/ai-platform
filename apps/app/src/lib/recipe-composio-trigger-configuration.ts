@@ -141,7 +141,7 @@ export function buildRecipeTriggerConfiguration(
 	if (errors.length > 0) {
 		return {
 			configuration: {},
-			error: `${errors.join(" and ").replace(" and enter", " and enter")}.`,
+			error: `${errors.join(" and ")}.`,
 		};
 	}
 	return { configuration };
