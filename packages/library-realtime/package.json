@@ -59,7 +59,7 @@
 		"format": "oxfmt",
 		"format:check": "oxfmt --check",
 		"lint": "pnpm oxlint",
-		"check": "pnpm lint && pnpm format:check && pnpm typecheck"
+		"check": "pnpm lint && pnpm format:check"
 	},
 	"dependencies": {
 		"@ngriffin_uk/polychat-schemas": "workspace:^"

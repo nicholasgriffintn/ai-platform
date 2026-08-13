@@ -5,7 +5,7 @@ on:
     branches:
       - canary
       - "*.x"
-      - 'main'
+      - "main"
   push:
     branches:
       - main
@@ -29,13 +29,11 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
+          cache: "pnpm"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Run checks
         run: pnpm check
-      - name: Build schemas
-        run: pnpm --filter @assistant/schemas build
       - name: Run typechecks
         run: pnpm typecheck
       - name: Run tests
@@ -56,7 +54,7 @@ jobs:
             cat ./coverage/coverage-summary.json >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           echo "### Workspace Coverage" >> $GITHUB_STEP_SUMMARY
           for app in apps/*/; do
             if [ -f "${app}coverage/coverage-summary.json" ]; then

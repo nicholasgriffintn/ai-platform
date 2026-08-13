@@ -84,6 +84,7 @@ for (const { manifest, manifestPath, packageRoot } of manifests) {
 	}
 
 	const sourceFiles = await collectSourceFiles(path.join(packageRoot, "src"));
+	const runtimeDependencies = { ...manifest.dependencies, ...manifest.peerDependencies };
 	if (manifest.name.includes("polychat-component-")) {
 		const componentStyles = await readFile(path.join(packageRoot, "src/styles.css"), "utf8").catch(
 			() => "",
@@ -97,6 +98,20 @@ for (const { manifest, manifestPath, packageRoot } of manifests) {
 	for (const sourceFile of sourceFiles) {
 		const source = await readFile(sourceFile, "utf8");
 		const relativeSource = path.relative(workspaceRoot, sourceFile);
+		const packageImports = source.matchAll(
+			/(?:\bfrom\s+|\bimport\s*(?:\(\s*)?)["'](@ngriffin_uk\/polychat-[^/"']+)/g,
+		);
+		for (const [, dependencyName] of packageImports) {
+			if (
+				dependencyName !== manifest.name &&
+				workspaceNames.has(dependencyName) &&
+				!Object.hasOwn(runtimeDependencies, dependencyName)
+			) {
+				errors.push(
+					`${relativeSource}: ${dependencyName} must be declared in dependencies or peerDependencies`,
+				);
+			}
+		}
 		if (/from\s+["'](?:~\/|src\/|apps\/)|import\s*\(["'](?:~\/|src\/|apps\/)/.test(source)) {
 			errors.push(`${relativeSource}: package source imports application code or aliases`);
 		}
@@ -119,7 +134,6 @@ for (const { manifest, manifestPath, packageRoot } of manifests) {
 	}
 
 	const ownRank = dependencyRanks.get(packageKind(manifest.name));
-	const runtimeDependencies = { ...manifest.dependencies, ...manifest.peerDependencies };
 	for (const dependencyName of Object.keys(runtimeDependencies)) {
 		if (!workspaceNames.has(dependencyName) || dependencyName === "@ngriffin_uk/polychat-config") {
 			continue;
