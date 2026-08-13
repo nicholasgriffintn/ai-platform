@@ -1,6 +1,7 @@
 import {
 	CalendarClock,
 	Clock,
+	Activity,
 	PauseCircle,
 	PlayCircle,
 	Plug,
@@ -39,6 +40,7 @@ interface RecipeCardProps {
 	onConfigure: (providerId: string, setupUrl?: string) => void;
 	onEditConfiguration: (recipe: AssistantRecipe, installation?: RecipeInstallation) => void;
 	onSchedule: (recipe: AssistantRecipe, installation?: RecipeInstallation) => void;
+	onManageEventTriggers?: (recipe: AssistantRecipe, installation: RecipeInstallation) => void;
 	onToggleInstallationStatus: (installation: RecipeInstallation) => void;
 	onDeleteInstallation: (installation: RecipeInstallation) => void;
 	isStarting: boolean;
@@ -57,6 +59,7 @@ export function RecipeCard({
 	onConfigure,
 	onEditConfiguration,
 	onSchedule,
+	onManageEventTriggers,
 	onToggleInstallationStatus,
 	onDeleteInstallation,
 	isStarting,
@@ -77,6 +80,7 @@ export function RecipeCard({
 			integration.connectionStatus !== "missing" && integration.connectionStatus !== "unknown",
 	);
 	const canSchedule = recipeSupportsSchedule(recipe);
+	const canUseEventTriggers = recipe.triggers.some((trigger) => trigger.type === "event");
 	const scheduleTrigger = getRecipeScheduleTrigger(installation);
 	const isPaused = installation?.status === "paused";
 	const hasConfiguration = hasSavedRecipeConfiguration(installation);
@@ -210,6 +214,17 @@ export function RecipeCard({
 									disabled={hasUnavailableIntegration}
 								>
 									{scheduleTrigger ? "Edit schedule" : "Schedule"}
+								</Button>
+							)}
+							{installation && canUseEventTriggers && onManageEventTriggers && (
+								<Button
+									variant="secondary"
+									fullWidth
+									icon={<Activity className="h-4 w-4" />}
+									onClick={() => onManageEventTriggers(recipe, installation)}
+									disabled={hasUnavailableIntegration || isPaused}
+								>
+									Manage event triggers
 								</Button>
 							)}
 							{installation && (

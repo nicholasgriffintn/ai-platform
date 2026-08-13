@@ -106,6 +106,50 @@ describe("WorkersProvider", () => {
 			expect(result).not.toHaveProperty("toolConfig");
 		});
 
+		it("preserves exact tool choice and parallel-call policy", async () => {
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "GLM 4.7 Flash",
+				matchingModel: "@cf/zai-org/glm-4.7-flash",
+				provider: "workers-ai",
+				modalities: { input: ["text"], output: ["text"] },
+				supportsToolCalls: true,
+			});
+			vi.mocked(createCommonParameters).mockReturnValue({
+				messages: [{ role: "developer", content: "Continue the approved action" }],
+			});
+			vi.mocked(getToolsForProvider).mockReturnValue({
+				tools: [
+					{
+						type: "function",
+						function: {
+							name: "use_recipe_connector",
+							description: "Use a connected provider",
+							parameters: { type: "object", properties: {} },
+						},
+					},
+				],
+				tool_choice: {
+					type: "function",
+					function: { name: "use_recipe_connector" },
+				},
+				parallel_tool_calls: false,
+			});
+
+			const result = await new WorkersProvider().mapParameters({
+				model: "@cf/zai-org/glm-4.7-flash",
+				messages: [{ role: "developer", content: "Continue the approved action" }],
+				env: Object.assign(Object.create(null), {}),
+			} as ChatCompletionParameters);
+
+			expect(result).toMatchObject({
+				tool_choice: {
+					type: "function",
+					function: { name: "use_recipe_connector" },
+				},
+				parallel_tool_calls: false,
+			});
+		});
+
 		it("should keep text-only requests on the chat payload for multimodal text models", async () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({

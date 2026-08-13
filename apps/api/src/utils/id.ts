@@ -22,3 +22,10 @@ export function generateId(): string {
 	}
 	return randomUUIDLike();
 }
+
+export function generatePrefixedId(prefix: string): string {
+	if (!/^[a-z][a-z0-9]*_$/.test(prefix)) {
+		throw new Error("ID prefix must be lowercase alphanumeric and end with an underscore");
+	}
+	return `${prefix}${generateId()}`;
+}

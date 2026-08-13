@@ -33,6 +33,8 @@ import { getLogger } from "~/utils/logger";
 import { hasToolCallNamed, nonEmptyToolCallsOrNull } from "~/utils/toolCalls";
 import { emitDoneEvent, emitEvent } from "./emitter";
 import { safeParseJson } from "~/utils/json";
+import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
+import { finaliseReadableStream } from "~/utils/finalise-readable-stream";
 
 const logger = getLogger({ prefix: "lib/chat/streaming" });
 
@@ -141,6 +143,7 @@ export interface StreamPostProcessingOptions {
 	requestOptions?: Record<string, any>;
 	continuationRequest?: ChatCompletionParameters;
 	memoryScope?: MemoryScope;
+	unknownToolRecoveryUsed?: boolean;
 }
 
 export async function createStreamWithPostProcessing(
@@ -163,6 +166,7 @@ export async function createStreamWithPostProcessing(
 		enabled_tools,
 		approved_tools,
 		memoryScope = { type: "personal" },
+		unknownToolRecoveryUsed = false,
 	} = options;
 	const user = context?.user;
 
@@ -499,6 +503,7 @@ export async function createStreamWithPostProcessing(
 					},
 					{
 						persistResults: "immediate",
+						recoverUnknownToolCalls: !unknownToolRecoveryUsed,
 						onToolResult: (toolResult) => {
 							emitEvent(controller, "tool_response", {
 								tool_id: toolResult.id,
@@ -524,7 +529,19 @@ export async function createStreamWithPostProcessing(
 				});
 			}
 
-			if (toolCallsData.length > 0 && max_steps && current_step < max_steps) {
+			if (toolCallsData.length > 0) {
+				const recoveredUnknownTool = toolResults.some(
+					(message) =>
+						message.data?.errorCode === "UNKNOWN_TOOL" && message.data?.recoverable === true,
+				);
+				const withinStepBudget = Boolean(max_steps && current_step < max_steps);
+				if (!withinStepBudget && !recoveredUnknownTool) {
+					emitEvent(controller, "state", {
+						state: StreamState.DONE,
+					});
+					emitDoneEvent(controller);
+					return;
+				}
 				const shouldContinue = shouldContinueAfterToolResults(toolCallsData, toolResults);
 
 				if (!shouldContinue) {
@@ -554,7 +571,12 @@ export async function createStreamWithPostProcessing(
 						} as ChatCompletionParameters);
 						const nextTransformed = await createStreamWithPostProcessing(
 							nextStream,
-							{ ...options, current_step: current_step + 1 },
+							{
+								...options,
+								current_step: current_step + 1,
+								unknownToolRecoveryUsed: unknownToolRecoveryUsed || recoveredUnknownTool,
+								continuationRequest: continuationBase,
+							},
 							conversationManager,
 						);
 
@@ -564,6 +586,7 @@ export async function createStreamWithPostProcessing(
 							if (done) break;
 							controller.enqueue(value);
 						}
+						return;
 					} catch (error: any) {
 						console.error("Next stream error:", {
 							error_message: error instanceof Error ? error.message : "Unknown error",
@@ -592,8 +615,8 @@ export async function createStreamWithPostProcessing(
 		}
 	}
 
-	return wrapStreamWithErrorEvent(
-		providerStream.pipeThrough(
+	return finaliseReadableStream({
+		stream: providerStream.pipeThrough(
 			new TransformStream({
 				async start(controller) {
 					try {
@@ -934,40 +957,17 @@ export async function createStreamWithPostProcessing(
 				},
 			}),
 		),
-	);
-}
-
-function wrapStreamWithErrorEvent(stream: ReadableStream): ReadableStream {
-	const reader = stream.getReader();
-
-	return new ReadableStream({
-		async pull(controller) {
-			try {
-				const { done, value } = await reader.read();
-				if (done) {
-					controller.close();
-					return;
-				}
-				controller.enqueue(value);
-			} catch (error) {
-				logger.error("Provider stream failed mid-flight", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-				try {
-					const streamController = controller as unknown as TransformStreamDefaultController;
-					emitEvent(streamController, "error", {
-						error: {
-							message: error instanceof Error ? error.message : "Stream failed",
-						},
-					});
-					emitDoneEvent(streamController);
-				} finally {
-					controller.close();
-				}
-			}
-		},
-		cancel(reason) {
-			return reader.cancel(reason);
+		cleanup: current_step === 1 && context ? () => closeComposioConnectorRun(context) : undefined,
+		onError(error, controller) {
+			logger.error("Provider stream failed mid-flight", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+			emitEvent(controller as unknown as TransformStreamDefaultController, "error", {
+				error: {
+					message: error instanceof Error ? error.message : "Stream failed",
+				},
+			});
+			emitDoneEvent(controller as unknown as TransformStreamDefaultController);
 		},
 	});
 }

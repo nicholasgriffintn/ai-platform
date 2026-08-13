@@ -29,6 +29,10 @@ import {
 	isRequiredRecipeConfigurationValueMissing,
 } from "./runtime";
 import { buildRecipeScheduleState, type RecipeScheduleState } from "./scheduleState";
+import {
+	deleteRecipeComposioTriggers,
+	syncRecipeComposioTriggerStatus,
+} from "./composio-trigger-lifecycle";
 
 export const RECIPE_INSTALLATION_APP_ID = "assistant_recipe_installation";
 export const RECIPE_INSTALLATION_ITEM_TYPE = "recipe_installation";
@@ -572,6 +576,14 @@ export async function updateRecipeInstallation(params: {
 		configuration: data,
 		status: data.status,
 	});
+	if (params.update.status && params.update.status !== existing.data.status) {
+		await syncRecipeComposioTriggerStatus({
+			context: params.context,
+			userId: params.userId,
+			installationId: existing.record.id,
+			enabled: data.status === "active",
+		});
+	}
 
 	return updated ? parseRecipeInstallationRecord(updated) : null;
 }
@@ -591,6 +603,11 @@ export async function deleteRecipeInstallation(params: {
 	if (!existing) {
 		return false;
 	}
+	await deleteRecipeComposioTriggers({
+		context: params.context,
+		userId: params.userId,
+		installationId: existing.record.id,
+	});
 
 	await params.context.repositories.templates.deleteTemplate(existing.record.id);
 	return true;
@@ -666,7 +683,7 @@ export async function installAssistantRecipe(id: string, options: RecipeInstallO
 export async function invokeAssistantRecipe(
 	id: string,
 	options: RecipeListOptions & {
-		channel: "web" | "ios" | "sms" | "scheduled" | "tool";
+		channel: "web" | "ios" | "sms" | "scheduled" | "event" | "tool";
 		input?: string;
 		configuration?: RecipeConfiguration;
 		queue?: boolean;

@@ -663,6 +663,7 @@ describe("ChatOrchestrator", () => {
 					expect.objectContaining({
 						context: mockOptions.context,
 					}),
+					{ recoverUnknownToolCalls: true },
 				);
 				if ("toolResponses" in result) {
 					expect(result.toolResponses).toEqual(mockToolResults);
@@ -813,6 +814,7 @@ describe("ChatOrchestrator", () => {
 							max_delegation_depth: 3,
 						}),
 					}),
+					{ recoverUnknownToolCalls: true },
 				);
 			});
 

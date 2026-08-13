@@ -19,6 +19,7 @@ export const ChatMessage = ({
 	message,
 	modelConfig,
 	onToolInteraction,
+	onConnectorApproval,
 	onArtifactOpen,
 	isSharedView = false,
 	onRetry,
@@ -37,6 +38,7 @@ export const ChatMessage = ({
 	message: Message;
 	modelConfig?: ModelConfigItem;
 	onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
+	onConnectorApproval?: (approvalId: string, resolution: "approved" | "rejected") => Promise<void>;
 	onArtifactOpen?: (
 		artifact: ArtifactProps,
 		combine?: boolean,
@@ -174,7 +176,11 @@ export const ChatMessage = ({
 								</div>
 							)}
 							{isToolResponse ? (
-								<ToolMessage message={message} onToolInteraction={onToolInteraction} />
+								<ToolMessage
+									message={message}
+									onToolInteraction={onToolInteraction}
+									onConnectorApproval={onConnectorApproval}
+								/>
 							) : isEditing && message.role === "user" && onSaveEdit && onCancelEdit ? (
 								<EditableMessageContent
 									message={message}

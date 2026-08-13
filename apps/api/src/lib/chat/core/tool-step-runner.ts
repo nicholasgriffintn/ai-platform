@@ -116,9 +116,9 @@ export async function runNonStreamingToolSteps<Response extends ToolStepResponse
 	const toolResponses: Message[] = [];
 	const steps: NonStreamingToolStepSummary[] = [];
 	let totalUsage: ToolStepUsage | undefined;
-	const messages = Array.isArray(params.requestParams.messages)
-		? [...params.requestParams.messages]
-		: [];
+	let unknownToolRecoveryUsed = false;
+	const requestParams = params.requestParams;
+	const messages = Array.isArray(requestParams.messages) ? [...requestParams.messages] : [];
 
 	while (getToolCalls(response).length > 0) {
 		const toolCalls = getToolCalls(response);
@@ -133,7 +133,14 @@ export async function runNonStreamingToolSteps<Response extends ToolStepResponse
 			response,
 			params.conversationManager,
 			params.toolRequestContext,
+			{ recoverUnknownToolCalls: !unknownToolRecoveryUsed },
 		);
+		const recoveredUnknownTool = stepToolResponses.some(
+			(message) => message.data?.errorCode === "UNKNOWN_TOOL" && message.data?.recoverable === true,
+		);
+		if (stepToolResponses.some((message) => message.data?.errorCode === "UNKNOWN_TOOL")) {
+			unknownToolRecoveryUsed = true;
+		}
 		toolResponses.push(...stepToolResponses);
 		messages.push(assistantMessage, ...stepToolResponses);
 		totalUsage = addUsage(totalUsage, stepUsage);
@@ -145,9 +152,9 @@ export async function runNonStreamingToolSteps<Response extends ToolStepResponse
 			usage: stepUsage,
 		});
 
+		const withinStepBudget = typeof params.maxSteps === "number" && currentStep < params.maxSteps;
 		const canContinue =
-			typeof params.maxSteps === "number" &&
-			currentStep < params.maxSteps &&
+			(withinStepBudget || recoveredUnknownTool) &&
 			shouldContinueAfterToolResults(toolCalls, stepToolResponses);
 
 		if (!canContinue) {
@@ -162,7 +169,7 @@ export async function runNonStreamingToolSteps<Response extends ToolStepResponse
 
 		currentStep += 1;
 		const nextResponse = await getAIResponse({
-			...params.requestParams,
+			...requestParams,
 			current_step: currentStep,
 			messages,
 			stream: false,

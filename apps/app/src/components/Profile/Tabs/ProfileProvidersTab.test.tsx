@@ -37,6 +37,18 @@ vi.mock("~/hooks/useConnectors", () => ({
 		mutateAsync: vi.fn(),
 		isPending: false,
 	}),
+	useRecipeConnectorAccounts: () => ({
+		data: { accounts: [] },
+		isLoading: false,
+		isError: false,
+		refetch: vi.fn(),
+	}),
+	useUpdateRecipeConnectorAccount: () => ({
+		mutateAsync: vi.fn(),
+		isPending: false,
+		isError: false,
+		variables: undefined,
+	}),
 }));
 
 function renderProfileProvidersTab(route = "/profile") {

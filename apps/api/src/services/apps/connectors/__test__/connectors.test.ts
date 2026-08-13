@@ -31,6 +31,9 @@ function createTestServiceContext(env: Record<string, string | undefined> = {}):
 	);
 	vi.spyOn(context, "repositories", "get").mockReturnValue(repositories);
 	vi.spyOn(repositories, "providerConnections", "get").mockReturnValue(providerConnections);
+	vi.spyOn(repositories, "composioConnectorSessions", "get").mockReturnValue({
+		create: vi.fn(async (input) => ({ id: "ccs_connection", ...input })),
+	} as never);
 	return context;
 }
 
@@ -183,11 +186,13 @@ describe("recipe connectors", () => {
 		});
 		vi.stubGlobal("fetch", fetchMock);
 
+		const context = createTestServiceContext({
+			COMPOSIO_API_KEY: "composio-secret",
+			APP_BASE_URL: "https://polychat.test",
+		});
+		const createSession = vi.mocked(context.repositories.composioConnectorSessions.create);
 		await startRecipeConnectorAuthorization({
-			context: createTestServiceContext({
-				COMPOSIO_API_KEY: "composio-secret",
-				APP_BASE_URL: "https://polychat.test",
-			}),
+			context,
 			userId: 42,
 			provider: "posthog",
 			returnTo: "https://attacker.test/steal",
@@ -200,6 +205,17 @@ describe("recipe connectors", () => {
 		expect(requestBodies.at(-1)).toMatchObject({
 			callback_url: "https://polychat.test/profile?tab=providers&type=connector",
 		});
+		expect(createSession).toHaveBeenCalledWith(
+			expect.objectContaining({
+				kind: "connection",
+				remoteSessionId: "trs_posthog",
+				connectedAccountId: "ca_posthog",
+				allowedOperationIds: [],
+				expiresAt: expect.any(String),
+			}),
+		);
+		const persisted = createSession.mock.calls[0]?.[0];
+		expect(Date.parse(persisted.expiresAt) - Date.parse(persisted.createdAt)).toBe(60 * 60 * 1000);
 	});
 
 	it("keeps duplicate auth configs under one exact toolkit connector and requires an explicit choice", async () => {

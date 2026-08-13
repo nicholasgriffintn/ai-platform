@@ -323,6 +323,82 @@ describe("tools", () => {
 			);
 		});
 
+		it("should return a recoverable correction for an unknown artifact tool call", async () => {
+			const functionError = new Error('Unknown functions tool "artifact"');
+			Object.assign(functionError, {
+				type: "PARAMS_ERROR",
+				context: {
+					category: "functions",
+					reason: "unknown_tool",
+					toolName: "artifact",
+				},
+			});
+			vi.mocked(handleFunctions).mockRejectedValue(functionError);
+
+			const result = await handleToolCalls(
+				"completion-123",
+				{
+					tool_calls: [
+						{
+							id: "call-artifact",
+							function: {
+								name: "artifact",
+								arguments: JSON.stringify({
+									identifier: "demo",
+									type: "text/html",
+								}),
+							},
+						},
+					],
+				},
+				mockConversationManager as any,
+				mockRequest as any,
+			);
+
+			expect(result[0]).toMatchObject({
+				name: "artifact",
+				status: "error",
+				data: {
+					errorCode: "UNKNOWN_TOOL",
+					recoverable: true,
+				},
+			});
+			expect(result[0].content).toContain(
+				"Artifacts are response markup, not tools. Return the artifact as assistant text using <artifact ...>...</artifact>.",
+			);
+		});
+
+		it("should stop recovering an unknown tool after the corrective turn is used", async () => {
+			const functionError = new Error('Unknown functions tool "artifact"');
+			Object.assign(functionError, {
+				type: "PARAMS_ERROR",
+				context: {
+					category: "functions",
+					reason: "unknown_tool",
+					toolName: "artifact",
+				},
+			});
+			vi.mocked(handleFunctions).mockRejectedValue(functionError);
+
+			const result = await handleToolCalls(
+				"completion-123",
+				{
+					tool_calls: [
+						{
+							id: "call-artifact-repeated",
+							function: { name: "artifact", arguments: "{}" },
+						},
+					],
+				},
+				mockConversationManager as any,
+				mockRequest as any,
+				{ recoverUnknownToolCalls: false },
+			);
+
+			expect(result[0].data).toMatchObject({ errorCode: "UNKNOWN_TOOL" });
+			expect(result[0].data).not.toHaveProperty("recoverable");
+		});
+
 		it("should handle null function result", async () => {
 			vi.mocked(handleFunctions).mockResolvedValue(null);
 

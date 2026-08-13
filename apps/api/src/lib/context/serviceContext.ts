@@ -8,17 +8,20 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { createRequestCache, memoizeRequest, type RequestCache } from "~/utils/requestCache";
 import type { LoggerOptions } from "~/utils/logger";
 import { getLogger } from "~/utils/logger";
+import { generateId } from "~/utils/id";
 
 export interface ServiceContextOptions {
 	env: IEnv;
 	user?: IUser | null;
 	requestId?: string;
+	connectorRunId?: string;
 }
 
 export interface ServiceContext {
 	env: IEnv;
 	user?: IUser | null;
 	requestId?: string;
+	connectorRunId: string;
 	database: Database;
 	repositories: RepositoryManager;
 	requestCache: RequestCache;
@@ -34,6 +37,7 @@ export const createServiceContext = ({
 	env,
 	user = null,
 	requestId,
+	connectorRunId = `connector_run_${generateId()}`,
 }: ServiceContextOptions): ServiceContext => {
 	let _database: Database | null = null;
 	let _repositories: RepositoryManager | null = null;
@@ -97,6 +101,7 @@ export const createServiceContext = ({
 		env,
 		user,
 		requestId,
+		connectorRunId,
 		requestCache,
 		get userSettings() {
 			return cachedUserSettings ?? null;

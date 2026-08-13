@@ -25,6 +25,7 @@ let mockServiceContext: any;
 
 describe("handleGetChatCompletion", () => {
 	let mockConversationManager: any;
+	const getByIdsForUser = vi.fn();
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
@@ -40,9 +41,12 @@ describe("handleGetChatCompletion", () => {
 			user: mockUser,
 			ensureDatabase: vi.fn(),
 			database: {} as any,
-			repositories: {} as any,
+			repositories: {
+				connectorOperationApprovals: { getByIdsForUser },
+			} as any,
 			requireUser: vi.fn().mockReturnValue(mockUser),
 		};
+		getByIdsForUser.mockResolvedValue([]);
 
 		vi.mocked(ConversationManager.getInstance).mockReturnValue(mockConversationManager);
 	});
@@ -112,6 +116,45 @@ describe("handleGetChatCompletion", () => {
 
 			expect(result.messages).toEqual([]);
 			expect(result.id).toBe(completionId);
+		});
+
+		it("hydrates a resolved connector approval without requiring refresh_pending", async () => {
+			const completionId = "completion-approval";
+			mockConversationManager.getConversationDetails.mockResolvedValue({
+				id: completionId,
+				title: "Approval Conversation",
+				messages: [
+					{
+						id: "approval-message",
+						role: "tool",
+						name: "use_recipe_connector",
+						status: "pending",
+						content: "Approval required",
+						data: {
+							approvalRequired: true,
+							approvalId: "coa_action",
+							provider: "googleslides",
+							operation: "GOOGLESLIDES_CREATE_SLIDES_MARKDOWN",
+						},
+					},
+				],
+			});
+			getByIdsForUser.mockResolvedValue([
+				{
+					id: "coa_action",
+					state: "approved",
+					expiresAt: "2099-01-01T00:00:00.000Z",
+					resolvedAt: "2026-08-13T14:00:00.000Z",
+					consumedAt: null,
+				},
+			]);
+
+			const result = await handleGetChatCompletion(mockServiceContext, completionId);
+
+			expect(result.messages[0].data.humanInTheLoop).toMatchObject({
+				status: "approved",
+				requires_user_action: false,
+			});
 		});
 
 		it("should handle empty completion ID", async () => {

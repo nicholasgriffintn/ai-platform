@@ -11,6 +11,7 @@ import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useModels } from "~/hooks/useModels";
+import { resolveConnectorOperationApproval } from "~/lib/api/connectors";
 import type { AttachmentData } from "~/lib/chat/attachments";
 import { isCompactConversationCommand } from "~/lib/chat/compaction-command";
 import {
@@ -119,6 +120,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 		compactConversation,
 		sendMessage,
 		sendCouncilDebate,
+		respondToExistingConversation,
 		abortStream,
 		branchConversation,
 		isBranching,
@@ -149,6 +151,26 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 	const messages = useMemo(
 		() => currentConversation?.messages || [],
 		[currentConversation?.messages],
+	);
+	const handleConnectorApproval = useCallback(
+		async (approvalId: string, resolution: "approved" | "rejected") => {
+			await resolveConnectorOperationApproval(approvalId, resolution);
+			if (resolution === "rejected") return;
+			if (!currentConversationId) {
+				throw new Error("The conversation is no longer available");
+			}
+
+			const result = await respondToExistingConversation(currentConversationId, {
+				requestOptions: {
+					...modeConfig?.requestOptions,
+					connector_approval_id: approvalId,
+				},
+			});
+			if (result.status === "error") {
+				throw new Error(result.response || "The approved action could not continue");
+			}
+		},
+		[currentConversationId, modeConfig?.requestOptions, respondToExistingConversation],
 	);
 
 	const chatInputRef = useRef<ChatInputHandle>(null);
@@ -543,6 +565,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						<MessageList
 							messages={messages}
 							onToolInteraction={handleToolInteraction}
+							onConnectorApproval={handleConnectorApproval}
 							onArtifactOpen={handleArtifactOpen}
 							onBranch={handleBranch}
 							isBranching={isBranching}

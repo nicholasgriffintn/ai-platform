@@ -1,12 +1,15 @@
 import { IEnv } from "~/types";
 import { SCHEDULES } from "~/constants/schedules";
 import { getLogger } from "~/utils/logger";
+import { getErrorMessage } from "~/utils/errors";
 import {
 	scheduleDailyUsageReset,
 	scheduleDailySynthesis,
 	scheduleRecipeExecutions,
 	scheduleTrainingQualityScoring,
 } from "./scheduledTasks";
+import { deleteExpiredConnectorOperationApprovals } from "~/services/apps/connectors/connector-approval-cleanup";
+import { reapComposioConnectorSessions } from "~/services/apps/connectors/composio-cleanup";
 
 const logger = getLogger({ prefix: "services/tasks/schedule-executor" });
 
@@ -46,11 +49,30 @@ export class ScheduleExecutor {
 				break;
 			case SCHEDULES.RECIPE_EXECUTION:
 				logger.info(`Starting due recipe execution scheduling`);
-				await scheduleRecipeExecutions(env);
+				await runRecipeScheduleAndConnectorMaintenance(env);
 				logger.info(`Due recipe execution scheduling completed`);
 				break;
 			default:
 				logger.warn(`No handler for scheduled task: ${event.cron}`);
 		}
 	}
+}
+
+async function runRecipeScheduleAndConnectorMaintenance(env: IEnv): Promise<void> {
+	const [recipeScheduling, sessionCleanup, approvalCleanup] = await Promise.allSettled([
+		scheduleRecipeExecutions(env),
+		reapComposioConnectorSessions(env),
+		deleteExpiredConnectorOperationApprovals(env),
+	]);
+	if (sessionCleanup.status === "rejected") {
+		logger.warn("Composio session cleanup failed", {
+			error: getErrorMessage(sessionCleanup.reason),
+		});
+	}
+	if (approvalCleanup.status === "rejected") {
+		logger.warn("Connector approval cleanup failed", {
+			error: getErrorMessage(approvalCleanup.reason),
+		});
+	}
+	if (recipeScheduling.status === "rejected") throw recipeScheduling.reason;
 }

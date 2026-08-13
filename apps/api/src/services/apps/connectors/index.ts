@@ -13,6 +13,7 @@ import {
 import {
 	completeComposioAuthorization,
 	createComposioConnectLink,
+	deleteComposioToolSession,
 	disconnectComposioAccount,
 	type ComposioConnectedAccount,
 	isComposioConfigured,
@@ -29,6 +30,7 @@ import {
 } from "./connector-adapters";
 
 const RECIPE_CONNECTOR_CONNECTION_KIND = "recipe_connector";
+const COMPOSIO_CONNECTION_SESSION_TTL_MS = 60 * 60 * 1000;
 
 export interface ConnectorTokenPayload {
 	accessToken: string;
@@ -291,6 +293,30 @@ export async function startRecipeConnectorAuthorization(params: {
 			authConfigId: authConfig.id,
 			callbackUrl,
 		});
+		if (link.sessionId) {
+			const now = Date.now();
+			try {
+				await params.context.repositories.composioConnectorSessions.create({
+					remoteSessionId: link.sessionId,
+					kind: "connection",
+					userId: params.userId,
+					provider: provider.id,
+					toolkitSlug: provider.auth.toolkitSlug,
+					authConfigId: authConfig.id,
+					connectedAccountId: link.connectedAccountId,
+					allowedOperationIds: [],
+					runId: params.context.connectorRunId,
+					createdAt: new Date(now).toISOString(),
+					expiresAt: new Date(now + COMPOSIO_CONNECTION_SESSION_TTL_MS).toISOString(),
+				});
+			} catch (error) {
+				await deleteComposioToolSession({
+					env: params.context.env,
+					sessionId: link.sessionId,
+				}).catch(() => undefined);
+				throw error;
+			}
+		}
 		return { provider: params.provider, authorizationUrl: link.redirectUrl };
 	}
 

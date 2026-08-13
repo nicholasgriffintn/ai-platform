@@ -1,15 +1,27 @@
 import { Terminal } from "lucide-react";
 
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
+import { readConnectorApprovalRequest } from "~/lib/connector-approval";
+import { isRecord } from "~/lib/objects";
 import type { Message } from "~/types";
+import { ConnectorApprovalCard } from "./ConnectorApprovalCard";
 
 interface ToolMessageProps {
 	message: Message;
 	onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
+	onConnectorApproval?: (approvalId: string, resolution: "approved" | "rejected") => Promise<void>;
 }
 
-export const ToolMessage = ({ message, onToolInteraction }: ToolMessageProps) => {
+export const ToolMessage = ({
+	message,
+	onToolInteraction,
+	onConnectorApproval,
+}: ToolMessageProps) => {
 	if (!message.data) return null;
+	const approvalData = isRecord(message.data) ? message.data : undefined;
+	if (approvalData && readConnectorApprovalRequest(approvalData)) {
+		return <ConnectorApprovalCard data={approvalData} onResolve={onConnectorApproval} />;
+	}
 
 	return (
 		<div className="mb-2">

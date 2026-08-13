@@ -140,6 +140,7 @@ describe("runAgentLoop", () => {
 			}),
 			expect.anything(),
 			expect.anything(),
+			{ recoverUnknownToolCalls: true },
 		);
 	});
 
@@ -293,6 +294,50 @@ describe("runAgentLoop", () => {
 				tool_choice: "auto",
 			}),
 		);
+	});
+
+	it("pauses after a connector result requires human approval", async () => {
+		mocks.getAIResponse.mockResolvedValueOnce({
+			response: "",
+			tool_calls: [
+				{
+					id: "call-approval",
+					type: "function",
+					function: {
+						name: "use_recipe_connector",
+						arguments: JSON.stringify({
+							provider: "gmail",
+							operation: "GMAIL_CREATE_DRAFT",
+						}),
+					},
+				},
+			],
+		});
+		mocks.handleToolCalls.mockResolvedValueOnce([
+			{
+				role: "tool",
+				name: "use_recipe_connector",
+				content: "Approval is required before gmail can run GMAIL_CREATE_DRAFT.",
+				status: "pending",
+				tool_call_id: "call-approval",
+				data: {
+					approvalRequired: true,
+					humanInTheLoop: {
+						type: "approval",
+						status: "pending",
+						requires_user_action: true,
+					},
+				},
+			},
+		]);
+
+		const result = await runAgentLoop(createParams());
+
+		expect(result.response.response).toBe(
+			"Approval is required before gmail can run GMAIL_CREATE_DRAFT.",
+		);
+		expect(mocks.getAIResponse).toHaveBeenCalledOnce();
+		expect(mocks.handleToolCalls).toHaveBeenCalledOnce();
 	});
 
 	it("aborts empty provider responses instead of retrying until step exhaustion", async () => {

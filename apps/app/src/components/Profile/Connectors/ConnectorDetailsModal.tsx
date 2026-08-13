@@ -3,6 +3,7 @@ import { ExternalLink, KeyRound, Loader2, Plug, Trash2, Wrench } from "lucide-re
 
 import { Button } from "~/components/ui/Button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "~/components/ui/Dialog";
+import { ConnectorAccountsPanel } from "./ConnectorAccountsPanel";
 import { ConnectorLogo } from "./ConnectorLogo";
 
 export function ConnectorDetailsModal({
@@ -27,7 +28,7 @@ export function ConnectorDetailsModal({
 
 	return (
 		<Dialog open onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-lg">
+			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
 				<div className="flex flex-col items-center px-2 pb-2 pt-4 text-center">
 					<ConnectorLogo connector={connector} className="size-20 rounded-2xl [&_img]:size-12" />
 					<DialogTitle className="mt-5 text-2xl">{connector.name}</DialogTitle>
@@ -58,7 +59,13 @@ export function ConnectorDetailsModal({
 						</span>
 					</div>
 
-					<div className="mt-7 flex w-full flex-col gap-2">
+					{isConnected && connector.authType === "composio" && (
+						<div className="mt-7 w-full border-t border-zinc-200 pt-5 dark:border-zinc-800">
+							<ConnectorAccountsPanel provider={connector.id} providerName={connector.name} />
+						</div>
+					)}
+
+					<div className="mt-6 flex w-full flex-col gap-2">
 						<Button
 							className="w-full"
 							disabled={isUnavailable || isStarting}

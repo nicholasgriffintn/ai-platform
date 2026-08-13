@@ -13,6 +13,7 @@ import type {
 import { createChatSseStreamWriter } from "~/lib/chat/emitter";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
 
 const logger = getLogger({ prefix: "lib/chat/core/agent-stream" });
 
@@ -125,6 +126,10 @@ export function createAgentExecutionStream(
 			});
 			await stream.writeDone();
 			await stream.close();
+		} finally {
+			if (params.toolRequestContext.context) {
+				await closeComposioConnectorRun(params.toolRequestContext.context);
+			}
 		}
 	};
 

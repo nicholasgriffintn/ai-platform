@@ -9,6 +9,8 @@ import { AuthChallengeRepository } from "./AuthChallengeRepository";
 import { AuditRepository } from "./AuditRepository";
 import { BaseRepository } from "./BaseRepository";
 import { ConversationRepository } from "./ConversationRepository";
+import { ComposioConnectorSessionRepository } from "./ComposioConnectorSessionRepository";
+import { ConnectorOperationApprovalRepository } from "./ConnectorOperationApprovalRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
 import { MemorySynthesisRepository } from "./MemorySynthesisRepository";
 import { MessageRepository } from "./MessageRepository";
@@ -16,6 +18,7 @@ import { OAuthStateRepository } from "./OAuthStateRepository";
 import { OutputRepository } from "./OutputRepository";
 import { PlanRepository } from "./PlanRepository";
 import { ProviderConnectionRepository } from "./ProviderConnectionRepository";
+import { RecipeComposioTriggerRepository } from "./RecipeComposioTriggerRepository";
 import { SessionRepository } from "./SessionRepository";
 import { SharedAgentRepository } from "./SharedAgentRepository";
 import { SourceRepository } from "./SourceRepository";
@@ -37,6 +40,8 @@ export {
 	AuditRepository,
 	BaseRepository,
 	ConversationRepository,
+	ComposioConnectorSessionRepository,
+	ConnectorOperationApprovalRepository,
 	EmbeddingRepository,
 	MemorySynthesisRepository,
 	MessageRepository,
@@ -51,6 +56,7 @@ export {
 	WebAuthnRepository,
 	PlanRepository,
 	ProviderConnectionRepository,
+	RecipeComposioTriggerRepository,
 	SharedAgentRepository,
 	SourceRepository,
 	WorkspaceRepository,
@@ -65,6 +71,8 @@ export class RepositoryManager {
 	private sessionRepo: SessionRepository;
 	private userSettingsRepo: UserSettingsRepository;
 	private conversationRepo: ConversationRepository;
+	private composioConnectorSessionRepo: ComposioConnectorSessionRepository;
+	private connectorOperationApprovalRepo: ConnectorOperationApprovalRepository;
 	private messageRepo: MessageRepository;
 	private embeddingRepo: EmbeddingRepository;
 	private webAuthnRepo: WebAuthnRepository;
@@ -75,6 +83,7 @@ export class RepositoryManager {
 	private oauthStateRepo: OAuthStateRepository;
 	private outputRepo: OutputRepository;
 	private providerConnectionRepo: ProviderConnectionRepository;
+	private recipeComposioTriggerRepo: RecipeComposioTriggerRepository;
 	private sharedAgentRepo: SharedAgentRepository;
 	private sourceRepo: SourceRepository;
 	private taskRepo: TaskRepository;
@@ -92,6 +101,8 @@ export class RepositoryManager {
 		this.sessionRepo = new SessionRepository(env);
 		this.userSettingsRepo = new UserSettingsRepository(env);
 		this.conversationRepo = new ConversationRepository(env);
+		this.composioConnectorSessionRepo = new ComposioConnectorSessionRepository(env);
+		this.connectorOperationApprovalRepo = new ConnectorOperationApprovalRepository(env);
 		this.messageRepo = new MessageRepository(env);
 		this.embeddingRepo = new EmbeddingRepository(env);
 		this.webAuthnRepo = new WebAuthnRepository(env);
@@ -102,6 +113,7 @@ export class RepositoryManager {
 		this.oauthStateRepo = new OAuthStateRepository(env);
 		this.outputRepo = new OutputRepository(env);
 		this.providerConnectionRepo = new ProviderConnectionRepository(env);
+		this.recipeComposioTriggerRepo = new RecipeComposioTriggerRepository(env);
 		this.sharedAgentRepo = new SharedAgentRepository(env);
 		this.sourceRepo = new SourceRepository(env);
 		this.taskRepo = new TaskRepository(env);
@@ -155,6 +167,14 @@ export class RepositoryManager {
 		return this.conversationRepo;
 	}
 
+	public get composioConnectorSessions(): ComposioConnectorSessionRepository {
+		return this.composioConnectorSessionRepo;
+	}
+
+	public get connectorOperationApprovals(): ConnectorOperationApprovalRepository {
+		return this.connectorOperationApprovalRepo;
+	}
+
 	public get messages(): MessageRepository {
 		return this.messageRepo;
 	}
@@ -181,6 +201,10 @@ export class RepositoryManager {
 
 	public get providerConnections(): ProviderConnectionRepository {
 		return this.providerConnectionRepo;
+	}
+
+	public get recipeComposioTriggers(): RecipeComposioTriggerRepository {
+		return this.recipeComposioTriggerRepo;
 	}
 
 	public get templates(): TemplateRepository {

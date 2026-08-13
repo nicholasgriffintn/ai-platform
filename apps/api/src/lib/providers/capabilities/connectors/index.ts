@@ -41,6 +41,10 @@ export interface ConnectorProviderConfig {
 export interface ConnectorOperationConfig {
 	id: string;
 	access: ConnectorOperationAccess;
+	readOnly?: boolean;
+	destructive?: boolean;
+	idempotent?: boolean;
+	openWorld?: boolean;
 	isImportant?: boolean;
 	authConfigIds?: readonly string[];
 	inputSchema?: {
@@ -291,6 +295,15 @@ export function isConnectorOperationWrite(
 	operation: string,
 ): boolean {
 	return getConnectorOperationConfig(providerId, operation)?.access === "write";
+}
+
+export function connectorOperationRequiresApproval(
+	providerId: RecipeConnectorProvider,
+	operation: string,
+): boolean {
+	const config = getConnectorOperationConfig(providerId, operation);
+	if (!config) return true;
+	return config.access === "write" || config.destructive === true;
 }
 
 export function getConnectorProviderOperationAccess(

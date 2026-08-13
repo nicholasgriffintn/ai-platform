@@ -13,6 +13,7 @@ export {
 	chatRequestOptionsSchema,
 	chatResponseFormatSchema,
 	chatToolChoiceSchema,
+	connectorApprovalIdSchema,
 	modelRouterModeSchema,
 	partialChatCompletionsJsonSchema,
 	createChatCompletionsResponseSchema,

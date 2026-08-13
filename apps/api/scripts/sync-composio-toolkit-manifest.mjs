@@ -125,10 +125,15 @@ function normaliseOperation(tool, toolkitSlug, importantToolSlugs) {
 	) {
 		throw new Error(`Invalid tool returned for ${toolkitSlug}: ${JSON.stringify(tool)}`);
 	}
+	const tags = new Set(Array.isArray(tool.tags) ? tool.tags : []);
 
 	return {
 		id: tool.slug,
-		access: Array.isArray(tool.tags) && tool.tags.includes("readOnlyHint") ? "read" : "write",
+		readOnlyHint: tags.has("readOnlyHint"),
+		destructiveHint: tags.has("destructiveHint"),
+		idempotentHint: tags.has("idempotentHint"),
+		openWorldHint: tags.has("openWorldHint"),
+		access: tags.has("readOnlyHint") ? "read" : "write",
 		isImportant: importantToolSlugs.has(tool.slug),
 	};
 }
@@ -175,7 +180,12 @@ const entries = await mapConcurrent(
 				const operation = normaliseOperation(tool, toolkitSlug, importantToolSlugs);
 				const existing = operations.get(operation.id);
 				if (existing) {
-					if (existing.access !== operation.access) {
+					if (
+						existing.readOnlyHint !== operation.readOnlyHint ||
+						existing.destructiveHint !== operation.destructiveHint ||
+						existing.idempotentHint !== operation.idempotentHint ||
+						existing.openWorldHint !== operation.openWorldHint
+					) {
 						throw new Error(`${toolkitSlug}.${operation.id} differs between auth configs`);
 					}
 					existing.isImportant ||= operation.isImportant;
@@ -248,6 +258,15 @@ const entries = await mapConcurrent(
 						.map((operation) => operation.id),
 					important: operationList
 						.filter((operation) => operation.isImportant)
+						.map((operation) => operation.id),
+					destructive: operationList
+						.filter((operation) => operation.destructiveHint)
+						.map((operation) => operation.id),
+					idempotent: operationList
+						.filter((operation) => operation.idempotentHint)
+						.map((operation) => operation.id),
+					openWorld: operationList
+						.filter((operation) => operation.openWorldHint)
 						.map((operation) => operation.id),
 				},
 			},

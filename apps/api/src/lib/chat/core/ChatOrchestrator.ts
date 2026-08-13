@@ -22,6 +22,7 @@ import type { CoreChatOptions, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { isAbortError } from "~/utils/abort";
+import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
 
 const logger = getLogger({ prefix: "lib/chat/core/ChatOrchestrator" });
 const RECIPE_CHAT_DEFAULT_MAX_STEPS = 4;
@@ -227,36 +228,50 @@ export class ChatOrchestrator {
 		let response: ModelResponse | ReadableStream;
 		let responseAlreadyStored = false;
 		if (isAgentExecutionMode(currentMode) && !stream) {
-			const agentResult = await runAgentLoop({
-				requestParams,
-				completionId: chatOptions.completion_id!,
-				conversationManager,
-				toolRequestContext,
-				maxSteps: resolveModeMaxSteps(currentMode, max_steps),
-			});
+			let agentResult;
+			try {
+				agentResult = await runAgentLoop({
+					requestParams,
+					completionId: chatOptions.completion_id!,
+					conversationManager,
+					toolRequestContext,
+					maxSteps: resolveModeMaxSteps(currentMode, max_steps),
+				});
+			} finally {
+				if (toolRequestContext.context) {
+					await closeComposioConnectorRun(toolRequestContext.context);
+				}
+			}
 			response = agentResult.response;
 			toolResponses.push(...agentResult.toolResponses);
 		} else {
 			response = await getAIResponse(requestParams);
 			if (!(response instanceof ReadableStream)) {
-				const toolStepResult = await runNonStreamingToolSteps({
-					response,
-					requestParams,
-					completionId: chatOptions.completion_id!,
-					conversationManager,
-					toolRequestContext,
-					maxSteps: resolvedMaxSteps,
-					buildAssistantMessage: (stepResponse) =>
-						buildStoredAssistantMessage({
-							response: stepResponse,
-							content: stepResponse.response || "",
-							envLogId: chatOptions.env.AI.aiGatewayLogId,
-							mode: currentMode,
-							model: primaryModel,
-							platform: platform || "api",
-							requestOptions: prepared.requestOptions,
-						}),
-				});
+				let toolStepResult;
+				try {
+					toolStepResult = await runNonStreamingToolSteps({
+						response,
+						requestParams,
+						completionId: chatOptions.completion_id!,
+						conversationManager,
+						toolRequestContext,
+						maxSteps: resolvedMaxSteps,
+						buildAssistantMessage: (stepResponse) =>
+							buildStoredAssistantMessage({
+								response: stepResponse,
+								content: stepResponse.response || "",
+								envLogId: chatOptions.env.AI.aiGatewayLogId,
+								mode: currentMode,
+								model: primaryModel,
+								platform: platform || "api",
+								requestOptions: prepared.requestOptions,
+							}),
+					});
+				} finally {
+					if (toolRequestContext.context) {
+						await closeComposioConnectorRun(toolRequestContext.context);
+					}
+				}
 				response = toolStepResult.response;
 				responseAlreadyStored = toolStepResult.responseAlreadyStored;
 				toolResponses.push(...toolStepResult.toolResponses);

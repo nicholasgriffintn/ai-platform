@@ -2,8 +2,17 @@ import { ConversationManager } from "~/lib/conversationManager";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { AnonymousUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { hydrateConnectorApprovalMessageState } from "~/services/apps/connectors/approval-message-state";
+import type { ConnectorOperationApprovalRepository } from "~/repositories/ConnectorOperationApprovalRepository";
 
-export type GetChatMessagesContext = Pick<ServiceContext, "database" | "ensureDatabase" | "user">;
+export type GetChatMessagesContext = Pick<
+	ServiceContext,
+	"database" | "ensureDatabase" | "user"
+> & {
+	repositories: {
+		connectorOperationApprovals: Pick<ConnectorOperationApprovalRepository, "getByIdsForUser">;
+	};
+};
 
 export const handleGetChatMessages = async (
 	context: GetChatMessagesContext,
@@ -26,9 +35,13 @@ export const handleGetChatMessages = async (
 		anonymousUser,
 	});
 
-	const messages = await conversationManager.getVisibleMessages(completion_id, limit || 50, after, {
-		includeArchived: true,
-		includeSnapshots: false,
+	const messages = await hydrateConnectorApprovalMessageState({
+		messages: await conversationManager.getVisibleMessages(completion_id, limit || 50, after, {
+			includeArchived: true,
+			includeSnapshots: false,
+		}),
+		userId: user.id,
+		approvals: context.repositories.connectorOperationApprovals,
 	});
 
 	return {
@@ -60,6 +73,11 @@ export const handleGetChatMessageById = async (
 	});
 
 	const result = await conversationManager.getMessageById(message_id);
+	const [message] = await hydrateConnectorApprovalMessageState({
+		messages: [result.message],
+		userId: user.id,
+		approvals: context.repositories.connectorOperationApprovals,
+	});
 
-	return result;
+	return { ...result, message: message ?? result.message };
 };

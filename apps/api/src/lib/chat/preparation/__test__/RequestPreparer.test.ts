@@ -174,6 +174,20 @@ describe("RequestPreparer", () => {
 	});
 
 	describe("prepare", () => {
+		it("uses appended provider messages without reconciling stored history", async () => {
+			const result = await preparer.prepare(
+				{ ...baseOptions, conversation_history_write_mode: "append" },
+				baseValidationContext,
+			);
+
+			expect(mockConversationManager.addBatch).not.toHaveBeenCalled();
+			expect(mockConversationManager.replaceMessages).not.toHaveBeenCalled();
+			expect(mockConversationManager.get).not.toHaveBeenCalled();
+			expect(result.messages).toEqual(
+				expect.arrayContaining([expect.objectContaining({ role: "user" })]),
+			);
+		});
+
 		it("should prepare request successfully with all required data", async () => {
 			const result = await preparer.prepare(baseOptions, baseValidationContext);
 
@@ -1103,6 +1117,29 @@ describe("RequestPreparer", () => {
 			);
 
 			expect(result).toBe("Custom system prompt");
+		});
+
+		it("appends the artifact contract to a custom system prompt for supported models", async () => {
+			const systemPromptOptions = {
+				...baseOptions,
+				system_prompt: "Custom system prompt",
+			};
+
+			const result = await (preparer as any).buildSystemPrompt(
+				systemPromptOptions,
+				[],
+				"test message",
+				"claude-3-sonnet",
+				{},
+				false,
+				null,
+				{ type: "personal" },
+				true,
+			);
+
+			expect(result).toContain("Custom system prompt");
+			expect(result).toContain("<artifact_contract>");
+			expect(result).toContain('Never call a function or tool named "artifact"');
 		});
 
 		it("should use system message from sanitized messages", async () => {

@@ -1,4 +1,6 @@
 import type {
+	RecipeConnectorAccount,
+	RecipeConnectorAccountUpdateRequest,
 	RecipeConnectorApiKeyRequest,
 	RecipeConnectorProvider,
 	RecipeConnectorsResponse,
@@ -57,4 +59,38 @@ export async function disconnectRecipeConnector(
 		headers: await getAuthHeaders(),
 	});
 	return returnFetchedData<{ success: boolean }>(response);
+}
+
+export async function listRecipeConnectorAccounts(
+	provider: RecipeConnectorProvider,
+): Promise<{ accounts: RecipeConnectorAccount[] }> {
+	const response = await fetchApiOrThrow(`/apps/connectors/${provider}/accounts`, {
+		method: "GET",
+		headers: await getAuthHeaders(),
+	});
+	return returnFetchedData<{ accounts: RecipeConnectorAccount[] }>(response);
+}
+
+export async function updateRecipeConnectorAccount(
+	provider: RecipeConnectorProvider,
+	request: RecipeConnectorAccountUpdateRequest,
+): Promise<RecipeConnectorAccount> {
+	const response = await fetchApiOrThrow(`/apps/connectors/${provider}/accounts`, {
+		method: "PUT",
+		headers: await getAuthHeaders(),
+		body: request,
+	});
+	return returnFetchedData<RecipeConnectorAccount>(response);
+}
+
+export async function resolveConnectorOperationApproval(
+	approvalId: string,
+	resolution: "approved" | "rejected",
+): Promise<{ approval: { id: string; state: "approved" | "rejected" } }> {
+	const response = await fetchApiOrThrow(`/apps/connectors/approvals/${approvalId}`, {
+		method: "PUT",
+		headers: await getAuthHeaders(),
+		body: { resolution },
+	});
+	return returnFetchedData<{ approval: { id: string; state: "approved" | "rejected" } }>(response);
 }

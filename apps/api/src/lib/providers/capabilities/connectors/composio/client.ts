@@ -7,7 +7,6 @@ import type { ComposioAuthConfigDefinition, ConnectorProviderConfig } from "..";
 const COMPOSIO_API_BASE_URL = "https://backend.composio.dev/api/v3.1";
 const COMPOSIO_REQUEST_TIMEOUT_MS = 20_000;
 const MAX_PAGES = 20;
-
 export interface ComposioConnectedAccount {
 	id: string;
 	userId: string;
@@ -45,6 +44,13 @@ export interface ComposioToolSearchResult {
 	recommendedPlanSteps: string[];
 	knownPitfalls: string[];
 	tools: ComposioToolSchema[];
+}
+
+export interface ComposioSessionMountFileUrl {
+	url: string;
+	mountRelativePath: string;
+	sandboxMountPrefix: string;
+	expiresAt: string;
 }
 
 const COMPOSIO_CONNECT_LINK_ORIGINS = new Set([
@@ -188,6 +194,79 @@ function parseConnectLinkUrl(value: unknown): string | null {
 	} catch {
 		return null;
 	}
+}
+
+function parseHttpsUrl(value: unknown): string | null {
+	if (typeof value !== "string") return null;
+	try {
+		const url = new URL(value);
+		return url.protocol === "https:" ? url.toString() : null;
+	} catch {
+		return null;
+	}
+}
+
+function parseSessionMountFileUrl(
+	value: unknown,
+	urlField: "upload_url" | "download_url",
+): ComposioSessionMountFileUrl {
+	if (!isRecord(value)) {
+		throw new AssistantError(
+			"Composio session file response is invalid",
+			ErrorType.EXTERNAL_API_ERROR,
+			502,
+		);
+	}
+	const url = parseHttpsUrl(value[urlField]);
+	if (
+		!url ||
+		typeof value.mount_relative_path !== "string" ||
+		typeof value.sandbox_mount_prefix !== "string" ||
+		typeof value.expires_at !== "string"
+	) {
+		throw new AssistantError(
+			"Composio session file response is invalid",
+			ErrorType.EXTERNAL_API_ERROR,
+			502,
+		);
+	}
+	return {
+		url,
+		mountRelativePath: value.mount_relative_path,
+		sandboxMountPrefix: value.sandbox_mount_prefix,
+		expiresAt: value.expires_at,
+	};
+}
+
+export async function createComposioSessionMountUploadUrl(params: {
+	env: IEnv;
+	sessionId: string;
+	mountId?: string;
+	mountRelativePath: string;
+	mimeType: string;
+}): Promise<ComposioSessionMountFileUrl> {
+	const response = await composioRequest<unknown>({
+		env: params.env,
+		path: `/tool_router/session/${encodeURIComponent(params.sessionId)}/mounts/${encodeURIComponent(params.mountId ?? "files")}/upload_url`,
+		method: "POST",
+		body: { mount_relative_path: params.mountRelativePath, mimetype: params.mimeType },
+	});
+	return parseSessionMountFileUrl(response, "upload_url");
+}
+
+export async function createComposioSessionMountDownloadUrl(params: {
+	env: IEnv;
+	sessionId: string;
+	mountId?: string;
+	mountRelativePath: string;
+}): Promise<ComposioSessionMountFileUrl> {
+	const response = await composioRequest<unknown>({
+		env: params.env,
+		path: `/tool_router/session/${encodeURIComponent(params.sessionId)}/mounts/${encodeURIComponent(params.mountId ?? "files")}/download_url`,
+		method: "POST",
+		body: { mount_relative_path: params.mountRelativePath },
+	});
+	return parseSessionMountFileUrl(response, "download_url");
 }
 
 function parseConnectedAccount(value: unknown): ComposioConnectedAccount | null {
@@ -372,7 +451,7 @@ export async function createComposioConnectLink(params: {
 	provider: ConnectorProviderConfig;
 	authConfigId: string;
 	callbackUrl: string;
-}): Promise<{ redirectUrl: string; connectedAccountId: string }> {
+}): Promise<{ redirectUrl: string; connectedAccountId: string; sessionId?: string }> {
 	if (params.provider.auth.authType !== "composio") {
 		throw new AssistantError("Connector is not managed by Composio", ErrorType.PARAMS_ERROR, 400);
 	}
@@ -439,21 +518,32 @@ export async function createComposioConnectLink(params: {
 		);
 	}
 
-	const link = await composioRequest<unknown>({
-		env: params.env,
-		path: `/tool_router/session/${encodeURIComponent(session.session_id)}/link`,
-		method: "POST",
-		body: { toolkit: auth.toolkitSlug, callback_url: params.callbackUrl },
-	});
-	const redirectUrl = isRecord(link) ? parseConnectLinkUrl(link.redirect_url) : null;
-	if (!isRecord(link) || !redirectUrl || typeof link.connected_account_id !== "string") {
-		throw new AssistantError(
-			"Composio link response is invalid",
-			ErrorType.EXTERNAL_API_ERROR,
-			502,
+	try {
+		const link = await composioRequest<unknown>({
+			env: params.env,
+			path: `/tool_router/session/${encodeURIComponent(session.session_id)}/link`,
+			method: "POST",
+			body: { toolkit: auth.toolkitSlug, callback_url: params.callbackUrl },
+		});
+		const redirectUrl = isRecord(link) ? parseConnectLinkUrl(link.redirect_url) : null;
+		if (!isRecord(link) || !redirectUrl || typeof link.connected_account_id !== "string") {
+			throw new AssistantError(
+				"Composio link response is invalid",
+				ErrorType.EXTERNAL_API_ERROR,
+				502,
+			);
+		}
+		return {
+			redirectUrl,
+			connectedAccountId: link.connected_account_id,
+			sessionId: session.session_id,
+		};
+	} catch (error) {
+		await deleteComposioToolSession({ env: params.env, sessionId: session.session_id }).catch(
+			() => undefined,
 		);
+		throw error;
 	}
-	return { redirectUrl, connectedAccountId: link.connected_account_id };
 }
 
 function parseSessionId(value: unknown): string {
@@ -700,17 +790,27 @@ function validateSessionScope(params: {
 	expectedUserId: string;
 	provider: ConnectorProviderConfig;
 	toolSlug: string;
+	authConfigId: string;
+	connectedAccountId: string;
 }) {
 	if (params.provider.auth.authType !== "composio" || !isRecord(params.session)) return false;
 	const config = isRecord(params.session.config) ? params.session.config : undefined;
 	const toolkits = config && isRecord(config.toolkits) ? config.toolkits : undefined;
 	const tools = config && isRecord(config.tools) ? config.tools : undefined;
+	const authConfigs = config && isRecord(config.auth_configs) ? config.auth_configs : undefined;
+	const connectedAccounts =
+		config && isRecord(config.connected_accounts) ? config.connected_accounts : undefined;
 	const providerToolsValue = tools?.[params.provider.auth.toolkitSlug];
 	const providerTools = isRecord(providerToolsValue) ? providerToolsValue : undefined;
+	const configuredAccounts = connectedAccounts?.[params.provider.auth.toolkitSlug];
 	return (
 		config?.user_id === params.expectedUserId &&
 		Array.isArray(toolkits?.enabled) &&
 		toolkits.enabled.includes(params.provider.auth.toolkitSlug) &&
+		authConfigs?.[params.provider.auth.toolkitSlug] === params.authConfigId &&
+		((Array.isArray(configuredAccounts) &&
+			configuredAccounts.includes(params.connectedAccountId)) ||
+			configuredAccounts === params.connectedAccountId) &&
 		Array.isArray(providerTools?.enabled) &&
 		providerTools.enabled.includes(params.toolSlug)
 	);
@@ -722,8 +822,10 @@ export async function executeComposioSessionTool(params: {
 	sessionId: string;
 	provider: ConnectorProviderConfig;
 	toolSlug: string;
+	authConfigId: string;
+	connectedAccountId: string;
 	arguments: Record<string, unknown>;
-}): Promise<unknown> {
+}): Promise<{ data: unknown; logId?: string }> {
 	const sessionPath = `/tool_router/session/${encodeURIComponent(params.sessionId)}`;
 	const session = await composioRequest<unknown>({ env: params.env, path: sessionPath });
 	if (
@@ -732,6 +834,8 @@ export async function executeComposioSessionTool(params: {
 			expectedUserId: getComposioUserId(params.env, params.userId),
 			provider: params.provider,
 			toolSlug: params.toolSlug,
+			authConfigId: params.authConfigId,
+			connectedAccountId: params.connectedAccountId,
 		})
 	) {
 		throw new AssistantError(
@@ -740,29 +844,36 @@ export async function executeComposioSessionTool(params: {
 			403,
 		);
 	}
-	try {
-		const result = await composioRequest<unknown>({
-			env: params.env,
-			path: `${sessionPath}/execute`,
-			method: "POST",
-			body: { tool_slug: params.toolSlug, arguments: params.arguments },
+	const result = await composioRequest<unknown>({
+		env: params.env,
+		path: `${sessionPath}/execute`,
+		method: "POST",
+		body: { tool_slug: params.toolSlug, arguments: params.arguments },
+	});
+	if (!isRecord(result) || result.error) {
+		throw new AssistantError("Composio tool execution failed", ErrorType.EXTERNAL_API_ERROR, 502, {
+			requestId: isRecord(result) && typeof result.log_id === "string" ? result.log_id : undefined,
 		});
-		if (!isRecord(result) || result.error) {
-			throw new AssistantError(
-				"Composio tool execution failed",
-				ErrorType.EXTERNAL_API_ERROR,
-				502,
-				{
-					requestId:
-						isRecord(result) && typeof result.log_id === "string" ? result.log_id : undefined,
-				},
-			);
-		}
-		return result.data;
-	} finally {
-		await composioRequest<unknown>({ env: params.env, path: sessionPath, method: "DELETE" }).catch(
-			() => undefined,
-		);
+	}
+	return {
+		data: result.data,
+		logId: typeof result.log_id === "string" ? result.log_id : undefined,
+	};
+}
+
+export async function deleteComposioToolSession(params: {
+	env: IEnv;
+	sessionId: string;
+}): Promise<void> {
+	try {
+		await composioRequest<unknown>({
+			env: params.env,
+			path: `/tool_router/session/${encodeURIComponent(params.sessionId)}`,
+			method: "DELETE",
+		});
+	} catch (error) {
+		if (error instanceof AssistantError && error.statusCode === 404) return;
+		throw error;
 	}
 }
 

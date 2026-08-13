@@ -69,7 +69,16 @@ export class ToolRegistry {
 
 		const registration = store.get(toolName.toLowerCase());
 		if (!registration) {
-			throw new AssistantError(`Unknown ${category} tool "${toolName}"`, ErrorType.PARAMS_ERROR);
+			throw new AssistantError(
+				`Unknown ${category} tool "${toolName}"`,
+				ErrorType.PARAMS_ERROR,
+				500,
+				{
+					category,
+					reason: "unknown_tool",
+					toolName,
+				},
+			);
 		}
 
 		if (registration.lifecycle === "singleton") {

@@ -33,6 +33,14 @@ import {
 	getRecipeScheduleTrigger,
 	isRecipeScheduleCronSupported,
 } from "~/lib/recipes";
+import type { RecipeEventTriggerProvider } from "./RecipeEventTriggersDialog";
+import { getRecipeEventTriggerProviders } from "./recipeEventTriggerProviders";
+
+interface RecipeEventDialogState {
+	recipe: AssistantRecipe;
+	installation: RecipeInstallation;
+	providers: RecipeEventTriggerProvider[];
+}
 
 export function useRecipeWorkflows({
 	conversationPath,
@@ -53,6 +61,7 @@ export function useRecipeWorkflows({
 		useState<RecipeInstallation | null>(null);
 	const [configurationValues, setConfigurationValues] = useState<ConfigurationFormValues>({});
 	const [continueToSchedule, setContinueToSchedule] = useState(false);
+	const [eventDialog, setEventDialog] = useState<RecipeEventDialogState | null>(null);
 	const installRecipe = useInstallAssistantRecipe();
 	const invokeRecipe = useInvokeAssistantRecipe();
 	const updateInstallation = useUpdateRecipeInstallation();
@@ -360,6 +369,15 @@ export function useRecipeWorkflows({
 		}
 	};
 
+	const openEventTriggersDialog = (recipe: AssistantRecipe, installation: RecipeInstallation) => {
+		const providers = getRecipeEventTriggerProviders(recipe, connectorByProviderId);
+		if (providers.length === 0) {
+			toast.error("Connect a supported integration before adding an event trigger.");
+			return;
+		}
+		setEventDialog({ recipe, installation, providers });
+	};
+
 	const closeConfigurationDialog = () => {
 		setConfigurationRecipe(null);
 		setConfigurationInstallation(null);
@@ -376,6 +394,9 @@ export function useRecipeWorkflows({
 
 	const getRecipeCardState = (recipe: AssistantRecipe, installation?: RecipeInstallation) => ({
 		installation,
+		canManageEventTriggers:
+			Boolean(installation) &&
+			getRecipeEventTriggerProviders(recipe, connectorByProviderId).length > 0,
 		isStarting:
 			(installRecipe.isPending &&
 				installRecipe.variables?.recipeId === recipe.id &&
@@ -431,11 +452,18 @@ export function useRecipeWorkflows({
 			submit: submitDeleteInstallation,
 			isLoading: deleteInstallation.isPending,
 		},
+		eventDialog: {
+			recipe: eventDialog?.recipe ?? null,
+			installation: eventDialog?.installation ?? null,
+			providers: eventDialog?.providers ?? [],
+			close: () => setEventDialog(null),
+		},
 		actions: {
 			start,
 			configureProvider,
 			openConfigurationDialog,
 			openScheduleDialog,
+			openEventTriggersDialog,
 			setScheduleEnabled,
 			stopSchedule,
 			toggleInstallationStatus,

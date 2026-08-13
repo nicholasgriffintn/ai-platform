@@ -73,4 +73,22 @@ describe("ToolRegistry", () => {
 		expect(byName).toBe(byAlias);
 		expect(create).toHaveBeenCalledTimes(1);
 	});
+
+	it("identifies unknown tool resolution errors for recovery", () => {
+		const registry = new ToolRegistry();
+		registry.register("functions", {
+			name: "web_search",
+			create: () => createDefinition("web_search"),
+		});
+
+		expect(() => registry.resolve("functions", "artifact")).toThrow(
+			expect.objectContaining({
+				context: {
+					category: "functions",
+					reason: "unknown_tool",
+					toolName: "artifact",
+				},
+			}),
+		);
+	});
 });

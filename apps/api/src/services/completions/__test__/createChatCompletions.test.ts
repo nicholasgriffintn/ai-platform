@@ -10,6 +10,14 @@ vi.mock("~/lib/chat/responses", () => ({
 	formatAssistantMessage: vi.fn(),
 }));
 
+vi.mock("~/lib/conversationManager", () => ({
+	ConversationManager: { getInstance: vi.fn(() => ({ getAllMessages: vi.fn() })) },
+}));
+
+vi.mock("~/services/apps/connectors/approved-operation-replay", () => ({
+	replayApprovedConnectorOperation: vi.fn(),
+}));
+
 const mockEnv = {
 	AI: {
 		aiGatewayLogId: "test-log-id",
@@ -135,6 +143,115 @@ describe("handleCreateChatCompletions", () => {
 			expect(mockProcessChatRequest).toHaveBeenCalledWith(
 				expect.objectContaining({
 					messages: [{ id: "user-1", role: "user", content: "Hello" }],
+				}),
+			);
+		});
+	});
+
+	describe("connector approval continuation", () => {
+		it("rejects approval continuation without an authenticated user", async () => {
+			await expect(
+				handleCreateChatCompletions({
+					env: mockEnv,
+					request: {
+						completion_id: "completion-with-approval",
+						connector_approval_id: "coa_action",
+						messages: [],
+					} as any,
+				}),
+			).rejects.toMatchObject({ statusCode: 401 });
+			expect(mockProcessChatRequest).not.toHaveBeenCalled();
+		});
+
+		it("replays the authoritative stored action and only asks the model to summarise", async () => {
+			const { replayApprovedConnectorOperation } =
+				await import("~/services/apps/connectors/approved-operation-replay");
+			const completionId = "completion-with-approval";
+			const authoritativeToolCall = {
+				id: "call-authoritative",
+				type: "function" as const,
+				function: {
+					name: "use_recipe_connector" as const,
+					arguments: '{"provider":"gmail","operation":"GMAIL_CREATE_DRAFT","sessionId":"ccs_1"}',
+				},
+			};
+			const authoritativeToolResult = {
+				id: "result-authoritative",
+				role: "tool",
+				name: "use_recipe_connector",
+				tool_call_id: authoritativeToolCall.id,
+				status: "success",
+				content: "Draft created",
+			};
+			vi.mocked(replayApprovedConnectorOperation).mockResolvedValue({
+				toolCall: authoritativeToolCall,
+				toolResult: authoritativeToolResult as any,
+				summaryMessages: [
+					{ role: "user", content: "Create the stored draft" },
+					{ role: "assistant", content: "", tool_calls: [authoritativeToolCall] },
+					authoritativeToolResult,
+				] as any,
+			});
+			const context = {
+				env: mockEnv,
+				connectorRunId: "connector_run_new",
+				database: {},
+				requestCache: new Map(),
+				ensureDatabase: vi.fn(),
+				repositories: {
+					connectorOperationApprovals: {
+						getByIdForUser: vi.fn().mockResolvedValue({
+							id: "coa_action",
+							state: "approved",
+							expiresAt: "2099-01-01T00:00:00.000Z",
+							completionId,
+							runId: "connector_run_approved",
+						}),
+					},
+				},
+			} as any;
+			const request = {
+				completion_id: completionId,
+				connector_approval_id: "coa_action",
+				messages: [],
+				model: "gpt-4",
+			} as any;
+
+			mockProcessChatRequest.mockResolvedValue({
+				response: { response: "Draft created" },
+				selectedModel: "gpt-4",
+			});
+			mockFormatAssistantMessage.mockReturnValue({
+				content: "Draft created",
+				model: "gpt-4",
+				finish_reason: "stop",
+			});
+
+			await handleCreateChatCompletions({
+				env: mockEnv,
+				request,
+				user: mockUser,
+				context,
+			});
+
+			expect(replayApprovedConnectorOperation).toHaveBeenCalledWith(
+				expect.objectContaining({
+					approval: expect.objectContaining({ runId: "connector_run_approved" }),
+					context,
+					user: mockUser,
+				}),
+			);
+			expect(mockProcessChatRequest).toHaveBeenCalledWith(
+				expect.objectContaining({
+					disable_functions: true,
+					conversation_history_write_mode: "append",
+					connector_approval_id: undefined,
+					approved_tools: [],
+					messages: [
+						{ role: "user", content: "Create the stored draft" },
+						{ role: "assistant", content: "", tool_calls: [authoritativeToolCall] },
+						authoritativeToolResult,
+					],
 				}),
 			);
 		});

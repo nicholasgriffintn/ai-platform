@@ -896,6 +896,122 @@ export const template = sqliteTable(
 
 export type Template = typeof template.$inferSelect;
 
+export const recipeComposioTrigger = sqliteTable(
+	"recipe_composio_trigger",
+	{
+		id: text().primaryKey(),
+		installation_id: text()
+			.notNull()
+			.references(() => template.id, { onDelete: "cascade" }),
+		created_by_user_id: integer()
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		project_id: text().references(() => project.id, { onDelete: "cascade" }),
+		provider_id: text().notNull(),
+		trigger_slug: text().notNull(),
+		external_trigger_id: text().notNull().unique(),
+		connected_account_id: text().notNull(),
+		external_user_id: text().notNull(),
+		configuration: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
+		status: text({ enum: ["active", "paused", "error"] })
+			.default("active")
+			.notNull(),
+		last_error: text(),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+	},
+	(table) => ({
+		installationIdx: index("recipe_composio_trigger_installation_idx").on(table.installation_id),
+		ownerIdx: index("recipe_composio_trigger_owner_idx").on(table.created_by_user_id),
+		accountIdx: index("recipe_composio_trigger_account_idx").on(table.connected_account_id),
+	}),
+);
+
+export type RecipeComposioTrigger = typeof recipeComposioTrigger.$inferSelect;
+
+export const composioConnectorSession = sqliteTable(
+	"composio_connector_session",
+	{
+		id: text().primaryKey(),
+		remote_session_id: text().notNull().unique(),
+		kind: text({ enum: ["tool", "connection"] }).notNull(),
+		user_id: integer()
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		provider: text().notNull(),
+		toolkit_slug: text().notNull(),
+		auth_config_id: text(),
+		connected_account_id: text(),
+		allowed_operation_ids: text({ mode: "json" }).$type<readonly string[]>().notNull(),
+		run_id: text().notNull(),
+		completion_id: text(),
+		recipe_id: text(),
+		installation_id: text().references(() => template.id, { onDelete: "cascade" }),
+		state: text({ enum: ["active", "claimed", "cleanup_pending"] }).notNull(),
+		created_at: text().notNull(),
+		expires_at: text().notNull(),
+		claimed_at: text(),
+		cleanup_attempts: integer().default(0).notNull(),
+		cleanup_after: text(),
+	},
+	(table) => ({
+		stateExpiryIdx: index("composio_connector_session_state_expiry_idx").on(
+			table.state,
+			table.expires_at,
+		),
+		stateCleanupIdx: index("composio_connector_session_state_cleanup_idx").on(
+			table.state,
+			table.cleanup_after,
+		),
+		ownerProviderIdx: index("composio_connector_session_owner_provider_idx").on(
+			table.user_id,
+			table.provider,
+		),
+		runIdx: index("composio_connector_session_run_idx").on(table.run_id),
+	}),
+);
+
+export type ComposioConnectorSession = typeof composioConnectorSession.$inferSelect;
+
+export const connectorOperationApproval = sqliteTable(
+	"connector_operation_approval",
+	{
+		id: text().primaryKey(),
+		user_id: integer()
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		run_id: text().notNull(),
+		completion_id: text().notNull(),
+		provider: text().notNull(),
+		operation: text().notNull(),
+		connected_account_id: text().notNull(),
+		channel: text().notNull(),
+		argument_digest: text().notNull(),
+		state: text({ enum: ["pending", "approved", "rejected", "consumed"] }).notNull(),
+		created_at: text().notNull(),
+		expires_at: text().notNull(),
+		resolved_at: text(),
+		consumed_at: text(),
+	},
+	(table) => ({
+		ownerStateIdx: index("connector_operation_approval_owner_state_idx").on(
+			table.user_id,
+			table.state,
+		),
+		stateExpiryIdx: index("connector_operation_approval_state_expiry_idx").on(
+			table.state,
+			table.expires_at,
+		),
+		runIdx: index("connector_operation_approval_run_idx").on(table.run_id),
+	}),
+);
+
+export type ConnectorOperationApproval = typeof connectorOperationApproval.$inferSelect;
+
 export const activityRecord = sqliteTable(
 	"activity_record",
 	{

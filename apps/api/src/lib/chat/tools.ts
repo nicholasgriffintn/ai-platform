@@ -17,9 +17,22 @@ interface ToolCallError extends Error {
 	functionName?: string;
 	type?: string;
 	status?: number;
+	context?: Record<string, unknown>;
 }
 
 type ToolResultPersistenceMode = "batch" | "immediate" | "none";
+
+function isUnknownToolError(error: ToolCallError): boolean {
+	return error.context?.reason === "unknown_tool";
+}
+
+function buildUnknownToolCorrection(functionName: string): string {
+	if (functionName.toLowerCase() === "artifact") {
+		return "Artifacts are response markup, not tools. Return the artifact as assistant text using <artifact ...>...</artifact>.";
+	}
+
+	return `Tool "${functionName}" is not available. Continue using only the tools provided in this request, or answer directly without a tool.`;
+}
 
 function isRecoverableToolCallError(params: {
 	errorType: string;
@@ -42,6 +55,7 @@ export const handleToolCalls = async (
 	options?: {
 		persistResults?: ToolResultPersistenceMode;
 		onToolResult?: (message: Message) => Promise<void> | void;
+		recoverUnknownToolCalls?: boolean;
 	},
 ): Promise<Message[]> => {
 	const functionResults: Message[] = [];
@@ -249,9 +263,13 @@ export const handleToolCalls = async (
 			} catch (functionError: any) {
 				logger.error(`Function execution error for ${functionName}:`, functionError);
 				const errorType = functionError.type || "FUNCTION_EXECUTION_ERROR";
+				const unknownTool = isUnknownToolError(functionError);
+				const recoverable = unknownTool && options?.recoverUnknownToolCalls !== false;
 				const formattedError = formatToolErrorResponse(
 					functionName,
-					functionError.message || "Function execution failed",
+					unknownTool
+						? buildUnknownToolCorrection(functionName)
+						: functionError.message || "Function execution failed",
 					errorType,
 				);
 
@@ -260,7 +278,13 @@ export const handleToolCalls = async (
 					name: functionName,
 					content: formattedError.content,
 					status: "error",
-					data: formattedError.data,
+					data: unknownTool
+						? {
+								...formattedError.data,
+								errorCode: "UNKNOWN_TOOL",
+								...(recoverable ? { recoverable: true } : {}),
+							}
+						: formattedError.data,
 					log_id: modelResponseLogId || "",
 					id: generateId(),
 					tool_call_id: toolCall.id,

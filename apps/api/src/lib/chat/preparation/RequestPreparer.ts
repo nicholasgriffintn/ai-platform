@@ -175,17 +175,19 @@ export class RequestPreparer {
 		});
 
 		const shouldStoreMessages = options.store !== false;
-		const storeMessagesTask = shouldStoreMessages
-			? this.storeMessages(
-					options,
-					conversationManager,
-					lastMessage!,
-					finalMessage,
-					primaryModel,
-					platform,
-					mode,
-				)
-			: null;
+		const shouldAppendConversationHistory = options.conversation_history_write_mode === "append";
+		const storeMessagesTask =
+			shouldStoreMessages && !shouldAppendConversationHistory
+				? this.storeMessages(
+						options,
+						conversationManager,
+						lastMessage!,
+						finalMessage,
+						primaryModel,
+						platform,
+						mode,
+					)
+				: null;
 
 		const systemPromptTask = this.buildSystemPrompt(
 			options,
@@ -196,6 +198,7 @@ export class RequestPreparer {
 			memoriesEnabled,
 			projectContext,
 			memoryScope,
+			primaryModelConfig.supportsArtifacts,
 		);
 
 		if (storeMessagesTask) {
@@ -207,7 +210,7 @@ export class RequestPreparer {
 		const messages = await this.buildProviderMessages({
 			conversationManager,
 			completionId: options.completion_id,
-			shouldStoreMessages,
+			shouldStoreMessages: shouldStoreMessages && !shouldAppendConversationHistory,
 			fallbackMessages: sanitizedMessages!,
 			messageWithContext,
 			primaryModelConfig,
@@ -442,6 +445,7 @@ export class RequestPreparer {
 		memoriesEnabled: boolean,
 		projectContext: ProjectChatContext | null,
 		memoryScope: MemoryScope = { type: "personal" },
+		supportsArtifacts = false,
 	): Promise<string> {
 		const {
 			system_prompt,
@@ -461,7 +465,7 @@ export class RequestPreparer {
 		}
 
 		if (system_prompt) {
-			const prompt = await this.enhanceSystemPromptWithMemory(
+			await this.enhanceSystemPromptWithMemory(
 				system_prompt,
 				finalMessage,
 				user,
@@ -470,13 +474,12 @@ export class RequestPreparer {
 				options.context,
 				memoryScope,
 			);
-			return this.appendProjectInstructions(prompt, projectContext);
 		}
 
 		const systemPromptFromMessages = sanitizedMessages.find((message) => message.role === "system");
 
 		if (systemPromptFromMessages?.content && typeof systemPromptFromMessages.content === "string") {
-			const prompt = await this.enhanceSystemPromptWithMemory(
+			await this.enhanceSystemPromptWithMemory(
 				systemPromptFromMessages.content,
 				finalMessage,
 				user,
@@ -485,7 +488,6 @@ export class RequestPreparer {
 				options.context,
 				memoryScope,
 			);
-			return this.appendProjectInstructions(prompt, projectContext);
 		}
 
 		const generatedPrompt = await getSystemPrompt(
@@ -507,7 +509,7 @@ export class RequestPreparer {
 			userSettings,
 		);
 
-		const prompt = await this.enhanceSystemPromptWithMemory(
+		await this.enhanceSystemPromptWithMemory(
 			generatedPrompt,
 			finalMessage,
 			user,
@@ -516,7 +518,6 @@ export class RequestPreparer {
 			options.context,
 			memoryScope,
 		);
-		return this.appendProjectInstructions(prompt, projectContext);
 	}
 
 	private appendProjectInstructions(

@@ -1258,7 +1258,7 @@ export const recipeConfigurationFieldSchema = z.object({
 export const recipeChatRequestOptionsSchema = z.object({
 	id: z.string(),
 	installationId: z.string().optional(),
-	channel: z.enum(["web", "ios", "sms", "scheduled", "tool"]).optional(),
+	channel: z.enum(["web", "ios", "sms", "scheduled", "event", "tool"]).optional(),
 	allowedConnectorProviders: z.array(recipeConnectorProviderSchema).optional(),
 	allowedConnectorOperations: z.record(z.string(), z.array(z.string())).optional(),
 	configuration: recipeConfigurationRecordSchema.optional(),
@@ -1380,6 +1380,28 @@ export const recipeConnectorApiKeyRequestSchema = z.object({
 	apiKey: z.string().min(1).max(4000),
 });
 
+export const recipeConnectorAccountSchema = z.object({
+	id: z.string(),
+	providerId: recipeConnectorProviderSchema,
+	alias: z.string().nullable(),
+	status: z.string(),
+	isDisabled: z.boolean(),
+	isSelected: z.boolean(),
+	authConfigId: z.string().optional(),
+	connectedAt: z.string(),
+	updatedAt: z.string(),
+});
+
+export const recipeConnectorAccountsResponseSchema = z.object({
+	accounts: z.array(recipeConnectorAccountSchema),
+});
+
+export const recipeConnectorAccountUpdateRequestSchema = z.object({
+	accountId: z.string().min(1).max(240),
+	alias: z.string().trim().min(1).max(80).nullable().optional(),
+	selected: z.boolean().optional(),
+});
+
 export const recipeInstallationTriggerSchema = z
 	.object({
 		type: z.enum(["manual", "schedule", "natural_language"]),
@@ -1433,10 +1455,53 @@ export const recipeInstallationUpdateRequestSchema = z.object({
 	configuration: recipeConfigurationRecordSchema.optional(),
 });
 
+export const recipeComposioTriggerCreateRequestSchema = z.object({
+	providerId: recipeConnectorProviderSchema,
+	triggerSlug: z
+		.string()
+		.trim()
+		.min(1)
+		.max(160)
+		.regex(/^[A-Z0-9_]+$/),
+	connectedAccountId: z.string().trim().min(1).max(200),
+	configuration: z.record(z.string().min(1).max(160), z.unknown()).default({}),
+});
+
+export const composioTriggerTypeSchema = z.object({
+	slug: z.string(),
+	name: z.string(),
+	description: z.string(),
+	kind: z.enum(["webhook", "poll"]),
+	configuration: z.record(z.string(), z.unknown()),
+});
+
+export const composioTriggerTypesResponseSchema = z.object({
+	triggerTypes: z.array(composioTriggerTypeSchema),
+});
+
+export const recipeComposioTriggerSchema = z.object({
+	id: z.string(),
+	installationId: z.string(),
+	projectId: z.string().nullable(),
+	providerId: recipeConnectorProviderSchema,
+	triggerSlug: z.string(),
+	externalTriggerId: z.string(),
+	connectedAccountId: z.string(),
+	configuration: z.record(z.string(), z.unknown()),
+	status: z.enum(["active", "paused", "error"]),
+	lastError: z.string().nullable(),
+	createdAt: z.string(),
+	updatedAt: z.string().nullable(),
+});
+
+export const recipeComposioTriggersResponseSchema = z.object({
+	triggers: z.array(recipeComposioTriggerSchema),
+});
+
 export const recipeInvocationRequestSchema = z.object({
 	input: z.string().optional(),
 	projectId: z.string().min(1).optional(),
-	channel: z.enum(["web", "ios", "sms", "scheduled", "tool"]).default("web"),
+	channel: z.enum(["web", "ios", "sms", "scheduled", "event", "tool"]).default("web"),
 });
 
 export const recipeInvocationResponseSchema = z.object({
@@ -1444,7 +1509,7 @@ export const recipeInvocationResponseSchema = z.object({
 	recipeTitle: z.string().optional(),
 	installationId: z.string().optional(),
 	projectId: z.string().nullable().optional(),
-	channel: z.enum(["web", "ios", "sms", "scheduled", "tool"]).default("web"),
+	channel: z.enum(["web", "ios", "sms", "scheduled", "event", "tool"]).default("web"),
 	status: z.enum(["ready", "queued", "blocked", "not_installed"]),
 	conversationStarter: z.string(),
 	messageUrl: z.string(),
@@ -1463,7 +1528,18 @@ export type RecipeConnectorsResponse = z.infer<typeof recipeConnectorsResponseSc
 export type RecipeConnectorStartResponse = z.infer<typeof recipeConnectorStartResponseSchema>;
 export type RecipeConnectorStartRequest = z.infer<typeof recipeConnectorStartRequestSchema>;
 export type RecipeConnectorApiKeyRequest = z.infer<typeof recipeConnectorApiKeyRequestSchema>;
+export type RecipeConnectorAccount = z.infer<typeof recipeConnectorAccountSchema>;
+export type RecipeConnectorAccountUpdateRequest = z.infer<
+	typeof recipeConnectorAccountUpdateRequestSchema
+>;
 export type RecipeInstallationTrigger = z.infer<typeof recipeInstallationTriggerSchema>;
+export type RecipeComposioTriggerCreateRequest = z.infer<
+	typeof recipeComposioTriggerCreateRequestSchema
+>;
+export type RecipeComposioTrigger = z.infer<typeof recipeComposioTriggerSchema>;
+export type ComposioTriggerType = z.infer<typeof composioTriggerTypeSchema>;
+export type ComposioTriggerTypesResponse = z.infer<typeof composioTriggerTypesResponseSchema>;
+export type RecipeComposioTriggersResponse = z.infer<typeof recipeComposioTriggersResponseSchema>;
 export type RecipeInstallation = z.infer<typeof recipeInstallationSchema>;
 export type RecipeInstallationsResponse = z.infer<typeof recipeInstallationsResponseSchema>;
 export type RecipeInstallRequest = z.infer<typeof recipeInstallRequestSchema>;

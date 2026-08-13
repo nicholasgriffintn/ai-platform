@@ -38,6 +38,8 @@ function shouldAbortAgentDecisionError(error: unknown): boolean {
 
 interface ApiAgentLoopState extends AgentLoopState {
 	commandCount: number;
+	unknownToolRecoveryUsed: boolean;
+	pendingUserAction?: string;
 }
 
 interface ApiAgentSharedContext {
@@ -66,11 +68,10 @@ export interface AgentLoopExecutionResult {
 export async function runAgentLoop(
 	params: AgentLoopExecutionParams,
 ): Promise<AgentLoopExecutionResult> {
+	const requestParams = params.requestParams;
 	const providerIO = createAgentProviderIO();
-	const runtimeMessages = providerIO.initialMessages(
-		toProviderMessages(params.requestParams.messages),
-	);
-	const completionRequirements = getAgentCompletionRequirements(params.requestParams);
+	const runtimeMessages = providerIO.initialMessages(toProviderMessages(requestParams.messages));
+	const completionRequirements = getAgentCompletionRequirements(requestParams);
 	if (
 		completionRequirements.minToolCalls > 0 &&
 		!hasEnabledToolNames(params.requestParams.enabled_tools)
@@ -82,6 +83,7 @@ export async function runAgentLoop(
 	}
 	const state: ApiAgentLoopState = {
 		commandCount: 0,
+		unknownToolRecoveryUsed: false,
 	};
 	const toolResponses: Message[] = [];
 	let finalResponse: ModelResponse | null = null;
@@ -105,22 +107,38 @@ export async function runAgentLoop(
 		shouldAbortOnDecisionError: shouldAbortAgentDecisionError,
 		onStepBudgetExceeded: ({ messages, state: runtimeState }) =>
 			resolveAgentStepBudgetExtension({
-				enabledTools: params.requestParams.enabled_tools,
+				enabledTools: requestParams.enabled_tools,
 				requirements: completionRequirements,
 				commandCount: runtimeState.commandCount,
 				messages,
 			}),
 		resolveDecision: async ({ messages }) => {
-			const requestParams = withRequiredToolChoice(
-				params.requestParams,
+			if (state.pendingUserAction) {
+				const response = state.pendingUserAction;
+				state.pendingUserAction = undefined;
+				finalResponse = { response, status: "pending" };
+				return {
+					decision: {
+						action: "finish",
+						summary: response,
+					},
+					assistantMessage: {
+						role: "assistant",
+						content: response,
+					},
+				};
+			}
+
+			const decisionRequestParams = withRequiredToolChoice(
+				requestParams,
 				shouldRequireToolChoice({
 					requirements: completionRequirements,
 					commandCount: state.commandCount,
-					requestParams: params.requestParams,
+					requestParams,
 				}),
 			);
 			const providerResponse = await getAIResponse({
-				...requestParams,
+				...decisionRequestParams,
 				messages: providerIO.providerMessages(messages),
 				stream: false,
 			});
@@ -202,11 +220,22 @@ export async function runAgentLoop(
 						},
 						context.shared.conversationManager,
 						context.shared.toolRequestContext,
+						{ recoverUnknownToolCalls: !context.state.unknownToolRecoveryUsed },
 					);
+					if (toolResults.some((message) => message.data?.errorCode === "UNKNOWN_TOOL")) {
+						context.state.unknownToolRecoveryUsed = true;
+					}
 
 					context.state.commandCount += toolResults.filter((message) =>
 						isSuccessfulToolStatus(message.status),
 					).length;
+					const pendingResult = toolResults.find((message) => message.status === "pending");
+					if (pendingResult) {
+						context.state.pendingUserAction =
+							typeof pendingResult.content === "string" && pendingResult.content.trim()
+								? pendingResult.content
+								: "This action is waiting for user approval.";
+					}
 					toolResponses.push(...toolResults);
 					context.messages.push(...toProviderMessages(toolResults));
 				},

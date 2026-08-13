@@ -23,9 +23,12 @@ import {
 	listRecipeInstallations,
 	updateRecipeInstallation,
 } from "~/services/apps/recipes";
+import recipeComposioTriggers from "./recipe-composio-triggers";
 
 const app = new Hono();
 const installationListQuerySchema = z.object({ projectId: z.string().min(1).optional() });
+
+app.route("/", recipeComposioTriggers);
 
 addRoute(app, "get", "/", {
 	tags: ["apps"],

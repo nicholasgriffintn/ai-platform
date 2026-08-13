@@ -18,6 +18,7 @@ const recordSchema = z.record(z.string(), z.unknown());
 
 export const modelRouterModeSchema = z.enum(["auto", "lite", "standard", "pro", "max"]);
 export const chatCompactionModeSchema = z.enum(["auto", "off"]);
+export const connectorApprovalIdSchema = z.string().regex(/^coa_[A-Za-z0-9-]+$/);
 
 export const chatHostedToolSettingsSchema = z
 	.object({
@@ -450,6 +451,9 @@ export const chatCompletionsRequestFieldsSchema = z.object({
 	approved_tools: toolIdsSchema
 		.optional()
 		.describe("Tool IDs pre-approved for approval-gated modes."),
+	connector_approval_id: connectorApprovalIdSchema
+		.optional()
+		.describe("One-time approval for the exact connector action in this request."),
 	tools: z.array(chatCompletionToolSchema).optional().describe("OpenAI-compatible function tools."),
 	tool_choice: chatToolChoiceSchema.optional().describe("OpenAI-compatible tool choice."),
 	functions: z

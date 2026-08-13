@@ -20,7 +20,7 @@ interface LoginModalProps {
 }
 
 const DISPLAY_SIGN_IN_WITH_APPLE_BUTTON =
-	import.meta.env.NEXT_PUBLIC_DISPLAY_SIGN_IN_WITH_APPLE_BUTTON === "true";
+	import.meta.env.VITE_DISPLAY_SIGN_IN_WITH_APPLE_BUTTON === "true";
 const AUTH_BUTTON_CLASS_NAME =
 	"flex h-11 w-full items-center justify-center gap-2.5 rounded-lg px-4 text-sm font-semibold leading-none shadow-sm disabled:opacity-60";
 const GITHUB_BUTTON_CLASS_NAME = `${AUTH_BUTTON_CLASS_NAME} border border-zinc-950 bg-zinc-950 text-white hover:bg-zinc-800 dark:border-zinc-700`;
@@ -58,7 +58,8 @@ export function LoginModal({ open, onOpenChange, onKeySubmit }: LoginModalProps)
 								id: "apple",
 								label: "Sign in with Apple",
 								clientId: APPLE_SIGN_IN_CLIENT_ID,
-								className: "!border-zinc-300 !bg-white !p-0 dark:!border-zinc-600 dark:!bg-white",
+								className:
+									"!border-zinc-300 !bg-white !p-0 dark:!border-zinc-600 dark:!bg-white overflow-hidden",
 							},
 						]
 					: []),

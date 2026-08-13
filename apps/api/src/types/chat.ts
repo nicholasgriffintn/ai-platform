@@ -181,6 +181,7 @@ export interface IBody {
 	platform?: Platform;
 	mode?: ChatMode;
 	approved_tools?: string[];
+	connector_approval_id?: string;
 	tool_permissions_map?: Record<string, string[]>;
 	verbosity?: VerbosityLevel;
 	role?: ChatRole;
@@ -239,6 +240,8 @@ type InternalExecutionParams = {
 	version?: string;
 	// Whether to disable functions for the response.
 	disable_functions?: boolean;
+	// Use provided messages without replacing authoritative stored conversation history.
+	conversation_history_write_mode?: "reconcile" | "append";
 	// Runtime-normalised messages.
 	messages?: Message[];
 	// Provider-formatted tools.

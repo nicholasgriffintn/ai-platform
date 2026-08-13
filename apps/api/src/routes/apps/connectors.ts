@@ -3,7 +3,11 @@ import z from "zod/v4";
 
 import {
 	errorResponseSchema,
+	connectorApprovalIdSchema,
 	recipeConnectorApiKeyRequestSchema,
+	recipeConnectorAccountSchema,
+	recipeConnectorAccountsResponseSchema,
+	recipeConnectorAccountUpdateRequestSchema,
 	recipeConnectorProviderSchema,
 	recipeConnectorsResponseSchema,
 	recipeConnectorStartRequestSchema,
@@ -17,6 +21,11 @@ import {
 	storeRecipeConnectorApiKey,
 	verifyComposioConnectorAuthorization,
 } from "~/services/apps/connectors";
+import { resolveConnectorOperationApproval } from "~/services/apps/connectors/operation-approvals";
+import {
+	listRecipeConnectorAccounts,
+	updateRecipeConnectorAccount,
+} from "~/services/apps/connectors/accounts";
 
 const app = new Hono();
 
@@ -27,6 +36,8 @@ app.use("/composio/verify", async (context, next) => {
 });
 
 const providerParamSchema = z.object({ provider: recipeConnectorProviderSchema });
+const approvalParamSchema = z.object({ approvalId: connectorApprovalIdSchema });
+const approvalResolutionSchema = z.object({ resolution: z.enum(["approved", "rejected"]) });
 const composioVerificationQuerySchema = z.union([
 	z.object({ session_uri: z.string().min(1).max(4096) }),
 	z
@@ -103,6 +114,26 @@ addRoute(app, "get", "/composio/verify", {
 	},
 });
 
+addRoute(app, "put", "/approvals/:approvalId", {
+	auth: true,
+	tags: ["apps"],
+	summary: "Resolve an exact connector operation approval",
+	paramSchema: approvalParamSchema,
+	bodySchema: approvalResolutionSchema,
+	responses: {
+		200: { description: "Connector approval resolved" },
+		404: { description: "Connector approval missing or expired", schema: errorResponseSchema },
+	},
+	handler: async ({ params, body, serviceContext, user }) => ({
+		approval: await resolveConnectorOperationApproval({
+			context: serviceContext,
+			userId: user.id,
+			approvalId: params.approvalId,
+			resolution: body.resolution,
+		}),
+	}),
+});
+
 addRoute(app, "post", "/:provider/api-key", {
 	auth: true,
 	tags: ["apps"],
@@ -119,6 +150,42 @@ addRoute(app, "post", "/:provider/api-key", {
 			userId: user.id,
 			provider: params.provider,
 			apiKey: body.apiKey,
+		}),
+});
+
+addRoute(app, "get", "/:provider/accounts", {
+	auth: true,
+	tags: ["apps"],
+	summary: "List connector accounts",
+	paramSchema: providerParamSchema,
+	responses: {
+		200: { description: "Connector accounts", schema: recipeConnectorAccountsResponseSchema },
+		400: { description: "Invalid connector", schema: errorResponseSchema },
+	},
+	handler: ({ params, serviceContext, user }) =>
+		listRecipeConnectorAccounts({
+			context: serviceContext,
+			userId: user.id,
+			providerId: params.provider,
+		}),
+});
+
+addRoute(app, "put", "/:provider/accounts", {
+	auth: true,
+	tags: ["apps"],
+	summary: "Label or select a connector account",
+	paramSchema: providerParamSchema,
+	bodySchema: recipeConnectorAccountUpdateRequestSchema,
+	responses: {
+		200: { description: "Updated connector account", schema: recipeConnectorAccountSchema },
+		404: { description: "Connector account not found", schema: errorResponseSchema },
+	},
+	handler: ({ params, body, serviceContext, user }) =>
+		updateRecipeConnectorAccount({
+			context: serviceContext,
+			userId: user.id,
+			providerId: params.provider,
+			input: body,
 		}),
 });
 

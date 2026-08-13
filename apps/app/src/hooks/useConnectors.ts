@@ -1,14 +1,19 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import type { RecipeConnectorAccount, RecipeConnectorProvider } from "@assistant/schemas";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
 	disconnectRecipeConnector,
+	listRecipeConnectorAccounts,
 	listRecipeConnectors,
 	startRecipeConnector,
 	storeRecipeConnectorApiKey,
+	updateRecipeConnectorAccount,
 } from "~/lib/api/connectors";
 import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
 
 export const RECIPE_CONNECTORS_QUERY_KEY = ["recipe-connectors"] as const;
+export const recipeConnectorAccountsQueryKey = (provider: RecipeConnectorProvider) =>
+	[...RECIPE_CONNECTORS_QUERY_KEY, provider, "accounts"] as const;
 
 export function useRecipeConnectors() {
 	const canAccessProFeatures = useCanAccessProFeatures();
@@ -56,5 +61,35 @@ export function useStoreRecipeConnectorApiKey() {
 			provider: Parameters<typeof storeRecipeConnectorApiKey>[0];
 			apiKey: string;
 		}) => storeRecipeConnectorApiKey(provider, { apiKey }),
+	});
+}
+
+export function useRecipeConnectorAccounts(provider: RecipeConnectorProvider) {
+	return useQuery({
+		queryKey: recipeConnectorAccountsQueryKey(provider),
+		queryFn: () => listRecipeConnectorAccounts(provider),
+		staleTime: 30 * 1000,
+	});
+}
+
+export function useUpdateRecipeConnectorAccount(provider: RecipeConnectorProvider) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (request: Parameters<typeof updateRecipeConnectorAccount>[1]) =>
+			updateRecipeConnectorAccount(provider, request),
+		onSuccess: (updatedAccount) => {
+			queryClient.setQueryData<{ accounts: RecipeConnectorAccount[] }>(
+				recipeConnectorAccountsQueryKey(provider),
+				(current) => ({
+					accounts: (current?.accounts ?? []).map((account) => ({
+						...account,
+						isSelected: updatedAccount.isSelected
+							? account.id === updatedAccount.id
+							: account.isSelected,
+						...(account.id === updatedAccount.id ? updatedAccount : {}),
+					})),
+				}),
+			);
+		},
 	});
 }

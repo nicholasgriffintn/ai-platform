@@ -3,6 +3,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { isAsyncInvocationPending } from "~/lib/async/asyncInvocation";
 import { handleAsyncInvocation } from "./async/handler";
 import type { Message } from "~/types";
+import { hydrateConnectorApprovalMessageState } from "~/services/apps/connectors/approval-message-state";
 
 interface GetChatCompletionOptions {
 	refreshPending?: boolean;
@@ -58,18 +59,25 @@ export const handleGetChatCompletion = async (
 		includeArchived: true,
 		includeSnapshots: false,
 	});
-	if (!options.refreshPending || !Array.isArray(conversation.messages)) {
+	if (!Array.isArray(conversation.messages)) {
 		return conversation;
 	}
+	const refreshedMessages = options.refreshPending
+		? await refreshPendingMessages(
+				context,
+				conversationManager,
+				completion_id,
+				conversation.messages as Message[],
+				user,
+			)
+		: (conversation.messages as Message[]);
 
 	return {
 		...conversation,
-		messages: await refreshPendingMessages(
-			context,
-			conversationManager,
-			completion_id,
-			conversation.messages as Message[],
-			user,
-		),
+		messages: await hydrateConnectorApprovalMessageState({
+			messages: refreshedMessages,
+			userId: user.id,
+			approvals: context.repositories.connectorOperationApprovals,
+		}),
 	};
 };

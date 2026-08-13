@@ -37,6 +37,7 @@ import { ScrollButton } from "./ScrollButton";
 
 interface MessageListProps {
 	onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
+	onConnectorApproval?: (approvalId: string, resolution: "approved" | "rejected") => Promise<void>;
 	onArtifactOpen?: (
 		artifact: ArtifactProps,
 		combine?: boolean,
@@ -80,6 +81,7 @@ function hasCurrentResponseCompactionMarker(messages: Message[]): boolean {
 
 export const MessageList = ({
 	onToolInteraction,
+	onConnectorApproval,
 	onArtifactOpen,
 	messages: propMessages,
 	isSharedView = false,
@@ -230,6 +232,7 @@ export const MessageList = ({
 											message={message}
 											modelConfig={getModelByReference(modelReferences, message.model)}
 											onToolInteraction={onToolInteraction}
+											onConnectorApproval={onConnectorApproval}
 											onArtifactOpen={onArtifactOpen}
 											isSharedView={isSharedView}
 											onRetry={retryMessage}

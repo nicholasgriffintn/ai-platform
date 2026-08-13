@@ -358,6 +358,9 @@ function createTestServiceContext(): ServiceContext {
 	vi.spyOn(context, "repositories", "get").mockReturnValue(repositories);
 	vi.spyOn(repositories, "templates", "get").mockReturnValue(templateRepository);
 	vi.spyOn(repositories, "tasks", "get").mockReturnValue(taskRepository);
+	vi.spyOn(repositories, "recipeComposioTriggers", "get").mockReturnValue({
+		listInstallationTriggers: vi.fn().mockResolvedValue([]),
+	} as never);
 
 	return context;
 }

@@ -14,11 +14,23 @@ const mocks = vi.hoisted(() => ({
 	getAssistantRecipe: vi.fn(),
 	executeRecipeInvocationChat: vi.fn(),
 	getRecipeConversationContext: vi.fn(),
+	authoriseConnectorOperation: vi.fn(),
+	retainComposioConnectorSession: vi.fn(),
+	resolveComposioRunAccount: vi.fn(),
 }));
 
 vi.mock("~/services/apps/connectors/operations", () => ({
 	executeRecipeConnectorOperation: mocks.executeRecipeConnectorOperation,
 	discoverRecipeConnectorTools: mocks.discoverRecipeConnectorTools,
+}));
+
+vi.mock("~/services/apps/connectors/operation-approvals", () => ({
+	authoriseConnectorOperation: mocks.authoriseConnectorOperation,
+}));
+
+vi.mock("~/services/apps/connectors/composio-run", () => ({
+	retainComposioConnectorSession: mocks.retainComposioConnectorSession,
+	resolveComposioRunAccount: mocks.resolveComposioRunAccount,
 }));
 
 vi.mock("~/services/apps/recipes", () => ({
@@ -48,7 +60,7 @@ function createToolContext(
 	params: {
 		allowedConnectorProviders?: string[];
 		allowedConnectorOperations?: Record<string, string[]>;
-		recipeChannel?: "web" | "ios" | "sms" | "scheduled" | "tool";
+		recipeChannel?: "web" | "ios" | "sms" | "scheduled" | "event" | "tool";
 		recipe?: {
 			id: string;
 			installationId?: string;
@@ -133,6 +145,16 @@ function createToolContext(
 	} satisfies ToolExecutionContext;
 }
 
+function expectConnectorExecution(request: Record<string, unknown>): void {
+	expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith(
+		expect.objectContaining({
+			context: {},
+			userId: 42,
+			request: expect.objectContaining(request),
+		}),
+	);
+}
+
 describe("recipe connector tools", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -148,6 +170,11 @@ describe("recipe connector tools", () => {
 			],
 		});
 		mocks.getRecipeConversationContext.mockResolvedValue([]);
+		mocks.authoriseConnectorOperation.mockResolvedValue({ required: false, approved: true });
+		mocks.resolveComposioRunAccount.mockResolvedValue({
+			connectedAccount: { id: "ca_session" },
+			session: { id: "ccs_discovery" },
+		});
 		mocks.getAssistantRecipe.mockResolvedValue({
 			id: "bad-weather-alerts",
 			title: "Bad Weather Alerts",
@@ -193,6 +220,23 @@ describe("recipe connector tools", () => {
 			const: "googleslides",
 			description: "Use the connector selected by the user: googleslides.",
 		});
+	});
+
+	it("accepts opaque connector session handles and rejects remote Composio IDs", () => {
+		expect(
+			use_recipe_connector.inputSchema.safeParse({
+				provider: "gmail",
+				operation: "GMAIL_FETCH_EMAILS",
+				sessionId: "ccs_opaque-handle",
+			}).success,
+		).toBe(true);
+		expect(
+			use_recipe_connector.inputSchema.safeParse({
+				provider: "gmail",
+				operation: "GMAIL_FETCH_EMAILS",
+				sessionId: "trs_remote-session",
+			}).success,
+		).toBe(false);
 	});
 
 	it("rejects connector operations outside the active recipe scope", async () => {
@@ -261,14 +305,10 @@ describe("recipe connector tools", () => {
 			}),
 		);
 
-		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
-			context: {},
-			userId: 42,
-			request: {
-				provider: "notion",
-				operation: "search",
-				params: { query: "Action log" },
-			},
+		expectConnectorExecution({
+			provider: "notion",
+			operation: "search",
+			params: { query: "Action log" },
 		});
 		expect(result).toEqual({
 			status: "success",
@@ -396,14 +436,10 @@ describe("recipe connector tools", () => {
 			}),
 		);
 
-		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
-			context: {},
-			userId: 42,
-			request: {
-				provider: "todoist",
-				operation: "create_task",
-				params: { content: "Follow up with finance", dueString: "tomorrow" },
-			},
+		expectConnectorExecution({
+			provider: "todoist",
+			operation: "create_task",
+			params: { content: "Follow up with finance", dueString: "tomorrow" },
 		});
 		expect(result).toEqual({
 			status: "success",
@@ -426,14 +462,10 @@ describe("recipe connector tools", () => {
 			}),
 		);
 
-		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
-			context: {},
-			userId: 42,
-			request: {
-				provider: "asana",
-				operation: "create_task",
-				params: { name: "Prepare launch plan", projectIds: ["project-1"] },
-			},
+		expectConnectorExecution({
+			provider: "asana",
+			operation: "create_task",
+			params: { name: "Prepare launch plan", projectIds: ["project-1"] },
 		});
 		expect(result).toEqual({
 			status: "success",
@@ -461,16 +493,12 @@ describe("recipe connector tools", () => {
 			}),
 		);
 
-		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
-			context: {},
-			userId: 42,
-			request: {
-				provider: "posthog",
-				operation: "query",
-				params: {
-					projectId: "123",
-					query: "select event, count() from events group by event",
-				},
+		expectConnectorExecution({
+			provider: "posthog",
+			operation: "query",
+			params: {
+				projectId: "123",
+				query: "select event, count() from events group by event",
 			},
 		});
 		expect(result).toEqual({
@@ -505,17 +533,13 @@ describe("recipe connector tools", () => {
 			}),
 		);
 
-		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
-			context: {},
-			userId: 42,
-			request: {
-				provider: "posthog",
-				operation: "query",
-				params: {
-					region: "us",
-					projectId: "479272",
-					query: "select event, count() from events group by event limit 10",
-				},
+		expectConnectorExecution({
+			provider: "posthog",
+			operation: "query",
+			params: {
+				region: "us",
+				projectId: "479272",
+				query: "select event, count() from events group by event limit 10",
 			},
 		});
 		expect(result).toEqual({
@@ -593,16 +617,12 @@ describe("recipe connector tools", () => {
 			}),
 		);
 
-		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
-			context: {},
-			userId: 42,
-			request: {
-				provider: "posthog",
-				operation: "POSTHOG_LIST_ORGANIZATION_PROJECTS",
-				params: {
-					organization_id: "org_123",
-					limit: 25,
-				},
+		expectConnectorExecution({
+			provider: "posthog",
+			operation: "POSTHOG_LIST_ORGANIZATION_PROJECTS",
+			params: {
+				organization_id: "org_123",
+				limit: 25,
 			},
 		});
 		expect(result).toEqual({
@@ -630,15 +650,11 @@ describe("recipe connector tools", () => {
 			}),
 		);
 
-		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
-			context: {},
-			userId: 42,
-			request: {
-				provider: "netlify",
-				operation: "list_deploys",
-				params: {
-					siteId: "polychat.netlify.app",
-				},
+		expectConnectorExecution({
+			provider: "netlify",
+			operation: "list_deploys",
+			params: {
+				siteId: "polychat.netlify.app",
 			},
 		});
 		expect(result).toEqual({
@@ -673,16 +689,12 @@ describe("recipe connector tools", () => {
 			}),
 		);
 
-		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
-			context: {},
-			userId: 42,
-			request: {
-				provider: "cloudflare",
-				operation: "list_worker_deployments",
-				params: {
-					accountId: "account_123",
-					scriptName: "assistant-api",
-				},
+		expectConnectorExecution({
+			provider: "cloudflare",
+			operation: "list_worker_deployments",
+			params: {
+				accountId: "account_123",
+				scriptName: "assistant-api",
 			},
 		});
 		expect(result).toEqual({
@@ -711,16 +723,12 @@ describe("recipe connector tools", () => {
 			}),
 		);
 
-		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
-			context: {},
-			userId: 42,
-			request: {
-				provider: "webflow",
-				operation: "list_items",
-				params: {
-					collectionId: "collection_123",
-					limit: 25,
-				},
+		expectConnectorExecution({
+			provider: "webflow",
+			operation: "list_items",
+			params: {
+				collectionId: "collection_123",
+				limit: 25,
 			},
 		});
 		expect(result).toEqual({
@@ -756,17 +764,13 @@ describe("recipe connector tools", () => {
 			}),
 		);
 
-		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
-			context: {},
-			userId: 42,
-			request: {
-				provider: "devin",
-				operation: "create_session",
-				params: {
-					organizationId: "org-abc123def456",
-					prompt: "Review the repository and report implementation risks.",
-					repos: ["nicholasgriffin/assistant"],
-				},
+		expectConnectorExecution({
+			provider: "devin",
+			operation: "create_session",
+			params: {
+				organizationId: "org-abc123def456",
+				prompt: "Review the repository and report implementation risks.",
+				repos: ["nicholasgriffin/assistant"],
 			},
 		});
 		expect(result).toEqual({
@@ -805,28 +809,112 @@ describe("recipe connector tools", () => {
 		expect(mocks.executeRecipeConnectorOperation).not.toHaveBeenCalled();
 	});
 
+	it("returns a redacted argument summary while an exact write awaits approval", async () => {
+		mocks.authoriseConnectorOperation.mockResolvedValueOnce({
+			required: true,
+			approved: false,
+			approval: {
+				id: "coa_pending",
+				expiresAt: "2026-08-13T12:10:00.000Z",
+			},
+		});
+
+		const result = await use_recipe_connector.execute(
+			{
+				provider: "todoist",
+				operation: "TODOIST_CREATE_TASK",
+				sessionId: "ccs_discovery",
+				params: { content: "Follow up", apiKey: "Abcdef1234567890Ghijklm_Nopqrs" },
+			},
+			createToolContext({
+				allowedConnectorProviders: ["todoist"],
+				allowedConnectorOperations: { todoist: ["TODOIST_CREATE_TASK"] },
+			}),
+		);
+
+		expect(result).toMatchObject({
+			status: "pending",
+			data: {
+				approvalId: "coa_pending",
+				argumentSummary: { content: "Follow up", apiKey: "[redacted]" },
+			},
+		});
+		expect(mocks.retainComposioConnectorSession).toHaveBeenCalledWith({}, "ccs_discovery");
+		expect(mocks.authoriseConnectorOperation).toHaveBeenCalledWith(
+			expect.objectContaining({ connectedAccountId: "ca_session" }),
+		);
+		expect(mocks.executeRecipeConnectorOperation).not.toHaveBeenCalled();
+	});
+
+	it("fails closed before approval when a Composio write has no discovered session", async () => {
+		mocks.authoriseConnectorOperation.mockRejectedValueOnce(
+			new AssistantError(
+				"A scoped connector session is required before approving this action",
+				ErrorType.AUTHORISATION_ERROR,
+				403,
+			),
+		);
+		const result = await use_recipe_connector.execute(
+			{
+				provider: "todoist",
+				operation: "TODOIST_CREATE_TASK",
+				params: { content: "Follow up" },
+			},
+			createToolContext({
+				allowedConnectorProviders: ["todoist"],
+				allowedConnectorOperations: { todoist: ["TODOIST_CREATE_TASK"] },
+			}),
+		);
+
+		expect(result).toMatchObject({
+			status: "error",
+			content: expect.stringContaining("scoped connector session is required"),
+		});
+		expect(mocks.authoriseConnectorOperation).toHaveBeenCalledWith(
+			expect.objectContaining({ connectedAccountId: undefined }),
+		);
+		expect(mocks.executeRecipeConnectorOperation).not.toHaveBeenCalled();
+	});
+
+	it("blocks connector write operations during event-triggered recipe runs", async () => {
+		const result = await use_recipe_connector.execute(
+			{
+				provider: "todoist",
+				operation: "TODOIST_CREATE_TASK",
+				params: { content: "Follow up with finance" },
+			},
+			createToolContext({
+				allowedConnectorProviders: ["todoist"],
+				allowedConnectorOperations: { todoist: ["TODOIST_CREATE_TASK"] },
+				recipeChannel: "event",
+			}),
+		);
+
+		expect(result).toMatchObject({
+			status: "error",
+			data: { provider: "todoist", operation: "TODOIST_CREATE_TASK", channel: "event" },
+		});
+		expect(mocks.executeRecipeConnectorOperation).not.toHaveBeenCalled();
+	});
+
 	it("allows connector read operations during scheduled recipe runs", async () => {
 		const result = await use_recipe_connector.execute(
 			{
 				provider: "todoist",
-				operation: "list_tasks",
+				operation: "TODOIST_GET_ALL_TASKS",
 				params: { label: "work" },
 			},
 			createToolContext({
 				allowedConnectorProviders: ["todoist"],
-				allowedConnectorOperations: { todoist: ["list_tasks"] },
+				allowedConnectorOperations: { todoist: ["TODOIST_GET_ALL_TASKS"] },
 				recipeChannel: "scheduled",
 			}),
 		);
 
-		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
-			context: {},
-			userId: 42,
-			request: {
-				provider: "todoist",
-				operation: "list_tasks",
-				params: { label: "work" },
-			},
+		expectConnectorExecution({
+			provider: "todoist",
+			operation: "TODOIST_GET_ALL_TASKS",
+			params: { label: "work" },
 		});
 		expect(result).toEqual({
 			status: "success",
@@ -863,13 +951,15 @@ describe("recipe connector tools", () => {
 			}),
 		);
 
-		expect(mocks.discoverRecipeConnectorTools).toHaveBeenCalledWith({
-			context: {},
-			userId: 42,
-			provider: "gmail",
-			useCase: "Find unread invoices",
-			allowedOperations: ["GMAIL_FETCH_EMAILS"],
-		});
+		expect(mocks.discoverRecipeConnectorTools).toHaveBeenCalledWith(
+			expect.objectContaining({
+				context: {},
+				userId: 42,
+				provider: "gmail",
+				useCase: "Find unread invoices",
+				allowedOperations: ["GMAIL_FETCH_EMAILS"],
+			}),
+		);
 		expect(result).toMatchObject({
 			status: "success",
 			data: { sessionId: "trs_gmail" },

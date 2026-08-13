@@ -261,11 +261,17 @@ describe("useChatManager", () => {
 		});
 
 		const response = await act(async () =>
-			result.current.respondToExistingConversation(conversationId),
+			result.current.respondToExistingConversation(conversationId, {
+				requestOptions: { connector_approval_id: "coa_action" },
+			}),
 		);
 
 		expect(response.status).toBe("success");
-		expect(mocks.streamChatCompletions).toHaveBeenCalled();
+		expect(mocks.streamChatCompletions).toHaveBeenCalledWith(
+			expect.objectContaining({
+				requestOptions: expect.objectContaining({ connector_approval_id: "coa_action" }),
+			}),
+		);
 	});
 
 	it("updates the cached conversation when manual compaction is a no-op", async () => {

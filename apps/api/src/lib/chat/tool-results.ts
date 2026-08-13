@@ -20,6 +20,10 @@ export function isSuccessfulToolStatus(status: string | null | undefined): boole
 }
 
 function isContinuableToolResult(message: Message): boolean {
+	if (message.status === "pending") {
+		return false;
+	}
+
 	if (message.name && FOLLOW_UP_REQUIRED_TOOL_NAMES.has(message.name)) {
 		return true;
 	}

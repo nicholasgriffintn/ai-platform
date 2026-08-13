@@ -41,6 +41,18 @@ const catalogRecipes: CatalogRecipe[] = [
 
 export const assistantRecipes: AssistantRecipe[] = catalogRecipes.map((recipe) => ({
 	...recipe,
+	triggers:
+		recipe.integrations.some((integration) => integration.requiresConnection) &&
+		!recipe.triggers.some((trigger) => trigger.type === "event")
+			? [
+					...recipe.triggers,
+					{
+						type: "event" as const,
+						label: "Connected app event",
+						description: "Run when a selected connected app emits a configured event.",
+					},
+				]
+			: recipe.triggers,
 	configurationFields: (recipe.configurationFields ?? []).map((field) => ({
 		required: false,
 		...field,

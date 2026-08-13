@@ -1,7 +1,7 @@
 import { recipeConnectorProviderSchema, type RecipeConnectorProvider } from "@assistant/schemas";
 import {
 	getConnectorProviderConfig,
-	isConnectorOperationWrite,
+	connectorOperationRequiresApproval,
 } from "~/lib/providers/capabilities/connectors";
 import {
 	discoverRecipeConnectorTools,
@@ -9,6 +9,7 @@ import {
 } from "~/services/apps/connectors/operations";
 import {
 	getRecipeConfiguration,
+	getActiveRecipeSetup,
 	getRecipeAllowedConnectorOperations,
 	getRecipeAllowedConnectorProviders,
 	getRecipeExecutionChannel,
@@ -17,6 +18,11 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { isRecord } from "~/utils/objects";
 import { jsonSchemaToZod } from "../../../utils/jsonSchema";
 import type { ApiToolDefinition } from "../../../types/functions";
+import { authoriseConnectorOperation } from "~/services/apps/connectors/operation-approvals";
+import { COMPOSIO_CONNECTOR_SESSION_HANDLE_PATTERN } from "~/lib/providers/capabilities/connectors/composio/session-handle";
+import { retainComposioConnectorSession } from "~/services/apps/connectors/composio-run";
+import { resolveComposioRunAccount } from "~/services/apps/connectors/composio-run";
+import { redactSensitiveTokens } from "~/utils/redaction";
 
 function buildConnectorToolError(params: {
 	provider: string;
@@ -91,8 +97,8 @@ export function createUseRecipeConnectorInputSchema(
 			},
 			sessionId: {
 				type: "string",
-				pattern: "^trs_[A-Za-z0-9_-]+$",
-				description: "The scoped sessionId returned by a preceding discovery call.",
+				pattern: COMPOSIO_CONNECTOR_SESSION_HANDLE_PATTERN,
+				description: "The opaque session handle returned by a preceding discovery call.",
 			},
 			params: {
 				type: "object",
@@ -110,7 +116,7 @@ export const use_recipe_connector: ApiToolDefinition = {
 		"Discover and use the exact tools available from a connector. Start with useCase to receive authoritative Composio schemas and a sessionId, then call again with an exact operation, its params, and that sessionId. Treat identifiers as operation-specific: never pass an ID returned by one operation to another unless their schemas explicitly describe the same identifier. Recipe configuration is merged into execution params as defaults.",
 	type: "premium",
 	costPerCall: 0,
-	permissions: ["network", "read", "write"],
+	permissions: ["network", "read"],
 	inputSchema: createUseRecipeConnectorInputSchema(),
 	execute: async (args, context) => {
 		const request = context.request;
@@ -130,6 +136,11 @@ export const use_recipe_connector: ApiToolDefinition = {
 
 		const provider = parsedProvider.data;
 		const savedConfiguration = getRecipeConfiguration(request.request?.options);
+		const activeRecipe = getActiveRecipeSetup(request.request?.options);
+		const projectId =
+			typeof request.request?.metadata?.project_id === "string"
+				? request.request.metadata.project_id
+				: undefined;
 		const allowedConnectorProviders = getRecipeAllowedConnectorProviders(request.request?.options);
 		if (allowedConnectorProviders && !allowedConnectorProviders.includes(provider)) {
 			return {
@@ -183,6 +194,10 @@ export const use_recipe_connector: ApiToolDefinition = {
 					provider,
 					useCase,
 					allowedOperations: effectiveAllowedOperations,
+					completionId: request.request?.completion_id ?? context.completionId,
+					recipeId: activeRecipe?.id,
+					installationId: activeRecipe?.installationId,
+					projectId,
 				});
 				return {
 					status: "success",
@@ -199,19 +214,19 @@ export const use_recipe_connector: ApiToolDefinition = {
 			}
 		}
 
+		const channel = getRecipeExecutionChannel(request.request?.options) ?? "web";
 		if (
-			getRecipeExecutionChannel(request.request?.options) === "scheduled" &&
-			isConnectorOperationWrite(provider, operation)
+			(channel === "scheduled" || channel === "event") &&
+			connectorOperationRequiresApproval(provider, operation)
 		) {
 			return {
 				status: "error",
 				name: "use_recipe_connector",
-				content:
-					"Scheduled recipe runs cannot perform connector write operations. Ask the user to run this recipe in chat if an external change is required.",
+				content: `${channel === "event" ? "Event-triggered" : "Scheduled"} recipe runs cannot perform connector write operations. Ask the user to run this recipe in chat if an external change is required.`,
 				data: {
 					provider,
 					operation,
-					channel: "scheduled",
+					channel,
 				},
 			};
 		}
@@ -219,6 +234,57 @@ export const use_recipe_connector: ApiToolDefinition = {
 		let data: unknown;
 		try {
 			const params = mergeRecipeConfigurationIntoParams(args.params, savedConfiguration);
+			const scope = {
+				completionId: request.request?.completion_id ?? context.completionId,
+				recipeId: activeRecipe?.id,
+				installationId: activeRecipe?.installationId,
+				projectId,
+			};
+			const resolvedRunAccount =
+				providerConfig?.auth.authType === "composio" && args.sessionId
+					? await resolveComposioRunAccount({
+							context: request.context,
+							userId: request.user.id,
+							provider: providerConfig,
+							operationId: operation,
+							sessionId: args.sessionId,
+							scope,
+						})
+					: undefined;
+			const approval = await authoriseConnectorOperation({
+				context: request.context,
+				userId: request.user.id,
+				provider,
+				operation,
+				arguments: params ?? {},
+				connectedAccountId: resolvedRunAccount?.connectedAccount.id,
+				channel,
+				scope,
+				approvalId: request.request?.connector_approval_id,
+			});
+			if (approval.required && !approval.approved) {
+				if (typeof args.sessionId === "string") {
+					retainComposioConnectorSession(request.context, args.sessionId);
+				}
+				return {
+					status: "pending",
+					name: "use_recipe_connector",
+					content: `Approval is required before ${provider} can run ${operation}.`,
+					data: {
+						approvalRequired: true,
+						approvalId: approval.approval?.id,
+						provider,
+						operation,
+						argumentSummary: redactSensitiveTokens(params ?? {}),
+						expiresAt: approval.approval?.expiresAt,
+						humanInTheLoop: {
+							type: "approval",
+							status: "pending",
+							requires_user_action: true,
+						},
+					},
+				};
+			}
 			data = await executeRecipeConnectorOperation({
 				context: request.context,
 				userId: request.user.id,
@@ -228,6 +294,7 @@ export const use_recipe_connector: ApiToolDefinition = {
 					params,
 					sessionId: typeof args.sessionId === "string" ? args.sessionId : undefined,
 				},
+				scope,
 			});
 		} catch (error) {
 			if (error instanceof AssistantError) {
@@ -246,7 +313,7 @@ export const use_recipe_connector: ApiToolDefinition = {
 			status: "success",
 			name: "use_recipe_connector",
 			content: "Connector operation completed",
-			data,
+			data: isRecord(data) && "data" in data ? data.data : data,
 		};
 	},
 };

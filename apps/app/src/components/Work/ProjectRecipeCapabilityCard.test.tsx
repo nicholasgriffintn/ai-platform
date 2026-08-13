@@ -16,7 +16,10 @@ const recipe = {
 	featured: false,
 	estimatedSetupMinutes: 5,
 	integrations: [],
-	triggers: [{ type: "schedule", label: "Daily", description: "Run daily" }],
+	triggers: [
+		{ type: "schedule", label: "Daily", description: "Run daily" },
+		{ type: "event", label: "On change", description: "Run on a connected event" },
+	],
 	actions: ["Summarise priorities"],
 	setupPrompt: "Configure the recipe",
 	enabledTools: [],
@@ -66,16 +69,24 @@ function createWorkflows() {
 			submit: vi.fn(),
 			isLoading: false,
 		},
+		eventDialog: {
+			recipe: null,
+			installation: null,
+			providers: [],
+			close: vi.fn(),
+		},
 		actions: {
 			start: vi.fn(),
 			configureProvider: vi.fn(),
 			openConfigurationDialog: vi.fn(),
 			openScheduleDialog: vi.fn(),
+			openEventTriggersDialog: vi.fn(),
 			toggleInstallationStatus: vi.fn(),
 			setScheduleEnabled: vi.fn(),
 			stopSchedule: vi.fn(),
 			getRecipeCardState: vi.fn().mockReturnValue({
 				installation,
+				canManageEventTriggers: true,
 				isStarting: false,
 				isConfiguring: false,
 				isEditingConfiguration: false,
@@ -118,12 +129,14 @@ describe("ProjectRecipeCapabilityCard", () => {
 		fireEvent.click(screen.getByRole("button", { name: "Run in chat" }));
 		fireEvent.click(screen.getByRole("button", { name: "Edit configuration" }));
 		fireEvent.click(screen.getByRole("button", { name: "Schedule" }));
+		fireEvent.click(screen.getByRole("button", { name: "Manage event triggers" }));
 		fireEvent.click(screen.getByRole("button", { name: "Pause" }));
 		fireEvent.click(screen.getByRole("button", { name: "Remove" }));
 
 		expect(workflows.actions.start).toHaveBeenCalledWith(recipe, installation);
 		expect(workflows.actions.openConfigurationDialog).toHaveBeenCalledWith(recipe, installation);
 		expect(workflows.actions.openScheduleDialog).toHaveBeenCalledWith(recipe, installation);
+		expect(workflows.actions.openEventTriggersDialog).toHaveBeenCalledWith(recipe, installation);
 		expect(workflows.actions.toggleInstallationStatus).toHaveBeenCalledWith(installation);
 		expect(workflows.deleteDialog.setInstallation).toHaveBeenCalledWith(installation);
 

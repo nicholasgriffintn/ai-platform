@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Database } from "~/lib/database";
 import type { IUser } from "~/types";
-import { handleGetChatMessages } from "../getChatMessages";
+import { handleGetChatMessageById, handleGetChatMessages } from "../getChatMessages";
 import type { GetChatMessagesContext } from "../getChatMessages";
 
 vi.mock("~/lib/conversationManager", () => ({
@@ -31,6 +31,7 @@ const mockUser: IUser = {
 };
 
 let mockServiceContext: GetChatMessagesContext;
+const getByIdsForUser = vi.fn();
 
 describe("handleGetChatMessages", () => {
 	let mockConversationManager: any;
@@ -41,6 +42,7 @@ describe("handleGetChatMessages", () => {
 		const { ConversationManager } = await import("~/lib/conversationManager");
 
 		mockConversationManager = {
+			getMessageById: vi.fn(),
 			getVisibleMessages: vi.fn(),
 		};
 
@@ -48,7 +50,11 @@ describe("handleGetChatMessages", () => {
 			user: mockUser,
 			ensureDatabase: vi.fn(),
 			database: {} as Database,
+			repositories: {
+				connectorOperationApprovals: { getByIdsForUser },
+			},
 		};
+		getByIdsForUser.mockResolvedValue([]);
 
 		vi.mocked(ConversationManager.getInstance).mockReturnValue(mockConversationManager);
 	});
@@ -94,6 +100,78 @@ describe("handleGetChatMessages", () => {
 		expect(result).toEqual({
 			messages,
 			conversation_id: "conversation-1",
+		});
+	});
+
+	it("returns the authoritative resolved approval state after a reload", async () => {
+		const approvalMessage = {
+			id: "approval-message",
+			role: "tool",
+			name: "use_recipe_connector",
+			status: "pending",
+			content: "Approval required",
+			data: {
+				approvalRequired: true,
+				approvalId: "coa_action",
+				provider: "googleslides",
+				operation: "GOOGLESLIDES_CREATE_SLIDES_MARKDOWN",
+				humanInTheLoop: {
+					type: "approval",
+					status: "pending",
+					requires_user_action: true,
+				},
+			},
+		};
+		mockConversationManager.getVisibleMessages.mockResolvedValue([approvalMessage]);
+		getByIdsForUser.mockResolvedValue([
+			{
+				id: "coa_action",
+				state: "consumed",
+				expiresAt: "2099-01-01T00:00:00.000Z",
+				resolvedAt: "2026-08-13T14:00:00.000Z",
+				consumedAt: "2026-08-13T14:00:05.000Z",
+			},
+		]);
+
+		const result = await handleGetChatMessages(mockServiceContext, null, "conversation-1");
+
+		expect(result.messages[0]?.data?.humanInTheLoop).toMatchObject({
+			status: "consumed",
+			requires_user_action: false,
+			consumedAt: "2026-08-13T14:00:05.000Z",
+		});
+	});
+
+	it("returns authoritative approval state for an individual message", async () => {
+		mockConversationManager.getMessageById.mockResolvedValue({
+			conversation_id: "conversation-1",
+			message: {
+				id: "approval-message",
+				role: "tool",
+				content: "Approval required",
+				data: {
+					approvalRequired: true,
+					approvalId: "coa_action",
+					provider: "googleslides",
+					operation: "GOOGLESLIDES_CREATE_SLIDES_MARKDOWN",
+				},
+			},
+		});
+		getByIdsForUser.mockResolvedValue([
+			{
+				id: "coa_action",
+				state: "rejected",
+				expiresAt: "2099-01-01T00:00:00.000Z",
+				resolvedAt: "2026-08-13T14:00:00.000Z",
+				consumedAt: null,
+			},
+		]);
+
+		const result = await handleGetChatMessageById(mockServiceContext, null, "approval-message");
+
+		expect(result.message.data?.humanInTheLoop).toMatchObject({
+			status: "rejected",
+			requires_user_action: false,
 		});
 	});
 });

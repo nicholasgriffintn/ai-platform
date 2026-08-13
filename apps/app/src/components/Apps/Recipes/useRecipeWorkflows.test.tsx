@@ -232,6 +232,45 @@ describe("useRecipeWorkflows", () => {
 		expect(mocks.startConnector.mutateAsync).not.toHaveBeenCalled();
 	});
 
+	it("opens event management only for connected Composio recipe integrations", () => {
+		mocks.recipeConnectors.mockReturnValue([
+			{
+				id: "github",
+				name: "GitHub",
+				description: "Repository automation",
+				authType: "composio",
+				status: "connected",
+				scopes: [],
+				toolCount: 10,
+				readToolCount: 6,
+				writeToolCount: 4,
+			},
+		]);
+		const eventRecipe = {
+			...morningBriefingRecipe,
+			integrations: [
+				{
+					id: "github",
+					providerId: "github",
+					name: "Work GitHub",
+					description: "Repository events",
+					connectionStatus: "connected",
+					requiresConnection: true,
+				},
+			],
+			triggers: [{ type: "event", label: "Repository event", description: "Run on change" }],
+		} satisfies AssistantRecipe;
+		const { result } = renderHook(() => useRecipeWorkflows(), { wrapper });
+
+		act(() =>
+			result.current.actions.openEventTriggersDialog(eventRecipe, morningBriefingInstallation),
+		);
+
+		expect(result.current.eventDialog.recipe).toBe(eventRecipe);
+		expect(result.current.eventDialog.installation).toBe(morningBriefingInstallation);
+		expect(result.current.eventDialog.providers).toEqual([{ id: "github", name: "Work GitHub" }]);
+	});
+
 	it("continues scheduling with the configuration returned by the save", async () => {
 		const savedInstallation = {
 			...morningBriefingInstallation,

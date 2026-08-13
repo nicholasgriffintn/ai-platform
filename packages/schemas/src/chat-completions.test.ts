@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+	connectorApprovalIdSchema,
 	createChatCompletionsJsonSchema,
 	createChatCompletionsResponseSchema,
 } from "./chat-completions";
@@ -8,6 +9,11 @@ import {
 const messages = [{ role: "user" as const, content: "Hello" }];
 
 describe("chat completions schema", () => {
+	it("shares the connector approval ID contract with request consumers", () => {
+		expect(connectorApprovalIdSchema.safeParse("coa_approval-123").success).toBe(true);
+		expect(connectorApprovalIdSchema.safeParse("ccs_approval-123").success).toBe(false);
+	});
+
 	it("accepts automatic router mode without an explicit model", () => {
 		expect(
 			createChatCompletionsJsonSchema.parse({

@@ -264,7 +264,11 @@ export function useChatManager(
 	const respondToExistingConversation = useCallback(
 		async (
 			conversationId: string,
-			options?: { assistantMessageData?: Partial<Message>; model?: string },
+			options?: {
+				assistantMessageData?: Partial<Message>;
+				model?: string;
+				requestOptions?: ChatRequestOptions;
+			},
 		) => {
 			const conversation = queryClient.getQueryData<Conversation>([
 				CHATS_QUERY_KEY,
@@ -282,10 +286,15 @@ export function useChatManager(
 			startLoading("stream-response", "Generating response...");
 
 			try {
-				return await streamResponse(conversation.messages, conversationId, undefined, {
-					assistantMessageData: options?.assistantMessageData,
-					model: options?.model,
-				});
+				return await streamResponse(
+					conversation.messages,
+					conversationId,
+					options?.requestOptions,
+					{
+						assistantMessageData: options?.assistantMessageData,
+						model: options?.model,
+					},
+				);
 			} catch (error) {
 				console.error("Failed to respond to live transcript:", error);
 				return {

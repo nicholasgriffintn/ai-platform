@@ -6,6 +6,10 @@ const mocks = vi.hoisted(() => ({
 	createComposioToolSession: vi.fn(),
 	executeComposioSessionTool: vi.fn(),
 	searchComposioSessionTools: vi.fn(),
+	deleteComposioToolSession: vi.fn(),
+	discoverComposioRunTools: vi.fn(),
+	executeComposioRunTool: vi.fn(),
+	getSelectedRecipeConnectorAccountId: vi.fn(),
 }));
 
 vi.mock("../index", () => ({
@@ -17,6 +21,16 @@ vi.mock("~/lib/providers/capabilities/connectors/composio/client", () => ({
 	createComposioToolSession: mocks.createComposioToolSession,
 	executeComposioSessionTool: mocks.executeComposioSessionTool,
 	searchComposioSessionTools: mocks.searchComposioSessionTools,
+	deleteComposioToolSession: mocks.deleteComposioToolSession,
+}));
+
+vi.mock("../composio-run", () => ({
+	discoverComposioRunTools: mocks.discoverComposioRunTools,
+	executeComposioRunTool: mocks.executeComposioRunTool,
+}));
+
+vi.mock("../accounts", () => ({
+	getSelectedRecipeConnectorAccountId: mocks.getSelectedRecipeConnectorAccountId,
 }));
 
 import { executeRecipeConnectorOperation } from "../operations";
@@ -35,6 +49,10 @@ describe("recipe connector operations", () => {
 		]);
 		mocks.createComposioToolSession.mockResolvedValue("trs_connector");
 		mocks.executeComposioSessionTool.mockResolvedValue({ messages: [] });
+		mocks.discoverComposioRunTools.mockResolvedValue({ sessionId: "ccs_connector", tools: [] });
+		mocks.executeComposioRunTool.mockResolvedValue({ messages: [] });
+		mocks.deleteComposioToolSession.mockResolvedValue(undefined);
+		mocks.getSelectedRecipeConnectorAccountId.mockResolvedValue(undefined);
 	});
 
 	it("executes only the registry-mapped Composio tool on the explicit user account", async () => {
@@ -59,22 +77,17 @@ describe("recipe connector operations", () => {
 			toolkitSlugs: ["gmail"],
 			authConfigIds: ["ac_uRCWNPtnTpEw"],
 		});
-		expect(mocks.createComposioToolSession).toHaveBeenCalledWith(
-			expect.objectContaining({
-				connectedAccount: expect.objectContaining({ id: "ca_gmail" }),
-				allowedToolSlugs: ["GMAIL_FETCH_EMAILS"],
-			}),
-		);
-		expect(mocks.executeComposioSessionTool).toHaveBeenCalledWith({
-			env: context.env,
+		expect(mocks.executeComposioRunTool).toHaveBeenCalledWith({
+			context,
 			userId: 42,
-			sessionId: "trs_connector",
 			provider: expect.objectContaining({ id: "gmail" }),
-			toolSlug: "GMAIL_FETCH_EMAILS",
+			connectedAccount: expect.objectContaining({ id: "ca_gmail" }),
+			operationId: "GMAIL_FETCH_EMAILS",
 			arguments: {
 				query: "from:alerts@example.com",
 				max_results: 5,
 			},
+			scope: expect.any(Object),
 		});
 		expect(mocks.getRecipeConnectorAccessToken).not.toHaveBeenCalled();
 	});
@@ -99,9 +112,9 @@ describe("recipe connector operations", () => {
 			},
 		});
 
-		expect(mocks.executeComposioSessionTool).toHaveBeenCalledWith(
+		expect(mocks.executeComposioRunTool).toHaveBeenCalledWith(
 			expect.objectContaining({
-				toolSlug: "OUTLOOK_CALENDAR_CREATE_EVENT",
+				operationId: "OUTLOOK_CALENDAR_CREATE_EVENT",
 				arguments: expect.objectContaining({ time_zone: "Europe/London" }),
 			}),
 		);
@@ -183,11 +196,46 @@ describe("recipe connector operations", () => {
 			request: { provider: "gmail", operation: "GMAIL_FETCH_EMAILS", params: {} },
 		});
 
-		expect(mocks.createComposioToolSession).toHaveBeenCalledWith(
+		expect(mocks.executeComposioRunTool).toHaveBeenCalledWith(
 			expect.objectContaining({
 				connectedAccount: expect.objectContaining({ id: "ca_newer" }),
 			}),
 		);
-		expect(mocks.executeComposioSessionTool).toHaveBeenCalledOnce();
+		expect(mocks.executeComposioRunTool).toHaveBeenCalledOnce();
+	});
+
+	it("prefers the selected active account over the most recently connected account", async () => {
+		mocks.listComposioConnectedAccounts.mockResolvedValue([
+			{
+				id: "ca_newer",
+				authConfigId: "ac_uRCWNPtnTpEw",
+				status: "ACTIVE",
+				isDisabled: false,
+				createdAt: "2026-08-12T12:00:00.000Z",
+			},
+			{
+				id: "ca_selected",
+				authConfigId: "ac_uRCWNPtnTpEw",
+				status: "ACTIVE",
+				isDisabled: false,
+				createdAt: "2026-08-12T10:00:00.000Z",
+			},
+		]);
+		mocks.getSelectedRecipeConnectorAccountId.mockResolvedValue("ca_selected");
+		const context = {
+			env: { COMPOSIO_API_KEY: "secret", COMPOSIO_USER_NAMESPACE: "test" },
+		} as Parameters<typeof executeRecipeConnectorOperation>[0]["context"];
+
+		await executeRecipeConnectorOperation({
+			context,
+			userId: 42,
+			request: { provider: "gmail", operation: "GMAIL_FETCH_EMAILS", params: {} },
+		});
+
+		expect(mocks.executeComposioRunTool).toHaveBeenCalledWith(
+			expect.objectContaining({
+				connectedAccount: expect.objectContaining({ id: "ca_selected" }),
+			}),
+		);
 	});
 });

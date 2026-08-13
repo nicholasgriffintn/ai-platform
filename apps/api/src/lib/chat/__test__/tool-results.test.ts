@@ -136,6 +136,36 @@ describe("tool result continuation", () => {
 		expect(shouldContinueAfterToolResults([connectorCall], toolResults)).toBe(true);
 	});
 
+	it("stops while a connector action is waiting for human approval", () => {
+		const connectorCall: ToolCall = {
+			id: "call-approval",
+			type: ToolCallType.FUNCTION,
+			function: {
+				name: "use_recipe_connector",
+				arguments: "{}",
+			},
+		};
+		const toolResults = [
+			{
+				role: "tool",
+				name: "use_recipe_connector",
+				tool_call_id: "call-approval",
+				status: "pending",
+				content: "Approval is required before this connector action can run.",
+				data: {
+					approvalRequired: true,
+					humanInTheLoop: {
+						type: "approval",
+						status: "pending",
+						requires_user_action: true,
+					},
+				},
+			},
+		] as Message[];
+
+		expect(shouldContinueAfterToolResults([connectorCall], toolResults)).toBe(false);
+	});
+
 	it("does not continue after non-recipe correction statuses", () => {
 		const toolResults = [
 			{

@@ -149,6 +149,7 @@ addRoute(app, "post", "/completions", {
 				anonymousUser: anonymousUserContext,
 				context: serviceContext,
 				executionCtx: requireCloudflareExecutionContext(context.executionCtx),
+				signal: context.req.raw.signal,
 			});
 
 			if (response instanceof Response) {

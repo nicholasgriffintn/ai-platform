@@ -29,14 +29,24 @@ const toolkitSchema = z
 			read: z.array(z.string().min(1)),
 			write: z.array(z.string().min(1)),
 			important: z.array(z.string().min(1)),
+			destructive: z.array(z.string().min(1)),
+			idempotent: z.array(z.string().min(1)),
+			openWorld: z.array(z.string().min(1)),
 		}),
 	})
 	.transform((toolkit) => {
 		const important = new Set(toolkit.operations.important);
+		const destructive = new Set(toolkit.operations.destructive);
+		const idempotent = new Set(toolkit.operations.idempotent);
+		const openWorld = new Set(toolkit.operations.openWorld);
 		const defaultAuthConfigIds = toolkit.authConfigs.map((config) => config.id);
 		const toOperation = (id: string, access: "read" | "write") => ({
 			id,
 			access,
+			readOnly: access === "read",
+			destructive: destructive.has(id),
+			idempotent: idempotent.has(id),
+			openWorld: openWorld.has(id),
 			isImportant: important.has(id),
 			authConfigIds: toolkit.authConfigs.some((config) => config.operationIds)
 				? toolkit.authConfigs

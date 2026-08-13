@@ -464,6 +464,7 @@ describe("Team Delegation Integration", () => {
 						max_delegation_depth: 3,
 					}),
 				}),
+				{ recoverUnknownToolCalls: true },
 			);
 		});
 

@@ -6,6 +6,8 @@ import {
 } from "~/lib/providers/capabilities/connectors";
 import { executeDevinOperation } from "./executors/devin";
 import { executeNetlifyOperation } from "./executors/netlify";
+import type { ResolveConnectorApprovalAuthority } from "./connector-approval-authority";
+import { resolveComposioApprovalAuthority } from "./composio-approval-authority";
 
 export type ConnectorOperationExecutor = (
 	token: string,
@@ -16,6 +18,10 @@ export type ConnectorOperationExecutor = (
 export interface RecipeConnectorAdapter {
 	provider: ConnectorProviderConfig;
 	executeOperation?: ConnectorOperationExecutor;
+	approval?: {
+		mode: "stored-action";
+		resolveAuthority: ResolveConnectorApprovalAuthority;
+	};
 }
 
 const localExecutors: Partial<Record<RecipeConnectorProvider, ConnectorOperationExecutor>> = {
@@ -26,6 +32,14 @@ const localExecutors: Partial<Record<RecipeConnectorProvider, ConnectorOperation
 const connectorAdapters: RecipeConnectorAdapter[] = connectorProviders.map((provider) => ({
 	provider,
 	...(localExecutors[provider.id] ? { executeOperation: localExecutors[provider.id] } : {}),
+	...(provider.auth.authType === "composio"
+		? {
+				approval: {
+					mode: "stored-action" as const,
+					resolveAuthority: resolveComposioApprovalAuthority,
+				},
+			}
+		: {}),
 }));
 
 export function getRecipeConnectorAdapters(): readonly RecipeConnectorAdapter[] {

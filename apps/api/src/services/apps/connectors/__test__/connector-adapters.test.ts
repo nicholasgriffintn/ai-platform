@@ -28,6 +28,10 @@ describe("recipe connector adapters", () => {
 		for (const adapter of adapters) {
 			if (adapter.provider.auth.authType === "composio") {
 				expect(adapter.executeOperation).toBeUndefined();
+				expect(adapter.approval).toMatchObject({
+					mode: "stored-action",
+					resolveAuthority: expect.any(Function),
+				});
 				expect(adapter.provider.auth.toolkitVersion).toMatch(/^\d{8}_\d{2}$/);
 				expect(adapter.provider.operations.every((operation) => operation.id)).toBe(true);
 				continue;
@@ -36,6 +40,7 @@ describe("recipe connector adapters", () => {
 			if (adapter.provider.operations.length > 0) {
 				expect(adapter.executeOperation, adapter.provider.id).toBeTypeOf("function");
 			}
+			expect(adapter.approval).toBeUndefined();
 		}
 	});
 

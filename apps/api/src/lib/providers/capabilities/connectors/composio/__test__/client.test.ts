@@ -7,6 +7,7 @@ import {
 	completeComposioAuthorization,
 	createComposioConnectLink,
 	createComposioToolSession,
+	deleteComposioToolSession,
 	disconnectComposioAccount,
 	executeComposioSessionTool,
 	listComposioConnectedAccounts,
@@ -367,6 +368,8 @@ describe("Composio REST client", () => {
 				auth_configs: { gmail: "ac_gmail" },
 				connected_accounts: { gmail: ["ca_gmail"] },
 				tools: { gmail: { enable: ["GMAIL_FETCH_EMAILS"] } },
+				workbench: { enable: false, enable_proxy_execution: false },
+				execute: { enable_multi_execute: false },
 			});
 			return jsonResponse({ session_id: "trs_gmail" }, 201);
 		});
@@ -497,7 +500,7 @@ describe("Composio REST client", () => {
 		});
 	});
 
-	it("verifies session ownership and scope before execution, then deletes the session", async () => {
+	it("verifies exact session ownership, auth config, account, and scope before execution", async () => {
 		const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
 			const url = String(input);
 			if (url.endsWith("/trs_gmail") && init?.method === "GET") {
@@ -505,6 +508,8 @@ describe("Composio REST client", () => {
 					config: {
 						user_id: "polychat:test:user:42",
 						toolkits: { enabled: ["gmail"] },
+						auth_configs: { gmail: "ac_gmail" },
+						connected_accounts: { gmail: ["ca_gmail"] },
 						tools: { gmail: { enabled: ["GMAIL_FETCH_EMAILS"] } },
 					},
 				});
@@ -523,13 +528,30 @@ describe("Composio REST client", () => {
 				sessionId: "trs_gmail",
 				provider: gmailProvider(),
 				toolSlug: "GMAIL_FETCH_EMAILS",
+				authConfigId: "ac_gmail",
+				connectedAccountId: "ca_gmail",
 				arguments: { query: "invoice" },
 			}),
-		).resolves.toEqual({ messages: [] });
-		expect(fetchMock).toHaveBeenCalledWith(
-			"https://backend.composio.dev/api/v3.1/tool_router/session/trs_gmail",
+		).resolves.toEqual({ data: { messages: [] }, logId: "log_1" });
+		expect(fetchMock).not.toHaveBeenCalledWith(
+			expect.anything(),
 			expect.objectContaining({ method: "DELETE" }),
 		);
+	});
+
+	it("deletes a connector session explicitly and treats a missing session as already closed", async () => {
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce(jsonResponse({ success: true }))
+			.mockResolvedValueOnce(jsonResponse({ error: { message: "not found" } }, 404));
+		vi.stubGlobal("fetch", fetchMock);
+
+		await expect(
+			deleteComposioToolSession({ env: createEnv(), sessionId: "trs_gmail" }),
+		).resolves.toBeUndefined();
+		await expect(
+			deleteComposioToolSession({ env: createEnv(), sessionId: "trs_missing" }),
+		).resolves.toBeUndefined();
 	});
 
 	it("surfaces scoped API-key permission errors without leaking the upstream payload", async () => {

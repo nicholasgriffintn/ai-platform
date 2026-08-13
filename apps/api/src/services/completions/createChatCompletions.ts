@@ -1,6 +1,7 @@
 import type { ChatCompletionRequestBody } from "@assistant/schemas";
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import { processChatRequest } from "~/lib/chat/core";
+import { ConversationManager } from "~/lib/conversationManager";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { buildMessageParts } from "~/lib/chat/messageParts";
 import {
@@ -23,7 +24,9 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { generateId } from "~/utils/id";
+import { replayApprovedConnectorOperation } from "~/services/apps/connectors/approved-operation-replay";
 import { normaliseChatCompletionRequest } from "./normaliseChatCompletionRequest";
+import { prependConnectorReplayToStream } from "./connectorApprovalReplayResponse";
 
 const logger = getLogger({
 	prefix: "services/completions/createChatCompletions",
@@ -37,18 +40,66 @@ export const handleCreateChatCompletions = async (req: {
 	app_url?: string;
 	context?: ServiceContext;
 	executionCtx?: ExecutionContext;
+	signal?: AbortSignal;
 }): Promise<CreateChatCompletionsResponse | Response> => {
-	const { env, request, user, anonymousUser, app_url, context, executionCtx } = req;
+	const { env, request, user, anonymousUser, app_url, context, executionCtx, signal } = req;
 	const serviceContext = context ?? createServiceContext({ env, user });
 	const chatRequest = normaliseChatCompletionRequest(request);
 	const isStreaming = !!request.stream;
-	const providerMessages = toProviderMessages(chatRequest.messages);
+	let providerMessages = toProviderMessages(chatRequest.messages);
+	let connectorReplay: Awaited<ReturnType<typeof replayApprovedConnectorOperation>> | undefined;
 
-	if (providerMessages.length === 0) {
+	if (providerMessages.length === 0 && !chatRequest.connector_approval_id) {
 		throw new AssistantError("Missing required parameter: messages", ErrorType.PARAMS_ERROR);
 	}
 
 	const completionIdWithFallback = request.completion_id || `chat_${generateId()}`;
+	if (chatRequest.connector_approval_id && !user?.id) {
+		throw new AssistantError(
+			"Connector approval requires an authenticated user",
+			ErrorType.AUTHENTICATION_ERROR,
+			401,
+		);
+	}
+	if (user?.id && chatRequest.connector_approval_id) {
+		const approval = await serviceContext.repositories.connectorOperationApprovals.getByIdForUser(
+			chatRequest.connector_approval_id,
+			user.id,
+		);
+		if (
+			!approval ||
+			(approval.state !== "approved" && approval.state !== "consumed") ||
+			(approval.state === "approved" && approval.expiresAt <= new Date().toISOString()) ||
+			approval.completionId !== completionIdWithFallback
+		) {
+			throw new AssistantError(
+				"Connector approval is invalid or expired",
+				ErrorType.AUTHORISATION_ERROR,
+				403,
+			);
+		}
+		serviceContext.ensureDatabase();
+		const conversationManager = ConversationManager.getInstance({
+			database: serviceContext.database,
+			repositories: serviceContext.repositories,
+			user,
+			model: chatRequest.model,
+			platform: chatRequest.platform,
+			store: true,
+			env,
+			requestCache: serviceContext.requestCache,
+		});
+		connectorReplay = await replayApprovedConnectorOperation({
+			approval,
+			context: serviceContext,
+			conversationManager,
+			user,
+			model: chatRequest.model,
+			appUrl: app_url,
+			signal,
+		});
+		providerMessages = toProviderMessages(connectorReplay.summaryMessages);
+	}
 
 	const result = await processChatRequest({
 		...chatRequest,
@@ -58,6 +109,14 @@ export const handleCreateChatCompletions = async (req: {
 		anonymousUser,
 		completion_id: completionIdWithFallback,
 		stream: isStreaming,
+		...(connectorReplay
+			? {
+					disable_functions: true,
+					conversation_history_write_mode: "append",
+					connector_approval_id: undefined,
+					approved_tools: [],
+				}
+			: {}),
 		location: "location" in request ? request.location || undefined : undefined,
 		context: serviceContext,
 		executionCtx,
@@ -99,7 +158,15 @@ export const handleCreateChatCompletions = async (req: {
 	}
 
 	if (isStreaming && "stream" in result) {
-		return sseResponse(result.stream);
+		return sseResponse(
+			connectorReplay
+				? prependConnectorReplayToStream({
+						stream: result.stream,
+						toolCall: connectorReplay.toolCall,
+						toolResult: connectorReplay.toolResult,
+					})
+				: result.stream,
+		);
 	}
 
 	if (!("response" in result)) {
@@ -156,34 +223,35 @@ export const handleCreateChatCompletions = async (req: {
 				},
 				finish_reason: assistantMessage.finish_reason,
 			},
-			...("toolResponses" in result && result.toolResponses
-				? toProviderResponseMessages(result.toolResponses).map((toolResponse, index) => {
-						const messagePartSource = toProviderResponseMessagePartSource(toolResponse);
+			...toProviderResponseMessages([
+				...(connectorReplay ? [connectorReplay.toolResult] : []),
+				...("toolResponses" in result && result.toolResponses ? result.toolResponses : []),
+			]).map((toolResponse, index) => {
+				const messagePartSource = toProviderResponseMessagePartSource(toolResponse);
 
-						return {
-							index: index + 1,
-							message: {
-								id: toolResponse.id,
-								log_id: env.AI.aiGatewayLogId,
-								role: toolResponse.role,
-								name: toolResponse.name,
-								content: Array.isArray(toolResponse.content)
-									? toolResponse.content.map((c) => c.text || "").join("\n")
-									: typeof toolResponse.content === "string"
-										? toolResponse.content
-										: JSON.stringify(toolResponse.content),
-								parts: toolResponse.parts || buildMessageParts(messagePartSource),
-								citations: toolResponse.citations || null,
-								data: toolResponse.data || null,
-								status: toolResponse.status || "unknown",
-								timestamp: toolResponse.timestamp,
-								tool_call_id: toolResponse.tool_call_id,
-								tool_call_arguments: toolResponse.tool_call_arguments,
-							},
-							finish_reason: "tool_result",
-						};
-					})
-				: []),
+				return {
+					index: index + 1,
+					message: {
+						id: toolResponse.id,
+						log_id: env.AI.aiGatewayLogId,
+						role: toolResponse.role,
+						name: toolResponse.name,
+						content: Array.isArray(toolResponse.content)
+							? toolResponse.content.map((c) => c.text || "").join("\n")
+							: typeof toolResponse.content === "string"
+								? toolResponse.content
+								: JSON.stringify(toolResponse.content),
+						parts: toolResponse.parts || buildMessageParts(messagePartSource),
+						citations: toolResponse.citations || null,
+						data: toolResponse.data || null,
+						status: toolResponse.status || "unknown",
+						timestamp: toolResponse.timestamp,
+						tool_call_id: toolResponse.tool_call_id,
+						tool_call_arguments: toolResponse.tool_call_arguments,
+					},
+					finish_reason: "tool_result",
+				};
+			}),
 		],
 		usage: assistantMessage.usage,
 		post_processing: buildChatPostProcessing({
