@@ -1282,4 +1282,27 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 	}),
+	createModelConfig("mai-code-1.1-flash", PROVIDER, {
+		name: "MAI-Code-1.1-Flash",
+		matchingModel: "mai-code-1.1-flash",
+		family: "mai",
+		openWeights: false,
+		releaseDate: "August 11, 2026",
+		lastUpdated: "August 11, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 256000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.0002,
+		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);

@@ -121,8 +121,8 @@ export const deepseekModelConfig: ModelConfig = {
 		matchingModel: "deepseek-v4-pro",
 		provider: "deepseek",
 		knowledgeCutoffDate: "May 2025",
-		releaseDate: "April 24, 2026",
-		lastUpdated: "April 24, 2026",
+		releaseDate: "August 12, 2026",
+		lastUpdated: "August 12, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -154,7 +154,7 @@ export const deepseekModelConfig: ModelConfig = {
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "deepseek-thinking",
-		openWeights: true,
+		openWeights: false,
 		costPer1kReasoningTokens: 0.00087,
 	},
 };
