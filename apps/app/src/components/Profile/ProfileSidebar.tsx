@@ -22,6 +22,7 @@ import { ProfileSandboxTab } from "./Tabs/ProfileSandboxTab";
 interface ProfileSidebarItem {
 	id: string;
 	label: string;
+	pageTitle?: string;
 	component: React.FC;
 }
 
@@ -31,10 +32,16 @@ export const profileSidebarItems: ProfileSidebarItem[] = [
 	{
 		id: "customisation",
 		label: "Customisation",
+		pageTitle: "Customise Chat",
 		component: ProfileCustomisationTab,
 	},
 	{ id: "history", label: "Chat History", component: ProfileHistoryTab },
-	{ id: "providers", label: "Providers", component: ProfileProvidersTab },
+	{
+		id: "providers",
+		label: "Providers",
+		pageTitle: "Available Providers",
+		component: ProfileProvidersTab,
+	},
 	{ id: "sandbox", label: "Sandbox", component: ProfileSandboxTab },
 	{ id: "agents", label: "Agents", component: ProfileAgentsTab },
 	{ id: "billing", label: "Billing", component: ProfileBillingTab },

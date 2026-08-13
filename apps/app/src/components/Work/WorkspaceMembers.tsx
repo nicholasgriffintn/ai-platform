@@ -2,8 +2,7 @@ import { ArrowRightLeft, Clock3, Link2, LogOut, ShieldCheck, Trash2, UserPlus } 
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import { PageHeader } from "~/components/Core/PageHeader";
-import { PageTitle } from "~/components/Core/PageTitle";
+import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, Card, ConfirmationDialog, FormSelect } from "~/components/ui";
 import { useAuthStatus } from "~/hooks/useAuth";
@@ -66,13 +65,11 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
 
 	return (
 		<>
-			<main className="container mx-auto max-w-5xl px-4 py-8">
-				<PageHeader actions={headerActions}>
-					<PageTitle title="People & access" />
-					<p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-						Manage access to {workspace.name}.
-					</p>
-				</PageHeader>
+			<PageShell.Content className="max-w-5xl">
+				<PageShell.Header title="People & access" actions={headerActions} />
+				<p className="mb-6 text-sm text-zinc-500 dark:text-zinc-400">
+					Manage access to {workspace.name}.
+				</p>
 				<Card className="gap-0 overflow-hidden py-0 shadow-none">
 					{workspace.members.map((member) => (
 						<div
@@ -178,7 +175,7 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
 						</Card>
 					</section>
 				)}
-			</main>
+			</PageShell.Content>
 			<InviteMemberDialog
 				workspaceId={workspaceId}
 				canInviteAdmin={workspace.role === "owner"}

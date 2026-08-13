@@ -67,7 +67,12 @@ describe("WorkOverview", () => {
 		useChatStore.setState({ isAuthenticated: true, isPro: true });
 		renderWorkOverview();
 
-		expect(screen.getByRole("button", { name: "New workspace" })).toBeInTheDocument();
+		const newWorkspaceButton = screen.getByRole("button", { name: "New workspace" });
+		expect(newWorkspaceButton).toHaveClass("w-8", "sm:w-auto");
+		expect(screen.getByText("New workspace", { selector: "span" })).toHaveClass(
+			"hidden",
+			"sm:inline",
+		);
 		expect(screen.getByRole("heading", { name: "No workspaces yet" })).toBeInTheDocument();
 		expect(
 			screen.queryByRole("heading", { name: "Unlock shared workspaces." }),

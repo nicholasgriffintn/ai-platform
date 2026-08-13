@@ -1,10 +1,9 @@
-import { ArrowRight, FolderKanban, Plus, Trash2, Users } from "lucide-react";
+import { ArrowRight, FolderKanban } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { EmptyState } from "~/components/Core/EmptyState";
-import { PageHeader } from "~/components/Core/PageHeader";
-import { PageTitle } from "~/components/Core/PageTitle";
+import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, Card, ConfirmationDialog } from "~/components/ui";
 import { useDeleteWorkspace } from "~/hooks/useWorkspaces";
@@ -12,6 +11,7 @@ import { isAuthenticationError } from "~/lib/errors";
 import { useWorkData } from "./WorkContext";
 import { CreateProjectDialog } from "./CreateProjectDialog";
 import { InviteMemberDialog } from "./InviteMemberDialog";
+import { WorkspaceOverviewActions } from "./WorkspaceOverviewActions";
 import { WorkspaceOverviewSkeleton } from "./WorkLoadingSkeletons";
 
 export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
@@ -42,41 +42,23 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 
 	return (
 		<>
-			<main className="container mx-auto max-w-6xl px-4 py-8">
-				<PageHeader
-					actions={
-						canManage
-							? [
-									{
-										label: "Invite",
-										icon: <Users size={16} />,
-										onClick: () => setIsInviteOpen(true),
-										variant: "secondary",
-									},
-									{
-										label: "New project",
-										icon: <Plus size={16} />,
-										onClick: () => setIsCreateOpen(true),
-									},
-									...(workspace.role === "owner"
-										? [
-												{
-													label: "Delete",
-													icon: <Trash2 size={16} />,
-													onClick: () => setIsDeleteOpen(true),
-													variant: "secondary" as const,
-												},
-											]
-										: []),
-								]
-							: undefined
+			<PageShell.Content className="max-w-6xl">
+				<PageShell.Header
+					title={workspace.name}
+					actionContent={
+						canManage ? (
+							<WorkspaceOverviewActions
+								isOwner={workspace.role === "owner"}
+								onCreateProject={() => setIsCreateOpen(true)}
+								onDeleteWorkspace={() => setIsDeleteOpen(true)}
+								onInvite={() => setIsInviteOpen(true)}
+							/>
+						) : undefined
 					}
-				>
-					<PageTitle title={workspace.name} />
-					<p className="mt-1 max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
-						{workspace.description || `Your role: ${workspace.role}`}
-					</p>
-				</PageHeader>
+				/>
+				<p className="mb-6 max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
+					{workspace.description || `Your role: ${workspace.role}`}
+				</p>
 
 				<div className="mb-5 flex items-center justify-between">
 					<div>
@@ -136,7 +118,7 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 						))}
 					</div>
 				)}
-			</main>
+			</PageShell.Content>
 			<CreateProjectDialog
 				workspaceId={workspaceId}
 				open={isCreateOpen}

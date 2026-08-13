@@ -1,7 +1,6 @@
 import { useState } from "react";
 
-import { PageHeader } from "~/components/Core/PageHeader";
-import { PageTitle } from "~/components/Core/PageTitle";
+import { PageShell } from "~/components/Core/PageShell";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useDeleteAllLocalChats, useDeleteAllRemoteChats } from "~/hooks/useChat";
 import { apiService } from "~/lib/api/api-service";
@@ -86,9 +85,7 @@ export function ProfileHistoryTab() {
 
 	return (
 		<div>
-			<PageHeader>
-				<PageTitle title="Chat History" />
-			</PageHeader>
+			<PageShell.Header title="Chat History" />
 
 			<div>
 				<div className="text-zinc-500 dark:text-zinc-400">

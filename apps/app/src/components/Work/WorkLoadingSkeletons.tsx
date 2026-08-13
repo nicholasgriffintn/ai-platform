@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-import { PageHeader } from "~/components/Core/PageHeader";
-import { PageTitle } from "~/components/Core/PageTitle";
+import { PageShell } from "~/components/Core/PageShell";
+import { pageShellContentClassName } from "~/components/Core/PageShellContent";
 import { Card, Skeleton } from "~/components/ui";
 import { cn } from "~/lib/utils";
 
@@ -21,23 +21,23 @@ function LoadingRegion({
 	);
 }
 
-function HeaderSkeleton({ title, actionCount = 0 }: { title?: string; actionCount?: number }) {
+function HeaderSkeleton({ title, actionCount = 0 }: { title: string; actionCount?: number }) {
 	return (
-		<PageHeader>
-			<div className="flex items-start justify-between gap-4">
-				<div className="min-w-0 flex-1">
-					{title ? <PageTitle title={title} /> : <Skeleton className="h-8 w-52 max-w-full" />}
-					<Skeleton className="mt-2 h-4 w-80 max-w-full" />
-				</div>
-				{actionCount > 0 && (
-					<div className="flex shrink-0 gap-2">
-						{Array.from({ length: actionCount }, (_, index) => (
-							<Skeleton key={index} className="h-9 w-24" />
-						))}
-					</div>
-				)}
-			</div>
-		</PageHeader>
+		<>
+			<PageShell.Header
+				title={title}
+				actionContent={
+					actionCount > 0 ? (
+						<div className="flex shrink-0 gap-2">
+							{Array.from({ length: actionCount }, (_, index) => (
+								<Skeleton key={index} className="h-8 w-8 sm:w-24" />
+							))}
+						</div>
+					) : undefined
+				}
+			/>
+			<Skeleton className="mb-6 h-4 w-80 max-w-full" />
+		</>
 	);
 }
 
@@ -103,8 +103,8 @@ export function WorkCardGridSkeleton({
 
 export function WorkspaceOverviewSkeleton() {
 	return (
-		<LoadingRegion label="Loading workspace" className="container mx-auto max-w-6xl px-4 py-8">
-			<HeaderSkeleton actionCount={2} />
+		<LoadingRegion label="Loading workspace" className={cn(pageShellContentClassName, "max-w-6xl")}>
+			<HeaderSkeleton title="Workspace" actionCount={2} />
 			<div className="mb-5">
 				<h2 className="text-lg font-semibold">Projects</h2>
 				<p className="text-sm text-zinc-500">Projects in this workspace.</p>
@@ -116,7 +116,7 @@ export function WorkspaceOverviewSkeleton() {
 
 export function WorkspaceMembersSkeleton() {
 	return (
-		<LoadingRegion label="Loading people" className="container mx-auto max-w-5xl px-4 py-8">
+		<LoadingRegion label="Loading people" className={cn(pageShellContentClassName, "max-w-5xl")}>
 			<HeaderSkeleton title="People & access" actionCount={1} />
 			<ListSkeleton />
 		</LoadingRegion>
@@ -125,8 +125,8 @@ export function WorkspaceMembersSkeleton() {
 
 export function ProjectOverviewSkeleton() {
 	return (
-		<LoadingRegion label="Loading project" className="container mx-auto max-w-6xl px-4 py-8">
-			<HeaderSkeleton actionCount={2} />
+		<LoadingRegion label="Loading project" className={cn(pageShellContentClassName, "max-w-6xl")}>
+			<HeaderSkeleton title="Project" actionCount={2} />
 			<div className="grid gap-5 lg:grid-cols-[1.45fr_0.75fr]">
 				<section>
 					<h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">

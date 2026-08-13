@@ -3,8 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 
 import { EmptyState } from "~/components/Core/EmptyState";
-import { PageHeader } from "~/components/Core/PageHeader";
-import { PageTitle } from "~/components/Core/PageTitle";
+import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, Card } from "~/components/ui";
 import { isAuthenticationError } from "~/lib/errors";
@@ -25,8 +24,9 @@ export function WorkOverview() {
 
 	return (
 		<>
-			<main className="container mx-auto max-w-6xl px-4 py-8">
-				<PageHeader
+			<PageShell.Content className="max-w-6xl">
+				<PageShell.Header
+					title="Workspaces"
 					actions={
 						canAccessWork
 							? [
@@ -38,12 +38,10 @@ export function WorkOverview() {
 								]
 							: undefined
 					}
-				>
-					<PageTitle title="Workspaces" />
-					<p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-						Create and manage shared workspaces.
-					</p>
-				</PageHeader>
+				/>
+				<p className="mb-6 text-sm text-zinc-500 dark:text-zinc-400">
+					Create and manage shared workspaces.
+				</p>
 
 				{isAuthenticationLoading ? (
 					<WorkCardGridSkeleton
@@ -123,7 +121,7 @@ export function WorkOverview() {
 						))}
 					</div>
 				) : null}
-			</main>
+			</PageShell.Content>
 			<CreateWorkspaceDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
 		</>
 	);

@@ -54,6 +54,18 @@ describe("ProductModeHeader", () => {
 		expect(header.children[2]).toContainElement(screen.getByRole("button", { name: "Trace" }));
 	});
 
+	it("hides product mode navigation outside Chat and Work routes", () => {
+		render(
+			<MemoryRouter initialEntries={["/profile"]}>
+				<ProductModeHeader context={<span>Account</span>} />
+			</MemoryRouter>,
+		);
+
+		expect(screen.queryByRole("link", { name: "Chat" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("link", { name: "Work" })).not.toBeInTheDocument();
+		expect(screen.getByText("Account")).toBeInTheDocument();
+	});
+
 	it("eases in the lower blur only after the content pane has meaningfully scrolled", () => {
 		const { container } = render(
 			<MemoryRouter initialEntries={["/chat"]}>

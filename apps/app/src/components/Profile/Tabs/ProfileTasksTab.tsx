@@ -5,8 +5,7 @@ import { EmptyState } from "~/components/Core/EmptyState";
 import { ListItem } from "~/components/ui";
 import { Card } from "~/components/ui/Card";
 import { useTasks } from "~/hooks/useTasks";
-import { PageHeader } from "../../Core/PageHeader";
-import { PageTitle } from "../../Core/PageTitle";
+import { PageShell } from "../../Core/PageShell";
 import { formatDate } from "~/lib/dates";
 import { getStatusIcon } from "~/components/ui/Status/icons";
 
@@ -58,9 +57,7 @@ export function ProfileTasksTab() {
 
 	return (
 		<div>
-			<PageHeader>
-				<PageTitle title="Tasks" />
-			</PageHeader>
+			<PageShell.Header title="Tasks" />
 
 			<div className="space-y-8">
 				<Card>

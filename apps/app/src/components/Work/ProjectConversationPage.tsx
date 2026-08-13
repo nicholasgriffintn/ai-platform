@@ -191,6 +191,7 @@ export function ProjectConversationPage({
 						: {}),
 				},
 				analyticsSource: "project",
+				hideComposerSuggestions: true,
 			}}
 		/>
 	);

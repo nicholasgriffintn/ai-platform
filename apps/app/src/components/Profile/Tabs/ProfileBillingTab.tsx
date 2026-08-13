@@ -2,9 +2,8 @@ import { Loader2, Plus, RefreshCw, Rocket, Sparkles, Trash2, Zap } from "lucide-
 import type { ReactNode } from "react";
 
 import { EmptyState } from "~/components/Core/EmptyState";
-import { PageHeader } from "~/components/Core/PageHeader";
+import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { PageTitle } from "~/components/Core/PageTitle";
 import { Button } from "~/components/ui/Button";
 import { Card } from "~/components/ui/Card";
 import { useTrackEvent } from "~/hooks/use-track-event";
@@ -107,9 +106,7 @@ export function ProfileBillingTab() {
 	if (IS_DISABLED) {
 		return (
 			<>
-				<PageHeader>
-					<PageTitle title="Billing" />
-				</PageHeader>
+				<PageShell.Header title="Billing" />
 				<EmptyState message="Billing features are currently disabled." />
 			</>
 		);
@@ -117,9 +114,7 @@ export function ProfileBillingTab() {
 
 	return (
 		<>
-			<PageHeader actions={actions}>
-				<PageTitle title="Billing" />
-			</PageHeader>
+			<PageShell.Header title="Billing" actions={actions} />
 
 			{sub?.cancel_at_period_end && sub.cancel_at && (
 				<div className="bg-yellow-100 dark:bg-yellow-900 p-4 rounded mb-4 text-sm text-yellow-800 dark:text-yellow-200">

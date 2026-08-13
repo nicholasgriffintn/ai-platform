@@ -3,8 +3,7 @@ import { Link } from "react-router";
 
 import { EmptyState } from "~/components/Core/EmptyState";
 import { BackLink } from "~/components/Core/BackLink";
-import { PageHeader } from "~/components/Core/PageHeader";
-import { PageTitle } from "~/components/Core/PageTitle";
+import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button } from "~/components/ui";
 import { useDynamicApps } from "~/hooks/useDynamicApps";
@@ -45,16 +44,14 @@ export function ProjectExperienceRoute({
 
 	return (
 		<>
-			<main className="container mx-auto max-w-7xl px-4 py-8">
-				<PageHeader>
-					<BackLink to={hubPath} label="Back to experiences" />
-					<PageTitle title={title ?? "Experience"} />
-					{definition && (
-						<p className="mt-1 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
-							{definition.description}
-						</p>
-					)}
-				</PageHeader>
+			<PageShell.Content className="max-w-7xl">
+				<PageShell.Header title={title ?? "Experience"} />
+				<BackLink to={hubPath} label="Back to experiences" />
+				{definition && (
+					<p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
+						{definition.description}
+					</p>
+				)}
 
 				{isLoading || isCatalogLoading ? (
 					<ProjectOverviewSkeleton />
@@ -94,7 +91,7 @@ export function ProjectExperienceRoute({
 						workspaceId={workspaceId}
 					/>
 				)}
-			</main>
+			</PageShell.Content>
 		</>
 	);
 }

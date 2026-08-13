@@ -18,8 +18,7 @@ import {
 } from "~/components/ui";
 import { Card } from "~/components/ui/Card";
 import { useApiKeys } from "~/hooks/useApiKeys";
-import { PageHeader } from "../../Core/PageHeader";
-import { PageTitle } from "../../Core/PageTitle";
+import { PageShell } from "../../Core/PageShell";
 import { isAuthenticationError } from "~/lib/errors";
 
 function GeneratedApiKeyModal({
@@ -131,9 +130,7 @@ export function ProfileApiKeysTab() {
 
 	return (
 		<div>
-			<PageHeader>
-				<PageTitle title="API Keys" />
-			</PageHeader>
+			<PageShell.Header title="API Keys" />
 			<div className="space-y-8">
 				<Card>
 					<div className="px-6 pb-4 border-b border-zinc-200 dark:border-zinc-700">

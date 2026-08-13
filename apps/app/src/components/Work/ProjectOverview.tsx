@@ -1,18 +1,10 @@
-import {
-	Archive,
-	ArrowRight,
-	LayoutTemplate,
-	MessageSquareText,
-	Settings2,
-	SquarePen,
-} from "lucide-react";
+import { ArrowRight, MessageSquareText } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { EmptyState } from "~/components/Core/EmptyState";
-import { PageHeader } from "~/components/Core/PageHeader";
-import { PageTitle } from "~/components/Core/PageTitle";
+import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, Card, ConfirmationDialog } from "~/components/ui";
 import { useTemplateMutations } from "~/hooks/useGovernance";
@@ -25,6 +17,7 @@ import { ProjectOverviewSkeleton } from "./WorkLoadingSkeletons";
 import { ProjectCodingEnvironmentCard } from "./ProjectCodingEnvironmentCard";
 import { ProjectConversationStarter } from "./ProjectConversationStarter";
 import { ProjectKnowledgeCard } from "./ProjectKnowledgeCard";
+import { ProjectOverviewActions } from "./ProjectOverviewActions";
 import { ProjectSchedulesCard } from "./ProjectSchedulesCard";
 
 export function ProjectOverview({
@@ -54,92 +47,56 @@ export function ProjectOverview({
 	if (error || !project)
 		return <div className="p-10 text-sm text-red-700">{error?.message ?? "Project not found"}</div>;
 	const canManage = workspace?.role === "owner" || workspace?.role === "admin";
+	const capabilitiesPath = `/work/${workspaceId}/projects/${projectId}/library`;
+	const conversationPath = `/work/${workspaceId}/projects/${projectId}/chat`;
+	const handleSaveTemplate = async () => {
+		try {
+			await templates.create.mutateAsync({
+				workspaceId,
+				kind: "project",
+				name: project.name,
+				description: project.description,
+				configuration: {
+					project: {
+						name: project.name,
+						description: project.description,
+						instructions: project.instructions,
+						colour: project.colour,
+						codingEnvironment: project.codingEnvironment,
+					},
+					capabilities: project.capabilities.map((capability) => ({
+						kind: capability.kind,
+						capabilityId: capability.capabilityId,
+						configuration: capability.configuration,
+					})),
+				},
+				status: "active",
+			});
+			toast.success("Project template saved");
+		} catch (error) {
+			toast.error(getErrorMessage(error, "Unable to save project template"));
+		}
+	};
 
 	return (
 		<>
-			<main className="container mx-auto max-w-6xl px-4 py-8">
-				<PageHeader>
-					<div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-						<div>
-							<PageTitle title={project.name} />
-							<p className="mt-1 max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
-								{project.description || "No project description"}
-							</p>
-						</div>
-						<div
-							role="group"
-							aria-label="Project actions"
-							className="flex max-w-full flex-wrap gap-2 xl:justify-end"
-						>
-							{canManage && (
-								<Button
-									variant="outline"
-									icon={<LayoutTemplate size={16} />}
-									className="whitespace-nowrap"
-									isLoading={templates.create.isPending}
-									onClick={async () => {
-										try {
-											await templates.create.mutateAsync({
-												workspaceId,
-												kind: "project",
-												name: project.name,
-												description: project.description,
-												configuration: {
-													project: {
-														name: project.name,
-														description: project.description,
-														instructions: project.instructions,
-														colour: project.colour,
-														codingEnvironment: project.codingEnvironment,
-													},
-													capabilities: project.capabilities.map((capability) => ({
-														kind: capability.kind,
-														capabilityId: capability.capabilityId,
-														configuration: capability.configuration,
-													})),
-												},
-												status: "active",
-											});
-											toast.success("Project template saved");
-										} catch (error) {
-											toast.error(getErrorMessage(error, "Unable to save project template"));
-										}
-									}}
-								>
-									Save template
-								</Button>
-							)}
-							{canManage && (
-								<Button
-									variant="outline"
-									icon={<Archive size={16} />}
-									className="whitespace-nowrap"
-									onClick={() => setIsArchiveOpen(true)}
-								>
-									Archive
-								</Button>
-							)}
-							<Link to={`/work/${workspaceId}/projects/${projectId}/library`}>
-								<Button
-									variant="outline"
-									icon={<Settings2 size={16} />}
-									className="whitespace-nowrap"
-								>
-									Capabilities
-								</Button>
-							</Link>
-							<Link to={`/work/${workspaceId}/projects/${projectId}/chat`}>
-								<Button
-									variant="primary"
-									icon={<SquarePen size={16} />}
-									className="whitespace-nowrap"
-								>
-									New conversation
-								</Button>
-							</Link>
-						</div>
-					</div>
-				</PageHeader>
+			<PageShell.Content className="max-w-6xl">
+				<PageShell.Header
+					title={project.name}
+					actionContent={
+						<ProjectOverviewActions
+							canManage={canManage}
+							capabilitiesPath={capabilitiesPath}
+							conversationPath={conversationPath}
+							isSavingTemplate={templates.create.isPending}
+							onArchive={() => setIsArchiveOpen(true)}
+							onSaveTemplate={() => void handleSaveTemplate()}
+						/>
+					}
+				/>
+				<p className="mb-6 max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
+					{project.description || "No project description"}
+				</p>
 
 				<div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_420px]">
 					<section className="min-w-0 space-y-6">
@@ -223,7 +180,7 @@ export function ProjectOverview({
 						</Card>
 					</aside>
 				</div>
-			</main>
+			</PageShell.Content>
 			<ConfirmationDialog
 				open={isArchiveOpen}
 				onOpenChange={setIsArchiveOpen}

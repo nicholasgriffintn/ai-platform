@@ -4,7 +4,6 @@ import { useLocation } from "react-router";
 import { ConversationProductHeader } from "~/components/ConversationThread/ConversationProductHeader";
 import { PageStatus } from "~/components/Core/PageStatus";
 import { PageShell } from "~/components/Core/PageShell";
-import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { useChatStore } from "~/state/stores/chatStore";
 import { WorkAccessEmptyState } from "./WorkAccessEmptyState";
@@ -44,12 +43,13 @@ export function WorkPageShell({
 
 	return (
 		<PageShell
+			title={isProjectConversation ? undefined : "Work"}
+			headerContent={isProjectConversation ? <ConversationProductHeader /> : undefined}
 			sidebarContent={<WorkSidebar workspaceId={workspaceId} projectId={projectId} />}
 			fullBleed
 			displayNavBar={false}
 		>
 			<div className="flex h-full min-h-0 flex-col overflow-hidden">
-				{isProjectConversation ? <ConversationProductHeader /> : <ProductModeHeader />}
 				<div data-header-scroll-source className="min-h-0 flex-1 overflow-y-auto">
 					{content}
 				</div>

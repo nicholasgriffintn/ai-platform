@@ -211,7 +211,7 @@ export const MessageList = ({
 				className="flex-1 pt-4 pr-2 h-full overflow-auto w-full"
 				onScroll={handleScroll}
 			>
-				<div className="py-4 space-y-4">
+				<div className="space-y-4">
 					{!isSharedView && isLoadingConversation ? (
 						<>
 							{[...Array(3)].map((_, i) => (

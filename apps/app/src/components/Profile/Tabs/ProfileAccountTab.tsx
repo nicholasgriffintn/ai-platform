@@ -1,344 +1,341 @@
-import { PageHeader } from "~/components/Core/PageHeader";
-import { PageTitle } from "~/components/Core/PageTitle";
+import { ExternalLink } from "lucide-react";
+import type { ReactNode } from "react";
+
+import { PageShell } from "~/components/Core/PageShell";
+import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
+import { Card } from "~/components/ui/Card";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { formatDate } from "~/lib/dates";
 import { getBoundedUsagePercentage } from "~/lib/sidebar-usage";
+import { cn } from "~/lib/utils";
 
 const AUTH_DAILY_MESSAGE_LIMIT = 50;
 const DAILY_LIMIT_PRO_MODELS = 200;
 
-export function ProfileAccountTab() {
-	const { user } = useAuthStatus();
-	const dailyUsagePercentage = getBoundedUsagePercentage(
-		user?.daily_message_count || 0,
-		AUTH_DAILY_MESSAGE_LIMIT,
-	);
-	const proUsagePercentage = getBoundedUsagePercentage(
-		user?.daily_pro_message_count || 0,
-		DAILY_LIMIT_PRO_MODELS,
-	);
+type UsageTone = "blue" | "purple" | "emerald";
 
-	const formatTimeAgo = (dateString: string | null | undefined) => {
-		if (!dateString) return "N/A";
+const usageToneClasses: Record<UsageTone, string> = {
+	blue: "bg-blue-500",
+	purple: "bg-purple-500",
+	emerald: "bg-emerald-500",
+};
 
-		try {
-			const lastResetDate = new Date(dateString);
-			const nextResetDate = new Date(lastResetDate);
-			nextResetDate.setHours(nextResetDate.getHours() + 24);
+function formatResetCountdown(dateString: string | null | undefined) {
+	if (!dateString) return "N/A";
 
-			const now = new Date();
-			const diffMs = nextResetDate.getTime() - now.getTime();
+	try {
+		const lastResetDate = new Date(dateString);
+		const nextResetDate = new Date(lastResetDate);
+		nextResetDate.setHours(nextResetDate.getHours() + 24);
 
-			if (diffMs < 0) return "any moment now";
+		const now = new Date();
+		const diffMs = nextResetDate.getTime() - now.getTime();
 
-			const diffSecs = Math.floor(diffMs / 1000);
-			const diffMins = Math.floor(diffSecs / 60);
-			const diffHours = Math.floor(diffMins / 60);
-			const diffDays = Math.floor(diffHours / 24);
+		if (diffMs < 0) return "any moment now";
 
-			if (diffDays > 0) {
-				return `in ${diffDays} day${diffDays > 1 ? "s" : ""}`;
-			}
+		const diffSecs = Math.floor(diffMs / 1000);
+		const diffMins = Math.floor(diffSecs / 60);
+		const diffHours = Math.floor(diffMins / 60);
+		const diffDays = Math.floor(diffHours / 24);
 
-			if (diffHours > 0) {
-				return `in ${diffHours} hour${diffHours > 1 ? "s" : ""}`;
-			}
-
-			if (diffMins > 0) {
-				return `in ${diffMins} minute${diffMins > 1 ? "s" : ""}`;
-			}
-
-			return `in ${diffSecs} second${diffSecs !== 1 ? "s" : ""}`;
-		} catch {
-			return "unknown time";
+		if (diffDays > 0) {
+			return `in ${diffDays} day${diffDays > 1 ? "s" : ""}`;
 		}
-	};
+
+		if (diffHours > 0) {
+			return `in ${diffHours} hour${diffHours > 1 ? "s" : ""}`;
+		}
+
+		if (diffMins > 0) {
+			return `in ${diffMins} minute${diffMins > 1 ? "s" : ""}`;
+		}
+
+		return `in ${diffSecs} second${diffSecs !== 1 ? "s" : ""}`;
+	} catch {
+		return "unknown time";
+	}
+}
+
+function StatCard({ label, value, hint }: { label: string; value: string; hint: string }) {
+	return (
+		<Card className="gap-1 p-4 sm:p-5">
+			<div className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{label}</div>
+			<div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 break-words">
+				{value}
+			</div>
+			<div className="text-xs text-zinc-500 dark:text-zinc-400">{hint}</div>
+		</Card>
+	);
+}
+
+function UsageCard({
+	title,
+	tone,
+	used,
+	limit,
+	description,
+	resets,
+	children,
+}: {
+	title: string;
+	tone: UsageTone;
+	used: number;
+	limit?: number;
+	description: string;
+	resets: string;
+	children?: ReactNode;
+}) {
+	const percentage = limit ? getBoundedUsagePercentage(used, limit) : null;
 
 	return (
-		<div>
-			<PageHeader>
-				<PageTitle title="Account" />
-			</PageHeader>
+		<Card className="gap-3 p-4 sm:p-5">
+			<div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+				<div className="font-medium text-zinc-900 dark:text-zinc-100">{title}</div>
+				<div className="text-sm tabular-nums text-zinc-600 dark:text-zinc-300">
+					{limit ? `${used} / ${limit}` : `${used} today`}
+				</div>
+			</div>
 
-			<div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-				<div className="flex flex-col items-center md:col-span-1">
+			{percentage !== null && (
+				<div
+					className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800"
+					role="meter"
+					aria-label={`${used} of ${limit} ${title.toLowerCase()} used today`}
+					aria-valuemin={0}
+					aria-valuemax={100}
+					aria-valuenow={Math.round(percentage)}
+				>
+					<div
+						className={cn(
+							"h-full rounded-full transition-[width] duration-500",
+							usageToneClasses[tone],
+						)}
+						style={{ width: `${percentage}%` }}
+					/>
+				</div>
+			)}
+
+			<div className="flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+				<div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-300">
+					<span
+						className={cn("h-2 w-2 shrink-0 rounded-full", usageToneClasses[tone])}
+						aria-hidden="true"
+					/>
+					<span>{description}</span>
+				</div>
+				<div className="text-zinc-500 dark:text-zinc-400">Resets {resets}</div>
+			</div>
+
+			{children}
+		</Card>
+	);
+}
+
+function ProfileLink({ href, children }: { href: string; children: ReactNode }) {
+	return (
+		<a
+			href={href}
+			target="_blank"
+			rel="noopener noreferrer"
+			className="inline-flex max-w-full items-center gap-1.5 text-sm text-zinc-700 dark:text-zinc-300"
+		>
+			<span className="truncate">{children}</span>
+			<ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden="true" />
+		</a>
+	);
+}
+
+export function ProfileAccountTab() {
+	const { user, isAuthenticated, isLoading } = useAuthStatus();
+
+	if (!isAuthenticated && !isLoading) {
+		return (
+			<>
+				<PageShell.Header title="Account" />
+				<SignInEmptyState
+					title="Sign in to view your account"
+					message="Sign in to see your plan, profile details and daily usage."
+				/>
+			</>
+		);
+	}
+
+	const isPro = user?.plan_id === "pro";
+
+	const details: Array<{ label: string; value: string }> = [];
+	if (user?.created_at) {
+		details.push({ label: "Member since", value: formatDate(user.created_at) });
+	}
+	details.push({ label: "Plan", value: isPro ? "Pro" : "Free" });
+	if (user?.company) {
+		details.push({ label: "Company", value: user.company });
+	}
+	if (user?.location) {
+		details.push({ label: "Location", value: user.location });
+	}
+
+	const site = user?.site
+		? user.site.startsWith("http")
+			? user.site
+			: `https://${user.site}`
+		: null;
+
+	return (
+		<div className="mx-auto w-full max-w-3xl space-y-6 pb-4">
+			<PageShell.Header title="Account" />
+
+			<Card className="gap-0 overflow-hidden p-0">
+				<div className="flex flex-col items-center gap-4 p-5 text-center sm:flex-row sm:items-start sm:gap-5 sm:p-6 sm:text-left">
 					{user?.avatar_url ? (
 						<img
 							src={user.avatar_url}
 							alt={user?.name || "Your Account"}
-							className="w-32 h-32 rounded-full object-cover mb-2 border-2 border-indigo-500"
+							className="h-20 w-20 shrink-0 rounded-full border border-zinc-200 object-cover dark:border-zinc-700"
 						/>
 					) : (
-						<div className="w-32 h-32 rounded-full bg-indigo-500 flex items-center justify-center text-white text-5xl font-semibold mb-2">
+						<div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-3xl font-semibold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-200">
 							{user?.name ? user.name.charAt(0).toUpperCase() : "U"}
 						</div>
 					)}
-					<h2 className="text-xl font-semibold text-zinc-800 dark:text-zinc-100">
-						{user?.name || "Your Account"}
-					</h2>
-					{user?.email && <p className="text-zinc-500 dark:text-zinc-400">{user?.email}</p>}
-					{user?.github_username && (
-						<p className="text-zinc-500 dark:text-zinc-400">
-							<a
-								href={`https://github.com/${user.github_username}`}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="text-zinc-700 dark:text-zinc-300"
-							>
+
+					<div className="min-w-0 flex-1 space-y-2">
+						<div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:justify-start">
+							<h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+								{user?.name || "Your Account"}
+							</h2>
+							<Badge variant="secondary">{isPro ? "Pro plan" : "Free plan"}</Badge>
+						</div>
+
+						{user?.email && (
+							<p className="break-all text-sm text-zinc-500 dark:text-zinc-400">{user.email}</p>
+						)}
+
+						{user?.github_username && (
+							<ProfileLink href={`https://github.com/${user.github_username}`}>
 								@{user.github_username}
-							</a>
-						</p>
-					)}
-					<div className="mt-2 px-3 py-1 bg-zinc-200 dark:bg-zinc-700 rounded-full text-sm text-zinc-700 dark:text-zinc-300">
-						{user?.plan_id === "pro" ? "Pro Plan" : "Free Plan"}
-					</div>
-				</div>
-				<div className="md:col-span-3">
-					<div>
-						<div>
-							<h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-4">
-								Account Information
-							</h3>
-							<div className="space-y-3">
-								{user?.created_at && (
-									<div className="flex justify-between">
-										<span className="text-zinc-500 dark:text-zinc-400">Member since</span>
-										<span className="text-zinc-800 dark:text-zinc-200">
-											{formatDate(user?.created_at)}
-										</span>
-									</div>
-								)}
-								<div className="flex justify-between">
-									<span className="text-zinc-500 dark:text-zinc-400">Plan</span>
-									<span className="text-zinc-800 dark:text-zinc-200">
-										{user?.plan_id === "pro" ? "Pro" : "Free"}
-									</span>
-								</div>
-								{user?.company && (
-									<div className="flex justify-between">
-										<span className="text-zinc-500 dark:text-zinc-400">Company</span>
-										<span className="text-zinc-800 dark:text-zinc-200">{user.company}</span>
-									</div>
-								)}
-								{user?.location && (
-									<div className="flex justify-between">
-										<span className="text-zinc-500 dark:text-zinc-400">Location</span>
-										<span className="text-zinc-800 dark:text-zinc-200">{user.location}</span>
-									</div>
-								)}
-							</div>
-						</div>
-					</div>
-
-					{user?.bio && (
-						<div className="pt-4">
-							<h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-4">Bio</h3>
-							<p className="text-zinc-700 dark:text-zinc-300 whitespace-pre-line">{user.bio}</p>
-						</div>
-					)}
-
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-						{user?.site && (
-							<div>
-								<h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-2">
-									Website
-								</h3>
-								<a
-									href={user.site.startsWith("http") ? user.site : `https://${user.site}`}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="text-zinc-700 dark:text-zinc-300"
-								>
-									{user.site}
-								</a>
-							</div>
+							</ProfileLink>
 						)}
 
+						{user?.bio && (
+							<p className="whitespace-pre-line text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+								{user.bio}
+							</p>
+						)}
+					</div>
+				</div>
+
+				{details.length > 0 && (
+					<dl className="grid grid-cols-1 gap-px border-t border-zinc-200 bg-zinc-200 sm:grid-cols-2 dark:border-zinc-800 dark:bg-zinc-800">
+						{details.map((detail) => (
+							<div
+								key={detail.label}
+								className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 bg-card px-5 py-3 sm:px-6"
+							>
+								<dt className="text-sm text-zinc-500 dark:text-zinc-400">{detail.label}</dt>
+								<dd className="min-w-0 break-words text-sm font-medium text-zinc-800 dark:text-zinc-200">
+									{detail.value}
+								</dd>
+							</div>
+						))}
+					</dl>
+				)}
+
+				{(site || user?.twitter_username) && (
+					<div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-zinc-200 px-5 py-3 sm:px-6 dark:border-zinc-800">
+						{site && <ProfileLink href={site}>{user?.site}</ProfileLink>}
 						{user?.twitter_username && (
-							<div>
-								<h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-2">
-									Twitter
-								</h3>
-								<a
-									href={`https://twitter.com/${user.twitter_username}`}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="text-zinc-700 dark:text-zinc-300"
-								>
-									@{user.twitter_username}
-								</a>
-							</div>
+							<ProfileLink href={`https://twitter.com/${user.twitter_username}`}>
+								@{user.twitter_username}
+							</ProfileLink>
 						)}
 					</div>
+				)}
+			</Card>
 
-					<div className="border-t border-zinc-200 dark:border-zinc-700 pt-4 mt-6" />
-
-					<h2 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-6">Usage</h2>
-
-					<div className="space-y-6">
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-							<div className="bg-white dark:bg-zinc-700 rounded-md p-4 shadow-sm">
-								<h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-2">
-									Total Messages
-								</h3>
-								<div className="text-zinc-700 dark:text-zinc-300 text-2xl font-medium">
-									{user?.message_count || 0}
-								</div>
-								<div className="text-zinc-500 dark:text-zinc-400 text-sm">
-									Messages sent since joining
-								</div>
-							</div>
-
-							<div className="bg-white dark:bg-zinc-700 rounded-md p-4 shadow-sm">
-								<h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-2">
-									Last Activity
-								</h3>
-								<div className="text-zinc-700 dark:text-zinc-300 text-2xl font-medium">
-									{user?.last_active_at ? formatDate(user.last_active_at) : "Never"}
-								</div>
-								<div className="text-zinc-500 dark:text-zinc-400 text-sm">
-									Last time you used the platform
-								</div>
-							</div>
-						</div>
-
-						<div>
-							<h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-2">
-								Usage & Limits
-							</h3>
-
-							<div className="grid gap-4">
-								{/* Standard usage card */}
-								<div className="bg-white dark:bg-zinc-700 rounded-md p-4 shadow-sm">
-									<div className="flex justify-between items-center mb-3">
-										<div className="font-medium text-zinc-800 dark:text-zinc-100">
-											Standard Usage
-										</div>
-										<div className="text-zinc-700 dark:text-zinc-300 text-sm">
-											{user?.daily_message_count || 0} / {AUTH_DAILY_MESSAGE_LIMIT}
-										</div>
-									</div>
-
-									<div className="w-full bg-zinc-200 rounded-full h-2.5 dark:bg-zinc-800 mb-3">
-										<div
-											className="bg-blue-500 h-2.5 rounded-full"
-											style={{
-												width: `${dailyUsagePercentage}%`,
-											}}
-										/>
-									</div>
-
-									<div className="flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
-										<div className="text-zinc-700 dark:text-zinc-300 flex items-center">
-											<div className="h-3 w-3 bg-blue-500 rounded-full mr-2" />
-											<span>{AUTH_DAILY_MESSAGE_LIMIT} messages per day</span>
-										</div>
-										<div className="text-zinc-500 dark:text-zinc-400">
-											Resets {formatTimeAgo(user?.daily_reset)}
-										</div>
-									</div>
-								</div>
-
-								{/* Pro usage info */}
-								{user?.plan_id === "pro" && (
-									<div className="bg-white dark:bg-zinc-700 rounded-md p-4 shadow-sm">
-										<div className="flex justify-between items-center mb-3">
-											<div className="font-medium text-zinc-800 dark:text-zinc-100">
-												Premium Usage
-											</div>
-											<div className="text-zinc-700 dark:text-zinc-300 text-sm">
-												{user?.daily_pro_message_count || 0} / {DAILY_LIMIT_PRO_MODELS}
-											</div>
-										</div>
-
-										<div className="w-full bg-zinc-200 rounded-full h-2.5 dark:bg-zinc-800 mb-3">
-											<div
-												className="bg-purple-500 h-2.5 rounded-full"
-												style={{
-													width: `${proUsagePercentage}%`,
-												}}
-											/>
-										</div>
-
-										<div className="mb-4 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
-											<div className="text-zinc-700 dark:text-zinc-300 flex items-center">
-												<div className="h-3 w-3 bg-purple-500 rounded-full mr-2" />
-												<span>{DAILY_LIMIT_PRO_MODELS} pro tokens per day</span>
-											</div>
-											<div className="text-zinc-500 dark:text-zinc-400">
-												Resets {formatTimeAgo(user?.daily_pro_reset)}
-											</div>
-										</div>
-
-										<div className="pt-3 border-t border-zinc-200 dark:border-zinc-600">
-											<div className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-												Approximate message equivalents:
-											</div>
-											<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-												<div className="bg-zinc-50 dark:bg-zinc-800 p-2 rounded">
-													<div className="text-xs text-zinc-500 dark:text-zinc-400">
-														Expensive models
-													</div>
-													<div className="font-medium text-zinc-800 dark:text-zinc-100">
-														~22 messages
-													</div>
-												</div>
-												<div className="bg-zinc-50 dark:bg-zinc-800 p-2 rounded">
-													<div className="text-xs text-zinc-500 dark:text-zinc-400">
-														Mid-tier models
-													</div>
-													<div className="font-medium text-zinc-800 dark:text-zinc-100">
-														~66 messages
-													</div>
-												</div>
-												<div className="bg-zinc-50 dark:bg-zinc-800 p-2 rounded">
-													<div className="text-xs text-zinc-500 dark:text-zinc-400">
-														Cheaper models
-													</div>
-													<div className="font-medium text-zinc-800 dark:text-zinc-100">
-														100-200 messages
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-								)}
-
-								<div className="bg-white dark:bg-zinc-700 rounded-md p-4 shadow-sm">
-									<div className="flex justify-between items-center mb-3">
-										<div className="font-medium text-zinc-800 dark:text-zinc-100">BYOK Usage</div>
-										<div className="text-zinc-700 dark:text-zinc-300 text-sm">
-											{user?.daily_byok_message_count || 0} today
-										</div>
-									</div>
-
-									<div className="flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
-										<div className="text-zinc-700 dark:text-zinc-300 flex items-center">
-											<div className="h-3 w-3 bg-emerald-500 rounded-full mr-2" />
-											<span>Unlimited provider-key messages</span>
-										</div>
-										<div className="text-zinc-500 dark:text-zinc-400">
-											Resets {formatTimeAgo(user?.daily_byok_reset)}
-										</div>
-									</div>
-								</div>
-							</div>
-
-							<div className="mt-4">
-								<Alert variant="info">
-									<AlertTitle>Function Call Usage</AlertTitle>
-									<AlertDescription>
-										Please note that when messages trigger a function call they are counted as
-										additional usage against your normal or premium limits, depending on the
-										function that was called.
-									</AlertDescription>
-								</Alert>
-							</div>
-						</div>
-					</div>
+			<section className="space-y-4">
+				<div className="space-y-1">
+					<h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Usage</h2>
+					<p className="text-sm text-zinc-500 dark:text-zinc-400">
+						Where the day's messages have gone.
+					</p>
 				</div>
-			</div>
+
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<StatCard
+						label="Total messages"
+						value={`${user?.message_count || 0}`}
+						hint="Messages sent since joining"
+					/>
+					<StatCard
+						label="Last activity"
+						value={user?.last_active_at ? formatDate(user.last_active_at) : "Never"}
+						hint="Last time you used the platform"
+					/>
+				</div>
+
+				<div className="grid gap-4">
+					<UsageCard
+						title="Standard usage"
+						tone="blue"
+						used={user?.daily_message_count || 0}
+						limit={AUTH_DAILY_MESSAGE_LIMIT}
+						description={`${AUTH_DAILY_MESSAGE_LIMIT} messages per day`}
+						resets={formatResetCountdown(user?.daily_reset)}
+					/>
+
+					{isPro && (
+						<UsageCard
+							title="Premium usage"
+							tone="purple"
+							used={user?.daily_pro_message_count || 0}
+							limit={DAILY_LIMIT_PRO_MODELS}
+							description={`${DAILY_LIMIT_PRO_MODELS} pro tokens per day`}
+							resets={formatResetCountdown(user?.daily_pro_reset)}
+						>
+							<div className="border-t border-zinc-200 pt-3 dark:border-zinc-800">
+								<div className="mb-2 text-sm text-zinc-500 dark:text-zinc-400">
+									Approximate message equivalents
+								</div>
+								<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+									{[
+										{ label: "Expensive models", value: "~22 messages" },
+										{ label: "Mid-tier models", value: "~66 messages" },
+										{ label: "Cheaper models", value: "100-200 messages" },
+									].map((tier) => (
+										<div
+											key={tier.label}
+											className="rounded-md bg-zinc-100 px-3 py-2 dark:bg-zinc-800"
+										>
+											<div className="text-xs text-zinc-500 dark:text-zinc-400">{tier.label}</div>
+											<div className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
+												{tier.value}
+											</div>
+										</div>
+									))}
+								</div>
+							</div>
+						</UsageCard>
+					)}
+
+					<UsageCard
+						title="BYOK usage"
+						tone="emerald"
+						used={user?.daily_byok_message_count || 0}
+						description="Unlimited provider-key messages"
+						resets={formatResetCountdown(user?.daily_byok_reset)}
+					/>
+				</div>
+
+				<Alert variant="info">
+					<AlertTitle>Function call usage</AlertTitle>
+					<AlertDescription>
+						When a message triggers a function call it counts as additional usage against your
+						standard or premium limits, depending on the function that was called.
+					</AlertDescription>
+				</Alert>
+			</section>
 		</div>
 	);
 }

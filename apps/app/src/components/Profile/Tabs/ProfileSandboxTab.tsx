@@ -4,8 +4,7 @@ import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 
 import { EmptyState } from "~/components/Core/EmptyState";
-import { PageHeader } from "~/components/Core/PageHeader";
-import { PageTitle } from "~/components/Core/PageTitle";
+import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { SandboxAddGitHubConnection } from "~/components/Models/SandboxAddGitHubConnection";
 import {
@@ -134,7 +133,8 @@ export function ProfileSandboxTab() {
 
 	return (
 		<div className="space-y-6">
-			<PageHeader
+			<PageShell.Header
+				title="Sandbox"
 				actions={[
 					{
 						label: "Add GitHub connection",
@@ -142,12 +142,10 @@ export function ProfileSandboxTab() {
 						onClick: () => setIsConnectionModalOpen(true),
 					},
 				]}
-			>
-				<PageTitle title="Sandbox" />
-				<p className="max-w-3xl text-sm text-muted-foreground">
-					Connect GitHub installations used by Sandbox chat mode.
-				</p>
-			</PageHeader>
+			/>
+			<p className="max-w-3xl text-sm text-muted-foreground">
+				Connect GitHub installations used by Sandbox chat mode.
+			</p>
 
 			<Card>
 				<CardHeader>

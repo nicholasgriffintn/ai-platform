@@ -2,8 +2,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { PageHeader } from "~/components/Core/PageHeader";
-import { PageTitle } from "~/components/Core/PageTitle";
+import { PageShell } from "~/components/Core/PageShell";
 import { type AgentData, useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
 import { useSharedAgents } from "~/hooks/useSharedAgents";
@@ -124,7 +123,8 @@ export function ProfileAgentsTab() {
 
 	return (
 		<div className="space-y-8">
-			<PageHeader
+			<PageShell.Header
+				title="Agents"
 				actions={[
 					{
 						label: "Add Agent",
@@ -133,9 +133,7 @@ export function ProfileAgentsTab() {
 						variant: "primary",
 					},
 				]}
-			>
-				<PageTitle title="Agents" />
-			</PageHeader>
+			/>
 
 			<AgentsList
 				groupedAgents={groupedAgents}

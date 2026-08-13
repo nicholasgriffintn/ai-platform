@@ -1,10 +1,9 @@
-import { ArrowRight, Puzzle } from "lucide-react";
+import { ArrowRight, Puzzle, Settings2 } from "lucide-react";
 import { Link } from "react-router";
 
 import { getIcon, getIconContainerClass } from "~/components/Apps/utils";
 import { EmptyState } from "~/components/Core/EmptyState";
-import { PageHeader } from "~/components/Core/PageHeader";
-import { PageTitle } from "~/components/Core/PageTitle";
+import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button, Card } from "~/components/ui";
 import { useDynamicApps } from "~/hooks/useDynamicApps";
@@ -34,20 +33,24 @@ export function ProjectExperiences({
 
 	return (
 		<>
-			<main className="container mx-auto max-w-6xl px-4 py-8">
-				<PageHeader>
-					<div className="flex items-start justify-between gap-4">
-						<div>
-							<PageTitle title="Experiences" />
-							<p className="mt-1 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
-								Open the richer tools enabled for {project?.name ?? "this project"}.
-							</p>
-						</div>
-						<Link to={libraryPath}>
-							<Button variant="outline">Manage capabilities</Button>
+			<PageShell.Content className="max-w-6xl">
+				<PageShell.Header
+					title="Experiences"
+					actionContent={
+						<Link
+							to={libraryPath}
+							aria-label="Manage capabilities"
+							title="Manage capabilities"
+							className="inline-flex h-8 w-8 shrink-0 items-center justify-center gap-2 rounded-md border border-zinc-300 text-sm text-zinc-900 no-underline transition-colors hover:bg-zinc-100 hover:no-underline focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-2 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800 sm:w-auto sm:px-3"
+						>
+							<Settings2 size={16} />
+							<span className="hidden sm:inline">Manage capabilities</span>
 						</Link>
-					</div>
-				</PageHeader>
+					}
+				/>
+				<p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
+					Open the richer tools enabled for {project?.name ?? "this project"}.
+				</p>
 
 				{isLoading || isCatalogLoading ? (
 					<WorkCardGridSkeleton
@@ -113,7 +116,7 @@ export function ProjectExperiences({
 						})}
 					</div>
 				)}
-			</main>
+			</PageShell.Content>
 		</>
 	);
 }

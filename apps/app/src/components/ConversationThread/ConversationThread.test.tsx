@@ -58,8 +58,8 @@ vi.mock("sonner", () => ({
 	},
 }));
 
-vi.mock("~/components/ConversationThread/UsageLimitWarning", () => ({
-	UsageLimitWarning: () => null,
+vi.mock("~/components/ConversationThread/ComposerBanner", () => ({
+	ComposerBanner: () => null,
 }));
 
 vi.mock("~/hooks/use-track-event", () => ({

@@ -90,7 +90,7 @@ describe("ProjectOverview", () => {
 		).toEqual(["Brief", "Memory", "Context", "Recipes", "Repository", "Capabilities"]);
 	});
 
-	it("wraps project actions without compressing their labels", () => {
+	it("keeps one primary project action visible and moves secondary actions into a menu", () => {
 		render(
 			<MemoryRouter>
 				<ProjectOverview workspaceId="workspace-1" projectId="project-1" />
@@ -98,9 +98,16 @@ describe("ProjectOverview", () => {
 		);
 
 		const projectActions = screen.getByRole("group", { name: "Project actions" });
-		expect(projectActions).toHaveClass("max-w-full", "flex-wrap");
-		for (const name of ["Save template", "Archive", "Capabilities", "New conversation"]) {
-			expect(within(projectActions).getByRole("button", { name })).toHaveClass("whitespace-nowrap");
+		expect(projectActions).toHaveClass("items-center");
+		expect(projectActions).not.toHaveClass("flex-wrap");
+		expect(within(projectActions).getByRole("link", { name: "New conversation" })).toBeVisible();
+		expect(
+			within(projectActions).queryByRole("button", { name: "Archive" }),
+		).not.toBeInTheDocument();
+
+		fireEvent.click(within(projectActions).getByRole("button", { name: "More project actions" }));
+		for (const name of ["Save template", "Archive", "Capabilities"]) {
+			expect(within(projectActions).getByRole("menuitem", { name })).toBeInTheDocument();
 		}
 	});
 
@@ -111,7 +118,8 @@ describe("ProjectOverview", () => {
 			</MemoryRouter>,
 		);
 
-		fireEvent.click(screen.getByRole("button", { name: "Archive" }));
+		fireEvent.click(screen.getByRole("button", { name: "More project actions" }));
+		fireEvent.click(screen.getByRole("menuitem", { name: "Archive" }));
 		expect(
 			screen.getByText(
 				"Archive Project. Its conversations will no longer appear in this workspace.",
@@ -135,7 +143,8 @@ describe("ProjectOverview", () => {
 			</MemoryRouter>,
 		);
 
-		fireEvent.click(screen.getByRole("button", { name: "Save template" }));
+		fireEvent.click(screen.getByRole("button", { name: "More project actions" }));
+		fireEvent.click(screen.getByRole("menuitem", { name: "Save template" }));
 
 		await waitFor(() => expect(mocks.toastError).toHaveBeenCalledWith("Template already exists"));
 	});

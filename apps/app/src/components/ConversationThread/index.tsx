@@ -6,7 +6,7 @@ import type { ConversationModeMetadata } from "@assistant/schemas";
 import "~/styles/scrollbar.css";
 import "~/styles/github.css";
 import "~/styles/github-dark.css";
-import { UsageLimitWarning } from "~/components/ConversationThread/UsageLimitWarning";
+import { ComposerBanner } from "~/components/ConversationThread/ComposerBanner";
 import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
@@ -34,7 +34,6 @@ import type {
 } from "./ChatInput/composerCommandTypes";
 import { FooterInfo } from "./FooterInfo";
 import { MessageList } from "./MessageList";
-import { StealthModelWarning } from "./StealthModelWarning";
 import { useAssistantActionSubmit } from "./useAssistantActionSubmit";
 import { useAutoPlayResponses } from "./useAutoPlayResponses";
 import { WelcomeScreen } from "./WelcomeScreen";
@@ -84,6 +83,7 @@ export interface ConversationThreadModeConfig {
 	hideTextInput?: boolean;
 	hideInlineResponseControls?: boolean;
 	hideChatSettings?: boolean;
+	hideComposerSuggestions?: boolean;
 	forceAutoPlayResponses?: boolean;
 	analyticsSource?: string;
 	contextAttachments?: AttachmentData[];
@@ -578,8 +578,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
 			<div className="relative z-10 shrink-0 px-4 pt-2">
 				<div className="max-w-3xl mx-auto">
-					<StealthModelWarning model={selectedModelConfig} />
-					<UsageLimitWarning />
+					<ComposerBanner
+						model={selectedModelConfig}
+						hideSuggestions={modeConfig?.hideComposerSuggestions}
+					/>
 					<ChatInput
 						ref={chatInputRef}
 						handleSubmit={handleSubmit}

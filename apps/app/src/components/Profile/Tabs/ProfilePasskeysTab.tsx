@@ -9,8 +9,7 @@ import { Skeleton } from "~/components/ui/Skeleton";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { usePasskeys } from "~/hooks/usePasskeys";
 import { formatRelativeTime } from "~/lib/dates";
-import { PageHeader } from "../../Core/PageHeader";
-import { PageTitle } from "../../Core/PageTitle";
+import { PageShell } from "../../Core/PageShell";
 
 export function ProfilePasskeysTab() {
 	const { trackEvent } = useTrackEvent();
@@ -59,7 +58,8 @@ export function ProfilePasskeysTab() {
 
 	return (
 		<div>
-			<PageHeader
+			<PageShell.Header
+				title="Passkeys"
 				actions={
 					passkeySupported
 						? [
@@ -72,9 +72,7 @@ export function ProfilePasskeysTab() {
 							]
 						: []
 				}
-			>
-				<PageTitle title="Passkeys" />
-			</PageHeader>
+			/>
 
 			{!passkeySupported ? (
 				<Card className="p-6 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">

@@ -3,8 +3,7 @@ import { SearchX } from "lucide-react";
 import { RecipeConfigurationDialog } from "~/components/Apps/Recipes/RecipeConfigurationDialog";
 import { RecipeScheduleDialog } from "~/components/Apps/Recipes/RecipeScheduleDialog";
 import { EmptyState } from "~/components/Core/EmptyState";
-import { PageHeader } from "~/components/Core/PageHeader";
-import { PageTitle } from "~/components/Core/PageTitle";
+import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { ConfirmationDialog } from "~/components/ui";
 import { isAuthenticationError } from "~/lib/errors";
@@ -32,14 +31,12 @@ export function ProjectLibrary({ workspaceId, projectId }: ProjectLibraryProps) 
 
 	return (
 		<>
-			<main className="container mx-auto max-w-6xl px-4 py-8">
-				<PageHeader>
-					<PageTitle title="Capabilities" />
-					<p className="mt-1 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
-						Choose which apps, recipes, and tools are available in
-						{controller.project ? ` ${controller.project.name}` : " this project"}.
-					</p>
-				</PageHeader>
+			<PageShell.Content className="max-w-6xl">
+				<PageShell.Header title="Capabilities" />
+				<p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
+					Choose which apps, recipes, and tools are available in
+					{controller.project ? ` ${controller.project.name}` : " this project"}.
+				</p>
 
 				<ProjectCapabilityFilters
 					categories={controller.filters.categories}
@@ -94,7 +91,7 @@ export function ProjectLibrary({ workspaceId, projectId }: ProjectLibraryProps) 
 						workspaceId={workspaceId}
 					/>
 				)}
-			</main>
+			</PageShell.Content>
 
 			<RecipeConfigurationDialog
 				recipe={recipeWorkflows.configurationDialog.recipe}

@@ -8,8 +8,7 @@ import type { RecipeConnectorManifest, RecipeConnectorProvider } from "@assistan
 
 import { EmptyState } from "~/components/Core/EmptyState";
 import { ModelIcon } from "~/components/ModelIcon";
-import { PageHeader } from "~/components/Core/PageHeader";
-import { PageTitle } from "~/components/Core/PageTitle";
+import { PageShell } from "~/components/Core/PageShell";
 import { ConfirmationDialog, SearchInput } from "~/components/ui";
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useTrackEvent } from "~/hooks/use-track-event";
@@ -388,7 +387,8 @@ export function ProfileProvidersTab() {
 
 	return (
 		<div>
-			<PageHeader
+			<PageShell.Header
+				title="Available Providers"
 				actions={
 					!isLoadingProviderSettings
 						? [
@@ -402,9 +402,7 @@ export function ProfileProvidersTab() {
 							]
 						: []
 				}
-			>
-				<PageTitle title="Available Providers" />
-			</PageHeader>
+			/>
 
 			<div className="space-y-5">
 				{!isLoadingProviderSettings && totalProviderCount > 0 && (

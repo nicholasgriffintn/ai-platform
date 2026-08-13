@@ -1,8 +1,7 @@
 import { Activity } from "lucide-react";
 
 import { EmptyState } from "~/components/Core/EmptyState";
-import { PageHeader } from "~/components/Core/PageHeader";
-import { PageTitle } from "~/components/Core/PageTitle";
+import { PageShell } from "~/components/Core/PageShell";
 import { Button, Card } from "~/components/ui";
 import { getStatusIcon } from "~/components/ui/Status/icons";
 import { useActivity } from "~/hooks/useActivity";
@@ -19,13 +18,11 @@ export function ProjectActivity({ projectId }: { projectId: string }) {
 	} = useActivity(projectId);
 
 	return (
-		<main className="container mx-auto max-w-6xl px-4 py-8">
-			<PageHeader>
-				<PageTitle title="Activity" />
-				<p className="mt-1 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
-					Runs and background work across this project.
-				</p>
-			</PageHeader>
+		<PageShell.Content className="max-w-6xl">
+			<PageShell.Header title="Activity" />
+			<p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
+				Runs and background work across this project.
+			</p>
 
 			{error ? <EmptyState title="Activity unavailable" message={error.message} /> : null}
 			{!error && isLoading ? (
@@ -73,6 +70,6 @@ export function ProjectActivity({ projectId }: { projectId: string }) {
 					) : null}
 				</div>
 			) : null}
-		</main>
+		</PageShell.Content>
 	);
 }

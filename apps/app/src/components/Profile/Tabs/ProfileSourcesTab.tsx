@@ -4,8 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { EmptyState } from "~/components/Core/EmptyState";
-import { PageHeader } from "~/components/Core/PageHeader";
-import { PageTitle } from "~/components/Core/PageTitle";
+import { PageShell } from "~/components/Core/PageShell";
 import {
 	Button,
 	Card,
@@ -61,7 +60,8 @@ export function SourcesLibrary({ projectId, title = "Sources" }: SourcesLibraryP
 
 	return (
 		<>
-			<PageHeader
+			<PageShell.Header
+				title={title}
 				actions={
 					projectId
 						? []
@@ -73,14 +73,12 @@ export function SourcesLibrary({ projectId, title = "Sources" }: SourcesLibraryP
 								},
 							]
 				}
-			>
-				<PageTitle title={title} />
-				<p className="mt-1 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
-					{projectId
-						? "Memories and sources available to this project."
-						: "Files, memories, links, repositories, and connected records available to Polychat."}
-				</p>
-			</PageHeader>
+			/>
+			<p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
+				{projectId
+					? "Memories and sources available to this project."
+					: "Files, memories, links, repositories, and connected records available to Polychat."}
+			</p>
 
 			<div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
 				<aside>

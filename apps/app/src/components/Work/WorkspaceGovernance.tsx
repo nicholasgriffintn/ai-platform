@@ -4,8 +4,7 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { EmptyState } from "~/components/Core/EmptyState";
-import { PageHeader } from "~/components/Core/PageHeader";
-import { PageTitle } from "~/components/Core/PageTitle";
+import { PageShell } from "~/components/Core/PageShell";
 import { Button, Card, ConfirmationDialog } from "~/components/ui";
 import {
 	useTemplateMutations,
@@ -26,13 +25,11 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
 	const projectTemplates = templates.data?.filter((template) => template.kind === "project");
 
 	return (
-		<main className="container mx-auto max-w-6xl px-4 py-8">
-			<PageHeader>
-				<PageTitle title="Governance" />
-				<p className="mt-1 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
-					Manage reusable project templates and review workspace changes.
-				</p>
-			</PageHeader>
+		<PageShell.Content className="max-w-6xl">
+			<PageShell.Header title="Governance" />
+			<p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
+				Manage reusable project templates and review workspace changes.
+			</p>
 
 			{workspaceQuery.isLoading ? (
 				<Card className="p-6 text-sm text-zinc-500 shadow-none">Loading governance…</Card>
@@ -157,6 +154,6 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
 					setTemplateIdToDelete(null);
 				}}
 			/>
-		</main>
+		</PageShell.Content>
 	);
 }

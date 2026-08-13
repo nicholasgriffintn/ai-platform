@@ -1,5 +1,4 @@
-import { PageHeader } from "~/components/Core/PageHeader";
-import { PageTitle } from "~/components/Core/PageTitle";
+import { PageShell } from "~/components/Core/PageShell";
 import { UserSettingsForm } from "~/components/Profile/UserSettingsForm";
 import { useAuthStatus } from "~/hooks/useAuth";
 
@@ -8,9 +7,7 @@ export function ProfileCustomisationTab() {
 
 	return (
 		<div>
-			<PageHeader>
-				<PageTitle title="Customise Chat" />
-			</PageHeader>
+			<PageShell.Header title="Customise Chat" />
 
 			<div className="space-y-6">
 				<UserSettingsForm

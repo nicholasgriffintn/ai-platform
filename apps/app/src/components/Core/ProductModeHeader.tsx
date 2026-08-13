@@ -5,6 +5,7 @@ import { useLocation } from "react-router";
 import { Button } from "~/components/ui";
 import { useHeaderScrollEdge } from "~/hooks/useHeaderScrollEdge";
 import { useTrackEvent } from "~/hooks/use-track-event";
+import { isProductModeRoute } from "~/lib/navigation/product-mode";
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
@@ -14,14 +15,17 @@ interface ProductModeHeaderProps {
 	actions?: ReactNode;
 	context?: ReactNode;
 	showCloudToggle?: boolean;
+	showSidebarToggle?: boolean;
 }
 
 export function ProductModeHeader({
 	actions,
 	context,
 	showCloudToggle = false,
+	showSidebarToggle = true,
 }: ProductModeHeaderProps) {
 	const { pathname } = useLocation();
+	const showProductModeSwitch = isProductModeRoute(pathname);
 	const headerRef = useRef<HTMLElement>(null);
 	const isScrolled = useHeaderScrollEdge(headerRef, pathname);
 	const { trackEvent } = useTrackEvent();
@@ -46,7 +50,7 @@ export function ProductModeHeader({
 			className="relative z-20 flex h-[53px] shrink-0 items-center gap-1 bg-off-white px-4 dark:bg-zinc-900 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-2"
 		>
 			<div className="flex min-w-0 flex-1 items-center gap-1 sm:justify-self-stretch sm:gap-2">
-				{!sidebarVisible && (
+				{showSidebarToggle && !sidebarVisible && (
 					<Button
 						type="button"
 						variant="icon"
@@ -58,7 +62,11 @@ export function ProductModeHeader({
 				)}
 				{context ? <div className="min-w-0 flex-1">{context}</div> : null}
 			</div>
-			<ProductModeSwitch className="w-auto shrink-0 sm:w-44 sm:justify-self-center" />
+			<div className="flex justify-center">
+				{showProductModeSwitch ? (
+					<ProductModeSwitch className="w-auto shrink-0 sm:w-44 sm:justify-self-center" />
+				) : null}
+			</div>
 			<div className="flex min-w-0 shrink-0 items-center sm:justify-self-end">
 				{actions}
 				{showCloudToggle && isAuthenticated && (

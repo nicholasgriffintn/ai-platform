@@ -8,7 +8,12 @@ import { useUIStore } from "~/state/stores/uiStore";
 import { WorkPageShell } from "./WorkPageShell";
 
 vi.mock("~/components/Core/PageShell", () => ({
-	PageShell: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+	PageShell: ({ children, headerContent }: { children: ReactNode; headerContent?: ReactNode }) => (
+		<div>
+			{headerContent}
+			{children}
+		</div>
+	),
 }));
 
 vi.mock("~/components/Core/ProductModeHeader", () => ({

@@ -20,7 +20,8 @@ export default function ProfilePage() {
 
 	const activeTabId = searchParams.get("tab") || profileSidebarItems[0].id;
 
-	const ActiveComponent = profileSidebarItems.find((item) => item.id === activeTabId)?.component;
+	const activeItem = profileSidebarItems.find((item) => item.id === activeTabId);
+	const ActiveComponent = activeItem?.component;
 
 	const handleSelectItem = (id: string) => {
 		setSearchParams({ tab: id });
@@ -29,7 +30,11 @@ export default function ProfilePage() {
 	const sidebar = <ProfileSidebar activeItemId={activeTabId} onSelectItem={handleSelectItem} />;
 
 	return (
-		<PageShell sidebarContent={sidebar} className="max-w-6xl mx-auto px-4 py-8">
+		<PageShell
+			title={activeItem?.pageTitle ?? activeItem?.label ?? "Profile"}
+			sidebarContent={sidebar}
+			className="max-w-6xl"
+		>
 			{isLoading ? (
 				<PageStatus
 					icon={<Loader2 size={32} className="animate-spin text-blue-600" />}
