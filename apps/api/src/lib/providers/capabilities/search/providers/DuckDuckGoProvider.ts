@@ -1,6 +1,6 @@
 import type { DuckDuckGoSearchResult, SearchOptions, SearchProvider, SearchResult } from "~/types";
 
-const stripHtml = (value?: string) => value?.replace(/<[^>]*>/g, "").trim() ?? "";
+const stripHtml = (value?: string) => value?.replace(/[<>]/g, "").trim() ?? "";
 
 export class DuckDuckGoProvider implements SearchProvider {
 	async performWebSearch(query: string, _options?: SearchOptions): Promise<SearchResult> {
