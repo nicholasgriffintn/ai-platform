@@ -1,7 +1,7 @@
 import {
 	type MarkdownConversionOptions,
 	markdownConversionOptionsSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { convertBlobToMarkdownViaCloudflare } from "~/lib/documentConverter";
 import { AssistantError, ErrorType } from "~/utils/errors";

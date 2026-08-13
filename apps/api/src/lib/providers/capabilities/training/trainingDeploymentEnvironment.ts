@@ -1,4 +1,7 @@
-import type { DeployTrainingModelRequest, TrainingModelDefinition } from "@assistant/schemas";
+import type {
+	DeployTrainingModelRequest,
+	TrainingModelDefinition,
+} from "@ngriffin_uk/polychat-schemas";
 
 interface ResolveDeploymentEnvironmentOptions {
 	model: TrainingModelDefinition;

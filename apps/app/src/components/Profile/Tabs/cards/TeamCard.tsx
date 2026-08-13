@@ -9,9 +9,15 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-import { Button } from "~/components/ui/Button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/Card";
-import { DropdownMenu, DropdownMenuItem } from "~/components/ui/DropdownMenu";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@ngriffin_uk/polychat-component-ui";
+import { DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
 import { cn } from "~/lib/utils";
 
 interface TeamCardProps {

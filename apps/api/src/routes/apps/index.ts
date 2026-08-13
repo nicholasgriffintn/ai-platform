@@ -5,7 +5,7 @@ import {
 	promptCoachJsonSchema,
 	promptCoachResponseSchema,
 	errorResponseSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";

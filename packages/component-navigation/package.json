@@ -1,0 +1,54 @@
+{
+	"name": "@ngriffin_uk/polychat-component-navigation",
+	"version": "0.1.0",
+	"license": "Apache-2.0",
+	"files": [
+		"dist"
+	],
+	"type": "module",
+	"sideEffects": [
+		"**/*.css"
+	],
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./styles.css": "./dist/index.css"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"build": "tsup",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"test:package": "pnpm build && node --test ../../scripts/test-component-package-exports.mjs",
+		"format": "oxfmt",
+		"format:check": "oxfmt --check",
+		"lint": "pnpm oxlint",
+		"check": "pnpm lint && pnpm format:check"
+	},
+	"dependencies": {
+		"lucide-react": "1.30.0"
+	},
+	"devDependencies": {
+		"@ngriffin_uk/polychat-config": "workspace:^",
+		"@testing-library/react": "catalog:",
+		"@types/react": "catalog:",
+		"@types/react-dom": "catalog:",
+		"jsdom": "catalog:",
+		"oxfmt": "catalog:",
+		"oxlint": "catalog:",
+		"tsup": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	},
+	"peerDependencies": {
+		"react": "catalog:react-peer",
+		"react-dom": "catalog:react-peer"
+	}
+}

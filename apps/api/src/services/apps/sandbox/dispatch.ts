@@ -6,7 +6,7 @@ import {
 	type SandboxRunData,
 	type SandboxRunEvent,
 	type SandboxRunStatus,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { MAX_STORED_STREAM_EVENTS, SANDBOX_RUNS_APP_ID } from "~/constants/app";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";

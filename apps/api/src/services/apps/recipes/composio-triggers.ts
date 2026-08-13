@@ -1,4 +1,7 @@
-import type { RecipeComposioTrigger, RecipeComposioTriggerCreateRequest } from "@assistant/schemas";
+import type {
+	RecipeComposioTrigger,
+	RecipeComposioTriggerCreateRequest,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getConnectorProviderConfig } from "~/lib/providers/capabilities/connectors";

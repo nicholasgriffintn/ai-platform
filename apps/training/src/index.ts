@@ -2,7 +2,7 @@ import {
 	TRAINING_WORKER_USER_ID_HEADER,
 	trainingWorkerDeployModelSchema,
 	trainingWorkerStartJobSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { TrainingWorkerService } from "./services/TrainingWorkerService.js";
 import type { Env } from "./types/env.js";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { SourceStatus, SourceSummary } from "@assistant/schemas";
+import type { SourceStatus, SourceSummary } from "@ngriffin_uk/polychat-schemas";
 
 import { getProjectConversationSourceIds } from "./project-context";
 

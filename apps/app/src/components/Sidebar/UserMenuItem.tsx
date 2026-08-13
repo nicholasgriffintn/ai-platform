@@ -2,7 +2,7 @@ import { KeyRound, Loader2, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
-import { Button } from "~/components/ui";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";

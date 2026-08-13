@@ -7,7 +7,7 @@ import type {
 	RecipeConnectorAccount,
 	RecipeConnectorProvider,
 	RecipeInstallation,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import {
 	Badge,
@@ -22,7 +22,7 @@ import {
 	FormInput,
 	FormSelect,
 	Switch,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
 import { useRecipeConnectorAccounts } from "~/hooks/useConnectors";
 import { getErrorMessage } from "~/lib/errors";
 import {

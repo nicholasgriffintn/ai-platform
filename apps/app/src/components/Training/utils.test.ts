@@ -2,7 +2,7 @@ import {
 	getBedrockImportModelSourceUriError,
 	type TrainingJob,
 	type TrainingModelDefinition,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import {

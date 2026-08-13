@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Note, NoteCreateRequest, NoteUpdateRequest } from "@assistant/schemas";
+import type { Note, NoteCreateRequest, NoteUpdateRequest } from "@ngriffin_uk/polychat-schemas";
 
 import {
 	createNote,

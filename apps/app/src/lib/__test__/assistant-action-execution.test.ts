@@ -3,7 +3,7 @@ import {
 	buildAssistantActionCatalog,
 	type AssistantRecipe,
 	type RecipeInstallation,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { executeAssistantAction } from "../assistant-action-execution";
 

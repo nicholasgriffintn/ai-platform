@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ModelConfigItem, PromptRequirements } from "@assistant/schemas";
+import type { ModelConfigItem, PromptRequirements } from "@ngriffin_uk/polychat-schemas";
 import type { IEnv, IUser } from "~/types";
 import { ModelRouter } from "../index";
 

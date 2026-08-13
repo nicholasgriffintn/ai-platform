@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { sandboxTaskTypeSchema, type SandboxTaskType } from "@assistant/schemas";
+import { sandboxTaskTypeSchema, type SandboxTaskType } from "@ngriffin_uk/polychat-schemas";
 import { toast } from "sonner";
 
 import { ConversationPage } from "~/components/ConversationThread/ConversationPage";

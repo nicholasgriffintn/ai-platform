@@ -12,7 +12,7 @@ import {
 	deepWebSearchSchema,
 	deepResearchSchema,
 	tutorSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";

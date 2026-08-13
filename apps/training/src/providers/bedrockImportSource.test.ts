@@ -1,4 +1,4 @@
-import type { TrainingModelDefinition } from "@assistant/schemas";
+import type { TrainingModelDefinition } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import { stageBedrockImportSource } from "./bedrockImportSource.js";

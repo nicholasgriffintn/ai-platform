@@ -1,16 +1,16 @@
 import { Loader2 } from "lucide-react";
 import React, { useState } from "react";
 
-import { Button } from "~/components/ui/Button";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import {
 	Dialog,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "~/components/ui/Dialog";
-import { FormInput } from "~/components/ui/Form/Input";
-import { FormSelect } from "~/components/ui/Form/Select";
+} from "@ngriffin_uk/polychat-component-ui";
+import { FormInput } from "@ngriffin_uk/polychat-component-ui";
+import { FormSelect } from "@ngriffin_uk/polychat-component-ui";
 
 interface ShareAgentModalProps {
 	open: boolean;

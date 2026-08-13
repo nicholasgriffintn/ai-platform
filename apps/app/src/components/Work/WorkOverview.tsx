@@ -5,7 +5,7 @@ import { Link } from "react-router";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card } from "~/components/ui";
+import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
 import { isAuthenticationError } from "~/lib/errors";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useWorkData } from "./WorkContext";

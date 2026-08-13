@@ -7,7 +7,7 @@ import {
 	formatAssistantActionMention,
 	mergeAssistantActionToolIds,
 	normaliseAssistantActionToolIds,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 describe("assistant action catalogue", () => {
 	it("merges verbs and action items from recipes, apps, connectors, agents, and tools", () => {

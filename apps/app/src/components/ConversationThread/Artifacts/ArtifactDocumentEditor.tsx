@@ -19,15 +19,15 @@ import {
 	useState,
 } from "react";
 
-import { MemoizedMarkdown } from "~/components/ui/Markdown";
+import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
 import { buildArtifactDownload, createArtifactSelectionAttachment } from "~/lib/artifacts";
-import type { AttachmentData } from "~/lib/chat/attachments";
+import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import {
 	applyMarkdownEdit,
 	extractMarkdownOutline,
 	type MarkdownEditAction,
 } from "~/lib/markdown-editor";
-import { getCharCount, getWordCount } from "~/lib/text-utils";
+import { getCharCount, getWordCount } from "@ngriffin_uk/polychat-utility-core";
 import { measureTextareaSelectionActionPosition } from "~/lib/textarea-selection-position";
 import type { ArtifactProps } from "~/types/artifact";
 

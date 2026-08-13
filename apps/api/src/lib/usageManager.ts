@@ -1,7 +1,7 @@
 import { USAGE_CONFIG } from "~/constants/app";
 import { RepositoryManager } from "~/repositories";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
-import type { FunctionType, ModelConfigItem } from "@assistant/schemas";
+import type { FunctionType, ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { AnonymousUser, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";

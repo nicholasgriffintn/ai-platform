@@ -6,7 +6,7 @@ import {
 	resetAudioCommitGate,
 	shouldCommitAudioGate,
 	type AudioCommitGateConfig,
-} from "./audio-commit-gate";
+} from "@ngriffin_uk/polychat-library-realtime/audio-commit-gate";
 
 const config: AudioCommitGateConfig = {
 	continueLevelThreshold: 0.04,

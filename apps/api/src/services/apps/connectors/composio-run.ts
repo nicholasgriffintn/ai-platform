@@ -1,4 +1,4 @@
-import type { RecipeConnectorProvider } from "@assistant/schemas";
+import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConnectorProviderConfig } from "~/lib/providers/capabilities/connectors";

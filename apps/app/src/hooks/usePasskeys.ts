@@ -7,7 +7,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { API_BASE_URL } from "~/constants";
 import { authService } from "~/lib/api/auth-service";
-import { fetchApi, returnFetchedData } from "~/lib/api/fetch-wrapper";
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+import { fetchApi } from "~/lib/api/fetch-wrapper";
 
 interface Passkey {
 	id: number;

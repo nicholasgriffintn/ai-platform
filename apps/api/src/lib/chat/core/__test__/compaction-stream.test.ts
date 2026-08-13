@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseChatStreamSseBuffer } from "@assistant/schemas";
+import { parseChatStreamSseBuffer } from "@ngriffin_uk/polychat-schemas";
 
 import { prependCompactionStateEvent } from "../compaction-stream";
 import type { Message } from "~/types";

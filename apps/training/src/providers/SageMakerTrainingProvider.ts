@@ -2,7 +2,7 @@ import {
 	getSageMakerEndpointInstanceCompatibilityError,
 	type TrainingDeployment,
 	type TrainingJob,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { signAwsJsonRequest } from "../utils/aws.js";
 import { stringifyEntries } from "../utils/json.js";

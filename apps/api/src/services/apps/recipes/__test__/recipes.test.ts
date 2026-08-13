@@ -4,7 +4,7 @@ import {
 	recipeInstallationUpdateRequestSchema,
 	type RecipeConnectorManifest,
 	type RecipeConnectorsResponse,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { RepositoryManager, TemplateRepository } from "~/repositories";
 import { TaskRepository } from "~/repositories/TaskRepository";

@@ -4,11 +4,9 @@ import {
 	stringifyAnalyticsProperties,
 	type AnalyticsEvent as SharedAnalyticsEvent,
 	type AnalyticsEventProperties,
-} from "@assistant/schemas/analytics";
+} from "@ngriffin_uk/polychat-schemas/analytics";
 
 import type { User } from "~/types";
-
-export type { AnalyticsEventProperties };
 
 export type AnalyticsEvent = SharedAnalyticsEvent & {
 	non_interaction?: boolean;

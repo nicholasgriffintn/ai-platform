@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { ApiError } from "../fetch-wrapper";
-import { shouldRetryApiQuery } from "../retry";
+import { ApiError } from "@ngriffin_uk/polychat-library-client";
+import { shouldRetryApiQuery } from "@ngriffin_uk/polychat-library-client/retry";
 
 describe("shouldRetryApiQuery", () => {
 	it("does not retry authentication failures", () => {

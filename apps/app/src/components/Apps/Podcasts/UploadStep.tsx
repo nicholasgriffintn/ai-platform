@@ -1,7 +1,7 @@
 import { Link as LinkIcon } from "lucide-react";
 
 import { SingleFileUploader } from "~/components/Uploader/SingleFileUploader";
-import { Button, FormInput, Label, Textarea } from "~/components/ui";
+import { Button, FormInput, Label, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import type { PodcastFormData } from "~/types/podcast";
 
 interface UploadStepProps {

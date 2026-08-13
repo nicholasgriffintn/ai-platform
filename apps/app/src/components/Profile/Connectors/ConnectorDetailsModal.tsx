@@ -1,8 +1,13 @@
-import type { RecipeConnectorManifest } from "@assistant/schemas";
+import type { RecipeConnectorManifest } from "@ngriffin_uk/polychat-schemas";
 import { ExternalLink, KeyRound, Loader2, Plug, Trash2, Wrench } from "lucide-react";
 
-import { Button } from "~/components/ui/Button";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "~/components/ui/Dialog";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogTitle,
+} from "@ngriffin_uk/polychat-component-ui";
 import { ConnectorAccountsPanel } from "./ConnectorAccountsPanel";
 import { ConnectorLogo } from "./ConnectorLogo";
 

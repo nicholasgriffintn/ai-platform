@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { areUserIdsEqual } from "./user-ids";
+import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 
 describe("areUserIdsEqual", () => {
 	it("matches the numeric auth response with string-backed client state", () => {

@@ -5,7 +5,7 @@ import type {
 	TrainingJob,
 	TrainingJobEvent,
 	TrainingModelDefinition,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { useState } from "react";
 import { FileText, RefreshCcw, Server, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -18,11 +18,11 @@ import {
 	CardHeader,
 	CardTitle,
 	ConfirmationDialog,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
 import { getErrorMessage } from "~/lib/errors";
 import { DeploymentCreateForm } from "./DeploymentCreateForm";
 import { TrainingLogsDialog } from "./TrainingLogsDialog";
-import { TrainingStatusBadge } from "./TrainingStatusBadge";
+import { TrainingStatusBadge } from "@ngriffin_uk/polychat-component-experiences/training";
 import { formatDeploymentTarget, formatTrainingDate, trainingRecordKey } from "./utils";
 
 interface DeploymentsPanelProps {

@@ -1,4 +1,4 @@
-import type { ChatCompletionRequestBody } from "@assistant/schemas";
+import type { ChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
 import type { ChatCompletionParameters, Message } from "~/types";
 
 type IncomingChatCompletionRequest =

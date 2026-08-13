@@ -1,0 +1,105 @@
+@layer polychat-capabilities {
+	.polychat-capability-filters {
+		display: grid;
+		gap: 1rem;
+		margin-bottom: 2rem;
+	}
+	.polychat-capability-filters input,
+	.polychat-capability-filters select {
+		width: min(100%, 36rem);
+		border: 1px solid #d4d4d8;
+		border-radius: 0.5rem;
+		padding: 0.65rem 0.8rem;
+		background: white;
+		color: #18181b;
+	}
+	.polychat-capability-filter-group,
+	.polychat-capability-category-buttons {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+	.polychat-capability-filter-group button,
+	.polychat-capability-category-buttons button {
+		border: 1px solid transparent;
+		border-radius: 999px;
+		padding: 0.4rem 0.75rem;
+		background: transparent;
+		color: #52525b;
+		cursor: pointer;
+	}
+	.polychat-capability-filter-group button[aria-pressed="true"] {
+		background: #18181b;
+		color: white;
+	}
+	.polychat-capability-category-buttons button[aria-pressed="true"] {
+		border-color: #a1a1aa;
+		background: #f4f4f5;
+		color: #18181b;
+	}
+	.polychat-capability-category-select {
+		display: none;
+	}
+	.polychat-capability-card {
+		display: grid;
+		gap: 0.6rem;
+		border: 1px solid #e4e4e7;
+		border-radius: 0.75rem;
+		padding: 1rem;
+	}
+	.polychat-capability-card header {
+		display: flex;
+		justify-content: space-between;
+		text-transform: capitalize;
+		color: #71717a;
+	}
+	.polychat-capability-card h3,
+	.polychat-capability-card p {
+		margin: 0;
+	}
+	.polychat-capability-card button {
+		justify-self: start;
+		border: 0;
+		border-radius: 0.5rem;
+		padding: 0.5rem 0.8rem;
+		background: #18181b;
+		color: white;
+		cursor: pointer;
+	}
+	.polychat-capability-card button:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+	.polychat-capability-visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+	}
+	@media (max-width: 640px) {
+		.polychat-capability-category-select {
+			display: block;
+		}
+		.polychat-capability-category-buttons {
+			display: none;
+		}
+	}
+	.dark .polychat-capability-filters input,
+	.dark .polychat-capability-filters select,
+	[data-polychat-theme="dark"] .polychat-capability-filters input,
+	[data-polychat-theme="dark"] .polychat-capability-filters select {
+		border-color: #3f3f46;
+		background: #18181b;
+		color: white;
+	}
+	.dark .polychat-capability-filter-group button[aria-pressed="true"],
+	[data-polychat-theme="dark"] .polychat-capability-filter-group button[aria-pressed="true"] {
+		background: #f4f4f5;
+		color: #18181b;
+	}
+	.dark .polychat-capability-card,
+	[data-polychat-theme="dark"] .polychat-capability-card {
+		border-color: #3f3f46;
+	}
+}

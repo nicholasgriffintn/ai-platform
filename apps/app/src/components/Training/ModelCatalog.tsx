@@ -1,6 +1,12 @@
-import type { TrainingModelDefinition } from "@assistant/schemas";
+import type { TrainingModelDefinition } from "@ngriffin_uk/polychat-schemas";
 
-import { Badge, Card, CardContent, CardHeader, CardTitle } from "~/components/ui";
+import {
+	Badge,
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@ngriffin_uk/polychat-component-ui";
 
 interface ModelCatalogProps {
 	models: TrainingModelDefinition[];

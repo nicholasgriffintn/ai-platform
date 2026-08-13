@@ -17,7 +17,7 @@ import type {
 	AssistantActionItemKind,
 	AssistantActionVerbId,
 	ProjectCapabilityKind,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { useAssistantActionCatalog } from "~/hooks/useAssistantActionCatalog";
 import { useAgents } from "~/hooks/useAgents";
@@ -32,7 +32,7 @@ import {
 	removeComposerDirective,
 	replaceComposerDirectiveWithCursor,
 } from "~/lib/composer-commands";
-import { COMPACT_CONVERSATION_COMMAND } from "~/lib/chat/compaction-command";
+import { COMPACT_CONVERSATION_COMMAND } from "@ngriffin_uk/polychat-library-chat/compaction-command";
 import type { ModelToolId } from "~/lib/model-tools";
 import { defaultModel, EMPTY_MODEL_CONFIG, getAvailableModels } from "~/lib/models";
 import {

@@ -1,5 +1,5 @@
 import type { UsageLimits } from "~/state/stores/usageStore";
-import { getBoundedPercentage } from "./percentage";
+import { getBoundedPercentage } from "@ngriffin_uk/polychat-utility-core";
 
 export interface SidebarUsageItem {
 	id: string;

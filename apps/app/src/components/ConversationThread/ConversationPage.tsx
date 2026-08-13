@@ -13,7 +13,7 @@ import {
 } from "~/lib/assistant-action-launch";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
-import { mergeChatRequestOptions } from "~/lib/chat/request-options";
+import { mergeChatRequestOptions } from "@ngriffin_uk/polychat-library-chat/request-options";
 import type { ChatRequestOptions } from "~/types";
 import { ConversationThread, type ConversationThreadModeConfig } from ".";
 import { ConversationProductHeader } from "./ConversationProductHeader";

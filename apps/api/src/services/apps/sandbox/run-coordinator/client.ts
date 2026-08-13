@@ -6,7 +6,7 @@ import {
 	type SandboxRunControl,
 	type SandboxRunEvent,
 	type SandboxRunInstruction,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import type { StartFiberResult } from "agents";
 import type { IEnv } from "~/types";
 import type { CoordinatorEventEnvelope, CoordinatorInstructionEnvelope } from "./types";

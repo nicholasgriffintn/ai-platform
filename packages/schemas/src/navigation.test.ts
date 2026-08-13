@@ -16,9 +16,13 @@ describe("navigation contracts", () => {
 		},
 	);
 
-	it.each(["javascript:alert(1)", "https://attacker.example", "//attacker.example/path"])(
-		"rejects unsafe internal path %s",
-		(path) => expect(isInternalNavigationPath(path)).toBe(false),
+	it.each([
+		"javascript:alert(1)",
+		"https://attacker.example",
+		"//attacker.example/path",
+		"/\\attacker.example/path",
+	])("rejects unsafe internal path %s", (path) =>
+		expect(isInternalNavigationPath(path)).toBe(false),
 	);
 
 	it.each([

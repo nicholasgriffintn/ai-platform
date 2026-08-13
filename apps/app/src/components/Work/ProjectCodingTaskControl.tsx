@@ -1,5 +1,5 @@
 import { GitBranch } from "lucide-react";
-import type { SandboxTaskType } from "@assistant/schemas";
+import type { SandboxTaskType } from "@ngriffin_uk/polychat-schemas";
 
 import { InlineSettingSelect } from "~/components/ConversationThread/ChatInput/InlineResponseControls";
 

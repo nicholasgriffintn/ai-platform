@@ -1,13 +1,13 @@
 import { Loader2 } from "lucide-react";
-import type { Task } from "@assistant/schemas";
+import type { Task } from "@ngriffin_uk/polychat-schemas";
 
 import { EmptyState } from "~/components/Core/EmptyState";
-import { ListItem } from "~/components/ui";
-import { Card } from "~/components/ui/Card";
+import { ListItem } from "@ngriffin_uk/polychat-component-ui";
+import { Card } from "@ngriffin_uk/polychat-component-ui";
 import { useTasks } from "~/hooks/useTasks";
 import { PageShell } from "../../Core/PageShell";
-import { formatDate } from "~/lib/dates";
-import { getStatusIcon } from "~/components/ui/Status/icons";
+import { formatDate } from "@ngriffin_uk/polychat-utility-core";
+import { getStatusIcon } from "@ngriffin_uk/polychat-component-ui";
 
 function TaskItem({ task }: { task: Task }) {
 	const getTaskLabel = (task: Task): string => {

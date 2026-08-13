@@ -8,7 +8,7 @@ import {
 	dynamicAppSchema,
 	dynamicAppsResponseSchema,
 	errorResponseSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { addRoute } from "~/lib/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";

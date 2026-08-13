@@ -1,4 +1,4 @@
-import type { AnalyticsEvent } from "@assistant/schemas";
+import type { AnalyticsEvent } from "@ngriffin_uk/polychat-schemas";
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { PostHog, PostHogOptions } from "posthog-node";
 

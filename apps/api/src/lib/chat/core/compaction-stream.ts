@@ -1,6 +1,6 @@
 import type { Message } from "~/types";
 import { buildChatCompactionMetadata, type ChatCompactionMetadata } from "../compaction-metadata";
-import { formatChatStreamSseEvent } from "@assistant/schemas";
+import { formatChatStreamSseEvent } from "@ngriffin_uk/polychat-schemas";
 
 function formatCompactionStateEvent(compactionMetadata: ChatCompactionMetadata): string {
 	return formatChatStreamSseEvent("state", {

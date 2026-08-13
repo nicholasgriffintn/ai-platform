@@ -1,4 +1,4 @@
-import type { SandboxRunData } from "@assistant/schemas";
+import type { SandboxRunData } from "@ngriffin_uk/polychat-schemas";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { StorageService } from "~/lib/storage";
 

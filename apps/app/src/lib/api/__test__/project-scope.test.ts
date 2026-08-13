@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { withProjectScope } from "../project-scope";
+import { withProjectScope } from "@ngriffin_uk/polychat-library-client/project-scope";
 
 describe("withProjectScope", () => {
 	it("adds an encoded project query parameter", () => {

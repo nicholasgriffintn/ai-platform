@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import type { RecipeConnectorProvider } from "@assistant/schemas";
-import { FormDialog, Input, Label } from "~/components/ui";
+import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
+import { FormDialog, Input, Label } from "@ngriffin_uk/polychat-component-ui";
 import { useStoreRecipeConnectorApiKey } from "~/hooks/useConnectors";
 
 interface ConnectorApiKeyModalProps {

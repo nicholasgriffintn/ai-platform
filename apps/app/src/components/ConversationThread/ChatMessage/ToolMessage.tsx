@@ -2,7 +2,7 @@ import { Terminal } from "lucide-react";
 
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import { readConnectorApprovalRequest } from "~/lib/connector-approval";
-import { isRecord } from "~/lib/objects";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import type { Message } from "~/types";
 import { ConnectorApprovalCard } from "./ConnectorApprovalCard";
 

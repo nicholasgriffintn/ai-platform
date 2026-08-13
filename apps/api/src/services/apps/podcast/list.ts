@@ -1,4 +1,4 @@
-import type { PodcastListItem } from "@assistant/schemas";
+import type { PodcastListItem } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";

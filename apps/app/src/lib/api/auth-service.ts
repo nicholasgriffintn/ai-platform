@@ -1,7 +1,8 @@
 import { API_BASE_URL } from "~/constants";
 import { apiKeyService } from "~/lib/api/api-key";
 import type { AnonymousUser, User, UserSettings } from "~/types";
-import { fetchApi, returnFetchedData } from "./fetch-wrapper";
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+import { fetchApi } from "./fetch-wrapper";
 
 interface MagicLinkSuccessResponse {
 	success: boolean;

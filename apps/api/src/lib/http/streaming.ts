@@ -1,4 +1,4 @@
-import { NO_STORE } from "@assistant/schemas";
+import { NO_STORE } from "@ngriffin_uk/polychat-schemas";
 
 export const SSE_HEADERS = {
 	"Content-Type": "text/event-stream",

@@ -1,6 +1,6 @@
 import { Menu, PanelLeftOpen } from "lucide-react";
 
-import { Button } from "~/components/ui";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { useUIStore } from "~/state/stores/uiStore";
 
 interface ChatNavbarProps {

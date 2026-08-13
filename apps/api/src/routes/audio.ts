@@ -6,7 +6,7 @@ import {
 	transcribeQuerySchema,
 	apiResponseSchema,
 	errorResponseSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleTextToSpeech } from "~/services/audio/speech";

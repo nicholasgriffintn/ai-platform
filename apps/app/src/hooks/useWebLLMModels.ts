@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { getCachedWebLLMModels, loadWebLLMModels } from "~/lib/web-llm-models";
-import type { ModelConfig } from "@assistant/schemas";
+import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 
 interface UseWebLLMModelsOptions {
 	enabled?: boolean;

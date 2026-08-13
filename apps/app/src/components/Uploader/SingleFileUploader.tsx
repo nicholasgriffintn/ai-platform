@@ -2,7 +2,7 @@
 
 import { AlertCircleIcon, PaperclipIcon, UploadIcon, XIcon } from "lucide-react";
 
-import { Button } from "~/components/ui/Button";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { type FileWithPreview, formatBytes, useFileUpload } from "~/hooks/use-file-upload";
 import { useTrackEvent } from "~/hooks/use-track-event";
 

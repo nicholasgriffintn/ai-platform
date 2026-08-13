@@ -1,8 +1,8 @@
 import { ExternalLink, Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { Button } from "~/components/ui";
-import { MemoizedMarkdown } from "~/components/ui/Markdown";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
 import { useResearchStatus } from "~/hooks/useResearchStatus";
 import type { ResearchStatus } from "~/types/research";
 import { JsonView } from "../../JsonView";

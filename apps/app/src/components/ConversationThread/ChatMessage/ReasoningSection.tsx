@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { MemoizedMarkdown } from "~/components/ui/Markdown";
+import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
 
 interface ReasoningSectionProps {
 	reasoning: {

@@ -1,6 +1,6 @@
 import { ArrowLeft, Plus } from "lucide-react";
 
-import { Button } from "~/components/ui";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import type { DrawingStudioState } from "./useDrawingStudio";
 
 export function DrawingSidebarControls({ drawing }: { drawing: DrawingStudioState }) {

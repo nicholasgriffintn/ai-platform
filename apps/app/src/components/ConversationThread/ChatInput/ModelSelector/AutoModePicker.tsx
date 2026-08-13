@@ -10,7 +10,7 @@ import {
 } from "~/lib/auto-router-modes";
 import { getModelDisplayName } from "~/lib/models";
 import { cn } from "~/lib/utils";
-import type { ModelConfigItem, ModelRouterMode } from "@assistant/schemas";
+import type { ModelConfigItem, ModelRouterMode } from "@ngriffin_uk/polychat-schemas";
 
 interface AutoModePickerProps {
 	models: ModelConfigItem[];

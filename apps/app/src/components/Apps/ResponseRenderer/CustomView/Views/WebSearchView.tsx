@@ -1,8 +1,8 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useState } from "react";
 
-import { Button, Favicon } from "~/components/ui";
-import { MemoizedMarkdown } from "~/components/ui/Markdown";
+import { Favicon, MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 
 export function WebSearchView({
 	data,

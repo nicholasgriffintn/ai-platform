@@ -9,10 +9,11 @@ import type {
 	WorkspaceDetail,
 	WorkspaceInvitationDelivery,
 	WorkspaceSummary,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service";
-import { fetchApiOrThrow, returnFetchedData } from "./fetch-wrapper";
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+import { fetchApiOrThrow } from "./fetch-wrapper";
 
 async function authHeaders() {
 	return apiService.getHeaders();

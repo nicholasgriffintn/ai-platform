@@ -5,8 +5,8 @@ import type {
 	ModelConfigItem,
 	ModelModalities,
 	ModelModality,
-} from "@assistant/schemas";
-import { isActiveRouterModel } from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
+import { isActiveRouterModel } from "@ngriffin_uk/polychat-schemas";
 import type { IEnv, IUser, IUserSettings, ResearchProviderName, SearchProviderName } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { anthropicModelConfig } from "~/data-model/models/anthropic";

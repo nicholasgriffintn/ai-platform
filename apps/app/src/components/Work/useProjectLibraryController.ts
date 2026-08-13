@@ -4,7 +4,7 @@ import type {
 	ProjectCapability,
 	ProjectCapabilityKind,
 	ProjectToolDefinition,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { useProjectCapabilityCatalog } from "~/hooks/useProjectCapabilityCatalog";
 import { useRecipeInstallations } from "~/hooks/useRecipes";
@@ -20,7 +20,7 @@ import { useRecipeActionRequest } from "~/components/Apps/Recipes/useRecipeActio
 import { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ProjectToolConfiguration } from "~/lib/project-tool-configuration";
-import { areUserIdsEqual } from "~/lib/user-ids";
+import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 import { useWorkData } from "./WorkContext";
 
 export function useProjectLibraryController(workspaceId: string, projectId: string) {

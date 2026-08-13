@@ -1,8 +1,13 @@
 import { Settings } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import {
+	Button,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@ngriffin_uk/polychat-component-ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ngriffin_uk/polychat-component-ui";
 import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import { EMPTY_MODEL_CONFIG, getAvailableModels } from "~/lib/models";

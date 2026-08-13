@@ -1,4 +1,4 @@
-import { ApiError } from "./api/fetch-wrapper";
+import { ApiError } from "@ngriffin_uk/polychat-library-client";
 
 const AUTHENTICATION_ERROR_MESSAGE = "Authentication failed. Please check your credentials.";
 const AUTHENTICATION_ERROR_PATTERN =

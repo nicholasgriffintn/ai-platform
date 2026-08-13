@@ -7,7 +7,7 @@ import type { Conversation, ConversationListPage } from "~/types";
 import {
 	updateConversationInChatCaches,
 	upsertConversationInChatCaches,
-} from "../conversation-cache";
+} from "@ngriffin_uk/polychat-library-react/conversation-cache";
 
 function conversation(id: string, title: string): Conversation {
 	return {

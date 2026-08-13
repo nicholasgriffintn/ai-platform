@@ -1,4 +1,4 @@
-import type { SandboxTrustLevel } from "@assistant/schemas";
+import type { SandboxTrustLevel } from "@ngriffin_uk/polychat-schemas";
 
 import type { TaskEvent } from "../../types";
 import type { RunControlClient } from "../run-control-client";

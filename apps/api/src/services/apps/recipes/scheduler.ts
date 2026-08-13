@@ -1,4 +1,4 @@
-import type { RecipeInstallationTrigger } from "@assistant/schemas";
+import type { RecipeInstallationTrigger } from "@ngriffin_uk/polychat-schemas";
 
 import { RepositoryManager } from "~/repositories";
 import type { TemplateRecord } from "~/repositories/TemplateRepository";

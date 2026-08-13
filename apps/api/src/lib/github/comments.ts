@@ -1,4 +1,4 @@
-import type { SandboxWebhookCommand } from "@assistant/schemas";
+import type { SandboxWebhookCommand } from "@ngriffin_uk/polychat-schemas";
 
 import { githubApiRequest } from "./api-client";
 

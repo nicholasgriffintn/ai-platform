@@ -8,7 +8,7 @@ import {
 import { formatProviderError } from "~/lib/providers/utils/errors";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
 import { createEventStreamParser } from "~/utils/awsEventStream";

@@ -16,7 +16,7 @@ import { Link, NavLink, useLocation, useSearchParams } from "react-router";
 
 import { SidebarFooter } from "~/components/Sidebar/SidebarFooter";
 import { SidebarHeader } from "~/components/Sidebar/SidebarHeader";
-import { SidebarShell } from "~/components/ui";
+import { SidebarShell } from "@ngriffin_uk/polychat-component-ui";
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";

@@ -1,4 +1,7 @@
-import { conversationModeMetadataSchema, type ConversationModeMetadata } from "@assistant/schemas";
+import {
+	conversationModeMetadataSchema,
+	type ConversationModeMetadata,
+} from "@ngriffin_uk/polychat-schemas";
 import { buildCouncilMessageData, type CouncilTurnRouting } from "~/lib/chat/council";
 import type { ChatMode, ChatRequestOptions } from "~/types";
 

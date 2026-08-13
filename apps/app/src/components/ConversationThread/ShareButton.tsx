@@ -1,4 +1,4 @@
-import { ShareDialog } from "~/components/ui/ShareDialog";
+import { ShareDialog } from "~/components/Content/ShareDialog";
 import { apiService } from "~/lib/api/api-service";
 import { cn } from "~/lib/utils";
 

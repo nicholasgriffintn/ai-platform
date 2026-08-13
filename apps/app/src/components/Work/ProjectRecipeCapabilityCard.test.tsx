@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it, vi } from "vitest";
-import type { AssistantRecipe, RecipeInstallation } from "@assistant/schemas";
+import type { AssistantRecipe, RecipeInstallation } from "@ngriffin_uk/polychat-schemas";
 
 import type { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
 import { ProjectRecipeCapabilityCard } from "./ProjectRecipeCapabilityCard";

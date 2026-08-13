@@ -1,4 +1,4 @@
-import type { ToolDefinition } from "@assistant/schemas";
+import type { ToolDefinition } from "@ngriffin_uk/polychat-schemas";
 import type { ToolExecutionContext } from "~/lib/tools/ToolExecutionContext";
 import type { IFunctionResponse } from "~/types";
 

@@ -1,4 +1,4 @@
-import { ImageModal } from "~/components/ui";
+import { ImageModal } from "@ngriffin_uk/polychat-component-content";
 
 import type { GeneratedImageResponseData } from "./response-data";
 

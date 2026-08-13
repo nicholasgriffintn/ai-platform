@@ -1,7 +1,7 @@
 import { useEffect, useId, useState } from "react";
-import type { ReplicateModel, ReplicateInputField } from "@assistant/schemas";
+import type { ReplicateModel, ReplicateInputField } from "@ngriffin_uk/polychat-schemas";
 
-import { getNumberInputValue, parseNumberInputValue } from "~/lib/number-input";
+import { getNumberInputValue, parseNumberInputValue } from "@ngriffin_uk/polychat-utility-core";
 
 interface ReplicateModelFormProps {
 	model: ReplicateModel;

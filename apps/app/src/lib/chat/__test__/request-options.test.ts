@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { mergeChatRequestOptions } from "../request-options";
+import { mergeChatRequestOptions } from "@ngriffin_uk/polychat-library-chat/request-options";
 
 describe("mergeChatRequestOptions", () => {
 	it("retains project metadata when a recipe adds nested options", () => {

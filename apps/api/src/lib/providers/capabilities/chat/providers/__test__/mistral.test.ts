@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { MistralProvider } from "../mistral";
 
 vi.mock("../base", () => ({

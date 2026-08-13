@@ -49,12 +49,11 @@ Store personal or project source material, retrieve relevant context with vector
 
 Built-in content safety with Llamaguard and AWS Bedrock Guardrails.
 
-## Getting Started
+## Resources
 
-1. **Quickstart Guide** - Get up and running in minutes
-2. **Authentication** - Choose your auth method
-3. **Make Your First Request** - Simple example
-4. **[API Reference](https://api.polychat.app)** - Complete endpoint documentation
+- **Authentication** - Review the available authentication routes and security schemes below.
+- **API Reference** - Browse the endpoint documentation in this reference.
+- **Self-hosting** - Use the repository's \`$polychat-setup\` agent skill for guided setup and configuration.
 
 ## API Base URL
 
@@ -77,6 +76,4 @@ The hosted version at polychat.app has the following limits:
 - **Authenticated (Pro tokens)**: 200 pro tokens/day
 
 Pro tokens scale based on model cost, allowing ~22 expensive model messages or ~200 cheaper model messages.
-
-Self-hosted deployments can configure custom limits in \`apps/api/src/constants/app.ts\`.
 `;

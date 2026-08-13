@@ -1,5 +1,5 @@
 import { Sparkles } from "lucide-react";
-import type { DynamicAppCatalogItem as AppListItem } from "@assistant/schemas";
+import type { DynamicAppCatalogItem as AppListItem } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -7,8 +7,8 @@ import { AppCard } from "~/components/Apps/AppCard";
 import { groupAppsByCategory } from "~/components/Apps/utils";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, SearchInput } from "~/components/ui";
-import { CardSkeleton } from "~/components/ui/skeletons";
+import { Button, SearchInput } from "@ngriffin_uk/polychat-component-ui";
+import { CardSkeleton } from "@ngriffin_uk/polychat-component-ui";
 import { useReplicateModels } from "~/hooks/useReplicate";
 import { cn } from "~/lib/utils";
 import { isAuthenticationError } from "~/lib/errors";

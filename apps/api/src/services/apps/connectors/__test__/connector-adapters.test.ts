@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { recipeConnectorProviderSchema } from "@assistant/schemas";
+import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { connectorProviders } from "~/lib/providers/capabilities/connectors";
 import { configuredComposioToolkits } from "~/lib/providers/capabilities/connectors/composio/configured-toolkit-manifest";

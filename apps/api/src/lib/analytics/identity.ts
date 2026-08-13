@@ -1,4 +1,4 @@
-import { buildAnalyticsDistinctId as buildSharedAnalyticsDistinctId } from "@assistant/schemas";
+import { buildAnalyticsDistinctId as buildSharedAnalyticsDistinctId } from "@ngriffin_uk/polychat-schemas";
 
 import type { AnonymousUser, IUser } from "~/types";
 

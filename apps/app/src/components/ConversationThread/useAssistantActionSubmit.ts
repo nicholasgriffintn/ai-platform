@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import type { AssistantActionResult } from "@assistant/schemas";
+import type { AssistantActionResult } from "@ngriffin_uk/polychat-schemas";
 
 import { useStartRecipeConnector } from "~/hooks/useConnectors";
 import { useInstallAssistantRecipe, useInvokeAssistantRecipe } from "~/hooks/useRecipes";

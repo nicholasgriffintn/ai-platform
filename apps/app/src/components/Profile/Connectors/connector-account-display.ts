@@ -1,4 +1,4 @@
-import type { RecipeConnectorAccount } from "@assistant/schemas";
+import type { RecipeConnectorAccount } from "@ngriffin_uk/polychat-schemas";
 
 export function getConnectorAccountLabel(
 	account: RecipeConnectorAccount,

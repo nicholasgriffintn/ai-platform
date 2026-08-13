@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useMemo, useState } from "react";
-import type { AssistantActionItem } from "@assistant/schemas";
+import type { AssistantActionItem } from "@ngriffin_uk/polychat-schemas";
 
 import { useAgentToolDefaults } from "~/hooks/useAgentToolDefaults";
 import { useAgents } from "~/hooks/useAgents";

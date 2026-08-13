@@ -45,8 +45,14 @@ describe("SampleQuestions", () => {
 
 		render(<SampleQuestions setInput={vi.fn()} />);
 
-		expect(
-			within(screen.getByLabelText("Suggested questions")).getAllByRole("button"),
-		).toHaveLength(4);
+		const questionButtons = within(screen.getByLabelText("Suggested questions")).getAllByRole(
+			"button",
+		);
+		expect(questionButtons).toHaveLength(4);
+		expect(questionButtons.every((button) => button.querySelector("svg"))).toBe(true);
+		expect(screen.getByRole("button", { name: "Refresh" }).querySelector("svg")).not.toBeNull();
+		expect(screen.getByRole("checkbox", { name: "Hard" }).nextElementSibling).toHaveClass(
+			"polychat-conversation-challenging-track",
+		);
 	});
 });

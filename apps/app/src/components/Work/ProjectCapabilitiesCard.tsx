@@ -1,7 +1,7 @@
-import type { ProjectCapability } from "@assistant/schemas";
+import type { ProjectCapability } from "@ngriffin_uk/polychat-schemas";
 import { Settings2 } from "lucide-react";
 
-import { Card } from "~/components/ui";
+import { Card } from "@ngriffin_uk/polychat-component-ui";
 
 const MAX_VISIBLE_CAPABILITIES = 6;
 

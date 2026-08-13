@@ -3,7 +3,7 @@ import type {
 	TrainingJob,
 	TrainingJobEvent,
 	TrainingProviderId,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import type { D1Database } from "@cloudflare/workers-types";
 
 import {

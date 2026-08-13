@@ -1,5 +1,6 @@
-import { fetchApi, returnFetchedData } from "../fetch-wrapper";
-import { withProjectScope } from "../project-scope";
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+import { fetchApi } from "../fetch-wrapper";
+import { withProjectScope } from "@ngriffin_uk/polychat-library-client/project-scope";
 import type {
 	GenerateStrudelRequest,
 	GenerateStrudelResponse,

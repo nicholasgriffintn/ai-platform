@@ -1,6 +1,7 @@
 import { Brush, ChevronLeft } from "lucide-react";
 
-import { Button, Image } from "~/components/ui";
+import { Image } from "@ngriffin_uk/polychat-component-content";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { cn } from "~/lib/utils";
 import { DrawingCanvas } from "./DrawingCanvas";
 import { DrawingEditorControls } from "./DrawingEditorControls";

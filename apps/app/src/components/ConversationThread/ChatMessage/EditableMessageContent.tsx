@@ -1,8 +1,8 @@
 import { Check, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { Button } from "~/components/ui/Button";
-import { Textarea } from "~/components/ui/Textarea";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { Textarea } from "@ngriffin_uk/polychat-component-ui";
 import { getMessageTextContent } from "~/lib/messages";
 import type { Message } from "~/types";
 

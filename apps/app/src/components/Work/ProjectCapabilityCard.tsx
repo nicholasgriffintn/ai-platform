@@ -7,9 +7,9 @@ import type {
 	ProjectCapabilityKind,
 	ProjectExperienceDefinition,
 	ProjectToolDefinition,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
-import { Button, Card, DropdownMenu, DropdownMenuItem } from "~/components/ui";
+import { Button, Card, DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
 import { getIcon, getIconContainerClass } from "~/components/Apps/utils";
 import { getProjectCapabilityOpenPath } from "~/lib/project-experiences";
 

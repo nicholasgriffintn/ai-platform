@@ -5,9 +5,9 @@
 	"license": "Apache-2.0",
 	"main": "src/index.ts",
 	"scripts": {
-		"build": "pnpm --filter @assistant/schemas build",
+		"build": "pnpm --filter @ngriffin_uk/polychat-schemas build",
 		"deploy": "pnpm build && pnpm typecheck && wrangler deploy src/index.ts --name=assistant",
-		"dev": "pnpm --filter @assistant/schemas build && wrangler dev src/index.ts",
+		"dev": "pnpm --filter @ngriffin_uk/polychat-schemas build && wrangler dev src/index.ts",
 		"start": "wrangler dev src/index.ts",
 		"test": "vitest",
 		"coverage": "vitest run --coverage",
@@ -31,8 +31,6 @@
 		"db:studio:prod": "drizzle-kit studio"
 	},
 	"dependencies": {
-		"@assistant/agent-core": "workspace:*",
-		"@assistant/schemas": "workspace:*",
 		"@hono/standard-validator": "0.4.0",
 		"@hono/zod-validator": "0.9.0",
 		"@ngriffin_uk/auth-core": "^0.5.1",
@@ -44,6 +42,8 @@
 		"@ngriffin_uk/auth-provider-apple": "^4.0.1",
 		"@ngriffin_uk/auth-provider-github": "^4.0.0",
 		"@ngriffin_uk/auth-webauthn": "^0.4.6",
+		"@ngriffin_uk/polychat-library-agent-core": "workspace:^",
+		"@ngriffin_uk/polychat-schemas": "workspace:^",
 		"@scalar/hono-api-reference": "0.11.13",
 		"@sentry/cloudflare": "10.69.0",
 		"@tsndr/cloudflare-worker-jwt": "3.2.2",
@@ -55,17 +55,17 @@
 		"isbot": "5.2.1",
 		"posthog-node": "^5.48.1",
 		"stripe": "22.4.0",
-		"zod": "4.4.3"
+		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "5.20260809.1",
-		"@types/node": "26.2.0",
+		"@cloudflare/workers-types": "catalog:",
+		"@types/node": "catalog:",
 		"better-sqlite3": "13.0.3",
 		"drizzle-kit": "0.31.10",
-		"oxfmt": "0.62.0",
-		"oxlint": "1.77.0",
-		"typescript": "6.0.3",
-		"vitest": "4.1.10",
-		"wrangler": "4.120.0"
+		"oxfmt": "catalog:",
+		"oxlint": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:",
+		"wrangler": "catalog:"
 	}
 }

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from "react";
-import type { NoteMetadata } from "@assistant/schemas";
+import type { NoteMetadata } from "@ngriffin_uk/polychat-schemas";
 import { toast } from "sonner";
 
-import { splitTitleAndContent } from "~/lib/text-utils";
+import { splitTitleAndContent } from "@ngriffin_uk/polychat-utility-core";
 
 interface SaveOptions {
 	refreshMetadata?: boolean;

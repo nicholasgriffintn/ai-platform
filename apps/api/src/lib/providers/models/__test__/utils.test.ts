@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { ModelModalities } from "@assistant/schemas";
+import type { ModelModalities } from "@ngriffin_uk/polychat-schemas";
 import {
 	getModelInputModalities,
 	getModelOutputModalities,

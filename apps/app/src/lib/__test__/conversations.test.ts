@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import type { Conversation } from "~/types";
-import { createConversationId, preserveOptimisticMessages } from "../conversations";
+import { preserveOptimisticMessages } from "@ngriffin_uk/polychat-library-chat/conversations";
+import { createConversationId } from "../conversations";
 
 function conversation(id: string, messages: Conversation["messages"]): Conversation {
 	return {

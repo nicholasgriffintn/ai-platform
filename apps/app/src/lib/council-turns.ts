@@ -1,4 +1,4 @@
-import type { CouncilMemberId } from "@assistant/schemas";
+import type { CouncilMemberId } from "@ngriffin_uk/polychat-schemas";
 
 import type { ChatRequestOptions, Message } from "~/types";
 import { normalizeMessage } from "./messages";

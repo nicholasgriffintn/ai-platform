@@ -2,7 +2,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { githubApiRequest } from "~/lib/github/api-client";
 import { getGitHubAppInstallationToken } from "~/lib/github";
 import type { ProviderConnectionRecord } from "~/repositories/ProviderConnectionRepository";
-import type { SandboxConnection } from "@assistant/schemas";
+import type { SandboxConnection } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import {
 	parseGitHubConnectionData,

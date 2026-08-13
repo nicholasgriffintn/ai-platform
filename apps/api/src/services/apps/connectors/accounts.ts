@@ -2,7 +2,7 @@ import type {
 	RecipeConnectorAccount,
 	RecipeConnectorAccountUpdateRequest,
 	RecipeConnectorProvider,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { listComposioConnectedAccounts } from "~/lib/providers/capabilities/connectors/composio/client";

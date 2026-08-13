@@ -1,4 +1,8 @@
-import type { SandboxRunControl, SandboxRunEvent, SandboxRunInstruction } from "@assistant/schemas";
+import type {
+	SandboxRunControl,
+	SandboxRunEvent,
+	SandboxRunInstruction,
+} from "@ngriffin_uk/polychat-schemas";
 
 export type CoordinatorState = SandboxRunControl;
 

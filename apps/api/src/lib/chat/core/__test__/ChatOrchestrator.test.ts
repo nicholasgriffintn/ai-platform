@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { parseChatStreamSseBuffer } from "@assistant/schemas";
+import { parseChatStreamSseBuffer } from "@ngriffin_uk/polychat-schemas";
 import type { CoreChatOptions } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { ChatOrchestrator } from "../ChatOrchestrator";

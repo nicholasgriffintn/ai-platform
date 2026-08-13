@@ -1,4 +1,4 @@
-import type { ParsedChatCompletionRequestBody } from "@assistant/schemas";
+import type { ParsedChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
 import type { Agent } from "~/lib/database/schema";
 import type { ChatCompletionParameters, Message } from "~/types";
 

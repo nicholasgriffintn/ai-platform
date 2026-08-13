@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { ModelCatalogItem } from "@assistant/schemas";
+import type { ModelCatalogItem } from "@ngriffin_uk/polychat-schemas";
 import {
 	collapseRegionalModelVariants,
 	getRegionalModelDisplayName,

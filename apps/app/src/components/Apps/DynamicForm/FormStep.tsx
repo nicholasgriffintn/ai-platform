@@ -1,4 +1,4 @@
-import type { AppSchema } from "@assistant/schemas";
+import type { AppSchema } from "@ngriffin_uk/polychat-schemas";
 import { FormField } from "./FormField";
 
 interface FormStepProps {

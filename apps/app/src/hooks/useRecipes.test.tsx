@@ -2,7 +2,10 @@ import { act, renderHook } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { AssistantRecipeInstallResponse, RecipeInstallation } from "@assistant/schemas";
+import type {
+	AssistantRecipeInstallResponse,
+	RecipeInstallation,
+} from "@ngriffin_uk/polychat-schemas";
 
 import {
 	RECIPE_INSTALLATIONS_QUERY_KEY,

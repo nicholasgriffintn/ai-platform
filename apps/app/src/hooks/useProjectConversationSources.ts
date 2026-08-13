@@ -3,7 +3,7 @@ import { useMemo } from "react";
 
 import { API_BASE_URL } from "~/constants";
 import { listProjectConversationSources } from "~/lib/api/sources";
-import type { AttachmentData } from "~/lib/chat/attachments";
+import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import {
 	createSourceAttachment,
 	type SourceAttachmentCapabilities,

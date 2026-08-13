@@ -1,5 +1,9 @@
 import { getSandbox } from "@cloudflare/sandbox";
-import type { SandboxModelSettings, SandboxTaskType, SandboxTrustLevel } from "@assistant/schemas";
+import type {
+	SandboxModelSettings,
+	SandboxTaskType,
+	SandboxTrustLevel,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { PolychatClient } from "../polychat-client";
 import type { RunControlClient } from "../run-control-client";

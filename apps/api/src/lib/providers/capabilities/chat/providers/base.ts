@@ -1,6 +1,6 @@
 import { ResponseFormatter } from "~/lib/formatter";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import { StorageService } from "~/lib/storage";

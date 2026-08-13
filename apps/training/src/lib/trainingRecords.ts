@@ -1,4 +1,4 @@
-import type { TrainingDeployment, TrainingJob } from "@assistant/schemas";
+import type { TrainingDeployment, TrainingJob } from "@ngriffin_uk/polychat-schemas";
 
 export function mergeTrainingJob(stored: TrainingJob | null, live: TrainingJob): TrainingJob {
 	if (!stored) return live;

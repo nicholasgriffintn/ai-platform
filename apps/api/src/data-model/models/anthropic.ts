@@ -1,5 +1,5 @@
 import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
-import type { ModelConfig } from "@assistant/schemas";
+import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 
 const PROVIDER = "anthropic";
 const anthropicLatestSearchTool = {

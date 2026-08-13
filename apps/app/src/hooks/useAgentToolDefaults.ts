@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { readToolIds } from "@assistant/schemas";
+import { readToolIds } from "@ngriffin_uk/polychat-schemas";
 
 import { useToolsStore } from "~/state/stores/toolsStore";
 import type { ChatMode } from "~/types";

@@ -3,14 +3,17 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
-import { recipeConnectorProviderSchema } from "@assistant/schemas";
-import type { RecipeConnectorManifest, RecipeConnectorProvider } from "@assistant/schemas";
+import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
+import type {
+	RecipeConnectorManifest,
+	RecipeConnectorProvider,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { EmptyState } from "~/components/Core/EmptyState";
 import { ModelIcon } from "~/components/ModelIcon";
 import { PageShell } from "~/components/Core/PageShell";
-import { ConfirmationDialog, SearchInput } from "~/components/ui";
-import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { ConfirmationDialog, SearchInput } from "@ngriffin_uk/polychat-component-ui";
+import { Tabs, TabsList, TabsTrigger } from "@ngriffin_uk/polychat-component-ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import {
 	RECIPE_CONNECTORS_QUERY_KEY,
@@ -20,7 +23,7 @@ import {
 } from "~/hooks/useConnectors";
 import { useUser } from "~/hooks/useUser";
 import { formatProviderLabel } from "~/lib/provider-display";
-import { ApiError } from "~/lib/api/fetch-wrapper";
+import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import type { ProviderSetting } from "~/lib/api/services/user-service";
 import {
 	completeConnectorAuthPopup,

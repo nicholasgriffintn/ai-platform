@@ -1,9 +1,15 @@
 import { Filter, Loader2, Search, Star } from "lucide-react";
 
 import { EmptyState } from "~/components/Core/EmptyState";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/Card";
-import { FormSelect } from "~/components/ui/Form/Select";
-import { Input } from "~/components/ui/input";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@ngriffin_uk/polychat-component-ui";
+import { FormSelect } from "@ngriffin_uk/polychat-component-ui";
+import { Input } from "@ngriffin_uk/polychat-component-ui";
 import { useAgentFilters } from "~/hooks/useAgentFilters";
 import { useSharedAgents } from "~/hooks/useSharedAgents";
 import { SharedAgentCard } from "./cards/SharedAgentCard";

@@ -1,8 +1,8 @@
 import { CheckCircle2, MessageSquareQuote, Scale } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { Button } from "~/components/ui";
-import { SearchInput } from "~/components/ui/SearchInput";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { SearchInput } from "@ngriffin_uk/polychat-component-ui";
 import { useConversationModelOptions } from "~/hooks/useConversationModelOptions";
 import type { OpinionMode, OpinionRequest } from "~/lib/chat/opinion";
 import { cn } from "~/lib/utils";

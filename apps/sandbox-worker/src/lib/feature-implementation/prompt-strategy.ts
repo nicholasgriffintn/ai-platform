@@ -1,4 +1,4 @@
-import type { SandboxPromptStrategy, SandboxTaskType } from "@assistant/schemas";
+import type { SandboxPromptStrategy, SandboxTaskType } from "@ngriffin_uk/polychat-schemas";
 
 type ResolvedPromptStrategy = Exclude<SandboxPromptStrategy, "auto">;
 

@@ -1,5 +1,10 @@
-import { fetchApiOrThrow, returnFetchedData } from "./fetch-wrapper";
-import type { CreateRealtimeSessionOptions, RealtimeModality, RealtimeSession } from "../realtime";
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+import type {
+	CreateRealtimeSessionOptions,
+	RealtimeModality,
+	RealtimeSession,
+} from "@ngriffin_uk/polychat-library-realtime";
+import { fetchApiOrThrow } from "./fetch-wrapper";
 
 function appendParam(params: URLSearchParams, key: string, value?: string): void {
 	if (value) {

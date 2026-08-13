@@ -1,7 +1,6 @@
 import { Clock3, MessageCircle, RadioTower, UsersRound, type LucideIcon } from "lucide-react";
-import type { HomeChatModeId } from "@assistant/schemas";
+import type { HomeChatModeId } from "@ngriffin_uk/polychat-schemas";
 
-export type { HomeChatModeId };
 export type SelectableHomeChatModeId = Exclude<HomeChatModeId, "sms">;
 
 export interface HomeChatModeOption {

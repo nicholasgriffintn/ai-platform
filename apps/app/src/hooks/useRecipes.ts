@@ -6,7 +6,7 @@ import type {
 	RecipeInstallationsResponse,
 	RecipeInstallationTrigger,
 	RecipeInstallationUpdateRequest,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import {
 	deleteRecipeInstallation,
 	installAssistantRecipe,

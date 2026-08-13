@@ -3,7 +3,7 @@ import {
 	getTrainingDeploymentChatModelId,
 	type TrainingDeployment,
 	type TrainingDeploymentTarget,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { isRecord } from "./objects.js";
 import { optionalString } from "./strings.js";

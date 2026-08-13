@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card, ConfirmationDialog } from "~/components/ui";
+import { Button, Card, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import { useDeleteWorkspace } from "~/hooks/useWorkspaces";
 import { isAuthenticationError } from "~/lib/errors";
 import { useWorkData } from "./WorkContext";

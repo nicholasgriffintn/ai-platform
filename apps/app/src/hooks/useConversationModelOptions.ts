@@ -13,7 +13,7 @@ import {
 	sortModelsByDisplayName,
 } from "~/lib/models";
 import { useChatStore } from "~/state/stores/chatStore";
-import type { ModelConfigItem, ModelModality } from "@assistant/schemas";
+import type { ModelConfigItem, ModelModality } from "@ngriffin_uk/polychat-schemas";
 
 interface UseConversationModelOptionsOptions {
 	excludeCurrentModel?: boolean;

@@ -1,4 +1,4 @@
-import type { SandboxTaskType } from "@assistant/schemas";
+import type { SandboxTaskType } from "@ngriffin_uk/polychat-schemas";
 
 import type { Env, TaskEventEmitter, TaskParams, TaskResult, TaskSecrets } from "../types";
 

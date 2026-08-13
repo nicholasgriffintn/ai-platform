@@ -5,7 +5,7 @@ import {
 	type CouncilChatOptions,
 	type CouncilMemberDefinition,
 	type CouncilMemberId,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { parseAIResponseJson } from "~/utils/json";
 
 const allCouncilMembers = councilMembers as readonly CouncilMemberDefinition[];

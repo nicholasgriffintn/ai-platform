@@ -1,4 +1,4 @@
-import type { SandboxTaskType } from "@assistant/schemas/sandbox-constants";
+import type { SandboxTaskType } from "@ngriffin_uk/polychat-schemas/sandbox-constants";
 
 export const SANDBOX_TASK_TOOL_NAMES = [
 	"run_feature_implementation",

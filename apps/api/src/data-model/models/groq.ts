@@ -1,4 +1,4 @@
-import type { ModelConfig } from "@assistant/schemas";
+import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 
 export const groqModelConfig: ModelConfig = {
 	"deepseek-r1-distill-qwen-32b": {

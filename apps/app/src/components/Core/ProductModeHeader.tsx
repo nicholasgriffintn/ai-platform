@@ -2,8 +2,8 @@ import { type ReactNode, useRef } from "react";
 import { Cloud, CloudOff, Menu, PanelLeftOpen } from "lucide-react";
 import { useLocation } from "react-router";
 
-import { Button } from "~/components/ui";
-import { useHeaderScrollEdge } from "~/hooks/useHeaderScrollEdge";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { useHeaderScrollEdge } from "@ngriffin_uk/polychat-utility-react";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { isProductModeRoute } from "~/lib/navigation/product-mode";
 import { cn } from "~/lib/utils";

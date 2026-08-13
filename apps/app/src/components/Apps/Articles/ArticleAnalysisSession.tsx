@@ -1,7 +1,7 @@
 import { Link2, Loader2, Plus, Save, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router";
 
-import { Button, Input, Textarea } from "~/components/ui";
+import { Button, Input, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import { cn } from "~/lib/utils";
 import { useArticleAnalysisSession } from "./useArticleAnalysisSession";
 

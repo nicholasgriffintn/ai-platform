@@ -4,7 +4,7 @@ import type {
 	TrainingJob,
 	TrainingModelDefinition,
 	TrainingProviderId,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { Env } from "./env.js";
 

@@ -2,7 +2,7 @@ import type {
 	RecipeConnectorManifest,
 	RecipeConnectorProvider,
 	RecipeConnectorStatus,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import {

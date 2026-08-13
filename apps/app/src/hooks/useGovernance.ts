@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { CreateTemplateInput, WorkspaceRole } from "@assistant/schemas";
+import type { CreateTemplateInput, WorkspaceRole } from "@ngriffin_uk/polychat-schemas";
 
 import {
 	createTemplate,

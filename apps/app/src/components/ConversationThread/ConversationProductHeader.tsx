@@ -2,7 +2,7 @@ import { GitBranch } from "lucide-react";
 import { useMemo } from "react";
 
 import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
-import { Button } from "~/components/ui";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { useChat } from "~/hooks/useChat";
 import { buildAgentTraceEntries } from "~/lib/agent-trace";
 import { useChatStore } from "~/state/stores/chatStore";

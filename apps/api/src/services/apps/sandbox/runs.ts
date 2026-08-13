@@ -1,5 +1,5 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { SandboxRunInstruction } from "@assistant/schemas";
+import type { SandboxRunInstruction } from "@ngriffin_uk/polychat-schemas";
 import { SANDBOX_RUNS_APP_ID } from "~/constants/app";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";

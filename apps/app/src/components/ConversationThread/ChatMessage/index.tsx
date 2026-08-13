@@ -6,7 +6,7 @@ import { apiService } from "~/lib/api/api-service";
 import type { OpinionRequest } from "~/lib/chat/opinion";
 import { getMessageTextContent } from "~/lib/messages";
 import { getModelDisplayName } from "~/lib/models";
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { Message } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
 import { EditableMessageContent } from "./EditableMessageContent";

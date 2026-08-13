@@ -18,7 +18,7 @@ import {
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
 import type { RealtimeCameraDevice, RealtimeLiveStatus } from "~/hooks/useRealtimeLiveSession";
 import {
 	REALTIME_LIVE_PROVIDER_OPTIONS,

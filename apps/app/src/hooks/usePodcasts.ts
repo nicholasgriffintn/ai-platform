@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Podcast, PodcastListItem } from "@assistant/schemas";
+import type { Podcast, PodcastListItem } from "@ngriffin_uk/polychat-schemas";
 
 import { fetchPodcast, fetchPodcasts, processPodcast, uploadPodcast } from "~/lib/api/dynamic-apps";
 

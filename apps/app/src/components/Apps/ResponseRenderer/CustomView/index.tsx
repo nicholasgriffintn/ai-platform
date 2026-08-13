@@ -1,4 +1,4 @@
-import { MemoizedMarkdown } from "~/components/ui/Markdown";
+import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
 import { JsonView } from "../JsonView";
 import { renderCustomView } from "./registry";
 

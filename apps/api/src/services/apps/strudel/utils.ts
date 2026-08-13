@@ -1,4 +1,4 @@
-import { strudelPatternSchema } from "@assistant/schemas";
+import { strudelPatternSchema } from "@ngriffin_uk/polychat-schemas";
 import type { z } from "zod";
 
 import type { OutputRecord } from "~/repositories/OutputRepository";

@@ -11,7 +11,7 @@ import {
 	strudelPatternDetailResponseSchema,
 	errorResponseSchema,
 	successResponseSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { generateStrudelCode } from "~/services/apps/strudel/generate";

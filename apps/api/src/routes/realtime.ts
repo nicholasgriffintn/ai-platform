@@ -8,7 +8,7 @@ import {
 	realtimePipelineSessionCreateSchema,
 	realtimePipelineSessionResponseSchema,
 	realtimeSessionResponseSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import type { IEnv, IUser } from "~/types";

@@ -40,7 +40,7 @@ vi.mock("~/lib/api/realtime-service", () => ({
 	createRealtimeSession: mocks.createRealtimeSession,
 }));
 
-vi.mock("~/lib/realtime", () => ({
+vi.mock("@ngriffin_uk/polychat-library-realtime", () => ({
 	connectRealtimeWebRTC: mocks.connectRealtimeWebRTC,
 	connectRealtimeWebSocket: mocks.connectRealtimeWebSocket,
 	isRealtimeWebSocketConnection: mocks.isRealtimeWebSocketConnection,
@@ -48,7 +48,7 @@ vi.mock("~/lib/realtime", () => ({
 	sendJsonWhenOpen: mocks.sendJsonWhenOpen,
 }));
 
-vi.mock("~/lib/realtime/audio", () => ({
+vi.mock("@ngriffin_uk/polychat-library-realtime/audio", () => ({
 	arrayBufferToBase64: mocks.arrayBufferToBase64,
 	createPcm16AudioPlayer: mocks.createPcm16AudioPlayer,
 	listRealtimeVideoInputDevices: mocks.listRealtimeVideoInputDevices,
@@ -60,7 +60,7 @@ vi.mock("~/lib/realtime/audio", () => ({
 	stopMediaStream: mocks.stopMediaStream,
 }));
 
-vi.mock("~/lib/realtime/audio-levels", () => ({
+vi.mock("@ngriffin_uk/polychat-library-realtime/audio-levels", () => ({
 	calculatePcm16Base64AudioLevel: mocks.calculatePcm16Base64AudioLevel,
 	calculatePcm16AudioLevel: mocks.calculatePcm16AudioLevel,
 	createMediaStreamAudioLevelMeter: mocks.createMediaStreamAudioLevelMeter,

@@ -23,6 +23,10 @@ describe("ProductModeSwitch", () => {
 
 		expect(screen.getByRole("link", { name: "Work" })).toHaveAttribute("aria-current", "page");
 		expect(screen.getByRole("link", { name: "Chat" })).not.toHaveAttribute("aria-current");
+		expect(screen.getByRole("link", { name: "Chat" })).toHaveClass("no-underline");
+		expect(screen.getByRole("link", { name: "Work" })).toHaveClass("no-underline");
+		expect(screen.getByRole("link", { name: "Chat" }).querySelector("svg")).not.toBeNull();
+		expect(screen.getByRole("link", { name: "Work" }).querySelector("svg")).not.toBeNull();
 
 		fireEvent.click(screen.getByRole("link", { name: "Chat" }));
 

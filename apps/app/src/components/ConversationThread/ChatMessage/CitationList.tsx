@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Favicon } from "~/components/ui/Favicon";
+import { Favicon } from "@ngriffin_uk/polychat-component-content";
 
 interface CitationListProps {
 	citations:

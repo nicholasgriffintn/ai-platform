@@ -1,5 +1,5 @@
 import type { Message } from "~/types";
-import { isRecord, readOptionalString } from "./objects";
+import { isRecord, readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 import { isWeatherData } from "./weather";
 
 type ToolResultPart = Extract<NonNullable<Message["parts"]>[number], { type: "tool_result" }>;

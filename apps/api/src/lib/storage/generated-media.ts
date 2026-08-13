@@ -1,4 +1,4 @@
-import type { ModelModalities } from "@assistant/schemas";
+import type { ModelModalities } from "@ngriffin_uk/polychat-schemas";
 import type { IEnv } from "~/types";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { StorageService } from "~/lib/storage";

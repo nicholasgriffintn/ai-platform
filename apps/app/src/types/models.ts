@@ -1,4 +1,4 @@
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
 export type ModelSelectorScope = "default" | "text-only" | "live" | "chat-and-live";
 

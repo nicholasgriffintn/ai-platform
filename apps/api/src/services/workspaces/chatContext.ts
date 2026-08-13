@@ -2,7 +2,7 @@ import {
 	projectCodingEnvironmentSchema,
 	type ChatHostedToolSettings,
 	type SandboxRequestOptions,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { CoreChatOptions } from "~/types";

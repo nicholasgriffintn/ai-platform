@@ -1,6 +1,6 @@
 import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { ProjectCapability, ProjectToolDefinition } from "@assistant/schemas";
+import type { ProjectCapability, ProjectToolDefinition } from "@ngriffin_uk/polychat-schemas";
 
 import {
 	Button,
@@ -12,7 +12,7 @@ import {
 	DialogTitle,
 	FormInput,
 	Textarea,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
 import {
 	parseProjectToolConfiguration,
 	type ProjectToolConfiguration,

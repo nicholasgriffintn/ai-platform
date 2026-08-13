@@ -5,10 +5,10 @@ import {
 	trainingDeploymentTargetSchema,
 	type TrainingDeploymentTarget,
 	type TrainingProviderId,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { hasD1DatabaseBinding, type EnvWithD1Database } from "~/lib/database/bindings";
-import type { ModelConfig, ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfig, ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { IEnv } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { isRecord } from "~/utils/objects";

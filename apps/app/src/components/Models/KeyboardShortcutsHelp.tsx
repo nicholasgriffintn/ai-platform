@@ -1,6 +1,11 @@
 import { useEffect, useRef } from "react";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "~/components/ui/Dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@ngriffin_uk/polychat-component-ui";
 
 interface KeyboardShortcutsHelpProps {
 	isOpen: boolean;

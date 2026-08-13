@@ -15,7 +15,7 @@ import type {
 	SandboxConnection,
 	SandboxConnectionRepositoriesPayload,
 	SandboxInstallConfig,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
 
 export const SANDBOX_QUERY_KEYS = {

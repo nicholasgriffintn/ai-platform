@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { encodePcm16Audio } from "./audio";
+import { encodePcm16Audio } from "@ngriffin_uk/polychat-library-realtime/audio";
 import {
 	calculateNormalisedAudioLevel,
 	calculatePcm16AudioLevel,
 	createMediaStreamAudioLevelMeter,
-} from "./audio-levels";
+} from "@ngriffin_uk/polychat-library-realtime/audio-levels";
 
 describe("realtime audio level helpers", () => {
 	it("normalises PCM samples to a bounded meter value", () => {

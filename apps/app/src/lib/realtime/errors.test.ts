@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatRealtimeWebSocketCloseError } from "./errors";
+import { formatRealtimeWebSocketCloseError } from "@ngriffin_uk/polychat-library-realtime/errors";
 
 function closeEvent(init: Pick<CloseEvent, "code" | "reason">): CloseEvent {
 	return init as CloseEvent;

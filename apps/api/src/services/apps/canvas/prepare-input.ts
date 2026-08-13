@@ -2,7 +2,7 @@ import type {
 	InputSchemaInputFieldDescriptor,
 	InputSchemaInputFieldType,
 	ModelConfigItem,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { buildInputSchemaInput, type InputSchemaBuildParameters } from "~/utils/inputSchema";
 import type { CanvasGenerationInput } from "./types";
 import { isCanvasReferenceFieldName } from "./input-requirements";

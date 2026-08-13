@@ -1,4 +1,4 @@
-import type { TrainingProviderId } from "@assistant/schemas";
+import type { TrainingProviderId } from "@ngriffin_uk/polychat-schemas";
 
 import { BedrockTrainingProvider } from "./BedrockTrainingProvider.js";
 import { SageMakerTrainingProvider } from "./SageMakerTrainingProvider.js";

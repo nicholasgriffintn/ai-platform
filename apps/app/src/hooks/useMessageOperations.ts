@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import type { ChatRequestOptions, Message } from "~/types";
-import { normalizeSelectedModel } from "~/lib/chat/model-selection";
+import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
 import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
 import { normalizeMessage } from "~/lib/messages";
 import { useConversationStorage } from "./useConversationStorage";

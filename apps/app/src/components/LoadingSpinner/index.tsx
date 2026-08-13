@@ -1,6 +1,6 @@
 import { Loader2 } from "lucide-react";
 
-import { clampPercentage } from "~/lib/percentage";
+import { clampPercentage } from "@ngriffin_uk/polychat-utility-core";
 
 interface LoadingSpinnerProps {
 	message?: string;

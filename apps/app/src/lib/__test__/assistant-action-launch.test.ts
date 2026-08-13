@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { AssistantRecipeInstallResponse, RecipeInvocationResponse } from "@assistant/schemas";
+import type {
+	AssistantRecipeInstallResponse,
+	RecipeInvocationResponse,
+} from "@ngriffin_uk/polychat-schemas";
 
 import {
 	createAssistantActionConversationUrl,

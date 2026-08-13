@@ -1,4 +1,4 @@
-import { createConversationTitleExcerpt } from "@assistant/schemas";
+import { createConversationTitleExcerpt } from "@ngriffin_uk/polychat-schemas";
 
 import { getMessageTextContent } from "~/lib/messages";
 import type { Message } from "~/types";

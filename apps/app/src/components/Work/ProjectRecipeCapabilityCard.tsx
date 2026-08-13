@@ -1,10 +1,14 @@
 import { Ellipsis, Plus, Trash2 } from "lucide-react";
-import type { AssistantRecipe, ProjectCapability, RecipeInstallation } from "@assistant/schemas";
+import type {
+	AssistantRecipe,
+	ProjectCapability,
+	RecipeInstallation,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { RecipeCard } from "~/components/Apps/Recipes/RecipeCard";
 import { RecipeEventTriggersDialog } from "~/components/Apps/Recipes/RecipeEventTriggersDialog";
 import type { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
-import { Button, DropdownMenu, DropdownMenuItem } from "~/components/ui";
+import { Button, DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
 
 interface ProjectRecipeCapabilityCardProps {
 	canManage: boolean;

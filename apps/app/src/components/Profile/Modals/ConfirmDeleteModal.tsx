@@ -1,13 +1,13 @@
 import { Loader2 } from "lucide-react";
 
-import { Button } from "~/components/ui/Button";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import {
 	Dialog,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "~/components/ui/Dialog";
+} from "@ngriffin_uk/polychat-component-ui";
 
 export function ConfirmDeleteModal({
 	isOpen,

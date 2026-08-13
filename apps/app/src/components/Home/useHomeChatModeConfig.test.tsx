@@ -2,7 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { isValidElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { HomeChatModeId, ModelConfig, ModelConfigItem } from "@assistant/schemas";
+import type { HomeChatModeId, ModelConfig, ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { FinalLiveInputTranscript } from "~/hooks/useLiveConversationMessages";
 import { useHomeChatModeConfig } from "./useHomeChatModeConfig";
 

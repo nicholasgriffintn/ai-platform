@@ -16,13 +16,13 @@ import {
 	Input,
 	Label,
 	Textarea,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
 import { useGenerateStrudelPattern, useSaveStrudelPattern } from "~/hooks/useStrudel";
 import { useModels } from "~/hooks/useModels";
 import { defaultCode, examplePatterns, type PatternExample } from "~/lib/strudel/examples";
 import { EMPTY_MODEL_CONFIG, getAvailableModels } from "~/lib/models";
 import { cn } from "~/lib/utils";
-import { parseCommaSeparatedTags } from "~/lib/tags";
+import { parseCommaSeparatedTags } from "@ngriffin_uk/polychat-utility-core";
 import type { StrudelComplexity, StrudelStyle } from "~/types";
 
 const STYLE_OPTIONS: { label: string; value: "" | StrudelStyle }[] = [

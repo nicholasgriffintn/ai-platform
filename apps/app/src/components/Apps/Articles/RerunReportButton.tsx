@@ -2,7 +2,7 @@ import { RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import { Button } from "~/components/ui";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import {
 	useAnalyseArticle,
 	useFetchSourceArticlesByIds,
@@ -11,7 +11,7 @@ import {
 	useSummariseArticle,
 } from "~/hooks/useArticles";
 import { cn } from "~/lib/utils";
-import { getStringProperty, isRecord } from "~/lib/unknown-values";
+import { getStringProperty, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 interface RerunReportButtonProps {
 	sourceIds: string[];

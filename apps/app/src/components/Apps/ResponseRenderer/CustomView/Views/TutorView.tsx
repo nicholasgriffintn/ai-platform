@@ -1,8 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 
-import { Favicon } from "~/components/ui";
-import { MemoizedMarkdown } from "~/components/ui/Markdown";
+import { Favicon, MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
 
 export function TutorView({ data, embedded }: { data: any; embedded: boolean }) {
 	const [showAllSources, setShowAllSources] = useState(false);

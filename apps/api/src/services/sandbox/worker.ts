@@ -5,7 +5,7 @@ import type {
 	SandboxTrustLevel,
 	SandboxModelSettings,
 	SandboxWorkerExecuteRequest,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateJwtToken } from "~/services/auth/jwt";

@@ -11,7 +11,7 @@ import {
 	listArticlesResponseSchema,
 	sourceArticlesResponseSchema,
 	errorResponseSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";

@@ -1,4 +1,4 @@
-import type { Output } from "@assistant/schemas";
+import type { Output } from "@ngriffin_uk/polychat-schemas";
 
 interface VerifiedQuotes {
 	verified: boolean;

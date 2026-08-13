@@ -1,8 +1,8 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { AssistantActionSelection } from "@assistant/schemas";
-import type { AttachmentData } from "~/lib/chat/attachments";
+import type { AssistantActionSelection } from "@ngriffin_uk/polychat-schemas";
+import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { ConversationThread } from ".";
 
 const mocks = vi.hoisted(() => {

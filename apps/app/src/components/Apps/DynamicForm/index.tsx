@@ -1,8 +1,8 @@
 import { Check } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getDynamicAppFormStepErrors, type AppSchema } from "@assistant/schemas";
+import { getDynamicAppFormStepErrors, type AppSchema } from "@ngriffin_uk/polychat-schemas";
 
-import { Button } from "~/components/ui";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { cn } from "~/lib/utils";
 import { getCardGradient, getIcon, getIconContainerClass } from "../utils";
 import { FormStep } from "./FormStep";

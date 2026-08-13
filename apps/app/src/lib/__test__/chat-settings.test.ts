@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { ChatSettings } from "~/types";
 import { applyModelResponseDefaults } from "../chat-settings";
 

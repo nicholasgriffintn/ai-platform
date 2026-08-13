@@ -14,7 +14,7 @@ import {
 	type TrainingProviderId,
 	type TrainingWorkerDeployModelRequest,
 	type TrainingWorkerStartJobRequest,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { IEnv } from "~/types";
 import { requestTrainingWorker } from "./trainingWorkerHttp";

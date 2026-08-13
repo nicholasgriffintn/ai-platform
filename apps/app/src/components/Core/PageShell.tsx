@@ -1,6 +1,6 @@
 import { type ReactNode, useCallback, useMemo, useState } from "react";
 
-import { NotificationBar } from "~/components/ui/NotificationBar";
+import { NotificationBar } from "@ngriffin_uk/polychat-component-ui";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
 import {

@@ -1,4 +1,4 @@
-import type { TrainingModelDefinition } from "@assistant/schemas";
+import type { TrainingModelDefinition } from "@ngriffin_uk/polychat-schemas";
 
 import { HuggingFaceHub, type HuggingFaceHubModelFile } from "../lib/HuggingFaceHub.js";
 import { S3ObjectStore, type AwsS3Credentials } from "../lib/S3ObjectStore.js";

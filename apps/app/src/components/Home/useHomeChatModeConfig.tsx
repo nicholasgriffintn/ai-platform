@@ -1,4 +1,7 @@
-import { defaultCouncilMemberIds, type CouncilMemberId } from "@assistant/schemas/council-data";
+import {
+	defaultCouncilMemberIds,
+	type CouncilMemberId,
+} from "@ngriffin_uk/polychat-schemas/council-data";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 
@@ -28,11 +31,11 @@ import {
 } from "~/lib/realtime/live-providers";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ModelSelectionChangeHandler } from "~/types";
+import type { HomeChatModeId } from "@ngriffin_uk/polychat-schemas";
 import { LiveChatModeControls, LiveSessionComposerControls } from "./LiveChatModeControls";
 import {
 	HOME_CHAT_MODE_OPTIONS,
 	getHomeChatModeAvailability,
-	type HomeChatModeId,
 	resolveHomeChatModeId,
 } from "./chatModes";
 

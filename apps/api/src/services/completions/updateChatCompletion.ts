@@ -1,4 +1,4 @@
-import { canReplaceStoredConversationMessages } from "@assistant/schemas";
+import { canReplaceStoredConversationMessages } from "@ngriffin_uk/polychat-schemas";
 import { ConversationManager } from "~/lib/conversationManager";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { cloneMessagesForBranch, selectBranchSourceMessages } from "~/lib/chat/branchMessages";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ResponseDisplayType } from "@assistant/schemas";
+import { ResponseDisplayType } from "@ngriffin_uk/polychat-schemas";
 import { formatToolErrorResponse, formatToolResponse } from "../tool-responses";
 
 describe("Tool Response Utilities", () => {

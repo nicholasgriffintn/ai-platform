@@ -12,17 +12,17 @@ import {
 	parseChatStreamSseBuffer,
 	type ChatStreamUpdate,
 	type ParsedChatStreamSseEvent,
-} from "@assistant/schemas/chat-stream";
-import { normaliseToolIds } from "@assistant/schemas/tool-ids";
+} from "@ngriffin_uk/polychat-schemas/chat-stream";
+import { normaliseToolIds } from "@ngriffin_uk/polychat-schemas/tool-ids";
 import type {
 	ChatCompletionResponseBody,
 	ModelConfigItem,
 	ModelRouterMode,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { getSandboxTaskToolNames } from "~/lib/sandbox/task-tools";
 import { readCompactionStatusMessage } from "~/lib/chat/compaction-status";
 import { filterUnavailableModelToolSelections } from "~/lib/model-tools";
-import { isRecord } from "~/lib/objects";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import {
 	getMessageTextContent,
 	serialiseMessagesForChatRequest,
@@ -39,10 +39,9 @@ import { normaliseConversationResponse } from "../conversation-response";
 import {
 	ApiError,
 	createApiErrorFromResponse,
-	fetchApi,
-	fetchApiOrThrow,
 	returnFetchedData,
-} from "../fetch-wrapper";
+} from "@ngriffin_uk/polychat-library-client";
+import { fetchApi, fetchApiOrThrow } from "../fetch-wrapper";
 
 export interface ConversationUpdateRequest {
 	archived?: boolean;

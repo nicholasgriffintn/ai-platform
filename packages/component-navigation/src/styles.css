@@ -1,0 +1,100 @@
+@layer polychat-navigation {
+	.polychat-navigation-mode-switch {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 0.25rem;
+		padding: 0.25rem;
+		border-radius: 0.5rem;
+		background: #e4e4e7;
+	}
+	.polychat-navigation-mode-control {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0;
+		box-sizing: border-box;
+		padding: 0.5rem;
+		border: 0;
+		border-radius: 0.375rem;
+		background: transparent;
+		color: #52525b;
+		cursor: pointer;
+		font: inherit;
+		font-size: 0.75rem;
+		font-weight: 500;
+		text-decoration: none;
+		transition:
+			color 150ms ease,
+			background-color 150ms ease;
+	}
+	.polychat-navigation-mode-control:hover {
+		background: #f4f4f5;
+		color: #000;
+	}
+	.polychat-navigation-mode-control[aria-pressed="true"],
+	.polychat-navigation-mode-control[aria-current="page"] {
+		background: #e8eaed;
+		color: #000;
+		box-shadow: 0 1px 2px rgb(0 0 0 / 0.1);
+	}
+	.polychat-navigation-mode-control:focus-visible {
+		outline: 2px solid rgb(59 130 246 / 40%);
+		outline-offset: 2px;
+	}
+	.polychat-navigation-mode-label {
+		display: none;
+	}
+	.polychat-navigation-list {
+		display: grid;
+		gap: 0.25rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.polychat-navigation-list button {
+		display: flex;
+		width: 100%;
+		gap: 0.5rem;
+		padding: 0.55rem 0.75rem;
+		border: 0;
+		border-radius: 0.4rem;
+		background: transparent;
+		color: #52525b;
+		text-align: left;
+		cursor: pointer;
+	}
+	.polychat-navigation-list button[aria-current="page"] {
+		background: #f4f4f5;
+		color: #18181b;
+	}
+	@media (min-width: 640px) {
+		.polychat-navigation-mode-control {
+			gap: 0.5rem;
+		}
+		.polychat-navigation-mode-label {
+			display: inline;
+		}
+	}
+	.dark .polychat-navigation-mode-switch,
+	[data-polychat-theme="dark"] .polychat-navigation-mode-switch {
+		background: #27272a;
+	}
+	.dark .polychat-navigation-mode-control,
+	[data-polychat-theme="dark"] .polychat-navigation-mode-control {
+		color: #d4d4d8;
+	}
+	.dark .polychat-navigation-mode-control:hover,
+	[data-polychat-theme="dark"] .polychat-navigation-mode-control:hover {
+		background: #3f3f46;
+		color: white;
+	}
+	.dark .polychat-navigation-mode-control[aria-pressed="true"],
+	.dark .polychat-navigation-mode-control[aria-current="page"],
+	.dark .polychat-navigation-list button[aria-current="page"],
+	[data-polychat-theme="dark"] .polychat-navigation-mode-control[aria-pressed="true"],
+	[data-polychat-theme="dark"] .polychat-navigation-mode-control[aria-current="page"],
+	[data-polychat-theme="dark"] .polychat-navigation-list button[aria-current="page"] {
+		background: #2d2d2d;
+		color: white;
+	}
+}

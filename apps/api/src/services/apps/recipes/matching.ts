@@ -1,4 +1,4 @@
-import type { AssistantRecipe, RecipeInstallation } from "@assistant/schemas";
+import type { AssistantRecipe, RecipeInstallation } from "@ngriffin_uk/polychat-schemas";
 
 const GENERIC_TRIGGER_WORDS = new Set([
 	"automation",

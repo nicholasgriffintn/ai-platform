@@ -1,4 +1,4 @@
-import type { InputSchemaInputSchemaDescriptor, ModelConfig } from "@assistant/schemas";
+import type { InputSchemaInputSchemaDescriptor, ModelConfig } from "@ngriffin_uk/polychat-schemas";
 import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "openai";

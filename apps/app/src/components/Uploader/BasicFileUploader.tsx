@@ -1,6 +1,6 @@
 // Source: https://originui.com/file-upload
 
-import { Button } from "~/components/ui/Button";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { useFileUpload } from "~/hooks/use-file-upload";
 
 export function BasicFileUploader({ id, accept = "*/*" }: { id: string; accept?: string }) {

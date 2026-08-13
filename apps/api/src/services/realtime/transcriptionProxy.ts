@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import { NO_STORE } from "@assistant/schemas";
+import { NO_STORE } from "@ngriffin_uk/polychat-schemas";
 
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { formatProviderError } from "~/lib/providers/utils/errors";

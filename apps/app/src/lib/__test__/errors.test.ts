@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ApiError } from "../api/fetch-wrapper";
+import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import { getErrorMessage, isAuthenticationError } from "../errors";
 
 describe("error helpers", () => {

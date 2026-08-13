@@ -5,8 +5,8 @@ import type {
 	RecipeInstallation,
 	RecipeInstallationTrigger,
 	RecipeKind,
-} from "@assistant/schemas";
-import { isSupportedCronExpression } from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
+import { isSupportedCronExpression } from "@ngriffin_uk/polychat-schemas";
 
 export type RecipeKindFilter = RecipeKind | "all";
 export type ConfigurationFormValues = Record<string, string | boolean>;

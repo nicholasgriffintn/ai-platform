@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 
-import { Button } from "~/components/ui/Button";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import {
 	Dialog,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "~/components/ui/Dialog";
-import { FormInput } from "~/components/ui/Form/Input";
+} from "@ngriffin_uk/polychat-component-ui";
+import { FormInput } from "@ngriffin_uk/polychat-component-ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useUser } from "~/hooks/useUser";
 

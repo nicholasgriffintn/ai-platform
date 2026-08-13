@@ -1,10 +1,9 @@
-import { ANALYTICS_EVENT_CATEGORIES } from "@assistant/schemas/analytics";
-import { useCallback } from "react";
 import {
-	captureClientException,
-	trackClientEvent,
+	ANALYTICS_EVENT_CATEGORIES,
 	type AnalyticsEventProperties,
-} from "~/lib/analytics/client";
+} from "@ngriffin_uk/polychat-schemas/analytics";
+import { useCallback } from "react";
+import { captureClientException, trackClientEvent } from "~/lib/analytics/client";
 import { useChatStore } from "~/state/stores/chatStore";
 import { usePostHogClient } from "./use-posthog-client";
 

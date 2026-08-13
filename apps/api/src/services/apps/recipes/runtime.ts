@@ -5,8 +5,8 @@ import type {
 	RecipeConfigurationField,
 	RecipeConnectorProvider,
 	RecipeInstallation,
-} from "@assistant/schemas";
-import { recipeConnectorProviderSchema } from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
+import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { isConnectorOperationSupported } from "~/lib/providers/capabilities/connectors";
 import { RECIPE_LOOKUP_TOOL, RECIPE_SETUP_TOOL } from "./catalog/shared";

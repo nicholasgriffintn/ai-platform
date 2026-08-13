@@ -1,4 +1,4 @@
-import { type ResponseDisplay, ResponseDisplayType } from "@assistant/schemas";
+import { type ResponseDisplay, ResponseDisplayType } from "@ngriffin_uk/polychat-schemas";
 
 export const formatFunctionName = (name: string): string => {
 	return name

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createApiErrorFromResponse, fetchApi } from "../fetch-wrapper";
+import { createApiErrorFromResponse } from "@ngriffin_uk/polychat-library-client";
+import { fetchApi } from "../fetch-wrapper";
 
 describe("fetchApi", () => {
 	beforeEach(() => {

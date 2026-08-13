@@ -5,5 +5,5 @@ export const userTagDescription = md`
 
 Manage per-user preferences, provider credentials, API keys, and exports.
 
-All routes require authentication and return typed envelopes defined in \`@assistant/schemas\` for consistent client handling.
+All routes require authentication and return typed envelopes defined in \`@ngriffin_uk/polychat-schemas\` for consistent client handling.
 `;

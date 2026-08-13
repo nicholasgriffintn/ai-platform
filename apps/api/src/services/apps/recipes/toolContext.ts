@@ -1,4 +1,7 @@
-import { parseChatRequestOptions, readRecipeChatRequestOptions } from "@assistant/schemas";
+import {
+	parseChatRequestOptions,
+	readRecipeChatRequestOptions,
+} from "@ngriffin_uk/polychat-schemas";
 
 export interface ActiveRecipeSetup {
 	id: string;

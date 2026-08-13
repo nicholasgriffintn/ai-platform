@@ -5,7 +5,7 @@ import type {
 	SourceCollection,
 	SourceSummary,
 	UpdateSourceInput,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { MemoryManager } from "~/lib/memory";

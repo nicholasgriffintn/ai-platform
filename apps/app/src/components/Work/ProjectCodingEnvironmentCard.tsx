@@ -1,8 +1,8 @@
 import { GitBranch, Pencil, Unplug } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import type { ProjectDetail } from "@assistant/schemas";
+import type { ProjectDetail } from "@ngriffin_uk/polychat-schemas";
 
-import { Button, Card, FormSelect } from "~/components/ui";
+import { Button, Card, FormSelect } from "@ngriffin_uk/polychat-component-ui";
 import { useSandboxConnections, useSandboxRepositoryOptions } from "~/hooks/useSandbox";
 import { useUpdateProject } from "~/hooks/useWorkspaces";
 

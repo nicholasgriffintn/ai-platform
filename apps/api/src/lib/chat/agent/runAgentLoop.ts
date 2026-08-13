@@ -3,7 +3,7 @@ import {
 	executeAgentLoop,
 	type AgentEvent,
 	type AgentLoopState,
-} from "@assistant/agent-core";
+} from "@ngriffin_uk/polychat-library-agent-core";
 import type { ConversationManager } from "~/lib/conversationManager";
 import {
 	buildContinuationInstruction,

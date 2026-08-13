@@ -3,7 +3,7 @@ import {
 	defaultCouncilMemberIds,
 	type CouncilMemberDefinition,
 	type CouncilMemberId,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import type { Message } from "~/types";
 
 const councilMemberById = new Map<CouncilMemberId, CouncilMemberDefinition>(

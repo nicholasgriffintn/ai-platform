@@ -1,5 +1,6 @@
 import type { Message } from "~/types";
-import { fetchApiOrThrow, returnFetchedData } from "./fetch-wrapper";
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+import { fetchApiOrThrow } from "./fetch-wrapper";
 
 const SHARED_CONVERSATION_PAGE_LIMIT = 100;
 const MAX_SHARED_CONVERSATION_PAGES = 10_000;

@@ -4,7 +4,7 @@ import {
 	type SandboxRunControl,
 	type SandboxRunInstruction,
 	type SandboxRunInstructionEnvelope,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 const DEFAULT_CONTROL_REQUEST_TIMEOUT_MS = 8000;
 

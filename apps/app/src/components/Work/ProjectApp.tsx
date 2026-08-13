@@ -4,7 +4,7 @@ import { DynamicForm } from "~/components/Apps/DynamicForm";
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import { BackLink } from "~/components/Core/BackLink";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Card } from "~/components/ui";
+import { Card } from "@ngriffin_uk/polychat-component-ui";
 import { useDynamicApp, useExecuteDynamicApp } from "~/hooks/useDynamicApps";
 import { useWorkData } from "./WorkContext";
 import { ProjectAppSkeleton } from "./WorkLoadingSkeletons";

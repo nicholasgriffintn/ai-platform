@@ -1,8 +1,8 @@
 import { Plus, Star } from "lucide-react";
 
-import { Button } from "~/components/ui/Button";
-import { Card, CardContent } from "~/components/ui/Card";
-import { Badge } from "~/components/ui/badge";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { Card, CardContent } from "@ngriffin_uk/polychat-component-ui";
+import { Badge } from "@ngriffin_uk/polychat-component-ui";
 
 export function SharedAgentCard({ agent, onInstall, isInstalling }: any) {
 	const tagsList = agent.tags ? JSON.parse(agent.tags) : [];

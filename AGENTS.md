@@ -26,10 +26,10 @@ Start from the user's global agent contract. These instructions make that contra
 - Use `apps/*` for deployable application workspaces. Each app owns its request handling, UI routes, app-local components, app-local utilities, and app-specific validation.
 - Use `packages/*` for shared workspace libraries consumed by more than one app or by app and tooling code. Keep shared schemas, domain primitives, generated contract surfaces, and reusable runtime logic there when the code is not app-specific.
 - Keep package APIs explicit and stable. Prefer exporting narrow functions, types, and schemas over leaking internal folder structure across workspaces.
-- Build shared packages before validating consumers when the package emits build output. `@assistant/schemas` is a common prerequisite for app typechecks and builds.
-- Use `docs/` for durable project documentation and supporting images. Keep implementation notes close to the code unless they explain cross-app architecture, workflows, or user-facing behaviour that must outlive a single patch.
-- Use `CONTEXT.md` for durable architecture vocabulary, product concepts, module responsibilities, and cross-app seams that architecture reviews should inherit.
-- Use `docs/adr/` for Architecture Decision Records. Record accepted decisions that are hard to reverse, surprising without context, or likely to be re-litigated later.
+- Build shared packages before validating consumers when the package emits build output. `@ngriffin_uk/polychat-schemas` is a common prerequisite for app typechecks and builds.
+- Use `.agents/skills/polychat-setup/references/` for durable Polychat setup, product, component, and architecture documentation. Keep supporting README images under `docs/images`.
+- Use `.agents/skills/polychat-setup/references/architecture/context.md` for durable architecture vocabulary, product concepts, module responsibilities, and cross-app seams that architecture reviews should inherit.
+- Use `.agents/skills/polychat-setup/references/architecture/decisions/` for Architecture Decision Records. Record accepted decisions that are hard to reverse, surprising without context, or likely to be re-litigated later, and update the adjacent `decisions.md` index.
 - Use `scripts/` for checked-in automation that is intentionally reused by package scripts, hooks, CI, or operators. Prefer package scripts for ordinary validation commands and keep shell scripts small, portable, and explicit about side effects.
 - Do not add one-off scripts for work that can be handled by an existing package script, test, migration command, or local utility.
 
@@ -68,9 +68,9 @@ Start from the user's global agent contract. These instructions make that contra
 - Keep paragraphs short and prefer bullets when they improve scanning.
 - Use British English unless nearby project text uses another convention.
 - Be concise, direct, and opinionated. Acknowledge trade-offs honestly.
-- Before large implementations, read `CONTEXT.md` and the relevant ADRs under `docs/adr/` so new work respects existing architecture decisions.
-- When a large implementation introduces or changes load-bearing concepts, module responsibilities, cross-app flows, provider seams, persistence seams, or frontend/backend ownership, update `CONTEXT.md` in the same patch.
-- When a large implementation makes a durable architecture decision, add a short ADR under `docs/adr/` using the next sequential number. Prefer concise ADRs that explain the problem, decision, and trade-off.
+- Before large implementations, read `.agents/skills/polychat-setup/references/architecture/context.md` and the relevant ADRs under `.agents/skills/polychat-setup/references/architecture/decisions/` so new work respects existing architecture decisions.
+- When a large implementation introduces or changes load-bearing concepts, module responsibilities, cross-app flows, provider seams, persistence seams, or frontend/backend ownership, update `.agents/skills/polychat-setup/references/architecture/context.md` in the same patch.
+- When a large implementation makes a durable architecture decision, add a short ADR under `.agents/skills/polychat-setup/references/architecture/decisions/` using the next sequential number and update `decisions.md`. Prefer concise ADRs that explain the problem, decision, and trade-off.
 - Do not create ADRs for routine implementation details, easy-to-reverse choices, or decisions already obvious from local code.
 
 ## Git and pull requests

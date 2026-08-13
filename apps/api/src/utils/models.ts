@@ -1,4 +1,4 @@
-import type { ModelConfig } from "@assistant/schemas";
+import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 import type { Message } from "~/types";
 
 export function getModelIdsByOutput(

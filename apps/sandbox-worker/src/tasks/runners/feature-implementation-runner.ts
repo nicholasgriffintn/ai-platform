@@ -1,5 +1,5 @@
 import { executeFeatureImplementation } from "./feature-implementation";
-import type { SandboxTaskType } from "@assistant/schemas";
+import type { SandboxTaskType } from "@ngriffin_uk/polychat-schemas";
 import type { SandboxTaskRunner, SandboxTaskRunnerContext } from "../runner";
 
 export class AgentTaskRunner implements SandboxTaskRunner {

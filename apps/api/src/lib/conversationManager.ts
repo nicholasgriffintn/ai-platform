@@ -1,4 +1,4 @@
-import type { FunctionType } from "@assistant/schemas";
+import type { FunctionType } from "@ngriffin_uk/polychat-schemas";
 import type { AnonymousUser, Message, Platform, User, IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";

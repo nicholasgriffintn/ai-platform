@@ -5,7 +5,7 @@ import {
 	recipeComposioTriggerCreateRequestSchema,
 	recipeComposioTriggerSchema,
 	recipeComposioTriggersResponseSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
 

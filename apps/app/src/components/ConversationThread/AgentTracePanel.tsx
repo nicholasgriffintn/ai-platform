@@ -1,5 +1,10 @@
 import { Activity } from "lucide-react";
-import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
+import {
+	Button,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@ngriffin_uk/polychat-component-ui";
 import type { AgentTraceEntry } from "~/lib/agent-trace";
 import {
 	formatAgentTraceLatency,

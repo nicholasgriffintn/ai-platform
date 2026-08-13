@@ -1,7 +1,7 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import type { ConversationModeMetadata } from "@assistant/schemas";
+import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
 
 import "~/styles/scrollbar.css";
 import "~/styles/github.css";
@@ -12,8 +12,8 @@ import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useModels } from "~/hooks/useModels";
 import { resolveConnectorOperationApproval } from "~/lib/api/connectors";
-import type { AttachmentData } from "~/lib/chat/attachments";
-import { isCompactConversationCommand } from "~/lib/chat/compaction-command";
+import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
+import { isCompactConversationCommand } from "@ngriffin_uk/polychat-library-chat/compaction-command";
 import {
 	createModelReferenceMap,
 	EMPTY_MODEL_CONFIG,
@@ -23,7 +23,7 @@ import {
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatRequestOptions, ModelSelectionChangeHandler, ModelSelectorScope } from "~/types";
-import type { CouncilMemberId } from "@assistant/schemas";
+import type { CouncilMemberId } from "@ngriffin_uk/polychat-schemas";
 import type { ArtifactProps } from "~/types/artifact";
 import { ArtifactPanel } from "./Artifacts/ArtifactPanel";
 import { ChatInput, type ChatInputHandle } from "./ChatInput";
@@ -38,7 +38,7 @@ import { useAssistantActionSubmit } from "./useAssistantActionSubmit";
 import { useAutoPlayResponses } from "./useAutoPlayResponses";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { findLatestArtifactByIdentifier } from "~/lib/artifacts";
-import { mergeChatRequestOptions } from "~/lib/chat/request-options";
+import { mergeChatRequestOptions } from "@ngriffin_uk/polychat-library-chat/request-options";
 import { openExternalUrl } from "~/lib/external-navigation";
 
 export interface ConversationThreadModeConfig {

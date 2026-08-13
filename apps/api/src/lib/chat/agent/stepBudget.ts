@@ -1,4 +1,4 @@
-import type { AgentMessage } from "@assistant/agent-core";
+import type { AgentMessage } from "@ngriffin_uk/polychat-library-agent-core";
 
 import type { AgentCompletionRequirements } from "~/lib/chat/agent/completionRequirements";
 import { hasEnabledToolNames } from "~/utils/toolNames";

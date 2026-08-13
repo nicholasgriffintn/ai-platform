@@ -1,5 +1,5 @@
 import type { MessageContent } from "~/types/chat";
-import { type ResponseDisplay, ResponseDisplayType } from "@assistant/schemas";
+import { type ResponseDisplay, ResponseDisplayType } from "@ngriffin_uk/polychat-schemas";
 import {
 	formatFunctionName,
 	getFunctionIcon,

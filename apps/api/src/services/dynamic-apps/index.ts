@@ -3,7 +3,7 @@ import {
 	getDynamicAppFormErrors,
 	type AppSchema,
 	type AssistantCapabilityDescriptor,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { getFeaturedApps, type FeaturedAppCatalogDefinition } from "~/services/dynamic-apps/config";
 import { handleFunctions } from "~/services/functions";
 import type { IRequest } from "~/types";

@@ -1,6 +1,10 @@
-import type { SandboxRunEvent, SandboxRunResult, SandboxTaskType } from "@assistant/schemas";
+import type {
+	SandboxRunEvent,
+	SandboxRunResult,
+	SandboxTaskType,
+} from "@ngriffin_uk/polychat-schemas";
 
-import { ResponseDisplayType } from "@assistant/schemas";
+import { ResponseDisplayType } from "@ngriffin_uk/polychat-schemas";
 import type { IFunctionResponse } from "~/types";
 
 interface SandboxRunSummary {

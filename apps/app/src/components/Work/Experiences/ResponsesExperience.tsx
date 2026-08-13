@@ -5,7 +5,7 @@ import { Link } from "react-router";
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card } from "~/components/ui";
+import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
 import {
 	useCreateOutputShare,
 	useOutput,
@@ -13,7 +13,7 @@ import {
 	useOutputShares,
 	useRevokeOutputShare,
 } from "~/hooks/useOutputs";
-import { formatDate } from "~/lib/dates";
+import { formatDate } from "@ngriffin_uk/polychat-utility-core";
 import { isAuthenticationError } from "~/lib/errors";
 import { WorkCardGridSkeleton } from "../WorkLoadingSkeletons";
 

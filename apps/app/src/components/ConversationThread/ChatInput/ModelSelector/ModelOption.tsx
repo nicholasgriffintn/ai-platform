@@ -18,7 +18,7 @@ import type { ModelRegionOption } from "~/lib/model-region-variants";
 import { getModelDisplayName, isStealthModel, modelSupportsVisualModality } from "~/lib/models";
 import { hasProviderReasoningOptions } from "~/lib/reasoning";
 import { cn } from "~/lib/utils";
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
 interface ModelOptionProps {
 	model: ModelConfigItem;

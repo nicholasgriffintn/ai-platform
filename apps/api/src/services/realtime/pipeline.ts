@@ -1,8 +1,8 @@
 import type {
 	RealtimePipelineSessionCreate,
 	RealtimePipelineSessionResponse,
-} from "@assistant/schemas";
-import { realtimeSessionResponseSchema } from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
+import { realtimeSessionResponseSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { getRealtimeProvider } from "~/lib/providers/capabilities/realtime";
 import { generateId } from "~/utils/id";

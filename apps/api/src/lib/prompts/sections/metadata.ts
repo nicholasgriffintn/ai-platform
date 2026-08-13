@@ -1,6 +1,6 @@
 import { APP_DESCRIPTION, APP_NAME } from "~/constants/app";
 import { hasProviderReasoningOptions } from "~/lib/providers/models/reasoning";
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { IBody } from "~/types";
 import { PromptBuilder } from "../builder";
 

@@ -1,5 +1,9 @@
 import { apiService } from "./api-service";
-import { createApiErrorFromResponse, fetchApi, returnFetchedData } from "./fetch-wrapper";
+import {
+	createApiErrorFromResponse,
+	returnFetchedData,
+} from "@ngriffin_uk/polychat-library-client";
+import { fetchApi } from "./fetch-wrapper";
 import type {
 	ConnectSandboxInstallationInput,
 	CreateSandboxConnectionInput,
@@ -8,7 +12,7 @@ import type {
 	SandboxInstallConfig,
 	SandboxRunInstruction,
 	SandboxRunInstructionKind,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 export async function fetchSandboxConnections(): Promise<SandboxConnection[]> {
 	const headers = await apiService.getHeaders();

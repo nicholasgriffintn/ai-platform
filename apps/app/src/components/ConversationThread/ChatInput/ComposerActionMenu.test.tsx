@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import type { SourceSummary } from "@assistant/schemas";
+import type { SourceSummary } from "@ngriffin_uk/polychat-schemas";
 
 import { ComposerActionMenu } from "./ComposerActionMenu";
 

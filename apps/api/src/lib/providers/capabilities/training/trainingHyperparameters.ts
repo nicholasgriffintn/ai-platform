@@ -1,4 +1,4 @@
-import type { TrainingModelDefinition } from "@assistant/schemas";
+import type { TrainingModelDefinition } from "@ngriffin_uk/polychat-schemas";
 
 type TrainingHyperparameterValue = string | number | boolean;
 type TrainingHyperparameters = Record<string, TrainingHyperparameterValue>;

@@ -1,4 +1,4 @@
-import type { SandboxTrustLevel } from "@assistant/schemas";
+import type { SandboxTrustLevel } from "@ngriffin_uk/polychat-schemas";
 import type {
 	AgentMessage,
 	ReadFileDecision,
@@ -6,7 +6,7 @@ import type {
 	RunCommandDecision,
 	RunParallelDecision,
 	RunScriptDecision,
-} from "@assistant/agent-core";
+} from "@ngriffin_uk/polychat-library-agent-core";
 
 import {
 	assertSafeCommand,

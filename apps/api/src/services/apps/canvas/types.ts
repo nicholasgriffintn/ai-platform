@@ -1,4 +1,4 @@
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
 export type CanvasMode = "image" | "video";
 export type CanvasGenerationStatus = "queued" | "processing" | "completed" | "succeeded" | "failed";

@@ -5,7 +5,7 @@ import {
 	fetchReplicatePredictions,
 	fetchReplicatePrediction,
 } from "~/lib/api/replicate";
-import type { ExecuteReplicateRequest, ReplicatePrediction } from "@assistant/schemas";
+import type { ExecuteReplicateRequest, ReplicatePrediction } from "@ngriffin_uk/polychat-schemas";
 
 const REPLICATE_QUERY_KEY = "replicate";
 const REPLICATE_MODELS_STALE_TIME = 30 * 60 * 1000;

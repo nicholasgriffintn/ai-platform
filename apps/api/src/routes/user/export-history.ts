@@ -1,7 +1,7 @@
 import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
 
-import { errorResponseSchema, NO_STORE } from "@assistant/schemas";
+import { errorResponseSchema, NO_STORE } from "@ngriffin_uk/polychat-schemas";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";

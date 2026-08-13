@@ -1,12 +1,12 @@
 import { NotebookPen, Plus } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import type { NoteMetadata } from "@assistant/schemas";
+import type { NoteMetadata } from "@ngriffin_uk/polychat-schemas";
 
 import { NoteEditor } from "~/components/Apps/Notes/NoteEditor";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card, SearchInput } from "~/components/ui";
+import { Button, Card, SearchInput } from "@ngriffin_uk/polychat-component-ui";
 import {
 	useCreateNote,
 	useDeleteNote,

@@ -1,9 +1,13 @@
-import type { TrainingDeployment, TrainingJob, TrainingJobEvent } from "@assistant/schemas";
+import type {
+	TrainingDeployment,
+	TrainingJob,
+	TrainingJobEvent,
+} from "@ngriffin_uk/polychat-schemas";
 import {
 	trainingJobEventSchema,
 	trainingProviderSchema,
 	getTrainingDeploymentChatModelId,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { parseJsonValue } from "../utils/json.js";
 import { optionalString } from "../utils/strings.js";

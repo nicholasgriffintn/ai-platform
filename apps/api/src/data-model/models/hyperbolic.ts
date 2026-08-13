@@ -1,4 +1,4 @@
-import type { ModelConfig } from "@assistant/schemas";
+import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 
 export const hyperbolicModelConfig: ModelConfig = {
 	"nousresearch/hermes-3-llama-3.1-70b": {

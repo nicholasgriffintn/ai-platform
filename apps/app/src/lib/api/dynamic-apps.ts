@@ -11,7 +11,7 @@ import type {
 	Podcast,
 	PodcastDetailResponse,
 	PodcastListItem,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import type {
 	AnalyseArticleParams,
 	AnalyseArticleResponse,
@@ -27,8 +27,9 @@ import type {
 } from "~/types/article";
 import type { ProcessPodcastParams, UploadPodcastParams, UploadResponse } from "~/types/podcast";
 import { apiService } from "./api-service";
-import { fetchApi, returnFetchedData } from "./fetch-wrapper";
-import { withProjectScope } from "./project-scope";
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+import { fetchApi } from "./fetch-wrapper";
+import { withProjectScope } from "@ngriffin_uk/polychat-library-client/project-scope";
 
 export interface DynamicAppExecutionResult {
 	success: boolean;

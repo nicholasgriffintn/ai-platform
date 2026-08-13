@@ -8,7 +8,7 @@ import {
 	shareAgentSchema,
 	sharedAgentFiltersSchema,
 	updateSharedAgentSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { requireStrictAdmin } from "~/middleware/adminMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";

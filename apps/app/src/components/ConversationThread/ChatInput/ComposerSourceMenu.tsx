@@ -1,4 +1,4 @@
-import type { SourceSummary } from "@assistant/schemas";
+import type { SourceSummary } from "@ngriffin_uk/polychat-schemas";
 import { ArrowLeft, FileText, Loader2 } from "lucide-react";
 
 export function ComposerSourceMenu({

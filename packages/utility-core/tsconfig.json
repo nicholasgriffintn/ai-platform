@@ -1,0 +1,9 @@
+{
+	"extends": "@ngriffin_uk/polychat-config/tsconfig/library",
+	"compilerOptions": {
+		"outDir": "dist",
+		"rootDir": "src"
+	},
+	"include": ["src/**/*.ts"],
+	"exclude": ["src/**/*.test.ts", "dist"]
+}

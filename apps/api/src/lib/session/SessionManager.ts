@@ -1,4 +1,4 @@
-import { compactionStatusLabels } from "@assistant/schemas";
+import { compactionStatusLabels } from "@ngriffin_uk/polychat-schemas";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getAuxiliaryModel } from "~/lib/providers/models";

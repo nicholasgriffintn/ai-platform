@@ -1,5 +1,5 @@
-import type { AppSchema } from "@assistant/schemas";
-import { Button } from "~/components/ui";
+import type { AppSchema } from "@ngriffin_uk/polychat-schemas";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { cn } from "~/lib/utils";
 import { getCardGradient, getIcon, getIconContainerClass } from "../utils";
 import { CustomView } from "./CustomView";

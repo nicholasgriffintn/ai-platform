@@ -1,4 +1,4 @@
-import type { ExecuteSandboxRunPayload as ExecuteSandboxRunStreamPayload } from "@assistant/schemas";
+import type { ExecuteSandboxRunPayload as ExecuteSandboxRunStreamPayload } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { SANDBOX_RUN_ITEM_TYPE, SANDBOX_RUNS_APP_ID } from "~/constants/app";

@@ -1,4 +1,4 @@
-import { formatChatStreamSseDone, formatChatStreamSseEvent } from "@assistant/schemas";
+import { formatChatStreamSseDone, formatChatStreamSseEvent } from "@ngriffin_uk/polychat-schemas";
 import type { SSEEventPayload } from "~/types";
 import { getLogger } from "~/utils/logger";
 

@@ -1,5 +1,5 @@
 import { readCompactionStatusMessage } from "~/lib/chat/compaction-status";
-import { isRecord } from "~/lib/objects";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export interface CompactConversationResponse {
 	compacted: boolean;

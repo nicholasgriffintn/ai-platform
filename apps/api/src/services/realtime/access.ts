@@ -1,5 +1,5 @@
 import { listModels } from "~/services/models";
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { IEnv } from "~/types";
 
 function matchesRequestedModel(

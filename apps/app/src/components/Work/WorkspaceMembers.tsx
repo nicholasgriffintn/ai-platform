@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card, ConfirmationDialog, FormSelect } from "~/components/ui";
+import { Button, Card, ConfirmationDialog, FormSelect } from "@ngriffin_uk/polychat-component-ui";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { useWorkspaceMemberMutations } from "~/hooks/useGovernance";
 import { useRevokeWorkspaceInvitation } from "~/hooks/useWorkspaces";

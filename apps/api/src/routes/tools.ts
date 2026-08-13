@@ -1,7 +1,7 @@
 import { addRoute } from "~/lib/http/routeBuilder";
 import { Hono } from "hono";
 
-import { errorResponseSchema, toolsResponseSchema } from "@assistant/schemas";
+import { errorResponseSchema, toolsResponseSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { getAvailableTools } from "~/services/tools/toolsOperations";

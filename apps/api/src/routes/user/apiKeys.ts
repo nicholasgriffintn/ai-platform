@@ -6,7 +6,7 @@ import {
 	successResponseSchema,
 	createApiKeySchema,
 	deleteApiKeyParamsSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { createUserApiKey, deleteUserApiKey, getUserApiKeys } from "~/services/user/apiKeys";

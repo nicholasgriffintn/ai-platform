@@ -1,4 +1,4 @@
-import type { RecipeConnectorManifest } from "@assistant/schemas";
+import type { RecipeConnectorManifest } from "@ngriffin_uk/polychat-schemas";
 
 import {
 	Button,
@@ -7,7 +7,7 @@ import {
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
 
 type ConnectorAuthConfig = NonNullable<RecipeConnectorManifest["authConfigs"]>[number];
 

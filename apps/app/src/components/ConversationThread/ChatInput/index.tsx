@@ -11,10 +11,11 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { Button, Image } from "~/components/ui";
+import { Image } from "@ngriffin_uk/polychat-component-content";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { useModels } from "~/hooks/useModels";
 import { useVoiceRecorder } from "~/hooks/useVoiceRecorder";
-import type { AttachmentData } from "~/lib/chat/attachments";
+import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { getModelInteractionCapabilities } from "~/lib/models";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";

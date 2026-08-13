@@ -1,4 +1,4 @@
-import type { ModelConfig } from "@assistant/schemas";
+import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 
 export const perplexityModelConfig: ModelConfig = {
 	"sonar-deep-research": {

@@ -1,4 +1,4 @@
-import type { WorkspaceRole } from "@assistant/schemas";
+import type { WorkspaceRole } from "@ngriffin_uk/polychat-schemas";
 import { z } from "zod/v4";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";

@@ -1,0 +1,44 @@
+@import "tailwindcss/theme" layer(polychat-ui-theme);
+@import "tailwindcss/utilities" layer(polychat-ui-utilities);
+
+@source "./**/*.{ts,tsx}";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--color-off-white: #f8f8f8;
+	--color-off-white-highlight: #e8eaed;
+}
+
+@theme inline {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+}
+
+@layer polychat-ui-tokens {
+	:root {
+		--polychat-radius-sm: 0.25rem;
+		--polychat-radius-md: 0.375rem;
+		--polychat-radius-lg: 0.5rem;
+		--polychat-focus-ring: rgb(59 130 246 / 40%);
+	}
+
+	[data-polychat-theme="dark"] {
+		color-scheme: dark;
+	}
+}

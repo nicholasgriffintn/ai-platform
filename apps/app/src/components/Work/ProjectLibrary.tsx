@@ -5,9 +5,9 @@ import { RecipeScheduleDialog } from "~/components/Apps/Recipes/RecipeScheduleDi
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { ConfirmationDialog } from "~/components/ui";
+import { ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
+import { CapabilityFilters } from "@ngriffin_uk/polychat-component-capabilities";
 import { isAuthenticationError } from "~/lib/errors";
-import { ProjectCapabilityFilters } from "./ProjectCapabilityFilters";
 import { ProjectCapabilityGroups } from "./ProjectCapabilityGroups";
 import { ProjectToolConfigurationDialog } from "./ProjectToolConfigurationDialog";
 import { WorkCardGridSkeleton } from "./WorkLoadingSkeletons";
@@ -38,7 +38,7 @@ export function ProjectLibrary({ workspaceId, projectId }: ProjectLibraryProps) 
 					{controller.project ? ` ${controller.project.name}` : " this project"}.
 				</p>
 
-				<ProjectCapabilityFilters
+				<CapabilityFilters
 					categories={controller.filters.categories}
 					category={controller.filters.category}
 					kind={controller.filters.kind}

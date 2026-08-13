@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { filterConversationsByListOptions } from "../conversation-list";
+import { filterConversationsByListOptions } from "@ngriffin_uk/polychat-library-chat/conversations";
 import type { Conversation } from "~/types";
 
 const conversations: Conversation[] = [

@@ -22,7 +22,7 @@ import {
 } from "react";
 
 import { ModelIcon } from "~/components/ModelIcon";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ngriffin_uk/polychat-component-ui";
 import { useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
 import { useTrackEvent } from "~/hooks/use-track-event";
@@ -55,7 +55,7 @@ import {
 } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
-import type { ModelConfigItem, ModelModality } from "@assistant/schemas";
+import type { ModelConfigItem, ModelModality } from "@ngriffin_uk/polychat-schemas";
 import type {
 	ChatMode,
 	ChatSettings,

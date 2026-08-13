@@ -6,7 +6,7 @@ import {
 	magicLinkRequestSchema,
 	magicLinkVerifySchema,
 	errorResponseSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { createAssistantMagicLinkAuth } from "~/services/auth/sharedAuth";
 import { createSessionCookie } from "~/services/auth/sessions";

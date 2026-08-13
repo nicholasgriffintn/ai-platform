@@ -18,14 +18,14 @@ import {
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
 import {
 	useConnectSandboxInstallation,
 	useDeleteSandboxConnection,
 	useSandboxConnections,
 	useSandboxInstallConfig,
 } from "~/hooks/useSandbox";
-import { formatRelativeTime } from "~/lib/dates";
+import { formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
 import { isAuthenticationError } from "~/lib/errors";
 
 interface ConnectionFormState {

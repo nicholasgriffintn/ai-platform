@@ -2,7 +2,7 @@ import { Send } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import { Button, Card, Textarea } from "~/components/ui";
+import { Button, Card, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import { createAssistantActionConversationUrl } from "~/lib/assistant-action-launch";
 
 export function ProjectConversationStarter({

@@ -9,7 +9,7 @@ import {
 	podcastSummarizeSchema,
 	podcastTranscribeSchema,
 	apiResponseSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requirePlan } from "~/middleware/requirePlan";

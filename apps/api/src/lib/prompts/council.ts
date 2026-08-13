@@ -3,7 +3,7 @@ import {
 	councilMembers,
 	defaultCouncilMemberIds,
 	type CouncilMemberDefinition,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 const allCouncilMembers = councilMembers as readonly CouncilMemberDefinition[];
 const councilMemberById = new Map(allCouncilMembers.map((member) => [member.id, member]));

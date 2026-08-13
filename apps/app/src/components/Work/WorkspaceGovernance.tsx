@@ -5,13 +5,13 @@ import { toast } from "sonner";
 
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageShell } from "~/components/Core/PageShell";
-import { Button, Card, ConfirmationDialog } from "~/components/ui";
+import { Button, Card, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import {
 	useTemplateMutations,
 	useWorkspaceAudit,
 	useWorkspaceTemplates,
 } from "~/hooks/useGovernance";
-import { formatDate } from "~/lib/dates";
+import { formatDate } from "@ngriffin_uk/polychat-utility-core";
 import { useWorkData } from "./WorkContext";
 
 export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {

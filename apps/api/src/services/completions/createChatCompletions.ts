@@ -1,4 +1,4 @@
-import type { ChatCompletionRequestBody } from "@assistant/schemas";
+import type { ChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import { processChatRequest } from "~/lib/chat/core";
 import { ConversationManager } from "~/lib/conversationManager";

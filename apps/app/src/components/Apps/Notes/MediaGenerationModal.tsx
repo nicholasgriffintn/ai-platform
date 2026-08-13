@@ -10,7 +10,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 	Textarea as UITextarea,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
 import { useGenerateNotesFromMedia } from "~/hooks/useNotes";
 
 type OutputType =

@@ -1,6 +1,11 @@
 import { useToolsStore } from "~/state/stores/toolsStore";
 import { useChatStore } from "~/state/stores/chatStore";
-import type { CreateAgentInput, ModelConfig, Tool, UpdateAgentInput } from "@assistant/schemas";
+import type {
+	CreateAgentInput,
+	ModelConfig,
+	Tool,
+	UpdateAgentInput,
+} from "@ngriffin_uk/polychat-schemas";
 import type { Conversation, ConversationListOptions, ConversationListPage, Message } from "~/types";
 import { formatMessageContent } from "../messages";
 import { AgentService } from "./services/agent-service";

@@ -1,4 +1,4 @@
-import type { ModelConfig } from "@assistant/schemas";
+import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 
 export const togetherAiModelConfig: ModelConfig = {
 	"meta-llama/Llama-3.3-70B-Instruct-Turbo": {

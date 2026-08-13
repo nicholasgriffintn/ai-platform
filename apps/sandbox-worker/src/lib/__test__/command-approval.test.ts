@@ -1,4 +1,4 @@
-import type { SandboxRunInstruction } from "@assistant/schemas";
+import type { SandboxRunInstruction } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import { resolveCommandApproval } from "../feature-implementation/command-approval";

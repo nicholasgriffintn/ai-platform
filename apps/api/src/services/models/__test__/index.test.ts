@@ -1,6 +1,6 @@
 import { type MockedFunction, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ModelConfig, ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfig, ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
 import {
 	getModelDetails,

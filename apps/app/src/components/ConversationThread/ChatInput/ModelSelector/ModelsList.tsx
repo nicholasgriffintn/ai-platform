@@ -12,7 +12,7 @@ import {
 import { getModelDisplayName, isModelSelectableForAccount } from "~/lib/models";
 import { formatProviderLabel } from "~/lib/provider-display";
 import { cn } from "~/lib/utils";
-import type { ModelCatalogItem, ModelConfigItem } from "@assistant/schemas";
+import type { ModelCatalogItem, ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { ModelOption } from "./ModelOption";
 
 interface ModelsListProps {

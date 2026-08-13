@@ -1,6 +1,6 @@
 import { ModelRouter } from "~/lib/modelRouter";
 import { filterModelsForUserAccess, findModelConfig, getModels } from "~/lib/providers/models";
-import type { ModelConfigItem, ModelRouterMode } from "@assistant/schemas";
+import type { ModelConfigItem, ModelRouterMode } from "@ngriffin_uk/polychat-schemas";
 import type { Attachment, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 

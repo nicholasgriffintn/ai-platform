@@ -1,10 +1,13 @@
-import type { MessagePart as SchemaMessagePart, SandboxTaskType } from "@assistant/schemas";
+import type {
+	MessagePart as SchemaMessagePart,
+	SandboxTaskType,
+} from "@ngriffin_uk/polychat-schemas";
 import type {
 	ChatCompletionRequestBody as SchemaChatCompletionRequestBody,
 	ChatHostedToolSettings as SchemaHostedToolSettings,
 	ConversationModeMetadata,
 	MessageRole as SchemaMessageRole,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 export type ChatRole = SchemaMessageRole;
 

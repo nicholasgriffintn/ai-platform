@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { TaskService } from "~/services/tasks/TaskService";
-import type { RecipeConfiguration } from "@assistant/schemas";
+import type { RecipeConfiguration } from "@ngriffin_uk/polychat-schemas";
 import type { IEnv } from "~/types";
 import { sha256Hex } from "~/utils/crypto";
 import { parseJsonRecord } from "~/utils/json";

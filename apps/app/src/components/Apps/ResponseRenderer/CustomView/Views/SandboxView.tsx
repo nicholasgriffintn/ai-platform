@@ -2,8 +2,8 @@ import { AlertTriangle, CheckCircle2, Clock, GitBranch, Terminal } from "lucide-
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Badge, Button } from "~/components/ui";
-import { MemoizedMarkdown } from "~/components/ui/Markdown";
+import { Badge, Button } from "@ngriffin_uk/polychat-component-ui";
+import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
 import { submitSandboxRunInstruction } from "~/lib/api/sandbox";
 
 interface SandboxViewProps {

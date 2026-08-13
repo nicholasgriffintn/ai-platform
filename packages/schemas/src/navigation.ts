@@ -9,7 +9,12 @@ function hasControlCharacter(value: string): boolean {
 
 export function isInternalNavigationPath(value: string): boolean {
 	const path = value.trim();
-	return path.startsWith("/") && !path.startsWith("//") && !hasControlCharacter(path);
+	return (
+		path.startsWith("/") &&
+		!path.startsWith("//") &&
+		!path.includes("\\") &&
+		!hasControlCharacter(path)
+	);
 }
 
 export function isExternalHttpUrl(value: string): boolean {

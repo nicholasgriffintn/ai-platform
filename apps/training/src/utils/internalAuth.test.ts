@@ -1,4 +1,7 @@
-import { TRAINING_WORKER_TOKEN_HEADER, TRAINING_WORKER_USER_ID_HEADER } from "@assistant/schemas";
+import {
+	TRAINING_WORKER_TOKEN_HEADER,
+	TRAINING_WORKER_USER_ID_HEADER,
+} from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import { assertInternalRequest, getInternalUserId } from "./internalAuth.js";

@@ -1,6 +1,6 @@
-import type { ConversationModeMetadata } from "@assistant/schemas";
+import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
 
-import type { AttachmentData } from "~/lib/chat/attachments";
+import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { normalizeMessage } from "~/lib/messages";
 import type { MessageContent } from "~/types";
 

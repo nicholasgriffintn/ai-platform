@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 
-import { Button, Card, Checkbox, FormDialog } from "~/components/ui";
+import { Button, Card, Checkbox, FormDialog } from "@ngriffin_uk/polychat-component-ui";
 import {
 	useProjectContextSources,
 	useSetProjectContextSources,

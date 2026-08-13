@@ -1,4 +1,7 @@
-import { recipeConfigurationSchema, recipeInstallationTriggerSchema } from "@assistant/schemas";
+import {
+	recipeConfigurationSchema,
+	recipeInstallationTriggerSchema,
+} from "@ngriffin_uk/polychat-schemas";
 import { updateRecipeInstallation } from "~/services/apps/recipes";
 import {
 	getRecipeNotificationCapabilities,

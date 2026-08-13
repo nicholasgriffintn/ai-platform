@@ -3,7 +3,7 @@ import {
 	SANDBOX_TIMEOUT_DEFAULT_SECONDS,
 	SANDBOX_TIMEOUT_MAX_SECONDS,
 	SANDBOX_TIMEOUT_MIN_SECONDS,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 const DEFAULT_MAX_CONCURRENT_RUNS = 2;
 const DEFAULT_MAX_RUNS_PER_DAY = 25;

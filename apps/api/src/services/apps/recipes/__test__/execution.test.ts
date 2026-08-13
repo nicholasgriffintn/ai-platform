@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { RecipeInvocationResponse } from "@assistant/schemas";
+import type { RecipeInvocationResponse } from "@ngriffin_uk/polychat-schemas";
 import type { IEnv, IUser } from "~/types";
 
 const mocks = vi.hoisted(() => ({

@@ -3,7 +3,7 @@ import type {
 	DynamicAppCatalogItem,
 	ProjectCapability,
 	ProjectExperienceDefinition,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import {
 	getEnabledProjectExperiences,

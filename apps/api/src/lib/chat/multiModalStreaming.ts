@@ -1,5 +1,5 @@
 import { getAIResponse } from "~/lib/chat/responses";
-import type { ModelConfigInfo } from "@assistant/schemas";
+import type { ModelConfigInfo } from "@ngriffin_uk/polychat-schemas";
 import type { ConversationManager } from "~/lib/conversationManager";
 import type { MultiModelStreamRequest } from "~/lib/chat/core/execution-request";
 import type { Message } from "~/types";

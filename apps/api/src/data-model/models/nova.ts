@@ -1,4 +1,4 @@
-import type { ModelConfig, ModelReasoningConfig } from "@assistant/schemas";
+import type { ModelConfig, ModelReasoningConfig } from "@ngriffin_uk/polychat-schemas";
 import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "nova";

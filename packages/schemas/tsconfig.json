@@ -1,21 +1,10 @@
 {
+	"extends": "@ngriffin_uk/polychat-config/tsconfig/library",
 	"compilerOptions": {
-		"target": "ES2022",
-		"module": "ESNext",
 		"lib": ["ES2022", "DOM"],
 		"outDir": "./dist",
 		"rootDir": "./src",
-		"declaration": true,
-		"declarationMap": true,
 		"emitDeclarationOnly": false,
-		"strict": true,
-		"esModuleInterop": true,
-		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true,
-		"moduleResolution": "bundler",
-		"resolveJsonModule": true,
-		"isolatedModules": true,
-		"verbatimModuleSyntax": true,
 		"ignoreDeprecations": "6.0"
 	},
 	"include": ["src/**/*"],

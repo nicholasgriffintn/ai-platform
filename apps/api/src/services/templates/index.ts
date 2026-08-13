@@ -4,14 +4,14 @@ import type {
 	TemplateKind,
 	UpdateTemplateInput,
 	ProjectDetail,
-} from "@assistant/schemas";
-import { projectTemplateConfigurationSchema } from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
+import { projectTemplateConfigurationSchema } from "@ngriffin_uk/polychat-schemas";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { TemplateRecord } from "~/repositories/TemplateRepository";
 import { requireWorkspaceAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";
-import { deriveProjectColour } from "@assistant/schemas";
+import { deriveProjectColour } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "~/utils/id";
 import { validateProjectCapabilityReference } from "~/services/workspaces/capabilities";
 import { validateProjectToolConfiguration } from "~/services/workspaces/projectTools";

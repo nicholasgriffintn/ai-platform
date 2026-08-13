@@ -6,7 +6,7 @@ import * as chatCapability from "~/lib/providers/capabilities/chat";
 import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 import { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters, Message } from "~/types";
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { formatMessages } from "~/utils/messages";
 import { mergeParametersWithDefaults, shouldEnableStreaming } from "~/utils/parameters";

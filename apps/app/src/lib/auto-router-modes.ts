@@ -4,7 +4,7 @@ import {
 	sortModelsByRouterModeFit,
 	type ModelConfigItem,
 	type ModelRouterMode,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 export interface AutoRouterModeDefinition {
 	id: ModelRouterMode;

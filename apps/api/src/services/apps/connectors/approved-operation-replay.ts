@@ -1,4 +1,4 @@
-import { recipeConnectorProviderSchema } from "@assistant/schemas";
+import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
 
 import type { ConversationManager } from "~/lib/conversationManager";
 import { handleToolCalls } from "~/lib/chat/tools";

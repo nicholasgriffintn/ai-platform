@@ -1,4 +1,7 @@
-import type { CreatePublicTaskRequest, TriggerMemorySynthesisRequest } from "@assistant/schemas";
+import type {
+	CreatePublicTaskRequest,
+	TriggerMemorySynthesisRequest,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";

@@ -7,11 +7,11 @@ import {
 	type TrainingDeploymentTarget,
 	type TrainingJob,
 	type TrainingModelDefinition,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button, FormInput, FormSelect } from "~/components/ui";
+import { Button, FormInput, FormSelect } from "@ngriffin_uk/polychat-component-ui";
 import { getErrorMessage } from "~/lib/errors";
 import {
 	canDeployBaseTrainingModelForTarget,

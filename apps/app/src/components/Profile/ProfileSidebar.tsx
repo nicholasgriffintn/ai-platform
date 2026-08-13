@@ -1,7 +1,8 @@
 import { Home, Loader2, LogOut } from "lucide-react";
 import { Link } from "react-router";
 
-import { Button } from "~/components/ui";
+import { AccountNavigation } from "@ngriffin_uk/polychat-component-account";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { cn } from "~/lib/utils";
 import { useUIStore } from "~/state/stores/uiStore";
@@ -96,22 +97,13 @@ export function ProfileSidebar({ activeItemId, onSelectItem }: ProfileSidebarPro
 										<span>Back to Home</span>
 									</Link>
 								</li>
-								{profileSidebarItems.map((item) => (
-									<li key={item.id}>
-										<button
-											type="button"
-											onClick={() => onSelectItem(item.id)}
-											className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ease-in-out cursor-pointer
-                        ${
-													activeItemId === item.id
-														? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
-														: "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-												}`}
-										>
-											{item.label}
-										</button>
-									</li>
-								))}
+								<li>
+									<AccountNavigation
+										sections={profileSidebarItems.map(({ id, label }) => ({ id, label }))}
+										activeSectionId={activeItemId}
+										onSelect={(section) => onSelectItem(section.id)}
+									/>
+								</li>
 								{isAuthenticated && (
 									<li>
 										<Button

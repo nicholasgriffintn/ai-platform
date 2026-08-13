@@ -1,4 +1,4 @@
-import type { CreateAgentInput, UpdateAgentInput } from "@assistant/schemas";
+import type { CreateAgentInput, UpdateAgentInput } from "@ngriffin_uk/polychat-schemas";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";

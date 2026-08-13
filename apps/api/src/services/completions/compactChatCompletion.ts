@@ -1,7 +1,7 @@
 import {
 	compactChatCompletionResponseSchema,
 	type CompactChatCompletionResponse,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { ConversationManager } from "~/lib/conversationManager";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { SessionManager } from "~/lib/session/SessionManager";

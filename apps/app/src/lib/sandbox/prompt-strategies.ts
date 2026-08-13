@@ -1,7 +1,7 @@
 import {
 	SANDBOX_PROMPT_STRATEGIES,
 	type SandboxPromptStrategy,
-} from "@assistant/schemas/sandbox-constants";
+} from "@ngriffin_uk/polychat-schemas/sandbox-constants";
 
 interface PromptStrategyOption {
 	value: SandboxPromptStrategy;

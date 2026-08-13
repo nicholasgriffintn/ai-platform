@@ -4,7 +4,7 @@ import {
 	getDynamicAppFormErrors,
 	getDynamicAppFormStepErrors,
 	type AppSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 const app: AppSchema = {
 	id: "example",

@@ -1,23 +1,23 @@
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import React, { type FormEvent } from "react";
 
-import { Button } from "~/components/ui/Button";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import {
 	Dialog,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "~/components/ui/Dialog";
-import { FormInput } from "~/components/ui/Form/Input";
-import { FormSelect } from "~/components/ui/Form/Select";
-import { Switch } from "~/components/ui/Form/Switch";
-import { Textarea } from "~/components/ui/Textarea";
-import { Label } from "~/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+} from "@ngriffin_uk/polychat-component-ui";
+import { FormInput } from "@ngriffin_uk/polychat-component-ui";
+import { FormSelect } from "@ngriffin_uk/polychat-component-ui";
+import { Switch } from "@ngriffin_uk/polychat-component-ui";
+import { Textarea } from "@ngriffin_uk/polychat-component-ui";
+import { Label } from "@ngriffin_uk/polychat-component-ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ngriffin_uk/polychat-component-ui";
 import { useAgentForm } from "~/hooks/useAgentForm";
 import { useTools } from "~/hooks/useTools";
-import { getNumberInputValue, parseNumberInputValue } from "~/lib/number-input";
+import { getNumberInputValue, parseNumberInputValue } from "@ngriffin_uk/polychat-utility-core";
 import { cn, generateId } from "~/lib/utils";
 
 interface AgentFormModalProps {

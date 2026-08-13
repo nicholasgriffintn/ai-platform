@@ -1,6 +1,6 @@
 import { Info } from "lucide-react";
 
-import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@ngriffin_uk/polychat-component-ui";
 import type { CanvasInputField } from "~/types/canvas";
 import { formatCanvasFieldLabel } from "./utils";
 

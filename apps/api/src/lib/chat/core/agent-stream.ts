@@ -1,4 +1,4 @@
-import type { AgentEvent } from "@assistant/agent-core";
+import type { AgentEvent } from "@ngriffin_uk/polychat-library-agent-core";
 import { buildStoredAssistantMessage } from "~/lib/chat/core/assistant-message";
 import { runAgentLoop } from "~/lib/chat/agent/runAgentLoop";
 import type { ConversationManager } from "~/lib/conversationManager";

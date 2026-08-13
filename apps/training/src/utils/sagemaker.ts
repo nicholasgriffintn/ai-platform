@@ -1,4 +1,8 @@
-import type { TrainingDeployment, TrainingInferenceRuntime, TrainingJob } from "@assistant/schemas";
+import type {
+	TrainingDeployment,
+	TrainingInferenceRuntime,
+	TrainingJob,
+} from "@ngriffin_uk/polychat-schemas";
 import { z } from "zod";
 
 import { isRecord } from "../utils/objects.js";

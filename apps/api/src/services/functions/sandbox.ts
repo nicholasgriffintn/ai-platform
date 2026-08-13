@@ -6,7 +6,7 @@ import {
 	type SandboxModelSettings,
 	type SandboxPromptStrategy,
 	type SandboxTaskType,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import {
 	buildSandboxEventToolResponse,

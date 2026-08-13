@@ -1,9 +1,12 @@
-import type { RecipeConnectorAccount, RecipeConnectorProvider } from "@assistant/schemas";
+import type {
+	RecipeConnectorAccount,
+	RecipeConnectorProvider,
+} from "@ngriffin_uk/polychat-schemas";
 import { Check, Pencil, RefreshCw, Save, UserRound, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { Button } from "~/components/ui/Button";
-import { Input } from "~/components/ui/input";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { Input } from "@ngriffin_uk/polychat-component-ui";
 import { useRecipeConnectorAccounts, useUpdateRecipeConnectorAccount } from "~/hooks/useConnectors";
 import { cn } from "~/lib/utils";
 import {

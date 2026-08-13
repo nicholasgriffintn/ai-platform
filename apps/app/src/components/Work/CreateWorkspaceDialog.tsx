@@ -10,7 +10,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 	FormInput,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
 import { useCreateWorkspace } from "~/hooks/useWorkspaces";
 
 export function CreateWorkspaceDialog({

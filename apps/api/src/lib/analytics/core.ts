@@ -1,4 +1,4 @@
-import { isAnalyticsTrackingEnabled } from "@assistant/schemas";
+import { isAnalyticsTrackingEnabled } from "@ngriffin_uk/polychat-schemas";
 
 import { createAnalyticsEngineProvider } from "./analytics-engine";
 import { createBeaconProvider } from "./beacon";

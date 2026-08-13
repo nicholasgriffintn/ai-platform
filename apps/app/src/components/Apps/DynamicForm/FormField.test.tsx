@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import type { AppSchema } from "@assistant/schemas";
+import type { AppSchema } from "@ngriffin_uk/polychat-schemas";
 import { FormField } from "./FormField";
 
 type DynamicField = AppSchema["formSchema"]["steps"][0]["fields"][0];

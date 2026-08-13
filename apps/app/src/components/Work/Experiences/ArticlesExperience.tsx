@@ -5,7 +5,7 @@ import { ArticleAnalysisSession } from "~/components/Apps/Articles/ArticleAnalys
 import { ArticleView } from "~/components/Apps/Articles/View";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card } from "~/components/ui";
+import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
 import { useFetchArticleReport, useFetchArticleReports } from "~/hooks/useArticles";
 import { WorkCardGridSkeleton } from "../WorkLoadingSkeletons";
 import { isAuthenticationError } from "~/lib/errors";

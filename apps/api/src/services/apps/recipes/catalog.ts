@@ -1,5 +1,5 @@
-import type { AssistantRecipe, RecipeCategory, RecipeKind } from "@assistant/schemas";
-import { recipeConnectorProviderSchema } from "@assistant/schemas";
+import type { AssistantRecipe, RecipeCategory, RecipeKind } from "@ngriffin_uk/polychat-schemas";
+import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
 import {
 	isConnectorOperationSupported,
 	isConnectorOperationWrite,

@@ -11,7 +11,7 @@ import {
 	getBedrockImportModelSourceUriError,
 	type TrainingJob,
 	type TrainingDeployment,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { stringifyEntries } from "../utils/json.js";
 import type { Env } from "../types/env.js";

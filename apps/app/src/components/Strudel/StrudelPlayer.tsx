@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Play, Pause } from "lucide-react";
 
-import { Button } from "~/components/ui/Button";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { loadStrudelRuntime, sanitizeStrudelCode } from "./strudel";
 
 interface StrudelMirrorInstance {

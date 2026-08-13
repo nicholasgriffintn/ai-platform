@@ -1,4 +1,7 @@
-import type { RecipeConnectorAccount, RecipeConnectorProvider } from "@assistant/schemas";
+import type {
+	RecipeConnectorAccount,
+	RecipeConnectorProvider,
+} from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {

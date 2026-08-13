@@ -1,4 +1,4 @@
-import type { Tool } from "@assistant/schemas";
+import type { Tool } from "@ngriffin_uk/polychat-schemas";
 import { listFunctionTools } from "~/services/functions";
 import { formatFunctionName } from "~/utils/functions";
 import { getToolCategory } from "./toolCategories";

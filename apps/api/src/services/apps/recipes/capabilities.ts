@@ -1,4 +1,4 @@
-import type { AssistantCapabilityDescriptor, AssistantRecipe } from "@assistant/schemas";
+import type { AssistantCapabilityDescriptor, AssistantRecipe } from "@ngriffin_uk/polychat-schemas";
 
 import { normaliseAssistantCapabilityTags } from "~/services/assistant-capabilities";
 

@@ -1,4 +1,5 @@
-import { fetchApi, returnFetchedData } from "../fetch-wrapper";
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+import { fetchApi } from "../fetch-wrapper";
 import type { ResearchStatus } from "~/types/research";
 
 export class ResearchService {

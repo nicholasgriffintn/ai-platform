@@ -6,7 +6,7 @@ import type {
 	GetMemorySynthesisResponse,
 	ListTasksResponse,
 	TriggerMemorySynthesisRequest,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 export const TASK_QUERY_KEYS = {
 	tasks: ["tasks"],

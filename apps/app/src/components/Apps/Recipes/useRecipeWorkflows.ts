@@ -9,7 +9,7 @@ import {
 	type RecipeConnectorManifest,
 	type RecipeInstallation,
 	type RecipeInstallationTrigger,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import {
 	RECIPE_CONNECTORS_QUERY_KEY,

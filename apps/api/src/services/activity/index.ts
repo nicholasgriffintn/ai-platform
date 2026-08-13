@@ -1,4 +1,4 @@
-import type { ActivityRecord as Activity, ActivityStatus } from "@assistant/schemas";
+import type { ActivityRecord as Activity, ActivityStatus } from "@ngriffin_uk/polychat-schemas";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ActivityRecord } from "~/repositories/ActivityRepository";
 import { requireProjectAccess } from "~/services/workspaces/access";

@@ -4,8 +4,8 @@ import type { ReactNode } from "react";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button } from "~/components/ui/Button";
-import { Card } from "~/components/ui/Card";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { Card } from "@ngriffin_uk/polychat-component-ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import {
 	useCancelSubscription,
@@ -13,7 +13,7 @@ import {
 	useReactivateSubscription,
 	useSubscription,
 } from "~/hooks/useBilling";
-import { formatDate } from "~/lib/dates";
+import { formatDate } from "@ngriffin_uk/polychat-utility-core";
 import { isAuthenticationError } from "~/lib/errors";
 
 type PageAction = {

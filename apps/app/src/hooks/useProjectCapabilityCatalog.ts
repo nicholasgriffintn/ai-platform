@@ -1,5 +1,8 @@
 import { useMemo } from "react";
-import { buildAssistantActionCatalog, createRecipeAssistantActionItem } from "@assistant/schemas";
+import {
+	buildAssistantActionCatalog,
+	createRecipeAssistantActionItem,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { useAssistantRecipes } from "./useRecipes";
 import { useDynamicApps } from "./useDynamicApps";

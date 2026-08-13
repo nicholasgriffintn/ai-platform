@@ -1,19 +1,19 @@
 import {
-	DEFAULT_REALTIME_LIVE_PROVIDER_ID,
 	REALTIME_LIVE_PROVIDER_MANIFEST,
 	type RealtimeLiveProviderManifestItem,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { defaultModel, isRealtimeSessionModel, isTextInputChatModel } from "~/lib/models";
-import type { ModelConfig } from "@assistant/schemas";
-import type { CreateRealtimeSessionOptions, RealtimeTransport } from "./types";
+import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
+import type {
+	CreateRealtimeSessionOptions,
+	RealtimeTransport,
+} from "@ngriffin_uk/polychat-library-realtime";
 import {
 	REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG,
 	type RealtimeLiveWebSocketConfig,
-} from "./websocket-protocols";
+} from "@ngriffin_uk/polychat-library-realtime/websocket-protocols";
 
 export type RealtimeLiveProviderId = RealtimeLiveProviderManifestItem["id"];
-
-export { DEFAULT_REALTIME_LIVE_PROVIDER_ID };
 
 export interface RealtimeLiveProviderOption extends RealtimeLiveProviderManifestItem {
 	transport: RealtimeTransport;

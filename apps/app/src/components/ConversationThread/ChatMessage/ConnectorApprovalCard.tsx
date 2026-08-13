@@ -2,7 +2,7 @@ import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Badge, Button } from "~/components/ui";
+import { Badge, Button } from "@ngriffin_uk/polychat-component-ui";
 import { formatConnectorLabel, readConnectorApprovalRequest } from "~/lib/connector-approval";
 
 interface ConnectorApprovalCardProps {

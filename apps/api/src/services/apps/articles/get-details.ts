@@ -1,5 +1,5 @@
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import type { Output } from "@assistant/schemas";
+import type { Output } from "@ngriffin_uk/polychat-schemas";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";

@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type { AssistantActionSelection } from "@assistant/schemas";
+import type { AssistantActionSelection } from "@ngriffin_uk/polychat-schemas";
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 

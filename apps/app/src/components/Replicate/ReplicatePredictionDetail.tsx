@@ -1,7 +1,11 @@
 import { useReplicatePrediction } from "~/hooks/useReplicate";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Card } from "~/components/ui";
-import { formatUnknownValue, getStringProperty, isRecord } from "~/lib/unknown-values";
+import { Card } from "@ngriffin_uk/polychat-component-ui";
+import {
+	formatUnknownValue,
+	getStringProperty,
+	isRecord,
+} from "@ngriffin_uk/polychat-utility-core";
 import { isAuthenticationError } from "~/lib/errors";
 
 interface ReplicatePredictionDetailProps {

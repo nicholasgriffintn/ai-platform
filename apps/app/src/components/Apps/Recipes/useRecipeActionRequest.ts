@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router";
-import type { AssistantRecipe, RecipeInstallation } from "@assistant/schemas";
+import type { AssistantRecipe, RecipeInstallation } from "@ngriffin_uk/polychat-schemas";
 
 interface RecipeActionRequestHandlers {
 	openConfigurationDialog: (recipe: AssistantRecipe, installation?: RecipeInstallation) => void;

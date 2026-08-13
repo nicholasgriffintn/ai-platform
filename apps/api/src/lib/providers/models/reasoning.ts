@@ -1,4 +1,4 @@
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { ReasoningEffortLevel } from "~/types";
 
 const PROVIDER_REASONING_EFFORTS = new Set<ReasoningEffortLevel>([

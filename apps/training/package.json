@@ -7,9 +7,9 @@
 	"main": "src/index.ts",
 	"scripts": {
 		"build": "tsc",
-		"dev": "pnpm --filter @assistant/schemas build && wrangler dev",
-		"start": "pnpm --filter @assistant/schemas build && wrangler dev",
-		"typecheck": "pnpm --filter @assistant/schemas build && tsc --noEmit",
+		"dev": "pnpm --filter @ngriffin_uk/polychat-schemas build && wrangler dev",
+		"start": "pnpm --filter @ngriffin_uk/polychat-schemas build && wrangler dev",
+		"typecheck": "pnpm --filter @ngriffin_uk/polychat-schemas build && tsc --noEmit",
 		"lint": "pnpm oxlint",
 		"format": "oxfmt",
 		"format:check": "oxfmt --check",
@@ -17,20 +17,20 @@
 		"test": "vitest run",
 		"coverage": "vitest run --coverage",
 		"ci:test": "pnpm run coverage",
-		"deploy": "pnpm --filter @assistant/schemas build && pnpm typecheck && wrangler deploy"
+		"deploy": "pnpm --filter @ngriffin_uk/polychat-schemas build && pnpm typecheck && wrangler deploy"
 	},
 	"dependencies": {
-		"@assistant/schemas": "workspace:*",
 		"@aws-sdk/client-bedrock": "3.1106.0",
-		"zod": "4.4.3"
+		"@ngriffin_uk/polychat-schemas": "workspace:^",
+		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "5.20260809.1",
-		"@types/node": "26.2.0",
-		"oxfmt": "0.62.0",
-		"oxlint": "1.77.0",
-		"typescript": "6.0.3",
-		"vitest": "4.1.10",
-		"wrangler": "4.120.0"
+		"@cloudflare/workers-types": "catalog:",
+		"@types/node": "catalog:",
+		"oxfmt": "catalog:",
+		"oxlint": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:",
+		"wrangler": "catalog:"
 	}
 }

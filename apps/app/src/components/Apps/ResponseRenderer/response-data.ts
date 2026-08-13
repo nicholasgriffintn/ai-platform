@@ -1,4 +1,4 @@
-import { isRecord, readOptionalString } from "~/lib/objects";
+import { isRecord, readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 
 interface ResolveResponseDataOptions {
 	hasAppSchema: boolean;

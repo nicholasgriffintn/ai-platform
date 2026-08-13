@@ -1,6 +1,6 @@
 import { Brush, Film, Image } from "lucide-react";
 
-import { Button } from "~/components/ui";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { cn } from "~/lib/utils";
 import { CanvasModelOptionControls } from "./CanvasModelOptionControls";
 import { DrawingSidebarControls } from "./Drawing/DrawingSidebarControls";

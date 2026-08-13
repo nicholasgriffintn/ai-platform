@@ -1,5 +1,5 @@
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { strudelGenerateResponseSchema } from "@assistant/schemas";
+import { strudelGenerateResponseSchema } from "@ngriffin_uk/polychat-schemas";
 import type { z } from "zod";
 import type { IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";

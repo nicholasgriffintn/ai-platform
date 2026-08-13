@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { pageShellContentClassName } from "~/components/Core/PageShellContent";
-import { Card, Skeleton } from "~/components/ui";
+import { Card, Skeleton } from "@ngriffin_uk/polychat-component-ui";
 import { cn } from "~/lib/utils";
 
 function LoadingRegion({

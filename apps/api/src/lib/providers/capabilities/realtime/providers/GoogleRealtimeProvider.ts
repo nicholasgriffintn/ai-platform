@@ -1,4 +1,4 @@
-import { getRealtimeLiveProviderManifestItem } from "@assistant/schemas";
+import { getRealtimeLiveProviderManifestItem } from "@ngriffin_uk/polychat-schemas";
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { formatGoogleStudioModelResource } from "~/lib/providers/utils/googleStudio";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";

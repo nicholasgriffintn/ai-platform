@@ -1,4 +1,4 @@
-import { errorResponseSchema } from "@assistant/schemas";
+import { errorResponseSchema } from "@ngriffin_uk/polychat-schemas";
 import { type Context, Hono } from "hono";
 import z from "zod/v4";
 

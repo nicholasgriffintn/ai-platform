@@ -6,7 +6,7 @@ import type {
 	OutputSummary,
 	SharedOutput,
 	UpdateOutputInput,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type {

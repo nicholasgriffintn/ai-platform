@@ -1,4 +1,4 @@
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
 import type { ChatSettings, HostedToolSettings as HostedToolSettingsValue } from "~/types";
 import { CompactSettingSelect } from "./CompactSettingControls";

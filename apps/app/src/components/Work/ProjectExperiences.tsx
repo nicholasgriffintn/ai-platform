@@ -5,7 +5,7 @@ import { getIcon, getIconContainerClass } from "~/components/Apps/utils";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card } from "~/components/ui";
+import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
 import { useDynamicApps } from "~/hooks/useDynamicApps";
 import { getEnabledProjectExperiences, getProjectExperiencePath } from "~/lib/project-experiences";
 import { useWorkData } from "./WorkContext";

@@ -3,14 +3,20 @@ import type {
 	TrainingJobEvent,
 	TrainingModelDefinition,
 	StartTrainingJobRequest,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { Activity, FileText, RefreshCcw } from "lucide-react";
 
 import { EmptyState } from "~/components/Core/EmptyState";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "~/components/ui";
+import {
+	Button,
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@ngriffin_uk/polychat-component-ui";
 import { JobCreateForm } from "./JobCreateForm";
 import { TrainingLogsDialog } from "./TrainingLogsDialog";
-import { TrainingStatusBadge } from "./TrainingStatusBadge";
+import { TrainingStatusBadge } from "@ngriffin_uk/polychat-component-experiences/training";
 import { formatTrainingDate, trainingRecordKey } from "./utils";
 
 interface JobsPanelProps {

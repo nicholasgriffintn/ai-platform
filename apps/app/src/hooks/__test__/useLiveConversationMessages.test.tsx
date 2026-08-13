@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
-import type { ConversationModeMetadata } from "@assistant/schemas";
+import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -8,7 +8,8 @@ import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Conversation, Message } from "~/types";
-import { orderLiveMessages, useLiveConversationMessages } from "../useLiveConversationMessages";
+import { orderLiveMessages } from "~/lib/realtime/live-turn-messages";
+import { useLiveConversationMessages } from "../useLiveConversationMessages";
 
 vi.mock("~/lib/api/api-service", () => ({
 	apiService: {

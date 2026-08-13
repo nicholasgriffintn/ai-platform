@@ -1,6 +1,6 @@
 import { Hash } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { NoteMetadata as NoteMetadataType } from "@assistant/schemas";
+import type { NoteMetadata as NoteMetadataType } from "@ngriffin_uk/polychat-schemas";
 
 import { AIFormattingModal } from "~/components/Apps/Notes/AIFormattingModal";
 import { MediaGenerationModal } from "~/components/Apps/Notes/MediaGenerationModal";
@@ -12,7 +12,11 @@ import { useKeyboardShortcuts } from "~/components/Apps/Notes/hooks/useKeyboardS
 import { useNoteFormatter } from "~/hooks/useNoteFormatter";
 import { useTabAudioCapture } from "~/hooks/useTabAudioCapture";
 import { useTranscription } from "~/hooks/useTranscription";
-import { formatTextWithSpacing, getCharCount, getWordCount } from "~/lib/text-utils";
+import {
+	formatTextWithSpacing,
+	getCharCount,
+	getWordCount,
+} from "@ngriffin_uk/polychat-utility-core";
 import { cn } from "~/lib/utils";
 
 interface NoteEditorProps {

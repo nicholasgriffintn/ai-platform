@@ -5,7 +5,7 @@ vi.mock("~/services/email", () => ({
 }));
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { deriveProjectColour } from "@assistant/schemas";
+import { deriveProjectColour } from "@ngriffin_uk/polychat-schemas";
 import type {
 	ProjectCapabilityRow,
 	ProjectRow,

@@ -1,8 +1,7 @@
 import type { Message, MessageContent } from "~/types";
 import { normaliseMessageParts } from "./chat/message-parts";
 import { toProviderMessages, type ProviderMessage } from "./chat/provider-messages";
-import { isRecord } from "./objects";
-import { escapeRegExp } from "./regex";
+import { escapeRegExp, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 type ChatRequestMessage = {
 	id?: string;

@@ -1,4 +1,4 @@
-import type { AssistantRecipe, RecipeConnectorManifest } from "@assistant/schemas";
+import type { AssistantRecipe, RecipeConnectorManifest } from "@ngriffin_uk/polychat-schemas";
 
 import type { RecipeEventTriggerProvider } from "./RecipeEventTriggersDialog";
 

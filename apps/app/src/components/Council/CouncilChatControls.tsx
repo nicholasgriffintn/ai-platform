@@ -2,11 +2,11 @@ import {
 	defaultCouncilMemberIds,
 	councilMembers,
 	type CouncilMemberId,
-} from "@assistant/schemas/council-data";
+} from "@ngriffin_uk/polychat-schemas/council-data";
 import { UsersRound } from "lucide-react";
 import { useMemo } from "react";
 
-import { Checkbox } from "~/components/ui/Checkbox";
+import { Checkbox } from "@ngriffin_uk/polychat-component-ui";
 import { cn } from "~/lib/utils";
 
 type CouncilResponseMode = "debate" | "single";

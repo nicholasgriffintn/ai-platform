@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { DEFAULT_REALTIME_LIVE_PROVIDER_ID } from "@ngriffin_uk/polychat-schemas";
 
 import { createRealtimeSession } from "~/lib/api/realtime-service";
 import { getErrorMessage } from "~/lib/errors";
@@ -11,7 +12,7 @@ import {
 	sendJsonWhenOpen,
 	type RealtimeConnection,
 	type RealtimeWebSocketConnection,
-} from "~/lib/realtime";
+} from "@ngriffin_uk/polychat-library-realtime";
 import {
 	arrayBufferToBase64,
 	createPcm16AudioPlayer,
@@ -24,19 +25,19 @@ import {
 	stopMediaStream,
 	type Pcm16AudioPlayer,
 	type RealtimeMediaController,
-} from "~/lib/realtime/audio";
+} from "@ngriffin_uk/polychat-library-realtime/audio";
 import {
 	calculatePcm16AudioLevel,
 	calculatePcm16Base64AudioLevel,
 	createMediaStreamAudioLevelMeter,
 	type MediaStreamAudioLevelMeter,
-} from "~/lib/realtime/audio-levels";
+} from "@ngriffin_uk/polychat-library-realtime/audio-levels";
 import {
 	createAudioCommitGateState,
 	observeAudioCommitGateSpeech,
 	resetAudioCommitGate,
 	shouldCommitAudioGate,
-} from "~/lib/realtime/audio-commit-gate";
+} from "@ngriffin_uk/polychat-library-realtime/audio-commit-gate";
 import {
 	extractRealtimeErrorMessage,
 	extractRealtimeEvent,
@@ -47,10 +48,9 @@ import {
 	parseRealtimeMessageData,
 	type RealtimeEventResult,
 	type RealtimeTranscriptResult,
-} from "~/lib/realtime/messages";
-import { formatRealtimeWebSocketCloseError } from "~/lib/realtime/errors";
+} from "@ngriffin_uk/polychat-library-realtime/messages";
+import { formatRealtimeWebSocketCloseError } from "@ngriffin_uk/polychat-library-realtime/errors";
 import {
-	DEFAULT_REALTIME_LIVE_PROVIDER_ID,
 	getRealtimeLiveProviderOption,
 	supportsRealtimeLiveVideoInput,
 	type RealtimeLiveProviderId,

@@ -4,7 +4,7 @@ import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { estimateTextTokens } from "~/lib/messageTokens";
 import { listFunctionTools } from "~/services/functions";
-import type { PromptRequirements } from "@assistant/schemas";
+import type { PromptRequirements } from "@ngriffin_uk/polychat-schemas";
 import type { Attachment, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";

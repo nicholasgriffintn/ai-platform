@@ -1,5 +1,8 @@
 import { safeParseJson } from "~/utils/json";
-import type { ModelConfigItem, InputSchemaInputFieldDescriptor } from "@assistant/schemas";
+import type {
+	ModelConfigItem,
+	InputSchemaInputFieldDescriptor,
+} from "@ngriffin_uk/polychat-schemas";
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 

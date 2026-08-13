@@ -2,10 +2,10 @@ import { Activity } from "lucide-react";
 
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageShell } from "~/components/Core/PageShell";
-import { Button, Card } from "~/components/ui";
-import { getStatusIcon } from "~/components/ui/Status/icons";
+import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
+import { getStatusIcon } from "@ngriffin_uk/polychat-component-ui";
 import { useActivity } from "~/hooks/useActivity";
-import { formatDate } from "~/lib/dates";
+import { formatDate } from "@ngriffin_uk/polychat-utility-core";
 
 export function ProjectActivity({ projectId }: { projectId: string }) {
 	const {

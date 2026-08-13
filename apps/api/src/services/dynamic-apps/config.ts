@@ -3,7 +3,7 @@ import type {
 	ProjectExperienceDefinition,
 	ProjectExperienceRuntime,
 	ProjectToolDefinition,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 type DynamicAppCategory =
 	| "Agents & Delegation"

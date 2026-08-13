@@ -4,7 +4,7 @@ import { PageShell } from "~/components/Core/PageShell";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useDeleteAllLocalChats, useDeleteAllRemoteChats } from "~/hooks/useChat";
 import { apiService } from "~/lib/api/api-service";
-import { Button, ConfirmationDialog } from "~/components/ui";
+import { Button, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 
 export function ProfileHistoryTab() {
 	const { trackEvent } = useTrackEvent();

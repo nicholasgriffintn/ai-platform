@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import React from "react";
-import type { AppTheme, DynamicAppCatalogItem as AppListItem } from "@assistant/schemas";
+import type { AppTheme, DynamicAppCatalogItem as AppListItem } from "@ngriffin_uk/polychat-schemas";
 
 type ThemeStyle = {
 	iconColor: string;

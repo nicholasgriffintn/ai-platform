@@ -1,4 +1,4 @@
-import type { TrainingModelDefinition } from "@assistant/schemas";
+import type { TrainingModelDefinition } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import { resolveTrainingHyperparameters } from "../trainingHyperparameters";

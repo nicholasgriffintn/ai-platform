@@ -23,7 +23,12 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
 import GithubIcon from "~/components/ModelIcon/Icons/github";
-import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
+import {
+	Button,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@ngriffin_uk/polychat-component-ui";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { useTheme } from "~/hooks/useTheme";
 import { getSidebarUsageItems, type SidebarUsageItem } from "~/lib/sidebar-usage";

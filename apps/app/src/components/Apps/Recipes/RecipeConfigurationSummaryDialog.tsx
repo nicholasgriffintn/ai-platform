@@ -1,4 +1,4 @@
-import type { AssistantRecipe, RecipeInstallation } from "@assistant/schemas";
+import type { AssistantRecipe, RecipeInstallation } from "@ngriffin_uk/polychat-schemas";
 
 import {
 	Button,
@@ -8,7 +8,7 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
 import { formatRecipeConfigurationSummaryValue } from "~/lib/recipes";
 
 interface RecipeConfigurationSummaryDialogProps {

@@ -3,8 +3,8 @@ import type {
 	ProjectToolCapability,
 	ProjectToolDefinition,
 	ProjectToolId,
-} from "@assistant/schemas";
-import { projectToolIdSchema } from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
+import { projectToolIdSchema } from "@ngriffin_uk/polychat-schemas";
 
 export type ModelToolId = ProjectToolId;
 export type ToolCapabilityKey = ProjectToolCapability;

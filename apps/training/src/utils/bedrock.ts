@@ -3,7 +3,7 @@ import type {
 	GetModelCustomizationJobCommandOutput,
 	GetModelImportJobCommandOutput,
 } from "@aws-sdk/client-bedrock";
-import type { TrainingDeployment, TrainingJob } from "@assistant/schemas";
+import type { TrainingDeployment, TrainingJob } from "@ngriffin_uk/polychat-schemas";
 
 import type { Env } from "../types/env.js";
 import { isRecord } from "./objects.js";

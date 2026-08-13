@@ -1,5 +1,5 @@
 import { listFunctionTools } from "~/services/functions";
-import { FieldType, type AppSchema } from "@assistant/schemas";
+import { FieldType, type AppSchema } from "@ngriffin_uk/polychat-schemas";
 import {
 	formatFunctionName,
 	getFunctionIcon,

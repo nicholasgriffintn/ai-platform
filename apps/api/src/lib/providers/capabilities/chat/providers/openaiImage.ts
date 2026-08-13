@@ -1,4 +1,4 @@
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { ChatCompletionParameters } from "~/types";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
 

@@ -2,7 +2,7 @@ import { ExternalLink, FileText, Keyboard, MoreVertical } from "lucide-react";
 import { Link } from "react-router";
 
 import GithubIcon from "~/components/ModelIcon/Icons/github";
-import { DropdownMenu, DropdownMenuItem } from "~/components/ui";
+import { DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
 
 interface MoreOptionsDropdownProps {
 	position?: "top" | "bottom";

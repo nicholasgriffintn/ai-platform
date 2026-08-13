@@ -1,4 +1,4 @@
-import type { RecipeConfiguration } from "@assistant/schemas";
+import type { RecipeConfiguration } from "@ngriffin_uk/polychat-schemas";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import {
 	getMessagingProviderFromStoredCredential,

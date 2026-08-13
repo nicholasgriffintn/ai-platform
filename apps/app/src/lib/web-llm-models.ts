@@ -1,6 +1,6 @@
 import type { ModelRecord } from "@mlc-ai/web-llm";
 
-import type { ModelConfig } from "@assistant/schemas";
+import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 
 let cachedWebLLMModels: ModelConfig | null = null;
 let pendingWebLLMModels: Promise<ModelConfig> | null = null;

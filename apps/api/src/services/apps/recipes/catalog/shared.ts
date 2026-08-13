@@ -1,4 +1,4 @@
-import type { AssistantRecipe, RecipeConfigurationField } from "@assistant/schemas";
+import type { AssistantRecipe, RecipeConfigurationField } from "@ngriffin_uk/polychat-schemas";
 
 export const RECIPE_CONNECTOR_TOOL = "use_recipe_connector";
 export const RECIPE_LOOKUP_TOOL = "get_recipe";

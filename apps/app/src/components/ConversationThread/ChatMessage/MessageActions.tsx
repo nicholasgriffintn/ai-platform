@@ -13,7 +13,12 @@ import {
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
+import {
+	Button,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@ngriffin_uk/polychat-component-ui";
 import { canBranchFromMessage } from "~/lib/chat/branching";
 import { isCompactionMarkerMessage } from "~/lib/chat/compaction-status";
 import type { OpinionRequest } from "~/lib/chat/opinion";

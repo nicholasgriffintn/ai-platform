@@ -5,7 +5,7 @@ import {
 	addProjectCapabilitySchema,
 	projectDetailSchema,
 	updateProjectSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { addRoute } from "~/lib/http/routeBuilder";
 import {
 	addProjectCapability,

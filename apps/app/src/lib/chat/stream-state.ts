@@ -1,5 +1,5 @@
-import { compactionStatusLabels } from "@assistant/schemas/compaction-status";
-import { isRecord } from "~/lib/objects";
+import { compactionStatusLabels } from "@ngriffin_uk/polychat-schemas/compaction-status";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 const INIT_MESSAGES = [
 	"Calling provider...",

@@ -1,8 +1,13 @@
-import type { SourceSummary } from "@assistant/schemas";
+import type { SourceSummary } from "@ngriffin_uk/polychat-schemas";
 import { Database, Loader2, Mic, Plus, Square, Volume1, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
+import {
+	Button,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@ngriffin_uk/polychat-component-ui";
 import { cn } from "~/lib/utils";
 import { ComposerSourceMenu } from "./ComposerSourceMenu";
 

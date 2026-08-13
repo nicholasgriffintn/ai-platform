@@ -4,7 +4,7 @@ import {
 	resolveAgentModeFromChatMode,
 	type AgentMode,
 	type ToolPermission,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import type { ChatMode, IUser } from "~/types";
 
 const VALID_PERMISSIONS = new Set<ToolPermission>(TOOL_PERMISSIONS);

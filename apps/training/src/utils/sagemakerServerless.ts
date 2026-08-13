@@ -1,4 +1,4 @@
-import { isSageMakerGpuImage, type TrainingDeploymentTarget } from "@assistant/schemas";
+import { isSageMakerGpuImage, type TrainingDeploymentTarget } from "@ngriffin_uk/polychat-schemas";
 
 import type { DeployModelOptions } from "../types/providers.js";
 

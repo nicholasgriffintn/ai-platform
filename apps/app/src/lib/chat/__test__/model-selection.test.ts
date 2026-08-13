@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { normalizeSelectedModel, resolveRequestModel } from "../model-selection";
+import {
+	normalizeSelectedModel,
+	resolveRequestModel,
+} from "@ngriffin_uk/polychat-library-chat/model-selection";
 
 describe("chat model selection", () => {
 	it("normalizes automatic model selection to an omitted request model", () => {

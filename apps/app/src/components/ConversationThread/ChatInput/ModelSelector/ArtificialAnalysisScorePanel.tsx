@@ -1,7 +1,7 @@
 import { ExternalLink } from "lucide-react";
 
-import type { ModelConfigItem } from "@assistant/schemas";
-import { clampPercentage } from "~/lib/percentage";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import { clampPercentage } from "@ngriffin_uk/polychat-utility-core";
 
 type ArtificialAnalysisScore = {
 	key: "intelligenceIndex" | "codingIndex" | "agenticIndex";

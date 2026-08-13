@@ -1,7 +1,7 @@
 import { Monitor, Moon, Sun } from "lucide-react";
 import { type JSX, useEffect, useState } from "react";
 
-import { DropdownMenu, DropdownMenuItem } from "~/components/ui";
+import { DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
 import { useTheme } from "~/hooks/useTheme";
 import type { Theme } from "~/types";
 

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ParsedChatCompletionRequestBody } from "@assistant/schemas";
+import type { ParsedChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
 import { createAgentCompletion } from "../createAgentCompletion";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import type { IEnv } from "~/types";

@@ -2,13 +2,13 @@ import { Fingerprint, KeyRound, Shield, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { EmptyState } from "~/components/Core/EmptyState";
-import { Button } from "~/components/ui/Button";
-import { Card } from "~/components/ui/Card";
-import { ConfirmationDialog, HoverActions, ListItem } from "~/components/ui";
-import { Skeleton } from "~/components/ui/Skeleton";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { Card } from "@ngriffin_uk/polychat-component-ui";
+import { ConfirmationDialog, HoverActions, ListItem } from "@ngriffin_uk/polychat-component-ui";
+import { Skeleton } from "@ngriffin_uk/polychat-component-ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { usePasskeys } from "~/hooks/usePasskeys";
-import { formatRelativeTime } from "~/lib/dates";
+import { formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
 import { PageShell } from "../../Core/PageShell";
 
 export function ProfilePasskeysTab() {

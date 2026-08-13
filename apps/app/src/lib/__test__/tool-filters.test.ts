@@ -1,4 +1,4 @@
-import type { Tool } from "@assistant/schemas";
+import type { Tool } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import { filterTools, getAvailableToolCategories } from "../tool-filters";

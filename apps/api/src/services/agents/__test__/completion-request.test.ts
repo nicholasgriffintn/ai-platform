@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { ParsedChatCompletionRequestBody } from "@assistant/schemas";
+import type { ParsedChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
 import { prepareAgentCompletionRequest } from "../completion-request";
 
 describe("agent completion request preparation", () => {

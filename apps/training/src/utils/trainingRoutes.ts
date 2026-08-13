@@ -1,4 +1,4 @@
-import { trainingProviderSchema } from "@assistant/schemas";
+import { trainingProviderSchema } from "@ngriffin_uk/polychat-schemas";
 
 export function decodeTrainingProvider(value: string) {
 	return trainingProviderSchema.parse(decodeURIComponent(value));

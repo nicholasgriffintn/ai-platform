@@ -6,7 +6,7 @@ import { StrudelPlayer } from "~/components/Strudel/StrudelPlayer";
 import { StrudelCreateStudio } from "~/components/Apps/Strudel/StrudelCreateStudio";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Badge, Button, Card, Input, Label, Textarea } from "~/components/ui";
+import { Badge, Button, Card, Input, Label, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import {
 	useDeleteStrudelPattern,
 	useGenerateStrudelPattern,
@@ -16,7 +16,7 @@ import {
 	useUpdateStrudelPattern,
 } from "~/hooks/useStrudel";
 import { WorkCardGridSkeleton } from "../WorkLoadingSkeletons";
-import { parseCommaSeparatedTags } from "~/lib/tags";
+import { parseCommaSeparatedTags } from "@ngriffin_uk/polychat-utility-core";
 import { isAuthenticationError } from "~/lib/errors";
 
 const STARTER_PATTERN = 's("bd sd, hh*8").bank("RolandTR909").gain(0.8)';

@@ -1,5 +1,5 @@
-import { canReplaceStoredConversationMessages } from "@assistant/schemas/conversation-replacement";
-import type { ConversationModeMetadata } from "@assistant/schemas";
+import { canReplaceStoredConversationMessages } from "@ngriffin_uk/polychat-schemas/conversation-replacement";
+import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef } from "react";
 
@@ -15,12 +15,10 @@ import {
 	type LiveTurn,
 } from "~/lib/realtime/live-turn-messages";
 import { getMessageTextContent } from "~/lib/messages";
-import type { RealtimeTranscriptResult } from "~/lib/realtime/messages";
+import type { RealtimeTranscriptResult } from "@ngriffin_uk/polychat-library-realtime/messages";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Conversation, Message } from "~/types";
 import { useConversationStorage } from "./useConversationStorage";
-
-export { orderLiveMessages } from "~/lib/realtime/live-turn-messages";
 
 export interface FinalLiveInputTranscript {
 	assistantMessageData: Partial<Message>;

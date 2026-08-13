@@ -1,4 +1,4 @@
-import type { SourceSummary } from "@assistant/schemas";
+import type { SourceSummary } from "@ngriffin_uk/polychat-schemas";
 
 export function getProjectConversationSourceIds(
 	memories: readonly SourceSummary[],

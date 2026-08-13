@@ -1,8 +1,8 @@
 import type { ChangeEvent } from "react";
-import type { AppSchema } from "@assistant/schemas";
+import type { AppSchema } from "@ngriffin_uk/polychat-schemas";
 
-import { FormCheckbox, FormInput, FormSelect, Textarea } from "~/components/ui";
-import { getNumberInputValue, parseNumberInputValue } from "~/lib/number-input";
+import { FormCheckbox, FormInput, FormSelect, Textarea } from "@ngriffin_uk/polychat-component-ui";
+import { getNumberInputValue, parseNumberInputValue } from "@ngriffin_uk/polychat-utility-core";
 
 type FieldType = AppSchema["formSchema"]["steps"][0]["fields"][0];
 

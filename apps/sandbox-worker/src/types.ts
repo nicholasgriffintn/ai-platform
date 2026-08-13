@@ -2,7 +2,7 @@ import type {
 	SandboxRunEvent,
 	SandboxTaskResult,
 	SandboxWorkerExecuteRequest,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 export type TaskParams = SandboxWorkerExecuteRequest;
 export type TaskResult = SandboxTaskResult;

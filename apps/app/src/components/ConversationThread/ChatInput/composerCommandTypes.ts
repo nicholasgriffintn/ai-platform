@@ -1,4 +1,4 @@
-import type { ProjectCapabilityKind } from "@assistant/schemas";
+import type { ProjectCapabilityKind } from "@ngriffin_uk/polychat-schemas";
 import type { ReactNode } from "react";
 
 export interface ComposerAssistantActionCapability {

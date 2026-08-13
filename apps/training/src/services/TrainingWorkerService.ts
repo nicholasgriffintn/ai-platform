@@ -5,7 +5,7 @@ import type {
 	TrainingDeploymentDeleteResponse,
 	TrainingJob,
 	TrainingProviderId,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { createTrainingProvider } from "../providers/registry.js";
 import type { Env } from "../types/env.js";

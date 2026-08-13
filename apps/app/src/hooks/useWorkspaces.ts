@@ -11,7 +11,7 @@ import type {
 	UpdateWorkspaceInput,
 	WorkspaceDetail,
 	WorkspaceSummary,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import {
 	acceptWorkspaceInvitation,
 	addProjectCapability,

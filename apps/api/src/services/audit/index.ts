@@ -1,4 +1,4 @@
-import type { WorkspaceAuditRecord } from "@assistant/schemas";
+import type { WorkspaceAuditRecord } from "@ngriffin_uk/polychat-schemas";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { WorkspaceAuditRecordRow } from "~/repositories/AuditRepository";
 import { requireWorkspaceAccess } from "~/services/workspaces/access";

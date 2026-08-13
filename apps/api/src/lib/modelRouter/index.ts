@@ -1,8 +1,12 @@
 import { PromptAnalyzer } from "~/lib/modelRouter/promptAnalyser";
 import { defaultModel, getIncludedInRouterModelsForUser, getModels } from "~/lib/providers/models";
 import { trackModelRoutingMetrics } from "~/lib/monitoring";
-import type { ModelConfigItem, ModelRouterMode, PromptRequirements } from "@assistant/schemas";
-import { filterModelsByRouterMode } from "@assistant/schemas";
+import type {
+	ModelConfigItem,
+	ModelRouterMode,
+	PromptRequirements,
+} from "@ngriffin_uk/polychat-schemas";
+import { filterModelsByRouterMode } from "@ngriffin_uk/polychat-schemas";
 import type { Attachment, IEnv, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { AssistantError, ErrorType } from "~/utils/errors";

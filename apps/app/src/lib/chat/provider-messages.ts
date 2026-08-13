@@ -1,9 +1,9 @@
 import {
 	toProviderChatMessages,
 	type NormalisedProviderChatMessage,
-} from "@assistant/schemas/provider-messages";
+} from "@ngriffin_uk/polychat-schemas/provider-messages";
 import type { Message, MessageContent } from "~/types";
-import { isRecord } from "../objects";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export type ProviderMessage = Omit<Message, "id" | "role"> & {
 	id?: string;

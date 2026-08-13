@@ -1,4 +1,4 @@
-import type { SourceCollectionKind, SourceKind, SourceStatus } from "@assistant/schemas";
+import type { SourceCollectionKind, SourceKind, SourceStatus } from "@ngriffin_uk/polychat-schemas";
 
 import { BaseRepository } from "./BaseRepository";
 import { AssistantError, ErrorType } from "~/utils/errors";

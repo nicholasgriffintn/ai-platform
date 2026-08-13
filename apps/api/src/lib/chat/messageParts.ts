@@ -2,7 +2,7 @@ import {
 	hasCompactionPart as hasCompactionMessagePart,
 	isCompactionMarkerMessage as isSchemaCompactionMarkerMessage,
 	normaliseMessageParts as normaliseSchemaMessageParts,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import type { Message, MessageContent, MessagePart } from "~/types";
 import { isRecord, isObjectOrArray } from "~/utils/objects";
 

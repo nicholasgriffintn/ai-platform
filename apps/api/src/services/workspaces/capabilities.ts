@@ -1,4 +1,4 @@
-import type { ProjectCapabilityKind } from "@assistant/schemas";
+import type { ProjectCapabilityKind } from "@ngriffin_uk/polychat-schemas";
 
 import { getRecipeById } from "~/services/apps/recipes";
 import { getDynamicAppCatalog } from "~/services/dynamic-apps";

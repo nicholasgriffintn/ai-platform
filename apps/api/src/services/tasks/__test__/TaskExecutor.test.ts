@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { SANDBOX_RUN_DISPATCH_TASK_TYPE, type TaskType } from "@assistant/schemas";
+import { SANDBOX_RUN_DISPATCH_TASK_TYPE, type TaskType } from "@ngriffin_uk/polychat-schemas";
 
 import { TaskExecutor } from "../TaskExecutor";
 import type { TaskHandler } from "../TaskHandler";

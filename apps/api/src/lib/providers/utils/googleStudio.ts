@@ -1,4 +1,4 @@
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { ChatCompletionParameters, ReasoningEffortLevel } from "~/types";
 import { coerceStringArray, isRecord, omitUndefinedValues } from "~/utils/objects";
 import { readOptionBag, readRecordOption } from "~/utils/options";

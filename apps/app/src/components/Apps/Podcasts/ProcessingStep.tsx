@@ -1,6 +1,6 @@
 import { BookText, ImageIcon, Mic } from "lucide-react";
 
-import { Button } from "~/components/ui";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import type { PodcastFormData } from "~/types/podcast";
 import { PodcastWorkflowStep } from "./workflow";
 

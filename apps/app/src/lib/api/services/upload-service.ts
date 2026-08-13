@@ -1,6 +1,7 @@
-import type { MarkdownConversionOptions } from "@assistant/schemas";
+import type { MarkdownConversionOptions } from "@ngriffin_uk/polychat-schemas";
 
-import { fetchApi, returnFetchedData } from "../fetch-wrapper";
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+import { fetchApi } from "../fetch-wrapper";
 
 export interface UploadFileOptions {
 	convertToMarkdown?: boolean;

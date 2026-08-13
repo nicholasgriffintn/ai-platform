@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AssistantActionItem, AssistantActionItemKind } from "@assistant/schemas";
+import type { AssistantActionItem, AssistantActionItemKind } from "@ngriffin_uk/polychat-schemas";
 
 import {
 	filterProjectCapabilities,

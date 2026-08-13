@@ -1,4 +1,4 @@
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useMemo } from "react";
 
 import { useRecipeConnectors } from "~/hooks/useConnectors";

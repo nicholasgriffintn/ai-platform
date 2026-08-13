@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { REALTIME_LIVE_PROVIDER_MANIFEST } from "@assistant/schemas";
+import { REALTIME_LIVE_PROVIDER_MANIFEST } from "@ngriffin_uk/polychat-schemas";
 import {
 	getComposedRealtimeReasoningModelId,
 	getDefaultLiveModelId,

@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { API_BASE_URL } from "~/constants";
 import { useSources } from "~/hooks/useSources";
 import { getSource } from "~/lib/api/sources";
-import type { AttachmentData } from "~/lib/chat/attachments";
+import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import {
 	createSourceAttachment,
 	type SourceAttachmentCapabilities,

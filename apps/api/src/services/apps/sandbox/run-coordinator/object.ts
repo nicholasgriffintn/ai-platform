@@ -5,7 +5,7 @@ import {
 	type SandboxRunDispatchMessage,
 	type SandboxRunEvent,
 	type SandboxRunInstruction,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { Agent, type FiberContext, type FiberRecoveryContext } from "agents";
 import type { IEnv } from "~/types";
 import { safeParseJson } from "~/utils/json";
@@ -20,7 +20,7 @@ import {
 	SANDBOX_RUN_DISPATCH_FIBER_NAME,
 	type SandboxDispatchFiberSnapshot,
 } from "./fibers";
-import { NO_STORE } from "@assistant/schemas";
+import { NO_STORE } from "@ngriffin_uk/polychat-schemas";
 
 const CONTROL_KEY = "control";
 const EVENTS_KEY = "events";

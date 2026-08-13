@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import type { PodcastTranscriptData } from "@assistant/schemas";
+import type { PodcastTranscriptData } from "@ngriffin_uk/polychat-schemas";
 
 interface TranscriptViewerProps {
 	transcript: PodcastTranscriptData;

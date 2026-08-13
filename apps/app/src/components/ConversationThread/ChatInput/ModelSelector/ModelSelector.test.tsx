@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ModelRouterMode } from "@assistant/schemas";
+import type { ModelRouterMode } from "@ngriffin_uk/polychat-schemas";
 import { ModelSelector } from ".";
 
 const store = {

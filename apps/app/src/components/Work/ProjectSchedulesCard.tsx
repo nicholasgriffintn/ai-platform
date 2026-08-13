@@ -3,7 +3,7 @@ import type {
 	ProjectCapability,
 	RecipeInstallation,
 	WorkspaceMember,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import {
 	CalendarClock,
 	CalendarX2,
@@ -30,10 +30,10 @@ import {
 	DropdownMenuItem,
 	FormDialog,
 	FormSelect,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
 import { useAssistantRecipes, useRecipeInstallations } from "~/hooks/useRecipes";
 import { getRecipeScheduleTrigger } from "~/lib/recipes";
-import { areUserIdsEqual } from "~/lib/user-ids";
+import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 import { useChatStore } from "~/state/stores/chatStore";
 
 export function ProjectSchedulesCard({

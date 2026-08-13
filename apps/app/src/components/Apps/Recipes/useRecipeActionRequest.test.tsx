@@ -2,7 +2,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
-import type { AssistantRecipe, RecipeInstallation } from "@assistant/schemas";
+import type { AssistantRecipe, RecipeInstallation } from "@ngriffin_uk/polychat-schemas";
 
 import { useRecipeActionRequest } from "./useRecipeActionRequest";
 

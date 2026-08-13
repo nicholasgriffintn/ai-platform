@@ -3,7 +3,7 @@ import type {
 	DeployTrainingModelRequest,
 	TrainingProviderId,
 	StartTrainingJobRequest,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import {
 	deleteTrainingDeployment,

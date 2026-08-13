@@ -1,7 +1,7 @@
 import { ArrowDown, ChevronDown, ExternalLink, FileText, Info, Loader2 } from "lucide-react";
 import { useState } from "react";
 
-import { Markdown } from "~/components/ui/Markdown";
+import { Markdown } from "@ngriffin_uk/polychat-component-content";
 import { useFetchSourceArticlesByIds } from "~/hooks/useArticles";
 import { cn } from "~/lib/utils";
 

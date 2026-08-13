@@ -7,7 +7,6 @@ import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import {
 	Button,
 	ConfirmationDialog,
-	CopyButton,
 	Dialog,
 	DialogContent,
 	DialogHeader,
@@ -15,8 +14,9 @@ import {
 	FormInput,
 	HoverActions,
 	ListItem,
-} from "~/components/ui";
-import { Card } from "~/components/ui/Card";
+} from "@ngriffin_uk/polychat-component-ui";
+import { CopyButton } from "~/components/Content/CopyButton";
+import { Card } from "@ngriffin_uk/polychat-component-ui";
 import { useApiKeys } from "~/hooks/useApiKeys";
 import { PageShell } from "../../Core/PageShell";
 import { isAuthenticationError } from "~/lib/errors";

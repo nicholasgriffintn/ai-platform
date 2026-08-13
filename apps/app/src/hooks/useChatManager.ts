@@ -1,17 +1,17 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
-import { compactionStatusLabels } from "@assistant/schemas/compaction-status";
-import type { ConversationModeMetadata, CouncilMemberId } from "@assistant/schemas";
+import { compactionStatusLabels } from "@ngriffin_uk/polychat-schemas/compaction-status";
+import type { ConversationModeMetadata, CouncilMemberId } from "@ngriffin_uk/polychat-schemas";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
-import type { AttachmentData } from "~/lib/chat/attachments";
-import { normalizeSelectedModel } from "~/lib/chat/model-selection";
+import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
+import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
 import { prepareUserMessage } from "~/lib/chat/prepare-user-message";
 import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
 import { createCouncilDebateTurnPlanner } from "~/lib/council-turns";
 import { createConversationId } from "~/lib/conversations";
-import { upsertConversationInChatCaches } from "~/lib/conversation-cache";
+import { upsertConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
 import { getErrorMessage } from "~/lib/errors";
 import { EMPTY_MODEL_CONFIG } from "~/lib/models";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";

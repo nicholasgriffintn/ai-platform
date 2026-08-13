@@ -1,7 +1,8 @@
-import type { ActivityRecord, ActivityStatus } from "@assistant/schemas";
+import type { ActivityRecord, ActivityStatus } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service";
-import { fetchApiOrThrow, returnFetchedData } from "./fetch-wrapper";
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+import { fetchApiOrThrow } from "./fetch-wrapper";
 
 export async function listActivity(
 	filters: {

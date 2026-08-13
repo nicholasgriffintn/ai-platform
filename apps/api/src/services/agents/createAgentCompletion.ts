@@ -2,7 +2,7 @@ import { formatToolCalls } from "~/lib/chat/tools";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { findModelConfig } from "~/lib/providers/models";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
-import type { ParsedChatCompletionRequestBody } from "@assistant/schemas";
+import type { ParsedChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { buildAgentCompletionTools, buildAgentSystemPrompt } from "./completion-tools";

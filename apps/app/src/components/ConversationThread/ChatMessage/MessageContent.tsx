@@ -2,8 +2,7 @@ import { File, FileText, Loader2, Volume2 } from "lucide-react";
 import { Fragment, type ReactNode } from "react";
 import { memo, useMemo } from "react";
 
-import { ImageModal } from "~/components/ui/ImageModal";
-import { MemoizedMarkdown } from "~/components/ui/Markdown";
+import { ImageModal, MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import { canCombineArtifacts, isInlinePreviewArtifact } from "~/lib/artifacts";
 import { processCustomXmlTags, splitContentByArtifacts } from "~/lib/message-utils";

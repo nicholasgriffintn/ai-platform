@@ -1,6 +1,6 @@
-import type { AssistantRecipe } from "@assistant/schemas";
+import type { AssistantRecipe } from "@ngriffin_uk/polychat-schemas";
 
-import { Checkbox, FormDialog, Input, Label, Textarea } from "~/components/ui";
+import { Checkbox, FormDialog, Input, Label, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import { isRecipeScheduleCronSupported } from "~/lib/recipes";
 
 interface RecipeScheduleDialogProps {

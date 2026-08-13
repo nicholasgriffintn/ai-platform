@@ -1,6 +1,6 @@
 import type { ChangeEvent } from "react";
 
-import { clampPercentage } from "~/lib/percentage";
+import { clampPercentage } from "@ngriffin_uk/polychat-utility-core";
 import { cn } from "~/lib/utils";
 
 interface CompactSelectOption {

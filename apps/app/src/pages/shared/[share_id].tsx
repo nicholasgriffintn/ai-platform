@@ -10,7 +10,7 @@ import { MessageList } from "~/components/ConversationThread/MessageList";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageStatus } from "~/components/Core/PageStatus";
-import { ApiError } from "~/lib/api/fetch-wrapper";
+import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import { fetchSharedConversationHistory } from "~/lib/api/shared-conversation";
 import type { Message } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";

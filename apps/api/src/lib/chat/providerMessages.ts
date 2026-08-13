@@ -2,7 +2,7 @@ import {
 	normaliseProviderChatMessage,
 	toProviderChatMessages,
 	type NormalisedProviderChatMessage,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import type { Message } from "~/types";
 
 export type ProviderMessage = Message & {

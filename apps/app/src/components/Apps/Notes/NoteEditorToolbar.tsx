@@ -14,7 +14,7 @@ import { memo, useState } from "react";
 import { toast } from "sonner";
 
 import { cn } from "~/lib/utils";
-import { ActionButtons, ConfirmationDialog } from "~/components/ui";
+import { ActionButtons, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 
 interface NoteEditorToolbarProps {
 	fontFamily: string;

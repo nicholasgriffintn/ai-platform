@@ -1,5 +1,5 @@
 import { PageShell } from "~/components/Core/PageShell";
-import { Prose } from "~/components/ui/Prose";
+import { Prose } from "@ngriffin_uk/polychat-component-content";
 import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 import { APP_NAME, CONTACT_LINK, PRIVACY_EFFECTIVE_DATE } from "~/constants";
 

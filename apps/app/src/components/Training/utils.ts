@@ -5,13 +5,13 @@ import type {
 	TrainingJobEvent,
 	TrainingModelDefinition,
 	TrainingProviderId,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import {
 	getSageMakerEndpointInstanceCompatibilityError,
 	isSageMakerGpuImage,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
-import { isRecord } from "~/lib/objects";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 type TrainingHyperparameterValue = string | number | boolean;
 

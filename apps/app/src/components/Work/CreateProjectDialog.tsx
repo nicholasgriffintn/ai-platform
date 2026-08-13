@@ -10,7 +10,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 	FormInput,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
 import { useCreateProject } from "~/hooks/useWorkspaces";
 
 export function CreateProjectDialog({

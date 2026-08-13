@@ -1,10 +1,10 @@
 import { Code2, Copy, FileText, Play, X } from "lucide-react";
 import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
 
-import { MemoizedMarkdown } from "~/components/ui/Markdown";
+import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { isCodeArtifact, isDocumentArtifact, isStylesheetArtifact } from "~/lib/artifacts";
-import type { AttachmentData } from "~/lib/chat/attachments";
+import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import type { ArtifactProps } from "~/types/artifact";
 import { ArtifactDocumentEditor } from "./ArtifactDocumentEditor";
 

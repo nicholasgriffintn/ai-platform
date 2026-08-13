@@ -10,7 +10,7 @@ import {
 	Trash2,
 	WandSparkles,
 } from "lucide-react";
-import type { AssistantRecipe, RecipeInstallation } from "@assistant/schemas";
+import type { AssistantRecipe, RecipeInstallation } from "@ngriffin_uk/polychat-schemas";
 import type { ReactNode } from "react";
 
 import {
@@ -21,7 +21,7 @@ import {
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
 import {
 	getRecipeIntegrationStatusLabel,
 	getRecipeScheduleTrigger,

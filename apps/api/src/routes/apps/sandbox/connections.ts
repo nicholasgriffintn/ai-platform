@@ -7,7 +7,7 @@ import {
 	errorResponseSchema,
 	githubConnectionSchema,
 	sandboxConnectionRepositoriesSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import {
 	canAutoConnectGitHubApp,

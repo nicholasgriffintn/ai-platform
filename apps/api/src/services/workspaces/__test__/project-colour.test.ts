@@ -1,4 +1,4 @@
-import { createProjectSchema, deriveProjectColour } from "@assistant/schemas";
+import { createProjectSchema, deriveProjectColour } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 describe("project colours", () => {

@@ -1,10 +1,10 @@
 import { Calendar, Clock, Edit3, FileText, Hash, Monitor, Tag, User } from "lucide-react";
 import { useState } from "react";
-import type { NoteMetadata as NoteMetadataType } from "@assistant/schemas";
-import { Button } from "~/components/ui/Button";
-import { Textarea } from "~/components/ui/Textarea";
-import { Badge } from "~/components/ui/badge";
-import { Input } from "~/components/ui/input";
+import type { NoteMetadata as NoteMetadataType } from "@ngriffin_uk/polychat-schemas";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { Textarea } from "@ngriffin_uk/polychat-component-ui";
+import { Badge } from "@ngriffin_uk/polychat-component-ui";
+import { Input } from "@ngriffin_uk/polychat-component-ui";
 import { cn } from "~/lib/utils";
 
 interface NoteMetadataProps {

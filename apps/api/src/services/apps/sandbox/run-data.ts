@@ -3,7 +3,7 @@ import {
 	type SandboxRunEvent,
 	type SandboxRunStatus,
 	sandboxRunDataSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 export { type SandboxRunData, type SandboxRunStatus };
 

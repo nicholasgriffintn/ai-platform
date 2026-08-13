@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { filterModelsByRouterMode } from "@assistant/schemas";
+import { filterModelsByRouterMode } from "@ngriffin_uk/polychat-schemas";
 import { ModelRouter } from "../index";
 import { getIncludedInRouterModelsForUser } from "~/lib/providers/models";
 import type { IEnv, IUser } from "~/types";

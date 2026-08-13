@@ -7,7 +7,12 @@ import {
 import { Loader2 } from "lucide-react";
 import { useEffect, useMemo } from "react";
 
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "~/components/ui/Dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogTitle,
+} from "@ngriffin_uk/polychat-component-ui";
 import { API_BASE_URL, APPLE_SIGN_IN_CLIENT_ID, APP_NAME } from "~/constants";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useAuthStatus } from "~/hooks/useAuth";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Source } from "@assistant/schemas";
+import type { Source } from "@ngriffin_uk/polychat-schemas";
 
 import { createSourceAttachment } from "./attachments";
 

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import type { CreateAgentInput, UpdateAgentInput } from "@assistant/schemas";
+import type { CreateAgentInput, UpdateAgentInput } from "@ngriffin_uk/polychat-schemas";
 import { apiService } from "~/lib/api/api-service";
 import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
 

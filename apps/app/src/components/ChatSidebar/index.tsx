@@ -25,10 +25,10 @@ import {
 	PopoverTrigger,
 	SearchInput,
 	SidebarShell,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
-import { useDebouncedValue } from "~/hooks/useDebouncedValue";
-import { useLoadMoreOnIntersect } from "~/hooks/useLoadMoreOnIntersect";
+import { useDebouncedValue } from "@ngriffin_uk/polychat-utility-react";
+import { useLoadMoreOnIntersect } from "@ngriffin_uk/polychat-utility-react";
 import { useChats, useDeleteChat, useUpdateChatTitle } from "~/hooks/useChat";
 import { categorizeItemsByDate } from "~/lib/sidebar";
 import { useChatStore } from "~/state/stores/chatStore";

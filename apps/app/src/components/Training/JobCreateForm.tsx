@@ -1,10 +1,13 @@
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
-import type { TrainingModelDefinition, StartTrainingJobRequest } from "@assistant/schemas";
+import type {
+	TrainingModelDefinition,
+	StartTrainingJobRequest,
+} from "@ngriffin_uk/polychat-schemas";
 import { Rocket } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button, FormInput, FormSelect, Textarea } from "~/components/ui";
+import { Button, FormInput, FormSelect, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import { getErrorMessage } from "~/lib/errors";
 import {
 	formatTrainingHyperparameters,

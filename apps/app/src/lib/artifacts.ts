@@ -1,6 +1,6 @@
 import type { ArtifactProps } from "~/types/artifact";
 import type { Message } from "~/types";
-import type { AttachmentData } from "./chat/attachments";
+import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { formattedMessageContent } from "./messages";
 
 export interface ArtifactDownload {

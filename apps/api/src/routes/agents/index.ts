@@ -5,7 +5,7 @@ import {
 	updateAgentSchema,
 	createChatCompletionsJsonSchema,
 	apiResponseSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";

@@ -9,7 +9,7 @@ import {
 	isRealtimeSetupCompleteMessage,
 	parseRealtimeJsonMessage,
 	parseRealtimeMessageData,
-} from "./messages";
+} from "@ngriffin_uk/polychat-library-realtime/messages";
 
 describe("realtime message helpers", () => {
 	it("extracts OpenAI-style completed transcription messages", () => {

@@ -1,4 +1,4 @@
-import type { TrainingModelDefinition } from "@assistant/schemas";
+import type { TrainingModelDefinition } from "@ngriffin_uk/polychat-schemas";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SageMakerTrainingProvider } from "./SageMakerTrainingProvider.js";

@@ -1,12 +1,14 @@
 {
-	"name": "@assistant/schemas",
-	"version": "0.0.1",
+	"name": "@ngriffin_uk/polychat-schemas",
+	"version": "0.1.0",
 	"private": false,
+	"description": "Validated wire contracts and product schemas shared across Polychat runtimes",
 	"license": "Apache-2.0",
 	"files": [
 		"dist",
-		"src"
+		"README.md"
 	],
+	"sideEffects": false,
 	"main": "dist/index.js",
 	"module": "dist/index.mjs",
 	"types": "dist/index.d.ts",
@@ -62,6 +64,9 @@
 			"require": "./dist/tool-ids.js"
 		}
 	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"build": "tsup",
 		"dev": "tsup --watch",
@@ -69,19 +74,22 @@
 		"format": "oxfmt",
 		"format:check": "oxfmt --check",
 		"lint": "pnpm oxlint",
-		"check": "pnpm lint && pnpm format:check"
+		"check": "pnpm lint && pnpm format:check",
+		"test": "vitest run --config vitest.config.mts",
+		"test:package": "pnpm build && node scripts/check-package-exports.mjs"
 	},
 	"dependencies": {
-		"zod": "4.4.3"
+		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@types/node": "26.2.0",
-		"oxfmt": "0.62.0",
-		"oxlint": "1.77.0",
-		"tsup": "8.5.1",
-		"typescript": "6.0.3"
+		"@ngriffin_uk/polychat-config": "workspace:^",
+		"@types/node": "catalog:",
+		"oxfmt": "catalog:",
+		"oxlint": "catalog:",
+		"tsup": "catalog:",
+		"typescript": "catalog:"
 	},
 	"peerDependencies": {
-		"zod": "4.4.3"
+		"zod": "catalog:"
 	}
 }

@@ -1,5 +1,5 @@
 import type { IEnv } from "~/types";
-import type { TaskType } from "@assistant/schemas";
+import type { TaskType } from "@ngriffin_uk/polychat-schemas";
 import type { TaskMessage } from "./TaskService";
 import type { TaskHandler, TaskResult } from "./TaskHandler";
 import { TaskRepository } from "~/repositories/TaskRepository";

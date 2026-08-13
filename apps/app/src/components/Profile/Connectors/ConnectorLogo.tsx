@@ -1,4 +1,4 @@
-import type { RecipeConnectorManifest } from "@assistant/schemas";
+import type { RecipeConnectorManifest } from "@ngriffin_uk/polychat-schemas";
 import { useState } from "react";
 
 import { ModelIcon } from "~/components/ModelIcon";

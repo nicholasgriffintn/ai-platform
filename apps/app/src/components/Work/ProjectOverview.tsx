@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card, ConfirmationDialog } from "~/components/ui";
+import { Button, Card, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import { useTemplateMutations } from "~/hooks/useGovernance";
 import { useArchiveProject } from "~/hooks/useWorkspaces";
 import { getErrorMessage, isAuthenticationError } from "~/lib/errors";

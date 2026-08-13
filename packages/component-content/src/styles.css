@@ -1,0 +1,79 @@
+@import "tailwindcss/theme" layer(polychat-content.theme);
+@import "tailwindcss/utilities" layer(polychat-content.utilities);
+
+@plugin "@tailwindcss/typography";
+@source "./**/*.{ts,tsx}";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--color-off-white: #f8f8f8;
+}
+
+@layer polychat-content {
+	.polychat-content-image {
+		max-width: 100%;
+		object-fit: contain;
+	}
+	.polychat-content-image-preview {
+		position: relative;
+		display: inline-block;
+	}
+	.polychat-content-image-preview > button {
+		display: block;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		cursor: zoom-in;
+	}
+	.polychat-content-image-preview img {
+		display: block;
+		max-width: 100%;
+		height: auto;
+		object-fit: contain;
+	}
+	.polychat-content-image-download {
+		position: absolute;
+		top: 0.5rem;
+		right: 0.5rem;
+		display: grid;
+		place-items: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 999px;
+		background: rgb(255 255 255 / 0.8);
+		color: #3f3f46;
+		text-decoration: none;
+	}
+	.polychat-content-image-modal {
+		position: fixed;
+		inset: 0;
+		z-index: 100;
+		display: grid;
+		place-items: center;
+		padding: 1rem;
+		background: rgb(0 0 0 / 0.72);
+	}
+	.polychat-content-image-modal img {
+		max-width: 100%;
+		border-radius: 0.75rem;
+	}
+	.polychat-content-image-close {
+		position: fixed;
+		top: 1rem;
+		right: 1rem;
+		border: 0;
+		background: transparent;
+		color: white;
+		font-size: 2rem;
+		cursor: pointer;
+	}
+	.polychat-content-favicon {
+		width: 1.5rem;
+		height: 1.5rem;
+		border-radius: 999px;
+		margin-right: 0.5rem;
+		padding: 2px;
+		background: white;
+		object-fit: contain;
+	}
+}

@@ -20,7 +20,7 @@ import { authMiddleware } from "./middleware/auth";
 import { loggerMiddleware } from "./middleware/loggerMiddleware";
 import { rateLimit } from "./middleware/rateLimit";
 import { securityHeaders } from "./middleware/securityHeaders";
-import { metricsParamsSchema, statusResponseSchema } from "@assistant/schemas";
+import { metricsParamsSchema, statusResponseSchema } from "@ngriffin_uk/polychat-schemas";
 import { registerApiRoutes } from "./routes/register";
 import { serviceContextMiddleware } from "./lib/context/serviceContext";
 import { ResponseFactory } from "./lib/http/ResponseFactory";

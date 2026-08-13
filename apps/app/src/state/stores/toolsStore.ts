@@ -1,8 +1,6 @@
-import type { Tool } from "@assistant/schemas";
+import type { Tool } from "@ngriffin_uk/polychat-schemas";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-export type { Tool } from "@assistant/schemas";
 
 interface ToolsStore {
 	selectedTools: string[];

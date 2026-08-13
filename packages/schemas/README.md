@@ -1,4 +1,4 @@
-# @assistant/schemas
+# @ngriffin_uk/polychat-schemas
 
 Shared Zod schemas for the Assistant application. This package provides reusable type definitions and validation schemas used across the web, API, and other applications in the workspace.
 
@@ -13,7 +13,7 @@ pnpm install
 ## Usage
 
 ```typescript
-import { messageSchema, apiResponseSchema } from "@assistant/schemas";
+import { messageSchema } from "@ngriffin_uk/polychat-schemas";
 
 // Use for validation
 const result = messageSchema.parse(data);

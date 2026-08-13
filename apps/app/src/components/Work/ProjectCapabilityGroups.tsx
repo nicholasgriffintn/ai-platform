@@ -7,13 +7,13 @@ import type {
 	ProjectExperienceDefinition,
 	ProjectToolDefinition,
 	RecipeInstallation,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
 import type { ProjectCapabilityKindGroup } from "~/lib/project-capability-catalog";
 import { getProjectCapabilityKind } from "~/lib/project-capability-catalog";
 import { parseProjectToolConfiguration } from "~/lib/project-tool-configuration";
-import { areUserIdsEqual } from "~/lib/user-ids";
+import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 import { ProjectCapabilityCard } from "./ProjectCapabilityCard";
 import { ProjectRecipeCapabilityCard } from "./ProjectRecipeCapabilityCard";
 

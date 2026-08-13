@@ -1,24 +1,50 @@
 # Polychat AI Platform
 
-Polychat is an experimental multi-model AI assistant platform. It brings chat, agents, retrieval, generated media, code assistance, and workflow-style apps into one Cloudflare-backed API with React web and iOS clients (In Development).
+Polychat is a multi-model AI assistant platform. It brings personal chat, collaborative project work, agents, retrieval, generated media, code assistance, and reusable workflows into one Cloudflare-backed API with web and iOS clients.
 
-Check out my write up on this project [here](https://nicholasgriffin.dev/blog/building-my-own-ai-assistant). I've also launched a version of this to try out at [polychat.app](https://polychat.app).
+Try the hosted version at [polychat.app](https://polychat.app), or read [Building my own AI assistant](https://nicholasgriffin.dev/blog/building-my-own-ai-assistant) for the story behind the project.
 
 > [!NOTE]
-> Please note that this project is still in active development so there are a few features that are not yet fully working or fully imagined. I'm also constantly testing stuff and re working, this is meant to be a playground for me.
+> Polychat is always in active development. Some features are still being developed, tested, or reimagined.
 
-![A screenshot of a chat in the frontend application](./docs/images/chat.png)
+![A chat in the Polychat web application](./docs/images/chat.png)
 
-## Quick Links
+## Set up or adapt Polychat
 
-- **API Documentation** - Live OpenAPI schema at [api.polychat.app/openapi](https://api.polychat.app/openapi) (served from `apps/api/src/index.ts`, with tags in `apps/api/src/openapi/documentation.ts`)
-- **[Example Chats](#example-chats)** - See what's possible
-- **[Getting Started](#setup-and-installation)** - Set up your own instance
-- **[Features](#features)** - What's included
+Use the repo-local [`$polychat-setup`](./.agents/skills/polychat-setup/SKILL.md) skill with your coding agent. It will explain the product and its architecture, help you choose the capabilities you need, make the agreed configuration or white-labelling changes, and validate the result.
 
-## Example Chats
+For example, ask your agent:
 
-Here are some example chats that you can try out:
+> Use `$polychat-setup` to help me run a white-labelled Polychat instance. Start with the web app and API, explain each decision, and make the changes after I confirm them.
+
+## Product
+
+Polychat has two primary modes:
+
+- **Chat** is a personal, conversation-first space for models, agents, connected tools, memories, and installed recipes.
+- **Work** organises collaborative work into workspaces and projects with shared instructions, conversations, sources, outputs, and selected capabilities.
+
+The platform includes:
+
+- Multi-provider chat with streaming, multimodal messages, model routing, sharing, feedback, and conversation compaction.
+- Custom agents, MCP servers, delegation, approval-aware tools, and reusable workflows.
+- Retrieval, memories, web research, generated media, realtime audio, and interactive artefacts.
+- Project-scoped experiences for longer workflows such as notes, podcasts, media generation, and model training.
+- Isolated coding runs against GitHub repositories through Cloudflare Sandboxes.
+- Authentication, guardrails, subscriptions, rate limiting, audit history, and observability.
+
+## Repository
+
+- `apps/app` — React Router web application and PWA.
+- `apps/api` — public Hono API Worker and platform control plane.
+- `apps/sandbox-worker` — isolated coding-task execution Worker.
+- `apps/training` — provider-backed model training and deployment Worker.
+- `apps/mobile/ios` — native iOS client under active development.
+- `packages/*` — shared schemas, utilities, runtime libraries, and reusable React components published under the `@ngriffin_uk/polychat-*` scope.
+
+## Resources
+
+### Examples
 
 - [Generation of a new React component](https://polychat.app/s/d27e1e2a-3ddf-495c-9b4f-d6866786f945)
 - [Code generation and execution](https://polychat.app/s/51fb196d-7def-4922-94d8-08e7ee86989d)
@@ -38,172 +64,13 @@ Here are some example chats that you can try out:
 - [Image Generation](https://polychat.app/s/f413fa60-6343-4591-93ff-9314b43e40cb)
 - [Council](https://polychat.app/s/40ed0b48-1f9c-4290-b57f-4b214dd6ce3a)
 
-## What's Included
+### References
 
-This monorepo contains:
-
-- **[API](./apps/api)** - OpenAI-style API for chat, agents, models, tools, memories, media, realtime sessions, payments, and webhooks
-- **[Web App](./apps/app)** - React-based PWA frontend for chat, shared conversations, generated artefacts, and focused app workflows
-- **[Sandbox Worker](./apps/sandbox-worker)** - Automated coding worker built on Cloudflare Sandboxes
-- **[Training Worker](./apps/training)** - Internal Worker for API-managed model training and deployment jobs
-- **[Mobile App](./apps/mobile/ios)** - iOS application (In Development) ([TestFlight](https://testflight.apple.com/join/52xrwxRP))
-
-## Features
-
-### Core API Features
-
-- **Chat Completions** - OpenAI-style chat with streaming, tools, multimodal message parts, stored conversations, sharing, feedback, and token counting (tag: `chat`)
-- **Multi-provider Model Library** - Anthropic, OpenAI, Google, Mistral, Meta, Bedrock, Groq, DeepSeek, Perplexity, Replicate, xAI, and many more through the provider registry (tag: `models`)
-- **Code Assistance** - FIM completions, next-edit suggestions, apply-edit support, and sandboxed implementation workflows (tag: `code`)
-- **Agents & Delegation** - Custom agents, shared agents, MCP server integrations, agent-to-agent delegation, and approval-aware tool flows (tag: `agents`)
-- **RAG & Memories** - Vector-based context retrieval, memory groups, synthesis tasks, and namespace-aware retrieval with Cloudflare Vectorize (tag: `memories`)
-- **Tools & Dynamic Apps** - Searchable function tools, dynamic app execution, reusable app responses, and app sharing (tags: `tools`, `dynamic-apps`, `apps`)
-- **Media & Realtime** - Uploads, audio transcription and speech, image/video/music generation, screenshots, OCR, and realtime transcription sessions (tags: `uploads`, `audio`, `realtime`)
-- **Guardrails & Auth** - Content safety checks, OAuth, magic links, passkeys, JWT, API keys, plan checks, Stripe subscriptions, rate limiting, CSRF, and security headers (tags: `guardrails`, `auth`, `plans`, `stripe`)
-
-### Web App Highlights
-
-- **[Automated Model Routing](https://nicholasgriffin.dev/blog/building-a-first-party-prompt-router)** - Smart model selection
-- **AI Council** - Multi-perspective debate mode with selectable council members and synthesis
-- **[Canvas](https://nicholasgriffin.dev/blog/building-multi-model-image-and-video-generation-in-polychat)** - Multi-model image and video generation with shared prompt controls
-- **Replicate App** - Run media and multimodal predictions from Replicate models
-- **[Sandbox App](https://nicholasgriffin.dev/blog/building-my-own-cloud-ai-environment-with-cloudflare-containers/)** - Connect GitHub repositories and stream implementation, review, test, or bug-fix runs
-- **Strudel Music Patterns** - Generate and edit code-based music patterns
-- **Podcast, Article, and Note Workflows** - Transcribe, summarise, report, format, and regenerate content
-- **Drawing Apps** - Create drawings and ask AI to enhance or guess them
-- **Web LLM Support** - Local/offline chat mode in the web app
-- **Metrics Dashboard** - Usage, model performance, costs, and user activity monitoring
-
-### Automated Coding with Sandbox Worker
-
-The [Sandbox Worker](./apps/sandbox-worker) uses Cloudflare Sandboxes to run AI-powered code generation tasks against GitHub repositories. This enables automated feature implementation triggered via GitHub comments or the web UI.
-
-I wrote more about this in my [blog post here](https://nicholasgriffin.dev/blog/building-my-own-cloud-ai-environment-with-cloudflare-containers/).
-
-**How it works:**
-
-1. Install the GitHub App on your repository
-2. Start an implementation, review, test, or bug-fix run from the web UI or GitHub workflow
-3. The AI generates a plan and executes commands in an isolated sandbox
-4. Progress streams back to the app while results are prepared for review
-
-**Key capabilities:**
-
-- Isolated command execution with security restrictions
-- Real-time progress streaming via SSE
-- Git operations (clone, branch, commit)
-- Web UI for installation, run history, instructions, pausing, cancellation, and task tracking
-
-**See all features in the OpenAPI reference → [api.polychat.app/openapi](https://api.polychat.app/openapi)**
-
-## Usage Limits
-
-Polychat is configured with usage limits to prevent abuse. These limits are as follows:
-
-- 10 standard messages per day for unauthenticated users
-- 50 standard messages per day for authenticated users
-- 200 pro tokens per day for authenticated users
-
-Pro tokens are calculated based on a multiplier of the cost of the model. For example, if a model costs $0.01 per 1000 input tokens and $0.05 per 1000 output tokens, then the pro token limit is 200 \* (0.01 + 0.05) / 2 = 6.
-
-This equates to around:
-
-- Expensive models (9x): ~22 messages
-- Mid-tier models (3x): ~66 messages
-- Cheaper models (1-2x): 100-200 messages
-
-If you are providing your own service and would like to change these limits, you can do so by changing the `USAGE_CONFIG` object in the `apps/api/src/constants/app.ts` file.
-
-## Setup and Installation
-
-### Getting Started
-
-1. Clone the repository
-2. Install dependencies
-
-   ```bash
-   pnpm install
-   ```
-
-3. Configure environment variables:
-   - Copy `.dev.vars.example` to `.dev.vars` in all the apps directories that have them.
-   - Copy `wrangler.jsonc.example` to `wrangler.jsonc` in all the apps directories that have them.
-   - Adjust with your API keys and configuration values.
-
-4. Start the development servers:
-
-   ```bash
-   # Start the API and web app
-   pnpm run dev
-
-   # Or start individual apps
-   pnpm run dev:app
-   pnpm run dev:api
-   pnpm run dev:metrics
-   ```
-
-### Deployment
-
-The applications are designed to be deployed to Cloudflare:
-
-```bash
-# Deploy all applications
-pnpm run deploy
-
-# Deploy individual applications
-pnpm run deploy:app
-pnpm run deploy:api
-pnpm run deploy:metrics
-```
-
-## API Documentation
-
-The complete API documentation is generated by the API worker and served at [api.polychat.app](https://api.polychat.app). Route registration lives in `apps/api/src/index.ts`, with tag descriptions in `apps/api/src/openapi/documentation.ts`.
-
-### Quick Example
-
-```bash
-curl https://api.polychat.app/chat/completions \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "claude-3-5-sonnet-20241022",
-    "messages": [
-      {"role": "user", "content": "Hello!"}
-    ]
-  }'
-```
-
-**View full API reference → [api.polychat.app](https://api.polychat.app)**
-
-## Database Management
-
-The application uses a Cloudflare D1 database with Drizzle ORM for schema management and migrations.
-
-### Running Migrations
-
-```bash
-cd apps/api
-# Migrate to the local database
-pnpm run db:migrate:local
-
-# Migrate to the preview database
-pnpm run db:migrate:preview
-
-# Migrate to the production database
-pnpm run db:migrate:prod
-```
-
-To generate a new migration, run:
-
-```bash
-pnpm run db:generate
-```
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the terms of the license included in the repository.
+- [Live API reference](https://api.polychat.app/openapi)
+- [Polychat setup skill](./.agents/skills/polychat-setup/SKILL.md)
+- [Hosted Polychat](https://polychat.app)
+- [Automated model routing](https://nicholasgriffin.dev/blog/building-a-first-party-prompt-router)
+- [Multi-model image and video generation](https://nicholasgriffin.dev/blog/building-multi-model-image-and-video-generation-in-polychat)
+- [Cloud AI coding environment](https://nicholasgriffin.dev/blog/building-my-own-cloud-ai-environment-with-cloudflare-containers/)
+- [Contributing](./.github/CONTRIBUTING.md)
+- [Licence](./LICENSE)

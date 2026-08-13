@@ -11,7 +11,7 @@ import {
 import { getMistralTargetStreamingDelayMs } from "~/lib/providers/capabilities/realtime/providers";
 import { formatProviderError } from "~/lib/providers/utils/errors";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
-import { NO_STORE } from "@assistant/schemas";
+import { NO_STORE } from "@ngriffin_uk/polychat-schemas";
 
 const logger = getLogger({ prefix: "services/realtime/mistral" });
 const MISTRAL_REALTIME_USER_AGENT = "polychat-mistral-realtime-proxy/1.0";

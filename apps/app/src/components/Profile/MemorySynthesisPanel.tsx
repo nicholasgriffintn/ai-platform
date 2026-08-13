@@ -9,9 +9,9 @@ import {
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
 import { useMemorySynthesis, useTasks } from "~/hooks/useTasks";
-import { formatDate } from "~/lib/dates";
+import { formatDate } from "@ngriffin_uk/polychat-utility-core";
 
 export function MemorySynthesisPanel() {
 	const { synthesis, history, isLoadingSynthesis, isLoadingHistory } = useMemorySynthesis("global");

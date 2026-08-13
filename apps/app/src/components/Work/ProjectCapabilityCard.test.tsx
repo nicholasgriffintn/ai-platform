@@ -1,7 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router";
 import { describe, expect, it, vi } from "vitest";
-import type { AssistantActionItem, ProjectExperienceDefinition } from "@assistant/schemas";
+import type {
+	AssistantActionItem,
+	ProjectExperienceDefinition,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { ProjectCapabilityCard } from "./ProjectCapabilityCard";
 

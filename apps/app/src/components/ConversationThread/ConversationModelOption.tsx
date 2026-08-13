@@ -1,8 +1,8 @@
 import { ModelIcon } from "~/components/ModelIcon";
-import { Checkbox } from "~/components/ui";
+import { Checkbox } from "@ngriffin_uk/polychat-component-ui";
 import { getModelDisplayName } from "~/lib/models";
 import { cn } from "~/lib/utils";
-import type { ModelCatalogItem } from "@assistant/schemas";
+import type { ModelCatalogItem } from "@ngriffin_uk/polychat-schemas";
 
 interface ConversationModelOptionProps {
 	model: ModelCatalogItem;

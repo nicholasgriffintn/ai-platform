@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { SearchInput } from "~/components/ui/SearchInput";
+import { SearchInput } from "@ngriffin_uk/polychat-component-ui";
 import { useConversationModelOptions } from "~/hooks/useConversationModelOptions";
 import { cn } from "~/lib/utils";
 import { ConversationModelOption } from "./ConversationModelOption";

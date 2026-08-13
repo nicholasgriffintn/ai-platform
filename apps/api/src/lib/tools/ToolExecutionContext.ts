@@ -1,4 +1,4 @@
-import type { ToolExecutionContext as BaseToolExecutionContext } from "@assistant/schemas";
+import type { ToolExecutionContext as BaseToolExecutionContext } from "@ngriffin_uk/polychat-schemas";
 import type { ConversationManager } from "~/lib/conversationManager";
 import type { IEnv, IFunctionResponse, IRequest, IUser } from "~/types";
 

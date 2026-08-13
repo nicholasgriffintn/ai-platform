@@ -1,4 +1,4 @@
-import { toolCategories, type Tool, type ToolCategory } from "@assistant/schemas";
+import { toolCategories, type Tool, type ToolCategory } from "@ngriffin_uk/polychat-schemas";
 
 export type ToolCategoryFilter = "all" | "selected" | ToolCategory;
 

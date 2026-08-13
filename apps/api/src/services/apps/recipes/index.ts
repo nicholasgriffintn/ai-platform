@@ -7,8 +7,8 @@ import type {
 	RecipeInstallation,
 	RecipeInstallationTrigger,
 	RecipeInstallationUpdateRequest,
-} from "@assistant/schemas";
-import { recipeConfigurationSchema } from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
+import { recipeConfigurationSchema } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { TemplateRecord } from "~/repositories/TemplateRepository";

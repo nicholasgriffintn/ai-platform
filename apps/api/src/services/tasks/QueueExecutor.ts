@@ -1,4 +1,4 @@
-import { SANDBOX_RUN_DISPATCH_TASK_TYPE, type TaskType } from "@assistant/schemas";
+import { SANDBOX_RUN_DISPATCH_TASK_TYPE, type TaskType } from "@ngriffin_uk/polychat-schemas";
 import { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { MAX_QUEUE_DELAY_SECONDS, TaskMessage } from "./TaskService";

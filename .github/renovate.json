@@ -9,9 +9,19 @@
 	},
 	"packageRules": [
 		{
+			"description": "Require review for release tooling",
+			"matchPackageNames": [
+				"@changesets/cli"
+			],
+			"automerge": false
+		},
+		{
 			"description": "Automerge devDependencies",
 			"matchDepTypes": [
 				"devDependencies"
+			],
+			"excludePackageNames": [
+				"@changesets/cli"
 			],
 			"abandonmentThreshold": "1 year",
 			"minimumReleaseAge": "7 days",
@@ -22,6 +32,9 @@
 			"matchUpdateTypes": [
 				"minor",
 				"patch"
+			],
+			"excludePackageNames": [
+				"@changesets/cli"
 			],
 			"abandonmentThreshold": "1 year",
 			"minimumReleaseAge": "7 days",

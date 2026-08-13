@@ -1,5 +1,9 @@
-import type { CreateAgentInput, UpdateAgentInput } from "@assistant/schemas";
-import { createApiErrorFromResponse, fetchApi, returnFetchedData } from "../fetch-wrapper";
+import type { CreateAgentInput, UpdateAgentInput } from "@ngriffin_uk/polychat-schemas";
+import {
+	createApiErrorFromResponse,
+	returnFetchedData,
+} from "@ngriffin_uk/polychat-library-client";
+import { fetchApi } from "../fetch-wrapper";
 
 export class AgentService {
 	constructor(private getHeaders: () => Promise<Record<string, string>>) {}

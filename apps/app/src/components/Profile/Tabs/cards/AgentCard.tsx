@@ -1,8 +1,8 @@
 import { Edit, Loader2, Settings, Star, Trash2, Zap } from "lucide-react";
 
-import { Button } from "~/components/ui/Button";
-import { Card, CardContent } from "~/components/ui/Card";
-import { Badge } from "~/components/ui/badge";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { Card, CardContent } from "@ngriffin_uk/polychat-component-ui";
+import { Badge } from "@ngriffin_uk/polychat-component-ui";
 
 export function AgentCard({
 	agent,

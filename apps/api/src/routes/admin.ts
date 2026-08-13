@@ -7,7 +7,7 @@ import {
 	moderateAgentSchema,
 	apiResponseSchema,
 	createTaskResponseSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { requireAdmin, requireStrictAdmin } from "~/middleware/adminMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";

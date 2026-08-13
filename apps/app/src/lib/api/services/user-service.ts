@@ -1,5 +1,6 @@
-import type { ModelConfig, Tool } from "@assistant/schemas";
-import { fetchApi, returnFetchedData } from "../fetch-wrapper";
+import type { ModelConfig, Tool } from "@ngriffin_uk/polychat-schemas";
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+import { fetchApi } from "../fetch-wrapper";
 
 export interface ProviderSetting {
 	id: string;

@@ -2,14 +2,14 @@ import type {
 	AssistantActionContextPayload,
 	AssistantActionItemMetadata,
 	RecipeChatSetupResponse,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import {
 	createAssistantRecipeActionContext,
 	normaliseAssistantActionToolIds,
 	readAssistantActionRequestOptions,
 	requireExternalHttpUrl,
 	requireInternalNavigationPath,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ChatRequestOptions } from "~/types";
 

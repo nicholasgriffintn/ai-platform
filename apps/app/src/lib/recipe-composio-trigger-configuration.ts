@@ -1,4 +1,4 @@
-import { isRecord } from "~/lib/objects";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export type RecipeTriggerConfigurationValue = string | boolean;
 

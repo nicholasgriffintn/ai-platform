@@ -1,4 +1,4 @@
-import { parseChatRequestOptions } from "@assistant/schemas";
+import { parseChatRequestOptions } from "@ngriffin_uk/polychat-schemas";
 
 import { isRecord } from "~/utils/objects";
 

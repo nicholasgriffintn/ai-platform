@@ -1,4 +1,4 @@
-import type { SandboxModelSettings } from "@assistant/schemas";
+import type { SandboxModelSettings } from "@ngriffin_uk/polychat-schemas";
 
 const POLYCHAT_SANDBOX_USER_AGENT = "Polychat-Sandbox-Worker/1.0 (+https://polychat.app)";
 

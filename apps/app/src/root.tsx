@@ -1,6 +1,6 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useEffect, useState } from "react";
+import { PolychatProvider } from "@ngriffin_uk/polychat-library-react";
+import { useEffect } from "react";
 import { Outlet, isRouteErrorResponse, ScrollRestoration } from "react-router";
 
 import { AnalyticsBootstrap } from "~/components/Core/AnalyticsBootstrap";
@@ -9,42 +9,22 @@ import { AppShell } from "~/components/Core/AppShell";
 import { CaptchaProvider } from "~/components/HCaptcha/CaptchaProvider";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { ServiceWorkerRegistration } from "~/components/Core/ServiceWorkerRegistration";
-import { Toaster } from "~/components/ui/sonner";
+import { Toaster } from "@ngriffin_uk/polychat-component-ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
-import { shouldRetryApiQuery } from "~/lib/api/retry";
 import ErrorRoute from "~/pages/error";
 import { LoadingProvider } from "~/state/contexts/LoadingContext";
 import type { Route } from "./+types/root";
 
 import { shouldShowDevTools } from "~/constants";
-
-function createQueryClient() {
-	return new QueryClient({
-		defaultOptions: {
-			queries: {
-				staleTime: 1000 * 60 * 5,
-				retry: shouldRetryApiQuery,
-			},
-		},
-	});
-}
-
-let browserQueryClient: QueryClient | undefined;
-
-function getQueryClient() {
-	if (typeof window === "undefined") {
-		return createQueryClient();
-	}
-
-	return (browserQueryClient ??= createQueryClient());
-}
+import { webSurfaceControls } from "~/lib/surface-controls";
+import { SurfaceControlsProvider } from "~/lib/surface-context";
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
-	const [queryClient] = useState(getQueryClient);
-
 	return (
 		<AppShell>
-			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+			<SurfaceControlsProvider controls={webSurfaceControls}>
+				<PolychatProvider>{children}</PolychatProvider>
+			</SurfaceControlsProvider>
 		</AppShell>
 	);
 };

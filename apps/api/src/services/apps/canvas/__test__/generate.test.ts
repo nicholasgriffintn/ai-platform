@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { executeModelGeneration } from "~/services/apps/generation/execute";
 import { executeReplicateModel } from "~/services/apps/replicate/execute";
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { IUser } from "~/types";
 import { generateCanvasBatch } from "../generate";
 import { prepareCanvasInputForModel } from "../prepare-input";

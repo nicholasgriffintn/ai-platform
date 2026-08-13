@@ -6,7 +6,7 @@ import type {
 	TrainingJobEvent,
 	TrainingModelDefinition,
 	StartTrainingJobRequest,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { Activity, Boxes, ListChecks, RefreshCcw, Server } from "lucide-react";
 
 import { EmptyState } from "~/components/Core/EmptyState";
@@ -22,8 +22,8 @@ import {
 	TabsContent,
 	TabsList,
 	TabsTrigger,
-} from "~/components/ui";
-import { CardSkeleton } from "~/components/ui/skeletons";
+} from "@ngriffin_uk/polychat-component-ui";
+import { CardSkeleton } from "@ngriffin_uk/polychat-component-ui";
 import {
 	useDeleteTrainingDeployment,
 	useDeployTrainingModel,

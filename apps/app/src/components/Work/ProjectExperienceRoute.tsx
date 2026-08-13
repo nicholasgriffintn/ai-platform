@@ -5,7 +5,7 @@ import { EmptyState } from "~/components/Core/EmptyState";
 import { BackLink } from "~/components/Core/BackLink";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button } from "~/components/ui";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { useDynamicApps } from "~/hooks/useDynamicApps";
 import {
 	getProjectExperiencePath,

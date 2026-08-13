@@ -13,7 +13,7 @@ import {
 	Label,
 	Textarea,
 	Button,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
 import { useUpsertSandboxConnection, useSandboxInstallConfig } from "~/hooks/useSandbox";
 import { parseGitHubRepositoryList } from "~/lib/sandbox/repositories";
 

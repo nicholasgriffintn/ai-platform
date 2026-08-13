@@ -6,10 +6,11 @@ import type {
 	ReplicateModelsResponse,
 	ReplicatePredictionResponse,
 	ReplicatePredictionsResponse,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { apiService } from "./api-service";
-import { fetchApi, returnFetchedData } from "./fetch-wrapper";
-import { withProjectScope } from "./project-scope";
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+import { fetchApi } from "./fetch-wrapper";
+import { withProjectScope } from "@ngriffin_uk/polychat-library-client/project-scope";
 
 export const fetchReplicateModels = async (projectId?: string): Promise<ReplicateModel[]> => {
 	try {

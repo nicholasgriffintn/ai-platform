@@ -1,4 +1,4 @@
-import { createChatCompletionsJsonSchema, messageSchema } from "@assistant/schemas";
+import { createChatCompletionsJsonSchema, messageSchema } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import type { Message } from "~/types";

@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { decodePcm16Audio, startPcm16MicrophoneStream } from "./audio";
+import {
+	decodePcm16Audio,
+	startPcm16MicrophoneStream,
+} from "@ngriffin_uk/polychat-library-realtime/audio";
 
 class FakeAudioNode {
 	disconnect = vi.fn();

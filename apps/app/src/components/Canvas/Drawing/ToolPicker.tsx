@@ -1,4 +1,4 @@
-import { Button } from "~/components/ui/Button";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 
 interface ToolPickerProps {
 	isFillMode: boolean;

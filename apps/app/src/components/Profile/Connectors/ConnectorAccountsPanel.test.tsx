@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type { RecipeConnectorAccount } from "@assistant/schemas";
+import type { RecipeConnectorAccount } from "@ngriffin_uk/polychat-schemas";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 

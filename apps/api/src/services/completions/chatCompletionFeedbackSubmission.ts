@@ -1,4 +1,4 @@
-import type { SubmitChatCompletionFeedbackInput } from "@assistant/schemas";
+import type { SubmitChatCompletionFeedbackInput } from "@ngriffin_uk/polychat-schemas";
 
 import { gatewayId } from "~/constants/app";
 import type { TrainingExampleRepository } from "~/repositories";

@@ -5,8 +5,9 @@ import type {
 	TriggerMemorySynthesisRequest,
 	MemorySynthesis,
 	GetMemorySynthesisResponse,
-} from "@assistant/schemas";
-import { fetchApi, returnFetchedData } from "./fetch-wrapper";
+} from "@ngriffin_uk/polychat-schemas";
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+import { fetchApi } from "./fetch-wrapper";
 
 interface MemorySynthesisHistoryResponse {
 	syntheses: MemorySynthesis[];

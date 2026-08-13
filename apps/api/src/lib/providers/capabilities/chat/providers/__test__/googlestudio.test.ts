@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { ChatCompletionParameters, IEnv } from "~/types";
 import { getEffectiveMaxTokens } from "~/utils/parameters";

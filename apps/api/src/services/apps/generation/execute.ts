@@ -1,4 +1,4 @@
-import type { TaskType } from "@assistant/schemas";
+import type { TaskType } from "@ngriffin_uk/polychat-schemas";
 
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { validateReplicatePayload } from "~/lib/providers/models/replicateValidation";

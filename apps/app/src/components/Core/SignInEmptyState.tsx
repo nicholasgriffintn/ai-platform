@@ -2,7 +2,7 @@ import { LogIn } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { EmptyState } from "~/components/Core/EmptyState";
-import { Button } from "~/components/ui/Button";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { useUIStore } from "~/state/stores/uiStore";
 
 interface SignInEmptyStateProps {

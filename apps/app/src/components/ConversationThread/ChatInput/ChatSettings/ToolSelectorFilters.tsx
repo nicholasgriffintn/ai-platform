@@ -1,6 +1,6 @@
-import type { ToolCategory } from "@assistant/schemas";
+import type { ToolCategory } from "@ngriffin_uk/polychat-schemas";
 
-import { SearchInput } from "~/components/ui";
+import { SearchInput } from "@ngriffin_uk/polychat-component-ui";
 import type { ToolCategoryFilter } from "~/lib/tool-filters";
 import { cn } from "~/lib/utils";
 

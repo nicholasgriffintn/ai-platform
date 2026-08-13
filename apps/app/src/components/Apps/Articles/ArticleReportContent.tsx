@@ -1,6 +1,6 @@
 import { FileText } from "lucide-react";
 
-import { Markdown } from "~/components/ui/Markdown";
+import { Markdown } from "@ngriffin_uk/polychat-component-content";
 import type { ArticleReportItem } from "~/types/article";
 
 interface ArticleReportContentProps {

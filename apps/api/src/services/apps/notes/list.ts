@@ -3,7 +3,7 @@ import type {
 	NoteCreateRequest,
 	NoteFormatResponse,
 	NoteUpdateRequest,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliaryModel } from "~/lib/providers/models";

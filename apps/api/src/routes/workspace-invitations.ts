@@ -1,6 +1,9 @@
 import { Hono } from "hono";
 
-import { acceptWorkspaceInvitationSchema, workspaceDetailSchema } from "@assistant/schemas";
+import {
+	acceptWorkspaceInvitationSchema,
+	workspaceDetailSchema,
+} from "@ngriffin_uk/polychat-schemas";
 import { addRoute } from "~/lib/http/routeBuilder";
 import { acceptWorkspaceInvitation } from "~/services/workspaces";
 

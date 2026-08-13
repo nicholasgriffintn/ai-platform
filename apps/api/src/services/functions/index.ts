@@ -1,5 +1,5 @@
 import type { ConversationManager } from "~/lib/conversationManager";
-import type { RecipeConnectorProvider } from "@assistant/schemas";
+import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 import { PermissionChecker, resolveToolPermissions } from "~/lib/permissions/PermissionChecker";
 import { ToolRegistry } from "~/lib/tools/ToolRegistry";
 import type { IFunctionResponse, IRequest } from "~/types";

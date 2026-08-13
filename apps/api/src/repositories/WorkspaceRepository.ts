@@ -2,7 +2,7 @@ import type {
 	ProjectCapabilityKind,
 	ProjectCodingEnvironment,
 	WorkspaceRole,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { BaseRepository } from "./BaseRepository";
 import { AssistantError, ErrorType } from "~/utils/errors";

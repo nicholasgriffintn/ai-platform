@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseAgentDecision } from "@assistant/agent-core";
+import { parseAgentDecision } from "@ngriffin_uk/polychat-library-agent-core";
 
 describe("parseAgentDecision", () => {
 	it("accepts supported run_script languages", () => {

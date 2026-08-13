@@ -1,6 +1,6 @@
 import { Ellipsis, Plus, Trash2, Users } from "lucide-react";
 
-import { Button, DropdownMenu, DropdownMenuItem } from "~/components/ui";
+import { Button, DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
 
 interface WorkspaceOverviewActionsProps {
 	isOwner: boolean;

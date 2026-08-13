@@ -1,7 +1,13 @@
 import { Loader2, User } from "lucide-react";
 
 import { EmptyState } from "~/components/Core/EmptyState";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/Card";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@ngriffin_uk/polychat-component-ui";
 import { AgentCard } from "./cards/AgentCard";
 import { TeamCard } from "./cards/TeamCard";
 

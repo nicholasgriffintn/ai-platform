@@ -1,5 +1,5 @@
 import { ZodError, type ZodType } from "zod";
-import { NO_STORE } from "@assistant/schemas";
+import { NO_STORE } from "@ngriffin_uk/polychat-schemas";
 
 export class HttpError extends Error {
 	constructor(

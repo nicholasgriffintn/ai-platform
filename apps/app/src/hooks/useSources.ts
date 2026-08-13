@@ -3,7 +3,7 @@ import type {
 	CreateSourceCollectionInput,
 	CreateSourceInput,
 	SourceKind,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import {
 	addCollectionSources,

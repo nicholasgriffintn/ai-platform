@@ -6,7 +6,7 @@ import {
 	connectOpenAIRealtimeWebRTC,
 	preferOpusAudioCodec,
 	type RealtimeWebRTCConnection,
-} from "~/lib/realtime";
+} from "@ngriffin_uk/polychat-library-realtime";
 
 interface TranscriptionOptions {
 	onTranscriptionReceived: (text: string, isPartial?: boolean) => void;

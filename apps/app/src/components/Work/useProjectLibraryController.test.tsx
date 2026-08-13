@@ -4,7 +4,7 @@ import {
 	buildAssistantActionCatalog,
 	createRecipeAssistantActionItem,
 	type AssistantRecipe,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import { useProjectLibraryController } from "./useProjectLibraryController";
 

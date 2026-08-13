@@ -6,7 +6,7 @@ import {
 	type AgentActionContext,
 	type AgentLoopState,
 	type AgentMessage,
-} from "@assistant/agent-core";
+} from "@ngriffin_uk/polychat-library-agent-core";
 
 import { buildSummary } from "../commands";
 import { throwIfAborted } from "../cancellation";

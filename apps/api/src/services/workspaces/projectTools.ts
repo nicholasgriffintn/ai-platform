@@ -3,7 +3,7 @@ import {
 	projectMcpConfigurationSchema,
 	type ChatHostedToolSettings,
 	type ProjectToolDefinition,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ProjectCapabilityRow } from "~/repositories/WorkspaceRepository";
 import { PROJECT_TOOL_DEFINITIONS } from "~/services/dynamic-apps/config";

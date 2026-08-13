@@ -1,4 +1,4 @@
-import type { SharedOutput } from "@assistant/schemas";
+import type { SharedOutput } from "@ngriffin_uk/polychat-schemas";
 import { FileQuestion, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
@@ -6,7 +6,7 @@ import { Link, useParams } from "react-router";
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageStatus } from "~/components/Core/PageStatus";
-import { Card } from "~/components/ui";
+import { Card } from "@ngriffin_uk/polychat-component-ui";
 import { API_BASE_URL } from "~/constants";
 import { getSharedOutput } from "~/lib/api/outputs";
 

@@ -1,4 +1,4 @@
-import type { ModelConfigInfo } from "@assistant/schemas";
+import type { ModelConfigInfo } from "@ngriffin_uk/polychat-schemas";
 import type { StreamPostProcessingOptions } from "~/lib/chat/streaming";
 import { toProviderMessages } from "~/lib/chat/providerMessages";
 import type { ChatCompletionParameters, CoreChatOptions, Message, Platform } from "~/types";

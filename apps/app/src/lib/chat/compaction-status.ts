@@ -2,9 +2,9 @@ import {
 	compactionStatusLabels,
 	isCompactionMarkerMessage as isSchemaCompactionMarkerMessage,
 	normaliseCompactionStatusMessage,
-} from "@assistant/schemas/compaction-status";
+} from "@ngriffin_uk/polychat-schemas/compaction-status";
 import type { Message, MessageContent } from "~/types";
-import { isRecord } from "../objects";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 function isMessageContentPart(value: unknown): value is MessageContent {
 	return isRecord(value) && typeof value.type === "string";

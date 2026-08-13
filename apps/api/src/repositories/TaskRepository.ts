@@ -1,4 +1,4 @@
-import type { TaskType, ScheduleType } from "@assistant/schemas";
+import type { TaskType, ScheduleType } from "@ngriffin_uk/polychat-schemas";
 
 import { BaseRepository } from "./BaseRepository";
 import type { Task, TaskExecution } from "~/lib/database/schema";

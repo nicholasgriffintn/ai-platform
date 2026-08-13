@@ -4,7 +4,7 @@ import {
 	type ProjectFileSearchConfiguration,
 	type ProjectMcpConfiguration,
 	type ProjectToolDefinition,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 export type ProjectToolConfiguration = ProjectFileSearchConfiguration | ProjectMcpConfiguration;
 

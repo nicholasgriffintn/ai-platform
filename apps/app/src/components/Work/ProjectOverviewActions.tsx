@@ -1,7 +1,7 @@
 import { Archive, Ellipsis, LayoutTemplate, Settings2, SquarePen } from "lucide-react";
 import { Link } from "react-router";
 
-import { DropdownMenu, DropdownMenuItem } from "~/components/ui";
+import { DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
 
 interface ProjectOverviewActionsProps {
 	canManage: boolean;

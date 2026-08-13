@@ -1,4 +1,4 @@
-import type { MarkdownConversionOptions } from "@assistant/schemas";
+import type { MarkdownConversionOptions } from "@ngriffin_uk/polychat-schemas";
 
 import { isRecord } from "~/utils/objects";
 

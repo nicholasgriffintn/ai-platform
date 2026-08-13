@@ -1,4 +1,4 @@
-import type { AgentMessage, ToolCallInvocation } from "@assistant/agent-core";
+import type { AgentMessage, ToolCallInvocation } from "@ngriffin_uk/polychat-library-agent-core";
 import type { Message, MessageContent } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";

@@ -2,8 +2,13 @@ import { Search, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { Button, FormInput } from "~/components/ui";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "~/components/ui/Dialog";
+import { Button, FormInput } from "@ngriffin_uk/polychat-component-ui";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogTitle,
+} from "@ngriffin_uk/polychat-component-ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useChats } from "~/hooks/useChat";
 import { useChatStore } from "~/state/stores/chatStore";

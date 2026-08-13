@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import type { ProjectCapability } from "@assistant/schemas";
+import type { ProjectCapability } from "@ngriffin_uk/polychat-schemas";
 
 import { ProjectCapabilitiesCard } from "./ProjectCapabilitiesCard";
 

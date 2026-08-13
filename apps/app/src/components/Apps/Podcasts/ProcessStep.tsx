@@ -1,5 +1,5 @@
-import { Button, FormInput, Label, Textarea } from "~/components/ui";
-import { FormCheckbox } from "~/components/ui/Form/Checkbox";
+import { Button, FormInput, Label, Textarea } from "@ngriffin_uk/polychat-component-ui";
+import { FormCheckbox } from "@ngriffin_uk/polychat-component-ui";
 import type { PodcastFormData } from "~/types/podcast";
 
 interface ProcessStepProps {

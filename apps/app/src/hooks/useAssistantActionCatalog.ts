@@ -1,5 +1,8 @@
 import { useMemo } from "react";
-import { buildAssistantActionCatalog, type AssistantActionCatalog } from "@assistant/schemas";
+import {
+	buildAssistantActionCatalog,
+	type AssistantActionCatalog,
+} from "@ngriffin_uk/polychat-schemas";
 import type { ModelToolDefinition } from "~/lib/model-tools";
 import { useAgents } from "./useAgents";
 import { useRecipeConnectors } from "./useConnectors";

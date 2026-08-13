@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card } from "~/components/ui";
+import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
 import { useAcceptWorkspaceInvitation } from "~/hooks/useWorkspaces";
 import { isAuthenticationError } from "~/lib/errors";
 import {

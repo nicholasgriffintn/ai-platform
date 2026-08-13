@@ -1,4 +1,8 @@
-import type { AssistantActionSelection, HomeChatModeId, ModelRouterMode } from "@assistant/schemas";
+import type {
+	AssistantActionSelection,
+	HomeChatModeId,
+	ModelRouterMode,
+} from "@ngriffin_uk/polychat-schemas";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 

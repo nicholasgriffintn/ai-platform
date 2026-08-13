@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import type { StorageService } from "~/lib/storage";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";

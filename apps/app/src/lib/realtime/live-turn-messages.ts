@@ -1,8 +1,8 @@
-import type { ConversationModeMetadata } from "@assistant/schemas";
+import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
 
 import { getMessageTextContent, normalizeMessage } from "~/lib/messages";
 import type { Message } from "~/types";
-import type { RealtimeTranscriptResult } from "./messages";
+import type { RealtimeTranscriptResult } from "@ngriffin_uk/polychat-library-realtime/messages";
 
 interface ActiveLiveMessage {
 	message: Message;

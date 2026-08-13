@@ -5,7 +5,7 @@ import {
 	connectRealtimeWebSocket,
 	isRealtimeWebSocketConnection,
 	sendJsonWhenOpen,
-} from "./websocket";
+} from "@ngriffin_uk/polychat-library-realtime";
 
 class FakeWebSocket extends EventTarget {
 	static CLOSED = 3;

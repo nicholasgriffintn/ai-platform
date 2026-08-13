@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { AppSchema } from "@assistant/schemas";
+import type { AppSchema } from "@ngriffin_uk/polychat-schemas";
 import type { IRequest } from "~/types";
 import { executeDynamicApp, registerDynamicApp } from "../index";
 

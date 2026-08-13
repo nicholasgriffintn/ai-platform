@@ -1,7 +1,7 @@
 import { Home } from "lucide-react";
 import { Link } from "react-router";
 
-import { SidebarShell } from "~/components/ui/SidebarShell";
+import { SidebarShell } from "@ngriffin_uk/polychat-component-ui";
 import { cn } from "~/lib/utils";
 import { useUIStore } from "~/state/stores/uiStore";
 import { SidebarFooter } from "./SidebarFooter";

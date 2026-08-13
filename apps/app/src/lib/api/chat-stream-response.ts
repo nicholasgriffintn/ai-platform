@@ -1,9 +1,9 @@
-import type { ChatCompletionResponseBody, ChatStreamMessage } from "@assistant/schemas";
+import type { ChatCompletionResponseBody, ChatStreamMessage } from "@ngriffin_uk/polychat-schemas";
 
 import type { Message } from "~/types";
 import { normalizeMessage } from "../messages";
-import { isRecord } from "../objects";
-import { ApiError } from "./fetch-wrapper";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { ApiError } from "@ngriffin_uk/polychat-library-client";
 
 const STREAM_ERROR_STATUS_BY_CODE: Record<string, number> = {
 	authentication_error: 401,

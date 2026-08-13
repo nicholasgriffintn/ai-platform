@@ -2,7 +2,7 @@ import {
 	conversationModeMetadataSchema,
 	type ConversationModeMetadata,
 	type HomeChatModeId,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ChatRequestOptions, Conversation } from "~/types";
 

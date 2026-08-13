@@ -1,4 +1,4 @@
-import type { RecipeInstallationTrigger } from "@assistant/schemas";
+import type { RecipeInstallationTrigger } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import {

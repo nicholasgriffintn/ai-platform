@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "@assistant/schemas";
+import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 
 import { SANDBOX_RUN_ITEM_TYPE, SANDBOX_RUNS_APP_ID } from "~/constants/app";
 import { resolveSandboxModel } from "~/services/sandbox/worker";

@@ -1,6 +1,6 @@
 import { Eraser, Redo2, Undo2 } from "lucide-react";
 
-import { Button } from "~/components/ui";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { ColorPicker } from "./ColorPicker";
 import { LineWidthPicker } from "./LineWidthPicker";
 import { ToolPicker } from "./ToolPicker";

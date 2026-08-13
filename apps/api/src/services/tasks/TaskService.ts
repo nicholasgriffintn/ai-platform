@@ -1,4 +1,4 @@
-import type { TaskType, ScheduleType } from "@assistant/schemas";
+import type { TaskType, ScheduleType } from "@ngriffin_uk/polychat-schemas";
 
 import type { IEnv } from "~/types";
 import type { TaskRepository } from "~/repositories/TaskRepository";

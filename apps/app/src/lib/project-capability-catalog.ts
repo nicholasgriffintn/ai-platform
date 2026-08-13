@@ -1,4 +1,4 @@
-import type { AssistantActionItem, ProjectCapabilityKind } from "@assistant/schemas";
+import type { AssistantActionItem, ProjectCapabilityKind } from "@ngriffin_uk/polychat-schemas";
 
 export type ProjectCapabilityKindFilter = "all" | ProjectCapabilityKind;
 

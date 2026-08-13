@@ -7,13 +7,13 @@ import type {
 	RecipeConnectorProvider,
 	RecipeConnectorStartResponse,
 	RecipeInvocationResponse,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import {
 	mergeAssistantActionToolIds,
 	recipeConnectorProviderSchema,
 	requireExternalHttpUrl,
 	requireInternalNavigationPath,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import {
 	createAppAssistantActionLaunch,

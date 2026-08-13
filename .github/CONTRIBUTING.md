@@ -30,7 +30,7 @@ If you do not have push access to the repository, please [fork it](https://help.
 
 Otherwise, you may clone this repository and create a working branch with a _kebab-case_ name reflecting what you are working on (e.g. `fix-the-thing`).
 
-Follow the setup instructions in the [README](../README.md).
+Ask your coding agent to use the repo-local [`$polychat-setup`](../.agents/skills/polychat-setup/SKILL.md) skill for development setup.
 
 Ensure all your code is thoroughly tested and that this testing is detailed in the pull request.
 

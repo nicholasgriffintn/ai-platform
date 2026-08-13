@@ -1,4 +1,4 @@
-import { canReplaceStoredConversationMessages } from "@assistant/schemas";
+import { canReplaceStoredConversationMessages } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 

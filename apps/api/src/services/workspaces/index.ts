@@ -7,8 +7,8 @@ import type {
 	UpdateWorkspaceInput,
 	WorkspaceDetail,
 	WorkspaceRole,
-} from "@assistant/schemas";
-import { deriveProjectColour } from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
+import { deriveProjectColour } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { sha256Hex } from "~/utils/crypto";

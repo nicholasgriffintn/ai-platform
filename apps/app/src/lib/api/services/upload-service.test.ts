@@ -9,6 +9,10 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("../fetch-wrapper", () => ({
 	fetchApi: mocks.fetchApi,
+}));
+
+vi.mock("@ngriffin_uk/polychat-library-client", async (importOriginal) => ({
+	...(await importOriginal<typeof import("@ngriffin_uk/polychat-library-client")>()),
 	returnFetchedData: mocks.returnFetchedData,
 }));
 

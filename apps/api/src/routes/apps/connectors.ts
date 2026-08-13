@@ -12,7 +12,7 @@ import {
 	recipeConnectorsResponseSchema,
 	recipeConnectorStartRequestSchema,
 	recipeConnectorStartResponseSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { addRoute } from "~/lib/http/routeBuilder";
 import {
 	deleteRecipeConnectorConnection,

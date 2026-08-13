@@ -1,4 +1,4 @@
-import type { ModelConfig } from "@assistant/schemas";
+import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 
 const rawOllamaModelConfig: ModelConfig = {
 	"ollama-gemma3-1b": {

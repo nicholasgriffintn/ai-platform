@@ -4,7 +4,7 @@ import type {
 	ChatRequestOptions as SchemaChatRequestOptions,
 	MessageRole as SchemaMessageRole,
 	MessagePart as SchemaMessagePart,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { ServiceContext } from "../lib/context/serviceContext";
 import type { AnonymousUser } from "./anonymous-user";

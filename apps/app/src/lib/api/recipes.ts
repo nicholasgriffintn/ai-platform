@@ -8,9 +8,10 @@ import type {
 	RecipeInstallationTrigger,
 	RecipeInstallationUpdateRequest,
 	RecipeInstallationsResponse,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { apiService } from "./api-service";
-import { fetchApi, fetchApiOrThrow, returnFetchedData } from "./fetch-wrapper";
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+import { fetchApi, fetchApiOrThrow } from "./fetch-wrapper";
 
 export async function listAssistantRecipes(): Promise<AssistantRecipesResponse> {
 	let headers = {};

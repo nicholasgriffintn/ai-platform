@@ -3,14 +3,17 @@ import { useMemo } from "react";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
-import { ApiError } from "~/lib/api/fetch-wrapper";
+import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
 import {
 	removeConversationFromChatCaches,
 	updateConversationInChatCaches,
-} from "~/lib/conversation-cache";
-import { filterConversationsByListOptions } from "~/lib/conversation-list";
-import { isLocallyCreatedConversation, preserveOptimisticMessages } from "~/lib/conversations";
+} from "@ngriffin_uk/polychat-library-react/conversation-cache";
+import {
+	filterConversationsByListOptions,
+	isLocallyCreatedConversation,
+	preserveOptimisticMessages,
+} from "@ngriffin_uk/polychat-library-chat/conversations";
 import { localChatService } from "~/lib/local/local-chat-service";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatRequestOptions, Conversation, ConversationListOptions, Message } from "~/types";

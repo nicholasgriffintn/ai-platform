@@ -1,6 +1,6 @@
 import { getSandbox, parseSSEStream, type ExecEvent } from "@cloudflare/sandbox";
-import type { SandboxTaskType } from "@assistant/schemas";
-import type { SandboxTrustLevel } from "@assistant/schemas";
+import type { SandboxTaskType } from "@ngriffin_uk/polychat-schemas";
+import type { SandboxTrustLevel } from "@ngriffin_uk/polychat-schemas";
 
 const MAX_LOG_CHARS = 80000;
 

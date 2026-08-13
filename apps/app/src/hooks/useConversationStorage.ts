@@ -2,8 +2,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
 import { CHATS_QUERY_KEY } from "~/constants";
-import { upsertConversationInChatCaches } from "~/lib/conversation-cache";
-import { resolveConversationStorageMode } from "~/lib/chat/conversation-storage-policy";
+import { upsertConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
+import { resolveConversationStorageMode } from "@ngriffin_uk/polychat-library-chat/conversation-storage-policy";
 import { localChatService } from "~/lib/local/local-chat-service";
 import type { ChatRequestOptions, Conversation } from "~/types";
 import { useChatStore } from "~/state/stores/chatStore";

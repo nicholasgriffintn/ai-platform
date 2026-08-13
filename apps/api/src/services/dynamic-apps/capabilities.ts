@@ -1,4 +1,7 @@
-import type { AssistantCapabilityDescriptor, DynamicAppCatalogItem } from "@assistant/schemas";
+import type {
+	AssistantCapabilityDescriptor,
+	DynamicAppCatalogItem,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { normaliseAssistantCapabilityTags } from "~/services/assistant-capabilities";
 

@@ -1,4 +1,4 @@
-import type { ToolDefinition, ToolResult } from "@assistant/schemas";
+import type { ToolDefinition, ToolResult } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { ToolExecutionContext } from "./ToolExecutionContext";
 

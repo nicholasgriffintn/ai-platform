@@ -1,7 +1,7 @@
 import type {
 	RecipeComposioTriggerCreateRequest,
 	RecipeConnectorProvider,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {

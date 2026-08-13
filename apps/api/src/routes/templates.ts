@@ -8,7 +8,7 @@ import {
 	templateListResponseSchema,
 	templateSchema,
 	updateTemplateSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { addRoute } from "~/lib/http/routeBuilder";
 import {
 	createTemplate,

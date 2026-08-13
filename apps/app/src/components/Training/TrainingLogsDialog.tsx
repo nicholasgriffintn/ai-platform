@@ -1,4 +1,4 @@
-import type { TrainingJobEvent } from "@assistant/schemas";
+import type { TrainingJobEvent } from "@ngriffin_uk/polychat-schemas";
 import { RefreshCcw } from "lucide-react";
 
 import {
@@ -8,8 +8,8 @@ import {
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-} from "~/components/ui";
-import { TrainingStatusBadge } from "./TrainingStatusBadge";
+} from "@ngriffin_uk/polychat-component-ui";
+import { TrainingStatusBadge } from "@ngriffin_uk/polychat-component-experiences/training";
 import { formatTrainingDate, getTrainingEventDetail } from "./utils";
 
 interface TrainingLogsResource {

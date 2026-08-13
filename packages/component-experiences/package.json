@@ -1,0 +1,60 @@
+{
+	"name": "@ngriffin_uk/polychat-component-experiences",
+	"version": "0.1.0",
+	"license": "Apache-2.0",
+	"files": [
+		"dist"
+	],
+	"type": "module",
+	"sideEffects": [
+		"**/*.css"
+	],
+	"exports": {
+		"./content": {
+			"types": "./dist/content.d.ts",
+			"import": "./dist/content.js"
+		},
+		"./media": {
+			"types": "./dist/media.d.ts",
+			"import": "./dist/media.js"
+		},
+		"./music": {
+			"types": "./dist/music.d.ts",
+			"import": "./dist/music.js"
+		},
+		"./training": {
+			"types": "./dist/training.d.ts",
+			"import": "./dist/training.js"
+		},
+		"./styles.css": "./dist/content.css"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"build": "tsup",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"test:package": "pnpm build && node --test ../../scripts/test-component-package-exports.mjs",
+		"format": "oxfmt",
+		"format:check": "oxfmt --check",
+		"lint": "pnpm oxlint",
+		"check": "pnpm lint && pnpm format:check"
+	},
+	"devDependencies": {
+		"@ngriffin_uk/polychat-config": "workspace:^",
+		"@testing-library/react": "catalog:",
+		"@types/react": "catalog:",
+		"@types/react-dom": "catalog:",
+		"jsdom": "catalog:",
+		"oxfmt": "catalog:",
+		"oxlint": "catalog:",
+		"tsup": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	},
+	"peerDependencies": {
+		"react": "catalog:react-peer",
+		"react-dom": "catalog:react-peer"
+	}
+}

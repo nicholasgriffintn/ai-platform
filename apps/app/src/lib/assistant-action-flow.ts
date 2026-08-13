@@ -2,7 +2,7 @@ import type {
 	AssistantActionDelivery,
 	AssistantActionResult,
 	AssistantActionVerb,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import {
 	executeAssistantAction,

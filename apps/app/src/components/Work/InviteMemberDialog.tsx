@@ -2,7 +2,6 @@ import { useState } from "react";
 
 import {
 	Button,
-	CopyButton,
 	Dialog,
 	DialogContent,
 	DialogDescription,
@@ -11,7 +10,8 @@ import {
 	DialogTitle,
 	FormInput,
 	FormSelect,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
+import { CopyButton } from "~/components/Content/CopyButton";
 import { useInviteWorkspaceMember } from "~/hooks/useWorkspaces";
 
 export function InviteMemberDialog({

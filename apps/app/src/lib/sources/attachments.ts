@@ -1,6 +1,6 @@
-import type { Source } from "@assistant/schemas";
+import type { Source } from "@ngriffin_uk/polychat-schemas";
 
-import type { AttachmentData } from "~/lib/chat/attachments";
+import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 
 export interface SourceAttachmentCapabilities {
 	supportsAudio: boolean;

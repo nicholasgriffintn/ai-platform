@@ -1,0 +1,5 @@
+{
+	"extends": "@ngriffin_uk/polychat-config/tsconfig/react-library",
+	"compilerOptions": { "noEmit": true },
+	"include": ["src/**/*"]
+}

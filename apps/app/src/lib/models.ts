@@ -3,7 +3,7 @@ import type {
 	ModelConfig,
 	ModelConfigItem,
 	ModelModality,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import type { ChatMode } from "~/types";
 
 export const defaultModel = "deepseek-v4-flash";

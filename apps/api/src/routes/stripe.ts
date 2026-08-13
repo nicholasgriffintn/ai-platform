@@ -1,7 +1,7 @@
 import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
 
-import { errorResponseSchema, checkoutSchema } from "@assistant/schemas";
+import { errorResponseSchema, checkoutSchema } from "@ngriffin_uk/polychat-schemas";
 
 import {
 	cancelSubscription,

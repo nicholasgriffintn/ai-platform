@@ -8,7 +8,7 @@ import {
 	type TrainingModelDefinition,
 	type TrainingProviderId,
 	type StartTrainingJobRequest,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { exportTrainingExamplesToS3 } from "~/lib/providers/capabilities/training/exportDataset";

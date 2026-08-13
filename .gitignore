@@ -193,3 +193,5 @@ xcshareddata/
 xcuserdata/
 .coverage/
 TestResults/
+
+.worktrees

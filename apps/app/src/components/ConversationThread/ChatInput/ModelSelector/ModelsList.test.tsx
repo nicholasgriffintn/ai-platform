@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { ModelCatalogItem } from "@assistant/schemas";
+import type { ModelCatalogItem } from "@ngriffin_uk/polychat-schemas";
 import { ModelsList } from "./ModelsList";
 
 vi.mock("~/hooks/use-track-event", () => ({

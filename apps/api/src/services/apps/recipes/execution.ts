@@ -1,5 +1,5 @@
-import type { RecipeInvocationResponse } from "@assistant/schemas";
-import { createRecipeChatRequestOptions } from "@assistant/schemas";
+import type { RecipeInvocationResponse } from "@ngriffin_uk/polychat-schemas";
+import { createRecipeChatRequestOptions } from "@ngriffin_uk/polychat-schemas";
 
 import { defaultModel } from "~/constants/models";
 import { ConversationManager } from "~/lib/conversationManager";

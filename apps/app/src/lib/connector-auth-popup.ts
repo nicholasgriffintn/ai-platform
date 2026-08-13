@@ -2,9 +2,9 @@ import {
 	recipeConnectorProviderSchema,
 	requireExternalHttpUrl,
 	type RecipeConnectorProvider,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
-import { isRecord } from "~/lib/objects";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export const CONNECTOR_AUTH_POPUP_NAME = "polychat-connector-auth";
 const CONNECTOR_AUTH_MESSAGE_TYPE = "polychat:connector-auth:completed";

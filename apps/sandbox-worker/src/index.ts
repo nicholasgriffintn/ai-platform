@@ -1,4 +1,4 @@
-import { sandboxWorkerExecuteRequestSchema, NO_STORE } from "@assistant/schemas";
+import { sandboxWorkerExecuteRequestSchema, NO_STORE } from "@ngriffin_uk/polychat-schemas";
 
 import { executeSandboxTask } from "./tasks";
 import { verifySandboxJwt } from "./lib/auth";

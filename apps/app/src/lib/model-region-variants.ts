@@ -1,4 +1,4 @@
-import type { ModelCatalogItem } from "@assistant/schemas";
+import type { ModelCatalogItem } from "@ngriffin_uk/polychat-schemas";
 import { getModelDisplayName } from "./models";
 
 const BEDROCK_PROVIDER = "bedrock";

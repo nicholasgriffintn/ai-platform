@@ -1,7 +1,7 @@
 import {
 	sandboxRunDispatchMessageSchema,
 	type SandboxRunDispatchMessage,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import type { FiberRecoveryContext, StartFiberResult } from "agents";
 
 import { isPlainObject } from "~/utils/objects";

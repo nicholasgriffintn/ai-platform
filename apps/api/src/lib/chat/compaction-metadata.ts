@@ -1,7 +1,7 @@
 import {
 	normaliseCompactionStatusMessage,
 	type NormalisedCompactionStatusMessage,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 
 export interface ChatCompactionMetadata {
 	message: NormalisedCompactionStatusMessage;

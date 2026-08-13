@@ -1,4 +1,7 @@
-import type { RecipeChatRequestOptions, RecipeConnectorProvider } from "@assistant/schemas";
+import type {
+	RecipeChatRequestOptions,
+	RecipeConnectorProvider,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConnectorOperationApprovalRecord } from "~/repositories/ConnectorOperationApprovalRepository";

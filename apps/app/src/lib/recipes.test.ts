@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AssistantRecipe, RecipeInstallation } from "@assistant/schemas";
+import type { AssistantRecipe, RecipeInstallation } from "@ngriffin_uk/polychat-schemas";
 
 import {
 	formatRecipeConfigurationSummaryValue,

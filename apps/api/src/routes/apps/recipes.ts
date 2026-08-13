@@ -11,7 +11,7 @@ import {
 	recipeInstallRequestSchema,
 	recipeInvocationRequestSchema,
 	recipeInvocationResponseSchema,
-} from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
 import { addRoute } from "~/lib/http/routeBuilder";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {

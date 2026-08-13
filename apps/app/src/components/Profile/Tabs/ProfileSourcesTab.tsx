@@ -1,4 +1,4 @@
-import type { SourceKind } from "@assistant/schemas";
+import type { SourceKind } from "@ngriffin_uk/polychat-schemas";
 import { Database, FileText, Link2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -13,10 +13,10 @@ import {
 	FormInput,
 	FormSelect,
 	Textarea,
-} from "~/components/ui";
+} from "@ngriffin_uk/polychat-component-ui";
 import { API_BASE_URL } from "~/constants";
 import { useSourceCollections, useSourceMutations, useSources } from "~/hooks/useSources";
-import { formatDate } from "~/lib/dates";
+import { formatDate } from "@ngriffin_uk/polychat-utility-core";
 import { MemorySynthesisPanel } from "../MemorySynthesisPanel";
 
 const sourceKinds: Array<{ value: "" | SourceKind; label: string }> = [

@@ -1,4 +1,4 @@
-import type { ModelConfig } from "@assistant/schemas";
+import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 
 export const huggingfaceModelConfig: ModelConfig = {
 	"deepseek-ai/Deepseek-V3-0324": {

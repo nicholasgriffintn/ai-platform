@@ -6,8 +6,8 @@ import type {
 	WorkspaceInvitation,
 	WorkspaceMember,
 	WorkspaceSummary,
-} from "@assistant/schemas";
-import { projectCodingEnvironmentSchema } from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
+import { projectCodingEnvironmentSchema } from "@ngriffin_uk/polychat-schemas";
 
 import type {
 	ProjectCapabilityRow,

@@ -1,12 +1,12 @@
 import { Mic2, Plus } from "lucide-react";
 import { Link } from "react-router";
-import type { Podcast } from "@assistant/schemas";
+import type { Podcast } from "@ngriffin_uk/polychat-schemas";
 
 import { PodcastView } from "~/components/Apps/Podcasts/View";
 import { PodcastWorkflow } from "~/components/Apps/Podcasts/PodcastWorkflow";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card } from "~/components/ui";
+import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
 import { useFetchPodcast, useFetchPodcasts, useProcessPodcast } from "~/hooks/usePodcasts";
 import { WorkCardGridSkeleton } from "../WorkLoadingSkeletons";
 import { isAuthenticationError } from "~/lib/errors";

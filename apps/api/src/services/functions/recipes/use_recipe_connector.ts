@@ -1,4 +1,7 @@
-import { recipeConnectorProviderSchema, type RecipeConnectorProvider } from "@assistant/schemas";
+import {
+	recipeConnectorProviderSchema,
+	type RecipeConnectorProvider,
+} from "@ngriffin_uk/polychat-schemas";
 import {
 	getConnectorProviderConfig,
 	connectorOperationRequiresApproval,

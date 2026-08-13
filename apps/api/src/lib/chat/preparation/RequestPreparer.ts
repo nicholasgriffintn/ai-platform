@@ -20,7 +20,7 @@ import { toProviderMessages } from "~/lib/chat/providerMessages";
 import { restoreStoredAttachmentContent } from "~/lib/chat/storedAttachments";
 import { findModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
-import type { ChatHostedToolSettings, ModelConfigInfo } from "@assistant/schemas";
+import type { ChatHostedToolSettings, ModelConfigInfo } from "@ngriffin_uk/polychat-schemas";
 import type { ChatMode, CoreChatOptions, MemoryScope, Message, Platform } from "~/types";
 import { generateId } from "~/utils/id";
 import { AssistantError, ErrorType } from "~/utils/errors";

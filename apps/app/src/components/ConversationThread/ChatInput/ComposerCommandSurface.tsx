@@ -11,9 +11,14 @@ import {
 	X,
 } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import type { AssistantActionItem, AssistantActionItemKind } from "@assistant/schemas";
+import type { AssistantActionItem, AssistantActionItemKind } from "@ngriffin_uk/polychat-schemas";
 
-import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
+import {
+	Button,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@ngriffin_uk/polychat-component-ui";
 import type { ComposerDirectiveQuery } from "~/lib/composer-commands";
 import { cn } from "~/lib/utils";
 import type {

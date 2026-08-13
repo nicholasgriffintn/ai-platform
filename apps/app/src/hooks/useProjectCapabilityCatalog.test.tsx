@@ -1,6 +1,6 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import type { AssistantRecipe } from "@assistant/schemas";
+import type { AssistantRecipe } from "@ngriffin_uk/polychat-schemas";
 
 import { useProjectCapabilityCatalog } from "./useProjectCapabilityCatalog";
 

@@ -1,4 +1,4 @@
-import type { ModelConfig, ModelConfigItem, ModelModalities } from "@assistant/schemas";
+import type { ModelConfig, ModelConfigItem, ModelModalities } from "@ngriffin_uk/polychat-schemas";
 import { availableModalities } from "~/constants/models";
 
 const DEFAULT_MODALITIES: ModelModalities = {

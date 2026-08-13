@@ -1,6 +1,6 @@
-import { connectorApprovalIdSchema } from "@assistant/schemas";
+import { connectorApprovalIdSchema } from "@ngriffin_uk/polychat-schemas";
 
-import { isRecord } from "~/lib/objects";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export interface ConnectorApprovalRequest {
 	approvalId: string;

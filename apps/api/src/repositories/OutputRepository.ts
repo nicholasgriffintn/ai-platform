@@ -1,4 +1,4 @@
-import type { OutputSensitivity, OutputStatus } from "@assistant/schemas";
+import type { OutputSensitivity, OutputStatus } from "@ngriffin_uk/polychat-schemas";
 
 import { KVCache } from "~/lib/cache";
 import type { IEnv } from "~/types";

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { connectOpenAIRealtimeWebRTC } from "./webrtc";
+import { connectOpenAIRealtimeWebRTC } from "@ngriffin_uk/polychat-library-realtime";
 
 class FakeRTCDataChannel extends EventTarget {
 	closed = false;

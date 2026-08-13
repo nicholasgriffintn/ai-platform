@@ -1,0 +1,63 @@
+@layer polychat-models {
+	.polychat-model-picker {
+		display: grid;
+		gap: 0.75rem;
+	}
+	.polychat-model-card {
+		display: flex;
+		width: 100%;
+		gap: 1rem;
+		align-items: flex-start;
+		padding: 1rem;
+		border: 1px solid #e4e4e7;
+		border-radius: 0.75rem;
+		background: white;
+		color: #18181b;
+		text-align: left;
+	}
+	button.polychat-model-card {
+		cursor: pointer;
+	}
+	.polychat-model-card[aria-pressed="true"],
+	.polychat-model-card[data-selected] {
+		border-color: #3b82f6;
+		box-shadow: 0 0 0 1px #3b82f6;
+	}
+	.polychat-model-card:disabled {
+		cursor: not-allowed;
+		opacity: 0.65;
+	}
+	.polychat-model-icon {
+		flex: none;
+	}
+	.polychat-model-copy {
+		display: grid;
+		gap: 0.2rem;
+	}
+	.polychat-model-copy strong {
+		font-size: 1.05rem;
+	}
+	.polychat-model-copy small,
+	.polychat-model-copy span {
+		color: #71717a;
+	}
+	.polychat-model-copy em {
+		color: #b45309;
+		font-size: 0.8rem;
+	}
+	.polychat-model-empty {
+		color: #71717a;
+	}
+	.dark .polychat-model-card,
+	[data-polychat-theme="dark"] .polychat-model-card {
+		border-color: #3f3f46;
+		background: #18181b;
+		color: #fafafa;
+	}
+	.dark .polychat-model-copy small,
+	.dark .polychat-model-copy span,
+	[data-polychat-theme="dark"] .polychat-model-copy small,
+	[data-polychat-theme="dark"] .polychat-model-copy span {
+		color: #a1a1aa;
+	}
+}

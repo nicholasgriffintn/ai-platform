@@ -31,8 +31,8 @@ import {
 	updateChatCompletionParamsSchema,
 	errorResponseSchema,
 	messageSchema,
-} from "@assistant/schemas";
-import type { ChatCompletionRequestBody } from "@assistant/schemas";
+} from "@ngriffin_uk/polychat-schemas";
+import type { ChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
 
 import { allowRestrictedPaths } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
@@ -63,7 +63,7 @@ import { handleListChatCompletions } from "~/services/completions/listChatComple
 import { handleShareConversation } from "~/services/completions/shareConversation";
 import { handleUnshareConversation } from "~/services/completions/unshareConversation";
 import { handleUpdateChatCompletion } from "~/services/completions/updateChatCompletion";
-import type { SubmitChatCompletionFeedbackInput } from "@assistant/schemas";
+import type { SubmitChatCompletionFeedbackInput } from "@ngriffin_uk/polychat-schemas";
 import type { ChatRole, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { readNumericField, readRecordObjectField } from "~/utils/recordFields";
