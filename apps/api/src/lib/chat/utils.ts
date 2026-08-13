@@ -227,7 +227,7 @@ export function sanitiseInput(input: string): string {
 		.replace(/}}/g, "} }")
 		// Handle angle brackets that might be part of XML-style instructions
 		.replace(
-			/<([a-zA-Z][a-zA-Z0-9]*(\s+[a-zA-Z][a-zA-Z0-9]*=("[^"]*"|'[^']*'|[^>\s]+))*)\s*\/?>/g,
+			/<([a-zA-Z][a-zA-Z0-9]*(\s+[a-zA-Z][a-zA-Z0-9]*=("[^"]*"|'[^']*'|[^>"'\s]+))*)\s*\/?>/g,
 			"`&lt;$1&gt;`",
 		)
 		// Normalize whitespace (but preserve newlines)
