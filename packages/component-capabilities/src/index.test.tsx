@@ -32,6 +32,29 @@ describe("capability controls", () => {
 		expect(screen.getByRole<HTMLInputElement>("searchbox").value).toBe("");
 	});
 
+	it("preserves the compact selected and hoverable filter variants", () => {
+		render(
+			<CapabilityFilters
+				categories={["Research"]}
+				category="Research"
+				kind="app"
+				query=""
+				onCategoryChange={vi.fn()}
+				onKindChange={vi.fn()}
+				onQueryChange={vi.fn()}
+			/>,
+		);
+
+		const apps = screen.getByRole("button", { name: "Apps" });
+		const all = screen.getByRole("button", { name: "All" });
+		const research = screen.getByRole("button", { name: "Research" });
+
+		expect(apps.className).toContain("px-3 py-1.5 text-xs");
+		expect(apps.className).toContain("dark:bg-zinc-100");
+		expect(all.className).toContain("dark:hover:bg-zinc-800");
+		expect(research.className).toContain("dark:bg-zinc-800");
+	});
+
 	it("does not launch an unavailable capability", () => {
 		const onLaunch = vi.fn<(capability: CapabilityCardModel) => void>();
 		const capability: CapabilityCardModel = {

@@ -56,6 +56,14 @@ Optional integrations should fail as unavailable rather than force a new adopter
    pnpm dev:training
    ```
 
+## Sign in during local browser validation
+
+Use the local magic-link delivery instead of requiring a real inbox or production authentication credentials:
+
+- Enter any disposable email address in the local sign-in form.
+- Read the API development terminal output for the generated email `.txt` file path.
+- Open that file locally and visit the magic-link URL it contains in the same browser session.
+
 ## Component-specific setup
 
 Read the matching reference when selected:

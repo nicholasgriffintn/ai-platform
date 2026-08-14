@@ -69,6 +69,7 @@ Start from the user's global agent contract. These instructions make that contra
 - When a change adds several test files or materially expands a web or API suite, measure the relevant workspace test command before and after. Consolidate or remove low-value coverage if runtime regresses noticeably.
 - Do not introduce global coverage thresholds. Review uncovered high-risk boundaries directly instead of using a percentage target as a proxy for test quality.
 - Run the narrowest meaningful validation first, then broader checks when risk justifies it.
+- For signed-in local browser validation, use the development magic-link flow in `.agents/skills/polychat-setup/references/setup.md`. Do not require a real inbox or production credentials.
 - If validation cannot run, state the blocker clearly.
 
 ## Documentation and communication

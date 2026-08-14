@@ -62,6 +62,16 @@ For responsive behaviour, keep the full behavioural matrix on desktop Chromium a
 - Run Chromium only by default and shard the full suite in CI.
 - Retain traces, screenshots, and videos only for failures or retries.
 
+## Main-branch smoke coverage
+
+Keep the push-to-`main` smoke suite compact, but require meaningful app/API journeys rather than page-load checks. Run one independent journey for each persona:
+
+- Logged out: complete a Chat response and verify the Work sign-in boundary.
+- Free: complete a Chat response, verify the Work entitlement boundary, and synchronise the provider catalogue.
+- Pro: open a seeded Work project and complete a project-scoped Chat response.
+
+Use the same production-optimised app Worker, actual API Worker, isolated D1 database, and outbound third-party mocks as the full release suite. Add another smoke outcome only when it protects a new top-level release-critical path; keep exhaustive states and lifecycles in the complete release suite.
+
 ## Running tests
 
 Install Chromium once:

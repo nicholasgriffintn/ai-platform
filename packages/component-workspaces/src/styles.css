@@ -1,100 +1,10 @@
-@layer polychat-workspaces {
-	.polychat-workspace-brief {
-		display: grid;
-		gap: 1rem;
-		border: 1px solid #e4e4e7;
-		border-radius: 0.75rem;
-		padding: 1.25rem;
-	}
-	.polychat-workspace-brief[data-embedded] {
-		border: 0;
-		border-radius: 0;
-	}
-	.polychat-workspace-brief header {
-		display: grid;
-		grid-template-columns: auto 1fr auto;
-		gap: 0.75rem;
-		align-items: center;
-	}
-	.polychat-workspace-brief h2,
-	.polychat-workspace-brief p {
-		margin: 0;
-	}
-	.polychat-workspace-brief header p,
-	.polychat-workspace-brief-copy {
-		color: #71717a;
-		font-size: 0.875rem;
-	}
-	.polychat-workspace-brief-icon {
-		display: grid;
-		place-items: center;
-		width: 2.25rem;
-		height: 2.25rem;
-		border-radius: 0.5rem;
-		background: #eef2ff;
-		color: #4f46e5;
-	}
-	.polychat-workspace-brief button {
-		border: 1px solid #d4d4d8;
-		border-radius: 0.5rem;
-		padding: 0.5rem 0.75rem;
-		background: white;
-		cursor: pointer;
-	}
-	.polychat-workspace-brief-editor {
-		display: grid;
-		gap: 0.75rem;
-	}
-	.polychat-workspace-brief-editor > label {
-		position: absolute;
-		clip: rect(0 0 0 0);
-	}
-	.polychat-workspace-brief-editor textarea {
-		resize: vertical;
-		border: 1px solid #d4d4d8;
-		border-radius: 0.5rem;
-		padding: 0.75rem;
-		font: inherit;
-	}
-	.polychat-workspace-brief-editor > p {
-		color: #b91c1c;
-	}
-	.polychat-workspace-brief-editor footer {
-		display: flex;
-		justify-content: flex-end;
-		gap: 0.5rem;
-	}
-	.polychat-workspace-list {
-		display: grid;
-		gap: 0.5rem;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-	.polychat-workspace-list button {
-		display: grid;
-		width: 100%;
-		padding: 0.75rem;
-		border: 1px solid #e4e4e7;
-		border-radius: 0.5rem;
-		background: transparent;
-		text-align: left;
-	}
-	.polychat-workspace-list button[aria-current="page"] {
-		border-color: #3b82f6;
-	}
-	.dark .polychat-workspace-brief,
-	.dark .polychat-workspace-list button,
-	[data-polychat-theme="dark"] .polychat-workspace-brief,
-	[data-polychat-theme="dark"] .polychat-workspace-list button {
-		border-color: #3f3f46;
-	}
-	.dark .polychat-workspace-brief button,
-	.dark .polychat-workspace-brief-editor textarea,
-	[data-polychat-theme="dark"] .polychat-workspace-brief button,
-	[data-polychat-theme="dark"] .polychat-workspace-brief-editor textarea {
-		border-color: #52525b;
-		background: #18181b;
-		color: #fafafa;
-	}
+@import "tailwindcss/theme" layer(polychat-workspaces-theme);
+@import "tailwindcss/utilities" layer(polychat-workspaces-utilities);
+
+@source "./**/*.{ts,tsx}";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--color-off-white: #f8f8f8;
+	--color-off-white-highlight: #e8eaed;
 }

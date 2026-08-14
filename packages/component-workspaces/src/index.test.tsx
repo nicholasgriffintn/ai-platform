@@ -6,6 +6,15 @@ import { ProjectBriefCard } from "./index";
 afterEach(cleanup);
 
 describe("ProjectBriefCard", () => {
+	it("uses the shared compact icon action rather than a text button", () => {
+		render(<ProjectBriefCard canManage instructions="Initial context" onSave={vi.fn()} />);
+
+		const edit = screen.getByRole("button", { name: "Edit project brief" });
+		expect(edit.textContent).toBe("");
+		expect(edit.title).toBe("Edit project brief");
+		expect(edit.querySelector("svg")).not.toBeNull();
+	});
+
 	it("submits the edited brief through the host callback", async () => {
 		const onSave = vi.fn(async () => undefined);
 		render(<ProjectBriefCard canManage instructions="Initial context" onSave={onSave} />);

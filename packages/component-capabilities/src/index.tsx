@@ -1,3 +1,4 @@
+import { Button, Card, FormSelect, SearchInput } from "@ngriffin_uk/polychat-component-ui";
 import "./styles.css";
 
 export type CapabilityKindFilter = "all" | "app" | "recipe" | "tool";
@@ -28,59 +29,71 @@ export function CapabilityFilters({
 	onKindChange,
 	onQueryChange,
 }: CapabilityFiltersProps) {
-	const categoryFilters = ["all", ...categories];
+	const categoryFilters = [
+		{ label: "All categories", value: "all" },
+		...categories.map((value) => ({ label: value, value })),
+	];
 	return (
-		<div className="polychat-capability-filters">
-			<label>
-				<span className="polychat-capability-visually-hidden">Search project capabilities</span>
-				<input
-					type="search"
-					placeholder="Search apps, recipes, and tools..."
-					value={query}
-					onChange={(event) => onQueryChange(event.target.value)}
-				/>
-			</label>
-			<div
-				className="polychat-capability-filter-group"
-				aria-label="Filter capabilities by type"
-				role="group"
-			>
-				{kindFilters.map((filter) => (
-					<button
-						key={filter.value}
-						type="button"
-						aria-pressed={kind === filter.value}
-						onClick={() => onKindChange(filter.value)}
-					>
-						{filter.label}
-					</button>
-				))}
-			</div>
-			<label className="polychat-capability-category-select">
-				<span className="polychat-capability-visually-hidden">Filter capabilities by category</span>
-				<select value={category} onChange={(event) => onCategoryChange(event.target.value)}>
-					{categoryFilters.map((value) => (
-						<option key={value} value={value}>
-							{value === "all" ? "All categories" : value}
-						</option>
+		<div className="mb-8 space-y-4">
+			<SearchInput
+				aria-label="Search project capabilities"
+				className="max-w-xl"
+				placeholder="Search apps, recipes, and tools..."
+				value={query}
+				onChange={onQueryChange}
+			/>
+			<div className="space-y-3">
+				<div
+					className="flex flex-wrap gap-1.5"
+					aria-label="Filter capabilities by type"
+					role="group"
+				>
+					{kindFilters.map((filter) => (
+						<button
+							key={filter.value}
+							type="button"
+							aria-pressed={kind === filter.value}
+							onClick={() => onKindChange(filter.value)}
+							className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+								kind === filter.value
+									? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
+									: "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+							}`}
+						>
+							{filter.label}
+						</button>
 					))}
-				</select>
-			</label>
-			<div
-				className="polychat-capability-category-buttons"
-				aria-label="Filter capabilities by category"
-				role="group"
-			>
-				{categoryFilters.map((value) => (
-					<button
-						key={value}
-						type="button"
-						aria-pressed={category === value}
-						onClick={() => onCategoryChange(value)}
-					>
-						{value === "all" ? "All categories" : value}
-					</button>
-				))}
+				</div>
+				<div className="sm:hidden">
+					<FormSelect
+						aria-label="Filter capabilities by category"
+						className="h-10 bg-white dark:bg-zinc-900"
+						onChange={(event) => onCategoryChange(event.target.value)}
+						options={categoryFilters}
+						value={category}
+					/>
+				</div>
+				<div
+					className="hidden min-w-0 flex-wrap gap-1.5 sm:flex"
+					aria-label="Filter capabilities by category"
+					role="group"
+				>
+					{categoryFilters.map((filter) => (
+						<button
+							key={filter.value}
+							type="button"
+							aria-pressed={category === filter.value}
+							onClick={() => onCategoryChange(filter.value)}
+							className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+								category === filter.value
+									? "border-zinc-400 bg-zinc-100 text-zinc-950 dark:border-zinc-500 dark:bg-zinc-800 dark:text-white"
+									: "border-transparent text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+							}`}
+						>
+							{filter.label}
+						</button>
+					))}
+				</div>
 			</div>
 		</div>
 	);
@@ -105,24 +118,24 @@ export function CapabilityCard({
 	onLaunch: (capability: CapabilityCardModel) => void;
 }) {
 	return (
-		<article className="polychat-capability-card">
-			<header>
+		<Card className="gap-3 p-4 shadow-none">
+			<header className="flex items-center justify-between text-xs capitalize text-zinc-500">
 				<span>{capability.kind}</span>
 				{installed && <small>Installed</small>}
 			</header>
-			<h3>{capability.name}</h3>
-			<p>{capability.description}</p>
-			<button
-				type="button"
+			<h3 className="text-sm font-semibold text-zinc-950 dark:text-zinc-100">{capability.name}</h3>
+			<p className="text-sm text-zinc-600 dark:text-zinc-400">{capability.description}</p>
+			<Button
+				size="sm"
 				disabled={!capability.available}
 				title={capability.unavailableReason}
 				onClick={() => onLaunch(capability)}
 			>
 				Open
-			</button>
+			</Button>
 			{!capability.available && capability.unavailableReason && (
-				<small>{capability.unavailableReason}</small>
+				<small className="text-xs text-zinc-500">{capability.unavailableReason}</small>
 			)}
-		</article>
+		</Card>
 	);
 }

@@ -61,7 +61,10 @@ export function ProjectCapabilityGroups({
 			{groups.map((group) => (
 				<section key={group.kind} aria-labelledby={`capability-kind-${group.kind}`}>
 					<div className="mb-4 flex items-center gap-2">
-						<h2 id={`capability-kind-${group.kind}`} className="text-lg font-semibold">
+						<h2
+							id={`capability-kind-${group.kind}`}
+							className="text-lg font-semibold text-zinc-950 dark:text-zinc-100"
+						>
 							{group.label}
 						</h2>
 						<span className="text-xs text-zinc-500">
