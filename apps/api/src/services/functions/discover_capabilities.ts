@@ -1,5 +1,4 @@
 import {
-	CAPABILITY_DISCOVERY_DATA_KEY,
 	CAPABILITY_DISCOVERY_TOOL_NAME,
 	capabilityDiscoveryKindSchema,
 } from "@ngriffin_uk/polychat-schemas";
@@ -7,6 +6,7 @@ import z from "zod/v4";
 
 import { discoverAssistantCapabilities } from "~/services/assistant-capability-discovery";
 import { loadCapabilityDiscoverySources } from "~/services/assistant-capability-discovery-sources";
+import { createCapabilityDiscoveryResponse } from "~/services/assistant-capability-discovery-response";
 import type { ApiToolDefinition } from "~/types/functions";
 
 const inputSchema = z.object({
@@ -40,17 +40,7 @@ export const discover_capabilities: ApiToolDefinition = {
 	execute: async (args, toolContext) => {
 		const sources = await loadCapabilityDiscoverySources(toolContext.request);
 		const result = discoverAssistantCapabilities(sources, args);
-		const setupCount = result.items.filter((item) => item.state === "setup_required").length;
 
-		return {
-			name: CAPABILITY_DISCOVERY_TOOL_NAME,
-			status: "success",
-			content: `Found ${result.items.length} matching capabilities. ${setupCount} require user setup. Use each result's invocation.toolName exactly and call it only when invocation.availableNow is true; otherwise explain the stated setup, enablement, or availability requirement without inventing another tool.`,
-			data: {
-				formattedName: "Capability discovery",
-				responseType: "custom",
-				[CAPABILITY_DISCOVERY_DATA_KEY]: result,
-			},
-		};
+		return createCapabilityDiscoveryResponse(result);
 	},
 };

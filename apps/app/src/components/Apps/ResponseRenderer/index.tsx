@@ -78,6 +78,9 @@ export const ResponseRenderer = ({
 		}
 
 		switch (type) {
+			case "hidden":
+				return null;
+
 			case "table":
 				return <TableView data={resolveTableResponseData(responseData, responseDisplay?.fields)} />;
 

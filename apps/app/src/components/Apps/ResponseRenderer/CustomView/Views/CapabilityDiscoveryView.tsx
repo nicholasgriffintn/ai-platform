@@ -84,6 +84,7 @@ export function CapabilityDiscoveryView({ data }: { data: unknown }) {
 				<Button
 					type="button"
 					size="sm"
+					variant="secondary"
 					disabled={connectorSetup.connectingProviderId === connector.id}
 					onClick={() => void connectorSetup.connect(connector)}
 				>
@@ -124,6 +125,7 @@ export function CapabilityDiscoveryView({ data }: { data: unknown }) {
 			<Button
 				type="button"
 				size="sm"
+				variant="secondary"
 				onClick={() => {
 					if (installation?.status === "paused") {
 						void workflows.actions.toggleInstallationStatus(installation);

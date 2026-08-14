@@ -121,7 +121,7 @@ export interface Attachment {
 export interface MessageData {
 	conversationMode?: ConversationModeMetadata;
 	codingTaskType?: SandboxTaskType;
-	responseType?: "table" | "json" | "text" | "template" | "custom";
+	responseType?: "table" | "json" | "text" | "template" | "custom" | "hidden";
 	responseDisplay?: {
 		fields?: {
 			key: string;

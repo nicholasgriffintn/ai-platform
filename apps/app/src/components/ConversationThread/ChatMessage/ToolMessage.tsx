@@ -22,6 +22,7 @@ export const ToolMessage = ({
 	if (approvalData && readConnectorApprovalRequest(approvalData)) {
 		return <ConnectorApprovalCard data={approvalData} onResolve={onConnectorApproval} />;
 	}
+	if (message.data.responseType === "hidden") return null;
 
 	return (
 		<div className="mb-2">

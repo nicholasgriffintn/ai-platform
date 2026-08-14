@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { parseChatStreamSseBuffer } from "@ngriffin_uk/polychat-schemas";
-import type { CoreChatOptions } from "~/types";
+import type { CoreChatOptions, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { ChatOrchestrator } from "../ChatOrchestrator";
 
@@ -38,6 +38,24 @@ const {
 let validationFactory: (() => any) | undefined;
 let preparerFactory: ((env: any) => any) | undefined;
 let guardrailsFactory: (() => any) | undefined;
+
+const proUser: IUser = {
+	id: 42,
+	name: "Pro user",
+	avatar_url: null,
+	email: "pro@example.com",
+	github_username: null,
+	company: null,
+	site: null,
+	location: null,
+	bio: null,
+	twitter_username: null,
+	created_at: "2026-08-14T00:00:00.000Z",
+	updated_at: "2026-08-14T00:00:00.000Z",
+	setup_at: null,
+	terms_accepted_at: null,
+	plan_id: "pro",
+};
 
 vi.mock("~/lib/chat/validation/ValidationPipeline", () => ({
 	ValidationPipeline: class {
@@ -602,6 +620,29 @@ describe("ChatOrchestrator", () => {
 					...mockOptions,
 					stream: true,
 					enabled_tools: ["use_recipe_connector"],
+				});
+
+				expect(mockCreateStreamWithPostProcessing).toHaveBeenCalledWith(
+					mockStream,
+					expect.objectContaining({ max_steps: 8 }),
+					mockConversationManager,
+				);
+			});
+
+			it("should give signed-in Pro chats the connector step budget when the gateway is automatic", async () => {
+				const mockStream = new ReadableStream();
+				const transformedStream = new ReadableStream();
+
+				mockGetAIResponse.mockResolvedValue(mockStream);
+				mockCreateStreamWithPostProcessing.mockResolvedValue(transformedStream);
+
+				await orchestrator.process({
+					...mockOptions,
+					stream: true,
+					context: {
+						...mockOptions.context,
+						user: proUser,
+					},
 				});
 
 				expect(mockCreateStreamWithPostProcessing).toHaveBeenCalledWith(

@@ -5,7 +5,7 @@ import { formatAssistantMessage, getAIResponse } from "~/lib/chat/responses";
 import { extractCouncilTurnRouting } from "~/lib/chat/council";
 import { appendReasoningPart, appendTextPart, buildMessageParts } from "~/lib/chat/messageParts";
 import { handleToolCalls } from "~/lib/chat/tools";
-import { shouldContinueAfterToolResults } from "~/lib/chat/tool-results";
+import { resolveToolStepBudget, shouldContinueAfterToolResults } from "~/lib/chat/tool-results";
 import { getToolEventPayload } from "~/lib/chat/utils";
 import { preprocessQwQResponse } from "~/lib/chat/utils/qwq";
 import type { ConversationManager } from "~/lib/conversationManager";
@@ -160,7 +160,7 @@ export async function createStreamWithPostProcessing(
 		userSettings,
 		app_url,
 		mode,
-		max_steps = 1,
+		max_steps,
 		current_step = 1,
 		tools,
 		enabled_tools,
@@ -535,7 +535,8 @@ export async function createStreamWithPostProcessing(
 					(message) =>
 						message.data?.errorCode === "UNKNOWN_TOOL" && message.data?.recoverable === true,
 				);
-				const withinStepBudget = Boolean(max_steps && current_step < max_steps);
+				const resolvedMaxSteps = resolveToolStepBudget(max_steps, toolCallsData, toolResults);
+				const withinStepBudget = Boolean(resolvedMaxSteps && current_step < resolvedMaxSteps);
 				if (!withinStepBudget && !recoveredUnknownTool) {
 					emitEvent(controller, "state", {
 						state: StreamState.DONE,
@@ -574,6 +575,7 @@ export async function createStreamWithPostProcessing(
 							nextStream,
 							{
 								...options,
+								max_steps: resolvedMaxSteps,
 								current_step: current_step + 1,
 								unknownToolRecoveryUsed: unknownToolRecoveryUsed || recoveredUnknownTool,
 								continuationRequest: continuationBase,

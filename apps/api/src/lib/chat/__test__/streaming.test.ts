@@ -344,6 +344,74 @@ describe("createStreamWithPostProcessing", () => {
 		expect(output).toContain('"tool_calls":[{"id":"call_recipe"');
 	});
 
+	it("continues a successful capability discovery without an explicit step budget", async () => {
+		const discoveryResult = {
+			role: "tool",
+			name: "discover_capabilities",
+			content: "A connected capability is ready.",
+			status: "success",
+			tool_call_id: "call_discovery",
+			data: { responseType: "hidden" },
+		};
+		chatMocks.handleToolCalls.mockImplementationOnce(
+			async (_completionId, _response, _manager, _request, options) => {
+				await options?.onToolResult?.(discoveryResult);
+				return [discoveryResult];
+			},
+		);
+		chatMocks.getAIResponse.mockResolvedValueOnce(
+			createProviderStream([
+				`data: ${JSON.stringify({ choices: [{ delta: { content: "Continuing now." } }] })}\n\n`,
+				"data: [DONE]\n\n",
+			]),
+		);
+		const conversationManager = {
+			getUsageLimits: vi.fn().mockResolvedValue(null),
+			add: vi.fn(),
+			get: vi.fn().mockResolvedValue([
+				{ role: "user", content: "Send an email" },
+				{ role: "tool", ...discoveryResult },
+			]),
+		};
+		const stream = await createStreamWithPostProcessing(
+			createProviderStream([
+				`data: ${JSON.stringify({
+					choices: [
+						{
+							delta: {
+								tool_calls: [
+									{
+										index: 0,
+										id: "call_discovery",
+										type: "function",
+										function: {
+											name: "discover_capabilities",
+											arguments: '{"query":"send an email"}',
+										},
+									},
+								],
+							},
+						},
+					],
+				})}\n\n`,
+				"data: [DONE]\n\n",
+			]),
+			{
+				env: { AI: {} } as any,
+				completion_id: "completion-discovery",
+				model: "gpt-5.4-mini",
+				provider: "openai",
+			},
+			conversationManager as any,
+		);
+
+		const output = await readStream(stream);
+
+		expect(chatMocks.getAIResponse).toHaveBeenCalledOnce();
+		expect(conversationManager.get).toHaveBeenCalledOnce();
+		expect(output).toContain("Continuing now.");
+	});
+
 	it("closes the stream without another model turn while connector approval is pending", async () => {
 		const pendingResult = {
 			role: "tool",

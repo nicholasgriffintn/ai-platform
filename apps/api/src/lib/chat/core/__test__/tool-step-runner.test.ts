@@ -102,4 +102,75 @@ describe("runNonStreamingToolSteps", () => {
 		expect(mocks.getAIResponse).toHaveBeenCalledTimes(1);
 		expect(result.response.tool_calls).toHaveLength(1);
 	});
+
+	it("continues a successful capability discovery with the default step budget", async () => {
+		const discoveryResponse = {
+			response: "",
+			tool_calls: [
+				{
+					id: "call-discovery",
+					function: { name: "discover_capabilities", arguments: "{}" },
+				},
+			],
+		};
+		mocks.handleToolCalls.mockResolvedValueOnce([
+			{
+				role: "tool",
+				name: "discover_capabilities",
+				content: "A connected capability is ready.",
+				status: "success",
+				tool_call_id: "call-discovery",
+			},
+		]);
+		mocks.getAIResponse.mockResolvedValueOnce({
+			response: "Continuing with the connected capability.",
+			tool_calls: [],
+		});
+
+		const result = await runNonStreamingToolSteps({
+			...createParams(),
+			response: discoveryResponse,
+			buildAssistantMessage: (response: typeof discoveryResponse) => ({
+				role: "assistant" as const,
+				content: response.response,
+				tool_calls: response.tool_calls,
+			}),
+		});
+
+		expect(mocks.getAIResponse).toHaveBeenCalledOnce();
+		expect(result.response.response).toBe("Continuing with the connected capability.");
+	});
+
+	it("does not continue capability discovery while setup is pending", async () => {
+		const discoveryResponse = {
+			response: "",
+			tool_calls: [
+				{
+					id: "call-discovery",
+					function: { name: "discover_capabilities", arguments: "{}" },
+				},
+			],
+		};
+		mocks.handleToolCalls.mockResolvedValueOnce([
+			{
+				role: "tool",
+				name: "discover_capabilities",
+				content: "Setup is required.",
+				status: "pending",
+				tool_call_id: "call-discovery",
+			},
+		]);
+
+		await runNonStreamingToolSteps({
+			...createParams(),
+			response: discoveryResponse,
+			buildAssistantMessage: (response: typeof discoveryResponse) => ({
+				role: "assistant" as const,
+				content: response.response,
+				tool_calls: response.tool_calls,
+			}),
+		});
+
+		expect(mocks.getAIResponse).not.toHaveBeenCalled();
+	});
 });

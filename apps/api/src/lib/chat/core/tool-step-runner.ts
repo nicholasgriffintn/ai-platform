@@ -1,7 +1,7 @@
 import type { ConversationManager } from "~/lib/conversationManager";
 import { getAIResponse } from "~/lib/chat/responses";
 import { handleToolCalls } from "~/lib/chat/tools";
-import { shouldContinueAfterToolResults } from "~/lib/chat/tool-results";
+import { resolveToolStepBudget, shouldContinueAfterToolResults } from "~/lib/chat/tool-results";
 import type { ChatCompletionParameters, IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -117,6 +117,7 @@ export async function runNonStreamingToolSteps<Response extends ToolStepResponse
 	const steps: NonStreamingToolStepSummary[] = [];
 	let totalUsage: ToolStepUsage | undefined;
 	let unknownToolRecoveryUsed = false;
+	let maxSteps = params.maxSteps;
 	const requestParams = params.requestParams;
 	const messages = Array.isArray(requestParams.messages) ? [...requestParams.messages] : [];
 
@@ -152,7 +153,8 @@ export async function runNonStreamingToolSteps<Response extends ToolStepResponse
 			usage: stepUsage,
 		});
 
-		const withinStepBudget = typeof params.maxSteps === "number" && currentStep < params.maxSteps;
+		maxSteps = resolveToolStepBudget(maxSteps, toolCalls, stepToolResponses);
+		const withinStepBudget = typeof maxSteps === "number" && currentStep < maxSteps;
 		const canContinue =
 			(withinStepBudget || recoveredUnknownTool) &&
 			shouldContinueAfterToolResults(toolCalls, stepToolResponses);

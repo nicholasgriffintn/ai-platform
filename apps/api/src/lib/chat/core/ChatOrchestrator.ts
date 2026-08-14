@@ -23,6 +23,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { isAbortError } from "~/utils/abort";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
+import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
 
 const logger = getLogger({ prefix: "lib/chat/core/ChatOrchestrator" });
 const RECIPE_CHAT_DEFAULT_MAX_STEPS = 4;
@@ -34,7 +35,11 @@ function resolveChatMaxSteps(chatOptions: CoreChatOptions): number | undefined {
 		return chatOptions.max_steps;
 	}
 
-	if (chatOptions.enabled_tools?.includes(RECIPE_CONNECTOR_TOOL_NAME)) {
+	const enabledFunctionTools = resolveEnabledFunctionToolNames(
+		chatOptions.enabled_tools,
+		chatOptions.context?.user,
+	);
+	if (enabledFunctionTools.has(RECIPE_CONNECTOR_TOOL_NAME)) {
 		return RECIPE_CONNECTOR_DEFAULT_MAX_STEPS;
 	}
 
