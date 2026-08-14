@@ -26,6 +26,12 @@ import { COMPOSIO_CONNECTOR_SESSION_HANDLE_PATTERN } from "~/lib/providers/capab
 import { retainComposioConnectorSession } from "~/services/apps/connectors/composio-run";
 import { resolveComposioRunAccount } from "~/services/apps/connectors/composio-run";
 import { redactSensitiveTokens } from "~/utils/redaction";
+import { requireProjectAccess } from "~/services/workspaces/access";
+import {
+	resolveAllowedProjectConnectorOperations,
+	resolveProjectRecipeConnectorScope,
+	type ProjectRecipeConnectorScope,
+} from "~/services/workspaces/projectRecipeConnectorScope";
 
 function buildConnectorToolError(params: {
 	provider: string;
@@ -141,10 +147,27 @@ export const use_recipe_connector: ApiToolDefinition = {
 		const savedConfiguration = getRecipeConfiguration(request.request?.options);
 		const activeRecipe = getActiveRecipeSetup(request.request?.options);
 		const projectId =
-			typeof request.request?.metadata?.project_id === "string"
-				? request.request.metadata.project_id
-				: undefined;
-		const allowedConnectorProviders = getRecipeAllowedConnectorProviders(request.request?.options);
+			request.memoryScope?.type === "project"
+				? request.memoryScope.projectId
+				: typeof request.request?.metadata?.project_id === "string"
+					? request.request.metadata.project_id
+					: undefined;
+		const recipeAllowedConnectorProviders = getRecipeAllowedConnectorProviders(
+			request.request?.options,
+		);
+		let projectConnectorScope: ProjectRecipeConnectorScope | undefined;
+		if (projectId) {
+			await requireProjectAccess(request.context, projectId);
+			const capabilities =
+				await request.context.repositories.workspaces.listProjectCapabilities(projectId);
+			projectConnectorScope = resolveProjectRecipeConnectorScope(capabilities);
+		}
+		const allowedConnectorProviders = projectConnectorScope
+			? projectConnectorScope.providers.filter(
+					(candidate) =>
+						!recipeAllowedConnectorProviders || recipeAllowedConnectorProviders.includes(candidate),
+				)
+			: recipeAllowedConnectorProviders;
 		if (allowedConnectorProviders && !allowedConnectorProviders.includes(provider)) {
 			return {
 				status: "error",
@@ -157,10 +180,15 @@ export const use_recipe_connector: ApiToolDefinition = {
 			};
 		}
 
-		const allowedConnectorOperations = getRecipeAllowedConnectorOperations(
+		const recipeAllowedConnectorOperations = getRecipeAllowedConnectorOperations(
 			request.request?.options,
 			provider,
 		);
+		const allowedConnectorOperations = resolveAllowedProjectConnectorOperations({
+			projectScope: projectConnectorScope,
+			provider,
+			recipeOperations: recipeAllowedConnectorOperations,
+		});
 		const providerConfig = getConnectorProviderConfig(provider);
 		const effectiveAllowedOperations =
 			allowedConnectorOperations ??

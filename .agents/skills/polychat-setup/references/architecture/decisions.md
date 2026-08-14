@@ -16,6 +16,7 @@ Read the relevant accepted records before changing product structure, ownership,
 - [0012](decisions/0012-composio-recipe-connector-authority.md): Treat Composio's configured catalogue as recipe connector authority without bespoke fallbacks.
 - [0013](decisions/0013-composio-run-approval-and-event-boundaries.md): Bind sessions, approvals, files, and events to exact local authority and fail closed on ambiguity.
 - [0014](decisions/0014-frontend-package-proposal.md): Proposed extraction of public frontend packages; consult its status before treating it as accepted architecture.
+- [0015](decisions/0015-model-driven-capability-discovery.md): Let models discover ready and setup-required capabilities through one read-only, scope-aware tool and render setup in the existing tool response surface.
 
 [context.md](context.md) holds the current domain vocabulary, workspace map, seams, and data flows.
 

@@ -6,6 +6,7 @@ import { SandboxView } from "./Views/SandboxView";
 import { TutorView } from "./Views/TutorView";
 import { WeatherView } from "./Views/WeatherView";
 import { WebSearchView } from "./Views/WebSearchView";
+import { CapabilityDiscoveryView } from "./Views/CapabilityDiscoveryView";
 
 interface CustomViewRendererProps {
 	data: any;
@@ -16,6 +17,7 @@ interface CustomViewRendererProps {
 type CustomViewRenderer = (props: CustomViewRendererProps) => ReactNode;
 
 const CUSTOM_VIEW_RENDERERS: Record<string, CustomViewRenderer> = {
+	discover_capabilities: ({ data }) => <CapabilityDiscoveryView data={data} />,
 	web_search: ({ data, embedded, onToolInteraction }) => (
 		<WebSearchView data={data} embedded={embedded} onToolInteraction={onToolInteraction} />
 	),

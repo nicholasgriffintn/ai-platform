@@ -47,6 +47,7 @@ export function buildToolRequestContext(params: {
 			mode,
 			date: new Date().toISOString().slice(0, 10),
 			approved_tools: chatOptions.approved_tools ?? [],
+			enabled_tools: chatOptions.enabled_tools ?? [],
 			tool_permissions_map: buildToolPermissionsMap(chatOptions.tools),
 			options: chatOptions.options || {},
 			current_agent_id: chatOptions.current_agent_id,

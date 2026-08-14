@@ -491,6 +491,7 @@ export async function createStreamWithPostProcessing(
 							mode: options.mode,
 							date: new Date().toISOString().split("T")[0],
 							approved_tools: approved_tools,
+							enabled_tools,
 							options: options.requestOptions || {},
 							current_agent_id: options.current_agent_id,
 							delegation_stack: options.delegation_stack,

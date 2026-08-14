@@ -119,7 +119,7 @@ export function buildRecipeInvocationRuntime(params: {
 	};
 }
 
-function buildAllowedConnectorProviders(recipe: AssistantRecipe): RecipeConnectorProvider[] {
+export function buildAllowedConnectorProviders(recipe: AssistantRecipe): RecipeConnectorProvider[] {
 	const providers = new Set<RecipeConnectorProvider>();
 	for (const integration of recipe.integrations) {
 		const parsed = recipeConnectorProviderSchema.safeParse(integration.providerId);
@@ -131,7 +131,7 @@ function buildAllowedConnectorProviders(recipe: AssistantRecipe): RecipeConnecto
 	return Array.from(providers);
 }
 
-function buildAllowedConnectorOperations(recipe: AssistantRecipe): Record<string, string[]> {
+export function buildAllowedConnectorOperations(recipe: AssistantRecipe): Record<string, string[]> {
 	const operationsByProvider = new Map<RecipeConnectorProvider, Set<string>>();
 
 	for (const integration of recipe.integrations) {

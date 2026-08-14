@@ -191,6 +191,7 @@ export class ChatOrchestrator {
 			chatOptions: {
 				...chatOptions,
 				approved_tools,
+				enabled_tools,
 				options: prepared.requestOptions,
 			},
 			input: messageWithContext,

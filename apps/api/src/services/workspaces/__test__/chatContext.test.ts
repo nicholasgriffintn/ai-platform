@@ -3,6 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ErrorType } from "~/utils/errors";
 import { applyProjectCodingEnvironment, resolveProjectChatContext } from "../chatContext";
+import {
+	resolveAllowedProjectConnectorOperations,
+	resolveProjectRecipeConnectorScope,
+} from "../projectRecipeConnectorScope";
 
 function createContext({
 	conversation = null,
@@ -171,6 +175,30 @@ describe("project chat context", () => {
 			"web_fetch",
 			"get_weather",
 		]);
+	});
+
+	it("limits direct connector execution to providers and operations from project recipes", () => {
+		const scope = resolveProjectRecipeConnectorScope([
+			{ kind: "recipe", capability_id: "gmail" },
+			{ kind: "recipe", capability_id: "unknown-recipe" },
+			{ kind: "tool", capability_id: "web_search" },
+		]);
+
+		expect(scope.providers).toEqual(["gmail"]);
+		expect(scope.operationsByProvider.gmail).toEqual([
+			"GMAIL_FETCH_EMAILS",
+			"GMAIL_CREATE_EMAIL_DRAFT",
+		]);
+	});
+
+	it("fails closed when a project recipe has no explicit connector operation allowlist", () => {
+		expect(
+			resolveAllowedProjectConnectorOperations({
+				projectScope: { providers: ["gmail"], operationsByProvider: {} },
+				provider: "gmail",
+				recipeOperations: undefined,
+			}),
+		).toEqual([]);
 	});
 
 	it("rejects moving an existing personal conversation into a project", async () => {

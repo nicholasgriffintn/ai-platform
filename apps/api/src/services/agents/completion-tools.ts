@@ -6,7 +6,6 @@ import { add_reasoning_step } from "~/services/functions/reasoning";
 import { compose_functions, if_then_else, parallel_execute } from "~/services/functions/workflow";
 import { request_approval, ask_user } from "~/services/functions/human_in_the_loop";
 import { retry_with_backoff, fallback } from "~/services/functions/error_recovery";
-import { search_functions, get_function_schema } from "~/services/functions/discovery";
 import {
 	delegateToTeamMember,
 	delegateToTeamMemberByRole,
@@ -36,8 +35,6 @@ const CORE_AGENT_TOOLS: ApiToolDefinition[] = [
 	ask_user,
 	retry_with_backoff,
 	fallback,
-	search_functions,
-	get_function_schema,
 ];
 
 type CompletionAgent = Pick<

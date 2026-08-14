@@ -202,17 +202,11 @@ export const FUNCTION_APP_METADATA: Record<string, DynamicAppMetadata> = {
 		theme: "slate",
 		tags: ["api", "integration"],
 	},
-	search_functions: {
+	discover_capabilities: {
 		category: "System & Meta",
 		icon: "search-code",
 		theme: "slate",
-		tags: ["discovery", "system", "meta"],
-	},
-	get_function_schema: {
-		category: "System & Meta",
-		icon: "file-json",
-		theme: "slate",
-		tags: ["schema", "system", "meta"],
+		tags: ["capability", "discovery", "system", "meta"],
 	},
 	retry_with_backoff: {
 		category: "System & Meta",

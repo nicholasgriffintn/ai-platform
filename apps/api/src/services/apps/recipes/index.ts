@@ -7,6 +7,7 @@ import type {
 	RecipeInstallation,
 	RecipeInstallationTrigger,
 	RecipeInstallationUpdateRequest,
+	RecipeConnectorManifest,
 } from "@ngriffin_uk/polychat-schemas";
 import { recipeConfigurationSchema } from "@ngriffin_uk/polychat-schemas";
 
@@ -41,6 +42,7 @@ interface RecipeListOptions {
 	context?: ServiceContext;
 	userId?: number;
 	requestUrl?: string;
+	connectors?: readonly RecipeConnectorManifest[];
 }
 
 interface RecipeInstallOptions extends RecipeListOptions {
@@ -93,6 +95,7 @@ async function getRecipeConnectionContext({
 	context,
 	userId,
 	requestUrl,
+	connectors: providedConnectors,
 }: RecipeListOptions): Promise<RecipeConnectionContext> {
 	const statusByProviderId = new Map<string, RecipeConnectionStatus>();
 	const setupUrlByProviderId = new Map<string, string | undefined>();
@@ -101,7 +104,8 @@ async function getRecipeConnectionContext({
 		return { statusByProviderId, setupUrlByProviderId };
 	}
 
-	const { connectors } = await listRecipeConnectors({ context, userId, requestUrl });
+	const connectors =
+		providedConnectors ?? (await listRecipeConnectors({ context, userId, requestUrl })).connectors;
 	for (const connector of connectors) {
 		statusByProviderId.set(
 			connector.id,

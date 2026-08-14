@@ -1,13 +1,10 @@
 import { RefreshCcw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
-import type {
-	RecipeConnectorManifest,
-	RecipeConnectorProvider,
-} from "@ngriffin_uk/polychat-schemas";
+import type { RecipeConnectorManifest } from "@ngriffin_uk/polychat-schemas";
 
 import { EmptyState } from "~/components/Core/EmptyState";
 import { ModelIcon } from "~/components/ModelIcon";
@@ -26,22 +23,15 @@ import {
 	RECIPE_CONNECTORS_QUERY_KEY,
 	useDisconnectRecipeConnector,
 	useRecipeConnectors,
-	useStartRecipeConnector,
 } from "~/hooks/useConnectors";
+import { useConnectorSetup } from "~/hooks/useConnectorSetup";
 import { useUser } from "~/hooks/useUser";
 import { formatProviderLabel } from "~/lib/provider-display";
-import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import type { ProviderSetting } from "~/lib/api/services/user-service";
-import {
-	completeConnectorAuthPopup,
-	navigateConnectorAuthPopup,
-	openConnectorAuthPopup,
-	waitForConnectorAuthPopup,
-} from "~/lib/connector-auth-popup";
+import { completeConnectorAuthPopup } from "~/lib/connector-auth-popup";
+import { ConnectorSetupDialogs } from "~/components/Connectors/ConnectorSetupDialogs";
 import { ConnectorDetailsModal } from "../Connectors/ConnectorDetailsModal";
 import { ConnectorLogo } from "../Connectors/ConnectorLogo";
-import { ConnectorApiKeyModal } from "../Modals/ConnectorApiKeyModal";
-import { ConnectorAuthConfigModal } from "../Modals/ConnectorAuthConfigModal";
 import { ProviderApiKeyModal } from "../Modals/ProviderApiKeyModal";
 import { ProviderCatalogue, type ProviderCatalogueItem } from "../Providers/ProviderCatalogue";
 
@@ -54,19 +44,6 @@ interface ProviderModalState {
 interface ProviderDeleteState {
 	providerId: string;
 	providerName: string;
-}
-
-interface ConnectorApiKeyModalState {
-	open: boolean;
-	providerId: RecipeConnectorProvider | null;
-	providerName: string;
-	credentialLabel?: string;
-}
-
-interface ConnectorAuthConfigModalState {
-	providerId: RecipeConnectorProvider | null;
-	providerName: string;
-	configs: NonNullable<RecipeConnectorManifest["authConfigs"]>;
 }
 
 type ProviderTypeFilter = "all" | "connected" | "chat" | "messaging" | "connector";
@@ -106,27 +83,10 @@ export function ProfileProvidersTab() {
 	const [providerToDelete, setProviderToDelete] = useState<ProviderDeleteState | null>(null);
 	const [connectorToDelete, setConnectorToDelete] = useState<ProviderDeleteState | null>(null);
 	const [selectedConnector, setSelectedConnector] = useState<RecipeConnectorManifest | null>(null);
-	const [connectorApiKeyModal, setConnectorApiKeyModal] = useState<ConnectorApiKeyModalState>({
-		open: false,
-		providerId: null,
-		providerName: "",
-	});
-	const [connectorAuthConfigModal, setConnectorAuthConfigModal] =
-		useState<ConnectorAuthConfigModalState>({
-			providerId: null,
-			providerName: "",
-			configs: [],
-		});
-	const [connectingProviderId, setConnectingProviderId] = useState<RecipeConnectorProvider | null>(
-		null,
-	);
-	const connectorPopupRef = useRef<Window | null>(null);
-	const connectorPopupAbortRef = useRef<AbortController | null>(null);
-	const isMountedRef = useRef(true);
 	const providerType = readProviderTypeFilter(searchParams.get("type"));
 	const [providerSearch, setProviderSearch] = useState("");
 	const { data: connectorsData, isLoading: isLoadingConnectors } = useRecipeConnectors();
-	const startConnector = useStartRecipeConnector();
+	const connectorSetup = useConnectorSetup();
 	const disconnectConnector = useDisconnectRecipeConnector();
 	const connectors = connectorsData?.connectors ?? [];
 	const configuredProviderCount =
@@ -151,17 +111,6 @@ export function ProfileProvidersTab() {
 	useEffect(() => {
 		completeConnectorAuthPopup(searchParams);
 	}, [searchParams]);
-
-	useEffect(() => {
-		isMountedRef.current = true;
-		return () => {
-			isMountedRef.current = false;
-			connectorPopupAbortRef.current?.abort();
-			if (connectorPopupRef.current && !connectorPopupRef.current.closed) {
-				connectorPopupRef.current.close();
-			}
-		};
-	}, []);
 
 	useEffect(() => {
 		const requestedConnectorId = searchParams.get("connector");
@@ -227,95 +176,6 @@ export function ProfileProvidersTab() {
 		setProviderToDelete(null);
 	};
 
-	const startComposioConnector = async (
-		connector: RecipeConnectorManifest,
-		authConfigId?: string,
-	) => {
-		if (connectorPopupRef.current && !connectorPopupRef.current.closed) {
-			connectorPopupRef.current.focus();
-			toast.info("Finish the current connector setup before starting another.");
-			return;
-		}
-
-		const popup = openConnectorAuthPopup();
-		if (!popup) {
-			toast.error("Allow popups for Polychat to connect this provider.");
-			return;
-		}
-		const abortController = new AbortController();
-		connectorPopupRef.current = popup;
-		connectorPopupAbortRef.current = abortController;
-		setConnectingProviderId(connector.id);
-		const toastId = toast.loading(`Waiting for ${connector.name}`, {
-			description: "Complete the connection in the popup window.",
-		});
-
-		try {
-			const completion = waitForConnectorAuthPopup({
-				popup,
-				provider: connector.id,
-				signal: abortController.signal,
-			});
-			const response = await startConnector.mutateAsync({
-				provider: connector.id,
-				authConfigId,
-				returnTo: "/profile?tab=providers&type=connector",
-			});
-			if (!popup.closed) navigateConnectorAuthPopup(popup, response.authorizationUrl);
-			const outcome = await completion;
-			if (outcome === "aborted") {
-				toast.dismiss(toastId);
-				return;
-			}
-			if (outcome === "connected") {
-				await queryClient.invalidateQueries({ queryKey: RECIPE_CONNECTORS_QUERY_KEY });
-				toast.success(`${connector.name} connected`, { id: toastId });
-				return;
-			}
-			toast.error(
-				outcome === "timed_out"
-					? `${connector.name} connection timed out.`
-					: `${connector.name} connection window was closed.`,
-				{ id: toastId },
-			);
-		} catch (error) {
-			abortController.abort();
-			if (!popup.closed) popup.close();
-			console.error(error);
-			toast.error(error instanceof ApiError ? error.message : "Could not start connector setup.", {
-				id: toastId,
-			});
-		} finally {
-			if (connectorPopupRef.current === popup) connectorPopupRef.current = null;
-			if (connectorPopupAbortRef.current === abortController) {
-				connectorPopupAbortRef.current = null;
-			}
-			if (isMountedRef.current) setConnectingProviderId(null);
-		}
-	};
-
-	const handleConnectConnector = async (connector: RecipeConnectorManifest) => {
-		if (connector.authType === "api_key") {
-			setConnectorApiKeyModal({
-				open: true,
-				providerId: connector.id,
-				providerName: connector.name,
-				credentialLabel: connector.credentialLabel,
-			});
-			return;
-		}
-		const authConfigs = connector.authConfigs ?? [];
-		if (authConfigs.length > 1) {
-			setConnectorAuthConfigModal({
-				providerId: connector.id,
-				providerName: connector.name,
-				configs: authConfigs,
-			});
-			return;
-		}
-		await startComposioConnector(connector, authConfigs[0]?.id);
-	};
-
 	const handleDisconnectConnector = async () => {
 		if (!connectorToDelete) {
 			return;
@@ -331,15 +191,6 @@ export function ProfileProvidersTab() {
 		await disconnectConnector.mutateAsync(parsedProvider.data);
 		await queryClient.invalidateQueries({ queryKey: RECIPE_CONNECTORS_QUERY_KEY });
 		setConnectorToDelete(null);
-	};
-
-	const handleCloseConnectorApiKeyModal = (open: boolean) => {
-		setConnectorApiKeyModal({
-			open,
-			providerId: open ? connectorApiKeyModal.providerId : null,
-			providerName: open ? connectorApiKeyModal.providerName : "",
-			credentialLabel: open ? connectorApiKeyModal.credentialLabel : undefined,
-		});
 	};
 
 	const handleProviderTypeChange = (value: string) => {
@@ -378,12 +229,12 @@ export function ProfileProvidersTab() {
 			id: `connector:${connector.id}`,
 			name: connector.name,
 			description:
-				connectingProviderId === connector.id
+				connectorSetup.connectingProviderId === connector.id
 					? "Waiting for connection in the popup…"
 					: connector.description,
 			category: connector.categories?.[0]?.name ?? "Integrations",
 			connected: connector.status === "connected",
-			connecting: connectingProviderId === connector.id,
+			connecting: connectorSetup.connectingProviderId === connector.id,
 			type: "connector",
 			icon: <ConnectorLogo connector={connector} />,
 			onSelect: () => setSelectedConnector(connector),
@@ -503,45 +354,19 @@ export function ProfileProvidersTab() {
 				}
 				isDeleting={isDeletingProviderApiKey}
 			/>
-			<ConnectorApiKeyModal
-				open={connectorApiKeyModal.open}
-				onOpenChange={handleCloseConnectorApiKeyModal}
-				providerId={connectorApiKeyModal.providerId}
-				providerName={connectorApiKeyModal.providerName}
-				credentialLabel={connectorApiKeyModal.credentialLabel}
-				onStored={() => queryClient.invalidateQueries({ queryKey: RECIPE_CONNECTORS_QUERY_KEY })}
-			/>
-			<ConnectorAuthConfigModal
-				configs={connectorAuthConfigModal.configs}
-				providerName={connectorAuthConfigModal.providerName}
-				isLoading={startConnector.isPending}
-				onOpenChange={(open) => {
-					if (!open) {
-						setConnectorAuthConfigModal({ providerId: null, providerName: "", configs: [] });
-					}
-				}}
-				onSelect={(authConfigId) => {
-					const connector = connectors.find(
-						(item) => item.id === connectorAuthConfigModal.providerId,
-					);
-					if (connector) {
-						setConnectorAuthConfigModal({ providerId: null, providerName: "", configs: [] });
-						void startComposioConnector(connector, authConfigId);
-					}
-				}}
-			/>
+			<ConnectorSetupDialogs controller={connectorSetup} />
 			<ConnectorDetailsModal
 				connector={selectedConnector}
 				onOpenChange={(open) => !open && setSelectedConnector(null)}
 				onConnect={(connector) => {
 					setSelectedConnector(null);
-					void handleConnectConnector(connector);
+					void connectorSetup.connect(connector);
 				}}
 				onDisconnect={(connector) => {
 					setSelectedConnector(null);
 					setConnectorToDelete({ providerId: connector.id, providerName: connector.name });
 				}}
-				isStarting={startConnector.isPending}
+				isStarting={connectorSetup.isStarting}
 				isDisconnecting={disconnectConnector.isPending}
 			/>
 			<ConfirmationDialog

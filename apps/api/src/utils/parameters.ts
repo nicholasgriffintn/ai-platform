@@ -1,13 +1,12 @@
 import { listFunctionTools } from "~/services/functions";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { ChatCompletionParameters } from "~/types";
+import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { omitNullishValues } from "~/utils/objects";
 import { resolveRequestUser } from "~/utils/requestUser";
 import { resolveReasoningModel } from "../lib/providers/models/reasoning";
 import { formatToolCalls } from "../lib/chat/tools";
-
-const AUTO_ENABLED_SIGNED_IN_PRO_TOOLS = new Set(["trigger_recipe"]);
 
 /**
  * Restricts max_tokens to the model's configured maximum
@@ -253,7 +252,18 @@ export function createCommonParameters(
  * @returns Tools configuration object to merge with parameters
  */
 export function getToolsForProvider(
-	params: ChatCompletionParameters,
+	params: Pick<
+		ChatCompletionParameters,
+		| "model"
+		| "disable_functions"
+		| "response_format"
+		| "enabled_tools"
+		| "options"
+		| "tools"
+		| "parallel_tool_calls"
+		| "tool_choice"
+		| "context"
+	>,
 	modelConfig: any,
 	providerName: string,
 ): { tools?: any[]; parallel_tool_calls?: boolean; tool_choice?: any } {
@@ -268,13 +278,8 @@ export function getToolsForProvider(
 	}
 
 	try {
-		const enabledTools = new Set(params.enabled_tools || []);
 		const user = resolveRequestUser(params);
-		if (user?.id && user.plan_id === "pro") {
-			for (const toolName of AUTO_ENABLED_SIGNED_IN_PRO_TOOLS) {
-				enabledTools.add(toolName);
-			}
-		}
+		const enabledTools = resolveEnabledFunctionToolNames(params.enabled_tools, user);
 		let tools: any[] = [];
 		const availableTools = listFunctionTools({
 			selectedConnectorProvider: params.options?.connector?.provider,
@@ -284,7 +289,9 @@ export function getToolsForProvider(
 			const providedTools = params.tools;
 			const filteredFunctions = availableTools
 				.filter((func) => enabledTools.has(func.name))
-				.filter((func) => modelConfig?.supportsSearchGrounding && func.name === "web_search");
+				.filter(
+					(func) => func.name !== "web_search" || Boolean(modelConfig?.supportsSearchGrounding),
+				);
 			const availableToolDeclarations = formatToolCalls(providerName, filteredFunctions);
 			tools = [...availableToolDeclarations, ...providedTools];
 		} else {

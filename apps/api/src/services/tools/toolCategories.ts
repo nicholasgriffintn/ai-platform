@@ -37,13 +37,12 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
 	Automation: [
 		"call_api",
 		"compose_functions",
+		"discover_capabilities",
 		"fallback",
-		"get_function_schema",
 		"if_then_else",
 		"parallel_execute",
 		"retry_with_backoff",
 		"run_pashi_tools",
-		"search_functions",
 		"search_pashi_tools",
 	],
 	Collaboration: [

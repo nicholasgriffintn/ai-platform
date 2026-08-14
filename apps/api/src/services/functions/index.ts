@@ -7,7 +7,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { analyse_hacker_news } from "./analyse_hacker_news";
 import { call_api } from "./api_call";
-import { search_functions, get_function_schema } from "./discovery";
+import { discover_capabilities } from "./discover_capabilities";
 import { retry_with_backoff, fallback } from "./error_recovery";
 import { extract_content } from "./extract_content";
 import { create_note } from "./create_note";
@@ -92,8 +92,7 @@ const functionDefinitions: ApiToolDefinition[] = [
 	delegateToTeamMember,
 	delegateToTeamMemberByRole,
 	getTeamMembers,
-	search_functions,
-	get_function_schema,
+	discover_capabilities,
 	retry_with_backoff,
 	fallback,
 	compose_functions,

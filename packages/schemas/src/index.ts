@@ -67,6 +67,7 @@ export * from "./auth";
 export * from "./chat";
 export * from "./chat-mode";
 export * from "./chat-stream";
+export * from "./capability-discovery";
 export * from "./compaction-status";
 export * from "./conversation-replacement";
 export * from "./conversation-title";

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { CAPABILITY_DISCOVERY_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
 import { listFunctionTools, resolveFunctionTool, toolRegistry } from "~/services/functions";
 
 describe("functions tool registry", () => {
@@ -29,5 +30,15 @@ describe("functions tool registry", () => {
 		expect(names).not.toContain("posthog_list_organization_projects");
 		expect(names).not.toContain("polymarket_us_create_order");
 		expect(names.some((name) => name.startsWith("zeplin_"))).toBe(false);
+	});
+
+	it("registers capability discovery as a default read-only tool", () => {
+		const discovery = resolveFunctionTool(CAPABILITY_DISCOVERY_TOOL_NAME);
+		const names = listFunctionTools().map((tool) => tool.name);
+
+		expect(discovery.isDefault).toBe(true);
+		expect(discovery.permissions).toEqual(["read"]);
+		expect(names).not.toContain("search_functions");
+		expect(names).not.toContain("get_function_schema");
 	});
 });
