@@ -34,6 +34,7 @@ export interface MessageActionsProps {
 	copied: boolean;
 	copyMessageToClipboard: () => void;
 	feedbackState: "none" | "liked" | "disliked";
+	canSubmitFeedback: boolean;
 	isSubmittingFeedback: boolean;
 	submitFeedback: (value: 1 | -1) => Promise<void>;
 	isSharedView: boolean;
@@ -56,6 +57,7 @@ export const MessageActions = ({
 	copied,
 	copyMessageToClipboard,
 	feedbackState,
+	canSubmitFeedback,
 	isSubmittingFeedback,
 	submitFeedback,
 	isSharedView = false,
@@ -325,7 +327,7 @@ export const MessageActions = ({
 					<MessageInfo message={message} buttonClassName={messageActionButtonClassName} />
 				)}
 			</div>
-			{!isSharedView && message.role !== "user" && message.log_id && (
+			{canSubmitFeedback && !isSharedView && message.role !== "user" && message.log_id && (
 				<div className="flex items-center space-x-1">
 					<span className="text-xs text-zinc-600 dark:text-zinc-300">Helpful?</span>
 					<Button

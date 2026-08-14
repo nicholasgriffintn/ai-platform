@@ -295,6 +295,8 @@ export class ProfilePage extends BasePage {
 		await form
 			.getByLabel("System Prompt", { exact: true })
 			.fill("Answer release questions concisely.");
+		await form.getByLabel("Temperature", { exact: true }).fill("0.2");
+		await form.getByLabel("Max Steps", { exact: true }).fill("7");
 		await form.getByRole("button", { name: "Create Agent" }).click();
 		await form.waitFor({ state: "hidden" });
 
@@ -304,6 +306,11 @@ export class ProfilePage extends BasePage {
 		await agentCard.waitFor();
 		await agentCard.getByRole("button", { name: "Edit" }).click();
 		const editForm = this.page.getByRole("dialog", { name: "Edit Agent" });
+		await editForm.getByRole("tab", { name: "Model", exact: true }).click();
+		const persistedSettings = {
+			temperature: await editForm.getByLabel("Temperature", { exact: true }).inputValue(),
+			maxSteps: await editForm.getByLabel("Max Steps", { exact: true }).inputValue(),
+		};
 		await editForm.getByRole("tab", { name: "Basic", exact: true }).click();
 		await editForm.getByLabel("Description", { exact: true }).fill(`${description} Updated.`);
 		const updateResponse = this.page.waitForResponse(
@@ -322,6 +329,8 @@ export class ProfilePage extends BasePage {
 		await confirmation.getByRole("button", { name: "Delete Agent" }).click();
 		await confirmation.waitFor({ state: "hidden" });
 		await agentCard.waitFor({ state: "detached" });
+
+		return persistedSettings;
 	}
 
 	async createSourceCollectionWithSource(

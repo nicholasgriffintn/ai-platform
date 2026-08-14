@@ -208,7 +208,7 @@ export function useDeleteChat() {
 
 export function useDeleteAllLocalChats() {
 	const queryClient = useQueryClient();
-	const { setCurrentConversationId } = useChatStore();
+	const { setCurrentConversationId, user } = useChatStore();
 
 	return useMutation({
 		mutationFn: async () => {
@@ -216,7 +216,7 @@ export function useDeleteAllLocalChats() {
 		},
 		onSuccess: () => {
 			setCurrentConversationId(undefined);
-			queryClient.setQueriesData({ queryKey: [CHATS_QUERY_KEY, "local"] }, []);
+			queryClient.setQueryData([CHATS_QUERY_KEY, "local", getLocalChatScope(user?.id)], []);
 		},
 	});
 }

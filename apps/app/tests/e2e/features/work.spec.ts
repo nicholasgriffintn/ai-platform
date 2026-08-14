@@ -198,7 +198,7 @@ test.describe("Work experience", () => {
 			await workPage.removeCapability("Note Taker");
 		});
 
-		test("enables and completes a rich note experience", async ({ page, workPage }) => {
+		test("enables and completes a rich note experience", async ({ workPage }) => {
 			await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
 			await workPage.enableCapabilityAfterReload("Note Taker");
 			await workPage.createUpdateAndDeleteProjectNote(
@@ -209,7 +209,7 @@ test.describe("Work experience", () => {
 			await expect(workPage.getCapabilityAddButton("Note Taker")).toBeVisible();
 		});
 
-		test("enables and completes a Strudel pattern experience", async ({ page, workPage }) => {
+		test("enables and completes a Strudel pattern experience", async ({ workPage }) => {
 			await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
 			await workPage.enableCapabilityAfterReload("Strudel Music Patterns");
 			await workPage.createUpdateAndDeleteStrudelPattern(
@@ -231,7 +231,7 @@ test.describe("Work experience", () => {
 			await expect(workPage.getCapabilityAddButton("Article Processor")).toBeVisible();
 		});
 
-		test("enables and uploads a podcast project asset", async ({ page, workPage }) => {
+		test("enables and uploads a podcast project asset", async ({ workPage }) => {
 			await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
 			await workPage.enableCapabilityAfterReload("Podcast Processor");
 			await workPage.uploadPodcastWithoutOptionalProcessing(

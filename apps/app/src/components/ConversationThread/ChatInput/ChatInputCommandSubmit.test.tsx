@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -111,16 +112,21 @@ describe("ChatInput command submission", () => {
 
 	it("submits /compact on Enter even when cursor state still points at a partial command", () => {
 		const handleSubmit = vi.fn();
+		const queryClient = new QueryClient({
+			defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+		});
 
 		render(
-			<ChatInput
-				controller={new AbortController()}
-				handleSubmit={handleSubmit}
-				isLoading={false}
-				onTranscribe={vi.fn()}
-				streamStarted={false}
-				hideDefaultControls={true}
-			/>,
+			<QueryClientProvider client={queryClient}>
+				<ChatInput
+					controller={new AbortController()}
+					handleSubmit={handleSubmit}
+					isLoading={false}
+					onTranscribe={vi.fn()}
+					streamStarted={false}
+					hideDefaultControls={true}
+				/>
+			</QueryClientProvider>,
 		);
 
 		const input = screen.getByRole("textbox", { name: "Message input" });

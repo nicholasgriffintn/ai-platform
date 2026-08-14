@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { authService } from "~/lib/api/auth-service";
@@ -30,20 +30,41 @@ const storeState = vi.hoisted(() => ({
 		} | null,
 	},
 }));
+const storeUpdates = vi.hoisted(() => ({
+	version: 0,
+	listeners: new Set<() => void>(),
+}));
+
+function publishStoreState(value: typeof storeState.value) {
+	storeState.value = value;
+	storeUpdates.version += 1;
+	storeUpdates.listeners.forEach((listener) => listener());
+}
 
 vi.mock("~/state/stores/chatStore", () => ({
-	useChatStore: () => ({
-		...storeState.value,
-		setHasApiKey,
-		setIsAuthenticated,
-		setIsAuthenticationLoading,
-		setIsPro,
-		setLocalOnlyMode,
-		setTemporaryChatsDefault,
-		setAuthenticatedUserConfiguration,
-		setUserSettings,
-		clearAuthenticatedUserConfiguration,
-	}),
+	useChatStore: () => {
+		useSyncExternalStore(
+			(listener) => {
+				storeUpdates.listeners.add(listener);
+				return () => storeUpdates.listeners.delete(listener);
+			},
+			() => storeUpdates.version,
+			() => storeUpdates.version,
+		);
+
+		return {
+			...storeState.value,
+			setHasApiKey,
+			setIsAuthenticated,
+			setIsAuthenticationLoading,
+			setIsPro,
+			setLocalOnlyMode,
+			setTemporaryChatsDefault,
+			setAuthenticatedUserConfiguration,
+			setUserSettings,
+			clearAuthenticatedUserConfiguration,
+		};
+	},
 }));
 
 vi.mock("~/state/stores/usageStore", () => ({
@@ -88,10 +109,10 @@ describe("useAuthStatus", () => {
 		clearAuthenticatedUserConfiguration.mockReset();
 		setUsageLimits.mockReset();
 		setIsAuthenticationLoading.mockImplementation((isAuthenticationLoading: boolean) => {
-			storeState.value = {
+			publishStoreState({
 				...storeState.value,
 				isAuthenticationLoading,
-			};
+			});
 		});
 		setAuthenticatedUserConfiguration.mockImplementation(
 			({
@@ -102,37 +123,37 @@ describe("useAuthStatus", () => {
 				user: typeof storeState.value.user;
 				userSettings: typeof storeState.value.userSettings;
 			}) => {
-				storeState.value = {
+				publishStoreState({
 					...storeState.value,
 					isAuthenticated: true,
 					isAuthenticationLoading: false,
 					user,
 					userSettings,
-				};
+				});
 			},
 		);
 		setUserSettings.mockImplementation((userSettings: typeof storeState.value.userSettings) => {
-			storeState.value = {
+			publishStoreState({
 				...storeState.value,
 				userSettings,
-			};
+			});
 		});
 		clearAuthenticatedUserConfiguration.mockImplementation(() => {
-			storeState.value = {
+			publishStoreState({
 				currentConversationId: undefined,
 				isAuthenticated: false,
 				isAuthenticationLoading: false,
 				user: null,
 				userSettings: null,
-			};
+			});
 		});
-		storeState.value = {
+		publishStoreState({
 			currentConversationId: undefined,
 			isAuthenticated: false,
 			isAuthenticationLoading: true,
 			user: null,
 			userSettings: null,
-		};
+		});
 
 		currentUserSettings = {
 			id: "settings-1",

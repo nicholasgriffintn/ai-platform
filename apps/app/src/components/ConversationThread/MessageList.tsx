@@ -229,6 +229,7 @@ export const MessageList = ({
 									) : (
 										<ChatMessage
 											conversationId={currentConversationId}
+											canSubmitFeedback={Boolean(conversation && !conversation.isLocalOnly)}
 											message={message}
 											modelConfig={getModelByReference(modelReferences, message.model)}
 											onToolInteraction={onToolInteraction}

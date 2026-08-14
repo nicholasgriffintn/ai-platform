@@ -48,13 +48,10 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
 			expect(await homePage.copyLatestAssistantMessage()).toContain(editedContent);
 			await homePage.retryLatestAssistantMessage();
 			await expect(homePage.getLatestAssistantMessage()).toContainText(editedContent);
-			const feedbackResponse = await homePage.submitLatestAssistantFeedback("positive");
 			if (persona !== "pro") {
-				expect(feedbackResponse.status()).toBe(persona === "logged-out" ? 401 : 404);
-				await expect(
-					homePage.getLatestAssistantMessage().getByRole("button", { name: "Thumbs up" }),
-				).toBeEnabled();
+				await expect(homePage.getLatestAssistantFeedbackButton("positive")).toHaveCount(0);
 			} else {
+				const feedbackResponse = await homePage.submitLatestAssistantFeedback("positive");
 				expect(feedbackResponse.status()).toBe(200);
 				await expect(
 					homePage.getLatestAssistantMessage().getByRole("button", { name: "Feedback submitted" }),
@@ -129,7 +126,7 @@ for (const persona of ["logged-out", "free"] as const) {
 	test.describe(`Local history as ${persona}`, () => {
 		test.use({ persona });
 
-		test("persists and reopens a conversation after reload", async ({ homePage, page }) => {
+		test("persists and reopens a conversation after reload", async ({ homePage }) => {
 			await homePage.navigate("/chat");
 			await homePage.selectModel(TEXT_MODEL);
 			await homePage.sendMessage(`Persist this ${persona} release conversation`);
@@ -354,7 +351,7 @@ test.describe("Pro message attachments", () => {
 		await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
 	});
 
-	test("persists a server-backed conversation across reload", async ({ homePage, page }) => {
+	test("persists a server-backed conversation across reload", async ({ homePage }) => {
 		await homePage.navigate("/chat");
 		await homePage.selectModel(TEXT_MODEL);
 		await homePage.sendMessage("Persist this Pro release conversation");

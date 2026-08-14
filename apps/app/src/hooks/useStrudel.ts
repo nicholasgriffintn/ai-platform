@@ -74,11 +74,8 @@ export const useDeleteStrudelPattern = (projectId?: string) => {
 	const queryClient = useQueryClient();
 	return useMutation<void, Error, string>({
 		mutationFn: (patternId) => strudelService.delete(patternId, projectId),
-		onSuccess: (_, patternId) => {
+		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: STRUDEL_QUERY_KEYS.list(projectId) });
-			queryClient.invalidateQueries({
-				queryKey: STRUDEL_QUERY_KEYS.detail(projectId, patternId),
-			});
 		},
 	});
 };

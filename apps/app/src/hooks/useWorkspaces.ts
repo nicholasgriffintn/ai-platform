@@ -71,8 +71,11 @@ function workspaceSummaryFromDetail(workspace: WorkspaceDetail): WorkspaceSummar
 	};
 }
 
-function updateProjectInWorkspaceCaches(queryClient: QueryClient, project: ProjectDetail) {
-	queryClient.setQueriesData<ProjectDetail>({ queryKey: projectQueryKey(project.id) }, project);
+export function updateProjectInWorkspaceCaches(queryClient: QueryClient, project: ProjectDetail) {
+	queryClient.setQueryData<ProjectDetail>(
+		[...projectQueryKey(project.id), project.workspaceId],
+		project,
+	);
 	const summary = projectSummaryFromDetail(project);
 	queryClient.setQueryData<WorkspaceDetail>(workspaceQueryKey(project.workspaceId), (workspace) => {
 		if (!workspace) return workspace;

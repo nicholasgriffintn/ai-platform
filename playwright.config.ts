@@ -24,7 +24,7 @@ export default defineConfig({
 		},
 		{
 			command: "pnpm --filter @assistant/app dev:e2e",
-			url: "http://localhost:5173",
+			url: "http://localhost:5173/src/entry.client.tsx",
 			timeout: 120 * 1000,
 			reuseExistingServer: !process.env.CI,
 		},

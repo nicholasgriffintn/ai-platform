@@ -97,7 +97,10 @@ export function useAgentForm() {
 		}
 
 		const agentModel = agent.model || "";
-		const isModelAvailable = agentModel === "" || apiModels[agentModel]?.supportsToolCalls;
+		const isModelAvailable =
+			agentModel === "" ||
+			Object.keys(apiModels).length === 0 ||
+			apiModels[agentModel]?.supportsToolCalls;
 
 		setSelectedModel(isModelAvailable ? agentModel : "");
 		setTemperature(getFiniteNumberOrFallback(agent.temperature, 0.7));

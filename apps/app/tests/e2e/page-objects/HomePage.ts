@@ -468,6 +468,11 @@ export class HomePage extends BasePage {
 		return feedbackResponse;
 	}
 
+	getLatestAssistantFeedbackButton(value: "positive" | "negative") {
+		const label = value === "positive" ? "Thumbs up" : "Thumbs down";
+		return this.getLatestAssistantMessage().getByRole("button", { name: label });
+	}
+
 	async configureResponseControls(reasoning: string, verbosity: string) {
 		await this.page.getByRole("button", { name: /^Reasoning depth:/ }).click();
 		await this.page.getByRole("menuitemradio", { name: reasoning, exact: true }).click();

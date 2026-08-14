@@ -197,7 +197,11 @@ test.describe("Account-owned resources", () => {
 	});
 
 	test("creates, edits and deletes an agent", async ({ page, profilePage }) => {
-		await profilePage.createAndDeleteAgent("Release validation agent", "Checks release readiness.");
+		const persistedSettings = await profilePage.createAndDeleteAgent(
+			"Release validation agent",
+			"Checks release readiness.",
+		);
+		expect(persistedSettings).toEqual({ temperature: "0.2", maxSteps: "7" });
 		await expect(page.getByText("Release validation agent", { exact: true })).toHaveCount(0);
 	});
 
