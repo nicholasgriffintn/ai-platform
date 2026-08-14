@@ -871,7 +871,7 @@ async function start() {
 	);
 	const trainingScriptPath = buildWorkerBundle(
 		"@assistant/training",
-		path.join(repositoryRoot, "apps/training/wrangler.json"),
+		path.join(runtimeDirectory, "training-wrangler.jsonc"),
 		trainingBuildDirectory,
 	);
 	const seedMaterial = await createPersonaSeedMaterial();

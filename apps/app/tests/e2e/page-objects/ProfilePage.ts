@@ -57,6 +57,9 @@ export class ProfilePage extends BasePage {
 	async openTab(tab: string, heading: string) {
 		await this.navigate(`/profile?tab=${tab}`);
 		await this.page.getByRole("heading", { name: heading, exact: true }).first().waitFor();
+		await this.page
+			.getByText("Loading profile data...", { exact: true })
+			.waitFor({ state: "hidden" });
 	}
 
 	async logout() {
