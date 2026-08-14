@@ -4,6 +4,7 @@ import {
 	isConnectorOperationSupported,
 	isConnectorOperationWrite,
 } from "~/lib/providers/capabilities/connectors";
+import { configuredComposioToolkits } from "~/lib/providers/capabilities/connectors/composio/configured-toolkit-manifest";
 import { mailCalendarRecipes } from "./catalog/mail-calendar";
 import { coreIntegrationRecipes } from "./catalog/core-integrations";
 import { configuredComposioRecipes } from "./catalog/configured-composio";
@@ -63,6 +64,15 @@ export function getRecipeCatalogValidationIssues(
 	recipes: readonly AssistantRecipe[] = assistantRecipes,
 ): string[] {
 	const issues: string[] = [];
+	const exposedProviders = new Set(
+		recipes.flatMap((recipe) => recipe.integrations.map((integration) => integration.providerId)),
+	);
+
+	for (const providerId of Object.keys(configuredComposioToolkits).sort()) {
+		if (!exposedProviders.has(providerId)) {
+			issues.push(`configured Composio provider ${providerId} is not exposed by any recipe`);
+		}
+	}
 
 	for (const recipe of recipes) {
 		const hasScheduleTrigger = recipe.triggers.some((trigger) => trigger.type === "schedule");
