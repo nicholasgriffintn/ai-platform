@@ -53,6 +53,7 @@ export function useStreamingResponse(
 
 	const [streamStarted, setStreamStarted] = useState(false);
 	const [controller, setController] = useState(() => new AbortController());
+	const controllerRef = useRef(controller);
 	const assistantResponseRef = useRef<string>("");
 	const assistantReasoningRef = useRef<string>("");
 	const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
@@ -77,6 +78,7 @@ export function useStreamingResponse(
 			messages?: Message[];
 			toolResponses?: Message[];
 		}> => {
+			const requestSignal = controllerRef.current.signal;
 			const effectiveRequestOptions = overrideRequestOptions ?? requestOptions;
 			const storageMode = resolveConversationStorageMode(
 				{
@@ -261,9 +263,12 @@ export function useStreamingResponse(
 					const modelsToSend = options?.models
 						?.map((modelId) => normalizeSelectedModel(modelId))
 						.filter((modelId): modelId is string => Boolean(modelId));
-					const modelToSend = normalizeSelectedModel(modelsToSend?.[0] ?? options?.model ?? model);
-					const providerToSend = getModelProvider(apiModels, modelToSend);
-					const modelConfigToSend = modelToSend ? apiModels[modelToSend] : undefined;
+					const selectedModel = normalizeSelectedModel(
+						modelsToSend?.[0] ?? options?.model ?? model,
+					);
+					const modelToSend = modelsToSend?.length ? undefined : selectedModel;
+					const providerToSend = getModelProvider(apiModels, selectedModel);
+					const modelConfigToSend = selectedModel ? apiModels[selectedModel] : undefined;
 
 					const handleStateChange = (state: string, data?: any) => {
 						if (state === "usage_limits") {
@@ -304,13 +309,13 @@ export function useStreamingResponse(
 						mode: chatMode,
 						model: modelToSend,
 						modelConfig: modelConfigToSend,
-						modelRouterMode: modelToSend ? undefined : autoMode,
+						modelRouterMode: selectedModel ? undefined : autoMode,
 						models: modelsToSend?.length ? modelsToSend : undefined,
 						onProgress: handleMessageUpdate,
 						onStateChange: handleStateChange,
 						provider: providerToSend,
 						requestOptions: effectiveRequestOptions,
-						signal: controller.signal,
+						signal: requestSignal,
 						store: shouldStore,
 						streamingEnabled: true,
 						useMultiModel: modelsToSend && modelsToSend.length > 1 ? true : useMultiModel,
@@ -360,7 +365,7 @@ export function useStreamingResponse(
 					toolResponses: toolResponseMessages,
 				};
 			} catch (error) {
-				if (controller.signal.aborted) {
+				if (requestSignal.aborted) {
 					return { status: "error" as const, response: "Request aborted" };
 				}
 				throw error;
@@ -374,7 +379,6 @@ export function useStreamingResponse(
 			localOnlyMode,
 			chatSettings,
 			model,
-			controller,
 			addMessageToConversation,
 			insertMessageBeforeConversationMessage,
 			addAssistantMessage,
@@ -402,6 +406,9 @@ export function useStreamingResponse(
 				toast.error("No messages provided");
 				throw new Error("No messages provided");
 			}
+			const requestController = new AbortController();
+			controllerRef.current = requestController;
+			setController(requestController);
 
 			try {
 				const response = await generateResponse(messages, conversationId, overrideRequestOptions, {
@@ -424,7 +431,7 @@ export function useStreamingResponse(
 
 				return response;
 			} catch (error) {
-				if (controller.signal.aborted) {
+				if (requestController.signal.aborted) {
 					toast.error("Request aborted");
 				} else {
 					const streamError = error as Error & {
@@ -452,17 +459,19 @@ export function useStreamingResponse(
 			} finally {
 				setStreamStarted(false);
 				stopLoading("stream-response");
-				setController(new AbortController());
+				if (controllerRef.current === requestController) {
+					const nextController = new AbortController();
+					controllerRef.current = nextController;
+					setController(nextController);
+				}
 			}
 		},
-		[generateResponse, controller, stopLoading, model, setModel, onTitleGeneration],
+		[generateResponse, stopLoading, model, setModel, onTitleGeneration],
 	);
 
 	const abortStream = useCallback(() => {
-		if (controller) {
-			controller.abort();
-		}
-	}, [controller]);
+		controllerRef.current.abort();
+	}, []);
 
 	return {
 		streamStarted,

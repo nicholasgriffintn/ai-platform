@@ -13,7 +13,9 @@ import {
 } from "react";
 import { Image } from "@ngriffin_uk/polychat-component-content";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { useQueryClient } from "@tanstack/react-query";
 import { useModels } from "~/hooks/useModels";
+import { SOURCE_QUERY_KEYS } from "~/hooks/useSources";
 import { useVoiceRecorder } from "~/hooks/useVoiceRecorder";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { getModelInteractionCapabilities } from "~/lib/models";
@@ -139,6 +141,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 		ref,
 	) => {
 		const { isMobile } = useUIStore();
+		const queryClient = useQueryClient();
 		const {
 			model,
 			chatInput,
@@ -367,6 +370,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 						...currentAttachments,
 						...uploadedAttachments,
 					]);
+					await queryClient.invalidateQueries({ queryKey: SOURCE_QUERY_KEYS.all });
 				}
 			} catch (error) {
 				console.error("Failed to upload file:", error);

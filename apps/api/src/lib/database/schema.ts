@@ -305,7 +305,9 @@ export const project = sqliteTable(
 	},
 	(table) => ({
 		workspaceIdx: index("project_workspace_id_idx").on(table.workspace_id),
-		workspaceNameIdx: uniqueIndex("project_workspace_name_idx").on(table.workspace_id, table.name),
+		workspaceNameIdx: uniqueIndex("project_workspace_name_idx")
+			.on(table.workspace_id, table.name)
+			.where(sql`${table.archived_at} IS NULL`),
 	}),
 );
 

@@ -348,11 +348,9 @@ export function useConversationActions(
 					currentConversationId,
 					request.mode === "consensus" ? "Requesting consensus..." : "Requesting second opinion...",
 					undefined,
-					{
-						generateTitle: false,
-						model: request.modelIds[0],
-						models: request.modelIds,
-					},
+					request.mode === "consensus"
+						? { generateTitle: false, models: request.modelIds }
+						: { generateTitle: false, model: request.modelIds[0] },
 				);
 			} catch (error) {
 				console.error("Error requesting second opinion:", error);

@@ -59,7 +59,6 @@ export function useChatManager(
 				}),
 				queryClient.cancelQueries({
 					queryKey: [CHATS_QUERY_KEY, "local"],
-					exact: true,
 				}),
 				queryClient.cancelQueries({ queryKey: [CHATS_QUERY_KEY, "remote"] }),
 			]);

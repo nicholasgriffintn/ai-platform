@@ -113,48 +113,23 @@ export class AnonymousUserRepository extends BaseRepository {
 	): Promise<AnonymousUser | null> {
 		try {
 			const hashedIp = await this.hashIpAddress(ipAddress);
-
 			const deterministicId = hashedIp.substring(0, 36);
 			const now = new Date().toISOString();
 
-			try {
-				const insert = this.buildInsertQuery("anonymous_user", {
-					id: deterministicId,
-					ip_address: hashedIp,
-					user_agent: userAgent || null,
-					daily_message_count: 0,
-					daily_reset: now,
-					created_at: now,
-					updated_at: now,
-					last_active_at: now,
-				});
-
-				if (!insert) {
-					return null;
-				}
-
-				await this.executeRun(insert.query, insert.values);
-
-				return this.getAnonymousUserById(deterministicId);
-			} catch (insertError) {
-				const existingUser = await this.getAnonymousUserById(deterministicId);
-
-				if (existingUser) {
-					await this.updateAnonymousUser(existingUser.id, {
-						last_active_at: now,
-						user_agent: userAgent || existingUser.user_agent,
-					});
-					return existingUser;
-				}
-
-				const ipUser = await this.getAnonymousUserByIp(ipAddress);
-				if (ipUser) {
-					return ipUser;
-				}
-
-				logger.error("Unexpected error in anonymous user creation:", insertError);
-				return null;
-			}
+			return this.runQuery<AnonymousUser>(
+				`INSERT INTO anonymous_user (
+					id, ip_address, user_agent, daily_message_count, daily_reset,
+					created_at, updated_at, last_active_at
+				) VALUES (?, ?, ?, 0, ?, ?, ?, ?)
+				ON CONFLICT(id) DO UPDATE SET
+					ip_address = excluded.ip_address,
+					user_agent = COALESCE(excluded.user_agent, anonymous_user.user_agent),
+					updated_at = excluded.updated_at,
+					last_active_at = excluded.last_active_at
+				RETURNING *`,
+				[deterministicId, hashedIp, userAgent || null, now, now, now, now],
+				true,
+			);
 		} catch (error) {
 			logger.error("Error in getOrCreateAnonymousUser:", {
 				error_message: error instanceof Error ? error.message : "Unknown error",

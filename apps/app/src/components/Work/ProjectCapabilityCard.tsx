@@ -73,7 +73,9 @@ export function ProjectCapabilityCard({
 				? isConfigured
 					? "Configured"
 					: "Configuration required"
-				: "Included"
+				: existing
+					? "Enabled"
+					: "Included"
 			: "Enabled";
 
 	return (

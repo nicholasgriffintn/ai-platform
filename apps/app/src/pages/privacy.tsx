@@ -169,24 +169,22 @@ export default function Privacy() {
 					<li>Withdraw consent where processing is based on consent</li>
 				</ul>
 				<h3>6.1 Exercising Your Rights</h3>
-				<p>
-					To exercise your data protection rights:
-					<ul>
-						<li>
-							For training data collection: Visit your Profile Settings and toggle "Allow Tracking
-							and Training Data Collection" in the Privacy & Data section
-						</li>
-						<li>
-							For access, correction, or deletion requests: Email us at{" "}
-							<a href={CONTACT_LINK}>{CONTACT_LINK}</a> with the subject line "Data Rights Request"
-						</li>
-						<li>We will respond to all legitimate requests within 30 days</li>
-						<li>
-							We may request specific information to verify your identity before processing your
-							request
-						</li>
-					</ul>
-				</p>
+				<p>To exercise your data protection rights:</p>
+				<ul>
+					<li>
+						For training data collection: Visit your Profile Settings and toggle "Allow Tracking and
+						Training Data Collection" in the Privacy & Data section
+					</li>
+					<li>
+						For access, correction, or deletion requests: Email us at{" "}
+						<a href={CONTACT_LINK}>{CONTACT_LINK}</a> with the subject line "Data Rights Request"
+					</li>
+					<li>We will respond to all legitimate requests within 30 days</li>
+					<li>
+						We may request specific information to verify your identity before processing your
+						request
+					</li>
+				</ul>
 
 				<h2>7. Data Retention</h2>
 				<p>

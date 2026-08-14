@@ -100,8 +100,9 @@ export function useAgentForm() {
 		const isModelAvailable = agentModel === "" || apiModels[agentModel]?.supportsToolCalls;
 
 		setSelectedModel(isModelAvailable ? agentModel : "");
-		setTemperature(getFiniteNumberOrFallback(Number(agent.temperature), 0.7));
-		setMaxSteps(getFiniteNumberOrFallback(Number(agent.max_steps), 20));
+		setTemperature(getFiniteNumberOrFallback(agent.temperature, 0.7));
+		const loadedMaxSteps = getFiniteNumberOrFallback(agent.max_steps, 20);
+		setMaxSteps(loadedMaxSteps > 0 ? loadedMaxSteps : 20);
 		setSystemPrompt(agent.system_prompt || "");
 
 		if (agent.few_shot_examples) {

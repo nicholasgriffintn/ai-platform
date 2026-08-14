@@ -1,112 +1,88 @@
-import { test, expect } from "@playwright/test";
-import { HomePage } from "../page-objects";
-import { TestHelpers } from "../utils/test-helpers";
+import { expect, test } from "../fixtures/polychat-test";
 
-test.describe("Authentication Feature", () => {
-	let homePage: HomePage;
+test.describe("Authentication experience", () => {
+	test.describe("logged out", () => {
+		test.use({ persona: "logged-out" });
 
-	test.beforeEach(async ({ page }) => {
-		homePage = TestHelpers.createHomePage(page);
-		await homePage.navigate();
-		await TestHelpers.clearLocalStorage(page);
-		await homePage.waitForPageLoad();
-	});
-
-	test("should show login button when not authenticated", async ({ page }) => {
-		const loginButton = page.getByRole("button", { name: /login/i });
-		await expect(loginButton).toBeVisible();
-	});
-
-	test("should open login modal when login button is clicked", async ({ page }) => {
-		const loginButton = page.getByRole("button", { name: /login/i });
-		await loginButton.click();
-
-		const loginModal = page.getByRole("dialog");
-		await expect(loginModal).toBeVisible();
-
-		const modalTitle = page.getByText(/sign in to/i);
-		await expect(modalTitle).toBeVisible();
-	});
-
-	test("should display GitHub and email authentication options in modal", async ({ page }) => {
-		const loginButton = page.getByRole("button", { name: /login/i });
-		await loginButton.click();
-
-		const githubButton = page.getByRole("button", {
-			name: /sign in with github/i,
-		});
-		const emailInput = page.getByRole("textbox", { name: /email/i });
-		const emailButton = page.getByRole("button", {
-			name: /sign in with email/i,
+		test.beforeEach(async ({ homePage }) => {
+			await homePage.navigate("/chat");
 		});
 
-		await expect(githubButton).toBeVisible();
-		await expect(emailInput).toBeVisible();
-		await expect(emailButton).toBeVisible();
-	});
+		test("opens sign-in from account settings and offers every enabled method", async ({
+			authPage,
+			page,
+		}) => {
+			await authPage.enablePasskeySignInOption();
+			await authPage.triggerLoginModal();
 
-	test("should handle magic link email submission", async ({ page }) => {
-		const loginButton = page.getByRole("button", { name: /login/i });
-		await loginButton.click();
-
-		const emailInput = page.getByRole("textbox", { name: /email/i });
-		const submitButton = page.getByRole("button", {
-			name: /sign in with email/i,
+			const dialog = page.getByRole("dialog");
+			await expect(dialog.getByRole("button", { name: "Sign in with GitHub" })).toBeVisible();
+			await expect(dialog.getByRole("textbox", { name: "Email Address" })).toBeVisible();
+			await expect(dialog.getByRole("button", { name: "Sign in with Passkey" })).toBeVisible();
+			await expect(dialog.getByRole("link", { name: "Terms of Service" })).toHaveAttribute(
+				"href",
+				"/terms",
+			);
+			await expect(dialog.getByRole("link", { name: "Privacy Policy" })).toHaveAttribute(
+				"href",
+				"/privacy",
+			);
 		});
 
-		await emailInput.fill("test@example.com");
-		await submitButton.click();
-
-		const successMessage = page.getByText(/check your email/i);
-		await expect(successMessage).toBeVisible();
-	});
-
-	test("should show validation error for invalid email", async ({ page }) => {
-		const loginButton = page.getByRole("button", { name: /login/i });
-		await loginButton.click();
-
-		const emailInput = page.getByRole("textbox", { name: /email/i });
-		const submitButton = page.getByRole("button", {
-			name: /sign in with email/i,
+		test("validates an email without submitting an authentication request", async ({
+			authPage,
+		}) => {
+			await authPage.triggerLoginModal();
+			await authPage.loginWithMagicLink("invalid-email");
+			await expect(authPage.isMagicLinkEmailValid()).resolves.toBe(false);
 		});
 
-		await emailInput.fill("invalid-email");
-		await submitButton.click();
+		test("requests a magic link and confirms delivery", async ({ authPage, page }) => {
+			await authPage.triggerLoginModal();
+			await authPage.loginWithMagicLink("release-user@polychat.invalid");
+			await expect(page.getByRole("dialog")).toContainText(
+				"Check your email for a magic link to sign in.",
+			);
+		});
 
-		const errorMessage = page.getByText(/please enter a valid email/i);
-		await expect(errorMessage).toBeVisible();
+		test("starts GitHub authorisation", async ({ authPage, externalServices, page }) => {
+			await externalServices.mockGitHubAuthorization();
+			await authPage.triggerLoginModal();
+			await authPage.loginWithGitHub();
+			await expect(page).toHaveURL(/github\.com\/login\/oauth\/authorize/);
+			await expect(page.getByRole("heading", { name: "GitHub authorisation" })).toBeVisible();
+		});
+
+		test("rejects an invalid magic-link callback", async ({ homePage, page }) => {
+			await homePage.navigate("/auth/verify-magic-link?token=invalid&nonce=invalid");
+			await expect(page.getByText("Verification Failed", { exact: true })).toBeVisible();
+		});
 	});
 
-	test("should close modal when clicking outside", async ({ page }) => {
-		const loginButton = page.getByRole("button", { name: /login/i });
-		await loginButton.click();
+	for (const persona of ["free", "pro"] as const) {
+		test.describe(`${persona} account`, () => {
+			test.use({ persona });
 
-		const loginModal = page.getByRole("dialog");
-		await expect(loginModal).toBeVisible();
-
-		await page.click("body", { position: { x: 10, y: 10 } });
-
-		await expect(loginModal).not.toBeVisible();
-	});
-
-	test("should show passkey option when supported", async ({ page }) => {
-		await page.addInitScript(() => {
-			Object.defineProperty(window, "PublicKeyCredential", {
-				value: class PublicKeyCredential {
-					static isUserVerifyingPlatformAuthenticatorAvailable() {
-						return Promise.resolve(true);
-					}
-				},
-				configurable: true,
+			test("signs out and returns to a protected signed-out state", async ({
+				authPage,
+				page,
+				profilePage,
+			}) => {
+				await profilePage.openAccount();
+				await expect(authPage.isLoggedIn()).resolves.toBe(true);
+				await profilePage.logout();
+				await expect(page.getByText("Sign in to view your profile", { exact: true })).toBeVisible();
+				await expect(authPage.isLoggedIn()).resolves.toBe(false);
 			});
 		});
+	}
 
-		const loginButton = page.getByRole("button", { name: /login/i });
-		await loginButton.click();
+	test.describe("pro passkey", () => {
+		test.use({ persona: "pro" });
 
-		const passkeyButton = page.getByRole("button", {
-			name: /sign in with passkey/i,
+		test("signs in with a registered passkey", async ({ authPage }) => {
+			await authPage.registerSignOutAndSignInWithPasskey();
+			await expect(authPage.isLoggedIn()).resolves.toBe(true);
 		});
-		await expect(passkeyButton).toBeVisible();
 	});
 });

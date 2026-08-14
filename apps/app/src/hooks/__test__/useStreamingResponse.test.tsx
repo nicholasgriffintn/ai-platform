@@ -258,6 +258,46 @@ describe("useStreamingResponse", () => {
 		expect(useChatStore.getState().locallyCreatedConversationIds["conversation-1"]).toBeUndefined();
 	});
 
+	it("starts a later response with a fresh abort signal", async () => {
+		const queryClient = createQueryClient();
+		const userMessage: Message = {
+			id: "user-1",
+			role: "user",
+			content: "Generate this branch",
+			model: "deepseek-v4-flash",
+		};
+		queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"], {
+			id: "conversation-1",
+			title: "Branch",
+			isLocalOnly: false,
+			messages: [userMessage],
+		});
+		let submittedSignal: AbortSignal | undefined;
+		mocks.streamChatCompletions.mockImplementation(async ({ signal }) => {
+			submittedSignal = signal;
+			return {
+				id: "assistant-1",
+				role: "assistant",
+				content: "Branched response",
+			};
+		});
+
+		const { result } = renderHook(() => useStreamingResponse(undefined), {
+			wrapper: wrapper(queryClient),
+		});
+		act(() => result.current.abortStream());
+		expect(result.current.controller.signal.aborted).toBe(true);
+
+		await act(async () => {
+			await result.current.streamResponse([userMessage], "conversation-1", undefined, {
+				generateTitle: false,
+			});
+		});
+
+		expect(mocks.streamChatCompletions).toHaveBeenCalledOnce();
+		expect(submittedSignal?.aborted).toBe(false);
+	});
+
 	it("updates local guest conversations from streamed content deltas", async () => {
 		const queryClient = createQueryClient();
 		const userMessage: Message = {

@@ -15,6 +15,7 @@ import {
 	preserveOptimisticMessages,
 } from "@ngriffin_uk/polychat-library-chat/conversations";
 import { localChatService } from "~/lib/local/local-chat-service";
+import { getLocalChatScope } from "~/lib/local/local-chat-scope";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatRequestOptions, Conversation, ConversationListOptions, Message } from "~/types";
 import { useConversationStorage } from "./useConversationStorage";
@@ -25,7 +26,8 @@ const CHAT_DETAIL_STALE_TIME = 2 * 60 * 1000;
 const CHAT_QUERY_GC_TIME = 30 * 60 * 1000;
 
 export function useChats(options: ConversationListOptions = {}) {
-	const { isAuthenticated, isPro, localOnlyMode } = useChatStore();
+	const { isAuthenticated, isPro, localOnlyMode, user } = useChatStore();
+	const localScope = getLocalChatScope(user?.id);
 	const queryOptions = useMemo<Omit<ConversationListOptions, "page">>(
 		() => ({
 			archived: options.archived ?? "active",
@@ -51,7 +53,7 @@ export function useChats(options: ConversationListOptions = {}) {
 	});
 
 	const localChatsQuery = useQuery({
-		queryKey: [CHATS_QUERY_KEY, "local"],
+		queryKey: [CHATS_QUERY_KEY, "local", localScope],
 		queryFn: async () => await localChatService.listLocalChats(),
 		staleTime: CHAT_LIST_STALE_TIME,
 		gcTime: CHAT_QUERY_GC_TIME,
@@ -170,8 +172,14 @@ export function useChat(completion_id: string | undefined) {
 
 export function useDeleteChat() {
 	const queryClient = useQueryClient();
-	const { currentConversationId, isAuthenticated, isPro, localOnlyMode, setCurrentConversationId } =
-		useChatStore();
+	const {
+		currentConversationId,
+		isAuthenticated,
+		isPro,
+		localOnlyMode,
+		setCurrentConversationId,
+		user,
+	} = useChatStore();
 
 	return useMutation({
 		mutationFn: async (completion_id: string) => {
@@ -188,7 +196,12 @@ export function useDeleteChat() {
 			if (currentConversationId === completion_id) {
 				setCurrentConversationId(undefined);
 			}
-			removeConversationFromChatCaches(queryClient, completion_id);
+			removeConversationFromChatCaches(
+				queryClient,
+				completion_id,
+				CHATS_QUERY_KEY,
+				getLocalChatScope(user?.id),
+			);
 		},
 	});
 }
@@ -203,7 +216,7 @@ export function useDeleteAllLocalChats() {
 		},
 		onSuccess: () => {
 			setCurrentConversationId(undefined);
-			queryClient.setQueryData([CHATS_QUERY_KEY, "local"], []);
+			queryClient.setQueriesData({ queryKey: [CHATS_QUERY_KEY, "local"] }, []);
 		},
 	});
 }
@@ -223,7 +236,7 @@ export function useDeleteAllRemoteChats() {
 
 export function useUpdateChatTitle() {
 	const queryClient = useQueryClient();
-	const { isAuthenticated, isPro, localOnlyMode } = useChatStore();
+	const { isAuthenticated, isPro, localOnlyMode, user } = useChatStore();
 
 	return useMutation({
 		mutationFn: async ({ completion_id, title }: { completion_id: string; title: string }) => {
@@ -237,10 +250,16 @@ export function useUpdateChatTitle() {
 			}
 		},
 		onSuccess: (_, { completion_id, title }) => {
-			updateConversationInChatCaches(queryClient, completion_id, (chat) => ({
-				...chat,
-				title,
-			}));
+			updateConversationInChatCaches(
+				queryClient,
+				completion_id,
+				(chat) => ({
+					...chat,
+					title,
+				}),
+				CHATS_QUERY_KEY,
+				getLocalChatScope(user?.id),
+			);
 		},
 	});
 }
@@ -248,6 +267,7 @@ export function useUpdateChatTitle() {
 export function useGenerateTitle(requestOptions?: ChatRequestOptions) {
 	const queryClient = useQueryClient();
 	const { determineStorageMode } = useConversationStorage(requestOptions);
+	const { user } = useChatStore();
 
 	return useMutation({
 		mutationFn: async ({
@@ -274,10 +294,16 @@ export function useGenerateTitle(requestOptions?: ChatRequestOptions) {
 		},
 
 		onSuccess: (newTitle, { completion_id }) => {
-			updateConversationInChatCaches(queryClient, completion_id, (chat) => ({
-				...chat,
-				title: newTitle,
-			}));
+			updateConversationInChatCaches(
+				queryClient,
+				completion_id,
+				(chat) => ({
+					...chat,
+					title: newTitle,
+				}),
+				CHATS_QUERY_KEY,
+				getLocalChatScope(user?.id),
+			);
 		},
 	});
 }

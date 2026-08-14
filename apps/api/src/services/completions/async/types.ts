@@ -3,7 +3,7 @@ import type { ConversationManager } from "~/lib/conversationManager";
 import type { Message, IEnv, IUser } from "~/types";
 
 export interface AsyncRefreshContext {
-	conversationManager: ConversationManager;
+	conversationManager: Pick<ConversationManager, "update">;
 	conversationId: string;
 	env: IEnv;
 	user: IUser | null;

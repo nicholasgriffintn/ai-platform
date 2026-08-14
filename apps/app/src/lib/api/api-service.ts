@@ -250,6 +250,10 @@ class ApiService {
 		return this.userService.getProviderSettings();
 	};
 
+	getProviderSyncStatus = () => {
+		return this.userService.getProviderSyncStatus();
+	};
+
 	deleteProviderApiKey = (providerId: string): Promise<void> => {
 		return this.userService.deleteProviderApiKey(providerId);
 	};

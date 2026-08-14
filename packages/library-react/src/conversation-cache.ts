@@ -16,6 +16,23 @@ export interface ConversationListPage<T extends ConversationSummary> {
 
 type ConversationListUpdater<T> = (conversation: T) => T;
 
+function updateLocalConversationLists<T extends ConversationSummary>(
+	queryClient: QueryClient,
+	queryKeyRoot: string,
+	updater: (oldData: T[] | undefined) => T[] | undefined,
+	localScope?: string,
+) {
+	if (localScope !== undefined) {
+		queryClient.setQueryData<T[]>([queryKeyRoot, "local", localScope], updater);
+		return;
+	}
+
+	const localQueries = queryClient.getQueryCache().findAll({ queryKey: [queryKeyRoot, "local"] });
+	for (const query of localQueries) {
+		queryClient.setQueryData<T[]>(query.queryKey, updater);
+	}
+}
+
 function getRemoteListOptions(queryKey: QueryKey): ConversationListOptions {
 	const [, , options] = Array.isArray(queryKey) ? queryKey : [];
 	if (!options || typeof options !== "object") return {};
@@ -47,15 +64,17 @@ function updateRemoteConversationLists<T extends ConversationSummary>(
 export function upsertConversationInChatCaches<T extends ConversationSummary>(
 	queryClient: QueryClient,
 	conversation: T,
-	options: { includeLocalList: boolean; includeRemoteLists: boolean },
+	options: { includeLocalList: boolean; includeRemoteLists: boolean; localScope?: string },
 	queryKeyRoot = DEFAULT_CHATS_QUERY_KEY,
 ) {
 	queryClient.setQueryData([queryKeyRoot, conversation.id], conversation);
 	if (options.includeLocalList) {
-		queryClient.setQueryData<T[]>([queryKeyRoot, "local"], (oldData = []) => [
-			conversation,
-			...oldData.filter((chat) => chat.id !== conversation.id),
-		]);
+		updateLocalConversationLists<T>(
+			queryClient,
+			queryKeyRoot,
+			(oldData = []) => [conversation, ...oldData.filter((chat) => chat.id !== conversation.id)],
+			options.localScope,
+		);
 	}
 	if (!options.includeRemoteLists) return;
 
@@ -77,12 +96,16 @@ export function updateConversationInChatCaches<T extends ConversationSummary>(
 	conversationId: string,
 	updater: ConversationListUpdater<T>,
 	queryKeyRoot = DEFAULT_CHATS_QUERY_KEY,
+	localScope?: string,
 ) {
 	queryClient.setQueryData<T>([queryKeyRoot, conversationId], (oldData) =>
 		oldData ? updater(oldData) : oldData,
 	);
-	queryClient.setQueryData<T[]>([queryKeyRoot, "local"], (oldData = []) =>
-		oldData.map((chat) => (chat.id === conversationId ? updater(chat) : chat)),
+	updateLocalConversationLists<T>(
+		queryClient,
+		queryKeyRoot,
+		(oldData = []) => oldData.map((chat) => (chat.id === conversationId ? updater(chat) : chat)),
+		localScope,
 	);
 	updateRemoteConversationLists<T>(queryClient, queryKeyRoot, (data) =>
 		data?.pages.length
@@ -103,10 +126,14 @@ export function removeConversationFromChatCaches<T extends ConversationSummary>(
 	queryClient: QueryClient,
 	conversationId: string,
 	queryKeyRoot = DEFAULT_CHATS_QUERY_KEY,
+	localScope?: string,
 ) {
 	queryClient.removeQueries({ queryKey: [queryKeyRoot, conversationId], exact: true });
-	queryClient.setQueryData<T[]>([queryKeyRoot, "local"], (oldData) =>
-		oldData?.filter((chat) => chat.id !== conversationId),
+	updateLocalConversationLists<T>(
+		queryClient,
+		queryKeyRoot,
+		(oldData) => oldData?.filter((chat) => chat.id !== conversationId),
+		localScope,
 	);
 	updateRemoteConversationLists<T>(queryClient, queryKeyRoot, (data) =>
 		data?.pages.length

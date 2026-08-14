@@ -99,7 +99,7 @@ describe("useProjectCapabilityCatalog", () => {
 		);
 	});
 
-	it("classifies callable API tools as tools instead of duplicate apps", () => {
+	it("keeps a callable dynamic app available through both its form and AI tool surfaces", () => {
 		mocks.appsData.mockReturnValue({
 			apps: [
 				{
@@ -137,7 +137,7 @@ describe("useProjectCapabilityCatalog", () => {
 				}),
 			}),
 		);
-		expect(result.current.items).not.toContainEqual(
+		expect(result.current.items).toContainEqual(
 			expect.objectContaining({ id: "app:get_weather", kind: "app" }),
 		);
 	});

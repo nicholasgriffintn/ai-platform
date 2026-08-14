@@ -55,6 +55,10 @@ Start from the user's global agent contract. These instructions make that contra
 ## Testing and validation
 
 - New behaviour needs relevant coverage.
+- Treat Playwright E2E tests as release validation for user-facing behaviour. Every user-facing change must explicitly consider whether the logged-out, Free, Pro, Chat, Work, configuration, message, and responsive journeys need to change.
+- Preserve existing E2E journeys when modernising the suite. Update their Page Objects and assertions; do not narrow or delete behavioural coverage to make tests pass.
+- Follow `.agents/skills/polychat-setup/references/testing/e2e.md`. Exercise the Polychat app and API together, and mock only outbound third-party services at their boundary.
+- Treat a failing release journey as product evidence. Do not skip it, weaken its outcome, replace a Polychat API route with a mock, or change test data to conceal the failure. Correct a test only when its boundary or expectation is demonstrably inaccurate, and keep product fixes within the authorised task scope.
 - Prefer integration-style tests that cover validation, state transitions, and error handling.
 - Avoid tests that only prove language or framework behaviour.
 - Cover edge cases and failure paths when changing parsing, auth, persistence, external API, or Worker boundary logic.

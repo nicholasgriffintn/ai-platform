@@ -43,14 +43,12 @@ export default function Terms() {
 					intelligence language models. We utilize various AI technologies. The service provides
 					automated responses to queries and facilitates interactive discussions.
 				</p>
-				<p>
-					You acknowledge that:
-					<ul>
-						<li>The outputs generated might not always be accurate, complete, or up-to-date</li>
-						<li>All outputs and responses are provided on an "as is" basis</li>
-						<li>{APP_NAME} is not a substitute for professional or expert advice</li>
-					</ul>
-				</p>
+				<p>You acknowledge that:</p>
+				<ul>
+					<li>The outputs generated might not always be accurate, complete, or up-to-date</li>
+					<li>All outputs and responses are provided on an "as is" basis</li>
+					<li>{APP_NAME} is not a substitute for professional or expert advice</li>
+				</ul>
 				<p>
 					We may update, improve, or change the functionality of {APP_NAME} at our discretion and
 					without obligation. We do not guarantee that any specific feature will always be
@@ -88,23 +86,21 @@ export default function Terms() {
 					<li>Uploading or transmitting viruses, malware, or other malicious code</li>
 				</ul>
 				<h3>4.1 AI Technology Limitations</h3>
-				<p>
-					You acknowledge that:
-					<ul>
-						<li>
-							Our Service uses artificial intelligence technology that may not always provide
-							accurate or complete information
-						</li>
-						<li>
-							The AI may occasionally generate unexpected, inappropriate, or inaccurate responses
-						</li>
-						<li>
-							You should not rely solely on our AI for critical decisions related to health,
-							finances, legal matters, or other significant concerns
-						</li>
-						<li>We do not guarantee specific outcomes or results from using our AI Service</li>
-					</ul>
-				</p>
+				<p>You acknowledge that:</p>
+				<ul>
+					<li>
+						Our Service uses artificial intelligence technology that may not always provide accurate
+						or complete information
+					</li>
+					<li>
+						The AI may occasionally generate unexpected, inappropriate, or inaccurate responses
+					</li>
+					<li>
+						You should not rely solely on our AI for critical decisions related to health, finances,
+						legal matters, or other significant concerns
+					</li>
+					<li>We do not guarantee specific outcomes or results from using our AI Service</li>
+				</ul>
 
 				<h2>5. Intellectual Property</h2>
 				<p>
@@ -167,23 +163,21 @@ export default function Terms() {
 					{JURISDICTION}, without regard to its conflict of law provisions.
 				</p>
 				<h3>10.1 Dispute Resolution</h3>
-				<p>
-					If you have a dispute with us:
-					<ul>
-						<li>
-							Please contact us first at <a href={CONTACT_LINK}>{CONTACT_LINK}</a> to attempt
-							informal resolution
-						</li>
-						<li>
-							If the matter cannot be resolved informally within 30 days, either party may pursue
-							litigation in the courts of the {JURISDICTION}
-						</li>
-						<li>
-							Nothing in these Terms prevents you from filing a complaint with relevant regulatory
-							authorities
-						</li>
-					</ul>
-				</p>
+				<p>If you have a dispute with us:</p>
+				<ul>
+					<li>
+						Please contact us first at <a href={CONTACT_LINK}>{CONTACT_LINK}</a> to attempt informal
+						resolution
+					</li>
+					<li>
+						If the matter cannot be resolved informally within 30 days, either party may pursue
+						litigation in the courts of the {JURISDICTION}
+					</li>
+					<li>
+						Nothing in these Terms prevents you from filing a complaint with relevant regulatory
+						authorities
+					</li>
+				</ul>
 
 				<h2>11. Disclaimer</h2>
 				<p>

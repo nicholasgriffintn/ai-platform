@@ -267,7 +267,7 @@ export function buildOpenAIResponsesBody(
 			params.system_prompt,
 		),
 		...(tools.length ? { tools } : {}),
-		...streamingParams,
+		...(background === true ? {} : streamingParams),
 		...createSamplingParameters(params, modelConfig),
 		...buildResponsesTextParams(params, modelConfig),
 		...buildResponsesReasoningParams(params, modelConfig, toolOptions),

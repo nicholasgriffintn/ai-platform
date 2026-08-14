@@ -10,6 +10,7 @@ import {
 	updateUserSettingsSchema,
 	userModelsResponseSchema,
 	providersResponseSchema,
+	providerSyncStatusSchema,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
@@ -22,6 +23,7 @@ import {
 	getUserEnabledModels,
 	storeProviderApiKey,
 	getUserProviderSettings,
+	getUserProviderSyncStatus,
 	syncUserProviders,
 } from "~/services/user/userOperations";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -175,6 +177,32 @@ addRoute(app, "get", "/providers", {
 			const providers = await getUserProviderSettings(serviceContext, user.id);
 
 			return ResponseFactory.success(c, providers);
+		})(raw),
+});
+
+addRoute(app, "get", "/providers/sync-status", {
+	tags: ["user"],
+	summary: "Check whether providers need syncing",
+	description: "Reports whether the user's provider catalogue is missing available providers",
+	responses: {
+		200: {
+			description: "Provider sync status",
+			schema: providerSyncStatusSchema,
+		},
+		401: {
+			description: "Authentication required",
+			schema: errorResponseSchema,
+		},
+	},
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const user = c.get("user");
+			if (!user) {
+				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
+			}
+
+			const status = await getUserProviderSyncStatus(getServiceContext(c), user.id);
+			return ResponseFactory.success(c, status);
 		})(raw),
 });
 

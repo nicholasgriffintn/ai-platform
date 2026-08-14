@@ -100,6 +100,18 @@ export function getEnabledProjectExperiences(
 	);
 }
 
+export function getEnabledProjectDynamicApps(
+	capabilities: ProjectCapability[],
+	apps: DynamicAppCatalogItem[],
+): DynamicAppCatalogItem[] {
+	const enabledAppIds = new Set(
+		capabilities
+			.filter((capability) => capability.kind === "app")
+			.map((capability) => capability.capabilityId),
+	);
+	return apps.filter((app) => app.kind === "dynamic" && enabledAppIds.has(app.id));
+}
+
 export function isProjectExperienceEnabled(
 	experience: ProjectExperienceDefinition,
 	capabilities: ProjectCapability[],

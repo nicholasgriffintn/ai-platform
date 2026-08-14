@@ -5,6 +5,7 @@ import { CHATS_QUERY_KEY } from "~/constants";
 import { upsertConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
 import { resolveConversationStorageMode } from "@ngriffin_uk/polychat-library-chat/conversation-storage-policy";
 import { localChatService } from "~/lib/local/local-chat-service";
+import { getLocalChatScope } from "~/lib/local/local-chat-scope";
 import type { ChatRequestOptions, Conversation } from "~/types";
 import { useChatStore } from "~/state/stores/chatStore";
 
@@ -14,7 +15,7 @@ import { useChatStore } from "~/state/stores/chatStore";
  */
 export function useConversationStorage(requestOptions?: ChatRequestOptions) {
 	const queryClient = useQueryClient();
-	const { isAuthenticated, isPro, localOnlyMode, chatSettings, chatMode } = useChatStore();
+	const { isAuthenticated, isPro, localOnlyMode, chatSettings, chatMode, user } = useChatStore();
 
 	const determineStorageMode = useCallback(
 		() =>
@@ -56,6 +57,7 @@ export function useConversationStorage(requestOptions?: ChatRequestOptions) {
 			upsertConversationInChatCaches(queryClient, updatedConversation, {
 				includeLocalList: isLocalOnly,
 				includeRemoteLists: !isLocalOnly,
+				localScope: getLocalChatScope(user?.id),
 			});
 
 			if (isLocalOnly) {
@@ -65,7 +67,7 @@ export function useConversationStorage(requestOptions?: ChatRequestOptions) {
 				});
 			}
 		},
-		[queryClient, determineStorageMode],
+		[queryClient, determineStorageMode, user?.id],
 	);
 
 	return {

@@ -7,6 +7,7 @@ import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import type { ChatCompletionParameters, Message } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { listChatProviders } from "~/lib/providers/capabilities/chat";
+import { buildMessageParts } from "~/lib/chat/messageParts";
 
 import type { AsyncInvocationHandler, AsyncRefreshContext, AsyncRefreshResult } from "./types";
 
@@ -84,6 +85,7 @@ async function handleCompletion(
 		tool_calls: formattedResult?.tool_calls ?? message.tool_calls,
 		usage: formattedResult?.usage ?? formattedResult?.usageMetadata ?? message.usage,
 	};
+	updatedMessage.parts = buildMessageParts(updatedMessage);
 
 	await context.conversationManager.update(context.conversationId, [updatedMessage]);
 
@@ -121,6 +123,7 @@ async function handleFailure(
 			error: raw?.error || raw?.status || "FAILED",
 		},
 	};
+	updatedMessage.parts = buildMessageParts(updatedMessage);
 
 	await context.conversationManager.update(context.conversationId, [updatedMessage]);
 
@@ -159,6 +162,7 @@ async function handleProgress(
 		},
 		status: "in_progress",
 	};
+	inProgressMessage.parts = buildMessageParts(inProgressMessage);
 
 	await context.conversationManager.update(context.conversationId, [inProgressMessage]);
 
