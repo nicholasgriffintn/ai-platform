@@ -1,83 +1,92 @@
 # End-to-end test structure
 
-This directory contains end-to-end tests for the AI platform using Playwright with the Page Object Model pattern.
+Use Playwright end-to-end tests as the release-validation suite for user-facing Polychat behaviour. Keep tests under `apps/app/tests/e2e` and write every browser interaction through a Page Object.
+
+## Test boundary
+
+Exercise the Polychat app and API together. The release command builds the app in a production-optimised E2E mode, serves its Cloudflare Worker locally, builds the API Worker, applies its migrations to an isolated D1 database, and seeds deterministic logged-out, Free, and Pro personas. The E2E app Worker has no production bindings or secrets and connects to the local API on the documented port.
+
+Mock only outbound third-party services at their boundary. Do not intercept or replace Polychat API routes in the browser. An unexpected outbound request must fail the test so new integrations cannot silently reach a live service.
+
+Disable browser telemetry and captcha in the E2E build because they are outbound third-party integrations, not part of the Polychat app/API boundary under release validation.
+
+## Release failures
+
+Treat a failed user journey as release evidence, not a reason to reduce coverage.
+
+- Keep the failing test enabled with its complete user outcome.
+- Correct the test only when its Page Object, boundary, or expectation is demonstrably inaccurate.
+- Do not delete or skip the journey, weaken the assertion, substitute an internal API mock, or alter fixtures to hide a product defect.
+- Fix product behaviour only within the authorised task scope, then rerun the complete release suite.
 
 ## Page Object Model
 
-Each page object extends `BasePage` and encapsulates:
+Each Page Object extends `BasePage` and owns:
 
 - Page-specific locators
-- Actions that can be performed on the page
-- Page-specific assertions
+- Browser interactions and multi-step workflows
+- Waiting for user-visible completion states
 
-Example usage:
+Keep assertions in the feature spec when they describe the user outcome. Add or extend a Page Object instead of placing clicks, form entry, or navigation sequences directly in a spec.
 
 ```typescript
-const homePage = new HomePage(page);
-await homePage.navigate();
+await homePage.navigate("/chat");
+await homePage.selectModel("Compound Mini");
 await homePage.sendMessage("Hello");
+await homePage.waitForChatResponse(0);
+await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
 ```
 
-## Test Helpers
+## Required coverage
 
-The `TestHelpers` class provides utilities for:
+Treat a user-facing feature as incomplete until its E2E impact has been considered. Cover the relevant state transitions, not static copy.
 
-- Creating page objects
-- Mocking API responses
-- Managing localStorage/sessionStorage
-- Network idle waiting
+| Surface       | Logged out                                                | Free account                                    | Pro account                                                                           |
+| ------------- | --------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Chat          | Local history, messages, public navigation, sign-in entry | Local history, messages, account limits         | Synced history, messages, attachments, sharing and branching                          |
+| Work          | Sign-in boundaries on overview and deep links             | Pro entitlement and return to Chat              | Workspaces, projects, members, governance, project chat and every project sub-surface |
+| Account       | Every profile tab is protected                            | Every profile tab loads with Free billing state | Every profile tab loads with Pro billing state                                        |
+| Configuration | Sign-in entry                                             | AI and messaging provider lifecycles            | Connectors, API keys, sources and Work configuration lifecycles                       |
+| Recovery      | Missing routes and unavailable shared links               | Missing routes and unavailable shared links     | Provider failures, missing resources and continued use after failure                  |
 
-## Prerequisites
+For messages, include representative plain text, multiline and Unicode, code and special characters, image, document/code, and audio inputs. Add another case when a new message or attachment type becomes user-facing.
 
-1. **API Key**: Set `PLAYWRIGHT_API_KEY` environment variable with a valid Polychat API key
+For responsive behaviour, keep the full behavioural matrix on desktop Chromium and add focused mobile-width journeys for navigation and layout-sensitive controls. Add another browser only when a browser-specific product contract requires it.
 
-   ```bash
-   export PLAYWRIGHT_API_KEY=your_api_key_here
-   ```
+## Keeping the suite fast
 
-   If this is not set, the API tests will be skipped.
+- Group closely related assertions into one journey per persona where isolation is not required.
+- Run independent tests fully in parallel and provision one isolated identity per test.
+- Use deterministic third-party responses with no fixed sleeps.
+- Wait on accessible UI state or a completed workflow, not network idle.
+- Run Chromium only by default and shard the full suite in CI.
+- Retain traces, screenshots, and videos only for failures or retries.
 
-2. **Dependencies**: Install Playwright browsers
-   ```bash
-   pnpm exec playwright install
-   ```
+## Running tests
 
-## Running Tests
-
-### Run all E2E tests
+Install Chromium once:
 
 ```bash
-pnpm run test:e2e
+pnpm exec playwright install chromium
 ```
 
-### Run specific test files
+Run the complete release-validation suite:
 
 ```bash
-# Chat functionality only
-pnpm exec playwright test features/chat
-
-# App features only
-pnpm exec playwright test features/app
-
-# Resilience tests only
-pnpm exec playwright test features/resilience
-
-# Smoke tests only
-pnpm exec playwright test smoke/
+pnpm test:e2e:release
 ```
 
-### Run in different modes
+Run the fast smoke suite:
 
 ```bash
-# Headed mode (see browser)
-pnpm exec playwright test --headed
-
-# Debug mode
-pnpm exec playwright test --debug
-
-# UI mode (interactive)
-pnpm exec playwright test --ui
-
-# Specific test by name
-pnpm exec playwright test -g "maintains context"
+pnpm test:e2e:smoke
 ```
+
+Run a focused file or test name:
+
+```bash
+pnpm test:e2e apps/app/tests/e2e/features/chat.spec.ts
+pnpm test:e2e --grep "provider failure"
+```
+
+The root `release:check` command includes the complete E2E suite. CI runs that suite in two shards for pull requests, runs the smoke suite after pushes to `main`, and uploads failure artefacts.

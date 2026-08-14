@@ -16,6 +16,7 @@ import { ToolMessage } from "./ToolMessage";
 
 export const ChatMessage = ({
 	conversationId,
+	canSubmitFeedback = false,
 	message,
 	modelConfig,
 	onToolInteraction,
@@ -35,6 +36,7 @@ export const ChatMessage = ({
 	isArchivedByCompaction = false,
 }: {
 	conversationId?: string;
+	canSubmitFeedback?: boolean;
 	message: Message;
 	modelConfig?: ModelConfigItem;
 	onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
@@ -108,7 +110,7 @@ export const ChatMessage = ({
 	};
 
 	const submitFeedback = async (value: 1 | -1) => {
-		if (!message.log_id || isSubmittingFeedback || isSharedView) {
+		if (!canSubmitFeedback || !message.log_id || isSubmittingFeedback || isSharedView) {
 			return;
 		}
 
@@ -204,6 +206,7 @@ export const ChatMessage = ({
 								copied={copied}
 								copyMessageToClipboard={copyMessageToClipboard}
 								feedbackState={feedbackState}
+								canSubmitFeedback={canSubmitFeedback}
 								isSubmittingFeedback={isSubmittingFeedback}
 								submitFeedback={submitFeedback}
 								isSharedView={isSharedView}

@@ -42,14 +42,21 @@ export function AgentFormModal({
 	const form = useAgentForm();
 	const { data: toolsData, isLoading: isLoadingTools } = useTools();
 	const tools = toolsData || [];
+	const agentRef = React.useRef(agent);
+	const apiModelsRef = React.useRef(apiModels);
+	agentRef.current = agent;
+	apiModelsRef.current = apiModels;
 
 	React.useEffect(() => {
-		if (agent && open) {
-			form.loadAgentData(agent, apiModels);
-		} else if (open && !agent) {
+		if (!open) return;
+
+		const currentAgent = agentRef.current;
+		if (currentAgent) {
+			form.loadAgentData(currentAgent, apiModelsRef.current);
+		} else {
 			form.resetForm();
 		}
-	}, [agent, open, apiModels]);
+	}, [agent?.id, form.loadAgentData, form.resetForm, open]);
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();

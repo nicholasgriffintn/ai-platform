@@ -1,4 +1,4 @@
-import type { ModelConfig, Tool } from "@ngriffin_uk/polychat-schemas";
+import type { ModelConfig, ProviderSyncStatus, Tool } from "@ngriffin_uk/polychat-schemas";
 import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import { fetchApi } from "../fetch-wrapper";
 
@@ -164,6 +164,26 @@ export class UserService {
 		if (!response.ok) {
 			throw new Error(`Failed to delete provider API key: ${response.statusText}`);
 		}
+	}
+
+	async getProviderSyncStatus(): Promise<ProviderSyncStatus> {
+		let headers = {};
+		try {
+			headers = await this.getHeaders();
+		} catch (error) {
+			console.error("Error getting provider sync status:", error);
+		}
+
+		const response = await fetchApi("/user/providers/sync-status", {
+			method: "GET",
+			headers,
+			timeoutMs: 10000,
+		});
+		if (!response.ok) {
+			throw new Error(`Failed to get provider sync status: ${response.statusText}`);
+		}
+
+		return returnFetchedData<ProviderSyncStatus>(response);
 	}
 
 	async syncProviders(): Promise<void> {

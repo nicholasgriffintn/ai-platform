@@ -246,9 +246,40 @@ describe("useConversationActions", () => {
 			{
 				generateTitle: false,
 				model: "opinion-model",
-				models: ["opinion-model"],
 			},
 		);
+	});
+
+	it("requests consensus through the multi-model API contract", async () => {
+		const queryClient = createQueryClient();
+		queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"], {
+			id: "conversation-1",
+			title: "Original conversation",
+			isLocalOnly: false,
+			messages: [
+				{ id: "user-1", role: "user", content: "Question", model: "test-model" },
+				{ id: "assistant-1", role: "assistant", content: "Answer", model: "test-model" },
+			],
+		});
+		const generateResponse = vi.fn().mockResolvedValue({
+			status: "success",
+			response: "Consensus",
+		});
+		const { result } = renderHook(() => useConversationActions(generateResponse, vi.fn()), {
+			wrapper: wrapper(queryClient),
+		});
+
+		await act(async () => {
+			await result.current.requestOpinion("assistant-1", {
+				mode: "consensus",
+				modelIds: ["opinion-model", "review-model"],
+			});
+		});
+
+		expect(generateResponse).toHaveBeenCalledWith(expect.any(Array), "conversation-1", undefined, {
+			generateTitle: false,
+			models: ["opinion-model", "review-model"],
+		});
 	});
 
 	it("does not replace stored compacted history when requesting an opinion", async () => {

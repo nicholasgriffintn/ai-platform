@@ -23,7 +23,7 @@ export function useAuthStatus() {
 	} = useChatStore();
 	const queryClient = useQueryClient();
 
-	const { isLoading: isAuthLoading } = useQuery({
+	const authStatusQuery = useQuery({
 		queryKey: AUTH_QUERY_KEYS.authStatus,
 		queryFn: async () => {
 			const isAuth = await authService.checkAuthStatus();
@@ -98,7 +98,8 @@ export function useAuthStatus() {
 
 	return {
 		isAuthenticated,
-		isLoading: isAuthenticationLoading || isAuthLoading,
+		isLoading: isAuthenticationLoading || authStatusQuery.isLoading,
+		refreshAuthStatus: authStatusQuery.refetch,
 		user,
 		userSettings,
 		loginWithGithub,

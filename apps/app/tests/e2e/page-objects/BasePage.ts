@@ -8,20 +8,18 @@ export abstract class BasePage {
 	}
 
 	async navigate(path: string = "/") {
-		await this.page.goto(path);
+		return this.page.goto(path, { waitUntil: "domcontentloaded" });
 	}
 
 	async waitForPageLoad() {
-		await this.page.waitForLoadState("networkidle");
+		await this.page.waitForLoadState("domcontentloaded");
 	}
 
-	async screenshot(name: string) {
-		await this.page.screenshot({
-			path: `test-results/screenshots/${name}.png`,
-		});
+	async reload() {
+		await this.page.reload({ waitUntil: "domcontentloaded" });
 	}
 
-	protected async waitForElement(locator: Locator, timeout: number = 10000) {
+	protected async waitForElement(locator: Locator, timeout: number = 20_000) {
 		await locator.waitFor({ timeout });
 	}
 

@@ -12,7 +12,14 @@ import type {
 import { EmptyState } from "~/components/Core/EmptyState";
 import { ModelIcon } from "~/components/ModelIcon";
 import { PageShell } from "~/components/Core/PageShell";
-import { ConfirmationDialog, SearchInput } from "@ngriffin_uk/polychat-component-ui";
+import {
+	Alert,
+	AlertDescription,
+	AlertTitle,
+	Button,
+	ConfirmationDialog,
+	SearchInput,
+} from "@ngriffin_uk/polychat-component-ui";
 import { Tabs, TabsList, TabsTrigger } from "@ngriffin_uk/polychat-component-ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import {
@@ -84,6 +91,8 @@ export function ProfileProvidersTab() {
 	const {
 		providerSettings,
 		isLoadingProviderSettings,
+		providerSyncRequired,
+		isLoadingProviderSyncStatus,
 		syncProviders,
 		isSyncingProviders,
 		deleteProviderApiKey,
@@ -408,6 +417,26 @@ export function ProfileProvidersTab() {
 			/>
 
 			<div className="space-y-5">
+				{!isLoadingProviderSyncStatus && providerSyncRequired && (
+					<Alert variant="warning" aria-label="Provider catalogue needs syncing">
+						<AlertTitle>Provider catalogue needs syncing</AlertTitle>
+						<AlertDescription>
+							<p>
+								New providers have not been synced to your account yet. Sync providers to make them
+								available for configuration.
+							</p>
+							<Button
+								type="button"
+								variant="secondary"
+								size="sm"
+								onClick={() => syncProviders()}
+								disabled={isSyncingProviders}
+							>
+								{isSyncingProviders ? "Syncing providers…" : "Sync providers now"}
+							</Button>
+						</AlertDescription>
+					</Alert>
+				)}
 				{!isLoadingProviderSettings && totalProviderCount > 0 && (
 					<div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
 						<Tabs value={providerType} onValueChange={handleProviderTypeChange}>

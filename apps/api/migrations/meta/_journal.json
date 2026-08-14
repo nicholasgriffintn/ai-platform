@@ -428,6 +428,13 @@
       "when": 1786578463897,
       "tag": "0060_watery_gabe_jones",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "6",
+      "when": 1786665968491,
+      "tag": "0061_fresh_blade",
+      "breakpoints": true
     }
   ]
 }

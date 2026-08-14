@@ -71,7 +71,11 @@ function workspaceSummaryFromDetail(workspace: WorkspaceDetail): WorkspaceSummar
 	};
 }
 
-function updateProjectInWorkspaceCaches(queryClient: QueryClient, project: ProjectDetail) {
+export function updateProjectInWorkspaceCaches(queryClient: QueryClient, project: ProjectDetail) {
+	queryClient.setQueryData<ProjectDetail>(
+		[...projectQueryKey(project.id), project.workspaceId],
+		project,
+	);
 	const summary = projectSummaryFromDetail(project);
 	queryClient.setQueryData<WorkspaceDetail>(workspaceQueryKey(project.workspaceId), (workspace) => {
 		if (!workspace) return workspace;
@@ -228,7 +232,7 @@ export function useCreateProject() {
 		mutationFn: ({ workspaceId, input }: { workspaceId: string; input: CreateProjectInput }) =>
 			createProject(workspaceId, input),
 		onSuccess: (project) => {
-			queryClient.setQueryData(projectQueryKey(project.id), project);
+			updateProjectInWorkspaceCaches(queryClient, project);
 			addProjectToWorkspaceCaches(queryClient, project);
 		},
 	});
@@ -240,7 +244,6 @@ export function useUpdateProject() {
 		mutationFn: ({ projectId, input }: { projectId: string; input: UpdateProjectInput }) =>
 			updateProject(projectId, input),
 		onSuccess: (project) => {
-			queryClient.setQueryData(projectQueryKey(project.id), project);
 			updateProjectInWorkspaceCaches(queryClient, project);
 		},
 	});
@@ -298,7 +301,6 @@ export function useAddProjectCapability() {
 		mutationFn: ({ projectId, input }: { projectId: string; input: AddProjectCapabilityInput }) =>
 			addProjectCapability(projectId, input),
 		onSuccess: (project) => {
-			queryClient.setQueryData(projectQueryKey(project.id), project);
 			updateProjectInWorkspaceCaches(queryClient, project);
 		},
 	});
@@ -310,7 +312,6 @@ export function useRemoveProjectCapability() {
 		mutationFn: ({ projectId, capabilityId }: { projectId: string; capabilityId: string }) =>
 			removeProjectCapability(projectId, capabilityId),
 		onSuccess: (project) => {
-			queryClient.setQueryData(projectQueryKey(project.id), project);
 			updateProjectInWorkspaceCaches(queryClient, project);
 		},
 	});

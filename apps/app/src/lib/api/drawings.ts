@@ -84,8 +84,7 @@ export const generateImageFromDrawing = async ({
 		throw new Error(`Failed to generate image: ${response.statusText}`);
 	}
 
-	const data = await returnFetchedData<GenerateImageResponse>(response);
-	return data;
+	return response.json() as Promise<GenerateImageResponse>;
 };
 
 export const guessDrawingFromImage = async ({

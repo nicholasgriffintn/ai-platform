@@ -63,6 +63,13 @@ export const providersResponseSchema = z.array(
 	}),
 );
 
+export const providerSyncStatusSchema = z.object({
+	required: z.boolean(),
+	missingProviderIds: z.array(z.string()),
+});
+
+export type ProviderSyncStatus = z.infer<typeof providerSyncStatusSchema>;
+
 export const providerSettingsSchema = z.object({
 	id: z.string(),
 	name: z.string(),

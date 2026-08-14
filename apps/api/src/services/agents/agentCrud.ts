@@ -2,23 +2,26 @@ import type { CreateAgentInput, UpdateAgentInput } from "@ngriffin_uk/polychat-s
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { normaliseAgentResponse } from "./agentResponse";
 
 export async function getUserAgents(context: ServiceContext, userId?: number) {
 	context.ensureDatabase();
 	const id = userId ?? context.requireUser().id;
-	return context.repositories.agents.getAgentsByUser(id);
+	return (await context.repositories.agents.getAgentsByUser(id)).map(normaliseAgentResponse);
 }
 
 export async function getUserTeamAgents(context: ServiceContext, userId?: number) {
 	context.ensureDatabase();
 	const id = userId ?? context.requireUser().id;
-	return context.repositories.agents.getTeamAgents(id);
+	return (await context.repositories.agents.getTeamAgents(id)).map(normaliseAgentResponse);
 }
 
 export async function getAgentsByTeam(context: ServiceContext, teamId: string, userId?: number) {
 	context.ensureDatabase();
 	const id = userId ?? context.requireUser().id;
-	return context.repositories.agents.getAgentsByTeamAndUser(teamId, id);
+	return (await context.repositories.agents.getAgentsByTeamAndUser(teamId, id)).map(
+		normaliseAgentResponse,
+	);
 }
 
 export async function getAgentById(context: ServiceContext, agentId: string, userId?: number) {
@@ -34,14 +37,14 @@ export async function getAgentById(context: ServiceContext, agentId: string, use
 		throw new AssistantError("Forbidden", ErrorType.AUTHENTICATION_ERROR);
 	}
 
-	return agent;
+	return normaliseAgentResponse(agent);
 }
 
 export async function createAgent(context: ServiceContext, params: CreateAgentInput, user?: IUser) {
 	context.ensureDatabase();
 	const currentUser = user ?? context.requireUser();
 
-	return context.repositories.agents.createAgent(
+	const agent = await context.repositories.agents.createAgent(
 		currentUser.id,
 		params.name,
 		params.description ?? "",
@@ -57,6 +60,8 @@ export async function createAgent(context: ServiceContext, params: CreateAgentIn
 		params.team_role,
 		params.is_team_agent,
 	);
+
+	return normaliseAgentResponse(agent);
 }
 
 export async function updateAgent(
@@ -68,11 +73,11 @@ export async function updateAgent(
 	context.ensureDatabase();
 	const id = userId ?? context.requireUser().id;
 
-	const agent = await getAgentById(context, agentId, id);
+	await getAgentById(context, agentId, id);
 
 	await context.repositories.agents.updateAgent(agentId, updates);
 
-	return agent;
+	return getAgentById(context, agentId, id);
 }
 
 export async function deleteAgent(context: ServiceContext, agentId: string, userId?: number) {

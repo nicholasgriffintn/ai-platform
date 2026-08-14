@@ -43,7 +43,7 @@ export function useTemplateMutations(workspaceId: string) {
 		instantiate: useMutation({
 			mutationFn: (templateId: string) => instantiateTemplate(templateId, workspaceId),
 			onSuccess: (project) => {
-				queryClient.setQueryData(projectQueryKey(project.id), project);
+				queryClient.setQueryData([...projectQueryKey(project.id), project.workspaceId], project);
 				queryClient.invalidateQueries({ queryKey: workspaceQueryKey(workspaceId) });
 			},
 		}),

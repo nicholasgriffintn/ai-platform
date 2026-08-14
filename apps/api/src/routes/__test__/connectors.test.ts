@@ -57,6 +57,7 @@ describe("connector routes", () => {
 		);
 
 		expect(response.status).toBe(302);
+		expect(response.headers.get("Cross-Origin-Opener-Policy")).toBe("unsafe-none");
 		expect(verifyComposioConnectorAuthorizationMock).toHaveBeenCalledWith(
 			expect.objectContaining({
 				userId: 42,

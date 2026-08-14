@@ -33,7 +33,7 @@ const PASSKEY_BUTTON_CLASS_NAME = `${AUTH_BUTTON_CLASS_NAME} border border-teal-
 const EMAIL_BUTTON_CLASS_NAME = `${AUTH_BUTTON_CLASS_NAME} bg-blue-600 text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-400`;
 
 export function LoginModal({ open, onOpenChange, onKeySubmit }: LoginModalProps) {
-	const { isAuthenticated, isLoading } = useAuthStatus();
+	const { isAuthenticated, isLoading, refreshAuthStatus } = useAuthStatus();
 	const { trackAuth, trackError } = useTrackEvent();
 
 	useEffect(() => {
@@ -125,10 +125,10 @@ export function LoginModal({ open, onOpenChange, onKeySubmit }: LoginModalProps)
 			},
 			onAuthenticated: () => {
 				trackAuth("auth_success", { method: "shared_auth_flow" });
-				onKeySubmit();
+				void refreshAuthStatus().then(() => onKeySubmit());
 			},
 		}),
-		[onKeySubmit, trackAuth, trackError],
+		[onKeySubmit, refreshAuthStatus, trackAuth, trackError],
 	);
 
 	if (isLoading) {

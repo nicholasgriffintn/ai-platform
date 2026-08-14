@@ -125,6 +125,12 @@ export async function getUserProviderSettings(
 	return repo.getUserProviderSettings(id);
 }
 
+export async function getUserProviderSyncStatus(context: ServiceContext, userId?: number) {
+	const repo = ensureRepo(context);
+	const id = userId ?? context.requireUser().id;
+	return repo.getProviderSyncStatus(id);
+}
+
 export async function syncUserProviders(
 	context: ServiceContext,
 	userId?: number,

@@ -204,8 +204,10 @@ export function getModelInteractionCapabilities(
 	const hasImageToImage = outputs.includes("image") && inputs.includes("image");
 	const hasImageToText = outputs.includes("text") && inputs.includes("image");
 	const isTextToImageOnlyModel = hasTextToImage && !hasImageToImage && !hasImageToText;
-	const supportsDocuments = Boolean(model.supportsDocuments) && !isTextToImageOnlyModel;
-	const supportsAudio = Boolean(model.supportsAudio) && !isTextToImageOnlyModel;
+	const supportsDocuments =
+		(Boolean(model.supportsDocuments) || inputs.includes("pdf")) && !isTextToImageOnlyModel;
+	const supportsAudio =
+		(Boolean(model.supportsAudio) || inputs.includes("audio")) && !isTextToImageOnlyModel;
 
 	return {
 		isImageModel: (hasImageToImage || hasImageToText) && !supportsDocuments && !supportsAudio,

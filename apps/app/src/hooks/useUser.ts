@@ -4,6 +4,7 @@ import { apiService } from "~/lib/api/api-service";
 
 export const USER_QUERY_KEYS = {
 	providerSettings: ["user", "provider-settings"],
+	providerSyncStatus: ["user", "provider-sync-status"],
 } as const;
 
 export function useUser(options?: { enabled?: boolean }) {
@@ -12,6 +13,11 @@ export function useUser(options?: { enabled?: boolean }) {
 	const { data: providerSettings, isLoading: isLoadingProviderSettings } = useQuery({
 		queryKey: USER_QUERY_KEYS.providerSettings,
 		queryFn: () => apiService.getProviderSettings(),
+		enabled: options?.enabled ?? true,
+	});
+	const { data: providerSyncStatus, isLoading: isLoadingProviderSyncStatus } = useQuery({
+		queryKey: USER_QUERY_KEYS.providerSyncStatus,
+		queryFn: () => apiService.getProviderSyncStatus(),
 		enabled: options?.enabled ?? true,
 	});
 
@@ -44,6 +50,9 @@ export function useUser(options?: { enabled?: boolean }) {
 			queryClient.invalidateQueries({
 				queryKey: USER_QUERY_KEYS.providerSettings,
 			});
+			queryClient.invalidateQueries({
+				queryKey: USER_QUERY_KEYS.providerSyncStatus,
+			});
 		},
 	});
 
@@ -61,6 +70,8 @@ export function useUser(options?: { enabled?: boolean }) {
 	return {
 		providerSettings: providerSettings ?? [],
 		isLoadingProviderSettings,
+		providerSyncRequired: providerSyncStatus?.required ?? false,
+		isLoadingProviderSyncStatus,
 		storeProviderApiKey: storeProviderApiKeyMutation.mutateAsync,
 		isStoringProviderApiKey: storeProviderApiKeyMutation.isPending,
 		syncProviders: syncProvidersMutation.mutate,

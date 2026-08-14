@@ -716,6 +716,27 @@ export class UserSettingsRepository extends BaseRepository {
 		);
 	}
 
+	public async getProviderSyncStatus(userId: number): Promise<{
+		required: boolean;
+		missingProviderIds: string[];
+	}> {
+		const { query, values } = this.buildSelectQuery(
+			"provider_settings",
+			{ user_id: userId },
+			{ columns: ["provider_id"] },
+		);
+		const storedProviders = await this.runQuery<{ provider_id: string }>(query, values);
+		const storedProviderIds = new Set(storedProviders.map(({ provider_id }) => provider_id));
+		const missingProviderIds = listConfigurableUserProviderIds().filter(
+			(providerId) => !storedProviderIds.has(providerId),
+		);
+
+		return {
+			required: missingProviderIds.length > 0,
+			missingProviderIds,
+		};
+	}
+
 	public async getProviderSettingsById(params: {
 		providerSettingsId: string;
 		providerId: string;

@@ -6,11 +6,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CHATS_QUERY_KEY } from "~/constants";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Conversation } from "~/types";
-import { useChat } from "../useChat";
+import { useChat, useDeleteAllLocalChats } from "../useChat";
 
 const mocks = vi.hoisted(() => ({
 	getChat: vi.fn(),
 	getLocalChat: vi.fn(),
+	deleteAllLocalChats: vi.fn(),
 }));
 
 vi.mock("~/lib/api/api-service", () => ({
@@ -22,6 +23,7 @@ vi.mock("~/lib/api/api-service", () => ({
 vi.mock("~/lib/local/local-chat-service", () => ({
 	localChatService: {
 		getLocalChat: mocks.getLocalChat,
+		deleteAllLocalChats: mocks.deleteAllLocalChats,
 	},
 }));
 
@@ -105,5 +107,51 @@ describe("useChat", () => {
 		await waitFor(() => expect(result.current.data).toBe(optimisticConversation));
 
 		consoleError.mockRestore();
+	});
+});
+
+describe("useDeleteAllLocalChats", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mocks.deleteAllLocalChats.mockResolvedValue(undefined);
+		useChatStore.setState({
+			currentConversationId: "conversation-1",
+			user: {
+				id: 42,
+				name: "Release user",
+				github_username: "release-user",
+				plan_id: "free",
+				avatar_url: "",
+				created_at: "2026-08-14T00:00:00.000Z",
+				updated_at: "2026-08-14T00:00:00.000Z",
+				company: "",
+				location: "",
+				site: "",
+				twitter_username: "",
+				github_url: "",
+				bio: "",
+			},
+		});
+	});
+
+	it("clears only the active user's local conversation cache", async () => {
+		const queryClient = createQueryClient();
+		const anonymousChats = [{ id: "anonymous-chat", title: "Anonymous", messages: [] }];
+		queryClient.setQueryData([CHATS_QUERY_KEY, "local", "anonymous"], anonymousChats);
+		queryClient.setQueryData(
+			[CHATS_QUERY_KEY, "local", "user:42"],
+			[{ id: "user-chat", title: "Signed in", messages: [] }],
+		);
+
+		const { result } = renderHook(() => useDeleteAllLocalChats(), {
+			wrapper: wrapper(queryClient),
+		});
+
+		await result.current.mutateAsync();
+
+		expect(queryClient.getQueryData([CHATS_QUERY_KEY, "local", "user:42"])).toEqual([]);
+		expect(queryClient.getQueryData([CHATS_QUERY_KEY, "local", "anonymous"])).toEqual(
+			anonymousChats,
+		);
 	});
 });

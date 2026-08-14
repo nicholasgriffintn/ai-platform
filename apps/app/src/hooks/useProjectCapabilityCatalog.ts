@@ -13,14 +13,7 @@ export function useProjectCapabilityCatalog() {
 	const recipesQuery = useAssistantRecipes();
 	const toolsQuery = useTools();
 	const callableTools = useMemo(() => toolsQuery.data ?? [], [toolsQuery.data]);
-	const callableToolIds = useMemo(
-		() => new Set(callableTools.map((tool) => tool.id)),
-		[callableTools],
-	);
-	const apps = useMemo(
-		() => (appsQuery.data?.apps ?? []).filter((app) => !callableToolIds.has(app.id)),
-		[appsQuery.data?.apps, callableToolIds],
-	);
+	const apps = useMemo(() => appsQuery.data?.apps ?? [], [appsQuery.data?.apps]);
 	const recipes = recipesQuery.data?.recipes ?? [];
 	const tools = appsQuery.data?.tools ?? [];
 
