@@ -2,6 +2,8 @@ export const IS_PRODUCTION = import.meta.env.PROD;
 export const IS_DEVELOPMENT = import.meta.env.DEV;
 export const BUILD_MODE = import.meta.env.MODE;
 
+const IS_E2E_BUILD = BUILD_MODE === "e2e";
+
 export const APP_NAME = "Polychat";
 export const APP_TAGLINE = "AI Assistant";
 export const CONTACT_LINK = "https://nicholasgriffin.dev/contact";
@@ -12,20 +14,22 @@ export const CHATS_QUERY_KEY = "chats";
 
 export const SHOW_DEV_TOOLS = IS_DEVELOPMENT;
 
-export const API_BASE_URL = IS_PRODUCTION ? "https://api.polychat.app" : "http://localhost:8787";
-export const WS_API_URL = IS_PRODUCTION ? "wss://api.polychat.app" : "ws://localhost:8787";
+export const API_BASE_URL =
+	IS_PRODUCTION && !IS_E2E_BUILD ? "https://api.polychat.app" : "http://localhost:8787";
+export const WS_API_URL =
+	IS_PRODUCTION && !IS_E2E_BUILD ? "wss://api.polychat.app" : "ws://localhost:8787";
 export const APPLE_SIGN_IN_CLIENT_ID = import.meta.env.VITE_APPLE_CLIENT_ID || "com.polychat.web";
 
 export const POSTHOG_CONFIG = {
 	apiKey: import.meta.env.VITE_PUBLIC_POSTHOG_KEY || "disabled",
 	apiHost: import.meta.env.VITE_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com",
 	debug: BUILD_MODE === "development",
-	disabled: !import.meta.env.VITE_PUBLIC_POSTHOG_KEY,
+	disabled: IS_E2E_BUILD || !import.meta.env.VITE_PUBLIC_POSTHOG_KEY,
 };
 
 export const BEACON_CONFIG = {
-	enabled: import.meta.env.VITE_ENABLE_BEACON === "true" || false,
-	experimentsEnabled: import.meta.env.VITE_ENABLE_BEACON_EXPERIMENTS === "true" || false,
+	enabled: !IS_E2E_BUILD && import.meta.env.VITE_ENABLE_BEACON === "true",
+	experimentsEnabled: !IS_E2E_BUILD && import.meta.env.VITE_ENABLE_BEACON_EXPERIMENTS === "true",
 	endpoint: import.meta.env.VITE_BEACON_ENDPOINT || "",
 	siteId: import.meta.env.VITE_BEACON_SITE_ID || "",
 	debug: import.meta.env.VITE_BEACON_DEBUG === "true" || false,
@@ -127,4 +131,4 @@ export const getAnalyticsConfig = () => POSTHOG_CONFIG;
 export const getBeaconConfig = () => BEACON_CONFIG;
 export const shouldShowDevTools = () => SHOW_DEV_TOOLS;
 export const shouldEnableCaptcha = () =>
-	CAPTCHA_SITE_KEY && (IS_PRODUCTION || ENABLE_CAPTCHA_IN_DEV);
+	!IS_E2E_BUILD && CAPTCHA_SITE_KEY && (IS_PRODUCTION || ENABLE_CAPTCHA_IN_DEV);

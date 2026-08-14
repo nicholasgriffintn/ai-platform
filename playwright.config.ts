@@ -23,8 +23,8 @@ export default defineConfig({
 			reuseExistingServer: !process.env.CI,
 		},
 		{
-			command: "pnpm --filter @assistant/app dev:e2e",
-			url: "http://localhost:5173/src/entry.client.tsx",
+			command: "pnpm --filter @assistant/app serve:e2e",
+			url: "http://localhost:5173/chat",
 			timeout: 120 * 1000,
 			reuseExistingServer: !process.env.CI,
 		},

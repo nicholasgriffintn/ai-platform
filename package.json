@@ -24,7 +24,7 @@
 		"deploy:app": "pnpm --filter @assistant/app deploy",
 		"deploy:training": "pnpm --filter @assistant/training deploy",
 		"deploy": "pnpm --filter @assistant/api --filter @assistant/app deploy",
-		"test:e2e": "pnpm build:packages && playwright test --config=playwright.config.ts --tsconfig=tsconfig.playwright.json",
+		"test:e2e": "pnpm build:packages && pnpm --filter @assistant/app build:e2e && playwright test --config=playwright.config.ts --tsconfig=tsconfig.playwright.json",
 		"test:e2e:smoke": "pnpm test:e2e apps/app/tests/e2e/smoke",
 		"test:e2e:release": "pnpm test:e2e",
 		"dev:mobile": "sh scripts/xcodebuild-mobile.sh build",

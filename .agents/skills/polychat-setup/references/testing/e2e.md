@@ -4,9 +4,11 @@ Use Playwright end-to-end tests as the release-validation suite for user-facing 
 
 ## Test boundary
 
-Exercise the Polychat app and API together. The E2E runtime builds the API Worker, applies its migrations to an isolated D1 database, and seeds deterministic logged-out, Free, and Pro personas.
+Exercise the Polychat app and API together. The release command builds the app in a production-optimised E2E mode, serves its Cloudflare Worker locally, builds the API Worker, applies its migrations to an isolated D1 database, and seeds deterministic logged-out, Free, and Pro personas. The E2E app Worker has no production bindings or secrets and connects to the local API on the documented port.
 
 Mock only outbound third-party services at their boundary. Do not intercept or replace Polychat API routes in the browser. An unexpected outbound request must fail the test so new integrations cannot silently reach a live service.
+
+Disable browser telemetry and captcha in the E2E build because they are outbound third-party integrations, not part of the Polychat app/API boundary under release validation.
 
 ## Release failures
 
@@ -39,13 +41,13 @@ await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:"
 
 Treat a user-facing feature as incomplete until its E2E impact has been considered. Cover the relevant state transitions, not static copy.
 
-| Surface | Logged out | Free account | Pro account |
-| --- | --- | --- | --- |
-| Chat | Local history, messages, public navigation, sign-in entry | Local history, messages, account limits | Synced history, messages, attachments, sharing and branching |
-| Work | Sign-in boundaries on overview and deep links | Pro entitlement and return to Chat | Workspaces, projects, members, governance, project chat and every project sub-surface |
-| Account | Every profile tab is protected | Every profile tab loads with Free billing state | Every profile tab loads with Pro billing state |
-| Configuration | Sign-in entry | AI and messaging provider lifecycles | Connectors, API keys, sources and Work configuration lifecycles |
-| Recovery | Missing routes and unavailable shared links | Missing routes and unavailable shared links | Provider failures, missing resources and continued use after failure |
+| Surface       | Logged out                                                | Free account                                    | Pro account                                                                           |
+| ------------- | --------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Chat          | Local history, messages, public navigation, sign-in entry | Local history, messages, account limits         | Synced history, messages, attachments, sharing and branching                          |
+| Work          | Sign-in boundaries on overview and deep links             | Pro entitlement and return to Chat              | Workspaces, projects, members, governance, project chat and every project sub-surface |
+| Account       | Every profile tab is protected                            | Every profile tab loads with Free billing state | Every profile tab loads with Pro billing state                                        |
+| Configuration | Sign-in entry                                             | AI and messaging provider lifecycles            | Connectors, API keys, sources and Work configuration lifecycles                       |
+| Recovery      | Missing routes and unavailable shared links               | Missing routes and unavailable shared links     | Provider failures, missing resources and continued use after failure                  |
 
 For messages, include representative plain text, multiline and Unicode, code and special characters, image, document/code, and audio inputs. Add another case when a new message or attachment type becomes user-facing.
 
@@ -87,4 +89,4 @@ pnpm test:e2e apps/app/tests/e2e/features/chat.spec.ts
 pnpm test:e2e --grep "provider failure"
 ```
 
-The root `release:check` command includes the complete E2E suite. CI runs the same suite in two shards and uploads failure artefacts.
+The root `release:check` command includes the complete E2E suite. CI runs that suite in two shards for pull requests, runs the smoke suite after pushes to `main`, and uploads failure artefacts.

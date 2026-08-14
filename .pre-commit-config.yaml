@@ -1,24 +1,26 @@
+default_install_hook_types: [pre-commit, pre-push]
+
 repos:
   - repo: local
     hooks:
       - id: formatter
         name: formatter
-        entry: pnpm format
+        entry: apps/app/node_modules/.bin/oxfmt
         language: system
         types_or: [javascript, jsx, ts, tsx, json, yaml, markdown, css, scss]
-        pass_filenames: false
       - id: typescript-check
         name: typescript-check
         entry: pnpm typecheck
         language: system
         types_or: [ts, tsx]
         pass_filenames: false
+        stages: [pre-push]
   - repo: local
     hooks:
       - id: trufflehog
         name: TruffleHog
         description: Detect secrets in your data.
-        entry: bash scripts/trufflehog-pre-commit.sh
+        entry: bash scripts/trufflehog-pre-push.sh
         language: system
         pass_filenames: false
-        stages: ["pre-commit", "pre-push"]
+        stages: [pre-push]

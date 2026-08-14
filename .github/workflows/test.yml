@@ -66,13 +66,13 @@ jobs:
           done
 
   e2e:
-    name: E2E (${{ matrix.shard }}/2)
+    name: E2E (${{ github.event_name == 'pull_request' && format('{0}/2', matrix.shard) || 'smoke' }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2]
+        shard: ${{ github.event_name == 'pull_request' && fromJSON('[1, 2]') || fromJSON('[1]') }}
     steps:
       - uses: actions/checkout@v7
       - name: Install pnpm
@@ -87,7 +87,11 @@ jobs:
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
       - name: Run end-to-end release tests
+        if: github.event_name == 'pull_request'
         run: pnpm test:e2e:release --shard=${{ matrix.shard }}/2
+      - name: Run end-to-end smoke tests
+        if: github.event_name == 'push'
+        run: pnpm test:e2e:smoke
       - name: Upload failure artefacts
         if: failure()
         uses: actions/upload-artifact@v7
