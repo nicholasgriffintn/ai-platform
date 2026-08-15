@@ -586,4 +586,28 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 	}),
+	createModelConfig("glm-5.3", PROVIDER, {
+		name: "GLM-5.3",
+		matchingModel: "glm-5.3",
+		family: "glm",
+		openWeights: false,
+		releaseDate: "August 14, 2026",
+		lastUpdated: "August 14, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1000000,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.0014,
+		costPer1kOutputTokens: 0.0044,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);
