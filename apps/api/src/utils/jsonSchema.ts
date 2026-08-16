@@ -1,5 +1,6 @@
 import z from "zod/v4";
 import { getLogger } from "~/utils/logger";
+import { isRecord } from "~/utils/objects";
 
 const logger = getLogger({ prefix: "services/functions/jsonSchema" });
 
@@ -33,6 +34,22 @@ type JsonObjectSchema = {
 	anyOf?: Array<{ required: readonly string[] }>;
 	additionalProperties?: boolean | JsonSchemaProperty;
 };
+
+export function ensureObjectRootJsonSchema(
+	schema: Record<string, unknown>,
+): Record<string, unknown> {
+	const alternatives = schema.anyOf;
+	if (
+		schema.type !== undefined ||
+		!Array.isArray(alternatives) ||
+		alternatives.length === 0 ||
+		!alternatives.every((alternative) => isRecord(alternative) && alternative.type === "object")
+	) {
+		return schema;
+	}
+
+	return { ...schema, type: "object" };
+}
 
 function applyDescription<TSchema extends z.ZodTypeAny>(
 	schema: TSchema,
@@ -204,6 +221,7 @@ export function jsonSchemaToZod(parameters: JsonObjectSchema, strict = false): z
 	if (!firstAlternative) {
 		return objectSchemaToZod(parameters, requiredKeys, strict);
 	}
+
 	const firstSchema = objectSchemaToZod(
 		parameters,
 		new Set([...requiredKeys, ...firstAlternative.required]),

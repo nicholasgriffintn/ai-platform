@@ -7,6 +7,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { formatToolErrorResponse, formatToolResponse } from "~/utils/tool-responses";
 import { safeParseJson } from "~/utils/json";
+import { ensureObjectRootJsonSchema } from "~/utils/jsonSchema";
 import { buildMessageParts } from "./messageParts";
 import z from "zod/v4";
 
@@ -472,7 +473,7 @@ function resolveFunctionParameters(func: any): Record<string, unknown> | null {
 	}
 
 	try {
-		return z.toJSONSchema(func.inputSchema);
+		return ensureObjectRootJsonSchema(z.toJSONSchema(func.inputSchema));
 	} catch (error) {
 		logger.warn("Failed to convert tool input schema to JSON schema", {
 			name: func.name,
