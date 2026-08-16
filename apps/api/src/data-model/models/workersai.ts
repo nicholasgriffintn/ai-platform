@@ -1066,7 +1066,6 @@ export const workersAiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 1,
 		speed: 4,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -1103,7 +1102,6 @@ export const workersAiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 1,
 		speed: 5,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -1140,7 +1138,6 @@ export const workersAiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 1,
 		speed: 5,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -1243,7 +1240,6 @@ export const workersAiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 2,
 		speed: 3,
-		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

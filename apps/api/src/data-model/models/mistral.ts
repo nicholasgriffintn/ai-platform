@@ -55,7 +55,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 3,
 		speed: 3,
 		isFree: true,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 	}),
 
@@ -83,7 +82,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 1,
 		speed: 3,
 		isFeatured: false,
-		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -122,7 +120,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 4,
 		speed: 3,
 		deprecated: true,
-		supportsArtifacts: true,
 		family: "mixtral",
 		openWeights: true,
 	}),
@@ -162,7 +159,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		isFeatured: false,
 		supportsFim: true,
-		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 4.4,
 			codingIndex: null,
@@ -196,7 +192,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 3,
 		speed: 5,
 		deprecated: true,
-		supportsArtifacts: true,
 		family: "mistral",
 		openWeights: true,
 	}),
@@ -228,7 +223,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 8.1,
 			codingIndex: null,
@@ -273,7 +267,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		speed: 4,
 		multimodal: true,
 		isFeatured: true,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -315,7 +308,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		isFeatured: true,
 		supportsFim: true,
-		supportsArtifacts: true,
 		family: "codestral",
 		openWeights: true,
 	}),
@@ -342,7 +334,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 3,
-		supportsArtifacts: true,
 		family: "mixtral",
 		openWeights: true,
 	}),
@@ -371,7 +362,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 4,
 		speed: 4,
 		multimodal: true,
-		supportsArtifacts: true,
 		family: "pixtral",
 		openWeights: true,
 	}),
@@ -411,7 +401,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		speed: 4,
 		multimodal: true,
 		isFeatured: true,
-		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -448,7 +437,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: true,
-		supportsArtifacts: true,
 	}),
 
 	createModelConfig("ministral-8b", PROVIDER, {
@@ -473,7 +461,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: true,
-		supportsArtifacts: true,
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "October 1, 2024",
 		lastUpdated: "October 4, 2024",
@@ -512,7 +499,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		speed: 4,
 		multimodal: true,
 		isFeatured: false,
-		supportsArtifacts: true,
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "October 1, 2024",
 		lastUpdated: "October 4, 2024",
@@ -550,7 +536,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 1,
 		speed: 3,
 		isFeatured: false,
-		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -590,7 +575,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 3,
 		speed: 4,
 		isFeatured: false,
-		supportsArtifacts: true,
 	}),
 
 	createModelConfig("voxtral-small", PROVIDER, {

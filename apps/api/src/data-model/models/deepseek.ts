@@ -28,7 +28,6 @@ export const deepseekModelConfig: ModelConfig = {
 		speed: 3,
 		isFeatured: true,
 		deprecated: true,
-		supportsArtifacts: true,
 		isFree: true,
 		family: "deepseek",
 		openWeights: true,
@@ -60,7 +59,6 @@ export const deepseekModelConfig: ModelConfig = {
 		speed: 3,
 		isFeatured: true,
 		deprecated: true,
-		supportsArtifacts: true,
 		isFree: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -98,7 +96,6 @@ export const deepseekModelConfig: ModelConfig = {
 		contextComplexity: 5,
 		reliability: 1,
 		speed: 4,
-		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -142,7 +139,6 @@ export const deepseekModelConfig: ModelConfig = {
 		contextComplexity: 5,
 		reliability: 1,
 		speed: 3,
-		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

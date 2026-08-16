@@ -9,7 +9,6 @@ export const parallelModelConfig: ModelConfig = {
 		provider: "parallel",
 		strengths: ["research", "search", "analysis"],
 		isFeatured: false,
-		supportsArtifacts: false,
 		isFree: false,
 		modalities: {
 			input: ["text"],

@@ -3,20 +3,17 @@ import type { PromptModelMetadata } from "./sections/metadata";
 
 export interface PromptCapabilities {
 	supportsToolCalls: boolean;
-	supportsArtifacts: boolean;
 	simulatedThinking: boolean;
 }
 
 interface ResolvePromptCapabilityArgs {
 	supportsToolCalls?: boolean;
-	supportsArtifacts?: boolean;
 	simulatedThinking?: boolean;
 	modelMetadata?: PromptModelMetadata;
 }
 
 export function resolvePromptCapabilities({
 	supportsToolCalls,
-	supportsArtifacts,
 	simulatedThinking,
 	modelMetadata,
 }: ResolvePromptCapabilityArgs): PromptCapabilities {
@@ -24,7 +21,6 @@ export function resolvePromptCapabilities({
 
 	return {
 		supportsToolCalls: supportsToolCalls ?? metadata?.supportsToolCalls ?? false,
-		supportsArtifacts: supportsArtifacts ?? metadata?.supportsArtifacts ?? false,
 		simulatedThinking: simulatedThinking ?? false,
 	};
 }
@@ -33,7 +29,6 @@ export function getResponseStyle(
 	verbosity?: VerbosityLevel,
 	simulatedThinking = false,
 	supportsToolCalls = false,
-	supportsArtifacts = false,
 	isAgent = false,
 	memoriesEnabled = false,
 	userTraits?: string,
@@ -81,14 +76,14 @@ export function getResponseStyle(
   - Offer to elaborate when the user asks; avoid over-explaining upfront.
   - Cite authoritative sources for specific facts and flag uncertainty only when information is incomplete.
   - Ask follow-up questions only when information is missing or safety requires clarification (more than one is fine if essential).
-  - Keep chat in Markdown prose. Place substantial code/data or executable outputs in fenced blocks or a single artifact per message.
+  - Keep chat in Markdown prose. Place substantial code or data in fenced blocks.
   - If a tool fails: retry once if safe; otherwise summarise the failure briefly and offer an alternative.
   - Write your response in the same language as the task posed by the user.`;
 
 	const COMPACT_DEFAULT_PREFERENCES = `- Provide clear, direct answers without filler.
   - Ask for missing details only when essential; multiple follow-ups are fine when safety or accuracy demands it.
   - Match explanation depth to the task's complexity.
-  - Keep chat in Markdown; put substantial code/data in fenced blocks or a single artifact per message.
+  - Keep chat in Markdown; put substantial code or data in fenced blocks.
   - If a tool fails: retry once if safe, otherwise summarise and suggest an alternative.
   - Reply in the same language the user used.`;
 
@@ -126,12 +121,6 @@ export function getResponseStyle(
 
 			if (supportsToolCalls) {
 				agentGuidelines.push("Only narrate tool usage when it helps the user act on the result.");
-			}
-
-			if (supportsArtifacts) {
-				agentGuidelines.push(
-					"Put reusable deliverables in artifacts and summarise them in one sentence.",
-				);
 			}
 
 			agentGuidelines.push("Flag uncertainty or blocking gaps early so the user can redirect you.");
@@ -175,12 +164,6 @@ export function getResponseStyle(
 			);
 		}
 
-		if (supportsArtifacts) {
-			additionalGuidelines.push(
-				"Store long-form or reusable deliverables in artifacts and provide a one-line description in chat.",
-			);
-		}
-
 		additionalGuidelines.push("Flag uncertainty or missing information instead of guessing.");
 		additionalGuidelines.push("Scale your explanation to the complexity of the request.");
 
@@ -193,7 +176,7 @@ export function getResponseStyle(
 		}
 
 		if (isCoding) {
-			preferences += `\n- Present runnable code in fenced blocks or a single artifact and call out assumptions or edge cases.`;
+			preferences += `\n- Present runnable code in fenced blocks and call out assumptions or edge cases.`;
 		} else {
 			preferences += `\n- Keep chat in Markdown prose; add short code snippets only when they clarify the explanation.`;
 		}
@@ -259,27 +242,11 @@ export function getResponseStyle(
 			PREFERENCES_WITH_INSTRUCTIONS += `${subBase}.2 Stop calling tools once you have enough information to answer confidently.\n`;
 		}
 
-		if (supportsArtifacts) {
-			let artifactSub;
-			if (isCoding && supportsToolCalls) {
-				artifactSub = `${step}.9`;
-			} else if (isCoding) {
-				artifactSub = `${step}.8`;
-			} else {
-				artifactSub = `${step}.2`;
-			}
-			PREFERENCES_WITH_INSTRUCTIONS += `${artifactSub} Use an artifact for long-form, reusable, or executable deliverables and provide a one-line summary in the chat.\n`;
-		}
-
 		let finalSub;
-		if (isCoding && supportsToolCalls && supportsArtifacts) {
-			finalSub = `${step}.10`;
-		} else if (isCoding && (supportsToolCalls || supportsArtifacts)) {
-			finalSub = `${step}.${supportsToolCalls && supportsArtifacts ? 10 : 9}`;
-		} else if (isCoding) {
-			finalSub = `${step}.8`;
+		if (isCoding) {
+			finalSub = supportsToolCalls ? `${step}.9` : `${step}.8`;
 		} else {
-			finalSub = `${step}.${supportsToolCalls && supportsArtifacts ? 3 : supportsToolCalls || supportsArtifacts ? 2 : 1}`;
+			finalSub = supportsToolCalls ? `${step}.2` : `${step}.1`;
 		}
 		PREFERENCES_WITH_INSTRUCTIONS += `${finalSub} Keep any pre-answer summary concise and omit sensitive personal details.\n`;
 		step++;
@@ -294,39 +261,14 @@ export function getResponseStyle(
 	}
 
 	if (isCoding) {
-		PREFERENCES_WITH_INSTRUCTIONS += `${step}. When coding, present runnable code in fenced blocks or artifacts and call out assumptions or edge cases.\n`;
-		for (let sub = 1; sub <= 5; sub++) {
-			switch (sub) {
-				case 1:
-					PREFERENCES_WITH_INSTRUCTIONS += `${step}.1. Ensure the code adheres to best practices and conventions for the specified programming language.\n`;
-					break;
-				case 2:
-					PREFERENCES_WITH_INSTRUCTIONS += `${step}.2. Write clean, efficient, and well-documented code.\n`;
-					break;
-				case 3:
-					PREFERENCES_WITH_INSTRUCTIONS += `${step}.3. Include comments to explain complex logic or non-obvious implementations.\n`;
-					break;
-				case 4:
-					PREFERENCES_WITH_INSTRUCTIONS += `${step}.4. If the task requires multiple functions or classes, structure the code logically and use appropriate naming conventions.\n`;
-					break;
-				case 5:
-					PREFERENCES_WITH_INSTRUCTIONS += `${step}.5. For substantial code solutions, consider using an artifact tag instead.\n`;
-					break;
-			}
-		}
+		PREFERENCES_WITH_INSTRUCTIONS += `${step}. When coding, present runnable code in fenced blocks and call out assumptions or edge cases.\n`;
+		PREFERENCES_WITH_INSTRUCTIONS += `${step}.1. Ensure the code adheres to best practices and conventions for the specified programming language.\n`;
+		PREFERENCES_WITH_INSTRUCTIONS += `${step}.2. Write clean, efficient, and well-documented code.\n`;
+		PREFERENCES_WITH_INSTRUCTIONS += `${step}.3. Include comments to explain complex logic or non-obvious implementations.\n`;
+		PREFERENCES_WITH_INSTRUCTIONS += `${step}.4. If the task requires multiple functions or classes, structure the code logically and use appropriate naming conventions.\n`;
 		step++;
 	} else {
 		PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Keep chat responses in Markdown prose; add short code snippets only when they clarify the explanation.\n`;
-	}
-
-	if (supportsArtifacts) {
-		PREFERENCES_WITH_INSTRUCTIONS += getArtifactInstructions(
-			supportsArtifacts,
-			false,
-			step,
-			"full",
-		);
-		step += 1;
 	}
 
 	PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Include 'Key steps' for complex tasks.\n`;
@@ -367,171 +309,6 @@ export function getResponseStyle(
 				answerFormatInstructions: `Balance your ${isCoding ? "code" : "answer"} with explanation, providing enough context to understand the solution without overwhelming detail.`,
 			};
 	}
-}
-
-/**
- * Returns an example artifact based on context
- * @param supportsArtifacts Whether artifacts are supported in the current environment
- * @param forCode Whether example should be for code specifically
- * @returns Example string or empty string if artifacts not supported
- */
-export function getArtifactExample(
-	supportsArtifacts = false,
-	forCode = false,
-	variant: "full" | "compact" = "full",
-): string {
-	if (!supportsArtifacts) {
-		return "";
-	}
-
-	const guidance = [
-		"Use artifacts for deliverables the user may reuse or download later.",
-		'Downloadable documents should use type="text/markdown" so they open as editable document artifacts.',
-		'For custom HTML interfaces, visualisations, or interactive demos that should appear directly in chat, set display="inline" on a type="text/html" artifact; inline artifacts are preview-only and do not show the source code by default.',
-		"Reference each artifact in your main response so the user understands what it contains.",
-		"Reuse an existing artifact identifier when updating earlier work; choose a new one for fresh deliverables.",
-		"When a user message includes <artifact_selection>, treat it as selected context from an existing artifact; apply the requested change to that portion and reuse the referenced artifact identifier when returning an update.",
-		"Do not call tools or APIs to create artifacts; emit inline artifact tags in your response.",
-		"Tailor each artifact to the user's request—never copy the example artifact verbatim.",
-	];
-
-	if (variant === "compact") {
-		const compactExample = forCode
-			? `<artifact identifier="solution-snippet" type="application/code" language="{{programming_language}}">
-// Final implementation
-</artifact>`
-			: `<artifact identifier="deliverable" type="text/markdown">
-Provide the full deliverable here.
-</artifact>`;
-
-		return `<artifact_hint>
-${guidance.map((line) => `  - ${line}`).join("\n")}
-</artifact_hint>
-  <example_artifact>
-  ${compactExample}
-</example_artifact>`;
-	}
-
-	const sampleArtifact = forCode
-		? `<artifact identifier="solution-snippet" type="application/code" language="{{programming_language}}">
-// Main implementation
-function example() {
-  // ...
-}
-</artifact>`
-		: `<artifact identifier="deliverable" type="text/markdown">
-# Outline
-- Key point 1
-- Key point 2
-</artifact>`;
-
-	return `<artifact_hint>
-${guidance.map((line) => `  - ${line}`).join("\n")}
-</artifact_hint>
-<artifact_example>
-  ${sampleArtifact}
-</artifact_example>`;
-}
-
-function getArtifactTypeInstructions(forCode = false): string {
-	if (forCode) {
-		return `- Code: "application/vnd.code" or "application/code"
-          - Use for code snippets or scripts in any programming language.
-          - Include the language name as the value of the \`language\` attribute (e.g., \`language="python"\`).
-          - Do not use triple backticks when putting code in an artifact.
-        - Documents: "text/markdown"
-            - Use for plain text, Markdown, or other formatted text documents.
-        - HTML: "text/html"
-          - The user interface can render single file HTML pages placed within the artifact tags. HTML, JS, and CSS should be in a single file when using the \`text/html\` type.
-          - Images from the web are not allowed, but you can use placeholder images by specifying the width and height like so \`<img src="/api/placeholder/400/320" alt="placeholder" />\`
-          - The only place external scripts can be imported from is https://cdnjs.cloudflare.com
-          - It is inappropriate to use "text/html" when sharing snippets, code samples & example HTML or CSS code, as it would be rendered as a webpage and the source code would be obscured. The assistant should instead use "application/vnd.code" defined above.
-          - If the assistant is unable to follow the above requirements for any reason, use "application/vnd.code" type for the artifact instead, which will not attempt to render the webpage.
-        - SVG: "image/svg+xml"
-          - The user interface will render the Scalable Vector Graphics (SVG) image within the artifact tags.
-          - The assistant should specify the viewbox of the SVG rather than defining a width/height
-        - Mermaid Diagrams: "text/vnd.mermaid"
-          - The user interface will render Mermaid diagrams placed within the artifact tags.
-          - Do not put Mermaid code in a code block when using artifacts.
-        - React Components: "application/vnd.react"
-          - Use this for displaying either: React elements, e.g. \`<strong>Hello World!</strong>\`, React pure functional components, e.g. \`() => <strong>Hello World!</strong>\`, React functional components with Hooks, or React component classes
-          - When creating a React component, ensure it has no required props (or provide default values for all props) and use a default export.
-          - Use Tailwind classes for styling. DO NOT USE ARBITRARY VALUES (e.g. \`h-[600px]\`).
-          - Base React is available to be imported. To use hooks, first import it at the top of the artifact, e.g. \`import { useState } from "react"\`
-          - The lucide-react@0.263.1 library is available to be imported. e.g. \`import { Camera } from "lucide-react"\` & \`<Camera color="red" size={48} />\`
-          - The recharts charting library is available to be imported, e.g. \`import { LineChart, XAxis, ... } from "recharts"\` & \`<LineChart ...><XAxis dataKey="name"> ...\`
-          - The assistant can use prebuilt components from the \`shadcn/ui\` library after it is imported: \`import { Alert, AlertDescription, AlertTitle, AlertDialog, AlertDialogAction } from '@/components/ui/alert';import { type } from "os"\`. If using components from the shadcn/ui library, the assistant mentions this to the user and offers to help them install the components if necessary.
-          - NO OTHER LIBRARIES (e.g. zod, hookform) ARE INSTALLED OR ABLE TO BE IMPORTED.
-          - Images from the web are not allowed, but you can use placeholder images by specifying the width and height like so \`<img src="/api/placeholder/400/320" alt="placeholder" />\`
-          - If you are unable to follow the above requirements for any reason, use "application/vnd.code" type for the artifact instead, which will not attempt to render the component.`;
-	}
-
-	return `- "text/markdown" for documentation
-      - "text/html" for web content
-      - "image/svg+xml" for diagrams
-      - "application/mermaid" for flowcharts
-      - "application/code" for code snippets or scripts in any programming language.`;
-}
-
-/**
- * Returns artifact usage instructions based on context
- * @param supportsArtifacts Whether artifacts are supported in the current environment
- * @param forCode Whether instructions should focus on code artifacts specifically
- * @param startIndex The starting index for numbered instructions
- * @returns Instructions string or empty string if artifacts not supported
- */
-export function getArtifactInstructions(
-	supportsArtifacts = false,
-	forCode = false,
-	startIndex = 1,
-	variant: "full" | "compact" = "full",
-): string {
-	if (!supportsArtifacts) return "";
-
-	if (variant === "compact") {
-		return `${startIndex}. When using artifacts, keep them lightweight:
-   - Reserve artifacts for deliverables the user may reuse or download.
-   - Use type="text/markdown" for downloadable documents that should open as editable document artifacts.
-   - Use display="inline" on type="text/html" artifacts for custom HTML interfaces, visualisations, or interactive demos that should render as preview-only output in chat.
-   - Summarise each artifact in your response so the user knows what's inside.
-   - Reuse identifiers when updating earlier work to keep context linked.
-   - When a user message includes <artifact_selection>, apply the requested change to that selected portion and reuse the referenced artifact identifier.
-   - Do not call tools or APIs to create artifacts; emit inline artifact tags in your response.`;
-	}
-
-	const baseInstructions = `${startIndex}. When creating artifacts:
-   a. Use artifacts for substantial, self-contained content (>15 lines) 
-      that users might modify or reuse
-   b. You can also use artifacts for content intended for eventual use
-      outside the conversation such as reports, emails, etc
-   c. Don't use artifacts for simple snippets, explanations, or 
-      context-dependent content
-   d. Don't use artifacts for content that appears to be a one-off question
-   e. Include these attributes:
-      - identifier: A descriptive kebab-case id (e.g., "sorting-algorithm")
-        when updating an artifact, reuse the prior identifier.
-      - title: Brief description of the content
-      - type: Appropriate content type that the type of content the artifact
-        represents, assign one of the following:
-        ${getArtifactTypeInstructions(forCode)}
-      - Downloadable documents: use type="text/markdown" for reports, letters,
-        plans, briefs, essays, emails, and other prose that should open as an
-        editable document artifact.
-      - Inline previews: use display="inline" only on type="text/html" artifacts
-        for custom HTML interfaces, visualisations, or interactive demos that
-        should render directly in chat as preview-only output. Omit display or
-        use display="panel" when the user should inspect or copy source code.
-   f. Only use one artifact per message unless specifically requested.
-   g. If a user asks the assistant to "draw an SVG" or "make a website", the
-      assistant should create the code for that and place it within an artifact.
-   h. When a user message includes <artifact_selection>, treat it as selected
-      context from an existing artifact; apply the requested change to that
-      portion and reuse the referenced artifact identifier when returning an
-      updated artifact.
-   i. Do not call tools or APIs to create artifacts; emit inline artifact tags
-      in your response.`;
-
-	return baseInstructions;
 }
 
 /**

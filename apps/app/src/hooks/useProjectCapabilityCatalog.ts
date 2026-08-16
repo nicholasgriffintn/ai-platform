@@ -46,18 +46,20 @@ export function useProjectCapabilityCatalog() {
 	);
 	const recipes = recipesQuery.data?.recipes ?? [];
 	const modelTools = catalogQuery.data?.modelTools ?? [];
+	const skills = useMemo(() => catalogQuery.data?.skills ?? [], [catalogQuery.data?.skills]);
 
 	const items = useMemo(() => {
 		const baseCatalog = buildAssistantActionCatalog({
 			apps,
 			modelTools,
+			skills,
 			tools: callableTools,
 		});
 		return [
 			...baseCatalog.items,
 			...recipes.map((recipe) => createRecipeAssistantActionItem(recipe)),
 		];
-	}, [apps, callableTools, recipes, modelTools]);
+	}, [apps, callableTools, recipes, modelTools, skills]);
 
 	return {
 		apps,
@@ -66,6 +68,7 @@ export function useProjectCapabilityCatalog() {
 		isLoading: catalogQuery.isLoading || recipesQuery.isLoading || toolsQuery.isLoading,
 		items,
 		recipes,
+		skills,
 		tools: modelTools,
 	};
 }

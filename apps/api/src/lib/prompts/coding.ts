@@ -1,3 +1,5 @@
+import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
+
 import type { IBody, IUserSettings } from "~/types";
 import { PromptBuilder } from "./builder";
 import { resolvePromptLayout } from "./layout";
@@ -6,14 +8,15 @@ import { buildAssistantPrinciplesSection } from "./sections/principles";
 import { buildCodingExampleOutputSection } from "./sections/examples";
 import { buildUserContextSection } from "./sections/user-context";
 import { buildSafetyStandardsSection } from "./sections/safety";
+import { buildSkillsSection } from "./sections/skills";
 import { getResponseStyle, resolvePromptCapabilities } from "./utils";
 
 export function returnCodingPrompt(
 	request: IBody,
 	userSettings?: IUserSettings,
 	supportsToolCalls?: boolean,
-	supportsArtifacts?: boolean,
 	modelMetadata?: PromptModelMetadata,
+	skills?: readonly SkillAvailability[],
 ): string {
 	const chatMode = request.mode || "standard";
 
@@ -38,8 +41,6 @@ export function returnCodingPrompt(
 
 	const capabilities = resolvePromptCapabilities({
 		supportsToolCalls,
-		supportsArtifacts,
-
 		simulatedThinking,
 		modelMetadata,
 	});
@@ -56,7 +57,6 @@ export function returnCodingPrompt(
 			verbosity,
 			capabilities.simulatedThinking,
 			capabilities.supportsToolCalls,
-			capabilities.supportsArtifacts,
 			isAgent,
 			memoriesEnabled,
 			userTraits,
@@ -75,7 +75,6 @@ export function returnCodingPrompt(
 	const principlesSection = buildAssistantPrinciplesSection({
 		isAgent,
 		supportsToolCalls: capabilities.supportsToolCalls,
-		supportsArtifacts: capabilities.supportsArtifacts,
 		simulatedThinking: capabilities.simulatedThinking,
 		preferredLanguage,
 		verbosity,
@@ -109,19 +108,18 @@ export function returnCodingPrompt(
 				language: preferredLanguage,
 			}),
 		)
+		.add(buildSkillsSection(skills))
 		.startSection();
 
 	builder
 		.add(
 			buildCodingExampleOutputSection({
 				simulatedThinking: capabilities.simulatedThinking,
-				supportsArtifacts: capabilities.supportsArtifacts,
 				problemBreakdownInstructions,
 				answerFormatInstructions,
 				preferredLanguage,
 				verbosity,
 				variant: layout.exampleVariant === "full" ? "full" : "compact",
-				artifactVariant: layout.artifactExampleVariant,
 			}),
 		)
 		.startSection()

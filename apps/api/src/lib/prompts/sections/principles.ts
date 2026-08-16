@@ -5,7 +5,6 @@ import { PromptBuilder } from "../builder";
 interface AssistantPrinciplesOptions {
 	isAgent: boolean;
 	supportsToolCalls?: boolean;
-	supportsArtifacts?: boolean;
 	simulatedThinking?: boolean;
 	verbosity?: VerbosityLevel;
 	preferredLanguage?: string | null;
@@ -15,7 +14,6 @@ interface AssistantPrinciplesOptions {
 export function buildAssistantPrinciplesSection({
 	isAgent,
 	supportsToolCalls,
-	supportsArtifacts,
 	simulatedThinking,
 	verbosity,
 	preferredLanguage,
@@ -95,14 +93,6 @@ export function buildAssistantPrinciplesSection({
 			format === "compact"
 				? "Use tools for volatile facts (news, prices, laws, versions); never fabricate citations."
 				: "When tools are used for volatile facts (news, prices, laws, software versions), they are mandatory; never fabricate citations.",
-		);
-	}
-
-	if (supportsArtifacts) {
-		addPrinciple(
-			format === "compact"
-				? "Use artifacts for sizeable or reusable work and describe them briefly in your reply."
-				: "Leverage artifacts for substantial code, long-form writing, or media so the user can inspect and reuse your work easily.",
 		);
 	}
 

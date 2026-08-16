@@ -5,6 +5,7 @@ import {
 	Plus,
 	Puzzle,
 	Settings2,
+	Sparkles,
 	Trash2,
 	Wrench,
 } from "lucide-react";
@@ -41,7 +42,15 @@ interface CapabilityCardProps {
 	};
 	experiences: ProjectExperienceDefinition[];
 	tool?: ModelToolDefinition;
+	skill?: SkillCardState;
 	surface: CapabilitySurface;
+}
+
+export interface SkillCardState {
+	alwaysOn: boolean;
+	enabled: boolean;
+	isPending: boolean;
+	onToggle: (enabled: boolean) => void;
 }
 
 export function CapabilityCard({
@@ -54,6 +63,7 @@ export function CapabilityCard({
 	projectActions,
 	experiences,
 	tool,
+	skill,
 	surface,
 }: CapabilityCardProps) {
 	const navigate = useNavigate();
@@ -62,7 +72,10 @@ export function CapabilityCard({
 	const isRunnableTool = kind === "tool" && Boolean(item.metadata?.toolRunnable);
 	const canManage = projectActions?.canManage ?? true;
 	const requiresExplicitEnablement = Boolean(projectActions);
-	const isIncluded = !requiresExplicitEnablement || Boolean(existing) || Boolean(tool);
+	const isAlwaysOnSkill = kind === "skill" && item.capability.savedState.supported === false;
+	const isIncluded =
+		!requiresExplicitEnablement || Boolean(existing) || Boolean(tool) || isAlwaysOnSkill;
+	const showSkillToggle = Boolean(skill) && !requiresExplicitEnablement;
 	const primaryAction = onConfigure
 		? {
 				icon: <Settings2 size={15} />,
@@ -78,18 +91,25 @@ export function CapabilityCard({
 					requiresManagement: false,
 				}
 			: null;
-	const statusLabel =
-		kind === "tool" && tool?.requiresConfiguration
-			? isConfigured
-				? "Configured"
-				: "Configuration required"
-			: !requiresExplicitEnablement
-				? "Available"
-				: kind === "tool"
-					? existing
-						? "Enabled"
-						: "Included"
-					: "Enabled";
+	const statusLabel = isAlwaysOnSkill
+		? "Always on"
+		: skill
+			? skill.alwaysOn
+				? "Always on"
+				: skill.enabled
+					? "On"
+					: "Off"
+			: kind === "tool" && tool?.requiresConfiguration
+				? isConfigured
+					? "Configured"
+					: "Configuration required"
+				: !requiresExplicitEnablement
+					? "Available"
+					: kind === "tool"
+						? existing
+							? "Enabled"
+							: "Included"
+						: "Enabled";
 
 	return (
 		<Card className="justify-between p-5 shadow-none">
@@ -100,7 +120,15 @@ export function CapabilityCard({
 							app ? getIconContainerClass(app.theme) : "bg-zinc-100 dark:bg-zinc-800"
 						}`}
 					>
-						{appIcon ? appIcon : kind === "tool" ? <Wrench size={18} /> : <Puzzle size={18} />}
+						{appIcon ? (
+							appIcon
+						) : kind === "tool" ? (
+							<Wrench size={18} />
+						) : kind === "skill" ? (
+							<Sparkles size={18} />
+						) : (
+							<Puzzle size={18} />
+						)}
 					</span>
 					{isIncluded && (
 						<span className="rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
@@ -113,7 +141,16 @@ export function CapabilityCard({
 					{item.description || item.capability.description}
 				</p>
 			</div>
-			{isIncluded ? (
+			{showSkillToggle && skill ? (
+				<Button
+					variant={skill.enabled ? "outline" : "primary"}
+					disabled={skill.alwaysOn}
+					isLoading={skill.isPending}
+					onClick={() => skill.onToggle(!skill.enabled)}
+				>
+					{skill.alwaysOn ? "Always on" : skill.enabled ? "Turn off" : "Turn on"}
+				</Button>
+			) : isIncluded ? (
 				<div className="flex gap-2">
 					{primaryAction && (
 						<Button

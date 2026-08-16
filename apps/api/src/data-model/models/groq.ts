@@ -24,7 +24,6 @@ export const groqModelConfig: ModelConfig = {
 		strengths: ["reasoning", "analysis", "tool_use"],
 		contextComplexity: 3,
 		reliability: 1,
-		supportsArtifacts: true,
 		supportsToolCalls: true,
 		artificialAnalysis: {
 			intelligenceIndex: 11,
@@ -56,7 +55,6 @@ export const groqModelConfig: ModelConfig = {
 		strengths: ["reasoning", "analysis"],
 		contextComplexity: 4,
 		reliability: 4,
-		supportsArtifacts: true,
 		supportsToolCalls: true,
 	},
 	"llama3-70b": {
@@ -82,7 +80,6 @@ export const groqModelConfig: ModelConfig = {
 		strengths: ["chat", "analysis", "creative", "general_knowledge"],
 		contextComplexity: 4,
 		reliability: 4,
-		supportsArtifacts: true,
 	},
 	"llama3-8b": {
 		name: "Groq Llama 3 8B",
@@ -107,7 +104,6 @@ export const groqModelConfig: ModelConfig = {
 		strengths: ["chat", "general_knowledge"],
 		contextComplexity: 3,
 		reliability: 3,
-		supportsArtifacts: true,
 	},
 	"llama-3.3-70b-versatile": {
 		name: "Llama 3.3 70B Versatile",
@@ -133,7 +129,6 @@ export const groqModelConfig: ModelConfig = {
 		reliability: 4,
 		speed: 5,
 		isFeatured: true,
-		supportsArtifacts: true,
 		family: "llama",
 		openWeights: true,
 	},
@@ -169,7 +164,6 @@ export const groqModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 5,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		family: "llama",
 		status: "beta",
@@ -197,7 +191,6 @@ export const groqModelConfig: ModelConfig = {
 		strengths: ["chat", "general_knowledge", "multilingual"],
 		contextComplexity: 3,
 		reliability: 3,
-		supportsArtifacts: true,
 		family: "llama",
 		openWeights: true,
 	},
@@ -224,7 +217,6 @@ export const groqModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 1,
 		deprecated: true,
-		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 2.4,
 			codingIndex: null,
@@ -255,7 +247,6 @@ export const groqModelConfig: ModelConfig = {
 		contextComplexity: 2,
 		reliability: 3,
 		deprecated: true,
-		supportsArtifacts: true,
 	},
 	"gemma-2-27b-it": {
 		name: "Gemma 2 27B IT",
@@ -280,7 +271,6 @@ export const groqModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 4,
 		deprecated: true,
-		supportsArtifacts: true,
 	},
 	"groq-openai-gpt-oss-20b": {
 		name: "GPT OSS 20B",
@@ -307,7 +297,6 @@ export const groqModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 5,
 		isFeatured: true,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -347,7 +336,6 @@ export const groqModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 5,
 		isFeatured: true,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],

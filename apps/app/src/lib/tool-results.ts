@@ -1,4 +1,5 @@
 import type { Message } from "~/types";
+import { ResponseDisplayType } from "@ngriffin_uk/polychat-schemas";
 import { isRecord, readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 import { isWeatherData } from "./weather";
 
@@ -8,6 +9,14 @@ export interface RenderableToolResult {
 	name: string;
 	content: string;
 	result: Record<string, unknown>;
+}
+
+export function isHiddenToolResponse(message: Message): boolean {
+	return (
+		message.role === "tool" &&
+		isRecord(message.data) &&
+		message.data.responseType === ResponseDisplayType.HIDDEN
+	);
 }
 
 export function resolveRenderableToolResult(part: ToolResultPart): RenderableToolResult | null {

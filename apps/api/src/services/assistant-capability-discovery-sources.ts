@@ -34,6 +34,7 @@ const INTERNAL_FUNCTION_TOOLS = new Set([
 	"get_recipe",
 	"get_team_members",
 	"if_then_else",
+	"load_skill",
 	"parallel_execute",
 	"request_approval",
 	"retry_with_backoff",

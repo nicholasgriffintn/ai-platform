@@ -30,6 +30,7 @@ function createContext({
 			listProjectCapabilities: vi.fn().mockResolvedValue([
 				{ kind: "tool", capability_id: "web_search" },
 				{ kind: "recipe", capability_id: "launch-brief" },
+				{ kind: "skill", capability_id: "artifacts" },
 			]),
 		},
 	};
@@ -63,6 +64,7 @@ describe("project chat context", () => {
 				projectId: "project-1",
 				instructions: "",
 				enabledTools: [],
+				enabledSkillIds: [],
 				sandboxOptions: {
 					enabled: true,
 					installationId: 123,
@@ -104,7 +106,9 @@ describe("project chat context", () => {
 				"hosted_shell",
 				"web_fetch",
 			],
+			enabledSkillIds: ["artifacts"],
 			toolOptions: undefined,
+			sandboxOptions: undefined,
 		});
 	});
 

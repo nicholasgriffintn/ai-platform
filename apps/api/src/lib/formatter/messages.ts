@@ -1,4 +1,5 @@
 import type { ContentType, Message, MessageContent } from "~/types";
+import { escapeHtml } from "~/utils/html";
 import { safeParseJson } from "~/utils/json";
 import { isRecord } from "~/utils/objects";
 import { hasToolCalls } from "~/utils/toolCalls";
@@ -347,12 +348,12 @@ export class MessageFormatter {
 		}
 
 		const title = selection.artifact.title
-			? ` title="${MessageFormatter.escapeAttribute(selection.artifact.title)}"`
+			? ` title="${escapeHtml(selection.artifact.title)}"`
 			: "";
 
 		return [
 			"<artifact_selection>",
-			`<artifact identifier="${MessageFormatter.escapeAttribute(selection.artifact.identifier)}" type="${MessageFormatter.escapeAttribute(selection.artifact.type)}"${title} />`,
+			`<artifact identifier="${escapeHtml(selection.artifact.identifier)}" type="${escapeHtml(selection.artifact.type)}"${title} />`,
 			`<range start="${selection.selectionStart}" end="${selection.selectionEnd}" />`,
 			"<selected_text>",
 			selection.selectedText,
@@ -381,14 +382,6 @@ export class MessageFormatter {
 		}
 
 		return item;
-	}
-
-	private static escapeAttribute(value: string): string {
-		return value
-			.replace(/&/g, "&amp;")
-			.replace(/"/g, "&quot;")
-			.replace(/</g, "&lt;")
-			.replace(/>/g, "&gt;");
 	}
 
 	private static formatContent(content: Message["content"], provider: string): any {

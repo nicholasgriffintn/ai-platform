@@ -51,6 +51,19 @@ const configuredModelToolItem = {
 	metadata: { toolId: "file_search", category: "Knowledge" },
 } as unknown as AssistantActionItem;
 
+const alwaysOnSkillItem = {
+	id: "skill:recipes",
+	kind: "skill",
+	label: "Recipes",
+	description: "Use saved recipes and connected services",
+	capability: {
+		id: "recipes",
+		description: "Use saved recipes and connected services",
+		savedState: { supported: false },
+	},
+	searchText: [],
+} as unknown as AssistantActionItem;
+
 const fileSearchTool: ModelToolDefinition = {
 	id: "file_search",
 	capability: "supportsFileSearch",
@@ -208,6 +221,24 @@ describe("CapabilityCard", () => {
 
 		expect(screen.getByRole("button", { name: "Add to project" })).toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "Open" })).not.toBeInTheDocument();
+	});
+
+	it("does not offer to add an always-on skill to a project", () => {
+		renderCard({
+			item: alwaysOnSkillItem,
+			kind: "skill",
+			surface: getProjectSurface("w1", "p1"),
+			projectActions: {
+				canManage: true,
+				isAdding: false,
+				isRemoving: false,
+				onAdd: vi.fn(),
+				onRemove: vi.fn(),
+			},
+		});
+
+		expect(screen.getByText("Always on")).toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "Add to project" })).not.toBeInTheDocument();
 	});
 });
 

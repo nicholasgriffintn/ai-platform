@@ -110,7 +110,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 		isFeatured: true,
-		supportsArtifacts: true,
 		supportsToolCalls: true,
 		...anthropicLatestCodeExecutionTool,
 		supportsDocuments: true,
@@ -166,7 +165,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
-		supportsArtifacts: true,
 		supportsToolCalls: true,
 		supportsDocuments: true,
 		supportsTokenCounting: true,
@@ -215,7 +213,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		speed: 5,
 		isFeatured: false,
 		multimodal: true,
-		supportsArtifacts: true,
 		supportsToolCalls: true,
 		supportsTokenCounting: true,
 		artificialAnalysis: {
@@ -251,7 +248,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 4,
 		speed: 5,
 		multimodal: true,
-		supportsArtifacts: true,
 		supportsDocuments: true,
 		supportsTokenCounting: true,
 		reasoningConfig: {
@@ -440,7 +436,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 3,
 		speed: 2,
 		multimodal: true,
-		supportsArtifacts: true,
 		supportsDocuments: true,
 		supportsTokenCounting: true,
 		reasoningConfig: {
@@ -490,7 +485,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 3,
 		speed: 2,
 		multimodal: true,
-		supportsArtifacts: true,
 		supportsDocuments: true,
 		supportsTokenCounting: true,
 		reasoningConfig: {

@@ -266,7 +266,6 @@ export function buildEffectiveModelProfile(objectNode, sourceFile, baseValues = 
 		"supportsWebFetch",
 		"supportsDocuments",
 		"supportsAudio",
-		"supportsArtifacts",
 		"contextWindow",
 		"maxTokens",
 		"costPer1kInputTokens",

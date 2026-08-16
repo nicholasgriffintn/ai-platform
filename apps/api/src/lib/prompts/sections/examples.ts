@@ -1,38 +1,29 @@
 import type { VerbosityLevel } from "~/types";
 import { PromptBuilder } from "../builder";
 import type { PromptExampleVariant } from "../layout";
-import { getArtifactExample } from "../utils";
 
 interface StandardExampleOptions {
 	simulatedThinking?: boolean;
-	supportsArtifacts?: boolean;
 	problemBreakdownInstructions: string;
 	answerFormatInstructions: string;
 	variant?: Exclude<PromptExampleVariant, "omit">;
-	artifactVariant?: "full" | "compact";
 }
 
 interface CodingExampleOptions {
 	simulatedThinking?: boolean;
-	supportsArtifacts?: boolean;
 	problemBreakdownInstructions: string;
 	answerFormatInstructions: string;
 	preferredLanguage?: string;
 	verbosity?: VerbosityLevel;
 	variant?: Exclude<PromptExampleVariant, "omit">;
-	artifactVariant?: "full" | "compact";
 }
 
 export function buildStandardExampleOutputSection({
 	simulatedThinking,
-	supportsArtifacts,
 	problemBreakdownInstructions,
 	answerFormatInstructions,
 	variant = "full",
-	artifactVariant,
 }: StandardExampleOptions): string {
-	const effectiveArtifactVariant = artifactVariant ?? (variant === "full" ? "full" : "compact");
-
 	if (variant === "compact") {
 		const builder = new PromptBuilder("<example_output>\n");
 
@@ -40,13 +31,12 @@ export function buildStandardExampleOutputSection({
 			builder.addLine("<think>").addLine(problemBreakdownInstructions).addLine("</think>");
 		}
 
-		builder.addLine("<answer>").addLine(answerFormatInstructions);
-
-		if (supportsArtifacts) {
-			builder.addLine(getArtifactExample(true, false, effectiveArtifactVariant));
-		}
-
-		builder.addLine("</answer>").addLine("</example_output>").addLine();
+		builder
+			.addLine("<answer>")
+			.addLine(answerFormatInstructions)
+			.addLine("</answer>")
+			.addLine("</example_output>")
+			.addLine();
 
 		return builder.build();
 	}
@@ -59,30 +49,26 @@ export function buildStandardExampleOutputSection({
 		builder.addLine("<think>").addLine(problemBreakdownInstructions).addLine("</think>");
 	}
 
-	builder.addLine("<answer>").addLine(answerFormatInstructions);
-
-	if (supportsArtifacts) {
-		builder.addLine(getArtifactExample(true, false, effectiveArtifactVariant));
-	}
-
-	builder.addLine("</answer>").addLine("</example_output>").addLine();
+	builder
+		.addLine("<answer>")
+		.addLine(answerFormatInstructions)
+		.addLine("</answer>")
+		.addLine("</example_output>")
+		.addLine();
 
 	return builder.build();
 }
 
 export function buildCodingExampleOutputSection({
 	simulatedThinking,
-	supportsArtifacts,
 	problemBreakdownInstructions,
 	answerFormatInstructions,
 	preferredLanguage,
 	verbosity,
 	variant = "full",
-	artifactVariant,
 }: CodingExampleOptions): string {
 	const proseLanguage = preferredLanguage || "the user's preferred language";
 	const codeLanguagePlaceholder = "{{programming_language}}";
-	const effectiveArtifactVariant = artifactVariant ?? (variant === "full" ? "full" : "compact");
 
 	const toneHint = (() => {
 		switch (verbosity) {
@@ -119,30 +105,21 @@ export function buildCodingExampleOutputSection({
 		}
 	}
 
-	if (supportsArtifacts) {
-		builder.addLine(getArtifactExample(true, true, effectiveArtifactVariant));
-		if (variant === "full") {
-			builder.addLine(
-				`<summary>Highlight what the artifact delivers and how the user can run or extend it.</summary>`,
-			);
-		}
-	} else {
-		builder
-			.addLine("<solution>")
-			.addLine(
-				`<code_block language="${codeLanguagePlaceholder}">// Provide the final implementation here.</code_block>`,
-			)
-			.addLine("<explanation>")
-			.addLine(
-				`- Outline the main approach, including key helpers or data structures, using ${proseLanguage}.`,
-			)
-			.addLine("- Note any assumptions or trade-offs that influenced the implementation.")
-			.addLine("</explanation>")
-			.addLine("<reference_note>")
-			.addLine(answerFormatInstructions)
-			.addLine("</reference_note>")
-			.addLine("</solution>");
-	}
+	builder
+		.addLine("<solution>")
+		.addLine(
+			`<code_block language="${codeLanguagePlaceholder}">// Provide the final implementation here.</code_block>`,
+		)
+		.addLine("<explanation>")
+		.addLine(
+			`- Outline the main approach, including key helpers or data structures, using ${proseLanguage}.`,
+		)
+		.addLine("- Note any assumptions or trade-offs that influenced the implementation.")
+		.addLine("</explanation>")
+		.addLine("<reference_note>")
+		.addLine(answerFormatInstructions)
+		.addLine("</reference_note>")
+		.addLine("</solution>");
 
 	builder
 		.addLine(

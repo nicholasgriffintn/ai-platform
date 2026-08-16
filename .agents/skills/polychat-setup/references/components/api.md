@@ -14,6 +14,7 @@ The API provides a unified interface to multiple AI providers, following OpenAI'
 - **40+ AI Models** - Anthropic, OpenAI, Google, Mistral, Meta, and more
 - **Code Specialized** - FIM completions, edit suggestions, code application
 - **AI Agents** - Custom agents with MCP server integrations
+- **Skills** - Specialised instructions the model loads on demand instead of carrying in every prompt
 - **RAG & Memories** - Vector-based context with Cloudflare Vectorize
 - **Training Control Plane** - A training and fine-tuning execution service
 - **Content Safety** - Llamaguard and AWS Bedrock Guardrails

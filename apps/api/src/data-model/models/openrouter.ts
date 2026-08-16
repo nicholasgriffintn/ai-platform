@@ -22,7 +22,6 @@ export const openrouterModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 1,
 		speed: 5,
-		supportsArtifacts: true,
 		knowledgeCutoffDate: "June 30, 2024",
 		supportsResponseFormat: true,
 		reasoningConfig: {
@@ -62,7 +61,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 3,
 		multimodal: true,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		artificialAnalysis: {
 			intelligenceIndex: 16.3,
@@ -98,7 +96,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 3,
 		multimodal: true,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -137,7 +134,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 3,
 		multimodal: true,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -176,7 +172,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 3,
 		multimodal: true,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		artificialAnalysis: {
 			intelligenceIndex: 6.9,
@@ -212,7 +207,6 @@ export const openrouterModelConfig: ModelConfig = {
 		speed: 4,
 		multimodal: true,
 		isFeatured: false,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -249,7 +243,6 @@ export const openrouterModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 1,
 		speed: 5,
-		supportsArtifacts: true,
 		knowledgeCutoffDate: "June 30, 2024",
 		supportsResponseFormat: true,
 		reasoningConfig: {
@@ -289,7 +282,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 4,
 		multimodal: true,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		artificialAnalysis: {
 			intelligenceIndex: 19.4,
@@ -324,7 +316,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 2,
 		multimodal: true,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -363,7 +354,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 4,
 		speed: 3,
 		isFree: true,
-		supportsArtifacts: true,
 	},
 
 	"deepseek/deepseek-r1-0528-free": {
@@ -389,7 +379,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 4,
 		speed: 3,
 		isFree: true,
-		supportsArtifacts: true,
 	},
 
 	"anthropic/claude-sonnet-4": {
@@ -416,7 +405,6 @@ export const openrouterModelConfig: ModelConfig = {
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		supportsArtifacts: true,
 		supportsResponseFormat: false,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -450,7 +438,6 @@ export const openrouterModelConfig: ModelConfig = {
 		speed: 2,
 		multimodal: true,
 		isFeatured: false,
-		supportsArtifacts: true,
 		supportsResponseFormat: false,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -483,7 +470,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 5,
 		multimodal: true,
-		supportsArtifacts: true,
 		supportsResponseFormat: false,
 		artificialAnalysis: {
 			intelligenceIndex: 12.4,
@@ -515,7 +501,6 @@ export const openrouterModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 1,
 		speed: 3,
-		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 18.4,
 			codingIndex: null,
@@ -546,7 +531,6 @@ export const openrouterModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 4,
 		speed: 4,
-		supportsArtifacts: true,
 	},
 
 	"moonshotai/kimi-k2-openrouter": {
@@ -571,7 +555,6 @@ export const openrouterModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 1,
 		speed: 2,
-		supportsArtifacts: true,
 		description:
 			"Kimi K2 is Moonshot AI's state-of-the-art Mixture-of-Experts (MoE) language model with 1 trillion total parameters and 32 billion activated parameters.",
 		supportsResponseFormat: false,
@@ -607,7 +590,6 @@ export const openrouterModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 1,
 		speed: 4,
-		supportsArtifacts: true,
 		description:
 			"Kimi K2 Thinking is Moonshot AI’s most advanced open reasoning model to date, extending the K2 series into agentic, long-horizon reasoning.",
 		supportsResponseFormat: true,
@@ -657,7 +639,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 3,
 		multimodal: true,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		costPer1kReasoningTokens: 0.01,
 		reasoningConfig: {
@@ -708,7 +689,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 4,
 		speed: 4,
 		multimodal: true,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		costPer1kReasoningTokens: 0.0025,
 		reasoningConfig: {
@@ -758,7 +738,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 4,
 		speed: 4,
 		isFree: true,
-		supportsArtifacts: true,
 		supportsResponseFormat: false,
 		family: "llama",
 		openWeights: true,
@@ -787,7 +766,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 4,
 		speed: 3,
 		isFree: true,
-		supportsArtifacts: true,
 		supportsResponseFormat: false,
 		family: "qwen",
 		openWeights: true,
@@ -815,7 +793,6 @@ export const openrouterModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 1,
 		speed: 2,
-		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		artificialAnalysis: {
 			intelligenceIndex: 9.3,
@@ -9417,7 +9394,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 4,
 		multimodal: true,
-		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -9492,7 +9468,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 4,
 		multimodal: true,
-		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -9539,7 +9514,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 4,
 		multimodal: true,
-		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -9588,7 +9562,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 5,
 		speed: 2,
 		multimodal: true,
-		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -9639,7 +9612,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 2,
 		speed: 3,
 		multimodal: true,
-		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -9688,7 +9660,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 5,
 		speed: 2,
 		multimodal: true,
-		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -12322,7 +12293,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 3,
 		speed: 3,
 		multimodal: true,
-		supportsArtifacts: true,
 		isFeatured: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -12468,7 +12438,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 3,
 		speed: 2,
 		multimodal: true,
-		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

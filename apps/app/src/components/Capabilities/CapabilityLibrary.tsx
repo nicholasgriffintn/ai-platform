@@ -24,7 +24,8 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
 	const mutationError =
 		controller.configurationMutation.error ??
 		controller.projectMutations?.add.error ??
-		controller.projectMutations?.remove.error;
+		controller.projectMutations?.remove.error ??
+		controller.personalSkills?.error;
 	const pendingAddCapabilityId = controller.projectMutations?.add.isPending
 		? controller.projectMutations.add.variables?.capabilityId
 		: undefined;
@@ -60,13 +61,16 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
 				{hasAuthenticationError ? (
 					<SignInEmptyState
 						title="Sign in to manage capabilities"
-						message="Sign in to choose which experiences, recipes, and tools you can use."
+						message="Sign in to choose which experiences, recipes, skills, and tools you can use."
 						className="min-h-[300px]"
 					/>
 				) : isLoading ? (
 					<CardGridLoadingSkeleton count={6} label="Loading capabilities" />
-				) : controller.catalog.error ? (
-					<EmptyState title="Capabilities unavailable" message={controller.catalog.error.message} />
+				) : controller.scopeError || controller.catalog.error ? (
+					<EmptyState
+						title="Capabilities unavailable"
+						message={(controller.scopeError ?? controller.catalog.error)?.message ?? "Try again."}
+					/>
 				) : controller.catalog.groups.length === 0 ? (
 					<EmptyState
 						icon={<SearchX size={24} className="text-zinc-400" />}
@@ -84,6 +88,7 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
 						pendingAddCapabilityId={pendingAddCapabilityId}
 						pendingRemoveId={pendingRemoveId}
 						onConfigureTool={controller.toolConfigurationDialog.open}
+						personalSkills={controller.personalSkills}
 						projectActions={controller.projectActions}
 						recipeById={controller.catalog.recipeById}
 						recipeInstallationById={controller.recipes.installationByRecipeId}

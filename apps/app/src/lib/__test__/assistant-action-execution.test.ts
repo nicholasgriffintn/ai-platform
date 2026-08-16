@@ -3,6 +3,7 @@ import {
 	buildAssistantActionCatalog,
 	type AssistantRecipe,
 	type RecipeInstallation,
+	type SkillSummary,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { executeAssistantAction } from "../assistant-action-execution";
@@ -34,6 +35,16 @@ const morningBriefingInstallation = {
 	updatedAt: "2026-01-01T00:00:00.000Z",
 } satisfies RecipeInstallation;
 
+const artifactsSkill = {
+	id: "artifacts",
+	name: "Artifacts",
+	description: "Create reusable deliverables.",
+	category: "Output",
+	tags: [],
+	alwaysOn: false,
+	requirement: { modelCapabilities: ["supportsToolCalls"], tools: [] },
+} satisfies SkillSummary;
+
 describe("assistant action execution", () => {
 	it("executes selected items through their launch contract", async () => {
 		await expect(
@@ -61,6 +72,27 @@ describe("assistant action execution", () => {
 			kind: "submit",
 			input: "Use web fetch",
 			selectedTools: ["web_fetch"],
+		});
+	});
+
+	it("keeps a selected skill on the existing tool-toggle launch seam", async () => {
+		const catalog = buildAssistantActionCatalog({ skills: [artifactsSkill] });
+		const item = catalog.items.find((catalogItem) => catalogItem.id === "skill:artifacts");
+		if (!item) throw new Error("Expected artifacts skill item");
+
+		await expect(
+			executeAssistantAction(
+				{ input: "@Artifacts build a dashboard", item, selectedTools: [] },
+				{
+					installRecipe: vi.fn(),
+					invokeRecipe: vi.fn(),
+					startConnector: vi.fn(),
+				},
+			),
+		).resolves.toEqual({
+			kind: "submit",
+			input: "@Artifacts build a dashboard",
+			selectedTools: ["load_skill"],
 		});
 	});
 

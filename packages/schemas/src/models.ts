@@ -154,7 +154,6 @@ export const modelConfigItemSchema = z.object({
 	supportsToolCalls: z.boolean().optional(),
 	supportsToolChoice: z.boolean().optional(),
 	supportsResponseFormat: z.boolean().optional(),
-	supportsArtifacts: z.boolean().optional(),
 	supportsStreaming: z.boolean().optional(),
 	supportsDocuments: z.boolean().optional(),
 	supportsAttachments: z.boolean().optional(),

@@ -1,3 +1,5 @@
+import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
+
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { ChatMode, IBody, IUser, IUserSettings } from "~/types";
 import { trimTemplateWhitespace } from "~/utils/strings";
@@ -18,10 +20,10 @@ export async function getSystemPrompt(
 	model: string,
 	user?: IUser,
 	userSettings?: IUserSettings,
+	skills?: readonly SkillAvailability[],
 ): Promise<string> {
 	const modelConfig = await getModelConfigByMatchingModel(model, undefined, request.provider);
 	const supportsToolCalls = modelConfig?.supportsToolCalls || false;
-	const supportsArtifacts = modelConfig?.supportsArtifacts || false;
 
 	let prompt: string;
 	const promptMode = request.promptMode;
@@ -45,8 +47,8 @@ export async function getSystemPrompt(
 			user,
 			userSettings,
 			supportsToolCalls,
-			supportsArtifacts,
 			{ modelId: model },
+			skills,
 		);
 	} else {
 		const inputs = modelConfig.modalities?.input ?? ["text"];
@@ -55,10 +57,13 @@ export async function getSystemPrompt(
 			outputs.includes("text") || (!outputs.length && inputs.includes("text"));
 		const isCodingModel = modelConfig?.promptTemplate === "coding";
 		if (isCodingModel) {
-			prompt = returnCodingPrompt(request, userSettings, supportsToolCalls, supportsArtifacts, {
-				modelId: model,
-				modelConfig,
-			});
+			prompt = returnCodingPrompt(
+				request,
+				userSettings,
+				supportsToolCalls,
+				{ modelId: model, modelConfig },
+				skills,
+			);
 		} else {
 			const isTextToImageModel = outputs.includes("image") && !supportsTextOutput;
 			if (isTextToImageModel) {
@@ -71,8 +76,8 @@ export async function getSystemPrompt(
 					user,
 					userSettings,
 					supportsToolCalls,
-					supportsArtifacts,
 					{ modelId: model, modelConfig },
+					skills,
 				);
 			}
 		}

@@ -1,3 +1,5 @@
+import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
+
 import type { IBody, IUser, IUserSettings } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { PromptBuilder } from "./builder";
@@ -8,6 +10,7 @@ import { buildAssistantPrinciplesSection } from "./sections/principles";
 import { buildStandardExampleOutputSection } from "./sections/examples";
 import { buildUserContextSection } from "./sections/user-context";
 import { buildSafetyStandardsSection } from "./sections/safety";
+import { buildSkillsSection } from "./sections/skills";
 import { getResponseStyle, resolvePromptCapabilities } from "./utils";
 
 const logger = getLogger({ prefix: "lib/prompts/standard" });
@@ -17,8 +20,8 @@ export async function returnStandardPrompt(
 	user?: IUser,
 	userSettings?: IUserSettings,
 	supportsToolCalls?: boolean,
-	supportsArtifacts?: boolean,
 	modelMetadata?: PromptModelMetadata,
+	skills?: readonly SkillAvailability[],
 ): Promise<string> {
 	try {
 		const chatMode = request.mode || "standard";
@@ -43,7 +46,6 @@ export async function returnStandardPrompt(
 
 		const capabilities = resolvePromptCapabilities({
 			supportsToolCalls,
-			supportsArtifacts,
 			simulatedThinking,
 			modelMetadata,
 		});
@@ -60,7 +62,6 @@ export async function returnStandardPrompt(
 				verbosity,
 				capabilities.simulatedThinking,
 				capabilities.supportsToolCalls,
-				capabilities.supportsArtifacts,
 				isAgent,
 				memoriesEnabled,
 				userTraits,
@@ -79,7 +80,6 @@ export async function returnStandardPrompt(
 		const principlesSection = buildAssistantPrinciplesSection({
 			isAgent,
 			supportsToolCalls: capabilities.supportsToolCalls,
-			supportsArtifacts: capabilities.supportsArtifacts,
 			simulatedThinking: capabilities.simulatedThinking,
 			verbosity,
 			preferredLanguage,
@@ -114,17 +114,16 @@ export async function returnStandardPrompt(
 			.addLine(`<response_traits>${traits}</response_traits>`)
 			.addLine(`<response_preferences>${preferences}</response_preferences>`)
 			.addLine()
-			.add(userContextSection);
+			.add(userContextSection)
+			.add(buildSkillsSection(skills));
 
 		if (layout.exampleVariant !== "omit") {
 			builder.add(
 				buildStandardExampleOutputSection({
 					simulatedThinking: capabilities.simulatedThinking,
-					supportsArtifacts: capabilities.supportsArtifacts,
 					problemBreakdownInstructions,
 					answerFormatInstructions,
 					variant: layout.exampleVariant === "full" ? "full" : "compact",
-					artifactVariant: layout.artifactExampleVariant,
 				}),
 			);
 		}

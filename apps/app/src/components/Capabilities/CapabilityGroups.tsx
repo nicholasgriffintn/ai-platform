@@ -10,6 +10,7 @@ import type {
 
 import type { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
 import type { CapabilitySurface, EnabledCapability } from "~/lib/capability-surfaces";
+import type { PersonalSkillControls } from "./useCapabilityLibraryController";
 import type { ProjectCapabilityKindGroup } from "~/lib/project-capability-catalog";
 import { getProjectCapabilityKind } from "~/lib/project-capability-catalog";
 import { parseModelToolConfiguration } from "~/lib/model-tool-configuration";
@@ -31,6 +32,7 @@ interface CapabilityGroupsProps {
 		addItem: (item: AssistantActionItem, kind: ProjectCapabilityKind) => void;
 		removeCapability: (capability: EnabledCapability & { id: string }) => void;
 	};
+	personalSkills?: PersonalSkillControls;
 	recipeById: Map<string, AssistantRecipe>;
 	recipeInstallationById: Map<string, RecipeInstallation>;
 	recipeWorkflows: ReturnType<typeof useRecipeWorkflows>;
@@ -48,6 +50,7 @@ export function CapabilityGroups({
 	pendingAddCapabilityId,
 	pendingRemoveId,
 	onConfigureTool,
+	personalSkills,
 	projectActions,
 	recipeById,
 	recipeInstallationById,
@@ -122,6 +125,10 @@ export function CapabilityGroups({
 											);
 										}
 										const tool = itemKind === "tool" ? toolById.get(item.capability.id) : undefined;
+										const skillState =
+											itemKind === "skill" && personalSkills
+												? personalSkills.byId.get(item.capability.id)
+												: undefined;
 										const toolConfiguration =
 											existing?.configuration ??
 											toolConfigurationById.get(item.capability.id) ??
@@ -156,6 +163,15 @@ export function CapabilityGroups({
 														: undefined
 												}
 												tool={tool}
+												skill={
+													skillState && {
+														alwaysOn: skillState.alwaysOn,
+														enabled: skillState.state === "ready",
+														isPending: personalSkills?.pendingSkillId === skillState.id,
+														onToggle: (enabled) =>
+															personalSkills?.setEnabled(skillState.id, enabled),
+													}
+												}
 												surface={surface}
 											/>
 										);

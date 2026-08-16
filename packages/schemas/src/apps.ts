@@ -3,6 +3,7 @@ import z from "zod/v4";
 import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json";
 import { outputSchema } from "./outputs";
 import { externalHttpUrlSchema } from "./navigation";
+import { skillSummarySchema } from "./skills";
 
 export const insertEmbeddingSchema = z.object({
 	type: z.string(),
@@ -322,6 +323,7 @@ export const assistantCapabilityKindSchema = z.enum([
 	"frontend_app",
 	"connector",
 	"agent",
+	"skill",
 	"tool",
 ]);
 
@@ -459,7 +461,14 @@ export const toolFormFieldTypes = [
 	"textarea",
 ] as const;
 
-export const toolResponseDisplayTypes = ["table", "json", "text", "template", "custom"] as const;
+export const toolResponseDisplayTypes = [
+	"table",
+	"json",
+	"text",
+	"template",
+	"custom",
+	"hidden",
+] as const;
 
 export const ResponseDisplayType = {
 	TABLE: "table",
@@ -467,6 +476,7 @@ export const ResponseDisplayType = {
 	TEXT: "text",
 	TEMPLATE: "template",
 	CUSTOM: "custom",
+	HIDDEN: "hidden",
 } satisfies Record<string, (typeof toolResponseDisplayTypes)[number]>;
 
 export const FieldType = {
@@ -628,6 +638,7 @@ export const renderableToolSchema = z.object({
 export const capabilityCatalogResponseSchema = z.object({
 	experiences: z.array(projectExperienceDefinitionSchema),
 	modelTools: z.array(modelToolDefinitionSchema),
+	skills: z.array(skillSummarySchema),
 });
 
 export type AppTheme = z.infer<typeof capabilityThemeSchema>;

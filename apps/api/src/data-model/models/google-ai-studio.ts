@@ -36,7 +36,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.003,
 		isFeatured: false,
-		supportsArtifacts: true,
 		isFree: true,
 		contextComplexity: 4,
 		reliability: 1,
@@ -77,7 +76,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.0015,
-		supportsArtifacts: true,
 		isFree: true,
 		contextComplexity: 3,
 		reliability: 3,
@@ -832,7 +830,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 4,
 		multimodal: true,
-		supportsArtifacts: true,
 		isFree: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking", "low", "medium", "high"],
@@ -886,7 +883,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		reliability: 2,
 		speed: 3,
 		multimodal: true,
-		supportsArtifacts: true,
 		isFeatured: true,
 		isFree: true,
 		reasoningConfig: {
@@ -1165,7 +1161,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		reliability: 3,
 		speed: 3,
 		multimodal: true,
-		supportsArtifacts: true,
 		isFeatured: true,
 		isFree: true,
 		reasoningConfig: {

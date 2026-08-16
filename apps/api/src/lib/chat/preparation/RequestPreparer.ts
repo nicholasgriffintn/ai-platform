@@ -20,7 +20,11 @@ import { toProviderMessages } from "~/lib/chat/providerMessages";
 import { restoreStoredAttachmentContent } from "~/lib/chat/storedAttachments";
 import { findModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
-import type { ChatHostedToolSettings, ModelConfigInfo } from "@ngriffin_uk/polychat-schemas";
+import type {
+	ChatHostedToolSettings,
+	ModelConfigInfo,
+	SkillAvailability,
+} from "@ngriffin_uk/polychat-schemas";
 import type { ChatMode, CoreChatOptions, MemoryScope, Message, Platform } from "~/types";
 import { generateId } from "~/utils/id";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -38,6 +42,13 @@ import {
 	mergePersonalModelToolOptions,
 	resolveModelToolConfigurations,
 } from "~/services/tools/modelToolConfiguration";
+import {
+	buildSkillAvailabilityInput,
+	createProjectSkillScope,
+	listSkillAvailability,
+	resolvePersonalSkillScope,
+	type RequestSkillScope,
+} from "~/services/skills";
 
 const logger = getLogger({ prefix: "lib/chat/preparation/RequestPreparer" });
 
@@ -156,6 +167,11 @@ export class RequestPreparer {
 			user?.id && !projectContext && needsSavedToolConfiguration
 				? repositories.capabilityConfigurations.list({ type: "user", id: user.id }, "tool")
 				: Promise.resolve([]);
+		const skillScopePromise = this.resolveSkillScope(
+			projectContext,
+			user?.id ? repositories : null,
+			user?.id,
+		);
 
 		const finalMessagePromise = (async () => {
 			const resolvedSettings = await userSettingsPromise;
@@ -202,6 +218,14 @@ export class RequestPreparer {
 					)
 				: null;
 
+		const skills = await listSkillAvailability(
+			buildSkillAvailabilityInput({
+				skillScope: await skillScopePromise,
+				supportsToolCalls: Boolean(primaryModelConfig.supportsToolCalls),
+				enabledToolIds: new Set(projectContext?.enabledTools ?? options.enabled_tools ?? []),
+			}),
+		);
+
 		const systemPromptTask = this.buildSystemPrompt(
 			options,
 			sanitizedMessages!,
@@ -211,6 +235,7 @@ export class RequestPreparer {
 			memoriesEnabled,
 			projectContext,
 			memoryScope,
+			skills,
 		);
 
 		if (storeMessagesTask) {
@@ -264,6 +289,27 @@ export class RequestPreparer {
 			requestOptions: options.options,
 			memoryScope,
 		};
+	}
+
+	private async resolveSkillScope(
+		projectContext: ProjectChatContext | null,
+		repositories: RepositoryManager | null,
+		userId?: number,
+	): Promise<RequestSkillScope> {
+		if (projectContext) {
+			return createProjectSkillScope(projectContext.enabledSkillIds);
+		}
+
+		if (!repositories || !userId) {
+			return { scope: "personal" };
+		}
+
+		try {
+			return await resolvePersonalSkillScope(repositories.capabilityConfigurations, userId);
+		} catch (error) {
+			logger.warn("Failed to load personal skill configuration", { error, userId });
+			return { scope: "personal" };
+		}
 	}
 
 	private async buildModelConfigs(
@@ -471,6 +517,7 @@ export class RequestPreparer {
 		memoriesEnabled: boolean,
 		projectContext: ProjectChatContext | null,
 		memoryScope: MemoryScope = { type: "personal" },
+		skills?: readonly SkillAvailability[],
 	): Promise<string> {
 		const {
 			system_prompt,
@@ -534,6 +581,7 @@ export class RequestPreparer {
 			primaryModel,
 			user || undefined,
 			userSettings,
+			skills,
 		);
 
 		const enhancedPrompt = await this.enhanceSystemPromptWithMemory(

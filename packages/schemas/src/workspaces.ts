@@ -1,7 +1,7 @@
 import z from "zod/v4";
 
 export const workspaceRoleSchema = z.enum(["owner", "admin", "member"]);
-export const projectCapabilityKindSchema = z.enum(["app", "recipe", "tool"]);
+export const projectCapabilityKindSchema = z.enum(["app", "recipe", "skill", "tool"]);
 export const projectCodingPromptStrategySchema = z.enum([
 	"auto",
 	"feature-delivery",

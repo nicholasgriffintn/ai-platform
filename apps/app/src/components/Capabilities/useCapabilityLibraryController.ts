@@ -4,6 +4,7 @@ import type {
 	SavedToolConfiguration,
 	ProjectCapabilityKind,
 	ModelToolDefinition,
+	SkillAvailability,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { useProjectCapabilityCatalog } from "~/hooks/useProjectCapabilityCatalog";
@@ -30,8 +31,16 @@ import {
 } from "~/lib/model-tool-configuration";
 import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 import { useToolConfigurations } from "~/hooks/useToolConfigurations";
+import { usePersonalSkills } from "~/hooks/useSkills";
 import type { CapabilityFilter } from "@ngriffin_uk/polychat-component-capabilities";
 import { isRecipeConfigured } from "~/lib/recipes";
+
+export interface PersonalSkillControls {
+	byId: Map<string, SkillAvailability>;
+	error: Error | null;
+	pendingSkillId?: string;
+	setEnabled: (skillId: string, enabled: boolean) => void;
+}
 
 interface CapabilityLibraryScopeBase {
 	surface: CapabilitySurface;
@@ -41,6 +50,7 @@ interface CapabilityLibraryScopeBase {
 	isLoading: boolean;
 	name?: string;
 	toolConfigurations: SavedToolConfiguration[];
+	personalSkills?: PersonalSkillControls;
 	saveToolConfiguration: (
 		tool: ModelToolDefinition,
 		configuration: ModelToolConfiguration,
@@ -254,6 +264,7 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
 			workflows: recipeWorkflows,
 		},
 		currentUserId,
+		personalSkills: scope.personalSkills,
 		projectActions: scope.requiresExplicitEnablement
 			? { canManage: scope.canManage, addItem, removeCapability }
 			: undefined,
@@ -262,15 +273,30 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
 
 export function usePersonalCapabilityScope(): CapabilityLibraryScope {
 	const configurations = useToolConfigurations();
+	const skills = usePersonalSkills();
+	const skillsById = useMemo(
+		() => new Map((skills.query.data?.skills ?? []).map((skill) => [skill.id, skill])),
+		[skills.query.data?.skills],
+	);
 
 	return {
 		surface: PERSONAL_SURFACE,
 		requiresExplicitEnablement: false,
 		capabilities: [],
 		conversationPath: "/chat",
-		isLoading: configurations.query.isLoading,
-		error: configurations.query.error,
+		isLoading: configurations.query.isLoading || skills.query.isLoading,
+		error: configurations.query.error ?? skills.query.error,
 		toolConfigurations: configurations.query.data?.configurations ?? [],
+		personalSkills: {
+			byId: skillsById,
+			error: skills.setEnabled.error,
+			pendingSkillId: skills.setEnabled.isPending
+				? skills.setEnabled.variables?.skillId
+				: undefined,
+			setEnabled: (skillId, enabled) => {
+				skills.setEnabled.mutate({ skillId, enabled });
+			},
+		},
 		saveToolConfiguration: (tool, configuration) =>
 			configurations.save.mutateAsync({ toolId: tool.id, configuration }),
 		configurationMutation: {

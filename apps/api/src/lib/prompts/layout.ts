@@ -17,7 +17,6 @@ export interface PromptLayoutConfig {
 	principlesFormat: PromptPrinciplesFormat;
 	instructionVariant: PromptInstructionVariant;
 	exampleVariant: PromptExampleVariant;
-	artifactExampleVariant: "full" | "compact";
 }
 
 const COMPACT_METADATA_THRESHOLD = 12000;
@@ -70,13 +69,10 @@ export function resolvePromptLayout({
 		exampleVariant = "compact";
 	}
 
-	const artifactExampleVariant = exampleVariant === "full" ? "full" : "compact";
-
 	return {
 		metadataFormat,
 		principlesFormat,
 		instructionVariant,
 		exampleVariant,
-		artifactExampleVariant,
 	};
 }

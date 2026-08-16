@@ -29,7 +29,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 16.3,
 			codingIndex: null,
@@ -66,7 +65,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -106,7 +104,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 6.9,
 			codingIndex: null,
@@ -142,7 +139,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 4,
 		multimodal: true,
 		isFeatured: false,
-		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 19.4,
 			codingIndex: null,
@@ -178,7 +174,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		supportsArtifacts: true,
 	}),
 
 	createModelConfig("anthropic/claude-3-7-sonnet", PROVIDER, {
@@ -206,7 +201,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -245,7 +239,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 2,
 		multimodal: true,
 		isFeatured: false,
-		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -289,7 +282,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 5,
 		multimodal: true,
 		isFeatured: false,
-		supportsArtifacts: true,
 		supportsAudio: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -349,7 +341,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		supportsArtifacts: true,
 		supportsAudio: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],

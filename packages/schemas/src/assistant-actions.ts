@@ -14,6 +14,7 @@ import {
 } from "./apps";
 import { partialChatCompletionsJsonSchema } from "./chat";
 import { mergeToolIds, normaliseToolIds } from "./tool-ids";
+import { SKILL_LOAD_TOOL_NAME, type SkillSummary } from "./skills";
 import { toolIdsSchema, toolIdSchema, type Tool } from "./tools";
 import { externalHttpUrlSchema, internalNavigationPathSchema } from "./navigation";
 
@@ -35,6 +36,7 @@ export const assistantActionItemKindSchema = z.enum([
 	"connector",
 	"installed_recipe",
 	"recipe",
+	"skill",
 	"tool",
 ]);
 
@@ -257,6 +259,7 @@ export interface AssistantActionCatalogSources {
 	installations?: readonly RecipeInstallation[];
 	modelTools?: readonly AssistantActionModelToolDefinition[];
 	recipes?: readonly AssistantRecipe[];
+	skills?: readonly SkillSummary[];
 	tools?: readonly Tool[];
 }
 
@@ -509,6 +512,53 @@ function createToolCapabilityDescriptor(
 	};
 }
 
+function createSkillCapabilityDescriptor(skill: SkillSummary): AssistantCapabilityDescriptor {
+	return {
+		id: skill.id,
+		kind: "skill",
+		name: skill.name,
+		description: skill.description,
+		availability: skill.alwaysOn ? "installed" : "available",
+		launch: {
+			method: "tool_toggle",
+			action: SKILL_LOAD_TOOL_NAME,
+		},
+		executionMode: "tool",
+		authRequirement: "none",
+		authState: "not_required",
+		operationAccess: "read",
+		approvalPolicy: "never",
+		requiredModelCapabilities: [...skill.requirement.modelCapabilities],
+		requiredConnectors: [],
+		availabilityReason: skill.alwaysOn
+			? "Always available; this skill cannot be turned off."
+			: "Can be enabled for this scope.",
+		savedState: {
+			supported: !skill.alwaysOn,
+		},
+		tags: ["skill", ...skill.tags],
+	};
+}
+
+export function createSkillAssistantActionItem(skill: SkillSummary): AssistantActionItem {
+	return {
+		id: `skill:${skill.id}`,
+		kind: "skill",
+		label: skill.name,
+		description: skill.description,
+		status: skill.alwaysOn ? "always on" : "available",
+		searchText: [skill.name, skill.id, skill.description, skill.category, ...skill.tags],
+		launch: {
+			kind: "tool_toggle",
+			toolId: SKILL_LOAD_TOOL_NAME,
+		},
+		capability: createSkillCapabilityDescriptor(skill),
+		metadata: {
+			category: skill.category,
+		},
+	};
+}
+
 export function createRecipeAssistantActionItem(
 	recipe: AssistantRecipe,
 	installation?: RecipeInstallation,
@@ -635,6 +685,7 @@ export function buildAssistantActionCatalog(
 					agentId: agent.id,
 				},
 			})),
+			...(sources.skills ?? []).map((skill) => createSkillAssistantActionItem(skill)),
 			...(sources.connectors ?? [])
 				.filter(isConnectedRecipeConnector)
 				.map((connector) => createConnectorAssistantActionItem(connector)),

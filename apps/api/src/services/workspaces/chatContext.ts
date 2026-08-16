@@ -19,6 +19,7 @@ export interface ProjectChatContext {
 	projectId: string;
 	instructions: string;
 	enabledTools: string[];
+	enabledSkillIds: string[];
 	toolOptions?: ChatHostedToolSettings;
 	sandboxOptions?: SandboxRequestOptions;
 }
@@ -118,6 +119,9 @@ export async function resolveProjectChatContext(
 		projectId,
 		instructions: project.instructions,
 		enabledTools: [...new Set(toolIds)],
+		enabledSkillIds: capabilities
+			.filter((capability) => capability.kind === "skill")
+			.map((capability) => capability.capability_id),
 		toolOptions: projectTools.toolOptions,
 		sandboxOptions:
 			project.coding_enabled === 1 && codingEnvironment.success

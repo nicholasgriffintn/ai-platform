@@ -23,7 +23,6 @@ export const upstageModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 2,
 		reliability: 1,
 		speed: 5,
-		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 6.2,
 			codingIndex: null,
@@ -53,7 +52,6 @@ export const upstageModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 4,
-		supportsArtifacts: true,
 		isFeatured: false,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],

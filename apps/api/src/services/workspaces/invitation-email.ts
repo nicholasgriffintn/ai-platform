@@ -1,19 +1,6 @@
 import { sendEmail } from "~/services/email";
 import type { IEnv } from "~/types";
-
-function escapeHtml(value: string): string {
-	return value.replace(
-		/[&<>'"]/g,
-		(character) =>
-			({
-				"&": "&amp;",
-				"<": "&lt;",
-				">": "&gt;",
-				"'": "&#39;",
-				'"': "&quot;",
-			})[character] ?? character,
-	);
-}
+import { escapeHtml } from "~/utils/html";
 
 export async function sendWorkspaceInvitationEmail(
 	env: IEnv,

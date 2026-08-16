@@ -23,7 +23,6 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 4,
 		speed: 5,
-		supportsArtifacts: true,
 		costPer1kReasoningTokens: 0.004,
 	},
 
@@ -50,7 +49,6 @@ export const xaiModelConfig: ModelConfig = {
 		reliability: 4,
 		speed: 4,
 		multimodal: true,
-		supportsArtifacts: true,
 	},
 
 	"grok-2-latest": {
@@ -75,7 +73,6 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 3,
-		supportsArtifacts: true,
 	},
 
 	"grok-3-mini": {
@@ -103,7 +100,6 @@ export const xaiModelConfig: ModelConfig = {
 		reliability: 4,
 		speed: 4,
 		isFeatured: false,
-		supportsArtifacts: true,
 		costPer1kReasoningTokens: 0.0005,
 	},
 
@@ -129,7 +125,6 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 5,
-		supportsArtifacts: true,
 	},
 
 	"grok-3": {
@@ -157,7 +152,6 @@ export const xaiModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 3,
 		isFeatured: false,
-		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 18.4,
 			codingIndex: null,
@@ -188,7 +182,6 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 4,
 		speed: 4,
-		supportsArtifacts: true,
 		costPer1kReasoningTokens: 0.0005,
 	},
 
@@ -214,7 +207,6 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 4,
 		speed: 5,
-		supportsArtifacts: true,
 		costPer1kReasoningTokens: 0.004,
 	},
 
@@ -240,7 +232,6 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 3,
-		supportsArtifacts: true,
 	},
 
 	"grok-4": {
@@ -268,7 +259,6 @@ export const xaiModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 2,
 		isFeatured: false,
-		supportsArtifacts: true,
 		supportsRepetitionPenalty: false,
 		supportsFrequencyPenalty: false,
 		supportsPresencePenalty: false,
@@ -304,7 +294,6 @@ export const xaiModelConfig: ModelConfig = {
 		reliability: 3,
 		speed: 3,
 		multimodal: true,
-		supportsArtifacts: true,
 	},
 
 	"grok-2": {
@@ -329,7 +318,6 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 1,
 		speed: 3,
-		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: null,
 			codingIndex: null,
@@ -370,7 +358,6 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 5,
-		supportsArtifacts: true,
 	},
 	"grok-2-1212": {
 		name: "Grok 2 (1212)",

@@ -56,6 +56,7 @@ const PROJECT_CAPABILITY_KIND_BY_ACTION_KIND: Partial<
 	app: "app",
 	installed_recipe: "recipe",
 	recipe: "recipe",
+	skill: "skill",
 	tool: "tool",
 };
 
@@ -358,8 +359,8 @@ export function useComposerCommandActions({
 			return [];
 		}
 		const allowedCapabilityIdsByKind = allowedAssistantActionCapabilities
-			? new Map(
-					(["app", "recipe", "tool"] as const).map((kind) => [
+			? new Map<ProjectCapabilityKind, Set<string>>(
+					(["app", "recipe", "skill", "tool"] as const).map((kind) => [
 						kind,
 						new Set(
 							allowedAssistantActionCapabilities

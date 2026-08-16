@@ -14,6 +14,7 @@ import { create_note } from "./create_note";
 import { get_note } from "./get_note";
 import { request_approval, ask_user } from "./human_in_the_loop";
 import { create_image } from "./image";
+import { load_skill } from "./load_skill";
 import { handleMCPTool } from "./mcp";
 import { search_memories, store_memory } from "./memory";
 import { create_music } from "./music";
@@ -93,6 +94,7 @@ const functionDefinitions: ApiToolDefinition[] = [
 	delegateToTeamMemberByRole,
 	getTeamMembers,
 	discover_capabilities,
+	load_skill,
 	retry_with_backoff,
 	fallback,
 	compose_functions,

@@ -1,5 +1,6 @@
 import type {
 	MessagePart as SchemaMessagePart,
+	ResponseDisplayType as SchemaResponseDisplayType,
 	SandboxTaskType,
 } from "@ngriffin_uk/polychat-schemas";
 import type {
@@ -121,7 +122,7 @@ export interface Attachment {
 export interface MessageData {
 	conversationMode?: ConversationModeMetadata;
 	codingTaskType?: SandboxTaskType;
-	responseType?: "table" | "json" | "text" | "template" | "custom" | "hidden";
+	responseType?: SchemaResponseDisplayType;
 	responseDisplay?: {
 		fields?: {
 			key: string;

@@ -15,6 +15,7 @@ import plans from "./plans";
 import projects from "./projects";
 import realtime from "./realtime";
 import search from "./search";
+import skills from "./skills";
 import sources from "./sources";
 import stripe from "./stripe";
 import tasks from "./tasks";
@@ -45,6 +46,7 @@ export function registerApiRoutes(app: ApiApp): void {
 	app.route("/user", user);
 	app.route("/plans", plans);
 	app.route("/stripe", stripe);
+	app.route("/skills", skills);
 	app.route("/sources", sources);
 	app.route("/realtime", realtime);
 	app.route("/search", search);

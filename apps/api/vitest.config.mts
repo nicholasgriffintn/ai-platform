@@ -1,7 +1,18 @@
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+	plugins: [
+		{
+			name: "skill-markdown",
+			enforce: "pre",
+			async load(id) {
+				if (!id.endsWith(".md")) return null;
+				return `export default ${JSON.stringify(await readFile(id, "utf8"))};`;
+			},
+		},
+	],
 	test: {
 		environment: "node",
 		coverage: {

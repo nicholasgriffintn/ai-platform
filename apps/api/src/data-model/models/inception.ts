@@ -31,7 +31,6 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 		supportsNextEdit: true,
 		supportsApplyEdit: true,
 		supportsFim: true,
-		supportsArtifacts: true,
 	}),
 
 	createModelConfig("mercury", PROVIDER, {
@@ -58,7 +57,6 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 4,
 		speed: 4,
 		isFeatured: false,
-		supportsArtifacts: true,
 	}),
 	createModelConfig("mercury-2", PROVIDER, {
 		name: "Mercury 2",

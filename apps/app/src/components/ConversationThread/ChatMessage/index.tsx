@@ -6,6 +6,7 @@ import { apiService } from "~/lib/api/api-service";
 import type { OpinionRequest } from "~/lib/chat/opinion";
 import { getMessageTextContent } from "~/lib/messages";
 import { getModelDisplayName } from "~/lib/models";
+import { isHiddenToolResponse } from "~/lib/tool-results";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { Message } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
@@ -88,7 +89,7 @@ export const ChatMessage = ({
 					| undefined)
 			: undefined;
 
-	if (isSystemMessage) {
+	if (isSystemMessage || isHiddenToolResponse(message)) {
 		return null;
 	}
 

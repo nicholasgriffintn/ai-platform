@@ -22,6 +22,7 @@ import {
 	getAvailableModels,
 	getModelByReference,
 } from "~/lib/models";
+import { isHiddenToolResponse } from "~/lib/tool-results";
 import {
 	useIsLoading,
 	useLoadingMessage,
@@ -220,6 +221,7 @@ export const MessageList = ({
 						</>
 					) : (
 						messages.map((message, index) => {
+							if (isHiddenToolResponse(message)) return null;
 							const compactionLabel = getCompactionMessageLabel(message);
 
 							return (

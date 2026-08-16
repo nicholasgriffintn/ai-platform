@@ -171,6 +171,9 @@ importers:
       stripe:
         specifier: 22.4.0
         version: 22.4.0(@types/node@26.2.0)
+      yaml:
+        specifier: 2.9.0
+        version: 2.9.0
       zod:
         specifier: 'catalog:'
         version: 4.4.3

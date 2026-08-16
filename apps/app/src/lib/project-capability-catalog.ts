@@ -14,14 +14,16 @@ export interface ProjectCapabilityKindGroup {
 const KIND_LABELS: Record<ProjectCapabilityKind, string> = {
 	app: "Apps",
 	recipe: "Recipes",
+	skill: "Skills",
 	tool: "Tools",
 };
 
-const KIND_ORDER: ProjectCapabilityKind[] = ["app", "recipe", "tool"];
+const KIND_ORDER: ProjectCapabilityKind[] = ["app", "recipe", "skill", "tool"];
 
 export function getProjectCapabilityKind(item: AssistantActionItem): ProjectCapabilityKind | null {
 	if (item.kind === "app") return "app";
 	if (item.kind === "recipe" || item.kind === "installed_recipe") return "recipe";
+	if (item.kind === "skill") return "skill";
 	if (item.kind === "tool") return "tool";
 	return null;
 }
