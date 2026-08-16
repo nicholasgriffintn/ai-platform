@@ -17,6 +17,15 @@ vi.mock("~/utils/id", () => ({
 }));
 
 import { executeRecipeInvocationChat } from "../execution";
+import { createRecipeMessageUrl } from "../runtime";
+
+describe("recipe message URL", () => {
+	it("uses a compact recipe action instead of serialising the generated prompt", () => {
+		expect(createRecipeMessageUrl("customer-revenue-operations", "setup")).toBe(
+			"/?action=setup&recipe=customer-revenue-operations",
+		);
+	});
+});
 
 describe("executeRecipeInvocationChat", () => {
 	const env = { DB: {}, AI: {} } as unknown as IEnv;

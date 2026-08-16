@@ -512,6 +512,36 @@ export const userSettings = sqliteTable(
 
 export type UserSettings = typeof userSettings.$inferSelect;
 
+export const capabilityConfiguration = sqliteTable(
+	"capability_configuration",
+	{
+		id: text().primaryKey(),
+		scope_type: text({ enum: ["user", "project"] })
+			.default("user")
+			.notNull(),
+		scope_id: text().notNull(),
+		capability_kind: text().default("tool").notNull(),
+		capability_id: text().notNull(),
+		configuration: text().notNull(),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+	},
+	(table) => ({
+		scopeCapabilityIdx: uniqueIndex("capability_configuration_scope_capability_idx").on(
+			table.scope_type,
+			table.scope_id,
+			table.capability_kind,
+			table.capability_id,
+		),
+	}),
+);
+
+export type CapabilityConfiguration = typeof capabilityConfiguration.$inferSelect;
+
 export const userApiKeys = sqliteTable(
 	"user_api_keys",
 	{

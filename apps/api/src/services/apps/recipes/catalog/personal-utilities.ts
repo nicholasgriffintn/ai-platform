@@ -21,7 +21,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Community",
 		featured: false,
-		estimatedSetupMinutes: 4,
 		enabledTools: [RECIPE_CONNECTOR_TOOL, WEB_SEARCH_TOOL],
 		integrations: [
 			{
@@ -94,7 +93,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Finance",
 		featured: false,
-		estimatedSetupMinutes: 4,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -164,7 +162,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Productivity",
 		featured: false,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL, WEB_SEARCH_TOOL],
 		integrations: [
 			{
@@ -221,7 +218,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Developer",
 		featured: false,
-		estimatedSetupMinutes: 2,
 		enabledTools: [WEB_SEARCH_TOOL],
 		integrations: [],
 		triggers: [
@@ -267,7 +263,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Productivity",
 		featured: false,
-		estimatedSetupMinutes: 1,
 		enabledTools: [WEB_SEARCH_TOOL],
 		integrations: [],
 		triggers: [
@@ -313,7 +308,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Productivity",
 		featured: false,
-		estimatedSetupMinutes: 1,
 		enabledTools: [QR_TOOL],
 		integrations: [],
 		triggers: [
@@ -356,7 +350,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Developer",
 		featured: false,
-		estimatedSetupMinutes: 1,
 		enabledTools: [PASHI_DISCOVERY_TOOL, PASHI_EXECUTION_TOOL],
 		integrations: [],
 		triggers: [
@@ -398,7 +391,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Home",
 		featured: false,
-		estimatedSetupMinutes: 1,
 		enabledTools: [IMAGE_TOOL],
 		integrations: [],
 		triggers: [
@@ -439,7 +431,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Health",
 		featured: false,
-		estimatedSetupMinutes: 1,
 		enabledTools: [],
 		integrations: [],
 		triggers: [
@@ -485,7 +476,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Health",
 		featured: false,
-		estimatedSetupMinutes: 1,
 		enabledTools: [],
 		integrations: [],
 		triggers: [
@@ -525,7 +515,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Health",
 		featured: false,
-		estimatedSetupMinutes: 1,
 		enabledTools: [],
 		integrations: [],
 		triggers: [
@@ -560,7 +549,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Finance",
 		featured: false,
-		estimatedSetupMinutes: 1,
 		enabledTools: [],
 		integrations: [],
 		triggers: [
@@ -607,7 +595,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Productivity",
 		featured: false,
-		estimatedSetupMinutes: 1,
 		enabledTools: [],
 		integrations: [],
 		triggers: [
@@ -653,7 +640,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Productivity",
 		featured: false,
-		estimatedSetupMinutes: 2,
 		enabledTools: [WEATHER_TOOL],
 		integrations: [],
 		triggers: [
@@ -700,7 +686,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Productivity",
 		featured: false,
-		estimatedSetupMinutes: 2,
 		enabledTools: [WEATHER_TOOL],
 		integrations: [],
 		triggers: [
@@ -747,7 +732,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Community",
 		featured: false,
-		estimatedSetupMinutes: 2,
 		enabledTools: [WEATHER_TOOL],
 		integrations: [],
 		triggers: [

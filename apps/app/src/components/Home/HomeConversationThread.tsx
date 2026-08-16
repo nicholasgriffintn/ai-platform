@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { ConversationThread } from "~/components/ConversationThread";
 import type { ConversationThreadModeConfig } from "~/components/ConversationThread";
+import { useConversationLaunchModeConfig } from "~/components/ConversationThread/useConversationLaunchModeConfig";
 import { useChats } from "~/hooks/useChat";
 import { createChatWelcome } from "~/lib/chat-welcome";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -11,6 +12,7 @@ interface HomeConversationThreadProps {
 }
 
 export function HomeConversationThread({ urlModeConfig }: HomeConversationThreadProps) {
+	const modeConfig = useConversationLaunchModeConfig(urlModeConfig);
 	const user = useChatStore((state) => state.user);
 	const userSettings = useChatStore((state) => state.userSettings);
 	const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
@@ -39,22 +41,20 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
 			welcomeSeed,
 		],
 	);
-	const hasModeWelcome = Boolean(urlModeConfig?.welcomeTitle || urlModeConfig?.welcomeDescription);
+	const hasModeWelcome = Boolean(modeConfig?.welcomeTitle || modeConfig?.welcomeDescription);
 	const isWelcomeLoading =
 		!hasModeWelcome && (welcomeSeed === null || isAuthenticationLoading || areConversationsLoading);
 
 	return (
 		<ConversationThread
 			modeConfig={{
-				...urlModeConfig,
+				...modeConfig,
 				modeControls: {
-					...urlModeConfig?.modeControls,
+					...modeConfig?.modeControls,
 					includeSettingCommands: false,
 				},
-				welcomeTitle: hasModeWelcome ? urlModeConfig?.welcomeTitle : welcome.title,
-				welcomeDescription: hasModeWelcome
-					? urlModeConfig?.welcomeDescription
-					: welcome.description,
+				welcomeTitle: hasModeWelcome ? modeConfig?.welcomeTitle : welcome.title,
+				welcomeDescription: hasModeWelcome ? modeConfig?.welcomeDescription : welcome.description,
 				welcomeLoading: isWelcomeLoading,
 			}}
 		/>

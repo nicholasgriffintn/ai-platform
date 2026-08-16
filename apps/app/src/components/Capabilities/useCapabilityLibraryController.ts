@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import type {
 	AssistantActionItem,
+	SavedToolConfiguration,
 	ProjectCapabilityKind,
-	ProjectToolDefinition,
+	ModelToolDefinition,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { useProjectCapabilityCatalog } from "~/hooks/useProjectCapabilityCatalog";
@@ -13,7 +14,6 @@ import {
 	getProjectCapabilityCategories,
 	getProjectCapabilityKind,
 	groupProjectCapabilities,
-	type ProjectCapabilityKindFilter,
 } from "~/lib/project-capability-catalog";
 import {
 	type CapabilitySurface,
@@ -24,34 +24,60 @@ import {
 import { useRecipeActionRequest } from "~/components/Apps/Recipes/useRecipeActionRequest";
 import { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
 import { useChatStore } from "~/state/stores/chatStore";
-import type { ProjectToolConfiguration } from "~/lib/project-tool-configuration";
+import {
+	parseModelToolConfiguration,
+	type ModelToolConfiguration,
+} from "~/lib/model-tool-configuration";
 import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
+import { useToolConfigurations } from "~/hooks/useToolConfigurations";
+import type { CapabilityFilter } from "@ngriffin_uk/polychat-component-capabilities";
+import { isRecipeConfigured } from "~/lib/recipes";
 
-export interface CapabilityLibraryScope {
+interface CapabilityLibraryScopeBase {
 	surface: CapabilitySurface;
-	canManage: boolean;
-	/**
-	 * Projects curate what their members may use, so every capability is attached explicitly.
-	 * A person already has everything: only recipes are opted into, because they carry
-	 * credentials, schedules, and triggers of their own.
-	 */
-	requiresExplicitEnablement: boolean;
 	capabilities: EnabledCapability[];
 	conversationPath: string;
 	error?: Error | null;
 	isLoading: boolean;
 	name?: string;
-	add: (input: {
-		kind: ProjectCapabilityKind;
-		capabilityId: string;
-		configuration: Record<string, unknown>;
-	}) => Promise<unknown>;
-	remove: (capability: EnabledCapability & { id: string }) => void;
-	mutations: {
-		add: { isPending: boolean; error: Error | null; variables?: { capabilityId?: string } };
-		remove: { isPending: boolean; error: Error | null; variables?: { capabilityId?: string } };
-	};
+	toolConfigurations: SavedToolConfiguration[];
+	saveToolConfiguration: (
+		tool: ModelToolDefinition,
+		configuration: ModelToolConfiguration,
+	) => Promise<unknown>;
+	configurationMutation: CapabilityMutationState;
 }
+
+interface CapabilityMutationState {
+	isPending: boolean;
+	error: Error | null;
+	variables?: { capabilityId?: string };
+}
+
+export type CapabilityLibraryScope = CapabilityLibraryScopeBase &
+	(
+		| {
+				requiresExplicitEnablement: false;
+				canManage?: never;
+				add?: never;
+				remove?: never;
+				projectMutations?: never;
+		  }
+		| {
+				requiresExplicitEnablement: true;
+				canManage: boolean;
+				add: (input: {
+					kind: ProjectCapabilityKind;
+					capabilityId: string;
+					configuration: Record<string, unknown>;
+				}) => Promise<unknown>;
+				remove: (capability: EnabledCapability & { id: string }) => void;
+				projectMutations: {
+					add: CapabilityMutationState;
+					remove: CapabilityMutationState;
+				};
+		  }
+	);
 
 export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
 	const catalog = useProjectCapabilityCatalog();
@@ -62,29 +88,22 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
 		projectId: scope.surface.projectId,
 	});
 	const [query, setQuery] = useState("");
-	const [kind, setKind] = useState<ProjectCapabilityKindFilter>("all");
+	const [selectedFilters, setSelectedFilters] = useState<CapabilityFilter[]>([]);
 	const [category, setCategory] = useState("all");
-	const [configurationTool, setConfigurationTool] = useState<ProjectToolDefinition | null>(null);
-	const [configurationToolCapability, setConfigurationToolCapability] =
-		useState<EnabledCapability>();
+	const [configurationTool, setConfigurationTool] = useState<ModelToolDefinition | null>(null);
+	const [configuration, setConfiguration] = useState<Record<string, unknown>>();
 
 	const items = useMemo(
 		() => catalog.items.filter((item) => getProjectCapabilityKind(item) !== null),
 		[catalog.items],
 	);
-	const categories = useMemo(() => getProjectCapabilityCategories(items, kind), [items, kind]);
-	const visibleItems = useMemo(
-		() => filterProjectCapabilities(items, { category, kind, query }),
-		[category, items, kind, query],
-	);
-	const groups = useMemo(() => groupProjectCapabilities(visibleItems), [visibleItems]);
 	const appById = useMemo(() => new Map(catalog.apps.map((app) => [app.id, app])), [catalog.apps]);
 	const recipeById = useMemo(
 		() => new Map(catalog.recipes.map((recipe) => [recipe.id, recipe])),
 		[catalog.recipes],
 	);
 	const toolById = useMemo(
-		() => new Map(catalog.tools.map((tool) => [tool.id, tool])),
+		() => new Map<string, ModelToolDefinition>(catalog.tools.map((tool) => [tool.id, tool])),
 		[catalog.tools],
 	);
 	const installationByRecipeId = useMemo(
@@ -96,30 +115,94 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
 			),
 		[currentUserId, installationsData?.installations],
 	);
+	const toolConfigurationById = useMemo(
+		() =>
+			new Map<string, Record<string, unknown>>(
+				scope.toolConfigurations.map((item) => [item.toolId, item.configuration]),
+			),
+		[scope.toolConfigurations],
+	);
+	const configuredItemIds = useMemo(() => {
+		const configured = new Set<string>();
+		for (const item of items) {
+			const kind = getProjectCapabilityKind(item);
+			if (kind === "recipe") {
+				const recipe = recipeById.get(item.capability.id);
+				const installation = installationByRecipeId.get(item.capability.id);
+				if (recipe && isRecipeConfigured(recipe, installation)) configured.add(item.id);
+			}
+			if (kind === "tool") {
+				const tool = toolById.get(item.capability.id);
+				const projectConfiguration = scope.capabilities.find(
+					(capability) =>
+						capability.kind === "tool" && capability.capabilityId === item.capability.id,
+				)?.configuration;
+				const configuration = projectConfiguration ?? toolConfigurationById.get(item.capability.id);
+				if (tool && configuration && parseModelToolConfiguration(tool, configuration)) {
+					configured.add(item.id);
+				}
+			}
+		}
+		return configured;
+	}, [
+		installationByRecipeId,
+		items,
+		recipeById,
+		scope.capabilities,
+		toolById,
+		toolConfigurationById,
+	]);
+	const kinds = useMemo(
+		() =>
+			selectedFilters.filter((filter): filter is ProjectCapabilityKind => filter !== "configured"),
+		[selectedFilters],
+	);
+	const itemsForCategories = useMemo(
+		() =>
+			filterProjectCapabilities(items, {
+				category: "all",
+				configuredItemIds,
+				configuredOnly: selectedFilters.includes("configured"),
+				kinds,
+				query: "",
+			}),
+		[configuredItemIds, items, kinds, selectedFilters],
+	);
+	const categories = useMemo(
+		() => getProjectCapabilityCategories(itemsForCategories, []),
+		[itemsForCategories],
+	);
+	const visibleItems = useMemo(
+		() =>
+			filterProjectCapabilities(items, {
+				category,
+				configuredItemIds,
+				configuredOnly: selectedFilters.includes("configured"),
+				kinds,
+				query,
+			}),
+		[category, configuredItemIds, items, kinds, query, selectedFilters],
+	);
+	const groups = useMemo(() => groupProjectCapabilities(visibleItems), [visibleItems]);
 
 	useRecipeActionRequest(catalog.recipes, installationByRecipeId, recipeWorkflows.actions);
 
-	const saveCapability = (
-		item: AssistantActionItem,
-		itemKind: ProjectCapabilityKind,
-		configuration: Record<string, unknown> = {},
-	) => scope.add({ kind: itemKind, capabilityId: item.capability.id, configuration });
-
 	const addItem = (item: AssistantActionItem, itemKind: ProjectCapabilityKind) => {
-		void saveCapability(item, itemKind).catch(() => undefined);
+		if (!scope.requiresExplicitEnablement) return;
+		void scope
+			.add({ kind: itemKind, capabilityId: item.capability.id, configuration: {} })
+			.catch(() => undefined);
+	};
+	const removeCapability = (capability: EnabledCapability & { id: string }) => {
+		if (!scope.requiresExplicitEnablement) return;
+		scope.remove(capability);
 	};
 
-	const submitToolConfiguration = async (configuration: ProjectToolConfiguration) => {
+	const submitToolConfiguration = async (configuration: ModelToolConfiguration) => {
 		if (!configurationTool) return;
-		const item = items.find(
-			(candidate) =>
-				getProjectCapabilityKind(candidate) === "tool" &&
-				candidate.capability.id === configurationTool.id,
-		);
-		if (!item) return;
-		await saveCapability(item, "tool", configuration);
+		await scope.saveToolConfiguration(configurationTool, configuration);
 		setConfigurationTool(null);
-		setConfigurationToolCapability(undefined);
+		setConfiguration(undefined);
 	};
 
 	return {
@@ -133,15 +216,15 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
 			toolById,
 		},
 		toolConfigurationDialog: {
-			capability: configurationToolCapability,
+			configuration,
 			close: () => {
 				setConfigurationTool(null);
-				setConfigurationToolCapability(undefined);
+				setConfiguration(undefined);
 			},
-			isLoading: scope.mutations.add.isPending,
-			open: (tool: ProjectToolDefinition, capability?: EnabledCapability) => {
+			isLoading: scope.configurationMutation.isPending,
+			open: (tool: ModelToolDefinition, currentConfiguration?: Record<string, unknown>) => {
 				setConfigurationTool(tool);
-				setConfigurationToolCapability(capability);
+				setConfiguration(currentConfiguration);
 			},
 			submit: submitToolConfiguration,
 			tool: configurationTool,
@@ -149,18 +232,20 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
 		filters: {
 			categories,
 			category,
-			kind,
+			selected: selectedFilters,
 			query,
 			setCategory,
-			setKind: (nextKind: ProjectCapabilityKindFilter) => {
-				setKind(nextKind);
+			setSelected: (nextFilters: CapabilityFilter[]) => {
+				setSelectedFilters(nextFilters);
 				setCategory("all");
 			},
 			setQuery,
 		},
-		mutations: scope.mutations,
+		configurationMutation: scope.configurationMutation,
+		projectMutations: scope.requiresExplicitEnablement ? scope.projectMutations : undefined,
 		surface: scope.surface,
 		capabilities: scope.capabilities,
+		toolConfigurationById,
 		scopeError: scope.error,
 		scopeName: scope.name,
 		isLoadingScope: scope.isLoading,
@@ -169,29 +254,29 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
 			workflows: recipeWorkflows,
 		},
 		currentUserId,
-		canManage: scope.canManage,
-		requiresExplicitEnablement: scope.requiresExplicitEnablement,
-		actions: {
-			addItem,
-			removeCapability: (capability: EnabledCapability & { id: string }) =>
-				scope.remove(capability),
-		},
+		projectActions: scope.requiresExplicitEnablement
+			? { canManage: scope.canManage, addItem, removeCapability }
+			: undefined,
 	};
 }
 
 export function usePersonalCapabilityScope(): CapabilityLibraryScope {
+	const configurations = useToolConfigurations();
+
 	return {
 		surface: PERSONAL_SURFACE,
-		canManage: true,
 		requiresExplicitEnablement: false,
 		capabilities: [],
 		conversationPath: "/chat",
-		isLoading: false,
-		add: () => Promise.resolve(),
-		remove: () => undefined,
-		mutations: {
-			add: { isPending: false, error: null },
-			remove: { isPending: false, error: null },
+		isLoading: configurations.query.isLoading,
+		error: configurations.query.error,
+		toolConfigurations: configurations.query.data?.configurations ?? [],
+		saveToolConfiguration: (tool, configuration) =>
+			configurations.save.mutateAsync({ toolId: tool.id, configuration }),
+		configurationMutation: {
+			isPending: configurations.save.isPending,
+			error: configurations.save.error,
+			variables: { capabilityId: configurations.save.variables?.toolId },
 		},
 	};
 }
@@ -216,9 +301,20 @@ export function useProjectCapabilityScope(
 		error: projectError,
 		isLoading,
 		name: project?.name,
+		toolConfigurations: [],
 		add: (input) => add.mutateAsync({ projectId, input }),
+		saveToolConfiguration: (tool, configuration) =>
+			add.mutateAsync({
+				projectId,
+				input: { kind: "tool", capabilityId: tool.id, configuration },
+			}),
 		remove: (capability) => remove.mutate({ projectId, capabilityId: capability.id }),
-		mutations: {
+		configurationMutation: {
+			isPending: add.isPending,
+			error: add.error as Error | null,
+			variables: { capabilityId: add.variables?.input.capabilityId },
+		},
+		projectMutations: {
 			add: {
 				isPending: add.isPending,
 				error: add.error as Error | null,

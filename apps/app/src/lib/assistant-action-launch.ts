@@ -18,12 +18,16 @@ const LEGACY_RECIPE_CONTEXT_PARAM = "recipe_context";
 const AUTO_SUBMIT_PARAM = "auto_submit";
 const QUERY_PARAM = "query";
 const ENABLED_TOOLS_PARAM = "enabled_tools";
+const RECIPE_ACTION_PARAM = "action";
+const RECIPE_ID_PARAM = "recipe";
 const ASSISTANT_ACTION_LAUNCH_PARAMS = [
 	ACTION_CONTEXT_PARAM,
 	LEGACY_RECIPE_CONTEXT_PARAM,
 	AUTO_SUBMIT_PARAM,
 	QUERY_PARAM,
 	ENABLED_TOOLS_PARAM,
+	RECIPE_ACTION_PARAM,
+	RECIPE_ID_PARAM,
 ] as const;
 
 export type RecipeManagementAction = "configure" | "schedule";
@@ -41,6 +45,29 @@ export interface AssistantActionChatLaunchPayload {
 	input: string;
 	enabledTools: string[];
 	requestOptions?: ChatRequestOptions;
+}
+
+export interface RecipeConversationLaunchIntent {
+	action: "run" | "setup";
+	recipeId: string;
+}
+
+export function createRecipeConversationActionPath(
+	conversationPath: string,
+	intent: RecipeConversationLaunchIntent,
+): string {
+	const params = new URLSearchParams({ action: intent.action, recipe: intent.recipeId });
+	return `${conversationPath}?${params.toString()}`;
+}
+
+export function readRecipeConversationLaunchIntent(
+	search: string,
+): RecipeConversationLaunchIntent | undefined {
+	const params = new URLSearchParams(search);
+	const action = params.get(RECIPE_ACTION_PARAM);
+	const recipeId = params.get(RECIPE_ID_PARAM)?.trim();
+	if ((action !== "run" && action !== "setup") || !recipeId) return undefined;
+	return { action, recipeId };
 }
 
 type AppAssistantActionLaunchSource = Pick<
@@ -113,7 +140,7 @@ export function loadAssistantActionRequestOptions(
 	);
 }
 
-export function createAssistantActionChatUrl(launch: AssistantActionChatLaunch): string {
+function createAssistantActionChatUrl(launch: AssistantActionChatLaunch): string {
 	const [path, search = ""] = launch.messageUrl.split("?");
 	const params = new URLSearchParams(search);
 	const enabledTools = normaliseAssistantActionToolIds(launch.enabledTools);
@@ -126,14 +153,6 @@ export function createAssistantActionChatUrl(launch: AssistantActionChatLaunch):
 
 	const query = params.toString();
 	return query ? `${path}?${query}` : path;
-}
-
-export function createRecipeAssistantActionChatUrl(response: RecipeChatSetupResponse): string {
-	return createAssistantActionChatUrl({
-		messageUrl: response.messageUrl,
-		enabledTools: response.enabledTools,
-		actionContext: createAssistantRecipeActionContext(response),
-	});
 }
 
 export function createRecipeAssistantActionLaunch(

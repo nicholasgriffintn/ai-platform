@@ -11,7 +11,6 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Productivity",
 		featured: true,
-		estimatedSetupMinutes: 5,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -89,7 +88,6 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Students",
 		featured: true,
-		estimatedSetupMinutes: 5,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -164,7 +162,6 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Travel",
 		featured: true,
-		estimatedSetupMinutes: 5,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -239,7 +236,6 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Productivity",
 		featured: false,
-		estimatedSetupMinutes: 4,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -305,7 +301,6 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Finance",
 		featured: false,
-		estimatedSetupMinutes: 4,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{

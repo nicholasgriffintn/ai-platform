@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type {
-	AssistantRecipeInstallResponse,
-	RecipeInvocationResponse,
-} from "@ngriffin_uk/polychat-schemas";
+import type { RecipeInvocationResponse } from "@ngriffin_uk/polychat-schemas";
 
 import {
 	createAssistantActionConversationUrl,
@@ -10,50 +7,11 @@ import {
 	createConnectorAssistantActionLaunch,
 	createRecipeManagementActionPath,
 	createRecipeAssistantActionLaunch,
-	createRecipeAssistantActionChatUrl,
 	loadAssistantActionRequestOptions,
 	parseAssistantActionLaunchState,
+	readRecipeConversationLaunchIntent,
 	removeConsumedAssistantActionLaunchParams,
 } from "../assistant-action-launch";
-
-const gmailSetup = {
-	recipe: {
-		id: "gmail",
-		title: "Gmail",
-		summary: "Work with Gmail",
-		description: "Search messages and create drafts.",
-		kind: "integrate",
-		category: "Email",
-		featured: false,
-		estimatedSetupMinutes: 3,
-		integrations: [],
-		triggers: [{ type: "message", label: "Message", description: "Run from chat" }],
-		actions: ["Search Gmail", "Create drafts"],
-		setupPrompt: "Set up the Gmail recipe.",
-		enabledTools: ["use_recipe_connector"],
-		configurationFields: [],
-	},
-	conversationStarter: "Set up the Gmail recipe.",
-	messageUrl: "/?query=Set+up+the+Gmail+recipe.",
-	checklist: [],
-	connections: [],
-	readyToRun: true,
-	enabledTools: ["use_recipe_connector", "get_recipe", "configure_recipe"],
-	allowedConnectorProviders: ["gmail"],
-	allowedConnectorOperations: {
-		gmail: ["search_messages", "create_draft"],
-	},
-	installation: {
-		id: "installation-1",
-		recipeId: "gmail",
-		userId: 42,
-		status: "active",
-		triggers: [{ type: "manual", enabled: true }],
-		configuration: { defaultSearch: "newer_than:7d" },
-		createdAt: "2026-06-20T10:00:00.000Z",
-		updatedAt: "2026-06-20T10:00:00.000Z",
-	},
-} satisfies AssistantRecipeInstallResponse;
 
 const plannerInvocation = {
 	recipeId: "plain-planner",
@@ -70,43 +28,6 @@ const plannerInvocation = {
 } satisfies RecipeInvocationResponse;
 
 describe("assistant action launch URL contract", () => {
-	it("creates a neutral action context for recipe setup launches", () => {
-		const url = createRecipeAssistantActionChatUrl(gmailSetup);
-		const state = parseAssistantActionLaunchState(url.split("?")[1] ?? "");
-		const requestOptions = loadAssistantActionRequestOptions(state);
-
-		expect(state.query).toBe("Set up the Gmail recipe.");
-		expect(state.hasEnabledTools).toBe(true);
-		expect(state.enabledTools).toEqual(["use_recipe_connector", "get_recipe", "configure_recipe"]);
-		expect(state.autoSubmit).toBe(true);
-		expect(url).toContain("assistant_action_context=");
-		expect(url).not.toContain("recipe_context=");
-		expect(requestOptions).toEqual({
-			options: {
-				recipe: {
-					id: "gmail",
-					installationId: "installation-1",
-					channel: "web",
-					allowedConnectorProviders: ["gmail"],
-					allowedConnectorOperations: {
-						gmail: ["search_messages", "create_draft"],
-					},
-					configuration: { defaultSearch: "newer_than:7d" },
-				},
-			},
-		});
-	});
-
-	it("preserves intentionally empty tool sets for recipe invocation launches", () => {
-		const url = createRecipeAssistantActionChatUrl(plannerInvocation);
-		const state = parseAssistantActionLaunchState(url.split("?")[1] ?? "");
-
-		expect(state.query).toBe("Run the planner recipe.");
-		expect(state.hasEnabledTools).toBe(true);
-		expect(state.enabledTools).toEqual([]);
-		expect(state.autoSubmit).toBe(true);
-	});
-
 	it("normalises enabled tool ids from action launch URLs", () => {
 		const state = parseAssistantActionLaunchState(
 			"enabled_tools=web_fetch,bad%20tool,web_fetch,tool:search",
@@ -124,11 +45,23 @@ describe("assistant action launch URL contract", () => {
 			auto_submit: "1",
 			assistant_action_context: "{}",
 			recipe_context: "{}",
+			action: "setup",
+			recipe: "morning-briefing",
 			view: "compact",
 		}).toString();
 
 		expect(removeConsumedAssistantActionLaunchParams(search)).toBe(
 			"completion_id=conversation-1&view=compact",
+		);
+	});
+
+	it("reads only valid compact recipe actions", () => {
+		expect(readRecipeConversationLaunchIntent("action=setup&recipe=morning-briefing")).toEqual({
+			action: "setup",
+			recipeId: "morning-briefing",
+		});
+		expect(readRecipeConversationLaunchIntent("action=delete&recipe=morning-briefing")).toBe(
+			undefined,
 		);
 	});
 

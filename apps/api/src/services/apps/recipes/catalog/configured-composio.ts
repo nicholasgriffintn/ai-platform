@@ -11,7 +11,6 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Productivity",
 		featured: false,
-		estimatedSetupMinutes: 4,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -85,7 +84,6 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Productivity",
 		featured: false,
-		estimatedSetupMinutes: 5,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -151,7 +149,6 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Students",
 		featured: false,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -235,7 +232,6 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Finance",
 		featured: false,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -301,7 +297,6 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Developer",
 		featured: false,
-		estimatedSetupMinutes: 5,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -383,7 +378,6 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Developer",
 		featured: false,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -452,7 +446,6 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Home",
 		featured: false,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -533,7 +526,6 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Home",
 		featured: false,
-		estimatedSetupMinutes: 4,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -592,7 +584,6 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Developer",
 		featured: false,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -663,7 +654,6 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Developer",
 		featured: false,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -715,7 +705,6 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Finance",
 		featured: false,
-		estimatedSetupMinutes: 6,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -819,7 +808,6 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Developer",
 		featured: false,
-		estimatedSetupMinutes: 6,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -920,7 +908,6 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Email",
 		featured: false,
-		estimatedSetupMinutes: 6,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -1026,7 +1013,6 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Travel",
 		featured: false,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -1106,7 +1092,6 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "To-dos",
 		featured: false,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -1171,7 +1156,6 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Productivity",
 		featured: false,
-		estimatedSetupMinutes: 6,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -1272,7 +1256,6 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Developer",
 		featured: false,
-		estimatedSetupMinutes: 5,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{

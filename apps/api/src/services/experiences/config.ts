@@ -2,7 +2,7 @@ import type {
 	AppTheme,
 	ProjectExperienceDefinition,
 	ProjectExperienceRuntime,
-	ProjectToolDefinition,
+	ModelToolDefinition,
 } from "@ngriffin_uk/polychat-schemas";
 
 export type AppKind = "dynamic" | "frontend";
@@ -116,7 +116,7 @@ export const EXPERIENCES: ExperienceDefinition[] = [
 	},
 ];
 
-export const MODEL_TOOL_DEFINITIONS: ProjectToolDefinition[] = [
+export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
 	{
 		capability: "supportsCodeExecution",
 		category: "Development",

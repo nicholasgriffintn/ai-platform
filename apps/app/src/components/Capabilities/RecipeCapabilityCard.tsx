@@ -9,27 +9,23 @@ import type { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWork
 import { Button, DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
 
 interface RecipeCapabilityCardProps {
-	canManage: boolean;
-	requiresExplicitEnablement: boolean;
 	capability?: EnabledCapability;
 	installation?: RecipeInstallation;
-	isAdding: boolean;
-	isRemoving: boolean;
-	onAdd: () => void;
-	onRemove: () => void;
+	projectActions?: {
+		canManage: boolean;
+		isAdding: boolean;
+		isRemoving: boolean;
+		onAdd: () => void;
+		onRemove: () => void;
+	};
 	recipe: AssistantRecipe;
 	workflows: ReturnType<typeof useRecipeWorkflows>;
 }
 
 export function RecipeCapabilityCard({
-	canManage,
-	requiresExplicitEnablement,
 	capability,
 	installation,
-	isAdding,
-	isRemoving,
-	onAdd,
-	onRemove,
+	projectActions,
 	recipe,
 	workflows,
 }: RecipeCapabilityCardProps) {
@@ -55,13 +51,13 @@ export function RecipeCapabilityCard({
 				isScheduling={cardState.isScheduling}
 				isUpdatingInstallation={cardState.isUpdatingInstallation}
 				headerAccessory={
-					capability && canManage ? (
+					capability && projectActions?.canManage ? (
 						<DropdownMenu
 							position="bottom"
 							buttonProps={{
 								"aria-label": "Recipe project actions",
-								disabled: isRemoving,
-								isLoading: isRemoving,
+								disabled: projectActions.isRemoving,
+								isLoading: projectActions.isRemoving,
 								size: "sm",
 								variant: "outline",
 							}}
@@ -70,7 +66,7 @@ export function RecipeCapabilityCard({
 							<DropdownMenuItem
 								className="text-red-700 dark:text-red-300"
 								icon={<Trash2 className="h-4 w-4" />}
-								onClick={onRemove}
+								onClick={projectActions.onRemove}
 							>
 								Remove from project
 							</DropdownMenuItem>
@@ -78,18 +74,18 @@ export function RecipeCapabilityCard({
 					) : undefined
 				}
 				inactiveAction={
-					capability ? undefined : (
+					projectActions && !capability ? (
 						<Button
 							variant="primary"
 							fullWidth
 							icon={<Plus className="h-4 w-4" />}
-							disabled={!canManage}
-							isLoading={isAdding}
-							onClick={onAdd}
+							disabled={!projectActions.canManage}
+							isLoading={projectActions.isAdding}
+							onClick={projectActions.onAdd}
 						>
-							{requiresExplicitEnablement ? "Add to project" : "Set up"}
+							Add to project
 						</Button>
-					)
+					) : undefined
 				}
 			/>
 			{workflows.eventDialog.recipe?.id === recipe.id && workflows.eventDialog.installation && (

@@ -28,7 +28,6 @@ function createWorkflowRecipe(spec: WorkflowSpec): CatalogRecipe {
 		kind: "integrate",
 		category: spec.category,
 		featured: false,
-		estimatedSetupMinutes: 5,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: spec.providers.map((provider) => ({
 			id: provider,

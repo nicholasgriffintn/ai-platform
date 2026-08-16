@@ -11,7 +11,6 @@ export const workspaceRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Productivity",
 		featured: false,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -66,7 +65,6 @@ export const workspaceRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Productivity",
 		featured: true,
-		estimatedSetupMinutes: 4,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -116,7 +114,6 @@ export const workspaceRecipes: CatalogRecipe[] = [
 		kind: "automate",
 		category: "Productivity",
 		featured: false,
-		estimatedSetupMinutes: 5,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{

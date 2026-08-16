@@ -397,6 +397,7 @@ describe("project capability ownership", () => {
 				projectId: PROJECT_ID,
 				kind: "recipe",
 				capabilityId: assistantRecipes[0].id,
+				configuration: {},
 				createdBy: 3,
 			}),
 		);

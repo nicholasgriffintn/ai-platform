@@ -1,31 +1,18 @@
-import {
-	projectFileSearchConfigurationSchema,
-	projectMcpConfigurationSchema,
-	type ChatHostedToolSettings,
-	type ProjectToolDefinition,
-} from "@ngriffin_uk/polychat-schemas";
+import { type ChatHostedToolSettings } from "@ngriffin_uk/polychat-schemas";
 
 import type { ProjectCapabilityRow } from "~/repositories/WorkspaceRepository";
 import { MODEL_TOOL_DEFINITIONS } from "~/services/experiences/config";
 import { listFunctionTools } from "~/services/functions";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import {
+	getModelToolDefinition,
+	resolveModelToolConfigurations,
+	validateModelToolConfiguration,
+} from "~/services/tools/modelToolConfiguration";
 
 interface ResolvedProjectTools {
 	enabledTools: string[];
 	toolOptions?: ChatHostedToolSettings;
-}
-
-function parseStoredConfiguration(configuration: ProjectCapabilityRow["configuration"]): unknown {
-	if (typeof configuration !== "string") return configuration ?? {};
-	try {
-		return JSON.parse(configuration);
-	} catch {
-		return {};
-	}
-}
-
-function getToolDefinition(toolId: string): ProjectToolDefinition | undefined {
-	return MODEL_TOOL_DEFINITIONS.find((tool) => tool.id === toolId);
 }
 
 function getCallableToolIds(): Set<string> {
@@ -36,75 +23,41 @@ export function validateProjectToolConfiguration(
 	toolId: string,
 	configuration: Record<string, unknown>,
 ): Record<string, unknown> {
-	const definition = getToolDefinition(toolId);
+	const definition = getModelToolDefinition(toolId);
 	if (!definition) {
 		if (getCallableToolIds().has(toolId)) return {};
 		throw new AssistantError("Unknown project tool", ErrorType.PARAMS_ERROR, 400);
 	}
 	if (!definition.requiresConfiguration) return {};
 
-	const result =
-		definition.configurationKind === "file_search"
-			? projectFileSearchConfigurationSchema.safeParse(configuration)
-			: definition.configurationKind === "mcp"
-				? projectMcpConfigurationSchema.safeParse(configuration)
-				: null;
-	if (!result?.success) {
-		throw new AssistantError(
-			`${definition.label} configuration is incomplete`,
-			ErrorType.PARAMS_ERROR,
-			400,
-		);
-	}
-
-	return result.data;
+	return validateModelToolConfiguration(toolId, configuration);
 }
 
 export function resolveProjectTools(capabilities: ProjectCapabilityRow[]): ResolvedProjectTools {
 	const callableToolIds = getCallableToolIds();
-	const configuredToolRows = new Map(
-		capabilities
-			.filter((capability) => capability.kind === "tool")
-			.map((capability) => [capability.capability_id, capability]),
-	);
 	const enabledTools = capabilities
 		.filter(
 			(capability) => capability.kind === "tool" && callableToolIds.has(capability.capability_id),
 		)
 		.map((capability) => capability.capability_id);
-	const toolOptions: ChatHostedToolSettings = {};
+	const configuredModelTools = resolveModelToolConfigurations(
+		capabilities
+			.filter((capability) => capability.kind === "tool")
+			.map((capability) => ({
+				toolId: capability.capability_id,
+				configuration: capability.configuration,
+			})),
+	);
 
 	for (const definition of MODEL_TOOL_DEFINITIONS) {
 		if (!definition.requiresConfiguration) {
 			enabledTools.push(definition.id);
-			continue;
-		}
-
-		const row = configuredToolRows.get(definition.id);
-		if (!row) continue;
-		const configuration = parseStoredConfiguration(row.configuration);
-
-		if (definition.configurationKind === "file_search") {
-			const parsed = projectFileSearchConfigurationSchema.safeParse(configuration);
-			if (!parsed.success) continue;
-			enabledTools.push(definition.id);
-			toolOptions.file_search = { vector_store_ids: parsed.data.vectorStoreIds };
-		}
-
-		if (definition.configurationKind === "mcp") {
-			const parsed = projectMcpConfigurationSchema.safeParse(configuration);
-			if (!parsed.success) continue;
-			enabledTools.push(definition.id);
-			toolOptions.mcp_servers = parsed.data.servers.map((server) => ({
-				require_approval: "always",
-				server_label: server.label,
-				server_url: new URL(server.url).toString(),
-			}));
 		}
 	}
+	enabledTools.push(...configuredModelTools.configuredToolIds);
 
 	return {
 		enabledTools: [...new Set(enabledTools)],
-		...(Object.keys(toolOptions).length > 0 ? { toolOptions } : {}),
+		...(configuredModelTools.toolOptions ? { toolOptions: configuredModelTools.toolOptions } : {}),
 	};
 }

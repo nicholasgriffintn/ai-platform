@@ -14,7 +14,6 @@ const recipe = {
 	kind: "automate",
 	category: "Productivity",
 	featured: true,
-	estimatedSetupMinutes: 5,
 	integrations: [],
 	triggers: [],
 	actions: ["Summarise"],

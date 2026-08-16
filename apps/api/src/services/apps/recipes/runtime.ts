@@ -79,7 +79,7 @@ export function buildRecipeSetupRuntime(params: {
 
 	return {
 		conversationStarter,
-		messageUrl: createRecipeMessageUrl(conversationStarter, enabledTools),
+		messageUrl: createRecipeMessageUrl(params.recipe.id, "setup"),
 		checklist: buildRecipeChecklist(params.recipe, params.connections, enabledTools),
 		enabledTools,
 		allowedConnectorProviders: buildAllowedConnectorProviders(params.recipe),
@@ -112,7 +112,7 @@ export function buildRecipeInvocationRuntime(params: {
 
 	return {
 		conversationStarter,
-		messageUrl: createRecipeMessageUrl(conversationStarter, enabledTools),
+		messageUrl: createRecipeMessageUrl(params.recipe.id, params.installation ? "run" : "setup"),
 		enabledTools,
 		allowedConnectorProviders: buildAllowedConnectorProviders(params.recipe),
 		allowedConnectorOperations: buildAllowedConnectorOperations(params.recipe),
@@ -309,11 +309,6 @@ function buildRecipeInvocationPrompt(params: {
 	return `Run the ${params.recipe.title} recipe now using saved configuration. Produce the recipe result, not setup instructions.`;
 }
 
-export function createRecipeMessageUrl(setupPrompt: string, enabledTools: string[] = []) {
-	const params = new URLSearchParams({ query: setupPrompt });
-	if (enabledTools.length > 0) {
-		params.set("enabled_tools", enabledTools.join(","));
-	}
-
-	return `/?${params.toString()}`;
+export function createRecipeMessageUrl(recipeId: string, action: "run" | "setup") {
+	return `/?${new URLSearchParams({ action, recipe: recipeId }).toString()}`;
 }

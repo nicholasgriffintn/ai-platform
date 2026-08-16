@@ -4,7 +4,7 @@ import type {
 	CapabilityCatalogItem,
 	ProjectCapabilityKind,
 	ProjectExperienceDefinition,
-	ProjectToolDefinition,
+	ModelToolDefinition,
 	RecipeInstallation,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -12,14 +12,12 @@ import type { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWork
 import type { CapabilitySurface, EnabledCapability } from "~/lib/capability-surfaces";
 import type { ProjectCapabilityKindGroup } from "~/lib/project-capability-catalog";
 import { getProjectCapabilityKind } from "~/lib/project-capability-catalog";
-import { parseProjectToolConfiguration } from "~/lib/project-tool-configuration";
+import { parseModelToolConfiguration } from "~/lib/model-tool-configuration";
 import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 import { CapabilityCard } from "./CapabilityCard";
 import { RecipeCapabilityCard } from "./RecipeCapabilityCard";
 
 interface CapabilityGroupsProps {
-	canManageProject: boolean;
-	requiresExplicitEnablement: boolean;
 	appById: Map<string, CapabilityCatalogItem>;
 	capabilities: EnabledCapability[];
 	currentUserId?: string | number;
@@ -27,33 +25,35 @@ interface CapabilityGroupsProps {
 	experiences: ProjectExperienceDefinition[];
 	pendingAddCapabilityId?: string;
 	pendingRemoveId?: string;
-	onAdd: (item: AssistantActionItem, kind: ProjectCapabilityKind) => void;
-	onConfigureTool: (tool: ProjectToolDefinition, capability?: EnabledCapability) => void;
-	onRemove: (capability: EnabledCapability) => void;
+	onConfigureTool: (tool: ModelToolDefinition, configuration?: Record<string, unknown>) => void;
+	projectActions?: {
+		canManage: boolean;
+		addItem: (item: AssistantActionItem, kind: ProjectCapabilityKind) => void;
+		removeCapability: (capability: EnabledCapability & { id: string }) => void;
+	};
 	recipeById: Map<string, AssistantRecipe>;
 	recipeInstallationById: Map<string, RecipeInstallation>;
 	recipeWorkflows: ReturnType<typeof useRecipeWorkflows>;
-	toolById: Map<string, ProjectToolDefinition>;
+	toolById: Map<string, ModelToolDefinition>;
+	toolConfigurationById: Map<string, Record<string, unknown>>;
 	surface: CapabilitySurface;
 }
 
 export function CapabilityGroups({
 	appById,
-	canManageProject,
-	requiresExplicitEnablement,
 	capabilities,
 	currentUserId,
 	groups,
 	experiences,
 	pendingAddCapabilityId,
 	pendingRemoveId,
-	onAdd,
 	onConfigureTool,
-	onRemove,
+	projectActions,
 	recipeById,
 	recipeInstallationById,
 	recipeWorkflows,
 	toolById,
+	toolConfigurationById,
 	surface,
 }: CapabilityGroupsProps) {
 	return (
@@ -93,51 +93,70 @@ export function CapabilityGroups({
 										const canManageCapability = existing
 											? existing.createdBy === undefined ||
 												areUserIdsEqual(existing.createdBy, currentUserId) ||
-												(existing.kind === "tool" && canManageProject)
-											: itemKind !== "tool" || canManageProject;
+												(existing.kind === "tool" && Boolean(projectActions?.canManage))
+											: projectActions
+												? itemKind !== "tool" || projectActions.canManage
+												: true;
 										if (recipe) {
 											return (
 												<RecipeCapabilityCard
 													key={item.id}
-													requiresExplicitEnablement={requiresExplicitEnablement}
-													canManage={canManageCapability}
 													capability={existing}
 													installation={recipeInstallationById.get(recipe.id)}
-													isAdding={isAdding}
-													isRemoving={isRemoving}
-													onAdd={() => onAdd(item, itemKind)}
-													onRemove={() => existing && onRemove(existing)}
+													projectActions={
+														projectActions
+															? {
+																	canManage: canManageCapability,
+																	isAdding,
+																	isRemoving,
+																	onAdd: () => projectActions.addItem(item, itemKind),
+																	onRemove: () => {
+																		if (existing) projectActions.removeCapability(existing);
+																	},
+																}
+															: undefined
+													}
 													recipe={recipe}
 													workflows={recipeWorkflows}
 												/>
 											);
 										}
 										const tool = itemKind === "tool" ? toolById.get(item.capability.id) : undefined;
+										const toolConfiguration =
+											existing?.configuration ??
+											toolConfigurationById.get(item.capability.id) ??
+											{};
 										return (
 											<CapabilityCard
 												key={item.id}
-												canManage={canManageCapability}
 												existing={existing}
-												isAdding={isAdding}
 												isConfigured={Boolean(
-													tool &&
-													parseProjectToolConfiguration(tool, existing?.configuration ?? {}),
+													tool && parseModelToolConfiguration(tool, toolConfiguration),
 												)}
-												isRemoving={isRemoving}
 												item={item}
 												kind={itemKind}
 												app={appById.get(item.capability.id)}
 												experiences={experiences}
-												onAdd={() => onAdd(item, itemKind)}
 												onConfigure={
 													tool?.requiresConfiguration
-														? () => onConfigureTool(tool, existing)
+														? () => onConfigureTool(tool, toolConfiguration)
 														: undefined
 												}
-												onRemove={() => existing && onRemove(existing)}
+												projectActions={
+													projectActions
+														? {
+																canManage: canManageCapability,
+																isAdding,
+																isRemoving,
+																onAdd: () => projectActions.addItem(item, itemKind),
+																onRemove: () => {
+																	if (existing) projectActions.removeCapability(existing);
+																},
+															}
+														: undefined
+												}
 												tool={tool}
 												surface={surface}
-												requiresExplicitEnablement={requiresExplicitEnablement}
 											/>
 										);
 									})}

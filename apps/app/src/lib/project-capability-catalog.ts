@@ -1,7 +1,5 @@
 import type { AssistantActionItem, ProjectCapabilityKind } from "@ngriffin_uk/polychat-schemas";
 
-export type ProjectCapabilityKindFilter = "all" | ProjectCapabilityKind;
-
 export interface ProjectCapabilityCategoryGroup {
 	category: string;
 	items: AssistantActionItem[];
@@ -34,12 +32,15 @@ export function getProjectCapabilityCategory(item: AssistantActionItem): string 
 
 export function getProjectCapabilityCategories(
 	items: AssistantActionItem[],
-	kind: ProjectCapabilityKindFilter,
+	kinds: ProjectCapabilityKind[],
 ): string[] {
 	return Array.from(
 		new Set(
 			items
-				.filter((item) => kind === "all" || getProjectCapabilityKind(item) === kind)
+				.filter((item) => {
+					const kind = getProjectCapabilityKind(item);
+					return kind && (kinds.length === 0 || kinds.includes(kind));
+				})
 				.map(getProjectCapabilityCategory),
 		),
 	).sort((left, right) => {
@@ -53,7 +54,9 @@ export function filterProjectCapabilities(
 	items: AssistantActionItem[],
 	filters: {
 		category: string;
-		kind: ProjectCapabilityKindFilter;
+		configuredItemIds: ReadonlySet<string>;
+		configuredOnly: boolean;
+		kinds: ProjectCapabilityKind[];
 		query: string;
 	},
 ): AssistantActionItem[] {
@@ -61,7 +64,8 @@ export function filterProjectCapabilities(
 
 	return items.filter((item) => {
 		const kind = getProjectCapabilityKind(item);
-		if (!kind || (filters.kind !== "all" && kind !== filters.kind)) return false;
+		if (!kind || (filters.kinds.length > 0 && !filters.kinds.includes(kind))) return false;
+		if (filters.configuredOnly && !filters.configuredItemIds.has(item.id)) return false;
 
 		const category = getProjectCapabilityCategory(item);
 		if (filters.category !== "all" && category !== filters.category) return false;
@@ -80,7 +84,7 @@ export function groupProjectCapabilities(
 		const kindItems = items.filter((item) => getProjectCapabilityKind(item) === kind);
 		if (kindItems.length === 0) return [];
 
-		const categories = getProjectCapabilityCategories(kindItems, kind).map((category) => ({
+		const categories = getProjectCapabilityCategories(kindItems, [kind]).map((category) => ({
 			category,
 			items: kindItems
 				.filter((item) => getProjectCapabilityCategory(item) === category)

@@ -33,6 +33,11 @@ import {
 	resolveProjectChatContext,
 	type ProjectChatContext,
 } from "~/services/workspaces/chatContext";
+import {
+	getModelToolDefinition,
+	mergePersonalModelToolOptions,
+	resolveModelToolConfigurations,
+} from "~/services/tools/modelToolConfiguration";
 
 const logger = getLogger({ prefix: "lib/chat/preparation/RequestPreparer" });
 
@@ -144,16 +149,24 @@ export class RequestPreparer {
 				: Promise.resolve(null);
 
 		const modelConfigsPromise = this.buildModelConfigs(options, validationContext);
+		const needsSavedToolConfiguration = options.enabled_tools?.some(
+			(toolId) => getModelToolDefinition(toolId)?.requiresConfiguration,
+		);
+		const savedToolConfigurationsPromise =
+			user?.id && !projectContext && needsSavedToolConfiguration
+				? repositories.capabilityConfigurations.list({ type: "user", id: user.id }, "tool")
+				: Promise.resolve([]);
 
 		const finalMessagePromise = (async () => {
 			const resolvedSettings = await userSettingsPromise;
 			return this.processMessageContent(options, validationContext, resolvedSettings);
 		})();
 
-		const [modelConfigs, userSettings, finalMessage] = await Promise.all([
+		const [modelConfigs, userSettings, finalMessage, savedToolConfigurations] = await Promise.all([
 			modelConfigsPromise,
 			userSettingsPromise,
 			finalMessagePromise,
+			savedToolConfigurationsPromise,
 		]);
 
 		const memoriesEnabled = this.shouldUseMemories(user, userSettings, options.store);
@@ -215,6 +228,20 @@ export class RequestPreparer {
 			primaryModelConfig,
 		});
 
+		const enabledTools = projectContext?.enabledTools ?? options.enabled_tools;
+		const toolOptions = projectContext
+			? projectContext.toolOptions
+			: mergePersonalModelToolOptions({
+					configured: resolveModelToolConfigurations(
+						savedToolConfigurations.map((configuration) => ({
+							toolId: configuration.capabilityId,
+							configuration: configuration.configuration,
+						})),
+					),
+					requestedEnabledTools: enabledTools,
+					requestedToolOptions: options.tool_options,
+				});
+
 		return {
 			modelConfigs,
 			primaryModel,
@@ -228,12 +255,12 @@ export class RequestPreparer {
 			currentMode: mode,
 			isProUser,
 			enabledTools: mergeEnabledMemoryToolNames({
-				enabledTools: projectContext?.enabledTools ?? options.enabled_tools,
+				enabledTools,
 				user,
 				userSettings,
 				store: options.store,
 			}),
-			toolOptions: projectContext ? projectContext.toolOptions : options.tool_options,
+			toolOptions,
 			requestOptions: options.options,
 			memoryScope,
 		};

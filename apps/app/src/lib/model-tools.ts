@@ -1,14 +1,14 @@
 import type {
 	ModelConfigItem,
-	ProjectToolCapability,
-	ProjectToolDefinition,
-	ProjectToolId,
+	ModelToolCapability,
+	ModelToolDefinition,
+	ModelToolId,
 } from "@ngriffin_uk/polychat-schemas";
-import { projectToolIdSchema } from "@ngriffin_uk/polychat-schemas";
+import { modelToolIdSchema } from "@ngriffin_uk/polychat-schemas";
 
-export type ModelToolId = ProjectToolId;
-export type ToolCapabilityKey = ProjectToolCapability;
-export type ModelToolDefinition = ProjectToolDefinition;
+export type { ModelToolDefinition, ModelToolId } from "@ngriffin_uk/polychat-schemas";
+
+export type ToolCapabilityKey = ModelToolCapability;
 export type ModelToolModelCapabilities = Partial<
 	Pick<ModelConfigItem, "supportsToolCalls" | ToolCapabilityKey>
 >;
@@ -20,7 +20,7 @@ export interface ModelToolOption extends ModelToolDefinition {
 }
 
 export function isModelToolId(toolId: string): toolId is ModelToolId {
-	return projectToolIdSchema.safeParse(toolId).success;
+	return modelToolIdSchema.safeParse(toolId).success;
 }
 
 function unavailableModelToolReason(

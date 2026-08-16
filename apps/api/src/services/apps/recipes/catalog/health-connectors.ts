@@ -11,7 +11,6 @@ export const healthConnectorRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Health",
 		featured: false,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -82,7 +81,6 @@ export const healthConnectorRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Health",
 		featured: false,
-		estimatedSetupMinutes: 4,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{

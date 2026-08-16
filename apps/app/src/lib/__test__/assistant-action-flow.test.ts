@@ -15,7 +15,6 @@ const morningBriefingRecipe = {
 	kind: "automate",
 	category: "Productivity",
 	featured: true,
-	estimatedSetupMinutes: 5,
 	integrations: [],
 	triggers: [{ type: "message", label: "Ask", description: "Ask for it" }],
 	actions: ["Summarise priorities"],

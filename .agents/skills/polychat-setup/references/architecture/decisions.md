@@ -18,6 +18,7 @@ Read the relevant accepted records before changing product structure, ownership,
 - [0014](decisions/0014-frontend-package-proposal.md): Proposed extraction of public frontend packages; consult its status before treating it as accepted architecture.
 - [0015](decisions/0015-model-driven-capability-discovery.md): Let models discover ready and setup-required capabilities through one read-only, scope-aware tool and render setup in the existing tool response surface.
 - [0016](decisions/0016-personal-capabilities-and-experiences.md): Nest personal capabilities and experiences under Chat, make scope a parameter rather than a fork, and stop publishing function tools as apps.
+- [0017](decisions/0017-scope-capability-configuration.md): Store capability configuration against an explicit scope without coupling it to enablement or one capability family.
 
 [context.md](context.md) holds the current domain vocabulary, workspace map, seams, and data flows.
 

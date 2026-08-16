@@ -433,6 +433,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 		if (
 			!initialAutoSubmit ||
 			modeConfig?.contextAttachmentsReady === false ||
+			isModelInitializing ||
+			isStreamLoading ||
+			streamStarted ||
 			autoSubmittedKeyRef.current === initialAutoSubmit.key
 		) {
 			return;
@@ -444,14 +447,19 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 			initialAutoSubmit.input,
 			contextAttachments.length > 0 ? contextAttachments : undefined,
 			modeConfig?.requestOptions,
-		);
+		).then((result) => {
+			if (result?.status === "error") setChatInput(initialAutoSubmit.input);
+		});
 	}, [
 		contextAttachments,
+		isModelInitializing,
+		isStreamLoading,
 		modeConfig?.contextAttachmentsReady,
 		modeConfig?.initialAutoSubmit,
 		modeConfig?.requestOptions,
 		sendMessage,
 		setChatInput,
+		streamStarted,
 	]);
 
 	const handleKeyPress = useCallback(

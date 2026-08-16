@@ -200,7 +200,7 @@ export const ChatSidebar = ({
 
 		return (
 			<div key={title}>
-				<h3 className="px-2 py-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+				<h3 className="px-2 py-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400 tracking-wider">
 					{title}
 				</h3>
 				<ul className="mb-3 space-y-1">

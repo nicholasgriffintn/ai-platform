@@ -8,26 +8,26 @@ afterEach(cleanup);
 describe("capability controls", () => {
 	it("reports controlled filter changes without owning filter state", () => {
 		const onCategoryChange = vi.fn();
-		const onKindChange = vi.fn();
+		const onFiltersChange = vi.fn();
 		const onQueryChange = vi.fn();
 		render(
 			<CapabilityFilters
 				categories={["Research"]}
 				category="all"
-				kind="all"
+				filters={["configured"]}
 				query=""
 				onCategoryChange={onCategoryChange}
-				onKindChange={onKindChange}
+				onFiltersChange={onFiltersChange}
 				onQueryChange={onQueryChange}
 			/>,
 		);
 
 		fireEvent.change(screen.getByRole("searchbox"), { target: { value: "weather" } });
-		fireEvent.click(screen.getByRole("button", { name: "Apps" }));
+		fireEvent.click(screen.getByRole("button", { name: "Recipes" }));
 		fireEvent.change(screen.getByRole("combobox"), { target: { value: "Research" } });
 
 		expect(onQueryChange).toHaveBeenCalledWith("weather");
-		expect(onKindChange).toHaveBeenCalledWith("app");
+		expect(onFiltersChange).toHaveBeenCalledWith(["configured", "recipe"]);
 		expect(onCategoryChange).toHaveBeenCalledWith("Research");
 		expect(screen.getByRole<HTMLInputElement>("searchbox").value).toBe("");
 	});
@@ -37,10 +37,10 @@ describe("capability controls", () => {
 			<CapabilityFilters
 				categories={["Research"]}
 				category="Research"
-				kind="app"
+				filters={["app", "recipe"]}
 				query=""
 				onCategoryChange={vi.fn()}
-				onKindChange={vi.fn()}
+				onFiltersChange={vi.fn()}
 				onQueryChange={vi.fn()}
 			/>,
 		);

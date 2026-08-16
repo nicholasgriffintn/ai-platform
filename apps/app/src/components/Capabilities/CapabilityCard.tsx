@@ -14,7 +14,7 @@ import type {
 	CapabilityCatalogItem,
 	ProjectCapabilityKind,
 	ProjectExperienceDefinition,
-	ProjectToolDefinition,
+	ModelToolDefinition,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { Button, Card, DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
@@ -26,36 +26,32 @@ import {
 } from "~/lib/capability-surfaces";
 
 interface CapabilityCardProps {
-	canManage: boolean;
-	requiresExplicitEnablement: boolean;
 	app?: CapabilityCatalogItem;
 	existing?: EnabledCapability;
-	isAdding: boolean;
 	isConfigured?: boolean;
-	isRemoving: boolean;
 	item: AssistantActionItem;
 	kind: ProjectCapabilityKind;
-	onAdd: () => void;
 	onConfigure?: () => void;
-	onRemove: () => void;
+	projectActions?: {
+		canManage: boolean;
+		isAdding: boolean;
+		isRemoving: boolean;
+		onAdd: () => void;
+		onRemove: () => void;
+	};
 	experiences: ProjectExperienceDefinition[];
-	tool?: ProjectToolDefinition;
+	tool?: ModelToolDefinition;
 	surface: CapabilitySurface;
 }
 
 export function CapabilityCard({
 	app,
-	canManage,
-	requiresExplicitEnablement,
 	existing,
-	isAdding,
 	isConfigured,
-	isRemoving,
 	item,
 	kind,
-	onAdd,
 	onConfigure,
-	onRemove,
+	projectActions,
 	experiences,
 	tool,
 	surface,
@@ -64,7 +60,8 @@ export function CapabilityCard({
 	const openPath = getCapabilityOpenPath(item, surface, experiences);
 	const appIcon = app ? getIcon(app.icon, app.theme) : null;
 	const isRunnableTool = kind === "tool" && Boolean(item.metadata?.toolRunnable);
-	// A person already has every experience and tool, so there is nothing to attach first.
+	const canManage = projectActions?.canManage ?? true;
+	const requiresExplicitEnablement = Boolean(projectActions);
 	const isIncluded = !requiresExplicitEnablement || Boolean(existing) || Boolean(tool);
 	const primaryAction = onConfigure
 		? {
@@ -81,17 +78,18 @@ export function CapabilityCard({
 					requiresManagement: false,
 				}
 			: null;
-	const statusLabel = !requiresExplicitEnablement
-		? "Available"
-		: kind === "tool"
-			? tool?.requiresConfiguration
-				? isConfigured
-					? "Configured"
-					: "Configuration required"
-				: existing
-					? "Enabled"
-					: "Included"
-			: "Enabled";
+	const statusLabel =
+		kind === "tool" && tool?.requiresConfiguration
+			? isConfigured
+				? "Configured"
+				: "Configuration required"
+			: !requiresExplicitEnablement
+				? "Available"
+				: kind === "tool"
+					? existing
+						? "Enabled"
+						: "Included"
+					: "Enabled";
 
 	return (
 		<Card className="justify-between p-5 shadow-none">
@@ -128,13 +126,13 @@ export function CapabilityCard({
 							{primaryAction.label}
 						</Button>
 					)}
-					{existing && (kind !== "tool" || !tool) && (
+					{existing && projectActions && (kind !== "tool" || !tool) && (
 						<DropdownMenu
 							position="top"
 							buttonProps={{
 								"aria-label": "More actions",
-								disabled: !canManage || isRemoving,
-								isLoading: isRemoving,
+								disabled: !canManage || projectActions.isRemoving,
+								isLoading: projectActions.isRemoving,
 								size: "md",
 								variant: "outline",
 							}}
@@ -143,20 +141,20 @@ export function CapabilityCard({
 							<DropdownMenuItem
 								className="text-red-700 dark:text-red-300"
 								icon={<Trash2 size={15} />}
-								onClick={onRemove}
+								onClick={projectActions.onRemove}
 							>
 								{requiresExplicitEnablement ? "Remove from project" : "Remove"}
 							</DropdownMenuItem>
 						</DropdownMenu>
 					)}
 				</div>
-			) : requiresExplicitEnablement ? (
+			) : projectActions ? (
 				<Button
 					variant="primary"
 					icon={<Plus size={15} />}
-					isLoading={isAdding}
+					isLoading={projectActions.isAdding}
 					disabled={!canManage}
-					onClick={onAdd}
+					onClick={projectActions.onAdd}
 				>
 					Add to project
 				</Button>

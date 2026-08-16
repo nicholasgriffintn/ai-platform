@@ -4,18 +4,12 @@ import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 import {
 	type AssistantRecipe,
-	createConnectorAssistantActionItem,
-	createRecipeAssistantActionItem,
 	type RecipeConnectorManifest,
 	type RecipeInstallation,
 	type RecipeInstallationTrigger,
 } from "@ngriffin_uk/polychat-schemas";
 
-import {
-	RECIPE_CONNECTORS_QUERY_KEY,
-	useRecipeConnectors,
-	useStartRecipeConnector,
-} from "~/hooks/useConnectors";
+import { useRecipeConnectors } from "~/hooks/useConnectors";
 import {
 	ASSISTANT_RECIPES_QUERY_KEY,
 	useDeleteRecipeInstallation,
@@ -23,8 +17,8 @@ import {
 	useInvokeAssistantRecipe,
 	useUpdateRecipeInstallation,
 } from "~/hooks/useRecipes";
-import { launchAssistantAction } from "~/lib/assistant-action-flow";
-import { openExternalUrl } from "~/lib/external-navigation";
+import { createRecipeConversationActionPath } from "~/lib/assistant-action-launch";
+import { useConnectorSetup } from "~/hooks/useConnectorSetup";
 import {
 	buildRecipeConfigurationFromFields,
 	type ConfigurationFormValues,
@@ -66,8 +60,11 @@ export function useRecipeWorkflows({
 	const invokeRecipe = useInvokeAssistantRecipe();
 	const updateInstallation = useUpdateRecipeInstallation();
 	const deleteInstallation = useDeleteRecipeInstallation();
-	const startConnector = useStartRecipeConnector();
 	const { data: connectorsData } = useRecipeConnectors();
+	const connectorSetup = useConnectorSetup({
+		returnTo: `${location.pathname}${location.search}`,
+		onConnected: () => queryClient.invalidateQueries({ queryKey: ASSISTANT_RECIPES_QUERY_KEY }),
+	});
 	const connectorByProviderId = useMemo<Map<string, RecipeConnectorManifest>>(
 		() =>
 			new Map<string, RecipeConnectorManifest>(
@@ -77,48 +74,13 @@ export function useRecipeWorkflows({
 	);
 	const scheduleCronIsSupported = isRecipeScheduleCronSupported(scheduleCronExpression);
 
-	const start = async (recipe: AssistantRecipe, installation?: RecipeInstallation) => {
-		try {
-			const result = await launchAssistantAction(
-				{
-					...(conversationPath ? { conversationPath } : {}),
-					delivery: "conversation",
-					input: "",
-					item: createRecipeAssistantActionItem(recipe, installation),
-					selectedTools: [],
-				},
-				{
-					installRecipe: (recipeId) => installRecipe.mutateAsync({ recipeId, projectId }),
-					invokeRecipe: (recipeId, input) =>
-						invokeRecipe.mutateAsync({
-							recipeId,
-							projectId,
-							...(input.trim() ? { input } : {}),
-						}),
-					startConnector: (provider, returnTo) =>
-						startConnector.mutateAsync({ provider, returnTo }),
-				},
-			);
-
-			if (result.notification?.type === "error") {
-				toast.error(result.notification.message);
-				return;
-			}
-			if (result.kind === "external") {
-				openExternalUrl(result.url);
-				return;
-			}
-			if (result.kind === "navigation") {
-				navigate(result.path);
-				return;
-			}
-			if (result.kind === "conversation") {
-				navigate(result.url);
-			}
-		} catch (startError) {
-			console.error(startError);
-			toast.error("Could not start recipe chat. Please try again.");
-		}
+	const start = (recipe: AssistantRecipe, installation?: RecipeInstallation) => {
+		navigate(
+			createRecipeConversationActionPath(conversationPath ?? "/", {
+				action: installation ? "run" : "setup",
+				recipeId: recipe.id,
+			}),
+		);
 	};
 
 	const submitSchedule = async () => {
@@ -325,48 +287,7 @@ export function useRecipeWorkflows({
 			return;
 		}
 
-		try {
-			const result = await launchAssistantAction(
-				{
-					delivery: "conversation",
-					input: "",
-					item: createConnectorAssistantActionItem(connector),
-					connectorReturnTo: `${location.pathname}${location.search}`,
-					selectedTools: [],
-				},
-				{
-					installRecipe: (recipeId) => installRecipe.mutateAsync({ recipeId, projectId }),
-					invokeRecipe: (recipeId, input) =>
-						invokeRecipe.mutateAsync({
-							recipeId,
-							projectId,
-							...(input.trim() ? { input } : {}),
-						}),
-					startConnector: (provider, returnTo) =>
-						startConnector.mutateAsync({ provider, returnTo }),
-				},
-			);
-			queryClient.invalidateQueries({ queryKey: RECIPE_CONNECTORS_QUERY_KEY });
-			queryClient.invalidateQueries({ queryKey: ASSISTANT_RECIPES_QUERY_KEY });
-			if (result.notification?.type === "error") {
-				toast.error(result.notification.message);
-				return;
-			}
-			if (result.kind === "external") {
-				openExternalUrl(result.url);
-				return;
-			}
-			if (result.kind === "navigation") {
-				navigate(result.path);
-			}
-		} catch (configureError) {
-			console.error(configureError);
-			if (setupUrl) {
-				navigate(setupUrl);
-				return;
-			}
-			toast.error("Could not start connector setup.");
-		}
+		await connectorSetup.connect(connector);
 	};
 
 	const openEventTriggersDialog = (recipe: AssistantRecipe, installation: RecipeInstallation) => {
@@ -402,7 +323,7 @@ export function useRecipeWorkflows({
 				installRecipe.variables?.recipeId === recipe.id &&
 				!installRecipe.variables?.triggers) ||
 			(invokeRecipe.isPending && invokeRecipe.variables?.recipeId === recipe.id),
-		isConfiguring: startConnector.isPending,
+		isConfiguring: connectorSetup.isStarting,
 		isEditingConfiguration:
 			(installRecipe.isPending &&
 				installRecipe.variables?.recipeId === recipe.id &&
@@ -422,6 +343,7 @@ export function useRecipeWorkflows({
 	});
 
 	return {
+		connectorSetup,
 		configurationDialog: {
 			recipe: configurationRecipe,
 			installation: configurationInstallation,

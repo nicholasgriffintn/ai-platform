@@ -1,4 +1,4 @@
-import { Activity, AlertTriangle, PauseCircle, PlayCircle, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, PauseCircle, PlayCircle, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type {
 	AssistantRecipe,
@@ -271,10 +271,6 @@ export function RecipeEventTriggersDialog({
 		<Dialog open onOpenChange={(open) => !open && onClose()}>
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
 				<DialogHeader>
-					<div className="mb-1 flex items-center gap-2 text-blue-600 dark:text-blue-400">
-						<Activity className="h-4 w-4" />
-						<span className="text-xs font-semibold uppercase tracking-wide">Live automation</span>
-					</div>
 					<DialogTitle>Event triggers for {recipe.title}</DialogTitle>
 					<DialogDescription>
 						Run this installed recipe when a selected connected app reports an event.

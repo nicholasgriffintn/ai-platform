@@ -1,0 +1,24 @@
+import {
+	fileSearchToolConfigurationSchema,
+	mcpToolConfigurationSchema,
+	type FileSearchToolConfiguration,
+	type McpToolConfiguration,
+	type ModelToolDefinition,
+} from "@ngriffin_uk/polychat-schemas";
+
+export type ModelToolConfiguration = FileSearchToolConfiguration | McpToolConfiguration;
+
+export function parseModelToolConfiguration(
+	tool: ModelToolDefinition,
+	configuration: unknown,
+): ModelToolConfiguration | null {
+	if (tool.configurationKind === "file_search") {
+		const parsed = fileSearchToolConfigurationSchema.safeParse(configuration);
+		return parsed.success ? parsed.data : null;
+	}
+	if (tool.configurationKind === "mcp") {
+		const parsed = mcpToolConfigurationSchema.safeParse(configuration);
+		return parsed.success ? parsed.data : null;
+	}
+	return null;
+}

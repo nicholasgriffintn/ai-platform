@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { CanvasGenerationsView } from "~/components/Canvas/CanvasGenerationsView";
 import { useCanvasStudio } from "~/components/Canvas/useCanvasStudio";
@@ -7,27 +7,13 @@ import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
 import { ConversationProductHeader } from "~/components/ConversationThread/ConversationProductHeader";
-import { useChatStore } from "~/state/stores/chatStore";
 import { HomeConversationThread } from "./HomeConversationThread";
 import { useHomeChatModeConfig } from "./useHomeChatModeConfig";
 
 export function HomePage() {
-	const { clearCurrentConversation, initializeStore } = useChatStore();
 	const [isCanvasMode, setIsCanvasMode] = useState(false);
 	const { modeConfig } = useHomeChatModeConfig();
 	const canvas = useCanvasStudio({ enabled: isCanvasMode });
-
-	useEffect(() => {
-		const init = async () => {
-			const completionId = new URLSearchParams(window.location.search).get("completion_id");
-			if (!completionId) {
-				clearCurrentConversation();
-			}
-			await initializeStore(completionId || undefined);
-		};
-
-		init();
-	}, [clearCurrentConversation, initializeStore]);
 
 	return (
 		<PageShell

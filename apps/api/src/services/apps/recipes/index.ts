@@ -126,11 +126,10 @@ function getConnectionStatus(
 	requiresConnection: boolean,
 	connectionContext: RecipeConnectionContext,
 ): RecipeConnectionStatus {
-	if (!requiresConnection) {
-		return "not_required";
-	}
-
-	return connectionContext.statusByProviderId.get(providerId) ?? "unknown";
+	return (
+		connectionContext.statusByProviderId.get(providerId) ??
+		(requiresConnection ? "unknown" : "not_required")
+	);
 }
 
 function enrichRecipe(

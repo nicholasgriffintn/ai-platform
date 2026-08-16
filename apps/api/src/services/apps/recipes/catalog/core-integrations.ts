@@ -11,7 +11,6 @@ export const coreIntegrationRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Developer",
 		featured: true,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -73,7 +72,6 @@ export const coreIntegrationRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Email",
 		featured: true,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -124,7 +122,6 @@ export const coreIntegrationRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Email",
 		featured: false,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -175,7 +172,6 @@ export const coreIntegrationRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Calendar",
 		featured: true,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -226,7 +222,6 @@ export const coreIntegrationRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Calendar",
 		featured: false,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{

@@ -19,10 +19,24 @@ export const recipeKindLabels: Record<RecipeKindFilter, string> = {
 
 export function getRecipeIntegrationStatusLabel(status: string | undefined) {
 	if (status === "connected") return "Connected";
-	if (status === "not_required") return "Built in";
+	if (status === "not_required") return "Not connected";
 	if (status === "missing") return "Connect";
 	if (status === "unconfigured") return "Unavailable";
 	return "Unknown";
+}
+
+export function getBlockingRecipeIntegrations(recipe: AssistantRecipe) {
+	return recipe.integrations.filter(
+		(integration) => integration.requiresConnection && integration.connectionStatus !== "connected",
+	);
+}
+
+export function isRecipeConfigured(recipe: AssistantRecipe, installation?: RecipeInstallation) {
+	return Boolean(
+		installation &&
+		getMissingRequiredRecipeConfigurationFields(recipe, installation).length === 0 &&
+		getBlockingRecipeIntegrations(recipe).length === 0,
+	);
 }
 
 export function formatRecipeConfigurationValue(

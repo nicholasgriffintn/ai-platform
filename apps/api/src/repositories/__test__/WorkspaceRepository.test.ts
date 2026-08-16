@@ -99,4 +99,69 @@ describe("WorkspaceRepository", () => {
 			),
 		).rejects.toMatchObject({ statusCode: 409 });
 	});
+
+	it("stores a project capability and its configuration in one batch", async () => {
+		const statements: { query: string; params: unknown[] }[] = [];
+		const database = {
+			prepare: vi.fn((query: string) => ({
+				bind: (...params: unknown[]) => {
+					const statement = { query, params };
+					statements.push(statement);
+					return statement;
+				},
+			})),
+			batch: vi.fn(async () => [
+				{ success: true, meta: { changes: 1 } },
+				{ success: true, meta: { changes: 1 } },
+			]),
+		};
+		const repository = new WorkspaceRepository({ DB: database } as any);
+
+		await repository.addProjectCapability({
+			id: "association-1",
+			projectId: "project-1",
+			kind: "tool",
+			capabilityId: "file_search",
+			configuration: { vectorStoreIds: ["vs_project"] },
+			createdBy: 42,
+		});
+
+		expect(database.batch).toHaveBeenCalledOnce();
+		expect(statements[0]?.query).toContain("INSERT INTO project_capability");
+		expect(statements[1]?.query).toContain("INSERT INTO capability_configuration");
+		expect(statements[1]?.query).toContain("WHERE EXISTS");
+		expect(statements[1]?.params).toEqual([
+			expect.any(String),
+			"project",
+			"project-1",
+			"tool",
+			"file_search",
+			JSON.stringify({ vectorStoreIds: ["vs_project"] }),
+			"project-1",
+			"tool",
+			"file_search",
+			42,
+		]);
+	});
+
+	it("deletes project-scoped capability configuration with its workspace", async () => {
+		const statements: { query: string; params: unknown[] }[] = [];
+		const database = {
+			prepare: vi.fn((query: string) => ({
+				bind: (...params: unknown[]) => {
+					const statement = { query, params };
+					statements.push(statement);
+					return statement;
+				},
+			})),
+			batch: vi.fn(async () => []),
+		};
+		const repository = new WorkspaceRepository({ DB: database } as any);
+
+		await repository.deleteWorkspace("workspace-1");
+
+		expect(statements[0]?.query).toContain("DELETE FROM capability_configuration");
+		expect(statements[0]?.query).toContain("scope_type = 'project'");
+		expect(statements[0]?.params).toEqual(["workspace-1"]);
+	});
 });

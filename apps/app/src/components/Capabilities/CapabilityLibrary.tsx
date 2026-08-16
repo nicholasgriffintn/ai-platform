@@ -11,6 +11,7 @@ import { isAuthenticationError } from "~/lib/errors";
 import { CapabilityGroups } from "~/components/Capabilities/CapabilityGroups";
 import { ToolConfigurationDialog } from "~/components/Capabilities/ToolConfigurationDialog";
 import { CardGridLoadingSkeleton } from "~/components/Core/LoadingSkeletons";
+import { ConnectorSetupDialogs } from "~/components/Connectors/ConnectorSetupDialogs";
 import {
 	useCapabilityLibraryController,
 	type CapabilityLibraryScope,
@@ -20,12 +21,15 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
 	const controller = useCapabilityLibraryController(scope);
 	const isLoading = controller.isLoadingScope || controller.catalog.isLoading;
 	const recipeWorkflows = controller.recipes.workflows;
-	const mutationError = controller.mutations.add.error ?? controller.mutations.remove.error;
-	const pendingAddCapabilityId = controller.mutations.add.isPending
-		? controller.mutations.add.variables?.capabilityId
+	const mutationError =
+		controller.configurationMutation.error ??
+		controller.projectMutations?.add.error ??
+		controller.projectMutations?.remove.error;
+	const pendingAddCapabilityId = controller.projectMutations?.add.isPending
+		? controller.projectMutations.add.variables?.capabilityId
 		: undefined;
-	const pendingRemoveId = controller.mutations.remove.isPending
-		? controller.mutations.remove.variables?.capabilityId
+	const pendingRemoveId = controller.projectMutations?.remove.isPending
+		? controller.projectMutations.remove.variables?.capabilityId
 		: undefined;
 	const hasAuthenticationError =
 		isAuthenticationError(controller.scopeError) ||
@@ -41,9 +45,9 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
 				<CapabilityFilters
 					categories={controller.filters.categories}
 					category={controller.filters.category}
-					kind={controller.filters.kind}
+					filters={controller.filters.selected}
 					onCategoryChange={controller.filters.setCategory}
-					onKindChange={controller.filters.setKind}
+					onFiltersChange={controller.filters.setSelected}
 					onQueryChange={controller.filters.setQuery}
 					query={controller.filters.query}
 				/>
@@ -73,21 +77,19 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
 				) : (
 					<CapabilityGroups
 						appById={controller.catalog.appById}
-						canManageProject={controller.canManage}
-						requiresExplicitEnablement={controller.requiresExplicitEnablement}
 						capabilities={controller.capabilities}
 						currentUserId={controller.currentUserId}
 						experiences={controller.catalog.experiences}
 						groups={controller.catalog.groups}
 						pendingAddCapabilityId={pendingAddCapabilityId}
 						pendingRemoveId={pendingRemoveId}
-						onAdd={controller.actions.addItem}
 						onConfigureTool={controller.toolConfigurationDialog.open}
-						onRemove={controller.actions.removeCapability}
+						projectActions={controller.projectActions}
 						recipeById={controller.catalog.recipeById}
 						recipeInstallationById={controller.recipes.installationByRecipeId}
 						recipeWorkflows={recipeWorkflows}
 						toolById={controller.catalog.toolById}
+						toolConfigurationById={controller.toolConfigurationById}
 						surface={controller.surface}
 					/>
 				)}
@@ -128,12 +130,13 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
 				onConfirm={recipeWorkflows.deleteDialog.submit}
 			/>
 			<ToolConfigurationDialog
-				capability={controller.toolConfigurationDialog.capability}
+				configuration={controller.toolConfigurationDialog.configuration}
 				isLoading={controller.toolConfigurationDialog.isLoading}
 				onClose={controller.toolConfigurationDialog.close}
 				onSubmit={controller.toolConfigurationDialog.submit}
 				tool={controller.toolConfigurationDialog.tool}
 			/>
+			<ConnectorSetupDialogs controller={recipeWorkflows.connectorSetup} />
 		</>
 	);
 }

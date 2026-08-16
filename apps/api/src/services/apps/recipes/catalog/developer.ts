@@ -11,7 +11,6 @@ export const developerRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Developer",
 		featured: false,
-		estimatedSetupMinutes: 5,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -84,7 +83,6 @@ export const developerRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Developer",
 		featured: false,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -132,7 +130,6 @@ export const developerRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "To-dos",
 		featured: true,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -189,7 +186,6 @@ export const developerRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Developer",
 		featured: false,
-		estimatedSetupMinutes: 4,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -257,7 +253,6 @@ export const developerRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Developer",
 		featured: false,
-		estimatedSetupMinutes: 4,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -333,7 +328,6 @@ export const developerRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Developer",
 		featured: false,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -390,7 +384,6 @@ export const developerRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Developer",
 		featured: false,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{
@@ -453,7 +446,6 @@ export const developerRecipes: CatalogRecipe[] = [
 		kind: "integrate",
 		category: "Developer",
 		featured: false,
-		estimatedSetupMinutes: 3,
 		enabledTools: [RECIPE_CONNECTOR_TOOL],
 		integrations: [
 			{

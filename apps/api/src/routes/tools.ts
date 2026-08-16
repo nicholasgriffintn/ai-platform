@@ -4,16 +4,24 @@ import z from "zod/v4";
 
 import {
 	errorResponseSchema,
+	savedToolConfigurationSchema,
+	savedToolConfigurationsResponseSchema,
+	modelToolIdSchema,
 	runnableToolExecuteRequestSchema,
 	runnableToolResponseSchema,
 	runnableToolSchema,
 	toolsResponseSchema,
+	saveToolConfigurationSchema,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { runFunctionWithOutput } from "~/services/functions/run-with-output";
 import { getRunnableTool } from "~/services/tools/runnable";
 import { getAvailableTools } from "~/services/tools/toolsOperations";
+import {
+	listModelToolConfigurations,
+	saveModelToolConfiguration,
+} from "~/services/tools/modelToolConfigurations";
 import { projectScopeQuerySchema } from "~/services/workspaces/access";
 import type { IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -46,6 +54,45 @@ addRoute(app, "get", "/", {
 });
 
 const toolParamsSchema = z.object({ id: z.string().min(1) });
+const configurableToolParamsSchema = z.object({ id: modelToolIdSchema });
+
+addRoute(app, "get", "/configurations", {
+	auth: true,
+	tags: ["tools"],
+	summary: "List tool configurations",
+	description: "Returns saved model-tool configuration for the authenticated scope.",
+	responses: {
+		200: {
+			description: "Saved tool configurations",
+			schema: savedToolConfigurationsResponseSchema,
+		},
+	},
+	handler: async ({ serviceContext, user }) =>
+		listModelToolConfigurations(serviceContext, { type: "user", id: user.id }),
+});
+
+addRoute(app, "put", "/:id/configuration", {
+	auth: true,
+	tags: ["tools"],
+	summary: "Save tool configuration",
+	description: "Validates and saves model-tool configuration for the authenticated scope.",
+	paramSchema: configurableToolParamsSchema,
+	bodySchema: saveToolConfigurationSchema,
+	responses: {
+		200: {
+			description: "Saved tool configuration",
+			schema: savedToolConfigurationSchema,
+		},
+		400: { description: "Invalid tool configuration", schema: errorResponseSchema },
+	},
+	handler: async ({ body, params, serviceContext, user }) =>
+		saveModelToolConfiguration(
+			serviceContext,
+			{ type: "user", id: user.id },
+			params.id,
+			body.configuration,
+		),
+});
 
 addRoute(app, "get", "/:id", {
 	tags: ["tools"],

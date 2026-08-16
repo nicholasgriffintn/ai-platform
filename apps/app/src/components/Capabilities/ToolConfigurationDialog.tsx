@@ -1,7 +1,6 @@
 import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { ProjectToolDefinition } from "@ngriffin_uk/polychat-schemas";
-import type { EnabledCapability } from "~/lib/capability-surfaces";
+import type { ModelToolDefinition } from "@ngriffin_uk/polychat-schemas";
 
 import {
 	Button,
@@ -15,9 +14,9 @@ import {
 	Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
 import {
-	parseProjectToolConfiguration,
-	type ProjectToolConfiguration,
-} from "~/lib/project-tool-configuration";
+	parseModelToolConfiguration,
+	type ModelToolConfiguration,
+} from "~/lib/model-tool-configuration";
 import { generateId } from "~/lib/utils";
 
 interface McpServerRow {
@@ -27,15 +26,15 @@ interface McpServerRow {
 }
 
 interface ToolConfigurationDialogProps {
-	capability?: EnabledCapability;
+	configuration?: Record<string, unknown>;
 	isLoading: boolean;
 	onClose: () => void;
-	onSubmit: (configuration: ProjectToolConfiguration) => Promise<void>;
-	tool: ProjectToolDefinition | null;
+	onSubmit: (configuration: ModelToolConfiguration) => Promise<void>;
+	tool: ModelToolDefinition | null;
 }
 
 export function ToolConfigurationDialog({
-	capability,
+	configuration: storedConfiguration,
 	isLoading,
 	onClose,
 	onSubmit,
@@ -47,7 +46,7 @@ export function ToolConfigurationDialog({
 
 	useEffect(() => {
 		if (!tool) return;
-		const configuration = parseProjectToolConfiguration(tool, capability?.configuration ?? {});
+		const configuration = parseModelToolConfiguration(tool, storedConfiguration ?? {});
 		setVectorStoreIds(
 			configuration && "vectorStoreIds" in configuration
 				? configuration.vectorStoreIds.join("\n")
@@ -59,7 +58,7 @@ export function ToolConfigurationDialog({
 				: [{ id: generateId(), label: "", url: "" }],
 		);
 		setError(null);
-	}, [capability, tool]);
+	}, [storedConfiguration, tool]);
 
 	const submit = async () => {
 		if (!tool) return;
@@ -77,7 +76,7 @@ export function ToolConfigurationDialog({
 							url: url.trim(),
 						})),
 					};
-		const configuration = parseProjectToolConfiguration(tool, candidate);
+		const configuration = parseModelToolConfiguration(tool, candidate);
 		if (!configuration) {
 			setError(`Complete the required ${tool.label} configuration.`);
 			return;
@@ -85,7 +84,7 @@ export function ToolConfigurationDialog({
 		try {
 			await onSubmit(configuration);
 		} catch {
-			// The project mutation exposes its API error beside the capability catalogue.
+			// The owning scope exposes its API error beside the capability catalogue.
 		}
 	};
 
@@ -162,6 +161,9 @@ export function ToolConfigurationDialog({
 						>
 							Add server
 						</Button>
+						<p className="text-xs text-zinc-500">
+							Use an HTTPS endpoint and do not put credentials in the URL.
+						</p>
 					</div>
 				)}
 

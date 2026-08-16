@@ -9,6 +9,7 @@ import { AuthChallengeRepository } from "./AuthChallengeRepository";
 import { AuditRepository } from "./AuditRepository";
 import { BaseRepository } from "./BaseRepository";
 import { ConversationRepository } from "./ConversationRepository";
+import { CapabilityConfigurationRepository } from "./CapabilityConfigurationRepository";
 import { ComposioConnectorSessionRepository } from "./ComposioConnectorSessionRepository";
 import { ConnectorOperationApprovalRepository } from "./ConnectorOperationApprovalRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
@@ -40,6 +41,7 @@ export {
 	AuditRepository,
 	BaseRepository,
 	ConversationRepository,
+	CapabilityConfigurationRepository,
 	ComposioConnectorSessionRepository,
 	ConnectorOperationApprovalRepository,
 	EmbeddingRepository,
@@ -70,6 +72,7 @@ export class RepositoryManager {
 	private anonymousUserRepo: AnonymousUserRepository;
 	private sessionRepo: SessionRepository;
 	private userSettingsRepo: UserSettingsRepository;
+	private capabilityConfigurationRepo: CapabilityConfigurationRepository;
 	private conversationRepo: ConversationRepository;
 	private composioConnectorSessionRepo: ComposioConnectorSessionRepository;
 	private connectorOperationApprovalRepo: ConnectorOperationApprovalRepository;
@@ -100,6 +103,7 @@ export class RepositoryManager {
 		this.anonymousUserRepo = new AnonymousUserRepository(env);
 		this.sessionRepo = new SessionRepository(env);
 		this.userSettingsRepo = new UserSettingsRepository(env);
+		this.capabilityConfigurationRepo = new CapabilityConfigurationRepository(env);
 		this.conversationRepo = new ConversationRepository(env);
 		this.composioConnectorSessionRepo = new ComposioConnectorSessionRepository(env);
 		this.connectorOperationApprovalRepo = new ConnectorOperationApprovalRepository(env);
@@ -161,6 +165,10 @@ export class RepositoryManager {
 
 	public get userSettings(): UserSettingsRepository {
 		return this.userSettingsRepo;
+	}
+
+	public get capabilityConfigurations(): CapabilityConfigurationRepository {
+		return this.capabilityConfigurationRepo;
 	}
 
 	public get conversations(): ConversationRepository {

@@ -518,7 +518,7 @@ export const projectExperienceDefinitionSchema = z.object({
 	requirement: projectExperienceRequirementSchema,
 });
 
-export const projectToolIdSchema = z.enum([
+export const modelToolIdSchema = z.enum([
 	"code_execution",
 	"file_search",
 	"search_grounding",
@@ -529,7 +529,7 @@ export const projectToolIdSchema = z.enum([
 	"hosted_shell",
 ]);
 
-export const projectToolCapabilitySchema = z.enum([
+export const modelToolCapabilitySchema = z.enum([
 	"supportsCodeExecution",
 	"supportsFileSearch",
 	"supportsSearchGrounding",
@@ -540,9 +540,9 @@ export const projectToolCapabilitySchema = z.enum([
 	"supportsHostedShell",
 ]);
 
-export const projectToolDefinitionSchema = z.object({
-	id: projectToolIdSchema,
-	capability: projectToolCapabilitySchema,
+export const modelToolDefinitionSchema = z.object({
+	id: modelToolIdSchema,
+	capability: modelToolCapabilitySchema,
 	category: z.string(),
 	command: z.string(),
 	description: z.string(),
@@ -550,6 +550,7 @@ export const projectToolDefinitionSchema = z.object({
 	requiresConfiguration: z.boolean().optional(),
 	configurationKind: z.enum(["file_search", "mcp"]).optional(),
 });
+
 export const toolFormFieldTypeSchema = z.enum(toolFormFieldTypes);
 export const toolResponseDisplayTypeSchema = z.enum(toolResponseDisplayTypes);
 
@@ -626,7 +627,7 @@ export const renderableToolSchema = z.object({
 
 export const capabilityCatalogResponseSchema = z.object({
 	experiences: z.array(projectExperienceDefinitionSchema),
-	modelTools: z.array(projectToolDefinitionSchema),
+	modelTools: z.array(modelToolDefinitionSchema),
 });
 
 export type AppTheme = z.infer<typeof capabilityThemeSchema>;
@@ -667,9 +668,9 @@ export type CapabilityCatalogItem = z.infer<typeof appInfoSchema>;
 export type ProjectExperienceRuntime = z.infer<typeof projectExperienceRuntimeSchema>;
 export type ProjectExperienceRequirement = z.infer<typeof projectExperienceRequirementSchema>;
 export type ProjectExperienceDefinition = z.infer<typeof projectExperienceDefinitionSchema>;
-export type ProjectToolId = z.infer<typeof projectToolIdSchema>;
-export type ProjectToolCapability = z.infer<typeof projectToolCapabilitySchema>;
-export type ProjectToolDefinition = z.infer<typeof projectToolDefinitionSchema>;
+export type ModelToolId = z.infer<typeof modelToolIdSchema>;
+export type ModelToolCapability = z.infer<typeof modelToolCapabilitySchema>;
+export type ModelToolDefinition = z.infer<typeof modelToolDefinitionSchema>;
 export type CapabilityCatalogResponse = z.infer<typeof capabilityCatalogResponseSchema>;
 export type ToolFormData = Record<string, unknown>;
 export type ToolFormErrors = Record<string, string>;
@@ -1237,7 +1238,6 @@ export const assistantRecipeSchema = z.object({
 	kind: recipeKindSchema,
 	category: recipeCategorySchema,
 	featured: z.boolean(),
-	estimatedSetupMinutes: z.number().int().positive(),
 	integrations: z.array(recipeIntegrationSchema),
 	triggers: z.array(recipeTriggerSchema),
 	actions: z.array(z.string()),

@@ -6,6 +6,8 @@ import type {
 
 import { escapeSqlLikePattern } from "~/utils/sql";
 import { BaseRepository } from "./BaseRepository";
+import { buildCapabilityConfigurationUpsert } from "./CapabilityConfigurationRepository";
+import { buildOwnedProjectCapabilityConfigurationUpsert } from "./projectCapabilityConfigurationStatements";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export interface WorkspaceRow {
@@ -283,6 +285,12 @@ export class WorkspaceRepository extends BaseRepository {
 		await database.batch([
 			database
 				.prepare(
+					`DELETE FROM capability_configuration
+					 WHERE scope_type = 'project' AND scope_id IN (${projectIds})`,
+				)
+				.bind(workspaceId),
+			database
+				.prepare(
 					`UPDATE conversation
 					 SET parent_conversation_id = NULL, parent_message_id = NULL
 					 WHERE parent_conversation_id IN (${conversationIds})`,
@@ -486,10 +494,19 @@ export class WorkspaceRepository extends BaseRepository {
 						params.id,
 						capability.kind,
 						capability.capabilityId,
-						JSON.stringify(capability.configuration),
+						JSON.stringify({}),
 						params.createdBy,
 					),
 			),
+			...capabilities.map((capability) => {
+				const statement = buildCapabilityConfigurationUpsert({
+					scope: { type: "project", id: params.id },
+					capabilityKind: capability.kind,
+					capabilityId: capability.capabilityId,
+					configuration: capability.configuration,
+				});
+				return database.prepare(statement.query).bind(...statement.values);
+			}),
 		]);
 	}
 
@@ -548,7 +565,17 @@ export class WorkspaceRepository extends BaseRepository {
 
 	async listProjectCapabilities(projectId: string): Promise<ProjectCapabilityRow[]> {
 		return this.runQuery<ProjectCapabilityRow>(
-			"SELECT * FROM project_capability WHERE project_id = ? ORDER BY created_at",
+			`SELECT pc.id, pc.project_id, pc.kind, pc.capability_id,
+				COALESCE(cc.configuration, pc.configuration) AS configuration,
+				pc.created_by, pc.created_at
+			 FROM project_capability pc
+			 LEFT JOIN capability_configuration cc
+				ON cc.scope_type = 'project'
+				AND cc.scope_id = pc.project_id
+				AND cc.capability_kind = pc.kind
+				AND cc.capability_id = pc.capability_id
+			 WHERE pc.project_id = ?
+			 ORDER BY pc.created_at`,
 			[projectId],
 		);
 	}
@@ -561,23 +588,37 @@ export class WorkspaceRepository extends BaseRepository {
 		configuration: Record<string, unknown>;
 		createdBy: number;
 	}): Promise<void> {
-		const result = await this.executeRun(
-			`INSERT INTO project_capability
-				(id, project_id, kind, capability_id, configuration, created_by)
-			 VALUES (?, ?, ?, ?, ?, ?)
-			 ON CONFLICT(project_id, kind, capability_id) DO UPDATE SET
-				configuration = excluded.configuration
-			 WHERE project_capability.created_by = excluded.created_by`,
-			[
-				params.id,
-				params.projectId,
-				params.kind,
-				params.capabilityId,
-				JSON.stringify(params.configuration),
-				params.createdBy,
-			],
-		);
-		if (result.meta.changes === 0) {
+		const database = this.env.DB;
+		if (!database) return;
+		const configurationStatement = buildOwnedProjectCapabilityConfigurationUpsert({
+			scope: { type: "project", id: params.projectId },
+			capabilityKind: params.kind,
+			capabilityId: params.capabilityId,
+			configuration: params.configuration,
+			createdBy: params.createdBy,
+		});
+		const results = await database.batch([
+			database
+				.prepare(
+					`INSERT INTO project_capability
+						(id, project_id, kind, capability_id, configuration, created_by)
+					 VALUES (?, ?, ?, ?, ?, ?)
+					 ON CONFLICT(project_id, kind, capability_id) DO UPDATE SET
+						created_by = project_capability.created_by
+					 WHERE project_capability.kind = 'tool'
+						OR project_capability.created_by = excluded.created_by`,
+				)
+				.bind(
+					params.id,
+					params.projectId,
+					params.kind,
+					params.capabilityId,
+					JSON.stringify({}),
+					params.createdBy,
+				),
+			database.prepare(configurationStatement.query).bind(...configurationStatement.values),
+		]);
+		if (results[0]?.meta.changes === 0) {
 			throw new AssistantError(
 				"Only the member who attached this capability can manage it",
 				ErrorType.FORBIDDEN,
@@ -587,9 +628,25 @@ export class WorkspaceRepository extends BaseRepository {
 	}
 
 	async removeProjectCapability(projectId: string, capabilityId: string): Promise<void> {
-		await this.executeRun("DELETE FROM project_capability WHERE project_id = ? AND id = ?", [
-			projectId,
-			capabilityId,
+		const database = this.env.DB;
+		if (!database) return;
+		await database.batch([
+			database
+				.prepare(
+					`DELETE FROM capability_configuration
+					 WHERE scope_type = 'project' AND scope_id = ?
+						AND EXISTS (
+							SELECT 1 FROM project_capability pc
+							WHERE pc.id = ?
+								AND pc.project_id = capability_configuration.scope_id
+								AND pc.kind = capability_configuration.capability_kind
+								AND pc.capability_id = capability_configuration.capability_id
+						)`,
+				)
+				.bind(projectId, capabilityId),
+			database
+				.prepare("DELETE FROM project_capability WHERE project_id = ? AND id = ?")
+				.bind(projectId, capabilityId),
 		]);
 	}
 

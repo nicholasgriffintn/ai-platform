@@ -1,7 +1,7 @@
 import {
 	CalendarClock,
-	Clock,
 	Activity,
+	ChevronRight,
 	PauseCircle,
 	PlayCircle,
 	Plug,
@@ -11,7 +11,7 @@ import {
 	WandSparkles,
 } from "lucide-react";
 import type { AssistantRecipe, RecipeInstallation } from "@ngriffin_uk/polychat-schemas";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 import {
 	Badge,
@@ -23,13 +23,14 @@ import {
 	CardTitle,
 } from "@ngriffin_uk/polychat-component-ui";
 import {
-	getRecipeIntegrationStatusLabel,
+	getBlockingRecipeIntegrations,
 	getRecipeScheduleTrigger,
-	hasSavedRecipeConfiguration,
+	isRecipeConfigured,
 	recipeKindLabels,
 	recipeSupportsSchedule,
 } from "~/lib/recipes";
 import { cn } from "~/lib/utils";
+import { RecipeConnectionsDialog } from "./RecipeConnectionsDialog";
 
 interface RecipeCardProps {
 	headerAccessory?: ReactNode;
@@ -68,197 +69,177 @@ export function RecipeCard({
 	isScheduling,
 	isUpdatingInstallation,
 }: RecipeCardProps) {
-	const connectableIntegrations = recipe.integrations.filter(
-		(integration) =>
-			integration.connectionStatus === "missing" || integration.connectionStatus === "unknown",
-	);
-	const hasUnavailableIntegration = recipe.integrations.some(
+	const [connectionsOpen, setConnectionsOpen] = useState(false);
+	const hasUnavailableIntegration = getBlockingRecipeIntegrations(recipe).some(
 		(integration) => integration.connectionStatus === "unconfigured",
 	);
-	const statusIntegrations = recipe.integrations.filter(
-		(integration) =>
-			integration.connectionStatus !== "missing" && integration.connectionStatus !== "unknown",
-	);
 	const canSchedule = recipeSupportsSchedule(recipe);
+	const canConfigure = recipe.configurationFields.length > 0;
 	const canUseEventTriggers = recipe.triggers.some((trigger) => trigger.type === "event");
 	const scheduleTrigger = getRecipeScheduleTrigger(installation);
 	const isPaused = installation?.status === "paused";
-	const hasConfiguration = hasSavedRecipeConfiguration(installation);
+	const isConfigured = isRecipeConfigured(recipe, installation);
+	const setupStatus = isPaused
+		? "Paused"
+		: isConfigured
+			? "Ready"
+			: installation
+				? "Setup incomplete"
+				: "Not set up";
 
 	return (
-		<Card className="flex h-full flex-col border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-			<CardHeader className="space-y-3">
-				<div className="flex items-start justify-between gap-3">
-					<div className="flex items-center gap-2">
-						<div className="rounded-md border border-zinc-200 bg-zinc-50 p-2 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-							{recipe.kind === "automate" ? (
-								<WandSparkles className="h-4 w-4" />
-							) : (
-								<Plug className="h-4 w-4" />
-							)}
+		<>
+			<Card className="flex h-full flex-col border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+				<CardHeader className="space-y-3">
+					<div className="flex items-start justify-between gap-3">
+						<div className="flex items-center gap-2">
+							<div className="rounded-md border border-zinc-200 bg-zinc-50 p-2 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+								{recipe.kind === "automate" ? (
+									<WandSparkles className="h-4 w-4" />
+								) : (
+									<Plug className="h-4 w-4" />
+								)}
+							</div>
+							<Badge variant="outline">{recipeKindLabels[recipe.kind]}</Badge>
 						</div>
-						<Badge variant="outline">{recipeKindLabels[recipe.kind]}</Badge>
-					</div>
-					<div className="flex items-center gap-2">
-						{recipe.featured && (
+						<div className="flex items-center gap-2">
 							<span
 								role="img"
-								aria-label="Featured recipe"
-								title="Featured recipe"
-								className="rounded-full bg-rose-100 p-1.5 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
-							>
-								<Sparkles className="h-4 w-4" />
-							</span>
-						)}
-						{headerAccessory}
+								aria-label={`Status: ${setupStatus}`}
+								title={setupStatus}
+								className={cn(
+									"size-2.5 rounded-full ring-2 ring-white dark:ring-zinc-900",
+									isPaused ? "bg-amber-500" : isConfigured ? "bg-emerald-500" : "bg-zinc-400",
+								)}
+							/>
+							{recipe.featured && (
+								<span
+									role="img"
+									aria-label="Featured recipe"
+									title="Featured recipe"
+									className="rounded-full bg-rose-100 p-1.5 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
+								>
+									<Sparkles className="h-4 w-4" />
+								</span>
+							)}
+							{headerAccessory}
+						</div>
 					</div>
-				</div>
-				<div>
-					<CardTitle className="text-lg">{recipe.title}</CardTitle>
-					<CardDescription className="mt-1 leading-6">{recipe.summary}</CardDescription>
-				</div>
-			</CardHeader>
-			<CardContent className="flex flex-1 flex-col gap-4">
-				<p className="text-sm leading-6 text-zinc-600 dark:text-zinc-300">{recipe.description}</p>
-
-				<div className="flex flex-wrap gap-2">
-					{installation && (
-						<span
-							className={cn(
-								"inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs",
-								isPaused
-									? "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-									: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300",
-							)}
-						>
-							{isPaused ? "Paused" : "Installed"}
-						</span>
-					)}
-					{hasConfiguration && (
-						<span className="inline-flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-xs text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300">
-							Configured
-						</span>
-					)}
-					{statusIntegrations.map((integration) => (
-						<span
-							key={integration.id}
-							className={cn(
-								"inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs",
-								integration.connectionStatus === "connected"
-									? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300"
-									: integration.connectionStatus === "not_required"
-										? "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-										: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300",
-							)}
-						>
-							{integration.name}
-							<span className="text-[11px] opacity-80">
-								{getRecipeIntegrationStatusLabel(integration.connectionStatus)}
-							</span>
-						</span>
-					))}
-				</div>
-
-				<div className="flex text-sm text-zinc-600 dark:text-zinc-300">
-					<div className="flex items-center gap-2">
-						<Clock className="h-4 w-4 text-zinc-400" />
-						<span>{recipe.estimatedSetupMinutes} min setup</span>
+					<div>
+						<CardTitle className="text-lg">{recipe.title}</CardTitle>
+						<CardDescription className="mt-1 leading-6">{recipe.summary}</CardDescription>
 					</div>
-				</div>
+				</CardHeader>
+				<CardContent className="flex flex-1 flex-col gap-4">
+					{recipe.integrations.length > 0 && !inactiveAction && (
+						<button
+							type="button"
+							aria-label={`Connections, ${recipe.integrations.length}`}
+							onClick={() => setConnectionsOpen(true)}
+							className="group flex w-fit items-center gap-2 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition-colors hover:border-zinc-400 hover:bg-zinc-50 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-offset-zinc-900"
+						>
+							<span>Connections</span>
+							<span className="min-w-5 rounded-full bg-zinc-100 px-1.5 text-center text-xs tabular-nums text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+								{recipe.integrations.length}
+							</span>
+							<ChevronRight className="size-4 shrink-0 text-zinc-400 transition-transform group-hover:translate-x-0.5" />
+						</button>
+					)}
 
-				<div className="mt-auto space-y-3 border-t border-zinc-200 pt-4 dark:border-zinc-800">
-					{inactiveAction ?? (
-						<>
-							{connectableIntegrations.length > 0 && (
-								<div className="flex flex-wrap gap-2">
-									{connectableIntegrations.map((integration) => (
-										<Button
-											key={integration.id}
-											variant="outline"
-											size="xs"
-											icon={<Plug className="h-3.5 w-3.5" />}
-											onClick={() => onConfigure(integration.providerId, integration.setupUrl)}
-											isLoading={isConfiguring}
-										>
-											Connect {integration.name}
-										</Button>
-									))}
-								</div>
-							)}
-							<Button
-								variant="primary"
-								fullWidth
-								onClick={() => onStart(recipe, installation)}
-								isLoading={isStarting}
-								disabled={hasUnavailableIntegration}
-							>
-								{installation ? "Run in chat" : "Set up in chat"}
-							</Button>
-							<Button
-								variant="secondary"
-								fullWidth
-								icon={<Settings2 className="h-4 w-4" />}
-								onClick={() => onEditConfiguration(recipe, installation)}
-								isLoading={isEditingConfiguration}
-								disabled={hasUnavailableIntegration}
-							>
-								{installation ? "Edit configuration" : "Configure"}
-							</Button>
-							{canSchedule && (
+					<div className="mt-auto space-y-3 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+						{inactiveAction ?? (
+							<>
 								<Button
-									variant="secondary"
+									variant="primary"
 									fullWidth
-									icon={<CalendarClock className="h-4 w-4" />}
-									onClick={() => onSchedule(recipe, installation)}
-									isLoading={isScheduling}
+									onClick={() => onStart(recipe, installation)}
+									isLoading={isStarting}
 									disabled={hasUnavailableIntegration}
 								>
-									{scheduleTrigger ? "Edit schedule" : "Schedule"}
+									{installation ? (isConfigured ? "Run" : "Continue setup") : "Set up"}
 								</Button>
-							)}
-							{installation && canUseEventTriggers && onManageEventTriggers && (
-								<Button
-									variant="secondary"
-									fullWidth
-									icon={<Activity className="h-4 w-4" />}
-									onClick={() => onManageEventTriggers(recipe, installation)}
-									disabled={hasUnavailableIntegration || isPaused}
-								>
-									Manage event triggers
-								</Button>
-							)}
-							{installation && (
-								<div className="grid grid-cols-2 gap-2">
+								{(canConfigure || canSchedule) && (
+									<div className={cn("grid gap-2", canConfigure && canSchedule && "grid-cols-2")}>
+										{canConfigure && (
+											<Button
+												variant="secondary"
+												fullWidth
+												icon={<Settings2 className="h-4 w-4" />}
+												onClick={() => onEditConfiguration(recipe, installation)}
+												isLoading={isEditingConfiguration}
+											>
+												Preferences
+											</Button>
+										)}
+										{canSchedule && (
+											<Button
+												variant="secondary"
+												fullWidth
+												icon={<CalendarClock className="h-4 w-4" />}
+												onClick={() => onSchedule(recipe, installation)}
+												isLoading={isScheduling}
+												disabled={!isConfigured}
+											>
+												{scheduleTrigger ? "Edit schedule" : "Schedule"}
+											</Button>
+										)}
+									</div>
+								)}
+								{installation && canUseEventTriggers && onManageEventTriggers && (
 									<Button
-										variant="outline"
-										size="sm"
-										icon={
-											isPaused ? (
-												<PlayCircle className="h-4 w-4" />
-											) : (
-												<PauseCircle className="h-4 w-4" />
-											)
-										}
-										onClick={() => onToggleInstallationStatus(installation)}
-										isLoading={isUpdatingInstallation}
+										variant="secondary"
+										fullWidth
+										icon={<Activity className="h-4 w-4" />}
+										onClick={() => onManageEventTriggers(recipe, installation)}
+										disabled={!isConfigured || isPaused}
 									>
-										{isPaused ? "Resume" : "Pause"}
+										Manage event triggers
 									</Button>
-									<Button
-										variant="outline"
-										size="sm"
-										icon={<Trash2 className="h-4 w-4" />}
-										onClick={() => onDeleteInstallation(installation)}
-										disabled={isUpdatingInstallation}
-									>
-										Remove
-									</Button>
-								</div>
-							)}
-						</>
-					)}
-				</div>
-			</CardContent>
-		</Card>
+								)}
+								{installation && (
+									<div className="grid grid-cols-2 gap-2">
+										<Button
+											variant="outline"
+											size="sm"
+											icon={
+												isPaused ? (
+													<PlayCircle className="h-4 w-4" />
+												) : (
+													<PauseCircle className="h-4 w-4" />
+												)
+											}
+											onClick={() => onToggleInstallationStatus(installation)}
+											isLoading={isUpdatingInstallation}
+										>
+											{isPaused ? "Resume" : "Pause"}
+										</Button>
+										<Button
+											variant="outline"
+											size="sm"
+											icon={<Trash2 className="h-4 w-4" />}
+											onClick={() => onDeleteInstallation(installation)}
+											disabled={isUpdatingInstallation}
+										>
+											Remove
+										</Button>
+									</div>
+								)}
+							</>
+						)}
+					</div>
+				</CardContent>
+			</Card>
+			<RecipeConnectionsDialog
+				integrations={recipe.integrations}
+				isConnecting={isConfiguring}
+				onConnect={(integration) => {
+					setConnectionsOpen(false);
+					onConfigure(integration.providerId, integration.setupUrl);
+				}}
+				onOpenChange={setConnectionsOpen}
+				open={connectionsOpen}
+				recipeTitle={recipe.title}
+			/>
+		</>
 	);
 }
