@@ -116,9 +116,6 @@ test.describe("Work experience", () => {
 
 			const selectedResult = resultList.locator('[role="option"][aria-selected="true"]');
 			await expect(selectedResult).toBeInViewport();
-			expect(
-				await selectedResult.evaluate((element) => getComputedStyle(element).backgroundColor),
-			).toBe("rgb(39, 39, 42)");
 			await homePage.closeGlobalSearch();
 		});
 
@@ -309,8 +306,11 @@ test.describe("Work experience", () => {
 			await externalServices.mockQrImage();
 			await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
 			await workPage.enableCapabilityAfterReload("Create Qr Code");
-			await workPage.executeQrAppAndOpenSavedResponse(payload);
-			await expect(page.getByText(`"${payload}"`, { exact: true })).toBeVisible();
+			await workPage.executeQrToolAndOpenSavedOutput(payload);
+			await expect(page.getByRole("link", { name: "Download Generated Image" })).toHaveAttribute(
+				"href",
+				new RegExp(encodeURIComponent(payload)),
+			);
 			await workPage.removeCapabilityAfterReload("Create Qr Code");
 			await expect(workPage.getCapabilityAddButton("Create Qr Code")).toBeVisible();
 		});

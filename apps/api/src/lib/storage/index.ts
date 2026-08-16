@@ -1,4 +1,11 @@
-import type { R2Bucket, R2ObjectBody } from "@cloudflare/workers-types";
+import type {
+	R2Bucket,
+	R2ListOptions,
+	R2Object,
+	R2ObjectBody,
+	R2Objects,
+	R2PutOptions,
+} from "@cloudflare/workers-types";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { RepositoryManager } from "~/repositories";
@@ -109,10 +116,24 @@ export class StorageService {
 		return this.requireBucket().get(normalizedKey);
 	}
 
+	async headObject(key: string): Promise<R2Object | null> {
+		const normalizedKey = key.startsWith("/") ? key.slice(1) : key;
+		return this.requireBucket().head(normalizedKey);
+	}
+
+	async listObjects(options?: R2ListOptions): Promise<R2Objects> {
+		return this.requireBucket().list(options);
+	}
+
+	async getTextObject(key: string): Promise<string | null> {
+		const object = await this.getObjectBody(key);
+		return object ? object.text() : null;
+	}
+
 	async uploadObject(
 		key: string,
 		data: string | ArrayBuffer | Uint8Array,
-		options?: Record<string, string | number>,
+		options?: R2PutOptions,
 	): Promise<string> {
 		logger.debug("Uploading object to storage", { key });
 
@@ -121,6 +142,11 @@ export class StorageService {
 		logger.debug("Object uploaded successfully", { key });
 
 		return key;
+	}
+
+	async deleteObject(key: string): Promise<void> {
+		const normalizedKey = key.startsWith("/") ? key.slice(1) : key;
+		await this.requireBucket().delete(normalizedKey);
 	}
 
 	async storeSourceFile({
@@ -137,7 +163,7 @@ export class StorageService {
 		metadata,
 	}: StoreSourceFileRequest): Promise<StoredSourceFileResult> {
 		await this.uploadObject(key, data, {
-			contentType: mimeType,
+			httpMetadata: { contentType: mimeType },
 		});
 		const context = this.requireResourceContext();
 		const source = await context.repositories.sources.createSource({
@@ -157,7 +183,9 @@ export class StorageService {
 	}
 
 	async storeOutputFile(input: StoreOutputFileRequest): Promise<StoredOutputFileResult> {
-		await this.uploadObject(input.key, input.data, { contentType: input.mimeType });
+		await this.uploadObject(input.key, input.data, {
+			httpMetadata: { contentType: input.mimeType },
+		});
 		return this.recordOutputFile(input);
 	}
 

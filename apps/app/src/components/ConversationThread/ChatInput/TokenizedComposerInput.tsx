@@ -31,6 +31,7 @@ export interface ComposerInputToken {
 	kind: "action" | "agent" | "skill" | "tool";
 	label: string;
 	position: number;
+	text?: string;
 }
 
 export interface ComposerInputTokenPosition {
@@ -280,10 +281,12 @@ function getTokenClassName(kind: ComposerInputToken["kind"]) {
 
 function createTokenSignature(tokens: ComposerInputToken[]) {
 	return tokens
-		.map((token) =>
-			[token.id, token.kind, getComposerInlineTokenText(token.label), token.position].join(":"),
-		)
+		.map((token) => [token.id, token.kind, getComposerTokenText(token), token.position].join(":"))
 		.join("|");
+}
+
+function getComposerTokenText(token: ComposerInputToken) {
+	return token.text ?? getComposerInlineTokenText(token.label);
 }
 
 function renderComposerDom(element: HTMLElement, value: string, tokens: ComposerInputToken[]) {
@@ -291,7 +294,7 @@ function renderComposerDom(element: HTMLElement, value: string, tokens: Composer
 	let cursor = 0;
 
 	for (const token of tokens) {
-		const tokenText = getComposerInlineTokenText(token.label);
+		const tokenText = getComposerTokenText(token);
 		const text = value.slice(cursor, token.position);
 		if (text) {
 			element.appendChild(document.createTextNode(text));
@@ -396,7 +399,7 @@ export const TokenizedComposerInput = forwardRef<
 				(token) =>
 					!existingTokenIds.has(token.id) &&
 					cursorPosition >= token.position &&
-					cursorPosition <= token.position + getComposerInlineTokenText(token.label).length,
+					cursorPosition <= token.position + getComposerTokenText(token).length,
 			);
 			renderComposerDom(editable, value, orderedTokens);
 			if (wasFocused) {

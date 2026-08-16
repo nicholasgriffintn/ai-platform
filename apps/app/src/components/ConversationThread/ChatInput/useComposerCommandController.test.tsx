@@ -33,7 +33,7 @@ const mocks = vi.hoisted(() => ({
 		}>,
 		items: [] as Array<{
 			id: string;
-			kind: "connector" | "recipe";
+			kind: "connector" | "recipe" | "skill";
 			label: string;
 			description: string;
 			capability?: { id: string };
@@ -197,6 +197,7 @@ describe("useComposerCommandController", () => {
 				metadata: undefined,
 			},
 			tokenPosition: 4,
+			tokenText: "@PostHog",
 		});
 		expect(mocks.store.setChatInput).toHaveBeenCalledWith("ask @PostHog about signups");
 		expect(mocks.store.setSelectedAgentId).not.toHaveBeenCalled();
@@ -237,6 +238,7 @@ describe("useComposerCommandController", () => {
 				},
 			},
 			tokenPosition: 0,
+			tokenText: "@Morning Briefing",
 		});
 		expect(mocks.store.setChatInput).toHaveBeenCalledWith("@Morning Briefing tomorrow");
 	});
@@ -262,6 +264,40 @@ describe("useComposerCommandController", () => {
 
 		expect(mocks.store.setSelectedAssistantAction).toHaveBeenCalledWith({ verb: "run" });
 		expect(mocks.store.setChatInput).toHaveBeenCalledWith("@");
+	});
+
+	it("inserts a skill slash suggestion as structured action state", () => {
+		mocks.store.chatInput = "/i-have";
+		mocks.actionCatalog.items = [
+			{
+				id: "skill:i-have-adhd",
+				kind: "skill",
+				label: "i-have-adhd",
+				description: "Shape output for a reader with ADHD.",
+				capability: { id: "i-have-adhd" },
+				searchText: ["i-have-adhd", "ADHD"],
+			},
+		];
+		const { result } = renderHook(() =>
+			useComposerCommandController({
+				isLoading: false,
+			}),
+		);
+
+		act(() => result.current.setTextareaCursorPosition(7));
+		act(() => result.current.applyDirectiveSelection());
+
+		expect(mocks.store.setChatInput).toHaveBeenCalledWith("/i-have-adhd ");
+		expect(mocks.store.setSelectedAssistantAction).toHaveBeenCalledWith({
+			item: {
+				id: "skill:i-have-adhd",
+				kind: "skill",
+				label: "i-have-adhd",
+				metadata: undefined,
+			},
+			tokenPosition: 0,
+			tokenText: "/i-have-adhd",
+		});
 	});
 
 	it("lets exact self-inserting slash commands submit instead of reselecting forever", () => {

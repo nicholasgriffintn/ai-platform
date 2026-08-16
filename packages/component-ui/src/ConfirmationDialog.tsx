@@ -1,4 +1,3 @@
-import { Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Button } from "./Button";
@@ -73,15 +72,8 @@ export function ConfirmationDialog({
 					<Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
 						{cancelText}
 					</Button>
-					<Button variant={variant} onClick={handleConfirm} disabled={isLoading}>
-						{isLoading ? (
-							<>
-								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-								Loading...
-							</>
-						) : (
-							confirmText
-						)}
+					<Button variant={variant} onClick={handleConfirm} isLoading={isLoading}>
+						{isLoading ? "Loading..." : confirmText}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

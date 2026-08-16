@@ -3,11 +3,13 @@ import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { CapabilityConfigurationRepository } from "~/repositories/CapabilityConfigurationRepository";
 import type { IRequest } from "~/types";
+import { requireProjectAccess } from "~/services/workspaces/access";
 import {
 	listSkillAvailability,
 	type SkillAvailabilityInput,
 	type SkillScopeKind,
 } from "./availability";
+import { resolveSkillCatalog, type SkillCatalog } from "./catalog";
 
 export const SKILL_CAPABILITY_KIND = "skill";
 const SKILL_DISABLED_CONFIGURATION_KEY = "enabled";
@@ -69,6 +71,7 @@ export async function resolveSkillScope(request: IRequest): Promise<RequestSkill
 		request.memoryScope?.type === "project" ? request.memoryScope.projectId : undefined;
 
 	if (projectId && context) {
+		await requireProjectAccess(context, projectId);
 		const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
 		return createProjectSkillScope(
 			capabilities
@@ -87,18 +90,56 @@ export async function resolveSkillScope(request: IRequest): Promise<RequestSkill
 	return { scope: "personal" };
 }
 
-export async function resolveRequestSkills(request: IRequest): Promise<SkillAvailability[]> {
+async function resolveRequestSkillCatalog(
+	request: IRequest,
+	skillScope: RequestSkillScope,
+): Promise<SkillCatalog | null> {
+	const context = request.context;
+	if (!context) return null;
+	const projectId =
+		request.memoryScope?.type === "project" ? request.memoryScope.projectId : undefined;
+	try {
+		if (skillScope.scope === "project" && projectId) {
+			return await resolveSkillCatalog(
+				context,
+				{ type: "project", id: projectId },
+				skillScope.enabledSkillIds,
+			);
+		}
+		if (request.user?.id) {
+			return await resolveSkillCatalog(context, { type: "personal", id: request.user.id });
+		}
+	} catch (error) {
+		context.getLogger({ prefix: "services/skills" }).warn("Failed to load authored skills", {
+			error,
+			projectId,
+			userId: request.user?.id,
+		});
+	}
+	return null;
+}
+
+export async function resolveRequestSkillState(request: IRequest): Promise<{
+	catalog: SkillCatalog | null;
+	skills: SkillAvailability[];
+}> {
 	const model = request.request?.model;
 	const modelConfig = model
 		? await getModelConfigByMatchingModel(model, undefined, request.request?.provider)
 		: undefined;
 	const skillScope = await resolveSkillScope(request);
-
-	return await listSkillAvailability(
+	const catalog = await resolveRequestSkillCatalog(request, skillScope);
+	const skills = await listSkillAvailability(
 		buildSkillAvailabilityInput({
 			skillScope,
 			supportsToolCalls: modelConfig?.supportsToolCalls ?? true,
 			enabledToolIds: new Set(request.request?.enabled_tools ?? []),
 		}),
+		catalog?.listDefinitions(),
 	);
+	return { catalog, skills };
+}
+
+export async function resolveRequestSkills(request: IRequest): Promise<SkillAvailability[]> {
+	return (await resolveRequestSkillState(request)).skills;
 }

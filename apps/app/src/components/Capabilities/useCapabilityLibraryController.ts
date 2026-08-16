@@ -31,7 +31,7 @@ import {
 } from "~/lib/model-tool-configuration";
 import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 import { useToolConfigurations } from "~/hooks/useToolConfigurations";
-import { usePersonalSkills } from "~/hooks/useSkills";
+import { useDeleteSkill, usePersonalSkills } from "~/hooks/useSkills";
 import type { CapabilityFilter } from "@ngriffin_uk/polychat-component-capabilities";
 import { isRecipeConfigured } from "~/lib/recipes";
 
@@ -90,7 +90,8 @@ export type CapabilityLibraryScope = CapabilityLibraryScopeBase &
 	);
 
 export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
-	const catalog = useProjectCapabilityCatalog();
+	const catalog = useProjectCapabilityCatalog(scope.surface.projectId);
+	const deleteSkill = useDeleteSkill(scope.surface.projectId);
 	const currentUserId = useChatStore((state) => state.user?.id);
 	const { data: installationsData } = useRecipeInstallations(scope.surface.projectId);
 	const recipeWorkflows = useRecipeWorkflows({
@@ -265,6 +266,13 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
 		},
 		currentUserId,
 		personalSkills: scope.personalSkills,
+		skillDeletion: {
+			delete: (skillId: string) => deleteSkill.mutateAsync(skillId),
+			error: deleteSkill.error,
+			isPending: deleteSkill.isPending,
+			pendingSkillId: deleteSkill.variables,
+			reset: deleteSkill.reset,
+		},
 		projectActions: scope.requiresExplicitEnablement
 			? { canManage: scope.canManage, addItem, removeCapability }
 			: undefined,

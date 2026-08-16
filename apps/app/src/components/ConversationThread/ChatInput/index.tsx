@@ -230,6 +230,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 					kind: "action",
 					label: selectedAssistantAction.item.label,
 					position: selectedAssistantAction.tokenPosition,
+					text: selectedAssistantAction.tokenText,
 				});
 			}
 

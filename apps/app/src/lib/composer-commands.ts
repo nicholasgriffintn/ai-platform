@@ -69,19 +69,20 @@ export function getComposerInlineTokenText(label: string) {
 export function getComposerInlineTokenRange(
 	position: number,
 	label: string,
+	tokenText = getComposerInlineTokenText(label),
 ): ComposerDirectiveIgnoredRange {
 	const start = Math.max(0, position);
 	return {
 		start,
-		end: start + getComposerInlineTokenText(label).length,
+		end: start + tokenText.length,
 	};
 }
 
 export function findComposerInlineTokenRanges(
 	input: string,
 	label: string,
+	tokenText = getComposerInlineTokenText(label),
 ): ComposerDirectiveIgnoredRange[] {
-	const tokenText = getComposerInlineTokenText(label);
 	if (!tokenText) {
 		return [];
 	}
@@ -156,9 +157,9 @@ export function replaceComposerDirectiveWithCursor(
 export function appendComposerInlineTokenWithCursor(
 	input: string,
 	label: string,
+	tokenText = getComposerInlineTokenText(label),
 ): ComposerDirectiveReplacement {
 	const before = input.replace(/\s+$/, "");
-	const tokenText = getComposerInlineTokenText(label);
 	const replacementStart = before ? before.length + 1 : 0;
 	const replacementEnd = replacementStart + tokenText.length;
 	const nextInput = before ? `${before} ${tokenText} ` : `${tokenText} `;

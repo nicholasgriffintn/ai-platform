@@ -248,6 +248,20 @@ test.describe("Response controls as pro", () => {
 		await homePage.waitForResponseText(/E2E response:/);
 	});
 
+	test("invokes a skill with its slash command", async ({ homePage }) => {
+		await homePage.navigate("/chat");
+		await homePage.selectModel(TEXT_MODEL);
+		const request = await homePage.sendMessageWithSkillCommand(
+			"artifacts",
+			"Create a release validation document",
+		);
+		expect(JSON.stringify(request.messages)).toContain(
+			"/artifacts Create a release validation document",
+		);
+		await homePage.waitForChatResponse(0);
+		await homePage.waitForResponseText(/E2E response:/);
+	});
+
 	test("applies detailed generation and retrieval settings", async ({ homePage }) => {
 		await homePage.navigate("/chat");
 		await homePage.selectModel(TEXT_MODEL);

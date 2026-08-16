@@ -3,7 +3,7 @@ import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { listSkillAvailability, resolveSkillAvailability } from "./availability";
-import { getSkillDefinition } from "./catalog";
+import { resolveSkillCatalog } from "./catalog";
 import {
 	buildSkillAvailabilityInput,
 	resolvePersonalSkillScope,
@@ -23,12 +23,14 @@ export async function getPersonalSkillAvailability(
 	userId: number,
 ): Promise<SkillAvailability[]> {
 	const disabledSkillIds = await loadDisabledSkillIds(context, userId);
+	const catalog = await resolveSkillCatalog(context, { type: "personal", id: userId });
 
 	return await listSkillAvailability(
 		buildSkillAvailabilityInput({
 			skillScope: { scope: "personal", disabledSkillIds },
 			supportsToolCalls: true,
 		}),
+		catalog.listDefinitions(),
 	);
 }
 
@@ -38,7 +40,8 @@ export async function setPersonalSkillEnabled(
 	skillId: string,
 	enabled: boolean,
 ): Promise<SkillAvailability> {
-	const skill = await getSkillDefinition(skillId);
+	const catalog = await resolveSkillCatalog(context, { type: "personal", id: userId });
+	const skill = catalog.getDefinition(skillId);
 	if (!skill) {
 		throw new AssistantError("Unknown skill", ErrorType.NOT_FOUND, 404);
 	}

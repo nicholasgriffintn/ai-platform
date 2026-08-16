@@ -4,7 +4,12 @@ import type { AssistantRecipe } from "@ngriffin_uk/polychat-schemas";
 
 import { useProjectCapabilityCatalog } from "./useProjectCapabilityCatalog";
 
-const mocks = vi.hoisted(() => ({ appsData: vi.fn(), recipes: vi.fn(), tools: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+	appsData: vi.fn(),
+	catalogueScope: vi.fn(),
+	recipes: vi.fn(),
+	tools: vi.fn(),
+}));
 
 const recipe = {
 	id: "daily-briefing",
@@ -23,11 +28,14 @@ const recipe = {
 } satisfies AssistantRecipe;
 
 vi.mock("./useCapabilityCatalog", () => ({
-	useCapabilityCatalog: () => ({
-		data: mocks.appsData(),
-		error: null,
-		isLoading: false,
-	}),
+	useCapabilityCatalog: (projectId?: string) => {
+		mocks.catalogueScope(projectId);
+		return {
+			data: mocks.appsData(),
+			error: null,
+			isLoading: false,
+		};
+	},
 }));
 vi.mock("./useRecipes", () => ({
 	useAssistantRecipes: () => ({
@@ -49,6 +57,16 @@ vi.mock("./useTools", () => ({
 }));
 
 describe("useProjectCapabilityCatalog", () => {
+	it("loads the catalogue for the current project scope", () => {
+		mocks.appsData.mockReturnValue({ experiences: [], modelTools: [], skills: [] });
+		mocks.recipes.mockReturnValue([]);
+		mocks.tools.mockReturnValue([]);
+
+		renderHook(() => useProjectCapabilityCatalog("project-1"));
+
+		expect(mocks.catalogueScope).toHaveBeenLastCalledWith("project-1");
+	});
+
 	it("uses API metadata and includes every recipe rather than only installations", () => {
 		mocks.appsData.mockReturnValue({
 			experiences: [

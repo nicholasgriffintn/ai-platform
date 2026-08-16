@@ -1,4 +1,3 @@
-import { Loader2 } from "lucide-react";
 import type { FormEvent, ReactNode } from "react";
 
 import { Button } from "./Button";
@@ -84,14 +83,7 @@ export function FormDialog({
 							disabled={submitDisabled || isLoading}
 							isLoading={isLoading}
 						>
-							{isLoading ? (
-								<>
-									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-									Submitting...
-								</>
-							) : (
-								submitText
-							)}
+							{isLoading ? "Submitting..." : submitText}
 						</Button>
 					</DialogFooter>
 				</form>

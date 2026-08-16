@@ -249,9 +249,13 @@ export class WorkPage extends BasePage {
 		);
 	}
 
+	private capabilitySearch() {
+		return this.page.getByRole("searchbox", { name: "Search capabilities" });
+	}
+
 	private async openCapability(name: string) {
 		await this.openProjectSurface("Capabilities");
-		await this.page.getByRole("searchbox", { name: "Search project capabilities" }).fill(name);
+		await this.capabilitySearch().fill(name);
 		return this.capabilityCard(name);
 	}
 
@@ -265,12 +269,13 @@ export class WorkPage extends BasePage {
 		}
 		if (reload) {
 			await this.reload();
-			await this.page.getByRole("searchbox", { name: "Search project capabilities" }).fill(name);
+			await this.capabilitySearch().fill(name);
 			card = this.capabilityCard(name);
 		}
 		await card
 			.getByText("Enabled", { exact: true })
 			.or(card.getByRole("button", { name: "Configure", exact: true }))
+			.or(card.getByRole("button", { name: "Set up", exact: true }))
 			.waitFor();
 	}
 
@@ -295,7 +300,7 @@ export class WorkPage extends BasePage {
 		}
 		if (reload) {
 			await this.reload();
-			await this.page.getByRole("searchbox", { name: "Search project capabilities" }).fill(name);
+			await this.capabilitySearch().fill(name);
 			card = this.capabilityCard(name);
 		}
 		await card.getByRole("button", { name: "Add to project" }).waitFor();
@@ -315,7 +320,7 @@ export class WorkPage extends BasePage {
 
 	async configureMcpTool(label: string, serverUrl: string) {
 		await this.openProjectSurface("Capabilities");
-		await this.page.getByRole("searchbox", { name: "Search project capabilities" }).fill("MCP");
+		await this.capabilitySearch().fill("MCP");
 		const card = this.page
 			.getByRole("heading", { name: "MCP", exact: true })
 			.locator("xpath=ancestor::div[@data-slot='card'][1]");
@@ -341,9 +346,7 @@ export class WorkPage extends BasePage {
 
 	async configureFileSearchTool(vectorStoreIds: string[]) {
 		await this.openProjectSurface("Capabilities");
-		await this.page
-			.getByRole("searchbox", { name: "Search project capabilities" })
-			.fill("File search");
+		await this.capabilitySearch().fill("File search");
 		const card = this.page
 			.getByRole("heading", { name: "File search", exact: true })
 			.locator("xpath=ancestor::div[@data-slot='card'][1]");
@@ -388,7 +391,7 @@ export class WorkPage extends BasePage {
 		await this.enableCapabilityAfterReload(recipeName);
 		let card = this.capabilityCard(recipeName);
 
-		await card.getByRole("button", { name: "Configure", exact: true }).click();
+		await card.getByRole("button", { name: "Preferences", exact: true }).click();
 		const configuration = this.page.getByRole("dialog", {
 			name: `Configure ${recipeName}`,
 		});
@@ -399,7 +402,7 @@ export class WorkPage extends BasePage {
 		await configuration.getByRole("button", { name: "Install recipe" }).click();
 		await this.requireSuccessfulResponse(installResponse, "Recipe configuration");
 		await configuration.waitFor({ state: "hidden" });
-		await card.getByText("Configured", { exact: true }).waitFor();
+		await card.getByRole("img", { name: "Status: Ready", exact: true }).waitFor();
 
 		await card.getByRole("button", { name: "Schedule", exact: true }).click();
 		const schedule = this.page.getByRole("dialog", { name: `Schedule ${recipeName}` });
@@ -472,7 +475,7 @@ export class WorkPage extends BasePage {
 		await removeInstallationDialog.getByRole("button", { name: "Remove", exact: true }).click();
 		await this.requireSuccessfulResponse(removeInstallationResponse, "Recipe installation removal");
 		await removeInstallationDialog.waitFor({ state: "hidden" });
-		await card.getByRole("button", { name: "Configure", exact: true }).waitFor();
+		await card.getByRole("button", { name: "Set up", exact: true }).waitFor();
 
 		const removeCapabilityResponse = this.waitForCapabilityMutation("DELETE");
 		await card.getByRole("button", { name: "Recipe project actions" }).click();
@@ -484,9 +487,7 @@ export class WorkPage extends BasePage {
 			);
 		}
 		await this.reload();
-		await this.page
-			.getByRole("searchbox", { name: "Search project capabilities" })
-			.fill(recipeName);
+		await this.capabilitySearch().fill(recipeName);
 		await this.getCapabilityAddButton(recipeName).waitFor();
 	}
 
@@ -525,7 +526,7 @@ export class WorkPage extends BasePage {
 		const confirmation = this.page.getByRole("dialog", { name: "Delete Note" });
 		await confirmation.getByRole("button", { name: "Delete", exact: true }).click();
 		await confirmation.waitFor({ state: "hidden" });
-		await this.page.getByRole("heading", { name: "No project notes" }).waitFor();
+		await this.page.getByRole("heading", { name: "No notes yet" }).waitFor();
 	}
 
 	async createUpdateAndDeleteStrudelPattern(name: string, description: string) {
@@ -574,7 +575,7 @@ export class WorkPage extends BasePage {
 				`Strudel pattern deletion failed with ${deleted.status()}: ${await deleted.text()}`,
 			);
 		}
-		await this.page.getByRole("heading", { name: "No project patterns" }).waitFor();
+		await this.page.getByRole("heading", { name: "No patterns yet" }).waitFor();
 	}
 
 	async createArticleReportFromPastedContent(content: string) {
@@ -670,16 +671,18 @@ export class WorkPage extends BasePage {
 		await this.page.getByText("Amazon Nova Lite", { exact: true }).waitFor();
 	}
 
-	async executeQrAppAndOpenSavedResponse(payload: string) {
-		await this.openProjectSurface("Experiences");
-		await this.page.getByRole("link", { name: /Create Qr Code/ }).click();
+	async executeQrToolAndOpenSavedOutput(payload: string) {
+		await this.openProjectSurface("Capabilities");
+		await this.capabilitySearch().fill("Create Qr Code");
+		const card = this.capabilityCard("Create Qr Code");
+		await card.getByRole("button", { name: "Run", exact: true }).click();
 		await this.page.getByRole("heading", { name: "Create Qr Code", exact: true }).waitFor();
 		await this.page.getByLabel(/^payload/).fill(payload);
 		await this.page.getByLabel(/^size/).fill("240x240");
 		const executionResponse = this.page.waitForResponse(
 			(response) =>
 				response.request().method() === "POST" &&
-				response.url().includes("/dynamic-apps/create_qr_code/execute?projectId="),
+				response.url().includes("/tools/create_qr_code/execute?projectId="),
 		);
 		await this.page.getByRole("button", { name: "Submit", exact: true }).click();
 		const response = await executionResponse;
@@ -692,22 +695,11 @@ export class WorkPage extends BasePage {
 			.getByRole("heading", { name: "Create Qr Code - Results", exact: true })
 			.waitFor();
 
-		await this.openProjectSurface("Experiences");
-		await this.page.getByRole("link", { name: /Saved Dynamic App Responses/ }).click();
+		await this.openProjectSurface("Outputs");
 		await this.page.getByRole("link", { name: /App output: create_qr_code/ }).click();
 		await this.page
 			.getByRole("heading", { name: "App output: create_qr_code", exact: true })
 			.waitFor();
-		const json = this.page.locator('[data-responsetype="json"]');
-		await json
-			.getByRole("button", { name: /Object/ })
-			.first()
-			.click();
-		await json
-			.getByText("formData:", { exact: true })
-			.locator("xpath=parent::div")
-			.getByRole("button", { name: /Object/ })
-			.click();
 	}
 
 	async shareAndRevokeOutput(title: string) {

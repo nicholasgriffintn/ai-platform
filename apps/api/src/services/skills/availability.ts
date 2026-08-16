@@ -82,8 +82,11 @@ export function resolveSkillAvailability(
 
 export async function listSkillAvailability(
 	input: SkillAvailabilityInput,
+	definitions?: readonly SkillDefinition[],
 ): Promise<SkillAvailability[]> {
-	return (await listSkillDefinitions()).map((skill) => resolveSkillAvailability(skill, input));
+	return (definitions ?? (await listSkillDefinitions())).map((skill) =>
+		resolveSkillAvailability(skill, input),
+	);
 }
 
 export async function listReadySkills(input: SkillAvailabilityInput): Promise<SkillAvailability[]> {

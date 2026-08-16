@@ -1,6 +1,6 @@
 import { loadSkillInputSchema, SKILL_LOAD_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
 
-import { getSkillResource, loadSkill, resolveRequestSkills } from "~/services/skills";
+import { getSkillResource, loadSkill, resolveRequestSkillState } from "~/services/skills";
 import {
 	createSkillInstructionsResponse,
 	createSkillResourceResponse,
@@ -21,10 +21,8 @@ export const load_skill: ApiToolDefinition = {
 	inputSchema: loadSkillInputSchema,
 	execute: async (args, toolContext) => {
 		const skillId = String(args.skill).trim();
-		const [requested, available] = await Promise.all([
-			loadSkill(skillId),
-			resolveRequestSkills(toolContext.request),
-		]);
+		const { catalog, skills: available } = await resolveRequestSkillState(toolContext.request);
+		const requested = catalog ? catalog.load(skillId) : await loadSkill(skillId);
 		const readyIds = new Set(
 			available.filter((skill) => skill.state === "ready").map((skill) => skill.id),
 		);
@@ -44,7 +42,9 @@ export const load_skill: ApiToolDefinition = {
 		const resourcePath = typeof args.resource === "string" ? args.resource.trim() : undefined;
 
 		if (resourcePath) {
-			const resource = await getSkillResource(skillId, resourcePath);
+			const resource = catalog
+				? catalog.readResource(skillId, resourcePath)
+				: await getSkillResource(skillId, resourcePath);
 			if (!resource) {
 				return {
 					status: "error",

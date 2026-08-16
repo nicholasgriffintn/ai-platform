@@ -64,6 +64,21 @@ export class HomePage extends BasePage {
 		if (mode === "Live") await this.page.keyboard.press("Escape");
 	}
 
+	async sendMessageWithSkillCommand(skillName: string, message: string) {
+		const command = `/${skillName}`;
+		await this.chatInput.fill(command.slice(0, -1));
+		await this.page.getByRole("button", { name: new RegExp(`^${command}`) }).click();
+		await this.chatInput.press("End");
+		await this.chatInput.pressSequentially(` ${message}`);
+		const requestPromise = this.page.waitForRequest(
+			(request) =>
+				request.method() === "POST" &&
+				new URL(request.url()).pathname.endsWith("/chat/completions"),
+		);
+		await this.clickElement(this.sendButton);
+		return (await requestPromise).postDataJSON() as Record<string, unknown>;
+	}
+
 	async waitForPersonaReady(persona: "logged-out" | "free" | "pro") {
 		if (persona === "logged-out") {
 			await this.page
@@ -337,7 +352,7 @@ export class HomePage extends BasePage {
 	async searchPolychat(query: string) {
 		const searchInput = this.page.getByRole("textbox", { name: "Search Polychat" });
 		if (!(await searchInput.isVisible())) {
-			await this.page.getByRole("button", { name: "Search", exact: true }).click();
+			await this.page.getByRole("button", { name: /^Search(?:\s|$)/ }).click();
 		}
 		await searchInput.fill(query);
 	}

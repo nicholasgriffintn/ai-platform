@@ -5,7 +5,13 @@ import { describe, expect, it } from "vitest";
 import { buildSkillsSection } from "~/lib/prompts/sections/skills";
 import { listSkillAvailability } from "../availability";
 import { SkillCatalog, getSkillResource, loadSkill, type SkillCatalogDocument } from "../catalog";
-import { parseSkillDocument, SkillDocumentError, validateSkillResourcePath } from "../document";
+import {
+	MAX_USER_SKILL_DOCUMENT_BYTES,
+	parseSkillDocument,
+	parseUserSkillDocument,
+	SkillDocumentError,
+	validateSkillResourcePath,
+} from "../document";
 import {
 	createSkillInstructionsResponse,
 	createSkillResourceResponse,
@@ -114,6 +120,20 @@ describe("built-in skill catalogue", () => {
 		expect(validateSkillResourcePath("references\\secret.txt")).not.toBeNull();
 		expect(validateSkillResourcePath("references/guide\n.md")).not.toBeNull();
 		expect(validateSkillResourcePath("a".repeat(513))).not.toBeNull();
+	});
+
+	it("rejects untrusted documents that exceed limits or claim product policy", () => {
+		expect(() =>
+			parseUserSkillDocument(
+				`---\nname: policy-override\ndescription: Useful instructions.\nmetadata:\n  polychat-always-on: "true"\n---\n\nBody`,
+			),
+		).toThrow("reserved for built-in skills");
+
+		expect(() =>
+			parseUserSkillDocument(
+				`---\nname: too-large\ndescription: Useful instructions.\n---\n\n${"a".repeat(MAX_USER_SKILL_DOCUMENT_BYTES)}`,
+			),
+		).toThrow("must be smaller than");
 	});
 
 	it("fails fast for duplicate skills, invalid policy, and unsafe resources", () => {

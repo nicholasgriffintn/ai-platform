@@ -4,6 +4,8 @@ export {
 	listSkillDefinitions,
 	listSkillSummaries,
 	loadSkill,
+	resolveSkillCatalog,
+	type SkillCatalog,
 } from "./catalog";
 export {
 	listReadySkills,
@@ -18,11 +20,25 @@ export {
 	resolveDisabledSkillIds,
 	resolvePersonalSkillScope,
 	resolveRequestSkills,
+	resolveRequestSkillState,
 	resolveSkillScope,
 	SKILL_CAPABILITY_KIND,
 	type RequestSkillScope,
 } from "./scope";
 export { getPersonalSkillAvailability, setPersonalSkillEnabled } from "./configuration";
+export { listScopedSkillSummaries } from "./listing";
+export {
+	createPersonalSkill,
+	deletePersonalSkill,
+	getPersonalSkill,
+	getProjectSkill,
+	listPersonalSkills,
+	listProjectSkills,
+	publishProjectSkill,
+	updatePersonalSkill,
+	updateProjectSkill,
+	deleteProjectSkill,
+} from "./management";
 export {
 	toSkillDefinition,
 	toSkillSummary,

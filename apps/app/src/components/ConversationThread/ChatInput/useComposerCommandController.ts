@@ -8,6 +8,7 @@ import {
 	findComposerInlineTokenRanges,
 	getComposerDirectiveQuery,
 	getComposerInlineTokenRange,
+	getComposerInlineTokenText,
 } from "~/lib/composer-commands";
 import { useChatStore } from "~/state/stores/chatStore";
 import type {
@@ -52,12 +53,18 @@ export function useComposerCommandController({
 	const ignoredDirectiveRanges = useMemo(() => {
 		const ranges: ComposerDirectiveIgnoredRange[] = [];
 		if (selectedAssistantAction?.item) {
-			ranges.push(...findComposerInlineTokenRanges(chatInput, selectedAssistantAction.item.label));
+			const tokenText =
+				selectedAssistantAction.tokenText ??
+				getComposerInlineTokenText(selectedAssistantAction.item.label);
+			ranges.push(
+				...findComposerInlineTokenRanges(chatInput, selectedAssistantAction.item.label, tokenText),
+			);
 			if (typeof selectedAssistantAction.tokenPosition === "number") {
 				ranges.push(
 					getComposerInlineTokenRange(
 						selectedAssistantAction.tokenPosition,
 						selectedAssistantAction.item.label,
+						tokenText,
 					),
 				);
 			}

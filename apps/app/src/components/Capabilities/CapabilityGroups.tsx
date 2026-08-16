@@ -39,6 +39,11 @@ interface CapabilityGroupsProps {
 	toolById: Map<string, ModelToolDefinition>;
 	toolConfigurationById: Map<string, Record<string, unknown>>;
 	surface: CapabilitySurface;
+	authoredSkillActions: {
+		canDelete: boolean;
+		onDelete: (skillId: string, label: string) => void;
+		pendingSkillId?: string;
+	};
 }
 
 export function CapabilityGroups({
@@ -58,6 +63,7 @@ export function CapabilityGroups({
 	toolById,
 	toolConfigurationById,
 	surface,
+	authoredSkillActions,
 }: CapabilityGroupsProps) {
 	return (
 		<div className="space-y-10">
@@ -163,6 +169,17 @@ export function CapabilityGroups({
 														: undefined
 												}
 												tool={tool}
+												authoredSkill={
+													item.metadata?.skillSource === "user-authored"
+														? {
+																canDelete: authoredSkillActions.canDelete,
+																isDeleting:
+																	authoredSkillActions.pendingSkillId === item.capability.id,
+																onDelete: () =>
+																	authoredSkillActions.onDelete(item.capability.id, item.label),
+															}
+														: undefined
+												}
 												skill={
 													skillState && {
 														alwaysOn: skillState.alwaysOn,

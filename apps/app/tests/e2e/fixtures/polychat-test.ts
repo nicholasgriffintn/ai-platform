@@ -7,6 +7,19 @@ import { ExternalServices } from "./external-services";
 export type Persona = "logged-out" | "free" | "pro";
 type AuthenticatedPersona = Exclude<Persona, "logged-out">;
 
+async function provisionLoggedOutPersona(seed: string) {
+	const identity = createHash("sha256").update(seed).digest("hex");
+	const response = await fetch("http://localhost:8787/__e2e-persona", {
+		method: "POST",
+		headers: { "content-type": "application/json" },
+		body: JSON.stringify({ identity, persona: "logged-out" }),
+	});
+	if (!response.ok) {
+		throw new Error(`E2E persona setup failed with ${response.status}: ${await response.text()}`);
+	}
+	return identity.slice(0, 36);
+}
+
 export async function provisionPersonaSession(persona: AuthenticatedPersona, seed: string) {
 	const identity = createHash("sha256").update(seed).digest("hex");
 	const sessionToken = `polychat-e2e-${persona}-${identity}`;
@@ -38,10 +51,13 @@ export const test = base.extend<PolychatFixtures>({
 	persona: ["logged-out", { option: true }],
 	page: async ({ page, persona }, use, testInfo) => {
 		if (persona === "logged-out") {
+			const anonymousId = await provisionLoggedOutPersona(
+				`${testInfo.testId}:${testInfo.retry}:${testInfo.workerIndex}`,
+			);
 			await page.context().addCookies([
 				{
 					name: "anon_id",
-					value: "b23a6a8439c0dde5515893e7c90c1e3233b8",
+					value: anonymousId,
 					domain: "localhost",
 					path: "/",
 					httpOnly: true,

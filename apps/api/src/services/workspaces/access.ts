@@ -61,7 +61,7 @@ export async function requireProjectAccess(
 export async function requireProjectCapabilityAccess(
 	context: ServiceContext,
 	projectId: string,
-	kind: "app" | "recipe" | "tool",
+	kind: "app" | "recipe" | "skill" | "tool",
 	capabilityId: string,
 ): Promise<void> {
 	await requireProjectAccess(context, projectId);

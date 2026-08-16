@@ -31,8 +31,8 @@ function toEnableableApp(experience: ProjectExperienceDefinition) {
 	};
 }
 
-export function useProjectCapabilityCatalog() {
-	const catalogQuery = useCapabilityCatalog();
+export function useProjectCapabilityCatalog(projectId?: string) {
+	const catalogQuery = useCapabilityCatalog(projectId);
 	const recipesQuery = useAssistantRecipes();
 	const toolsQuery = useTools();
 	const callableTools = useMemo(() => toolsQuery.data ?? [], [toolsQuery.data]);

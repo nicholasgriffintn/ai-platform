@@ -45,6 +45,13 @@ const artifactsSkill = {
 	requirement: { modelCapabilities: ["supportsToolCalls"], tools: [] },
 } satisfies SkillSummary;
 
+const authoredSkill = {
+	...artifactsSkill,
+	id: "meeting-notes",
+	name: "meeting-notes",
+	source: "user-authored",
+} satisfies SkillSummary;
+
 describe("assistant action execution", () => {
 	it("executes selected items through their launch contract", async () => {
 		await expect(
@@ -94,6 +101,12 @@ describe("assistant action execution", () => {
 			input: "@Artifacts build a dashboard",
 			selectedTools: ["load_skill"],
 		});
+	});
+
+	it("preserves authored skill provenance for capability-card management", () => {
+		const catalog = buildAssistantActionCatalog({ skills: [authoredSkill] });
+
+		expect(catalog.items[0]?.metadata?.skillSource).toBe("user-authored");
 	});
 
 	it("runs installed recipe catalogue items without changing the visible prompt", async () => {

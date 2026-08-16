@@ -1,7 +1,9 @@
 import { skillSummarySchema, type SkillSummary } from "@ngriffin_uk/polychat-schemas";
 
 import { builtInSkillDocuments } from "~/data-model/skills";
-import { parseSkillDocument, validateSkillResourcePath } from "./document";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import { parseSkillDocument, parseUserSkillDocument, validateSkillResourcePath } from "./document";
+import { SkillDocumentStorage, type SkillStorageScope } from "./storage";
 import {
 	toSkillDefinition,
 	toSkillSummary,
@@ -22,7 +24,8 @@ interface IndexedSkill {
 export interface SkillCatalogDocument {
 	directory: string;
 	rawContent: string;
-	resources: readonly {
+	trust?: "built-in" | "user-authored";
+	resources?: readonly {
 		path: string;
 		content: string;
 	}[];
@@ -77,14 +80,17 @@ export class SkillCatalog {
 
 	constructor(documents: readonly SkillCatalogDocument[]) {
 		for (const entry of documents) {
-			const document = parseSkillDocument(entry.rawContent, entry.directory);
+			const document =
+				entry.trust === "user-authored"
+					? parseUserSkillDocument(entry.rawContent)
+					: parseSkillDocument(entry.rawContent, entry.directory);
 			const descriptor = toDescriptor(document);
 			if (this.index.has(descriptor.name)) {
 				throw new Error(`Skill catalogue contains duplicate name ${descriptor.name}`);
 			}
 
 			const resources = new Map<string, SkillResource>();
-			for (const file of entry.resources) {
+			for (const file of entry.resources ?? []) {
 				const pathIssue = validateSkillResourcePath(file.path);
 				if (pathIssue) throw new Error(pathIssue);
 				if (resources.has(file.path)) {
@@ -100,7 +106,10 @@ export class SkillCatalog {
 				});
 			}
 
-			const definition = toSkillDefinition(descriptor, { allowAlwaysOn: true });
+			const definition = toSkillDefinition(descriptor, {
+				allowAlwaysOn: entry.trust !== "user-authored",
+				source: entry.trust ?? "built-in",
+			});
 			const summary = skillSummarySchema.safeParse(toSkillSummary(definition));
 			if (!summary.success) {
 				throw new Error(
@@ -115,6 +124,7 @@ export class SkillCatalog {
 				content: {
 					...descriptor,
 					body: document.body,
+					source: entry.trust ?? "built-in",
 					resources: [...resources.values()].map(withoutContent),
 				},
 				resources,
@@ -150,6 +160,36 @@ export class SkillCatalog {
 }
 
 const skillCatalog = new SkillCatalog(builtInSkillDocuments);
+
+export async function resolveSkillCatalog(
+	context: ServiceContext,
+	scope: SkillStorageScope,
+	enabledNames?: ReadonlySet<string>,
+): Promise<SkillCatalog> {
+	const storage = new SkillDocumentStorage(context);
+	const stored = await storage.list(scope);
+	const builtInNames = new Set(skillCatalog.listDefinitions().map((skill) => skill.id));
+	const selected = stored.filter(
+		(skill) => !builtInNames.has(skill.name) && (!enabledNames || enabledNames.has(skill.name)),
+	);
+	const documents = await Promise.all(
+		selected.map(async (skill): Promise<SkillCatalogDocument | null> => {
+			const document = await storage.get(scope, skill.name);
+			return document
+				? {
+						directory: skill.name,
+						rawContent: document.content,
+						trust: "user-authored",
+						resources: [],
+					}
+				: null;
+		}),
+	);
+	return new SkillCatalog([
+		...builtInSkillDocuments,
+		...documents.filter((document): document is SkillCatalogDocument => document !== null),
+	]);
+}
 
 export async function listSkillDefinitions(): Promise<SkillDefinition[]> {
 	return skillCatalog.listDefinitions();

@@ -1,4 +1,5 @@
-import { SearchX } from "lucide-react";
+import { Plus, SearchX } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { RecipeConfigurationDialog } from "~/components/Apps/Recipes/RecipeConfigurationDialog";
 import { RecipeScheduleDialog } from "~/components/Apps/Recipes/RecipeScheduleDialog";
@@ -16,8 +17,11 @@ import {
 	useCapabilityLibraryController,
 	type CapabilityLibraryScope,
 } from "~/components/Capabilities/useCapabilityLibraryController";
+import { AddSkillDialog } from "~/components/Capabilities/AddSkillDialog";
 
 export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryProps) {
+	const [addSkillOpen, setAddSkillOpen] = useState(false);
+	const [skillToDelete, setSkillToDelete] = useState<{ id: string; label: string } | null>(null);
 	const controller = useCapabilityLibraryController(scope);
 	const isLoading = controller.isLoadingScope || controller.catalog.isLoading;
 	const recipeWorkflows = controller.recipes.workflows;
@@ -25,6 +29,7 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
 		controller.configurationMutation.error ??
 		controller.projectMutations?.add.error ??
 		controller.projectMutations?.remove.error ??
+		controller.skillDeletion.error ??
 		controller.personalSkills?.error;
 	const pendingAddCapabilityId = controller.projectMutations?.add.isPending
 		? controller.projectMutations.add.variables?.capabilityId
@@ -36,13 +41,28 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
 		isAuthenticationError(controller.scopeError) ||
 		isAuthenticationError(controller.catalog.error) ||
 		isAuthenticationError(mutationError);
+	const canManageAuthoredSkills = controller.surface.projectId
+		? controller.projectActions?.canManage === true
+		: Boolean(controller.currentUserId);
+	const headerActions = useMemo(
+		() =>
+			canManageAuthoredSkills
+				? [
+						{
+							label: "Add skill",
+							icon: <Plus className="h-4 w-4" />,
+							onClick: () => setAddSkillOpen(true),
+						},
+					]
+				: undefined,
+		[canManageAuthoredSkills],
+	);
 
 	return (
 		<>
 			<PageShell.Content className="max-w-6xl">
-				<PageShell.Header title={title} />
+				<PageShell.Header title={title} actions={headerActions} />
 				<p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">{subtitle}</p>
-
 				<CapabilityFilters
 					categories={controller.filters.categories}
 					category={controller.filters.category}
@@ -96,6 +116,14 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
 						toolById={controller.catalog.toolById}
 						toolConfigurationById={controller.toolConfigurationById}
 						surface={controller.surface}
+						authoredSkillActions={{
+							canDelete: canManageAuthoredSkills,
+							onDelete: (id, label) => {
+								controller.skillDeletion.reset();
+								setSkillToDelete({ id, label });
+							},
+							pendingSkillId: controller.skillDeletion.pendingSkillId,
+						}}
 					/>
 				)}
 			</PageShell.Content>
@@ -141,6 +169,36 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
 				onSubmit={controller.toolConfigurationDialog.submit}
 				tool={controller.toolConfigurationDialog.tool}
 			/>
+			<AddSkillDialog
+				open={addSkillOpen}
+				onOpenChange={setAddSkillOpen}
+				projectId={controller.surface.projectId}
+			/>
+			<ConfirmationDialog
+				open={skillToDelete !== null}
+				onOpenChange={(open) => {
+					if (!open && !controller.skillDeletion.isPending) {
+						controller.skillDeletion.reset();
+						setSkillToDelete(null);
+					}
+				}}
+				title="Delete skill"
+				description={`Delete ${skillToDelete?.label ?? "this skill"}? This cannot be undone.`}
+				confirmText="Delete"
+				variant="destructive"
+				isLoading={controller.skillDeletion.isPending}
+				onConfirm={async () => {
+					if (!skillToDelete) return;
+					await controller.skillDeletion.delete(skillToDelete.id);
+					setSkillToDelete(null);
+				}}
+			>
+				{controller.skillDeletion.error && (
+					<p role="alert" className="text-sm text-red-700 dark:text-red-400">
+						{controller.skillDeletion.error.message}
+					</p>
+				)}
+			</ConfirmationDialog>
 			<ConnectorSetupDialogs controller={recipeWorkflows.connectorSetup} />
 		</>
 	);

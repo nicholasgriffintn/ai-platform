@@ -404,12 +404,22 @@ function buildWorkerBundle(workspace, configPath, outputDirectory) {
 		},
 	);
 
-	const bundleName = readdirSync(outputDirectory).find((name) => name.endsWith(".js"));
+	const outputNames = readdirSync(outputDirectory);
+	const bundleName = outputNames.find((name) => name.endsWith(".js"));
 	if (!bundleName) throw new Error(`Wrangler did not produce a bundle for ${workspace}`);
-	return path.join(outputDirectory, bundleName);
+	return {
+		script: readFileSync(path.join(outputDirectory, bundleName), "utf8"),
+		textModules: outputNames
+			.filter((name) => name.endsWith(".md") && name !== "README.md")
+			.map((name) => ({
+				type: "Text",
+				path: name,
+				contents: readFileSync(path.join(outputDirectory, name), "utf8"),
+			})),
+	};
 }
 
-function createRuntimeOptions(scriptPath, trainingScriptPath, port, seedMaterial) {
+function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
 	const readinessSessionHash = createHash("sha256")
 		.update("polychat-e2e-pro-0")
 		.digest("base64url");
@@ -471,7 +481,8 @@ function createRuntimeOptions(scriptPath, trainingScriptPath, port, seedMaterial
 				name: "api",
 				modules: [
 					{ type: "ESModule", path: "e2e-entry.js", contents: apiEntryModule },
-					{ type: "ESModule", path: "api.js", contents: readFileSync(scriptPath, "utf8") },
+					{ type: "ESModule", path: "api.js", contents: apiBundle.script },
+					...apiBundle.textModules,
 					{
 						type: "ESModule",
 						path: "effect",
@@ -560,8 +571,9 @@ function createRuntimeOptions(scriptPath, trainingScriptPath, port, seedMaterial
 					{
 						type: "ESModule",
 						path: "training.js",
-						contents: readFileSync(trainingScriptPath, "utf8"),
+						contents: trainingBundle.script,
 					},
+					...trainingBundle.textModules,
 				],
 				compatibilityDate,
 				compatibilityFlags: ["nodejs_compat"],
@@ -603,18 +615,24 @@ function createRuntimeOptions(scriptPath, trainingScriptPath, port, seedMaterial
 						return Number.parseInt(identity.slice(0, 12), 16);
 					}
 
-					async function provisionPersona(request, env) {
-						const { identity, persona, sessionToken } = await request.json();
-						if (
-							typeof identity !== "string" ||
-							!/^[a-f0-9]{64}$/.test(identity) ||
-							(persona !== "free" && persona !== "pro") ||
-							typeof sessionToken !== "string"
-						) {
-							return Response.json({ error: "Invalid persona setup request" }, { status: 400 });
-						}
+	async function provisionPersona(request, env) {
+		const { identity, persona, sessionToken } = await request.json();
+		if (
+			typeof identity !== "string" ||
+			!/^[a-f0-9]{64}$/.test(identity) ||
+			(persona !== "logged-out" && persona !== "free" && persona !== "pro") ||
+			(persona !== "logged-out" && typeof sessionToken !== "string")
+		) {
+			return Response.json({ error: "Invalid persona setup request" }, { status: 400 });
+		}
+		if (persona === "logged-out") {
+			await env.DB.prepare(
+				"INSERT INTO anonymous_user (id, ip_address, user_agent, daily_reset) VALUES (?, ?, 'Playwright', CURRENT_TIMESTAMP)"
+			).bind(identity.slice(0, 36), identity).run();
+			return new Response(null, { status: 204 });
+		}
 
-						const userId = userIdFor(identity);
+		const userId = userIdFor(identity);
 						const userName = persona === "pro" ? "Pro Release User" : "Free Release User";
 						const email = persona + "-" + identity + "@e2e.polychat.invalid";
 						const sessionId = await hashSession(sessionToken);
@@ -864,18 +882,18 @@ async function seedPersonas(database, seedMaterial) {
 let runtime;
 
 async function start() {
-	const scriptPath = buildWorkerBundle(
+	const apiBundle = buildWorkerBundle(
 		"@assistant/api",
 		path.join(runtimeDirectory, "wrangler.jsonc"),
 		buildDirectory,
 	);
-	const trainingScriptPath = buildWorkerBundle(
+	const trainingBundle = buildWorkerBundle(
 		"@assistant/training",
 		path.join(runtimeDirectory, "training-wrangler.jsonc"),
 		trainingBuildDirectory,
 	);
 	const seedMaterial = await createPersonaSeedMaterial();
-	runtime = new Miniflare(createRuntimeOptions(scriptPath, trainingScriptPath, 8787, seedMaterial));
+	runtime = new Miniflare(createRuntimeOptions(apiBundle, trainingBundle, 8787, seedMaterial));
 	await runtime.ready;
 	const database = await runtime.getD1Database("DB", "api");
 	await applyMigrations(database);

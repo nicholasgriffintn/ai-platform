@@ -5,6 +5,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useChatStore } from "~/state/stores/chatStore";
 import { ChatInput } from ".";
 
+const assistantActionCatalogMock = vi.hoisted(() => vi.fn());
+
 vi.mock("~/hooks/useAgentToolDefaults", () => ({
 	useAgentToolDefaults: () => undefined,
 }));
@@ -17,10 +19,7 @@ vi.mock("~/hooks/useAgents", () => ({
 }));
 
 vi.mock("~/hooks/useAssistantActionCatalog", () => ({
-	useAssistantActionCatalog: () => ({
-		verbs: [],
-		items: [],
-	}),
+	useAssistantActionCatalog: assistantActionCatalogMock,
 }));
 
 vi.mock("~/hooks/useModels", () => ({
@@ -97,6 +96,7 @@ function setTextSelection(element: HTMLElement, offset: number) {
 
 describe("ChatInput command submission", () => {
 	beforeEach(() => {
+		assistantActionCatalogMock.mockReturnValue({ verbs: [], items: [] });
 		useChatStore.setState({
 			chatInput: "/compact",
 			chatMode: "remote",
@@ -135,5 +135,50 @@ describe("ChatInput command submission", () => {
 		fireEvent.keyDown(input, { key: "Enter", shiftKey: false });
 
 		expect(handleSubmit).toHaveBeenCalledTimes(1);
+	});
+
+	it("inserts a selected skill slash command as an action token on Enter", () => {
+		assistantActionCatalogMock.mockReturnValue({
+			verbs: [],
+			items: [
+				{
+					id: "skill:artifacts",
+					kind: "skill",
+					label: "Artifacts",
+					description: "Create reusable deliverables.",
+					searchText: ["Artifacts"],
+					capability: { id: "artifacts" },
+					launch: { kind: "tool_toggle", toolId: "load_skill" },
+				},
+			],
+		});
+		useChatStore.setState({ chatInput: "/artifacts" });
+		const handleSubmit = vi.fn();
+		const queryClient = new QueryClient({
+			defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+		});
+
+		render(
+			<QueryClientProvider client={queryClient}>
+				<ChatInput
+					controller={new AbortController()}
+					handleSubmit={handleSubmit}
+					isLoading={false}
+					onTranscribe={vi.fn()}
+					streamStarted={false}
+					hideDefaultControls={true}
+				/>
+			</QueryClientProvider>,
+		);
+
+		const input = screen.getByRole("textbox", { name: "Message input" });
+		setTextSelection(input, 10);
+		fireEvent.keyUp(input);
+		fireEvent.keyDown(input, { key: "Enter", shiftKey: false });
+
+		expect(handleSubmit).not.toHaveBeenCalled();
+		expect(screen.getByTestId("composer-token-part")).toHaveTextContent("/artifacts");
+		expect(useChatStore.getState().selectedAssistantAction?.item?.id).toBe("skill:artifacts");
+		expect(useChatStore.getState().selectedAssistantAction?.tokenText).toBe("/artifacts");
 	});
 });

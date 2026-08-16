@@ -33,7 +33,8 @@ export function formatSkillContent(skill: SkillContent): string {
 					.join("\n")}`
 			: "";
 
-	return `<skill_content name="${escapeHtml(skill.name)}">\n${skill.body}${resourceList}\n</skill_content>`;
+	const source = skill.source === "user-authored" ? ' source="user-authored"' : "";
+	return `<skill_content name="${escapeHtml(skill.name)}"${source}>\n${skill.body}${resourceList}\n</skill_content>`;
 }
 
 export function formatSkillResource(skillName: string, resource: SkillResource): string {

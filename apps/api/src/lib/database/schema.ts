@@ -320,7 +320,7 @@ export const projectCapability = sqliteTable(
 		project_id: text()
 			.notNull()
 			.references(() => project.id, { onDelete: "cascade" }),
-		kind: text({ enum: ["app", "recipe", "tool"] }).notNull(),
+		kind: text({ enum: ["app", "recipe", "skill", "tool"] }).notNull(),
 		capability_id: text().notNull(),
 		configuration: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
 		created_by: integer()

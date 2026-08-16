@@ -64,6 +64,20 @@ const alwaysOnSkillItem = {
 	searchText: [],
 } as unknown as AssistantActionItem;
 
+const authoredSkillItem = {
+	id: "skill:meeting-notes",
+	kind: "skill",
+	label: "meeting-notes",
+	description: "Turn rough meeting notes into clear decisions and actions.",
+	capability: {
+		id: "meeting-notes",
+		description: "Turn rough meeting notes into clear decisions and actions.",
+		savedState: { supported: true },
+	},
+	searchText: [],
+	metadata: { skillSource: "user-authored" },
+} as unknown as AssistantActionItem;
+
 const fileSearchTool: ModelToolDefinition = {
 	id: "file_search",
 	capability: "supportsFileSearch",
@@ -239,6 +253,31 @@ describe("CapabilityCard", () => {
 
 		expect(screen.getByText("Always on")).toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "Add to project" })).not.toBeInTheDocument();
+	});
+
+	it("offers deletion from a user-authored personal skill card", () => {
+		const onDelete = vi.fn();
+		renderCard({
+			item: authoredSkillItem,
+			kind: "skill",
+			surface: PERSONAL_SURFACE,
+			skill: {
+				alwaysOn: false,
+				enabled: true,
+				isPending: false,
+				onToggle: vi.fn(),
+			},
+			authoredSkill: {
+				canDelete: true,
+				isDeleting: false,
+				onDelete,
+			},
+		});
+
+		fireEvent.click(screen.getByRole("button", { name: "More actions" }));
+		fireEvent.click(screen.getByRole("menuitem", { name: "Delete skill" }));
+
+		expect(onDelete).toHaveBeenCalledOnce();
 	});
 });
 

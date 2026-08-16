@@ -20,13 +20,13 @@ export default defineConfig({
 			command: "node apps/app/tests/e2e/runtime/server.mjs",
 			url: "http://localhost:8787/__e2e-ready",
 			timeout: 120 * 1000,
-			reuseExistingServer: !process.env.CI,
+			reuseExistingServer: false,
 		},
 		{
 			command: "pnpm --filter @assistant/app serve:e2e",
 			url: "http://localhost:5173/chat",
 			timeout: 120 * 1000,
-			reuseExistingServer: !process.env.CI,
+			reuseExistingServer: false,
 		},
 	],
 	reporter: [

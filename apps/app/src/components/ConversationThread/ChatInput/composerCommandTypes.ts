@@ -1,4 +1,4 @@
-import type { ProjectCapabilityKind } from "@ngriffin_uk/polychat-schemas";
+import type { AssistantActionItem, ProjectCapabilityKind } from "@ngriffin_uk/polychat-schemas";
 import type { ReactNode } from "react";
 
 export interface ComposerAssistantActionCapability {
@@ -24,5 +24,6 @@ export interface ComposerCommandAction {
 	keepPopoverOpen?: boolean;
 	selectionText?: string;
 	selectionCursorOffset?: number;
+	actionItem?: AssistantActionItem;
 	onSelect: () => void;
 }

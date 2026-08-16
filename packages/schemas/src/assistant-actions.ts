@@ -14,7 +14,7 @@ import {
 } from "./apps";
 import { partialChatCompletionsJsonSchema } from "./chat";
 import { mergeToolIds, normaliseToolIds } from "./tool-ids";
-import { SKILL_LOAD_TOOL_NAME, type SkillSummary } from "./skills";
+import { SKILL_LOAD_TOOL_NAME, skillSourceSchema, type SkillSummary } from "./skills";
 import { toolIdsSchema, toolIdSchema, type Tool } from "./tools";
 import { externalHttpUrlSchema, internalNavigationPathSchema } from "./navigation";
 
@@ -57,6 +57,7 @@ export const assistantActionItemMetadataSchema = z.object({
 	installationId: z.string().optional(),
 	provider: recipeConnectorProviderSchema.optional(),
 	recipeId: z.string().optional(),
+	skillSource: skillSourceSchema.optional(),
 	toolId: z.string().optional(),
 	/** Function tools can be run directly from the interface; model tools cannot. */
 	toolRunnable: z.boolean().optional(),
@@ -129,6 +130,7 @@ export const assistantActionSelectionSchema = z.object({
 	verb: assistantActionVerbIdSchema.optional(),
 	item: assistantActionSelectionItemSchema.optional(),
 	tokenPosition: z.number().optional(),
+	tokenText: z.string().optional(),
 });
 
 export const assistantRecipeActionContextSchema = z.object({
@@ -555,6 +557,7 @@ export function createSkillAssistantActionItem(skill: SkillSummary): AssistantAc
 		capability: createSkillCapabilityDescriptor(skill),
 		metadata: {
 			category: skill.category,
+			skillSource: skill.source,
 		},
 	};
 }

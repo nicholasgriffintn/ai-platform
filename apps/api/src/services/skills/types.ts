@@ -38,6 +38,7 @@ export interface SkillDescriptor {
 
 export interface SkillContent extends SkillDescriptor {
 	body: string;
+	source?: "built-in" | "user-authored";
 	resources?: SkillResourceDescriptor[];
 }
 
@@ -52,6 +53,7 @@ export interface SkillDefinition {
 		modelCapabilities: string[];
 		tools: string[];
 	};
+	source?: "built-in" | "user-authored";
 }
 
 function readMetadataString(
@@ -99,7 +101,10 @@ function readAlwaysOn(descriptor: SkillDescriptor): boolean {
 
 export function toSkillDefinition(
 	descriptor: SkillDescriptor,
-	options: { allowAlwaysOn?: boolean } = {},
+	options: {
+		allowAlwaysOn?: boolean;
+		source?: "built-in" | "user-authored";
+	} = {},
 ): SkillDefinition {
 	return {
 		id: descriptor.name,
@@ -117,6 +122,7 @@ export function toSkillDefinition(
 			],
 			tools: readMetadataList(descriptor, METADATA_KEYS.tools),
 		},
+		source: options.source,
 	};
 }
 
@@ -129,5 +135,6 @@ export function toSkillSummary(skill: SkillDefinition): SkillSummary {
 		tags: skill.tags,
 		alwaysOn: skill.alwaysOn,
 		requirement: skill.requirement,
+		source: skill.source,
 	};
 }

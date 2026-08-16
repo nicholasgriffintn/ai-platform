@@ -160,7 +160,7 @@ describe("Composio file bridge", () => {
 		expect(put).toHaveBeenCalledWith(
 			expect.stringMatching(/^composio\/outputs\/42\//),
 			expect.any(ArrayBuffer),
-			{ contentType: "application/pdf" },
+			{ httpMetadata: { contentType: "application/pdf" } },
 		);
 		expect(createOutput).toHaveBeenCalledWith(
 			expect.objectContaining({

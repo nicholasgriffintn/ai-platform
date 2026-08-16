@@ -47,6 +47,7 @@ import {
 	buildSkillAvailabilityInput,
 	createProjectSkillScope,
 	listSkillAvailability,
+	resolveSkillCatalog,
 	resolvePersonalSkillScope,
 	type RequestSkillScope,
 } from "~/services/skills";
@@ -252,12 +253,31 @@ export class RequestPreparer {
 					)
 				: null;
 
+		const skillScope = await skillScopePromise;
+		const scopedSkillCatalog =
+			options.context && (projectContext || user?.id)
+				? await resolveSkillCatalog(
+						options.context,
+						projectContext
+							? { type: "project", id: projectContext.projectId }
+							: { type: "personal", id: user!.id },
+						projectContext ? new Set(projectContext.enabledSkillIds) : undefined,
+					).catch((error) => {
+						logger.warn("Failed to load authored skills", {
+							error,
+							projectId: projectContext?.projectId,
+							userId: user?.id,
+						});
+						return null;
+					})
+				: null;
 		const skills = await listSkillAvailability(
 			buildSkillAvailabilityInput({
-				skillScope: await skillScopePromise,
+				skillScope,
 				supportsToolCalls: Boolean(primaryModelConfig.supportsToolCalls),
 				enabledToolIds: new Set(projectContext?.enabledTools ?? options.enabled_tools ?? []),
 			}),
+			scopedSkillCatalog?.listDefinitions(),
 		);
 
 		const systemPromptTask = this.buildSystemPrompt(

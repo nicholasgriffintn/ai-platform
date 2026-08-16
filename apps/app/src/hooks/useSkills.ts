@@ -1,9 +1,32 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { SkillAvailabilityResponse } from "@ngriffin_uk/polychat-schemas";
 
-import { fetchPersonalSkills, setPersonalSkillEnabled } from "~/lib/api/skills";
+import { capabilityCatalogQueryKey } from "~/hooks/useCapabilityCatalog";
+import { projectQueryKey } from "~/hooks/useWorkspaces";
+import {
+	createSkill,
+	deleteSkill,
+	fetchPersonalSkills,
+	setPersonalSkillEnabled,
+} from "~/lib/api/skills";
 
 export const PERSONAL_SKILLS_QUERY_KEY = ["personalSkills"];
+
+function useInvalidateSkillScope(projectId?: string) {
+	const queryClient = useQueryClient();
+
+	return async () => {
+		const invalidations = [
+			queryClient.invalidateQueries({ queryKey: capabilityCatalogQueryKey(projectId) }),
+		];
+		if (projectId) {
+			invalidations.push(queryClient.invalidateQueries({ queryKey: projectQueryKey(projectId) }));
+		} else {
+			invalidations.push(queryClient.invalidateQueries({ queryKey: PERSONAL_SKILLS_QUERY_KEY }));
+		}
+		await Promise.all(invalidations);
+	};
+}
 
 export function usePersonalSkills(enabled = true) {
 	const queryClient = useQueryClient();
@@ -27,4 +50,22 @@ export function usePersonalSkills(enabled = true) {
 	});
 
 	return { query, setEnabled };
+}
+
+export function useAddSkill(projectId?: string) {
+	const invalidateSkillScope = useInvalidateSkillScope(projectId);
+
+	return useMutation({
+		mutationFn: (content: string) => createSkill(content, projectId),
+		onSuccess: invalidateSkillScope,
+	});
+}
+
+export function useDeleteSkill(projectId?: string) {
+	const invalidateSkillScope = useInvalidateSkillScope(projectId);
+
+	return useMutation({
+		mutationFn: (skillId: string) => deleteSkill(skillId, projectId),
+		onSuccess: invalidateSkillScope,
+	});
 }

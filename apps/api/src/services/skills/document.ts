@@ -1,6 +1,9 @@
 import z from "zod/v4";
 import { parse as parseYaml } from "yaml";
 
+export const MAX_USER_SKILL_DOCUMENT_BYTES = 128 * 1024;
+const RESERVED_METADATA_PREFIX = "polychat-";
+
 const skillNameSchema = z
 	.string()
 	.min(1)
@@ -92,4 +95,25 @@ export function parseSkillDocument(
 	}
 
 	return { frontmatter: parsed.data, body };
+}
+
+export function parseUserSkillDocument(rawContent: string): ParsedSkillDocument {
+	const byteLength = new TextEncoder().encode(rawContent).byteLength;
+	if (byteLength >= MAX_USER_SKILL_DOCUMENT_BYTES) {
+		throw new SkillDocumentError(
+			`SKILL.md must be smaller than ${MAX_USER_SKILL_DOCUMENT_BYTES} bytes`,
+		);
+	}
+
+	const document = parseSkillDocument(rawContent);
+	const reservedKey = Object.keys(document.frontmatter.metadata ?? {}).find((key) =>
+		key.toLowerCase().startsWith(RESERVED_METADATA_PREFIX),
+	);
+	if (reservedKey) {
+		throw new SkillDocumentError(
+			`SKILL.md metadata key ${reservedKey} is reserved for built-in skills`,
+		);
+	}
+
+	return document;
 }
