@@ -140,5 +140,5 @@ export function ArticleAnalysisSession({ basePath, projectId }: ArticleAnalysisS
 
 interface ArticleAnalysisSessionProps {
 	basePath: string;
-	projectId: string;
+	projectId?: string;
 }

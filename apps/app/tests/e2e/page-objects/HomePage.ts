@@ -334,8 +334,17 @@ export class HomePage extends BasePage {
 		await this.conversationItem(replacement).waitFor();
 	}
 
-	async searchConversationTitles(query: string) {
-		await this.page.getByRole("searchbox", { name: "Search conversation titles" }).fill(query);
+	async searchPolychat(query: string) {
+		const searchInput = this.page.getByRole("textbox", { name: "Search Polychat" });
+		if (!(await searchInput.isVisible())) {
+			await this.page.getByRole("button", { name: "Search", exact: true }).click();
+		}
+		await searchInput.fill(query);
+	}
+
+	async closeGlobalSearch() {
+		await this.page.keyboard.press("Escape");
+		await this.page.getByRole("textbox", { name: "Search Polychat" }).waitFor({ state: "hidden" });
 	}
 
 	async setConversationArchiveFilter(state: "Active" | "Archived" | "All") {

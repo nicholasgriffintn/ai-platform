@@ -15,7 +15,7 @@ import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId, randomHex } from "~/utils/id";
 import { requireProjectAccess, requireWorkAccess, requireWorkspaceAccess } from "./access";
-import { validateProjectCapabilityReference } from "./capabilities";
+import { validateCapabilityReference } from "~/lib/capabilities";
 import { validateProjectToolConfiguration } from "./projectTools";
 import { sendWorkspaceInvitationEmail } from "./invitation-email";
 import { getGitHubAppConnectionForUserInstallation } from "~/services/github/connections";
@@ -483,7 +483,7 @@ export async function addProjectCapability(
 			403,
 		);
 	}
-	await validateProjectCapabilityReference(input.kind, input.capabilityId);
+	await validateCapabilityReference(input.kind, input.capabilityId);
 	const configuration =
 		input.kind === "tool"
 			? validateProjectToolConfiguration(input.capabilityId, input.configuration)

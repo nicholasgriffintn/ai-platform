@@ -9,7 +9,7 @@ import { projectQueryKey } from "~/hooks/useWorkspaces";
 import { useChat } from "~/hooks/useChat";
 import { useModels } from "~/hooks/useModels";
 import { useProjectConversationSources } from "~/hooks/useProjectConversationSources";
-import { getProjectLibraryPath } from "~/lib/project-experiences";
+import { getCapabilityLibraryPath, getProjectSurface } from "~/lib/capability-surfaces";
 import { getProjectCodingPresentation } from "~/lib/project-coding-presentation";
 import { getModelInteractionCapabilities } from "~/lib/models";
 import { getErrorMessage } from "~/lib/errors";
@@ -63,7 +63,7 @@ export function ProjectConversationPage({
 		? (taskTypesByConversation[currentConversationId] ?? draftTaskType)
 		: draftTaskType;
 	const codingPresentation = getProjectCodingPresentation(taskType);
-	const recipeManagementPath = getProjectLibraryPath(workspaceId, projectId);
+	const recipeManagementPath = getCapabilityLibraryPath(getProjectSurface(workspaceId, projectId));
 
 	useEffect(() => {
 		setDraftTaskType("feature-implementation");

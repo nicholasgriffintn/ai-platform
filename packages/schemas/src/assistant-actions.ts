@@ -5,7 +5,7 @@ import {
 	type AssistantCapabilityDescriptor,
 	type AssistantRecipe,
 	createRecipeChatRequestOptions,
-	type DynamicAppCatalogItem,
+	type CapabilityCatalogItem,
 	recipeChatRequestOptionsSchema,
 	recipeConnectorProviderSchema,
 	type RecipeConnectorManifest,
@@ -56,6 +56,8 @@ export const assistantActionItemMetadataSchema = z.object({
 	provider: recipeConnectorProviderSchema.optional(),
 	recipeId: z.string().optional(),
 	toolId: z.string().optional(),
+	/** Function tools can be run directly from the interface; model tools cannot. */
+	toolRunnable: z.boolean().optional(),
 });
 
 export const assistantActionConversationLaunchSchema = z.object({
@@ -250,7 +252,7 @@ export interface AssistantActionModelToolDefinition {
 
 export interface AssistantActionCatalogSources {
 	agents?: readonly AssistantActionAgentSource[];
-	apps?: readonly DynamicAppCatalogItem[];
+	apps?: readonly CapabilityCatalogItem[];
 	connectors?: readonly RecipeConnectorManifest[];
 	installations?: readonly RecipeInstallation[];
 	modelTools?: readonly AssistantActionModelToolDefinition[];
@@ -357,7 +359,7 @@ function createRecipeCapabilityDescriptor(
 	};
 }
 
-function createAppCapabilityDescriptor(app: DynamicAppCatalogItem): AssistantCapabilityDescriptor {
+function createAppCapabilityDescriptor(app: CapabilityCatalogItem): AssistantCapabilityDescriptor {
 	if (app.capability) {
 		return {
 			...app.capability,
@@ -674,6 +676,7 @@ export function buildAssistantActionCatalog(
 				metadata: {
 					category: tool.category,
 					toolId: tool.id,
+					toolRunnable: true,
 				},
 			})),
 		],

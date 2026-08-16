@@ -1,5 +1,5 @@
 import { ProductModeSwitch as ControlledProductModeSwitch } from "@ngriffin_uk/polychat-component-navigation";
-import { NavLink, useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
 
 export function ProductModeSwitch({ className }: { className?: string }) {
 	const { pathname } = useLocation();
@@ -9,7 +9,7 @@ export function ProductModeSwitch({ className }: { className?: string }) {
 			className={className}
 			onSelect={() => undefined}
 			renderControl={({ active, className: controlClassName, icon, label, mode }) => (
-				<NavLink
+				<Link
 					to={mode === "chat" ? "/chat" : "/work"}
 					aria-label={label}
 					aria-current={active ? "page" : undefined}
@@ -17,7 +17,7 @@ export function ProductModeSwitch({ className }: { className?: string }) {
 				>
 					{icon}
 					<span className="polychat-navigation-mode-label">{label}</span>
-				</NavLink>
+				</Link>
 			)}
 		/>
 	);

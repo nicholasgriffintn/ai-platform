@@ -10,6 +10,8 @@ import { getAuxiliaryModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { OutputRecord } from "~/repositories/OutputRepository";
+
+const NOTE_OUTPUT_KIND = "note";
 import { requireOutputRecordAccess } from "~/services/outputs/access";
 import type { ChatRole, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -51,8 +53,8 @@ export async function listNotes({
 	serviceContext.ensureDatabase();
 	const repo = serviceContext.repositories.outputs;
 	const list = projectId
-		? await repo.listProjectOutputs(projectId, "notes")
-		: await repo.listPersonalOutputs(userId, "notes");
+		? await repo.listProjectOutputs(projectId, "notes", { kind: NOTE_OUTPUT_KIND })
+		: await repo.listPersonalOutputs(userId, "notes", { kind: NOTE_OUTPUT_KIND });
 
 	return list.map(mapOutputToNote);
 }
@@ -81,7 +83,7 @@ export async function getNote({
 		? await repo.getProjectOutput(projectId, noteId)
 		: await repo.getPersonalOutput(userId, noteId);
 
-	if (!entry || entry.capability_id !== "notes" || entry.kind !== "note") {
+	if (!entry || entry.capability_id !== "notes" || entry.kind !== NOTE_OUTPUT_KIND) {
 		throw new AssistantError("Note not found", ErrorType.NOT_FOUND, 404);
 	}
 
@@ -132,7 +134,7 @@ export async function createNote({
 		projectId,
 		capabilityId: "notes",
 		groupId: noteId,
-		kind: "note",
+		kind: NOTE_OUTPUT_KIND,
 		title: sanitisedTitle,
 		content: appData,
 	});
@@ -166,7 +168,7 @@ export async function updateNote({
 		? await repo.getProjectOutput(projectId, noteId)
 		: await repo.getPersonalOutput(user.id, noteId);
 
-	if (!existing || existing.capability_id !== "notes" || existing.kind !== "note") {
+	if (!existing || existing.capability_id !== "notes" || existing.kind !== NOTE_OUTPUT_KIND) {
 		throw new AssistantError("Note not found", ErrorType.NOT_FOUND, 404);
 	}
 	await requireOutputRecordAccess(serviceContext, user.id, existing, true);
@@ -261,7 +263,7 @@ export async function deleteNote({
 		? await repo.getProjectOutput(projectId, noteId)
 		: await repo.getPersonalOutput(user.id, noteId);
 
-	if (!existing || existing.capability_id !== "notes" || existing.kind !== "note") {
+	if (!existing || existing.capability_id !== "notes" || existing.kind !== NOTE_OUTPUT_KIND) {
 		throw new AssistantError("Note not found", ErrorType.NOT_FOUND, 404);
 	}
 	await requireOutputRecordAccess(serviceContext, user.id, existing, true);

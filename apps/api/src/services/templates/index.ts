@@ -13,7 +13,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";
 import { deriveProjectColour } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "~/utils/id";
-import { validateProjectCapabilityReference } from "~/services/workspaces/capabilities";
+import { validateCapabilityReference } from "~/lib/capabilities";
 import { validateProjectToolConfiguration } from "~/services/workspaces/projectTools";
 import { getProject } from "~/services/workspaces";
 
@@ -148,7 +148,7 @@ export async function instantiateProjectTemplate(
 	);
 	const capabilities = [];
 	for (const capability of configuration.capabilities) {
-		await validateProjectCapabilityReference(capability.kind, capability.capabilityId);
+		await validateCapabilityReference(capability.kind, capability.capabilityId);
 		capabilities.push({
 			id: generateId(),
 			kind: capability.kind,

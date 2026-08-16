@@ -17,6 +17,7 @@ Read the relevant accepted records before changing product structure, ownership,
 - [0013](decisions/0013-composio-run-approval-and-event-boundaries.md): Bind sessions, approvals, files, and events to exact local authority and fail closed on ambiguity.
 - [0014](decisions/0014-frontend-package-proposal.md): Proposed extraction of public frontend packages; consult its status before treating it as accepted architecture.
 - [0015](decisions/0015-model-driven-capability-discovery.md): Let models discover ready and setup-required capabilities through one read-only, scope-aware tool and render setup in the existing tool response surface.
+- [0016](decisions/0016-personal-capabilities-and-experiences.md): Nest personal capabilities and experiences under Chat, make scope a parameter rather than a fork, and stop publishing function tools as apps.
 
 [context.md](context.md) holds the current domain vocabulary, workspace map, seams, and data flows.
 

@@ -11,7 +11,7 @@ import { useChatStore } from "~/state/stores/chatStore";
 import { useWorkData } from "./WorkContext";
 import { WorkAccessEmptyState } from "./WorkAccessEmptyState";
 import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog";
-import { WorkCardGridSkeleton } from "./WorkLoadingSkeletons";
+import { CardGridLoadingSkeleton } from "~/components/Core/LoadingSkeletons";
 
 export function WorkOverview() {
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -44,7 +44,7 @@ export function WorkOverview() {
 				</p>
 
 				{isAuthenticationLoading ? (
-					<WorkCardGridSkeleton
+					<CardGridLoadingSkeleton
 						count={6}
 						label="Loading workspaces"
 						gridClassName="grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
@@ -60,7 +60,7 @@ export function WorkOverview() {
 						/>
 					)
 				) : isLoading ? (
-					<WorkCardGridSkeleton
+					<CardGridLoadingSkeleton
 						count={6}
 						label="Loading workspaces"
 						gridClassName="grid-cols-1 md:grid-cols-2 xl:grid-cols-3"

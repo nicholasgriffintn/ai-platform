@@ -23,8 +23,8 @@ const recipe = {
 	configurationFields: [],
 } satisfies AssistantRecipe;
 
-vi.mock("./useDynamicApps", () => ({
-	useDynamicApps: () => ({
+vi.mock("./useCapabilityCatalog", () => ({
+	useCapabilityCatalog: () => ({
 		data: mocks.appsData(),
 		error: null,
 		isLoading: false,
@@ -52,17 +52,21 @@ vi.mock("./useTools", () => ({
 describe("useProjectCapabilityCatalog", () => {
 	it("uses API metadata and includes every recipe rather than only installations", () => {
 		mocks.appsData.mockReturnValue({
-			apps: [
+			experiences: [
 				{
-					id: "notes-app",
+					id: "notes",
+					runtime: "notes",
 					name: "Notes",
 					description: "Write notes",
-					kind: "frontend",
 					category: "Productivity",
+					requirement: {
+						kind: "capability",
+						capabilityKind: "app",
+						capabilityId: "notes-app",
+					},
 				},
 			],
-			experiences: [],
-			tools: [
+			modelTools: [
 				{
 					id: "web_fetch",
 					capability: "supportsWebFetch",
@@ -99,20 +103,8 @@ describe("useProjectCapabilityCatalog", () => {
 		);
 	});
 
-	it("keeps a callable dynamic app available through both its form and AI tool surfaces", () => {
-		mocks.appsData.mockReturnValue({
-			apps: [
-				{
-					id: "get_weather",
-					name: "Get Weather",
-					description: "Get a weather forecast",
-					kind: "dynamic",
-					category: "Data & Utilities",
-				},
-			],
-			experiences: [],
-			tools: [],
-		});
+	it("publishes a function tool only as a runnable tool, never as an app", () => {
+		mocks.appsData.mockReturnValue({ experiences: [], modelTools: [] });
 		mocks.recipes.mockReturnValue([]);
 		mocks.tools.mockReturnValue([
 			{
@@ -134,11 +126,10 @@ describe("useProjectCapabilityCatalog", () => {
 				metadata: expect.objectContaining({
 					category: "Research",
 					toolId: "get_weather",
+					toolRunnable: true,
 				}),
 			}),
 		);
-		expect(result.current.items).toContainEqual(
-			expect.objectContaining({ id: "app:get_weather", kind: "app" }),
-		);
+		expect(result.current.items.filter((item) => item.kind === "app")).toEqual([]);
 	});
 });

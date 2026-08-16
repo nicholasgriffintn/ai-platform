@@ -1,5 +1,5 @@
 import { PageShell } from "~/components/Core/PageShell";
-import { ResponsesExperience } from "./Experiences/ResponsesExperience";
+import { ResponsesExperience } from "~/components/Experiences/ResponsesExperience";
 
 export function ProjectOutputs({
 	workspaceId,

@@ -9,7 +9,7 @@ import {
 	generateReport,
 	prepareSessionForRerun,
 	summariseArticle,
-} from "~/lib/api/dynamic-apps";
+} from "~/lib/api/apps";
 
 export const useFetchArticleReports = (projectId?: string, options?: { enabled?: boolean }) => {
 	return useQuery({

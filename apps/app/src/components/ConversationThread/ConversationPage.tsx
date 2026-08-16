@@ -4,7 +4,6 @@ import { useLocation } from "react-router";
 import { ChatSidebar } from "~/components/ChatSidebar";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
-import { SearchDialog } from "~/components/Search/SearchDialog";
 import {
 	type AssistantActionLaunchState,
 	loadAssistantActionRequestOptions,
@@ -31,14 +30,8 @@ export function ConversationPage({
 	modeConfig,
 	sidebarContent,
 }: ConversationPageProps) {
-	const {
-		clearCurrentConversation,
-		initializeStore,
-		showSearch,
-		setShowSearch,
-		setChatInput,
-		startNewConversation,
-	} = useChatStore();
+	const { clearCurrentConversation, initializeStore, setChatInput, startNewConversation } =
+		useChatStore();
 	const { setSelectedTools } = useToolsStore();
 	const location = useLocation();
 	const [urlRequestOptions, setUrlRequestOptions] = useState<ChatRequestOptions | undefined>();
@@ -126,8 +119,6 @@ export function ConversationPage({
 					</div>
 				</div>
 			</div>
-
-			<SearchDialog isOpen={showSearch} onClose={() => setShowSearch(false)} />
 		</div>
 	);
 

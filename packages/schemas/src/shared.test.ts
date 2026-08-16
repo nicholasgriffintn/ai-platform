@@ -85,7 +85,7 @@ describe("messageSchema", () => {
 				role: "compaction",
 				content: "Context automatically compacted",
 				mode: "build",
-				platform: "dynamic-apps",
+				platform: "tool-run",
 				parts: [
 					{
 						type: "compaction",

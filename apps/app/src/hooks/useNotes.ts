@@ -9,7 +9,7 @@ import {
 	formatNoteAPI,
 	updateNote,
 	generateNotesFromMedia,
-} from "~/lib/api/dynamic-apps";
+} from "~/lib/api/apps";
 
 export const useFetchNotes = (projectId?: string, options?: { enabled?: boolean }) => {
 	return useQuery<Note[], Error>({

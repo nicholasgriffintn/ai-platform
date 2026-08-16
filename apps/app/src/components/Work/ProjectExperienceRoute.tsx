@@ -6,15 +6,16 @@ import { BackLink } from "~/components/Core/BackLink";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
-import { useDynamicApps } from "~/hooks/useDynamicApps";
+import { useCapabilityCatalog } from "~/hooks/useCapabilityCatalog";
 import {
-	getProjectExperiencePath,
-	getProjectExperiencesPath,
-	isProjectExperienceEnabled,
-} from "~/lib/project-experiences";
+	getExperienceBackLink,
+	getExperiencePath,
+	getProjectSurface,
+	isExperienceEnabled,
+} from "~/lib/capability-surfaces";
 import { useWorkData } from "./WorkContext";
-import { ProjectOverviewSkeleton } from "./WorkLoadingSkeletons";
-import { ProjectExperienceRenderer } from "./ProjectExperienceRenderer";
+import { ContentLoadingSkeleton } from "~/components/Core/LoadingSkeletons";
+import { ExperienceRenderer } from "~/components/Experiences/ExperienceRenderer";
 import { isAuthenticationError } from "~/lib/errors";
 
 export function ProjectExperienceRoute({
@@ -30,23 +31,29 @@ export function ProjectExperienceRoute({
 }) {
 	const { projectQuery } = useWorkData();
 	const { data: project, isLoading, error } = projectQuery;
-	const { data: dynamicApps, isLoading: isCatalogLoading, error: catalogError } = useDynamicApps();
-	const hubPath = getProjectExperiencesPath(workspaceId, projectId);
-	const definition = dynamicApps?.experiences.find((item) => item.id === experienceId);
+	const {
+		data: catalog,
+		isLoading: isCatalogLoading,
+		error: catalogError,
+	} = useCapabilityCatalog();
+	const definition = catalog?.experiences.find((item) => item.id === experienceId);
 	const title = definition?.name;
-	const basePath = getProjectExperiencePath(workspaceId, projectId, experienceId);
+	const backLink = getExperienceBackLink(
+		getProjectSurface(workspaceId, projectId),
+		experienceId,
+		subpath,
+		title,
+	);
+	const basePath = getExperiencePath(getProjectSurface(workspaceId, projectId), experienceId);
 
-	const isEnabled =
-		project &&
-		definition &&
-		isProjectExperienceEnabled(definition, project.capabilities, dynamicApps?.apps ?? []);
+	const isEnabled = project && definition && isExperienceEnabled(definition, project.capabilities);
 	const pageError = error ?? catalogError;
 
 	return (
 		<>
 			<PageShell.Content className="max-w-7xl">
 				<PageShell.Header title={title ?? "Experience"} />
-				<BackLink to={hubPath} label="Back to experiences" />
+				<BackLink to={backLink.to} label={backLink.label} />
 				{definition && (
 					<p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
 						{definition.description}
@@ -54,7 +61,7 @@ export function ProjectExperienceRoute({
 				)}
 
 				{isLoading || isCatalogLoading ? (
-					<ProjectOverviewSkeleton />
+					<ContentLoadingSkeleton />
 				) : isAuthenticationError(pageError) ? (
 					<SignInEmptyState
 						title="Sign in to open this experience"
@@ -83,12 +90,11 @@ export function ProjectExperienceRoute({
 						}
 					/>
 				) : (
-					<ProjectExperienceRenderer
+					<ExperienceRenderer
 						basePath={basePath}
 						projectId={projectId}
 						runtime={definition.runtime}
 						subpath={subpath}
-						workspaceId={workspaceId}
 					/>
 				)}
 			</PageShell.Content>

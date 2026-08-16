@@ -330,5 +330,5 @@ export function StrudelCreateStudio({ basePath, projectId }: StrudelCreateStudio
 
 interface StrudelCreateStudioProps {
 	basePath: string;
-	projectId: string;
+	projectId?: string;
 }

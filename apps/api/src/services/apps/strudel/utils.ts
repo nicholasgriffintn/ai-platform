@@ -6,6 +6,7 @@ import type { OutputRecord } from "~/repositories/OutputRepository";
 export type StrudelPattern = z.infer<typeof strudelPatternSchema>;
 
 export const STRUDEL_APP_ID = "strudel";
+export const PATTERN_OUTPUT_KIND = "strudel_pattern";
 
 type StoredPatternPayload = {
 	name?: string;

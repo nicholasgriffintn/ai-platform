@@ -1,4 +1,4 @@
-import type { AppSchema } from "@ngriffin_uk/polychat-schemas";
+import type { RenderableTool } from "@ngriffin_uk/polychat-schemas";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { cn } from "~/lib/utils";
 import { getCardGradient, getIcon, getIconContainerClass } from "../utils";
@@ -20,7 +20,7 @@ import {
 } from "./response-data";
 
 interface ResponseRendererProps {
-	app?: AppSchema;
+	app?: RenderableTool;
 	result: Record<string, any>;
 	onReset?: () => void;
 	responseType?: string;

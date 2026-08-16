@@ -55,7 +55,7 @@ function allRequestedProcessesComplete(
 	);
 }
 
-export function usePodcastWorkflow(basePath: string, projectId: string) {
+export function usePodcastWorkflow(basePath: string, projectId?: string) {
 	const navigate = useNavigate();
 	const [currentStep, setCurrentStep] = useState(PodcastWorkflowStep.Upload);
 	const [formData, setFormData] = useState<PodcastFormData>(INITIAL_FORM_DATA);

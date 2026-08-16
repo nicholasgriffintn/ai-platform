@@ -13,6 +13,16 @@ export interface GetUserConversationsOptions {
 	sortBy?: ConversationSortBy;
 }
 
+export interface GlobalConversationSearchRow {
+	id: string;
+	title: string | null;
+	updated_at: string | null;
+	project_id: string | null;
+	project_name: string | null;
+	workspace_id: string | null;
+	workspace_name: string | null;
+}
+
 export class ConversationRepository extends BaseRepository {
 	public async createConversation(
 		conversationId: string,
@@ -236,5 +246,38 @@ export class ConversationRepository extends BaseRepository {
 		);
 
 		return Array.isArray(result) ? result : [];
+	}
+
+	public async searchAccessibleConversations(
+		userId: number,
+		query: string,
+		limit: number,
+	): Promise<GlobalConversationSearchRow[]> {
+		const trimmedQuery = query.trim();
+		const searchTerm = `%${escapeSqlLikePattern(trimmedQuery)}%`;
+
+		return this.runQuery<GlobalConversationSearchRow>(
+			`SELECT c.id, c.title, c.updated_at, c.project_id,
+			        p.name AS project_name, w.id AS workspace_id, w.name AS workspace_name
+			 FROM conversation c
+			 LEFT JOIN project p ON p.id = c.project_id AND p.archived_at IS NULL
+			 LEFT JOIN workspace w ON w.id = p.workspace_id
+			 WHERE c.is_archived = 0
+			   AND (
+			     (c.project_id IS NULL AND c.user_id = ?)
+			     OR (
+			       c.project_id IS NOT NULL
+			       AND p.id IS NOT NULL
+			       AND EXISTS (
+			         SELECT 1 FROM workspace_member wm
+			         WHERE wm.workspace_id = p.workspace_id AND wm.user_id = ?
+			       )
+			     )
+			   )
+			   AND (? = '' OR c.title LIKE ? ESCAPE '\\')
+			 ORDER BY COALESCE(c.updated_at, c.created_at) DESC, c.id DESC
+			 LIMIT ?`,
+			[userId, userId, trimmedQuery, searchTerm, limit],
+		);
 	}
 }

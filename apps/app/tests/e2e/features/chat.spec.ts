@@ -69,17 +69,15 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
 
 			const renamedTitle = `${persona} managed release conversation`;
 			await homePage.renameConversation(generatedTitle, renamedTitle);
-			await homePage.searchConversationTitles(renamedTitle);
-			await expect(page.getByRole("button").filter({ hasText: renamedTitle })).toBeVisible();
-			await homePage.searchConversationTitles("missing release conversation");
-			await expect(page.getByText("No conversations match that search.")).toBeVisible();
-			await homePage.searchConversationTitles(renamedTitle);
+			await homePage.searchPolychat(renamedTitle);
+			await expect(page.getByRole("option").filter({ hasText: renamedTitle })).toBeVisible();
+			await homePage.searchPolychat("missing release conversation");
+			await expect(page.getByText("No matches found")).toBeVisible();
+			await homePage.closeGlobalSearch();
 			await homePage.deleteConversation(renamedTitle);
 
 			if (persona === "pro") {
-				await homePage.searchConversationTitles("");
 				await homePage.setConversationArchiveFilter("Archived");
-				await homePage.searchConversationTitles(renamedTitle);
 				await expect(page.getByRole("button").filter({ hasText: renamedTitle })).toBeVisible();
 			}
 		});

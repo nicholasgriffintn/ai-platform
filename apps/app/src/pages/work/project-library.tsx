@@ -1,6 +1,6 @@
 import { useParams } from "react-router";
 
-import { ProjectLibrary } from "~/components/Work/ProjectLibrary";
+import { ProjectCapabilityLibrary } from "~/components/Work/ProjectCapabilityLibrary";
 
 export function meta() {
 	return [{ title: "Project capabilities - Polychat" }];
@@ -8,5 +8,5 @@ export function meta() {
 
 export default function ProjectLibraryPage() {
 	const { workspaceId = "", projectId = "" } = useParams();
-	return <ProjectLibrary workspaceId={workspaceId} projectId={projectId} />;
+	return <ProjectCapabilityLibrary workspaceId={workspaceId} projectId={projectId} />;
 }

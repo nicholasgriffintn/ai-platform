@@ -59,5 +59,5 @@ export function PodcastWorkflow({ basePath, projectId }: PodcastWorkflowProps) {
 
 interface PodcastWorkflowProps {
 	basePath: string;
-	projectId: string;
+	projectId?: string;
 }

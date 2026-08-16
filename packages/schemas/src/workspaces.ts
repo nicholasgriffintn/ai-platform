@@ -154,6 +154,11 @@ export const acceptWorkspaceInvitationSchema = z.object({
 	token: z.string().min(32).max(512),
 });
 
+export const capabilityScopeSchema = z.discriminatedUnion("kind", [
+	z.object({ kind: z.literal("personal") }),
+	z.object({ kind: z.literal("project"), projectId: z.string().min(1) }),
+]);
+
 export const addProjectCapabilitySchema = z.object({
 	kind: projectCapabilityKindSchema,
 	capabilityId: z.string().trim().min(1).max(160),
@@ -200,6 +205,7 @@ export type WorkspaceMember = z.infer<typeof workspaceMemberSchema>;
 export type WorkspaceInvitation = z.infer<typeof workspaceInvitationSchema>;
 export type WorkspaceInvitationDelivery = z.infer<typeof workspaceInvitationDeliverySchema>;
 export type ProjectCapability = z.infer<typeof projectCapabilitySchema>;
+export type CapabilityScope = z.infer<typeof capabilityScopeSchema>;
 export type ProjectCodingEnvironment = z.infer<typeof projectCodingEnvironmentSchema>;
 export type ProjectConversation = z.infer<typeof projectConversationSchema>;
 export type ProjectSummary = z.infer<typeof projectSummarySchema>;

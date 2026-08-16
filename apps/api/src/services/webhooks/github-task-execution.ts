@@ -5,11 +5,11 @@ import {
 	defaultTaskForSandboxCommand,
 	formatResultComment,
 	getGitHubAppInstallationToken,
-	getSandboxDynamicAppId,
+	getSandboxFunctionName,
 	postCommentToIssue,
 } from "~/lib/github";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { executeDynamicApp } from "~/services/dynamic-apps";
+import { runFunctionWithOutput } from "~/services/functions/run-with-output";
 import type { IEnv, IRequest, IUser } from "~/types";
 import { generateId } from "~/utils/id";
 import { isPlainObject } from "~/utils/objects";
@@ -38,7 +38,7 @@ function buildRequest(params: { env: IEnv; user: IUser; context: ServiceContext 
 			completion_id: generateId(),
 			input: "dynamic-app-execution",
 			date: new Date().toISOString(),
-			platform: "dynamic-apps",
+			platform: "tool-run",
 		},
 	};
 }
@@ -55,7 +55,7 @@ export async function executeWebhookSandboxCommand(params: {
 }): Promise<SandboxExecutionResult> {
 	const { command, repo, task, installationId, shouldCommit, env, context, user } = params;
 
-	const appId = getSandboxDynamicAppId(command);
+	const functionName = getSandboxFunctionName(command);
 	const finalTask = task.trim() || defaultTaskForSandboxCommand(command);
 	const finalShouldCommit = shouldCommit ?? defaultShouldCommitForSandboxCommand(command);
 	const payload: Record<string, unknown> = {
@@ -69,7 +69,7 @@ export async function executeWebhookSandboxCommand(params: {
 	}
 
 	try {
-		const execution = await executeDynamicApp(appId, payload, {
+		const execution = await runFunctionWithOutput(functionName, payload, {
 			...buildRequest({ env, context, user }),
 		});
 

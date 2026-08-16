@@ -122,7 +122,7 @@ export async function generateStrudelCode({
 			enabled_tools: [],
 			tools: [],
 			mode: "normal",
-			platform: "dynamic-apps",
+			platform: "tool-run",
 			options: request.options || {
 				cache_ttl_seconds: 0,
 			},

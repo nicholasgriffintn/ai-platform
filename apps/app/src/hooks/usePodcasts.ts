@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Podcast, PodcastListItem } from "@ngriffin_uk/polychat-schemas";
 
-import { fetchPodcast, fetchPodcasts, processPodcast, uploadPodcast } from "~/lib/api/dynamic-apps";
+import { fetchPodcast, fetchPodcasts, processPodcast, uploadPodcast } from "~/lib/api/apps";
 
 export const useFetchPodcasts = (projectId?: string, options?: { enabled?: boolean }) => {
 	return useQuery<PodcastListItem[], Error>({

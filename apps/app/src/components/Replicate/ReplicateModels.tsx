@@ -1,5 +1,5 @@
 import { Sparkles } from "lucide-react";
-import type { DynamicAppCatalogItem as AppListItem } from "@ngriffin_uk/polychat-schemas";
+import type { CapabilityCatalogItem as AppListItem } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 

@@ -4,6 +4,7 @@ import type {
 	WorkspaceRole,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { escapeSqlLikePattern } from "~/utils/sql";
 import { BaseRepository } from "./BaseRepository";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -21,6 +22,18 @@ export interface WorkspaceSummaryRow extends WorkspaceRow {
 	role: WorkspaceRole;
 	member_count: number;
 	project_count: number;
+}
+
+export interface GlobalWorkspaceSearchRow {
+	id: string;
+	name: string;
+	description: string;
+	updated_at: string | null;
+}
+
+export interface GlobalProjectSearchRow extends GlobalWorkspaceSearchRow {
+	workspace_id: string;
+	workspace_name: string;
 }
 
 export interface WorkspaceMemberRow {
@@ -129,6 +142,45 @@ export class WorkspaceRepository extends BaseRepository {
 			 GROUP BY w.id, wm.role
 			 ORDER BY w.updated_at DESC, w.created_at DESC`,
 			[userId],
+		);
+	}
+
+	async searchWorkspaces(
+		userId: number,
+		query: string,
+		limit: number,
+	): Promise<GlobalWorkspaceSearchRow[]> {
+		const trimmedQuery = query.trim();
+		const searchTerm = `%${escapeSqlLikePattern(trimmedQuery)}%`;
+		return this.runQuery<GlobalWorkspaceSearchRow>(
+			`SELECT w.id, w.name, w.description, w.updated_at
+			 FROM workspace w
+			 JOIN workspace_member wm ON wm.workspace_id = w.id AND wm.user_id = ?
+			 WHERE (? = '' OR w.name LIKE ? ESCAPE '\\' OR w.description LIKE ? ESCAPE '\\')
+			 ORDER BY COALESCE(w.updated_at, w.created_at) DESC, w.id DESC
+			 LIMIT ?`,
+			[userId, trimmedQuery, searchTerm, searchTerm, limit],
+		);
+	}
+
+	async searchProjects(
+		userId: number,
+		query: string,
+		limit: number,
+	): Promise<GlobalProjectSearchRow[]> {
+		const trimmedQuery = query.trim();
+		const searchTerm = `%${escapeSqlLikePattern(trimmedQuery)}%`;
+		return this.runQuery<GlobalProjectSearchRow>(
+			`SELECT p.id, p.workspace_id, w.name AS workspace_name,
+			        p.name, p.description, p.updated_at
+			 FROM project p
+			 JOIN workspace w ON w.id = p.workspace_id
+			 JOIN workspace_member wm ON wm.workspace_id = w.id AND wm.user_id = ?
+			 WHERE p.archived_at IS NULL
+			   AND (? = '' OR p.name LIKE ? ESCAPE '\\' OR p.description LIKE ? ESCAPE '\\')
+			 ORDER BY COALESCE(p.updated_at, p.created_at) DESC, p.id DESC
+			 LIMIT ?`,
+			[userId, trimmedQuery, searchTerm, searchTerm, limit],
 		);
 	}
 

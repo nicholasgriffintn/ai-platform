@@ -5,15 +5,15 @@ import {
 	type ModelToolModelCapabilities,
 	type ModelToolOption,
 } from "~/lib/model-tools";
-import { useDynamicApps } from "./useDynamicApps";
+import { useCapabilityCatalog } from "./useCapabilityCatalog";
 
 export function useModelToolOptions(
 	modelCapabilities: ModelToolModelCapabilities | undefined,
 ): ModelToolOption[] {
-	const { data: dynamicApps } = useDynamicApps();
+	const { data: catalog } = useCapabilityCatalog();
 
 	return useMemo(
-		() => getModelToolOptions(modelCapabilities, dynamicApps?.tools ?? []),
-		[dynamicApps?.tools, modelCapabilities],
+		() => getModelToolOptions(modelCapabilities, catalog?.modelTools ?? []),
+		[catalog?.modelTools, modelCapabilities],
 	);
 }

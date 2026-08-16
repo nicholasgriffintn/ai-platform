@@ -6,7 +6,7 @@ import {
 	extractImplementTask,
 	extractSandboxCommand,
 	extractSandboxPushCommand,
-	getSandboxDynamicAppId,
+	getSandboxFunctionName,
 } from "./github/command";
 import { formatSandboxResultComment, postCommentToIssueOrPullRequest } from "./github/comments";
 import {
@@ -24,7 +24,7 @@ export {
 	extractSandboxCommand,
 	extractSandboxPushCommand,
 	getGitHubAppInstallationToken,
-	getSandboxDynamicAppId,
+	getSandboxFunctionName,
 	parseIssueNumberFromAutomationPayload,
 	parseSandboxAutomationCommand,
 	parseSandboxShouldCommit,

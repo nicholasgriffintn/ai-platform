@@ -399,6 +399,7 @@ export function useHomeChatModeConfig(): {
 			return {
 				activeModeId: effectiveActiveModeId,
 				modeConfig: {
+					assistantActionRoutes: { recipes: "/chat/capabilities" },
 					analyticsSource: "live",
 					welcomeTitle: "Start a live session",
 					welcomeDescription:
@@ -427,6 +428,7 @@ export function useHomeChatModeConfig(): {
 			return {
 				activeModeId: effectiveActiveModeId,
 				modeConfig: {
+					assistantActionRoutes: { recipes: "/chat/capabilities" },
 					analyticsSource: "background",
 					welcomeTitle: "What should keep running?",
 					welcomeDescription:
@@ -452,6 +454,7 @@ export function useHomeChatModeConfig(): {
 			return {
 				activeModeId: effectiveActiveModeId,
 				modeConfig: {
+					assistantActionRoutes: { recipes: "/chat/capabilities" },
 					modeControls,
 					onModelChange: handleModelChange,
 				},
@@ -472,6 +475,7 @@ export function useHomeChatModeConfig(): {
 		return {
 			activeModeId: effectiveActiveModeId,
 			modeConfig: {
+				assistantActionRoutes: { recipes: "/chat/capabilities" },
 				analyticsSource: "council",
 				welcomeTitle: "What should the council debate?",
 				welcomeDescription:

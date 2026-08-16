@@ -9,7 +9,7 @@ import {
 import { getErrorMessage } from "~/lib/errors";
 import type { ArticleInput } from "~/types/article";
 
-export function useArticleAnalysisSession(projectId: string) {
+export function useArticleAnalysisSession(projectId?: string) {
 	const [itemId] = useState(() => crypto.randomUUID());
 	const [articles, setArticles] = useState<ArticleInput[]>([{ id: crypto.randomUUID(), text: "" }]);
 	const [urlInputs, setUrlInputs] = useState<Record<string, string>>({});

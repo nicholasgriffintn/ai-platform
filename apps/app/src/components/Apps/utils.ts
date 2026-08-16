@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import React from "react";
-import type { AppTheme, DynamicAppCatalogItem as AppListItem } from "@ngriffin_uk/polychat-schemas";
+import type { AppTheme, CapabilityCatalogItem as AppListItem } from "@ngriffin_uk/polychat-schemas";
 
 type ThemeStyle = {
 	iconColor: string;
@@ -186,12 +186,16 @@ export const getThemeStyle = (theme?: string): ThemeStyle => {
 	return THEME_STYLES[key] || THEME_STYLES.default;
 };
 
-export const getIcon = (iconName?: string, theme?: string): React.ReactNode => {
+export const getIcon = (
+	iconName?: string,
+	theme?: string,
+	sizeClassName = "h-10 w-10",
+): React.ReactNode => {
 	const IconComponent = ICON_MAP[normaliseIconName(iconName) ?? ""];
 	const { iconColor } = getThemeStyle(theme);
 
 	const iconProps = {
-		className: `h-10 w-10 ${iconColor}`,
+		className: `${sizeClassName} ${iconColor}`,
 		strokeWidth: 1.5,
 	};
 

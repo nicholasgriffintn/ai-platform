@@ -25,7 +25,6 @@ import { registerApiRoutes } from "./routes/register";
 import { serviceContextMiddleware } from "./lib/context/serviceContext";
 import { ResponseFactory } from "./lib/http/ResponseFactory";
 import { addRoute } from "./lib/http/routeBuilder";
-import { autoRegisterDynamicApps } from "./services/dynamic-apps/auto-register-apps";
 import { handleGetMetrics } from "./services/metrics/getMetrics";
 import type { IEnv } from "./types";
 import { handleAIServiceError, normaliseApiError } from "./utils/errors";
@@ -103,8 +102,6 @@ app.use("*", authMiddleware);
 app.use("*", rateLimit);
 
 app.use("*", serviceContextMiddleware);
-
-autoRegisterDynamicApps();
 
 addRoute(app, "get", "/", {
 	tags: ["system"],

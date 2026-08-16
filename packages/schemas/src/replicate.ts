@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { dynamicAppThemeSchema } from "./apps";
+import { capabilityThemeSchema } from "./apps";
 import { modelModalitySchema } from "./models";
 import { apiResponseSchema } from "./shared";
 
@@ -33,7 +33,7 @@ export const replicateModelSchema = z.object({
 	reference: z.string().optional(),
 	category: z.string().optional(),
 	icon: z.string().optional(),
-	theme: dynamicAppThemeSchema.optional(),
+	theme: capabilityThemeSchema.optional(),
 	tags: z.array(z.string()).optional(),
 	featured: z.boolean().optional(),
 	href: z.string().optional(),

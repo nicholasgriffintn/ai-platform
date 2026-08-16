@@ -7,13 +7,12 @@ import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
 import { ConversationProductHeader } from "~/components/ConversationThread/ConversationProductHeader";
-import { SearchDialog } from "~/components/Search/SearchDialog";
 import { useChatStore } from "~/state/stores/chatStore";
 import { HomeConversationThread } from "./HomeConversationThread";
 import { useHomeChatModeConfig } from "./useHomeChatModeConfig";
 
 export function HomePage() {
-	const { clearCurrentConversation, initializeStore, showSearch, setShowSearch } = useChatStore();
+	const { clearCurrentConversation, initializeStore } = useChatStore();
 	const [isCanvasMode, setIsCanvasMode] = useState(false);
 	const { modeConfig } = useHomeChatModeConfig();
 	const canvas = useCanvasStudio({ enabled: isCanvasMode });
@@ -60,8 +59,6 @@ export function HomePage() {
 						</div>
 					</div>
 				</div>
-
-				<SearchDialog isOpen={showSearch} onClose={() => setShowSearch(false)} />
 			</div>
 		</PageShell>
 	);

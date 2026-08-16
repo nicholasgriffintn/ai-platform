@@ -63,7 +63,7 @@ export function extractSandboxPushCommand(commitMessage: string): ParsedSandboxC
 	};
 }
 
-export function getSandboxDynamicAppId(command: SandboxWebhookCommand): string {
+export function getSandboxFunctionName(command: SandboxWebhookCommand): string {
 	switch (command) {
 		case "review":
 			return "run_code_review";

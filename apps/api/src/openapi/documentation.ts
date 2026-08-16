@@ -7,7 +7,7 @@ import { guardrailsTagDescription } from "./content/tags/guardrailsTagDescriptio
 import { adminTagDescription } from "./content/tags/adminTagDescription.js";
 import { appsTagDescription } from "./content/tags/appsTagDescription.js";
 import { audioTagDescription } from "./content/tags/audioTagDescription.js";
-import { dynamicAppsTagDescription } from "./content/tags/dynamicAppsTagDescription.js";
+import { capabilitiesTagDescription } from "./content/tags/capabilitiesTagDescription.js";
 import { plansTagDescription } from "./content/tags/plansTagDescription.js";
 import { realtimeTagDescription } from "./content/tags/realtimeTagDescription.js";
 import { searchTagDescription } from "./content/tags/searchTagDescription.js";
@@ -35,7 +35,7 @@ export const tagDescriptions = {
 	tools: toolsTagDescription,
 	uploads: uploadsTagDescription,
 	user: userTagDescription,
-	"dynamic-apps": dynamicAppsTagDescription,
+	capabilities: capabilitiesTagDescription,
 	system: systemTagDescription,
 	training: trainingTagDescription,
 } as const;

@@ -2,41 +2,39 @@ import {
 	CloudOff,
 	Edit,
 	GitBranch,
+	Grid2X2,
 	Image as ImageIcon,
 	Loader2,
 	MessageCircle,
-	SlidersHorizontal,
+	Search,
+	Settings2,
 	SquarePen,
 	Trash2,
 } from "lucide-react";
 import { useCallback, useState } from "react";
+import { useLocation, useNavigate } from "react-router";
 
 import { CanvasSidebarControls } from "~/components/Canvas/CanvasSidebarControls";
 import type { CanvasStudioState } from "~/components/Canvas/useCanvasStudio";
 import {
 	Button,
 	ConfirmationDialog,
-	FormSelect,
 	HoverActions,
 	ListItem,
-	Popover,
-	PopoverAnchor,
-	PopoverContent,
-	PopoverTrigger,
-	SearchInput,
 	SidebarShell,
 } from "@ngriffin_uk/polychat-component-ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
-import { useDebouncedValue } from "@ngriffin_uk/polychat-utility-react";
 import { useLoadMoreOnIntersect } from "@ngriffin_uk/polychat-utility-react";
 import { useChats, useDeleteChat, useUpdateChatTitle } from "~/hooks/useChat";
 import { categorizeItemsByDate } from "~/lib/sidebar";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 import type { Conversation, ConversationArchiveFilter, ConversationSortBy } from "~/types/chat";
+import { SidebarNavButton, SidebarNavLink, SidebarNavSection } from "../Sidebar/SidebarNav";
 import { SidebarFooter } from "../Sidebar/SidebarFooter";
 import { SidebarHeader } from "../Sidebar/SidebarHeader";
 import { ChatSidebarNotifications } from "./ChatSidebarNotifications";
+import { ConversationListControls } from "./ConversationListControls";
 
 interface ChatSidebarProps {
 	canvas?: CanvasStudioState;
@@ -50,21 +48,24 @@ export const ChatSidebar = ({
 	onCanvasModeChange,
 }: ChatSidebarProps) => {
 	const { trackEvent } = useTrackEvent();
+	const navigate = useNavigate();
+	const { pathname } = useLocation();
+	// The conversation only renders on the chat index, so the sub-pages must route back to it.
+	const isConversationRoute = pathname === "/" || pathname === "/chat";
 	const { sidebarVisible, setSidebarVisible, isMobile } = useUIStore();
 	const {
 		currentConversationId,
 		setCurrentConversationId,
 		clearCurrentConversation,
+		setShowSearch,
 		isAuthenticated,
 		isAuthenticationLoading,
 		isPro,
 		localOnlyMode,
 	} = useChatStore();
 
-	const [searchQuery, setSearchQuery] = useState("");
 	const [archiveFilter, setArchiveFilter] = useState<ConversationArchiveFilter>("active");
 	const [sortBy, setSortBy] = useState<ConversationSortBy>("updated");
-	const debouncedSearchQuery = useDebouncedValue(searchQuery, 250);
 	const {
 		data: conversations = [],
 		error: conversationsError,
@@ -75,13 +76,11 @@ export const ChatSidebar = ({
 		refetch: refetchConversations,
 	} = useChats({
 		archived: archiveFilter,
-		query: debouncedSearchQuery,
 		sortBy,
 	});
 	const deleteChat = useDeleteChat();
 	const updateTitle = useUpdateChatTitle();
 	const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-	const hasListCustomisation = archiveFilter !== "active" || sortBy !== "updated";
 	const loadMoreConversations = useCallback(() => {
 		if (hasNextPage && !isFetchingNextPage) {
 			void fetchNextPage();
@@ -101,8 +100,16 @@ export const ChatSidebar = ({
 		return new Date(0);
 	});
 
+	const closeOnMobile = () => {
+		if (isMobile) setSidebarVisible(false);
+	};
+
 	const handleNewChatClick = () => {
 		clearCurrentConversation();
+
+		if (!isConversationRoute) {
+			navigate("/chat");
+		}
 
 		trackEvent({
 			name: "new_chat",
@@ -111,13 +118,15 @@ export const ChatSidebar = ({
 			value: 1,
 		});
 
-		if (isMobile) {
-			setSidebarVisible(false);
-		}
+		closeOnMobile();
 	};
 
 	const handleConversationClick = (id: string | undefined) => {
 		setCurrentConversationId(id);
+
+		if (!isConversationRoute) {
+			navigate(id ? `/chat?completion_id=${encodeURIComponent(id)}` : "/chat");
+		}
 
 		trackEvent({
 			name: "conversation_click",
@@ -126,9 +135,7 @@ export const ChatSidebar = ({
 			value: 1,
 		});
 
-		if (isMobile) {
-			setSidebarVisible(false);
-		}
+		closeOnMobile();
 	};
 
 	const handleEditTitle = async (completion_id: string, currentTitle: string) => {
@@ -196,12 +203,12 @@ export const ChatSidebar = ({
 				<h3 className="px-2 py-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
 					{title}
 				</h3>
-				<ul className="space-y-1 mb-3">
+				<ul className="mb-3 space-y-1">
 					{conversationsList.map((conversation) => (
 						<ListItem
 							key={conversation.id}
 							data-id={conversation.id}
-							isActive={currentConversationId === conversation.id}
+							isActive={isConversationRoute && currentConversationId === conversation.id}
 							badge={
 								<>
 									{(conversation.isLocalOnly || localOnlyMode) && (
@@ -310,116 +317,95 @@ export const ChatSidebar = ({
 					</div>
 				) : (
 					<div>
-						<div className="pb-2 px-2">
-							<Button
-								type="button"
-								variant="primary"
-								onClick={handleNewChatClick}
-								className="w-full bg-zinc-900 hover:bg-black dark:bg-zinc-800 dark:hover:bg-zinc-700"
-								icon={<SquarePen size={20} />}
-							>
-								New Chat
-							</Button>
-						</div>
-						<div className="px-2 pb-2">
-							<Popover>
-								<PopoverAnchor asChild>
-									<div className="flex items-center gap-2">
-										<SearchInput
-											value={searchQuery}
-											onChange={setSearchQuery}
-											placeholder="search..."
-											aria-label="Search conversation titles"
-											className="min-w-0 flex-1"
-										/>
-										<PopoverTrigger asChild>
-											<button
-												type="button"
-												className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-zinc-200 bg-off-white text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-												aria-label="Conversation list options"
-												title="Conversation list options"
-											>
-												<SlidersHorizontal size={17} />
-												{hasListCustomisation && (
-													<span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-blue-500" />
-												)}
-											</button>
-										</PopoverTrigger>
-									</div>
-								</PopoverAnchor>
-								<PopoverContent
-									align="start"
-									sideOffset={6}
-									className="w-[var(--radix-popper-anchor-width)] space-y-3 border-zinc-200 bg-off-white p-3 dark:border-zinc-700 dark:bg-zinc-900"
+						<div className="px-2 pb-3">
+							<SidebarNavSection>
+								<SidebarNavButton
+									icon={<SquarePen size={17} />}
+									isActive={isConversationRoute && !currentConversationId}
+									onClick={handleNewChatClick}
 								>
-									<FormSelect
-										label="State"
-										aria-label="Conversation archive filter"
-										value={archiveFilter}
-										onChange={(event) =>
-											setArchiveFilter(event.target.value as ConversationArchiveFilter)
-										}
-										className="h-8 px-2 py-1 text-xs"
-										options={[
-											{ value: "active", label: "Active" },
-											{ value: "archived", label: "Archived" },
-											{ value: "all", label: "All" },
-										]}
-									/>
-									<FormSelect
-										label="Sort"
-										aria-label="Conversation sort"
-										value={sortBy}
-										onChange={(event) => setSortBy(event.target.value as ConversationSortBy)}
-										className="h-8 px-2 py-1 text-xs"
-										options={[
-											{ value: "updated", label: "Updated" },
-											{ value: "created", label: "Created" },
-										]}
-									/>
-								</PopoverContent>
-							</Popover>
-						</div>
-						{isLoading ? (
-							<div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
-								Loading conversations...
-							</div>
-						) : conversationsError && conversations.length === 0 ? (
-							<div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
-								<p>Could not load conversations.</p>
-								<Button
-									type="button"
-									variant="secondary"
-									className="mt-2"
-									onClick={() => refetchConversations()}
+									New chat
+								</SidebarNavButton>
+								<SidebarNavButton
+									icon={<Search size={17} />}
+									onClick={() => setShowSearch(true)}
+									shortcut="⌘K"
 								>
-									Retry
-								</Button>
+									Search
+								</SidebarNavButton>
+								{isAuthenticated && (
+									<>
+										<SidebarNavLink
+											to="/chat/experiences"
+											icon={<Grid2X2 size={16} />}
+											onClick={closeOnMobile}
+										>
+											Experiences
+										</SidebarNavLink>
+										<SidebarNavLink
+											to="/chat/capabilities"
+											icon={<Settings2 size={16} />}
+											onClick={closeOnMobile}
+										>
+											Capabilities
+										</SidebarNavLink>
+									</>
+								)}
+							</SidebarNavSection>
+						</div>
+						<div className="px-2 pt-4">
+							<div className="flex items-center justify-between px-2 pb-2">
+								<p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+									Recent conversations
+								</p>
+								<ConversationListControls
+									archiveFilter={archiveFilter}
+									onArchiveFilterChange={setArchiveFilter}
+									onSortByChange={setSortBy}
+									sortBy={sortBy}
+								/>
 							</div>
-						) : conversations.length === 0 ? (
-							<div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
-								{searchQuery.trim() ? "No conversations match that search." : ""}
-							</div>
-						) : (
-							<div className="p-2">
-								{renderConversationGroup("Today", categorizedChats.today)}
-								{renderConversationGroup("Yesterday", categorizedChats.yesterday)}
-								{renderConversationGroup("This Week", categorizedChats.thisWeek)}
-								{renderConversationGroup("This Month", categorizedChats.thisMonth)}
-								{renderConversationGroup("Last Month", categorizedChats.lastMonth)}
-								{renderConversationGroup("Older", categorizedChats.older)}
-								<div ref={loadMoreRef} className="h-8">
-									{isFetchingNextPage && (
-										<div className="flex justify-center py-2">
-											<Loader2
-												size={16}
-												className="animate-spin text-zinc-500 dark:text-zinc-400"
-											/>
-										</div>
-									)}
+							{isLoading ? (
+								<div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
+									Loading conversations...
 								</div>
-							</div>
-						)}
+							) : conversationsError && conversations.length === 0 ? (
+								<div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
+									<p>Could not load conversations.</p>
+									<Button
+										type="button"
+										variant="secondary"
+										className="mt-2"
+										onClick={() => refetchConversations()}
+									>
+										Retry
+									</Button>
+								</div>
+							) : conversations.length === 0 ? (
+								<div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
+									No conversations yet.
+								</div>
+							) : (
+								<>
+									{renderConversationGroup("Today", categorizedChats.today)}
+									{renderConversationGroup("Yesterday", categorizedChats.yesterday)}
+									{renderConversationGroup("This Week", categorizedChats.thisWeek)}
+									{renderConversationGroup("This Month", categorizedChats.thisMonth)}
+									{renderConversationGroup("Last Month", categorizedChats.lastMonth)}
+									{renderConversationGroup("Older", categorizedChats.older)}
+									<div ref={loadMoreRef} className="h-8">
+										{isFetchingNextPage && (
+											<div className="flex justify-center py-2">
+												<Loader2
+													size={16}
+													className="animate-spin text-zinc-500 dark:text-zinc-400"
+												/>
+											</div>
+										)}
+									</div>
+								</>
+							)}
+						</div>
 					</div>
 				)}
 			</SidebarShell>

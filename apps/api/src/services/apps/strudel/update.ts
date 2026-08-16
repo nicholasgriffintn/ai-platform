@@ -4,6 +4,7 @@ import { requireOutputRecordAccess } from "~/services/outputs/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import {
+	PATTERN_OUTPUT_KIND,
 	STRUDEL_APP_ID,
 	extractStoredPattern,
 	mapResponseToPattern,
@@ -46,7 +47,7 @@ export async function updatePattern({
 		if (
 			!existing ||
 			existing.capability_id !== STRUDEL_APP_ID ||
-			existing.kind !== "strudel_pattern"
+			existing.kind !== PATTERN_OUTPUT_KIND
 		) {
 			throw new AssistantError("Pattern not found", ErrorType.NOT_FOUND);
 		}

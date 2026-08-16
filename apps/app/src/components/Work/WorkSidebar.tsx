@@ -8,6 +8,7 @@ import {
 	ClipboardList,
 	MessageSquareText,
 	PanelsTopLeft,
+	Search,
 	Settings2,
 	SquarePen,
 	Users,
@@ -20,6 +21,7 @@ import { SidebarShell } from "@ngriffin_uk/polychat-component-ui";
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
+import { SidebarNavButton, sidebarNavLinkClass } from "~/components/Sidebar/SidebarNav";
 import { useWorkData } from "./WorkContext";
 
 interface WorkSidebarProps {
@@ -35,8 +37,12 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
 	const { data: project } = projectQuery;
 	const { pathname } = useLocation();
 	const [searchParams] = useSearchParams();
-	const { clearCurrentConversation, currentConversationId, setCurrentConversationId } =
-		useChatStore();
+	const {
+		clearCurrentConversation,
+		currentConversationId,
+		setCurrentConversationId,
+		setShowSearch,
+	} = useChatStore();
 	const routedConversationId = searchParams.get("completion_id") ?? undefined;
 	const activeConversationId =
 		routedConversationId ??
@@ -48,13 +54,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
 		if (isMobile) setSidebarVisible(false);
 	};
 
-	const linkClass = ({ isActive }: { isActive: boolean }) =>
-		cn(
-			"flex items-center gap-2 rounded-lg p-2 text-sm no-underline transition-colors",
-			isActive
-				? "bg-off-white-highlight text-black dark:bg-[#2D2D2D] dark:text-white"
-				: "text-zinc-600 hover:bg-zinc-200 hover:text-black dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white",
-		);
+	const linkClass = sidebarNavLinkClass;
 
 	return (
 		<SidebarShell
@@ -66,6 +66,13 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
 		>
 			<nav className="space-y-5 p-2 pb-8">
 				<div className="space-y-1">
+					<SidebarNavButton
+						icon={<Search size={17} />}
+						onClick={() => setShowSearch(true)}
+						shortcut="⌘K"
+					>
+						Search
+					</SidebarNavButton>
 					<NavLink to="/work" end className={linkClass} onClick={closeOnMobile}>
 						<LayoutDashboard size={17} /> Workspaces
 					</NavLink>

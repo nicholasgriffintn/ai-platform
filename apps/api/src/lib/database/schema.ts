@@ -408,7 +408,7 @@ export const message = sqliteTable(
 		status: text(),
 		timestamp: integer(),
 		platform: text({
-			enum: ["web", "mobile", "api", "dynamic-apps"],
+			enum: ["web", "mobile", "api", "tool-run"],
 		}),
 		mode: text({
 			enum: [

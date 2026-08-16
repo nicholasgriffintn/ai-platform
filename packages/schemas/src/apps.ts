@@ -313,8 +313,8 @@ export const promptCoachResponseSchema = z.object({
 		.describe("The suggested improvement for the user's prompt."),
 });
 
-export const dynamicAppFunctionTypes = ["normal", "premium", "byok"] as const;
-export const dynamicAppFunctionTypeSchema = z.enum(dynamicAppFunctionTypes);
+export const toolFunctionTypes = ["normal", "premium", "byok"] as const;
+export const toolFunctionTypeSchema = z.enum(toolFunctionTypes);
 
 export const assistantCapabilityKindSchema = z.enum([
 	"recipe",
@@ -427,7 +427,7 @@ export const appInfoSchema = z.object({
 	featured: z.boolean().optional(),
 	costPerCall: z.number().optional(),
 	isDefault: z.boolean().optional(),
-	type: dynamicAppFunctionTypeSchema.optional(),
+	type: toolFunctionTypeSchema.optional(),
 	href: z.string().optional(),
 	kind: z.enum(["dynamic", "frontend"]).optional(),
 	capability: assistantCapabilityDescriptorSchema.optional(),
@@ -435,7 +435,7 @@ export const appInfoSchema = z.object({
 
 export const appInfoArraySchema = z.array(appInfoSchema);
 
-export const dynamicAppThemes = [
+export const capabilityThemes = [
 	"violet",
 	"indigo",
 	"pink",
@@ -448,7 +448,7 @@ export const dynamicAppThemes = [
 	"blue",
 ] as const;
 
-export const dynamicAppFieldTypes = [
+export const toolFormFieldTypes = [
 	"text",
 	"number",
 	"select",
@@ -459,13 +459,7 @@ export const dynamicAppFieldTypes = [
 	"textarea",
 ] as const;
 
-export const dynamicAppResponseDisplayTypes = [
-	"table",
-	"json",
-	"text",
-	"template",
-	"custom",
-] as const;
+export const toolResponseDisplayTypes = ["table", "json", "text", "template", "custom"] as const;
 
 export const ResponseDisplayType = {
 	TABLE: "table",
@@ -473,7 +467,7 @@ export const ResponseDisplayType = {
 	TEXT: "text",
 	TEMPLATE: "template",
 	CUSTOM: "custom",
-} satisfies Record<string, (typeof dynamicAppResponseDisplayTypes)[number]>;
+} satisfies Record<string, (typeof toolResponseDisplayTypes)[number]>;
 
 export const FieldType = {
 	TEXT: "text",
@@ -484,9 +478,9 @@ export const FieldType = {
 	FILE: "file",
 	DATE: "date",
 	TEXTAREA: "textarea",
-} satisfies Record<string, (typeof dynamicAppFieldTypes)[number]>;
+} satisfies Record<string, (typeof toolFormFieldTypes)[number]>;
 
-export const dynamicAppThemeSchema = z.enum(dynamicAppThemes);
+export const capabilityThemeSchema = z.enum(capabilityThemes);
 
 export const projectExperienceRuntimeSchema = z.enum([
 	"articles",
@@ -507,7 +501,6 @@ export const projectExperienceRequirementSchema = z.discriminatedUnion("kind", [
 	z.object({
 		kind: z.literal("capability_kind"),
 		capabilityKind: z.enum(["app", "recipe"]),
-		appKind: z.enum(["dynamic", "frontend"]).optional(),
 	}),
 ]);
 
@@ -518,7 +511,10 @@ export const projectExperienceDefinitionSchema = z.object({
 	description: z.string(),
 	icon: z.string().optional(),
 	category: z.string().optional(),
-	theme: dynamicAppThemeSchema.optional(),
+	theme: capabilityThemeSchema.optional(),
+	tags: z.array(z.string()).optional(),
+	type: toolFunctionTypeSchema.optional(),
+	href: z.string().optional(),
 	requirement: projectExperienceRequirementSchema,
 });
 
@@ -554,12 +550,12 @@ export const projectToolDefinitionSchema = z.object({
 	requiresConfiguration: z.boolean().optional(),
 	configurationKind: z.enum(["file_search", "mcp"]).optional(),
 });
-export const dynamicAppFieldTypeSchema = z.enum(dynamicAppFieldTypes);
-export const dynamicAppResponseDisplayTypeSchema = z.enum(dynamicAppResponseDisplayTypes);
+export const toolFormFieldTypeSchema = z.enum(toolFormFieldTypes);
+export const toolResponseDisplayTypeSchema = z.enum(toolResponseDisplayTypes);
 
-export const dynamicAppFormFieldSchema = z.object({
+export const toolFormFieldSchema = z.object({
 	id: z.string(),
-	type: dynamicAppFieldTypeSchema,
+	type: toolFormFieldTypeSchema,
 	label: z.string(),
 	description: z.string().optional(),
 	placeholder: z.string().optional(),
@@ -584,84 +580,56 @@ export const dynamicAppFormFieldSchema = z.object({
 		.optional(),
 });
 
-export const dynamicAppFormStepSchema = z.object({
+export const toolFormStepSchema = z.object({
 	id: z.string(),
 	title: z.string(),
 	description: z.string().optional(),
-	fields: z.array(dynamicAppFormFieldSchema),
+	fields: z.array(toolFormFieldSchema),
 });
 
-export const dynamicAppFormSchema = z.object({
-	steps: z.array(dynamicAppFormStepSchema),
+export const toolFormSchema = z.object({
+	steps: z.array(toolFormStepSchema),
 });
 
-export const dynamicAppResponseFieldSchema = z.object({
+export const toolResponseFieldSchema = z.object({
 	key: z.string(),
 	label: z.string(),
 	format: z.string().optional(),
 });
 
-export const dynamicAppResponseDisplaySchema = z.object({
-	fields: z.array(dynamicAppResponseFieldSchema).optional(),
+export const toolResponseDisplaySchema = z.object({
+	fields: z.array(toolResponseFieldSchema).optional(),
 	template: z.string().optional(),
 });
 
-export const dynamicAppResponseSchema = z.object({
-	type: dynamicAppResponseDisplayTypeSchema,
-	display: dynamicAppResponseDisplaySchema,
+export const toolResponseSchema = z.object({
+	type: toolResponseDisplayTypeSchema,
+	display: toolResponseDisplaySchema,
 });
 
-export const dynamicAppSchema = z.object({
+export const renderableToolSchema = z.object({
 	id: z.string(),
 	name: z.string(),
 	description: z.string(),
 	icon: z.string().optional(),
 	category: z.string().optional(),
-	theme: dynamicAppThemeSchema.optional(),
+	theme: capabilityThemeSchema.optional(),
 	tags: z.array(z.string()).optional(),
 	featured: z.boolean().optional(),
 	costPerCall: z.number().optional(),
 	isDefault: z.boolean().optional(),
-	type: dynamicAppFunctionTypeSchema.optional(),
+	type: toolFunctionTypeSchema.optional(),
 	kind: z.enum(["dynamic", "frontend"]).optional(),
-	formSchema: dynamicAppFormSchema,
-	responseSchema: dynamicAppResponseSchema,
+	formSchema: toolFormSchema,
+	responseSchema: toolResponseSchema,
 });
 
-export const dynamicAppsResponseSchema = z.object({
-	apps: appInfoArraySchema,
+export const capabilityCatalogResponseSchema = z.object({
 	experiences: z.array(projectExperienceDefinitionSchema),
-	tools: z.array(projectToolDefinitionSchema),
+	modelTools: z.array(projectToolDefinitionSchema),
 });
 
-export const dynamicAppIdParamSchema = z.object({ id: z.string() });
-
-export const dynamicAppExecuteRequestSchema = z.record(z.string(), z.any());
-
-export const dynamicAppErrorResponseSchema = z.object({
-	error: z.string(),
-	message: z.string().optional(),
-});
-
-export const dynamicAppExecutionUnauthorizedResponseSchema = z.object({
-	response: z.object({
-		status: z.literal("error"),
-		message: z.string(),
-	}),
-});
-
-export const dynamicAppExecutionResponseSchema = z.object({
-	success: z.boolean(),
-	output_id: z.string().optional(),
-	data: z.object({
-		message: z.string(),
-		timestamp: z.iso.datetime(),
-		input: z.record(z.string(), z.unknown()),
-		result: z.unknown(),
-	}),
-});
-
-export type AppTheme = z.infer<typeof dynamicAppThemeSchema>;
+export type AppTheme = z.infer<typeof capabilityThemeSchema>;
 export type AppKind = "dynamic" | "frontend";
 export type AssistantCapabilityKind = z.infer<typeof assistantCapabilityKindSchema>;
 export type AssistantCapabilityAvailability = z.infer<typeof assistantCapabilityAvailabilitySchema>;
@@ -684,28 +652,28 @@ export type AssistantCapabilityRequiredConnector = z.infer<
 >;
 export type AssistantCapabilitySavedState = z.infer<typeof assistantCapabilitySavedStateSchema>;
 export type AssistantCapabilityDescriptor = z.infer<typeof assistantCapabilityDescriptorSchema>;
-export type FieldType = z.infer<typeof dynamicAppFieldTypeSchema>;
-export type DynamicAppFormField = z.infer<typeof dynamicAppFormFieldSchema>;
-export type DynamicAppFormStep = z.infer<typeof dynamicAppFormStepSchema>;
-export type DynamicAppFormSchema = z.infer<typeof dynamicAppFormSchema>;
-export type DynamicAppResponseField = z.infer<typeof dynamicAppResponseFieldSchema>;
-export type DynamicAppResponseDisplay = z.infer<typeof dynamicAppResponseDisplaySchema>;
-export type ResponseDisplayType = z.infer<typeof dynamicAppResponseDisplayTypeSchema>;
-export type ResponseField = DynamicAppResponseField;
-export type ResponseDisplay = DynamicAppResponseDisplay;
-export type DynamicAppResponseSchema = z.infer<typeof dynamicAppResponseSchema>;
-export type AppSchema = z.infer<typeof dynamicAppSchema>;
-export type DynamicAppCatalogItem = z.infer<typeof appInfoSchema>;
+export type FieldType = z.infer<typeof toolFormFieldTypeSchema>;
+export type ToolFormField = z.infer<typeof toolFormFieldSchema>;
+export type ToolFormStep = z.infer<typeof toolFormStepSchema>;
+export type ToolFormSchema = z.infer<typeof toolFormSchema>;
+export type ToolResponseField = z.infer<typeof toolResponseFieldSchema>;
+export type ToolResponseDisplay = z.infer<typeof toolResponseDisplaySchema>;
+export type ResponseDisplayType = z.infer<typeof toolResponseDisplayTypeSchema>;
+export type ResponseField = ToolResponseField;
+export type ResponseDisplay = ToolResponseDisplay;
+export type ToolResponseSchemaType = z.infer<typeof toolResponseSchema>;
+export type RenderableTool = z.infer<typeof renderableToolSchema>;
+export type CapabilityCatalogItem = z.infer<typeof appInfoSchema>;
 export type ProjectExperienceRuntime = z.infer<typeof projectExperienceRuntimeSchema>;
 export type ProjectExperienceRequirement = z.infer<typeof projectExperienceRequirementSchema>;
 export type ProjectExperienceDefinition = z.infer<typeof projectExperienceDefinitionSchema>;
 export type ProjectToolId = z.infer<typeof projectToolIdSchema>;
 export type ProjectToolCapability = z.infer<typeof projectToolCapabilitySchema>;
 export type ProjectToolDefinition = z.infer<typeof projectToolDefinitionSchema>;
-export type DynamicAppsResponse = z.infer<typeof dynamicAppsResponseSchema>;
-export type DynamicAppFormData = Record<string, unknown>;
-export type DynamicAppFormErrors = Record<string, string>;
-export type FunctionType = z.infer<typeof dynamicAppFunctionTypeSchema>;
+export type CapabilityCatalogResponse = z.infer<typeof capabilityCatalogResponseSchema>;
+export type ToolFormData = Record<string, unknown>;
+export type ToolFormErrors = Record<string, string>;
+export type FunctionType = z.infer<typeof toolFunctionTypeSchema>;
 
 function isMissingDynamicAppFieldValue(value: unknown): boolean {
 	return (
@@ -724,7 +692,7 @@ function isValidDateFieldValue(value: unknown): boolean {
 	return typeof value === "string" && !Number.isNaN(Date.parse(value));
 }
 
-function getDynamicAppFieldError(field: DynamicAppFormField, value: unknown): string | undefined {
+function getDynamicAppFieldError(field: ToolFormField, value: unknown): string | undefined {
 	if (field.required && isMissingDynamicAppFieldValue(value)) {
 		return `${field.label} is required`;
 	}
@@ -811,11 +779,8 @@ function getDynamicAppFieldError(field: DynamicAppFormField, value: unknown): st
 	}
 }
 
-export function getDynamicAppFormStepErrors(
-	step: DynamicAppFormStep,
-	formData: DynamicAppFormData,
-): DynamicAppFormErrors {
-	const errors: DynamicAppFormErrors = {};
+export function getToolFormStepErrors(step: ToolFormStep, formData: ToolFormData): ToolFormErrors {
+	const errors: ToolFormErrors = {};
 
 	for (const field of step.fields) {
 		const error = getDynamicAppFieldError(field, formData[field.id]);
@@ -827,17 +792,17 @@ export function getDynamicAppFormStepErrors(
 	return errors;
 }
 
-export function getDynamicAppFormErrors(
-	app: Pick<AppSchema, "formSchema">,
-	formData: DynamicAppFormData,
-): DynamicAppFormErrors {
+export function getToolFormErrors(
+	app: Pick<RenderableTool, "formSchema">,
+	formData: ToolFormData,
+): ToolFormErrors {
 	const fieldIds = new Set(
 		app.formSchema.steps.flatMap((step) => step.fields.map((field) => field.id)),
 	);
-	const errors: DynamicAppFormErrors = {};
+	const errors: ToolFormErrors = {};
 
 	for (const step of app.formSchema.steps) {
-		Object.assign(errors, getDynamicAppFormStepErrors(step, formData));
+		Object.assign(errors, getToolFormStepErrors(step, formData));
 	}
 
 	for (const key of Object.keys(formData)) {

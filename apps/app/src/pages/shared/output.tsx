@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
+import { useRunnableTool } from "~/hooks/useRunnableTools";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageStatus } from "~/components/Core/PageStatus";
 import { Card } from "@ngriffin_uk/polychat-component-ui";
@@ -21,6 +22,8 @@ export default function SharedOutputPage() {
 	const { token } = useParams<{ token: string }>();
 	const [output, setOutput] = useState<SharedOutput | null>(null);
 	const [error, setError] = useState<string | null>(null);
+	// The stored output keeps the raw payload; the tool it came from owns how to display it.
+	const { data: producingTool } = useRunnableTool(output?.capabilityId ?? null);
 
 	useEffect(() => {
 		if (!token) {
@@ -74,7 +77,7 @@ export default function SharedOutputPage() {
 							Open {output.file.filename || "shared file"}
 						</a>
 					) : null}
-					<ResponseRenderer result={output.content} />
+					<ResponseRenderer app={producingTool ?? undefined} result={output.content} />
 				</Card>
 			</div>
 		</PageShell>

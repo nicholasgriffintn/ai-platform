@@ -6,7 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ProjectCapabilityRow } from "~/repositories/WorkspaceRepository";
-import { PROJECT_TOOL_DEFINITIONS } from "~/services/dynamic-apps/config";
+import { MODEL_TOOL_DEFINITIONS } from "~/services/experiences/config";
 import { listFunctionTools } from "~/services/functions";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -25,7 +25,7 @@ function parseStoredConfiguration(configuration: ProjectCapabilityRow["configura
 }
 
 function getToolDefinition(toolId: string): ProjectToolDefinition | undefined {
-	return PROJECT_TOOL_DEFINITIONS.find((tool) => tool.id === toolId);
+	return MODEL_TOOL_DEFINITIONS.find((tool) => tool.id === toolId);
 }
 
 function getCallableToolIds(): Set<string> {
@@ -74,7 +74,7 @@ export function resolveProjectTools(capabilities: ProjectCapabilityRow[]): Resol
 		.map((capability) => capability.capability_id);
 	const toolOptions: ChatHostedToolSettings = {};
 
-	for (const definition of PROJECT_TOOL_DEFINITIONS) {
+	for (const definition of MODEL_TOOL_DEFINITIONS) {
 		if (!definition.requiresConfiguration) {
 			enabledTools.push(definition.id);
 			continue;

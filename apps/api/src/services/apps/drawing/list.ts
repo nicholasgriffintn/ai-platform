@@ -3,6 +3,8 @@ import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "../../../utils/json";
 
+const DRAWING_OUTPUT_KIND = "drawing";
+
 export interface Drawing {
 	id: string;
 	description: string;
@@ -29,7 +31,7 @@ export async function listDrawings({
 	const serviceContext = resolveServiceContext({ context, env });
 	serviceContext.ensureDatabase();
 	const repo = serviceContext.repositories.outputs;
-	const list = await repo.listPersonalOutputs(userId, "drawings");
+	const list = await repo.listPersonalOutputs(userId, "drawings", { kind: DRAWING_OUTPUT_KIND });
 
 	return list.map((entry) => {
 		const data = safeParseJson<Record<string, unknown>>(entry.content) ?? {};

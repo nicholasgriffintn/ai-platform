@@ -211,8 +211,8 @@ export const research: ApiToolDefinition = {
 
 		const waitForCompletionArg =
 			typeof args?.wait_for_completion === "boolean" ? args.wait_for_completion : undefined;
-		const isDynamicApp = req.request?.platform === "dynamic-apps";
-		const shouldWait = waitForCompletionArg !== undefined ? waitForCompletionArg : !isDynamicApp;
+		const isToolRun = req.request?.platform === "tool-run";
+		const shouldWait = waitForCompletionArg !== undefined ? waitForCompletionArg : !isToolRun;
 
 		if (shouldWait) {
 			const response = await handleResearchTask({

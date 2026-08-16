@@ -53,6 +53,7 @@ export function ListItem({
 			}}
 			role={onClick ? "button" : undefined}
 			tabIndex={onClick ? 0 : undefined}
+			aria-current={isActive ? "page" : undefined}
 		>
 			<div
 				className={cn(

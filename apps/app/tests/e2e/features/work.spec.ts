@@ -89,6 +89,39 @@ test.describe("Work experience", () => {
 			}
 		});
 
+		test("finds projects and capabilities through global search", async ({
+			homePage,
+			page,
+			workPage,
+		}) => {
+			await page.emulateMedia({ colorScheme: "dark" });
+			await workPage.open();
+			await expect(page.locator("html")).toHaveClass(/dark/);
+			await homePage.searchPolychat("Release Project");
+			const projectResult = page.getByRole("option").filter({ hasText: "Release Project" });
+			await expect(projectResult).toBeVisible();
+			await projectResult.click();
+			await expect(page.getByText("Release validation project")).toBeVisible();
+
+			await homePage.searchPolychat("Note Taker");
+			await expect(page.getByRole("option").filter({ hasText: "Note Taker" })).toBeVisible();
+
+			await homePage.searchPolychat("e");
+			const resultList = page.getByRole("listbox");
+			const results = resultList.getByRole("option");
+			await expect.poll(() => results.count()).toBeGreaterThan(8);
+			for (let index = 0; index < 30; index += 1) {
+				await page.keyboard.press("ArrowDown");
+			}
+
+			const selectedResult = resultList.locator('[role="option"][aria-selected="true"]');
+			await expect(selectedResult).toBeInViewport();
+			expect(
+				await selectedResult.evaluate((element) => getComputedStyle(element).backgroundColor),
+			).toBe("rgb(39, 39, 42)");
+			await homePage.closeGlobalSearch();
+		});
+
 		test("sends a project conversation using its Work context", async ({
 			homePage,
 			page,

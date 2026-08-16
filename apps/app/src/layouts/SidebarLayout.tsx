@@ -1,8 +1,10 @@
 import React, { Suspense, lazy } from "react";
 
 import { ChatNavbar } from "~/components/Navbar";
+import { SearchDialog } from "~/components/Search/SearchDialog";
 import { useKeyboardShortcuts } from "~/hooks/useKeyboardShortcuts";
 import { cn } from "~/lib/utils";
+import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
 const LoginModal = lazy(() =>
@@ -39,6 +41,8 @@ export function SidebarLayout({
 		showLoginModal,
 		setShowLoginModal,
 	} = useUIStore();
+	const showSearch = useChatStore((state) => state.showSearch);
+	const setShowSearch = useChatStore((state) => state.setShowSearch);
 	useKeyboardShortcuts();
 
 	const handleEnterApiKey = () => {
@@ -96,6 +100,7 @@ export function SidebarLayout({
 					/>
 				</Suspense>
 			)}
+			{showSearch && <SearchDialog isOpen onClose={() => setShowSearch(false)} />}
 		</>
 	);
 }

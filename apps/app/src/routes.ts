@@ -2,7 +2,13 @@ import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export default [
 	index("pages/home.tsx"),
-	route("/chat", "pages/chat.tsx"),
+	route("/chat", "pages/chat/layout.tsx", [
+		index("pages/chat/index.tsx"),
+		route("capabilities", "pages/chat/capabilities.tsx"),
+		route("experiences", "pages/chat/experiences.tsx"),
+		route("experiences/:experienceId/*", "pages/chat/experience.tsx"),
+		route("tools/:toolId", "pages/chat/tool.tsx"),
+	]),
 	route("/work", "pages/work/layout.tsx", [
 		index("pages/work/index.tsx"),
 		route("invitations", "pages/work/invitations.tsx"),
@@ -20,7 +26,7 @@ export default [
 		route(":workspaceId/projects/:projectId/sources", "pages/work/project-sources.tsx"),
 		route(":workspaceId/projects/:projectId/activity", "pages/work/project-activity.tsx"),
 		route(":workspaceId/projects/:projectId/outputs/*", "pages/work/project-outputs.tsx"),
-		route(":workspaceId/projects/:projectId/apps/:appId", "pages/work/project-app.tsx"),
+		route(":workspaceId/projects/:projectId/tools/:toolId", "pages/work/project-tool.tsx"),
 	]),
 	route("/terms", "pages/terms.tsx"),
 	route("/privacy", "pages/privacy.tsx"),

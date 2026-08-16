@@ -1,5 +1,5 @@
 import { Crown, Lock } from "lucide-react";
-import type { DynamicAppCatalogItem as AppListItem } from "@ngriffin_uk/polychat-schemas";
+import type { CapabilityCatalogItem as AppListItem } from "@ngriffin_uk/polychat-schemas";
 import { Card } from "@ngriffin_uk/polychat-component-ui";
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
