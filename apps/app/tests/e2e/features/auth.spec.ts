@@ -54,7 +54,7 @@ test.describe("Authentication experience", () => {
 		});
 
 		test("rejects an invalid magic-link callback", async ({ homePage, page }) => {
-			await homePage.navigate("/auth/verify-magic-link?token=invalid&nonce=invalid");
+			await homePage.navigate("/auth/verify-magic-link?token=invalid");
 			await expect(page.getByText("Verification Failed", { exact: true })).toBeVisible();
 		});
 	});

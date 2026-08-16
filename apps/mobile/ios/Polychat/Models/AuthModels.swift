@@ -43,7 +43,6 @@ public struct MagicLinkRequest: Codable {
 
 public struct MagicLinkVerifyRequest: Codable {
     public let token: String
-    public let nonce: String
 }
 
 public struct MobileAuthExchangeRequest: Codable {

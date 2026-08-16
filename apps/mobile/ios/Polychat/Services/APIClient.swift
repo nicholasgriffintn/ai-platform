@@ -60,11 +60,11 @@ final class APIClient: ObservableObject {
         )
     }
 
-    func verifyMagicLink(token: String, nonce: String) async throws -> SuccessResponse {
+    func verifyMagicLink(token: String) async throws -> SuccessResponse {
         try await send(
             path: "/auth/magic-link/verify",
             method: "POST",
-            body: MagicLinkVerifyRequest(token: token, nonce: nonce)
+            body: MagicLinkVerifyRequest(token: token)
         )
     }
 

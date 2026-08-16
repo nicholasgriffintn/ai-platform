@@ -20,11 +20,9 @@ const VerifyMagicLink = () => {
 	const [error, setError] = useState<string | null>(null);
 
 	const token = searchParams.get("token");
-	const nonce = searchParams.get("nonce");
 
 	const { mutate: verify, isPending } = useMutation({
-		mutationFn: (params: { token: string; nonce: string }) =>
-			authService.verifyMagicLink(params.token, params.nonce),
+		mutationFn: (token: string) => authService.verifyMagicLink(token),
 		onSuccess: async (data) => {
 			if (data.success) {
 				navigate("/");
@@ -39,10 +37,10 @@ const VerifyMagicLink = () => {
 	});
 
 	useEffect(() => {
-		if (token && nonce) {
-			verify({ token, nonce });
-		} else if (!isPending && (typeof token === "undefined" || typeof nonce === "undefined")) {
-			setError("Invalid verification link. Missing required parameters.");
+		if (token) {
+			verify(token);
+		} else {
+			setError("Invalid verification link. Missing required token.");
 		}
 	}, []);
 
@@ -50,7 +48,7 @@ const VerifyMagicLink = () => {
 		<PageShell title="Magic Link Verification" displayNavBar={false}>
 			{error ? (
 				<PageStatus title="Verification Failed" message={error} />
-			) : isPending || !token || !nonce ? (
+			) : isPending || !token ? (
 				<PageStatus
 					icon={<Loader2 size={32} className="animate-spin text-blue-600" />}
 					message="Verifying your login link..."

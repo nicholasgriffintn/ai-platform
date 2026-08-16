@@ -301,14 +301,11 @@ class AuthService {
 		}
 	}
 
-	public async verifyMagicLink(
-		token: string,
-		nonce: string,
-	): Promise<{ success: boolean; error?: string }> {
+	public async verifyMagicLink(token: string): Promise<{ success: boolean; error?: string }> {
 		try {
 			const response = await fetchApi("/auth/magic-link/verify", {
 				method: "POST",
-				body: JSON.stringify({ token, nonce }),
+				body: JSON.stringify({ token }),
 				timeoutMs: 10000,
 			});
 

@@ -281,9 +281,8 @@ final class AuthenticationManager: NSObject, ObservableObject {
 
     private func handleMagicLinkCallback(_ url: URL) async {
         let queryItems = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
-        guard let token = queryItems?.first(where: { $0.name == "token" })?.value,
-              let nonce = queryItems?.first(where: { $0.name == "nonce" })?.value else {
-            error = "Magic link callback was missing required parameters."
+        guard let token = queryItems?.first(where: { $0.name == "token" })?.value else {
+            error = "Magic link callback was missing the required token."
             return
         }
 
@@ -292,7 +291,7 @@ final class AuthenticationManager: NSObject, ObservableObject {
         statusMessage = nil
 
         do {
-            let response = try await apiClient?.verifyMagicLink(token: token, nonce: nonce)
+            let response = try await apiClient?.verifyMagicLink(token: token)
             if response?.success == true, let sessionToken = try await apiClient?.fetchToken() {
                 try applyToken(sessionToken)
                 _ = await refreshUser()

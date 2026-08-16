@@ -46,7 +46,7 @@ addRoute(app, "post", "/request", {
 
 addRoute(app, "post", "/verify", {
 	tags: ["auth"],
-	summary: "Verify magic link token and nonce, logs user in",
+	summary: "Verify a magic-link token and log the user in",
 	bodySchema: magicLinkVerifySchema,
 	responses: {
 		200: {
@@ -54,22 +54,15 @@ addRoute(app, "post", "/verify", {
 			schema: z.object({ success: z.boolean() }),
 		},
 		400: {
-			description: "Missing or invalid token/nonce in body",
+			description: "Missing or invalid token in body",
 			schema: errorResponseSchema,
 		},
 		401: {
-			description: "Invalid or expired token/nonce",
+			description: "Invalid or expired token",
 			schema: errorResponseSchema,
 		},
 	},
 	handler: async ({ body, raw, serviceContext }) => {
-		if (body.token !== body.nonce) {
-			throw new AssistantError(
-				"Invalid magic-link verification data.",
-				ErrorType.AUTHENTICATION_ERROR,
-				401,
-			);
-		}
 		const magicLink = createAssistantMagicLinkAuth(serviceContext, async () => {});
 		const result = await magicLink.providers["magic-link"].authenticate({
 			token: body.token,

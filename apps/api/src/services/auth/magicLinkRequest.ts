@@ -20,9 +20,8 @@ export async function requestAssistantMagicLink({
 		const link = mobileRedirectUri
 			? buildMobileRedirectUri(mobileRedirectUri, {
 					token: delivery.token,
-					nonce: delivery.token,
 				})
-			: `${context.env.APP_BASE_URL}/auth/verify-magic-link?token=${encodeURIComponent(delivery.token)}&nonce=${encodeURIComponent(delivery.token)}`;
+			: `${context.env.APP_BASE_URL}/auth/verify-magic-link?token=${encodeURIComponent(delivery.token)}`;
 		await sendMagicLinkEmail(context.env, delivery.email, link);
 	});
 	await magicLink.providers["magic-link"].request(email);
