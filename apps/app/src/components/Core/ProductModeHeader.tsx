@@ -47,7 +47,7 @@ export function ProductModeHeader({
 		<header
 			ref={headerRef}
 			data-content-scrolled={isScrolled || undefined}
-			className="relative z-20 flex h-[53px] shrink-0 items-center gap-1 bg-off-white px-4 dark:bg-zinc-900 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-2"
+			className="relative z-20 flex h-[53px] shrink-0 items-center gap-1 bg-off-white px-2 dark:bg-zinc-900 min-[769px]:px-4 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-2"
 		>
 			<div className="flex min-w-0 flex-1 items-center gap-1 sm:justify-self-stretch sm:gap-2">
 				{showSidebarToggle && !sidebarVisible && (
