@@ -1,9 +1,6 @@
 import type { AssistantRecipe, RecipeCategory, RecipeKind } from "@ngriffin_uk/polychat-schemas";
 import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
-import {
-	isConnectorOperationSupported,
-	isConnectorOperationWrite,
-} from "~/lib/providers/capabilities/connectors";
+import { isConnectorOperationSupported } from "~/lib/providers/capabilities/connectors";
 import { configuredComposioToolkits } from "~/lib/providers/capabilities/connectors/composio/configured-toolkit-manifest";
 import { mailCalendarRecipes } from "./catalog/mail-calendar";
 import { coreIntegrationRecipes } from "./catalog/core-integrations";
@@ -60,6 +57,18 @@ export const assistantRecipes: AssistantRecipe[] = catalogRecipes.map((recipe) =
 	})),
 }));
 
+export function resolveRecipeId(recipeId: string): string {
+	if (assistantRecipes.some((recipe) => recipe.id === recipeId)) {
+		return recipeId;
+	}
+
+	return recipeId;
+}
+
+export function getRecipeIdAliases(recipeId: string): string[] {
+	return [recipeId];
+}
+
 export function getRecipeCatalogValidationIssues(
 	recipes: readonly AssistantRecipe[] = assistantRecipes,
 ): string[] {
@@ -75,8 +84,6 @@ export function getRecipeCatalogValidationIssues(
 	}
 
 	for (const recipe of recipes) {
-		const hasScheduleTrigger = recipe.triggers.some((trigger) => trigger.type === "schedule");
-
 		for (const integration of recipe.integrations) {
 			const provider = recipeConnectorProviderSchema.safeParse(integration.providerId);
 			if (!provider.success) {
@@ -88,19 +95,17 @@ export function getRecipeCatalogValidationIssues(
 					issues.push(
 						`${recipe.id}:${integration.id} declares unsupported ${provider.data}.${operationId}`,
 					);
-					continue;
-				}
-
-				if (hasScheduleTrigger && isConnectorOperationWrite(provider.data, operationId)) {
-					issues.push(
-						`${recipe.id}:${integration.id} declares scheduled write operation ${provider.data}.${operationId}`,
-					);
 				}
 			}
 		}
 	}
 
 	return issues;
+}
+
+const catalogIssues = getRecipeCatalogValidationIssues();
+if (catalogIssues.length > 0) {
+	throw new Error(`Invalid recipe catalog:\n${catalogIssues.join("\n")}`);
 }
 
 export const recipeFilters: RecipeKind[] = ["automate", "integrate"];

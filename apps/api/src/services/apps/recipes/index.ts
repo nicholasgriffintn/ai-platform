@@ -19,7 +19,13 @@ import { isSupportedCronExpression } from "~/utils/cron";
 import { safeParseJson } from "~/utils/json";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { listRecipeConnectors } from "../connectors";
-import { assistantRecipes, recipeCategories, recipeFilters } from "./catalog";
+import {
+	assistantRecipes,
+	getRecipeIdAliases,
+	recipeCategories,
+	recipeFilters,
+	resolveRecipeId,
+} from "./catalog";
 import { createRecipeCapabilityDescriptor } from "./capabilities";
 import { matchInstalledRecipe } from "./matching";
 import {
@@ -68,7 +74,8 @@ interface StoredRecipeInstallationData {
 type RecipeInstallationRecord = TemplateRecord;
 
 export function getRecipeById(id: string) {
-	return assistantRecipes.find((recipe) => recipe.id === id);
+	const resolvedId = resolveRecipeId(id);
+	return assistantRecipes.find((recipe) => recipe.id === resolvedId);
 }
 
 async function requireEnabledProjectRecipe(
@@ -80,7 +87,8 @@ async function requireEnabledProjectRecipe(
 	const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
 	if (
 		!capabilities.some(
-			(capability) => capability.kind === "recipe" && capability.capability_id === recipeId,
+			(capability) =>
+				capability.kind === "recipe" && resolveRecipeId(capability.capability_id) === recipeId,
 		)
 	) {
 		throw new AssistantError(
@@ -159,8 +167,22 @@ function enrichRecipe(
 }
 
 function getUnavailableConnections(connections: AssistantRecipeConnection[]) {
+	const groupsWithAvailableOption = new Set(
+		connections
+			.filter(
+				(connection) =>
+					connection.connectionGroup &&
+					connection.status !== "unconfigured" &&
+					connection.status !== "unknown",
+			)
+			.map((connection) => connection.connectionGroup),
+	);
+
 	return connections.filter(
-		(connection) => connection.requiresConnection && connection.status === "unconfigured",
+		(connection) =>
+			connection.requiresConnection &&
+			connection.status === "unconfigured" &&
+			(!connection.connectionGroup || !groupsWithAvailableOption.has(connection.connectionGroup)),
 	);
 }
 
@@ -332,7 +354,7 @@ export function parseRecipeInstallationRecord(
 
 	return {
 		id: record.id,
-		recipeId: parsed.recipeId,
+		recipeId: resolveRecipeId(parsed.recipeId),
 		userId: record.created_by_user_id,
 		projectId: record.project_id,
 		status: parsed.status ?? "active",
@@ -367,6 +389,33 @@ async function getRecipeInstallationRecord(params: {
 	return { record, data };
 }
 
+async function findRecipeInstallationRecord(params: {
+	context: ServiceContext;
+	userId: number;
+	recipeId: string;
+	projectId?: string;
+}): Promise<RecipeInstallationRecord | null> {
+	for (const recipeId of getRecipeIdAliases(params.recipeId)) {
+		const record = params.projectId
+			? await params.context.repositories.templates.getProjectTemplate(
+					params.userId,
+					params.projectId,
+					"recipe",
+					recipeId,
+				)
+			: await params.context.repositories.templates.getPersonalTemplate(
+					params.userId,
+					"recipe",
+					recipeId,
+				);
+		if (record) {
+			return record;
+		}
+	}
+
+	return null;
+}
+
 async function upsertRecipeInstallation(params: {
 	context: ServiceContext;
 	userId: number;
@@ -376,18 +425,12 @@ async function upsertRecipeInstallation(params: {
 	configuration?: RecipeConfiguration;
 }): Promise<RecipeInstallation> {
 	params.context.ensureDatabase();
-	const existing = params.projectId
-		? await params.context.repositories.templates.getProjectTemplate(
-				params.userId,
-				params.projectId,
-				"recipe",
-				params.recipe.id,
-			)
-		: await params.context.repositories.templates.getPersonalTemplate(
-				params.userId,
-				"recipe",
-				params.recipe.id,
-			);
+	const existing = await findRecipeInstallationRecord({
+		context: params.context,
+		userId: params.userId,
+		recipeId: params.recipe.id,
+		projectId: params.projectId,
+	});
 	const existingData = existing ? parseStoredRecipeInstallationData(existing) : null;
 	const now = new Date().toISOString();
 	const triggers =
@@ -426,6 +469,7 @@ async function upsertRecipeInstallation(params: {
 	if (existing) {
 		const updated = await params.context.repositories.templates.updateTemplate(existing.id, {
 			name: params.recipe.title,
+			capabilityId: params.recipe.id,
 			configuration: data,
 			status: data.status,
 		});
@@ -461,19 +505,7 @@ async function getRecipeInstallation(params: {
 	recipeId: string;
 	projectId?: string;
 }): Promise<RecipeInstallation | null> {
-	const record = params.projectId
-		? await params.context.repositories.templates.getProjectTemplate(
-				params.userId,
-				params.projectId,
-				"recipe",
-				params.recipeId,
-			)
-		: await params.context.repositories.templates.getPersonalTemplate(
-				params.userId,
-				"recipe",
-				params.recipeId,
-			);
-
+	const record = await findRecipeInstallationRecord(params);
 	return record ? parseRecipeInstallationRecord(record) : null;
 }
 

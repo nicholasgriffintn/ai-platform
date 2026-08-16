@@ -19,6 +19,15 @@ export type CatalogRecipe = Omit<AssistantRecipe, "configurationFields"> & {
 	configurationFields?: CatalogRecipeConfigurationField[];
 };
 
+export const preferredConnectorsField: CatalogRecipeConfigurationField = {
+	key: "preferredConnectors",
+	label: "Preferred connected services",
+	type: "string_list",
+	placeholder: "Leave empty to use whichever services are connected",
+	description:
+		"Which connected services to use when more than one alternative is connected. Saved automatically the first time you choose in chat.",
+};
+
 export const reviewInstructionsField: CatalogRecipeConfigurationField = {
 	key: "instructions",
 	label: "Review instructions",
@@ -32,12 +41,4 @@ export const locationField: CatalogRecipeConfigurationField = {
 	type: "text",
 	required: true,
 	placeholder: "City, postcode, or coordinates",
-};
-
-export const notionTargetField: CatalogRecipeConfigurationField = {
-	key: "notionTarget",
-	label: "Notion target",
-	type: "text",
-	required: true,
-	placeholder: "Page, database, or workspace area",
 };

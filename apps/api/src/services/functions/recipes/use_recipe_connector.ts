@@ -61,20 +61,27 @@ function buildConnectorToolError(params: {
 	};
 }
 
+const PROMPT_ONLY_CONFIGURATION_KEYS = new Set(["preferredConnectors"]);
+
 function mergeRecipeConfigurationIntoParams(
 	params: unknown,
 	configuration: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
-	if (!configuration) {
+	const parameterConfiguration = configuration
+		? Object.fromEntries(
+				Object.entries(configuration).filter(([key]) => !PROMPT_ONLY_CONFIGURATION_KEYS.has(key)),
+			)
+		: undefined;
+	if (!parameterConfiguration) {
 		return isRecord(params) ? params : undefined;
 	}
 
 	if (!isRecord(params)) {
-		return { ...configuration };
+		return { ...parameterConfiguration };
 	}
 
 	return {
-		...configuration,
+		...parameterConfiguration,
 		...params,
 	};
 }

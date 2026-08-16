@@ -26,8 +26,20 @@ export function getRecipeIntegrationStatusLabel(status: string | undefined) {
 }
 
 export function getBlockingRecipeIntegrations(recipe: AssistantRecipe) {
+	const connectedGroups = new Set(
+		recipe.integrations
+			.filter(
+				(integration) =>
+					integration.connectionGroup && integration.connectionStatus === "connected",
+			)
+			.map((integration) => integration.connectionGroup),
+	);
+
 	return recipe.integrations.filter(
-		(integration) => integration.requiresConnection && integration.connectionStatus !== "connected",
+		(integration) =>
+			integration.requiresConnection &&
+			integration.connectionStatus !== "connected" &&
+			(!integration.connectionGroup || !connectedGroups.has(integration.connectionGroup)),
 	);
 }
 

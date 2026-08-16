@@ -1,5 +1,5 @@
 import type { CatalogRecipe } from "./shared";
-import { RECIPE_CONNECTOR_TOOL, reviewInstructionsField } from "./shared";
+import { RECIPE_CONNECTOR_TOOL, preferredConnectorsField, reviewInstructionsField } from "./shared";
 
 export const mailCalendarRecipes: CatalogRecipe[] = [
 	{
@@ -7,7 +7,7 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 		title: "Morning Briefing",
 		summary: "Summarise your calendar, priority emails, and likely focus areas.",
 		description:
-			"Uses connected email and calendar accounts to prepare a daily briefing that can be started manually, scheduled, or requested in chat.",
+			"Uses whichever connected mail and calendar accounts you have to prepare a daily briefing that can be started manually, scheduled, or requested in chat.",
 		kind: "automate",
 		category: "Productivity",
 		featured: true,
@@ -19,6 +19,7 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Reads relevant recent messages when Gmail is connected.",
 				requiresConnection: true,
+				connectionGroup: "sources",
 				operationIds: ["GMAIL_FETCH_EMAILS"],
 			},
 			{
@@ -28,6 +29,7 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				description:
 					"Reads relevant recent mail and upcoming calendar events when Outlook is connected.",
 				requiresConnection: true,
+				connectionGroup: "sources",
 				operationIds: ["OUTLOOK_SEARCH_MESSAGES", "OUTLOOK_GET_CALENDAR_VIEW"],
 			},
 			{
@@ -36,6 +38,7 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				name: "Google Calendar",
 				description: "Reads upcoming calendar events when Google Calendar is connected.",
 				requiresConnection: true,
+				connectionGroup: "sources",
 				operationIds: ["GOOGLECALENDAR_EVENTS_LIST"],
 			},
 		],
@@ -52,25 +55,14 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 			},
 		],
 		actions: [
-			"Read upcoming calendar events",
-			"Search for recent priority emails",
+			"Read upcoming calendar events from connected calendars",
+			"Search connected inboxes for recent priority emails",
 			"Summarise blockers, commitments, and suggested next steps",
 		],
 		setupPrompt:
-			"Set up the Morning Briefing recipe. Confirm which connected mail and calendar providers I want to use, ask what time the briefing should run if I want a schedule, then prepare a concise briefing. Ask before marking, sending, or changing anything externally.",
+			"Set up the Morning Briefing recipe. Use every connected mail and calendar source unless I say otherwise, ask what time the briefing should run if I want a schedule, then prepare a concise briefing. Ask before marking, sending, or changing anything externally.",
 		configurationFields: [
-			{
-				key: "mailProviders",
-				label: "Mail providers",
-				type: "string_list",
-				placeholder: "Gmail, Outlook",
-			},
-			{
-				key: "calendarProvider",
-				label: "Calendar provider",
-				type: "text",
-				placeholder: "Google Calendar or Outlook",
-			},
+			preferredConnectorsField,
 			{
 				key: "briefingFocus",
 				label: "Briefing focus",
@@ -84,7 +76,7 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 		title: "Add Deadlines to Calendar",
 		summary: "Turn deadline emails into reviewed calendar events.",
 		description:
-			"Searches connected mail for deadline-style messages and creates calendar events from chat only after the user confirms the proposed event details.",
+			"Searches connected mail for deadline-style messages and creates events in your connected calendar only after the user confirms the proposed event details.",
 		kind: "automate",
 		category: "Students",
 		featured: true,
@@ -96,16 +88,17 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches Gmail for deadline messages.",
 				requiresConnection: true,
+				connectionGroup: "mail",
 				operationIds: ["GMAIL_FETCH_EMAILS"],
 			},
 			{
-				id: "outlook",
+				id: "outlook-mail",
 				providerId: "outlook",
-				name: "Outlook",
-				description:
-					"Searches Outlook mail for deadline messages and creates reviewed Outlook events.",
+				name: "Outlook Mail",
+				description: "Searches Outlook mail for deadline messages.",
 				requiresConnection: true,
-				operationIds: ["OUTLOOK_SEARCH_MESSAGES", "OUTLOOK_CALENDAR_CREATE_EVENT"],
+				connectionGroup: "mail",
+				operationIds: ["OUTLOOK_SEARCH_MESSAGES"],
 			},
 			{
 				id: "googlecalendar",
@@ -113,7 +106,17 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				name: "Google Calendar",
 				description: "Creates reviewed deadline events.",
 				requiresConnection: true,
+				connectionGroup: "calendar",
 				operationIds: ["GOOGLECALENDAR_CREATE_EVENT"],
+			},
+			{
+				id: "outlook-calendar",
+				providerId: "outlook",
+				name: "Outlook Calendar",
+				description: "Creates reviewed deadline events in Outlook.",
+				requiresConnection: true,
+				connectionGroup: "calendar",
+				operationIds: ["OUTLOOK_CALENDAR_CREATE_EVENT"],
 			},
 		],
 		triggers: [
@@ -129,19 +132,13 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 			"Create calendar events after confirmation",
 		],
 		setupPrompt:
-			"Set up the Add Deadlines to Calendar recipe. Ask which inboxes and calendars to use, search for deadline emails, propose events with confidence and source links, and create events only after I approve each one.",
+			"Set up the Add Deadlines to Calendar recipe. Use the connected mail and calendar services, search for deadline emails, propose events with confidence and source links, and create events only after I approve each one.",
 		configurationFields: [
-			{
-				key: "inboxes",
-				label: "Inboxes to scan",
-				type: "string_list",
-				placeholder: "School Gmail, Outlook",
-			},
+			preferredConnectorsField,
 			{
 				key: "calendarTarget",
 				label: "Calendar target",
 				type: "text",
-				required: true,
 				placeholder: "Primary calendar, Study calendar",
 			},
 			{
@@ -158,7 +155,7 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 		title: "Add Flights to Calendar",
 		summary: "Turn flight itinerary emails into reviewed calendar events.",
 		description:
-			"Searches connected mail for flight confirmations, extracts itinerary details, and creates reviewed calendar events after confirmation.",
+			"Searches connected mail for flight confirmations, extracts itinerary details, and creates reviewed events in your connected calendar after confirmation.",
 		kind: "automate",
 		category: "Travel",
 		featured: true,
@@ -170,16 +167,17 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches Gmail for flight confirmation and itinerary messages.",
 				requiresConnection: true,
+				connectionGroup: "mail",
 				operationIds: ["GMAIL_FETCH_EMAILS"],
 			},
 			{
-				id: "outlook",
+				id: "outlook-mail",
 				providerId: "outlook",
-				name: "Outlook",
-				description:
-					"Searches Outlook mail for flight itineraries and creates reviewed Outlook calendar events.",
+				name: "Outlook Mail",
+				description: "Searches Outlook mail for flight itineraries.",
 				requiresConnection: true,
-				operationIds: ["OUTLOOK_SEARCH_MESSAGES", "OUTLOOK_CALENDAR_CREATE_EVENT"],
+				connectionGroup: "mail",
+				operationIds: ["OUTLOOK_SEARCH_MESSAGES"],
 			},
 			{
 				id: "googlecalendar",
@@ -187,7 +185,17 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				name: "Google Calendar",
 				description: "Creates reviewed flight calendar events.",
 				requiresConnection: true,
+				connectionGroup: "calendar",
 				operationIds: ["GOOGLECALENDAR_CREATE_EVENT"],
+			},
+			{
+				id: "outlook-calendar",
+				providerId: "outlook",
+				name: "Outlook Calendar",
+				description: "Creates reviewed flight calendar events in Outlook.",
+				requiresConnection: true,
+				connectionGroup: "calendar",
+				operationIds: ["OUTLOOK_CALENDAR_CREATE_EVENT"],
 			},
 		],
 		triggers: [
@@ -203,19 +211,13 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 			"Create calendar events only after confirming each proposed event",
 		],
 		setupPrompt:
-			"Set up the Add Flights to Calendar recipe. Ask which inboxes and calendar to use, search for flight confirmations and itineraries, extract flight numbers, airports, local departure and arrival times, confirmation codes, and source links, then create calendar events only after I approve each event. Do not check in, contact airlines, or change bookings.",
+			"Set up the Add Flights to Calendar recipe. Use the connected mail and calendar services, search for flight confirmations and itineraries, extract flight numbers, airports, local departure and arrival times, confirmation codes, and source links, then create calendar events only after I approve each event. Do not check in, contact airlines, or change bookings.",
 		configurationFields: [
-			{
-				key: "inboxes",
-				label: "Inboxes to scan",
-				type: "string_list",
-				placeholder: "Travel Gmail, Outlook",
-			},
+			preferredConnectorsField,
 			{
 				key: "calendarTarget",
 				label: "Calendar target",
 				type: "text",
-				required: true,
 				placeholder: "Travel calendar, primary calendar",
 			},
 			{
@@ -242,16 +244,18 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				id: "gmail",
 				providerId: "gmail",
 				name: "Gmail",
-				description: "Searches sent Gmail conversations.",
+				description: "Searches sent Gmail conversations and creates draft follow-ups.",
 				requiresConnection: true,
+				connectionGroup: "mail",
 				operationIds: ["GMAIL_FETCH_EMAILS", "GMAIL_CREATE_EMAIL_DRAFT"],
 			},
 			{
 				id: "outlook",
 				providerId: "outlook",
 				name: "Outlook",
-				description: "Searches sent Outlook conversations.",
+				description: "Searches sent Outlook conversations and creates draft follow-ups.",
 				requiresConnection: true,
+				connectionGroup: "mail",
 				operationIds: ["OUTLOOK_SEARCH_MESSAGES", "OUTLOOK_CREATE_DRAFT"],
 			},
 		],
@@ -268,15 +272,9 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 			"Create draft follow-ups for review",
 		],
 		setupPrompt:
-			"Set up the Follow-up Reminders recipe. Ask which mail provider to use, find likely unreplied sent messages, explain why each candidate matters, and create follow-up drafts only when I confirm.",
+			"Set up the Follow-up Reminders recipe. Use the connected mail services, find likely unreplied sent messages, explain why each candidate matters, and create follow-up drafts only when I confirm.",
 		configurationFields: [
-			{
-				key: "mailProvider",
-				label: "Mail provider",
-				type: "text",
-				required: true,
-				placeholder: "Gmail or Outlook",
-			},
+			preferredConnectorsField,
 			{
 				key: "followUpAfterDays",
 				label: "Follow up after days",
@@ -295,9 +293,9 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 	{
 		id: "subscription-watchdog",
 		title: "Subscription Watchdog",
-		summary: "Watch mail for renewals, trials, and subscription charges.",
+		summary: "Track subscriptions, renewals, trials, and billing across connected mail.",
 		description:
-			"Uses connected mail search to identify upcoming renewals or trials and produce a reviewable spending summary.",
+			"Uses connected mail search to identify active subscriptions, upcoming renewals, trial expirations, and price changes, then produces a reviewable spending summary.",
 		kind: "automate",
 		category: "Finance",
 		featured: false,
@@ -307,16 +305,18 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 				id: "gmail",
 				providerId: "gmail",
 				name: "Gmail",
-				description: "Searches Gmail for renewal and trial messages.",
+				description: "Searches Gmail for subscription, renewal, trial, and billing messages.",
 				requiresConnection: true,
+				connectionGroup: "mail",
 				operationIds: ["GMAIL_FETCH_EMAILS"],
 			},
 			{
 				id: "outlook",
 				providerId: "outlook",
 				name: "Outlook",
-				description: "Searches Outlook for renewal and trial messages.",
+				description: "Searches Outlook for subscription, renewal, trial, and billing messages.",
 				requiresConnection: true,
+				connectionGroup: "mail",
 				operationIds: ["OUTLOOK_SEARCH_MESSAGES"],
 			},
 		],
@@ -324,34 +324,34 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
 			{
 				type: "message",
 				label: "Ask for an audit",
-				description: "Ask Polychat to review subscription messages.",
+				description: "Ask Polychat to review subscription and billing messages.",
 			},
 			{
 				type: "schedule",
 				label: "Monthly audit",
-				description: "Run a recurring subscription audit.",
+				description: "Run a recurring subscription spending audit.",
 			},
 		],
 		actions: [
-			"Search for renewal and trial language",
-			"Group likely subscriptions and dates",
-			"Summarise cancellation links or next actions",
+			"Search for renewal, receipt, trial, and billing language",
+			"Group likely subscriptions with costs and billing dates",
+			"Flag duplicates, price increases, expiring trials, and cancellation next steps",
 		],
 		setupPrompt:
-			"Set up the Subscription Watchdog recipe. Ask which inbox to scan, search for subscriptions, renewals, and trials, then summarise likely charges and cancellation next steps. Do not send emails or change accounts without approval.",
+			"Set up the Subscription Watchdog recipe. Use the connected mail services, search for subscriptions, renewals, trials, and receipts, then summarise likely charges, price changes, and cancellation next steps with uncertainties flagged. Do not cancel, send mail, or change accounts without explicit approval.",
 		configurationFields: [
-			{
-				key: "mailProvider",
-				label: "Mail provider",
-				type: "text",
-				required: true,
-				placeholder: "Gmail or Outlook",
-			},
+			preferredConnectorsField,
 			{
 				key: "reviewWindow",
 				label: "Review window",
 				type: "text",
 				placeholder: "Next 30 days, this month, last 90 days",
+			},
+			{
+				key: "currency",
+				label: "Currency",
+				type: "text",
+				placeholder: "GBP, USD, EUR",
 			},
 			{
 				key: "watchCategories",

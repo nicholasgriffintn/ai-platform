@@ -12,6 +12,36 @@ import { getRecipeIntegrationStatusLabel } from "~/lib/recipes";
 
 type RecipeIntegration = AssistantRecipe["integrations"][number];
 
+function getIntegrationStatusDetail(
+	integration: RecipeIntegration,
+	integrations: RecipeIntegration[],
+) {
+	if (integration.connectionStatus === "connected") {
+		return null;
+	}
+	if (!integration.requiresConnection) {
+		return "Optional — adds extra context when connected";
+	}
+	if (!integration.connectionGroup) {
+		return null;
+	}
+
+	const alternatives = integrations.filter(
+		(candidate) =>
+			candidate.id !== integration.id && candidate.connectionGroup === integration.connectionGroup,
+	);
+	if (alternatives.length === 0) {
+		return null;
+	}
+
+	const connectedAlternative = alternatives.find(
+		(candidate) => candidate.connectionStatus === "connected",
+	);
+	return connectedAlternative
+		? `Optional — ${connectedAlternative.name} already covers this`
+		: "Connect this or an alternative below";
+}
+
 export function RecipeConnectionsDialog({
 	integrations,
 	isConnecting,
@@ -31,11 +61,14 @@ export function RecipeConnectionsDialog({
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
 				<DialogTitle>{recipeTitle} connections</DialogTitle>
-				<DialogDescription>Manage this recipe’s connections.</DialogDescription>
+				<DialogDescription>
+					Manage this recipe’s connections. Services listed as alternatives only need one connected.
+				</DialogDescription>
 				<div className="mt-4 divide-y divide-zinc-200 rounded-xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
 					{integrations.map((integration) => {
 						const isConnected = integration.connectionStatus === "connected";
 						const isUnavailable = integration.connectionStatus === "unconfigured";
+						const statusDetail = getIntegrationStatusDetail(integration, integrations);
 						return (
 							<div
 								key={integration.id}
@@ -46,7 +79,7 @@ export function RecipeConnectionsDialog({
 										{integration.name}
 									</p>
 									<p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-										{getRecipeIntegrationStatusLabel(integration.connectionStatus)}
+										{statusDetail ?? getRecipeIntegrationStatusLabel(integration.connectionStatus)}
 									</p>
 								</div>
 								{isConnected ? (

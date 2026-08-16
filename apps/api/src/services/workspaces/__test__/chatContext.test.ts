@@ -179,15 +179,19 @@ describe("project chat context", () => {
 
 	it("limits direct connector execution to providers and operations from project recipes", () => {
 		const scope = resolveProjectRecipeConnectorScope([
-			{ kind: "recipe", capability_id: "gmail" },
+			{ kind: "recipe", capability_id: "email-assistant" },
 			{ kind: "recipe", capability_id: "unknown-recipe" },
 			{ kind: "tool", capability_id: "web_search" },
 		]);
 
-		expect(scope.providers).toEqual(["gmail"]);
+		expect(scope.providers).toEqual(["gmail", "outlook"]);
 		expect(scope.operationsByProvider.gmail).toEqual([
 			"GMAIL_FETCH_EMAILS",
 			"GMAIL_CREATE_EMAIL_DRAFT",
+		]);
+		expect(scope.operationsByProvider.outlook).toEqual([
+			"OUTLOOK_SEARCH_MESSAGES",
+			"OUTLOOK_CREATE_DRAFT",
 		]);
 	});
 

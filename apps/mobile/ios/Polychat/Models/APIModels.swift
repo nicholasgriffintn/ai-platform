@@ -294,7 +294,6 @@ public struct AssistantRecipe: Codable, Identifiable, Equatable {
     public let kind: String
     public let category: String
     public let featured: Bool
-    public let estimatedSetupMinutes: Int
     public let integrations: [AssistantRecipeIntegration]
     public let triggers: [AssistantRecipeTrigger]
     public let actions: [String]
@@ -309,6 +308,7 @@ public struct AssistantRecipeIntegration: Codable, Identifiable, Equatable {
     public let name: String
     public let description: String
     public let requiresConnection: Bool
+    public let connectionGroup: String?
     public let operationIds: [String]?
     public let connectionStatus: String?
     public let setupUrl: String?

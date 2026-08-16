@@ -45,8 +45,8 @@ describe("executeRecipeInvocationChat", () => {
 		},
 	} as any;
 	const invocation: RecipeInvocationResponse = {
-		recipeId: "notion-action-log",
-		recipeTitle: "Notion Action Log",
+		recipeId: "notes-assistant",
+		recipeTitle: "Notes Assistant",
 		installationId: "installation-1",
 		channel: "scheduled",
 		status: "ready",
@@ -103,7 +103,7 @@ describe("executeRecipeInvocationChat", () => {
 						minToolCalls: 1,
 					},
 					recipe: {
-						id: "notion-action-log",
+						id: "notes-assistant",
 						installationId: "installation-1",
 						channel: "scheduled",
 						allowedConnectorProviders: ["notion"],
@@ -136,7 +136,7 @@ describe("executeRecipeInvocationChat", () => {
 
 		expect(result.conversationId).toBe("recipe_generated-id");
 		expect(updateConversation).toHaveBeenCalledWith("recipe_generated-id", {
-			title: "Recipe: Notion Action Log",
+			title: "Recipe: Notes Assistant",
 		});
 	});
 
@@ -152,7 +152,7 @@ describe("executeRecipeInvocationChat", () => {
 
 		expect(result.conversationId).toBe("recipe_task-1");
 		expect(updateConversation).toHaveBeenCalledWith("recipe_task-1", {
-			title: "Recipe: Notion Action Log",
+			title: "Recipe: Notes Assistant",
 		});
 	});
 

@@ -218,7 +218,6 @@ struct ModelTests {
                 "kind": "automate",
                 "category": "Productivity",
                 "featured": false,
-                "estimatedSetupMinutes": 2,
                 "integrations": [],
                 "triggers": [],
                 "actions": [],

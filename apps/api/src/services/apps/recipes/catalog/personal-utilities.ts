@@ -7,6 +7,7 @@ import {
 	PASHI_DISCOVERY_TOOL,
 	PASHI_EXECUTION_TOOL,
 	QR_TOOL,
+	preferredConnectorsField,
 	reviewInstructionsField,
 	locationField,
 } from "./shared";
@@ -29,6 +30,7 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches Gmail for birthday context when connected.",
 				requiresConnection: true,
+				connectionGroup: "sources",
 				operationIds: ["GMAIL_FETCH_EMAILS"],
 			},
 			{
@@ -38,6 +40,7 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 				description:
 					"Searches Outlook mail and calendar events for birthday context when connected.",
 				requiresConnection: true,
+				connectionGroup: "sources",
 				operationIds: ["OUTLOOK_SEARCH_MESSAGES", "OUTLOOK_GET_CALENDAR_VIEW"],
 			},
 			{
@@ -46,6 +49,7 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 				name: "Google Calendar",
 				description: "Reads upcoming birthday events when connected.",
 				requiresConnection: true,
+				connectionGroup: "sources",
 				operationIds: ["GOOGLECALENDAR_EVENTS_LIST"],
 			},
 		],
@@ -67,8 +71,9 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 			"Suggest practical gift ideas without purchasing anything",
 		],
 		setupPrompt:
-			"Set up the Birthday Gift Ideas recipe. Ask which mail and calendar sources to use, how far ahead to scan, and any gift budget or categories to avoid. Use web search only for gift research, do not purchase anything, and ask before sending messages or changing calendars.",
+			"Set up the Birthday Gift Ideas recipe. Use the connected mail and calendar sources, ask how far ahead to scan and any gift budget or categories to avoid. Use web search only for gift research, do not purchase anything, and ask before sending messages or changing calendars.",
 		configurationFields: [
+			preferredConnectorsField,
 			{
 				key: "scanWindow",
 				label: "Scan window",
@@ -82,75 +87,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 				placeholder: "Under GBP 50, handmade ideas, no budget",
 			},
 			reviewInstructionsField,
-		],
-	},
-	{
-		id: "monthly-subscription-audit",
-		title: "Monthly Subscription Audit",
-		summary: "Report active subscriptions, costs, renewals, and trial expirations.",
-		description:
-			"Uses connected mail to find subscription and billing messages, then creates a reviewable monthly spending report.",
-		kind: "automate",
-		category: "Finance",
-		featured: false,
-		enabledTools: [RECIPE_CONNECTOR_TOOL],
-		integrations: [
-			{
-				id: "gmail",
-				providerId: "gmail",
-				name: "Gmail",
-				description: "Searches Gmail for subscription and billing messages.",
-				requiresConnection: true,
-				operationIds: ["GMAIL_FETCH_EMAILS"],
-			},
-			{
-				id: "outlook",
-				providerId: "outlook",
-				name: "Outlook",
-				description: "Searches Outlook for subscription and billing messages.",
-				requiresConnection: true,
-				operationIds: ["OUTLOOK_SEARCH_MESSAGES"],
-			},
-		],
-		triggers: [
-			{
-				type: "schedule",
-				label: "Monthly audit",
-				description: "Run a recurring subscription spending audit.",
-			},
-			{
-				type: "message",
-				label: "Ask for an audit",
-				description: "Ask Polychat to review subscription messages now.",
-			},
-		],
-		actions: [
-			"Search for renewal, receipt, trial, and billing language",
-			"Group likely subscriptions and billing dates",
-			"Flag duplicates, price increases, and possible cancellations",
-		],
-		setupPrompt:
-			"Set up the Monthly Subscription Audit recipe. Ask which inbox to scan, the review window, and whether to include trial, receipt, and renewal messages. Summarise likely subscriptions, costs, dates, and uncertainties. Do not cancel, send mail, or change accounts without explicit approval.",
-		configurationFields: [
-			{
-				key: "mailProvider",
-				label: "Mail provider",
-				type: "text",
-				required: true,
-				placeholder: "Gmail or Outlook",
-			},
-			{
-				key: "reviewWindow",
-				label: "Review window",
-				type: "text",
-				placeholder: "This month, last 90 days, next 30 days",
-			},
-			{
-				key: "currency",
-				label: "Currency",
-				type: "text",
-				placeholder: "GBP, USD, EUR",
-			},
 		],
 	},
 	{
@@ -170,6 +106,7 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches newsletters and reading-related Gmail messages.",
 				requiresConnection: true,
+				connectionGroup: "mail",
 				operationIds: ["GMAIL_FETCH_EMAILS"],
 			},
 			{
@@ -178,6 +115,7 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 				name: "Outlook",
 				description: "Searches newsletters and reading-related Outlook messages.",
 				requiresConnection: true,
+				connectionGroup: "mail",
 				operationIds: ["OUTLOOK_SEARCH_MESSAGES"],
 			},
 		],
@@ -194,8 +132,9 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 			"Return a concise shortlist with reasons",
 		],
 		setupPrompt:
-			"Set up the Weekly Reading Suggestion recipe. Ask which inbox or topics to use, preferred length and format, and any sources to avoid. Use mail context and web search to suggest reading, with links and short reasons. Do not subscribe, buy, or send anything.",
+			"Set up the Weekly Reading Suggestion recipe. Use the connected mail services for newsletter context, ask which topics to focus on, preferred length and format, and any sources to avoid. Use mail context and web search to suggest reading, with links and short reasons. Do not subscribe, buy, or send anything.",
 		configurationFields: [
+			preferredConnectorsField,
 			{
 				key: "topics",
 				label: "Topics",
@@ -383,11 +322,11 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		],
 	},
 	{
-		id: "chonky-cat",
-		title: "Chonky Cat",
-		summary: "Generate a playful candid cat image from a short text request.",
+		id: "image-studio",
+		title: "Image Studio",
+		summary: "Generate images from a short text request in chat.",
 		description:
-			"Uses Polychat image generation to create a photorealistic candid cat image for chat or SMS delivery.",
+			"Uses Polychat image generation to create images from described scenes, styles, and subjects for chat or SMS delivery.",
 		kind: "integrate",
 		category: "Home",
 		featured: false,
@@ -396,29 +335,29 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		triggers: [
 			{
 				type: "message",
-				label: "Ask for a cat image",
-				description: "Ask Polychat to generate a candid cat image.",
+				label: "Ask for an image",
+				description: "Describe the image you want Polychat to generate.",
 			},
 		],
 		actions: [
-			"Confirm any style or scene details",
-			"Generate a playful cat image",
-			"Return the image without claiming it is a real pet photo",
+			"Confirm the subject, style, and scene details",
+			"Generate the requested image",
+			"Return the image without claiming it is a real photo",
 		],
 		setupPrompt:
-			"Set up the Chonky Cat recipe. Ask for any scene, pose, or style preference, then use image generation to create a playful candid cat image. Keep it clearly synthetic and do not imply the generated image is a real pet photo.",
+			"Set up the Image Studio recipe. Ask what I want to generate and any style, scene, or format preferences, then use image generation to create it. Keep results clearly synthetic, do not imply a generated image is a real photo, and do not generate images of real people without my explicit description and confirmation.",
 		configurationFields: [
 			{
-				key: "catStyle",
-				label: "Cat style",
+				key: "defaultStyle",
+				label: "Default style",
 				type: "text",
-				placeholder: "Photorealistic phone photo, cosy, funny, dramatic",
+				placeholder: "Photorealistic, illustration, watercolour, minimal",
 			},
 			{
 				key: "imageNotes",
 				label: "Image notes",
 				type: "textarea",
-				placeholder: "Scene ideas, colours, or details to avoid",
+				placeholder: "Recurring subjects, colours, or details to avoid",
 			},
 		],
 	},
@@ -591,12 +530,46 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 		id: "weekly-productivity-check-in",
 		title: "Weekly Productivity Check-in",
 		summary: "Review wins, blockers, and priorities at the end of the week.",
-		description: "Uses scheduled recipe prompts to help reflect on the week and plan the next one.",
+		description:
+			"Uses scheduled recipe prompts to reflect on the week and plan the next one, enriched with connected calendar and task context when available.",
 		kind: "automate",
 		category: "Productivity",
 		featured: false,
-		enabledTools: [],
-		integrations: [],
+		enabledTools: [RECIPE_CONNECTOR_TOOL],
+		integrations: [
+			{
+				id: "googlecalendar",
+				providerId: "googlecalendar",
+				name: "Google Calendar",
+				description: "Reads the past and coming week's events for reflection context.",
+				requiresConnection: false,
+				operationIds: ["GOOGLECALENDAR_EVENTS_LIST"],
+			},
+			{
+				id: "outlook",
+				providerId: "outlook",
+				name: "Outlook",
+				description: "Reads the past and coming week's Outlook events for reflection context.",
+				requiresConnection: false,
+				operationIds: ["OUTLOOK_GET_CALENDAR_VIEW"],
+			},
+			{
+				id: "todoist",
+				providerId: "todoist",
+				name: "Todoist",
+				description: "Reviews open tasks when Todoist is connected.",
+				requiresConnection: false,
+				operationIds: ["TODOIST_GET_ALL_TASKS"],
+			},
+			{
+				id: "ticktick",
+				providerId: "ticktick",
+				name: "TickTick",
+				description: "Reviews open tasks when TickTick is connected.",
+				requiresConnection: false,
+				operationIds: ["TICKTICK_LIST_ALL_TASKS"],
+			},
+		],
 		triggers: [
 			{
 				type: "schedule",
@@ -610,12 +583,12 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 			},
 		],
 		actions: [
+			"Review the week's events and open tasks from connected services when available",
 			"Ask about wins, blockers, and next priorities",
-			"Keep the prompt concise",
-			"Use saved work style preferences",
+			"Use saved work style preferences and keep the prompt concise",
 		],
 		setupPrompt:
-			"Set up the Weekly Productivity Check-in recipe. Ask which day and time to run, what areas to reflect on, and preferred tone. Keep the output concise and ask follow-up questions rather than inventing accomplishments.",
+			"Set up the Weekly Productivity Check-in recipe. Ask which day and time to run, what areas to reflect on, and preferred tone. When calendar or task services are connected, read the week's events and open tasks to ground the reflection; never block on services that are not connected. Keep the output concise and ask follow-up questions rather than inventing accomplishments.",
 		configurationFields: [
 			{
 				key: "focusAreas",
@@ -720,52 +693,6 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 				label: "Forecast time",
 				type: "text",
 				placeholder: "07:00 local time, before school run, before commute",
-			},
-		],
-	},
-	{
-		id: "london-weather-comparison",
-		title: "London Weather Comparison",
-		summary: "Compare your local weather with London each morning.",
-		description:
-			"Uses Polychat's weather tool to compare a saved local forecast against London, United Kingdom with practical context.",
-		kind: "automate",
-		category: "Community",
-		featured: false,
-		enabledTools: [WEATHER_TOOL],
-		integrations: [],
-		triggers: [
-			{
-				type: "message",
-				label: "Ask for comparison",
-				description: "Ask Polychat to compare your weather with London.",
-			},
-			{
-				type: "schedule",
-				label: "Daily comparison",
-				description: "Run a recurring morning weather comparison.",
-			},
-		],
-		actions: [
-			"Look up weather for the configured location",
-			"Look up weather for London, United Kingdom",
-			"Compare temperature, conditions, and practical planning notes",
-		],
-		setupPrompt:
-			"Set up the London Weather Comparison recipe. Ask for my local location or coordinates, preferred forecast time, and tone. Use the weather tool for both my location and London, United Kingdom. Keep the comparison practical and light, avoid safety-critical guarantees, and ask for clarification if my location is ambiguous.",
-		configurationFields: [
-			locationField,
-			{
-				key: "forecastTime",
-				label: "Forecast time",
-				type: "text",
-				placeholder: "07:30 local time, before commute, morning",
-			},
-			{
-				key: "comparisonTone",
-				label: "Comparison tone",
-				type: "text",
-				placeholder: "Dry, playful, concise, practical",
 			},
 		],
 	},

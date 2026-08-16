@@ -1,5 +1,5 @@
 import type { CatalogRecipe } from "./shared";
-import { RECIPE_CONNECTOR_TOOL, reviewInstructionsField } from "./shared";
+import { RECIPE_CONNECTOR_TOOL, preferredConnectorsField, reviewInstructionsField } from "./shared";
 
 export const coreIntegrationRecipes: CatalogRecipe[] = [
 	{
@@ -64,11 +64,11 @@ export const coreIntegrationRecipes: CatalogRecipe[] = [
 		],
 	},
 	{
-		id: "gmail",
-		title: "Gmail",
-		summary: "Search Gmail and create reviewed draft replies from chat.",
+		id: "email-assistant",
+		title: "Email Assistant",
+		summary: "Search connected mail and create reviewed draft replies from chat.",
 		description:
-			"Uses a connected Gmail account to search messages and prepare draft emails for review.",
+			"Uses whichever mail account is connected, Gmail or Outlook, to search messages and prepare draft emails for review.",
 		kind: "integrate",
 		category: "Email",
 		featured: true,
@@ -80,79 +80,40 @@ export const coreIntegrationRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches Gmail messages and creates draft replies.",
 				requiresConnection: true,
+				connectionGroup: "mail",
 				operationIds: ["GMAIL_FETCH_EMAILS", "GMAIL_CREATE_EMAIL_DRAFT"],
 			},
-		],
-		triggers: [
-			{
-				type: "message",
-				label: "Ask about Gmail",
-				description: "Ask Polychat to search Gmail or draft a reply.",
-			},
-		],
-		actions: [
-			"Search Gmail messages by query",
-			"Summarise relevant message metadata",
-			"Create draft emails only after confirming recipients, subject, and body",
-		],
-		setupPrompt:
-			"Set up the Gmail recipe. Confirm what Gmail search or draft workflow I want, use Gmail search only for relevant messages, and create drafts only after I approve the recipient, subject, and body. Do not send, archive, delete, label, or modify messages.",
-		configurationFields: [
-			{
-				key: "defaultSearch",
-				label: "Default search",
-				type: "text",
-				placeholder: "from:client@example.com newer_than:14d",
-			},
-			{
-				key: "draftRules",
-				label: "Draft rules",
-				type: "textarea",
-				placeholder: "Tone, sign-off, recipients to avoid, or review requirements",
-			},
-			reviewInstructionsField,
-		],
-	},
-	{
-		id: "outlook-mail",
-		title: "Outlook Mail",
-		summary: "Search Outlook mail and create reviewed draft replies from chat.",
-		description:
-			"Uses a connected Outlook account to search messages and prepare draft emails for review.",
-		kind: "integrate",
-		category: "Email",
-		featured: false,
-		enabledTools: [RECIPE_CONNECTOR_TOOL],
-		integrations: [
 			{
 				id: "outlook",
 				providerId: "outlook",
-				name: "Outlook Mail",
+				name: "Outlook",
 				description: "Searches Outlook messages and creates draft replies.",
 				requiresConnection: true,
+				connectionGroup: "mail",
 				operationIds: ["OUTLOOK_SEARCH_MESSAGES", "OUTLOOK_CREATE_DRAFT"],
 			},
 		],
 		triggers: [
 			{
 				type: "message",
-				label: "Ask about Outlook mail",
-				description: "Ask Polychat to search Outlook mail or draft a reply.",
+				label: "Ask about your email",
+				description: "Ask Polychat to search mail or draft a reply.",
 			},
 		],
 		actions: [
-			"Search Outlook messages",
-			"Summarise message previews and links",
-			"Create draft emails only after confirmation",
+			"Search connected mail by query",
+			"Summarise relevant message metadata",
+			"Create draft emails only after confirming recipients, subject, and body",
 		],
 		setupPrompt:
-			"Set up the Outlook Mail recipe. Confirm the mailbox search or draft workflow, use Outlook mail search for relevant messages, and create drafts only after I approve the recipient, subject, and body. Do not send, delete, flag, move, or change messages.",
+			"Set up the Email Assistant recipe. Confirm what search or draft workflow I want, use the connected mail service to find relevant messages, and create drafts only after I approve the recipient, subject, and body. Do not send, archive, delete, label, flag, move, or modify messages.",
 		configurationFields: [
+			preferredConnectorsField,
 			{
 				key: "defaultSearch",
 				label: "Default search",
 				type: "text",
-				placeholder: "Project name, sender, or recent topic",
+				placeholder: "from:client@example.com newer_than:14d, project name, or sender",
 			},
 			{
 				key: "draftRules",
@@ -164,11 +125,11 @@ export const coreIntegrationRecipes: CatalogRecipe[] = [
 		],
 	},
 	{
-		id: "google-calendar",
-		title: "Google Calendar",
-		summary: "Review upcoming events and create confirmed calendar events.",
+		id: "calendar-assistant",
+		title: "Calendar Assistant",
+		summary: "Review upcoming events and create confirmed events in your connected calendar.",
 		description:
-			"Uses a connected Google Calendar to list upcoming events and create new events after confirmation.",
+			"Uses whichever calendar is connected, Google Calendar or Outlook, to list upcoming events and create new events after confirmation.",
 		kind: "integrate",
 		category: "Calendar",
 		featured: true,
@@ -180,14 +141,24 @@ export const coreIntegrationRecipes: CatalogRecipe[] = [
 				name: "Google Calendar",
 				description: "Lists upcoming events and creates confirmed events.",
 				requiresConnection: true,
+				connectionGroup: "calendar",
 				operationIds: ["GOOGLECALENDAR_EVENTS_LIST", "GOOGLECALENDAR_CREATE_EVENT"],
+			},
+			{
+				id: "outlook",
+				providerId: "outlook",
+				name: "Outlook Calendar",
+				description: "Lists upcoming Outlook events and creates confirmed events.",
+				requiresConnection: true,
+				connectionGroup: "calendar",
+				operationIds: ["OUTLOOK_GET_CALENDAR_VIEW", "OUTLOOK_CALENDAR_CREATE_EVENT"],
 			},
 		],
 		triggers: [
 			{
 				type: "message",
-				label: "Ask about calendar",
-				description: "Ask Polychat to review or create Google Calendar events.",
+				label: "Ask about your calendar",
+				description: "Ask Polychat to review or create calendar events.",
 			},
 		],
 		actions: [
@@ -196,58 +167,15 @@ export const coreIntegrationRecipes: CatalogRecipe[] = [
 			"Create calendar events only after confirming title, start, end, and timezone",
 		],
 		setupPrompt:
-			"Set up the Google Calendar recipe. Ask which calendar workflow I want, list upcoming events when needed, and create events only after I confirm the title, start, end, timezone, and description. Do not update or delete events.",
+			"Set up the Calendar Assistant recipe. Ask which calendar workflow I want, list upcoming events from the connected calendar when needed, and create events only after I confirm the title, start, end, timezone, and description. Do not update or delete events.",
 		configurationFields: [
+			preferredConnectorsField,
 			{
 				key: "calendarWindow",
 				label: "Calendar window",
 				type: "text",
 				placeholder: "Today, next 7 days, weekday mornings",
 			},
-			{
-				key: "timeZone",
-				label: "Timezone",
-				type: "text",
-				placeholder: "Europe/London, America/New_York",
-			},
-			reviewInstructionsField,
-		],
-	},
-	{
-		id: "outlook-calendar",
-		title: "Outlook Calendar",
-		summary: "Create confirmed Outlook calendar events from chat.",
-		description:
-			"Uses a connected Outlook account to create calendar events after the user confirms the details.",
-		kind: "integrate",
-		category: "Calendar",
-		featured: false,
-		enabledTools: [RECIPE_CONNECTOR_TOOL],
-		integrations: [
-			{
-				id: "outlook",
-				providerId: "outlook",
-				name: "Outlook Calendar",
-				description: "Creates confirmed Outlook calendar events.",
-				requiresConnection: true,
-				operationIds: ["OUTLOOK_CALENDAR_CREATE_EVENT"],
-			},
-		],
-		triggers: [
-			{
-				type: "message",
-				label: "Ask about Outlook calendar",
-				description: "Ask Polychat to create an Outlook calendar event.",
-			},
-		],
-		actions: [
-			"Prepare Outlook event details",
-			"Confirm title, start, end, timezone, and description",
-			"Create calendar events only after approval",
-		],
-		setupPrompt:
-			"Set up the Outlook Calendar recipe. Ask what event I want to create and confirm the title, start, end, timezone, and description before using Outlook. Do not update, delete, invite, or RSVP unless a future connector operation explicitly supports it.",
-		configurationFields: [
 			{
 				key: "timeZone",
 				label: "Timezone",

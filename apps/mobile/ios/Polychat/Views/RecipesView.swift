@@ -159,9 +159,17 @@ private struct RecipeRow: View {
     let onInstall: () -> Void
 
     private var missingIntegrations: [AssistantRecipeIntegration] {
-        recipe.integrations.filter { integration in
-            integration.requiresConnection &&
-                (integration.connectionStatus == "missing" || integration.connectionStatus == "unknown")
+        let connectedGroups = Set(
+            recipe.integrations.compactMap { integration in
+                integration.connectionStatus == "connected" ? integration.connectionGroup : nil
+            }
+        )
+        return recipe.integrations.filter { integration in
+            guard integration.requiresConnection,
+                integration.connectionStatus == "missing" || integration.connectionStatus == "unknown"
+            else { return false }
+            guard let group = integration.connectionGroup else { return true }
+            return !connectedGroups.contains(group)
         }
     }
 
@@ -196,7 +204,6 @@ private struct RecipeRow: View {
                 .foregroundStyle(.secondary)
 
             HStack {
-                Label("\(recipe.estimatedSetupMinutes) min", systemImage: "clock")
                 Label(recipe.category, systemImage: recipe.kind == "automate" ? "wand.and.stars" : "puzzlepiece.extension")
             }
             .font(.caption)

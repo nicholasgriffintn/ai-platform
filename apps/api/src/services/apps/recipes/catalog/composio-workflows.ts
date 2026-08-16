@@ -1,6 +1,6 @@
 import { configuredComposioToolkits } from "~/lib/providers/capabilities/connectors/composio/configured-toolkit-manifest";
 import type { CatalogRecipe } from "./shared";
-import { RECIPE_CONNECTOR_TOOL, reviewInstructionsField } from "./shared";
+import { RECIPE_CONNECTOR_TOOL, preferredConnectorsField, reviewInstructionsField } from "./shared";
 
 type ConfiguredComposioProvider = keyof typeof configuredComposioToolkits;
 
@@ -34,7 +34,8 @@ function createWorkflowRecipe(spec: WorkflowSpec): CatalogRecipe {
 			providerId: provider,
 			name: configuredComposioToolkits[provider].name,
 			description: configuredComposioToolkits[provider].description,
-			requiresConnection: false,
+			requiresConnection: true,
+			connectionGroup: "services",
 			operationIds: selectWorkflowOperations(provider),
 		})),
 		triggers: [
@@ -47,12 +48,7 @@ function createWorkflowRecipe(spec: WorkflowSpec): CatalogRecipe {
 		actions: spec.actions,
 		setupPrompt: spec.setupPrompt,
 		configurationFields: [
-			{
-				key: "preferredConnectors",
-				label: "Preferred connected services",
-				type: "string_list",
-				placeholder: "Choose the connected services to use for this workflow",
-			},
+			preferredConnectorsField,
 			{
 				key: "workflowRules",
 				label: "Workflow rules",
@@ -376,22 +372,6 @@ const workflowSpecs: WorkflowSpec[] = [
 		],
 		setupPrompt:
 			"Set up Commerce and Delivery Operations. Ask which connected accounts, markets, products, campaigns, and delivery destinations to use. Confirm all monetary, order, trading, sending, and deletion actions immediately before execution.",
-	},
-	{
-		id: "fitness-activity-coach",
-		title: "Fitness Activity Coach",
-		summary: "Review Strava activity, training, routes, clubs, and performance data.",
-		description:
-			"Uses the complete connected Strava capability set for activity analysis and reviewed account actions.",
-		category: "Health",
-		providers: ["strava"],
-		actions: [
-			"Review activities, efforts, routes, clubs, and athlete data",
-			"Compare training volume and performance over time",
-			"Create or update Strava data only after confirmation",
-		],
-		setupPrompt:
-			"Set up Fitness Activity Coach. Ask which activities, sports, date ranges, routes, clubs, and performance questions to use. Confirm any upload, update, deletion, or social action before execution.",
 	},
 ];
 

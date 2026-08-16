@@ -1,6 +1,6 @@
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 
-import { assistantRecipes } from "~/services/apps/recipes/catalog";
+import { assistantRecipes, resolveRecipeId } from "~/services/apps/recipes/catalog";
 import {
 	buildAllowedConnectorOperations,
 	buildAllowedConnectorProviders,
@@ -36,7 +36,7 @@ export function resolveProjectRecipeConnectorScope(
 	const recipeIds = new Set(
 		capabilities
 			.filter((capability) => capability.kind === "recipe")
-			.map((capability) => capability.capability_id),
+			.map((capability) => resolveRecipeId(capability.capability_id)),
 	);
 	const providers = new Set<RecipeConnectorProvider>();
 	const operationsByProvider = new Map<RecipeConnectorProvider, Set<string>>();

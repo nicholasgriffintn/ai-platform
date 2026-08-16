@@ -1191,6 +1191,7 @@ export const recipeIntegrationSchema = z.object({
 	name: z.string(),
 	description: z.string(),
 	requiresConnection: z.boolean().default(true),
+	connectionGroup: z.string().optional(),
 	operationIds: z.array(z.string()).optional(),
 	connectionStatus: recipeConnectionStatusSchema.optional(),
 	setupUrl: z.string().optional(),
@@ -1266,6 +1267,7 @@ export const assistantRecipeConnectionSchema = z.object({
 	name: z.string(),
 	status: recipeConnectionStatusSchema,
 	requiresConnection: z.boolean(),
+	connectionGroup: z.string().optional(),
 	setupUrl: z.string().optional(),
 });
 

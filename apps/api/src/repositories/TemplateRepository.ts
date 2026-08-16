@@ -137,14 +137,16 @@ export class TemplateRepository extends BaseRepository {
 		updates: {
 			name?: string;
 			description?: string;
+			capabilityId?: string;
 			configuration?: unknown;
 			status?: TemplateRecord["status"];
 		},
 	): Promise<TemplateRecord | null> {
+		const { capabilityId, ...rest } = updates;
 		const update = this.buildUpdateQuery(
 			"template",
-			updates,
-			["name", "description", "configuration", "status"],
+			{ ...rest, ...(capabilityId !== undefined ? { capability_id: capabilityId } : {}) },
+			["name", "description", "capability_id", "configuration", "status"],
 			"id = ?",
 			[templateId],
 			{ jsonFields: ["configuration"] },
