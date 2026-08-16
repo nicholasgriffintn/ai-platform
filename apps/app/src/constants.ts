@@ -85,6 +85,7 @@ const COMMON_CSP = {
 		"https://strudel.cc",
 	],
 	mediaSrc: ["'self'", "data:", "https://assistant-assets.nickgriffin.uk", API_BASE_URL],
+	workerSrc: ["'self'", "blob:"],
 } as const;
 
 const SCRIPT_SRC = [
