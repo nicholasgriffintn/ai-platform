@@ -7,6 +7,8 @@ import type { ComposioAuthConfigDefinition, ConnectorProviderConfig } from "..";
 const COMPOSIO_API_BASE_URL = "https://backend.composio.dev/api/v3.1";
 const COMPOSIO_REQUEST_TIMEOUT_MS = 20_000;
 const MAX_PAGES = 20;
+const POSTHOG_QUERY_GUIDANCE =
+	"Pass query as a HogQL string or { kind: 'HogQLQuery', query: string }. projectId, organizationId, and region use saved recipe configuration when omitted.";
 export interface ComposioConnectedAccount {
 	id: string;
 	userId: string;
@@ -595,6 +597,20 @@ function parseToolSchema(
 ): ComposioToolSchema | null {
 	const identity = parseToolSchemaIdentity(value, provider);
 	if (!identity || !isRecord(value) || !isRecord(value.input_schema)) return null;
+	let inputSchema = value.input_schema;
+	if (
+		provider.id === "posthog" &&
+		identity.operation.id === "POSTHOG_CREATE_QUERY_IN_PROJECT_BY_ID"
+	) {
+		inputSchema = {
+			...inputSchema,
+			description:
+				typeof inputSchema.description === "string"
+					? `${inputSchema.description} ${POSTHOG_QUERY_GUIDANCE}`
+					: POSTHOG_QUERY_GUIDANCE,
+		};
+	}
+
 	return {
 		slug: identity.slug,
 		name: identity.slug
@@ -605,7 +621,7 @@ function parseToolSchema(
 		description: identity.description,
 		toolkitSlug: identity.toolkitSlug,
 		access: identity.operation.access,
-		inputSchema: value.input_schema,
+		inputSchema,
 	};
 }
 

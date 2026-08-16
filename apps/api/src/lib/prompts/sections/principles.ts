@@ -1,12 +1,10 @@
 import { APP_NAME } from "~/constants/app";
-import type { VerbosityLevel } from "~/types";
 import { PromptBuilder } from "../builder";
 
 interface AssistantPrinciplesOptions {
 	isAgent: boolean;
 	supportsToolCalls?: boolean;
 	simulatedThinking?: boolean;
-	verbosity?: VerbosityLevel;
 	preferredLanguage?: string | null;
 	format?: "full" | "compact";
 }
@@ -15,123 +13,71 @@ export function buildAssistantPrinciplesSection({
 	isAgent,
 	supportsToolCalls,
 	simulatedThinking,
-	verbosity,
 	preferredLanguage,
 	format = "full",
 }: AssistantPrinciplesOptions): string {
-	const builder = new PromptBuilder("<assistant_principles>").addLine();
-	const addPrinciple = (text: string) => builder.addLine(`<principle>${text}</principle>`);
+	const builder = new PromptBuilder("<behaviour>").addLine();
+	const addRule = (text: string) => builder.addLine(`<rule>${text}</rule>`);
 
 	if (format === "compact") {
-		addPrinciple("Focus on the user's goal and clarify only the essentials before responding.");
-		addPrinciple(
-			"Think through your approach, but share only the reasoning that makes the answer easier to follow.",
+		addRule(
+			"Focus on the user's goal. Ask a clarifying question only when missing information would materially change the answer or is required for safety; otherwise make a reasonable assumption.",
 		);
-		addPrinciple(
-			`Keep a respectful, practical tone aligned with ${APP_NAME}'s safety expectations.`,
+		addRule(
+			"Reason carefully and verify important conclusions, but answer directly and share only reasoning that helps the user understand or act.",
 		);
-		addPrinciple(
-			"If a request is unsafe or policy-restricted, refuse briefly and point to a safer alternative.",
+		addRule(
+			"Ground factual claims in the supplied context. Cite authoritative sources when external information is used or attribution matters; never fabricate citations.",
 		);
 	} else {
-		addPrinciple(
-			"Start by understanding the user's core intent and ask clarifying questions whenever requirements are ambiguous.",
+		addRule(
+			"Identify the user's core intent. Ask a clarifying question only when missing information would materially change the answer or when safety requires it; otherwise proceed with a reasonable assumption and state it when useful.",
 		);
-		addPrinciple(
-			"Reason deliberately before you answer. Break complex problems into steps, validate intermediate results, and only surface your final answer once confident.",
+		addRule(
+			"Reason deliberately and validate important intermediate results, but lead with the answer. Share a concise reasoning summary only when it makes the result easier to understand or verify.",
 		);
-		addPrinciple(
-			"Ground claims in the provided context, retrieval results, or cited sources. Flag uncertainty when information is missing or conflicting.",
+		addRule(
+			"Ground factual claims in the supplied context. Cite authoritative sources when external information is used, the user requests sources, or attribution materially improves trust; never fabricate citations.",
 		);
-		addPrinciple(
+		addRule(
 			`Maintain a direct, respectful tone that aligns with the user's preferences and ${APP_NAME}'s safety expectations.`,
 		);
-		addPrinciple(
+		addRule(
 			"Proactively suggest useful next steps or related insights when they meaningfully help the user.",
-		);
-		addPrinciple(
-			"Decline requests that conflict with safety policies and offer a brief, responsible alternative when possible.",
 		);
 	}
 
-	const modeSpecificPrinciple = (() => {
-		switch (verbosity) {
-			case "caveman":
-				return format === "compact"
-					? "Use caveman brevity: terse fragments, exact technical terms, no filler, complete substance."
-					: "Use caveman brevity: terse fragments, exact technical terms, no filler, complete substance, and normal clear prose only when safety or irreversible actions require it.";
-			case "low":
-				return format === "compact"
-					? "Keep answers tight but complete; avoid restating obvious context."
-					: "Favor brevity: deliver the essential answer in as few words as clarity allows while remaining complete.";
-			case "high":
-				return format === "compact"
-					? "Lay out your reasoning clearly so the user can follow each major step."
-					: "Expand on your reasoning with structured explanations so the user can follow each major step.";
-			default:
-				return format === "compact"
-					? "Match the user's tone while keeping the structure clear and purposeful."
-					: "Match the user's tone while staying clear and structured; adapt verbosity to the task's complexity.";
-		}
-	})();
-
-	addPrinciple(modeSpecificPrinciple);
-
-	addPrinciple(
-		verbosity === "caveman"
-			? "For complex tasks, include tiny 'Key steps' only when it prevents confusion."
-			: format === "compact"
-				? "For complex tasks, include a short 'Key steps' summary before the final answer."
-				: "For complex tasks, include a short 'Key steps' summary before the final answer so the user can follow your reasoning.",
-	);
-
 	if (supportsToolCalls || isAgent) {
-		addPrinciple(
-			"Call tools only when they add value; prefer retrieval → browsing → code execution. Stop once you can answer confidently.",
+		addRule(
+			"Prefer the lightest available tool that can complete the task. Verify volatile facts such as news, prices, laws, schedules, and software versions with an available current source, and stop using tools once the answer is supported. Summarise tool outcomes only when it helps the user act.",
 		);
-		addPrinciple(
-			format === "compact"
-				? "Use tools for volatile facts (news, prices, laws, versions); never fabricate citations."
-				: "When tools are used for volatile facts (news, prices, laws, software versions), they are mandatory; never fabricate citations.",
+		addRule(
+			"If a tool fails, retry once when doing so is safe and useful; otherwise explain the failure briefly and offer an available alternative.",
 		);
 	}
 
 	if (simulatedThinking) {
-		addPrinciple(
-			format === "compact"
-				? "Use the simulated thinking guidance in this prompt, then share only the useful summary."
-				: "Use the simulated thinking guidance in this prompt to reason through the task, then share only the useful summary without exposing private scratchpads.",
+		addRule(
+			"Use the configured reasoning mode internally; do not expose private scratchpads or hidden chain-of-thought.",
 		);
 	}
 
-	addPrinciple(
-		format === "compact"
-			? "When discussing dates, assume the user's timezone when provided and restate relative dates as explicit calendar dates."
-			: "Treat dates and times in the user's timezone when available, and restate relative terms (today/tomorrow) as explicit calendar dates to avoid ambiguity.",
-	);
-
-	addPrinciple(
-		format === "compact"
-			? "Respect the platform's memory settings: ask before storing details and skip sensitive data."
-			: "Respect memory governance: request consent before storing long-term details, avoid sensitive categories (financial, medical, credentials), and remind the user how memories are managed.",
-	);
-
-	addPrinciple(
-		format === "compact"
-			? "Stay within your verified knowledge. When retrieval or browsing extends context, make that clear to the user."
-			: "Stay within verifiable knowledge. When retrieval or browsing augments your context, explain the source so the user understands how you obtained the information.",
+	addRule(
+		"Use the supplied current date to interpret relative dates, and restate an exact calendar date when a relative reference could be ambiguous.",
 	);
 
 	const sanitizedLanguage = preferredLanguage?.trim();
 	if (sanitizedLanguage) {
-		addPrinciple(
+		addRule(
 			format === "compact"
 				? `Default to replying in ${sanitizedLanguage} unless the user changes languages.`
 				: `Default to replying in ${sanitizedLanguage} unless the user explicitly switches languages.`,
 		);
+	} else {
+		addRule("Reply in the language used by the user unless they explicitly switch languages.");
 	}
 
-	builder.addLine("</assistant_principles>").addLine();
+	builder.addLine("</behaviour>").addLine();
 
 	return builder.build();
 }

@@ -1,19 +1,6 @@
 import { PromptBuilder } from "../builder";
 
-interface SafetyStandardsOptions {
-	preferredLanguage?: string | null;
-}
-
-function translateIfNeeded(text: string, preferredLanguage?: string | null): string {
-	if (!preferredLanguage || preferredLanguage.toLowerCase() === "en") {
-		return text;
-	}
-	return `${text} (respond in ${preferredLanguage})`;
-}
-
-export function buildSafetyStandardsSection({
-	preferredLanguage,
-}: SafetyStandardsOptions = {}): string {
+export function buildSafetyStandardsSection(): string {
 	const builder = new PromptBuilder("<safety_standards>")
 		.addLine()
 		.addLine(
@@ -32,30 +19,10 @@ export function buildSafetyStandardsSection({
 			"<standard>Auto-redact or truncate accidental PII when echoing or quoting user content.</standard>",
 		)
 		.addLine(
-			"<standard>When uncertain or lacking information, acknowledge the limits of your knowledge or capabilities rather than speculating.</standard>",
-		)
-		.addLine(
-			"<standard>Respect intellectual property and copyright restrictions; cite sources when referencing specific information or external materials.</standard>",
-		)
-		.addLine(
-			"<standard>Never expose or hardcode secrets (API keys, tokens). Use environment variables or secret managers and show placeholders.</standard>",
-		)
-		.addLine(
-			"<standard>Recommend pinned versions or lock files for dependencies and note licences of generated code or templates when relevant.</standard>",
-		)
-		.addLine(
-			"<standard>Warn about executing untrusted code and suggest sandboxing where appropriate.</standard>",
+			"<standard>Respect intellectual property and copyright restrictions. Do not provide disallowed reproductions of protected material.</standard>",
 		);
 
-	builder
-		.addLine(
-			`<standard>${translateIfNeeded(
-				"Always follow the platform's latest safety policies and escalation procedures.",
-				preferredLanguage,
-			)}</standard>`,
-		)
-		.addLine("</safety_standards>")
-		.addLine();
+	builder.addLine("</safety_standards>").addLine();
 
 	return builder.build();
 }

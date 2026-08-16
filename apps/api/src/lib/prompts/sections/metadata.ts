@@ -2,6 +2,7 @@ import { APP_DESCRIPTION, APP_NAME } from "~/constants/app";
 import { hasProviderReasoningOptions } from "~/lib/providers/models/reasoning";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { IBody } from "~/types";
+import { getEffectiveMaxTokens } from "~/utils/parameters";
 import { PromptBuilder } from "../builder";
 
 export interface PromptModelMetadata {
@@ -14,14 +15,6 @@ interface AssistantMetadataSectionOptions extends PromptModelMetadata {
 	format?: "full" | "compact";
 }
 
-const PLATFORM_CAPABILITIES = [
-	"adaptive_model_routing",
-	"agentic_tool_orchestration",
-	"retrieval_augmented_memories",
-	"artifact_based_outputs",
-	"search_grounding_support",
-];
-
 function asList(values?: string[]): string {
 	return values && values.length > 0 ? values.join(", ") : "unspecified";
 }
@@ -33,26 +26,18 @@ export function buildAssistantMetadataSection({
 	format = "full",
 }: AssistantMetadataSectionOptions): string {
 	const activeModelId = modelId || request.model || modelConfig?.matchingModel || "unknown";
+	const requestedMaxTokens =
+		request.max_tokens ?? request.max_completion_tokens ?? request.max_output_tokens;
+	const effectiveMaxOutputTokens = getEffectiveMaxTokens(
+		typeof requestedMaxTokens === "number" ? requestedMaxTokens : undefined,
+		modelConfig?.maxTokens,
+	);
 
-	const builder = new PromptBuilder("<session_metadata>")
+	const builder = new PromptBuilder("<assistant_identity>")
 		.addLine()
-		.addLine("<application_info>")
 		.addLine(`<name>${APP_NAME}</name>`)
-		.addLine(`<description>${APP_DESCRIPTION}</description>`)
-		.addLine("<capabilities>");
-
-	PLATFORM_CAPABILITIES.forEach((capability) => {
-		builder.addLine(`<capability>${capability}</capability>`);
-	});
-
-	builder
-		.addLine("</capabilities>")
-		.addLine(`<active_mode>${request.mode ? request.mode : "standard"}</active_mode>`)
-		.addIf(!!request.platform, `<origin_platform>${request.platform}</origin_platform>`)
-		.addLine(`<verbosity>${request.text?.verbosity ?? request.verbosity ?? "medium"}</verbosity>`)
-		.addIf(!!request.lang, `<preferred_language>${request.lang}</preferred_language>`)
-		.addLine("</application_info>")
-		.addLine();
+		.addLine(`<description>${APP_DESCRIPTION}</description>`);
+	builder.addLine("</assistant_identity>").addLine();
 
 	const enabledCapabilities = [
 		modelConfig?.supportsToolCalls ? "tool_calls" : null,
@@ -66,28 +51,26 @@ export function buildAssistantMetadataSection({
 
 	if (format === "compact") {
 		builder
-			.addLine("<model_info>")
+			.addLine("<model_card>")
 			.addLine(`<model_id>${activeModelId}</model_id>`)
 			.addLine(`<provider>${modelConfig?.provider ?? "unknown"}</provider>`)
 			.addLine(`<context_window>${modelConfig?.contextWindow ?? "unspecified"}</context_window>`)
-			.addLine(`<max_tokens>${modelConfig?.maxTokens ?? "unspecified"}</max_tokens>`)
 			.addLine(
-				`<enabled_capabilities>${
+				`<effective_max_output_tokens>${effectiveMaxOutputTokens}</effective_max_output_tokens>`,
+			)
+			.addLine(
+				`<supported_capabilities>${
 					enabledCapabilities.length > 0 ? enabledCapabilities.join(", ") : "none"
-				}</enabled_capabilities>`,
+				}</supported_capabilities>`,
 			)
-			.addLine(
-				"<note>If code_execution is enabled at runtime, its outputs must be summarised in chat; raw outputs and long code go into artifacts or fenced blocks.</note>",
-			)
-			.addLine("</model_info>")
-			.addLine("</session_metadata>")
+			.addLine("</model_card>")
 			.addLine();
 
 		return builder.build();
 	}
 
 	builder
-		.addLine("<model_info>")
+		.addLine("<model_card>")
 		.addLine(`<model_id>${activeModelId}</model_id>`)
 		.addLine(`<provider>${modelConfig?.provider ?? "unknown"}</provider>`)
 		.addLine(
@@ -96,22 +79,20 @@ export function buildAssistantMetadataSection({
 		.addLine(`<input_modalities>${asList(modelConfig?.modalities?.input)}</input_modalities>`)
 		.addLine(`<output_modalities>${asList(modelConfig?.modalities?.output)}</output_modalities>`)
 		.addLine(`<context_window>${modelConfig?.contextWindow ?? "unspecified"}</context_window>`)
-		.addLine(`<max_tokens>${modelConfig?.maxTokens ?? "unspecified"}</max_tokens>`)
+		.addLine(
+			`<effective_max_output_tokens>${effectiveMaxOutputTokens}</effective_max_output_tokens>`,
+		)
 		.addLine(
 			`<knowledge_cutoff>${modelConfig?.knowledgeCutoffDate ?? "unspecified"}</knowledge_cutoff>`,
 		)
 		.addLine(`<release_date>${modelConfig?.releaseDate ?? "unspecified"}</release_date>`)
 		.addLine(`<last_updated>${modelConfig?.lastUpdated ?? "unspecified"}</last_updated>`)
 		.addLine(
-			`<enabled_capabilities>${
+			`<supported_capabilities>${
 				enabledCapabilities.length > 0 ? enabledCapabilities.join(", ") : "none"
-			}</enabled_capabilities>`,
+			}</supported_capabilities>`,
 		)
-		.addLine(
-			"<note>If code_execution is enabled at runtime, its outputs must be summarised in chat; raw outputs and long code go into artifacts or fenced blocks.</note>",
-		)
-		.addLine("</model_info>")
-		.addLine("</session_metadata>")
+		.addLine("</model_card>")
 		.addLine();
 
 	return builder.build();

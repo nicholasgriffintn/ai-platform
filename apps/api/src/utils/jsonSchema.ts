@@ -30,6 +30,7 @@ type JsonObjectSchema = {
 	type: "object";
 	properties: Record<string, JsonSchemaProperty>;
 	required?: readonly string[];
+	anyOf?: Array<{ required: readonly string[] }>;
 	additionalProperties?: boolean | JsonSchemaProperty;
 };
 
@@ -176,8 +177,11 @@ function toZodSchema(property: JsonSchemaProperty): z.ZodTypeAny {
 	}
 }
 
-export function jsonSchemaToZod(parameters: JsonObjectSchema, strict = false): z.ZodTypeAny {
-	const requiredKeys = new Set(parameters.required ?? []);
+function objectSchemaToZod(
+	parameters: JsonObjectSchema,
+	requiredKeys: ReadonlySet<string>,
+	strict: boolean,
+): z.ZodTypeAny {
 	const shape: Record<string, z.ZodTypeAny> = {};
 
 	for (const [key, property] of Object.entries(parameters.properties ?? {})) {
@@ -191,4 +195,23 @@ export function jsonSchemaToZod(parameters: JsonObjectSchema, strict = false): z
 		return schema.catchall(toZodSchema(parameters.additionalProperties));
 	}
 	return schema.passthrough();
+}
+
+export function jsonSchemaToZod(parameters: JsonObjectSchema, strict = false): z.ZodTypeAny {
+	const requiredKeys = new Set(parameters.required ?? []);
+	const alternatives = parameters.anyOf;
+	const firstAlternative = alternatives?.[0];
+	if (!firstAlternative) {
+		return objectSchemaToZod(parameters, requiredKeys, strict);
+	}
+	const firstSchema = objectSchemaToZod(
+		parameters,
+		new Set([...requiredKeys, ...firstAlternative.required]),
+		strict,
+	);
+
+	return alternatives.slice(1).reduce<z.ZodTypeAny>((combined, alternative) => {
+		const alternativeRequiredKeys = new Set([...requiredKeys, ...alternative.required]);
+		return combined.or(objectSchemaToZod(parameters, alternativeRequiredKeys, strict));
+	}, firstSchema);
 }

@@ -7,9 +7,15 @@ import { resolvePromptLayout } from "./layout";
 import { buildAgentGuidelinesSection } from "./sections/agent-guidelines";
 import { buildAssistantMetadataSection, type PromptModelMetadata } from "./sections/metadata";
 import { buildAssistantPrinciplesSection } from "./sections/principles";
-import { buildStandardExampleOutputSection } from "./sections/examples";
+import { buildFormattingSection } from "./sections/formatting";
 import { buildUserContextSection } from "./sections/user-context";
 import { buildSafetyStandardsSection } from "./sections/safety";
+import { buildResponseStyleSection } from "./sections/response-style";
+import {
+	DISABLED_PROMPT_MEMORY_POLICY,
+	buildSessionConfigSection,
+	type PromptMemoryPolicy,
+} from "./sections/session-config";
 import { buildSkillsSection } from "./sections/skills";
 import { getResponseStyle, resolvePromptCapabilities } from "./utils";
 
@@ -22,6 +28,7 @@ export async function returnStandardPrompt(
 	supportsToolCalls?: boolean,
 	modelMetadata?: PromptModelMetadata,
 	skills?: readonly SkillAvailability[],
+	memoryPolicy: PromptMemoryPolicy = DISABLED_PROMPT_MEMORY_POLICY,
 ): Promise<string> {
 	try {
 		const chatMode = request.mode || "standard";
@@ -30,9 +37,6 @@ export async function returnStandardPrompt(
 		const userJobRole = userSettings?.job_role || null;
 		const userTraits = userSettings?.traits || null;
 		const userPreferences = userSettings?.preferences || null;
-		const memoriesEnabled =
-			userSettings?.memories_save_enabled || userSettings?.memories_chat_history_enabled;
-
 		const latitude = request.location?.latitude || user?.latitude;
 		const longitude = request.location?.longitude || user?.longitude;
 		const date = request.date || new Date().toISOString().split("T")[0];
@@ -52,23 +56,7 @@ export async function returnStandardPrompt(
 
 		const layout = resolvePromptLayout({
 			contextWindow: modelMetadata?.modelConfig?.contextWindow,
-			isAgent,
-			isCoding: false,
-			capabilities,
 		});
-
-		const { traits, preferences, problemBreakdownInstructions, answerFormatInstructions } =
-			getResponseStyle(
-				verbosity,
-				capabilities.simulatedThinking,
-				capabilities.supportsToolCalls,
-				isAgent,
-				memoriesEnabled,
-				userTraits,
-				userPreferences,
-				false,
-				layout.instructionVariant,
-			);
 
 		const metadataSection = buildAssistantMetadataSection({
 			request: preferredLanguage ? { ...request, lang: preferredLanguage } : request,
@@ -81,10 +69,18 @@ export async function returnStandardPrompt(
 			isAgent,
 			supportsToolCalls: capabilities.supportsToolCalls,
 			simulatedThinking: capabilities.simulatedThinking,
-			verbosity,
 			preferredLanguage,
 			format: layout.principlesFormat,
 		});
+		const responseStyle = getResponseStyle(
+			verbosity,
+			userTraits,
+			userPreferences,
+			false,
+			isAgent,
+			capabilities.simulatedThinking,
+			layout.principlesFormat,
+		);
 
 		const userContextSection = buildUserContextSection({
 			date,
@@ -92,45 +88,38 @@ export async function returnStandardPrompt(
 			userJobRole,
 			latitude,
 			longitude,
-			language: preferredLanguage,
 		});
 
 		const builder = new PromptBuilder(metadataSection)
 			.addLine(
-				isAgent
-					? "<assistant_info>You are a helpful agent with access to a range of powerful tools that extend your capabilities.</assistant_info>"
-					: "<assistant_info>You are an AI assistant helping with daily tasks.</assistant_info>",
-			)
-			.addLine(
-				"<instruction_precedence>\n<order>system > safety_standards > assistant_principles > response_preferences > example_output</order>\n<conflict_rule>If instructions conflict, follow the higher-precedence item and briefly note any limitation to the user if it affects the answer.</conflict_rule>\n</instruction_precedence>",
+				"<instruction_precedence>\n<order>safety_standards > behaviour > response_style > formatting > available_skills > session_config</order>\n<conflict_rule>Resolve conflicts silently in this order. Surface only limitations that materially change what the user receives.</conflict_rule>\n</instruction_precedence>",
 			)
 			.addLine()
 			.add(principlesSection)
+			.add(buildResponseStyleSection(responseStyle))
 			.add(
-				buildSafetyStandardsSection({
-					preferredLanguage,
+				buildFormattingSection({
+					format: layout.principlesFormat,
 				}),
 			)
-			.addLine(`<response_traits>${traits}</response_traits>`)
-			.addLine(`<response_preferences>${preferences}</response_preferences>`)
-			.addLine()
-			.add(userContextSection)
-			.add(buildSkillsSection(skills));
-
-		if (layout.exampleVariant !== "omit") {
-			builder.add(
-				buildStandardExampleOutputSection({
-					simulatedThinking: capabilities.simulatedThinking,
-					problemBreakdownInstructions,
-					answerFormatInstructions,
-					variant: layout.exampleVariant === "full" ? "full" : "compact",
-				}),
-			);
-		}
+			.add(buildSafetyStandardsSection());
 
 		if (isAgent) {
 			builder.add(buildAgentGuidelinesSection());
 		}
+
+		builder
+			.add(buildSkillsSection(skills))
+			.add(userContextSection)
+			.add(
+				buildSessionConfigSection({
+					mode: chatMode,
+					platform: request.platform,
+					verbosity,
+					preferredLanguage,
+					memory: memoryPolicy,
+				}),
+			);
 
 		return builder.build();
 	} catch (error) {

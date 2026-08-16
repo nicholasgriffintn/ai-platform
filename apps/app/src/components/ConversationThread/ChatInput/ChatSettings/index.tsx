@@ -247,10 +247,11 @@ export const ChatSettings = ({
 									min={0}
 									max={2}
 									step={0.1}
-									value={chatSettings.temperature ?? 1}
+									value={chatSettings.temperature ?? 0.7}
 									disabled={isDisabled}
 									onChange={(value) => handleNumericSettingChange("temperature", value)}
 									markers={["Precise", "Neutral", "Creative"]}
+									description="Controls randomness in responses."
 								/>
 
 								<CompactSettingSwitch
@@ -300,9 +301,10 @@ export const ChatSettings = ({
 									min={0}
 									max={1}
 									step={0.05}
-									value={chatSettings.top_p ?? 1}
+									value={chatSettings.top_p ?? 0.8}
 									disabled={isDisabled}
 									onChange={(value) => handleNumericSettingChange("top_p", value)}
+									description="Controls diversity via nucleus sampling."
 								/>
 
 								<CompactSettingNumber

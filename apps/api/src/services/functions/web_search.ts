@@ -20,6 +20,7 @@ export const web_search: ApiToolDefinition = {
 			},
 			search_depth: {
 				type: "string",
+				enum: ["basic", "advanced"],
 				description:
 					"The depth of the search - 'basic' for quick results or 'advanced' for more comprehensive results",
 				default: "basic",
@@ -41,6 +42,7 @@ export const web_search: ApiToolDefinition = {
 			},
 		},
 		required: ["query"],
+		additionalProperties: false,
 	}),
 	execute: async (args, context) => {
 		const req = context.request;

@@ -62,4 +62,27 @@ describe("jsonSchemaToZod", () => {
 		expect(schema.safeParse({ provider: "provider-149" }).success).toBe(true);
 		expect(schema.safeParse({ provider: "missing" }).success).toBe(false);
 	});
+
+	it("supports root-level required alternatives", () => {
+		const schema = jsonSchemaToZod({
+			type: "object",
+			properties: {
+				recipeId: { type: "string" },
+				query: { type: "string" },
+				input: { type: "string" },
+			},
+			anyOf: [{ required: ["recipeId"] }, { required: ["query"] }],
+			additionalProperties: false,
+		});
+
+		expect(schema.safeParse({}).success).toBe(false);
+		expect(schema.safeParse({ recipeId: "recipe-1" }).success).toBe(true);
+		expect(schema.safeParse({ query: "run my alert" }).success).toBe(true);
+		expect(z.toJSONSchema(schema).anyOf).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ required: ["recipeId"], additionalProperties: false }),
+				expect.objectContaining({ required: ["query"], additionalProperties: false }),
+			]),
+		);
+	});
 });

@@ -45,13 +45,16 @@ export function mergeParametersWithDefaults(
 }
 
 export function createSamplingParameters(
-	params: ChatCompletionParameters,
-	modelConfig: ModelConfigItem,
-): Record<string, any> {
-	return {
-		...(modelConfig.supportsTemperature !== false ? { temperature: params.temperature } : {}),
-		...(modelConfig.supportsTopP !== false && !params.should_think ? { top_p: params.top_p } : {}),
-	};
+	params: Pick<ChatCompletionParameters, "temperature" | "top_p" | "should_think">,
+	modelConfig: Pick<ModelConfigItem, "supportsTemperature" | "supportsTopP">,
+): { temperature?: number; top_p?: number } {
+	const temperature = modelConfig.supportsTemperature !== false ? params.temperature : undefined;
+	const topP =
+		temperature === undefined && modelConfig.supportsTopP !== false && !params.should_think
+			? params.top_p
+			: undefined;
+
+	return omitNullishValues({ temperature, top_p: topP });
 }
 
 export function isFimCompletionRequest(
@@ -171,9 +174,10 @@ export function createCommonParameters(
 		model: modelName,
 		messages: params.messages,
 	};
+	const samplingParameters = createSamplingParameters(params, modelConfig);
 
-	if (modelConfig.supportsTemperature !== false) {
-		commonParams.temperature = params.temperature;
+	if (samplingParameters.temperature !== undefined) {
+		commonParams.temperature = samplingParameters.temperature;
 	}
 
 	if (params.version) {
@@ -226,18 +230,11 @@ export function createCommonParameters(
 		}
 	}
 
-	if (modelConfig.supportsTopP !== false && params.model && !params.should_think) {
+	if (samplingParameters.top_p !== undefined && params.model) {
 		if (providerName === "cohere") {
-			commonParams.p = params.top_p;
-		} else if (modelConfig.restrictsCombinedTopPAndTemperature) {
-			if (params.temperature !== undefined && params.top_p !== undefined) {
-				commonParams.temperature = params.temperature;
-				delete commonParams.top_p;
-			} else {
-				commonParams.top_p = params.top_p;
-			}
+			commonParams.p = samplingParameters.top_p;
 		} else {
-			commonParams.top_p = params.top_p;
+			commonParams.top_p = samplingParameters.top_p;
 		}
 	}
 
@@ -263,6 +260,7 @@ export function getToolsForProvider(
 		| "parallel_tool_calls"
 		| "tool_choice"
 		| "context"
+		| "connectedConnectorProviders"
 	>,
 	modelConfig: any,
 	providerName: string,
@@ -282,6 +280,7 @@ export function getToolsForProvider(
 		const enabledTools = resolveEnabledFunctionToolNames(params.enabled_tools, user);
 		let tools: any[] = [];
 		const availableTools = listFunctionTools({
+			connectedConnectorProviders: params.connectedConnectorProviders,
 			selectedConnectorProvider: params.options?.connector?.provider,
 		});
 

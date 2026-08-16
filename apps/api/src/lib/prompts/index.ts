@@ -2,6 +2,7 @@ import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { ChatMode, IBody, IUser, IUserSettings } from "~/types";
+import { resolveMemoryPolicy } from "~/lib/chat/memoryPolicy";
 import { trimTemplateWhitespace } from "~/utils/strings";
 import { returnCodingPrompt } from "./coding";
 import { returnCouncilPrompt } from "./council";
@@ -11,9 +12,14 @@ import { returnSandboxPrompt } from "./sandbox";
 import { returnStandardPrompt } from "./standard";
 import { emptyPrompt } from "./utils";
 import { buildAssistantMetadataSection, type PromptModelMetadata } from "./sections/metadata";
+import type { PromptMemoryPolicy } from "./sections/session-config";
 
 export type PromptMode = "council" | "sms";
 export type PromptRequest = IBody & { promptMode?: PromptMode };
+
+export interface PromptSessionOptions {
+	memory?: PromptMemoryPolicy;
+}
 
 export async function getSystemPrompt(
 	request: PromptRequest,
@@ -21,9 +27,11 @@ export async function getSystemPrompt(
 	user?: IUser,
 	userSettings?: IUserSettings,
 	skills?: readonly SkillAvailability[],
+	session?: PromptSessionOptions,
 ): Promise<string> {
 	const modelConfig = await getModelConfigByMatchingModel(model, undefined, request.provider);
 	const supportsToolCalls = modelConfig?.supportsToolCalls || false;
+	const memoryPolicy = session?.memory ?? resolveMemoryPolicy({ user, userSettings });
 
 	let prompt: string;
 	const promptMode = request.promptMode;
@@ -49,6 +57,7 @@ export async function getSystemPrompt(
 			supportsToolCalls,
 			{ modelId: model },
 			skills,
+			memoryPolicy,
 		);
 	} else {
 		const inputs = modelConfig.modalities?.input ?? ["text"];
@@ -63,6 +72,7 @@ export async function getSystemPrompt(
 				supportsToolCalls,
 				{ modelId: model, modelConfig },
 				skills,
+				memoryPolicy,
 			);
 		} else {
 			const isTextToImageModel = outputs.includes("image") && !supportsTextOutput;
@@ -78,6 +88,7 @@ export async function getSystemPrompt(
 					supportsToolCalls,
 					{ modelId: model, modelConfig },
 					skills,
+					memoryPolicy,
 				);
 			}
 		}

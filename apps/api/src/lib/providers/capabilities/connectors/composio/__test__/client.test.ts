@@ -66,6 +66,38 @@ function gmailProvider(authConfigId = "ac_gmail"): ConnectorProviderConfig {
 	};
 }
 
+function posthogProvider(): ConnectorProviderConfig {
+	return {
+		id: "posthog",
+		name: "PostHog",
+		description: "Test PostHog provider",
+		categories: [],
+		setupUrl: "/profile",
+		operations: [
+			{
+				id: "POSTHOG_CREATE_QUERY_IN_PROJECT_BY_ID",
+				access: "read",
+				authConfigIds: ["ac_posthog"],
+				inputSchema: { type: "object", properties: {} },
+			},
+		],
+		auth: {
+			authType: "composio",
+			toolkitSlug: "posthog",
+			toolkitVersion: "20260721_00",
+			authConfigs: [
+				{
+					id: "ac_posthog",
+					name: "posthog",
+					authScheme: "API_KEY",
+					isManaged: false,
+				},
+			],
+			scopes: [],
+		},
+	};
+}
+
 describe("Composio REST client", () => {
 	beforeEach(() => {
 		vi.unstubAllGlobals();
@@ -437,6 +469,39 @@ describe("Composio REST client", () => {
 					inputSchema: { type: "object" },
 				},
 			],
+		});
+	});
+
+	it("adds PostHog HogQL guidance only to the discovered query schema", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () =>
+				jsonResponse({
+					results: [{}],
+					tool_schemas: {
+						POSTHOG_CREATE_QUERY_IN_PROJECT_BY_ID: {
+							toolkit: "POSTHOG",
+							tool_slug: "POSTHOG_CREATE_QUERY_IN_PROJECT_BY_ID",
+							description: "Run a query.",
+							input_schema: {
+								type: "object",
+								properties: { query: { type: "string" } },
+							},
+						},
+					},
+				}),
+			),
+		);
+
+		const result = await searchComposioSessionTools({
+			env: createEnv(),
+			sessionId: "trs_posthog",
+			provider: posthogProvider(),
+			useCase: "Count signups",
+		});
+
+		expect(result.tools[0]?.inputSchema).toMatchObject({
+			description: expect.stringContaining("HogQL"),
 		});
 	});
 

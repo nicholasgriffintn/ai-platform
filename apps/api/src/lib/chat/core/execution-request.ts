@@ -89,6 +89,7 @@ class ChatExecutionRequest {
 			system_prompt: prepared.systemPrompt,
 			env: chatOptions.env,
 			context: chatOptions.context,
+			connectedConnectorProviders: prepared.connectedConnectorProviders,
 			executionCtx: chatOptions.executionCtx,
 			analyticsTrackingEnabled: prepared.userSettings?.tracking_enabled ?? null,
 			disable_functions: chatOptions.disable_functions,

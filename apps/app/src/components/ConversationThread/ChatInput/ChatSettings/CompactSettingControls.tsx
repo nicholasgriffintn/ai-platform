@@ -120,7 +120,7 @@ export function CompactSettingRange({
 	step,
 	value,
 }: CompactSettingRangeProps) {
-	const rawPercentage = ((Number(value) - min) / (max - min)) * 100;
+	const rawPercentage = ((value - min) / (max - min)) * 100;
 	const percentage = clampPercentage(rawPercentage);
 	const descriptionId = description ? `${id}-description` : undefined;
 

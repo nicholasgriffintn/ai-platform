@@ -25,7 +25,7 @@ const inputSchema = z.object({
 		.boolean()
 		.optional()
 		.describe("Set true for configured capabilities or false for capabilities needing setup."),
-	limit: z.number().int().min(1).max(20).default(8),
+	limit: z.number().int().min(1).max(20).default(8).optional(),
 });
 
 export const discover_capabilities: ApiToolDefinition = {

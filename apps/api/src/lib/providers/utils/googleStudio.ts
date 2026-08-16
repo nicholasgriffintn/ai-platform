@@ -2,7 +2,7 @@ import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { ChatCompletionParameters, ReasoningEffortLevel } from "~/types";
 import { coerceStringArray, isRecord, omitUndefinedValues } from "~/utils/objects";
 import { readOptionBag, readRecordOption } from "~/utils/options";
-import { getEffectiveMaxTokens } from "~/utils/parameters";
+import { createSamplingParameters, getEffectiveMaxTokens } from "~/utils/parameters";
 
 const DEFAULT_TTS_VOICE = "Kore";
 const GEMINI_THINKING_LEVELS = new Set<ReasoningEffortLevel>(["low", "medium", "high"]);
@@ -121,11 +121,12 @@ export function buildGoogleStudioGenerationConfig(
 	modelConfig: ModelConfigItem,
 ): Record<string, unknown> {
 	const responseModalities = getConfiguredResponseModalities(params, modelConfig);
+	const samplingParameters = createSamplingParameters(params, modelConfig);
 
 	return omitUndefinedValues({
-		temperature: params.temperature,
+		temperature: samplingParameters.temperature,
 		maxOutputTokens: getEffectiveMaxTokens(params.max_tokens, modelConfig.maxTokens),
-		topP: params.top_p,
+		topP: samplingParameters.top_p,
 		topK: params.top_k,
 		seed: params.seed,
 		repetitionPenalty: params.repetition_penalty,

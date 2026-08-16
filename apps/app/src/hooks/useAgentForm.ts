@@ -146,7 +146,6 @@ export function useAgentForm() {
 
 	const getFormData = useCallback(() => {
 		const normalisedEnabledTools = normaliseToolIds(enabledTools);
-		const finiteTemperature = getFiniteNumberOrFallback(temperature, 0.7);
 		const finiteMaxSteps = getFiniteNumberOrFallback(maxSteps, 20);
 
 		return {
@@ -157,7 +156,7 @@ export function useAgentForm() {
 				servers: servers.map((s) => ({ url: s.url, type: s.type })),
 			}),
 			...(selectedModel && { model: selectedModel }),
-			...(finiteTemperature !== 0.7 && { temperature: finiteTemperature }),
+			...(temperature !== 0.7 && { temperature }),
 			...(finiteMaxSteps !== 20 && { max_steps: finiteMaxSteps }),
 			...(systemPrompt && { system_prompt: systemPrompt }),
 			...(useFewShotExamples && {

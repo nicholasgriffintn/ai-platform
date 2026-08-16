@@ -39,6 +39,14 @@ export interface ConnectorTokenPayload {
 	updatedAt: string;
 }
 
+export function getConnectedRecipeConnectorProviders(
+	connectors: readonly Pick<RecipeConnectorManifest, "id" | "status">[],
+): RecipeConnectorProvider[] {
+	return connectors
+		.filter((connector) => connector.status === "connected")
+		.map((connector) => connector.id);
+}
+
 function requireJwtSecret(context: ServiceContext): string {
 	if (!context.env.JWT_SECRET) {
 		throw new AssistantError("JWT secret not configured", ErrorType.CONFIGURATION_ERROR);

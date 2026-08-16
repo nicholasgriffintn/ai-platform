@@ -254,7 +254,10 @@ class OpenAIResponsesToolBuilder {
 				.map((tool) => getToolDefinitionName(tool))
 				.filter((name): name is string => typeof name === "string"),
 		);
-		const deferredFunctions = listFunctionTools().filter((tool) => !immediateNames.has(tool.name));
+		const deferredFunctions = listFunctionTools({
+			connectedConnectorProviders: this.params.connectedConnectorProviders,
+			selectedConnectorProvider: this.params.options?.connector?.provider,
+		}).filter((tool) => !immediateNames.has(tool.name));
 		const deferredTools = this.convertFunctionToolsToResponsesTools(
 			formatToolCalls("openai", deferredFunctions),
 		)

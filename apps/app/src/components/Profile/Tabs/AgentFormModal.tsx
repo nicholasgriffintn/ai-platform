@@ -144,7 +144,7 @@ export function AgentFormModal({
 									step="0.1"
 									value={getNumberInputValue(form.temperature)}
 									onChange={(e) => form.setTemperature(parseNumberInputValue(e.target.value))}
-									description="Controls randomness (0-1)"
+									description="Controls randomness in responses"
 								/>
 								<FormInput
 									label="Max Steps"

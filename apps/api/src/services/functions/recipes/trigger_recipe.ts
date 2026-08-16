@@ -34,6 +34,8 @@ export const trigger_recipe: ApiToolDefinition = {
 				description: "Optional user instruction or trigger context for the recipe.",
 			},
 		},
+		anyOf: [{ required: ["recipeId"] }, { required: ["query"] }],
+		additionalProperties: false,
 	}),
 	execute: async (args, context) => {
 		const request = context.request;

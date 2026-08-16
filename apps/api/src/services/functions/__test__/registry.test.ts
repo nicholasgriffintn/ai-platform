@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CAPABILITY_DISCOVERY_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
+import z from "zod/v4";
 import { listFunctionTools, resolveFunctionTool, toolRegistry } from "~/services/functions";
 
 describe("functions tool registry", () => {
@@ -40,5 +41,58 @@ describe("functions tool registry", () => {
 		expect(discovery.permissions).toEqual(["read"]);
 		expect(names).not.toContain("search_functions");
 		expect(names).not.toContain("get_function_schema");
+	});
+
+	it("keeps the defaulted discovery limit optional in the model schema", () => {
+		const discovery = resolveFunctionTool(CAPABILITY_DISCOVERY_TOOL_NAME);
+		const schema = z.toJSONSchema(discovery.inputSchema);
+
+		expect(schema.required).not.toContain("limit");
+		expect(schema.properties?.limit).toMatchObject({ default: 8 });
+		expect(discovery.inputSchema.parse({ query: "analytics" })).toMatchObject({ limit: 8 });
+	});
+
+	it("scopes connector providers to connected accounts for each request", () => {
+		const tools = listFunctionTools({ connectedConnectorProviders: ["gmail", "posthog"] });
+		const connector = tools.find((tool) => tool.name === "use_recipe_connector");
+		expect(connector).toBeDefined();
+		if (!connector) throw new Error("Connector tool was not registered");
+		const schema = z.toJSONSchema(connector.inputSchema);
+
+		expect(schema.properties?.provider).toMatchObject({ enum: ["gmail", "posthog"] });
+		expect(schema.properties?.params).toMatchObject({
+			description: "Parameters matching the exact schema returned by connector discovery.",
+		});
+	});
+
+	it("omits the connector tool when the user has no connected providers", () => {
+		const names = listFunctionTools({ connectedConnectorProviders: [] }).map((tool) => tool.name);
+
+		expect(names).not.toContain("use_recipe_connector");
+	});
+
+	it("publishes closed schemas for recipe and web-search tools", () => {
+		const triggerRecipe = resolveFunctionTool("trigger_recipe");
+		const useRecipeConnector = resolveFunctionTool("use_recipe_connector");
+		const webSearch = resolveFunctionTool("web_search");
+		const triggerRecipeSchema = z.toJSONSchema(triggerRecipe.inputSchema);
+		const useRecipeConnectorSchema = z.toJSONSchema(useRecipeConnector.inputSchema);
+		const webSearchSchema = z.toJSONSchema(webSearch.inputSchema);
+
+		expect(triggerRecipe.inputSchema.safeParse({}).success).toBe(false);
+		expect(triggerRecipe.inputSchema.safeParse({ recipeId: "recipe-1" }).success).toBe(true);
+		expect(triggerRecipe.inputSchema.safeParse({ query: "run my alert" }).success).toBe(true);
+		expect(triggerRecipeSchema.anyOf).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ required: ["recipeId"], additionalProperties: false }),
+				expect.objectContaining({ required: ["query"], additionalProperties: false }),
+			]),
+		);
+		expect(useRecipeConnectorSchema.additionalProperties).toBe(false);
+		expect(webSearchSchema.additionalProperties).toBe(false);
+		expect(webSearchSchema.properties?.search_depth).toMatchObject({
+			type: "string",
+			enum: ["basic", "advanced"],
+		});
 	});
 });

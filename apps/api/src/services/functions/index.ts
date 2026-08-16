@@ -142,24 +142,34 @@ for (const fn of functionDefinitions) {
 }
 
 export const listFunctionTools = (options?: {
+	connectedConnectorProviders?: readonly RecipeConnectorProvider[];
 	selectedConnectorProvider?: RecipeConnectorProvider;
 }): RegisteredFunctionTool[] => {
 	const definitions = toolRegistry.listDefinitions(
 		FUNCTIONS_TOOL_CATEGORY,
 	) as RegisteredFunctionTool[];
-	if (!options?.selectedConnectorProvider) {
+	if (!options?.connectedConnectorProviders && !options?.selectedConnectorProvider) {
 		return definitions;
 	}
-	const selectedConnectorProvider = options.selectedConnectorProvider;
+	const connectedConnectorProviders = options.connectedConnectorProviders;
+	const connectorProviders = options.selectedConnectorProvider
+		? !connectedConnectorProviders ||
+			connectedConnectorProviders.includes(options.selectedConnectorProvider)
+			? [options.selectedConnectorProvider]
+			: []
+		: [...(connectedConnectorProviders ?? [])];
 
-	return definitions.map((definition) =>
-		definition.name === use_recipe_connector.name
-			? {
-					...definition,
-					inputSchema: createUseRecipeConnectorInputSchema([selectedConnectorProvider]),
-				}
-			: definition,
-	);
+	return definitions.flatMap((definition) => {
+		if (definition.name !== use_recipe_connector.name) return [definition];
+		if (connectorProviders.length === 0) return [];
+
+		return [
+			{
+				...definition,
+				inputSchema: createUseRecipeConnectorInputSchema(connectorProviders),
+			},
+		];
+	});
 };
 
 export const resolveFunctionTool = (functionName: string): RegisteredFunctionTool =>

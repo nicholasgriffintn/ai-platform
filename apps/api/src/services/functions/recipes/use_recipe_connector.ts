@@ -97,7 +97,7 @@ export function createUseRecipeConnectorInputSchema(
 				enum: [...providers],
 				description:
 					providers.length === 1
-						? `Use the connector selected by the user: ${providers[0]}.`
+						? `Use the connected provider: ${providers[0]}.`
 						: "The connected provider to use.",
 			},
 			operation: {
@@ -118,11 +118,11 @@ export function createUseRecipeConnectorInputSchema(
 			},
 			params: {
 				type: "object",
-				description:
-					"Provider operation parameters. For PostHog query, pass query as a HogQL string or { kind: 'HogQLQuery', query: string }; projectId, organizationId, and region come from saved recipe configuration when omitted.",
+				description: "Parameters matching the exact schema returned by connector discovery.",
 			},
 		},
 		required: ["provider"],
+		additionalProperties: false,
 	});
 }
 

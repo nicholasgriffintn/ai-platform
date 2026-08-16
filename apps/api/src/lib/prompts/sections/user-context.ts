@@ -1,3 +1,4 @@
+import { escapeHtml } from "~/utils/html";
 import { PromptBuilder } from "../builder";
 
 interface UserContextOptions {
@@ -19,9 +20,9 @@ export function buildUserContextSection({
 }: UserContextOptions): string {
 	const builder = new PromptBuilder("<user_context>")
 		.addLine()
-		.addIf(!!userNickname, `<user_nickname>${userNickname}</user_nickname>`)
-		.addIf(!!userJobRole, `<user_job_role>${userJobRole}</user_job_role>`)
-		.addIf(!!date, `<current_date>${date}</current_date>`);
+		.addIf(!!userNickname, `<user_nickname>${escapeHtml(userNickname ?? "")}</user_nickname>`)
+		.addIf(!!userJobRole, `<user_job_role>${escapeHtml(userJobRole ?? "")}</user_job_role>`)
+		.addIf(!!date, `<current_date>${escapeHtml(date)}</current_date>`);
 
 	if (
 		latitude !== undefined &&
@@ -35,7 +36,10 @@ export function buildUserContextSection({
 			.addLine("</user_location>");
 	}
 
-	builder.addIf(!!language, `<preferred_language>${language}</preferred_language>`);
+	builder.addIf(
+		!!language,
+		`<preferred_language>${escapeHtml(language ?? "")}</preferred_language>`,
+	);
 
 	builder.addLine("</user_context>").addLine();
 

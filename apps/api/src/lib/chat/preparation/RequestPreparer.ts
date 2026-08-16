@@ -23,6 +23,7 @@ import { getSystemPrompt } from "~/lib/prompts";
 import type {
 	ChatHostedToolSettings,
 	ModelConfigInfo,
+	RecipeConnectorProvider,
 	SkillAvailability,
 } from "@ngriffin_uk/polychat-schemas";
 import type { ChatMode, CoreChatOptions, MemoryScope, Message, Platform } from "~/types";
@@ -49,6 +50,11 @@ import {
 	resolvePersonalSkillScope,
 	type RequestSkillScope,
 } from "~/services/skills";
+import {
+	getConnectedRecipeConnectorProviders,
+	listRecipeConnectors,
+} from "~/services/apps/connectors";
+import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
 
 const logger = getLogger({ prefix: "lib/chat/preparation/RequestPreparer" });
 
@@ -83,6 +89,7 @@ export interface PreparedRequest {
 	toolOptions?: ChatHostedToolSettings;
 	requestOptions: CoreChatOptions["options"];
 	memoryScope: MemoryScope;
+	connectedConnectorProviders?: RecipeConnectorProvider[];
 }
 
 export class RequestPreparer {
@@ -160,6 +167,26 @@ export class RequestPreparer {
 				: Promise.resolve(null);
 
 		const modelConfigsPromise = this.buildModelConfigs(options, validationContext);
+		const enabledFunctionTools = resolveEnabledFunctionToolNames(
+			projectContext?.enabledTools ?? options.enabled_tools,
+			user,
+		);
+		const connectedConnectorProvidersPromise =
+			user?.id && options.context && enabledFunctionTools.has("use_recipe_connector")
+				? listRecipeConnectors({
+						context: options.context,
+						userId: user.id,
+						requestUrl: options.app_url,
+					})
+						.then(({ connectors }) => getConnectedRecipeConnectorProviders(connectors))
+						.catch((error) => {
+							logger.warn("Failed to resolve connected recipe providers", {
+								error,
+								userId: user.id,
+							});
+							return [];
+						})
+				: Promise.resolve(undefined);
 		const needsSavedToolConfiguration = options.enabled_tools?.some(
 			(toolId) => getModelToolDefinition(toolId)?.requiresConfiguration,
 		);
@@ -178,14 +205,21 @@ export class RequestPreparer {
 			return this.processMessageContent(options, validationContext, resolvedSettings);
 		})();
 
-		const [modelConfigs, userSettings, finalMessage, savedToolConfigurations] = await Promise.all([
+		const [
+			modelConfigs,
+			userSettings,
+			finalMessage,
+			savedToolConfigurations,
+			connectedConnectorProviders,
+		] = await Promise.all([
 			modelConfigsPromise,
 			userSettingsPromise,
 			finalMessagePromise,
 			savedToolConfigurationsPromise,
+			connectedConnectorProvidersPromise,
 		]);
 
-		const memoriesEnabled = this.shouldUseMemories(user, userSettings, options.store);
+		const memoryPolicy = resolveMemoryPolicy({ user, userSettings, store: options.store });
 
 		const primaryModel = primaryModelConfig.matchingModel;
 		const primaryProvider = primaryModelConfig.provider;
@@ -232,7 +266,7 @@ export class RequestPreparer {
 			finalMessage,
 			primaryModel,
 			userSettings,
-			memoriesEnabled,
+			memoryPolicy,
 			projectContext,
 			memoryScope,
 			skills,
@@ -288,6 +322,7 @@ export class RequestPreparer {
 			toolOptions,
 			requestOptions: options.options,
 			memoryScope,
+			connectedConnectorProviders,
 		};
 	}
 
@@ -514,7 +549,7 @@ export class RequestPreparer {
 		finalMessage: string,
 		primaryModel: string,
 		userSettings: any,
-		memoriesEnabled: boolean,
+		memoryPolicy: ReturnType<typeof resolveMemoryPolicy>,
 		projectContext: ProjectChatContext | null,
 		memoryScope: MemoryScope = { type: "personal" },
 		skills?: readonly SkillAvailability[],
@@ -524,10 +559,12 @@ export class RequestPreparer {
 			mode = "normal",
 			verbosity,
 			reasoning_effort,
+			max_tokens,
 			location,
 			completion_id,
 		} = options;
 		const user = options.context?.user;
+		const memoriesEnabled = memoryPolicy.enabled;
 
 		const currentMode = mode;
 		const promptMode = resolveChatPromptMode(options.options);
@@ -576,12 +613,14 @@ export class RequestPreparer {
 				promptMode,
 				verbosity,
 				reasoning_effort,
+				max_tokens,
 				options: options.options,
 			},
 			primaryModel,
 			user || undefined,
 			userSettings,
 			skills,
+			{ memory: memoryPolicy },
 		);
 
 		const enhancedPrompt = await this.enhanceSystemPromptWithMemory(
@@ -650,10 +689,6 @@ export class RequestPreparer {
 		}
 
 		return systemPrompt;
-	}
-
-	private shouldUseMemories(user: any, userSettings: any, store?: boolean): boolean {
-		return resolveMemoryPolicy({ user, userSettings, store }).enabled;
 	}
 
 	private buildFinalMessages(

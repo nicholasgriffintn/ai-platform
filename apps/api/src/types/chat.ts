@@ -4,6 +4,7 @@ import type {
 	ChatRequestOptions as SchemaChatRequestOptions,
 	MessageRole as SchemaMessageRole,
 	MessagePart as SchemaMessagePart,
+	RecipeConnectorProvider,
 } from "@ngriffin_uk/polychat-schemas";
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { ServiceContext } from "../lib/context/serviceContext";
@@ -232,6 +233,8 @@ type InternalExecutionParams = {
 	env: IEnv;
 	// Runtime service context for authenticated user, repositories, and request cache.
 	context?: ServiceContext;
+	// Connector providers confirmed as connected for this request.
+	connectedConnectorProviders?: RecipeConnectorProvider[];
 	// The Worker execution context for background analytics delivery.
 	executionCtx?: ExecutionContext;
 	// Whether analytics tracking is permitted for this request.

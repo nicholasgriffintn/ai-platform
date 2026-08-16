@@ -5,9 +5,16 @@ import { PromptBuilder } from "./builder";
 import { resolvePromptLayout } from "./layout";
 import { buildAssistantMetadataSection, type PromptModelMetadata } from "./sections/metadata";
 import { buildAssistantPrinciplesSection } from "./sections/principles";
-import { buildCodingExampleOutputSection } from "./sections/examples";
+import { buildCodingConductSection } from "./sections/coding-conduct";
+import { buildFormattingSection } from "./sections/formatting";
 import { buildUserContextSection } from "./sections/user-context";
 import { buildSafetyStandardsSection } from "./sections/safety";
+import { buildResponseStyleSection } from "./sections/response-style";
+import {
+	DISABLED_PROMPT_MEMORY_POLICY,
+	buildSessionConfigSection,
+	type PromptMemoryPolicy,
+} from "./sections/session-config";
 import { buildSkillsSection } from "./sections/skills";
 import { getResponseStyle, resolvePromptCapabilities } from "./utils";
 
@@ -17,6 +24,7 @@ export function returnCodingPrompt(
 	supportsToolCalls?: boolean,
 	modelMetadata?: PromptModelMetadata,
 	skills?: readonly SkillAvailability[],
+	memoryPolicy: PromptMemoryPolicy = DISABLED_PROMPT_MEMORY_POLICY,
 ): string {
 	const chatMode = request.mode || "standard";
 
@@ -24,9 +32,6 @@ export function returnCodingPrompt(
 	const userJobRole = userSettings?.job_role || null;
 	const userTraits = userSettings?.traits || null;
 	const userPreferences = userSettings?.preferences || null;
-	const memoriesEnabled =
-		userSettings?.memories_save_enabled || userSettings?.memories_chat_history_enabled;
-
 	const verbosity = request.text?.verbosity ?? request.verbosity ?? "medium";
 	const reasoningEffort = request.reasoning?.effort ?? request.reasoning_effort ?? "none";
 	const simulatedThinking = reasoningEffort === "simulated-thinking";
@@ -47,23 +52,7 @@ export function returnCodingPrompt(
 
 	const layout = resolvePromptLayout({
 		contextWindow: modelMetadata?.modelConfig?.contextWindow,
-		isAgent,
-		isCoding: true,
-		capabilities,
 	});
-
-	const { traits, preferences, problemBreakdownInstructions, answerFormatInstructions } =
-		getResponseStyle(
-			verbosity,
-			capabilities.simulatedThinking,
-			capabilities.supportsToolCalls,
-			isAgent,
-			memoriesEnabled,
-			userTraits,
-			userPreferences,
-			true,
-			layout.instructionVariant,
-		);
 
 	const metadataSection = buildAssistantMetadataSection({
 		request: preferredLanguage ? { ...request, lang: preferredLanguage } : request,
@@ -77,27 +66,34 @@ export function returnCodingPrompt(
 		supportsToolCalls: capabilities.supportsToolCalls,
 		simulatedThinking: capabilities.simulatedThinking,
 		preferredLanguage,
-		verbosity,
 		format: layout.principlesFormat,
 	});
+	const responseStyle = getResponseStyle(
+		verbosity,
+		userTraits,
+		userPreferences,
+		true,
+		isAgent,
+		capabilities.simulatedThinking,
+		layout.principlesFormat,
+	);
 
 	const builder = new PromptBuilder(metadataSection)
 		.addLine(
-			"<assistant_info>You are an experienced software developer tasked with answering coding questions or generating code based on user requests. Your responses should be professional, accurate, and tailored to the specified programming language when applicable.</assistant_info>",
-		)
-		.addLine(
-			"<instruction_precedence>\n<order>system > safety_standards > assistant_principles > response_preferences > example_output</order>\n<conflict_rule>If instructions conflict, follow the higher-precedence item and briefly note any limitation to the user if it affects the answer.</conflict_rule>\n</instruction_precedence>",
+			"<instruction_precedence>\n<order>safety_standards > behaviour > coding_conduct > response_style > formatting > available_skills > session_config</order>\n<conflict_rule>Resolve conflicts silently in this order. Surface only limitations that materially change what the user receives.</conflict_rule>\n</instruction_precedence>",
 		)
 		.addLine()
 		.add(principlesSection)
+		.add(buildResponseStyleSection(responseStyle))
 		.add(
-			buildSafetyStandardsSection({
-				preferredLanguage,
+			buildFormattingSection({
+				isCoding: true,
+				format: layout.principlesFormat,
 			}),
 		)
-		.addLine(`<response_traits>${traits}</response_traits>`)
-		.addLine(`<response_preferences>${preferences}</response_preferences>`)
-		.addLine()
+		.add(buildCodingConductSection())
+		.add(buildSafetyStandardsSection())
+		.add(buildSkillsSection(skills))
 		.add(
 			buildUserContextSection({
 				date,
@@ -105,26 +101,16 @@ export function returnCodingPrompt(
 				userJobRole,
 				latitude,
 				longitude,
-				language: preferredLanguage,
 			}),
 		)
-		.add(buildSkillsSection(skills))
-		.startSection();
-
-	builder
 		.add(
-			buildCodingExampleOutputSection({
-				simulatedThinking: capabilities.simulatedThinking,
-				problemBreakdownInstructions,
-				answerFormatInstructions,
-				preferredLanguage,
+			buildSessionConfigSection({
+				mode: chatMode,
+				platform: request.platform,
 				verbosity,
-				variant: layout.exampleVariant === "full" ? "full" : "compact",
+				preferredLanguage,
+				memory: memoryPolicy,
 			}),
-		)
-		.startSection()
-		.addLine(
-			"Remember to tailor your response to the specified programming language when applicable, and always strive for accuracy and professionalism in your explanations and code examples.",
 		);
 
 	return builder.build();
