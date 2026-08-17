@@ -1,3 +1,5 @@
+import { type Conversation } from "@ngriffin_uk/polychat-library-chat/conversation-types";
+import type { SearchResult, SearchResultKind } from "@ngriffin_uk/polychat-component-navigation";
 import type {
 	AssistantActionItem,
 	GlobalSearchResponse,
@@ -5,16 +7,10 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { getCapabilityOpenPath, PERSONAL_SURFACE } from "~/lib/capability-surfaces";
-import type { Conversation } from "~/types/chat";
 
-export type GlobalSearchResultKind = "conversation" | "project" | "workspace" | "capability";
+export type GlobalSearchResultKind = SearchResultKind;
 
-export interface GlobalSearchResult {
-	id: string;
-	kind: GlobalSearchResultKind;
-	title: string;
-	description: string;
-	href: string;
+export interface GlobalSearchResult extends SearchResult {
 	searchText: string;
 	updatedAt?: string | null;
 }

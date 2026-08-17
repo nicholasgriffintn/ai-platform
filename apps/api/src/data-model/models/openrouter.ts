@@ -8617,6 +8617,8 @@ export const openrouterModelConfig: ModelConfig = {
 
 	"moonshotai/kimi-k2.6": {
 		name: "Kimi K2.6",
+		description:
+			"Moonshot AI's frontier-scale open model for agentic workloads, vision, and structured outputs.",
 		matchingModel: "moonshotai/kimi-k2.6",
 		provider: "openrouter",
 		releaseDate: "April 21, 2026",
@@ -11913,6 +11915,8 @@ export const openrouterModelConfig: ModelConfig = {
 
 	"x-ai/grok-4.3": {
 		name: "Grok 4.3",
+		description:
+			"xAI's fast general-purpose model with strong tool calling and instruction following.",
 		matchingModel: "x-ai/grok-4.3",
 		provider: "openrouter",
 		releaseDate: "April 17, 2026",
@@ -12293,7 +12297,6 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 3,
 		speed: 3,
 		multimodal: true,
-		isFeatured: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -13748,6 +13751,8 @@ export const openrouterModelConfig: ModelConfig = {
 
 	"google/gemini-3.6-flash": {
 		name: "Gemini 3.6 Flash",
+		description:
+			"Google's latest model balancing speed and intelligence for agentic and multimodal tasks.",
 		matchingModel: "google/gemini-3.6-flash",
 		provider: "openrouter",
 		family: "gemini-flash",
@@ -13763,6 +13768,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
+		isFeatured: true,
 		contextWindow: 1048576,
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00075,

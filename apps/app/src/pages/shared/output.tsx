@@ -6,8 +6,7 @@ import { Link, useParams } from "react-router";
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import { useRunnableTool } from "~/hooks/useRunnableTools";
 import { PageShell } from "~/components/Core/PageShell";
-import { PageStatus } from "~/components/Core/PageStatus";
-import { Card } from "@ngriffin_uk/polychat-component-ui";
+import { Card, PageStatus } from "@ngriffin_uk/polychat-component-ui";
 import { API_BASE_URL } from "~/constants";
 import { getSharedOutput } from "~/lib/api/outputs";
 

@@ -1,17 +1,21 @@
 import { Plus, SearchX } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { RecipeConfigurationDialog } from "~/components/Apps/Recipes/RecipeConfigurationDialog";
-import { RecipeScheduleDialog } from "~/components/Apps/Recipes/RecipeScheduleDialog";
-import { EmptyState } from "~/components/Core/EmptyState";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
-import { CapabilityFilters } from "@ngriffin_uk/polychat-component-capabilities";
+import {
+	CardGridLoadingSkeleton,
+	ConfirmationDialog,
+	EmptyState,
+} from "@ngriffin_uk/polychat-component-ui";
+import {
+	CapabilityFilters,
+	RecipeConfigurationDialog,
+	RecipeScheduleDialog,
+	ToolConfigurationDialog,
+} from "@ngriffin_uk/polychat-component-capabilities";
 import { isAuthenticationError } from "~/lib/errors";
 import { CapabilityGroups } from "~/components/Capabilities/CapabilityGroups";
-import { ToolConfigurationDialog } from "~/components/Capabilities/ToolConfigurationDialog";
-import { CardGridLoadingSkeleton } from "~/components/Core/LoadingSkeletons";
 import { ConnectorSetupDialogs } from "~/components/Connectors/ConnectorSetupDialogs";
 import {
 	useCapabilityLibraryController,

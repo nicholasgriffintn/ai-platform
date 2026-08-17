@@ -79,6 +79,7 @@
 		"test:package": "pnpm build && node scripts/check-package-exports.mjs"
 	},
 	"dependencies": {
+		"@ngriffin_uk/polychat-utility-core": "workspace:^",
 		"zod": "catalog:"
 	},
 	"devDependencies": {

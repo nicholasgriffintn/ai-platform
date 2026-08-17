@@ -1,3 +1,9 @@
+import {
+	getMessageTextContent,
+	serialiseMessagesForChatRequest,
+	serialiseMessagesForConversationUpdate,
+} from "@ngriffin_uk/polychat-library-chat/messages";
+import { readCompactionStatusMessage } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
 import type {
 	ChatMode,
 	ChatRequestOptions,
@@ -20,14 +26,8 @@ import type {
 	ModelRouterMode,
 } from "@ngriffin_uk/polychat-schemas";
 import { getSandboxTaskToolNames } from "~/lib/sandbox/task-tools";
-import { readCompactionStatusMessage } from "~/lib/chat/compaction-status";
 import { filterUnavailableModelToolSelections } from "~/lib/model-tools";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
-import {
-	getMessageTextContent,
-	serialiseMessagesForChatRequest,
-	serialiseMessagesForConversationUpdate,
-} from "../../messages";
 import {
 	createStreamingApiError,
 	toAppMessage,

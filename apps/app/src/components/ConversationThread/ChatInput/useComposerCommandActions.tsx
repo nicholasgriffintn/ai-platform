@@ -1,4 +1,25 @@
 import {
+	type ComposerActionCatalogConfig,
+	type ComposerAssistantActionCapability,
+	type ComposerCommandAction,
+} from "@ngriffin_uk/polychat-component-conversation";
+import {
+	appendComposerInlineTokenWithCursor,
+	type ComposerDirectiveQuery,
+	getComposerInlineTokenText,
+	matchesComposerCommand,
+	removeComposerDirective,
+	replaceComposerDirectiveWithCursor,
+} from "@ngriffin_uk/polychat-library-chat/composer-commands";
+import {
+	defaultModel,
+	EMPTY_MODEL_CONFIG,
+	formatReasoningLabel,
+	getAvailableModels,
+	getDefaultReasoningEffort,
+	getReasoningOptions,
+} from "@ngriffin_uk/polychat-schemas";
+import {
 	Archive,
 	BookOpen,
 	Brain,
@@ -26,31 +47,12 @@ import { useModelToolOptions } from "~/hooks/useModelTools";
 import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import { applyModelResponseDefaults } from "~/lib/chat-settings";
-import {
-	appendComposerInlineTokenWithCursor,
-	type ComposerDirectiveQuery,
-	getComposerInlineTokenText,
-	matchesComposerCommand,
-	removeComposerDirective,
-	replaceComposerDirectiveWithCursor,
-} from "~/lib/composer-commands";
 import { COMPACT_CONVERSATION_COMMAND } from "@ngriffin_uk/polychat-library-chat/compaction-command";
 import type { ModelToolId } from "~/lib/model-tools";
-import { defaultModel, EMPTY_MODEL_CONFIG, getAvailableModels } from "~/lib/models";
-import {
-	formatReasoningLabel,
-	getDefaultReasoningEffort,
-	getReasoningOptions,
-} from "~/lib/reasoning";
 import { formatVerbosityLabel, getDefaultVerbosity, getVerbosityOptions } from "~/lib/verbosity";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
 import type { ChatSettings, ReasoningEffort, VerbosityLevel } from "~/types";
-import type {
-	ComposerAssistantActionCapability,
-	ComposerActionCatalogConfig,
-	ComposerCommandAction,
-} from "./composerCommandTypes";
 
 const PROJECT_CAPABILITY_KIND_BY_ACTION_KIND: Partial<
 	Record<AssistantActionItemKind, ProjectCapabilityKind>

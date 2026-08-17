@@ -1,3 +1,8 @@
+import {
+	isRecipeConfigured,
+	type ModelToolConfiguration,
+	parseModelToolConfiguration,
+} from "@ngriffin_uk/polychat-schemas";
 import { useMemo, useState } from "react";
 import type {
 	AssistantActionItem,
@@ -25,15 +30,10 @@ import {
 import { useRecipeActionRequest } from "~/components/Apps/Recipes/useRecipeActionRequest";
 import { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
 import { useChatStore } from "~/state/stores/chatStore";
-import {
-	parseModelToolConfiguration,
-	type ModelToolConfiguration,
-} from "~/lib/model-tool-configuration";
 import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 import { useToolConfigurations } from "~/hooks/useToolConfigurations";
 import { useDeleteSkill, usePersonalSkills } from "~/hooks/useSkills";
 import type { CapabilityFilter } from "@ngriffin_uk/polychat-component-capabilities";
-import { isRecipeConfigured } from "~/lib/recipes";
 
 export interface PersonalSkillControls {
 	byId: Map<string, SkillAvailability>;

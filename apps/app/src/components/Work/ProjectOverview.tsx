@@ -1,23 +1,24 @@
+import {
+	ProjectCapabilitiesCard,
+	ProjectOverviewActions,
+	ProjectOverviewSkeleton,
+} from "@ngriffin_uk/polychat-component-workspaces";
 import { ArrowRight, MessageSquareText } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 
-import { EmptyState } from "~/components/Core/EmptyState";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
+import { Button, Card, ConfirmationDialog, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import { useTemplateMutations } from "~/hooks/useGovernance";
 import { useArchiveProject } from "~/hooks/useWorkspaces";
 import { getErrorMessage, isAuthenticationError } from "~/lib/errors";
 import { useWorkData } from "./WorkContext";
 import { ProjectBriefCard } from "./ProjectBriefCard";
-import { ProjectCapabilitiesCard } from "./ProjectCapabilitiesCard";
-import { ProjectOverviewSkeleton } from "./WorkLoadingSkeletons";
 import { ProjectCodingEnvironmentCard } from "./ProjectCodingEnvironmentCard";
 import { ProjectConversationStarter } from "./ProjectConversationStarter";
 import { ProjectKnowledgeCard } from "./ProjectKnowledgeCard";
-import { ProjectOverviewActions } from "./ProjectOverviewActions";
 import { ProjectSchedulesCard } from "./ProjectSchedulesCard";
 
 export function ProjectOverview({

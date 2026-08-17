@@ -1,3 +1,9 @@
+import { ToolSelectorFilters } from "@ngriffin_uk/polychat-component-conversation";
+import {
+	filterTools,
+	getAvailableToolCategories,
+	type ToolCategoryFilter,
+} from "@ngriffin_uk/polychat-library-chat/tool-filters";
 import { Blocks } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -8,15 +14,9 @@ import {
 	PopoverTrigger,
 } from "@ngriffin_uk/polychat-component-ui";
 import { useTools } from "~/hooks/useTools";
-import {
-	filterTools,
-	getAvailableToolCategories,
-	type ToolCategoryFilter,
-} from "~/lib/tool-filters";
 import { cn } from "~/lib/utils";
 import type { Tool } from "@ngriffin_uk/polychat-schemas";
 import { useToolsStore } from "~/state/stores/toolsStore";
-import { ToolSelectorFilters } from "./ToolSelectorFilters";
 
 export const ToolSelector = ({ isDisabled = false }: { isDisabled?: boolean }) => {
 	const [isOpen, setIsOpen] = useState(false);

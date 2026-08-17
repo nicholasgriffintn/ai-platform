@@ -14,7 +14,7 @@ const LoginModal = lazy(() =>
 );
 
 const KeyboardShortcutsHelp = lazy(() =>
-	import("~/components/Models/KeyboardShortcutsHelp").then((mod) => ({
+	import("@ngriffin_uk/polychat-component-conversation").then((mod) => ({
 		default: mod.KeyboardShortcutsHelp,
 	})),
 );

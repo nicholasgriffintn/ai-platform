@@ -1,9 +1,10 @@
+import { StrudelPlayer } from "@ngriffin_uk/polychat-component-experiences/music";
+import { EMPTY_MODEL_CONFIG, getAvailableModels } from "@ngriffin_uk/polychat-schemas";
 import { Sparkles, Save } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
-import { StrudelPlayer } from "~/components/Strudel/StrudelPlayer";
 import {
 	Badge,
 	Button,
@@ -20,7 +21,6 @@ import {
 import { useGenerateStrudelPattern, useSaveStrudelPattern } from "~/hooks/useStrudel";
 import { useModels } from "~/hooks/useModels";
 import { defaultCode, examplePatterns, type PatternExample } from "~/lib/strudel/examples";
-import { EMPTY_MODEL_CONFIG, getAvailableModels } from "~/lib/models";
 import { cn } from "~/lib/utils";
 import { parseCommaSeparatedTags } from "@ngriffin_uk/polychat-utility-core";
 import type { StrudelComplexity, StrudelStyle } from "~/types";

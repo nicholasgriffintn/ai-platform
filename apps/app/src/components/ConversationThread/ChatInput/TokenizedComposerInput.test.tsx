@@ -1,11 +1,10 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { createRef } from "react";
-import { describe, expect, it, vi } from "vitest";
-
 import {
 	TokenizedComposerInput,
 	type TokenizedComposerInputHandle,
-} from "./TokenizedComposerInput";
+} from "@ngriffin_uk/polychat-component-conversation";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { createRef } from "react";
+import { describe, expect, it, vi } from "vitest";
 
 describe("TokenizedComposerInput", () => {
 	it("renders tokens at their text insertion point", () => {

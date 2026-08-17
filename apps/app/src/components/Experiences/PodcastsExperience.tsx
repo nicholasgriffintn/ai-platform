@@ -4,11 +4,14 @@ import type { Podcast } from "@ngriffin_uk/polychat-schemas";
 
 import { PodcastView } from "~/components/Apps/Podcasts/View";
 import { PodcastWorkflow } from "~/components/Apps/Podcasts/PodcastWorkflow";
-import { EmptyState } from "~/components/Core/EmptyState";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
+import {
+	Button,
+	Card,
+	CardGridLoadingSkeleton,
+	EmptyState,
+} from "@ngriffin_uk/polychat-component-ui";
 import { useFetchPodcast, useFetchPodcasts, useProcessPodcast } from "~/hooks/usePodcasts";
-import { CardGridLoadingSkeleton } from "~/components/Core/LoadingSkeletons";
 import { isAuthenticationError } from "~/lib/errors";
 
 export function PodcastsExperience({ basePath, projectId, subpath }: ExperienceProps) {

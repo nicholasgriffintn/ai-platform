@@ -1,4 +1,4 @@
-import type { Conversation } from "~/types/chat";
+import { type Conversation } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 
 export const ANONYMOUS_LOCAL_CHAT_SCOPE = "anonymous";
 

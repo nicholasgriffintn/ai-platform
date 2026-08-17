@@ -1,12 +1,20 @@
+import { StrudelPlayer } from "@ngriffin_uk/polychat-component-experiences/music";
 import { Music2, Music4, Plus, Sparkles, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
-import { StrudelPlayer } from "~/components/Strudel/StrudelPlayer";
 import { StrudelCreateStudio } from "~/components/Apps/Strudel/StrudelCreateStudio";
-import { EmptyState } from "~/components/Core/EmptyState";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Badge, Button, Card, Input, Label, Textarea } from "@ngriffin_uk/polychat-component-ui";
+import {
+	Badge,
+	Button,
+	Card,
+	CardGridLoadingSkeleton,
+	EmptyState,
+	Input,
+	Label,
+	Textarea,
+} from "@ngriffin_uk/polychat-component-ui";
 import {
 	useDeleteStrudelPattern,
 	useGenerateStrudelPattern,
@@ -15,7 +23,6 @@ import {
 	useStrudelPatterns,
 	useUpdateStrudelPattern,
 } from "~/hooks/useStrudel";
-import { CardGridLoadingSkeleton } from "~/components/Core/LoadingSkeletons";
 import { parseCommaSeparatedTags } from "@ngriffin_uk/polychat-utility-core";
 import { isAuthenticationError } from "~/lib/errors";
 

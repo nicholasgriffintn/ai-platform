@@ -1,18 +1,20 @@
-import { ArrowRight, FolderKanban } from "lucide-react";
+import {
+	ProjectCardGrid,
+	WorkspaceOverviewActions,
+	WorkspaceOverviewSkeleton,
+} from "@ngriffin_uk/polychat-component-workspaces";
+import { FolderKanban } from "lucide-react";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
-import { EmptyState } from "~/components/Core/EmptyState";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
+import { Button, ConfirmationDialog, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
 import { useDeleteWorkspace } from "~/hooks/useWorkspaces";
 import { isAuthenticationError } from "~/lib/errors";
 import { useWorkData } from "./WorkContext";
 import { CreateProjectDialog } from "./CreateProjectDialog";
 import { InviteMemberDialog } from "./InviteMemberDialog";
-import { WorkspaceOverviewActions } from "./WorkspaceOverviewActions";
-import { WorkspaceOverviewSkeleton } from "./WorkLoadingSkeletons";
 
 export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 	const { workspaceQuery } = useWorkData();
@@ -66,7 +68,7 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 						<p className="text-sm text-zinc-500">Projects in this workspace.</p>
 					</div>
 					<Link
-						to={`/work/${workspaceId}/members`}
+						href={`/work/${workspaceId}/members`}
 						className="text-sm text-zinc-600 underline-offset-4 hover:underline dark:text-zinc-300"
 					>
 						{workspace.memberCount} {workspace.memberCount === 1 ? "member" : "members"}
@@ -85,38 +87,12 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 						className="min-h-[260px]"
 					/>
 				) : (
-					<div className="grid gap-4 md:grid-cols-2">
-						{workspace.projects.map((project) => (
-							<Link
-								key={project.id}
-								to={`/work/${workspaceId}/projects/${project.id}`}
-								className="group no-underline hover:!no-underline"
-							>
-								<Card className="h-full p-6 transition-colors group-hover:border-zinc-400 dark:group-hover:border-zinc-600">
-									<div className="flex items-start justify-between">
-										<FolderKanban size={20} className="text-zinc-500" />
-										<ArrowRight size={18} className="text-zinc-400" />
-									</div>
-									<h3 className="mt-4 text-xl font-semibold text-zinc-950 group-hover:underline dark:text-white">
-										{project.name}
-									</h3>
-									<p className="min-h-12 text-sm leading-6 text-zinc-500">
-										{project.description || "No description"}
-									</p>
-									<div className="flex gap-4 border-t border-zinc-100 pt-4 text-xs text-zinc-500 dark:border-zinc-800">
-										<span>
-											{project.conversationCount} conversation
-											{project.conversationCount !== 1 ? "s" : ""}
-										</span>
-										<span>
-											{project.capabilityCount} capabilit
-											{project.capabilityCount !== 1 ? "es" : "y"}
-										</span>
-									</div>
-								</Card>
-							</Link>
-						))}
-					</div>
+					<ProjectCardGrid
+						projects={workspace.projects.map((project) => ({
+							...project,
+							href: `/work/${workspaceId}/projects/${project.id}`,
+						}))}
+					/>
 				)}
 			</PageShell.Content>
 			<CreateProjectDialog

@@ -1,13 +1,12 @@
+import { groupAppsByCategory } from "@ngriffin_uk/polychat-component-capabilities";
 import { Sparkles } from "lucide-react";
 import type { CapabilityCatalogItem as AppListItem } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { AppCard } from "~/components/Apps/AppCard";
-import { groupAppsByCategory } from "~/components/Apps/utils";
-import { EmptyState } from "~/components/Core/EmptyState";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, SearchInput } from "@ngriffin_uk/polychat-component-ui";
+import { Button, EmptyState, SearchInput } from "@ngriffin_uk/polychat-component-ui";
 import { CardSkeleton } from "@ngriffin_uk/polychat-component-ui";
 import { useReplicateModels } from "~/hooks/useReplicate";
 import { cn } from "~/lib/utils";

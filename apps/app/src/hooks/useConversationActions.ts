@@ -1,18 +1,21 @@
+import {
+	createBranchConversation,
+	getBranchPoint,
+} from "@ngriffin_uk/polychat-library-chat/branching";
+import {
+	buildOpinionRequestPrompt,
+	canRequestOpinionForMessage,
+	getOpinionSourceContext,
+	type OpinionRequest,
+} from "@ngriffin_uk/polychat-library-chat/opinion";
+import { normalizeMessage } from "@ngriffin_uk/polychat-library-chat/messages";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
-import { createBranchConversation, getBranchPoint } from "~/lib/chat/branching";
-import {
-	buildOpinionRequestPrompt,
-	canRequestOpinionForMessage,
-	getOpinionSourceContext,
-	type OpinionRequest,
-} from "~/lib/chat/opinion";
 import { createConversationId } from "~/lib/conversations";
-import { normalizeMessage } from "~/lib/messages";
 import type { ChatRequestOptions, Conversation, Message } from "~/types";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";

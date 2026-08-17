@@ -1,5 +1,7 @@
-import { CanvasGenerationsView } from "./CanvasGenerationsView";
-import { CanvasSidebarControls } from "./CanvasSidebarControls";
+import {
+	CanvasGenerationsView,
+	CanvasSidebarControls,
+} from "@ngriffin_uk/polychat-component-experiences/media";
 import { useCanvasStudio } from "./useCanvasStudio";
 
 export function CanvasStudio() {

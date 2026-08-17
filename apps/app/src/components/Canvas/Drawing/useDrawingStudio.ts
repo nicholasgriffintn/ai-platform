@@ -1,3 +1,4 @@
+import { LINE_WIDTHS } from "@ngriffin_uk/polychat-component-experiences/media";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
@@ -6,7 +7,6 @@ import {
 	useGenerateDrawing,
 	useGuessDrawing,
 } from "~/hooks/useDrawings";
-import { LINE_WIDTHS } from "./constants";
 
 async function canvasToPngFile(canvas: HTMLCanvasElement): Promise<File> {
 	const blob = await new Promise<Blob>((resolve, reject) => {

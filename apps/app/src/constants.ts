@@ -7,6 +7,7 @@ const IS_E2E_BUILD = BUILD_MODE === "e2e";
 export const APP_NAME = "Polychat";
 export const APP_TAGLINE = "AI Assistant";
 export const CONTACT_LINK = "https://nicholasgriffin.dev/contact";
+export const SOURCE_CODE_URL = "https://github.com/nicholasgriffintn/personal-ai-assistant";
 export const JURISDICTION = "United Kingdom";
 export const TERMS_EFFECTIVE_DATE = "March 30, 2025";
 export const PRIVACY_EFFECTIVE_DATE = "March 30, 2025";

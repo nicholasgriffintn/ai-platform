@@ -1,17 +1,17 @@
-import { BriefcaseBusiness, Plus, Users } from "lucide-react";
+import {
+	WorkAccessEmptyState,
+	WorkspaceCardGrid,
+} from "@ngriffin_uk/polychat-component-workspaces";
+import { BriefcaseBusiness, Plus } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router";
 
-import { EmptyState } from "~/components/Core/EmptyState";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
+import { Button, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import { isAuthenticationError } from "~/lib/errors";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useWorkData } from "./WorkContext";
-import { WorkAccessEmptyState } from "./WorkAccessEmptyState";
 import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog";
-import { CardGridLoadingSkeleton } from "~/components/Core/LoadingSkeletons";
 
 export function WorkOverview() {
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -90,36 +90,12 @@ export function WorkOverview() {
 				)}
 
 				{canAccessWork && data?.workspaces.length ? (
-					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-						{data.workspaces.map((workspace) => (
-							<Link
-								key={workspace.id}
-								to={`/work/${workspace.id}`}
-								className="group no-underline hover:!no-underline"
-							>
-								<Card className="h-full p-6 transition-colors group-hover:border-zinc-400 dark:group-hover:border-zinc-600">
-									<div className="flex items-start justify-between">
-										<div>
-											<p className="text-xs capitalize text-zinc-500">{workspace.role}</p>
-											<h2 className="mt-1 text-lg font-semibold text-zinc-950 group-hover:underline dark:text-white">
-												{workspace.name}
-											</h2>
-										</div>
-										<BriefcaseBusiness size={18} className="text-zinc-400" />
-									</div>
-									<p className="min-h-10 text-sm leading-5 text-zinc-500">
-										{workspace.description || "No description"}
-									</p>
-									<div className="flex gap-4 border-t border-zinc-100 pt-4 text-xs text-zinc-500 dark:border-zinc-800">
-										<span>{workspace.projectCount} projects</span>
-										<span className="flex items-center gap-1">
-											<Users size={13} /> {workspace.memberCount}
-										</span>
-									</div>
-								</Card>
-							</Link>
-						))}
-					</div>
+					<WorkspaceCardGrid
+						workspaces={data.workspaces.map((workspace) => ({
+							...workspace,
+							href: `/work/${workspace.id}`,
+						}))}
+					/>
 				) : null}
 			</PageShell.Content>
 			<CreateWorkspaceDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />

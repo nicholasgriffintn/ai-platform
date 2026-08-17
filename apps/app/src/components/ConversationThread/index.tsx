@@ -1,3 +1,18 @@
+import {
+	type ComposerActionCatalogConfig,
+	type ComposerAssistantActionCapability,
+	type ComposerCommandAction,
+} from "@ngriffin_uk/polychat-component-conversation";
+import {
+	type ArtifactProps,
+	findLatestArtifactByIdentifier,
+} from "@ngriffin_uk/polychat-component-content";
+import {
+	createModelReferenceMap,
+	EMPTY_MODEL_CONFIG,
+	getModelByReference,
+	isImageGenerationOutputModel,
+} from "@ngriffin_uk/polychat-schemas";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -14,30 +29,20 @@ import { useModels } from "~/hooks/useModels";
 import { resolveConnectorOperationApproval } from "~/lib/api/connectors";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { isCompactConversationCommand } from "@ngriffin_uk/polychat-library-chat/compaction-command";
-import {
-	createModelReferenceMap,
-	EMPTY_MODEL_CONFIG,
-	getModelByReference,
-	isImageGenerationOutputModel,
-} from "~/lib/models";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatRequestOptions, ModelSelectionChangeHandler, ModelSelectorScope } from "~/types";
 import type { CouncilMemberId } from "@ngriffin_uk/polychat-schemas";
-import type { ArtifactProps } from "~/types/artifact";
 import { ArtifactPanel } from "./Artifacts/ArtifactPanel";
 import { ChatInput, type ChatInputHandle } from "./ChatInput";
-import type {
-	ComposerAssistantActionCapability,
-	ComposerActionCatalogConfig,
-	ComposerCommandAction,
-} from "./ChatInput/composerCommandTypes";
 import { FooterInfo } from "./FooterInfo";
 import { MessageList } from "./MessageList";
 import { useAssistantActionSubmit } from "./useAssistantActionSubmit";
 import { useAutoPlayResponses } from "./useAutoPlayResponses";
-import { WelcomeScreen } from "./WelcomeScreen";
-import { findLatestArtifactByIdentifier } from "~/lib/artifacts";
+import { WelcomeScreen } from "@ngriffin_uk/polychat-component-conversation";
+
+import { Logo } from "~/components/Core/Logo";
+import { SampleQuestions } from "./SampleQuestions";
 import { mergeChatRequestOptions } from "@ngriffin_uk/polychat-library-chat/request-options";
 import { openExternalUrl } from "~/lib/external-navigation";
 
@@ -559,11 +564,17 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 				>
 					<div className="my-auto w-full">
 						<WelcomeScreen
-							setInput={setChatInput}
 							title={modeConfig?.welcomeTitle}
 							description={modeConfig?.welcomeDescription}
 							isLoading={modeConfig?.welcomeLoading}
-							sampleQuestions={modeConfig?.welcomeSampleQuestions}
+							logo={<Logo variant="logo_control" />}
+							sampleQuestions={
+								<SampleQuestions
+									setInput={setChatInput}
+									questionsOverride={modeConfig?.welcomeSampleQuestions}
+									isLoading={modeConfig?.welcomeLoading}
+								/>
+							}
 						/>
 					</div>
 				</div>

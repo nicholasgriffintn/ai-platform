@@ -1,12 +1,14 @@
+import {
+	AIFormattingModal,
+	NoteEditorToolbar,
+	NoteMetadata,
+	TranscriptionOverlay,
+} from "@ngriffin_uk/polychat-component-experiences/content";
 import { Hash } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { NoteMetadata as NoteMetadataType } from "@ngriffin_uk/polychat-schemas";
 
-import { AIFormattingModal } from "~/components/Apps/Notes/AIFormattingModal";
 import { MediaGenerationModal } from "~/components/Apps/Notes/MediaGenerationModal";
-import { NoteEditorToolbar } from "~/components/Apps/Notes/NoteEditorToolbar";
-import { NoteMetadata } from "~/components/Apps/Notes/NoteMetadata";
-import { TranscriptionOverlay } from "~/components/Apps/Notes/TranscriptionOverlay";
 import { useAutoSave } from "~/components/Apps/Notes/hooks/useAutoSave";
 import { useKeyboardShortcuts } from "~/components/Apps/Notes/hooks/useKeyboardShortcuts";
 import { useNoteFormatter } from "~/hooks/useNoteFormatter";

@@ -26,7 +26,6 @@ export const deepseekModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 5,
 		speed: 3,
-		isFeatured: true,
 		deprecated: true,
 		isFree: true,
 		family: "deepseek",
@@ -57,7 +56,6 @@ export const deepseekModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 5,
 		speed: 3,
-		isFeatured: true,
 		deprecated: true,
 		isFree: true,
 		reasoningConfig: {

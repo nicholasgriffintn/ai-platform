@@ -11,5 +11,6 @@ export default defineConfig({
 	splitting: false,
 	sourcemap: true,
 	clean: true,
-	external: ["react", "react-dom"],
+	// The Strudel runtime is a large optional peer only the music subpath needs.
+	external: ["react", "react-dom", /^@strudel\//],
 });

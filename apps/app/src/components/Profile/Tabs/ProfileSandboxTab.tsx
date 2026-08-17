@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 
-import { EmptyState } from "~/components/Core/EmptyState";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { SandboxAddGitHubConnection } from "~/components/Models/SandboxAddGitHubConnection";
@@ -18,6 +17,7 @@ import {
 	CardDescription,
 	CardHeader,
 	CardTitle,
+	EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
 import {
 	useConnectSandboxInstallation,

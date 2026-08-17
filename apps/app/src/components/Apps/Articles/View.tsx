@@ -1,7 +1,10 @@
-import type { ArticleReportItem } from "~/types";
-import { ArticleReportContent } from "./ArticleReportContent";
-import { ArticleReportHeader } from "./ArticleReportHeader";
-import { ArticleReportMetadata } from "./ArticleReportMetadata";
+import {
+	ArticleReportContent,
+	ArticleReportHeader,
+	ArticleReportMetadata,
+} from "@ngriffin_uk/polychat-component-experiences/content";
+import type { ArticleReportItem } from "@ngriffin_uk/polychat-schemas";
+import { RerunReportButton } from "./RerunReportButton";
 import { ArticleSourceArticles } from "./ArticleSourceArticles";
 
 export function ArticleView({
@@ -22,8 +25,14 @@ export function ArticleView({
 			<ArticleReportHeader
 				report={report}
 				isShared={isShared}
-				basePath={basePath}
-				projectId={projectId}
+				rerunControl={
+					<RerunReportButton
+						basePath={basePath}
+						projectId={projectId}
+						sourceIds={report.content.sourceItemIds || []}
+						itemId={report.groupId || ""}
+					/>
+				}
 			/>
 			<ArticleReportContent report={report} />
 			<ArticleSourceArticles sourceIds={sourceIds} projectId={projectId} />

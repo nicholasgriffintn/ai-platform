@@ -1,7 +1,10 @@
+import {
+	type Conversation,
+	type Message,
+} from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import type { IDBPDatabase } from "idb";
 
 import { getDatabase, isIndexedDBSupported, storeName } from "~/hooks/useIndexedDB";
-import type { Conversation, Message } from "~/types/chat";
 import { useChatStore } from "~/state/stores/chatStore";
 import { getLocalChatScope, isConversationInLocalScope } from "./local-chat-scope";
 

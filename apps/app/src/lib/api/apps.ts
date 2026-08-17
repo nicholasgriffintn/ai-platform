@@ -1,3 +1,21 @@
+import {
+	type AnalyseArticleParams,
+	type AnalyseArticleResponse,
+	type ArticleResponse,
+	type ArticlesResponse,
+	type ExtractArticleContentParams,
+	type ExtractArticleContentResponse,
+	type FetchMultipleArticlesResponse,
+	type GenerateReportParams,
+	type GenerateReportResponse,
+	type SummariseArticleParams,
+	type SummariseArticleResponse,
+} from "@ngriffin_uk/polychat-schemas";
+import {
+	type ProcessPodcastParams,
+	type UploadPodcastParams,
+	type UploadResponse,
+} from "@ngriffin_uk/polychat-component-experiences/content";
 import type {
 	ListNotesResponse,
 	ListPodcastsResponse,
@@ -10,20 +28,6 @@ import type {
 	PodcastDetailResponse,
 	PodcastListItem,
 } from "@ngriffin_uk/polychat-schemas";
-import type {
-	AnalyseArticleParams,
-	AnalyseArticleResponse,
-	ArticleResponse,
-	ArticlesResponse,
-	ExtractArticleContentParams,
-	ExtractArticleContentResponse,
-	FetchMultipleArticlesResponse,
-	GenerateReportParams,
-	GenerateReportResponse,
-	SummariseArticleParams,
-	SummariseArticleResponse,
-} from "~/types/article";
-import type { ProcessPodcastParams, UploadPodcastParams, UploadResponse } from "~/types/podcast";
 import { apiService } from "./api-service";
 import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import { fetchApi } from "./fetch-wrapper";

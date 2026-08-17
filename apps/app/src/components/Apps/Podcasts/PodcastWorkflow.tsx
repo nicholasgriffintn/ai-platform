@@ -1,11 +1,13 @@
+import {
+	PodcastWorkflowStep,
+	ProcessingStep,
+	ProcessStep,
+	ProgressStepper,
+} from "@ngriffin_uk/polychat-component-experiences/content";
 import { useNavigate } from "react-router";
 
-import { ProcessStep } from "./ProcessStep";
-import { ProcessingStep } from "./ProcessingStep";
-import { ProgressStepper } from "./ProgressStepper";
 import { UploadStep } from "./UploadStep";
 import { usePodcastWorkflow } from "./usePodcastWorkflow";
-import { PodcastWorkflowStep } from "./workflow";
 
 export function PodcastWorkflow({ basePath, projectId }: PodcastWorkflowProps) {
 	const navigate = useNavigate();

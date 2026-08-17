@@ -1,15 +1,18 @@
+import { readCompactionStatusMessage } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
+import {
+	getMessageTextContent,
+	normalizeMessage,
+} from "@ngriffin_uk/polychat-library-chat/messages";
+import { EMPTY_MODEL_CONFIG, getModelProvider } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
-import { readCompactionStatusMessage } from "~/lib/chat/compaction-status";
 import { resolveConversationStorageMode } from "@ngriffin_uk/polychat-library-chat/conversation-storage-policy";
 import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
 import { getChatStreamLoadingMessage } from "~/lib/chat/stream-state";
-import { EMPTY_MODEL_CONFIG, getModelProvider } from "~/lib/models";
-import { getMessageTextContent, normalizeMessage } from "~/lib/messages";
 import { normaliseUsageLimits } from "~/lib/usage-limits";
 import type { ChatRequestOptions, Message } from "~/types";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";

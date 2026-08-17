@@ -1,8 +1,7 @@
-import { ExternalLink, FileText, Keyboard, MoreVertical } from "lucide-react";
-import { Link } from "react-router";
+import { ProviderGlyph } from "@ngriffin_uk/polychat-component-models";
+import { MoreOptionsDropdown as ControlledMoreOptionsDropdown } from "@ngriffin_uk/polychat-component-navigation";
 
-import GithubIcon from "~/components/ModelIcon/Icons/github";
-import { DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
+import { SOURCE_CODE_URL } from "~/constants";
 
 interface MoreOptionsDropdownProps {
 	position?: "top" | "bottom";
@@ -12,53 +11,13 @@ interface MoreOptionsDropdownProps {
 export const MoreOptionsDropdown = ({
 	position = "bottom",
 	onShowKeyboardShortcuts,
-}: MoreOptionsDropdownProps) => {
-	return (
-		<DropdownMenu
-			position={position}
-			menuClassName="w-48 rounded-md shadow-lg bg-off-white dark:bg-zinc-800 ring-1 ring-black ring-opacity-5"
-			trigger={
-				<div className="cursor-pointer flex items-center justify-center p-2 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md">
-					<MoreVertical size={20} />
-					<span className="sr-only">More options</span>
-				</div>
-			}
-		>
-			<DropdownMenuItem icon={<FileText size={16} />} asChild>
-				<Link to="/terms" className="block w-full no-underline">
-					Terms
-				</Link>
-			</DropdownMenuItem>
-			<DropdownMenuItem icon={<FileText size={16} />} asChild>
-				<Link to="/privacy" className="block w-full no-underline">
-					Privacy
-				</Link>
-			</DropdownMenuItem>
-			<DropdownMenuItem
-				icon={
-					<span aria-hidden="true" className="inline-flex">
-						<GithubIcon size={16} />
-					</span>
-				}
-				asChild
-			>
-				<a
-					href="https://github.com/nicholasgriffintn/personal-ai-assistant"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="block w-full no-underline"
-				>
-					<span className="flex items-center justify-between">
-						GitHub <ExternalLink size={16} />
-					</span>
-				</a>
-			</DropdownMenuItem>
-
-			<div className="h-px my-1 bg-zinc-200 dark:bg-zinc-700" />
-
-			<DropdownMenuItem icon={<Keyboard size={16} />} onClick={onShowKeyboardShortcuts}>
-				Keyboard Shortcuts
-			</DropdownMenuItem>
-		</DropdownMenu>
-	);
-};
+}: MoreOptionsDropdownProps) => (
+	<ControlledMoreOptionsDropdown
+		position={position}
+		privacyHref="/privacy"
+		termsHref="/terms"
+		sourceCodeUrl={SOURCE_CODE_URL}
+		sourceCodeIcon={<ProviderGlyph name="github" size={16} />}
+		onShowKeyboardShortcuts={onShowKeyboardShortcuts}
+	/>
+);

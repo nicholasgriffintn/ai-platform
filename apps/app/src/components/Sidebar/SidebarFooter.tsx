@@ -1,9 +1,11 @@
+import { SidebarFooter as ControlledSidebarFooter } from "@ngriffin_uk/polychat-component-navigation";
+
 import { SidebarSettingsPopover } from "./SidebarSettingsPopover";
 
 export function SidebarFooter() {
 	return (
-		<div className="bg-zinc-50 dark:bg-zinc-900">
+		<ControlledSidebarFooter>
 			<SidebarSettingsPopover />
-		</div>
+		</ControlledSidebarFooter>
 	);
 }

@@ -564,16 +564,31 @@ importers:
 
   packages/component-account:
     dependencies:
-      react:
-        specifier: catalog:react-peer
-        version: 19.2.8
-      react-dom:
-        specifier: catalog:react-peer
-        version: 19.2.8(react@19.2.8)
+      '@ngriffin_uk/polychat-component-models':
+        specifier: workspace:^
+        version: link:../component-models
+      '@ngriffin_uk/polychat-component-ui':
+        specifier: workspace:^
+        version: link:../component-ui
+      '@ngriffin_uk/polychat-library-react':
+        specifier: workspace:^
+        version: link:../library-react
+      '@ngriffin_uk/polychat-schemas':
+        specifier: workspace:^
+        version: link:../schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
+      lucide-react:
+        specifier: 1.30.0
+        version: 1.30.0(react@19.2.8)
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
         version: link:../config
+      '@tailwindcss/vite':
+        specifier: 4.3.3
+        version: 4.3.3(vite@8.2.1(@types/node@26.2.0)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))
       '@testing-library/react':
         specifier: 'catalog:'
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -592,12 +607,24 @@ importers:
       oxlint:
         specifier: 'catalog:'
         version: 1.77.0
+      react:
+        specifier: 'catalog:'
+        version: 19.2.8
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.8(react@19.2.8)
+      tailwindcss:
+        specifier: 4.3.3
+        version: 4.3.3
       tsup:
         specifier: 'catalog:'
         version: 8.5.1(jiti@2.7.0)(postcss@8.5.26)(supports-color@10.2.2)(tsx@4.23.11)(typescript@6.0.3)(yaml@2.9.0)
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
+      vite:
+        specifier: 8.2.1
+        version: 8.2.1(@types/node@26.2.0)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0)
       vitest:
         specifier: 'catalog:'
         version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@30.0.1)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))
@@ -607,12 +634,15 @@ importers:
       '@ngriffin_uk/polychat-component-ui':
         specifier: workspace:^
         version: link:../component-ui
-      react:
-        specifier: catalog:react-peer
-        version: 19.2.8
-      react-dom:
-        specifier: catalog:react-peer
-        version: 19.2.8(react@19.2.8)
+      '@ngriffin_uk/polychat-schemas':
+        specifier: workspace:^
+        version: link:../schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
+      lucide-react:
+        specifier: 1.30.0
+        version: 1.30.0(react@19.2.8)
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
@@ -638,6 +668,12 @@ importers:
       oxlint:
         specifier: 'catalog:'
         version: 1.77.0
+      react:
+        specifier: 'catalog:'
+        version: 19.2.8
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.8(react@19.2.8)
       tailwindcss:
         specifier: 4.3.3
         version: 4.3.3
@@ -656,21 +692,21 @@ importers:
 
   packages/component-content:
     dependencies:
+      '@babel/standalone':
+        specifier: 8.0.4
+        version: 8.0.4
       '@ngriffin_uk/polychat-component-ui':
         specifier: workspace:^
         version: link:../component-ui
+      '@ngriffin_uk/polychat-library-chat':
+        specifier: workspace:^
+        version: link:../library-chat
       '@ngriffin_uk/polychat-utility-core':
         specifier: workspace:^
         version: link:../utility-core
       lucide-react:
         specifier: 1.30.0
         version: 1.30.0(react@19.2.8)
-      react:
-        specifier: catalog:react-peer
-        version: 19.2.8
-      react-dom:
-        specifier: catalog:react-peer
-        version: 19.2.8(react@19.2.8)
       react-markdown:
         specifier: 10.1.0
         version: 10.1.0(@types/react@19.2.18)(react@19.2.8)(supports-color@10.2.2)
@@ -690,6 +726,240 @@ importers:
       '@tailwindcss/vite':
         specifier: 4.3.3
         version: 4.3.3(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))
+      '@testing-library/jest-dom':
+        specifier: 7.0.0
+        version: 7.0.0(@testing-library/dom@10.4.1)
+      '@testing-library/react':
+        specifier: 'catalog:'
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@types/babel__standalone':
+        specifier: 7.1.9
+        version: 7.1.9
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.4(@types/react@19.2.18)
+      jsdom:
+        specifier: 'catalog:'
+        version: 30.0.1
+      oxfmt:
+        specifier: 'catalog:'
+        version: 0.62.0
+      oxlint:
+        specifier: 'catalog:'
+        version: 1.77.0
+      react:
+        specifier: 'catalog:'
+        version: 19.2.8
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.8(react@19.2.8)
+      tailwindcss:
+        specifier: 4.3.3
+        version: 4.3.3
+      tsup:
+        specifier: 'catalog:'
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.26)(supports-color@10.2.2)(tsx@4.23.11)(typescript@6.0.3)(yaml@2.9.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vite:
+        specifier: 8.2.1
+        version: 8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0)
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@30.0.1)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))
+
+  packages/component-conversation:
+    dependencies:
+      '@ngriffin_uk/polychat-component-content':
+        specifier: workspace:^
+        version: link:../component-content
+      '@ngriffin_uk/polychat-component-ui':
+        specifier: workspace:^
+        version: link:../component-ui
+      '@ngriffin_uk/polychat-library-chat':
+        specifier: workspace:^
+        version: link:../library-chat
+      '@ngriffin_uk/polychat-schemas':
+        specifier: workspace:^
+        version: link:../schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
+      lucide-react:
+        specifier: 1.30.0
+        version: 1.30.0(react@19.2.8)
+      sonner:
+        specifier: 2.0.8
+        version: 2.0.8(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+    devDependencies:
+      '@ngriffin_uk/polychat-config':
+        specifier: workspace:^
+        version: link:../config
+      '@tailwindcss/vite':
+        specifier: 4.3.3
+        version: 4.3.3(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))
+      '@testing-library/react':
+        specifier: 'catalog:'
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.4(@types/react@19.2.18)
+      jsdom:
+        specifier: 'catalog:'
+        version: 30.0.1
+      oxfmt:
+        specifier: 'catalog:'
+        version: 0.62.0
+      oxlint:
+        specifier: 'catalog:'
+        version: 1.77.0
+      react:
+        specifier: 'catalog:'
+        version: 19.2.8
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.8(react@19.2.8)
+      tailwindcss:
+        specifier: 4.3.3
+        version: 4.3.3
+      tsup:
+        specifier: 'catalog:'
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.26)(supports-color@10.2.2)(tsx@4.23.11)(typescript@6.0.3)(yaml@2.9.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vite:
+        specifier: 8.2.1
+        version: 8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0)
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@30.0.1)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))
+
+  packages/component-experiences:
+    dependencies:
+      '@ngriffin_uk/polychat-component-content':
+        specifier: workspace:^
+        version: link:../component-content
+      '@ngriffin_uk/polychat-component-ui':
+        specifier: workspace:^
+        version: link:../component-ui
+      '@ngriffin_uk/polychat-schemas':
+        specifier: workspace:^
+        version: link:../schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
+      lucide-react:
+        specifier: 1.30.0
+        version: 1.30.0(react@19.2.8)
+      sonner:
+        specifier: 2.0.8
+        version: 2.0.8(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+    devDependencies:
+      '@ngriffin_uk/polychat-config':
+        specifier: workspace:^
+        version: link:../config
+      '@strudel/codemirror':
+        specifier: 1.3.0
+        version: 1.3.0(@codemirror/lint@6.9.7)
+      '@strudel/core':
+        specifier: 1.2.6
+        version: 1.2.6
+      '@strudel/draw':
+        specifier: 1.2.6
+        version: 1.2.6
+      '@strudel/hydra':
+        specifier: 1.2.6
+        version: 1.2.6(rollup@4.62.4)(supports-color@10.2.2)
+      '@strudel/midi':
+        specifier: 1.3.0
+        version: 1.3.0
+      '@strudel/mini':
+        specifier: 1.2.6
+        version: 1.2.6
+      '@strudel/soundfonts':
+        specifier: 1.3.0
+        version: 1.3.0
+      '@strudel/tonal':
+        specifier: 1.2.6
+        version: 1.2.6
+      '@strudel/transpiler':
+        specifier: 1.2.6
+        version: 1.2.6
+      '@strudel/webaudio':
+        specifier: 1.3.0
+        version: 1.3.0
+      '@testing-library/react':
+        specifier: 'catalog:'
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.4(@types/react@19.2.18)
+      jsdom:
+        specifier: 'catalog:'
+        version: 30.0.1
+      oxfmt:
+        specifier: 'catalog:'
+        version: 0.62.0
+      oxlint:
+        specifier: 'catalog:'
+        version: 1.77.0
+      react:
+        specifier: 'catalog:'
+        version: 19.2.8
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.8(react@19.2.8)
+      tsup:
+        specifier: 'catalog:'
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.26)(supports-color@10.2.2)(tsx@4.23.11)(typescript@6.0.3)(yaml@2.9.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@30.0.1)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))
+
+  packages/component-models:
+    dependencies:
+      '@ngriffin_uk/polychat-component-ui':
+        specifier: workspace:^
+        version: link:../component-ui
+      '@ngriffin_uk/polychat-schemas':
+        specifier: workspace:^
+        version: link:../schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
+      '@ngriffin_uk/polychat-utility-react':
+        specifier: workspace:^
+        version: link:../utility-react
+      lucide-react:
+        specifier: 1.30.0
+        version: 1.30.0(react@19.2.8)
+      react:
+        specifier: catalog:react-peer
+        version: 19.2.8
+      react-dom:
+        specifier: catalog:react-peer
+        version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@ngriffin_uk/polychat-config':
+        specifier: workspace:^
+        version: link:../config
+      '@tailwindcss/vite':
+        specifier: 4.3.3
+        version: 4.3.3(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))
       '@testing-library/react':
         specifier: 'catalog:'
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -724,144 +994,21 @@ importers:
         specifier: 'catalog:'
         version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@30.0.1)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))
 
-  packages/component-conversation:
-    dependencies:
-      lucide-react:
-        specifier: 1.30.0
-        version: 1.30.0(react@19.2.8)
-      react:
-        specifier: catalog:react-peer
-        version: 19.2.8
-      react-dom:
-        specifier: catalog:react-peer
-        version: 19.2.8(react@19.2.8)
-    devDependencies:
-      '@ngriffin_uk/polychat-config':
-        specifier: workspace:^
-        version: link:../config
-      '@testing-library/react':
-        specifier: 'catalog:'
-        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@types/react':
-        specifier: 'catalog:'
-        version: 19.2.18
-      '@types/react-dom':
-        specifier: 'catalog:'
-        version: 19.2.4(@types/react@19.2.18)
-      jsdom:
-        specifier: 'catalog:'
-        version: 30.0.1
-      oxfmt:
-        specifier: 'catalog:'
-        version: 0.62.0
-      oxlint:
-        specifier: 'catalog:'
-        version: 1.77.0
-      tsup:
-        specifier: 'catalog:'
-        version: 8.5.1(jiti@2.7.0)(postcss@8.5.26)(supports-color@10.2.2)(tsx@4.23.11)(typescript@6.0.3)(yaml@2.9.0)
-      typescript:
-        specifier: 'catalog:'
-        version: 6.0.3
-      vitest:
-        specifier: 'catalog:'
-        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@30.0.1)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))
-
-  packages/component-experiences:
-    dependencies:
-      react:
-        specifier: catalog:react-peer
-        version: 19.2.8
-      react-dom:
-        specifier: catalog:react-peer
-        version: 19.2.8(react@19.2.8)
-    devDependencies:
-      '@ngriffin_uk/polychat-config':
-        specifier: workspace:^
-        version: link:../config
-      '@testing-library/react':
-        specifier: 'catalog:'
-        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@types/react':
-        specifier: 'catalog:'
-        version: 19.2.18
-      '@types/react-dom':
-        specifier: 'catalog:'
-        version: 19.2.4(@types/react@19.2.18)
-      jsdom:
-        specifier: 'catalog:'
-        version: 30.0.1
-      oxfmt:
-        specifier: 'catalog:'
-        version: 0.62.0
-      oxlint:
-        specifier: 'catalog:'
-        version: 1.77.0
-      tsup:
-        specifier: 'catalog:'
-        version: 8.5.1(jiti@2.7.0)(postcss@8.5.26)(supports-color@10.2.2)(tsx@4.23.11)(typescript@6.0.3)(yaml@2.9.0)
-      typescript:
-        specifier: 'catalog:'
-        version: 6.0.3
-      vitest:
-        specifier: 'catalog:'
-        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@30.0.1)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))
-
-  packages/component-models:
-    dependencies:
-      react:
-        specifier: catalog:react-peer
-        version: 19.2.8
-      react-dom:
-        specifier: catalog:react-peer
-        version: 19.2.8(react@19.2.8)
-    devDependencies:
-      '@ngriffin_uk/polychat-config':
-        specifier: workspace:^
-        version: link:../config
-      '@testing-library/react':
-        specifier: 'catalog:'
-        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@types/react':
-        specifier: 'catalog:'
-        version: 19.2.18
-      '@types/react-dom':
-        specifier: 'catalog:'
-        version: 19.2.4(@types/react@19.2.18)
-      jsdom:
-        specifier: 'catalog:'
-        version: 30.0.1
-      oxfmt:
-        specifier: 'catalog:'
-        version: 0.62.0
-      oxlint:
-        specifier: 'catalog:'
-        version: 1.77.0
-      tsup:
-        specifier: 'catalog:'
-        version: 8.5.1(jiti@2.7.0)(postcss@8.5.26)(supports-color@10.2.2)(tsx@4.23.11)(typescript@6.0.3)(yaml@2.9.0)
-      typescript:
-        specifier: 'catalog:'
-        version: 6.0.3
-      vitest:
-        specifier: 'catalog:'
-        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@30.0.1)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))
-
   packages/component-navigation:
     dependencies:
+      '@ngriffin_uk/polychat-component-ui':
+        specifier: workspace:^
+        version: link:../component-ui
       lucide-react:
         specifier: 1.30.0
         version: 1.30.0(react@19.2.8)
-      react:
-        specifier: catalog:react-peer
-        version: 19.2.8
-      react-dom:
-        specifier: catalog:react-peer
-        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
         version: link:../config
+      '@tailwindcss/vite':
+        specifier: 4.3.3
+        version: 4.3.3(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))
       '@testing-library/react':
         specifier: 'catalog:'
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -880,12 +1027,24 @@ importers:
       oxlint:
         specifier: 'catalog:'
         version: 1.77.0
+      react:
+        specifier: 'catalog:'
+        version: 19.2.8
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.8(react@19.2.8)
+      tailwindcss:
+        specifier: 4.3.3
+        version: 4.3.3
       tsup:
         specifier: 'catalog:'
         version: 8.5.1(jiti@2.7.0)(postcss@8.5.26)(supports-color@10.2.2)(tsx@4.23.11)(typescript@6.0.3)(yaml@2.9.0)
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
+      vite:
+        specifier: 8.2.1
+        version: 8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0)
       vitest:
         specifier: 'catalog:'
         version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@30.0.1)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))
@@ -895,6 +1054,9 @@ importers:
       '@ngriffin_uk/polychat-utility-core':
         specifier: workspace:^
         version: link:../utility-core
+      '@ngriffin_uk/polychat-utility-react':
+        specifier: workspace:^
+        version: link:../utility-react
       '@radix-ui/react-checkbox':
         specifier: 1.3.11
         version: 1.3.11(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -992,18 +1154,21 @@ importers:
 
   packages/component-workspaces:
     dependencies:
+      '@ngriffin_uk/polychat-component-navigation':
+        specifier: workspace:^
+        version: link:../component-navigation
       '@ngriffin_uk/polychat-component-ui':
         specifier: workspace:^
         version: link:../component-ui
+      '@ngriffin_uk/polychat-schemas':
+        specifier: workspace:^
+        version: link:../schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
       lucide-react:
         specifier: 1.30.0
         version: 1.30.0(react@19.2.8)
-      react:
-        specifier: catalog:react-peer
-        version: 19.2.8
-      react-dom:
-        specifier: catalog:react-peer
-        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
@@ -1029,6 +1194,12 @@ importers:
       oxlint:
         specifier: 'catalog:'
         version: 1.77.0
+      react:
+        specifier: 'catalog:'
+        version: 19.2.8
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.8(react@19.2.8)
       tailwindcss:
         specifier: 4.3.3
         version: 4.3.3
@@ -1083,6 +1254,9 @@ importers:
       '@ngriffin_uk/polychat-schemas':
         specifier: workspace:^
         version: link:../schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
@@ -1227,6 +1401,9 @@ importers:
 
   packages/schemas:
     dependencies:
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -1269,6 +1446,10 @@ importers:
         version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@30.0.1)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))
 
   packages/utility-react:
+    dependencies:
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
@@ -10052,6 +10233,13 @@ snapshots:
     dependencies:
       postcss-selector-parser: 6.0.10
       tailwindcss: 4.3.3
+
+  '@tailwindcss/vite@4.3.3(vite@8.2.1(@types/node@26.2.0)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))':
+    dependencies:
+      '@tailwindcss/node': 4.3.3
+      '@tailwindcss/oxide': 4.3.3
+      tailwindcss: 4.3.3
+      vite: 8.2.1(@types/node@26.2.0)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0)
 
   '@tailwindcss/vite@4.3.3(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))':
     dependencies:

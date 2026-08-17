@@ -3,12 +3,12 @@ import { Database, FileText, Link2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { EmptyState } from "~/components/Core/EmptyState";
 import { PageShell } from "~/components/Core/PageShell";
 import {
 	Button,
 	Card,
 	ConfirmationDialog,
+	EmptyState,
 	FormDialog,
 	FormInput,
 	FormSelect,

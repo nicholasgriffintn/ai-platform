@@ -227,7 +227,6 @@ export const workersAiModelConfig: ModelConfig = {
 		reliability: 4,
 		contextComplexity: 3,
 		multimodal: true,
-		isFeatured: true,
 		modalities: {
 			input: ["image"],
 			output: ["text"],
@@ -1185,7 +1184,6 @@ export const workersAiModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		isFeatured: true,
 		contextWindow: 32768,
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0000509,

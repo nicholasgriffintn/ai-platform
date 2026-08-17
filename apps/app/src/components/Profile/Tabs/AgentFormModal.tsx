@@ -18,7 +18,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ngriffin_uk/polychat-
 import { useAgentForm } from "~/hooks/useAgentForm";
 import { useTools } from "~/hooks/useTools";
 import { getNumberInputValue, parseNumberInputValue } from "@ngriffin_uk/polychat-utility-core";
-import { cn, generateId } from "~/lib/utils";
+import { cn } from "~/lib/utils";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 interface AgentFormModalProps {
 	open: boolean;

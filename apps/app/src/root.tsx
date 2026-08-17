@@ -1,5 +1,6 @@
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { PolychatProvider } from "@ngriffin_uk/polychat-library-react";
+import { CustomResponseViewProvider } from "@ngriffin_uk/polychat-component-content";
+import { AnalyticsProvider, PolychatProvider } from "@ngriffin_uk/polychat-library-react";
 import { useEffect } from "react";
 import { Outlet, isRouteErrorResponse, ScrollRestoration } from "react-router";
 
@@ -7,9 +8,11 @@ import { AnalyticsBootstrap } from "~/components/Core/AnalyticsBootstrap";
 import { AppInitializer } from "~/components/Core/AppInitializer";
 import { AppShell } from "~/components/Core/AppShell";
 import { CaptchaProvider } from "~/components/HCaptcha/CaptchaProvider";
-import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { ServiceWorkerRegistration } from "~/components/Core/ServiceWorkerRegistration";
-import { Toaster } from "@ngriffin_uk/polychat-component-ui";
+import { LinkProvider, LoadingSpinner, Toaster } from "@ngriffin_uk/polychat-component-ui";
+import { customResponseViews } from "~/components/Apps/ResponseRenderer/customResponseViews";
+import { useAnalyticsAdapter } from "~/lib/analytics-adapter";
+import { RouterLink, RouterNavLink } from "~/lib/router-link";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import ErrorRoute from "~/pages/error";
 import { LoadingProvider } from "~/state/contexts/LoadingContext";
@@ -19,12 +22,26 @@ import { shouldShowDevTools } from "~/constants";
 import { webSurfaceControls } from "~/lib/surface-controls";
 import { SurfaceControlsProvider } from "~/lib/surface-context";
 
+function AppProviders({ children }: { children: React.ReactNode }) {
+	const analytics = useAnalyticsAdapter();
+
+	return (
+		<SurfaceControlsProvider controls={webSurfaceControls}>
+			<LinkProvider Link={RouterLink} NavLink={RouterNavLink}>
+				<AnalyticsProvider analytics={analytics}>
+					<CustomResponseViewProvider views={customResponseViews}>
+						<PolychatProvider>{children}</PolychatProvider>
+					</CustomResponseViewProvider>
+				</AnalyticsProvider>
+			</LinkProvider>
+		</SurfaceControlsProvider>
+	);
+}
+
 export const Layout = ({ children }: { children: React.ReactNode }) => {
 	return (
 		<AppShell>
-			<SurfaceControlsProvider controls={webSurfaceControls}>
-				<PolychatProvider>{children}</PolychatProvider>
-			</SurfaceControlsProvider>
+			<AppProviders>{children}</AppProviders>
 		</AppShell>
 	);
 };

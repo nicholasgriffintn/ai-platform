@@ -1,5 +1,5 @@
+import { ConnectorAuthConfigModal } from "@ngriffin_uk/polychat-component-account";
 import { ConnectorApiKeyModal } from "~/components/Profile/Modals/ConnectorApiKeyModal";
-import { ConnectorAuthConfigModal } from "~/components/Profile/Modals/ConnectorAuthConfigModal";
 import type { ConnectorSetupController } from "~/hooks/useConnectorSetup";
 
 export function ConnectorSetupDialogs({ controller }: { controller: ConnectorSetupController }) {

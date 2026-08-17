@@ -1,3 +1,14 @@
+import {
+	type ComposerActionCatalogConfig,
+	ComposerActionMenu,
+	type ComposerAssistantActionCapability,
+	type ComposerCommandAction,
+	type ComposerInputToken,
+	type ComposerInputTokenPosition,
+	TokenizedComposerInput,
+	type TokenizedComposerInputHandle,
+} from "@ngriffin_uk/polychat-component-conversation";
+import { getModelInteractionCapabilities } from "@ngriffin_uk/polychat-schemas";
 import { File, FileText, Loader2, Paperclip, Pause, Send, Volume2 } from "lucide-react";
 import {
 	type ChangeEvent,
@@ -18,31 +29,19 @@ import { useModels } from "~/hooks/useModels";
 import { SOURCE_QUERY_KEYS } from "~/hooks/useSources";
 import { useVoiceRecorder } from "~/hooks/useVoiceRecorder";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
-import { getModelInteractionCapabilities } from "~/lib/models";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 import type { ModelSelectionChangeHandler, ModelSelectorScope } from "~/types";
 import { ChatSettings as ChatSettingsComponent } from "./ChatSettings";
 import { ToolToggles } from "./ChatSettings/ToolToggles";
-import { ComposerActionMenu } from "./ComposerActionMenu";
 import {
+	ComposerCommandActionsProvider,
 	ComposerCommandButton,
 	ComposerCommandChips,
 	ComposerCommandSuggestions,
-} from "./ComposerCommandSurface";
-import type {
-	ComposerAssistantActionCapability,
-	ComposerActionCatalogConfig,
-	ComposerCommandAction,
-} from "./composerCommandTypes";
+} from "@ngriffin_uk/polychat-component-conversation";
 import { InlineResponseControls } from "./InlineResponseControls";
 import { ModelSelector } from "./ModelSelector";
-import {
-	TokenizedComposerInput,
-	type ComposerInputToken,
-	type ComposerInputTokenPosition,
-	type TokenizedComposerInputHandle,
-} from "./TokenizedComposerInput";
 import { useComposerCommandController } from "./useComposerCommandController";
 import { uploadComposerAttachment } from "./uploadAttachment";
 import { useComposerSources } from "./useComposerSources";
@@ -192,6 +191,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 		const fileInputId = useId();
 		const {
 			applyDirectiveSelection,
+			commandActions,
 			commandState,
 			directiveQuery,
 			moveActiveSuggestion,
@@ -582,177 +582,185 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			isAuthenticationLoading;
 
 		return (
-			<div
-				data-chat-input-shell
-				className="relative rounded-lg border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-[#121212] shadow-sm hover:border-zinc-300 dark:hover:border-zinc-600 focus-within:border-zinc-300 dark:focus-within:border-zinc-500 transition-colors"
-			>
-				<div className="flex flex-col">
-					<ComposerCommandChips
-						{...commandState}
-						attachments={attachmentChips}
-						hideAgentChip={hasInlineAgentToken}
-						onClearMode={modeControls?.onClearActive}
-					/>
-					{canUploadFiles && (
-						<input
-							type="file"
-							ref={fileInputRef}
-							accept={getFileTypeAccept()}
-							onChange={handleFileUpload}
-							className="hidden"
-							id={fileInputId}
-							aria-label="Upload a file (images, documents, audio, and code)"
-							multiple
+			<ComposerCommandActionsProvider actions={commandActions}>
+				<div
+					data-chat-input-shell
+					className="relative rounded-lg border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-[#121212] shadow-sm hover:border-zinc-300 dark:hover:border-zinc-600 focus-within:border-zinc-300 dark:focus-within:border-zinc-500 transition-colors"
+				>
+					<div className="flex flex-col">
+						<ComposerCommandChips
+							{...commandState}
+							attachments={attachmentChips}
+							hideAgentChip={hasInlineAgentToken}
+							onClearMode={modeControls?.onClearActive}
 						/>
-					)}
-					<div className="relative">
-						<ComposerCommandSuggestions {...commandState} />
-						<div className="flex items-start">
-							{shouldRenderInputControls && (
-								<div className="flex min-h-[60px] min-w-0 flex-grow items-center px-4 py-3">
-									{controls}
-								</div>
-							)}
-							{!hideTextInput && (
-								<div data-composer-input-row className="flex min-w-0 flex-grow px-4 py-3">
-									<TokenizedComposerInput
-										id="message-input"
-										ref={composerInputRef}
-										value={chatInput}
-										tokens={composerTokens}
-										onChange={handleComposerInput}
-										onCursorPositionChange={setTextareaCursorPosition}
-										onTokenPositionsChange={handleComposerTokenPositionsChange}
-										onKeyDown={handleKeyDown}
-										placeholder={
-											!currentConversationId
-												? (placeholder?.newConversation ??
-													NEW_CONVERSATION_PLACEHOLDERS[
-														placeholderSeed % NEW_CONVERSATION_PLACEHOLDERS.length
-													])
-												: (placeholder?.followUp ??
-													FOLLOW_UP_PLACEHOLDERS[placeholderSeed % FOLLOW_UP_PLACEHOLDERS.length])
-										}
-										disabled={isRecording || isTranscribing || isLoading || isAuthenticationLoading}
-										ariaLabel="Message input"
-										ariaDescribedBy="message-input-help"
-									/>
-								</div>
-							)}
-							{!hideTextInput && (
-								<div id="message-input-help" className="sr-only">
-									Type your message and press Enter to send. Use Shift+Enter for a new line.
-								</div>
-							)}
+						{canUploadFiles && (
+							<input
+								type="file"
+								ref={fileInputRef}
+								accept={getFileTypeAccept()}
+								onChange={handleFileUpload}
+								className="hidden"
+								id={fileInputId}
+								aria-label="Upload a file (images, documents, audio, and code)"
+								multiple
+							/>
+						)}
+						<div className="relative">
+							<ComposerCommandSuggestions {...commandState} />
+							<div className="flex items-start">
+								{shouldRenderInputControls && (
+									<div className="flex min-h-[60px] min-w-0 flex-grow items-center px-4 py-3">
+										{controls}
+									</div>
+								)}
+								{!hideTextInput && (
+									<div data-composer-input-row className="flex min-w-0 flex-grow px-4 py-3">
+										<TokenizedComposerInput
+											id="message-input"
+											ref={composerInputRef}
+											value={chatInput}
+											tokens={composerTokens}
+											onChange={handleComposerInput}
+											onCursorPositionChange={setTextareaCursorPosition}
+											onTokenPositionsChange={handleComposerTokenPositionsChange}
+											onKeyDown={handleKeyDown}
+											placeholder={
+												!currentConversationId
+													? (placeholder?.newConversation ??
+														NEW_CONVERSATION_PLACEHOLDERS[
+															placeholderSeed % NEW_CONVERSATION_PLACEHOLDERS.length
+														])
+													: (placeholder?.followUp ??
+														FOLLOW_UP_PLACEHOLDERS[placeholderSeed % FOLLOW_UP_PLACEHOLDERS.length])
+											}
+											disabled={
+												isRecording || isTranscribing || isLoading || isAuthenticationLoading
+											}
+											ariaLabel="Message input"
+											ariaDescribedBy="message-input-help"
+										/>
+									</div>
+								)}
+								{!hideTextInput && (
+									<div id="message-input-help" className="sr-only">
+										Type your message and press Enter to send. Use Shift+Enter for a new line.
+									</div>
+								)}
 
+								{!hideDefaultControls && (
+									<div className="flex flex-shrink-0 items-center gap-1 pr-3 pt-3">
+										{isLoading && streamStarted ? (
+											<Button
+												type="button"
+												onClick={() => controller.abort()}
+												variant="icon"
+												className="cursor-pointer p-2 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-md text-zinc-600 dark:text-zinc-400"
+												title="Stop generating"
+												aria-label="Stop generating"
+											>
+												<Pause className="h-5 w-5" />
+											</Button>
+										) : (
+											<>
+												{!hideComposerActionMenu && canShowActionMenu && (
+													<ComposerActionMenu
+														autoPlayResponses={
+															canUseProComposerActions ? autoPlayResponses : undefined
+														}
+														attachingSourceId={composerSources.attachingSourceId}
+														canAttachSources={canUseProComposerActions}
+														canUseVoice={canUseProComposerActions}
+														canUploadFiles={canUseProComposerActions && canUploadFiles}
+														isDisabled={isLoading}
+														isLoadingSources={composerSources.isLoading}
+														isRecording={isRecording}
+														isTranscribing={isTranscribing}
+														isUploading={isUploading}
+														onStartRecording={startRecording}
+														onStopRecording={stopRecording}
+														onUploadClick={() => fileInputRef.current?.click()}
+														onAttachSource={composerSources.attachSource}
+														sourceScopeLabel={
+															attachmentProjectId ? "Project sources" : "Personal sources"
+														}
+														sources={composerSources.availableSources}
+														tools={
+															canShowToolMenu ? (
+																<ToolToggles isDisabled={isLoading || isToolSelectionLocked} />
+															) : undefined
+														}
+														uploadIcon={<Paperclip className="h-4 w-4" aria-hidden="true" />}
+														uploadLabel={`Upload ${isMultimodalModel || supportsAudio ? "files (images, audio, documents, code)" : "a Document or Code file"}`}
+													/>
+												)}
+												<ComposerCommandButton {...commandState} />
+												{!hideSubmitButton && (
+													<Button
+														type="submit"
+														onClick={submitSelectedAttachments}
+														disabled={isComposerSubmitDisabled}
+														className="cursor-pointer p-2.5 bg-black hover:bg-zinc-800 dark:bg-off-white dark:hover:bg-zinc-200 rounded-md text-white dark:text-black shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+														title="Send message"
+														aria-label="Send message"
+													>
+														<Send className="h-5 w-5" />
+														<span className="sr-only">Send message</span>
+													</Button>
+												)}
+											</>
+										)}
+									</div>
+								)}
+							</div>
+						</div>
+
+						<div className="mt-2 border-t border-zinc-200 px-3 pb-3 pt-3 dark:border-zinc-700">
+							{autoPlayResponses?.isGenerating && (
+								<div
+									className="mb-3 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400"
+									aria-live="polite"
+									role="status"
+								>
+									<Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500" aria-hidden="true" />
+									<span>Generating response audio...</span>
+								</div>
+							)}
+							{hideDefaultControls && controls && !shouldRenderInputControls && (
+								<div>{controls}</div>
+							)}
 							{!hideDefaultControls && (
-								<div className="flex flex-shrink-0 items-center gap-1 pr-3 pt-3">
-									{isLoading && streamStarted ? (
-										<Button
-											type="button"
-											onClick={() => controller.abort()}
-											variant="icon"
-											className="cursor-pointer p-2 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-md text-zinc-600 dark:text-zinc-400"
-											title="Stop generating"
-											aria-label="Stop generating"
-										>
-											<Pause className="h-5 w-5" />
-										</Button>
-									) : (
-										<>
-											{!hideComposerActionMenu && canShowActionMenu && (
-												<ComposerActionMenu
-													autoPlayResponses={
-														canUseProComposerActions ? autoPlayResponses : undefined
-													}
-													attachingSourceId={composerSources.attachingSourceId}
-													canAttachSources={canUseProComposerActions}
-													canUseVoice={canUseProComposerActions}
-													canUploadFiles={canUseProComposerActions && canUploadFiles}
-													isDisabled={isLoading}
-													isLoadingSources={composerSources.isLoading}
-													isRecording={isRecording}
-													isTranscribing={isTranscribing}
-													isUploading={isUploading}
-													onStartRecording={startRecording}
-													onStopRecording={stopRecording}
-													onUploadClick={() => fileInputRef.current?.click()}
-													onAttachSource={composerSources.attachSource}
-													sourceScopeLabel={
-														attachmentProjectId ? "Project sources" : "Personal sources"
-													}
-													sources={composerSources.availableSources}
-													tools={
-														canShowToolMenu ? (
-															<ToolToggles isDisabled={isLoading || isToolSelectionLocked} />
-														) : undefined
-													}
-													uploadIcon={<Paperclip className="h-4 w-4" aria-hidden="true" />}
-													uploadLabel={`Upload ${isMultimodalModel || supportsAudio ? "files (images, audio, documents, code)" : "a Document or Code file"}`}
-												/>
-											)}
-											<ComposerCommandButton {...commandState} />
-											{!hideSubmitButton && (
-												<Button
-													type="submit"
-													onClick={submitSelectedAttachments}
-													disabled={isComposerSubmitDisabled}
-													className="cursor-pointer p-2.5 bg-black hover:bg-zinc-800 dark:bg-off-white dark:hover:bg-zinc-200 rounded-md text-white dark:text-black shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-													title="Send message"
-													aria-label="Send message"
-												>
-													<Send className="h-5 w-5" />
-													<span className="sr-only">Send message</span>
-												</Button>
-											)}
-										</>
-									)}
+								<div className="flex items-center justify-between gap-1 sm:gap-2">
+									<div className="flex-1 min-w-0 max-w-[70%] sm:max-w-none flex items-center gap-2">
+										<div className="min-w-0 flex-shrink">
+											<ModelSelector
+												isDisabled={isLoading}
+												mono={true}
+												modelProviderFilter={modelProviderFilter}
+												modelScope={modelScope}
+												onModelChange={onModelChange}
+											/>
+										</div>
+										{!hideInlineResponseControls && (
+											<InlineResponseControls isDisabled={isLoading} />
+										)}
+										{!hideTextInput && controls && <div className="shrink-0">{controls}</div>}
+									</div>
+									<div className="flex-shrink-0 flex items-center gap-2">
+										{!hideChatSettings && (
+											<ChatSettingsComponent
+												isDisabled={isLoading}
+												toolSelectionLocked={isToolSelectionLocked}
+												supportsToolCalls={supportsToolCalls}
+											/>
+										)}
+									</div>
 								</div>
 							)}
 						</div>
 					</div>
-
-					<div className="mt-2 border-t border-zinc-200 px-3 pb-3 pt-3 dark:border-zinc-700">
-						{autoPlayResponses?.isGenerating && (
-							<div
-								className="mb-3 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400"
-								aria-live="polite"
-								role="status"
-							>
-								<Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500" aria-hidden="true" />
-								<span>Generating response audio...</span>
-							</div>
-						)}
-						{hideDefaultControls && controls && !shouldRenderInputControls && <div>{controls}</div>}
-						{!hideDefaultControls && (
-							<div className="flex items-center justify-between gap-1 sm:gap-2">
-								<div className="flex-1 min-w-0 max-w-[70%] sm:max-w-none flex items-center gap-2">
-									<div className="min-w-0 flex-shrink">
-										<ModelSelector
-											isDisabled={isLoading}
-											mono={true}
-											modelProviderFilter={modelProviderFilter}
-											modelScope={modelScope}
-											onModelChange={onModelChange}
-										/>
-									</div>
-									{!hideInlineResponseControls && <InlineResponseControls isDisabled={isLoading} />}
-									{!hideTextInput && controls && <div className="shrink-0">{controls}</div>}
-								</div>
-								<div className="flex-shrink-0 flex items-center gap-2">
-									{!hideChatSettings && (
-										<ChatSettingsComponent
-											isDisabled={isLoading}
-											toolSelectionLocked={isToolSelectionLocked}
-											supportsToolCalls={supportsToolCalls}
-										/>
-									)}
-								</div>
-							</div>
-						)}
-					</div>
 				</div>
-			</div>
+			</ComposerCommandActionsProvider>
 		);
 	},
 );

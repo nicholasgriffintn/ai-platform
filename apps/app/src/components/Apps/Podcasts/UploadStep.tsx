@@ -1,8 +1,14 @@
+import { type PodcastFormData } from "@ngriffin_uk/polychat-component-experiences/content";
 import { Link as LinkIcon } from "lucide-react";
 
-import { SingleFileUploader } from "~/components/Uploader/SingleFileUploader";
-import { Button, FormInput, Label, Textarea } from "@ngriffin_uk/polychat-component-ui";
-import type { PodcastFormData } from "~/types/podcast";
+import {
+	Button,
+	FormInput,
+	Label,
+	SingleFileUploader,
+	Textarea,
+} from "@ngriffin_uk/polychat-component-ui";
+import { useFileUploadAnalytics } from "~/hooks/useFileUploadAnalytics";
 
 interface UploadStepProps {
 	formData: PodcastFormData;
@@ -21,6 +27,8 @@ export function UploadStep({
 	isUploading,
 	setFormData,
 }: UploadStepProps) {
+	const uploadAnalytics = useFileUploadAnalytics("audioFile");
+
 	return (
 		<div className="bg-off-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-6">
 			<h2 className="text-xl font-semibold mb-4 text-zinc-800 dark:text-zinc-200">
@@ -85,7 +93,9 @@ export function UploadStep({
 							<SingleFileUploader
 								id="audioFile"
 								maxSize={10 * 1024 * 1024}
+								{...uploadAnalytics}
 								onFilesAdded={(files) => {
+									uploadAnalytics.onFilesAdded(files);
 									if (files[0].file instanceof File) {
 										handleFileChange(files[0].file);
 									}

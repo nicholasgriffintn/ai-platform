@@ -1,8 +1,8 @@
+import { PageStatus } from "@ngriffin_uk/polychat-component-ui";
 import { Link } from "react-router";
 
 import { Logo } from "~/components/Core/Logo";
 import { PageShell } from "~/components/Core/PageShell";
-import { PageStatus } from "~/components/Core/PageStatus";
 import { StandardSidebarContent } from "~/components/Sidebar/StandardSidebarContent";
 
 export function meta() {

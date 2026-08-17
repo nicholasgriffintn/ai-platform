@@ -1,9 +1,9 @@
+import { PageStatus } from "@ngriffin_uk/polychat-component-ui";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
-import { PageStatus } from "~/components/Core/PageStatus";
 import { useAuthStatus } from "~/hooks/useAuth";
 
 export function meta() {

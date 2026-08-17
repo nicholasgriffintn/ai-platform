@@ -183,7 +183,6 @@ export const perplexityModelConfig: ModelConfig = {
 		contextComplexity: 1,
 		reliability: 1,
 		speed: 3,
-		isFeatured: true,
 		deprecated: true,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,

@@ -1,7 +1,10 @@
 import {
-	CloudOff,
-	Edit,
-	GitBranch,
+	type ConversationArchiveFilter,
+	type ConversationSortBy,
+} from "@ngriffin_uk/polychat-library-chat/conversation-types";
+import { type CanvasStudioState } from "~/components/Canvas/useCanvasStudio";
+import { CanvasSidebarControls } from "@ngriffin_uk/polychat-component-experiences/media";
+import {
 	Grid2X2,
 	Image as ImageIcon,
 	Loader2,
@@ -9,32 +12,28 @@ import {
 	Search,
 	Settings2,
 	SquarePen,
-	Trash2,
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
-import { CanvasSidebarControls } from "~/components/Canvas/CanvasSidebarControls";
-import type { CanvasStudioState } from "~/components/Canvas/useCanvasStudio";
 import {
-	Button,
-	ConfirmationDialog,
-	HoverActions,
-	ListItem,
-	SidebarShell,
-} from "@ngriffin_uk/polychat-component-ui";
+	ConversationList,
+	ConversationListControls,
+	ConversationStorageNotice,
+	SidebarNavButton,
+	SidebarNavLink,
+	SidebarNavSection,
+} from "@ngriffin_uk/polychat-component-navigation";
+
+import { Button, ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useLoadMoreOnIntersect } from "@ngriffin_uk/polychat-utility-react";
 import { useChats, useDeleteChat, useUpdateChatTitle } from "~/hooks/useChat";
 import { categorizeItemsByDate } from "~/lib/sidebar";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
-import type { Conversation, ConversationArchiveFilter, ConversationSortBy } from "~/types/chat";
-import { SidebarNavButton, SidebarNavLink, SidebarNavSection } from "../Sidebar/SidebarNav";
 import { SidebarFooter } from "../Sidebar/SidebarFooter";
 import { SidebarHeader } from "../Sidebar/SidebarHeader";
-import { ChatSidebarNotifications } from "./ChatSidebarNotifications";
-import { ConversationListControls } from "./ConversationListControls";
 
 interface ChatSidebarProps {
 	canvas?: CanvasStudioState;
@@ -157,11 +156,6 @@ export const ChatSidebar = ({
 		}
 	};
 
-	const handleDeleteChat = async (completion_id: string, e: React.MouseEvent) => {
-		e.stopPropagation();
-		setConfirmDelete(completion_id);
-	};
-
 	const confirmDeleteChat = async () => {
 		if (!confirmDelete) return;
 
@@ -195,83 +189,22 @@ export const ChatSidebar = ({
 		});
 	};
 
-	const renderConversationGroup = (title: string, conversationsList: Conversation[]) => {
-		if (!conversationsList || conversationsList.length === 0) return null;
-
-		return (
-			<div key={title}>
-				<h3 className="px-2 py-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400 tracking-wider">
-					{title}
-				</h3>
-				<ul className="mb-3 space-y-1">
-					{conversationsList.map((conversation) => (
-						<ListItem
-							key={conversation.id}
-							data-id={conversation.id}
-							isActive={isConversationRoute && currentConversationId === conversation.id}
-							badge={
-								<>
-									{(conversation.isLocalOnly || localOnlyMode) && (
-										<span className="text-xs text-blue-500 dark:text-blue-400 inline-flex items-center">
-											<CloudOff size={14} className="mr-1" />
-											<span className="sr-only">Local only</span>
-										</span>
-									)}
-									{conversation.parent_conversation_id && (
-										<span
-											className="text-xs text-zinc-600 dark:text-zinc-400 inline-flex items-center cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100"
-											title="Go to original conversation"
-											aria-label="Go to original conversation"
-											onClick={(e) => {
-												e?.stopPropagation();
-												handleConversationClick(conversation.parent_conversation_id);
-											}}
-											onKeyDown={(e) => {
-												if (e.key === "Enter" || e.key === " ") {
-													e.stopPropagation();
-													handleConversationClick(conversation.parent_conversation_id!);
-												}
-											}}
-										>
-											<GitBranch size={14} className="mr-1" />
-										</span>
-									)}
-								</>
-							}
-							label={conversation.title || "New conversation"}
-							onClick={() => handleConversationClick(conversation.id)}
-							actions={
-								conversation.id ? (
-									<HoverActions
-										actions={[
-											{
-												id: "edit",
-												icon: <Edit size={14} />,
-												label: "Edit conversation title",
-												onClick: (e) => {
-													e.stopPropagation();
-													handleEditTitle(conversation.id || "", conversation.title || "");
-												},
-											},
-											{
-												id: "delete",
-												icon: <Trash2 size={14} />,
-												label: "Delete",
-												onClick: (e) => {
-													e.stopPropagation();
-													handleDeleteChat(conversation.id || "", e);
-												},
-											},
-										]}
-									/>
-								) : undefined
-							}
-						/>
-					))}
-				</ul>
-			</div>
-		);
-	};
+	const conversationGroups = [
+		{ title: "Today", conversations: categorizedChats.today },
+		{ title: "Yesterday", conversations: categorizedChats.yesterday },
+		{ title: "This Week", conversations: categorizedChats.thisWeek },
+		{ title: "This Month", conversations: categorizedChats.thisMonth },
+		{ title: "Last Month", conversations: categorizedChats.lastMonth },
+		{ title: "Older", conversations: categorizedChats.older },
+	].map(({ title, conversations: group }) => ({
+		title,
+		conversations: group.map((conversation) => ({
+			id: conversation.id,
+			title: conversation.title,
+			isLocalOnly: conversation.isLocalOnly,
+			parentConversationId: conversation.parent_conversation_id,
+		})),
+	}));
 
 	const sidebarHeader = (
 		<SidebarHeader
@@ -301,7 +234,7 @@ export const ChatSidebar = ({
 			>
 				{sidebarVisible && !isCanvasMode && !isAuthenticationLoading && (
 					<div>
-						<ChatSidebarNotifications
+						<ConversationStorageNotice
 							isAuthenticated={isAuthenticated}
 							isPro={isPro}
 							localOnlyMode={localOnlyMode}
@@ -336,14 +269,14 @@ export const ChatSidebar = ({
 								{isAuthenticated && (
 									<>
 										<SidebarNavLink
-											to="/chat/experiences"
+											href="/chat/experiences"
 											icon={<Grid2X2 size={16} />}
 											onClick={closeOnMobile}
 										>
 											Experiences
 										</SidebarNavLink>
 										<SidebarNavLink
-											to="/chat/capabilities"
+											href="/chat/capabilities"
 											icon={<Settings2 size={16} />}
 											onClick={closeOnMobile}
 										>
@@ -386,24 +319,26 @@ export const ChatSidebar = ({
 									No conversations yet.
 								</div>
 							) : (
-								<>
-									{renderConversationGroup("Today", categorizedChats.today)}
-									{renderConversationGroup("Yesterday", categorizedChats.yesterday)}
-									{renderConversationGroup("This Week", categorizedChats.thisWeek)}
-									{renderConversationGroup("This Month", categorizedChats.thisMonth)}
-									{renderConversationGroup("Last Month", categorizedChats.lastMonth)}
-									{renderConversationGroup("Older", categorizedChats.older)}
-									<div ref={loadMoreRef} className="h-8">
-										{isFetchingNextPage && (
+								<ConversationList
+									groups={conversationGroups}
+									activeConversationId={currentConversationId}
+									isConversationRoute={isConversationRoute}
+									localOnlyMode={localOnlyMode}
+									loadMoreRef={loadMoreRef}
+									loadMoreSlot={
+										isFetchingNextPage ? (
 											<div className="flex justify-center py-2">
 												<Loader2
 													size={16}
 													className="animate-spin text-zinc-500 dark:text-zinc-400"
 												/>
 											</div>
-										)}
-									</div>
-								</>
+										) : null
+									}
+									onSelect={handleConversationClick}
+									onEditTitle={handleEditTitle}
+									onDelete={(conversationId) => setConfirmDelete(conversationId)}
+								/>
 							)}
 						</div>
 					</div>

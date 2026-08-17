@@ -31,3 +31,6 @@ export function MusicTransportControls({
 		</div>
 	);
 }
+
+export * from "./strudel";
+export * from "./StrudelPlayer";

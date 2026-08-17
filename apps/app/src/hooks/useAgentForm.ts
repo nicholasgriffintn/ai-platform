@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { normaliseToolIds, readToolIds } from "@ngriffin_uk/polychat-schemas";
 import type { ParsedNumberInput } from "@ngriffin_uk/polychat-utility-core";
 import { getFiniteNumberOrFallback } from "@ngriffin_uk/polychat-utility-core";
-import { generateId } from "~/lib/utils";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 interface FewShotExample {
 	id: string;

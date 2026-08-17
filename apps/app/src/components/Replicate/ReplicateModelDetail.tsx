@@ -1,8 +1,8 @@
+import { ReplicateModelForm } from "@ngriffin_uk/polychat-component-experiences/media";
 import { useNavigate } from "react-router";
 import { useReplicateModels, useExecuteReplicateModel } from "~/hooks/useReplicate";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { isAuthenticationError } from "~/lib/errors";
-import { ReplicateModelForm } from "./ReplicateModelForm";
 
 interface ReplicateModelDetailProps {
 	basePath: string;

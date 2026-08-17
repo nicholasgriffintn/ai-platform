@@ -4,6 +4,12 @@ import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 import {
 	type AssistantRecipe,
+	buildRecipeConfigurationFromFields,
+	type ConfigurationFormValues,
+	formatRecipeConfigurationValue,
+	getMissingRequiredRecipeConfigurationFields,
+	getRecipeScheduleTrigger,
+	isRecipeScheduleCronSupported,
 	type RecipeConnectorManifest,
 	type RecipeInstallation,
 	type RecipeInstallationTrigger,
@@ -19,14 +25,6 @@ import {
 } from "~/hooks/useRecipes";
 import { createRecipeConversationActionPath } from "~/lib/assistant-action-launch";
 import { useConnectorSetup } from "~/hooks/useConnectorSetup";
-import {
-	buildRecipeConfigurationFromFields,
-	type ConfigurationFormValues,
-	formatRecipeConfigurationValue,
-	getMissingRequiredRecipeConfigurationFields,
-	getRecipeScheduleTrigger,
-	isRecipeScheduleCronSupported,
-} from "~/lib/recipes";
 import type { RecipeEventTriggerProvider } from "./RecipeEventTriggersDialog";
 import { getRecipeEventTriggerProviders } from "./recipeEventTriggerProviders";
 

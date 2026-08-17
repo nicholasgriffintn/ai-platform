@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { CapabilityCard, CapabilityFilters, type CapabilityCardModel } from "./index";
+import { CapabilityFilters } from "./index";
 
 afterEach(cleanup);
 
@@ -53,24 +53,5 @@ describe("capability controls", () => {
 		expect(apps.className).toContain("dark:bg-zinc-100");
 		expect(all.className).toContain("dark:hover:bg-zinc-800");
 		expect(research.className).toContain("dark:bg-zinc-800");
-	});
-
-	it("does not launch an unavailable capability", () => {
-		const onLaunch = vi.fn<(capability: CapabilityCardModel) => void>();
-		const capability: CapabilityCardModel = {
-			id: "reports",
-			name: "Reports",
-			description: "Generate reports",
-			kind: "app",
-			available: false,
-			unavailableReason: "Connect a data source first",
-		};
-		render(<CapabilityCard capability={capability} onLaunch={onLaunch} />);
-
-		const launch = screen.getByRole("button", { name: "Open" });
-		expect(launch.hasAttribute("disabled")).toBe(true);
-		expect(launch.title).toBe("Connect a data source first");
-		fireEvent.click(launch);
-		expect(onLaunch).not.toHaveBeenCalled();
 	});
 });

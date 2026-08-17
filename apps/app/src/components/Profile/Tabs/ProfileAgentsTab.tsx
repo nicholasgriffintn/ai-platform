@@ -1,3 +1,9 @@
+import {
+	AgentsList,
+	ConfirmDeleteModal,
+	ShareAgentModal,
+} from "@ngriffin_uk/polychat-component-account";
+import { EMPTY_MODEL_CONFIG } from "@ngriffin_uk/polychat-schemas";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -6,11 +12,7 @@ import { PageShell } from "~/components/Core/PageShell";
 import { type AgentData, useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
 import { useSharedAgents } from "~/hooks/useSharedAgents";
-import { EMPTY_MODEL_CONFIG } from "~/lib/models";
 import { AgentFormModal } from "./AgentFormModal";
-import { AgentsList } from "./AgentsList";
-import { ConfirmDeleteModal } from "../Modals/ConfirmDeleteModal";
-import { ShareAgentModal } from "./ShareAgentModal";
 import { SharedAgentsBrowser } from "./SharedAgentsBrowser";
 
 export function ProfileAgentsTab() {

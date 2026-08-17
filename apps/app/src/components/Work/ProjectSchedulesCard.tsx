@@ -1,3 +1,9 @@
+import {
+	RecipeConfigurationDialog,
+	RecipeConfigurationSummaryDialog,
+	RecipeScheduleDialog,
+} from "@ngriffin_uk/polychat-component-capabilities";
+import { getRecipeScheduleTrigger } from "@ngriffin_uk/polychat-schemas";
 import type {
 	AssistantRecipe,
 	ProjectCapability,
@@ -16,11 +22,6 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import {
-	RecipeConfigurationDialog,
-	RecipeConfigurationSummaryDialog,
-	RecipeScheduleDialog,
-} from "~/components/Apps/Recipes";
 import { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
 import {
 	Button,
@@ -32,7 +33,6 @@ import {
 	FormSelect,
 } from "@ngriffin_uk/polychat-component-ui";
 import { useAssistantRecipes, useRecipeInstallations } from "~/hooks/useRecipes";
-import { getRecipeScheduleTrigger } from "~/lib/recipes";
 import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 import { useChatStore } from "~/state/stores/chatStore";
 

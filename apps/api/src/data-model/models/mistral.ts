@@ -306,7 +306,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 3,
-		isFeatured: true,
 		supportsFim: true,
 		family: "codestral",
 		openWeights: true,
@@ -436,7 +435,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 3,
 		speed: 3,
 		multimodal: true,
-		isFeatured: true,
 	}),
 
 	createModelConfig("ministral-8b", PROVIDER, {
@@ -460,7 +458,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 3,
 		speed: 3,
 		multimodal: true,
-		isFeatured: true,
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "October 1, 2024",
 		lastUpdated: "October 4, 2024",

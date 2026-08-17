@@ -1,3 +1,4 @@
+import { type ArticleInput } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useMemo, useState } from "react";
 
 import {
@@ -7,7 +8,6 @@ import {
 	useSummariseArticle,
 } from "~/hooks/useArticles";
 import { getErrorMessage } from "~/lib/errors";
-import type { ArticleInput } from "~/types/article";
 
 export function useArticleAnalysisSession(projectId?: string) {
 	const [itemId] = useState(() => crypto.randomUUID());

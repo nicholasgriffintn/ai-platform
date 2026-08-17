@@ -1614,8 +1614,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 1,
 		speed: 4,
 		multimodal: true,
-		isFeatured: true,
-
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
 			defaultEffort: "medium",
@@ -1725,8 +1723,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 2,
 		multimodal: true,
-		isFeatured: true,
-
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
 			defaultEffort: "medium",
@@ -1786,8 +1782,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 2,
 		speed: 3,
 		multimodal: true,
-		isFeatured: true,
-
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
 			defaultEffort: "medium",
@@ -2121,6 +2115,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("gpt-5.6-luna", PROVIDER, {
 		name: "GPT-5.6 Luna",
+		description: "OpenAI's efficient GPT-5.6 model for fast, high-volume production workloads.",
 		matchingModel: "gpt-5.6-luna",
 		family: "gpt-luna",
 		openWeights: false,
@@ -2135,6 +2130,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: false,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
+		isFeatured: true,
 		contextWindow: 1050000,
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0002,
@@ -2147,6 +2143,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("gpt-5.6-sol", PROVIDER, {
 		name: "GPT-5.6 Sol",
+		description: "OpenAI's flagship GPT-5.6 model for complex production workflows.",
 		matchingModel: "gpt-5.6-sol",
 		family: "gpt-sol",
 		openWeights: false,
@@ -2161,6 +2158,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: false,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
+		isFeatured: true,
 		contextWindow: 1050000,
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
@@ -2173,6 +2171,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("gpt-5.6-terra", PROVIDER, {
 		name: "GPT-5.6 Terra",
+		description: "OpenAI's balanced GPT-5.6 model for strong performance at a lower cost.",
 		matchingModel: "gpt-5.6-terra",
 		family: "gpt-terra",
 		openWeights: false,
@@ -2187,6 +2186,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: false,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
+		isFeatured: true,
 		contextWindow: 1050000,
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.002,

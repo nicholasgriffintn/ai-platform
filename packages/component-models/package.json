@@ -1,6 +1,7 @@
 {
 	"name": "@ngriffin_uk/polychat-component-models",
 	"version": "0.1.0",
+	"description": "Model and provider presentation for Polychat surfaces: icon registry, catalogue lists, and controlled model selection views",
 	"license": "Apache-2.0",
 	"files": [
 		"dist"
@@ -23,7 +24,7 @@
 		"access": "public"
 	},
 	"scripts": {
-		"build": "tsup",
+		"build": "tsup && vite build --config vite.styles.config.ts",
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",
 		"test:package": "pnpm build && node --test ../../scripts/test-component-package-exports.mjs",
@@ -32,16 +33,26 @@
 		"lint": "pnpm oxlint",
 		"check": "pnpm lint && pnpm format:check"
 	},
+	"dependencies": {
+		"@ngriffin_uk/polychat-component-ui": "workspace:^",
+		"@ngriffin_uk/polychat-schemas": "workspace:^",
+		"@ngriffin_uk/polychat-utility-core": "workspace:^",
+		"@ngriffin_uk/polychat-utility-react": "workspace:^",
+		"lucide-react": "1.30.0"
+	},
 	"devDependencies": {
 		"@ngriffin_uk/polychat-config": "workspace:^",
+		"@tailwindcss/vite": "4.3.3",
 		"@testing-library/react": "catalog:",
 		"@types/react": "catalog:",
 		"@types/react-dom": "catalog:",
 		"jsdom": "catalog:",
 		"oxfmt": "catalog:",
 		"oxlint": "catalog:",
+		"tailwindcss": "4.3.3",
 		"tsup": "catalog:",
 		"typescript": "catalog:",
+		"vite": "8.2.1",
 		"vitest": "catalog:"
 	},
 	"peerDependencies": {

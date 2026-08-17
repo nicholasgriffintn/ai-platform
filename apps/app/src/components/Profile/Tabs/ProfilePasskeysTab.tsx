@@ -1,8 +1,7 @@
 import { Fingerprint, KeyRound, Shield, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { EmptyState } from "~/components/Core/EmptyState";
-import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { Button, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import { Card } from "@ngriffin_uk/polychat-component-ui";
 import { ConfirmationDialog, HoverActions, ListItem } from "@ngriffin_uk/polychat-component-ui";
 import { Skeleton } from "@ngriffin_uk/polychat-component-ui";

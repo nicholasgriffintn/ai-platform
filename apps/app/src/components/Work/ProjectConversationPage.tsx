@@ -1,6 +1,10 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { sandboxTaskTypeSchema, type SandboxTaskType } from "@ngriffin_uk/polychat-schemas";
+import {
+	getModelInteractionCapabilities,
+	type SandboxTaskType,
+	sandboxTaskTypeSchema,
+} from "@ngriffin_uk/polychat-schemas";
 import { toast } from "sonner";
 
 import { ConversationPage } from "~/components/ConversationThread/ConversationPage";
@@ -11,7 +15,6 @@ import { useModels } from "~/hooks/useModels";
 import { useProjectConversationSources } from "~/hooks/useProjectConversationSources";
 import { getCapabilityLibraryPath, getProjectSurface } from "~/lib/capability-surfaces";
 import { getProjectCodingPresentation } from "~/lib/project-coding-presentation";
-import { getModelInteractionCapabilities } from "~/lib/models";
 import { getErrorMessage } from "~/lib/errors";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useWorkData } from "./WorkContext";

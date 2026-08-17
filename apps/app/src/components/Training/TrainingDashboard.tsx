@@ -1,3 +1,11 @@
+import {
+	DeploymentsPanel,
+	isActiveTrainingDeploymentStatus,
+	isActiveTrainingJobStatus,
+	JobsPanel,
+	ModelCatalog,
+	trainingRecordKey,
+} from "@ngriffin_uk/polychat-component-experiences/training";
 import { useCallback, useMemo, useState } from "react";
 import type {
 	DeployTrainingModelRequest,
@@ -9,7 +17,6 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { Activity, Boxes, ListChecks, RefreshCcw, Server } from "lucide-react";
 
-import { EmptyState } from "~/components/Core/EmptyState";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import {
 	Alert,
@@ -18,6 +25,7 @@ import {
 	Button,
 	Card,
 	CardContent,
+	EmptyState,
 	Tabs,
 	TabsContent,
 	TabsList,
@@ -35,14 +43,6 @@ import {
 	useStartTrainingJob,
 } from "~/hooks/useTraining";
 import { getErrorMessage, isAuthenticationError } from "~/lib/errors";
-import { DeploymentsPanel } from "./DeploymentsPanel";
-import { JobsPanel } from "./JobsPanel";
-import { ModelCatalog } from "./ModelCatalog";
-import {
-	isActiveTrainingDeploymentStatus,
-	isActiveTrainingJobStatus,
-	trainingRecordKey,
-} from "./utils";
 
 const EMPTY_MODELS: TrainingModelDefinition[] = [];
 const EMPTY_JOBS: TrainingJob[] = [];

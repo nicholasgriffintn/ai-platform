@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { ConnectorApiKeyModal as ControlledConnectorApiKeyModal } from "@ngriffin_uk/polychat-component-account";
+import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 import { toast } from "sonner";
 
-import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
-import { FormDialog, Input, Label } from "@ngriffin_uk/polychat-component-ui";
 import { useStoreRecipeConnectorApiKey } from "~/hooks/useConnectors";
 
 interface ConnectorApiKeyModalProps {
@@ -22,58 +21,27 @@ export function ConnectorApiKeyModal({
 	credentialLabel,
 	onStored,
 }: ConnectorApiKeyModalProps) {
-	const [apiKey, setApiKey] = useState("");
 	const storeApiKey = useStoreRecipeConnectorApiKey();
 
-	useEffect(() => {
-		if (!open) {
-			setApiKey("");
-		}
-	}, [open]);
-
-	const handleSubmit = async () => {
-		if (!providerId || !apiKey.trim()) {
-			return;
-		}
-
-		try {
-			await storeApiKey.mutateAsync({
-				provider: providerId,
-				apiKey: apiKey.trim(),
-			});
-			await onStored();
-			toast.success(`${providerName} connected.`);
-			onOpenChange(false);
-		} catch (error) {
-			console.error(error);
-			toast.error(`Could not connect ${providerName}.`);
-		}
-	};
-
-	const fieldLabel = credentialLabel || "API key";
-
 	return (
-		<FormDialog
+		<ControlledConnectorApiKeyModal
 			open={open}
+			providerName={providerName}
+			credentialLabel={credentialLabel}
+			isSubmitting={storeApiKey.isPending}
 			onOpenChange={onOpenChange}
-			title={`Connect ${providerName}`}
-			description={`Store your ${fieldLabel.toLowerCase()} for recipe connectors.`}
-			onSubmit={handleSubmit}
-			submitText="Connect"
-			isLoading={storeApiKey.isPending}
-			submitDisabled={!apiKey.trim() || storeApiKey.isPending}
-		>
-			<div className="space-y-2">
-				<Label htmlFor="connector-api-key">{fieldLabel}</Label>
-				<Input
-					id="connector-api-key"
-					type="password"
-					value={apiKey}
-					onChange={(event) => setApiKey(event.target.value)}
-					placeholder="Paste key"
-					autoComplete="off"
-				/>
-			</div>
-		</FormDialog>
+			onSubmit={async (apiKey) => {
+				if (!providerId || !apiKey) return;
+				try {
+					await storeApiKey.mutateAsync({ provider: providerId, apiKey });
+					await onStored();
+					toast.success(`${providerName} connected.`);
+					onOpenChange(false);
+				} catch (error) {
+					console.error(error);
+					toast.error(`Could not connect ${providerName}.`);
+				}
+			}}
+		/>
 	);
 }

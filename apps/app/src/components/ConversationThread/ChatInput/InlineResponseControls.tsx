@@ -1,3 +1,10 @@
+import {
+	EMPTY_MODEL_CONFIG,
+	formatReasoningLabel,
+	getAvailableModels,
+	getDefaultReasoningEffort,
+	getReasoningOptions,
+} from "@ngriffin_uk/polychat-schemas";
 import { Brain, ChevronDown, ChevronUp, ListFilter } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
@@ -5,12 +12,6 @@ import { useMemo, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ngriffin_uk/polychat-component-ui";
 import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
-import { EMPTY_MODEL_CONFIG, getAvailableModels } from "~/lib/models";
-import {
-	formatReasoningLabel,
-	getDefaultReasoningEffort,
-	getReasoningOptions,
-} from "~/lib/reasoning";
 import { cn } from "~/lib/utils";
 import { formatVerbosityLabel, getDefaultVerbosity, getVerbosityOptions } from "~/lib/verbosity";
 import { useChatStore } from "~/state/stores/chatStore";

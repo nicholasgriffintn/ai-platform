@@ -1,20 +1,10 @@
+export { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
+
 import { ApiError } from "@ngriffin_uk/polychat-library-client";
 
 const AUTHENTICATION_ERROR_MESSAGE = "Authentication failed. Please check your credentials.";
 const AUTHENTICATION_ERROR_PATTERN =
 	/authentication failed|authentication required|not authenticated|unauthori[sz]ed/i;
-
-export function getErrorMessage(error: unknown, fallback: string): string {
-	if (error instanceof Error && error.message) {
-		return error.message;
-	}
-
-	if (typeof error === "string" && error.trim()) {
-		return error;
-	}
-
-	return fallback;
-}
 
 export function isAuthenticationError(error: unknown): boolean {
 	if (error instanceof ApiError) {

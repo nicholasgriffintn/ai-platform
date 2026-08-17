@@ -1,8 +1,7 @@
 import { Link } from "react-router";
 import { useReplicatePredictions } from "~/hooks/useReplicate";
-import { EmptyState } from "~/components/Core/EmptyState";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Card } from "@ngriffin_uk/polychat-component-ui";
+import { Card, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import { isAuthenticationError } from "~/lib/errors";
 
 export function ReplicatePredictions({

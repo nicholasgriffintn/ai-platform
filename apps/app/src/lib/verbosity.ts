@@ -1,5 +1,5 @@
+import { type VerbosityLevel } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
-import type { VerbosityLevel } from "~/types/chat";
 
 export const DEFAULT_VERBOSITY_LEVELS: VerbosityLevel[] = ["low", "medium", "high"];
 export const CAVEMAN_VERBOSITY: VerbosityLevel = "caveman";

@@ -1,12 +1,12 @@
+import { AgentTraceButton } from "@ngriffin_uk/polychat-component-conversation";
+import { buildAgentTraceEntries } from "@ngriffin_uk/polychat-library-chat/agent-trace";
 import { GitBranch } from "lucide-react";
 import { useMemo } from "react";
 
 import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { useChat } from "~/hooks/useChat";
-import { buildAgentTraceEntries } from "~/lib/agent-trace";
 import { useChatStore } from "~/state/stores/chatStore";
-import { AgentTraceButton } from "./AgentTracePanel";
 import { ShareButton } from "./ShareButton";
 
 interface ConversationProductHeaderProps {

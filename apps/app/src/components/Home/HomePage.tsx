@@ -1,10 +1,10 @@
+import { useCanvasStudio } from "~/components/Canvas/useCanvasStudio";
+import { PageTitle } from "@ngriffin_uk/polychat-component-ui";
 import { useState } from "react";
 
-import { CanvasGenerationsView } from "~/components/Canvas/CanvasGenerationsView";
-import { useCanvasStudio } from "~/components/Canvas/useCanvasStudio";
+import { CanvasGenerationsView } from "@ngriffin_uk/polychat-component-experiences/media";
 import { ChatSidebar } from "~/components/ChatSidebar";
 import { PageShell } from "~/components/Core/PageShell";
-import { PageTitle } from "~/components/Core/PageTitle";
 import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
 import { ConversationProductHeader } from "~/components/ConversationThread/ConversationProductHeader";
 import { HomeConversationThread } from "./HomeConversationThread";

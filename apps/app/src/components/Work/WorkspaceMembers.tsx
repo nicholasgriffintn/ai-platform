@@ -1,17 +1,21 @@
-import { ArrowRightLeft, Clock3, Link2, LogOut, ShieldCheck, Trash2, UserPlus } from "lucide-react";
+import {
+	WorkspaceInvitationList,
+	WorkspaceMemberList,
+	WorkspaceMembersSkeleton,
+} from "@ngriffin_uk/polychat-component-workspaces";
+import { LogOut, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card, ConfirmationDialog, FormSelect } from "@ngriffin_uk/polychat-component-ui";
+import { ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { useWorkspaceMemberMutations } from "~/hooks/useGovernance";
 import { useRevokeWorkspaceInvitation } from "~/hooks/useWorkspaces";
 import { isAuthenticationError } from "~/lib/errors";
 import { useWorkData } from "./WorkContext";
 import { InviteMemberDialog } from "./InviteMemberDialog";
-import { WorkspaceMembersSkeleton } from "./WorkLoadingSkeletons";
 
 export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
 	const { workspaceQuery } = useWorkData();
@@ -70,110 +74,23 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
 				<p className="mb-6 text-sm text-zinc-500 dark:text-zinc-400">
 					Manage access to {workspace.name}.
 				</p>
-				<Card className="gap-0 overflow-hidden py-0 shadow-none">
-					{workspace.members.map((member) => (
-						<div
-							key={member.userId}
-							className="flex items-center gap-4 border-b border-zinc-100 px-5 py-4 last:border-0 dark:border-zinc-800"
-						>
-							<div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold dark:bg-zinc-800">
-								{(member.name || member.email).slice(0, 1).toUpperCase()}
-							</div>
-							<div className="min-w-0 flex-1">
-								<p className="truncate text-sm font-medium">{member.name || member.email}</p>
-								{member.name && <p className="truncate text-xs text-zinc-500">{member.email}</p>}
-							</div>
-							{canManage &&
-							member.role !== "owner" &&
-							currentUserId !== member.userId &&
-							!(workspace.role === "admin" && member.role === "admin") ? (
-								<FormSelect
-									aria-label={`Role for ${member.name || member.email}`}
-									fullWidth={false}
-									value={member.role}
-									onChange={(event) =>
-										memberMutations.updateRole.mutate({
-											userId: member.userId,
-											role: event.target.value as "admin" | "member",
-										})
-									}
-									className="w-28 capitalize"
-								>
-									<option value="member">Member</option>
-									{workspace.role === "owner" ? <option value="admin">Admin</option> : null}
-								</FormSelect>
-							) : (
-								<span className="flex items-center gap-1 rounded-full border border-zinc-200 px-2.5 py-1 text-xs capitalize text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
-									{member.role === "owner" && <ShieldCheck size={13} />}
-									{member.role}
-								</span>
-							)}
-							{canManage &&
-							member.role !== "owner" &&
-							currentUserId !== member.userId &&
-							!(workspace.role === "admin" && member.role === "admin") ? (
-								<Button
-									size="sm"
-									variant="ghost"
-									icon={<Trash2 size={14} />}
-									onClick={() => setRemoveUserId(member.userId)}
-								>
-									Remove
-								</Button>
-							) : null}
-							{workspace.role === "owner" && member.role !== "owner" ? (
-								<Button
-									size="sm"
-									variant="outline"
-									icon={<ArrowRightLeft size={14} />}
-									onClick={() => setTransferUserId(member.userId)}
-								>
-									Make owner
-								</Button>
-							) : null}
-						</div>
-					))}
-				</Card>
+				<WorkspaceMemberList
+					members={workspace.members}
+					viewerRole={workspace.role}
+					viewerUserId={currentUserId}
+					onChangeRole={(userId, role) => memberMutations.updateRole.mutate({ userId, role })}
+					onRemove={setRemoveUserId}
+					onTransferOwnership={setTransferUserId}
+				/>
 
-				{canManage && workspace.invitations.some((invite) => invite.status === "pending") && (
-					<section className="mt-10">
-						<h2 className="mb-3 text-sm font-semibold">Pending invitations</h2>
-						<Card className="gap-0 overflow-hidden py-0 shadow-none">
-							{workspace.invitations
-								.filter((invite) => invite.status === "pending")
-								.map((invite) => (
-									<div
-										key={invite.id}
-										className="flex items-center gap-4 border-b border-zinc-100 px-5 py-4 last:border-0 dark:border-zinc-800"
-									>
-										<Link2 size={17} className="text-zinc-400" />
-										<div className="min-w-0 flex-1">
-											<p className="truncate text-sm font-medium">{invite.email}</p>
-											<p className="flex items-center gap-1 text-xs text-zinc-500">
-												<Clock3 size={12} /> Expires{" "}
-												{new Date(invite.expiresAt).toLocaleDateString()}
-											</p>
-										</div>
-										<span className="text-xs capitalize text-zinc-500">{invite.role}</span>
-										<Button
-											type="button"
-											size="sm"
-											variant="outline"
-											icon={<Trash2 size={14} />}
-											isLoading={
-												revokeInvitation.isPending &&
-												revokeInvitation.variables?.invitationId === invite.id
-											}
-											onClick={() =>
-												revokeInvitation.mutate({ workspaceId, invitationId: invite.id })
-											}
-										>
-											Revoke
-										</Button>
-									</div>
-								))}
-						</Card>
-					</section>
+				{canManage && (
+					<WorkspaceInvitationList
+						invitations={workspace.invitations.filter((invite) => invite.status === "pending")}
+						revokingInvitationId={
+							revokeInvitation.isPending ? revokeInvitation.variables?.invitationId : null
+						}
+						onRevoke={(invitationId) => revokeInvitation.mutate({ workspaceId, invitationId })}
+					/>
 				)}
 			</PageShell.Content>
 			<InviteMemberDialog

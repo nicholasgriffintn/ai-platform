@@ -1,7 +1,7 @@
+import { normalizeMessage } from "@ngriffin_uk/polychat-library-chat/messages";
 import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
 
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
-import { normalizeMessage } from "~/lib/messages";
 import type { MessageContent } from "~/types";
 
 export function prepareUserMessage(

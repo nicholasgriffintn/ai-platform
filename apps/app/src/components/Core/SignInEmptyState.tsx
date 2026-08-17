@@ -1,8 +1,6 @@
-import { LogIn } from "lucide-react";
+import { SignInEmptyState as ControlledSignInEmptyState } from "@ngriffin_uk/polychat-component-ui";
 import type { ReactNode } from "react";
 
-import { EmptyState } from "~/components/Core/EmptyState";
-import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { useUIStore } from "~/state/stores/uiStore";
 
 interface SignInEmptyStateProps {
@@ -11,24 +9,8 @@ interface SignInEmptyStateProps {
 	className?: string;
 }
 
-export function SignInEmptyState({
-	title = "Sign in to continue",
-	message = "Sign in to access this area of Polychat.",
-	className,
-}: SignInEmptyStateProps) {
+export function SignInEmptyState(props: SignInEmptyStateProps) {
 	const setShowLoginModal = useUIStore((state) => state.setShowLoginModal);
 
-	return (
-		<EmptyState
-			icon={<LogIn className="text-blue-600 dark:text-blue-400" size={24} aria-hidden="true" />}
-			title={title}
-			message={message}
-			action={
-				<Button type="button" variant="primary" onClick={() => setShowLoginModal(true)}>
-					Sign in
-				</Button>
-			}
-			className={className}
-		/>
-	);
+	return <ControlledSignInEmptyState {...props} onSignIn={() => setShowLoginModal(true)} />;
 }

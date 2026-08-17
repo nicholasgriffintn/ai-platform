@@ -1,9 +1,9 @@
+import { ConversationModelOption } from "@ngriffin_uk/polychat-component-models";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { SearchInput } from "@ngriffin_uk/polychat-component-ui";
 import { useConversationModelOptions } from "~/hooks/useConversationModelOptions";
 import { cn } from "~/lib/utils";
-import { ConversationModelOption } from "./ConversationModelOption";
 
 interface InlineModelSelectorProps {
 	onModelSelect: (modelId: string) => void;

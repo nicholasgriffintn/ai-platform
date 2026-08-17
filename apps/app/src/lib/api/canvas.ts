@@ -1,13 +1,13 @@
+import {
+	type CanvasGenerateRequest,
+	type CanvasGenerateResponse,
+	type CanvasGeneration,
+	type CanvasMode,
+	type CanvasModel,
+} from "@ngriffin_uk/polychat-component-experiences/media";
 import { apiService } from "./api-service";
 import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import { fetchApi } from "./fetch-wrapper";
-import type {
-	CanvasGeneration,
-	CanvasGenerateRequest,
-	CanvasGenerateResponse,
-	CanvasMode,
-	CanvasModel,
-} from "~/types/canvas";
 
 export async function fetchCanvasModels(mode: CanvasMode): Promise<CanvasModel[]> {
 	let headers = {};

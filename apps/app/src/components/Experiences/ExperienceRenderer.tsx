@@ -1,7 +1,5 @@
+import { ContentLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import { lazy, Suspense } from "react";
-
-import { EmptyState } from "~/components/Core/EmptyState";
-import { ContentLoadingSkeleton } from "~/components/Core/LoadingSkeletons";
 
 const ReplicateModelDetail = lazy(async () => {
 	const module = await import("~/components/Replicate/ReplicateModelDetail");

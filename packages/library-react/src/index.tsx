@@ -1,6 +1,10 @@
 import { QueryClient, QueryClientProvider, type QueryClientConfig } from "@tanstack/react-query";
 import { shouldRetryApiQuery } from "@ngriffin_uk/polychat-library-client/retry";
-import type { SurfaceControls } from "@ngriffin_uk/polychat-library-surface";
+import {
+	noopSurfaceAnalytics,
+	type SurfaceAnalytics,
+	type SurfaceControls,
+} from "@ngriffin_uk/polychat-library-surface";
 import { createContext, useContext, useState, type ReactNode } from "react";
 
 export interface SurfaceControlsProviderProps<NavigationIntent, SelectedFile> {
@@ -61,4 +65,20 @@ export function PolychatProvider({
 }: PolychatProviderProps) {
 	const [client] = useState(() => queryClient ?? createPolychatQueryClient(queryClientConfig));
 	return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+}
+
+const AnalyticsContext = createContext<SurfaceAnalytics>(noopSurfaceAnalytics);
+
+export interface AnalyticsProviderProps {
+	analytics: SurfaceAnalytics;
+	children: ReactNode;
+}
+
+export function AnalyticsProvider({ analytics, children }: AnalyticsProviderProps) {
+	return <AnalyticsContext.Provider value={analytics}>{children}</AnalyticsContext.Provider>;
+}
+
+/** Render packages report through this; without a provider the events are dropped. */
+export function useAnalytics(): SurfaceAnalytics {
+	return useContext(AnalyticsContext);
 }

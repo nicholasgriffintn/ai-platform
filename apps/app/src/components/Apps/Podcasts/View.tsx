@@ -1,8 +1,8 @@
+import { TranscriptViewer } from "@ngriffin_uk/polychat-component-experiences/content";
 import { FileText } from "lucide-react";
 import { useCallback } from "react";
 import type { Podcast } from "@ngriffin_uk/polychat-schemas";
 
-import { TranscriptViewer } from "~/components/Apps/Podcasts/TranscriptViewer";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { Markdown } from "@ngriffin_uk/polychat-component-content";
 

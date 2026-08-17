@@ -1,12 +1,12 @@
+import { WorkAccessEmptyState } from "@ngriffin_uk/polychat-component-workspaces";
+import { PageStatus } from "@ngriffin_uk/polychat-component-ui";
 import type { ReactNode } from "react";
 import { useLocation } from "react-router";
 
 import { ConversationProductHeader } from "~/components/ConversationThread/ConversationProductHeader";
-import { PageStatus } from "~/components/Core/PageStatus";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { useChatStore } from "~/state/stores/chatStore";
-import { WorkAccessEmptyState } from "./WorkAccessEmptyState";
 import { WorkSidebar } from "./WorkSidebar";
 
 export function WorkPageShell({

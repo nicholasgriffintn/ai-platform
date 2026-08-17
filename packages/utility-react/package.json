@@ -28,6 +28,9 @@
 		"lint": "pnpm oxlint",
 		"check": "pnpm lint && pnpm format:check"
 	},
+	"dependencies": {
+		"@ngriffin_uk/polychat-utility-core": "workspace:^"
+	},
 	"devDependencies": {
 		"@ngriffin_uk/polychat-config": "workspace:^",
 		"@testing-library/react": "catalog:",

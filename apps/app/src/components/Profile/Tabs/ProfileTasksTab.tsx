@@ -1,8 +1,7 @@
 import { Loader2 } from "lucide-react";
 import type { Task } from "@ngriffin_uk/polychat-schemas";
 
-import { EmptyState } from "~/components/Core/EmptyState";
-import { ListItem } from "@ngriffin_uk/polychat-component-ui";
+import { EmptyState, ListItem } from "@ngriffin_uk/polychat-component-ui";
 import { Card } from "@ngriffin_uk/polychat-component-ui";
 import { useTasks } from "~/hooks/useTasks";
 import { PageShell } from "../../Core/PageShell";

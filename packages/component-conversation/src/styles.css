@@ -1,3 +1,14 @@
+@import "tailwindcss/theme" layer(polychat-conversation-theme);
+@import "tailwindcss/utilities" layer(polychat-conversation-utilities);
+
+@source "./**/*.{ts,tsx}";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--color-off-white: #f8f8f8;
+	--color-off-white-highlight: #e8eaed;
+}
+
 @layer polychat-conversation {
 	.polychat-conversation-questions {
 		max-width: 36rem;

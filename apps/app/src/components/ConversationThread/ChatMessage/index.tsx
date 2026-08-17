@@ -1,19 +1,24 @@
+import {
+	EditableMessageContent,
+	MessageActions,
+	MessageContent,
+	ToolMessage,
+} from "@ngriffin_uk/polychat-component-conversation";
+
+import { InlineModelSelector } from "../InlineModelSelector";
+import { OpinionModelSelector } from "../OpinionModelSelector";
+import { type OpinionRequest } from "@ngriffin_uk/polychat-library-chat/opinion";
+import { isHiddenToolResponse } from "@ngriffin_uk/polychat-library-chat/tool-results";
+import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
+import { type ArtifactProps } from "@ngriffin_uk/polychat-component-content";
+import { ModelIcon } from "@ngriffin_uk/polychat-component-models";
+import { getModelDisplayName } from "@ngriffin_uk/polychat-schemas";
 import { useState } from "react";
 
-import { ModelIcon } from "~/components/ModelIcon";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { apiService } from "~/lib/api/api-service";
-import type { OpinionRequest } from "~/lib/chat/opinion";
-import { getMessageTextContent } from "~/lib/messages";
-import { getModelDisplayName } from "~/lib/models";
-import { isHiddenToolResponse } from "~/lib/tool-results";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { Message } from "~/types";
-import type { ArtifactProps } from "~/types/artifact";
-import { EditableMessageContent } from "./EditableMessageContent";
-import { MessageActions } from "./MessageActions";
-import { MessageContent } from "./MessageContent";
-import { ToolMessage } from "./ToolMessage";
 
 export const ChatMessage = ({
 	conversationId,
@@ -203,6 +208,21 @@ export const ChatMessage = ({
 						(message.content || hasPartContent) &&
 						(message.log_id || message.created) && (
 							<MessageActions
+								renderModelSelector={({ onModelSelect, onCancel }) => (
+									<InlineModelSelector
+										onModelSelect={onModelSelect}
+										onCancel={onCancel}
+										className="w-full"
+									/>
+								)}
+								renderOpinionSelector={({ onSubmit, onCancel, sourceModelId }) => (
+									<OpinionModelSelector
+										onSubmit={onSubmit}
+										onCancel={onCancel}
+										sourceModelId={sourceModelId}
+										className="w-full"
+									/>
+								)}
 								message={message}
 								copied={copied}
 								copyMessageToClipboard={copyMessageToClipboard}

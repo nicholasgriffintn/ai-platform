@@ -1,3 +1,4 @@
+import { RecipeConfigurationDialog } from "@ngriffin_uk/polychat-component-capabilities";
 import { Plug } from "lucide-react";
 
 import {
@@ -10,7 +11,6 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { Badge, Button } from "@ngriffin_uk/polychat-component-ui";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
-import { RecipeConfigurationDialog } from "~/components/Apps/Recipes";
 import { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
 import { ConnectorSetupDialogs } from "~/components/Connectors/ConnectorSetupDialogs";
 import { useRecipeConnectors } from "~/hooks/useConnectors";

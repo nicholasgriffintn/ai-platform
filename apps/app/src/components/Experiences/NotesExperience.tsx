@@ -4,9 +4,14 @@ import { Link, useNavigate } from "react-router";
 import type { NoteMetadata } from "@ngriffin_uk/polychat-schemas";
 
 import { NoteEditor } from "~/components/Apps/Notes/NoteEditor";
-import { EmptyState } from "~/components/Core/EmptyState";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card, SearchInput } from "@ngriffin_uk/polychat-component-ui";
+import {
+	Button,
+	Card,
+	CardGridLoadingSkeleton,
+	EmptyState,
+	SearchInput,
+} from "@ngriffin_uk/polychat-component-ui";
 import {
 	useCreateNote,
 	useDeleteNote,
@@ -14,7 +19,6 @@ import {
 	useFetchNotes,
 	useUpdateNote,
 } from "~/hooks/useNotes";
-import { CardGridLoadingSkeleton } from "~/components/Core/LoadingSkeletons";
 import { cn } from "~/lib/utils";
 import { isAuthenticationError } from "~/lib/errors";
 

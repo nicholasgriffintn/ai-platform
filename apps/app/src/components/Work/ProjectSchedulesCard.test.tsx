@@ -97,8 +97,9 @@ vi.mock("~/components/Apps/Recipes/useRecipeWorkflows", () => ({
 	}),
 }));
 
-vi.mock("~/components/Apps/Recipes", async (importOriginal) => {
-	const original = await importOriginal<typeof import("~/components/Apps/Recipes")>();
+vi.mock("@ngriffin_uk/polychat-component-capabilities", async (importOriginal) => {
+	const original =
+		await importOriginal<typeof import("@ngriffin_uk/polychat-component-capabilities")>();
 	return {
 		...original,
 		RecipeConfigurationDialog: () => null,

@@ -1,3 +1,9 @@
+import { CouncilChatControls } from "@ngriffin_uk/polychat-component-conversation";
+import {
+	createModelReferenceMap,
+	EMPTY_MODEL_CONFIG,
+	getModelByReference,
+} from "@ngriffin_uk/polychat-schemas";
 import {
 	defaultCouncilMemberIds,
 	type CouncilMemberId,
@@ -5,7 +11,6 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 
-import { CouncilChatControls } from "~/components/Council/CouncilChatControls";
 import type { ConversationThreadModeConfig } from "~/components/ConversationThread";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
@@ -19,7 +24,6 @@ import {
 	buildConversationModeMetadata,
 	getConversationModeMetadata,
 } from "~/lib/home-chat-modes/conversation-mode";
-import { createModelReferenceMap, EMPTY_MODEL_CONFIG, getModelByReference } from "~/lib/models";
 import {
 	getComposedRealtimeReasoningModelId,
 	getDefaultLiveModelId,

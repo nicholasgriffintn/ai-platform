@@ -1,7 +1,7 @@
+import { normalizeMessage } from "@ngriffin_uk/polychat-library-chat/messages";
 import type { ChatCompletionResponseBody, ChatStreamMessage } from "@ngriffin_uk/polychat-schemas";
 
 import type { Message } from "~/types";
-import { normalizeMessage } from "../messages";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { ApiError } from "@ngriffin_uk/polychat-library-client";
 

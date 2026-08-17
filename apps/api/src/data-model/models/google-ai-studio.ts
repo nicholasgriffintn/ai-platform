@@ -883,7 +883,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		reliability: 2,
 		speed: 3,
 		multimodal: true,
-		isFeatured: true,
 		isFree: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["thinking", "low", "medium", "high"],
@@ -1161,7 +1160,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		reliability: 3,
 		speed: 3,
 		multimodal: true,
-		isFeatured: true,
 		isFree: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking", "low", "medium", "high"],
@@ -1292,6 +1290,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
 	},
 	"gemini-3.5-flash-lite": {
 		name: "Gemini 3.5 Flash Lite",
+		description: "Google's fastest, lowest-cost Gemini model for high-throughput execution.",
 		matchingModel: "gemini-3.5-flash-lite",
 		provider: "google-ai-studio",
 		family: "gemini-flash-lite",
@@ -1307,6 +1306,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
+		isFeatured: true,
 		contextWindow: 1048576,
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
@@ -1319,6 +1319,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 
 	"gemini-3.6-flash": {
 		name: "Gemini 3.6 Flash",
+		description:
+			"Google's latest model balancing speed and intelligence for agentic and multimodal tasks.",
 		matchingModel: "gemini-3.6-flash",
 		provider: "google-ai-studio",
 		family: "gemini-flash",
@@ -1334,6 +1336,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
+		isFeatured: true,
 		contextWindow: 1048576,
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0015,

@@ -1,3 +1,8 @@
+import {
+	type Drawing,
+	type GenerateImageResponse,
+	type GuessResponse,
+} from "@ngriffin_uk/polychat-component-experiences/media";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
@@ -6,7 +11,6 @@ import {
 	generateImageFromDrawing,
 	guessDrawingFromImage,
 } from "~/lib/api/drawings";
-import type { Drawing, GenerateImageResponse, GuessResponse } from "~/types/drawing";
 
 export const useFetchDrawings = (enabled = true) => {
 	return useQuery<Drawing[], Error>({

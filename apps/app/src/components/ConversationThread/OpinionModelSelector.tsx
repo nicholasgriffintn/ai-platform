@@ -1,12 +1,12 @@
+import { type OpinionMode, type OpinionRequest } from "@ngriffin_uk/polychat-library-chat/opinion";
+import { ConversationModelOption } from "@ngriffin_uk/polychat-component-models";
 import { CheckCircle2, MessageSquareQuote, Scale } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { SearchInput } from "@ngriffin_uk/polychat-component-ui";
 import { useConversationModelOptions } from "~/hooks/useConversationModelOptions";
-import type { OpinionMode, OpinionRequest } from "~/lib/chat/opinion";
 import { cn } from "~/lib/utils";
-import { ConversationModelOption } from "./ConversationModelOption";
 
 const MAX_CONSENSUS_MODELS = 3;
 

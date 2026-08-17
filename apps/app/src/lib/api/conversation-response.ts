@@ -1,5 +1,5 @@
+import { normalizeMessage } from "@ngriffin_uk/polychat-library-chat/messages";
 import type { Conversation } from "~/types";
-import { normalizeMessage } from "../messages";
 
 type ConversationResponse = Omit<Partial<Conversation>, "messages"> & {
 	id?: unknown;

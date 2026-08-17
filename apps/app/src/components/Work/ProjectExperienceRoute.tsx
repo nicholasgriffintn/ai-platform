@@ -1,11 +1,14 @@
 import { Puzzle } from "lucide-react";
 import { Link } from "react-router";
 
-import { EmptyState } from "~/components/Core/EmptyState";
-import { BackLink } from "~/components/Core/BackLink";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button } from "@ngriffin_uk/polychat-component-ui";
+import {
+	BackLink,
+	Button,
+	ContentLoadingSkeleton,
+	EmptyState,
+} from "@ngriffin_uk/polychat-component-ui";
 import { useCapabilityCatalog } from "~/hooks/useCapabilityCatalog";
 import {
 	getExperienceBackLink,
@@ -14,7 +17,6 @@ import {
 	isExperienceEnabled,
 } from "~/lib/capability-surfaces";
 import { useWorkData } from "./WorkContext";
-import { ContentLoadingSkeleton } from "~/components/Core/LoadingSkeletons";
 import { ExperienceRenderer } from "~/components/Experiences/ExperienceRenderer";
 import { isAuthenticationError } from "~/lib/errors";
 
@@ -53,7 +55,7 @@ export function ProjectExperienceRoute({
 		<>
 			<PageShell.Content className="max-w-7xl">
 				<PageShell.Header title={title ?? "Experience"} />
-				<BackLink to={backLink.to} label={backLink.label} />
+				<BackLink href={backLink.to} label={backLink.label} />
 				{definition && (
 					<p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
 						{definition.description}

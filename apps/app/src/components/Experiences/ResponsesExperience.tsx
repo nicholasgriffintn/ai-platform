@@ -3,9 +3,13 @@ import { useRef, useState } from "react";
 import { Link } from "react-router";
 
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
-import { EmptyState } from "~/components/Core/EmptyState";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
+import {
+	Button,
+	Card,
+	CardGridLoadingSkeleton,
+	EmptyState,
+} from "@ngriffin_uk/polychat-component-ui";
 import {
 	useCreateOutputShare,
 	useOutput,
@@ -16,7 +20,6 @@ import {
 import { formatDate } from "@ngriffin_uk/polychat-utility-core";
 import { useRunnableTool } from "~/hooks/useRunnableTools";
 import { isAuthenticationError } from "~/lib/errors";
-import { CardGridLoadingSkeleton } from "~/components/Core/LoadingSkeletons";
 
 export function ResponsesExperience({ basePath, projectId, subpath }: ExperienceProps) {
 	const [copiedOutputId, setCopiedOutputId] = useState<string | null>(null);

@@ -1,10 +1,12 @@
+import {
+	type PodcastFormData,
+	PodcastWorkflowStep,
+} from "@ngriffin_uk/polychat-component-experiences/content";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { useProcessPodcast, useUploadPodcast } from "~/hooks/usePodcasts";
 import { getErrorMessage } from "~/lib/errors";
-import type { PodcastFormData } from "~/types/podcast";
-import { PodcastWorkflowStep } from "./workflow";
 
 type PodcastProcess = "transcribe" | "summarise" | "generate-image";
 type ProcessingKey = "transcribing" | "summarizing" | "generatingImage";

@@ -128,7 +128,6 @@ export const groqModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 5,
-		isFeatured: true,
 		family: "llama",
 		openWeights: true,
 	},
@@ -296,7 +295,6 @@ export const groqModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 1,
 		speed: 5,
-		isFeatured: true,
 		supportsResponseFormat: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],

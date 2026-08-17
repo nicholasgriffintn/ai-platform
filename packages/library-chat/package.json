@@ -46,6 +46,91 @@
 			"types": "./dist/request-options.d.ts",
 			"import": "./dist/request-options.js",
 			"require": "./dist/request-options.cjs"
+		},
+		"./conversation-types": {
+			"types": "./dist/conversation-types.d.ts",
+			"import": "./dist/conversation-types.js",
+			"require": "./dist/conversation-types.cjs"
+		},
+		"./messages": {
+			"types": "./dist/messages.d.ts",
+			"import": "./dist/messages.js",
+			"require": "./dist/messages.cjs"
+		},
+		"./composer-commands": {
+			"types": "./dist/composer-commands.d.ts",
+			"import": "./dist/composer-commands.js",
+			"require": "./dist/composer-commands.cjs"
+		},
+		"./tool-results": {
+			"types": "./dist/tool-results.d.ts",
+			"import": "./dist/tool-results.js",
+			"require": "./dist/tool-results.cjs"
+		},
+		"./tool-filters": {
+			"types": "./dist/tool-filters.d.ts",
+			"import": "./dist/tool-filters.js",
+			"require": "./dist/tool-filters.cjs"
+		},
+		"./message-utils": {
+			"types": "./dist/message-utils.d.ts",
+			"import": "./dist/message-utils.js",
+			"require": "./dist/message-utils.cjs"
+		},
+		"./markdown-editor": {
+			"types": "./dist/markdown-editor.d.ts",
+			"import": "./dist/markdown-editor.js",
+			"require": "./dist/markdown-editor.cjs"
+		},
+		"./agent-trace": {
+			"types": "./dist/agent-trace.d.ts",
+			"import": "./dist/agent-trace.js",
+			"require": "./dist/agent-trace.cjs"
+		},
+		"./agent-trace-display": {
+			"types": "./dist/agent-trace-display.d.ts",
+			"import": "./dist/agent-trace-display.js",
+			"require": "./dist/agent-trace-display.cjs"
+		},
+		"./textarea-selection-position": {
+			"types": "./dist/textarea-selection-position.d.ts",
+			"import": "./dist/textarea-selection-position.js",
+			"require": "./dist/textarea-selection-position.cjs"
+		},
+		"./opinion": {
+			"types": "./dist/opinion.d.ts",
+			"import": "./dist/opinion.js",
+			"require": "./dist/opinion.cjs"
+		},
+		"./branching": {
+			"types": "./dist/branching.d.ts",
+			"import": "./dist/branching.js",
+			"require": "./dist/branching.cjs"
+		},
+		"./message-compaction-status": {
+			"types": "./dist/message-compaction-status.d.ts",
+			"import": "./dist/message-compaction-status.js",
+			"require": "./dist/message-compaction-status.cjs"
+		},
+		"./message-parts": {
+			"types": "./dist/message-parts.d.ts",
+			"import": "./dist/message-parts.js",
+			"require": "./dist/message-parts.cjs"
+		},
+		"./provider-messages": {
+			"types": "./dist/provider-messages.d.ts",
+			"import": "./dist/provider-messages.js",
+			"require": "./dist/provider-messages.cjs"
+		},
+		"./weather": {
+			"types": "./dist/weather.d.ts",
+			"import": "./dist/weather.js",
+			"require": "./dist/weather.cjs"
+		},
+		"./message-speech": {
+			"types": "./dist/message-speech.d.ts",
+			"import": "./dist/message-speech.js",
+			"require": "./dist/message-speech.cjs"
 		}
 	},
 	"publishConfig": {
@@ -62,7 +147,8 @@
 		"check": "pnpm lint && pnpm format:check"
 	},
 	"dependencies": {
-		"@ngriffin_uk/polychat-schemas": "workspace:^"
+		"@ngriffin_uk/polychat-schemas": "workspace:^",
+		"@ngriffin_uk/polychat-utility-core": "workspace:^"
 	},
 	"devDependencies": {
 		"@ngriffin_uk/polychat-config": "workspace:^",

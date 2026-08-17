@@ -1,3 +1,25 @@
+import {
+	getCompactionMessageLabel,
+	isCompactionLoadingMessage,
+} from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
+import {
+	canOfferOpinionRequestForMessage,
+	type OpinionRequest,
+	shouldPromoteOpinionRequest,
+} from "@ngriffin_uk/polychat-library-chat/opinion";
+import { isHiddenToolResponse } from "@ngriffin_uk/polychat-library-chat/tool-results";
+import {
+	getMessageListScrollKey,
+	MessageSkeleton,
+	ScrollButton,
+} from "@ngriffin_uk/polychat-component-conversation";
+import { type ArtifactProps } from "@ngriffin_uk/polychat-component-content";
+import {
+	createModelReferenceMap,
+	EMPTY_MODEL_CONFIG,
+	getAvailableModels,
+	getModelByReference,
+} from "@ngriffin_uk/polychat-schemas";
 import { Loader2, ScrollText } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { VList, type VListHandle } from "virtua";
@@ -8,33 +30,13 @@ import { useCanAccessProFeatures } from "~/hooks/useCanAccessProFeatures";
 import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import {
-	getCompactionMessageLabel,
-	isCompactionLoadingMessage,
-} from "~/lib/chat/compaction-status";
-import {
-	canOfferOpinionRequestForMessage,
-	shouldPromoteOpinionRequest,
-	type OpinionRequest,
-} from "~/lib/chat/opinion";
-import {
-	createModelReferenceMap,
-	EMPTY_MODEL_CONFIG,
-	getAvailableModels,
-	getModelByReference,
-} from "~/lib/models";
-import { isHiddenToolResponse } from "~/lib/tool-results";
-import {
 	useIsLoading,
 	useLoadingMessage,
 	useLoadingProgress,
 } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Message } from "~/types";
-import type { ArtifactProps } from "~/types/artifact";
 import { ChatMessage } from "./ChatMessage";
-import { getMessageListScrollKey } from "./messageListScroll";
-import { MessageSkeleton } from "./MessageSkeleton";
-import { ScrollButton } from "./ScrollButton";
 
 interface MessageListProps {
 	onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;

@@ -15,3 +15,5 @@ export const reasoningEffortSchema = z.enum(REASONING_EFFORT_LEVELS);
 export const reasoningSettingsSchema = z.object({
 	effort: reasoningEffortSchema.optional(),
 });
+
+export type ReasoningEffort = z.infer<typeof reasoningEffortSchema>;

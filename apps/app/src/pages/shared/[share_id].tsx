@@ -1,3 +1,5 @@
+import { type ArtifactProps } from "@ngriffin_uk/polychat-component-content";
+import { LoadingSpinner, PageStatus } from "@ngriffin_uk/polychat-component-ui";
 import { PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
@@ -7,13 +9,10 @@ import "~/styles/github.css";
 import "~/styles/github-dark.css";
 import { ArtifactPanel } from "~/components/ConversationThread/Artifacts/ArtifactPanel";
 import { MessageList } from "~/components/ConversationThread/MessageList";
-import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { PageShell } from "~/components/Core/PageShell";
-import { PageStatus } from "~/components/Core/PageStatus";
 import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import { fetchSharedConversationHistory } from "~/lib/api/shared-conversation";
 import type { Message } from "~/types";
-import type { ArtifactProps } from "~/types/artifact";
 
 export function meta({ params }: { params: { share_id: string } }) {
 	return [

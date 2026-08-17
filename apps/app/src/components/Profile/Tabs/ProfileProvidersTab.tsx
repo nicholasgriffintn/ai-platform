@@ -1,13 +1,19 @@
+import {
+	ConnectorDetailsModal,
+	ConnectorLogo,
+	ProviderCatalogue,
+	type ProviderCatalogueItem,
+} from "@ngriffin_uk/polychat-component-account";
+import { ConnectorAccountsPanel } from "../Connectors/ConnectorAccountsPanel";
+import { ModelIcon } from "@ngriffin_uk/polychat-component-models";
 import { RefreshCcw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
-import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
+import { formatProviderLabel, recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
 import type { RecipeConnectorManifest } from "@ngriffin_uk/polychat-schemas";
 
-import { EmptyState } from "~/components/Core/EmptyState";
-import { ModelIcon } from "~/components/ModelIcon";
 import { PageShell } from "~/components/Core/PageShell";
 import {
 	Alert,
@@ -15,6 +21,7 @@ import {
 	AlertTitle,
 	Button,
 	ConfirmationDialog,
+	EmptyState,
 	SearchInput,
 } from "@ngriffin_uk/polychat-component-ui";
 import { Tabs, TabsList, TabsTrigger } from "@ngriffin_uk/polychat-component-ui";
@@ -26,14 +33,10 @@ import {
 } from "~/hooks/useConnectors";
 import { useConnectorSetup } from "~/hooks/useConnectorSetup";
 import { useUser } from "~/hooks/useUser";
-import { formatProviderLabel } from "~/lib/provider-display";
 import type { ProviderSetting } from "~/lib/api/services/user-service";
 import { completeConnectorAuthPopup } from "~/lib/connector-auth-popup";
 import { ConnectorSetupDialogs } from "~/components/Connectors/ConnectorSetupDialogs";
-import { ConnectorDetailsModal } from "../Connectors/ConnectorDetailsModal";
-import { ConnectorLogo } from "../Connectors/ConnectorLogo";
 import { ProviderApiKeyModal } from "../Modals/ProviderApiKeyModal";
-import { ProviderCatalogue, type ProviderCatalogueItem } from "../Providers/ProviderCatalogue";
 
 interface ProviderModalState {
 	open: boolean;
@@ -368,6 +371,14 @@ export function ProfileProvidersTab() {
 				}}
 				isStarting={connectorSetup.isStarting}
 				isDisconnecting={disconnectConnector.isPending}
+				accountsSlot={
+					selectedConnector ? (
+						<ConnectorAccountsPanel
+							provider={selectedConnector.id}
+							providerName={selectedConnector.name}
+						/>
+					) : null
+				}
 			/>
 			<ConfirmationDialog
 				open={providerToDelete !== null}

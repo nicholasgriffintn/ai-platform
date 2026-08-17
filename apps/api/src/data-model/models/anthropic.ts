@@ -48,7 +48,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 2,
 		speed: 2,
 		multimodal: true,
-		isFeatured: true,
 		supportsToolCalls: true,
 		...anthropicLatestHostedTools,
 		supportsDocuments: true,
@@ -109,7 +108,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
-		isFeatured: true,
 		supportsToolCalls: true,
 		...anthropicLatestCodeExecutionTool,
 		supportsDocuments: true,
@@ -227,6 +225,8 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("claude-haiku-4-5", PROVIDER, {
 		name: "Claude Haiku 4.5",
+		description:
+			"Anthropic's fastest model with near-frontier intelligence for high-volume workloads.",
 		matchingModel: "claude-haiku-4-5",
 		knowledgeCutoffDate: "February 28, 2025",
 		releaseDate: "October 15, 2025",
@@ -239,6 +239,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		restrictsCombinedTopPAndTemperature: true,
 		supportsToolCalls: true,
+		isFeatured: true,
 		contextWindow: 200000,
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.001,
@@ -377,7 +378,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		restrictsCombinedTopPAndTemperature: true,
 		supportsToolCalls: true,
-		isFeatured: true,
 		...anthropicLatestHostedTools,
 		contextWindow: 1000000,
 		maxTokens: 128000,
@@ -415,7 +415,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: false,
 		supportsTopP: false,
 		supportsToolCalls: true,
-		isFeatured: true,
 		contextWindow: 1000000,
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
@@ -455,6 +454,8 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 	}),
 	createModelConfig("claude-fable-5", PROVIDER, {
 		name: "Claude Fable 5",
+		description:
+			"Anthropic's most capable widely released model for demanding reasoning and long-horizon agentic work.",
 		matchingModel: "claude-fable-5",
 		releaseDate: "June 7, 2026",
 		lastUpdated: "June 9, 2026",
@@ -466,6 +467,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: false,
 		supportsTopP: false,
 		supportsToolCalls: true,
+		isFeatured: true,
 		contextWindow: 1000000,
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.01,
@@ -503,6 +505,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 	}),
 	createModelConfig("claude-sonnet-5", PROVIDER, {
 		name: "Claude Sonnet 5",
+		description: "Anthropic's best balance of intelligence and speed for production workloads.",
 		matchingModel: "claude-sonnet-5",
 		family: "claude-sonnet",
 		openWeights: false,
@@ -516,6 +519,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: true,
+		isFeatured: true,
 		contextWindow: 1000000,
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.002,
@@ -528,6 +532,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 	}),
 	createModelConfig("claude-opus-5", PROVIDER, {
 		name: "Claude Opus 5",
+		description: "Anthropic's advanced model for complex agentic coding and enterprise work.",
 		matchingModel: "claude-opus-5",
 		family: "claude-opus",
 		openWeights: false,
@@ -542,6 +547,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: false,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
+		isFeatured: true,
 		contextWindow: 1000000,
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,

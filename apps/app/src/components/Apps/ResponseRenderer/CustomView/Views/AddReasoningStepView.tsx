@@ -1,4 +1,4 @@
-import { ReasoningSection } from "~/components/ConversationThread/ChatMessage/ReasoningSection";
+import { ReasoningSection } from "@ngriffin_uk/polychat-component-conversation";
 
 export const AddReasoningStepView = ({
 	data,

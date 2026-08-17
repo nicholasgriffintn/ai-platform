@@ -1,12 +1,10 @@
 import { useState } from "react";
 
-import { ToolForm } from "~/components/Apps/ToolForm";
+import { ToolForm } from "@ngriffin_uk/polychat-component-capabilities";
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
-import { BackLink } from "~/components/Core/BackLink";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Card } from "@ngriffin_uk/polychat-component-ui";
+import { BackLink, Card, FormLoadingSkeleton } from "@ngriffin_uk/polychat-component-ui";
 import { useExecuteRunnableTool, useRunnableTool } from "~/hooks/useRunnableTools";
-import { FormLoadingSkeleton } from "~/components/Core/LoadingSkeletons";
 import { isAuthenticationError } from "~/lib/errors";
 
 interface ToolRunnerProps {
@@ -40,7 +38,7 @@ export function ToolRunner({ backPath, projectId, toolId }: ToolRunnerProps) {
 				<Card className="p-8 text-center shadow-none">
 					<h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Tool unavailable</h1>
 					<p className="text-sm leading-6 text-zinc-500">This tool no longer exists.</p>
-					<BackLink to={backPath} label="Back to capabilities" />
+					<BackLink href={backPath} label="Back to capabilities" />
 				</Card>
 			</main>
 		);
@@ -49,7 +47,7 @@ export function ToolRunner({ backPath, projectId, toolId }: ToolRunnerProps) {
 	return (
 		<main className="mx-auto max-w-5xl px-6 py-10 md:px-10 md:py-14">
 			<header className="mb-8">
-				<BackLink to={backPath} label="Back to capabilities" />
+				<BackLink href={backPath} label="Back to capabilities" />
 			</header>
 			{result ? (
 				<ResponseRenderer app={tool} result={result} onReset={() => setResult(null)} />

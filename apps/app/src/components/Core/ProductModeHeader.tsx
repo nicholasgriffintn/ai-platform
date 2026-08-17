@@ -9,7 +9,7 @@ import { isProductModeRoute } from "~/lib/navigation/product-mode";
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
-import { ProductModeSwitch } from "./ProductModeSwitch";
+import { ProductModeSwitch } from "@ngriffin_uk/polychat-component-navigation";
 
 interface ProductModeHeaderProps {
 	actions?: ReactNode;
@@ -64,7 +64,11 @@ export function ProductModeHeader({
 			</div>
 			<div className="flex justify-center">
 				{showProductModeSwitch ? (
-					<ProductModeSwitch className="w-auto shrink-0 sm:w-44 sm:justify-self-center" />
+					<ProductModeSwitch
+						activeMode={pathname.startsWith("/work") ? "work" : "chat"}
+						className="w-auto shrink-0 sm:w-44 sm:justify-self-center"
+						destinations={{ chat: "/chat", work: "/work" }}
+					/>
 				) : null}
 			</div>
 			<div className="flex min-w-0 shrink-0 items-center sm:justify-self-end">

@@ -1,6 +1,6 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { ChatSettings } from "~/types";
-import { getDefaultReasoningEffort } from "./reasoning";
+import { getDefaultReasoningEffort } from "@ngriffin_uk/polychat-schemas";
 import { getDefaultVerbosity } from "./verbosity";
 
 export function applyModelResponseDefaults(

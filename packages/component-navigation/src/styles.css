@@ -1,3 +1,14 @@
+@import "tailwindcss/theme" layer(polychat-navigation-theme);
+@import "tailwindcss/utilities" layer(polychat-navigation-utilities);
+
+@source "./**/*.{ts,tsx}";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--color-off-white: #f8f8f8;
+	--color-off-white-highlight: #e8eaed;
+}
+
 @layer polychat-navigation {
 	.polychat-navigation-mode-switch {
 		display: grid;

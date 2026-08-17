@@ -46,7 +46,6 @@ vi.mock("~/hooks/useChat", () => ({
 vi.mock("~/hooks/use-track-event", () => ({ useTrackEvent: () => ({ trackEvent: vi.fn() }) }));
 
 vi.mock("../Sidebar/SidebarFooter", () => ({ SidebarFooter: () => null }));
-vi.mock("./ChatSidebarNotifications", () => ({ ChatSidebarNotifications: () => null }));
 
 function LocationProbe() {
 	const location = useLocation();

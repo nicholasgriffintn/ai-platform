@@ -1,3 +1,4 @@
+import { parseModelToolConfiguration } from "@ngriffin_uk/polychat-schemas";
 import type {
 	AssistantActionItem,
 	AssistantRecipe,
@@ -9,13 +10,18 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
-import type { CapabilitySurface, EnabledCapability } from "~/lib/capability-surfaces";
+import { useNavigate } from "react-router";
+
+import {
+	type CapabilitySurface,
+	type EnabledCapability,
+	getCapabilityOpenPath,
+} from "~/lib/capability-surfaces";
 import type { PersonalSkillControls } from "./useCapabilityLibraryController";
 import type { ProjectCapabilityKindGroup } from "~/lib/project-capability-catalog";
 import { getProjectCapabilityKind } from "~/lib/project-capability-catalog";
-import { parseModelToolConfiguration } from "~/lib/model-tool-configuration";
 import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
-import { CapabilityCard } from "./CapabilityCard";
+import { CapabilityCard } from "@ngriffin_uk/polychat-component-capabilities";
 import { RecipeCapabilityCard } from "./RecipeCapabilityCard";
 
 interface CapabilityGroupsProps {
@@ -65,6 +71,8 @@ export function CapabilityGroups({
 	surface,
 	authoredSkillActions,
 }: CapabilityGroupsProps) {
+	const navigate = useNavigate();
+
 	return (
 		<div className="space-y-10">
 			{groups.map((group) => (
@@ -139,17 +147,18 @@ export function CapabilityGroups({
 											existing?.configuration ??
 											toolConfigurationById.get(item.capability.id) ??
 											{};
+										const openPath = getCapabilityOpenPath(item, surface, experiences);
 										return (
 											<CapabilityCard
 												key={item.id}
-												existing={existing}
+												isEnabled={Boolean(existing)}
 												isConfigured={Boolean(
 													tool && parseModelToolConfiguration(tool, toolConfiguration),
 												)}
 												item={item}
 												kind={itemKind}
 												app={appById.get(item.capability.id)}
-												experiences={experiences}
+												onOpen={openPath ? () => navigate(openPath) : undefined}
 												onConfigure={
 													tool?.requiresConfiguration
 														? () => onConfigureTool(tool, toolConfiguration)
@@ -189,7 +198,6 @@ export function CapabilityGroups({
 															personalSkills?.setEnabled(skillState.id, enabled),
 													}
 												}
-												surface={surface}
 											/>
 										);
 									})}

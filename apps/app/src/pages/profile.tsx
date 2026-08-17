@@ -1,8 +1,8 @@
+import { PageStatus } from "@ngriffin_uk/polychat-component-ui";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
-import { PageStatus } from "~/components/Core/PageStatus";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { ProfileSidebar, profileSidebarItems } from "~/components/Profile/ProfileSidebar";
 import { useAuthStatus } from "~/hooks/useAuth";

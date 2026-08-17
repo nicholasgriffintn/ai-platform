@@ -1,7 +1,3 @@
-import { useCallback, useMemo } from "react";
-
-import { useModels } from "~/hooks/useModels";
-import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import {
 	doesModelMatchId,
 	EMPTY_MODEL_CONFIG,
@@ -11,7 +7,11 @@ import {
 	modelHasOutputModality,
 	searchModelList,
 	sortModelsByDisplayName,
-} from "~/lib/models";
+} from "@ngriffin_uk/polychat-schemas";
+import { useCallback, useMemo } from "react";
+
+import { useModels } from "~/hooks/useModels";
+import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ModelConfigItem, ModelModality } from "@ngriffin_uk/polychat-schemas";
 

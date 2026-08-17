@@ -1,10 +1,10 @@
-import type {
-	Drawing,
-	DrawingResponse,
-	DrawingsResponse,
-	GenerateImageResponse,
-	GuessResponse,
-} from "~/types/drawing";
+import {
+	type Drawing,
+	type DrawingResponse,
+	type DrawingsResponse,
+	type GenerateImageResponse,
+	type GuessResponse,
+} from "@ngriffin_uk/polychat-component-experiences/media";
 import { apiService } from "./api-service";
 import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import { fetchApi } from "./fetch-wrapper";

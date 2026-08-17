@@ -1,0 +1,222 @@
+import { getCardGradient, getIcon, getIconContainerClass } from "../capability-theme";
+import { Check } from "lucide-react";
+import { useEffect, useState } from "react";
+import { getToolFormStepErrors, type RunnableTool } from "@ngriffin_uk/polychat-schemas";
+
+import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { cn } from "@ngriffin_uk/polychat-component-ui";
+import { FormStep } from "./FormStep";
+
+interface ToolFormProps {
+	tool: RunnableTool;
+	onSubmit: (formData: Record<string, any>) => Promise<Record<string, any>>;
+	onComplete: (result: Record<string, any>) => void;
+	isSubmitting?: boolean;
+}
+
+export const ToolForm = ({
+	tool,
+	onSubmit,
+	onComplete,
+	isSubmitting: externalIsSubmitting = false,
+}: ToolFormProps) => {
+	const [currentStepIndex, setCurrentStepIndex] = useState(0);
+	const [formData, setFormData] = useState<Record<string, any>>({});
+	const [errors, setErrors] = useState<Record<string, string>>({});
+	const [internalIsSubmitting, setInternalIsSubmitting] = useState(false);
+
+	const isSubmitting = externalIsSubmitting || internalIsSubmitting;
+
+	useEffect(() => {
+		const initialData: Record<string, any> = {};
+
+		for (const step of tool.formSchema.steps) {
+			for (const field of step.fields) {
+				if (field.defaultValue !== undefined) {
+					initialData[field.id] = field.defaultValue;
+				}
+			}
+		}
+
+		setFormData(initialData);
+	}, [tool]);
+
+	const handleFieldChange = (id: string, value: any) => {
+		setFormData((prev) => ({
+			...prev,
+			[id]: value,
+		}));
+
+		if (errors[id]) {
+			setErrors((prev) => {
+				const newErrors = { ...prev };
+				delete newErrors[id];
+				return newErrors;
+			});
+		}
+	};
+
+	const validateStep = (stepIndex: number): boolean => {
+		const step = tool.formSchema.steps[stepIndex];
+		const newErrors = getToolFormStepErrors(step, formData);
+
+		setErrors(newErrors);
+		return Object.keys(newErrors).length === 0;
+	};
+
+	const handleNext = () => {
+		if (validateStep(currentStepIndex)) {
+			setCurrentStepIndex((prev) => Math.min(prev + 1, tool.formSchema.steps.length - 1));
+		}
+	};
+
+	const handlePrevious = () => {
+		setCurrentStepIndex((prev) => Math.max(prev - 1, 0));
+	};
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+
+		if (!validateStep(currentStepIndex)) {
+			return;
+		}
+
+		try {
+			setInternalIsSubmitting(true);
+			const result = await onSubmit(formData);
+			onComplete(result);
+		} catch (error) {
+			console.error("Error submitting form:", error);
+			setErrors({
+				form:
+					error instanceof Error ? error.message : "An error occurred while submitting the form",
+			});
+		} finally {
+			setInternalIsSubmitting(false);
+		}
+	};
+
+	const currentStep = tool.formSchema.steps[currentStepIndex];
+	const isFirstStep = currentStepIndex === 0;
+	const isLastStep = currentStepIndex === tool.formSchema.steps.length - 1;
+
+	return (
+		<div className="max-w-3xl mx-auto">
+			<div
+				className={cn(
+					"border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-off-white dark:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600",
+					"bg-gradient-to-br",
+					getCardGradient(tool.theme),
+					"mb-6",
+				)}
+			>
+				<div className="mb-6">
+					<div className="flex items-center space-x-4 mb-4">
+						<div className={cn("p-3 rounded-lg shadow-sm", getIconContainerClass(tool.theme))}>
+							{getIcon(tool.icon, tool.theme)}
+						</div>
+						<div>
+							<h1 className={cn("text-2xl font-bold mb-2 text-zinc-900 dark:text-zinc-50")}>
+								{tool.name}
+							</h1>
+							<p className={cn("text-zinc-600 dark:text-zinc-300")}>{tool.description}</p>
+							{tool.costPerCall !== undefined && (
+								<p className={cn("text-sm text-zinc-500 dark:text-zinc-400 mt-1")}>
+									Cost per run:{" "}
+									{tool.costPerCall === 0
+										? "Free"
+										: `${tool.costPerCall} ${tool.costPerCall === 1 ? "request" : "requests"}`}
+								</p>
+							)}
+						</div>
+					</div>
+
+					{tool.formSchema.steps.length > 1 && (
+						<>
+							<div className="flex items-center justify-between mt-6">
+								{tool.formSchema.steps.map((step, index) => (
+									<div key={step.id} className="flex flex-col items-center">
+										<div
+											className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${
+												index < currentStepIndex
+													? "bg-green-500 dark:bg-green-600 text-white"
+													: index === currentStepIndex
+														? "bg-blue-500 dark:bg-blue-600 text-white"
+														: "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
+											}`}
+										>
+											{index < currentStepIndex ? <Check className="w-4 h-4" /> : index + 1}
+										</div>
+										<span className="text-xs text-zinc-600 dark:text-zinc-300">{step.title}</span>
+									</div>
+								))}
+							</div>
+							<div className="mt-4 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full">
+								<div
+									className="h-full bg-blue-500 dark:bg-blue-600 rounded-full transition-all duration-300"
+									style={{
+										width: `${((currentStepIndex + 1) / tool.formSchema.steps.length) * 100}%`,
+									}}
+								/>
+							</div>
+						</>
+					)}
+				</div>
+
+				<form onSubmit={handleSubmit}>
+					<div className="bg-off-white/80 dark:bg-zinc-800/80 p-5 rounded-lg">
+						<FormStep
+							step={currentStep}
+							formData={formData}
+							onChange={handleFieldChange}
+							errors={errors}
+						/>
+
+						{errors.form && (
+							<div className="mt-4 p-3 bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300 rounded-md border border-red-200 dark:border-red-800">
+								{errors.form}
+							</div>
+						)}
+					</div>
+
+					<div className="flex justify-between mt-6">
+						{!isFirstStep && (
+							<Button
+								type="button"
+								variant="secondary"
+								onClick={handlePrevious}
+								disabled={isSubmitting}
+							>
+								Previous
+							</Button>
+						)}
+
+						<div className="ml-auto">
+							{isLastStep ? (
+								<Button
+									type="submit"
+									variant="primary"
+									className={"flex items-center"}
+									disabled={isSubmitting}
+									isLoading={isSubmitting}
+									size="lg"
+								>
+									{isSubmitting ? "Processing..." : "Submit"}
+								</Button>
+							) : (
+								<Button
+									type="button"
+									onClick={handleNext}
+									variant="primary"
+									disabled={isSubmitting}
+								>
+									Next
+								</Button>
+							)}
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	);
+};

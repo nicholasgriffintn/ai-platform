@@ -1,6 +1,9 @@
+import {
+	getMessageTextContent,
+	normalizeMessage,
+} from "@ngriffin_uk/polychat-library-chat/messages";
 import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
 
-import { getMessageTextContent, normalizeMessage } from "~/lib/messages";
 import type { Message } from "~/types";
 import type { RealtimeTranscriptResult } from "@ngriffin_uk/polychat-library-realtime/messages";
 

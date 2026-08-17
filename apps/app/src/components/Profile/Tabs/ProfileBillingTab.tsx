@@ -1,10 +1,9 @@
 import { Loader2, Plus, RefreshCw, Rocket, Sparkles, Trash2, Zap } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { EmptyState } from "~/components/Core/EmptyState";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { Button, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import { Card } from "@ngriffin_uk/polychat-component-ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import {

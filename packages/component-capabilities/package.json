@@ -33,7 +33,10 @@
 		"check": "pnpm lint && pnpm format:check"
 	},
 	"dependencies": {
-		"@ngriffin_uk/polychat-component-ui": "workspace:^"
+		"@ngriffin_uk/polychat-component-ui": "workspace:^",
+		"@ngriffin_uk/polychat-schemas": "workspace:^",
+		"@ngriffin_uk/polychat-utility-core": "workspace:^",
+		"lucide-react": "1.30.0"
 	},
 	"devDependencies": {
 		"@ngriffin_uk/polychat-config": "workspace:^",
@@ -44,6 +47,8 @@
 		"jsdom": "catalog:",
 		"oxfmt": "catalog:",
 		"oxlint": "catalog:",
+		"react": "catalog:",
+		"react-dom": "catalog:",
 		"tailwindcss": "4.3.3",
 		"tsup": "catalog:",
 		"typescript": "catalog:",

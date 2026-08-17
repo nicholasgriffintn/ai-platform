@@ -1,10 +1,10 @@
+import { isStealthModel } from "@ngriffin_uk/polychat-schemas";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useMemo } from "react";
 
 import { useRecipeConnectors } from "~/hooks/useConnectors";
 import { useUser } from "~/hooks/useUser";
 import { useWorkspaces } from "~/hooks/useWorkspaces";
-import { isStealthModel } from "~/lib/models";
 import { useChatStore } from "~/state/stores/chatStore";
 import { type UsageLimits, useUsageStore } from "~/state/stores/usageStore";
 import { type BannerDismissalScope, isDismissed, useComposerBannerDismissals } from "./dismissal";

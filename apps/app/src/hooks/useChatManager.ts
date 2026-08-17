@@ -1,3 +1,4 @@
+import { EMPTY_MODEL_CONFIG } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { compactionStatusLabels } from "@ngriffin_uk/polychat-schemas/compaction-status";
@@ -13,7 +14,6 @@ import { createCouncilDebateTurnPlanner } from "~/lib/council-turns";
 import { createConversationId } from "~/lib/conversations";
 import { upsertConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
 import { getErrorMessage } from "~/lib/errors";
-import { EMPTY_MODEL_CONFIG } from "~/lib/models";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatRequestOptions, Conversation, Message } from "~/types";

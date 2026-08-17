@@ -1,8 +1,8 @@
+import { isCompactionMarkerMessage } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
+import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import { createConversationTitleExcerpt } from "@ngriffin_uk/polychat-schemas";
 
-import { getMessageTextContent } from "~/lib/messages";
 import type { Message } from "~/types";
-import { isCompactionMarkerMessage } from "./compaction-status";
 
 export function getConversationTitleSourceMessage(messages: Message[]): Message | undefined {
 	return messages.find(

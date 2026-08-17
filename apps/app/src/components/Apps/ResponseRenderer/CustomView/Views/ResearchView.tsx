@@ -5,7 +5,7 @@ import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
 import { useResearchStatus } from "~/hooks/useResearchStatus";
 import type { ResearchStatus } from "~/types/research";
-import { JsonView } from "../../JsonView";
+import { JsonView } from "@ngriffin_uk/polychat-component-content";
 
 const providerLabels: Record<string, string> = {
 	parallel: "Parallel",

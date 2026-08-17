@@ -1,7 +1,11 @@
+import {
+	type CanvasGenerateRequest,
+	type CanvasGeneration,
+	type CanvasMode,
+} from "@ngriffin_uk/polychat-component-experiences/media";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { fetchCanvasGenerations, fetchCanvasModels, generateCanvasOutputs } from "~/lib/api/canvas";
-import type { CanvasGenerateRequest, CanvasGeneration, CanvasMode } from "~/types/canvas";
 
 export const CANVAS_QUERY_KEY = "canvas";
 

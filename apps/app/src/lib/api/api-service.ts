@@ -1,3 +1,4 @@
+import { formatMessageContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import { useToolsStore } from "~/state/stores/toolsStore";
 import { useChatStore } from "~/state/stores/chatStore";
 import type {
@@ -7,7 +8,6 @@ import type {
 	UpdateAgentInput,
 } from "@ngriffin_uk/polychat-schemas";
 import type { Conversation, ConversationListOptions, ConversationListPage, Message } from "~/types";
-import { formatMessageContent } from "../messages";
 import { AgentService } from "./services/agent-service";
 import { AudioService, type SpeechGenerationResponse } from "./services/audio-service";
 import {

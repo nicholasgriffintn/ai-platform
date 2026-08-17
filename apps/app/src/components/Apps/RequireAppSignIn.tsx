@@ -1,7 +1,7 @@
+import { PageStatus } from "@ngriffin_uk/polychat-component-ui";
 import type { ReactNode } from "react";
 import { Loader2 } from "lucide-react";
 
-import { PageStatus } from "~/components/Core/PageStatus";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { useAuthStatus } from "~/hooks/useAuth";
 

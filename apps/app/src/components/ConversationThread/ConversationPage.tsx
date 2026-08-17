@@ -1,8 +1,8 @@
+import { PageTitle } from "@ngriffin_uk/polychat-component-ui";
 import { type ReactNode } from "react";
 
 import { ChatSidebar } from "~/components/ChatSidebar";
 import { PageShell } from "~/components/Core/PageShell";
-import { PageTitle } from "~/components/Core/PageTitle";
 import { ConversationThread, type ConversationThreadModeConfig } from ".";
 import { ConversationProductHeader } from "./ConversationProductHeader";
 import { useConversationLaunchModeConfig } from "./useConversationLaunchModeConfig";

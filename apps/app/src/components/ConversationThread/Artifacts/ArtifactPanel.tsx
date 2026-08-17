@@ -1,15 +1,19 @@
 import { Code2, Copy, FileText, Play, X } from "lucide-react";
 import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
 
-import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
+import {
+	ArtifactDocumentEditor,
+	type ArtifactProps,
+	isCodeArtifact,
+	isDocumentArtifact,
+	isStylesheetArtifact,
+	MemoizedMarkdown,
+} from "@ngriffin_uk/polychat-component-content";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
-import { isCodeArtifact, isDocumentArtifact, isStylesheetArtifact } from "~/lib/artifacts";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
-import type { ArtifactProps } from "~/types/artifact";
-import { ArtifactDocumentEditor } from "./ArtifactDocumentEditor";
 
 const ArtifactSandbox = lazy(() =>
-	import("./ArtifactSandbox/index").then((mod) => ({
+	import("@ngriffin_uk/polychat-component-content").then((mod) => ({
 		default: mod.ArtifactSandbox,
 	})),
 );

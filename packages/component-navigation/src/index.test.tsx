@@ -1,44 +1,92 @@
+import { LinkProvider } from "@ngriffin_uk/polychat-component-ui";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { forwardRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { NavigationList, ProductModeSwitch, type NavigationItem } from "./index";
+import { ConversationList, ProductModeSwitch } from "./index";
 
 afterEach(cleanup);
 
-describe("navigation controls", () => {
-	it("reports the selected product mode without owning mode state", () => {
-		const onSelect = vi.fn();
-		render(<ProductModeSwitch activeMode="chat" onSelect={onSelect} />);
+describe("ProductModeSwitch", () => {
+	it("marks the active mode and links to host-resolved destinations", () => {
+		render(<ProductModeSwitch activeMode="work" destinations={{ chat: "/chat", work: "/work" }} />);
 
-		const chatControl = screen.getByRole("button", { name: "Chat" });
-		const workControl = screen.getByRole("button", { name: "Work" });
-		expect(chatControl.getAttribute("aria-pressed")).toBe("true");
-		expect(chatControl.querySelector("svg")).not.toBeNull();
-		expect(workControl.querySelector("svg")).not.toBeNull();
-		fireEvent.click(workControl);
-		expect(onSelect).toHaveBeenCalledWith("work");
-		expect(screen.getByRole("button", { name: "Chat" }).getAttribute("aria-pressed")).toBe("true");
+		expect(screen.getByRole("link", { name: "Work" }).getAttribute("aria-current")).toBe("page");
+		expect(screen.getByRole("link", { name: "Chat" }).getAttribute("aria-current")).toBeNull();
+		expect(screen.getByRole("link", { name: "Chat" }).getAttribute("href")).toBe("/chat");
 	});
 
-	it("keeps unavailable navigation destinations inert", () => {
-		const items: NavigationItem[] = [
-			{ id: "home", label: "Home" },
-			{ id: "admin", label: "Admin", disabledReason: "Administrators only" },
-		];
-		const onSelect = vi.fn();
+	it("renders through the host link component when one is provided", () => {
+		const HostLink = forwardRef<HTMLAnchorElement, { href: string }>(function HostLink(
+			{ href, ...props },
+			ref,
+		) {
+			return <a ref={ref} data-host-link href={href} {...props} />;
+		});
+
 		render(
-			<NavigationList
-				items={items}
-				activeItemId="home"
-				ariaLabel="Workspace"
+			<LinkProvider Link={HostLink}>
+				<ProductModeSwitch activeMode="chat" destinations={{ chat: "/chat", work: "/work" }} />
+			</LinkProvider>,
+		);
+
+		expect(screen.getByRole("link", { name: "Chat" }).hasAttribute("data-host-link")).toBe(true);
+	});
+});
+
+describe("ConversationList", () => {
+	const groups = [
+		{
+			title: "Today",
+			conversations: [
+				{ id: "one", title: "Roadmap", parentConversationId: "root" },
+				{ id: "two", title: "Ideas" },
+			],
+		},
+		{ title: "Older", conversations: [] },
+	];
+
+	it("emits selection, edit, and delete intents without owning the data", () => {
+		const onSelect = vi.fn();
+		const onEditTitle = vi.fn();
+		const onDelete = vi.fn();
+
+		render(
+			<ConversationList
+				groups={groups}
+				activeConversationId="one"
+				isConversationRoute
 				onSelect={onSelect}
+				onEditTitle={onEditTitle}
+				onDelete={onDelete}
 			/>,
 		);
 
-		const unavailable = screen.getByRole("button", { name: "Admin" });
-		expect(unavailable.hasAttribute("disabled")).toBe(true);
-		expect(unavailable.title).toBe("Administrators only");
-		fireEvent.click(unavailable);
-		expect(onSelect).not.toHaveBeenCalled();
+		expect(screen.queryByText("Older")).toBeNull();
+
+		fireEvent.click(screen.getByText("Ideas"));
+		expect(onSelect).toHaveBeenCalledWith("two");
+
+		fireEvent.click(screen.getAllByLabelText("Edit conversation title")[0]);
+		expect(onEditTitle).toHaveBeenCalledWith("one", "Roadmap");
+
+		fireEvent.click(screen.getAllByLabelText("Delete")[0]);
+		expect(onDelete).toHaveBeenCalledWith("one");
+	});
+
+	it("routes the branch badge back to the parent conversation", () => {
+		const onSelect = vi.fn();
+		render(
+			<ConversationList
+				groups={groups}
+				isConversationRoute
+				onSelect={onSelect}
+				onEditTitle={vi.fn()}
+				onDelete={vi.fn()}
+			/>,
+		);
+
+		fireEvent.click(screen.getByLabelText("Go to original conversation"));
+		expect(onSelect).toHaveBeenCalledWith("root");
 	});
 });

@@ -1,21 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
-
-import { useCanvasGenerations, useCanvasModels, useGenerateCanvasOutputs } from "~/hooks/useCanvas";
-import type {
-	CanvasGeneration,
-	CanvasGenerateRequest,
-	CanvasGenerationResult,
-	CanvasMode,
-} from "~/types/canvas";
 import { useDrawingStudio } from "./Drawing/useDrawingStudio";
-import type { CanvasRun } from "./GenerationCard";
 import {
-	buildCanvasModelOptions,
 	buildCanvasModelOptionControlValues,
+	buildCanvasModelOptions,
+	type CanvasGenerateRequest,
+	type CanvasGeneration,
+	type CanvasGenerationResult,
+	type CanvasMode,
+	type CanvasRun,
 	collectCanvasModelOptionFields,
 	collectFieldEnumOptions,
 	parseReferenceImages,
-} from "./utils";
+} from "@ngriffin_uk/polychat-component-experiences/media";
+import { useEffect, useMemo, useState } from "react";
+
+import { useCanvasGenerations, useCanvasModels, useGenerateCanvasOutputs } from "~/hooks/useCanvas";
 
 export type CanvasStudioMode = CanvasMode | "drawing";
 

@@ -1,21 +1,21 @@
-import { type ReactNode, useEffect, useMemo, useState } from "react";
-import type { AssistantActionItem } from "@ngriffin_uk/polychat-schemas";
-
-import { useAgentToolDefaults } from "~/hooks/useAgentToolDefaults";
-import { useAgents } from "~/hooks/useAgents";
+import {
+	type ComposerActionCatalogConfig,
+	type ComposerAssistantActionCapability,
+	type ComposerCommandAction,
+} from "@ngriffin_uk/polychat-component-conversation";
 import {
 	type ComposerDirectiveIgnoredRange,
 	findComposerInlineTokenRanges,
 	getComposerDirectiveQuery,
 	getComposerInlineTokenRange,
 	getComposerInlineTokenText,
-} from "~/lib/composer-commands";
+} from "@ngriffin_uk/polychat-library-chat/composer-commands";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
+import type { AssistantActionItem } from "@ngriffin_uk/polychat-schemas";
+
+import { useAgentToolDefaults } from "~/hooks/useAgentToolDefaults";
+import { useAgents } from "~/hooks/useAgents";
 import { useChatStore } from "~/state/stores/chatStore";
-import type {
-	ComposerAssistantActionCapability,
-	ComposerActionCatalogConfig,
-	ComposerCommandAction,
-} from "./composerCommandTypes";
 import { useComposerCommandActions } from "./useComposerCommandActions";
 
 interface ComposerCommandControls {
@@ -168,6 +168,7 @@ export function useComposerCommandController({
 
 	return {
 		applyDirectiveSelection,
+		commandActions,
 		commandState: {
 			allowedAssistantActionCapabilities,
 			assistantActionCatalog,

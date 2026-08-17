@@ -1,16 +1,16 @@
+import {
+	buildMessageSpeech,
+	type MessageSpeech,
+	resolveMessageSpeechAudioSource,
+	resolveSpeechResponseAudioSource,
+	withMessageSpeech,
+} from "@ngriffin_uk/polychat-library-chat/message-speech";
+import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import { canReplaceStoredConversationMessages } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { apiService } from "~/lib/api/api-service";
-import { getMessageTextContent } from "~/lib/messages";
-import {
-	buildMessageSpeech,
-	resolveMessageSpeechAudioSource,
-	resolveSpeechResponseAudioSource,
-	withMessageSpeech,
-	type MessageSpeech,
-} from "~/lib/speech/message-speech";
 import type { Message } from "~/types";
 import { useConversationStorage } from "~/hooks/useConversationStorage";
 

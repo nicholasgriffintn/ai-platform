@@ -1,8 +1,10 @@
 import {
+	defaultModel,
+	isRealtimeSessionModel,
+	isTextInputChatModel,
 	REALTIME_LIVE_PROVIDER_MANIFEST,
 	type RealtimeLiveProviderManifestItem,
 } from "@ngriffin_uk/polychat-schemas";
-import { defaultModel, isRealtimeSessionModel, isTextInputChatModel } from "~/lib/models";
 import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 import type {
 	CreateRealtimeSessionOptions,

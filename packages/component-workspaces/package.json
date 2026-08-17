@@ -1,6 +1,7 @@
 {
 	"name": "@ngriffin_uk/polychat-component-workspaces",
 	"version": "0.1.0",
+	"description": "Controlled workspace and project views for Polychat surfaces",
 	"license": "Apache-2.0",
 	"files": [
 		"dist"
@@ -33,7 +34,10 @@
 		"check": "pnpm lint && pnpm format:check"
 	},
 	"dependencies": {
+		"@ngriffin_uk/polychat-component-navigation": "workspace:^",
 		"@ngriffin_uk/polychat-component-ui": "workspace:^",
+		"@ngriffin_uk/polychat-schemas": "workspace:^",
+		"@ngriffin_uk/polychat-utility-core": "workspace:^",
 		"lucide-react": "1.30.0"
 	},
 	"devDependencies": {
@@ -45,6 +49,8 @@
 		"jsdom": "catalog:",
 		"oxfmt": "catalog:",
 		"oxlint": "catalog:",
+		"react": "catalog:",
+		"react-dom": "catalog:",
 		"tailwindcss": "4.3.3",
 		"tsup": "catalog:",
 		"typescript": "catalog:",
