@@ -938,4 +938,22 @@ export const xaiModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 	},
+	"grok-imagine-image-2.0": {
+		name: "Grok Imagine Image 2.0",
+		matchingModel: "grok-imagine-image-2.0",
+		provider: "grok",
+		family: "grok",
+		openWeights: false,
+		releaseDate: "August 7, 2026",
+		lastUpdated: "August 7, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["image", "pdf"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		contextWindow: 8000,
+		maxTokens: 0,
+	},
 };

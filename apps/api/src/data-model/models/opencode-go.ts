@@ -20,8 +20,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 		contextWindow: 1000000,
 		maxTokens: 384000,
-		costPer1kInputTokens: 0.00007,
-		costPer1kOutputTokens: 0.00014,
+		costPer1kInputTokens: 0.00022,
+		costPer1kOutputTokens: 0.00066,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -56,8 +56,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 		contextWindow: 1000000,
 		maxTokens: 384000,
-		costPer1kInputTokens: 0.000435,
-		costPer1kOutputTokens: 0.00087,
+		costPer1kInputTokens: 0.00066,
+		costPer1kOutputTokens: 0.00198,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

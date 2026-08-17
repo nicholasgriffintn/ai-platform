@@ -3692,15 +3692,15 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("qwen3.8-2.4t-a95b", PROVIDER, {
 		name: "qwen3.8-2.4t-a95b",
 		matchingModel: "qwen3.8-2.4t-a95b",
-		openWeights: false,
-		releaseDate: "August 14, 2026",
-		lastUpdated: "August 14, 2026",
+		openWeights: true,
+		releaseDate: "August 12, 2026",
+		lastUpdated: "August 12, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
 		contextWindow: 262144,
@@ -3711,5 +3711,6 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen",
 	}),
 ]);

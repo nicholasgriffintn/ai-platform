@@ -2084,4 +2084,28 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 	}),
+	createModelConfig("Qwen/Qwen3.8-27B-TEE", PROVIDER, {
+		name: "Qwen3.8 27B TEE",
+		matchingModel: "Qwen/Qwen3.8-27B-TEE",
+		family: "qwen",
+		openWeights: true,
+		releaseDate: "August 16, 2026",
+		lastUpdated: "August 16, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 262144,
+		maxTokens: 65536,
+		costPer1kInputTokens: 0.0004,
+		costPer1kOutputTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);

@@ -10128,6 +10128,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		supportsTemperature: false,
 	}),
 	createModelConfig("xai/grok-4.6", PROVIDER, {
 		name: "Grok 4.6",
@@ -10158,14 +10159,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen3.8 2.4T A95B",
 		matchingModel: "alibaba/qwen3.8-2.4t-a95b",
 		family: "qwen",
-		openWeights: false,
+		openWeights: true,
 		releaseDate: "August 3, 2026",
-		lastUpdated: "August 2, 2026",
+		lastUpdated: "August 12, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
 		},
-		supportsAttachments: true,
+		supportsAttachments: false,
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 131072,
@@ -10175,6 +10176,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsTemperature: true,
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("google/gemini-3.7-flash", PROVIDER, {

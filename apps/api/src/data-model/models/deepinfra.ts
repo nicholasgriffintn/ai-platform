@@ -2003,4 +2003,28 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 	}),
+	createModelConfig("Qwen/Qwen3.8-2.4T-A95B", PROVIDER, {
+		name: "Qwen3.8 2.4T A95B",
+		matchingModel: "Qwen/Qwen3.8-2.4T-A95B",
+		family: "qwen",
+		openWeights: true,
+		releaseDate: "August 12, 2026",
+		lastUpdated: "August 12, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 262144,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.002,
+		costPer1kOutputTokens: 0.006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);
