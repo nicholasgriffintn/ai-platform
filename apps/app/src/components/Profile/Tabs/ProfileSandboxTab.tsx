@@ -1,32 +1,19 @@
-import { ExternalLink, Link2, Plus, Trash2 } from "lucide-react";
+import { SandboxConnectionList } from "@ngriffin_uk/polychat-component-account";
+import { Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 
 import { PageShell } from "~/components/Core/PageShell";
-import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { SandboxAddGitHubConnection } from "~/components/Models/SandboxAddGitHubConnection";
-import {
-	Alert,
-	AlertDescription,
-	AlertTitle,
-	Badge,
-	Button,
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-	EmptyState,
-} from "@ngriffin_uk/polychat-component-ui";
 import {
 	useConnectSandboxInstallation,
 	useDeleteSandboxConnection,
 	useSandboxConnections,
 	useSandboxInstallConfig,
 } from "~/hooks/useSandbox";
-import { formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
 import { isAuthenticationError } from "~/lib/errors";
+import { useUIStore } from "~/state/stores/uiStore";
 
 interface ConnectionFormState {
 	installationId: string;
@@ -54,6 +41,7 @@ export function ProfileSandboxTab() {
 	const { data: installConfig, isLoading: isInstallConfigLoading } = useSandboxInstallConfig();
 	const connectInstallationMutation = useConnectSandboxInstallation();
 	const deleteConnectionMutation = useDeleteSandboxConnection();
+	const setShowLoginModal = useUIStore((state) => state.setShowLoginModal);
 
 	useEffect(() => {
 		const rawInstallationId =
@@ -147,90 +135,21 @@ export function ProfileSandboxTab() {
 				Connect GitHub installations used by Sandbox chat mode.
 			</p>
 
-			<Card>
-				<CardHeader>
-					<div className="flex items-center gap-3">
-						<div className="rounded-lg bg-zinc-900/10 p-2 text-zinc-900 dark:text-zinc-100">
-							<Link2 className="h-5 w-5" />
-						</div>
-						<div>
-							<CardTitle>Repository connections</CardTitle>
-							<CardDescription>
-								{connections.length} installation{connections.length === 1 ? "" : "s"} connected.
-							</CardDescription>
-						</div>
-					</div>
-				</CardHeader>
-				<CardContent>
-					{isLoading ? (
-						<div className="text-sm text-muted-foreground">Loading connections...</div>
-					) : isAuthenticationError(error) ? (
-						<SignInEmptyState
-							title="Sign in to view sandbox connections"
-							message="Sign in to manage the GitHub connections used by Sandbox."
-							className="border-0 bg-transparent dark:bg-transparent"
-						/>
-					) : error ? (
-						<Alert variant="destructive">
-							<AlertTitle>Unable to load connections</AlertTitle>
-							<AlertDescription>
-								{error instanceof Error ? error.message : "Unknown error"}
-							</AlertDescription>
-						</Alert>
-					) : connections.length === 0 ? (
-						<EmptyState
-							icon={<ExternalLink className="h-8 w-8 text-zinc-400" />}
-							title="No sandbox connections yet"
-							message="Install the GitHub App or add a connection manually to start running sandbox tasks from chat."
-							className="min-h-[260px]"
-						/>
-					) : (
-						<div className="space-y-3">
-							{connections.map((connection) => (
-								<div key={connection.installationId} className="rounded-lg border bg-card p-4">
-									<div className="flex flex-wrap items-start justify-between gap-3">
-										<div className="space-y-1">
-											<p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-												Installation {connection.installationId}
-											</p>
-											<p className="text-xs text-muted-foreground">App ID: {connection.appId}</p>
-											<p className="text-xs text-muted-foreground">
-												Updated {formatRelativeTime(connection.updatedAt)}
-											</p>
-										</div>
-										<Button
-											variant="destructive"
-											size="sm"
-											icon={<Trash2 className="h-4 w-4" />}
-											onClick={() => handleDeleteConnection(connection.installationId)}
-											isLoading={deleteConnectionMutation.isPending}
-										>
-											Remove
-										</Button>
-									</div>
-									<div className="mt-3 flex flex-wrap gap-2">
-										<Badge variant="outline">
-											{connection.repositories.length || "Any"} repo
-											{connection.repositories.length === 1 ? "" : "s"}
-										</Badge>
-										{connection.hasWebhookSecret && (
-											<Badge variant="outline">Webhook enabled</Badge>
-										)}
-										{connection.repositories.slice(0, 4).map((repo) => (
-											<Badge key={repo} variant="outline">
-												{repo}
-											</Badge>
-										))}
-										{connection.repositories.length > 4 && (
-											<Badge variant="outline">+{connection.repositories.length - 4} more</Badge>
-										)}
-									</div>
-								</div>
-							))}
-						</div>
-					)}
-				</CardContent>
-			</Card>
+			<SandboxConnectionList
+				connections={connections}
+				isLoading={isLoading}
+				requiresSignIn={isAuthenticationError(error)}
+				loadErrorMessage={
+					!isAuthenticationError(error) && error
+						? error instanceof Error
+							? error.message
+							: "Unknown error"
+						: undefined
+				}
+				onSignIn={() => setShowLoginModal(true)}
+				onDelete={handleDeleteConnection}
+				isDeleting={deleteConnectionMutation.isPending}
+			/>
 
 			<SandboxAddGitHubConnection
 				isOpen={isConnectionModalOpen}

@@ -1,10 +1,10 @@
-import { Loader2, Plus, RefreshCw, Rocket, Sparkles, Trash2, Zap } from "lucide-react";
+import { Loader2, Plus, RefreshCw, Trash2 } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { BillingPanel } from "@ngriffin_uk/polychat-component-account";
+import { EmptyState } from "@ngriffin_uk/polychat-component-ui";
+
 import { PageShell } from "~/components/Core/PageShell";
-import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, EmptyState } from "@ngriffin_uk/polychat-component-ui";
-import { Card } from "@ngriffin_uk/polychat-component-ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import {
 	useCancelSubscription,
@@ -12,8 +12,8 @@ import {
 	useReactivateSubscription,
 	useSubscription,
 } from "~/hooks/useBilling";
-import { formatDate } from "@ngriffin_uk/polychat-utility-core";
 import { isAuthenticationError } from "~/lib/errors";
+import { useUIStore } from "~/state/stores/uiStore";
 
 type PageAction = {
 	label: string;
@@ -35,6 +35,7 @@ export function ProfileBillingTab() {
 	const { mutate: cancelSub, status: cancelStatus } = useCancelSubscription();
 
 	const { mutate: reactivateSub, status: reactivateStatus } = useReactivateSubscription();
+	const setShowLoginModal = useUIStore((state) => state.setShowLoginModal);
 
 	const actions: PageAction[] = [];
 
@@ -115,134 +116,27 @@ export function ProfileBillingTab() {
 		<>
 			<PageShell.Header title="Billing" actions={actions} />
 
-			{sub?.cancel_at_period_end && sub.cancel_at && (
-				<div className="bg-yellow-100 dark:bg-yellow-900 p-4 rounded mb-4 text-sm text-yellow-800 dark:text-yellow-200">
-					Your subscription will cancel on{" "}
-					{formatDate(new Date(sub.cancel_at * 1000).toISOString())}.
-				</div>
-			)}
-
-			{sub?.trial_start && sub.trial_end && (
-				<div className="bg-green-100 dark:bg-green-900 p-4 rounded mb-4 text-sm text-green-800 dark:text-green-200">
-					You are in a trial until {formatDate(new Date(sub.trial_end * 1000).toISOString())}.
-				</div>
-			)}
-
-			{isSubLoading ? (
-				<EmptyState message="Loading billing information..." />
-			) : isAuthenticationError(subError) ? (
-				<SignInEmptyState
-					title="Sign in to view billing"
-					message="Sign in to manage your subscription and billing details."
-				/>
-			) : subError ? (
-				<EmptyState message="Error loading billing data." />
-			) : sub?.items?.data?.[0] ? (
-				<Card className="p-4">
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<div>
-							<h3 className="text-sm font-medium text-zinc-500">Status</h3>
-							<p className="text-base text-zinc-800 dark:text-zinc-200">{sub.status}</p>
-						</div>
-						<div>
-							<h3 className="text-sm font-medium text-zinc-500">Current Period</h3>
-							<p className="text-base text-zinc-800 dark:text-zinc-200">
-								{formatDate(new Date(sub.items.data[0].current_period_start * 1000).toISOString())}{" "}
-								– {formatDate(new Date(sub.items.data[0].current_period_end * 1000).toISOString())}
-							</p>
-						</div>
-						<div>
-							<h3 className="text-sm font-medium text-zinc-500">Amount</h3>
-							<p className="text-base text-zinc-800 dark:text-zinc-200">
-								{(sub.items.data[0].price.unit_amount / 100).toFixed(2)}{" "}
-								{sub.currency.toUpperCase()}/{sub.items.data[0].price.recurring.interval}
-							</p>
-						</div>
-						<div>
-							<h3 className="text-sm font-medium text-zinc-500">Next Billing</h3>
-							<p className="text-base text-zinc-800 dark:text-zinc-200">
-								{formatDate(new Date(sub.items.data[0].current_period_end * 1000).toISOString())}
-							</p>
-						</div>
-					</div>
-				</Card>
-			) : (
-				<>
-					<Card className="p-6 sm:p-8">
-						<div className="grid md:grid-cols-2 gap-8">
-							<div className="flex flex-col justify-center items-center md:items-start border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-700 pb-6 md:pb-0 md:pr-8">
-								<h2 className="text-3xl font-bold mb-2">Upgrade to Pro</h2>
-								<div className="text-5xl font-bold mb-4">
-									$8
-									<span className="text-lg font-normal text-zinc-500">/month</span>
-								</div>
-
-								<Button
-									disabled={checkoutStatus === "pending"}
-									onClick={() => {
-										trackEvent({
-											name: "upgrade_to_pro",
-											category: "billing",
-											label: "upgrade_to_pro",
-											value: 1,
-										});
-
-										checkout({
-											planId: "pro",
-											successUrl: window.location.href,
-											cancelUrl: window.location.href,
-										});
-									}}
-									variant="primary"
-									className="w-full px-10 py-3 text-lg relative overflow-hidden transition-all duration-300 shadow-lg hover:shadow-xl hover:bg-blue-700"
-								>
-									<span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-gleam" />
-									<span className="relative flex items-center justify-center">
-										<Zap className="mr-2 h-4 w-4 animate-pulse text-yellow-100" />
-										<span className="relative">
-											{checkoutStatus === "pending" ? "Redirecting..." : "Upgrade to Pro"}
-										</span>
-									</span>
-								</Button>
-							</div>
-
-							<div className="grid gap-6 pt-6 md:pt-0">
-								<div className="flex items-start">
-									<Rocket className="h-6 w-6 text-indigo-500 mr-3 mt-0.5 flex-shrink-0" />
-									<div>
-										<h3 className="font-semibold mb-1">Access to the best AI Models</h3>
-										<p className="text-sm text-zinc-600 dark:text-zinc-400">
-											Get access to our full suite of models including Claude, OpenAI, Grok, Gemini,
-											and more!
-										</p>
-									</div>
-								</div>
-
-								<div className="flex items-start">
-									<Sparkles className="h-6 w-6 text-yellow-500 mr-3 mt-0.5 flex-shrink-0" />
-									<div>
-										<h3 className="font-semibold mb-1">Generous Message Limits</h3>
-										<p className="text-sm text-zinc-600 dark:text-zinc-400">
-											Receive 50 standard message credits per day, plus 200 premium credits for
-											image gen, and premium model access.
-										</p>
-									</div>
-								</div>
-
-								<div className="flex items-start">
-									<Zap className="h-6 w-6 text-purple-500 mr-3 mt-0.5 flex-shrink-0" />
-									<div>
-										<h3 className="font-semibold mb-1">Priority Support</h3>
-										<p className="text-sm text-zinc-600 dark:text-zinc-400">
-											Get faster responses and dedicated assistance when you need help.
-										</p>
-									</div>
-								</div>
-							</div>
-						</div>
-					</Card>
-				</>
-			)}
+			<BillingPanel
+				subscription={sub}
+				isLoading={isSubLoading}
+				requiresSignIn={isAuthenticationError(subError)}
+				hasLoadError={!isAuthenticationError(subError) && !!subError}
+				isCheckingOut={checkoutStatus === "pending"}
+				onSignIn={() => setShowLoginModal(true)}
+				onUpgrade={() => {
+					trackEvent({
+						name: "upgrade_to_pro",
+						category: "billing",
+						label: "upgrade_to_pro",
+						value: 1,
+					});
+					checkout({
+						planId: "pro",
+						successUrl: window.location.href,
+						cancelUrl: window.location.href,
+					});
+				}}
+			/>
 		</>
 	);
 }
