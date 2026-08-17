@@ -1,17 +1,16 @@
-@layer theme, polychat-ui-theme, polychat-content.theme, polychat-models-theme, polychat-navigation-theme, polychat-conversation-theme, polychat-account-theme, polychat-capabilities-theme, polychat-workspaces-theme, base, polychat-ui-tokens, polychat-content, polychat-models, polychat-navigation, polychat-conversation, polychat-capabilities, polychat-workspaces, polychat-account, polychat-experiences, components, polychat-ui-utilities, polychat-content.utilities, polychat-models-utilities, polychat-navigation-utilities, polychat-conversation-utilities, polychat-account-utilities, polychat-capabilities-utilities, polychat-workspaces-utilities, utilities;
+@layer theme, base, polychat-ui-tokens, polychat-content, polychat-navigation, polychat-conversation, polychat-account, polychat-experiences, components, utilities;
 
 @import "@ngriffin_uk/polychat-component-ui/styles.css";
 @import "@ngriffin_uk/polychat-component-content/styles.css";
-@import "@ngriffin_uk/polychat-component-models/styles.css";
 @import "@ngriffin_uk/polychat-component-navigation/styles.css";
 @import "@ngriffin_uk/polychat-component-conversation/styles.css";
-@import "@ngriffin_uk/polychat-component-capabilities/styles.css";
-@import "@ngriffin_uk/polychat-component-workspaces/styles.css";
 @import "@ngriffin_uk/polychat-component-account/styles.css";
 @import "@ngriffin_uk/polychat-component-experiences/styles.css";
 @import "tailwindcss";
 @import "tw-animate-css";
 @config "../../tailwind.config.js";
+
+@source "../../../../packages/component-*/src/**/*.{ts,tsx}";
 
 @theme inline {
 	--radius-sm: calc(var(--radius) - 4px);

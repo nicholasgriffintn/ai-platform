@@ -16,14 +16,13 @@
 		".": {
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
-		},
-		"./styles.css": "./dist/index.css"
+		}
 	},
 	"publishConfig": {
 		"access": "public"
 	},
 	"scripts": {
-		"build": "tsup && vite build --config vite.styles.config.ts",
+		"build": "tsup",
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",
 		"test:package": "pnpm build && node --test ../../scripts/test-component-package-exports.mjs",
@@ -40,7 +39,6 @@
 	},
 	"devDependencies": {
 		"@ngriffin_uk/polychat-config": "workspace:^",
-		"@tailwindcss/vite": "4.3.3",
 		"@testing-library/react": "catalog:",
 		"@types/react": "catalog:",
 		"@types/react-dom": "catalog:",
@@ -49,10 +47,8 @@
 		"oxlint": "catalog:",
 		"react": "catalog:",
 		"react-dom": "catalog:",
-		"tailwindcss": "4.3.3",
 		"tsup": "catalog:",
 		"typescript": "catalog:",
-		"vite": "8.2.1",
 		"vitest": "catalog:"
 	},
 	"peerDependencies": {
