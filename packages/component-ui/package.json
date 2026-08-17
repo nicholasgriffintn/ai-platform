@@ -55,7 +55,7 @@
 	"devDependencies": {
 		"@ngriffin_uk/polychat-config": "workspace:^",
 		"@tailwindcss/vite": "4.3.3",
-		"@testing-library/jest-dom": "7.0.0",
+		"@testing-library/jest-dom": "7.0.1",
 		"@testing-library/react": "catalog:",
 		"@types/react": "catalog:",
 		"@types/react-dom": "catalog:",

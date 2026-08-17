@@ -46,7 +46,7 @@
 		"@ngriffin_uk/polychat-config": "workspace:^",
 		"@tailwindcss/typography": "0.5.20",
 		"@tailwindcss/vite": "4.3.3",
-		"@testing-library/jest-dom": "7.0.0",
+		"@testing-library/jest-dom": "7.0.1",
 		"@testing-library/react": "catalog:",
 		"@types/babel__standalone": "7.1.9",
 		"@types/react": "catalog:",

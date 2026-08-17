@@ -102,7 +102,7 @@
 		"@rolldown/plugin-babel": "0.2.3",
 		"@tailwindcss/typography": "0.5.20",
 		"@tailwindcss/vite": "4.3.3",
-		"@testing-library/jest-dom": "7.0.0",
+		"@testing-library/jest-dom": "7.0.1",
 		"@testing-library/react": "catalog:",
 		"@types/babel__core": "7.20.5",
 		"@types/babel__standalone": "7.1.9",
