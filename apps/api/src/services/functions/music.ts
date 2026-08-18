@@ -1,70 +1,71 @@
-import { generateMusic } from "~/services/generate/music";
 import { replicateModelConfig } from "~/data-model/models/replicate";
 import { workersAiModelConfig } from "~/data-model/models/workersai";
-import { jsonSchemaToZod } from "../../utils/jsonSchema";
-import type { ApiToolDefinition } from "../../types/functions";
+import { generateMusic } from "~/services/generate/music";
 import { getModelIdsByOutput } from "~/utils/models";
+
+import type { ApiToolDefinition } from "../../types/functions";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
 
 const DEFAULT_DURATION = 8;
 const MUSIC_PROVIDERS = ["workers-ai", "replicate", "elevenlabs"] as const;
 
 const MUSIC_MODELS = [
-	...getModelIdsByOutput(workersAiModelConfig, "workers-ai", "audio"),
-	...getModelIdsByOutput(replicateModelConfig, "replicate", "audio"),
+  ...getModelIdsByOutput(workersAiModelConfig, "workers-ai", "audio"),
+  ...getModelIdsByOutput(replicateModelConfig, "replicate", "audio"),
 ].sort();
 
 export const create_music: ApiToolDefinition = {
-	name: "create_music",
-	description:
-		"Composes musical pieces based on stylistic and emotional prompts. Use when users request songs, melodies, or audio compositions.",
-	inputSchema: jsonSchemaToZod({
-		type: "object",
-		properties: {
-			prompt: {
-				type: "string",
-				description:
-					"Description of the desired music including style, mood, tempo, and instruments",
-			},
-			input_audio: {
-				type: "string",
-				description: "An audio file that will influence the generated music.",
-			},
-			duration: {
-				type: "number",
-				description: `The duration of the generated music in seconds. Defaults to ${DEFAULT_DURATION} seconds.`,
-				default: DEFAULT_DURATION,
-			},
-			provider: {
-				type: "string",
-				description: "Music generation provider",
-				enum: Array.from(MUSIC_PROVIDERS),
-				default: "replicate",
-			},
-			model: {
-				type: "string",
-				description: "Specific music generation model to use",
-				enum: MUSIC_MODELS,
-			},
-		},
-		required: ["prompt"],
-	}),
-	type: "byok",
-	costPerCall: 1,
-	permissions: ["network"],
-	execute: async (args, context) => {
-		const req = context.request;
-		const completion_id = context.completionId;
-		const app_url = context.appUrl;
+  name: "create_music",
+  description:
+    "Composes musical pieces based on stylistic and emotional prompts. Use when users request songs, melodies, or audio compositions.",
+  inputSchema: jsonSchemaToZod({
+    type: "object",
+    properties: {
+      prompt: {
+        type: "string",
+        description:
+          "Description of the desired music including style, mood, tempo, and instruments",
+      },
+      input_audio: {
+        type: "string",
+        description: "An audio file that will influence the generated music.",
+      },
+      duration: {
+        type: "number",
+        description: `The duration of the generated music in seconds. Defaults to ${DEFAULT_DURATION} seconds.`,
+        default: DEFAULT_DURATION,
+      },
+      provider: {
+        type: "string",
+        description: "Music generation provider",
+        enum: Array.from(MUSIC_PROVIDERS),
+        default: "replicate",
+      },
+      model: {
+        type: "string",
+        description: "Specific music generation model to use",
+        enum: MUSIC_MODELS,
+      },
+    },
+    required: ["prompt"],
+  }),
+  type: "byok",
+  costPerCall: 1,
+  permissions: ["network"],
+  execute: async (args, context) => {
+    const req = context.request;
+    const completion_id = context.completionId;
+    const app_url = context.appUrl;
 
-		const response = await generateMusic({
-			completion_id,
-			app_url,
-			env: req.env,
-			context: req.context,
-			args,
-			user: req.user,
-		});
+    const response = await generateMusic({
+      completion_id,
+      app_url,
+      env: req.env,
+      context: req.context,
+      args,
+      user: req.user,
+    });
 
-		return response;
-	},
+    return response;
+  },
 };

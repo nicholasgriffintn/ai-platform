@@ -48,7 +48,8 @@ const renderTextContent = (
   ) => void,
   key?: string,
 ): ReactNode => {
-  let { content, reasoning, artifacts } = formattedMessageContent(role, textContent);
+  const { reasoning, artifacts } = formattedMessageContent(role, textContent);
+  let { content } = formattedMessageContent(role, textContent);
 
   content = processCustomXmlTags(content);
 

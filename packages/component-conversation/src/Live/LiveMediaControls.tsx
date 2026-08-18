@@ -1,5 +1,5 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
-import { AudioLines, Mic, MicOff, Video, VideoOff } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff } from "lucide-react";
 
 const AUDIO_LEVEL_BAR_WEIGHTS = [0.42, 0.72, 1, 0.62, 0.9, 1.18, 0.76, 1.04, 0.58, 0.82, 0.46];
 const ASSISTANT_AUDIO_LEVEL_THRESHOLD = 0.025;

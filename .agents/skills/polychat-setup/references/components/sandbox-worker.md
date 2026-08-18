@@ -60,15 +60,15 @@ Execute a feature implementation task.
 
 ```json
 {
-	"userId": 123,
-	"taskType": "feature-implementation",
-	"repo": "owner/repo",
-	"task": "Add a logout button to the navbar",
-	"model": "mistral-large",
-	"promptStrategy": "auto",
-	"shouldCommit": true,
-	"polychatApiUrl": "https://api.polychat.app",
-	"runId": "run_123"
+  "userId": 123,
+  "taskType": "feature-implementation",
+  "repo": "owner/repo",
+  "task": "Add a logout button to the navbar",
+  "model": "mistral-large",
+  "promptStrategy": "auto",
+  "shouldCommit": true,
+  "polychatApiUrl": "https://api.polychat.app",
+  "runId": "run_123"
 }
 ```
 

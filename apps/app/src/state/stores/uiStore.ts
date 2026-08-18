@@ -39,8 +39,12 @@ export const useUIStore = create<UIStore>()(
     {
       name: "ui-store",
       merge: (persisted, current) => {
-        const { isMobile, isMobileLoading, sidebarVisible, ...rest } = (persisted ??
-          {}) as Partial<UIStore>;
+        const {
+          isMobile: _m,
+          isMobileLoading: _l,
+          sidebarVisible: _s,
+          ...rest
+        } = (persisted ?? {}) as Partial<UIStore>;
 
         return { ...current, ...rest };
       },

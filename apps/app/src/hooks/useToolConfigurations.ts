@@ -1,4 +1,8 @@
-import type { ModelToolConfiguration,type ModelToolId,type SavedToolConfigurationsResponse } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ModelToolConfiguration,
+  ModelToolId,
+  SavedToolConfigurationsResponse,
+} from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { fetchToolConfigurations, saveToolConfiguration } from "~/lib/api/tool-configurations";
@@ -6,32 +10,32 @@ import { fetchToolConfigurations, saveToolConfiguration } from "~/lib/api/tool-c
 export const TOOL_CONFIGURATIONS_QUERY_KEY = ["toolConfigurations"];
 
 export function useToolConfigurations() {
-	const queryClient = useQueryClient();
-	const query = useQuery({
-		queryKey: TOOL_CONFIGURATIONS_QUERY_KEY,
-		queryFn: fetchToolConfigurations,
-	});
-	const save = useMutation({
-		mutationFn: ({
-			toolId,
-			configuration,
-		}: {
-			toolId: ModelToolId;
-			configuration: ModelToolConfiguration;
-		}) => saveToolConfiguration(toolId, { configuration }),
-		onSuccess: (saved) => {
-			queryClient.setQueryData<SavedToolConfigurationsResponse>(
-				TOOL_CONFIGURATIONS_QUERY_KEY,
-				(current) => {
-					const configurations = (current?.configurations ?? []).filter(
-						(configuration) => configuration.toolId !== saved.toolId,
-					);
+  const queryClient = useQueryClient();
+  const query = useQuery({
+    queryKey: TOOL_CONFIGURATIONS_QUERY_KEY,
+    queryFn: fetchToolConfigurations,
+  });
+  const save = useMutation({
+    mutationFn: ({
+      toolId,
+      configuration,
+    }: {
+      toolId: ModelToolId;
+      configuration: ModelToolConfiguration;
+    }) => saveToolConfiguration(toolId, { configuration }),
+    onSuccess: (saved) => {
+      queryClient.setQueryData<SavedToolConfigurationsResponse>(
+        TOOL_CONFIGURATIONS_QUERY_KEY,
+        (current) => {
+          const configurations = (current?.configurations ?? []).filter(
+            (configuration) => configuration.toolId !== saved.toolId,
+          );
 
-					return { configurations: [...configurations, saved] };
-				},
-			);
-		},
-	});
+          return { configurations: [...configurations, saved] };
+        },
+      );
+    },
+  });
 
-	return { query, save };
+  return { query, save };
 }

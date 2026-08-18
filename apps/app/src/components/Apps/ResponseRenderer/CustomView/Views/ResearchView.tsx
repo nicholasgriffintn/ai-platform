@@ -43,28 +43,24 @@ const buildInitialStatus = (base: any, provider: string): ResearchStatus | undef
 };
 
 export function ResearchView({ data, embedded }: { data: any; embedded: boolean }) {
-  if (!data) {
-    return <p className="text-red-500 dark:text-red-300">No research data available</p>;
-  }
-
-  const initialProvider = data.provider ?? data.raw?.provider ?? "parallel";
+  const initialProvider = data?.provider ?? data?.raw?.provider ?? "parallel";
   const providerLabel = providerLabels[initialProvider] ?? initialProvider;
-  const providerWarning = data.providerWarning ?? data.raw?.providerWarning;
+  const providerWarning = data?.providerWarning ?? data?.raw?.providerWarning;
 
-  const asyncInvocation = (data.asyncInvocation ?? data.data?.asyncInvocation) as
+  const asyncInvocation = (data?.asyncInvocation ?? data?.data?.asyncInvocation) as
     | AsyncInvocationData
     | undefined;
 
   const combinedInitial = {
-    run: data.run ?? data.raw?.run ?? data.data?.run,
-    output: data.output ?? data.raw?.output ?? data.data?.output,
-    warnings: data.warnings ?? data.raw?.warnings ?? data.data?.warnings,
-    poll: data.poll ?? data.raw?.poll ?? data.data?.poll,
+    run: data?.run ?? data?.raw?.run ?? data?.data?.run,
+    output: data?.output ?? data?.raw?.output ?? data?.data?.output,
+    warnings: data?.warnings ?? data?.raw?.warnings ?? data?.data?.warnings,
+    poll: data?.poll ?? data?.raw?.poll ?? data?.data?.poll,
   };
 
   const initialStatus = buildInitialStatus(combinedInitial, initialProvider);
   const initialRunId =
-    initialStatus?.run?.run_id ?? asyncInvocation?.id ?? data.run_id ?? data.data?.run_id ?? null;
+    initialStatus?.run?.run_id ?? asyncInvocation?.id ?? data?.run_id ?? data?.data?.run_id ?? null;
 
   const basePollInterval = ensureInterval(
     initialStatus?.poll?.interval_ms ??
@@ -90,6 +86,10 @@ export function ResearchView({ data, embedded }: { data: any; embedded: boolean 
   });
 
   const statusData = researchQuery.data ?? initialStatus;
+
+  if (!data) {
+    return <p className="text-red-500 dark:text-red-300">No research data available</p>;
+  }
 
   const run = statusData?.run;
   const runId = run?.run_id ?? initialRunId;

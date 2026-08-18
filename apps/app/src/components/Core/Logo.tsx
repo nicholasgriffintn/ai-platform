@@ -17,7 +17,7 @@ export function Logo({ variant = "logo_control", className = "" }: LogoProps) {
   useEffect(() => {
     let isMounted = true;
 
-    getObjectDetails("logo", {}).then((result) => {
+    void getObjectDetails("logo", {}).then((result) => {
       if (isMounted && isLogoVariant(result?.variant)) {
         setExperimentVariant(result.variant);
       }

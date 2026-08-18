@@ -1,14 +1,14 @@
 import { hasCompactionPart, isCompactionMarkerMessage } from "./message-part-utils";
 
 export type StoredConversationReplacementMessage = {
-	parts?: unknown;
-	role?: unknown;
+  parts?: unknown;
+  role?: unknown;
 };
 
 export function canReplaceStoredConversationMessages(
-	messages: readonly StoredConversationReplacementMessage[],
+  messages: readonly StoredConversationReplacementMessage[],
 ): boolean {
-	return !messages.some(
-		(message) => isCompactionMarkerMessage(message) || hasCompactionPart(message.parts),
-	);
+  return !messages.some(
+    (message) => isCompactionMarkerMessage(message) || hasCompactionPart(message.parts),
+  );
 }

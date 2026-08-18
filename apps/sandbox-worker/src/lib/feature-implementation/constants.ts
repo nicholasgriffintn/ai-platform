@@ -16,7 +16,7 @@ export const MAX_SNIPPET_CHARS = 5000;
 export const MAX_OBSERVATION_CHARS = 5000;
 
 export const MODEL_RETRY_OPTIONS: PolychatRetryOptions = {
-	maxAttempts: 3,
-	baseDelayMs: 500,
-	maxDelayMs: 2500,
+  maxAttempts: 3,
+  baseDelayMs: 500,
+  maxDelayMs: 2500,
 };

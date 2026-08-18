@@ -46,7 +46,7 @@ export function useTemplateMutations(workspaceId: string) {
       mutationFn: (templateId: string) => instantiateTemplate(templateId, workspaceId),
       onSuccess: (project) => {
         queryClient.setQueryData([...projectQueryKey(project.id), project.workspaceId], project);
-        queryClient.invalidateQueries({ queryKey: workspaceQueryKey(workspaceId) });
+        void queryClient.invalidateQueries({ queryKey: workspaceQueryKey(workspaceId) });
       },
     }),
   };
@@ -75,7 +75,7 @@ export function useWorkspaceMemberMutations(workspaceId: string) {
       mutationFn: () => leaveWorkspace(workspaceId),
       onSuccess: () => {
         queryClient.removeQueries({ queryKey: workspaceQueryKey(workspaceId) });
-        queryClient.invalidateQueries({ queryKey: WORKSPACES_QUERY_KEY });
+        void queryClient.invalidateQueries({ queryKey: WORKSPACES_QUERY_KEY });
       },
     }),
   };

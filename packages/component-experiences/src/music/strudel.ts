@@ -55,7 +55,7 @@ async function prebake(core: StrudelCoreModule, webaudio: StrudelWebAudioModule)
   const { initAudioOnFirstClick, registerSynthSounds, samples, aliasBank, registerZZFXSounds } =
     webaudio;
 
-  initAudioOnFirstClick();
+  void initAudioOnFirstClick();
 
   const modulesLoading = evalScope(
     import("@strudel/core"),

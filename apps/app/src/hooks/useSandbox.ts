@@ -151,7 +151,7 @@ export const useUpsertSandboxConnection = () => {
   return useMutation<void, Error, CreateSandboxConnectionInput>({
     mutationFn: (input) => upsertSandboxConnection(input),
     onSuccess: () => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: SANDBOX_QUERY_KEYS.connections(),
       });
     },
@@ -164,10 +164,10 @@ export const useDeleteSandboxConnection = () => {
   return useMutation<void, Error, number>({
     mutationFn: (installationId) => deleteSandboxConnection(installationId),
     onSuccess: () => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: SANDBOX_QUERY_KEYS.connections(),
       });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: SANDBOX_QUERY_KEYS.root,
       });
     },
@@ -180,10 +180,10 @@ export const useConnectSandboxInstallation = () => {
   return useMutation<void, Error, ConnectSandboxInstallationInput>({
     mutationFn: (input) => connectSandboxInstallation(input),
     onSuccess: () => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: SANDBOX_QUERY_KEYS.connections(),
       });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: SANDBOX_QUERY_KEYS.root,
       });
     },
@@ -201,10 +201,10 @@ export const useUpdateSandboxConnectionRepositories = () => {
     mutationFn: ({ installationId, input }) =>
       updateSandboxConnectionRepositories(installationId, input),
     onSuccess: (_result, variables) => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: SANDBOX_QUERY_KEYS.connections(),
       });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: SANDBOX_QUERY_KEYS.connectionRepositories(variables.installationId),
       });
     },

@@ -4,20 +4,20 @@ import { MoreOptionsDropdown as ControlledMoreOptionsDropdown } from "@ngriffin_
 import { SOURCE_CODE_URL } from "~/constants";
 
 interface MoreOptionsDropdownProps {
-	position?: "top" | "bottom";
-	onShowKeyboardShortcuts: () => void;
+  position?: "top" | "bottom";
+  onShowKeyboardShortcuts: () => void;
 }
 
 export const MoreOptionsDropdown = ({
-	position = "bottom",
-	onShowKeyboardShortcuts,
+  position = "bottom",
+  onShowKeyboardShortcuts,
 }: MoreOptionsDropdownProps) => (
-	<ControlledMoreOptionsDropdown
-		position={position}
-		privacyHref="/privacy"
-		termsHref="/terms"
-		sourceCodeUrl={SOURCE_CODE_URL}
-		sourceCodeIcon={<ProviderGlyph name="github" size={16} />}
-		onShowKeyboardShortcuts={onShowKeyboardShortcuts}
-	/>
+  <ControlledMoreOptionsDropdown
+    position={position}
+    privacyHref="/privacy"
+    termsHref="/terms"
+    sourceCodeUrl={SOURCE_CODE_URL}
+    sourceCodeIcon={<ProviderGlyph name="github" size={16} />}
+    onShowKeyboardShortcuts={onShowKeyboardShortcuts}
+  />
 );

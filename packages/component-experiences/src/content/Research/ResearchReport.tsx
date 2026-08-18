@@ -9,10 +9,6 @@ import type {
 import { ExternalLink, Loader2 } from "lucide-react";
 import { useState } from "react";
 
-const providerLabels: Record<string, string> = {
-  parallel: "Parallel",
-};
-
 const statusColors: Record<string, string> = {
   completed:
     "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300 border border-emerald-500/40",

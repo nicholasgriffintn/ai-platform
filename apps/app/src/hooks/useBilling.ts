@@ -31,7 +31,7 @@ export function useCancelSubscription() {
   return useMutation<any>({
     mutationFn: () => apiService.cancelSubscription(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["subscription"] });
+      void queryClient.invalidateQueries({ queryKey: ["subscription"] });
     },
   });
 }
@@ -42,7 +42,7 @@ export function useReactivateSubscription() {
   return useMutation<any>({
     mutationFn: () => apiService.reactivateSubscription(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["subscription"] });
+      void queryClient.invalidateQueries({ queryKey: ["subscription"] });
     },
   });
 }

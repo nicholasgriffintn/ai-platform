@@ -8,7 +8,7 @@ import {
   getGitHubAppConnectionForInstallation,
   getGitHubAppConnectionForUserInstallation,
 } from "~/services/github/connections";
-import type { IEnv, IUser } from "~/types";
+import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
 
 import {

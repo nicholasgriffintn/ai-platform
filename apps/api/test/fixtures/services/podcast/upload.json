@@ -1,15 +1,15 @@
 {
-	"response": {
-		"role": "assistant",
-		"content": "Podcast Uploaded: [0.bdesqatv5a](https://assistant-assets.nickgriffin.uk/podcasts/0.bdesqatv5a/recording.mp3)",
-		"name": "podcast_upload",
-		"data": {
-			"imageKey": "podcasts/0.bdesqatv5a/recording.mp3",
-			"url": "https://assistant-assets.95afa6fa9aba1181119ed0aeeac7bfb8.r2.cloudflarestorage.com/podcasts/0.bdesqatv5a/recording.mp3?X-Amz-Expires=3600",
-			"signed": {}
-		},
-		"id": "3lkuqc",
-		"timestamp": 1731724551625,
-		"chatId": "0.bdesqatv5a"
-	}
+  "response": {
+    "role": "assistant",
+    "content": "Podcast Uploaded: [0.bdesqatv5a](https://assistant-assets.nickgriffin.uk/podcasts/0.bdesqatv5a/recording.mp3)",
+    "name": "podcast_upload",
+    "data": {
+      "imageKey": "podcasts/0.bdesqatv5a/recording.mp3",
+      "url": "https://assistant-assets.95afa6fa9aba1181119ed0aeeac7bfb8.r2.cloudflarestorage.com/podcasts/0.bdesqatv5a/recording.mp3?X-Amz-Expires=3600",
+      "signed": {}
+    },
+    "id": "3lkuqc",
+    "timestamp": 1731724551625,
+    "chatId": "0.bdesqatv5a"
+  }
 }

@@ -98,30 +98,22 @@
       "indexes": {
         "activity_record_created_by_user_id_idx": {
           "name": "activity_record_created_by_user_id_idx",
-          "columns": [
-            "created_by_user_id"
-          ],
+          "columns": ["created_by_user_id"],
           "isUnique": false
         },
         "activity_record_project_id_idx": {
           "name": "activity_record_project_id_idx",
-          "columns": [
-            "project_id"
-          ],
+          "columns": ["project_id"],
           "isUnique": false
         },
         "activity_record_conversation_id_idx": {
           "name": "activity_record_conversation_id_idx",
-          "columns": [
-            "conversation_id"
-          ],
+          "columns": ["conversation_id"],
           "isUnique": false
         },
         "activity_record_group_id_idx": {
           "name": "activity_record_group_id_idx",
-          "columns": [
-            "group_id"
-          ],
+          "columns": ["group_id"],
           "isUnique": false
         }
       },
@@ -130,12 +122,8 @@
           "name": "activity_record_created_by_user_id_user_id_fk",
           "tableFrom": "activity_record",
           "tableTo": "user",
-          "columnsFrom": [
-            "created_by_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -143,12 +131,8 @@
           "name": "activity_record_project_id_project_id_fk",
           "tableFrom": "activity_record",
           "tableTo": "project",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -156,12 +140,8 @@
           "name": "activity_record_conversation_id_conversation_id_fk",
           "tableFrom": "activity_record",
           "tableTo": "conversation",
-          "columnsFrom": [
-            "conversation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["conversation_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -213,31 +193,22 @@
       "indexes": {
         "agent_installs_shared_agent_id_idx": {
           "name": "agent_installs_shared_agent_id_idx",
-          "columns": [
-            "shared_agent_id"
-          ],
+          "columns": ["shared_agent_id"],
           "isUnique": false
         },
         "agent_installs_user_id_idx": {
           "name": "agent_installs_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "agent_installs_agent_id_idx": {
           "name": "agent_installs_agent_id_idx",
-          "columns": [
-            "agent_id"
-          ],
+          "columns": ["agent_id"],
           "isUnique": false
         },
         "agent_installs_unique_idx": {
           "name": "agent_installs_unique_idx",
-          "columns": [
-            "shared_agent_id",
-            "user_id"
-          ],
+          "columns": ["shared_agent_id", "user_id"],
           "isUnique": false
         }
       },
@@ -246,12 +217,8 @@
           "name": "agent_installs_shared_agent_id_shared_agents_id_fk",
           "tableFrom": "agent_installs",
           "tableTo": "shared_agents",
-          "columnsFrom": [
-            "shared_agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["shared_agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -259,12 +226,8 @@
           "name": "agent_installs_user_id_user_id_fk",
           "tableFrom": "agent_installs",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -272,12 +235,8 @@
           "name": "agent_installs_agent_id_agents_id_fk",
           "tableFrom": "agent_installs",
           "tableTo": "agents",
-          "columnsFrom": [
-            "agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -344,31 +303,22 @@
       "indexes": {
         "agent_ratings_shared_agent_id_idx": {
           "name": "agent_ratings_shared_agent_id_idx",
-          "columns": [
-            "shared_agent_id"
-          ],
+          "columns": ["shared_agent_id"],
           "isUnique": false
         },
         "agent_ratings_user_id_idx": {
           "name": "agent_ratings_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "agent_ratings_rating_idx": {
           "name": "agent_ratings_rating_idx",
-          "columns": [
-            "rating"
-          ],
+          "columns": ["rating"],
           "isUnique": false
         },
         "agent_ratings_unique_idx": {
           "name": "agent_ratings_unique_idx",
-          "columns": [
-            "shared_agent_id",
-            "user_id"
-          ],
+          "columns": ["shared_agent_id", "user_id"],
           "isUnique": false
         }
       },
@@ -377,12 +327,8 @@
           "name": "agent_ratings_shared_agent_id_shared_agents_id_fk",
           "tableFrom": "agent_ratings",
           "tableTo": "shared_agents",
-          "columnsFrom": [
-            "shared_agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["shared_agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -390,12 +336,8 @@
           "name": "agent_ratings_user_id_user_id_fk",
           "tableFrom": "agent_ratings",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -534,16 +476,12 @@
       "indexes": {
         "agents_user_id_idx": {
           "name": "agents_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "agents_team_id_idx": {
           "name": "agents_team_id_idx",
-          "columns": [
-            "team_id"
-          ],
+          "columns": ["team_id"],
           "isUnique": false
         }
       },
@@ -552,12 +490,8 @@
           "name": "agents_user_id_user_id_fk",
           "tableFrom": "agents",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -836,23 +770,17 @@
       "indexes": {
         "artificial_analysis_models_slug_idx": {
           "name": "artificial_analysis_models_slug_idx",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": false
         },
         "artificial_analysis_models_creator_slug_idx": {
           "name": "artificial_analysis_models_creator_slug_idx",
-          "columns": [
-            "creator_slug"
-          ],
+          "columns": ["creator_slug"],
           "isUnique": false
         },
         "artificial_analysis_models_ingested_at_idx": {
           "name": "artificial_analysis_models_ingested_at_idx",
-          "columns": [
-            "ingested_at"
-          ],
+          "columns": ["ingested_at"],
           "isUnique": false
         }
       },
@@ -918,9 +846,7 @@
       "indexes": {
         "auth_challenge_expires_at_idx": {
           "name": "auth_challenge_expires_at_idx",
-          "columns": [
-            "expires_at"
-          ],
+          "columns": ["expires_at"],
           "isUnique": false
         }
       },
@@ -1070,40 +996,27 @@
       "indexes": {
         "composio_connector_session_remote_session_id_unique": {
           "name": "composio_connector_session_remote_session_id_unique",
-          "columns": [
-            "remote_session_id"
-          ],
+          "columns": ["remote_session_id"],
           "isUnique": true
         },
         "composio_connector_session_state_expiry_idx": {
           "name": "composio_connector_session_state_expiry_idx",
-          "columns": [
-            "state",
-            "expires_at"
-          ],
+          "columns": ["state", "expires_at"],
           "isUnique": false
         },
         "composio_connector_session_state_cleanup_idx": {
           "name": "composio_connector_session_state_cleanup_idx",
-          "columns": [
-            "state",
-            "cleanup_after"
-          ],
+          "columns": ["state", "cleanup_after"],
           "isUnique": false
         },
         "composio_connector_session_owner_provider_idx": {
           "name": "composio_connector_session_owner_provider_idx",
-          "columns": [
-            "user_id",
-            "provider"
-          ],
+          "columns": ["user_id", "provider"],
           "isUnique": false
         },
         "composio_connector_session_run_idx": {
           "name": "composio_connector_session_run_idx",
-          "columns": [
-            "run_id"
-          ],
+          "columns": ["run_id"],
           "isUnique": false
         }
       },
@@ -1112,12 +1025,8 @@
           "name": "composio_connector_session_user_id_user_id_fk",
           "tableFrom": "composio_connector_session",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1125,12 +1034,8 @@
           "name": "composio_connector_session_installation_id_template_id_fk",
           "tableFrom": "composio_connector_session",
           "tableTo": "template",
-          "columnsFrom": [
-            "installation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["installation_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1244,25 +1149,17 @@
       "indexes": {
         "connector_operation_approval_owner_state_idx": {
           "name": "connector_operation_approval_owner_state_idx",
-          "columns": [
-            "user_id",
-            "state"
-          ],
+          "columns": ["user_id", "state"],
           "isUnique": false
         },
         "connector_operation_approval_state_expiry_idx": {
           "name": "connector_operation_approval_state_expiry_idx",
-          "columns": [
-            "state",
-            "expires_at"
-          ],
+          "columns": ["state", "expires_at"],
           "isUnique": false
         },
         "connector_operation_approval_run_idx": {
           "name": "connector_operation_approval_run_idx",
-          "columns": [
-            "run_id"
-          ],
+          "columns": ["run_id"],
           "isUnique": false
         }
       },
@@ -1271,12 +1168,8 @@
           "name": "connector_operation_approval_user_id_user_id_fk",
           "tableFrom": "connector_operation_approval",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1396,65 +1289,47 @@
       "indexes": {
         "conversation_share_id_unique": {
           "name": "conversation_share_id_unique",
-          "columns": [
-            "share_id"
-          ],
+          "columns": ["share_id"],
           "isUnique": true
         },
         "conversation_title_idx": {
           "name": "conversation_title_idx",
-          "columns": [
-            "title"
-          ],
+          "columns": ["title"],
           "isUnique": false
         },
         "conversation_archived_idx": {
           "name": "conversation_archived_idx",
-          "columns": [
-            "is_archived"
-          ],
+          "columns": ["is_archived"],
           "isUnique": false
         },
         "conversation_public_idx": {
           "name": "conversation_public_idx",
-          "columns": [
-            "is_public"
-          ],
+          "columns": ["is_public"],
           "isUnique": false
         },
         "conversation_share_id_idx": {
           "name": "conversation_share_id_idx",
-          "columns": [
-            "share_id"
-          ],
+          "columns": ["share_id"],
           "isUnique": false
         },
         "conversation_user_id_idx": {
           "name": "conversation_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "conversation_parent_conversation_id_idx": {
           "name": "conversation_parent_conversation_id_idx",
-          "columns": [
-            "parent_conversation_id"
-          ],
+          "columns": ["parent_conversation_id"],
           "isUnique": false
         },
         "conversation_parent_message_id_idx": {
           "name": "conversation_parent_message_id_idx",
-          "columns": [
-            "parent_message_id"
-          ],
+          "columns": ["parent_message_id"],
           "isUnique": false
         },
         "conversation_project_id_idx": {
           "name": "conversation_project_id_idx",
-          "columns": [
-            "project_id"
-          ],
+          "columns": ["project_id"],
           "isUnique": false
         }
       },
@@ -1463,12 +1338,8 @@
           "name": "conversation_user_id_user_id_fk",
           "tableFrom": "conversation",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1476,12 +1347,8 @@
           "name": "conversation_parent_conversation_id_conversation_id_fk",
           "tableFrom": "conversation",
           "tableTo": "conversation",
-          "columnsFrom": [
-            "parent_conversation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_conversation_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1489,12 +1356,8 @@
           "name": "conversation_project_id_project_id_fk",
           "tableFrom": "conversation",
           "tableTo": "project",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1575,26 +1438,17 @@
       "indexes": {
         "embedding_namespace_idx": {
           "name": "embedding_namespace_idx",
-          "columns": [
-            "namespace"
-          ],
+          "columns": ["namespace"],
           "isUnique": false
         },
         "embedding_user_id_idx": {
           "name": "embedding_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "embedding_scope_lookup_idx": {
           "name": "embedding_scope_lookup_idx",
-          "columns": [
-            "id",
-            "type",
-            "namespace",
-            "user_id"
-          ],
+          "columns": ["id", "type", "namespace", "user_id"],
           "isUnique": false
         }
       },
@@ -1603,12 +1457,8 @@
           "name": "embedding_user_id_user_id_fk",
           "tableFrom": "embedding",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1714,23 +1564,17 @@
       "indexes": {
         "memory_syntheses_user_id_idx": {
           "name": "memory_syntheses_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "memory_syntheses_namespace_idx": {
           "name": "memory_syntheses_namespace_idx",
-          "columns": [
-            "namespace"
-          ],
+          "columns": ["namespace"],
           "isUnique": false
         },
         "memory_syntheses_is_active_idx": {
           "name": "memory_syntheses_is_active_idx",
-          "columns": [
-            "is_active"
-          ],
+          "columns": ["is_active"],
           "isUnique": false
         }
       },
@@ -1739,12 +1583,8 @@
           "name": "memory_syntheses_user_id_user_id_fk",
           "tableFrom": "memory_syntheses",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1924,30 +1764,22 @@
       "indexes": {
         "message_conversation_id_idx": {
           "name": "message_conversation_id_idx",
-          "columns": [
-            "conversation_id"
-          ],
+          "columns": ["conversation_id"],
           "isUnique": false
         },
         "message_archived_idx": {
           "name": "message_archived_idx",
-          "columns": [
-            "is_archived"
-          ],
+          "columns": ["is_archived"],
           "isUnique": false
         },
         "message_parent_message_id_idx": {
           "name": "message_parent_message_id_idx",
-          "columns": [
-            "parent_message_id"
-          ],
+          "columns": ["parent_message_id"],
           "isUnique": false
         },
         "message_role_idx": {
           "name": "message_role_idx",
-          "columns": [
-            "role"
-          ],
+          "columns": ["role"],
           "isUnique": false
         }
       },
@@ -1956,12 +1788,8 @@
           "name": "message_conversation_id_conversation_id_fk",
           "tableFrom": "message",
           "tableTo": "conversation",
-          "columnsFrom": [
-            "conversation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["conversation_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2013,16 +1841,12 @@
       "indexes": {
         "mobile_auth_exchange_code_expires_at_idx": {
           "name": "mobile_auth_exchange_code_expires_at_idx",
-          "columns": [
-            "expires_at"
-          ],
+          "columns": ["expires_at"],
           "isUnique": false
         },
         "mobile_auth_exchange_code_session_idx": {
           "name": "mobile_auth_exchange_code_session_idx",
-          "columns": [
-            "session_id"
-          ],
+          "columns": ["session_id"],
           "isUnique": false
         }
       },
@@ -2031,12 +1855,8 @@
           "name": "mobile_auth_exchange_code_session_id_session_id_fk",
           "tableFrom": "mobile_auth_exchange_code",
           "tableTo": "session",
-          "columnsFrom": [
-            "session_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["session_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2044,12 +1864,8 @@
           "name": "mobile_auth_exchange_code_user_id_user_id_fk",
           "tableFrom": "mobile_auth_exchange_code",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2118,23 +1934,17 @@
       "indexes": {
         "model_settings_user_id_idx": {
           "name": "model_settings_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "model_settings_model_id_idx": {
           "name": "model_settings_model_id_idx",
-          "columns": [
-            "model_id"
-          ],
+          "columns": ["model_id"],
           "isUnique": false
         },
         "model_settings_enabled_idx": {
           "name": "model_settings_enabled_idx",
-          "columns": [
-            "enabled"
-          ],
+          "columns": ["enabled"],
           "isUnique": false
         }
       },
@@ -2143,12 +1953,8 @@
           "name": "model_settings_user_id_user_id_fk",
           "tableFrom": "model_settings",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2188,22 +1994,15 @@
           "name": "oauth_account_user_id_user_id_fk",
           "tableFrom": "oauth_account",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "oauth_account_provider_id_provider_user_id_pk": {
-          "columns": [
-            "provider_id",
-            "provider_user_id"
-          ],
+          "columns": ["provider_id", "provider_user_id"],
           "name": "oauth_account_provider_id_provider_user_id_pk"
         }
       },
@@ -2273,9 +2072,7 @@
       "indexes": {
         "oauth_state_expires_at_idx": {
           "name": "oauth_state_expires_at_idx",
-          "columns": [
-            "expires_at"
-          ],
+          "columns": ["expires_at"],
           "isUnique": false
         }
       },
@@ -2429,61 +2226,42 @@
       "indexes": {
         "output_storage_key_unique": {
           "name": "output_storage_key_unique",
-          "columns": [
-            "storage_key"
-          ],
+          "columns": ["storage_key"],
           "isUnique": true
         },
         "output_created_by_user_id_idx": {
           "name": "output_created_by_user_id_idx",
-          "columns": [
-            "created_by_user_id"
-          ],
+          "columns": ["created_by_user_id"],
           "isUnique": false
         },
         "output_project_id_idx": {
           "name": "output_project_id_idx",
-          "columns": [
-            "project_id"
-          ],
+          "columns": ["project_id"],
           "isUnique": false
         },
         "output_conversation_id_idx": {
           "name": "output_conversation_id_idx",
-          "columns": [
-            "conversation_id"
-          ],
+          "columns": ["conversation_id"],
           "isUnique": false
         },
         "output_parent_output_id_idx": {
           "name": "output_parent_output_id_idx",
-          "columns": [
-            "parent_output_id"
-          ],
+          "columns": ["parent_output_id"],
           "isUnique": false
         },
         "output_capability_id_idx": {
           "name": "output_capability_id_idx",
-          "columns": [
-            "capability_id"
-          ],
+          "columns": ["capability_id"],
           "isUnique": false
         },
         "output_group_id_idx": {
           "name": "output_group_id_idx",
-          "columns": [
-            "group_id"
-          ],
+          "columns": ["group_id"],
           "isUnique": false
         },
         "output_lookup_idx": {
           "name": "output_lookup_idx",
-          "columns": [
-            "created_by_user_id",
-            "capability_id",
-            "group_id",
-            "kind"
-          ],
+          "columns": ["created_by_user_id", "capability_id", "group_id", "kind"],
           "isUnique": false
         }
       },
@@ -2492,12 +2270,8 @@
           "name": "output_created_by_user_id_user_id_fk",
           "tableFrom": "output",
           "tableTo": "user",
-          "columnsFrom": [
-            "created_by_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2505,12 +2279,8 @@
           "name": "output_project_id_project_id_fk",
           "tableFrom": "output",
           "tableTo": "project",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2518,12 +2288,8 @@
           "name": "output_conversation_id_conversation_id_fk",
           "tableFrom": "output",
           "tableTo": "conversation",
-          "columnsFrom": [
-            "conversation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["conversation_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2599,12 +2365,8 @@
           "name": "output_revision_output_id_output_id_fk",
           "tableFrom": "output_revision",
           "tableTo": "output",
-          "columnsFrom": [
-            "output_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["output_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2612,22 +2374,15 @@
           "name": "output_revision_created_by_user_id_user_id_fk",
           "tableFrom": "output_revision",
           "tableTo": "user",
-          "columnsFrom": [
-            "created_by_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "output_revision_output_id_revision_pk": {
-          "columns": [
-            "output_id",
-            "revision"
-          ],
+          "columns": ["output_id", "revision"],
           "name": "output_revision_output_id_revision_pk"
         }
       },
@@ -2699,16 +2454,12 @@
       "indexes": {
         "output_share_token_hash_unique": {
           "name": "output_share_token_hash_unique",
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "isUnique": true
         },
         "output_share_output_id_idx": {
           "name": "output_share_output_id_idx",
-          "columns": [
-            "output_id"
-          ],
+          "columns": ["output_id"],
           "isUnique": false
         }
       },
@@ -2717,12 +2468,8 @@
           "name": "output_share_output_id_output_id_fk",
           "tableFrom": "output_share",
           "tableTo": "output",
-          "columnsFrom": [
-            "output_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["output_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2730,12 +2477,8 @@
           "name": "output_share_created_by_user_id_user_id_fk",
           "tableFrom": "output_share",
           "tableTo": "user",
-          "columnsFrom": [
-            "created_by_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2773,9 +2516,7 @@
       "indexes": {
         "output_source_source_id_idx": {
           "name": "output_source_source_id_idx",
-          "columns": [
-            "source_id"
-          ],
+          "columns": ["source_id"],
           "isUnique": false
         }
       },
@@ -2784,12 +2525,8 @@
           "name": "output_source_output_id_output_id_fk",
           "tableFrom": "output_source",
           "tableTo": "output",
-          "columnsFrom": [
-            "output_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["output_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2797,22 +2534,15 @@
           "name": "output_source_source_id_source_id_fk",
           "tableFrom": "output_source",
           "tableTo": "source",
-          "columnsFrom": [
-            "source_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["source_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "output_source_output_id_source_id_pk": {
-          "columns": [
-            "output_id",
-            "source_id"
-          ],
+          "columns": ["output_id", "source_id"],
           "name": "output_source_output_id_source_id_pk"
         }
       },
@@ -2898,23 +2628,17 @@
       "indexes": {
         "passkey_credential_id_unique": {
           "name": "passkey_credential_id_unique",
-          "columns": [
-            "credential_id"
-          ],
+          "columns": ["credential_id"],
           "isUnique": true
         },
         "passkey_user_id_idx": {
           "name": "passkey_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "passkey_credential_id_idx": {
           "name": "passkey_credential_id_idx",
-          "columns": [
-            "credential_id"
-          ],
+          "columns": ["credential_id"],
           "isUnique": false
         }
       },
@@ -2923,12 +2647,8 @@
           "name": "passkey_user_id_user_id_fk",
           "tableFrom": "passkey",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3126,17 +2846,12 @@
       "indexes": {
         "project_workspace_id_idx": {
           "name": "project_workspace_id_idx",
-          "columns": [
-            "workspace_id"
-          ],
+          "columns": ["workspace_id"],
           "isUnique": false
         },
         "project_workspace_name_idx": {
           "name": "project_workspace_name_idx",
-          "columns": [
-            "workspace_id",
-            "name"
-          ],
+          "columns": ["workspace_id", "name"],
           "isUnique": true
         }
       },
@@ -3145,12 +2860,8 @@
           "name": "project_workspace_id_workspace_id_fk",
           "tableFrom": "project",
           "tableTo": "workspace",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3158,12 +2869,8 @@
           "name": "project_created_by_user_id_fk",
           "tableFrom": "project",
           "tableTo": "user",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3230,11 +2937,7 @@
       "indexes": {
         "project_capability_project_kind_id_idx": {
           "name": "project_capability_project_kind_id_idx",
-          "columns": [
-            "project_id",
-            "kind",
-            "capability_id"
-          ],
+          "columns": ["project_id", "kind", "capability_id"],
           "isUnique": true
         }
       },
@@ -3243,12 +2946,8 @@
           "name": "project_capability_project_id_project_id_fk",
           "tableFrom": "project_capability",
           "tableTo": "project",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3256,12 +2955,8 @@
           "name": "project_capability_created_by_user_id_fk",
           "tableFrom": "project_capability",
           "tableTo": "user",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3352,20 +3047,12 @@
       "indexes": {
         "provider_connection_user_provider_idx": {
           "name": "provider_connection_user_provider_idx",
-          "columns": [
-            "user_id",
-            "provider"
-          ],
+          "columns": ["user_id", "provider"],
           "isUnique": false
         },
         "provider_connection_unique_idx": {
           "name": "provider_connection_unique_idx",
-          "columns": [
-            "user_id",
-            "provider",
-            "kind",
-            "external_id"
-          ],
+          "columns": ["user_id", "provider", "kind", "external_id"],
           "isUnique": true
         }
       },
@@ -3374,12 +3061,8 @@
           "name": "provider_connection_user_id_user_id_fk",
           "tableFrom": "provider_connection",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3447,16 +3130,12 @@
       "indexes": {
         "provider_settings_user_id_idx": {
           "name": "provider_settings_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "provider_settings_provider_id_idx": {
           "name": "provider_settings_provider_id_idx",
-          "columns": [
-            "provider_id"
-          ],
+          "columns": ["provider_id"],
           "isUnique": false
         }
       },
@@ -3465,12 +3144,8 @@
           "name": "provider_settings_user_id_user_id_fk",
           "tableFrom": "provider_settings",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3588,30 +3263,22 @@
       "indexes": {
         "recipe_composio_trigger_external_trigger_id_unique": {
           "name": "recipe_composio_trigger_external_trigger_id_unique",
-          "columns": [
-            "external_trigger_id"
-          ],
+          "columns": ["external_trigger_id"],
           "isUnique": true
         },
         "recipe_composio_trigger_installation_idx": {
           "name": "recipe_composio_trigger_installation_idx",
-          "columns": [
-            "installation_id"
-          ],
+          "columns": ["installation_id"],
           "isUnique": false
         },
         "recipe_composio_trigger_owner_idx": {
           "name": "recipe_composio_trigger_owner_idx",
-          "columns": [
-            "created_by_user_id"
-          ],
+          "columns": ["created_by_user_id"],
           "isUnique": false
         },
         "recipe_composio_trigger_account_idx": {
           "name": "recipe_composio_trigger_account_idx",
-          "columns": [
-            "connected_account_id"
-          ],
+          "columns": ["connected_account_id"],
           "isUnique": false
         }
       },
@@ -3620,12 +3287,8 @@
           "name": "recipe_composio_trigger_installation_id_template_id_fk",
           "tableFrom": "recipe_composio_trigger",
           "tableTo": "template",
-          "columnsFrom": [
-            "installation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["installation_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3633,12 +3296,8 @@
           "name": "recipe_composio_trigger_created_by_user_id_user_id_fk",
           "tableFrom": "recipe_composio_trigger",
           "tableTo": "user",
-          "columnsFrom": [
-            "created_by_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3646,12 +3305,8 @@
           "name": "recipe_composio_trigger_project_id_project_id_fk",
           "tableFrom": "recipe_composio_trigger",
           "tableTo": "project",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3705,12 +3360,8 @@
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3846,51 +3497,37 @@
       "indexes": {
         "shared_agents_agent_id_idx": {
           "name": "shared_agents_agent_id_idx",
-          "columns": [
-            "agent_id"
-          ],
+          "columns": ["agent_id"],
           "isUnique": false
         },
         "shared_agents_user_id_idx": {
           "name": "shared_agents_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "shared_agents_category_idx": {
           "name": "shared_agents_category_idx",
-          "columns": [
-            "category"
-          ],
+          "columns": ["category"],
           "isUnique": false
         },
         "shared_agents_featured_idx": {
           "name": "shared_agents_featured_idx",
-          "columns": [
-            "is_featured"
-          ],
+          "columns": ["is_featured"],
           "isUnique": false
         },
         "shared_agents_public_idx": {
           "name": "shared_agents_public_idx",
-          "columns": [
-            "is_public"
-          ],
+          "columns": ["is_public"],
           "isUnique": false
         },
         "shared_agents_usage_idx": {
           "name": "shared_agents_usage_idx",
-          "columns": [
-            "usage_count"
-          ],
+          "columns": ["usage_count"],
           "isUnique": false
         },
         "shared_agents_rating_idx": {
           "name": "shared_agents_rating_idx",
-          "columns": [
-            "rating_average"
-          ],
+          "columns": ["rating_average"],
           "isUnique": false
         }
       },
@@ -3899,12 +3536,8 @@
           "name": "shared_agents_agent_id_agents_id_fk",
           "tableFrom": "shared_agents",
           "tableTo": "agents",
-          "columnsFrom": [
-            "agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3912,12 +3545,8 @@
           "name": "shared_agents_user_id_user_id_fk",
           "tableFrom": "shared_agents",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -4070,51 +3699,37 @@
       "indexes": {
         "source_storage_key_unique": {
           "name": "source_storage_key_unique",
-          "columns": [
-            "storage_key"
-          ],
+          "columns": ["storage_key"],
           "isUnique": true
         },
         "source_created_by_user_id_idx": {
           "name": "source_created_by_user_id_idx",
-          "columns": [
-            "created_by_user_id"
-          ],
+          "columns": ["created_by_user_id"],
           "isUnique": false
         },
         "source_project_id_idx": {
           "name": "source_project_id_idx",
-          "columns": [
-            "project_id"
-          ],
+          "columns": ["project_id"],
           "isUnique": false
         },
         "source_conversation_id_idx": {
           "name": "source_conversation_id_idx",
-          "columns": [
-            "conversation_id"
-          ],
+          "columns": ["conversation_id"],
           "isUnique": false
         },
         "source_connection_id_idx": {
           "name": "source_connection_id_idx",
-          "columns": [
-            "connection_id"
-          ],
+          "columns": ["connection_id"],
           "isUnique": false
         },
         "source_kind_idx": {
           "name": "source_kind_idx",
-          "columns": [
-            "kind"
-          ],
+          "columns": ["kind"],
           "isUnique": false
         },
         "source_vector_id_idx": {
           "name": "source_vector_id_idx",
-          "columns": [
-            "vector_id"
-          ],
+          "columns": ["vector_id"],
           "isUnique": false
         }
       },
@@ -4123,12 +3738,8 @@
           "name": "source_created_by_user_id_user_id_fk",
           "tableFrom": "source",
           "tableTo": "user",
-          "columnsFrom": [
-            "created_by_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4136,12 +3747,8 @@
           "name": "source_project_id_project_id_fk",
           "tableFrom": "source",
           "tableTo": "project",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4149,12 +3756,8 @@
           "name": "source_conversation_id_conversation_id_fk",
           "tableFrom": "source",
           "tableTo": "conversation",
-          "columnsFrom": [
-            "conversation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["conversation_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -4162,12 +3765,8 @@
           "name": "source_connection_id_provider_connection_id_fk",
           "tableFrom": "source",
           "tableTo": "provider_connection",
-          "columnsFrom": [
-            "connection_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -4242,16 +3841,12 @@
       "indexes": {
         "source_collection_created_by_user_id_idx": {
           "name": "source_collection_created_by_user_id_idx",
-          "columns": [
-            "created_by_user_id"
-          ],
+          "columns": ["created_by_user_id"],
           "isUnique": false
         },
         "source_collection_project_id_idx": {
           "name": "source_collection_project_id_idx",
-          "columns": [
-            "project_id"
-          ],
+          "columns": ["project_id"],
           "isUnique": false
         }
       },
@@ -4260,12 +3855,8 @@
           "name": "source_collection_created_by_user_id_user_id_fk",
           "tableFrom": "source_collection",
           "tableTo": "user",
-          "columnsFrom": [
-            "created_by_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4273,12 +3864,8 @@
           "name": "source_collection_project_id_project_id_fk",
           "tableFrom": "source_collection",
           "tableTo": "project",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4316,9 +3903,7 @@
       "indexes": {
         "source_collection_member_source_id_idx": {
           "name": "source_collection_member_source_id_idx",
-          "columns": [
-            "source_id"
-          ],
+          "columns": ["source_id"],
           "isUnique": false
         }
       },
@@ -4327,12 +3912,8 @@
           "name": "source_collection_member_collection_id_source_collection_id_fk",
           "tableFrom": "source_collection_member",
           "tableTo": "source_collection",
-          "columnsFrom": [
-            "collection_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["collection_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4340,22 +3921,15 @@
           "name": "source_collection_member_source_id_source_id_fk",
           "tableFrom": "source_collection_member",
           "tableTo": "source",
-          "columnsFrom": [
-            "source_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["source_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "source_collection_member_collection_id_source_id_pk": {
-          "columns": [
-            "collection_id",
-            "source_id"
-          ],
+          "columns": ["collection_id", "source_id"],
           "name": "source_collection_member_collection_id_source_id_pk"
         }
       },
@@ -4441,9 +4015,7 @@
       "indexes": {
         "task_executions_task_id_idx": {
           "name": "task_executions_task_id_idx",
-          "columns": [
-            "task_id"
-          ],
+          "columns": ["task_id"],
           "isUnique": false
         }
       },
@@ -4452,12 +4024,8 @@
           "name": "task_executions_task_id_tasks_id_fk",
           "tableFrom": "task_executions",
           "tableTo": "tasks",
-          "columnsFrom": [
-            "task_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["task_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -4613,37 +4181,27 @@
       "indexes": {
         "tasks_user_id_idx": {
           "name": "tasks_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "tasks_project_id_idx": {
           "name": "tasks_project_id_idx",
-          "columns": [
-            "project_id"
-          ],
+          "columns": ["project_id"],
           "isUnique": false
         },
         "tasks_status_idx": {
           "name": "tasks_status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         },
         "tasks_task_type_idx": {
           "name": "tasks_task_type_idx",
-          "columns": [
-            "task_type"
-          ],
+          "columns": ["task_type"],
           "isUnique": false
         },
         "tasks_scheduled_at_idx": {
           "name": "tasks_scheduled_at_idx",
-          "columns": [
-            "scheduled_at"
-          ],
+          "columns": ["scheduled_at"],
           "isUnique": false
         }
       },
@@ -4652,12 +4210,8 @@
           "name": "tasks_user_id_user_id_fk",
           "tableFrom": "tasks",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4665,12 +4219,8 @@
           "name": "tasks_project_id_project_id_fk",
           "tableFrom": "tasks",
           "tableTo": "project",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4775,30 +4325,22 @@
       "indexes": {
         "template_created_by_user_id_idx": {
           "name": "template_created_by_user_id_idx",
-          "columns": [
-            "created_by_user_id"
-          ],
+          "columns": ["created_by_user_id"],
           "isUnique": false
         },
         "template_workspace_id_idx": {
           "name": "template_workspace_id_idx",
-          "columns": [
-            "workspace_id"
-          ],
+          "columns": ["workspace_id"],
           "isUnique": false
         },
         "template_project_id_idx": {
           "name": "template_project_id_idx",
-          "columns": [
-            "project_id"
-          ],
+          "columns": ["project_id"],
           "isUnique": false
         },
         "template_capability_id_idx": {
           "name": "template_capability_id_idx",
-          "columns": [
-            "capability_id"
-          ],
+          "columns": ["capability_id"],
           "isUnique": false
         }
       },
@@ -4807,12 +4349,8 @@
           "name": "template_created_by_user_id_user_id_fk",
           "tableFrom": "template",
           "tableTo": "user",
-          "columnsFrom": [
-            "created_by_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4820,12 +4358,8 @@
           "name": "template_workspace_id_workspace_id_fk",
           "tableFrom": "template",
           "tableTo": "workspace",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4833,12 +4367,8 @@
           "name": "template_project_id_project_id_fk",
           "tableFrom": "template",
           "tableTo": "project",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4954,16 +4484,12 @@
       "indexes": {
         "training_deployments_user_id_idx": {
           "name": "training_deployments_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "training_deployments_status_idx": {
           "name": "training_deployments_status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         }
       },
@@ -4972,22 +4498,15 @@
           "name": "training_deployments_user_id_user_id_fk",
           "tableFrom": "training_deployments",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "training_deployments_provider_endpoint_name_pk": {
-          "columns": [
-            "provider",
-            "endpoint_name"
-          ],
+          "columns": ["provider", "endpoint_name"],
           "name": "training_deployments_provider_endpoint_name_pk"
         }
       },
@@ -5196,86 +4715,62 @@
       "indexes": {
         "training_examples_user_id_idx": {
           "name": "training_examples_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "training_examples_conversation_id_idx": {
           "name": "training_examples_conversation_id_idx",
-          "columns": [
-            "conversation_id"
-          ],
+          "columns": ["conversation_id"],
           "isUnique": false
         },
         "training_examples_source_idx": {
           "name": "training_examples_source_idx",
-          "columns": [
-            "source"
-          ],
+          "columns": ["source"],
           "isUnique": false
         },
         "training_examples_app_name_idx": {
           "name": "training_examples_app_name_idx",
-          "columns": [
-            "app_name"
-          ],
+          "columns": ["app_name"],
           "isUnique": false
         },
         "training_examples_exported_idx": {
           "name": "training_examples_exported_idx",
-          "columns": [
-            "exported"
-          ],
+          "columns": ["exported"],
           "isUnique": false
         },
         "training_examples_include_in_training_idx": {
           "name": "training_examples_include_in_training_idx",
-          "columns": [
-            "include_in_training"
-          ],
+          "columns": ["include_in_training"],
           "isUnique": false
         },
         "training_examples_feedback_rating_idx": {
           "name": "training_examples_feedback_rating_idx",
-          "columns": [
-            "feedback_rating"
-          ],
+          "columns": ["feedback_rating"],
           "isUnique": false
         },
         "training_examples_quality_score_idx": {
           "name": "training_examples_quality_score_idx",
-          "columns": [
-            "quality_score"
-          ],
+          "columns": ["quality_score"],
           "isUnique": false
         },
         "training_examples_task_category_idx": {
           "name": "training_examples_task_category_idx",
-          "columns": [
-            "task_category"
-          ],
+          "columns": ["task_category"],
           "isUnique": false
         },
         "training_examples_difficulty_level_idx": {
           "name": "training_examples_difficulty_level_idx",
-          "columns": [
-            "difficulty_level"
-          ],
+          "columns": ["difficulty_level"],
           "isUnique": false
         },
         "training_examples_language_code_idx": {
           "name": "training_examples_language_code_idx",
-          "columns": [
-            "language_code"
-          ],
+          "columns": ["language_code"],
           "isUnique": false
         },
         "training_examples_conversation_turn_idx": {
           "name": "training_examples_conversation_turn_idx",
-          "columns": [
-            "conversation_turn"
-          ],
+          "columns": ["conversation_turn"],
           "isUnique": false
         }
       },
@@ -5284,12 +4779,8 @@
           "name": "training_examples_user_id_user_id_fk",
           "tableFrom": "training_examples",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -5297,12 +4788,8 @@
           "name": "training_examples_conversation_id_conversation_id_fk",
           "tableFrom": "training_examples",
           "tableTo": "conversation",
-          "columnsFrom": [
-            "conversation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["conversation_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -5368,17 +4855,12 @@
       "indexes": {
         "training_job_events_job_idx": {
           "name": "training_job_events_job_idx",
-          "columns": [
-            "provider",
-            "job_name"
-          ],
+          "columns": ["provider", "job_name"],
           "isUnique": false
         },
         "training_job_events_created_at_idx": {
           "name": "training_job_events_created_at_idx",
-          "columns": [
-            "created_at"
-          ],
+          "columns": ["created_at"],
           "isUnique": false
         }
       },
@@ -5515,23 +4997,17 @@
       "indexes": {
         "training_jobs_user_id_idx": {
           "name": "training_jobs_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "training_jobs_status_idx": {
           "name": "training_jobs_status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         },
         "training_jobs_updated_at_idx": {
           "name": "training_jobs_updated_at_idx",
-          "columns": [
-            "updated_at"
-          ],
+          "columns": ["updated_at"],
           "isUnique": false
         }
       },
@@ -5540,22 +5016,15 @@
           "name": "training_jobs_user_id_user_id_fk",
           "tableFrom": "training_jobs",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "training_jobs_provider_job_name_pk": {
-          "columns": [
-            "provider",
-            "job_name"
-          ],
+          "columns": ["provider", "job_name"],
           "name": "training_jobs_provider_job_name_pk"
         }
       },
@@ -5767,9 +5236,7 @@
       "indexes": {
         "user_email_unique": {
           "name": "user_email_unique",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "isUnique": true
         }
       },
@@ -5778,12 +5245,8 @@
           "name": "user_plan_id_plans_id_fk",
           "tableFrom": "user",
           "tableTo": "plans",
-          "columnsFrom": [
-            "plan_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["plan_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -5851,23 +5314,17 @@
       "indexes": {
         "user_api_keys_hashed_key_unique": {
           "name": "user_api_keys_hashed_key_unique",
-          "columns": [
-            "hashed_key"
-          ],
+          "columns": ["hashed_key"],
           "isUnique": true
         },
         "user_api_keys_user_id_idx": {
           "name": "user_api_keys_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "user_api_keys_hashed_key_idx": {
           "name": "user_api_keys_hashed_key_idx",
-          "columns": [
-            "hashed_key"
-          ],
+          "columns": ["hashed_key"],
           "isUnique": false
         }
       },
@@ -5876,12 +5333,8 @@
           "name": "user_api_keys_user_id_user_id_fk",
           "tableFrom": "user_api_keys",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -6128,9 +5581,7 @@
       "indexes": {
         "user_settings_user_id_idx": {
           "name": "user_settings_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -6139,12 +5590,8 @@
           "name": "user_settings_user_id_user_id_fk",
           "tableFrom": "user_settings",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -6213,9 +5660,7 @@
       "indexes": {
         "workspace_created_by_idx": {
           "name": "workspace_created_by_idx",
-          "columns": [
-            "created_by"
-          ],
+          "columns": ["created_by"],
           "isUnique": false
         }
       },
@@ -6224,12 +5669,8 @@
           "name": "workspace_created_by_user_id_fk",
           "tableFrom": "workspace",
           "tableTo": "user",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -6303,23 +5744,17 @@
       "indexes": {
         "workspace_audit_record_workspace_id_idx": {
           "name": "workspace_audit_record_workspace_id_idx",
-          "columns": [
-            "workspace_id"
-          ],
+          "columns": ["workspace_id"],
           "isUnique": false
         },
         "workspace_audit_record_actor_user_id_idx": {
           "name": "workspace_audit_record_actor_user_id_idx",
-          "columns": [
-            "actor_user_id"
-          ],
+          "columns": ["actor_user_id"],
           "isUnique": false
         },
         "workspace_audit_record_created_at_idx": {
           "name": "workspace_audit_record_created_at_idx",
-          "columns": [
-            "created_at"
-          ],
+          "columns": ["created_at"],
           "isUnique": false
         }
       },
@@ -6328,12 +5763,8 @@
           "name": "workspace_audit_record_actor_user_id_user_id_fk",
           "tableFrom": "workspace_audit_record",
           "tableTo": "user",
-          "columnsFrom": [
-            "actor_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["actor_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -6436,25 +5867,17 @@
       "indexes": {
         "workspace_invitation_token_hash_unique": {
           "name": "workspace_invitation_token_hash_unique",
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "isUnique": true
         },
         "workspace_invitation_workspace_email_idx": {
           "name": "workspace_invitation_workspace_email_idx",
-          "columns": [
-            "workspace_id",
-            "email"
-          ],
+          "columns": ["workspace_id", "email"],
           "isUnique": true
         },
         "workspace_invitation_workspace_status_idx": {
           "name": "workspace_invitation_workspace_status_idx",
-          "columns": [
-            "workspace_id",
-            "status"
-          ],
+          "columns": ["workspace_id", "status"],
           "isUnique": false
         }
       },
@@ -6463,12 +5886,8 @@
           "name": "workspace_invitation_workspace_id_workspace_id_fk",
           "tableFrom": "workspace_invitation",
           "tableTo": "workspace",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -6476,12 +5895,8 @@
           "name": "workspace_invitation_invited_by_user_id_fk",
           "tableFrom": "workspace_invitation",
           "tableTo": "user",
-          "columnsFrom": [
-            "invited_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["invited_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -6489,12 +5904,8 @@
           "name": "workspace_invitation_accepted_by_user_id_fk",
           "tableFrom": "workspace_invitation",
           "tableTo": "user",
-          "columnsFrom": [
-            "accepted_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["accepted_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -6539,9 +5950,7 @@
       "indexes": {
         "workspace_member_user_id_idx": {
           "name": "workspace_member_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -6550,12 +5959,8 @@
           "name": "workspace_member_workspace_id_workspace_id_fk",
           "tableFrom": "workspace_member",
           "tableTo": "workspace",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -6563,22 +5968,15 @@
           "name": "workspace_member_user_id_user_id_fk",
           "tableFrom": "workspace_member",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "workspace_member_workspace_id_user_id_pk": {
-          "columns": [
-            "workspace_id",
-            "user_id"
-          ],
+          "columns": ["workspace_id", "user_id"],
           "name": "workspace_member_workspace_id_user_id_pk"
         }
       },

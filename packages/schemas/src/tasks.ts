@@ -3,17 +3,17 @@ import { z } from "zod";
 export const SANDBOX_RUN_DISPATCH_TASK_TYPE = "sandbox_run_dispatch";
 
 export const TASK_TYPES = [
-	"memory_synthesis",
-	"research_polling",
-	"replicate_polling",
-	"async_message_polling",
-	"podcast_transcription_polling",
-	"training_quality_scoring",
-	"usage_update",
-	"recipe_execution",
-	"artificial_analysis_ingest",
-	"artificial_analysis_scoring",
-	SANDBOX_RUN_DISPATCH_TASK_TYPE,
+  "memory_synthesis",
+  "research_polling",
+  "replicate_polling",
+  "async_message_polling",
+  "podcast_transcription_polling",
+  "training_quality_scoring",
+  "usage_update",
+  "recipe_execution",
+  "artificial_analysis_ingest",
+  "artificial_analysis_scoring",
+  SANDBOX_RUN_DISPATCH_TASK_TYPE,
 ] as const;
 
 export const PUBLIC_TASK_TYPES = ["memory_synthesis"] as const;
@@ -21,110 +21,110 @@ export const PUBLIC_TASK_TYPES = ["memory_synthesis"] as const;
 export const taskTypeSchema = z.enum(TASK_TYPES);
 
 export const taskStatusSchema = z.enum([
-	"pending",
-	"queued",
-	"running",
-	"completed",
-	"failed",
-	"cancelled",
+  "pending",
+  "queued",
+  "running",
+  "completed",
+  "failed",
+  "cancelled",
 ]);
 
 export const scheduleTypeSchema = z.enum([
-	"immediate",
-	"scheduled",
-	"recurring",
-	"event_triggered",
+  "immediate",
+  "scheduled",
+  "recurring",
+  "event_triggered",
 ]);
 
 export const taskExecutionStatusSchema = z.enum(["running", "completed", "failed"]);
 
 export const taskSchema = z.object({
-	id: z.string(),
-	task_type: taskTypeSchema,
-	status: taskStatusSchema.optional(),
-	priority: z.number().min(1).max(10).optional(),
-	user_id: z.number().optional(),
-	task_data: z.record(z.string(), z.any()).optional(),
-	schedule_type: scheduleTypeSchema.optional(),
-	scheduled_at: z.string().optional(),
-	cron_expression: z.string().optional(),
-	created_by: z.enum(["system", "user"]),
-	attempts: z.number().optional(),
-	max_attempts: z.number().optional(),
-	last_attempted_at: z.string().optional(),
-	completed_at: z.string().optional(),
-	error_message: z.string().optional(),
-	metadata: z.record(z.string(), z.any()).optional(),
-	created_at: z.string(),
-	updated_at: z.string().optional(),
+  id: z.string(),
+  task_type: taskTypeSchema,
+  status: taskStatusSchema.optional(),
+  priority: z.number().min(1).max(10).optional(),
+  user_id: z.number().optional(),
+  task_data: z.record(z.string(), z.any()).optional(),
+  schedule_type: scheduleTypeSchema.optional(),
+  scheduled_at: z.string().optional(),
+  cron_expression: z.string().optional(),
+  created_by: z.enum(["system", "user"]),
+  attempts: z.number().optional(),
+  max_attempts: z.number().optional(),
+  last_attempted_at: z.string().optional(),
+  completed_at: z.string().optional(),
+  error_message: z.string().optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
+  created_at: z.string(),
+  updated_at: z.string().optional(),
 });
 
 export const taskExecutionSchema = z.object({
-	id: z.string(),
-	task_id: z.string(),
-	status: taskExecutionStatusSchema,
-	started_at: z.string(),
-	completed_at: z.string().optional(),
-	execution_time_ms: z.number().optional(),
-	error_message: z.string().optional(),
-	result_data: z.record(z.string(), z.any()).optional(),
-	created_at: z.string(),
+  id: z.string(),
+  task_id: z.string(),
+  status: taskExecutionStatusSchema,
+  started_at: z.string(),
+  completed_at: z.string().optional(),
+  execution_time_ms: z.number().optional(),
+  error_message: z.string().optional(),
+  result_data: z.record(z.string(), z.any()).optional(),
+  created_at: z.string(),
 });
 
 export const memorySynthesisSchema = z.object({
-	id: z.string(),
-	user_id: z.number(),
-	synthesis_text: z.string(),
-	synthesis_version: z.number().optional(),
-	memory_ids: z.array(z.string()).optional(),
-	memory_count: z.number().optional(),
-	tokens_used: z.number().optional(),
-	namespace: z.string().optional(),
-	is_active: z.boolean().optional(),
-	superseded_by: z.string().optional(),
-	created_at: z.string(),
-	updated_at: z.string().optional(),
+  id: z.string(),
+  user_id: z.number(),
+  synthesis_text: z.string(),
+  synthesis_version: z.number().optional(),
+  memory_ids: z.array(z.string()).optional(),
+  memory_count: z.number().optional(),
+  tokens_used: z.number().optional(),
+  namespace: z.string().optional(),
+  is_active: z.boolean().optional(),
+  superseded_by: z.string().optional(),
+  created_at: z.string(),
+  updated_at: z.string().optional(),
 });
 
 export const createTaskRequestSchema = z.object({
-	task_type: taskTypeSchema,
-	task_data: z.record(z.string(), z.any()),
-	schedule_type: scheduleTypeSchema.optional(),
-	scheduled_at: z.string().optional(),
-	priority: z.number().min(1).max(10).optional(),
-	metadata: z.record(z.string(), z.any()).optional(),
+  task_type: taskTypeSchema,
+  task_data: z.record(z.string(), z.any()),
+  schedule_type: scheduleTypeSchema.optional(),
+  scheduled_at: z.string().optional(),
+  priority: z.number().min(1).max(10).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 export const publicTaskTypeSchema = z.enum(PUBLIC_TASK_TYPES);
 
 export const createPublicTaskRequestSchema = z.object({
-	task_type: publicTaskTypeSchema,
-	task_data: z.record(z.string(), z.any()),
-	schedule_type: scheduleTypeSchema.optional(),
-	scheduled_at: z.string().optional(),
-	priority: z.number().min(1).max(10).optional(),
-	metadata: z.record(z.string(), z.any()).optional(),
+  task_type: publicTaskTypeSchema,
+  task_data: z.record(z.string(), z.any()),
+  schedule_type: scheduleTypeSchema.optional(),
+  scheduled_at: z.string().optional(),
+  priority: z.number().min(1).max(10).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 export const createTaskResponseSchema = z.object({
-	task_id: z.string(),
-	status: taskStatusSchema,
-	message: z.string().optional(),
+  task_id: z.string(),
+  status: taskStatusSchema,
+  message: z.string().optional(),
 });
 
 export const getTaskResponseSchema = taskSchema;
 
 export const listTasksResponseSchema = z.object({
-	tasks: z.array(taskSchema),
-	total: z.number(),
+  tasks: z.array(taskSchema),
+  total: z.number(),
 });
 
 export const getMemorySynthesisResponseSchema = z.object({
-	synthesis: memorySynthesisSchema.optional(),
+  synthesis: memorySynthesisSchema.optional(),
 });
 
 export const triggerMemorySynthesisRequestSchema = z.object({
-	namespace: z.string().optional(),
+  namespace: z.string().optional(),
 });
 
 export type TaskType = z.infer<typeof taskTypeSchema>;

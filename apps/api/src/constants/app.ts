@@ -1,6 +1,6 @@
 export const APP_NAME = "Polychat";
 export const APP_DESCRIPTION =
-	"Polychat is a multi-model AI assistant platform that orchestrates chats, agents, retrieval, and artifact workflows across leading AI providers.";
+  "Polychat is a multi-model AI assistant platform that orchestrates chats, agents, retrieval, and artifact workflows across leading AI providers.";
 
 export const LOCAL_HOST = "localhost:5173";
 export const PROD_HOST = "polychat.app";
@@ -21,11 +21,11 @@ const BASELINE_INPUT_COST = 0.0025;
 const BASELINE_OUTPUT_COST = 0.01;
 
 export const USAGE_CONFIG = {
-	NON_AUTH_DAILY_MESSAGE_LIMIT,
-	AUTH_DAILY_MESSAGE_LIMIT,
-	DAILY_LIMIT_PRO_MODELS,
-	BASELINE_INPUT_COST,
-	BASELINE_OUTPUT_COST,
+  NON_AUTH_DAILY_MESSAGE_LIMIT,
+  AUTH_DAILY_MESSAGE_LIMIT,
+  DAILY_LIMIT_PRO_MODELS,
+  BASELINE_INPUT_COST,
+  BASELINE_OUTPUT_COST,
 };
 
 export const FREE_TRIAL_DAYS = 90;

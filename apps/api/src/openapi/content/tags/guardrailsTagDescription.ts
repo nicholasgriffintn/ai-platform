@@ -163,13 +163,13 @@ Or if violations occur:
 
 ~~~json
 {
-	"post_processing": {
-		"guardrails": {
-			"passed": false,
-			"error": "Content policy violation",
-			"violations": ["S10: Hate"]
-		}
-	}
+  "post_processing": {
+    "guardrails": {
+      "passed": false,
+      "error": "Content policy violation",
+      "violations": ["S10: Hate"]
+    }
+  }
 }
 ~~~
 

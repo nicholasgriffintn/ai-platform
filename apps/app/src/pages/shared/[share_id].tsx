@@ -62,7 +62,7 @@ export default function SharedConversationPage() {
       }
     };
 
-    fetchSharedConversation();
+    void fetchSharedConversation();
   }, [share_id]);
 
   const { copied: artifactCopied, copy: copyArtifact } = useCopyToClipboard();

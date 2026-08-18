@@ -1192,10 +1192,12 @@ export const recipeConnectionStatusSchema = z.enum([
 
 const nonComposioRecipeConnectorProviders = ["devin", "hindsight", "honcho", "netlify"];
 
-export const recipeConnectorProviderSchema = z.enum([
+const recipeConnectorProviders = [
   ...composioRecipeConnectorProviders,
   ...nonComposioRecipeConnectorProviders,
-] as [string, ...string[]]);
+] satisfies string[] as [string, ...string[]];
+
+export const recipeConnectorProviderSchema = z.enum(recipeConnectorProviders);
 
 export const recipeIntegrationSchema = z.object({
   id: z.string(),

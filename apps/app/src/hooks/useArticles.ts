@@ -48,7 +48,7 @@ export const useGenerateReport = (projectId?: string) => {
   return useMutation({
     mutationFn: (params: Parameters<typeof generateReport>[0]) => generateReport(params, projectId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["articles", projectId, "reports"] });
+      void queryClient.invalidateQueries({ queryKey: ["articles", projectId, "reports"] });
     },
   });
 };

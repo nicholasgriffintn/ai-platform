@@ -226,7 +226,7 @@ export const useChatStore = create<ChatStore>()(
           }
         };
 
-        checkAuthAndSetConversation();
+        void checkAuthAndSetConversation();
       },
     }),
     {

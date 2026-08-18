@@ -4,24 +4,24 @@ import { useNavigate } from "react-router";
 import { createAssistantActionConversationUrl } from "~/lib/assistant-action-launch";
 
 export function ProjectConversationStarter({
-	workspaceId,
-	projectId,
+  workspaceId,
+  projectId,
 }: {
-	workspaceId: string;
-	projectId: string;
+  workspaceId: string;
+  projectId: string;
 }) {
-	const navigate = useNavigate();
+  const navigate = useNavigate();
 
-	return (
-		<ControlledProjectConversationStarter
-			onStart={(prompt) => {
-				navigate(
-					createAssistantActionConversationUrl(
-						{ input: prompt, enabledTools: [] },
-						`/work/${workspaceId}/projects/${projectId}/chat`,
-					),
-				);
-			}}
-		/>
-	);
+  return (
+    <ControlledProjectConversationStarter
+      onStart={(prompt) => {
+        void navigate(
+          createAssistantActionConversationUrl(
+            { input: prompt, enabledTools: [] },
+            `/work/${workspaceId}/projects/${projectId}/chat`,
+          ),
+        );
+      }}
+    />
+  );
 }

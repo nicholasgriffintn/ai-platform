@@ -1,7 +1,7 @@
 {
-	"extends": "./library.json",
-	"compilerOptions": {
-		"lib": ["ES2022"],
-		"types": ["@cloudflare/workers-types"]
-	}
+  "extends": "./library.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "types": ["@cloudflare/workers-types"]
+  }
 }

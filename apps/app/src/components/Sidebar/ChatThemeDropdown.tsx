@@ -4,18 +4,18 @@ import { useIsHydrated } from "~/hooks/useIsHydrated";
 import { useTheme } from "~/hooks/useTheme";
 
 export const ChatThemeDropdown = ({
-	position = "bottom",
+  position = "bottom",
 }: {
-	position?: "top" | "bottom";
+  position?: "top" | "bottom";
 } = {}) => {
-	const [theme, setTheme] = useTheme();
-	const isHydrated = useIsHydrated();
+  const [theme, setTheme] = useTheme();
+  const isHydrated = useIsHydrated();
 
-	return (
-		<ThemeDropdown
-			position={position}
-			theme={isHydrated ? theme : undefined}
-			onThemeChange={setTheme}
-		/>
-	);
+  return (
+    <ThemeDropdown
+      position={position}
+      theme={isHydrated ? theme : undefined}
+      onThemeChange={setTheme}
+    />
+  );
 };

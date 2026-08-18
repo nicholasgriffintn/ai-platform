@@ -100,7 +100,7 @@ export function StrudelCreateStudio({ basePath, projectId }: StrudelCreateStudio
       });
 
       toast.success("Pattern saved");
-      navigate(`${basePath}/${pattern.id}`);
+      void navigate(`${basePath}/${pattern.id}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to save pattern");
     }

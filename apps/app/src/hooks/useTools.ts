@@ -5,10 +5,10 @@ import { apiService } from "~/lib/api/api-service";
 export const TOOLS_QUERY_KEY = "tools";
 
 export function useTools() {
-	return useQuery({
-		queryKey: [TOOLS_QUERY_KEY],
-		queryFn: apiService.fetchTools,
-		staleTime: 1000 * 60 * 60,
-		gcTime: 1000 * 60 * 60,
-	});
+  return useQuery({
+    queryKey: [TOOLS_QUERY_KEY],
+    queryFn: apiService.fetchTools,
+    staleTime: 1000 * 60 * 60,
+    gcTime: 1000 * 60 * 60,
+  });
 }

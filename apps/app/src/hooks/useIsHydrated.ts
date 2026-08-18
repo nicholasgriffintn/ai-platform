@@ -5,11 +5,11 @@ import { useEffect, useState } from "react";
  * first client render before showing the resolved value.
  */
 export function useIsHydrated(): boolean {
-	const [isHydrated, setIsHydrated] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
-	useEffect(() => {
-		setIsHydrated(true);
-	}, []);
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
-	return isHydrated;
+  return isHydrated;
 }

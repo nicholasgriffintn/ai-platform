@@ -93,7 +93,7 @@ export function useAutoSave({
 
     const timeout = setTimeout(() => {
       if (!isSavingRef.current) {
-        saveNote(text);
+        void saveNote(text);
       }
     }, delay);
 

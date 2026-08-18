@@ -324,7 +324,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
           return;
         }
 
-        submitSelectedAttachments();
+        void submitSelectedAttachments();
       }
 
       if (e.key === "Enter" && e.shiftKey) {

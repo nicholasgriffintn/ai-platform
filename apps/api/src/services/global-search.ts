@@ -2,73 +2,73 @@ import type { GlobalSearchQuery, GlobalSearchResponse } from "@ngriffin_uk/polyc
 
 import type { ConversationRepository } from "~/repositories/ConversationRepository";
 import type {
-	GlobalProjectSearchRow,
-	GlobalWorkspaceSearchRow,
-	WorkspaceRepository,
+  GlobalProjectSearchRow,
+  GlobalWorkspaceSearchRow,
+  WorkspaceRepository,
 } from "~/repositories/WorkspaceRepository";
 
 export interface GlobalSearchContext {
-	requireUser(): { id: number; plan_id: string | null };
-	repositories: {
-		conversations: Pick<ConversationRepository, "searchAccessibleConversations">;
-		workspaces: Pick<WorkspaceRepository, "searchProjects" | "searchWorkspaces">;
-	};
+  requireUser(): { id: number; plan_id: string | null };
+  repositories: {
+    conversations: Pick<ConversationRepository, "searchAccessibleConversations">;
+    workspaces: Pick<WorkspaceRepository, "searchProjects" | "searchWorkspaces">;
+  };
 }
 
 export async function searchPolychat(
-	context: GlobalSearchContext,
-	input: GlobalSearchQuery,
+  context: GlobalSearchContext,
+  input: GlobalSearchQuery,
 ): Promise<GlobalSearchResponse> {
-	const user = context.requireUser();
-	const canSearchWork = user.plan_id === "pro";
-	const [conversations, workspaces, projects] = await Promise.all([
-		context.repositories.conversations.searchAccessibleConversations(
-			user.id,
-			input.query,
-			input.limit,
-		),
-		canSearchWork
-			? context.repositories.workspaces.searchWorkspaces(user.id, input.query, input.limit)
-			: Promise.resolve<GlobalWorkspaceSearchRow[]>([]),
-		canSearchWork
-			? context.repositories.workspaces.searchProjects(user.id, input.query, input.limit)
-			: Promise.resolve<GlobalProjectSearchRow[]>([]),
-	]);
+  const user = context.requireUser();
+  const canSearchWork = user.plan_id === "pro";
+  const [conversations, workspaces, projects] = await Promise.all([
+    context.repositories.conversations.searchAccessibleConversations(
+      user.id,
+      input.query,
+      input.limit,
+    ),
+    canSearchWork
+      ? context.repositories.workspaces.searchWorkspaces(user.id, input.query, input.limit)
+      : Promise.resolve<GlobalWorkspaceSearchRow[]>([]),
+    canSearchWork
+      ? context.repositories.workspaces.searchProjects(user.id, input.query, input.limit)
+      : Promise.resolve<GlobalProjectSearchRow[]>([]),
+  ]);
 
-	return {
-		query: input.query,
-		conversations: conversations
-			.filter((conversation) => canSearchWork || !conversation.project_id)
-			.map((conversation) => ({
-				id: conversation.id,
-				title: conversation.title,
-				updatedAt: conversation.updated_at,
-				project:
-					conversation.project_id &&
-					conversation.project_name &&
-					conversation.workspace_id &&
-					conversation.workspace_name
-						? {
-								id: conversation.project_id,
-								name: conversation.project_name,
-								workspaceId: conversation.workspace_id,
-								workspaceName: conversation.workspace_name,
-							}
-						: null,
-			})),
-		workspaces: workspaces.map((workspace) => ({
-			id: workspace.id,
-			name: workspace.name,
-			description: workspace.description,
-			updatedAt: workspace.updated_at,
-		})),
-		projects: projects.map((project) => ({
-			id: project.id,
-			workspaceId: project.workspace_id,
-			workspaceName: project.workspace_name,
-			name: project.name,
-			description: project.description,
-			updatedAt: project.updated_at,
-		})),
-	};
+  return {
+    query: input.query,
+    conversations: conversations
+      .filter((conversation) => canSearchWork || !conversation.project_id)
+      .map((conversation) => ({
+        id: conversation.id,
+        title: conversation.title,
+        updatedAt: conversation.updated_at,
+        project:
+          conversation.project_id &&
+          conversation.project_name &&
+          conversation.workspace_id &&
+          conversation.workspace_name
+            ? {
+                id: conversation.project_id,
+                name: conversation.project_name,
+                workspaceId: conversation.workspace_id,
+                workspaceName: conversation.workspace_name,
+              }
+            : null,
+      })),
+    workspaces: workspaces.map((workspace) => ({
+      id: workspace.id,
+      name: workspace.name,
+      description: workspace.description,
+      updatedAt: workspace.updated_at,
+    })),
+    projects: projects.map((project) => ({
+      id: project.id,
+      workspaceId: project.workspace_id,
+      workspaceName: project.workspace_name,
+      name: project.name,
+      description: project.description,
+      updatedAt: project.updated_at,
+    })),
+  };
 }

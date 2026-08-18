@@ -74,7 +74,7 @@ export function useRecipeWorkflows({
   const scheduleCronIsSupported = isRecipeScheduleCronSupported(scheduleCronExpression);
 
   const start = (recipe: AssistantRecipe, installation?: RecipeInstallation) => {
-    navigate(
+    void navigate(
       createRecipeConversationActionPath(conversationPath ?? "/", {
         action: installation ? "run" : "setup",
         recipeId: recipe.id,
@@ -294,7 +294,7 @@ export function useRecipeWorkflows({
 
     if (!connector) {
       if (setupUrl) {
-        navigate(setupUrl);
+        void navigate(setupUrl);
 
         return;
       }

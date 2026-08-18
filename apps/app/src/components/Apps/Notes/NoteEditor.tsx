@@ -100,7 +100,7 @@ export function NoteEditor({
     async (newMetadata: NoteMetadataType) => {
       setCurrentMetadata(newMetadata);
       if (noteId) {
-        forceSave({ bypassDirtyCheck: true });
+        void forceSave({ bypassDirtyCheck: true });
       }
     },
     [noteId, forceSave],
@@ -116,7 +116,7 @@ export function NoteEditor({
     const maybePromise = forceSave({ bypassDirtyCheck: true });
 
     if (maybePromise?.finally) {
-      maybePromise.finally(() => {
+      void maybePromise.finally(() => {
         setIsMetadataRefreshing(false);
       });
     } else {
@@ -219,7 +219,7 @@ export function NoteEditor({
       setIsSpeechDetected(false);
       setLastSilenceTime(0);
     } else {
-      startTranscription();
+      void startTranscription();
     }
   }, [isTranscribing, stopTranscription, startTranscription]);
 
@@ -234,7 +234,7 @@ export function NoteEditor({
       const stream = await tabCapture.start();
 
       if (stream) {
-        startTranscription(stream);
+        void startTranscription(stream);
       }
     }
   }, [tabCapture, stopTranscription, startTranscription]);

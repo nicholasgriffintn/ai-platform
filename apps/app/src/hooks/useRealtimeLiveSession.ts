@@ -651,6 +651,7 @@ export function useRealtimeLiveSession({
         });
       }
 
+      // oxlint-disable-next-line prefer-const
       let connection: RealtimeWebSocketConnection;
       let hasStartedMedia = false;
       const startWebSocketMedia = async () => {

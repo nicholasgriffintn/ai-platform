@@ -477,6 +477,7 @@ export const TokenizedComposerInput = forwardRef<
 
     return (
       <div
+        role="presentation"
         className={cn(
           "relative min-h-[36px] min-w-0 flex-1 cursor-text",
           disabled && "pointer-events-none opacity-60",
@@ -496,6 +497,7 @@ export const TokenizedComposerInput = forwardRef<
           id={id}
           ref={editableRef}
           role="textbox"
+          tabIndex={disabled ? -1 : 0}
           data-dynamic-copy=""
           aria-label={ariaLabel}
           aria-describedby={ariaDescribedBy}

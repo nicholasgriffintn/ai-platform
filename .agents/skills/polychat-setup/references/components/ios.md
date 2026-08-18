@@ -18,11 +18,13 @@ Native iOS client for the Polychat AI platform.
 ## Running the App
 
 - Development build:
+
   ```sh
   pnpm dev:mobile
   ```
 
 - Production build:
+
   ```sh
   pnpm build:mobile
   ```

@@ -398,7 +398,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         }
 
         if (actionSubmit.kind === "navigation") {
-          navigate(actionSubmit.path);
+          void navigate(actionSubmit.path);
 
           return true;
         }
@@ -505,7 +505,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
         if (canSubmit) {
-          handleSubmit();
+          void handleSubmit();
         }
       }
 
@@ -582,7 +582,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
   const handleBranch = useCallback(
     (messageId: string, modelId?: string) => {
-      branchConversation(messageId, modelId);
+      void branchConversation(messageId, modelId);
     },
     [branchConversation],
   );

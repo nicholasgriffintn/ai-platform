@@ -61,7 +61,7 @@ export function SvgSandbox({
       }
     };
 
-    prepareDocument();
+    void prepareDocument();
 
     return () => {
       isMounted = false;

@@ -1,55 +1,56 @@
 import {
-	toProviderChatMessages,
-	type NormalisedProviderChatMessage,
+  toProviderChatMessages,
+  type NormalisedProviderChatMessage,
 } from "@ngriffin_uk/polychat-schemas/provider-messages";
-import type { Message, MessageContent } from "./conversation-types";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
+import type { Message, MessageContent } from "./conversation-types";
+
 export type ProviderMessage = Omit<Message, "id" | "role"> & {
-	id?: string;
-	role: Exclude<Message["role"], "compaction">;
+  id?: string;
+  role: Exclude<Message["role"], "compaction">;
 };
 
 function isMessageContentPart(value: unknown): value is MessageContent {
-	return isRecord(value) && typeof value.type === "string";
+  return isRecord(value) && typeof value.type === "string";
 }
 
 function readProviderContent(content: unknown): Message["content"] {
-	if (typeof content === "string" || isRecord(content)) {
-		return content;
-	}
+  if (typeof content === "string" || isRecord(content)) {
+    return content;
+  }
 
-	if (Array.isArray(content) && content.every(isMessageContentPart)) {
-		return content;
-	}
+  if (Array.isArray(content) && content.every(isMessageContentPart)) {
+    return content;
+  }
 
-	return "";
+  return "";
 }
 
 function readOptionalToolCalls(value: unknown): Message["tool_calls"] {
-	return Array.isArray(value) ? value : undefined;
+  return Array.isArray(value) ? value : undefined;
 }
 
 function toAppProviderMessage(message: NormalisedProviderChatMessage): ProviderMessage {
-	const { content, timestamp, tool_calls, ...metadata } = message;
-	const providerMessage: ProviderMessage = {
-		...metadata,
-		content: readProviderContent(content),
-	};
+  const { content, timestamp, tool_calls, ...metadata } = message;
+  const providerMessage: ProviderMessage = {
+    ...metadata,
+    content: readProviderContent(content),
+  };
 
-	if (typeof timestamp === "number") {
-		providerMessage.timestamp = timestamp;
-	}
+  if (typeof timestamp === "number") {
+    providerMessage.timestamp = timestamp;
+  }
 
-	if (tool_calls) {
-		providerMessage.tool_calls = readOptionalToolCalls(tool_calls);
-	}
+  if (tool_calls) {
+    providerMessage.tool_calls = readOptionalToolCalls(tool_calls);
+  }
 
-	return providerMessage;
+  return providerMessage;
 }
 
 export function toProviderMessages(
-	messages: readonly unknown[] | null | undefined,
+  messages: readonly unknown[] | null | undefined,
 ): ProviderMessage[] {
-	return toProviderChatMessages(messages).map(toAppProviderMessage);
+  return toProviderChatMessages(messages).map(toAppProviderMessage);
 }

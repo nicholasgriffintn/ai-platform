@@ -141,7 +141,7 @@ export function useStartTrainingJob() {
   return useMutation({
     mutationFn: (request: StartTrainingJobRequest) => startTrainingJob(request),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: TRAINING_QUERY_KEYS.jobs });
+      void queryClient.invalidateQueries({ queryKey: TRAINING_QUERY_KEYS.jobs });
     },
   });
 }
@@ -152,8 +152,8 @@ export function useDeployTrainingModel() {
   return useMutation({
     mutationFn: (request: DeployTrainingModelRequest) => deployTrainingModel(request),
     onSuccess: (deployment) => {
-      queryClient.invalidateQueries({ queryKey: TRAINING_QUERY_KEYS.deployments });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({ queryKey: TRAINING_QUERY_KEYS.deployments });
+      void queryClient.invalidateQueries({
         queryKey: TRAINING_QUERY_KEYS.deploymentEvents(
           deployment.provider,
           deployment.endpointName,
@@ -175,7 +175,7 @@ export function useDeleteTrainingDeployment() {
       endpointName: string;
     }) => deleteTrainingDeployment(provider, endpointName),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: TRAINING_QUERY_KEYS.deployments });
+      void queryClient.invalidateQueries({ queryKey: TRAINING_QUERY_KEYS.deployments });
     },
   });
 }

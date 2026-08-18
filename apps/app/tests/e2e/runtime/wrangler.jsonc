@@ -1,13 +1,13 @@
 {
-	"name": "polychat-e2e-api",
-	"main": "../../../../api/src/index.ts",
-	"rules": [
-		{
-			"type": "Text",
-			"globs": ["**/*.md"],
-			"fallthrough": true,
-		},
-	],
-	"compatibility_date": "2026-06-16",
-	"compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env"],
+  "name": "polychat-e2e-api",
+  "main": "../../../../api/src/index.ts",
+  "rules": [
+    {
+      "type": "Text",
+      "globs": ["**/*.md"],
+      "fallthrough": true,
+    },
+  ],
+  "compatibility_date": "2026-06-16",
+  "compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env"],
 }

@@ -1,32 +1,32 @@
 {
-	"id": "46d504b4-f9ab-4cac-88e5-3ea0318f5dc8",
-	"model": "llama-3.1-sonar-small-128k-online",
-	"created": 1734110939,
-	"usage": {
-		"prompt_tokens": 289,
-		"completion_tokens": 613,
-		"total_tokens": 902
-	},
-	"citations": [
-		"https://www.cnet.com/gifts/best-christmas-gift-ideas/",
-		"https://www.tasteofhome.com/collection/family-christmas-gift-ideas/",
-		"https://www.realsimple.com/holidays-entertaining/gifts/best-christmas-gifts",
-		"https://www.housebeautiful.com/entertaining/holidays-celebrations/g23437650/family-christmas-gifts/",
-		"https://www.goodhousekeeping.com/holidays/gift-ideas/g29263705/best-family-gifts/"
-	],
-	"object": "chat.completion",
-	"choices": [
-		{
-			"index": 0,
-			"finish_reason": "stop",
-			"message": {
-				"role": "assistant",
-				"content": "Choosing the best Christmas presents for family members can depend on their interests and preferences. Here are some versatile and enjoyable gift ideas that cater to various tastes:\n\n### For the Tech-Savvy Family Member\n- **Meta Quest 3**: A top pick for VR headsets, offering immersive experiences in gaming, learning, and entertainment[1].\n- **Earfun Air Pro 4**: Lightweight and comfortable earbuds with long battery life, perfect for daily use[1].\n- **Apple AirPods Pro 2 (USB-C)**: Excellent sound quality and great voice-calling capabilities, ideal for teens and tweens[1].\n\n### For the Foodies\n- **Ninja Waffle Maker Pro**: A space-saving, nonstick waffle maker with five shade settings, perfect for making fluffy Belgian waffles[1].\n- **Dash Mini Waffle Maker**: Easy to use and clean, great for making small, perfectly delectable waffles[1].\n- **Ninja CREAMi Deluxe 11-in-1 Ice Cream & Frozen Treat Maker**: An ice cream maker that crafts delicious frozen treats quickly and easily[4].\n\n### For the Family Who Loves to Entertain\n- **Boarderie Charcuterie Board**: A large enough gift to feed the whole family, perfect for over-the-top meat and cheese boards[2].\n- **Home Theater Projector**: Provides a movie theater experience at home with crystal-clear image quality and vivid colors[2].\n- **Sharper Image Electric Tabletop S'mores Maker**: An electric, flameless heater for roasting marshmallows indoors, ideal for groups[5].\n\n### For the Adventurous Family\n- **Adventure Challenge Family Book**: A unique book filled with family-friendly adventures to scratch off and complete[2].\n- **National Parks Puzzle**: A fun and educational puzzle that helps plan future vacations to U.S. National Parks[2].\n- **The Adventure Challenge Family Camera Set**: A camera-activity journal set that encourages outings and adventures[4].\n\n### For the Cozy Family\n- **Riley Cotton Twill Slippers**: Matching slippers for every family member to stay cozy and stylish on Christmas morning[4].\n- **Keenray Towel Warmer**: A smart bathroom gadget that keeps towels heated for about an hour, perfect for a toasty shower experience[4].\n- **Dorai Stone Bath Mat**: A water-wicking bath mat that dries quickly, making bathroom time more enjoyable[4].\n\n### For the Family Who Loves to Play\n- **Magna-Tiles**: Versatile magnetic building blocks that keep kids busy for hours, encouraging creativity and imagination[1].\n- **Personalized Four-Across Game**: A customized game that adds a fun twist to family game nights, especially during winter weather[2].\n- **TableTopics Family Gathering: Questions to Start Great Conversations**: Creative cards to guide dinner table conversations and create lasting memories[4].\n\nThese gifts cater to various interests and ensure that every family member finds something they love."
-			},
-			"delta": {
-				"role": "assistant",
-				"content": ""
-			}
-		}
-	]
+  "id": "46d504b4-f9ab-4cac-88e5-3ea0318f5dc8",
+  "model": "llama-3.1-sonar-small-128k-online",
+  "created": 1734110939,
+  "usage": {
+    "prompt_tokens": 289,
+    "completion_tokens": 613,
+    "total_tokens": 902
+  },
+  "citations": [
+    "https://www.cnet.com/gifts/best-christmas-gift-ideas/",
+    "https://www.tasteofhome.com/collection/family-christmas-gift-ideas/",
+    "https://www.realsimple.com/holidays-entertaining/gifts/best-christmas-gifts",
+    "https://www.housebeautiful.com/entertaining/holidays-celebrations/g23437650/family-christmas-gifts/",
+    "https://www.goodhousekeeping.com/holidays/gift-ideas/g29263705/best-family-gifts/"
+  ],
+  "object": "chat.completion",
+  "choices": [
+    {
+      "index": 0,
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "Choosing the best Christmas presents for family members can depend on their interests and preferences. Here are some versatile and enjoyable gift ideas that cater to various tastes:\n\n### For the Tech-Savvy Family Member\n- **Meta Quest 3**: A top pick for VR headsets, offering immersive experiences in gaming, learning, and entertainment[1].\n- **Earfun Air Pro 4**: Lightweight and comfortable earbuds with long battery life, perfect for daily use[1].\n- **Apple AirPods Pro 2 (USB-C)**: Excellent sound quality and great voice-calling capabilities, ideal for teens and tweens[1].\n\n### For the Foodies\n- **Ninja Waffle Maker Pro**: A space-saving, nonstick waffle maker with five shade settings, perfect for making fluffy Belgian waffles[1].\n- **Dash Mini Waffle Maker**: Easy to use and clean, great for making small, perfectly delectable waffles[1].\n- **Ninja CREAMi Deluxe 11-in-1 Ice Cream & Frozen Treat Maker**: An ice cream maker that crafts delicious frozen treats quickly and easily[4].\n\n### For the Family Who Loves to Entertain\n- **Boarderie Charcuterie Board**: A large enough gift to feed the whole family, perfect for over-the-top meat and cheese boards[2].\n- **Home Theater Projector**: Provides a movie theater experience at home with crystal-clear image quality and vivid colors[2].\n- **Sharper Image Electric Tabletop S'mores Maker**: An electric, flameless heater for roasting marshmallows indoors, ideal for groups[5].\n\n### For the Adventurous Family\n- **Adventure Challenge Family Book**: A unique book filled with family-friendly adventures to scratch off and complete[2].\n- **National Parks Puzzle**: A fun and educational puzzle that helps plan future vacations to U.S. National Parks[2].\n- **The Adventure Challenge Family Camera Set**: A camera-activity journal set that encourages outings and adventures[4].\n\n### For the Cozy Family\n- **Riley Cotton Twill Slippers**: Matching slippers for every family member to stay cozy and stylish on Christmas morning[4].\n- **Keenray Towel Warmer**: A smart bathroom gadget that keeps towels heated for about an hour, perfect for a toasty shower experience[4].\n- **Dorai Stone Bath Mat**: A water-wicking bath mat that dries quickly, making bathroom time more enjoyable[4].\n\n### For the Family Who Loves to Play\n- **Magna-Tiles**: Versatile magnetic building blocks that keep kids busy for hours, encouraging creativity and imagination[1].\n- **Personalized Four-Across Game**: A customized game that adds a fun twist to family game nights, especially during winter weather[2].\n- **TableTopics Family Gathering: Questions to Start Great Conversations**: Creative cards to guide dinner table conversations and create lasting memories[4].\n\nThese gifts cater to various interests and ensure that every family member finds something they love."
+      },
+      "delta": {
+        "role": "assistant",
+        "content": ""
+      }
+    }
+  ]
 }

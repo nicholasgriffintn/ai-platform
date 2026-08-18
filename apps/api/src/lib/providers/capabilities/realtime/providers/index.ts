@@ -4,6 +4,6 @@ export { OpenAIRealtimeProvider } from "./OpenAIRealtimeProvider";
 export { GoogleRealtimeProvider } from "./GoogleRealtimeProvider";
 
 export {
-	getMistralTargetStreamingDelayMs,
-	MistralRealtimeProvider,
+  getMistralTargetStreamingDelayMs,
+  MistralRealtimeProvider,
 } from "./MistralRealtimeProvider";

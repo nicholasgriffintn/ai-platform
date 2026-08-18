@@ -1,46 +1,47 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+
 import { PATTERN_OUTPUT_KIND, STRUDEL_APP_ID, mapResponseToPattern } from "./utils";
 
 const logger = getLogger({ prefix: "services/strudel/list" });
 
 export async function listPatterns({
-	context,
-	userId,
-	projectId,
+  context,
+  userId,
+  projectId,
 }: {
-	context: ServiceContext;
-	userId: number;
-	projectId?: string;
+  context: ServiceContext;
+  userId: number;
+  projectId?: string;
 }) {
-	try {
-		context.ensureDatabase();
-		const { repositories } = context;
+  try {
+    context.ensureDatabase();
+    const { repositories } = context;
 
-		// The detail, update, and delete paths all require a saved pattern, so the list must not
-		// surface other outputs stored against the same capability.
-		const responses = projectId
-			? await repositories.outputs.listProjectOutputs(projectId, STRUDEL_APP_ID, {
-					kind: PATTERN_OUTPUT_KIND,
-				})
-			: await repositories.outputs.listPersonalOutputs(userId, STRUDEL_APP_ID, {
-					kind: PATTERN_OUTPUT_KIND,
-				});
+    // The detail, update, and delete paths all require a saved pattern, so the list must not
+    // surface other outputs stored against the same capability.
+    const responses = projectId
+      ? await repositories.outputs.listProjectOutputs(projectId, STRUDEL_APP_ID, {
+          kind: PATTERN_OUTPUT_KIND,
+        })
+      : await repositories.outputs.listPersonalOutputs(userId, STRUDEL_APP_ID, {
+          kind: PATTERN_OUTPUT_KIND,
+        });
 
-		const patterns = responses.map(mapResponseToPattern);
+    const patterns = responses.map(mapResponseToPattern);
 
-		logger.info("Listed Strudel patterns", {
-			userId,
-			count: patterns.length,
-		});
+    logger.info("Listed Strudel patterns", {
+      userId,
+      count: patterns.length,
+    });
 
-		return patterns;
-	} catch (error) {
-		logger.error("Error listing Strudel patterns:", {
-			error_message: error instanceof Error ? error.message : "Unknown error",
-			userId,
-		});
-		throw new AssistantError("Failed to list Strudel patterns", ErrorType.UNKNOWN_ERROR);
-	}
+    return patterns;
+  } catch (error) {
+    logger.error("Error listing Strudel patterns:", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+      userId,
+    });
+    throw new AssistantError("Failed to list Strudel patterns", ErrorType.UNKNOWN_ERROR);
+  }
 }

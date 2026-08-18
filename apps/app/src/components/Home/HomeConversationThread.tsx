@@ -16,7 +16,7 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
   const user = useChatStore((state) => state.user);
   const userSettings = useChatStore((state) => state.userSettings);
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
-  const { data: conversations = [], isLoading: areConversationsLoading } = useChats();
+  const { data: conversations, isLoading: areConversationsLoading } = useChats();
   const [welcomeSeed, setWelcomeSeed] = useState<number | null>(null);
 
   useEffect(() => {

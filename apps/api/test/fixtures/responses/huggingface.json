@@ -1,23 +1,23 @@
 {
-	"object": "chat.completion",
-	"id": "",
-	"created": 1734111932,
-	"model": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
-	"system_fingerprint": "2.4.2-dev0-sha-5df8059",
-	"choices": [
-		{
-			"index": 0,
-			"message": {
-				"role": "assistant",
-				"content": "Based on current trends, popular gifts for the family include thoughtful toys such as scratch-off lottery tickets, fusion of decor and games like puzzle games that open into fun toys, and personalized items."
-			},
-			"logprobs": null,
-			"finish_reason": "stop"
-		}
-	],
-	"usage": {
-		"prompt_tokens": 337,
-		"completion_tokens": 40,
-		"total_tokens": 377
-	}
+  "object": "chat.completion",
+  "id": "",
+  "created": 1734111932,
+  "model": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+  "system_fingerprint": "2.4.2-dev0-sha-5df8059",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Based on current trends, popular gifts for the family include thoughtful toys such as scratch-off lottery tickets, fusion of decor and games like puzzle games that open into fun toys, and personalized items."
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 337,
+    "completion_tokens": 40,
+    "total_tokens": 377
+  }
 }

@@ -316,7 +316,7 @@ export function useTranscription({
                     setTimeout(() => {
                       if (isTranscribing) {
                         stopTranscription(false);
-                        startTranscription();
+                        void startTranscription();
                       }
                     }, RETRY_DELAY);
                   } else {
@@ -450,7 +450,7 @@ export function useTranscription({
 
     if (audioContextRef.current?.state !== "closed") {
       try {
-        audioContextRef.current?.suspend();
+        void audioContextRef.current?.suspend();
       } catch (err) {
         console.error("Error suspending audio context:", err);
       }

@@ -102,7 +102,7 @@ export function PodcastDetailView({ podcast, onDownloadTranscript }: PodcastDeta
                 ) : (
                   <TranscriptViewer
                     transcript={podcast.transcript}
-                    speakerNames={podcast.transcript.segments.reduce(
+                    speakerNames={podcast.transcript.segments.reduce<Record<string, string>>(
                       (acc, segment, index) => {
                         const speakerId = segment.speaker ?? `Segment ${index + 1}`;
 
@@ -116,7 +116,7 @@ export function PodcastDetailView({ podcast, onDownloadTranscript }: PodcastDeta
 
                         return acc;
                       },
-                      {} as Record<string, string>,
+                      {},
                     )}
                   />
                 )}

@@ -1,54 +1,54 @@
 import { sanitiseInput } from "~/lib/chat/utils";
-import { getAuxiliarySearchProvider } from "~/lib/providers/models";
 import { getSearchProvider } from "~/lib/providers/capabilities/search";
+import { getAuxiliarySearchProvider } from "~/lib/providers/models";
 import type { IEnv, IFunctionResponse, IUser, SearchOptions, SearchProviderName } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 type WebSearchRequest = {
-	env: IEnv;
-	query: string;
-	user?: IUser;
-	provider?: SearchProviderName;
-	options?: SearchOptions;
+  env: IEnv;
+  query: string;
+  user?: IUser;
+  provider?: SearchProviderName;
+  options?: SearchOptions;
 };
 
 export const handleWebSearch = async (req: WebSearchRequest): Promise<IFunctionResponse> => {
-	const { query: rawQuery, env, provider, options, user } = req;
+  const { query: rawQuery, env, provider, options, user } = req;
 
-	const query = sanitiseInput(rawQuery);
+  const query = sanitiseInput(rawQuery);
 
-	if (!query) {
-		throw new AssistantError("Missing query", ErrorType.PARAMS_ERROR);
-	}
+  if (!query) {
+    throw new AssistantError("Missing query", ErrorType.PARAMS_ERROR);
+  }
 
-	if (query.length > 4096) {
-		throw new AssistantError("Query is too long", ErrorType.PARAMS_ERROR);
-	}
+  if (query.length > 4096) {
+    throw new AssistantError("Query is too long", ErrorType.PARAMS_ERROR);
+  }
 
-	const providerToUse = await getAuxiliarySearchProvider(env, user, provider);
-	const searchProvider = getSearchProvider(providerToUse, { env, user });
-	const response = await searchProvider.performWebSearch(query, options);
+  const providerToUse = await getAuxiliarySearchProvider(env, user, provider);
+  const searchProvider = getSearchProvider(providerToUse, { env, user });
+  const response = await searchProvider.performWebSearch(query, options);
 
-	if (!response) {
-		throw new AssistantError("No response from the web search service");
-	}
+  if (!response) {
+    throw new AssistantError("No response from the web search service");
+  }
 
-	const resultsArray =
-		"results" in response && Array.isArray(response.results) ? response.results : [];
+  const resultsArray =
+    "results" in response && Array.isArray(response.results) ? response.results : [];
 
-	const warning =
-		providerToUse === "duckduckgo"
-			? "Results may be limited when using DuckDuckGo. Upgrade to a Pro plan for richer web search results."
-			: undefined;
+  const warning =
+    providerToUse === "duckduckgo"
+      ? "Results may be limited when using DuckDuckGo. Upgrade to a Pro plan for richer web search results."
+      : undefined;
 
-	return {
-		status: "success",
-		content: "Search completed",
-		data: {
-			provider: providerToUse,
-			result: response,
-			results: resultsArray,
-			warning,
-		},
-	};
+  return {
+    status: "success",
+    content: "Search completed",
+    data: {
+      provider: providerToUse,
+      result: response,
+      results: resultsArray,
+      warning,
+    },
+  };
 };

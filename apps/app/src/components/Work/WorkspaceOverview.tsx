@@ -99,7 +99,7 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
         isLoading={deleteWorkspace.isPending}
         onConfirm={async () => {
           await deleteWorkspace.mutateAsync(workspaceId);
-          navigate("/work", { replace: true });
+          void navigate("/work", { replace: true });
         }}
       >
         {deleteWorkspace.error && (

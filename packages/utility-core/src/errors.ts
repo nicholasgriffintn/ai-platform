@@ -1,11 +1,11 @@
 export function getErrorMessage(error: unknown, fallback: string): string {
-	if (error instanceof Error && error.message) {
-		return error.message;
-	}
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
 
-	if (typeof error === "string" && error.trim()) {
-		return error;
-	}
+  if (typeof error === "string" && error.trim()) {
+    return error;
+  }
 
-	return fallback;
+  return fallback;
 }

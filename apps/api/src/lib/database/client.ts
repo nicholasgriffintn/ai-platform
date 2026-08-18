@@ -6,5 +6,5 @@ import * as schema from "./schema";
 export type DatabaseClient = DrizzleD1Database<typeof schema>;
 
 export function createDatabaseClient(database: D1Database): DatabaseClient {
-	return drizzle(database, { schema });
+  return drizzle(database, { schema });
 }

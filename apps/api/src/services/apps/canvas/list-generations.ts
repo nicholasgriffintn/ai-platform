@@ -1,28 +1,29 @@
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv } from "~/types";
-import type { CanvasGenerationListItem, CanvasMode } from "./types";
+
 import { mapCanvasGenerationRecord } from "./records";
+import type { CanvasGenerationListItem, CanvasMode } from "./types";
 
 export const listCanvasGenerations = async ({
-	context,
-	env,
-	userId,
-	mode,
+  context,
+  env,
+  userId,
+  mode,
 }: {
-	context?: ServiceContext;
-	env?: IEnv;
-	userId: number;
-	mode?: CanvasMode;
+  context?: ServiceContext;
+  env?: IEnv;
+  userId: number;
+  mode?: CanvasMode;
 }): Promise<CanvasGenerationListItem[]> => {
-	const serviceContext = resolveServiceContext({ context, env });
+  const serviceContext = resolveServiceContext({ context, env });
 
-	const records = await serviceContext.repositories.outputs.listPersonalOutputs(userId, "canvas");
+  const records = await serviceContext.repositories.outputs.listPersonalOutputs(userId, "canvas");
 
-	const mapped = records.map(mapCanvasGenerationRecord);
+  const mapped = records.map(mapCanvasGenerationRecord);
 
-	if (!mode) {
-		return mapped;
-	}
+  if (!mode) {
+    return mapped;
+  }
 
-	return mapped.filter((generation) => generation.mode === mode);
+  return mapped.filter((generation) => generation.mode === mode);
 };

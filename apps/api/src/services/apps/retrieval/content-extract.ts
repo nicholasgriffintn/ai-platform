@@ -9,46 +9,46 @@ import type { ContentExtractParams, ContentExtractResult } from "./types/content
 export type { ContentExtractParams, ContentExtractResult };
 
 export const extractContent = async (
-	params: ContentExtractParams,
-	req: IRequest,
+  params: ContentExtractParams,
+  req: IRequest,
 ): Promise<ContentExtractResult> => {
-	try {
-		const provider = resolveContentExtractProvider(params, req);
-		const extracted =
-			provider === "cloudflare"
-				? await extractWithCloudflare(params, req)
-				: await extractWithTavily(params, req);
+  try {
+    const provider = resolveContentExtractProvider(params, req);
+    const extracted =
+      provider === "cloudflare"
+        ? await extractWithCloudflare(params, req)
+        : await extractWithTavily(params, req);
 
-		const result: ContentExtractResult = {
-			status: "success",
-			data: {
-				extracted,
-			},
-		};
+    const result: ContentExtractResult = {
+      status: "success",
+      data: {
+        extracted,
+      },
+    };
 
-		await maybeVectorizeExtractedContent({
-			params,
-			req,
-			provider,
-			extracted,
-			result,
-		});
+    await maybeVectorizeExtractedContent({
+      params,
+      req,
+      provider,
+      extracted,
+      result,
+    });
 
-		return result;
-	} catch (error) {
-		const errorText = String(error);
-		const errorMessage = error instanceof Error ? error.message : errorText;
+    return result;
+  } catch (error) {
+    const errorText = String(error);
+    const errorMessage = error instanceof Error ? error.message : errorText;
 
-		if (errorMessage === "Tavily API key not configured") {
-			return {
-				status: "error",
-				error: errorMessage,
-			};
-		}
+    if (errorMessage === "Tavily API key not configured") {
+      return {
+        status: "error",
+        error: errorMessage,
+      };
+    }
 
-		return {
-			status: "error",
-			error: `Error extracting content: ${errorText.replace(/^Error:\s*/, "Error: ")}`,
-		};
-	}
+    return {
+      status: "error",
+      error: `Error extracting content: ${errorText.replace(/^Error:\s*/, "Error: ")}`,
+    };
+  }
 };

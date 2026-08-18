@@ -1,8 +1,8 @@
 {
-	"extends": "./react-library.json",
-	"compilerOptions": {
-		"allowImportingTsExtensions": true,
-		"noEmit": true,
-		"useDefineForClassFields": true
-	}
+  "extends": "./react-library.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "useDefineForClassFields": true
+  }
 }

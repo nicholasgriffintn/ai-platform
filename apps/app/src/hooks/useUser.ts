@@ -3,80 +3,80 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiService } from "~/lib/api/api-service";
 
 export const USER_QUERY_KEYS = {
-	providerSettings: ["user", "provider-settings"],
-	providerSyncStatus: ["user", "provider-sync-status"],
+  providerSettings: ["user", "provider-settings"],
+  providerSyncStatus: ["user", "provider-sync-status"],
 } as const;
 
 export function useUser(options?: { enabled?: boolean }) {
-	const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-	const { data: providerSettings, isLoading: isLoadingProviderSettings } = useQuery({
-		queryKey: USER_QUERY_KEYS.providerSettings,
-		queryFn: () => apiService.getProviderSettings(),
-		enabled: options?.enabled ?? true,
-	});
-	const { data: providerSyncStatus, isLoading: isLoadingProviderSyncStatus } = useQuery({
-		queryKey: USER_QUERY_KEYS.providerSyncStatus,
-		queryFn: () => apiService.getProviderSyncStatus(),
-		enabled: options?.enabled ?? true,
-	});
+  const { data: providerSettings, isLoading: isLoadingProviderSettings } = useQuery({
+    queryKey: USER_QUERY_KEYS.providerSettings,
+    queryFn: () => apiService.getProviderSettings(),
+    enabled: options?.enabled ?? true,
+  });
+  const { data: providerSyncStatus, isLoading: isLoadingProviderSyncStatus } = useQuery({
+    queryKey: USER_QUERY_KEYS.providerSyncStatus,
+    queryFn: () => apiService.getProviderSyncStatus(),
+    enabled: options?.enabled ?? true,
+  });
 
-	const storeProviderApiKeyMutation = useMutation({
-		mutationFn: async ({
-			providerId,
-			apiKey,
-			secretKey,
-			configuration,
-		}: {
-			providerId: string;
-			apiKey: string;
-			secretKey?: string;
-			configuration?: Record<string, unknown>;
-		}) => {
-			await apiService.storeProviderApiKey(providerId, apiKey, secretKey, configuration);
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: USER_QUERY_KEYS.providerSettings,
-			});
-		},
-	});
+  const storeProviderApiKeyMutation = useMutation({
+    mutationFn: async ({
+      providerId,
+      apiKey,
+      secretKey,
+      configuration,
+    }: {
+      providerId: string;
+      apiKey: string;
+      secretKey?: string;
+      configuration?: Record<string, unknown>;
+    }) => {
+      await apiService.storeProviderApiKey(providerId, apiKey, secretKey, configuration);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: USER_QUERY_KEYS.providerSettings,
+      });
+    },
+  });
 
-	const syncProvidersMutation = useMutation({
-		mutationFn: async () => {
-			await apiService.syncProviders();
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: USER_QUERY_KEYS.providerSettings,
-			});
-			queryClient.invalidateQueries({
-				queryKey: USER_QUERY_KEYS.providerSyncStatus,
-			});
-		},
-	});
+  const syncProvidersMutation = useMutation({
+    mutationFn: async () => {
+      await apiService.syncProviders();
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: USER_QUERY_KEYS.providerSettings,
+      });
+      void queryClient.invalidateQueries({
+        queryKey: USER_QUERY_KEYS.providerSyncStatus,
+      });
+    },
+  });
 
-	const deleteProviderApiKeyMutation = useMutation({
-		mutationFn: async ({ providerId }: { providerId: string }) => {
-			await apiService.deleteProviderApiKey(providerId);
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: USER_QUERY_KEYS.providerSettings,
-			});
-		},
-	});
+  const deleteProviderApiKeyMutation = useMutation({
+    mutationFn: async ({ providerId }: { providerId: string }) => {
+      await apiService.deleteProviderApiKey(providerId);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: USER_QUERY_KEYS.providerSettings,
+      });
+    },
+  });
 
-	return {
-		providerSettings: providerSettings ?? [],
-		isLoadingProviderSettings,
-		providerSyncRequired: providerSyncStatus?.required ?? false,
-		isLoadingProviderSyncStatus,
-		storeProviderApiKey: storeProviderApiKeyMutation.mutateAsync,
-		isStoringProviderApiKey: storeProviderApiKeyMutation.isPending,
-		syncProviders: syncProvidersMutation.mutate,
-		isSyncingProviders: syncProvidersMutation.isPending,
-		deleteProviderApiKey: deleteProviderApiKeyMutation.mutateAsync,
-		isDeletingProviderApiKey: deleteProviderApiKeyMutation.isPending,
-	};
+  return {
+    providerSettings: providerSettings ?? [],
+    isLoadingProviderSettings,
+    providerSyncRequired: providerSyncStatus?.required ?? false,
+    isLoadingProviderSyncStatus,
+    storeProviderApiKey: storeProviderApiKeyMutation.mutateAsync,
+    isStoringProviderApiKey: storeProviderApiKeyMutation.isPending,
+    syncProviders: syncProvidersMutation.mutate,
+    isSyncingProviders: syncProvidersMutation.isPending,
+    deleteProviderApiKey: deleteProviderApiKeyMutation.mutateAsync,
+    isDeletingProviderApiKey: deleteProviderApiKeyMutation.isPending,
+  };
 }

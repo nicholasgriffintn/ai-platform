@@ -6,30 +6,30 @@ import type { WeatherCondition, WeatherDailyForecast, WeatherHourlyForecast } fr
 export type WeatherIcon = ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
 
 export function getWeatherIcon(
-	condition: WeatherCondition | WeatherHourlyForecast | WeatherDailyForecast | undefined,
+  condition: WeatherCondition | WeatherHourlyForecast | WeatherDailyForecast | undefined,
 ): WeatherIcon {
-	const main = condition && "main" in condition ? condition.main : "";
-	const text = `${condition?.description ?? ""} ${main ?? ""}`.toLowerCase();
+  const main = condition && "main" in condition ? condition.main : "";
+  const text = `${condition?.description ?? ""} ${main ?? ""}`.toLowerCase();
 
-	if (text.includes("thunder")) {
-		return CloudLightning;
-	}
+  if (text.includes("thunder")) {
+    return CloudLightning;
+  }
 
-	if (text.includes("snow") || text.includes("sleet")) {
-		return CloudSnow;
-	}
+  if (text.includes("snow") || text.includes("sleet")) {
+    return CloudSnow;
+  }
 
-	if (text.includes("rain")) {
-		return CloudRain;
-	}
+  if (text.includes("rain")) {
+    return CloudRain;
+  }
 
-	if (text.includes("drizzle")) {
-		return CloudDrizzle;
-	}
+  if (text.includes("drizzle")) {
+    return CloudDrizzle;
+  }
 
-	if (text.includes("cloud")) {
-		return Cloud;
-	}
+  if (text.includes("cloud")) {
+    return Cloud;
+  }
 
-	return Sun;
+  return Sun;
 }

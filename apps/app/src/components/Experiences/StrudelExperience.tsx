@@ -186,7 +186,7 @@ function PatternEditor({
               tags,
             });
 
-            navigate(`${basePath}/${created.id}`, { replace: true });
+            void navigate(`${basePath}/${created.id}`, { replace: true });
           }
         }}
         canDelete={!!patternId}
@@ -197,7 +197,7 @@ function PatternEditor({
           }
 
           await remove.mutateAsync(patternId);
-          navigate(basePath);
+          void navigate(basePath);
         }}
         requiresSignIn={isAuthenticationError(mutationError)}
         onSignIn={() => setShowLoginModal(true)}

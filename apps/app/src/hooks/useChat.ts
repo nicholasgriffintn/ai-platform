@@ -244,7 +244,7 @@ export function useDeleteAllRemoteChats() {
       await apiService.deleteAllConversations();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY, "remote"] });
+      void queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY, "remote"] });
     },
   });
 }

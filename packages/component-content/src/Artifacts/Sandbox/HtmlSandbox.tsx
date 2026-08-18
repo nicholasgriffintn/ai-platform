@@ -72,7 +72,7 @@ export function HtmlSandbox({
       }
     };
 
-    prepareDocument();
+    void prepareDocument();
 
     return () => {
       isMounted = false;

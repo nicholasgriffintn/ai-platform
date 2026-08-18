@@ -1,231 +1,231 @@
 {
-	"completed_at": "2024-11-15T19:39:16.947816Z",
-	"created_at": "2024-11-15T19:36:55.322000Z",
-	"data_removed": false,
-	"error": null,
-	"id": "pgj9vggs39rgj0ck65a88bk43w",
-	"input": {
-		"file": "https://assistant-assets.nickgriffin.uk/podcasts/0.bikvdc15u5c/recording.mp3",
-		"prompt": "LLama, AI, Meta.",
-		"language": "en",
-		"translate": false,
-		"num_speakers": 2,
-		"group_segments": true,
-		"offset_seconds": 0,
-		"transcript_output_format": "segments_only"
-	},
-	"logs": "ffmpeg version 4.4.2-0ubuntu0.22.04.1 Copyright (c) 2000-2021 the FFmpeg developers\nbuilt with gcc 11 (Ubuntu 11.2.0-19ubuntu1)\nconfiguration: --prefix=/usr --extra-version=0ubuntu0.22.04.1 --toolchain=hardened --libdir=/usr/lib/x86_64-linux-gnu --incdir=/usr/include/x86_64-linux-gnu --arch=amd64 --enable-gpl --disable-stripping --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sdl2 --enable-pocketsphinx --enable-librsvg --enable-libmfx --enable-libdc1394 --enable-libdrm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libx264 --enable-shared\nlibavutil      56. 70.100 / 56. 70.100\nlibavcodec     58.134.100 / 58.134.100\nlibavformat    58. 76.100 / 58. 76.100\nlibavdevice    58. 13.100 / 58. 13.100\nlibavfilter     7.110.100 /  7.110.100\nlibswscale      5.  9.100 /  5.  9.100\nlibswresample   3.  9.100 /  3.  9.100\nlibpostproc    55.  9.100 / 55.  9.100\nInput #0, mp3, from '/tmp/tmpcmyk3nlnrecording.mp3':\nMetadata:\nmajor_brand     : mp42\nminor_version   : 0\ncompatible_brands: isommp42\nencoder         : Lavf58.29.100\nDuration: 00:25:07.40, start: 0.025057, bitrate: 192 kb/s\nStream #0:0: Audio: mp3, 44100 Hz, stereo, fltp, 192 kb/s\nMetadata:\nencoder         : Lavc58.54\nStream mapping:\nStream #0:0 -> #0:0 (mp3 (mp3float) -> pcm_s16le (native))\nPress [q] to stop, [?] for help\nOutput #0, wav, to 'temp-1731699415891977904.wav':\nMetadata:\nmajor_brand     : mp42\nminor_version   : 0\ncompatible_brands: isommp42\nISFT            : Lavf58.76.100\nStream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 16000 Hz, mono, s16, 256 kb/s\nMetadata:\nencoder         : Lavc58.134.100 pcm_s16le\nsize=       0kB time=00:00:00.00 bitrate=N/A speed=N/A\nsize=   13824kB time=00:07:26.95 bitrate= 253.4kbits/s speed= 894x\nsize=   27904kB time=00:14:55.39 bitrate= 255.3kbits/s speed= 895x\nsize=   41984kB time=00:22:23.50 bitrate= 256.0kbits/s speed= 896x\nsize=   47105kB time=00:25:07.34 bitrate= 256.0kbits/s speed= 898x\nvideo:0kB audio:47105kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.000162%\nStarting transcribing\nFinished with transcribing, took 119.59 seconds\nStarting diarization\nFinished with diarization, took 19.727 seconds\nStarting merging\nFinished with merging, took 0.0035655 seconds\nStarting cleaning\nFinished with cleaning, took 0.00024724 seconds\nProcessing time: 139.32 seconds\ndone with inference",
-	"metrics": {
-		"predict_time": 141.523026893,
-		"total_time": 141.625816
-	},
-	"output": {
-		"language": "en",
-		"segments": [
-			{
-				"end": 38.78,
-				"text": "Let me ask you about AI. It seems like this year, for the entirety of the human civilization, is an interesting year for the development of artificial intelligence. A lot of interesting stuff is happening. So Meta is a big part of that. Meta has developed LLama, which is a 65 billion parameter model. There's a lot of interesting questions I can ask here, one of which has to do with open source. But first, can you tell the story of developing of this model and making the complicated decision of how to release it?",
-				"start": 2.67,
-				"speaker": "SPEAKER_01",
-				"avg_logprob": -0.07731827146009258
-			},
-			{
-				"end": 255.27,
-				"text": "Yeah, sure. I think you're right, first of all, that in the last year, there have been a bunch of advances on scaling up these large transformer models. So there's the language equivalent of it with large language models. There's sort of the image generation equivalent with these large diffusion models. There's a lot of fundamental research that's gone into this. And Meta has taken the approach of being quite open and academic in our development of AI. Part of this is we want to have the best people in the world researching this. And a lot of the best people want to know that they're going to be able to share their work. So that's part of the deal that we have, is that we can get... If you're one of the top AI researchers in the world and come here, you can get access to kind of industry scale infrastructure. And part of our ethos is that we want to share what's invented broadly. We do that with a lot of the different AI tools that we create. And LLama is the language model that our research team made. And we did a limited open source release for it, right? Right. So we wanted for researchers to be able to use it. But responsibility and getting safety right on these is very important. So we didn't think that... For the first one, there were a bunch of questions around whether we should be releasing this commercially. So we kind of punted on that for V1 of LLama and just released it from research. Now, obviously, by releasing it for research, it's out there. But companies know that they're not supposed to kind of put it into the market. And we're working on the follow-up models for this and thinking through how exactly this should work for follow-on now that we've had time to work on a lot more of the safety and the pieces around that. But overall, I mean, this is... I just kind of think that it would be good if there were a lot of different folks who had the ability to build state-of-the-art... Right. ...technology here. You know, it's... And not just a small number of big companies. But to train one of these AI models, the state-of-the-art models, is... You know, it just takes, you know, hundreds of millions of dollars of infrastructure, right? So there are not that many organizations in the world that can do that at the biggest scale today. And, you know, it gets more efficient every day. So I do think that that will be a big thing. It will be available to more folks over time. But I just think, like, there's all this innovation out there that people can create. And I just think that we'll also learn a lot by seeing what the whole community of students and hackers and startups and different folks build with this. And that's kind of been how we've approached this. And it's also how we've done a lot of our infrastructure. And we took our whole data center design and our server design, and we built this open compute project where we just made that public. And part of the theory was, like, all right, if we make it so that more people can use this server design, then that'll enable more innovation. It'll also make the server design more efficient. And that'll make our business more efficient, too. So that's worked. And we've just done this with a lot of our infrastructure.",
-				"start": 39.18,
-				"speaker": "SPEAKER_00",
-				"avg_logprob": -0.05644745715371855
-			},
-			{
-				"end": 279.76,
-				"text": "So for people who don't know, you did the limited release, I think, in February of this year of Llama. And it got, quote-unquote, leaked, meaning, like, it escaped. Right. The limited release aspect. But it was, you know, that's something you probably anticipated, given that it's just released to researchers.",
-				"start": 256.15,
-				"speaker": "SPEAKER_01",
-				"avg_logprob": -0.09090909287949239
-			},
-			{
-				"end": 280.56,
-				"text": "Well, we shared it with researchers.",
-				"start": 279.76,
-				"speaker": "SPEAKER_00",
-				"avg_logprob": -0.12141047163052601
-			},
-			{
-				"end": 321.7,
-				"text": "Right. So it's just trying to make sure that there's, like, a slow release. Yeah. But from there, I just would love to get your comment on what happened next, which is, like, there's a very vibrant open source community that just built stuff on top of it. There's Llama CPP. Basically, stuff that makes it more efficient to run on smaller computers. Yep. There's combining with reinforcement learning with human feedback. So some of the different interesting fine-tuning mechanisms. There's then also, like, fine-tuning in GPT-3 generations. There's a lot of GPT-4-all, Alpaca, Colossal AI. All these kinds of models just kind of spring up, like, run on top of it. Yeah.",
-				"start": 280.78,
-				"speaker": "SPEAKER_01",
-				"avg_logprob": -0.12141047163052601
-			},
-			{
-				"end": 363.24,
-				"text": "What do you think of that? No, I think it's been really... It's been really neat to see. I mean, there's been folks who are getting it to run on local devices, right? So if you're an individual who just, you know, wants to experiment, you know, with this at home, you probably don't have a large budget to get access to, like, a large amount of cloud compute. So getting it to run on your local laptop, you know, is pretty good, right? And pretty relevant. And then there were things like, yeah, Llama CPP re-implemented it more efficiently. So, you know, now even when we run... We run our own versions of it, we can do it on way less compute and it's just way more efficient, save a lot of money for everyone who uses this. So that is good.",
-				"start": 321.7,
-				"speaker": "SPEAKER_00",
-				"avg_logprob": -0.16451540340979895
-			},
-			{
-				"end": 520.6,
-				"text": "I do think it's worth calling out that because this was a relatively early release, Llama isn't quite as on the frontier as, for example, the biggest OpenAI models or the biggest Google models, right? I mean, you mentioned... That the largest Llama model that we released had 65 billion parameters and no one knows, you know, I guess outside of OpenAI, exactly what the specs are for GPT-4. But I think the, you know, my understanding is it's like 10 times bigger. And I think Google's Palm model is also, I think, has about 10 times as many parameters. Now, the Llama models are very efficient, so they perform well for something that's around 65 billion parameters. So for me, that was also part of this. Because there's this whole debate around, you know, is it good for everyone in the world to have access to the most frontier AI models? And I think as the AI models start approaching something that's like a super human intelligence, I think that that's a bigger question that we'll have to grapple with. But right now, I mean, these are still, you know, very basic tools. They're, you know, they're powerful in the sense that, you know, a lot of open source software like databases or web servers can enable a lot of pretty important things. But I don't think anyone looks at the, you know, the current generation of Llama and thinks it's, you know, anywhere near a super intelligence. So I think that a bunch of those questions around, like, is it good to kind of get out there? I think at this stage, surely, you want more researchers working on it for all the reasons that open source software has a lot of advantages. And we talked about efficiency before. But another one is just open source software tends to be more secure because you have more people looking at it openly and scrutinizing it and finding holes in it. And that makes it more safe. So I think at this point, it's more, I think it's generally agreed upon that open source software is generally more secure and safer than things that are kind of developed in a silo where people try to get through security through obscurity. So I think that for the scale of what? We're seeing now with AI, I think we're more likely to get to, you know, good alignment and good understanding of kind of what needs to do to make this work well by having it be open source. And that's something that I think is quite good to have out there and happening publicly at this point.",
-				"start": 365.3,
-				"speaker": "SPEAKER_00",
-				"avg_logprob": -0.09319760266578558
-			},
-			{
-				"end": 577.84,
-				"text": "Meta released a lot of models as open source. So the massively multilingual speech model, the image buying model, I mean, I'll ask you questions about those. But the point is, you've open source quite a lot, you've been spearheading the open source movement. Where's, that's really positive, inspiring to see from one angle from the research angle, of course, as folks who are really terrified about the existential threat of artificial intelligence. And those folks will say that, you know, you have to be careful about the open sourcing step. But what, where do you see the future of open source here? As part of Meta? The tension here is, do you want to release the magic sauce? That's one tension. And the other one is, do you want to put a powerful tool in the hands of bad actors, even though it probably has a huge amount of positive impact also?",
-				"start": 520.76,
-				"speaker": "SPEAKER_01",
-				"avg_logprob": -0.20204740993935486
-			},
-			{
-				"end": 624.8,
-				"text": "Yeah. I mean, again, I think for the stage that we're at in the development of AI, I don't think anyone looks at the current state of things and thinks that this is super intelligence. And, you know, the models that we're talking about for the llama models here are, you know, Generally, an order of magnitude smaller than what OpenAI or Google are doing. So I think that, at least for the stage that we're in now, the equity is balanced strongly, in my view, towards doing this more openly. I think if you got something that was closer to superintelligence, then I think you'd have to discuss that more and think through that a lot more. And we haven't made a decision yet as to what we would do if we were in that position. But I think there's a good chance that we're pretty far off from that position.",
-				"start": 578.84,
-				"speaker": "SPEAKER_00",
-				"avg_logprob": -0.30288788167441766
-			},
-			{
-				"end": 700.58,
-				"text": "So I'm certainly not saying that the position that we're taking on this now applies to every single thing that we would ever do. And certainly inside the company, we probably do more open-source work than most of the other big tech companies. But we also don't open-source everything. A lot of the core app code for WhatsApp or Instagram or something. I mean, we're not open-sourcing that. It's not like a general enough piece of software that would be useful for a lot of people to do different things. Whereas the software that we do, whether it's like an open-source server design or basically things like Memcache, like a good, it was probably our earliest project that I worked on. It was probably one of the last things that I coded and led directly for the company. But basically. There's like caching tool for quick data retrieval. These are things that are just broadly useful across like anything that you want to build. And I think that some of the language models now have that feel as well as some of the other things that we're building, like the translation tool that you just referenced.",
-				"start": 627.36,
-				"speaker": "SPEAKER_00",
-				"avg_logprob": -0.11478365341631266
-			},
-			{
-				"end": 724.76,
-				"text": "So text-to-speech and speech-to-text, you've expanded it from around 100 languages to more than 1,100 languages. Yeah. And you can identify more than, the model can identify more. You can identify more than 4,000 spoken languages, which is 40 times more than any known previous technology. To me, that's really, really, really exciting in terms of connecting the world, breaking down barriers that language creates. Yeah.",
-				"start": 700.92,
-				"speaker": "SPEAKER_01",
-				"avg_logprob": -0.16633064912692194
-			},
-			{
-				"end": 751.72,
-				"text": "I think being able to translate between all of these different pieces in real time, this has been a kind of common sci-fi idea that we'd all have, you know, whether it's, I don't know, an earbud or glasses or something that can help translate in real time. Yeah. Um, between all these different languages. And that's one that I think technology is basically delivering now. So I think, yeah, I think that's pretty, pretty exciting.",
-				"start": 724.82,
-				"speaker": "SPEAKER_00",
-				"avg_logprob": -0.13716700099042203
-			},
-			{
-				"end": 764.16,
-				"text": "Uh, you mentioned the next version of Lama. What can you say about the next version of Lama? What can you say about like, what, uh, what were you working on in terms of release in terms of the vision for that?",
-				"start": 752.1,
-				"speaker": "SPEAKER_01",
-				"avg_logprob": -0.25139410961839487
-			},
-			{
-				"end": 888.63,
-				"text": "Well, a lot of what we're doing is taking the first version, which was primarily, you know, this research version and trying to now build a version that has all of the latest state-of-the-art safety precautions built in. Um, and, and we're, um, we're using some more data to train it, um, from across our services, but, but a lot of the, the work that we're doing internally is really just focused on making sure that this is, um, you know, as aligned and responsible as, as possible. And, you know, we're building a lot of our own. You know, we're talking about kind of the open source infrastructure, but, you know, the, the main thing that we focus on building here, you know, a lot of product experience is to help people connect and express themselves. So, you know, we're going to, I've, I've talked about a bunch of this stuff, but, um, then you'll have, you know, an assistant that you can talk to in WhatsApp. Um, you know, I think, I think in the future, every creator will, will have kind of an AI agent that can kind of act on their behalf that their fans can talk to. I, I want to get to the point where every small. Business basically has an AI agent that people can talk to for, you know, to do commerce and customer support and things like that. So they're going to be all these different things and Lama or the language model underlying this is, is basically going to be the engine that powers that the reason to open source it is that, um, as, as we did with, um, with the, the first version is that it, uh, you know, basically it, it unlocks a lot of innovation in the ecosystem. We'll, we'll make. Our products better as well. Um, and also gives us a lot of valuable feedback on security and safety, which is important for making this good. But yeah, I mean the, the, the work that we're doing to advance the infrastructure, it's, um, it's basically at this point, taking it beyond a research project into something, which is ready to be kind of core infrastructure, not only for our own products, but, um, you know, hopefully for, for a lot of other things out there too.",
-				"start": 764.66,
-				"speaker": "SPEAKER_00",
-				"avg_logprob": -0.25139410961839487
-			},
-			{
-				"end": 900.97,
-				"text": "Do you think the Lama or the language model underlying that. Version. Version two will be open-sourced your, you have internal debate around that, the pros and cons and so on.",
-				"start": 888.73,
-				"speaker": "SPEAKER_01",
-				"avg_logprob": -0.16747685538397894
-			},
-			{
-				"end": 920.64,
-				"text": "This is, I mean, we were talking about the debates that we have internally and I think, um, I think the question is how to do it. Right. I mean, it's, I think we, you know, we, we did the research license for V1 and, and I think the, the, the big thing that we're, that we're thinking about is, is basically like, what's the, what's the right, the right way.",
-				"start": 901.15,
-				"speaker": "SPEAKER_00",
-				"avg_logprob": -0.17482517711766116
-			},
-			{
-				"end": 924.92,
-				"text": "So there was a leak that happened. I don't know if you can comment on it for the V1.",
-				"start": 920.8,
-				"speaker": "SPEAKER_01",
-				"avg_logprob": -0.17482517711766116
-			},
-			{
-				"end": 1021.98,
-				"text": "You know, we released it as a research project, um, for researchers to be able to use, but in doing so we put it out there. So, um, you know, we were very clear that anyone who uses the code and the weights doesn't have a commercial license to put into products. And we've, we've generally seen people respect that, right. It's like, you don't have any reputable companies that are basically trying to put this into, into, um, their commercial products, but, but yeah, but by sharing it with. You know, so many researchers it's, it's, you know, it, it did leave the building. But, uh, what have you learned from that process that you might be able to apply to V2 about how to release it safely, effectively, uh, if, if you release it? Yeah, well, I mean, I think a lot of the feedback, like I said, is just around, you know, different things around, you know, how do you fine tune models to make them more aligned and safer? And you see all the different data recipes that, um, you know, you mentioned a lot of different. Projects that are based on this, I mean, there's one at Berkeley, there's, you know, it was just like all over and, um, and people have tried a lot of different things and we've tried a bunch of stuff internally. So kind of where we're, we're making progress here, but also we're able to learn from some of the best ideas in the community. And, you know, I think it, you know, we want to just continue, continue pushing that forward, but I don't have any news to announce if that's, if that's what you're, you're asking, I mean, this is, uh. A thing that we're, uh, we're still, we're still kind of, you know, actively working through the, the, the right way to move forward here.",
-				"start": 925.36,
-				"speaker": "SPEAKER_00",
-				"avg_logprob": -0.14755721736541935
-			},
-			{
-				"end": 1062.04,
-				"text": "The details of the secret sauce are still being developed. I see. Uh, can you comment on, what do you think of, uh, the thing that worked for GPT, which is the reinforcement learning with human feedback? So doing this alignment process, do you find it interesting? And as part of that, let me ask, cause I talked to Yann LeCun before talking to you today. He asked me to ask or suggested that I ask, do you think LLM fine-tuning will need to be crowd-sourced Wikipedia style, so crowd-sourcing, so this kind of idea of how to integrate the human in the fine-tuning of these foundation models?",
-				"start": 1022.04,
-				"speaker": "SPEAKER_01",
-				"avg_logprob": -0.15119830827067668
-			},
-			{
-				"end": 1170.15,
-				"text": "Yeah, I think that's a really interesting idea that I've talked to Yann about a bunch. Um, and you were talking about how. How do you basically train these models to be as, as safe and aligned and responsible as possible? And, you know, different groups out there who are doing development test different data recipes in fine-tuning, but this idea that you, that you just mentioned is that at the end of the day, instead of having kind of one group fine-tune some stuff and then another group, you know, produce a different fine-tuning recipe. And then us trying to figure out which one we think. Works. Works best to produce the most aligned model. Um, I, I do think that it would be nice if you could get to a point where you had a Wikipedia style collaborative way for a, a kind of a broader community to, um, to, to fine tune it as well. Now there's a lot of challenges in that both from an infrastructure and like a community management and product perspective about how you do that. So I, I haven't worked that out yet. Um, but, but I, as an idea, I think it's, it's quite compelling and I think it, it goes well with the ethos of open sourcing. The technology is also finding a way to have a, a kind of community driven, um, a community driven training of it. Um, but I think that there are a lot of questions on this in general, these, this, these questions around what's the, the best way to produce aligned AI models. It's very much a research area and it's one that I think we will need to make as much progress. On as the kind of core intelligence capability of the, of the, um, the models themselves.",
-				"start": 1062.46,
-				"speaker": "SPEAKER_00",
-				"avg_logprob": -0.24779041126520948
-			},
-			{
-				"end": 1201.65,
-				"text": "Well, I, I just did a conversation with Jimmy Wales, the founder of Wikipedia, and to me, Wikipedia is one of the greatest websites ever created. And it's kind of a miracle that it works. And I think it has to do with something that you mentioned, which is community. You have a small community of editors that somehow work together well, and they, uh, they handle very controversial, uh, topics and they handle it with balance and with grace, despite sort of the, um, attacks that will often happen.",
-				"start": 1170.65,
-				"speaker": "SPEAKER_01",
-				"avg_logprob": -0.19355679894315786
-			},
-			{
-				"end": 1217.95,
-				"text": "A lot of the time. I mean, it's not, it's, it has issues just like any other human system, but yes, I mean, the balance is, I mean, it's, uh, it's amazing what they've been able to achieve, but it's, it's also not perfect. And I think that that's, um, there's still a lot of challenges. Right.",
-				"start": 1201.71,
-				"speaker": "SPEAKER_00",
-				"avg_logprob": -0.11448506495487765
-			},
-			{
-				"end": 1286.7,
-				"text": "It's, uh, the more controversial the topic, the more, the more difficult, uh, the, um, the journey towards it is. I mean, the more you go towards quote unquote truth or knowledge or wisdom that Wikipedia tries to capture and the same way AI models, we need to be able to generate those same things, truth, knowledge, and wisdom. And how do you align those models that they generate, um, something that, uh, is closest to truth. There's these concerns about misinformation, all this kind of stuff that nobody can define. And this is something that we together. There's a human species I have to define, like what is truth and how to help AI systems generate that. And one of the things that language models do really well is generate convincing sounding things that can be completely wrong. And so how do you align it to be less wrong? And part of that is the training and part of that is the alignment and however you do the alignment stage. And just like you said, it's a very new and a very open research problem. Yeah.",
-				"start": 1217.97,
-				"speaker": "SPEAKER_01",
-				"avg_logprob": -0.11448506495487765
-			},
-			{
-				"end": 1330.38,
-				"text": "And I think that there's also a lot of questions about whether the current architecture for LLMs, as you continue scaling it, what happens. I mean, a lot of what's been exciting in the last year is that there's clearly a qualitative breakthrough where with some of the GPT models that OpenAI put out and that others have been able to do as well, I think it reached a kind of level of quality where people are like, wow, this feels different and like it's gonna be able to be the foundation for building a lot of awesome products and experiences and value. But I think that the other realization that people have is, wow, we just made a breakthrough.",
-				"start": 1286.8,
-				"speaker": "SPEAKER_00",
-				"avg_logprob": -0.1625267160244477
-			},
-			{
-				"end": 1374.18,
-				"text": "If there are other breakthroughs quickly, then I think that there's the sense that maybe we're closer to general intelligence. But I think that that idea is predicated on the idea that I think people believe that there's still generally a bunch of additional breakthroughs to make and that we just don't know how long it's gonna take to get there. And one view that some people have, this doesn't tend to be my view as much, is that simply scaling the current LLMs and getting to higher parameter count models by itself will get to something that is closer to general intelligence. But I don't know, I tend to think that there's probably more,",
-				"start": 1333.14,
-				"speaker": "SPEAKER_00",
-				"avg_logprob": -0.15434782816016157
-			},
-			{
-				"end": 1379.44,
-				"text": "if not more, fundamental steps that need to be taken along the way there.",
-				"start": 1376.54,
-				"speaker": "SPEAKER_00",
-				"avg_logprob": -0.4906965981400202
-			},
-			{
-				"end": 1409.3,
-				"text": "But still, the leap that's taken with this extra alignment step, is quite incredible, quite surprising to a lot of folks. And on top of that, when you start to have hundreds of millions of people potentially using a product that integrates that, you can start to see civilization-transforming effects before you achieve super, quote-unquote, super-intelligence. It could be super-transformation. Super transformative without being a super intelligence.",
-				"start": 1379.64,
-				"speaker": "SPEAKER_01",
-				"avg_logprob": -0.4906965981400202
-			},
-			{
-				"end": 1486.85,
-				"text": "to kind of build these breakthroughs into the products and experiences that we all use so we can actually benefit from them. But I don't know, I think that there's just a like an awesome amount of stuff to do. I mean, I think about like all of the small businesses or individual entrepreneurs out there who now we're going to be able to get help coding the things that they need to go build things or designing the things that they need or will be able to, you know, use these models to be able to do customer support for the people that they're, that they're serving, you know, over WhatsApp without having to, you know, I think that that's, that's just gonna be, I just think that this is all going to be super exciting. It's going to create better, better experiences for people and just unlock a ton of innovation and value.",
-				"start": 1437.11,
-				"speaker": "SPEAKER_00",
-				"avg_logprob": -0.07782451851436725
-			}
-		],
-		"num_speakers": 2
-	},
-	"started_at": "2024-11-15T19:36:55.424789Z",
-	"status": "succeeded",
-	"urls": {
-		"get": "https://api.replicate.com/v1/predictions/pgj9vggs39rgj0ck65a88bk43w",
-		"cancel": "https://api.replicate.com/v1/predictions/pgj9vggs39rgj0ck65a88bk43w/cancel"
-	},
-	"version": "cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f"
+  "completed_at": "2024-11-15T19:39:16.947816Z",
+  "created_at": "2024-11-15T19:36:55.322000Z",
+  "data_removed": false,
+  "error": null,
+  "id": "pgj9vggs39rgj0ck65a88bk43w",
+  "input": {
+    "file": "https://assistant-assets.nickgriffin.uk/podcasts/0.bikvdc15u5c/recording.mp3",
+    "prompt": "LLama, AI, Meta.",
+    "language": "en",
+    "translate": false,
+    "num_speakers": 2,
+    "group_segments": true,
+    "offset_seconds": 0,
+    "transcript_output_format": "segments_only"
+  },
+  "logs": "ffmpeg version 4.4.2-0ubuntu0.22.04.1 Copyright (c) 2000-2021 the FFmpeg developers\nbuilt with gcc 11 (Ubuntu 11.2.0-19ubuntu1)\nconfiguration: --prefix=/usr --extra-version=0ubuntu0.22.04.1 --toolchain=hardened --libdir=/usr/lib/x86_64-linux-gnu --incdir=/usr/include/x86_64-linux-gnu --arch=amd64 --enable-gpl --disable-stripping --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sdl2 --enable-pocketsphinx --enable-librsvg --enable-libmfx --enable-libdc1394 --enable-libdrm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libx264 --enable-shared\nlibavutil      56. 70.100 / 56. 70.100\nlibavcodec     58.134.100 / 58.134.100\nlibavformat    58. 76.100 / 58. 76.100\nlibavdevice    58. 13.100 / 58. 13.100\nlibavfilter     7.110.100 /  7.110.100\nlibswscale      5.  9.100 /  5.  9.100\nlibswresample   3.  9.100 /  3.  9.100\nlibpostproc    55.  9.100 / 55.  9.100\nInput #0, mp3, from '/tmp/tmpcmyk3nlnrecording.mp3':\nMetadata:\nmajor_brand     : mp42\nminor_version   : 0\ncompatible_brands: isommp42\nencoder         : Lavf58.29.100\nDuration: 00:25:07.40, start: 0.025057, bitrate: 192 kb/s\nStream #0:0: Audio: mp3, 44100 Hz, stereo, fltp, 192 kb/s\nMetadata:\nencoder         : Lavc58.54\nStream mapping:\nStream #0:0 -> #0:0 (mp3 (mp3float) -> pcm_s16le (native))\nPress [q] to stop, [?] for help\nOutput #0, wav, to 'temp-1731699415891977904.wav':\nMetadata:\nmajor_brand     : mp42\nminor_version   : 0\ncompatible_brands: isommp42\nISFT            : Lavf58.76.100\nStream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 16000 Hz, mono, s16, 256 kb/s\nMetadata:\nencoder         : Lavc58.134.100 pcm_s16le\nsize=       0kB time=00:00:00.00 bitrate=N/A speed=N/A\nsize=   13824kB time=00:07:26.95 bitrate= 253.4kbits/s speed= 894x\nsize=   27904kB time=00:14:55.39 bitrate= 255.3kbits/s speed= 895x\nsize=   41984kB time=00:22:23.50 bitrate= 256.0kbits/s speed= 896x\nsize=   47105kB time=00:25:07.34 bitrate= 256.0kbits/s speed= 898x\nvideo:0kB audio:47105kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.000162%\nStarting transcribing\nFinished with transcribing, took 119.59 seconds\nStarting diarization\nFinished with diarization, took 19.727 seconds\nStarting merging\nFinished with merging, took 0.0035655 seconds\nStarting cleaning\nFinished with cleaning, took 0.00024724 seconds\nProcessing time: 139.32 seconds\ndone with inference",
+  "metrics": {
+    "predict_time": 141.523026893,
+    "total_time": 141.625816
+  },
+  "output": {
+    "language": "en",
+    "segments": [
+      {
+        "end": 38.78,
+        "text": "Let me ask you about AI. It seems like this year, for the entirety of the human civilization, is an interesting year for the development of artificial intelligence. A lot of interesting stuff is happening. So Meta is a big part of that. Meta has developed LLama, which is a 65 billion parameter model. There's a lot of interesting questions I can ask here, one of which has to do with open source. But first, can you tell the story of developing of this model and making the complicated decision of how to release it?",
+        "start": 2.67,
+        "speaker": "SPEAKER_01",
+        "avg_logprob": -0.07731827146009258
+      },
+      {
+        "end": 255.27,
+        "text": "Yeah, sure. I think you're right, first of all, that in the last year, there have been a bunch of advances on scaling up these large transformer models. So there's the language equivalent of it with large language models. There's sort of the image generation equivalent with these large diffusion models. There's a lot of fundamental research that's gone into this. And Meta has taken the approach of being quite open and academic in our development of AI. Part of this is we want to have the best people in the world researching this. And a lot of the best people want to know that they're going to be able to share their work. So that's part of the deal that we have, is that we can get... If you're one of the top AI researchers in the world and come here, you can get access to kind of industry scale infrastructure. And part of our ethos is that we want to share what's invented broadly. We do that with a lot of the different AI tools that we create. And LLama is the language model that our research team made. And we did a limited open source release for it, right? Right. So we wanted for researchers to be able to use it. But responsibility and getting safety right on these is very important. So we didn't think that... For the first one, there were a bunch of questions around whether we should be releasing this commercially. So we kind of punted on that for V1 of LLama and just released it from research. Now, obviously, by releasing it for research, it's out there. But companies know that they're not supposed to kind of put it into the market. And we're working on the follow-up models for this and thinking through how exactly this should work for follow-on now that we've had time to work on a lot more of the safety and the pieces around that. But overall, I mean, this is... I just kind of think that it would be good if there were a lot of different folks who had the ability to build state-of-the-art... Right. ...technology here. You know, it's... And not just a small number of big companies. But to train one of these AI models, the state-of-the-art models, is... You know, it just takes, you know, hundreds of millions of dollars of infrastructure, right? So there are not that many organizations in the world that can do that at the biggest scale today. And, you know, it gets more efficient every day. So I do think that that will be a big thing. It will be available to more folks over time. But I just think, like, there's all this innovation out there that people can create. And I just think that we'll also learn a lot by seeing what the whole community of students and hackers and startups and different folks build with this. And that's kind of been how we've approached this. And it's also how we've done a lot of our infrastructure. And we took our whole data center design and our server design, and we built this open compute project where we just made that public. And part of the theory was, like, all right, if we make it so that more people can use this server design, then that'll enable more innovation. It'll also make the server design more efficient. And that'll make our business more efficient, too. So that's worked. And we've just done this with a lot of our infrastructure.",
+        "start": 39.18,
+        "speaker": "SPEAKER_00",
+        "avg_logprob": -0.05644745715371855
+      },
+      {
+        "end": 279.76,
+        "text": "So for people who don't know, you did the limited release, I think, in February of this year of Llama. And it got, quote-unquote, leaked, meaning, like, it escaped. Right. The limited release aspect. But it was, you know, that's something you probably anticipated, given that it's just released to researchers.",
+        "start": 256.15,
+        "speaker": "SPEAKER_01",
+        "avg_logprob": -0.09090909287949239
+      },
+      {
+        "end": 280.56,
+        "text": "Well, we shared it with researchers.",
+        "start": 279.76,
+        "speaker": "SPEAKER_00",
+        "avg_logprob": -0.12141047163052601
+      },
+      {
+        "end": 321.7,
+        "text": "Right. So it's just trying to make sure that there's, like, a slow release. Yeah. But from there, I just would love to get your comment on what happened next, which is, like, there's a very vibrant open source community that just built stuff on top of it. There's Llama CPP. Basically, stuff that makes it more efficient to run on smaller computers. Yep. There's combining with reinforcement learning with human feedback. So some of the different interesting fine-tuning mechanisms. There's then also, like, fine-tuning in GPT-3 generations. There's a lot of GPT-4-all, Alpaca, Colossal AI. All these kinds of models just kind of spring up, like, run on top of it. Yeah.",
+        "start": 280.78,
+        "speaker": "SPEAKER_01",
+        "avg_logprob": -0.12141047163052601
+      },
+      {
+        "end": 363.24,
+        "text": "What do you think of that? No, I think it's been really... It's been really neat to see. I mean, there's been folks who are getting it to run on local devices, right? So if you're an individual who just, you know, wants to experiment, you know, with this at home, you probably don't have a large budget to get access to, like, a large amount of cloud compute. So getting it to run on your local laptop, you know, is pretty good, right? And pretty relevant. And then there were things like, yeah, Llama CPP re-implemented it more efficiently. So, you know, now even when we run... We run our own versions of it, we can do it on way less compute and it's just way more efficient, save a lot of money for everyone who uses this. So that is good.",
+        "start": 321.7,
+        "speaker": "SPEAKER_00",
+        "avg_logprob": -0.16451540340979895
+      },
+      {
+        "end": 520.6,
+        "text": "I do think it's worth calling out that because this was a relatively early release, Llama isn't quite as on the frontier as, for example, the biggest OpenAI models or the biggest Google models, right? I mean, you mentioned... That the largest Llama model that we released had 65 billion parameters and no one knows, you know, I guess outside of OpenAI, exactly what the specs are for GPT-4. But I think the, you know, my understanding is it's like 10 times bigger. And I think Google's Palm model is also, I think, has about 10 times as many parameters. Now, the Llama models are very efficient, so they perform well for something that's around 65 billion parameters. So for me, that was also part of this. Because there's this whole debate around, you know, is it good for everyone in the world to have access to the most frontier AI models? And I think as the AI models start approaching something that's like a super human intelligence, I think that that's a bigger question that we'll have to grapple with. But right now, I mean, these are still, you know, very basic tools. They're, you know, they're powerful in the sense that, you know, a lot of open source software like databases or web servers can enable a lot of pretty important things. But I don't think anyone looks at the, you know, the current generation of Llama and thinks it's, you know, anywhere near a super intelligence. So I think that a bunch of those questions around, like, is it good to kind of get out there? I think at this stage, surely, you want more researchers working on it for all the reasons that open source software has a lot of advantages. And we talked about efficiency before. But another one is just open source software tends to be more secure because you have more people looking at it openly and scrutinizing it and finding holes in it. And that makes it more safe. So I think at this point, it's more, I think it's generally agreed upon that open source software is generally more secure and safer than things that are kind of developed in a silo where people try to get through security through obscurity. So I think that for the scale of what? We're seeing now with AI, I think we're more likely to get to, you know, good alignment and good understanding of kind of what needs to do to make this work well by having it be open source. And that's something that I think is quite good to have out there and happening publicly at this point.",
+        "start": 365.3,
+        "speaker": "SPEAKER_00",
+        "avg_logprob": -0.09319760266578558
+      },
+      {
+        "end": 577.84,
+        "text": "Meta released a lot of models as open source. So the massively multilingual speech model, the image buying model, I mean, I'll ask you questions about those. But the point is, you've open source quite a lot, you've been spearheading the open source movement. Where's, that's really positive, inspiring to see from one angle from the research angle, of course, as folks who are really terrified about the existential threat of artificial intelligence. And those folks will say that, you know, you have to be careful about the open sourcing step. But what, where do you see the future of open source here? As part of Meta? The tension here is, do you want to release the magic sauce? That's one tension. And the other one is, do you want to put a powerful tool in the hands of bad actors, even though it probably has a huge amount of positive impact also?",
+        "start": 520.76,
+        "speaker": "SPEAKER_01",
+        "avg_logprob": -0.20204740993935486
+      },
+      {
+        "end": 624.8,
+        "text": "Yeah. I mean, again, I think for the stage that we're at in the development of AI, I don't think anyone looks at the current state of things and thinks that this is super intelligence. And, you know, the models that we're talking about for the llama models here are, you know, Generally, an order of magnitude smaller than what OpenAI or Google are doing. So I think that, at least for the stage that we're in now, the equity is balanced strongly, in my view, towards doing this more openly. I think if you got something that was closer to superintelligence, then I think you'd have to discuss that more and think through that a lot more. And we haven't made a decision yet as to what we would do if we were in that position. But I think there's a good chance that we're pretty far off from that position.",
+        "start": 578.84,
+        "speaker": "SPEAKER_00",
+        "avg_logprob": -0.30288788167441766
+      },
+      {
+        "end": 700.58,
+        "text": "So I'm certainly not saying that the position that we're taking on this now applies to every single thing that we would ever do. And certainly inside the company, we probably do more open-source work than most of the other big tech companies. But we also don't open-source everything. A lot of the core app code for WhatsApp or Instagram or something. I mean, we're not open-sourcing that. It's not like a general enough piece of software that would be useful for a lot of people to do different things. Whereas the software that we do, whether it's like an open-source server design or basically things like Memcache, like a good, it was probably our earliest project that I worked on. It was probably one of the last things that I coded and led directly for the company. But basically. There's like caching tool for quick data retrieval. These are things that are just broadly useful across like anything that you want to build. And I think that some of the language models now have that feel as well as some of the other things that we're building, like the translation tool that you just referenced.",
+        "start": 627.36,
+        "speaker": "SPEAKER_00",
+        "avg_logprob": -0.11478365341631266
+      },
+      {
+        "end": 724.76,
+        "text": "So text-to-speech and speech-to-text, you've expanded it from around 100 languages to more than 1,100 languages. Yeah. And you can identify more than, the model can identify more. You can identify more than 4,000 spoken languages, which is 40 times more than any known previous technology. To me, that's really, really, really exciting in terms of connecting the world, breaking down barriers that language creates. Yeah.",
+        "start": 700.92,
+        "speaker": "SPEAKER_01",
+        "avg_logprob": -0.16633064912692194
+      },
+      {
+        "end": 751.72,
+        "text": "I think being able to translate between all of these different pieces in real time, this has been a kind of common sci-fi idea that we'd all have, you know, whether it's, I don't know, an earbud or glasses or something that can help translate in real time. Yeah. Um, between all these different languages. And that's one that I think technology is basically delivering now. So I think, yeah, I think that's pretty, pretty exciting.",
+        "start": 724.82,
+        "speaker": "SPEAKER_00",
+        "avg_logprob": -0.13716700099042203
+      },
+      {
+        "end": 764.16,
+        "text": "Uh, you mentioned the next version of Lama. What can you say about the next version of Lama? What can you say about like, what, uh, what were you working on in terms of release in terms of the vision for that?",
+        "start": 752.1,
+        "speaker": "SPEAKER_01",
+        "avg_logprob": -0.25139410961839487
+      },
+      {
+        "end": 888.63,
+        "text": "Well, a lot of what we're doing is taking the first version, which was primarily, you know, this research version and trying to now build a version that has all of the latest state-of-the-art safety precautions built in. Um, and, and we're, um, we're using some more data to train it, um, from across our services, but, but a lot of the, the work that we're doing internally is really just focused on making sure that this is, um, you know, as aligned and responsible as, as possible. And, you know, we're building a lot of our own. You know, we're talking about kind of the open source infrastructure, but, you know, the, the main thing that we focus on building here, you know, a lot of product experience is to help people connect and express themselves. So, you know, we're going to, I've, I've talked about a bunch of this stuff, but, um, then you'll have, you know, an assistant that you can talk to in WhatsApp. Um, you know, I think, I think in the future, every creator will, will have kind of an AI agent that can kind of act on their behalf that their fans can talk to. I, I want to get to the point where every small. Business basically has an AI agent that people can talk to for, you know, to do commerce and customer support and things like that. So they're going to be all these different things and Lama or the language model underlying this is, is basically going to be the engine that powers that the reason to open source it is that, um, as, as we did with, um, with the, the first version is that it, uh, you know, basically it, it unlocks a lot of innovation in the ecosystem. We'll, we'll make. Our products better as well. Um, and also gives us a lot of valuable feedback on security and safety, which is important for making this good. But yeah, I mean the, the, the work that we're doing to advance the infrastructure, it's, um, it's basically at this point, taking it beyond a research project into something, which is ready to be kind of core infrastructure, not only for our own products, but, um, you know, hopefully for, for a lot of other things out there too.",
+        "start": 764.66,
+        "speaker": "SPEAKER_00",
+        "avg_logprob": -0.25139410961839487
+      },
+      {
+        "end": 900.97,
+        "text": "Do you think the Lama or the language model underlying that. Version. Version two will be open-sourced your, you have internal debate around that, the pros and cons and so on.",
+        "start": 888.73,
+        "speaker": "SPEAKER_01",
+        "avg_logprob": -0.16747685538397894
+      },
+      {
+        "end": 920.64,
+        "text": "This is, I mean, we were talking about the debates that we have internally and I think, um, I think the question is how to do it. Right. I mean, it's, I think we, you know, we, we did the research license for V1 and, and I think the, the, the big thing that we're, that we're thinking about is, is basically like, what's the, what's the right, the right way.",
+        "start": 901.15,
+        "speaker": "SPEAKER_00",
+        "avg_logprob": -0.17482517711766116
+      },
+      {
+        "end": 924.92,
+        "text": "So there was a leak that happened. I don't know if you can comment on it for the V1.",
+        "start": 920.8,
+        "speaker": "SPEAKER_01",
+        "avg_logprob": -0.17482517711766116
+      },
+      {
+        "end": 1021.98,
+        "text": "You know, we released it as a research project, um, for researchers to be able to use, but in doing so we put it out there. So, um, you know, we were very clear that anyone who uses the code and the weights doesn't have a commercial license to put into products. And we've, we've generally seen people respect that, right. It's like, you don't have any reputable companies that are basically trying to put this into, into, um, their commercial products, but, but yeah, but by sharing it with. You know, so many researchers it's, it's, you know, it, it did leave the building. But, uh, what have you learned from that process that you might be able to apply to V2 about how to release it safely, effectively, uh, if, if you release it? Yeah, well, I mean, I think a lot of the feedback, like I said, is just around, you know, different things around, you know, how do you fine tune models to make them more aligned and safer? And you see all the different data recipes that, um, you know, you mentioned a lot of different. Projects that are based on this, I mean, there's one at Berkeley, there's, you know, it was just like all over and, um, and people have tried a lot of different things and we've tried a bunch of stuff internally. So kind of where we're, we're making progress here, but also we're able to learn from some of the best ideas in the community. And, you know, I think it, you know, we want to just continue, continue pushing that forward, but I don't have any news to announce if that's, if that's what you're, you're asking, I mean, this is, uh. A thing that we're, uh, we're still, we're still kind of, you know, actively working through the, the, the right way to move forward here.",
+        "start": 925.36,
+        "speaker": "SPEAKER_00",
+        "avg_logprob": -0.14755721736541935
+      },
+      {
+        "end": 1062.04,
+        "text": "The details of the secret sauce are still being developed. I see. Uh, can you comment on, what do you think of, uh, the thing that worked for GPT, which is the reinforcement learning with human feedback? So doing this alignment process, do you find it interesting? And as part of that, let me ask, cause I talked to Yann LeCun before talking to you today. He asked me to ask or suggested that I ask, do you think LLM fine-tuning will need to be crowd-sourced Wikipedia style, so crowd-sourcing, so this kind of idea of how to integrate the human in the fine-tuning of these foundation models?",
+        "start": 1022.04,
+        "speaker": "SPEAKER_01",
+        "avg_logprob": -0.15119830827067668
+      },
+      {
+        "end": 1170.15,
+        "text": "Yeah, I think that's a really interesting idea that I've talked to Yann about a bunch. Um, and you were talking about how. How do you basically train these models to be as, as safe and aligned and responsible as possible? And, you know, different groups out there who are doing development test different data recipes in fine-tuning, but this idea that you, that you just mentioned is that at the end of the day, instead of having kind of one group fine-tune some stuff and then another group, you know, produce a different fine-tuning recipe. And then us trying to figure out which one we think. Works. Works best to produce the most aligned model. Um, I, I do think that it would be nice if you could get to a point where you had a Wikipedia style collaborative way for a, a kind of a broader community to, um, to, to fine tune it as well. Now there's a lot of challenges in that both from an infrastructure and like a community management and product perspective about how you do that. So I, I haven't worked that out yet. Um, but, but I, as an idea, I think it's, it's quite compelling and I think it, it goes well with the ethos of open sourcing. The technology is also finding a way to have a, a kind of community driven, um, a community driven training of it. Um, but I think that there are a lot of questions on this in general, these, this, these questions around what's the, the best way to produce aligned AI models. It's very much a research area and it's one that I think we will need to make as much progress. On as the kind of core intelligence capability of the, of the, um, the models themselves.",
+        "start": 1062.46,
+        "speaker": "SPEAKER_00",
+        "avg_logprob": -0.24779041126520948
+      },
+      {
+        "end": 1201.65,
+        "text": "Well, I, I just did a conversation with Jimmy Wales, the founder of Wikipedia, and to me, Wikipedia is one of the greatest websites ever created. And it's kind of a miracle that it works. And I think it has to do with something that you mentioned, which is community. You have a small community of editors that somehow work together well, and they, uh, they handle very controversial, uh, topics and they handle it with balance and with grace, despite sort of the, um, attacks that will often happen.",
+        "start": 1170.65,
+        "speaker": "SPEAKER_01",
+        "avg_logprob": -0.19355679894315786
+      },
+      {
+        "end": 1217.95,
+        "text": "A lot of the time. I mean, it's not, it's, it has issues just like any other human system, but yes, I mean, the balance is, I mean, it's, uh, it's amazing what they've been able to achieve, but it's, it's also not perfect. And I think that that's, um, there's still a lot of challenges. Right.",
+        "start": 1201.71,
+        "speaker": "SPEAKER_00",
+        "avg_logprob": -0.11448506495487765
+      },
+      {
+        "end": 1286.7,
+        "text": "It's, uh, the more controversial the topic, the more, the more difficult, uh, the, um, the journey towards it is. I mean, the more you go towards quote unquote truth or knowledge or wisdom that Wikipedia tries to capture and the same way AI models, we need to be able to generate those same things, truth, knowledge, and wisdom. And how do you align those models that they generate, um, something that, uh, is closest to truth. There's these concerns about misinformation, all this kind of stuff that nobody can define. And this is something that we together. There's a human species I have to define, like what is truth and how to help AI systems generate that. And one of the things that language models do really well is generate convincing sounding things that can be completely wrong. And so how do you align it to be less wrong? And part of that is the training and part of that is the alignment and however you do the alignment stage. And just like you said, it's a very new and a very open research problem. Yeah.",
+        "start": 1217.97,
+        "speaker": "SPEAKER_01",
+        "avg_logprob": -0.11448506495487765
+      },
+      {
+        "end": 1330.38,
+        "text": "And I think that there's also a lot of questions about whether the current architecture for LLMs, as you continue scaling it, what happens. I mean, a lot of what's been exciting in the last year is that there's clearly a qualitative breakthrough where with some of the GPT models that OpenAI put out and that others have been able to do as well, I think it reached a kind of level of quality where people are like, wow, this feels different and like it's gonna be able to be the foundation for building a lot of awesome products and experiences and value. But I think that the other realization that people have is, wow, we just made a breakthrough.",
+        "start": 1286.8,
+        "speaker": "SPEAKER_00",
+        "avg_logprob": -0.1625267160244477
+      },
+      {
+        "end": 1374.18,
+        "text": "If there are other breakthroughs quickly, then I think that there's the sense that maybe we're closer to general intelligence. But I think that that idea is predicated on the idea that I think people believe that there's still generally a bunch of additional breakthroughs to make and that we just don't know how long it's gonna take to get there. And one view that some people have, this doesn't tend to be my view as much, is that simply scaling the current LLMs and getting to higher parameter count models by itself will get to something that is closer to general intelligence. But I don't know, I tend to think that there's probably more,",
+        "start": 1333.14,
+        "speaker": "SPEAKER_00",
+        "avg_logprob": -0.15434782816016157
+      },
+      {
+        "end": 1379.44,
+        "text": "if not more, fundamental steps that need to be taken along the way there.",
+        "start": 1376.54,
+        "speaker": "SPEAKER_00",
+        "avg_logprob": -0.4906965981400202
+      },
+      {
+        "end": 1409.3,
+        "text": "But still, the leap that's taken with this extra alignment step, is quite incredible, quite surprising to a lot of folks. And on top of that, when you start to have hundreds of millions of people potentially using a product that integrates that, you can start to see civilization-transforming effects before you achieve super, quote-unquote, super-intelligence. It could be super-transformation. Super transformative without being a super intelligence.",
+        "start": 1379.64,
+        "speaker": "SPEAKER_01",
+        "avg_logprob": -0.4906965981400202
+      },
+      {
+        "end": 1486.85,
+        "text": "to kind of build these breakthroughs into the products and experiences that we all use so we can actually benefit from them. But I don't know, I think that there's just a like an awesome amount of stuff to do. I mean, I think about like all of the small businesses or individual entrepreneurs out there who now we're going to be able to get help coding the things that they need to go build things or designing the things that they need or will be able to, you know, use these models to be able to do customer support for the people that they're, that they're serving, you know, over WhatsApp without having to, you know, I think that that's, that's just gonna be, I just think that this is all going to be super exciting. It's going to create better, better experiences for people and just unlock a ton of innovation and value.",
+        "start": 1437.11,
+        "speaker": "SPEAKER_00",
+        "avg_logprob": -0.07782451851436725
+      }
+    ],
+    "num_speakers": 2
+  },
+  "started_at": "2024-11-15T19:36:55.424789Z",
+  "status": "succeeded",
+  "urls": {
+    "get": "https://api.replicate.com/v1/predictions/pgj9vggs39rgj0ck65a88bk43w",
+    "cancel": "https://api.replicate.com/v1/predictions/pgj9vggs39rgj0ck65a88bk43w/cancel"
+  },
+  "version": "cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f"
 }

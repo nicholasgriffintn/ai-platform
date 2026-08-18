@@ -1,7 +1,7 @@
 {
-	"extends": "./library.json",
-	"compilerOptions": {
-		"jsx": "react-jsx",
-		"lib": ["DOM", "DOM.Iterable", "ES2022"]
-	}
+  "extends": "./library.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"]
+  }
 }

@@ -144,7 +144,7 @@ export function RerunReportButton({
       }));
 
       if (reportResult.outputId) {
-        navigate(`${basePath ?? "/work"}/${reportResult.outputId}`);
+        void navigate(`${basePath ?? "/work"}/${reportResult.outputId}`);
       } else {
         throw new Error("Failed to generate report");
       }

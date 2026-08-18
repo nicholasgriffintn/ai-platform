@@ -255,7 +255,7 @@ export function useStreamingResponse(
             response += text;
             assistantResponseRef.current = response;
 
-            updateAssistantMessage(conversationId, response, undefined, undefined, {
+            void updateAssistantMessage(conversationId, response, undefined, undefined, {
               messageId: placeholderMessage.id,
             });
           };

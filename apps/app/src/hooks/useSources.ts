@@ -66,7 +66,7 @@ export function useSetProjectContextSources(projectId: string) {
     mutationFn: (sourceIds: string[]) => setProjectContextSources(projectId, sourceIds),
     onSuccess: (sources) => {
       queryClient.setQueryData(SOURCE_QUERY_KEYS.projectContext(projectId), sources);
-      queryClient.invalidateQueries({ queryKey: SOURCE_QUERY_KEYS.collections(projectId) });
+      void queryClient.invalidateQueries({ queryKey: SOURCE_QUERY_KEYS.collections(projectId) });
     },
   });
 }

@@ -3,6 +3,6 @@ import { createSurfaceControlsContext } from "@ngriffin_uk/polychat-library-reac
 import type { WebNavigationIntent } from "./surface-controls";
 
 export const { SurfaceControlsProvider, useSurfaceControls } = createSurfaceControlsContext<
-	WebNavigationIntent,
-	File
+  WebNavigationIntent,
+  File
 >();

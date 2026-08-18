@@ -84,7 +84,7 @@ export function useAuthStatus() {
         return;
       }
 
-      queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.authStatus });
+      void queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.authStatus });
     },
   });
 

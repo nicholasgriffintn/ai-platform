@@ -1,193 +1,195 @@
 import { describe, expect, it } from "vitest";
+
 import type { IUser } from "~/types";
+
 import {
-	PermissionChecker,
-	resolveModeMaxSteps,
-	resolveToolPermissions,
+  PermissionChecker,
+  resolveModeMaxSteps,
+  resolveToolPermissions,
 } from "../PermissionChecker";
 
 const proUser: IUser = {
-	id: 1,
-	name: "Pro User",
-	avatar_url: null,
-	email: "pro@example.com",
-	github_username: null,
-	company: null,
-	site: null,
-	location: null,
-	bio: null,
-	twitter_username: null,
-	created_at: "2026-01-01T00:00:00.000Z",
-	updated_at: "2026-01-01T00:00:00.000Z",
-	setup_at: null,
-	terms_accepted_at: null,
-	plan_id: "pro",
+  id: 1,
+  name: "Pro User",
+  avatar_url: null,
+  email: "pro@example.com",
+  github_username: null,
+  company: null,
+  site: null,
+  location: null,
+  bio: null,
+  twitter_username: null,
+  created_at: "2026-01-01T00:00:00.000Z",
+  updated_at: "2026-01-01T00:00:00.000Z",
+  setup_at: null,
+  terms_accepted_at: null,
+  plan_id: "pro",
 };
 
 const freeUser: IUser = {
-	...proUser,
-	id: 2,
-	email: "free@example.com",
-	plan_id: "free",
+  ...proUser,
+  id: 2,
+  email: "free@example.com",
+  plan_id: "free",
 };
 
 describe("PermissionChecker", () => {
-	it("allows unrestricted access in chat mode", () => {
-		const checker = new PermissionChecker();
-		const result = checker.checkToolAccess({
-			toolName: "run_refactoring",
-			mode: "normal",
-			user: proUser,
-			toolType: "premium",
-			toolPermissions: ["sandbox", "write"],
-		});
+  it("allows unrestricted access in chat mode", () => {
+    const checker = new PermissionChecker();
+    const result = checker.checkToolAccess({
+      toolName: "run_refactoring",
+      mode: "normal",
+      user: proUser,
+      toolType: "premium",
+      toolPermissions: ["sandbox", "write"],
+    });
 
-		expect(result.allowed).toBe(true);
-		expect(result.requiresApproval).toBe(false);
-	});
+    expect(result.allowed).toBe(true);
+    expect(result.requiresApproval).toBe(false);
+  });
 
-	it("allows read-only tools in plan mode", () => {
-		const checker = new PermissionChecker();
-		const result = checker.checkToolAccess({
-			toolName: "web_search",
-			mode: "plan",
-			user: proUser,
-			toolType: "normal",
-			toolPermissions: ["read"],
-		});
+  it("allows read-only tools in plan mode", () => {
+    const checker = new PermissionChecker();
+    const result = checker.checkToolAccess({
+      toolName: "web_search",
+      mode: "plan",
+      user: proUser,
+      toolType: "normal",
+      toolPermissions: ["read"],
+    });
 
-		expect(result.allowed).toBe(true);
-		expect(result.requiresApproval).toBe(false);
-	});
+    expect(result.allowed).toBe(true);
+    expect(result.requiresApproval).toBe(false);
+  });
 
-	it("blocks network tools in plan mode", () => {
-		const checker = new PermissionChecker();
-		const result = checker.checkToolAccess({
-			toolName: "call_api",
-			mode: "plan",
-			user: proUser,
-			toolType: "normal",
-			toolPermissions: ["network"],
-		});
+  it("blocks network tools in plan mode", () => {
+    const checker = new PermissionChecker();
+    const result = checker.checkToolAccess({
+      toolName: "call_api",
+      mode: "plan",
+      user: proUser,
+      toolType: "normal",
+      toolPermissions: ["network"],
+    });
 
-		expect(result.allowed).toBe(false);
-		expect(result.reason).toContain("plan");
-	});
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toContain("plan");
+  });
 
-	it("blocks write tools in explore mode", () => {
-		const checker = new PermissionChecker();
-		const result = checker.checkToolAccess({
-			toolName: "create_note",
-			mode: "explore",
-			user: proUser,
-			toolType: "normal",
-			toolPermissions: ["write"],
-		});
+  it("blocks write tools in explore mode", () => {
+    const checker = new PermissionChecker();
+    const result = checker.checkToolAccess({
+      toolName: "create_note",
+      mode: "explore",
+      user: proUser,
+      toolType: "normal",
+      toolPermissions: ["write"],
+    });
 
-		expect(result.allowed).toBe(false);
-		expect(result.reason).toContain("explore");
-	});
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toContain("explore");
+  });
 
-	it("flags risky tools as approval-required in build mode", () => {
-		const checker = new PermissionChecker();
-		const result = checker.checkToolAccess({
-			toolName: "run_refactoring",
-			mode: "build",
-			user: proUser,
-			toolType: "premium",
-			toolPermissions: ["sandbox", "write"],
-		});
+  it("flags risky tools as approval-required in build mode", () => {
+    const checker = new PermissionChecker();
+    const result = checker.checkToolAccess({
+      toolName: "run_refactoring",
+      mode: "build",
+      user: proUser,
+      toolType: "premium",
+      toolPermissions: ["sandbox", "write"],
+    });
 
-		expect(result.allowed).toBe(true);
-		expect(result.requiresApproval).toBe(true);
-	});
+    expect(result.allowed).toBe(true);
+    expect(result.requiresApproval).toBe(true);
+  });
 
-	it("blocks premium tools for non-pro users", () => {
-		const checker = new PermissionChecker();
-		const result = checker.checkToolAccess({
-			toolName: "create_image",
-			mode: "chat",
-			user: freeUser,
-			toolType: "premium",
-			toolPermissions: ["network"],
-		});
+  it("blocks premium tools for non-pro users", () => {
+    const checker = new PermissionChecker();
+    const result = checker.checkToolAccess({
+      toolName: "create_image",
+      mode: "chat",
+      user: freeUser,
+      toolType: "premium",
+      toolPermissions: ["network"],
+    });
 
-		expect(result.allowed).toBe(false);
-		expect(result.reason).toBe("This tool requires a premium subscription");
-	});
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toBe("This tool requires a premium subscription");
+  });
 
-	it("allows BYOK tools for signed-in non-pro users", () => {
-		const checker = new PermissionChecker();
-		const result = checker.checkToolAccess({
-			toolName: "research",
-			mode: "chat",
-			user: freeUser,
-			toolType: "byok",
-			toolPermissions: ["read"],
-		});
+  it("allows BYOK tools for signed-in non-pro users", () => {
+    const checker = new PermissionChecker();
+    const result = checker.checkToolAccess({
+      toolName: "research",
+      mode: "chat",
+      user: freeUser,
+      toolType: "byok",
+      toolPermissions: ["read"],
+    });
 
-		expect(result.allowed).toBe(true);
-	});
+    expect(result.allowed).toBe(true);
+  });
 
-	it("blocks BYOK tools for anonymous users", () => {
-		const checker = new PermissionChecker();
-		const result = checker.checkToolAccess({
-			toolName: "research",
-			mode: "chat",
-			toolType: "byok",
-			toolPermissions: ["read"],
-		});
+  it("blocks BYOK tools for anonymous users", () => {
+    const checker = new PermissionChecker();
+    const result = checker.checkToolAccess({
+      toolName: "research",
+      mode: "chat",
+      toolType: "byok",
+      toolPermissions: ["read"],
+    });
 
-		expect(result.allowed).toBe(false);
-		expect(result.reason).toBe("This tool requires a signed-in user");
-	});
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toBe("This tool requires a signed-in user");
+  });
 
-	it("matches request approvals case-insensitively and preserves access decisions", () => {
-		const checker = new PermissionChecker();
-		const result = checker.checkRequestToolAccess({
-			toolName: "run_code",
-			mode: "build",
-			user: proUser,
-			toolPermissions: ["sandbox"],
-			approvedTools: [" RUN_CODE "],
-		});
+  it("matches request approvals case-insensitively and preserves access decisions", () => {
+    const checker = new PermissionChecker();
+    const result = checker.checkRequestToolAccess({
+      toolName: "run_code",
+      mode: "build",
+      user: proUser,
+      toolPermissions: ["sandbox"],
+      approvedTools: [" RUN_CODE "],
+    });
 
-		expect(result.allowed).toBe(true);
-		expect(result.requiresApproval).toBe(true);
-		expect(result.approved).toBe(true);
-	});
+    expect(result.allowed).toBe(true);
+    expect(result.requiresApproval).toBe(true);
+    expect(result.approved).toBe(true);
+  });
 
-	it("keeps approval state false when request approvals are missing", () => {
-		const checker = new PermissionChecker();
-		const result = checker.checkRequestToolAccess({
-			toolName: "run_code",
-			mode: "build",
-			user: proUser,
-			toolPermissions: ["sandbox"],
-			approvedTools: [],
-		});
+  it("keeps approval state false when request approvals are missing", () => {
+    const checker = new PermissionChecker();
+    const result = checker.checkRequestToolAccess({
+      toolName: "run_code",
+      mode: "build",
+      user: proUser,
+      toolPermissions: ["sandbox"],
+      approvedTools: [],
+    });
 
-		expect(result.allowed).toBe(true);
-		expect(result.requiresApproval).toBe(true);
-		expect(result.approved).toBe(false);
-	});
+    expect(result.allowed).toBe(true);
+    expect(result.requiresApproval).toBe(true);
+    expect(result.approved).toBe(false);
+  });
 });
 
 describe("permission helpers", () => {
-	it("normalises explicit permissions and drops invalid values", () => {
-		expect(resolveToolPermissions("any_tool", ["READ", "read", "invalid", "reasoning"])).toEqual([
-			"read",
-			"reasoning",
-		]);
-	});
+  it("normalises explicit permissions and drops invalid values", () => {
+    expect(resolveToolPermissions("any_tool", ["READ", "read", "invalid", "reasoning"])).toEqual([
+      "read",
+      "reasoning",
+    ]);
+  });
 
-	it("returns empty permissions when no explicit permissions exist", () => {
-		expect(resolveToolPermissions("any_tool")).toEqual([]);
-	});
+  it("returns empty permissions when no explicit permissions exist", () => {
+    expect(resolveToolPermissions("any_tool")).toEqual([]);
+  });
 
-	it("resolves max steps by mode", () => {
-		expect(resolveModeMaxSteps("plan", 30)).toBe(24);
-		expect(resolveModeMaxSteps("build", 10)).toBe(10);
-		expect(resolveModeMaxSteps("normal")).toBe(1);
-	});
+  it("resolves max steps by mode", () => {
+    expect(resolveModeMaxSteps("plan", 30)).toBe(24);
+    expect(resolveModeMaxSteps("build", 10)).toBe(10);
+    expect(resolveModeMaxSteps("normal")).toBe(1);
+  });
 });

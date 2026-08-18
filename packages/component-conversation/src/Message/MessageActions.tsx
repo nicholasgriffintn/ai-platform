@@ -69,7 +69,7 @@ export const MessageActions = ({
   canSubmitFeedback,
   isSubmittingFeedback,
   submitFeedback,
-  isSharedView = false,
+  isSharedView,
   onRetry,
   isRetrying = false,
   onEdit,

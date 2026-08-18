@@ -3,13 +3,13 @@ import { cn } from "./utils";
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function Skeleton({ className, ...props }: SkeletonProps) {
-	return (
-		<div
-			className={cn(
-				"animate-pulse rounded-md bg-zinc-200 motion-reduce:animate-none dark:bg-zinc-700",
-				className,
-			)}
-			{...props}
-		/>
-	);
+  return (
+    <div
+      className={cn(
+        "animate-pulse rounded-md bg-zinc-200 motion-reduce:animate-none dark:bg-zinc-700",
+        className,
+      )}
+      {...props}
+    />
+  );
 }

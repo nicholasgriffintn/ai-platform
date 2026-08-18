@@ -1,28 +1,28 @@
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "assistant-app",
-	"compatibility_date": "2026-06-16",
-	"compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env"],
-	"main": "./workers/app.ts",
-	"workers_dev": false,
-	"preview_urls": false,
-	"placement": {
-		"mode": "smart",
-	},
-	"cache": {
-		"enabled": false,
-	},
-	"observability": {
-		"enabled": true,
-		"head_sampling_rate": 0.1,
-		"logs": {
-			"enabled": true,
-			"head_sampling_rate": 0.1,
-			"invocation_logs": false,
-		},
-	},
-	"assets": {
-		"directory": "./build/client/",
-		"not_found_handling": "single-page-application",
-	},
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "assistant-app",
+  "compatibility_date": "2026-06-16",
+  "compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env"],
+  "main": "./workers/app.ts",
+  "workers_dev": false,
+  "preview_urls": false,
+  "placement": {
+    "mode": "smart",
+  },
+  "cache": {
+    "enabled": false,
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 0.1,
+      "invocation_logs": false,
+    },
+  },
+  "assets": {
+    "directory": "./build/client/",
+    "not_found_handling": "single-page-application",
+  },
 }

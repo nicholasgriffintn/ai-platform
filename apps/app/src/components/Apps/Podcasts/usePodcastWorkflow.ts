@@ -218,7 +218,7 @@ export function usePodcastWorkflow(basePath: string, projectId?: string) {
       }
     }
 
-    navigate(`${basePath}/${uploadedPodcastId}`);
+    void navigate(`${basePath}/${uploadedPodcastId}`);
   }, [basePath, formData, navigate, runProcess, uploadedPodcastId]);
 
   const retry = useCallback(
@@ -233,7 +233,7 @@ export function usePodcastWorkflow(basePath: string, projectId?: string) {
       };
 
       if (allRequestedProcessesComplete(formData, complete)) {
-        navigate(`${basePath}/${uploadedPodcastId}`);
+        void navigate(`${basePath}/${uploadedPodcastId}`);
       }
     },
     [basePath, formData, navigate, processingComplete, runProcess, uploadedPodcastId],

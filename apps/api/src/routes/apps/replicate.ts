@@ -2,7 +2,6 @@ import {
   executeReplicateRequestSchema,
   type AppTheme,
   type ModelModalities,
-  type ModelModality,
   replicateExecuteResponseSchema,
   replicateModelsResponseSchema,
   replicatePredictionParamsSchema,

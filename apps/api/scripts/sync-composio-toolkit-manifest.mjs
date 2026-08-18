@@ -289,7 +289,7 @@ const entries = await mapConcurrent(
               .flatMap((tool) => (Array.isArray(tool.scopes) ? tool.scopes : []))
               .filter(Boolean),
           ),
-        ].sort(),
+        ].sort((a, b) => a.localeCompare(b)),
         operations: {
           read: operationList
             .filter((operation) => operation.access === "read")

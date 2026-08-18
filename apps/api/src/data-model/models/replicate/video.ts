@@ -1,1047 +1,1048 @@
 import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
+
 import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "replicate";
 
 export const replicateModelConfig: ModelConfig = createModelConfigObject([
-	createModelConfig("replicate-insanely-fast-whisper-with-video", PROVIDER, {
-		name: "Insanely Fast Whisper, with video transcription",
-		matchingModel:
-			"turian/insanely-fast-whisper-with-video:4f41e90243af171da918f04da3e526b2c247065583ea9b757f2071f573965408",
-		description:
-			"TL;DR - Transcribe 150 minutes (2.5 hours) of audio in less than 98 seconds - with OpenAI’s Whisper Large v3. Blazingly fast transcription is now a reality! ⚡️",
-		strengths: ["creative", "audio", "transcription"],
-		supportsStreaming: false,
-		supportsAttachments: false,
-		costPerRun: 1.25,
-		inputSchema: {
-			reference: "https://replicate.com/turian/insanely-fast-whisper-with-video",
-			fields: [
-				{
-					name: "audio",
-					type: ["file", "string"],
-					description: "Audio file. Either this or url must be provided.",
-				},
-				{
-					name: "url",
-					type: "string",
-					description:
-						"Video URL for yt-dlp to download the audio from. Either this or audio must be provided.",
-				},
-				{
-					name: "task",
-					type: "string",
-					enum: ["transcribe", "translate"],
-					default: "transcribe",
-					description:
-						"Task to perform: transcribe or translate to another language. (default: transcribe).",
-				},
-				{
-					name: "language",
-					type: "string",
-					description:
-						"Language spoken in the audio. Supplying this improves accuracy and latency.",
-				},
-				{
-					name: "batch_size",
-					type: "integer",
-					description: "Number of parallel batches you want to compute. Reduce if you face OOMs.",
-					default: 64,
-				},
-				{
-					name: "timestamp",
-					type: "string",
-					default: "chunk",
-					description: "Whisper supports both chunked as well as word level timestamps.",
-					enum: ["chunk", "word"],
-				},
-			],
-		},
-	}),
-	createModelConfig("replicate-tencent-hunyuan-video", PROVIDER, {
-		name: "Hunyuan Video",
-		matchingModel: "847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405",
-		description:
-			"A state-of-the-art text-to-video generation model capable of creating high-quality videos with realistic motion from text descriptions .",
-		strengths: ["creative", "video"],
-		supportsStreaming: false,
-		supportsAttachments: false,
-		costPerRun: 1.25,
-		inputSchema: {
-			reference: "https://replicate.com/tencent/hunyuan-video",
-			fields: [
-				{
-					name: "prompt",
-					type: "string",
-					description: "Primary prompt describing the video scene to render.",
-					required: true,
-				},
-				{
-					name: "negative_prompt",
-					type: "string",
-					description: "Text describing elements to avoid in the generated image.",
-					default: "",
-				},
-				{
-					name: "video_length",
-					type: "number",
-					description: "Number of frames to generate (must be 4k+1, ex: 49 or 129)",
-					default: 129,
-				},
-				{
-					name: "width",
-					type: "integer",
-					description: "Frame width in pixels.",
-					default: 864,
-				},
-				{
-					name: "height",
-					type: "integer",
-					description: "Frame height in pixels.",
-					default: 480,
-				},
-				{
-					name: "infer_steps",
-					type: "number",
-					description: "Number of denoising steps",
-					default: 50,
-				},
-				{
-					name: "seed",
-					type: "integer",
-					description: "Random seed for reproducibility.",
-				},
-			],
-		},
-		reliability: 2,
-		artificialAnalysis: {
-			intelligenceIndex: null,
-			codingIndex: null,
-			agenticIndex: null,
-			intelligenceIndexVersion: null,
-			mediaScores: [
-				{
-					key: "text_to_videoElo",
-					label: "Text-to-video arena",
-					value: 1001,
-					min: 800,
-					max: 1400,
-					confidenceInterval95: 8,
-				},
-			],
-		},
-	}),
-	createModelConfig("replicate-sora-2", PROVIDER, {
-		name: "Sora 2",
-		matchingModel: "openai/sora-2",
-		description: "OpenAI's Flagship video generation with synced audio ",
-		strengths: ["creative", "video"],
-		supportsStreaming: false,
-		supportsAttachments: false,
-		costPerRun: 0.5,
-		modalities: {
-			input: ["text"],
-			output: ["video"],
-		},
-		inputSchema: {
-			reference: "https://replicate.com/openai/sora-2",
-			fields: [
-				{
-					name: "seconds",
-					type: "integer",
-					description: "Duration of the generated video in seconds.",
-					default: 4,
-				},
-				{
-					name: "aspect_ratio",
-					type: "string",
-					description: "Aspect ratio of the generated video.",
-					default: "portrait",
-					enum: ["portrait", "landscape"],
-				},
-				{
-					name: "prompt",
-					type: "string",
-					description: "A text description of the video to generate",
-					required: true,
-				},
-				{
-					name: "input_reference",
-					type: ["file", "string"],
-					description:
-						"An optional image to use as the first frame of the video. The image must be the same aspect ratio as the video.",
-				},
-			],
-		},
-		reliability: 4,
-		artificialAnalysis: {
-			intelligenceIndex: null,
-			codingIndex: null,
-			agenticIndex: null,
-			intelligenceIndexVersion: null,
-			mediaScores: [
-				{
-					key: "text_to_videoElo",
-					label: "Text-to-video arena",
-					value: 1179,
-					min: 800,
-					max: 1400,
-					confidenceInterval95: 8,
-				},
-			],
-		},
-	}),
-	createModelConfig("replicate-hailuo-2-3", PROVIDER, {
-		name: "Hailuo 2.3",
-		matchingModel: "minimax/hailuo-2.3",
-		description:
-			"A high-fidelity video generation model optimized for realistic human motion, cinematic VFX, expressive characters, and strong prompt and style adherence across both text-to-video and image-to-video workflows ",
-		strengths: ["creative", "video"],
-		supportsStreaming: false,
-		supportsAttachments: false,
-		costPerRun: 1,
-		modalities: {
-			input: ["text"],
-			output: ["video"],
-		},
-		inputSchema: {
-			reference: "https://replicate.com/minimax/hailuo-2-3",
-			fields: [
-				{
-					name: "prompt",
-					type: "string",
-					description: "A text description of the video to generate",
-					required: true,
-				},
-				{
-					name: "first_frame_image",
-					type: ["file", "string"],
-					description:
-						"First frame image for video generation. The output video will have the same aspect ratio as this image.",
-				},
-				{
-					name: "duration",
-					type: "integer",
-					description: "Duration of the generated video in seconds.",
-					default: 6,
-				},
-				{
-					name: "resolution",
-					type: "string",
-					description: "Resolution of the generated video.",
-					default: "768p",
-					enum: ["768p", "1080p"],
-				},
-				{
-					name: "prompt_optimizer",
-					type: "boolean",
-					description: "Whether to use prompt optimization.",
-					default: true,
-				},
-			],
-		},
-		reliability: 4,
-		artificialAnalysis: {
-			intelligenceIndex: null,
-			codingIndex: null,
-			agenticIndex: null,
-			intelligenceIndexVersion: null,
-			mediaScores: [
-				{
-					key: "text_to_videoElo",
-					label: "Text-to-video arena",
-					value: 1179,
-					min: 800,
-					max: 1400,
-					confidenceInterval95: 8,
-				},
-			],
-		},
-	}),
-	createModelConfig("replicate-veo-3-1", PROVIDER, {
-		name: "Veo 3.1",
-		matchingModel: "google/veo-3.1",
-		description:
-			"New and improved version of Veo 3, with higher-fidelity video, context-aware audio, reference image and last frame support ",
-		strengths: ["creative", "video"],
-		supportsStreaming: false,
-		supportsAttachments: false,
-		costPerRun: 1,
-		modalities: {
-			input: ["text"],
-			output: ["video"],
-		},
-		inputSchema: {
-			reference: "https://replicate.com/google/veo-3-1",
-			fields: [
-				{
-					name: "prompt",
-					type: "string",
-					description: "A text description of the video to generate",
-					required: true,
-				},
-				{
-					name: "aspect_ratio",
-					type: "string",
-					description: "Aspect ratio of the generated video.",
-					default: "16:9",
-					enum: ["16:9", "9:16"],
-				},
-				{
-					name: "duration",
-					type: "integer",
-					description: "Duration of the generated video in seconds.",
-					default: 6,
-				},
-				{
-					name: "image",
-					type: ["file", "string"],
-					description:
-						"Input image to start generating from. Ideal images are 16:9 or 9:16 and 1280x720 or 720x1280, depending on the aspect ratio you choose.",
-				},
-				{
-					name: "last_frame",
-					type: ["file", "string"],
-					description:
-						"Binding image for interpolation. When provided with an input image, creates a transition between the two images.",
-				},
-				{
-					name: "resolution",
-					type: "string",
-					description: "Resolution of the generated video.",
-					default: "720p",
-					enum: ["720p", "1080p"],
-				},
-				{
-					name: "reference_images",
-					type: ["array"],
-					description:
-						"1 to 3 reference images for subject-consistent generation (reference-to-video, or R2V). Reference images only work with 16:9 aspect ratio and 8-second duration. Last frame is ignored if reference images are provided.",
-					default: [],
-				},
-				{
-					name: "generate_audio",
-					type: "boolean",
-					description: "Whether to generate audio for the video.",
-					default: true,
-				},
-				{
-					name: "seed",
-					type: "integer",
-					description: "A random seed for the video generation.",
-				},
-			],
-		},
-		reliability: 4,
-		artificialAnalysis: {
-			intelligenceIndex: null,
-			codingIndex: null,
-			agenticIndex: null,
-			intelligenceIndexVersion: null,
-			mediaScores: [
-				{
-					key: "text_to_videoElo",
-					label: "Text-to-video arena",
-					value: 1208,
-					min: 800,
-					max: 1400,
-					confidenceInterval95: 9,
-				},
-			],
-		},
-	}),
-	createModelConfig("replicate-google-veo-3-1-fast", PROVIDER, {
-		name: "Google Veo 3.1 Fast",
-		matchingModel: "google/veo-3.1-fast",
-		description:
-			"New and improved version of Veo 3 Fast, with higher-fidelity video, context-aware audio and last frame support ",
-		modalities: {
-			input: ["text", "image"],
-			output: ["video"],
-		},
-		costPerRun: 5,
-		inputSchema: {
-			reference: "https://replicate.com/google/veo-3-1-fast",
-			fields: [
-				{
-					name: "prompt",
-					type: "string",
-					description: "A text description of the video to generate",
-					required: true,
-				},
-				{
-					name: "aspect_ratio",
-					type: "string",
-					description: "Aspect ratio of the generated video.",
-					default: "16:9",
-					enum: ["16:9", "9:16"],
-				},
-				{
-					name: "duration",
-					type: "integer",
-					description: "Duration of the generated video in seconds.",
-					default: 8,
-				},
-				{
-					name: "image",
-					type: ["file", "string"],
-					description:
-						"Input image to start generating from. Ideal images are 16:9 or 9:16 and 1280x720 or 720x1280, depending on the aspect ratio you choose.",
-				},
-				{
-					name: "last_frame",
-					type: ["file", "string"],
-					description:
-						"Binding image for interpolation. When provided with an input image, creates a transition between the two images.",
-				},
-				{
-					name: "negative_prompt",
-					type: "string",
-					description: "Text describing elements to avoid in the generated video.",
-					default: "",
-				},
-				{
-					name: "resolution",
-					type: "string",
-					description: "Resolution of the generated video.",
-					default: "1080p",
-					enum: ["720p", "1080p"],
-				},
-				{
-					name: "generate_audio",
-					type: "boolean",
-					description: "Whether to generate audio for the video.",
-					default: true,
-				},
-				{
-					name: "seed",
-					type: "integer",
-					description: "A random seed for the video generation.",
-				},
-			],
-		},
-		strengths: ["vision", "video", "creative"],
-		contextComplexity: 4,
-		reliability: 4,
-		artificialAnalysis: {
-			intelligenceIndex: null,
-			codingIndex: null,
-			agenticIndex: null,
-			intelligenceIndexVersion: null,
-			mediaScores: [
-				{
-					key: "text_to_videoElo",
-					label: "Text-to-video arena",
-					value: 1210,
-					min: 800,
-					max: 1400,
-					confidenceInterval95: 9,
-				},
-			],
-		},
-	}),
-	createModelConfig("replicate-bytedance-seedance-1-5-pro", PROVIDER, {
-		name: "SeeDance 1.5 Pro",
-		matchingModel: "bytedance/seedance-1.5-pro",
-		description: "A joint audio-video model that accurately follows complex instructions",
-		strengths: ["creative", "video", "vision"],
-		supportsStreaming: false,
-		supportsAttachments: false,
-		costPerRun: 1,
-		modalities: {
-			input: ["text", "image"],
-			output: ["video"],
-		},
-		inputSchema: {
-			reference: "https://replicate.com/bytedance/seedance-1.5-pro",
-			fields: [
-				{
-					name: "prompt",
-					type: "string",
-					description: "Text prompt for video generation",
-					required: true,
-				},
-				{
-					name: "image",
-					type: ["file", "string"],
-					description: "Input image for image-to-video generation",
-				},
-				{
-					name: "last_frame_image",
-					type: ["file", "string"],
-					description:
-						"Input image for last frame generation. This only works if an image start frame is given too.",
-				},
-				{
-					name: "duration",
-					type: "integer",
-					description: "Video duration in seconds",
-					default: 5,
-				},
-				{
-					name: "aspect_ratio",
-					type: "string",
-					description: "Video aspect ratio. Ignored if an image is used.",
-					default: "16:9",
-					enum: ["16:9", "4:3", "1:1", "3:4", "9:16", "21:9", "9:21"],
-				},
-				{
-					name: "fps",
-					type: "integer",
-					description: "Frame rate (frames per second)",
-					default: 24,
-					enum: [24],
-				},
-				{
-					name: "camera_fixed",
-					type: "boolean",
-					description: "Whether to fix camera position",
-					default: false,
-				},
-				{
-					name: "generate_audio",
-					type: "boolean",
-					description:
-						"Generate audio synchronized with the video. When enabled, the model outputs a video with audio that matches the visuals.",
-					default: false,
-				},
-				{
-					name: "seed",
-					type: "integer",
-					description: "Random seed. Set for reproducible generation",
-				},
-			],
-		},
-		contextComplexity: 4,
-		reliability: 4,
-		artificialAnalysis: {
-			intelligenceIndex: null,
-			codingIndex: null,
-			agenticIndex: null,
-			intelligenceIndexVersion: null,
-			mediaScores: [
-				{
-					key: "text_to_videoElo",
-					label: "Text-to-video arena",
-					value: 1179,
-					min: 800,
-					max: 1400,
-					confidenceInterval95: 8,
-				},
-			],
-		},
-	}),
-	createModelConfig("replicate-bytedance-seedance-2-0", PROVIDER, {
-		name: "Seedance 2.0",
-		matchingModel: "bytedance/seedance-2.0",
-		description:
-			"ByteDance video generation model with first-frame, last-frame, reference image, reference video, and reference audio support.",
-		strengths: ["creative", "video", "vision", "audio"],
-		isFeatured: true,
-		supportsStreaming: false,
-		supportsAttachments: false,
-		modalities: {
-			input: ["text", "image", "video", "audio"],
-			output: ["video"],
-		},
-		inputSchema: {
-			reference: "https://replicate.com/bytedance/seedance-2.0",
-			fields: [
-				{
-					name: "prompt",
-					type: "string",
-					description: "Text prompt for video generation",
-					required: true,
-				},
-				{
-					name: "image",
-					type: ["file", "string"],
-					description:
-						"Input image for image-to-video generation (first frame). Cannot be combined with reference images.",
-				},
-				{
-					name: "last_frame_image",
-					type: ["file", "string"],
-					description:
-						"Input image for last frame generation. Only works if a first frame image is also provided. Cannot be combined with reference images.",
-				},
-				{
-					name: "reference_images",
-					type: "array",
-					description:
-						"Reference images (up to 9) for character consistency, style guidance, and scene composition. Cannot be used together with first/last frame images. You can reference them in your prompt as [Image1], [Image2], etc.",
-					default: [],
-				},
-				{
-					name: "reference_videos",
-					type: "array",
-					description:
-						"Reference videos (up to 3, total duration max 15s) for motion transfer, style reference, and editing. Reference them in your prompt as [Video1], [Video2], etc.",
-					default: [],
-				},
-				{
-					name: "reference_audios",
-					type: "array",
-					description:
-						"Reference audio files (up to 3, total duration max 15s) for audio-driven generation and lip-sync. Requires at least one reference image or video. Reference them in your prompt as [Audio1], [Audio2], etc.",
-					default: [],
-				},
-				{
-					name: "duration",
-					type: "integer",
-					description:
-						"Video duration in seconds. Set to -1 for intelligent duration (model picks the best length).",
-					default: 5,
-				},
-				{
-					name: "resolution",
-					type: "string",
-					description: "Video resolution.",
-					default: "720p",
-					enum: ["480p", "720p", "1080p"],
-				},
-				{
-					name: "aspect_ratio",
-					type: "string",
-					description:
-						"Video aspect ratio. Set to 'adaptive' to let the model choose the best ratio based on inputs.",
-					default: "16:9",
-					enum: ["16:9", "4:3", "1:1", "3:4", "9:16", "21:9", "9:21", "adaptive"],
-				},
-				{
-					name: "generate_audio",
-					type: "boolean",
-					description:
-						"Generate synchronized audio with the video, including dialogue (use double quotes in prompt), sound effects, and background music.",
-					default: true,
-				},
-				{
-					name: "seed",
-					type: "integer",
-					description: "Random seed. Set for reproducible generation.",
-				},
-			],
-		},
-		contextComplexity: 4,
-		reliability: 5,
-		artificialAnalysis: {
-			intelligenceIndex: null,
-			codingIndex: null,
-			agenticIndex: null,
-			intelligenceIndexVersion: null,
-			mediaScores: [
-				{
-					key: "text_to_videoElo",
-					label: "Text-to-video arena",
-					value: 1273,
-					min: 800,
-					max: 1400,
-					confidenceInterval95: 8,
-				},
-			],
-		},
-	}),
-	createModelConfig("replicate-alibaba-happyhorse-1-0", PROVIDER, {
-		name: "HappyHorse 1.0",
-		matchingModel: "alibaba/happyhorse-1.0",
-		description:
-			"Alibaba text-to-video and image-to-video generation model with configurable duration and resolution.",
-		strengths: ["creative", "video", "vision"],
-		supportsStreaming: false,
-		supportsAttachments: false,
-		modalities: {
-			input: ["text", "image"],
-			output: ["video"],
-		},
-		inputSchema: {
-			reference: "https://replicate.com/alibaba/happyhorse-1.0",
-			fields: [
-				{
-					name: "prompt",
-					type: "string",
-					description: "Text prompt for video generation. Optional when an image is provided.",
-					default: "",
-				},
-				{
-					name: "image",
-					type: ["file", "string"],
-					description:
-						"First-frame image to animate. When provided, the model runs in image-to-video mode. Accepts jpg/png/bmp/webp, <=10MB, aspect ratio between 1:2.5 and 2.5:1, each side >=300px.",
-				},
-				{
-					name: "resolution",
-					type: "string",
-					description: "Output video resolution",
-					default: "1080p",
-					enum: ["720p", "1080p"],
-				},
-				{
-					name: "aspect_ratio",
-					type: "string",
-					description:
-						"Aspect ratio of the generated video. Only applies to text-to-video - when an image is provided, the image's aspect ratio is used.",
-					default: "16:9",
-					enum: ["16:9", "9:16", "1:1", "4:3", "3:4"],
-				},
-				{
-					name: "duration",
-					type: "integer",
-					description: "Duration of the generated video in seconds",
-					default: 5,
-					enum: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-				},
-				{
-					name: "seed",
-					type: "integer",
-					description: "Random seed for reproducible generation. Range: 0-2147483647",
-				},
-			],
-		},
-		contextComplexity: 4,
-		reliability: 5,
-		artificialAnalysis: {
-			intelligenceIndex: null,
-			codingIndex: null,
-			agenticIndex: null,
-			intelligenceIndexVersion: null,
-			mediaScores: [
-				{
-					key: "text_to_videoElo",
-					label: "Text-to-video arena",
-					value: 1291,
-					min: 800,
-					max: 1400,
-					confidenceInterval95: 10,
-				},
-			],
-		},
-	}),
-	createModelConfig("replicate-xai-grok-imagine-video", PROVIDER, {
-		name: "Grok Imagine Video",
-		matchingModel: "xai/grok-imagine-video",
-		description: "Generate videos using xAI's Grok Imagine Video model",
-		strengths: ["creative", "video", "vision"],
-		supportsStreaming: false,
-		supportsAttachments: false,
-		modalities: {
-			input: ["text", "image", "video"],
-			output: ["video"],
-		},
-		inputSchema: {
-			reference: "https://replicate.com/xai/grok-imagine-video",
-			fields: [
-				{
-					name: "prompt",
-					type: "string",
-					description: "Text prompt for video generation",
-					required: true,
-				},
-				{
-					name: "image",
-					type: ["file", "string"],
-					description:
-						"Input image to generate video from (image-to-video). Supports jpg, jpeg, png, webp.",
-				},
-				{
-					name: "video",
-					type: "string",
-					description:
-						"Input video to edit (video editing mode). Must be a direct link, max 8.7 seconds. Supports mp4, mov, webm.",
-				},
-				{
-					name: "duration",
-					type: "integer",
-					description: "Duration of the video in seconds (1-15). Ignored when editing a video.",
-					default: 5,
-				},
-				{
-					name: "aspect_ratio",
-					type: "string",
-					description:
-						"Aspect ratio of the video. For text-to-video, defaults to 16:9. For image-to-video, defaults to the input image's native aspect ratio. Ignored when editing a video.",
-					default: "auto",
-					enum: ["auto", "16:9", "4:3", "1:1", "9:16", "3:4", "3:2", "2:3"],
-				},
-				{
-					name: "resolution",
-					type: "string",
-					description: "Resolution of the video. Ignored when editing a video.",
-					default: "720p",
-					enum: ["720p", "480p"],
-				},
-			],
-		},
-		contextComplexity: 4,
-		reliability: 4,
-		artificialAnalysis: {
-			intelligenceIndex: null,
-			codingIndex: null,
-			agenticIndex: null,
-			intelligenceIndexVersion: null,
-			mediaScores: [
-				{
-					key: "text_to_videoElo",
-					label: "Text-to-video arena",
-					value: 1232,
-					min: 800,
-					max: 1400,
-					confidenceInterval95: 8,
-				},
-			],
-		},
-	}),
-	createModelConfig("replicate-prunaai-p-video", PROVIDER, {
-		name: "P-Video",
-		matchingModel: "prunaai/p-video",
-		description:
-			"PrunaAI video generation model for text-to-video, image-to-video, last-frame control, and audio-conditioned generation.",
-		strengths: ["creative", "video", "vision", "audio"],
-		supportsStreaming: false,
-		supportsAttachments: false,
-		modalities: {
-			input: ["text", "image", "audio"],
-			output: ["video"],
-		},
-		inputSchema: {
-			reference: "https://replicate.com/prunaai/p-video",
-			fields: [
-				{
-					name: "prompt",
-					type: "string",
-					description: "Text prompt for video generation.",
-					required: true,
-				},
-				{
-					name: "image",
-					type: ["file", "string"],
-					description:
-						"Input image to generate video from (image-to-video). Supports jpg, jpeg, png, webp.",
-				},
-				{
-					name: "last_frame_image",
-					type: ["file", "string"],
-					description:
-						"Reference image for the last frame of the video. Supports jpg, jpeg, png, webp.",
-				},
-				{
-					name: "audio",
-					type: ["file", "string"],
-					description: "Input audio to condition video generation. Supports flac, mp3, wav.",
-				},
-				{
-					name: "duration",
-					type: "integer",
-					description: "Duration of the video in seconds (1-20). Ignored when audio is provided.",
-					default: 5,
-				},
-				{
-					name: "aspect_ratio",
-					type: "string",
-					description: "Aspect ratio of the video. Ignored when an input image is provided.",
-					default: "16:9",
-					enum: ["16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "1:1"],
-				},
-				{
-					name: "resolution",
-					type: "string",
-					description: "Resolution of the video.",
-					default: "720p",
-					enum: ["720p", "1080p"],
-				},
-				{
-					name: "fps",
-					type: "integer",
-					description: "Frames per second of the video.",
-					default: 24,
-					enum: [24, 48],
-				},
-				{
-					name: "draft",
-					type: "boolean",
-					description: "Draft mode. Generates a lower-quality preview of the video.",
-					default: false,
-				},
-				{
-					name: "prompt_upsampling",
-					type: "boolean",
-					description: "Use prompt upsampling to enhance the prompt.",
-					default: true,
-				},
-				{
-					name: "disable_safety_filter",
-					type: "boolean",
-					description:
-						"Disable safety filter for prompts and input image. When disabled, prompts are not checked for unsafe content before generation.",
-					default: true,
-				},
-				{
-					name: "save_audio",
-					type: "boolean",
-					description: "Save the video with audio.",
-					default: true,
-				},
-				{
-					name: "seed",
-					type: "integer",
-					description: "Random seed. Set for reproducible generation.",
-				},
-				{
-					name: "no_op",
-					type: "boolean",
-					description: "Health check mode - returns status without inference.",
-					default: false,
-				},
-			],
-		},
-		contextComplexity: 4,
-		reliability: 3,
-		artificialAnalysis: {
-			intelligenceIndex: null,
-			codingIndex: null,
-			agenticIndex: null,
-			intelligenceIndexVersion: null,
-			mediaScores: [
-				{
-					key: "text_to_videoElo",
-					label: "Text-to-video arena",
-					value: 1072,
-					min: 800,
-					max: 1400,
-					confidenceInterval95: 9,
-				},
-			],
-		},
-	}),
-	createModelConfig("replicate-runway-gen-4-5", PROVIDER, {
-		name: "Runway Gen-4.5",
-		matchingModel: "runwayml/gen-4.5",
-		description: "State-of-the-art video motion quality, prompt adherence and visual fidelity",
-		strengths: ["creative", "video", "vision"],
-		supportsStreaming: false,
-		supportsAttachments: false,
-		modalities: {
-			input: ["text", "image"],
-			output: ["video"],
-		},
-		inputSchema: {
-			reference: "https://replicate.com/runwayml/gen-4.5",
-			fields: [
-				{
-					name: "prompt",
-					type: "string",
-					description: "Text prompt for video generation",
-					required: true,
-				},
-				{
-					name: "image",
-					type: ["file", "string"],
-					description:
-						"Optional initial image for video generation (first frame). If not provided, video will be generated from text only.",
-				},
-				{
-					name: "aspect_ratio",
-					type: "string",
-					description: "Video aspect ratio",
-				},
-				{
-					name: "duration",
-					type: "integer",
-					description: "Duration of the output video in seconds",
-				},
-				{
-					name: "seed",
-					type: "integer",
-					description: "Random seed. Set for reproducible generation",
-				},
-			],
-		},
-		contextComplexity: 4,
-		reliability: 4,
-		artificialAnalysis: {
-			intelligenceIndex: null,
-			codingIndex: null,
-			agenticIndex: null,
-			intelligenceIndexVersion: null,
-			mediaScores: [
-				{
-					key: "text_to_videoElo",
-					label: "Text-to-video arena",
-					value: 1223,
-					min: 800,
-					max: 1400,
-					confidenceInterval95: 8,
-				},
-			],
-		},
-	}),
-	createModelConfig("replicate-kwaivgi-kling-v3-video", PROVIDER, {
-		name: "Kling Video 3.0",
-		matchingModel: "kwaivgi/kling-v3-video",
-		description:
-			"Generate cinematic videos up to 15 seconds with multi-shot control, native audio, and improved consistency",
-		strengths: ["creative", "video"],
-		supportsStreaming: false,
-		supportsAttachments: false,
-		modalities: {
-			input: ["text", "image"],
-			output: ["video"],
-		},
-		inputSchema: {
-			reference: "https://replicate.com/kwaivgi/kling-v3-video",
-			fields: [
-				{
-					name: "prompt",
-					type: "string",
-					description: "Text prompt for video generation. Max 2500 characters.",
-					required: true,
-				},
-				{
-					name: "negative_prompt",
-					type: "string",
-					description: "Things you do not want to see in the video. Max 2500 characters.",
-				},
-				{
-					name: "start_image",
-					type: ["file", "string"],
-					description:
-						"First frame image. Supports .jpg/.jpeg/.png, max 10MB, min 300px, aspect ratio 1:2.5 to 2.5:1.",
-				},
-				{
-					name: "end_image",
-					type: ["file", "string"],
-					description:
-						"Last frame image. Requires start_image. Supports .jpg/.jpeg/.png, max 10MB, min 300px.",
-				},
-				{
-					name: "mode",
-					type: "string",
-					description: "'standard' generates 720p, 'pro' generates 1080p.",
-					default: "standard",
-					enum: ["standard", "pro"],
-				},
-				{
-					name: "aspect_ratio",
-					type: "string",
-					description: "Aspect ratio. Ignored when start_image is provided.",
-					enum: ["16:9", "9:16", "1:1"],
-				},
-				{
-					name: "duration",
-					type: "integer",
-					description: "Video duration in seconds.",
-				},
-				{
-					name: "generate_audio",
-					type: "boolean",
-					description: "Generate native audio for the video.",
-				},
-				{
-					name: "multi_prompt",
-					type: "string",
-					description:
-						'JSON array of shot definitions for multi-shot mode. Each shot: {"prompt": "...", "duration": N}. Max 6 shots, min 1s per shot, total must equal duration.',
-				},
-			],
-		},
-	}),
+  createModelConfig("replicate-insanely-fast-whisper-with-video", PROVIDER, {
+    name: "Insanely Fast Whisper, with video transcription",
+    matchingModel:
+      "turian/insanely-fast-whisper-with-video:4f41e90243af171da918f04da3e526b2c247065583ea9b757f2071f573965408",
+    description:
+      "TL;DR - Transcribe 150 minutes (2.5 hours) of audio in less than 98 seconds - with OpenAI’s Whisper Large v3. Blazingly fast transcription is now a reality! ⚡️",
+    strengths: ["creative", "audio", "transcription"],
+    supportsStreaming: false,
+    supportsAttachments: false,
+    costPerRun: 1.25,
+    inputSchema: {
+      reference: "https://replicate.com/turian/insanely-fast-whisper-with-video",
+      fields: [
+        {
+          name: "audio",
+          type: ["file", "string"],
+          description: "Audio file. Either this or url must be provided.",
+        },
+        {
+          name: "url",
+          type: "string",
+          description:
+            "Video URL for yt-dlp to download the audio from. Either this or audio must be provided.",
+        },
+        {
+          name: "task",
+          type: "string",
+          enum: ["transcribe", "translate"],
+          default: "transcribe",
+          description:
+            "Task to perform: transcribe or translate to another language. (default: transcribe).",
+        },
+        {
+          name: "language",
+          type: "string",
+          description:
+            "Language spoken in the audio. Supplying this improves accuracy and latency.",
+        },
+        {
+          name: "batch_size",
+          type: "integer",
+          description: "Number of parallel batches you want to compute. Reduce if you face OOMs.",
+          default: 64,
+        },
+        {
+          name: "timestamp",
+          type: "string",
+          default: "chunk",
+          description: "Whisper supports both chunked as well as word level timestamps.",
+          enum: ["chunk", "word"],
+        },
+      ],
+    },
+  }),
+  createModelConfig("replicate-tencent-hunyuan-video", PROVIDER, {
+    name: "Hunyuan Video",
+    matchingModel: "847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405",
+    description:
+      "A state-of-the-art text-to-video generation model capable of creating high-quality videos with realistic motion from text descriptions .",
+    strengths: ["creative", "video"],
+    supportsStreaming: false,
+    supportsAttachments: false,
+    costPerRun: 1.25,
+    inputSchema: {
+      reference: "https://replicate.com/tencent/hunyuan-video",
+      fields: [
+        {
+          name: "prompt",
+          type: "string",
+          description: "Primary prompt describing the video scene to render.",
+          required: true,
+        },
+        {
+          name: "negative_prompt",
+          type: "string",
+          description: "Text describing elements to avoid in the generated image.",
+          default: "",
+        },
+        {
+          name: "video_length",
+          type: "number",
+          description: "Number of frames to generate (must be 4k+1, ex: 49 or 129)",
+          default: 129,
+        },
+        {
+          name: "width",
+          type: "integer",
+          description: "Frame width in pixels.",
+          default: 864,
+        },
+        {
+          name: "height",
+          type: "integer",
+          description: "Frame height in pixels.",
+          default: 480,
+        },
+        {
+          name: "infer_steps",
+          type: "number",
+          description: "Number of denoising steps",
+          default: 50,
+        },
+        {
+          name: "seed",
+          type: "integer",
+          description: "Random seed for reproducibility.",
+        },
+      ],
+    },
+    reliability: 2,
+    artificialAnalysis: {
+      intelligenceIndex: null,
+      codingIndex: null,
+      agenticIndex: null,
+      intelligenceIndexVersion: null,
+      mediaScores: [
+        {
+          key: "text_to_videoElo",
+          label: "Text-to-video arena",
+          value: 1001,
+          min: 800,
+          max: 1400,
+          confidenceInterval95: 8,
+        },
+      ],
+    },
+  }),
+  createModelConfig("replicate-sora-2", PROVIDER, {
+    name: "Sora 2",
+    matchingModel: "openai/sora-2",
+    description: "OpenAI's Flagship video generation with synced audio ",
+    strengths: ["creative", "video"],
+    supportsStreaming: false,
+    supportsAttachments: false,
+    costPerRun: 0.5,
+    modalities: {
+      input: ["text"],
+      output: ["video"],
+    },
+    inputSchema: {
+      reference: "https://replicate.com/openai/sora-2",
+      fields: [
+        {
+          name: "seconds",
+          type: "integer",
+          description: "Duration of the generated video in seconds.",
+          default: 4,
+        },
+        {
+          name: "aspect_ratio",
+          type: "string",
+          description: "Aspect ratio of the generated video.",
+          default: "portrait",
+          enum: ["portrait", "landscape"],
+        },
+        {
+          name: "prompt",
+          type: "string",
+          description: "A text description of the video to generate",
+          required: true,
+        },
+        {
+          name: "input_reference",
+          type: ["file", "string"],
+          description:
+            "An optional image to use as the first frame of the video. The image must be the same aspect ratio as the video.",
+        },
+      ],
+    },
+    reliability: 4,
+    artificialAnalysis: {
+      intelligenceIndex: null,
+      codingIndex: null,
+      agenticIndex: null,
+      intelligenceIndexVersion: null,
+      mediaScores: [
+        {
+          key: "text_to_videoElo",
+          label: "Text-to-video arena",
+          value: 1179,
+          min: 800,
+          max: 1400,
+          confidenceInterval95: 8,
+        },
+      ],
+    },
+  }),
+  createModelConfig("replicate-hailuo-2-3", PROVIDER, {
+    name: "Hailuo 2.3",
+    matchingModel: "minimax/hailuo-2.3",
+    description:
+      "A high-fidelity video generation model optimized for realistic human motion, cinematic VFX, expressive characters, and strong prompt and style adherence across both text-to-video and image-to-video workflows ",
+    strengths: ["creative", "video"],
+    supportsStreaming: false,
+    supportsAttachments: false,
+    costPerRun: 1,
+    modalities: {
+      input: ["text"],
+      output: ["video"],
+    },
+    inputSchema: {
+      reference: "https://replicate.com/minimax/hailuo-2-3",
+      fields: [
+        {
+          name: "prompt",
+          type: "string",
+          description: "A text description of the video to generate",
+          required: true,
+        },
+        {
+          name: "first_frame_image",
+          type: ["file", "string"],
+          description:
+            "First frame image for video generation. The output video will have the same aspect ratio as this image.",
+        },
+        {
+          name: "duration",
+          type: "integer",
+          description: "Duration of the generated video in seconds.",
+          default: 6,
+        },
+        {
+          name: "resolution",
+          type: "string",
+          description: "Resolution of the generated video.",
+          default: "768p",
+          enum: ["768p", "1080p"],
+        },
+        {
+          name: "prompt_optimizer",
+          type: "boolean",
+          description: "Whether to use prompt optimization.",
+          default: true,
+        },
+      ],
+    },
+    reliability: 4,
+    artificialAnalysis: {
+      intelligenceIndex: null,
+      codingIndex: null,
+      agenticIndex: null,
+      intelligenceIndexVersion: null,
+      mediaScores: [
+        {
+          key: "text_to_videoElo",
+          label: "Text-to-video arena",
+          value: 1179,
+          min: 800,
+          max: 1400,
+          confidenceInterval95: 8,
+        },
+      ],
+    },
+  }),
+  createModelConfig("replicate-veo-3-1", PROVIDER, {
+    name: "Veo 3.1",
+    matchingModel: "google/veo-3.1",
+    description:
+      "New and improved version of Veo 3, with higher-fidelity video, context-aware audio, reference image and last frame support ",
+    strengths: ["creative", "video"],
+    supportsStreaming: false,
+    supportsAttachments: false,
+    costPerRun: 1,
+    modalities: {
+      input: ["text"],
+      output: ["video"],
+    },
+    inputSchema: {
+      reference: "https://replicate.com/google/veo-3-1",
+      fields: [
+        {
+          name: "prompt",
+          type: "string",
+          description: "A text description of the video to generate",
+          required: true,
+        },
+        {
+          name: "aspect_ratio",
+          type: "string",
+          description: "Aspect ratio of the generated video.",
+          default: "16:9",
+          enum: ["16:9", "9:16"],
+        },
+        {
+          name: "duration",
+          type: "integer",
+          description: "Duration of the generated video in seconds.",
+          default: 6,
+        },
+        {
+          name: "image",
+          type: ["file", "string"],
+          description:
+            "Input image to start generating from. Ideal images are 16:9 or 9:16 and 1280x720 or 720x1280, depending on the aspect ratio you choose.",
+        },
+        {
+          name: "last_frame",
+          type: ["file", "string"],
+          description:
+            "Binding image for interpolation. When provided with an input image, creates a transition between the two images.",
+        },
+        {
+          name: "resolution",
+          type: "string",
+          description: "Resolution of the generated video.",
+          default: "720p",
+          enum: ["720p", "1080p"],
+        },
+        {
+          name: "reference_images",
+          type: ["array"],
+          description:
+            "1 to 3 reference images for subject-consistent generation (reference-to-video, or R2V). Reference images only work with 16:9 aspect ratio and 8-second duration. Last frame is ignored if reference images are provided.",
+          default: [],
+        },
+        {
+          name: "generate_audio",
+          type: "boolean",
+          description: "Whether to generate audio for the video.",
+          default: true,
+        },
+        {
+          name: "seed",
+          type: "integer",
+          description: "A random seed for the video generation.",
+        },
+      ],
+    },
+    reliability: 4,
+    artificialAnalysis: {
+      intelligenceIndex: null,
+      codingIndex: null,
+      agenticIndex: null,
+      intelligenceIndexVersion: null,
+      mediaScores: [
+        {
+          key: "text_to_videoElo",
+          label: "Text-to-video arena",
+          value: 1208,
+          min: 800,
+          max: 1400,
+          confidenceInterval95: 9,
+        },
+      ],
+    },
+  }),
+  createModelConfig("replicate-google-veo-3-1-fast", PROVIDER, {
+    name: "Google Veo 3.1 Fast",
+    matchingModel: "google/veo-3.1-fast",
+    description:
+      "New and improved version of Veo 3 Fast, with higher-fidelity video, context-aware audio and last frame support ",
+    modalities: {
+      input: ["text", "image"],
+      output: ["video"],
+    },
+    costPerRun: 5,
+    inputSchema: {
+      reference: "https://replicate.com/google/veo-3-1-fast",
+      fields: [
+        {
+          name: "prompt",
+          type: "string",
+          description: "A text description of the video to generate",
+          required: true,
+        },
+        {
+          name: "aspect_ratio",
+          type: "string",
+          description: "Aspect ratio of the generated video.",
+          default: "16:9",
+          enum: ["16:9", "9:16"],
+        },
+        {
+          name: "duration",
+          type: "integer",
+          description: "Duration of the generated video in seconds.",
+          default: 8,
+        },
+        {
+          name: "image",
+          type: ["file", "string"],
+          description:
+            "Input image to start generating from. Ideal images are 16:9 or 9:16 and 1280x720 or 720x1280, depending on the aspect ratio you choose.",
+        },
+        {
+          name: "last_frame",
+          type: ["file", "string"],
+          description:
+            "Binding image for interpolation. When provided with an input image, creates a transition between the two images.",
+        },
+        {
+          name: "negative_prompt",
+          type: "string",
+          description: "Text describing elements to avoid in the generated video.",
+          default: "",
+        },
+        {
+          name: "resolution",
+          type: "string",
+          description: "Resolution of the generated video.",
+          default: "1080p",
+          enum: ["720p", "1080p"],
+        },
+        {
+          name: "generate_audio",
+          type: "boolean",
+          description: "Whether to generate audio for the video.",
+          default: true,
+        },
+        {
+          name: "seed",
+          type: "integer",
+          description: "A random seed for the video generation.",
+        },
+      ],
+    },
+    strengths: ["vision", "video", "creative"],
+    contextComplexity: 4,
+    reliability: 4,
+    artificialAnalysis: {
+      intelligenceIndex: null,
+      codingIndex: null,
+      agenticIndex: null,
+      intelligenceIndexVersion: null,
+      mediaScores: [
+        {
+          key: "text_to_videoElo",
+          label: "Text-to-video arena",
+          value: 1210,
+          min: 800,
+          max: 1400,
+          confidenceInterval95: 9,
+        },
+      ],
+    },
+  }),
+  createModelConfig("replicate-bytedance-seedance-1-5-pro", PROVIDER, {
+    name: "SeeDance 1.5 Pro",
+    matchingModel: "bytedance/seedance-1.5-pro",
+    description: "A joint audio-video model that accurately follows complex instructions",
+    strengths: ["creative", "video", "vision"],
+    supportsStreaming: false,
+    supportsAttachments: false,
+    costPerRun: 1,
+    modalities: {
+      input: ["text", "image"],
+      output: ["video"],
+    },
+    inputSchema: {
+      reference: "https://replicate.com/bytedance/seedance-1.5-pro",
+      fields: [
+        {
+          name: "prompt",
+          type: "string",
+          description: "Text prompt for video generation",
+          required: true,
+        },
+        {
+          name: "image",
+          type: ["file", "string"],
+          description: "Input image for image-to-video generation",
+        },
+        {
+          name: "last_frame_image",
+          type: ["file", "string"],
+          description:
+            "Input image for last frame generation. This only works if an image start frame is given too.",
+        },
+        {
+          name: "duration",
+          type: "integer",
+          description: "Video duration in seconds",
+          default: 5,
+        },
+        {
+          name: "aspect_ratio",
+          type: "string",
+          description: "Video aspect ratio. Ignored if an image is used.",
+          default: "16:9",
+          enum: ["16:9", "4:3", "1:1", "3:4", "9:16", "21:9", "9:21"],
+        },
+        {
+          name: "fps",
+          type: "integer",
+          description: "Frame rate (frames per second)",
+          default: 24,
+          enum: [24],
+        },
+        {
+          name: "camera_fixed",
+          type: "boolean",
+          description: "Whether to fix camera position",
+          default: false,
+        },
+        {
+          name: "generate_audio",
+          type: "boolean",
+          description:
+            "Generate audio synchronized with the video. When enabled, the model outputs a video with audio that matches the visuals.",
+          default: false,
+        },
+        {
+          name: "seed",
+          type: "integer",
+          description: "Random seed. Set for reproducible generation",
+        },
+      ],
+    },
+    contextComplexity: 4,
+    reliability: 4,
+    artificialAnalysis: {
+      intelligenceIndex: null,
+      codingIndex: null,
+      agenticIndex: null,
+      intelligenceIndexVersion: null,
+      mediaScores: [
+        {
+          key: "text_to_videoElo",
+          label: "Text-to-video arena",
+          value: 1179,
+          min: 800,
+          max: 1400,
+          confidenceInterval95: 8,
+        },
+      ],
+    },
+  }),
+  createModelConfig("replicate-bytedance-seedance-2-0", PROVIDER, {
+    name: "Seedance 2.0",
+    matchingModel: "bytedance/seedance-2.0",
+    description:
+      "ByteDance video generation model with first-frame, last-frame, reference image, reference video, and reference audio support.",
+    strengths: ["creative", "video", "vision", "audio"],
+    isFeatured: true,
+    supportsStreaming: false,
+    supportsAttachments: false,
+    modalities: {
+      input: ["text", "image", "video", "audio"],
+      output: ["video"],
+    },
+    inputSchema: {
+      reference: "https://replicate.com/bytedance/seedance-2.0",
+      fields: [
+        {
+          name: "prompt",
+          type: "string",
+          description: "Text prompt for video generation",
+          required: true,
+        },
+        {
+          name: "image",
+          type: ["file", "string"],
+          description:
+            "Input image for image-to-video generation (first frame). Cannot be combined with reference images.",
+        },
+        {
+          name: "last_frame_image",
+          type: ["file", "string"],
+          description:
+            "Input image for last frame generation. Only works if a first frame image is also provided. Cannot be combined with reference images.",
+        },
+        {
+          name: "reference_images",
+          type: "array",
+          description:
+            "Reference images (up to 9) for character consistency, style guidance, and scene composition. Cannot be used together with first/last frame images. You can reference them in your prompt as [Image1], [Image2], etc.",
+          default: [],
+        },
+        {
+          name: "reference_videos",
+          type: "array",
+          description:
+            "Reference videos (up to 3, total duration max 15s) for motion transfer, style reference, and editing. Reference them in your prompt as [Video1], [Video2], etc.",
+          default: [],
+        },
+        {
+          name: "reference_audios",
+          type: "array",
+          description:
+            "Reference audio files (up to 3, total duration max 15s) for audio-driven generation and lip-sync. Requires at least one reference image or video. Reference them in your prompt as [Audio1], [Audio2], etc.",
+          default: [],
+        },
+        {
+          name: "duration",
+          type: "integer",
+          description:
+            "Video duration in seconds. Set to -1 for intelligent duration (model picks the best length).",
+          default: 5,
+        },
+        {
+          name: "resolution",
+          type: "string",
+          description: "Video resolution.",
+          default: "720p",
+          enum: ["480p", "720p", "1080p"],
+        },
+        {
+          name: "aspect_ratio",
+          type: "string",
+          description:
+            "Video aspect ratio. Set to 'adaptive' to let the model choose the best ratio based on inputs.",
+          default: "16:9",
+          enum: ["16:9", "4:3", "1:1", "3:4", "9:16", "21:9", "9:21", "adaptive"],
+        },
+        {
+          name: "generate_audio",
+          type: "boolean",
+          description:
+            "Generate synchronized audio with the video, including dialogue (use double quotes in prompt), sound effects, and background music.",
+          default: true,
+        },
+        {
+          name: "seed",
+          type: "integer",
+          description: "Random seed. Set for reproducible generation.",
+        },
+      ],
+    },
+    contextComplexity: 4,
+    reliability: 5,
+    artificialAnalysis: {
+      intelligenceIndex: null,
+      codingIndex: null,
+      agenticIndex: null,
+      intelligenceIndexVersion: null,
+      mediaScores: [
+        {
+          key: "text_to_videoElo",
+          label: "Text-to-video arena",
+          value: 1273,
+          min: 800,
+          max: 1400,
+          confidenceInterval95: 8,
+        },
+      ],
+    },
+  }),
+  createModelConfig("replicate-alibaba-happyhorse-1-0", PROVIDER, {
+    name: "HappyHorse 1.0",
+    matchingModel: "alibaba/happyhorse-1.0",
+    description:
+      "Alibaba text-to-video and image-to-video generation model with configurable duration and resolution.",
+    strengths: ["creative", "video", "vision"],
+    supportsStreaming: false,
+    supportsAttachments: false,
+    modalities: {
+      input: ["text", "image"],
+      output: ["video"],
+    },
+    inputSchema: {
+      reference: "https://replicate.com/alibaba/happyhorse-1.0",
+      fields: [
+        {
+          name: "prompt",
+          type: "string",
+          description: "Text prompt for video generation. Optional when an image is provided.",
+          default: "",
+        },
+        {
+          name: "image",
+          type: ["file", "string"],
+          description:
+            "First-frame image to animate. When provided, the model runs in image-to-video mode. Accepts jpg/png/bmp/webp, <=10MB, aspect ratio between 1:2.5 and 2.5:1, each side >=300px.",
+        },
+        {
+          name: "resolution",
+          type: "string",
+          description: "Output video resolution",
+          default: "1080p",
+          enum: ["720p", "1080p"],
+        },
+        {
+          name: "aspect_ratio",
+          type: "string",
+          description:
+            "Aspect ratio of the generated video. Only applies to text-to-video - when an image is provided, the image's aspect ratio is used.",
+          default: "16:9",
+          enum: ["16:9", "9:16", "1:1", "4:3", "3:4"],
+        },
+        {
+          name: "duration",
+          type: "integer",
+          description: "Duration of the generated video in seconds",
+          default: 5,
+          enum: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+        },
+        {
+          name: "seed",
+          type: "integer",
+          description: "Random seed for reproducible generation. Range: 0-2147483647",
+        },
+      ],
+    },
+    contextComplexity: 4,
+    reliability: 5,
+    artificialAnalysis: {
+      intelligenceIndex: null,
+      codingIndex: null,
+      agenticIndex: null,
+      intelligenceIndexVersion: null,
+      mediaScores: [
+        {
+          key: "text_to_videoElo",
+          label: "Text-to-video arena",
+          value: 1291,
+          min: 800,
+          max: 1400,
+          confidenceInterval95: 10,
+        },
+      ],
+    },
+  }),
+  createModelConfig("replicate-xai-grok-imagine-video", PROVIDER, {
+    name: "Grok Imagine Video",
+    matchingModel: "xai/grok-imagine-video",
+    description: "Generate videos using xAI's Grok Imagine Video model",
+    strengths: ["creative", "video", "vision"],
+    supportsStreaming: false,
+    supportsAttachments: false,
+    modalities: {
+      input: ["text", "image", "video"],
+      output: ["video"],
+    },
+    inputSchema: {
+      reference: "https://replicate.com/xai/grok-imagine-video",
+      fields: [
+        {
+          name: "prompt",
+          type: "string",
+          description: "Text prompt for video generation",
+          required: true,
+        },
+        {
+          name: "image",
+          type: ["file", "string"],
+          description:
+            "Input image to generate video from (image-to-video). Supports jpg, jpeg, png, webp.",
+        },
+        {
+          name: "video",
+          type: "string",
+          description:
+            "Input video to edit (video editing mode). Must be a direct link, max 8.7 seconds. Supports mp4, mov, webm.",
+        },
+        {
+          name: "duration",
+          type: "integer",
+          description: "Duration of the video in seconds (1-15). Ignored when editing a video.",
+          default: 5,
+        },
+        {
+          name: "aspect_ratio",
+          type: "string",
+          description:
+            "Aspect ratio of the video. For text-to-video, defaults to 16:9. For image-to-video, defaults to the input image's native aspect ratio. Ignored when editing a video.",
+          default: "auto",
+          enum: ["auto", "16:9", "4:3", "1:1", "9:16", "3:4", "3:2", "2:3"],
+        },
+        {
+          name: "resolution",
+          type: "string",
+          description: "Resolution of the video. Ignored when editing a video.",
+          default: "720p",
+          enum: ["720p", "480p"],
+        },
+      ],
+    },
+    contextComplexity: 4,
+    reliability: 4,
+    artificialAnalysis: {
+      intelligenceIndex: null,
+      codingIndex: null,
+      agenticIndex: null,
+      intelligenceIndexVersion: null,
+      mediaScores: [
+        {
+          key: "text_to_videoElo",
+          label: "Text-to-video arena",
+          value: 1232,
+          min: 800,
+          max: 1400,
+          confidenceInterval95: 8,
+        },
+      ],
+    },
+  }),
+  createModelConfig("replicate-prunaai-p-video", PROVIDER, {
+    name: "P-Video",
+    matchingModel: "prunaai/p-video",
+    description:
+      "PrunaAI video generation model for text-to-video, image-to-video, last-frame control, and audio-conditioned generation.",
+    strengths: ["creative", "video", "vision", "audio"],
+    supportsStreaming: false,
+    supportsAttachments: false,
+    modalities: {
+      input: ["text", "image", "audio"],
+      output: ["video"],
+    },
+    inputSchema: {
+      reference: "https://replicate.com/prunaai/p-video",
+      fields: [
+        {
+          name: "prompt",
+          type: "string",
+          description: "Text prompt for video generation.",
+          required: true,
+        },
+        {
+          name: "image",
+          type: ["file", "string"],
+          description:
+            "Input image to generate video from (image-to-video). Supports jpg, jpeg, png, webp.",
+        },
+        {
+          name: "last_frame_image",
+          type: ["file", "string"],
+          description:
+            "Reference image for the last frame of the video. Supports jpg, jpeg, png, webp.",
+        },
+        {
+          name: "audio",
+          type: ["file", "string"],
+          description: "Input audio to condition video generation. Supports flac, mp3, wav.",
+        },
+        {
+          name: "duration",
+          type: "integer",
+          description: "Duration of the video in seconds (1-20). Ignored when audio is provided.",
+          default: 5,
+        },
+        {
+          name: "aspect_ratio",
+          type: "string",
+          description: "Aspect ratio of the video. Ignored when an input image is provided.",
+          default: "16:9",
+          enum: ["16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "1:1"],
+        },
+        {
+          name: "resolution",
+          type: "string",
+          description: "Resolution of the video.",
+          default: "720p",
+          enum: ["720p", "1080p"],
+        },
+        {
+          name: "fps",
+          type: "integer",
+          description: "Frames per second of the video.",
+          default: 24,
+          enum: [24, 48],
+        },
+        {
+          name: "draft",
+          type: "boolean",
+          description: "Draft mode. Generates a lower-quality preview of the video.",
+          default: false,
+        },
+        {
+          name: "prompt_upsampling",
+          type: "boolean",
+          description: "Use prompt upsampling to enhance the prompt.",
+          default: true,
+        },
+        {
+          name: "disable_safety_filter",
+          type: "boolean",
+          description:
+            "Disable safety filter for prompts and input image. When disabled, prompts are not checked for unsafe content before generation.",
+          default: true,
+        },
+        {
+          name: "save_audio",
+          type: "boolean",
+          description: "Save the video with audio.",
+          default: true,
+        },
+        {
+          name: "seed",
+          type: "integer",
+          description: "Random seed. Set for reproducible generation.",
+        },
+        {
+          name: "no_op",
+          type: "boolean",
+          description: "Health check mode - returns status without inference.",
+          default: false,
+        },
+      ],
+    },
+    contextComplexity: 4,
+    reliability: 3,
+    artificialAnalysis: {
+      intelligenceIndex: null,
+      codingIndex: null,
+      agenticIndex: null,
+      intelligenceIndexVersion: null,
+      mediaScores: [
+        {
+          key: "text_to_videoElo",
+          label: "Text-to-video arena",
+          value: 1072,
+          min: 800,
+          max: 1400,
+          confidenceInterval95: 9,
+        },
+      ],
+    },
+  }),
+  createModelConfig("replicate-runway-gen-4-5", PROVIDER, {
+    name: "Runway Gen-4.5",
+    matchingModel: "runwayml/gen-4.5",
+    description: "State-of-the-art video motion quality, prompt adherence and visual fidelity",
+    strengths: ["creative", "video", "vision"],
+    supportsStreaming: false,
+    supportsAttachments: false,
+    modalities: {
+      input: ["text", "image"],
+      output: ["video"],
+    },
+    inputSchema: {
+      reference: "https://replicate.com/runwayml/gen-4.5",
+      fields: [
+        {
+          name: "prompt",
+          type: "string",
+          description: "Text prompt for video generation",
+          required: true,
+        },
+        {
+          name: "image",
+          type: ["file", "string"],
+          description:
+            "Optional initial image for video generation (first frame). If not provided, video will be generated from text only.",
+        },
+        {
+          name: "aspect_ratio",
+          type: "string",
+          description: "Video aspect ratio",
+        },
+        {
+          name: "duration",
+          type: "integer",
+          description: "Duration of the output video in seconds",
+        },
+        {
+          name: "seed",
+          type: "integer",
+          description: "Random seed. Set for reproducible generation",
+        },
+      ],
+    },
+    contextComplexity: 4,
+    reliability: 4,
+    artificialAnalysis: {
+      intelligenceIndex: null,
+      codingIndex: null,
+      agenticIndex: null,
+      intelligenceIndexVersion: null,
+      mediaScores: [
+        {
+          key: "text_to_videoElo",
+          label: "Text-to-video arena",
+          value: 1223,
+          min: 800,
+          max: 1400,
+          confidenceInterval95: 8,
+        },
+      ],
+    },
+  }),
+  createModelConfig("replicate-kwaivgi-kling-v3-video", PROVIDER, {
+    name: "Kling Video 3.0",
+    matchingModel: "kwaivgi/kling-v3-video",
+    description:
+      "Generate cinematic videos up to 15 seconds with multi-shot control, native audio, and improved consistency",
+    strengths: ["creative", "video"],
+    supportsStreaming: false,
+    supportsAttachments: false,
+    modalities: {
+      input: ["text", "image"],
+      output: ["video"],
+    },
+    inputSchema: {
+      reference: "https://replicate.com/kwaivgi/kling-v3-video",
+      fields: [
+        {
+          name: "prompt",
+          type: "string",
+          description: "Text prompt for video generation. Max 2500 characters.",
+          required: true,
+        },
+        {
+          name: "negative_prompt",
+          type: "string",
+          description: "Things you do not want to see in the video. Max 2500 characters.",
+        },
+        {
+          name: "start_image",
+          type: ["file", "string"],
+          description:
+            "First frame image. Supports .jpg/.jpeg/.png, max 10MB, min 300px, aspect ratio 1:2.5 to 2.5:1.",
+        },
+        {
+          name: "end_image",
+          type: ["file", "string"],
+          description:
+            "Last frame image. Requires start_image. Supports .jpg/.jpeg/.png, max 10MB, min 300px.",
+        },
+        {
+          name: "mode",
+          type: "string",
+          description: "'standard' generates 720p, 'pro' generates 1080p.",
+          default: "standard",
+          enum: ["standard", "pro"],
+        },
+        {
+          name: "aspect_ratio",
+          type: "string",
+          description: "Aspect ratio. Ignored when start_image is provided.",
+          enum: ["16:9", "9:16", "1:1"],
+        },
+        {
+          name: "duration",
+          type: "integer",
+          description: "Video duration in seconds.",
+        },
+        {
+          name: "generate_audio",
+          type: "boolean",
+          description: "Generate native audio for the video.",
+        },
+        {
+          name: "multi_prompt",
+          type: "string",
+          description:
+            'JSON array of shot definitions for multi-shot mode. Each shot: {"prompt": "...", "duration": N}. Max 6 shots, min 1s per shot, total must equal duration.',
+        },
+      ],
+    },
+  }),
 ]);

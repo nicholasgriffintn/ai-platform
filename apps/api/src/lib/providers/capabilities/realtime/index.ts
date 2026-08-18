@@ -1,4 +1,5 @@
 import type { IEnv, IUser } from "~/types";
+
 import { providerLibrary } from "../../library";
 import type { ProviderFactoryContext } from "../../registry/types";
 import type { RealtimeModality, RealtimeTransport } from "./modalities";
@@ -7,47 +8,47 @@ export type RealtimeSessionType = "realtime" | "translation" | "transcription";
 export type RealtimeTranscriptionDelay = "minimal" | "low" | "medium" | "high" | "xhigh";
 
 export function parseRealtimeTranscriptionDelay(
-	delay?: string,
+  delay?: string,
 ): RealtimeTranscriptionDelay | undefined {
-	switch (delay) {
-		case "minimal":
-		case "low":
-		case "medium":
-		case "high":
-		case "xhigh":
-			return delay;
-		default:
-			return undefined;
-	}
+  switch (delay) {
+    case "minimal":
+    case "low":
+    case "medium":
+    case "high":
+    case "xhigh":
+      return delay;
+    default:
+      return undefined;
+  }
 }
 
 export interface RealtimeSessionRequest {
-	env: IEnv;
-	user: IUser;
-	type: RealtimeSessionType;
-	apiBaseUrl?: string;
-	model?: string;
-	language?: string;
-	sourceLanguage?: string;
-	targetLanguage?: string;
-	voice?: string;
-	instructions?: string;
-	delay?: RealtimeTranscriptionDelay;
-	transport?: RealtimeTransport;
-	inputModalities?: RealtimeModality[];
-	outputModalities?: RealtimeModality[];
+  env: IEnv;
+  user: IUser;
+  type: RealtimeSessionType;
+  apiBaseUrl?: string;
+  model?: string;
+  language?: string;
+  sourceLanguage?: string;
+  targetLanguage?: string;
+  voice?: string;
+  instructions?: string;
+  delay?: RealtimeTranscriptionDelay;
+  transport?: RealtimeTransport;
+  inputModalities?: RealtimeModality[];
+  outputModalities?: RealtimeModality[];
 }
 
 export interface RealtimeProvider {
-	name: string;
-	models?: string[];
-	getApiKey?: (request: RealtimeSessionRequest) => Promise<string>;
-	getDefaultModel: (type: RealtimeSessionRequest["type"]) => string;
-	getTranscriptionDelay?: (
-		request: RealtimeSessionRequest,
-	) => RealtimeTranscriptionDelay | undefined;
-	buildAudioFormat?: () => Record<string, unknown>;
-	createSession(request: RealtimeSessionRequest): Promise<unknown>;
+  name: string;
+  models?: string[];
+  getApiKey?: (request: RealtimeSessionRequest) => Promise<string>;
+  getDefaultModel: (type: RealtimeSessionRequest["type"]) => string;
+  getTranscriptionDelay?: (
+    request: RealtimeSessionRequest,
+  ) => RealtimeTranscriptionDelay | undefined;
+  buildAudioFormat?: () => Record<string, unknown>;
+  createSession(request: RealtimeSessionRequest): Promise<unknown>;
 }
 
 /**
@@ -56,30 +57,30 @@ export interface RealtimeProvider {
  * @param context - Optional provider factory context (env, user, config)
  */
 export function getRealtimeProvider(
-	providerName: string,
-	context?: ProviderFactoryContext,
+  providerName: string,
+  context?: ProviderFactoryContext,
 ): RealtimeProvider {
-	return providerLibrary.realtime(providerName, context);
+  return providerLibrary.realtime(providerName, context);
 }
 
 /**
  * List all registered realtime providers (includes aliases).
  */
 export function listRealtimeProviders(): string[] {
-	const summaries = providerLibrary.list("realtime");
-	const names = new Set<string>();
+  const summaries = providerLibrary.list("realtime");
+  const names = new Set<string>();
 
-	for (const summary of summaries) {
-		names.add(summary.name);
-		summary.aliases?.forEach((alias) => names.add(alias));
-	}
+  for (const summary of summaries) {
+    names.add(summary.name);
+    summary.aliases?.forEach((alias) => names.add(alias));
+  }
 
-	return Array.from(names).sort();
+  return Array.from(names).sort();
 }
 
 export {
-	parseRealtimeModalities,
-	parseRealtimeTransport,
-	validateRealtimeModalities,
+  parseRealtimeModalities,
+  parseRealtimeTransport,
+  validateRealtimeModalities,
 } from "./modalities";
 export type { RealtimeModality, RealtimeTransport } from "./modalities";

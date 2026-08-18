@@ -82,8 +82,8 @@ The API Worker must define this service binding:
 
 ```json
 {
-	"binding": "TRAINING_WORKER",
-	"service": "assistant-training-worker"
+  "binding": "TRAINING_WORKER",
+  "service": "assistant-training-worker"
 }
 ```
 

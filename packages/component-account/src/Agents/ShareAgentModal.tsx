@@ -83,7 +83,7 @@ export function ShareAgentModal({
           className="space-y-4"
           onSubmit={(e) => {
             e.preventDefault();
-            handleShare();
+            void handleShare();
           }}
         >
           <FormInput

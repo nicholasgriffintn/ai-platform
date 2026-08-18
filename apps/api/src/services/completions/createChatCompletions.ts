@@ -21,7 +21,6 @@ import type {
   CreateChatCompletionsResponse,
   IEnv,
   IUser,
-  Message,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";

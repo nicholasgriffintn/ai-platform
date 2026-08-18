@@ -33,7 +33,7 @@ export const useCreateNote = (projectId?: string) => {
   return useMutation({
     mutationFn: (data: NoteCreateRequest) => createNote(data, projectId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes", projectId] });
+      void queryClient.invalidateQueries({ queryKey: ["notes", projectId] });
     },
   });
 };
@@ -44,7 +44,7 @@ export const useUpdateNote = (id: string, projectId?: string) => {
   return useMutation({
     mutationFn: (data: NoteUpdateRequest) => updateNote({ id, ...data }, projectId),
     onSuccess: (note) => {
-      queryClient.invalidateQueries({ queryKey: ["notes", projectId] });
+      void queryClient.invalidateQueries({ queryKey: ["notes", projectId] });
       queryClient.setQueryData(["note", projectId, id], note);
     },
   });
@@ -56,7 +56,7 @@ export const useDeleteNote = (projectId?: string) => {
   return useMutation({
     mutationFn: (id: string) => deleteNote(id, projectId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes", projectId] });
+      void queryClient.invalidateQueries({ queryKey: ["notes", projectId] });
     },
   });
 };

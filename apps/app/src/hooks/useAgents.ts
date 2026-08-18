@@ -30,21 +30,21 @@ export function useAgents({ enabled = true }: { enabled?: boolean } = {}) {
   const createMutation = useMutation<any, Error, AgentData>({
     mutationFn: (data) => apiService.createAgent(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: AGENTS_QUERY_KEYS.all });
+      void queryClient.invalidateQueries({ queryKey: AGENTS_QUERY_KEYS.all });
     },
   });
 
   const updateMutation = useMutation<any, Error, { id: string; data: UpdateAgentInput }>({
     mutationFn: ({ id, data }) => apiService.updateAgent(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: AGENTS_QUERY_KEYS.all });
+      void queryClient.invalidateQueries({ queryKey: AGENTS_QUERY_KEYS.all });
     },
   });
 
   const deleteMutation = useMutation<void, Error, string>({
     mutationFn: (agentId) => apiService.deleteAgent(agentId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: AGENTS_QUERY_KEYS.all });
+      void queryClient.invalidateQueries({ queryKey: AGENTS_QUERY_KEYS.all });
     },
   });
 

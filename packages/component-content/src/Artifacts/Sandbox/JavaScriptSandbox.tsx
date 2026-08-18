@@ -170,7 +170,7 @@ export function JavaScriptSandbox({
       }
     };
 
-    prepareDocument();
+    void prepareDocument();
 
     return () => {
       isMounted = false;

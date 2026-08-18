@@ -1042,7 +1042,7 @@ export async function disconnectComposioAccount(params: {
 }) {
   const id = encodeURIComponent(params.connectedAccountId);
 
-  if (params.revokeAtProvider) {
+  if (params.revokeAtProvider ?? true) {
     try {
       await composioRequest<unknown>({
         env: params.env,

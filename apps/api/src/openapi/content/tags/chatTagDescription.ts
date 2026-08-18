@@ -23,8 +23,8 @@ By default, the chat completions endpoint returns the full response once process
 
 ~~~json
 {
-	"model": "gpt-4o-2024-08-06",
-	"messages": [{ "role": "user", "content": "Hello, world!" }]
+  "model": "gpt-4o-2024-08-06",
+  "messages": [{ "role": "user", "content": "Hello, world!" }]
 }
 ~~~
 

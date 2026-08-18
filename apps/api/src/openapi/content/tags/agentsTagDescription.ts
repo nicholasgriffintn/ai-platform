@@ -30,13 +30,13 @@ Start a conversation with an agent. The agent will use its configured model, sys
 
 ~~~json
 {
-	"messages": [
-		{
-			"role": "user",
-			"content": "Review this code: function add(a,b){return a+b}"
-		}
-	],
-	"stream": true
+  "messages": [
+    {
+      "role": "user",
+      "content": "Review this code: function add(a,b){return a+b}"
+    }
+  ],
+  "stream": true
 }
 ~~~
 
@@ -77,9 +77,9 @@ Each server in the \`servers\` array supports:
 
 ~~~json
 {
-	"url": "https://mcp.example.com",
-	"type": "sse",
-	"headers": [{ "key": "Authorization", "value": "Bearer token123" }]
+  "url": "https://mcp.example.com",
+  "type": "sse",
+  "headers": [{ "key": "Authorization", "value": "Bearer token123" }]
 }
 ~~~
 
@@ -87,11 +87,11 @@ Each server in the \`servers\` array supports:
 
 ~~~json
 {
-	"url": "file:///path/to/server",
-	"type": "stdio",
-	"command": "node",
-	"args": ["server.js"],
-	"env": [{ "key": "API_KEY", "value": "key123" }]
+  "url": "file:///path/to/server",
+  "type": "stdio",
+  "command": "node",
+  "args": ["server.js"],
+  "env": [{ "key": "API_KEY", "value": "key123" }]
 }
 ~~~
 
@@ -103,7 +103,7 @@ Define how your agent behaves:
 
 ~~~json
 {
-	"system_prompt": "You are a helpful coding assistant. Always provide examples and explain your reasoning. Format code using markdown."
+  "system_prompt": "You are a helpful coding assistant. Always provide examples and explain your reasoning. Format code using markdown."
 }
 ~~~
 
@@ -113,9 +113,9 @@ Control the model:
 
 ~~~json
 {
-	"model": "claude-3-5-sonnet-20241022",
-	"temperature": 0.7,
-	"max_steps": 10
+  "model": "claude-3-5-sonnet-20241022",
+  "temperature": 0.7,
+  "max_steps": 10
 }
 ~~~
 
@@ -129,12 +129,12 @@ Provide example inputs/outputs to guide behavior:
 
 ~~~json
 {
-	"few_shot_examples": [
-		{
-			"input": "How do I sort a list?",
-			"output": "Here's how to sort a list in Python:\\n\`\`\`python\\nmy_list.sort()\\n\`\`\`"
-		}
-	]
+  "few_shot_examples": [
+    {
+      "input": "How do I sort a list?",
+      "output": "Here's how to sort a list in Python:\\n\`\`\`python\\nmy_list.sort()\\n\`\`\`"
+    }
+  ]
 }
 ~~~
 
@@ -144,9 +144,9 @@ Organize agents into teams:
 
 ~~~json
 {
-	"team_id": "team_xyz789",
-	"team_role": "researcher",
-	"is_team_agent": true
+  "team_id": "team_xyz789",
+  "team_role": "researcher",
+  "is_team_agent": true
 }
 ~~~
 
@@ -156,16 +156,16 @@ Organize agents into teams:
 
 ~~~json
 {
-	"name": "Senior Code Reviewer",
-	"model": "claude-3-5-sonnet-20241022",
-	"system_prompt": "Review code for:\\n1. Security issues\\n2. Performance problems\\n3. Best practices\\n4. Code style\\nProvide specific, actionable feedback.",
-	"temperature": 0.2,
-	"servers": [
-		{
-			"url": "https://git-mcp.example.com",
-			"type": "sse"
-		}
-	]
+  "name": "Senior Code Reviewer",
+  "model": "claude-3-5-sonnet-20241022",
+  "system_prompt": "Review code for:\\n1. Security issues\\n2. Performance problems\\n3. Best practices\\n4. Code style\\nProvide specific, actionable feedback.",
+  "temperature": 0.2,
+  "servers": [
+    {
+      "url": "https://git-mcp.example.com",
+      "type": "sse"
+    }
+  ]
 }
 ~~~
 
@@ -173,16 +173,16 @@ Organize agents into teams:
 
 ~~~json
 {
-	"name": "Research Assistant",
-	"model": "gpt-4o",
-	"system_prompt": "Help with research by finding, summarizing, and citing sources. Always verify information and provide links.",
-	"max_steps": 15,
-	"servers": [
-		{
-			"url": "https://web-search-mcp.example.com",
-			"type": "sse"
-		}
-	]
+  "name": "Research Assistant",
+  "model": "gpt-4o",
+  "system_prompt": "Help with research by finding, summarizing, and citing sources. Always verify information and provide links.",
+  "max_steps": 15,
+  "servers": [
+    {
+      "url": "https://web-search-mcp.example.com",
+      "type": "sse"
+    }
+  ]
 }
 ~~~
 
@@ -190,17 +190,17 @@ Organize agents into teams:
 
 ~~~json
 {
-	"name": "Support Agent",
-	"model": "claude-3-5-haiku-20241022",
-	"system_prompt": "Provide friendly, helpful customer support. Be concise and solution-focused.",
-	"temperature": 0.5,
-	"servers": [
-		{
-			"url": "https://database-mcp.example.com",
-			"type": "sse",
-			"headers": [{ "key": "Authorization", "value": "Bearer db_token" }]
-		}
-	]
+  "name": "Support Agent",
+  "model": "claude-3-5-haiku-20241022",
+  "system_prompt": "Provide friendly, helpful customer support. Be concise and solution-focused.",
+  "temperature": 0.5,
+  "servers": [
+    {
+      "url": "https://database-mcp.example.com",
+      "type": "sse",
+      "headers": [{ "key": "Authorization", "value": "Bearer db_token" }]
+    }
+  ]
 }
 ~~~
 

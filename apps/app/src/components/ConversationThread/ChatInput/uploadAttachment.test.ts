@@ -3,100 +3,100 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { uploadComposerAttachment } from "./uploadAttachment";
 
 const mocks = vi.hoisted(() => ({
-	uploadFile: vi.fn(),
+  uploadFile: vi.fn(),
 }));
 
 vi.mock("~/lib/api/api-service", () => ({
-	apiService: {
-		uploadFile: mocks.uploadFile,
-	},
+  apiService: {
+    uploadFile: mocks.uploadFile,
+  },
 }));
 
 const defaultContext = {
-	isImageModel: false,
-	isMultimodalModel: false,
-	isTextToImageOnlyModel: false,
-	supportsAudio: false,
-	supportsDocuments: true,
+  isImageModel: false,
+  isMultimodalModel: false,
+  isTextToImageOnlyModel: false,
+  supportsAudio: false,
+  supportsDocuments: true,
 };
 
 describe("uploadComposerAttachment", () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-	});
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-	it("uploads supported PDFs as document attachments", async () => {
-		mocks.uploadFile.mockResolvedValue({
-			url: "https://files.test/spec.pdf",
-			name: "spec.pdf",
-		});
+  it("uploads supported PDFs as document attachments", async () => {
+    mocks.uploadFile.mockResolvedValue({
+      url: "https://files.test/spec.pdf",
+      name: "spec.pdf",
+    });
 
-		const result = await uploadComposerAttachment(
-			new File(["pdf"], "spec.pdf", { type: "application/pdf" }),
-			defaultContext,
-		);
+    const result = await uploadComposerAttachment(
+      new File(["pdf"], "spec.pdf", { type: "application/pdf" }),
+      defaultContext,
+    );
 
-		expect(mocks.uploadFile).toHaveBeenCalledWith(expect.any(File), "document");
-		expect(result).toEqual({
-			attachment: {
-				type: "document",
-				data: "https://files.test/spec.pdf",
-				name: "spec.pdf",
-			},
-		});
-	});
+    expect(mocks.uploadFile).toHaveBeenCalledWith(expect.any(File), "document");
+    expect(result).toEqual({
+      attachment: {
+        type: "document",
+        data: "https://files.test/spec.pdf",
+        name: "spec.pdf",
+      },
+    });
+  });
 
-	it("scopes project chat attachments to the active project", async () => {
-		mocks.uploadFile.mockResolvedValue({
-			url: "https://files.test/screenshot.png",
-			name: "screenshot.png",
-		});
+  it("scopes project chat attachments to the active project", async () => {
+    mocks.uploadFile.mockResolvedValue({
+      url: "https://files.test/screenshot.png",
+      name: "screenshot.png",
+    });
 
-		await uploadComposerAttachment(new File(["image"], "screenshot.png", { type: "image/png" }), {
-			...defaultContext,
-			isMultimodalModel: true,
-			projectId: "project-1",
-		});
+    await uploadComposerAttachment(new File(["image"], "screenshot.png", { type: "image/png" }), {
+      ...defaultContext,
+      isMultimodalModel: true,
+      projectId: "project-1",
+    });
 
-		expect(mocks.uploadFile).toHaveBeenCalledWith(expect.any(File), "image", {
-			projectId: "project-1",
-		});
-	});
+    expect(mocks.uploadFile).toHaveBeenCalledWith(expect.any(File), "image", {
+      projectId: "project-1",
+    });
+  });
 
-	it("converts code-like files into markdown document attachments", async () => {
-		mocks.uploadFile.mockResolvedValue({
-			url: "https://files.test/app.ts",
-			name: "app.ts",
-			type: "markdown_document",
-			markdown: "const value = true;",
-		});
+  it("converts code-like files into markdown document attachments", async () => {
+    mocks.uploadFile.mockResolvedValue({
+      url: "https://files.test/app.ts",
+      name: "app.ts",
+      type: "markdown_document",
+      markdown: "const value = true;",
+    });
 
-		const result = await uploadComposerAttachment(
-			new File(["const value = true;"], "app.ts", { type: "text/typescript" }),
-			defaultContext,
-		);
+    const result = await uploadComposerAttachment(
+      new File(["const value = true;"], "app.ts", { type: "text/typescript" }),
+      defaultContext,
+    );
 
-		expect(mocks.uploadFile).toHaveBeenCalledWith(expect.any(File), "code");
-		expect(result).toEqual({
-			attachment: {
-				type: "markdown_document",
-				data: "https://files.test/app.ts",
-				name: "app.ts",
-				markdown: "const value = true;",
-			},
-		});
-	});
+    expect(mocks.uploadFile).toHaveBeenCalledWith(expect.any(File), "code");
+    expect(result).toEqual({
+      attachment: {
+        type: "markdown_document",
+        data: "https://files.test/app.ts",
+        name: "app.ts",
+        markdown: "const value = true;",
+      },
+    });
+  });
 
-	it("rejects uploads for text-to-image-only models", async () => {
-		const result = await uploadComposerAttachment(
-			new File(["pdf"], "spec.pdf", { type: "application/pdf" }),
-			{
-				...defaultContext,
-				isTextToImageOnlyModel: true,
-			},
-		);
+  it("rejects uploads for text-to-image-only models", async () => {
+    const result = await uploadComposerAttachment(
+      new File(["pdf"], "spec.pdf", { type: "application/pdf" }),
+      {
+        ...defaultContext,
+        isTextToImageOnlyModel: true,
+      },
+    );
 
-		expect(mocks.uploadFile).not.toHaveBeenCalled();
-		expect(result).toEqual({ error: "This model does not support file uploads" });
-	});
+    expect(mocks.uploadFile).not.toHaveBeenCalled();
+    expect(result).toEqual({ error: "This model does not support file uploads" });
+  });
 });

@@ -1,10 +1,10 @@
 import z from "zod/v4";
 
 export const magicLinkVerifySchema = z.object({
-	token: z.string(),
+  token: z.string(),
 });
 
 export const magicLinkRequestSchema = z.object({
-	email: z.email(),
-	redirect_uri: z.string().optional(),
+  email: z.email(),
+  redirect_uri: z.string().optional(),
 });

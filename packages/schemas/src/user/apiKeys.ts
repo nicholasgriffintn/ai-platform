@@ -1,20 +1,20 @@
 import z from "zod/v4";
 
 export const createApiKeySchema = z.object({
-	name: z.string().min(1, "Name cannot be empty").max(100).optional(),
+  name: z.string().min(1, "Name cannot be empty").max(100).optional(),
 });
 
 export const deleteApiKeyParamsSchema = z.object({
-	keyId: z.string(),
+  keyId: z.string(),
 });
 
 export const storeProviderApiKeySchema = z.object({
-	providerId: z.string(),
-	apiKey: z.string(),
-	secretKey: z.string().nullable().optional(),
-	configuration: z.record(z.string(), z.unknown()).optional(),
+  providerId: z.string(),
+  apiKey: z.string(),
+  secretKey: z.string().nullable().optional(),
+  configuration: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const deleteProviderApiKeyParamsSchema = z.object({
-	providerId: z.string(),
+  providerId: z.string(),
 });

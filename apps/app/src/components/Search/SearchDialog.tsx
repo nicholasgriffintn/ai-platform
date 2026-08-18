@@ -46,7 +46,7 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
           setCurrentConversationId(result.id.slice("conversation:".length));
         }
 
-        navigate(result.href);
+        void navigate(result.href);
         onClose();
       }}
     />

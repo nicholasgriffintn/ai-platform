@@ -1,6 +1,6 @@
 {
-	"name": "polychat-e2e-training",
-	"main": "../../../../training/src/index.ts",
-	"compatibility_date": "2026-06-16",
-	"compatibility_flags": ["nodejs_compat"],
+  "name": "polychat-e2e-training",
+  "main": "../../../../training/src/index.ts",
+  "compatibility_date": "2026-06-16",
+  "compatibility_flags": ["nodejs_compat"],
 }

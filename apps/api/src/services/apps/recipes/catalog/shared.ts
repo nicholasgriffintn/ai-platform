@@ -12,33 +12,33 @@ export const PASHI_DISCOVERY_TOOL = "search_pashi_tools";
 export const PASHI_EXECUTION_TOOL = "run_pashi_tools";
 
 export type CatalogRecipeConfigurationField = Omit<RecipeConfigurationField, "required"> & {
-	required?: boolean;
+  required?: boolean;
 };
 
 export type CatalogRecipe = Omit<AssistantRecipe, "configurationFields"> & {
-	configurationFields?: CatalogRecipeConfigurationField[];
+  configurationFields?: CatalogRecipeConfigurationField[];
 };
 
 export const preferredConnectorsField: CatalogRecipeConfigurationField = {
-	key: "preferredConnectors",
-	label: "Preferred connected services",
-	type: "string_list",
-	placeholder: "Leave empty to use whichever services are connected",
-	description:
-		"Which connected services to use when more than one alternative is connected. Saved automatically the first time you choose in chat.",
+  key: "preferredConnectors",
+  label: "Preferred connected services",
+  type: "string_list",
+  placeholder: "Leave empty to use whichever services are connected",
+  description:
+    "Which connected services to use when more than one alternative is connected. Saved automatically the first time you choose in chat.",
 };
 
 export const reviewInstructionsField: CatalogRecipeConfigurationField = {
-	key: "instructions",
-	label: "Review instructions",
-	type: "textarea",
-	placeholder: "Boundaries, preferred format, and what the assistant should confirm before acting",
+  key: "instructions",
+  label: "Review instructions",
+  type: "textarea",
+  placeholder: "Boundaries, preferred format, and what the assistant should confirm before acting",
 };
 
 export const locationField: CatalogRecipeConfigurationField = {
-	key: "location",
-	label: "Location",
-	type: "text",
-	required: true,
-	placeholder: "City, postcode, or coordinates",
+  key: "location",
+  label: "Location",
+  type: "text",
+  required: true,
+  placeholder: "City, postcode, or coordinates",
 };

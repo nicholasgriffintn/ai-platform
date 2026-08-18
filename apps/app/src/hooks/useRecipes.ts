@@ -74,8 +74,8 @@ export function useInstallAssistantRecipe() {
         upsertRecipeInstallation(queryClient, response.installation);
       }
 
-      queryClient.invalidateQueries({ queryKey: RECIPE_INSTALLATIONS_QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: ASSISTANT_RECIPES_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: RECIPE_INSTALLATIONS_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: ASSISTANT_RECIPES_QUERY_KEY });
     },
   });
 }
@@ -125,8 +125,8 @@ export function useUpdateRecipeInstallation() {
     }) => updateRecipeInstallation(installationId, update),
     onSuccess: (installation) => {
       upsertRecipeInstallation(queryClient, installation);
-      queryClient.invalidateQueries({ queryKey: RECIPE_INSTALLATIONS_QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: ASSISTANT_RECIPES_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: RECIPE_INSTALLATIONS_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: ASSISTANT_RECIPES_QUERY_KEY });
     },
   });
 }
@@ -138,8 +138,8 @@ export function useDeleteRecipeInstallation() {
     mutationFn: ({ installationId }: { installationId: string }) =>
       deleteRecipeInstallation(installationId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: RECIPE_INSTALLATIONS_QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: ASSISTANT_RECIPES_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: RECIPE_INSTALLATIONS_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: ASSISTANT_RECIPES_QUERY_KEY });
     },
   });
 }

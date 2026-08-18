@@ -165,6 +165,7 @@ export const ModelOption = ({
               className="relative flex max-w-[112px] items-center"
               title="Region"
               onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => event.stopPropagation()}
               onMouseDown={(event) => event.stopPropagation()}
             >
               <Globe2

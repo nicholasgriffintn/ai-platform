@@ -7,7 +7,7 @@ interface UseVoiceRecorderProps {
     response: {
       content: string;
     };
-  }) => void;
+  }) => void | Promise<void>;
 }
 
 export function useVoiceRecorder({ onTranscribe }: UseVoiceRecorderProps) {

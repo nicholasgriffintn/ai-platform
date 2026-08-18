@@ -1,21 +1,22 @@
-import { executeFeatureImplementation } from "./feature-implementation";
 import type { SandboxTaskType } from "@ngriffin_uk/polychat-schemas";
+
 import type { SandboxTaskRunner, SandboxTaskRunnerContext } from "../runner";
+import { executeFeatureImplementation } from "./feature-implementation";
 
 export class AgentTaskRunner implements SandboxTaskRunner {
-	public readonly taskType: SandboxTaskType;
+  public readonly taskType: SandboxTaskType;
 
-	constructor(taskType: SandboxTaskType) {
-		this.taskType = taskType;
-	}
+  constructor(taskType: SandboxTaskType) {
+    this.taskType = taskType;
+  }
 
-	public execute(context: SandboxTaskRunnerContext) {
-		return executeFeatureImplementation(
-			context.params,
-			context.secrets,
-			context.env,
-			context.emitEvent,
-			context.abortSignal,
-		);
-	}
+  public execute(context: SandboxTaskRunnerContext) {
+    return executeFeatureImplementation(
+      context.params,
+      context.secrets,
+      context.env,
+      context.emitEvent,
+      context.abortSignal,
+    );
+  }
 }

@@ -1,20 +1,20 @@
 {
-	"output": {
-		"message": {
-			"content": [
-				{
-					"text": "<analysis>\nThe user is asking for gift ideas for Christmas, specifying they want the best presents for family members. The context doesn't provide details about the specific family members (e.g., age, interests), so I'll need to suggest general, versatile gift ideas that are often appreciated.\n</analysis>\n\n<answer>\nConsider personalized gifts, tech gadgets, or experiences like cooking classes. These options are versatile and can cater to a range of interests within the family."
-				}
-			],
-			"role": "assistant"
-		}
-	},
-	"stopReason": "end_turn",
-	"usage": {
-		"inputTokens": 307,
-		"outputTokens": 96,
-		"totalTokens": 403,
-		"cacheReadInputTokenCount": null,
-		"cacheWriteInputTokenCount": null
-	}
+  "output": {
+    "message": {
+      "content": [
+        {
+          "text": "<analysis>\nThe user is asking for gift ideas for Christmas, specifying they want the best presents for family members. The context doesn't provide details about the specific family members (e.g., age, interests), so I'll need to suggest general, versatile gift ideas that are often appreciated.\n</analysis>\n\n<answer>\nConsider personalized gifts, tech gadgets, or experiences like cooking classes. These options are versatile and can cater to a range of interests within the family."
+        }
+      ],
+      "role": "assistant"
+    }
+  },
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 307,
+    "outputTokens": 96,
+    "totalTokens": 403,
+    "cacheReadInputTokenCount": null,
+    "cacheWriteInputTokenCount": null
+  }
 }

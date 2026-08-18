@@ -1,3 +1,3 @@
 export function escapeSqlLikePattern(value: string): string {
-	return value.replace(/[\\%_]/g, (character) => `\\${character}`);
+  return value.replace(/[\\%_]/g, (character) => `\\${character}`);
 }

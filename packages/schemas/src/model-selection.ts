@@ -44,19 +44,16 @@ export function getAvailableModels(
 }
 
 export function getFeaturedModelIds(models: ModelConfig) {
-  return Object.entries(models).reduce(
-    (acc, [key, model]) => {
-      if (model.isFeatured) {
-        acc[key] = {
-          ...model,
-          id: key,
-        };
-      }
+  return Object.entries(models).reduce<Record<string, ModelCatalogItem>>((acc, [key, model]) => {
+    if (model.isFeatured) {
+      acc[key] = {
+        ...model,
+        id: key,
+      };
+    }
 
-      return acc;
-    },
-    {} as Record<string, ModelCatalogItem>,
-  );
+    return acc;
+  }, {});
 }
 
 export function getModelDisplayName(model: Pick<ModelConfigItem, "matchingModel" | "name">) {
@@ -257,19 +254,16 @@ export function isRealtimeSessionModel(model: ModelConfigItem) {
 }
 
 export function getRealtimeSessionModelsByProvider(models: ModelConfig, provider?: string | null) {
-  return Object.entries(models).reduce(
-    (acc, [key, model]) => {
-      if (isRealtimeSessionModel(model) && (!provider || model.provider === provider)) {
-        acc[key] = {
-          ...model,
-          id: key,
-        };
-      }
+  return Object.entries(models).reduce<Record<string, ModelCatalogItem>>((acc, [key, model]) => {
+    if (isRealtimeSessionModel(model) && (!provider || model.provider === provider)) {
+      acc[key] = {
+        ...model,
+        id: key,
+      };
+    }
 
-      return acc;
-    },
-    {} as Record<string, ModelCatalogItem>,
-  );
+    return acc;
+  }, {});
 }
 
 export function getChatAndRealtimeModelsByMode(models: ModelConfig, mode: ChatMode) {
@@ -280,45 +274,39 @@ export function getChatAndRealtimeModelsByMode(models: ModelConfig, mode: ChatMo
 }
 
 export function getToolCallModels(models: ModelConfig) {
-  return Object.entries(models).reduce(
-    (acc, [key, model]) => {
-      if (model.supportsToolCalls) {
-        acc[key] = {
-          ...model,
-          id: key,
-        };
-      }
+  return Object.entries(models).reduce<Record<string, ModelCatalogItem>>((acc, [key, model]) => {
+    if (model.supportsToolCalls) {
+      acc[key] = {
+        ...model,
+        id: key,
+      };
+    }
 
-      return acc;
-    },
-    {} as Record<string, ModelCatalogItem>,
-  );
+    return acc;
+  }, {});
 }
 
 export function getModelsByMode(models: ModelConfig, mode: ChatMode) {
-  return Object.entries(models).reduce(
-    (acc, [key, model]) => {
-      const outputs = getModelOutputModalities(model);
-      const isEmbeddingOnly =
-        outputs.length > 0 && outputs.every((modality) => modality === "embedding");
-      const isAudioOnly = outputs.length > 0 && outputs.every((modality) => modality === "audio");
-      const isVideoOnly = outputs.length > 0 && outputs.every((modality) => modality === "video");
-      const isHidden = model.hiddenFromDefaultList;
-      const isIncompatible =
-        !isTextInputChatModel(model) || isAudioOnly || isVideoOnly || isEmbeddingOnly || isHidden;
-      const isLocalModel = model.provider === LOCAL_MODEL_PROVIDER;
+  return Object.entries(models).reduce<Record<string, ModelCatalogItem>>((acc, [key, model]) => {
+    const outputs = getModelOutputModalities(model);
+    const isEmbeddingOnly =
+      outputs.length > 0 && outputs.every((modality) => modality === "embedding");
+    const isAudioOnly = outputs.length > 0 && outputs.every((modality) => modality === "audio");
+    const isVideoOnly = outputs.length > 0 && outputs.every((modality) => modality === "video");
+    const isHidden = model.hiddenFromDefaultList;
+    const isIncompatible =
+      !isTextInputChatModel(model) || isAudioOnly || isVideoOnly || isEmbeddingOnly || isHidden;
+    const isLocalModel = model.provider === LOCAL_MODEL_PROVIDER;
 
-      if (!isHidden && !isIncompatible && (mode === "local" ? isLocalModel : !isLocalModel)) {
-        acc[key] = {
-          ...model,
-          id: key,
-        };
-      }
+    if (!isHidden && !isIncompatible && (mode === "local" ? isLocalModel : !isLocalModel)) {
+      acc[key] = {
+        ...model,
+        id: key,
+      };
+    }
 
-      return acc;
-    },
-    {} as Record<string, ModelCatalogItem>,
-  );
+    return acc;
+  }, {});
 }
 
 export const DEFAULT_REASONING_EFFORTS: ReasoningEffort[] = ["none", "simulated-thinking"];

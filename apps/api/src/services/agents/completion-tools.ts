@@ -167,7 +167,7 @@ async function collectServerTools(
       return;
     }
 
-    const rawTools = await mcp.getAITools();
+    const rawTools = await Promise.resolve(mcp.getAITools());
     const defs = Object.entries(rawTools);
 
     for (const [name, def] of defs) {

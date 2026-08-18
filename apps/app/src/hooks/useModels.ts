@@ -5,10 +5,10 @@ import { apiService } from "~/lib/api/api-service";
 export const MODELS_QUERY_KEY = "models";
 
 export function useModels() {
-	return useQuery({
-		queryKey: [MODELS_QUERY_KEY],
-		queryFn: apiService.fetchModels,
-		staleTime: 1000 * 60 * 30,
-		gcTime: 1000 * 60 * 60,
-	});
+  return useQuery({
+    queryKey: [MODELS_QUERY_KEY],
+    queryFn: apiService.fetchModels,
+    staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60,
+  });
 }

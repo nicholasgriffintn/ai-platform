@@ -47,7 +47,7 @@ export const useSaveStrudelPattern = (projectId?: string) => {
   return useMutation<StrudelPattern, Error, SaveStrudelPatternInput>({
     mutationFn: (payload) => strudelService.save(payload, projectId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: STRUDEL_QUERY_KEYS.list(projectId) });
+      void queryClient.invalidateQueries({ queryKey: STRUDEL_QUERY_KEYS.list(projectId) });
     },
   });
 };
@@ -64,9 +64,9 @@ export const useUpdateStrudelPattern = (id?: string, projectId?: string) => {
       return strudelService.update(id, payload, projectId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: STRUDEL_QUERY_KEYS.list(projectId) });
+      void queryClient.invalidateQueries({ queryKey: STRUDEL_QUERY_KEYS.list(projectId) });
       if (id) {
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: STRUDEL_QUERY_KEYS.detail(projectId, id),
         });
       }
@@ -80,7 +80,7 @@ export const useDeleteStrudelPattern = (projectId?: string) => {
   return useMutation<void, Error, string>({
     mutationFn: (patternId) => strudelService.delete(patternId, projectId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: STRUDEL_QUERY_KEYS.list(projectId) });
+      void queryClient.invalidateQueries({ queryKey: STRUDEL_QUERY_KEYS.list(projectId) });
     },
   });
 };

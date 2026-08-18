@@ -2,7 +2,6 @@ import {
   cloneElement,
   isValidElement,
   type MouseEvent as ReactMouseEvent,
-  type ReactElement,
   type ReactNode,
   useEffect,
   useRef,
@@ -125,6 +124,7 @@ export function DropdownMenu({
         <div
           className={`absolute ${positionClasses[position]} z-50 w-48 rounded-md bg-off-white shadow-lg ring-1 ring-black/5 dark:bg-zinc-800 ${menuClassName}`}
           role="menu"
+          tabIndex={-1}
           aria-orientation="vertical"
           aria-labelledby={triggerRef.current?.id}
           onKeyDown={(event) => {

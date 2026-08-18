@@ -1,30 +1,30 @@
 {
-	"id": "chatcmpl-e81ed883-f2b7-4c49-a731-21d3b2067d2b",
-	"object": "chat.completion",
-	"created": 1734110437,
-	"model": "llama3-groq-70b-8192-tool-use-preview",
-	"choices": [
-		{
-			"index": 0,
-			"message": {
-				"role": "assistant",
-				"content": "<analysis>\nThe user is asking for suggestions on the best Christmas presents to buy for their family members this year. This question requires a general understanding of popular gifts and personal preferences. It's important to consider the interests and age groups of the family members to provide relevant suggestions.\n</analysis>\n\n<answer>\nFor family members, consider gifts that cater to their interests or hobbies. For tech-savvy individuals, the latest smartphones or smartwatches could be great options. For those who enjoy reading, a new book by their favorite author or an e-reader could be perfect. For younger family members, popular toys or educational games are always a hit."
-			},
-			"logprobs": null,
-			"finish_reason": "stop"
-		}
-	],
-	"usage": {
-		"queue_time": 0.0032335099999999985,
-		"prompt_tokens": 374,
-		"prompt_time": 0.030657894,
-		"completion_tokens": 131,
-		"completion_time": 0.422877021,
-		"total_tokens": 505,
-		"total_time": 0.453534915
-	},
-	"system_fingerprint": "fp_ee4b521143",
-	"x_groq": {
-		"id": "req_01jf0gjrgtf0d8sc3312wg17nv"
-	}
+  "id": "chatcmpl-e81ed883-f2b7-4c49-a731-21d3b2067d2b",
+  "object": "chat.completion",
+  "created": 1734110437,
+  "model": "llama3-groq-70b-8192-tool-use-preview",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "<analysis>\nThe user is asking for suggestions on the best Christmas presents to buy for their family members this year. This question requires a general understanding of popular gifts and personal preferences. It's important to consider the interests and age groups of the family members to provide relevant suggestions.\n</analysis>\n\n<answer>\nFor family members, consider gifts that cater to their interests or hobbies. For tech-savvy individuals, the latest smartphones or smartwatches could be great options. For those who enjoy reading, a new book by their favorite author or an e-reader could be perfect. For younger family members, popular toys or educational games are always a hit."
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "queue_time": 0.0032335099999999985,
+    "prompt_tokens": 374,
+    "prompt_time": 0.030657894,
+    "completion_tokens": 131,
+    "completion_time": 0.422877021,
+    "total_tokens": 505,
+    "total_time": 0.453534915
+  },
+  "system_fingerprint": "fp_ee4b521143",
+  "x_groq": {
+    "id": "req_01jf0gjrgtf0d8sc3312wg17nv"
+  }
 }

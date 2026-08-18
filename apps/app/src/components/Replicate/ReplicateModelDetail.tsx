@@ -48,7 +48,7 @@ export function ReplicateModelDetail({ basePath, modelId, projectId }: Replicate
         input: data,
       });
 
-      navigate(`${basePath}/predictions/${result.id}`);
+      void navigate(`${basePath}/predictions/${result.id}`);
     } catch (error) {
       console.error("Failed to execute model:", error);
     }

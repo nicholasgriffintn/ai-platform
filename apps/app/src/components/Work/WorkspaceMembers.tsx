@@ -116,7 +116,7 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
         isLoading={memberMutations.leave.isPending}
         onConfirm={async () => {
           await memberMutations.leave.mutateAsync();
-          navigate("/work");
+          void navigate("/work");
         }}
       />
       <ConfirmationDialog

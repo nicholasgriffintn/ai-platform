@@ -1,22 +1,22 @@
 [
-	{
-		"role": "user",
-		"content": "Make me a react component that shows a user's log in state.",
-		"mode": "remote",
-		"id": "5x13s",
-		"timestamp": 1732997172348,
-		"model": "@hf/thebloke/deepseek-coder-6.7b-instruct-awq",
-		"platform": "api"
-	},
-	{
-		"role": "assistant",
-		"content": "Sure, here's a simple example of a React component that shows a user's login state. This component will render a message based on whether the user is logged in or not.\n\n```jsx\nimport React, { Component } from 'react';\n\nclass UserLoginStatus extends Component {\n  constructor(props) {\n    super(props);\n    this.state = {\n      isLoggedIn: false\n    };\n  }\n\n  handleLogin = () => {\n    this.setState({ isLoggedIn: true });\n  }\n\n  handleLogout = () => {\n    this.setState({ isLoggedIn: false });\n  }\n\n  render() {\n    let button;\n    if (this.state.isLoggedIn) {\n      button = <button onClick={this.handleLogout}>Logout</button>;\n    } else {\n      button = <button onClick={this.handleLogin}>Login</button>;\n    }\n\n    return (\n      <div>\n        <h1>User Login Status</h1>\n        <p>{",
-		"citations": [],
-		"logId": "01JDZAWKX8B9MN4ASWFQJRES9R",
-		"mode": "remote",
-		"id": "vwidvo",
-		"timestamp": 1732997179204,
-		"model": "@hf/thebloke/deepseek-coder-6.7b-instruct-awq",
-		"platform": "api"
-	}
+  {
+    "role": "user",
+    "content": "Make me a react component that shows a user's log in state.",
+    "mode": "remote",
+    "id": "5x13s",
+    "timestamp": 1732997172348,
+    "model": "@hf/thebloke/deepseek-coder-6.7b-instruct-awq",
+    "platform": "api"
+  },
+  {
+    "role": "assistant",
+    "content": "Sure, here's a simple example of a React component that shows a user's login state. This component will render a message based on whether the user is logged in or not.\n\n```jsx\nimport React, { Component } from 'react';\n\nclass UserLoginStatus extends Component {\n  constructor(props) {\n    super(props);\n    this.state = {\n      isLoggedIn: false\n    };\n  }\n\n  handleLogin = () => {\n    this.setState({ isLoggedIn: true });\n  }\n\n  handleLogout = () => {\n    this.setState({ isLoggedIn: false });\n  }\n\n  render() {\n    let button;\n    if (this.state.isLoggedIn) {\n      button = <button onClick={this.handleLogout}>Logout</button>;\n    } else {\n      button = <button onClick={this.handleLogin}>Login</button>;\n    }\n\n    return (\n      <div>\n        <h1>User Login Status</h1>\n        <p>{",
+    "citations": [],
+    "logId": "01JDZAWKX8B9MN4ASWFQJRES9R",
+    "mode": "remote",
+    "id": "vwidvo",
+    "timestamp": 1732997179204,
+    "model": "@hf/thebloke/deepseek-coder-6.7b-instruct-awq",
+    "platform": "api"
+  }
 ]

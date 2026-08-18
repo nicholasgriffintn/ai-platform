@@ -294,7 +294,7 @@ export function ReactSandbox({
       }
     };
 
-    prepareDocument();
+    void prepareDocument();
 
     return () => {
       isMounted = false;

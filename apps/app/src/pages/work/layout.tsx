@@ -4,13 +4,13 @@ import { WorkDataProvider } from "~/components/Work/WorkContext";
 import { WorkPageShell } from "~/components/Work/WorkPageShell";
 
 export default function WorkLayout() {
-	const { projectId, workspaceId } = useParams();
+  const { projectId, workspaceId } = useParams();
 
-	return (
-		<WorkDataProvider projectId={projectId} workspaceId={workspaceId}>
-			<WorkPageShell projectId={projectId} workspaceId={workspaceId}>
-				<Outlet />
-			</WorkPageShell>
-		</WorkDataProvider>
-	);
+  return (
+    <WorkDataProvider projectId={projectId} workspaceId={workspaceId}>
+      <WorkPageShell projectId={projectId} workspaceId={workspaceId}>
+        <Outlet />
+      </WorkPageShell>
+    </WorkDataProvider>
+  );
 }

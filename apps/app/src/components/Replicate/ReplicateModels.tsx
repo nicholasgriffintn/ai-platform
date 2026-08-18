@@ -87,13 +87,13 @@ export function ReplicateModels({ basePath, projectId }: { basePath: string; pro
 
   const handleModelSelect = useCallback(
     (app: AppListItem) => {
-      navigate(`${basePath}/${app.id}`);
+      void navigate(`${basePath}/${app.id}`);
     },
     [basePath, navigate],
   );
 
   const handlePredictionsClick = useCallback(() => {
-    navigate(`${basePath}/predictions`);
+    void navigate(`${basePath}/predictions`);
   }, [basePath, navigate]);
 
   const handleClearFilters = useCallback(() => {

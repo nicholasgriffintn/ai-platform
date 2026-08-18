@@ -1,16 +1,16 @@
 {
-	"files": [],
-	"references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.cloudflare.json" }],
-	"compilerOptions": {
-		"checkJs": true,
-		"verbatimModuleSyntax": true,
-		"skipLibCheck": true,
-		"strict": true,
-		"noEmit": true,
-		"noImplicitAny": false,
-		"paths": {
-			"src/*": ["./src/*"],
-			"~/*": ["./src/*"]
-		}
-	}
+  "files": [],
+  "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.cloudflare.json" }],
+  "compilerOptions": {
+    "checkJs": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "noImplicitAny": false,
+    "paths": {
+      "src/*": ["./src/*"],
+      "~/*": ["./src/*"]
+    }
+  }
 }

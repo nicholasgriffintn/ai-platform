@@ -25,7 +25,7 @@ export const useUploadPodcast = (projectId?: string) => {
   return useMutation({
     mutationFn: (params: Parameters<typeof uploadPodcast>[0]) => uploadPodcast(params, projectId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["podcasts", projectId] });
+      void queryClient.invalidateQueries({ queryKey: ["podcasts", projectId] });
     },
   });
 };
@@ -36,8 +36,8 @@ export const useProcessPodcast = (projectId?: string) => {
   return useMutation({
     mutationFn: (params: Parameters<typeof processPodcast>[0]) => processPodcast(params, projectId),
     onSuccess: (_, params) => {
-      queryClient.invalidateQueries({ queryKey: ["podcast", projectId, params.podcastId] });
-      queryClient.invalidateQueries({ queryKey: ["podcasts", projectId] });
+      void queryClient.invalidateQueries({ queryKey: ["podcast", projectId, params.podcastId] });
+      void queryClient.invalidateQueries({ queryKey: ["podcasts", projectId] });
     },
   });
 };

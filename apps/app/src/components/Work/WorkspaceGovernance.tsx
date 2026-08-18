@@ -54,7 +54,7 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
               const project = await mutations.instantiate.mutateAsync(templateId);
 
               toast.success("Project created from template");
-              navigate(`/work/${workspaceId}/projects/${project.id}`);
+              void navigate(`/work/${workspaceId}/projects/${project.id}`);
             }}
             onDelete={setTemplateIdToDelete}
           />

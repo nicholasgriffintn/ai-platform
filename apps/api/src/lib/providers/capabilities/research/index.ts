@@ -1,14 +1,15 @@
-import { providerLibrary } from "../../library";
-import type { ProviderFactoryContext } from "../../registry/types";
 import type { ResearchProvider, ResearchProviderName } from "~/types";
 
+import { providerLibrary } from "../../library";
+import type { ProviderFactoryContext } from "../../registry/types";
+
 export type {
-	ResearchProvider,
-	ResearchProviderName,
-	ResearchOptions,
-	ResearchResult,
-	ResearchResultError,
-	ResearchTaskHandle,
+  ResearchProvider,
+  ResearchProviderName,
+  ResearchOptions,
+  ResearchResult,
+  ResearchResultError,
+  ResearchTaskHandle,
 } from "~/types";
 export * from "./providers";
 
@@ -18,23 +19,23 @@ export * from "./providers";
  * @param context - Optional provider factory context (env, user, config)
  */
 export function getResearchProvider(
-	providerName: ResearchProviderName,
-	context?: ProviderFactoryContext,
+  providerName: ResearchProviderName,
+  context?: ProviderFactoryContext,
 ): ResearchProvider {
-	return providerLibrary.research(providerName, context);
+  return providerLibrary.research(providerName, context);
 }
 
 /**
  * List all registered research providers (including aliases).
  */
 export function listResearchProviders(): string[] {
-	const summaries = providerLibrary.list("research");
-	const names = new Set<string>();
+  const summaries = providerLibrary.list("research");
+  const names = new Set<string>();
 
-	for (const summary of summaries) {
-		names.add(summary.name);
-		summary.aliases?.forEach((alias) => names.add(alias));
-	}
+  for (const summary of summaries) {
+    names.add(summary.name);
+    summary.aliases?.forEach((alias) => names.add(alias));
+  }
 
-	return Array.from(names).sort();
+  return Array.from(names).sort();
 }

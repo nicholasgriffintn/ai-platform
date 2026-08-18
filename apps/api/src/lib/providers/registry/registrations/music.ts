@@ -1,24 +1,24 @@
-import type { ProviderRegistry } from "../ProviderRegistry";
-import type { ProviderRegistration } from "../types";
 import type { MusicProvider } from "../../capabilities/music";
 import { ReplicateMusicProvider, WorkersAiMusicProvider } from "../../capabilities/music/providers";
+import type { ProviderRegistry } from "../ProviderRegistry";
+import type { ProviderRegistration } from "../types";
 
 const musicProviders: ProviderRegistration<MusicProvider>[] = [
-	{
-		name: "workers-ai",
-		aliases: ["workers"],
-		create: () => new WorkersAiMusicProvider(),
-		metadata: { vendor: "Cloudflare", categories: ["music"] },
-	},
-	{
-		name: "replicate",
-		create: () => new ReplicateMusicProvider(),
-		metadata: { vendor: "Replicate", categories: ["music"] },
-	},
+  {
+    name: "workers-ai",
+    aliases: ["workers"],
+    create: () => new WorkersAiMusicProvider(),
+    metadata: { vendor: "Cloudflare", categories: ["music"] },
+  },
+  {
+    name: "replicate",
+    create: () => new ReplicateMusicProvider(),
+    metadata: { vendor: "Replicate", categories: ["music"] },
+  },
 ];
 
 export function registerMusicProviders(registry: ProviderRegistry): void {
-	for (const registration of musicProviders) {
-		registry.register("music", registration);
-	}
+  for (const registration of musicProviders) {
+    registry.register("music", registration);
+  }
 }

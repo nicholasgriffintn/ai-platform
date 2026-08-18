@@ -1,32 +1,33 @@
 import type { ChatCompletionParameters } from "~/types";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
+
 import { BaseProvider } from "./base";
 
 export class MorphProvider extends BaseProvider {
-	name = "morph";
-	supportsStreaming = true;
-	isOpenAiCompatible = false;
+  name = "morph";
+  supportsStreaming = true;
+  isOpenAiCompatible = false;
 
-	protected getProviderKeyName(): string {
-		return "MORPH_API_KEY";
-	}
+  protected getProviderKeyName(): string {
+    return "MORPH_API_KEY";
+  }
 
-	protected validateParams(params: ChatCompletionParameters): void {
-		super.validateParams(params);
-	}
+  protected validateParams(params: ChatCompletionParameters): void {
+    super.validateParams(params);
+  }
 
-	protected async getEndpoint(): Promise<string> {
-		return "https://api.morphllm.com/v1";
-	}
+  protected async getEndpoint(): Promise<string> {
+    return "https://api.morphllm.com/v1";
+  }
 
-	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
-		const apiKey = await this.getApiKey(params, params.context?.user?.id);
+  protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
+    const apiKey = await this.getApiKey(params, params.context?.user?.id);
 
-		return {
-			Authorization: `Bearer ${apiKey}`,
-			"Content-Type": "application/json",
-			"cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-			"cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
-		};
-	}
+    return {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
+      "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+    };
+  }
 }

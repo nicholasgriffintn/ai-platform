@@ -1,66 +1,67 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+
 import type { ReasoningEffortLevel } from "~/types";
 
 const PROVIDER_REASONING_EFFORTS = new Set<ReasoningEffortLevel>([
-	"low",
-	"medium",
-	"high",
-	"xhigh",
+  "low",
+  "medium",
+  "high",
+  "xhigh",
 ]);
 const PROMPT_ONLY_REASONING_EFFORTS = new Set<ReasoningEffortLevel>(["none", "simulated-thinking"]);
 
 export function isConfiguredReasoningEffort(
-	modelConfig: ModelConfigItem | undefined,
-	reasoningEffort: ReasoningEffortLevel | undefined,
+  modelConfig: ModelConfigItem | undefined,
+  reasoningEffort: ReasoningEffortLevel | undefined,
 ): reasoningEffort is ReasoningEffortLevel {
-	if (!reasoningEffort) {
-		return false;
-	}
+  if (!reasoningEffort) {
+    return false;
+  }
 
-	return modelConfig?.reasoningConfig?.supportedEffortLevels?.includes(reasoningEffort) ?? false;
+  return modelConfig?.reasoningConfig?.supportedEffortLevels?.includes(reasoningEffort) ?? false;
 }
 
 export function hasProviderReasoningOptions(modelConfig: ModelConfigItem | undefined): boolean {
-	return (
-		modelConfig?.reasoningConfig?.supportedEffortLevels?.some(
-			(level) => !PROMPT_ONLY_REASONING_EFFORTS.has(level),
-		) ?? false
-	);
+  return (
+    modelConfig?.reasoningConfig?.supportedEffortLevels?.some(
+      (level) => !PROMPT_ONLY_REASONING_EFFORTS.has(level),
+    ) ?? false
+  );
 }
 
 export function shouldSendProviderReasoningEffort(
-	modelConfig: ModelConfigItem | undefined,
-	reasoningEffort: ReasoningEffortLevel | undefined,
+  modelConfig: ModelConfigItem | undefined,
+  reasoningEffort: ReasoningEffortLevel | undefined,
 ): reasoningEffort is Exclude<ReasoningEffortLevel, "none" | "simulated-thinking" | "thinking"> {
-	if (!reasoningEffort || !PROVIDER_REASONING_EFFORTS.has(reasoningEffort)) {
-		return false;
-	}
+  if (!reasoningEffort || !PROVIDER_REASONING_EFFORTS.has(reasoningEffort)) {
+    return false;
+  }
 
-	return isConfiguredReasoningEffort(modelConfig, reasoningEffort);
+  return isConfiguredReasoningEffort(modelConfig, reasoningEffort);
 }
 
 export function shouldEnableProviderThinking(
-	modelConfig: ModelConfigItem | undefined,
-	reasoningEffort: ReasoningEffortLevel | undefined,
+  modelConfig: ModelConfigItem | undefined,
+  reasoningEffort: ReasoningEffortLevel | undefined,
 ): boolean {
-	return (
-		!!reasoningEffort &&
-		!PROMPT_ONLY_REASONING_EFFORTS.has(reasoningEffort) &&
-		isConfiguredReasoningEffort(modelConfig, reasoningEffort)
-	);
+  return (
+    !!reasoningEffort &&
+    !PROMPT_ONLY_REASONING_EFFORTS.has(reasoningEffort) &&
+    isConfiguredReasoningEffort(modelConfig, reasoningEffort)
+  );
 }
 
 export function resolveReasoningModel(
-	modelConfig: ModelConfigItem | undefined,
-	reasoningEffort: ReasoningEffortLevel | undefined,
+  modelConfig: ModelConfigItem | undefined,
+  reasoningEffort: ReasoningEffortLevel | undefined,
 ): string | undefined {
-	if (!reasoningEffort || PROMPT_ONLY_REASONING_EFFORTS.has(reasoningEffort)) {
-		return undefined;
-	}
+  if (!reasoningEffort || PROMPT_ONLY_REASONING_EFFORTS.has(reasoningEffort)) {
+    return undefined;
+  }
 
-	if (!isConfiguredReasoningEffort(modelConfig, reasoningEffort)) {
-		return undefined;
-	}
+  if (!isConfiguredReasoningEffort(modelConfig, reasoningEffort)) {
+    return undefined;
+  }
 
-	return modelConfig?.reasoningConfig?.modelOverrides?.[reasoningEffort];
+  return modelConfig?.reasoningConfig?.modelOverrides?.[reasoningEffort];
 }

@@ -1,7 +1,7 @@
 import type {
-	SandboxRunEvent,
-	SandboxTaskResult,
-	SandboxWorkerExecuteRequest,
+  SandboxRunEvent,
+  SandboxTaskResult,
+  SandboxWorkerExecuteRequest,
 } from "@ngriffin_uk/polychat-schemas";
 
 export type TaskParams = SandboxWorkerExecuteRequest;
@@ -10,13 +10,13 @@ export type TaskEvent = SandboxRunEvent;
 export type TaskEventEmitter = (event: TaskEvent) => Promise<void> | void;
 
 export interface TaskSecrets {
-	userToken: string;
-	githubToken?: string;
+  userToken: string;
+  githubToken?: string;
 }
 
 export interface Env {
-	Sandbox: DurableObjectNamespace<import("./index").Sandbox>;
-	SANDBOX_TRANSPORT?: "http" | "rpc";
-	JWT_SECRET?: string;
-	POLYCHAT_API: Fetcher;
+  Sandbox: DurableObjectNamespace<import("./index").Sandbox>;
+  SANDBOX_TRANSPORT?: "http" | "rpc";
+  JWT_SECRET?: string;
+  POLYCHAT_API: Fetcher;
 }

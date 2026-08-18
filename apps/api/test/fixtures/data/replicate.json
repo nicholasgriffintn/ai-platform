@@ -1,263 +1,263 @@
 [
-	{
-		"role": "user",
-		"content": "Generate an image, video and song for my upcoming film about a new mob gang from Manchester, they're taking over the scene and dealing.",
-		"id": "vum5x",
-		"timestamp": 1731389203204,
-		"model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
-		"platform": "api"
-	},
-	{
-		"role": "assistant",
-		"name": "External Functions",
-		"tool_calls": [
-			{
-				"arguments": {
-					"prompt": "A new mob gang from Manchester taking over the scene and dealing",
-					"negative_prompt": "Do not show any happy or positive scenes",
-					"width": 1024,
-					"height": 1024,
-					"num_outputs": 1,
-					"guidance_scale": 0
-				},
-				"name": "create_image"
-			},
-			{
-				"arguments": {
-					"prompt": "A new mob gang from Manchester taking over the scene and dealing",
-					"height": 320,
-					"width": 576,
-					"duration": 8
-				},
-				"name": "create_video"
-			}
-		],
-		"logId": "01JCFDD9A887R429J3SD7SZM27",
-		"content": "",
-		"id": "lwgh2o",
-		"timestamp": 1731389221012,
-		"model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
-		"platform": "api"
-	},
-	{
-		"role": "assistant",
-		"name": "create_image",
-		"content": "Image generated successfully",
-		"status": "success",
-		"data": {
-			"id": "z7ath3fbtxrj40ck3vbbs5h614",
-			"model": "bytedance/sdxl-lightning-4step",
-			"version": "5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637",
-			"input": {
-				"guidance_scale": 0,
-				"height": 1024,
-				"negative_prompt": "Do not show any happy or positive scenes",
-				"num_outputs": 1,
-				"prompt": "A new mob gang from Manchester taking over the scene and dealing",
-				"width": 1024
-			},
-			"logs": "",
-			"output": [
-				"https://replicate.delivery/yhqm/yewTTfGdj6rvuUTMOM4eeQEsXqW1vwGOSuKsSgoOwoGaSmAPB/out-0.png"
-			],
-			"data_removed": false,
-			"error": null,
-			"status": "processing",
-			"created_at": "2024-11-12T05:27:01.847Z",
-			"urls": {
-				"cancel": "https://api.replicate.com/v1/predictions/z7ath3fbtxrj40ck3vbbs5h614/cancel",
-				"get": "https://api.replicate.com/v1/predictions/z7ath3fbtxrj40ck3vbbs5h614",
-				"stream": "https://stream.replicate.com/v1/files/qoxq-wrtnjpwqcxrhszcaz7b3g6jpwdddi2q2pfgtzpyhrd3nss4h2awa"
-			},
-			"response": [
-				"https://replicate.delivery/yhqm/yewTTfGdj6rvuUTMOM4eeQEsXqW1vwGOSuKsSgoOwoGaSmAPB/out-0.png"
-			]
-		},
-		"logId": "01JCFDD9A887R429J3SD7SZM27",
-		"id": "vfmiaa",
-		"timestamp": 1731389222994,
-		"model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
-		"platform": "api"
-	},
-	{
-		"role": "user",
-		"content": "Create a video from this prompt: \"A macbook beating up Steve Jobs with a Windows PC\"",
-		"id": "9lqbhd",
-		"timestamp": 1731439276142,
-		"model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
-		"platform": "api"
-	},
-	{
-		"role": "assistant",
-		"name": "External Functions",
-		"tool_calls": [
-			{
-				"arguments": {
-					"prompt": "A macbook beating up Steve Jobs with a Windows PC",
-					"duration": 8,
-					"resolution": {
-						"width": 576,
-						"height": 320
-					}
-				},
-				"name": "create_video"
-			}
-		],
-		"logId": "01JCGX5CWN2PNJWFBZPK6KP9X4",
-		"content": "",
-		"id": "2liwbg",
-		"timestamp": 1731439287117,
-		"model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
-		"platform": "api"
-	},
-	{
-		"role": "assistant",
-		"name": "create_video",
-		"content": "Video generated successfully",
-		"status": "success",
-		"data": {
-			"id": "8hpwscpz4hrj40ck479aae5n90",
-			"model": "anotherjesse/zeroscope-v2-xl",
-			"version": "9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
-			"input": {
-				"duration": 8,
-				"prompt": "A macbook beating up Steve Jobs with a Windows PC",
-				"resolution": {
-					"height": 320,
-					"width": 576
-				}
-			},
-			"logs": "Using seed: 20386\nb'Tue Nov 12 19:21:38 2024       \\n+---------------------------------------------------------------------------------------+\\n| NVIDIA-SMI 535.212                Driver Version: 535.212      CUDA Version: 12.2     |\\n|-----------------------------------------+----------------------+----------------------+\\n| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |\\n| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |\\n|                                         |                      |               MIG M. |\\n|=========================================+======================+======================|\\n|   0  NVIDIA A100-SXM4-80GB          On  | 00000000:C7:00.0 Off |                    0 |\\n| N/A   24C    P0              63W / 400W |      0MiB / 81920MiB |      0%      Default |\\n|                                         |                      |             Disabled |\\n+-----------------------------------------+----------------------+----------------------+\\n                                                                                         \\n+---------------------------------------------------------------------------------------+\\n| Processes:                                                                            |\\n|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |\\n|        ID   ID                                                             Usage      |\\n|=======================================================================================|\\n|  No running processes found                                                           |\\n+---------------------------------------------------------------------------------------+\\n'\n  0%|          | 0/50 [00:00<?, ?it/s]\n  2%|▏         | 1/50 [00:00<00:30,  1.61it/s]\n  4%|▍         | 2/50 [00:01<00:27,  1.76it/s]\n  6%|▌         | 3/50 [00:01<00:25,  1.81it/s]\n  8%|▊         | 4/50 [00:02<00:25,  1.84it/s]\n 10%|█         | 5/50 [00:02<00:24,  1.85it/s]\n 12%|█▏        | 6/50 [00:03<00:23,  1.86it/s]\n 14%|█▍        | 7/50 [00:03<00:23,  1.87it/s]\n 16%|█▌        | 8/50 [00:04<00:22,  1.87it/s]\n 18%|█▊        | 9/50 [00:04<00:21,  1.87it/s]\n 20%|██        | 10/50 [00:05<00:21,  1.87it/s]\n 22%|██▏       | 11/50 [00:05<00:20,  1.88it/s]\n 24%|██▍       | 12/50 [00:06<00:20,  1.88it/s]\n 26%|██▌       | 13/50 [00:07<00:19,  1.88it/s]\n 28%|██▊       | 14/50 [00:07<00:19,  1.88it/s]\n 30%|███       | 15/50 [00:08<00:18,  1.88it/s]\n 32%|███▏      | 16/50 [00:08<00:18,  1.88it/s]\n 34%|███▍      | 17/50 [00:09<00:17,  1.88it/s]\n 36%|███▌      | 18/50 [00:09<00:17,  1.88it/s]\n 38%|███▊      | 19/50 [00:10<00:16,  1.88it/s]\n 40%|████      | 20/50 [00:10<00:15,  1.88it/s]\n 42%|████▏     | 21/50 [00:11<00:15,  1.88it/s]\n 44%|████▍     | 22/50 [00:11<00:14,  1.88it/s]\n 46%|████▌     | 23/50 [00:12<00:14,  1.88it/s]\n 48%|████▊     | 24/50 [00:12<00:13,  1.88it/s]\n 50%|█████     | 25/50 [00:13<00:13,  1.88it/s]\n 52%|█████▏    | 26/50 [00:13<00:12,  1.88it/s]\n 54%|█████▍    | 27/50 [00:14<00:12,  1.88it/s]\n 56%|█████▌    | 28/50 [00:15<00:11,  1.87it/s]\n 58%|█████▊    | 29/50 [00:15<00:11,  1.87it/s]\n 60%|██████    | 30/50 [00:16<00:10,  1.87it/s]\n 62%|██████▏   | 31/50 [00:16<00:10,  1.87it/s]\n 64%|██████▍   | 32/50 [00:17<00:09,  1.87it/s]\n 66%|██████▌   | 33/50 [00:17<00:09,  1.87it/s]\n 68%|██████▊   | 34/50 [00:18<00:08,  1.87it/s]\n 70%|███████   | 35/50 [00:18<00:07,  1.88it/s]\n 72%|███████▏  | 36/50 [00:19<00:07,  1.88it/s]\n 74%|███████▍  | 37/50 [00:19<00:06,  1.87it/s]\n 76%|███████▌  | 38/50 [00:20<00:06,  1.87it/s]\n 78%|███████▊  | 39/50 [00:20<00:05,  1.87it/s]\n 80%|████████  | 40/50 [00:21<00:05,  1.87it/s]\n 82%|████████▏ | 41/50 [00:21<00:04,  1.87it/s]\n 84%|████████▍ | 42/50 [00:22<00:04,  1.87it/s]\n 86%|████████▌ | 43/50 [00:23<00:03,  1.87it/s]\n 88%|████████▊ | 44/50 [00:23<00:03,  1.87it/s]\n 90%|█████████ | 45/50 [00:24<00:02,  1.87it/s]\n 92%|█████████▏| 46/50 [00:24<00:02,  1.87it/s]\n 94%|█████████▍| 47/50 [00:25<00:01,  1.87it/s]\n 96%|█████████▌| 48/50 [00:25<00:01,  1.87it/s]\n 98%|█████████▊| 49/50 [00:26<00:00,  1.87it/s]\n100%|██████████| 50/50 [00:26<00:00,  1.87it/s]\n100%|██████████| 50/50 [00:26<00:00,  1.87it/s]\noutput/output-0.mp4\n",
-			"output": [
-				"https://replicate.delivery/yhqm/UVGZp2afziyYLqvAknzIK6YyWuiKlC2n9L7K3NosGF415K4JA/output-0.mp4"
-			],
-			"data_removed": false,
-			"error": null,
-			"status": "succeeded",
-			"created_at": "2024-11-12T19:21:28.1Z",
-			"webhook": "https://chat-api.nickgriffin.uk/webhooks/replicate?chatId=158igp&token=ll0k0XFKItAVcqWCMYFrc4ec6WZqIUfMPJk2Ac5PElGg4YVKXQPTR9jejed6tw13",
-			"webhook_events_filter": ["output", "completed"],
-			"urls": {
-				"cancel": "https://api.replicate.com/v1/predictions/8hpwscpz4hrj40ck479aae5n90/cancel",
-				"get": "https://api.replicate.com/v1/predictions/8hpwscpz4hrj40ck479aae5n90",
-				"stream": "https://stream.replicate.com/v1/files/qoxq-g5kolun5imxyy4bh45xp4udkm5pv5o3yhe5z5as3mqs2osmzadtq"
-			},
-			"response": null,
-			"completed_at": "2024-11-12T19:22:19.375654407Z",
-			"metrics": {
-				"predict_time": 40.622332767
-			},
-			"started_at": "2024-11-12T19:21:38.753321601Z"
-		},
-		"logId": "01JCGX5CWN2PNJWFBZPK6KP9X4",
-		"id": "enxcwd",
-		"timestamp": 1731439292847,
-		"model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
-		"platform": "api"
-	},
-	{
-		"role": "assistant",
-		"name": "create_video",
-		"content": "Video generated successfully",
-		"status": "success",
-		"data": {
-			"id": "kqhr5nskfdrj40ck462r7k5s8c",
-			"model": "anotherjesse/zeroscope-v2-xl",
-			"version": "9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
-			"input": {
-				"guidance_scale": 30,
-				"prompt": "A puffin playing on a playground with some pigeons"
-			},
-			"logs": "Using seed: 43466\nb'Tue Nov 12 17:56:37 2024       \\n+---------------------------------------------------------------------------------------+\\n| NVIDIA-SMI 535.212                Driver Version: 535.212      CUDA Version: 12.2     |\\n|-----------------------------------------+----------------------+----------------------+\\n| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |\\n| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |\\n|                                         |                      |               MIG M. |\\n|=========================================+======================+======================|\\n|   0  NVIDIA A100-SXM4-80GB          On  | 00000000:2A:00.0 Off |                    0 |\\n| N/A   25C    P0              64W / 400W |      0MiB / 81920MiB |      0%      Default |\\n|                                         |                      |             Disabled |\\n+-----------------------------------------+----------------------+----------------------+\\n                                                                                         \\n+---------------------------------------------------------------------------------------+\\n| Processes:                                                                            |\\n|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |\\n|        ID   ID                                                             Usage      |\\n|=======================================================================================|\\n|  No running processes found                                                           |\\n+---------------------------------------------------------------------------------------+\\n'\n  0%|          | 0/50 [00:00<?, ?it/s]\n  2%|▏         | 1/50 [00:00<00:30,  1.62it/s]\n  4%|▍         | 2/50 [00:01<00:27,  1.76it/s]\n  6%|▌         | 3/50 [00:01<00:25,  1.81it/s]\n  8%|▊         | 4/50 [00:02<00:24,  1.84it/s]\n 10%|█         | 5/50 [00:02<00:24,  1.85it/s]\n 12%|█▏        | 6/50 [00:03<00:23,  1.87it/s]\n 14%|█▍        | 7/50 [00:03<00:22,  1.87it/s]\n 16%|█▌        | 8/50 [00:04<00:22,  1.87it/s]\n 18%|█▊        | 9/50 [00:04<00:21,  1.88it/s]\n 20%|██        | 10/50 [00:05<00:21,  1.88it/s]\n 22%|██▏       | 11/50 [00:05<00:20,  1.88it/s]\n 24%|██▍       | 12/50 [00:06<00:20,  1.88it/s]\n 26%|██▌       | 13/50 [00:06<00:19,  1.88it/s]\n 28%|██▊       | 14/50 [00:07<00:19,  1.88it/s]\n 30%|███       | 15/50 [00:08<00:18,  1.88it/s]\n 32%|███▏      | 16/50 [00:08<00:18,  1.88it/s]\n 34%|███▍      | 17/50 [00:09<00:17,  1.88it/s]\n 36%|███▌      | 18/50 [00:09<00:17,  1.88it/s]\n 38%|███▊      | 19/50 [00:10<00:16,  1.88it/s]\n 40%|████      | 20/50 [00:10<00:15,  1.88it/s]\n 42%|████▏     | 21/50 [00:11<00:15,  1.88it/s]\n 44%|████▍     | 22/50 [00:11<00:14,  1.88it/s]\n 46%|████▌     | 23/50 [00:12<00:14,  1.88it/s]\n 48%|████▊     | 24/50 [00:12<00:13,  1.88it/s]\n 50%|█████     | 25/50 [00:13<00:13,  1.88it/s]\n 52%|█████▏    | 26/50 [00:13<00:12,  1.88it/s]\n 54%|█████▍    | 27/50 [00:14<00:12,  1.88it/s]\n 56%|█████▌    | 28/50 [00:14<00:11,  1.88it/s]\n 58%|█████▊    | 29/50 [00:15<00:11,  1.88it/s]\n 60%|██████    | 30/50 [00:16<00:10,  1.88it/s]\n 62%|██████▏   | 31/50 [00:16<00:10,  1.88it/s]\n 64%|██████▍   | 32/50 [00:17<00:09,  1.88it/s]\n 66%|██████▌   | 33/50 [00:17<00:09,  1.88it/s]\n 68%|██████▊   | 34/50 [00:18<00:08,  1.88it/s]\n 70%|███████   | 35/50 [00:18<00:07,  1.88it/s]\n 72%|███████▏  | 36/50 [00:19<00:07,  1.88it/s]\n 74%|███████▍  | 37/50 [00:19<00:06,  1.88it/s]\n 76%|███████▌  | 38/50 [00:20<00:06,  1.88it/s]\n 78%|███████▊  | 39/50 [00:20<00:05,  1.88it/s]\n 80%|████████  | 40/50 [00:21<00:05,  1.88it/s]\n 82%|████████▏ | 41/50 [00:21<00:04,  1.88it/s]\n 84%|████████▍ | 42/50 [00:22<00:04,  1.88it/s]\n 86%|████████▌ | 43/50 [00:22<00:03,  1.88it/s]\n 88%|████████▊ | 44/50 [00:23<00:03,  1.88it/s]\n 90%|█████████ | 45/50 [00:24<00:02,  1.88it/s]\n 92%|█████████▏| 46/50 [00:24<00:02,  1.88it/s]\n 94%|█████████▍| 47/50 [00:25<00:01,  1.88it/s]\n 96%|█████████▌| 48/50 [00:25<00:01,  1.88it/s]\n 98%|█████████▊| 49/50 [00:26<00:00,  1.88it/s]\n100%|██████████| 50/50 [00:26<00:00,  1.88it/s]\n100%|██████████| 50/50 [00:26<00:00,  1.87it/s]\noutput/output-0.mp4\n",
-			"output": [
-				"https://replicate.delivery/yhqm/Lg6LdTFTdLp1Hhloy5evMpfJUxThDFlOIprcWKmuJQ09jUwTA/output-0.mp4"
-			],
-			"data_removed": false,
-			"error": null,
-			"status": "succeeded",
-			"created_at": "2024-11-12T17:56:37.883Z",
-			"webhook": "https://chat-api.nickgriffin.uk/webhooks/replicate?chatId=lc2o3&token=ll0k0XFKItAVcqWCMYFrc4ec6WZqIUfMPJk2Ac5PElGg4YVKXQPTR9jejed6tw13",
-			"webhook_events_filter": ["output", "completed"],
-			"urls": {
-				"cancel": "https://api.replicate.com/v1/predictions/kqhr5nskfdrj40ck462r7k5s8c/cancel",
-				"get": "https://api.replicate.com/v1/predictions/kqhr5nskfdrj40ck462r7k5s8c",
-				"stream": "https://stream.replicate.com/v1/files/qoxq-cpbipakwu7ufi63rqzczui3ebvy2cvom3bkm7us6ug6oevyakx3a"
-			},
-			"response": null,
-			"completed_at": "2024-11-12T17:57:17.704833971Z",
-			"metrics": {
-				"predict_time": 39.813398055
-			},
-			"started_at": "2024-11-12T17:56:37.891435913Z"
-		},
-		"logId": "01JCGRA1JVEBYDX59ZC0XKE40Q",
-		"id": "n731a",
-		"timestamp": 1731434202805,
-		"model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
-		"platform": "api"
-	},
-	{
-		"role": "user",
-		"content": "Create a song from this prompt: \"Edo25 major g melodies that sound triumphant and cinematic. Leading up to a crescendo that resolves in a 9th harmonic\"",
-		"id": "22jioj",
-		"timestamp": 1731439546176,
-		"model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
-		"platform": "api"
-	},
-	{
-		"role": "assistant",
-		"name": "External Functions",
-		"tool_calls": [
-			{
-				"arguments": {
-					"prompt": "Edo25 major g melodies that sound triumphant and cinematic. Leading up to a crescendo that resolves in a 9th harmonic",
-					"duration": 8
-				},
-				"name": "create_music"
-			}
-		],
-		"logId": "01JCGXDMKX1ZTRGH2WBKR5R4ZF",
-		"content": "",
-		"id": "ei6f1j",
-		"timestamp": 1731439559499,
-		"model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
-		"platform": "api"
-	},
-	{
-		"role": "assistant",
-		"name": "create_music",
-		"content": "Music generated successfully",
-		"status": "success",
-		"data": {
-			"id": "z6nqew8689rj60ck47bswhd8sc",
-			"model": "meta/musicgen",
-			"version": "671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
-			"input": {
-				"duration": 8,
-				"prompt": "Edo25 major g melodies that sound triumphant and cinematic. Leading up to a crescendo that resolves in a 9th harmonic"
-			},
-			"logs": "Using seed 2501692442\n1 /    400\n2 /    400\n3 /    400\n4 /    400\n5 /    400\n6 /    400\n7 /    400\n8 /    400\n9 /    400\n10 /    400\n11 /    400\n12 /    400\n13 /    400\n14 /    400\n15 /    400\n16 /    400\n17 /    400\n18 /    400\n19 /    400\n20 /    400\n21 /    400\n22 /    400\n23 /    400\n24 /    400\n25 /    400\n26 /    400\n27 /    400\n28 /    400\n29 /    400\n30 /    400\n31 /    400\n32 /    400\n33 /    400\n34 /    400\n35 /    400\n36 /    400\n37 /    400\n38 /    400\n39 /    400\n40 /    400\n41 /    400\n42 /    400\n43 /    400\n44 /    400\n45 /    400\n46 /    400\n47 /    400\n48 /    400\n49 /    400\n50 /    400\n51 /    400\n52 /    400\n53 /    400\n54 /    400\n55 /    400\n56 /    400\n57 /    400\n58 /    400\n59 /    400\n60 /    400\n61 /    400\n62 /    400\n63 /    400\n64 /    400\n65 /    400\n66 /    400\n67 /    400\n68 /    400\n69 /    400\n70 /    400\n71 /    400\n72 /    400\n73 /    400\n74 /    400\n75 /    400\n76 /    400\n77 /    400\n78 /    400\n79 /    400\n80 /    400\n81 /    400\n82 /    400\n83 /    400\n84 /    400\n85 /    400\n86 /    400\n87 /    400\n88 /    400\n89 /    400\n90 /    400\n91 /    400\n92 /    400\n93 /    400\n94 /    400\n95 /    400\n96 /    400\n97 /    400\n98 /    400\n99 /    400\n100 /    400\n101 /    400\n102 /    400\n103 /    400\n104 /    400\n105 /    400\n106 /    400\n107 /    400\n108 /    400\n109 /    400\n110 /    400\n111 /    400\n112 /    400\n113 /    400\n114 /    400\n115 /    400\n116 /    400\n117 /    400\n118 /    400\n119 /    400\n120 /    400\n121 /    400\n122 /    400\n123 /    400\n124 /    400\n125 /    400\n126 /    400\n127 /    400\n128 /    400\n129 /    400\n130 /    400\n131 /    400\n132 /    400\n133 /    400\n134 /    400\n135 /    400\n136 /    400\n137 /    400\n138 /    400\n139 /    400\n140 /    400\n141 /    400\n142 /    400\n143 /    400\n144 /    400\n145 /    400\n146 /    400\n147 /    400\n148 /    400\n149 /    400\n150 /    400\n151 /    400\n152 /    400\n153 /    400\n154 /    400\n155 /    400\n156 /    400\n157 /    400\n158 /    400\n159 /    400\n160 /    400\n161 /    400\n162 /    400\n163 /    400\n164 /    400\n165 /    400\n166 /    400\n167 /    400\n168 /    400\n169 /    400\n170 /    400\n171 /    400\n172 /    400\n173 /    400\n174 /    400\n175 /    400\n176 /    400\n177 /    400\n178 /    400\n179 /    400\n180 /    400\n181 /    400\n182 /    400\n183 /    400\n184 /    400\n185 /    400\n186 /    400\n187 /    400\n188 /    400\n189 /    400\n190 /    400\n191 /    400\n192 /    400\n193 /    400\n194 /    400\n195 /    400\n196 /    400\n197 /    400\n198 /    400\n199 /    400\n200 /    400\n201 /    400\n202 /    400\n203 /    400\n204 /    400\n205 /    400\n206 /    400\n207 /    400\n208 /    400\n209 /    400\n210 /    400\n211 /    400\n212 /    400\n213 /    400\n214 /    400\n215 /    400\n216 /    400\n217 /    400\n218 /    400\n219 /    400\n220 /    400\n221 /    400\n222 /    400\n223 /    400\n224 /    400\n225 /    400\n226 /    400\n227 /    400\n228 /    400\n229 /    400\n230 /    400\n231 /    400\n232 /    400\n233 /    400\n234 /    400\n235 /    400\n236 /    400\n237 /    400\n238 /    400\n239 /    400\n240 /    400\n241 /    400\n242 /    400\n243 /    400\n244 /    400\n245 /    400\n246 /    400\n247 /    400\n248 /    400\n249 /    400\n250 /    400\n251 /    400\n252 /    400\n253 /    400\n254 /    400\n255 /    400\n256 /    400\n257 /    400\n258 /    400\n259 /    400\n260 /    400\n261 /    400\n262 /    400\n263 /    400\n264 /    400\n265 /    400\n266 /    400\n267 /    400\n268 /    400\n269 /    400\n270 /    400\n271 /    400\n272 /    400\n273 /    400\n274 /    400\n275 /    400\n276 /    400\n277 /    400\n278 /    400\n279 /    400\n280 /    400\n281 /    400\n282 /    400\n283 /    400\n284 /    400\n285 /    400\n286 /    400\n287 /    400\n288 /    400\n289 /    400\n290 /    400\n291 /    400\n292 /    400\n293 /    400\n294 /    400\n295 /    400\n296 /    400\n297 /    400\n298 /    400\n299 /    400\n300 /    400\n301 /    400\n302 /    400\n303 /    400\n304 /    400\n305 /    400\n306 /    400\n307 /    400\n308 /    400\n309 /    400\n310 /    400\n311 /    400\n312 /    400\n313 /    400\n314 /    400\n315 /    400\n316 /    400\n317 /    400\n318 /    400\n319 /    400\n320 /    400\n321 /    400\n322 /    400\n323 /    400\n324 /    400\n325 /    400\n326 /    400\n327 /    400\n328 /    400\n329 /    400\n330 /    400\n331 /    400\n332 /    400\n333 /    400\n334 /    400\n335 /    400\n336 /    400\n337 /    400\n338 /    400\n339 /    400\n340 /    400\n341 /    400\n342 /    400\n343 /    400\n344 /    400\n345 /    400\n346 /    400\n347 /    400\n348 /    400\n349 /    400\n350 /    400\n351 /    400\n352 /    400\n353 /    400\n354 /    400\n355 /    400\n356 /    400\n357 /    400\n358 /    400\n359 /    400\n360 /    400\n361 /    400\n362 /    400\n363 /    400\n364 /    400\n365 /    400\n366 /    400\n367 /    400\n368 /    400\n369 /    400\n370 /    400\n371 /    400\n372 /    400\n373 /    400\n374 /    400\n375 /    400\n376 /    400\n377 /    400\n378 /    400\n379 /    400\n380 /    400\n381 /    400\n382 /    400\n383 /    400\n384 /    400\n385 /    400\n386 /    400\n387 /    400\n388 /    400\n389 /    400\n390 /    400\n391 /    400\n392 /    400\n393 /    400\n394 /    400\n395 /    400\n396 /    400\n397 /    400\n398 /    400\n399 /    400\n400 /    400\n401 /    400\n402 /    400\n403 /    400\n",
-			"output": "https://replicate.delivery/yhqm/8GSEITV1S1bvHRv166SghyLaQjI5doresXs1Ib7egBST3VwTA/out.wav",
-			"data_removed": false,
-			"error": null,
-			"status": "succeeded",
-			"created_at": "2024-11-12T19:26:00.258Z",
-			"webhook": "https://chat-api.nickgriffin.uk/webhooks/replicate?chatId=zlbj0d&token=ll0k0XFKItAVcqWCMYFrc4ec6WZqIUfMPJk2Ac5PElGg4YVKXQPTR9jejed6tw13",
-			"webhook_events_filter": ["output", "completed"],
-			"urls": {
-				"cancel": "https://api.replicate.com/v1/predictions/z6nqew8689rj60ck47bswhd8sc/cancel",
-				"get": "https://api.replicate.com/v1/predictions/z6nqew8689rj60ck47bswhd8sc",
-				"stream": "https://stream.replicate.com/v1/files/qoxq-q67nqbqi7g7uabvjxt3rzkuoebzgv7mtjndyeghingldangxu35a"
-			},
-			"response": null,
-			"completed_at": "2024-11-12T19:26:11.93396715Z",
-			"metrics": { "predict_time": 11.664499522 },
-			"started_at": "2024-11-12T19:26:00.269467591Z"
-		},
-		"logId": "01JCGXDMKX1ZTRGH2WBKR5R4ZF",
-		"id": "ujhxrs",
-		"timestamp": 1731439565159,
-		"model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
-		"platform": "api"
-	}
+  {
+    "role": "user",
+    "content": "Generate an image, video and song for my upcoming film about a new mob gang from Manchester, they're taking over the scene and dealing.",
+    "id": "vum5x",
+    "timestamp": 1731389203204,
+    "model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
+    "platform": "api"
+  },
+  {
+    "role": "assistant",
+    "name": "External Functions",
+    "tool_calls": [
+      {
+        "arguments": {
+          "prompt": "A new mob gang from Manchester taking over the scene and dealing",
+          "negative_prompt": "Do not show any happy or positive scenes",
+          "width": 1024,
+          "height": 1024,
+          "num_outputs": 1,
+          "guidance_scale": 0
+        },
+        "name": "create_image"
+      },
+      {
+        "arguments": {
+          "prompt": "A new mob gang from Manchester taking over the scene and dealing",
+          "height": 320,
+          "width": 576,
+          "duration": 8
+        },
+        "name": "create_video"
+      }
+    ],
+    "logId": "01JCFDD9A887R429J3SD7SZM27",
+    "content": "",
+    "id": "lwgh2o",
+    "timestamp": 1731389221012,
+    "model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
+    "platform": "api"
+  },
+  {
+    "role": "assistant",
+    "name": "create_image",
+    "content": "Image generated successfully",
+    "status": "success",
+    "data": {
+      "id": "z7ath3fbtxrj40ck3vbbs5h614",
+      "model": "bytedance/sdxl-lightning-4step",
+      "version": "5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637",
+      "input": {
+        "guidance_scale": 0,
+        "height": 1024,
+        "negative_prompt": "Do not show any happy or positive scenes",
+        "num_outputs": 1,
+        "prompt": "A new mob gang from Manchester taking over the scene and dealing",
+        "width": 1024
+      },
+      "logs": "",
+      "output": [
+        "https://replicate.delivery/yhqm/yewTTfGdj6rvuUTMOM4eeQEsXqW1vwGOSuKsSgoOwoGaSmAPB/out-0.png"
+      ],
+      "data_removed": false,
+      "error": null,
+      "status": "processing",
+      "created_at": "2024-11-12T05:27:01.847Z",
+      "urls": {
+        "cancel": "https://api.replicate.com/v1/predictions/z7ath3fbtxrj40ck3vbbs5h614/cancel",
+        "get": "https://api.replicate.com/v1/predictions/z7ath3fbtxrj40ck3vbbs5h614",
+        "stream": "https://stream.replicate.com/v1/files/qoxq-wrtnjpwqcxrhszcaz7b3g6jpwdddi2q2pfgtzpyhrd3nss4h2awa"
+      },
+      "response": [
+        "https://replicate.delivery/yhqm/yewTTfGdj6rvuUTMOM4eeQEsXqW1vwGOSuKsSgoOwoGaSmAPB/out-0.png"
+      ]
+    },
+    "logId": "01JCFDD9A887R429J3SD7SZM27",
+    "id": "vfmiaa",
+    "timestamp": 1731389222994,
+    "model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
+    "platform": "api"
+  },
+  {
+    "role": "user",
+    "content": "Create a video from this prompt: \"A macbook beating up Steve Jobs with a Windows PC\"",
+    "id": "9lqbhd",
+    "timestamp": 1731439276142,
+    "model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
+    "platform": "api"
+  },
+  {
+    "role": "assistant",
+    "name": "External Functions",
+    "tool_calls": [
+      {
+        "arguments": {
+          "prompt": "A macbook beating up Steve Jobs with a Windows PC",
+          "duration": 8,
+          "resolution": {
+            "width": 576,
+            "height": 320
+          }
+        },
+        "name": "create_video"
+      }
+    ],
+    "logId": "01JCGX5CWN2PNJWFBZPK6KP9X4",
+    "content": "",
+    "id": "2liwbg",
+    "timestamp": 1731439287117,
+    "model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
+    "platform": "api"
+  },
+  {
+    "role": "assistant",
+    "name": "create_video",
+    "content": "Video generated successfully",
+    "status": "success",
+    "data": {
+      "id": "8hpwscpz4hrj40ck479aae5n90",
+      "model": "anotherjesse/zeroscope-v2-xl",
+      "version": "9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
+      "input": {
+        "duration": 8,
+        "prompt": "A macbook beating up Steve Jobs with a Windows PC",
+        "resolution": {
+          "height": 320,
+          "width": 576
+        }
+      },
+      "logs": "Using seed: 20386\nb'Tue Nov 12 19:21:38 2024       \\n+---------------------------------------------------------------------------------------+\\n| NVIDIA-SMI 535.212                Driver Version: 535.212      CUDA Version: 12.2     |\\n|-----------------------------------------+----------------------+----------------------+\\n| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |\\n| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |\\n|                                         |                      |               MIG M. |\\n|=========================================+======================+======================|\\n|   0  NVIDIA A100-SXM4-80GB          On  | 00000000:C7:00.0 Off |                    0 |\\n| N/A   24C    P0              63W / 400W |      0MiB / 81920MiB |      0%      Default |\\n|                                         |                      |             Disabled |\\n+-----------------------------------------+----------------------+----------------------+\\n                                                                                         \\n+---------------------------------------------------------------------------------------+\\n| Processes:                                                                            |\\n|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |\\n|        ID   ID                                                             Usage      |\\n|=======================================================================================|\\n|  No running processes found                                                           |\\n+---------------------------------------------------------------------------------------+\\n'\n  0%|          | 0/50 [00:00<?, ?it/s]\n  2%|▏         | 1/50 [00:00<00:30,  1.61it/s]\n  4%|▍         | 2/50 [00:01<00:27,  1.76it/s]\n  6%|▌         | 3/50 [00:01<00:25,  1.81it/s]\n  8%|▊         | 4/50 [00:02<00:25,  1.84it/s]\n 10%|█         | 5/50 [00:02<00:24,  1.85it/s]\n 12%|█▏        | 6/50 [00:03<00:23,  1.86it/s]\n 14%|█▍        | 7/50 [00:03<00:23,  1.87it/s]\n 16%|█▌        | 8/50 [00:04<00:22,  1.87it/s]\n 18%|█▊        | 9/50 [00:04<00:21,  1.87it/s]\n 20%|██        | 10/50 [00:05<00:21,  1.87it/s]\n 22%|██▏       | 11/50 [00:05<00:20,  1.88it/s]\n 24%|██▍       | 12/50 [00:06<00:20,  1.88it/s]\n 26%|██▌       | 13/50 [00:07<00:19,  1.88it/s]\n 28%|██▊       | 14/50 [00:07<00:19,  1.88it/s]\n 30%|███       | 15/50 [00:08<00:18,  1.88it/s]\n 32%|███▏      | 16/50 [00:08<00:18,  1.88it/s]\n 34%|███▍      | 17/50 [00:09<00:17,  1.88it/s]\n 36%|███▌      | 18/50 [00:09<00:17,  1.88it/s]\n 38%|███▊      | 19/50 [00:10<00:16,  1.88it/s]\n 40%|████      | 20/50 [00:10<00:15,  1.88it/s]\n 42%|████▏     | 21/50 [00:11<00:15,  1.88it/s]\n 44%|████▍     | 22/50 [00:11<00:14,  1.88it/s]\n 46%|████▌     | 23/50 [00:12<00:14,  1.88it/s]\n 48%|████▊     | 24/50 [00:12<00:13,  1.88it/s]\n 50%|█████     | 25/50 [00:13<00:13,  1.88it/s]\n 52%|█████▏    | 26/50 [00:13<00:12,  1.88it/s]\n 54%|█████▍    | 27/50 [00:14<00:12,  1.88it/s]\n 56%|█████▌    | 28/50 [00:15<00:11,  1.87it/s]\n 58%|█████▊    | 29/50 [00:15<00:11,  1.87it/s]\n 60%|██████    | 30/50 [00:16<00:10,  1.87it/s]\n 62%|██████▏   | 31/50 [00:16<00:10,  1.87it/s]\n 64%|██████▍   | 32/50 [00:17<00:09,  1.87it/s]\n 66%|██████▌   | 33/50 [00:17<00:09,  1.87it/s]\n 68%|██████▊   | 34/50 [00:18<00:08,  1.87it/s]\n 70%|███████   | 35/50 [00:18<00:07,  1.88it/s]\n 72%|███████▏  | 36/50 [00:19<00:07,  1.88it/s]\n 74%|███████▍  | 37/50 [00:19<00:06,  1.87it/s]\n 76%|███████▌  | 38/50 [00:20<00:06,  1.87it/s]\n 78%|███████▊  | 39/50 [00:20<00:05,  1.87it/s]\n 80%|████████  | 40/50 [00:21<00:05,  1.87it/s]\n 82%|████████▏ | 41/50 [00:21<00:04,  1.87it/s]\n 84%|████████▍ | 42/50 [00:22<00:04,  1.87it/s]\n 86%|████████▌ | 43/50 [00:23<00:03,  1.87it/s]\n 88%|████████▊ | 44/50 [00:23<00:03,  1.87it/s]\n 90%|█████████ | 45/50 [00:24<00:02,  1.87it/s]\n 92%|█████████▏| 46/50 [00:24<00:02,  1.87it/s]\n 94%|█████████▍| 47/50 [00:25<00:01,  1.87it/s]\n 96%|█████████▌| 48/50 [00:25<00:01,  1.87it/s]\n 98%|█████████▊| 49/50 [00:26<00:00,  1.87it/s]\n100%|██████████| 50/50 [00:26<00:00,  1.87it/s]\n100%|██████████| 50/50 [00:26<00:00,  1.87it/s]\noutput/output-0.mp4\n",
+      "output": [
+        "https://replicate.delivery/yhqm/UVGZp2afziyYLqvAknzIK6YyWuiKlC2n9L7K3NosGF415K4JA/output-0.mp4"
+      ],
+      "data_removed": false,
+      "error": null,
+      "status": "succeeded",
+      "created_at": "2024-11-12T19:21:28.1Z",
+      "webhook": "https://chat-api.nickgriffin.uk/webhooks/replicate?chatId=158igp&token=ll0k0XFKItAVcqWCMYFrc4ec6WZqIUfMPJk2Ac5PElGg4YVKXQPTR9jejed6tw13",
+      "webhook_events_filter": ["output", "completed"],
+      "urls": {
+        "cancel": "https://api.replicate.com/v1/predictions/8hpwscpz4hrj40ck479aae5n90/cancel",
+        "get": "https://api.replicate.com/v1/predictions/8hpwscpz4hrj40ck479aae5n90",
+        "stream": "https://stream.replicate.com/v1/files/qoxq-g5kolun5imxyy4bh45xp4udkm5pv5o3yhe5z5as3mqs2osmzadtq"
+      },
+      "response": null,
+      "completed_at": "2024-11-12T19:22:19.375654407Z",
+      "metrics": {
+        "predict_time": 40.622332767
+      },
+      "started_at": "2024-11-12T19:21:38.753321601Z"
+    },
+    "logId": "01JCGX5CWN2PNJWFBZPK6KP9X4",
+    "id": "enxcwd",
+    "timestamp": 1731439292847,
+    "model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
+    "platform": "api"
+  },
+  {
+    "role": "assistant",
+    "name": "create_video",
+    "content": "Video generated successfully",
+    "status": "success",
+    "data": {
+      "id": "kqhr5nskfdrj40ck462r7k5s8c",
+      "model": "anotherjesse/zeroscope-v2-xl",
+      "version": "9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
+      "input": {
+        "guidance_scale": 30,
+        "prompt": "A puffin playing on a playground with some pigeons"
+      },
+      "logs": "Using seed: 43466\nb'Tue Nov 12 17:56:37 2024       \\n+---------------------------------------------------------------------------------------+\\n| NVIDIA-SMI 535.212                Driver Version: 535.212      CUDA Version: 12.2     |\\n|-----------------------------------------+----------------------+----------------------+\\n| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |\\n| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |\\n|                                         |                      |               MIG M. |\\n|=========================================+======================+======================|\\n|   0  NVIDIA A100-SXM4-80GB          On  | 00000000:2A:00.0 Off |                    0 |\\n| N/A   25C    P0              64W / 400W |      0MiB / 81920MiB |      0%      Default |\\n|                                         |                      |             Disabled |\\n+-----------------------------------------+----------------------+----------------------+\\n                                                                                         \\n+---------------------------------------------------------------------------------------+\\n| Processes:                                                                            |\\n|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |\\n|        ID   ID                                                             Usage      |\\n|=======================================================================================|\\n|  No running processes found                                                           |\\n+---------------------------------------------------------------------------------------+\\n'\n  0%|          | 0/50 [00:00<?, ?it/s]\n  2%|▏         | 1/50 [00:00<00:30,  1.62it/s]\n  4%|▍         | 2/50 [00:01<00:27,  1.76it/s]\n  6%|▌         | 3/50 [00:01<00:25,  1.81it/s]\n  8%|▊         | 4/50 [00:02<00:24,  1.84it/s]\n 10%|█         | 5/50 [00:02<00:24,  1.85it/s]\n 12%|█▏        | 6/50 [00:03<00:23,  1.87it/s]\n 14%|█▍        | 7/50 [00:03<00:22,  1.87it/s]\n 16%|█▌        | 8/50 [00:04<00:22,  1.87it/s]\n 18%|█▊        | 9/50 [00:04<00:21,  1.88it/s]\n 20%|██        | 10/50 [00:05<00:21,  1.88it/s]\n 22%|██▏       | 11/50 [00:05<00:20,  1.88it/s]\n 24%|██▍       | 12/50 [00:06<00:20,  1.88it/s]\n 26%|██▌       | 13/50 [00:06<00:19,  1.88it/s]\n 28%|██▊       | 14/50 [00:07<00:19,  1.88it/s]\n 30%|███       | 15/50 [00:08<00:18,  1.88it/s]\n 32%|███▏      | 16/50 [00:08<00:18,  1.88it/s]\n 34%|███▍      | 17/50 [00:09<00:17,  1.88it/s]\n 36%|███▌      | 18/50 [00:09<00:17,  1.88it/s]\n 38%|███▊      | 19/50 [00:10<00:16,  1.88it/s]\n 40%|████      | 20/50 [00:10<00:15,  1.88it/s]\n 42%|████▏     | 21/50 [00:11<00:15,  1.88it/s]\n 44%|████▍     | 22/50 [00:11<00:14,  1.88it/s]\n 46%|████▌     | 23/50 [00:12<00:14,  1.88it/s]\n 48%|████▊     | 24/50 [00:12<00:13,  1.88it/s]\n 50%|█████     | 25/50 [00:13<00:13,  1.88it/s]\n 52%|█████▏    | 26/50 [00:13<00:12,  1.88it/s]\n 54%|█████▍    | 27/50 [00:14<00:12,  1.88it/s]\n 56%|█████▌    | 28/50 [00:14<00:11,  1.88it/s]\n 58%|█████▊    | 29/50 [00:15<00:11,  1.88it/s]\n 60%|██████    | 30/50 [00:16<00:10,  1.88it/s]\n 62%|██████▏   | 31/50 [00:16<00:10,  1.88it/s]\n 64%|██████▍   | 32/50 [00:17<00:09,  1.88it/s]\n 66%|██████▌   | 33/50 [00:17<00:09,  1.88it/s]\n 68%|██████▊   | 34/50 [00:18<00:08,  1.88it/s]\n 70%|███████   | 35/50 [00:18<00:07,  1.88it/s]\n 72%|███████▏  | 36/50 [00:19<00:07,  1.88it/s]\n 74%|███████▍  | 37/50 [00:19<00:06,  1.88it/s]\n 76%|███████▌  | 38/50 [00:20<00:06,  1.88it/s]\n 78%|███████▊  | 39/50 [00:20<00:05,  1.88it/s]\n 80%|████████  | 40/50 [00:21<00:05,  1.88it/s]\n 82%|████████▏ | 41/50 [00:21<00:04,  1.88it/s]\n 84%|████████▍ | 42/50 [00:22<00:04,  1.88it/s]\n 86%|████████▌ | 43/50 [00:22<00:03,  1.88it/s]\n 88%|████████▊ | 44/50 [00:23<00:03,  1.88it/s]\n 90%|█████████ | 45/50 [00:24<00:02,  1.88it/s]\n 92%|█████████▏| 46/50 [00:24<00:02,  1.88it/s]\n 94%|█████████▍| 47/50 [00:25<00:01,  1.88it/s]\n 96%|█████████▌| 48/50 [00:25<00:01,  1.88it/s]\n 98%|█████████▊| 49/50 [00:26<00:00,  1.88it/s]\n100%|██████████| 50/50 [00:26<00:00,  1.88it/s]\n100%|██████████| 50/50 [00:26<00:00,  1.87it/s]\noutput/output-0.mp4\n",
+      "output": [
+        "https://replicate.delivery/yhqm/Lg6LdTFTdLp1Hhloy5evMpfJUxThDFlOIprcWKmuJQ09jUwTA/output-0.mp4"
+      ],
+      "data_removed": false,
+      "error": null,
+      "status": "succeeded",
+      "created_at": "2024-11-12T17:56:37.883Z",
+      "webhook": "https://chat-api.nickgriffin.uk/webhooks/replicate?chatId=lc2o3&token=ll0k0XFKItAVcqWCMYFrc4ec6WZqIUfMPJk2Ac5PElGg4YVKXQPTR9jejed6tw13",
+      "webhook_events_filter": ["output", "completed"],
+      "urls": {
+        "cancel": "https://api.replicate.com/v1/predictions/kqhr5nskfdrj40ck462r7k5s8c/cancel",
+        "get": "https://api.replicate.com/v1/predictions/kqhr5nskfdrj40ck462r7k5s8c",
+        "stream": "https://stream.replicate.com/v1/files/qoxq-cpbipakwu7ufi63rqzczui3ebvy2cvom3bkm7us6ug6oevyakx3a"
+      },
+      "response": null,
+      "completed_at": "2024-11-12T17:57:17.704833971Z",
+      "metrics": {
+        "predict_time": 39.813398055
+      },
+      "started_at": "2024-11-12T17:56:37.891435913Z"
+    },
+    "logId": "01JCGRA1JVEBYDX59ZC0XKE40Q",
+    "id": "n731a",
+    "timestamp": 1731434202805,
+    "model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
+    "platform": "api"
+  },
+  {
+    "role": "user",
+    "content": "Create a song from this prompt: \"Edo25 major g melodies that sound triumphant and cinematic. Leading up to a crescendo that resolves in a 9th harmonic\"",
+    "id": "22jioj",
+    "timestamp": 1731439546176,
+    "model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
+    "platform": "api"
+  },
+  {
+    "role": "assistant",
+    "name": "External Functions",
+    "tool_calls": [
+      {
+        "arguments": {
+          "prompt": "Edo25 major g melodies that sound triumphant and cinematic. Leading up to a crescendo that resolves in a 9th harmonic",
+          "duration": 8
+        },
+        "name": "create_music"
+      }
+    ],
+    "logId": "01JCGXDMKX1ZTRGH2WBKR5R4ZF",
+    "content": "",
+    "id": "ei6f1j",
+    "timestamp": 1731439559499,
+    "model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
+    "platform": "api"
+  },
+  {
+    "role": "assistant",
+    "name": "create_music",
+    "content": "Music generated successfully",
+    "status": "success",
+    "data": {
+      "id": "z6nqew8689rj60ck47bswhd8sc",
+      "model": "meta/musicgen",
+      "version": "671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
+      "input": {
+        "duration": 8,
+        "prompt": "Edo25 major g melodies that sound triumphant and cinematic. Leading up to a crescendo that resolves in a 9th harmonic"
+      },
+      "logs": "Using seed 2501692442\n1 /    400\n2 /    400\n3 /    400\n4 /    400\n5 /    400\n6 /    400\n7 /    400\n8 /    400\n9 /    400\n10 /    400\n11 /    400\n12 /    400\n13 /    400\n14 /    400\n15 /    400\n16 /    400\n17 /    400\n18 /    400\n19 /    400\n20 /    400\n21 /    400\n22 /    400\n23 /    400\n24 /    400\n25 /    400\n26 /    400\n27 /    400\n28 /    400\n29 /    400\n30 /    400\n31 /    400\n32 /    400\n33 /    400\n34 /    400\n35 /    400\n36 /    400\n37 /    400\n38 /    400\n39 /    400\n40 /    400\n41 /    400\n42 /    400\n43 /    400\n44 /    400\n45 /    400\n46 /    400\n47 /    400\n48 /    400\n49 /    400\n50 /    400\n51 /    400\n52 /    400\n53 /    400\n54 /    400\n55 /    400\n56 /    400\n57 /    400\n58 /    400\n59 /    400\n60 /    400\n61 /    400\n62 /    400\n63 /    400\n64 /    400\n65 /    400\n66 /    400\n67 /    400\n68 /    400\n69 /    400\n70 /    400\n71 /    400\n72 /    400\n73 /    400\n74 /    400\n75 /    400\n76 /    400\n77 /    400\n78 /    400\n79 /    400\n80 /    400\n81 /    400\n82 /    400\n83 /    400\n84 /    400\n85 /    400\n86 /    400\n87 /    400\n88 /    400\n89 /    400\n90 /    400\n91 /    400\n92 /    400\n93 /    400\n94 /    400\n95 /    400\n96 /    400\n97 /    400\n98 /    400\n99 /    400\n100 /    400\n101 /    400\n102 /    400\n103 /    400\n104 /    400\n105 /    400\n106 /    400\n107 /    400\n108 /    400\n109 /    400\n110 /    400\n111 /    400\n112 /    400\n113 /    400\n114 /    400\n115 /    400\n116 /    400\n117 /    400\n118 /    400\n119 /    400\n120 /    400\n121 /    400\n122 /    400\n123 /    400\n124 /    400\n125 /    400\n126 /    400\n127 /    400\n128 /    400\n129 /    400\n130 /    400\n131 /    400\n132 /    400\n133 /    400\n134 /    400\n135 /    400\n136 /    400\n137 /    400\n138 /    400\n139 /    400\n140 /    400\n141 /    400\n142 /    400\n143 /    400\n144 /    400\n145 /    400\n146 /    400\n147 /    400\n148 /    400\n149 /    400\n150 /    400\n151 /    400\n152 /    400\n153 /    400\n154 /    400\n155 /    400\n156 /    400\n157 /    400\n158 /    400\n159 /    400\n160 /    400\n161 /    400\n162 /    400\n163 /    400\n164 /    400\n165 /    400\n166 /    400\n167 /    400\n168 /    400\n169 /    400\n170 /    400\n171 /    400\n172 /    400\n173 /    400\n174 /    400\n175 /    400\n176 /    400\n177 /    400\n178 /    400\n179 /    400\n180 /    400\n181 /    400\n182 /    400\n183 /    400\n184 /    400\n185 /    400\n186 /    400\n187 /    400\n188 /    400\n189 /    400\n190 /    400\n191 /    400\n192 /    400\n193 /    400\n194 /    400\n195 /    400\n196 /    400\n197 /    400\n198 /    400\n199 /    400\n200 /    400\n201 /    400\n202 /    400\n203 /    400\n204 /    400\n205 /    400\n206 /    400\n207 /    400\n208 /    400\n209 /    400\n210 /    400\n211 /    400\n212 /    400\n213 /    400\n214 /    400\n215 /    400\n216 /    400\n217 /    400\n218 /    400\n219 /    400\n220 /    400\n221 /    400\n222 /    400\n223 /    400\n224 /    400\n225 /    400\n226 /    400\n227 /    400\n228 /    400\n229 /    400\n230 /    400\n231 /    400\n232 /    400\n233 /    400\n234 /    400\n235 /    400\n236 /    400\n237 /    400\n238 /    400\n239 /    400\n240 /    400\n241 /    400\n242 /    400\n243 /    400\n244 /    400\n245 /    400\n246 /    400\n247 /    400\n248 /    400\n249 /    400\n250 /    400\n251 /    400\n252 /    400\n253 /    400\n254 /    400\n255 /    400\n256 /    400\n257 /    400\n258 /    400\n259 /    400\n260 /    400\n261 /    400\n262 /    400\n263 /    400\n264 /    400\n265 /    400\n266 /    400\n267 /    400\n268 /    400\n269 /    400\n270 /    400\n271 /    400\n272 /    400\n273 /    400\n274 /    400\n275 /    400\n276 /    400\n277 /    400\n278 /    400\n279 /    400\n280 /    400\n281 /    400\n282 /    400\n283 /    400\n284 /    400\n285 /    400\n286 /    400\n287 /    400\n288 /    400\n289 /    400\n290 /    400\n291 /    400\n292 /    400\n293 /    400\n294 /    400\n295 /    400\n296 /    400\n297 /    400\n298 /    400\n299 /    400\n300 /    400\n301 /    400\n302 /    400\n303 /    400\n304 /    400\n305 /    400\n306 /    400\n307 /    400\n308 /    400\n309 /    400\n310 /    400\n311 /    400\n312 /    400\n313 /    400\n314 /    400\n315 /    400\n316 /    400\n317 /    400\n318 /    400\n319 /    400\n320 /    400\n321 /    400\n322 /    400\n323 /    400\n324 /    400\n325 /    400\n326 /    400\n327 /    400\n328 /    400\n329 /    400\n330 /    400\n331 /    400\n332 /    400\n333 /    400\n334 /    400\n335 /    400\n336 /    400\n337 /    400\n338 /    400\n339 /    400\n340 /    400\n341 /    400\n342 /    400\n343 /    400\n344 /    400\n345 /    400\n346 /    400\n347 /    400\n348 /    400\n349 /    400\n350 /    400\n351 /    400\n352 /    400\n353 /    400\n354 /    400\n355 /    400\n356 /    400\n357 /    400\n358 /    400\n359 /    400\n360 /    400\n361 /    400\n362 /    400\n363 /    400\n364 /    400\n365 /    400\n366 /    400\n367 /    400\n368 /    400\n369 /    400\n370 /    400\n371 /    400\n372 /    400\n373 /    400\n374 /    400\n375 /    400\n376 /    400\n377 /    400\n378 /    400\n379 /    400\n380 /    400\n381 /    400\n382 /    400\n383 /    400\n384 /    400\n385 /    400\n386 /    400\n387 /    400\n388 /    400\n389 /    400\n390 /    400\n391 /    400\n392 /    400\n393 /    400\n394 /    400\n395 /    400\n396 /    400\n397 /    400\n398 /    400\n399 /    400\n400 /    400\n401 /    400\n402 /    400\n403 /    400\n",
+      "output": "https://replicate.delivery/yhqm/8GSEITV1S1bvHRv166SghyLaQjI5doresXs1Ib7egBST3VwTA/out.wav",
+      "data_removed": false,
+      "error": null,
+      "status": "succeeded",
+      "created_at": "2024-11-12T19:26:00.258Z",
+      "webhook": "https://chat-api.nickgriffin.uk/webhooks/replicate?chatId=zlbj0d&token=ll0k0XFKItAVcqWCMYFrc4ec6WZqIUfMPJk2Ac5PElGg4YVKXQPTR9jejed6tw13",
+      "webhook_events_filter": ["output", "completed"],
+      "urls": {
+        "cancel": "https://api.replicate.com/v1/predictions/z6nqew8689rj60ck47bswhd8sc/cancel",
+        "get": "https://api.replicate.com/v1/predictions/z6nqew8689rj60ck47bswhd8sc",
+        "stream": "https://stream.replicate.com/v1/files/qoxq-q67nqbqi7g7uabvjxt3rzkuoebzgv7mtjndyeghingldangxu35a"
+      },
+      "response": null,
+      "completed_at": "2024-11-12T19:26:11.93396715Z",
+      "metrics": { "predict_time": 11.664499522 },
+      "started_at": "2024-11-12T19:26:00.269467591Z"
+    },
+    "logId": "01JCGXDMKX1ZTRGH2WBKR5R4ZF",
+    "id": "ujhxrs",
+    "timestamp": 1731439565159,
+    "model": "@hf/nousresearch/hermes-2-pro-mistral-7b",
+    "platform": "api"
+  }
 ]

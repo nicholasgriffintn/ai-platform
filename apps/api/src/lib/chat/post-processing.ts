@@ -1,37 +1,38 @@
 import type { CreateChatCompletionsResponse } from "~/types";
-import { buildChatCompactionMetadata } from "./compaction-metadata";
 import { isPlainObject } from "~/utils/objects";
+
+import { buildChatCompactionMetadata } from "./compaction-metadata";
 
 type ChatPostProcessing = NonNullable<CreateChatCompletionsResponse["post_processing"]>;
 type ChatPostProcessingSteps = Partial<Pick<ChatPostProcessing, "steps" | "total_usage">>;
 
 function isGuardrailsPostProcessing(
-	value: unknown,
+  value: unknown,
 ): value is NonNullable<ChatPostProcessing["guardrails"]> {
-	return isPlainObject(value) && typeof value.passed === "boolean";
+  return isPlainObject(value) && typeof value.passed === "boolean";
 }
 
 function getStepMetadata(response: unknown): ChatPostProcessingSteps {
-	if (!isPlainObject(response)) {
-		return {};
-	}
+  if (!isPlainObject(response)) {
+    return {};
+  }
 
-	return {
-		...(Array.isArray(response.steps) ? { steps: response.steps } : {}),
-		...(isPlainObject(response.totalUsage) ? { total_usage: response.totalUsage } : {}),
-	};
+  return {
+    ...(Array.isArray(response.steps) ? { steps: response.steps } : {}),
+    ...(isPlainObject(response.totalUsage) ? { total_usage: response.totalUsage } : {}),
+  };
 }
 
 export function buildChatPostProcessing(result: {
-	guardrails?: unknown;
-	response?: unknown;
-	compactionMessage?: unknown;
+  guardrails?: unknown;
+  response?: unknown;
+  compactionMessage?: unknown;
 }): ChatPostProcessing {
-	const compaction = buildChatCompactionMetadata(result.compactionMessage);
+  const compaction = buildChatCompactionMetadata(result.compactionMessage);
 
-	return {
-		...(isGuardrailsPostProcessing(result.guardrails) ? { guardrails: result.guardrails } : {}),
-		...(compaction ? { compaction } : {}),
-		...getStepMetadata(result.response),
-	};
+  return {
+    ...(isGuardrailsPostProcessing(result.guardrails) ? { guardrails: result.guardrails } : {}),
+    ...(compaction ? { compaction } : {}),
+    ...getStepMetadata(result.response),
+  };
 }

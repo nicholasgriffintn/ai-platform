@@ -244,7 +244,7 @@ export const MessageList = ({
                       isEditing={editingMessageId === message.id}
                       onSaveEdit={(newContent) => {
                         if (message.id) {
-                          updateUserMessage(message.id, newContent);
+                          void updateUserMessage(message.id, newContent);
                           stopEditingMessage();
                         }
                       }}

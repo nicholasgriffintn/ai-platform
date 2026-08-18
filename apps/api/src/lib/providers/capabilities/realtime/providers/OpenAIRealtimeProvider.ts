@@ -41,7 +41,7 @@ const REALTIME_WHISPER_MODEL = "gpt-realtime-whisper";
 const DEFAULT_VOICE = "marin";
 const DEFAULT_TRANSPORT: RealtimeTransport = "webrtc";
 const DEFAULT_TRANSCRIPTION_DELAY: RealtimeTranscriptionDelay = "low";
-const TRANSCRIPTION_DELAYS: RealtimeTranscriptionDelay[] = new Set([
+const TRANSCRIPTION_DELAYS = new Set<RealtimeTranscriptionDelay>([
   "minimal",
   "low",
   "medium",

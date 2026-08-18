@@ -1,6 +1,7 @@
+import type { SearchProvider, SearchProviderName } from "~/types";
+
 import { providerLibrary } from "../../library";
 import type { ProviderFactoryContext } from "../../registry/types";
-import type { SearchProvider, SearchProviderName } from "~/types";
 
 export type { SearchProvider, SearchOptions, SearchProviderName, SearchResult } from "~/types";
 export * from "./providers";
@@ -11,23 +12,23 @@ export * from "./providers";
  * @param context - Optional provider factory context (env, user, config)
  */
 export function getSearchProvider(
-	providerName: SearchProviderName,
-	context?: ProviderFactoryContext,
+  providerName: SearchProviderName,
+  context?: ProviderFactoryContext,
 ): SearchProvider {
-	return providerLibrary.search(providerName, context);
+  return providerLibrary.search(providerName, context);
 }
 
 /**
  * List all registered search providers (including aliases).
  */
 export function listSearchProviders(): string[] {
-	const summaries = providerLibrary.list("search");
-	const names = new Set<string>();
+  const summaries = providerLibrary.list("search");
+  const names = new Set<string>();
 
-	for (const summary of summaries) {
-		names.add(summary.name);
-		summary.aliases?.forEach((alias) => names.add(alias));
-	}
+  for (const summary of summaries) {
+    names.add(summary.name);
+    summary.aliases?.forEach((alias) => names.add(alias));
+  }
 
-	return Array.from(names).sort();
+  return Array.from(names).sort();
 }

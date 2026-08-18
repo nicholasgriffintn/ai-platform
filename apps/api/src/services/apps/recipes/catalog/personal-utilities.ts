@@ -1,699 +1,699 @@
 import type { CatalogRecipe } from "./shared";
 import {
-	RECIPE_CONNECTOR_TOOL,
-	WEATHER_TOOL,
-	WEB_SEARCH_TOOL,
-	IMAGE_TOOL,
-	PASHI_DISCOVERY_TOOL,
-	PASHI_EXECUTION_TOOL,
-	QR_TOOL,
-	preferredConnectorsField,
-	reviewInstructionsField,
-	locationField,
+  RECIPE_CONNECTOR_TOOL,
+  WEATHER_TOOL,
+  WEB_SEARCH_TOOL,
+  IMAGE_TOOL,
+  PASHI_DISCOVERY_TOOL,
+  PASHI_EXECUTION_TOOL,
+  QR_TOOL,
+  preferredConnectorsField,
+  reviewInstructionsField,
+  locationField,
 } from "./shared";
 
 export const personalUtilityRecipes: CatalogRecipe[] = [
-	{
-		id: "birthday-gift-ideas",
-		title: "Birthday Gift Ideas",
-		summary: "Scan mail and calendars for upcoming birthdays and suggest gifts.",
-		description:
-			"Uses connected email and calendar accounts to spot upcoming birthdays, then prepares gift ideas for review.",
-		kind: "automate",
-		category: "Community",
-		featured: false,
-		enabledTools: [RECIPE_CONNECTOR_TOOL, WEB_SEARCH_TOOL],
-		integrations: [
-			{
-				id: "gmail",
-				providerId: "gmail",
-				name: "Gmail",
-				description: "Searches Gmail for birthday context when connected.",
-				requiresConnection: true,
-				connectionGroup: "sources",
-				operationIds: ["GMAIL_FETCH_EMAILS"],
-			},
-			{
-				id: "outlook",
-				providerId: "outlook",
-				name: "Outlook",
-				description:
-					"Searches Outlook mail and calendar events for birthday context when connected.",
-				requiresConnection: true,
-				connectionGroup: "sources",
-				operationIds: ["OUTLOOK_SEARCH_MESSAGES", "OUTLOOK_GET_CALENDAR_VIEW"],
-			},
-			{
-				id: "googlecalendar",
-				providerId: "googlecalendar",
-				name: "Google Calendar",
-				description: "Reads upcoming birthday events when connected.",
-				requiresConnection: true,
-				connectionGroup: "sources",
-				operationIds: ["GOOGLECALENDAR_EVENTS_LIST"],
-			},
-		],
-		triggers: [
-			{
-				type: "schedule",
-				label: "Weekly birthday scan",
-				description: "Run a weekly scan for upcoming birthdays.",
-			},
-			{
-				type: "message",
-				label: "Ask for gift ideas",
-				description: "Ask Polychat to prepare ideas for a specific person.",
-			},
-		],
-		actions: [
-			"Search upcoming calendar events and relevant mail",
-			"Summarise the relationship and useful context",
-			"Suggest practical gift ideas without purchasing anything",
-		],
-		setupPrompt:
-			"Set up the Birthday Gift Ideas recipe. Use the connected mail and calendar sources, ask how far ahead to scan and any gift budget or categories to avoid. Use web search only for gift research, do not purchase anything, and ask before sending messages or changing calendars.",
-		configurationFields: [
-			preferredConnectorsField,
-			{
-				key: "scanWindow",
-				label: "Scan window",
-				type: "text",
-				placeholder: "Next 14 days, next month",
-			},
-			{
-				key: "giftBudget",
-				label: "Gift budget",
-				type: "text",
-				placeholder: "Under GBP 50, handmade ideas, no budget",
-			},
-			reviewInstructionsField,
-		],
-	},
-	{
-		id: "weekly-reading-suggestion",
-		title: "Weekly Reading Suggestion",
-		summary: "Suggest articles or books from recent interests and newsletters.",
-		description:
-			"Uses connected mail and web search to suggest reading material based on newsletters, projects, and recurring interests.",
-		kind: "automate",
-		category: "Productivity",
-		featured: false,
-		enabledTools: [RECIPE_CONNECTOR_TOOL, WEB_SEARCH_TOOL],
-		integrations: [
-			{
-				id: "gmail",
-				providerId: "gmail",
-				name: "Gmail",
-				description: "Searches newsletters and reading-related Gmail messages.",
-				requiresConnection: true,
-				connectionGroup: "mail",
-				operationIds: ["GMAIL_FETCH_EMAILS"],
-			},
-			{
-				id: "outlook",
-				providerId: "outlook",
-				name: "Outlook",
-				description: "Searches newsletters and reading-related Outlook messages.",
-				requiresConnection: true,
-				connectionGroup: "mail",
-				operationIds: ["OUTLOOK_SEARCH_MESSAGES"],
-			},
-		],
-		triggers: [
-			{
-				type: "schedule",
-				label: "Weekly suggestion",
-				description: "Run a weekly reading recommendation.",
-			},
-		],
-		actions: [
-			"Identify recent topics from mail context",
-			"Search for relevant articles or books",
-			"Return a concise shortlist with reasons",
-		],
-		setupPrompt:
-			"Set up the Weekly Reading Suggestion recipe. Use the connected mail services for newsletter context, ask which topics to focus on, preferred length and format, and any sources to avoid. Use mail context and web search to suggest reading, with links and short reasons. Do not subscribe, buy, or send anything.",
-		configurationFields: [
-			preferredConnectorsField,
-			{
-				key: "topics",
-				label: "Topics",
-				type: "string_list",
-				placeholder: "AI, product, health, history",
-			},
-			{
-				key: "preferredSources",
-				label: "Preferred sources",
-				type: "string_list",
-				placeholder: "Blogs, papers, books, newsletters",
-			},
-		],
-	},
-	{
-		id: "daily-ai-news-briefing",
-		title: "Daily AI News Briefing",
-		summary: "Get a concise daily briefing on major AI news.",
-		description: "Uses web search to gather recent AI news and summarise the highest-signal items.",
-		kind: "automate",
-		category: "Developer",
-		featured: false,
-		enabledTools: [WEB_SEARCH_TOOL],
-		integrations: [],
-		triggers: [
-			{
-				type: "schedule",
-				label: "Daily briefing",
-				description: "Run a daily AI news scan.",
-			},
-			{
-				type: "message",
-				label: "Ask for news",
-				description: "Ask Polychat for the latest AI news.",
-			},
-		],
-		actions: [
-			"Search recent AI news",
-			"Deduplicate repeated stories",
-			"Summarise important changes with links",
-		],
-		setupPrompt:
-			"Set up the Daily AI News Briefing recipe. Ask for preferred topics, sources, and length. Use web search for recent AI news, cite sources in the answer, and separate confirmed facts from interpretation.",
-		configurationFields: [
-			{
-				key: "topics",
-				label: "Topics",
-				type: "string_list",
-				placeholder: "OpenAI, agents, regulation, chips, research",
-			},
-			{
-				key: "briefingLength",
-				label: "Briefing length",
-				type: "text",
-				placeholder: "3 bullets, concise, detailed",
-			},
-		],
-	},
-	{
-		id: "did-you-know",
-		title: "Did You Know?",
-		summary: "Learn one interesting fact or topic with links to go deeper.",
-		description:
-			"Uses web search to prepare concise, sourced facts or mini-briefings for chat or scheduled delivery.",
-		kind: "automate",
-		category: "Productivity",
-		featured: false,
-		enabledTools: [WEB_SEARCH_TOOL],
-		integrations: [],
-		triggers: [
-			{
-				type: "schedule",
-				label: "Daily fact",
-				description: "Run a recurring fact or topic briefing.",
-			},
-			{
-				type: "message",
-				label: "Ask for a fact",
-				description: "Ask Polychat for an interesting fact or short explainer.",
-			},
-		],
-		actions: [
-			"Pick a topic from saved interests or the user's request",
-			"Search for current supporting sources",
-			"Return a short explanation with links for deeper reading",
-		],
-		setupPrompt:
-			"Set up the Did You Know recipe. Ask for preferred topics, depth, and sources to avoid. Use web search to verify facts, cite links, and keep each briefing concise. Do not present uncertain claims as confirmed.",
-		configurationFields: [
-			{
-				key: "topics",
-				label: "Topics",
-				type: "string_list",
-				placeholder: "History, science, technology, language, everyday life",
-			},
-			{
-				key: "readingLength",
-				label: "Reading length",
-				type: "text",
-				placeholder: "One paragraph, 5-minute read, three bullets",
-			},
-		],
-	},
-	{
-		id: "quick-qr-generator",
-		title: "Quick QR Generator",
-		summary: "Turn text, URLs, phone numbers, or Wi-Fi details into a scannable QR image.",
-		description:
-			"Builds a QR image URL from the user's supplied content and returns it for sharing in chat or SMS.",
-		kind: "integrate",
-		category: "Productivity",
-		featured: false,
-		enabledTools: [QR_TOOL],
-		integrations: [],
-		triggers: [
-			{
-				type: "message",
-				label: "Send QR content",
-				description:
-					"Ask Polychat to make a QR code for a URL, text, phone number, or Wi-Fi details.",
-			},
-		],
-		actions: [
-			"Confirm the exact payload to encode",
-			"Build a QR image URL",
-			"Return the QR image URL and the decoded payload for review",
-		],
-		setupPrompt:
-			"Set up the Quick QR Generator recipe. Ask for the exact URL, text, phone number, email, or Wi-Fi payload to encode. Use the create_qr_code tool with the exact payload, return the generated QR image, and show the encoded payload for review. Do not invent or alter credentials, Wi-Fi passwords, phone numbers, or payment details.",
-		configurationFields: [
-			{
-				key: "defaultSize",
-				label: "Default size",
-				type: "text",
-				placeholder: "300x300",
-			},
-			{
-				key: "qrNotes",
-				label: "QR notes",
-				type: "textarea",
-				placeholder: "Preferred format, labels, or content to avoid encoding",
-			},
-		],
-	},
-	{
-		id: "pashi-generator-toolkit",
-		title: "Pashi Generator Toolkit",
-		summary:
-			"Discover and run Pashi generators and text converters for code, design, data, and documents.",
-		description:
-			"Uses Pashi's live tool catalogue to select the best current generator or text converter, validate its inputs, and run one or more operations in order.",
-		kind: "integrate",
-		category: "Developer",
-		featured: false,
-		enabledTools: [PASHI_DISCOVERY_TOOL, PASHI_EXECUTION_TOOL],
-		integrations: [],
-		triggers: [
-			{
-				type: "message",
-				label: "Generate or convert with Pashi",
-				description:
-					"Ask Polychat to create structured data, developer assets, design values, or convert text formats.",
-			},
-		],
-		actions: [
-			"Search the live Pashi catalogue for the requested generator or converter",
-			"Choose an executable tool and validate its current fields",
-			"Run the requested operations in order and return each result",
-		],
-		setupPrompt:
-			"Set up the Pashi Generator Toolkit recipe. Ask what I want to generate or convert and any required format constraints. Call search_pashi_tools with an explicit tool_types list before choosing a tool, then call run_pashi_tools with only exact executable tool IDs and documented fields. Preserve user-supplied text exactly. File converters are not supported yet. Never send existing passwords, private keys, access tokens, personal data, or other secrets to Pashi; ask for confirmation when input may be sensitive.",
-		configurationFields: [
-			{
-				key: "preferredToolTypes",
-				label: "Preferred tool types",
-				type: "string_list",
-				placeholder: "generator, converter",
-			},
-			{
-				key: "outputPreferences",
-				label: "Output preferences",
-				type: "textarea",
-				placeholder: "Preferred formats, naming, limits, and content to avoid",
-			},
-		],
-	},
-	{
-		id: "image-studio",
-		title: "Image Studio",
-		summary: "Generate images from a short text request in chat.",
-		description:
-			"Uses Polychat image generation to create images from described scenes, styles, and subjects for chat or SMS delivery.",
-		kind: "integrate",
-		category: "Home",
-		featured: false,
-		enabledTools: [IMAGE_TOOL],
-		integrations: [],
-		triggers: [
-			{
-				type: "message",
-				label: "Ask for an image",
-				description: "Describe the image you want Polychat to generate.",
-			},
-		],
-		actions: [
-			"Confirm the subject, style, and scene details",
-			"Generate the requested image",
-			"Return the image without claiming it is a real photo",
-		],
-		setupPrompt:
-			"Set up the Image Studio recipe. Ask what I want to generate and any style, scene, or format preferences, then use image generation to create it. Keep results clearly synthetic, do not imply a generated image is a real photo, and do not generate images of real people without my explicit description and confirmation.",
-		configurationFields: [
-			{
-				key: "defaultStyle",
-				label: "Default style",
-				type: "text",
-				placeholder: "Photorealistic, illustration, watercolour, minimal",
-			},
-			{
-				key: "imageNotes",
-				label: "Image notes",
-				type: "textarea",
-				placeholder: "Recurring subjects, colours, or details to avoid",
-			},
-		],
-	},
-	{
-		id: "journal",
-		title: "Journal",
-		summary: "Send journaling prompts and reflect on past entries in chat.",
-		description:
-			"Uses scheduled or manual chat prompts to support journaling without connecting a third-party service.",
-		kind: "automate",
-		category: "Health",
-		featured: false,
-		enabledTools: [],
-		integrations: [],
-		triggers: [
-			{
-				type: "schedule",
-				label: "Daily prompt",
-				description: "Send a recurring journaling prompt.",
-			},
-			{
-				type: "message",
-				label: "Journal in chat",
-				description: "Ask Polychat for a prompt or reflection.",
-			},
-		],
-		actions: [
-			"Ask a concise reflection question",
-			"Adapt prompts to saved preferences",
-			"Keep tone supportive without clinical claims",
-		],
-		setupPrompt:
-			"Set up the Journal recipe. Ask what kind of prompts I want, preferred cadence, and any topics to avoid. Keep responses private, reflective, and non-clinical. Do not infer diagnoses or expose past entries unless I ask.",
-		configurationFields: [
-			{
-				key: "journalStyle",
-				label: "Journal style",
-				type: "text",
-				placeholder: "Gratitude, work reflection, mood, free-form",
-			},
-			{
-				key: "topicsToAvoid",
-				label: "Topics to avoid",
-				type: "string_list",
-				placeholder: "Work, relationships, health",
-			},
-		],
-	},
-	{
-		id: "hydration-reminders",
-		title: "Hydration Reminders",
-		summary: "Send friendly water reminders throughout the day.",
-		description:
-			"Uses scheduled recipe prompts and optional SMS delivery for lightweight hydration reminders.",
-		kind: "automate",
-		category: "Health",
-		featured: false,
-		enabledTools: [],
-		integrations: [],
-		triggers: [
-			{
-				type: "schedule",
-				label: "Reminder schedule",
-				description: "Run recurring reminders during preferred hours.",
-			},
-		],
-		actions: [
-			"Send a short reminder",
-			"Vary wording to avoid repetition",
-			"Respect saved quiet hours and tone",
-		],
-		setupPrompt:
-			"Set up the Hydration Reminders recipe. Ask for reminder times, quiet hours, tone, and whether scheduled results should be sent by SMS. Keep messages short and avoid medical claims.",
-		configurationFields: [
-			{
-				key: "quietHours",
-				label: "Quiet hours",
-				type: "text",
-				placeholder: "After 21:00, before 08:00",
-			},
-			{
-				key: "tone",
-				label: "Tone",
-				type: "text",
-				placeholder: "Direct, gentle, funny, minimal",
-			},
-		],
-	},
-	{
-		id: "nightly-gratitude",
-		title: "Nightly Gratitude",
-		summary: "Receive an evening reflection prompt to wind down.",
-		description: "Uses scheduled recipe prompts to generate varied gratitude reflections.",
-		kind: "automate",
-		category: "Health",
-		featured: false,
-		enabledTools: [],
-		integrations: [],
-		triggers: [
-			{
-				type: "schedule",
-				label: "Nightly prompt",
-				description: "Run a recurring evening gratitude prompt.",
-			},
-		],
-		actions: [
-			"Generate a short gratitude prompt",
-			"Vary phrasing over time",
-			"Keep the tone calm and non-clinical",
-		],
-		setupPrompt:
-			"Set up the Nightly Gratitude recipe. Ask what time I want prompts, tone preferences, and any topics to avoid. Keep messages concise and reflective, not therapeutic or diagnostic.",
-		configurationFields: [
-			{
-				key: "promptStyle",
-				label: "Prompt style",
-				type: "text",
-				placeholder: "Simple, specific, reflective, playful",
-			},
-		],
-	},
-	{
-		id: "rent-reminders",
-		title: "Rent Reminders",
-		summary: "Send a reminder before rent or household bills are due.",
-		description:
-			"Uses scheduled recipe prompts and optional SMS delivery for recurring bill reminders.",
-		kind: "automate",
-		category: "Finance",
-		featured: false,
-		enabledTools: [],
-		integrations: [],
-		triggers: [
-			{
-				type: "schedule",
-				label: "Monthly reminder",
-				description: "Run before the configured due date.",
-			},
-		],
-		actions: [
-			"Send a concise reminder",
-			"Include amount or account notes if saved",
-			"Avoid implying payment was made",
-		],
-		setupPrompt:
-			"Set up the Rent Reminders recipe. Ask for due date, reminder timing, amount or notes to include, and whether scheduled results should be sent by SMS. Do not claim a payment was made or access financial accounts.",
-		configurationFields: [
-			{
-				key: "dueDate",
-				label: "Due date",
-				type: "text",
-				required: true,
-				placeholder: "1st of each month, last weekday",
-			},
-			{
-				key: "reminderLeadTime",
-				label: "Reminder lead time",
-				type: "text",
-				placeholder: "3 days before, morning of",
-			},
-			{
-				key: "paymentNotes",
-				label: "Payment notes",
-				type: "textarea",
-				placeholder: "Amount, reference, or account nickname",
-			},
-		],
-	},
-	{
-		id: "weekly-productivity-check-in",
-		title: "Weekly Productivity Check-in",
-		summary: "Review wins, blockers, and priorities at the end of the week.",
-		description:
-			"Uses scheduled recipe prompts to reflect on the week and plan the next one, enriched with connected calendar and task context when available.",
-		kind: "automate",
-		category: "Productivity",
-		featured: false,
-		enabledTools: [RECIPE_CONNECTOR_TOOL],
-		integrations: [
-			{
-				id: "googlecalendar",
-				providerId: "googlecalendar",
-				name: "Google Calendar",
-				description: "Reads the past and coming week's events for reflection context.",
-				requiresConnection: false,
-				operationIds: ["GOOGLECALENDAR_EVENTS_LIST"],
-			},
-			{
-				id: "outlook",
-				providerId: "outlook",
-				name: "Outlook",
-				description: "Reads the past and coming week's Outlook events for reflection context.",
-				requiresConnection: false,
-				operationIds: ["OUTLOOK_GET_CALENDAR_VIEW"],
-			},
-			{
-				id: "todoist",
-				providerId: "todoist",
-				name: "Todoist",
-				description: "Reviews open tasks when Todoist is connected.",
-				requiresConnection: false,
-				operationIds: ["TODOIST_GET_ALL_TASKS"],
-			},
-			{
-				id: "ticktick",
-				providerId: "ticktick",
-				name: "TickTick",
-				description: "Reviews open tasks when TickTick is connected.",
-				requiresConnection: false,
-				operationIds: ["TICKTICK_LIST_ALL_TASKS"],
-			},
-		],
-		triggers: [
-			{
-				type: "schedule",
-				label: "Weekly check-in",
-				description: "Run at the end of each week.",
-			},
-			{
-				type: "message",
-				label: "Ask for a check-in",
-				description: "Ask Polychat to run a productivity reflection now.",
-			},
-		],
-		actions: [
-			"Review the week's events and open tasks from connected services when available",
-			"Ask about wins, blockers, and next priorities",
-			"Use saved work style preferences and keep the prompt concise",
-		],
-		setupPrompt:
-			"Set up the Weekly Productivity Check-in recipe. Ask which day and time to run, what areas to reflect on, and preferred tone. When calendar or task services are connected, read the week's events and open tasks to ground the reflection; never block on services that are not connected. Keep the output concise and ask follow-up questions rather than inventing accomplishments.",
-		configurationFields: [
-			{
-				key: "focusAreas",
-				label: "Focus areas",
-				type: "string_list",
-				placeholder: "Work, health, learning, relationships",
-			},
-			{
-				key: "checkInTone",
-				label: "Check-in tone",
-				type: "text",
-				placeholder: "Direct, encouraging, analytical",
-			},
-		],
-	},
-	{
-		id: "daily-weather",
-		title: "Daily Weather",
-		summary: "Get a local forecast with practical planning notes.",
-		description:
-			"Uses Polychat's weather tool to prepare a local forecast with temperature, conditions, and practical suggestions.",
-		kind: "automate",
-		category: "Productivity",
-		featured: false,
-		enabledTools: [WEATHER_TOOL],
-		integrations: [],
-		triggers: [
-			{
-				type: "message",
-				label: "Ask for weather",
-				description: "Ask Polychat for a forecast for a saved or supplied location.",
-			},
-			{
-				type: "schedule",
-				label: "Daily forecast",
-				description: "Run a recurring local forecast.",
-			},
-		],
-		actions: [
-			"Look up current weather for the configured location",
-			"Summarise temperature and conditions",
-			"Suggest practical non-critical planning notes",
-		],
-		setupPrompt:
-			"Set up the Daily Weather recipe. Ask for the location or coordinates to use, save any preferred forecast timing in the recipe configuration, and use the weather tool to summarise conditions. Avoid safety-critical guarantees and ask for clarification if the location is ambiguous.",
-		configurationFields: [
-			locationField,
-			{
-				key: "forecastTime",
-				label: "Forecast time",
-				type: "text",
-				placeholder: "07:30 local time, before commute, evening",
-			},
-			{
-				key: "units",
-				label: "Units",
-				type: "text",
-				placeholder: "Celsius or Fahrenheit",
-			},
-		],
-	},
-	{
-		id: "bad-weather-alerts",
-		title: "Bad Weather Alerts",
-		summary: "Check for rain, snow, storms, or heat before the day starts.",
-		description:
-			"Uses Polychat's weather tool to prepare practical alerts for likely disruptive weather.",
-		kind: "automate",
-		category: "Productivity",
-		featured: false,
-		enabledTools: [WEATHER_TOOL],
-		integrations: [],
-		triggers: [
-			{
-				type: "message",
-				label: "Ask about bad weather",
-				description: "Ask Polychat whether today's weather needs extra preparation.",
-			},
-			{
-				type: "schedule",
-				label: "Morning alert",
-				description: "Run a recurring morning weather check.",
-			},
-		],
-		actions: [
-			"Look up weather for the configured location",
-			"Flag likely rain, snow, storms, or heat",
-			"Suggest practical reminders like umbrella, layers, or sunscreen",
-		],
-		setupPrompt:
-			"Set up the Bad Weather Alerts recipe. Ask for the location or coordinates, preferred alert threshold, and morning schedule. Use the weather tool for conditions and keep recommendations practical rather than safety-critical.",
-		configurationFields: [
-			locationField,
-			{
-				key: "alertThresholds",
-				label: "Alert thresholds",
-				type: "string_list",
-				placeholder: "Rain, snow, storms, heat above 30C",
-			},
-			{
-				key: "forecastTime",
-				label: "Forecast time",
-				type: "text",
-				placeholder: "07:00 local time, before school run, before commute",
-			},
-		],
-	},
+  {
+    id: "birthday-gift-ideas",
+    title: "Birthday Gift Ideas",
+    summary: "Scan mail and calendars for upcoming birthdays and suggest gifts.",
+    description:
+      "Uses connected email and calendar accounts to spot upcoming birthdays, then prepares gift ideas for review.",
+    kind: "automate",
+    category: "Community",
+    featured: false,
+    enabledTools: [RECIPE_CONNECTOR_TOOL, WEB_SEARCH_TOOL],
+    integrations: [
+      {
+        id: "gmail",
+        providerId: "gmail",
+        name: "Gmail",
+        description: "Searches Gmail for birthday context when connected.",
+        requiresConnection: true,
+        connectionGroup: "sources",
+        operationIds: ["GMAIL_FETCH_EMAILS"],
+      },
+      {
+        id: "outlook",
+        providerId: "outlook",
+        name: "Outlook",
+        description:
+          "Searches Outlook mail and calendar events for birthday context when connected.",
+        requiresConnection: true,
+        connectionGroup: "sources",
+        operationIds: ["OUTLOOK_SEARCH_MESSAGES", "OUTLOOK_GET_CALENDAR_VIEW"],
+      },
+      {
+        id: "googlecalendar",
+        providerId: "googlecalendar",
+        name: "Google Calendar",
+        description: "Reads upcoming birthday events when connected.",
+        requiresConnection: true,
+        connectionGroup: "sources",
+        operationIds: ["GOOGLECALENDAR_EVENTS_LIST"],
+      },
+    ],
+    triggers: [
+      {
+        type: "schedule",
+        label: "Weekly birthday scan",
+        description: "Run a weekly scan for upcoming birthdays.",
+      },
+      {
+        type: "message",
+        label: "Ask for gift ideas",
+        description: "Ask Polychat to prepare ideas for a specific person.",
+      },
+    ],
+    actions: [
+      "Search upcoming calendar events and relevant mail",
+      "Summarise the relationship and useful context",
+      "Suggest practical gift ideas without purchasing anything",
+    ],
+    setupPrompt:
+      "Set up the Birthday Gift Ideas recipe. Use the connected mail and calendar sources, ask how far ahead to scan and any gift budget or categories to avoid. Use web search only for gift research, do not purchase anything, and ask before sending messages or changing calendars.",
+    configurationFields: [
+      preferredConnectorsField,
+      {
+        key: "scanWindow",
+        label: "Scan window",
+        type: "text",
+        placeholder: "Next 14 days, next month",
+      },
+      {
+        key: "giftBudget",
+        label: "Gift budget",
+        type: "text",
+        placeholder: "Under GBP 50, handmade ideas, no budget",
+      },
+      reviewInstructionsField,
+    ],
+  },
+  {
+    id: "weekly-reading-suggestion",
+    title: "Weekly Reading Suggestion",
+    summary: "Suggest articles or books from recent interests and newsletters.",
+    description:
+      "Uses connected mail and web search to suggest reading material based on newsletters, projects, and recurring interests.",
+    kind: "automate",
+    category: "Productivity",
+    featured: false,
+    enabledTools: [RECIPE_CONNECTOR_TOOL, WEB_SEARCH_TOOL],
+    integrations: [
+      {
+        id: "gmail",
+        providerId: "gmail",
+        name: "Gmail",
+        description: "Searches newsletters and reading-related Gmail messages.",
+        requiresConnection: true,
+        connectionGroup: "mail",
+        operationIds: ["GMAIL_FETCH_EMAILS"],
+      },
+      {
+        id: "outlook",
+        providerId: "outlook",
+        name: "Outlook",
+        description: "Searches newsletters and reading-related Outlook messages.",
+        requiresConnection: true,
+        connectionGroup: "mail",
+        operationIds: ["OUTLOOK_SEARCH_MESSAGES"],
+      },
+    ],
+    triggers: [
+      {
+        type: "schedule",
+        label: "Weekly suggestion",
+        description: "Run a weekly reading recommendation.",
+      },
+    ],
+    actions: [
+      "Identify recent topics from mail context",
+      "Search for relevant articles or books",
+      "Return a concise shortlist with reasons",
+    ],
+    setupPrompt:
+      "Set up the Weekly Reading Suggestion recipe. Use the connected mail services for newsletter context, ask which topics to focus on, preferred length and format, and any sources to avoid. Use mail context and web search to suggest reading, with links and short reasons. Do not subscribe, buy, or send anything.",
+    configurationFields: [
+      preferredConnectorsField,
+      {
+        key: "topics",
+        label: "Topics",
+        type: "string_list",
+        placeholder: "AI, product, health, history",
+      },
+      {
+        key: "preferredSources",
+        label: "Preferred sources",
+        type: "string_list",
+        placeholder: "Blogs, papers, books, newsletters",
+      },
+    ],
+  },
+  {
+    id: "daily-ai-news-briefing",
+    title: "Daily AI News Briefing",
+    summary: "Get a concise daily briefing on major AI news.",
+    description: "Uses web search to gather recent AI news and summarise the highest-signal items.",
+    kind: "automate",
+    category: "Developer",
+    featured: false,
+    enabledTools: [WEB_SEARCH_TOOL],
+    integrations: [],
+    triggers: [
+      {
+        type: "schedule",
+        label: "Daily briefing",
+        description: "Run a daily AI news scan.",
+      },
+      {
+        type: "message",
+        label: "Ask for news",
+        description: "Ask Polychat for the latest AI news.",
+      },
+    ],
+    actions: [
+      "Search recent AI news",
+      "Deduplicate repeated stories",
+      "Summarise important changes with links",
+    ],
+    setupPrompt:
+      "Set up the Daily AI News Briefing recipe. Ask for preferred topics, sources, and length. Use web search for recent AI news, cite sources in the answer, and separate confirmed facts from interpretation.",
+    configurationFields: [
+      {
+        key: "topics",
+        label: "Topics",
+        type: "string_list",
+        placeholder: "OpenAI, agents, regulation, chips, research",
+      },
+      {
+        key: "briefingLength",
+        label: "Briefing length",
+        type: "text",
+        placeholder: "3 bullets, concise, detailed",
+      },
+    ],
+  },
+  {
+    id: "did-you-know",
+    title: "Did You Know?",
+    summary: "Learn one interesting fact or topic with links to go deeper.",
+    description:
+      "Uses web search to prepare concise, sourced facts or mini-briefings for chat or scheduled delivery.",
+    kind: "automate",
+    category: "Productivity",
+    featured: false,
+    enabledTools: [WEB_SEARCH_TOOL],
+    integrations: [],
+    triggers: [
+      {
+        type: "schedule",
+        label: "Daily fact",
+        description: "Run a recurring fact or topic briefing.",
+      },
+      {
+        type: "message",
+        label: "Ask for a fact",
+        description: "Ask Polychat for an interesting fact or short explainer.",
+      },
+    ],
+    actions: [
+      "Pick a topic from saved interests or the user's request",
+      "Search for current supporting sources",
+      "Return a short explanation with links for deeper reading",
+    ],
+    setupPrompt:
+      "Set up the Did You Know recipe. Ask for preferred topics, depth, and sources to avoid. Use web search to verify facts, cite links, and keep each briefing concise. Do not present uncertain claims as confirmed.",
+    configurationFields: [
+      {
+        key: "topics",
+        label: "Topics",
+        type: "string_list",
+        placeholder: "History, science, technology, language, everyday life",
+      },
+      {
+        key: "readingLength",
+        label: "Reading length",
+        type: "text",
+        placeholder: "One paragraph, 5-minute read, three bullets",
+      },
+    ],
+  },
+  {
+    id: "quick-qr-generator",
+    title: "Quick QR Generator",
+    summary: "Turn text, URLs, phone numbers, or Wi-Fi details into a scannable QR image.",
+    description:
+      "Builds a QR image URL from the user's supplied content and returns it for sharing in chat or SMS.",
+    kind: "integrate",
+    category: "Productivity",
+    featured: false,
+    enabledTools: [QR_TOOL],
+    integrations: [],
+    triggers: [
+      {
+        type: "message",
+        label: "Send QR content",
+        description:
+          "Ask Polychat to make a QR code for a URL, text, phone number, or Wi-Fi details.",
+      },
+    ],
+    actions: [
+      "Confirm the exact payload to encode",
+      "Build a QR image URL",
+      "Return the QR image URL and the decoded payload for review",
+    ],
+    setupPrompt:
+      "Set up the Quick QR Generator recipe. Ask for the exact URL, text, phone number, email, or Wi-Fi payload to encode. Use the create_qr_code tool with the exact payload, return the generated QR image, and show the encoded payload for review. Do not invent or alter credentials, Wi-Fi passwords, phone numbers, or payment details.",
+    configurationFields: [
+      {
+        key: "defaultSize",
+        label: "Default size",
+        type: "text",
+        placeholder: "300x300",
+      },
+      {
+        key: "qrNotes",
+        label: "QR notes",
+        type: "textarea",
+        placeholder: "Preferred format, labels, or content to avoid encoding",
+      },
+    ],
+  },
+  {
+    id: "pashi-generator-toolkit",
+    title: "Pashi Generator Toolkit",
+    summary:
+      "Discover and run Pashi generators and text converters for code, design, data, and documents.",
+    description:
+      "Uses Pashi's live tool catalogue to select the best current generator or text converter, validate its inputs, and run one or more operations in order.",
+    kind: "integrate",
+    category: "Developer",
+    featured: false,
+    enabledTools: [PASHI_DISCOVERY_TOOL, PASHI_EXECUTION_TOOL],
+    integrations: [],
+    triggers: [
+      {
+        type: "message",
+        label: "Generate or convert with Pashi",
+        description:
+          "Ask Polychat to create structured data, developer assets, design values, or convert text formats.",
+      },
+    ],
+    actions: [
+      "Search the live Pashi catalogue for the requested generator or converter",
+      "Choose an executable tool and validate its current fields",
+      "Run the requested operations in order and return each result",
+    ],
+    setupPrompt:
+      "Set up the Pashi Generator Toolkit recipe. Ask what I want to generate or convert and any required format constraints. Call search_pashi_tools with an explicit tool_types list before choosing a tool, then call run_pashi_tools with only exact executable tool IDs and documented fields. Preserve user-supplied text exactly. File converters are not supported yet. Never send existing passwords, private keys, access tokens, personal data, or other secrets to Pashi; ask for confirmation when input may be sensitive.",
+    configurationFields: [
+      {
+        key: "preferredToolTypes",
+        label: "Preferred tool types",
+        type: "string_list",
+        placeholder: "generator, converter",
+      },
+      {
+        key: "outputPreferences",
+        label: "Output preferences",
+        type: "textarea",
+        placeholder: "Preferred formats, naming, limits, and content to avoid",
+      },
+    ],
+  },
+  {
+    id: "image-studio",
+    title: "Image Studio",
+    summary: "Generate images from a short text request in chat.",
+    description:
+      "Uses Polychat image generation to create images from described scenes, styles, and subjects for chat or SMS delivery.",
+    kind: "integrate",
+    category: "Home",
+    featured: false,
+    enabledTools: [IMAGE_TOOL],
+    integrations: [],
+    triggers: [
+      {
+        type: "message",
+        label: "Ask for an image",
+        description: "Describe the image you want Polychat to generate.",
+      },
+    ],
+    actions: [
+      "Confirm the subject, style, and scene details",
+      "Generate the requested image",
+      "Return the image without claiming it is a real photo",
+    ],
+    setupPrompt:
+      "Set up the Image Studio recipe. Ask what I want to generate and any style, scene, or format preferences, then use image generation to create it. Keep results clearly synthetic, do not imply a generated image is a real photo, and do not generate images of real people without my explicit description and confirmation.",
+    configurationFields: [
+      {
+        key: "defaultStyle",
+        label: "Default style",
+        type: "text",
+        placeholder: "Photorealistic, illustration, watercolour, minimal",
+      },
+      {
+        key: "imageNotes",
+        label: "Image notes",
+        type: "textarea",
+        placeholder: "Recurring subjects, colours, or details to avoid",
+      },
+    ],
+  },
+  {
+    id: "journal",
+    title: "Journal",
+    summary: "Send journaling prompts and reflect on past entries in chat.",
+    description:
+      "Uses scheduled or manual chat prompts to support journaling without connecting a third-party service.",
+    kind: "automate",
+    category: "Health",
+    featured: false,
+    enabledTools: [],
+    integrations: [],
+    triggers: [
+      {
+        type: "schedule",
+        label: "Daily prompt",
+        description: "Send a recurring journaling prompt.",
+      },
+      {
+        type: "message",
+        label: "Journal in chat",
+        description: "Ask Polychat for a prompt or reflection.",
+      },
+    ],
+    actions: [
+      "Ask a concise reflection question",
+      "Adapt prompts to saved preferences",
+      "Keep tone supportive without clinical claims",
+    ],
+    setupPrompt:
+      "Set up the Journal recipe. Ask what kind of prompts I want, preferred cadence, and any topics to avoid. Keep responses private, reflective, and non-clinical. Do not infer diagnoses or expose past entries unless I ask.",
+    configurationFields: [
+      {
+        key: "journalStyle",
+        label: "Journal style",
+        type: "text",
+        placeholder: "Gratitude, work reflection, mood, free-form",
+      },
+      {
+        key: "topicsToAvoid",
+        label: "Topics to avoid",
+        type: "string_list",
+        placeholder: "Work, relationships, health",
+      },
+    ],
+  },
+  {
+    id: "hydration-reminders",
+    title: "Hydration Reminders",
+    summary: "Send friendly water reminders throughout the day.",
+    description:
+      "Uses scheduled recipe prompts and optional SMS delivery for lightweight hydration reminders.",
+    kind: "automate",
+    category: "Health",
+    featured: false,
+    enabledTools: [],
+    integrations: [],
+    triggers: [
+      {
+        type: "schedule",
+        label: "Reminder schedule",
+        description: "Run recurring reminders during preferred hours.",
+      },
+    ],
+    actions: [
+      "Send a short reminder",
+      "Vary wording to avoid repetition",
+      "Respect saved quiet hours and tone",
+    ],
+    setupPrompt:
+      "Set up the Hydration Reminders recipe. Ask for reminder times, quiet hours, tone, and whether scheduled results should be sent by SMS. Keep messages short and avoid medical claims.",
+    configurationFields: [
+      {
+        key: "quietHours",
+        label: "Quiet hours",
+        type: "text",
+        placeholder: "After 21:00, before 08:00",
+      },
+      {
+        key: "tone",
+        label: "Tone",
+        type: "text",
+        placeholder: "Direct, gentle, funny, minimal",
+      },
+    ],
+  },
+  {
+    id: "nightly-gratitude",
+    title: "Nightly Gratitude",
+    summary: "Receive an evening reflection prompt to wind down.",
+    description: "Uses scheduled recipe prompts to generate varied gratitude reflections.",
+    kind: "automate",
+    category: "Health",
+    featured: false,
+    enabledTools: [],
+    integrations: [],
+    triggers: [
+      {
+        type: "schedule",
+        label: "Nightly prompt",
+        description: "Run a recurring evening gratitude prompt.",
+      },
+    ],
+    actions: [
+      "Generate a short gratitude prompt",
+      "Vary phrasing over time",
+      "Keep the tone calm and non-clinical",
+    ],
+    setupPrompt:
+      "Set up the Nightly Gratitude recipe. Ask what time I want prompts, tone preferences, and any topics to avoid. Keep messages concise and reflective, not therapeutic or diagnostic.",
+    configurationFields: [
+      {
+        key: "promptStyle",
+        label: "Prompt style",
+        type: "text",
+        placeholder: "Simple, specific, reflective, playful",
+      },
+    ],
+  },
+  {
+    id: "rent-reminders",
+    title: "Rent Reminders",
+    summary: "Send a reminder before rent or household bills are due.",
+    description:
+      "Uses scheduled recipe prompts and optional SMS delivery for recurring bill reminders.",
+    kind: "automate",
+    category: "Finance",
+    featured: false,
+    enabledTools: [],
+    integrations: [],
+    triggers: [
+      {
+        type: "schedule",
+        label: "Monthly reminder",
+        description: "Run before the configured due date.",
+      },
+    ],
+    actions: [
+      "Send a concise reminder",
+      "Include amount or account notes if saved",
+      "Avoid implying payment was made",
+    ],
+    setupPrompt:
+      "Set up the Rent Reminders recipe. Ask for due date, reminder timing, amount or notes to include, and whether scheduled results should be sent by SMS. Do not claim a payment was made or access financial accounts.",
+    configurationFields: [
+      {
+        key: "dueDate",
+        label: "Due date",
+        type: "text",
+        required: true,
+        placeholder: "1st of each month, last weekday",
+      },
+      {
+        key: "reminderLeadTime",
+        label: "Reminder lead time",
+        type: "text",
+        placeholder: "3 days before, morning of",
+      },
+      {
+        key: "paymentNotes",
+        label: "Payment notes",
+        type: "textarea",
+        placeholder: "Amount, reference, or account nickname",
+      },
+    ],
+  },
+  {
+    id: "weekly-productivity-check-in",
+    title: "Weekly Productivity Check-in",
+    summary: "Review wins, blockers, and priorities at the end of the week.",
+    description:
+      "Uses scheduled recipe prompts to reflect on the week and plan the next one, enriched with connected calendar and task context when available.",
+    kind: "automate",
+    category: "Productivity",
+    featured: false,
+    enabledTools: [RECIPE_CONNECTOR_TOOL],
+    integrations: [
+      {
+        id: "googlecalendar",
+        providerId: "googlecalendar",
+        name: "Google Calendar",
+        description: "Reads the past and coming week's events for reflection context.",
+        requiresConnection: false,
+        operationIds: ["GOOGLECALENDAR_EVENTS_LIST"],
+      },
+      {
+        id: "outlook",
+        providerId: "outlook",
+        name: "Outlook",
+        description: "Reads the past and coming week's Outlook events for reflection context.",
+        requiresConnection: false,
+        operationIds: ["OUTLOOK_GET_CALENDAR_VIEW"],
+      },
+      {
+        id: "todoist",
+        providerId: "todoist",
+        name: "Todoist",
+        description: "Reviews open tasks when Todoist is connected.",
+        requiresConnection: false,
+        operationIds: ["TODOIST_GET_ALL_TASKS"],
+      },
+      {
+        id: "ticktick",
+        providerId: "ticktick",
+        name: "TickTick",
+        description: "Reviews open tasks when TickTick is connected.",
+        requiresConnection: false,
+        operationIds: ["TICKTICK_LIST_ALL_TASKS"],
+      },
+    ],
+    triggers: [
+      {
+        type: "schedule",
+        label: "Weekly check-in",
+        description: "Run at the end of each week.",
+      },
+      {
+        type: "message",
+        label: "Ask for a check-in",
+        description: "Ask Polychat to run a productivity reflection now.",
+      },
+    ],
+    actions: [
+      "Review the week's events and open tasks from connected services when available",
+      "Ask about wins, blockers, and next priorities",
+      "Use saved work style preferences and keep the prompt concise",
+    ],
+    setupPrompt:
+      "Set up the Weekly Productivity Check-in recipe. Ask which day and time to run, what areas to reflect on, and preferred tone. When calendar or task services are connected, read the week's events and open tasks to ground the reflection; never block on services that are not connected. Keep the output concise and ask follow-up questions rather than inventing accomplishments.",
+    configurationFields: [
+      {
+        key: "focusAreas",
+        label: "Focus areas",
+        type: "string_list",
+        placeholder: "Work, health, learning, relationships",
+      },
+      {
+        key: "checkInTone",
+        label: "Check-in tone",
+        type: "text",
+        placeholder: "Direct, encouraging, analytical",
+      },
+    ],
+  },
+  {
+    id: "daily-weather",
+    title: "Daily Weather",
+    summary: "Get a local forecast with practical planning notes.",
+    description:
+      "Uses Polychat's weather tool to prepare a local forecast with temperature, conditions, and practical suggestions.",
+    kind: "automate",
+    category: "Productivity",
+    featured: false,
+    enabledTools: [WEATHER_TOOL],
+    integrations: [],
+    triggers: [
+      {
+        type: "message",
+        label: "Ask for weather",
+        description: "Ask Polychat for a forecast for a saved or supplied location.",
+      },
+      {
+        type: "schedule",
+        label: "Daily forecast",
+        description: "Run a recurring local forecast.",
+      },
+    ],
+    actions: [
+      "Look up current weather for the configured location",
+      "Summarise temperature and conditions",
+      "Suggest practical non-critical planning notes",
+    ],
+    setupPrompt:
+      "Set up the Daily Weather recipe. Ask for the location or coordinates to use, save any preferred forecast timing in the recipe configuration, and use the weather tool to summarise conditions. Avoid safety-critical guarantees and ask for clarification if the location is ambiguous.",
+    configurationFields: [
+      locationField,
+      {
+        key: "forecastTime",
+        label: "Forecast time",
+        type: "text",
+        placeholder: "07:30 local time, before commute, evening",
+      },
+      {
+        key: "units",
+        label: "Units",
+        type: "text",
+        placeholder: "Celsius or Fahrenheit",
+      },
+    ],
+  },
+  {
+    id: "bad-weather-alerts",
+    title: "Bad Weather Alerts",
+    summary: "Check for rain, snow, storms, or heat before the day starts.",
+    description:
+      "Uses Polychat's weather tool to prepare practical alerts for likely disruptive weather.",
+    kind: "automate",
+    category: "Productivity",
+    featured: false,
+    enabledTools: [WEATHER_TOOL],
+    integrations: [],
+    triggers: [
+      {
+        type: "message",
+        label: "Ask about bad weather",
+        description: "Ask Polychat whether today's weather needs extra preparation.",
+      },
+      {
+        type: "schedule",
+        label: "Morning alert",
+        description: "Run a recurring morning weather check.",
+      },
+    ],
+    actions: [
+      "Look up weather for the configured location",
+      "Flag likely rain, snow, storms, or heat",
+      "Suggest practical reminders like umbrella, layers, or sunscreen",
+    ],
+    setupPrompt:
+      "Set up the Bad Weather Alerts recipe. Ask for the location or coordinates, preferred alert threshold, and morning schedule. Use the weather tool for conditions and keep recommendations practical rather than safety-critical.",
+    configurationFields: [
+      locationField,
+      {
+        key: "alertThresholds",
+        label: "Alert thresholds",
+        type: "string_list",
+        placeholder: "Rain, snow, storms, heat above 30C",
+      },
+      {
+        key: "forecastTime",
+        label: "Forecast time",
+        type: "text",
+        placeholder: "07:00 local time, before school run, before commute",
+      },
+    ],
+  },
 ];

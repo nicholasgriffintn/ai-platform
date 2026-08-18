@@ -28,7 +28,7 @@ export function CreateProjectDialog({
         });
 
         onOpenChange(false);
-        navigate(`/work/${workspaceId}/projects/${project.id}`);
+        void navigate(`/work/${workspaceId}/projects/${project.id}`);
       }}
     />
   );

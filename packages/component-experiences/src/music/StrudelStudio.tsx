@@ -289,8 +289,3 @@ export function StrudelStudio({
     </div>
   );
 }
-
-interface StrudelCreateStudioProps {
-  basePath: string;
-  projectId?: string;
-}

@@ -57,7 +57,7 @@ export function useTasks({ shouldRefetch = true }) {
       return await taskService.triggerMemorySynthesis(data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.tasks });
+      void queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.tasks });
     },
   });
 
@@ -66,7 +66,7 @@ export function useTasks({ shouldRefetch = true }) {
       return await taskService.cancelTask(taskId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.tasks });
+      void queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.tasks });
     },
   });
 
@@ -112,10 +112,10 @@ export function useMemorySynthesis(namespace = "global") {
     isLoadingHistory,
 
     refresh: () => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: TASK_QUERY_KEYS.synthesis(namespace),
       });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: TASK_QUERY_KEYS.synthesisHistory(namespace),
       });
     },

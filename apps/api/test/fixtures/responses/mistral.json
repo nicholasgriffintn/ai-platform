@@ -1,22 +1,22 @@
 {
-	"id": "275b555dfb144e579bb9fb7098560aaa",
-	"object": "chat.completion",
-	"created": 1734049812,
-	"model": "open-mistral-nemo",
-	"choices": [
-		{
-			"index": 0,
-			"message": {
-				"role": "assistant",
-				"tool_calls": null,
-				"content": "<analysis>\nThe user is asking for Christmas present ideas for family members. This is a general question that doesn't require a specific tool to answer. I can provide a list of thoughtful and popular gift ideas that would suit a variety of family members.\n</analysis>\n\n<answer>\nHere are some thoughtful Christmas present ideas for your family members: personalized photo albums, high-quality blankets, luxury chocolates, custom portrait art, or subscription boxes tailored to their interests.\n</answer>"
-			},
-			"finish_reason": "stop"
-		}
-	],
-	"usage": {
-		"prompt_tokens": 1390,
-		"total_tokens": 1485,
-		"completion_tokens": 95
-	}
+  "id": "275b555dfb144e579bb9fb7098560aaa",
+  "object": "chat.completion",
+  "created": 1734049812,
+  "model": "open-mistral-nemo",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "tool_calls": null,
+        "content": "<analysis>\nThe user is asking for Christmas present ideas for family members. This is a general question that doesn't require a specific tool to answer. I can provide a list of thoughtful and popular gift ideas that would suit a variety of family members.\n</analysis>\n\n<answer>\nHere are some thoughtful Christmas present ideas for your family members: personalized photo albums, high-quality blankets, luxury chocolates, custom portrait art, or subscription boxes tailored to their interests.\n</answer>"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1390,
+    "total_tokens": 1485,
+    "completion_tokens": 95
+  }
 }

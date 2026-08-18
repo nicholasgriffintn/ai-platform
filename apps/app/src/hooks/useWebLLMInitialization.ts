@@ -71,7 +71,7 @@ export function useWebLLMInitialization(apiModels: Record<string, any> = {}) {
     };
 
     const timer = setTimeout(() => {
-      initializeLocalModel();
+      void initializeLocalModel();
     }, 100);
 
     return () => {

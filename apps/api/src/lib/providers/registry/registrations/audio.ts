@@ -1,49 +1,49 @@
-import type { ProviderRegistry } from "../ProviderRegistry";
-import type { ProviderRegistration } from "../types";
 import type { AudioProvider } from "../../capabilities/audio";
 import {
-	CartesiaAudioProvider,
-	ElevenLabsAudioProvider,
-	MelottsAudioProvider,
-	MistralAudioProvider,
-	PollyAudioProvider,
+  CartesiaAudioProvider,
+  ElevenLabsAudioProvider,
+  MelottsAudioProvider,
+  MistralAudioProvider,
+  PollyAudioProvider,
 } from "../../capabilities/audio/providers";
+import type { ProviderRegistry } from "../ProviderRegistry";
+import type { ProviderRegistration } from "../types";
 
 const audioProviders: ProviderRegistration<AudioProvider>[] = [
-	{
-		name: "elevenlabs",
-		create: () => new ElevenLabsAudioProvider(),
-		metadata: { vendor: "ElevenLabs", categories: ["audio"], tags: ["tts"] },
-	},
-	{
-		name: "polly",
-		create: () => new PollyAudioProvider(),
-		metadata: { vendor: "AWS", categories: ["audio"], tags: ["tts"] },
-	},
-	{
-		name: "cartesia",
-		aliases: ["certesia"],
-		create: () => new CartesiaAudioProvider(),
-		metadata: { vendor: "Cartesia", categories: ["audio"], tags: ["tts"] },
-	},
-	{
-		name: "melotts",
-		create: () => new MelottsAudioProvider(),
-		metadata: {
-			vendor: "Cloudflare",
-			categories: ["audio"],
-			tags: ["tts", "workers-ai"],
-		},
-	},
-	{
-		name: "mistral",
-		create: () => new MistralAudioProvider(),
-		metadata: { vendor: "Mistral", categories: ["audio"], tags: ["tts", "voxtral"] },
-	},
+  {
+    name: "elevenlabs",
+    create: () => new ElevenLabsAudioProvider(),
+    metadata: { vendor: "ElevenLabs", categories: ["audio"], tags: ["tts"] },
+  },
+  {
+    name: "polly",
+    create: () => new PollyAudioProvider(),
+    metadata: { vendor: "AWS", categories: ["audio"], tags: ["tts"] },
+  },
+  {
+    name: "cartesia",
+    aliases: ["certesia"],
+    create: () => new CartesiaAudioProvider(),
+    metadata: { vendor: "Cartesia", categories: ["audio"], tags: ["tts"] },
+  },
+  {
+    name: "melotts",
+    create: () => new MelottsAudioProvider(),
+    metadata: {
+      vendor: "Cloudflare",
+      categories: ["audio"],
+      tags: ["tts", "workers-ai"],
+    },
+  },
+  {
+    name: "mistral",
+    create: () => new MistralAudioProvider(),
+    metadata: { vendor: "Mistral", categories: ["audio"], tags: ["tts", "voxtral"] },
+  },
 ];
 
 export function registerAudioProviders(registry: ProviderRegistry): void {
-	for (const registration of audioProviders) {
-		registry.register("audio", registration);
-	}
+  for (const registration of audioProviders) {
+    registry.register("audio", registration);
+  }
 }

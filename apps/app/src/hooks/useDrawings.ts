@@ -34,7 +34,7 @@ export const useGenerateDrawing = () => {
   return useMutation<GenerateImageResponse, Error, { drawing: File; drawingId?: string }>({
     mutationFn: (data) => generateImageFromDrawing(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["drawings"] });
+      void queryClient.invalidateQueries({ queryKey: ["drawings"] });
     },
   });
 };

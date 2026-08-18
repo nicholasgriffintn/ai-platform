@@ -5,8 +5,8 @@ import { HydratedRouter } from "react-router/dom";
 import "./styles/index.css";
 
 hydrateRoot(
-	document,
-	<StrictMode>
-		<HydratedRouter />
-	</StrictMode>,
+  document,
+  <StrictMode>
+    <HydratedRouter />
+  </StrictMode>,
 );

@@ -4,34 +4,34 @@ import { Button } from "../Button";
 import { Link } from "../Link";
 
 const backLinkClassName =
-	"no-underline flex items-center text-blue-500 dark:text-blue-400 mb-2 hover:underline group";
+  "no-underline flex items-center text-blue-500 dark:text-blue-400 mb-2 hover:underline group";
 
 const backLinkIcon = (
-	<ArrowLeft size={16} className="mr-1 group-hover:-translate-x-1 transition-transform" />
+  <ArrowLeft size={16} className="mr-1 group-hover:-translate-x-1 transition-transform" />
 );
 
 export function BackLink({
-	href,
-	label,
-	onClick,
+  href,
+  label,
+  onClick,
 }: {
-	href?: string;
-	label: string;
-	onClick?: () => void;
+  href?: string;
+  label: string;
+  onClick?: () => void;
 }) {
-	if (onClick) {
-		return (
-			<Button type="button" onClick={onClick} className={backLinkClassName}>
-				{backLinkIcon}
-				<span>{label}</span>
-			</Button>
-		);
-	}
+  if (onClick) {
+    return (
+      <Button type="button" onClick={onClick} className={backLinkClassName}>
+        {backLinkIcon}
+        <span>{label}</span>
+      </Button>
+    );
+  }
 
-	return (
-		<Link href={href || "/"} className={backLinkClassName}>
-			{backLinkIcon}
-			<span>{label}</span>
-		</Link>
-	);
+  return (
+    <Link href={href || "/"} className={backLinkClassName}>
+      {backLinkIcon}
+      <span>{label}</span>
+    </Link>
+  );
 }

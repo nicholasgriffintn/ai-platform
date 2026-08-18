@@ -185,7 +185,7 @@ export const ModelSelector = ({
         new Set(
           Object.values(filteredModels).flatMap((modelConfig) => modelConfig.strengths || []),
         ),
-      ).sort(),
+      ).sort((a, b) => a.localeCompare(b)),
     [filteredModels],
   );
 

@@ -1,30 +1,30 @@
-import { ConversationManager } from "~/lib/conversationManager";
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { ConversationManager } from "~/lib/conversationManager";
 
 interface DeleteChatCompletionResult {
-	success: boolean;
-	message: string;
+  success: boolean;
+  message: string;
 }
 
 export const handleDeleteChatCompletion = async (
-	context: ServiceContext,
-	completion_id: string,
+  context: ServiceContext,
+  completion_id: string,
 ): Promise<DeleteChatCompletionResult> => {
-	const user = context.requireUser();
+  const user = context.requireUser();
 
-	context.ensureDatabase();
+  context.ensureDatabase();
 
-	const conversationManager = ConversationManager.getInstance({
-		database: context.database,
-		user,
-	});
+  const conversationManager = ConversationManager.getInstance({
+    database: context.database,
+    user,
+  });
 
-	await conversationManager.updateConversation(completion_id, {
-		archived: true,
-	});
+  await conversationManager.updateConversation(completion_id, {
+    archived: true,
+  });
 
-	return {
-		success: true,
-		message: "Conversation has been archived",
-	};
+  return {
+    success: true,
+    message: "Conversation has been archived",
+  };
 };

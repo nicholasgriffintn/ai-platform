@@ -1,6 +1,5 @@
 import type {
   CanvasGenerateRequest,
-  CanvasGeneration,
   CanvasMode,
 } from "@ngriffin_uk/polychat-component-experiences/media";
 import { useMutation, useQuery } from "@tanstack/react-query";

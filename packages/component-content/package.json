@@ -1,69 +1,69 @@
 {
-	"name": "@ngriffin_uk/polychat-component-content",
-	"version": "0.1.0",
-	"license": "Apache-2.0",
-	"files": [
-		"dist"
-	],
-	"type": "module",
-	"sideEffects": [
-		"**/*.css"
-	],
-	"main": "./dist/index.js",
-	"module": "./dist/index.js",
-	"types": "./dist/index.d.ts",
-	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js"
-		},
-		"./styles.css": "./dist/index.css"
-	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"scripts": {
-		"build": "tsup && vite build --config vite.styles.config.ts",
-		"typecheck": "tsc --noEmit",
-		"test": "vitest run",
-		"test:package": "pnpm build",
-		"format": "oxfmt",
-		"format:check": "oxfmt --check",
-		"lint": "pnpm oxlint",
-		"check": "pnpm lint && pnpm format:check"
-	},
-	"dependencies": {
-		"@babel/standalone": "8.0.4",
-		"@ngriffin_uk/polychat-component-ui": "workspace:^",
-		"@ngriffin_uk/polychat-library-chat": "workspace:^",
-		"@ngriffin_uk/polychat-utility-core": "workspace:^",
-		"lucide-react": "1.30.0",
-		"react-markdown": "10.1.0",
-		"rehype-highlight": "7.0.2",
-		"remark-gfm": "4.0.1"
-	},
-	"devDependencies": {
-		"@ngriffin_uk/polychat-config": "workspace:^",
-		"@tailwindcss/typography": "0.5.20",
-		"@tailwindcss/vite": "4.3.3",
-		"@testing-library/jest-dom": "7.0.1",
-		"@testing-library/react": "catalog:",
-		"@types/babel__standalone": "7.1.9",
-		"@types/react": "catalog:",
-		"@types/react-dom": "catalog:",
-		"jsdom": "catalog:",
-		"oxfmt": "catalog:",
-		"oxlint": "catalog:",
-		"react": "catalog:",
-		"react-dom": "catalog:",
-		"tailwindcss": "4.3.3",
-		"tsup": "catalog:",
-		"typescript": "catalog:",
-		"vite": "8.2.1",
-		"vitest": "catalog:"
-	},
-	"peerDependencies": {
-		"react": "catalog:react-peer",
-		"react-dom": "catalog:react-peer"
-	}
+  "name": "@ngriffin_uk/polychat-component-content",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/index.css"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup && vite build --config vite.styles.config.ts",
+    "check": "pnpm lint && pnpm format:check",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "lint": "pnpm oxlint",
+    "test": "vitest run",
+    "test:package": "pnpm build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@babel/standalone": "8.0.4",
+    "@ngriffin_uk/polychat-component-ui": "workspace:^",
+    "@ngriffin_uk/polychat-library-chat": "workspace:^",
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
+    "lucide-react": "1.30.0",
+    "react-markdown": "10.1.0",
+    "rehype-highlight": "7.0.2",
+    "remark-gfm": "4.0.1"
+  },
+  "devDependencies": {
+    "@ngriffin_uk/polychat-config": "workspace:^",
+    "@tailwindcss/typography": "0.5.20",
+    "@tailwindcss/vite": "4.3.3",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "catalog:",
+    "@types/babel__standalone": "7.1.9",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "jsdom": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tailwindcss": "4.3.3",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vite": "8.2.1",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "catalog:react-peer",
+    "react-dom": "catalog:react-peer"
+  }
 }

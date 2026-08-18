@@ -163,7 +163,7 @@ export function ProjectOverview({
         isLoading={archiveProject.isPending}
         onConfirm={async () => {
           await archiveProject.mutateAsync({ workspaceId, projectId });
-          navigate(`/work/${workspaceId}`, { replace: true });
+          void navigate(`/work/${workspaceId}`, { replace: true });
         }}
       >
         {archiveProject.error && (

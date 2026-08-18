@@ -1,34 +1,35 @@
 import type { StorageService } from "~/lib/storage";
 import type { IEnv, IUser } from "~/types";
+
 import { providerLibrary } from "../../library";
 import type { ProviderFactoryContext } from "../../registry/types";
 
 export interface MusicGenerationRequest {
-	prompt: string;
-	env: IEnv;
-	user: IUser;
-	completion_id?: string;
-	app_url?: string;
-	slug?: string;
-	storage?: StorageService;
-	inputAudio?: string;
-	duration?: number;
-	model?: string;
-	metadata?: Record<string, unknown>;
+  prompt: string;
+  env: IEnv;
+  user: IUser;
+  completion_id?: string;
+  app_url?: string;
+  slug?: string;
+  storage?: StorageService;
+  inputAudio?: string;
+  duration?: number;
+  model?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface MusicGenerationResult {
-	key?: string;
-	url?: string;
-	response?: string;
-	metadata?: Record<string, unknown>;
-	raw?: unknown;
+  key?: string;
+  url?: string;
+  response?: string;
+  metadata?: Record<string, unknown>;
+  raw?: unknown;
 }
 
 export interface MusicProvider {
-	name: string;
-	models?: string[];
-	generate(request: MusicGenerationRequest): Promise<MusicGenerationResult>;
+  name: string;
+  models?: string[];
+  generate(request: MusicGenerationRequest): Promise<MusicGenerationResult>;
 }
 
 /**
@@ -37,23 +38,23 @@ export interface MusicProvider {
  * @param context - Optional provider factory context (env, user, config)
  */
 export function getMusicProvider(
-	providerName: string,
-	context?: ProviderFactoryContext,
+  providerName: string,
+  context?: ProviderFactoryContext,
 ): MusicProvider {
-	return providerLibrary.music(providerName, context);
+  return providerLibrary.music(providerName, context);
 }
 
 /**
  * List all registered music providers (includes aliases)
  */
 export function listMusicProviders(): string[] {
-	const summaries = providerLibrary.list("music");
-	const names = new Set<string>();
+  const summaries = providerLibrary.list("music");
+  const names = new Set<string>();
 
-	for (const summary of summaries) {
-		names.add(summary.name);
-		summary.aliases?.forEach((alias) => names.add(alias));
-	}
+  for (const summary of summaries) {
+    names.add(summary.name);
+    summary.aliases?.forEach((alias) => names.add(alias));
+  }
 
-	return Array.from(names).sort();
+  return Array.from(names).sort();
 }

@@ -3,9 +3,9 @@ import { SidebarFooter as ControlledSidebarFooter } from "@ngriffin_uk/polychat-
 import { SidebarSettingsPopover } from "./SidebarSettingsPopover";
 
 export function SidebarFooter() {
-	return (
-		<ControlledSidebarFooter>
-			<SidebarSettingsPopover />
-		</ControlledSidebarFooter>
-	);
+  return (
+    <ControlledSidebarFooter>
+      <SidebarSettingsPopover />
+    </ControlledSidebarFooter>
+  );
 }

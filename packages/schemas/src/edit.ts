@@ -1,24 +1,24 @@
 import z from "zod/v4";
 
-import { messageSchema } from "./shared";
 import { chatCompletionResponseSchema } from "./chat";
+import { messageSchema } from "./shared";
 
 const editRequestBase = z.object({
-	model: z.string().optional().describe("The Mercury model to use for the edit operation."),
-	provider: z
-		.string()
-		.optional()
-		.describe("The provider to use when the model name is shared by multiple providers."),
-	messages: z
-		.array(messageSchema)
-		.min(1)
-		.describe(
-			"Conversation-style inputs providing the current file state and instructions for the edit.",
-		),
-	stream: z
-		.boolean()
-		.optional()
-		.describe("Whether to stream the edit response as server-sent events."),
+  model: z.string().optional().describe("The Mercury model to use for the edit operation."),
+  provider: z
+    .string()
+    .optional()
+    .describe("The provider to use when the model name is shared by multiple providers."),
+  messages: z
+    .array(messageSchema)
+    .min(1)
+    .describe(
+      "Conversation-style inputs providing the current file state and instructions for the edit.",
+    ),
+  stream: z
+    .boolean()
+    .optional()
+    .describe("Whether to stream the edit response as server-sent events."),
 });
 
 export const nextEditRequestSchema = editRequestBase;

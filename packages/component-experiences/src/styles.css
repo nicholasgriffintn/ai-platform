@@ -1,99 +1,99 @@
 @layer polychat-experiences {
-	.polychat-experience-content {
-		display: grid;
-		gap: 1.5rem;
-		max-width: 64rem;
-	}
-	.polychat-experience-content > header {
-		display: flex;
-		justify-content: space-between;
-		gap: 1rem;
-		align-items: flex-start;
-	}
-	.polychat-experience-content h1,
-	.polychat-experience-content h2,
-	.polychat-experience-content p {
-		margin: 0;
-	}
-	.polychat-experience-content > header p {
-		margin-top: 0.35rem;
-		color: #71717a;
-	}
-	.polychat-experience-content > section {
-		display: grid;
-		gap: 0.75rem;
-		border: 1px solid #e4e4e7;
-		border-radius: 0.75rem;
-		padding: 1rem;
-	}
-	.polychat-experience-media-preview {
-		overflow: hidden;
-		width: 100%;
-		border: 1px solid #e4e4e7;
-		border-radius: 0.75rem;
-	}
-	.polychat-experience-media-preview img,
-	.polychat-experience-media-preview video {
-		display: block;
-		width: 100%;
-		height: auto;
-		object-fit: contain;
-	}
-	.polychat-experience-media-preview audio {
-		display: block;
-		width: 100%;
-	}
-	.polychat-experience-music-transport {
-		display: flex;
-		gap: 0.75rem;
-		align-items: center;
-	}
-	.polychat-experience-music-transport button {
-		border: 0;
-		border-radius: 0.5rem;
-		padding: 0.55rem 0.9rem;
-		background: #18181b;
-		color: white;
-		cursor: pointer;
-	}
-	.polychat-experience-music-transport button:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-	.polychat-experience-training-status {
-		display: inline-flex;
-		border: 1px solid #d4d4d8;
-		border-radius: 999px;
-		padding: 0.2rem 0.55rem;
-		color: #52525b;
-		font-size: 0.75rem;
-		line-height: 1;
-		text-transform: capitalize;
-	}
-	.polychat-experience-training-status[data-tone="info"] {
-		border-color: #93c5fd;
-		background: #eff6ff;
-		color: #1d4ed8;
-	}
-	.polychat-experience-training-status[data-tone="success"] {
-		border-color: #86efac;
-		background: #f0fdf4;
-		color: #15803d;
-	}
-	.polychat-experience-training-status[data-tone="warning"] {
-		border-color: #fcd34d;
-		background: #fffbeb;
-		color: #a16207;
-	}
-	.polychat-experience-training-status[data-tone="danger"] {
-		border-color: #fca5a5;
-		background: #fef2f2;
-		color: #b91c1c;
-	}
-	.dark .polychat-experience-content > section,
-	.dark .polychat-experience-media-preview,
-	[data-polychat-theme="dark"] .polychat-experience-content > section,
-	[data-polychat-theme="dark"] .polychat-experience-media-preview {
-		border-color: #3f3f46;
-	}
+  .polychat-experience-content {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 64rem;
+  }
+  .polychat-experience-content > header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .polychat-experience-content h1,
+  .polychat-experience-content h2,
+  .polychat-experience-content p {
+    margin: 0;
+  }
+  .polychat-experience-content > header p {
+    margin-top: 0.35rem;
+    color: #71717a;
+  }
+  .polychat-experience-content > section {
+    display: grid;
+    gap: 0.75rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.75rem;
+    padding: 1rem;
+  }
+  .polychat-experience-media-preview {
+    overflow: hidden;
+    width: 100%;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.75rem;
+  }
+  .polychat-experience-media-preview img,
+  .polychat-experience-media-preview video {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+  .polychat-experience-media-preview audio {
+    display: block;
+    width: 100%;
+  }
+  .polychat-experience-music-transport {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  .polychat-experience-music-transport button {
+    border: 0;
+    border-radius: 0.5rem;
+    padding: 0.55rem 0.9rem;
+    background: #18181b;
+    color: white;
+    cursor: pointer;
+  }
+  .polychat-experience-music-transport button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .polychat-experience-training-status {
+    display: inline-flex;
+    border: 1px solid #d4d4d8;
+    border-radius: 999px;
+    padding: 0.2rem 0.55rem;
+    color: #52525b;
+    font-size: 0.75rem;
+    line-height: 1;
+    text-transform: capitalize;
+  }
+  .polychat-experience-training-status[data-tone="info"] {
+    border-color: #93c5fd;
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
+  .polychat-experience-training-status[data-tone="success"] {
+    border-color: #86efac;
+    background: #f0fdf4;
+    color: #15803d;
+  }
+  .polychat-experience-training-status[data-tone="warning"] {
+    border-color: #fcd34d;
+    background: #fffbeb;
+    color: #a16207;
+  }
+  .polychat-experience-training-status[data-tone="danger"] {
+    border-color: #fca5a5;
+    background: #fef2f2;
+    color: #b91c1c;
+  }
+  .dark .polychat-experience-content > section,
+  .dark .polychat-experience-media-preview,
+  [data-polychat-theme="dark"] .polychat-experience-content > section,
+  [data-polychat-theme="dark"] .polychat-experience-media-preview {
+    border-color: #3f3f46;
+  }
 }

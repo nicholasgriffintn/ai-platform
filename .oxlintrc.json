@@ -40,7 +40,13 @@
   ],
   "rules": {
     "curly": ["error", "all"],
-    "eqeqeq": "error",
+    "eqeqeq": [
+      "error",
+      "always",
+      {
+        "null": "ignore"
+      }
+    ],
     "prefer-const": "error",
     "no-else-return": [
       "error",
@@ -52,7 +58,8 @@
       "error",
       {
         "prefer": "type-imports",
-        "fixStyle": "separate-type-imports"
+        "fixStyle": "separate-type-imports",
+        "disallowTypeAnnotations": false
       }
     ],
     "typescript/no-import-type-side-effects": "error",
@@ -65,7 +72,7 @@
         "arrayLiteralTypeAssertions": "never"
       }
     ],
-    "typescript/no-misused-promises": "error",
+    "typescript/no-misused-promises": "warn",
     "typescript/switch-exhaustiveness-check": "warn",
     "import/no-duplicates": "error",
     "react/react-in-jsx-scope": "off",
@@ -97,6 +104,54 @@
         "prev": "*",
         "next": "return"
       }
-    ]
-  }
+    ],
+    "typescript/no-unsafe-type-assertion": "off",
+    "typescript/no-base-to-string": "warn",
+    "typescript/unbound-method": "warn",
+    "typescript/no-redundant-type-constituents": "warn",
+    "typescript/restrict-template-expressions": "warn",
+    "typescript/consistent-return": "warn",
+    "typescript/no-extraneous-class": "warn",
+    "typescript/no-misused-spread": "warn",
+    "jsx-a11y/prefer-tag-over-role": "warn",
+    "react-hooks/exhaustive-deps": "warn",
+    "jsx-a11y/control-has-associated-label": "warn",
+    "jsx-a11y/anchor-is-valid": "warn",
+    "jsx-a11y/label-has-associated-control": "warn",
+    "jsx-a11y/media-has-caption": "warn",
+    "jsx-a11y/no-autofocus": "warn",
+    "jsx-a11y/no-noninteractive-element-interactions": "warn",
+    "jsx-a11y/anchor-has-content": "warn",
+    "jsx-a11y/no-static-element-interactions": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["apps/api/**"],
+      "rules": {
+        "typescript/no-unnecessary-boolean-literal-compare": "off",
+        "typescript/no-useless-default-assignment": "off",
+        "typescript/consistent-type-assertions": "off"
+      }
+    },
+    {
+      "files": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.test.mjs",
+        "**/tests/**",
+        "**/__tests__/**",
+        "**/__test__/**"
+      ],
+      "rules": {
+        "typescript/consistent-type-assertions": "off",
+        "typescript/unbound-method": "off",
+        "typescript/no-floating-promises": "off",
+        "typescript/no-misused-promises": "off",
+        "typescript/no-base-to-string": "off",
+        "typescript/restrict-template-expressions": "off",
+        "react-hooks/rules-of-hooks": "off",
+        "typescript/consistent-type-imports": "off"
+      }
+    }
+  ]
 }

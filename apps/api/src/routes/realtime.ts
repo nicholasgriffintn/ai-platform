@@ -162,14 +162,17 @@ addRoute(app, "post", "/pipeline/session", {
     403: { description: "Model access denied", schema: errorResponseSchema },
   },
   handler: async ({ body, raw, serviceContext, user }) => {
-    const result = await createRealtimePipelineSession({
+    type PipelineResult = Awaited<ReturnType<typeof createRealtimePipelineSession>>;
+    const result: PipelineResult = await createRealtimePipelineSession({
       env: serviceContext.env,
       request: body,
       user,
     });
 
     if (!result.ok) {
-      return ResponseFactory.error(raw, result.message, result.status);
+      const failure = result as Extract<PipelineResult, { ok: false }>;
+
+      return ResponseFactory.error(raw, failure.message, failure.status);
     }
 
     return result.session;

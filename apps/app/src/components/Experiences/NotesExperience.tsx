@@ -77,7 +77,7 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
       const created = await createNote.mutateAsync({ title, content, metadata });
 
       setCreatedNoteId(created.id);
-      navigate(`${basePath}/${created.id}`, { replace: true });
+      void navigate(`${basePath}/${created.id}`, { replace: true });
 
       return created.id;
     },
@@ -120,7 +120,7 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
             noteId
               ? async () => {
                   await deleteNote.mutateAsync(noteId);
-                  navigate(basePath);
+                  void navigate(basePath);
                 }
               : undefined
           }

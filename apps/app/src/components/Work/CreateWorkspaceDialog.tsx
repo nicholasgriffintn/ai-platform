@@ -27,7 +27,7 @@ export function CreateWorkspaceDialog({
         });
 
         onOpenChange(false);
-        navigate(`/work/${workspace.id}`);
+        void navigate(`/work/${workspace.id}`);
       }}
     />
   );

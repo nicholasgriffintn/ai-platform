@@ -56,7 +56,7 @@ import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import { applyModelResponseDefaults } from "~/lib/chat-settings";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
-import type { ChatSettings, ReasoningEffort, VerbosityLevel } from "~/types";
+import type { ChatSettings, ReasoningEffort } from "~/types";
 
 const PROJECT_CAPABILITY_KIND_BY_ACTION_KIND: Partial<
   Record<AssistantActionItemKind, ProjectCapabilityKind>

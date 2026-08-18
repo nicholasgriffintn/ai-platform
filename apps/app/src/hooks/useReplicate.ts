@@ -1,4 +1,4 @@
-import type { ExecuteReplicateRequest, ReplicatePrediction } from "@ngriffin_uk/polychat-schemas";
+import type { ExecuteReplicateRequest } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
@@ -81,7 +81,7 @@ export function useExecuteReplicateModel(projectId?: string) {
     mutationFn: (request: ExecuteReplicateRequest) => executeReplicateModel(request, projectId),
     onSuccess: (prediction) => {
       queryClient.setQueryData(replicatePredictionQueryKey(projectId, prediction.id), prediction);
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: [REPLICATE_QUERY_KEY, projectId, "predictions"],
       });
     },

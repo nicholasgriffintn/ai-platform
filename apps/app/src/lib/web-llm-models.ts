@@ -9,7 +9,7 @@ function buildWebLLMModels(models: ModelRecord[]): ModelConfig {
     .filter((model) => {
       return model.model_id.includes("q0f16") || model.model_id.includes("q4f16");
     })
-    .reduce((acc, model) => {
+    .reduce<ModelConfig>((acc, model) => {
       acc[model.model_id] = {
         id: model.model_id,
         matchingModel: model.model_id,
@@ -23,7 +23,7 @@ function buildWebLLMModels(models: ModelRecord[]): ModelConfig {
       };
 
       return acc;
-    }, {} as ModelConfig);
+    }, {});
 }
 
 export function getCachedWebLLMModels() {

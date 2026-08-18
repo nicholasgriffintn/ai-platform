@@ -1,70 +1,71 @@
 import type { ParsedChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
+
 import type { Agent } from "~/lib/database/schema";
 import type { ChatCompletionParameters, Message } from "~/types";
 
 type CompletionAgent = Pick<Agent, "id" | "model" | "temperature" | "max_steps">;
 
 export interface AgentCompletionRequestInput {
-	agent: CompletionAgent;
-	body: ParsedChatCompletionRequestBody;
-	modelProvider: string;
-	formattedTools: NonNullable<ChatCompletionParameters["tools"]>;
-	systemPrompt: string;
+  agent: CompletionAgent;
+  body: ParsedChatCompletionRequestBody;
+  modelProvider: string;
+  formattedTools: NonNullable<ChatCompletionParameters["tools"]>;
+  systemPrompt: string;
 }
 
 type PreparedAgentCompletionRequest = Omit<ChatCompletionParameters, "env">;
 
 class AgentCompletionRequestPreparer {
-	constructor(private readonly input: AgentCompletionRequestInput) {}
+  constructor(private readonly input: AgentCompletionRequestInput) {}
 
-	prepare(): PreparedAgentCompletionRequest {
-		const {
-			user: _requestUser,
-			platform: requestPlatform,
-			stop: requestStop,
-			tool_choice: requestToolChoice,
-			messages: requestMessages,
-			...requestBody
-		} = this.input.body;
+  prepare(): PreparedAgentCompletionRequest {
+    const {
+      user: _requestUser,
+      platform: requestPlatform,
+      stop: requestStop,
+      tool_choice: requestToolChoice,
+      messages: requestMessages,
+      ...requestBody
+    } = this.input.body;
 
-		return {
-			...requestBody,
-			messages: requestMessages.map((message): Message => ({
-				...message,
-				content: message.content ?? "",
-			})),
-			system_prompt: this.input.systemPrompt,
-			model: this.input.agent.model || this.input.body.model,
-			provider: this.input.agent.model ? this.input.modelProvider : this.input.body.provider,
-			tools: this.input.formattedTools,
-			stream: false,
-			mode: "agent",
-			max_steps: this.input.agent.max_steps || this.input.body.max_steps || 20,
-			temperature: this.input.agent.temperature
-				? Number.parseFloat(this.input.agent.temperature)
-				: this.input.body.temperature || 0.8,
-			top_p: this.input.body.top_p,
-			current_agent_id: this.input.agent.id,
-			platform: requestPlatform === "obsidian" ? "api" : requestPlatform,
-			stop: requestStop ? (Array.isArray(requestStop) ? requestStop : [requestStop]) : undefined,
-			enabled_tools: this.input.body.enabled_tools,
-			approved_tools: this.input.body.approved_tools,
-			use_rag: this.input.body.use_rag,
-			rag_options: this.input.body.rag_options,
-			use_multi_model: this.input.body.use_multi_model,
-			models: this.input.body.models,
-			reasoning_effort: this.input.body.reasoning_effort ?? this.input.body.reasoning?.effort,
-			verbosity: this.input.body.verbosity,
-			budget_constraint: this.input.body.budget_constraint,
-			parallel_tool_calls: this.input.body.parallel_tool_calls,
-			response_format: this.input.body.response_format,
-			tool_choice: requestToolChoice,
-		};
-	}
+    return {
+      ...requestBody,
+      messages: requestMessages.map((message): Message => ({
+        ...message,
+        content: message.content ?? "",
+      })),
+      system_prompt: this.input.systemPrompt,
+      model: this.input.agent.model || this.input.body.model,
+      provider: this.input.agent.model ? this.input.modelProvider : this.input.body.provider,
+      tools: this.input.formattedTools,
+      stream: false,
+      mode: "agent",
+      max_steps: this.input.agent.max_steps || this.input.body.max_steps || 20,
+      temperature: this.input.agent.temperature
+        ? Number.parseFloat(this.input.agent.temperature)
+        : this.input.body.temperature || 0.8,
+      top_p: this.input.body.top_p,
+      current_agent_id: this.input.agent.id,
+      platform: requestPlatform === "obsidian" ? "api" : requestPlatform,
+      stop: requestStop ? (Array.isArray(requestStop) ? requestStop : [requestStop]) : undefined,
+      enabled_tools: this.input.body.enabled_tools,
+      approved_tools: this.input.body.approved_tools,
+      use_rag: this.input.body.use_rag,
+      rag_options: this.input.body.rag_options,
+      use_multi_model: this.input.body.use_multi_model,
+      models: this.input.body.models,
+      reasoning_effort: this.input.body.reasoning_effort ?? this.input.body.reasoning?.effort,
+      verbosity: this.input.body.verbosity,
+      budget_constraint: this.input.body.budget_constraint,
+      parallel_tool_calls: this.input.body.parallel_tool_calls,
+      response_format: this.input.body.response_format,
+      tool_choice: requestToolChoice,
+    };
+  }
 }
 
 export function prepareAgentCompletionRequest(
-	input: AgentCompletionRequestInput,
+  input: AgentCompletionRequestInput,
 ): PreparedAgentCompletionRequest {
-	return new AgentCompletionRequestPreparer(input).prepare();
+  return new AgentCompletionRequestPreparer(input).prepare();
 }

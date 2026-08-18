@@ -146,11 +146,11 @@ Connector inputs may reference an authorised private file using a Polychat priva
 
 ```json
 {
-	"$assistantFile": {
-		"kind": "source",
-		"id": "<source-id>",
-		"path": "documents/input.pdf"
-	}
+  "$assistantFile": {
+    "kind": "source",
+    "id": "<source-id>",
+    "path": "documents/input.pdf"
+  }
 }
 ```
 

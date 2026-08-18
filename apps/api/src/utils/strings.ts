@@ -1,17 +1,17 @@
 export function trimTemplateWhitespace(str: string): string {
-	// Replace multiple spaces with a single space
-	// Remove spaces at the start of each line (common in template literals)
-	// Remove multiple consecutive empty lines
-	return str
-		.replace(/[ \t]+/g, " ")
-		.replace(/^[ \t]+/gm, "")
-		.replace(/\n{3,}/g, "\n\n");
+  // Replace multiple spaces with a single space
+  // Remove spaces at the start of each line (common in template literals)
+  // Remove multiple consecutive empty lines
+  return str
+    .replace(/[ \t]+/g, " ")
+    .replace(/^[ \t]+/gm, "")
+    .replace(/\n{3,}/g, "\n\n");
 }
 
 export function compactNonEmptyStrings(values: Array<string | null | undefined>): string[] {
-	return values.map((value) => value?.trim()).filter((value): value is string => Boolean(value));
+  return values.map((value) => value?.trim()).filter((value): value is string => Boolean(value));
 }
 
 export function escapeRegExp(value: string): string {
-	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

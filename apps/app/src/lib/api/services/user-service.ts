@@ -27,7 +27,7 @@ export class UserService {
   constructor(private getHeaders: () => Promise<Record<string, string>>) {}
 
   async exportChatHistory(): Promise<Blob> {
-    let headers = {} as Record<string, string>;
+    let headers: Record<string, string> = {};
 
     try {
       headers = await this.getHeaders();

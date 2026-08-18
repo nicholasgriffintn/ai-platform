@@ -72,14 +72,11 @@ export function ModelsList({
     {},
   );
   const modelsById = useMemo(() => {
-    return models.reduce(
-      (acc, model) => {
-        acc[model.id] = model;
+    return models.reduce<Record<string, ModelCatalogItem>>((acc, model) => {
+      acc[model.id] = model;
 
-        return acc;
-      },
-      {} as Record<string, ModelCatalogItem>,
-    );
+      return acc;
+    }, {});
   }, [models]);
 
   const handleModelSelect = (modelId: string, modelInfo: ModelCatalogItem) => {
@@ -95,20 +92,17 @@ export function ModelsList({
   );
 
   const groupedByProvider = useMemo(() => {
-    return models.reduce(
-      (acc, model) => {
-        const provider = model.provider || "unknown";
+    return models.reduce<Record<string, ModelCatalogItem[]>>((acc, model) => {
+      const provider = model.provider || "unknown";
 
-        if (!acc[provider]) {
-          acc[provider] = [];
-        }
+      if (!acc[provider]) {
+        acc[provider] = [];
+      }
 
-        acc[provider].push(model);
+      acc[provider].push(model);
 
-        return acc;
-      },
-      {} as Record<string, ModelCatalogItem[]>,
-    );
+      return acc;
+    }, {});
   }, [models]);
 
   const providerEntries = useMemo(() => {

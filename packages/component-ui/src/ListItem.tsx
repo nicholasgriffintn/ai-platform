@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 
 import { cn } from "./utils";
 
@@ -34,26 +34,33 @@ export function ListItem({
   className,
   "data-id": dataId,
 }: ListItemProps) {
+  const containerClassName = cn(
+    "group flex items-center relative p-2 rounded-lg transition-colors",
+    isActive
+      ? "bg-off-white-highlight text-black dark:bg-[#2D2D2D] dark:text-white"
+      : "hover:bg-zinc-200 dark:hover:bg-zinc-900 text-zinc-600 dark:text-zinc-300",
+    onClick ? "cursor-pointer" : "cursor-default",
+    className,
+  );
+  const interactiveProps = onClick
+    ? {
+        role: "button" as const,
+        tabIndex: 0,
+        onClick,
+        onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
+          if (event.key === "Enter" || event.key === " ") {
+            onClick();
+          }
+        },
+      }
+    : {};
+
   return (
     <div
       data-id={dataId}
-      className={cn(
-        "group flex items-center relative p-2 rounded-lg transition-colors",
-        isActive
-          ? "bg-off-white-highlight text-black dark:bg-[#2D2D2D] dark:text-white"
-          : "hover:bg-zinc-200 dark:hover:bg-zinc-900 text-zinc-600 dark:text-zinc-300",
-        onClick ? "cursor-pointer" : "cursor-default",
-        className,
-      )}
-      onClick={onClick}
-      onKeyDown={(e) => {
-        if (onClick && (e.key === "Enter" || e.key === " ")) {
-          onClick();
-        }
-      }}
-      role={onClick ? "button" : undefined}
-      tabIndex={onClick ? 0 : undefined}
+      className={containerClassName}
       aria-current={isActive ? "page" : undefined}
+      {...interactiveProps}
     >
       <div
         className={cn(

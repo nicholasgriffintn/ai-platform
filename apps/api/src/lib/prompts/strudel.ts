@@ -1,27 +1,27 @@
 const styleGuides = {
-	techno:
-		"Techno: 4-on-the-floor kick (bd on each beat), tight hats, minimal but driving bass, Euclidean hats and subtle random fills. Use synthetic sounds (sawtooth, square, noise) with .bank('RolandTR909') or .bank('RolandTR808') for drums. Apply .crush() or .shape() for grit, and subtle .delay()/.room() for space. Keep it driving and hypnotic.",
-	ambient:
-		"Ambient: very slow cycles (.slow, /N), long release/clip, soft waveforms (sine/triangle pads). Use .s('sine') or .s('triangle') for pads, layer with sound('crackle') or filtered noise for texture. Rich .room()/.roomsize() and gentle .lpf() sweeps. Focus on evolving textures with slow filter modulation (e.g. lpf(sine.slow(8).range(200,2000))) rather than strong beats.",
-	house:
-		"House: bd on every beat, snare/clap on 2 and 4, swung/open hats (.early/.late for swing feel), funky basslines and piano/organ-style chords. Use .bank('RolandTR909') for drums, .s('piano') or .s('organ') for chords. Apply .degrade()/.sometimes() for humanized variations. Keep it groovy with warm .lpf() and subtle .room().",
-	jazz: "Jazz: use chord()/voicing() with rich jazz voicings (e.g. dict('ireal')), modal scales (dorian, mixolydian, lydian), syncopated rhythms and call-response between bass, comping and lead. Prefer acoustic-ish timbres: .s('piano') for comping, clean guitar samples if available, .s('sine') or mellow .s('triangle') for bass. Avoid aggressive synths. Use .early()/.late() for loose, humanized timing.",
-	drums:
-		"Drums: focus on s() patterns with bd/sd/hh/perc, polyrhythms, polymeter, Euclidean patterns (e.g. s('hh(5,8)')) and random/conditional modifiers (.degradeBy(), .sometimes()) for ghost notes and fills. Use .bank('RolandTR808') or .bank('RolandTR909') for classic kits. Melodic content optional.",
-	experimental:
-		"Experimental: explore polyrhythms, polymeter, stepwise functions, signals, microtonal/xen tuning, unusual effects chains (.crush(), .coarse(), .vowel()) and aggressive modulation. Keep it valid, playable and somewhat structured.",
-	lofi: "Lo-Fi Hip Hop: slow, swung beats (60-90 BPM via .cpm(15-22)). Use .s('piano') or Rhodes-style electric piano for warm, jazzy chords with 7ths/9ths. Deep, warm bass using .s('sine') or .s('triangle') with .lpf(). Dusty, soft drums - use .degradeBy() on hats, .crush() or .shape() for vintage lo-fi warmth. Add .early()/.late() on drum hits for lazy, humanized swing. Layer sound('crackle') at low .gain(0.1) for vinyl atmosphere. Use .lpf() with slow modulation for warmth. Keep mood calm, nostalgic, mellow. 8-bar structures with subtle variations (.every(8, ...) or .chunk(4, ...)) to stay engaging without being static.",
-	hiphop:
-		"Hip Hop: boom-bap style drums with hard-hitting bd and punchy sd on 2 and 4. Use .bank('RolandTR808') for classic hip-hop kit. Swung hi-hats with .early()/.late() for groove. Deep sub-bass using .s('sine') or .s('sawtooth') with heavy .lpf(). Melodic samples or .s('piano') for hooks. Use .sometimes() and .degradeBy() for variation. Keep it head-nodding with strong groove.",
+  techno:
+    "Techno: 4-on-the-floor kick (bd on each beat), tight hats, minimal but driving bass, Euclidean hats and subtle random fills. Use synthetic sounds (sawtooth, square, noise) with .bank('RolandTR909') or .bank('RolandTR808') for drums. Apply .crush() or .shape() for grit, and subtle .delay()/.room() for space. Keep it driving and hypnotic.",
+  ambient:
+    "Ambient: very slow cycles (.slow, /N), long release/clip, soft waveforms (sine/triangle pads). Use .s('sine') or .s('triangle') for pads, layer with sound('crackle') or filtered noise for texture. Rich .room()/.roomsize() and gentle .lpf() sweeps. Focus on evolving textures with slow filter modulation (e.g. lpf(sine.slow(8).range(200,2000))) rather than strong beats.",
+  house:
+    "House: bd on every beat, snare/clap on 2 and 4, swung/open hats (.early/.late for swing feel), funky basslines and piano/organ-style chords. Use .bank('RolandTR909') for drums, .s('piano') or .s('organ') for chords. Apply .degrade()/.sometimes() for humanized variations. Keep it groovy with warm .lpf() and subtle .room().",
+  jazz: "Jazz: use chord()/voicing() with rich jazz voicings (e.g. dict('ireal')), modal scales (dorian, mixolydian, lydian), syncopated rhythms and call-response between bass, comping and lead. Prefer acoustic-ish timbres: .s('piano') for comping, clean guitar samples if available, .s('sine') or mellow .s('triangle') for bass. Avoid aggressive synths. Use .early()/.late() for loose, humanized timing.",
+  drums:
+    "Drums: focus on s() patterns with bd/sd/hh/perc, polyrhythms, polymeter, Euclidean patterns (e.g. s('hh(5,8)')) and random/conditional modifiers (.degradeBy(), .sometimes()) for ghost notes and fills. Use .bank('RolandTR808') or .bank('RolandTR909') for classic kits. Melodic content optional.",
+  experimental:
+    "Experimental: explore polyrhythms, polymeter, stepwise functions, signals, microtonal/xen tuning, unusual effects chains (.crush(), .coarse(), .vowel()) and aggressive modulation. Keep it valid, playable and somewhat structured.",
+  lofi: "Lo-Fi Hip Hop: slow, swung beats (60-90 BPM via .cpm(15-22)). Use .s('piano') or Rhodes-style electric piano for warm, jazzy chords with 7ths/9ths. Deep, warm bass using .s('sine') or .s('triangle') with .lpf(). Dusty, soft drums - use .degradeBy() on hats, .crush() or .shape() for vintage lo-fi warmth. Add .early()/.late() on drum hits for lazy, humanized swing. Layer sound('crackle') at low .gain(0.1) for vinyl atmosphere. Use .lpf() with slow modulation for warmth. Keep mood calm, nostalgic, mellow. 8-bar structures with subtle variations (.every(8, ...) or .chunk(4, ...)) to stay engaging without being static.",
+  hiphop:
+    "Hip Hop: boom-bap style drums with hard-hitting bd and punchy sd on 2 and 4. Use .bank('RolandTR808') for classic hip-hop kit. Swung hi-hats with .early()/.late() for groove. Deep sub-bass using .s('sine') or .s('sawtooth') with heavy .lpf(). Melodic samples or .s('piano') for hooks. Use .sometimes() and .degradeBy() for variation. Keep it head-nodding with strong groove.",
 } as const;
 
 const complexityGuides = {
-	simple:
-		"Simple: 1–2 voices, straightforward rhythms, minimal modifiers and effects. Prioritise clarity and a strong hook over complexity.",
-	medium:
-		"Medium: 2–3 coordinated voices (e.g. drums + bass + one melodic/pad line), some time modifiers (.fast/.slow/.euclid), a bit of random/conditional variation and tasteful effects.",
-	complex:
-		"Complex: 3–6 stacked or layered voices (drums, bass, chords, leads, textures), creative use of struct/stepcat/chunk, signals and random/conditional modifiers to create evolving but coherent music. Consider A/B-style variation over time.",
+  simple:
+    "Simple: 1–2 voices, straightforward rhythms, minimal modifiers and effects. Prioritise clarity and a strong hook over complexity.",
+  medium:
+    "Medium: 2–3 coordinated voices (e.g. drums + bass + one melodic/pad line), some time modifiers (.fast/.slow/.euclid), a bit of random/conditional variation and tasteful effects.",
+  complex:
+    "Complex: 3–6 stacked or layered voices (drums, bass, chords, leads, textures), creative use of struct/stepcat/chunk, signals and random/conditional modifiers to create evolving but coherent music. Consider A/B-style variation over time.",
 } as const;
 
 export type StrudelStyle = keyof typeof styleGuides;
@@ -326,20 +326,20 @@ stack(
 Return ONLY the Strudel code snippet that a real Strudel user could paste into the REPL and run.`;
 
 export function buildStrudelSystemPrompt(
-	style?: StrudelStyle,
-	complexity?: StrudelComplexity,
+  style?: StrudelStyle,
+  complexity?: StrudelComplexity,
 ): string {
-	const hints: string[] = [];
+  const hints: string[] = [];
 
-	if (style && styleGuides[style]) {
-		hints.push(`STYLE: ${style}\n${styleGuides[style]}`);
-	}
+  if (style && styleGuides[style]) {
+    hints.push(`STYLE: ${style}\n${styleGuides[style]}`);
+  }
 
-	if (complexity && complexityGuides[complexity]) {
-		hints.push(`COMPLEXITY: ${complexity}\n${complexityGuides[complexity]}`);
-	}
+  if (complexity && complexityGuides[complexity]) {
+    hints.push(`COMPLEXITY: ${complexity}\n${complexityGuides[complexity]}`);
+  }
 
-	const hintBlock = hints.length ? `\n\n${hints.join("\n\n")}\n` : "\n";
+  const hintBlock = hints.length ? `\n\n${hints.join("\n\n")}\n` : "\n";
 
-	return `${basePrompt}${hintBlock}Generate clean, working Strudel code that matches the user's request and the style/complexity hints. Output ONLY a single Strudel expression.`;
+  return `${basePrompt}${hintBlock}Generate clean, working Strudel code that matches the user's request and the style/complexity hints. Output ONLY a single Strudel expression.`;
 }

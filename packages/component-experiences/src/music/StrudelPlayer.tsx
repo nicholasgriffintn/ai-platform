@@ -164,7 +164,7 @@ export function StrudelPlayer({
       return;
     }
 
-    editor.stop();
+    void editor.stop();
     setIsPlaying(false);
   }, []);
 
@@ -172,7 +172,7 @@ export function StrudelPlayer({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.altKey && e.key === "Enter") {
         e.preventDefault();
-        handlePlay();
+        void handlePlay();
       } else if (e.altKey && (e.key === "." || e.key === "≥")) {
         e.preventDefault();
         handlePause();

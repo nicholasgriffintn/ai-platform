@@ -3,35 +3,35 @@ import { JsonView } from "./JsonView";
 import { useCustomResponseView } from "./registry";
 
 export interface CustomViewProps {
-	messageContent: string;
-	data: any;
-	toolName?: string;
-	embedded: boolean;
-	onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
+  messageContent: string;
+  data: any;
+  toolName?: string;
+  embedded: boolean;
+  onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
 }
 
 export function CustomView({
-	messageContent,
-	data,
-	toolName,
-	embedded,
-	onToolInteraction,
+  messageContent,
+  data,
+  toolName,
+  embedded,
+  onToolInteraction,
 }: CustomViewProps) {
-	const customData = data.data || data;
-	const renderView = useCustomResponseView(toolName ?? data.name);
+  const customData = data.data || data;
+  const renderView = useCustomResponseView(toolName ?? data.name);
 
-	if (renderView) {
-		return renderView({ data: customData, embedded, onToolInteraction });
-	}
+  if (renderView) {
+    return renderView({ data: customData, embedded, onToolInteraction });
+  }
 
-	return (
-		<>
-			<JsonView data={customData} />
-			{typeof messageContent === "string" && (
-				<div className="mt-6">
-					<MemoizedMarkdown>{messageContent}</MemoizedMarkdown>
-				</div>
-			)}
-		</>
-	);
+  return (
+    <>
+      <JsonView data={customData} />
+      {typeof messageContent === "string" && (
+        <div className="mt-6">
+          <MemoizedMarkdown>{messageContent}</MemoizedMarkdown>
+        </div>
+      )}
+    </>
+  );
 }

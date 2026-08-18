@@ -67,7 +67,7 @@ export const ChatSidebar = ({
   const [archiveFilter, setArchiveFilter] = useState<ConversationArchiveFilter>("active");
   const [sortBy, setSortBy] = useState<ConversationSortBy>("updated");
   const {
-    data: conversations = [],
+    data: conversations,
     error: conversationsError,
     fetchNextPage,
     hasNextPage,
@@ -122,7 +122,7 @@ export const ChatSidebar = ({
     clearCurrentConversation();
 
     if (!isConversationRoute) {
-      navigate("/chat");
+      void navigate("/chat");
     }
 
     trackEvent({
@@ -139,7 +139,7 @@ export const ChatSidebar = ({
     setCurrentConversationId(id);
 
     if (!isConversationRoute) {
-      navigate(id ? `/chat?completion_id=${encodeURIComponent(id)}` : "/chat");
+      void navigate(id ? `/chat?completion_id=${encodeURIComponent(id)}` : "/chat");
     }
 
     trackEvent({
