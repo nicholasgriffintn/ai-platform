@@ -6,239 +6,254 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { CHATS_QUERY_KEY } from "~/constants";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Conversation } from "~/types";
+
 import { useMessageOperations } from "../useMessageOperations";
 
 function createQueryClient() {
-	return new QueryClient({
-		defaultOptions: {
-			queries: {
-				retry: false,
-			},
-		},
-	});
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
 }
 
 function conversation(messages: Conversation["messages"]): Conversation {
-	return {
-		id: "conversation-1",
-		title: "Test",
-		isLocalOnly: false,
-		messages,
-	};
+  return {
+    id: "conversation-1",
+    title: "Test",
+    isLocalOnly: false,
+    messages,
+  };
 }
 
 function compactionMessage(): Conversation["messages"][number] {
-	return {
-		id: "snapshot-1-compaction",
-		role: "compaction",
-		content: "Context automatically compacted",
-		parts: [
-			{
-				type: "compaction",
-				status: "completed",
-				label: "Context automatically compacted",
-			},
-		],
-	};
+  return {
+    id: "snapshot-1-compaction",
+    role: "compaction",
+    content: "Context automatically compacted",
+    parts: [
+      {
+        type: "compaction",
+        status: "completed",
+        label: "Context automatically compacted",
+      },
+    ],
+  };
 }
 
 describe("useMessageOperations", () => {
-	beforeEach(() => {
-		useChatStore.setState({
-			isAuthenticated: true,
-			isPro: true,
-			localOnlyMode: false,
-			chatMode: "remote",
-			model: "test-model",
-		});
-	});
+  beforeEach(() => {
+    useChatStore.setState({
+      isAuthenticated: true,
+      isPro: true,
+      localOnlyMode: false,
+      chatMode: "remote",
+      model: "test-model",
+    });
+  });
 
-	it("uses the first message excerpt as a new conversation title", async () => {
-		const queryClient = createQueryClient();
-		const wrapper = ({ children }: { children: ReactNode }) => (
-			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-		);
-		const { result } = renderHook(() => useMessageOperations(), { wrapper });
+  it("uses the first message excerpt as a new conversation title", async () => {
+    const queryClient = createQueryClient();
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useMessageOperations(), { wrapper });
 
-		await act(async () => {
-			await result.current.addMessageToConversation("conversation-1", {
-				id: "user-1",
-				role: "user",
-				content: "Help me brainstorm creative uses for old wine bottles.",
-			});
-		});
+    await act(async () => {
+      await result.current.addMessageToConversation("conversation-1", {
+        id: "user-1",
+        role: "user",
+        content: "Help me brainstorm creative uses for old wine bottles.",
+      });
+    });
 
-		const conversation = queryClient.getQueryData<Conversation>([
-			CHATS_QUERY_KEY,
-			"conversation-1",
-		]);
-		expect(conversation?.title).toBe("Help me brainstorm creative us...");
-	});
+    const conversation = queryClient.getQueryData<Conversation>([
+      CHATS_QUERY_KEY,
+      "conversation-1",
+    ]);
 
-	it("throws by default when there is no assistant message to update", async () => {
-		const queryClient = createQueryClient();
-		queryClient.setQueryData(
-			[CHATS_QUERY_KEY, "conversation-1"],
-			conversation([{ id: "user-1", role: "user", content: "Question", model: "test-model" }]),
-		);
-		const wrapper = ({ children }: { children: ReactNode }) => (
-			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-		);
-		const { result } = renderHook(() => useMessageOperations(), { wrapper });
+    expect(conversation?.title).toBe("Help me brainstorm creative us...");
+  });
 
-		await expect(
-			act(async () => {
-				await result.current.updateAssistantMessage("conversation-1", "Answer");
-			}),
-		).rejects.toThrow("No assistant message found to update");
-	});
+  it("throws by default when there is no assistant message to update", async () => {
+    const queryClient = createQueryClient();
 
-	it("adds an assistant placeholder and returns its message", async () => {
-		const queryClient = createQueryClient();
-		queryClient.setQueryData(
-			[CHATS_QUERY_KEY, "conversation-1"],
-			conversation([{ id: "user-1", role: "user", content: "Question", model: "test-model" }]),
-		);
-		const wrapper = ({ children }: { children: ReactNode }) => (
-			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-		);
-		const { result } = renderHook(() => useMessageOperations(), { wrapper });
+    queryClient.setQueryData(
+      [CHATS_QUERY_KEY, "conversation-1"],
+      conversation([{ id: "user-1", role: "user", content: "Question", model: "test-model" }]),
+    );
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useMessageOperations(), { wrapper });
 
-		let assistantId: string | undefined;
-		await act(async () => {
-			const assistantMessage = await result.current.addAssistantMessage("conversation-1", "");
-			assistantId = assistantMessage.id;
-		});
+    await expect(
+      act(async () => {
+        await result.current.updateAssistantMessage("conversation-1", "Answer");
+      }),
+    ).rejects.toThrow("No assistant message found to update");
+  });
 
-		const updated = queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"]);
-		expect(updated?.messages).toEqual([
-			expect.objectContaining({ id: "user-1", role: "user", content: "Question" }),
-			expect.objectContaining({ id: assistantId, role: "assistant", content: "" }),
-		]);
-	});
+  it("adds an assistant placeholder and returns its message", async () => {
+    const queryClient = createQueryClient();
 
-	it("updates a specific assistant message by id", async () => {
-		const queryClient = createQueryClient();
-		queryClient.setQueryData(
-			[CHATS_QUERY_KEY, "conversation-1"],
-			conversation([
-				{ id: "user-1", role: "user", content: "Question", model: "test-model" },
-				{ id: "assistant-1", role: "assistant", content: "First", model: "test-model" },
-				{ id: "assistant-2", role: "assistant", content: "Second", model: "test-model" },
-			]),
-		);
-		const wrapper = ({ children }: { children: ReactNode }) => (
-			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-		);
-		const { result } = renderHook(() => useMessageOperations(), { wrapper });
+    queryClient.setQueryData(
+      [CHATS_QUERY_KEY, "conversation-1"],
+      conversation([{ id: "user-1", role: "user", content: "Question", model: "test-model" }]),
+    );
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useMessageOperations(), { wrapper });
 
-		await act(async () => {
-			await result.current.updateAssistantMessage(
-				"conversation-1",
-				"Answer",
-				undefined,
-				{ id: "assistant-1" },
-				{
-					messageId: "assistant-1",
-				},
-			);
-		});
+    let assistantId: string | undefined;
 
-		const updated = queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"]);
-		expect(updated?.messages).toEqual([
-			expect.objectContaining({ id: "user-1", role: "user", content: "Question" }),
-			expect.objectContaining({ id: "assistant-1", role: "assistant", content: "Answer" }),
-			expect.objectContaining({ id: "assistant-2", role: "assistant", content: "Second" }),
-		]);
-	});
+    await act(async () => {
+      const assistantMessage = await result.current.addAssistantMessage("conversation-1", "");
 
-	it("updates the latest assistant message when a placeholder exists", async () => {
-		const queryClient = createQueryClient();
-		queryClient.setQueryData(
-			[CHATS_QUERY_KEY, "conversation-1"],
-			conversation([
-				{ id: "user-1", role: "user", content: "Question", model: "test-model" },
-				{ id: "assistant-1", role: "assistant", content: "", model: "test-model" },
-			]),
-		);
-		const wrapper = ({ children }: { children: ReactNode }) => (
-			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-		);
-		const { result } = renderHook(() => useMessageOperations(), { wrapper });
+      assistantId = assistantMessage.id;
+    });
 
-		await act(async () => {
-			await result.current.updateAssistantMessage("conversation-1", "Answer", undefined, {
-				id: "assistant-1",
-			});
-		});
+    const updated = queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"]);
 
-		const updated = queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"]);
-		expect(updated?.messages).toHaveLength(2);
-		expect(updated?.messages[1]).toEqual(
-			expect.objectContaining({ id: "assistant-1", role: "assistant", content: "Answer" }),
-		);
-	});
+    expect(updated?.messages).toEqual([
+      expect.objectContaining({ id: "user-1", role: "user", content: "Question" }),
+      expect.objectContaining({ id: assistantId, role: "assistant", content: "" }),
+    ]);
+  });
 
-	it("inserts a compaction marker before the active assistant placeholder", async () => {
-		const queryClient = createQueryClient();
-		queryClient.setQueryData(
-			[CHATS_QUERY_KEY, "conversation-1"],
-			conversation([
-				{ id: "user-1", role: "user", content: "Question", model: "test-model" },
-				{ id: "assistant-1", role: "assistant", content: "", model: "test-model" },
-			]),
-		);
-		const wrapper = ({ children }: { children: ReactNode }) => (
-			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-		);
-		const { result } = renderHook(() => useMessageOperations(), { wrapper });
+  it("updates a specific assistant message by id", async () => {
+    const queryClient = createQueryClient();
 
-		await act(async () => {
-			await result.current.insertMessageBeforeConversationMessage(
-				"conversation-1",
-				compactionMessage(),
-				"assistant-1",
-			);
-		});
+    queryClient.setQueryData(
+      [CHATS_QUERY_KEY, "conversation-1"],
+      conversation([
+        { id: "user-1", role: "user", content: "Question", model: "test-model" },
+        { id: "assistant-1", role: "assistant", content: "First", model: "test-model" },
+        { id: "assistant-2", role: "assistant", content: "Second", model: "test-model" },
+      ]),
+    );
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useMessageOperations(), { wrapper });
 
-		const updated = queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"]);
-		expect(updated?.messages.map((message) => message.id)).toEqual([
-			"user-1",
-			"snapshot-1-compaction",
-			"assistant-1",
-		]);
-	});
+    await act(async () => {
+      await result.current.updateAssistantMessage(
+        "conversation-1",
+        "Answer",
+        undefined,
+        { id: "assistant-1" },
+        {
+          messageId: "assistant-1",
+        },
+      );
+    });
 
-	it("moves an existing compaction marker instead of duplicating it", async () => {
-		const queryClient = createQueryClient();
-		queryClient.setQueryData(
-			[CHATS_QUERY_KEY, "conversation-1"],
-			conversation([
-				{ id: "user-1", role: "user", content: "Question", model: "test-model" },
-				compactionMessage(),
-				{ id: "user-2", role: "user", content: "Follow-up", model: "test-model" },
-				{ id: "assistant-1", role: "assistant", content: "", model: "test-model" },
-			]),
-		);
-		const wrapper = ({ children }: { children: ReactNode }) => (
-			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-		);
-		const { result } = renderHook(() => useMessageOperations(), { wrapper });
+    const updated = queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"]);
 
-		await act(async () => {
-			await result.current.insertMessageBeforeConversationMessage(
-				"conversation-1",
-				compactionMessage(),
-				"assistant-1",
-			);
-		});
+    expect(updated?.messages).toEqual([
+      expect.objectContaining({ id: "user-1", role: "user", content: "Question" }),
+      expect.objectContaining({ id: "assistant-1", role: "assistant", content: "Answer" }),
+      expect.objectContaining({ id: "assistant-2", role: "assistant", content: "Second" }),
+    ]);
+  });
 
-		const updated = queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"]);
-		expect(updated?.messages.map((message) => message.id)).toEqual([
-			"user-1",
-			"user-2",
-			"snapshot-1-compaction",
-			"assistant-1",
-		]);
-	});
+  it("updates the latest assistant message when a placeholder exists", async () => {
+    const queryClient = createQueryClient();
+
+    queryClient.setQueryData(
+      [CHATS_QUERY_KEY, "conversation-1"],
+      conversation([
+        { id: "user-1", role: "user", content: "Question", model: "test-model" },
+        { id: "assistant-1", role: "assistant", content: "", model: "test-model" },
+      ]),
+    );
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useMessageOperations(), { wrapper });
+
+    await act(async () => {
+      await result.current.updateAssistantMessage("conversation-1", "Answer", undefined, {
+        id: "assistant-1",
+      });
+    });
+
+    const updated = queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"]);
+
+    expect(updated?.messages).toHaveLength(2);
+    expect(updated?.messages[1]).toEqual(
+      expect.objectContaining({ id: "assistant-1", role: "assistant", content: "Answer" }),
+    );
+  });
+
+  it("inserts a compaction marker before the active assistant placeholder", async () => {
+    const queryClient = createQueryClient();
+
+    queryClient.setQueryData(
+      [CHATS_QUERY_KEY, "conversation-1"],
+      conversation([
+        { id: "user-1", role: "user", content: "Question", model: "test-model" },
+        { id: "assistant-1", role: "assistant", content: "", model: "test-model" },
+      ]),
+    );
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useMessageOperations(), { wrapper });
+
+    await act(async () => {
+      await result.current.insertMessageBeforeConversationMessage(
+        "conversation-1",
+        compactionMessage(),
+        "assistant-1",
+      );
+    });
+
+    const updated = queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"]);
+
+    expect(updated?.messages.map((message) => message.id)).toEqual([
+      "user-1",
+      "snapshot-1-compaction",
+      "assistant-1",
+    ]);
+  });
+
+  it("moves an existing compaction marker instead of duplicating it", async () => {
+    const queryClient = createQueryClient();
+
+    queryClient.setQueryData(
+      [CHATS_QUERY_KEY, "conversation-1"],
+      conversation([
+        { id: "user-1", role: "user", content: "Question", model: "test-model" },
+        compactionMessage(),
+        { id: "user-2", role: "user", content: "Follow-up", model: "test-model" },
+        { id: "assistant-1", role: "assistant", content: "", model: "test-model" },
+      ]),
+    );
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useMessageOperations(), { wrapper });
+
+    await act(async () => {
+      await result.current.insertMessageBeforeConversationMessage(
+        "conversation-1",
+        compactionMessage(),
+        "assistant-1",
+      );
+    });
+
+    const updated = queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"]);
+
+    expect(updated?.messages.map((message) => message.id)).toEqual([
+      "user-1",
+      "user-2",
+      "snapshot-1-compaction",
+      "assistant-1",
+    ]);
+  });
 });

@@ -1,33 +1,34 @@
+import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
+import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
+import { upsertConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
 import { EMPTY_MODEL_CONFIG } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationModeMetadata, CouncilMemberId } from "@ngriffin_uk/polychat-schemas";
+import { compactionStatusLabels } from "@ngriffin_uk/polychat-schemas/compaction-status";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
-import { compactionStatusLabels } from "@ngriffin_uk/polychat-schemas/compaction-status";
-import type { ConversationModeMetadata, CouncilMemberId } from "@ngriffin_uk/polychat-schemas";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
-import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
-import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
 import { prepareUserMessage } from "~/lib/chat/prepare-user-message";
 import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
-import { createCouncilDebateTurnPlanner } from "~/lib/council-turns";
 import { createConversationId } from "~/lib/conversations";
-import { upsertConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
+import { createCouncilDebateTurnPlanner } from "~/lib/council-turns";
 import { getErrorMessage } from "~/lib/errors";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatRequestOptions, Conversation, Message } from "~/types";
+
 import { useGenerateTitle } from "./useChat";
-import { useModels } from "./useModels";
 import { useConversationActions } from "./useConversationActions";
 import { useConversationStorage } from "./useConversationStorage";
 import { useMessageOperations } from "./useMessageOperations";
+import { useModels } from "./useModels";
 import { useStreamingResponse } from "./useStreamingResponse";
 import { useWebLLMInitialization } from "./useWebLLMInitialization";
 
 interface CouncilDebateOptions {
-	memberIds: CouncilMemberId[];
-	requireConsensus?: boolean;
+  memberIds: CouncilMemberId[];
+  requireConsensus?: boolean;
 }
 
 /**
@@ -35,434 +36,444 @@ interface CouncilDebateOptions {
  * Composes smaller hooks to handle streaming, storage, WebLLM, and conversation actions.
  */
 export function useChatManager(
-	requestOptions?: ChatRequestOptions,
-	conversationMode?: ConversationModeMetadata,
+  requestOptions?: ChatRequestOptions,
+  conversationMode?: ConversationModeMetadata,
 ) {
-	const queryClient = useQueryClient();
-	const generateTitleMutation = useGenerateTitle(requestOptions);
-	const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
-	const { startLoading, stopLoading } = useLoadingActions();
+  const queryClient = useQueryClient();
+  const generateTitleMutation = useGenerateTitle(requestOptions);
+  const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
+  const { startLoading, stopLoading } = useLoadingActions();
 
-	const { currentConversationId, model, startNewConversation } = useChatStore();
+  const { currentConversationId, model, startNewConversation } = useChatStore();
 
-	const { webLLMService } = useWebLLMInitialization(apiModels);
-	const { determineStorageMode, updateConversation } = useConversationStorage(requestOptions);
-	const { addMessageToConversation, addAssistantMessage, updateAssistantMessage } =
-		useMessageOperations(requestOptions);
+  const { webLLMService } = useWebLLMInitialization(apiModels);
+  const { determineStorageMode, updateConversation } = useConversationStorage(requestOptions);
+  const { addMessageToConversation, addAssistantMessage, updateAssistantMessage } =
+    useMessageOperations(requestOptions);
 
-	const cancelConversationQueries = useCallback(
-		async (conversationId: string) => {
-			await Promise.all([
-				queryClient.cancelQueries({
-					queryKey: [CHATS_QUERY_KEY, conversationId],
-					exact: true,
-				}),
-				queryClient.cancelQueries({
-					queryKey: [CHATS_QUERY_KEY, "local"],
-				}),
-				queryClient.cancelQueries({ queryKey: [CHATS_QUERY_KEY, "remote"] }),
-			]);
-		},
-		[queryClient],
-	);
+  const cancelConversationQueries = useCallback(
+    async (conversationId: string) => {
+      await Promise.all([
+        queryClient.cancelQueries({
+          queryKey: [CHATS_QUERY_KEY, conversationId],
+          exact: true,
+        }),
+        queryClient.cancelQueries({
+          queryKey: [CHATS_QUERY_KEY, "local"],
+        }),
+        queryClient.cancelQueries({ queryKey: [CHATS_QUERY_KEY, "remote"] }),
+      ]);
+    },
+    [queryClient],
+  );
 
-	const generateConversationTitle = useCallback(
-		async (conversationId: string, messages: Message[], assistantMessage: Message) => {
-			try {
-				const tempTitle = createTemporaryConversationTitle(messages);
+  const generateConversationTitle = useCallback(
+    async (conversationId: string, messages: Message[], assistantMessage: Message) => {
+      try {
+        const tempTitle = createTemporaryConversationTitle(messages);
 
-				await updateConversation(conversationId, (oldData) => ({
-					...oldData!,
-					title: tempTitle,
-				}));
+        await updateConversation(conversationId, (oldData) => ({
+          ...oldData!,
+          title: tempTitle,
+        }));
 
-				const finalTitle = await generateTitleMutation.mutateAsync({
-					completion_id: conversationId,
-					messages: [...messages, assistantMessage],
-				});
+        const finalTitle = await generateTitleMutation.mutateAsync({
+          completion_id: conversationId,
+          messages: [...messages, assistantMessage],
+        });
 
-				await updateConversation(conversationId, (oldData) => ({
-					...oldData!,
-					title: finalTitle,
-				}));
-			} catch (error) {
-				console.error("Failed to generate title:", error);
-			}
-		},
-		[generateTitleMutation, updateConversation],
-	);
+        await updateConversation(conversationId, (oldData) => ({
+          ...oldData!,
+          title: finalTitle,
+        }));
+      } catch (error) {
+        console.error("Failed to generate title:", error);
+      }
+    },
+    [generateTitleMutation, updateConversation],
+  );
 
-	const handleTitleGeneration = useCallback(
-		async (conversationId: string, messages: Message[]) => {
-			const conversation = queryClient.getQueryData<Conversation>([
-				CHATS_QUERY_KEY,
-				conversationId,
-			]);
+  const handleTitleGeneration = useCallback(
+    async (conversationId: string, messages: Message[]) => {
+      const conversation = queryClient.getQueryData<Conversation>([
+        CHATS_QUERY_KEY,
+        conversationId,
+      ]);
 
-			if (conversation?.messages) {
-				const lastAssistantMessage = conversation.messages
-					.slice()
-					.reverse()
-					.find((msg) => msg.role === "assistant");
+      if (conversation?.messages) {
+        const lastAssistantMessage = conversation.messages
+          .slice()
+          .reverse()
+          .find((msg) => msg.role === "assistant");
 
-				if (lastAssistantMessage) {
-					await generateConversationTitle(conversationId, messages, lastAssistantMessage);
-				}
-			}
-		},
-		[queryClient, generateConversationTitle],
-	);
+        if (lastAssistantMessage) {
+          await generateConversationTitle(conversationId, messages, lastAssistantMessage);
+        }
+      }
+    },
+    [queryClient, generateConversationTitle],
+  );
 
-	const {
-		streamStarted,
-		setStreamStarted,
-		controller,
-		assistantResponseRef,
-		assistantReasoningRef,
-		streamResponse,
-		abortStream,
-	} = useStreamingResponse(webLLMService, handleTitleGeneration, requestOptions);
+  const {
+    streamStarted,
+    setStreamStarted,
+    controller,
+    assistantResponseRef,
+    assistantReasoningRef,
+    streamResponse,
+    abortStream,
+  } = useStreamingResponse(webLLMService, handleTitleGeneration, requestOptions);
 
-	const {
-		editingMessageId,
-		isBranching,
-		retryMessage,
-		updateUserMessage,
-		startEditingMessage,
-		stopEditingMessage,
-		branchConversation,
-		isRequestingOpinion,
-		requestOpinion,
-	} = useConversationActions(
-		streamResponse,
-		generateConversationTitle,
-		setStreamStarted,
-		requestOptions,
-	);
+  const {
+    editingMessageId,
+    isBranching,
+    retryMessage,
+    updateUserMessage,
+    startEditingMessage,
+    stopEditingMessage,
+    branchConversation,
+    isRequestingOpinion,
+    requestOpinion,
+  } = useConversationActions(
+    streamResponse,
+    generateConversationTitle,
+    setStreamStarted,
+    requestOptions,
+  );
 
-	const sendMessage = useCallback(
-		async (
-			input: string,
-			attachments?: AttachmentData[],
-			overrideRequestOptions?: ChatRequestOptions,
-		) => {
-			if (!input.trim() && !attachments?.length) {
-				return {
-					status: "error",
-					response: "",
-				};
-			}
+  const sendMessage = useCallback(
+    async (
+      input: string,
+      attachments?: AttachmentData[],
+      overrideRequestOptions?: ChatRequestOptions,
+    ) => {
+      if (!input.trim() && !attachments?.length) {
+        return {
+          status: "error",
+          response: "",
+        };
+      }
 
-			setStreamStarted(true);
-			startLoading("stream-response", "Generating response...");
+      setStreamStarted(true);
+      startLoading("stream-response", "Generating response...");
 
-			const currentModel = normalizeSelectedModel(model);
+      const currentModel = normalizeSelectedModel(model);
 
-			try {
-				let conversationId = currentConversationId;
-				if (!conversationId) {
-					conversationId = createConversationId();
-					startNewConversation(conversationId);
-				}
+      try {
+        let conversationId = currentConversationId;
 
-				const userMessage = prepareUserMessage(input, attachments, currentModel, conversationMode);
+        if (!conversationId) {
+          conversationId = createConversationId();
+          startNewConversation(conversationId);
+        }
 
-				await cancelConversationQueries(conversationId);
+        const userMessage = prepareUserMessage(input, attachments, currentModel, conversationMode);
 
-				const previousConversation = queryClient.getQueryData<Conversation>([
-					CHATS_QUERY_KEY,
-					conversationId,
-				]);
+        await cancelConversationQueries(conversationId);
 
-				await addMessageToConversation(conversationId, userMessage);
+        const previousConversation = queryClient.getQueryData<Conversation>([
+          CHATS_QUERY_KEY,
+          conversationId,
+        ]);
 
-				const updatedMessages = previousConversation?.messages?.length
-					? [...previousConversation.messages, userMessage]
-					: [userMessage];
+        await addMessageToConversation(conversationId, userMessage);
 
-				const response = await streamResponse(
-					updatedMessages,
-					conversationId,
-					overrideRequestOptions,
-				);
-				return response;
-			} catch (error) {
-				console.error("Failed to send message:", error);
-				return {
-					status: "error",
-					response: (error as Error).message || "Failed",
-				};
-			}
-		},
-		[
-			model,
-			currentConversationId,
-			startNewConversation,
-			queryClient,
-			cancelConversationQueries,
-			streamResponse,
-			startLoading,
-			addMessageToConversation,
-			setStreamStarted,
-			conversationMode,
-		],
-	);
+        const updatedMessages = previousConversation?.messages?.length
+          ? [...previousConversation.messages, userMessage]
+          : [userMessage];
 
-	const compactConversation = useCallback(async () => {
-		if (!currentConversationId) {
-			return {
-				status: "error" as const,
-				response: "No conversation to compact",
-			};
-		}
+        const response = await streamResponse(
+          updatedMessages,
+          conversationId,
+          overrideRequestOptions,
+        );
 
-		const isRemoteStoredConversation = determineStorageMode().shouldSyncRemote;
+        return response;
+      } catch (error) {
+        console.error("Failed to send message:", error);
 
-		if (!isRemoteStoredConversation) {
-			return {
-				status: "error" as const,
-				response: "Compaction is only available for stored conversations.",
-			};
-		}
+        return {
+          status: "error",
+          response: (error as Error).message || "Failed",
+        };
+      }
+    },
+    [
+      model,
+      currentConversationId,
+      startNewConversation,
+      queryClient,
+      cancelConversationQueries,
+      streamResponse,
+      startLoading,
+      addMessageToConversation,
+      setStreamStarted,
+      conversationMode,
+    ],
+  );
 
-		setStreamStarted(true);
-		startLoading("stream-response", compactionStatusLabels.manualPending);
+  const compactConversation = useCallback(async () => {
+    if (!currentConversationId) {
+      return {
+        status: "error" as const,
+        response: "No conversation to compact",
+      };
+    }
 
-		try {
-			await cancelConversationQueries(currentConversationId);
-			const result = await apiService.compactConversation(currentConversationId);
-			upsertConversationInChatCaches(queryClient, result.conversation, {
-				includeLocalList: false,
-				includeRemoteLists: true,
-			});
+    const isRemoteStoredConversation = determineStorageMode().shouldSyncRemote;
 
-			return {
-				status: "success" as const,
-				response: "",
-				compacted: result.compacted,
-			};
-		} catch (error) {
-			console.error("Failed to compact conversation:", error);
-			return {
-				status: "error" as const,
-				response: getErrorMessage(error, "Failed to compact conversation"),
-			};
-		} finally {
-			setStreamStarted(false);
-			stopLoading("stream-response");
-		}
-	}, [
-		currentConversationId,
-		determineStorageMode,
-		queryClient,
-		cancelConversationQueries,
-		startLoading,
-		stopLoading,
-	]);
+    if (!isRemoteStoredConversation) {
+      return {
+        status: "error" as const,
+        response: "Compaction is only available for stored conversations.",
+      };
+    }
 
-	const respondToExistingConversation = useCallback(
-		async (
-			conversationId: string,
-			options?: {
-				assistantMessageData?: Partial<Message>;
-				model?: string;
-				requestOptions?: ChatRequestOptions;
-			},
-		) => {
-			const conversation = queryClient.getQueryData<Conversation>([
-				CHATS_QUERY_KEY,
-				conversationId,
-			]);
+    setStreamStarted(true);
+    startLoading("stream-response", compactionStatusLabels.manualPending);
 
-			if (!conversation?.messages.length) {
-				return {
-					status: "error",
-					response: "No messages provided",
-				};
-			}
+    try {
+      await cancelConversationQueries(currentConversationId);
+      const result = await apiService.compactConversation(currentConversationId);
 
-			setStreamStarted(true);
-			startLoading("stream-response", "Generating response...");
+      upsertConversationInChatCaches(queryClient, result.conversation, {
+        includeLocalList: false,
+        includeRemoteLists: true,
+      });
 
-			try {
-				return await streamResponse(
-					conversation.messages,
-					conversationId,
-					options?.requestOptions,
-					{
-						assistantMessageData: options?.assistantMessageData,
-						model: options?.model,
-					},
-				);
-			} catch (error) {
-				console.error("Failed to respond to live transcript:", error);
-				return {
-					status: "error",
-					response: getErrorMessage(error, "Failed"),
-				};
-			}
-		},
-		[queryClient, setStreamStarted, startLoading, streamResponse],
-	);
+      return {
+        status: "success" as const,
+        response: "",
+        compacted: result.compacted,
+      };
+    } catch (error) {
+      console.error("Failed to compact conversation:", error);
 
-	const sendCouncilDebate = useCallback(
-		async (
-			input: string,
-			attachments: AttachmentData[] | undefined,
-			debate: CouncilDebateOptions,
-		) => {
-			if (!input.trim() && !attachments?.length) {
-				return {
-					status: "error",
-					response: "",
-				};
-			}
+      return {
+        status: "error" as const,
+        response: getErrorMessage(error, "Failed to compact conversation"),
+      };
+    } finally {
+      setStreamStarted(false);
+      stopLoading("stream-response");
+    }
+  }, [
+    currentConversationId,
+    determineStorageMode,
+    queryClient,
+    cancelConversationQueries,
+    startLoading,
+    stopLoading,
+  ]);
 
-			const currentModel = normalizeSelectedModel(model);
-			const councilTurns = createCouncilDebateTurnPlanner({
-				memberIds: debate.memberIds,
-				model: currentModel ?? "",
-				requireConsensus: debate.requireConsensus,
-			});
+  const respondToExistingConversation = useCallback(
+    async (
+      conversationId: string,
+      options?: {
+        assistantMessageData?: Partial<Message>;
+        model?: string;
+        requestOptions?: ChatRequestOptions;
+      },
+    ) => {
+      const conversation = queryClient.getQueryData<Conversation>([
+        CHATS_QUERY_KEY,
+        conversationId,
+      ]);
 
-			try {
-				let conversationId = currentConversationId;
-				if (!conversationId) {
-					conversationId = createConversationId();
-					startNewConversation(conversationId);
-				}
+      if (!conversation?.messages.length) {
+        return {
+          status: "error",
+          response: "No messages provided",
+        };
+      }
 
-				const previousConversation = queryClient.getQueryData<Conversation>([
-					CHATS_QUERY_KEY,
-					conversationId,
-				]);
-				const userMessage = prepareUserMessage(input, attachments, currentModel, conversationMode);
+      setStreamStarted(true);
+      startLoading("stream-response", "Generating response...");
 
-				await cancelConversationQueries(conversationId);
+      try {
+        return await streamResponse(
+          conversation.messages,
+          conversationId,
+          options?.requestOptions,
+          {
+            assistantMessageData: options?.assistantMessageData,
+            model: options?.model,
+          },
+        );
+      } catch (error) {
+        console.error("Failed to respond to live transcript:", error);
 
-				await addMessageToConversation(conversationId, userMessage);
+        return {
+          status: "error",
+          response: getErrorMessage(error, "Failed"),
+        };
+      }
+    },
+    [queryClient, setStreamStarted, startLoading, streamResponse],
+  );
 
-				const baseMessages = previousConversation?.messages?.length
-					? [...previousConversation.messages, userMessage]
-					: [userMessage];
-				let accumulatedMessages = [...baseMessages];
-				let finalResponse = "";
-				let finalAssistantMessage: Message | undefined;
-				let turn = 1;
-				const speakerQueue: CouncilMemberId[] = councilTurns.openingSpeakerIds();
+  const sendCouncilDebate = useCallback(
+    async (
+      input: string,
+      attachments: AttachmentData[] | undefined,
+      debate: CouncilDebateOptions,
+    ) => {
+      if (!input.trim() && !attachments?.length) {
+        return {
+          status: "error",
+          response: "",
+        };
+      }
 
-				while (speakerQueue.length > 0) {
-					const memberId = speakerQueue.shift()!;
-					setStreamStarted(true);
-					startLoading("stream-response", "Council debating...");
+      const currentModel = normalizeSelectedModel(model);
+      const councilTurns = createCouncilDebateTurnPlanner({
+        memberIds: debate.memberIds,
+        model: currentModel ?? "",
+        requireConsensus: debate.requireConsensus,
+      });
 
-					const debateTurn = councilTurns.createDebateTurn({
-						memberId,
-						turn,
-						accumulatedMessages,
-					});
+      try {
+        let conversationId = currentConversationId;
 
-					const result = await streamResponse(
-						debateTurn.requestMessages,
-						conversationId,
-						debateTurn.requestOptions,
-						{ generateTitle: false },
-					);
+        if (!conversationId) {
+          conversationId = createConversationId();
+          startNewConversation(conversationId);
+        }
 
-					if (result.status === "error") {
-						return result;
-					}
+        const previousConversation = queryClient.getQueryData<Conversation>([
+          CHATS_QUERY_KEY,
+          conversationId,
+        ]);
+        const userMessage = prepareUserMessage(input, attachments, currentModel, conversationMode);
 
-					finalResponse = result.response;
-					if (result.message) {
-						finalAssistantMessage = result.message;
-						accumulatedMessages = [
-							...accumulatedMessages,
-							...(result.messages?.length ? result.messages : [result.message]),
-						];
-						speakerQueue.splice(
-							0,
-							speakerQueue.length,
-							...councilTurns.nextSpeakerIds(result.message),
-						);
-					}
-					turn += 1;
-				}
+        await cancelConversationQueries(conversationId);
 
-				const conclusionTurn = councilTurns.createConclusionTurn({
-					turn,
-					accumulatedMessages,
-				});
-				const conclusionResult = await streamResponse(
-					conclusionTurn.requestMessages,
-					conversationId,
-					conclusionTurn.requestOptions,
-					{ generateTitle: false },
-				);
+        await addMessageToConversation(conversationId, userMessage);
 
-				if (conclusionResult.status === "error") {
-					return conclusionResult;
-				}
+        const baseMessages = previousConversation?.messages?.length
+          ? [...previousConversation.messages, userMessage]
+          : [userMessage];
+        let accumulatedMessages = [...baseMessages];
+        let finalResponse = "";
+        let finalAssistantMessage: Message | undefined;
+        let turn = 1;
+        const speakerQueue: CouncilMemberId[] = councilTurns.openingSpeakerIds();
 
-				finalResponse = conclusionResult.response;
-				if (conclusionResult.message) {
-					finalAssistantMessage = conclusionResult.message;
-				}
+        while (speakerQueue.length > 0) {
+          const memberId = speakerQueue.shift()!;
 
-				if (baseMessages.length === 1 && finalAssistantMessage) {
-					generateConversationTitle(conversationId, baseMessages, finalAssistantMessage).catch(
-						(err) => console.error("Background title generation failed:", err),
-					);
-				}
+          setStreamStarted(true);
+          startLoading("stream-response", "Council debating...");
 
-				return {
-					status: "success",
-					response: finalResponse,
-				};
-			} catch (error) {
-				console.error("Failed to run council debate:", error);
-				return {
-					status: "error",
-					response: (error as Error).message || "Failed",
-				};
-			}
-		},
-		[
-			model,
-			currentConversationId,
-			startNewConversation,
-			queryClient,
-			cancelConversationQueries,
-			addMessageToConversation,
-			streamResponse,
-			startLoading,
-			setStreamStarted,
-			generateConversationTitle,
-			conversationMode,
-		],
-	);
+          const debateTurn = councilTurns.createDebateTurn({
+            memberId,
+            turn,
+            accumulatedMessages,
+          });
 
-	return {
-		streamStarted,
-		controller,
-		assistantResponseRef,
-		assistantReasoningRef,
-		editingMessageId,
-		isBranching,
-		compactConversation,
-		sendMessage,
-		respondToExistingConversation,
-		sendCouncilDebate,
-		streamResponse,
-		abortStream,
-		addAssistantMessage,
-		updateAssistantMessage,
-		retryMessage,
-		updateUserMessage,
-		startEditingMessage,
-		stopEditingMessage,
-		branchConversation,
-		isRequestingOpinion,
-		requestOpinion,
-	};
+          const result = await streamResponse(
+            debateTurn.requestMessages,
+            conversationId,
+            debateTurn.requestOptions,
+            { generateTitle: false },
+          );
+
+          if (result.status === "error") {
+            return result;
+          }
+
+          finalResponse = result.response;
+          if (result.message) {
+            finalAssistantMessage = result.message;
+            accumulatedMessages = [
+              ...accumulatedMessages,
+              ...(result.messages?.length ? result.messages : [result.message]),
+            ];
+            speakerQueue.splice(
+              0,
+              speakerQueue.length,
+              ...councilTurns.nextSpeakerIds(result.message),
+            );
+          }
+
+          turn += 1;
+        }
+
+        const conclusionTurn = councilTurns.createConclusionTurn({
+          turn,
+          accumulatedMessages,
+        });
+        const conclusionResult = await streamResponse(
+          conclusionTurn.requestMessages,
+          conversationId,
+          conclusionTurn.requestOptions,
+          { generateTitle: false },
+        );
+
+        if (conclusionResult.status === "error") {
+          return conclusionResult;
+        }
+
+        finalResponse = conclusionResult.response;
+        if (conclusionResult.message) {
+          finalAssistantMessage = conclusionResult.message;
+        }
+
+        if (baseMessages.length === 1 && finalAssistantMessage) {
+          generateConversationTitle(conversationId, baseMessages, finalAssistantMessage).catch(
+            (err) => console.error("Background title generation failed:", err),
+          );
+        }
+
+        return {
+          status: "success",
+          response: finalResponse,
+        };
+      } catch (error) {
+        console.error("Failed to run council debate:", error);
+
+        return {
+          status: "error",
+          response: (error as Error).message || "Failed",
+        };
+      }
+    },
+    [
+      model,
+      currentConversationId,
+      startNewConversation,
+      queryClient,
+      cancelConversationQueries,
+      addMessageToConversation,
+      streamResponse,
+      startLoading,
+      setStreamStarted,
+      generateConversationTitle,
+      conversationMode,
+    ],
+  );
+
+  return {
+    streamStarted,
+    controller,
+    assistantResponseRef,
+    assistantReasoningRef,
+    editingMessageId,
+    isBranching,
+    compactConversation,
+    sendMessage,
+    respondToExistingConversation,
+    sendCouncilDebate,
+    streamResponse,
+    abortStream,
+    addAssistantMessage,
+    updateAssistantMessage,
+    retryMessage,
+    updateUserMessage,
+    startEditingMessage,
+    stopEditingMessage,
+    branchConversation,
+    isRequestingOpinion,
+    requestOpinion,
+  };
 }

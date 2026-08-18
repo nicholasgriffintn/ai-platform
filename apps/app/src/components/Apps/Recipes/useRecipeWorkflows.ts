@@ -86,8 +86,10 @@ export function useRecipeWorkflows({
     if (!scheduleRecipe) {
       return;
     }
+
     if (!scheduleCronIsSupported) {
       toast.error("Use a supported five-field cron expression.");
+
       return;
     }
 
@@ -116,6 +118,7 @@ export function useRecipeWorkflows({
           triggers,
         });
       }
+
       setScheduleRecipe(null);
       setScheduleInstallation(null);
       setScheduleNotifySms(false);
@@ -139,6 +142,7 @@ export function useRecipeWorkflows({
         formatRecipeConfigurationValue(field, configuration),
       ]),
     );
+
     setConfigurationRecipe(nextRecipe);
     setConfigurationInstallation(installation ?? null);
     setConfigurationValues(values);
@@ -157,6 +161,7 @@ export function useRecipeWorkflows({
 
     try {
       let savedInstallation: RecipeInstallation;
+
       if (configurationInstallation) {
         savedInstallation = await updateInstallation.mutateAsync({
           installationId: configurationInstallation.id,
@@ -168,18 +173,23 @@ export function useRecipeWorkflows({
           projectId,
           configuration,
         });
+
         if (!setup.installation) {
           throw new Error("Recipe installation was not returned after saving configuration");
         }
+
         savedInstallation = setup.installation;
       }
+
       const shouldContinueToSchedule = continueToSchedule;
       const savedRecipe = configurationRecipe;
+
       setConfigurationRecipe(null);
       setConfigurationInstallation(null);
       setContinueToSchedule(false);
       if (shouldContinueToSchedule) {
         const scheduleTrigger = getRecipeScheduleTrigger(savedInstallation);
+
         setScheduleRecipe(savedRecipe);
         setScheduleInstallation(savedInstallation);
         setScheduleCronExpression(scheduleTrigger?.cronExpression ?? "0 9 * * *");
@@ -187,6 +197,7 @@ export function useRecipeWorkflows({
         setScheduleNotifySms(scheduleTrigger?.notificationChannel === "sms");
         setScheduleSmsTarget(scheduleTrigger?.notificationTarget ?? "");
       }
+
       toast.success("Recipe configuration saved.");
     } catch (configurationError) {
       console.error(configurationError);
@@ -199,13 +210,16 @@ export function useRecipeWorkflows({
       nextRecipe,
       installation,
     );
+
     if (missingRequiredFields.length > 0) {
       openConfigurationDialog(nextRecipe, installation, { continueToSchedule: true });
       toast.info("Save required recipe configuration before scheduling.");
+
       return;
     }
 
     const scheduleTrigger = getRecipeScheduleTrigger(installation);
+
     setScheduleRecipe(nextRecipe);
     setScheduleInstallation(installation ?? null);
     setScheduleCronExpression(scheduleTrigger?.cronExpression ?? "0 9 * * *");
@@ -277,12 +291,16 @@ export function useRecipeWorkflows({
 
   const configureProvider = async (providerId: string, setupUrl?: string) => {
     const connector = connectorByProviderId.get(providerId);
+
     if (!connector) {
       if (setupUrl) {
         navigate(setupUrl);
+
         return;
       }
+
       toast.error("This connector is not available yet.");
+
       return;
     }
 
@@ -291,10 +309,13 @@ export function useRecipeWorkflows({
 
   const openEventTriggersDialog = (recipe: AssistantRecipe, installation: RecipeInstallation) => {
     const providers = getRecipeEventTriggerProviders(recipe, connectorByProviderId);
+
     if (providers.length === 0) {
       toast.error("Connect a supported integration before adding an event trigger.");
+
       return;
     }
+
     setEventDialog({ recipe, installation, providers });
   };
 

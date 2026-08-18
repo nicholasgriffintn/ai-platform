@@ -103,6 +103,7 @@ export function useHomeChatModeConfig(): {
   const handleFinalLiveInputTranscript = useCallback(
     ({ assistantMessageData, conversationId }: FinalLiveInputTranscript) => {
       const provider = effectiveLiveProviderRef.current;
+
       if (!provider || !isComposedRealtimeLiveProvider(provider)) {
         return;
       }
@@ -157,6 +158,7 @@ export function useHomeChatModeConfig(): {
       waitsForRealtimeLiveProviderFinalEventOnStop(effectiveLiveProviderRef.current ?? liveProvider)
     ) {
       stopLiveSession();
+
       return;
     }
 
@@ -164,6 +166,7 @@ export function useHomeChatModeConfig(): {
     stopLiveSession();
   }, [flushLiveMessages, liveProvider, stopLiveSession]);
   const effectiveLiveProvider = selectedModelLiveProvider ?? liveProvider;
+
   effectiveLiveProviderRef.current = effectiveLiveProvider;
   const forceLiveResponseAudio = isComposedRealtimeLiveProvider(effectiveLiveProvider);
 
@@ -185,6 +188,7 @@ export function useHomeChatModeConfig(): {
     }
 
     const next = new URLSearchParams(searchParams);
+
     next.delete("mode");
     setActiveModeId("chat");
     setHomeChatMode("chat");
@@ -195,6 +199,7 @@ export function useHomeChatModeConfig(): {
     if (currentConversationId && conversationModeMetadata) {
       return;
     }
+
     setActiveModeId(
       resolveHomeChatModeId(searchParams.has("mode") ? searchParams.get("mode") : homeChatMode),
     );
@@ -203,8 +208,10 @@ export function useHomeChatModeConfig(): {
   useEffect(() => {
     if (!currentConversationId) {
       hydratedConversationIdRef.current = undefined;
+
       return;
     }
+
     if (!conversationModeMetadata || hydratedConversationIdRef.current === currentConversationId) {
       return;
     }
@@ -217,6 +224,7 @@ export function useHomeChatModeConfig(): {
     if (activeModeId === "chat") {
       return;
     }
+
     setSelectedAgentId(null);
     setChatMode("remote");
   }, [activeModeId, setChatMode, setSelectedAgentId]);
@@ -230,6 +238,7 @@ export function useHomeChatModeConfig(): {
       setActiveModeId(modeId);
       setHomeChatMode(modeId);
       const next = new URLSearchParams(searchParams);
+
       if (modeId === "chat") {
         next.delete("mode");
       } else {
@@ -237,8 +246,10 @@ export function useHomeChatModeConfig(): {
         setSelectedAgentId(null);
         setChatMode("remote");
       }
+
       if (modeId === "live") {
         const nextLiveProvider = selectedModelLiveProvider ?? liveProvider;
+
         setLiveProvider(nextLiveProvider);
         if (!selectedModelLiveProvider) {
           setModel(getDefaultLiveModelId(nextLiveProvider));
@@ -246,6 +257,7 @@ export function useHomeChatModeConfig(): {
       } else if (effectiveActiveModeId === "live") {
         stopLiveSessionAndFlush();
       }
+
       setSearchParams(next, { replace: true });
     },
     [
@@ -284,6 +296,7 @@ export function useHomeChatModeConfig(): {
         setLiveProvider(nextLiveProvider);
         next.set("mode", "live");
         setSearchParams(next, { replace: true });
+
         return;
       }
 
@@ -384,6 +397,7 @@ export function useHomeChatModeConfig(): {
               }
             : getHomeChatModeAvailability(option, effectiveActiveModeId);
         const Icon = option.icon;
+
         return {
           id: option.id,
           label: option.label,

@@ -1,5 +1,4 @@
 import { ProviderRegistry } from "./registry/ProviderRegistry";
-import type { ProviderCategory } from "./registry/types";
 import { registerAudioProviders } from "./registry/registrations/audio";
 import { registerChatProviders } from "./registry/registrations/chat";
 import { registerEmbeddingProviders } from "./registry/registrations/embedding";
@@ -16,157 +15,161 @@ import { registerSpeechProviders } from "./registry/registrations/speech";
 import { registerTranscriptionProviders } from "./registry/registrations/transcription";
 import { registerVideoProviders } from "./registry/registrations/video";
 import type {
-	CategoryProviderMap,
-	ProviderFactoryContext,
-	ProviderRegistration,
-	ProviderSummary,
+  ProviderCategory,
+  CategoryProviderMap,
+  ProviderFactoryContext,
+  ProviderRegistration,
+  ProviderSummary,
 } from "./registry/types";
 
 type CategoryBootstrapper = (registry: ProviderRegistry) => void;
 
 const DEFAULT_BOOTSTRAPPERS: Partial<Record<ProviderCategory, CategoryBootstrapper[]>> = {
-	audio: [registerAudioProviders],
-	chat: [registerChatProviders],
-	embedding: [registerEmbeddingProviders],
-	guardrails: [registerGuardrailProviders],
-	image: [registerImageProviders],
-	memory: [registerMemoryProviders],
-	messaging: [registerMessagingProviders],
-	music: [registerMusicProviders],
-	ocr: [registerOcrProviders],
-	realtime: [registerRealtimeProviders],
-	research: [registerResearchProviders],
-	search: [registerSearchProviders],
-	speech: [registerSpeechProviders],
-	transcription: [registerTranscriptionProviders],
-	video: [registerVideoProviders],
+  audio: [registerAudioProviders],
+  chat: [registerChatProviders],
+  embedding: [registerEmbeddingProviders],
+  guardrails: [registerGuardrailProviders],
+  image: [registerImageProviders],
+  memory: [registerMemoryProviders],
+  messaging: [registerMessagingProviders],
+  music: [registerMusicProviders],
+  ocr: [registerOcrProviders],
+  realtime: [registerRealtimeProviders],
+  research: [registerResearchProviders],
+  search: [registerSearchProviders],
+  speech: [registerSpeechProviders],
+  transcription: [registerTranscriptionProviders],
+  video: [registerVideoProviders],
 };
 
 export class ProviderLibrary {
-	private static instance: ProviderLibrary;
-	private readonly registry: ProviderRegistry;
-	private readonly bootstrappers = new Map<ProviderCategory, CategoryBootstrapper[]>();
-	private readonly bootstrappedCategories = new Set<ProviderCategory>();
+  private static instance: ProviderLibrary;
+  private readonly registry: ProviderRegistry;
+  private readonly bootstrappers = new Map<ProviderCategory, CategoryBootstrapper[]>();
+  private readonly bootstrappedCategories = new Set<ProviderCategory>();
 
-	private constructor(registry?: ProviderRegistry, bootstrappers = DEFAULT_BOOTSTRAPPERS) {
-		this.registry = registry ?? new ProviderRegistry();
+  private constructor(registry?: ProviderRegistry, bootstrappers = DEFAULT_BOOTSTRAPPERS) {
+    this.registry = registry ?? new ProviderRegistry();
 
-		for (const [category, categoryBootstrappers] of Object.entries(bootstrappers)) {
-			this.bootstrappers.set(category as ProviderCategory, [...(categoryBootstrappers ?? [])]);
-		}
-	}
+    for (const [category, categoryBootstrappers] of Object.entries(bootstrappers)) {
+      this.bootstrappers.set(category as ProviderCategory, [...(categoryBootstrappers ?? [])]);
+    }
+  }
 
-	static getInstance(): ProviderLibrary {
-		if (!ProviderLibrary.instance) {
-			ProviderLibrary.instance = new ProviderLibrary();
-		}
+  static getInstance(): ProviderLibrary {
+    if (!ProviderLibrary.instance) {
+      ProviderLibrary.instance = new ProviderLibrary();
+    }
 
-		return ProviderLibrary.instance;
-	}
+    return ProviderLibrary.instance;
+  }
 
-	registerBootstrapper(category: ProviderCategory, bootstrapper: CategoryBootstrapper): void {
-		const existing = this.bootstrappers.get(category) ?? [];
-		existing.push(bootstrapper);
-		this.bootstrappers.set(category, existing);
-		this.bootstrappedCategories.delete(category);
-	}
+  registerBootstrapper(category: ProviderCategory, bootstrapper: CategoryBootstrapper): void {
+    const existing = this.bootstrappers.get(category) ?? [];
 
-	register<TCategory extends ProviderCategory>(
-		category: TCategory,
-		registration: ProviderRegistration<CategoryProviderMap[TCategory]>,
-	): void {
-		this.registry.register(category, registration);
-	}
+    existing.push(bootstrapper);
+    this.bootstrappers.set(category, existing);
+    this.bootstrappedCategories.delete(category);
+  }
 
-	resolve<TCategory extends ProviderCategory>(
-		category: TCategory,
-		providerName: string,
-		context?: ProviderFactoryContext,
-	): CategoryProviderMap[TCategory] {
-		this.ensureBootstrapped(category);
-		return this.registry.resolve(category, providerName, context);
-	}
+  register<TCategory extends ProviderCategory>(
+    category: TCategory,
+    registration: ProviderRegistration<CategoryProviderMap[TCategory]>,
+  ): void {
+    this.registry.register(category, registration);
+  }
 
-	chat(providerName: string, context?: ProviderFactoryContext) {
-		return this.resolve("chat", providerName, context);
-	}
+  resolve<TCategory extends ProviderCategory>(
+    category: TCategory,
+    providerName: string,
+    context?: ProviderFactoryContext,
+  ): CategoryProviderMap[TCategory] {
+    this.ensureBootstrapped(category);
 
-	audio(providerName: string, context?: ProviderFactoryContext) {
-		return this.resolve("audio", providerName, context);
-	}
+    return this.registry.resolve(category, providerName, context);
+  }
 
-	image(providerName: string, context?: ProviderFactoryContext) {
-		return this.resolve("image", providerName, context);
-	}
+  chat(providerName: string, context?: ProviderFactoryContext) {
+    return this.resolve("chat", providerName, context);
+  }
 
-	messaging(providerName: string, context?: ProviderFactoryContext) {
-		return this.resolve("messaging", providerName, context);
-	}
+  audio(providerName: string, context?: ProviderFactoryContext) {
+    return this.resolve("audio", providerName, context);
+  }
 
-	memory(providerName: string, context?: ProviderFactoryContext) {
-		return this.resolve("memory", providerName, context);
-	}
+  image(providerName: string, context?: ProviderFactoryContext) {
+    return this.resolve("image", providerName, context);
+  }
 
-	music(providerName: string, context?: ProviderFactoryContext) {
-		return this.resolve("music", providerName, context);
-	}
+  messaging(providerName: string, context?: ProviderFactoryContext) {
+    return this.resolve("messaging", providerName, context);
+  }
 
-	ocr(providerName: string, context?: ProviderFactoryContext) {
-		return this.resolve("ocr", providerName, context);
-	}
+  memory(providerName: string, context?: ProviderFactoryContext) {
+    return this.resolve("memory", providerName, context);
+  }
 
-	realtime(providerName: string, context?: ProviderFactoryContext) {
-		return this.resolve("realtime", providerName, context);
-	}
+  music(providerName: string, context?: ProviderFactoryContext) {
+    return this.resolve("music", providerName, context);
+  }
 
-	search(providerName: string, context?: ProviderFactoryContext) {
-		return this.resolve("search", providerName, context);
-	}
+  ocr(providerName: string, context?: ProviderFactoryContext) {
+    return this.resolve("ocr", providerName, context);
+  }
 
-	research(providerName: string, context?: ProviderFactoryContext) {
-		return this.resolve("research", providerName, context);
-	}
+  realtime(providerName: string, context?: ProviderFactoryContext) {
+    return this.resolve("realtime", providerName, context);
+  }
 
-	embedding(providerName: string, context?: ProviderFactoryContext) {
-		return this.resolve("embedding", providerName, context);
-	}
+  search(providerName: string, context?: ProviderFactoryContext) {
+    return this.resolve("search", providerName, context);
+  }
 
-	guardrails(providerName: string, context?: ProviderFactoryContext) {
-		return this.resolve("guardrails", providerName, context);
-	}
+  research(providerName: string, context?: ProviderFactoryContext) {
+    return this.resolve("research", providerName, context);
+  }
 
-	speech(providerName: string, context?: ProviderFactoryContext) {
-		return this.resolve("speech", providerName, context);
-	}
+  embedding(providerName: string, context?: ProviderFactoryContext) {
+    return this.resolve("embedding", providerName, context);
+  }
 
-	transcription(providerName: string, context?: ProviderFactoryContext) {
-		return this.resolve("transcription", providerName, context);
-	}
+  guardrails(providerName: string, context?: ProviderFactoryContext) {
+    return this.resolve("guardrails", providerName, context);
+  }
 
-	video(providerName: string, context?: ProviderFactoryContext) {
-		return this.resolve("video", providerName, context);
-	}
+  speech(providerName: string, context?: ProviderFactoryContext) {
+    return this.resolve("speech", providerName, context);
+  }
 
-	list(category?: ProviderCategory): ProviderSummary[] {
-		if (category) {
-			this.ensureBootstrapped(category);
-		}
+  transcription(providerName: string, context?: ProviderFactoryContext) {
+    return this.resolve("transcription", providerName, context);
+  }
 
-		return this.registry.list(category);
-	}
+  video(providerName: string, context?: ProviderFactoryContext) {
+    return this.resolve("video", providerName, context);
+  }
 
-	private ensureBootstrapped(category: ProviderCategory): void {
-		if (this.bootstrappedCategories.has(category)) {
-			return;
-		}
+  list(category?: ProviderCategory): ProviderSummary[] {
+    if (category) {
+      this.ensureBootstrapped(category);
+    }
 
-		const bootstrappers = this.bootstrappers.get(category) ?? [];
-		for (const bootstrapper of bootstrappers) {
-			bootstrapper(this.registry);
-		}
+    return this.registry.list(category);
+  }
 
-		this.bootstrappedCategories.add(category);
-	}
+  private ensureBootstrapped(category: ProviderCategory): void {
+    if (this.bootstrappedCategories.has(category)) {
+      return;
+    }
+
+    const bootstrappers = this.bootstrappers.get(category) ?? [];
+
+    for (const bootstrapper of bootstrappers) {
+      bootstrapper(this.registry);
+    }
+
+    this.bootstrappedCategories.add(category);
+  }
 }
 
 export const providerLibrary = ProviderLibrary.getInstance();

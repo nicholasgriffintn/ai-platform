@@ -30,9 +30,15 @@ export function PodcastsExperience({ basePath, projectId, subpath }: ExperienceP
     error: podcastError,
   } = useFetchPodcast(podcastId ?? "", projectId);
 
-  if (isNew) return <PodcastWorkflow basePath={basePath} projectId={projectId} />;
+  if (isNew) {
+    return <PodcastWorkflow basePath={basePath} projectId={projectId} />;
+  }
+
   if (podcastId) {
-    if (isPodcastLoading) return <CardGridLoadingSkeleton count={1} label="Loading podcast" />;
+    if (isPodcastLoading) {
+      return <CardGridLoadingSkeleton count={1} label="Loading podcast" />;
+    }
+
     if (isAuthenticationError(podcastError)) {
       return (
         <SignInEmptyState
@@ -41,16 +47,23 @@ export function PodcastsExperience({ basePath, projectId, subpath }: ExperienceP
         />
       );
     }
-    if (podcastError || !podcast)
+
+    if (podcastError || !podcast) {
       return (
         <EmptyState
           title="Podcast unavailable"
           message={podcastError?.message ?? "Podcast not found"}
         />
       );
+    }
+
     return <PodcastDetail podcast={podcast} projectId={projectId} />;
   }
-  if (isLoading) return <CardGridLoadingSkeleton count={4} label="Loading podcasts" />;
+
+  if (isLoading) {
+    return <CardGridLoadingSkeleton count={4} label="Loading podcasts" />;
+  }
+
   if (isAuthenticationError(error)) {
     return (
       <SignInEmptyState
@@ -59,7 +72,11 @@ export function PodcastsExperience({ basePath, projectId, subpath }: ExperienceP
       />
     );
   }
-  if (error) return <EmptyState title="Podcasts unavailable" message={error.message} />;
+
+  if (error) {
+    return <EmptyState title="Podcasts unavailable" message={error.message} />;
+  }
+
   if (!podcasts?.length) {
     return (
       <EmptyState

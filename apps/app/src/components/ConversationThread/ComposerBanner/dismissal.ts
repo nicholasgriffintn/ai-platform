@@ -16,14 +16,19 @@ function readDismissals(): Record<string, string> {
   if (typeof window === "undefined") {
     return {};
   }
+
   const dismissals: Record<string, string> = {};
+
   for (let index = 0; index < window.localStorage.length; index++) {
     const key = window.localStorage.key(index);
+
     if (key?.startsWith(KEY_PREFIX) && key.endsWith(DISMISSED_SUFFIX)) {
       const id = key.slice(KEY_PREFIX.length, -DISMISSED_SUFFIX.length);
+
       dismissals[id] = window.localStorage.getItem(key) ?? "";
     }
   }
+
   return dismissals;
 }
 
@@ -31,7 +36,9 @@ function readCooldownUntil(): number {
   if (typeof window === "undefined") {
     return 0;
   }
+
   const value = Number(window.localStorage.getItem(SUGGESTION_COOLDOWN_KEY));
+
   return Number.isFinite(value) ? value : 0;
 }
 
@@ -48,15 +55,18 @@ export const useComposerBannerDismissals = create<ComposerBannerDismissalStore>(
     set((state) => {
       const value = scope === "forever" ? "forever" : todayStamp();
       let cooldownUntil = state.cooldownUntil;
+
       if (typeof window !== "undefined") {
         window.localStorage.setItem(dismissalKey(id), value);
       }
+
       if (suggestion) {
         cooldownUntil = Date.now() + SUGGESTION_COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
         if (typeof window !== "undefined") {
           window.localStorage.setItem(SUGGESTION_COOLDOWN_KEY, String(cooldownUntil));
         }
       }
+
       return {
         dismissals: { ...state.dismissals, [id]: value },
         cooldownUntil,
@@ -70,11 +80,14 @@ export function isDismissed(
   scope: BannerDismissalScope,
 ): boolean {
   const value = dismissals[id];
+
   if (!value) {
     return false;
   }
+
   if (value === "forever") {
     return true;
   }
+
   return scope === "day" && value === todayStamp();
 }

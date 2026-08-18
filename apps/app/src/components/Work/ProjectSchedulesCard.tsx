@@ -67,6 +67,7 @@ export function ProjectSchedulesCard({
   const projectInstallations = installations.data?.installations ?? [];
   const scheduleEntries = projectInstallations.flatMap((installation) => {
     const trigger = getRecipeScheduleTrigger(installation);
+
     return trigger
       ? [{ installation, trigger, recipe: recipeById.get(installation.recipeId) }]
       : [];
@@ -111,20 +112,28 @@ export function ProjectSchedulesCard({
         onSchedule={openRecipePicker}
         onViewConfiguration={(entryId) => {
           const entry = entryById.get(entryId);
+
           if (entry?.recipe) {
             setConfigurationView({ recipe: entry.recipe, installation: entry.installation });
           }
         }}
         onEditSchedule={(entryId) => {
           const entry = entryById.get(entryId);
-          if (entry?.recipe) workflows.actions.openScheduleDialog(entry.recipe, entry.installation);
+
+          if (entry?.recipe) {
+            workflows.actions.openScheduleDialog(entry.recipe, entry.installation);
+          }
         }}
         onToggleEnabled={(entryId, enabled) => {
           const entry = entryById.get(entryId);
-          if (entry) void workflows.actions.setScheduleEnabled(entry.installation, enabled);
+
+          if (entry) {
+            void workflows.actions.setScheduleEnabled(entry.installation, enabled);
+          }
         }}
         onStopSchedule={(entryId) => {
           const entry = entryById.get(entryId);
+
           if (entry?.recipe) {
             setScheduleToStop({ recipe: entry.recipe, installation: entry.installation });
           }
@@ -140,7 +149,11 @@ export function ProjectSchedulesCard({
         submitDisabled={!selectedRecipeId}
         onSubmit={() => {
           const recipe = schedulableRecipes.find((candidate) => candidate.id === selectedRecipeId);
-          if (!recipe) return;
+
+          if (!recipe) {
+            return;
+          }
+
           setIsRecipePickerOpen(false);
           workflows.actions.openScheduleDialog(recipe, ownInstallationByRecipeId.get(recipe.id));
         }}
@@ -184,13 +197,17 @@ export function ProjectSchedulesCard({
         recipe={configurationView?.recipe ?? null}
         installation={configurationView?.installation ?? null}
         onOpenChange={(open) => {
-          if (!open) setConfigurationView(null);
+          if (!open) {
+            setConfigurationView(null);
+          }
         }}
       />
       <ConfirmationDialog
         open={scheduleToStop !== null}
         onOpenChange={(open) => {
-          if (!open) setScheduleToStop(null);
+          if (!open) {
+            setScheduleToStop(null);
+          }
         }}
         title="Stop recipe schedule"
         description={`Stop the ${scheduleToStop?.recipe.title ?? "recipe"} schedule? Its saved configuration and recipe installation will be kept.`}
@@ -205,7 +222,10 @@ export function ProjectSchedulesCard({
             : false
         }
         onConfirm={async () => {
-          if (!scheduleToStop) return;
+          if (!scheduleToStop) {
+            return;
+          }
+
           await workflows.actions.stopSchedule(scheduleToStop.installation);
           setScheduleToStop(null);
         }}

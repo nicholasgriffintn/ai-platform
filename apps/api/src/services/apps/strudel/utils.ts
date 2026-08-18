@@ -9,89 +9,89 @@ export const STRUDEL_APP_ID = "strudel";
 export const PATTERN_OUTPUT_KIND = "strudel_pattern";
 
 type StoredPatternPayload = {
-	name?: string;
-	code?: string;
-	description?: string;
-	tags?: string[];
+  name?: string;
+  code?: string;
+  description?: string;
+  tags?: string[];
 };
 
 const parseStoredPayload = (raw: unknown): StoredPatternPayload => {
-	if (!raw) {
-		return {};
-	}
+  if (!raw) {
+    return {};
+  }
 
-	if (typeof raw === "string") {
-		try {
-			return JSON.parse(raw);
-		} catch {
-			return {};
-		}
-	}
+  if (typeof raw === "string") {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return {};
+    }
+  }
 
-	if (typeof raw === "object") {
-		return raw as StoredPatternPayload;
-	}
+  if (typeof raw === "object") {
+    return raw;
+  }
 
-	return {};
+  return {};
 };
 
 const sanitizeTags = (tags?: string[]): string[] => {
-	if (!Array.isArray(tags)) {
-		return [];
-	}
+  if (!Array.isArray(tags)) {
+    return [];
+  }
 
-	return tags
-		.map((tag) => (typeof tag === "string" ? tag.trim() : ""))
-		.filter((tag) => tag.length > 0);
+  return tags
+    .map((tag) => (typeof tag === "string" ? tag.trim() : ""))
+    .filter((tag) => tag.length > 0);
 };
 
 export const normalizePatternPayload = (
-	payload: StoredPatternPayload,
+  payload: StoredPatternPayload,
 ): Required<StoredPatternPayload> => ({
-	name:
-		typeof payload.name === "string" && payload.name.trim().length > 0
-			? payload.name.trim()
-			: "Untitled Pattern",
-	code: typeof payload.code === "string" ? payload.code.trim() : "",
-	description:
-		typeof payload.description === "string" && payload.description.trim().length > 0
-			? payload.description.trim()
-			: "",
-	tags: sanitizeTags(payload.tags),
+  name:
+    typeof payload.name === "string" && payload.name.trim().length > 0
+      ? payload.name.trim()
+      : "Untitled Pattern",
+  code: typeof payload.code === "string" ? payload.code.trim() : "",
+  description:
+    typeof payload.description === "string" && payload.description.trim().length > 0
+      ? payload.description.trim()
+      : "",
+  tags: sanitizeTags(payload.tags),
 });
 
 export const mapResponseToPattern = (response: OutputRecord): StrudelPattern => {
-	const normalized = normalizePatternPayload(parseStoredPayload(response.content));
+  const normalized = normalizePatternPayload(parseStoredPayload(response.content));
 
-	return strudelPatternSchema.parse({
-		id: response.id,
-		name: normalized.name,
-		code: normalized.code,
-		description: normalized.description || undefined,
-		tags: normalized.tags,
-		createdAt: response.created_at,
-		updatedAt: response.updated_at,
-	});
+  return strudelPatternSchema.parse({
+    id: response.id,
+    name: normalized.name,
+    code: normalized.code,
+    description: normalized.description || undefined,
+    tags: normalized.tags,
+    createdAt: response.created_at,
+    updatedAt: response.updated_at,
+  });
 };
 
 export const buildPatternPayload = ({
-	name,
-	code,
-	description,
-	tags,
+  name,
+  code,
+  description,
+  tags,
 }: {
-	name: string;
-	code: string;
-	description?: string;
-	tags?: string[];
+  name: string;
+  code: string;
+  description?: string;
+  tags?: string[];
 }): Required<StoredPatternPayload> => {
-	return normalizePatternPayload({
-		name,
-		code,
-		description,
-		tags,
-	});
+  return normalizePatternPayload({
+    name,
+    code,
+    description,
+    tags,
+  });
 };
 
 export const extractStoredPattern = (data: unknown) =>
-	normalizePatternPayload(parseStoredPayload(data));
+  normalizePatternPayload(parseStoredPayload(data));

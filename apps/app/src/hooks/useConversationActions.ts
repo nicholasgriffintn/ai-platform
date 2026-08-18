@@ -1,14 +1,14 @@
 import {
-	createBranchConversation,
-	getBranchPoint,
+  createBranchConversation,
+  getBranchPoint,
 } from "@ngriffin_uk/polychat-library-chat/branching";
-import {
-	buildOpinionRequestPrompt,
-	canRequestOpinionForMessage,
-	getOpinionSourceContext,
-	type OpinionRequest,
-} from "@ngriffin_uk/polychat-library-chat/opinion";
 import { normalizeMessage } from "@ngriffin_uk/polychat-library-chat/messages";
+import {
+  buildOpinionRequestPrompt,
+  canRequestOpinionForMessage,
+  getOpinionSourceContext,
+  type OpinionRequest,
+} from "@ngriffin_uk/polychat-library-chat/opinion";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -16,373 +16,388 @@ import { toast } from "sonner";
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
 import { createConversationId } from "~/lib/conversations";
-import type { ChatRequestOptions, Conversation, Message } from "~/types";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
+import type { ChatRequestOptions, Conversation, Message } from "~/types";
+
 import { useConversationStorage } from "./useConversationStorage";
 
 /**
  * Hook for advanced conversation actions like editing, retrying, and branching.
  */
 export function useConversationActions(
-	generateResponse: (
-		messages: Message[],
-		conversationId: string,
-		overrideRequestOptions?: ChatRequestOptions,
-		options?: { generateTitle?: boolean; model?: string; models?: string[] },
-	) => Promise<{
-		status: "success" | "error";
-		response: string;
-		message?: Message;
-	}>,
-	generateTitle: (
-		conversationId: string,
-		messages: Message[],
-		assistantMessage: Message,
-	) => Promise<void>,
-	setStreamStarted?: (started: boolean) => void,
-	requestOptions?: ChatRequestOptions,
+  generateResponse: (
+    messages: Message[],
+    conversationId: string,
+    overrideRequestOptions?: ChatRequestOptions,
+    options?: { generateTitle?: boolean; model?: string; models?: string[] },
+  ) => Promise<{
+    status: "success" | "error";
+    response: string;
+    message?: Message;
+  }>,
+  generateTitle: (
+    conversationId: string,
+    messages: Message[],
+    assistantMessage: Message,
+  ) => Promise<void>,
+  setStreamStarted?: (started: boolean) => void,
+  requestOptions?: ChatRequestOptions,
 ) {
-	const queryClient = useQueryClient();
-	const { currentConversationId, model, isAuthenticated, isPro, setCurrentConversationId } =
-		useChatStore();
+  const queryClient = useQueryClient();
+  const { currentConversationId, model, isAuthenticated, isPro, setCurrentConversationId } =
+    useChatStore();
 
-	const { determineStorageMode, updateConversation } = useConversationStorage(requestOptions);
-	const { startLoading, stopLoading } = useLoadingActions();
+  const { determineStorageMode, updateConversation } = useConversationStorage(requestOptions);
+  const { startLoading, stopLoading } = useLoadingActions();
 
-	const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
-	const [isBranching, setIsBranching] = useState(false);
-	const [isRequestingOpinion, setIsRequestingOpinion] = useState(false);
-	const branchInFlightRef = useRef(false);
-	const opinionInFlightRef = useRef(false);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [isBranching, setIsBranching] = useState(false);
+  const [isRequestingOpinion, setIsRequestingOpinion] = useState(false);
+  const branchInFlightRef = useRef(false);
+  const opinionInFlightRef = useRef(false);
 
-	const generateResponseWithLoading = useCallback(
-		async (
-			messages: Message[],
-			conversationId: string,
-			loadingMessage: string,
-			overrideRequestOptions?: ChatRequestOptions,
-			options?: { generateTitle?: boolean; model?: string; models?: string[] },
-		) => {
-			setStreamStarted?.(true);
-			startLoading("stream-response", loadingMessage);
-			try {
-				return await generateResponse(messages, conversationId, overrideRequestOptions, options);
-			} finally {
-				setStreamStarted?.(false);
-				stopLoading("stream-response");
-			}
-		},
-		[generateResponse, setStreamStarted, startLoading, stopLoading],
-	);
+  const generateResponseWithLoading = useCallback(
+    async (
+      messages: Message[],
+      conversationId: string,
+      loadingMessage: string,
+      overrideRequestOptions?: ChatRequestOptions,
+      options?: { generateTitle?: boolean; model?: string; models?: string[] },
+    ) => {
+      setStreamStarted?.(true);
+      startLoading("stream-response", loadingMessage);
+      try {
+        return await generateResponse(messages, conversationId, overrideRequestOptions, options);
+      } finally {
+        setStreamStarted?.(false);
+        stopLoading("stream-response");
+      }
+    },
+    [generateResponse, setStreamStarted, startLoading, stopLoading],
+  );
 
-	const retryMessage = useCallback(
-		async (messageId: string) => {
-			const conversation = queryClient.getQueryData<Conversation>([
-				CHATS_QUERY_KEY,
-				currentConversationId || "",
-			]);
+  const retryMessage = useCallback(
+    async (messageId: string) => {
+      const conversation = queryClient.getQueryData<Conversation>([
+        CHATS_QUERY_KEY,
+        currentConversationId || "",
+      ]);
 
-			if (!conversation?.messages || !currentConversationId) {
-				toast.error("Unable to retry: conversation not found");
-				return;
-			}
+      if (!conversation?.messages || !currentConversationId) {
+        toast.error("Unable to retry: conversation not found");
 
-			const messageIndex = conversation.messages.findIndex((msg) => msg.id === messageId);
+        return;
+      }
 
-			if (messageIndex === -1) {
-				toast.error("Unable to retry: message not found");
-				return;
-			}
+      const messageIndex = conversation.messages.findIndex((msg) => msg.id === messageId);
 
-			const message = conversation.messages[messageIndex];
+      if (messageIndex === -1) {
+        toast.error("Unable to retry: message not found");
 
-			let messagesToRetry: Message[];
+        return;
+      }
 
-			if (message.role === "assistant") {
-				messagesToRetry = conversation.messages.slice(0, messageIndex);
-			} else {
-				messagesToRetry = conversation.messages.slice(0, messageIndex + 1);
-			}
+      const message = conversation.messages[messageIndex];
 
-			try {
-				await updateConversation(currentConversationId, (prev) => ({
-					...prev!,
-					messages: messagesToRetry,
-				}));
+      let messagesToRetry: Message[];
 
-				await generateResponseWithLoading(
-					messagesToRetry,
-					currentConversationId,
-					"Generating response...",
-				);
-			} catch (error) {
-				console.error("Error retrying message:", error);
-				toast.error("Failed to retry message");
-			}
-		},
-		[queryClient, currentConversationId, updateConversation, generateResponseWithLoading],
-	);
+      if (message.role === "assistant") {
+        messagesToRetry = conversation.messages.slice(0, messageIndex);
+      } else {
+        messagesToRetry = conversation.messages.slice(0, messageIndex + 1);
+      }
 
-	const updateUserMessage = useCallback(
-		async (messageId: string, newContent: string) => {
-			const conversation = queryClient.getQueryData<Conversation>([
-				CHATS_QUERY_KEY,
-				currentConversationId || "",
-			]);
+      try {
+        await updateConversation(currentConversationId, (prev) => ({
+          ...prev!,
+          messages: messagesToRetry,
+        }));
 
-			if (!conversation?.messages || !currentConversationId) {
-				toast.error("Unable to edit: conversation not found");
-				return;
-			}
+        await generateResponseWithLoading(
+          messagesToRetry,
+          currentConversationId,
+          "Generating response...",
+        );
+      } catch (error) {
+        console.error("Error retrying message:", error);
+        toast.error("Failed to retry message");
+      }
+    },
+    [queryClient, currentConversationId, updateConversation, generateResponseWithLoading],
+  );
 
-			const messageIndex = conversation.messages.findIndex((msg) => msg.id === messageId);
+  const updateUserMessage = useCallback(
+    async (messageId: string, newContent: string) => {
+      const conversation = queryClient.getQueryData<Conversation>([
+        CHATS_QUERY_KEY,
+        currentConversationId || "",
+      ]);
 
-			if (messageIndex === -1) {
-				toast.error("Unable to edit: message not found");
-				return;
-			}
+      if (!conversation?.messages || !currentConversationId) {
+        toast.error("Unable to edit: conversation not found");
 
-			const message = conversation.messages[messageIndex];
+        return;
+      }
 
-			if (message.role !== "user") {
-				toast.error("Can only edit user messages");
-				return;
-			}
+      const messageIndex = conversation.messages.findIndex((msg) => msg.id === messageId);
 
-			try {
-				const updatedMessages = [...conversation.messages];
-				updatedMessages[messageIndex] = {
-					...message,
-					content: newContent.trim(),
-				};
+      if (messageIndex === -1) {
+        toast.error("Unable to edit: message not found");
 
-				const messagesToRegenerate = updatedMessages.slice(0, messageIndex + 1);
+        return;
+      }
 
-				await updateConversation(currentConversationId, (prev) => ({
-					...prev!,
-					messages: messagesToRegenerate,
-				}));
+      const message = conversation.messages[messageIndex];
 
-				await generateResponseWithLoading(
-					messagesToRegenerate,
-					currentConversationId,
-					"Generating response...",
-				);
-			} catch (error) {
-				console.error("Error updating message:", error);
-				toast.error("Failed to update message");
-			}
-		},
-		[queryClient, currentConversationId, updateConversation, generateResponseWithLoading],
-	);
+      if (message.role !== "user") {
+        toast.error("Can only edit user messages");
 
-	const startEditingMessage = useCallback((messageId: string) => {
-		setEditingMessageId(messageId);
-	}, []);
+        return;
+      }
 
-	const stopEditingMessage = useCallback(() => {
-		setEditingMessageId(null);
-	}, []);
+      try {
+        const updatedMessages = [...conversation.messages];
 
-	const branchConversation = useCallback(
-		async (messageId: string, selectedModelId?: string) => {
-			if (branchInFlightRef.current) {
-				return;
-			}
+        updatedMessages[messageIndex] = {
+          ...message,
+          content: newContent.trim(),
+        };
 
-			const conversation = queryClient.getQueryData<Conversation>([
-				CHATS_QUERY_KEY,
-				currentConversationId || "",
-			]);
+        const messagesToRegenerate = updatedMessages.slice(0, messageIndex + 1);
 
-			if (!conversation?.messages || !currentConversationId) {
-				toast.error("Unable to branch: conversation not found");
-				return;
-			}
+        await updateConversation(currentConversationId, (prev) => ({
+          ...prev!,
+          messages: messagesToRegenerate,
+        }));
 
-			const branchPoint = getBranchPoint(conversation.messages, messageId);
-			if (!branchPoint) {
-				toast.error("Unable to branch: message not found");
-				return;
-			}
+        await generateResponseWithLoading(
+          messagesToRegenerate,
+          currentConversationId,
+          "Generating response...",
+        );
+      } catch (error) {
+        console.error("Error updating message:", error);
+        toast.error("Failed to update message");
+      }
+    },
+    [queryClient, currentConversationId, updateConversation, generateResponseWithLoading],
+  );
 
-			try {
-				branchInFlightRef.current = true;
-				setIsBranching(true);
+  const startEditingMessage = useCallback((messageId: string) => {
+    setEditingMessageId(messageId);
+  }, []);
 
-				const newConversationId = createConversationId();
-				const shouldStore = determineStorageMode().shouldSyncRemote;
-				let branchConversation = createBranchConversation({
-					conversation,
-					conversationId: newConversationId,
-					isLocalOnly: !shouldStore,
-					messages: branchPoint.messages,
-					parentConversationId: currentConversationId,
-					parentMessageId: messageId,
-				});
+  const stopEditingMessage = useCallback(() => {
+    setEditingMessageId(null);
+  }, []);
 
-				if (shouldStore) {
-					const storedBranchConversation = await apiService.updateConversation(newConversationId, {
-						title: branchConversation.title,
-						messages: branchPoint.messages,
-						parent_conversation_id: currentConversationId,
-						parent_message_id: messageId,
-					});
-					branchConversation = {
-						...branchConversation,
-						...storedBranchConversation,
-						id: storedBranchConversation.id || newConversationId,
-						messages: storedBranchConversation.messages.length
-							? storedBranchConversation.messages
-							: branchPoint.messages,
-						parent_conversation_id: currentConversationId,
-						parent_message_id: messageId,
-						isLocalOnly: false,
-					};
-				}
+  const branchConversation = useCallback(
+    async (messageId: string, selectedModelId?: string) => {
+      if (branchInFlightRef.current) {
+        return;
+      }
 
-				await updateConversation(newConversationId, () => branchConversation);
-				setCurrentConversationId(newConversationId);
+      const conversation = queryClient.getQueryData<Conversation>([
+        CHATS_QUERY_KEY,
+        currentConversationId || "",
+      ]);
 
-				if (branchPoint.shouldGenerateResponse) {
-					const result = await generateResponseWithLoading(
-						branchConversation.messages,
-						newConversationId,
-						"Generating branched response...",
-						undefined,
-						{
-							generateTitle: false,
-							model: selectedModelId || model || undefined,
-						},
-					);
+      if (!conversation?.messages || !currentConversationId) {
+        toast.error("Unable to branch: conversation not found");
 
-					if (result.status === "success" && result.message) {
-						generateTitle(newConversationId, branchConversation.messages, result.message).catch(
-							(err) =>
-								console.error("Background title generation failed for branched conversation:", err),
-						);
-					}
-				}
+        return;
+      }
 
-				toast.success("Conversation branched successfully!");
-			} catch (error) {
-				console.error("Error branching conversation:", error);
-				toast.error("Failed to branch conversation");
-			} finally {
-				branchInFlightRef.current = false;
-				setIsBranching(false);
-			}
-		},
-		[
-			queryClient,
-			currentConversationId,
-			determineStorageMode,
-			model,
-			updateConversation,
-			setCurrentConversationId,
-			generateResponseWithLoading,
-			generateTitle,
-		],
-	);
+      const branchPoint = getBranchPoint(conversation.messages, messageId);
 
-	const requestOpinion = useCallback(
-		async (messageId: string, request: OpinionRequest) => {
-			if (opinionInFlightRef.current) {
-				return;
-			}
+      if (!branchPoint) {
+        toast.error("Unable to branch: message not found");
 
-			if (!isAuthenticated || !isPro) {
-				toast.error("Second opinions are only available to Pro users");
-				return;
-			}
+        return;
+      }
 
-			const conversation = queryClient.getQueryData<Conversation>([
-				CHATS_QUERY_KEY,
-				currentConversationId || "",
-			]);
+      try {
+        branchInFlightRef.current = true;
+        setIsBranching(true);
 
-			if (!conversation?.messages || !currentConversationId) {
-				toast.error("Unable to request opinion: conversation not found");
-				return;
-			}
+        const newConversationId = createConversationId();
+        const shouldStore = determineStorageMode().shouldSyncRemote;
+        let branchConversation = createBranchConversation({
+          conversation,
+          conversationId: newConversationId,
+          isLocalOnly: !shouldStore,
+          messages: branchPoint.messages,
+          parentConversationId: currentConversationId,
+          parentMessageId: messageId,
+        });
 
-			if (!canRequestOpinionForMessage(conversation.messages, messageId)) {
-				toast.error("Second opinions are only available on the latest answer");
-				return;
-			}
+        if (shouldStore) {
+          const storedBranchConversation = await apiService.updateConversation(newConversationId, {
+            title: branchConversation.title,
+            messages: branchPoint.messages,
+            parent_conversation_id: currentConversationId,
+            parent_message_id: messageId,
+          });
 
-			if (
-				request.modelIds.length === 0 ||
-				(request.mode === "consensus" && request.modelIds.length < 2)
-			) {
-				toast.error("Select enough models to request an opinion");
-				return;
-			}
+          branchConversation = {
+            ...branchConversation,
+            ...storedBranchConversation,
+            id: storedBranchConversation.id || newConversationId,
+            messages: storedBranchConversation.messages.length
+              ? storedBranchConversation.messages
+              : branchPoint.messages,
+            parent_conversation_id: currentConversationId,
+            parent_message_id: messageId,
+            isLocalOnly: false,
+          };
+        }
 
-			try {
-				opinionInFlightRef.current = true;
-				setIsRequestingOpinion(true);
-				const sourceContext = getOpinionSourceContext(conversation.messages, messageId);
+        await updateConversation(newConversationId, () => branchConversation);
+        setCurrentConversationId(newConversationId);
 
-				const opinionMessage = normalizeMessage({
-					role: "user",
-					content: buildOpinionRequestPrompt(request, sourceContext),
-					id: crypto.randomUUID(),
-					created: Date.now(),
-					model: request.modelIds[0] || model || "",
-					data: {
-						opinion: {
-							mode: request.mode,
-							sourceMessageId: messageId,
-							modelIds: request.modelIds,
-						},
-					},
-				});
-				const messagesWithOpinionRequest = [...conversation.messages, opinionMessage];
+        if (branchPoint.shouldGenerateResponse) {
+          const result = await generateResponseWithLoading(
+            branchConversation.messages,
+            newConversationId,
+            "Generating branched response...",
+            undefined,
+            {
+              generateTitle: false,
+              model: selectedModelId || model || undefined,
+            },
+          );
 
-				await updateConversation(currentConversationId, (prev) => ({
-					...prev!,
-					messages: messagesWithOpinionRequest,
-				}));
+          if (result.status === "success" && result.message) {
+            generateTitle(newConversationId, branchConversation.messages, result.message).catch(
+              (err) =>
+                console.error("Background title generation failed for branched conversation:", err),
+            );
+          }
+        }
 
-				await generateResponseWithLoading(
-					messagesWithOpinionRequest,
-					currentConversationId,
-					request.mode === "consensus" ? "Requesting consensus..." : "Requesting second opinion...",
-					undefined,
-					request.mode === "consensus"
-						? { generateTitle: false, models: request.modelIds }
-						: { generateTitle: false, model: request.modelIds[0] },
-				);
-			} catch (error) {
-				console.error("Error requesting second opinion:", error);
-				toast.error("Failed to request second opinion");
-			} finally {
-				opinionInFlightRef.current = false;
-				setIsRequestingOpinion(false);
-			}
-		},
-		[
-			queryClient,
-			currentConversationId,
-			model,
-			isAuthenticated,
-			isPro,
-			updateConversation,
-			generateResponseWithLoading,
-		],
-	);
+        toast.success("Conversation branched successfully!");
+      } catch (error) {
+        console.error("Error branching conversation:", error);
+        toast.error("Failed to branch conversation");
+      } finally {
+        branchInFlightRef.current = false;
+        setIsBranching(false);
+      }
+    },
+    [
+      queryClient,
+      currentConversationId,
+      determineStorageMode,
+      model,
+      updateConversation,
+      setCurrentConversationId,
+      generateResponseWithLoading,
+      generateTitle,
+    ],
+  );
 
-	return {
-		editingMessageId,
-		isBranching,
-		isRequestingOpinion,
-		retryMessage,
-		updateUserMessage,
-		startEditingMessage,
-		stopEditingMessage,
-		branchConversation,
-		requestOpinion,
-	};
+  const requestOpinion = useCallback(
+    async (messageId: string, request: OpinionRequest) => {
+      if (opinionInFlightRef.current) {
+        return;
+      }
+
+      if (!isAuthenticated || !isPro) {
+        toast.error("Second opinions are only available to Pro users");
+
+        return;
+      }
+
+      const conversation = queryClient.getQueryData<Conversation>([
+        CHATS_QUERY_KEY,
+        currentConversationId || "",
+      ]);
+
+      if (!conversation?.messages || !currentConversationId) {
+        toast.error("Unable to request opinion: conversation not found");
+
+        return;
+      }
+
+      if (!canRequestOpinionForMessage(conversation.messages, messageId)) {
+        toast.error("Second opinions are only available on the latest answer");
+
+        return;
+      }
+
+      if (
+        request.modelIds.length === 0 ||
+        (request.mode === "consensus" && request.modelIds.length < 2)
+      ) {
+        toast.error("Select enough models to request an opinion");
+
+        return;
+      }
+
+      try {
+        opinionInFlightRef.current = true;
+        setIsRequestingOpinion(true);
+        const sourceContext = getOpinionSourceContext(conversation.messages, messageId);
+
+        const opinionMessage = normalizeMessage({
+          role: "user",
+          content: buildOpinionRequestPrompt(request, sourceContext),
+          id: crypto.randomUUID(),
+          created: Date.now(),
+          model: request.modelIds[0] || model || "",
+          data: {
+            opinion: {
+              mode: request.mode,
+              sourceMessageId: messageId,
+              modelIds: request.modelIds,
+            },
+          },
+        });
+        const messagesWithOpinionRequest = [...conversation.messages, opinionMessage];
+
+        await updateConversation(currentConversationId, (prev) => ({
+          ...prev!,
+          messages: messagesWithOpinionRequest,
+        }));
+
+        await generateResponseWithLoading(
+          messagesWithOpinionRequest,
+          currentConversationId,
+          request.mode === "consensus" ? "Requesting consensus..." : "Requesting second opinion...",
+          undefined,
+          request.mode === "consensus"
+            ? { generateTitle: false, models: request.modelIds }
+            : { generateTitle: false, model: request.modelIds[0] },
+        );
+      } catch (error) {
+        console.error("Error requesting second opinion:", error);
+        toast.error("Failed to request second opinion");
+      } finally {
+        opinionInFlightRef.current = false;
+        setIsRequestingOpinion(false);
+      }
+    },
+    [
+      queryClient,
+      currentConversationId,
+      model,
+      isAuthenticated,
+      isPro,
+      updateConversation,
+      generateResponseWithLoading,
+    ],
+  );
+
+  return {
+    editingMessageId,
+    isBranching,
+    isRequestingOpinion,
+    retryMessage,
+    updateUserMessage,
+    startEditingMessage,
+    stopEditingMessage,
+    branchConversation,
+    requestOpinion,
+  };
 }

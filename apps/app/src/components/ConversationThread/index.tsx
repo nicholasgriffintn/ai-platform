@@ -1,12 +1,12 @@
 import {
   type ArtifactProps,
   findLatestArtifactByIdentifier,
+  ArtifactPanel,
 } from "@ngriffin_uk/polychat-component-content";
-import { ArtifactPanel } from "@ngriffin_uk/polychat-component-content";
-import {
-  type ComposerActionCatalogConfig,
-  type ComposerAssistantActionCapability,
-  type ComposerCommandAction,
+import type {
+  ComposerActionCatalogConfig,
+  ComposerAssistantActionCapability,
+  ComposerCommandAction,
 } from "@ngriffin_uk/polychat-component-conversation";
 import {
   ConversationComposerDock,
@@ -26,8 +26,7 @@ import {
   getModelByReference,
   isImageGenerationOutputModel,
 } from "@ngriffin_uk/polychat-schemas";
-import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
-import type { CouncilMemberId } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationModeMetadata, CouncilMemberId } from "@ngriffin_uk/polychat-schemas";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -168,7 +167,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const handleConnectorApproval = useCallback(
     async (approvalId: string, resolution: "approved" | "rejected") => {
       await resolveConnectorOperationApproval(approvalId, resolution);
-      if (resolution === "rejected") return;
+      if (resolution === "rejected") {
+        return;
+      }
+
       if (!currentConversationId) {
         throw new Error("The conversation is no longer available");
       }
@@ -179,6 +181,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           connector_approval_id: approvalId,
         },
       });
+
       if (result.status === "error") {
         throw new Error(result.response || "The approved action could not continue");
       }
@@ -209,6 +212,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     if (autoPlayResponsesEnabled) {
       stopPlayback();
     }
+
     setAutoPlayResponsesEnabled(!autoPlayResponsesEnabled);
   }, [autoPlayResponsesEnabled, stopPlayback]);
 
@@ -226,6 +230,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       if (combine && artifacts && artifacts.length > 1) {
         setCurrentArtifacts(artifacts);
         setIsCombinedPanel(true);
+
         return;
       }
 
@@ -283,8 +288,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     (indexToRemove: number) => {
       if (indexToRemove < modeContextAttachments.length) {
         modeConfig?.onRemoveContextAttachment?.(indexToRemove);
+
         return;
       }
+
       handleRemoveArtifactContextAttachment(indexToRemove - modeContextAttachments.length);
     },
     [handleRemoveArtifactContextAttachment, modeConfig, modeContextAttachments.length],
@@ -306,6 +313,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     }
 
     const latestArtifact = findLatestArtifactByIdentifier(messages, currentArtifact.identifier);
+
     if (latestArtifact && latestArtifact.content !== currentArtifact.content) {
       setCurrentArtifact(latestArtifact);
     }
@@ -327,16 +335,19 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
       if (isCompactConversationCommand(chatInput) && !selectedAssistantAction?.item) {
         const originalInput = chatInput;
+
         setChatInput("");
         setSelectedAssistantAction(null);
 
         const result = await compactConversation();
+
         if (result.status === "error") {
           setChatInput(originalInput);
           if (result.response) {
             toast.error(result.response);
           }
         }
+
         return result.status !== "error";
       }
 
@@ -350,6 +361,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           toast.error(
             "Text-to-image models only support one message per conversation. Please start a new conversation.",
           );
+
           return false;
         }
       }
@@ -359,6 +371,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
       try {
         const actionSubmit = await resolveAssistantActionSubmit(chatInput);
+
         setChatInput("");
         setSelectedAssistantAction(null);
 
@@ -380,11 +393,13 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
         if (actionSubmit.kind === "external") {
           openExternalUrl(actionSubmit.url);
+
           return true;
         }
 
         if (actionSubmit.kind === "navigation") {
           navigate(actionSubmit.path);
+
           return true;
         }
 
@@ -395,6 +410,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         const result = modeConfig?.councilDebate?.enabled
           ? await sendCouncilDebate(actionSubmit.input, attachments, modeConfig.councilDebate)
           : await sendMessage(actionSubmit.input, attachments, requestOptions);
+
         if (result?.status === "error") {
           setChatInput(originalInput);
           setSelectedAssistantAction(originalAssistantAction);
@@ -406,6 +422,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
             chatInputRef.current?.focus();
           }, 0);
         }
+
         return result?.status !== "error";
       } catch (error) {
         setChatInput(originalInput);
@@ -416,6 +433,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           conversation_id: currentConversationId || "new",
           model_id: model || "unknown",
         });
+
         return false;
       }
     },
@@ -443,6 +461,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
   useEffect(() => {
     const initialAutoSubmit = modeConfig?.initialAutoSubmit;
+
     if (
       !initialAutoSubmit ||
       modeConfig?.contextAttachmentsReady === false ||
@@ -461,7 +480,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       contextAttachments.length > 0 ? contextAttachments : undefined,
       modeConfig?.requestOptions,
     ).then((result) => {
-      if (result?.status === "error") setChatInput(initialAutoSubmit.input);
+      if (result?.status === "error") {
+        setChatInput(initialAutoSubmit.input);
+      }
     });
   }, [
     contextAttachments,
@@ -477,7 +498,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
   const handleKeyPress = useCallback(
     (e: KeyboardEvent) => {
-      if (isStreamLoading || isModelInitializing) return;
+      if (isStreamLoading || isModelInitializing) {
+        return;
+      }
 
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
@@ -485,6 +508,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           handleSubmit();
         }
       }
+
       if (e.key === "Escape") {
         if (isPanelVisible) {
           handlePanelClose();
@@ -510,6 +534,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyPress);
+
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
     };
@@ -543,6 +568,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           if (action === "useAsPrompt") {
             setChatInput(data.question);
           }
+
           break;
         default:
           break;

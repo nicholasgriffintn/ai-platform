@@ -26,8 +26,10 @@ export default function SharedOutputPage() {
   useEffect(() => {
     if (!token) {
       setError("Invalid share link");
+
       return;
     }
+
     getSharedOutput(token)
       .then(setOutput)
       .catch((cause: unknown) => {

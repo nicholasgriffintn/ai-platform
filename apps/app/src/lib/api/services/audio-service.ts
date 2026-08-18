@@ -1,52 +1,55 @@
 import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+
 import { fetchApi } from "../fetch-wrapper";
 
 export interface SpeechGenerationResponse {
-	status: "success" | "error";
-	content: string;
-	data: {
-		audioOutputId?: string;
-		audioKey?: string;
-		audioUrl?: string;
-		audioBase64?: string;
-		audioDataUrl?: string;
-		audioMimeType?: string;
-		provider?: string;
-		model?: string;
-		response?: string;
-		metadata?: Record<string, unknown>;
-	};
+  status: "success" | "error";
+  content: string;
+  data: {
+    audioOutputId?: string;
+    audioKey?: string;
+    audioUrl?: string;
+    audioBase64?: string;
+    audioDataUrl?: string;
+    audioMimeType?: string;
+    provider?: string;
+    model?: string;
+    response?: string;
+    metadata?: Record<string, unknown>;
+  };
 }
 
 export class AudioService {
-	constructor(private getHeaders: () => Promise<Record<string, string>>) {}
+  constructor(private getHeaders: () => Promise<Record<string, string>>) {}
 
-	async generateSpeech(
-		input: string,
-		options?: { store?: boolean },
-	): Promise<SpeechGenerationResponse> {
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error generating speech:", error);
-		}
+  async generateSpeech(
+    input: string,
+    options?: { store?: boolean },
+  ): Promise<SpeechGenerationResponse> {
+    let headers = {};
 
-		const response = await fetchApi("/audio/speech", {
-			method: "POST",
-			headers,
-			body: {
-				input,
-				store: options?.store ?? true,
-			},
-			timeoutMs: null,
-		});
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error generating speech:", error);
+    }
 
-		if (!response.ok) {
-			throw new Error(`Failed to generate speech: ${response.statusText}`);
-		}
+    const response = await fetchApi("/audio/speech", {
+      method: "POST",
+      headers,
+      body: {
+        input,
+        store: options?.store ?? true,
+      },
+      timeoutMs: null,
+    });
 
-		const data = await returnFetchedData<{ response: SpeechGenerationResponse }>(response);
-		return data.response;
-	}
+    if (!response.ok) {
+      throw new Error(`Failed to generate speech: ${response.statusText}`);
+    }
+
+    const data = await returnFetchedData<{ response: SpeechGenerationResponse }>(response);
+
+    return data.response;
+  }
 }

@@ -1,8 +1,8 @@
 import { sanitiseInput } from "~/lib/chat/utils";
-import { findModelConfig, getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
+import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { summariseArticlePrompt } from "~/lib/prompts";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { findModelConfig, getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractQuotes } from "~/utils/extract";
@@ -12,165 +12,169 @@ import { verifyQuotes } from "~/utils/verify";
 const logger = getLogger({ prefix: "services/apps/articles/summarise" });
 
 export interface Params {
-	article: string;
-	itemId: string;
+  article: string;
+  itemId: string;
 }
 
 export interface SummariseSuccessResponse {
-	status: "success";
-	message?: string;
-	outputId?: string;
-	itemId?: string;
-	summary?: { content: string; data: any };
+  status: "success";
+  message?: string;
+  outputId?: string;
+  itemId?: string;
+  summary?: { content: string; data: any };
 }
 
 export async function summariseArticle({
-	completion_id,
-	app_url,
-	context,
-	env,
-	args,
-	user,
-	projectId,
+  completion_id,
+  app_url,
+  context,
+  env,
+  args,
+  user,
+  projectId,
 }: {
-	completion_id: string;
-	app_url: string | undefined;
-	context?: ServiceContext;
-	env?: IEnv;
-	args: Params;
-	user: IUser;
-	projectId?: string;
+  completion_id: string;
+  app_url: string | undefined;
+  context?: ServiceContext;
+  env?: IEnv;
+  args: Params;
+  user: IUser;
+  projectId?: string;
 }): Promise<SummariseSuccessResponse> {
-	if (!user.id) {
-		throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
-	}
-	if (!args.itemId) {
-		throw new AssistantError("Item ID is required", ErrorType.PARAMS_ERROR);
-	}
-	if (!args.article) {
-		throw new AssistantError("Article content is required", ErrorType.PARAMS_ERROR);
-	}
+  if (!user.id) {
+    throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
+  }
 
-	const sanitisedArticle = sanitiseInput(args.article);
+  if (!args.itemId) {
+    throw new AssistantError("Item ID is required", ErrorType.PARAMS_ERROR);
+  }
 
-	try {
-		const serviceContext =
-			context ??
-			(env
-				? createServiceContext({
-						env,
-						user,
-					})
-				: null);
+  if (!args.article) {
+    throw new AssistantError("Article content is required", ErrorType.PARAMS_ERROR);
+  }
 
-		if (!serviceContext) {
-			throw new AssistantError("Service context is required", ErrorType.CONFIGURATION_ERROR);
-		}
+  const sanitisedArticle = sanitiseInput(args.article);
 
-		const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModelForRetrieval(
-			serviceContext.env,
-			user,
-		);
-		const modelConfig = await findModelConfig(modelToUse, serviceContext.env, providerToUse);
-		const provider = getChatProvider(providerToUse, {
-			env: serviceContext.env,
-			user,
-		});
+  try {
+    const serviceContext =
+      context ??
+      (env
+        ? createServiceContext({
+            env,
+            user,
+          })
+        : null);
 
-		const summaryGenData = await provider.getResponse({
-			completion_id,
-			app_url,
-			model: modelToUse,
-			messages: [
-				{
-					role: "user",
-					content: summariseArticlePrompt(sanitisedArticle, {
-						modelId: modelToUse,
-						modelConfig,
-					}),
-				},
-			],
-			env: serviceContext.env,
-			context: serviceContext,
-		});
+    if (!serviceContext) {
+      throw new AssistantError("Service context is required", ErrorType.CONFIGURATION_ERROR);
+    }
 
-		const summaryGenDataContent = summaryGenData.content || summaryGenData.response;
+    const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModelForRetrieval(
+      serviceContext.env,
+      user,
+    );
+    const modelConfig = await findModelConfig(modelToUse, serviceContext.env, providerToUse);
+    const provider = getChatProvider(providerToUse, {
+      env: serviceContext.env,
+      user,
+    });
 
-		if (!summaryGenDataContent) {
-			throw new AssistantError("Summary content was empty", ErrorType.PARAMS_ERROR);
-		}
+    const summaryGenData = await provider.getResponse({
+      completion_id,
+      app_url,
+      model: modelToUse,
+      messages: [
+        {
+          role: "user",
+          content: summariseArticlePrompt(sanitisedArticle, {
+            modelId: modelToUse,
+            modelConfig,
+          }),
+        },
+      ],
+      env: serviceContext.env,
+      context: serviceContext,
+    });
 
-		const quotes = extractQuotes(summaryGenDataContent);
-		const verifiedQuotes = verifyQuotes(args.article, quotes);
+    const summaryGenDataContent = summaryGenData.content || summaryGenData.response;
 
-		const summaryResult = {
-			content: summaryGenDataContent,
-			model: modelToUse,
-			id: summaryGenData.id,
-			citations: summaryGenData.citations,
-			log_id: summaryGenData.log_id,
-			verifiedQuotes,
-		};
+    if (!summaryGenDataContent) {
+      throw new AssistantError("Summary content was empty", ErrorType.PARAMS_ERROR);
+    }
 
-		serviceContext.ensureDatabase();
-		const outputRepo = serviceContext.repositories.outputs;
-		const outputContent = {
-			originalArticle: args.article,
-			summary: summaryResult,
-			title: `Summary: ${args.article.substring(0, 80)}...`,
-		};
+    const quotes = extractQuotes(summaryGenDataContent);
+    const verifiedQuotes = verifyQuotes(args.article, quotes);
 
-		const savedData = await outputRepo.createOutput({
-			createdByUserId: user.id,
-			projectId,
-			capabilityId: "articles",
-			groupId: args.itemId,
-			kind: "summary",
-			title: outputContent.title,
-			content: outputContent,
-		});
+    const summaryResult = {
+      content: summaryGenDataContent,
+      model: modelToUse,
+      id: summaryGenData.id,
+      citations: summaryGenData.citations,
+      log_id: summaryGenData.log_id,
+      verifiedQuotes,
+    };
 
-		return {
-			status: "success",
-			message: "Article summarised and saved.",
-			outputId: savedData.id,
-			itemId: args.itemId,
-			summary: {
-				content: summaryResult.content,
-				data: { ...summaryResult, verifiedQuotes },
-			},
-		};
-	} catch (error) {
-		logger.error("Error during article summary or saving:", {
-			error_message: error instanceof Error ? error.message : "Unknown error",
-		});
-		if (error instanceof AssistantError) {
-			throw error;
-		}
-		throw new AssistantError(
-			"Failed to summarise article",
-			ErrorType.UNKNOWN_ERROR,
-			undefined,
-			error,
-		);
-	}
+    serviceContext.ensureDatabase();
+    const outputRepo = serviceContext.repositories.outputs;
+    const outputContent = {
+      originalArticle: args.article,
+      summary: summaryResult,
+      title: `Summary: ${args.article.substring(0, 80)}...`,
+    };
+
+    const savedData = await outputRepo.createOutput({
+      createdByUserId: user.id,
+      projectId,
+      capabilityId: "articles",
+      groupId: args.itemId,
+      kind: "summary",
+      title: outputContent.title,
+      content: outputContent,
+    });
+
+    return {
+      status: "success",
+      message: "Article summarised and saved.",
+      outputId: savedData.id,
+      itemId: args.itemId,
+      summary: {
+        content: summaryResult.content,
+        data: { ...summaryResult, verifiedQuotes },
+      },
+    };
+  } catch (error) {
+    logger.error("Error during article summary or saving:", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
+    if (error instanceof AssistantError) {
+      throw error;
+    }
+
+    throw new AssistantError(
+      "Failed to summarise article",
+      ErrorType.UNKNOWN_ERROR,
+      undefined,
+      error,
+    );
+  }
 }
 
 export const cleanupArticleSession = async (
-	context: ServiceContext,
-	userId: number,
-	itemId: string,
-	projectId?: string,
+  context: ServiceContext,
+  userId: number,
+  itemId: string,
+  projectId?: string,
 ): Promise<void> => {
-	context.ensureDatabase();
-	const outputRepo = context.repositories.outputs;
+  context.ensureDatabase();
+  const outputRepo = context.repositories.outputs;
 
-	if (projectId) {
-		await outputRepo.deleteProjectOutputGroup(projectId, "articles", itemId, "analysis");
-		await outputRepo.deleteProjectOutputGroup(projectId, "articles", itemId, "summary");
-		return;
-	}
+  if (projectId) {
+    await outputRepo.deleteProjectOutputGroup(projectId, "articles", itemId, "analysis");
+    await outputRepo.deleteProjectOutputGroup(projectId, "articles", itemId, "summary");
 
-	await outputRepo.deletePersonalOutputGroup(userId, "articles", itemId, "analysis");
-	await outputRepo.deletePersonalOutputGroup(userId, "articles", itemId, "summary");
+    return;
+  }
+
+  await outputRepo.deletePersonalOutputGroup(userId, "articles", itemId, "analysis");
+  await outputRepo.deletePersonalOutputGroup(userId, "articles", itemId, "summary");
 };

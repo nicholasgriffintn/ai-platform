@@ -1,63 +1,71 @@
-import { type ChatHostedToolSettings } from "@ngriffin_uk/polychat-schemas";
+import type { ChatHostedToolSettings } from "@ngriffin_uk/polychat-schemas";
 
 import type { ProjectCapabilityRow } from "~/repositories/WorkspaceRepository";
 import { MODEL_TOOL_DEFINITIONS } from "~/services/experiences/config";
 import { listFunctionTools } from "~/services/functions";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import {
-	getModelToolDefinition,
-	resolveModelToolConfigurations,
-	validateModelToolConfiguration,
+  getModelToolDefinition,
+  resolveModelToolConfigurations,
+  validateModelToolConfiguration,
 } from "~/services/tools/modelToolConfiguration";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface ResolvedProjectTools {
-	enabledTools: string[];
-	toolOptions?: ChatHostedToolSettings;
+  enabledTools: string[];
+  toolOptions?: ChatHostedToolSettings;
 }
 
 function getCallableToolIds(): Set<string> {
-	return new Set(listFunctionTools().map((tool) => tool.name));
+  return new Set(listFunctionTools().map((tool) => tool.name));
 }
 
 export function validateProjectToolConfiguration(
-	toolId: string,
-	configuration: Record<string, unknown>,
+  toolId: string,
+  configuration: Record<string, unknown>,
 ): Record<string, unknown> {
-	const definition = getModelToolDefinition(toolId);
-	if (!definition) {
-		if (getCallableToolIds().has(toolId)) return {};
-		throw new AssistantError("Unknown project tool", ErrorType.PARAMS_ERROR, 400);
-	}
-	if (!definition.requiresConfiguration) return {};
+  const definition = getModelToolDefinition(toolId);
 
-	return validateModelToolConfiguration(toolId, configuration);
+  if (!definition) {
+    if (getCallableToolIds().has(toolId)) {
+      return {};
+    }
+
+    throw new AssistantError("Unknown project tool", ErrorType.PARAMS_ERROR, 400);
+  }
+
+  if (!definition.requiresConfiguration) {
+    return {};
+  }
+
+  return validateModelToolConfiguration(toolId, configuration);
 }
 
 export function resolveProjectTools(capabilities: ProjectCapabilityRow[]): ResolvedProjectTools {
-	const callableToolIds = getCallableToolIds();
-	const enabledTools = capabilities
-		.filter(
-			(capability) => capability.kind === "tool" && callableToolIds.has(capability.capability_id),
-		)
-		.map((capability) => capability.capability_id);
-	const configuredModelTools = resolveModelToolConfigurations(
-		capabilities
-			.filter((capability) => capability.kind === "tool")
-			.map((capability) => ({
-				toolId: capability.capability_id,
-				configuration: capability.configuration,
-			})),
-	);
+  const callableToolIds = getCallableToolIds();
+  const enabledTools = capabilities
+    .filter(
+      (capability) => capability.kind === "tool" && callableToolIds.has(capability.capability_id),
+    )
+    .map((capability) => capability.capability_id);
+  const configuredModelTools = resolveModelToolConfigurations(
+    capabilities
+      .filter((capability) => capability.kind === "tool")
+      .map((capability) => ({
+        toolId: capability.capability_id,
+        configuration: capability.configuration,
+      })),
+  );
 
-	for (const definition of MODEL_TOOL_DEFINITIONS) {
-		if (!definition.requiresConfiguration) {
-			enabledTools.push(definition.id);
-		}
-	}
-	enabledTools.push(...configuredModelTools.configuredToolIds);
+  for (const definition of MODEL_TOOL_DEFINITIONS) {
+    if (!definition.requiresConfiguration) {
+      enabledTools.push(definition.id);
+    }
+  }
 
-	return {
-		enabledTools: [...new Set(enabledTools)],
-		...(configuredModelTools.toolOptions ? { toolOptions: configuredModelTools.toolOptions } : {}),
-	};
+  enabledTools.push(...configuredModelTools.configuredToolIds);
+
+  return {
+    enabledTools: [...new Set(enabledTools)],
+    ...(configuredModelTools.toolOptions ? { toolOptions: configuredModelTools.toolOptions } : {}),
+  };
 }

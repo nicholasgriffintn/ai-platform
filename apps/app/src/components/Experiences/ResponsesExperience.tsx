@@ -42,7 +42,10 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
   const { data: producingTool } = useRunnableTool(output?.capabilityId ?? null);
 
   if (outputId) {
-    if (isOutputLoading) return <CardGridLoadingSkeleton count={1} label="Loading output" />;
+    if (isOutputLoading) {
+      return <CardGridLoadingSkeleton count={1} label="Loading output" />;
+    }
+
     if (isAuthenticationError(outputError)) {
       return (
         <SignInEmptyState
@@ -51,13 +54,16 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
         />
       );
     }
-    if (outputError || !output)
+
+    if (outputError || !output) {
       return (
         <EmptyState
           title="Output unavailable"
           message={outputError?.message ?? "Output not found"}
         />
       );
+    }
+
     return (
       <Card className="gap-5 p-6 shadow-none">
         <OutputDetailHeader
@@ -70,10 +76,12 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
             setShareError(null);
             try {
               let token = mintedShareTokens.current.get(output.id);
+
               if (!token) {
                 ({ token } = await createShare.mutateAsync({ outputId: output.id }));
                 mintedShareTokens.current.set(output.id, token);
               }
+
               await navigator.clipboard.writeText(`${window.location.origin}/o/${token}`);
               setCopiedOutputId(output.id);
             } catch (error) {
@@ -91,14 +99,21 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
           revokingShareId={revokeShare.isPending ? (revokeShare.variables?.shareId ?? null) : null}
           onRevoke={(shareId) => {
             mintedShareTokens.current.delete(output.id);
-            if (copiedOutputId === output.id) setCopiedOutputId(null);
+            if (copiedOutputId === output.id) {
+              setCopiedOutputId(null);
+            }
+
             revokeShare.mutate({ outputId: output.id, shareId });
           }}
         />
       </Card>
     );
   }
-  if (isLoading) return <CardGridLoadingSkeleton count={4} label="Loading outputs" />;
+
+  if (isLoading) {
+    return <CardGridLoadingSkeleton count={4} label="Loading outputs" />;
+  }
+
   if (isAuthenticationError(error)) {
     return (
       <SignInEmptyState
@@ -107,8 +122,12 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
       />
     );
   }
-  if (error) return <EmptyState title="Outputs unavailable" message={error.message} />;
-  if (!outputs?.length)
+
+  if (error) {
+    return <EmptyState title="Outputs unavailable" message={error.message} />;
+  }
+
+  if (!outputs?.length) {
     return (
       <EmptyState
         icon={<Puzzle size={24} className="text-zinc-400" />}
@@ -116,6 +135,7 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
         message="Run an experience or tool and its result lands here."
       />
     );
+  }
 
   return (
     <OutputCardGrid

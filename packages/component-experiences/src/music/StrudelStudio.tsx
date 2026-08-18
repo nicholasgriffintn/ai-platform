@@ -15,7 +15,7 @@ import {
 import type { StrudelComplexity, StrudelStyle } from "@ngriffin_uk/polychat-schemas";
 import { Save, Sparkles } from "lucide-react";
 
-import { type PatternExample } from "./examples";
+import type { PatternExample } from "./examples";
 import { StrudelPlayer } from "./StrudelPlayer";
 
 const STYLE_OPTIONS: { label: string; value: "" | StrudelStyle }[] = [

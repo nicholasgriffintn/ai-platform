@@ -1,229 +1,230 @@
 import {
-	MAX_AGENT_STEPS,
-	MAX_COMMANDS,
-	MAX_OBSERVATION_CHARS,
-	MAX_READ_FILES_BATCH,
-	MAX_SNIPPET_CHARS,
+  MAX_AGENT_STEPS,
+  MAX_COMMANDS,
+  MAX_OBSERVATION_CHARS,
+  MAX_READ_FILES_BATCH,
+  MAX_SNIPPET_CHARS,
 } from "./constants";
 import {
-	formatPromptStrategyExamples,
-	formatPromptStrategyFocus,
-	type PromptStrategySelection,
+  formatPromptStrategyExamples,
+  formatPromptStrategyFocus,
+  type PromptStrategySelection,
 } from "./prompt-strategy";
 import type { ReadFileResult, RepositoryContext } from "./types";
 import { truncateForModel } from "./utils";
 
 function formatRepositoryContext(repoContext: RepositoryContext): string {
-	const topLevelText = repoContext.topLevelEntries.length
-		? repoContext.topLevelEntries.map((entry) => `- ${entry}`).join("\n")
-		: "- (unable to detect top-level entries)";
+  const topLevelText = repoContext.topLevelEntries.length
+    ? repoContext.topLevelEntries.map((entry) => `- ${entry}`).join("\n")
+    : "- (unable to detect top-level entries)";
 
-	const filesText = repoContext.files.length
-		? repoContext.files
-				.map(
-					(entry) =>
-						`File: ${entry.path}\n\`\`\`\n${truncateForModel(entry.snippet, MAX_SNIPPET_CHARS)}\n\`\`\``,
-				)
-				.join("\n\n")
-		: "No context files were detected.";
+  const filesText = repoContext.files.length
+    ? repoContext.files
+        .map(
+          (entry) =>
+            `File: ${entry.path}\n\`\`\`\n${truncateForModel(entry.snippet, MAX_SNIPPET_CHARS)}\n\`\`\``,
+        )
+        .join("\n\n")
+    : "No context files were detected.";
 
-	const instructionText = repoContext.taskInstructions
-		? `Found ${repoContext.taskInstructionSource.toUpperCase()} instructions in ${repoContext.taskInstructions.path}:\n\`\`\`\n${truncateForModel(repoContext.taskInstructions.snippet, MAX_SNIPPET_CHARS)}\n\`\`\``
-		: "No task instruction files were found.";
+  const instructionText = repoContext.taskInstructions
+    ? `Found ${repoContext.taskInstructionSource.toUpperCase()} instructions in ${repoContext.taskInstructions.path}:\n\`\`\`\n${truncateForModel(repoContext.taskInstructions.snippet, MAX_SNIPPET_CHARS)}\n\`\`\``
+    : "No task instruction files were found.";
 
-	return [
-		"Repository top-level entries:",
-		topLevelText,
-		"",
-		"Detected file context snippets:",
-		filesText,
-		"",
-		"Task instructions (PRD preferred):",
-		instructionText,
-	].join("\n");
+  return [
+    "Repository top-level entries:",
+    topLevelText,
+    "",
+    "Detected file context snippets:",
+    filesText,
+    "",
+    "Task instructions (PRD preferred):",
+    instructionText,
+  ].join("\n");
 }
 
 function formatPromptStrategySection(promptStrategy: PromptStrategySelection): string {
-	return [
-		`Selected prompt strategy: ${promptStrategy.definition.label} (${promptStrategy.strategy})`,
-		`Selection reason: ${promptStrategy.reason}`,
-		"",
-		"Planning focus:",
-		formatPromptStrategyFocus(promptStrategy.definition, "planning"),
-		"",
-		"Good implementation examples to emulate:",
-		formatPromptStrategyExamples(promptStrategy.definition),
-	].join("\n");
+  return [
+    `Selected prompt strategy: ${promptStrategy.definition.label} (${promptStrategy.strategy})`,
+    `Selection reason: ${promptStrategy.reason}`,
+    "",
+    "Planning focus:",
+    formatPromptStrategyFocus(promptStrategy.definition, "planning"),
+    "",
+    "Good implementation examples to emulate:",
+    formatPromptStrategyExamples(promptStrategy.definition),
+  ].join("\n");
 }
 
 export function buildPlanningPrompt(params: {
-	repoName: string;
-	task: string;
-	repoContext: RepositoryContext;
-	promptStrategy: PromptStrategySelection;
+  repoName: string;
+  task: string;
+  repoContext: RepositoryContext;
+  promptStrategy: PromptStrategySelection;
 }): string {
-	const { repoName, task, repoContext, promptStrategy } = params;
-	const context = formatRepositoryContext(repoContext);
-	const promptStrategySection = formatPromptStrategySection(promptStrategy);
+  const { repoName, task, repoContext, promptStrategy } = params;
+  const context = formatRepositoryContext(repoContext);
+  const promptStrategySection = formatPromptStrategySection(promptStrategy);
 
-	return [
-		`You are planning a code implementation for repository ${repoName}.`,
-		`Task: ${task}`,
-		"",
-		context,
-		"",
-		promptStrategySection,
-		"",
-		"Planning requirements:",
-		"1. If PRD user stories exist, choose one passes=false story to implement first and cite its story id/title.",
-		"2. Explain what files should be changed and why.",
-		"3. Define key implementation steps and ordering.",
-		"4. Include a 'Validation commands' section with one shell command per line (no chaining).",
-		"5. Call out risks or assumptions to verify during execution.",
-		"6. If checks are independent and safe to run together, call out a run_parallel batch candidate (for example: git status --short, rg --files, lint, test).",
-	].join("\n");
+  return [
+    `You are planning a code implementation for repository ${repoName}.`,
+    `Task: ${task}`,
+    "",
+    context,
+    "",
+    promptStrategySection,
+    "",
+    "Planning requirements:",
+    "1. If PRD user stories exist, choose one passes=false story to implement first and cite its story id/title.",
+    "2. Explain what files should be changed and why.",
+    "3. Define key implementation steps and ordering.",
+    "4. Include a 'Validation commands' section with one shell command per line (no chaining).",
+    "5. Call out risks or assumptions to verify during execution.",
+    "6. If checks are independent and safe to run together, call out a run_parallel batch candidate (for example: git status --short, rg --files, lint, test).",
+  ].join("\n");
 }
 
 export function buildAgentSystemPrompt(params: {
-	repoTargetDir: string;
-	promptStrategy: PromptStrategySelection;
-	readOnlyCommands?: boolean;
+  repoTargetDir: string;
+  promptStrategy: PromptStrategySelection;
+  readOnlyCommands?: boolean;
 }): string {
-	const { repoTargetDir, promptStrategy, readOnlyCommands } = params;
-	return [
-		"You are an autonomous coding agent running inside a sandboxed shell.",
-		`Repository root is '${repoTargetDir}'.`,
-		`Selected prompt strategy: ${promptStrategy.definition.label} (${promptStrategy.strategy}).`,
-		`Selection reason: ${promptStrategy.reason}`,
-		"",
-		"Execution focus:",
-		formatPromptStrategyFocus(promptStrategy.definition, "execution"),
-		"",
-		"Respond with exactly one JSON object per message and no markdown.",
-		"",
-		"Allowed actions:",
-		'- run_command: {"action":"run_command","command":"...","reasoning":"..."}',
-		'- run_parallel: {"action":"run_parallel","commands":["...","..."],"reasoning":"..."}',
-		'- read_file: {"action":"read_file","path":"path/from/repo/root","startLine":1,"endLine":120,"reasoning":"..."}',
-		'- read_files: {"action":"read_files","files":[{"path":"path/from/repo/root","startLine":1,"endLine":120},{"path":"another/path"}],"reasoning":"..."}',
-		'- run_script: {"action":"run_script","code":"...","language":"python","reasoning":"..."}',
-		'- update_plan: {"action":"update_plan","plan":"...","reasoning":"..."}',
-		'- finish: {"action":"finish","summary":"...","reasoning":"..."}',
-		"",
-		"Rules for run_command:",
-		"- Must be a single command.",
-		"- Do not include cd.",
-		"- Do not chain commands with &&, ||, ;, pipes, or command substitution.",
-		"- Prefer safe inspection/edit/build/test commands.",
-		readOnlyCommands
-			? "- This run is read-only: use only inspection and test/lint/typecheck commands."
-			: "",
-		"",
-		"Rules for run_parallel:",
-		"- Use only independent read-only inspection/verification commands.",
-		"- Maximum 4 commands per run_parallel action.",
-		"- Each command must follow all run_command safety rules.",
-		"- Do not use run_parallel for mutating commands.",
-		"",
-		"Rules for read_files:",
-		`- Maximum ${MAX_READ_FILES_BATCH} files per read_files action.`,
-		"- Use for parallel context gathering across independent files.",
-		"- Each file target accepts path and optional startLine/endLine.",
-		"",
-		"Rules for run_script:",
-		"- Write a script that performs multiple file operations or shell commands in one step.",
-		"- Supported languages: python, javascript, typescript (default: javascript).",
-		`- The script runs inside the sandbox container with full filesystem access at '${repoTargetDir}'.`,
-		"- Use run_script when you need to batch multiple file reads, writes, or edits in one step.",
-		"- Prefer run_script over sequential run_command calls when making changes to 3+ files.",
-		"- The script's stdout/stderr will be returned as the observation.",
-		readOnlyCommands ? "- Scripts are not allowed for this read-only run." : "",
-		"",
-		"Tool-use heuristics:",
-		"- Prefer read_file first when the target file or exact edit location is uncertain.",
-		"- Prefer read_files for fast multi-file context gathering before writing code.",
-		"- Prefer run_parallel for independent, safe checks (for example: git status --short plus rg/ls/test/lint).",
-		"- Prefer run_script for coordinated edits across multiple files or when a command pipeline would otherwise be required.",
-		"- Prefer deterministic inspection commands (rg, ls, cat, git status, git diff) before build/test commands.",
-		"- If a command/script is blocked or fails, do not repeat it unchanged: update_plan with a revised approach before continuing.",
-		"",
-		"Use read_file when you need more context before deciding on commands.",
-		"After each command result, adapt the next action based on the output.",
-		"Use finish only when the task is implemented and validated, or when blocked with a clear reason.",
-	]
-		.filter(Boolean)
-		.join("\n");
+  const { repoTargetDir, promptStrategy, readOnlyCommands } = params;
+
+  return [
+    "You are an autonomous coding agent running inside a sandboxed shell.",
+    `Repository root is '${repoTargetDir}'.`,
+    `Selected prompt strategy: ${promptStrategy.definition.label} (${promptStrategy.strategy}).`,
+    `Selection reason: ${promptStrategy.reason}`,
+    "",
+    "Execution focus:",
+    formatPromptStrategyFocus(promptStrategy.definition, "execution"),
+    "",
+    "Respond with exactly one JSON object per message and no markdown.",
+    "",
+    "Allowed actions:",
+    '- run_command: {"action":"run_command","command":"...","reasoning":"..."}',
+    '- run_parallel: {"action":"run_parallel","commands":["...","..."],"reasoning":"..."}',
+    '- read_file: {"action":"read_file","path":"path/from/repo/root","startLine":1,"endLine":120,"reasoning":"..."}',
+    '- read_files: {"action":"read_files","files":[{"path":"path/from/repo/root","startLine":1,"endLine":120},{"path":"another/path"}],"reasoning":"..."}',
+    '- run_script: {"action":"run_script","code":"...","language":"python","reasoning":"..."}',
+    '- update_plan: {"action":"update_plan","plan":"...","reasoning":"..."}',
+    '- finish: {"action":"finish","summary":"...","reasoning":"..."}',
+    "",
+    "Rules for run_command:",
+    "- Must be a single command.",
+    "- Do not include cd.",
+    "- Do not chain commands with &&, ||, ;, pipes, or command substitution.",
+    "- Prefer safe inspection/edit/build/test commands.",
+    readOnlyCommands
+      ? "- This run is read-only: use only inspection and test/lint/typecheck commands."
+      : "",
+    "",
+    "Rules for run_parallel:",
+    "- Use only independent read-only inspection/verification commands.",
+    "- Maximum 4 commands per run_parallel action.",
+    "- Each command must follow all run_command safety rules.",
+    "- Do not use run_parallel for mutating commands.",
+    "",
+    "Rules for read_files:",
+    `- Maximum ${MAX_READ_FILES_BATCH} files per read_files action.`,
+    "- Use for parallel context gathering across independent files.",
+    "- Each file target accepts path and optional startLine/endLine.",
+    "",
+    "Rules for run_script:",
+    "- Write a script that performs multiple file operations or shell commands in one step.",
+    "- Supported languages: python, javascript, typescript (default: javascript).",
+    `- The script runs inside the sandbox container with full filesystem access at '${repoTargetDir}'.`,
+    "- Use run_script when you need to batch multiple file reads, writes, or edits in one step.",
+    "- Prefer run_script over sequential run_command calls when making changes to 3+ files.",
+    "- The script's stdout/stderr will be returned as the observation.",
+    readOnlyCommands ? "- Scripts are not allowed for this read-only run." : "",
+    "",
+    "Tool-use heuristics:",
+    "- Prefer read_file first when the target file or exact edit location is uncertain.",
+    "- Prefer read_files for fast multi-file context gathering before writing code.",
+    "- Prefer run_parallel for independent, safe checks (for example: git status --short plus rg/ls/test/lint).",
+    "- Prefer run_script for coordinated edits across multiple files or when a command pipeline would otherwise be required.",
+    "- Prefer deterministic inspection commands (rg, ls, cat, git status, git diff) before build/test commands.",
+    "- If a command/script is blocked or fails, do not repeat it unchanged: update_plan with a revised approach before continuing.",
+    "",
+    "Use read_file when you need more context before deciding on commands.",
+    "After each command result, adapt the next action based on the output.",
+    "Use finish only when the task is implemented and validated, or when blocked with a clear reason.",
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 export function buildAgentKickoffPrompt(params: {
-	repoName: string;
-	task: string;
-	plan: string;
-	repoContext: RepositoryContext;
-	promptStrategy: PromptStrategySelection;
+  repoName: string;
+  task: string;
+  plan: string;
+  repoContext: RepositoryContext;
+  promptStrategy: PromptStrategySelection;
 }): string {
-	const context = formatRepositoryContext(params.repoContext);
+  const context = formatRepositoryContext(params.repoContext);
 
-	return [
-		`Repository: ${params.repoName}`,
-		`Task: ${params.task}`,
-		"",
-		`Prompt strategy: ${params.promptStrategy.definition.label} (${params.promptStrategy.strategy})`,
-		`Reason: ${params.promptStrategy.reason}`,
-		"",
-		"Current implementation plan:",
-		params.plan,
-		"",
-		context,
-		"",
-		`Execution limits: max ${MAX_COMMANDS} commands and ${MAX_AGENT_STEPS} total agent steps.`,
-		"Return the next best action as JSON.",
-	].join("\n");
+  return [
+    `Repository: ${params.repoName}`,
+    `Task: ${params.task}`,
+    "",
+    `Prompt strategy: ${params.promptStrategy.definition.label} (${params.promptStrategy.strategy})`,
+    `Reason: ${params.promptStrategy.reason}`,
+    "",
+    "Current implementation plan:",
+    params.plan,
+    "",
+    context,
+    "",
+    `Execution limits: max ${MAX_COMMANDS} commands and ${MAX_AGENT_STEPS} total agent steps.`,
+    "Return the next best action as JSON.",
+  ].join("\n");
 }
 
 export function formatReadObservation(result: ReadFileResult): string {
-	if (result.error) {
-		return [
-			`File read failed for ${result.path}.`,
-			`Error: ${truncateForModel(result.error)}`,
-			"Choose a different path or action.",
-		].join("\n");
-	}
+  if (result.error) {
+    return [
+      `File read failed for ${result.path}.`,
+      `Error: ${truncateForModel(result.error)}`,
+      "Choose a different path or action.",
+    ].join("\n");
+  }
 
-	return [
-		`Read file ${result.path} lines ${result.startLine}-${result.endLine}.`,
-		result.truncated ? "Output was truncated." : "",
-		"File contents:",
-		"```",
-		truncateForModel(result.content, MAX_OBSERVATION_CHARS),
-		"```",
-	]
-		.filter(Boolean)
-		.join("\n");
+  return [
+    `Read file ${result.path} lines ${result.startLine}-${result.endLine}.`,
+    result.truncated ? "Output was truncated." : "",
+    "File contents:",
+    "```",
+    truncateForModel(result.content, MAX_OBSERVATION_CHARS),
+    "```",
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 export function formatCommandObservation(params: {
-	command: string;
-	result: {
-		exitCode: number;
-		stdout: string;
-		stderr: string;
-		success: boolean;
-	};
+  command: string;
+  result: {
+    exitCode: number;
+    stdout: string;
+    stderr: string;
+    success: boolean;
+  };
 }): string {
-	const { command, result } = params;
+  const { command, result } = params;
 
-	return [
-		`Command: ${command}`,
-		`Success: ${result.success}`,
-		`Exit code: ${result.exitCode}`,
-		"STDOUT:",
-		"```",
-		truncateForModel(result.stdout.trim(), MAX_OBSERVATION_CHARS),
-		"```",
-		"STDERR:",
-		"```",
-		truncateForModel(result.stderr.trim(), MAX_OBSERVATION_CHARS),
-		"```",
-	].join("\n");
+  return [
+    `Command: ${command}`,
+    `Success: ${result.success}`,
+    `Exit code: ${result.exitCode}`,
+    "STDOUT:",
+    "```",
+    truncateForModel(result.stdout.trim(), MAX_OBSERVATION_CHARS),
+    "```",
+    "STDERR:",
+    "```",
+    truncateForModel(result.stderr.trim(), MAX_OBSERVATION_CHARS),
+    "```",
+  ].join("\n");
 }

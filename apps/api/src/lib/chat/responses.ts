@@ -1,8 +1,8 @@
-import { findModelConfig } from "~/lib/providers/models";
+import { toProviderMessages } from "~/lib/chat/providerMessages";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { findModelConfig } from "~/lib/providers/models";
 import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 import { StorageService } from "~/lib/storage";
-import { toProviderMessages } from "~/lib/chat/providerMessages";
 import type { AssistantMessageData, ChatCompletionParameters, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -19,291 +19,304 @@ const logger = getLogger({ prefix: "lib/chat/responses" });
  * by both streaming and non-streaming response handlers
  */
 export function formatAssistantMessage({
-	content = "",
-	thinking = "",
-	signature = "",
-	citations = [],
-	tool_calls = [],
-	data = null,
-	usage = null,
-	guardrails = { passed: true },
-	log_id = null,
-	model = "",
-	selected_models = [],
-	platform = "api",
-	timestamp = Date.now(),
-	id = generateId(),
-	finish_reason = null,
-	mode,
-	refusal = null,
-	annotations = null,
+  content = "",
+  thinking = "",
+  signature = "",
+  citations = [],
+  tool_calls = [],
+  data = null,
+  usage = null,
+  guardrails = { passed: true },
+  log_id = null,
+  model = "",
+  selected_models = [],
+  platform = "api",
+  timestamp = Date.now(),
+  id = generateId(),
+  finish_reason = null,
+  mode,
+  refusal = null,
+  annotations = null,
 }: Partial<AssistantMessageData>): AssistantMessageData {
-	if (tool_calls && !Array.isArray(tool_calls)) {
-		logger.warn("Invalid tool_calls format, expected array", {
-			tool_calls,
-		});
-		tool_calls = [];
-	}
+  if (tool_calls && !Array.isArray(tool_calls)) {
+    logger.warn("Invalid tool_calls format, expected array", {
+      tool_calls,
+    });
+    tool_calls = [];
+  }
 
-	if (citations && !Array.isArray(citations)) {
-		logger.warn("Invalid citations format, expected array", {
-			citations,
-		});
-		citations = [];
-	}
+  if (citations && !Array.isArray(citations)) {
+    logger.warn("Invalid citations format, expected array", {
+      citations,
+    });
+    citations = [];
+  }
 
-	if (typeof timestamp !== "number" || Number.isNaN(timestamp)) {
-		logger.warn("Invalid timestamp, using current time", { timestamp });
-		timestamp = Date.now();
-	}
+  if (typeof timestamp !== "number" || Number.isNaN(timestamp)) {
+    logger.warn("Invalid timestamp, using current time", { timestamp });
+    timestamp = Date.now();
+  }
 
-	const determinedFinishReason = finish_reason || (tool_calls?.length ? "tool_calls" : "stop");
+  const determinedFinishReason = finish_reason || (tool_calls?.length ? "tool_calls" : "stop");
 
-	const finalUsage = usage || {
-		prompt_tokens: 0,
-		completion_tokens: 0,
-		total_tokens: 0,
-	};
+  const finalUsage = usage || {
+    prompt_tokens: 0,
+    completion_tokens: 0,
+    total_tokens: 0,
+  };
 
-	let messageContent: string | Array<any> = content;
-	if (thinking || signature) {
-		const contentBlocks = [];
-		if (thinking) {
-			contentBlocks.push({
-				type: "thinking",
-				thinking,
-				signature: signature || "",
-			});
-		}
-		if (content) {
-			contentBlocks.push({
-				type: "text",
-				text: content,
-			});
-		}
-		messageContent = contentBlocks;
-	}
+  let messageContent: string | Array<any> = content;
 
-	return {
-		content: messageContent,
-		thinking,
-		signature,
-		citations,
-		tool_calls,
-		data,
-		usage: finalUsage,
-		guardrails,
-		log_id,
-		model,
-		selected_models,
-		platform,
-		timestamp,
-		id,
-		finish_reason: determinedFinishReason,
-		mode,
-		refusal,
-		annotations,
-	};
+  if (thinking || signature) {
+    const contentBlocks = [];
+
+    if (thinking) {
+      contentBlocks.push({
+        type: "thinking",
+        thinking,
+        signature: signature || "",
+      });
+    }
+
+    if (content) {
+      contentBlocks.push({
+        type: "text",
+        text: content,
+      });
+    }
+
+    messageContent = contentBlocks;
+  }
+
+  return {
+    content: messageContent,
+    thinking,
+    signature,
+    citations,
+    tool_calls,
+    data,
+    usage: finalUsage,
+    guardrails,
+    log_id,
+    model,
+    selected_models,
+    platform,
+    timestamp,
+    id,
+    finish_reason: determinedFinishReason,
+    mode,
+    refusal,
+    annotations,
+  };
 }
 
 export async function getAIResponse(request: ChatCompletionParameters) {
-	const {
-		app_url,
-		system_prompt,
-		env,
-		context,
-		mode,
-		model,
-		models,
-		provider: requestedProvider,
-		messages,
-		message,
-		enabled_tools,
-		tools,
-		...params
-	} = request;
-	const user = context?.user;
-	const requestedModel = model || models?.[0];
-	if (!requestedModel) {
-		throw new AssistantError("Model is required", ErrorType.PARAMS_ERROR);
-	}
+  const {
+    app_url,
+    system_prompt,
+    env,
+    context,
+    mode,
+    model,
+    models,
+    provider: requestedProvider,
+    messages,
+    message,
+    enabled_tools,
+    tools,
+    ...params
+  } = request;
+  const user = context?.user;
+  const requestedModel = model || models?.[0];
 
-	if (!messages || !Array.isArray(messages) || messages.length === 0) {
-		throw new AssistantError(
-			"Messages array is required and cannot be empty",
-			ErrorType.PARAMS_ERROR,
-		);
-	}
+  if (!requestedModel) {
+    throw new AssistantError("Model is required", ErrorType.PARAMS_ERROR);
+  }
 
-	logger.debug("Getting AI response", {
-		model: requestedModel,
-		provider: requestedProvider,
-		mode,
-		user: user?.id,
-	});
+  if (!messages || !Array.isArray(messages) || messages.length === 0) {
+    throw new AssistantError(
+      "Messages array is required and cannot be empty",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
 
-	let modelConfig;
-	try {
-		modelConfig = await findModelConfig(requestedModel, env, requestedProvider, user?.id);
-		if (!modelConfig) {
-			throw new AssistantError(
-				`Model configuration not found for ${requestedModel}`,
-				ErrorType.PARAMS_ERROR,
-			);
-		}
-	} catch (error: any) {
-		logger.error("Failed to get model configuration", { model: requestedModel, error });
-		throw new AssistantError(
-			`Invalid model configuration for ${requestedModel}: ${error.message}`,
-			ErrorType.PARAMS_ERROR,
-		);
-	}
+  logger.debug("Getting AI response", {
+    model: requestedModel,
+    provider: requestedProvider,
+    mode,
+    user: user?.id,
+  });
 
-	let provider;
-	try {
-		provider = getChatProvider(modelConfig?.provider || "workers-ai", {
-			env,
-			user,
-		});
-	} catch (error: any) {
-		logger.error("Failed to initialize provider", {
-			provider: modelConfig?.provider,
-			error,
-		});
-		throw new AssistantError(
-			`Failed to initialize provider ${modelConfig?.provider}: ${error.message}`,
-			ErrorType.PROVIDER_ERROR,
-		);
-	}
+  let modelConfig;
 
-	const providerMessages = toProviderMessages(messages);
+  try {
+    modelConfig = await findModelConfig(requestedModel, env, requestedProvider, user?.id);
+    if (!modelConfig) {
+      throw new AssistantError(
+        `Model configuration not found for ${requestedModel}`,
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+  } catch (error: any) {
+    logger.error("Failed to get model configuration", { model: requestedModel, error });
+    throw new AssistantError(
+      `Invalid model configuration for ${requestedModel}: ${error.message}`,
+      ErrorType.PARAMS_ERROR,
+    );
+  }
 
-	const filteredMessages =
-		mode === "normal"
-			? providerMessages.filter((msg: Message) => !msg.mode || msg.mode === "normal")
-			: providerMessages;
+  let provider;
 
-	if (filteredMessages.length === 0) {
-		logger.warn("No messages after filtering", { mode });
-		throw new AssistantError("No valid messages after filtering", ErrorType.PARAMS_ERROR);
-	}
+  try {
+    provider = getChatProvider(modelConfig?.provider || "workers-ai", {
+      env,
+      user,
+    });
+  } catch (error: any) {
+    logger.error("Failed to initialize provider", {
+      provider: modelConfig?.provider,
+      error,
+    });
+    throw new AssistantError(
+      `Failed to initialize provider ${modelConfig?.provider}: ${error.message}`,
+      ErrorType.PROVIDER_ERROR,
+    );
+  }
 
-	const resolvedAssetParams = await resolvePrivateAssetUrls({
-		params: { ...request, messages: filteredMessages },
-		storageService: StorageService.forPrivateAssetsEnv(env),
-		assetsUrl: env.API_BASE_URL || "",
-	});
+  const providerMessages = toProviderMessages(messages);
 
-	let formattedMessages;
-	const resolvedModel = modelConfig.matchingModel;
-	try {
-		formattedMessages = formatMessages(
-			provider.name,
-			resolvedAssetParams.messages,
-			system_prompt,
-			resolvedModel,
-		);
-	} catch (error: any) {
-		logger.error("Failed to format messages", { error });
-		throw new AssistantError(`Failed to format messages: ${error.message}`, ErrorType.PARAMS_ERROR);
-	}
+  const filteredMessages =
+    mode === "normal"
+      ? providerMessages.filter((msg: Message) => !msg.mode || msg.mode === "normal")
+      : providerMessages;
 
-	const shouldStream = shouldEnableStreaming(
-		modelConfig,
-		provider.supportsStreaming,
-		params.stream,
-	);
+  if (filteredMessages.length === 0) {
+    logger.warn("No messages after filtering", { mode });
+    throw new AssistantError("No valid messages after filtering", ErrorType.PARAMS_ERROR);
+  }
 
-	let parameters;
-	try {
-		parameters = mergeParametersWithDefaults({
-			...params,
-			model: resolvedModel,
-			provider: modelConfig.provider,
-			messages: formattedMessages,
-			message,
-			mode,
-			app_url,
-			system_prompt,
-			env,
-			context,
-			stream: shouldStream,
-			enabled_tools,
-			tools,
-		});
-	} catch (error: any) {
-		logger.error("Failed to merge parameters", { error });
-		throw new AssistantError(
-			`Failed to prepare request parameters: ${error.message}`,
-			ErrorType.PARAMS_ERROR,
-		);
-	}
+  const resolvedAssetParams = await resolvePrivateAssetUrls({
+    params: { ...request, messages: filteredMessages },
+    storageService: StorageService.forPrivateAssetsEnv(env),
+    assetsUrl: env.API_BASE_URL || "",
+  });
 
-	const startTime = Date.now();
-	let response;
-	try {
-		response = await withRetry(() => provider.getResponse(parameters, user?.id), {
-			retryCount: 1,
-			baseDelayMs: 1000,
-			isRetryableError: isRetryableProviderError,
-			onRetry: (attempt, error, delayMs) => {
-				logger.warn("Retrying model invocation after retryable provider error", {
-					model: requestedModel,
-					provider: provider.name,
-					attempt,
-					delayMs,
-					error,
-				});
-			},
-		});
-	} catch (err: any) {
-		let errorType = ErrorType.PROVIDER_ERROR;
-		let statusCode =
-			typeof err.statusCode === "number"
-				? err.statusCode
-				: typeof err.status === "number"
-					? err.status
-					: 500;
-		if (isProviderRateLimitError(err)) {
-			errorType = ErrorType.RATE_LIMIT_ERROR;
-			statusCode = 429;
-		} else if (statusCode >= 500) {
-			errorType = ErrorType.PROVIDER_ERROR;
-		} else if (statusCode === 401 || statusCode === 403) {
-			errorType = ErrorType.AUTHENTICATION_ERROR;
-		}
+  let formattedMessages;
+  const resolvedModel = modelConfig.matchingModel;
 
-		logger.error("Model invocation failed", {
-			model: requestedModel,
-			provider: provider.name,
-			error: err,
-			errorType,
-		});
+  try {
+    formattedMessages = formatMessages(
+      provider.name,
+      resolvedAssetParams.messages,
+      system_prompt,
+      resolvedModel,
+    );
+  } catch (error: any) {
+    logger.error("Failed to format messages", { error });
+    throw new AssistantError(`Failed to format messages: ${error.message}`, ErrorType.PARAMS_ERROR);
+  }
 
-		throw new AssistantError(
-			`${provider.name} error: ${err.message || "Unknown error"}`,
-			errorType,
-			statusCode,
-			err instanceof AssistantError ? err.context : {},
-		);
-	}
-	const durationMs = Date.now() - startTime;
-	const usageTokens =
-		typeof response === "object" && response && "usage" in response
-			? response.usage.total_tokens
-			: null;
-	logger.debug("Model invocation metrics", {
-		model: requestedModel,
-		provider: provider.name,
-		durationMs,
-		usageTokens,
-	});
+  const shouldStream = shouldEnableStreaming(
+    modelConfig,
+    provider.supportsStreaming,
+    params.stream,
+  );
 
-	if (!response) {
-		throw new AssistantError("Provider returned empty response", ErrorType.PROVIDER_ERROR);
-	}
+  let parameters;
 
-	logger.debug("AI response received", { model: requestedModel, mode, user: user?.id });
+  try {
+    parameters = mergeParametersWithDefaults({
+      ...params,
+      model: resolvedModel,
+      provider: modelConfig.provider,
+      messages: formattedMessages,
+      message,
+      mode,
+      app_url,
+      system_prompt,
+      env,
+      context,
+      stream: shouldStream,
+      enabled_tools,
+      tools,
+    });
+  } catch (error: any) {
+    logger.error("Failed to merge parameters", { error });
+    throw new AssistantError(
+      `Failed to prepare request parameters: ${error.message}`,
+      ErrorType.PARAMS_ERROR,
+    );
+  }
 
-	return response;
+  const startTime = Date.now();
+  let response;
+
+  try {
+    response = await withRetry(() => provider.getResponse(parameters, user?.id), {
+      retryCount: 1,
+      baseDelayMs: 1000,
+      isRetryableError: isRetryableProviderError,
+      onRetry: (attempt, error, delayMs) => {
+        logger.warn("Retrying model invocation after retryable provider error", {
+          model: requestedModel,
+          provider: provider.name,
+          attempt,
+          delayMs,
+          error,
+        });
+      },
+    });
+  } catch (err: any) {
+    let errorType = ErrorType.PROVIDER_ERROR;
+    let statusCode =
+      typeof err.statusCode === "number"
+        ? err.statusCode
+        : typeof err.status === "number"
+          ? err.status
+          : 500;
+
+    if (isProviderRateLimitError(err)) {
+      errorType = ErrorType.RATE_LIMIT_ERROR;
+      statusCode = 429;
+    } else if (statusCode >= 500) {
+      errorType = ErrorType.PROVIDER_ERROR;
+    } else if (statusCode === 401 || statusCode === 403) {
+      errorType = ErrorType.AUTHENTICATION_ERROR;
+    }
+
+    logger.error("Model invocation failed", {
+      model: requestedModel,
+      provider: provider.name,
+      error: err,
+      errorType,
+    });
+
+    throw new AssistantError(
+      `${provider.name} error: ${err.message || "Unknown error"}`,
+      errorType,
+      statusCode,
+      err instanceof AssistantError ? err.context : {},
+    );
+  }
+
+  const durationMs = Date.now() - startTime;
+  const usageTokens =
+    typeof response === "object" && response && "usage" in response
+      ? response.usage.total_tokens
+      : null;
+
+  logger.debug("Model invocation metrics", {
+    model: requestedModel,
+    provider: provider.name,
+    durationMs,
+    usageTokens,
+  });
+
+  if (!response) {
+    throw new AssistantError("Provider returned empty response", ErrorType.PROVIDER_ERROR);
+  }
+
+  logger.debug("AI response received", { model: requestedModel, mode, user: user?.id });
+
+  return response;
 }

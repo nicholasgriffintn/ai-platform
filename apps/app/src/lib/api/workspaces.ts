@@ -1,157 +1,168 @@
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import type {
-	AddProjectCapabilityInput,
-	CreateProjectInput,
-	CreateWorkspaceInput,
-	CreateWorkspaceInvitationInput,
-	ProjectDetail,
-	UpdateProjectInput,
-	UpdateWorkspaceInput,
-	WorkspaceDetail,
-	WorkspaceInvitationDelivery,
-	WorkspaceSummary,
+  AddProjectCapabilityInput,
+  CreateProjectInput,
+  CreateWorkspaceInput,
+  CreateWorkspaceInvitationInput,
+  ProjectDetail,
+  UpdateProjectInput,
+  UpdateWorkspaceInput,
+  WorkspaceDetail,
+  WorkspaceInvitationDelivery,
+  WorkspaceSummary,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service";
-import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import { fetchApiOrThrow } from "./fetch-wrapper";
 
 async function authHeaders() {
-	return apiService.getHeaders();
+  return apiService.getHeaders();
 }
 
 export async function listWorkspaces(): Promise<{ workspaces: WorkspaceSummary[] }> {
-	const response = await fetchApiOrThrow("/workspaces", {
-		method: "GET",
-		headers: await authHeaders(),
-	});
-	return returnFetchedData(response);
+  const response = await fetchApiOrThrow("/workspaces", {
+    method: "GET",
+    headers: await authHeaders(),
+  });
+
+  return returnFetchedData(response);
 }
 
 export async function getWorkspace(workspaceId: string): Promise<WorkspaceDetail> {
-	const response = await fetchApiOrThrow(`/workspaces/${workspaceId}`, {
-		method: "GET",
-		headers: await authHeaders(),
-	});
-	return returnFetchedData(response);
+  const response = await fetchApiOrThrow(`/workspaces/${workspaceId}`, {
+    method: "GET",
+    headers: await authHeaders(),
+  });
+
+  return returnFetchedData(response);
 }
 
 export async function createWorkspace(input: CreateWorkspaceInput): Promise<WorkspaceDetail> {
-	const response = await fetchApiOrThrow("/workspaces", {
-		method: "POST",
-		headers: await authHeaders(),
-		body: input,
-	});
-	return returnFetchedData(response);
+  const response = await fetchApiOrThrow("/workspaces", {
+    method: "POST",
+    headers: await authHeaders(),
+    body: input,
+  });
+
+  return returnFetchedData(response);
 }
 
 export async function updateWorkspace(
-	workspaceId: string,
-	input: UpdateWorkspaceInput,
+  workspaceId: string,
+  input: UpdateWorkspaceInput,
 ): Promise<WorkspaceDetail> {
-	const response = await fetchApiOrThrow(`/workspaces/${workspaceId}`, {
-		method: "PUT",
-		headers: await authHeaders(),
-		body: input,
-	});
-	return returnFetchedData(response);
+  const response = await fetchApiOrThrow(`/workspaces/${workspaceId}`, {
+    method: "PUT",
+    headers: await authHeaders(),
+    body: input,
+  });
+
+  return returnFetchedData(response);
 }
 
 export async function deleteWorkspace(workspaceId: string): Promise<void> {
-	await fetchApiOrThrow(`/workspaces/${workspaceId}`, {
-		method: "DELETE",
-		headers: await authHeaders(),
-	});
+  await fetchApiOrThrow(`/workspaces/${workspaceId}`, {
+    method: "DELETE",
+    headers: await authHeaders(),
+  });
 }
 
 export async function createProject(
-	workspaceId: string,
-	input: CreateProjectInput,
+  workspaceId: string,
+  input: CreateProjectInput,
 ): Promise<ProjectDetail> {
-	const response = await fetchApiOrThrow(`/workspaces/${workspaceId}/projects`, {
-		method: "POST",
-		headers: await authHeaders(),
-		body: input,
-	});
-	return returnFetchedData(response);
+  const response = await fetchApiOrThrow(`/workspaces/${workspaceId}/projects`, {
+    method: "POST",
+    headers: await authHeaders(),
+    body: input,
+  });
+
+  return returnFetchedData(response);
 }
 
 export async function getProject(projectId: string): Promise<ProjectDetail> {
-	const response = await fetchApiOrThrow(`/projects/${projectId}`, {
-		method: "GET",
-		headers: await authHeaders(),
-	});
-	return returnFetchedData(response);
+  const response = await fetchApiOrThrow(`/projects/${projectId}`, {
+    method: "GET",
+    headers: await authHeaders(),
+  });
+
+  return returnFetchedData(response);
 }
 
 export async function updateProject(
-	projectId: string,
-	input: UpdateProjectInput,
+  projectId: string,
+  input: UpdateProjectInput,
 ): Promise<ProjectDetail> {
-	const response = await fetchApiOrThrow(`/projects/${projectId}`, {
-		method: "PUT",
-		headers: await authHeaders(),
-		body: input,
-	});
-	return returnFetchedData(response);
+  const response = await fetchApiOrThrow(`/projects/${projectId}`, {
+    method: "PUT",
+    headers: await authHeaders(),
+    body: input,
+  });
+
+  return returnFetchedData(response);
 }
 
 export async function archiveProject(projectId: string): Promise<void> {
-	await fetchApiOrThrow(`/projects/${projectId}`, {
-		method: "DELETE",
-		headers: await authHeaders(),
-	});
+  await fetchApiOrThrow(`/projects/${projectId}`, {
+    method: "DELETE",
+    headers: await authHeaders(),
+  });
 }
 
 export async function inviteWorkspaceMember(
-	workspaceId: string,
-	input: CreateWorkspaceInvitationInput,
+  workspaceId: string,
+  input: CreateWorkspaceInvitationInput,
 ): Promise<WorkspaceInvitationDelivery> {
-	const response = await fetchApiOrThrow(`/workspaces/${workspaceId}/invitations`, {
-		method: "POST",
-		headers: await authHeaders(),
-		body: input,
-	});
-	return returnFetchedData(response);
+  const response = await fetchApiOrThrow(`/workspaces/${workspaceId}/invitations`, {
+    method: "POST",
+    headers: await authHeaders(),
+    body: input,
+  });
+
+  return returnFetchedData(response);
 }
 
 export async function revokeWorkspaceInvitation(
-	workspaceId: string,
-	invitationId: string,
+  workspaceId: string,
+  invitationId: string,
 ): Promise<void> {
-	await fetchApiOrThrow(`/workspaces/${workspaceId}/invitations/${invitationId}`, {
-		method: "DELETE",
-		headers: await authHeaders(),
-	});
+  await fetchApiOrThrow(`/workspaces/${workspaceId}/invitations/${invitationId}`, {
+    method: "DELETE",
+    headers: await authHeaders(),
+  });
 }
 
 export async function acceptWorkspaceInvitation(token: string): Promise<WorkspaceDetail> {
-	const response = await fetchApiOrThrow("/workspace-invitations/accept", {
-		method: "POST",
-		headers: await authHeaders(),
-		body: { token },
-	});
-	return returnFetchedData(response);
+  const response = await fetchApiOrThrow("/workspace-invitations/accept", {
+    method: "POST",
+    headers: await authHeaders(),
+    body: { token },
+  });
+
+  return returnFetchedData(response);
 }
 
 export async function addProjectCapability(
-	projectId: string,
-	input: AddProjectCapabilityInput,
+  projectId: string,
+  input: AddProjectCapabilityInput,
 ): Promise<ProjectDetail> {
-	const response = await fetchApiOrThrow(`/projects/${projectId}/capabilities`, {
-		method: "POST",
-		headers: await authHeaders(),
-		body: input,
-	});
-	return returnFetchedData(response);
+  const response = await fetchApiOrThrow(`/projects/${projectId}/capabilities`, {
+    method: "POST",
+    headers: await authHeaders(),
+    body: input,
+  });
+
+  return returnFetchedData(response);
 }
 
 export async function removeProjectCapability(
-	projectId: string,
-	capabilityId: string,
+  projectId: string,
+  capabilityId: string,
 ): Promise<ProjectDetail> {
-	const response = await fetchApiOrThrow(`/projects/${projectId}/capabilities/${capabilityId}`, {
-		method: "DELETE",
-		headers: await authHeaders(),
-	});
-	return returnFetchedData(response);
+  const response = await fetchApiOrThrow(`/projects/${projectId}/capabilities/${capabilityId}`, {
+    method: "DELETE",
+    headers: await authHeaders(),
+  });
+
+  return returnFetchedData(response);
 }

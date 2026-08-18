@@ -1,335 +1,358 @@
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+
 import { API_BASE_URL } from "~/constants";
 import { apiKeyService } from "~/lib/api/api-key";
 import type { AnonymousUser, User, UserSettings } from "~/types";
-import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+
 import { fetchApi } from "./fetch-wrapper";
 
 interface MagicLinkSuccessResponse {
-	success: boolean;
+  success: boolean;
 }
 
 interface MagicLinkErrorResponse {
-	error: string;
+  error: string;
 }
 
 interface AppleSignInRequest {
-	identityToken: string;
-	nonce: string;
-	fullName?: string;
+  identityToken: string;
+  nonce: string;
+  fullName?: string;
 }
 
 class AuthService {
-	private static instance: AuthService;
-	private user: User | null = null;
-	private anonymousUser: AnonymousUser | null = null;
-	private userSettings: UserSettings | null = null;
-	private tokenExpiry: Date | null = null;
-	private refreshTimer: ReturnType<typeof setTimeout> | null = null;
+  private static instance: AuthService;
+  private user: User | null = null;
+  private anonymousUser: AnonymousUser | null = null;
+  private userSettings: UserSettings | null = null;
+  private tokenExpiry: Date | null = null;
+  private refreshTimer: ReturnType<typeof setTimeout> | null = null;
 
-	private constructor() {}
+  private constructor() {}
 
-	public static getInstance(): AuthService {
-		if (!AuthService.instance) {
-			AuthService.instance = new AuthService();
-		}
-		return AuthService.instance;
-	}
+  public static getInstance(): AuthService {
+    if (!AuthService.instance) {
+      AuthService.instance = new AuthService();
+    }
 
-	public initiateGithubLogin(): void {
-		window.location.href = `${API_BASE_URL}/auth/github`;
-	}
+    return AuthService.instance;
+  }
 
-	public githubLoginUrl(): string {
-		return `${API_BASE_URL}/auth/github`;
-	}
+  public initiateGithubLogin(): void {
+    window.location.href = `${API_BASE_URL}/auth/github`;
+  }
 
-	public isPasskeySupported(): boolean {
-		return (
-			typeof window !== "undefined" &&
-			window.PublicKeyCredential !== undefined &&
-			typeof window.PublicKeyCredential === "function"
-		);
-	}
+  public githubLoginUrl(): string {
+    return `${API_BASE_URL}/auth/github`;
+  }
 
-	public async isConditionalUISupported(): Promise<boolean> {
-		if (!this.isPasskeySupported()) {
-			return false;
-		}
+  public isPasskeySupported(): boolean {
+    return (
+      typeof window !== "undefined" &&
+      window.PublicKeyCredential !== undefined &&
+      typeof window.PublicKeyCredential === "function"
+    );
+  }
 
-		try {
-			return await window.PublicKeyCredential.isConditionalMediationAvailable();
-		} catch {
-			return false;
-		}
-	}
+  public async isConditionalUISupported(): Promise<boolean> {
+    if (!this.isPasskeySupported()) {
+      return false;
+    }
 
-	public async checkAuthStatus(): Promise<boolean> {
-		try {
-			const response = await fetchApi("/auth/me", {
-				method: "GET",
-				timeoutMs: 10000,
-			});
+    try {
+      return await window.PublicKeyCredential.isConditionalMediationAvailable();
+    } catch {
+      return false;
+    }
+  }
 
-			if (!response.ok) {
-				this.user = null;
-				this.anonymousUser = null;
-				this.userSettings = null;
-				return false;
-			}
+  public async checkAuthStatus(): Promise<boolean> {
+    try {
+      const response = await fetchApi("/auth/me", {
+        method: "GET",
+        timeoutMs: 10000,
+      });
 
-			const data = await returnFetchedData<{
-				user: User | null;
-				userSettings: UserSettings | null;
-				anon?: AnonymousUser | null;
-			}>(response);
-			this.anonymousUser = data?.anon ?? null;
-			if (data?.user) {
-				this.user = data.user;
-				this.userSettings = data.userSettings;
-				return true;
-			}
+      if (!response.ok) {
+        this.user = null;
+        this.anonymousUser = null;
+        this.userSettings = null;
 
-			this.user = null;
-			this.userSettings = null;
-			return false;
-		} catch (error) {
-			console.error("Error checking auth status:", error);
-			this.user = null;
-			this.anonymousUser = null;
-			this.userSettings = null;
-			return false;
-		}
-	}
+        return false;
+      }
 
-	public async getToken(): Promise<string | null> {
-		try {
-			if (this.tokenExpiry && Date.now() < this.tokenExpiry.getTime() - 2 * 60 * 1000) {
-				const existingToken = await apiKeyService.getApiKey();
-				if (existingToken) {
-					return existingToken;
-				}
-			}
+      const data = await returnFetchedData<{
+        user: User | null;
+        userSettings: UserSettings | null;
+        anon?: AnonymousUser | null;
+      }>(response);
 
-			const response = await fetchApi("/auth/token", {
-				method: "GET",
-				timeoutMs: 10000,
-			});
+      this.anonymousUser = data?.anon ?? null;
+      if (data?.user) {
+        this.user = data.user;
+        this.userSettings = data.userSettings;
 
-			if (!response.ok) {
-				return null;
-			}
+        return true;
+      }
 
-			const data = await returnFetchedData<{
-				token: string;
-				expires_in: number;
-			}>(response);
-			if (data?.token && data?.expires_in) {
-				this.tokenExpiry = new Date(Date.now() + data.expires_in * 1000);
-				this.scheduleTokenRefresh();
-				await apiKeyService.setApiKey(data.token);
-				return data.token;
-			}
+      this.user = null;
+      this.userSettings = null;
 
-			return null;
-		} catch (error) {
-			console.error("Error getting token:", error);
-			return null;
-		}
-	}
+      return false;
+    } catch (error) {
+      console.error("Error checking auth status:", error);
+      this.user = null;
+      this.anonymousUser = null;
+      this.userSettings = null;
 
-	private scheduleTokenRefresh(): void {
-		if (this.refreshTimer) {
-			clearTimeout(this.refreshTimer);
-		}
+      return false;
+    }
+  }
 
-		if (!this.tokenExpiry) {
-			return;
-		}
+  public async getToken(): Promise<string | null> {
+    try {
+      if (this.tokenExpiry && Date.now() < this.tokenExpiry.getTime() - 2 * 60 * 1000) {
+        const existingToken = await apiKeyService.getApiKey();
 
-		const refreshTime = this.tokenExpiry.getTime() - Date.now() - 3 * 60 * 1000;
+        if (existingToken) {
+          return existingToken;
+        }
+      }
 
-		if (refreshTime <= 0) {
-			this.refreshTimer = setTimeout(async () => {
-				await this.getToken();
-			}, 0);
-			return;
-		}
+      const response = await fetchApi("/auth/token", {
+        method: "GET",
+        timeoutMs: 10000,
+      });
 
-		this.refreshTimer = setTimeout(async () => {
-			await this.getToken();
-		}, refreshTime);
-	}
+      if (!response.ok) {
+        return null;
+      }
 
-	private clearTokenRefresh(): void {
-		if (this.refreshTimer) {
-			clearTimeout(this.refreshTimer);
-			this.refreshTimer = null;
-		}
-		this.tokenExpiry = null;
-	}
+      const data = await returnFetchedData<{
+        token: string;
+        expires_in: number;
+      }>(response);
 
-	public async logout(): Promise<boolean> {
-		try {
-			const response = await fetchApi("/auth/logout", {
-				method: "POST",
-				timeoutMs: 10000,
-			});
+      if (data?.token && data?.expires_in) {
+        this.tokenExpiry = new Date(Date.now() + data.expires_in * 1000);
+        this.scheduleTokenRefresh();
+        await apiKeyService.setApiKey(data.token);
 
-			if (response.ok) {
-				this.clearTokenRefresh();
-				apiKeyService.removeApiKey();
-				this.user = null;
-				this.anonymousUser = null;
-				this.userSettings = null;
-				return true;
-			}
+        return data.token;
+      }
 
-			return false;
-		} catch (error) {
-			console.error("Error logging out:", error);
-			return false;
-		}
-	}
+      return null;
+    } catch (error) {
+      console.error("Error getting token:", error);
 
-	public getUser(): User | null {
-		return this.user;
-	}
+      return null;
+    }
+  }
 
-	public getAnonymousUser(): AnonymousUser | null {
-		return this.anonymousUser;
-	}
+  private scheduleTokenRefresh(): void {
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer);
+    }
 
-	public getUserSettings(): UserSettings | null {
-		return this.userSettings;
-	}
+    if (!this.tokenExpiry) {
+      return;
+    }
 
-	public async updateUserSettings(settings: Partial<UserSettings>): Promise<boolean> {
-		try {
-			const response = await fetchApi("/user/settings", {
-				method: "PUT",
-				body: settings,
-			});
+    const refreshTime = this.tokenExpiry.getTime() - Date.now() - 3 * 60 * 1000;
 
-			if (!response.ok) {
-				return false;
-			}
+    if (refreshTime <= 0) {
+      this.refreshTimer = setTimeout(async () => {
+        await this.getToken();
+      }, 0);
 
-			await this.checkAuthStatus();
+      return;
+    }
 
-			return true;
-		} catch (error) {
-			console.error("Error updating user settings:", error);
-			return false;
-		}
-	}
+    this.refreshTimer = setTimeout(async () => {
+      await this.getToken();
+    }, refreshTime);
+  }
 
-	public async requestMagicLink(email: string): Promise<{ success: boolean; error?: string }> {
-		try {
-			const response = await fetchApi("/auth/magic-link/request", {
-				method: "POST",
-				body: JSON.stringify({ email }),
-				timeoutMs: 10000,
-			});
+  private clearTokenRefresh(): void {
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer);
+      this.refreshTimer = null;
+    }
 
-			if (!response.ok) {
-				const errorData = (await response
-					.json()
-					.catch(() => ({}))) as Partial<MagicLinkErrorResponse>;
-				return {
-					success: false,
-					error: errorData.error || "Failed to request magic link.",
-				};
-			}
+    this.tokenExpiry = null;
+  }
 
-			const data = await returnFetchedData<MagicLinkSuccessResponse>(response);
-			return { success: data.success };
-		} catch (error: any) {
-			console.error("Error requesting magic link:", error);
-			return {
-				success: false,
-				error: error.message || "An unexpected error occurred.",
-			};
-		}
-	}
+  public async logout(): Promise<boolean> {
+    try {
+      const response = await fetchApi("/auth/logout", {
+        method: "POST",
+        timeoutMs: 10000,
+      });
 
-	public async signInWithApple({
-		identityToken,
-		nonce,
-		fullName,
-	}: AppleSignInRequest): Promise<{ success: boolean; error?: string }> {
-		try {
-			const response = await fetchApi("/auth/apple", {
-				method: "POST",
-				body: {
-					identity_token: identityToken,
-					nonce,
-					full_name: fullName,
-				},
-				timeoutMs: 10000,
-			});
+      if (response.ok) {
+        this.clearTokenRefresh();
+        apiKeyService.removeApiKey();
+        this.user = null;
+        this.anonymousUser = null;
+        this.userSettings = null;
 
-			if (!response.ok) {
-				const errorData = (await response
-					.json()
-					.catch(() => ({}))) as Partial<MagicLinkErrorResponse>;
-				return {
-					success: false,
-					error: errorData.error || "Failed to sign in with Apple.",
-				};
-			}
+        return true;
+      }
 
-			const data = await returnFetchedData<{
-				token: string;
-				expires_in: number;
-			}>(response);
+      return false;
+    } catch (error) {
+      console.error("Error logging out:", error);
 
-			if (data?.token && data?.expires_in) {
-				this.tokenExpiry = new Date(Date.now() + data.expires_in * 1000);
-				this.scheduleTokenRefresh();
-				await apiKeyService.setApiKey(data.token);
-			}
+      return false;
+    }
+  }
 
-			await this.checkAuthStatus();
+  public getUser(): User | null {
+    return this.user;
+  }
 
-			return { success: true };
-		} catch (error: any) {
-			console.error("Error signing in with Apple:", error);
-			return {
-				success: false,
-				error: error.message || "An unexpected error occurred.",
-			};
-		}
-	}
+  public getAnonymousUser(): AnonymousUser | null {
+    return this.anonymousUser;
+  }
 
-	public async verifyMagicLink(token: string): Promise<{ success: boolean; error?: string }> {
-		try {
-			const response = await fetchApi("/auth/magic-link/verify", {
-				method: "POST",
-				body: JSON.stringify({ token }),
-				timeoutMs: 10000,
-			});
+  public getUserSettings(): UserSettings | null {
+    return this.userSettings;
+  }
 
-			const data = await returnFetchedData<{
-				success: boolean;
-				error?: string;
-			}>(response);
+  public async updateUserSettings(settings: Partial<UserSettings>): Promise<boolean> {
+    try {
+      const response = await fetchApi("/user/settings", {
+        method: "PUT",
+        body: settings,
+      });
 
-			if (!response.ok) {
-				return {
-					success: false,
-					error: data.error || "Failed to verify magic link.",
-				};
-			}
+      if (!response.ok) {
+        return false;
+      }
 
-			return { success: data.success };
-		} catch (error: any) {
-			console.error("Error verifying magic link:", error);
-			return {
-				success: false,
-				error: error.message || "An unexpected error occurred.",
-			};
-		}
-	}
+      await this.checkAuthStatus();
+
+      return true;
+    } catch (error) {
+      console.error("Error updating user settings:", error);
+
+      return false;
+    }
+  }
+
+  public async requestMagicLink(email: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const response = await fetchApi("/auth/magic-link/request", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+        timeoutMs: 10000,
+      });
+
+      if (!response.ok) {
+        const errorData = (await response
+          .json()
+          .catch(() => ({}))) as Partial<MagicLinkErrorResponse>;
+
+        return {
+          success: false,
+          error: errorData.error || "Failed to request magic link.",
+        };
+      }
+
+      const data = await returnFetchedData<MagicLinkSuccessResponse>(response);
+
+      return { success: data.success };
+    } catch (error: any) {
+      console.error("Error requesting magic link:", error);
+
+      return {
+        success: false,
+        error: error.message || "An unexpected error occurred.",
+      };
+    }
+  }
+
+  public async signInWithApple({
+    identityToken,
+    nonce,
+    fullName,
+  }: AppleSignInRequest): Promise<{ success: boolean; error?: string }> {
+    try {
+      const response = await fetchApi("/auth/apple", {
+        method: "POST",
+        body: {
+          identity_token: identityToken,
+          nonce,
+          full_name: fullName,
+        },
+        timeoutMs: 10000,
+      });
+
+      if (!response.ok) {
+        const errorData = (await response
+          .json()
+          .catch(() => ({}))) as Partial<MagicLinkErrorResponse>;
+
+        return {
+          success: false,
+          error: errorData.error || "Failed to sign in with Apple.",
+        };
+      }
+
+      const data = await returnFetchedData<{
+        token: string;
+        expires_in: number;
+      }>(response);
+
+      if (data?.token && data?.expires_in) {
+        this.tokenExpiry = new Date(Date.now() + data.expires_in * 1000);
+        this.scheduleTokenRefresh();
+        await apiKeyService.setApiKey(data.token);
+      }
+
+      await this.checkAuthStatus();
+
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error signing in with Apple:", error);
+
+      return {
+        success: false,
+        error: error.message || "An unexpected error occurred.",
+      };
+    }
+  }
+
+  public async verifyMagicLink(token: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const response = await fetchApi("/auth/magic-link/verify", {
+        method: "POST",
+        body: JSON.stringify({ token }),
+        timeoutMs: 10000,
+      });
+
+      const data = await returnFetchedData<{
+        success: boolean;
+        error?: string;
+      }>(response);
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.error || "Failed to verify magic link.",
+        };
+      }
+
+      return { success: data.success };
+    } catch (error: any) {
+      console.error("Error verifying magic link:", error);
+
+      return {
+        success: false,
+        error: error.message || "An unexpected error occurred.",
+      };
+    }
+  }
 }
 
 export const authService = AuthService.getInstance();

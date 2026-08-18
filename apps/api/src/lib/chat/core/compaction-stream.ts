@@ -1,45 +1,51 @@
-import type { Message } from "~/types";
-import { buildChatCompactionMetadata, type ChatCompactionMetadata } from "../compaction-metadata";
 import { formatChatStreamSseEvent } from "@ngriffin_uk/polychat-schemas";
 
+import type { Message } from "~/types";
+
+import { buildChatCompactionMetadata, type ChatCompactionMetadata } from "../compaction-metadata";
+
 function formatCompactionStateEvent(compactionMetadata: ChatCompactionMetadata): string {
-	return formatChatStreamSseEvent("state", {
-		state: "compaction",
-		...compactionMetadata,
-	});
+  return formatChatStreamSseEvent("state", {
+    state: "compaction",
+    ...compactionMetadata,
+  });
 }
 
 export function prependCompactionStateEvent(
-	stream: ReadableStream,
-	message: Message,
+  stream: ReadableStream,
+  message: Message,
 ): ReadableStream {
-	const compactionMetadata = buildChatCompactionMetadata(message);
-	if (!compactionMetadata) {
-		return stream;
-	}
+  const compactionMetadata = buildChatCompactionMetadata(message);
 
-	const encoder = new TextEncoder();
-	const reader = stream.getReader();
+  if (!compactionMetadata) {
+    return stream;
+  }
 
-	return new ReadableStream({
-		async start(controller) {
-			controller.enqueue(encoder.encode(formatCompactionStateEvent(compactionMetadata)));
+  const encoder = new TextEncoder();
+  const reader = stream.getReader();
 
-			try {
-				while (true) {
-					const { done, value } = await reader.read();
-					if (done) {
-						break;
-					}
-					controller.enqueue(value);
-				}
-				controller.close();
-			} catch (error) {
-				controller.error(error);
-			}
-		},
-		cancel(reason) {
-			return reader.cancel(reason);
-		},
-	});
+  return new ReadableStream({
+    async start(controller) {
+      controller.enqueue(encoder.encode(formatCompactionStateEvent(compactionMetadata)));
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+
+          if (done) {
+            break;
+          }
+
+          controller.enqueue(value);
+        }
+
+        controller.close();
+      } catch (error) {
+        controller.error(error);
+      }
+    },
+    cancel(reason) {
+      return reader.cancel(reason);
+    },
+  });
 }

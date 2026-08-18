@@ -1,83 +1,85 @@
 import { trackProviderMetrics } from "~/lib/monitoring";
 import type { ChatCompletionParameters } from "~/types";
-import { BaseProvider } from "./base";
+
 import { fetchAIResponse } from "../../../lib/fetch";
+import { BaseProvider } from "./base";
 
 export class CertesiaProvider extends BaseProvider {
-	name = "cartesia";
-	supportsStreaming = false;
-	voice_id = "4f7f1324-1853-48a6-b294-4e78e8036a83"; // Casper
-	isOpenAiCompatible = false;
+  name = "cartesia";
+  supportsStreaming = false;
+  voice_id = "4f7f1324-1853-48a6-b294-4e78e8036a83"; // Casper
+  isOpenAiCompatible = false;
 
-	protected getProviderKeyName(): string {
-		return "CARTESIA_API_KEY";
-	}
+  protected getProviderKeyName(): string {
+    return "CARTESIA_API_KEY";
+  }
 
-	protected validateParams(params: ChatCompletionParameters): void {
-		super.validateParams(params);
-		this.validateAiGatewayToken(params);
-	}
+  protected validateParams(params: ChatCompletionParameters): void {
+    super.validateParams(params);
+    this.validateAiGatewayToken(params);
+  }
 
-	protected async getEndpoint(): Promise<string> {
-		return "tts/bytes";
-	}
+  protected async getEndpoint(): Promise<string> {
+    return "tts/bytes";
+  }
 
-	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
-		const apiKey = await this.getApiKey(params, params.context?.user?.id);
-		const baseHeaders = this.buildAiGatewayHeaders(params, apiKey);
-		delete baseHeaders.Authorization;
-		delete baseHeaders.authorization;
+  protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
+    const apiKey = await this.getApiKey(params, params.context?.user?.id);
+    const baseHeaders = this.buildAiGatewayHeaders(params, apiKey);
 
-		return {
-			...baseHeaders,
-			"X-API-Key": apiKey,
-			"Cartesia-Version": "2026-03-01",
-		};
-	}
+    delete baseHeaders.Authorization;
+    delete baseHeaders.authorization;
 
-	async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
-		this.validateParams(params);
+    return {
+      ...baseHeaders,
+      "X-API-Key": apiKey,
+      "Cartesia-Version": "2026-03-01",
+    };
+  }
 
-		const endpoint = await this.getEndpoint();
-		const headers = await this.getHeaders(params);
+  async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
+    this.validateParams(params);
 
-		const body = {
-			transcript: params.message,
-			model_id: params.model,
-			language: "en",
-			voice: {
-				mode: "id",
-				id: this.voice_id,
-			},
-			output_format: {
-				container: "mp3",
-				bit_rate: 128000,
-				sample_rate: 44100,
-			},
-		};
+    const endpoint = await this.getEndpoint();
+    const headers = await this.getHeaders(params);
 
-		return trackProviderMetrics({
-			provider: this.name,
-			model: params.model as string,
-			operation: async () => {
-				const data = await fetchAIResponse(
-					this.isOpenAiCompatible,
-					this.name,
-					endpoint,
-					headers,
-					body,
-					params.env,
-					{
-						responseType: "raw",
-					},
-				);
+    const body = {
+      transcript: params.message,
+      model_id: params.model,
+      language: "en",
+      voice: {
+        mode: "id",
+        id: this.voice_id,
+      },
+      output_format: {
+        container: "mp3",
+        bit_rate: 128000,
+        sample_rate: 44100,
+      },
+    };
 
-				return data;
-			},
-			analyticsEngine: params.env?.ANALYTICS,
-			settings: this.buildMetricsSettings(params),
-			userId,
-			completion_id: params.completion_id,
-		});
-	}
+    return trackProviderMetrics({
+      provider: this.name,
+      model: params.model,
+      operation: async () => {
+        const data = await fetchAIResponse(
+          this.isOpenAiCompatible,
+          this.name,
+          endpoint,
+          headers,
+          body,
+          params.env,
+          {
+            responseType: "raw",
+          },
+        );
+
+        return data;
+      },
+      analyticsEngine: params.env?.ANALYTICS,
+      settings: this.buildMetricsSettings(params),
+      userId,
+      completion_id: params.completion_id,
+    });
+  }
 }

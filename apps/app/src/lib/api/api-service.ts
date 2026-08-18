@@ -1,19 +1,21 @@
 import { formatMessageContent } from "@ngriffin_uk/polychat-library-chat/messages";
-import { useToolsStore } from "~/state/stores/toolsStore";
-import { useChatStore } from "~/state/stores/chatStore";
 import type {
-	CreateAgentInput,
-	ModelConfig,
-	Tool,
-	UpdateAgentInput,
+  CreateAgentInput,
+  ModelConfig,
+  Tool,
+  UpdateAgentInput,
 } from "@ngriffin_uk/polychat-schemas";
+
+import { useChatStore } from "~/state/stores/chatStore";
+import { useToolsStore } from "~/state/stores/toolsStore";
 import type { Conversation, ConversationListOptions, ConversationListPage, Message } from "~/types";
+
 import { AgentService } from "./services/agent-service";
 import { AudioService, type SpeechGenerationResponse } from "./services/audio-service";
 import {
-	ChatService,
-	type ConversationUpdateRequest,
-	type StreamChatCompletionsParams,
+  ChatService,
+  type ConversationUpdateRequest,
+  type StreamChatCompletionsParams,
 } from "./services/chat-service";
 import { ResearchService } from "./services/research-service";
 import { SubscriptionService } from "./services/subscription-service";
@@ -28,305 +30,306 @@ import { getHeaders } from "./utils/headers";
  * to specialized services internally.
  */
 class ApiService {
-	private static instance: ApiService;
+  private static instance: ApiService;
 
-	private chatService: ChatService;
-	private audioService: AudioService;
-	private agentService: AgentService;
-	private userService: UserService;
-	private subscriptionService: SubscriptionService;
-	private uploadService: UploadService;
-	private researchService: ResearchService;
+  private chatService: ChatService;
+  private audioService: AudioService;
+  private agentService: AgentService;
+  private userService: UserService;
+  private subscriptionService: SubscriptionService;
+  private uploadService: UploadService;
+  private researchService: ResearchService;
 
-	private constructor() {
-		this.chatService = new ChatService(getHeaders);
-		this.audioService = new AudioService(getHeaders);
-		this.agentService = new AgentService(getHeaders);
-		this.userService = new UserService(getHeaders);
-		this.subscriptionService = new SubscriptionService();
-		this.uploadService = new UploadService(getHeaders);
-		this.researchService = new ResearchService(getHeaders);
-	}
+  private constructor() {
+    this.chatService = new ChatService(getHeaders);
+    this.audioService = new AudioService(getHeaders);
+    this.agentService = new AgentService(getHeaders);
+    this.userService = new UserService(getHeaders);
+    this.subscriptionService = new SubscriptionService();
+    this.uploadService = new UploadService(getHeaders);
+    this.researchService = new ResearchService(getHeaders);
+  }
 
-	public static getInstance(): ApiService {
-		if (!ApiService.instance) {
-			ApiService.instance = new ApiService();
-		}
-		return ApiService.instance;
-	}
+  public static getInstance(): ApiService {
+    if (!ApiService.instance) {
+      ApiService.instance = new ApiService();
+    }
 
-	public getHeaders = getHeaders;
+    return ApiService.instance;
+  }
 
-	// ===== Chat/Conversation Methods =====
+  public getHeaders = getHeaders;
 
-	listChats = (options?: ConversationListOptions): Promise<ConversationListPage> => {
-		return this.chatService.listChats(options);
-	};
+  // ===== Chat/Conversation Methods =====
 
-	getChat = (
-		completion_id: string,
-		options?: { refreshPending?: boolean },
-	): Promise<Conversation> => {
-		return this.chatService.getChat(completion_id, options);
-	};
+  listChats = (options?: ConversationListOptions): Promise<ConversationListPage> => {
+    return this.chatService.listChats(options);
+  };
 
-	generateTitle = (completion_id: string, messages: Message[]): Promise<string> => {
-		return this.chatService.generateTitle(completion_id, messages);
-	};
+  getChat = (
+    completion_id: string,
+    options?: { refreshPending?: boolean },
+  ): Promise<Conversation> => {
+    return this.chatService.getChat(completion_id, options);
+  };
 
-	compactConversation = (completion_id: string) => {
-		return this.chatService.compactConversation(completion_id);
-	};
+  generateTitle = (completion_id: string, messages: Message[]): Promise<string> => {
+    return this.chatService.generateTitle(completion_id, messages);
+  };
 
-	updateConversationTitle = (completion_id: string, newTitle: string): Promise<void> => {
-		return this.chatService.updateConversationTitle(completion_id, newTitle);
-	};
+  compactConversation = (completion_id: string) => {
+    return this.chatService.compactConversation(completion_id);
+  };
 
-	updateConversation = (
-		completion_id: string,
-		updates: ConversationUpdateRequest,
-	): Promise<Conversation> => {
-		return this.chatService.updateConversation(completion_id, updates);
-	};
+  updateConversationTitle = (completion_id: string, newTitle: string): Promise<void> => {
+    return this.chatService.updateConversationTitle(completion_id, newTitle);
+  };
 
-	deleteConversation = (completion_id: string): Promise<void> => {
-		return this.chatService.deleteConversation(completion_id);
-	};
+  updateConversation = (
+    completion_id: string,
+    updates: ConversationUpdateRequest,
+  ): Promise<Conversation> => {
+    return this.chatService.updateConversation(completion_id, updates);
+  };
 
-	deleteAllConversations = (): Promise<void> => {
-		return this.chatService.deleteAllConversations();
-	};
+  deleteConversation = (completion_id: string): Promise<void> => {
+    return this.chatService.deleteConversation(completion_id);
+  };
 
-	shareConversation = (completion_id: string): Promise<{ share_id: string }> => {
-		return this.chatService.shareConversation(completion_id);
-	};
+  deleteAllConversations = (): Promise<void> => {
+    return this.chatService.deleteAllConversations();
+  };
 
-	unshareConversation = (completion_id: string): Promise<void> => {
-		return this.chatService.unshareConversation(completion_id);
-	};
+  shareConversation = (completion_id: string): Promise<{ share_id: string }> => {
+    return this.chatService.shareConversation(completion_id);
+  };
 
-	submitFeedback = (completion_id: string, log_id: string, feedback: 1 | -1): Promise<void> => {
-		return this.chatService.submitFeedback(completion_id, log_id, feedback);
-	};
+  unshareConversation = (completion_id: string): Promise<void> => {
+    return this.chatService.unshareConversation(completion_id);
+  };
 
-	generateSpeech = (
-		input: string,
-		options?: { store?: boolean },
-	): Promise<SpeechGenerationResponse> => {
-		return this.audioService.generateSpeech(input, options);
-	};
+  submitFeedback = (completion_id: string, log_id: string, feedback: 1 | -1): Promise<void> => {
+    return this.chatService.submitFeedback(completion_id, log_id, feedback);
+  };
 
-	streamChatCompletions = async ({
-		onProgress,
-		...params
-	}: Omit<StreamChatCompletionsParams, "selectedTools">): Promise<Message> => {
-		const { selectedTools } = useToolsStore.getState();
-		const { isPro } = useChatStore.getState();
+  generateSpeech = (
+    input: string,
+    options?: { store?: boolean },
+  ): Promise<SpeechGenerationResponse> => {
+    return this.audioService.generateSpeech(input, options);
+  };
 
-		const assistantMessage = await this.chatService.streamChatCompletions({
-			...params,
-			allowTools: isPro,
-			onProgress: (text, reasoning, toolResponses, done, assistantMessage) => {
-				onProgress(text, reasoning, toolResponses, done, assistantMessage);
-			},
-			selectedTools,
-		});
+  streamChatCompletions = async ({
+    onProgress,
+    ...params
+  }: Omit<StreamChatCompletionsParams, "selectedTools">): Promise<Message> => {
+    const { selectedTools } = useToolsStore.getState();
+    const { isPro } = useChatStore.getState();
 
-		if (typeof assistantMessage.content === "string") {
-			const { content: formattedContent, reasoning: extractedReasoning } =
-				this.formatMessageContent(assistantMessage.content);
+    const assistantMessage = await this.chatService.streamChatCompletions({
+      ...params,
+      allowTools: isPro,
+      onProgress: (text, reasoning, toolResponses, done, assistantMessage) => {
+        onProgress(text, reasoning, toolResponses, done, assistantMessage);
+      },
+      selectedTools,
+    });
 
-			return {
-				...assistantMessage,
-				content: formattedContent,
-				reasoning: extractedReasoning
-					? {
-							collapsed: false,
-							content: extractedReasoning,
-						}
-					: assistantMessage.reasoning,
-			};
-		}
+    if (typeof assistantMessage.content === "string") {
+      const { content: formattedContent, reasoning: extractedReasoning } =
+        this.formatMessageContent(assistantMessage.content);
 
-		return assistantMessage;
-	};
+      return {
+        ...assistantMessage,
+        content: formattedContent,
+        reasoning: extractedReasoning
+          ? {
+              collapsed: false,
+              content: extractedReasoning,
+            }
+          : assistantMessage.reasoning,
+      };
+    }
 
-	private formatMessageContent(messageContent: string): {
-		content: string;
-		reasoning: string;
-	} {
-		return formatMessageContent(messageContent);
-	}
+    return assistantMessage;
+  };
 
-	// ===== Agent Methods =====
+  private formatMessageContent(messageContent: string): {
+    content: string;
+    reasoning: string;
+  } {
+    return formatMessageContent(messageContent);
+  }
 
-	listAgents = (): Promise<any[]> => {
-		return this.agentService.listAgents();
-	};
+  // ===== Agent Methods =====
 
-	listSharedAgents = (params?: {
-		category?: string;
-		tags?: string[];
-		search?: string;
-		featured?: boolean;
-		limit?: number;
-		offset?: number;
-		sort_by?: string;
-	}): Promise<any[]> => {
-		return this.agentService.listSharedAgents(params);
-	};
+  listAgents = (): Promise<any[]> => {
+    return this.agentService.listAgents();
+  };
 
-	listFeaturedSharedAgents = (limit = 10): Promise<any[]> => {
-		return this.agentService.listFeaturedSharedAgents(limit);
-	};
+  listSharedAgents = (params?: {
+    category?: string;
+    tags?: string[];
+    search?: string;
+    featured?: boolean;
+    limit?: number;
+    offset?: number;
+    sort_by?: string;
+  }): Promise<any[]> => {
+    return this.agentService.listSharedAgents(params);
+  };
 
-	installSharedAgent = (agentId: string): Promise<any> => {
-		return this.agentService.installSharedAgent(agentId);
-	};
+  listFeaturedSharedAgents = (limit = 10): Promise<any[]> => {
+    return this.agentService.listFeaturedSharedAgents(limit);
+  };
 
-	shareAgent = (
-		agentId: string,
-		name: string,
-		description?: string | null,
-		avatarUrl?: string | null,
-		category?: string | null,
-		tags?: string[] | null,
-	): Promise<any> => {
-		return this.agentService.shareAgent(agentId, name, description, avatarUrl, category, tags);
-	};
+  installSharedAgent = (agentId: string): Promise<any> => {
+    return this.agentService.installSharedAgent(agentId);
+  };
 
-	rateSharedAgent = (agentId: string, rating: number, review?: string): Promise<any> => {
-		return this.agentService.rateSharedAgent(agentId, rating, review);
-	};
+  shareAgent = (
+    agentId: string,
+    name: string,
+    description?: string | null,
+    avatarUrl?: string | null,
+    category?: string | null,
+    tags?: string[] | null,
+  ): Promise<any> => {
+    return this.agentService.shareAgent(agentId, name, description, avatarUrl, category, tags);
+  };
 
-	getAgentRatings = (agentId: string, limit = 10): Promise<any[]> => {
-		return this.agentService.getAgentRatings(agentId, limit);
-	};
+  rateSharedAgent = (agentId: string, rating: number, review?: string): Promise<any> => {
+    return this.agentService.rateSharedAgent(agentId, rating, review);
+  };
 
-	getSharedCategories = (): Promise<string[]> => {
-		return this.agentService.getSharedCategories();
-	};
+  getAgentRatings = (agentId: string, limit = 10): Promise<any[]> => {
+    return this.agentService.getAgentRatings(agentId, limit);
+  };
 
-	getSharedTags = (): Promise<string[]> => {
-		return this.agentService.getSharedTags();
-	};
+  getSharedCategories = (): Promise<string[]> => {
+    return this.agentService.getSharedCategories();
+  };
 
-	createAgent = (data: CreateAgentInput): Promise<any> => {
-		return this.agentService.createAgent(data);
-	};
+  getSharedTags = (): Promise<string[]> => {
+    return this.agentService.getSharedTags();
+  };
 
-	updateAgent = (agentId: string, data: UpdateAgentInput): Promise<void> => {
-		return this.agentService.updateAgent(agentId, data);
-	};
+  createAgent = (data: CreateAgentInput): Promise<any> => {
+    return this.agentService.createAgent(data);
+  };
 
-	deleteAgent = (agentId: string): Promise<void> => {
-		return this.agentService.deleteAgent(agentId);
-	};
+  updateAgent = (agentId: string, data: UpdateAgentInput): Promise<void> => {
+    return this.agentService.updateAgent(agentId, data);
+  };
 
-	// ===== User/Settings Methods =====
+  deleteAgent = (agentId: string): Promise<void> => {
+    return this.agentService.deleteAgent(agentId);
+  };
 
-	exportChatHistory = (): Promise<Blob> => {
-		return this.userService.exportChatHistory();
-	};
+  // ===== User/Settings Methods =====
 
-	fetchModels = (): Promise<ModelConfig> => {
-		return this.userService.fetchModels();
-	};
+  exportChatHistory = (): Promise<Blob> => {
+    return this.userService.exportChatHistory();
+  };
 
-	fetchTools = (): Promise<Tool[]> => {
-		return this.userService.fetchTools();
-	};
+  fetchModels = (): Promise<ModelConfig> => {
+    return this.userService.fetchModels();
+  };
 
-	storeProviderApiKey = (
-		providerId: string,
-		apiKey: string,
-		secretKey?: string,
-		configuration?: Record<string, unknown>,
-	): Promise<void> => {
-		return this.userService.storeProviderApiKey(providerId, apiKey, secretKey, configuration);
-	};
+  fetchTools = (): Promise<Tool[]> => {
+    return this.userService.fetchTools();
+  };
 
-	getProviderSettings = (): Promise<ProviderSetting[]> => {
-		return this.userService.getProviderSettings();
-	};
+  storeProviderApiKey = (
+    providerId: string,
+    apiKey: string,
+    secretKey?: string,
+    configuration?: Record<string, unknown>,
+  ): Promise<void> => {
+    return this.userService.storeProviderApiKey(providerId, apiKey, secretKey, configuration);
+  };
 
-	getProviderSyncStatus = () => {
-		return this.userService.getProviderSyncStatus();
-	};
+  getProviderSettings = (): Promise<ProviderSetting[]> => {
+    return this.userService.getProviderSettings();
+  };
 
-	deleteProviderApiKey = (providerId: string): Promise<void> => {
-		return this.userService.deleteProviderApiKey(providerId);
-	};
+  getProviderSyncStatus = () => {
+    return this.userService.getProviderSyncStatus();
+  };
 
-	syncProviders = (): Promise<void> => {
-		return this.userService.syncProviders();
-	};
+  deleteProviderApiKey = (providerId: string): Promise<void> => {
+    return this.userService.deleteProviderApiKey(providerId);
+  };
 
-	getUserApiKeys = (): Promise<{ id: string; name: string; created_at: string }[]> => {
-		return this.userService.getUserApiKeys();
-	};
+  syncProviders = (): Promise<void> => {
+    return this.userService.syncProviders();
+  };
 
-	createApiKey = (
-		name?: string,
-	): Promise<{
-		apiKey: string;
-		id: string;
-		name: string;
-		created_at: string;
-	}> => {
-		return this.userService.createApiKey(name);
-	};
+  getUserApiKeys = (): Promise<{ id: string; name: string; created_at: string }[]> => {
+    return this.userService.getUserApiKeys();
+  };
 
-	deleteApiKey = (keyId: string): Promise<void> => {
-		return this.userService.deleteApiKey(keyId);
-	};
+  createApiKey = (
+    name?: string,
+  ): Promise<{
+    apiKey: string;
+    id: string;
+    name: string;
+    created_at: string;
+  }> => {
+    return this.userService.createApiKey(name);
+  };
 
-	// ===== Subscription Methods =====
+  deleteApiKey = (keyId: string): Promise<void> => {
+    return this.userService.deleteApiKey(keyId);
+  };
 
-	getSubscription = (): Promise<any | null> => {
-		return this.subscriptionService.getSubscription();
-	};
+  // ===== Subscription Methods =====
 
-	createCheckoutSession = (
-		planId: string,
-		successUrl: string,
-		cancelUrl: string,
-	): Promise<{ url: string }> => {
-		return this.subscriptionService.createCheckoutSession(planId, successUrl, cancelUrl);
-	};
+  getSubscription = (): Promise<any | null> => {
+    return this.subscriptionService.getSubscription();
+  };
 
-	cancelSubscription = (): Promise<any> => {
-		return this.subscriptionService.cancelSubscription();
-	};
+  createCheckoutSession = (
+    planId: string,
+    successUrl: string,
+    cancelUrl: string,
+  ): Promise<{ url: string }> => {
+    return this.subscriptionService.createCheckoutSession(planId, successUrl, cancelUrl);
+  };
 
-	reactivateSubscription = (): Promise<any> => {
-		return this.subscriptionService.reactivateSubscription();
-	};
+  cancelSubscription = (): Promise<any> => {
+    return this.subscriptionService.cancelSubscription();
+  };
 
-	// ===== Research Methods =====
+  reactivateSubscription = (): Promise<any> => {
+    return this.subscriptionService.reactivateSubscription();
+  };
 
-	fetchResearchStatus = (runId: string, provider?: string) => {
-		return this.researchService.fetchStatus(runId, provider);
-	};
+  // ===== Research Methods =====
 
-	// ===== Upload Methods =====
+  fetchResearchStatus = (runId: string, provider?: string) => {
+    return this.researchService.fetchStatus(runId, provider);
+  };
 
-	transcribeAudio = (audioBlob: Blob): Promise<any> => {
-		return this.uploadService.transcribeAudio(audioBlob);
-	};
+  // ===== Upload Methods =====
 
-	uploadFile = (
-		file: File,
-		fileType: "image" | "document" | "audio" | "code",
-		options?: UploadFileOptions,
-	): Promise<{
-		url: string;
-		type: string;
-		name: string;
-		markdown?: string;
-	}> => {
-		return this.uploadService.uploadFile(file, fileType, options);
-	};
+  transcribeAudio = (audioBlob: Blob): Promise<any> => {
+    return this.uploadService.transcribeAudio(audioBlob);
+  };
+
+  uploadFile = (
+    file: File,
+    fileType: "image" | "document" | "audio" | "code",
+    options?: UploadFileOptions,
+  ): Promise<{
+    url: string;
+    type: string;
+    name: string;
+    markdown?: string;
+  }> => {
+    return this.uploadService.uploadFile(file, fileType, options);
+  };
 }
 
 export const apiService = ApiService.getInstance();

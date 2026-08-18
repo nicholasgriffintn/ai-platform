@@ -1,6 +1,6 @@
 import type { ChatCompletionParameters } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { redactSensitiveTokens } from "~/utils/redaction";
 
 /**
@@ -9,9 +9,9 @@ import { redactSensitiveTokens } from "~/utils/redaction";
  * @throws AssistantError if AI_GATEWAY_TOKEN is missing
  */
 export function validateAiGatewayToken(params: ChatCompletionParameters): void {
-	if (!params.env.AI_GATEWAY_TOKEN) {
-		throw new AssistantError("Missing AI_GATEWAY_TOKEN", ErrorType.CONFIGURATION_ERROR);
-	}
+  if (!params.env.AI_GATEWAY_TOKEN) {
+    throw new AssistantError("Missing AI_GATEWAY_TOKEN", ErrorType.CONFIGURATION_ERROR);
+  }
 }
 
 /**
@@ -21,16 +21,16 @@ export function validateAiGatewayToken(params: ChatCompletionParameters): void {
  * @returns Headers object with AI Gateway configuration
  */
 export function buildAiGatewayHeaders(
-	params: ChatCompletionParameters,
-	apiKey: string,
+  params: ChatCompletionParameters,
+  apiKey: string,
 ): Record<string, string> {
-	return {
-		"cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-		Authorization: `Bearer ${apiKey}`,
-		"Content-Type": "application/json",
-		"cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-		"cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
-	};
+  return {
+    "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
+    Authorization: `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
+    "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
+    "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+  };
 }
 
 /**
@@ -39,16 +39,16 @@ export function buildAiGatewayHeaders(
  * @returns Settings object for analytics
  */
 export function buildMetricsSettings(params: ChatCompletionParameters): Record<string, any> {
-	return {
-		temperature: params.temperature,
-		max_tokens: params.max_tokens,
-		top_p: params.top_p,
-		top_k: params.top_k,
-		seed: params.seed,
-		repetition_penalty: params.repetition_penalty,
-		frequency_penalty: params.frequency_penalty,
-		presence_penalty: params.presence_penalty,
-	};
+  return {
+    temperature: params.temperature,
+    max_tokens: params.max_tokens,
+    top_p: params.top_p,
+    top_k: params.top_k,
+    seed: params.seed,
+    repetition_penalty: params.repetition_penalty,
+    frequency_penalty: params.frequency_penalty,
+    presence_penalty: params.presence_penalty,
+  };
 }
 
 /**
@@ -61,18 +61,18 @@ export function buildMetricsSettings(params: ChatCompletionParameters): Record<s
  * @throws AssistantError if parsing fails
  */
 export function parseDelimitedCredentials(
-	credentialString: string,
-	delimiter = "::@@::",
-	expectedParts: number,
-	errorMessage = "Invalid credentials format",
+  credentialString: string,
+  delimiter = "::@@::",
+  expectedParts: number,
+  errorMessage = "Invalid credentials format",
 ): string[] {
-	const parts = credentialString.split(delimiter);
+  const parts = credentialString.split(delimiter);
 
-	if (parts.length !== expectedParts) {
-		throw new AssistantError(errorMessage, ErrorType.CONFIGURATION_ERROR);
-	}
+  if (parts.length !== expectedParts) {
+    throw new AssistantError(errorMessage, ErrorType.CONFIGURATION_ERROR);
+  }
 
-	return parts;
+  return parts;
 }
 
 /**
@@ -83,35 +83,36 @@ export function parseDelimitedCredentials(
  * @throws AssistantError if parsing fails
  */
 export async function safeParseJSON<T = any>(response: Response, context: string): Promise<T> {
-	try {
-		return (await response.json()) as T;
-	} catch (jsonError) {
-		const responseText = await response.text().catch(() => "[unable to read]");
-		const redactedResponseText = redactSensitiveTokens(responseText);
-		throw new AssistantError(
-			`${context} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
-			ErrorType.PROVIDER_ERROR,
-			500,
-			{
-				responsePreview: redactedResponseText.substring(0, 200),
-				originalError: jsonError,
-			},
-		);
-	}
+  try {
+    return (await response.json()) as T;
+  } catch (jsonError) {
+    const responseText = await response.text().catch(() => "[unable to read]");
+    const redactedResponseText = redactSensitiveTokens(responseText);
+
+    throw new AssistantError(
+      `${context} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
+      ErrorType.PROVIDER_ERROR,
+      500,
+      {
+        responsePreview: redactedResponseText.substring(0, 200),
+        originalError: jsonError,
+      },
+    );
+  }
 }
 
 type AssetReference = {
-	key?: string;
-	url?: string;
+  key?: string;
+  url?: string;
 };
 
 type AssetResponseShape = {
-	url?: unknown;
-	output?: unknown;
-	attachments?: unknown;
-	data?: {
-		attachments?: unknown;
-	};
+  url?: unknown;
+  output?: unknown;
+  attachments?: unknown;
+  data?: {
+    attachments?: unknown;
+  };
 };
 
 /**
@@ -119,43 +120,49 @@ type AssetResponseShape = {
  * attachments, a direct URL, or an output array.
  */
 export function extractGeneratedAsset(response: AssetResponseShape): AssetReference {
-	const attachments = response?.data?.attachments ?? response?.attachments;
-	if (Array.isArray(attachments) && attachments.length > 0) {
-		const [first] = attachments;
-		if (first && typeof first === "object") {
-			const asset = first as AssetReference;
-			return {
-				url: asset.url,
-				key: asset.key,
-			};
-		}
-	}
+  const attachments = response?.data?.attachments ?? response?.attachments;
 
-	if (typeof response?.url === "string") {
-		return { url: response.url };
-	}
+  if (Array.isArray(attachments) && attachments.length > 0) {
+    const [first] = attachments;
 
-	if (typeof response?.output === "string") {
-		return { url: response.output };
-	}
+    if (first && typeof first === "object") {
+      const asset = first as AssetReference;
 
-	if (Array.isArray(response?.output) && response.output.length > 0) {
-		const [first] = response.output;
-		if (typeof first === "string") {
-			return { url: first };
-		}
-		if (first && typeof first === "object") {
-			const asset = first as AssetReference;
-			if (asset.url) {
-				return {
-					url: asset.url,
-					key: asset.key,
-				};
-			}
-		}
-	}
+      return {
+        url: asset.url,
+        key: asset.key,
+      };
+    }
+  }
 
-	return {};
+  if (typeof response?.url === "string") {
+    return { url: response.url };
+  }
+
+  if (typeof response?.output === "string") {
+    return { url: response.output };
+  }
+
+  if (Array.isArray(response?.output) && response.output.length > 0) {
+    const [first] = response.output;
+
+    if (typeof first === "string") {
+      return { url: first };
+    }
+
+    if (first && typeof first === "object") {
+      const asset = first as AssetReference;
+
+      if (asset.url) {
+        return {
+          url: asset.url,
+          key: asset.key,
+        };
+      }
+    }
+  }
+
+  return {};
 }
 
 /**
@@ -164,24 +171,26 @@ export function extractGeneratedAsset(response: AssetResponseShape): AssetRefere
  * @returns Normalized status
  */
 export function normalizeAsyncStatus(
-	status: string | undefined,
+  status: string | undefined,
 ): "in_progress" | "completed" | "failed" {
-	if (!status) return "in_progress";
+  if (!status) {
+    return "in_progress";
+  }
 
-	const normalized = status.toString().toUpperCase();
+  const normalized = status.toString().toUpperCase();
 
-	if (normalized === "SUCCEEDED" || normalized === "SUCCESS" || normalized === "COMPLETED") {
-		return "completed";
-	}
+  if (normalized === "SUCCEEDED" || normalized === "SUCCESS" || normalized === "COMPLETED") {
+    return "completed";
+  }
 
-	if (
-		normalized === "FAILED" ||
-		normalized === "ERROR" ||
-		normalized === "CANCELLED" ||
-		normalized === "TIMED_OUT"
-	) {
-		return "failed";
-	}
+  if (
+    normalized === "FAILED" ||
+    normalized === "ERROR" ||
+    normalized === "CANCELLED" ||
+    normalized === "TIMED_OUT"
+  ) {
+    return "failed";
+  }
 
-	return "in_progress";
+  return "in_progress";
 }

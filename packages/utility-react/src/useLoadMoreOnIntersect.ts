@@ -1,34 +1,40 @@
 import { useEffect, useRef, type RefObject } from "react";
 
 export interface LoadMoreOnIntersectOptions {
-	enabled: boolean;
-	isLoading: boolean;
-	onLoadMore: () => void;
-	rootMargin?: string;
+  enabled: boolean;
+  isLoading: boolean;
+  onLoadMore: () => void;
+  rootMargin?: string;
 }
 
 export function useLoadMoreOnIntersect({
-	enabled,
-	isLoading,
-	onLoadMore,
-	rootMargin = "160px",
+  enabled,
+  isLoading,
+  onLoadMore,
+  rootMargin = "160px",
 }: LoadMoreOnIntersectOptions): RefObject<HTMLDivElement | null> {
-	const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-	useEffect(() => {
-		const sentinel = sentinelRef.current;
-		if (!sentinel || !enabled) return;
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
 
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				if (entry?.isIntersecting && !isLoading) onLoadMore();
-			},
-			{ rootMargin },
-		);
+    if (!sentinel || !enabled) {
+      return;
+    }
 
-		observer.observe(sentinel);
-		return () => observer.disconnect();
-	}, [enabled, isLoading, onLoadMore, rootMargin]);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting && !isLoading) {
+          onLoadMore();
+        }
+      },
+      { rootMargin },
+    );
 
-	return sentinelRef;
+    observer.observe(sentinel);
+
+    return () => observer.disconnect();
+  }, [enabled, isLoading, onLoadMore, rootMargin]);
+
+  return sentinelRef;
 }

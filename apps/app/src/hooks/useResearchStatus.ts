@@ -30,12 +30,13 @@ export function useResearchStatus({
 }: UseResearchStatusOptions) {
   const sanitizedInterval = Math.max(5000, pollInterval || 0);
 
-  return useQuery<ResearchStatus, Error>({
+  return useQuery<ResearchStatus>({
     queryKey: researchStatusQueryKey(runId, provider),
     queryFn: async () => {
       if (!runId) {
         throw new Error("Research run ID is required");
       }
+
       return apiService.fetchResearchStatus(runId, provider);
     },
     enabled: Boolean(runId) && enabled,
@@ -45,7 +46,7 @@ export function useResearchStatus({
         return false;
       }
 
-      const data = query.state.data as ResearchStatus | undefined;
+      const data = query.state.data;
       const intervalFromData = data?.poll?.interval_ms;
       const effectiveInterval = Math.max(5000, Number(intervalFromData ?? sanitizedInterval) || 0);
 
@@ -64,6 +65,7 @@ export function useResearchStatus({
       }
 
       const pollCount = (query.state.dataUpdateCount || 0) + 1;
+
       if (pollCount > 10) {
         return Math.max(effectiveInterval, Math.min(60000, effectiveInterval * 1.5));
       }

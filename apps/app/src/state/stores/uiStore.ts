@@ -2,7 +2,10 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 function initialIsMobile(): boolean {
-  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return false;
+  }
+
   return window.matchMedia("(max-width: 768px)").matches;
 }
 
@@ -38,6 +41,7 @@ export const useUIStore = create<UIStore>()(
       merge: (persisted, current) => {
         const { isMobile, isMobileLoading, sidebarVisible, ...rest } = (persisted ??
           {}) as Partial<UIStore>;
+
         return { ...current, ...rest };
       },
     },

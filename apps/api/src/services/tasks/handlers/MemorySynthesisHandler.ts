@@ -1,148 +1,153 @@
-import type { IEnv } from "~/types";
-import type { TaskMessage } from "../TaskService";
-import type { TaskHandler, TaskResult } from "../TaskHandler";
-import { SourceRepository, type SourceRecord } from "~/repositories/SourceRepository";
-import { MemorySynthesisRepository } from "~/repositories/MemorySynthesisRepository";
-import { getLogger } from "~/utils/logger";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getAuxiliaryModel } from "~/lib/providers/models";
+import { MemorySynthesisRepository } from "~/repositories/MemorySynthesisRepository";
+import { SourceRepository, type SourceRecord } from "~/repositories/SourceRepository";
+import type { IEnv } from "~/types";
 import { safeParseJson } from "~/utils/json";
+import { getLogger } from "~/utils/logger";
 import { isRecord } from "~/utils/objects";
+
+import type { TaskHandler, TaskResult } from "../TaskHandler";
+import type { TaskMessage } from "../TaskService";
 
 const logger = getLogger({ prefix: "services/tasks/memory-synthesis" });
 
-interface CategorizedMemories {
-	[category: string]: Array<{ id: string; text: string; category: string }>;
-}
+type CategorizedMemories = Record<string, Array<{ id: string; text: string; category: string }>>;
 
 export class MemorySynthesisHandler implements TaskHandler {
-	public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {
-		try {
-			const { namespace = "global" } = message.task_data;
+  public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {
+    try {
+      const { namespace = "global" } = message.task_data;
 
-			if (!message.user_id) {
-				return {
-					status: "error",
-					message: "user_id is required for memory synthesis",
-				};
-			}
+      if (!message.user_id) {
+        return {
+          status: "error",
+          message: "user_id is required for memory synthesis",
+        };
+      }
 
-			const sourceRepository = new SourceRepository(env);
-			const memorySynthesisRepository = new MemorySynthesisRepository(env);
+      const sourceRepository = new SourceRepository(env);
+      const memorySynthesisRepository = new MemorySynthesisRepository(env);
 
-			const memories = await sourceRepository.listPersonalSources(message.user_id, "memory");
+      const memories = await sourceRepository.listPersonalSources(message.user_id, "memory");
 
-			const activeMemories = memories.filter((memory) => {
-				const metadata = this.readMetadata(memory);
-				const sourceNamespace =
-					typeof metadata.namespace === "string" ? metadata.namespace : "global";
-				return sourceNamespace === namespace && memory.status !== "archived";
-			});
+      const activeMemories = memories.filter((memory) => {
+        const metadata = this.readMetadata(memory);
+        const sourceNamespace =
+          typeof metadata.namespace === "string" ? metadata.namespace : "global";
 
-			if (activeMemories.length === 0) {
-				return {
-					status: "skipped",
-					message: "No active memories to synthesize",
-				};
-			}
+        return sourceNamespace === namespace && memory.status !== "archived";
+      });
 
-			const existingSynthesis = await memorySynthesisRepository.getActiveSynthesis(
-				message.user_id,
-				namespace,
-			);
+      if (activeMemories.length === 0) {
+        return {
+          status: "skipped",
+          message: "No active memories to synthesize",
+        };
+      }
 
-			const categorized = this.categorizeMemories(
-				activeMemories.map((memory) => {
-					const metadata = this.readMetadata(memory);
-					return {
-						id: memory.id,
-						text: memory.content ?? "",
-						category: typeof metadata.category === "string" ? metadata.category : "general",
-					};
-				}),
-			);
+      const existingSynthesis = await memorySynthesisRepository.getActiveSynthesis(
+        message.user_id,
+        namespace,
+      );
 
-			const synthesis = await this.generateSynthesis(categorized, existingSynthesis, env);
+      const categorized = this.categorizeMemories(
+        activeMemories.map((memory) => {
+          const metadata = this.readMetadata(memory);
 
-			const synthesisRecord = await memorySynthesisRepository.createSynthesis({
-				user_id: message.user_id,
-				namespace,
-				synthesis_text: synthesis,
-				memory_ids: activeMemories.map((m) => m.id),
-				memory_count: activeMemories.length,
-				synthesis_version: (existingSynthesis?.synthesis_version ?? 0) + 1,
-			});
+          return {
+            id: memory.id,
+            text: memory.content ?? "",
+            category: typeof metadata.category === "string" ? metadata.category : "general",
+          };
+        }),
+      );
 
-			if (!synthesisRecord) {
-				throw new Error("Failed to create synthesis record");
-			}
+      const synthesis = await this.generateSynthesis(categorized, existingSynthesis, env);
 
-			if (existingSynthesis) {
-				await memorySynthesisRepository.supersedeSynthesis(
-					existingSynthesis.id,
-					synthesisRecord.id,
-				);
-			}
+      const synthesisRecord = await memorySynthesisRepository.createSynthesis({
+        user_id: message.user_id,
+        namespace,
+        synthesis_text: synthesis,
+        memory_ids: activeMemories.map((m) => m.id),
+        memory_count: activeMemories.length,
+        synthesis_version: (existingSynthesis?.synthesis_version ?? 0) + 1,
+      });
 
-			logger.info(
-				`Memory synthesis completed for user ${message.user_id}, synthesized ${activeMemories.length} memories`,
-			);
+      if (!synthesisRecord) {
+        throw new Error("Failed to create synthesis record");
+      }
 
-			return {
-				status: "success",
-				message: "Memory synthesis completed successfully",
-				data: {
-					synthesis_id: synthesisRecord.id,
-					memory_count: activeMemories.length,
-					synthesis_version: synthesisRecord.synthesis_version,
-				},
-			};
-		} catch (error) {
-			logger.error("Memory synthesis error:", error);
-			return {
-				status: "error",
-				message: (error as Error).message,
-			};
-		}
-	}
+      if (existingSynthesis) {
+        await memorySynthesisRepository.supersedeSynthesis(
+          existingSynthesis.id,
+          synthesisRecord.id,
+        );
+      }
 
-	private readMetadata(memory: Pick<SourceRecord, "metadata">): Record<string, unknown> {
-		const value =
-			typeof memory.metadata === "string" ? safeParseJson(memory.metadata) : memory.metadata;
-		return isRecord(value) ? value : {};
-	}
+      logger.info(
+        `Memory synthesis completed for user ${message.user_id}, synthesized ${activeMemories.length} memories`,
+      );
 
-	private categorizeMemories(
-		memories: Array<{ id: string; text: string; category: string }>,
-	): CategorizedMemories {
-		const categorized: CategorizedMemories = {};
+      return {
+        status: "success",
+        message: "Memory synthesis completed successfully",
+        data: {
+          synthesis_id: synthesisRecord.id,
+          memory_count: activeMemories.length,
+          synthesis_version: synthesisRecord.synthesis_version,
+        },
+      };
+    } catch (error) {
+      logger.error("Memory synthesis error:", error);
 
-		for (const memory of memories) {
-			const category = memory.category || "general";
-			if (!categorized[category]) {
-				categorized[category] = [];
-			}
-			categorized[category].push(memory);
-		}
+      return {
+        status: "error",
+        message: (error as Error).message,
+      };
+    }
+  }
 
-		return categorized;
-	}
+  private readMetadata(memory: Pick<SourceRecord, "metadata">): Record<string, unknown> {
+    const value =
+      typeof memory.metadata === "string" ? safeParseJson(memory.metadata) : memory.metadata;
 
-	private async generateSynthesis(
-		categorized: CategorizedMemories,
-		existing: any,
-		env: IEnv,
-	): Promise<string> {
-		const memoriesText = Object.entries(categorized)
-			.map(
-				([category, mems]) => `
+    return isRecord(value) ? value : {};
+  }
+
+  private categorizeMemories(
+    memories: Array<{ id: string; text: string; category: string }>,
+  ): CategorizedMemories {
+    const categorized: CategorizedMemories = {};
+
+    for (const memory of memories) {
+      const category = memory.category || "general";
+
+      if (!categorized[category]) {
+        categorized[category] = [];
+      }
+
+      categorized[category].push(memory);
+    }
+
+    return categorized;
+  }
+
+  private async generateSynthesis(
+    categorized: CategorizedMemories,
+    existing: any,
+    env: IEnv,
+  ): Promise<string> {
+    const memoriesText = Object.entries(categorized)
+      .map(
+        ([category, mems]) => `
 ## ${category.toUpperCase()}
 ${mems.map((m) => `- ${m.text}`).join("\n")}
 `,
-			)
-			.join("\n");
+      )
+      .join("\n");
 
-		const prompt = `You are creating a memory synthesis for an AI assistant.
+    const prompt = `You are creating a memory synthesis for an AI assistant.
 
 Consolidate the following memories into a coherent, well-organized summary:
 
@@ -161,27 +166,28 @@ Create a clear, factual synthesis that:
 
 Format as a structured document with clear sections.`;
 
-		try {
-			const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env);
+    try {
+      const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env);
 
-			const provider = getChatProvider(providerToUse, { env, user: undefined });
+      const provider = getChatProvider(providerToUse, { env, user: undefined });
 
-			const response = await provider.getResponse({
-				env,
-				model: modelToUse,
-				messages: [{ role: "user", content: prompt }],
-				max_tokens: 2000,
-			});
+      const response = await provider.getResponse({
+        env,
+        model: modelToUse,
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 2000,
+      });
 
-			return response.response;
-		} catch (error) {
-			logger.error("Failed to generate synthesis with AI:", error);
-			return Object.entries(categorized)
-				.map(
-					([category, mems]) =>
-						`## ${category.toUpperCase()}\n${mems.map((m) => `- ${m.text}`).join("\n")}`,
-				)
-				.join("\n\n");
-		}
-	}
+      return response.response;
+    } catch (error) {
+      logger.error("Failed to generate synthesis with AI:", error);
+
+      return Object.entries(categorized)
+        .map(
+          ([category, mems]) =>
+            `## ${category.toUpperCase()}\n${mems.map((m) => `- ${m.text}`).join("\n")}`,
+        )
+        .join("\n\n");
+    }
+  }
 }

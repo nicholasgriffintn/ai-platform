@@ -1,30 +1,31 @@
 import {
-	createToolCallActionHandler,
-	executeAgentLoop,
-	type AgentEvent,
-	type AgentLoopState,
+  createToolCallActionHandler,
+  executeAgentLoop,
+  type AgentEvent,
+  type AgentLoopState,
 } from "@ngriffin_uk/polychat-library-agent-core";
-import type { ConversationManager } from "~/lib/conversationManager";
+
 import {
-	buildContinuationInstruction,
-	buildInitialPlan,
-	getAgentCompletionRequirements,
-	shouldRequireToolChoice,
-	withRequiredToolChoice,
+  buildContinuationInstruction,
+  buildInitialPlan,
+  getAgentCompletionRequirements,
+  shouldRequireToolChoice,
+  withRequiredToolChoice,
 } from "~/lib/chat/agent/completionRequirements";
 import {
-	createAgentProviderIO,
-	type AgentModelResponse,
-	type AgentModelToolCall,
+  createAgentProviderIO,
+  type AgentModelResponse,
+  type AgentModelToolCall,
 } from "~/lib/chat/agent/provider-io";
 import {
-	DEFAULT_AGENT_MAX_STEPS,
-	resolveAgentStepBudgetExtension,
+  DEFAULT_AGENT_MAX_STEPS,
+  resolveAgentStepBudgetExtension,
 } from "~/lib/chat/agent/stepBudget";
-import { getAIResponse } from "~/lib/chat/responses";
 import { toProviderMessages } from "~/lib/chat/providerMessages";
+import { getAIResponse } from "~/lib/chat/responses";
 import { isSuccessfulToolStatus } from "~/lib/chat/tool-results";
 import { handleToolCalls } from "~/lib/chat/tools";
+import type { ConversationManager } from "~/lib/conversationManager";
 import type { IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { hasEnabledToolNames } from "~/utils/toolNames";
@@ -33,225 +34,236 @@ const AGENT_MAX_RECOVERY_REPLANS = 2;
 const AGENT_MAX_DECISION_FAILURES = 2;
 
 function shouldAbortAgentDecisionError(error: unknown): boolean {
-	return error instanceof AssistantError && error.type !== ErrorType.PARAMS_ERROR;
+  return error instanceof AssistantError && error.type !== ErrorType.PARAMS_ERROR;
 }
 
 interface ApiAgentLoopState extends AgentLoopState {
-	commandCount: number;
-	unknownToolRecoveryUsed: boolean;
-	pendingUserAction?: string;
+  commandCount: number;
+  unknownToolRecoveryUsed: boolean;
+  pendingUserAction?: string;
 }
 
 interface ApiAgentSharedContext {
-	completionId: string;
-	conversationManager: ConversationManager;
-	toolRequestContext: IRequest;
+  completionId: string;
+  conversationManager: ConversationManager;
+  toolRequestContext: IRequest;
 }
 
 export type ModelToolCall = AgentModelToolCall;
 export type ModelResponse = AgentModelResponse;
 
 export interface AgentLoopExecutionParams {
-	requestParams: Parameters<typeof getAIResponse>[0];
-	completionId: string;
-	conversationManager: ConversationManager;
-	toolRequestContext: IRequest;
-	maxSteps?: number;
-	emit?: (event: AgentEvent) => Promise<void>;
+  requestParams: Parameters<typeof getAIResponse>[0];
+  completionId: string;
+  conversationManager: ConversationManager;
+  toolRequestContext: IRequest;
+  maxSteps?: number;
+  emit?: (event: AgentEvent) => Promise<void>;
 }
 
 export interface AgentLoopExecutionResult {
-	response: ModelResponse;
-	toolResponses: Message[];
+  response: ModelResponse;
+  toolResponses: Message[];
 }
 
 export async function runAgentLoop(
-	params: AgentLoopExecutionParams,
+  params: AgentLoopExecutionParams,
 ): Promise<AgentLoopExecutionResult> {
-	const requestParams = params.requestParams;
-	const providerIO = createAgentProviderIO();
-	const runtimeMessages = providerIO.initialMessages(toProviderMessages(requestParams.messages));
-	const completionRequirements = getAgentCompletionRequirements(requestParams);
-	if (
-		completionRequirements.minToolCalls > 0 &&
-		!hasEnabledToolNames(params.requestParams.enabled_tools)
-	) {
-		throw new AssistantError(
-			"Agent completion requires tool calls but no tools are enabled",
-			ErrorType.PARAMS_ERROR,
-		);
-	}
-	const state: ApiAgentLoopState = {
-		commandCount: 0,
-		unknownToolRecoveryUsed: false,
-	};
-	const toolResponses: Message[] = [];
-	let finalResponse: ModelResponse | null = null;
+  const requestParams = params.requestParams;
+  const providerIO = createAgentProviderIO();
+  const runtimeMessages = providerIO.initialMessages(toProviderMessages(requestParams.messages));
+  const completionRequirements = getAgentCompletionRequirements(requestParams);
 
-	await executeAgentLoop<ApiAgentSharedContext, ApiAgentLoopState>({
-		initialMessages: runtimeMessages,
-		initialPlan: buildInitialPlan(completionRequirements),
-		shared: {
-			completionId: params.completionId,
-			conversationManager: params.conversationManager,
-			toolRequestContext: params.toolRequestContext,
-		},
-		state,
-		config: {
-			maxSteps: params.maxSteps || DEFAULT_AGENT_MAX_STEPS,
-			maxConsecutiveDecisionFailures: AGENT_MAX_DECISION_FAILURES,
-			maxRecoveryReplans: AGENT_MAX_RECOVERY_REPLANS,
-		},
-		emit: params.emit,
-		getCommandCount: (runtimeState) => runtimeState.commandCount,
-		shouldAbortOnDecisionError: shouldAbortAgentDecisionError,
-		onStepBudgetExceeded: ({ messages, state: runtimeState }) =>
-			resolveAgentStepBudgetExtension({
-				enabledTools: requestParams.enabled_tools,
-				requirements: completionRequirements,
-				commandCount: runtimeState.commandCount,
-				messages,
-			}),
-		resolveDecision: async ({ messages }) => {
-			if (state.pendingUserAction) {
-				const response = state.pendingUserAction;
-				state.pendingUserAction = undefined;
-				finalResponse = { response, status: "pending" };
-				return {
-					decision: {
-						action: "finish",
-						summary: response,
-					},
-					assistantMessage: {
-						role: "assistant",
-						content: response,
-					},
-				};
-			}
+  if (
+    completionRequirements.minToolCalls > 0 &&
+    !hasEnabledToolNames(params.requestParams.enabled_tools)
+  ) {
+    throw new AssistantError(
+      "Agent completion requires tool calls but no tools are enabled",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
 
-			const decisionRequestParams = withRequiredToolChoice(
-				requestParams,
-				shouldRequireToolChoice({
-					requirements: completionRequirements,
-					commandCount: state.commandCount,
-					requestParams,
-				}),
-			);
-			const providerResponse = await getAIResponse({
-				...decisionRequestParams,
-				messages: providerIO.providerMessages(messages),
-				stream: false,
-			});
+  const state: ApiAgentLoopState = {
+    commandCount: 0,
+    unknownToolRecoveryUsed: false,
+  };
+  const toolResponses: Message[] = [];
+  let finalResponse: ModelResponse | null = null;
 
-			if (providerResponse instanceof ReadableStream) {
-				throw new AssistantError(
-					"Agent mode expected non-streaming model response",
-					ErrorType.PROVIDER_ERROR,
-				);
-			}
+  await executeAgentLoop<ApiAgentSharedContext, ApiAgentLoopState>({
+    initialMessages: runtimeMessages,
+    initialPlan: buildInitialPlan(completionRequirements),
+    shared: {
+      completionId: params.completionId,
+      conversationManager: params.conversationManager,
+      toolRequestContext: params.toolRequestContext,
+    },
+    state,
+    config: {
+      maxSteps: params.maxSteps || DEFAULT_AGENT_MAX_STEPS,
+      maxConsecutiveDecisionFailures: AGENT_MAX_DECISION_FAILURES,
+      maxRecoveryReplans: AGENT_MAX_RECOVERY_REPLANS,
+    },
+    emit: params.emit,
+    getCommandCount: (runtimeState) => runtimeState.commandCount,
+    shouldAbortOnDecisionError: shouldAbortAgentDecisionError,
+    onStepBudgetExceeded: ({ messages, state: runtimeState }) =>
+      resolveAgentStepBudgetExtension({
+        enabledTools: requestParams.enabled_tools,
+        requirements: completionRequirements,
+        commandCount: runtimeState.commandCount,
+        messages,
+      }),
+    resolveDecision: async ({ messages }) => {
+      if (state.pendingUserAction) {
+        const response = state.pendingUserAction;
 
-			const modelResponse = providerIO.modelResponse(providerResponse);
-			if (!modelResponse.response && !modelResponse.tool_calls?.length) {
-				throw new AssistantError("No response generated by the model", ErrorType.PROVIDER_ERROR);
-			}
+        state.pendingUserAction = undefined;
+        finalResponse = { response, status: "pending" };
 
-			if (modelResponse.tool_calls?.length) {
-				const toolCalls = providerIO.toolCallInvocations(modelResponse.tool_calls);
-				return {
-					decision: {
-						action: "tool_calls",
-						toolCalls,
-						responseText: typeof modelResponse.response === "string" ? modelResponse.response : "",
-					},
-					assistantMessage: {
-						role: "assistant",
-						content: modelResponse.response || "",
-						tool_calls: modelResponse.tool_calls,
-					},
-				};
-			}
+        return {
+          decision: {
+            action: "finish",
+            summary: response,
+          },
+          assistantMessage: {
+            role: "assistant",
+            content: response,
+          },
+        };
+      }
 
-			if (completionRequirements.minToolCalls > state.commandCount) {
-				return {
-					decision: {
-						action: "continue",
-						instruction: buildContinuationInstruction({
-							requirements: completionRequirements,
-							commandCount: state.commandCount,
-						}),
-						reasoning: "Agent completion requirements were not met before the model returned text.",
-					},
-					assistantMessage: {
-						role: "assistant",
-						content: modelResponse.response || "",
-					},
-				};
-			}
+      const decisionRequestParams = withRequiredToolChoice(
+        requestParams,
+        shouldRequireToolChoice({
+          requirements: completionRequirements,
+          commandCount: state.commandCount,
+          requestParams,
+        }),
+      );
+      const providerResponse = await getAIResponse({
+        ...decisionRequestParams,
+        messages: providerIO.providerMessages(messages),
+        stream: false,
+      });
 
-			finalResponse = modelResponse;
-			return {
-				decision: {
-					action: "finish",
-					summary:
-						typeof modelResponse.response === "string"
-							? modelResponse.response
-							: JSON.stringify(modelResponse.response ?? ""),
-				},
-				assistantMessage: {
-					role: "assistant",
-					content: modelResponse.response || "",
-				},
-			};
-		},
-		handlers: [
-			createToolCallActionHandler<ApiAgentSharedContext, ApiAgentLoopState>({
-				onToolCalls: async (decision, context) => {
-					const providerToolCalls = providerIO.providerToolCalls(decision.toolCalls);
-					await context.shared.conversationManager.add(context.shared.completionId, {
-						role: "assistant",
-						content: decision.responseText || "",
-						tool_calls: providerToolCalls,
-					});
-					const toolResults = await handleToolCalls(
-						context.shared.completionId,
-						{
-							response: decision.responseText || "",
-							tool_calls: providerToolCalls,
-						},
-						context.shared.conversationManager,
-						context.shared.toolRequestContext,
-						{ recoverUnknownToolCalls: !context.state.unknownToolRecoveryUsed },
-					);
-					if (toolResults.some((message) => message.data?.errorCode === "UNKNOWN_TOOL")) {
-						context.state.unknownToolRecoveryUsed = true;
-					}
+      if (providerResponse instanceof ReadableStream) {
+        throw new AssistantError(
+          "Agent mode expected non-streaming model response",
+          ErrorType.PROVIDER_ERROR,
+        );
+      }
 
-					context.state.commandCount += toolResults.filter((message) =>
-						isSuccessfulToolStatus(message.status),
-					).length;
-					const pendingResult = toolResults.find((message) => message.status === "pending");
-					if (pendingResult) {
-						context.state.pendingUserAction =
-							typeof pendingResult.content === "string" && pendingResult.content.trim()
-								? pendingResult.content
-								: "This action is waiting for user approval.";
-					}
-					toolResponses.push(...toolResults);
-					context.messages.push(...toProviderMessages(toolResults));
-				},
-			}),
-		],
-	});
+      const modelResponse = providerIO.modelResponse(providerResponse);
 
-	if (!finalResponse) {
-		throw new AssistantError(
-			"Agent loop finished without a final response",
-			ErrorType.PROVIDER_ERROR,
-		);
-	}
+      if (!modelResponse.response && !modelResponse.tool_calls?.length) {
+        throw new AssistantError("No response generated by the model", ErrorType.PROVIDER_ERROR);
+      }
 
-	return {
-		response: finalResponse,
-		toolResponses,
-	};
+      if (modelResponse.tool_calls?.length) {
+        const toolCalls = providerIO.toolCallInvocations(modelResponse.tool_calls);
+
+        return {
+          decision: {
+            action: "tool_calls",
+            toolCalls,
+            responseText: typeof modelResponse.response === "string" ? modelResponse.response : "",
+          },
+          assistantMessage: {
+            role: "assistant",
+            content: modelResponse.response || "",
+            tool_calls: modelResponse.tool_calls,
+          },
+        };
+      }
+
+      if (completionRequirements.minToolCalls > state.commandCount) {
+        return {
+          decision: {
+            action: "continue",
+            instruction: buildContinuationInstruction({
+              requirements: completionRequirements,
+              commandCount: state.commandCount,
+            }),
+            reasoning: "Agent completion requirements were not met before the model returned text.",
+          },
+          assistantMessage: {
+            role: "assistant",
+            content: modelResponse.response || "",
+          },
+        };
+      }
+
+      finalResponse = modelResponse;
+
+      return {
+        decision: {
+          action: "finish",
+          summary:
+            typeof modelResponse.response === "string"
+              ? modelResponse.response
+              : JSON.stringify(modelResponse.response ?? ""),
+        },
+        assistantMessage: {
+          role: "assistant",
+          content: modelResponse.response || "",
+        },
+      };
+    },
+    handlers: [
+      createToolCallActionHandler<ApiAgentSharedContext, ApiAgentLoopState>({
+        onToolCalls: async (decision, context) => {
+          const providerToolCalls = providerIO.providerToolCalls(decision.toolCalls);
+
+          await context.shared.conversationManager.add(context.shared.completionId, {
+            role: "assistant",
+            content: decision.responseText || "",
+            tool_calls: providerToolCalls,
+          });
+          const toolResults = await handleToolCalls(
+            context.shared.completionId,
+            {
+              response: decision.responseText || "",
+              tool_calls: providerToolCalls,
+            },
+            context.shared.conversationManager,
+            context.shared.toolRequestContext,
+            { recoverUnknownToolCalls: !context.state.unknownToolRecoveryUsed },
+          );
+
+          if (toolResults.some((message) => message.data?.errorCode === "UNKNOWN_TOOL")) {
+            context.state.unknownToolRecoveryUsed = true;
+          }
+
+          context.state.commandCount += toolResults.filter((message) =>
+            isSuccessfulToolStatus(message.status),
+          ).length;
+          const pendingResult = toolResults.find((message) => message.status === "pending");
+
+          if (pendingResult) {
+            context.state.pendingUserAction =
+              typeof pendingResult.content === "string" && pendingResult.content.trim()
+                ? pendingResult.content
+                : "This action is waiting for user approval.";
+          }
+
+          toolResponses.push(...toolResults);
+          context.messages.push(...toProviderMessages(toolResults));
+        },
+      }),
+    ],
+  });
+
+  if (!finalResponse) {
+    throw new AssistantError(
+      "Agent loop finished without a final response",
+      ErrorType.PROVIDER_ERROR,
+    );
+  }
+
+  return {
+    response: finalResponse,
+    toolResponses,
+  };
 }

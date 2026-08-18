@@ -1,96 +1,100 @@
 import {
-	completeBrowserWebAuthn,
-	createBrowserAuthTransport,
-	isWebAuthnSupported,
+  completeBrowserWebAuthn,
+  createBrowserAuthTransport,
+  isWebAuthnSupported,
 } from "@ngriffin_uk/auth-react";
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { API_BASE_URL } from "~/constants";
 import { authService } from "~/lib/api/auth-service";
-import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import { fetchApi } from "~/lib/api/fetch-wrapper";
 
 interface Passkey {
-	id: number;
-	device_type: string;
-	created_at: string;
-	backed_up: boolean;
+  id: number;
+  device_type: string;
+  created_at: string;
+  backed_up: boolean;
 }
 
 interface DeleteResponse {
-	success: boolean;
+  success: boolean;
 }
 
 export const usePasskeys = () => {
-	const registerPasskeyMutation = useMutation({
-		mutationFn: async () => {
-			const result = await completeBrowserWebAuthn(
-				createBrowserAuthTransport({ endpoint: `${API_BASE_URL}/auth` }),
-				"registration",
-			);
-			if (result.status !== "authenticated") {
-				throw new Error("Passkey registration was not completed.");
-			}
-			void passkeysQuery.refetch();
-			return true;
-		},
-	});
+  const registerPasskeyMutation = useMutation({
+    mutationFn: async () => {
+      const result = await completeBrowserWebAuthn(
+        createBrowserAuthTransport({ endpoint: `${API_BASE_URL}/auth` }),
+        "registration",
+      );
 
-	const passkeysQuery = useQuery({
-		queryKey: ["passkeys"],
-		queryFn: async (): Promise<Passkey[]> => {
-			const isAuth = await authService.checkAuthStatus();
-			if (!isAuth) {
-				return [];
-			}
+      if (result.status !== "authenticated") {
+        throw new Error("Passkey registration was not completed.");
+      }
 
-			const response = await fetchApi("/auth/webauthn/passkeys", {
-				method: "GET",
-			});
+      void passkeysQuery.refetch();
 
-			if (!response.ok) {
-				throw new Error("Failed to fetch passkeys");
-			}
+      return true;
+    },
+  });
 
-			return returnFetchedData<Passkey[]>(response);
-		},
-		enabled: false,
-	});
+  const passkeysQuery = useQuery({
+    queryKey: ["passkeys"],
+    queryFn: async (): Promise<Passkey[]> => {
+      const isAuth = await authService.checkAuthStatus();
 
-	const deletePasskeyMutation = useMutation({
-		mutationFn: async (passkeyId: number) => {
-			const response = await fetchApi(`/auth/webauthn/passkeys/${passkeyId}`, {
-				method: "DELETE",
-			});
+      if (!isAuth) {
+        return [];
+      }
 
-			if (!response.ok) {
-				throw new Error("Failed to delete passkey");
-			}
+      const response = await fetchApi("/auth/webauthn/passkeys", {
+        method: "GET",
+      });
 
-			const result = await returnFetchedData<DeleteResponse>(response);
+      if (!response.ok) {
+        throw new Error("Failed to fetch passkeys");
+      }
 
-			if (result.success) {
-				void passkeysQuery.refetch();
-			}
+      return returnFetchedData<Passkey[]>(response);
+    },
+    enabled: false,
+  });
 
-			return result.success;
-		},
-	});
+  const deletePasskeyMutation = useMutation({
+    mutationFn: async (passkeyId: number) => {
+      const response = await fetchApi(`/auth/webauthn/passkeys/${passkeyId}`, {
+        method: "DELETE",
+      });
 
-	return {
-		registerPasskey: registerPasskeyMutation.mutate,
-		isRegisteringPasskey: registerPasskeyMutation.isPending,
-		registerPasskeyError: registerPasskeyMutation.error,
+      if (!response.ok) {
+        throw new Error("Failed to delete passkey");
+      }
 
-		passkeys: passkeysQuery.data || [],
-		fetchPasskeys: passkeysQuery.refetch,
-		isLoadingPasskeys: passkeysQuery.isLoading || passkeysQuery.isFetching,
-		passkeysError: passkeysQuery.error,
+      const result = await returnFetchedData<DeleteResponse>(response);
 
-		deletePasskey: deletePasskeyMutation.mutate,
-		isDeletingPasskey: deletePasskeyMutation.isPending,
-		deletePasskeyError: deletePasskeyMutation.error,
+      if (result.success) {
+        void passkeysQuery.refetch();
+      }
 
-		isPasskeySupported: isWebAuthnSupported,
-	};
+      return result.success;
+    },
+  });
+
+  return {
+    registerPasskey: registerPasskeyMutation.mutate,
+    isRegisteringPasskey: registerPasskeyMutation.isPending,
+    registerPasskeyError: registerPasskeyMutation.error,
+
+    passkeys: passkeysQuery.data || [],
+    fetchPasskeys: passkeysQuery.refetch,
+    isLoadingPasskeys: passkeysQuery.isLoading || passkeysQuery.isFetching,
+    passkeysError: passkeysQuery.error,
+
+    deletePasskey: deletePasskeyMutation.mutate,
+    isDeletingPasskey: deletePasskeyMutation.isPending,
+    deletePasskeyError: deletePasskeyMutation.error,
+
+    isPasskeySupported: isWebAuthnSupported,
+  };
 };

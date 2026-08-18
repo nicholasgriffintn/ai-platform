@@ -32,7 +32,9 @@ export function InvitationAcceptPage() {
   }, [acceptInvitation, isAuthenticated, token]);
 
   useEffect(() => {
-    if (acceptInvitation.data) clearWorkspaceInvitationToken();
+    if (acceptInvitation.data) {
+      clearWorkspaceInvitationToken();
+    }
   }, [acceptInvitation.data]);
 
   const sessionExpired = isAuthenticationError(acceptInvitation.error);

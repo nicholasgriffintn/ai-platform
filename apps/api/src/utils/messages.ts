@@ -1,277 +1,292 @@
 import { MessageFormatter } from "~/lib/formatter";
 import type { CreateChatCompletionsResponse, Message, MessageContent } from "~/types";
-import { isPashiQrPngUrl } from "./qr";
+
 import { AssistantError, ErrorType } from "./errors";
 import { isRecord } from "./objects";
+import { isPashiQrPngUrl } from "./qr";
 
 export function formatMessages(
-	provider: string,
-	messageHistory: Message[],
-	system_prompt?: string,
-	model?: string,
+  provider: string,
+  messageHistory: Message[],
+  system_prompt?: string,
+  model?: string,
 ): Message[] {
-	return MessageFormatter.formatMessages(messageHistory, {
-		provider,
-		model,
-		system_prompt,
-		maxTokens: 0,
-		truncationStrategy: "tail",
-	});
+  return MessageFormatter.formatMessages(messageHistory, {
+    provider,
+    model,
+    system_prompt,
+    maxTokens: 0,
+    truncationStrategy: "tail",
+  });
 }
 
 export function formatTextGenerationPrompt(
-	provider: string,
-	messageHistory: Message[],
-	system_prompt?: string,
-	model?: string,
+  provider: string,
+  messageHistory: Message[],
+  system_prompt?: string,
+  model?: string,
 ): string {
-	return MessageFormatter.formatTextGenerationPrompt(messageHistory, {
-		provider,
-		model,
-		system_prompt,
-		maxTokens: 0,
-		truncationStrategy: "tail",
-	});
+  return MessageFormatter.formatTextGenerationPrompt(messageHistory, {
+    provider,
+    model,
+    system_prompt,
+    maxTokens: 0,
+    truncationStrategy: "tail",
+  });
 }
 
 export function stringifyMessageContent(content: unknown): string {
-	return MessageFormatter.stringifyMessageContent(content);
+  return MessageFormatter.stringifyMessageContent(content);
 }
 
 export interface ChatCompletionNotification {
-	body: string;
-	mediaUrls: string[];
+  body: string;
+  mediaUrls: string[];
 }
 
 export interface MessageMediaInput {
-	url: string;
-	mimeType?: string;
+  url: string;
+  mimeType?: string;
 }
 
 const INBOUND_MEDIA_LIMIT = 5;
 const IMAGE_URL_EXTENSION_PATTERN = /\.(avif|gif|jpe?g|png|webp)(?:[?#].*)?$/i;
 
 function isMessagingMediaUrl(value: string): boolean {
-	const trimmed = value.trim();
-	return trimmed.startsWith("https://") || trimmed.startsWith("s3://") || isPashiQrPngUrl(trimmed);
+  const trimmed = value.trim();
+
+  return trimmed.startsWith("https://") || trimmed.startsWith("s3://") || isPashiQrPngUrl(trimmed);
 }
 
 function isInboundMediaUrl(value: string): boolean {
-	let url: URL;
-	try {
-		url = new URL(value.trim());
-	} catch {
-		return false;
-	}
+  let url: URL;
 
-	return url.protocol === "https:" && !url.username && !url.password;
+  try {
+    url = new URL(value.trim());
+  } catch {
+    return false;
+  }
+
+  return url.protocol === "https:" && !url.username && !url.password;
 }
 
 function isImageMedia(value: MessageMediaInput): boolean {
-	const mimeType = value.mimeType?.split(";")[0]?.trim().toLowerCase();
-	return Boolean(mimeType?.startsWith("image/") || IMAGE_URL_EXTENSION_PATTERN.test(value.url));
+  const mimeType = value.mimeType?.split(";")[0]?.trim().toLowerCase();
+
+  return Boolean(mimeType?.startsWith("image/") || IMAGE_URL_EXTENSION_PATTERN.test(value.url));
 }
 
 function normaliseInboundMedia(media: MessageMediaInput[] | undefined): MessageMediaInput[] {
-	const seen = new Set<string>();
-	const normalised: MessageMediaInput[] = [];
+  const seen = new Set<string>();
+  const normalised: MessageMediaInput[] = [];
 
-	for (const item of media ?? []) {
-		const url = item.url.trim();
-		if (!url || seen.has(url) || !isInboundMediaUrl(url)) {
-			continue;
-		}
+  for (const item of media ?? []) {
+    const url = item.url.trim();
 
-		seen.add(url);
-		normalised.push({
-			url,
-			...(item.mimeType?.trim() ? { mimeType: item.mimeType.trim() } : {}),
-		});
+    if (!url || seen.has(url) || !isInboundMediaUrl(url)) {
+      continue;
+    }
 
-		if (normalised.length >= INBOUND_MEDIA_LIMIT) {
-			break;
-		}
-	}
+    seen.add(url);
+    normalised.push({
+      url,
+      ...(item.mimeType?.trim() ? { mimeType: item.mimeType.trim() } : {}),
+    });
 
-	return normalised;
+    if (normalised.length >= INBOUND_MEDIA_LIMIT) {
+      break;
+    }
+  }
+
+  return normalised;
 }
 
 export function buildInboundMessageContent(params: {
-	body: string;
-	media?: MessageMediaInput[];
+  body: string;
+  media?: MessageMediaInput[];
 }): string | MessageContent[] {
-	const body = params.body.trim();
-	const media = normaliseInboundMedia(params.media);
-	if (media.length === 0) {
-		return body;
-	}
+  const body = params.body.trim();
+  const media = normaliseInboundMedia(params.media);
 
-	const content: MessageContent[] = [];
-	if (body) {
-		content.push({ type: "text", text: body });
-	}
+  if (media.length === 0) {
+    return body;
+  }
 
-	const unsupportedMediaUrls: string[] = [];
-	for (const item of media) {
-		if (isImageMedia(item)) {
-			content.push({
-				type: "image_url",
-				image_url: {
-					url: item.url,
-				},
-			});
-		} else {
-			unsupportedMediaUrls.push(item.url);
-		}
-	}
+  const content: MessageContent[] = [];
 
-	if (unsupportedMediaUrls.length > 0) {
-		content.push({
-			type: "text",
-			text: `Attached media URLs: ${unsupportedMediaUrls.join(", ")}`,
-		});
-	}
+  if (body) {
+    content.push({ type: "text", text: body });
+  }
 
-	return content.length > 0 ? content : "Incoming message contained unsupported media.";
+  const unsupportedMediaUrls: string[] = [];
+
+  for (const item of media) {
+    if (isImageMedia(item)) {
+      content.push({
+        type: "image_url",
+        image_url: {
+          url: item.url,
+        },
+      });
+    } else {
+      unsupportedMediaUrls.push(item.url);
+    }
+  }
+
+  if (unsupportedMediaUrls.length > 0) {
+    content.push({
+      type: "text",
+      text: `Attached media URLs: ${unsupportedMediaUrls.join(", ")}`,
+    });
+  }
+
+  return content.length > 0 ? content : "Incoming message contained unsupported media.";
 }
 
 function addMessagingMediaUrl(urls: string[], value: unknown): void {
-	if (typeof value !== "string" || !isMessagingMediaUrl(value)) {
-		return;
-	}
+  if (typeof value !== "string" || !isMessagingMediaUrl(value)) {
+    return;
+  }
 
-	const trimmed = value.trim();
-	if (!urls.includes(trimmed)) {
-		urls.push(trimmed);
-	}
+  const trimmed = value.trim();
+
+  if (!urls.includes(trimmed)) {
+    urls.push(trimmed);
+  }
 }
 
 function isMessageContentPart(part: unknown): part is MessageContent {
-	return isRecord(part) && typeof part.type === "string";
+  return isRecord(part) && typeof part.type === "string";
 }
 
 function extractTextFromMessageContent(content: unknown): string {
-	if (typeof content === "string") {
-		return content.trim();
-	}
+  if (typeof content === "string") {
+    return content.trim();
+  }
 
-	if (!Array.isArray(content)) {
-		return "";
-	}
+  if (!Array.isArray(content)) {
+    return "";
+  }
 
-	return content
-		.filter(isMessageContentPart)
-		.map((part) => (part.type === "text" && typeof part.text === "string" ? part.text.trim() : ""))
-		.filter(Boolean)
-		.join("\n")
-		.trim();
+  return content
+    .filter(isMessageContentPart)
+    .map((part) => (part.type === "text" && typeof part.text === "string" ? part.text.trim() : ""))
+    .filter(Boolean)
+    .join("\n")
+    .trim();
 }
 
 function addMediaUrlsFromMessageContent(urls: string[], content: unknown) {
-	if (!Array.isArray(content)) {
-		return;
-	}
+  if (!Array.isArray(content)) {
+    return;
+  }
 
-	for (const part of content.filter(isMessageContentPart)) {
-		addMessagingMediaUrl(urls, part.image_url?.url);
-		addMessagingMediaUrl(urls, part.audio_url?.url);
-		addMessagingMediaUrl(urls, part.video_url?.url);
-	}
+  for (const part of content.filter(isMessageContentPart)) {
+    addMessagingMediaUrl(urls, part.image_url?.url);
+    addMessagingMediaUrl(urls, part.audio_url?.url);
+    addMessagingMediaUrl(urls, part.video_url?.url);
+  }
 }
 
 function addMediaUrlsFromData(urls: string[], data: Record<string, unknown> | undefined): void {
-	if (!data) {
-		return;
-	}
+  if (!data) {
+    return;
+  }
 
-	const explicitUrlFields = [
-		"imageUrl",
-		"image_url",
-		"audioUrl",
-		"audio_url",
-		"videoUrl",
-		"video_url",
-		"screenshotUrl",
-		"drawingUrl",
-		"paintingUrl",
-	];
+  const explicitUrlFields = [
+    "imageUrl",
+    "image_url",
+    "audioUrl",
+    "audio_url",
+    "videoUrl",
+    "video_url",
+    "screenshotUrl",
+    "drawingUrl",
+    "paintingUrl",
+  ];
 
-	for (const key of explicitUrlFields) {
-		addMessagingMediaUrl(urls, data[key]);
-	}
+  for (const key of explicitUrlFields) {
+    addMessagingMediaUrl(urls, data[key]);
+  }
 
-	const assets = data.assets;
-	if (Array.isArray(assets)) {
-		for (const asset of assets) {
-			if (asset && typeof asset === "object" && "url" in asset) {
-				addMessagingMediaUrl(urls, asset.url);
-			}
-		}
-	}
+  const assets = data.assets;
 
-	const mediaUrls = data.mediaUrls;
-	if (Array.isArray(mediaUrls)) {
-		for (const mediaUrl of mediaUrls) {
-			addMessagingMediaUrl(urls, mediaUrl);
-		}
-	}
+  if (Array.isArray(assets)) {
+    for (const asset of assets) {
+      if (asset && typeof asset === "object" && "url" in asset) {
+        addMessagingMediaUrl(urls, asset.url);
+      }
+    }
+  }
 
-	const notification = data.notification;
-	if (notification && typeof notification === "object" && "mediaUrls" in notification) {
-		const notificationMediaUrls = notification.mediaUrls;
-		if (Array.isArray(notificationMediaUrls)) {
-			for (const mediaUrl of notificationMediaUrls) {
-				addMessagingMediaUrl(urls, mediaUrl);
-			}
-		}
-	}
+  const mediaUrls = data.mediaUrls;
+
+  if (Array.isArray(mediaUrls)) {
+    for (const mediaUrl of mediaUrls) {
+      addMessagingMediaUrl(urls, mediaUrl);
+    }
+  }
+
+  const notification = data.notification;
+
+  if (notification && typeof notification === "object" && "mediaUrls" in notification) {
+    const notificationMediaUrls = notification.mediaUrls;
+
+    if (Array.isArray(notificationMediaUrls)) {
+      for (const mediaUrl of notificationMediaUrls) {
+        addMessagingMediaUrl(urls, mediaUrl);
+      }
+    }
+  }
 }
 
 export function extractChatCompletionText(
-	response: CreateChatCompletionsResponse | Response,
-	options?: {
-		streamingMessage?: string;
-		fallback?: string;
-	},
+  response: CreateChatCompletionsResponse | Response,
+  options?: {
+    streamingMessage?: string;
+    fallback?: string;
+  },
 ): string {
-	if (response instanceof Response) {
-		throw new AssistantError(
-			options?.streamingMessage ?? "Chat completion text cannot be extracted from a stream",
-			ErrorType.PARAMS_ERROR,
-		);
-	}
+  if (response instanceof Response) {
+    throw new AssistantError(
+      options?.streamingMessage ?? "Chat completion text cannot be extracted from a stream",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
 
-	const content = response.choices?.[0]?.message?.content;
-	const text = extractTextFromMessageContent(content);
-	if (text) {
-		return text;
-	}
+  const content = response.choices?.[0]?.message?.content;
+  const text = extractTextFromMessageContent(content);
 
-	return options?.fallback ?? "I could not generate a text response.";
+  if (text) {
+    return text;
+  }
+
+  return options?.fallback ?? "I could not generate a text response.";
 }
 
 export function extractChatCompletionNotification(
-	response: CreateChatCompletionsResponse | Response,
-	options?: {
-		streamingMessage?: string;
-		fallback?: string;
-	},
+  response: CreateChatCompletionsResponse | Response,
+  options?: {
+    streamingMessage?: string;
+    fallback?: string;
+  },
 ): ChatCompletionNotification {
-	if (response instanceof Response) {
-		throw new AssistantError(
-			options?.streamingMessage ?? "Chat completion notification cannot be extracted from a stream",
-			ErrorType.PARAMS_ERROR,
-		);
-	}
+  if (response instanceof Response) {
+    throw new AssistantError(
+      options?.streamingMessage ?? "Chat completion notification cannot be extracted from a stream",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
 
-	const mediaUrls: string[] = [];
-	for (const choice of response.choices ?? []) {
-		addMediaUrlsFromMessageContent(mediaUrls, choice.message?.content);
-		addMediaUrlsFromData(mediaUrls, choice.message?.data);
-	}
+  const mediaUrls: string[] = [];
 
-	return {
-		body: extractChatCompletionText(response, options),
-		mediaUrls,
-	};
+  for (const choice of response.choices ?? []) {
+    addMediaUrlsFromMessageContent(mediaUrls, choice.message?.content);
+    addMediaUrlsFromData(mediaUrls, choice.message?.data);
+  }
+
+  return {
+    body: extractChatCompletionText(response, options),
+    mediaUrls,
+  };
 }

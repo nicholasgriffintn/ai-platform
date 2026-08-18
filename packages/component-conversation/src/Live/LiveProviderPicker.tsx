@@ -6,9 +6,11 @@ function ProviderIcon({ option }: { option: RealtimeLiveProviderOption }) {
   if (option.inputModalities.includes("video")) {
     return <Video className="h-4 w-4" aria-hidden="true" />;
   }
+
   if (option.sessionType === "transcription") {
     return <Mic className="h-4 w-4" aria-hidden="true" />;
   }
+
   return <RadioTower className="h-4 w-4" aria-hidden="true" />;
 }
 

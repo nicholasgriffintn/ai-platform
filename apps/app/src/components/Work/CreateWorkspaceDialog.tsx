@@ -4,30 +4,31 @@ import { useNavigate } from "react-router";
 import { useCreateWorkspace } from "~/hooks/useWorkspaces";
 
 export function CreateWorkspaceDialog({
-	open,
-	onOpenChange,
+  open,
+  onOpenChange,
 }: {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-	const navigate = useNavigate();
-	const createWorkspace = useCreateWorkspace();
+  const navigate = useNavigate();
+  const createWorkspace = useCreateWorkspace();
 
-	return (
-		<ControlledCreateWorkspaceDialog
-			open={open}
-			isSubmitting={createWorkspace.isPending}
-			errorMessage={createWorkspace.error?.message}
-			onOpenChange={onOpenChange}
-			onSubmit={async ({ name, description }) => {
-				const workspace = await createWorkspace.mutateAsync({
-					name,
-					description,
-					colour: "#2563EB",
-				});
-				onOpenChange(false);
-				navigate(`/work/${workspace.id}`);
-			}}
-		/>
-	);
+  return (
+    <ControlledCreateWorkspaceDialog
+      open={open}
+      isSubmitting={createWorkspace.isPending}
+      errorMessage={createWorkspace.error?.message}
+      onOpenChange={onOpenChange}
+      onSubmit={async ({ name, description }) => {
+        const workspace = await createWorkspace.mutateAsync({
+          name,
+          description,
+          colour: "#2563EB",
+        });
+
+        onOpenChange(false);
+        navigate(`/work/${workspace.id}`);
+      }}
+    />
+  );
 }

@@ -20,8 +20,10 @@ export function useResponsiveSidebar() {
         setIsMobile(isMobile);
         setSidebarVisible(!isMobile);
       }
+
       setIsMobileLoading(false);
     };
+
     const handleBreakpointChange = (event: MediaQueryListEvent) => {
       updateResponsiveState(event.matches);
     };

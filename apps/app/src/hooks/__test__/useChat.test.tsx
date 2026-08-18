@@ -6,152 +6,157 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CHATS_QUERY_KEY } from "~/constants";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Conversation } from "~/types";
+
 import { useChat, useDeleteAllLocalChats } from "../useChat";
 
 const mocks = vi.hoisted(() => ({
-	getChat: vi.fn(),
-	getLocalChat: vi.fn(),
-	deleteAllLocalChats: vi.fn(),
+  getChat: vi.fn(),
+  getLocalChat: vi.fn(),
+  deleteAllLocalChats: vi.fn(),
 }));
 
 vi.mock("~/lib/api/api-service", () => ({
-	apiService: {
-		getChat: mocks.getChat,
-	},
+  apiService: {
+    getChat: mocks.getChat,
+  },
 }));
 
 vi.mock("~/lib/local/local-chat-service", () => ({
-	localChatService: {
-		getLocalChat: mocks.getLocalChat,
-		deleteAllLocalChats: mocks.deleteAllLocalChats,
-	},
+  localChatService: {
+    getLocalChat: mocks.getLocalChat,
+    deleteAllLocalChats: mocks.deleteAllLocalChats,
+  },
 }));
 
 function createQueryClient() {
-	return new QueryClient({
-		defaultOptions: {
-			queries: {
-				retry: false,
-			},
-		},
-	});
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
 }
 
 function wrapper(queryClient: QueryClient) {
-	return ({ children }: { children: ReactNode }) => (
-		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-	);
+  return ({ children }: { children: ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
 }
 
 describe("useChat", () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-		mocks.getLocalChat.mockResolvedValue(null);
-		useChatStore.setState({
-			isAuthenticated: true,
-			isPro: true,
-			localOnlyMode: false,
-			locallyCreatedConversationIds: {},
-		});
-	});
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getLocalChat.mockResolvedValue(null);
+    useChatStore.setState({
+      isAuthenticated: true,
+      isPro: true,
+      localOnlyMode: false,
+      locallyCreatedConversationIds: {},
+    });
+  });
 
-	it("does not fetch a remote chat for a client-created conversation id", async () => {
-		const queryClient = createQueryClient();
-		useChatStore.setState({
-			locallyCreatedConversationIds: {
-				"conversation-1": true,
-			},
-		});
+  it("does not fetch a remote chat for a client-created conversation id", async () => {
+    const queryClient = createQueryClient();
 
-		const { result } = renderHook(() => useChat("conversation-1"), {
-			wrapper: wrapper(queryClient),
-		});
+    useChatStore.setState({
+      locallyCreatedConversationIds: {
+        "conversation-1": true,
+      },
+    });
 
-		await waitFor(() => expect(result.current.data).toBeNull());
+    const { result } = renderHook(() => useChat("conversation-1"), {
+      wrapper: wrapper(queryClient),
+    });
 
-		expect(mocks.getLocalChat).toHaveBeenCalledWith("conversation-1");
-		expect(mocks.getChat).not.toHaveBeenCalled();
-	});
+    await waitFor(() => expect(result.current.data).toBeNull());
 
-	it("keeps optimistic messages when a new remote conversation is not found", async () => {
-		const queryClient = createQueryClient();
-		let rejectRemoteChat: (error: Error) => void = () => {};
-		mocks.getChat.mockReturnValue(
-			new Promise((_resolve, reject) => {
-				rejectRemoteChat = reject;
-			}),
-		);
-		const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(mocks.getLocalChat).toHaveBeenCalledWith("conversation-1");
+    expect(mocks.getChat).not.toHaveBeenCalled();
+  });
 
-		const { result } = renderHook(() => useChat("conversation-1"), {
-			wrapper: wrapper(queryClient),
-		});
+  it("keeps optimistic messages when a new remote conversation is not found", async () => {
+    const queryClient = createQueryClient();
+    let rejectRemoteChat: (error: Error) => void = () => {};
 
-		await waitFor(() => expect(mocks.getChat).toHaveBeenCalled());
+    mocks.getChat.mockReturnValue(
+      new Promise((_resolve, reject) => {
+        rejectRemoteChat = reject;
+      }),
+    );
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
-		const optimisticConversation: Conversation = {
-			id: "conversation-1",
-			title: "New conversation",
-			isLocalOnly: false,
-			messages: [
-				{
-					id: "user-1",
-					role: "user",
-					content: "hi",
-				},
-			],
-		};
-		queryClient.setQueryData([CHATS_QUERY_KEY, "conversation-1"], optimisticConversation);
-		rejectRemoteChat(new Error("Failed to get chat: Not Found"));
+    const { result } = renderHook(() => useChat("conversation-1"), {
+      wrapper: wrapper(queryClient),
+    });
 
-		await waitFor(() => expect(result.current.data).toBe(optimisticConversation));
+    await waitFor(() => expect(mocks.getChat).toHaveBeenCalled());
 
-		consoleError.mockRestore();
-	});
+    const optimisticConversation: Conversation = {
+      id: "conversation-1",
+      title: "New conversation",
+      isLocalOnly: false,
+      messages: [
+        {
+          id: "user-1",
+          role: "user",
+          content: "hi",
+        },
+      ],
+    };
+
+    queryClient.setQueryData([CHATS_QUERY_KEY, "conversation-1"], optimisticConversation);
+    rejectRemoteChat(new Error("Failed to get chat: Not Found"));
+
+    await waitFor(() => expect(result.current.data).toBe(optimisticConversation));
+
+    consoleError.mockRestore();
+  });
 });
 
 describe("useDeleteAllLocalChats", () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-		mocks.deleteAllLocalChats.mockResolvedValue(undefined);
-		useChatStore.setState({
-			currentConversationId: "conversation-1",
-			user: {
-				id: 42,
-				name: "Release user",
-				github_username: "release-user",
-				plan_id: "free",
-				avatar_url: "",
-				created_at: "2026-08-14T00:00:00.000Z",
-				updated_at: "2026-08-14T00:00:00.000Z",
-				company: "",
-				location: "",
-				site: "",
-				twitter_username: "",
-				github_url: "",
-				bio: "",
-			},
-		});
-	});
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.deleteAllLocalChats.mockResolvedValue(undefined);
+    useChatStore.setState({
+      currentConversationId: "conversation-1",
+      user: {
+        id: 42,
+        name: "Release user",
+        github_username: "release-user",
+        plan_id: "free",
+        avatar_url: "",
+        created_at: "2026-08-14T00:00:00.000Z",
+        updated_at: "2026-08-14T00:00:00.000Z",
+        company: "",
+        location: "",
+        site: "",
+        twitter_username: "",
+        github_url: "",
+        bio: "",
+      },
+    });
+  });
 
-	it("clears only the active user's local conversation cache", async () => {
-		const queryClient = createQueryClient();
-		const anonymousChats = [{ id: "anonymous-chat", title: "Anonymous", messages: [] }];
-		queryClient.setQueryData([CHATS_QUERY_KEY, "local", "anonymous"], anonymousChats);
-		queryClient.setQueryData(
-			[CHATS_QUERY_KEY, "local", "user:42"],
-			[{ id: "user-chat", title: "Signed in", messages: [] }],
-		);
+  it("clears only the active user's local conversation cache", async () => {
+    const queryClient = createQueryClient();
+    const anonymousChats = [{ id: "anonymous-chat", title: "Anonymous", messages: [] }];
 
-		const { result } = renderHook(() => useDeleteAllLocalChats(), {
-			wrapper: wrapper(queryClient),
-		});
+    queryClient.setQueryData([CHATS_QUERY_KEY, "local", "anonymous"], anonymousChats);
+    queryClient.setQueryData(
+      [CHATS_QUERY_KEY, "local", "user:42"],
+      [{ id: "user-chat", title: "Signed in", messages: [] }],
+    );
 
-		await result.current.mutateAsync();
+    const { result } = renderHook(() => useDeleteAllLocalChats(), {
+      wrapper: wrapper(queryClient),
+    });
 
-		expect(queryClient.getQueryData([CHATS_QUERY_KEY, "local", "user:42"])).toEqual([]);
-		expect(queryClient.getQueryData([CHATS_QUERY_KEY, "local", "anonymous"])).toEqual(
-			anonymousChats,
-		);
-	});
+    await result.current.mutateAsync();
+
+    expect(queryClient.getQueryData([CHATS_QUERY_KEY, "local", "user:42"])).toEqual([]);
+    expect(queryClient.getQueryData([CHATS_QUERY_KEY, "local", "anonymous"])).toEqual(
+      anonymousChats,
+    );
+  });
 });

@@ -9,7 +9,7 @@ export * as schema from "./schema";
 export { createDatabaseClient, type DatabaseClient } from "./client";
 
 export interface Env {
-	DB: D1Database;
+  DB: D1Database;
 }
 
 /**
@@ -18,67 +18,68 @@ export interface Env {
  * Most database operations should be done through repositories directly via ServiceContext
  */
 export class Database {
-	private _repositories: RepositoryManager;
-	private env: IEnv;
+  private _repositories: RepositoryManager;
+  private env: IEnv;
 
-	constructor(env: IEnv) {
-		if (!env?.DB) {
-			throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
-		}
-		this.env = env;
-		this._repositories = new RepositoryManager(env);
-	}
+  constructor(env: IEnv) {
+    if (!env?.DB) {
+      throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
+    }
 
-	public static getInstance(env: IEnv): Database {
-		return new Database(env);
-	}
+    this.env = env;
+    this._repositories = new RepositoryManager(env);
+  }
 
-	/**
-	 * Get the repository manager for direct repository access
-	 * Prefer using context.repositories in services
-	 */
-	public get repositories(): RepositoryManager {
-		return this._repositories;
-	}
+  public static getInstance(env: IEnv): Database {
+    return new Database(env);
+  }
 
-	public get connection(): D1Database {
-		return this.env.DB;
-	}
+  /**
+   * Get the repository manager for direct repository access
+   * Prefer using context.repositories in services
+   */
+  public get repositories(): RepositoryManager {
+    return this._repositories;
+  }
 
-	public async createUser(userData: Record<string, unknown>): Promise<User | null> {
-		try {
-			const user = await this._repositories.users.createUser(userData);
+  public get connection(): D1Database {
+    return this.env.DB;
+  }
 
-			if (user) {
-				try {
-					await this._repositories.userSettings.createUserSettings(user.id);
-				} catch (settingsError) {
-					logError("Failed to create user settings during user creation", settingsError, {
-						operation: "createUserSettings",
-					});
-				}
+  public async createUser(userData: Record<string, unknown>): Promise<User | null> {
+    try {
+      const user = await this._repositories.users.createUser(userData);
 
-				try {
-					await this._repositories.userSettings.createUserProviderSettings(user.id);
-				} catch (providerSettingsError) {
-					logError(
-						"Failed to create user provider settings during user creation",
-						providerSettingsError,
-						{
-							operation: "createUserProviderSettings",
-						},
-					);
-				}
-			}
+      if (user) {
+        try {
+          await this._repositories.userSettings.createUserSettings(user.id);
+        } catch (settingsError) {
+          logError("Failed to create user settings during user creation", settingsError, {
+            operation: "createUserSettings",
+          });
+        }
 
-			return user;
-		} catch (error) {
-			logError("Failed to create user", error, {
-				operation: "createUser",
-				userData: { ...userData, password: "REDACTED" },
-			});
+        try {
+          await this._repositories.userSettings.createUserProviderSettings(user.id);
+        } catch (providerSettingsError) {
+          logError(
+            "Failed to create user provider settings during user creation",
+            providerSettingsError,
+            {
+              operation: "createUserProviderSettings",
+            },
+          );
+        }
+      }
 
-			throw new AssistantError("Unable to create user account", ErrorType.DATABASE_ERROR, 500);
-		}
-	}
+      return user;
+    } catch (error) {
+      logError("Failed to create user", error, {
+        operation: "createUser",
+        userData: { ...userData, password: "REDACTED" },
+      });
+
+      throw new AssistantError("Unable to create user account", ErrorType.DATABASE_ERROR, 500);
+    }
+  }
 }

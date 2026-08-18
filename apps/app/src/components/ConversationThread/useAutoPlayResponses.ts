@@ -1,219 +1,238 @@
 import {
-	buildMessageSpeech,
-	type MessageSpeech,
-	resolveMessageSpeechAudioSource,
-	resolveSpeechResponseAudioSource,
-	withMessageSpeech,
+  buildMessageSpeech,
+  type MessageSpeech,
+  resolveMessageSpeechAudioSource,
+  resolveSpeechResponseAudioSource,
+  withMessageSpeech,
 } from "@ngriffin_uk/polychat-library-chat/message-speech";
 import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import { canReplaceStoredConversationMessages } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { useConversationStorage } from "~/hooks/useConversationStorage";
 import { apiService } from "~/lib/api/api-service";
 import type { Message } from "~/types";
-import { useConversationStorage } from "~/hooks/useConversationStorage";
 
 export function useAutoPlayResponses({
-	conversationId,
-	messages,
-	isEnabled,
-	isStreaming,
+  conversationId,
+  messages,
+  isEnabled,
+  isStreaming,
 }: {
-	conversationId?: string;
-	messages: Message[];
-	isEnabled: boolean;
-	isStreaming: boolean;
+  conversationId?: string;
+  messages: Message[];
+  isEnabled: boolean;
+  isStreaming: boolean;
 }) {
-	const { determineStorageMode, updateConversation } = useConversationStorage();
-	const [isPlaying, setIsPlaying] = useState(false);
-	const [isGeneratingSpeech, setIsGeneratingSpeech] = useState(false);
-	const audioRef = useRef<HTMLAudioElement | null>(null);
-	const lastHandledMessageIdRef = useRef<string | undefined>(undefined);
-	const generationRequestIdRef = useRef(0);
-	const hasSeenStreamingRef = useRef(false);
+  const { determineStorageMode, updateConversation } = useConversationStorage();
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isGeneratingSpeech, setIsGeneratingSpeech] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const lastHandledMessageIdRef = useRef<string | undefined>(undefined);
+  const generationRequestIdRef = useRef(0);
+  const hasSeenStreamingRef = useRef(false);
 
-	const playAudioSource = useCallback((audioSource: string) => {
-		const audio = new Audio(audioSource);
-		audio.crossOrigin = "use-credentials";
-		audioRef.current = audio;
-		audio.onended = () => setIsPlaying(false);
-		audio.onerror = () => {
-			setIsPlaying(false);
-			toast.error("Failed to play generated speech");
-		};
-		setIsGeneratingSpeech(false);
-		setIsPlaying(true);
-		return audio.play();
-	}, []);
+  const playAudioSource = useCallback((audioSource: string) => {
+    const audio = new Audio(audioSource);
 
-	const stopPlayback = useCallback(() => {
-		generationRequestIdRef.current += 1;
-		const audio = audioRef.current;
-		if (audio) {
-			audio.pause();
-			audio.removeAttribute("src");
-			audio.load();
-		}
-		audioRef.current = null;
-		setIsPlaying(false);
-		setIsGeneratingSpeech(false);
-	}, []);
+    audio.crossOrigin = "use-credentials";
+    audioRef.current = audio;
+    audio.onended = () => setIsPlaying(false);
+    audio.onerror = () => {
+      setIsPlaying(false);
+      toast.error("Failed to play generated speech");
+    };
 
-	const persistMessageSpeech = useCallback(
-		async ({ messageId, speech }: { messageId: string; speech: MessageSpeech }) => {
-			if (!conversationId) {
-				return;
-			}
+    setIsGeneratingSpeech(false);
+    setIsPlaying(true);
 
-			let updatedMessages: Message[] | undefined;
-			await updateConversation(conversationId, (conversation) => {
-				if (!conversation) {
-					throw new Error("No conversation found to update generated speech");
-				}
+    return audio.play();
+  }, []);
 
-				updatedMessages = conversation.messages.map((message) =>
-					message.id === messageId ? withMessageSpeech(message, speech) : message,
-				);
+  const stopPlayback = useCallback(() => {
+    generationRequestIdRef.current += 1;
+    const audio = audioRef.current;
 
-				return {
-					...conversation,
-					messages: updatedMessages,
-				};
-			});
+    if (audio) {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+    }
 
-			if (
-				determineStorageMode().shouldSyncRemote &&
-				updatedMessages &&
-				canReplaceStoredConversationMessages(updatedMessages)
-			) {
-				await apiService.updateConversation(conversationId, {
-					messages: updatedMessages,
-				});
-			}
-		},
-		[conversationId, determineStorageMode, updateConversation],
-	);
+    audioRef.current = null;
+    setIsPlaying(false);
+    setIsGeneratingSpeech(false);
+  }, []);
 
-	useEffect(() => {
-		if (!isEnabled) {
-			const latestAssistantMessage = messages
-				.slice()
-				.reverse()
-				.find((message) => message.role === "assistant");
-			lastHandledMessageIdRef.current = latestAssistantMessage?.id;
-			stopPlayback();
-		}
-	}, [isEnabled, messages, stopPlayback]);
+  const persistMessageSpeech = useCallback(
+    async ({ messageId, speech }: { messageId: string; speech: MessageSpeech }) => {
+      if (!conversationId) {
+        return;
+      }
 
-	useEffect(() => {
-		return () => {
-			stopPlayback();
-		};
-	}, [stopPlayback]);
+      let updatedMessages: Message[] | undefined;
 
-	useEffect(() => {
-		if (!isEnabled || isStreaming) {
-			if (isStreaming) {
-				hasSeenStreamingRef.current = true;
-			}
-			return;
-		}
+      await updateConversation(conversationId, (conversation) => {
+        if (!conversation) {
+          throw new Error("No conversation found to update generated speech");
+        }
 
-		const latestAssistantMessage = messages
-			.slice()
-			.reverse()
-			.find((message) => message.role === "assistant");
+        updatedMessages = conversation.messages.map((message) =>
+          message.id === messageId ? withMessageSpeech(message, speech) : message,
+        );
 
-		if (!hasSeenStreamingRef.current) {
-			lastHandledMessageIdRef.current = latestAssistantMessage?.id;
-			return;
-		}
-		hasSeenStreamingRef.current = false;
+        return {
+          ...conversation,
+          messages: updatedMessages,
+        };
+      });
 
-		if (
-			!latestAssistantMessage?.id ||
-			latestAssistantMessage.id === lastHandledMessageIdRef.current
-		) {
-			return;
-		}
+      if (
+        determineStorageMode().shouldSyncRemote &&
+        updatedMessages &&
+        canReplaceStoredConversationMessages(updatedMessages)
+      ) {
+        await apiService.updateConversation(conversationId, {
+          messages: updatedMessages,
+        });
+      }
+    },
+    [conversationId, determineStorageMode, updateConversation],
+  );
 
-		const existingSpeechSource = resolveMessageSpeechAudioSource(latestAssistantMessage);
-		if (existingSpeechSource) {
-			lastHandledMessageIdRef.current = latestAssistantMessage.id;
-			stopPlayback();
-			void playAudioSource(existingSpeechSource).catch(() => {
-				toast.error("Failed to play generated speech");
-			});
-			return;
-		}
+  useEffect(() => {
+    if (!isEnabled) {
+      const latestAssistantMessage = messages
+        .slice()
+        .reverse()
+        .find((message) => message.role === "assistant");
 
-		const text = getMessageTextContent(latestAssistantMessage);
-		if (!text || !conversationId) {
-			lastHandledMessageIdRef.current = latestAssistantMessage.id;
-			return;
-		}
+      lastHandledMessageIdRef.current = latestAssistantMessage?.id;
+      stopPlayback();
+    }
+  }, [isEnabled, messages, stopPlayback]);
 
-		let isCancelled = false;
-		lastHandledMessageIdRef.current = latestAssistantMessage.id;
-		stopPlayback();
-		const requestId = generationRequestIdRef.current + 1;
-		generationRequestIdRef.current = requestId;
-		setIsGeneratingSpeech(true);
+  useEffect(() => {
+    return () => {
+      stopPlayback();
+    };
+  }, [stopPlayback]);
 
-		apiService
-			.generateSpeech(text)
-			.then((response) => {
-				if (
-					isCancelled ||
-					generationRequestIdRef.current !== requestId ||
-					response.status !== "success"
-				) {
-					return;
-				}
+  useEffect(() => {
+    if (!isEnabled || isStreaming) {
+      if (isStreaming) {
+        hasSeenStreamingRef.current = true;
+      }
 
-				const speech = buildMessageSpeech(response);
-				const audioSource = resolveSpeechResponseAudioSource(response);
-				if (!audioSource) {
-					setIsGeneratingSpeech(false);
-					return;
-				}
+      return;
+    }
 
-				const persistSpeech = speech
-					? persistMessageSpeech({
-							messageId: latestAssistantMessage.id,
-							speech,
-						})
-					: Promise.resolve();
+    const latestAssistantMessage = messages
+      .slice()
+      .reverse()
+      .find((message) => message.role === "assistant");
 
-				return persistSpeech.then(() => playAudioSource(audioSource));
-			})
-			.catch((error) => {
-				if (isCancelled || generationRequestIdRef.current !== requestId) {
-					return;
-				}
-				console.error("Failed to auto-play response:", error);
-				toast.error("Failed to generate speech for this response");
-				setIsGeneratingSpeech(false);
-				setIsPlaying(false);
-			});
+    if (!hasSeenStreamingRef.current) {
+      lastHandledMessageIdRef.current = latestAssistantMessage?.id;
 
-		return () => {
-			isCancelled = true;
-		};
-	}, [
-		conversationId,
-		isEnabled,
-		isStreaming,
-		messages,
-		persistMessageSpeech,
-		playAudioSource,
-		stopPlayback,
-	]);
+      return;
+    }
 
-	return {
-		isGeneratingSpeech,
-		isPlaying,
-		stopPlayback,
-	};
+    hasSeenStreamingRef.current = false;
+
+    if (
+      !latestAssistantMessage?.id ||
+      latestAssistantMessage.id === lastHandledMessageIdRef.current
+    ) {
+      return;
+    }
+
+    const existingSpeechSource = resolveMessageSpeechAudioSource(latestAssistantMessage);
+
+    if (existingSpeechSource) {
+      lastHandledMessageIdRef.current = latestAssistantMessage.id;
+      stopPlayback();
+      void playAudioSource(existingSpeechSource).catch(() => {
+        toast.error("Failed to play generated speech");
+      });
+
+      return;
+    }
+
+    const text = getMessageTextContent(latestAssistantMessage);
+
+    if (!text || !conversationId) {
+      lastHandledMessageIdRef.current = latestAssistantMessage.id;
+
+      return;
+    }
+
+    let isCancelled = false;
+
+    lastHandledMessageIdRef.current = latestAssistantMessage.id;
+    stopPlayback();
+    const requestId = generationRequestIdRef.current + 1;
+
+    generationRequestIdRef.current = requestId;
+    setIsGeneratingSpeech(true);
+
+    apiService
+      .generateSpeech(text)
+      .then((response) => {
+        if (
+          isCancelled ||
+          generationRequestIdRef.current !== requestId ||
+          response.status !== "success"
+        ) {
+          return;
+        }
+
+        const speech = buildMessageSpeech(response);
+        const audioSource = resolveSpeechResponseAudioSource(response);
+
+        if (!audioSource) {
+          setIsGeneratingSpeech(false);
+
+          return;
+        }
+
+        const persistSpeech = speech
+          ? persistMessageSpeech({
+              messageId: latestAssistantMessage.id,
+              speech,
+            })
+          : Promise.resolve();
+
+        return persistSpeech.then(() => playAudioSource(audioSource));
+      })
+      .catch((error) => {
+        if (isCancelled || generationRequestIdRef.current !== requestId) {
+          return;
+        }
+
+        console.error("Failed to auto-play response:", error);
+        toast.error("Failed to generate speech for this response");
+        setIsGeneratingSpeech(false);
+        setIsPlaying(false);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    conversationId,
+    isEnabled,
+    isStreaming,
+    messages,
+    persistMessageSpeech,
+    playAudioSource,
+    stopPlayback,
+  ]);
+
+  return {
+    isGeneratingSpeech,
+    isPlaying,
+    stopPlayback,
+  };
 }

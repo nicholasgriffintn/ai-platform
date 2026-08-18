@@ -1,204 +1,207 @@
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { validateReplicatePayload } from "~/lib/providers/models/replicateValidation";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import type { IEnv, IFunctionResponse, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
-import { safeParseJson } from "~/utils/json";
-import { omitNullishValues } from "~/utils/objects";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { TaskService } from "~/services/tasks/TaskService";
+import type { IEnv, IFunctionResponse, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { safeParseJson } from "~/utils/json";
+import { getLogger } from "~/utils/logger";
+import { omitNullishValues } from "~/utils/objects";
 
 const logger = getLogger({ prefix: "services/apps/podcast/transcribe" });
 
 const MODEL_KEY = "replicate-whisper-large-v3";
 
 export interface IPodcastTranscribeBody {
-	podcastId: string;
-	numberOfSpeakers: number;
-	prompt: string;
+  podcastId: string;
+  numberOfSpeakers: number;
+  prompt: string;
 }
 
 interface TranscribeRequest {
-	context?: ServiceContext;
-	env?: IEnv;
-	request: IPodcastTranscribeBody;
-	user: IUser;
-	app_url?: string;
-	projectId?: string;
+  context?: ServiceContext;
+  env?: IEnv;
+  request: IPodcastTranscribeBody;
+  user: IUser;
+  app_url?: string;
+  projectId?: string;
 }
 
 export const handlePodcastTranscribe = async (
-	req: TranscribeRequest,
+  req: TranscribeRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-	const { request, context, env, user, app_url, projectId } = req;
+  const { request, context, env, user, app_url, projectId } = req;
 
-	if (!request.podcastId || !request.prompt || !request.numberOfSpeakers) {
-		throw new AssistantError(
-			"Missing podcast id or prompt or number of speakers",
-			ErrorType.PARAMS_ERROR,
-		);
-	}
+  if (!request.podcastId || !request.prompt || !request.numberOfSpeakers) {
+    throw new AssistantError(
+      "Missing podcast id or prompt or number of speakers",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
 
-	try {
-		if (!user?.id) {
-			throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
-		}
+  try {
+    if (!user?.id) {
+      throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
+    }
 
-		const serviceContext = resolveServiceContext({ context, env, user });
-		serviceContext.ensureDatabase();
-		const repositories = serviceContext.repositories;
-		const runtimeEnv = serviceContext.env as IEnv;
+    const serviceContext = resolveServiceContext({ context, env, user });
 
-		const existingTranscriptions = projectId
-			? await repositories.outputs.listProjectOutputGroup(
-					projectId,
-					"podcasts",
-					request.podcastId,
-					"transcribe",
-				)
-			: await repositories.outputs.listPersonalOutputGroup(
-					user.id,
-					"podcasts",
-					request.podcastId,
-					"transcribe",
-				);
+    serviceContext.ensureDatabase();
+    const repositories = serviceContext.repositories;
+    const runtimeEnv = serviceContext.env;
 
-		if (existingTranscriptions.length > 0) {
-			const transcriptionData = safeParseJson<Record<string, any>>(
-				existingTranscriptions[0].content,
-			)?.transcriptionData;
+    const existingTranscriptions = projectId
+      ? await repositories.outputs.listProjectOutputGroup(
+          projectId,
+          "podcasts",
+          request.podcastId,
+          "transcribe",
+        )
+      : await repositories.outputs.listPersonalOutputGroup(
+          user.id,
+          "podcasts",
+          request.podcastId,
+          "transcribe",
+        );
 
-			return {
-				status: "success",
-				content: "Podcast Transcription retrieved from cache",
-				data: transcriptionData,
-			};
-		}
+    if (existingTranscriptions.length > 0) {
+      const transcriptionData = safeParseJson<Record<string, any>>(
+        existingTranscriptions[0].content,
+      )?.transcriptionData;
 
-		const uploadData = projectId
-			? await repositories.outputs.listProjectOutputGroup(
-					projectId,
-					"podcasts",
-					request.podcastId,
-					"upload",
-				)
-			: await repositories.outputs.listPersonalOutputGroup(
-					user.id,
-					"podcasts",
-					request.podcastId,
-					"upload",
-				);
+      return {
+        status: "success",
+        content: "Podcast Transcription retrieved from cache",
+        data: transcriptionData,
+      };
+    }
 
-		if (uploadData.length === 0) {
-			throw new AssistantError(
-				"Podcast upload not found. Please upload audio first",
-				ErrorType.PARAMS_ERROR,
-			);
-		}
+    const uploadData = projectId
+      ? await repositories.outputs.listProjectOutputGroup(
+          projectId,
+          "podcasts",
+          request.podcastId,
+          "upload",
+        )
+      : await repositories.outputs.listPersonalOutputGroup(
+          user.id,
+          "podcasts",
+          request.podcastId,
+          "upload",
+        );
 
-		const parsedUploadData = safeParseJson<Record<string, any>>(uploadData[0].content) ?? {};
-		const title = parsedUploadData.title;
-		const description = parsedUploadData.description;
-		const audioUrl = parsedUploadData.audioUrl;
+    if (uploadData.length === 0) {
+      throw new AssistantError(
+        "Podcast upload not found. Please upload audio first",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
 
-		const modelConfig = await getModelConfigByModel(MODEL_KEY);
+    const parsedUploadData = safeParseJson<Record<string, any>>(uploadData[0].content) ?? {};
+    const title = parsedUploadData.title;
+    const description = parsedUploadData.description;
+    const audioUrl = parsedUploadData.audioUrl;
 
-		if (!modelConfig) {
-			throw new AssistantError(
-				`Model configuration not found for ${MODEL_KEY}`,
-				ErrorType.CONFIGURATION_ERROR,
-			);
-		}
-		const provider = getChatProvider(modelConfig.provider || "replicate", {
-			env: runtimeEnv,
-			user,
-		});
+    const modelConfig = await getModelConfigByModel(MODEL_KEY);
 
-		const prompt = `${request.prompt} <title>${title}</title> <description>${description}</description>`;
+    if (!modelConfig) {
+      throw new AssistantError(
+        `Model configuration not found for ${MODEL_KEY}`,
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
 
-		const replicatePayload = omitNullishValues({
-			file: audioUrl,
-			prompt,
-			language: "en",
-			num_speakers: request.numberOfSpeakers,
-			transcript_output_format: "segments_only",
-			group_segments: true,
-			translate: false,
-			offset_seconds: 0,
-		});
+    const provider = getChatProvider(modelConfig.provider || "replicate", {
+      env: runtimeEnv,
+      user,
+    });
 
-		validateReplicatePayload({
-			payload: replicatePayload,
-			schema: modelConfig.inputSchema,
-			modelName: modelConfig.name || MODEL_KEY,
-		});
+    const prompt = `${request.prompt} <title>${title}</title> <description>${description}</description>`;
 
-		const transcriptionData = await provider.getResponse({
-			completion_id: request.podcastId,
-			app_url,
-			model: modelConfig.matchingModel,
-			messages: [
-				{
-					role: "user",
-					content: [{ ...replicatePayload, type: "text" }],
-				},
-			],
-			env: runtimeEnv,
-			context: serviceContext,
-		});
+    const replicatePayload = omitNullishValues({
+      file: audioUrl,
+      prompt,
+      language: "en",
+      num_speakers: request.numberOfSpeakers,
+      transcript_output_format: "segments_only",
+      group_segments: true,
+      translate: false,
+      offset_seconds: 0,
+    });
 
-		const isAsync = transcriptionData?.status === "in_progress";
+    validateReplicatePayload({
+      payload: replicatePayload,
+      schema: modelConfig.inputSchema,
+      modelName: modelConfig.name || MODEL_KEY,
+    });
 
-		const appData = {
-			title,
-			description,
-			numberOfSpeakers: request.numberOfSpeakers,
-			prompt: request.prompt,
-			transcriptionData,
-			status: isAsync ? "pending" : "complete",
-			createdAt: new Date().toISOString(),
-		};
+    const transcriptionData = await provider.getResponse({
+      completion_id: request.podcastId,
+      app_url,
+      model: modelConfig.matchingModel,
+      messages: [
+        {
+          role: "user",
+          content: [{ ...replicatePayload, type: "text" }],
+        },
+      ],
+      env: runtimeEnv,
+      context: serviceContext,
+    });
 
-		await repositories.outputs.createOutput({
-			createdByUserId: user.id,
-			projectId,
-			capabilityId: "podcasts",
-			groupId: request.podcastId,
-			kind: "transcribe",
-			title: `Transcript: ${title || "Untitled podcast"}`,
-			status: isAsync ? "pending" : "ready",
-			content: appData,
-		});
+    const isAsync = transcriptionData?.status === "in_progress";
 
-		if (isAsync) {
-			const taskService = new TaskService(runtimeEnv, new TaskRepository(runtimeEnv));
-			await taskService.enqueueTask({
-				task_type: "podcast_transcription_polling",
-				user_id: user.id,
-				task_data: {
-					podcastId: request.podcastId,
-					userId: user.id,
-					projectId,
-					startedAt: new Date().toISOString(),
-					pollAttempt: 0,
-				},
-				priority: 6,
-			});
-		}
+    const appData = {
+      title,
+      description,
+      numberOfSpeakers: request.numberOfSpeakers,
+      prompt: request.prompt,
+      transcriptionData,
+      status: isAsync ? "pending" : "complete",
+      createdAt: new Date().toISOString(),
+    };
 
-		return {
-			status: "success",
-			content: isAsync
-				? `Podcast transcription started: ${transcriptionData.id}`
-				: `Podcast transcribed: ${transcriptionData.id}`,
-			data: appData,
-		};
-	} catch (error) {
-		logger.error("Failed to transcribe podcast:", {
-			error_message: error instanceof Error ? error.message : "Unknown error",
-		});
-		throw new AssistantError("Failed to transcribe podcast");
-	}
+    await repositories.outputs.createOutput({
+      createdByUserId: user.id,
+      projectId,
+      capabilityId: "podcasts",
+      groupId: request.podcastId,
+      kind: "transcribe",
+      title: `Transcript: ${title || "Untitled podcast"}`,
+      status: isAsync ? "pending" : "ready",
+      content: appData,
+    });
+
+    if (isAsync) {
+      const taskService = new TaskService(runtimeEnv, new TaskRepository(runtimeEnv));
+
+      await taskService.enqueueTask({
+        task_type: "podcast_transcription_polling",
+        user_id: user.id,
+        task_data: {
+          podcastId: request.podcastId,
+          userId: user.id,
+          projectId,
+          startedAt: new Date().toISOString(),
+          pollAttempt: 0,
+        },
+        priority: 6,
+      });
+    }
+
+    return {
+      status: "success",
+      content: isAsync
+        ? `Podcast transcription started: ${transcriptionData.id}`
+        : `Podcast transcribed: ${transcriptionData.id}`,
+      data: appData,
+    };
+  } catch (error) {
+    logger.error("Failed to transcribe podcast:", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
+    throw new AssistantError("Failed to transcribe podcast");
+  }
 };

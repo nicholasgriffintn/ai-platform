@@ -8,8 +8,6 @@ import {
   type ComposerInputTokenPosition,
   TokenizedComposerInput,
   type TokenizedComposerInputHandle,
-} from "@ngriffin_uk/polychat-component-conversation";
-import {
   ComposerCommandActionsProvider,
   ComposerCommandButton,
   ComposerCommandChips,
@@ -162,6 +160,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     });
     const [selectedAttachments, setSelectedAttachments] = useState<AttachmentData[]>([]);
     const [placeholderSeed, setPlaceholderSeed] = useState(0);
+
     useEffect(() => {
       setPlaceholderSeed(Math.floor(Math.random() * 12));
     }, []);
@@ -224,6 +223,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
     const composerTokens = useMemo<ComposerInputToken[]>(() => {
       const tokens: ComposerInputToken[] = [];
+
       if (
         selectedAssistantAction?.item &&
         typeof selectedAssistantAction.tokenPosition === "number"
@@ -252,9 +252,11 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
     const handleComposerTokenPositionsChange = (positions: ComposerInputTokenPosition[]) => {
       const nextPositions = new Map(positions.map((position) => [position.id, position.position]));
+
       if (selectedAssistantAction?.item) {
         const tokenId = `action:${selectedAssistantAction.item.id}`;
         const nextPosition = nextPositions.get(tokenId);
+
         if (typeof nextPosition === "number") {
           if (selectedAssistantAction.tokenPosition !== nextPosition) {
             setSelectedAssistantAction({
@@ -269,6 +271,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
       if (selectedAgentId) {
         const nextPosition = nextPositions.get(`agent:${selectedAgentId}`);
+
         if (typeof nextPosition === "number") {
           if (selectedAgentTokenPosition !== nextPosition) {
             setSelectedAgentTokenPosition(nextPosition);
@@ -282,16 +285,20 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
       if ((e.key === "ArrowDown" || e.key === "ArrowUp") && directiveQuery) {
         const didMove = moveActiveSuggestion(e.key === "ArrowDown" ? 1 : -1);
+
         if (didMove) {
           e.preventDefault();
+
           return;
         }
       }
 
       if ((e.key === "Enter" || e.key === "Tab") && directiveQuery) {
         const didApplyDirective = applyDirectiveSelection();
+
         if (didApplyDirective) {
           e.preventDefault();
+
           return;
         }
       }
@@ -303,6 +310,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       ) {
         e.preventDefault();
         modeControls.onClearActive();
+
         return;
       }
 
@@ -315,13 +323,16 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         if (isComposerSubmitDisabled) {
           return;
         }
+
         submitSelectedAttachments();
       }
+
       if (e.key === "Enter" && e.shiftKey) {
         e.preventDefault();
         const cursorPosition = composerInputRef.current?.getCursorPosition() ?? chatInput.length;
         const textBeforeCursor = chatInput.substring(0, cursorPosition);
         const textAfterCursor = chatInput.substring(cursorPosition);
+
         setChatInput(`${textBeforeCursor}\n${textAfterCursor}`);
 
         setTimeout(() => {
@@ -334,6 +345,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
     const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files ?? []);
+
       if (files.length === 0) {
         return;
       }
@@ -409,12 +421,15 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       ];
       const attachments = combinedAttachments.length > 0 ? combinedAttachments : undefined;
       const submitResult = handleSubmit(attachments);
+
       if (submitResult && typeof submitResult.then === "function") {
         const didSubmit = await submitResult;
-        if (didSubmit === false) {
+
+        if (!didSubmit) {
           return;
         }
       }
+
       clearSelectedAttachments();
       onClearContextAttachments?.();
     };
@@ -495,6 +510,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
           label: "Image attached",
         };
       }
+
       if (attachment.type === "document" || attachment.type === "markdown_document") {
         return {
           preview: <File className="h-3.5 w-3.5" aria-hidden="true" />,
@@ -504,18 +520,21 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
               : attachment.name || "Document attached",
         };
       }
+
       if (attachment.type === "artifact_selection") {
         return {
           preview: <FileText className="h-3.5 w-3.5" aria-hidden="true" />,
           label: attachment.name,
         };
       }
+
       if (attachment.type === "audio") {
         return {
           preview: <Volume2 className="h-3.5 w-3.5" aria-hidden="true" />,
           label: attachment.name || "Audio attached",
         };
       }
+
       return { preview: null, label: "" };
     };
 
@@ -523,6 +542,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
     const contextAttachmentChips = contextAttachments.flatMap((attachment, index) => {
       const { preview, label } = getAttachmentIconAndLabel(attachment);
+
       return preview
         ? [
             {
@@ -539,6 +559,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
     const selectedAttachmentChips = selectedAttachments.flatMap((attachment, index) => {
       const { preview, label } = getAttachmentIconAndLabel(attachment);
+
       return preview
         ? [
             {
@@ -551,6 +572,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     });
     const sourceAttachmentChips = composerSources.attachments.flatMap((attachment, index) => {
       const { preview, label } = getAttachmentIconAndLabel(attachment);
+
       return preview
         ? [
             {
@@ -718,7 +740,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                 <div className="min-w-0 flex-shrink">
                   <ModelSelector
                     isDisabled={isLoading}
-                    mono={true}
+                    mono
                     modelProviderFilter={modelProviderFilter}
                     modelScope={modelScope}
                     onModelChange={onModelChange}

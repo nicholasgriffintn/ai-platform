@@ -7,227 +7,232 @@ import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { isRecord } from "~/utils/objects";
+
 import { BaseProvider } from "./base";
 
 const logger = getLogger({ prefix: "lib/providers/polly" });
 
 interface PollyResponse {
-	SynthesisTask: {
-		TaskId: string;
-		TaskStatus: string;
-		TaskStatusReason?: string;
-		OutputUri?: string;
-	};
+  SynthesisTask: {
+    TaskId: string;
+    TaskStatus: string;
+    TaskStatusReason?: string;
+    OutputUri?: string;
+  };
 }
 
 interface PollyStorageService {
-	uploadObject: (key: string, data: Uint8Array) => Promise<unknown>;
+  uploadObject: (key: string, data: Uint8Array) => Promise<unknown>;
 }
 
 interface PollyProviderOptions {
-	returnAudio?: boolean;
-	slug?: string;
-	storageService?: PollyStorageService;
+  returnAudio?: boolean;
+  slug?: string;
+  storageService?: PollyStorageService;
 }
 
 function isPollyStorageService(value: unknown): value is PollyStorageService {
-	return isRecord(value) && typeof value.uploadObject === "function";
+  return isRecord(value) && typeof value.uploadObject === "function";
 }
 
 function readPollyProviderOptions(options: unknown): PollyProviderOptions {
-	if (!isRecord(options)) {
-		return {};
-	}
+  if (!isRecord(options)) {
+    return {};
+  }
 
-	return {
-		returnAudio: options.returnAudio === true,
-		slug: typeof options.slug === "string" ? options.slug : undefined,
-		storageService: isPollyStorageService(options.storageService)
-			? options.storageService
-			: undefined,
-	};
+  return {
+    returnAudio: options.returnAudio === true,
+    slug: typeof options.slug === "string" ? options.slug : undefined,
+    storageService: isPollyStorageService(options.storageService)
+      ? options.storageService
+      : undefined,
+  };
 }
 
 export class PollyProvider extends BaseProvider {
-	name = "polly";
-	supportsStreaming = false;
-	isOpenAiCompatible = false;
+  name = "polly";
+  supportsStreaming = false;
+  isOpenAiCompatible = false;
 
-	protected getProviderKeyName(): string {
-		return "polly";
-	}
+  protected getProviderKeyName(): string {
+    return "polly";
+  }
 
-	private parseAwsCredentials(apiKey: string): {
-		accessKey: string;
-		secretKey: string;
-	} {
-		const delimiter = "::@@::";
-		const parts = apiKey.split(delimiter);
+  private parseAwsCredentials(apiKey: string): {
+    accessKey: string;
+    secretKey: string;
+  } {
+    const delimiter = "::@@::";
+    const parts = apiKey.split(delimiter);
 
-		if (parts.length !== 2) {
-			throw new AssistantError("Invalid AWS credentials format", ErrorType.CONFIGURATION_ERROR);
-		}
+    if (parts.length !== 2) {
+      throw new AssistantError("Invalid AWS credentials format", ErrorType.CONFIGURATION_ERROR);
+    }
 
-		return { accessKey: parts[0], secretKey: parts[1] };
-	}
+    return { accessKey: parts[0], secretKey: parts[1] };
+  }
 
-	protected validateParams(params: ChatCompletionParameters): void {
-		super.validateParams(params);
-	}
+  protected validateParams(params: ChatCompletionParameters): void {
+    super.validateParams(params);
+  }
 
-	protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
-		const region = params.env.AWS_REGION || "us-east-1";
-		return `https://polly.${region}.amazonaws.com/v1/synthesisTasks`;
-	}
+  protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
+    const region = params.env.AWS_REGION || "us-east-1";
 
-	protected getHeaders(): Record<string, string> {
-		return {};
-	}
+    return `https://polly.${region}.amazonaws.com/v1/synthesisTasks`;
+  }
 
-	async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
-		this.validateParams(params);
+  protected getHeaders(): Record<string, string> {
+    return {};
+  }
 
-		const pollyUrl = await this.getEndpoint(params);
-		const options = readPollyProviderOptions(params.body);
+  async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
+    this.validateParams(params);
 
-		return trackProviderMetrics({
-			provider: this.name,
-			model: params.model as string,
-			operation: async () => {
-				let accessKey = params.env.BEDROCK_AWS_ACCESS_KEY || "";
-				let secretKey = params.env.BEDROCK_AWS_SECRET_KEY || "";
+    const pollyUrl = await this.getEndpoint(params);
+    const options = readPollyProviderOptions(params.body);
 
-				if (userId) {
-					try {
-						const userApiKey = await this.getApiKey(params, userId);
-						if (userApiKey) {
-							const credentials = this.parseAwsCredentials(userApiKey);
-							if (credentials.accessKey) {
-								accessKey = credentials.accessKey;
-							}
-							if (credentials.secretKey) {
-								secretKey = credentials.secretKey;
-							}
-						}
-					} catch (error) {
-						logger.warn("Failed to get user AWS credentials, using environment variables:", {
-							error,
-						});
-					}
-				}
+    return trackProviderMetrics({
+      provider: this.name,
+      model: params.model,
+      operation: async () => {
+        let accessKey = params.env.BEDROCK_AWS_ACCESS_KEY || "";
+        let secretKey = params.env.BEDROCK_AWS_SECRET_KEY || "";
 
-				const region = "us-east-1";
+        if (userId) {
+          try {
+            const userApiKey = await this.getApiKey(params, userId);
 
-				const awsClient = new AwsClient({
-					accessKeyId: accessKey,
-					secretAccessKey: secretKey,
-					region: region,
-				});
+            if (userApiKey) {
+              const credentials = this.parseAwsCredentials(userApiKey);
 
-				const response = await awsClient.fetch(pollyUrl, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						Text: params.message,
-						OutputFormat: "mp3",
-						VoiceId: params.model,
-						Engine: "long-form",
-						TextType: "ssml",
-						OutputS3BucketName: "polly-text-to-speech-input",
-						OutputS3KeyPrefix: `polly/${options.slug}`,
-					}),
-				});
+              if (credentials.accessKey) {
+                accessKey = credentials.accessKey;
+              }
 
-				if (!response.ok) {
-					throw new AssistantError(
-						await formatProviderError(response, "Polly API Error"),
-						ErrorType.PROVIDER_ERROR,
-						response.status,
-					);
-				}
+              if (credentials.secretKey) {
+                secretKey = credentials.secretKey;
+              }
+            }
+          } catch (error) {
+            logger.warn("Failed to get user AWS credentials, using environment variables:", {
+              error,
+            });
+          }
+        }
 
-				const data = (await response.json()) as PollyResponse;
+        const region = "us-east-1";
 
-				const taskId = data.SynthesisTask.TaskId;
+        const awsClient = new AwsClient({
+          accessKeyId: accessKey,
+          secretAccessKey: secretKey,
+          region: region,
+        });
 
-				while (true) {
-					const taskResponse = await awsClient.fetch(`${pollyUrl}/${taskId}`, {
-						method: "GET",
-					});
+        const response = await awsClient.fetch(pollyUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            Text: params.message,
+            OutputFormat: "mp3",
+            VoiceId: params.model,
+            Engine: "long-form",
+            TextType: "ssml",
+            OutputS3BucketName: "polly-text-to-speech-input",
+            OutputS3KeyPrefix: `polly/${options.slug}`,
+          }),
+        });
 
-					if (!taskResponse.ok) {
-						throw new AssistantError(
-							`Failed to check task status: ${taskResponse.status}`,
-							ErrorType.PROVIDER_ERROR,
-							taskResponse.status,
-						);
-					}
+        if (!response.ok) {
+          throw new AssistantError(
+            await formatProviderError(response, "Polly API Error"),
+            ErrorType.PROVIDER_ERROR,
+            response.status,
+          );
+        }
 
-					const taskData = (await taskResponse.json()) as PollyResponse;
-					const status = taskData.SynthesisTask.TaskStatus;
+        const data = (await response.json()) as PollyResponse;
 
-					if (status === "completed") {
-						if (!taskData.SynthesisTask.OutputUri) {
-							throw new AssistantError(
-								"Polly synthesis task failed or output URI is missing",
-								ErrorType.PROVIDER_ERROR,
-							);
-						}
+        const taskId = data.SynthesisTask.TaskId;
 
-						const s3Response = await awsClient.fetch(taskData.SynthesisTask.OutputUri, {
-							method: "GET",
-						});
+        while (true) {
+          const taskResponse = await awsClient.fetch(`${pollyUrl}/${taskId}`, {
+            method: "GET",
+          });
 
-						if (!s3Response.ok) {
-							throw new AssistantError(
-								await formatProviderError(s3Response, "Error fetching Polly audio from S3"),
-								ErrorType.EXTERNAL_API_ERROR,
-								s3Response.status,
-							);
-						}
+          if (!taskResponse.ok) {
+            throw new AssistantError(
+              `Failed to check task status: ${taskResponse.status}`,
+              ErrorType.PROVIDER_ERROR,
+              taskResponse.status,
+            );
+          }
 
-						const audioBuffer = await s3Response.arrayBuffer();
-						const audioKey = `audio/${options.slug}.mp3`;
+          const taskData = (await taskResponse.json()) as PollyResponse;
+          const status = taskData.SynthesisTask.TaskStatus;
 
-						if (options.returnAudio === true) {
-							const audioBase64 = bufferToBase64(audioBuffer);
+          if (status === "completed") {
+            if (!taskData.SynthesisTask.OutputUri) {
+              throw new AssistantError(
+                "Polly synthesis task failed or output URI is missing",
+                ErrorType.PROVIDER_ERROR,
+              );
+            }
 
-							return {
-								audioBase64,
-								audioDataUrl: `data:audio/mpeg;base64,${audioBase64}`,
-								audioMimeType: "audio/mpeg",
-							};
-						}
+            const s3Response = await awsClient.fetch(taskData.SynthesisTask.OutputUri, {
+              method: "GET",
+            });
 
-						await options.storageService?.uploadObject(audioKey, new Uint8Array(audioBuffer));
+            if (!s3Response.ok) {
+              throw new AssistantError(
+                await formatProviderError(s3Response, "Error fetching Polly audio from S3"),
+                ErrorType.EXTERNAL_API_ERROR,
+                s3Response.status,
+              );
+            }
 
-						return audioKey;
-					}
+            const audioBuffer = await s3Response.arrayBuffer();
+            const audioKey = `audio/${options.slug}.mp3`;
 
-					if (status === "failed") {
-						throw new AssistantError(
-							`Task failed: ${taskData.SynthesisTask.TaskStatusReason}`,
-							ErrorType.PROVIDER_ERROR,
-						);
-					}
+            if (options.returnAudio) {
+              const audioBase64 = bufferToBase64(audioBuffer);
 
-					await new Promise((resolve) => setTimeout(resolve, 5000));
-				}
-			},
-			analyticsEngine: params.env?.ANALYTICS,
-			settings: {
-				temperature: params.temperature,
-				max_tokens: params.max_tokens,
-				top_p: params.top_p,
-				top_k: params.top_k,
-				seed: params.seed,
-				repetition_penalty: params.repetition_penalty,
-				frequency_penalty: params.frequency_penalty,
-			},
-			userId,
-			completion_id: params.completion_id,
-		});
-	}
+              return {
+                audioBase64,
+                audioDataUrl: `data:audio/mpeg;base64,${audioBase64}`,
+                audioMimeType: "audio/mpeg",
+              };
+            }
+
+            await options.storageService?.uploadObject(audioKey, new Uint8Array(audioBuffer));
+
+            return audioKey;
+          }
+
+          if (status === "failed") {
+            throw new AssistantError(
+              `Task failed: ${taskData.SynthesisTask.TaskStatusReason}`,
+              ErrorType.PROVIDER_ERROR,
+            );
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+        }
+      },
+      analyticsEngine: params.env?.ANALYTICS,
+      settings: {
+        temperature: params.temperature,
+        max_tokens: params.max_tokens,
+        top_p: params.top_p,
+        top_k: params.top_k,
+        seed: params.seed,
+        repetition_penalty: params.repetition_penalty,
+        frequency_penalty: params.frequency_penalty,
+      },
+      userId,
+      completion_id: params.completion_id,
+    });
+  }
 }

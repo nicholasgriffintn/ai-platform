@@ -1,123 +1,125 @@
-import { sanitiseMessages } from "~/lib/chat/utils";
 import { toProviderMessages } from "~/lib/chat/providerMessages";
-import { ConversationManager } from "~/lib/conversationManager";
-import { createInitialConversationTitle } from "~/lib/conversation/title-source";
+import { sanitiseMessages } from "~/lib/chat/utils";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { getAuxiliaryModel } from "~/lib/providers/models";
+import { createInitialConversationTitle } from "~/lib/conversation/title-source";
+import { ConversationManager } from "~/lib/conversationManager";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { getAuxiliaryModel } from "~/lib/providers/models";
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 const TITLE_MAX_MESSAGES = 3;
 
 export const handleGenerateChatCompletionTitle = async (
-	context: ServiceContext,
-	completion_id: string,
-	messages?: Message[],
-	store?: boolean,
+  context: ServiceContext,
+  completion_id: string,
+  messages?: Message[],
+  store?: boolean,
 ): Promise<{ title: string }> => {
-	const runtimeEnv = context.env;
+  const runtimeEnv = context.env;
 
-	if (!runtimeEnv.AI) {
-		throw new AssistantError("AI binding is not available", ErrorType.CONFIGURATION_ERROR);
-	}
+  if (!runtimeEnv.AI) {
+    throw new AssistantError("AI binding is not available", ErrorType.CONFIGURATION_ERROR);
+  }
 
-	const user = context.requireUser();
+  const user = context.requireUser();
 
-	context.ensureDatabase();
-	const conversationManager = ConversationManager.getInstance({
-		database: context.database,
-		user,
-		store,
-	});
+  context.ensureDatabase();
+  const conversationManager = ConversationManager.getInstance({
+    database: context.database,
+    user,
+    store,
+  });
 
-	let messagesToUse: Message[] = [];
+  let messagesToUse: Message[] = [];
 
-	const rawMessages = messages;
-	const hasProvidedMessages = Array.isArray(rawMessages) && rawMessages.length > 0;
+  const rawMessages = messages;
+  const hasProvidedMessages = Array.isArray(rawMessages) && rawMessages.length > 0;
 
-	if (hasProvidedMessages) {
-		try {
-			await conversationManager.get(completion_id, undefined, 1);
-		} catch {
-			throw new AssistantError(
-				"Conversation not found or you don't have access to it",
-				ErrorType.NOT_FOUND,
-			);
-		}
+  if (hasProvidedMessages) {
+    try {
+      await conversationManager.get(completion_id, undefined, 1);
+    } catch {
+      throw new AssistantError(
+        "Conversation not found or you don't have access to it",
+        ErrorType.NOT_FOUND,
+      );
+    }
 
-		const sanitisedMessages = sanitiseMessages(rawMessages);
-		messagesToUse = toProviderMessages(sanitisedMessages).slice(0, TITLE_MAX_MESSAGES);
-	} else {
-		let conversationMessages: Message[];
-		try {
-			conversationMessages = await conversationManager.get(completion_id, undefined);
-		} catch {
-			throw new AssistantError(
-				"Conversation not found or you don't have access to it",
-				ErrorType.NOT_FOUND,
-			);
-		}
+    const sanitisedMessages = sanitiseMessages(rawMessages);
 
-		if (conversationMessages.length === 0) {
-			return { title: "New Conversation" };
-		}
+    messagesToUse = toProviderMessages(sanitisedMessages).slice(0, TITLE_MAX_MESSAGES);
+  } else {
+    let conversationMessages: Message[];
 
-		messagesToUse = toProviderMessages(conversationMessages)
-			.slice(0, TITLE_MAX_MESSAGES)
-			.map((msg) => ({
-				role: msg.role,
-				content: msg.content,
-			}));
-	}
+    try {
+      conversationMessages = await conversationManager.get(completion_id, undefined);
+    } catch {
+      throw new AssistantError(
+        "Conversation not found or you don't have access to it",
+        ErrorType.NOT_FOUND,
+      );
+    }
 
-	if (!messagesToUse.length) {
-		return { title: "New Conversation" };
-	}
+    if (conversationMessages.length === 0) {
+      return { title: "New Conversation" };
+    }
 
-	const prompt = `You are a title generator. Your only job is to create a short, concise title (maximum 5 words) for a conversation.
+    messagesToUse = toProviderMessages(conversationMessages)
+      .slice(0, TITLE_MAX_MESSAGES)
+      .map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      }));
+  }
+
+  if (!messagesToUse.length) {
+    return { title: "New Conversation" };
+  }
+
+  const prompt = `You are a title generator. Your only job is to create a short, concise title (maximum 5 words) for a conversation.
     Do not include any explanations, prefixes, or quotes in your response.
     Output only the title itself.
 
     Conversation:
     ${messagesToUse
-			.map(
-				(msg) =>
-					`${msg.role.toUpperCase()}: ${typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)}`,
-			)
-			.join("\n")}
+      .map(
+        (msg) =>
+          `${msg.role.toUpperCase()}: ${typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)}`,
+      )
+      .join("\n")}
   `;
 
-	const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(runtimeEnv, user);
-	const provider = getChatProvider(providerToUse, { env: runtimeEnv, user });
-	const response: any = await provider.getResponse({
-		env: runtimeEnv,
-		context,
-		model: modelToUse,
-		provider: providerToUse,
-		messages: [{ role: "user", content: prompt }],
-	});
+  const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(runtimeEnv, user);
+  const provider = getChatProvider(providerToUse, { env: runtimeEnv, user });
+  const response: any = await provider.getResponse({
+    env: runtimeEnv,
+    context,
+    model: modelToUse,
+    provider: providerToUse,
+    messages: [{ role: "user", content: prompt }],
+  });
 
-	let newTitle = response.response.trim();
+  let newTitle = response.response.trim();
 
-	if (
-		(newTitle.startsWith('"') && newTitle.endsWith('"')) ||
-		(newTitle.startsWith("'") && newTitle.endsWith("'"))
-	) {
-		newTitle = newTitle.slice(1, -1);
-	}
+  if (
+    (newTitle.startsWith('"') && newTitle.endsWith('"')) ||
+    (newTitle.startsWith("'") && newTitle.endsWith("'"))
+  ) {
+    newTitle = newTitle.slice(1, -1);
+  }
 
-	if (newTitle.length > 50) {
-		newTitle = `${newTitle.substring(0, 47)}...`;
-	}
+  if (newTitle.length > 50) {
+    newTitle = `${newTitle.substring(0, 47)}...`;
+  }
 
-	if (!newTitle) {
-		newTitle = createInitialConversationTitle(messagesToUse);
-	}
+  if (!newTitle) {
+    newTitle = createInitialConversationTitle(messagesToUse);
+  }
 
-	await conversationManager.updateConversation(completion_id, {
-		title: newTitle,
-	});
+  await conversationManager.updateConversation(completion_id, {
+    title: newTitle,
+  });
 
-	return { title: newTitle };
+  return { title: newTitle };
 };

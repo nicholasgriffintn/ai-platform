@@ -1,303 +1,316 @@
-import { safeParseJson } from "~/utils/json";
 import type {
-	ModelConfigItem,
-	InputSchemaInputFieldDescriptor,
+  ModelConfigItem,
+  InputSchemaInputFieldDescriptor,
 } from "@ngriffin_uk/polychat-schemas";
+
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { safeParseJson } from "~/utils/json";
 
 type InputSchemaFieldType =
-	| "string"
-	| "number"
-	| "integer"
-	| "boolean"
-	| "file"
-	| "array"
-	| "object";
+  | "string"
+  | "number"
+  | "integer"
+  | "boolean"
+  | "file"
+  | "array"
+  | "object";
 
 type InputSchemaInputBuildResult = {
-	input: Record<string, any> | string;
+  input: Record<string, any> | string;
 };
 
 export interface InputSchemaBuildParameters {
-	body?: Record<string, any>;
-	options?: Record<string, any>;
-	message?: string | Record<string, any>;
-	messages?: Message[];
+  body?: Record<string, any>;
+  options?: Record<string, any>;
+  message?: string | Record<string, any>;
+  messages?: Message[];
 }
 
 function normalizeFieldTypes(field: InputSchemaInputFieldDescriptor): InputSchemaFieldType[] {
-	return Array.isArray(field.type)
-		? (field.type as InputSchemaFieldType[])
-		: [field.type as InputSchemaFieldType];
+  return Array.isArray(field.type) ? field.type : [field.type];
 }
 
 function extractPromptFromMessages(messages: Message[]): string {
-	for (let index = messages.length - 1; index >= 0; index--) {
-		const message = messages[index];
-		if (message.role !== "user" && message.role !== "developer") {
-			continue;
-		}
+  for (let index = messages.length - 1; index >= 0; index--) {
+    const message = messages[index];
 
-		const { content } = message;
+    if (message.role !== "user" && message.role !== "developer") {
+      continue;
+    }
 
-		if (typeof content === "string") {
-			if (content.trim()) {
-				return content.trim();
-			}
-			continue;
-		}
+    const { content } = message;
 
-		if (Array.isArray(content)) {
-			const textParts = content
-				.filter((part) => part?.type === "text" && typeof part.text === "string")
-				.map((part) => part.text!.trim())
-				.filter(Boolean);
+    if (typeof content === "string") {
+      if (content.trim()) {
+        return content.trim();
+      }
 
-			if (textParts.length) {
-				return textParts.join("\n");
-			}
-		} else if (content && typeof content === "object") {
-			const obj: Record<string, unknown> = content;
-			const promptLike =
-				typeof obj.prompt === "string"
-					? obj.prompt
-					: typeof obj.text === "string"
-						? obj.text
-						: undefined;
+      continue;
+    }
 
-			if (promptLike && promptLike.trim()) {
-				return promptLike.trim();
-			}
-		}
-	}
+    if (Array.isArray(content)) {
+      const textParts = content
+        .filter((part) => part?.type === "text" && typeof part.text === "string")
+        .map((part) => part.text.trim())
+        .filter(Boolean);
 
-	return "";
+      if (textParts.length) {
+        return textParts.join("\n");
+      }
+    } else if (content && typeof content === "object") {
+      const obj: Record<string, unknown> = content;
+      const promptLike =
+        typeof obj.prompt === "string"
+          ? obj.prompt
+          : typeof obj.text === "string"
+            ? obj.text
+            : undefined;
+
+      if (promptLike && promptLike.trim()) {
+        return promptLike.trim();
+      }
+    }
+  }
+
+  return "";
 }
 
 function extractAssetFromMessage(message?: Message): string | undefined {
-	if (!message) {
-		return undefined;
-	}
+  if (!message) {
+    return undefined;
+  }
 
-	const { content, data } = message;
+  const { content, data } = message;
 
-	if (Array.isArray(content)) {
-		for (const part of content) {
-			if (!part || typeof part !== "object") {
-				continue;
-			}
+  if (Array.isArray(content)) {
+    for (const part of content) {
+      if (!part || typeof part !== "object") {
+        continue;
+      }
 
-			if (part.type === "image_url" && part.image_url?.url) {
-				return part.image_url.url;
-			}
+      if (part.type === "image_url" && part.image_url?.url) {
+        return part.image_url.url;
+      }
 
-			if (part.type === "audio_url" && part.audio_url?.url) {
-				return part.audio_url.url;
-			}
+      if (part.type === "audio_url" && part.audio_url?.url) {
+        return part.audio_url.url;
+      }
 
-			if (part.type === "video_url" && part.video_url?.url) {
-				return part.video_url.url;
-			}
+      if (part.type === "video_url" && part.video_url?.url) {
+        return part.video_url.url;
+      }
 
-			if (part.type === "document_url" && part.document_url?.url) {
-				return part.document_url.url;
-			}
+      if (part.type === "document_url" && part.document_url?.url) {
+        return part.document_url.url;
+      }
 
-			if (part.type === "input_audio" && part.input_audio?.data) {
-				return part.input_audio.data;
-			}
-		}
-	}
+      if (part.type === "input_audio" && part.input_audio?.data) {
+        return part.input_audio.data;
+      }
+    }
+  }
 
-	if (content && typeof content === "object" && !Array.isArray(content)) {
-		if (typeof content.url === "string") {
-			return content.url;
-		}
+  if (content && typeof content === "object" && !Array.isArray(content)) {
+    if (typeof content.url === "string") {
+      return content.url;
+    }
 
-		if (typeof content.file === "string") {
-			return content.file;
-		}
-	}
+    if (typeof content.file === "string") {
+      return content.file;
+    }
+  }
 
-	const attachments = data?.attachments;
-	if (Array.isArray(attachments) && attachments.length > 0) {
-		const firstAttachment = attachments[0];
-		if (firstAttachment?.url) {
-			return firstAttachment.url;
-		}
+  const attachments = data?.attachments;
 
-		if (firstAttachment?.markdown) {
-			return firstAttachment.markdown;
-		}
-	}
+  if (Array.isArray(attachments) && attachments.length > 0) {
+    const firstAttachment = attachments[0];
 
-	return undefined;
+    if (firstAttachment?.url) {
+      return firstAttachment.url;
+    }
+
+    if (firstAttachment?.markdown) {
+      return firstAttachment.markdown;
+    }
+  }
+
+  return undefined;
 }
 
 function coerceValue(value: unknown, types: InputSchemaFieldType[]): unknown {
-	if (value === undefined || value === null) {
-		return value;
-	}
+  if (value === undefined || value === null) {
+    return value;
+  }
 
-	if (types.includes("boolean") && typeof value === "string") {
-		if (value.toLowerCase() === "true") {
-			return true;
-		}
-		if (value.toLowerCase() === "false") {
-			return false;
-		}
-	}
+  if (types.includes("boolean") && typeof value === "string") {
+    if (value.toLowerCase() === "true") {
+      return true;
+    }
 
-	if ((types.includes("number") || types.includes("integer")) && typeof value === "string") {
-		const parsed = types.includes("integer") ? parseInt(value, 10) : parseFloat(value);
-		if (!Number.isNaN(parsed)) {
-			return parsed;
-		}
-	}
+    if (value.toLowerCase() === "false") {
+      return false;
+    }
+  }
 
-	if (types.includes("array") && typeof value === "string") {
-		const parsed = safeParseJson(value);
-		if (Array.isArray(parsed)) {
-			return parsed;
-		}
-		return value;
-	}
+  if ((types.includes("number") || types.includes("integer")) && typeof value === "string") {
+    const parsed = types.includes("integer") ? parseInt(value, 10) : parseFloat(value);
 
-	if (types.includes("object") && typeof value === "string") {
-		const parsed = safeParseJson(value);
-		if (parsed && typeof parsed === "object") {
-			return parsed;
-		}
-	}
+    if (!Number.isNaN(parsed)) {
+      return parsed;
+    }
+  }
 
-	return value;
+  if (types.includes("array") && typeof value === "string") {
+    const parsed = safeParseJson(value);
+
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
+
+    return value;
+  }
+
+  if (types.includes("object") && typeof value === "string") {
+    const parsed = safeParseJson(value);
+
+    if (parsed && typeof parsed === "object") {
+      return parsed;
+    }
+  }
+
+  return value;
 }
 
 function pickFromSources(
-	fieldName: string,
-	sources: Array<Record<string, any> | undefined>,
+  fieldName: string,
+  sources: Array<Record<string, any> | undefined>,
 ): unknown {
-	for (const source of sources) {
-		if (!source) {
-			continue;
-		}
+  for (const source of sources) {
+    if (!source) {
+      continue;
+    }
 
-		if (Object.prototype.hasOwnProperty.call(source, fieldName)) {
-			const value = source[fieldName];
-			if (value !== undefined) {
-				return value;
-			}
-		}
-	}
+    if (Object.prototype.hasOwnProperty.call(source, fieldName)) {
+      const value = source[fieldName];
 
-	return undefined;
+      if (value !== undefined) {
+        return value;
+      }
+    }
+  }
+
+  return undefined;
 }
 
 function buildFieldValue(
-	field: InputSchemaInputFieldDescriptor,
-	params: InputSchemaBuildParameters,
-	modelConfig: ModelConfigItem,
+  field: InputSchemaInputFieldDescriptor,
+  params: InputSchemaBuildParameters,
+  modelConfig: ModelConfigItem,
 ): unknown {
-	const lastMessage = params.messages?.[params.messages.length - 1];
-	const messageContent =
-		lastMessage && typeof lastMessage.content === "object" && !Array.isArray(lastMessage.content)
-			? (lastMessage.content as Record<string, any>)
-			: undefined;
+  const lastMessage = params.messages?.[params.messages.length - 1];
+  const messageContent =
+    lastMessage && typeof lastMessage.content === "object" && !Array.isArray(lastMessage.content)
+      ? (lastMessage.content as Record<string, any>)
+      : undefined;
 
-	const candidateSources = [
-		params.body?.input as Record<string, any> | undefined,
-		params.body as Record<string, any> | undefined,
-		params.options as Record<string, any> | undefined,
-		params.message && typeof params.message === "object"
-			? (params.message as Record<string, any>)
-			: undefined,
-		messageContent,
-		params as unknown as Record<string, any>,
-	];
+  const candidateSources = [
+    params.body?.input as Record<string, any> | undefined,
+    params.body,
+    params.options,
+    params.message && typeof params.message === "object" ? params.message : undefined,
+    messageContent,
+    params as unknown as Record<string, any>,
+  ];
 
-	const types = normalizeFieldTypes(field);
-	let value = pickFromSources(field.name, candidateSources);
+  const types = normalizeFieldTypes(field);
+  let value = pickFromSources(field.name, candidateSources);
 
-	if (value === undefined) {
-		if (
-			types.includes("string") &&
-			(field.name.toLowerCase() === "prompt" || field.name.toLowerCase() === "text")
-		) {
-			const prompt = extractPromptFromMessages(params.messages || []);
-			if (prompt) {
-				value = prompt;
-			}
-		} else if (types.includes("file")) {
-			value = pickFromSources(field.name, [messageContent]);
-			if (value === undefined) {
-				value = extractAssetFromMessage(lastMessage);
-			}
-		}
-	}
+  if (value === undefined) {
+    if (
+      types.includes("string") &&
+      (field.name.toLowerCase() === "prompt" || field.name.toLowerCase() === "text")
+    ) {
+      const prompt = extractPromptFromMessages(params.messages || []);
 
-	if (value === undefined && field.default !== undefined) {
-		value = field.default;
-	}
+      if (prompt) {
+        value = prompt;
+      }
+    } else if (types.includes("file")) {
+      value = pickFromSources(field.name, [messageContent]);
+      if (value === undefined) {
+        value = extractAssetFromMessage(lastMessage);
+      }
+    }
+  }
 
-	if (value === undefined && field.required) {
-		throw new AssistantError(
-			`Missing required input "${field.name}" for model ${modelConfig.matchingModel}`,
-			ErrorType.PARAMS_ERROR,
-		);
-	}
+  if (value === undefined && field.default !== undefined) {
+    value = field.default;
+  }
 
-	if (value === undefined) {
-		return undefined;
-	}
+  if (value === undefined && field.required) {
+    throw new AssistantError(
+      `Missing required input "${field.name}" for model ${modelConfig.matchingModel}`,
+      ErrorType.PARAMS_ERROR,
+    );
+  }
 
-	const coerced = coerceValue(value, types);
+  if (value === undefined) {
+    return undefined;
+  }
 
-	if (field.enum && field.enum.length > 0) {
-		const enumValues = new Set(field.enum);
-		if (!enumValues.has(coerced as never)) {
-			throw new AssistantError(
-				`Invalid value "${coerced}" for field "${field.name}". Expected one of: ${field.enum.join(", ")}.`,
-				ErrorType.PARAMS_ERROR,
-			);
-		}
-	}
+  const coerced = coerceValue(value, types);
 
-	return coerced;
+  if (field.enum && field.enum.length > 0) {
+    const enumValues = new Set(field.enum);
+
+    if (!enumValues.has(coerced as never)) {
+      throw new AssistantError(
+        `Invalid value "${coerced}" for field "${field.name}". Expected one of: ${field.enum.join(", ")}.`,
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+  }
+
+  return coerced;
 }
 
 export function buildInputSchemaInput(
-	params: InputSchemaBuildParameters,
-	modelConfig: ModelConfigItem,
+  params: InputSchemaBuildParameters,
+  modelConfig: ModelConfigItem,
 ): InputSchemaInputBuildResult {
-	const schema = modelConfig.inputSchema;
-	const lastMessage = params.messages?.[params.messages.length - 1];
+  const schema = modelConfig.inputSchema;
+  const lastMessage = params.messages?.[params.messages.length - 1];
 
-	if (!schema?.fields?.length) {
-		const fallbackContent = lastMessage?.content;
-		if (fallbackContent !== undefined) {
-			if (Array.isArray(fallbackContent)) {
-				const prompt = extractPromptFromMessages(params.messages || []);
-				return { input: prompt || "" };
-			}
-			return { input: fallbackContent };
-		}
+  if (!schema?.fields?.length) {
+    const fallbackContent = lastMessage?.content;
 
-		return { input: "" };
-	}
+    if (fallbackContent !== undefined) {
+      if (Array.isArray(fallbackContent)) {
+        const prompt = extractPromptFromMessages(params.messages || []);
 
-	const input: Record<string, any> = {};
+        return { input: prompt || "" };
+      }
 
-	for (const field of schema.fields) {
-		const value = buildFieldValue(field, params, modelConfig);
-		if (value === undefined) {
-			continue;
-		}
+      return { input: fallbackContent };
+    }
 
-		input[field.name] = value;
-	}
+    return { input: "" };
+  }
 
-	return {
-		input,
-	};
+  const input: Record<string, any> = {};
+
+  for (const field of schema.fields) {
+    const value = buildFieldValue(field, params, modelConfig);
+
+    if (value === undefined) {
+      continue;
+    }
+
+    input[field.name] = value;
+  }
+
+  return {
+    input,
+  };
 }

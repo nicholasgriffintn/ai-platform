@@ -1,137 +1,140 @@
-import type { IEnv } from "~/types";
-import type { TaskMessage } from "../TaskService";
-import type { TaskHandler, TaskResult } from "../TaskHandler";
-import { getLogger } from "~/utils/logger";
-import { ConversationManager } from "~/lib/conversationManager";
-import { Database } from "~/lib/database";
-import { handleAsyncInvocation } from "~/services/completions/async/handler";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { isAsyncInvocationPending } from "~/lib/async/asyncInvocation";
-import { TaskService } from "../TaskService";
+import { ConversationManager } from "~/lib/conversationManager";
+import { Database } from "~/lib/database";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { UserRepository } from "~/repositories/UserRepository";
+import { handleAsyncInvocation } from "~/services/completions/async/handler";
+import type { IEnv } from "~/types";
+import { getLogger } from "~/utils/logger";
+
+import type { TaskHandler, TaskResult } from "../TaskHandler";
+import type { TaskMessage } from "../TaskService";
+import { TaskService } from "../TaskService";
 import { getNextPollingSchedule } from "./polling";
 
 const logger = getLogger({ prefix: "services/tasks/async-message-polling" });
 
 interface AsyncMessagePollingData {
-	conversationId: string;
-	messageId: string;
-	asyncInvocation: AsyncInvocationMetadata;
-	userId: number;
-	pollAttempt?: number;
+  conversationId: string;
+  messageId: string;
+  asyncInvocation: AsyncInvocationMetadata;
+  userId: number;
+  pollAttempt?: number;
 }
 
 export class AsyncMessagePollingHandler implements TaskHandler {
-	public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {
-		try {
-			const data = message.task_data as AsyncMessagePollingData;
+  public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {
+    try {
+      const data = message.task_data as AsyncMessagePollingData;
 
-			if (!data.conversationId || !data.messageId || !data.asyncInvocation) {
-				return {
-					status: "error",
-					message:
-						"conversationId, messageId, and asyncInvocation are required for async message polling",
-				};
-			}
+      if (!data.conversationId || !data.messageId || !data.asyncInvocation) {
+        return {
+          status: "error",
+          message:
+            "conversationId, messageId, and asyncInvocation are required for async message polling",
+        };
+      }
 
-			const database = new Database(env);
+      const database = new Database(env);
 
-			const userRepository = new UserRepository(env);
-			const user = await userRepository.getUserById(data.userId);
+      const userRepository = new UserRepository(env);
+      const user = await userRepository.getUserById(data.userId);
 
-			if (!user) {
-				return {
-					status: "error",
-					message: `User ${data.userId} not found`,
-				};
-			}
+      if (!user) {
+        return {
+          status: "error",
+          message: `User ${data.userId} not found`,
+        };
+      }
 
-			const conversationManager = ConversationManager.getInstance({
-				database,
-				user,
-				store: true,
-				env,
-			});
+      const conversationManager = ConversationManager.getInstance({
+        database,
+        user,
+        store: true,
+        env,
+      });
 
-			const messages = await conversationManager.getAllMessages(data.conversationId, {
-				includeArchived: true,
-			});
-			const targetMessage = messages.find((m) => m.id === data.messageId);
+      const messages = await conversationManager.getAllMessages(data.conversationId, {
+        includeArchived: true,
+      });
+      const targetMessage = messages.find((m) => m.id === data.messageId);
 
-			if (!targetMessage) {
-				return {
-					status: "error",
-					message: `Message ${data.messageId} not found in conversation`,
-				};
-			}
+      if (!targetMessage) {
+        return {
+          status: "error",
+          message: `Message ${data.messageId} not found in conversation`,
+        };
+      }
 
-			const messageAsyncInvocation = (targetMessage.data as Record<string, any> | undefined)
-				?.asyncInvocation as AsyncInvocationMetadata | undefined;
+      const messageAsyncInvocation = (targetMessage.data as Record<string, any> | undefined)
+        ?.asyncInvocation as AsyncInvocationMetadata | undefined;
 
-			if (!messageAsyncInvocation || !isAsyncInvocationPending(messageAsyncInvocation)) {
-				logger.info(`Message ${data.messageId} is not pending async invocation`);
-				return {
-					status: "success",
-					message: "Message not pending async invocation",
-					data: {
-						messageId: data.messageId,
-						status: targetMessage.status,
-					},
-				};
-			}
+      if (!messageAsyncInvocation || !isAsyncInvocationPending(messageAsyncInvocation)) {
+        logger.info(`Message ${data.messageId} is not pending async invocation`);
 
-			const result = await handleAsyncInvocation(data.asyncInvocation, targetMessage, {
-				conversationManager,
-				conversationId: data.conversationId,
-				env,
-				user,
-			});
+        return {
+          status: "success",
+          message: "Message not pending async invocation",
+          data: {
+            messageId: data.messageId,
+            status: targetMessage.status,
+          },
+        };
+      }
 
-			if (result.status === "completed" || result.status === "failed") {
-				logger.info(`Async invocation for message ${data.messageId} ${result.status}`);
+      const result = await handleAsyncInvocation(data.asyncInvocation, targetMessage, {
+        conversationManager,
+        conversationId: data.conversationId,
+        env,
+        user,
+      });
 
-				return {
-					status: "success",
-					message: `Async invocation ${result.status}`,
-					data: {
-						messageId: data.messageId,
-						invocationStatus: result.status,
-					},
-				};
-			}
+      if (result.status === "completed" || result.status === "failed") {
+        logger.info(`Async invocation for message ${data.messageId} ${result.status}`);
 
-			logger.info(`Async invocation for message ${data.messageId} still in progress, re-queuing`);
+        return {
+          status: "success",
+          message: `Async invocation ${result.status}`,
+          data: {
+            messageId: data.messageId,
+            invocationStatus: result.status,
+          },
+        };
+      }
 
-			const taskRepository = new TaskRepository(env);
-			const taskService = new TaskService(env, taskRepository);
-			const polling = getNextPollingSchedule(data.pollAttempt);
+      logger.info(`Async invocation for message ${data.messageId} still in progress, re-queuing`);
 
-			await taskService.enqueueTask({
-				task_type: "async_message_polling",
-				user_id: message.user_id,
-				task_data: {
-					...data,
-					pollAttempt: polling.pollAttempt,
-				},
-				schedule_type: "scheduled",
-				scheduled_at: polling.scheduledAt,
-				priority: message.priority || 5,
-			});
+      const taskRepository = new TaskRepository(env);
+      const taskService = new TaskService(env, taskRepository);
+      const polling = getNextPollingSchedule(data.pollAttempt);
 
-			return {
-				status: "success",
-				message: "Async invocation still in progress, re-queued",
-				data: {
-					messageId: data.messageId,
-				},
-			};
-		} catch (error) {
-			logger.error("Async message polling error:", error);
-			return {
-				status: "error",
-				message: (error as Error).message,
-			};
-		}
-	}
+      await taskService.enqueueTask({
+        task_type: "async_message_polling",
+        user_id: message.user_id,
+        task_data: {
+          ...data,
+          pollAttempt: polling.pollAttempt,
+        },
+        schedule_type: "scheduled",
+        scheduled_at: polling.scheduledAt,
+        priority: message.priority || 5,
+      });
+
+      return {
+        status: "success",
+        message: "Async invocation still in progress, re-queued",
+        data: {
+          messageId: data.messageId,
+        },
+      };
+    } catch (error) {
+      logger.error("Async message polling error:", error);
+
+      return {
+        status: "error",
+        message: (error as Error).message,
+      };
+    }
+  }
 }

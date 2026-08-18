@@ -1,7 +1,7 @@
-import {
-  type ComposerActionCatalogConfig,
-  type ComposerAssistantActionCapability,
-  type ComposerCommandAction,
+import type {
+  ComposerActionCatalogConfig,
+  ComposerAssistantActionCapability,
+  ComposerCommandAction,
 } from "@ngriffin_uk/polychat-component-conversation";
 import { COMPACT_CONVERSATION_COMMAND } from "@ngriffin_uk/polychat-library-chat/compaction-command";
 import {
@@ -166,8 +166,13 @@ export function useComposerCommandActions({
   const toolSelectionLocked =
     toolSelectionLockedOverride || (chatMode === "agent" && selectedAgentId !== null);
   const allowedActionItems = useMemo(() => {
-    if (!canUseAgents) return [];
-    if (!allowedAssistantActionCapabilities) return actionCatalog.items;
+    if (!canUseAgents) {
+      return [];
+    }
+
+    if (!allowedAssistantActionCapabilities) {
+      return actionCatalog.items;
+    }
 
     const allowedCapabilityIdsByKind = new Map<ProjectCapabilityKind, Set<string>>(
       (["app", "recipe", "skill", "tool"] as const).map((kind) => [
@@ -182,6 +187,7 @@ export function useComposerCommandActions({
 
     return actionCatalog.items.filter((item) => {
       const capabilityKind = PROJECT_CAPABILITY_KIND_BY_ACTION_KIND[item.kind];
+
       return (
         capabilityKind !== undefined &&
         allowedCapabilityIdsByKind.get(capabilityKind)?.has(item.capability.id) === true
@@ -203,6 +209,7 @@ export function useComposerCommandActions({
     if (!directive) {
       return;
     }
+
     setChatInput(removeComposerDirective(chatInput, directive));
   }, [chatInput, directive, setChatInput]);
 
@@ -268,7 +275,7 @@ export function useComposerCommandActions({
         onSelect: () =>
           setChatSettings({
             ...chatSettings,
-            verbosity: option as VerbosityLevel,
+            verbosity: option,
           }),
       })),
       ...reasoningOptions.map((option) => ({
@@ -320,6 +327,7 @@ export function useComposerCommandActions({
     if (availableModelTools.length > 0 && !toolSelectionLocked) {
       for (const tool of availableModelTools) {
         const Icon = MODEL_TOOL_ICONS[tool.id];
+
         commands.push({
           id: `${tool.id}-toggle`,
           label: selectedTools.includes(tool.id)
@@ -402,12 +410,14 @@ export function useComposerCommandActions({
   );
   const filteredSlashCommands = useMemo(() => {
     const query = directive?.trigger === "/" ? directive.query : "";
+
     return slashCommands.filter((command) =>
       matchesComposerCommand(query, [command.label, command.command, command.description]),
     );
   }, [directive, slashCommands]);
   const filteredActionItems = useMemo(() => {
     const query = directive?.trigger === "@" ? directive.query : "";
+
     return allowedActionItems.filter((item) =>
       matchesComposerCommand(query, [
         item.label,
@@ -425,12 +435,14 @@ export function useComposerCommandActions({
       if (!canUseAgents) {
         return undefined;
       }
+
       setSelectedAgentId(agent.id);
       const selection = directive
         ? replaceComposerDirectiveWithCursor(chatInput, directive, `@${agent.name}`, {
             appendTrailingSpace: true,
           })
         : appendComposerInlineTokenWithCursor(chatInput, agent.name);
+
       setSelectedAgentTokenPosition(selection.replacementStart);
       setChatMode("agent");
       selectModelWithDefaults(agent.model ?? defaultModel, {
@@ -438,6 +450,7 @@ export function useComposerCommandActions({
         localOnly: false,
       });
       setChatInput(selection.input);
+
       return selection;
     },
     [
@@ -458,19 +471,24 @@ export function useComposerCommandActions({
       if (!canUseAgents) {
         return undefined;
       }
+
       if (item.kind === "agent") {
         const agentId = item.id.replace(/^agent:/, "");
         const agent = agents.find((item) => item.id === agentId);
+
         if (agent) {
           return selectAgent(agent);
         }
+
         return undefined;
       }
+
       const selection = directive
         ? replaceComposerDirectiveWithCursor(chatInput, directive, tokenText, {
             appendTrailingSpace: true,
           })
         : appendComposerInlineTokenWithCursor(chatInput, item.label, tokenText);
+
       setSelectedAssistantAction({
         ...selectedAssistantAction,
         item: {
@@ -484,6 +502,7 @@ export function useComposerCommandActions({
         tokenText,
       });
       setChatInput(selection.input);
+
       return selection;
     },
     [
@@ -503,9 +522,11 @@ export function useComposerCommandActions({
       if (command.disabled) {
         return undefined;
       }
+
       if (command.actionItem) {
         return selectActionItem(command.actionItem, `/${command.command}`);
       }
+
       if (command.selectionText && directive) {
         if (command.id.startsWith("action-")) {
           setSelectedAssistantAction({
@@ -513,20 +534,26 @@ export function useComposerCommandActions({
             verb: command.command as AssistantActionVerbId,
           });
         }
+
         const selection = replaceComposerDirectiveWithCursor(
           chatInput,
           directive,
           command.selectionText,
           command.selectionCursorOffset,
         );
+
         setChatInput(selection.input);
+
         return selection;
       }
+
       command.onSelect();
       if (command.command !== "chat" && modeCommands.some((mode) => mode.id === command.id)) {
         clearAgent();
       }
+
       consumeDirective();
+
       return undefined;
     },
     [

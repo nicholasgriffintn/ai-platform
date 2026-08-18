@@ -1,63 +1,65 @@
+import type { ModelConfigItem, ModelRouterMode } from "@ngriffin_uk/polychat-schemas";
+
 import { ModelRouter } from "~/lib/modelRouter";
 import { filterModelsForUserAccess, findModelConfig, getModels } from "~/lib/providers/models";
-import type { ModelConfigItem, ModelRouterMode } from "@ngriffin_uk/polychat-schemas";
 import type { Attachment, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 function normaliseExplicitModels(requestedModels?: string[]): string[] {
-	const explicitModels = requestedModels
-		?.map((model) => model.trim())
-		.filter((model) => model.length > 0);
+  const explicitModels = requestedModels
+    ?.map((model) => model.trim())
+    .filter((model) => model.length > 0);
 
-	return explicitModels?.length ? [...new Set(explicitModels)] : [];
+  return explicitModels?.length ? [...new Set(explicitModels)] : [];
 }
 
 function hasAccessibleModelConfig(
-	accessibleModels: Record<string, ModelConfigItem>,
-	requestedModel: string,
-	requestedConfig: ModelConfigItem,
+  accessibleModels: Record<string, ModelConfigItem>,
+  requestedModel: string,
+  requestedConfig: ModelConfigItem,
 ): boolean {
-	return Object.entries(accessibleModels).some(([modelId, config]) => {
-		if (modelId === requestedModel) {
-			return true;
-		}
+  return Object.entries(accessibleModels).some(([modelId, config]) => {
+    if (modelId === requestedModel) {
+      return true;
+    }
 
-		return (
-			config.provider === requestedConfig.provider &&
-			config.matchingModel === requestedConfig.matchingModel
-		);
-	});
+    return (
+      config.provider === requestedConfig.provider &&
+      config.matchingModel === requestedConfig.matchingModel
+    );
+  });
 }
 
 async function assertExplicitModelsAccessible(
-	env: IEnv,
-	user: IUser | undefined,
-	explicitModels: string[],
-	requestedProvider?: string,
+  env: IEnv,
+  user: IUser | undefined,
+  explicitModels: string[],
+  requestedProvider?: string,
 ): Promise<void> {
-	const allModels = getModels({ shouldUseCache: false });
-	const accessibleModels = await filterModelsForUserAccess(allModels, env, user?.id, {
-		shouldUseCache: false,
-	});
-	const inaccessibleModels: string[] = [];
+  const allModels = getModels({ shouldUseCache: false });
+  const accessibleModels = await filterModelsForUserAccess(allModels, env, user?.id, {
+    shouldUseCache: false,
+  });
+  const inaccessibleModels: string[] = [];
 
-	for (const requestedModel of explicitModels) {
-		const requestedConfig = await findModelConfig(requestedModel, env, requestedProvider, user?.id);
-		if (
-			!requestedConfig ||
-			!hasAccessibleModelConfig(accessibleModels, requestedModel, requestedConfig)
-		) {
-			inaccessibleModels.push(requestedModel);
-		}
-	}
+  for (const requestedModel of explicitModels) {
+    const requestedConfig = await findModelConfig(requestedModel, env, requestedProvider, user?.id);
 
-	if (inaccessibleModels.length > 0) {
-		throw new AssistantError(
-			`Model not found or user does not have access: ${inaccessibleModels.join(", ")}`,
-			ErrorType.AUTHENTICATION_ERROR,
-			403,
-		);
-	}
+    if (
+      !requestedConfig ||
+      !hasAccessibleModelConfig(accessibleModels, requestedModel, requestedConfig)
+    ) {
+      inaccessibleModels.push(requestedModel);
+    }
+  }
+
+  if (inaccessibleModels.length > 0) {
+    throw new AssistantError(
+      `Model not found or user does not have access: ${inaccessibleModels.join(", ")}`,
+      ErrorType.AUTHENTICATION_ERROR,
+      403,
+    );
+  }
 }
 
 /**
@@ -76,45 +78,49 @@ async function assertExplicitModelsAccessible(
  * @returns The selected models
  */
 export async function selectModels(
-	env: IEnv,
-	lastMessageText: string,
-	attachments: Attachment[],
-	budgetConstraint: number | undefined,
-	user: IUser | undefined,
-	completionId: string,
-	requestedModel?: string,
-	use_multi_model?: boolean,
-	requestedModels?: string[],
-	requestedProvider?: string,
-	routerMode: ModelRouterMode = "auto",
+  env: IEnv,
+  lastMessageText: string,
+  attachments: Attachment[],
+  budgetConstraint: number | undefined,
+  user: IUser | undefined,
+  completionId: string,
+  requestedModel?: string,
+  use_multi_model?: boolean,
+  requestedModels?: string[],
+  requestedProvider?: string,
+  routerMode: ModelRouterMode = "auto",
 ): Promise<string[]> {
-	const explicitModels = normaliseExplicitModels(requestedModels);
-	if (explicitModels.length) {
-		await assertExplicitModelsAccessible(env, user, explicitModels, requestedProvider);
-		return explicitModels;
-	}
+  const explicitModels = normaliseExplicitModels(requestedModels);
 
-	if (use_multi_model && !requestedModel) {
-		return ModelRouter.selectMultipleModels(
-			env,
-			lastMessageText,
-			attachments,
-			budgetConstraint,
-			user,
-			completionId,
-			routerMode,
-		);
-	}
-	const model =
-		requestedModel ||
-		(await ModelRouter.selectModel(
-			env,
-			lastMessageText,
-			attachments,
-			budgetConstraint,
-			user,
-			completionId,
-			routerMode,
-		));
-	return [model];
+  if (explicitModels.length) {
+    await assertExplicitModelsAccessible(env, user, explicitModels, requestedProvider);
+
+    return explicitModels;
+  }
+
+  if (use_multi_model && !requestedModel) {
+    return ModelRouter.selectMultipleModels(
+      env,
+      lastMessageText,
+      attachments,
+      budgetConstraint,
+      user,
+      completionId,
+      routerMode,
+    );
+  }
+
+  const model =
+    requestedModel ||
+    (await ModelRouter.selectModel(
+      env,
+      lastMessageText,
+      attachments,
+      budgetConstraint,
+      user,
+      completionId,
+      routerMode,
+    ));
+
+  return [model];
 }

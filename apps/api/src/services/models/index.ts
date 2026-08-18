@@ -1,138 +1,147 @@
-import {
-	availableModalities,
-	filterModelsForUserAccess,
-	getAvailableStrengths,
-	getModelConfig,
-	getModels,
-	getModelsByCapability,
-	getModelsByModality,
-	getModelsByOutputModality,
-} from "~/lib/providers/models";
 import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
+
+import {
+  availableModalities,
+  filterModelsForUserAccess,
+  getAvailableStrengths,
+  getModelConfig,
+  getModels,
+  getModelsByCapability,
+  getModelsByModality,
+  getModelsByOutputModality,
+} from "~/lib/providers/models";
+import { RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { RepositoryManager } from "~/repositories";
 
 function includeModelIds(models: ModelConfig): ModelConfig {
-	const modelsWithIds: ModelConfig = {};
+  const modelsWithIds: ModelConfig = {};
 
-	for (const [id, model] of Object.entries(models)) {
-		modelsWithIds[id] = {
-			...model,
-			id,
-		};
-	}
+  for (const [id, model] of Object.entries(models)) {
+    modelsWithIds[id] = {
+      ...model,
+      id,
+    };
+  }
 
-	return modelsWithIds;
+  return modelsWithIds;
 }
 
 /**
  * List all models available to the user.
  */
 export async function listModels(env: IEnv, userId?: number) {
-	const allModels = getModels({
-		shouldUseCache: false,
-		excludeModalities: [
-			"guardrails",
-			"voice-activity-detection",
-			"reranking",
-			"embedding",
-			"speech",
-		],
-	});
-	const filteredModels = await filterModelsForUserAccess(allModels, env, userId, {
-		shouldUseCache: false,
-	});
-	return includeModelIds(filteredModels);
+  const allModels = getModels({
+    shouldUseCache: false,
+    excludeModalities: [
+      "guardrails",
+      "voice-activity-detection",
+      "reranking",
+      "embedding",
+      "speech",
+    ],
+  });
+  const filteredModels = await filterModelsForUserAccess(allModels, env, userId, {
+    shouldUseCache: false,
+  });
+
+  return includeModelIds(filteredModels);
 }
 
 /**
  * Get all capabilities.
  */
 export function listStrengths() {
-	return getAvailableStrengths();
+  return getAvailableStrengths();
 }
 
 /**
  * Filter models by capability and user access.
  */
 export async function listModelsByStrength(env: IEnv, capability: string, userId?: number) {
-	const models = getModelsByCapability(capability);
-	const filteredModels = await filterModelsForUserAccess(models, env, userId, {
-		shouldUseCache: false,
-		includeTrainingDeployments: false,
-	});
-	return includeModelIds(filteredModels);
+  const models = getModelsByCapability(capability);
+  const filteredModels = await filterModelsForUserAccess(models, env, userId, {
+    shouldUseCache: false,
+    includeTrainingDeployments: false,
+  });
+
+  return includeModelIds(filteredModels);
 }
 
 /**
  * Get all model modalities.
  */
 export function listModalities() {
-	return availableModalities;
+  return availableModalities;
 }
 
 /**
  * Filter models by modality and user access.
  */
 export async function listModelsByModality(env: IEnv, modality: string, userId?: number) {
-	const models = getModelsByModality(modality as (typeof availableModalities)[number]);
-	const filteredModels = await filterModelsForUserAccess(models, env, userId, {
-		shouldUseCache: false,
-		includeTrainingDeployments: modality === "text",
-	});
-	return includeModelIds(filteredModels);
+  const models = getModelsByModality(modality as (typeof availableModalities)[number]);
+  const filteredModels = await filterModelsForUserAccess(models, env, userId, {
+    shouldUseCache: false,
+    includeTrainingDeployments: modality === "text",
+  });
+
+  return includeModelIds(filteredModels);
 }
 
 /**
  * Filter models by output modality and user access.
  */
 export async function listModelsByOutputModality(env: IEnv, modality: string, userId?: number) {
-	const models = getModelsByOutputModality(modality as (typeof availableModalities)[number]);
-	const filteredModels = await filterModelsForUserAccess(models, env, userId, {
-		shouldUseCache: false,
-		includeTrainingDeployments: modality === "text",
-	});
-	return includeModelIds(filteredModels);
+  const models = getModelsByOutputModality(modality as (typeof availableModalities)[number]);
+  const filteredModels = await filterModelsForUserAccess(models, env, userId, {
+    shouldUseCache: false,
+    includeTrainingDeployments: modality === "text",
+  });
+
+  return includeModelIds(filteredModels);
 }
 
 /**
  * Get model details by ID if user has access.
  */
 export async function getModelDetails(env: IEnv, id: string, userId?: number) {
-	const model = await getModelConfig(id, env, undefined, userId);
-	if (!model) {
-		throw new AssistantError("Model not found or user does not have access", ErrorType.NOT_FOUND);
-	}
-	const accessibleModels = await filterModelsForUserAccess({ [id]: model }, env, userId, {
-		shouldUseCache: false,
-	});
-	if (!accessibleModels[id]) {
-		throw new AssistantError("Model not found or user does not have access", ErrorType.NOT_FOUND);
-	}
-	return {
-		...model,
-		id,
-	};
+  const model = await getModelConfig(id, env, undefined, userId);
+
+  if (!model) {
+    throw new AssistantError("Model not found or user does not have access", ErrorType.NOT_FOUND);
+  }
+
+  const accessibleModels = await filterModelsForUserAccess({ [id]: model }, env, userId, {
+    shouldUseCache: false,
+  });
+
+  if (!accessibleModels[id]) {
+    throw new AssistantError("Model not found or user does not have access", ErrorType.NOT_FOUND);
+  }
+
+  return {
+    ...model,
+    id,
+  };
 }
 
 export async function listArtificialAnalysisModels(
-	env: IEnv,
-	options: { page: number; limit: number },
+  env: IEnv,
+  options: { page: number; limit: number },
 ) {
-	const result = await RepositoryManager.getInstance(env).artificialAnalysis.listPage(options);
+  const result = await RepositoryManager.getInstance(env).artificialAnalysis.listPage(options);
 
-	return {
-		attribution: {
-			label: "Artificial Analysis",
-			url: "https://artificialanalysis.ai/",
-		},
-		models: result.models,
-		pagination: {
-			total: result.total,
-			page: result.page,
-			limit: result.limit,
-			totalPages: result.totalPages,
-		},
-	};
+  return {
+    attribution: {
+      label: "Artificial Analysis",
+      url: "https://artificialanalysis.ai/",
+    },
+    models: result.models,
+    pagination: {
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
+    },
+  };
 }

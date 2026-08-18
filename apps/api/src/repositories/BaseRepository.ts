@@ -1,6 +1,6 @@
-import type { IEnv } from "~/types";
 import { createDatabaseClient, type DatabaseClient } from "~/lib/database/client";
 import { QueryBuilder } from "~/lib/database/QueryBuilder";
+import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
@@ -9,269 +9,277 @@ const IDENTIFIER_PATTERN = /^[A-Za-z_][A-Za-z0-9_$]*$/;
 const logger = getLogger({ prefix: "repositories/BaseRepository" });
 
 export abstract class BaseRepository {
-	protected env: IEnv;
-	protected database: DatabaseClient;
+  protected env: IEnv;
+  protected database: DatabaseClient;
 
-	constructor(env: IEnv) {
-		if (!env?.DB) {
-			throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
-		}
-		this.env = env;
-		this.database = createDatabaseClient(env.DB);
-	}
+  constructor(env: IEnv) {
+    if (!env?.DB) {
+      throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
+    }
 
-	protected async runQuery<T>(query: string, params: any[], returnFirst: true): Promise<T | null>;
-	protected async runQuery<T>(query: string, params?: any[], returnFirst?: false): Promise<T[]>;
-	protected async runQuery<T>(
-		query: string,
-		params: any[] = [],
-		returnFirst = false,
-	): Promise<T | T[] | null> {
-		if (!this.env.DB) {
-			throw new AssistantError("DB is not configured in runQuery", ErrorType.CONFIGURATION_ERROR);
-		}
+    this.env = env;
+    this.database = createDatabaseClient(env.DB);
+  }
 
-		try {
-			const stmt = this.env.DB.prepare(query);
-			const bound = stmt.bind(...params);
+  protected async runQuery<T>(query: string, params: any[], returnFirst: true): Promise<T | null>;
+  protected async runQuery<T>(query: string, params?: any[], returnFirst?: false): Promise<T[]>;
+  protected async runQuery<T>(
+    query: string,
+    params: any[] = [],
+    returnFirst = false,
+  ): Promise<T | T[] | null> {
+    if (!this.env.DB) {
+      throw new AssistantError("DB is not configured in runQuery", ErrorType.CONFIGURATION_ERROR);
+    }
 
-			if (returnFirst) {
-				const result = await bound.first();
-				return result as T | null;
-			}
+    try {
+      const stmt = this.env.DB.prepare(query);
+      const bound = stmt.bind(...params);
 
-			const result = await bound.all();
-			return result.results as T[];
-		} catch (error: any) {
-			logger.error("Database query error:", { error });
-			throw new AssistantError(
-				`Error executing database query: ${error.message}`,
-				ErrorType.UNKNOWN_ERROR,
-				500,
-				{ originalError: error },
-			);
-		}
-	}
+      if (returnFirst) {
+        const result = await bound.first();
 
-	protected async executeRun(query: string, params: any[] = []): Promise<D1Result<unknown>> {
-		if (!this.env.DB) {
-			throw new AssistantError("DB is not configured in executeRun", ErrorType.CONFIGURATION_ERROR);
-		}
+        return result as T | null;
+      }
 
-		try {
-			const stmt = this.env.DB.prepare(query);
-			const bound = stmt.bind(...params);
-			const result = await bound.run();
+      const result = await bound.all();
 
-			if (!result.success) {
-				throw new AssistantError("Database operation failed", ErrorType.UNKNOWN_ERROR, 500, {
-					meta: result.meta,
-				});
-			}
+      return result.results as T[];
+    } catch (error: any) {
+      logger.error("Database query error:", { error });
+      throw new AssistantError(
+        `Error executing database query: ${error.message}`,
+        ErrorType.UNKNOWN_ERROR,
+        500,
+        { originalError: error },
+      );
+    }
+  }
 
-			return result;
-		} catch (error: any) {
-			if (error instanceof AssistantError) {
-				throw error;
-			}
-			logger.error("Database execution error:", { error });
-			throw new AssistantError(
-				`Error executing database operation: ${error.message}`,
-				ErrorType.UNKNOWN_ERROR,
-				500,
-				{ originalError: error },
-			);
-		}
-	}
+  protected async executeRun(query: string, params: any[] = []): Promise<D1Result> {
+    if (!this.env.DB) {
+      throw new AssistantError("DB is not configured in executeRun", ErrorType.CONFIGURATION_ERROR);
+    }
 
-	protected buildUpdateQuery(
-		table: string,
-		updates: Record<string, unknown>,
-		allowedFields: string[],
-		whereClause: string,
-		whereValues: unknown[] = [],
-		options: {
-			jsonFields?: string[];
-			transformer?: (field: string, value: unknown) => unknown;
-			returning?: string;
-		} = {},
-	): { query: string; values: unknown[] } | null {
-		const builder = new QueryBuilder().update(table).set(updates, allowedFields, {
-			jsonFields: options.jsonFields,
-			transformer: options.transformer,
-		});
+    try {
+      const stmt = this.env.DB.prepare(query);
+      const bound = stmt.bind(...params);
+      const result = await bound.run();
 
-		if (whereClause) {
-			builder.where(whereClause, whereValues);
-		}
+      if (!result.success) {
+        throw new AssistantError("Database operation failed", ErrorType.UNKNOWN_ERROR, 500, {
+          meta: result.meta,
+        });
+      }
 
-		if (options.returning) {
-			builder.returning(options.returning);
-		}
+      return result;
+    } catch (error: any) {
+      if (error instanceof AssistantError) {
+        throw error;
+      }
 
-		return builder.build();
-	}
+      logger.error("Database execution error:", { error });
+      throw new AssistantError(
+        `Error executing database operation: ${error.message}`,
+        ErrorType.UNKNOWN_ERROR,
+        500,
+        { originalError: error },
+      );
+    }
+  }
 
-	protected buildInsertQuery(
-		table: string,
-		data: Record<string, unknown>,
-		options: {
-			jsonFields?: string[];
-			returning?: string;
-		} = {},
-	): { query: string; values: unknown[] } | null {
-		const builder = new QueryBuilder()
-			.insert(table)
-			.values(data, { jsonFields: options.jsonFields });
+  protected buildUpdateQuery(
+    table: string,
+    updates: Record<string, unknown>,
+    allowedFields: string[],
+    whereClause: string,
+    whereValues: unknown[] = [],
+    options: {
+      jsonFields?: string[];
+      transformer?: (field: string, value: unknown) => unknown;
+      returning?: string;
+    } = {},
+  ): { query: string; values: unknown[] } | null {
+    const builder = new QueryBuilder().update(table).set(updates, allowedFields, {
+      jsonFields: options.jsonFields,
+      transformer: options.transformer,
+    });
 
-		if (options.returning) {
-			builder.returning(options.returning);
-		}
+    if (whereClause) {
+      builder.where(whereClause, whereValues);
+    }
 
-		return builder.build();
-	}
+    if (options.returning) {
+      builder.returning(options.returning);
+    }
 
-	protected buildSelectQuery(
-		table: string,
-		conditions: Record<string, unknown> = {},
-		options: {
-			columns?: string[];
-			orderBy?: string;
-			limit?: number;
-			offset?: number;
-		} = {},
-	): { query: string; values: unknown[] } {
-		const builder = new QueryBuilder().select(
-			options.columns && options.columns.length > 0 ? options.columns : ["*"],
-		);
+    return builder.build();
+  }
 
-		builder.from(table);
+  protected buildInsertQuery(
+    table: string,
+    data: Record<string, unknown>,
+    options: {
+      jsonFields?: string[];
+      returning?: string;
+    } = {},
+  ): { query: string; values: unknown[] } | null {
+    const builder = new QueryBuilder()
+      .insert(table)
+      .values(data, { jsonFields: options.jsonFields });
 
-		const { clause, values } = this.buildWhereFromConditions(conditions);
+    if (options.returning) {
+      builder.returning(options.returning);
+    }
 
-		if (clause) {
-			builder.where(clause, values);
-		}
+    return builder.build();
+  }
 
-		if (options.orderBy) {
-			builder.orderBy(options.orderBy);
-		}
+  protected buildSelectQuery(
+    table: string,
+    conditions: Record<string, unknown> = {},
+    options: {
+      columns?: string[];
+      orderBy?: string;
+      limit?: number;
+      offset?: number;
+    } = {},
+  ): { query: string; values: unknown[] } {
+    const builder = new QueryBuilder().select(
+      options.columns && options.columns.length > 0 ? options.columns : ["*"],
+    );
 
-		if (typeof options.limit === "number") {
-			builder.limit(options.limit);
-		}
+    builder.from(table);
 
-		if (typeof options.offset === "number") {
-			builder.offset(options.offset);
-		}
+    const { clause, values } = this.buildWhereFromConditions(conditions);
 
-		const result = builder.build();
+    if (clause) {
+      builder.where(clause, values);
+    }
 
-		if (!result) {
-			return { query: "", values: [] };
-		}
+    if (options.orderBy) {
+      builder.orderBy(options.orderBy);
+    }
 
-		return result;
-	}
+    if (typeof options.limit === "number") {
+      builder.limit(options.limit);
+    }
 
-	protected buildDeleteQuery(
-		table: string,
-		conditions: Record<string, unknown> = {},
-		options: {
-			returning?: string;
-		} = {},
-	): { query: string; values: unknown[] } {
-		const builder = new QueryBuilder().delete(table);
+    if (typeof options.offset === "number") {
+      builder.offset(options.offset);
+    }
 
-		const { clause, values } = this.buildWhereFromConditions(conditions);
+    const result = builder.build();
 
-		if (clause) {
-			builder.where(clause, values);
-		}
+    if (!result) {
+      return { query: "", values: [] };
+    }
 
-		if (options.returning) {
-			builder.returning(options.returning);
-		}
+    return result;
+  }
 
-		const result = builder.build();
+  protected buildDeleteQuery(
+    table: string,
+    conditions: Record<string, unknown> = {},
+    options: {
+      returning?: string;
+    } = {},
+  ): { query: string; values: unknown[] } {
+    const builder = new QueryBuilder().delete(table);
 
-		if (!result) {
-			return { query: "", values: [] };
-		}
+    const { clause, values } = this.buildWhereFromConditions(conditions);
 
-		return result;
-	}
+    if (clause) {
+      builder.where(clause, values);
+    }
 
-	private buildWhereFromConditions(conditions: Record<string, unknown>): {
-		clause: string;
-		values: unknown[];
-	} {
-		const clauses: string[] = [];
-		const values: unknown[] = [];
+    if (options.returning) {
+      builder.returning(options.returning);
+    }
 
-		for (const [field, value] of Object.entries(conditions)) {
-			if (value === undefined) {
-				continue;
-			}
+    const result = builder.build();
 
-			const sanitizedField = this.sanitizeIdentifier(field);
+    if (!result) {
+      return { query: "", values: [] };
+    }
 
-			if (value === null) {
-				clauses.push(`${sanitizedField} IS NULL`);
-				continue;
-			}
+    return result;
+  }
 
-			if (Array.isArray(value)) {
-				if (value.length === 0) {
-					continue;
-				}
-				const placeholders = value.map(() => "?").join(", ");
-				clauses.push(`${sanitizedField} IN (${placeholders})`);
-				values.push(...value);
-				continue;
-			}
+  private buildWhereFromConditions(conditions: Record<string, unknown>): {
+    clause: string;
+    values: unknown[];
+  } {
+    const clauses: string[] = [];
+    const values: unknown[] = [];
 
-			clauses.push(`${sanitizedField} = ?`);
-			values.push(value);
-		}
+    for (const [field, value] of Object.entries(conditions)) {
+      if (value === undefined) {
+        continue;
+      }
 
-		return {
-			clause: clauses.join(" AND "),
-			values,
-		};
-	}
+      const sanitizedField = this.sanitizeIdentifier(field);
 
-	private sanitizeIdentifier(identifier: string): string {
-		const trimmed = identifier.trim();
-		if (!trimmed) {
-			throw new AssistantError("Invalid identifier: empty value", ErrorType.UNKNOWN_ERROR);
-		}
+      if (value === null) {
+        clauses.push(`${sanitizedField} IS NULL`);
+        continue;
+      }
 
-		if (trimmed === "*") {
-			return trimmed;
-		}
+      if (Array.isArray(value)) {
+        if (value.length === 0) {
+          continue;
+        }
 
-		const parts = trimmed.split(".");
+        const placeholders = value.map(() => "?").join(", ");
 
-		const sanitizedParts = parts.map((part, index) => {
-			if (!part) {
-				throw new AssistantError(`Invalid identifier: ${identifier}`, ErrorType.UNKNOWN_ERROR);
-			}
+        clauses.push(`${sanitizedField} IN (${placeholders})`);
+        values.push(...value);
+        continue;
+      }
 
-			if (part === "*") {
-				if (index !== parts.length - 1) {
-					throw new AssistantError(`Invalid identifier: ${identifier}`, ErrorType.UNKNOWN_ERROR);
-				}
-				return part;
-			}
+      clauses.push(`${sanitizedField} = ?`);
+      values.push(value);
+    }
 
-			if (!IDENTIFIER_PATTERN.test(part)) {
-				throw new AssistantError(`Invalid identifier: ${identifier}`, ErrorType.UNKNOWN_ERROR);
-			}
+    return {
+      clause: clauses.join(" AND "),
+      values,
+    };
+  }
 
-			return part;
-		});
+  private sanitizeIdentifier(identifier: string): string {
+    const trimmed = identifier.trim();
 
-		return sanitizedParts.join(".");
-	}
+    if (!trimmed) {
+      throw new AssistantError("Invalid identifier: empty value", ErrorType.UNKNOWN_ERROR);
+    }
+
+    if (trimmed === "*") {
+      return trimmed;
+    }
+
+    const parts = trimmed.split(".");
+
+    const sanitizedParts = parts.map((part, index) => {
+      if (!part) {
+        throw new AssistantError(`Invalid identifier: ${identifier}`, ErrorType.UNKNOWN_ERROR);
+      }
+
+      if (part === "*") {
+        if (index !== parts.length - 1) {
+          throw new AssistantError(`Invalid identifier: ${identifier}`, ErrorType.UNKNOWN_ERROR);
+        }
+
+        return part;
+      }
+
+      if (!IDENTIFIER_PATTERN.test(part)) {
+        throw new AssistantError(`Invalid identifier: ${identifier}`, ErrorType.UNKNOWN_ERROR);
+      }
+
+      return part;
+    });
+
+    return sanitizedParts.join(".");
+  }
 }

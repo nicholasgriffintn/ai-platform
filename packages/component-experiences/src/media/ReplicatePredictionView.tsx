@@ -106,7 +106,7 @@ export function ReplicatePredictionView({
       {prediction.status === "processing" && (
         <Card className="p-6 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
           <div className="flex items-center gap-3">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-800 dark:border-yellow-200"></div>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-800 dark:border-yellow-200" />
             <div>
               <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">Processing</h3>
               <p className="text-sm text-yellow-700 dark:text-yellow-300">
@@ -177,19 +177,32 @@ function OutputRenderer({ output }: OutputRendererProps) {
                 </div>
               );
             }
+
             if (item.type === "image_url") {
               const url = getStringProperty(item.image_url, "url");
-              if (url) return <OutputItem key={index} item={url} />;
+
+              if (url) {
+                return <OutputItem key={index} item={url} />;
+              }
             }
+
             if (item.type === "audio_url") {
               const url = getStringProperty(item.audio_url, "url");
-              if (url) return <OutputItem key={index} item={url} />;
+
+              if (url) {
+                return <OutputItem key={index} item={url} />;
+              }
             }
+
             if (item.type === "video_url") {
               const url = getStringProperty(item.video_url, "url");
-              if (url) return <OutputItem key={index} item={url} />;
+
+              if (url) {
+                return <OutputItem key={index} item={url} />;
+              }
             }
           }
+
           return <OutputItem key={index} item={item} />;
         })}
       </div>

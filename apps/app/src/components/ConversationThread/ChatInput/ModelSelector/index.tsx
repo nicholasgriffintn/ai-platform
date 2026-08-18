@@ -100,8 +100,14 @@ export const ModelSelector = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const hoverPreviewRef = useRef<HTMLDivElement | null>(null);
   const [selectedTab, setSelectedTab] = useState<ModelSelectorTab>(() => {
-    if (isModelListOnlyScope) return "models";
-    if (model === null) return "auto";
+    if (isModelListOnlyScope) {
+      return "models";
+    }
+
+    if (model === null) {
+      return "auto";
+    }
+
     return "models";
   });
 
@@ -248,6 +254,7 @@ export const ModelSelector = ({
       : filteredModels[defaultModel]
         ? defaultModel
         : Object.keys(filteredModels)[0];
+
     if (fallbackModel) {
       selectModelWithDefaults(fallbackModel, {
         ...chatSettings,
@@ -283,48 +290,70 @@ export const ModelSelector = ({
         containsEventTarget(dropdownRef.current, event.target) ||
         containsEventTarget(triggerWrapperRef.current, event.target) ||
         containsEventTarget(hoverPreviewRef.current, event.target);
+
       if (!isInsideSelector) {
         setIsOpen(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
+
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
-    if (isOpen) return;
+    if (isOpen) {
+      return;
+    }
+
     dismissHoverPreview();
   }, [dismissHoverPreview, isOpen]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Escape") {
       setIsOpen(false);
+
       return;
     }
+
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
       const items = dropdownRef.current?.querySelectorAll(
         '[data-model-option]:not([aria-disabled="true"])',
       );
-      if (!items?.length) return;
+
+      if (!items?.length) {
+        return;
+      }
+
       const list = Array.from(items) as HTMLElement[];
       const active = document.activeElement as HTMLElement;
       const idx = list.indexOf(active);
       let next = 0;
-      if (e.key === "ArrowDown") next = idx < list.length - 1 ? idx + 1 : 0;
-      else next = idx > 0 ? idx - 1 : list.length - 1;
+
+      if (e.key === "ArrowDown") {
+        next = idx < list.length - 1 ? idx + 1 : 0;
+      } else {
+        next = idx > 0 ? idx - 1 : list.length - 1;
+      }
+
       list[next].focus();
     }
   };
 
   useEffect(() => {
-    if (!isOpen) return;
-    if (!isMobile && searchInputRef.current) {
-      searchInputRef.current.focus();
+    if (!isOpen) {
       return;
     }
+
+    if (!isMobile && searchInputRef.current) {
+      searchInputRef.current.focus();
+
+      return;
+    }
+
     const firstOpt = dropdownRef.current?.querySelector("[data-model-option]");
+
     (firstOpt as HTMLElement | null)?.focus();
   }, [isOpen, isMobile]);
 
@@ -341,12 +370,14 @@ export const ModelSelector = ({
         ...chatSettings,
         localOnly: true,
       };
+
       selectModelWithDefaults("", nextSettings);
     } else {
       const nextSettings = {
         ...chatSettings,
         localOnly: false,
       };
+
       selectModelWithDefaults(defaultModel, nextSettings);
     }
 
@@ -401,6 +432,7 @@ export const ModelSelector = ({
 
     if (!isOpen) {
       dismissHoverPreview();
+
       return;
     }
 
@@ -408,8 +440,10 @@ export const ModelSelector = ({
       anchorRect,
       dropdownRef.current?.getBoundingClientRect(),
     );
+
     if (!position) {
       dismissHoverPreview();
+
       return;
     }
 
@@ -516,6 +550,7 @@ export const ModelSelector = ({
         title={triggerTitle}
         onToggle={() => {
           const opening = !isOpen;
+
           if (opening) {
             if (isModelListOnlyScope) {
               setSelectedTab("models");
@@ -525,6 +560,7 @@ export const ModelSelector = ({
               setSelectedTab("models");
             }
           }
+
           setIsOpen(opening);
         }}
       />

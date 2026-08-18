@@ -6,8 +6,7 @@ import {
   PopoverTrigger,
 } from "@ngriffin_uk/polychat-component-ui";
 import type { ToolCategoryFilter } from "@ngriffin_uk/polychat-library-chat/tool-filters";
-import type { Tool } from "@ngriffin_uk/polychat-schemas";
-import type { ToolCategory } from "@ngriffin_uk/polychat-schemas";
+import type { Tool, ToolCategory } from "@ngriffin_uk/polychat-schemas";
 import { Blocks } from "lucide-react";
 
 import { ToolSelectorFilters } from "./ToolSelectorFilters";

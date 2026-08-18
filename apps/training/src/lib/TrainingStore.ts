@@ -1,47 +1,47 @@
-import type {
-	TrainingDeployment,
-	TrainingJob,
-	TrainingJobEvent,
-	TrainingProviderId,
-} from "@ngriffin_uk/polychat-schemas";
 import type { D1Database } from "@cloudflare/workers-types";
+import type {
+  TrainingDeployment,
+  TrainingJob,
+  TrainingJobEvent,
+  TrainingProviderId,
+} from "@ngriffin_uk/polychat-schemas";
 
 import {
-	mapTrainingDeploymentRow,
-	mapTrainingJobEventRow,
-	mapTrainingJobRow,
+  mapTrainingDeploymentRow,
+  mapTrainingJobEventRow,
+  mapTrainingJobRow,
 } from "./trainingStoreRows.js";
 
 interface SaveJobInput {
-	userId?: number;
-	job: TrainingJob;
-	providerJobId?: string;
-	request?: unknown;
-	response?: unknown;
+  userId?: number;
+  job: TrainingJob;
+  providerJobId?: string;
+  request?: unknown;
+  response?: unknown;
 }
 
 interface SaveDeploymentInput {
-	userId?: number;
-	deployment: TrainingDeployment;
-	request?: unknown;
-	response?: unknown;
+  userId?: number;
+  deployment: TrainingDeployment;
+  request?: unknown;
+  response?: unknown;
 }
 
 interface AddEventInput {
-	provider: TrainingProviderId;
-	jobName: string;
-	level: TrainingJobEvent["level"];
-	message: string;
-	metadata?: unknown;
+  provider: TrainingProviderId;
+  jobName: string;
+  level: TrainingJobEvent["level"];
+  message: string;
+  metadata?: unknown;
 }
 
 export class TrainingStore {
-	constructor(private readonly db: D1Database) {}
+  constructor(private readonly db: D1Database) {}
 
-	async saveJob({ userId, job, providerJobId, request, response }: SaveJobInput): Promise<void> {
-		await this.db
-			.prepare(
-				`INSERT INTO training_jobs (
+  async saveJob({ userId, job, providerJobId, request, response }: SaveJobInput): Promise<void> {
+    await this.db
+      .prepare(
+        `INSERT INTO training_jobs (
 					provider, job_name, provider_job_id, user_id, status, model_id, base_model,
 					training_image, training_data_s3_uri, validation_data_s3_uri, output_s3_uri,
 					model_artifacts_s3_uri, failure_reason, request_json, response_json,
@@ -62,71 +62,73 @@ export class TrainingStore {
 					request_json = COALESCE(excluded.request_json, training_jobs.request_json),
 					response_json = COALESCE(excluded.response_json, training_jobs.response_json),
 					updated_at = CURRENT_TIMESTAMP`,
-			)
-			.bind(
-				job.provider,
-				job.jobName,
-				providerJobId ?? null,
-				userId ?? null,
-				job.status,
-				job.modelId,
-				job.baseModel,
-				job.trainingImage ?? null,
-				job.trainingDataS3Uri ?? null,
-				job.validationDataS3Uri ?? null,
-				job.outputS3Uri ?? null,
-				job.modelArtifactsS3Uri ?? null,
-				job.failureReason ?? null,
-				request === undefined ? null : JSON.stringify(request),
-				response === undefined ? null : JSON.stringify(response),
-			)
-			.run();
-	}
+      )
+      .bind(
+        job.provider,
+        job.jobName,
+        providerJobId ?? null,
+        userId ?? null,
+        job.status,
+        job.modelId,
+        job.baseModel,
+        job.trainingImage ?? null,
+        job.trainingDataS3Uri ?? null,
+        job.validationDataS3Uri ?? null,
+        job.outputS3Uri ?? null,
+        job.modelArtifactsS3Uri ?? null,
+        job.failureReason ?? null,
+        request === undefined ? null : JSON.stringify(request),
+        response === undefined ? null : JSON.stringify(response),
+      )
+      .run();
+  }
 
-	async getJob(
-		provider: TrainingProviderId,
-		jobName: string,
-		userId?: number,
-	): Promise<TrainingJob | null> {
-		const statement =
-			userId === undefined
-				? this.db
-						.prepare("SELECT * FROM training_jobs WHERE provider = ? AND job_name = ?")
-						.bind(provider, jobName)
-				: this.db
-						.prepare(
-							"SELECT * FROM training_jobs WHERE provider = ? AND job_name = ? AND user_id = ?",
-						)
-						.bind(provider, jobName, userId);
-		const row = await statement.first<Record<string, unknown>>();
-		return row ? mapTrainingJobRow(row) : null;
-	}
+  async getJob(
+    provider: TrainingProviderId,
+    jobName: string,
+    userId?: number,
+  ): Promise<TrainingJob | null> {
+    const statement =
+      userId === undefined
+        ? this.db
+            .prepare("SELECT * FROM training_jobs WHERE provider = ? AND job_name = ?")
+            .bind(provider, jobName)
+        : this.db
+            .prepare(
+              "SELECT * FROM training_jobs WHERE provider = ? AND job_name = ? AND user_id = ?",
+            )
+            .bind(provider, jobName, userId);
+    const row = await statement.first();
 
-	async listJobs(userId?: number, limit = 50): Promise<TrainingJob[]> {
-		const boundedLimit = Math.min(Math.max(limit, 1), 100);
-		const statement =
-			userId === undefined
-				? this.db
-						.prepare("SELECT * FROM training_jobs ORDER BY updated_at DESC LIMIT ?")
-						.bind(boundedLimit)
-				: this.db
-						.prepare(
-							"SELECT * FROM training_jobs WHERE user_id = ? ORDER BY updated_at DESC LIMIT ?",
-						)
-						.bind(userId, boundedLimit);
-		const result = await statement.all<Record<string, unknown>>();
-		return (result.results ?? []).map(mapTrainingJobRow);
-	}
+    return row ? mapTrainingJobRow(row) : null;
+  }
 
-	async saveDeployment({
-		userId,
-		deployment,
-		request,
-		response,
-	}: SaveDeploymentInput): Promise<void> {
-		await this.db
-			.prepare(
-				`INSERT INTO training_deployments (
+  async listJobs(userId?: number, limit = 50): Promise<TrainingJob[]> {
+    const boundedLimit = Math.min(Math.max(limit, 1), 100);
+    const statement =
+      userId === undefined
+        ? this.db
+            .prepare("SELECT * FROM training_jobs ORDER BY updated_at DESC LIMIT ?")
+            .bind(boundedLimit)
+        : this.db
+            .prepare(
+              "SELECT * FROM training_jobs WHERE user_id = ? ORDER BY updated_at DESC LIMIT ?",
+            )
+            .bind(userId, boundedLimit);
+    const result = await statement.all();
+
+    return (result.results ?? []).map(mapTrainingJobRow);
+  }
+
+  async saveDeployment({
+    userId,
+    deployment,
+    request,
+    response,
+  }: SaveDeploymentInput): Promise<void> {
+    await this.db
+      .prepare(
+        `INSERT INTO training_deployments (
 					provider, endpoint_name, deployment_name, model_name, endpoint_config_name,
 					user_id, status, model_id, model_artifacts_s3_uri, failure_reason,
 					request_json, response_json, created_at, updated_at
@@ -143,117 +145,121 @@ export class TrainingStore {
 					request_json = COALESCE(excluded.request_json, training_deployments.request_json),
 					response_json = COALESCE(excluded.response_json, training_deployments.response_json),
 					updated_at = CURRENT_TIMESTAMP`,
-			)
-			.bind(
-				deployment.provider,
-				deployment.endpointName,
-				deployment.deploymentName,
-				deployment.modelName,
-				deployment.endpointConfigName,
-				userId ?? null,
-				deployment.status,
-				deployment.modelId,
-				deployment.modelArtifactsS3Uri ?? null,
-				deployment.failureReason ?? null,
-				request === undefined ? null : JSON.stringify(request),
-				response === undefined ? null : JSON.stringify(response),
-			)
-			.run();
-	}
+      )
+      .bind(
+        deployment.provider,
+        deployment.endpointName,
+        deployment.deploymentName,
+        deployment.modelName,
+        deployment.endpointConfigName,
+        userId ?? null,
+        deployment.status,
+        deployment.modelId,
+        deployment.modelArtifactsS3Uri ?? null,
+        deployment.failureReason ?? null,
+        request === undefined ? null : JSON.stringify(request),
+        response === undefined ? null : JSON.stringify(response),
+      )
+      .run();
+  }
 
-	async getDeployment(
-		provider: TrainingProviderId,
-		endpointName: string,
-		userId?: number,
-	): Promise<TrainingDeployment | null> {
-		const statement =
-			userId === undefined
-				? this.db
-						.prepare("SELECT * FROM training_deployments WHERE provider = ? AND endpoint_name = ?")
-						.bind(provider, endpointName)
-				: this.db
-						.prepare(
-							"SELECT * FROM training_deployments WHERE provider = ? AND endpoint_name = ? AND user_id = ?",
-						)
-						.bind(provider, endpointName, userId);
-		const row = await statement.first<Record<string, unknown>>();
-		return row ? mapTrainingDeploymentRow(row) : null;
-	}
+  async getDeployment(
+    provider: TrainingProviderId,
+    endpointName: string,
+    userId?: number,
+  ): Promise<TrainingDeployment | null> {
+    const statement =
+      userId === undefined
+        ? this.db
+            .prepare("SELECT * FROM training_deployments WHERE provider = ? AND endpoint_name = ?")
+            .bind(provider, endpointName)
+        : this.db
+            .prepare(
+              "SELECT * FROM training_deployments WHERE provider = ? AND endpoint_name = ? AND user_id = ?",
+            )
+            .bind(provider, endpointName, userId);
+    const row = await statement.first();
 
-	async listDeployments(userId?: number, limit = 50): Promise<TrainingDeployment[]> {
-		const boundedLimit = Math.min(Math.max(limit, 1), 100);
-		const statement =
-			userId === undefined
-				? this.db
-						.prepare("SELECT * FROM training_deployments ORDER BY updated_at DESC LIMIT ?")
-						.bind(boundedLimit)
-				: this.db
-						.prepare(
-							"SELECT * FROM training_deployments WHERE user_id = ? ORDER BY updated_at DESC LIMIT ?",
-						)
-						.bind(userId, boundedLimit);
-		const result = await statement.all<Record<string, unknown>>();
-		return (result.results ?? []).map(mapTrainingDeploymentRow);
-	}
+    return row ? mapTrainingDeploymentRow(row) : null;
+  }
 
-	async deleteDeployment(
-		provider: TrainingProviderId,
-		endpointName: string,
-		userId: number,
-	): Promise<void> {
-		await this.db
-			.prepare(
-				"DELETE FROM training_deployments WHERE provider = ? AND endpoint_name = ? AND user_id = ?",
-			)
-			.bind(provider, endpointName, userId)
-			.run();
-	}
+  async listDeployments(userId?: number, limit = 50): Promise<TrainingDeployment[]> {
+    const boundedLimit = Math.min(Math.max(limit, 1), 100);
+    const statement =
+      userId === undefined
+        ? this.db
+            .prepare("SELECT * FROM training_deployments ORDER BY updated_at DESC LIMIT ?")
+            .bind(boundedLimit)
+        : this.db
+            .prepare(
+              "SELECT * FROM training_deployments WHERE user_id = ? ORDER BY updated_at DESC LIMIT ?",
+            )
+            .bind(userId, boundedLimit);
+    const result = await statement.all();
 
-	async addEvent(input: AddEventInput): Promise<TrainingJobEvent> {
-		const id = crypto.randomUUID();
-		const createdAt = new Date().toISOString();
-		await this.db
-			.prepare(
-				`INSERT INTO training_job_events (
+    return (result.results ?? []).map(mapTrainingDeploymentRow);
+  }
+
+  async deleteDeployment(
+    provider: TrainingProviderId,
+    endpointName: string,
+    userId: number,
+  ): Promise<void> {
+    await this.db
+      .prepare(
+        "DELETE FROM training_deployments WHERE provider = ? AND endpoint_name = ? AND user_id = ?",
+      )
+      .bind(provider, endpointName, userId)
+      .run();
+  }
+
+  async addEvent(input: AddEventInput): Promise<TrainingJobEvent> {
+    const id = crypto.randomUUID();
+    const createdAt = new Date().toISOString();
+
+    await this.db
+      .prepare(
+        `INSERT INTO training_job_events (
 					id, provider, job_name, level, message, metadata_json, created_at
 				) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-			)
-			.bind(
-				id,
-				input.provider,
-				input.jobName,
-				input.level,
-				input.message,
-				input.metadata === undefined ? null : JSON.stringify(input.metadata),
-				createdAt,
-			)
-			.run();
+      )
+      .bind(
+        id,
+        input.provider,
+        input.jobName,
+        input.level,
+        input.message,
+        input.metadata === undefined ? null : JSON.stringify(input.metadata),
+        createdAt,
+      )
+      .run();
 
-		return {
-			id,
-			provider: input.provider,
-			jobName: input.jobName,
-			level: input.level,
-			message: input.message,
-			metadata: input.metadata,
-			createdAt,
-		};
-	}
+    return {
+      id,
+      provider: input.provider,
+      jobName: input.jobName,
+      level: input.level,
+      message: input.message,
+      metadata: input.metadata,
+      createdAt,
+    };
+  }
 
-	async listEvents(
-		provider: TrainingProviderId,
-		jobName: string,
-		limit = 100,
-	): Promise<TrainingJobEvent[]> {
-		const result = await this.db
-			.prepare(
-				`SELECT * FROM training_job_events
+  async listEvents(
+    provider: TrainingProviderId,
+    jobName: string,
+    limit = 100,
+  ): Promise<TrainingJobEvent[]> {
+    const result = await this.db
+      .prepare(
+        `SELECT * FROM training_job_events
 				WHERE provider = ? AND job_name = ?
 				ORDER BY created_at ASC
 				LIMIT ?`,
-			)
-			.bind(provider, jobName, Math.min(Math.max(limit, 1), 500))
-			.all<Record<string, unknown>>();
-		return (result.results ?? []).map(mapTrainingJobEventRow);
-	}
+      )
+      .bind(provider, jobName, Math.min(Math.max(limit, 1), 500))
+      .all();
+
+    return (result.results ?? []).map(mapTrainingJobEventRow);
+  }
 }

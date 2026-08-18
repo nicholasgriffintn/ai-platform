@@ -36,7 +36,11 @@ export function ProjectOverview({
   const { projectQuery, workspaceQuery } = useWorkData();
   const { data: project, isLoading, error } = projectQuery;
   const { data: workspace } = workspaceQuery;
-  if (isLoading) return <ProjectOverviewSkeleton />;
+
+  if (isLoading) {
+    return <ProjectOverviewSkeleton />;
+  }
+
   if (isAuthenticationError(error)) {
     return (
       <SignInEmptyState
@@ -46,8 +50,11 @@ export function ProjectOverview({
       />
     );
   }
-  if (error || !project)
+
+  if (error || !project) {
     return <div className="p-10 text-sm text-red-700">{error?.message ?? "Project not found"}</div>;
+  }
+
   const canManage = workspace?.role === "owner" || workspace?.role === "admin";
   const capabilitiesPath = `/work/${workspaceId}/projects/${projectId}/library`;
   const conversationPath = `/work/${workspaceId}/projects/${projectId}/chat`;

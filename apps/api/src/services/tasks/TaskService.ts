@@ -1,178 +1,187 @@
 import type { TaskType, ScheduleType } from "@ngriffin_uk/polychat-schemas";
 
-import type { IEnv } from "~/types";
-import type { TaskRepository } from "~/repositories/TaskRepository";
 import type { Task } from "~/lib/database/schema";
+import type { TaskRepository } from "~/repositories/TaskRepository";
+import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/tasks" });
 
 export interface TaskDefinition {
-	id?: string;
-	task_type: TaskType;
-	user_id?: number;
-	project_id?: string;
-	task_data: Record<string, any>;
-	schedule_type?: ScheduleType;
-	scheduled_at?: string;
-	cron_expression?: string;
-	priority?: number;
-	metadata?: Record<string, any>;
+  id?: string;
+  task_type: TaskType;
+  user_id?: number;
+  project_id?: string;
+  task_data: Record<string, any>;
+  schedule_type?: ScheduleType;
+  scheduled_at?: string;
+  cron_expression?: string;
+  priority?: number;
+  metadata?: Record<string, any>;
 }
 
 export interface TaskMessage {
-	taskId: string;
-	task_type: TaskType;
-	user_id?: number;
-	project_id?: string;
-	task_data: Record<string, any>;
-	priority: number;
-	schedule_type?: ScheduleType;
-	scheduled_at?: string;
-	max_attempts?: number;
+  taskId: string;
+  task_type: TaskType;
+  user_id?: number;
+  project_id?: string;
+  task_data: Record<string, any>;
+  priority: number;
+  schedule_type?: ScheduleType;
+  scheduled_at?: string;
+  max_attempts?: number;
 }
 
 export const MAX_QUEUE_DELAY_SECONDS = 60 * 60 * 12;
 
 export class TaskService {
-	private env: IEnv;
-	private taskRepository: TaskRepository;
+  private env: IEnv;
+  private taskRepository: TaskRepository;
 
-	constructor(env: IEnv, taskRepository: TaskRepository) {
-		this.env = env;
-		this.taskRepository = taskRepository;
-	}
+  constructor(env: IEnv, taskRepository: TaskRepository) {
+    this.env = env;
+    this.taskRepository = taskRepository;
+  }
 
-	public async enqueueTask(taskDef: TaskDefinition): Promise<string> {
-		try {
-			const createdBy: "system" | "user" = taskDef.user_id ? "user" : "system";
-			const taskParams = {
-				id: taskDef.id,
-				task_type: taskDef.task_type,
-				user_id: taskDef.user_id,
-				project_id: taskDef.project_id,
-				task_data: taskDef.task_data,
-				schedule_type: taskDef.schedule_type ?? "immediate",
-				scheduled_at: taskDef.scheduled_at,
-				cron_expression: taskDef.cron_expression,
-				priority: taskDef.priority ?? 5,
-				metadata: taskDef.metadata,
-				created_by: createdBy,
-			};
+  public async enqueueTask(taskDef: TaskDefinition): Promise<string> {
+    try {
+      const createdBy: "system" | "user" = taskDef.user_id ? "user" : "system";
+      const taskParams = {
+        id: taskDef.id,
+        task_type: taskDef.task_type,
+        user_id: taskDef.user_id,
+        project_id: taskDef.project_id,
+        task_data: taskDef.task_data,
+        schedule_type: taskDef.schedule_type ?? "immediate",
+        scheduled_at: taskDef.scheduled_at,
+        cron_expression: taskDef.cron_expression,
+        priority: taskDef.priority ?? 5,
+        metadata: taskDef.metadata,
+        created_by: createdBy,
+      };
 
-			const taskResult = taskDef.id
-				? await this.taskRepository.createTaskIfAbsent({
-						...taskParams,
-						id: taskDef.id,
-					})
-				: { task: await this.taskRepository.createTask(taskParams), created: true };
-			const task = taskResult.task;
+      const taskResult = taskDef.id
+        ? await this.taskRepository.createTaskIfAbsent({
+            ...taskParams,
+            id: taskDef.id,
+          })
+        : { task: await this.taskRepository.createTask(taskParams), created: true };
+      const task = taskResult.task;
 
-			if (!task) {
-				throw new Error("Failed to create task record");
-			}
+      if (!task) {
+        throw new Error("Failed to create task record");
+      }
 
-			if (!taskResult.created) {
-				logger.info("Task already exists, skipping duplicate enqueue", {
-					taskId: task.id,
-					taskType: taskDef.task_type,
-				});
-				return task.id;
-			}
+      if (!taskResult.created) {
+        logger.info("Task already exists, skipping duplicate enqueue", {
+          taskId: task.id,
+          taskType: taskDef.task_type,
+        });
 
-			await this.taskRepository.updateTask(task.id, { status: "queued" });
+        return task.id;
+      }
 
-			const message: TaskMessage = {
-				taskId: task.id,
-				task_type: taskDef.task_type,
-				user_id: taskDef.user_id,
-				project_id: taskDef.project_id,
-				task_data: taskDef.task_data,
-				priority: taskDef.priority ?? 5,
-				schedule_type: taskDef.schedule_type ?? "immediate",
-				scheduled_at: taskDef.scheduled_at,
-				max_attempts: task.max_attempts ?? 3,
-			};
+      await this.taskRepository.updateTask(task.id, { status: "queued" });
 
-			if (!this.env.TASK_QUEUE) {
-				logger.warn("TASK_QUEUE binding not available, task will remain in queued status");
-				logger.info(`Task ${task.id} created but not sent to queue`);
-				return task.id;
-			}
+      const message: TaskMessage = {
+        taskId: task.id,
+        task_type: taskDef.task_type,
+        user_id: taskDef.user_id,
+        project_id: taskDef.project_id,
+        task_data: taskDef.task_data,
+        priority: taskDef.priority ?? 5,
+        schedule_type: taskDef.schedule_type ?? "immediate",
+        scheduled_at: taskDef.scheduled_at,
+        max_attempts: task.max_attempts ?? 3,
+      };
 
-			let delaySeconds: number | undefined;
-			if (message.schedule_type === "scheduled" && message.scheduled_at) {
-				const scheduledAtMs = Date.parse(message.scheduled_at);
-				if (Number.isFinite(scheduledAtMs)) {
-					const delayMs = scheduledAtMs - Date.now();
-					if (delayMs > 0) {
-						delaySeconds = Math.min(MAX_QUEUE_DELAY_SECONDS, Math.ceil(delayMs / 1000));
-					}
-				}
-			}
+      if (!this.env.TASK_QUEUE) {
+        logger.warn("TASK_QUEUE binding not available, task will remain in queued status");
+        logger.info(`Task ${task.id} created but not sent to queue`);
 
-			if (delaySeconds) {
-				await this.env.TASK_QUEUE.send(message, { delaySeconds });
-			} else {
-				await this.env.TASK_QUEUE.send(message);
-			}
+        return task.id;
+      }
 
-			logger.info("Task enqueued successfully", {
-				taskId: task.id,
-				taskType: taskDef.task_type,
-				priority: message.priority,
-				queuedAt: message.task_data?.queuedAt ?? Date.now(),
-			});
-			return task.id;
-		} catch (error) {
-			logger.error("Failed to enqueue task:", error);
-			throw error;
-		}
-	}
+      let delaySeconds: number | undefined;
 
-	public async scheduleRecurringTask(
-		taskDef: TaskDefinition,
-		cronExpression: string,
-	): Promise<string> {
-		const task = await this.taskRepository.createTask({
-			task_type: taskDef.task_type,
-			user_id: taskDef.user_id,
-			project_id: taskDef.project_id,
-			task_data: taskDef.task_data,
-			schedule_type: "recurring",
-			cron_expression: cronExpression,
-			priority: taskDef.priority ?? 5,
-			metadata: taskDef.metadata,
-			created_by: taskDef.user_id ? "user" : "system",
-		});
+      if (message.schedule_type === "scheduled" && message.scheduled_at) {
+        const scheduledAtMs = Date.parse(message.scheduled_at);
 
-		if (!task) {
-			throw new Error("Failed to create recurring task");
-		}
+        if (Number.isFinite(scheduledAtMs)) {
+          const delayMs = scheduledAtMs - Date.now();
 
-		logger.info(`Recurring task ${task.id} scheduled with cron: ${cronExpression}`);
-		return task.id;
-	}
+          if (delayMs > 0) {
+            delaySeconds = Math.min(MAX_QUEUE_DELAY_SECONDS, Math.ceil(delayMs / 1000));
+          }
+        }
+      }
 
-	public async getTask(taskId: string): Promise<Task | null> {
-		return this.taskRepository.getTaskById(taskId);
-	}
+      if (delaySeconds) {
+        await this.env.TASK_QUEUE.send(message, { delaySeconds });
+      } else {
+        await this.env.TASK_QUEUE.send(message);
+      }
 
-	public async getUserTasks(userId: number, limit = 50): Promise<Task[]> {
-		return this.taskRepository.getTasksByUserId(userId, limit);
-	}
+      logger.info("Task enqueued successfully", {
+        taskId: task.id,
+        taskType: taskDef.task_type,
+        priority: message.priority,
+        queuedAt: message.task_data?.queuedAt ?? Date.now(),
+      });
 
-	public async cancelTask(taskId: string): Promise<boolean> {
-		const task = await this.taskRepository.getTaskById(taskId);
-		if (!task) {
-			return false;
-		}
+      return task.id;
+    } catch (error) {
+      logger.error("Failed to enqueue task:", error);
+      throw error;
+    }
+  }
 
-		if (task.status === "completed" || task.status === "cancelled") {
-			return false;
-		}
+  public async scheduleRecurringTask(
+    taskDef: TaskDefinition,
+    cronExpression: string,
+  ): Promise<string> {
+    const task = await this.taskRepository.createTask({
+      task_type: taskDef.task_type,
+      user_id: taskDef.user_id,
+      project_id: taskDef.project_id,
+      task_data: taskDef.task_data,
+      schedule_type: "recurring",
+      cron_expression: cronExpression,
+      priority: taskDef.priority ?? 5,
+      metadata: taskDef.metadata,
+      created_by: taskDef.user_id ? "user" : "system",
+    });
 
-		await this.taskRepository.updateTask(taskId, { status: "cancelled" });
-		return true;
-	}
+    if (!task) {
+      throw new Error("Failed to create recurring task");
+    }
+
+    logger.info(`Recurring task ${task.id} scheduled with cron: ${cronExpression}`);
+
+    return task.id;
+  }
+
+  public async getTask(taskId: string): Promise<Task | null> {
+    return this.taskRepository.getTaskById(taskId);
+  }
+
+  public async getUserTasks(userId: number, limit = 50): Promise<Task[]> {
+    return this.taskRepository.getTasksByUserId(userId, limit);
+  }
+
+  public async cancelTask(taskId: string): Promise<boolean> {
+    const task = await this.taskRepository.getTaskById(taskId);
+
+    if (!task) {
+      return false;
+    }
+
+    if (task.status === "completed" || task.status === "cancelled") {
+      return false;
+    }
+
+    await this.taskRepository.updateTask(taskId, { status: "cancelled" });
+
+    return true;
+  }
 }

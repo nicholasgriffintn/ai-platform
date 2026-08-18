@@ -1,109 +1,115 @@
 import type { User } from "~/types";
+
 import { BaseRepository } from "./BaseRepository";
 
 export interface DailyUsageResetResult {
-	regular: number;
-	pro: number;
-	byok: number;
-	total: number;
+  regular: number;
+  pro: number;
+  byok: number;
+  total: number;
 }
 
 export class UserRepository extends BaseRepository {
-	public async getUserByOauthAccount(
-		providerId: string,
-		providerUserId: string,
-	): Promise<User | null> {
-		const result = this.runQuery<User>(
-			`SELECT u.* FROM user u
+  public async getUserByOauthAccount(
+    providerId: string,
+    providerUserId: string,
+  ): Promise<User | null> {
+    const result = this.runQuery<User>(
+      `SELECT u.* FROM user u
        JOIN oauth_account oa ON u.id = oa.user_id
        WHERE oa.provider_id = ? AND oa.provider_user_id = ?`,
-			[providerId, providerUserId],
-			true,
-		);
-		return result;
-	}
+      [providerId, providerUserId],
+      true,
+    );
 
-	public async getUserByGithubId(githubId: string): Promise<User | null> {
-		return this.getUserByOauthAccount("github", githubId);
-	}
+    return result;
+  }
 
-	public async getUserBySessionId(sessionId: string): Promise<User | null> {
-		const result = this.runQuery<User>(
-			`SELECT u.* FROM user u
+  public async getUserByGithubId(githubId: string): Promise<User | null> {
+    return this.getUserByOauthAccount("github", githubId);
+  }
+
+  public async getUserBySessionId(sessionId: string): Promise<User | null> {
+    const result = this.runQuery<User>(
+      `SELECT u.* FROM user u
        JOIN session s ON u.id = s.user_id
        WHERE s.id = ? AND s.expires_at > datetime('now')`,
-			[sessionId],
-			true,
-		);
-		return result;
-	}
+      [sessionId],
+      true,
+    );
 
-	public async getUserById(userId: number): Promise<User | null> {
-		const { query, values } = this.buildSelectQuery("user", { id: userId });
-		return this.runQuery<User>(query, values, true);
-	}
+    return result;
+  }
 
-	public async getUserByEmail(email: string): Promise<User | null> {
-		const { query, values } = this.buildSelectQuery("user", { email });
-		return this.runQuery<User>(query, values, true);
-	}
+  public async getUserById(userId: number): Promise<User | null> {
+    const { query, values } = this.buildSelectQuery("user", { id: userId });
 
-	public async updateUser(userId: number, userData: Record<string, unknown>): Promise<void> {
-		const fieldsToUpdate = Object.keys(userData).filter((key) => key !== "id");
+    return this.runQuery<User>(query, values, true);
+  }
 
-		const result = this.buildUpdateQuery("user", userData, fieldsToUpdate, "id = ?", [userId]);
-		if (!result) {
-			return;
-		}
+  public async getUserByEmail(email: string): Promise<User | null> {
+    const { query, values } = this.buildSelectQuery("user", { email });
 
-		await this.executeRun(result.query, result.values);
-	}
+    return this.runQuery<User>(query, values, true);
+  }
 
-	public async resetDailyUsage(resetAt: string): Promise<DailyUsageResetResult> {
-		const regular = await this.resetDailyUsageCounter(
-			"daily_message_count",
-			"daily_reset",
-			resetAt,
-		);
-		const pro = await this.resetDailyUsageCounter(
-			"daily_pro_message_count",
-			"daily_pro_reset",
-			resetAt,
-		);
-		const byok = await this.resetDailyUsageCounter(
-			"daily_byok_message_count",
-			"daily_byok_reset",
-			resetAt,
-		);
+  public async updateUser(userId: number, userData: Record<string, unknown>): Promise<void> {
+    const fieldsToUpdate = Object.keys(userData).filter((key) => key !== "id");
 
-		return {
-			regular,
-			pro,
-			byok,
-			total: regular + pro + byok,
-		};
-	}
+    const result = this.buildUpdateQuery("user", userData, fieldsToUpdate, "id = ?", [userId]);
 
-	private async resetDailyUsageCounter(
-		countColumn: string,
-		resetColumn: string,
-		resetAt: string,
-	): Promise<number> {
-		const result = await this.executeRun(
-			`UPDATE user
+    if (!result) {
+      return;
+    }
+
+    await this.executeRun(result.query, result.values);
+  }
+
+  public async resetDailyUsage(resetAt: string): Promise<DailyUsageResetResult> {
+    const regular = await this.resetDailyUsageCounter(
+      "daily_message_count",
+      "daily_reset",
+      resetAt,
+    );
+    const pro = await this.resetDailyUsageCounter(
+      "daily_pro_message_count",
+      "daily_pro_reset",
+      resetAt,
+    );
+    const byok = await this.resetDailyUsageCounter(
+      "daily_byok_message_count",
+      "daily_byok_reset",
+      resetAt,
+    );
+
+    return {
+      regular,
+      pro,
+      byok,
+      total: regular + pro + byok,
+    };
+  }
+
+  private async resetDailyUsageCounter(
+    countColumn: string,
+    resetColumn: string,
+    resetAt: string,
+  ): Promise<number> {
+    const result = await this.executeRun(
+      `UPDATE user
 			 SET ${countColumn} = 0,
 			     ${resetColumn} = ?,
 			     updated_at = datetime('now')
 			 WHERE ${resetColumn} IS NULL OR date(${resetColumn}) < date(?)`,
-			[resetAt, resetAt],
-		);
+      [resetAt, resetAt],
+    );
 
-		return result.meta?.changes ?? 0;
-	}
+    return result.meta?.changes ?? 0;
+  }
 
-	public async createUser(userData: Record<string, unknown>): Promise<User | null> {
-		const result = this.runQuery<User>(
-			`INSERT INTO user (
+  public async createUser(userData: Record<string, unknown>): Promise<User | null> {
+    const result = this.runQuery<User>(
+      `INSERT INTO user (
          name, 
          avatar_url, 
          email, 
@@ -118,28 +124,29 @@ export class UserRepository extends BaseRepository {
        ) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
        RETURNING *`,
-			[
-				userData.name || null,
-				userData.avatar_url || null,
-				userData.email,
-				userData.username || null,
-				userData.company || null,
-				userData.location || null,
-				userData.bio || null,
-				userData.twitter_username || null,
-				userData.site || null,
-			],
-			true,
-		);
-		return result;
-	}
+      [
+        userData.name || null,
+        userData.avatar_url || null,
+        userData.email,
+        userData.username || null,
+        userData.company || null,
+        userData.location || null,
+        userData.bio || null,
+        userData.twitter_username || null,
+        userData.site || null,
+      ],
+      true,
+    );
 
-	public async updateUserWithGithubData(
-		userId: number,
-		userData: Record<string, unknown>,
-	): Promise<void> {
-		await this.executeRun(
-			`UPDATE user 
+    return result;
+  }
+
+  public async updateUserWithGithubData(
+    userId: number,
+    userData: Record<string, unknown>,
+  ): Promise<void> {
+    await this.executeRun(
+      `UPDATE user 
        SET 
          github_username = ?,
          name = COALESCE(?, name),
@@ -151,112 +158,116 @@ export class UserRepository extends BaseRepository {
          site = COALESCE(?, site),
          updated_at = datetime('now')
        WHERE id = ?`,
-			[
-				userData.username,
-				userData.name || null,
-				userData.avatar_url || null,
-				userData.company || null,
-				userData.location || null,
-				userData.bio || null,
-				userData.twitter_username || null,
-				userData.site || null,
-				userId,
-			],
-		);
-	}
+      [
+        userData.username,
+        userData.name || null,
+        userData.avatar_url || null,
+        userData.company || null,
+        userData.location || null,
+        userData.bio || null,
+        userData.twitter_username || null,
+        userData.site || null,
+        userId,
+      ],
+    );
+  }
 
-	public async createOauthAccount(
-		userId: number,
-		providerId: string,
-		providerUserId: string,
-	): Promise<void> {
-		await this.executeRun(
-			`INSERT INTO oauth_account (provider_id, provider_user_id, user_id)
+  public async createOauthAccount(
+    userId: number,
+    providerId: string,
+    providerUserId: string,
+  ): Promise<void> {
+    await this.executeRun(
+      `INSERT INTO oauth_account (provider_id, provider_user_id, user_id)
        VALUES (?, ?, ?)`,
-			[providerId, providerUserId, userId],
-		);
-	}
+      [providerId, providerUserId, userId],
+    );
+  }
 
-	public async getUserByStripeCustomerId(customerId: string): Promise<User | null> {
-		const { query, values } = this.buildSelectQuery("user", {
-			stripe_customer_id: customerId,
-		});
-		return this.runQuery<User>(query, values, true);
-	}
+  public async getUserByStripeCustomerId(customerId: string): Promise<User | null> {
+    const { query, values } = this.buildSelectQuery("user", {
+      stripe_customer_id: customerId,
+    });
 
-	public async createOrUpdateGithubUser(userData: {
-		githubId: string;
-		username: string;
-		email: string;
-		name?: string;
-		avatar_url?: string;
-		company?: string;
-		location?: string;
-		bio?: string;
-		twitter_username?: string;
-		site?: string;
-	}): Promise<User> {
-		// Check if user exists by GitHub ID
-		const existingUser = await this.getUserByGithubId(userData.githubId);
+    return this.runQuery<User>(query, values, true);
+  }
 
-		if (existingUser) {
-			// Update existing user
-			await this.updateUser(existingUser.id, {
-				name: userData.name || null,
-				avatar_url: userData.avatar_url || null,
-				email: userData.email,
-				github_username: userData.username,
-				company: userData.company || null,
-				location: userData.location || null,
-				bio: userData.bio || null,
-				twitter_username: userData.twitter_username || null,
-				site: userData.site || null,
-			});
+  public async createOrUpdateGithubUser(userData: {
+    githubId: string;
+    username: string;
+    email: string;
+    name?: string;
+    avatar_url?: string;
+    company?: string;
+    location?: string;
+    bio?: string;
+    twitter_username?: string;
+    site?: string;
+  }): Promise<User> {
+    // Check if user exists by GitHub ID
+    const existingUser = await this.getUserByGithubId(userData.githubId);
 
-			// Get updated user
-			const updatedUser = await this.getUserById(existingUser.id);
-			if (!updatedUser) {
-				throw new Error("Failed to retrieve updated user");
-			}
+    if (existingUser) {
+      // Update existing user
+      await this.updateUser(existingUser.id, {
+        name: userData.name || null,
+        avatar_url: userData.avatar_url || null,
+        email: userData.email,
+        github_username: userData.username,
+        company: userData.company || null,
+        location: userData.location || null,
+        bio: userData.bio || null,
+        twitter_username: userData.twitter_username || null,
+        site: userData.site || null,
+      });
 
-			return updatedUser;
-		}
+      // Get updated user
+      const updatedUser = await this.getUserById(existingUser.id);
 
-		// Check if user exists by email
-		const userByEmail = await this.getUserByEmail(userData.email);
+      if (!updatedUser) {
+        throw new Error("Failed to retrieve updated user");
+      }
 
-		if (userByEmail) {
-			// Link GitHub account to existing user
-			await this.createOauthAccount(userByEmail.id, "github", userData.githubId);
+      return updatedUser;
+    }
 
-			// Update user with GitHub data
-			await this.updateUserWithGithubData(userByEmail.id, userData);
+    // Check if user exists by email
+    const userByEmail = await this.getUserByEmail(userData.email);
 
-			// Get updated user
-			const updatedUser = await this.getUserById(userByEmail.id);
-			if (!updatedUser) {
-				throw new Error("Failed to retrieve updated user");
-			}
+    if (userByEmail) {
+      // Link GitHub account to existing user
+      await this.createOauthAccount(userByEmail.id, "github", userData.githubId);
 
-			return updatedUser;
-		}
+      // Update user with GitHub data
+      await this.updateUserWithGithubData(userByEmail.id, userData);
 
-		// Create new user
-		const result = await this.createUser(userData);
+      // Get updated user
+      const updatedUser = await this.getUserById(userByEmail.id);
 
-		if (!result) {
-			throw new Error("Failed to create user");
-		}
+      if (!updatedUser) {
+        throw new Error("Failed to retrieve updated user");
+      }
 
-		// Link GitHub account to new user
-		await this.createOauthAccount(result.id, "github", userData.githubId);
+      return updatedUser;
+    }
 
-		// Get created user
-		const newUser = await this.getUserById(result.id);
-		if (!newUser) {
-			throw new Error("Failed to retrieve created user");
-		}
+    // Create new user
+    const result = await this.createUser(userData);
 
-		return newUser;
-	}
+    if (!result) {
+      throw new Error("Failed to create user");
+    }
+
+    // Link GitHub account to new user
+    await this.createOauthAccount(result.id, "github", userData.githubId);
+
+    // Get created user
+    const newUser = await this.getUserById(result.id);
+
+    if (!newUser) {
+      throw new Error("Failed to retrieve created user");
+    }
+
+    return newUser;
+  }
 }

@@ -24,6 +24,7 @@ const normalizeStatus = (status?: string) => status?.toLowerCase() ?? "";
 
 const ensureInterval = (value?: number | null, fallback = 5000) => {
   const numeric = typeof value === "number" && Number.isFinite(value) ? value : fallback;
+
   return Math.max(1000, numeric);
 };
 
@@ -88,7 +89,7 @@ export function ResearchView({ data, embedded }: { data: any; embedded: boolean 
     initialData: initialStatus,
   });
 
-  const statusData = (researchQuery.data ?? initialStatus) as ResearchStatus | undefined;
+  const statusData = researchQuery.data ?? initialStatus;
 
   const run = statusData?.run;
   const runId = run?.run_id ?? initialRunId;

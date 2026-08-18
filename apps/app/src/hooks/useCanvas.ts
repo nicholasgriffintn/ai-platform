@@ -1,7 +1,7 @@
-import {
-	type CanvasGenerateRequest,
-	type CanvasGeneration,
-	type CanvasMode,
+import type {
+  CanvasGenerateRequest,
+  CanvasGeneration,
+  CanvasMode,
 } from "@ngriffin_uk/polychat-component-experiences/media";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
@@ -10,36 +10,37 @@ import { fetchCanvasGenerations, fetchCanvasModels, generateCanvasOutputs } from
 export const CANVAS_QUERY_KEY = "canvas";
 
 export function useCanvasModels(mode: CanvasMode, enabled = true) {
-	return useQuery({
-		queryKey: [CANVAS_QUERY_KEY, "models", mode],
-		queryFn: () => fetchCanvasModels(mode),
-		staleTime: 1000 * 60 * 5,
-		enabled,
-	});
+  return useQuery({
+    queryKey: [CANVAS_QUERY_KEY, "models", mode],
+    queryFn: () => fetchCanvasModels(mode),
+    staleTime: 1000 * 60 * 5,
+    enabled,
+  });
 }
 
 export function useGenerateCanvasOutputs() {
-	return useMutation({
-		mutationFn: (request: CanvasGenerateRequest) => generateCanvasOutputs(request),
-	});
+  return useMutation({
+    mutationFn: (request: CanvasGenerateRequest) => generateCanvasOutputs(request),
+  });
 }
 
 export function useCanvasGenerations(mode?: CanvasMode, enabled = true) {
-	return useQuery({
-		queryKey: [CANVAS_QUERY_KEY, "generations", mode ?? "all"],
-		queryFn: () => fetchCanvasGenerations(mode),
-		enabled,
-		refetchInterval: (query) => {
-			const data = query.state.data as CanvasGeneration[] | undefined;
-			if (!data?.length) {
-				return false;
-			}
+  return useQuery({
+    queryKey: [CANVAS_QUERY_KEY, "generations", mode ?? "all"],
+    queryFn: () => fetchCanvasGenerations(mode),
+    enabled,
+    refetchInterval: (query) => {
+      const data = query.state.data;
 
-			const hasActiveGeneration = data.some((generation) =>
-				["queued", "processing"].includes(generation.status),
-			);
+      if (!data?.length) {
+        return false;
+      }
 
-			return hasActiveGeneration ? 10000 : false;
-		},
-	});
+      const hasActiveGeneration = data.some((generation) =>
+        ["queued", "processing"].includes(generation.status),
+      );
+
+      return hasActiveGeneration ? 10000 : false;
+    },
+  });
 }

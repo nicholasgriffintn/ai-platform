@@ -1,6 +1,6 @@
 import {
-	TRAINING_WORKER_TOKEN_HEADER,
-	TRAINING_WORKER_USER_ID_HEADER,
+  TRAINING_WORKER_TOKEN_HEADER,
+  TRAINING_WORKER_USER_ID_HEADER,
 } from "@ngriffin_uk/polychat-schemas";
 import type { ZodType } from "zod";
 
@@ -13,85 +13,89 @@ const TRAINING_WORKER_ORIGIN = "https://training.worker.internal";
 type TrainingWorkerEnv = Pick<IEnv, "TRAINING_WORKER" | "TRAINING_WORKER_TOKEN">;
 
 export async function requestTrainingWorker<T>(
-	env: TrainingWorkerEnv,
-	path: string,
-	responseSchema: ZodType<T>,
-	init: { method?: string; body?: unknown; userId: number },
+  env: TrainingWorkerEnv,
+  path: string,
+  responseSchema: ZodType<T>,
+  init: { method?: string; body?: unknown; userId: number },
 ): Promise<T> {
-	if (!env.TRAINING_WORKER) {
-		throw new AssistantError(
-			"Training worker binding is not configured",
-			ErrorType.CONFIGURATION_ERROR,
-			500,
-		);
-	}
+  if (!env.TRAINING_WORKER) {
+    throw new AssistantError(
+      "Training worker binding is not configured",
+      ErrorType.CONFIGURATION_ERROR,
+      500,
+    );
+  }
 
-	const workerToken = env.TRAINING_WORKER_TOKEN;
-	if (!workerToken) {
-		throw new AssistantError(
-			"Training worker token is not configured",
-			ErrorType.CONFIGURATION_ERROR,
-			500,
-		);
-	}
+  const workerToken = env.TRAINING_WORKER_TOKEN;
 
-	const headers = getTrainingWorkerHeaders(workerToken, init);
-	const request = new Request(`${TRAINING_WORKER_ORIGIN}${path}`, {
-		method: init.method || "GET",
-		headers,
-		body: init.body === undefined ? undefined : JSON.stringify(init.body),
-	});
-	const response = await env.TRAINING_WORKER.fetch(request, {
-		props: { userId: String(init.userId) },
-	});
-	const payload = await readTrainingWorkerJson(response);
+  if (!workerToken) {
+    throw new AssistantError(
+      "Training worker token is not configured",
+      ErrorType.CONFIGURATION_ERROR,
+      500,
+    );
+  }
 
-	if (!response.ok) {
-		throw new AssistantError(
-			getTrainingWorkerErrorMessage(payload, response.statusText),
-			ErrorType.PROVIDER_ERROR,
-			response.status,
-		);
-	}
+  const headers = getTrainingWorkerHeaders(workerToken, init);
+  const request = new Request(`${TRAINING_WORKER_ORIGIN}${path}`, {
+    method: init.method || "GET",
+    headers,
+    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+  });
+  const response = await env.TRAINING_WORKER.fetch(request, {
+    props: { userId: String(init.userId) },
+  });
+  const payload = await readTrainingWorkerJson(response);
 
-	return responseSchema.parse(payload);
+  if (!response.ok) {
+    throw new AssistantError(
+      getTrainingWorkerErrorMessage(payload, response.statusText),
+      ErrorType.PROVIDER_ERROR,
+      response.status,
+    );
+  }
+
+  return responseSchema.parse(payload);
 }
 
 function getTrainingWorkerHeaders(
-	workerToken: string,
-	init: { body?: unknown; userId: number },
+  workerToken: string,
+  init: { body?: unknown; userId: number },
 ): Headers {
-	const headers = new Headers();
+  const headers = new Headers();
 
-	if (init.body !== undefined) {
-		headers.set("Content-Type", "application/json");
-	}
+  if (init.body !== undefined) {
+    headers.set("Content-Type", "application/json");
+  }
 
-	headers.set(TRAINING_WORKER_USER_ID_HEADER, String(init.userId));
-	headers.set(TRAINING_WORKER_TOKEN_HEADER, workerToken);
+  headers.set(TRAINING_WORKER_USER_ID_HEADER, String(init.userId));
+  headers.set(TRAINING_WORKER_TOKEN_HEADER, workerToken);
 
-	return headers;
+  return headers;
 }
 
 async function readTrainingWorkerJson(response: Response): Promise<unknown> {
-	const text = await response.text();
-	if (!text) return undefined;
+  const text = await response.text();
 
-	try {
-		return JSON.parse(text);
-	} catch {
-		throw new AssistantError(
-			"Training worker returned invalid JSON",
-			ErrorType.PROVIDER_ERROR,
-			response.status,
-		);
-	}
+  if (!text) {
+    return undefined;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new AssistantError(
+      "Training worker returned invalid JSON",
+      ErrorType.PROVIDER_ERROR,
+      response.status,
+    );
+  }
 }
 
 function getTrainingWorkerErrorMessage(payload: unknown, fallback: string): string {
-	if (isRecord(payload) && typeof payload.error === "string") {
-		return payload.error;
-	}
+  if (isRecord(payload) && typeof payload.error === "string") {
+    return payload.error;
+  }
 
-	return fallback || "Training worker request failed";
+  return fallback || "Training worker request failed";
 }

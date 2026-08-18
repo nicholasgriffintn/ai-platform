@@ -1,8 +1,8 @@
-import { type ArtifactProps } from "@ngriffin_uk/polychat-component-content";
+import type { ArtifactProps } from "@ngriffin_uk/polychat-component-content";
 import { ModelIcon } from "@ngriffin_uk/polychat-component-models";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
-import { type OpinionRequest } from "@ngriffin_uk/polychat-library-chat/opinion";
+import type { OpinionRequest } from "@ngriffin_uk/polychat-library-chat/opinion";
 import { isHiddenToolResponse } from "@ngriffin_uk/polychat-library-chat/tool-results";
 import { getModelDisplayName } from "@ngriffin_uk/polychat-schemas";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
@@ -120,6 +120,7 @@ export const ChatMessageView = ({
 
   const copyMessageToClipboard = () => {
     const copyText = getMessageTextContent(message);
+
     if (copyText) {
       onCopy(copyText);
     }
@@ -135,6 +136,7 @@ export const ChatMessageView = ({
       if (!conversationId) {
         return;
       }
+
       await onSubmitFeedback?.(value);
       setFeedbackState(value === 1 ? "liked" : "disliked");
     } catch (error) {
@@ -172,7 +174,7 @@ export const ChatMessageView = ({
                   url={modelConfig?.avatarUrl}
                   size={24}
                   title={assistantModelName}
-                  mono={true}
+                  mono
                 />
               </div>
             )}
@@ -225,7 +227,7 @@ export const ChatMessageView = ({
                 isSubmittingFeedback={isSubmittingFeedback}
                 submitFeedback={submitFeedback}
                 isSharedView={isSharedView}
-                onRetry={onRetry && message.id ? () => onRetry(message.id!) : undefined}
+                onRetry={onRetry && message.id ? () => onRetry(message.id) : undefined}
                 isRetrying={isRetrying}
                 onEdit={onEdit}
                 isEditing={isEditing}

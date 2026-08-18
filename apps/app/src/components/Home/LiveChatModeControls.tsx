@@ -86,6 +86,7 @@ function LiveSessionControls({
     if (videoEnabled) {
       onVideoEnabledChange(false);
       setCameraDialogOpen(false);
+
       return;
     }
 

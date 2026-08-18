@@ -1,108 +1,118 @@
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import type {
-	CreateSourceCollectionInput,
-	CreateSourceInput,
-	Source,
-	SourceCollection,
-	SourceKind,
-	SourceSummary,
+  CreateSourceCollectionInput,
+  CreateSourceInput,
+  Source,
+  SourceCollection,
+  SourceKind,
+  SourceSummary,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service";
-import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import { fetchApiOrThrow } from "./fetch-wrapper";
 
 async function request<T>(path: string, init: { method?: string; body?: object } = {}): Promise<T> {
-	const response = await fetchApiOrThrow(path, {
-		method: init.method ?? "GET",
-		headers: await apiService.getHeaders(),
-		body: init.body,
-	});
-	return returnFetchedData<T>(response);
+  const response = await fetchApiOrThrow(path, {
+    method: init.method ?? "GET",
+    headers: await apiService.getHeaders(),
+    body: init.body,
+  });
+
+  return returnFetchedData<T>(response);
 }
 
 export async function listSources(
-	filters: {
-		projectId?: string;
-		kind?: SourceKind;
-	} = {},
+  filters: {
+    projectId?: string;
+    kind?: SourceKind;
+  } = {},
 ): Promise<SourceSummary[]> {
-	const query = new URLSearchParams();
-	if (filters.projectId) query.set("projectId", filters.projectId);
-	if (filters.kind) query.set("kind", filters.kind);
-	const suffix = query.size ? `?${query.toString()}` : "";
-	return (await request<{ sources: SourceSummary[] }>(`/sources${suffix}`)).sources;
+  const query = new URLSearchParams();
+
+  if (filters.projectId) {
+    query.set("projectId", filters.projectId);
+  }
+
+  if (filters.kind) {
+    query.set("kind", filters.kind);
+  }
+
+  const suffix = query.size ? `?${query.toString()}` : "";
+
+  return (await request<{ sources: SourceSummary[] }>(`/sources${suffix}`)).sources;
 }
 
 export async function getSource(sourceId: string): Promise<Source> {
-	return request(`/sources/${encodeURIComponent(sourceId)}`);
+  return request(`/sources/${encodeURIComponent(sourceId)}`);
 }
 
 export async function createSource(input: CreateSourceInput): Promise<Source> {
-	return request("/sources", { method: "POST", body: input });
+  return request("/sources", { method: "POST", body: input });
 }
 
 export async function deleteSource(sourceId: string): Promise<void> {
-	await request(`/sources/${encodeURIComponent(sourceId)}`, { method: "DELETE" });
+  await request(`/sources/${encodeURIComponent(sourceId)}`, { method: "DELETE" });
 }
 
 export async function listSourceCollections(projectId?: string): Promise<SourceCollection[]> {
-	const suffix = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
-	return (await request<{ collections: SourceCollection[] }>(`/sources/collections${suffix}`))
-		.collections;
+  const suffix = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+
+  return (await request<{ collections: SourceCollection[] }>(`/sources/collections${suffix}`))
+    .collections;
 }
 
 export async function createSourceCollection(
-	input: CreateSourceCollectionInput,
+  input: CreateSourceCollectionInput,
 ): Promise<SourceCollection> {
-	return request("/sources/collections", { method: "POST", body: input });
+  return request("/sources/collections", { method: "POST", body: input });
 }
 
 export async function deleteSourceCollection(collectionId: string): Promise<void> {
-	await request(`/sources/collections/${encodeURIComponent(collectionId)}`, { method: "DELETE" });
+  await request(`/sources/collections/${encodeURIComponent(collectionId)}`, { method: "DELETE" });
 }
 
 export async function listCollectionSources(collectionId: string): Promise<SourceSummary[]> {
-	return (
-		await request<{ sources: SourceSummary[] }>(
-			`/sources/collections/${encodeURIComponent(collectionId)}/sources`,
-		)
-	).sources;
+  return (
+    await request<{ sources: SourceSummary[] }>(
+      `/sources/collections/${encodeURIComponent(collectionId)}/sources`,
+    )
+  ).sources;
 }
 
 export async function addCollectionSources(
-	collectionId: string,
-	sourceIds: string[],
+  collectionId: string,
+  sourceIds: string[],
 ): Promise<void> {
-	await request(`/sources/collections/${encodeURIComponent(collectionId)}/sources`, {
-		method: "POST",
-		body: { sourceIds },
-	});
+  await request(`/sources/collections/${encodeURIComponent(collectionId)}/sources`, {
+    method: "POST",
+    body: { sourceIds },
+  });
 }
 
 export async function listProjectContextSources(projectId: string): Promise<SourceSummary[]> {
-	return (
-		await request<{ sources: SourceSummary[] }>(
-			`/sources/project-context?projectId=${encodeURIComponent(projectId)}`,
-		)
-	).sources;
+  return (
+    await request<{ sources: SourceSummary[] }>(
+      `/sources/project-context?projectId=${encodeURIComponent(projectId)}`,
+    )
+  ).sources;
 }
 
 export async function listProjectConversationSources(projectId: string): Promise<Source[]> {
-	return (
-		await request<{ sources: Source[] }>(
-			`/sources/project-conversation?projectId=${encodeURIComponent(projectId)}`,
-		)
-	).sources;
+  return (
+    await request<{ sources: Source[] }>(
+      `/sources/project-conversation?projectId=${encodeURIComponent(projectId)}`,
+    )
+  ).sources;
 }
 
 export async function setProjectContextSources(
-	projectId: string,
-	sourceIds: string[],
+  projectId: string,
+  sourceIds: string[],
 ): Promise<SourceSummary[]> {
-	return (
-		await request<{ sources: SourceSummary[] }>(
-			`/sources/project-context?projectId=${encodeURIComponent(projectId)}`,
-			{ method: "PUT", body: { sourceIds } },
-		)
-	).sources;
+  return (
+    await request<{ sources: SourceSummary[] }>(
+      `/sources/project-context?projectId=${encodeURIComponent(projectId)}`,
+      { method: "PUT", body: { sourceIds } },
+    )
+  ).sources;
 }

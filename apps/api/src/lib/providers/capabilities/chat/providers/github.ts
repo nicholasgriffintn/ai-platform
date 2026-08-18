@@ -1,30 +1,32 @@
 import type { ChatCompletionParameters } from "~/types";
+
 import { BaseProvider } from "./base";
 
 export class GithubModelsProvider extends BaseProvider {
-	name = "github-models";
-	supportsStreaming = true;
-	isOpenAiCompatible = false;
+  name = "github-models";
+  supportsStreaming = true;
+  isOpenAiCompatible = false;
 
-	protected getProviderKeyName(): string {
-		return "GITHUB_MODELS_API_TOKEN";
-	}
+  protected getProviderKeyName(): string {
+    return "GITHUB_MODELS_API_TOKEN";
+  }
 
-	protected validateParams(params: ChatCompletionParameters): void {
-		super.validateParams(params);
-	}
+  protected validateParams(params: ChatCompletionParameters): void {
+    super.validateParams(params);
+  }
 
-	protected async getEndpoint(): Promise<string> {
-		const githubModelsUrl = "https://models.github.ai/inference";
-		return `${githubModelsUrl}/chat/completions`;
-	}
+  protected async getEndpoint(): Promise<string> {
+    const githubModelsUrl = "https://models.github.ai/inference";
 
-	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
-		const apiKey = await this.getApiKey(params, params.context?.user?.id);
+    return `${githubModelsUrl}/chat/completions`;
+  }
 
-		return {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${apiKey}`,
-		};
-	}
+  protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
+    const apiKey = await this.getApiKey(params, params.context?.user?.id);
+
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    };
+  }
 }

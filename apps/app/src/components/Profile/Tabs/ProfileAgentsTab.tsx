@@ -83,6 +83,7 @@ export function ProfileAgentsTab() {
         await createAgent(agentData);
         toast.success("Agent created successfully");
       }
+
       setModalOpen(false);
       setEditingAgent(null);
     } catch (error) {

@@ -142,6 +142,7 @@ export function useComposerBanner({ model, hideSuggestions }: ComposerBannerOpti
     if (!banner?.dismissal) {
       return;
     }
+
     storeDismiss(banner.id, banner.dismissal.scope, banner.dismissal.suggestion);
   }, [banner, storeDismiss]);
 
@@ -175,6 +176,7 @@ function buildUsageBanner(
 
   if (isPro && pro) {
     const proRemaining = pro.limit - pro.used;
+
     if (proRemaining <= 0) {
       return {
         id: "usage-pro-exhausted",
@@ -184,6 +186,7 @@ function buildUsageBanner(
         dismissal: { scope: "day" },
       };
     }
+
     if (proRemaining / pro.limit <= USAGE_WARNING_THRESHOLD) {
       return {
         id: "usage-pro-low",

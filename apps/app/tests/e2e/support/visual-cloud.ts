@@ -39,6 +39,7 @@ function canCaptureVisualSnapshot(): boolean {
   if (!process.env.PVC_SERVER_URL || !process.env.PVC_TOKEN) {
     return false;
   }
+
   return true;
 }
 
@@ -59,6 +60,7 @@ async function getThemeState(page: Page): Promise<ThemeState> {
 async function setThemeAndMediaForScheme(page: Page, scheme: ColourScheme): Promise<void> {
   await page.evaluate((nextScheme) => {
     const root = document.documentElement;
+
     root.classList.remove("light", "dark");
     root.classList.add(nextScheme);
     window.localStorage.setItem("theme", nextScheme);
@@ -73,6 +75,7 @@ async function setThemeAndMediaForScheme(page: Page, scheme: ColourScheme): Prom
 async function restoreThemeState(page: Page, state: ThemeState): Promise<void> {
   await page.evaluate((previousState) => {
     const root = document.documentElement;
+
     if (previousState.hasDarkThemeClass) {
       root.classList.add("dark");
     } else {
@@ -87,6 +90,7 @@ async function restoreThemeState(page: Page, state: ThemeState): Promise<void> {
 
     if (previousState.storedTheme === null) {
       window.localStorage.removeItem("theme");
+
       return;
     }
 
@@ -128,6 +132,7 @@ export async function captureVisualSnapshots(
   const originalTheme = await getThemeState(page);
 
   const originalViewport = page.viewportSize();
+
   for (const viewport of viewports) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     for (const scheme of colorSchemes) {
@@ -145,5 +150,6 @@ export async function captureVisualSnapshots(
   if (originalViewport) {
     await page.setViewportSize(originalViewport);
   }
+
   await page.emulateMedia();
 }

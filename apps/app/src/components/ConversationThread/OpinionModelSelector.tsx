@@ -1,5 +1,5 @@
 import { OpinionModelPicker } from "@ngriffin_uk/polychat-component-models";
-import { type OpinionMode, type OpinionRequest } from "@ngriffin_uk/polychat-library-chat/opinion";
+import type { OpinionMode, OpinionRequest } from "@ngriffin_uk/polychat-library-chat/opinion";
 import { useEffect, useMemo, useState } from "react";
 
 import { useConversationModelOptions } from "~/hooks/useConversationModelOptions";
@@ -33,6 +33,7 @@ export function OpinionModelSelector({
   const searchResults = useMemo(() => searchModels(searchQuery), [searchModels, searchQuery]);
   const recommendedModelIds = useMemo(() => {
     const recommended = featuredModels.length ? featuredModels : selectableModels;
+
     return recommended.slice(0, MAX_CONSENSUS_MODELS).map((modelItem) => modelItem.id);
   }, [featuredModels, selectableModels]);
   const submitDisabled =
@@ -50,6 +51,7 @@ export function OpinionModelSelector({
     setMode(nextMode);
     if (nextMode === "second-opinion") {
       setSelectedModelIds((ids) => ids.slice(0, 1));
+
       return;
     }
 
@@ -57,6 +59,7 @@ export function OpinionModelSelector({
       if (ids.length >= 2) {
         return ids.slice(0, MAX_CONSENSUS_MODELS);
       }
+
       return recommendedModelIds.slice(0, Math.max(2, ids.length));
     });
   };

@@ -1,39 +1,40 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-	enqueueSandboxRunDispatchTask,
-	isSandboxRunDispatchMessage,
-	processSandboxRunDispatch,
-} from "../dispatch";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { executeSandboxWorker } from "~/services/sandbox/worker";
-import { appendRunCoordinatorEvent, updateRunCoordinatorControl } from "../run-coordinator";
+
+import {
+  enqueueSandboxRunDispatchTask,
+  isSandboxRunDispatchMessage,
+  processSandboxRunDispatch,
+} from "../dispatch";
 import { persistSandboxRunArtifact } from "../run-artifacts";
+import { appendRunCoordinatorEvent, updateRunCoordinatorControl } from "../run-coordinator";
 import { indexSandboxRunResult } from "../run-indexing";
 
 const mockEnqueueTask = vi.fn();
 
 vi.mock("~/lib/context/serviceContext", () => ({
-	createServiceContext: vi.fn(),
+  createServiceContext: vi.fn(),
 }));
 vi.mock("~/services/sandbox/worker", () => ({
-	executeSandboxWorker: vi.fn(),
+  executeSandboxWorker: vi.fn(),
 }));
 vi.mock("../run-coordinator", () => ({
-	appendRunCoordinatorEvent: vi.fn(),
-	updateRunCoordinatorControl: vi.fn(),
+  appendRunCoordinatorEvent: vi.fn(),
+  updateRunCoordinatorControl: vi.fn(),
 }));
 vi.mock("../run-artifacts", () => ({
-	persistSandboxRunArtifact: vi.fn(async ({ run }) => run),
+  persistSandboxRunArtifact: vi.fn(async ({ run }) => run),
 }));
 vi.mock("../run-indexing", () => ({
-	indexSandboxRunResult: vi.fn(async () => undefined),
+  indexSandboxRunResult: vi.fn(async () => undefined),
 }));
 vi.mock("~/services/tasks/TaskService", () => ({
-	TaskService: class {
-		public enqueueTask = mockEnqueueTask;
-	},
+  TaskService: class {
+    public enqueueTask = mockEnqueueTask;
+  },
 }));
 
 const mockGetUserById = vi.fn();
@@ -41,238 +42,239 @@ const mockGetActivityById = vi.fn();
 const mockUpdateActivity = vi.fn();
 
 const mockServiceContext = {
-	env: {},
-	repositories: {
-		users: {
-			getUserById: mockGetUserById,
-		},
-		activities: {
-			getActivityById: mockGetActivityById,
-			updateActivity: mockUpdateActivity,
-		},
-		tasks: {},
-	},
+  env: {},
+  repositories: {
+    users: {
+      getUserById: mockGetUserById,
+    },
+    activities: {
+      getActivityById: mockGetActivityById,
+      updateActivity: mockUpdateActivity,
+    },
+    tasks: {},
+  },
 } as any;
 
 const baseRunRecord = {
-	runId: "run-123",
-	installationId: 99,
-	repo: "owner/repo",
-	task: "Implement feature",
-	model: "mistral-large",
-	shouldCommit: true,
-	status: "queued",
-	startedAt: "2026-03-15T12:00:00.000Z",
-	updatedAt: "2026-03-15T12:00:00.000Z",
-	events: [],
-	timeoutSeconds: 900,
-	timeoutAt: "2026-03-15T12:15:00.000Z",
+  runId: "run-123",
+  installationId: 99,
+  repo: "owner/repo",
+  task: "Implement feature",
+  model: "mistral-large",
+  shouldCommit: true,
+  status: "queued",
+  startedAt: "2026-03-15T12:00:00.000Z",
+  updatedAt: "2026-03-15T12:00:00.000Z",
+  events: [],
+  timeoutSeconds: 900,
+  timeoutAt: "2026-03-15T12:15:00.000Z",
 };
 
 describe("sandbox dispatch", () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-		vi.mocked(createServiceContext).mockReturnValue(mockServiceContext);
-		mockGetUserById.mockResolvedValue({
-			id: 42,
-			email: "dev@example.com",
-			name: "Dev",
-		});
-		mockGetActivityById.mockResolvedValue({
-			data: JSON.stringify(baseRunRecord),
-		});
-		mockEnqueueTask.mockResolvedValue("task-123");
-		mockUpdateActivity.mockResolvedValue(undefined);
-		vi.mocked(executeSandboxWorker).mockResolvedValue(
-			Response.json({
-				success: true,
-				summary: "Completed",
-			}),
-		);
-	});
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(createServiceContext).mockReturnValue(mockServiceContext);
+    mockGetUserById.mockResolvedValue({
+      id: 42,
+      email: "dev@example.com",
+      name: "Dev",
+    });
+    mockGetActivityById.mockResolvedValue({
+      data: JSON.stringify(baseRunRecord),
+    });
+    mockEnqueueTask.mockResolvedValue("task-123");
+    mockUpdateActivity.mockResolvedValue(undefined);
+    vi.mocked(executeSandboxWorker).mockResolvedValue(
+      Response.json({
+        success: true,
+        summary: "Completed",
+      }),
+    );
+  });
 
-	it("validates sandbox dispatch message shape", () => {
-		expect(
-			isSandboxRunDispatchMessage({
-				kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
-				runId: "run-1",
-				recordId: "record-1",
-				userId: 1,
-				payload: {
-					installationId: 1,
-					repo: "owner/repo",
-					task: "Task",
-					shouldCommit: false,
-				},
-			}),
-		).toBe(true);
-		expect(
-			isSandboxRunDispatchMessage({
-				kind: "other",
-				runId: "run-1",
-			}),
-		).toBe(false);
-	});
+  it("validates sandbox dispatch message shape", () => {
+    expect(
+      isSandboxRunDispatchMessage({
+        kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
+        runId: "run-1",
+        recordId: "record-1",
+        userId: 1,
+        payload: {
+          installationId: 1,
+          repo: "owner/repo",
+          task: "Task",
+          shouldCommit: false,
+        },
+      }),
+    ).toBe(true);
+    expect(
+      isSandboxRunDispatchMessage({
+        kind: "other",
+        runId: "run-1",
+      }),
+    ).toBe(false);
+  });
 
-	it("enqueues dispatch message via shared task service", async () => {
-		const taskId = await enqueueSandboxRunDispatchTask({
-			context: {
-				env: {
-					TASK_QUEUE: { send: vi.fn() },
-				},
-				repositories: {
-					tasks: {},
-				},
-			} as any,
-			projectId: "project-1",
-			message: {
-				kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
-				runId: "run-1",
-				recordId: "record-1",
-				userId: 1,
-				payload: {
-					installationId: 1,
-					repo: "owner/repo",
-					task: "Task",
-					shouldCommit: false,
-				},
-			},
-		});
-		expect(taskId).toBe("task-123");
-		expect(mockEnqueueTask).toHaveBeenCalledWith(
-			expect.objectContaining({
-				task_type: SANDBOX_RUN_DISPATCH_TASK_TYPE,
-				user_id: 1,
-				project_id: "project-1",
-				task_data: expect.objectContaining({
-					kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
-					runId: "run-1",
-				}),
-			}),
-		);
-	});
+  it("enqueues dispatch message via shared task service", async () => {
+    const taskId = await enqueueSandboxRunDispatchTask({
+      context: {
+        env: {
+          TASK_QUEUE: { send: vi.fn() },
+        },
+        repositories: {
+          tasks: {},
+        },
+      } as any,
+      projectId: "project-1",
+      message: {
+        kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
+        runId: "run-1",
+        recordId: "record-1",
+        userId: 1,
+        payload: {
+          installationId: 1,
+          repo: "owner/repo",
+          task: "Task",
+          shouldCommit: false,
+        },
+      },
+    });
 
-	it("rejects dispatch enqueue when TASK_QUEUE is unavailable", async () => {
-		await expect(
-			enqueueSandboxRunDispatchTask({
-				context: {
-					env: {},
-					repositories: {
-						tasks: {},
-					},
-				} as any,
-				message: {
-					kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
-					runId: "run-1",
-					recordId: "record-1",
-					userId: 1,
-					payload: {
-						installationId: 1,
-						repo: "owner/repo",
-						task: "Task",
-						shouldCommit: false,
-					},
-				},
-			}),
-		).rejects.toThrow("TASK_QUEUE binding is not configured for sandbox run dispatch");
-	});
+    expect(taskId).toBe("task-123");
+    expect(mockEnqueueTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        task_type: SANDBOX_RUN_DISPATCH_TASK_TYPE,
+        user_id: 1,
+        project_id: "project-1",
+        task_data: expect.objectContaining({
+          kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
+          runId: "run-1",
+        }),
+      }),
+    );
+  });
 
-	it("processes queued runs and persists completed state", async () => {
-		await processSandboxRunDispatch({
-			env: {} as any,
-			message: {
-				kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
-				runId: "run-123",
-				recordId: "record-1",
-				userId: 42,
-				payload: {
-					installationId: 99,
-					repo: "owner/repo",
-					task: "Implement feature",
-					model: "mistral-large",
-					shouldCommit: true,
-				},
-			},
-		});
+  it("rejects dispatch enqueue when TASK_QUEUE is unavailable", async () => {
+    await expect(
+      enqueueSandboxRunDispatchTask({
+        context: {
+          env: {},
+          repositories: {
+            tasks: {},
+          },
+        } as any,
+        message: {
+          kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
+          runId: "run-1",
+          recordId: "record-1",
+          userId: 1,
+          payload: {
+            installationId: 1,
+            repo: "owner/repo",
+            task: "Task",
+            shouldCommit: false,
+          },
+        },
+      }),
+    ).rejects.toThrow("TASK_QUEUE binding is not configured for sandbox run dispatch");
+  });
 
-		expect(executeSandboxWorker).toHaveBeenCalledWith(
-			expect.objectContaining({
-				runId: "run-123",
-				repo: "owner/repo",
-			}),
-		);
-		expect(mockUpdateActivity).toHaveBeenCalled();
-		expect(updateRunCoordinatorControl).toHaveBeenCalledWith(
-			expect.objectContaining({
-				runId: "run-123",
-				state: "running",
-			}),
-		);
-		expect(updateRunCoordinatorControl).toHaveBeenLastCalledWith(
-			expect.objectContaining({
-				runId: "run-123",
-				state: "cancelled",
-			}),
-		);
-		expect(appendRunCoordinatorEvent).toHaveBeenCalledWith(
-			expect.objectContaining({
-				runId: "run-123",
-				event: expect.objectContaining({
-					type: "run_completed",
-				}),
-			}),
-		);
-		expect(persistSandboxRunArtifact).toHaveBeenCalled();
-		expect(indexSandboxRunResult).toHaveBeenCalled();
-	});
+  it("processes queued runs and persists completed state", async () => {
+    await processSandboxRunDispatch({
+      env: {} as any,
+      message: {
+        kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
+        runId: "run-123",
+        recordId: "record-1",
+        userId: 42,
+        payload: {
+          installationId: 99,
+          repo: "owner/repo",
+          task: "Implement feature",
+          model: "mistral-large",
+          shouldCommit: true,
+        },
+      },
+    });
 
-	it("marks queued runs as failed when worker startup throws", async () => {
-		vi.mocked(executeSandboxWorker).mockRejectedValueOnce(new Error("worker startup failed"));
+    expect(executeSandboxWorker).toHaveBeenCalledWith(
+      expect.objectContaining({
+        runId: "run-123",
+        repo: "owner/repo",
+      }),
+    );
+    expect(mockUpdateActivity).toHaveBeenCalled();
+    expect(updateRunCoordinatorControl).toHaveBeenCalledWith(
+      expect.objectContaining({
+        runId: "run-123",
+        state: "running",
+      }),
+    );
+    expect(updateRunCoordinatorControl).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        runId: "run-123",
+        state: "cancelled",
+      }),
+    );
+    expect(appendRunCoordinatorEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        runId: "run-123",
+        event: expect.objectContaining({
+          type: "run_completed",
+        }),
+      }),
+    );
+    expect(persistSandboxRunArtifact).toHaveBeenCalled();
+    expect(indexSandboxRunResult).toHaveBeenCalled();
+  });
 
-		await processSandboxRunDispatch({
-			env: {} as any,
-			message: {
-				kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
-				runId: "run-123",
-				recordId: "record-1",
-				userId: 42,
-				payload: {
-					installationId: 99,
-					repo: "owner/repo",
-					task: "Implement feature",
-					model: "mistral-large",
-					shouldCommit: true,
-				},
-			},
-		});
+  it("marks queued runs as failed when worker startup throws", async () => {
+    vi.mocked(executeSandboxWorker).mockRejectedValueOnce(new Error("worker startup failed"));
 
-		expect(mockUpdateActivity).toHaveBeenLastCalledWith(
-			"record-1",
-			expect.objectContaining({
-				status: "failed",
-				data: expect.objectContaining({
-					status: "failed",
-					workflowPhase: "failed",
-					error: "worker startup failed",
-				}),
-			}),
-		);
-		expect(appendRunCoordinatorEvent).toHaveBeenCalledWith(
-			expect.objectContaining({
-				runId: "run-123",
-				event: expect.objectContaining({
-					type: "run_failed",
-					error: "worker startup failed",
-				}),
-			}),
-		);
-		expect(updateRunCoordinatorControl).toHaveBeenLastCalledWith(
-			expect.objectContaining({
-				runId: "run-123",
-				state: "cancelled",
-				cancellationReason: "worker startup failed",
-			}),
-		);
-		expect(indexSandboxRunResult).not.toHaveBeenCalled();
-	});
+    await processSandboxRunDispatch({
+      env: {} as any,
+      message: {
+        kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
+        runId: "run-123",
+        recordId: "record-1",
+        userId: 42,
+        payload: {
+          installationId: 99,
+          repo: "owner/repo",
+          task: "Implement feature",
+          model: "mistral-large",
+          shouldCommit: true,
+        },
+      },
+    });
+
+    expect(mockUpdateActivity).toHaveBeenLastCalledWith(
+      "record-1",
+      expect.objectContaining({
+        status: "failed",
+        data: expect.objectContaining({
+          status: "failed",
+          workflowPhase: "failed",
+          error: "worker startup failed",
+        }),
+      }),
+    );
+    expect(appendRunCoordinatorEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        runId: "run-123",
+        event: expect.objectContaining({
+          type: "run_failed",
+          error: "worker startup failed",
+        }),
+      }),
+    );
+    expect(updateRunCoordinatorControl).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        runId: "run-123",
+        state: "cancelled",
+        cancellationReason: "worker startup failed",
+      }),
+    );
+    expect(indexSandboxRunResult).not.toHaveBeenCalled();
+  });
 });

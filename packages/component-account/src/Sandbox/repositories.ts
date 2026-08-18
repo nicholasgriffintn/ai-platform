@@ -6,6 +6,7 @@ export function isGitHubRepoSlug(value: string): boolean {
 
 export function normaliseGitHubRepoInput(value: string): string {
   const trimmed = value.trim();
+
   if (!trimmed) {
     return "";
   }
@@ -15,6 +16,7 @@ export function normaliseGitHubRepoInput(value: string): string {
   }
 
   let parsedUrl: URL;
+
   try {
     parsedUrl = new URL(trimmed);
   } catch {
@@ -29,6 +31,7 @@ export function normaliseGitHubRepoInput(value: string): string {
     .split("/")
     .map((part) => part.trim())
     .filter(Boolean);
+
   if (pathParts.length < 2) {
     return trimmed;
   }

@@ -1,5 +1,5 @@
-import { StrudelStudio } from "@ngriffin_uk/polychat-component-experiences/music";
 import {
+  StrudelStudio,
   defaultCode,
   examplePatterns,
   type PatternExample,
@@ -47,6 +47,7 @@ export function StrudelCreateStudio({ basePath, projectId }: StrudelCreateStudio
         const outputs = model.modalities?.output ?? inputs;
         const supportsOnlyText =
           outputs.length === 1 && outputs[0] === "text" && inputs.includes("text");
+
         return supportsOnlyText;
       })
       .map(([id, model]) => ({
@@ -59,6 +60,7 @@ export function StrudelCreateStudio({ basePath, projectId }: StrudelCreateStudio
   const handleGenerate = async () => {
     if (!prompt.trim()) {
       toast.error("Describe what you want to hear first");
+
       return;
     }
 
@@ -70,10 +72,12 @@ export function StrudelCreateStudio({ basePath, projectId }: StrudelCreateStudio
         tempo: tempo ? Number(tempo) : undefined,
         model: selectedModel || undefined,
       });
+
       setCode(payload.code);
       if (!name.trim()) {
         setName(prompt.slice(0, 64));
       }
+
       toast.success("Generated a new Strudel pattern");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Unable to generate pattern");
@@ -83,6 +87,7 @@ export function StrudelCreateStudio({ basePath, projectId }: StrudelCreateStudio
   const handleSave = async () => {
     if (!name.trim()) {
       toast.error("Give your pattern a name");
+
       return;
     }
 
@@ -93,6 +98,7 @@ export function StrudelCreateStudio({ basePath, projectId }: StrudelCreateStudio
         description: description.trim() || undefined,
         tags: parsedTags,
       });
+
       toast.success("Pattern saved");
       navigate(`${basePath}/${pattern.id}`);
     } catch (err) {
@@ -106,6 +112,7 @@ export function StrudelCreateStudio({ basePath, projectId }: StrudelCreateStudio
     if (!name.trim()) {
       setName(example.name);
     }
+
     toast.success(`Loaded ${example.name}`);
   };
 

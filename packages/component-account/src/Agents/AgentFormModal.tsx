@@ -1,19 +1,26 @@
-import { Button, cn } from "@ngriffin_uk/polychat-component-ui";
 import {
+  Button,
+  cn,
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  FormInput,
+  FormSelect,
+  Switch,
+  Textarea,
+  Label,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from "@ngriffin_uk/polychat-component-ui";
-import { FormInput } from "@ngriffin_uk/polychat-component-ui";
-import { FormSelect } from "@ngriffin_uk/polychat-component-ui";
-import { Switch } from "@ngriffin_uk/polychat-component-ui";
-import { Textarea } from "@ngriffin_uk/polychat-component-ui";
-import { Label } from "@ngriffin_uk/polychat-component-ui";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ngriffin_uk/polychat-component-ui";
-import { getNumberInputValue, parseNumberInputValue } from "@ngriffin_uk/polychat-utility-core";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import {
+  getNumberInputValue,
+  parseNumberInputValue,
+  generateId,
+} from "@ngriffin_uk/polychat-utility-core";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import React, { type FormEvent } from "react";
 
@@ -45,13 +52,17 @@ export function AgentFormModal({
   const form = useAgentForm();
   const agentRef = React.useRef(agent);
   const apiModelsRef = React.useRef(apiModels);
+
   agentRef.current = agent;
   apiModelsRef.current = apiModels;
 
   React.useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
 
     const currentAgent = agentRef.current;
+
     if (currentAgent) {
       form.loadAgentData(currentAgent, apiModelsRef.current);
     } else {
@@ -63,11 +74,13 @@ export function AgentFormModal({
     e.preventDefault();
 
     const validation = form.validateForm();
+
     if (!validation.valid) {
       return;
     }
 
     const formData = form.getFormData();
+
     await onSubmit(formData, form.isEditMode, form.currentAgentId);
   };
 
@@ -85,7 +98,10 @@ export function AgentFormModal({
         if (!isOpen && !isSubmitting) {
           form.resetForm();
         }
-        if (!isOpen) onClose();
+
+        if (!isOpen) {
+          onClose();
+        }
       }}
     >
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -334,6 +350,7 @@ export function AgentFormModal({
                   <div className="space-y-2 border rounded-lg p-3 max-h-56 overflow-y-auto">
                     {tools.map((tool: any) => {
                       const isSelected = form.enabledTools.includes(tool.id);
+
                       return (
                         <label
                           key={tool.id}

@@ -12,7 +12,7 @@ export function MediaPreview({
   preview: MediaPreviewModel;
   renderImage?: (preview: Extract<MediaPreviewModel, { type: "image" }>) => React.ReactNode;
 }) {
-  if (preview.type === "image")
+  if (preview.type === "image") {
     return (
       <div className="polychat-experience-media-preview">
         {renderImage ? (
@@ -22,7 +22,9 @@ export function MediaPreview({
         )}
       </div>
     );
-  if (preview.type === "video")
+  }
+
+  if (preview.type === "video") {
     return (
       <div className="polychat-experience-media-preview">
         <video controls aria-label={preview.title}>
@@ -30,6 +32,8 @@ export function MediaPreview({
         </video>
       </div>
     );
+  }
+
   return (
     <div className="polychat-experience-media-preview">
       <audio controls aria-label={preview.title}>

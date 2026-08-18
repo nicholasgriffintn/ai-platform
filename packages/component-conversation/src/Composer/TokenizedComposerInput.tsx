@@ -62,15 +62,19 @@ function readComposerDom(element: HTMLElement): ReadComposerState {
   const walk = (node: Node) => {
     if (node.nodeType === Node.TEXT_NODE) {
       text += node.textContent ?? "";
+
       return;
     }
+
     if (!(node instanceof Element)) {
       return;
     }
 
     const tokenId = getTokenId(node);
+
     if (tokenId) {
       const tokenText = node.textContent ?? "";
+
       tokenPositions.push({ id: tokenId, position: text.length });
       text += tokenText;
       tokenSignatures.push(
@@ -81,6 +85,7 @@ function readComposerDom(element: HTMLElement): ReadComposerState {
           text.length - tokenText.length,
         ].join(":"),
       );
+
       return;
     }
 
@@ -104,10 +109,13 @@ function measureTextLength(node: Node): number {
   if (node.nodeType === Node.TEXT_NODE) {
     return node.textContent?.length ?? 0;
   }
+
   if (!(node instanceof Element)) {
     return 0;
   }
+
   const tokenId = getTokenId(node);
+
   if (tokenId) {
     return node.textContent?.length ?? 0;
   }
@@ -120,11 +128,13 @@ function measureTextLength(node: Node): number {
 
 function getCursorPosition(element: HTMLElement): number {
   const selection = window.getSelection();
+
   if (!selection || selection.rangeCount === 0) {
     return readComposerDom(element).text.length;
   }
 
   const range = selection.getRangeAt(0);
+
   if (!element.contains(range.startContainer)) {
     return readComposerDom(element).text.length;
   }
@@ -145,19 +155,25 @@ function getCursorPosition(element: HTMLElement): number {
           textLength += measureTextLength(child);
         }
       }
+
       found = true;
+
       return;
     }
 
     if (node.nodeType === Node.TEXT_NODE) {
       textLength += node.textContent?.length ?? 0;
+
       return;
     }
+
     if (!(node instanceof Element)) {
       return;
     }
+
     if (getTokenId(node)) {
       textLength += measureTextLength(node);
+
       return;
     }
 
@@ -170,6 +186,7 @@ function getCursorPosition(element: HTMLElement): number {
   };
 
   walk(element);
+
   return textLength;
 }
 
@@ -179,16 +196,22 @@ function setCursorPosition(element: HTMLElement, position: number) {
   const place = (node: Node): boolean => {
     if (node.nodeType === Node.TEXT_NODE) {
       const textLength = node.textContent?.length ?? 0;
+
       if (remaining > textLength) {
         remaining -= textLength;
+
         return false;
       }
+
       const range = document.createRange();
+
       range.setStart(node, remaining);
       range.collapse(true);
       const selection = window.getSelection();
+
       selection?.removeAllRanges();
       selection?.addRange(range);
+
       return true;
     }
 
@@ -197,23 +220,30 @@ function setCursorPosition(element: HTMLElement, position: number) {
     }
 
     const tokenId = getTokenId(node);
+
     if (tokenId) {
       const tokenLength = node.textContent?.length ?? 0;
+
       if (remaining > tokenLength) {
         remaining -= tokenLength;
+
         return false;
       }
 
       const range = document.createRange();
+
       if (remaining === 0) {
         range.setStartBefore(node);
       } else {
         range.setStartAfter(node);
       }
+
       range.collapse(true);
       const selection = window.getSelection();
+
       selection?.removeAllRanges();
       selection?.addRange(range);
+
       return true;
     }
 
@@ -222,6 +252,7 @@ function setCursorPosition(element: HTMLElement, position: number) {
         return true;
       }
     }
+
     return false;
   };
 
@@ -230,9 +261,11 @@ function setCursorPosition(element: HTMLElement, position: number) {
   }
 
   const range = document.createRange();
+
   range.selectNodeContents(element);
   range.collapse(false);
   const selection = window.getSelection();
+
   selection?.removeAllRanges();
   selection?.addRange(range);
 }
@@ -242,16 +275,20 @@ function setCursorAfterToken(element: HTMLElement, tokenId: string) {
     (candidate) =>
       candidate instanceof HTMLElement && candidate.dataset.composerTokenId === tokenId,
   );
+
   if (!token) {
     return false;
   }
 
   const range = document.createRange();
+
   range.setStartAfter(token);
   range.collapse(true);
   const selection = window.getSelection();
+
   selection?.removeAllRanges();
   selection?.addRange(range);
+
   return true;
 }
 
@@ -295,11 +332,13 @@ function renderComposerDom(element: HTMLElement, value: string, tokens: Composer
   for (const token of tokens) {
     const tokenText = getComposerTokenText(token);
     const text = value.slice(cursor, token.position);
+
     if (text) {
       element.appendChild(document.createTextNode(text));
     }
 
     const tokenElement = document.createElement("span");
+
     tokenElement.dataset.composerTokenId = token.id;
     tokenElement.dataset.composerTokenKind = token.kind;
     tokenElement.dataset.testid = "composer-token-part";
@@ -314,6 +353,7 @@ function renderComposerDom(element: HTMLElement, value: string, tokens: Composer
   }
 
   const remainingText = value.slice(cursor);
+
   if (remainingText) {
     element.appendChild(document.createTextNode(remainingText));
   }
@@ -321,6 +361,7 @@ function renderComposerDom(element: HTMLElement, value: string, tokens: Composer
 
 function insertTextAtSelection(text: string) {
   const selection = window.getSelection();
+
   if (!selection || selection.rangeCount === 0) {
     return;
   }
@@ -328,6 +369,7 @@ function insertTextAtSelection(text: string) {
   selection.deleteFromDocument();
   const range = selection.getRangeAt(0);
   const textNode = document.createTextNode(text);
+
   range.insertNode(textNode);
   range.setStartAfter(textNode);
   range.collapse(true);
@@ -382,11 +424,13 @@ export const TokenizedComposerInput = forwardRef<
 
     useLayoutEffect(() => {
       const editable = editableRef.current;
+
       if (!editable) {
         return;
       }
 
       const current = readComposerDom(editable);
+
       if (current.text === value && current.tokenSignature === expectedTokenSignature) {
         return;
       }
@@ -400,22 +444,26 @@ export const TokenizedComposerInput = forwardRef<
           cursorPosition >= token.position &&
           cursorPosition <= token.position + getComposerTokenText(token).length,
       );
+
       renderComposerDom(editable, value, orderedTokens);
       if (wasFocused) {
         if (!tokenToEnterAfter || !setCursorAfterToken(editable, tokenToEnterAfter.id)) {
           setCursorPosition(editable, Math.min(cursorPosition, value.length));
         }
+
         onCursorPositionChange(getCursorPosition(editable));
       }
     }, [expectedTokenSignature, onCursorPositionChange, orderedTokens, value]);
 
     const emitCurrentState = () => {
       const editable = editableRef.current;
+
       if (!editable) {
         return;
       }
 
       const current = readComposerDom(editable);
+
       onChange(current.text);
       onTokenPositionsChange(current.tokenPositions);
       onCursorPositionChange(getCursorPosition(editable));
@@ -453,7 +501,7 @@ export const TokenizedComposerInput = forwardRef<
           aria-describedby={ariaDescribedBy}
           aria-disabled={disabled}
           contentEditable={!disabled}
-          suppressContentEditableWarning={true}
+          suppressContentEditableWarning
           className="min-h-[36px] w-full whitespace-pre-wrap break-words bg-transparent text-base leading-6 outline-none dark:text-white"
           onInput={emitCurrentState}
           onKeyDown={onKeyDown}

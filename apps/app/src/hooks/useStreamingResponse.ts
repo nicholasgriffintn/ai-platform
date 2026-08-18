@@ -1,8 +1,10 @@
+import { resolveConversationStorageMode } from "@ngriffin_uk/polychat-library-chat/conversation-storage-policy";
 import { readCompactionStatusMessage } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
 import {
-	getMessageTextContent,
-	normalizeMessage,
+  getMessageTextContent,
+  normalizeMessage,
 } from "@ngriffin_uk/polychat-library-chat/messages";
+import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
 import { EMPTY_MODEL_CONFIG, getModelProvider } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
@@ -10,22 +12,21 @@ import { toast } from "sonner";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
-import { resolveConversationStorageMode } from "@ngriffin_uk/polychat-library-chat/conversation-storage-policy";
-import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
 import { getChatStreamLoadingMessage } from "~/lib/chat/stream-state";
 import { normaliseUsageLimits } from "~/lib/usage-limits";
-import type { ChatRequestOptions, Message } from "~/types";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUsageStore } from "~/state/stores/usageStore";
+import type { ChatRequestOptions, Message } from "~/types";
+
 import { useMessageOperations } from "./useMessageOperations";
 import { useModels } from "./useModels";
 
 export interface StreamResponseOptions {
-	assistantMessageData?: Partial<Message>;
-	generateTitle?: boolean;
-	model?: string;
-	models?: string[];
+  assistantMessageData?: Partial<Message>;
+  generateTitle?: boolean;
+  model?: string;
+  models?: string[];
 }
 
 /**
@@ -33,457 +34,489 @@ export interface StreamResponseOptions {
  * Handles both local WebLLM and remote API streaming.
  */
 export function useStreamingResponse(
-	webLLMService: any,
-	onTitleGeneration?: (conversationId: string, messages: Message[]) => Promise<void>,
-	requestOptions?: ChatRequestOptions,
+  webLLMService: any,
+  onTitleGeneration?: (conversationId: string, messages: Message[]) => Promise<void>,
+  requestOptions?: ChatRequestOptions,
 ) {
-	const queryClient = useQueryClient();
-	const { stopLoading, updateLoading } = useLoadingActions();
-	const {
-		chatMode,
-		model,
-		chatSettings,
-		isAuthenticated,
-		isPro,
-		localOnlyMode,
-		useMultiModel,
-		autoMode,
-		selectedAgentId,
-		markConversationRemoteAvailable,
-		setModel,
-	} = useChatStore();
-	const setUsageLimits = useUsageStore((state) => state.setUsageLimits);
+  const queryClient = useQueryClient();
+  const { stopLoading, updateLoading } = useLoadingActions();
+  const {
+    chatMode,
+    model,
+    chatSettings,
+    isAuthenticated,
+    isPro,
+    localOnlyMode,
+    useMultiModel,
+    autoMode,
+    selectedAgentId,
+    markConversationRemoteAvailable,
+    setModel,
+  } = useChatStore();
+  const setUsageLimits = useUsageStore((state) => state.setUsageLimits);
 
-	const [streamStarted, setStreamStarted] = useState(false);
-	const [controller, setController] = useState(() => new AbortController());
-	const controllerRef = useRef(controller);
-	const assistantResponseRef = useRef<string>("");
-	const assistantReasoningRef = useRef<string>("");
-	const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
+  const [streamStarted, setStreamStarted] = useState(false);
+  const [controller, setController] = useState(() => new AbortController());
+  const controllerRef = useRef(controller);
+  const assistantResponseRef = useRef<string>("");
+  const assistantReasoningRef = useRef<string>("");
+  const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
 
-	const {
-		addMessageToConversation,
-		insertMessageBeforeConversationMessage,
-		addAssistantMessage,
-		updateAssistantMessage,
-	} = useMessageOperations(requestOptions);
+  const {
+    addMessageToConversation,
+    insertMessageBeforeConversationMessage,
+    addAssistantMessage,
+    updateAssistantMessage,
+  } = useMessageOperations(requestOptions);
 
-	const generateResponse = useCallback(
-		async (
-			messages: Message[],
-			conversationId: string,
-			overrideRequestOptions?: ChatRequestOptions,
-			options?: Pick<StreamResponseOptions, "assistantMessageData" | "model" | "models">,
-		): Promise<{
-			status: "success" | "error";
-			response: string;
-			message?: Message;
-			messages?: Message[];
-			toolResponses?: Message[];
-		}> => {
-			const requestSignal = controllerRef.current.signal;
-			const effectiveRequestOptions = overrideRequestOptions ?? requestOptions;
-			const storageMode = resolveConversationStorageMode(
-				{
-					chatMode,
-					isAuthenticated,
-					isPro,
-					localOnlyMode,
-					settingsLocalOnly: chatSettings.localOnly === true,
-				},
-				effectiveRequestOptions,
-			);
-			const isLocal = !storageMode.shouldSyncRemote && chatMode === "local";
-			let response = "";
-			let generatedMessage: Message | undefined;
-			const generatedMessages: Message[] = [];
-			const toolResponseMessages: Message[] = [];
-			let messageWriteQueue: Promise<unknown> = Promise.resolve();
-			const pendingMessageTasks: Promise<unknown>[] = [];
-			const assistantMessageData = options?.assistantMessageData;
-			let shouldRefreshStoredConversation = false;
+  const generateResponse = useCallback(
+    async (
+      messages: Message[],
+      conversationId: string,
+      overrideRequestOptions?: ChatRequestOptions,
+      options?: Pick<StreamResponseOptions, "assistantMessageData" | "model" | "models">,
+    ): Promise<{
+      status: "success" | "error";
+      response: string;
+      message?: Message;
+      messages?: Message[];
+      toolResponses?: Message[];
+    }> => {
+      const requestSignal = controllerRef.current.signal;
+      const effectiveRequestOptions = overrideRequestOptions ?? requestOptions;
+      const storageMode = resolveConversationStorageMode(
+        {
+          chatMode,
+          isAuthenticated,
+          isPro,
+          localOnlyMode,
+          settingsLocalOnly: chatSettings.localOnly === true,
+        },
+        effectiveRequestOptions,
+      );
+      const isLocal = !storageMode.shouldSyncRemote && chatMode === "local";
+      let response = "";
+      let generatedMessage: Message | undefined;
+      const generatedMessages: Message[] = [];
+      const toolResponseMessages: Message[] = [];
+      let messageWriteQueue: Promise<unknown> = Promise.resolve();
+      const pendingMessageTasks: Promise<unknown>[] = [];
+      const assistantMessageData = options?.assistantMessageData;
+      let shouldRefreshStoredConversation = false;
 
-			const placeholderMessage = await addAssistantMessage(
-				conversationId,
-				"",
-				undefined,
-				assistantMessageData,
-			);
-			let activeAssistantMessage: Message | undefined = placeholderMessage;
-			let activeAssistantMessagePromise: Promise<Message> | null =
-				Promise.resolve(placeholderMessage);
+      const placeholderMessage = await addAssistantMessage(
+        conversationId,
+        "",
+        undefined,
+        assistantMessageData,
+      );
+      let activeAssistantMessage: Message | undefined = placeholderMessage;
+      let activeAssistantMessagePromise: Promise<Message> | null =
+        Promise.resolve(placeholderMessage);
 
-			const enqueueMessageWrite = <T>(operation: () => Promise<T>): Promise<T> => {
-				const queuedWrite = messageWriteQueue.then(operation);
-				messageWriteQueue = queuedWrite.then(() => undefined);
-				return queuedWrite;
-			};
+      const enqueueMessageWrite = <T>(operation: () => Promise<T>): Promise<T> => {
+        const queuedWrite = messageWriteQueue.then(operation);
 
-			const ensureActiveAssistantMessage = (): Promise<Message> => {
-				if (activeAssistantMessage) {
-					return Promise.resolve(activeAssistantMessage);
-				}
+        messageWriteQueue = queuedWrite.then(() => undefined);
 
-				if (activeAssistantMessagePromise) {
-					return activeAssistantMessagePromise;
-				}
+        return queuedWrite;
+      };
 
-				activeAssistantMessagePromise = enqueueMessageWrite(() =>
-					addAssistantMessage(conversationId, "", undefined, assistantMessageData),
-				).then((message) => {
-					activeAssistantMessage = message;
-					return message;
-				});
-				return activeAssistantMessagePromise;
-			};
+      const ensureActiveAssistantMessage = (): Promise<Message> => {
+        if (activeAssistantMessage) {
+          return Promise.resolve(activeAssistantMessage);
+        }
 
-			const withAssistantMessageData = (assistantMessage: Message): Message => ({
-				...assistantMessage,
-				...assistantMessageData,
-				content: assistantMessage.content,
-				model: assistantMessage.model ?? assistantMessageData?.model,
-				reasoning: assistantMessage.reasoning ?? assistantMessageData?.reasoning,
-				role: "assistant",
-				status: assistantMessage.status,
-			});
+        if (activeAssistantMessagePromise) {
+          return activeAssistantMessagePromise;
+        }
 
-			const handleMessageUpdate = (
-				content: Message["content"],
-				reasoning?: string,
-				toolResponses?: Message[],
-				done?: boolean,
-				assistantMessage?: Message,
-			) => {
-				if (done && assistantMessage) {
-					const updatedAssistantMessage = withAssistantMessageData(assistantMessage);
-					generatedMessages.push(updatedAssistantMessage);
-					generatedMessage = updatedAssistantMessage;
-					const activeMessagePromise = ensureActiveAssistantMessage();
-					activeAssistantMessage = undefined;
-					activeAssistantMessagePromise = null;
-					pendingMessageTasks.push(
-						activeMessagePromise.then((message) =>
-							enqueueMessageWrite(() =>
-								updateAssistantMessage(
-									conversationId,
-									updatedAssistantMessage.content,
-									updatedAssistantMessage.reasoning?.content || reasoning,
-									updatedAssistantMessage,
-									{
-										messageId: message.id,
-									},
-								),
-							),
-						),
-					);
-					response = "";
-					return;
-				}
+        activeAssistantMessagePromise = enqueueMessageWrite(() =>
+          addAssistantMessage(conversationId, "", undefined, assistantMessageData),
+        ).then((message) => {
+          activeAssistantMessage = message;
 
-				response = typeof content === "string" ? content : response;
+          return message;
+        });
 
-				if (assistantMessage) {
-					const updatedAssistantMessage = withAssistantMessageData({
-						...assistantMessage,
-						content,
-					});
-					pendingMessageTasks.push(
-						ensureActiveAssistantMessage().then((message) => {
-							const metadataUpdate = {
-								...updatedAssistantMessage,
-								id: message.id,
-							};
-							activeAssistantMessage = metadataUpdate;
-							return enqueueMessageWrite(() =>
-								updateAssistantMessage(
-									conversationId,
-									metadataUpdate.content,
-									metadataUpdate.reasoning?.content || reasoning,
-									metadataUpdate,
-									{
-										messageId: message.id,
-									},
-								),
-							);
-						}),
-					);
-					return;
-				}
+        return activeAssistantMessagePromise;
+      };
 
-				if (toolResponses && toolResponses.length > 0) {
-					for (const toolResponse of toolResponses) {
-						toolResponseMessages.push(toolResponse);
-						generatedMessages.push(toolResponse);
-						pendingMessageTasks.push(
-							enqueueMessageWrite(() => addMessageToConversation(conversationId, toolResponse)),
-						);
-					}
-				} else {
-					pendingMessageTasks.push(
-						ensureActiveAssistantMessage().then((message) =>
-							enqueueMessageWrite(() =>
-								updateAssistantMessage(conversationId, content, reasoning, activeAssistantMessage, {
-									messageId: message.id,
-								}),
-							),
-						),
-					);
-				}
-			};
+      const withAssistantMessageData = (assistantMessage: Message): Message => ({
+        ...assistantMessage,
+        ...assistantMessageData,
+        content: assistantMessage.content,
+        model: assistantMessage.model ?? assistantMessageData?.model,
+        reasoning: assistantMessage.reasoning ?? assistantMessageData?.reasoning,
+        role: "assistant",
+        status: assistantMessage.status,
+      });
 
-			try {
-				if (isLocal) {
-					const currentModel = normalizeSelectedModel(options?.model ?? model);
-					if (!currentModel) {
-						throw new Error("Cannot generate local response without a selected model.");
-					}
-					const handleProgress = (text: string) => {
-						response += text;
-						assistantResponseRef.current = response;
+      const handleMessageUpdate = (
+        content: Message["content"],
+        reasoning?: string,
+        toolResponses?: Message[],
+        done?: boolean,
+        assistantMessage?: Message,
+      ) => {
+        if (done && assistantMessage) {
+          const updatedAssistantMessage = withAssistantMessageData(assistantMessage);
 
-						updateAssistantMessage(conversationId, response, undefined, undefined, {
-							messageId: placeholderMessage.id,
-						});
-					};
+          generatedMessages.push(updatedAssistantMessage);
+          generatedMessage = updatedAssistantMessage;
+          const activeMessagePromise = ensureActiveAssistantMessage();
 
-					const lastMessage = messages[messages.length - 1];
-					const lastMessageContent = getMessageTextContent(lastMessage);
+          activeAssistantMessage = undefined;
+          activeAssistantMessagePromise = null;
+          pendingMessageTasks.push(
+            activeMessagePromise.then((message) =>
+              enqueueMessageWrite(() =>
+                updateAssistantMessage(
+                  conversationId,
+                  updatedAssistantMessage.content,
+                  updatedAssistantMessage.reasoning?.content || reasoning,
+                  updatedAssistantMessage,
+                  {
+                    messageId: message.id,
+                  },
+                ),
+              ),
+            ),
+          );
+          response = "";
 
-					response = await webLLMService.generate(
-						String(conversationId),
-						lastMessageContent,
-						async (_chatId: string, content: any, _model: any, _mode: any, role: string) => {
-							if (role !== "user") handleMessageUpdate(content);
-							return [];
-						},
-						handleProgress,
-					);
-				} else {
-					const shouldStore = storageMode.shouldSyncRemote;
+          return;
+        }
 
-					const normalizedMessages = messages.map(normalizeMessage);
+        response = typeof content === "string" ? content : response;
 
-					const modelsToSend = options?.models
-						?.map((modelId) => normalizeSelectedModel(modelId))
-						.filter((modelId): modelId is string => Boolean(modelId));
-					const selectedModel = normalizeSelectedModel(
-						modelsToSend?.[0] ?? options?.model ?? model,
-					);
-					const modelToSend = modelsToSend?.length ? undefined : selectedModel;
-					const providerToSend = getModelProvider(apiModels, selectedModel);
-					const modelConfigToSend = selectedModel ? apiModels[selectedModel] : undefined;
+        if (assistantMessage) {
+          const updatedAssistantMessage = withAssistantMessageData({
+            ...assistantMessage,
+            content,
+          });
 
-					const handleStateChange = (state: string, data?: any) => {
-						if (state === "usage_limits") {
-							const usageLimits = normaliseUsageLimits(data);
-							if (usageLimits) {
-								setUsageLimits(usageLimits);
-							}
-							return;
-						}
+          pendingMessageTasks.push(
+            ensureActiveAssistantMessage().then((message) => {
+              const metadataUpdate = {
+                ...updatedAssistantMessage,
+                id: message.id,
+              };
 
-						if (state === "compaction") {
-							const compactionMessage = readCompactionStatusMessage(data?.message);
-							if (compactionMessage) {
-								const targetMessageId = activeAssistantMessage?.id || placeholderMessage.id;
-								pendingMessageTasks.push(
-									enqueueMessageWrite(() =>
-										insertMessageBeforeConversationMessage(
-											conversationId,
-											compactionMessage,
-											targetMessageId,
-										),
-									),
-								);
-							}
-						}
+              activeAssistantMessage = metadataUpdate;
 
-						const msg = getChatStreamLoadingMessage(state, data);
-						if (!msg) {
-							return;
-						}
-						updateLoading("stream-response", undefined, msg);
-					};
-					const assistantMessage = await apiService.streamChatCompletions({
-						chatSettings,
-						completionId: conversationId,
-						endpoint: chatMode === "agent" ? `/agents/${selectedAgentId}/completions` : undefined,
-						messages: normalizedMessages,
-						mode: chatMode,
-						model: modelToSend,
-						modelConfig: modelConfigToSend,
-						modelRouterMode: selectedModel ? undefined : autoMode,
-						models: modelsToSend?.length ? modelsToSend : undefined,
-						onProgress: handleMessageUpdate,
-						onStateChange: handleStateChange,
-						provider: providerToSend,
-						requestOptions: effectiveRequestOptions,
-						signal: requestSignal,
-						store: shouldStore,
-						streamingEnabled: true,
-						useMultiModel: modelsToSend && modelsToSend.length > 1 ? true : useMultiModel,
-					});
-					if (shouldStore) {
-						markConversationRemoteAvailable(conversationId);
-						shouldRefreshStoredConversation = true;
-					}
+              return enqueueMessageWrite(() =>
+                updateAssistantMessage(
+                  conversationId,
+                  metadataUpdate.content,
+                  metadataUpdate.reasoning?.content || reasoning,
+                  metadataUpdate,
+                  {
+                    messageId: message.id,
+                  },
+                ),
+              );
+            }),
+          );
 
-					const textPreview =
-						typeof assistantMessage.content === "string"
-							? assistantMessage.content
-							: getMessageTextContent(assistantMessage);
+          return;
+        }
 
-					if (generatedMessage?.id !== assistantMessage.id) {
-						const targetMessage = activeAssistantMessage || placeholderMessage;
-						const updatedAssistantMessage = withAssistantMessageData(assistantMessage);
-						await updateAssistantMessage(
-							conversationId,
-							updatedAssistantMessage.content,
-							updatedAssistantMessage.reasoning?.content,
-							updatedAssistantMessage,
-							{ messageId: targetMessage.id },
-						);
-					}
+        if (toolResponses && toolResponses.length > 0) {
+          for (const toolResponse of toolResponses) {
+            toolResponseMessages.push(toolResponse);
+            generatedMessages.push(toolResponse);
+            pendingMessageTasks.push(
+              enqueueMessageWrite(() => addMessageToConversation(conversationId, toolResponse)),
+            );
+          }
+        } else {
+          pendingMessageTasks.push(
+            ensureActiveAssistantMessage().then((message) =>
+              enqueueMessageWrite(() =>
+                updateAssistantMessage(conversationId, content, reasoning, activeAssistantMessage, {
+                  messageId: message.id,
+                }),
+              ),
+            ),
+          );
+        }
+      };
 
-					response = textPreview;
-					generatedMessage = withAssistantMessageData(assistantMessage);
-					if (!generatedMessages.some((message) => message.id === generatedMessage?.id)) {
-						generatedMessages.push(generatedMessage);
-					}
-				}
+      try {
+        if (isLocal) {
+          const currentModel = normalizeSelectedModel(options?.model ?? model);
 
-				await Promise.all(pendingMessageTasks);
-				await messageWriteQueue;
-				if (shouldRefreshStoredConversation) {
-					await queryClient.invalidateQueries({
-						queryKey: [CHATS_QUERY_KEY, conversationId],
-					});
-				}
+          if (!currentModel) {
+            throw new Error("Cannot generate local response without a selected model.");
+          }
 
-				return {
-					status: "success",
-					response,
-					message: generatedMessage,
-					messages: generatedMessages,
-					toolResponses: toolResponseMessages,
-				};
-			} catch (error) {
-				if (requestSignal.aborted) {
-					return { status: "error" as const, response: "Request aborted" };
-				}
-				throw error;
-			}
-		},
-		[
-			chatMode,
-			updateAssistantMessage,
-			isAuthenticated,
-			isPro,
-			localOnlyMode,
-			chatSettings,
-			model,
-			addMessageToConversation,
-			insertMessageBeforeConversationMessage,
-			addAssistantMessage,
-			useMultiModel,
-			autoMode,
-			selectedAgentId,
-			apiModels,
-			updateLoading,
-			webLLMService,
-			requestOptions,
-			markConversationRemoteAvailable,
-			setUsageLimits,
-			queryClient,
-		],
-	);
+          const handleProgress = (text: string) => {
+            response += text;
+            assistantResponseRef.current = response;
 
-	const streamResponse = useCallback(
-		async (
-			messages: Message[],
-			conversationId: string,
-			overrideRequestOptions?: ChatRequestOptions,
-			options?: StreamResponseOptions,
-		) => {
-			if (!messages.length) {
-				toast.error("No messages provided");
-				throw new Error("No messages provided");
-			}
-			const requestController = new AbortController();
-			controllerRef.current = requestController;
-			setController(requestController);
+            updateAssistantMessage(conversationId, response, undefined, undefined, {
+              messageId: placeholderMessage.id,
+            });
+          };
 
-			try {
-				const response = await generateResponse(messages, conversationId, overrideRequestOptions, {
-					assistantMessageData: options?.assistantMessageData,
-					model: options?.model,
-					models: options?.models,
-				});
+          const lastMessage = messages[messages.length - 1];
+          const lastMessageContent = getMessageTextContent(lastMessage);
 
-				const shouldGenerateTitle = options?.generateTitle ?? true;
-				if (
-					shouldGenerateTitle &&
-					response.status === "success" &&
-					messages.length <= 1 &&
-					onTitleGeneration
-				) {
-					onTitleGeneration(conversationId, messages).catch((err) =>
-						console.error("Background title generation failed:", err),
-					);
-				}
+          response = await webLLMService.generate(
+            String(conversationId),
+            lastMessageContent,
+            async (_chatId: string, content: any, _model: any, _mode: any, role: string) => {
+              if (role !== "user") {
+                handleMessageUpdate(content);
+              }
 
-				return response;
-			} catch (error) {
-				if (requestController.signal.aborted) {
-					toast.error("Request aborted");
-				} else {
-					const streamError = error as Error & {
-						status?: number;
-						code?: string;
-						message?: string;
-					};
-					console.error("Error generating response:", streamError);
+              return [];
+            },
+            handleProgress,
+          );
+        } else {
+          const shouldStore = storageMode.shouldSyncRemote;
 
-					if (streamError.status === 429) {
-						toast.error("Rate limit exceeded. Please try again later.");
-					} else if (streamError.code === "model_not_found") {
-						toast.error(`Model not found: ${model}`);
-						setModel(null);
-					} else {
-						toast.error(streamError.message || "Failed to generate response");
-					}
+          const normalizedMessages = messages.map(normalizeMessage);
 
-					throw streamError;
-				}
-				return {
-					status: "error" as const,
-					response: (error as Error).message || "Failed",
-				};
-			} finally {
-				setStreamStarted(false);
-				stopLoading("stream-response");
-				if (controllerRef.current === requestController) {
-					const nextController = new AbortController();
-					controllerRef.current = nextController;
-					setController(nextController);
-				}
-			}
-		},
-		[generateResponse, stopLoading, model, setModel, onTitleGeneration],
-	);
+          const modelsToSend = options?.models
+            ?.map((modelId) => normalizeSelectedModel(modelId))
+            .filter((modelId): modelId is string => Boolean(modelId));
+          const selectedModel = normalizeSelectedModel(
+            modelsToSend?.[0] ?? options?.model ?? model,
+          );
+          const modelToSend = modelsToSend?.length ? undefined : selectedModel;
+          const providerToSend = getModelProvider(apiModels, selectedModel);
+          const modelConfigToSend = selectedModel ? apiModels[selectedModel] : undefined;
 
-	const abortStream = useCallback(() => {
-		controllerRef.current.abort();
-	}, []);
+          const handleStateChange = (state: string, data?: any) => {
+            if (state === "usage_limits") {
+              const usageLimits = normaliseUsageLimits(data);
 
-	return {
-		streamStarted,
-		setStreamStarted,
-		controller,
-		assistantResponseRef,
-		assistantReasoningRef,
-		streamResponse,
-		generateResponse,
-		abortStream,
-	};
+              if (usageLimits) {
+                setUsageLimits(usageLimits);
+              }
+
+              return;
+            }
+
+            if (state === "compaction") {
+              const compactionMessage = readCompactionStatusMessage(data?.message);
+
+              if (compactionMessage) {
+                const targetMessageId = activeAssistantMessage?.id || placeholderMessage.id;
+
+                pendingMessageTasks.push(
+                  enqueueMessageWrite(() =>
+                    insertMessageBeforeConversationMessage(
+                      conversationId,
+                      compactionMessage,
+                      targetMessageId,
+                    ),
+                  ),
+                );
+              }
+            }
+
+            const msg = getChatStreamLoadingMessage(state, data);
+
+            if (!msg) {
+              return;
+            }
+
+            updateLoading("stream-response", undefined, msg);
+          };
+
+          const assistantMessage = await apiService.streamChatCompletions({
+            chatSettings,
+            completionId: conversationId,
+            endpoint: chatMode === "agent" ? `/agents/${selectedAgentId}/completions` : undefined,
+            messages: normalizedMessages,
+            mode: chatMode,
+            model: modelToSend,
+            modelConfig: modelConfigToSend,
+            modelRouterMode: selectedModel ? undefined : autoMode,
+            models: modelsToSend?.length ? modelsToSend : undefined,
+            onProgress: handleMessageUpdate,
+            onStateChange: handleStateChange,
+            provider: providerToSend,
+            requestOptions: effectiveRequestOptions,
+            signal: requestSignal,
+            store: shouldStore,
+            streamingEnabled: true,
+            useMultiModel: modelsToSend && modelsToSend.length > 1 ? true : useMultiModel,
+          });
+
+          if (shouldStore) {
+            markConversationRemoteAvailable(conversationId);
+            shouldRefreshStoredConversation = true;
+          }
+
+          const textPreview =
+            typeof assistantMessage.content === "string"
+              ? assistantMessage.content
+              : getMessageTextContent(assistantMessage);
+
+          if (generatedMessage?.id !== assistantMessage.id) {
+            const targetMessage = activeAssistantMessage || placeholderMessage;
+            const updatedAssistantMessage = withAssistantMessageData(assistantMessage);
+
+            await updateAssistantMessage(
+              conversationId,
+              updatedAssistantMessage.content,
+              updatedAssistantMessage.reasoning?.content,
+              updatedAssistantMessage,
+              { messageId: targetMessage.id },
+            );
+          }
+
+          response = textPreview;
+          generatedMessage = withAssistantMessageData(assistantMessage);
+          if (!generatedMessages.some((message) => message.id === generatedMessage?.id)) {
+            generatedMessages.push(generatedMessage);
+          }
+        }
+
+        await Promise.all(pendingMessageTasks);
+        await messageWriteQueue;
+        if (shouldRefreshStoredConversation) {
+          await queryClient.invalidateQueries({
+            queryKey: [CHATS_QUERY_KEY, conversationId],
+          });
+        }
+
+        return {
+          status: "success",
+          response,
+          message: generatedMessage,
+          messages: generatedMessages,
+          toolResponses: toolResponseMessages,
+        };
+      } catch (error) {
+        if (requestSignal.aborted) {
+          return { status: "error" as const, response: "Request aborted" };
+        }
+
+        throw error;
+      }
+    },
+    [
+      chatMode,
+      updateAssistantMessage,
+      isAuthenticated,
+      isPro,
+      localOnlyMode,
+      chatSettings,
+      model,
+      addMessageToConversation,
+      insertMessageBeforeConversationMessage,
+      addAssistantMessage,
+      useMultiModel,
+      autoMode,
+      selectedAgentId,
+      apiModels,
+      updateLoading,
+      webLLMService,
+      requestOptions,
+      markConversationRemoteAvailable,
+      setUsageLimits,
+      queryClient,
+    ],
+  );
+
+  const streamResponse = useCallback(
+    async (
+      messages: Message[],
+      conversationId: string,
+      overrideRequestOptions?: ChatRequestOptions,
+      options?: StreamResponseOptions,
+    ) => {
+      if (!messages.length) {
+        toast.error("No messages provided");
+        throw new Error("No messages provided");
+      }
+
+      const requestController = new AbortController();
+
+      controllerRef.current = requestController;
+      setController(requestController);
+
+      try {
+        const response = await generateResponse(messages, conversationId, overrideRequestOptions, {
+          assistantMessageData: options?.assistantMessageData,
+          model: options?.model,
+          models: options?.models,
+        });
+
+        const shouldGenerateTitle = options?.generateTitle ?? true;
+
+        if (
+          shouldGenerateTitle &&
+          response.status === "success" &&
+          messages.length <= 1 &&
+          onTitleGeneration
+        ) {
+          onTitleGeneration(conversationId, messages).catch((err) =>
+            console.error("Background title generation failed:", err),
+          );
+        }
+
+        return response;
+      } catch (error) {
+        if (requestController.signal.aborted) {
+          toast.error("Request aborted");
+        } else {
+          const streamError = error as Error & {
+            status?: number;
+            code?: string;
+            message?: string;
+          };
+
+          console.error("Error generating response:", streamError);
+
+          if (streamError.status === 429) {
+            toast.error("Rate limit exceeded. Please try again later.");
+          } else if (streamError.code === "model_not_found") {
+            toast.error(`Model not found: ${model}`);
+            setModel(null);
+          } else {
+            toast.error(streamError.message || "Failed to generate response");
+          }
+
+          throw streamError;
+        }
+
+        return {
+          status: "error" as const,
+          response: (error as Error).message || "Failed",
+        };
+      } finally {
+        setStreamStarted(false);
+        stopLoading("stream-response");
+        if (controllerRef.current === requestController) {
+          const nextController = new AbortController();
+
+          controllerRef.current = nextController;
+          setController(nextController);
+        }
+      }
+    },
+    [generateResponse, stopLoading, model, setModel, onTitleGeneration],
+  );
+
+  const abortStream = useCallback(() => {
+    controllerRef.current.abort();
+  }, []);
+
+  return {
+    streamStarted,
+    setStreamStarted,
+    controller,
+    assistantResponseRef,
+    assistantReasoningRef,
+    streamResponse,
+    generateResponse,
+    abortStream,
+  };
 }

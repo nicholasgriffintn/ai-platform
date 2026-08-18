@@ -1,34 +1,35 @@
+import { gatewayId } from "~/constants/app";
+import {
+  createAsyncInvocationMetadata,
+  type AsyncInvocationMetadata,
+} from "~/lib/async/asyncInvocation";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { shouldSendProviderReasoningEffort } from "~/lib/providers/models/reasoning";
 import { shouldSendProviderVerbosity } from "~/lib/providers/models/verbosity";
+import { safeParseJSON } from "~/lib/providers/utils/helpers";
 import {
-	buildOpenAIResponsesBody,
-	shouldUseOpenAIResponsesApi,
+  buildOpenAIResponsesBody,
+  shouldUseOpenAIResponsesApi,
 } from "~/lib/providers/utils/openaiResponses";
-import {
-	createAsyncInvocationMetadata,
-	type AsyncInvocationMetadata,
-} from "~/lib/async/asyncInvocation";
-import { gatewayId } from "~/constants/app";
+import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters, MessageContent } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { isRecord } from "~/utils/objects";
+import {
+  createCommonParameters,
+  getToolsForProvider,
+  shouldEnableStreaming,
+} from "~/utils/parameters";
 import { resolveRequestUser } from "~/utils/requestUser";
 import { appendUrlPath } from "~/utils/urls";
-import {
-	createCommonParameters,
-	getToolsForProvider,
-	shouldEnableStreaming,
-} from "~/utils/parameters";
-import { safeParseJSON } from "~/lib/providers/utils/helpers";
+
 import { BaseProvider } from "./base";
 import {
-	getOpenAIImageRequestInput,
-	OPENAI_IMAGE_PARAMETER_NAMES,
-	type OpenAIImageParams,
+  getOpenAIImageRequestInput,
+  OPENAI_IMAGE_PARAMETER_NAMES,
+  type OpenAIImageParams,
 } from "./openaiImage";
-import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 
 const DEFAULT_IMAGE_SIZE = "1024x1024";
 const DEFAULT_IMAGE_COUNT = 1;
@@ -36,434 +37,445 @@ const DEFAULT_AUDIO_VOICE = "marin";
 const DEFAULT_AUDIO_FORMAT = "mp3";
 
 export class OpenAIProvider extends BaseProvider {
-	name = "openai";
-	supportsStreaming = true;
-	isOpenAiCompatible = false;
+  name = "openai";
+  supportsStreaming = true;
+  isOpenAiCompatible = false;
 
-	protected getProviderKeyName(): string {
-		return "OPENAI_API_KEY";
-	}
+  protected getProviderKeyName(): string {
+    return "OPENAI_API_KEY";
+  }
 
-	protected validateParams(params: ChatCompletionParameters): void {
-		super.validateParams(params);
-		this.validateAiGatewayToken(params);
-	}
+  protected validateParams(params: ChatCompletionParameters): void {
+    super.validateParams(params);
+    this.validateAiGatewayToken(params);
+  }
 
-	private isImageGeneration(params: ChatCompletionParameters): boolean {
-		return params.model.startsWith("gpt-image-");
-	}
+  private isImageGeneration(params: ChatCompletionParameters): boolean {
+    return params.model.startsWith("gpt-image-");
+  }
 
-	protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
-		if (this.isImageGeneration(params)) {
-			const hasAttachments = params.messages.some(
-				(message) =>
-					Array.isArray(message.content) && message.content.some((c) => c.type === "image_url"),
-			);
-			return hasAttachments ? "https://api.openai.com/v1/images/edits" : "images/generations";
-		}
+  protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
+    if (this.isImageGeneration(params)) {
+      const hasAttachments = params.messages.some(
+        (message) =>
+          Array.isArray(message.content) && message.content.some((c) => c.type === "image_url"),
+      );
 
-		const modelConfig = await getModelConfigByMatchingModel(
-			params.model || "",
-			params.env,
-			params.provider || this.name,
-		);
-		if (modelConfig && shouldUseOpenAIResponsesApi(params, modelConfig)) {
-			return "responses";
-		}
+      return hasAttachments ? "https://api.openai.com/v1/images/edits" : "images/generations";
+    }
 
-		return "chat/completions";
-	}
+    const modelConfig = await getModelConfigByMatchingModel(
+      params.model || "",
+      params.env,
+      params.provider || this.name,
+    );
 
-	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
-		const apiKey = await this.getApiKey(params, params.context?.user?.id);
-		const endpoint = await this.getEndpoint(params);
-		const isImageEdits = endpoint.includes("images/edits");
+    if (modelConfig && shouldUseOpenAIResponsesApi(params, modelConfig)) {
+      return "responses";
+    }
 
-		const headers = this.buildAiGatewayHeaders(params, apiKey);
+    return "chat/completions";
+  }
 
-		if (isImageEdits) {
-			delete headers["Content-Type"];
-		}
+  protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
+    const apiKey = await this.getApiKey(params, params.context?.user?.id);
+    const endpoint = await this.getEndpoint(params);
+    const isImageEdits = endpoint.includes("images/edits");
 
-		return headers;
-	}
+    const headers = this.buildAiGatewayHeaders(params, apiKey);
 
-	private getImageFileName(blob: Blob): string {
-		const mimeTypeToExtension: Record<string, string> = {
-			"image/png": "image.png",
-			"image/jpeg": "image.jpg",
-			"image/jpg": "image.jpg",
-			"image/webp": "image.webp",
-		};
+    if (isImageEdits) {
+      delete headers["Content-Type"];
+    }
 
-		return mimeTypeToExtension[blob.type] || "image.png";
-	}
+    return headers;
+  }
 
-	private buildImageEditFormData(params: OpenAIImageParams, imageBlob: Blob): FormData {
-		const formData = new FormData();
+  private getImageFileName(blob: Blob): string {
+    const mimeTypeToExtension: Record<string, string> = {
+      "image/png": "image.png",
+      "image/jpeg": "image.jpg",
+      "image/jpg": "image.jpg",
+      "image/webp": "image.webp",
+    };
 
-		formData.append("model", params.model || "gpt-image-1");
-		formData.append("prompt", params.prompt);
-		formData.append("image", imageBlob, this.getImageFileName(imageBlob));
+    return mimeTypeToExtension[blob.type] || "image.png";
+  }
 
-		for (const [name, value] of Object.entries(params)) {
-			if (!OPENAI_IMAGE_PARAMETER_NAMES.has(name) || name === "prompt") {
-				continue;
-			}
+  private buildImageEditFormData(params: OpenAIImageParams, imageBlob: Blob): FormData {
+    const formData = new FormData();
 
-			if (value !== undefined) {
-				formData.append(name, value.toString());
-			}
-		}
+    formData.append("model", params.model || "gpt-image-1");
+    formData.append("prompt", params.prompt);
+    formData.append("image", imageBlob, this.getImageFileName(imageBlob));
 
-		return formData;
-	}
+    for (const [name, value] of Object.entries(params)) {
+      if (!OPENAI_IMAGE_PARAMETER_NAMES.has(name) || name === "prompt") {
+        continue;
+      }
 
-	private async handleImageEditRequest(
-		params: ChatCompletionParameters,
-		prompt: string,
-		storageService: StorageService,
-		imageRequestInput: Partial<OpenAIImageParams>,
-	): Promise<FormData> {
-		const messageWithImage = params.messages.find(
-			(message) =>
-				Array.isArray(message.content) && message.content.some((item) => item.type === "image_url"),
-		);
+      if (value !== undefined) {
+        formData.append(name, value.toString());
+      }
+    }
 
-		if (!messageWithImage || !Array.isArray(messageWithImage.content)) {
-			throw new AssistantError("No valid image found for image editing", ErrorType.PARAMS_ERROR);
-		}
+    return formData;
+  }
 
-		const imageItem = messageWithImage.content.find((item) => item.type === "image_url");
-		if (!imageItem?.image_url?.url) {
-			throw new AssistantError("No image URL found for editing", ErrorType.PARAMS_ERROR);
-		}
+  private async handleImageEditRequest(
+    params: ChatCompletionParameters,
+    prompt: string,
+    storageService: StorageService,
+    imageRequestInput: Partial<OpenAIImageParams>,
+  ): Promise<FormData> {
+    const messageWithImage = params.messages.find(
+      (message) =>
+        Array.isArray(message.content) && message.content.some((item) => item.type === "image_url"),
+    );
 
-		const user = resolveRequestUser(params);
-		const imageBlob = await storageService.downloadFile(
-			imageItem.image_url.url,
-			user?.id,
-			params.env.API_BASE_URL,
-		);
+    if (!messageWithImage || !Array.isArray(messageWithImage.content)) {
+      throw new AssistantError("No valid image found for image editing", ErrorType.PARAMS_ERROR);
+    }
 
-		const formDataParams: OpenAIImageParams = {
-			model: params.model,
-			prompt,
-			size: DEFAULT_IMAGE_SIZE,
-			n: DEFAULT_IMAGE_COUNT,
-			...imageRequestInput,
-		};
+    const imageItem = messageWithImage.content.find((item) => item.type === "image_url");
 
-		return this.buildImageEditFormData(formDataParams, imageBlob);
-	}
+    if (!imageItem?.image_url?.url) {
+      throw new AssistantError("No image URL found for editing", ErrorType.PARAMS_ERROR);
+    }
 
-	private handleImageToImageRequest(
-		params: ChatCompletionParameters,
-		prompt: string,
-	): Record<string, any> {
-		if (!Array.isArray(params.messages[1].content)) {
-			throw new AssistantError(
-				"Image to image is not supported for text input",
-				ErrorType.PARAMS_ERROR,
-			);
-		}
+    const user = resolveRequestUser(params);
+    const imageBlob = await storageService.downloadFile(
+      imageItem.image_url.url,
+      user?.id,
+      params.env.API_BASE_URL,
+    );
 
-		const imageUrls = params.messages[1].content
-			.filter((item) => item.type === "image_url")
-			.map((item) => item.image_url?.url);
+    const formDataParams: OpenAIImageParams = {
+      model: params.model,
+      prompt,
+      size: DEFAULT_IMAGE_SIZE,
+      n: DEFAULT_IMAGE_COUNT,
+      ...imageRequestInput,
+    };
 
-		if (imageUrls.length === 0) {
-			throw new AssistantError("No image urls found", ErrorType.PARAMS_ERROR);
-		}
+    return this.buildImageEditFormData(formDataParams, imageBlob);
+  }
 
-		return {
-			model: params.model,
-			prompt,
-			image: imageUrls,
-		};
-	}
+  private handleImageToImageRequest(
+    params: ChatCompletionParameters,
+    prompt: string,
+  ): Record<string, any> {
+    if (!Array.isArray(params.messages[1].content)) {
+      throw new AssistantError(
+        "Image to image is not supported for text input",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
 
-	private buildAudioOutputParams(params: ChatCompletionParameters): Record<string, any> {
-		const audioOptions = isRecord(params.audio) ? params.audio : {};
+    const imageUrls = params.messages[1].content
+      .filter((item) => item.type === "image_url")
+      .map((item) => item.image_url?.url);
 
-		return {
-			modalities: ["text", "audio"],
-			audio: {
-				voice: audioOptions.voice || params.voice || DEFAULT_AUDIO_VOICE,
-				format: audioOptions.format || params.audio_format || DEFAULT_AUDIO_FORMAT,
-			},
-		};
-	}
+    if (imageUrls.length === 0) {
+      throw new AssistantError("No image urls found", ErrorType.PARAMS_ERROR);
+    }
 
-	private isBackgroundResponsePending(data: any): boolean {
-		return (
-			data?.object === "response" &&
-			data?.background === true &&
-			(data?.status === "queued" || data?.status === "in_progress")
-		);
-	}
+    return {
+      model: params.model,
+      prompt,
+      image: imageUrls,
+    };
+  }
 
-	protected async formatResponse(data: any, params: ChatCompletionParameters): Promise<any> {
-		if (!this.isBackgroundResponsePending(data)) {
-			return await super.formatResponse(data, params);
-		}
+  private buildAudioOutputParams(params: ChatCompletionParameters): Record<string, any> {
+    const audioOptions = isRecord(params.audio) ? params.audio : {};
 
-		const placeholderContent: MessageContent[] = [
-			{
-				type: "text",
-				text: "Response is running in the background. We'll update this message once it completes.",
-			},
-		];
+    return {
+      modalities: ["text", "audio"],
+      audio: {
+        voice: audioOptions.voice || params.voice || DEFAULT_AUDIO_VOICE,
+        format: audioOptions.format || params.audio_format || DEFAULT_AUDIO_FORMAT,
+      },
+    };
+  }
 
-		const asyncInvocation = createAsyncInvocationMetadata({
-			provider: this.name,
-			id: data.id,
-			type: "openai.response",
-			pollIntervalMs: 4000,
-			initialResponse: data,
-			context: {
-				model: params.model,
-			},
-			contentHints: {
-				placeholder: placeholderContent,
-				progress: placeholderContent,
-				failure: [
-					{
-						type: "text",
-						text: "Background response failed. Please try again.",
-					},
-				],
-			},
-		});
+  private isBackgroundResponsePending(data: any): boolean {
+    return (
+      data?.object === "response" &&
+      data?.background === true &&
+      (data?.status === "queued" || data?.status === "in_progress")
+    );
+  }
 
-		return {
-			...data,
-			response: placeholderContent,
-			status: "in_progress",
-			data: {
-				...data.data,
-				openai_response_id: data.id,
-				output: data.output,
-				asyncInvocation,
-			},
-		};
-	}
+  protected async formatResponse(data: any, params: ChatCompletionParameters): Promise<any> {
+    if (!this.isBackgroundResponsePending(data)) {
+      return await super.formatResponse(data, params);
+    }
 
-	private async fetchStoredResponse(
-		responseId: string,
-		params: ChatCompletionParameters,
-		userId?: number,
-	): Promise<Record<string, any>> {
-		const endpoint = `responses/${encodeURIComponent(responseId)}`;
-		const apiKey = await this.getApiKey(params, userId);
-		const headers = this.buildAiGatewayHeaders(params, apiKey);
-		const response = params.env?.AI
-			? await fetch(
-					appendUrlPath(await params.env.AI.gateway(gatewayId).getUrl(this.name), endpoint),
-					{
-						method: "GET",
-						headers,
-					},
-				)
-			: await fetch(`https://api.openai.com/v1/${endpoint}`, {
-					method: "GET",
-					headers: {
-						Authorization: headers.Authorization,
-						"Content-Type": headers["Content-Type"],
-					},
-				});
+    const placeholderContent: MessageContent[] = [
+      {
+        type: "text",
+        text: "Response is running in the background. We'll update this message once it completes.",
+      },
+    ];
 
-		if (!response.ok) {
-			throw new AssistantError(
-				`Failed to retrieve OpenAI response ${responseId}`,
-				ErrorType.PROVIDER_ERROR,
-				response.status,
-			);
-		}
+    const asyncInvocation = createAsyncInvocationMetadata({
+      provider: this.name,
+      id: data.id,
+      type: "openai.response",
+      pollIntervalMs: 4000,
+      initialResponse: data,
+      context: {
+        model: params.model,
+      },
+      contentHints: {
+        placeholder: placeholderContent,
+        progress: placeholderContent,
+        failure: [
+          {
+            type: "text",
+            text: "Background response failed. Please try again.",
+          },
+        ],
+      },
+    });
 
-		return await safeParseJSON(response, this.name);
-	}
+    return {
+      ...data,
+      response: placeholderContent,
+      status: "in_progress",
+      data: {
+        ...data.data,
+        openai_response_id: data.id,
+        output: data.output,
+        asyncInvocation,
+      },
+    };
+  }
 
-	async getAsyncInvocationStatus(
-		metadata: AsyncInvocationMetadata,
-		params: ChatCompletionParameters,
-		userId?: number,
-	): Promise<{
-		status: "in_progress" | "completed" | "failed";
-		result?: any;
-		raw: Record<string, any>;
-	}> {
-		const responseId = metadata.id;
-		const raw = await this.fetchStoredResponse(responseId, params, userId);
-		const status = typeof raw.status === "string" ? raw.status : "in_progress";
+  private async fetchStoredResponse(
+    responseId: string,
+    params: ChatCompletionParameters,
+    userId?: number,
+  ): Promise<Record<string, any>> {
+    const endpoint = `responses/${encodeURIComponent(responseId)}`;
+    const apiKey = await this.getApiKey(params, userId);
+    const headers = this.buildAiGatewayHeaders(params, apiKey);
+    const response = params.env?.AI
+      ? await fetch(
+          appendUrlPath(await params.env.AI.gateway(gatewayId).getUrl(this.name), endpoint),
+          {
+            method: "GET",
+            headers,
+          },
+        )
+      : await fetch(`https://api.openai.com/v1/${endpoint}`, {
+          method: "GET",
+          headers: {
+            Authorization: headers.Authorization,
+            "Content-Type": headers["Content-Type"],
+          },
+        });
 
-		if (status === "completed") {
-			return {
-				status: "completed",
-				result: await super.formatResponse(raw, params),
-				raw,
-			};
-		}
+    if (!response.ok) {
+      throw new AssistantError(
+        `Failed to retrieve OpenAI response ${responseId}`,
+        ErrorType.PROVIDER_ERROR,
+        response.status,
+      );
+    }
 
-		if (status === "failed" || status === "cancelled" || status === "incomplete") {
-			return {
-				status: "failed",
-				raw,
-			};
-		}
+    return await safeParseJSON(response, this.name);
+  }
 
-		return {
-			status: "in_progress",
-			raw,
-		};
-	}
+  async getAsyncInvocationStatus(
+    metadata: AsyncInvocationMetadata,
+    params: ChatCompletionParameters,
+    userId?: number,
+  ): Promise<{
+    status: "in_progress" | "completed" | "failed";
+    result?: any;
+    raw: Record<string, any>;
+  }> {
+    const responseId = metadata.id;
+    const raw = await this.fetchStoredResponse(responseId, params, userId);
+    const status = typeof raw.status === "string" ? raw.status : "in_progress";
 
-	async mapParameters(
-		params: ChatCompletionParameters,
-		_storageService?: StorageService,
-		_assetsUrl?: string,
-	): Promise<Record<string, any>> {
-		const modelConfig = await getModelConfigByMatchingModel(
-			params.model || "",
-			params.env,
-			params.provider || this.name,
-		);
-		if (!modelConfig) {
-			throw new AssistantError(
-				`Model configuration not found for ${params.model}`,
-				ErrorType.CONFIGURATION_ERROR,
-			);
-		}
+    if (status === "completed") {
+      return {
+        status: "completed",
+        result: await super.formatResponse(raw, params),
+        raw,
+      };
+    }
 
-		const inputs = modelConfig?.modalities?.input ?? ["text"];
-		const outputs = modelConfig?.modalities?.output ?? inputs;
-		const isImageEditing = outputs.includes("image") && inputs.includes("image");
-		const isTextToImage = outputs.includes("image") && !inputs.includes("image");
-		const producesAudio = outputs.includes("audio");
+    if (status === "failed" || status === "cancelled" || status === "incomplete") {
+      return {
+        status: "failed",
+        raw,
+      };
+    }
 
-		if (isImageEditing || isTextToImage) {
-			const imageRequestInput = getOpenAIImageRequestInput(params, modelConfig);
-			let prompt = "";
-			if (params.messages.length > 1) {
-				const content = params.messages[1].content;
-				prompt = typeof content === "string" ? content : content[0]?.text || "";
-			} else {
-				const content = params.messages[0].content;
-				prompt =
-					typeof content === "string"
-						? content
-						: Array.isArray(content)
-							? content[0]?.text || ""
-							: "";
-			}
-			prompt = imageRequestInput.prompt || prompt;
+    return {
+      status: "in_progress",
+      raw,
+    };
+  }
 
-			const hasImages = params.messages.some(
-				(message) =>
-					Array.isArray(message.content) &&
-					message.content.some((item) => item.type === "image_url"),
-			);
+  async mapParameters(
+    params: ChatCompletionParameters,
+    _storageService?: StorageService,
+    _assetsUrl?: string,
+  ): Promise<Record<string, any>> {
+    const modelConfig = await getModelConfigByMatchingModel(
+      params.model || "",
+      params.env,
+      params.provider || this.name,
+    );
 
-			const endpoint = await this.getEndpoint(params);
+    if (!modelConfig) {
+      throw new AssistantError(
+        `Model configuration not found for ${params.model}`,
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
 
-			if (endpoint.includes("images/edits") && hasImages) {
-				if (!_storageService) {
-					throw new AssistantError(
-						"StorageService is required for image editing",
-						ErrorType.CONFIGURATION_ERROR,
-					);
-				}
-				return await this.handleImageEditRequest(
-					params,
-					prompt,
-					_storageService,
-					imageRequestInput,
-				);
-			}
+    const inputs = modelConfig?.modalities?.input ?? ["text"];
+    const outputs = modelConfig?.modalities?.output ?? inputs;
+    const isImageEditing = outputs.includes("image") && inputs.includes("image");
+    const isTextToImage = outputs.includes("image") && !inputs.includes("image");
+    const producesAudio = outputs.includes("audio");
 
-			if (isImageEditing && hasImages) {
-				return this.handleImageToImageRequest(params, prompt);
-			}
+    if (isImageEditing || isTextToImage) {
+      const imageRequestInput = getOpenAIImageRequestInput(params, modelConfig);
+      let prompt = "";
 
-			return {
-				model: params.model,
-				prompt,
-				...imageRequestInput,
-			};
-		}
+      if (params.messages.length > 1) {
+        const content = params.messages[1].content;
 
-		const providerParams = _storageService
-			? await resolvePrivateAssetUrls({
-					params,
-					storageService: _storageService,
-					assetsUrl: _assetsUrl,
-				})
-			: params;
+        prompt = typeof content === "string" ? content : content[0]?.text || "";
+      } else {
+        const content = params.messages[0].content;
 
-		const commonParams = createCommonParameters(
-			providerParams,
-			modelConfig,
-			this.name,
-			this.isOpenAiCompatible,
-		);
+        prompt =
+          typeof content === "string"
+            ? content
+            : Array.isArray(content)
+              ? content[0]?.text || ""
+              : "";
+      }
 
-		const streamingParams = shouldEnableStreaming(
-			modelConfig,
-			this.supportsStreaming,
-			providerParams.stream,
-		)
-			? { stream: true }
-			: {};
+      prompt = imageRequestInput.prompt || prompt;
 
-		const toolsParams = getToolsForProvider(providerParams, modelConfig, this.name);
-		const enabledTools = providerParams.enabled_tools || [];
+      const hasImages = params.messages.some(
+        (message) =>
+          Array.isArray(message.content) &&
+          message.content.some((item) => item.type === "image_url"),
+      );
 
-		const tools = [];
-		if (modelConfig?.supportsToolCalls) {
-			if (modelConfig?.supportsSearchGrounding && enabledTools.includes("search_grounding")) {
-				tools.push({ type: "web_search_preview" });
-			}
-		}
-		const allTools = [...tools, ...(toolsParams.tools || [])];
+      const endpoint = await this.getEndpoint(params);
 
-		const openaiSpecificTools =
-			modelConfig?.supportsToolCalls && allTools.length > 0 ? { tools: allTools } : {};
+      if (endpoint.includes("images/edits") && hasImages) {
+        if (!_storageService) {
+          throw new AssistantError(
+            "StorageService is required for image editing",
+            ErrorType.CONFIGURATION_ERROR,
+          );
+        }
 
-		const reasoningEffort = providerParams.reasoning_effort;
-		const thinkingParams = shouldSendProviderReasoningEffort(modelConfig, reasoningEffort)
-			? {
-					reasoning_effort: reasoningEffort,
-				}
-			: {};
+        return await this.handleImageEditRequest(
+          params,
+          prompt,
+          _storageService,
+          imageRequestInput,
+        );
+      }
 
-		const verbositySetting = providerParams.verbosity;
-		const verbosityParams = shouldSendProviderVerbosity(modelConfig, verbositySetting)
-			? { verbosity: verbositySetting }
-			: {};
-		const user = providerParams.context?.user;
+      if (isImageEditing && hasImages) {
+        return this.handleImageToImageRequest(params, prompt);
+      }
 
-		if (shouldUseOpenAIResponsesApi(providerParams, modelConfig)) {
-			return buildOpenAIResponsesBody(
-				providerParams,
-				modelConfig,
-				toolsParams.tools || [],
-				streamingParams,
-			);
-		}
+      return {
+        model: params.model,
+        prompt,
+        ...imageRequestInput,
+      };
+    }
 
-		return {
-			...commonParams,
-			...(producesAudio ? {} : streamingParams),
-			...toolsParams,
-			...openaiSpecificTools,
-			...thinkingParams,
-			...verbosityParams,
-			...(producesAudio ? this.buildAudioOutputParams(providerParams) : {}),
-			store: providerParams.store,
-			logit_bias: providerParams.logit_bias,
-			n: providerParams.n,
-			stop: providerParams.stop,
-			user: user?.email,
-		};
-	}
+    const providerParams = _storageService
+      ? await resolvePrivateAssetUrls({
+          params,
+          storageService: _storageService,
+          assetsUrl: _assetsUrl,
+        })
+      : params;
+
+    const commonParams = createCommonParameters(
+      providerParams,
+      modelConfig,
+      this.name,
+      this.isOpenAiCompatible,
+    );
+
+    const streamingParams = shouldEnableStreaming(
+      modelConfig,
+      this.supportsStreaming,
+      providerParams.stream,
+    )
+      ? { stream: true }
+      : {};
+
+    const toolsParams = getToolsForProvider(providerParams, modelConfig, this.name);
+    const enabledTools = providerParams.enabled_tools || [];
+
+    const tools = [];
+
+    if (modelConfig?.supportsToolCalls) {
+      if (modelConfig?.supportsSearchGrounding && enabledTools.includes("search_grounding")) {
+        tools.push({ type: "web_search_preview" });
+      }
+    }
+
+    const allTools = [...tools, ...(toolsParams.tools || [])];
+
+    const openaiSpecificTools =
+      modelConfig?.supportsToolCalls && allTools.length > 0 ? { tools: allTools } : {};
+
+    const reasoningEffort = providerParams.reasoning_effort;
+    const thinkingParams = shouldSendProviderReasoningEffort(modelConfig, reasoningEffort)
+      ? {
+          reasoning_effort: reasoningEffort,
+        }
+      : {};
+
+    const verbositySetting = providerParams.verbosity;
+    const verbosityParams = shouldSendProviderVerbosity(modelConfig, verbositySetting)
+      ? { verbosity: verbositySetting }
+      : {};
+    const user = providerParams.context?.user;
+
+    if (shouldUseOpenAIResponsesApi(providerParams, modelConfig)) {
+      return buildOpenAIResponsesBody(
+        providerParams,
+        modelConfig,
+        toolsParams.tools || [],
+        streamingParams,
+      );
+    }
+
+    return {
+      ...commonParams,
+      ...(producesAudio ? {} : streamingParams),
+      ...toolsParams,
+      ...openaiSpecificTools,
+      ...thinkingParams,
+      ...verbosityParams,
+      ...(producesAudio ? this.buildAudioOutputParams(providerParams) : {}),
+      store: providerParams.store,
+      logit_bias: providerParams.logit_bias,
+      n: providerParams.n,
+      stop: providerParams.stop,
+      user: user?.email,
+    };
+  }
 }

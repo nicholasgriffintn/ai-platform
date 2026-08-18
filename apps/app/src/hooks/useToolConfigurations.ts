@@ -1,6 +1,5 @@
-import { type ModelToolConfiguration } from "@ngriffin_uk/polychat-schemas";
+import type { ModelToolConfiguration,type ModelToolId,type SavedToolConfigurationsResponse } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { ModelToolId, SavedToolConfigurationsResponse } from "@ngriffin_uk/polychat-schemas";
 
 import { fetchToolConfigurations, saveToolConfiguration } from "~/lib/api/tool-configurations";
 
@@ -27,6 +26,7 @@ export function useToolConfigurations() {
 					const configurations = (current?.configurations ?? []).filter(
 						(configuration) => configuration.toolId !== saved.toolId,
 					);
+
 					return { configurations: [...configurations, saved] };
 				},
 			);

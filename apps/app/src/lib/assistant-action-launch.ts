@@ -1,14 +1,14 @@
 import type {
-	AssistantActionContextPayload,
-	AssistantActionItemMetadata,
-	RecipeChatSetupResponse,
+  AssistantActionContextPayload,
+  AssistantActionItemMetadata,
+  RecipeChatSetupResponse,
 } from "@ngriffin_uk/polychat-schemas";
 import {
-	createAssistantRecipeActionContext,
-	normaliseAssistantActionToolIds,
-	readAssistantActionRequestOptions,
-	requireExternalHttpUrl,
-	requireInternalNavigationPath,
+  createAssistantRecipeActionContext,
+  normaliseAssistantActionToolIds,
+  readAssistantActionRequestOptions,
+  requireExternalHttpUrl,
+  requireInternalNavigationPath,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ChatRequestOptions } from "~/types";
@@ -21,228 +21,237 @@ const ENABLED_TOOLS_PARAM = "enabled_tools";
 const RECIPE_ACTION_PARAM = "action";
 const RECIPE_ID_PARAM = "recipe";
 const ASSISTANT_ACTION_LAUNCH_PARAMS = [
-	ACTION_CONTEXT_PARAM,
-	LEGACY_RECIPE_CONTEXT_PARAM,
-	AUTO_SUBMIT_PARAM,
-	QUERY_PARAM,
-	ENABLED_TOOLS_PARAM,
-	RECIPE_ACTION_PARAM,
-	RECIPE_ID_PARAM,
+  ACTION_CONTEXT_PARAM,
+  LEGACY_RECIPE_CONTEXT_PARAM,
+  AUTO_SUBMIT_PARAM,
+  QUERY_PARAM,
+  ENABLED_TOOLS_PARAM,
+  RECIPE_ACTION_PARAM,
+  RECIPE_ID_PARAM,
 ] as const;
 
 export type RecipeManagementAction = "configure" | "schedule";
 
 export interface AssistantActionLaunchState {
-	query: string | null;
-	enabledTools: string[];
-	hasEnabledTools: boolean;
-	actionContext: string | null;
-	recipeContext: string | null;
-	autoSubmit: boolean;
+  query: string | null;
+  enabledTools: string[];
+  hasEnabledTools: boolean;
+  actionContext: string | null;
+  recipeContext: string | null;
+  autoSubmit: boolean;
 }
 
 export interface AssistantActionChatLaunchPayload {
-	input: string;
-	enabledTools: string[];
-	requestOptions?: ChatRequestOptions;
+  input: string;
+  enabledTools: string[];
+  requestOptions?: ChatRequestOptions;
 }
 
 export interface RecipeConversationLaunchIntent {
-	action: "run" | "setup";
-	recipeId: string;
+  action: "run" | "setup";
+  recipeId: string;
 }
 
 export function createRecipeConversationActionPath(
-	conversationPath: string,
-	intent: RecipeConversationLaunchIntent,
+  conversationPath: string,
+  intent: RecipeConversationLaunchIntent,
 ): string {
-	const params = new URLSearchParams({ action: intent.action, recipe: intent.recipeId });
-	return `${conversationPath}?${params.toString()}`;
+  const params = new URLSearchParams({ action: intent.action, recipe: intent.recipeId });
+
+  return `${conversationPath}?${params.toString()}`;
 }
 
 export function readRecipeConversationLaunchIntent(
-	search: string,
+  search: string,
 ): RecipeConversationLaunchIntent | undefined {
-	const params = new URLSearchParams(search);
-	const action = params.get(RECIPE_ACTION_PARAM);
-	const recipeId = params.get(RECIPE_ID_PARAM)?.trim();
-	if ((action !== "run" && action !== "setup") || !recipeId) return undefined;
-	return { action, recipeId };
+  const params = new URLSearchParams(search);
+  const action = params.get(RECIPE_ACTION_PARAM);
+  const recipeId = params.get(RECIPE_ID_PARAM)?.trim();
+
+  if ((action !== "run" && action !== "setup") || !recipeId) {
+    return undefined;
+  }
+
+  return { action, recipeId };
 }
 
 type AppAssistantActionLaunchSource = Pick<
-	AssistantActionItemMetadata,
-	"appId" | "appKind" | "href"
+  AssistantActionItemMetadata,
+  "appId" | "appKind" | "href"
 >;
 
 type ConnectorAssistantActionLaunchSource = Pick<
-	AssistantActionItemMetadata,
-	"authType" | "provider"
+  AssistantActionItemMetadata,
+  "authType" | "provider"
 > & {
-	authorizationUrl?: string;
+  authorizationUrl?: string;
 };
 
 export interface AssistantActionNavigationLaunchPayload {
-	externalUrl?: string;
-	navigationPath: string;
+  externalUrl?: string;
+  navigationPath: string;
 }
 
 export interface AssistantActionExternalLaunchPayload {
-	externalUrl: string;
-	navigationPath?: string;
+  externalUrl: string;
+  navigationPath?: string;
 }
 
 interface AssistantActionChatLaunch {
-	messageUrl: string;
-	enabledTools?: string | string[];
-	actionContext?: AssistantActionContextPayload;
+  messageUrl: string;
+  enabledTools?: string | string[];
+  actionContext?: AssistantActionContextPayload;
 }
 
 function parseJson(value: string | null): unknown {
-	if (!value) {
-		return undefined;
-	}
+  if (!value) {
+    return undefined;
+  }
 
-	try {
-		return JSON.parse(value);
-	} catch {
-		return undefined;
-	}
+  try {
+    return JSON.parse(value);
+  } catch {
+    return undefined;
+  }
 }
 
 export function parseAssistantActionLaunchState(search: string): AssistantActionLaunchState {
-	const params = new URLSearchParams(search);
+  const params = new URLSearchParams(search);
 
-	return {
-		query: params.get(QUERY_PARAM),
-		enabledTools: normaliseAssistantActionToolIds(params.get(ENABLED_TOOLS_PARAM) ?? undefined),
-		hasEnabledTools: params.has(ENABLED_TOOLS_PARAM),
-		actionContext: params.get(ACTION_CONTEXT_PARAM),
-		recipeContext: params.get(LEGACY_RECIPE_CONTEXT_PARAM),
-		autoSubmit: params.get(AUTO_SUBMIT_PARAM) === "1",
-	};
+  return {
+    query: params.get(QUERY_PARAM),
+    enabledTools: normaliseAssistantActionToolIds(params.get(ENABLED_TOOLS_PARAM) ?? undefined),
+    hasEnabledTools: params.has(ENABLED_TOOLS_PARAM),
+    actionContext: params.get(ACTION_CONTEXT_PARAM),
+    recipeContext: params.get(LEGACY_RECIPE_CONTEXT_PARAM),
+    autoSubmit: params.get(AUTO_SUBMIT_PARAM) === "1",
+  };
 }
 
 export function removeConsumedAssistantActionLaunchParams(search: string): string {
-	const params = new URLSearchParams(search);
-	for (const param of ASSISTANT_ACTION_LAUNCH_PARAMS) {
-		params.delete(param);
-	}
-	return params.toString();
+  const params = new URLSearchParams(search);
+
+  for (const param of ASSISTANT_ACTION_LAUNCH_PARAMS) {
+    params.delete(param);
+  }
+
+  return params.toString();
 }
 
 export function loadAssistantActionRequestOptions(
-	state: Pick<AssistantActionLaunchState, "actionContext" | "recipeContext">,
+  state: Pick<AssistantActionLaunchState, "actionContext" | "recipeContext">,
 ): ChatRequestOptions | undefined {
-	return readAssistantActionRequestOptions(
-		parseJson(state.actionContext),
-		parseJson(state.recipeContext),
-	);
+  return readAssistantActionRequestOptions(
+    parseJson(state.actionContext),
+    parseJson(state.recipeContext),
+  );
 }
 
 function createAssistantActionChatUrl(launch: AssistantActionChatLaunch): string {
-	const [path, search = ""] = launch.messageUrl.split("?");
-	const params = new URLSearchParams(search);
-	const enabledTools = normaliseAssistantActionToolIds(launch.enabledTools);
+  const [path, search = ""] = launch.messageUrl.split("?");
+  const params = new URLSearchParams(search);
+  const enabledTools = normaliseAssistantActionToolIds(launch.enabledTools);
 
-	params.set(ENABLED_TOOLS_PARAM, enabledTools.join(","));
-	params.set(AUTO_SUBMIT_PARAM, "1");
-	if (launch.actionContext) {
-		params.set(ACTION_CONTEXT_PARAM, JSON.stringify(launch.actionContext));
-	}
+  params.set(ENABLED_TOOLS_PARAM, enabledTools.join(","));
+  params.set(AUTO_SUBMIT_PARAM, "1");
+  if (launch.actionContext) {
+    params.set(ACTION_CONTEXT_PARAM, JSON.stringify(launch.actionContext));
+  }
 
-	const query = params.toString();
-	return query ? `${path}?${query}` : path;
+  const query = params.toString();
+
+  return query ? `${path}?${query}` : path;
 }
 
 export function createRecipeAssistantActionLaunch(
-	response: RecipeChatSetupResponse,
+  response: RecipeChatSetupResponse,
 ): AssistantActionChatLaunchPayload {
-	const requestOptions = loadAssistantActionRequestOptions({
-		actionContext: JSON.stringify(createAssistantRecipeActionContext(response)),
-		recipeContext: null,
-	});
+  const requestOptions = loadAssistantActionRequestOptions({
+    actionContext: JSON.stringify(createAssistantRecipeActionContext(response)),
+    recipeContext: null,
+  });
 
-	return {
-		input: response.conversationStarter,
-		enabledTools: normaliseAssistantActionToolIds(response.enabledTools),
-		requestOptions,
-	};
+  return {
+    input: response.conversationStarter,
+    enabledTools: normaliseAssistantActionToolIds(response.enabledTools),
+    requestOptions,
+  };
 }
 
 export function createAssistantActionConversationUrl(
-	launch: AssistantActionChatLaunchPayload,
-	conversationPath = "/",
+  launch: AssistantActionChatLaunchPayload,
+  conversationPath = "/",
 ): string {
-	const params = new URLSearchParams({ [QUERY_PARAM]: launch.input });
+  const params = new URLSearchParams({ [QUERY_PARAM]: launch.input });
 
-	return createAssistantActionChatUrl({
-		messageUrl: `${conversationPath}?${params.toString()}`,
-		enabledTools: launch.enabledTools,
-		actionContext: launch.requestOptions?.options?.recipe
-			? {
-					action: {
-						kind: "recipe",
-						recipe: launch.requestOptions.options.recipe,
-					},
-				}
-			: undefined,
-	});
+  return createAssistantActionChatUrl({
+    messageUrl: `${conversationPath}?${params.toString()}`,
+    enabledTools: launch.enabledTools,
+    actionContext: launch.requestOptions?.options?.recipe
+      ? {
+          action: {
+            kind: "recipe",
+            recipe: launch.requestOptions.options.recipe,
+          },
+        }
+      : undefined,
+  });
 }
 
 export function createRecipeManagementActionPath(
-	basePath: string,
-	action: RecipeManagementAction,
-	recipeId: string,
+  basePath: string,
+  action: RecipeManagementAction,
+  recipeId: string,
 ): string {
-	const [path, search = ""] = basePath.split("?");
-	const params = new URLSearchParams(search);
-	params.set("action", action);
-	params.set("recipe", recipeId);
+  const [path, search = ""] = basePath.split("?");
+  const params = new URLSearchParams(search);
 
-	return `${path}?${params.toString()}`;
+  params.set("action", action);
+  params.set("recipe", recipeId);
+
+  return `${path}?${params.toString()}`;
 }
 
 export function createAppAssistantActionLaunch(
-	source: AppAssistantActionLaunchSource,
+  source: AppAssistantActionLaunchSource,
 ): AssistantActionNavigationLaunchPayload {
-	if (!source.appId) {
-		throw new Error("This app cannot open because its identifier is missing.");
-	}
+  if (!source.appId) {
+    throw new Error("This app cannot open because its identifier is missing.");
+  }
 
-	if (source.appKind === "frontend" && source.href) {
-		return { navigationPath: requireInternalNavigationPath(source.href) };
-	}
+  if (source.appKind === "frontend" && source.href) {
+    return { navigationPath: requireInternalNavigationPath(source.href) };
+  }
 
-	return {
-		navigationPath: `/apps?app=${encodeURIComponent(source.appId)}`,
-	};
+  return {
+    navigationPath: `/apps?app=${encodeURIComponent(source.appId)}`,
+  };
 }
 
 export function createConnectorAssistantActionLaunch(
-	source: ConnectorAssistantActionLaunchSource,
+  source: ConnectorAssistantActionLaunchSource,
 ): AssistantActionNavigationLaunchPayload | AssistantActionExternalLaunchPayload {
-	if (!source.provider) {
-		throw new Error("This connector cannot open because its provider is missing.");
-	}
+  if (!source.provider) {
+    throw new Error("This connector cannot open because its provider is missing.");
+  }
 
-	if (source.authType === "api_key") {
-		const params = new URLSearchParams({
-			tab: "providers",
-			type: "connector",
-			connector: source.provider,
-		});
+  if (source.authType === "api_key") {
+    const params = new URLSearchParams({
+      tab: "providers",
+      type: "connector",
+      connector: source.provider,
+    });
 
-		return {
-			navigationPath: `/profile?${params.toString()}`,
-		};
-	}
+    return {
+      navigationPath: `/profile?${params.toString()}`,
+    };
+  }
 
-	if (!source.authorizationUrl) {
-		throw new Error("This connector cannot open because its authorization URL is missing.");
-	}
+  if (!source.authorizationUrl) {
+    throw new Error("This connector cannot open because its authorization URL is missing.");
+  }
 
-	return {
-		externalUrl: requireExternalHttpUrl(source.authorizationUrl),
-	};
+  return {
+    externalUrl: requireExternalHttpUrl(source.authorizationUrl),
+  };
 }

@@ -1,250 +1,260 @@
 import type { TaskType, ScheduleType } from "@ngriffin_uk/polychat-schemas";
 
-import { BaseRepository } from "./BaseRepository";
 import type { Task, TaskExecution } from "~/lib/database/schema";
+import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
 
-import { generateId } from "~/utils/id";
+import { BaseRepository } from "./BaseRepository";
 
 export interface CreateTaskParams {
-	id?: string;
-	task_type: TaskType;
-	user_id?: number;
-	project_id?: string;
-	task_data?: Record<string, any>;
-	schedule_type?: ScheduleType;
-	scheduled_at?: string;
-	cron_expression?: string;
-	priority?: number;
-	metadata?: Record<string, any>;
-	created_by: "system" | "user";
+  id?: string;
+  task_type: TaskType;
+  user_id?: number;
+  project_id?: string;
+  task_data?: Record<string, any>;
+  schedule_type?: ScheduleType;
+  scheduled_at?: string;
+  cron_expression?: string;
+  priority?: number;
+  metadata?: Record<string, any>;
+  created_by: "system" | "user";
 }
 
 export interface UpdateTaskParams {
-	status?: "pending" | "queued" | "running" | "completed" | "failed" | "cancelled";
-	attempts?: number;
-	last_attempted_at?: string;
-	completed_at?: string;
-	error_message?: string;
+  status?: "pending" | "queued" | "running" | "completed" | "failed" | "cancelled";
+  attempts?: number;
+  last_attempted_at?: string;
+  completed_at?: string;
+  error_message?: string;
 }
 
 export class TaskRepository extends BaseRepository {
-	private parseTask(task: Task): Task {
-		return {
-			...task,
-			task_data: task.task_data ? safeParseJson(task.task_data) : null,
-			metadata: task.metadata ? safeParseJson(task.metadata) : null,
-		};
-	}
+  private parseTask(task: Task): Task {
+    return {
+      ...task,
+      task_data: task.task_data ? safeParseJson(task.task_data) : null,
+      metadata: task.metadata ? safeParseJson(task.metadata) : null,
+    };
+  }
 
-	public async createTask(params: CreateTaskParams): Promise<Task | null> {
-		const id = params.id ?? generateId();
-		const insert = this.buildInsertQuery(
-			"tasks",
-			{
-				id,
-				task_type: params.task_type,
-				user_id: params.user_id ?? null,
-				project_id: params.project_id ?? null,
-				task_data: params.task_data ? JSON.stringify(params.task_data) : null,
-				schedule_type: params.schedule_type ?? "immediate",
-				scheduled_at: params.scheduled_at ?? null,
-				cron_expression: params.cron_expression ?? null,
-				priority: params.priority ?? 5,
-				metadata: params.metadata ? JSON.stringify(params.metadata) : null,
-				created_by: params.created_by,
-				status: "pending",
-				attempts: 0,
-				max_attempts: 3,
-			},
-			{ jsonFields: ["task_data", "metadata"], returning: "*" },
-		);
+  public async createTask(params: CreateTaskParams): Promise<Task | null> {
+    const id = params.id ?? generateId();
+    const insert = this.buildInsertQuery(
+      "tasks",
+      {
+        id,
+        task_type: params.task_type,
+        user_id: params.user_id ?? null,
+        project_id: params.project_id ?? null,
+        task_data: params.task_data ? JSON.stringify(params.task_data) : null,
+        schedule_type: params.schedule_type ?? "immediate",
+        scheduled_at: params.scheduled_at ?? null,
+        cron_expression: params.cron_expression ?? null,
+        priority: params.priority ?? 5,
+        metadata: params.metadata ? JSON.stringify(params.metadata) : null,
+        created_by: params.created_by,
+        status: "pending",
+        attempts: 0,
+        max_attempts: 3,
+      },
+      { jsonFields: ["task_data", "metadata"], returning: "*" },
+    );
 
-		if (!insert) {
-			return null;
-		}
+    if (!insert) {
+      return null;
+    }
 
-		return this.runQuery<Task>(insert.query, insert.values, true);
-	}
+    return this.runQuery<Task>(insert.query, insert.values, true);
+  }
 
-	public async createTaskIfAbsent(
-		params: CreateTaskParams & { id: string },
-	): Promise<{ task: Task | null; created: boolean }> {
-		const result = await this.executeRun(
-			`INSERT OR IGNORE INTO tasks (
+  public async createTaskIfAbsent(
+    params: CreateTaskParams & { id: string },
+  ): Promise<{ task: Task | null; created: boolean }> {
+    const result = await this.executeRun(
+      `INSERT OR IGNORE INTO tasks (
 				id, task_type, user_id, project_id, task_data, schedule_type, scheduled_at,
 				cron_expression, priority, metadata, created_by, status, attempts, max_attempts
 			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, 3)`,
-			[
-				params.id,
-				params.task_type,
-				params.user_id ?? null,
-				params.project_id ?? null,
-				params.task_data ? JSON.stringify(params.task_data) : null,
-				params.schedule_type ?? "immediate",
-				params.scheduled_at ?? null,
-				params.cron_expression ?? null,
-				params.priority ?? 5,
-				params.metadata ? JSON.stringify(params.metadata) : null,
-				params.created_by,
-			],
-		);
-		const task = await this.getTaskById(params.id);
-		return { task, created: Boolean(result.meta?.changes) };
-	}
+      [
+        params.id,
+        params.task_type,
+        params.user_id ?? null,
+        params.project_id ?? null,
+        params.task_data ? JSON.stringify(params.task_data) : null,
+        params.schedule_type ?? "immediate",
+        params.scheduled_at ?? null,
+        params.cron_expression ?? null,
+        params.priority ?? 5,
+        params.metadata ? JSON.stringify(params.metadata) : null,
+        params.created_by,
+      ],
+    );
+    const task = await this.getTaskById(params.id);
 
-	public async getTaskById(taskId: string): Promise<Task | null> {
-		const { query, values } = this.buildSelectQuery("tasks", { id: taskId });
-		const result = await this.runQuery<Task>(query, values, true);
-		if (!result) return null;
-		return this.parseTask(result);
-	}
+    return { task, created: Boolean(result.meta?.changes) };
+  }
 
-	public async getTasksByUserId(userId: number, limit = 50): Promise<Task[]> {
-		const { query, values } = this.buildSelectQuery(
-			"tasks",
-			{ user_id: userId },
-			{ orderBy: "created_at DESC", limit },
-		);
-		const result = await this.runQuery<Task>(query, values);
+  public async getTaskById(taskId: string): Promise<Task | null> {
+    const { query, values } = this.buildSelectQuery("tasks", { id: taskId });
+    const result = await this.runQuery<Task>(query, values, true);
 
-		if (!result) {
-			return [];
-		}
+    if (!result) {
+      return null;
+    }
 
-		return Array.isArray(result) ? result.map((task) => this.parseTask(task)) : [];
-	}
+    return this.parseTask(result);
+  }
 
-	public async getPendingTasks(limit = 10): Promise<Task[]> {
-		const result = await this.runQuery<Task>(
-			`SELECT * FROM tasks
+  public async getTasksByUserId(userId: number, limit = 50): Promise<Task[]> {
+    const { query, values } = this.buildSelectQuery(
+      "tasks",
+      { user_id: userId },
+      { orderBy: "created_at DESC", limit },
+    );
+    const result = await this.runQuery<Task>(query, values);
+
+    if (!result) {
+      return [];
+    }
+
+    return Array.isArray(result) ? result.map((task) => this.parseTask(task)) : [];
+  }
+
+  public async getPendingTasks(limit = 10): Promise<Task[]> {
+    const result = await this.runQuery<Task>(
+      `SELECT * FROM tasks
        WHERE status IN ('pending', 'queued')
          AND (scheduled_at IS NULL OR scheduled_at <= datetime('now'))
        ORDER BY priority DESC, created_at ASC
        LIMIT ?`,
-			[limit],
-		);
-		return result || [];
-	}
+      [limit],
+    );
 
-	public async updateTask(taskId: string, params: UpdateTaskParams): Promise<Task | null> {
-		const fieldsToUpdate = Object.keys(params);
+    return result || [];
+  }
 
-		const update = this.buildUpdateQuery(
-			"tasks",
-			params as Record<string, unknown>,
-			fieldsToUpdate,
-			"id = ?",
-			[taskId],
-			{ returning: "*" },
-		);
+  public async updateTask(taskId: string, params: UpdateTaskParams): Promise<Task | null> {
+    const fieldsToUpdate = Object.keys(params);
 
-		if (!update) {
-			return null;
-		}
+    const update = this.buildUpdateQuery(
+      "tasks",
+      params as Record<string, unknown>,
+      fieldsToUpdate,
+      "id = ?",
+      [taskId],
+      { returning: "*" },
+    );
 
-		return this.runQuery<Task>(update.query, update.values, true);
-	}
+    if (!update) {
+      return null;
+    }
 
-	public async claimTaskForExecution(taskId: string): Promise<Task | null> {
-		const task = await this.runQuery<Task>(
-			`UPDATE tasks
+    return this.runQuery<Task>(update.query, update.values, true);
+  }
+
+  public async claimTaskForExecution(taskId: string): Promise<Task | null> {
+    const task = await this.runQuery<Task>(
+      `UPDATE tasks
 			 SET status = 'running', last_attempted_at = ?
 			 WHERE id = ? AND status IN ('pending', 'queued')
 			 RETURNING *`,
-			[new Date().toISOString(), taskId],
-			true,
-		);
+      [new Date().toISOString(), taskId],
+      true,
+    );
 
-		return task ? this.parseTask(task) : null;
-	}
+    return task ? this.parseTask(task) : null;
+  }
 
-	public async deleteTask(taskId: string): Promise<boolean> {
-		const { query, values } = this.buildDeleteQuery("tasks", { id: taskId });
-		await this.executeRun(query, values);
-		return true;
-	}
+  public async deleteTask(taskId: string): Promise<boolean> {
+    const { query, values } = this.buildDeleteQuery("tasks", { id: taskId });
 
-	public async createTaskExecution(
-		taskId: string,
-		status: "running" | "completed" | "failed",
-		errorMessage?: string,
-		resultData?: Record<string, any>,
-	): Promise<TaskExecution | null> {
-		const id = generateId();
-		const now = new Date().toISOString();
+    await this.executeRun(query, values);
 
-		const insert = this.buildInsertQuery(
-			"task_executions",
-			{
-				id,
-				task_id: taskId,
-				status,
-				started_at: now,
-				completed_at: status !== "running" ? now : null,
-				execution_time_ms: null,
-				error_message: errorMessage ?? null,
-				result_data: resultData ? JSON.stringify(resultData) : null,
-			},
-			{ jsonFields: ["result_data"], returning: "*" },
-		);
+    return true;
+  }
 
-		if (!insert) {
-			return null;
-		}
+  public async createTaskExecution(
+    taskId: string,
+    status: "running" | "completed" | "failed",
+    errorMessage?: string,
+    resultData?: Record<string, any>,
+  ): Promise<TaskExecution | null> {
+    const id = generateId();
+    const now = new Date().toISOString();
 
-		return this.runQuery<TaskExecution>(insert.query, insert.values, true);
-	}
+    const insert = this.buildInsertQuery(
+      "task_executions",
+      {
+        id,
+        task_id: taskId,
+        status,
+        started_at: now,
+        completed_at: status !== "running" ? now : null,
+        execution_time_ms: null,
+        error_message: errorMessage ?? null,
+        result_data: resultData ? JSON.stringify(resultData) : null,
+      },
+      { jsonFields: ["result_data"], returning: "*" },
+    );
 
-	public async updateTaskExecution(
-		executionId: string,
-		status: "running" | "completed" | "failed",
-		executionTimeMs?: number,
-		errorMessage?: string,
-		resultData?: Record<string, any>,
-	): Promise<TaskExecution | null> {
-		const now = new Date().toISOString();
+    if (!insert) {
+      return null;
+    }
 
-		const updates = {
-			status,
-			completed_at: now,
-			execution_time_ms: executionTimeMs ?? null,
-			error_message: errorMessage ?? null,
-			result_data: resultData ? JSON.stringify(resultData) : null,
-		};
+    return this.runQuery<TaskExecution>(insert.query, insert.values, true);
+  }
 
-		const fieldsToUpdate = Object.keys(updates);
+  public async updateTaskExecution(
+    executionId: string,
+    status: "running" | "completed" | "failed",
+    executionTimeMs?: number,
+    errorMessage?: string,
+    resultData?: Record<string, any>,
+  ): Promise<TaskExecution | null> {
+    const now = new Date().toISOString();
 
-		const update = this.buildUpdateQuery(
-			"task_executions",
-			updates as Record<string, unknown>,
-			fieldsToUpdate,
-			"id = ?",
-			[executionId],
-			{ jsonFields: ["result_data"], returning: "*" },
-		);
+    const updates = {
+      status,
+      completed_at: now,
+      execution_time_ms: executionTimeMs ?? null,
+      error_message: errorMessage ?? null,
+      result_data: resultData ? JSON.stringify(resultData) : null,
+    };
 
-		if (!update) {
-			return null;
-		}
+    const fieldsToUpdate = Object.keys(updates);
 
-		return this.runQuery<TaskExecution>(update.query, update.values, true);
-	}
+    const update = this.buildUpdateQuery(
+      "task_executions",
+      updates,
+      fieldsToUpdate,
+      "id = ?",
+      [executionId],
+      { jsonFields: ["result_data"], returning: "*" },
+    );
 
-	public async getTaskExecutions(taskId: string): Promise<TaskExecution[]> {
-		const { query, values } = this.buildSelectQuery(
-			"task_executions",
-			{ task_id: taskId },
-			{ orderBy: "created_at DESC" },
-		);
-		const result = await this.runQuery<TaskExecution>(query, values);
-		return result || [];
-	}
+    if (!update) {
+      return null;
+    }
 
-	public async getTaskExecutionById(executionId: string): Promise<TaskExecution | null> {
-		const { query, values } = this.buildSelectQuery("task_executions", {
-			id: executionId,
-		});
-		return this.runQuery<TaskExecution>(query, values, true);
-	}
+    return this.runQuery<TaskExecution>(update.query, update.values, true);
+  }
+
+  public async getTaskExecutions(taskId: string): Promise<TaskExecution[]> {
+    const { query, values } = this.buildSelectQuery(
+      "task_executions",
+      { task_id: taskId },
+      { orderBy: "created_at DESC" },
+    );
+    const result = await this.runQuery<TaskExecution>(query, values);
+
+    return result || [];
+  }
+
+  public async getTaskExecutionById(executionId: string): Promise<TaskExecution | null> {
+    const { query, values } = this.buildSelectQuery("task_executions", {
+      id: executionId,
+    });
+
+    return this.runQuery<TaskExecution>(query, values, true);
+  }
 }

@@ -1,178 +1,181 @@
-import type { IEnv } from "~/types";
-import type { TaskMessage } from "../TaskService";
-import type { TaskHandler, TaskResult } from "../TaskHandler";
-import { getLogger } from "~/utils/logger";
+import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { OutputRepository } from "~/repositories/OutputRepository";
-import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
-import { safeParseJson } from "~/utils/json";
-import { TaskService } from "../TaskService";
 import { TaskRepository } from "~/repositories/TaskRepository";
+import type { IEnv } from "~/types";
+import { safeParseJson } from "~/utils/json";
+import { getLogger } from "~/utils/logger";
+
+import type { TaskHandler, TaskResult } from "../TaskHandler";
+import type { TaskMessage } from "../TaskService";
+import { TaskService } from "../TaskService";
 import { getNextPollingSchedule } from "./polling";
 
 const logger = getLogger({ prefix: "services/tasks/replicate-polling" });
 
 interface ReplicatePollingData {
-	predictionId: string;
-	userId: number;
-	modelId: string;
-	startedAt: string;
-	pollAttempt?: number;
+  predictionId: string;
+  userId: number;
+  modelId: string;
+  startedAt: string;
+  pollAttempt?: number;
 }
 
 export class ReplicatePollingHandler implements TaskHandler {
-	public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {
-		try {
-			const data = message.task_data as ReplicatePollingData;
+  public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {
+    try {
+      const data = message.task_data as ReplicatePollingData;
 
-			if (!data.predictionId || !data.userId) {
-				return {
-					status: "error",
-					message: "predictionId and userId are required for replicate polling",
-				};
-			}
+      if (!data.predictionId || !data.userId) {
+        return {
+          status: "error",
+          message: "predictionId and userId are required for replicate polling",
+        };
+      }
 
-			const outputRepo = new OutputRepository(env);
-			const prediction = await outputRepo.getOutput(data.predictionId);
+      const outputRepo = new OutputRepository(env);
+      const prediction = await outputRepo.getOutput(data.predictionId);
 
-			if (!prediction) {
-				return {
-					status: "error",
-					message: `Prediction ${data.predictionId} not found`,
-				};
-			}
+      if (!prediction) {
+        return {
+          status: "error",
+          message: `Prediction ${data.predictionId} not found`,
+        };
+      }
 
-			if (prediction.created_by_user_id !== data.userId) {
-				return {
-					status: "error",
-					message: "Unauthorized access to prediction",
-				};
-			}
+      if (prediction.created_by_user_id !== data.userId) {
+        return {
+          status: "error",
+          message: "Unauthorized access to prediction",
+        };
+      }
 
-			const predictionData = safeParseJson<Record<string, any>>(prediction.content);
+      const predictionData = safeParseJson<Record<string, any>>(prediction.content);
 
-			if (!predictionData) {
-				return {
-					status: "error",
-					message: "Invalid prediction data",
-				};
-			}
+      if (!predictionData) {
+        return {
+          status: "error",
+          message: "Invalid prediction data",
+        };
+      }
 
-			const asyncInvocation = predictionData.predictionData?.data?.asyncInvocation as
-				| AsyncInvocationMetadata
-				| undefined;
+      const asyncInvocation = predictionData.predictionData?.data?.asyncInvocation as
+        | AsyncInvocationMetadata
+        | undefined;
 
-			if (!asyncInvocation || predictionData.status !== "processing") {
-				logger.info(`Prediction ${data.predictionId} not in processing state`);
-				return {
-					status: "success",
-					message: "Prediction not in processing state",
-					data: {
-						predictionId: data.predictionId,
-						status: predictionData.status,
-					},
-				};
-			}
+      if (!asyncInvocation || predictionData.status !== "processing") {
+        logger.info(`Prediction ${data.predictionId} not in processing state`);
 
-			const provider = getChatProvider(asyncInvocation.provider || "replicate", {
-				env,
-				user: undefined,
-			});
+        return {
+          status: "success",
+          message: "Prediction not in processing state",
+          data: {
+            predictionId: data.predictionId,
+            status: predictionData.status,
+          },
+        };
+      }
 
-			if (!provider?.getAsyncInvocationStatus) {
-				return {
-					status: "error",
-					message: "Provider does not support async invocation status",
-				};
-			}
+      const provider = getChatProvider(asyncInvocation.provider || "replicate", {
+        env,
+        user: undefined,
+      });
 
-			const result = await provider.getAsyncInvocationStatus(
-				asyncInvocation,
-				{
-					model: asyncInvocation.context?.version || "",
-					env,
-					messages: [],
-					completion_id: data.predictionId,
-				},
-				data.userId,
-			);
+      if (!provider?.getAsyncInvocationStatus) {
+        return {
+          status: "error",
+          message: "Provider does not support async invocation status",
+        };
+      }
 
-			if (result.status === "completed" && result.result) {
-				logger.info(`Prediction ${data.predictionId} completed`);
+      const result = await provider.getAsyncInvocationStatus(
+        asyncInvocation,
+        {
+          model: asyncInvocation.context?.version || "",
+          env,
+          messages: [],
+          completion_id: data.predictionId,
+        },
+        data.userId,
+      );
 
-				predictionData.status = "succeeded";
-				predictionData.predictionData = result.result;
-				predictionData.output = result.result.response;
+      if (result.status === "completed" && result.result) {
+        logger.info(`Prediction ${data.predictionId} completed`);
 
-				await outputRepo.updateOutput(data.predictionId, {
-					status: "ready",
-					content: predictionData,
-					expectedRevision: prediction.revision,
-					updatedByUserId: data.userId,
-				});
+        predictionData.status = "succeeded";
+        predictionData.predictionData = result.result;
+        predictionData.output = result.result.response;
 
-				return {
-					status: "success",
-					message: "Prediction completed",
-					data: {
-						predictionId: data.predictionId,
-						output: result.result.response,
-					},
-				};
-			}
+        await outputRepo.updateOutput(data.predictionId, {
+          status: "ready",
+          content: predictionData,
+          expectedRevision: prediction.revision,
+          updatedByUserId: data.userId,
+        });
 
-			if (result.status === "failed") {
-				logger.warn(`Prediction ${data.predictionId} failed`);
+        return {
+          status: "success",
+          message: "Prediction completed",
+          data: {
+            predictionId: data.predictionId,
+            output: result.result.response,
+          },
+        };
+      }
 
-				predictionData.status = "failed";
-				predictionData.error = result.raw?.error || "Generation failed";
+      if (result.status === "failed") {
+        logger.warn(`Prediction ${data.predictionId} failed`);
 
-				await outputRepo.updateOutput(data.predictionId, {
-					status: "failed",
-					content: predictionData,
-					expectedRevision: prediction.revision,
-					updatedByUserId: data.userId,
-				});
+        predictionData.status = "failed";
+        predictionData.error = result.raw?.error || "Generation failed";
 
-				return {
-					status: "success",
-					message: "Prediction failed",
-					data: {
-						predictionId: data.predictionId,
-						error: predictionData.error,
-					},
-				};
-			}
+        await outputRepo.updateOutput(data.predictionId, {
+          status: "failed",
+          content: predictionData,
+          expectedRevision: prediction.revision,
+          updatedByUserId: data.userId,
+        });
 
-			logger.info(`Prediction ${data.predictionId} still in progress, re-queuing`);
+        return {
+          status: "success",
+          message: "Prediction failed",
+          data: {
+            predictionId: data.predictionId,
+            error: predictionData.error,
+          },
+        };
+      }
 
-			const taskRepository = new TaskRepository(env);
-			const taskService = new TaskService(env, taskRepository);
-			const polling = getNextPollingSchedule(data.pollAttempt);
+      logger.info(`Prediction ${data.predictionId} still in progress, re-queuing`);
 
-			await taskService.enqueueTask({
-				task_type: "replicate_polling",
-				user_id: message.user_id,
-				task_data: {
-					...data,
-					pollAttempt: polling.pollAttempt,
-				},
-				schedule_type: "scheduled",
-				scheduled_at: polling.scheduledAt,
-				priority: message.priority || 5,
-			});
+      const taskRepository = new TaskRepository(env);
+      const taskService = new TaskService(env, taskRepository);
+      const polling = getNextPollingSchedule(data.pollAttempt);
 
-			return {
-				status: "success",
-				message: "Prediction still in progress, re-queued",
-				data: { predictionId: data.predictionId },
-			};
-		} catch (error) {
-			logger.error("Replicate polling error:", error);
-			return {
-				status: "error",
-				message: (error as Error).message,
-			};
-		}
-	}
+      await taskService.enqueueTask({
+        task_type: "replicate_polling",
+        user_id: message.user_id,
+        task_data: {
+          ...data,
+          pollAttempt: polling.pollAttempt,
+        },
+        schedule_type: "scheduled",
+        scheduled_at: polling.scheduledAt,
+        priority: message.priority || 5,
+      });
+
+      return {
+        status: "success",
+        message: "Prediction still in progress, re-queued",
+        data: { predictionId: data.predictionId },
+      };
+    } catch (error) {
+      logger.error("Replicate polling error:", error);
+
+      return {
+        status: "error",
+        message: (error as Error).message,
+      };
+    }
+  }
 }

@@ -4,8 +4,8 @@ import type { IconType } from "./icon-type";
 import { ICON_LOADERS } from "./iconLoaders";
 
 export interface ProviderGlyphProps extends ComponentProps<IconType> {
-	/** Registry key for the brand glyph, for example "github" or "anthropic". */
-	name: string;
+  /** Registry key for the brand glyph, for example "github" or "anthropic". */
+  name: string;
 }
 
 /**
@@ -13,16 +13,19 @@ export interface ProviderGlyphProps extends ComponentProps<IconType> {
  * private to the package; this is the supported way to reach one.
  */
 export function ProviderGlyph({ name, ...props }: ProviderGlyphProps) {
-	const Icon = useMemo(() => {
-		const loadIcon = ICON_LOADERS[name];
-		return loadIcon ? lazy(loadIcon) : null;
-	}, [name]);
+  const Icon = useMemo(() => {
+    const loadIcon = ICON_LOADERS[name];
 
-	if (!Icon) return null;
+    return loadIcon ? lazy(loadIcon) : null;
+  }, [name]);
 
-	return (
-		<Suspense fallback={null}>
-			<Icon {...props} />
-		</Suspense>
-	);
+  if (!Icon) {
+    return null;
+  }
+
+  return (
+    <Suspense fallback={null}>
+      <Icon {...props} />
+    </Suspense>
+  );
 }

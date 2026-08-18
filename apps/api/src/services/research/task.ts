@@ -1,362 +1,366 @@
 import { sanitiseInput } from "~/lib/chat/utils";
-import { getAuxiliaryResearchProvider } from "~/lib/providers/models";
 import { getResearchProvider } from "~/lib/providers/capabilities/research";
-import type {
-	IEnv,
-	IFunctionResponse,
-	IUser,
-	ParallelResearchResult,
-	ParallelTaskRun,
-	ExaTaskRun,
-	ResearchOptions,
-	ResearchProviderName,
-	ResearchTaskHandle,
-	ResearchResult,
-} from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { getAuxiliaryResearchProvider } from "~/lib/providers/models";
 import { OutputRepository } from "~/repositories/OutputRepository";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { TaskService } from "~/services/tasks/TaskService";
+import type {
+  IEnv,
+  IFunctionResponse,
+  IUser,
+  ParallelResearchResult,
+  ParallelTaskRun,
+  ExaTaskRun,
+  ResearchOptions,
+  ResearchProviderName,
+  ResearchTaskHandle,
+  ResearchResult,
+} from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+
 import { safeParseJson } from "../../utils/json";
 
 const MAX_INPUT_LENGTH = 15000;
 
 export type ResearchTaskRequest = {
-	env: IEnv;
-	input: unknown;
-	user?: IUser;
-	provider?: ResearchProviderName;
-	options?: ResearchOptions;
+  env: IEnv;
+  input: unknown;
+  user?: IUser;
+  provider?: ResearchProviderName;
+  options?: ResearchOptions;
 };
 
 export type ResearchTaskStatusRequest = {
-	env: IEnv;
-	runId: string;
-	user?: IUser;
-	provider?: ResearchProviderName;
-	options?: ResearchOptions;
+  env: IEnv;
+  runId: string;
+  user?: IUser;
+  provider?: ResearchProviderName;
+  options?: ResearchOptions;
 };
 
 const normaliseInput = (input: unknown): unknown => {
-	if (input === undefined || input === null) {
-		throw new AssistantError("Missing research input", ErrorType.PARAMS_ERROR);
-	}
+  if (input === undefined || input === null) {
+    throw new AssistantError("Missing research input", ErrorType.PARAMS_ERROR);
+  }
 
-	if (typeof input === "string") {
-		const sanitised = sanitiseInput(input);
+  if (typeof input === "string") {
+    const sanitised = sanitiseInput(input);
 
-		if (!sanitised) {
-			throw new AssistantError("Missing research input", ErrorType.PARAMS_ERROR);
-		}
+    if (!sanitised) {
+      throw new AssistantError("Missing research input", ErrorType.PARAMS_ERROR);
+    }
 
-		if (sanitised.length > MAX_INPUT_LENGTH) {
-			throw new AssistantError("Research input is too long", ErrorType.PARAMS_ERROR);
-		}
+    if (sanitised.length > MAX_INPUT_LENGTH) {
+      throw new AssistantError("Research input is too long", ErrorType.PARAMS_ERROR);
+    }
 
-		return sanitised;
-	}
+    return sanitised;
+  }
 
-	if (typeof input === "object") {
-		const entries = Object.entries(input as Record<string, unknown>);
+  if (typeof input === "object") {
+    const entries = Object.entries(input as Record<string, unknown>);
 
-		if (entries.length === 0) {
-			throw new AssistantError("Research input cannot be empty", ErrorType.PARAMS_ERROR);
-		}
+    if (entries.length === 0) {
+      throw new AssistantError("Research input cannot be empty", ErrorType.PARAMS_ERROR);
+    }
 
-		return input;
-	}
+    return input;
+  }
 
-	throw new AssistantError("Unsupported research input type", ErrorType.PARAMS_ERROR);
+  throw new AssistantError("Unsupported research input type", ErrorType.PARAMS_ERROR);
 };
 
 const getResearchProviderInstance = async (
-	env: IEnv,
-	user: IUser | undefined,
-	provider?: ResearchProviderName,
+  env: IEnv,
+  user: IUser | undefined,
+  provider?: ResearchProviderName,
 ) => {
-	const providerToUse = await getAuxiliaryResearchProvider(env, user, provider);
-	return {
-		provider: providerToUse,
-		researchProvider: getResearchProvider(providerToUse, {
-			env,
-			user,
-		}),
-	};
+  const providerToUse = await getAuxiliaryResearchProvider(env, user, provider);
+
+  return {
+    provider: providerToUse,
+    researchProvider: getResearchProvider(providerToUse, {
+      env,
+      user,
+    }),
+  };
 };
 
 export const startResearchTask = async (req: ResearchTaskRequest): Promise<ResearchTaskHandle> => {
-	const { env, user, provider, options } = req;
-	const preparedInput = normaliseInput(req.input);
+  const { env, user, provider, options } = req;
+  const preparedInput = normaliseInput(req.input);
 
-	const { provider: providerToUse, researchProvider } = await getResearchProviderInstance(
-		env,
-		user,
-		provider,
-	);
+  const { provider: providerToUse, researchProvider } = await getResearchProviderInstance(
+    env,
+    user,
+    provider,
+  );
 
-	const creation = await researchProvider.createResearchTask(preparedInput, options);
+  const creation = await researchProvider.createResearchTask(preparedInput, options);
 
-	if ("status" in creation) {
-		throw new AssistantError(creation.error, ErrorType.EXTERNAL_API_ERROR);
-	}
+  if ("status" in creation) {
+    throw new AssistantError(creation.error, ErrorType.EXTERNAL_API_ERROR);
+  }
 
-	if (user?.id && env.DB) {
-		const taskRepository = new TaskRepository(env);
-		const taskService = new TaskService(env, taskRepository);
+  if (user?.id && env.DB) {
+    const taskRepository = new TaskRepository(env);
+    const taskService = new TaskService(env, taskRepository);
 
-		const runId =
-			"run_id" in creation.run
-				? creation.run.run_id
-				: "research_id" in creation.run
-					? creation.run.research_id
-					: "";
+    const runId =
+      "run_id" in creation.run
+        ? creation.run.run_id
+        : "research_id" in creation.run
+          ? creation.run.research_id
+          : "";
 
-		if (runId) {
-			await taskService.enqueueTask({
-				task_type: "research_polling",
-				user_id: user.id,
-				task_data: {
-					runId,
-					provider: providerToUse,
-					userId: user.id,
-					options,
-					startedAt: new Date().toISOString(),
-					pollAttempt: 0,
-				},
-				priority: 7,
-			});
-		}
-	}
+    if (runId) {
+      await taskService.enqueueTask({
+        task_type: "research_polling",
+        user_id: user.id,
+        task_data: {
+          runId,
+          provider: providerToUse,
+          userId: user.id,
+          options,
+          startedAt: new Date().toISOString(),
+          pollAttempt: 0,
+        },
+        priority: 7,
+      });
+    }
+  }
 
-	return {
-		provider: providerToUse,
-		run: creation.run,
-	};
+  return {
+    provider: providerToUse,
+    run: creation.run,
+  };
 };
 
 export const getResearchTaskStatus = async (
-	req: ResearchTaskStatusRequest,
+  req: ResearchTaskStatusRequest,
 ): Promise<ResearchResult> => {
-	const { env, runId, user, provider, options } = req;
+  const { env, runId, user, provider, options } = req;
 
-	const { provider: providerToUse, researchProvider } = await getResearchProviderInstance(
-		env,
-		user,
-		provider,
-	);
-	const responseRepo = env.DB && user?.id ? new OutputRepository(env) : null;
-	const existingResponse = responseRepo
-		? await responseRepo.getPersonalOutputByGroup(user!.id, runId, "dynamic_app_response")
-		: null;
+  const { provider: providerToUse, researchProvider } = await getResearchProviderInstance(
+    env,
+    user,
+    provider,
+  );
+  const responseRepo = env.DB && user?.id ? new OutputRepository(env) : null;
+  const existingResponse = responseRepo
+    ? await responseRepo.getPersonalOutputByGroup(user.id, runId, "dynamic_app_response")
+    : null;
 
-	const parsePayload = (payload: string | null | undefined) => {
-		if (!payload) {
-			return undefined;
-		}
+  const parsePayload = (payload: string | null | undefined) => {
+    if (!payload) {
+      return undefined;
+    }
 
-		return safeParseJson(payload) as Record<string, any>;
-	};
+    return safeParseJson(payload) as Record<string, any>;
+  };
 
-	const extractStoredResult = (
-		payload: Record<string, any> | undefined,
-	): ResearchResult | undefined => {
-		const data = payload?.result?.data ?? {};
-		const run = data?.run;
-		const providerValue = data?.provider ?? payload?.result?.provider ?? providerToUse;
+  const extractStoredResult = (
+    payload: Record<string, any> | undefined,
+  ): ResearchResult | undefined => {
+    const data = payload?.result?.data ?? {};
+    const run = data?.run;
+    const providerValue = data?.provider ?? payload?.result?.provider ?? providerToUse;
 
-		if (!run || !providerValue) {
-			return undefined;
-		}
+    if (!run || !providerValue) {
+      return undefined;
+    }
 
-		if (providerValue === "parallel") {
-			return {
-				provider: "parallel",
-				run: run as ParallelTaskRun,
-				output: data?.output,
-				warnings: data?.warnings ?? null,
-				poll: data?.poll,
-			};
-		}
+    if (providerValue === "parallel") {
+      return {
+        provider: "parallel",
+        run: run as ParallelTaskRun,
+        output: data?.output,
+        warnings: data?.warnings ?? null,
+        poll: data?.poll,
+      };
+    }
 
-		if (providerValue === "exa") {
-			return {
-				provider: "exa",
-				run: run as ExaTaskRun,
-				output: data?.output,
-				warnings: data?.warnings ?? null,
-				poll: data?.poll,
-			};
-		}
+    if (providerValue === "exa") {
+      return {
+        provider: "exa",
+        run: run as ExaTaskRun,
+        output: data?.output,
+        warnings: data?.warnings ?? null,
+        poll: data?.poll,
+      };
+    }
 
-		return undefined;
-	};
+    return undefined;
+  };
 
-	let storedPayload = existingResponse ? parsePayload(existingResponse.content) : undefined;
-	let storedResult = extractStoredResult(storedPayload);
+  let storedPayload = existingResponse ? parsePayload(existingResponse.content) : undefined;
+  let storedResult = extractStoredResult(storedPayload);
 
-	if (
-		storedResult &&
-		!("status" in storedResult) &&
-		storedResult.run?.status === "completed" &&
-		storedResult.output !== undefined
-	) {
-		return storedResult;
-	}
+  if (
+    storedResult &&
+    !("status" in storedResult) &&
+    storedResult.run?.status === "completed" &&
+    storedResult.output !== undefined
+  ) {
+    return storedResult;
+  }
 
-	const canPersist =
-		Boolean(responseRepo) &&
-		Boolean(existingResponse) &&
-		existingResponse?.created_by_user_id === (user?.id ?? existingResponse?.created_by_user_id);
+  const canPersist =
+    Boolean(responseRepo) &&
+    Boolean(existingResponse) &&
+    existingResponse?.created_by_user_id === (user?.id ?? existingResponse?.created_by_user_id);
 
-	const persistResult = async (
-		merged: ParallelResearchResult | ResearchResult,
-		statusLabel: string,
-		extra?: Record<string, any>,
-	) => {
-		if (!canPersist || !existingResponse || !responseRepo) {
-			return;
-		}
+  const persistResult = async (
+    merged: ParallelResearchResult | ResearchResult,
+    statusLabel: string,
+    extra?: Record<string, any>,
+  ) => {
+    if (!canPersist || !existingResponse || !responseRepo) {
+      return;
+    }
 
-		if ("status" in merged && merged.status === "error") {
-			return;
-		}
+    if ("status" in merged && merged.status === "error") {
+      return;
+    }
 
-		const result = merged as
-			| ParallelResearchResult
-			| Extract<ResearchResult, { provider: "parallel" | "exa" }>;
+    const result = merged as
+      | ParallelResearchResult
+      | Extract<ResearchResult, { provider: "parallel" | "exa" }>;
 
-		const basePayload = storedPayload ?? {};
-		const baseResult = (basePayload.result ?? {}) as Record<string, any>;
-		const baseData = (baseResult.data ?? {}) as Record<string, any>;
+    const basePayload = storedPayload ?? {};
+    const baseResult = (basePayload.result ?? {}) as Record<string, any>;
+    const baseData = (baseResult.data ?? {}) as Record<string, any>;
 
-		const nextData: Record<string, any> = {
-			...baseData,
-			provider: result.provider,
-			run: result.run,
-			warnings: result.warnings ?? null,
-			poll: result.poll ?? baseData.poll,
-		};
+    const nextData: Record<string, any> = {
+      ...baseData,
+      provider: result.provider,
+      run: result.run,
+      warnings: result.warnings ?? null,
+      poll: result.poll ?? baseData.poll,
+    };
 
-		if (result.output !== undefined) {
-			nextData.output = result.output;
-		} else if (baseData.output !== undefined) {
-			nextData.output = baseData.output;
-		}
+    if (result.output !== undefined) {
+      nextData.output = result.output;
+    } else if (baseData.output !== undefined) {
+      nextData.output = baseData.output;
+    }
 
-		const nextResult: Record<string, any> = {
-			...baseResult,
-			status: statusLabel,
-			data: nextData,
-		};
+    const nextResult: Record<string, any> = {
+      ...baseResult,
+      status: statusLabel,
+      data: nextData,
+    };
 
-		if (extra) {
-			for (const [key, value] of Object.entries(extra)) {
-				if (value === undefined) {
-					delete nextResult[key];
-				} else {
-					nextResult[key] = value;
-				}
-			}
-		} else if (nextResult.error) {
-			delete nextResult.error;
-		}
+    if (extra) {
+      for (const [key, value] of Object.entries(extra)) {
+        if (value === undefined) {
+          delete nextResult[key];
+        } else {
+          nextResult[key] = value;
+        }
+      }
+    } else if (nextResult.error) {
+      delete nextResult.error;
+    }
 
-		const nextPayload = {
-			...basePayload,
-			result: nextResult,
-			lastSyncedAt: new Date().toISOString(),
-		};
+    const nextPayload = {
+      ...basePayload,
+      result: nextResult,
+      lastSyncedAt: new Date().toISOString(),
+    };
 
-		await responseRepo.updateOutput(existingResponse.id, {
-			content: nextPayload,
-			status:
-				statusLabel === "error" ? "failed" : statusLabel === "completed" ? "ready" : "pending",
-			expectedRevision: existingResponse.revision,
-			updatedByUserId: existingResponse.created_by_user_id,
-		});
-		storedPayload = nextPayload;
-		storedResult = merged;
-	};
+    await responseRepo.updateOutput(existingResponse.id, {
+      content: nextPayload,
+      status:
+        statusLabel === "error" ? "failed" : statusLabel === "completed" ? "ready" : "pending",
+      expectedRevision: existingResponse.revision,
+      updatedByUserId: existingResponse.created_by_user_id,
+    });
+    storedPayload = nextPayload;
+    storedResult = merged;
+  };
 
-	const result = await researchProvider.fetchResearchResult(runId, options);
+  const result = await researchProvider.fetchResearchResult(runId, options);
 
-	if ("status" in result) {
-		const now = new Date().toISOString();
-		const errorMessage = result.error;
+  if ("status" in result) {
+    const now = new Date().toISOString();
+    const errorMessage = result.error;
 
-		if (providerToUse === "parallel") {
-			const errorRun: ParallelTaskRun = {
-				run_id: runId,
-				status: "errored",
-				is_active: false,
-				processor: options?.processor ?? "unknown",
-				metadata: null,
-				created_at: now,
-				modified_at: now,
-				warnings: [errorMessage],
-				error: errorMessage,
-				taskgroup_id: null,
-			};
+    if (providerToUse === "parallel") {
+      const errorRun: ParallelTaskRun = {
+        run_id: runId,
+        status: "errored",
+        is_active: false,
+        processor: options?.processor ?? "unknown",
+        metadata: null,
+        created_at: now,
+        modified_at: now,
+        warnings: [errorMessage],
+        error: errorMessage,
+        taskgroup_id: null,
+      };
 
-			const errorResult: ParallelResearchResult = {
-				provider: "parallel",
-				run: errorRun,
-				warnings: [errorMessage],
-			};
+      const errorResult: ParallelResearchResult = {
+        provider: "parallel",
+        run: errorRun,
+        warnings: [errorMessage],
+      };
 
-			await persistResult(errorResult, "error", { error: errorMessage });
-			return errorResult;
-		}
+      await persistResult(errorResult, "error", { error: errorMessage });
 
-		const errorRun: ExaTaskRun = {
-			research_id: runId,
-			status: "errored",
-			created_at: now,
-			error: errorMessage,
-			warnings: [errorMessage],
-		};
+      return errorResult;
+    }
 
-		const errorResult: ResearchResult = {
-			provider: "exa",
-			run: errorRun,
-			warnings: [errorMessage],
-		};
+    const errorRun: ExaTaskRun = {
+      research_id: runId,
+      status: "errored",
+      created_at: now,
+      error: errorMessage,
+      warnings: [errorMessage],
+    };
 
-		await persistResult(errorResult, "error", { error: errorMessage });
-		return errorResult;
-	}
+    const errorResult: ResearchResult = {
+      provider: "exa",
+      run: errorRun,
+      warnings: [errorMessage],
+    };
 
-	await persistResult(result, result.run.status ?? "running");
+    await persistResult(errorResult, "error", { error: errorMessage });
 
-	return result;
+    return errorResult;
+  }
+
+  await persistResult(result, result.run.status ?? "running");
+
+  return result;
 };
 
 export const handleResearchTask = async (req: ResearchTaskRequest): Promise<IFunctionResponse> => {
-	const { env, user, provider, options } = req;
-	const preparedInput = normaliseInput(req.input);
+  const { env, user, provider, options } = req;
+  const preparedInput = normaliseInput(req.input);
 
-	const { provider: providerToUse, researchProvider } = await getResearchProviderInstance(
-		env,
-		user,
-		provider,
-	);
+  const { provider: providerToUse, researchProvider } = await getResearchProviderInstance(
+    env,
+    user,
+    provider,
+  );
 
-	const result = await researchProvider.performResearch(preparedInput, options);
+  const result = await researchProvider.performResearch(preparedInput, options);
 
-	if ("status" in result) {
-		throw new AssistantError(result.error, ErrorType.EXTERNAL_API_ERROR);
-	}
+  if ("status" in result) {
+    throw new AssistantError(result.error, ErrorType.EXTERNAL_API_ERROR);
+  }
 
-	return {
-		status: "success",
-		content: "Research completed",
-		data: {
-			provider: providerToUse,
-			run: result.run,
-			output: result.output,
-			poll: result.poll,
-			warnings: result.warnings,
-			raw: result,
-		},
-	};
+  return {
+    status: "success",
+    content: "Research completed",
+    data: {
+      provider: providerToUse,
+      run: result.run,
+      output: result.output,
+      poll: result.poll,
+      warnings: result.warnings,
+      raw: result,
+    },
+  };
 };

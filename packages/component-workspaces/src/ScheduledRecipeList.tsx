@@ -134,6 +134,9 @@ export function ScheduledRecipeList({
     </section>
   );
 
-  if (embedded) return content;
+  if (embedded) {
+    return content;
+  }
+
   return <Card className="gap-0 overflow-hidden py-0 shadow-none">{content}</Card>;
 }

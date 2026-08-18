@@ -1,19 +1,20 @@
 import {
-	normaliseCompactionStatusMessage,
-	type NormalisedCompactionStatusMessage,
+  normaliseCompactionStatusMessage,
+  type NormalisedCompactionStatusMessage,
 } from "@ngriffin_uk/polychat-schemas";
 
 export interface ChatCompactionMetadata {
-	message: NormalisedCompactionStatusMessage;
+  message: NormalisedCompactionStatusMessage;
 }
 
 export function buildChatCompactionMetadata(message: unknown): ChatCompactionMetadata | undefined {
-	const compactionMessage = normaliseCompactionStatusMessage(message);
+  const compactionMessage = normaliseCompactionStatusMessage(message);
 
-	if (!compactionMessage) {
-		return undefined;
-	}
-	return {
-		message: compactionMessage,
-	};
+  if (!compactionMessage) {
+    return undefined;
+  }
+
+  return {
+    message: compactionMessage,
+  };
 }

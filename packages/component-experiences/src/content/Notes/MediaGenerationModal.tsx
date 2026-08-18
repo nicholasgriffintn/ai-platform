@@ -73,8 +73,10 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
   const handleGenerate = async () => {
     if (!mediaUrl || selectedOutputs.length === 0) {
       onValidationError?.("Provide a URL and select at least one output");
+
       return;
     }
+
     const content = await onGenerate({
       url: mediaUrl,
       outputs: selectedOutputs,
@@ -84,7 +86,11 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
       useVideoAnalysis,
       enableVideoSearch,
     });
-    if (content === undefined) return;
+
+    if (content === undefined) {
+      return;
+    }
+
     onNotesGenerated(content);
     onClose();
   };
@@ -198,6 +204,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
                       disabled={opt.videoOnly && !useVideoAnalysis}
                       onChange={(e) => {
                         const checked = e.target.checked;
+
                         setSelectedOutputs((prev) =>
                           checked
                             ? Array.from(new Set([...prev, opt.id]))
@@ -226,6 +233,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
                       checked={useVideoAnalysis}
                       onChange={(e) => {
                         const checked = e.target.checked;
+
                         setUseVideoAnalysis(checked);
                         if (!checked) {
                           setSelectedOutputs((prev) =>

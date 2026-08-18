@@ -26,7 +26,7 @@ export function HomePage() {
           onCanvasModeChange={setIsCanvasMode}
         />
       }
-      fullBleed={true}
+      fullBleed
       displayNavBar={false}
       headerContent={<PageTitle title="Conversation" className="sr-only" />}
     >

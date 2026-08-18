@@ -15,11 +15,13 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
       for (const message of TEXT_MESSAGE_CASES) {
         await test.step(message.name, async () => {
           const previousCount = await homePage.getAssistantMessageCount();
+
           await homePage.sendMessage(message.value);
           await homePage.waitForChatResponse(previousCount);
           await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
         });
       }
+
       await captureVisualSnapshots(
         page,
         `release-chat-text-${persona}`,
@@ -52,6 +54,7 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
       await homePage.waitForChatResponse(0);
 
       const editedContent = `Edited ${persona} message action content`;
+
       await homePage.editLatestUserMessage(editedContent);
       await expect(homePage.getLatestUserMessage()).toContainText(editedContent);
       await expect(homePage.getLatestAssistantMessage()).toContainText(editedContent);
@@ -62,11 +65,13 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
         await expect(homePage.getLatestAssistantFeedbackButton("positive")).toHaveCount(0);
       } else {
         const feedbackResponse = await homePage.submitLatestAssistantFeedback("positive");
+
         expect(feedbackResponse.status()).toBe(200);
         await expect(
           homePage.getLatestAssistantMessage().getByRole("button", { name: "Feedback submitted" }),
         ).toBeDisabled();
       }
+
       await captureVisualSnapshots(page, `release-chat-edits-${persona}`, {
         ...DEFAULT_VISUAL_CHECKPOINTS,
         viewports: [{ name: "desktop", width: 1280, height: 720 }],
@@ -79,9 +84,11 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
       await homePage.sendMessage(`Manage this ${persona} release conversation`);
       await homePage.waitForChatResponse(0);
       const generatedTitle = /Manage this|Release validation chat/;
+
       await homePage.waitForConversationInHistory(generatedTitle);
 
       const renamedTitle = `${persona} managed release conversation`;
+
       await homePage.renameConversation(generatedTitle, renamedTitle);
       await homePage.searchPolychat(renamedTitle);
       await expect(page.getByRole("option").filter({ hasText: renamedTitle })).toBeVisible();
@@ -94,6 +101,7 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
         await homePage.setConversationArchiveFilter("Archived");
         await expect(page.getByRole("button").filter({ hasText: renamedTitle })).toBeVisible();
       }
+
       await captureVisualSnapshots(page, `release-chat-conversation-history-${persona}`, {
         ...DEFAULT_VISUAL_CHECKPOINTS,
         viewports: [{ name: "desktop", width: 1280, height: 720 }],
@@ -119,7 +127,10 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
       });
       await homePage.clearChatMode("Council");
 
-      if (persona === "pro") await homePage.selectModel("GPT-5.2");
+      if (persona === "pro") {
+        await homePage.selectModel("GPT-5.2");
+      }
+
       await homePage.selectChatMode("Background");
       await expect(page).toHaveURL(/\/chat\?mode=background$/);
       await expect(page.getByRole("heading", { name: "What should keep running?" })).toBeVisible();
@@ -164,6 +175,7 @@ for (const persona of ["logged-out", "free"] as const) {
       await homePage.sendMessage(`Persist this ${persona} release conversation`);
       await homePage.waitForChatResponse(0);
       const conversationTitle = new RegExp(`Persist this ${persona}|Release validation chat`);
+
       await homePage.waitForConversationInHistory(conversationTitle);
 
       await homePage.reload();
@@ -217,6 +229,7 @@ test.describe("Canvas generation", () => {
       await profilePage.configureProvider("Replicate", "e2e-replicate-provider-key");
       await homePage.navigate("/chat");
       const modelName = "FLUX 2 Pro";
+
       await homePage.generateCanvasOutput(
         "Image generation",
         modelName,
@@ -236,6 +249,7 @@ test.describe("Canvas generation", () => {
     test("generates and displays a video", async ({ homePage, page }) => {
       await homePage.navigate("/chat");
       const modelName = "Seedance 2.0";
+
       await homePage.generateCanvasOutput(
         "Video generation",
         modelName,
@@ -288,6 +302,7 @@ test.describe("Response controls as pro", () => {
     const request = await homePage.sendMessageAndReadCompletionRequest(
       "Use the selected response controls for this release check",
     );
+
     expect(request.reasoning).toEqual({ effort: "high" });
     expect(request.verbosity).toBe("caveman");
     await homePage.waitForChatResponse(0);
@@ -305,6 +320,7 @@ test.describe("Response controls as pro", () => {
       "Use code execution for this release check",
       "Code execution",
     );
+
     expect(request.enabled_tools).toContain("code_execution");
     await homePage.waitForChatResponse(0);
     await homePage.waitForResponseText(/E2E response:/);
@@ -321,6 +337,7 @@ test.describe("Response controls as pro", () => {
       "artifacts",
       "Create a release validation document",
     );
+
     expect(JSON.stringify(request.messages)).toContain(
       "/artifacts Create a release validation document",
     );
@@ -339,6 +356,7 @@ test.describe("Response controls as pro", () => {
     const request = await homePage.sendMessageAndReadCompletionRequest(
       "Use the detailed settings for this release check",
     );
+
     expect(request).toMatchObject({
       compaction: "off",
       frequency_penalty: -0.3,
@@ -369,6 +387,7 @@ test.describe("Response controls as pro", () => {
     await homePage.waitForChatResponse(0);
 
     const request = await homePage.requestSecondOpinion("Llama 4 Scout 17B", "Groq");
+
     expect(request.model).toBe("groq-llama-4-scout-17b");
     expect(request.models).toBeUndefined();
     expect(request.use_multi_model).toBe(false);

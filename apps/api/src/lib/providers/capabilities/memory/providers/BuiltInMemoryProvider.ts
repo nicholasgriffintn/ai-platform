@@ -1,147 +1,154 @@
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getEmbeddingProvider } from "~/lib/providers/capabilities/embedding/helpers";
 import type { IEnv, IUser, IUserSettings, MemoryScope } from "~/types";
-import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+
 import { BaseMemoryProvider } from "../base";
 import type {
-	MemoryProviderCapabilities,
-	MemoryRetrieveOptions,
-	MemoryRetrieveResult,
-	MemoryStoreInput,
-	MemoryStoreResult,
+  MemoryProviderCapabilities,
+  MemoryRetrieveOptions,
+  MemoryRetrieveResult,
+  MemoryStoreInput,
+  MemoryStoreResult,
 } from "../types";
 
 const logger = getLogger({ prefix: "lib/providers/memory/built-in" });
 
 export class BuiltInMemoryProvider extends BaseMemoryProvider {
-	readonly name = "built-in" as const;
-	readonly capabilities: MemoryProviderCapabilities = {
-		deduplication: true,
-		reasoning: false,
-		conversationIngestion: false,
-		externalStorage: false,
-		deletion: true,
-	};
+  readonly name = "built-in" as const;
+  readonly capabilities: MemoryProviderCapabilities = {
+    deduplication: true,
+    reasoning: false,
+    conversationIngestion: false,
+    externalStorage: false,
+    deletion: true,
+  };
 
-	constructor(
-		env: IEnv,
-		user?: IUser,
-		userSettings?: IUserSettings | null,
-		serviceContext?: ServiceContext,
-		memoryScope?: MemoryScope,
-	) {
-		super({ env, user, userSettings, serviceContext, memoryScope });
-	}
+  constructor(
+    env: IEnv,
+    user?: IUser,
+    userSettings?: IUserSettings | null,
+    serviceContext?: ServiceContext,
+    memoryScope?: MemoryScope,
+  ) {
+    super({ env, user, userSettings, serviceContext, memoryScope });
+  }
 
-	async storeMemory(input: MemoryStoreInput): Promise<MemoryStoreResult> {
-		const embedding = this.getEmbeddingProvider(input.userSettings);
-		const vectorId = generateId();
+  async storeMemory(input: MemoryStoreInput): Promise<MemoryStoreResult> {
+    const embedding = this.getEmbeddingProvider(input.userSettings);
+    const vectorId = generateId();
 
-		const vectors = await embedding.generate("memory", input.text, vectorId, {
-			...input.metadata,
-			text: input.text,
-			stored_at: Date.now().toString(),
-		});
+    const vectors = await embedding.generate("memory", input.text, vectorId, {
+      ...input.metadata,
+      text: input.text,
+      stored_at: Date.now().toString(),
+    });
 
-		const namespace = this.getNamespace();
-		const rawVec = vectors[0].values as number[];
-		const candidateVector = new Float64Array(rawVec);
-		const existing = await embedding.getMatches(candidateVector, {
-			topK: 5,
-			scoreThreshold: 0,
-			namespace,
-			returnMetadata: "all",
-		});
+    const namespace = this.getNamespace();
+    const rawVec = vectors[0].values as number[];
+    const candidateVector = new Float64Array(rawVec);
+    const existing = await embedding.getMatches(candidateVector, {
+      topK: 5,
+      scoreThreshold: 0,
+      namespace,
+      returnMetadata: "all",
+    });
 
-		const hasSimilarMemory = (existing.matches || []).some(
-			(match) => match.score >= 0.85 && match.metadata?.text,
-		);
+    const hasSimilarMemory = (existing.matches || []).some(
+      (match) => match.score >= 0.85 && match.metadata?.text,
+    );
 
-		if (hasSimilarMemory) {
-			return { id: null, provider: this.name };
-		}
+    if (hasSimilarMemory) {
+      return { id: null, provider: this.name };
+    }
 
-		await embedding.insert(vectors, { namespace });
-		const id = await this.createLocalMemory(input, vectorId);
-		return { id, provider: this.name, externalId: vectorId };
-	}
+    await embedding.insert(vectors, { namespace });
+    const id = await this.createLocalMemory(input, vectorId);
 
-	async retrieveMemories(
-		query: string,
-		options: MemoryRetrieveOptions = {},
-	): Promise<MemoryRetrieveResult[]> {
-		const embedding = this.getEmbeddingProvider(options.userSettings);
-		const topK = options.topK ?? 3;
-		const scoreThreshold = options.scoreThreshold ?? 0.3;
+    return { id, provider: this.name, externalId: vectorId };
+  }
 
-		const queryEmb = await embedding.getQuery(query);
-		const rawNumbers = queryEmb.data[0] as number[];
-		const vector = new Float64Array(rawNumbers);
+  async retrieveMemories(
+    query: string,
+    options: MemoryRetrieveOptions = {},
+  ): Promise<MemoryRetrieveResult[]> {
+    const embedding = this.getEmbeddingProvider(options.userSettings);
+    const topK = options.topK ?? 3;
+    const scoreThreshold = options.scoreThreshold ?? 0.3;
 
-		const result = await embedding.getMatches(vector, {
-			topK: Math.max(topK * 2, 10),
-			scoreThreshold,
-			namespace: this.getNamespace(),
-			returnMetadata: "all",
-		});
+    const queryEmb = await embedding.getQuery(query);
+    const rawNumbers = queryEmb.data[0] as number[];
+    const vector = new Float64Array(rawNumbers);
 
-		return (result.matches || [])
-			.filter((match) => match.score >= scoreThreshold && typeof match.metadata?.text === "string")
-			.slice(0, topK)
-			.map((match) => ({
-				id: match.id,
-				text: match.metadata.text as string,
-				score: match.score,
-				metadata: match.metadata,
-			}));
-	}
+    const result = await embedding.getMatches(vector, {
+      topK: Math.max(topK * 2, 10),
+      scoreThreshold,
+      namespace: this.getNamespace(),
+      returnMetadata: "all",
+    });
 
-	async deleteMemory(memoryId: string): Promise<boolean> {
-		if (!this.user?.id) {
-			throw new AssistantError(
-				"User ID is required to delete memories",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
-		}
+    return (result.matches || [])
+      .filter((match) => match.score >= scoreThreshold && typeof match.metadata?.text === "string")
+      .slice(0, topK)
+      .map((match) => ({
+        id: match.id,
+        text: match.metadata.text as string,
+        score: match.score,
+        metadata: match.metadata,
+      }));
+  }
 
-		try {
-			const localMemory = await this.getLocalMemoryForDelete(memoryId);
-			if (!localMemory) {
-				logger.warn("Memory not found or access denied", {
-					memoryId,
-					userId: this.user.id,
-				});
-				return false;
-			}
+  async deleteMemory(memoryId: string): Promise<boolean> {
+    if (!this.user?.id) {
+      throw new AssistantError(
+        "User ID is required to delete memories",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
 
-			if (localMemory.vectorId) {
-				const embedding = this.getEmbeddingProvider();
-				await embedding.delete([localMemory.vectorId]);
-			}
+    try {
+      const localMemory = await this.getLocalMemoryForDelete(memoryId);
 
-			await this.removeLocalMemory(memoryId);
-			return true;
-		} catch (error) {
-			logger.error("Failed to delete memory", { error, memoryId });
-			return false;
-		}
-	}
+      if (!localMemory) {
+        logger.warn("Memory not found or access denied", {
+          memoryId,
+          userId: this.user.id,
+        });
 
-	private getNamespace(): string {
-		return this.memoryScope.type === "project"
-			? `memory_project_${this.memoryScope.projectId}`
-			: `memory_user_${this.user?.id ?? "global"}`;
-	}
+        return false;
+      }
 
-	private getEmbeddingProvider(userSettings?: IUserSettings | null) {
-		return getEmbeddingProvider(
-			this.env,
-			this.user,
-			this.memoryScope.type === "project"
-				? undefined
-				: (userSettings ?? this.userSettings ?? undefined),
-		);
-	}
+      if (localMemory.vectorId) {
+        const embedding = this.getEmbeddingProvider();
+
+        await embedding.delete([localMemory.vectorId]);
+      }
+
+      await this.removeLocalMemory(memoryId);
+
+      return true;
+    } catch (error) {
+      logger.error("Failed to delete memory", { error, memoryId });
+
+      return false;
+    }
+  }
+
+  private getNamespace(): string {
+    return this.memoryScope.type === "project"
+      ? `memory_project_${this.memoryScope.projectId}`
+      : `memory_user_${this.user?.id ?? "global"}`;
+  }
+
+  private getEmbeddingProvider(userSettings?: IUserSettings | null) {
+    return getEmbeddingProvider(
+      this.env,
+      this.user,
+      this.memoryScope.type === "project"
+        ? undefined
+        : (userSettings ?? this.userSettings ?? undefined),
+    );
+  }
 }

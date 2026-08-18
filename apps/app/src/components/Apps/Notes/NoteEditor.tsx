@@ -4,8 +4,8 @@ import {
   NoteEditorToolbar,
   NoteMetadata,
   TranscriptionOverlay,
+  MediaGenerationModal,
 } from "@ngriffin_uk/polychat-component-experiences/content";
-import { MediaGenerationModal } from "@ngriffin_uk/polychat-component-experiences/content";
 import type { NoteMetadata as NoteMetadataType } from "@ngriffin_uk/polychat-schemas";
 import {
   formatTextWithSpacing,
@@ -107,10 +107,14 @@ export function NoteEditor({
   );
 
   const handleMetadataRegenerate = useCallback(() => {
-    if (!noteId) return;
+    if (!noteId) {
+      return;
+    }
+
     saveOptionsRef.current = { refreshMetadata: true };
     setIsMetadataRefreshing(true);
     const maybePromise = forceSave({ bypassDirtyCheck: true });
+
     if (maybePromise?.finally) {
       maybePromise.finally(() => {
         setIsMetadataRefreshing(false);
@@ -159,8 +163,12 @@ export function NoteEditor({
 
   useEffect(() => {
     const lastApplied = appliedInitialTextRef.current;
+
     appliedInitialTextRef.current = initialText;
-    if (document.activeElement === textareaRef.current) return;
+    if (document.activeElement === textareaRef.current) {
+      return;
+    }
+
     setText((current) => (current === lastApplied ? initialText : current));
   }, [initialText]);
 
@@ -224,6 +232,7 @@ export function NoteEditor({
       setLastSilenceTime(0);
     } else {
       const stream = await tabCapture.start();
+
       if (stream) {
         startTranscription(stream);
       }
@@ -306,10 +315,13 @@ export function NoteEditor({
         onGenerate={async (request) => {
           try {
             const result = await generateNotesFromMedia.mutateAsync(request);
+
             toast.success("Generated notes added to editor");
+
             return result.content;
           } catch {
             toast.error("Failed to generate notes from URL");
+
             return undefined;
           }
         }}

@@ -36,6 +36,7 @@ export function ConfigurationFields({
         />
       );
     }
+
     if (field.type === "select") {
       return (
         <FormSelect
@@ -49,6 +50,7 @@ export function ConfigurationFields({
         />
       );
     }
+
     return (
       <FormInput
         key={field.key}
@@ -97,6 +99,7 @@ export function TriggerList({
         );
         const eventName = triggerType?.name ?? formatRecipeTriggerIdentifier(trigger.triggerSlug);
         const active = trigger.status === "active";
+
         return (
           <li
             key={trigger.id}

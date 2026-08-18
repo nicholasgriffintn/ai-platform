@@ -26,11 +26,14 @@ function getMissingConnectors(
   connectors: readonly RecipeConnectorManifest[],
 ): RecipeConnectorManifest[] {
   const connectorById = new Map(connectors.map((connector) => [connector.id, connector]));
+
   return recipe.integrations.flatMap((integration) => {
-    if (integration.requiresConnection === false || integration.connectionStatus === "connected") {
+    if (!integration.requiresConnection || integration.connectionStatus === "connected") {
       return [];
     }
+
     const connector = connectorById.get(integration.providerId);
+
     return connector && connector.status !== "connected" ? [connector] : [];
   });
 }
@@ -82,7 +85,11 @@ export function CapabilityDiscoveryView({ data }: { data: unknown }) {
   const renderSetup = (item: CapabilityDiscoveryItem) => {
     if (item.setup?.kind === "connector") {
       const connector = connectorById.get(item.setup.provider);
-      if (!connector || connector.status === "connected") return null;
+
+      if (!connector || connector.status === "connected") {
+        return null;
+      }
+
       return (
         <Button
           type="button"
@@ -97,14 +104,21 @@ export function CapabilityDiscoveryView({ data }: { data: unknown }) {
       );
     }
 
-    if (item.setup?.kind !== "recipe") return null;
+    if (item.setup?.kind !== "recipe") {
+      return null;
+    }
+
     const recipe = recipeById.get(item.setup.recipeId);
-    if (!recipe) return null;
+
+    if (!recipe) {
+      return null;
+    }
+
     const installation = findOwnInstallation(installations, recipe.id, userId);
     const missingConnectors = getMissingConnectors(recipe, connectors);
     const hasBlockingConnection = recipe.integrations.some(
       (integration) =>
-        integration.requiresConnection !== false && integration.connectionStatus !== "connected",
+        integration.requiresConnection && integration.connectionStatus !== "connected",
     );
 
     if (missingConnectors.length > 0) {
@@ -123,7 +137,10 @@ export function CapabilityDiscoveryView({ data }: { data: unknown }) {
       ));
     }
 
-    if (hasBlockingConnection) return null;
+    if (hasBlockingConnection) {
+      return null;
+    }
+
     return (
       <Button
         type="button"
@@ -132,8 +149,10 @@ export function CapabilityDiscoveryView({ data }: { data: unknown }) {
         onClick={() => {
           if (installation?.status === "paused") {
             void workflows.actions.toggleInstallationStatus(installation);
+
             return;
           }
+
           workflows.actions.openConfigurationDialog(recipe, installation);
         }}
       >
@@ -157,6 +176,7 @@ export function CapabilityDiscoveryView({ data }: { data: unknown }) {
         }))}
         renderSetupActions={(item) => {
           const original = itemById.get(item.id);
+
           return original ? renderSetup(original) : null;
         }}
       />

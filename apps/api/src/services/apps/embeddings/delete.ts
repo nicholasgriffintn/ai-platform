@@ -1,5 +1,5 @@
-import { RepositoryManager } from "~/repositories";
 import { getEmbeddingProvider } from "~/lib/providers/capabilities/embedding/helpers";
+import { RepositoryManager } from "~/repositories";
 import type { IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -8,44 +8,46 @@ const logger = getLogger({ prefix: "services/apps/embeddings/delete" });
 
 // @ts-ignore
 export interface IDeleteEmbeddingRequest extends IRequest {
-	request: {
-		ids: string[];
-	};
+  request: {
+    ids: string[];
+  };
 }
 
 export const deleteEmbedding = async (req: IDeleteEmbeddingRequest): Promise<any> => {
-	try {
-		const { request, env } = req;
+  try {
+    const { request, env } = req;
 
-		const { ids } = request;
+    const { ids } = request;
 
-		if (!ids) {
-			throw new AssistantError("Missing ids from request", ErrorType.PARAMS_ERROR);
-		}
+    if (!ids) {
+      throw new AssistantError("Missing ids from request", ErrorType.PARAMS_ERROR);
+    }
 
-		const repositories = new RepositoryManager(env);
-		const userSettings = req.user?.id
-			? await repositories.userSettings.getUserSettings(req.user.id)
-			: null;
-		if (!userSettings) {
-			throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
-		}
-		const embedding = getEmbeddingProvider(env, req.user, userSettings);
+    const repositories = new RepositoryManager(env);
+    const userSettings = req.user?.id
+      ? await repositories.userSettings.getUserSettings(req.user.id)
+      : null;
 
-		const result = await embedding.delete(ids);
+    if (!userSettings) {
+      throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
+    }
 
-		if (result.status !== "success") {
-			throw new AssistantError("Error deleting embedding");
-		}
+    const embedding = getEmbeddingProvider(env, req.user, userSettings);
 
-		return {
-			status: "success",
-			data: {
-				ids,
-			},
-		};
-	} catch (error) {
-		logger.error("Error deleting embedding", { error });
-		throw new AssistantError("Error deleting embedding");
-	}
+    const result = await embedding.delete(ids);
+
+    if (result.status !== "success") {
+      throw new AssistantError("Error deleting embedding");
+    }
+
+    return {
+      status: "success",
+      data: {
+        ids,
+      },
+    };
+  } catch (error) {
+    logger.error("Error deleting embedding", { error });
+    throw new AssistantError("Error deleting embedding");
+  }
 };

@@ -13,13 +13,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@ngriffin_uk/polychat-component-ui";
-import type {
-  AssistantRecipe,
-  RecipeComposioTrigger,
-  RecipeConnectorAccount,
-  RecipeInstallation,
-} from "@ngriffin_uk/polychat-schemas";
 import {
+  type AssistantRecipe,
+  type RecipeComposioTrigger,
+  type RecipeConnectorAccount,
+  type RecipeInstallation,
   buildRecipeTriggerConfiguration,
   getRecipeTriggerConfigurationFields,
   type RecipeTriggerConfigurationValue,
@@ -77,6 +75,7 @@ export function RecipeEventTriggersDialog({
 
   useEffect(() => {
     const selected = activeAccounts.find((account) => account.isSelected) ?? activeAccounts[0];
+
     setAccountId(selected?.id ?? "");
   }, [activeAccounts]);
 
@@ -92,16 +91,24 @@ export function RecipeEventTriggersDialog({
   }, [triggerSlug]);
 
   const submit = async () => {
-    if (!provider || !accountId || !selectedTriggerType) return;
+    if (!provider || !accountId || !selectedTriggerType) {
+      return;
+    }
+
     if (configuration.unsupportedRequiredLabels.length > 0) {
       setValidationError("This event needs configuration that is not supported here yet.");
+
       return;
     }
+
     const result = buildRecipeTriggerConfiguration(configuration.fields, configurationValues);
+
     if (result.error) {
       setValidationError(result.error);
+
       return;
     }
+
     setValidationError(undefined);
     await manager.createTrigger.mutateAsync({
       providerId: provider.id,
@@ -221,7 +228,10 @@ export function RecipeEventTriggersDialog({
           variant="destructive"
           isLoading={manager.deleteTrigger.isPending}
           onConfirm={async () => {
-            if (!triggerToDelete) return;
+            if (!triggerToDelete) {
+              return;
+            }
+
             await manager.deleteTrigger.mutateAsync(triggerToDelete.id);
             setTriggerToDelete(null);
           }}

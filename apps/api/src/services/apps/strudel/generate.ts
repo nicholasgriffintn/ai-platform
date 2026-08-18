@@ -1,200 +1,205 @@
-import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { strudelGenerateResponseSchema } from "@ngriffin_uk/polychat-schemas";
+import type { strudelGenerateResponseSchema } from "@ngriffin_uk/polychat-schemas";
 import type { z } from "zod";
+
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { buildStrudelSystemPrompt } from "~/lib/prompts/strudel";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { captureTrainingExample } from "~/lib/providers/capabilities/training/captureTrainingExample";
+import { getAuxiliaryModel, getModels, filterModelsForUserAccess } from "~/lib/providers/models";
 import type { IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { buildStrudelSystemPrompt } from "~/lib/prompts/strudel";
-import { getAuxiliaryModel, getModels, filterModelsForUserAccess } from "~/lib/providers/models";
 import { formatMessages } from "~/utils/messages";
 import { mergeParametersWithDefaults } from "~/utils/parameters";
-import { captureTrainingExample } from "~/lib/providers/capabilities/training/captureTrainingExample";
-import { generateId } from "~/utils/id";
 
 const logger = getLogger({ prefix: "services/strudel/generate" });
 
 interface StrudelGenerateRequest {
-	prompt: string;
-	style?: "techno" | "ambient" | "house" | "jazz" | "drums" | "experimental";
-	tempo?: number;
-	complexity?: "simple" | "medium" | "complex";
-	model?: string;
-	options?: Record<string, any>;
+  prompt: string;
+  style?: "techno" | "ambient" | "house" | "jazz" | "drums" | "experimental";
+  tempo?: number;
+  complexity?: "simple" | "medium" | "complex";
+  model?: string;
+  options?: Record<string, any>;
 }
 
 type StrudelGenerateResponse = z.infer<typeof strudelGenerateResponseSchema>;
 
 export async function generateStrudelCode({
-	context,
-	env,
-	request,
-	user,
+  context,
+  env,
+  request,
+  user,
 }: {
-	context?: ServiceContext;
-	env?: IEnv;
-	request: StrudelGenerateRequest;
-	user: IUser;
+  context?: ServiceContext;
+  env?: IEnv;
+  request: StrudelGenerateRequest;
+  user: IUser;
 }): Promise<StrudelGenerateResponse> {
-	const serviceContext = resolveServiceContext({ context, env, user });
-	const runtimeEnv = serviceContext.env as IEnv;
+  const serviceContext = resolveServiceContext({ context, env, user });
+  const runtimeEnv = serviceContext.env;
 
-	if (!request.prompt || request.prompt.trim().length === 0) {
-		throw new AssistantError("Prompt is required", ErrorType.PARAMS_ERROR);
-	}
+  if (!request.prompt || request.prompt.trim().length === 0) {
+    throw new AssistantError("Prompt is required", ErrorType.PARAMS_ERROR);
+  }
 
-	try {
-		const systemPrompt = buildStrudelSystemPrompt(request.style, request.complexity || "medium");
+  try {
+    const systemPrompt = buildStrudelSystemPrompt(request.style, request.complexity || "medium");
 
-		let userPrompt = `Generate Strudel code for: ${request.prompt}`;
-		if (request.tempo) {
-			userPrompt += `\nTempo: ${request.tempo} BPM (use .fast() or .slow() to adjust)`;
-		}
+    let userPrompt = `Generate Strudel code for: ${request.prompt}`;
 
-		logger.info("Generating Strudel code", {
-			prompt: request.prompt,
-			style: request.style,
-			complexity: request.complexity,
-			model: request.model,
-		});
+    if (request.tempo) {
+      userPrompt += `\nTempo: ${request.tempo} BPM (use .fast() or .slow() to adjust)`;
+    }
 
-		let model: string;
-		let providerName: string;
+    logger.info("Generating Strudel code", {
+      prompt: request.prompt,
+      style: request.style,
+      complexity: request.complexity,
+      model: request.model,
+    });
 
-		if (request.model) {
-			const allModels = getModels();
-			const accessibleModels = await filterModelsForUserAccess(
-				allModels,
-				runtimeEnv,
-				user?.id || null,
-			);
+    let model: string;
+    let providerName: string;
 
-			const selectedModelConfig = accessibleModels[request.model];
-			if (!selectedModelConfig) {
-				throw new AssistantError("Selected model is not available", ErrorType.PARAMS_ERROR);
-			}
+    if (request.model) {
+      const allModels = getModels();
+      const accessibleModels = await filterModelsForUserAccess(
+        allModels,
+        runtimeEnv,
+        user?.id || null,
+      );
 
-			model = selectedModelConfig.matchingModel;
-			providerName = selectedModelConfig.provider;
-		} else {
-			const auxiliaryModel = await getAuxiliaryModel(runtimeEnv, user);
-			model = auxiliaryModel.model;
-			providerName = auxiliaryModel.provider;
-		}
+      const selectedModelConfig = accessibleModels[request.model];
 
-		const provider = getChatProvider(providerName, {
-			env: runtimeEnv,
-			user,
-		});
+      if (!selectedModelConfig) {
+        throw new AssistantError("Selected model is not available", ErrorType.PARAMS_ERROR);
+      }
 
-		const baseMessages: Message[] = [
-			{
-				role: "user",
-				content: userPrompt,
-			},
-		];
+      model = selectedModelConfig.matchingModel;
+      providerName = selectedModelConfig.provider;
+    } else {
+      const auxiliaryModel = await getAuxiliaryModel(runtimeEnv, user);
 
-		let formattedMessages: Message[];
-		try {
-			formattedMessages = formatMessages(provider.name, baseMessages, systemPrompt, model);
-		} catch (error) {
-			logger.error("Failed to format messages for provider", {
-				provider: provider.name,
-				error,
-			});
-			throw new AssistantError(
-				"Unable to prepare prompts for the selected model",
-				ErrorType.PARAMS_ERROR,
-			);
-		}
+      model = auxiliaryModel.model;
+      providerName = auxiliaryModel.provider;
+    }
 
-		const requestParameters = mergeParametersWithDefaults({
-			model,
-			env: runtimeEnv,
-			context: serviceContext,
-			system_prompt: systemPrompt,
-			messages: formattedMessages,
-			temperature: 0.7,
-			max_tokens: 8192,
-			stream: false,
-			store: false,
-			completion_id: `strudel-${generateId()}`,
-			enabled_tools: [],
-			tools: [],
-			mode: "normal",
-			platform: "tool-run",
-			options: request.options || {
-				cache_ttl_seconds: 0,
-			},
-		});
+    const provider = getChatProvider(providerName, {
+      env: runtimeEnv,
+      user,
+    });
 
-		const aiResponse = await provider.getResponse(requestParameters, user?.id || null);
+    const baseMessages: Message[] = [
+      {
+        role: "user",
+        content: userPrompt,
+      },
+    ];
 
-		const rawContent =
-			aiResponse?.response ||
-			(Array.isArray(aiResponse?.choices) && aiResponse.choices[0]?.message?.content) ||
-			(typeof aiResponse === "string" ? aiResponse : JSON.stringify(aiResponse));
+    let formattedMessages: Message[];
 
-		if (!rawContent) {
-			throw new AssistantError("No response from AI provider", ErrorType.UNKNOWN_ERROR);
-		}
+    try {
+      formattedMessages = formatMessages(provider.name, baseMessages, systemPrompt, model);
+    } catch (error) {
+      logger.error("Failed to format messages for provider", {
+        provider: provider.name,
+        error,
+      });
+      throw new AssistantError(
+        "Unable to prepare prompts for the selected model",
+        ErrorType.PARAMS_ERROR,
+      );
+    }
 
-		let generatedCode = String(rawContent);
+    const requestParameters = mergeParametersWithDefaults({
+      model,
+      env: runtimeEnv,
+      context: serviceContext,
+      system_prompt: systemPrompt,
+      messages: formattedMessages,
+      temperature: 0.7,
+      max_tokens: 8192,
+      stream: false,
+      store: false,
+      completion_id: `strudel-${generateId()}`,
+      enabled_tools: [],
+      tools: [],
+      mode: "normal",
+      platform: "tool-run",
+      options: request.options || {
+        cache_ttl_seconds: 0,
+      },
+    });
 
-		generatedCode = generatedCode
-			.replace(/^```(?:javascript|js|strudel)?\n?/gm, "")
-			.replace(/\n?```$/gm, "")
-			.trim();
+    const aiResponse = await provider.getResponse(requestParameters, user?.id || null);
 
-		logger.info("Successfully generated Strudel code", {
-			codeLength: generatedCode.length,
-		});
+    const rawContent =
+      aiResponse?.response ||
+      (Array.isArray(aiResponse?.choices) && aiResponse.choices[0]?.message?.content) ||
+      (typeof aiResponse === "string" ? aiResponse : JSON.stringify(aiResponse));
 
-		const generationId = generateId();
+    if (!rawContent) {
+      throw new AssistantError("No response from AI provider", ErrorType.UNKNOWN_ERROR);
+    }
 
-		captureTrainingExample({
-			context: serviceContext,
-			source: "app",
-			appName: "strudel",
-			userPrompt: request.prompt,
-			assistantResponse: generatedCode,
-			systemPrompt,
-			modelUsed: model,
-			conversationId: generationId,
-			metadata: {
-				style: request.style,
-				complexity: request.complexity,
-				tempo: request.tempo,
-			},
-		}).catch((err) => {
-			logger.error("Failed to capture training example", err);
-		});
+    let generatedCode = String(rawContent);
 
-		return {
-			code: generatedCode,
-			explanation: `Generated a ${request.style || "musical"} pattern${request.tempo ? ` at ${request.tempo} BPM` : ""}`,
-			generationId,
-		};
-	} catch (error) {
-		logger.error("Error generating Strudel code:", {
-			error_message: error instanceof Error ? error.message : "Unknown error",
-			error_stack: error instanceof Error ? error.stack : undefined,
-			error_cause: error instanceof Error ? error.cause : undefined,
-			prompt: request.prompt,
-		});
+    generatedCode = generatedCode
+      .replace(/^```(?:javascript|js|strudel)?\n?/gm, "")
+      .replace(/\n?```$/gm, "")
+      .trim();
 
-		if (error instanceof AssistantError) {
-			throw error;
-		}
+    logger.info("Successfully generated Strudel code", {
+      codeLength: generatedCode.length,
+    });
 
-		throw new AssistantError(
-			`Failed to generate Strudel code: ${error instanceof Error ? error.message : "Unknown error"}`,
-			ErrorType.UNKNOWN_ERROR,
-			500,
-			{
-				originalError: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
-			},
-		);
-	}
+    const generationId = generateId();
+
+    captureTrainingExample({
+      context: serviceContext,
+      source: "app",
+      appName: "strudel",
+      userPrompt: request.prompt,
+      assistantResponse: generatedCode,
+      systemPrompt,
+      modelUsed: model,
+      conversationId: generationId,
+      metadata: {
+        style: request.style,
+        complexity: request.complexity,
+        tempo: request.tempo,
+      },
+    }).catch((err) => {
+      logger.error("Failed to capture training example", err);
+    });
+
+    return {
+      code: generatedCode,
+      explanation: `Generated a ${request.style || "musical"} pattern${request.tempo ? ` at ${request.tempo} BPM` : ""}`,
+      generationId,
+    };
+  } catch (error) {
+    logger.error("Error generating Strudel code:", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+      error_stack: error instanceof Error ? error.stack : undefined,
+      error_cause: error instanceof Error ? error.cause : undefined,
+      prompt: request.prompt,
+    });
+
+    if (error instanceof AssistantError) {
+      throw error;
+    }
+
+    throw new AssistantError(
+      `Failed to generate Strudel code: ${error instanceof Error ? error.message : "Unknown error"}`,
+      ErrorType.UNKNOWN_ERROR,
+      500,
+      {
+        originalError: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      },
+    );
+  }
 }

@@ -1,338 +1,358 @@
 export interface RealtimeTranscriptResult {
-	isDelta: boolean;
-	isFinal: boolean;
-	itemId?: string;
-	responseId?: string;
-	source: "input" | "output" | "unknown";
-	text: string;
+  isDelta: boolean;
+  isFinal: boolean;
+  itemId?: string;
+  responseId?: string;
+  source: "input" | "output" | "unknown";
+  text: string;
 }
 
 export interface RealtimeEventResult {
-	itemId?: string;
-	label?: string;
-	responseId?: string;
-	type: string;
+  itemId?: string;
+  label?: string;
+  responseId?: string;
+  type: string;
 }
 
 const REALTIME_EVENT_LABELS: Record<string, string> = {
-	"session.created": "Realtime session ready",
-	"session.updated": "Realtime session configured",
-	"input_audio_buffer.speech_started": "Listening",
-	"input_audio_buffer.speech_stopped": "Processing speech",
-	"input_audio_buffer.committed": "Speech captured",
-	"response.created": "Assistant responding",
-	"response.output_item.added": "Assistant responding",
-	"response.content_part.added": "Assistant responding",
-	"response.output_audio.delta": "Assistant speaking",
-	"response.output_audio.done": "Assistant audio complete",
-	"response.interrupted": "Assistant interrupted",
-	"response.done": "Assistant response complete",
+  "session.created": "Realtime session ready",
+  "session.updated": "Realtime session configured",
+  "input_audio_buffer.speech_started": "Listening",
+  "input_audio_buffer.speech_stopped": "Processing speech",
+  "input_audio_buffer.committed": "Speech captured",
+  "response.created": "Assistant responding",
+  "response.output_item.added": "Assistant responding",
+  "response.content_part.added": "Assistant responding",
+  "response.output_audio.delta": "Assistant speaking",
+  "response.output_audio.done": "Assistant audio complete",
+  "response.interrupted": "Assistant interrupted",
+  "response.done": "Assistant response complete",
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null;
+  return typeof value === "object" && value !== null;
 }
 
 function getString(value: unknown): string | undefined {
-	return typeof value === "string" && value.trim().length > 0 ? value : undefined;
+  return typeof value === "string" && value.trim().length > 0 ? value : undefined;
 }
 
 function getBoolean(value: unknown): boolean {
-	return value === true;
+  return value === true;
 }
 
 function getNestedRecord(value: unknown, key: string): Record<string, unknown> | undefined {
-	if (!isRecord(value)) {
-		return undefined;
-	}
+  if (!isRecord(value)) {
+    return undefined;
+  }
 
-	const nested = value[key];
-	return isRecord(nested) ? nested : undefined;
+  const nested = value[key];
+
+  return isRecord(nested) ? nested : undefined;
 }
 
 function getTranscriptFromRecord(value: unknown): string | undefined {
-	if (!isRecord(value)) {
-		return undefined;
-	}
+  if (!isRecord(value)) {
+    return undefined;
+  }
 
-	return (
-		getString(value.text) ??
-		getString(value.transcript) ??
-		getString(value.delta) ??
-		getString(getNestedRecord(value, "inputTranscription")?.text) ??
-		getString(getNestedRecord(value, "outputTranscription")?.text) ??
-		getString(getNestedRecord(value, "input_transcription")?.text) ??
-		getString(getNestedRecord(value, "output_transcription")?.text)
-	);
+  return (
+    getString(value.text) ??
+    getString(value.transcript) ??
+    getString(value.delta) ??
+    getString(getNestedRecord(value, "inputTranscription")?.text) ??
+    getString(getNestedRecord(value, "outputTranscription")?.text) ??
+    getString(getNestedRecord(value, "input_transcription")?.text) ??
+    getString(getNestedRecord(value, "output_transcription")?.text)
+  );
 }
 
 function getRealtimeItemId(value: Record<string, unknown>): string | undefined {
-	return getString(value.item_id) ?? getString(value.itemId);
+  return getString(value.item_id) ?? getString(value.itemId);
 }
 
 function getRealtimeResponseId(value: Record<string, unknown>): string | undefined {
-	const response = getNestedRecord(value, "response");
-	return getString(value.response_id) ?? getString(value.responseId) ?? getString(response?.id);
+  const response = getNestedRecord(value, "response");
+
+  return getString(value.response_id) ?? getString(value.responseId) ?? getString(response?.id);
 }
 
 function getTextFromParts(parts: unknown): string | undefined {
-	if (!Array.isArray(parts)) {
-		return undefined;
-	}
+  if (!Array.isArray(parts)) {
+    return undefined;
+  }
 
-	const text = parts
-		.map((part) => (isRecord(part) ? getString(part.text) : undefined))
-		.filter((partText): partText is string => Boolean(partText))
-		.join("");
+  const text = parts
+    .map((part) => (isRecord(part) ? getString(part.text) : undefined))
+    .filter((partText): partText is string => Boolean(partText))
+    .join("");
 
-	return text.length > 0 ? text : undefined;
+  return text.length > 0 ? text : undefined;
 }
 
 function getTranscriptSource(value: Record<string, unknown>): RealtimeTranscriptResult["source"] {
-	const type = getString(value.type)?.toLowerCase() ?? "";
-	if (type.includes("input")) {
-		return "input";
-	}
-	if (type.startsWith("transcription.")) {
-		return "input";
-	}
-	if (type.includes("output") || type.includes("response")) {
-		return "output";
-	}
-	if (
-		getNestedRecord(value, "inputTranscription") ||
-		getNestedRecord(value, "input_transcription")
-	) {
-		return "input";
-	}
-	if (
-		getNestedRecord(value, "outputTranscription") ||
-		getNestedRecord(value, "output_transcription")
-	) {
-		return "output";
-	}
+  const type = getString(value.type)?.toLowerCase() ?? "";
 
-	return "unknown";
+  if (type.includes("input")) {
+    return "input";
+  }
+
+  if (type.startsWith("transcription.")) {
+    return "input";
+  }
+
+  if (type.includes("output") || type.includes("response")) {
+    return "output";
+  }
+
+  if (
+    getNestedRecord(value, "inputTranscription") ||
+    getNestedRecord(value, "input_transcription")
+  ) {
+    return "input";
+  }
+
+  if (
+    getNestedRecord(value, "outputTranscription") ||
+    getNestedRecord(value, "output_transcription")
+  ) {
+    return "output";
+  }
+
+  return "unknown";
 }
 
 function isRealtimeTranscriptDelta(type: string): boolean {
-	return type.includes("delta");
+  return type.includes("delta");
 }
 
 function isRealtimeTranscriptFinal(type: string): boolean {
-	if (type === "transcription.text" || type === "transcription.text.delta") {
-		return false;
-	}
-	if (type === "transcription.segment" || type === "transcription.done") {
-		return true;
-	}
+  if (type === "transcription.text" || type === "transcription.text.delta") {
+    return false;
+  }
 
-	return (
-		type.includes("completed") ||
-		type.includes("final") ||
-		type.includes("done") ||
-		!isRealtimeTranscriptDelta(type)
-	);
+  if (type === "transcription.segment" || type === "transcription.done") {
+    return true;
+  }
+
+  return (
+    type.includes("completed") ||
+    type.includes("final") ||
+    type.includes("done") ||
+    !isRealtimeTranscriptDelta(type)
+  );
 }
 
 export function parseRealtimeJsonMessage(data: unknown): unknown | undefined {
-	if (typeof data !== "string") {
-		return undefined;
-	}
+  if (typeof data !== "string") {
+    return undefined;
+  }
 
-	return parseJson(data);
+  return parseJson(data);
 }
 
 export async function parseRealtimeMessageData(data: unknown): Promise<unknown | undefined> {
-	if (typeof data === "string") {
-		return parseRealtimeJsonMessage(data);
-	}
+  if (typeof data === "string") {
+    return parseRealtimeJsonMessage(data);
+  }
 
-	if (data instanceof Blob) {
-		return parseJson(await data.text());
-	}
+  if (data instanceof Blob) {
+    return parseJson(await data.text());
+  }
 
-	if (isArrayBuffer(data)) {
-		return parseJson(new TextDecoder().decode(data));
-	}
+  if (isArrayBuffer(data)) {
+    return parseJson(new TextDecoder().decode(data));
+  }
 
-	if (ArrayBuffer.isView(data)) {
-		return parseJson(new TextDecoder().decode(data));
-	}
+  if (ArrayBuffer.isView(data)) {
+    return parseJson(new TextDecoder().decode(data));
+  }
 
-	return undefined;
+  return undefined;
 }
 
 function parseJson(data: string): unknown | undefined {
-	try {
-		return JSON.parse(data);
-	} catch {
-		return undefined;
-	}
+  try {
+    return JSON.parse(data);
+  } catch {
+    return undefined;
+  }
 }
 
 function isArrayBuffer(value: unknown): value is ArrayBuffer {
-	return Object.prototype.toString.call(value) === "[object ArrayBuffer]";
+  return Object.prototype.toString.call(value) === "[object ArrayBuffer]";
 }
 
 export function extractRealtimeErrorMessage(payload: unknown): string | undefined {
-	if (!isRecord(payload)) {
-		return undefined;
-	}
+  if (!isRecord(payload)) {
+    return undefined;
+  }
 
-	const type = getString(payload.type)?.toLowerCase() ?? "";
-	const error = getNestedRecord(payload, "error");
-	if (error) {
-		return (
-			getString(error.message) ??
-			getString(error.code) ??
-			getString(error.type) ??
-			"Realtime session error"
-		);
-	}
+  const type = getString(payload.type)?.toLowerCase() ?? "";
+  const error = getNestedRecord(payload, "error");
 
-	if (type.includes("error")) {
-		return (
-			getString(payload.message) ??
-			getString(payload.code) ??
-			getString(payload.type) ??
-			"Realtime session error"
-		);
-	}
+  if (error) {
+    return (
+      getString(error.message) ??
+      getString(error.code) ??
+      getString(error.type) ??
+      "Realtime session error"
+    );
+  }
 
-	return undefined;
+  if (type.includes("error")) {
+    return (
+      getString(payload.message) ??
+      getString(payload.code) ??
+      getString(payload.type) ??
+      "Realtime session error"
+    );
+  }
+
+  return undefined;
 }
 
 export function extractRealtimeEventLabel(payload: unknown): string | undefined {
-	if (!isRecord(payload)) {
-		return undefined;
-	}
+  if (!isRecord(payload)) {
+    return undefined;
+  }
 
-	const type = extractRealtimeEventType(payload);
-	if (!type || type.includes("transcript")) {
-		return undefined;
-	}
+  const type = extractRealtimeEventType(payload);
 
-	return REALTIME_EVENT_LABELS[type];
+  if (!type || type.includes("transcript")) {
+    return undefined;
+  }
+
+  return REALTIME_EVENT_LABELS[type];
 }
 
 export function extractRealtimeEvent(payload: unknown): RealtimeEventResult | undefined {
-	if (!isRecord(payload)) {
-		return undefined;
-	}
+  if (!isRecord(payload)) {
+    return undefined;
+  }
 
-	const type = extractRealtimeEventType(payload);
-	if (!type) {
-		return undefined;
-	}
+  const type = extractRealtimeEventType(payload);
 
-	const itemId = getRealtimeItemId(payload);
-	const responseId = getRealtimeResponseId(payload);
-	return {
-		...(itemId ? { itemId } : {}),
-		label: extractRealtimeEventLabel(payload),
-		...(responseId ? { responseId } : {}),
-		type,
-	};
+  if (!type) {
+    return undefined;
+  }
+
+  const itemId = getRealtimeItemId(payload);
+  const responseId = getRealtimeResponseId(payload);
+
+  return {
+    ...(itemId ? { itemId } : {}),
+    label: extractRealtimeEventLabel(payload),
+    ...(responseId ? { responseId } : {}),
+    type,
+  };
 }
 
 export function extractRealtimeEventType(payload: unknown): string | undefined {
-	if (!isRecord(payload)) {
-		return undefined;
-	}
+  if (!isRecord(payload)) {
+    return undefined;
+  }
 
-	const serverContent = getNestedRecord(payload, "serverContent");
-	if (getBoolean(serverContent?.interrupted)) {
-		return "response.interrupted";
-	}
-	if (
-		getBoolean(serverContent?.turnComplete) ||
-		getBoolean(serverContent?.turn_complete) ||
-		getBoolean(serverContent?.generationComplete) ||
-		getBoolean(serverContent?.generation_complete)
-	) {
-		return "response.done";
-	}
+  const serverContent = getNestedRecord(payload, "serverContent");
 
-	return getString(payload.type);
+  if (getBoolean(serverContent?.interrupted)) {
+    return "response.interrupted";
+  }
+
+  if (
+    getBoolean(serverContent?.turnComplete) ||
+    getBoolean(serverContent?.turn_complete) ||
+    getBoolean(serverContent?.generationComplete) ||
+    getBoolean(serverContent?.generation_complete)
+  ) {
+    return "response.done";
+  }
+
+  return getString(payload.type);
 }
 
 export function extractRealtimeTranscript(payload: unknown): RealtimeTranscriptResult | undefined {
-	if (!isRecord(payload)) {
-		return undefined;
-	}
+  if (!isRecord(payload)) {
+    return undefined;
+  }
 
-	const serverContent = getNestedRecord(payload, "serverContent");
-	const modelTurn =
-		getNestedRecord(serverContent, "modelTurn") ?? getNestedRecord(serverContent, "model_turn");
-	const serverTranscript =
-		getTranscriptFromRecord(serverContent) ?? getTextFromParts(modelTurn?.parts);
-	if (serverContent && serverTranscript) {
-		const itemId = getRealtimeItemId(payload);
-		const responseId = getRealtimeResponseId(payload);
-		const isFinal =
-			getBoolean(serverContent.turnComplete) ||
-			getBoolean(serverContent.turn_complete) ||
-			getBoolean(serverContent.generationComplete) ||
-			getBoolean(serverContent.generation_complete);
-		return {
-			text: serverTranscript,
-			isDelta: true,
-			isFinal,
-			...(itemId ? { itemId } : {}),
-			...(responseId ? { responseId } : {}),
-			source: modelTurn ? "output" : getTranscriptSource(serverContent),
-		};
-	}
+  const serverContent = getNestedRecord(payload, "serverContent");
+  const modelTurn =
+    getNestedRecord(serverContent, "modelTurn") ?? getNestedRecord(serverContent, "model_turn");
+  const serverTranscript =
+    getTranscriptFromRecord(serverContent) ?? getTextFromParts(modelTurn?.parts);
 
-	const directTranscript = getTranscriptFromRecord(payload);
-	if (!directTranscript) {
-		return undefined;
-	}
+  if (serverContent && serverTranscript) {
+    const itemId = getRealtimeItemId(payload);
+    const responseId = getRealtimeResponseId(payload);
+    const isFinal =
+      getBoolean(serverContent.turnComplete) ||
+      getBoolean(serverContent.turn_complete) ||
+      getBoolean(serverContent.generationComplete) ||
+      getBoolean(serverContent.generation_complete);
 
-	const type = getString(payload.type)?.toLowerCase() ?? "";
-	if (type === "transcription.done" && !directTranscript) {
-		return undefined;
-	}
+    return {
+      text: serverTranscript,
+      isDelta: true,
+      isFinal,
+      ...(itemId ? { itemId } : {}),
+      ...(responseId ? { responseId } : {}),
+      source: modelTurn ? "output" : getTranscriptSource(serverContent),
+    };
+  }
 
-	const itemId = getRealtimeItemId(payload);
-	const responseId = getRealtimeResponseId(payload);
-	return {
-		text: directTranscript,
-		isDelta: isRealtimeTranscriptDelta(type),
-		isFinal: isRealtimeTranscriptFinal(type),
-		...(itemId ? { itemId } : {}),
-		...(responseId ? { responseId } : {}),
-		source: getTranscriptSource(payload),
-	};
+  const directTranscript = getTranscriptFromRecord(payload);
+
+  if (!directTranscript) {
+    return undefined;
+  }
+
+  const type = getString(payload.type)?.toLowerCase() ?? "";
+
+  if (type === "transcription.done" && !directTranscript) {
+    return undefined;
+  }
+
+  const itemId = getRealtimeItemId(payload);
+  const responseId = getRealtimeResponseId(payload);
+
+  return {
+    text: directTranscript,
+    isDelta: isRealtimeTranscriptDelta(type),
+    isFinal: isRealtimeTranscriptFinal(type),
+    ...(itemId ? { itemId } : {}),
+    ...(responseId ? { responseId } : {}),
+    source: getTranscriptSource(payload),
+  };
 }
 
 export function extractInlineAudioChunks(payload: unknown): string[] {
-	if (!isRecord(payload)) {
-		return [];
-	}
+  if (!isRecord(payload)) {
+    return [];
+  }
 
-	const serverContent = getNestedRecord(payload, "serverContent");
-	const modelTurn = getNestedRecord(serverContent, "modelTurn");
-	const parts = Array.isArray(modelTurn?.parts) ? modelTurn.parts : [];
-	const chunks: string[] = [];
+  const serverContent = getNestedRecord(payload, "serverContent");
+  const modelTurn = getNestedRecord(serverContent, "modelTurn");
+  const parts = Array.isArray(modelTurn?.parts) ? modelTurn.parts : [];
+  const chunks: string[] = [];
 
-	for (const part of parts) {
-		const inlineData = getNestedRecord(part, "inlineData") ?? getNestedRecord(part, "inline_data");
-		const mimeType = getString(inlineData?.mimeType) ?? getString(inlineData?.mime_type);
-		const data = getString(inlineData?.data);
-		if (data && mimeType?.startsWith("audio/")) {
-			chunks.push(data);
-		}
-	}
+  for (const part of parts) {
+    const inlineData = getNestedRecord(part, "inlineData") ?? getNestedRecord(part, "inline_data");
+    const mimeType = getString(inlineData?.mimeType) ?? getString(inlineData?.mime_type);
+    const data = getString(inlineData?.data);
 
-	return chunks;
+    if (data && mimeType?.startsWith("audio/")) {
+      chunks.push(data);
+    }
+  }
+
+  return chunks;
 }
 
 export function isRealtimeSetupCompleteMessage(payload: unknown): boolean {
-	if (!isRecord(payload)) {
-		return false;
-	}
+  if (!isRecord(payload)) {
+    return false;
+  }
 
-	return isRecord(payload.setupComplete) || isRecord(payload.setup_complete);
+  return isRecord(payload.setupComplete) || isRecord(payload.setup_complete);
 }

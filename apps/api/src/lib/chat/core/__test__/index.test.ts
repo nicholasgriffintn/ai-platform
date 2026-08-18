@@ -1,168 +1,171 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import type { CoreChatOptions } from "~/types";
+
 import { processChatRequest } from "../index";
 
 const mockOrchestrator = {
-	process: vi.fn(),
+  process: vi.fn(),
 };
 
 vi.mock("../ChatOrchestrator", () => ({
-	ChatOrchestrator: class {
-		constructor() {
-			return mockOrchestrator;
-		}
-	},
+  ChatOrchestrator: class {
+    constructor() {
+      return mockOrchestrator;
+    }
+  },
 }));
 
 describe("processChatRequest", () => {
-	let mockOptions: CoreChatOptions;
+  let mockOptions: CoreChatOptions;
 
-	beforeEach(() => {
-		vi.clearAllMocks();
+  beforeEach(() => {
+    vi.clearAllMocks();
 
-		mockOptions = {
-			completion_id: "test-completion-id",
-			model: "test-model",
-			messages: [{ role: "user", content: "Hello" }],
-			user: { id: "test-user" },
-			env: { AI: { aiGatewayLogId: "test-log-id" } },
-			app_url: "https://test.com",
-		} as any;
-	});
+    mockOptions = {
+      completion_id: "test-completion-id",
+      model: "test-model",
+      messages: [{ role: "user", content: "Hello" }],
+      user: { id: "test-user" },
+      env: { AI: { aiGatewayLogId: "test-log-id" } },
+      app_url: "https://test.com",
+    } as any;
+  });
 
-	afterEach(() => {
-		vi.restoreAllMocks();
-	});
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
-	it("should create orchestrator with env and process options", async () => {
-		const mockResult = {
-			response: { response: "Test response" },
-			selectedModel: "test-model",
-			completion_id: "test-completion-id",
-		};
+  it("should create orchestrator with env and process options", async () => {
+    const mockResult = {
+      response: { response: "Test response" },
+      selectedModel: "test-model",
+      completion_id: "test-completion-id",
+    };
 
-		mockOrchestrator.process.mockResolvedValue(mockResult);
+    mockOrchestrator.process.mockResolvedValue(mockResult);
 
-		const result = await processChatRequest(mockOptions);
+    const result = await processChatRequest(mockOptions);
 
-		expect(mockOrchestrator.process).toHaveBeenCalledWith(mockOptions);
-		expect(result).toEqual(mockResult);
-	});
+    expect(mockOrchestrator.process).toHaveBeenCalledWith(mockOptions);
+    expect(result).toEqual(mockResult);
+  });
 
-	it("should handle orchestrator errors", async () => {
-		const error = new Error("Orchestrator error");
-		mockOrchestrator.process.mockRejectedValue(error);
+  it("should handle orchestrator errors", async () => {
+    const error = new Error("Orchestrator error");
 
-		await expect(processChatRequest(mockOptions)).rejects.toThrow(error);
-	});
+    mockOrchestrator.process.mockRejectedValue(error);
 
-	it("should handle streaming responses", async () => {
-		const mockStream = new ReadableStream();
-		const streamResult = {
-			stream: mockStream,
-			selectedModel: "test-model",
-			completion_id: "test-completion-id",
-		};
+    await expect(processChatRequest(mockOptions)).rejects.toThrow(error);
+  });
 
-		mockOrchestrator.process.mockResolvedValue(streamResult);
+  it("should handle streaming responses", async () => {
+    const mockStream = new ReadableStream();
+    const streamResult = {
+      stream: mockStream,
+      selectedModel: "test-model",
+      completion_id: "test-completion-id",
+    };
 
-		const result = await processChatRequest({
-			...mockOptions,
-			stream: true,
-		});
+    mockOrchestrator.process.mockResolvedValue(streamResult);
 
-		expect(result).toEqual(streamResult);
-	});
+    const result = await processChatRequest({
+      ...mockOptions,
+      stream: true,
+    });
 
-	it("should handle validation errors", async () => {
-		const validationResult = {
-			selectedModel: "test-model",
-			validation: "input",
-			error: "Invalid input",
-			violations: ["test-violation"],
-		};
+    expect(result).toEqual(streamResult);
+  });
 
-		mockOrchestrator.process.mockResolvedValue(validationResult);
+  it("should handle validation errors", async () => {
+    const validationResult = {
+      selectedModel: "test-model",
+      validation: "input",
+      error: "Invalid input",
+      violations: ["test-violation"],
+    };
 
-		const result = await processChatRequest(mockOptions);
+    mockOrchestrator.process.mockResolvedValue(validationResult);
 
-		expect(result).toEqual(validationResult);
-	});
+    const result = await processChatRequest(mockOptions);
 
-	it("should handle multi-model responses", async () => {
-		const multiModelResult = {
-			response: { response: "Test response" },
-			selectedModel: "primary-model",
-			selectedModels: ["model-1", "model-2"],
-			completion_id: "test-completion-id",
-		};
+    expect(result).toEqual(validationResult);
+  });
 
-		mockOrchestrator.process.mockResolvedValue(multiModelResult);
+  it("should handle multi-model responses", async () => {
+    const multiModelResult = {
+      response: { response: "Test response" },
+      selectedModel: "primary-model",
+      selectedModels: ["model-1", "model-2"],
+      completion_id: "test-completion-id",
+    };
 
-		const result = await processChatRequest(mockOptions);
+    mockOrchestrator.process.mockResolvedValue(multiModelResult);
 
-		expect(result).toEqual(multiModelResult);
-	});
+    const result = await processChatRequest(mockOptions);
 
-	it("should handle tool responses", async () => {
-		const toolResult = {
-			response: { response: "Test response", tool_calls: [] },
-			toolResponses: [{ role: "tool", content: "tool result" }],
-			selectedModel: "test-model",
-			completion_id: "test-completion-id",
-		};
+    expect(result).toEqual(multiModelResult);
+  });
 
-		mockOrchestrator.process.mockResolvedValue(toolResult);
+  it("should handle tool responses", async () => {
+    const toolResult = {
+      response: { response: "Test response", tool_calls: [] },
+      toolResponses: [{ role: "tool", content: "tool result" }],
+      selectedModel: "test-model",
+      completion_id: "test-completion-id",
+    };
 
-		const result = await processChatRequest(mockOptions);
+    mockOrchestrator.process.mockResolvedValue(toolResult);
 
-		expect(result).toEqual(toolResult);
-	});
+    const result = await processChatRequest(mockOptions);
 
-	describe("parameter validation", () => {
-		it("should throw error for missing required parameters", async () => {
-			mockOrchestrator.process.mockRejectedValue(new Error("Missing required parameters"));
+    expect(result).toEqual(toolResult);
+  });
 
-			await expect(processChatRequest({} as any)).rejects.toThrow("Missing required parameters");
-		});
+  describe("parameter validation", () => {
+    it("should throw error for missing required parameters", async () => {
+      mockOrchestrator.process.mockRejectedValue(new Error("Missing required parameters"));
 
-		it("should handle different parameter combinations", async () => {
-			const optionsWithTools = {
-				...mockOptions,
-				tools: [{ type: "function", function: { name: "test_tool" } }],
-				tool_choice: "auto",
-				enabled_tools: ["search"],
-			};
+      await expect(processChatRequest({} as any)).rejects.toThrow("Missing required parameters");
+    });
 
-			mockOrchestrator.process.mockResolvedValue({
-				response: { response: "Test response" },
-				selectedModel: "test-model",
-				completion_id: "test-completion-id",
-			});
+    it("should handle different parameter combinations", async () => {
+      const optionsWithTools = {
+        ...mockOptions,
+        tools: [{ type: "function", function: { name: "test_tool" } }],
+        tool_choice: "auto",
+        enabled_tools: ["search"],
+      };
 
-			// @ts-ignore - optionsWithTools is not a CoreChatOptions
-			await processChatRequest(optionsWithTools);
+      mockOrchestrator.process.mockResolvedValue({
+        response: { response: "Test response" },
+        selectedModel: "test-model",
+        completion_id: "test-completion-id",
+      });
 
-			expect(mockOrchestrator.process).toHaveBeenCalledWith(optionsWithTools);
-		});
+      // @ts-ignore - optionsWithTools is not a CoreChatOptions
+      await processChatRequest(optionsWithTools);
 
-		it("should handle streaming parameters", async () => {
-			const streamingOptions = {
-				...mockOptions,
-				stream: true,
-				temperature: 0.7,
-				max_tokens: 1000,
-			};
+      expect(mockOrchestrator.process).toHaveBeenCalledWith(optionsWithTools);
+    });
 
-			mockOrchestrator.process.mockResolvedValue({
-				stream: new ReadableStream(),
-				selectedModel: "test-model",
-				completion_id: "test-completion-id",
-			});
+    it("should handle streaming parameters", async () => {
+      const streamingOptions = {
+        ...mockOptions,
+        stream: true,
+        temperature: 0.7,
+        max_tokens: 1000,
+      };
 
-			await processChatRequest(streamingOptions);
+      mockOrchestrator.process.mockResolvedValue({
+        stream: new ReadableStream(),
+        selectedModel: "test-model",
+        completion_id: "test-completion-id",
+      });
 
-			expect(mockOrchestrator.process).toHaveBeenCalledWith(streamingOptions);
-		});
-	});
+      await processChatRequest(streamingOptions);
+
+      expect(mockOrchestrator.process).toHaveBeenCalledWith(streamingOptions);
+    });
+  });
 });

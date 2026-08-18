@@ -5,8 +5,8 @@ import {
   JobsPanel,
   ModelCatalog,
   trainingRecordKey,
+  TrainingSummaryBar,
 } from "@ngriffin_uk/polychat-component-experiences/training";
-import { TrainingSummaryBar } from "@ngriffin_uk/polychat-component-experiences/training";
 import {
   Alert,
   AlertDescription,
@@ -17,8 +17,8 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  CardSkeleton,
 } from "@ngriffin_uk/polychat-component-ui";
-import { CardSkeleton } from "@ngriffin_uk/polychat-component-ui";
 import type {
   DeployTrainingModelRequest,
   TrainingDeployment,
@@ -82,15 +82,21 @@ export function TrainingDashboard() {
   const [logsDeploymentTarget, setLogsDeploymentTarget] = useState<TrainingDeployment | null>(null);
 
   const logsJob = useMemo(() => {
-    if (!logsJobTarget) return null;
+    if (!logsJobTarget) {
+      return null;
+    }
 
     const logsJobKey = trainingRecordKey(logsJobTarget);
+
     return jobs.find((job) => trainingRecordKey(job) === logsJobKey) ?? logsJobTarget;
   }, [jobs, logsJobTarget]);
   const logsDeployment = useMemo(() => {
-    if (!logsDeploymentTarget) return null;
+    if (!logsDeploymentTarget) {
+      return null;
+    }
 
     const logsDeploymentKey = trainingRecordKey(logsDeploymentTarget);
+
     return (
       deployments.find((deployment) => trainingRecordKey(deployment) === logsDeploymentKey) ??
       logsDeploymentTarget
@@ -134,6 +140,7 @@ export function TrainingDashboard() {
     if (logsJob) {
       void refetchEvents();
     }
+
     if (logsDeployment) {
       void refetchDeploymentEvents();
     }
@@ -191,9 +198,11 @@ export function TrainingDashboard() {
         provider: deployment.provider,
         endpointName: deployment.endpointName,
       });
+
       if (logsDeployment && trainingRecordKey(logsDeployment) === trainingRecordKey(deployment)) {
         setLogsDeploymentTarget(null);
       }
+
       return result;
     },
     [deleteDeployment, logsDeployment],

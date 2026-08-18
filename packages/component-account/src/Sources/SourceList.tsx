@@ -90,7 +90,10 @@ export function SourceList({
               fullWidth={false}
               defaultValue=""
               onChange={(event) => {
-                if (!event.target.value) return;
+                if (!event.target.value) {
+                  return;
+                }
+
                 onAddToCollection(event.target.value, source.id);
                 event.target.value = "";
               }}

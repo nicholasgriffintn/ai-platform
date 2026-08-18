@@ -4,101 +4,104 @@ import { createChatExecutionRequest } from "../execution-request";
 import type { ChatExecutionRequestInput } from "../execution-request";
 
 function createInput(): ChatExecutionRequestInput {
-	return {
-		chatOptions: {
-			app_url: "https://example.com",
-			completion_id: "conversation-1",
-			env: {},
-			messages: [],
-			stream: true,
-		} as any,
-		prepared: {
-			currentMode: "normal",
-			enabledTools: [],
-			messageWithContext: "Hello",
-			modelConfigs: [],
-			primaryModel: "test-model",
-			primaryModelConfig: {},
-			primaryProvider: "test-provider",
-			systemPrompt: "You are helpful",
-			userSettings: null,
-		} as any,
-		messages: [
-			{ role: "user", content: "Hello" },
-			{
-				role: "compaction",
-				content: "Context automatically compacted",
-				parts: [
-					{
-						type: "compaction",
-						status: "completed",
-						label: "Context automatically compacted",
-					},
-				],
-			},
-			{ role: "assistant", content: "Hi" },
-		] as any,
-	};
+  return {
+    chatOptions: {
+      app_url: "https://example.com",
+      completion_id: "conversation-1",
+      env: {},
+      messages: [],
+      stream: true,
+    } as any,
+    prepared: {
+      currentMode: "normal",
+      enabledTools: [],
+      messageWithContext: "Hello",
+      modelConfigs: [],
+      primaryModel: "test-model",
+      primaryModelConfig: {},
+      primaryProvider: "test-provider",
+      systemPrompt: "You are helpful",
+      userSettings: null,
+    } as any,
+    messages: [
+      { role: "user", content: "Hello" },
+      {
+        role: "compaction",
+        content: "Context automatically compacted",
+        parts: [
+          {
+            type: "compaction",
+            status: "completed",
+            label: "Context automatically compacted",
+          },
+        ],
+      },
+      { role: "assistant", content: "Hi" },
+    ] as any,
+  };
 }
 
 describe("createChatExecutionRequest", () => {
-	it("excludes compaction status messages from provider request parameters", () => {
-		const request = createChatExecutionRequest(createInput());
+  it("excludes compaction status messages from provider request parameters", () => {
+    const request = createChatExecutionRequest(createInput());
 
-		expect(request.providerRequest().messages).toEqual([
-			{ role: "user", content: "Hello" },
-			{ role: "assistant", content: "Hi" },
-		]);
-	});
+    expect(request.providerRequest().messages).toEqual([
+      { role: "user", content: "Hello" },
+      { role: "assistant", content: "Hi" },
+    ]);
+  });
 
-	it("excludes compaction status messages from multi-model stream parameters", () => {
-		const request = createChatExecutionRequest(createInput());
+  it("excludes compaction status messages from multi-model stream parameters", () => {
+    const request = createChatExecutionRequest(createInput());
 
-		expect(request.multiModelStreamRequest().messages).toEqual([
-			{ role: "user", content: "Hello" },
-			{ role: "assistant", content: "Hi" },
-		]);
-	});
+    expect(request.multiModelStreamRequest().messages).toEqual([
+      { role: "user", content: "Hello" },
+      { role: "assistant", content: "Hi" },
+    ]);
+  });
 
-	it("uses tool options resolved from project capability configuration", () => {
-		const input = createInput();
-		input.prepared.toolOptions = {
-			file_search: { vector_store_ids: ["vs_project"] },
-		};
-		input.chatOptions.tool_options = {
-			file_search: { vector_store_ids: ["vs_untrusted_request"] },
-		};
+  it("uses tool options resolved from project capability configuration", () => {
+    const input = createInput();
 
-		expect(createChatExecutionRequest(input).providerRequest().tool_options).toEqual({
-			file_search: { vector_store_ids: ["vs_project"] },
-		});
-	});
+    input.prepared.toolOptions = {
+      file_search: { vector_store_ids: ["vs_project"] },
+    };
+    input.chatOptions.tool_options = {
+      file_search: { vector_store_ids: ["vs_untrusted_request"] },
+    };
 
-	it("uses the prepared server-authoritative request options downstream", () => {
-		const input = createInput();
-		input.chatOptions.options = {
-			sandbox: { enabled: true, repo: "attacker/repository", installationId: 1 },
-		};
-		input.prepared.requestOptions = {
-			sandbox: { enabled: true, repo: "project/repository", installationId: 42 },
-		};
+    expect(createChatExecutionRequest(input).providerRequest().tool_options).toEqual({
+      file_search: { vector_store_ids: ["vs_project"] },
+    });
+  });
 
-		const request = createChatExecutionRequest(input);
+  it("uses the prepared server-authoritative request options downstream", () => {
+    const input = createInput();
 
-		expect(request.providerRequest().options).toEqual(input.prepared.requestOptions);
-		expect(request.streamOptions("test-model", "test-provider").requestOptions).toEqual(
-			input.prepared.requestOptions,
-		);
-	});
+    input.chatOptions.options = {
+      sandbox: { enabled: true, repo: "attacker/repository", installationId: 1 },
+    };
+    input.prepared.requestOptions = {
+      sandbox: { enabled: true, repo: "project/repository", installationId: 42 },
+    };
 
-	it("passes the prepared memory scope to stream post-processing", () => {
-		const input = createInput();
-		input.prepared.memoryScope = { type: "project", projectId: "project-1" };
+    const request = createChatExecutionRequest(input);
 
-		expect(createChatExecutionRequest(input).streamOptions("test-model", "test-provider")).toEqual(
-			expect.objectContaining({
-				memoryScope: { type: "project", projectId: "project-1" },
-			}),
-		);
-	});
+    expect(request.providerRequest().options).toEqual(input.prepared.requestOptions);
+    expect(request.streamOptions("test-model", "test-provider").requestOptions).toEqual(
+      input.prepared.requestOptions,
+    );
+  });
+
+  it("passes the prepared memory scope to stream post-processing", () => {
+    const input = createInput();
+
+    input.prepared.memoryScope = { type: "project", projectId: "project-1" };
+
+    expect(createChatExecutionRequest(input).streamOptions("test-model", "test-provider")).toEqual(
+      expect.objectContaining({
+        memoryScope: { type: "project", projectId: "project-1" },
+      }),
+    );
+  });
 });

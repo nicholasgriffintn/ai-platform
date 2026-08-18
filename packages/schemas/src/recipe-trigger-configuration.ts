@@ -23,6 +23,7 @@ export function formatRecipeTriggerIdentifier(value: string): string {
     .replace(/[_-]+/g, " ")
     .trim()
     .toLowerCase();
+
   return words ? words.charAt(0).toUpperCase() + words.slice(1) : "Event";
 }
 
@@ -33,8 +34,12 @@ function readFieldLabel(key: string, schema: Record<string, unknown>): string {
 }
 
 function readStringOptions(schema: Record<string, unknown>): string[] | undefined {
-  if (!Array.isArray(schema.enum)) return undefined;
+  if (!Array.isArray(schema.enum)) {
+    return undefined;
+  }
+
   const options = schema.enum.filter((option): option is string => typeof option === "string");
+
   return options.length === schema.enum.length && options.length > 0 ? options : undefined;
 }
 
@@ -49,9 +54,11 @@ function toSupportedField(
       ? schema.description.trim()
       : undefined;
   const common = { key, label, description, required };
+
   if (schema.type === "boolean") {
     return { ...common, type: "boolean", defaultValue: schema.default === true };
   }
+
   if (schema.type === "number" || schema.type === "integer") {
     return {
       ...common,
@@ -59,8 +66,10 @@ function toSupportedField(
       defaultValue: typeof schema.default === "number" ? String(schema.default) : "",
     };
   }
+
   if (schema.type === "string" || schema.type === undefined) {
     const options = readStringOptions(schema);
+
     return {
       ...common,
       type: options ? "select" : "text",
@@ -69,6 +78,7 @@ function toSupportedField(
         typeof schema.default === "string" ? schema.default : options?.[0] ? options[0] : "",
     };
   }
+
   return null;
 }
 
@@ -85,8 +95,12 @@ export function getRecipeTriggerConfigurationFields(
   const unsupportedRequiredLabels: string[] = [];
 
   for (const [key, value] of Object.entries(properties)) {
-    if (!key.trim() || !isRecord(value)) continue;
+    if (!key.trim() || !isRecord(value)) {
+      continue;
+    }
+
     const field = toSupportedField(key, value, requiredKeys.has(key));
+
     if (field) {
       fields.push(field);
     } else if (requiredKeys.has(key)) {
@@ -98,8 +112,14 @@ export function getRecipeTriggerConfigurationFields(
 }
 
 function joinLabels(labels: string[]): string {
-  if (labels.length < 2) return labels[0] ?? "";
-  if (labels.length === 2) return `${labels[0]} and ${labels[1]}`;
+  if (labels.length < 2) {
+    return labels[0] ?? "";
+  }
+
+  if (labels.length === 2) {
+    return `${labels[0]} and ${labels[1]}`;
+  }
+
   return `${labels.slice(0, -1).join(", ")}, and ${labels.at(-1)}`;
 }
 
@@ -113,24 +133,34 @@ export function buildRecipeTriggerConfiguration(
 
   for (const field of fields) {
     const value = values[field.key] ?? field.defaultValue;
+
     if (field.type === "boolean") {
       configuration[field.key] = value === true;
       continue;
     }
+
     const text = typeof value === "string" ? value.trim() : "";
+
     if (!text) {
-      if (field.required) missing.push(field.label);
+      if (field.required) {
+        missing.push(field.label);
+      }
+
       continue;
     }
+
     if (field.type === "number") {
       const number = Number(text);
+
       if (!Number.isFinite(number)) {
         invalidNumbers.push(field.label);
         continue;
       }
+
       configuration[field.key] = number;
       continue;
     }
+
     configuration[field.key] = text;
   }
 
@@ -138,11 +168,13 @@ export function buildRecipeTriggerConfiguration(
     missing.length > 0 ? `Complete ${joinLabels(missing)}` : "",
     invalidNumbers.length > 0 ? `enter a valid ${joinLabels(invalidNumbers)}` : "",
   ].filter(Boolean);
+
   if (errors.length > 0) {
     return {
       configuration: {},
       error: `${errors.join(" and ")}.`,
     };
   }
+
   return { configuration };
 }

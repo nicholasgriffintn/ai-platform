@@ -71,7 +71,7 @@ function PredictionCard({ basePath, prediction }: PredictionCardProps) {
 
         {prediction.status === "processing" && (
           <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-zinc-600 dark:border-zinc-400"></div>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-zinc-600 dark:border-zinc-400" />
             <span>Processing...</span>
           </div>
         )}

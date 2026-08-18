@@ -30,7 +30,9 @@ export function ProjectCodingTaskControl({
       displayLabel={selectedOption?.label ?? "Build a feature"}
       options={TASK_OPTIONS}
       onChange={(value) => {
-        if (value) onChange(value);
+        if (value) {
+          onChange(value);
+        }
       }}
     />
   );

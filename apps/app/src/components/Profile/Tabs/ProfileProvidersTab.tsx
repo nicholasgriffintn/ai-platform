@@ -117,11 +117,13 @@ export function ProfileProvidersTab() {
 
   useEffect(() => {
     const requestedConnectorId = searchParams.get("connector");
+
     if (!requestedConnectorId || isLoadingConnectors) {
       return;
     }
 
     const connector = connectors.find((item) => item.id === requestedConnectorId);
+
     if (!connector) {
       return;
     }
@@ -129,6 +131,7 @@ export function ProfileProvidersTab() {
     setSelectedConnector(connector);
 
     const nextSearchParams = new URLSearchParams(searchParams);
+
     nextSearchParams.delete("connector");
     nextSearchParams.set("type", "connector");
     setSearchParams(nextSearchParams, { replace: true });
@@ -185,9 +188,11 @@ export function ProfileProvidersTab() {
     }
 
     const parsedProvider = recipeConnectorProviderSchema.safeParse(connectorToDelete.providerId);
+
     if (!parsedProvider.success) {
       toast.error("Unknown connector provider.");
       setConnectorToDelete(null);
+
       return;
     }
 
@@ -199,8 +204,13 @@ export function ProfileProvidersTab() {
   const handleProviderTypeChange = (value: string) => {
     const nextType = value as ProviderTypeFilter;
     const nextSearchParams = new URLSearchParams(searchParams);
-    if (nextType === "all") nextSearchParams.delete("type");
-    else nextSearchParams.set("type", nextType);
+
+    if (nextType === "all") {
+      nextSearchParams.delete("type");
+    } else {
+      nextSearchParams.set("type", nextType);
+    }
+
     setSearchParams(nextSearchParams, { replace: true });
   };
 
@@ -209,6 +219,7 @@ export function ProfileProvidersTab() {
     ...providerSettings.map((provider): ProviderCatalogueItem & { type: ProviderTypeFilter } => {
       const providerName = getProviderName(provider);
       const isConfigured = Boolean(provider.hasApiKey);
+
       return {
         id: `provider:${provider.provider_id}`,
         name: providerName,
@@ -243,9 +254,18 @@ export function ProfileProvidersTab() {
       onSelect: () => setSelectedConnector(connector),
     })),
   ].filter((item) => {
-    if (providerType === "connected" && !item.connected) return false;
-    if (!["all", "connected"].includes(providerType) && item.type !== providerType) return false;
-    if (!normalisedSearch) return true;
+    if (providerType === "connected" && !item.connected) {
+      return false;
+    }
+
+    if (!["all", "connected"].includes(providerType) && item.type !== providerType) {
+      return false;
+    }
+
+    if (!normalisedSearch) {
+      return true;
+    }
+
     return `${item.name} ${item.description ?? ""} ${item.category}`
       .toLowerCase()
       .includes(normalisedSearch);

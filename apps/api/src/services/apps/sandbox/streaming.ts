@@ -1,214 +1,225 @@
 interface EventEnvelopeLike {
-	index: number;
-	event: {
-		type: string;
-	};
+  index: number;
+  event: {
+    type: string;
+  };
 }
 
 interface CreateCoordinatorEventStreamParams {
-	listEvents: (after: number) => Promise<EventEnvelopeLike[]>;
-	openSocket?: () => Promise<WebSocket | null>;
-	initialAfter?: number;
-	signal?: AbortSignal;
-	pollIntervalMs?: number;
-	heartbeatIntervalMs?: number;
+  listEvents: (after: number) => Promise<EventEnvelopeLike[]>;
+  openSocket?: () => Promise<WebSocket | null>;
+  initialAfter?: number;
+  signal?: AbortSignal;
+  pollIntervalMs?: number;
+  heartbeatIntervalMs?: number;
 }
 
 export function isTerminalSandboxEventType(type: string): boolean {
-	return type === "run_completed" || type === "run_failed" || type === "run_cancelled";
+  return type === "run_completed" || type === "run_failed" || type === "run_cancelled";
 }
 
 export function toSseChunk(value: unknown): Uint8Array {
-	return new TextEncoder().encode(`data: ${JSON.stringify(value)}\n\n`);
+  return new TextEncoder().encode(`data: ${JSON.stringify(value)}\n\n`);
 }
 
 export function toSsePingChunk(): Uint8Array {
-	return new TextEncoder().encode(": ping\n\n");
+  return new TextEncoder().encode(": ping\n\n");
 }
 
 export function toSseDoneChunk(): Uint8Array {
-	return new TextEncoder().encode("data: [DONE]\n\n");
+  return new TextEncoder().encode("data: [DONE]\n\n");
 }
 
 export function sleep(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function parseEnvelopeFromSocketMessage(data: unknown): EventEnvelopeLike | null {
-	if (typeof data !== "string") {
-		return null;
-	}
+  if (typeof data !== "string") {
+    return null;
+  }
 
-	let parsed: unknown;
-	try {
-		parsed = JSON.parse(data) as Record<string, unknown>;
-	} catch {
-		return null;
-	}
+  let parsed: unknown;
 
-	if (!parsed || typeof parsed !== "object") {
-		return null;
-	}
-	const value = parsed as Record<string, unknown>;
-	if (
-		typeof value.index !== "number" ||
-		!Number.isFinite(value.index) ||
-		!value.event ||
-		typeof value.event !== "object" ||
-		typeof (value.event as { type?: unknown }).type !== "string"
-	) {
-		return null;
-	}
+  try {
+    parsed = JSON.parse(data) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
 
-	return {
-		index: value.index,
-		event: value.event as EventEnvelopeLike["event"],
-	};
+  if (!parsed || typeof parsed !== "object") {
+    return null;
+  }
+
+  const value = parsed as Record<string, unknown>;
+
+  if (
+    typeof value.index !== "number" ||
+    !Number.isFinite(value.index) ||
+    !value.event ||
+    typeof value.event !== "object" ||
+    typeof (value.event as { type?: unknown }).type !== "string"
+  ) {
+    return null;
+  }
+
+  return {
+    index: value.index,
+    event: value.event as EventEnvelopeLike["event"],
+  };
 }
 
 async function consumeSocketEvents(params: {
-	socket: WebSocket;
-	controller: ReadableStreamDefaultController<Uint8Array>;
-	signal?: AbortSignal;
-	heartbeatIntervalMs: number;
-	onEnvelope: (envelope: EventEnvelopeLike) => void;
+  socket: WebSocket;
+  controller: ReadableStreamDefaultController<Uint8Array>;
+  signal?: AbortSignal;
+  heartbeatIntervalMs: number;
+  onEnvelope: (envelope: EventEnvelopeLike) => void;
 }): Promise<{ terminalSeen: boolean; aborted: boolean }> {
-	const { socket, controller, signal, heartbeatIntervalMs, onEnvelope } = params;
-	let terminalSeen = false;
-	let aborted = false;
+  const { socket, controller, signal, heartbeatIntervalMs, onEnvelope } = params;
+  let terminalSeen = false;
+  let aborted = false;
 
-	await new Promise<void>((resolve) => {
-		let settled = false;
-		const done = () => {
-			if (settled) {
-				return;
-			}
-			settled = true;
-			clearInterval(heartbeatTimer);
-			socket.removeEventListener("message", onMessage as EventListener);
-			socket.removeEventListener("close", onClose as EventListener);
-			socket.removeEventListener("error", onError as EventListener);
-			signal?.removeEventListener("abort", onAbort);
-			resolve();
-		};
+  await new Promise<void>((resolve) => {
+    let settled = false;
+    const done = () => {
+      if (settled) {
+        return;
+      }
 
-		const onMessage = (event: MessageEvent) => {
-			const envelope = parseEnvelopeFromSocketMessage(event.data);
-			if (!envelope) {
-				return;
-			}
-			onEnvelope(envelope);
-			controller.enqueue(toSseChunk(envelope.event));
-			if (isTerminalSandboxEventType(envelope.event.type)) {
-				terminalSeen = true;
-				done();
-			}
-		};
+      settled = true;
+      clearInterval(heartbeatTimer);
+      socket.removeEventListener("message", onMessage as EventListener);
+      socket.removeEventListener("close", onClose as EventListener);
+      socket.removeEventListener("error", onError as EventListener);
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    };
 
-		const onClose = () => done();
-		const onError = () => done();
-		const onAbort = () => {
-			aborted = true;
-			done();
-		};
+    const onMessage = (event: MessageEvent) => {
+      const envelope = parseEnvelopeFromSocketMessage(event.data);
 
-		const heartbeatTimer = setInterval(() => {
-			controller.enqueue(toSsePingChunk());
-		}, heartbeatIntervalMs);
+      if (!envelope) {
+        return;
+      }
 
-		socket.addEventListener("message", onMessage as EventListener);
-		socket.addEventListener("close", onClose as EventListener);
-		socket.addEventListener("error", onError as EventListener);
-		signal?.addEventListener("abort", onAbort);
-	});
+      onEnvelope(envelope);
+      controller.enqueue(toSseChunk(envelope.event));
+      if (isTerminalSandboxEventType(envelope.event.type)) {
+        terminalSeen = true;
+        done();
+      }
+    };
 
-	try {
-		socket.close(1000, "SSE stream detached");
-	} catch {
-		// Ignore websocket close errors.
-	}
+    const onClose = () => done();
+    const onError = () => done();
+    const onAbort = () => {
+      aborted = true;
+      done();
+    };
 
-	return { terminalSeen, aborted };
+    const heartbeatTimer = setInterval(() => {
+      controller.enqueue(toSsePingChunk());
+    }, heartbeatIntervalMs);
+
+    socket.addEventListener("message", onMessage as EventListener);
+    socket.addEventListener("close", onClose as EventListener);
+    socket.addEventListener("error", onError as EventListener);
+    signal?.addEventListener("abort", onAbort);
+  });
+
+  try {
+    socket.close(1000, "SSE stream detached");
+  } catch {
+    // Ignore websocket close errors.
+  }
+
+  return { terminalSeen, aborted };
 }
 
 export function createCoordinatorEventSseStream(
-	params: CreateCoordinatorEventStreamParams,
+  params: CreateCoordinatorEventStreamParams,
 ): ReadableStream<Uint8Array> {
-	const {
-		listEvents,
-		openSocket,
-		initialAfter = 0,
-		signal,
-		pollIntervalMs = 900,
-		heartbeatIntervalMs = 15000,
-	} = params;
+  const {
+    listEvents,
+    openSocket,
+    initialAfter = 0,
+    signal,
+    pollIntervalMs = 900,
+    heartbeatIntervalMs = 15000,
+  } = params;
 
-	return new ReadableStream<Uint8Array>({
-		async start(controller) {
-			let after = initialAfter;
-			let terminalSeen = false;
-			let aborted = false;
-			let lastHeartbeatAt = Date.now();
+  return new ReadableStream<Uint8Array>({
+    async start(controller) {
+      let after = initialAfter;
+      let terminalSeen = false;
+      let aborted = false;
+      let lastHeartbeatAt = Date.now();
 
-			const applyEnvelope = (envelope: EventEnvelopeLike) => {
-				after = Math.max(after, envelope.index);
-			};
+      const applyEnvelope = (envelope: EventEnvelopeLike) => {
+        after = Math.max(after, envelope.index);
+      };
 
-			const initialEnvelopes = await listEvents(after);
-			for (const envelope of initialEnvelopes) {
-				applyEnvelope(envelope);
-				controller.enqueue(toSseChunk(envelope.event));
-				if (isTerminalSandboxEventType(envelope.event.type)) {
-					terminalSeen = true;
-					break;
-				}
-			}
+      const initialEnvelopes = await listEvents(after);
 
-			if (!terminalSeen && openSocket && !signal?.aborted) {
-				try {
-					const socket = await openSocket();
-					if (socket) {
-						const socketState = await consumeSocketEvents({
-							socket,
-							controller,
-							signal,
-							heartbeatIntervalMs,
-							onEnvelope: applyEnvelope,
-						});
-						terminalSeen = socketState.terminalSeen;
-						aborted = socketState.aborted;
-					}
-				} catch {
-					// Fallback to polling if websocket setup fails.
-				}
-			}
+      for (const envelope of initialEnvelopes) {
+        applyEnvelope(envelope);
+        controller.enqueue(toSseChunk(envelope.event));
+        if (isTerminalSandboxEventType(envelope.event.type)) {
+          terminalSeen = true;
+          break;
+        }
+      }
 
-			while (!terminalSeen && !aborted && !signal?.aborted) {
-				const envelopes = await listEvents(after);
-				if (envelopes.length === 0) {
-					if (Date.now() - lastHeartbeatAt >= heartbeatIntervalMs) {
-						lastHeartbeatAt = Date.now();
-						controller.enqueue(toSsePingChunk());
-					}
-					await sleep(pollIntervalMs);
-					continue;
-				}
+      if (!terminalSeen && openSocket && !signal?.aborted) {
+        try {
+          const socket = await openSocket();
 
-				for (const envelope of envelopes) {
-					applyEnvelope(envelope);
-					controller.enqueue(toSseChunk(envelope.event));
-					if (isTerminalSandboxEventType(envelope.event.type)) {
-						terminalSeen = true;
-						break;
-					}
-				}
-			}
+          if (socket) {
+            const socketState = await consumeSocketEvents({
+              socket,
+              controller,
+              signal,
+              heartbeatIntervalMs,
+              onEnvelope: applyEnvelope,
+            });
 
-			controller.enqueue(toSseDoneChunk());
-			controller.close();
-		},
-		cancel() {
-			// Run continues in background; stream cancellation only detaches client.
-		},
-	});
+            terminalSeen = socketState.terminalSeen;
+            aborted = socketState.aborted;
+          }
+        } catch {
+          // Fallback to polling if websocket setup fails.
+        }
+      }
+
+      while (!terminalSeen && !aborted && !signal?.aborted) {
+        const envelopes = await listEvents(after);
+
+        if (envelopes.length === 0) {
+          if (Date.now() - lastHeartbeatAt >= heartbeatIntervalMs) {
+            lastHeartbeatAt = Date.now();
+            controller.enqueue(toSsePingChunk());
+          }
+
+          await sleep(pollIntervalMs);
+          continue;
+        }
+
+        for (const envelope of envelopes) {
+          applyEnvelope(envelope);
+          controller.enqueue(toSseChunk(envelope.event));
+          if (isTerminalSandboxEventType(envelope.event.type)) {
+            terminalSeen = true;
+            break;
+          }
+        }
+      }
+
+      controller.enqueue(toSseDoneChunk());
+      controller.close();
+    },
+    cancel() {
+      // Run continues in background; stream cancellation only detaches client.
+    },
+  });
 }

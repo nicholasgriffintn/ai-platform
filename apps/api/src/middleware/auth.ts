@@ -21,46 +21,52 @@ const BOT_CACHE_TTL = 86400; // 24 hours - bot detection is very stable
 let botCache: KVCache | null = null;
 
 function getBotCache(kv: any): KVCache | null {
-	if (!kv) {
-		return null;
-	}
-	if (!botCache) {
-		botCache = new KVCache(kv, BOT_CACHE_TTL);
-	}
-	return botCache;
+  if (!kv) {
+    return null;
+  }
+
+  if (!botCache) {
+    botCache = new KVCache(kv, BOT_CACHE_TTL);
+  }
+
+  return botCache;
 }
 
 async function isBotCached(userAgent: string, kv: any): Promise<boolean> {
-	const cache = getBotCache(kv);
-	if (!cache) {
-		try {
-			return isbot(userAgent);
-		} catch (error) {
-			logger.error("Failed to check if user is a bot:", { error });
-			return true;
-		}
-	}
+  const cache = getBotCache(kv);
 
-	const cacheKey = KVCache.createKey("bot", userAgent);
+  if (!cache) {
+    try {
+      return isbot(userAgent);
+    } catch (error) {
+      logger.error("Failed to check if user is a bot:", { error });
 
-	const cached = await cache.get<boolean>(cacheKey);
-	if (cached !== null) {
-		return cached;
-	}
+      return true;
+    }
+  }
 
-	let isBotUser: boolean;
-	try {
-		isBotUser = isbot(userAgent);
-	} catch (error) {
-		logger.error("Failed to check if user is a bot:", { error });
-		isBotUser = true;
-	}
+  const cacheKey = KVCache.createKey("bot", userAgent);
 
-	cache.set(cacheKey, isBotUser).catch((error) => {
-		logger.error("Failed to cache bot detection result", { error, userAgent });
-	});
+  const cached = await cache.get<boolean>(cacheKey);
 
-	return isBotUser;
+  if (cached !== null) {
+    return cached;
+  }
+
+  let isBotUser: boolean;
+
+  try {
+    isBotUser = isbot(userAgent);
+  } catch (error) {
+    logger.error("Failed to check if user is a bot:", { error });
+    isBotUser = true;
+  }
+
+  cache.set(cacheKey, isBotUser).catch((error) => {
+    logger.error("Failed to cache bot detection result", { error, userAgent });
+  });
+
+  return isBotUser;
 }
 
 /**
@@ -71,148 +77,157 @@ async function isBotCached(userAgent: string, kv: any): Promise<boolean> {
  * @returns The next middleware function
  */
 export async function authMiddleware(context: Context, next: Next) {
-	const path = context.req.path;
-	if (path === "/status" || path === "/openapi" || path.startsWith("/webhooks/")) {
-		return next();
-	}
+  const path = context.req.path;
 
-	const ipAddress =
-		context.req.header("CF-Connecting-IP") ||
-		context.req.header("X-Forwarded-For") ||
-		context.req.header("X-Real-IP") ||
-		"unknown";
+  if (path === "/status" || path === "/openapi" || path.startsWith("/webhooks/")) {
+    return next();
+  }
 
-	const userAgent = context.req.header("user-agent") || "unknown";
+  const ipAddress =
+    context.req.header("CF-Connecting-IP") ||
+    context.req.header("X-Forwarded-For") ||
+    context.req.header("X-Real-IP") ||
+    "unknown";
 
-	const jwtSecret = context.env.JWT_SECRET;
-	let repositories: RepositoryManager | null = null;
-	const getRepositories = () => {
-		if (!repositories) {
-			repositories = new RepositoryManager(context.env);
-		}
-		return repositories;
-	};
+  const userAgent = context.req.header("user-agent") || "unknown";
 
-	let user: User | null = null;
-	let anonymousUser: AnonymousUser | null = null;
+  const jwtSecret = context.env.JWT_SECRET;
+  let repositories: RepositoryManager | null = null;
+  const getRepositories = () => {
+    if (!repositories) {
+      repositories = new RepositoryManager(context.env);
+    }
 
-	const authToken = parseBearerToken(context.req.header("Authorization"));
+    return repositories;
+  };
 
-	const isJwtToken = authToken?.split(".").length === 3;
+  let user: User | null = null;
+  let anonymousUser: AnonymousUser | null = null;
 
-	const authPromises: Promise<User | null>[] = [];
+  const authToken = parseBearerToken(context.req.header("Authorization"));
 
-	const cookies = parseCookieHeader(context.req.header("Cookie") || "");
-	const sessionId = cookies.session;
+  const isJwtToken = authToken?.split(".").length === 3;
 
-	if (sessionId) {
-		// The request context must be created after authentication so downstream services receive its user.
-		const authenticationContext = createServiceContext({
-			env: context.env,
-			requestId: context.get("requestId"),
-		});
-		authPromises.push(
-			createAssistantAuth(authenticationContext)
-				.authenticate(sessionId)
-				.then((session) => session?.user.record ?? null),
-		);
-	}
+  const authPromises: Promise<User | null>[] = [];
 
-	if (authToken?.startsWith("ak_")) {
-		authPromises.push(
-			(async () => {
-				try {
-					const repo = getRepositories();
-					const userId = await repo.apiKeys.findUserIdByApiKey(authToken);
-					if (userId) {
-						return repo.users.getUserById(userId);
-					}
-					return null;
-				} catch (error) {
-					logger.error("API Key authentication check failed:", { error });
-					return null;
-				}
-			})(),
-		);
-	}
+  const cookies = parseCookieHeader(context.req.header("Cookie") || "");
+  const sessionId = cookies.session;
 
-	if (authToken && isJwtToken && jwtSecret) {
-		authPromises.push(
-			(async () => {
-				try {
-					return await getUserByJwtToken(context.env, authToken, jwtSecret);
-				} catch (error) {
-					if (error instanceof AssistantError && error.type === ErrorType.AUTHENTICATION_ERROR) {
-						return null;
-					}
+  if (sessionId) {
+    // The request context must be created after authentication so downstream services receive its user.
+    const authenticationContext = createServiceContext({
+      env: context.env,
+      requestId: context.get("requestId"),
+    });
 
-					logger.error("JWT authentication failed:", { error });
-					return null;
-				}
-			})(),
-		);
-	}
+    authPromises.push(
+      createAssistantAuth(authenticationContext)
+        .authenticate(sessionId)
+        .then((session) => session?.user.record ?? null),
+    );
+  }
 
-	if (authPromises.length > 0) {
-		const authResults = await Promise.allSettled(authPromises);
-		const fulfilledResult = authResults.find(
-			(result) => result.status === "fulfilled" && result.value !== null,
-		);
-		user = fulfilledResult?.status === "fulfilled" ? fulfilledResult.value : null;
-	}
+  if (authToken?.startsWith("ak_")) {
+    authPromises.push(
+      (async () => {
+        try {
+          const repo = getRepositories();
+          const userId = await repo.apiKeys.findUserIdByApiKey(authToken);
 
-	const isProUser = user?.plan_id === "pro";
+          if (userId) {
+            return repo.users.getUserById(userId);
+          }
 
-	if (userAgent === "unknown") {
-		throw new AssistantError("Bot access is not allowed.", ErrorType.AUTHENTICATION_ERROR);
-	}
+          return null;
+        } catch (error) {
+          logger.error("API Key authentication check failed:", { error });
 
-	let isBot = false;
-	const shouldSkipBotCheck = Boolean(user);
+          return null;
+        }
+      })(),
+    );
+  }
 
-	if (!shouldSkipBotCheck) {
-		isBot = await isBotCached(userAgent, context.env.CACHE);
-	}
+  if (authToken && isJwtToken && jwtSecret) {
+    authPromises.push(
+      (async () => {
+        try {
+          return await getUserByJwtToken(context.env, authToken, jwtSecret);
+        } catch (error) {
+          if (error instanceof AssistantError && error.type === ErrorType.AUTHENTICATION_ERROR) {
+            return null;
+          }
 
-	if (isBot && !isProUser) {
-		throw new AssistantError("Bot access is not allowed.", ErrorType.AUTHENTICATION_ERROR);
-	}
+          logger.error("JWT authentication failed:", { error });
 
-	if (!user) {
-		try {
-			const anonymousId = cookies[ANONYMOUS_ID_COOKIE];
-			if (anonymousId) {
-				anonymousUser = await getRepositories().anonymousUsers.getAnonymousUserById(anonymousId);
-			}
+          return null;
+        }
+      })(),
+    );
+  }
 
-			if (!anonymousUser) {
-				anonymousUser = await getRepositories().anonymousUsers.getOrCreateAnonymousUser(
-					ipAddress,
-					userAgent,
-				);
+  if (authPromises.length > 0) {
+    const authResults = await Promise.allSettled(authPromises);
+    const fulfilledResult = authResults.find(
+      (result) => result.status === "fulfilled" && result.value !== null,
+    );
 
-				if (anonymousUser) {
-					const anonymousCookie = [
-						`${ANONYMOUS_ID_COOKIE}=${anonymousUser.id}`,
-						"Path=/",
-						`Max-Age=${COOKIE_MAX_AGE}`,
-						"SameSite=Lax",
-						"HttpOnly",
-						"Secure",
-					].join("; ");
+    user = fulfilledResult?.status === "fulfilled" ? fulfilledResult.value : null;
+  }
 
-					context.header("Set-Cookie", anonymousCookie);
-				}
-			}
-		} catch (error) {
-			logger.error("Anonymous user tracking failed:", { error });
-		}
-	}
+  const isProUser = user?.plan_id === "pro";
 
-	context.set("user", user);
-	context.set("anonymousUser", anonymousUser);
+  if (userAgent === "unknown") {
+    throw new AssistantError("Bot access is not allowed.", ErrorType.AUTHENTICATION_ERROR);
+  }
 
-	return next();
+  let isBot = false;
+  const shouldSkipBotCheck = Boolean(user);
+
+  if (!shouldSkipBotCheck) {
+    isBot = await isBotCached(userAgent, context.env.CACHE);
+  }
+
+  if (isBot && !isProUser) {
+    throw new AssistantError("Bot access is not allowed.", ErrorType.AUTHENTICATION_ERROR);
+  }
+
+  if (!user) {
+    try {
+      const anonymousId = cookies[ANONYMOUS_ID_COOKIE];
+
+      if (anonymousId) {
+        anonymousUser = await getRepositories().anonymousUsers.getAnonymousUserById(anonymousId);
+      }
+
+      if (!anonymousUser) {
+        anonymousUser = await getRepositories().anonymousUsers.getOrCreateAnonymousUser(
+          ipAddress,
+          userAgent,
+        );
+
+        if (anonymousUser) {
+          const anonymousCookie = [
+            `${ANONYMOUS_ID_COOKIE}=${anonymousUser.id}`,
+            "Path=/",
+            `Max-Age=${COOKIE_MAX_AGE}`,
+            "SameSite=Lax",
+            "HttpOnly",
+            "Secure",
+          ].join("; ");
+
+          context.header("Set-Cookie", anonymousCookie);
+        }
+      }
+    } catch (error) {
+      logger.error("Anonymous user tracking failed:", { error });
+    }
+  }
+
+  context.set("user", user);
+  context.set("anonymousUser", anonymousUser);
+
+  return next();
 }
 
 /**
@@ -222,17 +237,17 @@ export async function authMiddleware(context: Context, next: Next) {
  * @returns The next middleware function
  */
 export async function requireAuth(context: Context, next: Next) {
-	const user = context.get("user");
-	const anonymousUser = context.get("anonymousUser");
+  const user = context.get("user");
+  const anonymousUser = context.get("anonymousUser");
 
-	if (!user?.id && !anonymousUser?.id) {
-		throw new AssistantError(
-			"This endpoint requires authentication. Please provide a valid access token.",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
-	}
+  if (!user?.id && !anonymousUser?.id) {
+    throw new AssistantError(
+      "This endpoint requires authentication. Please provide a valid access token.",
+      ErrorType.AUTHENTICATION_ERROR,
+    );
+  }
 
-	await next();
+  await next();
 }
 
 /**
@@ -242,77 +257,77 @@ export async function requireAuth(context: Context, next: Next) {
  * @returns The next middleware function
  */
 export async function allowRestrictedPaths(context: Context, next: Next) {
-	const user = context.get("user");
-	const isProUser = user?.plan_id === "pro";
+  const user = context.get("user");
+  const isProUser = user?.plan_id === "pro";
 
-	if (!isProUser) {
-		const anonymousUser = context.get("anonymousUser");
+  if (!isProUser) {
+    const anonymousUser = context.get("anonymousUser");
 
-		if (!user && !anonymousUser) {
-			logger.warn("Missing user or anonymous user data for restricted path access");
-			throw new AssistantError(
-				"User usage tracking required for this endpoint.",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
-		}
+    if (!user && !anonymousUser) {
+      logger.warn("Missing user or anonymous user data for restricted path access");
+      throw new AssistantError(
+        "User usage tracking required for this endpoint.",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
 
-		const path = context.req.path;
-		const method = context.req.method;
+    const path = context.req.path;
+    const method = context.req.method;
 
-		const isGenerateTitlePath =
-			/^\/chat\/completions\/[^/]+\/generate-title$/.test(path) && method === "POST";
-		const isUpdatePath = /^\/chat\/completions\/[^/]+$/.test(path) && method === "PUT";
-		const isDeletePath = /^\/chat\/completions\/[^/]+$/.test(path) && method === "DELETE";
-		const isCheckPath = /^\/chat\/completions\/[^/]+\/check$/.test(path) && method === "POST";
-		const isFeedbackPath = /^\/chat\/completions\/[^/]+\/feedback$/.test(path) && method === "POST";
-		const isSharePath = /^\/chat\/completions\/[^/]+\/share$/.test(path) && method === "POST";
-		const isUnsharePath = /^\/chat\/completions\/[^/]+\/share$/.test(path) && method === "DELETE";
-		const isGetSharedPath = /^\/chat\/shared\/[^/]+$/.test(path) && method === "GET";
+    const isGenerateTitlePath =
+      /^\/chat\/completions\/[^/]+\/generate-title$/.test(path) && method === "POST";
+    const isUpdatePath = /^\/chat\/completions\/[^/]+$/.test(path) && method === "PUT";
+    const isDeletePath = /^\/chat\/completions\/[^/]+$/.test(path) && method === "DELETE";
+    const isCheckPath = /^\/chat\/completions\/[^/]+\/check$/.test(path) && method === "POST";
+    const isFeedbackPath = /^\/chat\/completions\/[^/]+\/feedback$/.test(path) && method === "POST";
+    const isSharePath = /^\/chat\/completions\/[^/]+\/share$/.test(path) && method === "POST";
+    const isUnsharePath = /^\/chat\/completions\/[^/]+\/share$/.test(path) && method === "DELETE";
+    const isGetSharedPath = /^\/chat\/shared\/[^/]+$/.test(path) && method === "GET";
 
-		const isAllowedPath =
-			isGenerateTitlePath ||
-			isUpdatePath ||
-			isDeletePath ||
-			isCheckPath ||
-			isFeedbackPath ||
-			isSharePath ||
-			isUnsharePath ||
-			isGetSharedPath;
+    const isAllowedPath =
+      isGenerateTitlePath ||
+      isUpdatePath ||
+      isDeletePath ||
+      isCheckPath ||
+      isFeedbackPath ||
+      isSharePath ||
+      isUnsharePath ||
+      isGetSharedPath;
 
-		if (path === "/chat/completions" && method === "POST") {
-			try {
-				const body = await context.req.json();
+    if (path === "/chat/completions" && method === "POST") {
+      try {
+        const body = await context.req.json();
 
-				if (body?.use_rag) {
-					throw new AssistantError(
-						"RAG features require authentication. Please provide a valid access token.",
-						ErrorType.AUTHENTICATION_ERROR,
-					);
-				}
+        if (body?.use_rag) {
+          throw new AssistantError(
+            "RAG features require authentication. Please provide a valid access token.",
+            ErrorType.AUTHENTICATION_ERROR,
+          );
+        }
 
-				if (
-					body?.tools?.length > 0 ||
-					body?.tool_choice ||
-					body?.enabled_tools?.length > 0 ||
-					body?.approved_tools?.length > 0
-				) {
-					throw new AssistantError(
-						"Tool usage requires authentication. Please provide a valid access token.",
-						ErrorType.AUTHENTICATION_ERROR,
-					);
-				}
-			} catch (error) {
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-			}
-		} else if (!isAllowedPath) {
-			throw new AssistantError(
-				"This endpoint requires authentication. Please provide a valid access token.",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
-		}
-	}
+        if (
+          body?.tools?.length > 0 ||
+          body?.tool_choice ||
+          body?.enabled_tools?.length > 0 ||
+          body?.approved_tools?.length > 0
+        ) {
+          throw new AssistantError(
+            "Tool usage requires authentication. Please provide a valid access token.",
+            ErrorType.AUTHENTICATION_ERROR,
+          );
+        }
+      } catch (error) {
+        if (error instanceof AssistantError) {
+          throw error;
+        }
+      }
+    } else if (!isAllowedPath) {
+      throw new AssistantError(
+        "This endpoint requires authentication. Please provide a valid access token.",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+  }
 
-	await next();
+  await next();
 }

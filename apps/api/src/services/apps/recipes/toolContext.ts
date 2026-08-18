@@ -1,73 +1,78 @@
 import {
-	parseChatRequestOptions,
-	readRecipeChatRequestOptions,
+  parseChatRequestOptions,
+  readRecipeChatRequestOptions,
 } from "@ngriffin_uk/polychat-schemas";
 
 export interface ActiveRecipeSetup {
-	id: string;
-	installationId?: string;
+  id: string;
+  installationId?: string;
 }
 
 export function getRecipeAllowedConnectorProviders(options: unknown): string[] | null {
-	const recipe = readRecipeChatRequestOptions(options);
-	if (!recipe) {
-		return null;
-	}
+  const recipe = readRecipeChatRequestOptions(options);
 
-	return recipe.allowedConnectorProviders ?? [];
+  if (!recipe) {
+    return null;
+  }
+
+  return recipe.allowedConnectorProviders ?? [];
 }
 
 export function getRecipeAllowedConnectorOperations(
-	options: unknown,
-	provider: string,
+  options: unknown,
+  provider: string,
 ): string[] | null {
-	const recipe = readRecipeChatRequestOptions(options);
-	if (!recipe) {
-		return null;
-	}
+  const recipe = readRecipeChatRequestOptions(options);
 
-	return recipe.allowedConnectorOperations?.[provider] ?? [];
+  if (!recipe) {
+    return null;
+  }
+
+  return recipe.allowedConnectorOperations?.[provider] ?? [];
 }
 
 export function getRecipeExecutionChannel(options: unknown): string | undefined {
-	return readRecipeChatRequestOptions(options)?.channel;
+  return readRecipeChatRequestOptions(options)?.channel;
 }
 
 export function getRecipeConfiguration(options: unknown): Record<string, unknown> | undefined {
-	return readRecipeChatRequestOptions(options)?.configuration;
+  return readRecipeChatRequestOptions(options)?.configuration;
 }
 
 export function getActiveRecipeSetup(options: unknown): ActiveRecipeSetup | undefined {
-	const recipe = readRecipeChatRequestOptions(options);
-	if (!recipe) {
-		return undefined;
-	}
+  const recipe = readRecipeChatRequestOptions(options);
 
-	return {
-		id: recipe.id,
-		installationId: recipe.installationId,
-	};
+  if (!recipe) {
+    return undefined;
+  }
+
+  return {
+    id: recipe.id,
+    installationId: recipe.installationId,
+  };
 }
 
 export function getTriggerRecipeChannel(options: unknown): "sms" | "tool" {
-	const requestOptions = parseChatRequestOptions(options);
-	if (requestOptions?.sms?.enabled === true) {
-		return "sms";
-	}
+  const requestOptions = parseChatRequestOptions(options);
 
-	return "tool";
+  if (requestOptions?.sms?.enabled) {
+    return "sms";
+  }
+
+  return "tool";
 }
 
 export function getSmsRecipeExecutionContext(
-	options: unknown,
+  options: unknown,
 ): { from?: string; to?: string } | undefined {
-	const sms = parseChatRequestOptions(options)?.sms;
-	if (sms?.enabled !== true) {
-		return undefined;
-	}
+  const sms = parseChatRequestOptions(options)?.sms;
 
-	return {
-		...(sms.from ? { from: sms.from } : {}),
-		...(sms.to ? { to: sms.to } : {}),
-	};
+  if (!sms?.enabled) {
+    return undefined;
+  }
+
+  return {
+    ...(sms.from ? { from: sms.from } : {}),
+    ...(sms.to ? { to: sms.to } : {}),
+  };
 }

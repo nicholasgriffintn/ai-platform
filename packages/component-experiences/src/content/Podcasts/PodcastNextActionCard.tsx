@@ -19,7 +19,9 @@ export function PodcastNextActionCard({
   onRun,
   isRunning = false,
 }: PodcastNextActionCardProps) {
-  if (!action) return null;
+  if (!action) {
+    return null;
+  }
 
   const label = ACTION_LABELS[action] ?? action;
 

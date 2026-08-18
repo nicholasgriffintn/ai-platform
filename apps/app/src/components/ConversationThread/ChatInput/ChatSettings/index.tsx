@@ -76,6 +76,7 @@ export const ChatSettings = ({
 
   const handleNumericSettingChange = (key: NumericChatSettingKey, value: string) => {
     const numValue = Number.parseFloat(value);
+
     if (Number.isNaN(numValue)) {
       return;
     }
@@ -106,13 +107,16 @@ export const ChatSettings = ({
 
   const handleReasoningEffortChange = (value: string) => {
     const nextValue = value as ReasoningEffort | "";
+
     if (!nextValue) {
       setChatSettings({
         ...chatSettings,
         reasoning: undefined,
       });
+
       return;
     }
+
     setChatSettings({
       ...chatSettings,
       reasoning: {
@@ -124,13 +128,16 @@ export const ChatSettings = ({
 
   const handleVerbosityChange = (value: string) => {
     const nextValue = value as VerbosityLevel | "";
+
     if (!nextValue) {
       setChatSettings({
         ...chatSettings,
         verbosity: undefined,
       });
+
       return;
     }
+
     setChatSettings({
       ...chatSettings,
       verbosity: nextValue,
@@ -139,6 +146,7 @@ export const ChatSettings = ({
 
   const handleRagNumericOptionChange = (key: RagNumericOptionKey, value: string) => {
     const numValue = Number.parseFloat(value);
+
     if (Number.isNaN(numValue)) {
       return;
     }

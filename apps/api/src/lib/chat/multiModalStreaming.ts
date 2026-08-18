@@ -1,52 +1,55 @@
-import { getAIResponse } from "~/lib/chat/responses";
 import type { ModelConfigInfo } from "@ngriffin_uk/polychat-schemas";
-import type { ConversationManager } from "~/lib/conversationManager";
+
 import type { MultiModelStreamRequest } from "~/lib/chat/core/execution-request";
+import { getAIResponse } from "~/lib/chat/responses";
+import type { ConversationManager } from "~/lib/conversationManager";
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { getLogger } from "~/utils/logger";
-import { createStreamWithPostProcessing, type StreamPostProcessingOptions } from "./streaming";
 import { safeParseJson } from "~/utils/json";
+import { getLogger } from "~/utils/logger";
+
+import { createStreamWithPostProcessing, type StreamPostProcessingOptions } from "./streaming";
 
 const logger = getLogger({ prefix: "lib/chat/multiModalStreaming" });
 
 function getOpinionMode(messages: unknown): string | null {
-	if (!Array.isArray(messages)) {
-		return null;
-	}
+  if (!Array.isArray(messages)) {
+    return null;
+  }
 
-	for (let index = messages.length - 1; index >= 0; index--) {
-		const message = messages[index];
-		if (
-			message &&
-			typeof message === "object" &&
-			"role" in message &&
-			message.role === "user" &&
-			"data" in message &&
-			message.data &&
-			typeof message.data === "object" &&
-			"opinion" in message.data &&
-			message.data.opinion &&
-			typeof message.data.opinion === "object" &&
-			"mode" in message.data.opinion &&
-			typeof message.data.opinion.mode === "string"
-		) {
-			return message.data.opinion.mode;
-		}
-	}
+  for (let index = messages.length - 1; index >= 0; index--) {
+    const message = messages[index];
 
-	return null;
+    if (
+      message &&
+      typeof message === "object" &&
+      "role" in message &&
+      message.role === "user" &&
+      "data" in message &&
+      message.data &&
+      typeof message.data === "object" &&
+      "opinion" in message.data &&
+      message.data.opinion &&
+      typeof message.data.opinion === "object" &&
+      "mode" in message.data.opinion &&
+      typeof message.data.opinion.mode === "string"
+    ) {
+      return message.data.opinion.mode;
+    }
+  }
+
+  return null;
 }
 
 function buildConsensusSynthesisPrompt(modelResponses: string): string {
-	return [
-		"Write a concise consensus from these model responses.",
-		"State the shared answer, mention meaningful disagreement or uncertainty, and finish with the answer a user should trust.",
-		"Do not mention process unless it affects confidence.",
-		"",
-		modelResponses,
-	].join("\n");
+  return [
+    "Write a concise consensus from these model responses.",
+    "State the shared answer, mention meaningful disagreement or uncertainty, and finish with the answer a user should trust.",
+    "Do not mention process unless it affects confidence.",
+    "",
+    modelResponses,
+  ].join("\n");
 }
 
 /**
@@ -57,443 +60,483 @@ function buildConsensusSynthesisPrompt(modelResponses: string): string {
  * @returns The multi-model stream
  */
 export function createMultiModelStream(
-	parameters: MultiModelStreamRequest,
-	options: StreamPostProcessingOptions,
-	conversationManager: ConversationManager,
+  parameters: MultiModelStreamRequest,
+  options: StreamPostProcessingOptions,
+  conversationManager: ConversationManager,
 ): ReadableStream {
-	const { models, ...requestDefaults } = parameters;
-	const baseParams = {
-		...requestDefaults,
-		env: requestDefaults.env ?? options.env,
-	};
-	const primaryParams = {
-		...baseParams,
-		body: baseParams.body,
-		model: models[0].model,
-		provider: models[0].provider,
-		stream: true,
-	};
+  const { models, ...requestDefaults } = parameters;
+  const baseParams = {
+    ...requestDefaults,
+    env: requestDefaults.env ?? options.env,
+  };
+  const primaryParams = {
+    ...baseParams,
+    body: baseParams.body,
+    model: models[0].model,
+    provider: models[0].provider,
+    stream: true,
+  };
 
-	const primaryResponsePromise = getAIResponse(primaryParams);
+  const primaryResponsePromise = getAIResponse(primaryParams);
 
-	const secondaryPromises =
-		models.length > 1
-			? models.slice(1).map(async (modelConfig: ModelConfigInfo) => {
-					logger.info("Secondary model request", { model: modelConfig.model });
+  const secondaryPromises =
+    models.length > 1
+      ? models.slice(1).map(async (modelConfig: ModelConfigInfo) => {
+          logger.info("Secondary model request", { model: modelConfig.model });
 
-					const secondaryParams = {
-						...baseParams,
-						body: baseParams.body,
-						model: modelConfig.model,
-						provider: modelConfig.provider,
-						stream: false,
-					};
+          const secondaryParams = {
+            ...baseParams,
+            body: baseParams.body,
+            model: modelConfig.model,
+            provider: modelConfig.provider,
+            stream: false,
+          };
 
-					try {
-						const response = await getAIResponse(secondaryParams);
+          try {
+            const response = await getAIResponse(secondaryParams);
 
-						if (!(response instanceof ReadableStream)) {
-							const encoder = new TextEncoder();
-							const responseText = response.response || "";
-							const modelName = modelConfig.displayName;
-							const modelResponse = `${responseText}`;
+            if (!(response instanceof ReadableStream)) {
+              const encoder = new TextEncoder();
+              const responseText = response.response || "";
+              const modelName = modelConfig.displayName;
+              const modelResponse = `${responseText}`;
 
-							return new ReadableStream({
-								start(controller) {
-									controller.enqueue(
-										encoder.encode(
-											`data: ${JSON.stringify({
-												type: "content_block_delta",
-												content: modelResponse,
-												modelName: modelName,
-											})}\n\n`,
-										),
-									);
-									controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-									controller.close();
-								},
-							});
-						}
+              return new ReadableStream({
+                start(controller) {
+                  controller.enqueue(
+                    encoder.encode(
+                      `data: ${JSON.stringify({
+                        type: "content_block_delta",
+                        content: modelResponse,
+                        modelName: modelName,
+                      })}\n\n`,
+                    ),
+                  );
+                  controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+                  controller.close();
+                },
+              });
+            }
 
-						return response;
-					} catch (error) {
-						logger.error(`Error getting response from secondary model ${modelConfig.model}`, {
-							error,
-						});
+            return response;
+          } catch (error) {
+            logger.error(`Error getting response from secondary model ${modelConfig.model}`, {
+              error,
+            });
 
-						return new ReadableStream({
-							start(controller) {
-								controller.close();
-							},
-						});
-					}
-				})
-			: [];
+            return new ReadableStream({
+              start(controller) {
+                controller.close();
+              },
+            });
+          }
+        })
+      : [];
 
-	return new ReadableStream({
-		async start(controller) {
-			const encoder = new TextEncoder();
-			let primaryContent = "";
-			let modelHeader = "";
+  return new ReadableStream({
+    async start(controller) {
+      const encoder = new TextEncoder();
+      let primaryContent = "";
+      let modelHeader = "";
 
-			try {
-				const usageLimits = await conversationManager.getUsageLimits();
-				if (usageLimits) {
-					controller.enqueue(
-						encoder.encode(
-							`data: ${JSON.stringify({
-								type: "usage_limits",
-								usage_limits: usageLimits,
-							})}\n\n`,
-						),
-					);
-				}
-			} catch (error) {
-				logger.error("Failed to get usage limits for multi-model streaming:", error);
-			}
+      try {
+        const usageLimits = await conversationManager.getUsageLimits();
 
-			try {
-				const primaryResponse = await primaryResponsePromise;
-				if (!(primaryResponse instanceof ReadableStream)) {
-					throw new AssistantError(
-						"Primary model response is not a stream",
-						ErrorType.PROVIDER_ERROR,
-					);
-				}
+        if (usageLimits) {
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({
+                type: "usage_limits",
+                usage_limits: usageLimits,
+              })}\n\n`,
+            ),
+          );
+        }
+      } catch (error) {
+        logger.error("Failed to get usage limits for multi-model streaming:", error);
+      }
 
-				const primaryProcessedStream = await createStreamWithPostProcessing(
-					primaryResponse,
-					{ ...options, model: models[0].model, provider: models[0].provider },
-					conversationManager,
-				);
+      try {
+        const primaryResponse = await primaryResponsePromise;
 
-				const primaryReader = primaryProcessedStream.getReader();
-				const primaryDecoder = new TextDecoder();
-				let primaryEventBuffer = "";
+        if (!(primaryResponse instanceof ReadableStream)) {
+          throw new AssistantError(
+            "Primary model response is not a stream",
+            ErrorType.PROVIDER_ERROR,
+          );
+        }
 
-				const modelNames = models.map((m: ModelConfigInfo) => m.displayName).join(", ");
-				modelHeader = `Using the following models: ${modelNames}\n\n`;
-				controller.enqueue(
-					encoder.encode(
-						`data: ${JSON.stringify({
-							type: "content_block_delta",
-							content: modelHeader,
-						})}\n\n`,
-					),
-				);
+        const primaryProcessedStream = await createStreamWithPostProcessing(
+          primaryResponse,
+          { ...options, model: models[0].model, provider: models[0].provider },
+          conversationManager,
+        );
 
-				while (true) {
-					const { done, value } = await primaryReader.read();
-					if (done) break;
+        const primaryReader = primaryProcessedStream.getReader();
+        const primaryDecoder = new TextDecoder();
+        let primaryEventBuffer = "";
 
-					primaryEventBuffer += primaryDecoder.decode(value, { stream: true });
-					const blocks = primaryEventBuffer.split("\n\n");
-					primaryEventBuffer = blocks.pop() || "";
+        const modelNames = models.map((m: ModelConfigInfo) => m.displayName).join(", ");
 
-					for (const block of blocks) {
-						if (!block.trim()) {
-							continue;
-						}
+        modelHeader = `Using the following models: ${modelNames}\n\n`;
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({
+              type: "content_block_delta",
+              content: modelHeader,
+            })}\n\n`,
+          ),
+        );
 
-						const eventText = `${block}\n\n`;
-						try {
-							const dataLines = block
-								.split("\n")
-								.map((line) => line.trimEnd())
-								.filter((line) => line.startsWith("data:"))
-								.map((line) => line.slice(5).trimStart());
+        while (true) {
+          const { done, value } = await primaryReader.read();
 
-							if (dataLines.length === 0) {
-								controller.enqueue(encoder.encode(eventText));
-								continue;
-							}
+          if (done) {
+            break;
+          }
 
-							const dataStr = dataLines.join("\n").trim();
-							if (dataStr === "[DONE]") {
-								continue;
-							}
+          primaryEventBuffer += primaryDecoder.decode(value, { stream: true });
+          const blocks = primaryEventBuffer.split("\n\n");
 
-							const data = safeParseJson(dataStr);
-							if (!data) {
-								throw new AssistantError("Failed to parse data", ErrorType.PARAMS_ERROR);
-							}
-							if (data.type === "content_block_delta" && data.content) {
-								primaryContent += data.content;
-							} else if (data.type === "text" && data.text) {
-								primaryContent += data.text;
-							}
-							if (
-								data.type === "message_delta" ||
-								data.type === "message_stop" ||
-								(data.type === "state" && data.state === "done")
-							) {
-								continue;
-							}
-							controller.enqueue(encoder.encode(eventText));
-						} catch {
-							controller.enqueue(encoder.encode(eventText));
-						}
-					}
-				}
-			} catch (error) {
-				logger.error("Error processing primary stream in multi-model setup:", error);
-				controller.error(error);
-				return;
-			}
+          primaryEventBuffer = blocks.pop() || "";
 
-			let secondaryContent = "";
-			try {
-				const secondaryResponses = await Promise.all(secondaryPromises);
-				let secondaryIndex = 0;
+          for (const block of blocks) {
+            if (!block.trim()) {
+              continue;
+            }
 
-				for (const secondaryStream of secondaryResponses) {
-					const modelConfig = models[secondaryIndex + 1];
-					const modelName = modelConfig?.displayName || "Secondary model";
+            const eventText = `${block}\n\n`;
 
-					const divider = `\n\n***\n### ${modelName} response\n\n`;
-					controller.enqueue(
-						encoder.encode(
-							`data: ${JSON.stringify({ type: "content_block_delta", content: divider })}\n\n`,
-						),
-					);
-					secondaryContent += divider;
+            try {
+              const dataLines = block
+                .split("\n")
+                .map((line) => line.trimEnd())
+                .filter((line) => line.startsWith("data:"))
+                .map((line) => line.slice(5).trimStart());
 
-					const secondaryReader = secondaryStream.getReader();
-					while (true) {
-						const { done, value } = await secondaryReader.read();
-						if (done) break;
+              if (dataLines.length === 0) {
+                controller.enqueue(encoder.encode(eventText));
+                continue;
+              }
 
-						const text = new TextDecoder().decode(value);
-						try {
-							const matches = text.match(/data: (.*?)\n\n/g);
-							if (matches) {
-								for (const match of matches) {
-									const dataStr = match.substring(6, match.length - 2);
-									if (dataStr === "[DONE]") continue;
-									const data = safeParseJson(dataStr);
-									if (!data) {
-										throw new AssistantError("Failed to parse data", ErrorType.PARAMS_ERROR);
-									}
-									if (data.type === "content_block_delta" && data.content) {
-										secondaryContent += data.content;
-										const deltaEvent = encoder.encode(
-											`data: ${JSON.stringify({
-												type: "content_block_delta",
-												content: data.content,
-											})}\n\n`,
-										);
-										controller.enqueue(deltaEvent);
-									} else {
-										controller.enqueue(value);
-									}
-								}
-							} else {
-								controller.enqueue(value);
-							}
-						} catch {
-							controller.enqueue(value);
-						}
-					}
-					secondaryIndex++;
-				}
-			} catch (error) {
-				logger.error("Error processing secondary streams:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
+              const dataStr = dataLines.join("\n").trim();
 
-				const errorMessage =
-					"\n\n***\n### Error processing additional model responses\n\nThere was an error processing responses from secondary models. Only the primary model response is available.\n\n";
+              if (dataStr === "[DONE]") {
+                continue;
+              }
 
-				controller.enqueue(
-					encoder.encode(
-						`data: ${JSON.stringify({
-							type: "content_block_delta",
-							content: errorMessage,
-							isError: true,
-						})}\n\n`,
-					),
-				);
+              const data = safeParseJson(dataStr);
 
-				secondaryContent += errorMessage;
-			}
+              if (!data) {
+                throw new AssistantError("Failed to parse data", ErrorType.PARAMS_ERROR);
+              }
 
-			if (getOpinionMode(baseParams.messages) === "consensus" && secondaryContent.trim()) {
-				const consensusDivider = "\n\n***\n### Consensus\n\n";
-				const comparisonContent = `${modelHeader}### ${models[0].displayName} response\n\n${primaryContent}${secondaryContent}`;
+              if (data.type === "content_block_delta" && data.content) {
+                primaryContent += data.content;
+              } else if (data.type === "text" && data.text) {
+                primaryContent += data.text;
+              }
 
-				controller.enqueue(
-					encoder.encode(
-						`data: ${JSON.stringify({
-							type: "content_block_delta",
-							content: consensusDivider,
-						})}\n\n`,
-					),
-				);
-				secondaryContent += consensusDivider;
+              if (
+                data.type === "message_delta" ||
+                data.type === "message_stop" ||
+                (data.type === "state" && data.state === "done")
+              ) {
+                continue;
+              }
 
-				try {
-					const consensusResponse = await getAIResponse({
-						...baseParams,
-						body: baseParams.body,
-						disable_functions: true,
-						enabled_tools: [],
-						messages: [
-							...baseParams.messages,
-							{
-								role: "user",
-								content: buildConsensusSynthesisPrompt(comparisonContent),
-							},
-						],
-						model: models[0].model,
-						provider: models[0].provider,
-						stream: false,
-						tools: undefined,
-					});
+              controller.enqueue(encoder.encode(eventText));
+            } catch {
+              controller.enqueue(encoder.encode(eventText));
+            }
+          }
+        }
+      } catch (error) {
+        logger.error("Error processing primary stream in multi-model setup:", error);
+        controller.error(error);
 
-					if (!(consensusResponse instanceof ReadableStream)) {
-						const consensusContent = consensusResponse.response || "";
-						secondaryContent += consensusContent;
-						controller.enqueue(
-							encoder.encode(
-								`data: ${JSON.stringify({
-									type: "content_block_delta",
-									content: consensusContent,
-								})}\n\n`,
-							),
-						);
-					}
-				} catch (error) {
-					logger.error("Error synthesizing multi-model consensus:", {
-						error_message: error instanceof Error ? error.message : "Unknown error",
-					});
-					const consensusError =
-						"Consensus synthesis failed, but the individual model responses above are available.";
-					secondaryContent += consensusError;
-					controller.enqueue(
-						encoder.encode(
-							`data: ${JSON.stringify({
-								type: "content_block_delta",
-								content: consensusError,
-								isError: true,
-							})}\n\n`,
-						),
-					);
-				}
-			}
+        return;
+      }
 
-			try {
-				const conversation = await conversationManager.get(options.completion_id);
-				const secondaryModels = models.slice(1).map((m: ModelConfigInfo) => m.model) || [];
-				const buildFinalMessage = (content: string, baseMessage?: Partial<Message>): Message => {
-					const timestamp = baseMessage?.timestamp || Date.now();
+      let secondaryContent = "";
 
-					return {
-						...baseMessage,
-						role: "assistant",
-						content,
-						parts: [
-							{
-								type: "text",
-								text: content,
-								timestamp,
-							},
-						],
-						citations: baseMessage?.citations || [],
-						log_id: baseMessage?.log_id || null,
-						mode: options.mode,
-						id: baseMessage?.id || generateId(),
-						timestamp,
-						model: baseMessage?.model || models[0].model,
-						platform: baseMessage?.platform || options.platform || "api",
-						usage: baseMessage?.usage || null,
-						data: {
-							...baseMessage?.data,
-							includesSecondaryModels: true,
-							secondaryModels,
-						},
-						tool_calls: baseMessage?.tool_calls || null,
-					};
-				};
-				let finalAssistantMessage: Message | null = null;
+      try {
+        const secondaryResponses = await Promise.all(secondaryPromises);
+        let secondaryIndex = 0;
 
-				if (conversation?.length > 0) {
-					const assistantMessages = conversation.filter((msg) => msg.role === "assistant");
-					if (assistantMessages.length > 0) {
-						const lastMessage = assistantMessages[assistantMessages.length - 1];
-						let storedPrimaryContent = "";
-						if (typeof lastMessage.content === "string") {
-							storedPrimaryContent = lastMessage.content;
-						} else if (Array.isArray(lastMessage.content)) {
-							const textBlock = lastMessage.content.find((block) => block.type === "text");
-							storedPrimaryContent = textBlock?.text || "";
-						}
+        for (const secondaryStream of secondaryResponses) {
+          const modelConfig = models[secondaryIndex + 1];
+          const modelName = modelConfig?.displayName || "Secondary model";
 
-						const finalCombinedContent = modelHeader + storedPrimaryContent + secondaryContent;
-						finalAssistantMessage = buildFinalMessage(finalCombinedContent, lastMessage);
+          const divider = `\n\n***\n### ${modelName} response\n\n`;
 
-						await conversationManager.update(options.completion_id, [finalAssistantMessage]);
-					} else {
-						const finalCombinedContentForAdd = modelHeader + primaryContent + secondaryContent;
-						finalAssistantMessage = buildFinalMessage(finalCombinedContentForAdd);
-						await conversationManager.add(options.completion_id, finalAssistantMessage);
-					}
-				} else {
-					const finalCombinedContentForAdd = modelHeader + primaryContent + secondaryContent;
-					finalAssistantMessage = buildFinalMessage(finalCombinedContentForAdd);
-					await conversationManager.add(options.completion_id, finalAssistantMessage);
-				}
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({ type: "content_block_delta", content: divider })}\n\n`,
+            ),
+          );
+          secondaryContent += divider;
 
-				if (finalAssistantMessage) {
-					controller.enqueue(
-						encoder.encode(
-							`data: ${JSON.stringify({
-								type: "message_delta",
-								id: options.completion_id,
-								message_id: finalAssistantMessage.id,
-								object: "chat.completion",
-								created: finalAssistantMessage.timestamp,
-								model: finalAssistantMessage.model,
-								content: finalAssistantMessage.content,
-								data: finalAssistantMessage.data,
-								log_id: finalAssistantMessage.log_id,
-								usage: finalAssistantMessage.usage,
-								citations: finalAssistantMessage.citations,
-								finish_reason: "stop",
-							})}\n\n`,
-						),
-					);
-				}
+          const secondaryReader = secondaryStream.getReader();
 
-				try {
-					const updatedUsageLimits = await conversationManager.getUsageLimits();
-					if (updatedUsageLimits) {
-						controller.enqueue(
-							encoder.encode(
-								`data: ${JSON.stringify({
-									type: "usage_limits",
-									usage_limits: updatedUsageLimits,
-								})}\n\n`,
-							),
-						);
-					}
-				} catch (error) {
-					logger.error("Failed to get updated usage limits for multi-model streaming:", error);
-				}
+          while (true) {
+            const { done, value } = await secondaryReader.read();
 
-				controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-				controller.close();
-			} catch (error) {
-				logger.error("Error during finalization/storage:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-				controller.error(error);
-			}
-		},
-		cancel(reason) {
-			logger.warn("Multi-model stream cancelled", {
-				reason,
-				completion_id: options.completion_id,
-			});
-		},
-	});
+            if (done) {
+              break;
+            }
+
+            const text = new TextDecoder().decode(value);
+
+            try {
+              const matches = text.match(/data: (.*?)\n\n/g);
+
+              if (matches) {
+                for (const match of matches) {
+                  const dataStr = match.substring(6, match.length - 2);
+
+                  if (dataStr === "[DONE]") {
+                    continue;
+                  }
+
+                  const data = safeParseJson(dataStr);
+
+                  if (!data) {
+                    throw new AssistantError("Failed to parse data", ErrorType.PARAMS_ERROR);
+                  }
+
+                  if (data.type === "content_block_delta" && data.content) {
+                    secondaryContent += data.content;
+                    const deltaEvent = encoder.encode(
+                      `data: ${JSON.stringify({
+                        type: "content_block_delta",
+                        content: data.content,
+                      })}\n\n`,
+                    );
+
+                    controller.enqueue(deltaEvent);
+                  } else {
+                    controller.enqueue(value);
+                  }
+                }
+              } else {
+                controller.enqueue(value);
+              }
+            } catch {
+              controller.enqueue(value);
+            }
+          }
+
+          secondaryIndex++;
+        }
+      } catch (error) {
+        logger.error("Error processing secondary streams:", {
+          error_message: error instanceof Error ? error.message : "Unknown error",
+        });
+
+        const errorMessage =
+          "\n\n***\n### Error processing additional model responses\n\nThere was an error processing responses from secondary models. Only the primary model response is available.\n\n";
+
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({
+              type: "content_block_delta",
+              content: errorMessage,
+              isError: true,
+            })}\n\n`,
+          ),
+        );
+
+        secondaryContent += errorMessage;
+      }
+
+      if (getOpinionMode(baseParams.messages) === "consensus" && secondaryContent.trim()) {
+        const consensusDivider = "\n\n***\n### Consensus\n\n";
+        const comparisonContent = `${modelHeader}### ${models[0].displayName} response\n\n${primaryContent}${secondaryContent}`;
+
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({
+              type: "content_block_delta",
+              content: consensusDivider,
+            })}\n\n`,
+          ),
+        );
+        secondaryContent += consensusDivider;
+
+        try {
+          const consensusResponse = await getAIResponse({
+            ...baseParams,
+            body: baseParams.body,
+            disable_functions: true,
+            enabled_tools: [],
+            messages: [
+              ...baseParams.messages,
+              {
+                role: "user",
+                content: buildConsensusSynthesisPrompt(comparisonContent),
+              },
+            ],
+            model: models[0].model,
+            provider: models[0].provider,
+            stream: false,
+            tools: undefined,
+          });
+
+          if (!(consensusResponse instanceof ReadableStream)) {
+            const consensusContent = consensusResponse.response || "";
+
+            secondaryContent += consensusContent;
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  type: "content_block_delta",
+                  content: consensusContent,
+                })}\n\n`,
+              ),
+            );
+          }
+        } catch (error) {
+          logger.error("Error synthesizing multi-model consensus:", {
+            error_message: error instanceof Error ? error.message : "Unknown error",
+          });
+          const consensusError =
+            "Consensus synthesis failed, but the individual model responses above are available.";
+
+          secondaryContent += consensusError;
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({
+                type: "content_block_delta",
+                content: consensusError,
+                isError: true,
+              })}\n\n`,
+            ),
+          );
+        }
+      }
+
+      try {
+        const conversation = await conversationManager.get(options.completion_id);
+        const secondaryModels = models.slice(1).map((m: ModelConfigInfo) => m.model) || [];
+        const buildFinalMessage = (content: string, baseMessage?: Partial<Message>): Message => {
+          const timestamp = baseMessage?.timestamp || Date.now();
+
+          return {
+            ...baseMessage,
+            role: "assistant",
+            content,
+            parts: [
+              {
+                type: "text",
+                text: content,
+                timestamp,
+              },
+            ],
+            citations: baseMessage?.citations || [],
+            log_id: baseMessage?.log_id || null,
+            mode: options.mode,
+            id: baseMessage?.id || generateId(),
+            timestamp,
+            model: baseMessage?.model || models[0].model,
+            platform: baseMessage?.platform || options.platform || "api",
+            usage: baseMessage?.usage || null,
+            data: {
+              ...baseMessage?.data,
+              includesSecondaryModels: true,
+              secondaryModels,
+            },
+            tool_calls: baseMessage?.tool_calls || null,
+          };
+        };
+
+        let finalAssistantMessage: Message | null = null;
+
+        if (conversation?.length > 0) {
+          const assistantMessages = conversation.filter((msg) => msg.role === "assistant");
+
+          if (assistantMessages.length > 0) {
+            const lastMessage = assistantMessages[assistantMessages.length - 1];
+            let storedPrimaryContent = "";
+
+            if (typeof lastMessage.content === "string") {
+              storedPrimaryContent = lastMessage.content;
+            } else if (Array.isArray(lastMessage.content)) {
+              const textBlock = lastMessage.content.find((block) => block.type === "text");
+
+              storedPrimaryContent = textBlock?.text || "";
+            }
+
+            const finalCombinedContent = modelHeader + storedPrimaryContent + secondaryContent;
+
+            finalAssistantMessage = buildFinalMessage(finalCombinedContent, lastMessage);
+
+            await conversationManager.update(options.completion_id, [finalAssistantMessage]);
+          } else {
+            const finalCombinedContentForAdd = modelHeader + primaryContent + secondaryContent;
+
+            finalAssistantMessage = buildFinalMessage(finalCombinedContentForAdd);
+            await conversationManager.add(options.completion_id, finalAssistantMessage);
+          }
+        } else {
+          const finalCombinedContentForAdd = modelHeader + primaryContent + secondaryContent;
+
+          finalAssistantMessage = buildFinalMessage(finalCombinedContentForAdd);
+          await conversationManager.add(options.completion_id, finalAssistantMessage);
+        }
+
+        if (finalAssistantMessage) {
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({
+                type: "message_delta",
+                id: options.completion_id,
+                message_id: finalAssistantMessage.id,
+                object: "chat.completion",
+                created: finalAssistantMessage.timestamp,
+                model: finalAssistantMessage.model,
+                content: finalAssistantMessage.content,
+                data: finalAssistantMessage.data,
+                log_id: finalAssistantMessage.log_id,
+                usage: finalAssistantMessage.usage,
+                citations: finalAssistantMessage.citations,
+                finish_reason: "stop",
+              })}\n\n`,
+            ),
+          );
+        }
+
+        try {
+          const updatedUsageLimits = await conversationManager.getUsageLimits();
+
+          if (updatedUsageLimits) {
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  type: "usage_limits",
+                  usage_limits: updatedUsageLimits,
+                })}\n\n`,
+              ),
+            );
+          }
+        } catch (error) {
+          logger.error("Failed to get updated usage limits for multi-model streaming:", error);
+        }
+
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+        controller.close();
+      } catch (error) {
+        logger.error("Error during finalization/storage:", {
+          error_message: error instanceof Error ? error.message : "Unknown error",
+        });
+        controller.error(error);
+      }
+    },
+    cancel(reason) {
+      logger.warn("Multi-model stream cancelled", {
+        reason,
+        completion_id: options.completion_id,
+      });
+    },
+  });
 }

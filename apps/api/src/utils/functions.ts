@@ -1,70 +1,154 @@
 import { type ResponseDisplay, ResponseDisplayType } from "@ngriffin_uk/polychat-schemas";
 
 export const formatFunctionName = (name: string): string => {
-	return name
-		.split("_")
-		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-		.join(" ");
+  return name
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 };
 
 export const getFunctionIcon = (name: string): string => {
-	if (name.includes("weather")) return "cloud";
-	if (name.includes("search")) return "search";
-	if (name.includes("image") || name.includes("screenshot")) return "image";
-	if (name.includes("speech")) return "speech";
-	if (name.includes("video")) return "video";
-	if (name.includes("music")) return "music";
-	if (name.includes("note")) return "file-text";
-	if (name.includes("extract") || name.includes("content")) return "file-text";
-	if (name.includes("create")) return "plus-circle";
-	if (name.includes("get")) return "folder-open";
-	if (name === "compose_functions") return "braces";
-	if (name === "if_then_else") return "brain-circuit";
-	if (name === "parallel_execute") return "users";
-	if (name.startsWith("mcp_")) return "file-text";
-	if (name.startsWith("analyse_")) return "file-text";
-	return "app";
+  if (name.includes("weather")) {
+    return "cloud";
+  }
+
+  if (name.includes("search")) {
+    return "search";
+  }
+
+  if (name.includes("image") || name.includes("screenshot")) {
+    return "image";
+  }
+
+  if (name.includes("speech")) {
+    return "speech";
+  }
+
+  if (name.includes("video")) {
+    return "video";
+  }
+
+  if (name.includes("music")) {
+    return "music";
+  }
+
+  if (name.includes("note")) {
+    return "file-text";
+  }
+
+  if (name.includes("extract") || name.includes("content")) {
+    return "file-text";
+  }
+
+  if (name.includes("create")) {
+    return "plus-circle";
+  }
+
+  if (name.includes("get")) {
+    return "folder-open";
+  }
+
+  if (name === "compose_functions") {
+    return "braces";
+  }
+
+  if (name === "if_then_else") {
+    return "brain-circuit";
+  }
+
+  if (name === "parallel_execute") {
+    return "users";
+  }
+
+  if (name.startsWith("mcp_")) {
+    return "file-text";
+  }
+
+  if (name.startsWith("analyse_")) {
+    return "file-text";
+  }
+
+  return "app";
 };
 
 export const getFunctionResponseType = (name: string): ResponseDisplayType => {
-	if (name.includes("search")) return ResponseDisplayType.CUSTOM;
-	if (name.includes("weather")) return ResponseDisplayType.CUSTOM;
-	if (name.includes("image") || name.includes("screenshot")) return ResponseDisplayType.TEMPLATE;
-	if (name.includes("video")) return ResponseDisplayType.TEMPLATE;
-	if (name.includes("extract")) return ResponseDisplayType.TEXT;
-	if (name.includes("speech")) return ResponseDisplayType.TEXT;
-	if (name.includes("prompt_coach")) return ResponseDisplayType.TEMPLATE;
-	if (
-		name === "run_feature_implementation" ||
-		name === "run_code_review" ||
-		name === "run_test_suite" ||
-		name === "run_bug_fix" ||
-		name === "run_refactoring" ||
-		name === "run_documentation" ||
-		name === "run_migration"
-	)
-		return ResponseDisplayType.TEMPLATE;
-	if (name.includes("call_api")) return ResponseDisplayType.JSON;
-	if (name === "request_approval") return ResponseDisplayType.TEMPLATE;
-	if (name === "ask_user") return ResponseDisplayType.TEMPLATE;
-	if (name === "compose_functions" || name === "if_then_else" || name === "parallel_execute") {
-		return ResponseDisplayType.TEMPLATE;
-	}
-	if (name.startsWith("mcp_")) return ResponseDisplayType.JSON;
-	if (name.startsWith("analyse_")) return ResponseDisplayType.TEMPLATE;
-	return ResponseDisplayType.CUSTOM;
+  if (name.includes("search")) {
+    return ResponseDisplayType.CUSTOM;
+  }
+
+  if (name.includes("weather")) {
+    return ResponseDisplayType.CUSTOM;
+  }
+
+  if (name.includes("image") || name.includes("screenshot")) {
+    return ResponseDisplayType.TEMPLATE;
+  }
+
+  if (name.includes("video")) {
+    return ResponseDisplayType.TEMPLATE;
+  }
+
+  if (name.includes("extract")) {
+    return ResponseDisplayType.TEXT;
+  }
+
+  if (name.includes("speech")) {
+    return ResponseDisplayType.TEXT;
+  }
+
+  if (name.includes("prompt_coach")) {
+    return ResponseDisplayType.TEMPLATE;
+  }
+
+  if (
+    name === "run_feature_implementation" ||
+    name === "run_code_review" ||
+    name === "run_test_suite" ||
+    name === "run_bug_fix" ||
+    name === "run_refactoring" ||
+    name === "run_documentation" ||
+    name === "run_migration"
+  ) {
+    return ResponseDisplayType.TEMPLATE;
+  }
+
+  if (name.includes("call_api")) {
+    return ResponseDisplayType.JSON;
+  }
+
+  if (name === "request_approval") {
+    return ResponseDisplayType.TEMPLATE;
+  }
+
+  if (name === "ask_user") {
+    return ResponseDisplayType.TEMPLATE;
+  }
+
+  if (name === "compose_functions" || name === "if_then_else" || name === "parallel_execute") {
+    return ResponseDisplayType.TEMPLATE;
+  }
+
+  if (name.startsWith("mcp_")) {
+    return ResponseDisplayType.JSON;
+  }
+
+  if (name.startsWith("analyse_")) {
+    return ResponseDisplayType.TEMPLATE;
+  }
+
+  return ResponseDisplayType.CUSTOM;
 };
 
 export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
-	const display: ResponseDisplay = {
-		fields: [
-			{ key: "status", label: "Status" },
-			{ key: "content", label: "Content" },
-		],
-	};
+  const display: ResponseDisplay = {
+    fields: [
+      { key: "status", label: "Status" },
+      { key: "content", label: "Content" },
+    ],
+  };
 
-	if (name.startsWith("analyse_")) {
-		display.template = `
+  if (name.startsWith("analyse_")) {
+    display.template = `
       <div class="analysis-container prose dark:prose-invert">
         <h2>Analysis</h2>
         <div class="analysis-content">
@@ -91,8 +175,8 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
         {{/if}}
       </div>
     `;
-	} else if (name.includes("image") || name.includes("screenshot")) {
-		display.template = `
+  } else if (name.includes("image") || name.includes("screenshot")) {
+    display.template = `
       <div class="image-response">
         <h2>Generated Image</h2>
         <p>{{content}}</p>
@@ -108,15 +192,15 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
         {{/if}}
       </div>
     `;
-	} else if (name.includes("speech")) {
-		display.template = `
+  } else if (name.includes("speech")) {
+    display.template = `
       <div class="speech-response">
         <h2>Generated Speech</h2>
         <p>{{content}}</p>
       </div>
     `;
-	} else if (name.includes("prompt_coach")) {
-		display.template = `
+  } else if (name.includes("prompt_coach")) {
+    display.template = `
       <div class="prompt-coach-response prose dark:prose-invert">
         <h2>Prompt Coach</h2>
         {{#if data.analysis}}
@@ -161,38 +245,39 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
         {{/if}}
       </div>
     `;
-	} else if (
-		name === "run_feature_implementation" ||
-		name === "run_code_review" ||
-		name === "run_test_suite" ||
-		name === "run_bug_fix" ||
-		name === "run_refactoring" ||
-		name === "run_documentation" ||
-		name === "run_migration"
-	) {
-		const sandboxHeading =
-			name === "run_code_review"
-				? "Sandbox Code Review"
-				: name === "run_test_suite"
-					? "Sandbox Test Suite"
-					: name === "run_bug_fix"
-						? "Sandbox Bug Fix"
-						: name === "run_refactoring"
-							? "Sandbox Refactoring"
-							: name === "run_documentation"
-								? "Sandbox Documentation"
-								: name === "run_migration"
-									? "Sandbox Migration"
-									: "Sandbox Implementation";
-		display.fields = [
-			{ key: "success", label: "Success" },
-			{ key: "summary", label: "Summary" },
-			{ key: "branchName", label: "Branch" },
-			{ key: "diff", label: "Diff" },
-			{ key: "logs", label: "Logs" },
-			{ key: "error", label: "Error" },
-		];
-		display.template = `
+  } else if (
+    name === "run_feature_implementation" ||
+    name === "run_code_review" ||
+    name === "run_test_suite" ||
+    name === "run_bug_fix" ||
+    name === "run_refactoring" ||
+    name === "run_documentation" ||
+    name === "run_migration"
+  ) {
+    const sandboxHeading =
+      name === "run_code_review"
+        ? "Sandbox Code Review"
+        : name === "run_test_suite"
+          ? "Sandbox Test Suite"
+          : name === "run_bug_fix"
+            ? "Sandbox Bug Fix"
+            : name === "run_refactoring"
+              ? "Sandbox Refactoring"
+              : name === "run_documentation"
+                ? "Sandbox Documentation"
+                : name === "run_migration"
+                  ? "Sandbox Migration"
+                  : "Sandbox Implementation";
+
+    display.fields = [
+      { key: "success", label: "Success" },
+      { key: "summary", label: "Summary" },
+      { key: "branchName", label: "Branch" },
+      { key: "diff", label: "Diff" },
+      { key: "logs", label: "Logs" },
+      { key: "error", label: "Error" },
+    ];
+    display.template = `
       <div class="sandbox-response prose dark:prose-invert">
         <h2>${sandboxHeading}</h2>
         {{#if summary}}
@@ -212,8 +297,8 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
         {{/if}}
       </div>
     `;
-	} else if (name === "request_approval") {
-		display.template = `
+  } else if (name === "request_approval") {
+    display.template = `
       <div class="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-zinc-800 p-5 space-y-4">
         <div class="flex items-center gap-2">
           <span class="text-xl">⏸️</span>
@@ -238,8 +323,8 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
         </div>
       </div>
     `;
-	} else if (name === "ask_user") {
-		display.template = `
+  } else if (name === "ask_user") {
+    display.template = `
       <div class="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-zinc-800 p-5 space-y-4">
         <div class="flex items-center gap-2">
           <span class="text-xl">❓</span>
@@ -275,19 +360,19 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
         </div>
       </div>
     `;
-	} else if (
-		name === "compose_functions" ||
-		name === "parallel_execute" ||
-		name === "if_then_else"
-	) {
-		const headerTitle =
-			name === "compose_functions"
-				? "Workflow Results"
-				: name === "parallel_execute"
-					? "Parallel Execution"
-					: "Conditional Workflow";
+  } else if (
+    name === "compose_functions" ||
+    name === "parallel_execute" ||
+    name === "if_then_else"
+  ) {
+    const headerTitle =
+      name === "compose_functions"
+        ? "Workflow Results"
+        : name === "parallel_execute"
+          ? "Parallel Execution"
+          : "Conditional Workflow";
 
-		display.template = `
+    display.template = `
       <div class="workflow-response rounded-lg border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-zinc-800 p-5 space-y-4">
         <div class="workflow-header flex items-start justify-between gap-4">
           <div>
@@ -329,6 +414,7 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
         {{/if}}
       </div>
     `;
-	}
-	return display;
+  }
+
+  return display;
 };

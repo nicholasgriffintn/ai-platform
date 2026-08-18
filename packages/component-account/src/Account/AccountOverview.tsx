@@ -52,24 +52,39 @@ export interface AccountOverviewProps {
 }
 
 function formatResetCountdown(dateString: string | null | undefined) {
-  if (!dateString) return "N/A";
+  if (!dateString) {
+    return "N/A";
+  }
 
   try {
     const lastResetDate = new Date(dateString);
     const nextResetDate = new Date(lastResetDate);
+
     nextResetDate.setHours(nextResetDate.getHours() + 24);
 
     const diffMs = nextResetDate.getTime() - Date.now();
-    if (diffMs < 0) return "any moment now";
+
+    if (diffMs < 0) {
+      return "any moment now";
+    }
 
     const diffSecs = Math.floor(diffMs / 1000);
     const diffMins = Math.floor(diffSecs / 60);
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffDays > 0) return `in ${diffDays} day${diffDays > 1 ? "s" : ""}`;
-    if (diffHours > 0) return `in ${diffHours} hour${diffHours > 1 ? "s" : ""}`;
-    if (diffMins > 0) return `in ${diffMins} minute${diffMins > 1 ? "s" : ""}`;
+    if (diffDays > 0) {
+      return `in ${diffDays} day${diffDays > 1 ? "s" : ""}`;
+    }
+
+    if (diffHours > 0) {
+      return `in ${diffHours} hour${diffHours > 1 ? "s" : ""}`;
+    }
+
+    if (diffMins > 0) {
+      return `in ${diffMins} minute${diffMins > 1 ? "s" : ""}`;
+    }
+
     return `in ${diffSecs} second${diffSecs !== 1 ? "s" : ""}`;
   } catch {
     return "unknown time";
@@ -184,12 +199,19 @@ export function AccountOverview({
   const isPro = user?.plan_id === "pro";
 
   const details: Array<{ label: string; value: string }> = [];
+
   if (user?.created_at) {
     details.push({ label: "Member since", value: formatDate(user.created_at) });
   }
+
   details.push({ label: "Plan", value: isPro ? "Pro" : "Free" });
-  if (user?.company) details.push({ label: "Company", value: user.company });
-  if (user?.location) details.push({ label: "Location", value: user.location });
+  if (user?.company) {
+    details.push({ label: "Company", value: user.company });
+  }
+
+  if (user?.location) {
+    details.push({ label: "Location", value: user.location });
+  }
 
   const site = user?.site
     ? user.site.startsWith("http")

@@ -37,56 +37,57 @@ const HTML_SANDBOX_TEMPLATE = `
 `;
 
 export function HtmlSandbox({
-	code,
-	css,
-	setPreviewError,
-	iframeKey,
+  code,
+  css,
+  setPreviewError,
+  iframeKey,
 }: {
-	code: ArtifactProps;
-	css?: ArtifactProps;
-	setPreviewError: (error: string | null) => void;
-	iframeKey: number;
+  code: ArtifactProps;
+  css?: ArtifactProps;
+  setPreviewError: (error: string | null) => void;
+  iframeKey: number;
 }) {
-	const [documentContent, setDocumentContent] = useState<string | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
+  const [documentContent, setDocumentContent] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-	useEffect(() => {
-		let isMounted = true;
-		setIsLoading(true);
+  useEffect(() => {
+    let isMounted = true;
 
-		const prepareDocument = async () => {
-			let doc = HTML_SANDBOX_TEMPLATE;
+    setIsLoading(true);
 
-			if (css) {
-				doc = doc.replace("<CSS_CODE_PLACEHOLDER>", css.content);
-			} else {
-				doc = doc.replace("<CSS_CODE_PLACEHOLDER>", "");
-			}
+    const prepareDocument = async () => {
+      let doc = HTML_SANDBOX_TEMPLATE;
 
-			doc = doc.replace("<CONTENT_PLACEHOLDER>", code.content);
+      if (css) {
+        doc = doc.replace("<CSS_CODE_PLACEHOLDER>", css.content);
+      } else {
+        doc = doc.replace("<CSS_CODE_PLACEHOLDER>", "");
+      }
 
-			if (isMounted) {
-				setDocumentContent(doc);
-				setIsLoading(false);
-			}
-		};
+      doc = doc.replace("<CONTENT_PLACEHOLDER>", code.content);
 
-		prepareDocument();
+      if (isMounted) {
+        setDocumentContent(doc);
+        setIsLoading(false);
+      }
+    };
 
-		return () => {
-			isMounted = false;
-		};
-	}, [code, css]);
+    prepareDocument();
 
-	if (isLoading) {
-		return <LoadingIndicator />;
-	}
+    return () => {
+      isMounted = false;
+    };
+  }, [code, css]);
 
-	return (
-		<SandboxIframe
-			documentContent={documentContent}
-			iframeKey={iframeKey}
-			setPreviewError={setPreviewError}
-		/>
-	);
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
+
+  return (
+    <SandboxIframe
+      documentContent={documentContent}
+      iframeKey={iframeKey}
+      setPreviewError={setPreviewError}
+    />
+  );
 }

@@ -2,225 +2,275 @@ import { LINE_WIDTHS } from "@ngriffin_uk/polychat-component-experiences/media";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
-	useFetchDrawing,
-	useFetchDrawings,
-	useGenerateDrawing,
-	useGuessDrawing,
+  useFetchDrawing,
+  useFetchDrawings,
+  useGenerateDrawing,
+  useGuessDrawing,
 } from "~/hooks/useDrawings";
 
 async function canvasToPngFile(canvas: HTMLCanvasElement): Promise<File> {
-	const blob = await new Promise<Blob>((resolve, reject) => {
-		canvas.toBlob((result) => {
-			if (result) {
-				resolve(result);
-				return;
-			}
+  const blob = await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((result) => {
+      if (result) {
+        resolve(result);
 
-			reject(new Error("Could not convert canvas to blob"));
-		}, "image/png");
-	});
+        return;
+      }
 
-	return new File([blob], "drawing.png", { type: "image/png" });
+      reject(new Error("Could not convert canvas to blob"));
+    }, "image/png");
+  });
+
+  return new File([blob], "drawing.png", { type: "image/png" });
 }
 
 export function useDrawingStudio(enabled: boolean) {
-	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const [currentColor, setCurrentColor] = useState("#030712");
-	const [lineWidth, setLineWidth] = useState(LINE_WIDTHS[2]);
-	const [isFillMode, setIsFillMode] = useState(false);
-	const [preview, setPreview] = useState<string | null>(null);
-	const [guessResult, setGuessResult] = useState<string | null>(null);
-	const [guessedDrawingId, setGuessedDrawingId] = useState<string | null>(null);
-	const [isEditorOpen, setIsEditorOpen] = useState(false);
-	const [selectedDrawingId, setSelectedDrawingId] = useState<string | null>(null);
-	const [drawingHistory, setDrawingHistory] = useState<string[]>([]);
-	const [currentHistoryIndex, setCurrentHistoryIndex] = useState(-1);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [currentColor, setCurrentColor] = useState("#030712");
+  const [lineWidth, setLineWidth] = useState(LINE_WIDTHS[2]);
+  const [isFillMode, setIsFillMode] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [guessResult, setGuessResult] = useState<string | null>(null);
+  const [guessedDrawingId, setGuessedDrawingId] = useState<string | null>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [selectedDrawingId, setSelectedDrawingId] = useState<string | null>(null);
+  const [drawingHistory, setDrawingHistory] = useState<string[]>([]);
+  const [currentHistoryIndex, setCurrentHistoryIndex] = useState(-1);
 
-	const drawingsQuery = useFetchDrawings(enabled);
-	const selectedDrawingQuery = useFetchDrawing(
-		enabled ? selectedDrawingId || undefined : undefined,
-	);
-	const generateMutation = useGenerateDrawing();
-	const guessMutation = useGuessDrawing();
+  const drawingsQuery = useFetchDrawings(enabled);
+  const selectedDrawingQuery = useFetchDrawing(
+    enabled ? selectedDrawingId || undefined : undefined,
+  );
+  const generateMutation = useGenerateDrawing();
+  const guessMutation = useGuessDrawing();
 
-	const saveToHistory = useCallback(() => {
-		const canvas = canvasRef.current;
-		if (!canvas) return;
+  const saveToHistory = useCallback(() => {
+    const canvas = canvasRef.current;
 
-		const dataUrl = canvas.toDataURL("image/png");
-		setPreview(dataUrl);
-		setDrawingHistory((currentHistory) => {
-			const nextHistory = currentHistory.slice(0, currentHistoryIndex + 1);
-			nextHistory.push(dataUrl);
-			setCurrentHistoryIndex(nextHistory.length - 1);
-			return nextHistory;
-		});
-	}, [currentHistoryIndex]);
+    if (!canvas) {
+      return;
+    }
 
-	const initialiseCanvas = useCallback(() => {
-		const canvas = canvasRef.current;
-		if (!canvas) return;
+    const dataUrl = canvas.toDataURL("image/png");
 
-		const ctx = canvas.getContext("2d");
-		if (!ctx) return;
+    setPreview(dataUrl);
+    setDrawingHistory((currentHistory) => {
+      const nextHistory = currentHistory.slice(0, currentHistoryIndex + 1);
 
-		ctx.fillStyle = "#f9fafb";
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
-		const dataUrl = canvas.toDataURL("image/png");
-		setPreview(dataUrl);
-		setDrawingHistory([dataUrl]);
-		setCurrentHistoryIndex(0);
-		setGuessResult(null);
-		setGuessedDrawingId(null);
-	}, []);
+      nextHistory.push(dataUrl);
+      setCurrentHistoryIndex(nextHistory.length - 1);
 
-	useEffect(() => {
-		if (isEditorOpen) {
-			initialiseCanvas();
-		}
-	}, [initialiseCanvas, isEditorOpen]);
+      return nextHistory;
+    });
+  }, [currentHistoryIndex]);
 
-	const startNewDrawing = useCallback(() => {
-		setSelectedDrawingId(null);
-		setIsEditorOpen(true);
-	}, []);
+  const initialiseCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
 
-	const showDrawingList = useCallback(() => {
-		setIsEditorOpen(false);
-		setSelectedDrawingId(null);
-	}, []);
+    if (!canvas) {
+      return;
+    }
 
-	const handleDrawingComplete = useCallback(() => {
-		const canvas = canvasRef.current;
-		if (!canvas) return;
+    const ctx = canvas.getContext("2d");
 
-		setPreview(canvas.toDataURL("image/png"));
-	}, []);
+    if (!ctx) {
+      return;
+    }
 
-	const clearCanvas = useCallback(() => {
-		const canvas = canvasRef.current;
-		if (!canvas) return;
+    ctx.fillStyle = "#f9fafb";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL("image/png");
 
-		const ctx = canvas.getContext("2d");
-		if (!ctx) return;
+    setPreview(dataUrl);
+    setDrawingHistory([dataUrl]);
+    setCurrentHistoryIndex(0);
+    setGuessResult(null);
+    setGuessedDrawingId(null);
+  }, []);
 
-		ctx.fillStyle = "#f9fafb";
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
-		saveToHistory();
-		setGuessResult(null);
-	}, [saveToHistory]);
+  useEffect(() => {
+    if (isEditorOpen) {
+      initialiseCanvas();
+    }
+  }, [initialiseCanvas, isEditorOpen]);
 
-	const undoDrawing = useCallback(() => {
-		if (currentHistoryIndex <= 0) return;
+  const startNewDrawing = useCallback(() => {
+    setSelectedDrawingId(null);
+    setIsEditorOpen(true);
+  }, []);
 
-		const nextIndex = currentHistoryIndex - 1;
-		const previousDrawing = drawingHistory[nextIndex];
-		if (!previousDrawing || !canvasRef.current) return;
+  const showDrawingList = useCallback(() => {
+    setIsEditorOpen(false);
+    setSelectedDrawingId(null);
+  }, []);
 
-		setCurrentHistoryIndex(nextIndex);
-		const image = new Image();
-		image.onload = () => {
-			const ctx = canvasRef.current?.getContext("2d");
-			if (!ctx) return;
+  const handleDrawingComplete = useCallback(() => {
+    const canvas = canvasRef.current;
 
-			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-			ctx.drawImage(image, 0, 0);
-			setPreview(previousDrawing);
-		};
-		image.src = previousDrawing;
-	}, [currentHistoryIndex, drawingHistory]);
+    if (!canvas) {
+      return;
+    }
 
-	const redoDrawing = useCallback(() => {
-		if (currentHistoryIndex >= drawingHistory.length - 1) return;
+    setPreview(canvas.toDataURL("image/png"));
+  }, []);
 
-		const nextIndex = currentHistoryIndex + 1;
-		const nextDrawing = drawingHistory[nextIndex];
-		if (!nextDrawing || !canvasRef.current) return;
+  const clearCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
 
-		setCurrentHistoryIndex(nextIndex);
-		const image = new Image();
-		image.onload = () => {
-			const ctx = canvasRef.current?.getContext("2d");
-			if (!ctx) return;
+    if (!canvas) {
+      return;
+    }
 
-			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-			ctx.drawImage(image, 0, 0);
-			setPreview(nextDrawing);
-		};
-		image.src = nextDrawing;
-	}, [currentHistoryIndex, drawingHistory]);
+    const ctx = canvas.getContext("2d");
 
-	const handleGuess = useCallback(async () => {
-		const canvas = canvasRef.current;
-		if (!canvas) return;
+    if (!ctx) {
+      return;
+    }
 
-		try {
-			const file = await canvasToPngFile(canvas);
-			const result = await guessMutation.mutateAsync({ drawing: file });
-			setGuessResult(result.content);
+    ctx.fillStyle = "#f9fafb";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    saveToHistory();
+    setGuessResult(null);
+  }, [saveToHistory]);
 
-			if (result.completion_id) {
-				setGuessedDrawingId(result.completion_id);
-			}
-		} catch {
-			setGuessResult("Error: Could not process your drawing");
-		}
-	}, [guessMutation]);
+  const undoDrawing = useCallback(() => {
+    if (currentHistoryIndex <= 0) {
+      return;
+    }
 
-	const handleGenerate = useCallback(async () => {
-		const canvas = canvasRef.current;
-		if (!canvas) return;
+    const nextIndex = currentHistoryIndex - 1;
+    const previousDrawing = drawingHistory[nextIndex];
 
-		try {
-			const file = await canvasToPngFile(canvas);
-			const payload = guessedDrawingId
-				? { drawing: file, drawingId: guessedDrawingId }
-				: { drawing: file };
-			const result = await generateMutation.mutateAsync(payload);
+    if (!previousDrawing || !canvasRef.current) {
+      return;
+    }
 
-			if (result?.output_id) {
-				setSelectedDrawingId(result.output_id);
-				setIsEditorOpen(false);
-			} else {
-				setGuessResult("Error: Could not show your drawing");
-			}
-		} catch {
-			setGuessResult("Error: Could not generate image from your drawing");
-		}
-	}, [generateMutation, guessedDrawingId]);
+    setCurrentHistoryIndex(nextIndex);
+    const image = new Image();
 
-	return {
-		canvasRef,
-		currentColor,
-		lineWidth,
-		isFillMode,
-		preview,
-		guessResult,
-		isEditorOpen,
-		selectedDrawingId,
-		drawingHistory,
-		currentHistoryIndex,
-		drawings: drawingsQuery.data ?? [],
-		selectedDrawing: selectedDrawingQuery.data,
-		isDrawingsLoading: drawingsQuery.isLoading,
-		drawingsError: drawingsQuery.error,
-		isSelectedDrawingLoading: selectedDrawingQuery.isLoading,
-		selectedDrawingError: selectedDrawingQuery.error,
-		isProcessing: generateMutation.isPending || guessMutation.isPending,
-		setCurrentColor,
-		setLineWidth,
-		setIsFillMode,
-		setSelectedDrawingId,
-		saveToHistory,
-		handleDrawingComplete,
-		clearCanvas,
-		undoDrawing,
-		redoDrawing,
-		handleGuess,
-		handleGenerate,
-		startNewDrawing,
-		showDrawingList,
-	};
+    image.onload = () => {
+      const ctx = canvasRef.current?.getContext("2d");
+
+      if (!ctx) {
+        return;
+      }
+
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.drawImage(image, 0, 0);
+      setPreview(previousDrawing);
+    };
+
+    image.src = previousDrawing;
+  }, [currentHistoryIndex, drawingHistory]);
+
+  const redoDrawing = useCallback(() => {
+    if (currentHistoryIndex >= drawingHistory.length - 1) {
+      return;
+    }
+
+    const nextIndex = currentHistoryIndex + 1;
+    const nextDrawing = drawingHistory[nextIndex];
+
+    if (!nextDrawing || !canvasRef.current) {
+      return;
+    }
+
+    setCurrentHistoryIndex(nextIndex);
+    const image = new Image();
+
+    image.onload = () => {
+      const ctx = canvasRef.current?.getContext("2d");
+
+      if (!ctx) {
+        return;
+      }
+
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.drawImage(image, 0, 0);
+      setPreview(nextDrawing);
+    };
+
+    image.src = nextDrawing;
+  }, [currentHistoryIndex, drawingHistory]);
+
+  const handleGuess = useCallback(async () => {
+    const canvas = canvasRef.current;
+
+    if (!canvas) {
+      return;
+    }
+
+    try {
+      const file = await canvasToPngFile(canvas);
+      const result = await guessMutation.mutateAsync({ drawing: file });
+
+      setGuessResult(result.content);
+
+      if (result.completion_id) {
+        setGuessedDrawingId(result.completion_id);
+      }
+    } catch {
+      setGuessResult("Error: Could not process your drawing");
+    }
+  }, [guessMutation]);
+
+  const handleGenerate = useCallback(async () => {
+    const canvas = canvasRef.current;
+
+    if (!canvas) {
+      return;
+    }
+
+    try {
+      const file = await canvasToPngFile(canvas);
+      const payload = guessedDrawingId
+        ? { drawing: file, drawingId: guessedDrawingId }
+        : { drawing: file };
+      const result = await generateMutation.mutateAsync(payload);
+
+      if (result?.output_id) {
+        setSelectedDrawingId(result.output_id);
+        setIsEditorOpen(false);
+      } else {
+        setGuessResult("Error: Could not show your drawing");
+      }
+    } catch {
+      setGuessResult("Error: Could not generate image from your drawing");
+    }
+  }, [generateMutation, guessedDrawingId]);
+
+  return {
+    canvasRef,
+    currentColor,
+    lineWidth,
+    isFillMode,
+    preview,
+    guessResult,
+    isEditorOpen,
+    selectedDrawingId,
+    drawingHistory,
+    currentHistoryIndex,
+    drawings: drawingsQuery.data ?? [],
+    selectedDrawing: selectedDrawingQuery.data,
+    isDrawingsLoading: drawingsQuery.isLoading,
+    drawingsError: drawingsQuery.error,
+    isSelectedDrawingLoading: selectedDrawingQuery.isLoading,
+    selectedDrawingError: selectedDrawingQuery.error,
+    isProcessing: generateMutation.isPending || guessMutation.isPending,
+    setCurrentColor,
+    setLineWidth,
+    setIsFillMode,
+    setSelectedDrawingId,
+    saveToHistory,
+    handleDrawingComplete,
+    clearCanvas,
+    undoDrawing,
+    redoDrawing,
+    handleGuess,
+    handleGenerate,
+    startNewDrawing,
+    showDrawingList,
+  };
 }
 
 export type DrawingStudioState = ReturnType<typeof useDrawingStudio>;

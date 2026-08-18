@@ -55,7 +55,10 @@ export function ArticleAnalysisForm({ session, onReportGenerated }: ArticleAnaly
           disabled={!session.isGenerateEnabled}
           onClick={async () => {
             const reportId = await session.actions.processAndGenerate();
-            if (reportId) onReportGenerated(reportId);
+
+            if (reportId) {
+              onReportGenerated(reportId);
+            }
           }}
         >
           {session.processingArticles
@@ -78,6 +81,7 @@ export function ArticleAnalysisForm({ session, onReportGenerated }: ArticleAnaly
           {session.articles.map((article, index) => {
             const isExtracting = session.extractingContent[article.id] ?? false;
             const isBusy = session.processingArticles || session.reportGenerating || isExtracting;
+
             return (
               <div
                 key={article.id}

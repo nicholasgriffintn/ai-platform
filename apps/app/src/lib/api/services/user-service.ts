@@ -1,276 +1,299 @@
-import type { ModelConfig, ProviderSyncStatus, Tool } from "@ngriffin_uk/polychat-schemas";
 import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+import type { ModelConfig, ProviderSyncStatus, Tool } from "@ngriffin_uk/polychat-schemas";
+
 import { fetchApi } from "../fetch-wrapper";
 
 export interface ProviderSetting {
-	id: string;
-	provider_id: string;
-	name?: string;
-	description?: string;
-	type?: string;
-	configurationFields?: Array<{
-		key: string;
-		label: string;
-		type: "text" | "password";
-		required?: boolean;
-		placeholder?: string;
-		description?: string;
-	}>;
-	configurationValues?: Record<string, string>;
-	webhookUrl?: string;
-	enabled: boolean;
-	hasApiKey?: boolean;
+  id: string;
+  provider_id: string;
+  name?: string;
+  description?: string;
+  type?: string;
+  configurationFields?: Array<{
+    key: string;
+    label: string;
+    type: "text" | "password";
+    required?: boolean;
+    placeholder?: string;
+    description?: string;
+  }>;
+  configurationValues?: Record<string, string>;
+  webhookUrl?: string;
+  enabled: boolean;
+  hasApiKey?: boolean;
 }
 
 export class UserService {
-	constructor(private getHeaders: () => Promise<Record<string, string>>) {}
+  constructor(private getHeaders: () => Promise<Record<string, string>>) {}
 
-	async exportChatHistory(): Promise<Blob> {
-		let headers = {} as Record<string, string>;
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error preparing headers for export:", error);
-		}
+  async exportChatHistory(): Promise<Blob> {
+    let headers = {} as Record<string, string>;
 
-		const response = await fetchApi("/user/export-chat-history", {
-			method: "GET",
-			headers,
-		});
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error preparing headers for export:", error);
+    }
 
-		if (!response.ok) {
-			let message = `Failed to export chat history: ${response.statusText}`;
-			try {
-				const data = await returnFetchedData<any>(response);
-				if (data && typeof data === "object" && typeof data.error === "string") {
-					message = data.error;
-				}
-			} catch {}
-			throw new Error(message);
-		}
+    const response = await fetchApi("/user/export-chat-history", {
+      method: "GET",
+      headers,
+    });
 
-		const blob = await response.blob();
-		return blob;
-	}
+    if (!response.ok) {
+      let message = `Failed to export chat history: ${response.statusText}`;
 
-	async fetchModels(): Promise<ModelConfig> {
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error fetching models:", error);
-		}
+      try {
+        const data = await returnFetchedData<any>(response);
 
-		const response = await fetchApi("/models", {
-			method: "GET",
-			headers,
-			timeoutMs: 10000,
-		});
+        if (data && typeof data === "object" && typeof data.error === "string") {
+          message = data.error;
+        }
+      } catch {}
 
-		if (!response.ok) {
-			throw new Error(`Failed to fetch models: ${response.statusText}`);
-		}
-		const responseData = await returnFetchedData<any>(response);
+      throw new Error(message);
+    }
 
-		return responseData;
-	}
+    const blob = await response.blob();
 
-	async fetchTools(): Promise<Tool[]> {
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error fetching tools:", error);
-		}
+    return blob;
+  }
 
-		const response = await fetchApi("/tools", {
-			method: "GET",
-			headers,
-			timeoutMs: 10000,
-		});
-		if (!response.ok) {
-			throw new Error(`Failed to fetch tools: ${response.statusText}`);
-		}
-		const responseData = await returnFetchedData<Tool[]>(response);
+  async fetchModels(): Promise<ModelConfig> {
+    let headers = {};
 
-		return responseData;
-	}
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error fetching models:", error);
+    }
 
-	async storeProviderApiKey(
-		providerId: string,
-		apiKey: string,
-		secretKey?: string,
-		configuration?: Record<string, unknown>,
-	): Promise<void> {
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error storing provider API key:", error);
-		}
+    const response = await fetchApi("/models", {
+      method: "GET",
+      headers,
+      timeoutMs: 10000,
+    });
 
-		const response = await fetchApi("/user/store-provider-api-key", {
-			method: "POST",
-			headers,
-			body: {
-				providerId,
-				apiKey,
-				secretKey,
-				configuration,
-			},
-			timeoutMs: 10000,
-		});
+    if (!response.ok) {
+      throw new Error(`Failed to fetch models: ${response.statusText}`);
+    }
 
-		if (!response.ok) {
-			throw new Error(`Failed to store provider API key: ${response.statusText}`);
-		}
-	}
+    const responseData = await returnFetchedData<any>(response);
 
-	async getProviderSettings(): Promise<ProviderSetting[]> {
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error getting provider settings:", error);
-		}
+    return responseData;
+  }
 
-		const response = await fetchApi("/user/providers", {
-			method: "GET",
-			headers,
-			timeoutMs: 10000,
-		});
+  async fetchTools(): Promise<Tool[]> {
+    let headers = {};
 
-		if (!response.ok) {
-			throw new Error(`Failed to get provider settings: ${response.statusText}`);
-		}
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error fetching tools:", error);
+    }
 
-		return await returnFetchedData<ProviderSetting[]>(response);
-	}
+    const response = await fetchApi("/tools", {
+      method: "GET",
+      headers,
+      timeoutMs: 10000,
+    });
 
-	async deleteProviderApiKey(providerId: string): Promise<void> {
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error deleting provider API key:", error);
-		}
+    if (!response.ok) {
+      throw new Error(`Failed to fetch tools: ${response.statusText}`);
+    }
 
-		const response = await fetchApi(`/user/providers/${encodeURIComponent(providerId)}`, {
-			method: "DELETE",
-			headers,
-			timeoutMs: 10000,
-		});
+    const responseData = await returnFetchedData<Tool[]>(response);
 
-		if (!response.ok) {
-			throw new Error(`Failed to delete provider API key: ${response.statusText}`);
-		}
-	}
+    return responseData;
+  }
 
-	async getProviderSyncStatus(): Promise<ProviderSyncStatus> {
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error getting provider sync status:", error);
-		}
+  async storeProviderApiKey(
+    providerId: string,
+    apiKey: string,
+    secretKey?: string,
+    configuration?: Record<string, unknown>,
+  ): Promise<void> {
+    let headers = {};
 
-		const response = await fetchApi("/user/providers/sync-status", {
-			method: "GET",
-			headers,
-			timeoutMs: 10000,
-		});
-		if (!response.ok) {
-			throw new Error(`Failed to get provider sync status: ${response.statusText}`);
-		}
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error storing provider API key:", error);
+    }
 
-		return returnFetchedData<ProviderSyncStatus>(response);
-	}
+    const response = await fetchApi("/user/store-provider-api-key", {
+      method: "POST",
+      headers,
+      body: {
+        providerId,
+        apiKey,
+        secretKey,
+        configuration,
+      },
+      timeoutMs: 10000,
+    });
 
-	async syncProviders(): Promise<void> {
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error syncing providers:", error);
-		}
+    if (!response.ok) {
+      throw new Error(`Failed to store provider API key: ${response.statusText}`);
+    }
+  }
 
-		const response = await fetchApi("/user/sync-providers", {
-			method: "POST",
-			headers,
-			timeoutMs: 10000,
-		});
+  async getProviderSettings(): Promise<ProviderSetting[]> {
+    let headers = {};
 
-		if (!response.ok) {
-			throw new Error(`Failed to sync providers: ${response.statusText}`);
-		}
-	}
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting provider settings:", error);
+    }
 
-	async getUserApiKeys(): Promise<{ id: string; name: string; created_at: string }[]> {
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error getting API keys:", error);
-		}
+    const response = await fetchApi("/user/providers", {
+      method: "GET",
+      headers,
+      timeoutMs: 10000,
+    });
 
-		const response = await fetchApi("/user/api-keys", {
-			method: "GET",
-			headers,
-			timeoutMs: 10000,
-		});
+    if (!response.ok) {
+      throw new Error(`Failed to get provider settings: ${response.statusText}`);
+    }
 
-		if (!response.ok) {
-			throw new Error(`Failed to get API keys: ${response.statusText}`);
-		}
-		return await returnFetchedData<any>(response);
-	}
+    return await returnFetchedData<ProviderSetting[]>(response);
+  }
 
-	async createApiKey(name?: string): Promise<{
-		apiKey: string;
-		id: string;
-		name: string;
-		created_at: string;
-	}> {
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error creating API key:", error);
-		}
+  async deleteProviderApiKey(providerId: string): Promise<void> {
+    let headers = {};
 
-		const response = await fetchApi("/user/api-keys", {
-			method: "POST",
-			headers,
-			body: { name },
-			timeoutMs: 10000,
-		});
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error deleting provider API key:", error);
+    }
 
-		if (!response.ok) {
-			const errorData = (await response.json().catch(() => ({ error: response.statusText }))) as {
-				error?: string;
-			};
-			const errorMessage = errorData?.error || response.statusText;
-			throw new Error(`Failed to create API key: ${errorMessage}`);
-		}
-		return await returnFetchedData<any>(response);
-	}
+    const response = await fetchApi(`/user/providers/${encodeURIComponent(providerId)}`, {
+      method: "DELETE",
+      headers,
+      timeoutMs: 10000,
+    });
 
-	async deleteApiKey(keyId: string): Promise<void> {
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error deleting API key:", error);
-		}
+    if (!response.ok) {
+      throw new Error(`Failed to delete provider API key: ${response.statusText}`);
+    }
+  }
 
-		const response = await fetchApi(`/user/api-keys/${keyId}`, {
-			method: "DELETE",
-			headers,
-			timeoutMs: 10000,
-		});
+  async getProviderSyncStatus(): Promise<ProviderSyncStatus> {
+    let headers = {};
 
-		if (!response.ok) {
-			throw new Error(`Failed to delete API key: ${response.statusText}`);
-		}
-	}
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting provider sync status:", error);
+    }
+
+    const response = await fetchApi("/user/providers/sync-status", {
+      method: "GET",
+      headers,
+      timeoutMs: 10000,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to get provider sync status: ${response.statusText}`);
+    }
+
+    return returnFetchedData<ProviderSyncStatus>(response);
+  }
+
+  async syncProviders(): Promise<void> {
+    let headers = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error syncing providers:", error);
+    }
+
+    const response = await fetchApi("/user/sync-providers", {
+      method: "POST",
+      headers,
+      timeoutMs: 10000,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to sync providers: ${response.statusText}`);
+    }
+  }
+
+  async getUserApiKeys(): Promise<{ id: string; name: string; created_at: string }[]> {
+    let headers = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting API keys:", error);
+    }
+
+    const response = await fetchApi("/user/api-keys", {
+      method: "GET",
+      headers,
+      timeoutMs: 10000,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to get API keys: ${response.statusText}`);
+    }
+
+    return await returnFetchedData<any>(response);
+  }
+
+  async createApiKey(name?: string): Promise<{
+    apiKey: string;
+    id: string;
+    name: string;
+    created_at: string;
+  }> {
+    let headers = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error creating API key:", error);
+    }
+
+    const response = await fetchApi("/user/api-keys", {
+      method: "POST",
+      headers,
+      body: { name },
+      timeoutMs: 10000,
+    });
+
+    if (!response.ok) {
+      const errorData = (await response.json().catch(() => ({ error: response.statusText }))) as {
+        error?: string;
+      };
+      const errorMessage = errorData?.error || response.statusText;
+
+      throw new Error(`Failed to create API key: ${errorMessage}`);
+    }
+
+    return await returnFetchedData<any>(response);
+  }
+
+  async deleteApiKey(keyId: string): Promise<void> {
+    let headers = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error deleting API key:", error);
+    }
+
+    const response = await fetchApi(`/user/api-keys/${keyId}`, {
+      method: "DELETE",
+      headers,
+      timeoutMs: 10000,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete API key: ${response.statusText}`);
+    }
+  }
 }

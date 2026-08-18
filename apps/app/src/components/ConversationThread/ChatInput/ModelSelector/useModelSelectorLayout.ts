@@ -8,55 +8,69 @@ const MAX_PANEL_WIDTH = 660;
  * the trigger. Other surfaces can supply their own layout without changing the render package.
  */
 export function useModelSelectorLayout(
-	isOpen: boolean,
-	triggerWrapperRef: RefObject<HTMLDivElement | null>,
+  isOpen: boolean,
+  triggerWrapperRef: RefObject<HTMLDivElement | null>,
 ): ModelSelectorPanelLayout | null {
-	const [layout, setLayout] = useState<ModelSelectorPanelLayout | null>(null);
+  const [layout, setLayout] = useState<ModelSelectorPanelLayout | null>(null);
 
-	useEffect(() => {
-		if (!isOpen) {
-			setLayout(null);
-			return;
-		}
+  useEffect(() => {
+    if (!isOpen) {
+      setLayout(null);
 
-		const updateDialogLayout = () => {
-			const wrapper = triggerWrapperRef.current;
-			if (!wrapper) return;
+      return;
+    }
 
-			const chatInputShell = wrapper.closest("[data-chat-input-shell]");
-			if (!(chatInputShell instanceof HTMLElement)) {
-				setLayout(null);
-				return;
-			}
+    const updateDialogLayout = () => {
+      const wrapper = triggerWrapperRef.current;
 
-			const shellRect = chatInputShell.getBoundingClientRect();
-			const wrapperRect = wrapper.getBoundingClientRect();
+      if (!wrapper) {
+        return;
+      }
 
-			setLayout({
-				left: shellRect.left - wrapperRect.left,
-				width: Math.min(MAX_PANEL_WIDTH, shellRect.width),
-			});
-		};
+      const chatInputShell = wrapper.closest("[data-chat-input-shell]");
 
-		updateDialogLayout();
+      if (!(chatInputShell instanceof HTMLElement)) {
+        setLayout(null);
 
-		if (typeof ResizeObserver === "undefined") {
-			window.addEventListener("resize", updateDialogLayout);
-			return () => window.removeEventListener("resize", updateDialogLayout);
-		}
+        return;
+      }
 
-		const observer = new ResizeObserver(updateDialogLayout);
-		const wrapper = triggerWrapperRef.current;
-		const chatInputShell = wrapper?.closest("[data-chat-input-shell]");
-		if (wrapper) observer.observe(wrapper);
-		if (chatInputShell instanceof HTMLElement) observer.observe(chatInputShell);
-		window.addEventListener("resize", updateDialogLayout);
+      const shellRect = chatInputShell.getBoundingClientRect();
+      const wrapperRect = wrapper.getBoundingClientRect();
 
-		return () => {
-			observer.disconnect();
-			window.removeEventListener("resize", updateDialogLayout);
-		};
-	}, [isOpen, triggerWrapperRef]);
+      setLayout({
+        left: shellRect.left - wrapperRect.left,
+        width: Math.min(MAX_PANEL_WIDTH, shellRect.width),
+      });
+    };
 
-	return layout;
+    updateDialogLayout();
+
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", updateDialogLayout);
+
+      return () => window.removeEventListener("resize", updateDialogLayout);
+    }
+
+    const observer = new ResizeObserver(updateDialogLayout);
+    const wrapper = triggerWrapperRef.current;
+    const chatInputShell = wrapper?.closest("[data-chat-input-shell]");
+
+    if (wrapper) {
+      observer.observe(wrapper);
+    }
+
+    if (chatInputShell instanceof HTMLElement) {
+      observer.observe(chatInputShell);
+    }
+
+    window.addEventListener("resize", updateDialogLayout);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateDialogLayout);
+    };
+  }, [isOpen, triggerWrapperRef]);
+
+  return layout;
 }

@@ -128,9 +128,11 @@ export const ArtifactPanel = ({
     if (isCombined && artifacts.length > 0) {
       return artifacts;
     }
+
     if (artifact) {
       return [artifact];
     }
+
     return [];
   }, [artifact, artifacts, isCombined]);
 
@@ -200,7 +202,9 @@ export const ArtifactPanel = ({
     setActiveTab(tab);
   }, []);
 
-  if (allArtifacts.length === 0 || !currentArtifact) return null;
+  if (allArtifacts.length === 0 || !currentArtifact) {
+    return null;
+  }
 
   return (
     <div className={`absolute right-0 top-0 h-full 

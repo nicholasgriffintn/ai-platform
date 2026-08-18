@@ -38,6 +38,7 @@ import {
   supportsRealtimeLiveVideoInput,
   type RealtimeLiveProviderId,
   type RealtimeLiveProviderOption,
+  type RealtimeLiveStatus,
 } from "@ngriffin_uk/polychat-library-realtime/live-providers";
 import {
   extractRealtimeErrorMessage,
@@ -58,7 +59,6 @@ import { createRealtimeSession } from "~/lib/api/realtime-service";
 import { getErrorMessage } from "~/lib/errors";
 
 export type { RealtimeLiveStatus } from "@ngriffin_uk/polychat-library-realtime/live-providers";
-import type { RealtimeLiveStatus } from "@ngriffin_uk/polychat-library-realtime/live-providers";
 
 export interface RealtimeCameraDevice {
   deviceId: string;
@@ -91,6 +91,7 @@ function sendConfiguredAudioEnd(
   options: { forMicrophonePause?: boolean } = {},
 ): void {
   const audioInput = getConnectionProviderOption(connection).websocket?.audioInput;
+
   if (!audioInput || (options.forMicrophonePause && !audioInput.endOnMicrophonePause)) {
     return;
   }
@@ -102,6 +103,7 @@ function sendConfiguredAudioEnd(
 
 function sendConfiguredAudioCommit(connection: RealtimeWebSocketConnection): void {
   const audioInput = getConnectionProviderOption(connection).websocket?.audioInput;
+
   if (!audioInput) {
     return;
   }
@@ -123,6 +125,7 @@ function isConfiguredAudioEndEvent(
 ): boolean {
   const eventType =
     getConnectionProviderOption(connection).websocket?.audioInput?.waitForFinalEventTypeOnStop;
+
   return Boolean(eventType && extractRealtimeEventType(payload) === eventType);
 }
 
@@ -223,6 +226,7 @@ export function useRealtimeLiveSession({
 
   const refreshCameraDevices = useCallback(async () => {
     const devices = (await listRealtimeVideoInputDevices()).map(createCameraDeviceOption);
+
     setCameraDevices(devices);
 
     if (
@@ -233,6 +237,7 @@ export function useRealtimeLiveSession({
     }
 
     const nextDeviceId = devices[0]?.deviceId ?? "";
+
     selectedCameraDeviceIdRef.current = nextDeviceId;
     setSelectedCameraDeviceIdState(nextDeviceId);
   }, []);
@@ -266,12 +271,14 @@ export function useRealtimeLiveSession({
   const maybeCommitAudioAfterSilence = useCallback(
     (connection: RealtimeWebSocketConnection, chunk: ArrayBuffer) => {
       const config = getConnectionProviderOption(connection).websocket?.audioInput?.commitOnSilence;
+
       if (!config || stoppingRef.current || !microphoneEnabledRef.current) {
         return;
       }
 
       const now = Date.now();
       const level = calculatePcm16AudioLevel(chunk);
+
       if (
         !observeAudioCommitGateSpeech(audioCommitGateRef.current, config, {
           level,
@@ -302,6 +309,7 @@ export function useRealtimeLiveSession({
   const handleTranscript = useCallback(
     (payload: unknown): boolean => {
       const transcript = extractRealtimeTranscript(payload);
+
       if (!transcript) {
         return false;
       }
@@ -309,6 +317,7 @@ export function useRealtimeLiveSession({
       setLastTranscript(transcript.text);
       setLastEvent(transcript.source === "output" ? "Assistant transcript" : "Input transcript");
       onTranscript?.(transcript);
+
       return true;
     },
     [onTranscript],
@@ -320,9 +329,11 @@ export function useRealtimeLiveSession({
     }
 
     const stream = await requestRealtimeAudioStream();
+
     setMediaStreamTrackEnabled(stream, "audio", microphoneEnabledRef.current);
     audioStreamRef.current = stream;
     startInputAudioMeter(stream);
+
     return stream;
   }, [startInputAudioMeter]);
 
@@ -332,9 +343,11 @@ export function useRealtimeLiveSession({
     }
 
     const stream = await requestRealtimeVideoStream(selectedCameraDeviceIdRef.current || undefined);
+
     videoStreamRef.current = stream;
     setVideoPreviewStream(stream);
     void refreshCameraDevices();
+
     return stream;
   }, [refreshCameraDevices]);
 
@@ -345,12 +358,14 @@ export function useRealtimeLiveSession({
       stopInputAudioMeter();
 
       const connection = connectionRef.current;
+
       if (notifyProvider && isRealtimeWebSocketConnection(connection)) {
         sendConfiguredAudioEnd(connection, { forMicrophonePause: true });
       }
 
       if (connection?.session.transport === "webrtc") {
         setMediaStreamTrackEnabled(audioStreamRef.current, "audio", false);
+
         return;
       }
 
@@ -377,6 +392,7 @@ export function useRealtimeLiveSession({
     if (connectionRef.current === connection) {
       connectionRef.current = null;
     }
+
     connection.close();
   }, []);
 
@@ -387,6 +403,7 @@ export function useRealtimeLiveSession({
       }
 
       const audioInput = getConnectionProviderOption(connection).websocket?.audioInput;
+
       if (!audioInput) {
         return;
       }
@@ -399,14 +416,17 @@ export function useRealtimeLiveSession({
           maybeCommitAudioAfterSilence(connection, chunk);
         },
       });
+
       if (
         connectionRef.current !== connection ||
         stoppingRef.current ||
         !microphoneEnabledRef.current
       ) {
         controller.stop();
+
         return;
       }
+
       inputAudioControllerRef.current = controller;
     },
     [ensureAudioStream, maybeCommitAudioAfterSilence],
@@ -423,6 +443,7 @@ export function useRealtimeLiveSession({
       }
 
       const videoInput = getConnectionProviderOption(connection).websocket?.videoInput;
+
       if (!videoInput) {
         return;
       }
@@ -432,10 +453,13 @@ export function useRealtimeLiveSession({
         stream,
         onFrame: (frame) => sendJsonWhenOpen(connection, videoInput.buildFrameMessage(frame)),
       });
+
       if (connectionRef.current !== connection || stoppingRef.current || !videoEnabledRef.current) {
         controller.stop();
+
         return;
       }
+
       inputVideoControllerRef.current = controller;
     },
     [ensureVideoStream],
@@ -444,6 +468,7 @@ export function useRealtimeLiveSession({
   const cleanup = useCallback(
     (nextStatus: RealtimeLiveStatus = "idle", updateState = true, options: CleanupOptions = {}) => {
       const closeConnection = options.closeConnection ?? true;
+
       stoppingRef.current = true;
       abortControllerRef.current?.abort();
       abortControllerRef.current = null;
@@ -484,6 +509,7 @@ export function useRealtimeLiveSession({
           setLastEvent("Idle");
         }
       }
+
       stoppingRef.current = false;
     },
     [resetAudioTurnDetection, setLiveStatus, stopInputAudio, stopInputVideo, stopOutputAudioMeter],
@@ -506,8 +532,10 @@ export function useRealtimeLiveSession({
   const handleRealtimePayload = useCallback(
     (payload: unknown) => {
       const errorMessage = extractRealtimeErrorMessage(payload);
+
       if (errorMessage) {
         failSession(errorMessage);
+
         return;
       }
 
@@ -518,9 +546,11 @@ export function useRealtimeLiveSession({
       const event = extractRealtimeEvent(payload);
       const eventLabel = event?.label ?? extractRealtimeEventLabel(payload);
       const eventType = event?.type ?? extractRealtimeEventType(payload);
+
       if (eventLabel) {
         setLastEvent(eventLabel);
       }
+
       if (event) {
         onEvent?.(event);
       } else if (eventType) {
@@ -549,6 +579,7 @@ export function useRealtimeLiveSession({
       });
 
       const remoteAudio = new Audio();
+
       remoteAudio.autoplay = true;
       remoteAudioRef.current = remoteAudio;
 
@@ -575,6 +606,7 @@ export function useRealtimeLiveSession({
         },
         onTrack: (event) => {
           const outputStream = event.streams[0] ?? new MediaStream([event.track]);
+
           remoteAudio.srcObject = outputStream;
           startOutputAudioMeter(outputStream);
           void remoteAudio.play().catch(() => {
@@ -597,6 +629,7 @@ export function useRealtimeLiveSession({
       selectedModel?: string | null,
     ) => {
       const websocketConfig = selectedProvider.websocket;
+
       if (!websocketConfig) {
         throw new Error(`${selectedProvider.label} WebSocket configuration missing`);
       }
@@ -624,6 +657,7 @@ export function useRealtimeLiveSession({
         if (hasStartedMedia) {
           return;
         }
+
         hasStartedMedia = true;
 
         try {
@@ -653,8 +687,10 @@ export function useRealtimeLiveSession({
             if (connectionRef.current === connection) {
               connectionRef.current = null;
             }
+
             return;
           }
+
           if (connectionRef.current === connection && !stoppingRef.current) {
             failSession(formatRealtimeWebSocketCloseError(websocketConfig.closeErrorLabel, event));
           }
@@ -663,6 +699,7 @@ export function useRealtimeLiveSession({
           if (finalizingConnectionRef.current === connection) {
             return;
           }
+
           if (connectionRef.current === connection && !stoppingRef.current) {
             failSession(websocketConfig.connectionFailedMessage);
           }
@@ -674,9 +711,11 @@ export function useRealtimeLiveSession({
             }
 
             const eventType = extractRealtimeEventType(payload);
+
             if (websocketConfig.setup?.isCompleteMessage(payload)) {
               void startWebSocketMedia();
             }
+
             if (eventType === "response.interrupted" && websocketConfig.audioOutput) {
               audioPlayerRef.current?.stop();
               audioPlayerRef.current = createPcm16AudioPlayer({
@@ -684,11 +723,13 @@ export function useRealtimeLiveSession({
               });
               setOutputAudioLevel(0);
             }
+
             handleRealtimePayload(payload);
             for (const chunk of websocketConfig.audioOutput?.extractChunks(payload) ?? []) {
               audioPlayerRef.current?.playBase64(chunk);
               handleOutputAudioChunk(chunk);
             }
+
             if (isConfiguredAudioEndEvent(connection, payload)) {
               completePendingFinalization(connection);
             }
@@ -699,6 +740,7 @@ export function useRealtimeLiveSession({
             if (websocketConfig.setup) {
               connection.sendJson(websocketConfig.setup.buildMessage(session));
               setLastEvent(websocketConfig.setup.waitingEventLabel);
+
               return;
             }
 
@@ -735,6 +777,7 @@ export function useRealtimeLiveSession({
       setLastEvent("Connecting");
 
       const abortController = new AbortController();
+
       abortControllerRef.current = abortController;
       const selectedProvider = getRealtimeLiveProviderOption(providerOverride ?? provider);
       const selectedModel = modelOverride ?? model;
@@ -758,12 +801,14 @@ export function useRealtimeLiveSession({
 
   const stop = useCallback(() => {
     const connection = connectionRef.current;
+
     if (
       isRealtimeWebSocketConnection(connection) &&
       shouldWaitForConfiguredAudioEndEvent(connection)
     ) {
       finalizingConnectionRef.current = connection;
       cleanup("idle", true, { closeConnection: false });
+
       return;
     }
 
@@ -776,6 +821,7 @@ export function useRealtimeLiveSession({
       setIsMicrophoneEnabledState(enabled);
 
       const connection = connectionRef.current;
+
       if (!connection) {
         return;
       }
@@ -787,12 +833,14 @@ export function useRealtimeLiveSession({
         } else if (audioStreamRef.current) {
           startInputAudioMeter(audioStreamRef.current);
         }
+
         return;
       }
 
       if (!enabled) {
         resetAudioTurnDetection();
         stopInputAudio(true);
+
         return;
       }
 
@@ -810,15 +858,18 @@ export function useRealtimeLiveSession({
   const setVideoEnabled = useCallback(
     (enabled: boolean) => {
       const nextEnabled = supportsRealtimeLiveVideoInput(provider) && enabled;
+
       videoEnabledRef.current = nextEnabled;
       setIsVideoEnabledState(nextEnabled);
 
       if (!nextEnabled) {
         stopInputVideo();
+
         return;
       }
 
       const connection = connectionRef.current;
+
       if (
         !isRealtimeWebSocketConnection(connection) ||
         !getConnectionProviderOption(connection).websocket?.videoInput
@@ -829,6 +880,7 @@ export function useRealtimeLiveSession({
           setError(getErrorMessage(toggleError, "Failed to start camera preview"));
           toast.error(getErrorMessage(toggleError, "Failed to start camera preview"));
         });
+
         return;
       }
 
@@ -854,6 +906,7 @@ export function useRealtimeLiveSession({
 
       stopInputVideo();
       const connection = connectionRef.current;
+
       if (
         isRealtimeWebSocketConnection(connection) &&
         getConnectionProviderOption(connection).websocket?.videoInput
@@ -861,6 +914,7 @@ export function useRealtimeLiveSession({
         void startInputVideo(connection).catch((toggleError) => {
           failSession(getErrorMessage(toggleError, "Failed to switch camera"));
         });
+
         return;
       }
 
@@ -879,6 +933,7 @@ export function useRealtimeLiveSession({
       if (statusRef.current === "active" || statusRef.current === "connecting") {
         return;
       }
+
       setProvider(nextProvider);
       setVideoEnabled(false);
       setLastTranscript(null);
@@ -891,6 +946,7 @@ export function useRealtimeLiveSession({
   useEffect(() => {
     void refreshCameraDevices();
     navigator.mediaDevices?.addEventListener?.("devicechange", refreshCameraDevices);
+
     return () => {
       navigator.mediaDevices?.removeEventListener?.("devicechange", refreshCameraDevices);
     };

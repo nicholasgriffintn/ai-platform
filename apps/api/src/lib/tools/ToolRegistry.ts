@@ -1,164 +1,172 @@
 import type { ToolDefinition, ToolResult } from "@ngriffin_uk/polychat-schemas";
+
 import { AssistantError, ErrorType } from "~/utils/errors";
+
 import type { ToolExecutionContext } from "./ToolExecutionContext";
 
 export type ToolCategory = string;
 export type ToolLifecycle = "singleton" | "transient";
 
 export type RegisteredToolDefinition<
-	TInput = unknown,
-	TResult extends ToolResult = ToolResult,
+  TInput = unknown,
+  TResult extends ToolResult = ToolResult,
 > = ToolDefinition<TInput, TResult, ToolExecutionContext>;
 
 export interface ToolRegistration<TInput = unknown, TResult extends ToolResult = ToolResult> {
-	name: string;
-	aliases?: string[];
-	lifecycle?: ToolLifecycle;
-	metadata?: Record<string, unknown>;
-	create: () => RegisteredToolDefinition<TInput, TResult>;
+  name: string;
+  aliases?: string[];
+  lifecycle?: ToolLifecycle;
+  metadata?: Record<string, unknown>;
+  create: () => RegisteredToolDefinition<TInput, TResult>;
 }
 
 export interface ToolSummary {
-	name: string;
-	category: ToolCategory;
-	aliases?: string[];
-	metadata?: Record<string, unknown>;
-	permissions?: string[];
+  name: string;
+  category: ToolCategory;
+  aliases?: string[];
+  metadata?: Record<string, unknown>;
+  permissions?: string[];
 }
 
 type InternalRegistration = ToolRegistration & {
-	id: string;
-	instance?: RegisteredToolDefinition;
+  id: string;
+  instance?: RegisteredToolDefinition;
 };
 
 export class ToolRegistry {
-	private readonly categories = new Map<ToolCategory, Map<string, InternalRegistration>>();
+  private readonly categories = new Map<ToolCategory, Map<string, InternalRegistration>>();
 
-	register(category: ToolCategory, registration: ToolRegistration): void {
-		const key = registration.name.toLowerCase();
-		const store = this.getOrCreateCategoryStore(category);
+  register(category: ToolCategory, registration: ToolRegistration): void {
+    const key = registration.name.toLowerCase();
+    const store = this.getOrCreateCategoryStore(category);
 
-		if (store.has(key)) {
-			throw new AssistantError(
-				`Tool "${registration.name}" already registered for category "${category}"`,
-				ErrorType.CONFIGURATION_ERROR,
-			);
-		}
+    if (store.has(key)) {
+      throw new AssistantError(
+        `Tool "${registration.name}" already registered for category "${category}"`,
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
 
-		const internalRegistration: InternalRegistration = {
-			...registration,
-			id: key,
-			lifecycle: registration.lifecycle ?? "singleton",
-		};
+    const internalRegistration: InternalRegistration = {
+      ...registration,
+      id: key,
+      lifecycle: registration.lifecycle ?? "singleton",
+    };
 
-		store.set(key, internalRegistration);
+    store.set(key, internalRegistration);
 
-		registration.aliases?.forEach((alias) => {
-			store.set(alias.toLowerCase(), internalRegistration);
-		});
-	}
+    registration.aliases?.forEach((alias) => {
+      store.set(alias.toLowerCase(), internalRegistration);
+    });
+  }
 
-	resolve(category: ToolCategory, toolName: string): RegisteredToolDefinition {
-		const store = this.categories.get(category);
-		if (!store) {
-			throw new AssistantError(
-				`No tools registered for category "${category}"`,
-				ErrorType.CONFIGURATION_ERROR,
-			);
-		}
+  resolve(category: ToolCategory, toolName: string): RegisteredToolDefinition {
+    const store = this.categories.get(category);
 
-		const registration = store.get(toolName.toLowerCase());
-		if (!registration) {
-			throw new AssistantError(
-				`Unknown ${category} tool "${toolName}"`,
-				ErrorType.PARAMS_ERROR,
-				500,
-				{
-					category,
-					reason: "unknown_tool",
-					toolName,
-				},
-			);
-		}
+    if (!store) {
+      throw new AssistantError(
+        `No tools registered for category "${category}"`,
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
 
-		if (registration.lifecycle === "singleton") {
-			if (!registration.instance) {
-				registration.instance = registration.create();
-			}
+    const registration = store.get(toolName.toLowerCase());
 
-			return registration.instance;
-		}
+    if (!registration) {
+      throw new AssistantError(
+        `Unknown ${category} tool "${toolName}"`,
+        ErrorType.PARAMS_ERROR,
+        500,
+        {
+          category,
+          reason: "unknown_tool",
+          toolName,
+        },
+      );
+    }
 
-		return registration.create();
-	}
+    if (registration.lifecycle === "singleton") {
+      if (!registration.instance) {
+        registration.instance = registration.create();
+      }
 
-	list(category?: ToolCategory): ToolSummary[] {
-		if (category) {
-			return this.listByCategory(category);
-		}
+      return registration.instance;
+    }
 
-		const summaries: ToolSummary[] = [];
-		for (const categoryKey of this.categories.keys()) {
-			summaries.push(...this.listByCategory(categoryKey));
-		}
+    return registration.create();
+  }
 
-		return summaries;
-	}
+  list(category?: ToolCategory): ToolSummary[] {
+    if (category) {
+      return this.listByCategory(category);
+    }
 
-	listDefinitions(category: ToolCategory): RegisteredToolDefinition[] {
-		const store = this.categories.get(category);
-		if (!store) {
-			return [];
-		}
+    const summaries: ToolSummary[] = [];
 
-		const seen = new Set<string>();
-		const definitions: RegisteredToolDefinition[] = [];
+    for (const categoryKey of this.categories.keys()) {
+      summaries.push(...this.listByCategory(categoryKey));
+    }
 
-		for (const registration of store.values()) {
-			if (seen.has(registration.id)) {
-				continue;
-			}
+    return summaries;
+  }
 
-			seen.add(registration.id);
-			definitions.push(this.resolve(category, registration.name));
-		}
+  listDefinitions(category: ToolCategory): RegisteredToolDefinition[] {
+    const store = this.categories.get(category);
 
-		return definitions;
-	}
+    if (!store) {
+      return [];
+    }
 
-	private listByCategory(category: ToolCategory): ToolSummary[] {
-		const store = this.categories.get(category);
-		if (!store) {
-			return [];
-		}
+    const seen = new Set<string>();
+    const definitions: RegisteredToolDefinition[] = [];
 
-		const seen = new Set<string>();
-		const summaries: ToolSummary[] = [];
+    for (const registration of store.values()) {
+      if (seen.has(registration.id)) {
+        continue;
+      }
 
-		for (const registration of store.values()) {
-			if (seen.has(registration.id)) {
-				continue;
-			}
+      seen.add(registration.id);
+      definitions.push(this.resolve(category, registration.name));
+    }
 
-			seen.add(registration.id);
-			summaries.push({
-				name: registration.name,
-				category,
-				aliases: registration.aliases,
-				metadata: registration.metadata,
-				permissions: registration.instance?.permissions,
-			});
-		}
+    return definitions;
+  }
 
-		summaries.sort((a, b) => a.name.localeCompare(b.name));
-		return summaries;
-	}
+  private listByCategory(category: ToolCategory): ToolSummary[] {
+    const store = this.categories.get(category);
 
-	private getOrCreateCategoryStore(category: ToolCategory) {
-		if (!this.categories.has(category)) {
-			this.categories.set(category, new Map());
-		}
+    if (!store) {
+      return [];
+    }
 
-		return this.categories.get(category)!;
-	}
+    const seen = new Set<string>();
+    const summaries: ToolSummary[] = [];
+
+    for (const registration of store.values()) {
+      if (seen.has(registration.id)) {
+        continue;
+      }
+
+      seen.add(registration.id);
+      summaries.push({
+        name: registration.name,
+        category,
+        aliases: registration.aliases,
+        metadata: registration.metadata,
+        permissions: registration.instance?.permissions,
+      });
+    }
+
+    summaries.sort((a, b) => a.name.localeCompare(b.name));
+
+    return summaries;
+  }
+
+  private getOrCreateCategoryStore(category: ToolCategory) {
+    if (!this.categories.has(category)) {
+      this.categories.set(category, new Map());
+    }
+
+    return this.categories.get(category);
+  }
 }

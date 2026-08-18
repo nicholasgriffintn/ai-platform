@@ -1,339 +1,342 @@
 import { AwsClient } from "aws4fetch";
 
+import {
+  buildBedrockRetrievalFilter,
+  withEmbeddingScopeMetadata,
+} from "~/lib/providers/capabilities/embedding/utils/scope";
 import { formatProviderError } from "~/lib/providers/utils/errors";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type {
-	EmbeddingMutationResult,
-	EmbeddingProvider,
-	EmbeddingQueryResult,
-	EmbeddingVector,
-	IEnv,
-	IUser,
-	RagOptions,
+  EmbeddingMutationResult,
+  EmbeddingProvider,
+  EmbeddingQueryResult,
+  EmbeddingVector,
+  IEnv,
+  IUser,
+  RagOptions,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import {
-	buildBedrockRetrievalFilter,
-	withEmbeddingScopeMetadata,
-} from "~/lib/providers/capabilities/embedding/utils/scope";
 
 const logger = getLogger({ prefix: "lib/embedding/bedrock" });
 
 export interface BedrockEmbeddingProviderConfig {
-	knowledgeBaseId: string;
-	knowledgeBaseCustomDataSourceId?: string;
-	region?: string;
-	accessKeyId: string;
-	secretAccessKey: string;
+  knowledgeBaseId: string;
+  knowledgeBaseCustomDataSourceId?: string;
+  region?: string;
+  accessKeyId: string;
+  secretAccessKey: string;
 }
 
 export class BedrockEmbeddingProvider implements EmbeddingProvider {
-	private knowledgeBaseId: string;
-	private knowledgeBaseCustomDataSourceId?: string;
-	private region: string;
-	private agentEndpoint: string;
-	private agentRuntimeEndpoint: string;
-	private env: IEnv;
-	private user?: IUser;
-	private defaultAccessKeyId: string;
-	private defaultSecretAccessKey: string;
+  private knowledgeBaseId: string;
+  private knowledgeBaseCustomDataSourceId?: string;
+  private region: string;
+  private agentEndpoint: string;
+  private agentRuntimeEndpoint: string;
+  private env: IEnv;
+  private user?: IUser;
+  private defaultAccessKeyId: string;
+  private defaultSecretAccessKey: string;
 
-	constructor(config: BedrockEmbeddingProviderConfig, env: IEnv, user?: IUser) {
-		this.knowledgeBaseId = config.knowledgeBaseId;
-		this.knowledgeBaseCustomDataSourceId = config.knowledgeBaseCustomDataSourceId;
-		this.region = config.region || "us-east-1";
-		this.agentEndpoint = `https://bedrock-agent.${this.region}.amazonaws.com`;
-		this.agentRuntimeEndpoint = `https://bedrock-agent-runtime.${this.region}.amazonaws.com`;
-		this.env = env;
-		this.user = user;
-		this.defaultAccessKeyId = config.accessKeyId || "";
-		this.defaultSecretAccessKey = config.secretAccessKey || "";
-	}
+  constructor(config: BedrockEmbeddingProviderConfig, env: IEnv, user?: IUser) {
+    this.knowledgeBaseId = config.knowledgeBaseId;
+    this.knowledgeBaseCustomDataSourceId = config.knowledgeBaseCustomDataSourceId;
+    this.region = config.region || "us-east-1";
+    this.agentEndpoint = `https://bedrock-agent.${this.region}.amazonaws.com`;
+    this.agentRuntimeEndpoint = `https://bedrock-agent-runtime.${this.region}.amazonaws.com`;
+    this.env = env;
+    this.user = user;
+    this.defaultAccessKeyId = config.accessKeyId || "";
+    this.defaultSecretAccessKey = config.secretAccessKey || "";
+  }
 
-	private parseAwsCredentials(apiKey: string): {
-		accessKey: string;
-		secretKey: string;
-	} {
-		const delimiter = "::@@::";
-		const parts = apiKey.split(delimiter);
+  private parseAwsCredentials(apiKey: string): {
+    accessKey: string;
+    secretKey: string;
+  } {
+    const delimiter = "::@@::";
+    const parts = apiKey.split(delimiter);
 
-		if (parts.length !== 2) {
-			throw new AssistantError("Invalid AWS credentials format", ErrorType.CONFIGURATION_ERROR);
-		}
+    if (parts.length !== 2) {
+      throw new AssistantError("Invalid AWS credentials format", ErrorType.CONFIGURATION_ERROR);
+    }
 
-		return { accessKey: parts[0], secretKey: parts[1] };
-	}
+    return { accessKey: parts[0], secretKey: parts[1] };
+  }
 
-	async generate(
-		type: string,
-		content: string,
-		id: string,
-		metadata: Record<string, any>,
-	): Promise<EmbeddingVector[]> {
-		try {
-			if (!type || !content || !id) {
-				throw new AssistantError(
-					"Missing type, content or id from request",
-					ErrorType.PARAMS_ERROR,
-				);
-			}
+  async generate(
+    type: string,
+    content: string,
+    id: string,
+    metadata: Record<string, any>,
+  ): Promise<EmbeddingVector[]> {
+    try {
+      if (!type || !content || !id) {
+        throw new AssistantError(
+          "Missing type, content or id from request",
+          ErrorType.PARAMS_ERROR,
+        );
+      }
 
-			return [
-				{
-					id,
-					values: [],
-					metadata: { ...metadata, type, content },
-				},
-			];
-		} catch (error) {
-			logger.error("Bedrock Embedding API error:", { error });
-			throw error;
-		}
-	}
+      return [
+        {
+          id,
+          values: [],
+          metadata: { ...metadata, type, content },
+        },
+      ];
+    } catch (error) {
+      logger.error("Bedrock Embedding API error:", { error });
+      throw error;
+    }
+  }
 
-	async getAwsClient() {
-		let accessKeyId = this.defaultAccessKeyId;
-		let secretAccessKey = this.defaultSecretAccessKey;
+  async getAwsClient() {
+    let accessKeyId = this.defaultAccessKeyId;
+    let secretAccessKey = this.defaultSecretAccessKey;
 
-		if (this.user?.id && this.env.DB) {
-			try {
-				const userSettingsRepo = new UserSettingsRepository(this.env);
-				const userApiKey = await userSettingsRepo.getProviderApiKey(this.user.id, "bedrock");
+    if (this.user?.id && this.env.DB) {
+      try {
+        const userSettingsRepo = new UserSettingsRepository(this.env);
+        const userApiKey = await userSettingsRepo.getProviderApiKey(this.user.id, "bedrock");
 
-				if (userApiKey) {
-					const credentials = this.parseAwsCredentials(userApiKey);
-					accessKeyId = credentials.accessKey;
-					secretAccessKey = credentials.secretKey;
-				}
-			} catch (error) {
-				logger.warn("Failed to get user API key for bedrock:", { error });
-			}
-		}
+        if (userApiKey) {
+          const credentials = this.parseAwsCredentials(userApiKey);
 
-		if (!accessKeyId || !secretAccessKey) {
-			throw new AssistantError("No valid credentials found", ErrorType.CONFIGURATION_ERROR);
-		}
+          accessKeyId = credentials.accessKey;
+          secretAccessKey = credentials.secretKey;
+        }
+      } catch (error) {
+        logger.warn("Failed to get user API key for bedrock:", { error });
+      }
+    }
 
-		const aws = new AwsClient({
-			accessKeyId,
-			secretAccessKey,
-			region: this.region,
-			service: "bedrock",
-		});
+    if (!accessKeyId || !secretAccessKey) {
+      throw new AssistantError("No valid credentials found", ErrorType.CONFIGURATION_ERROR);
+    }
 
-		return aws;
-	}
+    const aws = new AwsClient({
+      accessKeyId,
+      secretAccessKey,
+      region: this.region,
+      service: "bedrock",
+    });
 
-	async insert(
-		embeddings: EmbeddingVector[],
-		options: RagOptions = {},
-	): Promise<EmbeddingMutationResult> {
-		logger.debug("Inserting embeddings into Bedrock Knowledge Base", {
-			count: embeddings.length,
-		});
-		const url = `${this.agentEndpoint}/knowledgebases/${this.knowledgeBaseId}/datasources/${this.knowledgeBaseCustomDataSourceId}/documents`;
+    return aws;
+  }
 
-		const body = JSON.stringify({
-			documents: embeddings.map((embedding) => {
-				const metadata = withEmbeddingScopeMetadata(embedding.metadata, options);
-				const hasFileData = metadata.fileData;
+  async insert(
+    embeddings: EmbeddingVector[],
+    options: RagOptions = {},
+  ): Promise<EmbeddingMutationResult> {
+    logger.debug("Inserting embeddings into Bedrock Knowledge Base", {
+      count: embeddings.length,
+    });
+    const url = `${this.agentEndpoint}/knowledgebases/${this.knowledgeBaseId}/datasources/${this.knowledgeBaseCustomDataSourceId}/documents`;
 
-				return {
-					content: {
-						dataSourceType: "CUSTOM",
-						custom: {
-							customDocumentIdentifier: {
-								id: embedding.id,
-							},
-							sourceType: "IN_LINE",
-							inlineContent: hasFileData
-								? {
-										type: metadata.contentType || "BYTE",
-										byteContent: {
-											data: metadata.fileData,
-											mimeType: metadata.mimeType || "application/octet-stream",
-										},
-										textContent: {
-											data: metadata.content || "",
-										},
-									}
-								: {
-										type: "TEXT",
-										textContent: {
-											data: metadata.content || "",
-										},
-									},
-						},
-					},
-					metadata: {
-						type: "IN_LINE_ATTRIBUTE",
-						inlineAttributes: Object.keys(metadata)
-							.filter((key) => !["fileData", "mimeType", "contentType"].includes(key))
-							.map((key) => ({
-								key,
-								value: {
-									type: "STRING",
-									stringValue: String(metadata[key]),
-								},
-							})),
-					},
-				};
-			}),
-		});
+    const body = JSON.stringify({
+      documents: embeddings.map((embedding) => {
+        const metadata = withEmbeddingScopeMetadata(embedding.metadata, options);
+        const hasFileData = metadata.fileData;
 
-		const aws = await this.getAwsClient();
-		const response = await aws.fetch(url, {
-			method: "PUT",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body,
-		});
+        return {
+          content: {
+            dataSourceType: "CUSTOM",
+            custom: {
+              customDocumentIdentifier: {
+                id: embedding.id,
+              },
+              sourceType: "IN_LINE",
+              inlineContent: hasFileData
+                ? {
+                    type: metadata.contentType || "BYTE",
+                    byteContent: {
+                      data: metadata.fileData,
+                      mimeType: metadata.mimeType || "application/octet-stream",
+                    },
+                    textContent: {
+                      data: metadata.content || "",
+                    },
+                  }
+                : {
+                    type: "TEXT",
+                    textContent: {
+                      data: metadata.content || "",
+                    },
+                  },
+            },
+          },
+          metadata: {
+            type: "IN_LINE_ATTRIBUTE",
+            inlineAttributes: Object.keys(metadata)
+              .filter((key) => !["fileData", "mimeType", "contentType"].includes(key))
+              .map((key) => ({
+                key,
+                value: {
+                  type: "STRING",
+                  stringValue: String(metadata[key]),
+                },
+              })),
+          },
+        };
+      }),
+    });
 
-		if (!response.ok) {
-			throw new AssistantError(
-				await formatProviderError(response, "Bedrock Knowledge Base API error"),
-				ErrorType.PROVIDER_ERROR,
-				response.status,
-			);
-		}
+    const aws = await this.getAwsClient();
+    const response = await aws.fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body,
+    });
 
-		let responseData: unknown = null;
-		if (typeof response.json === "function") {
-			try {
-				responseData = await response.json();
-			} catch (error) {
-				logger.warn("Failed to parse Bedrock response JSON", { error });
-			}
-		} else if (typeof response.text === "function") {
-			responseData = await response.text();
-		}
+    if (!response.ok) {
+      throw new AssistantError(
+        await formatProviderError(response, "Bedrock Knowledge Base API error"),
+        ErrorType.PROVIDER_ERROR,
+        response.status,
+      );
+    }
 
-		logger.debug("Bedrock Knowledge Base API response", {
-			status: response.status,
-			data: responseData,
-		});
+    let responseData: unknown = null;
 
-		return {
-			status: "success",
-			error: null,
-		};
-	}
+    if (typeof response.json === "function") {
+      try {
+        responseData = await response.json();
+      } catch (error) {
+        logger.warn("Failed to parse Bedrock response JSON", { error });
+      }
+    } else if (typeof response.text === "function") {
+      responseData = await response.text();
+    }
 
-	async delete(_ids: string[]): Promise<{ status: string; error: string | null }> {
-		return {
-			status: "error",
-			error: "Not implemented",
-		};
-	}
+    logger.debug("Bedrock Knowledge Base API response", {
+      status: response.status,
+      data: responseData,
+    });
 
-	async getQuery(query: string): Promise<{ data: any; status: { success: boolean } }> {
-		return {
-			data: query,
-			status: { success: true },
-		};
-	}
+    return {
+      status: "success",
+      error: null,
+    };
+  }
 
-	private buildVectorSearchConfiguration(options: RagOptions) {
-		const vectorSearchConfiguration: Record<string, unknown> = {};
+  async delete(_ids: string[]): Promise<{ status: string; error: string | null }> {
+    return {
+      status: "error",
+      error: "Not implemented",
+    };
+  }
 
-		if (typeof options.topK === "number" && Number.isFinite(options.topK) && options.topK > 0) {
-			vectorSearchConfiguration.numberOfResults = Math.trunc(options.topK);
-		}
+  async getQuery(query: string): Promise<{ data: any; status: { success: boolean } }> {
+    return {
+      data: query,
+      status: { success: true },
+    };
+  }
 
-		if (options.type && typeof options.type === "string") {
-			const overrideSearchType = options.type.trim().toUpperCase();
+  private buildVectorSearchConfiguration(options: RagOptions) {
+    const vectorSearchConfiguration: Record<string, unknown> = {};
 
-			if (overrideSearchType.length > 0) {
-				vectorSearchConfiguration.overrideSearchType = overrideSearchType;
-			}
-		}
+    if (typeof options.topK === "number" && Number.isFinite(options.topK) && options.topK > 0) {
+      vectorSearchConfiguration.numberOfResults = Math.trunc(options.topK);
+    }
 
-		const metadataFilter = buildBedrockRetrievalFilter(options);
-		if (metadataFilter) {
-			vectorSearchConfiguration.filter = metadataFilter;
-		}
+    if (options.type && typeof options.type === "string") {
+      const overrideSearchType = options.type.trim().toUpperCase();
 
-		return Object.keys(vectorSearchConfiguration).length ? vectorSearchConfiguration : null;
-	}
+      if (overrideSearchType.length > 0) {
+        vectorSearchConfiguration.overrideSearchType = overrideSearchType;
+      }
+    }
 
-	async getMatches(queryVector: string, options: RagOptions = {}): Promise<EmbeddingQueryResult> {
-		const url = `${this.agentRuntimeEndpoint}/knowledgebases/${this.knowledgeBaseId}/retrieve`;
+    const metadataFilter = buildBedrockRetrievalFilter(options);
 
-		const vectorSearchConfiguration = this.buildVectorSearchConfiguration(options);
+    if (metadataFilter) {
+      vectorSearchConfiguration.filter = metadataFilter;
+    }
 
-		const payload: Record<string, unknown> = {
-			retrievalQuery: {
-				text: queryVector,
-			},
-		};
+    return Object.keys(vectorSearchConfiguration).length ? vectorSearchConfiguration : null;
+  }
 
-		if (vectorSearchConfiguration) {
-			payload.retrievalConfiguration = {
-				knowledgeBaseRetrievalConfiguration: {
-					vectorSearchConfiguration,
-				},
-			};
-		}
+  async getMatches(queryVector: string, options: RagOptions = {}): Promise<EmbeddingQueryResult> {
+    const url = `${this.agentRuntimeEndpoint}/knowledgebases/${this.knowledgeBaseId}/retrieve`;
 
-		const body = JSON.stringify(payload);
+    const vectorSearchConfiguration = this.buildVectorSearchConfiguration(options);
 
-		const aws = await this.getAwsClient();
-		const response = await aws.fetch(url, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body,
-		});
+    const payload: Record<string, unknown> = {
+      retrievalQuery: {
+        text: queryVector,
+      },
+    };
 
-		if (!response.ok) {
-			throw new AssistantError(
-				await formatProviderError(response, "Bedrock Knowledge Base API error"),
-				ErrorType.PROVIDER_ERROR,
-				response.status,
-			);
-		}
+    if (vectorSearchConfiguration) {
+      payload.retrievalConfiguration = {
+        knowledgeBaseRetrievalConfiguration: {
+          vectorSearchConfiguration,
+        },
+      };
+    }
 
-		const data = (await response.json()) as {
-			retrievalResults: Array<{
-				title?: string;
-				content: { text?: string };
-				location?: { type?: string };
-				score?: number;
-				metadata?: Record<string, unknown>;
-			}>;
-		};
+    const body = JSON.stringify(payload);
 
-		return {
-			matches: data.retrievalResults.map((result) => ({
-				title: result.title || "",
-				content: result.content.text || "",
-				id: result.location?.type || "",
-				score: result.score || 0,
-				metadata: {
-					...result.metadata,
-					location: result.location,
-				},
-			})),
-			count: data.retrievalResults.length,
-		};
-	}
+    const aws = await this.getAwsClient();
+    const response = await aws.fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body,
+    });
 
-	async searchSimilar(query: string, options: RagOptions = {}) {
-		const matchesResponse = await this.getMatches(query, options);
+    if (!response.ok) {
+      throw new AssistantError(
+        await formatProviderError(response, "Bedrock Knowledge Base API error"),
+        ErrorType.PROVIDER_ERROR,
+        response.status,
+      );
+    }
 
-		if (!matchesResponse.matches.length) {
-			throw new AssistantError("No matches found", ErrorType.NOT_FOUND);
-		}
+    const data = (await response.json()) as {
+      retrievalResults: Array<{
+        title?: string;
+        content: { text?: string };
+        location?: { type?: string };
+        score?: number;
+        metadata?: Record<string, unknown>;
+      }>;
+    };
 
-		return matchesResponse.matches.map((match) => ({
-			title: match.title || match.metadata?.title || "",
-			content: match.content || match.metadata?.content || "",
-			metadata: match.metadata || {},
-			score: match.score,
-			type: match.metadata?.type || "text",
-		}));
-	}
+    return {
+      matches: data.retrievalResults.map((result) => ({
+        title: result.title || "",
+        content: result.content.text || "",
+        id: result.location?.type || "",
+        score: result.score || 0,
+        metadata: {
+          ...result.metadata,
+          location: result.location,
+        },
+      })),
+      count: data.retrievalResults.length,
+    };
+  }
+
+  async searchSimilar(query: string, options: RagOptions = {}) {
+    const matchesResponse = await this.getMatches(query, options);
+
+    if (!matchesResponse.matches.length) {
+      throw new AssistantError("No matches found", ErrorType.NOT_FOUND);
+    }
+
+    return matchesResponse.matches.map((match) => ({
+      title: match.title || match.metadata?.title || "",
+      content: match.content || match.metadata?.content || "",
+      metadata: match.metadata || {},
+      score: match.score,
+      type: match.metadata?.type || "text",
+    }));
+  }
 }

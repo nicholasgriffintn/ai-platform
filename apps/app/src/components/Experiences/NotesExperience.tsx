@@ -48,7 +48,11 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
   const filteredNotes = useMemo(() => {
     const availableNotes = notes ?? [];
     const query = searchQuery.trim().toLowerCase();
-    if (!query) return availableNotes;
+
+    if (!query) {
+      return availableNotes;
+    }
+
     return availableNotes.filter(
       (item) =>
         item.title.toLowerCase().includes(query) || item.content.toLowerCase().includes(query),
@@ -63,13 +67,18 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
       options?: { refreshMetadata?: boolean },
     ) => {
       const metadata = { themeMode: activeThemeMode, fontFamily, fontSize, ...additionalMetadata };
+
       if (noteId) {
         await updateNote.mutateAsync({ title, content, metadata, options });
+
         return noteId;
       }
+
       const created = await createNote.mutateAsync({ title, content, metadata });
+
       setCreatedNoteId(created.id);
       navigate(`${basePath}/${created.id}`, { replace: true });
+
       return created.id;
     },
     [activeThemeMode, basePath, createNote, fontFamily, fontSize, navigate, noteId, updateNote],
@@ -79,11 +88,13 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
     if (noteId && isNoteLoading && !isLocallyCreatedNote) {
       return <CardGridLoadingSkeleton count={1} label="Loading note" />;
     }
+
     if (noteId && isAuthenticationError(noteError)) {
       return (
         <SignInEmptyState title="Sign in to view this note" message="Sign in to open this note." />
       );
     }
+
     if (noteId && !isNoteLoading && (noteError || !note)) {
       return (
         <EmptyState title="Note unavailable" message={noteError?.message ?? "Note not found"} />
@@ -126,7 +137,10 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
     );
   }
 
-  if (isLoading) return <CardGridLoadingSkeleton count={4} label="Loading notes" />;
+  if (isLoading) {
+    return <CardGridLoadingSkeleton count={4} label="Loading notes" />;
+  }
+
   if (isAuthenticationError(error)) {
     return (
       <SignInEmptyState
@@ -135,7 +149,11 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
       />
     );
   }
-  if (error) return <EmptyState title="Notes unavailable" message={error.message} />;
+
+  if (error) {
+    return <EmptyState title="Notes unavailable" message={error.message} />;
+  }
+
   if (!notes?.length) {
     return (
       <EmptyState

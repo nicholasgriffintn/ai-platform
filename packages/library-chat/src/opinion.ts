@@ -1,175 +1,187 @@
-import { getMessageTextContent } from "./messages";
 import type { Message } from "./conversation-types";
 import { isCompactionMarkerMessage } from "./message-compaction-status";
+import { getMessageTextContent } from "./messages";
 
 export type OpinionMode = "second-opinion" | "consensus";
 
 export interface OpinionRequest {
-	mode: OpinionMode;
-	modelIds: string[];
+  mode: OpinionMode;
+  modelIds: string[];
 }
 
 export interface OpinionSourceContext {
-	userMessage?: string;
-	assistantAnswer: string;
+  userMessage?: string;
+  assistantAnswer: string;
 }
 
 const SECOND_OPINION_INTENT_PATTERN =
-	/\b(second opinion|another opinion|consensus|double[-\s]?check|cross[-\s]?check|sanity check|verify|validate|review this|is (?:this|that) (?:right|correct|true)|am i (?:right|correct)|does this make sense)\b/i;
+  /\b(second opinion|another opinion|consensus|double[-\s]?check|cross[-\s]?check|sanity check|verify|validate|review this|is (?:this|that) (?:right|correct|true)|am i (?:right|correct)|does this make sense)\b/i;
 const MAX_SOURCE_CONTEXT_LENGTH = 12000;
 const MAX_SOURCE_USER_MESSAGE_LENGTH = 4000;
 
 function getMessageIndex(messages: Message[], messageId: string): number {
-	return messages.findIndex((message) => message.id === messageId);
+  return messages.findIndex((message) => message.id === messageId);
 }
 
 function getPreviousUserMessage(messages: Message[], messageIndex: number): Message | null {
-	for (let index = messageIndex - 1; index >= 0; index--) {
-		if (messages[index].role === "user") {
-			return messages[index];
-		}
-	}
+  for (let index = messageIndex - 1; index >= 0; index--) {
+    if (messages[index].role === "user") {
+      return messages[index];
+    }
+  }
 
-	return null;
+  return null;
 }
 
 function getLatestActionableMessage(messages: Message[]): Message | undefined {
-	for (let index = messages.length - 1; index >= 0; index--) {
-		const message = messages[index];
-		if (!isCompactionMarkerMessage(message)) {
-			return message;
-		}
-	}
+  for (let index = messages.length - 1; index >= 0; index--) {
+    const message = messages[index];
 
-	return undefined;
+    if (!isCompactionMarkerMessage(message)) {
+      return message;
+    }
+  }
+
+  return undefined;
 }
 
 function hasOpinionRequestData(message: Message | null): boolean {
-	return Boolean(
-		message?.data &&
-		typeof message.data === "object" &&
-		"opinion" in message.data &&
-		message.data.opinion,
-	);
+  return Boolean(
+    message?.data &&
+    typeof message.data === "object" &&
+    "opinion" in message.data &&
+    message.data.opinion,
+  );
 }
 
 function truncateSourceText(text: string, maxLength: number): string {
-	const trimmed = text.trim();
-	if (trimmed.length <= maxLength) {
-		return trimmed;
-	}
+  const trimmed = text.trim();
 
-	return `${trimmed.slice(0, maxLength).trimEnd()}\n\n[Source text truncated for review.]`;
+  if (trimmed.length <= maxLength) {
+    return trimmed;
+  }
+
+  return `${trimmed.slice(0, maxLength).trimEnd()}\n\n[Source text truncated for review.]`;
 }
 
 function getMessageTextForOpinion(message: Message): string {
-	const text = getMessageTextContent(message);
-	if (text) {
-		return text;
-	}
+  const text = getMessageTextContent(message);
 
-	return message.reasoning?.content?.trim() || "";
+  if (text) {
+    return text;
+  }
+
+  return message.reasoning?.content?.trim() || "";
 }
 
 export function canRequestOpinionForMessage(messages: Message[], messageId: string): boolean {
-	const messageIndex = getMessageIndex(messages, messageId);
-	if (messageIndex === -1) {
-		return false;
-	}
+  const messageIndex = getMessageIndex(messages, messageId);
 
-	const message = messages[messageIndex];
-	if (message.role !== "assistant") {
-		return false;
-	}
+  if (messageIndex === -1) {
+    return false;
+  }
 
-	const latestMessage = getLatestActionableMessage(messages);
-	if (latestMessage?.id !== messageId) {
-		return false;
-	}
+  const message = messages[messageIndex];
 
-	const previousUserMessage = getPreviousUserMessage(messages, messageIndex);
-	return (
-		!hasOpinionRequestData(previousUserMessage) && getMessageTextForOpinion(message).length > 0
-	);
+  if (message.role !== "assistant") {
+    return false;
+  }
+
+  const latestMessage = getLatestActionableMessage(messages);
+
+  if (latestMessage?.id !== messageId) {
+    return false;
+  }
+
+  const previousUserMessage = getPreviousUserMessage(messages, messageIndex);
+
+  return (
+    !hasOpinionRequestData(previousUserMessage) && getMessageTextForOpinion(message).length > 0
+  );
 }
 
 export function canOfferOpinionRequestForMessage(
-	messages: Message[],
-	messageId: string,
-	canAccessProFeatures: boolean,
+  messages: Message[],
+  messageId: string,
+  canAccessProFeatures: boolean,
 ): boolean {
-	return canAccessProFeatures && canRequestOpinionForMessage(messages, messageId);
+  return canAccessProFeatures && canRequestOpinionForMessage(messages, messageId);
 }
 
 export function shouldPromoteOpinionRequest(messages: Message[], messageId: string): boolean {
-	const messageIndex = getMessageIndex(messages, messageId);
-	if (messageIndex === -1 || !canRequestOpinionForMessage(messages, messageId)) {
-		return false;
-	}
+  const messageIndex = getMessageIndex(messages, messageId);
 
-	const previousUserMessage = getPreviousUserMessage(messages, messageIndex);
-	if (!previousUserMessage) {
-		return false;
-	}
+  if (messageIndex === -1 || !canRequestOpinionForMessage(messages, messageId)) {
+    return false;
+  }
 
-	return SECOND_OPINION_INTENT_PATTERN.test(getMessageTextContent(previousUserMessage));
+  const previousUserMessage = getPreviousUserMessage(messages, messageIndex);
+
+  if (!previousUserMessage) {
+    return false;
+  }
+
+  return SECOND_OPINION_INTENT_PATTERN.test(getMessageTextContent(previousUserMessage));
 }
 
 export function getOpinionSourceContext(
-	messages: Message[],
-	messageId: string,
+  messages: Message[],
+  messageId: string,
 ): OpinionSourceContext | null {
-	const messageIndex = getMessageIndex(messages, messageId);
-	if (messageIndex === -1) {
-		return null;
-	}
+  const messageIndex = getMessageIndex(messages, messageId);
 
-	const assistantMessage = messages[messageIndex];
-	if (assistantMessage.role !== "assistant") {
-		return null;
-	}
+  if (messageIndex === -1) {
+    return null;
+  }
 
-	const assistantAnswer = getMessageTextForOpinion(assistantMessage);
-	if (!assistantAnswer) {
-		return null;
-	}
+  const assistantMessage = messages[messageIndex];
 
-	const previousUserMessage = getPreviousUserMessage(messages, messageIndex);
-	const userMessage = previousUserMessage ? getMessageTextContent(previousUserMessage) : "";
+  if (assistantMessage.role !== "assistant") {
+    return null;
+  }
 
-	return {
-		userMessage: userMessage
-			? truncateSourceText(userMessage, MAX_SOURCE_USER_MESSAGE_LENGTH)
-			: undefined,
-		assistantAnswer: truncateSourceText(assistantAnswer, MAX_SOURCE_CONTEXT_LENGTH),
-	};
+  const assistantAnswer = getMessageTextForOpinion(assistantMessage);
+
+  if (!assistantAnswer) {
+    return null;
+  }
+
+  const previousUserMessage = getPreviousUserMessage(messages, messageIndex);
+  const userMessage = previousUserMessage ? getMessageTextContent(previousUserMessage) : "";
+
+  return {
+    userMessage: userMessage
+      ? truncateSourceText(userMessage, MAX_SOURCE_USER_MESSAGE_LENGTH)
+      : undefined,
+    assistantAnswer: truncateSourceText(assistantAnswer, MAX_SOURCE_CONTEXT_LENGTH),
+  };
 }
 
 export function buildOpinionRequestPrompt(
-	request: OpinionRequest,
-	sourceContext?: OpinionSourceContext | null,
+  request: OpinionRequest,
+  sourceContext?: OpinionSourceContext | null,
 ): string {
-	const sourceParts = sourceContext
-		? [
-				sourceContext.userMessage ? `Source user message:\n${sourceContext.userMessage}` : null,
-				`Assistant answer to review:\n${sourceContext.assistantAnswer}`,
-			]
-				.filter((part): part is string => Boolean(part))
-				.join("\n\n")
-		: "";
+  const sourceParts = sourceContext
+    ? [
+        sourceContext.userMessage ? `Source user message:\n${sourceContext.userMessage}` : null,
+        `Assistant answer to review:\n${sourceContext.assistantAnswer}`,
+      ]
+        .filter((part): part is string => Boolean(part))
+        .join("\n\n")
+    : "";
 
-	if (request.mode === "consensus") {
-		return [
-			"Consensus request: review the assistant answer below.",
-			"Compare the selected models' judgement, identify what they agree on, call out any meaningful disagreement or uncertainty, and finish with the answer you would trust.",
-			"Focus on correctness and missing caveats rather than rewriting for style.",
-			sourceParts,
-		].join(" ");
-	}
+  if (request.mode === "consensus") {
+    return [
+      "Consensus request: review the assistant answer below.",
+      "Compare the selected models' judgement, identify what they agree on, call out any meaningful disagreement or uncertainty, and finish with the answer you would trust.",
+      "Focus on correctness and missing caveats rather than rewriting for style.",
+      sourceParts,
+    ].join(" ");
+  }
 
-	return [
-		"Second opinion request: review the assistant answer below.",
-		"Confirm what is correct, flag likely mistakes or missing caveats, and provide a corrected answer only where it changes the outcome.",
-		sourceParts,
-	].join(" ");
+  return [
+    "Second opinion request: review the assistant answer below.",
+    "Confirm what is correct, flag likely mistakes or missing caveats, and provide a corrected answer only where it changes the outcome.",
+    sourceParts,
+  ].join(" ");
 }

@@ -1,190 +1,202 @@
-import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import { fetchAIResponse } from "~/lib/providers/lib/fetch";
+import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
+import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { detectStreaming } from "~/utils/streaming";
+
 import { BaseProvider } from "./base";
-import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 
 // @ts-expect-error - AzureOpenAIProvider is different and CBA to work around it.
 export class AzureOpenAIProvider extends BaseProvider {
-	name = "azure-openai";
-	supportsStreaming = true;
-	isOpenAiCompatible = false;
+  name = "azure-openai";
+  supportsStreaming = true;
+  isOpenAiCompatible = false;
 
-	protected getProviderKeyName(): string {
-		return "AZURE_API_KEY";
-	}
+  protected getProviderKeyName(): string {
+    return "AZURE_API_KEY";
+  }
 
-	protected validateParams(params: ChatCompletionParameters): void {
-		super.validateParams(params);
-		this.validateAiGatewayToken(params);
-	}
+  protected validateParams(params: ChatCompletionParameters): void {
+    super.validateParams(params);
+    this.validateAiGatewayToken(params);
+  }
 
-	protected parseAzureCredentials(apiKey: string): {
-		resourceName: string;
-		apiVersion: string;
-		token: string;
-	} {
-		const delimiter = "::@@::";
-		const parts = apiKey.split(delimiter);
-		if (parts.length !== 3) {
-			throw new AssistantError("Invalid Azure credentials format", ErrorType.CONFIGURATION_ERROR);
-		}
-		return {
-			resourceName: parts[0],
-			apiVersion: parts[1],
-			token: parts[2],
-		};
-	}
+  protected parseAzureCredentials(apiKey: string): {
+    resourceName: string;
+    apiVersion: string;
+    token: string;
+  } {
+    const delimiter = "::@@::";
+    const parts = apiKey.split(delimiter);
 
-	protected getAzureEndpoint(
-		params: ChatCompletionParameters,
-		resourceName: string,
-		apiVersion: string,
-	): string {
-		const deployment = params.model;
-		return `${resourceName}/${deployment}/chat/completions?api-version=${apiVersion}`;
-	}
+    if (parts.length !== 3) {
+      throw new AssistantError("Invalid Azure credentials format", ErrorType.CONFIGURATION_ERROR);
+    }
 
-	async mapParameters(params: ChatCompletionParameters): Promise<Record<string, any>> {
-		const mapped = await this.defaultMapParameters(params);
-		delete mapped.model;
-		return mapped;
-	}
+    return {
+      resourceName: parts[0],
+      apiVersion: parts[1],
+      token: parts[2],
+    };
+  }
 
-	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
-		const rawKey = await this.getApiKey(params, params.context?.user?.id);
-		let token = rawKey;
-		if (rawKey.includes("::@@::")) {
-			try {
-				token = this.parseAzureCredentials(rawKey).token;
-			} catch {
-				token = rawKey;
-			}
-		}
-		return {
-			"Content-Type": "application/json",
-			"api-key": token,
-			"cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-			"cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-			"cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
-		};
-	}
+  protected getAzureEndpoint(
+    params: ChatCompletionParameters,
+    resourceName: string,
+    apiVersion: string,
+  ): string {
+    const deployment = params.model;
 
-	private resolveAzureCredentials = async (
-		params: ChatCompletionParameters,
-		userId?: number,
-	): Promise<{ resourceName: string; apiVersion: string; token: string }> => {
-		const rawKey = await this.getApiKey(params, userId);
-		if (rawKey.includes("::@@::")) {
-			return this.parseAzureCredentials(rawKey);
-		}
+    return `${resourceName}/${deployment}/chat/completions?api-version=${apiVersion}`;
+  }
 
-		const resourceName = params.env.AZURE_RESOURCE_NAME;
-		const apiVersion = params.env.AZURE_API_VERSION || "2023-05-15";
-		const token = rawKey;
+  async mapParameters(params: ChatCompletionParameters): Promise<Record<string, any>> {
+    const mapped = await this.defaultMapParameters(params);
 
-		if (!resourceName) {
-			throw new AssistantError(
-				"Missing AZURE_RESOURCE_NAME for Azure provider",
-				ErrorType.CONFIGURATION_ERROR,
-			);
-		}
-		return { resourceName, apiVersion, token };
-	};
+    delete mapped.model;
 
-	private async getAzureParameterMapping(
-		params: ChatCompletionParameters,
-		storageService?: StorageService,
-		assetsUrl?: string,
-	): Promise<Record<string, any>> {
-		if (this.isOpenAiCompatible) {
-			return await this.defaultMapParameters(params, storageService, assetsUrl);
-		}
+    return mapped;
+  }
 
-		if (this.mapParameters) {
-			return await this.mapParameters(params);
-		}
+  protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
+    const rawKey = await this.getApiKey(params, params.context?.user?.id);
+    let token = rawKey;
 
-		return await this.defaultMapParameters(params, storageService, assetsUrl);
-	}
+    if (rawKey.includes("::@@::")) {
+      try {
+        token = this.parseAzureCredentials(rawKey).token;
+      } catch {
+        token = rawKey;
+      }
+    }
 
-	async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
-		this.validateParams(params);
+    return {
+      "Content-Type": "application/json",
+      "api-key": token,
+      "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
+      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
+      "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+    };
+  }
 
-		const model = params.model;
-		if (!model) {
-			throw new AssistantError("Missing model", ErrorType.PARAMS_ERROR);
-		}
+  private resolveAzureCredentials = async (
+    params: ChatCompletionParameters,
+    userId?: number,
+  ): Promise<{ resourceName: string; apiVersion: string; token: string }> => {
+    const rawKey = await this.getApiKey(params, userId);
 
-		const isOpenAiCompatible = this.isOpenAiCompatible;
+    if (rawKey.includes("::@@::")) {
+      return this.parseAzureCredentials(rawKey);
+    }
 
-		const { resourceName, apiVersion } = await this.resolveAzureCredentials(
-			params,
-			params.context?.user?.id,
-		);
+    const resourceName = params.env.AZURE_RESOURCE_NAME;
+    const apiVersion = params.env.AZURE_API_VERSION || "2023-05-15";
+    const token = rawKey;
 
-		const endpoint = isOpenAiCompatible
-			? "chat/completions"
-			: this.getAzureEndpoint(params, resourceName, apiVersion);
-		const headers = await this.getHeaders(params);
+    if (!resourceName) {
+      throw new AssistantError(
+        "Missing AZURE_RESOURCE_NAME for Azure provider",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
 
-		const modelConfig = await getModelConfigByMatchingModel(
-			model,
-			params.env,
-			params.provider || this.name,
-		);
+    return { resourceName, apiVersion, token };
+  };
 
-		if (!modelConfig) {
-			throw new AssistantError(`Model ${params.model} not found`, ErrorType.CONFIGURATION_ERROR);
-		}
+  private async getAzureParameterMapping(
+    params: ChatCompletionParameters,
+    storageService?: StorageService,
+    assetsUrl?: string,
+  ): Promise<Record<string, any>> {
+    if (this.isOpenAiCompatible) {
+      return await this.defaultMapParameters(params, storageService, assetsUrl);
+    }
 
-		const timeout = modelConfig.timeout || 100000;
+    if (this.mapParameters) {
+      return await this.mapParameters(params);
+    }
 
-		const storageService = StorageService.forPrivateAssetsEnv(params.env);
-		const assetsUrl = params.env.API_BASE_URL || "";
+    return await this.defaultMapParameters(params, storageService, assetsUrl);
+  }
 
-		return trackProviderMetrics({
-			provider: this.name,
-			model,
-			operation: async () => {
-				const body = await this.getAzureParameterMapping(params, storageService, assetsUrl);
-				const data = await fetchAIResponse(
-					isOpenAiCompatible,
-					this.name,
-					endpoint,
-					headers,
-					body,
-					params.env,
-					{
-						requestTimeout: timeout,
-					},
-				);
+  async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
+    this.validateParams(params);
 
-				const isStreaming = detectStreaming(body, endpoint);
-				if (isStreaming) {
-					return data;
-				}
+    const model = params.model;
 
-				return await this.formatResponse(data, params);
-			},
-			analyticsEngine: params.env?.ANALYTICS,
-			settings: {
-				temperature: params.temperature,
-				max_tokens: params.max_tokens,
-				top_p: params.top_p,
-				top_k: params.top_k,
-				seed: params.seed,
-				repetition_penalty: params.repetition_penalty,
-				frequency_penalty: params.frequency_penalty,
-				presence_penalty: params.presence_penalty,
-			},
-			userId,
-			completion_id: params.completion_id,
-			request: params,
-		});
-	}
+    if (!model) {
+      throw new AssistantError("Missing model", ErrorType.PARAMS_ERROR);
+    }
+
+    const isOpenAiCompatible = this.isOpenAiCompatible;
+
+    const { resourceName, apiVersion } = await this.resolveAzureCredentials(
+      params,
+      params.context?.user?.id,
+    );
+
+    const endpoint = isOpenAiCompatible
+      ? "chat/completions"
+      : this.getAzureEndpoint(params, resourceName, apiVersion);
+    const headers = await this.getHeaders(params);
+
+    const modelConfig = await getModelConfigByMatchingModel(
+      model,
+      params.env,
+      params.provider || this.name,
+    );
+
+    if (!modelConfig) {
+      throw new AssistantError(`Model ${params.model} not found`, ErrorType.CONFIGURATION_ERROR);
+    }
+
+    const timeout = modelConfig.timeout || 100000;
+
+    const storageService = StorageService.forPrivateAssetsEnv(params.env);
+    const assetsUrl = params.env.API_BASE_URL || "";
+
+    return trackProviderMetrics({
+      provider: this.name,
+      model,
+      operation: async () => {
+        const body = await this.getAzureParameterMapping(params, storageService, assetsUrl);
+        const data = await fetchAIResponse(
+          isOpenAiCompatible,
+          this.name,
+          endpoint,
+          headers,
+          body,
+          params.env,
+          {
+            requestTimeout: timeout,
+          },
+        );
+
+        const isStreaming = detectStreaming(body, endpoint);
+
+        if (isStreaming) {
+          return data;
+        }
+
+        return await this.formatResponse(data, params);
+      },
+      analyticsEngine: params.env?.ANALYTICS,
+      settings: {
+        temperature: params.temperature,
+        max_tokens: params.max_tokens,
+        top_p: params.top_p,
+        top_k: params.top_k,
+        seed: params.seed,
+        repetition_penalty: params.repetition_penalty,
+        frequency_penalty: params.frequency_penalty,
+        presence_penalty: params.presence_penalty,
+      },
+      userId,
+      completion_id: params.completion_id,
+      request: params,
+    });
+  }
 }

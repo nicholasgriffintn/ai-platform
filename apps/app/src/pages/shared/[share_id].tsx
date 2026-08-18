@@ -1,4 +1,4 @@
-import { type ArtifactProps } from "@ngriffin_uk/polychat-component-content";
+import type { ArtifactProps } from "@ngriffin_uk/polychat-component-content";
 import { ArtifactPanel } from "@ngriffin_uk/polychat-component-content";
 import { LoadingSpinner, PageStatus } from "@ngriffin_uk/polychat-component-ui";
 import { ApiError } from "@ngriffin_uk/polychat-library-client";
@@ -38,12 +38,14 @@ export default function SharedConversationPage() {
       if (!share_id) {
         setError("Invalid share link");
         setIsLoading(false);
+
         return;
       }
 
       try {
         setIsLoading(true);
         const data = await fetchSharedConversationHistory(share_id);
+
         setMessages(data.messages);
         setIsLoading(false);
       } catch (err) {
@@ -55,6 +57,7 @@ export default function SharedConversationPage() {
         } else {
           setError("An error occurred while loading the shared conversation.");
         }
+
         setIsLoading(false);
       }
     };
@@ -75,6 +78,7 @@ export default function SharedConversationPage() {
     if (combine && artifacts && artifacts.length > 1) {
       setCurrentArtifacts(artifacts);
       setIsCombinedPanel(true);
+
       return;
     }
 
@@ -100,6 +104,7 @@ export default function SharedConversationPage() {
     };
 
     window.addEventListener("keydown", handleKeyPress);
+
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
     };
@@ -148,7 +153,7 @@ export default function SharedConversationPage() {
         </Link>
       }
       displayNavBar={false}
-      fullBleed={true}
+      fullBleed
       className="flex min-h-screen flex-col bg-off-white dark:bg-zinc-900"
     >
       <div
@@ -161,7 +166,7 @@ export default function SharedConversationPage() {
                 <div className="mx-auto w-full max-w-3xl h-full flex flex-col gap-8 px-4">
                   <MessageList
                     messages={messages}
-                    isSharedView={true}
+                    isSharedView
                     onArtifactOpen={handleArtifactOpen}
                   />
                 </div>

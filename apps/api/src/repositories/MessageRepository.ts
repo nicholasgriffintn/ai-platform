@@ -1,37 +1,38 @@
-import { BaseRepository } from "./BaseRepository";
-import { nonEmptyToolCallsOrNull } from "~/utils/toolCalls";
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { nonEmptyToolCallsOrNull } from "~/utils/toolCalls";
+
+import { BaseRepository } from "./BaseRepository";
 
 const MESSAGE_INSERT_COLUMNS = [
-	"id",
-	"conversation_id",
-	"parent_message_id",
-	"role",
-	"content",
-	"name",
-	"tool_calls",
-	"citations",
-	"model",
-	"status",
-	"timestamp",
-	"platform",
-	"mode",
-	"log_id",
-	"data",
-	"usage",
-	"tool_call_id",
-	"tool_call_arguments",
-	"app",
-	"parts",
+  "id",
+  "conversation_id",
+  "parent_message_id",
+  "role",
+  "content",
+  "name",
+  "tool_calls",
+  "citations",
+  "model",
+  "status",
+  "timestamp",
+  "platform",
+  "mode",
+  "log_id",
+  "data",
+  "usage",
+  "tool_call_id",
+  "tool_call_arguments",
+  "app",
+  "parts",
 ] as const;
 
 const MESSAGE_UPSERT_UPDATE_COLUMNS = MESSAGE_INSERT_COLUMNS.filter((column) => column !== "id");
 
 const LIVE_TURN_ORDER_EXPRESSION =
-	"CASE WHEN json_valid(data) THEN CAST(json_extract(data, '$.realtime.turnStartedAt') AS INTEGER) END";
+  "CASE WHEN json_valid(data) THEN CAST(json_extract(data, '$.realtime.turnStartedAt') AS INTEGER) END";
 const LIVE_SEQUENCE_ORDER_EXPRESSION =
-	"CASE WHEN json_valid(data) THEN CAST(json_extract(data, '$.realtime.sequence') AS INTEGER) END";
+  "CASE WHEN json_valid(data) THEN CAST(json_extract(data, '$.realtime.sequence') AS INTEGER) END";
 const MESSAGE_ORDER_EXPRESSION = `COALESCE(${LIVE_TURN_ORDER_EXPRESSION}, timestamp, CAST(strftime('%s', created_at) AS INTEGER) * 1000)`;
 const MESSAGE_SEQUENCE_EXPRESSION = `COALESCE(${LIVE_SEQUENCE_ORDER_EXPRESSION}, 0)`;
 const MESSAGE_TIMESTAMP_TIE_EXPRESSION = "COALESCE(timestamp, 0)";
@@ -39,138 +40,144 @@ const MESSAGE_ORDER_BY = `${MESSAGE_ORDER_EXPRESSION} ASC, ${MESSAGE_SEQUENCE_EX
 const MESSAGE_ORDER_BY_DESC = `${MESSAGE_ORDER_EXPRESSION} DESC, ${MESSAGE_SEQUENCE_EXPRESSION} DESC, ${MESSAGE_TIMESTAMP_TIE_EXPRESSION} DESC, created_at DESC, id DESC`;
 
 export interface ConversationMessageMetadata {
-	last_message_id: string | null;
-	message_count: number;
+  last_message_id: string | null;
+  message_count: number;
 }
 
 export class MessageRepository extends BaseRepository {
-	public async createMessagesAndUpdateConversation(
-		conversationId: string,
-		messages: Array<{
-			id: string;
-			role: string;
-			content: string | Record<string, unknown>;
-			data?: Partial<Message>;
-		}>,
-	): Promise<void> {
-		if (messages.length === 0) return;
-		const database = this.env.DB;
-		if (!database) {
-			throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
-		}
-		const columns = MESSAGE_INSERT_COLUMNS.join(", ");
-		const placeholders = MESSAGE_INSERT_COLUMNS.map(() => "?").join(", ");
-		const insertSql = `INSERT INTO message (
+  public async createMessagesAndUpdateConversation(
+    conversationId: string,
+    messages: Array<{
+      id: string;
+      role: string;
+      content: string | Record<string, unknown>;
+      data?: Partial<Message>;
+    }>,
+  ): Promise<void> {
+    if (messages.length === 0) {
+      return;
+    }
+
+    const database = this.env.DB;
+
+    if (!database) {
+      throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
+    }
+
+    const columns = MESSAGE_INSERT_COLUMNS.join(", ");
+    const placeholders = MESSAGE_INSERT_COLUMNS.map(() => "?").join(", ");
+    const insertSql = `INSERT INTO message (
 			${columns}, created_at, updated_at
 		) VALUES (${placeholders}, datetime('now'), datetime('now'))`;
-		const lastMessage = messages[messages.length - 1];
+    const lastMessage = messages[messages.length - 1];
 
-		await database.batch([
-			...messages.map((message) =>
-				database
-					.prepare(insertSql)
-					.bind(
-						...this.buildMessageValues(
-							message.id,
-							conversationId,
-							message.role,
-							message.content,
-							message.data,
-						),
-					),
-			),
-			database
-				.prepare(
-					`UPDATE conversation
+    await database.batch([
+      ...messages.map((message) =>
+        database
+          .prepare(insertSql)
+          .bind(
+            ...this.buildMessageValues(
+              message.id,
+              conversationId,
+              message.role,
+              message.content,
+              message.data,
+            ),
+          ),
+      ),
+      database
+        .prepare(
+          `UPDATE conversation
 					 SET last_message_id = ?,
 					     last_message_at = datetime('now'),
 					     message_count = message_count + ?,
 					     updated_at = datetime('now')
 					 WHERE id = ?`,
-				)
-				.bind(lastMessage.id, messages.length, conversationId),
-		]);
-	}
+        )
+        .bind(lastMessage.id, messages.length, conversationId),
+    ]);
+  }
 
-	private buildMessageValues(
-		messageId: string,
-		conversationId: string,
-		role: string,
-		content: string | Record<string, unknown>,
-		messageData: Partial<Message> = {},
-	): unknown[] {
-		const contentStr = typeof content === "object" ? JSON.stringify(content) : content;
+  private buildMessageValues(
+    messageId: string,
+    conversationId: string,
+    role: string,
+    content: string | Record<string, unknown>,
+    messageData: Partial<Message> = {},
+  ): unknown[] {
+    const contentStr = typeof content === "object" ? JSON.stringify(content) : content;
 
-		const toolCallsData = nonEmptyToolCallsOrNull(messageData.tool_calls);
-		const toolCalls = toolCallsData ? JSON.stringify(toolCallsData) : null;
-		const citations = messageData.citations ? JSON.stringify(messageData.citations) : null;
-		const data = messageData.data ? JSON.stringify(messageData.data) : null;
-		const usage = messageData.usage ? JSON.stringify(messageData.usage) : null;
-		const parts = messageData.parts ? JSON.stringify(messageData.parts) : null;
+    const toolCallsData = nonEmptyToolCallsOrNull(messageData.tool_calls);
+    const toolCalls = toolCallsData ? JSON.stringify(toolCallsData) : null;
+    const citations = messageData.citations ? JSON.stringify(messageData.citations) : null;
+    const data = messageData.data ? JSON.stringify(messageData.data) : null;
+    const usage = messageData.usage ? JSON.stringify(messageData.usage) : null;
+    const parts = messageData.parts ? JSON.stringify(messageData.parts) : null;
 
-		return [
-			messageId,
-			conversationId,
-			messageData.parent_message_id || null,
-			role,
-			contentStr,
-			messageData.name || null,
-			toolCalls,
-			citations,
-			messageData.model || null,
-			messageData.status || null,
-			messageData.timestamp || null,
-			messageData.platform || null,
-			messageData.mode || null,
-			messageData.log_id || null,
-			data,
-			usage,
-			messageData.tool_call_id || null,
-			messageData.tool_call_arguments || null,
-			messageData.app || null,
-			parts,
-		];
-	}
+    return [
+      messageId,
+      conversationId,
+      messageData.parent_message_id || null,
+      role,
+      contentStr,
+      messageData.name || null,
+      toolCalls,
+      citations,
+      messageData.model || null,
+      messageData.status || null,
+      messageData.timestamp || null,
+      messageData.platform || null,
+      messageData.mode || null,
+      messageData.log_id || null,
+      data,
+      usage,
+      messageData.tool_call_id || null,
+      messageData.tool_call_arguments || null,
+      messageData.app || null,
+      parts,
+    ];
+  }
 
-	public async createMessage(
-		messageId: string,
-		conversationId: string,
-		role: string,
-		content: string | Record<string, unknown>,
-		messageData: Partial<Message> = {},
-	): Promise<Record<string, unknown> | null> {
-		const columns = MESSAGE_INSERT_COLUMNS.join(", ");
-		const placeholders = MESSAGE_INSERT_COLUMNS.map(() => "?").join(", ");
+  public async createMessage(
+    messageId: string,
+    conversationId: string,
+    role: string,
+    content: string | Record<string, unknown>,
+    messageData: Partial<Message> = {},
+  ): Promise<Record<string, unknown> | null> {
+    const columns = MESSAGE_INSERT_COLUMNS.join(", ");
+    const placeholders = MESSAGE_INSERT_COLUMNS.map(() => "?").join(", ");
 
-		const result = this.runQuery<Record<string, unknown>>(
-			`INSERT INTO message (
+    const result = this.runQuery<Record<string, unknown>>(
+      `INSERT INTO message (
          ${columns},
          created_at,
          updated_at
        )
        VALUES (${placeholders}, datetime('now'), datetime('now'))
        RETURNING *`,
-			this.buildMessageValues(messageId, conversationId, role, content, messageData),
-			true,
-		);
-		return result;
-	}
+      this.buildMessageValues(messageId, conversationId, role, content, messageData),
+      true,
+    );
 
-	public async upsertMessage(
-		messageId: string,
-		conversationId: string,
-		role: string,
-		content: string | Record<string, unknown>,
-		messageData: Partial<Message> = {},
-	): Promise<Record<string, unknown> | null> {
-		const columns = MESSAGE_INSERT_COLUMNS.join(", ");
-		const placeholders = MESSAGE_INSERT_COLUMNS.map(() => "?").join(", ");
-		const updateClause = MESSAGE_UPSERT_UPDATE_COLUMNS.map(
-			(column) => `${column} = excluded.${column}`,
-		).join(", ");
+    return result;
+  }
 
-		const result = this.runQuery<Record<string, unknown>>(
-			`INSERT INTO message (
+  public async upsertMessage(
+    messageId: string,
+    conversationId: string,
+    role: string,
+    content: string | Record<string, unknown>,
+    messageData: Partial<Message> = {},
+  ): Promise<Record<string, unknown> | null> {
+    const columns = MESSAGE_INSERT_COLUMNS.join(", ");
+    const placeholders = MESSAGE_INSERT_COLUMNS.map(() => "?").join(", ");
+    const updateClause = MESSAGE_UPSERT_UPDATE_COLUMNS.map(
+      (column) => `${column} = excluded.${column}`,
+    ).join(", ");
+
+    const result = this.runQuery<Record<string, unknown>>(
+      `INSERT INTO message (
          ${columns},
          created_at,
          updated_at
@@ -181,40 +188,42 @@ export class MessageRepository extends BaseRepository {
          updated_at = datetime('now')
        WHERE message.conversation_id = excluded.conversation_id
        RETURNING *`,
-			this.buildMessageValues(messageId, conversationId, role, content, messageData),
-			true,
-		);
-		return result;
-	}
+      this.buildMessageValues(messageId, conversationId, role, content, messageData),
+      true,
+    );
 
-	public async getMessage(messageId: string): Promise<Record<string, unknown> | null> {
-		const result = this.runQuery<Record<string, unknown>>(
-			"SELECT * FROM message WHERE id = ?",
-			[messageId],
-			true,
-		);
-		return result;
-	}
+    return result;
+  }
 
-	public async getConversationMessages(
-		conversationId: string,
-		limit = 50,
-		after?: string,
-		options?: {
-			includeArchived?: boolean;
-		},
-	): Promise<Record<string, unknown>[]> {
-		const includeArchived = options?.includeArchived ?? false;
-		const archivedClause = includeArchived ? "" : " AND is_archived = 0";
-		let query = `
+  public async getMessage(messageId: string): Promise<Record<string, unknown> | null> {
+    const result = this.runQuery<Record<string, unknown>>(
+      "SELECT * FROM message WHERE id = ?",
+      [messageId],
+      true,
+    );
+
+    return result;
+  }
+
+  public async getConversationMessages(
+    conversationId: string,
+    limit = 50,
+    after?: string,
+    options?: {
+      includeArchived?: boolean;
+    },
+  ): Promise<Record<string, unknown>[]> {
+    const includeArchived = options?.includeArchived ?? false;
+    const archivedClause = includeArchived ? "" : " AND is_archived = 0";
+    let query = `
       SELECT * FROM message WHERE conversation_id = ?${archivedClause}
       ORDER BY ${MESSAGE_ORDER_BY}
     `;
 
-		const params: Array<string | number> = [conversationId];
+    const params: Array<string | number> = [conversationId];
 
-		if (after) {
-			query = `
+    if (after) {
+      query = `
         WITH cursor_message AS (
           SELECT
             ${MESSAGE_ORDER_EXPRESSION} AS cursor_order_value,
@@ -254,128 +263,136 @@ export class MessageRepository extends BaseRepository {
         )
         ORDER BY ${MESSAGE_ORDER_BY}
       `;
-			params.length = 0;
-			params.push(conversationId, after, conversationId);
-		}
+      params.length = 0;
+      params.push(conversationId, after, conversationId);
+    }
 
-		if (limit) {
-			query += " LIMIT ?";
-			params.push(limit);
-		}
+    if (limit) {
+      query += " LIMIT ?";
+      params.push(limit);
+    }
 
-		const result = await this.runQuery<Record<string, unknown>>(query, params);
-		return Array.isArray(result) ? result : [];
-	}
+    const result = await this.runQuery<Record<string, unknown>>(query, params);
 
-	public async getMessages(
-		conversationId: string,
-		limit = 50,
-		after?: string,
-		options?: {
-			includeArchived?: boolean;
-		},
-	): Promise<Record<string, unknown>[]> {
-		return this.getConversationMessages(conversationId, limit, after, options);
-	}
+    return Array.isArray(result) ? result : [];
+  }
 
-	public async archiveMessages(conversationId: string, messageIds: string[]): Promise<void> {
-		if (messageIds.length === 0) {
-			return;
-		}
+  public async getMessages(
+    conversationId: string,
+    limit = 50,
+    after?: string,
+    options?: {
+      includeArchived?: boolean;
+    },
+  ): Promise<Record<string, unknown>[]> {
+    return this.getConversationMessages(conversationId, limit, after, options);
+  }
 
-		const placeholders = messageIds.map(() => "?").join(", ");
-		await this.executeRun(
-			`UPDATE message
+  public async archiveMessages(conversationId: string, messageIds: string[]): Promise<void> {
+    if (messageIds.length === 0) {
+      return;
+    }
+
+    const placeholders = messageIds.map(() => "?").join(", ");
+
+    await this.executeRun(
+      `UPDATE message
 			 SET is_archived = 1,
 			     updated_at = datetime('now')
 			 WHERE conversation_id = ?
 			   AND id IN (${placeholders})`,
-			[conversationId, ...messageIds],
-		);
-	}
+      [conversationId, ...messageIds],
+    );
+  }
 
-	public async updateMessage(
-		conversationId: string,
-		messageId: string,
-		updates: Record<string, unknown>,
-	): Promise<void> {
-		const allowedFields = [
-			"is_archived",
-			"content",
-			"status",
-			"tool_calls",
-			"citations",
-			"log_id",
-			"data",
-			"parent_message_id",
-			"tool_call_id",
-			"tool_call_arguments",
-			"app",
-			"mode",
-			"platform",
-			"model",
-			"name",
-			"timestamp",
-			"usage",
-			"parts",
-		];
+  public async updateMessage(
+    conversationId: string,
+    messageId: string,
+    updates: Record<string, unknown>,
+  ): Promise<void> {
+    const allowedFields = [
+      "is_archived",
+      "content",
+      "status",
+      "tool_calls",
+      "citations",
+      "log_id",
+      "data",
+      "parent_message_id",
+      "tool_call_id",
+      "tool_call_arguments",
+      "app",
+      "mode",
+      "platform",
+      "model",
+      "name",
+      "timestamp",
+      "usage",
+      "parts",
+    ];
 
-		const result = this.buildUpdateQuery(
-			"message",
-			updates,
-			allowedFields,
-			"id = ? AND conversation_id = ?",
-			[messageId, conversationId],
-			{
-				jsonFields: ["tool_calls", "citations", "data", "usage", "parts"],
-				transformer: (field, value) => {
-					if (field === "content" && typeof value === "object") {
-						return JSON.stringify(value);
-					}
-					return value;
-				},
-			},
-		);
-		if (!result) {
-			return;
-		}
+    const result = this.buildUpdateQuery(
+      "message",
+      updates,
+      allowedFields,
+      "id = ? AND conversation_id = ?",
+      [messageId, conversationId],
+      {
+        jsonFields: ["tool_calls", "citations", "data", "usage", "parts"],
+        transformer: (field, value) => {
+          if (field === "content" && typeof value === "object") {
+            return JSON.stringify(value);
+          }
 
-		await this.executeRun(result.query, result.values);
-	}
+          return value;
+        },
+      },
+    );
 
-	public async deleteMessage(messageId: string): Promise<void> {
-		const { query, values } = this.buildDeleteQuery("message", {
-			id: messageId,
-		});
-		if (!query) {
-			return;
-		}
-		await this.executeRun(query, values);
-	}
+    if (!result) {
+      return;
+    }
 
-	public async deleteMessages(conversationId: string, messageIds: string[]): Promise<void> {
-		const uniqueMessageIds = Array.from(new Set(messageIds.filter(Boolean)));
-		if (uniqueMessageIds.length === 0) {
-			return;
-		}
+    await this.executeRun(result.query, result.values);
+  }
 
-		const placeholders = uniqueMessageIds.map(() => "?").join(", ");
-		await this.executeRun(
-			`DELETE FROM message
+  public async deleteMessage(messageId: string): Promise<void> {
+    const { query, values } = this.buildDeleteQuery("message", {
+      id: messageId,
+    });
+
+    if (!query) {
+      return;
+    }
+
+    await this.executeRun(query, values);
+  }
+
+  public async deleteMessages(conversationId: string, messageIds: string[]): Promise<void> {
+    const uniqueMessageIds = Array.from(new Set(messageIds.filter(Boolean)));
+
+    if (uniqueMessageIds.length === 0) {
+      return;
+    }
+
+    const placeholders = uniqueMessageIds.map(() => "?").join(", ");
+
+    await this.executeRun(
+      `DELETE FROM message
 			 WHERE conversation_id = ?
 			   AND id IN (${placeholders})`,
-			[conversationId, ...uniqueMessageIds],
-		);
-	}
+      [conversationId, ...uniqueMessageIds],
+    );
+  }
 
-	public async getConversationMessageMetadata(
-		conversationId: string,
-	): Promise<ConversationMessageMetadata> {
-		const result = await this.runQuery<{
-			last_message_id: string | null;
-			message_count: number;
-		}>(
-			`SELECT
+  public async getConversationMessageMetadata(
+    conversationId: string,
+  ): Promise<ConversationMessageMetadata> {
+    const result = await this.runQuery<{
+      last_message_id: string | null;
+      message_count: number;
+    }>(
+      `SELECT
 			   COUNT(*) AS message_count,
 			   (
 			     SELECT id
@@ -388,89 +405,95 @@ export class MessageRepository extends BaseRepository {
 			 FROM message
 			 WHERE conversation_id = ?
 			   AND is_archived = 0`,
-			[conversationId, conversationId],
-			true,
-		);
+      [conversationId, conversationId],
+      true,
+    );
 
-		return {
-			last_message_id: typeof result?.last_message_id === "string" ? result.last_message_id : null,
-			message_count: Number(result?.message_count ?? 0),
-		};
-	}
+    return {
+      last_message_id: typeof result?.last_message_id === "string" ? result.last_message_id : null,
+      message_count: Number(result?.message_count ?? 0),
+    };
+  }
 
-	public async deleteAllMessages(conversationId: string): Promise<void> {
-		const { query, values } = this.buildDeleteQuery("message", {
-			conversation_id: conversationId,
-		});
-		if (!query) {
-			return;
-		}
-		await this.executeRun(query, values);
-	}
+  public async deleteAllMessages(conversationId: string): Promise<void> {
+    const { query, values } = this.buildDeleteQuery("message", {
+      conversation_id: conversationId,
+    });
 
-	public async countMessagesOwnedByOtherConversations(
-		conversationId: string,
-		messageIds: string[],
-	): Promise<number> {
-		const uniqueMessageIds = Array.from(new Set(messageIds.filter(Boolean)));
-		if (uniqueMessageIds.length === 0) {
-			return 0;
-		}
+    if (!query) {
+      return;
+    }
 
-		const placeholders = uniqueMessageIds.map(() => "?").join(", ");
-		const result = await this.runQuery<{ foreign_count: number }>(
-			`SELECT COUNT(*) AS foreign_count
+    await this.executeRun(query, values);
+  }
+
+  public async countMessagesOwnedByOtherConversations(
+    conversationId: string,
+    messageIds: string[],
+  ): Promise<number> {
+    const uniqueMessageIds = Array.from(new Set(messageIds.filter(Boolean)));
+
+    if (uniqueMessageIds.length === 0) {
+      return 0;
+    }
+
+    const placeholders = uniqueMessageIds.map(() => "?").join(", ");
+    const result = await this.runQuery<{ foreign_count: number }>(
+      `SELECT COUNT(*) AS foreign_count
 			 FROM message
 			 WHERE id IN (${placeholders})
 			   AND conversation_id != ?`,
-			[...uniqueMessageIds, conversationId],
-			true,
-		);
+      [...uniqueMessageIds, conversationId],
+      true,
+    );
 
-		return Number(result?.foreign_count ?? 0);
-	}
+    return Number(result?.foreign_count ?? 0);
+  }
 
-	public async deleteMessagesExcept(conversationId: string, messageIds: string[]): Promise<void> {
-		const uniqueMessageIds = Array.from(new Set(messageIds.filter(Boolean)));
+  public async deleteMessagesExcept(conversationId: string, messageIds: string[]): Promise<void> {
+    const uniqueMessageIds = Array.from(new Set(messageIds.filter(Boolean)));
 
-		if (uniqueMessageIds.length === 0) {
-			await this.deleteAllMessages(conversationId);
-			return;
-		}
+    if (uniqueMessageIds.length === 0) {
+      await this.deleteAllMessages(conversationId);
 
-		const placeholders = uniqueMessageIds.map(() => "?").join(", ");
-		await this.executeRun(
-			`DELETE FROM message
+      return;
+    }
+
+    const placeholders = uniqueMessageIds.map(() => "?").join(", ");
+
+    await this.executeRun(
+      `DELETE FROM message
 			 WHERE conversation_id = ?
 			   AND id NOT IN (${placeholders})`,
-			[conversationId, ...uniqueMessageIds],
-		);
-	}
+      [conversationId, ...uniqueMessageIds],
+    );
+  }
 
-	public async getChildMessages(
-		parentMessageId: string,
-		limit = 50,
-	): Promise<Record<string, unknown>[]> {
-		const result = await this.runQuery<Record<string, unknown>>(
-			`SELECT * FROM message 
+  public async getChildMessages(
+    parentMessageId: string,
+    limit = 50,
+  ): Promise<Record<string, unknown>[]> {
+    const result = await this.runQuery<Record<string, unknown>>(
+      `SELECT * FROM message 
        WHERE parent_message_id = ?
        ORDER BY created_at ASC 
        LIMIT ?`,
-			[parentMessageId, limit],
-		);
-		return Array.isArray(result) ? result : [];
-	}
+      [parentMessageId, limit],
+    );
 
-	public async searchMessages(
-		userId: number,
-		query: string,
-		limit = 25,
-		offset = 0,
-	): Promise<Record<string, unknown>[]> {
-		const searchTerm = `%${query}%`;
+    return Array.isArray(result) ? result : [];
+  }
 
-		const result = await this.runQuery<Record<string, unknown>>(
-			`SELECT m.* 
+  public async searchMessages(
+    userId: number,
+    query: string,
+    limit = 25,
+    offset = 0,
+  ): Promise<Record<string, unknown>[]> {
+    const searchTerm = `%${query}%`;
+
+    const result = await this.runQuery<Record<string, unknown>>(
+      `SELECT m.* 
        FROM message m
        JOIN conversation c ON m.conversation_id = c.id
 	   WHERE c.user_id = ?
@@ -478,50 +501,51 @@ export class MessageRepository extends BaseRepository {
        AND m.content LIKE ?
        ORDER BY m.created_at DESC
        LIMIT ? OFFSET ?`,
-			[userId, searchTerm, limit, offset],
-		);
-		return Array.isArray(result) ? result : [];
-	}
+      [userId, searchTerm, limit, offset],
+    );
 
-	public async getMessageById(messageId: string): Promise<{
-		message: Record<string, unknown>;
-		conversation_id: string;
-		user_id: number;
-	} | null> {
-		const result = (await this.runQuery<Record<string, unknown>>(
-			`SELECT m.*, c.id as conversation_id, c.user_id 
+    return Array.isArray(result) ? result : [];
+  }
+
+  public async getMessageById(messageId: string): Promise<{
+    message: Record<string, unknown>;
+    conversation_id: string;
+    user_id: number;
+  } | null> {
+    const result = await this.runQuery<Record<string, unknown>>(
+      `SELECT m.*, c.id as conversation_id, c.user_id 
        FROM message m
        JOIN conversation c ON m.conversation_id = c.id
        WHERE m.id = ?`,
-			[messageId],
-			true,
-		)) as Record<string, unknown> | null;
+      [messageId],
+      true,
+    );
 
-		if (!result) {
-			return null;
-		}
+    if (!result) {
+      return null;
+    }
 
-		return {
-			message: {
-				id: result.id,
-				role: result.role,
-				content: result.content,
-				model: result.model,
-				name: result.name,
-				tool_calls: result.tool_calls,
-				citations: result.citations,
-				status: result.status,
-				timestamp: result.timestamp,
-				platform: result.platform,
-				mode: result.mode,
-				is_archived: result.is_archived,
-				data: result.data,
-				parts: result.parts,
-				usage: result.usage,
-				log_id: result.log_id,
-			},
-			conversation_id: result.conversation_id as string,
-			user_id: result.user_id as number,
-		};
-	}
+    return {
+      message: {
+        id: result.id,
+        role: result.role,
+        content: result.content,
+        model: result.model,
+        name: result.name,
+        tool_calls: result.tool_calls,
+        citations: result.citations,
+        status: result.status,
+        timestamp: result.timestamp,
+        platform: result.platform,
+        mode: result.mode,
+        is_archived: result.is_archived,
+        data: result.data,
+        parts: result.parts,
+        usage: result.usage,
+        log_id: result.log_id,
+      },
+      conversation_id: result.conversation_id as string,
+      user_id: result.user_id as number,
+    };
+  }
 }

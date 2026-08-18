@@ -4,84 +4,92 @@ const OPENFEATURE_POLL_INTERVAL_MS = 100;
 const OPENFEATURE_READY_TIMEOUT_MS = 5000;
 
 function getOpenFeatureClient(): Window["BeaconOpenFeature"] {
-	if (typeof window === "undefined") {
-		return undefined;
-	}
+  if (typeof window === "undefined") {
+    return undefined;
+  }
 
-	return window.BeaconOpenFeature;
+  return window.BeaconOpenFeature;
 }
 
 export function useOpenFeature() {
-	const [isReady, setIsReady] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
-	useEffect(() => {
-		const checkOpenFeature = () => {
-			if (getOpenFeatureClient()) {
-				setIsReady(true);
-				return true;
-			}
-			return false;
-		};
+  useEffect(() => {
+    const checkOpenFeature = () => {
+      if (getOpenFeatureClient()) {
+        setIsReady(true);
 
-		if (!checkOpenFeature()) {
-			const interval = setInterval(() => {
-				if (checkOpenFeature()) {
-					clearInterval(interval);
-				}
-			}, OPENFEATURE_POLL_INTERVAL_MS);
+        return true;
+      }
 
-			return () => clearInterval(interval);
-		}
-	}, []);
+      return false;
+    };
 
-	const waitForOpenFeature = useCallback(async () => {
-		const existingClient = getOpenFeatureClient();
-		if (isReady || existingClient) {
-			return existingClient;
-		}
+    if (!checkOpenFeature()) {
+      const interval = setInterval(() => {
+        if (checkOpenFeature()) {
+          clearInterval(interval);
+        }
+      }, OPENFEATURE_POLL_INTERVAL_MS);
 
-		return new Promise<Window["BeaconOpenFeature"]>((resolve) => {
-			const startedAt = Date.now();
-			const check = () => {
-				const client = getOpenFeatureClient();
-				if (client || Date.now() - startedAt >= OPENFEATURE_READY_TIMEOUT_MS) {
-					resolve(client);
-					return;
-				}
+      return () => clearInterval(interval);
+    }
+  }, []);
 
-				setTimeout(check, OPENFEATURE_POLL_INTERVAL_MS);
-			};
-			check();
-		});
-	}, [isReady]);
+  const waitForOpenFeature = useCallback(async () => {
+    const existingClient = getOpenFeatureClient();
 
-	const getObjectDetails = useCallback(
-		async <TValue extends Record<string, unknown>>(
-			flagKey: string,
-			defaultValue: TValue,
-			context?: Record<string, unknown>,
-		) => {
-			const client = await waitForOpenFeature();
-			return client?.getObjectDetails(flagKey, defaultValue, context);
-		},
-		[waitForOpenFeature],
-	);
+    if (isReady || existingClient) {
+      return existingClient;
+    }
 
-	const track = useCallback(
-		async (
-			trackingEventName: string,
-			context?: Record<string, unknown>,
-			details?: Record<string, unknown>,
-		) => {
-			const client = await waitForOpenFeature();
-			return client?.track(trackingEventName, context, details);
-		},
-		[waitForOpenFeature],
-	);
+    return new Promise<Window["BeaconOpenFeature"]>((resolve) => {
+      const startedAt = Date.now();
+      const check = () => {
+        const client = getOpenFeatureClient();
 
-	return {
-		getObjectDetails,
-		track,
-		isReady,
-	};
+        if (client || Date.now() - startedAt >= OPENFEATURE_READY_TIMEOUT_MS) {
+          resolve(client);
+
+          return;
+        }
+
+        setTimeout(check, OPENFEATURE_POLL_INTERVAL_MS);
+      };
+
+      check();
+    });
+  }, [isReady]);
+
+  const getObjectDetails = useCallback(
+    async <TValue extends Record<string, unknown>>(
+      flagKey: string,
+      defaultValue: TValue,
+      context?: Record<string, unknown>,
+    ) => {
+      const client = await waitForOpenFeature();
+
+      return client?.getObjectDetails(flagKey, defaultValue, context);
+    },
+    [waitForOpenFeature],
+  );
+
+  const track = useCallback(
+    async (
+      trackingEventName: string,
+      context?: Record<string, unknown>,
+      details?: Record<string, unknown>,
+    ) => {
+      const client = await waitForOpenFeature();
+
+      return client?.track(trackingEventName, context, details);
+    },
+    [waitForOpenFeature],
+  );
+
+  return {
+    getObjectDetails,
+    track,
+    isReady,
+  };
 }

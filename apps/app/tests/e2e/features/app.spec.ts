@@ -80,6 +80,7 @@ test.describe("Application experience", () => {
         page,
       }) => {
         const plan = persona === "pro" ? "Pro" : "Free";
+
         await homePage.navigate("/chat");
         await expect(homePage.chatInput).toBeEditable();
         await expect(appPage.settingsButton).toContainText(`${plan} Release User`);

@@ -209,7 +209,10 @@ export function SourcesLibrary({ projectId, title = "Sources" }: SourcesLibraryP
         variant="destructive"
         isLoading={mutations.deleteSource.isPending}
         onConfirm={async () => {
-          if (sourceIdToDelete) await mutations.deleteSource.mutateAsync(sourceIdToDelete);
+          if (sourceIdToDelete) {
+            await mutations.deleteSource.mutateAsync(sourceIdToDelete);
+          }
+
           setSourceIdToDelete(null);
         }}
       />
@@ -224,8 +227,11 @@ export function SourcesLibrary({ projectId, title = "Sources" }: SourcesLibraryP
         onConfirm={async () => {
           if (collectionIdToDelete) {
             await mutations.deleteCollection.mutateAsync(collectionIdToDelete);
-            if (collectionId === collectionIdToDelete) setCollectionId(null);
+            if (collectionId === collectionIdToDelete) {
+              setCollectionId(null);
+            }
           }
+
           setCollectionIdToDelete(null);
         }}
       />

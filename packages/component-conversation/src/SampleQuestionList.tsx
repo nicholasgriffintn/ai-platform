@@ -63,7 +63,7 @@ export function SampleQuestionList({
   onChallengingChange,
   onSelect,
 }: SampleQuestionListProps) {
-  if (isLoading)
+  if (isLoading) {
     return (
       <div
         className="polychat-conversation-question-skeleton"
@@ -82,7 +82,11 @@ export function SampleQuestionList({
         <div className="polychat-conversation-question-skeleton-toggle" aria-hidden="true" />
       </div>
     );
-  if (questions.length === 0) return null;
+  }
+
+  if (questions.length === 0) {
+    return null;
+  }
 
   return (
     <section
@@ -161,7 +165,10 @@ export function ConversationTimeline({
   emptyState,
   renderActions,
 }: ConversationTimelineProps) {
-  if (messages.length === 0) return <>{emptyState}</>;
+  if (messages.length === 0) {
+    return <>{emptyState}</>;
+  }
+
   return (
     <ol className="polychat-conversation-timeline" aria-label="Conversation">
       {messages.map((message) => (
@@ -206,7 +213,9 @@ export function ConversationComposer({
       className="polychat-conversation-composer"
       onSubmit={(event) => {
         event.preventDefault();
-        if (canSubmit) void onSubmit(value.trim());
+        if (canSubmit) {
+          void onSubmit(value.trim());
+        }
       }}
     >
       <label>

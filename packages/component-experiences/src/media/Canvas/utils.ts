@@ -1,346 +1,358 @@
 import type { CanvasInputField, CanvasMode, CanvasModel } from "./types";
 
 interface MediaPreview {
-	url: string;
-	type: "image" | "video" | "audio" | "unknown";
+  url: string;
+  type: "image" | "video" | "audio" | "unknown";
 }
 
 const imageMixedAspectClasses = [
-	"aspect-square",
-	"aspect-[4/5]",
-	"aspect-[3/4]",
-	"aspect-[4/3]",
-	"aspect-[16/9]",
-	"aspect-[5/4]",
-	"aspect-[3/2]",
-	"aspect-[2/3]",
+  "aspect-square",
+  "aspect-[4/5]",
+  "aspect-[3/4]",
+  "aspect-[4/3]",
+  "aspect-[16/9]",
+  "aspect-[5/4]",
+  "aspect-[3/2]",
+  "aspect-[2/3]",
 ] as const;
 
 const videoMixedAspectClasses = [
-	"aspect-[16/9]",
-	"aspect-[9/16]",
-	"aspect-[4/3]",
-	"aspect-[3/4]",
+  "aspect-[16/9]",
+  "aspect-[9/16]",
+  "aspect-[4/3]",
+  "aspect-[3/4]",
 ] as const;
 
 const placeholderPaletteClasses = [
-	"from-sky-200 via-cyan-100 to-indigo-200",
-	"from-rose-200 via-pink-100 to-orange-200",
-	"from-amber-200 via-yellow-100 to-lime-200",
-	"from-violet-200 via-purple-100 to-fuchsia-200",
-	"from-emerald-200 via-teal-100 to-cyan-200",
-	"from-blue-200 via-indigo-100 to-violet-200",
+  "from-sky-200 via-cyan-100 to-indigo-200",
+  "from-rose-200 via-pink-100 to-orange-200",
+  "from-amber-200 via-yellow-100 to-lime-200",
+  "from-violet-200 via-purple-100 to-fuchsia-200",
+  "from-emerald-200 via-teal-100 to-cyan-200",
+  "from-blue-200 via-indigo-100 to-violet-200",
 ] as const;
 
 function intersectOptions(optionGroups: string[][]): string[] {
-	if (!optionGroups.length) {
-		return [];
-	}
+  if (!optionGroups.length) {
+    return [];
+  }
 
-	return optionGroups.reduce((acc, group) => acc.filter((option) => group.includes(option)));
+  return optionGroups.reduce((acc, group) => acc.filter((option) => group.includes(option)));
 }
 
 const reservedCanvasOptionFieldNames = new Set([
-	"prompt",
-	"negative_prompt",
-	"duration",
-	"seconds",
-	"generate_audio",
+  "prompt",
+  "negative_prompt",
+  "duration",
+  "seconds",
+  "generate_audio",
 ]);
 
 const canvasReferenceFieldNames = new Set([
-	"input_images",
-	"reference_images",
-	"input_references",
-	"input_reference",
-	"input_image",
-	"image",
-	"image_input",
-	"image_inputs",
-	"first_frame_image",
-	"last_frame",
-	"last_frame_image",
-	"reference_audios",
-	"reference_videos",
-	"start_image",
-	"end_image",
+  "input_images",
+  "reference_images",
+  "input_references",
+  "input_reference",
+  "input_image",
+  "image",
+  "image_input",
+  "image_inputs",
+  "first_frame_image",
+  "last_frame",
+  "last_frame_image",
+  "reference_audios",
+  "reference_videos",
+  "start_image",
+  "end_image",
 ]);
 
 interface CanvasModelOptionFieldOptions {
-	includeReservedFields?: boolean;
-	includeReferenceFields?: boolean;
+  includeReservedFields?: boolean;
+  includeReferenceFields?: boolean;
 }
 
 function getFieldTypes(field: CanvasInputField): string[] {
-	return Array.isArray(field.type) ? field.type : [field.type];
+  return Array.isArray(field.type) ? field.type : [field.type];
 }
 
 function isCanvasModelOptionField(
-	field: CanvasInputField,
-	options: CanvasModelOptionFieldOptions = {},
+  field: CanvasInputField,
+  options: CanvasModelOptionFieldOptions = {},
 ): boolean {
-	const name = field.name.toLowerCase();
-	if (name === "prompt") {
-		return false;
-	}
+  const name = field.name.toLowerCase();
 
-	if (!options.includeReservedFields && reservedCanvasOptionFieldNames.has(name)) {
-		return false;
-	}
+  if (name === "prompt") {
+    return false;
+  }
 
-	if (!options.includeReferenceFields && canvasReferenceFieldNames.has(name)) {
-		return false;
-	}
+  if (!options.includeReservedFields && reservedCanvasOptionFieldNames.has(name)) {
+    return false;
+  }
 
-	return true;
+  if (!options.includeReferenceFields && canvasReferenceFieldNames.has(name)) {
+    return false;
+  }
+
+  return true;
 }
 
 export function parseReferenceImages(value: string): string[] {
-	return value
-		.split(/\n|,/)
-		.map((entry) => entry.trim())
-		.filter(Boolean);
+  return value
+    .split(/\n|,/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 }
 
 export function collectFieldEnumOptions(models: CanvasModel[], fieldName: string): string[] {
-	const optionGroups = models
-		.map((model) => model.inputSchema?.fields.find((field) => field.name === fieldName)?.enum)
-		.filter(
-			(enumValues): enumValues is Array<string | number> =>
-				Array.isArray(enumValues) && enumValues.length > 0,
-		)
-		.map((enumValues) =>
-			enumValues.filter((value): value is string => typeof value === "string").filter(Boolean),
-		)
-		.filter((options) => options.length > 0);
+  const optionGroups = models
+    .map((model) => model.inputSchema?.fields.find((field) => field.name === fieldName)?.enum)
+    .filter(
+      (enumValues): enumValues is Array<string | number> =>
+        Array.isArray(enumValues) && enumValues.length > 0,
+    )
+    .map((enumValues) =>
+      enumValues.filter((value): value is string => typeof value === "string").filter(Boolean),
+    )
+    .filter((options) => options.length > 0);
 
-	if (!optionGroups.length) {
-		return [];
-	}
+  if (!optionGroups.length) {
+    return [];
+  }
 
-	const options = optionGroups.length === 1 ? optionGroups[0] : intersectOptions(optionGroups);
+  const options = optionGroups.length === 1 ? optionGroups[0] : intersectOptions(optionGroups);
 
-	return Array.from(new Set(options));
+  return Array.from(new Set(options));
 }
 
 export function collectCanvasModelOptionFields(
-	models: CanvasModel[],
-	options: CanvasModelOptionFieldOptions = {},
+  models: CanvasModel[],
+  options: CanvasModelOptionFieldOptions = {},
 ): CanvasInputField[] {
-	const fieldsByName = new Map<string, CanvasInputField>();
+  const fieldsByName = new Map<string, CanvasInputField>();
 
-	for (const model of models) {
-		for (const field of model.inputSchema?.fields ?? []) {
-			if (!isCanvasModelOptionField(field, options) || fieldsByName.has(field.name)) {
-				continue;
-			}
+  for (const model of models) {
+    for (const field of model.inputSchema?.fields ?? []) {
+      if (!isCanvasModelOptionField(field, options) || fieldsByName.has(field.name)) {
+        continue;
+      }
 
-			const enumOptions = collectFieldEnumOptions(models, field.name);
-			fieldsByName.set(field.name, {
-				...field,
-				enum: enumOptions.length > 0 ? enumOptions : field.enum,
-			});
-		}
-	}
+      const enumOptions = collectFieldEnumOptions(models, field.name);
 
-	return Array.from(fieldsByName.values());
+      fieldsByName.set(field.name, {
+        ...field,
+        enum: enumOptions.length > 0 ? enumOptions : field.enum,
+      });
+    }
+  }
+
+  return Array.from(fieldsByName.values());
 }
 
 export function formatCanvasFieldLabel(fieldName: string): string {
-	return fieldName
-		.split("_")
-		.filter(Boolean)
-		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-		.join(" ");
+  return fieldName
+    .split("_")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 export function buildCanvasModelOptions(
-	fields: CanvasInputField[],
-	values: Record<string, string | boolean>,
+  fields: CanvasInputField[],
+  values: Record<string, string | boolean>,
 ): Record<string, string | number | boolean | string[]> | undefined {
-	const result: Record<string, string | number | boolean | string[]> = {};
+  const result: Record<string, string | number | boolean | string[]> = {};
 
-	for (const field of fields) {
-		const value = values[field.name];
-		const fieldTypes = getFieldTypes(field);
+  for (const field of fields) {
+    const value = values[field.name];
+    const fieldTypes = getFieldTypes(field);
 
-		if (fieldTypes.includes("boolean")) {
-			if (value === true) {
-				result[field.name] = true;
-			} else if (value === false && field.default === true) {
-				result[field.name] = false;
-			}
-			continue;
-		}
+    if (fieldTypes.includes("boolean")) {
+      if (value === true) {
+        result[field.name] = true;
+      } else if (value === false && field.default === true) {
+        result[field.name] = false;
+      }
 
-		if (typeof value !== "string" || value.trim() === "") {
-			continue;
-		}
+      continue;
+    }
 
-		if (fieldTypes.includes("array")) {
-			const entries = parseReferenceImages(value);
-			if (entries.length > 0) {
-				result[field.name] = entries;
-			}
-			continue;
-		}
+    if (typeof value !== "string" || value.trim() === "") {
+      continue;
+    }
 
-		if (fieldTypes.includes("integer") || fieldTypes.includes("number")) {
-			const parsed = Number(value);
-			if (
-				Number.isFinite(parsed) &&
-				(!fieldTypes.includes("integer") || Number.isInteger(parsed))
-			) {
-				result[field.name] = parsed;
-			}
-			continue;
-		}
+    if (fieldTypes.includes("array")) {
+      const entries = parseReferenceImages(value);
 
-		result[field.name] = value.trim();
-	}
+      if (entries.length > 0) {
+        result[field.name] = entries;
+      }
 
-	return Object.keys(result).length > 0 ? result : undefined;
+      continue;
+    }
+
+    if (fieldTypes.includes("integer") || fieldTypes.includes("number")) {
+      const parsed = Number(value);
+
+      if (
+        Number.isFinite(parsed) &&
+        (!fieldTypes.includes("integer") || Number.isInteger(parsed))
+      ) {
+        result[field.name] = parsed;
+      }
+
+      continue;
+    }
+
+    result[field.name] = value.trim();
+  }
+
+  return Object.keys(result).length > 0 ? result : undefined;
 }
 
 export function buildCanvasModelOptionControlValues(
-	fields: CanvasInputField[],
-	values: Record<string, string | boolean>,
+  fields: CanvasInputField[],
+  values: Record<string, string | boolean>,
 ): Record<string, string | boolean> {
-	const result: Record<string, string | boolean> = { ...values };
+  const result: Record<string, string | boolean> = { ...values };
 
-	for (const field of fields) {
-		const fieldTypes = getFieldTypes(field);
-		if (
-			fieldTypes.includes("boolean") &&
-			field.default === true &&
-			!Object.prototype.hasOwnProperty.call(result, field.name)
-		) {
-			result[field.name] = true;
-		}
-	}
+  for (const field of fields) {
+    const fieldTypes = getFieldTypes(field);
 
-	return result;
+    if (
+      fieldTypes.includes("boolean") &&
+      field.default === true &&
+      !Object.prototype.hasOwnProperty.call(result, field.name)
+    ) {
+      result[field.name] = true;
+    }
+  }
+
+  return result;
 }
 
 function inferMediaType(url: string): MediaPreview["type"] {
-	if (/\.(jpg|jpeg|png|gif|webp)$/i.test(url)) {
-		return "image";
-	}
+  if (/\.(jpg|jpeg|png|gif|webp)$/i.test(url)) {
+    return "image";
+  }
 
-	if (/\.(mp4|webm|mov)$/i.test(url)) {
-		return "video";
-	}
+  if (/\.(mp4|webm|mov)$/i.test(url)) {
+    return "video";
+  }
 
-	if (/\.(mp3|wav|ogg)$/i.test(url)) {
-		return "audio";
-	}
+  if (/\.(mp3|wav|ogg)$/i.test(url)) {
+    return "audio";
+  }
 
-	return "unknown";
+  return "unknown";
 }
 
 export function getMediaPreview(output: unknown): MediaPreview | null {
-	if (!output) {
-		return null;
-	}
+  if (!output) {
+    return null;
+  }
 
-	if (typeof output === "string") {
-		return { url: output, type: inferMediaType(output) };
-	}
+  if (typeof output === "string") {
+    return { url: output, type: inferMediaType(output) };
+  }
 
-	if (Array.isArray(output)) {
-		for (const item of output) {
-			if (typeof item === "string") {
-				return { url: item, type: inferMediaType(item) };
-			}
+  if (Array.isArray(output)) {
+    for (const item of output) {
+      if (typeof item === "string") {
+        return { url: item, type: inferMediaType(item) };
+      }
 
-			if (!item || typeof item !== "object") {
-				continue;
-			}
+      if (!item || typeof item !== "object") {
+        continue;
+      }
 
-			if ("type" in item && item.type === "image_url" && item.image_url?.url) {
-				return { url: item.image_url.url, type: "image" };
-			}
+      if ("type" in item && item.type === "image_url" && item.image_url?.url) {
+        return { url: item.image_url.url, type: "image" };
+      }
 
-			if ("type" in item && item.type === "video_url" && item.video_url?.url) {
-				return { url: item.video_url.url, type: "video" };
-			}
+      if ("type" in item && item.type === "video_url" && item.video_url?.url) {
+        return { url: item.video_url.url, type: "video" };
+      }
 
-			if ("type" in item && item.type === "audio_url" && item.audio_url?.url) {
-				return { url: item.audio_url.url, type: "audio" };
-			}
+      if ("type" in item && item.type === "audio_url" && item.audio_url?.url) {
+        return { url: item.audio_url.url, type: "audio" };
+      }
 
-			const nestedUrl =
-				(item as Record<string, unknown>).url || (item as Record<string, unknown>).uri;
-			if (typeof nestedUrl === "string") {
-				return { url: nestedUrl, type: inferMediaType(nestedUrl) };
-			}
-		}
-	}
+      const nestedUrl =
+        (item as Record<string, unknown>).url || (item as Record<string, unknown>).uri;
 
-	if (typeof output === "object") {
-		const value = output as Record<string, unknown>;
-		const directUrl = value.url || value.uri;
-		if (typeof directUrl === "string") {
-			return { url: directUrl, type: inferMediaType(directUrl) };
-		}
-	}
+      if (typeof nestedUrl === "string") {
+        return { url: nestedUrl, type: inferMediaType(nestedUrl) };
+      }
+    }
+  }
 
-	return null;
+  if (typeof output === "object") {
+    const value = output as Record<string, unknown>;
+    const directUrl = value.url || value.uri;
+
+    if (typeof directUrl === "string") {
+      return { url: directUrl, type: inferMediaType(directUrl) };
+    }
+  }
+
+  return null;
 }
 
 function mapAspectRatioToClass(aspectRatio?: string): string | null {
-	if (!aspectRatio) {
-		return null;
-	}
+  if (!aspectRatio) {
+    return null;
+  }
 
-	const ratio = aspectRatio.trim().toLowerCase();
+  const ratio = aspectRatio.trim().toLowerCase();
 
-	switch (ratio) {
-		case "1:1":
-			return "aspect-square";
-		case "16:9":
-		case "landscape":
-			return "aspect-[16/9]";
-		case "9:16":
-		case "portrait":
-			return "aspect-[9/16]";
-		case "4:3":
-			return "aspect-[4/3]";
-		case "3:4":
-			return "aspect-[3/4]";
-		case "3:2":
-			return "aspect-[3/2]";
-		case "2:3":
-			return "aspect-[2/3]";
-		case "4:5":
-			return "aspect-[4/5]";
-		case "5:4":
-			return "aspect-[5/4]";
-		case "21:9":
-			return "aspect-[21/9]";
-		default:
-			return null;
-	}
+  switch (ratio) {
+    case "1:1":
+      return "aspect-square";
+    case "16:9":
+    case "landscape":
+      return "aspect-[16/9]";
+    case "9:16":
+    case "portrait":
+      return "aspect-[9/16]";
+    case "4:3":
+      return "aspect-[4/3]";
+    case "3:4":
+      return "aspect-[3/4]";
+    case "3:2":
+      return "aspect-[3/2]";
+    case "2:3":
+      return "aspect-[2/3]";
+    case "4:5":
+      return "aspect-[4/5]";
+    case "5:4":
+      return "aspect-[5/4]";
+    case "21:9":
+      return "aspect-[21/9]";
+    default:
+      return null;
+  }
 }
 
 export function getCardAspectClass({
-	mode,
-	aspectRatio,
-	index,
+  mode,
+  aspectRatio,
+  index,
 }: {
-	mode: CanvasMode;
-	aspectRatio?: string;
-	index: number;
+  mode: CanvasMode;
+  aspectRatio?: string;
+  index: number;
 }): string {
-	const selected = mapAspectRatioToClass(aspectRatio);
-	if (selected) {
-		return selected;
-	}
+  const selected = mapAspectRatioToClass(aspectRatio);
 
-	const mixed = mode === "video" ? videoMixedAspectClasses : imageMixedAspectClasses;
-	return mixed[index % mixed.length];
+  if (selected) {
+    return selected;
+  }
+
+  const mixed = mode === "video" ? videoMixedAspectClasses : imageMixedAspectClasses;
+
+  return mixed[index % mixed.length];
 }
 
 export function getPlaceholderPaletteClass(index: number): string {
-	return placeholderPaletteClasses[index % placeholderPaletteClasses.length];
+  return placeholderPaletteClasses[index % placeholderPaletteClasses.length];
 }

@@ -15,7 +15,9 @@ export interface ShareLinkListProps {
 }
 
 export function ShareLinkList({ shares, onRevoke, revokingShareId }: ShareLinkListProps) {
-  if (!shares.length) return null;
+  if (!shares.length) {
+    return null;
+  }
 
   return (
     <section className="border-t border-zinc-200 pt-5 dark:border-zinc-800">

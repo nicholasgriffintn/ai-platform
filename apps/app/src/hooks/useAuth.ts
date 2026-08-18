@@ -7,105 +7,113 @@ import { useUsageStore } from "~/state/stores/usageStore";
 import type { UserSettings } from "~/types";
 
 export const AUTH_QUERY_KEYS = {
-	authStatus: ["auth", "status"],
+  authStatus: ["auth", "status"],
 };
 
 export function useAuthStatus() {
-	const {
-		isAuthenticated,
-		isAuthenticationLoading,
-		user,
-		userSettings,
-		setIsAuthenticationLoading,
-		setAuthenticatedUserConfiguration,
-		setUserSettings,
-		clearAuthenticatedUserConfiguration,
-	} = useChatStore();
-	const queryClient = useQueryClient();
+  const {
+    isAuthenticated,
+    isAuthenticationLoading,
+    user,
+    userSettings,
+    setIsAuthenticationLoading,
+    setAuthenticatedUserConfiguration,
+    setUserSettings,
+    clearAuthenticatedUserConfiguration,
+  } = useChatStore();
+  const queryClient = useQueryClient();
 
-	const authStatusQuery = useQuery({
-		queryKey: AUTH_QUERY_KEYS.authStatus,
-		queryFn: async () => {
-			const isAuth = await authService.checkAuthStatus();
+  const authStatusQuery = useQuery({
+    queryKey: AUTH_QUERY_KEYS.authStatus,
+    queryFn: async () => {
+      const isAuth = await authService.checkAuthStatus();
 
-			const user = authService.getUser();
-			const anonymousUser = user ? null : (authService.getAnonymousUser() ?? null);
+      const user = authService.getUser();
+      const anonymousUser = user ? null : (authService.getAnonymousUser() ?? null);
 
-			if (isAuth) {
-				const token = await authService.getToken();
-				const userSettings = authService.getUserSettings();
-				setAuthenticatedUserConfiguration({
-					hasApiKey: !!token,
-					user,
-					userSettings,
-				});
-			} else {
-				clearAuthenticatedUserConfiguration();
-			}
-			useUsageStore
-				.getState()
-				.setUsageLimits(
-					getUsageLimitsFromUser(user) ?? getUsageLimitsFromAnonymousUser(anonymousUser),
-				);
-			setIsAuthenticationLoading(false);
+      if (isAuth) {
+        const token = await authService.getToken();
+        const userSettings = authService.getUserSettings();
 
-			return isAuth;
-		},
-		staleTime: 1000 * 60 * 5, // 5 minutes
-	});
+        setAuthenticatedUserConfiguration({
+          hasApiKey: !!token,
+          user,
+          userSettings,
+        });
+      } else {
+        clearAuthenticatedUserConfiguration();
+      }
 
-	const loginWithGithub = () => {
-		setIsAuthenticationLoading(true);
-		authService.initiateGithubLogin();
-	};
+      useUsageStore
+        .getState()
+        .setUsageLimits(
+          getUsageLimitsFromUser(user) ?? getUsageLimitsFromAnonymousUser(anonymousUser),
+        );
+      setIsAuthenticationLoading(false);
 
-	const logoutMutation = useMutation({
-		mutationFn: async () => {
-			setIsAuthenticationLoading(true);
-			const success = await authService.logout();
-			if (success) {
-				clearAuthenticatedUserConfiguration();
-				setIsAuthenticationLoading(false);
-				// Clear usage limits when user logs out
-				useUsageStore.getState().setUsageLimits(null);
-				return true;
-			}
-			return false;
-		},
-		onSuccess: (didLogout) => {
-			if (didLogout) {
-				queryClient.clear();
-				return;
-			}
-			queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.authStatus });
-		},
-	});
+      return isAuth;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
-	const updateUserSettingsMutation = useMutation({
-		mutationFn: async (settings: Partial<UserSettings>) => {
-			const didUpdate = await authService.updateUserSettings(settings);
-			if (!didUpdate) {
-				throw new Error("Failed to update user settings");
-			}
+  const loginWithGithub = () => {
+    setIsAuthenticationLoading(true);
+    authService.initiateGithubLogin();
+  };
 
-			return true;
-		},
-		onSuccess: async () => {
-			setUserSettings(authService.getUserSettings());
-			await queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.authStatus });
-		},
-	});
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      setIsAuthenticationLoading(true);
+      const success = await authService.logout();
 
-	return {
-		isAuthenticated,
-		isLoading: isAuthenticationLoading || authStatusQuery.isLoading,
-		refreshAuthStatus: authStatusQuery.refetch,
-		user,
-		userSettings,
-		loginWithGithub,
-		logout: logoutMutation.mutate,
-		isLoggingOut: logoutMutation.isPending,
-		updateUserSettings: updateUserSettingsMutation.mutateAsync,
-		isUpdatingUserSettings: updateUserSettingsMutation.isPending,
-	};
+      if (success) {
+        clearAuthenticatedUserConfiguration();
+        setIsAuthenticationLoading(false);
+        // Clear usage limits when user logs out
+        useUsageStore.getState().setUsageLimits(null);
+
+        return true;
+      }
+
+      return false;
+    },
+    onSuccess: (didLogout) => {
+      if (didLogout) {
+        queryClient.clear();
+
+        return;
+      }
+
+      queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.authStatus });
+    },
+  });
+
+  const updateUserSettingsMutation = useMutation({
+    mutationFn: async (settings: Partial<UserSettings>) => {
+      const didUpdate = await authService.updateUserSettings(settings);
+
+      if (!didUpdate) {
+        throw new Error("Failed to update user settings");
+      }
+
+      return true;
+    },
+    onSuccess: async () => {
+      setUserSettings(authService.getUserSettings());
+      await queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.authStatus });
+    },
+  });
+
+  return {
+    isAuthenticated,
+    isLoading: isAuthenticationLoading || authStatusQuery.isLoading,
+    refreshAuthStatus: authStatusQuery.refetch,
+    user,
+    userSettings,
+    loginWithGithub,
+    logout: logoutMutation.mutate,
+    isLoggingOut: logoutMutation.isPending,
+    updateUserSettings: updateUserSettingsMutation.mutateAsync,
+    isUpdatingUserSettings: updateUserSettingsMutation.isPending,
+  };
 }

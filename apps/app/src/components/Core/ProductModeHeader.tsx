@@ -33,6 +33,7 @@ export function ProductModeHeader({
 
   const toggleLocalOnlyMode = () => {
     const nextMode = !localOnlyMode;
+
     setLocalOnlyMode(nextMode);
     trackEvent({
       name: "toggle_local_only_mode",

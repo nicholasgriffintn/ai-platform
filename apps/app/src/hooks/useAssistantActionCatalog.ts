@@ -31,11 +31,18 @@ export function useAssistantActionCatalog({
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
   const { query: personalSkills } = usePersonalSkills(isAuthenticated && !projectId);
   const skills = useMemo(() => {
-    if (projectId) return capabilityCatalog.data?.skills ?? [];
-    if (isAuthenticationLoading) return [];
+    if (projectId) {
+      return capabilityCatalog.data?.skills ?? [];
+    }
+
+    if (isAuthenticationLoading) {
+      return [];
+    }
+
     if (isAuthenticated) {
       return personalSkills.data?.skills.filter((skill) => skill.state === "ready") ?? [];
     }
+
     return capabilityCatalog.data?.skills ?? [];
   }, [
     capabilityCatalog.data?.skills,

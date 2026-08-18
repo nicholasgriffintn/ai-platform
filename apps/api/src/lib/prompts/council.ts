@@ -1,47 +1,49 @@
 import {
-	councilChatOptionsSchema,
-	councilMembers,
-	defaultCouncilMemberIds,
-	type CouncilMemberDefinition,
+  councilChatOptionsSchema,
+  councilMembers,
+  defaultCouncilMemberIds,
+  type CouncilMemberDefinition,
 } from "@ngriffin_uk/polychat-schemas";
 
 const allCouncilMembers = councilMembers as readonly CouncilMemberDefinition[];
 const councilMemberById = new Map(allCouncilMembers.map((member) => [member.id, member]));
 
 function resolveCouncilMembers(options: unknown): CouncilMemberDefinition[] {
-	const parsed = councilChatOptionsSchema.safeParse(options);
-	if (!parsed.success) {
-		return [...allCouncilMembers];
-	}
+  const parsed = councilChatOptionsSchema.safeParse(options);
 
-	const memberIds = parsed.data.memberIds?.length ? parsed.data.memberIds : defaultCouncilMemberIds;
-	const members = memberIds
-		.map((id) => councilMemberById.get(id))
-		.filter((member): member is CouncilMemberDefinition => Boolean(member));
+  if (!parsed.success) {
+    return [...allCouncilMembers];
+  }
 
-	return members.length ? members : [...allCouncilMembers];
+  const memberIds = parsed.data.memberIds?.length ? parsed.data.memberIds : defaultCouncilMemberIds;
+  const members = memberIds
+    .map((id) => councilMemberById.get(id))
+    .filter((member): member is CouncilMemberDefinition => Boolean(member));
+
+  return members.length ? members : [...allCouncilMembers];
 }
 
 export function returnCouncilPrompt(value: unknown): string {
-	const parsed = councilChatOptionsSchema.safeParse(value);
-	if (!parsed.success || !parsed.data.enabled) {
-		return "";
-	}
+  const parsed = councilChatOptionsSchema.safeParse(value);
 
-	const members = resolveCouncilMembers(parsed.data);
-	const requireConsensus = parsed.data.requireConsensus ?? true;
-	const activeMember = parsed.data.activeMemberId
-		? councilMemberById.get(parsed.data.activeMemberId)
-		: null;
-	const memberList = members
-		.map(
-			(member) =>
-				`- ${member.name} (${member.role}): traits=${member.traits.join(", ")}. ${member.systemPrompt}`,
-		)
-		.join("\n");
+  if (!parsed.success || !parsed.data.enabled) {
+    return "";
+  }
 
-	if (parsed.data.responseMode === "debate" && parsed.data.phase === "conclusion" && activeMember) {
-		return `You are concluding a multi-agent AI council debate.
+  const members = resolveCouncilMembers(parsed.data);
+  const requireConsensus = parsed.data.requireConsensus ?? true;
+  const activeMember = parsed.data.activeMemberId
+    ? councilMemberById.get(parsed.data.activeMemberId)
+    : null;
+  const memberList = members
+    .map(
+      (member) =>
+        `- ${member.name} (${member.role}): traits=${member.traits.join(", ")}. ${member.systemPrompt}`,
+    )
+    .join("\n");
+
+  if (parsed.data.responseMode === "debate" && parsed.data.phase === "conclusion" && activeMember) {
+    return `You are concluding a multi-agent AI council debate.
 
 <active_council_member>
 Name: ${activeMember.name}
@@ -69,10 +71,10 @@ Return:
 3. Dissent or caveats: unresolved points only if they matter.
 4. Next action: concrete step for the user.
 </output_contract>`;
-	}
+  }
 
-	if (parsed.data.responseMode === "debate" && activeMember) {
-		return `You are one member of an ongoing multi-agent AI council debate.
+  if (parsed.data.responseMode === "debate" && activeMember) {
+    return `You are one member of an ongoing multi-agent AI council debate.
 
 <active_council_member>
 Name: ${activeMember.name}
@@ -107,9 +109,9 @@ Use only selected member ids from this list: ${members.map((member) => member.id
 Use {"shouldContinue":false,"nextMemberIds":[],"reason":"consensus reached"} when no member has new input.
 Choose only members with a concrete reason to speak next.
 </output_contract>`;
-	}
+  }
 
-	return `You are running a multi-agent AI council inside this chat.
+  return `You are running a multi-agent AI council inside this chat.
 
 <council_members>
 ${memberList}

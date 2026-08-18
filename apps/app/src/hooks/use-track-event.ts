@@ -1,126 +1,129 @@
 import {
-	ANALYTICS_EVENT_CATEGORIES,
-	type AnalyticsEventProperties,
+  ANALYTICS_EVENT_CATEGORIES,
+  type AnalyticsEventProperties,
 } from "@ngriffin_uk/polychat-schemas/analytics";
 import { useCallback } from "react";
+
 import { captureClientException, trackClientEvent } from "~/lib/analytics/client";
 import { useChatStore } from "~/state/stores/chatStore";
+
 import { usePostHogClient } from "./use-posthog-client";
 
 export const EventCategory = ANALYTICS_EVENT_CATEGORIES;
 
 export type TrackEventProps = {
-	name: string;
-	category: string;
-	label?: string;
-	value?: number | string;
-	non_interaction?: boolean;
-	properties?: AnalyticsEventProperties;
+  name: string;
+  category: string;
+  label?: string;
+  value?: number | string;
+  non_interaction?: boolean;
+  properties?: AnalyticsEventProperties;
 };
 
 export function useTrackEvent() {
-	const { isAuthenticated, user } = useChatStore();
-	const posthog = usePostHogClient();
+  const { isAuthenticated, user } = useChatStore();
+  const posthog = usePostHogClient();
 
-	const trackEvent = useCallback(
-		(event: TrackEventProps) => {
-			const enhancedProperties: AnalyticsEventProperties = {
-				...event.properties,
-				authenticated: isAuthenticated,
-			};
-			if (isAuthenticated && user && user.id) {
-				enhancedProperties.user_id = String(user.id);
-			}
+  const trackEvent = useCallback(
+    (event: TrackEventProps) => {
+      const enhancedProperties: AnalyticsEventProperties = {
+        ...event.properties,
+        authenticated: isAuthenticated,
+      };
 
-			trackClientEvent(
-				{
-					...event,
-					properties: enhancedProperties,
-				},
-				{
-					posthog,
-					beacon: typeof window !== "undefined" ? window.Beacon : undefined,
-				},
-			);
-		},
-		[isAuthenticated, user, posthog],
-	);
+      if (isAuthenticated && user && user.id) {
+        enhancedProperties.user_id = String(user.id);
+      }
 
-	const trackException = useCallback(
-		(error: Error | string, properties?: AnalyticsEventProperties) => {
-			captureClientException(
-				error,
-				{
-					authenticated: isAuthenticated,
-					...(isAuthenticated && user?.id ? { user_id: String(user.id) } : {}),
-					...properties,
-				},
-				{
-					posthog,
-					beacon: typeof window !== "undefined" ? window.Beacon : undefined,
-				},
-			);
-		},
-		[posthog, isAuthenticated, user],
-	);
+      trackClientEvent(
+        {
+          ...event,
+          properties: enhancedProperties,
+        },
+        {
+          posthog,
+          beacon: typeof window !== "undefined" ? window.Beacon : undefined,
+        },
+      );
+    },
+    [isAuthenticated, user, posthog],
+  );
 
-	const trackAuth = useCallback(
-		(name: string, properties?: AnalyticsEventProperties) => {
-			trackEvent({
-				name,
-				category: EventCategory.AUTH,
-				properties,
-			});
-		},
-		[trackEvent],
-	);
+  const trackException = useCallback(
+    (error: Error | string, properties?: AnalyticsEventProperties) => {
+      captureClientException(
+        error,
+        {
+          authenticated: isAuthenticated,
+          ...(isAuthenticated && user?.id ? { user_id: String(user.id) } : {}),
+          ...properties,
+        },
+        {
+          posthog,
+          beacon: typeof window !== "undefined" ? window.Beacon : undefined,
+        },
+      );
+    },
+    [posthog, isAuthenticated, user],
+  );
 
-	const trackError = useCallback(
-		(name: string, error: unknown, properties?: AnalyticsEventProperties) => {
-			trackEvent({
-				name,
-				category: EventCategory.ERROR,
-				properties: {
-					...properties,
-					error_message: error instanceof Error ? error.message : String(error),
-				},
-			});
-		},
-		[trackEvent],
-	);
+  const trackAuth = useCallback(
+    (name: string, properties?: AnalyticsEventProperties) => {
+      trackEvent({
+        name,
+        category: EventCategory.AUTH,
+        properties,
+      });
+    },
+    [trackEvent],
+  );
 
-	const trackFeatureUsage = useCallback(
-		(name: string, properties?: AnalyticsEventProperties) => {
-			trackEvent({
-				name,
-				category: EventCategory.FEATURE_USAGE,
-				properties,
-			});
-		},
-		[trackEvent],
-	);
+  const trackError = useCallback(
+    (name: string, error: unknown, properties?: AnalyticsEventProperties) => {
+      trackEvent({
+        name,
+        category: EventCategory.ERROR,
+        properties: {
+          ...properties,
+          error_message: error instanceof Error ? error.message : String(error),
+        },
+      });
+    },
+    [trackEvent],
+  );
 
-	const trackNavigation = useCallback(
-		(path: string, properties?: AnalyticsEventProperties) => {
-			trackEvent({
-				name: "page_view",
-				category: EventCategory.NAVIGATION,
-				properties: {
-					...properties,
-					path,
-				},
-			});
-		},
-		[trackEvent],
-	);
+  const trackFeatureUsage = useCallback(
+    (name: string, properties?: AnalyticsEventProperties) => {
+      trackEvent({
+        name,
+        category: EventCategory.FEATURE_USAGE,
+        properties,
+      });
+    },
+    [trackEvent],
+  );
 
-	return {
-		trackEvent,
-		trackException,
-		trackAuth,
-		trackError,
-		trackFeatureUsage,
-		trackNavigation,
-		EventCategory,
-	};
+  const trackNavigation = useCallback(
+    (path: string, properties?: AnalyticsEventProperties) => {
+      trackEvent({
+        name: "page_view",
+        category: EventCategory.NAVIGATION,
+        properties: {
+          ...properties,
+          path,
+        },
+      });
+    },
+    [trackEvent],
+  );
+
+  return {
+    trackEvent,
+    trackException,
+    trackAuth,
+    trackError,
+    trackFeatureUsage,
+    trackNavigation,
+    EventCategory,
+  };
 }

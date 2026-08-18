@@ -16,6 +16,7 @@ async function parseResponse<T>(response: Response, errorMessage: string): Promi
   if (!response.ok) {
     throw new Error(`${errorMessage}: ${response.status} ${response.statusText}`);
   }
+
   return returnFetchedData<T>(response);
 }
 
@@ -28,6 +29,7 @@ export const strudelService = {
       response,
       "Failed to fetch Strudel patterns",
     );
+
     return payload.patterns;
   },
 
@@ -39,6 +41,7 @@ export const strudelService = {
       response,
       `Failed to fetch Strudel pattern ${id}`,
     );
+
     return payload.pattern;
   },
 
@@ -50,6 +53,7 @@ export const strudelService = {
       method: "POST",
       body: request,
     });
+
     return parseResponse<GenerateStrudelResponse>(response, "Failed to generate Strudel pattern");
   },
 
@@ -62,6 +66,7 @@ export const strudelService = {
       response,
       "Failed to save Strudel pattern",
     );
+
     return payload.pattern;
   },
 
@@ -78,6 +83,7 @@ export const strudelService = {
       response,
       `Failed to update Strudel pattern ${id}`,
     );
+
     return payload.pattern;
   },
 

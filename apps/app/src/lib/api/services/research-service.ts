@@ -12,6 +12,7 @@ export class ResearchService {
     }
 
     let headers: Record<string, string> = {};
+
     try {
       headers = await this.getHeaders();
     } catch (error) {

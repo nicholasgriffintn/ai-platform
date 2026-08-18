@@ -4,7 +4,9 @@ import { useCallback } from "react";
 
 export function PodcastView({ podcast }: { podcast: Podcast }) {
   const handleDownloadTranscript = useCallback(() => {
-    if (!podcast?.transcript) return;
+    if (!podcast?.transcript) {
+      return;
+    }
 
     const transcriptText =
       typeof podcast.transcript === "string"
@@ -14,6 +16,7 @@ export function PodcastView({ podcast }: { podcast: Podcast }) {
     const blob = new Blob([transcriptText], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
+
     a.href = url;
     a.download = `${podcast.title.replace(/\s+/g, "-")}-transcript.txt`;
     document.body.appendChild(a);

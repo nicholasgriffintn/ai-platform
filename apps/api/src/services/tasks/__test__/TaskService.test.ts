@@ -3,65 +3,66 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TaskService } from "../TaskService";
 
 const taskRepository = {
-	createTask: vi.fn(),
-	createTaskIfAbsent: vi.fn(),
-	updateTask: vi.fn(),
+  createTask: vi.fn(),
+  createTaskIfAbsent: vi.fn(),
+  updateTask: vi.fn(),
 };
 
 describe("TaskService", () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-		taskRepository.createTask.mockResolvedValue({
-			id: "task-random",
-			max_attempts: 3,
-		});
-		taskRepository.createTaskIfAbsent.mockResolvedValue({
-			created: true,
-			task: {
-				id: "task-stable",
-				max_attempts: 3,
-			},
-		});
-		taskRepository.updateTask.mockResolvedValue(undefined);
-	});
+  beforeEach(() => {
+    vi.clearAllMocks();
+    taskRepository.createTask.mockResolvedValue({
+      id: "task-random",
+      max_attempts: 3,
+    });
+    taskRepository.createTaskIfAbsent.mockResolvedValue({
+      created: true,
+      task: {
+        id: "task-stable",
+        max_attempts: 3,
+      },
+    });
+    taskRepository.updateTask.mockResolvedValue(undefined);
+  });
 
-	it("does not send duplicate queue messages for an existing idempotent task", async () => {
-		const send = vi.fn();
-		taskRepository.createTaskIfAbsent.mockResolvedValue({
-			created: false,
-			task: {
-				id: "recipe_schedule_existing",
-				max_attempts: 3,
-			},
-		});
-		const service = new TaskService({ TASK_QUEUE: { send } } as any, taskRepository as any);
+  it("does not send duplicate queue messages for an existing idempotent task", async () => {
+    const send = vi.fn();
 
-		const taskId = await service.enqueueTask({
-			id: "recipe_schedule_existing",
-			task_type: "recipe_execution",
-			user_id: 42,
-			task_data: { recipeId: "bad-weather-alerts" },
-		});
+    taskRepository.createTaskIfAbsent.mockResolvedValue({
+      created: false,
+      task: {
+        id: "recipe_schedule_existing",
+        max_attempts: 3,
+      },
+    });
+    const service = new TaskService({ TASK_QUEUE: { send } } as any, taskRepository as any);
 
-		expect(taskId).toBe("recipe_schedule_existing");
-		expect(taskRepository.updateTask).not.toHaveBeenCalled();
-		expect(send).not.toHaveBeenCalled();
-	});
+    const taskId = await service.enqueueTask({
+      id: "recipe_schedule_existing",
+      task_type: "recipe_execution",
+      user_id: 42,
+      task_data: { recipeId: "bad-weather-alerts" },
+    });
 
-	it("persists and queues first-class project scope", async () => {
-		const send = vi.fn();
-		const service = new TaskService({ TASK_QUEUE: { send } } as any, taskRepository as any);
+    expect(taskId).toBe("recipe_schedule_existing");
+    expect(taskRepository.updateTask).not.toHaveBeenCalled();
+    expect(send).not.toHaveBeenCalled();
+  });
 
-		await service.enqueueTask({
-			task_type: "recipe_execution",
-			user_id: 42,
-			project_id: "project-1",
-			task_data: { recipeId: "bad-weather-alerts" },
-		});
+  it("persists and queues first-class project scope", async () => {
+    const send = vi.fn();
+    const service = new TaskService({ TASK_QUEUE: { send } } as any, taskRepository as any);
 
-		expect(taskRepository.createTask).toHaveBeenCalledWith(
-			expect.objectContaining({ project_id: "project-1" }),
-		);
-		expect(send).toHaveBeenCalledWith(expect.objectContaining({ project_id: "project-1" }));
-	});
+    await service.enqueueTask({
+      task_type: "recipe_execution",
+      user_id: 42,
+      project_id: "project-1",
+      task_data: { recipeId: "bad-weather-alerts" },
+    });
+
+    expect(taskRepository.createTask).toHaveBeenCalledWith(
+      expect.objectContaining({ project_id: "project-1" }),
+    );
+    expect(send).toHaveBeenCalledWith(expect.objectContaining({ project_id: "project-1" }));
+  });
 });

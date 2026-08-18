@@ -1,80 +1,89 @@
-import { useEffect, useRef } from "react";
 import { readToolIds } from "@ngriffin_uk/polychat-schemas";
+import { useEffect, useRef } from "react";
 
 import { useToolsStore } from "~/state/stores/toolsStore";
 import type { ChatMode } from "~/types";
 
 type AgentWithTools = {
-	id: string;
-	enabled_tools?: string[] | string | null;
+  id: string;
+  enabled_tools?: string[] | string | null;
 };
 
 export const useAgentToolDefaults = ({
-	agents,
-	selectedAgentId,
-	chatMode,
+  agents,
+  selectedAgentId,
+  chatMode,
 }: {
-	agents: AgentWithTools[];
-	selectedAgentId: string | null;
-	chatMode: ChatMode;
+  agents: AgentWithTools[];
+  selectedAgentId: string | null;
+  chatMode: ChatMode;
 }) => {
-	const { selectedTools, setSelectedTools, resetToDefaults, defaultTools } = useToolsStore();
-	const previousAgentIdRef = useRef<string | null>(null);
-	const pendingResetRef = useRef(false);
+  const { selectedTools, setSelectedTools, resetToDefaults, defaultTools } = useToolsStore();
+  const previousAgentIdRef = useRef<string | null>(null);
+  const pendingResetRef = useRef(false);
 
-	const arraysEqual = (left: string[], right: string[]) => {
-		if (left.length !== right.length) return false;
-		for (let i = 0; i < left.length; i += 1) {
-			if (left[i] !== right[i]) return false;
-		}
-		return true;
-	};
+  const arraysEqual = (left: string[], right: string[]) => {
+    if (left.length !== right.length) {
+      return false;
+    }
 
-	useEffect(() => {
-		const isAgentMode = chatMode === "agent" && selectedAgentId;
-		const previousAgentId = previousAgentIdRef.current;
+    for (let i = 0; i < left.length; i += 1) {
+      if (left[i] !== right[i]) {
+        return false;
+      }
+    }
 
-		if (isAgentMode) {
-			pendingResetRef.current = false;
-			const agent = agents.find((a) => a.id === selectedAgentId);
-			const agentTools = readToolIds(agent?.enabled_tools);
-			if (agentTools && agentTools.length > 0) {
-				if (!arraysEqual(selectedTools, agentTools)) {
-					setSelectedTools(agentTools);
-				}
-			} else if (defaultTools.length > 0) {
-				if (!arraysEqual(selectedTools, defaultTools)) {
-					resetToDefaults();
-				}
-			} else {
-				if (selectedTools.length > 0) {
-					setSelectedTools([]);
-				}
-			}
-		} else if (previousAgentId) {
-			if (defaultTools.length > 0) {
-				if (!arraysEqual(selectedTools, defaultTools)) {
-					resetToDefaults();
-				}
-				pendingResetRef.current = false;
-			} else {
-				pendingResetRef.current = true;
-			}
-		} else if (pendingResetRef.current && defaultTools.length > 0) {
-			if (!arraysEqual(selectedTools, defaultTools)) {
-				resetToDefaults();
-			}
-			pendingResetRef.current = false;
-		}
+    return true;
+  };
 
-		previousAgentIdRef.current = selectedAgentId;
-	}, [
-		agents,
-		chatMode,
-		defaultTools,
-		resetToDefaults,
-		selectedAgentId,
-		selectedTools,
-		setSelectedTools,
-	]);
+  useEffect(() => {
+    const isAgentMode = chatMode === "agent" && selectedAgentId;
+    const previousAgentId = previousAgentIdRef.current;
+
+    if (isAgentMode) {
+      pendingResetRef.current = false;
+      const agent = agents.find((a) => a.id === selectedAgentId);
+      const agentTools = readToolIds(agent?.enabled_tools);
+
+      if (agentTools && agentTools.length > 0) {
+        if (!arraysEqual(selectedTools, agentTools)) {
+          setSelectedTools(agentTools);
+        }
+      } else if (defaultTools.length > 0) {
+        if (!arraysEqual(selectedTools, defaultTools)) {
+          resetToDefaults();
+        }
+      } else {
+        if (selectedTools.length > 0) {
+          setSelectedTools([]);
+        }
+      }
+    } else if (previousAgentId) {
+      if (defaultTools.length > 0) {
+        if (!arraysEqual(selectedTools, defaultTools)) {
+          resetToDefaults();
+        }
+
+        pendingResetRef.current = false;
+      } else {
+        pendingResetRef.current = true;
+      }
+    } else if (pendingResetRef.current && defaultTools.length > 0) {
+      if (!arraysEqual(selectedTools, defaultTools)) {
+        resetToDefaults();
+      }
+
+      pendingResetRef.current = false;
+    }
+
+    previousAgentIdRef.current = selectedAgentId;
+  }, [
+    agents,
+    chatMode,
+    defaultTools,
+    resetToDefaults,
+    selectedAgentId,
+    selectedTools,
+    setSelectedTools,
+  ]);
 };

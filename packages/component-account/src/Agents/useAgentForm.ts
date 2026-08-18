@@ -1,7 +1,6 @@
 import { normaliseToolIds, readToolIds } from "@ngriffin_uk/polychat-schemas";
 import type { ParsedNumberInput } from "@ngriffin_uk/polychat-utility-core";
-import { getFiniteNumberOrFallback } from "@ngriffin_uk/polychat-utility-core";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { getFiniteNumberOrFallback, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useState, useCallback } from "react";
 
 interface FewShotExample {
@@ -74,6 +73,7 @@ export function useAgentForm() {
     if (agent.servers) {
       try {
         const parsedServers = JSON.parse(agent.servers);
+
         if (Array.isArray(parsedServers) && parsedServers.length > 0) {
           setUseServers(true);
           setServers(
@@ -105,12 +105,14 @@ export function useAgentForm() {
     setSelectedModel(isModelAvailable ? agentModel : "");
     setTemperature(getFiniteNumberOrFallback(agent.temperature, 0.7));
     const loadedMaxSteps = getFiniteNumberOrFallback(agent.max_steps, 20);
+
     setMaxSteps(loadedMaxSteps > 0 ? loadedMaxSteps : 20);
     setSystemPrompt(agent.system_prompt || "");
 
     if (agent.few_shot_examples) {
       try {
         const parsedExamples = JSON.parse(agent.few_shot_examples);
+
         if (Array.isArray(parsedExamples) && parsedExamples.length > 0) {
           setUseFewShotExamples(true);
           setFewShotExamples(

@@ -25,7 +25,10 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
   const deleteWorkspace = useDeleteWorkspace();
   const navigate = useNavigate();
 
-  if (isLoading) return <WorkspaceOverviewSkeleton />;
+  if (isLoading) {
+    return <WorkspaceOverviewSkeleton />;
+  }
+
   if (isAuthenticationError(error)) {
     return (
       <SignInEmptyState
@@ -35,10 +38,12 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
       />
     );
   }
-  if (error || !workspace)
+
+  if (error || !workspace) {
     return (
       <div className="p-10 text-sm text-red-700">{error?.message ?? "Workspace not found"}</div>
     );
+  }
 
   const canManage = workspace.role === "owner" || workspace.role === "admin";
 

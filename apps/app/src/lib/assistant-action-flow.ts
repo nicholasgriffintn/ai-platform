@@ -1,91 +1,94 @@
 import type {
-	AssistantActionDelivery,
-	AssistantActionResult,
-	AssistantActionVerb,
+  AssistantActionDelivery,
+  AssistantActionResult,
+  AssistantActionVerb,
 } from "@ngriffin_uk/polychat-schemas";
 
 import {
-	executeAssistantAction,
-	type AssistantActionExecutionDependencies,
-	type AssistantActionExecutionInput,
+  executeAssistantAction,
+  type AssistantActionExecutionDependencies,
+  type AssistantActionExecutionInput,
 } from "./assistant-action-execution";
 import { createAssistantActionConversationUrl } from "./assistant-action-launch";
 
 interface AssistantActionFlowInput extends AssistantActionExecutionInput {
-	conversationPath?: string;
-	delivery: AssistantActionDelivery;
-	verb?: Pick<AssistantActionVerb, "command" | "id">;
+  conversationPath?: string;
+  delivery: AssistantActionDelivery;
+  verb?: Pick<AssistantActionVerb, "command" | "id">;
 }
 
 function getRecipeIdForSchedule(action: AssistantActionFlowInput): string | undefined {
-	const launch = action.item?.launch;
-	if (
-		launch?.kind === "conversation" &&
-		(launch.operation === "install_recipe" || launch.operation === "invoke_recipe")
-	) {
-		return launch.recipeId;
-	}
+  const launch = action.item?.launch;
 
-	return action.item?.metadata?.recipeId;
+  if (
+    launch?.kind === "conversation" &&
+    (launch.operation === "install_recipe" || launch.operation === "invoke_recipe")
+  ) {
+    return launch.recipeId;
+  }
+
+  return action.item?.metadata?.recipeId;
 }
 
 export async function launchAssistantAction(
-	action: AssistantActionFlowInput,
-	dependencies: AssistantActionExecutionDependencies,
+  action: AssistantActionFlowInput,
+  dependencies: AssistantActionExecutionDependencies,
 ): Promise<AssistantActionResult> {
-	if (
-		action.verb?.command === "schedule" &&
-		(action.item?.kind === "recipe" || action.item?.kind === "installed_recipe")
-	) {
-		const recipeId = getRecipeIdForSchedule(action);
-		if (!recipeId) {
-			return {
-				input: action.input,
-				kind: "submit",
-				notification: {
-					type: "error",
-					message: "This recipe cannot be scheduled because its identifier is missing.",
-				},
-			};
-		}
+  if (
+    action.verb?.command === "schedule" &&
+    (action.item?.kind === "recipe" || action.item?.kind === "installed_recipe")
+  ) {
+    const recipeId = getRecipeIdForSchedule(action);
 
-		return executeAssistantAction(
-			{
-				...action,
-				item: {
-					...action.item,
-					launch: {
-						kind: "schedule",
-						recipeId,
-					},
-				},
-			},
-			dependencies,
-		);
-	}
+    if (!recipeId) {
+      return {
+        input: action.input,
+        kind: "submit",
+        notification: {
+          type: "error",
+          message: "This recipe cannot be scheduled because its identifier is missing.",
+        },
+      };
+    }
 
-	const result = await executeAssistantAction(action, dependencies);
-	if (
-		result.kind === "submit" &&
-		action.delivery === "conversation" &&
-		(result.requestOptions || result.selectedTools)
-	) {
-		return {
-			kind: "conversation",
-			input: result.input,
-			...(result.notification ? { notification: result.notification } : {}),
-			...(result.requestOptions ? { requestOptions: result.requestOptions } : {}),
-			...(result.selectedTools ? { selectedTools: result.selectedTools } : {}),
-			url: createAssistantActionConversationUrl(
-				{
-					input: result.input,
-					enabledTools: result.selectedTools ?? [],
-					requestOptions: result.requestOptions,
-				},
-				action.conversationPath,
-			),
-		};
-	}
+    return executeAssistantAction(
+      {
+        ...action,
+        item: {
+          ...action.item,
+          launch: {
+            kind: "schedule",
+            recipeId,
+          },
+        },
+      },
+      dependencies,
+    );
+  }
 
-	return result;
+  const result = await executeAssistantAction(action, dependencies);
+
+  if (
+    result.kind === "submit" &&
+    action.delivery === "conversation" &&
+    (result.requestOptions || result.selectedTools)
+  ) {
+    return {
+      kind: "conversation",
+      input: result.input,
+      ...(result.notification ? { notification: result.notification } : {}),
+      ...(result.requestOptions ? { requestOptions: result.requestOptions } : {}),
+      ...(result.selectedTools ? { selectedTools: result.selectedTools } : {}),
+      url: createAssistantActionConversationUrl(
+        {
+          input: result.input,
+          enabledTools: result.selectedTools ?? [],
+          requestOptions: result.requestOptions,
+        },
+        action.conversationPath,
+      ),
+    };
+  }
+
+  return result;
 }

@@ -2,354 +2,388 @@ import type { Context, Next } from "hono";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("~/utils/logger", () => ({
-	getLogger: vi.fn(() => ({
-		info: vi.fn(),
-		error: vi.fn(),
-		warn: vi.fn(),
-	})),
+  getLogger: vi.fn(() => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+  })),
 }));
 
 function createMockContext(overrides: any = {}): Context {
-	const baseContext = {
-		req: {
-			method: "GET",
-			url: "http://example.com/test",
-			header: vi.fn(),
-		},
-		res: {
-			status: 200,
-			headers: new Headers(),
-		},
-		get: vi.fn(),
-		set: vi.fn(),
-	} as any;
+  const baseContext = {
+    req: {
+      method: "GET",
+      url: "http://example.com/test",
+      header: vi.fn(),
+    },
+    res: {
+      status: 200,
+      headers: new Headers(),
+    },
+    get: vi.fn(),
+    set: vi.fn(),
+  } as any;
 
-	const mockContext = {
-		...baseContext,
-		...overrides,
-		req: {
-			...baseContext.req,
-			...overrides.req,
-		},
-		res: {
-			...baseContext.res,
-			...overrides.res,
-		},
-	} as any;
+  const mockContext = {
+    ...baseContext,
+    ...overrides,
+    req: {
+      ...baseContext.req,
+      ...overrides.req,
+    },
+    res: {
+      ...baseContext.res,
+      ...overrides.res,
+    },
+  };
 
-	return mockContext;
+  return mockContext;
 }
 
 const mockNext = vi.fn() as ReturnType<typeof vi.fn> & Next;
 
 describe("Logger Middleware", () => {
-	let mockLogger: any;
-	let loggerMiddleware: any;
-	let createRouteLogger: any;
+  let mockLogger: any;
+  let loggerMiddleware: any;
+  let createRouteLogger: any;
 
-	beforeEach(async () => {
-		vi.clearAllMocks();
-		mockNext.mockReset();
-		mockNext.mockImplementation(async () => undefined);
-		vi.useFakeTimers();
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    mockNext.mockReset();
+    mockNext.mockImplementation(async () => undefined);
+    vi.useFakeTimers();
 
-		vi.resetModules();
+    vi.resetModules();
 
-		mockLogger = {
-			info: vi.fn(),
-			error: vi.fn(),
-			warn: vi.fn(),
-		};
+    mockLogger = {
+      info: vi.fn(),
+      error: vi.fn(),
+      warn: vi.fn(),
+    };
 
-		const { getLogger } = await import("~/utils/logger");
-		vi.mocked(getLogger).mockReturnValue(mockLogger);
+    const { getLogger } = await import("~/utils/logger");
 
-		const middlewareModule = await import("../loggerMiddleware");
-		loggerMiddleware = middlewareModule.loggerMiddleware;
-		createRouteLogger = middlewareModule.createRouteLogger;
-	});
+    vi.mocked(getLogger).mockReturnValue(mockLogger);
 
-	afterEach(() => {
-		vi.restoreAllMocks();
-		vi.useRealTimers();
-	});
+    const middlewareModule = await import("../loggerMiddleware");
 
-	describe("loggerMiddleware", () => {
-		it("should log request start and completion", async () => {
-			const context = createMockContext();
-			const mockUser = { id: "user-123" };
+    loggerMiddleware = middlewareModule.loggerMiddleware;
+    createRouteLogger = middlewareModule.createRouteLogger;
+  });
 
-			// @ts-expect-error - mock implementation
-			context.get.mockImplementation((key: string) => {
-				if (key === "user") return mockUser;
-				return null;
-			});
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+  });
 
-			// @ts-expect-error - mock implementation
-			context.req.header.mockImplementation((name: string) => {
-				if (name === "user-agent") return "Mozilla/5.0";
-				return null;
-			});
+  describe("loggerMiddleware", () => {
+    it("should log request start and completion", async () => {
+      const context = createMockContext();
+      const mockUser = { id: "user-123" };
 
-			const startTime = Date.now();
-			vi.setSystemTime(startTime);
+      // @ts-expect-error - mock implementation
+      context.get.mockImplementation((key: string) => {
+        if (key === "user") {
+          return mockUser;
+        }
 
-			const middlewarePromise = loggerMiddleware(context, mockNext as Next);
+        return null;
+      });
 
-			expect(mockLogger.info).toHaveBeenCalledWith("Request started: GET http://example.com/test", {
-				method: "GET",
-				url: "http://example.com/test",
-				userId: "user-123",
-			});
+      // @ts-expect-error - mock implementation
+      context.req.header.mockImplementation((name: string) => {
+        if (name === "user-agent") {
+          return "Mozilla/5.0";
+        }
 
-			vi.setSystemTime(startTime + 100);
-			await middlewarePromise;
+        return null;
+      });
 
-			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Request completed: GET http://example.com/test",
-				{
-					method: "GET",
-					url: "http://example.com/test",
-					status: 200,
-					duration: "0.1s",
-					userId: "user-123",
-				},
-			);
-			expect(mockNext).toHaveBeenCalled();
-		});
+      const startTime = Date.now();
 
-		it("should log without user ID when no user present", async () => {
-			const context = createMockContext();
-			// @ts-expect-error - mock implementation
-			context.get.mockReturnValue(null);
+      vi.setSystemTime(startTime);
 
-			// @ts-expect-error - mock implementation
-			context.req.header.mockImplementation((name: string) => {
-				if (name === "user-agent") return "Mozilla/5.0";
-				return null;
-			});
+      const middlewarePromise = loggerMiddleware(context, mockNext as Next);
 
-			await loggerMiddleware(context, mockNext as Next);
+      expect(mockLogger.info).toHaveBeenCalledWith("Request started: GET http://example.com/test", {
+        method: "GET",
+        url: "http://example.com/test",
+        userId: "user-123",
+      });
 
-			expect(mockLogger.info).toHaveBeenCalledWith("Request started: GET http://example.com/test", {
-				method: "GET",
-				url: "http://example.com/test",
-				userId: undefined,
-			});
-		});
+      vi.setSystemTime(startTime + 100);
+      await middlewarePromise;
 
-		it("redacts callback bearer values from every request log", async () => {
-			const context = createMockContext({
-				req: {
-					url: "https://api.example.com/apps/connectors/composio/verify?session_uri=single-use-secret",
-				},
-			});
-			// @ts-expect-error - mock implementation
-			context.get.mockReturnValue(null);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        "Request completed: GET http://example.com/test",
+        {
+          method: "GET",
+          url: "http://example.com/test",
+          status: 200,
+          duration: "0.1s",
+          userId: "user-123",
+        },
+      );
+      expect(mockNext).toHaveBeenCalled();
+    });
 
-			await loggerMiddleware(context, mockNext as Next);
+    it("should log without user ID when no user present", async () => {
+      const context = createMockContext();
 
-			const loggedValues = JSON.stringify(mockLogger.info.mock.calls);
-			expect(loggedValues).not.toContain("single-use-secret");
-			expect(loggedValues).toContain("%5Bredacted%5D");
-		});
+      // @ts-expect-error - mock implementation
+      context.get.mockReturnValue(null);
 
-		it("should log errors when middleware throws", async () => {
-			const context = createMockContext();
-			const mockUser = { id: "user-123" };
-			const error = new Error("Test error");
+      // @ts-expect-error - mock implementation
+      context.req.header.mockImplementation((name: string) => {
+        if (name === "user-agent") {
+          return "Mozilla/5.0";
+        }
 
-			// @ts-expect-error - mock implementation
-			context.get.mockImplementation((key: string) => {
-				if (key === "user") return mockUser;
-				return null;
-			});
+        return null;
+      });
 
-			// @ts-expect-error - mock implementation
-			context.req.header.mockImplementation((name: string) => {
-				if (name === "user-agent") return "Mozilla/5.0";
-				return null;
-			});
+      await loggerMiddleware(context, mockNext as Next);
 
-			mockNext.mockRejectedValue(error);
+      expect(mockLogger.info).toHaveBeenCalledWith("Request started: GET http://example.com/test", {
+        method: "GET",
+        url: "http://example.com/test",
+        userId: undefined,
+      });
+    });
 
-			const startTime = Date.now();
-			vi.setSystemTime(startTime);
+    it("redacts callback bearer values from every request log", async () => {
+      const context = createMockContext({
+        req: {
+          url: "https://api.example.com/apps/connectors/composio/verify?session_uri=single-use-secret",
+        },
+      });
 
-			const middlewarePromise = loggerMiddleware(context, mockNext as Next);
+      // @ts-expect-error - mock implementation
+      context.get.mockReturnValue(null);
 
-			vi.setSystemTime(startTime + 50);
+      await loggerMiddleware(context, mockNext as Next);
 
-			await expect(middlewarePromise).rejects.toThrow("Test error");
+      const loggedValues = JSON.stringify(mockLogger.info.mock.calls);
 
-			expect(mockLogger.error).toHaveBeenCalledWith("Request failed: GET http://example.com/test", {
-				method: "GET",
-				url: "http://example.com/test",
-				error: "Test error",
-				duration: "0.05s",
-				userId: "user-123",
-				userAgent: "Mozilla/5.0",
-				stack: expect.any(String),
-			});
-		});
+      expect(loggedValues).not.toContain("single-use-secret");
+      expect(loggedValues).toContain("%5Bredacted%5D");
+    });
 
-		it("should handle non-Error objects thrown by middleware", async () => {
-			const context = createMockContext();
-			// @ts-expect-error - mock implementation
-			context.get.mockReturnValue(null);
+    it("should log errors when middleware throws", async () => {
+      const context = createMockContext();
+      const mockUser = { id: "user-123" };
+      const error = new Error("Test error");
 
-			// @ts-expect-error - mock implementation
-			context.req.header.mockImplementation((name: string) => {
-				if (name === "user-agent") return "Mozilla/5.0";
-				return null;
-			});
+      // @ts-expect-error - mock implementation
+      context.get.mockImplementation((key: string) => {
+        if (key === "user") {
+          return mockUser;
+        }
 
-			const nonErrorValue = "String error";
-			mockNext.mockRejectedValue(nonErrorValue);
+        return null;
+      });
 
-			await expect(loggerMiddleware(context, mockNext as Next)).rejects.toBe(nonErrorValue);
+      // @ts-expect-error - mock implementation
+      context.req.header.mockImplementation((name: string) => {
+        if (name === "user-agent") {
+          return "Mozilla/5.0";
+        }
 
-			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Request failed: GET http://example.com/test",
-				expect.objectContaining({
-					error: "String error",
-					stack: "No stack trace",
-				}),
-			);
-		});
+        return null;
+      });
 
-		it("should handle unknown user agent", async () => {
-			const context = createMockContext();
-			// @ts-expect-error - mock implementation
-			context.get.mockReturnValue(null);
+      mockNext.mockRejectedValue(error);
 
-			// @ts-expect-error - mock implementation
-			context.req.header.mockImplementation((name: string) => {
-				if (name === "user-agent") return null;
-				return null;
-			});
+      const startTime = Date.now();
 
-			const error = new Error("Test error");
-			mockNext.mockRejectedValue(error);
+      vi.setSystemTime(startTime);
 
-			await expect(loggerMiddleware(context, mockNext as Next)).rejects.toThrow("Test error");
+      const middlewarePromise = loggerMiddleware(context, mockNext as Next);
 
-			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Request failed: GET http://example.com/test",
-				expect.objectContaining({
-					userAgent: "unknown",
-				}),
-			);
-		});
+      vi.setSystemTime(startTime + 50);
 
-		it("should handle different HTTP methods", async () => {
-			const context = createMockContext({
-				req: {
-					method: "POST",
-					url: "http://example.com/api/users",
-					header: vi.fn(),
-				},
-			});
+      await expect(middlewarePromise).rejects.toThrow("Test error");
 
-			// @ts-expect-error - mock implementation
-			context.get.mockReturnValue(null);
-			// @ts-expect-error - mock implementation
-			context.req.header.mockReturnValue("Mozilla/5.0");
+      expect(mockLogger.error).toHaveBeenCalledWith("Request failed: GET http://example.com/test", {
+        method: "GET",
+        url: "http://example.com/test",
+        error: "Test error",
+        duration: "0.05s",
+        userId: "user-123",
+        userAgent: "Mozilla/5.0",
+        stack: expect.any(String),
+      });
+    });
 
-			await loggerMiddleware(context, mockNext as Next);
+    it("should handle non-Error objects thrown by middleware", async () => {
+      const context = createMockContext();
 
-			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Request started: POST http://example.com/api/users",
-				expect.objectContaining({
-					method: "POST",
-					url: "http://example.com/api/users",
-				}),
-			);
-		});
+      // @ts-expect-error - mock implementation
+      context.get.mockReturnValue(null);
 
-		it("should handle different response status codes", async () => {
-			const context = createMockContext({
-				res: {
-					status: 404,
-				},
-			});
+      // @ts-expect-error - mock implementation
+      context.req.header.mockImplementation((name: string) => {
+        if (name === "user-agent") {
+          return "Mozilla/5.0";
+        }
 
-			// @ts-expect-error - mock implementation
-			context.get.mockReturnValue(null);
-			// @ts-expect-error - mock implementation
-			context.req.header.mockReturnValue("Mozilla/5.0");
+        return null;
+      });
 
-			await loggerMiddleware(context, mockNext as Next);
+      const nonErrorValue = "String error";
 
-			expect(mockLogger.warn).toHaveBeenCalledWith(
-				"Request completed with client error: GET http://example.com/test",
-				expect.objectContaining({
-					status: 404,
-				}),
-			);
-		});
+      mockNext.mockRejectedValue(nonErrorValue);
 
-		it("should measure request duration accurately", async () => {
-			const context = createMockContext();
-			// @ts-expect-error - mock implementation
-			context.get.mockReturnValue(null);
-			// @ts-expect-error - mock implementation
-			context.req.header.mockReturnValue("Mozilla/5.0");
+      await expect(loggerMiddleware(context, mockNext as Next)).rejects.toBe(nonErrorValue);
 
-			const startTime = Date.now();
-			vi.setSystemTime(startTime);
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        "Request failed: GET http://example.com/test",
+        expect.objectContaining({
+          error: "String error",
+          stack: "No stack trace",
+        }),
+      );
+    });
 
-			const middlewarePromise = loggerMiddleware(context, mockNext as Next);
+    it("should handle unknown user agent", async () => {
+      const context = createMockContext();
 
-			vi.setSystemTime(startTime + 250);
-			await middlewarePromise;
+      // @ts-expect-error - mock implementation
+      context.get.mockReturnValue(null);
 
-			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Request completed: GET http://example.com/test",
-				expect.objectContaining({
-					duration: "0.25s",
-				}),
-			);
-		});
-	});
+      // @ts-expect-error - mock implementation
+      context.req.header.mockImplementation((name: string) => {
+        if (name === "user-agent") {
+          return null;
+        }
 
-	describe("createRouteLogger", () => {
-		it("should create logger with specified route prefix", async () => {
-			const { getLogger } = await import("~/utils/logger");
+        return null;
+      });
 
-			const routeLogger = createRouteLogger("AUTH");
+      const error = new Error("Test error");
 
-			expect(vi.mocked(getLogger)).toHaveBeenCalledWith({
-				prefix: "routes/AUTH",
-			});
-			expect(routeLogger).toEqual(
-				expect.objectContaining({
-					info: expect.any(Function),
-					error: expect.any(Function),
-				}),
-			);
-		});
+      mockNext.mockRejectedValue(error);
 
-		it("should create logger with different route prefixes", async () => {
-			const { getLogger } = await import("~/utils/logger");
+      await expect(loggerMiddleware(context, mockNext as Next)).rejects.toThrow("Test error");
 
-			createRouteLogger("USERS");
-			createRouteLogger("CHAT");
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        "Request failed: GET http://example.com/test",
+        expect.objectContaining({
+          userAgent: "unknown",
+        }),
+      );
+    });
 
-			expect(vi.mocked(getLogger)).toHaveBeenCalledWith({
-				prefix: "routes/USERS",
-			});
-			expect(vi.mocked(getLogger)).toHaveBeenCalledWith({
-				prefix: "routes/CHAT",
-			});
-		});
+    it("should handle different HTTP methods", async () => {
+      const context = createMockContext({
+        req: {
+          method: "POST",
+          url: "http://example.com/api/users",
+          header: vi.fn(),
+        },
+      });
 
-		it("should handle empty route name", async () => {
-			const { getLogger } = await import("~/utils/logger");
+      // @ts-expect-error - mock implementation
+      context.get.mockReturnValue(null);
+      // @ts-expect-error - mock implementation
+      context.req.header.mockReturnValue("Mozilla/5.0");
 
-			createRouteLogger("");
+      await loggerMiddleware(context, mockNext as Next);
 
-			expect(vi.mocked(getLogger)).toHaveBeenCalledWith({ prefix: "routes/" });
-		});
-	});
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        "Request started: POST http://example.com/api/users",
+        expect.objectContaining({
+          method: "POST",
+          url: "http://example.com/api/users",
+        }),
+      );
+    });
+
+    it("should handle different response status codes", async () => {
+      const context = createMockContext({
+        res: {
+          status: 404,
+        },
+      });
+
+      // @ts-expect-error - mock implementation
+      context.get.mockReturnValue(null);
+      // @ts-expect-error - mock implementation
+      context.req.header.mockReturnValue("Mozilla/5.0");
+
+      await loggerMiddleware(context, mockNext as Next);
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        "Request completed with client error: GET http://example.com/test",
+        expect.objectContaining({
+          status: 404,
+        }),
+      );
+    });
+
+    it("should measure request duration accurately", async () => {
+      const context = createMockContext();
+
+      // @ts-expect-error - mock implementation
+      context.get.mockReturnValue(null);
+      // @ts-expect-error - mock implementation
+      context.req.header.mockReturnValue("Mozilla/5.0");
+
+      const startTime = Date.now();
+
+      vi.setSystemTime(startTime);
+
+      const middlewarePromise = loggerMiddleware(context, mockNext as Next);
+
+      vi.setSystemTime(startTime + 250);
+      await middlewarePromise;
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        "Request completed: GET http://example.com/test",
+        expect.objectContaining({
+          duration: "0.25s",
+        }),
+      );
+    });
+  });
+
+  describe("createRouteLogger", () => {
+    it("should create logger with specified route prefix", async () => {
+      const { getLogger } = await import("~/utils/logger");
+
+      const routeLogger = createRouteLogger("AUTH");
+
+      expect(vi.mocked(getLogger)).toHaveBeenCalledWith({
+        prefix: "routes/AUTH",
+      });
+      expect(routeLogger).toEqual(
+        expect.objectContaining({
+          info: expect.any(Function),
+          error: expect.any(Function),
+        }),
+      );
+    });
+
+    it("should create logger with different route prefixes", async () => {
+      const { getLogger } = await import("~/utils/logger");
+
+      createRouteLogger("USERS");
+      createRouteLogger("CHAT");
+
+      expect(vi.mocked(getLogger)).toHaveBeenCalledWith({
+        prefix: "routes/USERS",
+      });
+      expect(vi.mocked(getLogger)).toHaveBeenCalledWith({
+        prefix: "routes/CHAT",
+      });
+    });
+
+    it("should handle empty route name", async () => {
+      const { getLogger } = await import("~/utils/logger");
+
+      createRouteLogger("");
+
+      expect(vi.mocked(getLogger)).toHaveBeenCalledWith({ prefix: "routes/" });
+    });
+  });
 });

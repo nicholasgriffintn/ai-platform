@@ -3,89 +3,101 @@ import type { PodcastListItem } from "@ngriffin_uk/polychat-schemas";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+
 import { safeParseJson } from "../../../utils/json";
 
 export interface IPodcastListRequest {
-	context?: ServiceContext;
-	env?: IEnv;
-	user: IUser;
-	projectId?: string;
+  context?: ServiceContext;
+  env?: IEnv;
+  user: IUser;
+  projectId?: string;
 }
 
 interface PodcastItem {
-	id: string;
-	items?: {
-		upload?: Array<{ data: Record<string, any> }>;
-		transcribe?: Array<{ data: Record<string, any> }>;
-		summary?: Array<{ data: Record<string, any> }>;
-		image?: Array<{ data: Record<string, any> }>;
-	};
+  id: string;
+  items?: {
+    upload?: Array<{ data: Record<string, any> }>;
+    transcribe?: Array<{ data: Record<string, any> }>;
+    summary?: Array<{ data: Record<string, any> }>;
+    image?: Array<{ data: Record<string, any> }>;
+  };
 }
 
 export const handlePodcastList = async (req: IPodcastListRequest): Promise<PodcastListItem[]> => {
-	const { env, context, user, projectId } = req;
+  const { env, context, user, projectId } = req;
 
-	if (!user?.id) {
-		throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
-	}
-	const serviceContext = resolveServiceContext({ context, env, user });
-	serviceContext.ensureDatabase();
-	const repositories = serviceContext.repositories;
+  if (!user?.id) {
+    throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
+  }
 
-	const appDataList = projectId
-		? await repositories.outputs.listProjectOutputs(projectId, "podcasts")
-		: await repositories.outputs.listPersonalOutputs(user.id, "podcasts");
+  const serviceContext = resolveServiceContext({ context, env, user });
 
-	if (!appDataList || appDataList.length === 0) {
-		return [];
-	}
+  serviceContext.ensureDatabase();
+  const repositories = serviceContext.repositories;
 
-	const podcastMap = new Map<string, PodcastItem>();
+  const appDataList = projectId
+    ? await repositories.outputs.listProjectOutputs(projectId, "podcasts")
+    : await repositories.outputs.listPersonalOutputs(user.id, "podcasts");
 
-	for (const appData of appDataList) {
-		if (!appData.group_id) continue;
+  if (!appDataList || appDataList.length === 0) {
+    return [];
+  }
 
-		const itemId = appData.group_id;
-		const itemType = appData.kind;
-		const data = safeParseJson<Record<string, any>>(appData.content) ?? {};
+  const podcastMap = new Map<string, PodcastItem>();
 
-		if (!podcastMap.has(itemId)) {
-			podcastMap.set(itemId, { id: itemId, items: {} });
-		}
+  for (const appData of appDataList) {
+    if (!appData.group_id) {
+      continue;
+    }
 
-		const podcast = podcastMap.get(itemId)!;
-		if (!podcast.items) podcast.items = {};
-		if (!podcast.items[itemType]) podcast.items[itemType] = [];
+    const itemId = appData.group_id;
+    const itemType = appData.kind;
+    const data = safeParseJson<Record<string, any>>(appData.content) ?? {};
 
-		podcast.items[itemType]!.push({ data });
-	}
+    if (!podcastMap.has(itemId)) {
+      podcastMap.set(itemId, { id: itemId, items: {} });
+    }
 
-	const podcasts = Array.from(podcastMap.values()).map((podcast) => {
-		const uploads = podcast.items?.upload || [];
-		const transcriptions = podcast.items?.transcribe || [];
-		const summaries = podcast.items?.summary || [];
-		const images = podcast.items?.image || [];
+    const podcast = podcastMap.get(itemId);
 
-		let status = "processing" as PodcastListItem["status"];
-		if (images.length > 0) {
-			status = "complete";
-		} else if (summaries.length > 0) {
-			status = "summarizing";
-		} else if (transcriptions.length > 0) {
-			status = "transcribing";
-		}
+    if (!podcast.items) {
+      podcast.items = {};
+    }
 
-		const uploadData = uploads[0]?.data || {};
+    if (!podcast.items[itemType]) {
+      podcast.items[itemType] = [];
+    }
 
-		return {
-			id: podcast.id,
-			title: uploadData.title || "Untitled Podcast",
-			createdAt: uploadData.createdAt || new Date().toISOString(),
-			imageUrl: images[0]?.data?.imageUrl,
-			duration: uploadData.duration,
-			status,
-		};
-	});
+    podcast.items[itemType]!.push({ data });
+  }
 
-	return podcasts;
+  const podcasts = Array.from(podcastMap.values()).map((podcast) => {
+    const uploads = podcast.items?.upload || [];
+    const transcriptions = podcast.items?.transcribe || [];
+    const summaries = podcast.items?.summary || [];
+    const images = podcast.items?.image || [];
+
+    let status = "processing" as PodcastListItem["status"];
+
+    if (images.length > 0) {
+      status = "complete";
+    } else if (summaries.length > 0) {
+      status = "summarizing";
+    } else if (transcriptions.length > 0) {
+      status = "transcribing";
+    }
+
+    const uploadData = uploads[0]?.data || {};
+
+    return {
+      id: podcast.id,
+      title: uploadData.title || "Untitled Podcast",
+      createdAt: uploadData.createdAt || new Date().toISOString(),
+      imageUrl: images[0]?.data?.imageUrl,
+      duration: uploadData.duration,
+      status,
+    };
+  });
+
+  return podcasts;
 };

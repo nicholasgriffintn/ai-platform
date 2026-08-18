@@ -1,4 +1,4 @@
-import { type ArtifactProps } from "@ngriffin_uk/polychat-component-content";
+import type { ArtifactProps } from "@ngriffin_uk/polychat-component-content";
 import {
   getMessageListScrollKey,
   CompactionStatusRow,
@@ -60,6 +60,7 @@ function hasCurrentResponseCompactionMarker(messages: Message[]): boolean {
   for (let index = messages.length - 1; index > 0; index--) {
     if (messages[index]?.role === "assistant") {
       const previousMessage = messages[index - 1];
+
       return previousMessage ? Boolean(getCompactionMessageLabel(previousMessage)) : false;
     }
   }
@@ -120,6 +121,7 @@ export const MessageList = ({
         message.id,
         canAccessProFeatures,
       );
+
       availability.set(message.id, {
         canRequest,
         shouldPromote: canRequest && shouldPromoteOpinionRequest(messages, message.id),
@@ -159,14 +161,18 @@ export const MessageList = ({
   useEffect(() => {
     if (isSharedView) {
       prevCount.current = messages.length;
+
       return;
     }
+
     const lastIndex = messages.length - 1;
     const shouldFollowNewMessages = prevCount.current === 0 || isNearBottomRef.current;
+
     if (virtualRef.current && shouldFollowNewMessages) {
       virtualRef.current.scrollToIndex(lastIndex, { align: "end" });
       isNearBottomRef.current = true;
     }
+
     prevCount.current = messages.length;
   }, [lastMessageScrollKey, messages.length, isSharedView]);
 
@@ -174,12 +180,16 @@ export const MessageList = ({
   const [showScroll, setShowScroll] = useState(false);
   const handleScroll = () => {
     const v = virtualRef.current;
+
     if (!v) {
       setShowScroll(false);
+
       return;
     }
+
     const { scrollSize, scrollOffset, viewportSize } = v;
     const distance = scrollSize - (scrollOffset + viewportSize);
+
     isNearBottomRef.current = distance <= 100;
     setShowScroll(distance > 100);
   };
@@ -208,7 +218,10 @@ export const MessageList = ({
             </>
           ) : (
             messages.map((message, index) => {
-              if (isHiddenToolResponse(message)) return null;
+              if (isHiddenToolResponse(message)) {
+                return null;
+              }
+
               const compactionLabel = getCompactionMessageLabel(message);
 
               return (
@@ -227,7 +240,7 @@ export const MessageList = ({
                       isSharedView={isSharedView}
                       onRetry={retryMessage}
                       isRetrying={streamStarted}
-                      onEdit={message.id ? () => startEditingMessage(message.id!) : undefined}
+                      onEdit={message.id ? () => startEditingMessage(message.id) : undefined}
                       isEditing={editingMessageId === message.id}
                       onSaveEdit={(newContent) => {
                         if (message.id) {

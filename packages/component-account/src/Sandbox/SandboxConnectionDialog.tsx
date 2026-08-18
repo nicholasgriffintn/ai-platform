@@ -54,12 +54,16 @@ export const SandboxConnectionDialog = ({
 
   const handleSaveConnection = async () => {
     const installationId = Number(form.installationId);
+
     if (!Number.isFinite(installationId) || installationId <= 0) {
       onValidationError?.("Installation ID must be a positive number");
+
       return;
     }
+
     if (!form.appId.trim() || !form.privateKey.trim()) {
       onValidationError?.("App ID and private key are required");
+
       return;
     }
 

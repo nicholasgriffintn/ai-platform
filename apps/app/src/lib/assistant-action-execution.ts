@@ -1,286 +1,297 @@
 import type {
-	AssistantActionLaunch,
-	AssistantActionNotification,
-	AssistantActionResult,
-	AssistantActionSelectionItem,
-	AssistantRecipeInstallResponse,
-	RecipeConnectorProvider,
-	RecipeConnectorStartResponse,
-	RecipeInvocationResponse,
+  AssistantActionLaunch,
+  AssistantActionNotification,
+  AssistantActionResult,
+  AssistantActionSelectionItem,
+  AssistantRecipeInstallResponse,
+  RecipeConnectorProvider,
+  RecipeConnectorStartResponse,
+  RecipeInvocationResponse,
 } from "@ngriffin_uk/polychat-schemas";
 import {
-	mergeAssistantActionToolIds,
-	recipeConnectorProviderSchema,
-	requireExternalHttpUrl,
-	requireInternalNavigationPath,
+  mergeAssistantActionToolIds,
+  recipeConnectorProviderSchema,
+  requireExternalHttpUrl,
+  requireInternalNavigationPath,
 } from "@ngriffin_uk/polychat-schemas";
 
-import {
-	createAppAssistantActionLaunch,
-	createConnectorAssistantActionLaunch,
-	createRecipeManagementActionPath,
-	createRecipeAssistantActionLaunch,
-} from "./assistant-action-launch";
 import type { ChatRequestOptions } from "~/types";
 
+import {
+  createAppAssistantActionLaunch,
+  createConnectorAssistantActionLaunch,
+  createRecipeManagementActionPath,
+  createRecipeAssistantActionLaunch,
+} from "./assistant-action-launch";
+
 export interface AssistantActionExecutionInput {
-	connectorReturnTo?: string;
-	input: string;
-	item?: AssistantActionSelectionItem;
-	recipeManagementPath?: string;
-	selectedTools?: string[];
+  connectorReturnTo?: string;
+  input: string;
+  item?: AssistantActionSelectionItem;
+  recipeManagementPath?: string;
+  selectedTools?: string[];
 }
 
 export interface AssistantActionExecutionDependencies {
-	installRecipe: (recipeId: string) => Promise<AssistantRecipeInstallResponse>;
-	invokeRecipe: (recipeId: string, input: string) => Promise<RecipeInvocationResponse>;
-	startConnector: (
-		provider: RecipeConnectorProvider,
-		returnTo?: string,
-	) => Promise<RecipeConnectorStartResponse>;
+  installRecipe: (recipeId: string) => Promise<AssistantRecipeInstallResponse>;
+  invokeRecipe: (recipeId: string, input: string) => Promise<RecipeInvocationResponse>;
+  startConnector: (
+    provider: RecipeConnectorProvider,
+    returnTo?: string,
+  ) => Promise<RecipeConnectorStartResponse>;
 }
 
 function readRecipeId(item: AssistantActionSelectionItem): string | undefined {
-	return item.metadata?.recipeId;
+  return item.metadata?.recipeId;
 }
 
 function readLaunch(item: AssistantActionSelectionItem): AssistantActionLaunch | undefined {
-	if (item.launch) {
-		return item.launch;
-	}
+  if (item.launch) {
+    return item.launch;
+  }
 
-	if (item.kind === "installed_recipe" || item.kind === "recipe") {
-		const recipeId = readRecipeId(item);
-		if (!recipeId) {
-			return undefined;
-		}
+  if (item.kind === "installed_recipe" || item.kind === "recipe") {
+    const recipeId = readRecipeId(item);
 
-		return {
-			kind: "conversation",
-			operation: item.kind === "installed_recipe" ? "invoke_recipe" : "install_recipe",
-			recipeId,
-			installationId: item.metadata?.installationId,
-		};
-	}
+    if (!recipeId) {
+      return undefined;
+    }
 
-	if (item.kind === "tool" && item.metadata?.toolId) {
-		return {
-			kind: "tool_toggle",
-			toolId: item.metadata.toolId,
-		};
-	}
+    return {
+      kind: "conversation",
+      operation: item.kind === "installed_recipe" ? "invoke_recipe" : "install_recipe",
+      recipeId,
+      installationId: item.metadata?.installationId,
+    };
+  }
 
-	if (item.kind === "app") {
-		return {
-			kind: "navigation",
-			path: createAppAssistantActionLaunch({
-				appId: item.metadata?.appId,
-				appKind: item.metadata?.appKind,
-				href: item.metadata?.href,
-			}).navigationPath,
-		};
-	}
+  if (item.kind === "tool" && item.metadata?.toolId) {
+    return {
+      kind: "tool_toggle",
+      toolId: item.metadata.toolId,
+    };
+  }
 
-	if (item.kind === "connector") {
-		const parsedProvider = recipeConnectorProviderSchema.safeParse(item.metadata?.provider);
-		if (!parsedProvider.success) {
-			throw new Error("This connector cannot open because its provider is missing.");
-		}
+  if (item.kind === "app") {
+    return {
+      kind: "navigation",
+      path: createAppAssistantActionLaunch({
+        appId: item.metadata?.appId,
+        appKind: item.metadata?.appKind,
+        href: item.metadata?.href,
+      }).navigationPath,
+    };
+  }
 
-		if (item.metadata?.authType === "api_key") {
-			const connectorLaunch = createConnectorAssistantActionLaunch({
-				authType: item.metadata?.authType,
-				provider: parsedProvider.data,
-			});
-			return connectorLaunch.navigationPath
-				? { kind: "navigation", path: connectorLaunch.navigationPath }
-				: undefined;
-		}
+  if (item.kind === "connector") {
+    const parsedProvider = recipeConnectorProviderSchema.safeParse(item.metadata?.provider);
 
-		return {
-			kind: "external",
-			authType: item.metadata?.authType,
-			provider: parsedProvider.data,
-		};
-	}
+    if (!parsedProvider.success) {
+      throw new Error("This connector cannot open because its provider is missing.");
+    }
 
-	return undefined;
+    if (item.metadata?.authType === "api_key") {
+      const connectorLaunch = createConnectorAssistantActionLaunch({
+        authType: item.metadata?.authType,
+        provider: parsedProvider.data,
+      });
+
+      return connectorLaunch.navigationPath
+        ? { kind: "navigation", path: connectorLaunch.navigationPath }
+        : undefined;
+    }
+
+    return {
+      kind: "external",
+      authType: item.metadata?.authType,
+      provider: parsedProvider.data,
+    };
+  }
+
+  return undefined;
 }
 
 function createErrorSubmitResult(
-	input: string,
-	notification: AssistantActionNotification,
+  input: string,
+  notification: AssistantActionNotification,
 ): AssistantActionResult {
-	return {
-		kind: "submit",
-		input,
-		notification,
-	};
+  return {
+    kind: "submit",
+    input,
+    notification,
+  };
 }
 
 function createMissingRecipeIdResult(input: string): AssistantActionResult {
-	return createErrorSubmitResult(input, {
-		type: "error",
-		message: "This recipe cannot run because its identifier is missing.",
-	});
+  return createErrorSubmitResult(input, {
+    type: "error",
+    message: "This recipe cannot run because its identifier is missing.",
+  });
 }
 
 function createUnsupportedActionResult(input: string, item: AssistantActionSelectionItem) {
-	return createErrorSubmitResult(input, {
-		type: "error",
-		message: `${item.label} is not executable from the composer yet.`,
-	});
+  return createErrorSubmitResult(input, {
+    type: "error",
+    message: `${item.label} is not executable from the composer yet.`,
+  });
 }
 
 function createSubmitResult(
-	input: string,
-	result: {
-		notification?: AssistantActionNotification;
-		requestOptions?: ChatRequestOptions;
-		selectedTools?: string[];
-	},
+  input: string,
+  result: {
+    notification?: AssistantActionNotification;
+    requestOptions?: ChatRequestOptions;
+    selectedTools?: string[];
+  },
 ): AssistantActionResult {
-	return {
-		kind: "submit",
-		input,
-		...(result.notification ? { notification: result.notification } : {}),
-		...(result.requestOptions ? { requestOptions: result.requestOptions } : {}),
-		...(result.selectedTools ? { selectedTools: result.selectedTools } : {}),
-	};
+  return {
+    kind: "submit",
+    input,
+    ...(result.notification ? { notification: result.notification } : {}),
+    ...(result.requestOptions ? { requestOptions: result.requestOptions } : {}),
+    ...(result.selectedTools ? { selectedTools: result.selectedTools } : {}),
+  };
 }
 
 export async function executeAssistantAction(
-	action: AssistantActionExecutionInput,
-	dependencies: AssistantActionExecutionDependencies,
+  action: AssistantActionExecutionInput,
+  dependencies: AssistantActionExecutionDependencies,
 ): Promise<AssistantActionResult> {
-	const item = action.item;
-	if (!item) {
-		return createSubmitResult(action.input, {});
-	}
-	const launch = readLaunch(item);
+  const item = action.item;
 
-	if (!launch) {
-		return createUnsupportedActionResult(action.input, item);
-	}
+  if (!item) {
+    return createSubmitResult(action.input, {});
+  }
 
-	if (launch.kind === "conversation") {
-		if (launch.operation === "ask_agent") {
-			return createUnsupportedActionResult(action.input, item);
-		}
-		const recipeId = launch.recipeId;
-		if (!recipeId) {
-			return createMissingRecipeIdResult(action.input);
-		}
+  const launch = readLaunch(item);
 
-		const response =
-			launch.operation === "invoke_recipe"
-				? await dependencies.invokeRecipe(recipeId, action.input)
-				: await dependencies.installRecipe(recipeId);
-		const chatLaunch = createRecipeAssistantActionLaunch(response);
+  if (!launch) {
+    return createUnsupportedActionResult(action.input, item);
+  }
 
-		return {
-			kind: "submit",
-			input: action.input.trim() ? action.input : chatLaunch.input,
-			requestOptions: chatLaunch.requestOptions,
-			selectedTools: chatLaunch.enabledTools,
-		};
-	}
+  if (launch.kind === "conversation") {
+    if (launch.operation === "ask_agent") {
+      return createUnsupportedActionResult(action.input, item);
+    }
 
-	if (launch.kind === "tool_toggle") {
-		const connectorProvider =
-			item.kind === "connector"
-				? recipeConnectorProviderSchema.safeParse(item.metadata?.provider)
-				: undefined;
-		if (connectorProvider && !connectorProvider.success) {
-			throw new Error("This connector cannot open because its provider is missing.");
-		}
+    const recipeId = launch.recipeId;
 
-		return {
-			kind: "submit",
-			input: action.input,
-			...(connectorProvider?.success
-				? {
-						requestOptions: {
-							options: { connector: { provider: connectorProvider.data } },
-						},
-					}
-				: {}),
-			selectedTools: mergeAssistantActionToolIds(action.selectedTools ?? [], launch.toolId),
-		};
-	}
+    if (!recipeId) {
+      return createMissingRecipeIdResult(action.input);
+    }
 
-	if (launch.kind === "navigation") {
-		return {
-			kind: "navigation",
-			input: action.input,
-			path: requireInternalNavigationPath(launch.path),
-		};
-	}
+    const response =
+      launch.operation === "invoke_recipe"
+        ? await dependencies.invokeRecipe(recipeId, action.input)
+        : await dependencies.installRecipe(recipeId);
+    const chatLaunch = createRecipeAssistantActionLaunch(response);
 
-	if (launch.kind === "external") {
-		if (launch.url) {
-			return {
-				kind: "external",
-				input: action.input,
-				url: requireExternalHttpUrl(launch.url),
-			};
-		}
+    return {
+      kind: "submit",
+      input: action.input.trim() ? action.input : chatLaunch.input,
+      requestOptions: chatLaunch.requestOptions,
+      selectedTools: chatLaunch.enabledTools,
+    };
+  }
 
-		const parsedProvider = recipeConnectorProviderSchema.safeParse(launch.provider);
-		if (!parsedProvider.success) {
-			throw new Error("This connector cannot open because its provider is missing.");
-		}
+  if (launch.kind === "tool_toggle") {
+    const connectorProvider =
+      item.kind === "connector"
+        ? recipeConnectorProviderSchema.safeParse(item.metadata?.provider)
+        : undefined;
 
-		const authorization = await dependencies.startConnector(
-			parsedProvider.data,
-			action.connectorReturnTo ?? "/profile?tab=providers&type=connector",
-		);
-		const connectorLaunch = createConnectorAssistantActionLaunch({
-			authType: launch.authType,
-			authorizationUrl: authorization?.authorizationUrl,
-			provider: parsedProvider.data,
-		});
+    if (connectorProvider && !connectorProvider.success) {
+      throw new Error("This connector cannot open because its provider is missing.");
+    }
 
-		if (connectorLaunch.externalUrl) {
-			return {
-				kind: "external",
-				input: action.input,
-				url: connectorLaunch.externalUrl,
-			};
-		}
-		if (!connectorLaunch.navigationPath) {
-			throw new Error("This connector cannot open because its navigation path is missing.");
-		}
+    return {
+      kind: "submit",
+      input: action.input,
+      ...(connectorProvider?.success
+        ? {
+            requestOptions: {
+              options: { connector: { provider: connectorProvider.data } },
+            },
+          }
+        : {}),
+      selectedTools: mergeAssistantActionToolIds(action.selectedTools ?? [], launch.toolId),
+    };
+  }
 
-		return {
-			kind: "navigation",
-			input: action.input,
-			path: connectorLaunch.navigationPath,
-		};
-	}
+  if (launch.kind === "navigation") {
+    return {
+      kind: "navigation",
+      input: action.input,
+      path: requireInternalNavigationPath(launch.path),
+    };
+  }
 
-	if (launch.kind === "schedule") {
-		if (action.recipeManagementPath) {
-			return {
-				input: action.input,
-				kind: "navigation",
-				path: createRecipeManagementActionPath(
-					action.recipeManagementPath,
-					"schedule",
-					launch.recipeId,
-				),
-			};
-		}
+  if (launch.kind === "external") {
+    if (launch.url) {
+      return {
+        kind: "external",
+        input: action.input,
+        url: requireExternalHttpUrl(launch.url),
+      };
+    }
 
-		return {
-			input: action.input,
-			kind: "submit",
-			notification: {
-				type: "error",
-				message: "Schedule this recipe from a Work project's Capabilities page.",
-			},
-		};
-	}
+    const parsedProvider = recipeConnectorProviderSchema.safeParse(launch.provider);
 
-	return createUnsupportedActionResult(action.input, item);
+    if (!parsedProvider.success) {
+      throw new Error("This connector cannot open because its provider is missing.");
+    }
+
+    const authorization = await dependencies.startConnector(
+      parsedProvider.data,
+      action.connectorReturnTo ?? "/profile?tab=providers&type=connector",
+    );
+    const connectorLaunch = createConnectorAssistantActionLaunch({
+      authType: launch.authType,
+      authorizationUrl: authorization?.authorizationUrl,
+      provider: parsedProvider.data,
+    });
+
+    if (connectorLaunch.externalUrl) {
+      return {
+        kind: "external",
+        input: action.input,
+        url: connectorLaunch.externalUrl,
+      };
+    }
+
+    if (!connectorLaunch.navigationPath) {
+      throw new Error("This connector cannot open because its navigation path is missing.");
+    }
+
+    return {
+      kind: "navigation",
+      input: action.input,
+      path: connectorLaunch.navigationPath,
+    };
+  }
+
+  if (launch.kind === "schedule") {
+    if (action.recipeManagementPath) {
+      return {
+        input: action.input,
+        kind: "navigation",
+        path: createRecipeManagementActionPath(
+          action.recipeManagementPath,
+          "schedule",
+          launch.recipeId,
+        ),
+      };
+    }
+
+    return {
+      input: action.input,
+      kind: "submit",
+      notification: {
+        type: "error",
+        message: "Schedule this recipe from a Work project's Capabilities page.",
+      },
+    };
+  }
+
+  return createUnsupportedActionResult(action.input, item);
 }

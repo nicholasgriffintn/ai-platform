@@ -6,32 +6,34 @@ import { ProjectBriefCard } from "./index";
 afterEach(cleanup);
 
 describe("ProjectBriefCard", () => {
-	it("uses the shared compact icon action rather than a text button", () => {
-		render(<ProjectBriefCard canManage instructions="Initial context" onSave={vi.fn()} />);
+  it("uses the shared compact icon action rather than a text button", () => {
+    render(<ProjectBriefCard canManage instructions="Initial context" onSave={vi.fn()} />);
 
-		const edit = screen.getByRole("button", { name: "Edit project brief" });
-		expect(edit.textContent).toBe("");
-		expect(edit.title).toBe("Edit project brief");
-		expect(edit.querySelector("svg")).not.toBeNull();
-	});
+    const edit = screen.getByRole("button", { name: "Edit project brief" });
 
-	it("submits the edited brief through the host callback", async () => {
-		const onSave = vi.fn(async () => undefined);
-		render(<ProjectBriefCard canManage instructions="Initial context" onSave={onSave} />);
+    expect(edit.textContent).toBe("");
+    expect(edit.title).toBe("Edit project brief");
+    expect(edit.querySelector("svg")).not.toBeNull();
+  });
 
-		fireEvent.click(screen.getByRole("button", { name: "Edit project brief" }));
-		fireEvent.change(screen.getByRole("textbox", { name: "Project brief" }), {
-			target: { value: "Updated context" },
-		});
-		fireEvent.click(screen.getByRole("button", { name: "Save brief" }));
+  it("submits the edited brief through the host callback", async () => {
+    const onSave = vi.fn(async () => undefined);
 
-		await waitFor(() => expect(onSave).toHaveBeenCalledWith("Updated context"));
-		await waitFor(() => expect(screen.queryByRole("textbox")).toBeNull());
-	});
+    render(<ProjectBriefCard canManage instructions="Initial context" onSave={onSave} />);
 
-	it("does not expose editing controls without management permission", () => {
-		render(<ProjectBriefCard canManage={false} instructions="" onSave={vi.fn()} />);
-		expect(screen.queryByRole("button")).toBeNull();
-		expect(screen.getByText("No project instructions have been added.")).toBeTruthy();
-	});
+    fireEvent.click(screen.getByRole("button", { name: "Edit project brief" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Project brief" }), {
+      target: { value: "Updated context" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save brief" }));
+
+    await waitFor(() => expect(onSave).toHaveBeenCalledWith("Updated context"));
+    await waitFor(() => expect(screen.queryByRole("textbox")).toBeNull());
+  });
+
+  it("does not expose editing controls without management permission", () => {
+    render(<ProjectBriefCard canManage={false} instructions="" onSave={vi.fn()} />);
+    expect(screen.queryByRole("button")).toBeNull();
+    expect(screen.getByText("No project instructions have been added.")).toBeTruthy();
+  });
 });

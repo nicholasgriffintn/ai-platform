@@ -16,121 +16,122 @@ export const CHATS_QUERY_KEY = "chats";
 export const SHOW_DEV_TOOLS = IS_DEVELOPMENT;
 
 export const API_BASE_URL =
-	IS_PRODUCTION && !IS_E2E_BUILD ? "https://api.polychat.app" : "http://localhost:8787";
+  IS_PRODUCTION && !IS_E2E_BUILD ? "https://api.polychat.app" : "http://localhost:8787";
 export const WS_API_URL =
-	IS_PRODUCTION && !IS_E2E_BUILD ? "wss://api.polychat.app" : "ws://localhost:8787";
+  IS_PRODUCTION && !IS_E2E_BUILD ? "wss://api.polychat.app" : "ws://localhost:8787";
 export const APPLE_SIGN_IN_CLIENT_ID = import.meta.env.VITE_APPLE_CLIENT_ID || "com.polychat.web";
 
 export const POSTHOG_CONFIG = {
-	apiKey: import.meta.env.VITE_PUBLIC_POSTHOG_KEY || "disabled",
-	apiHost: import.meta.env.VITE_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com",
-	debug: BUILD_MODE === "development",
-	disabled: IS_E2E_BUILD || !import.meta.env.VITE_PUBLIC_POSTHOG_KEY,
+  apiKey: import.meta.env.VITE_PUBLIC_POSTHOG_KEY || "disabled",
+  apiHost: import.meta.env.VITE_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com",
+  debug: BUILD_MODE === "development",
+  disabled: IS_E2E_BUILD || !import.meta.env.VITE_PUBLIC_POSTHOG_KEY,
 };
 
 export const BEACON_CONFIG = {
-	enabled: !IS_E2E_BUILD && import.meta.env.VITE_ENABLE_BEACON === "true",
-	experimentsEnabled: !IS_E2E_BUILD && import.meta.env.VITE_ENABLE_BEACON_EXPERIMENTS === "true",
-	endpoint: import.meta.env.VITE_BEACON_ENDPOINT || "",
-	siteId: import.meta.env.VITE_BEACON_SITE_ID || "",
-	debug: import.meta.env.VITE_BEACON_DEBUG === "true" || false,
+  enabled: !IS_E2E_BUILD && import.meta.env.VITE_ENABLE_BEACON === "true",
+  experimentsEnabled: !IS_E2E_BUILD && import.meta.env.VITE_ENABLE_BEACON_EXPERIMENTS === "true",
+  endpoint: import.meta.env.VITE_BEACON_ENDPOINT || "",
+  siteId: import.meta.env.VITE_BEACON_SITE_ID || "",
+  debug: import.meta.env.VITE_BEACON_DEBUG === "true" || false,
 };
 
 export const CAPTCHA_SITE_KEY = import.meta.env.VITE_CAPTCHA_SITE_KEY || "";
 export const ENABLE_CAPTCHA_IN_DEV = false;
 
 const COMMON_CSP = {
-	defaultSrc: ["'self'"],
-	frameSrc: [
-		"https://appleid.apple.com",
-		"https://hcaptcha.com",
-		"https://*.hcaptcha.com",
-		"https://strudel.cc",
-	],
-	styleSrc: ["https://hcaptcha.com", "https://*.hcaptcha.com", "'self'", "'unsafe-inline'"],
-	fontSrc: ["'self'", "data:"],
-	imgSrc: [
-		"https://appleid.apple.com",
-		"openweathermap.org",
-		"assistant-assets.nickgriffin.uk",
-		"icons.duckduckgo.com",
-		"avatars.githubusercontent.com/u/",
-		"https://logos.composio.dev",
-		"https://giphy.com",
-		"https://github.githubassets.com/images/modules/logos_page/",
-		"'self'",
-		"data:",
-		API_BASE_URL,
-	],
-	connectSrc: [
-		"'self'",
-		API_BASE_URL,
-		WS_API_URL,
-		"cas-bridge.xethub.hf.co",
-		"https://eu.i.posthog.com",
-		"https://eu-assets.i.posthog.com",
-		"https://us.i.posthog.com",
-		"https://us-assets.i.posthog.com",
-		"beacon.polychat.app",
-		"beacon-cdn.polychat.app",
-		"https://appleid.apple.com",
-		"https://hcaptcha.com",
-		"https://*.hcaptcha.com",
-		"https://api.openai.com",
-		"https://generativelanguage.googleapis.com",
-		"wss://generativelanguage.googleapis.com",
-		"https://huggingface.co",
-		"https://raw.githubusercontent.com",
-		"https://cdn-lfs-us-1.hf.co",
-		"https://assistant-assets.nickgriffin.uk",
-		"https://strudel.cc",
-	],
-	mediaSrc: ["'self'", "data:", "https://assistant-assets.nickgriffin.uk", API_BASE_URL],
-	workerSrc: ["'self'", "blob:"],
+  defaultSrc: ["'self'"],
+  frameSrc: [
+    "https://appleid.apple.com",
+    "https://hcaptcha.com",
+    "https://*.hcaptcha.com",
+    "https://strudel.cc",
+  ],
+  styleSrc: ["https://hcaptcha.com", "https://*.hcaptcha.com", "'self'", "'unsafe-inline'"],
+  fontSrc: ["'self'", "data:"],
+  imgSrc: [
+    "https://appleid.apple.com",
+    "openweathermap.org",
+    "assistant-assets.nickgriffin.uk",
+    "icons.duckduckgo.com",
+    "avatars.githubusercontent.com/u/",
+    "https://logos.composio.dev",
+    "https://giphy.com",
+    "https://github.githubassets.com/images/modules/logos_page/",
+    "'self'",
+    "data:",
+    API_BASE_URL,
+  ],
+  connectSrc: [
+    "'self'",
+    API_BASE_URL,
+    WS_API_URL,
+    "cas-bridge.xethub.hf.co",
+    "https://eu.i.posthog.com",
+    "https://eu-assets.i.posthog.com",
+    "https://us.i.posthog.com",
+    "https://us-assets.i.posthog.com",
+    "beacon.polychat.app",
+    "beacon-cdn.polychat.app",
+    "https://appleid.apple.com",
+    "https://hcaptcha.com",
+    "https://*.hcaptcha.com",
+    "https://api.openai.com",
+    "https://generativelanguage.googleapis.com",
+    "wss://generativelanguage.googleapis.com",
+    "https://huggingface.co",
+    "https://raw.githubusercontent.com",
+    "https://cdn-lfs-us-1.hf.co",
+    "https://assistant-assets.nickgriffin.uk",
+    "https://strudel.cc",
+  ],
+  mediaSrc: ["'self'", "data:", "https://assistant-assets.nickgriffin.uk", API_BASE_URL],
+  workerSrc: ["'self'", "blob:"],
 } as const;
 
 const SCRIPT_SRC = [
-	"https://eu.i.posthog.com",
-	"https://eu-assets.i.posthog.com",
-	"https://us.i.posthog.com",
-	"https://us-assets.i.posthog.com",
-	"beacon.polychat.app",
-	"https://appleid.cdn-apple.com",
-	"https://unpkg.com/react@18/umd/react.development.js",
-	"https://unpkg.com/react-dom@18/umd/react-dom.development.js",
-	"https://unpkg.com/@strudel/embed@latest",
-	"https://unpkg.com/@strudel/repl@latest",
-	"https://hcaptcha.com",
-	"https://*.hcaptcha.com",
-	"'self'",
-	"'unsafe-inline'",
-	"'unsafe-eval'",
-	"data:",
+  "https://eu.i.posthog.com",
+  "https://eu-assets.i.posthog.com",
+  "https://us.i.posthog.com",
+  "https://us-assets.i.posthog.com",
+  "beacon.polychat.app",
+  "https://appleid.cdn-apple.com",
+  "https://unpkg.com/react@18/umd/react.development.js",
+  "https://unpkg.com/react-dom@18/umd/react-dom.development.js",
+  "https://unpkg.com/@strudel/embed@latest",
+  "https://unpkg.com/@strudel/repl@latest",
+  "https://hcaptcha.com",
+  "https://*.hcaptcha.com",
+  "'self'",
+  "'unsafe-inline'",
+  "'unsafe-eval'",
+  "data:",
 ];
 
 const CSP = {
-	...COMMON_CSP,
-	scriptSrc: SCRIPT_SRC,
+  ...COMMON_CSP,
+  scriptSrc: SCRIPT_SRC,
 } as const;
 
 export const BEACON_ALLOWED_ORIGINS = IS_PRODUCTION
-	? ["https://beacon.polychat.app"]
-	: ["https://beacon.polychat.app", "http://localhost:5173"];
+  ? ["https://beacon.polychat.app"]
+  : ["https://beacon.polychat.app", "http://localhost:5173"];
 
 /**
  * Generates the Content Security Policy string from the CSP configuration
  */
 export function generateCSP(): string {
-	return Object.entries(CSP)
-		.map(([directive, sources]) => {
-			const directiveName = directive.replace(/([A-Z])/g, "-$1").toLowerCase();
-			return `${directiveName} ${sources.join(" ")}`;
-		})
-		.join("; ");
+  return Object.entries(CSP)
+    .map(([directive, sources]) => {
+      const directiveName = directive.replace(/([A-Z])/g, "-$1").toLowerCase();
+
+      return `${directiveName} ${sources.join(" ")}`;
+    })
+    .join("; ");
 }
 
 export const getAnalyticsConfig = () => POSTHOG_CONFIG;
 export const getBeaconConfig = () => BEACON_CONFIG;
 export const shouldShowDevTools = () => SHOW_DEV_TOOLS;
 export const shouldEnableCaptcha = () =>
-	!IS_E2E_BUILD && CAPTCHA_SITE_KEY && (IS_PRODUCTION || ENABLE_CAPTCHA_IN_DEV);
+  !IS_E2E_BUILD && CAPTCHA_SITE_KEY && (IS_PRODUCTION || ENABLE_CAPTCHA_IN_DEV);

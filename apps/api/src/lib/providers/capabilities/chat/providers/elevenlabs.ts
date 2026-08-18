@@ -1,73 +1,75 @@
 import { trackProviderMetrics } from "~/lib/monitoring";
 import type { ChatCompletionParameters } from "~/types";
-import { BaseProvider } from "./base";
+
 import { fetchAIResponse } from "../../../lib/fetch";
+import { BaseProvider } from "./base";
 
 export class ElevenLabsProvider extends BaseProvider {
-	name = "elevenlabs";
-	supportsStreaming = false;
-	private readonly voiceId = "JBFqnCBsd6RMkjVDRZzb";
-	isOpenAiCompatible = false;
+  name = "elevenlabs";
+  supportsStreaming = false;
+  private readonly voiceId = "JBFqnCBsd6RMkjVDRZzb";
+  isOpenAiCompatible = false;
 
-	protected getProviderKeyName(): string {
-		return "ELEVENLABS_API_KEY";
-	}
+  protected getProviderKeyName(): string {
+    return "ELEVENLABS_API_KEY";
+  }
 
-	protected validateParams(params: ChatCompletionParameters): void {
-		super.validateParams(params);
-		this.validateAiGatewayToken(params);
-	}
+  protected validateParams(params: ChatCompletionParameters): void {
+    super.validateParams(params);
+    this.validateAiGatewayToken(params);
+  }
 
-	protected async getEndpoint(): Promise<string> {
-		return `v1/text-to-speech/${this.voiceId}`;
-	}
+  protected async getEndpoint(): Promise<string> {
+    return `v1/text-to-speech/${this.voiceId}`;
+  }
 
-	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
-		const apiKey = await this.getApiKey(params, params.context?.user?.id);
-		const baseHeaders = this.buildAiGatewayHeaders(params, apiKey);
-		delete baseHeaders.Authorization;
-		delete baseHeaders.authorization;
+  protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
+    const apiKey = await this.getApiKey(params, params.context?.user?.id);
+    const baseHeaders = this.buildAiGatewayHeaders(params, apiKey);
 
-		return {
-			...baseHeaders,
-			"xi-api-key": apiKey,
-		};
-	}
+    delete baseHeaders.Authorization;
+    delete baseHeaders.authorization;
 
-	async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
-		this.validateParams(params);
+    return {
+      ...baseHeaders,
+      "xi-api-key": apiKey,
+    };
+  }
 
-		const endpoint = await this.getEndpoint();
-		const headers = await this.getHeaders(params);
+  async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
+    this.validateParams(params);
 
-		const body = {
-			text: params.message,
-			model_id: params.model,
-			output_format: "mp3_44100_128",
-		};
+    const endpoint = await this.getEndpoint();
+    const headers = await this.getHeaders(params);
 
-		return trackProviderMetrics({
-			provider: this.name,
-			model: params.model as string,
-			operation: async () => {
-				const data = await fetchAIResponse(
-					this.isOpenAiCompatible,
-					this.name,
-					endpoint,
-					headers,
-					body,
-					params.env,
-					{
-						responseType: "raw",
-					},
-				);
+    const body = {
+      text: params.message,
+      model_id: params.model,
+      output_format: "mp3_44100_128",
+    };
 
-				return data;
-			},
-			analyticsEngine: params.env?.ANALYTICS,
-			settings: this.buildMetricsSettings(params),
-			userId,
-			completion_id: params.completion_id,
-		});
-	}
+    return trackProviderMetrics({
+      provider: this.name,
+      model: params.model,
+      operation: async () => {
+        const data = await fetchAIResponse(
+          this.isOpenAiCompatible,
+          this.name,
+          endpoint,
+          headers,
+          body,
+          params.env,
+          {
+            responseType: "raw",
+          },
+        );
+
+        return data;
+      },
+      analyticsEngine: params.env?.ANALYTICS,
+      settings: this.buildMetricsSettings(params),
+      userId,
+      completion_id: params.completion_id,
+    });
+  }
 }

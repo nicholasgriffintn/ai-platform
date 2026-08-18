@@ -1,35 +1,36 @@
-import { addRoute } from "~/lib/http/routeBuilder";
+import {
+  promptCoachJsonSchema,
+  promptCoachResponseSchema,
+  errorResponseSchema,
+} from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 
-import {
-	promptCoachJsonSchema,
-	promptCoachResponseSchema,
-	errorResponseSchema,
-} from "@ngriffin_uk/polychat-schemas";
-
+import { addRoute } from "~/lib/http/routeBuilder";
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handlePromptCoachSuggestion } from "~/services/apps/prompt-coach";
+
 import articles from "./articles";
+import canvas from "./canvas";
+import connectors from "./connectors";
 import drawing from "./drawing";
 import embeddings from "./embeddings";
 import notes from "./notes";
 import podcasts from "./podcasts";
-import retrieval from "./retrieval";
-import replicate from "./replicate";
-import canvas from "./canvas";
-import strudel from "./strudel";
-import sandbox from "./sandbox";
 import recipes from "./recipes";
-import connectors from "./connectors";
+import replicate from "./replicate";
+import retrieval from "./retrieval";
+import sandbox from "./sandbox";
+import strudel from "./strudel";
 
 const app = new Hono();
 
 const routeLogger = createRouteLogger("apps");
 
 app.use("/*", (c, next) => {
-	routeLogger.info(`Processing apps route: ${c.req.path}`);
-	return next();
+  routeLogger.info(`Processing apps route: ${c.req.path}`);
+
+  return next();
 });
 
 app.use("/*", requireAuth);
@@ -55,31 +56,31 @@ app.route("/strudel", strudel);
 app.route("/sandbox", sandbox);
 
 addRoute(app, "post", "/prompt-coach", {
-	tags: ["chat"],
-	summary: "Get prompt suggestion using coaching system",
-	description:
-		"Takes a user prompt, runs it through the existing coaching system prompt, and returns the suggested revised prompt.",
-	bodySchema: promptCoachJsonSchema,
-	responses: {
-		200: {
-			description: "Suggested revised prompt extracted from AI response",
-			schema: promptCoachResponseSchema,
-		},
-		400: {
-			description: "Bad request or validation error",
-			schema: errorResponseSchema,
-		},
-		500: {
-			description: "Internal server error during suggestion generation or extraction",
-			schema: errorResponseSchema,
-		},
-	},
-	handler: async ({ body, serviceContext, user }) =>
-		handlePromptCoachSuggestion({
-			env: serviceContext.env,
-			user,
-			prompt: body.prompt,
-		}),
+  tags: ["chat"],
+  summary: "Get prompt suggestion using coaching system",
+  description:
+    "Takes a user prompt, runs it through the existing coaching system prompt, and returns the suggested revised prompt.",
+  bodySchema: promptCoachJsonSchema,
+  responses: {
+    200: {
+      description: "Suggested revised prompt extracted from AI response",
+      schema: promptCoachResponseSchema,
+    },
+    400: {
+      description: "Bad request or validation error",
+      schema: errorResponseSchema,
+    },
+    500: {
+      description: "Internal server error during suggestion generation or extraction",
+      schema: errorResponseSchema,
+    },
+  },
+  handler: async ({ body, serviceContext, user }) =>
+    handlePromptCoachSuggestion({
+      env: serviceContext.env,
+      user,
+      prompt: body.prompt,
+    }),
 });
 
 app.route("/recipes", recipes);

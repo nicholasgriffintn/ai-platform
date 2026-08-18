@@ -1,124 +1,128 @@
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type {
-	IEnv,
-	IUser,
-	ExaAnswerResult,
-	ExaSearchResult,
-	SearchOptions,
-	SearchProvider,
-	SearchResult,
+  IEnv,
+  IUser,
+  ExaAnswerResult,
+  ExaSearchResult,
+  SearchOptions,
+  SearchProvider,
+  SearchResult,
 } from "~/types";
-import { formatProviderError } from "~/lib/providers/utils/errors";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export class ExaSearchProvider implements SearchProvider {
-	private env: IEnv;
-	private user?: IUser;
-	private apiKey?: string;
-	private userSettingsRepo?: UserSettingsRepository;
+  private env: IEnv;
+  private user?: IUser;
+  private apiKey?: string;
+  private userSettingsRepo?: UserSettingsRepository;
 
-	constructor(env: IEnv, user?: IUser) {
-		this.env = env;
-		this.user = user;
+  constructor(env: IEnv, user?: IUser) {
+    this.env = env;
+    this.user = user;
 
-		if (user?.id && env.DB) {
-			this.userSettingsRepo = new UserSettingsRepository(env);
-		}
-	}
+    if (user?.id && env.DB) {
+      this.userSettingsRepo = new UserSettingsRepository(env);
+    }
+  }
 
-	private async resolveApiKey(): Promise<string> {
-		if (this.apiKey) {
-			return this.apiKey;
-		}
+  private async resolveApiKey(): Promise<string> {
+    if (this.apiKey) {
+      return this.apiKey;
+    }
 
-		if (this.user?.id && this.userSettingsRepo) {
-			try {
-				const userApiKey = await this.userSettingsRepo.getProviderApiKey(this.user.id, "exa");
-				if (userApiKey) {
-					this.apiKey = userApiKey;
-					return userApiKey;
-				}
-			} catch (error) {
-				if (
-					error instanceof AssistantError &&
-					(error.type === ErrorType.NOT_FOUND || error.type === ErrorType.PARAMS_ERROR)
-				) {
-					// Ignore missing user-specific keys so we can fall back to env key
-				} else {
-					throw error;
-				}
-			}
-		}
+    if (this.user?.id && this.userSettingsRepo) {
+      try {
+        const userApiKey = await this.userSettingsRepo.getProviderApiKey(this.user.id, "exa");
 
-		const envKey = this.env.EXA_API_KEY;
-		if (!envKey) {
-			throw new AssistantError("EXA_API_KEY is not set", ErrorType.CONFIGURATION_ERROR);
-		}
+        if (userApiKey) {
+          this.apiKey = userApiKey;
 
-		this.apiKey = envKey;
-		return envKey;
-	}
+          return userApiKey;
+        }
+      } catch (error) {
+        if (
+          error instanceof AssistantError &&
+          (error.type === ErrorType.NOT_FOUND || error.type === ErrorType.PARAMS_ERROR)
+        ) {
+          // Ignore missing user-specific keys so we can fall back to env key
+        } else {
+          throw error;
+        }
+      }
+    }
 
-	async performWebSearch(query: string, options?: SearchOptions): Promise<SearchResult> {
-		const apiKey = await this.resolveApiKey();
+    const envKey = this.env.EXA_API_KEY;
 
-		const payload = options?.include_answer
-			? {
-					query,
-					userLocation: options?.country,
-					text: options?.include_raw_content ? true : false,
-					systemPrompt: options?.system_prompt || "",
-				}
-			: {
-					query,
-					type: "auto",
-					userLocation: options?.country,
-					numResults: options?.max_results || 5,
-					contents: {
-						text: options?.include_raw_content ? true : false,
-					},
-				};
+    if (!envKey) {
+      throw new AssistantError("EXA_API_KEY is not set", ErrorType.CONFIGURATION_ERROR);
+    }
 
-		const endpoint = options.include_answer
-			? `https://api.exa.ai/answer`
-			: `https://api.exa.ai/search`;
+    this.apiKey = envKey;
 
-		try {
-			const response = await fetch(endpoint, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					"x-api-key": apiKey,
-				},
-				body: JSON.stringify(payload),
-			});
+    return envKey;
+  }
 
-			if (!response.ok) {
-				return {
-					status: "error",
-					error: await formatProviderError(response, "Error performing web search"),
-				};
-			}
+  async performWebSearch(query: string, options?: SearchOptions): Promise<SearchResult> {
+    const apiKey = await this.resolveApiKey();
 
-			const data = (await response.json()) as ExaSearchResult | ExaAnswerResult;
+    const payload = options?.include_answer
+      ? {
+          query,
+          userLocation: options?.country,
+          text: options?.include_raw_content ? true : false,
+          systemPrompt: options?.system_prompt || "",
+        }
+      : {
+          query,
+          type: "auto",
+          userLocation: options?.country,
+          numResults: options?.max_results || 5,
+          contents: {
+            text: options?.include_raw_content ? true : false,
+          },
+        };
 
-			if ("citations" in data) {
-				return {
-					provider: "exa",
-					results: data.citations || [],
-					...data,
-				};
-			}
+    const endpoint = options.include_answer
+      ? `https://api.exa.ai/answer`
+      : `https://api.exa.ai/search`;
 
-			return {
-				provider: "exa",
-				results: data.results || [],
-			};
-		} catch (error) {
-			return {
-				status: "error",
-				error: await formatProviderError(error, "Error performing web search"),
-			};
-		}
-	}
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        return {
+          status: "error",
+          error: await formatProviderError(response, "Error performing web search"),
+        };
+      }
+
+      const data = (await response.json()) as ExaSearchResult | ExaAnswerResult;
+
+      if ("citations" in data) {
+        return {
+          provider: "exa",
+          results: data.citations || [],
+          ...data,
+        };
+      }
+
+      return {
+        provider: "exa",
+        results: data.results || [],
+      };
+    } catch (error) {
+      return {
+        status: "error",
+        error: await formatProviderError(error, "Error performing web search"),
+      };
+    }
+  }
 }

@@ -91,7 +91,11 @@ export function CapabilityGroups({
               <>
                 {categoryGroup.items.map((item) => {
                   const itemKind = getProjectCapabilityKind(item);
-                  if (!itemKind) return null;
+
+                  if (!itemKind) {
+                    return null;
+                  }
+
                   const existing = capabilities.find(
                     (capability) =>
                       capability.kind === itemKind &&
@@ -108,6 +112,7 @@ export function CapabilityGroups({
                     : projectActions
                       ? itemKind !== "tool" || projectActions.canManage
                       : true;
+
                   if (recipe) {
                     return (
                       <RecipeCapabilityCard
@@ -122,7 +127,9 @@ export function CapabilityGroups({
                                 isRemoving,
                                 onAdd: () => projectActions.addItem(item, itemKind),
                                 onRemove: () => {
-                                  if (existing) projectActions.removeCapability(existing);
+                                  if (existing) {
+                                    projectActions.removeCapability(existing);
+                                  }
                                 },
                               }
                             : undefined
@@ -132,6 +139,7 @@ export function CapabilityGroups({
                       />
                     );
                   }
+
                   const tool = itemKind === "tool" ? toolById.get(item.capability.id) : undefined;
                   const skillState =
                     itemKind === "skill" && personalSkills
@@ -140,6 +148,7 @@ export function CapabilityGroups({
                   const toolConfiguration =
                     existing?.configuration ?? toolConfigurationById.get(item.capability.id) ?? {};
                   const openPath = getCapabilityOpenPath(item, surface, experiences);
+
                   return (
                     <CapabilityCard
                       key={item.id}
@@ -164,7 +173,9 @@ export function CapabilityGroups({
                               isRemoving,
                               onAdd: () => projectActions.addItem(item, itemKind),
                               onRemove: () => {
-                                if (existing) projectActions.removeCapability(existing);
+                                if (existing) {
+                                  projectActions.removeCapability(existing);
+                                }
                               },
                             }
                           : undefined

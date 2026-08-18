@@ -1,225 +1,228 @@
-import { getModelConfigByMatchingModel } from "~/lib/providers/models";
-import { trackProviderMetrics } from "~/lib/monitoring";
-import type { StorageService } from "~/lib/storage";
 import {
-	createAsyncInvocationMetadata,
-	type AsyncInvocationMetadata,
+  createAsyncInvocationMetadata,
+  type AsyncInvocationMetadata,
 } from "~/lib/async/asyncInvocation";
+import { trackProviderMetrics } from "~/lib/monitoring";
+import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { formatProviderError } from "~/lib/providers/utils/errors";
+import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { BaseProvider } from "./base";
-import { fetchAIResponse } from "../../../lib/fetch";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
 
+import { fetchAIResponse } from "../../../lib/fetch";
+import { BaseProvider } from "./base";
+
 export class ReplicateProvider extends BaseProvider {
-	name = "replicate";
-	supportsStreaming = false;
-	isOpenAiCompatible = false;
+  name = "replicate";
+  supportsStreaming = false;
+  isOpenAiCompatible = false;
 
-	protected getProviderKeyName(): string {
-		return "REPLICATE_API_TOKEN";
-	}
+  protected getProviderKeyName(): string {
+    return "REPLICATE_API_TOKEN";
+  }
 
-	protected validateParams(params: ChatCompletionParameters): void {
-		super.validateParams(params);
-		this.validateAiGatewayToken(params);
+  protected validateParams(params: ChatCompletionParameters): void {
+    super.validateParams(params);
+    this.validateAiGatewayToken(params);
 
-		const lastMessage = params.messages[params.messages.length - 1];
-		const hasContent = Boolean(lastMessage.content);
-		const hasBodyInput = Boolean(params.body?.input);
+    const lastMessage = params.messages[params.messages.length - 1];
+    const hasContent = Boolean(lastMessage.content);
+    const hasBodyInput = Boolean(params.body?.input);
 
-		if (!hasContent && !hasBodyInput) {
-			throw new AssistantError("Missing last message content", ErrorType.PARAMS_ERROR);
-		}
-	}
+    if (!hasContent && !hasBodyInput) {
+      throw new AssistantError("Missing last message content", ErrorType.PARAMS_ERROR);
+    }
+  }
 
-	protected async getEndpoint(): Promise<string> {
-		return "v1/predictions";
-	}
+  protected async getEndpoint(): Promise<string> {
+    return "v1/predictions";
+  }
 
-	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
-		const apiKey = await this.getApiKey(params, params.context?.user?.id);
-		const waitSecondsOption = params.replicate_wait_seconds;
-		const waitSeconds =
-			typeof waitSecondsOption === "number" && Number.isFinite(waitSecondsOption)
-				? Math.max(0, Math.min(60, Math.floor(waitSecondsOption)))
-				: 30;
+  protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
+    const apiKey = await this.getApiKey(params, params.context?.user?.id);
+    const waitSecondsOption = params.replicate_wait_seconds;
+    const waitSeconds =
+      typeof waitSecondsOption === "number" && Number.isFinite(waitSecondsOption)
+        ? Math.max(0, Math.min(60, Math.floor(waitSecondsOption)))
+        : 30;
 
-		return {
-			"cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-			Authorization: `Token ${apiKey}`,
-			"Content-Type": "application/json",
-			Prefer: `wait=${waitSeconds}`,
-			"cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-			"cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
-		};
-	}
+    return {
+      "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
+      Authorization: `Token ${apiKey}`,
+      "Content-Type": "application/json",
+      Prefer: `wait=${waitSeconds}`,
+      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
+      "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+    };
+  }
 
-	async mapParameters(
-		params: ChatCompletionParameters,
-		_storageService?: StorageService,
-		_assetsUrl?: string,
-	): Promise<Record<string, any>> {
-		const modelConfig = await getModelConfigByMatchingModel(
-			params.model || "",
-			params.env,
-			this.name,
-		);
-		if (!modelConfig) {
-			throw new AssistantError(
-				`Model configuration not found for ${params.model}`,
-				ErrorType.CONFIGURATION_ERROR,
-			);
-		}
+  async mapParameters(
+    params: ChatCompletionParameters,
+    _storageService?: StorageService,
+    _assetsUrl?: string,
+  ): Promise<Record<string, any>> {
+    const modelConfig = await getModelConfigByMatchingModel(
+      params.model || "",
+      params.env,
+      this.name,
+    );
 
-		const { input } = buildInputSchemaInput(params, modelConfig);
+    if (!modelConfig) {
+      throw new AssistantError(
+        `Model configuration not found for ${params.model}`,
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
 
-		const payload: Record<string, any> = {
-			version: params.version || modelConfig.matchingModel,
-			input,
-		};
+    const { input } = buildInputSchemaInput(params, modelConfig);
 
-		return payload;
-	}
+    const payload: Record<string, any> = {
+      version: params.version || modelConfig.matchingModel,
+      input,
+    };
 
-	async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
-		this.validateParams(params);
+    return payload;
+  }
 
-		const endpoint = await this.getEndpoint();
-		const headers = await this.getHeaders(params);
-		const body = await this.mapParameters(params);
-		const resolvedModel = (body?.model as string) || params.model || params.version || "unknown";
+  async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
+    this.validateParams(params);
 
-		return trackProviderMetrics({
-			provider: this.name,
-			model: resolvedModel,
-			operation: async () => {
-				const initialResponse = await fetchAIResponse(
-					this.isOpenAiCompatible,
-					this.name,
-					endpoint,
-					headers,
-					body,
-					params.env,
-				);
+    const endpoint = await this.getEndpoint();
+    const headers = await this.getHeaders(params);
+    const body = await this.mapParameters(params);
+    const resolvedModel = (body?.model as string) || params.model || params.version || "unknown";
 
-				if (initialResponse.status === "succeeded") {
-					return await this.formatResponse(initialResponse, params);
-				}
+    return trackProviderMetrics({
+      provider: this.name,
+      model: resolvedModel,
+      operation: async () => {
+        const initialResponse = await fetchAIResponse(
+          this.isOpenAiCompatible,
+          this.name,
+          endpoint,
+          headers,
+          body,
+          params.env,
+        );
 
-				if (!initialResponse.id) {
-					throw new AssistantError(
-						"Replicate async response did not include an id",
-						ErrorType.PROVIDER_ERROR,
-					);
-				}
+        if (initialResponse.status === "succeeded") {
+          return await this.formatResponse(initialResponse, params);
+        }
 
-				const placeholderContent = [
-					{
-						type: "text" as const,
-						text: "Generation in progress. We'll update this message once the results are ready.",
-					},
-				];
+        if (!initialResponse.id) {
+          throw new AssistantError(
+            "Replicate async response did not include an id",
+            ErrorType.PROVIDER_ERROR,
+          );
+        }
 
-				const asyncInvocationData = createAsyncInvocationMetadata({
-					provider: this.name,
-					id: initialResponse.id,
-					type: "replicate.prediction",
-					pollIntervalMs: 5000,
-					initialResponse,
-					context: {
-						version: params.version || params.model,
-					},
-					contentHints: {
-						placeholder: placeholderContent,
-						failure: [
-							{
-								type: "text",
-								text: "Generation failed. Please try again.",
-							},
-						],
-					},
-				});
+        const placeholderContent = [
+          {
+            type: "text" as const,
+            text: "Generation in progress. We'll update this message once the results are ready.",
+          },
+        ];
 
-				return {
-					response: placeholderContent,
-					status: "in_progress",
-					data: {
-						asyncInvocation: asyncInvocationData,
-						id: initialResponse.id,
-						status: initialResponse.status,
-					},
-				};
-			},
-			analyticsEngine: params.env?.ANALYTICS,
-			settings: {
-				temperature: params.temperature,
-				max_tokens: params.max_tokens,
-				top_p: params.top_p,
-				top_k: params.top_k,
-				seed: params.seed,
-				repetition_penalty: params.repetition_penalty,
-				frequency_penalty: params.frequency_penalty,
-			},
-			userId,
-			completion_id: params.completion_id,
-			request: params,
-		});
-	}
+        const asyncInvocationData = createAsyncInvocationMetadata({
+          provider: this.name,
+          id: initialResponse.id,
+          type: "replicate.prediction",
+          pollIntervalMs: 5000,
+          initialResponse,
+          context: {
+            version: params.version || params.model,
+          },
+          contentHints: {
+            placeholder: placeholderContent,
+            failure: [
+              {
+                type: "text",
+                text: "Generation failed. Please try again.",
+              },
+            ],
+          },
+        });
 
-	async getAsyncInvocationStatus(
-		metadata: AsyncInvocationMetadata,
-		params: ChatCompletionParameters,
-		userId?: number,
-	): Promise<{
-		status: "in_progress" | "completed" | "failed";
-		result?: any;
-		raw: Record<string, any>;
-	}> {
-		const apiKey = await this.getApiKey(params, userId);
-		const pollHeaders: Record<string, string> = {
-			"cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-			Authorization: `Token ${apiKey}`,
-			"cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-			"cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
-		};
+        return {
+          response: placeholderContent,
+          status: "in_progress",
+          data: {
+            asyncInvocation: asyncInvocationData,
+            id: initialResponse.id,
+            status: initialResponse.status,
+          },
+        };
+      },
+      analyticsEngine: params.env?.ANALYTICS,
+      settings: {
+        temperature: params.temperature,
+        max_tokens: params.max_tokens,
+        top_p: params.top_p,
+        top_k: params.top_k,
+        seed: params.seed,
+        repetition_penalty: params.repetition_penalty,
+        frequency_penalty: params.frequency_penalty,
+      },
+      userId,
+      completion_id: params.completion_id,
+      request: params,
+    });
+  }
 
-		const response = await fetch(`https://api.replicate.com/v1/predictions/${metadata.id}`, {
-			headers: pollHeaders,
-		});
+  async getAsyncInvocationStatus(
+    metadata: AsyncInvocationMetadata,
+    params: ChatCompletionParameters,
+    userId?: number,
+  ): Promise<{
+    status: "in_progress" | "completed" | "failed";
+    result?: any;
+    raw: Record<string, any>;
+  }> {
+    const apiKey = await this.getApiKey(params, userId);
+    const pollHeaders: Record<string, string> = {
+      "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
+      Authorization: `Token ${apiKey}`,
+      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
+      "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+    };
 
-		if (!response.ok) {
-			throw new AssistantError(
-				await formatProviderError(response, "Failed to poll Replicate prediction"),
-				ErrorType.PROVIDER_ERROR,
-				response.status,
-			);
-		}
+    const response = await fetch(`https://api.replicate.com/v1/predictions/${metadata.id}`, {
+      headers: pollHeaders,
+    });
 
-		const data = (await response.json()) as Record<string, any>;
-		const status = String(data.status || "").toLowerCase();
+    if (!response.ok) {
+      throw new AssistantError(
+        await formatProviderError(response, "Failed to poll Replicate prediction"),
+        ErrorType.PROVIDER_ERROR,
+        response.status,
+      );
+    }
 
-		if (status === "succeeded") {
-			const formatted = await this.formatResponse(data, params);
-			return {
-				status: "completed",
-				result: formatted,
-				raw: data,
-			};
-		}
+    const data = (await response.json()) as Record<string, any>;
+    const status = String(data.status || "").toLowerCase();
 
-		if (status === "failed" || status === "canceled" || status === "cancelled") {
-			return {
-				status: "failed",
-				raw: data,
-			};
-		}
+    if (status === "succeeded") {
+      const formatted = await this.formatResponse(data, params);
 
-		return {
-			status: "in_progress",
-			raw: data,
-		};
-	}
+      return {
+        status: "completed",
+        result: formatted,
+        raw: data,
+      };
+    }
+
+    if (status === "failed" || status === "canceled" || status === "cancelled") {
+      return {
+        status: "failed",
+        raw: data,
+      };
+    }
+
+    return {
+      status: "in_progress",
+      raw: data,
+    };
+  }
 }

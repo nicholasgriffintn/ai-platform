@@ -107,7 +107,9 @@ export function LoginModal({ open, onOpenChange, onKeySubmit }: LoginModalProps)
       },
       mapError: (error) => {
         const message = error instanceof Error ? error.message : "Sign-in failed.";
+
         trackError("auth_error", message, { method: "shared_auth_flow" });
+
         return getLoginErrorMessage(message, "email");
       },
       onAnalytics: (event) => {

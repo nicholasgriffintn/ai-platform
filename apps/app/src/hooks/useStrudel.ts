@@ -17,19 +17,20 @@ export const STRUDEL_QUERY_KEYS = {
 };
 
 export const useStrudelPatterns = (projectId?: string, options?: { enabled?: boolean }) =>
-  useQuery<StrudelPattern[], Error>({
+  useQuery<StrudelPattern[]>({
     queryKey: STRUDEL_QUERY_KEYS.list(projectId),
     queryFn: () => strudelService.list(projectId),
     enabled: options?.enabled ?? true,
   });
 
 export const useStrudelPattern = (id?: string, projectId?: string) =>
-  useQuery<StrudelPattern, Error>({
+  useQuery<StrudelPattern>({
     queryKey: STRUDEL_QUERY_KEYS.detail(projectId, id),
     queryFn: () => {
       if (!id) {
         throw new Error("Pattern ID is required");
       }
+
       return strudelService.get(id, projectId);
     },
     enabled: Boolean(id),
@@ -42,6 +43,7 @@ export const useGenerateStrudelPattern = (projectId?: string) =>
 
 export const useSaveStrudelPattern = (projectId?: string) => {
   const queryClient = useQueryClient();
+
   return useMutation<StrudelPattern, Error, SaveStrudelPatternInput>({
     mutationFn: (payload) => strudelService.save(payload, projectId),
     onSuccess: () => {
@@ -52,11 +54,13 @@ export const useSaveStrudelPattern = (projectId?: string) => {
 
 export const useUpdateStrudelPattern = (id?: string, projectId?: string) => {
   const queryClient = useQueryClient();
+
   return useMutation<StrudelPattern, Error, UpdateStrudelPatternInput>({
     mutationFn: (payload) => {
       if (!id) {
         throw new Error("Pattern ID is required");
       }
+
       return strudelService.update(id, payload, projectId);
     },
     onSuccess: () => {
@@ -72,6 +76,7 @@ export const useUpdateStrudelPattern = (id?: string, projectId?: string) => {
 
 export const useDeleteStrudelPattern = (projectId?: string) => {
   const queryClient = useQueryClient();
+
   return useMutation<void, Error, string>({
     mutationFn: (patternId) => strudelService.delete(patternId, projectId),
     onSuccess: () => {

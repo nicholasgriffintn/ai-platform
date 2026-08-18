@@ -13,14 +13,14 @@ export type { ChatCompletionParameters } from "~/types";
  * @returns The chat provider instance
  */
 export function getChatProvider(
-	providerName: string,
-	context?: ProviderFactoryContext,
+  providerName: string,
+  context?: ProviderFactoryContext,
 ): AIProvider {
-	try {
-		return providerLibrary.chat(providerName, context);
-	} catch {
-		return providerLibrary.chat("workers", context);
-	}
+  try {
+    return providerLibrary.chat(providerName, context);
+  } catch {
+    return providerLibrary.chat("workers", context);
+  }
 }
 
 /**
@@ -28,15 +28,15 @@ export function getChatProvider(
  * @returns Array of provider names (including aliases)
  */
 export function listChatProviders(): string[] {
-	const summaries = providerLibrary.list("chat");
-	const names = new Set<string>();
+  const summaries = providerLibrary.list("chat");
+  const names = new Set<string>();
 
-	for (const summary of summaries) {
-		names.add(summary.name);
-		summary.aliases?.forEach((alias) => names.add(alias));
-	}
+  for (const summary of summaries) {
+    names.add(summary.name);
+    summary.aliases?.forEach((alias) => names.add(alias));
+  }
 
-	return Array.from(names).sort();
+  return Array.from(names).sort();
 }
 
 /**
@@ -44,9 +44,17 @@ export function listChatProviders(): string[] {
  * @returns Array of configurable provider names
  */
 export function listConfigurableChatProviders(): string[] {
-	const ignoredProviders = ["ollama", "workers", "workers-ai", "google", "googleai", "github"];
-	return providerLibrary
-		.list("chat")
-		.map((provider) => provider.name)
-		.filter((provider) => !ignoredProviders.includes(provider));
+  const ignoredProviders = new Set([
+    "ollama",
+    "workers",
+    "workers-ai",
+    "google",
+    "googleai",
+    "github",
+  ]);
+
+  return providerLibrary
+    .list("chat")
+    .map((provider) => provider.name)
+    .filter((provider) => !ignoredProviders.has(provider));
 }

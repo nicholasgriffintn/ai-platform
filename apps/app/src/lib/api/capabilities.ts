@@ -1,27 +1,28 @@
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import type { CapabilityCatalogResponse } from "@ngriffin_uk/polychat-schemas";
 
-import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import { apiService } from "./api-service";
 import { fetchApi } from "./fetch-wrapper";
 
 export const fetchCapabilityCatalog = async (
-	projectId?: string,
+  projectId?: string,
 ): Promise<CapabilityCatalogResponse> => {
-	let headers = {};
-	try {
-		headers = await apiService.getHeaders();
-	} catch (error) {
-		console.error("Error reading capability catalogue headers:", error);
-	}
+  let headers = {};
 
-	const path = projectId
-		? `/capabilities?projectId=${encodeURIComponent(projectId)}`
-		: "/capabilities";
-	const response = await fetchApi(path, { method: "GET", headers });
+  try {
+    headers = await apiService.getHeaders();
+  } catch (error) {
+    console.error("Error reading capability catalogue headers:", error);
+  }
 
-	if (!response.ok) {
-		throw new Error(`Failed to fetch capability catalogue: ${response.statusText}`);
-	}
+  const path = projectId
+    ? `/capabilities?projectId=${encodeURIComponent(projectId)}`
+    : "/capabilities";
+  const response = await fetchApi(path, { method: "GET", headers });
 
-	return returnFetchedData<CapabilityCatalogResponse>(response);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch capability catalogue: ${response.statusText}`);
+  }
+
+  return returnFetchedData<CapabilityCatalogResponse>(response);
 };

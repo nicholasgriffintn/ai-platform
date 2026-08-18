@@ -36,8 +36,10 @@ function extractHostname(url?: string | null) {
   if (!url) {
     return "";
   }
+
   try {
     const parsed = new URL(url);
+
     return parsed.hostname.replace(/^www\./, "");
   } catch {
     return url;
@@ -145,7 +147,7 @@ export function ResearchReport({
         <>
           {isTextContent ? (
             <div className="prose dark:prose-invert max-w-none text-zinc-700 dark:text-zinc-200">
-              <MemoizedMarkdown>{content as string}</MemoizedMarkdown>
+              <MemoizedMarkdown>{content}</MemoizedMarkdown>
             </div>
           ) : (
             <JsonView data={content ?? {}} />

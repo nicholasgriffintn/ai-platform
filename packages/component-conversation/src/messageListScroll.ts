@@ -1,21 +1,22 @@
 interface MessageListScrollMessage {
-	id: string;
+  id: string;
 }
 
 interface MessageListScrollKeyInput {
-	conversationId?: string;
-	messages: MessageListScrollMessage[];
+  conversationId?: string;
+  messages: MessageListScrollMessage[];
 }
 
 export function getMessageListScrollKey({
-	conversationId,
-	messages,
+  conversationId,
+  messages,
 }: MessageListScrollKeyInput): string {
-	const conversationKey = conversationId ?? "new";
-	const lastMessage = messages[messages.length - 1];
-	if (!lastMessage) {
-		return `${conversationKey}:empty`;
-	}
+  const conversationKey = conversationId ?? "new";
+  const lastMessage = messages[messages.length - 1];
 
-	return `${conversationKey}:${messages.length}:${lastMessage.id}`;
+  if (!lastMessage) {
+    return `${conversationKey}:empty`;
+  }
+
+  return `${conversationKey}:${messages.length}:${lastMessage.id}`;
 }

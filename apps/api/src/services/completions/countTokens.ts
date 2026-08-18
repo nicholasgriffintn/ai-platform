@@ -1,6 +1,6 @@
-import { findModelConfig } from "~/lib/providers/models";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { findModelConfig } from "~/lib/providers/models";
 import type { ChatCompletionParameters, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -8,86 +8,89 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "services/completions/countTokens" });
 
 interface CountTokensRequest {
-	model: string;
-	provider?: string;
-	messages: Message[];
-	system_prompt?: string;
+  model: string;
+  provider?: string;
+  messages: Message[];
+  system_prompt?: string;
 }
 
 interface CountTokensResponse {
-	status: "success" | "error";
-	message?: string;
-	inputTokens: number;
-	model: string;
+  status: "success" | "error";
+  message?: string;
+  inputTokens: number;
+  model: string;
 }
 
 export async function handleCountTokens(
-	context: ServiceContext,
-	request: CountTokensRequest,
+  context: ServiceContext,
+  request: CountTokensRequest,
 ): Promise<CountTokensResponse> {
-	const { model, provider: requestedProvider, messages, system_prompt } = request;
-	const { env, user } = context;
+  const { model, provider: requestedProvider, messages, system_prompt } = request;
+  const { env, user } = context;
 
-	logger.info("Processing token count request", { model });
+  logger.info("Processing token count request", { model });
 
-	const modelConfig = await findModelConfig(model, env, requestedProvider);
-	if (!modelConfig) {
-		return {
-			status: "error",
-			message: `Model ${model} not found`,
-			inputTokens: 0,
-			model,
-		};
-	}
+  const modelConfig = await findModelConfig(model, env, requestedProvider);
 
-	if (!modelConfig.supportsTokenCounting) {
-		return {
-			status: "error",
-			message: `Token counting is not supported for the model ${model}`,
-			inputTokens: 0,
-			model,
-		};
-	}
+  if (!modelConfig) {
+    return {
+      status: "error",
+      message: `Model ${model} not found`,
+      inputTokens: 0,
+      model,
+    };
+  }
 
-	const provider = getChatProvider(modelConfig.provider, { env, user });
-	if (!provider) {
-		return {
-			status: "error",
-			message: `Provider ${modelConfig.provider} not found`,
-			inputTokens: 0,
-			model,
-		};
-	}
+  if (!modelConfig.supportsTokenCounting) {
+    return {
+      status: "error",
+      message: `Token counting is not supported for the model ${model}`,
+      inputTokens: 0,
+      model,
+    };
+  }
 
-	if (!provider.countTokens) {
-		return {
-			status: "error",
-			message: `Token counting not supported for provider ${modelConfig.provider}`,
-			inputTokens: 0,
-			model,
-		};
-	}
+  const provider = getChatProvider(modelConfig.provider, { env, user });
 
-	const matchingModel = modelConfig.matchingModel;
+  if (!provider) {
+    return {
+      status: "error",
+      message: `Provider ${modelConfig.provider} not found`,
+      inputTokens: 0,
+      model,
+    };
+  }
 
-	const params: ChatCompletionParameters = {
-		model: matchingModel,
-		provider: modelConfig.provider,
-		messages,
-		system_prompt,
-		env,
-		context,
-	};
+  if (!provider.countTokens) {
+    return {
+      status: "error",
+      message: `Token counting not supported for provider ${modelConfig.provider}`,
+      inputTokens: 0,
+      model,
+    };
+  }
 
-	try {
-		const result = await provider.countTokens(params, user?.id);
-		return {
-			status: "success",
-			inputTokens: result.inputTokens,
-			model,
-		};
-	} catch (error) {
-		logger.error("Token counting failed", { error, model });
-		throw new AssistantError("Failed to count tokens", ErrorType.PROVIDER_ERROR);
-	}
+  const matchingModel = modelConfig.matchingModel;
+
+  const params: ChatCompletionParameters = {
+    model: matchingModel,
+    provider: modelConfig.provider,
+    messages,
+    system_prompt,
+    env,
+    context,
+  };
+
+  try {
+    const result = await provider.countTokens(params, user?.id);
+
+    return {
+      status: "success",
+      inputTokens: result.inputTokens,
+      model,
+    };
+  } catch (error) {
+    logger.error("Token counting failed", { error, model });
+    throw new AssistantError("Failed to count tokens", ErrorType.PROVIDER_ERROR);
+  }
 }

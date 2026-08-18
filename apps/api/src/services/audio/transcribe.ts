@@ -1,79 +1,81 @@
-import { getAuxiliarySpeechModel } from "~/lib/providers/models";
 import { getTranscriptionProvider } from "~/lib/providers/capabilities/transcription";
+import { getAuxiliarySpeechModel } from "~/lib/providers/models";
+import { hasUserProviderApiKey } from "~/lib/providers/utils/apiKeys";
+import { RepositoryManager } from "~/repositories";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { RepositoryManager } from "~/repositories";
-import { hasUserProviderApiKey } from "~/lib/providers/utils/apiKeys";
 
 export type TranscriptionProvider = "workers" | "mistral" | "replicate";
 
 type TranscribeRequest = {
-	env: IEnv;
-	audio: File | Blob | string;
-	user: IUser;
-	provider?: TranscriptionProvider;
-	timestamps?: boolean;
+  env: IEnv;
+  audio: File | Blob | string;
+  user: IUser;
+  provider?: TranscriptionProvider;
+  timestamps?: boolean;
 };
 
 export const handleTranscribe = async (
-	req: TranscribeRequest,
+  req: TranscribeRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-	const { audio, env, user, provider, timestamps = false } = req;
+  const { audio, env, user, provider, timestamps = false } = req;
 
-	if (!audio) {
-		throw new AssistantError("Missing audio", ErrorType.PARAMS_ERROR);
-	}
+  if (!audio) {
+    throw new AssistantError("Missing audio", ErrorType.PARAMS_ERROR);
+  }
 
-	try {
-		let selectedProvider = provider;
+  try {
+    let selectedProvider = provider;
 
-		if (!selectedProvider) {
-			const repositories = new RepositoryManager(env);
-			const userSettings = user?.id
-				? await repositories.userSettings.getUserSettings(user.id)
-				: null;
+    if (!selectedProvider) {
+      const repositories = new RepositoryManager(env);
+      const userSettings = user?.id
+        ? await repositories.userSettings.getUserSettings(user.id)
+        : null;
 
-			const speechModel = await getAuxiliarySpeechModel(env, userSettings);
-			selectedProvider = speechModel.transcriptionProvider as TranscriptionProvider;
-		}
+      const speechModel = await getAuxiliarySpeechModel(env, userSettings);
 
-		const resolvedProvider = selectedProvider || "workers";
-		if (user?.plan_id !== "pro") {
-			if (!(await hasUserProviderApiKey({ env, user, providerName: resolvedProvider }))) {
-				throw new AssistantError(
-					`Transcription requires a configured ${resolvedProvider} provider key`,
-					ErrorType.AUTHORISATION_ERROR,
-					403,
-				);
-			}
-		}
+      selectedProvider = speechModel.transcriptionProvider as TranscriptionProvider;
+    }
 
-		const transcriptionProvider = getTranscriptionProvider(resolvedProvider, {
-			env,
-			user,
-		});
+    const resolvedProvider = selectedProvider || "workers";
 
-		const result = await transcriptionProvider.transcribe({
-			env,
-			audio,
-			user,
-			provider: resolvedProvider,
-			timestamps,
-		});
+    if (user?.plan_id !== "pro") {
+      if (!(await hasUserProviderApiKey({ env, user, providerName: resolvedProvider }))) {
+        throw new AssistantError(
+          `Transcription requires a configured ${resolvedProvider} provider key`,
+          ErrorType.AUTHORISATION_ERROR,
+          403,
+        );
+      }
+    }
 
-		return {
-			status: "success",
-			content: result.text,
-			data: result.data,
-		};
-	} catch (error) {
-		if (error instanceof AssistantError) {
-			throw error;
-		}
+    const transcriptionProvider = getTranscriptionProvider(resolvedProvider, {
+      env,
+      user,
+    });
 
-		throw new AssistantError(
-			`Transcription failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-			ErrorType.EXTERNAL_API_ERROR,
-		);
-	}
+    const result = await transcriptionProvider.transcribe({
+      env,
+      audio,
+      user,
+      provider: resolvedProvider,
+      timestamps,
+    });
+
+    return {
+      status: "success",
+      content: result.text,
+      data: result.data,
+    };
+  } catch (error) {
+    if (error instanceof AssistantError) {
+      throw error;
+    }
+
+    throw new AssistantError(
+      `Transcription failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      ErrorType.EXTERNAL_API_ERROR,
+    );
+  }
 };

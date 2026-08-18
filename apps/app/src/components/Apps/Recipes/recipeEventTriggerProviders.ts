@@ -5,9 +5,13 @@ export function getRecipeEventTriggerProviders(
   recipe: AssistantRecipe,
   connectorByProviderId: Map<string, RecipeConnectorManifest>,
 ): RecipeEventTriggerProvider[] {
-  if (!recipe.triggers.some((trigger) => trigger.type === "event")) return [];
+  if (!recipe.triggers.some((trigger) => trigger.type === "event")) {
+    return [];
+  }
+
   return recipe.integrations.flatMap((integration) => {
     const connector = connectorByProviderId.get(integration.providerId);
+
     if (
       integration.connectionStatus !== "connected" ||
       connector?.authType !== "composio" ||
@@ -15,6 +19,7 @@ export function getRecipeEventTriggerProviders(
     ) {
       return [];
     }
+
     return [{ id: connector.id, name: integration.name || connector.name }];
   });
 }

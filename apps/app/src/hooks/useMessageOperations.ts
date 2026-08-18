@@ -1,208 +1,217 @@
 import { normalizeMessage } from "@ngriffin_uk/polychat-library-chat/messages";
-import { useCallback } from "react";
-import type { ChatRequestOptions, Message } from "~/types";
 import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
+import { useCallback } from "react";
+
 import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
-import { useConversationStorage } from "./useConversationStorage";
 import { useChatStore } from "~/state/stores/chatStore";
+import type { ChatRequestOptions, Message } from "~/types";
+
+import { useConversationStorage } from "./useConversationStorage";
 
 /**
  * Hook for managing message operations within conversations.
  * Handles adding, updating, and deleting messages.
  */
 export function useMessageOperations(requestOptions?: ChatRequestOptions) {
-	const { updateConversation } = useConversationStorage(requestOptions);
-	const { model } = useChatStore();
+  const { updateConversation } = useConversationStorage(requestOptions);
+  const { model } = useChatStore();
 
-	const addMessageToConversation = useCallback(
-		async (conversationId: string, message: Message) => {
-			const normalizedMessage = normalizeMessage(message);
+  const addMessageToConversation = useCallback(
+    async (conversationId: string, message: Message) => {
+      const normalizedMessage = normalizeMessage(message);
 
-			await updateConversation(conversationId, (oldData) => {
-				if (!oldData) {
-					const now = new Date().toISOString();
-					return {
-						id: conversationId,
-						title: createTemporaryConversationTitle([normalizedMessage]),
-						messages: [normalizedMessage],
-						isLocalOnly: false,
-						created_at: now,
-						updated_at: now,
-						last_message_at: now,
-					};
-				}
+      await updateConversation(conversationId, (oldData) => {
+        if (!oldData) {
+          const now = new Date().toISOString();
 
-				const existingMessageIndex = oldData.messages.findIndex(
-					(message) => message.id === normalizedMessage.id,
-				);
-				if (existingMessageIndex !== -1) {
-					const messages = [...oldData.messages];
-					messages[existingMessageIndex] = normalizedMessage;
-					return {
-						...oldData,
-						messages,
-						updated_at: new Date().toISOString(),
-						last_message_at: new Date().toISOString(),
-					};
-				}
+          return {
+            id: conversationId,
+            title: createTemporaryConversationTitle([normalizedMessage]),
+            messages: [normalizedMessage],
+            isLocalOnly: false,
+            created_at: now,
+            updated_at: now,
+            last_message_at: now,
+          };
+        }
 
-				return {
-					...oldData,
-					messages: [...oldData.messages, normalizedMessage],
-					updated_at: new Date().toISOString(),
-					last_message_at: new Date().toISOString(),
-				};
-			});
-		},
-		[updateConversation],
-	);
+        const existingMessageIndex = oldData.messages.findIndex(
+          (message) => message.id === normalizedMessage.id,
+        );
 
-	const insertMessageBeforeConversationMessage = useCallback(
-		async (conversationId: string, message: Message, beforeMessageId: string) => {
-			const normalizedMessage = normalizeMessage(message);
+        if (existingMessageIndex !== -1) {
+          const messages = [...oldData.messages];
 
-			await updateConversation(conversationId, (oldData) => {
-				if (!oldData) {
-					const now = new Date().toISOString();
-					return {
-						id: conversationId,
-						title: createTemporaryConversationTitle([normalizedMessage]),
-						messages: [normalizedMessage],
-						isLocalOnly: false,
-						created_at: now,
-						updated_at: now,
-						last_message_at: now,
-					};
-				}
+          messages[existingMessageIndex] = normalizedMessage;
 
-				const withoutExisting = oldData.messages.filter(
-					(existingMessage) => existingMessage.id !== normalizedMessage.id,
-				);
-				const beforeIndex = withoutExisting.findIndex(
-					(existingMessage) => existingMessage.id === beforeMessageId,
-				);
-				const insertIndex = beforeIndex === -1 ? withoutExisting.length : beforeIndex;
-				const messages = [
-					...withoutExisting.slice(0, insertIndex),
-					normalizedMessage,
-					...withoutExisting.slice(insertIndex),
-				];
+          return {
+            ...oldData,
+            messages,
+            updated_at: new Date().toISOString(),
+            last_message_at: new Date().toISOString(),
+          };
+        }
 
-				return {
-					...oldData,
-					messages,
-					updated_at: new Date().toISOString(),
-					last_message_at: new Date().toISOString(),
-				};
-			});
-		},
-		[updateConversation],
-	);
+        return {
+          ...oldData,
+          messages: [...oldData.messages, normalizedMessage],
+          updated_at: new Date().toISOString(),
+          last_message_at: new Date().toISOString(),
+        };
+      });
+    },
+    [updateConversation],
+  );
 
-	const addAssistantMessage = useCallback(
-		async (
-			conversationId: string,
-			content: Message["content"],
-			reasoning?: string,
-			messageData?: Partial<Message>,
-		) => {
-			const now = Date.now();
-			const currentModel = normalizeSelectedModel(model);
+  const insertMessageBeforeConversationMessage = useCallback(
+    async (conversationId: string, message: Message, beforeMessageId: string) => {
+      const normalizedMessage = normalizeMessage(message);
 
-			const assistantMessage = normalizeMessage({
-				role: "assistant",
-				content,
-				id: messageData?.id || crypto.randomUUID(),
-				created: messageData?.created || now,
-				timestamp: messageData?.timestamp || now,
-				model: messageData?.model || currentModel,
-				reasoning: reasoning
-					? {
-							collapsed: true,
-							content: reasoning,
-						}
-					: undefined,
-				...messageData,
-			});
+      await updateConversation(conversationId, (oldData) => {
+        if (!oldData) {
+          const now = new Date().toISOString();
 
-			await addMessageToConversation(conversationId, assistantMessage);
-			return assistantMessage;
-		},
-		[model, addMessageToConversation],
-	);
+          return {
+            id: conversationId,
+            title: createTemporaryConversationTitle([normalizedMessage]),
+            messages: [normalizedMessage],
+            isLocalOnly: false,
+            created_at: now,
+            updated_at: now,
+            last_message_at: now,
+          };
+        }
 
-	const updateAssistantMessage = useCallback(
-		async (
-			conversationId: string,
-			content: Message["content"],
-			reasoning?: string,
-			messageData?: Partial<Message>,
-			options?: { messageId?: string },
-		) => {
-			await updateConversation(conversationId, (oldData) => {
-				const now = Date.now();
-				const nowISOString = new Date(now).toISOString();
-				const currentModel = normalizeSelectedModel(model);
+        const withoutExisting = oldData.messages.filter(
+          (existingMessage) => existingMessage.id !== normalizedMessage.id,
+        );
+        const beforeIndex = withoutExisting.findIndex(
+          (existingMessage) => existingMessage.id === beforeMessageId,
+        );
+        const insertIndex = beforeIndex === -1 ? withoutExisting.length : beforeIndex;
+        const messages = [
+          ...withoutExisting.slice(0, insertIndex),
+          normalizedMessage,
+          ...withoutExisting.slice(insertIndex),
+        ];
 
-				if (!oldData) {
-					throw new Error("No conversation found to update");
-				}
+        return {
+          ...oldData,
+          messages,
+          updated_at: new Date().toISOString(),
+          last_message_at: new Date().toISOString(),
+        };
+      });
+    },
+    [updateConversation],
+  );
 
-				const messages = [...oldData.messages];
-				const assistantIndex = (() => {
-					if (options?.messageId) {
-						return messages.findIndex(
-							(message) => message.id === options.messageId && message.role === "assistant",
-						);
-					}
+  const addAssistantMessage = useCallback(
+    async (
+      conversationId: string,
+      content: Message["content"],
+      reasoning?: string,
+      messageData?: Partial<Message>,
+    ) => {
+      const now = Date.now();
+      const currentModel = normalizeSelectedModel(model);
 
-					for (let i = messages.length - 1; i >= 0; i--) {
-						if (messages[i].role === "assistant") {
-							return i;
-						}
-					}
-					return -1;
-				})();
+      const assistantMessage = normalizeMessage({
+        role: "assistant",
+        content,
+        id: messageData?.id || crypto.randomUUID(),
+        created: messageData?.created || now,
+        timestamp: messageData?.timestamp || now,
+        model: messageData?.model || currentModel,
+        reasoning: reasoning
+          ? {
+              collapsed: true,
+              content: reasoning,
+            }
+          : undefined,
+        ...messageData,
+      });
 
-				if (assistantIndex === -1) {
-					throw new Error("No assistant message found to update");
-				}
+      await addMessageToConversation(conversationId, assistantMessage);
 
-				const lastAssistantMessage = messages[assistantIndex];
-				const updatedMessage = normalizeMessage({
-					...lastAssistantMessage,
-					...messageData,
-					role: "assistant",
-					content,
-					created: messageData?.created || lastAssistantMessage.created || now,
-					timestamp: messageData?.timestamp || lastAssistantMessage.timestamp || now,
-					model: messageData?.model || currentModel,
-					reasoning: reasoning
-						? {
-								collapsed: true,
-								content: reasoning,
-							}
-						: lastAssistantMessage.reasoning,
-				});
+      return assistantMessage;
+    },
+    [model, addMessageToConversation],
+  );
 
-				messages[assistantIndex] = updatedMessage;
+  const updateAssistantMessage = useCallback(
+    async (
+      conversationId: string,
+      content: Message["content"],
+      reasoning?: string,
+      messageData?: Partial<Message>,
+      options?: { messageId?: string },
+    ) => {
+      await updateConversation(conversationId, (oldData) => {
+        const now = Date.now();
+        const nowISOString = new Date(now).toISOString();
+        const currentModel = normalizeSelectedModel(model);
 
-				return {
-					...oldData,
-					messages: [...messages],
-					updated_at: nowISOString,
-					last_message_at: nowISOString,
-					created_at: oldData.created_at || nowISOString,
-				};
-			});
-		},
-		[model, updateConversation],
-	);
+        if (!oldData) {
+          throw new Error("No conversation found to update");
+        }
 
-	return {
-		addMessageToConversation,
-		insertMessageBeforeConversationMessage,
-		addAssistantMessage,
-		updateAssistantMessage,
-	};
+        const messages = [...oldData.messages];
+        const assistantIndex = (() => {
+          if (options?.messageId) {
+            return messages.findIndex(
+              (message) => message.id === options.messageId && message.role === "assistant",
+            );
+          }
+
+          for (let i = messages.length - 1; i >= 0; i--) {
+            if (messages[i].role === "assistant") {
+              return i;
+            }
+          }
+
+          return -1;
+        })();
+
+        if (assistantIndex === -1) {
+          throw new Error("No assistant message found to update");
+        }
+
+        const lastAssistantMessage = messages[assistantIndex];
+        const updatedMessage = normalizeMessage({
+          ...lastAssistantMessage,
+          ...messageData,
+          role: "assistant",
+          content,
+          created: messageData?.created || lastAssistantMessage.created || now,
+          timestamp: messageData?.timestamp || lastAssistantMessage.timestamp || now,
+          model: messageData?.model || currentModel,
+          reasoning: reasoning
+            ? {
+                collapsed: true,
+                content: reasoning,
+              }
+            : lastAssistantMessage.reasoning,
+        });
+
+        messages[assistantIndex] = updatedMessage;
+
+        return {
+          ...oldData,
+          messages: [...messages],
+          updated_at: nowISOString,
+          last_message_at: nowISOString,
+          created_at: oldData.created_at || nowISOString,
+        };
+      });
+    },
+    [model, updateConversation],
+  );
+
+  return {
+    addMessageToConversation,
+    insertMessageBeforeConversationMessage,
+    addAssistantMessage,
+    updateAssistantMessage,
+  };
 }

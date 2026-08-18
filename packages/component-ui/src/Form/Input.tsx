@@ -1,62 +1,61 @@
 import type { InputHTMLAttributes } from "react";
-import { forwardRef } from "react";
-import { useId } from "react";
+import { forwardRef, useId } from "react";
 
-import { cn } from "../utils";
 import { Label } from "../label";
+import { cn } from "../utils";
 import { mergeDescribedBy } from "./describedBy";
 
 export interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
-	label?: string;
-	description?: string;
-	className?: string;
-	fullWidth?: boolean;
-	disabled?: boolean;
+  label?: string;
+  description?: string;
+  className?: string;
+  fullWidth?: boolean;
+  disabled?: boolean;
 }
 
 export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
-	(
-		{
-			label,
-			description,
-			className,
-			fullWidth = true,
-			id,
-			disabled = false,
-			"aria-describedby": ariaDescribedBy,
-			...props
-		},
-		ref,
-	) => {
-		const generatedId = useId();
-		const controlId = id ?? generatedId;
-		const descriptionId = description ? `${controlId}-description` : undefined;
-		const describedBy = mergeDescribedBy(ariaDescribedBy, descriptionId);
+  (
+    {
+      label,
+      description,
+      className,
+      fullWidth = true,
+      id,
+      disabled = false,
+      "aria-describedby": ariaDescribedBy,
+      ...props
+    },
+    ref,
+  ) => {
+    const generatedId = useId();
+    const controlId = id ?? generatedId;
+    const descriptionId = description ? `${controlId}-description` : undefined;
+    const describedBy = mergeDescribedBy(ariaDescribedBy, descriptionId);
 
-		return (
-			<div className={cn("space-y-1", fullWidth && "w-full")}>
-				{label && <Label htmlFor={controlId}>{label}</Label>}
-				<input
-					ref={ref}
-					id={controlId}
-					className={cn(
-						"px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100",
-						fullWidth && "w-full",
-						className,
-						disabled && "opacity-50 cursor-not-allowed",
-					)}
-					aria-describedby={describedBy}
-					disabled={disabled}
-					{...props}
-				/>
-				{description && (
-					<p id={descriptionId} className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-						{description}
-					</p>
-				)}
-			</div>
-		);
-	},
+    return (
+      <div className={cn("space-y-1", fullWidth && "w-full")}>
+        {label && <Label htmlFor={controlId}>{label}</Label>}
+        <input
+          ref={ref}
+          id={controlId}
+          className={cn(
+            "px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100",
+            fullWidth && "w-full",
+            className,
+            disabled && "opacity-50 cursor-not-allowed",
+          )}
+          aria-describedby={describedBy}
+          disabled={disabled}
+          {...props}
+        />
+        {description && (
+          <p id={descriptionId} className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+            {description}
+          </p>
+        )}
+      </div>
+    );
+  },
 );
 
 FormInput.displayName = "FormInput";

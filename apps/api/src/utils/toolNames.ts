@@ -1,52 +1,53 @@
 export interface ToolDefinitionLike {
-	[key: string]: unknown;
-	name?: unknown;
-	function?: {
-		name?: unknown;
-	} | null;
+  [key: string]: unknown;
+  name?: unknown;
+  function?: {
+    name?: unknown;
+  } | null;
 }
 
 export function getToolDefinitionName(
-	tool: ToolDefinitionLike | null | undefined,
+  tool: ToolDefinitionLike | null | undefined,
 ): string | undefined {
-	if (typeof tool?.name === "string") {
-		return tool.name;
-	}
+  if (typeof tool?.name === "string") {
+    return tool.name;
+  }
 
-	if (typeof tool?.function?.name === "string") {
-		return tool.function.name;
-	}
+  if (typeof tool?.function?.name === "string") {
+    return tool.function.name;
+  }
 
-	return undefined;
+  return undefined;
 }
 
 export function mergeToolDefinitionsByName<Tool extends ToolDefinitionLike>(
-	...toolGroups: ReadonlyArray<ReadonlyArray<Tool>>
+  ...toolGroups: ReadonlyArray<ReadonlyArray<Tool>>
 ): Tool[] {
-	const toolNames = new Set<string>();
-	const mergedTools: Tool[] = [];
+  const toolNames = new Set<string>();
+  const mergedTools: Tool[] = [];
 
-	for (const group of toolGroups) {
-		for (const tool of group) {
-			const name = getToolDefinitionName(tool);
-			if (name && toolNames.has(name)) {
-				continue;
-			}
+  for (const group of toolGroups) {
+    for (const tool of group) {
+      const name = getToolDefinitionName(tool);
 
-			if (name) {
-				toolNames.add(name);
-			}
+      if (name && toolNames.has(name)) {
+        continue;
+      }
 
-			mergedTools.push(tool);
-		}
-	}
+      if (name) {
+        toolNames.add(name);
+      }
 
-	return mergedTools;
+      mergedTools.push(tool);
+    }
+  }
+
+  return mergedTools;
 }
 
 export function hasEnabledToolNames(enabledTools: unknown): boolean {
-	return (
-		Array.isArray(enabledTools) &&
-		enabledTools.some((toolName) => typeof toolName === "string" && toolName.trim().length > 0)
-	);
+  return (
+    Array.isArray(enabledTools) &&
+    enabledTools.some((toolName) => typeof toolName === "string" && toolName.trim().length > 0)
+  );
 }

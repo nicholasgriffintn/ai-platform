@@ -8,7 +8,8 @@ export default defineConfig({
 			name: "skill-markdown",
 			enforce: "pre",
 			async load(id) {
-				if (!id.endsWith(".md")) return null;
+				if (!id.endsWith(".md")) {return null;}
+
 				return `export default ${JSON.stringify(await readFile(id, "utf8"))};`;
 			},
 		},

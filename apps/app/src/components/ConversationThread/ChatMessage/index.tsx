@@ -21,7 +21,10 @@ export function ChatMessage(props: ChatMessageProps) {
       copied={copied}
       onCopy={copy}
       onSubmitFeedback={async (value) => {
-        if (!props.conversationId || !props.message.log_id) return;
+        if (!props.conversationId || !props.message.log_id) {
+          return;
+        }
+
         await apiService.submitFeedback(props.conversationId, props.message.log_id, value);
       }}
       renderModelSelector={({ onModelSelect, onCancel }) => (

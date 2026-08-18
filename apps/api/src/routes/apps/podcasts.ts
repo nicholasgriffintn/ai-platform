@@ -1,16 +1,15 @@
-import { addRoute } from "~/lib/http/routeBuilder";
+import {
+  listPodcastsResponseSchema,
+  podcastDetailResponseSchema,
+  podcastGenerateImageSchema,
+  podcastSummarizeSchema,
+  podcastTranscribeSchema,
+  apiResponseSchema,
+} from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import { z } from "zod/v4";
 
-import {
-	listPodcastsResponseSchema,
-	podcastDetailResponseSchema,
-	podcastGenerateImageSchema,
-	podcastSummarizeSchema,
-	podcastTranscribeSchema,
-	apiResponseSchema,
-} from "@ngriffin_uk/polychat-schemas";
-
+import { addRoute } from "~/lib/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requirePlan } from "~/middleware/requirePlan";
 import { handlePodcastGenerateImage } from "~/services/apps/podcast/generate-image";
@@ -19,264 +18,272 @@ import { handlePodcastList } from "~/services/apps/podcast/list";
 import { handlePodcastSummarise } from "~/services/apps/podcast/summarise";
 import { handlePodcastTranscribe } from "~/services/apps/podcast/transcribe";
 import { handlePodcastUpload } from "~/services/apps/podcast/upload";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import {
-	projectScopeQuerySchema,
-	requireProjectCapabilityAccess,
+  projectScopeQuerySchema,
+  requireProjectCapabilityAccess,
 } from "~/services/workspaces/access";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
 
 const routeLogger = createRouteLogger("apps/podcasts");
 
 app.use("/*", (c, next) => {
-	routeLogger.info(`Processing apps route: ${c.req.path}`);
-	return next();
+  routeLogger.info(`Processing apps route: ${c.req.path}`);
+
+  return next();
 });
 
 const podcastParamsSchema = z.object({
-	id: z.string().min(1),
+  id: z.string().min(1),
 });
 
 addRoute(app, "get", "/", {
-	tags: ["apps"],
-	description: "List user's podcasts",
-	responses: {
-		200: {
-			description: "List of user's podcasts",
-			schema: listPodcastsResponseSchema,
-		},
-	},
-	auth: true,
-	querySchema: projectScopeQuerySchema,
-	middleware: [requirePlan("pro")],
-	handler: async ({ query, serviceContext, user }) => {
-		try {
-			if (query.projectId) {
-				await requireProjectCapabilityAccess(
-					serviceContext,
-					query.projectId,
-					"app",
-					"featured-podcast-processor",
-				);
-			}
+  tags: ["apps"],
+  description: "List user's podcasts",
+  responses: {
+    200: {
+      description: "List of user's podcasts",
+      schema: listPodcastsResponseSchema,
+    },
+  },
+  auth: true,
+  querySchema: projectScopeQuerySchema,
+  middleware: [requirePlan("pro")],
+  handler: async ({ query, serviceContext, user }) => {
+    try {
+      if (query.projectId) {
+        await requireProjectCapabilityAccess(
+          serviceContext,
+          query.projectId,
+          "app",
+          "featured-podcast-processor",
+        );
+      }
 
-			const podcasts = await handlePodcastList({
-				context: serviceContext,
-				user,
-				projectId: query.projectId,
-			});
+      const podcasts = await handlePodcastList({
+        context: serviceContext,
+        user,
+        projectId: query.projectId,
+      });
 
-			return { podcasts };
-		} catch (error) {
-			if (error instanceof AssistantError) {
-				throw error;
-			}
+      return { podcasts };
+    } catch (error) {
+      if (error instanceof AssistantError) {
+        throw error;
+      }
 
-			routeLogger.error("Error fetching podcasts:", {
-				error_message: error instanceof Error ? error.message : "Unknown error",
-			});
-			throw new AssistantError("Failed to fetch podcasts", ErrorType.UNKNOWN_ERROR);
-		}
-	},
+      routeLogger.error("Error fetching podcasts:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
+      throw new AssistantError("Failed to fetch podcasts", ErrorType.UNKNOWN_ERROR);
+    }
+  },
 });
 
 addRoute(app, "get", "/:id", {
-	tags: ["apps"],
-	description: "Get podcast details",
-	paramSchema: podcastParamsSchema,
-	responses: {
-		200: {
-			description: "Podcast details",
-			schema: podcastDetailResponseSchema,
-		},
-	},
-	auth: true,
-	querySchema: projectScopeQuerySchema,
-	middleware: [requirePlan("pro")],
-	handler: async ({ params, query, serviceContext, user }) => {
-		try {
-			if (query.projectId) {
-				await requireProjectCapabilityAccess(
-					serviceContext,
-					query.projectId,
-					"app",
-					"featured-podcast-processor",
-				);
-			}
+  tags: ["apps"],
+  description: "Get podcast details",
+  paramSchema: podcastParamsSchema,
+  responses: {
+    200: {
+      description: "Podcast details",
+      schema: podcastDetailResponseSchema,
+    },
+  },
+  auth: true,
+  querySchema: projectScopeQuerySchema,
+  middleware: [requirePlan("pro")],
+  handler: async ({ params, query, serviceContext, user }) => {
+    try {
+      if (query.projectId) {
+        await requireProjectCapabilityAccess(
+          serviceContext,
+          query.projectId,
+          "app",
+          "featured-podcast-processor",
+        );
+      }
 
-			const podcast = await handlePodcastDetail({
-				context: serviceContext,
-				podcastId: params.id,
-				user,
-				projectId: query.projectId,
-			});
+      const podcast = await handlePodcastDetail({
+        context: serviceContext,
+        podcastId: params.id,
+        user,
+        projectId: query.projectId,
+      });
 
-			return { podcast };
-		} catch (error) {
-			if (error instanceof AssistantError) {
-				throw error;
-			}
+      return { podcast };
+    } catch (error) {
+      if (error instanceof AssistantError) {
+        throw error;
+      }
 
-			routeLogger.error("Error fetching podcast:", {
-				error_message: error instanceof Error ? error.message : "Unknown error",
-			});
-			throw new AssistantError("Failed to fetch podcast", ErrorType.UNKNOWN_ERROR);
-		}
-	},
+      routeLogger.error("Error fetching podcast:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
+      throw new AssistantError("Failed to fetch podcast", ErrorType.UNKNOWN_ERROR);
+    }
+  },
 });
 
 addRoute(app, "post", "/upload", {
-	tags: ["apps"],
-	description: "Upload a podcast",
-	responses: {
-		200: { description: "Response", schema: apiResponseSchema },
-	},
-	auth: true,
-	querySchema: projectScopeQuerySchema,
-	middleware: [requirePlan("pro")],
-	handler: async ({ query, raw, serviceContext, user }) => {
-		try {
-			if (query.projectId) {
-				await requireProjectCapabilityAccess(
-					serviceContext,
-					query.projectId,
-					"app",
-					"featured-podcast-processor",
-				);
-			}
+  tags: ["apps"],
+  description: "Upload a podcast",
+  responses: {
+    200: { description: "Response", schema: apiResponseSchema },
+  },
+  auth: true,
+  querySchema: projectScopeQuerySchema,
+  middleware: [requirePlan("pro")],
+  handler: async ({ query, raw, serviceContext, user }) => {
+    try {
+      if (query.projectId) {
+        await requireProjectCapabilityAccess(
+          serviceContext,
+          query.projectId,
+          "app",
+          "featured-podcast-processor",
+        );
+      }
 
-			const formData = await raw.req.formData();
-			const title = formData.get("title") as string;
-			const description = formData.get("description") as string | null;
-			const audio = formData.get("audio") as File | null;
-			const audioUrl = formData.get("audioUrl") as string | null;
+      const formData = await raw.req.formData();
+      const title = formData.get("title") as string;
+      const description = formData.get("description") as string | null;
+      const audio = formData.get("audio") as File | null;
+      const audioUrl = formData.get("audioUrl") as string | null;
 
-			if (!audio && !audioUrl) {
-				throw new AssistantError("Missing audio file or URL", ErrorType.PARAMS_ERROR);
-			}
+      if (!audio && !audioUrl) {
+        throw new AssistantError("Missing audio file or URL", ErrorType.PARAMS_ERROR);
+      }
 
-			const response = await handlePodcastUpload({
-				context: serviceContext,
-				request: {
-					audio,
-					audioUrl,
-					title,
-					description: description || undefined,
-				},
-				user,
-				projectId: query.projectId,
-			});
+      const response = await handlePodcastUpload({
+        context: serviceContext,
+        request: {
+          audio,
+          audioUrl,
+          title,
+          description: description || undefined,
+        },
+        user,
+        projectId: query.projectId,
+      });
 
-			if (response.status === "error") {
-				throw new AssistantError(
-					"Something went wrong, we are working on it",
-					ErrorType.UNKNOWN_ERROR,
-				);
-			}
+      if (response.status === "error") {
+        throw new AssistantError(
+          "Something went wrong, we are working on it",
+          ErrorType.UNKNOWN_ERROR,
+        );
+      }
 
-			return { response };
-		} catch (error) {
-			if (error instanceof AssistantError) {
-				throw error;
-			}
-			routeLogger.error("Error uploading podcast:", {
-				error_message: error instanceof Error ? error.message : "Unknown error",
-			});
-			throw new AssistantError("Failed to upload podcast", ErrorType.UNKNOWN_ERROR);
-		}
-	},
+      return { response };
+    } catch (error) {
+      if (error instanceof AssistantError) {
+        throw error;
+      }
+
+      routeLogger.error("Error uploading podcast:", {
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
+      throw new AssistantError("Failed to upload podcast", ErrorType.UNKNOWN_ERROR);
+    }
+  },
 });
 
 addRoute(app, "post", "/transcribe", {
-	tags: ["apps"],
-	description: "Transcribe a podcast",
-	bodySchema: podcastTranscribeSchema,
-	responses: {
-		200: { description: "Response", schema: apiResponseSchema },
-	},
-	auth: true,
-	querySchema: projectScopeQuerySchema,
-	middleware: [requirePlan("pro")],
-	handler: async ({ body, query, raw, serviceContext, user }) => {
-		if (query.projectId)
-			await requireProjectCapabilityAccess(
-				serviceContext,
-				query.projectId,
-				"app",
-				"featured-podcast-processor",
-			);
-		const newUrl = new URL(raw.req.url);
-		const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
+  tags: ["apps"],
+  description: "Transcribe a podcast",
+  bodySchema: podcastTranscribeSchema,
+  responses: {
+    200: { description: "Response", schema: apiResponseSchema },
+  },
+  auth: true,
+  querySchema: projectScopeQuerySchema,
+  middleware: [requirePlan("pro")],
+  handler: async ({ body, query, raw, serviceContext, user }) => {
+    if (query.projectId) {
+      await requireProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-podcast-processor",
+      );
+    }
 
-		const response = await handlePodcastTranscribe({
-			context: serviceContext,
-			request: body,
-			user,
-			app_url,
-			projectId: query.projectId,
-		});
+    const newUrl = new URL(raw.req.url);
+    const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 
-		return { response };
-	},
+    const response = await handlePodcastTranscribe({
+      context: serviceContext,
+      request: body,
+      user,
+      app_url,
+      projectId: query.projectId,
+    });
+
+    return { response };
+  },
 });
 
 addRoute(app, "post", "/summarise", {
-	tags: ["apps"],
-	description: "Summarise a podcast",
-	bodySchema: podcastSummarizeSchema,
-	responses: {
-		200: { description: "Response", schema: apiResponseSchema },
-	},
-	auth: true,
-	querySchema: projectScopeQuerySchema,
-	middleware: [requirePlan("pro")],
-	handler: async ({ body, query, serviceContext, user }) => {
-		if (query.projectId)
-			await requireProjectCapabilityAccess(
-				serviceContext,
-				query.projectId,
-				"app",
-				"featured-podcast-processor",
-			);
-		const response = await handlePodcastSummarise({
-			context: serviceContext,
-			request: body,
-			user,
-			projectId: query.projectId,
-		});
+  tags: ["apps"],
+  description: "Summarise a podcast",
+  bodySchema: podcastSummarizeSchema,
+  responses: {
+    200: { description: "Response", schema: apiResponseSchema },
+  },
+  auth: true,
+  querySchema: projectScopeQuerySchema,
+  middleware: [requirePlan("pro")],
+  handler: async ({ body, query, serviceContext, user }) => {
+    if (query.projectId) {
+      await requireProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-podcast-processor",
+      );
+    }
 
-		return { response };
-	},
+    const response = await handlePodcastSummarise({
+      context: serviceContext,
+      request: body,
+      user,
+      projectId: query.projectId,
+    });
+
+    return { response };
+  },
 });
 
 addRoute(app, "post", "/generate-image", {
-	tags: ["apps"],
-	description: "Generate an image for a podcast",
-	bodySchema: podcastGenerateImageSchema,
-	responses: {
-		200: { description: "Response", schema: apiResponseSchema },
-	},
-	auth: true,
-	querySchema: projectScopeQuerySchema,
-	middleware: [requirePlan("pro")],
-	handler: async ({ body, query, serviceContext, user }) => {
-		if (query.projectId)
-			await requireProjectCapabilityAccess(
-				serviceContext,
-				query.projectId,
-				"app",
-				"featured-podcast-processor",
-			);
-		const response = await handlePodcastGenerateImage({
-			context: serviceContext,
-			request: body,
-			user,
-			projectId: query.projectId,
-		});
+  tags: ["apps"],
+  description: "Generate an image for a podcast",
+  bodySchema: podcastGenerateImageSchema,
+  responses: {
+    200: { description: "Response", schema: apiResponseSchema },
+  },
+  auth: true,
+  querySchema: projectScopeQuerySchema,
+  middleware: [requirePlan("pro")],
+  handler: async ({ body, query, serviceContext, user }) => {
+    if (query.projectId) {
+      await requireProjectCapabilityAccess(
+        serviceContext,
+        query.projectId,
+        "app",
+        "featured-podcast-processor",
+      );
+    }
 
-		return { response };
-	},
+    const response = await handlePodcastGenerateImage({
+      context: serviceContext,
+      request: body,
+      user,
+      projectId: query.projectId,
+    });
+
+    return { response };
+  },
 });
 
 export default app;

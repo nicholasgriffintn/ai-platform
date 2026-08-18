@@ -1,75 +1,76 @@
-import { Clock3, MessageCircle, RadioTower, UsersRound, type LucideIcon } from "lucide-react";
 import type { HomeChatModeId } from "@ngriffin_uk/polychat-schemas";
+import { Clock3, MessageCircle, RadioTower, UsersRound, type LucideIcon } from "lucide-react";
 
 export type SelectableHomeChatModeId = Exclude<HomeChatModeId, "sms">;
 
 export interface HomeChatModeOption {
-	id: SelectableHomeChatModeId;
-	label: string;
-	description: string;
-	icon: LucideIcon;
-	exclusiveGroup?: string;
-	disabled?: boolean;
-	disabledReason?: string;
+  id: SelectableHomeChatModeId;
+  label: string;
+  description: string;
+  icon: LucideIcon;
+  exclusiveGroup?: string;
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
 export const HOME_CHAT_MODE_OPTIONS: HomeChatModeOption[] = [
-	{
-		id: "chat",
-		label: "Chat",
-		description: "Use the standard assistant chat flow.",
-		icon: MessageCircle,
-	},
-	{
-		id: "council",
-		label: "Council",
-		description: "Route the prompt through selected council perspectives.",
-		icon: UsersRound,
-		exclusiveGroup: "chat-orchestration",
-	},
-	{
-		id: "background",
-		label: "Background",
-		description: "Start resumable work that can continue outside the active chat stream.",
-		icon: Clock3,
-		exclusiveGroup: "chat-orchestration",
-	},
-	{
-		id: "live",
-		label: "Live",
-		description: "Start a low-latency voice or vision session.",
-		icon: RadioTower,
-		exclusiveGroup: "chat-orchestration",
-	},
+  {
+    id: "chat",
+    label: "Chat",
+    description: "Use the standard assistant chat flow.",
+    icon: MessageCircle,
+  },
+  {
+    id: "council",
+    label: "Council",
+    description: "Route the prompt through selected council perspectives.",
+    icon: UsersRound,
+    exclusiveGroup: "chat-orchestration",
+  },
+  {
+    id: "background",
+    label: "Background",
+    description: "Start resumable work that can continue outside the active chat stream.",
+    icon: Clock3,
+    exclusiveGroup: "chat-orchestration",
+  },
+  {
+    id: "live",
+    label: "Live",
+    description: "Start a low-latency voice or vision session.",
+    icon: RadioTower,
+    exclusiveGroup: "chat-orchestration",
+  },
 ];
 
 export function resolveHomeChatModeId(value: string | null): HomeChatModeId {
-	return value === "background" || value === "council" || value === "live" ? value : "chat";
+  return value === "background" || value === "council" || value === "live" ? value : "chat";
 }
 
 export function isSelectableHomeChatModeId(value: string): value is SelectableHomeChatModeId {
-	return value === "background" || value === "chat" || value === "council" || value === "live";
+  return value === "background" || value === "chat" || value === "council" || value === "live";
 }
 
 export function getHomeChatModeAvailability(
-	option: HomeChatModeOption,
-	activeModeId: HomeChatModeId,
+  option: HomeChatModeOption,
+  activeModeId: HomeChatModeId,
 ): { disabled: boolean; reason?: string } {
-	if (option.disabled) {
-		return { disabled: true, reason: option.disabledReason };
-	}
+  if (option.disabled) {
+    return { disabled: true, reason: option.disabledReason };
+  }
 
-	if (option.id === activeModeId || activeModeId === "chat" || !option.exclusiveGroup) {
-		return { disabled: false };
-	}
+  if (option.id === activeModeId || activeModeId === "chat" || !option.exclusiveGroup) {
+    return { disabled: false };
+  }
 
-	const activeOption = HOME_CHAT_MODE_OPTIONS.find((candidate) => candidate.id === activeModeId);
-	if (activeOption?.exclusiveGroup === option.exclusiveGroup) {
-		return {
-			disabled: true,
-			reason: `Turn off ${activeOption.label} mode before enabling ${option.label}.`,
-		};
-	}
+  const activeOption = HOME_CHAT_MODE_OPTIONS.find((candidate) => candidate.id === activeModeId);
 
-	return { disabled: false };
+  if (activeOption?.exclusiveGroup === option.exclusiveGroup) {
+    return {
+      disabled: true,
+      reason: `Turn off ${activeOption.label} mode before enabling ${option.label}.`,
+    };
+  }
+
+  return { disabled: false };
 }

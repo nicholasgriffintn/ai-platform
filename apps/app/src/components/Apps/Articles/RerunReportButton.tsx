@@ -56,16 +56,19 @@ export function RerunReportButton({
   const handleRerunAnalysis = async () => {
     if (!itemId || !sourceIds.length) {
       setError("Missing item ID or source articles");
+
       return;
     }
 
     if (isLoadingSourceArticles) {
       setError("Still loading source articles");
+
       return;
     }
 
     if (!sourceArticles || sourceArticles.length === 0) {
       setError("No source articles found");
+
       return;
     }
 
@@ -89,6 +92,7 @@ export function RerunReportButton({
       }
 
       const totalSteps = articlesWithContent.length * 2 + 1;
+
       setProgress({
         analyzing: true,
         summarizing: false,

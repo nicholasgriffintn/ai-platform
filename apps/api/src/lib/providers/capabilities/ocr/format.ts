@@ -2,48 +2,49 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { StorageService } from "~/lib/storage";
 import { convertMarkdownToHtml } from "~/utils/markdown";
 import { escapeRegExp } from "~/utils/strings";
+
 import type { OcrOutputFormat } from "./types";
 
 export interface OcrImage {
-	id?: string;
-	image_base64?: string;
+  id?: string;
+  image_base64?: string;
 }
 
 export interface OcrPage {
-	markdown?: string;
-	text?: string;
-	images?: OcrImage[];
+  markdown?: string;
+  text?: string;
+  images?: OcrImage[];
 }
 
 export interface OcrApiResponse {
-	model?: string;
-	data?: {
-		model?: string;
-	};
-	pages?: OcrPage[];
-	eventId?: string;
-	log_id?: string;
-	cacheStatus?: string;
+  model?: string;
+  data?: {
+    model?: string;
+  };
+  pages?: OcrPage[];
+  eventId?: string;
+  log_id?: string;
+  cacheStatus?: string;
 }
 
 export interface PersistedOcrOutput {
-	key: string;
-	url: string;
-	outputFormat: OcrOutputFormat;
+  key: string;
+  url: string;
+  outputFormat: OcrOutputFormat;
 }
 
 interface PersistOcrOutputOptions {
-	requestId: string;
-	response: OcrApiResponse;
-	outputFormat: OcrOutputFormat;
-	context: ServiceContext;
-	ownerUserId: number;
+  requestId: string;
+  response: OcrApiResponse;
+  outputFormat: OcrOutputFormat;
+  context: ServiceContext;
+  ownerUserId: number;
 }
 
 function buildHtmlDocument(markdown: string): string {
-	const htmlContent = convertMarkdownToHtml(markdown);
+  const htmlContent = convertMarkdownToHtml(markdown);
 
-	return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -76,114 +77,115 @@ ${htmlContent}
 }
 
 function collectImages(pages: OcrPage[]): Map<string, string> {
-	const images = new Map<string, string>();
+  const images = new Map<string, string>();
 
-	for (const page of pages) {
-		for (const image of page.images ?? []) {
-			if (typeof image.id === "string" && typeof image.image_base64 === "string") {
-				images.set(image.id, image.image_base64);
-			}
-		}
-	}
+  for (const page of pages) {
+    for (const image of page.images ?? []) {
+      if (typeof image.id === "string" && typeof image.image_base64 === "string") {
+        images.set(image.id, image.image_base64);
+      }
+    }
+  }
 
-	return images;
+  return images;
 }
 
 export function buildOcrMarkdown(response: OcrApiResponse): string {
-	const pages = Array.isArray(response.pages) ? response.pages : [];
-	const images = collectImages(pages);
-	const pageContent = pages.map((page) => {
-		let content = page.markdown || page.text || "";
+  const pages = Array.isArray(response.pages) ? response.pages : [];
+  const images = collectImages(pages);
+  const pageContent = pages.map((page) => {
+    let content = page.markdown || page.text || "";
 
-		for (const [imageId, imageBase64] of images) {
-			const imagePattern = new RegExp(`!\\[(.*?)\\]\\(${escapeRegExp(imageId)}\\)`, "g");
-			content = content.replace(imagePattern, `![${imageId}](${imageBase64})`);
-		}
+    for (const [imageId, imageBase64] of images) {
+      const imagePattern = new RegExp(`!\\[(.*?)\\]\\(${escapeRegExp(imageId)}\\)`, "g");
 
-		return content;
-	});
+      content = content.replace(imagePattern, `![${imageId}](${imageBase64})`);
+    }
 
-	return pageContent.length ? `${pageContent.join("\n\n")}\n\n` : "";
+    return content;
+  });
+
+  return pageContent.length ? `${pageContent.join("\n\n")}\n\n` : "";
 }
 
 export function getOcrResponseModel(response: OcrApiResponse): string | undefined {
-	return response.model ?? response.data?.model;
+  return response.model ?? response.data?.model;
 }
 
 export async function persistOcrOutput({
-	requestId,
-	response,
-	outputFormat,
-	context,
-	ownerUserId,
+  requestId,
+  response,
+  outputFormat,
+  context,
+  ownerUserId,
 }: PersistOcrOutputOptions): Promise<PersistedOcrOutput> {
-	const storage = StorageService.forPrivateAssets(context);
+  const storage = StorageService.forPrivateAssets(context);
 
-	if (outputFormat === "json") {
-		const content = JSON.stringify(response);
-		const storedOutput = await storage.storeOutputFile({
-			key: `ocr/${requestId}/output.json`,
-			data: content,
-			createdByUserId: ownerUserId,
-			capabilityId: "ocr",
-			groupId: requestId,
-			kind: "ocr_output",
-			title: "OCR result (JSON)",
-			content: { outputFormat },
-			mimeType: "application/json",
-			filename: "output.json",
-			byteSize: content.length,
-		});
+  if (outputFormat === "json") {
+    const content = JSON.stringify(response);
+    const storedOutput = await storage.storeOutputFile({
+      key: `ocr/${requestId}/output.json`,
+      data: content,
+      createdByUserId: ownerUserId,
+      capabilityId: "ocr",
+      groupId: requestId,
+      kind: "ocr_output",
+      title: "OCR result (JSON)",
+      content: { outputFormat },
+      mimeType: "application/json",
+      filename: "output.json",
+      byteSize: content.length,
+    });
 
-		return {
-			key: storedOutput.key,
-			url: storedOutput.url,
-			outputFormat,
-		};
-	}
+    return {
+      key: storedOutput.key,
+      url: storedOutput.url,
+      outputFormat,
+    };
+  }
 
-	const markdown = buildOcrMarkdown(response);
+  const markdown = buildOcrMarkdown(response);
 
-	if (outputFormat === "html") {
-		const html = buildHtmlDocument(markdown);
-		const storedOutput = await storage.storeOutputFile({
-			key: `ocr/${requestId}/output.html`,
-			data: html,
-			createdByUserId: ownerUserId,
-			capabilityId: "ocr",
-			groupId: requestId,
-			kind: "ocr_output",
-			title: "OCR result (HTML)",
-			content: { outputFormat },
-			mimeType: "text/html",
-			filename: "output.html",
-			byteSize: html.length,
-		});
+  if (outputFormat === "html") {
+    const html = buildHtmlDocument(markdown);
+    const storedOutput = await storage.storeOutputFile({
+      key: `ocr/${requestId}/output.html`,
+      data: html,
+      createdByUserId: ownerUserId,
+      capabilityId: "ocr",
+      groupId: requestId,
+      kind: "ocr_output",
+      title: "OCR result (HTML)",
+      content: { outputFormat },
+      mimeType: "text/html",
+      filename: "output.html",
+      byteSize: html.length,
+    });
 
-		return {
-			key: storedOutput.key,
-			url: storedOutput.url,
-			outputFormat,
-		};
-	}
+    return {
+      key: storedOutput.key,
+      url: storedOutput.url,
+      outputFormat,
+    };
+  }
 
-	const storedOutput = await storage.storeOutputFile({
-		key: `ocr/${requestId}/output.md`,
-		data: markdown,
-		createdByUserId: ownerUserId,
-		capabilityId: "ocr",
-		groupId: requestId,
-		kind: "ocr_output",
-		title: "OCR result (Markdown)",
-		content: { outputFormat },
-		mimeType: "text/markdown",
-		filename: "output.md",
-		byteSize: markdown.length,
-	});
+  const storedOutput = await storage.storeOutputFile({
+    key: `ocr/${requestId}/output.md`,
+    data: markdown,
+    createdByUserId: ownerUserId,
+    capabilityId: "ocr",
+    groupId: requestId,
+    kind: "ocr_output",
+    title: "OCR result (Markdown)",
+    content: { outputFormat },
+    mimeType: "text/markdown",
+    filename: "output.md",
+    byteSize: markdown.length,
+  });
 
-	return {
-		key: storedOutput.key,
-		url: storedOutput.url,
-		outputFormat,
-	};
+  return {
+    key: storedOutput.key,
+    url: storedOutput.url,
+    outputFormat,
+  };
 }

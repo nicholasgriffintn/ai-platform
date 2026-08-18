@@ -1,14 +1,15 @@
-import { KeywordFilter } from "~/lib/keywords";
-import { getAuxiliaryModel, getAvailableStrengths } from "~/lib/providers/models";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { createServiceContext } from "~/lib/context/serviceContext";
-import { estimateTextTokens } from "~/lib/messageTokens";
-import { listFunctionTools } from "~/services/functions";
 import type { PromptRequirements } from "@ngriffin_uk/polychat-schemas";
+
+import { createServiceContext } from "~/lib/context/serviceContext";
+import { KeywordFilter } from "~/lib/keywords";
+import { estimateTextTokens } from "~/lib/messageTokens";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { getAuxiliaryModel, getAvailableStrengths } from "~/lib/providers/models";
+import { listFunctionTools } from "~/services/functions";
 import type { Attachment, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 import { safeParseJson } from "~/utils/json";
+import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/modelRouter/promptAnalyser" });
 
@@ -18,134 +19,139 @@ const FUNCTION_DESCRIPTION_MAX_CHARS = 120;
 const FUNCTION_SUMMARY_MAX_CHARS = 2400;
 
 export class PromptAnalyzer {
-	private static readonly FILTERS = {
-		coding: new KeywordFilter(KeywordFilter.getAllCodingKeywords()),
-		math: new KeywordFilter(KeywordFilter.getAllMathKeywords()),
-		general_knowledge: new KeywordFilter(KeywordFilter.getAllGeneralKeywords()),
-		creative: new KeywordFilter(KeywordFilter.getAllCreativeKeywords()),
-		reasoning: new KeywordFilter(KeywordFilter.getAllReasoningKeywords()),
-	};
+  private static readonly FILTERS = {
+    coding: new KeywordFilter(KeywordFilter.getAllCodingKeywords()),
+    math: new KeywordFilter(KeywordFilter.getAllMathKeywords()),
+    general_knowledge: new KeywordFilter(KeywordFilter.getAllGeneralKeywords()),
+    creative: new KeywordFilter(KeywordFilter.getAllCreativeKeywords()),
+    reasoning: new KeywordFilter(KeywordFilter.getAllReasoningKeywords()),
+  };
 
-	private static async analyzeWithAI(
-		env: IEnv,
-		prompt: string,
-		keywords: string[],
-		user: IUser,
-	): Promise<PromptRequirements> {
-		try {
-			const analysisResponse = await PromptAnalyzer.performAIAnalysis(env, prompt, keywords, user);
-			return PromptAnalyzer.validateAndParseAnalysis(analysisResponse);
-		} catch (error) {
-			throw new AssistantError(
-				`Prompt analysis failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-				ErrorType.UNKNOWN_ERROR,
-			);
-		}
-	}
+  private static async analyzeWithAI(
+    env: IEnv,
+    prompt: string,
+    keywords: string[],
+    user: IUser,
+  ): Promise<PromptRequirements> {
+    try {
+      const analysisResponse = await PromptAnalyzer.performAIAnalysis(env, prompt, keywords, user);
 
-	private static async performAIAnalysis(
-		env: IEnv,
-		prompt: string,
-		keywords: string[],
-		user: IUser,
-	) {
-		const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
-		const analysisPrompt = PromptAnalyzer.preparePromptForAnalysis(prompt);
+      return PromptAnalyzer.validateAndParseAnalysis(analysisResponse);
+    } catch (error) {
+      throw new AssistantError(
+        `Prompt analysis failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        ErrorType.UNKNOWN_ERROR,
+      );
+    }
+  }
 
-		const context = createServiceContext({ env, user });
-		const provider = getChatProvider(providerToUse, { env, user });
+  private static async performAIAnalysis(
+    env: IEnv,
+    prompt: string,
+    keywords: string[],
+    user: IUser,
+  ) {
+    const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
+    const analysisPrompt = PromptAnalyzer.preparePromptForAnalysis(prompt);
 
-		return provider.getResponse({
-			env,
-			context,
-			model: modelToUse,
-			disable_functions: true,
-			max_tokens: ANALYSIS_MAX_OUTPUT_TOKENS,
-			messages: [
-				{
-					role: "system",
-					content: PromptAnalyzer.constructsystem_prompt(keywords),
-				},
-				{ role: "user", content: analysisPrompt },
-			],
-			response_format: { type: "json_object" },
-		});
-	}
+    const context = createServiceContext({ env, user });
+    const provider = getChatProvider(providerToUse, { env, user });
 
-	private static preparePromptForAnalysis(prompt: string): string {
-		if (prompt.length <= ANALYSIS_PROMPT_SAMPLE_MAX_CHARS) {
-			return prompt;
-		}
+    return provider.getResponse({
+      env,
+      context,
+      model: modelToUse,
+      disable_functions: true,
+      max_tokens: ANALYSIS_MAX_OUTPUT_TOKENS,
+      messages: [
+        {
+          role: "system",
+          content: PromptAnalyzer.constructsystem_prompt(keywords),
+        },
+        { role: "user", content: analysisPrompt },
+      ],
+      response_format: { type: "json_object" },
+    });
+  }
 
-		const estimatedInputTokens = estimateTextTokens(prompt);
-		const omittedCharacters = prompt.length - ANALYSIS_PROMPT_SAMPLE_MAX_CHARS;
-		const headLength = Math.ceil(ANALYSIS_PROMPT_SAMPLE_MAX_CHARS * 0.65);
-		const tailLength = ANALYSIS_PROMPT_SAMPLE_MAX_CHARS - headLength;
-		const promptExcerpt = [
-			prompt.slice(0, headLength),
-			`\n\n[Prompt excerpt truncated: ${omittedCharacters} characters omitted]\n\n`,
-			prompt.slice(-tailLength),
-		].join("");
+  private static preparePromptForAnalysis(prompt: string): string {
+    if (prompt.length <= ANALYSIS_PROMPT_SAMPLE_MAX_CHARS) {
+      return prompt;
+    }
 
-		return [
-			`Original prompt estimated input tokens: ${estimatedInputTokens}`,
-			"Analyse this bounded excerpt for routing. Use the estimate above for input-token scale.",
-			"",
-			promptExcerpt,
-		].join("\n");
-	}
+    const estimatedInputTokens = estimateTextTokens(prompt);
+    const omittedCharacters = prompt.length - ANALYSIS_PROMPT_SAMPLE_MAX_CHARS;
+    const headLength = Math.ceil(ANALYSIS_PROMPT_SAMPLE_MAX_CHARS * 0.65);
+    const tailLength = ANALYSIS_PROMPT_SAMPLE_MAX_CHARS - headLength;
+    const promptExcerpt = [
+      prompt.slice(0, headLength),
+      `\n\n[Prompt excerpt truncated: ${omittedCharacters} characters omitted]\n\n`,
+      prompt.slice(-tailLength),
+    ].join("");
 
-	private static truncateDescription(description: string): string {
-		const normalisedDescription = description.replace(/\s+/g, " ").trim();
-		if (normalisedDescription.length <= FUNCTION_DESCRIPTION_MAX_CHARS) {
-			return normalisedDescription;
-		}
+    return [
+      `Original prompt estimated input tokens: ${estimatedInputTokens}`,
+      "Analyse this bounded excerpt for routing. Use the estimate above for input-token scale.",
+      "",
+      promptExcerpt,
+    ].join("\n");
+  }
 
-		return `${normalisedDescription.slice(0, FUNCTION_DESCRIPTION_MAX_CHARS - 3)}...`;
-	}
+  private static truncateDescription(description: string): string {
+    const normalisedDescription = description.replace(/\s+/g, " ").trim();
 
-	private static summarizeAvailableFunctions(): string {
-		const tools = listFunctionTools();
-		const summaries: string[] = [];
-		let usedCharacters = 0;
+    if (normalisedDescription.length <= FUNCTION_DESCRIPTION_MAX_CHARS) {
+      return normalisedDescription;
+    }
 
-		for (const tool of tools) {
-			const summary = `${tool.name}: ${PromptAnalyzer.truncateDescription(tool.description)}`;
-			const separatorLength = summaries.length > 0 ? 2 : 0;
+    return `${normalisedDescription.slice(0, FUNCTION_DESCRIPTION_MAX_CHARS - 3)}...`;
+  }
 
-			if (usedCharacters + separatorLength + summary.length > FUNCTION_SUMMARY_MAX_CHARS) {
-				const remainingTools = tools.length - summaries.length;
-				summaries.push(`and ${remainingTools} more tools`);
-				break;
-			}
+  private static summarizeAvailableFunctions(): string {
+    const tools = listFunctionTools();
+    const summaries: string[] = [];
+    let usedCharacters = 0;
 
-			summaries.push(summary);
-			usedCharacters += separatorLength + summary.length;
-		}
+    for (const tool of tools) {
+      const summary = `${tool.name}: ${PromptAnalyzer.truncateDescription(tool.description)}`;
+      const separatorLength = summaries.length > 0 ? 2 : 0;
 
-		return summaries.join("; ");
-	}
+      if (usedCharacters + separatorLength + summary.length > FUNCTION_SUMMARY_MAX_CHARS) {
+        const remainingTools = tools.length - summaries.length;
 
-	private static constructsystem_prompt(keywords: string[]): string {
-		const availableFunctions = PromptAnalyzer.summarizeAvailableFunctions();
+        summaries.push(`and ${remainingTools} more tools`);
+        break;
+      }
 
-		const categorizedKeywords = keywords.reduce(
-			(acc, keyword) => {
-				for (const [domain, filter] of Object.entries(PromptAnalyzer.FILTERS)) {
-					const categories = filter.getCategorizedMatches(keyword);
-					if (Object.keys(categories).length > 0) {
-						acc[domain] = acc[domain] || {};
-						for (const [category, words] of Object.entries(categories)) {
-							acc[domain][category] = [...(acc[domain][category] || []), ...words];
-						}
-					}
-				}
-				return acc;
-			},
-			{} as Record<string, Record<string, string[]>>,
-		);
+      summaries.push(summary);
+      usedCharacters += separatorLength + summary.length;
+    }
 
-		return `You are an AI assistant analyzing a user prompt. Respond ONLY with a valid JSON object matching the following structure:
+    return summaries.join("; ");
+  }
+
+  private static constructsystem_prompt(keywords: string[]): string {
+    const availableFunctions = PromptAnalyzer.summarizeAvailableFunctions();
+
+    const categorizedKeywords = keywords.reduce(
+      (acc, keyword) => {
+        for (const [domain, filter] of Object.entries(PromptAnalyzer.FILTERS)) {
+          const categories = filter.getCategorizedMatches(keyword);
+
+          if (Object.keys(categories).length > 0) {
+            acc[domain] = acc[domain] || {};
+            for (const [category, words] of Object.entries(categories)) {
+              acc[domain][category] = [...(acc[domain][category] || []), ...words];
+            }
+          }
+        }
+
+        return acc;
+      },
+      {} as Record<string, Record<string, string[]>>,
+    );
+
+    return `You are an AI assistant analyzing a user prompt. Respond ONLY with a valid JSON object matching the following structure:
 {
   "expectedComplexity": number, // 1-5 indicating task complexity
   "requiredStrengths": string[], // array of required model strengths
@@ -170,154 +176,158 @@ For the "benefitsFromMultipleModels" field, consider:
 If you determine multiple models would be beneficial, provide a brief reason in "modelComparisonReason".
 
 Ensure the output is nothing but the JSON object itself.`;
-	}
+  }
 
-	private static validateAndParseAnalysis(analysisResponse: {
-		choices?: {
-			message: {
-				content: string;
-			};
-		}[];
-		response?: string;
-	}): PromptRequirements {
-		const openAiResponse = analysisResponse?.choices?.[0]?.message?.content;
-		const workersAiResponse = analysisResponse?.response;
+  private static validateAndParseAnalysis(analysisResponse: {
+    choices?: {
+      message: {
+        content: string;
+      };
+    }[];
+    response?: string;
+  }): PromptRequirements {
+    const openAiResponse = analysisResponse?.choices?.[0]?.message?.content;
+    const workersAiResponse = analysisResponse?.response;
 
-		const aiResponse = openAiResponse || workersAiResponse;
+    const aiResponse = openAiResponse || workersAiResponse;
 
-		if (!aiResponse) {
-			throw new AssistantError("No valid AI response received", ErrorType.PROVIDER_ERROR);
-		}
+    if (!aiResponse) {
+      throw new AssistantError("No valid AI response received", ErrorType.PROVIDER_ERROR);
+    }
 
-		let cleanedContent = aiResponse.trim();
+    let cleanedContent = aiResponse.trim();
 
-		// Remove outer code block markers if present (```json ... ```)
-		cleanedContent = cleanedContent.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```$/g, "");
+    // Remove outer code block markers if present (```json ... ```)
+    cleanedContent = cleanedContent.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```$/g, "");
 
-		// Remove any remaining backticks that might be inside the content
-		cleanedContent = cleanedContent.replace(/`/g, "");
+    // Remove any remaining backticks that might be inside the content
+    cleanedContent = cleanedContent.replace(/`/g, "");
 
-		let requirementsAnalysis: Partial<PromptRequirements>;
+    let requirementsAnalysis: Partial<PromptRequirements>;
 
-		try {
-			// NOTE: This is not using safeParseJson to allow the error to be caught below
-			requirementsAnalysis = JSON.parse(cleanedContent);
-		} catch (error) {
-			logger.error(
-				"Failed to parse JSON response:",
-				error,
-				"Original Content:",
-				aiResponse,
-				"Cleaned Content:",
-				cleanedContent,
-			);
+    try {
+      // NOTE: This is not using safeParseJson to allow the error to be caught below
+      requirementsAnalysis = JSON.parse(cleanedContent);
+    } catch (error) {
+      logger.error(
+        "Failed to parse JSON response:",
+        error,
+        "Original Content:",
+        aiResponse,
+        "Cleaned Content:",
+        cleanedContent,
+      );
 
-			try {
-				const jsonMatch = aiResponse.match(/\{[\s\S]*?\}/);
-				if (jsonMatch) {
-					requirementsAnalysis = safeParseJson<Partial<PromptRequirements>>(jsonMatch[0]);
-					if (!requirementsAnalysis) {
-						throw new AssistantError(
-							"Invalid JSON response from AI analysis",
-							ErrorType.PROVIDER_ERROR,
-						);
-					}
-				} else {
-					throw new AssistantError("Could not extract valid JSON", ErrorType.PARAMS_ERROR);
-				}
-			} catch {
-				throw new AssistantError(
-					"Invalid JSON response from AI analysis",
-					ErrorType.PROVIDER_ERROR,
-				);
-			}
-		}
+      try {
+        const jsonMatch = aiResponse.match(/\{[\s\S]*?\}/);
 
-		if (
-			!requirementsAnalysis ||
-			typeof requirementsAnalysis.expectedComplexity !== "number" ||
-			!Array.isArray(requirementsAnalysis.requiredStrengths)
-		) {
-			logger.error("Incomplete or invalid AI analysis structure:", requirementsAnalysis);
-			throw new AssistantError(
-				"Incomplete or invalid AI analysis structure",
-				ErrorType.PROVIDER_ERROR,
-			);
-		}
+        if (jsonMatch) {
+          requirementsAnalysis = safeParseJson<Partial<PromptRequirements>>(jsonMatch[0]);
+          if (!requirementsAnalysis) {
+            throw new AssistantError(
+              "Invalid JSON response from AI analysis",
+              ErrorType.PROVIDER_ERROR,
+            );
+          }
+        } else {
+          throw new AssistantError("Could not extract valid JSON", ErrorType.PARAMS_ERROR);
+        }
+      } catch {
+        throw new AssistantError(
+          "Invalid JSON response from AI analysis",
+          ErrorType.PROVIDER_ERROR,
+        );
+      }
+    }
 
-		return PromptAnalyzer.normalizeRequirements(requirementsAnalysis);
-	}
+    if (
+      !requirementsAnalysis ||
+      typeof requirementsAnalysis.expectedComplexity !== "number" ||
+      !Array.isArray(requirementsAnalysis.requiredStrengths)
+    ) {
+      logger.error("Incomplete or invalid AI analysis structure:", requirementsAnalysis);
+      throw new AssistantError(
+        "Incomplete or invalid AI analysis structure",
+        ErrorType.PROVIDER_ERROR,
+      );
+    }
 
-	private static normalizeRequirements(analysis: Partial<PromptRequirements>): PromptRequirements {
-		return {
-			expectedComplexity: Math.max(1, Math.min(5, analysis.expectedComplexity || 1)) as
-				| 1
-				| 2
-				| 3
-				| 4
-				| 5,
-			requiredStrengths: analysis.requiredStrengths || [],
-			criticalStrengths: analysis.criticalStrengths || [],
-			estimatedInputTokens: Math.max(0, analysis.estimatedInputTokens || 0),
-			estimatedOutputTokens: Math.max(0, analysis.estimatedOutputTokens || 0),
-			needsFunctions: !!analysis.needsFunctions,
-			hasImages: false,
-			hasDocuments: false,
-			benefitsFromMultipleModels: !!analysis.benefitsFromMultipleModels,
-			modelComparisonReason: analysis.modelComparisonReason || "",
-		};
-	}
+    return PromptAnalyzer.normalizeRequirements(requirementsAnalysis);
+  }
 
-	private static extractKeywords(prompt: string): string[] {
-		const categorizedMatches = Object.entries(PromptAnalyzer.FILTERS).reduce(
-			(acc, [_domain, filter]) => {
-				const matches = filter.getCategorizedMatches(prompt);
-				for (const [key, value] of Object.entries(matches)) {
-					acc[key] = [...(acc[key] || []), ...value];
-				}
-				return acc;
-			},
-			{} as Record<string, string[]>,
-		);
+  private static normalizeRequirements(analysis: Partial<PromptRequirements>): PromptRequirements {
+    return {
+      expectedComplexity: Math.max(1, Math.min(5, analysis.expectedComplexity || 1)) as
+        | 1
+        | 2
+        | 3
+        | 4
+        | 5,
+      requiredStrengths: analysis.requiredStrengths || [],
+      criticalStrengths: analysis.criticalStrengths || [],
+      estimatedInputTokens: Math.max(0, analysis.estimatedInputTokens || 0),
+      estimatedOutputTokens: Math.max(0, analysis.estimatedOutputTokens || 0),
+      needsFunctions: !!analysis.needsFunctions,
+      hasImages: false,
+      hasDocuments: false,
+      benefitsFromMultipleModels: !!analysis.benefitsFromMultipleModels,
+      modelComparisonReason: analysis.modelComparisonReason || "",
+    };
+  }
 
-		const allMatches = Object.values(categorizedMatches).flat();
-		if (allMatches.length > 0) {
-			return [...new Set(allMatches)];
-		}
+  private static extractKeywords(prompt: string): string[] {
+    const categorizedMatches = Object.entries(PromptAnalyzer.FILTERS).reduce(
+      (acc, [_domain, filter]) => {
+        const matches = filter.getCategorizedMatches(prompt);
 
-		return PromptAnalyzer.fallbackKeywordExtraction(prompt);
-	}
+        for (const [key, value] of Object.entries(matches)) {
+          acc[key] = [...(acc[key] || []), ...value];
+        }
 
-	private static fallbackKeywordExtraction(prompt: string): string[] {
-		const words = prompt
-			.toLowerCase()
-			.split(/[\s,.-]+/)
-			.filter((word) => word.length > 2);
+        return acc;
+      },
+      {} as Record<string, string[]>,
+    );
 
-		const matches = words.filter(
-			(word) =>
-				PromptAnalyzer.FILTERS.coding.hasKeywords(word) ||
-				PromptAnalyzer.FILTERS.math.hasKeywords(word),
-		);
+    const allMatches = Object.values(categorizedMatches).flat();
 
-		return [...new Set(matches)].slice(0, 5);
-	}
+    if (allMatches.length > 0) {
+      return [...new Set(allMatches)];
+    }
 
-	public static async analyzePrompt(
-		env: IEnv,
-		prompt: string,
-		attachments?: Attachment[],
-		budget_constraint?: number,
-		user?: IUser,
-	): Promise<PromptRequirements> {
-		const keywords = PromptAnalyzer.extractKeywords(prompt);
-		const aiAnalysis = await PromptAnalyzer.analyzeWithAI(env, prompt, keywords, user);
+    return PromptAnalyzer.fallbackKeywordExtraction(prompt);
+  }
 
-		return {
-			...aiAnalysis,
-			budget_constraint,
-			hasImages: !!attachments?.some((a) => a.type === "image"),
-			hasDocuments: !!attachments?.some((a) => a.type === "document"),
-		};
-	}
+  private static fallbackKeywordExtraction(prompt: string): string[] {
+    const words = prompt
+      .toLowerCase()
+      .split(/[\s,.-]+/)
+      .filter((word) => word.length > 2);
+
+    const matches = words.filter(
+      (word) =>
+        PromptAnalyzer.FILTERS.coding.hasKeywords(word) ||
+        PromptAnalyzer.FILTERS.math.hasKeywords(word),
+    );
+
+    return [...new Set(matches)].slice(0, 5);
+  }
+
+  public static async analyzePrompt(
+    env: IEnv,
+    prompt: string,
+    attachments?: Attachment[],
+    budget_constraint?: number,
+    user?: IUser,
+  ): Promise<PromptRequirements> {
+    const keywords = PromptAnalyzer.extractKeywords(prompt);
+    const aiAnalysis = await PromptAnalyzer.analyzeWithAI(env, prompt, keywords, user);
+
+    return {
+      ...aiAnalysis,
+      budget_constraint,
+      hasImages: !!attachments?.some((a) => a.type === "image"),
+      hasDocuments: !!attachments?.some((a) => a.type === "document"),
+    };
+  }
 }

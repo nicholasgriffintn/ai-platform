@@ -1,185 +1,192 @@
 import type {
-	InputSchemaInputFieldDescriptor,
-	InputSchemaInputFieldType,
-	ModelConfigItem,
+  InputSchemaInputFieldDescriptor,
+  InputSchemaInputFieldType,
+  ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
+
 import { buildInputSchemaInput, type InputSchemaBuildParameters } from "~/utils/inputSchema";
-import type { CanvasGenerationInput } from "./types";
+
 import { isCanvasReferenceFieldName } from "./input-requirements";
+import type { CanvasGenerationInput } from "./types";
 
 function isAllowedEnumValue(
-	field: InputSchemaInputFieldDescriptor | undefined,
-	value: string | undefined,
+  field: InputSchemaInputFieldDescriptor | undefined,
+  value: string | undefined,
 ): string | undefined {
-	if (!field || !value) {
-		return undefined;
-	}
+  if (!field || !value) {
+    return undefined;
+  }
 
-	if (!field.enum?.length) {
-		return value;
-	}
+  if (!field.enum?.length) {
+    return value;
+  }
 
-	const enumValues = new Set(
-		field.enum.filter((entry): entry is string => typeof entry === "string"),
-	);
+  const enumValues = new Set(
+    field.enum.filter((entry): entry is string => typeof entry === "string"),
+  );
 
-	if (enumValues.has(value)) {
-		return value;
-	}
+  if (enumValues.has(value)) {
+    return value;
+  }
 
-	const aliases: Record<string, string[]> = {
-		"0.5 MP": ["0.5MP"],
-		"0.5MP": ["0.5 MP"],
-	};
+  const aliases: Record<string, string[]> = {
+    "0.5 MP": ["0.5MP"],
+    "0.5MP": ["0.5 MP"],
+  };
 
-	for (const alias of aliases[value] ?? []) {
-		if (enumValues.has(alias)) {
-			return alias;
-		}
-	}
+  for (const alias of aliases[value] ?? []) {
+    if (enumValues.has(alias)) {
+      return alias;
+    }
+  }
 
-	return undefined;
+  return undefined;
 }
 
 function getFieldTypes(field: InputSchemaInputFieldDescriptor): InputSchemaInputFieldType[] {
-	return Array.isArray(field.type) ? field.type : [field.type];
+  return Array.isArray(field.type) ? field.type : [field.type];
 }
 
 function isReferenceField(fieldName: string): boolean {
-	return isCanvasReferenceFieldName(fieldName);
+  return isCanvasReferenceFieldName(fieldName);
 }
 
 const reservedCanvasOptionFieldNames = new Set(["prompt", "aspect_ratio", "resolution"]);
 
 function getCanvasModelOptions(
-	fields: InputSchemaInputFieldDescriptor[],
-	request: CanvasGenerationInput,
+  fields: InputSchemaInputFieldDescriptor[],
+  request: CanvasGenerationInput,
 ): Record<string, string | number | boolean | string[]> {
-	const values = request.modelOptions ?? {};
-	const fieldNames = new Set(
-		fields
-			.filter((field) => {
-				const name = field.name.toLowerCase();
-				return !reservedCanvasOptionFieldNames.has(name);
-			})
-			.map((field) => field.name),
-	);
+  const values = request.modelOptions ?? {};
+  const fieldNames = new Set(
+    fields
+      .filter((field) => {
+        const name = field.name.toLowerCase();
 
-	return Object.fromEntries(
-		Object.entries(values).filter(([name, value]) => {
-			if (!fieldNames.has(name)) {
-				return false;
-			}
+        return !reservedCanvasOptionFieldNames.has(name);
+      })
+      .map((field) => field.name),
+  );
 
-			if (Array.isArray(value)) {
-				return value.some((entry) => typeof entry === "string" && entry.trim().length > 0);
-			}
+  return Object.fromEntries(
+    Object.entries(values).filter(([name, value]) => {
+      if (!fieldNames.has(name)) {
+        return false;
+      }
 
-			return typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value))
-				? true
-				: typeof value === "string" && value.trim().length > 0;
-		}),
-	);
+      if (Array.isArray(value)) {
+        return value.some((entry) => typeof entry === "string" && entry.trim().length > 0);
+      }
+
+      return typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value))
+        ? true
+        : typeof value === "string" && value.trim().length > 0;
+    }),
+  );
 }
 
 function getReferenceFieldValue(
-	field: InputSchemaInputFieldDescriptor,
-	referenceImages: string[],
+  field: InputSchemaInputFieldDescriptor,
+  referenceImages: string[],
 ): unknown {
-	if (referenceImages.length === 0) {
-		return undefined;
-	}
+  if (referenceImages.length === 0) {
+    return undefined;
+  }
 
-	const fieldTypes = getFieldTypes(field);
-	const fieldName = field.name.toLowerCase();
+  const fieldTypes = getFieldTypes(field);
+  const fieldName = field.name.toLowerCase();
 
-	if (fieldTypes.includes("array")) {
-		return referenceImages;
-	}
+  if (fieldTypes.includes("array")) {
+    return referenceImages;
+  }
 
-	if (fieldName === "last_frame" || fieldName === "last_frame_image" || fieldName === "end_image") {
-		return referenceImages[1];
-	}
+  if (fieldName === "last_frame" || fieldName === "last_frame_image" || fieldName === "end_image") {
+    return referenceImages[1];
+  }
 
-	return referenceImages[0];
+  return referenceImages[0];
 }
 
 function buildCanvasInputSource(
-	request: CanvasGenerationInput,
-	model: ModelConfigItem,
+  request: CanvasGenerationInput,
+  model: ModelConfigItem,
 ): Record<string, unknown> {
-	const fields = model.inputSchema?.fields ?? [];
-	const aspectRatioField = fields.find((field) => field.name === "aspect_ratio");
-	const resolutionField = fields.find((field) => field.name === "resolution");
-	const referenceImages = (request.referenceImages ?? []).filter(Boolean);
-	const modelOptions = getCanvasModelOptions(fields, request);
+  const fields = model.inputSchema?.fields ?? [];
+  const aspectRatioField = fields.find((field) => field.name === "aspect_ratio");
+  const resolutionField = fields.find((field) => field.name === "resolution");
+  const referenceImages = (request.referenceImages ?? []).filter(Boolean);
+  const modelOptions = getCanvasModelOptions(fields, request);
 
-	const input: Record<string, unknown> = {
-		prompt: request.prompt,
-		negative_prompt: request.negativePrompt,
-		width: request.width,
-		height: request.height,
-		duration: request.durationSeconds,
-		seconds: request.durationSeconds,
-		generate_audio: request.generateAudio,
-		...modelOptions,
-	};
+  const input: Record<string, unknown> = {
+    prompt: request.prompt,
+    negative_prompt: request.negativePrompt,
+    width: request.width,
+    height: request.height,
+    duration: request.durationSeconds,
+    seconds: request.durationSeconds,
+    generate_audio: request.generateAudio,
+    ...modelOptions,
+  };
 
-	for (const field of fields) {
-		const fieldName = field.name.toLowerCase();
-		if (!isReferenceField(fieldName)) {
-			continue;
-		}
+  for (const field of fields) {
+    const fieldName = field.name.toLowerCase();
 
-		const value = getReferenceFieldValue(field, referenceImages);
-		if (value === undefined) {
-			continue;
-		}
+    if (!isReferenceField(fieldName)) {
+      continue;
+    }
 
-		input[field.name] = value;
-	}
+    const value = getReferenceFieldValue(field, referenceImages);
 
-	const resolvedAspectRatio = isAllowedEnumValue(aspectRatioField, request.aspectRatio);
-	if (resolvedAspectRatio) {
-		input.aspect_ratio = resolvedAspectRatio;
-	}
+    if (value === undefined) {
+      continue;
+    }
 
-	const resolvedResolution = isAllowedEnumValue(resolutionField, request.resolution);
-	if (resolvedResolution) {
-		input.resolution = resolvedResolution;
-	}
+    input[field.name] = value;
+  }
 
-	return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined));
+  const resolvedAspectRatio = isAllowedEnumValue(aspectRatioField, request.aspectRatio);
+
+  if (resolvedAspectRatio) {
+    input.aspect_ratio = resolvedAspectRatio;
+  }
+
+  const resolvedResolution = isAllowedEnumValue(resolutionField, request.resolution);
+
+  if (resolvedResolution) {
+    input.resolution = resolvedResolution;
+  }
+
+  return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined));
 }
 
 export function prepareCanvasInputForModel({
-	request,
-	model,
+  request,
+  model,
 }: {
-	request: CanvasGenerationInput;
-	model: ModelConfigItem;
+  request: CanvasGenerationInput;
+  model: ModelConfigItem;
 }): Record<string, unknown> {
-	const sourceInput = buildCanvasInputSource(request, model);
+  const sourceInput = buildCanvasInputSource(request, model);
 
-	const params = {
-		messages: [
-			{
-				role: "user",
-				content: request.prompt,
-			},
-		],
-		body: {
-			input: sourceInput,
-		},
-	} satisfies InputSchemaBuildParameters;
+  const params = {
+    messages: [
+      {
+        role: "user",
+        content: request.prompt,
+      },
+    ],
+    body: {
+      input: sourceInput,
+    },
+  } satisfies InputSchemaBuildParameters;
 
-	const built = buildInputSchemaInput(params, model).input;
+  const built = buildInputSchemaInput(params, model).input;
 
-	if (typeof built === "string") {
-		return {
-			prompt: built,
-		};
-	}
+  if (typeof built === "string") {
+    return {
+      prompt: built,
+    };
+  }
 
-	return built;
+  return built;
 }

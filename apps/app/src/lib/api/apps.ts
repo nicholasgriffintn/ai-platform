@@ -1,33 +1,21 @@
-import {
-	type AnalyseArticleParams,
-	type AnalyseArticleResponse,
-	type ArticleResponse,
-	type ArticlesResponse,
-	type ExtractArticleContentParams,
-	type ExtractArticleContentResponse,
-	type FetchMultipleArticlesResponse,
-	type GenerateReportParams,
-	type GenerateReportResponse,
-	type SummariseArticleParams,
-	type SummariseArticleResponse,
+import type {
+	AnalyseArticleParams,
+	AnalyseArticleResponse,
+	ArticleResponse,
+	ArticlesResponse,
+	ExtractArticleContentParams,
+	ExtractArticleContentResponse,
+	FetchMultipleArticlesResponse,
+	GenerateReportParams,
+	GenerateReportResponse,
+	SummariseArticleParams,
+	SummariseArticleResponse,type ListNotesResponse,type ListPodcastsResponse,type Note,type NoteCreateRequest,type NoteDetailResponse,type NoteFormatResponse,type NoteUpdateRequest,type Podcast,type PodcastDetailResponse,type PodcastListItem
 } from "@ngriffin_uk/polychat-schemas";
 import {
 	type ProcessPodcastParams,
 	type UploadPodcastParams,
 	type UploadResponse,
 } from "@ngriffin_uk/polychat-component-experiences/content";
-import type {
-	ListNotesResponse,
-	ListPodcastsResponse,
-	Note,
-	NoteCreateRequest,
-	NoteDetailResponse,
-	NoteFormatResponse,
-	NoteUpdateRequest,
-	Podcast,
-	PodcastDetailResponse,
-	PodcastListItem,
-} from "@ngriffin_uk/polychat-schemas";
 import { apiService } from "./api-service";
 import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import { fetchApi } from "./fetch-wrapper";
@@ -35,6 +23,7 @@ import { withProjectScope } from "@ngriffin_uk/polychat-library-client/project-s
 
 export const fetchPodcasts = async (projectId?: string): Promise<PodcastListItem[]> => {
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (error) {
@@ -51,11 +40,13 @@ export const fetchPodcasts = async (projectId?: string): Promise<PodcastListItem
 	}
 
 	const data = await returnFetchedData<ListPodcastsResponse>(response);
+
 	return data.podcasts || [];
 };
 
 export const fetchPodcast = async (id: string, projectId?: string): Promise<Podcast> => {
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (error) {
@@ -72,6 +63,7 @@ export const fetchPodcast = async (id: string, projectId?: string): Promise<Podc
 	}
 
 	const data = await returnFetchedData<PodcastDetailResponse>(response);
+
 	return data.podcast;
 };
 
@@ -80,18 +72,22 @@ export const uploadPodcast = async (
 	projectId?: string,
 ): Promise<UploadResponse> => {
 	const formData = new FormData();
+
 	formData.append("title", params.title);
 	if (params.description) {
 		formData.append("description", params.description);
 	}
+
 	if (params.audio) {
 		formData.append("audio", params.audio);
 	}
+
 	if (params.audioUrl) {
 		formData.append("audioUrl", params.audioUrl);
 	}
 
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (error) {
@@ -131,6 +127,7 @@ export const processPodcast = async (params: ProcessPodcastParams, projectId?: s
 	}
 
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (error) {
@@ -152,6 +149,7 @@ export const processPodcast = async (params: ProcessPodcastParams, projectId?: s
 
 export const fetchArticles = async (projectId?: string): Promise<ArticlesResponse> => {
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (error) {
@@ -165,13 +163,16 @@ export const fetchArticles = async (projectId?: string): Promise<ArticlesRespons
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
+
 		throw new Error(errorData?.message || `Failed to fetch articles: ${response.statusText}`);
 	}
+
 	return await returnFetchedData<ArticlesResponse>(response);
 };
 
 export const fetchArticle = async (id: string, projectId?: string): Promise<ArticleResponse> => {
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (error) {
@@ -182,10 +183,13 @@ export const fetchArticle = async (id: string, projectId?: string): Promise<Arti
 		method: "GET",
 		headers,
 	});
+
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
+
 		throw new Error(errorData?.message || `Failed to fetch article report: ${response.statusText}`);
 	}
+
 	return await returnFetchedData<ArticleResponse>(response);
 };
 
@@ -194,6 +198,7 @@ export const analyseArticle = async (
 	projectId?: string,
 ): Promise<AnalyseArticleResponse> => {
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (error) {
@@ -205,10 +210,13 @@ export const analyseArticle = async (
 		body: params,
 		headers,
 	});
+
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
+
 		throw new Error(errorData?.message || `Failed to analyse article: ${response.statusText}`);
 	}
+
 	return await returnFetchedData<AnalyseArticleResponse>(response);
 };
 
@@ -217,6 +225,7 @@ export const summariseArticle = async (
 	projectId?: string,
 ): Promise<SummariseArticleResponse> => {
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (error) {
@@ -228,10 +237,13 @@ export const summariseArticle = async (
 		body: params,
 		headers,
 	});
+
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
+
 		throw new Error(errorData?.message || `Failed to summarise article: ${response.statusText}`);
 	}
+
 	return await returnFetchedData<SummariseArticleResponse>(response);
 };
 
@@ -240,6 +252,7 @@ export const generateReport = async (
 	projectId?: string,
 ): Promise<GenerateReportResponse> => {
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (error) {
@@ -251,10 +264,13 @@ export const generateReport = async (
 		body: params,
 		headers,
 	});
+
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
+
 		throw new Error(errorData?.message || `Failed to generate report: ${response.statusText}`);
 	}
+
 	return await returnFetchedData<GenerateReportResponse>(response);
 };
 
@@ -262,10 +278,11 @@ export const fetchSourceArticlesByIds = async (
 	ids: string[],
 	projectId?: string,
 ): Promise<FetchMultipleArticlesResponse> => {
-	if (!ids.length) return { articles: [] };
+	if (!ids.length) {return { articles: [] };}
 
 	const queryString = ids.map((id) => `ids[]=${encodeURIComponent(id)}`).join("&");
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (error) {
@@ -282,15 +299,18 @@ export const fetchSourceArticlesByIds = async (
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
+
 		throw new Error(
 			errorData?.message || `Failed to fetch source articles: ${response.statusText}`,
 		);
 	}
+
 	return await returnFetchedData<FetchMultipleArticlesResponse>(response);
 };
 
 export const fetchNotes = async (projectId?: string): Promise<Note[]> => {
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (e) {
@@ -307,11 +327,13 @@ export const fetchNotes = async (projectId?: string): Promise<Note[]> => {
 	}
 
 	const data = await returnFetchedData<ListNotesResponse>(response);
+
 	return data.notes;
 };
 
 export const fetchNote = async (id: string, projectId?: string): Promise<Note> => {
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (e) {
@@ -325,15 +347,18 @@ export const fetchNote = async (id: string, projectId?: string): Promise<Note> =
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
+
 		throw new Error(errorData?.message || `Failed to fetch note: ${response.statusText}`);
 	}
 
 	const data = await returnFetchedData<NoteDetailResponse>(response);
+
 	return data.note;
 };
 
 export const createNote = async (params: NoteCreateRequest, projectId?: string): Promise<Note> => {
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (e) {
@@ -348,10 +373,12 @@ export const createNote = async (params: NoteCreateRequest, projectId?: string):
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
+
 		throw new Error(errorData?.message || `Failed to create note: ${response.statusText}`);
 	}
 
 	const data = await returnFetchedData<NoteDetailResponse>(response);
+
 	return data.note;
 };
 
@@ -360,6 +387,7 @@ export const updateNote = async (
 	projectId?: string,
 ): Promise<Note> => {
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (e) {
@@ -376,15 +404,18 @@ export const updateNote = async (
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
+
 		throw new Error(errorData?.message || `Failed to update note: ${response.statusText}`);
 	}
 
 	const data = await returnFetchedData<NoteDetailResponse>(response);
+
 	return data.note;
 };
 
 export const deleteNote = async (id: string, projectId?: string): Promise<void> => {
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (e) {
@@ -398,6 +429,7 @@ export const deleteNote = async (id: string, projectId?: string): Promise<void> 
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
+
 		throw new Error(errorData?.message || `Failed to delete note: ${response.statusText}`);
 	}
 };
@@ -408,6 +440,7 @@ export const formatNoteAPI = async (
 	projectId?: string,
 ): Promise<string> => {
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (e) {
@@ -422,10 +455,12 @@ export const formatNoteAPI = async (
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
+
 		throw new Error(errorData?.message || `Failed to format note: ${response.statusText}`);
 	}
 
 	const data = await returnFetchedData<NoteFormatResponse>(response);
+
 	return data.content;
 };
 
@@ -434,6 +469,7 @@ export const extractArticleContent = async (
 	projectId?: string,
 ): Promise<ExtractArticleContentResponse> => {
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (e) {
@@ -455,6 +491,7 @@ export const extractArticleContent = async (
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
+
 		throw new Error(
 			errorData?.message || `Failed to extract article content: ${response.statusText}`,
 		);
@@ -465,6 +502,7 @@ export const extractArticleContent = async (
 
 export const prepareSessionForRerun = async (itemId: string, projectId?: string): Promise<void> => {
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (e) {
@@ -484,6 +522,7 @@ export const prepareSessionForRerun = async (itemId: string, projectId?: string)
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
+
 		throw new Error(
 			errorData?.message || `Failed to prepare session for rerun: ${response.statusText}`,
 		);
@@ -525,6 +564,7 @@ export const generateNotesFromMedia = async (
 	projectId?: string,
 ): Promise<{ content: string }> => {
 	let headers = {};
+
 	try {
 		headers = await apiService.getHeaders();
 	} catch (e) {
@@ -542,6 +582,7 @@ export const generateNotesFromMedia = async (
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
+
 		throw new Error(errorData?.message || `Failed to generate notes: ${response.statusText}`);
 	}
 

@@ -4,8 +4,8 @@ import {
   isTextInputChatModel,
   REALTIME_LIVE_PROVIDER_MANIFEST,
   type RealtimeLiveProviderManifestItem,
+  type ModelConfig,
 } from "@ngriffin_uk/polychat-schemas";
-import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 
 import type { CreateRealtimeSessionOptions, RealtimeTransport } from "./types";
 import {
@@ -69,6 +69,7 @@ export function getComposedRealtimeReasoningModelId(
   selectedModelId?: string | null,
 ): string | undefined {
   const selectedModel = selectedModelId ? models[selectedModelId] : undefined;
+
   if (
     selectedModel &&
     !isRealtimeSessionModel(selectedModel) &&
@@ -78,6 +79,7 @@ export function getComposedRealtimeReasoningModelId(
   }
 
   const defaultChatModel = models[defaultModel];
+
   if (
     defaultChatModel &&
     !isRealtimeSessionModel(defaultChatModel) &&

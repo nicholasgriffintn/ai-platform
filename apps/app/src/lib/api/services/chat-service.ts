@@ -93,6 +93,7 @@ export class ChatService {
 
   async listChats(options: ConversationListOptions = {}): Promise<ConversationListPage> {
     let headers = {};
+
     try {
       headers = await this.getHeaders();
     } catch (error) {
@@ -100,11 +101,26 @@ export class ChatService {
     }
 
     const params = new URLSearchParams();
-    if (options.limit) params.set("limit", String(options.limit));
-    if (options.page) params.set("page", String(options.page));
-    if (options.archived) params.set("archived", options.archived);
-    if (options.sortBy) params.set("sort_by", options.sortBy);
-    if (options.query?.trim()) params.set("q", options.query.trim());
+
+    if (options.limit) {
+      params.set("limit", String(options.limit));
+    }
+
+    if (options.page) {
+      params.set("page", String(options.page));
+    }
+
+    if (options.archived) {
+      params.set("archived", options.archived);
+    }
+
+    if (options.sortBy) {
+      params.set("sort_by", options.sortBy);
+    }
+
+    if (options.query?.trim()) {
+      params.set("q", options.query.trim());
+    }
 
     const queryString = params.toString();
     const endpoint = queryString ? `/chat/completions?${queryString}` : "/chat/completions";
@@ -133,6 +149,7 @@ export class ChatService {
 
     if (!data.conversations || !Array.isArray(data.conversations)) {
       console.error("Unexpected response format from /chat/completions endpoint:", data);
+
       return {
         conversations: [],
         pageNumber: options.page ?? 1,
@@ -153,6 +170,7 @@ export class ChatService {
       const dateField = options.sortBy === "created" ? "created_at" : "updated_at";
       const aTimestamp = new Date(a[dateField] || a.last_message_at).getTime();
       const bTimestamp = new Date(b[dateField] || b.last_message_at).getTime();
+
       return bTimestamp - aTimestamp;
     });
 
@@ -173,6 +191,7 @@ export class ChatService {
     }
 
     let headers = {};
+
     try {
       headers = await this.getHeaders();
     } catch (error) {
@@ -207,6 +226,7 @@ export class ChatService {
     }
 
     let headers = {};
+
     try {
       headers = await this.getHeaders();
     } catch (error) {
@@ -218,6 +238,7 @@ export class ChatService {
       headers,
     });
     const parsed = parseCompactConversationResponse(await returnFetchedData<unknown>(response));
+
     if (!parsed) {
       throw new Error("Invalid compact conversation response");
     }
@@ -234,6 +255,7 @@ export class ChatService {
     }
 
     let headers = {};
+
     try {
       headers = await this.getHeaders();
     } catch (error) {
@@ -256,6 +278,7 @@ export class ChatService {
     }
 
     const data = await returnFetchedData<any>(response);
+
     return data.title;
   }
 
@@ -272,6 +295,7 @@ export class ChatService {
     }
 
     let headers = {};
+
     try {
       headers = await this.getHeaders();
     } catch (error) {
@@ -291,6 +315,7 @@ export class ChatService {
     });
 
     const data = await returnFetchedData<Conversation>(updateResponse);
+
     return normaliseConversationResponse(data, completion_id);
   }
 
@@ -300,6 +325,7 @@ export class ChatService {
     }
 
     let headers = {};
+
     try {
       headers = await this.getHeaders();
     } catch (error) {
@@ -318,6 +344,7 @@ export class ChatService {
 
   async deleteAllConversations(): Promise<void> {
     let headers = {};
+
     try {
       headers = await this.getHeaders();
     } catch (error) {
@@ -340,6 +367,7 @@ export class ChatService {
     }
 
     let headers = {};
+
     try {
       headers = await this.getHeaders();
     } catch (error) {
@@ -364,6 +392,7 @@ export class ChatService {
     }
 
     let headers = {};
+
     try {
       headers = await this.getHeaders();
     } catch (error) {
@@ -386,6 +415,7 @@ export class ChatService {
     }
 
     let headers = {};
+
     try {
       headers = await this.getHeaders();
     } catch (error) {
@@ -428,6 +458,7 @@ export class ChatService {
     allowTools = true,
   }: StreamChatCompletionsParams): Promise<Message> {
     let headers = {};
+
     try {
       headers = await this.getHeaders();
     } catch (error) {
@@ -435,9 +466,11 @@ export class ChatService {
     }
 
     const formattedMessages = serialiseMessagesForChatRequest(messages);
+
     if (formattedMessages.length === 0) {
       throw new Error("Missing required parameter: messages");
     }
+
     const sandboxOptions =
       allowTools && requestOptions?.options?.sandbox?.enabled
         ? requestOptions.options.sandbox
@@ -490,6 +523,7 @@ export class ChatService {
     if (model !== undefined) {
       requestBody.model = model;
     }
+
     const response = await fetchApi(endpoint, {
       method: "POST",
       headers,
@@ -523,6 +557,7 @@ export class ChatService {
 
       if ("error" in data) {
         const error = data.error;
+
         throw new Error(
           isRecord(error) && typeof error.message === "string" ? error.message : "Unknown error",
         );
@@ -531,6 +566,7 @@ export class ChatService {
       const compactionMessage = readCompactionStatusMessage(
         data.post_processing?.compaction?.message,
       );
+
       if (compactionMessage) {
         onStateChange("compaction", {
           type: "state",
@@ -544,6 +580,7 @@ export class ChatService {
 
     const decoder = new TextDecoder();
     const reader = response.body?.getReader();
+
     if (!reader) {
       throw new Error("Response body is not readable as a stream");
     }
@@ -561,11 +598,13 @@ export class ChatService {
           false,
           toAppMessage(update.message),
         );
+
         return;
       }
 
       if (update.type === "assistant_delta") {
         onProgress(update.content, update.reasoning, undefined, false);
+
         return;
       }
 
@@ -578,16 +617,19 @@ export class ChatService {
           true,
           lastAssistantMessage,
         );
+
         return;
       }
 
       if (update.type === "tool_result") {
         onProgress("", "", [toAppMessage(update.message)]);
+
         return;
       }
 
       if (update.type === "state") {
         onStateChange(update.state, update.event);
+
         return;
       }
 
@@ -595,16 +637,20 @@ export class ChatService {
         lastAssistantMessage = toAppMessage(update.message);
       }
     };
+
     const handleParsedEvent = (parsedData: ParsedChatStreamSseEvent) => {
       if (parsedData.type === "error" && "error" in parsedData) {
         throw createStreamingApiError(parsedData.error);
       }
+
       if (parsedData.type === "usage_limits" && "usage_limits" in parsedData) {
         onStateChange("usage_limits", parsedData.usage_limits);
       }
+
       if (parsedData.type === "tool_use_start") {
         onStateChange("tool_use_start", parsedData);
       }
+
       if (parsedData.type === "tool_use_stop") {
         onStateChange("tool_use_stop", parsedData);
       }
@@ -613,8 +659,10 @@ export class ChatService {
         handleUpdate(update);
       }
     };
+
     const processBufferedEvents = (flush = false) => {
       const parsed = parseChatStreamSseBuffer(buffer, { flush });
+
       buffer = parsed.remainingBuffer;
 
       for (const parsedData of parsed.events) {
@@ -624,6 +672,7 @@ export class ChatService {
           if (error instanceof ApiError) {
             throw error;
           }
+
           console.error("Error handling SSE data:", error, parsedData);
         }
       }
@@ -632,6 +681,7 @@ export class ChatService {
     try {
       while (true) {
         const { done, value } = await reader.read();
+
         if (done) {
           break;
         }
@@ -659,6 +709,7 @@ export class ChatService {
     }
 
     const finalStreamMessage = assembler.getFinalMessage();
+
     return (
       lastAssistantMessage ||
       (finalStreamMessage

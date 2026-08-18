@@ -12,9 +12,13 @@ export interface PodcastDetailViewProps {
 
 export function PodcastDetailView({ podcast, onDownloadTranscript }: PodcastDetailViewProps) {
   const formatDuration = (seconds?: number) => {
-    if (!seconds) return "Unknown duration";
+    if (!seconds) {
+      return "Unknown duration";
+    }
+
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
+
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
@@ -101,12 +105,15 @@ export function PodcastDetailView({ podcast, onDownloadTranscript }: PodcastDeta
                     speakerNames={podcast.transcript.segments.reduce(
                       (acc, segment, index) => {
                         const speakerId = segment.speaker ?? `Segment ${index + 1}`;
+
                         if (!acc[speakerId]) {
                           const speakerNum = speakerId.startsWith("SPEAKER_")
                             ? Number.parseInt(speakerId.replace("SPEAKER_", ""))
                             : index;
+
                           acc[speakerId] = `Speaker ${speakerNum + 1}`;
                         }
+
                         return acc;
                       },
                       {} as Record<string, string>,

@@ -68,6 +68,7 @@ export const ToolToggles = ({ isDisabled = false }: ToolTogglesProps) => {
       : null,
     ...modelToolOptions.map((tool) => {
       const Icon = MODEL_TOOL_ICONS[tool.id];
+
       return {
         description: tool.availabilityReason,
         isDisabled: !tool.available,

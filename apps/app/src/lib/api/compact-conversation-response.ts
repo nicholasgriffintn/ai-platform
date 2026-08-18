@@ -2,34 +2,35 @@ import { readCompactionStatusMessage } from "@ngriffin_uk/polychat-library-chat/
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export interface CompactConversationResponse {
-	compacted: boolean;
-	conversation: {
-		messages: unknown[];
-		[key: string]: unknown;
-	};
+  compacted: boolean;
+  conversation: {
+    messages: unknown[];
+    [key: string]: unknown;
+  };
 }
 
 export function parseCompactConversationResponse(
-	value: unknown,
+  value: unknown,
 ): CompactConversationResponse | null {
-	if (!isRecord(value) || typeof value.compacted !== "boolean" || !isRecord(value.conversation)) {
-		return null;
-	}
+  if (!isRecord(value) || typeof value.compacted !== "boolean" || !isRecord(value.conversation)) {
+    return null;
+  }
 
-	const messages = value.conversation.messages;
-	if (!Array.isArray(messages)) {
-		return null;
-	}
+  const messages = value.conversation.messages;
 
-	if (value.compacted && !messages.some((message) => readCompactionStatusMessage(message))) {
-		return null;
-	}
+  if (!Array.isArray(messages)) {
+    return null;
+  }
 
-	return {
-		compacted: value.compacted,
-		conversation: {
-			...value.conversation,
-			messages,
-		},
-	};
+  if (value.compacted && !messages.some((message) => readCompactionStatusMessage(message))) {
+    return null;
+  }
+
+  return {
+    compacted: value.compacted,
+    conversation: {
+      ...value.conversation,
+      messages,
+    },
+  };
 }

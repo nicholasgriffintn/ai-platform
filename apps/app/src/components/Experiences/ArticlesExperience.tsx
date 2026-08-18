@@ -26,10 +26,15 @@ export function ArticlesExperience({ basePath, projectId, subpath }: ExperienceP
     error: reportError,
   } = useFetchArticleReport(articleId, projectId);
 
-  if (isNew) return <ArticleAnalysisSession basePath={basePath} projectId={projectId} />;
+  if (isNew) {
+    return <ArticleAnalysisSession basePath={basePath} projectId={projectId} />;
+  }
+
   if (articleId) {
-    if (isReportLoading)
+    if (isReportLoading) {
       return <CardGridLoadingSkeleton count={1} label="Loading article report" />;
+    }
+
     if (isAuthenticationError(reportError)) {
       return (
         <SignInEmptyState
@@ -38,14 +43,18 @@ export function ArticlesExperience({ basePath, projectId, subpath }: ExperienceP
         />
       );
     }
-    if (reportError || !report)
+
+    if (reportError || !report) {
       return (
         <EmptyState
           title="Report unavailable"
           message={reportError?.message ?? "Article report not found"}
         />
       );
+    }
+
     const sourceIds = report.content.sourceItemIds ?? [];
+
     return (
       <ArticleView
         report={report}
@@ -55,7 +64,11 @@ export function ArticlesExperience({ basePath, projectId, subpath }: ExperienceP
       />
     );
   }
-  if (isLoading) return <CardGridLoadingSkeleton count={4} label="Loading article reports" />;
+
+  if (isLoading) {
+    return <CardGridLoadingSkeleton count={4} label="Loading article reports" />;
+  }
+
   if (isAuthenticationError(error)) {
     return (
       <SignInEmptyState
@@ -64,7 +77,11 @@ export function ArticlesExperience({ basePath, projectId, subpath }: ExperienceP
       />
     );
   }
-  if (error) return <EmptyState title="Article reports unavailable" message={error.message} />;
+
+  if (error) {
+    return <EmptyState title="Article reports unavailable" message={error.message} />;
+  }
+
   if (!reports?.length) {
     return (
       <EmptyState

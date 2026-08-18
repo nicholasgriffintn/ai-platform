@@ -1,94 +1,99 @@
+import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import type {
-	DeployTrainingModelRequest,
-	TrainingDeployment,
-	TrainingDeploymentDeleteResponse,
-	TrainingJob,
-	TrainingJobEvent,
-	TrainingModelDefinition,
-	TrainingProviderId,
-	StartTrainingJobRequest,
+  DeployTrainingModelRequest,
+  TrainingDeployment,
+  TrainingDeploymentDeleteResponse,
+  TrainingJob,
+  TrainingJobEvent,
+  TrainingModelDefinition,
+  TrainingProviderId,
+  StartTrainingJobRequest,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service";
-import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import { fetchApiOrThrow } from "./fetch-wrapper";
 
 type TrainingRequestInit = Omit<RequestInit, "headers"> & {
-	headers?: Record<string, string>;
+  headers?: Record<string, string>;
 };
 
 async function trainingRequest<T>(path: string, init: TrainingRequestInit = {}): Promise<T> {
-	const headers = await apiService.getHeaders();
-	const response = await fetchApiOrThrow(`/training${path}`, {
-		...init,
-		headers: {
-			...headers,
-			...init.headers,
-		},
-	});
+  const headers = await apiService.getHeaders();
+  const response = await fetchApiOrThrow(`/training${path}`, {
+    ...init,
+    headers: {
+      ...headers,
+      ...init.headers,
+    },
+  });
 
-	return returnFetchedData<T>(response);
+  return returnFetchedData<T>(response);
 }
 
 export async function fetchTrainingModels(): Promise<TrainingModelDefinition[]> {
-	const data = await trainingRequest<{ models: TrainingModelDefinition[] }>("/models");
-	return data.models;
+  const data = await trainingRequest<{ models: TrainingModelDefinition[] }>("/models");
+
+  return data.models;
 }
 
 export async function fetchTrainingJobs(): Promise<TrainingJob[]> {
-	const data = await trainingRequest<{ jobs: TrainingJob[] }>("/jobs");
-	return data.jobs;
+  const data = await trainingRequest<{ jobs: TrainingJob[] }>("/jobs");
+
+  return data.jobs;
 }
 
 export async function startTrainingJob(request: StartTrainingJobRequest): Promise<TrainingJob> {
-	return trainingRequest<TrainingJob>("/jobs", {
-		method: "POST",
-		body: JSON.stringify(request),
-	});
+  return trainingRequest<TrainingJob>("/jobs", {
+    method: "POST",
+    body: JSON.stringify(request),
+  });
 }
 
 export async function fetchTrainingJobEvents(
-	provider: TrainingProviderId,
-	jobName: string,
+  provider: TrainingProviderId,
+  jobName: string,
 ): Promise<TrainingJobEvent[]> {
-	const data = await trainingRequest<{ events: TrainingJobEvent[] }>(
-		`/jobs/${encodeURIComponent(provider)}/${encodeURIComponent(jobName)}/events`,
-	);
-	return data.events;
+  const data = await trainingRequest<{ events: TrainingJobEvent[] }>(
+    `/jobs/${encodeURIComponent(provider)}/${encodeURIComponent(jobName)}/events`,
+  );
+
+  return data.events;
 }
 
 export async function fetchTrainingDeploymentEvents(
-	provider: TrainingProviderId,
-	endpointName: string,
+  provider: TrainingProviderId,
+  endpointName: string,
 ): Promise<TrainingJobEvent[]> {
-	const data = await trainingRequest<{ events: TrainingJobEvent[] }>(
-		`/deployments/${encodeURIComponent(provider)}/${encodeURIComponent(endpointName)}/events`,
-	);
-	return data.events;
+  const data = await trainingRequest<{ events: TrainingJobEvent[] }>(
+    `/deployments/${encodeURIComponent(provider)}/${encodeURIComponent(endpointName)}/events`,
+  );
+
+  return data.events;
 }
 
 export async function fetchTrainingDeployments(): Promise<TrainingDeployment[]> {
-	const data = await trainingRequest<{ deployments: TrainingDeployment[] }>("/deployments");
-	return data.deployments;
+  const data = await trainingRequest<{ deployments: TrainingDeployment[] }>("/deployments");
+
+  return data.deployments;
 }
 
 export async function deployTrainingModel(
-	request: DeployTrainingModelRequest,
+  request: DeployTrainingModelRequest,
 ): Promise<TrainingDeployment> {
-	return trainingRequest<TrainingDeployment>("/deployments", {
-		method: "POST",
-		body: JSON.stringify(request),
-	});
+  return trainingRequest<TrainingDeployment>("/deployments", {
+    method: "POST",
+    body: JSON.stringify(request),
+  });
 }
 
 export async function deleteTrainingDeployment(
-	provider: TrainingProviderId,
-	endpointName: string,
+  provider: TrainingProviderId,
+  endpointName: string,
 ): Promise<TrainingDeploymentDeleteResponse> {
-	return trainingRequest<TrainingDeploymentDeleteResponse>(
-		`/deployments/${encodeURIComponent(provider)}/${encodeURIComponent(endpointName)}`,
-		{
-			method: "DELETE",
-		},
-	);
+  return trainingRequest<TrainingDeploymentDeleteResponse>(
+    `/deployments/${encodeURIComponent(provider)}/${encodeURIComponent(endpointName)}`,
+    {
+      method: "DELETE",
+    },
+  );
 }

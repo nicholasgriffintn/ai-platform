@@ -5,182 +5,194 @@ import { getRealtimeProvider } from "~/lib/providers/capabilities/realtime";
 import type { IEnv, IUser } from "~/types";
 import { base64ToBuffer } from "~/utils/base64";
 import { generateId } from "~/utils/id";
+
 import {
-	createRealtimeTranscriptionProxyResponse,
-	type NormalizedClientRealtimeMessage,
+  createRealtimeTranscriptionProxyResponse,
+  type NormalizedClientRealtimeMessage,
 } from "./transcriptionProxy";
 
 const ELEVENLABS_SAMPLE_RATE = 16000;
 const PCM_S16LE_BYTES_PER_SAMPLE = 2;
 const MIN_COMMIT_AUDIO_MS = 300;
 const MIN_COMMIT_AUDIO_BYTES =
-	(ELEVENLABS_SAMPLE_RATE * PCM_S16LE_BYTES_PER_SAMPLE * MIN_COMMIT_AUDIO_MS) / 1000;
+  (ELEVENLABS_SAMPLE_RATE * PCM_S16LE_BYTES_PER_SAMPLE * MIN_COMMIT_AUDIO_MS) / 1000;
 
 type ElevenLabsUpstreamMessageMapper = (message: NormalizedClientRealtimeMessage) => string | null;
 type ElevenLabsClientMessageMapper = (message: unknown) => string | string[] | undefined;
 
 function createInputAudioChunkMessage({
-	audio,
-	commit,
+  audio,
+  commit,
 }: {
-	audio?: string;
-	commit: boolean;
+  audio?: string;
+  commit: boolean;
 }): string {
-	return JSON.stringify({
-		message_type: "input_audio_chunk",
-		...(audio ? { audio_base_64: audio } : {}),
-		commit,
-		sample_rate: ELEVENLABS_SAMPLE_RATE,
-	});
+  return JSON.stringify({
+    message_type: "input_audio_chunk",
+    ...(audio ? { audio_base_64: audio } : {}),
+    commit,
+    sample_rate: ELEVENLABS_SAMPLE_RATE,
+  });
 }
 
 export function createElevenLabsUpstreamMessageMapper(): ElevenLabsUpstreamMessageMapper {
-	let uncommittedAudioBytes = 0;
+  let uncommittedAudioBytes = 0;
 
-	return (message) => {
-		if (message.type === "input_audio.append") {
-			uncommittedAudioBytes += base64ToBuffer(message.audio).byteLength;
-			return createInputAudioChunkMessage({ audio: message.audio, commit: false });
-		}
+  return (message) => {
+    if (message.type === "input_audio.append") {
+      uncommittedAudioBytes += base64ToBuffer(message.audio).byteLength;
 
-		if (message.type === "input_audio.flush" || message.type === "input_audio.end") {
-			if (uncommittedAudioBytes < MIN_COMMIT_AUDIO_BYTES) {
-				return null;
-			}
+      return createInputAudioChunkMessage({ audio: message.audio, commit: false });
+    }
 
-			uncommittedAudioBytes = 0;
-			return createInputAudioChunkMessage({ commit: true });
-		}
+    if (message.type === "input_audio.flush" || message.type === "input_audio.end") {
+      if (uncommittedAudioBytes < MIN_COMMIT_AUDIO_BYTES) {
+        return null;
+      }
 
-		return null;
-	};
+      uncommittedAudioBytes = 0;
+
+      return createInputAudioChunkMessage({ commit: true });
+    }
+
+    return null;
+  };
 }
 
 export function toElevenLabsUpstreamMessage(
-	message: NormalizedClientRealtimeMessage,
+  message: NormalizedClientRealtimeMessage,
 ): string | null {
-	return createElevenLabsUpstreamMessageMapper()(message);
+  return createElevenLabsUpstreamMessageMapper()(message);
 }
 
 function createSegmentId(): string {
-	return `elevenlabs-${generateId()}`;
+  return `elevenlabs-${generateId()}`;
 }
 
 function getString(value: unknown): string | undefined {
-	return typeof value === "string" && value.trim().length > 0 ? value : undefined;
+  return typeof value === "string" && value.trim().length > 0 ? value : undefined;
 }
 
 export function createElevenLabsClientMessageMapper(): ElevenLabsClientMessageMapper {
-	let currentSegmentId = createSegmentId();
-	let committedSegment: { itemId: string; text: string } | undefined;
+  let currentSegmentId = createSegmentId();
+  let committedSegment: { itemId: string; text: string } | undefined;
 
-	const getActiveSegmentId = () => {
-		if (committedSegment) {
-			currentSegmentId = createSegmentId();
-			committedSegment = undefined;
-		}
+  const getActiveSegmentId = () => {
+    if (committedSegment) {
+      currentSegmentId = createSegmentId();
+      committedSegment = undefined;
+    }
 
-		return currentSegmentId;
-	};
+    return currentSegmentId;
+  };
 
-	const getCommittedSegmentId = (text: string) => {
-		if (committedSegment?.text === text) {
-			return committedSegment.itemId;
-		}
-		if (committedSegment) {
-			currentSegmentId = createSegmentId();
-		}
+  const getCommittedSegmentId = (text: string) => {
+    if (committedSegment?.text === text) {
+      return committedSegment.itemId;
+    }
 
-		committedSegment = { itemId: currentSegmentId, text };
-		return currentSegmentId;
-	};
+    if (committedSegment) {
+      currentSegmentId = createSegmentId();
+    }
 
-	return (data) => {
-		if (typeof data !== "string") {
-			return undefined;
-		}
+    committedSegment = { itemId: currentSegmentId, text };
 
-		let payload: Record<string, unknown>;
-		try {
-			payload = JSON.parse(data);
-		} catch {
-			return undefined;
-		}
+    return currentSegmentId;
+  };
 
-		const messageType = getString(payload.message_type);
-		const text = getString(payload.text);
-		if (messageType === "partial_transcript" && text) {
-			return JSON.stringify({
-				type: "transcription.text",
-				item_id: getActiveSegmentId(),
-				text,
-			});
-		}
-		if (
-			(messageType === "committed_transcript" ||
-				messageType === "committed_transcript_with_timestamps" ||
-				messageType === "final_transcript") &&
-			text
-		) {
-			const itemId = getCommittedSegmentId(text);
-			return [
-				JSON.stringify({ type: "transcription.segment", item_id: itemId, text }),
-				JSON.stringify({ type: "transcription.done", item_id: itemId }),
-			];
-		}
-		if (messageType === "session_started") {
-			return JSON.stringify({ type: "session.created" });
-		}
-		if (messageType === "error") {
-			return JSON.stringify({ type: "error", error: { message: getString(payload.message) } });
-		}
+  return (data) => {
+    if (typeof data !== "string") {
+      return undefined;
+    }
 
-		return data;
-	};
+    let payload: Record<string, unknown>;
+
+    try {
+      payload = JSON.parse(data);
+    } catch {
+      return undefined;
+    }
+
+    const messageType = getString(payload.message_type);
+    const text = getString(payload.text);
+
+    if (messageType === "partial_transcript" && text) {
+      return JSON.stringify({
+        type: "transcription.text",
+        item_id: getActiveSegmentId(),
+        text,
+      });
+    }
+
+    if (
+      (messageType === "committed_transcript" ||
+        messageType === "committed_transcript_with_timestamps" ||
+        messageType === "final_transcript") &&
+      text
+    ) {
+      const itemId = getCommittedSegmentId(text);
+
+      return [
+        JSON.stringify({ type: "transcription.segment", item_id: itemId, text }),
+        JSON.stringify({ type: "transcription.done", item_id: itemId }),
+      ];
+    }
+
+    if (messageType === "session_started") {
+      return JSON.stringify({ type: "session.created" });
+    }
+
+    if (messageType === "error") {
+      return JSON.stringify({ type: "error", error: { message: getString(payload.message) } });
+    }
+
+    return data;
+  };
 }
 
 export function toElevenLabsClientMessage(data: unknown): string | string[] | undefined {
-	return createElevenLabsClientMessageMapper()(data);
+  return createElevenLabsClientMessageMapper()(data);
 }
 
 export async function createElevenLabsRealtimeProxyResponse({
-	context,
-	env,
-	user,
-	model,
-	language,
+  context,
+  env,
+  user,
+  model,
+  language,
 }: {
-	context: Context;
-	env: IEnv;
-	user: IUser;
-	model?: string;
-	language?: string;
+  context: Context;
+  env: IEnv;
+  user: IUser;
+  model?: string;
+  language?: string;
 }): Promise<Response> {
-	const provider = getRealtimeProvider("elevenlabs", { env, user });
-	const apiKey = await provider.getApiKey?.({
-		env,
-		user,
-		type: "transcription",
-	});
+  const provider = getRealtimeProvider("elevenlabs", { env, user });
+  const apiKey = await provider.getApiKey?.({
+    env,
+    user,
+    type: "transcription",
+  });
 
-	if (!apiKey) {
-		return ResponseFactory.error(context, "Failed to resolve API key for ElevenLabs provider", 500);
-	}
+  if (!apiKey) {
+    return ResponseFactory.error(context, "Failed to resolve API key for ElevenLabs provider", 500);
+  }
 
-	const modelToUse = model || provider.getDefaultModel("transcription");
-	const upstreamUrl = new URL("/v1/speech-to-text/realtime", "https://api.elevenlabs.io");
-	upstreamUrl.searchParams.set("model_id", modelToUse);
-	upstreamUrl.searchParams.set("commit_strategy", "vad");
-	if (language) {
-		upstreamUrl.searchParams.set("language_code", language);
-	}
+  const modelToUse = model || provider.getDefaultModel("transcription");
+  const upstreamUrl = new URL("/v1/speech-to-text/realtime", "https://api.elevenlabs.io");
 
-	return createRealtimeTranscriptionProxyResponse({
-		context,
-		providerLabel: "ElevenLabs",
-		upstreamUrl,
-		headers: { "xi-api-key": apiKey },
-		toUpstreamMessage: createElevenLabsUpstreamMessageMapper(),
-		toClientMessage: createElevenLabsClientMessageMapper(),
-	});
+  upstreamUrl.searchParams.set("model_id", modelToUse);
+  upstreamUrl.searchParams.set("commit_strategy", "vad");
+  if (language) {
+    upstreamUrl.searchParams.set("language_code", language);
+  }
+
+  return createRealtimeTranscriptionProxyResponse({
+    context,
+    providerLabel: "ElevenLabs",
+    upstreamUrl,
+    headers: { "xi-api-key": apiKey },
+    toUpstreamMessage: createElevenLabsUpstreamMessageMapper(),
+    toClientMessage: createElevenLabsClientMessageMapper(),
+  });
 }

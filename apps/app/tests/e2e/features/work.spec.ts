@@ -152,6 +152,7 @@ test.describe("Work experience", () => {
       await expect(page.locator("html")).toHaveClass(/dark/);
       await homePage.searchPolychat("Release Project");
       const projectResult = page.getByRole("option").filter({ hasText: "Release Project" });
+
       await expect(projectResult).toBeVisible();
       await projectResult.click();
       await expect(page.getByText("Release validation project")).toBeVisible();
@@ -162,12 +163,14 @@ test.describe("Work experience", () => {
       await homePage.searchPolychat("e");
       const resultList = page.getByRole("listbox");
       const results = resultList.getByRole("option");
+
       await expect.poll(() => results.count()).toBeGreaterThan(8);
       for (let index = 0; index < 30; index += 1) {
         await page.keyboard.press("ArrowDown");
       }
 
       const selectedResult = resultList.locator('[role="option"][aria-selected="true"]');
+
       await expect(selectedResult).toBeInViewport();
       await homePage.closeGlobalSearch();
     });
@@ -228,11 +231,13 @@ test.describe("Work experience", () => {
         "pro",
         `${testInfo.testId}:invitee:${testInfo.retry}`,
       );
+
       await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
       await workPage.openProjectSurface("People");
       const inviteUrl = await workPage.createMemberInvitation(invitee.email);
 
       const inviteeContext = await browser.newContext();
+
       try {
         await inviteeContext.addCookies([
           {
@@ -246,6 +251,7 @@ test.describe("Work experience", () => {
           },
         ]);
         const inviteeWorkPage = new WorkPage(await inviteeContext.newPage());
+
         await inviteeWorkPage.acceptInvitation(inviteUrl);
       } finally {
         await inviteeContext.close();
@@ -381,6 +387,7 @@ test.describe("Work experience", () => {
       workPage,
     }) => {
       const payload = "https://polychat.example/release-validation";
+
       await externalServices.mockQrImage();
       await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
       await workPage.enableCapabilityAfterReload("Create Qr Code");

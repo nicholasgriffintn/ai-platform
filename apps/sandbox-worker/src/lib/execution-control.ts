@@ -7,156 +7,162 @@ const PAUSE_HEARTBEAT_INTERVAL_MS = 30000;
 const CONTROL_STATE_MIN_REFRESH_MS = 1000;
 
 export class SandboxTimeoutError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = "SandboxTimeoutError";
-	}
+  constructor(message: string) {
+    super(message);
+    this.name = "SandboxTimeoutError";
+  }
 }
 
 interface CreateExecutionControlOptions {
-	runId?: string;
-	timeoutSeconds?: number;
-	userToken: string;
-	apiService: Pick<Fetcher, "fetch">;
-	abortSignal?: AbortSignal;
-	emitEvent?: TaskEventEmitter;
+  runId?: string;
+  timeoutSeconds?: number;
+  userToken: string;
+  apiService: Pick<Fetcher, "fetch">;
+  abortSignal?: AbortSignal;
+  emitEvent?: TaskEventEmitter;
 }
 
 export interface ExecutionControl {
-	checkpoint: (abortMessage: string) => Promise<void>;
+  checkpoint: (abortMessage: string) => Promise<void>;
 }
 
 function wait(ms: number): Promise<void> {
-	return new Promise((resolve) => {
-		setTimeout(resolve, ms);
-	});
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 export function createExecutionControl(options: CreateExecutionControlOptions): ExecutionControl {
-	const { runId, timeoutSeconds, userToken, apiService, abortSignal, emitEvent } = options;
+  const { runId, timeoutSeconds, userToken, apiService, abortSignal, emitEvent } = options;
 
-	const timeoutMs =
-		typeof timeoutSeconds === "number" && Number.isFinite(timeoutSeconds)
-			? timeoutSeconds * 1000
-			: undefined;
-	const deadlineMs = typeof timeoutMs === "number" ? Date.now() + timeoutMs : undefined;
+  const timeoutMs =
+    typeof timeoutSeconds === "number" && Number.isFinite(timeoutSeconds)
+      ? timeoutSeconds * 1000
+      : undefined;
+  const deadlineMs = typeof timeoutMs === "number" ? Date.now() + timeoutMs : undefined;
 
-	const runControlClient = runId
-		? new RunControlClient({
-				userToken,
-				runId,
-				apiService,
-			})
-		: null;
-	let lastControlStateFetchedAt = 0;
-	let lastControlState: Awaited<ReturnType<RunControlClient["fetchControlState"]>> | null = null;
+  const runControlClient = runId
+    ? new RunControlClient({
+        userToken,
+        runId,
+        apiService,
+      })
+    : null;
+  let lastControlStateFetchedAt = 0;
+  let lastControlState: Awaited<ReturnType<RunControlClient["fetchControlState"]>> | null = null;
 
-	const throwIfTimedOut = () => {
-		if (deadlineMs === undefined) {
-			return;
-		}
+  const throwIfTimedOut = () => {
+    if (deadlineMs === undefined) {
+      return;
+    }
 
-		if (Date.now() <= deadlineMs) {
-			return;
-		}
+    if (Date.now() <= deadlineMs) {
+      return;
+    }
 
-		const seconds = Math.max(1, Math.floor((timeoutMs ?? 1000) / 1000));
-		throw new SandboxTimeoutError(`Sandbox run timed out after ${seconds} seconds`);
-	};
+    const seconds = Math.max(1, Math.floor((timeoutMs ?? 1000) / 1000));
 
-	const waitWhilePaused = async (pauseReason?: string) => {
-		if (!runControlClient) {
-			return;
-		}
+    throw new SandboxTimeoutError(`Sandbox run timed out after ${seconds} seconds`);
+  };
 
-		await emitEvent?.({
-			type: "run_paused",
-			runId,
-			message: pauseReason || "Run paused by user request",
-		});
-		let lastHeartbeatAt = Date.now();
+  const waitWhilePaused = async (pauseReason?: string) => {
+    if (!runControlClient) {
+      return;
+    }
 
-		while (true) {
-			throwIfAborted(abortSignal, "Sandbox run cancelled while paused");
-			throwIfTimedOut();
+    await emitEvent?.({
+      type: "run_paused",
+      runId,
+      message: pauseReason || "Run paused by user request",
+    });
+    let lastHeartbeatAt = Date.now();
 
-			await wait(PAUSE_POLL_INTERVAL_MS);
-			const nextControlState = await fetchControlState({
-				minRefreshMs: PAUSE_POLL_INTERVAL_MS,
-			});
+    while (true) {
+      throwIfAborted(abortSignal, "Sandbox run cancelled while paused");
+      throwIfTimedOut();
 
-			if (!nextControlState) {
-				continue;
-			}
+      await wait(PAUSE_POLL_INTERVAL_MS);
+      const nextControlState = await fetchControlState({
+        minRefreshMs: PAUSE_POLL_INTERVAL_MS,
+      });
 
-			if (nextControlState.state === "cancelled") {
-				throw new SandboxCancellationError(
-					nextControlState.cancellationReason || "Sandbox run cancelled while paused",
-				);
-			}
+      if (!nextControlState) {
+        continue;
+      }
 
-			if (nextControlState.state === "paused") {
-				if (Date.now() - lastHeartbeatAt >= PAUSE_HEARTBEAT_INTERVAL_MS) {
-					lastHeartbeatAt = Date.now();
-					await emitEvent?.({
-						type: "run_paused",
-						runId,
-						message: nextControlState.pauseReason || "Run is still paused",
-					});
-				}
-				continue;
-			}
+      if (nextControlState.state === "cancelled") {
+        throw new SandboxCancellationError(
+          nextControlState.cancellationReason || "Sandbox run cancelled while paused",
+        );
+      }
 
-			await emitEvent?.({
-				type: "run_resumed",
-				runId,
-				message: "Run resumed",
-			});
-			return;
-		}
-	};
+      if (nextControlState.state === "paused") {
+        if (Date.now() - lastHeartbeatAt >= PAUSE_HEARTBEAT_INTERVAL_MS) {
+          lastHeartbeatAt = Date.now();
+          await emitEvent?.({
+            type: "run_paused",
+            runId,
+            message: nextControlState.pauseReason || "Run is still paused",
+          });
+        }
 
-	const fetchControlState = async (options?: {
-		minRefreshMs?: number;
-	}): Promise<Awaited<ReturnType<RunControlClient["fetchControlState"]>> | null> => {
-		if (!runControlClient) {
-			return null;
-		}
+        continue;
+      }
 
-		const now = Date.now();
-		const minRefreshMs = options?.minRefreshMs ?? CONTROL_STATE_MIN_REFRESH_MS;
-		if (lastControlStateFetchedAt > 0 && now - lastControlStateFetchedAt < minRefreshMs) {
-			return lastControlState;
-		}
+      await emitEvent?.({
+        type: "run_resumed",
+        runId,
+        message: "Run resumed",
+      });
 
-		lastControlState = await runControlClient.fetchControlState(abortSignal);
-		lastControlStateFetchedAt = Date.now();
-		return lastControlState;
-	};
+      return;
+    }
+  };
 
-	return {
-		checkpoint: async (abortMessage: string) => {
-			throwIfAborted(abortSignal, abortMessage);
-			throwIfTimedOut();
+  const fetchControlState = async (options?: {
+    minRefreshMs?: number;
+  }): Promise<Awaited<ReturnType<RunControlClient["fetchControlState"]>> | null> => {
+    if (!runControlClient) {
+      return null;
+    }
 
-			if (!runControlClient) {
-				return;
-			}
+    const now = Date.now();
+    const minRefreshMs = options?.minRefreshMs ?? CONTROL_STATE_MIN_REFRESH_MS;
 
-			const controlState = await fetchControlState();
-			if (!controlState) {
-				return;
-			}
+    if (lastControlStateFetchedAt > 0 && now - lastControlStateFetchedAt < minRefreshMs) {
+      return lastControlState;
+    }
 
-			if (controlState.state === "cancelled") {
-				throw new SandboxCancellationError(
-					controlState.cancellationReason || "Sandbox run cancelled",
-				);
-			}
+    lastControlState = await runControlClient.fetchControlState(abortSignal);
+    lastControlStateFetchedAt = Date.now();
 
-			if (controlState.state === "paused") {
-				await waitWhilePaused(controlState.pauseReason);
-			}
-		},
-	};
+    return lastControlState;
+  };
+
+  return {
+    checkpoint: async (abortMessage: string) => {
+      throwIfAborted(abortSignal, abortMessage);
+      throwIfTimedOut();
+
+      if (!runControlClient) {
+        return;
+      }
+
+      const controlState = await fetchControlState();
+
+      if (!controlState) {
+        return;
+      }
+
+      if (controlState.state === "cancelled") {
+        throw new SandboxCancellationError(
+          controlState.cancellationReason || "Sandbox run cancelled",
+        );
+      }
+
+      if (controlState.state === "paused") {
+        await waitWhilePaused(controlState.pauseReason);
+      }
+    },
+  };
 }

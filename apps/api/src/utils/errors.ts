@@ -5,305 +5,313 @@ import { getLogger } from "./logger";
 const logger = getLogger({ prefix: "utils/errors" });
 
 export enum ErrorType {
-	CONFIGURATION_ERROR = "CONFIGURATION_ERROR",
-	NETWORK_ERROR = "NETWORK_ERROR",
-	AUTHENTICATION_ERROR = "AUTHENTICATION_ERROR",
-	AUTHORISATION_ERROR = "AUTHORISATION_ERROR",
-	RATE_LIMIT_ERROR = "RATE_LIMIT_ERROR",
-	PARAMS_ERROR = "PARAMS_ERROR",
-	NOT_FOUND = "NOT_FOUND",
-	PROVIDER_ERROR = "PROVIDER_ERROR",
-	UNKNOWN_ERROR = "UNKNOWN_ERROR",
-	EXTERNAL_API_ERROR = "EXTERNAL_API_ERROR",
-	FORBIDDEN = "FORBIDDEN",
-	UNAUTHORIZED = "UNAUTHORIZED",
-	CONTEXT_WINDOW_EXCEEDED = "CONTEXT_WINDOW_EXCEEDED",
-	EMAIL_SEND_FAILED = "EMAIL_SEND_FAILED",
-	INTERNAL_ERROR = "INTERNAL_ERROR",
-	USAGE_LIMIT_ERROR = "USAGE_LIMIT_ERROR",
-	USER_NOT_FOUND = "USER_NOT_FOUND",
-	CONFLICT_ERROR = "CONFLICT_ERROR",
-	STORAGE_ERROR = "STORAGE_ERROR",
-	DATABASE_ERROR = "DATABASE_ERROR",
-	TOOL_CALL_ERROR = "TOOL_CALL_ERROR",
+  CONFIGURATION_ERROR = "CONFIGURATION_ERROR",
+  NETWORK_ERROR = "NETWORK_ERROR",
+  AUTHENTICATION_ERROR = "AUTHENTICATION_ERROR",
+  AUTHORISATION_ERROR = "AUTHORISATION_ERROR",
+  RATE_LIMIT_ERROR = "RATE_LIMIT_ERROR",
+  PARAMS_ERROR = "PARAMS_ERROR",
+  NOT_FOUND = "NOT_FOUND",
+  PROVIDER_ERROR = "PROVIDER_ERROR",
+  UNKNOWN_ERROR = "UNKNOWN_ERROR",
+  EXTERNAL_API_ERROR = "EXTERNAL_API_ERROR",
+  FORBIDDEN = "FORBIDDEN",
+  UNAUTHORIZED = "UNAUTHORIZED",
+  CONTEXT_WINDOW_EXCEEDED = "CONTEXT_WINDOW_EXCEEDED",
+  EMAIL_SEND_FAILED = "EMAIL_SEND_FAILED",
+  INTERNAL_ERROR = "INTERNAL_ERROR",
+  USAGE_LIMIT_ERROR = "USAGE_LIMIT_ERROR",
+  USER_NOT_FOUND = "USER_NOT_FOUND",
+  CONFLICT_ERROR = "CONFLICT_ERROR",
+  STORAGE_ERROR = "STORAGE_ERROR",
+  DATABASE_ERROR = "DATABASE_ERROR",
+  TOOL_CALL_ERROR = "TOOL_CALL_ERROR",
 }
 
 export interface ErrorContext {
-	userId?: string | number;
-	requestId?: string;
-	operation?: string;
-	resource?: string;
-	timestamp?: number;
-	[key: string]: any;
+  userId?: string | number;
+  requestId?: string;
+  operation?: string;
+  resource?: string;
+  timestamp?: number;
+  [key: string]: any;
 }
 
 export class AssistantError extends Error {
-	type: ErrorType;
-	statusCode?: number;
-	context?: ErrorContext;
-	timestamp?: number;
+  type: ErrorType;
+  statusCode?: number;
+  context?: ErrorContext;
+  timestamp?: number;
 
-	constructor(
-		message: string,
-		type: ErrorType = ErrorType.UNKNOWN_ERROR,
-		statusCode = 500,
-		context: ErrorContext = {},
-	) {
-		super(message);
-		this.name = "AssistantError";
-		this.type = type;
-		this.statusCode = statusCode;
-		this.context = context;
-		this.timestamp = Date.now();
+  constructor(
+    message: string,
+    type: ErrorType = ErrorType.UNKNOWN_ERROR,
+    statusCode = 500,
+    context: ErrorContext = {},
+  ) {
+    super(message);
+    this.name = "AssistantError";
+    this.type = type;
+    this.statusCode = statusCode;
+    this.context = context;
+    this.timestamp = Date.now();
 
-		Error.captureStackTrace(this, AssistantError);
-	}
+    Error.captureStackTrace(this, AssistantError);
+  }
 
-	static fromError(error: Error, type?: ErrorType, context: ErrorContext = {}): AssistantError {
-		return new AssistantError(error.message, type || ErrorType.UNKNOWN_ERROR, 500, {
-			...context,
-			originalError: error.name,
-			stack: error.stack,
-		});
-	}
+  static fromError(error: Error, type?: ErrorType, context: ErrorContext = {}): AssistantError {
+    return new AssistantError(error.message, type || ErrorType.UNKNOWN_ERROR, 500, {
+      ...context,
+      originalError: error.name,
+      stack: error.stack,
+    });
+  }
 
-	toJSON() {
-		return {
-			name: this.name,
-			message: this.message,
-			type: this.type,
-			statusCode: this.statusCode,
-			timestamp: this.timestamp,
-			context: this.context,
-		};
-	}
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      type: this.type,
+      statusCode: this.statusCode,
+      timestamp: this.timestamp,
+      context: this.context,
+    };
+  }
 
-	/**
-	 * Get user-safe error message (strips sensitive information)
-	 */
-	getUserMessage(): string {
-		const fallbackMessages: Partial<Record<ErrorType, string>> = {
-			[ErrorType.AUTHENTICATION_ERROR]: "Authentication failed. Please check your credentials.",
-			[ErrorType.PARAMS_ERROR]: "Invalid request parameters.",
-			[ErrorType.NOT_FOUND]: "Requested resource not found.",
-			[ErrorType.FORBIDDEN]: "Access denied.",
-			[ErrorType.AUTHORISATION_ERROR]: "Access denied.",
-			[ErrorType.UNAUTHORIZED]: "Authentication required.",
-			[ErrorType.CONFLICT_ERROR]: "Resource conflict occurred.",
-		};
+  /**
+   * Get user-safe error message (strips sensitive information)
+   */
+  getUserMessage(): string {
+    const fallbackMessages: Partial<Record<ErrorType, string>> = {
+      [ErrorType.AUTHENTICATION_ERROR]: "Authentication failed. Please check your credentials.",
+      [ErrorType.PARAMS_ERROR]: "Invalid request parameters.",
+      [ErrorType.NOT_FOUND]: "Requested resource not found.",
+      [ErrorType.FORBIDDEN]: "Access denied.",
+      [ErrorType.AUTHORISATION_ERROR]: "Access denied.",
+      [ErrorType.UNAUTHORIZED]: "Authentication required.",
+      [ErrorType.CONFLICT_ERROR]: "Resource conflict occurred.",
+    };
 
-		const passthroughTypes = new Set([
-			ErrorType.RATE_LIMIT_ERROR,
-			ErrorType.USAGE_LIMIT_ERROR,
-			ErrorType.PARAMS_ERROR,
-			ErrorType.NOT_FOUND,
-			ErrorType.FORBIDDEN,
-			ErrorType.AUTHORISATION_ERROR,
-			ErrorType.CONFLICT_ERROR,
-		]);
+    const passthroughTypes = new Set([
+      ErrorType.RATE_LIMIT_ERROR,
+      ErrorType.USAGE_LIMIT_ERROR,
+      ErrorType.PARAMS_ERROR,
+      ErrorType.NOT_FOUND,
+      ErrorType.FORBIDDEN,
+      ErrorType.AUTHORISATION_ERROR,
+      ErrorType.CONFLICT_ERROR,
+    ]);
 
-		if (passthroughTypes.has(this.type) && this.message.trim().length > 0) {
-			return this.message;
-		}
+    if (passthroughTypes.has(this.type) && this.message.trim().length > 0) {
+      return this.message;
+    }
 
-		return fallbackMessages[this.type] || "An internal error occurred. Please try again later.";
-	}
+    return fallbackMessages[this.type] || "An internal error occurred. Please try again later.";
+  }
 }
 
 export function normaliseApiError(error: Error): AssistantError {
-	if (error instanceof AssistantError) return error;
-	if (!(error instanceof AuthError)) return AssistantError.fromError(error);
+  if (error instanceof AssistantError) {
+    return error;
+  }
 
-	const [type, statusCode] = authErrorResponse(error.code);
-	return new AssistantError(error.message, type, statusCode);
+  if (!(error instanceof AuthError)) {
+    return AssistantError.fromError(error);
+  }
+
+  const [type, statusCode] = authErrorResponse(error.code);
+
+  return new AssistantError(error.message, type, statusCode);
 }
 
 function authErrorResponse(code: AuthErrorCode): readonly [ErrorType, number] {
-	switch (code) {
-		case "invalid_input":
-			return [ErrorType.PARAMS_ERROR, 400];
-		case "rate_limited":
-			return [ErrorType.RATE_LIMIT_ERROR, 429];
-		case "oauth_exchange_failed":
-		case "provider_error":
-			return [ErrorType.PROVIDER_ERROR, 502];
-		case "storage_error":
-			return [ErrorType.STORAGE_ERROR, 500];
-		case "duplicate_plugin":
-		case "insecure_runtime":
-		case "provider_not_found":
-		case "unsupported_operation":
-			return [ErrorType.CONFIGURATION_ERROR, 500];
-		case "email_in_use":
-		case "identity_conflict":
-			return [ErrorType.CONFLICT_ERROR, 409];
-		default:
-			return [ErrorType.AUTHENTICATION_ERROR, 401];
-	}
+  switch (code) {
+    case "invalid_input":
+      return [ErrorType.PARAMS_ERROR, 400];
+    case "rate_limited":
+      return [ErrorType.RATE_LIMIT_ERROR, 429];
+    case "oauth_exchange_failed":
+    case "provider_error":
+      return [ErrorType.PROVIDER_ERROR, 502];
+    case "storage_error":
+      return [ErrorType.STORAGE_ERROR, 500];
+    case "duplicate_plugin":
+    case "insecure_runtime":
+    case "provider_not_found":
+    case "unsupported_operation":
+      return [ErrorType.CONFIGURATION_ERROR, 500];
+    case "email_in_use":
+    case "identity_conflict":
+      return [ErrorType.CONFLICT_ERROR, 409];
+    default:
+      return [ErrorType.AUTHENTICATION_ERROR, 401];
+  }
 }
 
 export function handleAIServiceError(error: AssistantError): Response {
-	const clientStatus = (fallback: number) =>
-		error.statusCode && error.statusCode >= 400 && error.statusCode < 500
-			? error.statusCode
-			: fallback;
-	const logContext = {
-		errorType: error.type,
-		statusCode: error.statusCode,
-		message: error.message,
-		context: error.context,
-		timestamp: error.timestamp,
-	};
+  const clientStatus = (fallback: number) =>
+    error.statusCode && error.statusCode >= 400 && error.statusCode < 500
+      ? error.statusCode
+      : fallback;
+  const logContext = {
+    errorType: error.type,
+    statusCode: error.statusCode,
+    message: error.message,
+    context: error.context,
+    timestamp: error.timestamp,
+  };
 
-	switch (error.type) {
-		case ErrorType.CONFIGURATION_ERROR:
-			logger.error("Configuration error occurred", logContext);
+  switch (error.type) {
+    case ErrorType.CONFIGURATION_ERROR:
+      logger.error("Configuration error occurred", logContext);
 
-			return Response.json(
-				{
-					error: "Service configuration error",
-					requestId: error.context.requestId,
-				},
-				{ status: 500 },
-			);
-		case ErrorType.NETWORK_ERROR:
-			logger.error("Network error occurred", logContext);
+      return Response.json(
+        {
+          error: "Service configuration error",
+          requestId: error.context.requestId,
+        },
+        { status: 500 },
+      );
+    case ErrorType.NETWORK_ERROR:
+      logger.error("Network error occurred", logContext);
 
-			return Response.json(
-				{
-					error: "Network connectivity issue",
-					requestId: error.context.requestId,
-				},
-				{ status: 500 },
-			);
-		case ErrorType.RATE_LIMIT_ERROR:
-			logger.error("Rate limit exceeded", logContext);
+      return Response.json(
+        {
+          error: "Network connectivity issue",
+          requestId: error.context.requestId,
+        },
+        { status: 500 },
+      );
+    case ErrorType.RATE_LIMIT_ERROR:
+      logger.error("Rate limit exceeded", logContext);
 
-			return Response.json(
-				{
-					error: error.getUserMessage(),
-					retryAfter: 60,
-					requestId: error.context.requestId,
-				},
-				{ status: 429, headers: { "Retry-After": "60" } },
-			);
-		case ErrorType.AUTHENTICATION_ERROR:
-		case ErrorType.UNAUTHORIZED:
-			return Response.json(
-				{
-					error: error.getUserMessage(),
-					requestId: error.context.requestId,
-				},
-				{ status: 401 },
-			);
-		case ErrorType.FORBIDDEN:
-		case ErrorType.AUTHORISATION_ERROR:
-			return Response.json(
-				{
-					error: error.getUserMessage(),
-					requestId: error.context.requestId,
-				},
-				{ status: 403 },
-			);
-		case ErrorType.PARAMS_ERROR:
-			return Response.json(
-				{
-					error: error.getUserMessage(),
-					details: error.context.validationErrors,
-					requestId: error.context.requestId,
-				},
-				{ status: clientStatus(400) },
-			);
-		case ErrorType.NOT_FOUND:
-		case ErrorType.USER_NOT_FOUND:
-			return Response.json(
-				{
-					error: error.getUserMessage(),
-					requestId: error.context.requestId,
-				},
-				{ status: clientStatus(404) },
-			);
-		case ErrorType.CONFLICT_ERROR:
-			return Response.json(
-				{
-					error: error.getUserMessage(),
-					requestId: error.context.requestId,
-				},
-				{ status: clientStatus(409) },
-			);
-		case ErrorType.CONTEXT_WINDOW_EXCEEDED:
-			return Response.json(
-				{
-					error: "Request too large. Please reduce the input size.",
-					requestId: error.context.requestId,
-				},
-				{ status: 413 },
-			);
-		case ErrorType.USAGE_LIMIT_ERROR:
-			return Response.json(
-				{
-					error: error.getUserMessage(),
-					requestId: error.context.requestId,
-				},
-				{ status: 429 },
-			);
-		case ErrorType.PROVIDER_ERROR:
-		case ErrorType.EXTERNAL_API_ERROR:
-		case ErrorType.TOOL_CALL_ERROR:
-			logger.error("External service error", logContext);
+      return Response.json(
+        {
+          error: error.getUserMessage(),
+          retryAfter: 60,
+          requestId: error.context.requestId,
+        },
+        { status: 429, headers: { "Retry-After": "60" } },
+      );
+    case ErrorType.AUTHENTICATION_ERROR:
+    case ErrorType.UNAUTHORIZED:
+      return Response.json(
+        {
+          error: error.getUserMessage(),
+          requestId: error.context.requestId,
+        },
+        { status: 401 },
+      );
+    case ErrorType.FORBIDDEN:
+    case ErrorType.AUTHORISATION_ERROR:
+      return Response.json(
+        {
+          error: error.getUserMessage(),
+          requestId: error.context.requestId,
+        },
+        { status: 403 },
+      );
+    case ErrorType.PARAMS_ERROR:
+      return Response.json(
+        {
+          error: error.getUserMessage(),
+          details: error.context.validationErrors,
+          requestId: error.context.requestId,
+        },
+        { status: clientStatus(400) },
+      );
+    case ErrorType.NOT_FOUND:
+    case ErrorType.USER_NOT_FOUND:
+      return Response.json(
+        {
+          error: error.getUserMessage(),
+          requestId: error.context.requestId,
+        },
+        { status: clientStatus(404) },
+      );
+    case ErrorType.CONFLICT_ERROR:
+      return Response.json(
+        {
+          error: error.getUserMessage(),
+          requestId: error.context.requestId,
+        },
+        { status: clientStatus(409) },
+      );
+    case ErrorType.CONTEXT_WINDOW_EXCEEDED:
+      return Response.json(
+        {
+          error: "Request too large. Please reduce the input size.",
+          requestId: error.context.requestId,
+        },
+        { status: 413 },
+      );
+    case ErrorType.USAGE_LIMIT_ERROR:
+      return Response.json(
+        {
+          error: error.getUserMessage(),
+          requestId: error.context.requestId,
+        },
+        { status: 429 },
+      );
+    case ErrorType.PROVIDER_ERROR:
+    case ErrorType.EXTERNAL_API_ERROR:
+    case ErrorType.TOOL_CALL_ERROR:
+      logger.error("External service error", logContext);
 
-			return Response.json(
-				{
-					error: "External service temporarily unavailable",
-					requestId: error.context.requestId,
-				},
-				{ status: 502 },
-			);
-		case ErrorType.EMAIL_SEND_FAILED:
-			logger.error("Email service error", logContext);
+      return Response.json(
+        {
+          error: "External service temporarily unavailable",
+          requestId: error.context.requestId,
+        },
+        { status: 502 },
+      );
+    case ErrorType.EMAIL_SEND_FAILED:
+      logger.error("Email service error", logContext);
 
-			return Response.json(
-				{
-					error: "Email delivery failed",
-					requestId: error.context.requestId,
-				},
-				{ status: 500 },
-			);
-		case ErrorType.STORAGE_ERROR:
-			logger.error("Storage service error", logContext);
-			return Response.json(
-				{
-					error: "Storage service temporarily unavailable",
-					requestId: error.context.requestId,
-				},
-				{ status: 500 },
-			);
-		case ErrorType.DATABASE_ERROR:
-			logger.error("Database error", logContext);
-			return Response.json(
-				{
-					error: "Database service temporarily unavailable",
-					requestId: error.context.requestId,
-				},
-				{ status: 500 },
-			);
-		default:
-			logger.error("Unknown error occurred", logContext);
+      return Response.json(
+        {
+          error: "Email delivery failed",
+          requestId: error.context.requestId,
+        },
+        { status: 500 },
+      );
+    case ErrorType.STORAGE_ERROR:
+      logger.error("Storage service error", logContext);
 
-			return Response.json(
-				{
-					error: "An unexpected error occurred",
-					requestId: error.context?.requestId,
-				},
-				{ status: 500 },
-			);
-	}
+      return Response.json(
+        {
+          error: "Storage service temporarily unavailable",
+          requestId: error.context.requestId,
+        },
+        { status: 500 },
+      );
+    case ErrorType.DATABASE_ERROR:
+      logger.error("Database error", logContext);
+
+      return Response.json(
+        {
+          error: "Database service temporarily unavailable",
+          requestId: error.context.requestId,
+        },
+        { status: 500 },
+      );
+    default:
+      logger.error("Unknown error occurred", logContext);
+
+      return Response.json(
+        {
+          error: "An unexpected error occurred",
+          requestId: error.context?.requestId,
+        },
+        { status: 500 },
+      );
+  }
 }
 
 export function getErrorMessage(error: unknown, fallback = "Unknown error"): string {
-	if (error instanceof Error && error.message.trim().length > 0) {
-		return error.message;
-	}
+  if (error instanceof Error && error.message.trim().length > 0) {
+    return error.message;
+  }
 
-	return fallback;
+  return fallback;
 }

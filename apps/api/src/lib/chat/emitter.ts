@@ -1,11 +1,12 @@
 import { formatChatStreamSseDone, formatChatStreamSseEvent } from "@ngriffin_uk/polychat-schemas";
+
 import type { SSEEventPayload } from "~/types";
 import { getLogger } from "~/utils/logger";
 
 const encoder = new TextEncoder();
 
 const logger = getLogger({
-	prefix: "CHAT:EMITTER",
+  prefix: "CHAT:EMITTER",
 });
 
 /**
@@ -15,12 +16,12 @@ const logger = getLogger({
  * @returns The formatted SSE event data string
  */
 export function createEventData(type: string, payload: SSEEventPayload = {}): string {
-	try {
-		return formatChatStreamSseEvent(type, payload);
-	} catch (error) {
-		logger.error("Error creating event data", { error, type, payload });
-		throw error;
-	}
+  try {
+    return formatChatStreamSseEvent(type, payload);
+  } catch (error) {
+    logger.error("Error creating event data", { error, type, payload });
+    throw error;
+  }
 }
 
 /**
@@ -29,29 +30,29 @@ export function createEventData(type: string, payload: SSEEventPayload = {}): st
  * @returns The encoded Uint8Array
  */
 export function encodeEventData(data: string): Uint8Array {
-	return encoder.encode(data);
+  return encoder.encode(data);
 }
 
 export interface ChatSseStreamWriter {
-	readable: ReadableStream<Uint8Array>;
-	writeEvent: (type: string, payload?: SSEEventPayload) => Promise<void>;
-	writeDone: () => Promise<void>;
-	close: () => Promise<void>;
-	abort: (error: unknown) => Promise<void>;
+  readable: ReadableStream<Uint8Array>;
+  writeEvent: (type: string, payload?: SSEEventPayload) => Promise<void>;
+  writeDone: () => Promise<void>;
+  close: () => Promise<void>;
+  abort: (error: unknown) => Promise<void>;
 }
 
 export function createChatSseStreamWriter(): ChatSseStreamWriter {
-	const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
-	const writer = writable.getWriter();
+  const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
+  const writer = writable.getWriter();
 
-	return {
-		readable,
-		writeEvent: (type: string, payload: SSEEventPayload = {}) =>
-			writer.write(encodeEventData(createEventData(type, payload))),
-		writeDone: () => writer.write(encodeEventData(formatChatStreamSseDone())),
-		close: () => writer.close(),
-		abort: (error: unknown) => writer.abort(error),
-	};
+  return {
+    readable,
+    writeEvent: (type: string, payload: SSEEventPayload = {}) =>
+      writer.write(encodeEventData(createEventData(type, payload))),
+    writeDone: () => writer.write(encodeEventData(formatChatStreamSseDone())),
+    close: () => writer.close(),
+    abort: (error: unknown) => writer.abort(error),
+  };
 }
 
 /**
@@ -59,8 +60,9 @@ export function createChatSseStreamWriter(): ChatSseStreamWriter {
  * @param controller - The stream controller
  */
 export function emitDoneEvent(controller: TransformStreamDefaultController) {
-	const doneEvent = encodeEventData(formatChatStreamSseDone());
-	controller.enqueue(doneEvent);
+  const doneEvent = encodeEventData(formatChatStreamSseDone());
+
+  controller.enqueue(doneEvent);
 }
 
 /**
@@ -70,11 +72,12 @@ export function emitDoneEvent(controller: TransformStreamDefaultController) {
  * @param payload - The payload of the event
  */
 export function emitEvent(
-	controller: TransformStreamDefaultController,
-	type: string,
-	payload: SSEEventPayload = {},
+  controller: TransformStreamDefaultController,
+  type: string,
+  payload: SSEEventPayload = {},
 ) {
-	const eventData = createEventData(type, payload);
-	const encodedEvent = encodeEventData(eventData);
-	controller.enqueue(encodedEvent);
+  const eventData = createEventData(type, payload);
+  const encodedEvent = encodeEventData(eventData);
+
+  controller.enqueue(encodedEvent);
 }

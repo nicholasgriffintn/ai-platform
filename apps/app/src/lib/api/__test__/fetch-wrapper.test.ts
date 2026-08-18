@@ -1,91 +1,93 @@
+import { createApiErrorFromResponse } from "@ngriffin_uk/polychat-library-client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createApiErrorFromResponse } from "@ngriffin_uk/polychat-library-client";
 import { fetchApi } from "../fetch-wrapper";
 
 describe("fetchApi", () => {
-	beforeEach(() => {
-		vi.useFakeTimers();
-	});
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
 
-	afterEach(() => {
-		vi.useRealTimers();
-		vi.restoreAllMocks();
-	});
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
 
-	it("does not abort requests when timeoutMs is null", async () => {
-		let capturedSignal: AbortSignal | undefined;
-		let resolveFetch: ((response: Response) => void) | undefined;
+  it("does not abort requests when timeoutMs is null", async () => {
+    let capturedSignal: AbortSignal | undefined;
+    let resolveFetch: ((response: Response) => void) | undefined;
 
-		vi.stubGlobal(
-			"fetch",
-			vi.fn((_url: string, init?: RequestInit) => {
-				capturedSignal = init?.signal ?? undefined;
-				return new Promise<Response>((resolve) => {
-					resolveFetch = resolve;
-				});
-			}),
-		);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((_url: string, init?: RequestInit) => {
+        capturedSignal = init?.signal ?? undefined;
 
-		const request = fetchApi("/audio/speech", {
-			method: "POST",
-			body: { input: "hello" },
-			timeoutMs: null,
-		});
+        return new Promise<Response>((resolve) => {
+          resolveFetch = resolve;
+        });
+      }),
+    );
 
-		await vi.advanceTimersByTimeAsync(15_000);
+    const request = fetchApi("/audio/speech", {
+      method: "POST",
+      body: { input: "hello" },
+      timeoutMs: null,
+    });
 
-		expect(capturedSignal).toBeUndefined();
+    await vi.advanceTimersByTimeAsync(15_000);
 
-		resolveFetch?.(new Response("{}"));
-		await expect(request).resolves.toBeInstanceOf(Response);
-	});
+    expect(capturedSignal).toBeUndefined();
 
-	it("keeps the default timeout for requests without an explicit timeout override", async () => {
-		let capturedSignal: AbortSignal | undefined;
-		let resolveFetch: ((response: Response) => void) | undefined;
+    resolveFetch?.(new Response("{}"));
+    await expect(request).resolves.toBeInstanceOf(Response);
+  });
 
-		vi.stubGlobal(
-			"fetch",
-			vi.fn((_url: string, init?: RequestInit) => {
-				capturedSignal = init?.signal ?? undefined;
-				return new Promise<Response>((resolve) => {
-					resolveFetch = resolve;
-				});
-			}),
-		);
+  it("keeps the default timeout for requests without an explicit timeout override", async () => {
+    let capturedSignal: AbortSignal | undefined;
+    let resolveFetch: ((response: Response) => void) | undefined;
 
-		const request = fetchApi("/models", { method: "GET" });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((_url: string, init?: RequestInit) => {
+        capturedSignal = init?.signal ?? undefined;
 
-		await vi.advanceTimersByTimeAsync(15_000);
+        return new Promise<Response>((resolve) => {
+          resolveFetch = resolve;
+        });
+      }),
+    );
 
-		expect(capturedSignal?.aborted).toBe(true);
+    const request = fetchApi("/models", { method: "GET" });
 
-		resolveFetch?.(new Response("{}"));
-		await expect(request).resolves.toBeInstanceOf(Response);
-	});
+    await vi.advanceTimersByTimeAsync(15_000);
 
-	it("preserves response status on API errors", async () => {
-		const error = await createApiErrorFromResponse(
-			new Response(JSON.stringify({ error: "Unauthorized" }), {
-				status: 401,
-				statusText: "Unauthorized",
-			}),
-		);
+    expect(capturedSignal?.aborted).toBe(true);
 
-		expect(error.status).toBe(401);
-		expect(error.message).toBe("Unauthorized");
-	});
+    resolveFetch?.(new Response("{}"));
+    await expect(request).resolves.toBeInstanceOf(Response);
+  });
 
-	it("extracts validation detail messages from API errors", async () => {
-		const error = await createApiErrorFromResponse(
-			new Response(JSON.stringify({ details: [{ message: "Invalid installation" }] }), {
-				status: 400,
-				statusText: "Bad Request",
-			}),
-		);
+  it("preserves response status on API errors", async () => {
+    const error = await createApiErrorFromResponse(
+      new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        statusText: "Unauthorized",
+      }),
+    );
 
-		expect(error.status).toBe(400);
-		expect(error.message).toBe("Invalid installation");
-	});
+    expect(error.status).toBe(401);
+    expect(error.message).toBe("Unauthorized");
+  });
+
+  it("extracts validation detail messages from API errors", async () => {
+    const error = await createApiErrorFromResponse(
+      new Response(JSON.stringify({ details: [{ message: "Invalid installation" }] }), {
+        status: 400,
+        statusText: "Bad Request",
+      }),
+    );
+
+    expect(error.status).toBe(400);
+    expect(error.message).toBe("Invalid installation");
+  });
 });

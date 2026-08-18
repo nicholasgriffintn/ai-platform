@@ -8,112 +8,114 @@ const SHOULD_TRACK_USER_TIMINGS = true;
 const RESPECT_DO_NOT_TRACK = false;
 
 interface AnalyticsProps {
-	isEnabled?: boolean;
-	isExperimentsEnabled?: boolean;
-	beaconEndpoint?: string;
-	beaconCdnEndpoint?: string;
-	beaconSiteId?: string;
-	beaconDebug?: boolean;
-	directEvents?: boolean;
-	directPageViews?: boolean;
-	batchSize?: number;
-	batchTimeout?: number;
-	beaconUserId?: string;
-	openFeatureBootstrap?: OpenFeatureBootstrap;
+  isEnabled?: boolean;
+  isExperimentsEnabled?: boolean;
+  beaconEndpoint?: string;
+  beaconCdnEndpoint?: string;
+  beaconSiteId?: string;
+  beaconDebug?: boolean;
+  directEvents?: boolean;
+  directPageViews?: boolean;
+  batchSize?: number;
+  batchTimeout?: number;
+  beaconUserId?: string;
+  openFeatureBootstrap?: OpenFeatureBootstrap;
 }
 
 export function Analytics({
-	isEnabled = true,
-	isExperimentsEnabled = false,
-	beaconEndpoint = BEACON_ENDPOINT,
-	beaconCdnEndpoint = BEACON_CDN_ENDPOINT,
-	beaconSiteId = "test-beacon",
-	beaconDebug = false,
-	directEvents = false,
-	directPageViews = true,
-	batchSize = 10,
-	batchTimeout = 5000,
-	beaconUserId,
-	openFeatureBootstrap,
+  isEnabled = true,
+  isExperimentsEnabled = false,
+  beaconEndpoint = BEACON_ENDPOINT,
+  beaconCdnEndpoint = BEACON_CDN_ENDPOINT,
+  beaconSiteId = "test-beacon",
+  beaconDebug = false,
+  directEvents = false,
+  directPageViews = true,
+  batchSize = 10,
+  batchTimeout = 5000,
+  beaconUserId,
+  openFeatureBootstrap,
 }: AnalyticsProps) {
-	// biome-ignore lint/correctness/useExhaustiveDependencies: Only react to enabled state
-	useEffect(() => {
-		if (!isEnabled) {
-			return;
-		}
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Only react to enabled state
+  useEffect(() => {
+    if (!isEnabled) {
+      return;
+    }
 
-		if (
-			window.__BEACON_INITALISED__ ||
-			document.querySelector(`script[src="${beaconEndpoint}/beacon.min.js"]`)
-		) {
-			return;
-		}
+    if (
+      window.__BEACON_INITALISED__ ||
+      document.querySelector(`script[src="${beaconEndpoint}/beacon.min.js"]`)
+    ) {
+      return;
+    }
 
-		window.__BEACON_INITALISED__ = true;
+    window.__BEACON_INITALISED__ = true;
 
-		const script = document.createElement("script");
-		script.src = `${beaconEndpoint}/beacon.min.js`;
-		script.async = true;
+    const script = document.createElement("script");
 
-		script.onload = () => {
-			if (window.Beacon) {
-				window.Beacon.init({
-					endpoint: beaconEndpoint,
-					cdnEndpoint: beaconCdnEndpoint,
-					siteId: beaconSiteId,
-					debug: beaconDebug,
-					trackClicks: SHOULD_TRACK_CLICKS,
-					trackUserTimings: SHOULD_TRACK_USER_TIMINGS,
-					respectDoNotTrack: RESPECT_DO_NOT_TRACK,
-					directEvents,
-					directPageViews,
-					batchSize,
-					batchTimeout,
-					userId: beaconUserId || window.__BEACON_USER_ID__,
-				});
-			}
-		};
+    script.src = `${beaconEndpoint}/beacon.min.js`;
+    script.async = true;
 
-		document.head.appendChild(script);
+    script.onload = () => {
+      if (window.Beacon) {
+        window.Beacon.init({
+          endpoint: beaconEndpoint,
+          cdnEndpoint: beaconCdnEndpoint,
+          siteId: beaconSiteId,
+          debug: beaconDebug,
+          trackClicks: SHOULD_TRACK_CLICKS,
+          trackUserTimings: SHOULD_TRACK_USER_TIMINGS,
+          respectDoNotTrack: RESPECT_DO_NOT_TRACK,
+          directEvents,
+          directPageViews,
+          batchSize,
+          batchTimeout,
+          userId: beaconUserId || window.__BEACON_USER_ID__,
+        });
+      }
+    };
 
-		return () => {};
-	}, [isEnabled]);
+    document.head.appendChild(script);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: Only react to enabled state
-	useEffect(() => {
-		if (!isEnabled || !isExperimentsEnabled) {
-			return;
-		}
+    return () => {};
+  }, [isEnabled]);
 
-		if (
-			window.__OPEN_FEATURE_INITALISED__ ||
-			document.querySelector(`script[src="${beaconEndpoint}/exp-beacon.min.js"]`)
-		) {
-			return;
-		}
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Only react to enabled state
+  useEffect(() => {
+    if (!isEnabled || !isExperimentsEnabled) {
+      return;
+    }
 
-		window.__OPEN_FEATURE_INITALISED__ = true;
+    if (
+      window.__OPEN_FEATURE_INITALISED__ ||
+      document.querySelector(`script[src="${beaconEndpoint}/exp-beacon.min.js"]`)
+    ) {
+      return;
+    }
 
-		const script = document.createElement("script");
-		script.src = `${beaconEndpoint}/exp-beacon.min.js`;
-		script.async = true;
+    window.__OPEN_FEATURE_INITALISED__ = true;
 
-		script.onload = () => {
-			if (window.BeaconOpenFeature) {
-				window.BeaconOpenFeature.init({
-					debug: beaconDebug,
-					endpoint: beaconEndpoint,
-					cdnEndpoint: beaconCdnEndpoint,
-					siteId: beaconSiteId,
-					bootstrap: openFeatureBootstrap || window.__BEACON_OPENFEATURE_BOOTSTRAP__,
-				});
-			}
-		};
+    const script = document.createElement("script");
 
-		document.head.appendChild(script);
+    script.src = `${beaconEndpoint}/exp-beacon.min.js`;
+    script.async = true;
 
-		return () => {};
-	}, [isEnabled, isExperimentsEnabled]);
+    script.onload = () => {
+      if (window.BeaconOpenFeature) {
+        window.BeaconOpenFeature.init({
+          debug: beaconDebug,
+          endpoint: beaconEndpoint,
+          cdnEndpoint: beaconCdnEndpoint,
+          siteId: beaconSiteId,
+          bootstrap: openFeatureBootstrap || window.__BEACON_OPENFEATURE_BOOTSTRAP__,
+        });
+      }
+    };
 
-	return null;
+    document.head.appendChild(script);
+
+    return () => {};
+  }, [isEnabled, isExperimentsEnabled]);
+
+  return null;
 }

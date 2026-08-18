@@ -34,48 +34,49 @@ const HTML_SANDBOX_TEMPLATE = `
 `;
 
 export function SvgSandbox({
-	code,
-	setPreviewError,
-	iframeKey,
+  code,
+  setPreviewError,
+  iframeKey,
 }: {
-	code: ArtifactProps;
-	setPreviewError: (error: string | null) => void;
-	iframeKey: number;
+  code: ArtifactProps;
+  setPreviewError: (error: string | null) => void;
+  iframeKey: number;
 }) {
-	const [documentContent, setDocumentContent] = useState<string | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
+  const [documentContent, setDocumentContent] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-	useEffect(() => {
-		let isMounted = true;
-		setIsLoading(true);
+  useEffect(() => {
+    let isMounted = true;
 
-		const prepareDocument = async () => {
-			let doc = HTML_SANDBOX_TEMPLATE;
+    setIsLoading(true);
 
-			doc = doc.replace("<CONTENT_PLACEHOLDER>", code.content);
+    const prepareDocument = async () => {
+      let doc = HTML_SANDBOX_TEMPLATE;
 
-			if (isMounted) {
-				setDocumentContent(doc);
-				setIsLoading(false);
-			}
-		};
+      doc = doc.replace("<CONTENT_PLACEHOLDER>", code.content);
 
-		prepareDocument();
+      if (isMounted) {
+        setDocumentContent(doc);
+        setIsLoading(false);
+      }
+    };
 
-		return () => {
-			isMounted = false;
-		};
-	}, [code]);
+    prepareDocument();
 
-	if (isLoading) {
-		return <LoadingIndicator />;
-	}
+    return () => {
+      isMounted = false;
+    };
+  }, [code]);
 
-	return (
-		<SandboxIframe
-			documentContent={documentContent}
-			iframeKey={iframeKey}
-			setPreviewError={setPreviewError}
-		/>
-	);
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
+
+  return (
+    <SandboxIframe
+      documentContent={documentContent}
+      iframeKey={iframeKey}
+      setPreviewError={setPreviewError}
+    />
+  );
 }

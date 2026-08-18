@@ -2,12 +2,13 @@ import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { CapabilityConfigurationRepository } from "~/repositories/CapabilityConfigurationRepository";
-import type { IRequest } from "~/types";
 import { requireProjectAccess } from "~/services/workspaces/access";
+import type { IRequest } from "~/types";
+
 import {
-	listSkillAvailability,
-	type SkillAvailabilityInput,
-	type SkillScopeKind,
+  listSkillAvailability,
+  type SkillAvailabilityInput,
+  type SkillScopeKind,
 } from "./availability";
 import { resolveSkillCatalog, type SkillCatalog } from "./catalog";
 
@@ -15,131 +16,141 @@ export const SKILL_CAPABILITY_KIND = "skill";
 const SKILL_DISABLED_CONFIGURATION_KEY = "enabled";
 
 interface StoredSkillConfiguration {
-	capabilityId: string;
-	configuration: Record<string, unknown>;
+  capabilityId: string;
+  configuration: Record<string, unknown>;
 }
 
 export function resolveDisabledSkillIds(
-	configurations: readonly StoredSkillConfiguration[],
+  configurations: readonly StoredSkillConfiguration[],
 ): Set<string> {
-	return new Set(
-		configurations
-			.filter((entry) => entry.configuration[SKILL_DISABLED_CONFIGURATION_KEY] === false)
-			.map((entry) => entry.capabilityId),
-	);
+  return new Set(
+    configurations
+      .filter((entry) => entry.configuration[SKILL_DISABLED_CONFIGURATION_KEY] === false)
+      .map((entry) => entry.capabilityId),
+  );
 }
 
 export interface RequestSkillScope {
-	scope: SkillScopeKind;
-	enabledSkillIds?: ReadonlySet<string>;
-	disabledSkillIds?: ReadonlySet<string>;
+  scope: SkillScopeKind;
+  enabledSkillIds?: ReadonlySet<string>;
+  disabledSkillIds?: ReadonlySet<string>;
 }
 
 export function createProjectSkillScope(skillIds: Iterable<string>): RequestSkillScope {
-	return { scope: "project", enabledSkillIds: new Set(skillIds) };
+  return { scope: "project", enabledSkillIds: new Set(skillIds) };
 }
 
 export async function resolvePersonalSkillScope(
-	repository: Pick<CapabilityConfigurationRepository, "list">,
-	userId: number,
+  repository: Pick<CapabilityConfigurationRepository, "list">,
+  userId: number,
 ): Promise<RequestSkillScope> {
-	const configurations = await repository.list({ type: "user", id: userId }, SKILL_CAPABILITY_KIND);
-	return { scope: "personal", disabledSkillIds: resolveDisabledSkillIds(configurations) };
+  const configurations = await repository.list({ type: "user", id: userId }, SKILL_CAPABILITY_KIND);
+
+  return { scope: "personal", disabledSkillIds: resolveDisabledSkillIds(configurations) };
 }
 
 export function buildSkillAvailabilityInput(params: {
-	skillScope: RequestSkillScope;
-	supportsToolCalls: boolean;
-	enabledToolIds?: ReadonlySet<string>;
+  skillScope: RequestSkillScope;
+  supportsToolCalls: boolean;
+  enabledToolIds?: ReadonlySet<string>;
 }): SkillAvailabilityInput {
-	return {
-		scope: params.skillScope.scope,
-		modelCapabilities: { supportsToolCalls: params.supportsToolCalls },
-		...(params.enabledToolIds ? { enabledToolIds: params.enabledToolIds } : {}),
-		...(params.skillScope.enabledSkillIds
-			? { enabledSkillIds: params.skillScope.enabledSkillIds }
-			: {}),
-		...(params.skillScope.disabledSkillIds
-			? { disabledSkillIds: params.skillScope.disabledSkillIds }
-			: {}),
-	};
+  return {
+    scope: params.skillScope.scope,
+    modelCapabilities: { supportsToolCalls: params.supportsToolCalls },
+    ...(params.enabledToolIds ? { enabledToolIds: params.enabledToolIds } : {}),
+    ...(params.skillScope.enabledSkillIds
+      ? { enabledSkillIds: params.skillScope.enabledSkillIds }
+      : {}),
+    ...(params.skillScope.disabledSkillIds
+      ? { disabledSkillIds: params.skillScope.disabledSkillIds }
+      : {}),
+  };
 }
 
 export async function resolveSkillScope(request: IRequest): Promise<RequestSkillScope> {
-	const context = request.context;
-	const projectId =
-		request.memoryScope?.type === "project" ? request.memoryScope.projectId : undefined;
+  const context = request.context;
+  const projectId =
+    request.memoryScope?.type === "project" ? request.memoryScope.projectId : undefined;
 
-	if (projectId && context) {
-		await requireProjectAccess(context, projectId);
-		const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
-		return createProjectSkillScope(
-			capabilities
-				.filter((capability) => capability.kind === SKILL_CAPABILITY_KIND)
-				.map((capability) => capability.capability_id),
-		);
-	}
+  if (projectId && context) {
+    await requireProjectAccess(context, projectId);
+    const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
 
-	if (context && request.user?.id) {
-		return resolvePersonalSkillScope(
-			context.repositories.capabilityConfigurations,
-			request.user.id,
-		);
-	}
+    return createProjectSkillScope(
+      capabilities
+        .filter((capability) => capability.kind === SKILL_CAPABILITY_KIND)
+        .map((capability) => capability.capability_id),
+    );
+  }
 
-	return { scope: "personal" };
+  if (context && request.user?.id) {
+    return resolvePersonalSkillScope(
+      context.repositories.capabilityConfigurations,
+      request.user.id,
+    );
+  }
+
+  return { scope: "personal" };
 }
 
 async function resolveRequestSkillCatalog(
-	request: IRequest,
-	skillScope: RequestSkillScope,
+  request: IRequest,
+  skillScope: RequestSkillScope,
 ): Promise<SkillCatalog | null> {
-	const context = request.context;
-	if (!context) return null;
-	const projectId =
-		request.memoryScope?.type === "project" ? request.memoryScope.projectId : undefined;
-	try {
-		if (skillScope.scope === "project" && projectId) {
-			return await resolveSkillCatalog(
-				context,
-				{ type: "project", id: projectId },
-				skillScope.enabledSkillIds,
-			);
-		}
-		if (request.user?.id) {
-			return await resolveSkillCatalog(context, { type: "personal", id: request.user.id });
-		}
-	} catch (error) {
-		context.getLogger({ prefix: "services/skills" }).warn("Failed to load authored skills", {
-			error,
-			projectId,
-			userId: request.user?.id,
-		});
-	}
-	return null;
+  const context = request.context;
+
+  if (!context) {
+    return null;
+  }
+
+  const projectId =
+    request.memoryScope?.type === "project" ? request.memoryScope.projectId : undefined;
+
+  try {
+    if (skillScope.scope === "project" && projectId) {
+      return await resolveSkillCatalog(
+        context,
+        { type: "project", id: projectId },
+        skillScope.enabledSkillIds,
+      );
+    }
+
+    if (request.user?.id) {
+      return await resolveSkillCatalog(context, { type: "personal", id: request.user.id });
+    }
+  } catch (error) {
+    context.getLogger({ prefix: "services/skills" }).warn("Failed to load authored skills", {
+      error,
+      projectId,
+      userId: request.user?.id,
+    });
+  }
+
+  return null;
 }
 
 export async function resolveRequestSkillState(request: IRequest): Promise<{
-	catalog: SkillCatalog | null;
-	skills: SkillAvailability[];
+  catalog: SkillCatalog | null;
+  skills: SkillAvailability[];
 }> {
-	const model = request.request?.model;
-	const modelConfig = model
-		? await getModelConfigByMatchingModel(model, undefined, request.request?.provider)
-		: undefined;
-	const skillScope = await resolveSkillScope(request);
-	const catalog = await resolveRequestSkillCatalog(request, skillScope);
-	const skills = await listSkillAvailability(
-		buildSkillAvailabilityInput({
-			skillScope,
-			supportsToolCalls: modelConfig?.supportsToolCalls ?? true,
-			enabledToolIds: new Set(request.request?.enabled_tools ?? []),
-		}),
-		catalog?.listDefinitions(),
-	);
-	return { catalog, skills };
+  const model = request.request?.model;
+  const modelConfig = model
+    ? await getModelConfigByMatchingModel(model, undefined, request.request?.provider)
+    : undefined;
+  const skillScope = await resolveSkillScope(request);
+  const catalog = await resolveRequestSkillCatalog(request, skillScope);
+  const skills = await listSkillAvailability(
+    buildSkillAvailabilityInput({
+      skillScope,
+      supportsToolCalls: modelConfig?.supportsToolCalls ?? true,
+      enabledToolIds: new Set(request.request?.enabled_tools ?? []),
+    }),
+    catalog?.listDefinitions(),
+  );
+
+  return { catalog, skills };
 }
 
 export async function resolveRequestSkills(request: IRequest): Promise<SkillAvailability[]> {
-	return (await resolveRequestSkillState(request)).skills;
+  return (await resolveRequestSkillState(request)).skills;
 }

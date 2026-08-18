@@ -1,283 +1,296 @@
-import { type Context } from "hono";
+import { NO_STORE } from "@ngriffin_uk/polychat-schemas";
+import type { Context } from "hono";
 
+import { ResponseFactory } from "~/lib/http/ResponseFactory";
+import {
+  getRealtimeProvider,
+  type RealtimeTranscriptionDelay,
+} from "~/lib/providers/capabilities/realtime";
+import { getMistralTargetStreamingDelayMs } from "~/lib/providers/capabilities/realtime/providers";
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import type { IEnv, IUser } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import {
-	getRealtimeProvider,
-	type RealtimeTranscriptionDelay,
-} from "~/lib/providers/capabilities/realtime";
-import { getMistralTargetStreamingDelayMs } from "~/lib/providers/capabilities/realtime/providers";
-import { formatProviderError } from "~/lib/providers/utils/errors";
-import { ResponseFactory } from "~/lib/http/ResponseFactory";
-import { NO_STORE } from "@ngriffin_uk/polychat-schemas";
 
 const logger = getLogger({ prefix: "services/realtime/mistral" });
 const MISTRAL_REALTIME_USER_AGENT = "polychat-mistral-realtime-proxy/1.0";
 
 function sanitizeMistralClientMessage(data: string): string {
-	let payload: unknown;
-	try {
-		payload = JSON.parse(data);
-	} catch {
-		throw new AssistantError("Invalid realtime message", ErrorType.PARAMS_ERROR);
-	}
+  let payload: unknown;
 
-	if (!payload || typeof payload !== "object") {
-		throw new AssistantError("Invalid realtime message", ErrorType.PARAMS_ERROR);
-	}
+  try {
+    payload = JSON.parse(data);
+  } catch {
+    throw new AssistantError("Invalid realtime message", ErrorType.PARAMS_ERROR);
+  }
 
-	const message = payload as Record<string, unknown>;
-	const type = message.type;
-	const MISTRAL_CLIENT_MESSAGE_TYPES = new Set([
-		"input_audio.append",
-		"input_audio.flush",
-		"input_audio.end",
-	]);
-	if (typeof type !== "string" || !MISTRAL_CLIENT_MESSAGE_TYPES.has(type)) {
-		throw new AssistantError("Unsupported realtime message type", ErrorType.PARAMS_ERROR);
-	}
+  if (!payload || typeof payload !== "object") {
+    throw new AssistantError("Invalid realtime message", ErrorType.PARAMS_ERROR);
+  }
 
-	if (type === "input_audio.append") {
-		const audio = message.audio;
-		const BASE64_PATTERN = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
-		if (typeof audio !== "string" || !BASE64_PATTERN.test(audio)) {
-			throw new AssistantError("Invalid realtime audio payload", ErrorType.PARAMS_ERROR);
-		}
+  const message = payload as Record<string, unknown>;
+  const type = message.type;
+  const MISTRAL_CLIENT_MESSAGE_TYPES = new Set([
+    "input_audio.append",
+    "input_audio.flush",
+    "input_audio.end",
+  ]);
 
-		return JSON.stringify({ type, audio });
-	}
+  if (typeof type !== "string" || !MISTRAL_CLIENT_MESSAGE_TYPES.has(type)) {
+    throw new AssistantError("Unsupported realtime message type", ErrorType.PARAMS_ERROR);
+  }
 
-	return JSON.stringify({ type });
+  if (type === "input_audio.append") {
+    const audio = message.audio;
+    const BASE64_PATTERN = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+
+    if (typeof audio !== "string" || !BASE64_PATTERN.test(audio)) {
+      throw new AssistantError("Invalid realtime audio payload", ErrorType.PARAMS_ERROR);
+    }
+
+    return JSON.stringify({ type, audio });
+  }
+
+  return JSON.stringify({ type });
 }
 
 function isMistralSessionCreatedMessage(data: unknown): boolean {
-	if (typeof data !== "string") {
-		return false;
-	}
+  if (typeof data !== "string") {
+    return false;
+  }
 
-	try {
-		const payload = JSON.parse(data) as { type?: unknown };
-		return payload.type === "session.created";
-	} catch {
-		return false;
-	}
+  try {
+    const payload = JSON.parse(data) as { type?: unknown };
+
+    return payload.type === "session.created";
+  } catch {
+    return false;
+  }
 }
 
 function closeSocket(socket: WebSocket, code = 1000, reason = ""): void {
-	try {
-		if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
-			socket.close(code, reason);
-		}
-	} catch {
-		// close can race with the peer closing first.
-	}
+  try {
+    if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+      socket.close(code, reason);
+    }
+  } catch {
+    // close can race with the peer closing first.
+  }
 }
 
 function normaliseClientMessage(data: unknown): string {
-	if (typeof data === "string") {
-		return sanitizeMistralClientMessage(data);
-	}
+  if (typeof data === "string") {
+    return sanitizeMistralClientMessage(data);
+  }
 
-	if (data instanceof ArrayBuffer) {
-		return JSON.stringify({
-			type: "input_audio.append",
-			audio: bufferToBase64(data),
-		});
-	}
+  if (data instanceof ArrayBuffer) {
+    return JSON.stringify({
+      type: "input_audio.append",
+      audio: bufferToBase64(data),
+    });
+  }
 
-	throw new TypeError("Unsupported realtime message payload");
+  throw new TypeError("Unsupported realtime message payload");
 }
 
 function getMistralProxyFailureStatus(providerStatus: number): 400 | 401 | 403 | 404 | 429 | 502 {
-	switch (providerStatus) {
-		case 400:
-		case 401:
-		case 403:
-		case 404:
-		case 429:
-			return providerStatus;
-		default:
-			return 502;
-	}
+  switch (providerStatus) {
+    case 400:
+    case 401:
+    case 403:
+    case 404:
+    case 429:
+      return providerStatus;
+    default:
+      return 502;
+  }
 }
 
 function bridgeMistralRealtimeSockets({
-	client,
-	upstream,
-	sessionUpdateMessage,
+  client,
+  upstream,
+  sessionUpdateMessage,
 }: {
-	client: WebSocket;
-	upstream: WebSocket;
-	sessionUpdateMessage: string;
+  client: WebSocket;
+  upstream: WebSocket;
+  sessionUpdateMessage: string;
 }): void {
-	let hasSentSessionUpdate = false;
-	const pendingClientMessages: string[] = [];
+  let hasSentSessionUpdate = false;
+  const pendingClientMessages: string[] = [];
 
-	const flushPendingClientMessages = () => {
-		while (pendingClientMessages.length > 0 && upstream.readyState === WebSocket.OPEN) {
-			upstream.send(pendingClientMessages.shift()!);
-		}
-	};
+  const flushPendingClientMessages = () => {
+    while (pendingClientMessages.length > 0 && upstream.readyState === WebSocket.OPEN) {
+      upstream.send(pendingClientMessages.shift());
+    }
+  };
 
-	client.addEventListener("message", (event) => {
-		try {
-			const message = normaliseClientMessage(event.data);
-			if (!hasSentSessionUpdate) {
-				const MISTRAL_PENDING_MESSAGE_LIMIT = 64;
-				if (pendingClientMessages.length >= MISTRAL_PENDING_MESSAGE_LIMIT) {
-					throw new Error("Upstream session is not ready");
-				}
-				pendingClientMessages.push(message);
-				return;
-			}
+  client.addEventListener("message", (event) => {
+    try {
+      const message = normaliseClientMessage(event.data);
 
-			upstream.send(message);
-		} catch {
-			if (client.readyState !== WebSocket.OPEN) {
-				return;
-			}
+      if (!hasSentSessionUpdate) {
+        const MISTRAL_PENDING_MESSAGE_LIMIT = 64;
 
-			client.send(
-				JSON.stringify({
-					type: "error",
-					error: {
-						message: "Invalid realtime message",
-						code: 400,
-					},
-				}),
-			);
-			closeSocket(client, 1003, "Invalid realtime message");
-			closeSocket(upstream, 1003, "Invalid realtime message");
-		}
-	});
+        if (pendingClientMessages.length >= MISTRAL_PENDING_MESSAGE_LIMIT) {
+          throw new Error("Upstream session is not ready");
+        }
 
-	upstream.addEventListener("message", (event) => {
-		if (!hasSentSessionUpdate && isMistralSessionCreatedMessage(event.data)) {
-			upstream.send(sessionUpdateMessage);
-			hasSentSessionUpdate = true;
-			flushPendingClientMessages();
-		}
+        pendingClientMessages.push(message);
 
-		if (client.readyState === WebSocket.OPEN) {
-			client.send(event.data);
-		}
-	});
+        return;
+      }
 
-	client.addEventListener("close", () => closeSocket(upstream));
-	client.addEventListener("error", () => closeSocket(upstream, 1011, "Client socket error"));
-	upstream.addEventListener("close", (event) => closeSocket(client, event.code, event.reason));
-	upstream.addEventListener("error", () => closeSocket(client, 1011, "Upstream socket error"));
+      upstream.send(message);
+    } catch {
+      if (client.readyState !== WebSocket.OPEN) {
+        return;
+      }
+
+      client.send(
+        JSON.stringify({
+          type: "error",
+          error: {
+            message: "Invalid realtime message",
+            code: 400,
+          },
+        }),
+      );
+      closeSocket(client, 1003, "Invalid realtime message");
+      closeSocket(upstream, 1003, "Invalid realtime message");
+    }
+  });
+
+  upstream.addEventListener("message", (event) => {
+    if (!hasSentSessionUpdate && isMistralSessionCreatedMessage(event.data)) {
+      upstream.send(sessionUpdateMessage);
+      hasSentSessionUpdate = true;
+      flushPendingClientMessages();
+    }
+
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(event.data);
+    }
+  });
+
+  client.addEventListener("close", () => closeSocket(upstream));
+  client.addEventListener("error", () => closeSocket(upstream, 1011, "Client socket error"));
+  upstream.addEventListener("close", (event) => closeSocket(client, event.code, event.reason));
+  upstream.addEventListener("error", () => closeSocket(client, 1011, "Upstream socket error"));
 }
 
 export async function createMistralRealtimeProxyResponse({
-	context,
-	delay,
-	env,
-	user,
-	model,
+  context,
+  delay,
+  env,
+  user,
+  model,
 }: {
-	context: Context;
-	delay?: RealtimeTranscriptionDelay;
-	env: IEnv;
-	user: IUser;
-	model?: string;
+  context: Context;
+  delay?: RealtimeTranscriptionDelay;
+  env: IEnv;
+  user: IUser;
+  model?: string;
 }): Promise<Response> {
-	const request = context.req.raw;
-	const isWebSocketUpgrade = request.headers.get("Upgrade")?.toLowerCase() === "websocket";
-	if (!isWebSocketUpgrade) {
-		return new Response("Expected WebSocket upgrade", {
-			status: 426,
-			headers: { Upgrade: "websocket", "Cache-Control": NO_STORE },
-		});
-	}
+  const request = context.req.raw;
+  const isWebSocketUpgrade = request.headers.get("Upgrade")?.toLowerCase() === "websocket";
 
-	const provider = getRealtimeProvider("mistral", context);
+  if (!isWebSocketUpgrade) {
+    return new Response("Expected WebSocket upgrade", {
+      status: 426,
+      headers: { Upgrade: "websocket", "Cache-Control": NO_STORE },
+    });
+  }
 
-	const apiKey = await provider.getApiKey?.({
-		env,
-		user,
-		type: "transcription",
-	});
+  const provider = getRealtimeProvider("mistral", context);
 
-	if (!apiKey) {
-		return ResponseFactory.error(context, "Failed to resolve API key for Mistral provider", 500);
-	}
+  const apiKey = await provider.getApiKey?.({
+    env,
+    user,
+    type: "transcription",
+  });
 
-	const modelToUse = model || provider.getDefaultModel("transcription");
+  if (!apiKey) {
+    return ResponseFactory.error(context, "Failed to resolve API key for Mistral provider", 500);
+  }
 
-	if (!modelToUse) {
-		return ResponseFactory.error(context, "Failed to resolve model for Mistral provider", 500);
-	}
+  const modelToUse = model || provider.getDefaultModel("transcription");
 
-	const url = new URL("/v1/audio/transcriptions/realtime", "https://api.mistral.ai");
-	url.searchParams.set("model", encodeURIComponent("voxtral-mini-transcribe-realtime-2602"));
+  if (!modelToUse) {
+    return ResponseFactory.error(context, "Failed to resolve model for Mistral provider", 500);
+  }
 
-	const upstreamResponse = await fetch(url, {
-		headers: {
-			Authorization: `Bearer ${apiKey}`,
-			Upgrade: "websocket",
-			"user-agent": MISTRAL_REALTIME_USER_AGENT,
-		},
-	});
+  const url = new URL("/v1/audio/transcriptions/realtime", "https://api.mistral.ai");
 
-	if (upstreamResponse.status !== 101 || !upstreamResponse.webSocket) {
-		const providerError = await formatProviderError(
-			upstreamResponse,
-			"Failed to connect to Mistral realtime",
-		);
-		const status = getMistralProxyFailureStatus(upstreamResponse.status);
-		const correlationId =
-			upstreamResponse.headers.get("mistral-correlation-id") ??
-			upstreamResponse.headers.get("x-kong-request-id");
-		logger.error("Mistral realtime handshake failed", {
-			model: modelToUse,
-			providerStatus: upstreamResponse.status,
-			providerStatusText: upstreamResponse.statusText,
-			providerResponse: providerError,
-			providerCorrelationId: correlationId,
-		});
-		const details = [providerError, correlationId ? `correlation_id=${correlationId}` : ""]
-			.filter(Boolean)
-			.join(" - ");
-		return ResponseFactory.error(context, details, status);
-	}
+  url.searchParams.set("model", encodeURIComponent("voxtral-mini-transcribe-realtime-2602"));
 
-	const pair = new WebSocketPair();
-	const [clientSocket, serverSocket] = Object.values(pair);
-	serverSocket.accept();
-	upstreamResponse.webSocket.accept();
+  const upstreamResponse = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      Upgrade: "websocket",
+      "user-agent": MISTRAL_REALTIME_USER_AGENT,
+    },
+  });
 
-	const audioFormat = provider.buildAudioFormat ? provider.buildAudioFormat() : undefined;
-	const targetStreamingDelayMs = provider.getTranscriptionDelay
-		? getMistralTargetStreamingDelayMs(
-				provider.getTranscriptionDelay({
-					delay,
-					env,
-					user,
-					type: "transcription",
-				}),
-			)
-		: undefined;
+  if (upstreamResponse.status !== 101 || !upstreamResponse.webSocket) {
+    const providerError = await formatProviderError(
+      upstreamResponse,
+      "Failed to connect to Mistral realtime",
+    );
+    const status = getMistralProxyFailureStatus(upstreamResponse.status);
+    const correlationId =
+      upstreamResponse.headers.get("mistral-correlation-id") ??
+      upstreamResponse.headers.get("x-kong-request-id");
 
-	bridgeMistralRealtimeSockets({
-		client: serverSocket,
-		upstream: upstreamResponse.webSocket,
-		sessionUpdateMessage: JSON.stringify({
-			type: "session.update",
-			session: {
-				audio_format: audioFormat,
-				...(targetStreamingDelayMs ? { target_streaming_delay_ms: targetStreamingDelayMs } : {}),
-			},
-		}),
-	});
+    logger.error("Mistral realtime handshake failed", {
+      model: modelToUse,
+      providerStatus: upstreamResponse.status,
+      providerStatusText: upstreamResponse.statusText,
+      providerResponse: providerError,
+      providerCorrelationId: correlationId,
+    });
+    const details = [providerError, correlationId ? `correlation_id=${correlationId}` : ""]
+      .filter(Boolean)
+      .join(" - ");
 
-	return new Response(null, {
-		status: 101,
-		webSocket: clientSocket,
-		headers: {
-			"Cache-Control": NO_STORE,
-		},
-	});
+    return ResponseFactory.error(context, details, status);
+  }
+
+  const pair = new WebSocketPair();
+  const [clientSocket, serverSocket] = Object.values(pair);
+
+  serverSocket.accept();
+  upstreamResponse.webSocket.accept();
+
+  const audioFormat = provider.buildAudioFormat ? provider.buildAudioFormat() : undefined;
+  const targetStreamingDelayMs = provider.getTranscriptionDelay
+    ? getMistralTargetStreamingDelayMs(
+        provider.getTranscriptionDelay({
+          delay,
+          env,
+          user,
+          type: "transcription",
+        }),
+      )
+    : undefined;
+
+  bridgeMistralRealtimeSockets({
+    client: serverSocket,
+    upstream: upstreamResponse.webSocket,
+    sessionUpdateMessage: JSON.stringify({
+      type: "session.update",
+      session: {
+        audio_format: audioFormat,
+        ...(targetStreamingDelayMs ? { target_streaming_delay_ms: targetStreamingDelayMs } : {}),
+      },
+    }),
+  });
+
+  return new Response(null, {
+    status: 101,
+    webSocket: clientSocket,
+    headers: {
+      "Cache-Control": NO_STORE,
+    },
+  });
 }

@@ -1,24 +1,26 @@
 export function bufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
-	const bytes = new Uint8Array(buffer);
-	const chunkSize = 0x8000;
-	let binary = "";
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 0x8000;
+  let binary = "";
 
-	for (let index = 0; index < bytes.length; index += chunkSize) {
-		const chunk = bytes.subarray(index, index + chunkSize);
-		binary += String.fromCharCode.apply(null, Array.from(chunk));
-	}
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    const chunk = bytes.subarray(index, index + chunkSize);
 
-	return btoa(binary);
+    binary += String.fromCharCode.apply(null, Array.from(chunk));
+  }
+
+  return btoa(binary);
 }
 
 export function base64ToBuffer(base64: string): Uint8Array {
-	const binString = atob(base64.replace(/\s/g, ""));
-	return Uint8Array.from(binString, (char) => char.charCodeAt(0));
+  const binString = atob(base64.replace(/\s/g, ""));
+
+  return Uint8Array.from(binString, (char) => char.charCodeAt(0));
 }
 
 export function stringToBase64Url(value: string): string {
-	return bufferToBase64(new TextEncoder().encode(value))
-		.replace(/\+/g, "-")
-		.replace(/\//g, "_")
-		.replace(/=+$/, "");
+  return bufferToBase64(new TextEncoder().encode(value))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 }

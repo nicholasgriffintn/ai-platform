@@ -1,238 +1,239 @@
+import type { RecipeInvocationResponse } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { RecipeInvocationResponse } from "@ngriffin_uk/polychat-schemas";
 import type { IEnv, IUser } from "~/types";
 
 const mocks = vi.hoisted(() => ({
-	handleCreateChatCompletions: vi.fn(),
-	generateId: vi.fn(),
+  handleCreateChatCompletions: vi.fn(),
+  generateId: vi.fn(),
 }));
 
 vi.mock("~/services/completions/createChatCompletions", () => ({
-	handleCreateChatCompletions: mocks.handleCreateChatCompletions,
+  handleCreateChatCompletions: mocks.handleCreateChatCompletions,
 }));
 
 vi.mock("~/utils/id", () => ({
-	generateId: mocks.generateId,
+  generateId: mocks.generateId,
 }));
 
 import { executeRecipeInvocationChat } from "../execution";
 import { createRecipeMessageUrl } from "../runtime";
 
 describe("recipe message URL", () => {
-	it("uses a compact recipe action instead of serialising the generated prompt", () => {
-		expect(createRecipeMessageUrl("customer-revenue-operations", "setup")).toBe(
-			"/?action=setup&recipe=customer-revenue-operations",
-		);
-	});
+  it("uses a compact recipe action instead of serialising the generated prompt", () => {
+    expect(createRecipeMessageUrl("customer-revenue-operations", "setup")).toBe(
+      "/?action=setup&recipe=customer-revenue-operations",
+    );
+  });
 });
 
 describe("executeRecipeInvocationChat", () => {
-	const env = { DB: {}, AI: {} } as unknown as IEnv;
-	const user = {
-		id: 42,
-		email: "test@example.com",
-		plan_id: "pro",
-	} as IUser;
-	const updateConversation = vi.fn();
-	const context = {
-		env,
-		user,
-		repositories: {
-			conversations: {
-				updateConversation,
-			},
-		},
-	} as any;
-	const invocation: RecipeInvocationResponse = {
-		recipeId: "notes-assistant",
-		recipeTitle: "Notes Assistant",
-		installationId: "installation-1",
-		channel: "scheduled",
-		status: "ready",
-		conversationStarter: "Run this installed Notion recipe.",
-		messageUrl: "/?query=Run",
-		missingConnections: [],
-		enabledTools: ["use_recipe_connector"],
-		allowedConnectorProviders: ["notion"],
-		allowedConnectorOperations: {
-			notion: ["NOTION_SEARCH_NOTION_PAGE", "NOTION_ADD_MULTIPLE_PAGE_CONTENT"],
-		},
-		configuration: { target: "Action log" },
-	};
+  const env = { DB: {}, AI: {} } as unknown as IEnv;
+  const user = {
+    id: 42,
+    email: "test@example.com",
+    plan_id: "pro",
+  } as IUser;
+  const updateConversation = vi.fn();
+  const context = {
+    env,
+    user,
+    repositories: {
+      conversations: {
+        updateConversation,
+      },
+    },
+  } as any;
+  const invocation: RecipeInvocationResponse = {
+    recipeId: "notes-assistant",
+    recipeTitle: "Notes Assistant",
+    installationId: "installation-1",
+    channel: "scheduled",
+    status: "ready",
+    conversationStarter: "Run this installed Notion recipe.",
+    messageUrl: "/?query=Run",
+    missingConnections: [],
+    enabledTools: ["use_recipe_connector"],
+    allowedConnectorProviders: ["notion"],
+    allowedConnectorOperations: {
+      notion: ["NOTION_SEARCH_NOTION_PAGE", "NOTION_ADD_MULTIPLE_PAGE_CONTENT"],
+    },
+    configuration: { target: "Action log" },
+  };
 
-	beforeEach(() => {
-		vi.clearAllMocks();
-		updateConversation.mockResolvedValue({});
-		mocks.generateId.mockReturnValue("generated-id");
-		mocks.handleCreateChatCompletions.mockResolvedValue({
-			id: "recipe_generated-id",
-			log_id: "log-1",
-			object: "chat.completion",
-			created: 1,
-			choices: [],
-		});
-	});
+  beforeEach(() => {
+    vi.clearAllMocks();
+    updateConversation.mockResolvedValue({});
+    mocks.generateId.mockReturnValue("generated-id");
+    mocks.handleCreateChatCompletions.mockResolvedValue({
+      id: "recipe_generated-id",
+      log_id: "log-1",
+      object: "chat.completion",
+      created: 1,
+      choices: [],
+    });
+  });
 
-	it("runs the invocation through a stored non-streaming chat completion", async () => {
-		const result = await executeRecipeInvocationChat({
-			env,
-			context,
-			user,
-			invocation,
-			projectId: "project-1",
-		});
+  it("runs the invocation through a stored non-streaming chat completion", async () => {
+    const result = await executeRecipeInvocationChat({
+      env,
+      context,
+      user,
+      invocation,
+      projectId: "project-1",
+    });
 
-		expect(result.conversationId).toBe("recipe_generated-id");
-		expect(mocks.handleCreateChatCompletions).toHaveBeenCalledWith({
-			env,
-			context,
-			user,
-			request: expect.objectContaining({
-				completion_id: "recipe_generated-id",
-				model: "deepseek-v4-flash",
-				mode: "agent",
-				stream: false,
-				store: true,
-				metadata: { project_id: "project-1" },
-				enabled_tools: ["use_recipe_connector"],
-				approved_tools: ["use_recipe_connector"],
-				tool_choice: "auto",
-				options: expect.objectContaining({
-					agent: {
-						minToolCalls: 1,
-					},
-					recipe: {
-						id: "notes-assistant",
-						installationId: "installation-1",
-						channel: "scheduled",
-						allowedConnectorProviders: ["notion"],
-						allowedConnectorOperations: {
-							notion: ["NOTION_SEARCH_NOTION_PAGE", "NOTION_ADD_MULTIPLE_PAGE_CONTENT"],
-						},
-						configuration: { target: "Action log" },
-					},
-				}),
-				messages: [
-					{
-						role: "user",
-						content: "Run this installed Notion recipe.",
-					},
-				],
-			}),
-		});
+    expect(result.conversationId).toBe("recipe_generated-id");
+    expect(mocks.handleCreateChatCompletions).toHaveBeenCalledWith({
+      env,
+      context,
+      user,
+      request: expect.objectContaining({
+        completion_id: "recipe_generated-id",
+        model: "deepseek-v4-flash",
+        mode: "agent",
+        stream: false,
+        store: true,
+        metadata: { project_id: "project-1" },
+        enabled_tools: ["use_recipe_connector"],
+        approved_tools: ["use_recipe_connector"],
+        tool_choice: "auto",
+        options: expect.objectContaining({
+          agent: {
+            minToolCalls: 1,
+          },
+          recipe: {
+            id: "notes-assistant",
+            installationId: "installation-1",
+            channel: "scheduled",
+            allowedConnectorProviders: ["notion"],
+            allowedConnectorOperations: {
+              notion: ["NOTION_SEARCH_NOTION_PAGE", "NOTION_ADD_MULTIPLE_PAGE_CONTENT"],
+            },
+            configuration: { target: "Action log" },
+          },
+        }),
+        messages: [
+          {
+            role: "user",
+            content: "Run this installed Notion recipe.",
+          },
+        ],
+      }),
+    });
 
-		const request = mocks.handleCreateChatCompletions.mock.calls[0]?.[0].request;
-		expect(request).not.toHaveProperty("max_steps");
-	});
+    const request = mocks.handleCreateChatCompletions.mock.calls[0]?.[0].request;
 
-	it("titles generated recipe conversations so scheduled runs are visible in history", async () => {
-		const result = await executeRecipeInvocationChat({
-			env,
-			context,
-			user,
-			invocation,
-		});
+    expect(request).not.toHaveProperty("max_steps");
+  });
 
-		expect(result.conversationId).toBe("recipe_generated-id");
-		expect(updateConversation).toHaveBeenCalledWith("recipe_generated-id", {
-			title: "Recipe: Notes Assistant",
-		});
-	});
+  it("titles generated recipe conversations so scheduled runs are visible in history", async () => {
+    const result = await executeRecipeInvocationChat({
+      env,
+      context,
+      user,
+      invocation,
+    });
 
-	it("titles caller-provided recipe conversations when requested", async () => {
-		const result = await executeRecipeInvocationChat({
-			env,
-			context,
-			user,
-			invocation,
-			conversationId: "recipe_task-1",
-			titleConversation: true,
-		});
+    expect(result.conversationId).toBe("recipe_generated-id");
+    expect(updateConversation).toHaveBeenCalledWith("recipe_generated-id", {
+      title: "Recipe: Notes Assistant",
+    });
+  });
 
-		expect(result.conversationId).toBe("recipe_task-1");
-		expect(updateConversation).toHaveBeenCalledWith("recipe_task-1", {
-			title: "Recipe: Notes Assistant",
-		});
-	});
+  it("titles caller-provided recipe conversations when requested", async () => {
+    const result = await executeRecipeInvocationChat({
+      env,
+      context,
+      user,
+      invocation,
+      conversationId: "recipe_task-1",
+      titleConversation: true,
+    });
 
-	it("passes SMS context into chat completion options for text-message recipe runs", async () => {
-		await executeRecipeInvocationChat({
-			env,
-			context,
-			user,
-			invocation,
-			sms: {
-				from: "+15551234567",
-				to: "+15557654321",
-			},
-		});
+    expect(result.conversationId).toBe("recipe_task-1");
+    expect(updateConversation).toHaveBeenCalledWith("recipe_task-1", {
+      title: "Recipe: Notes Assistant",
+    });
+  });
 
-		expect(mocks.handleCreateChatCompletions).toHaveBeenCalledWith({
-			env,
-			context,
-			user,
-			request: expect.objectContaining({
-				options: expect.objectContaining({
-					source: "sms",
-					sms: {
-						enabled: true,
-						from: "+15551234567",
-						to: "+15557654321",
-					},
-				}),
-			}),
-		});
-	});
+  it("passes SMS context into chat completion options for text-message recipe runs", async () => {
+    await executeRecipeInvocationChat({
+      env,
+      context,
+      user,
+      invocation,
+      sms: {
+        from: "+15551234567",
+        to: "+15557654321",
+      },
+    });
 
-	it("can run a recipe inside an existing SMS conversation window", async () => {
-		const result = await executeRecipeInvocationChat({
-			env,
-			context,
-			user,
-			invocation,
-			conversationId: "sms_conversation",
-			priorMessages: [
-				{
-					id: "message-1",
-					role: "user",
-					content: "run my action log recipe",
-				},
-			],
-			sms: {
-				from: "+15551234567",
-				to: "+15557654321",
-			},
-		});
+    expect(mocks.handleCreateChatCompletions).toHaveBeenCalledWith({
+      env,
+      context,
+      user,
+      request: expect.objectContaining({
+        options: expect.objectContaining({
+          source: "sms",
+          sms: {
+            enabled: true,
+            from: "+15551234567",
+            to: "+15557654321",
+          },
+        }),
+      }),
+    });
+  });
 
-		expect(result.conversationId).toBe("sms_conversation");
-		expect(mocks.generateId).not.toHaveBeenCalled();
-		expect(mocks.handleCreateChatCompletions).toHaveBeenCalledWith({
-			env,
-			context,
-			user,
-			request: expect.objectContaining({
-				completion_id: "sms_conversation",
-				messages: [
-					{
-						id: "message-1",
-						role: "user",
-						content: "run my action log recipe",
-					},
-					{
-						role: "user",
-						content: "Run this installed Notion recipe.",
-					},
-				],
-				options: expect.objectContaining({
-					source: "sms",
-					sms: {
-						enabled: true,
-						from: "+15551234567",
-						to: "+15557654321",
-					},
-				}),
-			}),
-		});
-	});
+  it("can run a recipe inside an existing SMS conversation window", async () => {
+    const result = await executeRecipeInvocationChat({
+      env,
+      context,
+      user,
+      invocation,
+      conversationId: "sms_conversation",
+      priorMessages: [
+        {
+          id: "message-1",
+          role: "user",
+          content: "run my action log recipe",
+        },
+      ],
+      sms: {
+        from: "+15551234567",
+        to: "+15557654321",
+      },
+    });
+
+    expect(result.conversationId).toBe("sms_conversation");
+    expect(mocks.generateId).not.toHaveBeenCalled();
+    expect(mocks.handleCreateChatCompletions).toHaveBeenCalledWith({
+      env,
+      context,
+      user,
+      request: expect.objectContaining({
+        completion_id: "sms_conversation",
+        messages: [
+          {
+            id: "message-1",
+            role: "user",
+            content: "run my action log recipe",
+          },
+          {
+            role: "user",
+            content: "Run this installed Notion recipe.",
+          },
+        ],
+        options: expect.objectContaining({
+          source: "sms",
+          sms: {
+            enabled: true,
+            from: "+15551234567",
+            to: "+15557654321",
+          },
+        }),
+      }),
+    });
+  });
 });

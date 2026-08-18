@@ -1,366 +1,382 @@
 import { gatewayId } from "~/constants/app";
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type {
-	IEnv,
-	IUser,
-	ParallelTaskOutput,
-	ParallelTaskRun,
-	ParallelTaskSchema,
-	ParallelTaskSpec,
-	ResearchOptions,
-	ResearchProvider,
-	ResearchResult,
-	ResearchResultError,
-	ResearchTaskHandle,
+  IEnv,
+  IUser,
+  ParallelTaskOutput,
+  ParallelTaskRun,
+  ParallelTaskSchema,
+  ParallelTaskSpec,
+  ResearchOptions,
+  ResearchProvider,
+  ResearchResult,
+  ResearchResultError,
+  ResearchTaskHandle,
 } from "~/types";
-import { formatProviderError } from "~/lib/providers/utils/errors";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 type ParallelResultPayload = {
-	run: ParallelTaskRun;
-	output: ParallelTaskOutput;
+  run: ParallelTaskRun;
+  output: ParallelTaskOutput;
 };
 
 const FAILURE_STATUSES = new Set(["failed", "cancelled", "errored", "stopped"]);
 
 const isResearchResultError = (
-	value: ParallelTaskRun | ResearchResultError,
+  value: ParallelTaskRun | ResearchResultError,
 ): value is ResearchResultError => {
-	return value?.status === "error" && !Object.prototype.hasOwnProperty.call(value, "is_active");
+  return value?.status === "error" && !Object.prototype.hasOwnProperty.call(value, "is_active");
 };
 
 export class ParallelResearchProvider implements ResearchProvider {
-	private env: IEnv;
-	private user?: IUser;
-	private apiKey?: string;
-	private userSettingsRepo?: UserSettingsRepository;
+  private env: IEnv;
+  private user?: IUser;
+  private apiKey?: string;
+  private userSettingsRepo?: UserSettingsRepository;
 
-	constructor(env: IEnv, user?: IUser) {
-		this.env = env;
-		this.user = user;
+  constructor(env: IEnv, user?: IUser) {
+    this.env = env;
+    this.user = user;
 
-		if (user?.id && env.DB) {
-			this.userSettingsRepo = new UserSettingsRepository(env);
-		}
-	}
+    if (user?.id && env.DB) {
+      this.userSettingsRepo = new UserSettingsRepository(env);
+    }
+  }
 
-	private async resolveApiKey(): Promise<string> {
-		if (this.apiKey) {
-			return this.apiKey;
-		}
+  private async resolveApiKey(): Promise<string> {
+    if (this.apiKey) {
+      return this.apiKey;
+    }
 
-		if (this.user?.id && this.userSettingsRepo) {
-			try {
-				const userApiKey = await this.userSettingsRepo.getProviderApiKey(this.user.id, "parallel");
-				if (userApiKey) {
-					this.apiKey = userApiKey;
-					return userApiKey;
-				}
-			} catch (error) {
-				if (
-					error instanceof AssistantError &&
-					(error.type === ErrorType.NOT_FOUND || error.type === ErrorType.PARAMS_ERROR)
-				) {
-					// Ignore and fallback to env key
-				} else {
-					throw error;
-				}
-			}
-		}
+    if (this.user?.id && this.userSettingsRepo) {
+      try {
+        const userApiKey = await this.userSettingsRepo.getProviderApiKey(this.user.id, "parallel");
 
-		const envKey = this.env.PARALLEL_API_KEY;
-		if (!envKey) {
-			throw new AssistantError("PARALLEL_API_KEY is not set", ErrorType.CONFIGURATION_ERROR);
-		}
+        if (userApiKey) {
+          this.apiKey = userApiKey;
 
-		this.apiKey = envKey;
-		return envKey;
-	}
+          return userApiKey;
+        }
+      } catch (error) {
+        if (
+          error instanceof AssistantError &&
+          (error.type === ErrorType.NOT_FOUND || error.type === ErrorType.PARAMS_ERROR)
+        ) {
+          // Ignore and fallback to env key
+        } else {
+          throw error;
+        }
+      }
+    }
 
-	private getAiGatewayEndpoint(path = ""): string {
-		return `https://gateway.ai.cloudflare.com/v1/${this.env.ACCOUNT_ID}/${gatewayId}/parallel/v1/tasks/runs${path}`;
-	}
+    const envKey = this.env.PARALLEL_API_KEY;
 
-	private getParallelEndpoint(path = ""): string {
-		return `https://api.parallel.ai/v1/tasks/runs${path}`;
-	}
+    if (!envKey) {
+      throw new AssistantError("PARALLEL_API_KEY is not set", ErrorType.CONFIGURATION_ERROR);
+    }
 
-	private async getHeaders(): Promise<Record<string, string>> {
-		const apiKey = await this.resolveApiKey();
-		if (!this.env.AI_GATEWAY_TOKEN) {
-			throw new AssistantError("AI_GATEWAY_TOKEN is not set", ErrorType.CONFIGURATION_ERROR);
-		}
+    this.apiKey = envKey;
 
-		return {
-			"Content-Type": "application/json",
-			Accept: "application/json",
-			"x-api-key": apiKey,
-			"cf-aig-authorization": this.env.AI_GATEWAY_TOKEN,
-			"cf-aig-metadata": JSON.stringify({
-				...getAiGatewayMetadataHeaders({ user: this.user }),
-				provider: "parallel",
-				feature: "research",
-			}),
-			"cf-aig-cache-ttl": resolveAiGatewayCacheTtl().toString(),
-		};
-	}
+    return envKey;
+  }
 
-	private normaliseSchema(schema?: ParallelTaskSchema) {
-		if (!schema) {
-			return undefined;
-		}
+  private getAiGatewayEndpoint(path = ""): string {
+    return `https://gateway.ai.cloudflare.com/v1/${this.env.ACCOUNT_ID}/${gatewayId}/parallel/v1/tasks/runs${path}`;
+  }
 
-		const normalised: ParallelTaskSchema = {
-			type: schema.type,
-		};
+  private getParallelEndpoint(path = ""): string {
+    return `https://api.parallel.ai/v1/tasks/runs${path}`;
+  }
 
-		if (schema.json_schema !== undefined) {
-			normalised.json_schema = schema.json_schema;
-		}
+  private async getHeaders(): Promise<Record<string, string>> {
+    const apiKey = await this.resolveApiKey();
 
-		if (schema.description !== undefined) {
-			normalised.description = schema.description;
-		}
+    if (!this.env.AI_GATEWAY_TOKEN) {
+      throw new AssistantError("AI_GATEWAY_TOKEN is not set", ErrorType.CONFIGURATION_ERROR);
+    }
 
-		return normalised;
-	}
+    return {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "x-api-key": apiKey,
+      "cf-aig-authorization": this.env.AI_GATEWAY_TOKEN,
+      "cf-aig-metadata": JSON.stringify({
+        ...getAiGatewayMetadataHeaders({ user: this.user }),
+        provider: "parallel",
+        feature: "research",
+      }),
+      "cf-aig-cache-ttl": resolveAiGatewayCacheTtl().toString(),
+    };
+  }
 
-	private normaliseTaskSpec(taskSpec?: ParallelTaskSpec) {
-		if (!taskSpec) {
-			return undefined;
-		}
+  private normaliseSchema(schema?: ParallelTaskSchema) {
+    if (!schema) {
+      return undefined;
+    }
 
-		const normalised: ParallelTaskSpec = {};
+    const normalised: ParallelTaskSchema = {
+      type: schema.type,
+    };
 
-		const inputSchema = this.normaliseSchema(taskSpec.input_schema);
-		if (inputSchema) {
-			normalised.input_schema = inputSchema;
-		}
+    if (schema.json_schema !== undefined) {
+      normalised.json_schema = schema.json_schema;
+    }
 
-		const outputSchema = this.normaliseSchema(taskSpec.output_schema);
-		if (outputSchema) {
-			normalised.output_schema = outputSchema;
-		}
+    if (schema.description !== undefined) {
+      normalised.description = schema.description;
+    }
 
-		return Object.keys(normalised).length > 0 ? normalised : undefined;
-	}
+    return normalised;
+  }
 
-	private sleep(ms: number) {
-		return new Promise((resolve) => setTimeout(resolve, ms));
-	}
+  private normaliseTaskSpec(taskSpec?: ParallelTaskSpec) {
+    if (!taskSpec) {
+      return undefined;
+    }
 
-	async createResearchTask(
-		input: unknown,
-		options?: ResearchOptions,
-	): Promise<ResearchTaskHandle | ResearchResultError> {
-		const headers = await this.getHeaders();
-		const payload: Record<string, unknown> = {
-			input,
-			processor: options?.processor ?? "ultra",
-		};
+    const normalised: ParallelTaskSpec = {};
 
-		const taskSpec = this.normaliseTaskSpec(options?.task_spec);
-		if (taskSpec) {
-			payload.task_spec = taskSpec;
-		}
+    const inputSchema = this.normaliseSchema(taskSpec.input_schema);
 
-		if (options?.enable_events !== undefined) {
-			payload.enable_events = options.enable_events;
-		}
+    if (inputSchema) {
+      normalised.input_schema = inputSchema;
+    }
 
-		if (options?.metadata) {
-			payload.metadata = options.metadata;
-		}
+    const outputSchema = this.normaliseSchema(taskSpec.output_schema);
 
-		try {
-			const endpoint = this.getAiGatewayEndpoint();
-			const response = await fetch(endpoint, {
-				method: "POST",
-				headers,
-				body: JSON.stringify(payload),
-			});
+    if (outputSchema) {
+      normalised.output_schema = outputSchema;
+    }
 
-			if (!response.ok) {
-				return {
-					status: "error",
-					error: await formatProviderError(response, "Error creating research task"),
-				};
-			}
+    return Object.keys(normalised).length > 0 ? normalised : undefined;
+  }
 
-			const run = (await response.json()) as ParallelTaskRun;
-			if (!run?.run_id) {
-				return {
-					status: "error",
-					error: "Parallel research task creation failed: missing run_id",
-				};
-			}
+  private sleep(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 
-			return {
-				provider: "parallel",
-				run,
-			};
-		} catch (error) {
-			return {
-				status: "error",
-				error: await formatProviderError(error, "Error creating research task"),
-			};
-		}
-	}
+  async createResearchTask(
+    input: unknown,
+    options?: ResearchOptions,
+  ): Promise<ResearchTaskHandle | ResearchResultError> {
+    const headers = await this.getHeaders();
+    const payload: Record<string, unknown> = {
+      input,
+      processor: options?.processor ?? "ultra",
+    };
 
-	async fetchResearchRun(runId: string): Promise<ParallelTaskRun | ResearchResultError> {
-		const headers = await this.getHeaders();
+    const taskSpec = this.normaliseTaskSpec(options?.task_spec);
 
-		try {
-			const endpoint = this.getParallelEndpoint(`/${runId}`);
-			const response = await fetch(endpoint, {
-				method: "GET",
-				headers,
-			});
+    if (taskSpec) {
+      payload.task_spec = taskSpec;
+    }
 
-			if (!response.ok) {
-				const errorMessage = await formatProviderError(response, "Failed to fetch research run");
-				console.error("ParallelResearchProvider: Error fetching research run:", errorMessage);
-				return {
-					status: "error",
-					error: errorMessage,
-				};
-			}
+    if (options?.enable_events !== undefined) {
+      payload.enable_events = options.enable_events;
+    }
 
-			const run = (await response.json()) as ParallelTaskRun;
-			return run;
-		} catch (error) {
-			return {
-				status: "error",
-				error: await formatProviderError(error, "Error fetching research run"),
-			};
-		}
-	}
+    if (options?.metadata) {
+      payload.metadata = options.metadata;
+    }
 
-	async fetchResearchResult(runId: string, options?: ResearchOptions): Promise<ResearchResult> {
-		const runStatus = await this.fetchResearchRun(runId);
+    try {
+      const endpoint = this.getAiGatewayEndpoint();
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload),
+      });
 
-		if (isResearchResultError(runStatus)) {
-			return runStatus;
-		}
+      if (!response.ok) {
+        return {
+          status: "error",
+          error: await formatProviderError(response, "Error creating research task"),
+        };
+      }
 
-		const normalizedStatus = runStatus.status?.toLowerCase?.();
+      const run = (await response.json()) as ParallelTaskRun;
 
-		if (normalizedStatus && FAILURE_STATUSES.has(normalizedStatus)) {
-			return {
-				status: "error",
-				error: runStatus.error || `Parallel task ${normalizedStatus} for run ${runId}`,
-			};
-		}
+      if (!run?.run_id) {
+        return {
+          status: "error",
+          error: "Parallel research task creation failed: missing run_id",
+        };
+      }
 
-		if (normalizedStatus !== "completed") {
-			return {
-				provider: "parallel",
-				run: runStatus,
-				warnings: runStatus.warnings ?? null,
-			};
-		}
+      return {
+        provider: "parallel",
+        run,
+      };
+    } catch (error) {
+      return {
+        status: "error",
+        error: await formatProviderError(error, "Error creating research task"),
+      };
+    }
+  }
 
-		const headers = await this.getHeaders();
-		const timeoutSeconds = Math.max(1, Math.min(60, options?.polling?.timeout_seconds ?? 5));
-		const endpoint = this.getParallelEndpoint(`/${runId}/result?timeout=${timeoutSeconds}`);
+  async fetchResearchRun(runId: string): Promise<ParallelTaskRun | ResearchResultError> {
+    const headers = await this.getHeaders();
 
-		try {
-			const response = await fetch(endpoint, {
-				method: "GET",
-				headers,
-			});
+    try {
+      const endpoint = this.getParallelEndpoint(`/${runId}`);
+      const response = await fetch(endpoint, {
+        method: "GET",
+        headers,
+      });
 
-			if (response.ok) {
-				const data = (await response.json()) as ParallelResultPayload;
-				return {
-					provider: "parallel",
-					run: data.run,
-					output: data.output,
-					warnings: data.run?.warnings ?? null,
-				};
-			}
+      if (!response.ok) {
+        const errorMessage = await formatProviderError(response, "Failed to fetch research run");
 
-			return {
-				status: "error",
-				error: await formatProviderError(response, "Failed to fetch research result"),
-			};
-		} catch (error) {
-			return {
-				status: "error",
-				error: await formatProviderError(error, "Error fetching research result"),
-			};
-		}
-	}
+        console.error("ParallelResearchProvider: Error fetching research run:", errorMessage);
 
-	private async pollForResult(runId: string, options?: ResearchOptions): Promise<ResearchResult> {
-		const pollingOptions = options?.polling ?? {};
-		const interval =
-			pollingOptions.interval_ms && pollingOptions.interval_ms >= 500
-				? pollingOptions.interval_ms
-				: 5000;
-		const maxAttempts = pollingOptions.max_attempts ?? 120;
-		const startedAt = Date.now();
+        return {
+          status: "error",
+          error: errorMessage,
+        };
+      }
 
-		for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-			const result = await this.fetchResearchResult(runId, options);
+      const run = (await response.json()) as ParallelTaskRun;
 
-			if ("status" in result) {
-				return result;
-			}
+      return run;
+    } catch (error) {
+      return {
+        status: "error",
+        error: await formatProviderError(error, "Error fetching research run"),
+      };
+    }
+  }
 
-			if (result.output) {
-				return {
-					provider: "parallel" as const,
-					run: result.run as ParallelTaskRun,
-					output: result.output as ParallelTaskOutput,
-					warnings: result.warnings ?? result.run?.warnings ?? null,
-					poll: {
-						attempts: attempt,
-						interval_ms: interval,
-						timeout_seconds: Math.max(1, Math.min(60, pollingOptions.timeout_seconds ?? 5)),
-						elapsed_ms: Date.now() - startedAt,
-					},
-				};
-			}
+  async fetchResearchResult(runId: string, options?: ResearchOptions): Promise<ResearchResult> {
+    const runStatus = await this.fetchResearchRun(runId);
 
-			const runStatus = result.run as ParallelTaskRun;
+    if (isResearchResultError(runStatus)) {
+      return runStatus;
+    }
 
-			if (FAILURE_STATUSES.has(runStatus.status)) {
-				const errorMessage =
-					runStatus.error || `Parallel research task ${runStatus.status.toLowerCase()}`;
-				return {
-					status: "error",
-					error: errorMessage,
-				};
-			}
+    const normalizedStatus = runStatus.status?.toLowerCase?.();
 
-			if (runStatus.status === "completed") {
-				return {
-					provider: "parallel" as const,
-					run: runStatus,
-					warnings: runStatus.warnings ?? null,
-				};
-			}
+    if (normalizedStatus && FAILURE_STATUSES.has(normalizedStatus)) {
+      return {
+        status: "error",
+        error: runStatus.error || `Parallel task ${normalizedStatus} for run ${runId}`,
+      };
+    }
 
-			if (attempt < maxAttempts) {
-				await this.sleep(interval);
-			}
-		}
+    if (normalizedStatus !== "completed") {
+      return {
+        provider: "parallel",
+        run: runStatus,
+        warnings: runStatus.warnings ?? null,
+      };
+    }
 
-		return {
-			status: "error",
-			error: `Timed out waiting for research result after ${maxAttempts} attempts.`,
-		};
-	}
+    const headers = await this.getHeaders();
+    const timeoutSeconds = Math.max(1, Math.min(60, options?.polling?.timeout_seconds ?? 5));
+    const endpoint = this.getParallelEndpoint(`/${runId}/result?timeout=${timeoutSeconds}`);
 
-	async performResearch(input: unknown, options?: ResearchOptions): Promise<ResearchResult> {
-		const creation = await this.createResearchTask(input, options);
-		if ("status" in creation) {
-			return creation;
-		}
+    try {
+      const response = await fetch(endpoint, {
+        method: "GET",
+        headers,
+      });
 
-		const run = creation.run as ParallelTaskRun;
-		return this.pollForResult(run.run_id, options);
-	}
+      if (response.ok) {
+        const data = (await response.json()) as ParallelResultPayload;
+
+        return {
+          provider: "parallel",
+          run: data.run,
+          output: data.output,
+          warnings: data.run?.warnings ?? null,
+        };
+      }
+
+      return {
+        status: "error",
+        error: await formatProviderError(response, "Failed to fetch research result"),
+      };
+    } catch (error) {
+      return {
+        status: "error",
+        error: await formatProviderError(error, "Error fetching research result"),
+      };
+    }
+  }
+
+  private async pollForResult(runId: string, options?: ResearchOptions): Promise<ResearchResult> {
+    const pollingOptions = options?.polling ?? {};
+    const interval =
+      pollingOptions.interval_ms && pollingOptions.interval_ms >= 500
+        ? pollingOptions.interval_ms
+        : 5000;
+    const maxAttempts = pollingOptions.max_attempts ?? 120;
+    const startedAt = Date.now();
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const result = await this.fetchResearchResult(runId, options);
+
+      if ("status" in result) {
+        return result;
+      }
+
+      if (result.output) {
+        return {
+          provider: "parallel" as const,
+          run: result.run as ParallelTaskRun,
+          output: result.output as ParallelTaskOutput,
+          warnings: result.warnings ?? result.run?.warnings ?? null,
+          poll: {
+            attempts: attempt,
+            interval_ms: interval,
+            timeout_seconds: Math.max(1, Math.min(60, pollingOptions.timeout_seconds ?? 5)),
+            elapsed_ms: Date.now() - startedAt,
+          },
+        };
+      }
+
+      const runStatus = result.run as ParallelTaskRun;
+
+      if (FAILURE_STATUSES.has(runStatus.status)) {
+        const errorMessage =
+          runStatus.error || `Parallel research task ${runStatus.status.toLowerCase()}`;
+
+        return {
+          status: "error",
+          error: errorMessage,
+        };
+      }
+
+      if (runStatus.status === "completed") {
+        return {
+          provider: "parallel" as const,
+          run: runStatus,
+          warnings: runStatus.warnings ?? null,
+        };
+      }
+
+      if (attempt < maxAttempts) {
+        await this.sleep(interval);
+      }
+    }
+
+    return {
+      status: "error",
+      error: `Timed out waiting for research result after ${maxAttempts} attempts.`,
+    };
+  }
+
+  async performResearch(input: unknown, options?: ResearchOptions): Promise<ResearchResult> {
+    const creation = await this.createResearchTask(input, options);
+
+    if ("status" in creation) {
+      return creation;
+    }
+
+    const run = creation.run as ParallelTaskRun;
+
+    return this.pollForResult(run.run_id, options);
+  }
 }

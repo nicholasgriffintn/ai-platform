@@ -1,83 +1,86 @@
 import { gatewayId } from "~/constants/app";
-import { guessDrawingPrompt } from "~/lib/prompts";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { guessDrawingPrompt } from "~/lib/prompts";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
 interface ImageFromDrawingResponse extends IFunctionResponse {
-	completion_id?: string;
+  completion_id?: string;
 }
 
 const userGuessesCache = new Map<string, Set<string>>();
 
 export async function guessDrawingFromImage({
-	context,
-	env,
-	request,
-	user,
+  context,
+  env,
+  request,
+  user,
 }: {
-	context?: ServiceContext;
-	env?: IEnv;
-	request: {
-		drawing?: Blob;
-	};
-	user: IUser;
+  context?: ServiceContext;
+  env?: IEnv;
+  request: {
+    drawing?: Blob;
+  };
+  user: IUser;
 }): Promise<ImageFromDrawingResponse> {
-	if (!request.drawing) {
-		throw new AssistantError("Missing drawing", ErrorType.PARAMS_ERROR);
-	}
+  if (!request.drawing) {
+    throw new AssistantError("Missing drawing", ErrorType.PARAMS_ERROR);
+  }
 
-	const arrayBuffer = await request.drawing.arrayBuffer();
+  const arrayBuffer = await request.drawing.arrayBuffer();
 
-	const userId = user.id.toString();
-	const userGuesses = userGuessesCache.get(userId) || new Set<string>();
+  const userId = user.id.toString();
+  const userGuesses = userGuessesCache.get(userId) || new Set<string>();
 
-	const serviceContext = resolveServiceContext({ context, env, user });
-	serviceContext.ensureDatabase();
-	const runtimeEnv = serviceContext.env as IEnv;
+  const serviceContext = resolveServiceContext({ context, env, user });
 
-	const guessRequest = await runtimeEnv.AI.run(
-		"@cf/llava-hf/llava-1.5-7b-hf",
-		{
-			prompt: guessDrawingPrompt(userGuesses),
-			image: [...new Uint8Array(arrayBuffer)],
-		},
-		{
-			gateway: {
-				id: gatewayId,
-				skipCache: false,
-				cacheTtl: 3360,
-				metadata: {
-					email: user?.email,
-				},
-			},
-		},
-	);
+  serviceContext.ensureDatabase();
+  const runtimeEnv = serviceContext.env;
 
-	if (!guessRequest.description) {
-		throw new AssistantError("Failed to generate description");
-	}
+  const guessRequest = await runtimeEnv.AI.run(
+    "@cf/llava-hf/llava-1.5-7b-hf",
+    {
+      prompt: guessDrawingPrompt(userGuesses),
+      image: [...new Uint8Array(arrayBuffer)],
+    },
+    {
+      gateway: {
+        id: gatewayId,
+        skipCache: false,
+        cacheTtl: 3360,
+        metadata: {
+          email: user?.email,
+        },
+      },
+    },
+  );
 
-	const guess = guessRequest.description.trim();
-	userGuesses.add(guess.toLowerCase());
-	userGuessesCache.set(userId, userGuesses);
+  if (!guessRequest.description) {
+    throw new AssistantError("Failed to generate description");
+  }
 
-	const guessId = generateId();
+  const guess = guessRequest.description.trim();
 
-	const repo = serviceContext.repositories.outputs;
-	await repo.createOutput({
-		createdByUserId: user.id,
-		capabilityId: "drawings",
-		groupId: guessId,
-		kind: "guess",
-		title: guess,
-		content: { guess, timestamp: new Date().toISOString() },
-	});
+  userGuesses.add(guess.toLowerCase());
+  userGuessesCache.set(userId, userGuesses);
 
-	return {
-		status: "success",
-		content: guess,
-		completion_id: guessId,
-	};
+  const guessId = generateId();
+
+  const repo = serviceContext.repositories.outputs;
+
+  await repo.createOutput({
+    createdByUserId: user.id,
+    capabilityId: "drawings",
+    groupId: guessId,
+    kind: "guess",
+    title: guess,
+    content: { guess, timestamp: new Date().toISOString() },
+  });
+
+  return {
+    status: "success",
+    content: guess,
+    completion_id: guessId,
+  };
 }

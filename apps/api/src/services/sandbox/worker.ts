@@ -1,202 +1,209 @@
-import type { ServiceContext } from "~/lib/context/serviceContext";
 import type {
-	SandboxPromptStrategy,
-	SandboxTaskType,
-	SandboxTrustLevel,
-	SandboxModelSettings,
-	SandboxWorkerExecuteRequest,
+  SandboxPromptStrategy,
+  SandboxTaskType,
+  SandboxTrustLevel,
+  SandboxModelSettings,
+  SandboxWorkerExecuteRequest,
 } from "@ngriffin_uk/polychat-schemas";
+
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import { getGitHubAppInstallationToken } from "~/lib/github";
+import { generateJwtToken } from "~/services/auth/jwt";
+import {
+  getGitHubAppConnectionForUserInstallation,
+  getGitHubAppConnectionForUserRepo,
+} from "~/services/github/connections";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateJwtToken } from "~/services/auth/jwt";
-import { getGitHubAppInstallationToken } from "~/lib/github";
-import {
-	getGitHubAppConnectionForUserInstallation,
-	getGitHubAppConnectionForUserRepo,
-} from "~/services/github/connections";
 
 const SANDBOX_TOKEN_EXPIRATION_SECONDS = 60 * 60;
 const DEFAULT_SANDBOX_MODEL = "mistral-large";
 
 function parseModelPolicyList(input: string | undefined): Set<string> {
-	if (!input?.trim()) {
-		return new Set();
-	}
-	return new Set(
-		input
-			.split(",")
-			.map((entry) => entry.trim())
-			.filter(Boolean)
-			.map((entry) => entry.toLowerCase()),
-	);
+  if (!input?.trim()) {
+    return new Set();
+  }
+
+  return new Set(
+    input
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+      .map((entry) => entry.toLowerCase()),
+  );
 }
 
 function enforceSandboxModelPolicy(env: IEnv, model: string): string {
-	const normalisedModel = model.trim();
-	const lower = normalisedModel.toLowerCase();
-	const blockedModels = parseModelPolicyList(env.SANDBOX_BLOCKED_MODELS);
-	if (blockedModels.has(lower)) {
-		throw new AssistantError(
-			`Sandbox model "${normalisedModel}" is blocked by policy`,
-			ErrorType.PARAMS_ERROR,
-		);
-	}
+  const normalisedModel = model.trim();
+  const lower = normalisedModel.toLowerCase();
+  const blockedModels = parseModelPolicyList(env.SANDBOX_BLOCKED_MODELS);
 
-	const allowedModels = parseModelPolicyList(env.SANDBOX_ALLOWED_MODELS);
-	if (allowedModels.size > 0 && !allowedModels.has(lower)) {
-		throw new AssistantError(
-			`Sandbox model "${normalisedModel}" is not allowed by policy`,
-			ErrorType.PARAMS_ERROR,
-		);
-	}
+  if (blockedModels.has(lower)) {
+    throw new AssistantError(
+      `Sandbox model "${normalisedModel}" is blocked by policy`,
+      ErrorType.PARAMS_ERROR,
+    );
+  }
 
-	return normalisedModel;
+  const allowedModels = parseModelPolicyList(env.SANDBOX_ALLOWED_MODELS);
+
+  if (allowedModels.size > 0 && !allowedModels.has(lower)) {
+    throw new AssistantError(
+      `Sandbox model "${normalisedModel}" is not allowed by policy`,
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+
+  return normalisedModel;
 }
 
 export interface ExecuteSandboxWorkerOptions {
-	env: IEnv;
-	context: ServiceContext;
-	user: IUser;
-	repo: string;
-	task: string;
-	model?: string;
-	taskType?: SandboxTaskType;
-	promptStrategy?: SandboxPromptStrategy;
-	shouldCommit?: boolean;
-	timeoutSeconds?: number;
-	trustLevel?: SandboxTrustLevel;
-	modelSettings?: SandboxModelSettings;
-	installationId?: number;
-	stream?: boolean;
-	runId?: string;
-	githubTokenOverride?: string;
-	signal?: AbortSignal;
+  env: IEnv;
+  context: ServiceContext;
+  user: IUser;
+  repo: string;
+  task: string;
+  model?: string;
+  taskType?: SandboxTaskType;
+  promptStrategy?: SandboxPromptStrategy;
+  shouldCommit?: boolean;
+  timeoutSeconds?: number;
+  trustLevel?: SandboxTrustLevel;
+  modelSettings?: SandboxModelSettings;
+  installationId?: number;
+  stream?: boolean;
+  runId?: string;
+  githubTokenOverride?: string;
+  signal?: AbortSignal;
 }
 
 export function resolveApiBaseUrl(env: IEnv): string {
-	const apiBaseUrl = env.API_BASE_URL?.trim();
-	return apiBaseUrl || "https://api.polychat.app";
+  const apiBaseUrl = env.API_BASE_URL?.trim();
+
+  return apiBaseUrl || "https://api.polychat.app";
 }
 
 export async function resolveSandboxModel(params: {
-	context: ServiceContext;
-	userId: number;
-	model?: string;
+  context: ServiceContext;
+  userId: number;
+  model?: string;
 }): Promise<string> {
-	const { context, userId, model } = params;
+  const { context, userId, model } = params;
 
-	if (model?.trim()) {
-		return enforceSandboxModelPolicy(context.env, model.trim());
-	}
+  if (model?.trim()) {
+    return enforceSandboxModelPolicy(context.env, model.trim());
+  }
 
-	const settings = await context.repositories.userSettings.getUserSettings(userId);
-	if (settings?.sandbox_model?.trim()) {
-		return enforceSandboxModelPolicy(context.env, settings.sandbox_model.trim());
-	}
+  const settings = await context.repositories.userSettings.getUserSettings(userId);
 
-	return enforceSandboxModelPolicy(context.env, DEFAULT_SANDBOX_MODEL);
+  if (settings?.sandbox_model?.trim()) {
+    return enforceSandboxModelPolicy(context.env, settings.sandbox_model.trim());
+  }
+
+  return enforceSandboxModelPolicy(context.env, DEFAULT_SANDBOX_MODEL);
 }
 
 async function resolveGitHubToken(params: {
-	context: ServiceContext;
-	userId: number;
-	repo: string;
-	installationId?: number;
-	githubTokenOverride?: string;
+  context: ServiceContext;
+  userId: number;
+  repo: string;
+  installationId?: number;
+  githubTokenOverride?: string;
 }): Promise<string> {
-	const { context, userId, repo, installationId, githubTokenOverride } = params;
+  const { context, userId, repo, installationId, githubTokenOverride } = params;
 
-	if (githubTokenOverride?.trim()) {
-		return githubTokenOverride.trim();
-	}
+  if (githubTokenOverride?.trim()) {
+    return githubTokenOverride.trim();
+  }
 
-	const githubConnection = installationId
-		? await getGitHubAppConnectionForUserInstallation(context, userId, installationId)
-		: await getGitHubAppConnectionForUserRepo(context, userId, repo);
+  const githubConnection = installationId
+    ? await getGitHubAppConnectionForUserInstallation(context, userId, installationId)
+    : await getGitHubAppConnectionForUserRepo(context, userId, repo);
 
-	return getGitHubAppInstallationToken({
-		appId: githubConnection.appId,
-		privateKey: githubConnection.privateKey,
-		installationId: githubConnection.installationId,
-	});
+  return getGitHubAppInstallationToken({
+    appId: githubConnection.appId,
+    privateKey: githubConnection.privateKey,
+    installationId: githubConnection.installationId,
+  });
 }
 
 export async function executeSandboxWorker(
-	options: ExecuteSandboxWorkerOptions,
+  options: ExecuteSandboxWorkerOptions,
 ): Promise<Response> {
-	const {
-		env,
-		context,
-		user,
-		repo,
-		task,
-		taskType,
-		promptStrategy,
-		shouldCommit,
-		timeoutSeconds,
-		trustLevel,
-		modelSettings,
-		installationId,
-		stream,
-		runId,
-		githubTokenOverride,
-		signal,
-	} = options;
+  const {
+    env,
+    context,
+    user,
+    repo,
+    task,
+    taskType,
+    promptStrategy,
+    shouldCommit,
+    timeoutSeconds,
+    trustLevel,
+    modelSettings,
+    installationId,
+    stream,
+    runId,
+    githubTokenOverride,
+    signal,
+  } = options;
 
-	if (!env.SANDBOX_WORKER) {
-		throw new AssistantError("Sandbox worker not available", ErrorType.NOT_FOUND);
-	}
-	if (!env.JWT_SECRET) {
-		throw new AssistantError("JWT secret not configured", ErrorType.CONFIGURATION_ERROR);
-	}
+  if (!env.SANDBOX_WORKER) {
+    throw new AssistantError("Sandbox worker not available", ErrorType.NOT_FOUND);
+  }
 
-	const model = await resolveSandboxModel({
-		context,
-		userId: user.id,
-		model: options.model,
-	});
-	const sandboxToken = await generateJwtToken(
-		user,
-		env.JWT_SECRET,
-		SANDBOX_TOKEN_EXPIRATION_SECONDS,
-	);
+  if (!env.JWT_SECRET) {
+    throw new AssistantError("JWT secret not configured", ErrorType.CONFIGURATION_ERROR);
+  }
 
-	const githubToken = await resolveGitHubToken({
-		context,
-		userId: user.id,
-		repo,
-		installationId,
-		githubTokenOverride,
-	});
-	const workerPayload: SandboxWorkerExecuteRequest = {
-		userId: user.id,
-		taskType: taskType || "feature-implementation",
-		repo,
-		task,
-		model,
-		promptStrategy,
-		shouldCommit: Boolean(shouldCommit),
-		timeoutSeconds,
-		trustLevel,
-		modelSettings,
-		polychatApiUrl: resolveApiBaseUrl(env),
-		installationId,
-		runId,
-	};
+  const model = await resolveSandboxModel({
+    context,
+    userId: user.id,
+    model: options.model,
+  });
+  const sandboxToken = await generateJwtToken(
+    user,
+    env.JWT_SECRET,
+    SANDBOX_TOKEN_EXPIRATION_SECONDS,
+  );
 
-	const response = await env.SANDBOX_WORKER.fetch(
-		new Request("http://sandbox/execute", {
-			method: "POST",
-			signal,
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${sandboxToken}`,
-				"X-GitHub-Token": githubToken,
-				...(stream ? { Accept: "text/event-stream" } : {}),
-			},
-			body: JSON.stringify(workerPayload),
-		}),
-	);
+  const githubToken = await resolveGitHubToken({
+    context,
+    userId: user.id,
+    repo,
+    installationId,
+    githubTokenOverride,
+  });
+  const workerPayload: SandboxWorkerExecuteRequest = {
+    userId: user.id,
+    taskType: taskType || "feature-implementation",
+    repo,
+    task,
+    model,
+    promptStrategy,
+    shouldCommit: Boolean(shouldCommit),
+    timeoutSeconds,
+    trustLevel,
+    modelSettings,
+    polychatApiUrl: resolveApiBaseUrl(env),
+    installationId,
+    runId,
+  };
 
-	return response;
+  const response = await env.SANDBOX_WORKER.fetch(
+    new Request("http://sandbox/execute", {
+      method: "POST",
+      signal,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sandboxToken}`,
+        "X-GitHub-Token": githubToken,
+        ...(stream ? { Accept: "text/event-stream" } : {}),
+      },
+      body: JSON.stringify(workerPayload),
+    }),
+  );
+
+  return response;
 }

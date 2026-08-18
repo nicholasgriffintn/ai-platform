@@ -36,10 +36,18 @@ export function StrudelExperience({ basePath, projectId, subpath }: ExperiencePr
     enabled: !isNew && !patternId,
   });
 
-  if (isNew) return <StrudelCreateStudio basePath={basePath} projectId={projectId} />;
-  if (patternId)
+  if (isNew) {
+    return <StrudelCreateStudio basePath={basePath} projectId={projectId} />;
+  }
+
+  if (patternId) {
     return <PatternEditor basePath={basePath} patternId={patternId} projectId={projectId} />;
-  if (isLoading) return <CardGridLoadingSkeleton count={4} label="Loading music patterns" />;
+  }
+
+  if (isLoading) {
+    return <CardGridLoadingSkeleton count={4} label="Loading music patterns" />;
+  }
+
   if (isAuthenticationError(error)) {
     return (
       <SignInEmptyState
@@ -48,7 +56,11 @@ export function StrudelExperience({ basePath, projectId, subpath }: ExperiencePr
       />
     );
   }
-  if (error) return <EmptyState title="Patterns unavailable" message={error.message} />;
+
+  if (error) {
+    return <EmptyState title="Patterns unavailable" message={error.message} />;
+  }
+
   if (!patterns?.length) {
     return (
       <EmptyState
@@ -106,15 +118,20 @@ function PatternEditor({
   const tags = useMemo(() => parseCommaSeparatedTags(tagsInput), [tagsInput]);
 
   useEffect(() => {
-    if (!pattern) return;
+    if (!pattern) {
+      return;
+    }
+
     setName(pattern.name);
     setDescription(pattern.description ?? "");
     setTagsInput((pattern.tags ?? []).join(", "));
     setCode(pattern.code);
   }, [pattern]);
 
-  if (patternId && isLoading)
+  if (patternId && isLoading) {
     return <CardGridLoadingSkeleton count={1} label="Loading music pattern" />;
+  }
+
   if (patternId && isAuthenticationError(error)) {
     return (
       <SignInEmptyState
@@ -123,10 +140,13 @@ function PatternEditor({
       />
     );
   }
-  if (patternId && (error || !pattern))
+
+  if (patternId && (error || !pattern)) {
     return (
       <EmptyState title="Pattern unavailable" message={error?.message ?? "Pattern not found"} />
     );
+  }
+
   const mutationError = save.error ?? update.error ?? remove.error ?? generate.error;
 
   return (
@@ -145,6 +165,7 @@ function PatternEditor({
         isGenerating={generate.isPending}
         onGenerate={async () => {
           const result = await generate.mutateAsync({ prompt: prompt.trim() });
+
           setCode(result.code);
         }}
         canSave={!!name.trim() && !!code.trim()}
@@ -164,13 +185,17 @@ function PatternEditor({
               code,
               tags,
             });
+
             navigate(`${basePath}/${created.id}`, { replace: true });
           }
         }}
         canDelete={!!patternId}
         isDeleting={remove.isPending}
         onDelete={async () => {
-          if (!patternId) return;
+          if (!patternId) {
+            return;
+          }
+
           await remove.mutateAsync(patternId);
           navigate(basePath);
         }}

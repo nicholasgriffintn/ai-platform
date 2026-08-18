@@ -1,311 +1,316 @@
-import { ResponseFormatter } from "~/lib/formatter";
-import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
+import { ResponseFormatter } from "~/lib/formatter";
 import { trackProviderMetrics } from "~/lib/monitoring";
+import { getModelConfigByMatchingModel } from "~/lib/providers/models";
+import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
+import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 import { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
 import {
-	createCommonParameters,
-	getToolsForProvider,
-	shouldEnableStreaming,
+  createCommonParameters,
+  getToolsForProvider,
+  shouldEnableStreaming,
 } from "~/utils/parameters";
 import { detectStreaming } from "~/utils/streaming";
+
 import { fetchAIResponse, type FetchAIResponseOptions } from "../../../lib/fetch";
 import {
-	validateAiGatewayToken,
-	buildAiGatewayHeaders,
-	buildMetricsSettings,
+  validateAiGatewayToken,
+  buildAiGatewayHeaders,
+  buildMetricsSettings,
 } from "../../../utils/helpers";
-import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 
 const logger = getLogger({ prefix: "lib/providers/base" });
 
 export interface AIProvider {
-	name: string;
-	supportsStreaming: boolean;
-	getResponse(params: ChatCompletionParameters, userId?: number): Promise<any>;
-	countTokens?(params: ChatCompletionParameters, userId?: number): Promise<{ inputTokens: number }>;
-	getAsyncInvocationStatus?(
-		metadata: AsyncInvocationMetadata,
-		params: ChatCompletionParameters,
-		userId?: number,
-	): Promise<{
-		status: "in_progress" | "completed" | "failed";
-		result?: any;
-		raw: Record<string, any>;
-	}>;
+  name: string;
+  supportsStreaming: boolean;
+  getResponse(params: ChatCompletionParameters, userId?: number): Promise<any>;
+  countTokens?(params: ChatCompletionParameters, userId?: number): Promise<{ inputTokens: number }>;
+  getAsyncInvocationStatus?(
+    metadata: AsyncInvocationMetadata,
+    params: ChatCompletionParameters,
+    userId?: number,
+  ): Promise<{
+    status: "in_progress" | "completed" | "failed";
+    result?: any;
+    raw: Record<string, any>;
+  }>;
 }
 
 export abstract class BaseProvider implements AIProvider {
-	abstract name: string;
-	abstract supportsStreaming: boolean;
-	abstract isOpenAiCompatible?: boolean;
+  abstract name: string;
+  abstract supportsStreaming: boolean;
+  abstract isOpenAiCompatible?: boolean;
 
-	/**
-	 * Gets the environment variable name for the provider's API key
-	 */
-	protected abstract getProviderKeyName(): string;
+  /**
+   * Gets the environment variable name for the provider's API key
+   */
+  protected abstract getProviderKeyName(): string;
 
-	/**
-	 * Default parameter mapping implementation for providers that don't need custom logic
-	 */
-	async defaultMapParameters(
-		params: ChatCompletionParameters,
-		storageService?: StorageService,
-		assetsUrl?: string,
-	): Promise<Record<string, any>> {
-		const modelConfig = await getModelConfigByMatchingModel(
-			params.model || "",
-			params.env,
-			params.provider || this.name,
-			params.context?.user?.id,
-		);
-		if (!modelConfig) {
-			throw new AssistantError(
-				`Model configuration not found for ${params.model}`,
-				ErrorType.CONFIGURATION_ERROR,
-			);
-		}
+  /**
+   * Default parameter mapping implementation for providers that don't need custom logic
+   */
+  async defaultMapParameters(
+    params: ChatCompletionParameters,
+    storageService?: StorageService,
+    assetsUrl?: string,
+  ): Promise<Record<string, any>> {
+    const modelConfig = await getModelConfigByMatchingModel(
+      params.model || "",
+      params.env,
+      params.provider || this.name,
+      params.context?.user?.id,
+    );
 
-		const providerParams = storageService
-			? await resolvePrivateAssetUrls({
-					params,
-					storageService,
-					assetsUrl,
-				})
-			: params;
+    if (!modelConfig) {
+      throw new AssistantError(
+        `Model configuration not found for ${params.model}`,
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
 
-		const commonParams = createCommonParameters(
-			providerParams,
-			modelConfig,
-			this.name,
-			this.isOpenAiCompatible,
-		);
+    const providerParams = storageService
+      ? await resolvePrivateAssetUrls({
+          params,
+          storageService,
+          assetsUrl,
+        })
+      : params;
 
-		const streamingParams = shouldEnableStreaming(
-			modelConfig,
-			this.supportsStreaming,
-			providerParams.stream,
-		)
-			? { stream: true }
-			: {};
+    const commonParams = createCommonParameters(
+      providerParams,
+      modelConfig,
+      this.name,
+      this.isOpenAiCompatible,
+    );
 
-		const toolsParams = getToolsForProvider(providerParams, modelConfig, this.name);
+    const streamingParams = shouldEnableStreaming(
+      modelConfig,
+      this.supportsStreaming,
+      providerParams.stream,
+    )
+      ? { stream: true }
+      : {};
 
-		return {
-			...commonParams,
-			...streamingParams,
-			...toolsParams,
-		};
-	}
+    const toolsParams = getToolsForProvider(providerParams, modelConfig, this.name);
 
-	/**
-	 * Maps parameters to provider-specific format
-	 * @param params - The chat completion parameters
-	 * @param storageService - Optional storage service for handling files
-	 * @param assetsUrl - Optional assets URL for file processing
-	 * @returns The provider-specific parameters
-	 */
-	mapParameters?(
-		params: ChatCompletionParameters,
-		storageService?: StorageService,
-		assetsUrl?: string,
-	): Promise<Record<string, any>>;
+    return {
+      ...commonParams,
+      ...streamingParams,
+      ...toolsParams,
+    };
+  }
 
-	/**
-	 * Gets the API key for the provider, checking user settings first
-	 * @param params - The parameters of the request
-	 * @param userId - The user ID
-	 * @returns The API key
-	 */
-	protected async getApiKey(params: ChatCompletionParameters, userId?: number): Promise<string> {
-		return resolveProviderApiKey({
-			env: params.env,
-			providerName: this.name,
-			envKeyName: this.getProviderKeyName(),
-			userId,
-			logger,
-		});
-	}
+  /**
+   * Maps parameters to provider-specific format
+   * @param params - The chat completion parameters
+   * @param storageService - Optional storage service for handling files
+   * @param assetsUrl - Optional assets URL for file processing
+   * @returns The provider-specific parameters
+   */
+  mapParameters?(
+    params: ChatCompletionParameters,
+    storageService?: StorageService,
+    assetsUrl?: string,
+  ): Promise<Record<string, any>>;
 
-	/**
-	 * Validates common parameters and provider-specific requirements
-	 * @param params - The parameters of the request
-	 * @throws AssistantError if validation fails
-	 */
-	protected validateParams(params: ChatCompletionParameters): void {
-		if (!params.model && !params.version) {
-			throw new AssistantError("Missing model or version", ErrorType.PARAMS_ERROR);
-		}
-	}
+  /**
+   * Gets the API key for the provider, checking user settings first
+   * @param params - The parameters of the request
+   * @param userId - The user ID
+   * @returns The API key
+   */
+  protected async getApiKey(params: ChatCompletionParameters, userId?: number): Promise<string> {
+    return resolveProviderApiKey({
+      env: params.env,
+      providerName: this.name,
+      envKeyName: this.getProviderKeyName(),
+      userId,
+      logger,
+    });
+  }
 
-	/**
-	 * Validates that AI_GATEWAY_TOKEN is present
-	 * Helper method for providers using Cloudflare AI Gateway
-	 * @param params - The parameters of the request
-	 * @throws AssistantError if AI_GATEWAY_TOKEN is missing
-	 */
-	protected validateAiGatewayToken(params: ChatCompletionParameters): void {
-		validateAiGatewayToken(params);
-	}
+  /**
+   * Validates common parameters and provider-specific requirements
+   * @param params - The parameters of the request
+   * @throws AssistantError if validation fails
+   */
+  protected validateParams(params: ChatCompletionParameters): void {
+    if (!params.model && !params.version) {
+      throw new AssistantError("Missing model or version", ErrorType.PARAMS_ERROR);
+    }
+  }
 
-	/**
-	 * Builds standard AI Gateway headers with authorization
-	 * Helper method for providers using Cloudflare AI Gateway
-	 * @param params - The parameters of the request
-	 * @param apiKey - The provider API key
-	 * @returns Headers object with AI Gateway configuration
-	 */
-	protected buildAiGatewayHeaders(
-		params: ChatCompletionParameters,
-		apiKey: string,
-	): Record<string, string> {
-		return buildAiGatewayHeaders(params, apiKey);
-	}
+  /**
+   * Validates that AI_GATEWAY_TOKEN is present
+   * Helper method for providers using Cloudflare AI Gateway
+   * @param params - The parameters of the request
+   * @throws AssistantError if AI_GATEWAY_TOKEN is missing
+   */
+  protected validateAiGatewayToken(params: ChatCompletionParameters): void {
+    validateAiGatewayToken(params);
+  }
 
-	/**
-	 * Builds metrics settings object from parameters
-	 * Helper method for consistent analytics tracking
-	 * @param params - The parameters of the request
-	 * @returns Settings object for metrics tracking
-	 */
-	protected buildMetricsSettings(params: ChatCompletionParameters): Record<string, any> {
-		return buildMetricsSettings(params);
-	}
+  /**
+   * Builds standard AI Gateway headers with authorization
+   * Helper method for providers using Cloudflare AI Gateway
+   * @param params - The parameters of the request
+   * @param apiKey - The provider API key
+   * @returns Headers object with AI Gateway configuration
+   */
+  protected buildAiGatewayHeaders(
+    params: ChatCompletionParameters,
+    apiKey: string,
+  ): Record<string, string> {
+    return buildAiGatewayHeaders(params, apiKey);
+  }
 
-	protected getFetchOptions(
-		_params: ChatCompletionParameters,
-		modelConfig: ModelConfigItem,
-	): FetchAIResponseOptions {
-		return {
-			requestTimeout: modelConfig.timeout || 100000,
-		};
-	}
+  /**
+   * Builds metrics settings object from parameters
+   * Helper method for consistent analytics tracking
+   * @param params - The parameters of the request
+   * @returns Settings object for metrics tracking
+   */
+  protected buildMetricsSettings(params: ChatCompletionParameters): Record<string, any> {
+    return buildMetricsSettings(params);
+  }
 
-	/**
-	 * Gets the endpoint for the API call
-	 * @param params - The parameters of the request
-	 * @returns The endpoint
-	 */
-	protected abstract getEndpoint(params: ChatCompletionParameters): Promise<string>;
+  protected getFetchOptions(
+    _params: ChatCompletionParameters,
+    modelConfig: ModelConfigItem,
+  ): FetchAIResponseOptions {
+    return {
+      requestTimeout: modelConfig.timeout || 100000,
+    };
+  }
 
-	/**
-	 * Gets the headers for the API call
-	 * @param params - The parameters of the request
-	 * @returns The headers
-	 */
-	protected abstract getHeaders(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, string>> | Record<string, string>;
+  /**
+   * Gets the endpoint for the API call
+   * @param params - The parameters of the request
+   * @returns The endpoint
+   */
+  protected abstract getEndpoint(params: ChatCompletionParameters): Promise<string>;
 
-	/**
-	 * Formats the response from the API call
-	 * @param data - The data to format
-	 * @param params - The parameters of the request
-	 * @returns The formatted data
-	 */
-	protected async formatResponse(data: any, params: ChatCompletionParameters): Promise<any> {
-		const modelConfig = await getModelConfigByMatchingModel(
-			params.model || "",
-			params.env,
-			params.provider || this.name,
-			params.context?.user?.id,
-		);
+  /**
+   * Gets the headers for the API call
+   * @param params - The parameters of the request
+   * @returns The headers
+   */
+  protected abstract getHeaders(
+    params: ChatCompletionParameters,
+  ): Promise<Record<string, string>> | Record<string, string>;
 
-		const providerName = this.isOpenAiCompatible ? "compat" : this.name;
+  /**
+   * Formats the response from the API call
+   * @param data - The data to format
+   * @param params - The parameters of the request
+   * @returns The formatted data
+   */
+  protected async formatResponse(data: any, params: ChatCompletionParameters): Promise<any> {
+    const modelConfig = await getModelConfigByMatchingModel(
+      params.model || "",
+      params.env,
+      params.provider || this.name,
+      params.context?.user?.id,
+    );
 
-		return await ResponseFormatter.formatResponse(data, providerName, {
-			model: params.model,
-			modalities: modelConfig?.modalities,
-			env: params.env,
-			userId: typeof params.context?.user?.id === "number" ? params.context?.user.id : undefined,
-		});
-	}
+    const providerName = this.isOpenAiCompatible ? "compat" : this.name;
 
-	/**
-	 * Maps parameters using the appropriate provider strategy
-	 * For OpenAI-compatible providers, uses the compat provider's mapping
-	 */
-	private async getParameterMapping(
-		params: ChatCompletionParameters,
-		storageService?: StorageService,
-		assetsUrl?: string,
-	): Promise<Record<string, any>> {
-		if (this.isOpenAiCompatible) {
-			return await this.defaultMapParameters(params, storageService, assetsUrl);
-		}
+    return await ResponseFormatter.formatResponse(data, providerName, {
+      model: params.model,
+      modalities: modelConfig?.modalities,
+      env: params.env,
+      userId: typeof params.context?.user?.id === "number" ? params.context?.user.id : undefined,
+    });
+  }
 
-		if (this.mapParameters) {
-			return await this.mapParameters(params, storageService, assetsUrl);
-		}
+  /**
+   * Maps parameters using the appropriate provider strategy
+   * For OpenAI-compatible providers, uses the compat provider's mapping
+   */
+  private async getParameterMapping(
+    params: ChatCompletionParameters,
+    storageService?: StorageService,
+    assetsUrl?: string,
+  ): Promise<Record<string, any>> {
+    if (this.isOpenAiCompatible) {
+      return await this.defaultMapParameters(params, storageService, assetsUrl);
+    }
 
-		return await this.defaultMapParameters(params, storageService, assetsUrl);
-	}
+    if (this.mapParameters) {
+      return await this.mapParameters(params, storageService, assetsUrl);
+    }
 
-	/**
-	 * Main method to get response from the provider
-	 * Implements the template method pattern
-	 * @param params - The parameters of the request
-	 * @param userId - The user ID
-	 * @returns The response
-	 */
-	async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
-		this.validateParams(params);
+    return await this.defaultMapParameters(params, storageService, assetsUrl);
+  }
 
-		const model = params.model;
-		if (!model) {
-			throw new AssistantError("Missing model", ErrorType.PARAMS_ERROR);
-		}
+  /**
+   * Main method to get response from the provider
+   * Implements the template method pattern
+   * @param params - The parameters of the request
+   * @param userId - The user ID
+   * @returns The response
+   */
+  async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
+    this.validateParams(params);
 
-		const headers = await this.getHeaders(params);
+    const model = params.model;
 
-		const modelConfig = await getModelConfigByMatchingModel(
-			model,
-			params.env,
-			params.provider || this.name,
-			params.context?.user?.id,
-		);
+    if (!model) {
+      throw new AssistantError("Missing model", ErrorType.PARAMS_ERROR);
+    }
 
-		if (!modelConfig) {
-			throw new AssistantError(`Model ${params.model} not found`, ErrorType.CONFIGURATION_ERROR);
-		}
+    const headers = await this.getHeaders(params);
 
-		const storageService = StorageService.forPrivateAssetsEnv(params.env);
-		const assetsUrl = params.env.API_BASE_URL || "";
+    const modelConfig = await getModelConfigByMatchingModel(
+      model,
+      params.env,
+      params.provider || this.name,
+      params.context?.user?.id,
+    );
 
-		return trackProviderMetrics({
-			provider: this.name,
-			model,
-			operation: async () => {
-				const body = await this.getParameterMapping(params, storageService, assetsUrl);
-				const endpoint = await this.getEndpoint(params);
+    if (!modelConfig) {
+      throw new AssistantError(`Model ${params.model} not found`, ErrorType.CONFIGURATION_ERROR);
+    }
 
-				const data = await fetchAIResponse(
-					this.isOpenAiCompatible,
-					this.name,
-					endpoint,
-					headers,
-					body,
-					params.env,
-					this.getFetchOptions(params, modelConfig),
-				);
+    const storageService = StorageService.forPrivateAssetsEnv(params.env);
+    const assetsUrl = params.env.API_BASE_URL || "";
 
-				const isStreaming = detectStreaming(body, endpoint);
-				if (isStreaming) {
-					return data;
-				}
+    return trackProviderMetrics({
+      provider: this.name,
+      model,
+      operation: async () => {
+        const body = await this.getParameterMapping(params, storageService, assetsUrl);
+        const endpoint = await this.getEndpoint(params);
 
-				return await this.formatResponse(data, params);
-			},
-			analyticsEngine: params.env?.ANALYTICS,
-			settings: this.buildMetricsSettings(params),
-			userId,
-			completion_id: params.completion_id,
-			request: params,
-		});
-	}
+        const data = await fetchAIResponse(
+          this.isOpenAiCompatible,
+          this.name,
+          endpoint,
+          headers,
+          body,
+          params.env,
+          this.getFetchOptions(params, modelConfig),
+        );
+
+        const isStreaming = detectStreaming(body, endpoint);
+
+        if (isStreaming) {
+          return data;
+        }
+
+        return await this.formatResponse(data, params);
+      },
+      analyticsEngine: params.env?.ANALYTICS,
+      settings: this.buildMetricsSettings(params),
+      userId,
+      completion_id: params.completion_id,
+      request: params,
+    });
+  }
 }

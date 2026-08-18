@@ -1,118 +1,127 @@
-import {
-	type Drawing,
-	type DrawingResponse,
-	type DrawingsResponse,
-	type GenerateImageResponse,
-	type GuessResponse,
+import type {
+  Drawing,
+  DrawingResponse,
+  DrawingsResponse,
+  GenerateImageResponse,
+  GuessResponse,
 } from "@ngriffin_uk/polychat-component-experiences/media";
-import { apiService } from "./api-service";
 import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
+
+import { apiService } from "./api-service";
 import { fetchApi } from "./fetch-wrapper";
 
 export const fetchDrawings = async (): Promise<Drawing[]> => {
-	let headers = {};
-	try {
-		headers = await apiService.getHeaders();
-	} catch (error) {
-		console.error("Error fetching drawings:", error);
-	}
+  let headers = {};
 
-	const response = await fetchApi("/apps/drawing", {
-		method: "GET",
-		headers,
-	});
+  try {
+    headers = await apiService.getHeaders();
+  } catch (error) {
+    console.error("Error fetching drawings:", error);
+  }
 
-	if (!response.ok) {
-		throw new Error(`Failed to fetch drawings: ${response.statusText}`);
-	}
+  const response = await fetchApi("/apps/drawing", {
+    method: "GET",
+    headers,
+  });
 
-	const data = await returnFetchedData<DrawingsResponse>(response);
-	return data.drawings || [];
+  if (!response.ok) {
+    throw new Error(`Failed to fetch drawings: ${response.statusText}`);
+  }
+
+  const data = await returnFetchedData<DrawingsResponse>(response);
+
+  return data.drawings || [];
 };
 
 export const fetchDrawing = async (id: string): Promise<Drawing> => {
-	let headers = {};
-	try {
-		headers = await apiService.getHeaders();
-	} catch (error) {
-		console.error("Error fetching drawing:", error);
-	}
+  let headers = {};
 
-	const response = await fetchApi(`/apps/drawing/${id}`, {
-		method: "GET",
-		headers,
-	});
+  try {
+    headers = await apiService.getHeaders();
+  } catch (error) {
+    console.error("Error fetching drawing:", error);
+  }
 
-	if (!response.ok) {
-		throw new Error(`Failed to fetch drawing: ${response.statusText}`);
-	}
+  const response = await fetchApi(`/apps/drawing/${id}`, {
+    method: "GET",
+    headers,
+  });
 
-	const data = await returnFetchedData<DrawingResponse>(response);
-	return data.drawing;
+  if (!response.ok) {
+    throw new Error(`Failed to fetch drawing: ${response.statusText}`);
+  }
+
+  const data = await returnFetchedData<DrawingResponse>(response);
+
+  return data.drawing;
 };
 
 export const generateImageFromDrawing = async ({
-	drawing,
-	drawingId,
+  drawing,
+  drawingId,
 }: {
-	drawing: File;
-	drawingId?: string;
+  drawing: File;
+  drawingId?: string;
 }): Promise<GenerateImageResponse> => {
-	const formData = new FormData();
-	formData.append("drawing", drawing);
+  const formData = new FormData();
 
-	if (drawingId) {
-		formData.append("drawingId", drawingId);
-	}
+  formData.append("drawing", drawing);
 
-	let headers = {};
-	try {
-		headers = await apiService.getHeaders();
-	} catch (error) {
-		console.error("Error generating image from drawing:", error);
-	}
+  if (drawingId) {
+    formData.append("drawingId", drawingId);
+  }
 
-	const filteredHeaders = { ...headers };
+  let headers = {};
 
-	const response = await fetchApi("/apps/drawing", {
-		method: "POST",
-		body: formData,
-		headers: filteredHeaders,
-	});
+  try {
+    headers = await apiService.getHeaders();
+  } catch (error) {
+    console.error("Error generating image from drawing:", error);
+  }
 
-	if (!response.ok) {
-		throw new Error(`Failed to generate image: ${response.statusText}`);
-	}
+  const filteredHeaders = { ...headers };
 
-	return response.json() as Promise<GenerateImageResponse>;
+  const response = await fetchApi("/apps/drawing", {
+    method: "POST",
+    body: formData,
+    headers: filteredHeaders,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to generate image: ${response.statusText}`);
+  }
+
+  return response.json() as Promise<GenerateImageResponse>;
 };
 
 export const guessDrawingFromImage = async ({
-	drawing,
+  drawing,
 }: {
-	drawing: File;
+  drawing: File;
 }): Promise<GuessResponse> => {
-	const formData = new FormData();
-	formData.append("drawing", drawing);
+  const formData = new FormData();
 
-	let headers = {};
-	try {
-		headers = await apiService.getHeaders();
-	} catch (error) {
-		console.error("Error guessing drawing from image:", error);
-	}
+  formData.append("drawing", drawing);
 
-	const filteredHeaders = { ...headers };
+  let headers = {};
 
-	const response = await fetchApi("/apps/drawing/guess", {
-		method: "POST",
-		body: formData,
-		headers: filteredHeaders,
-	});
+  try {
+    headers = await apiService.getHeaders();
+  } catch (error) {
+    console.error("Error guessing drawing from image:", error);
+  }
 
-	if (!response.ok) {
-		throw new Error(`Failed to guess drawing: ${response.statusText}`);
-	}
+  const filteredHeaders = { ...headers };
 
-	return await returnFetchedData<GuessResponse>(response);
+  const response = await fetchApi("/apps/drawing/guess", {
+    method: "POST",
+    body: formData,
+    headers: filteredHeaders,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to guess drawing: ${response.statusText}`);
+  }
+
+  return await returnFetchedData<GuessResponse>(response);
 };

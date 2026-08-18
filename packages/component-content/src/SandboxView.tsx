@@ -118,7 +118,10 @@ function SandboxEventView({
   const command = typeof event.command === "string" ? event.command : undefined;
 
   const resolveApproval = async (status: "approved" | "rejected") => {
-    if (!runId || !approvalId || !onResolveApproval) return;
+    if (!runId || !approvalId || !onResolveApproval) {
+      return;
+    }
+
     setIsResolving(true);
     try {
       await onResolveApproval({ runId, approvalId, command, approvalStatus: status });

@@ -58,6 +58,7 @@ test.describe("Profile experience", () => {
                 }),
               ).toBeVisible();
             }
+
             await captureVisualSnapshots(page, `release-profile-${persona}-${tab}`, {
               ...DEFAULT_VISUAL_CHECKPOINTS,
               viewports: [{ name: "desktop", width: 1280, height: 720 }],
@@ -80,6 +81,7 @@ test.describe("Profile experience", () => {
           preferences: `Keep ${persona} release answers concise.`,
           searchProvider: "duckduckgo",
         };
+
         await profilePage.updateCustomisation(settings);
         await profilePage.reload();
         await expect(page.getByLabel("Nickname", { exact: true })).toHaveValue(settings.nickname);
@@ -255,6 +257,7 @@ test.describe("Account-owned resources", () => {
       "Release validation agent",
       "Checks release readiness.",
     );
+
     expect(persistedSettings).toEqual({ temperature: "0.2", maxSteps: "7" });
     await expect(page.getByText("Release validation agent", { exact: true })).toHaveCount(0);
   });
@@ -288,6 +291,7 @@ test.describe("Chat history controls", () => {
       await homePage.sendMessage("Delete this Free release conversation");
       await homePage.waitForChatResponse(0);
       const title = /Delete this Free release conve|Release validation chat/;
+
       await homePage.waitForConversationInHistory(title);
 
       await profilePage.deleteAllLocalChats();
@@ -309,17 +313,24 @@ test.describe("Chat history controls", () => {
       profilePage,
     }) => {
       const message = "Export this Pro release conversation";
+
       await homePage.navigate("/chat");
       await homePage.selectModel("Compound Mini");
       await homePage.sendMessage(message);
       await homePage.waitForChatResponse(0);
       const title = /Export this Pro release conv|Release validation chat/;
+
       await homePage.waitForConversationInHistory(title);
 
       const download = await profilePage.exportChatHistory();
+
       expect(download.suggestedFilename()).toMatch(/^chat-history-.+\.json$/);
       const downloadPath = await download.path();
-      if (!downloadPath) throw new Error("Chat history export did not create a download");
+
+      if (!downloadPath) {
+        throw new Error("Chat history export did not create a download");
+      }
+
       expect(await readFile(downloadPath, "utf8")).toContain(message);
 
       await profilePage.deleteAllRemoteChats();

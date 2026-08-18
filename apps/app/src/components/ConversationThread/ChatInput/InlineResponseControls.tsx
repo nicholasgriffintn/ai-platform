@@ -51,6 +51,7 @@ export function InlineResponseControls({ isDisabled = false }: InlineResponseCon
         ...chatSettings,
         reasoning: undefined,
       });
+
       return;
     }
 

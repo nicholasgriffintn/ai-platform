@@ -9,9 +9,9 @@ import {
   SidebarNavSection,
 } from "@ngriffin_uk/polychat-component-navigation";
 import { Button, ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
-import {
-  type ConversationArchiveFilter,
-  type ConversationSortBy,
+import type {
+  ConversationArchiveFilter,
+  ConversationSortBy,
 } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { useLoadMoreOnIntersect } from "@ngriffin_uk/polychat-utility-react";
 import {
@@ -26,7 +26,7 @@ import {
 import { useCallback, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
-import { type CanvasStudioState } from "~/components/Canvas/useCanvasStudio";
+import type { CanvasStudioState } from "~/components/Canvas/useCanvasStudio";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useChats, useDeleteChat, useUpdateChatTitle } from "~/hooks/useChat";
 import { categorizeItemsByDate } from "~/lib/sidebar";
@@ -93,15 +93,29 @@ export const ChatSidebar = ({
   });
 
   const categorizedChats = categorizeItemsByDate(conversations, (c) => {
-    if (sortBy === "created" && c.created_at) return new Date(c.created_at);
-    if (sortBy === "updated" && c.updated_at) return new Date(c.updated_at);
-    if (c.last_message_at) return new Date(c.last_message_at);
-    if (c.created_at) return new Date(c.created_at);
+    if (sortBy === "created" && c.created_at) {
+      return new Date(c.created_at);
+    }
+
+    if (sortBy === "updated" && c.updated_at) {
+      return new Date(c.updated_at);
+    }
+
+    if (c.last_message_at) {
+      return new Date(c.last_message_at);
+    }
+
+    if (c.created_at) {
+      return new Date(c.created_at);
+    }
+
     return new Date(0);
   });
 
   const closeOnMobile = () => {
-    if (isMobile) setSidebarVisible(false);
+    if (isMobile) {
+      setSidebarVisible(false);
+    }
   };
 
   const handleNewChatClick = () => {
@@ -140,6 +154,7 @@ export const ChatSidebar = ({
 
   const handleEditTitle = async (completion_id: string, currentTitle: string) => {
     const newTitle = prompt("Enter new title:", currentTitle);
+
     if (newTitle && newTitle !== currentTitle) {
       try {
         trackEvent({
@@ -158,7 +173,9 @@ export const ChatSidebar = ({
   };
 
   const confirmDeleteChat = async () => {
-    if (!confirmDelete) return;
+    if (!confirmDelete) {
+      return;
+    }
 
     try {
       trackEvent({
@@ -171,8 +188,10 @@ export const ChatSidebar = ({
       await deleteChat.mutateAsync(confirmDelete);
       if (currentConversationId === confirmDelete) {
         const firstConversation = conversations.find((c) => c.id !== confirmDelete);
+
         setCurrentConversationId(firstConversation?.id);
       }
+
       setConfirmDelete(null);
     } catch (error) {
       console.error("Failed to delete chat:", error);

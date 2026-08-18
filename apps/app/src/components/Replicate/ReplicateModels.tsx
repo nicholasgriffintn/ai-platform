@@ -4,8 +4,7 @@ import {
   ReplicateModelCategoryGrid,
   ReplicateModelFilters,
 } from "@ngriffin_uk/polychat-component-experiences/media";
-import { Button, EmptyState } from "@ngriffin_uk/polychat-component-ui";
-import { CardSkeleton } from "@ngriffin_uk/polychat-component-ui";
+import { Button, EmptyState, CardSkeleton } from "@ngriffin_uk/polychat-component-ui";
 import type { CapabilityCatalogItem as AppListItem } from "@ngriffin_uk/polychat-schemas";
 import { Sparkles } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";

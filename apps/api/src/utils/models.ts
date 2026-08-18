@@ -1,37 +1,41 @@
 import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
+
 import type { Message } from "~/types";
 
 export function getModelIdsByOutput(
-	config: ModelConfig,
-	provider: string,
-	modality: "image" | "audio" | "video" | "speech",
+  config: ModelConfig,
+  provider: string,
+  modality: "image" | "audio" | "video" | "speech",
 ) {
-	return Object.entries(config)
-		.filter(
-			([, model]) =>
-				model.provider === provider && (model.modalities?.output ?? []).includes(modality),
-		)
-		.map(([id]) => id);
+  return Object.entries(config)
+    .filter(
+      ([, model]) =>
+        model.provider === provider && (model.modalities?.output ?? []).includes(modality),
+    )
+    .map(([id]) => id);
 }
 
 export function extractPromptFromMessages(messages: Message[]): string {
-	return messages
-		.map((message) => {
-			const role = message.role;
-			let content = "";
+  return messages
+    .map((message) => {
+      const role = message.role;
+      let content = "";
 
-			if (typeof message.content === "string") {
-				content = message.content;
-			} else if (Array.isArray(message.content)) {
-				content = message.content
-					.map((c) => {
-						if (c.type === "text") return c.text;
-						return "";
-					})
-					.join("");
-			}
+      if (typeof message.content === "string") {
+        content = message.content;
+      } else if (Array.isArray(message.content)) {
+        content = message.content
+          .map((c) => {
+            if (c.type === "text") {
+              return c.text;
+            }
 
-			return `${role}: ${content}`;
-		})
-		.join("\n");
+            return "";
+          })
+          .join("");
+      }
+
+      return `${role}: ${content}`;
+    })
+    .join("\n");
 }

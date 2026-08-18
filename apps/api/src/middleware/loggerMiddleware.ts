@@ -1,8 +1,8 @@
 import type { Context, Next } from "hono";
 
 import type { IUser } from "~/types";
-import { getLogger } from "~/utils/logger";
 import { generateId } from "~/utils/id";
+import { getLogger } from "~/utils/logger";
 import { redactSensitiveUrl } from "~/utils/redaction";
 
 const logger = getLogger({ prefix: "middleware/loggerMiddleware" });
@@ -15,66 +15,68 @@ const logger = getLogger({ prefix: "middleware/loggerMiddleware" });
  * @returns The next middleware function
  */
 export const loggerMiddleware = async (c: Context, next: Next) => {
-	const method = c.req.method;
-	const url = redactSensitiveUrl(c.req.url);
-	const userAgent = c.req.header("user-agent") || "unknown";
+  const method = c.req.method;
+  const url = redactSensitiveUrl(c.req.url);
+  const userAgent = c.req.header("user-agent") || "unknown";
 
-	const requestIdHeader = c.req.header("x-request-id");
-	const requestId = requestIdHeader || generateId();
-	c.set("requestId", requestId);
-	if (!requestIdHeader) {
-		c.res.headers.set("x-request-id", requestId);
-	}
+  const requestIdHeader = c.req.header("x-request-id");
+  const requestId = requestIdHeader || generateId();
 
-	const user = c.get("user") as IUser | undefined;
-	const userId = user?.id;
+  c.set("requestId", requestId);
+  if (!requestIdHeader) {
+    c.res.headers.set("x-request-id", requestId);
+  }
 
-	const startTime = Date.now();
-	logger.info(`Request started: ${method} ${url}`, {
-		method,
-		url,
-		userId,
-	});
+  const user = c.get("user") as IUser | undefined;
+  const userId = user?.id;
 
-	try {
-		await next();
+  const startTime = Date.now();
 
-		const duration = Date.now() - startTime;
+  logger.info(`Request started: ${method} ${url}`, {
+    method,
+    url,
+    userId,
+  });
 
-		const responseContext = {
-			method,
-			url,
-			status: c.res.status,
-			duration: `${duration / 1000}s`,
-			userId,
-		};
+  try {
+    await next();
 
-		if (c.res.status >= 500) {
-			logger.error(`Request completed with server error: ${method} ${url}`, responseContext);
-		} else if (c.res.status >= 400) {
-			logger.warn(`Request completed with client error: ${method} ${url}`, responseContext);
-		} else if (duration > 5000) {
-			logger.warn(`Slow request completed: ${method} ${url}`, responseContext);
-		} else {
-			logger.info(`Request completed: ${method} ${url}`, responseContext);
-		}
-	} catch (error) {
-		const duration = Date.now() - startTime;
+    const duration = Date.now() - startTime;
 
-		const errorContext = {
-			method,
-			url,
-			error: error instanceof Error ? error.message : String(error),
-			duration: `${duration / 1000}s`,
-			userId,
-			userAgent,
-			stack: error instanceof Error ? error.stack?.substring(0, 1000) : "No stack trace",
-		};
+    const responseContext = {
+      method,
+      url,
+      status: c.res.status,
+      duration: `${duration / 1000}s`,
+      userId,
+    };
 
-		logger.error(`Request failed: ${method} ${url}`, errorContext);
+    if (c.res.status >= 500) {
+      logger.error(`Request completed with server error: ${method} ${url}`, responseContext);
+    } else if (c.res.status >= 400) {
+      logger.warn(`Request completed with client error: ${method} ${url}`, responseContext);
+    } else if (duration > 5000) {
+      logger.warn(`Slow request completed: ${method} ${url}`, responseContext);
+    } else {
+      logger.info(`Request completed: ${method} ${url}`, responseContext);
+    }
+  } catch (error) {
+    const duration = Date.now() - startTime;
 
-		throw error;
-	}
+    const errorContext = {
+      method,
+      url,
+      error: error instanceof Error ? error.message : String(error),
+      duration: `${duration / 1000}s`,
+      userId,
+      userAgent,
+      stack: error instanceof Error ? error.stack?.substring(0, 1000) : "No stack trace",
+    };
+
+    logger.error(`Request failed: ${method} ${url}`, errorContext);
+
+    throw error;
+  }
 };
 
 /**
@@ -83,5 +85,5 @@ export const loggerMiddleware = async (c: Context, next: Next) => {
  * @returns A logger instance specific to this route
  */
 export const createRouteLogger = (routeName: string) => {
-	return getLogger({ prefix: `routes/${routeName}` });
+  return getLogger({ prefix: `routes/${routeName}` });
 };
