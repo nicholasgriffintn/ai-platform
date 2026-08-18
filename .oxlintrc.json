@@ -36,7 +36,8 @@
     "**/build/**",
     "**/coverage/**",
     "**/.wrangler/**",
-    "**/generated/**"
+    "**/generated/**",
+    "**/worker-configuration.d.ts"
   ],
   "rules": {
     "curly": ["error", "all"],
