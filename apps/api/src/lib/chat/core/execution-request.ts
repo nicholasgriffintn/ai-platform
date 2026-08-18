@@ -117,7 +117,7 @@ class ChatExecutionRequest {
       reasoning_effort: chatOptions.reasoning_effort,
       verbosity: chatOptions.verbosity,
       cache_ttl_seconds: chatOptions.cache_ttl_seconds,
-      use_responses: chatOptions.use_responses,
+      use_responses: chatOptions.use_responses ?? (chatOptions.background ? true : undefined),
       background: chatOptions.background,
       previous_response_id: chatOptions.previous_response_id,
       auto_previous_response_id: chatOptions.auto_previous_response_id,
