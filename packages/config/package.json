@@ -1,47 +1,39 @@
 {
-	"name": "@ngriffin_uk/polychat-config",
-	"version": "0.1.0",
-	"description": "Shared TypeScript, Oxlint, Oxfmt, Vitest, and Tailwind presets for Polychat",
-	"license": "Apache-2.0",
-	"files": [
-		"oxfmt",
-		"oxlint",
-		"tailwind",
-		"tsconfig",
-		"vitest"
-	],
-	"type": "module",
-	"sideEffects": false,
-	"exports": {
-		"./oxfmt": "./oxfmt/base.json",
-		"./oxlint": "./oxlint/base.json",
-		"./tailwind/react-dom": "./tailwind/react-dom.cjs",
-		"./tsconfig/base": "./tsconfig/base.json",
-		"./tsconfig/library": "./tsconfig/library.json",
-		"./tsconfig/node": "./tsconfig/node.json",
-		"./tsconfig/react-application": "./tsconfig/react-application.json",
-		"./tsconfig/react-library": "./tsconfig/react-library.json",
-		"./tsconfig/worker": "./tsconfig/worker.json",
-		"./vitest/node": "./vitest/node.js",
-		"./vitest/react": "./vitest/react.js"
-	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"scripts": {
-		"test": "node --test test/package-exports.test.mjs",
-		"test:package": "node --test test/package-exports.test.mjs"
-	},
-	"peerDependencies": {
-		"tailwindcss": ">=3.4.0 <5",
-		"vitest": ">=4.0.0 <5"
-	},
-	"peerDependenciesMeta": {
-		"tailwindcss": {
-			"optional": true
-		},
-		"vitest": {
-			"optional": true
-		}
-	}
+  "name": "@ngriffin_uk/polychat-config",
+  "version": "0.1.0",
+  "description": "Shared TypeScript, Oxlint, Oxfmt, Vitest, and Tailwind presets for Polychat",
+  "license": "Apache-2.0",
+  "files": [
+    "tailwind",
+    "tsconfig",
+    "vitest"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./tailwind/react-dom": "./tailwind/react-dom.cjs",
+    "./tsconfig/base": "./tsconfig/base.json",
+    "./tsconfig/library": "./tsconfig/library.json",
+    "./tsconfig/node": "./tsconfig/node.json",
+    "./tsconfig/react-application": "./tsconfig/react-application.json",
+    "./tsconfig/react-library": "./tsconfig/react-library.json",
+    "./tsconfig/worker": "./tsconfig/worker.json",
+    "./vitest/node": "./vitest/node.js",
+    "./vitest/react": "./vitest/react.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {},
+  "peerDependencies": {
+    "tailwindcss": ">=3.4.0 <5"
+  },
+  "peerDependenciesMeta": {
+    "tailwindcss": {
+      "optional": true
+    },
+    "vitest": {
+      "optional": true
+    }
+  }
 }

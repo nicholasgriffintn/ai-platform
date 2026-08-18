@@ -1,76 +1,74 @@
 {
-	"name": "@ngriffin_uk/polychat-library-realtime",
-	"version": "0.1.0",
-	"description": "Realtime protocol, audio, WebRTC, and WebSocket modules for Polychat",
-	"license": "Apache-2.0",
-	"files": [
-		"dist"
-	],
-	"type": "module",
-	"sideEffects": false,
-	"main": "./dist/index.cjs",
-	"module": "./dist/index.js",
-	"types": "./dist/index.d.ts",
-	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js",
-			"require": "./dist/index.cjs"
-		},
-		"./audio": {
-			"types": "./dist/audio.d.ts",
-			"import": "./dist/audio.js",
-			"require": "./dist/audio.cjs"
-		},
-		"./audio-commit-gate": {
-			"types": "./dist/audio-commit-gate.d.ts",
-			"import": "./dist/audio-commit-gate.js",
-			"require": "./dist/audio-commit-gate.cjs"
-		},
-		"./audio-levels": {
-			"types": "./dist/audio-levels.d.ts",
-			"import": "./dist/audio-levels.js",
-			"require": "./dist/audio-levels.cjs"
-		},
-		"./errors": {
-			"types": "./dist/errors.d.ts",
-			"import": "./dist/errors.js",
-			"require": "./dist/errors.cjs"
-		},
-		"./messages": {
-			"types": "./dist/messages.d.ts",
-			"import": "./dist/messages.js",
-			"require": "./dist/messages.cjs"
-		},
-		"./websocket-protocols": {
-			"types": "./dist/websocket-protocols.d.ts",
-			"import": "./dist/websocket-protocols.js",
-			"require": "./dist/websocket-protocols.cjs"
-		}
-	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"scripts": {
-		"build": "tsup",
-		"typecheck": "tsc --noEmit",
-		"test": "vitest run",
-		"test:package": "pnpm build && node --test test/package-exports.test.mjs",
-		"format": "oxfmt",
-		"format:check": "oxfmt --check",
-		"lint": "pnpm oxlint",
-		"check": "pnpm lint && pnpm format:check"
-	},
-	"dependencies": {
-		"@ngriffin_uk/polychat-schemas": "workspace:^"
-	},
-	"devDependencies": {
-		"@ngriffin_uk/polychat-config": "workspace:^",
-		"@types/node": "catalog:",
-		"oxfmt": "catalog:",
-		"oxlint": "catalog:",
-		"tsup": "catalog:",
-		"typescript": "catalog:",
-		"vitest": "catalog:"
-	}
+  "name": "@ngriffin_uk/polychat-library-realtime",
+  "version": "0.1.0",
+  "description": "Realtime protocol, audio, WebRTC, and WebSocket modules for Polychat",
+  "license": "Apache-2.0",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./audio": {
+      "types": "./dist/audio.d.ts",
+      "import": "./dist/audio.js",
+      "require": "./dist/audio.cjs"
+    },
+    "./audio-commit-gate": {
+      "types": "./dist/audio-commit-gate.d.ts",
+      "import": "./dist/audio-commit-gate.js",
+      "require": "./dist/audio-commit-gate.cjs"
+    },
+    "./audio-levels": {
+      "types": "./dist/audio-levels.d.ts",
+      "import": "./dist/audio-levels.js",
+      "require": "./dist/audio-levels.cjs"
+    },
+    "./errors": {
+      "types": "./dist/errors.d.ts",
+      "import": "./dist/errors.js",
+      "require": "./dist/errors.cjs"
+    },
+    "./live-providers": {
+      "types": "./dist/live-providers.d.ts",
+      "import": "./dist/live-providers.js"
+    },
+    "./messages": {
+      "types": "./dist/messages.d.ts",
+      "import": "./dist/messages.js",
+      "require": "./dist/messages.cjs"
+    },
+    "./websocket-protocols": {
+      "types": "./dist/websocket-protocols.d.ts",
+      "import": "./dist/websocket-protocols.js",
+      "require": "./dist/websocket-protocols.cjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:package": "pnpm build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ngriffin_uk/polychat-schemas": "workspace:^"
+  },
+  "devDependencies": {
+    "@ngriffin_uk/polychat-config": "workspace:^",
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
 }

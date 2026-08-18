@@ -1,38 +1,32 @@
 {
-	"name": "@ngriffin_uk/polychat-library-surface",
-	"version": "0.1.0",
-	"description": "Host controls for reusable Polychat React rendering",
-	"license": "Apache-2.0",
-	"files": [
-		"dist"
-	],
-	"type": "module",
-	"sideEffects": false,
-	"main": "./dist/index.js",
-	"types": "./dist/index.d.ts",
-	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js"
-		}
-	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"scripts": {
-		"build": "tsc -p tsconfig.json",
-		"typecheck": "tsc -p tsconfig.json --noEmit",
-		"test": "vitest run --config vitest.config.ts",
-		"format": "oxfmt",
-		"format:check": "oxfmt --check",
-		"lint": "pnpm oxlint",
-		"check": "pnpm lint && pnpm format:check"
-	},
-	"devDependencies": {
-		"@ngriffin_uk/polychat-config": "workspace:^",
-		"oxfmt": "catalog:",
-		"oxlint": "catalog:",
-		"typescript": "catalog:",
-		"vitest": "catalog:"
-	}
+  "name": "@ngriffin_uk/polychat-library-surface",
+  "version": "0.1.0",
+  "description": "Host controls for reusable Polychat React rendering",
+  "license": "Apache-2.0",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@ngriffin_uk/polychat-config": "workspace:^",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
 }

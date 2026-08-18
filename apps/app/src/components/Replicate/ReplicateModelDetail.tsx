@@ -1,120 +1,76 @@
-import { ReplicateModelForm } from "@ngriffin_uk/polychat-component-experiences/media";
+import {
+  ReplicateModelDetailView,
+  ReplicateModelForm,
+  ReplicateModelLoadError,
+  ReplicateModelLoading,
+} from "@ngriffin_uk/polychat-component-experiences/media";
 import { useNavigate } from "react-router";
-import { useReplicateModels, useExecuteReplicateModel } from "~/hooks/useReplicate";
+
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
+import { useReplicateModels, useExecuteReplicateModel } from "~/hooks/useReplicate";
 import { isAuthenticationError } from "~/lib/errors";
 
 interface ReplicateModelDetailProps {
-	basePath: string;
-	modelId: string;
-	projectId?: string;
+  basePath: string;
+  modelId: string;
+  projectId?: string;
 }
 
 export function ReplicateModelDetail({ basePath, modelId, projectId }: ReplicateModelDetailProps) {
-	const navigate = useNavigate();
-	const { data: models, isLoading, error } = useReplicateModels(projectId);
-	const executeMutation = useExecuteReplicateModel(projectId);
+  const navigate = useNavigate();
+  const { data: models, isLoading, error } = useReplicateModels(projectId);
+  const executeMutation = useExecuteReplicateModel(projectId);
 
-	const model = models?.find((m) => m.id === modelId);
+  const model = models?.find((m) => m.id === modelId);
 
-	if (isLoading) {
-		return (
-			<div className="flex items-center justify-center min-h-screen">
-				<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900 dark:border-zinc-100"></div>
-			</div>
-		);
-	}
+  if (isLoading) {
+    return <ReplicateModelLoading />;
+  }
 
-	if (error || !model) {
-		if (isAuthenticationError(error)) {
-			return (
-				<SignInEmptyState
-					title="Sign in to use this model"
-					message="Sign in to run Replicate models for this project."
-					className="min-h-[300px]"
-				/>
-			);
-		}
+  if (error || !model) {
+    if (isAuthenticationError(error)) {
+      return (
+        <SignInEmptyState
+          title="Sign in to use this model"
+          message="Sign in to run Replicate models for this project."
+          className="min-h-[300px]"
+        />
+      );
+    }
 
-		return (
-			<div>
-				<div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-					<p className="text-red-800 dark:text-red-200">Failed to load model. Please try again.</p>
-				</div>
-			</div>
-		);
-	}
+    return <ReplicateModelLoadError />;
+  }
 
-	const handleSubmit = async (data: Record<string, any>) => {
-		try {
-			const result = await executeMutation.mutateAsync({
-				modelId,
-				input: data,
-			});
+  const handleSubmit = async (data: Record<string, any>) => {
+    try {
+      const result = await executeMutation.mutateAsync({
+        modelId,
+        input: data,
+      });
 
-			navigate(`${basePath}/predictions/${result.id}`);
-		} catch (error) {
-			console.error("Failed to execute model:", error);
-		}
-	};
+      navigate(`${basePath}/predictions/${result.id}`);
+    } catch (error) {
+      console.error("Failed to execute model:", error);
+    }
+  };
 
-	return (
-		<div>
-			<div className="mb-8">
-				<h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{model.name}</h1>
-				<p className="text-zinc-600 dark:text-zinc-400 mb-4">{model.description}</p>
-
-				{(model.tags?.length || model.modalityLabel) && (
-					<div className="flex flex-wrap gap-2 mb-4">
-						{[model.modalityLabel, ...(model.tags ?? [])].filter(Boolean).map((tag) => (
-							<span
-								key={tag}
-								className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-sm rounded-full"
-							>
-								{tag}
-							</span>
-						))}
-					</div>
-				)}
-
-				<div className="text-sm text-zinc-600 dark:text-zinc-400">
-					Cost: ${model.costPerRun} per run
-					{model.reference && (
-						<>
-							{" • "}
-							<a
-								href={model.reference}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="text-blue-600 dark:text-blue-400 no-underline hover:underline"
-							>
-								View documentation
-							</a>
-						</>
-					)}
-				</div>
-			</div>
-
-			{/* Form */}
-			<div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-6">
-				<h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
-					Model Parameters
-				</h2>
-				<ReplicateModelForm
-					model={model}
-					onSubmit={handleSubmit}
-					isSubmitting={executeMutation.isPending}
-				/>
-				{executeMutation.isError && (
-					<div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-						<p className="text-red-800 dark:text-red-200">
-							{executeMutation.error instanceof Error
-								? executeMutation.error.message
-								: "Failed to execute model. Please try again."}
-						</p>
-					</div>
-				)}
-			</div>
-		</div>
-	);
+  return (
+    <ReplicateModelDetailView
+      model={model}
+      errorMessage={
+        executeMutation.isError
+          ? executeMutation.error instanceof Error
+            ? executeMutation.error.message
+            : "Failed to execute model. Please try again."
+          : undefined
+      }
+      form={
+        <ReplicateModelForm
+          model={model}
+          onSubmit={handleSubmit}
+          isSubmitting={executeMutation.isPending}
+        />
+      }
+    />
+  );
 }

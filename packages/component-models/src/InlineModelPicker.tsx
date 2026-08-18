@@ -1,0 +1,104 @@
+import { cn, SearchInput } from "@ngriffin_uk/polychat-component-ui";
+import type { ModelCatalogItem } from "@ngriffin_uk/polychat-schemas";
+import { useRef } from "react";
+
+import { ConversationModelOption } from "./Selector/ConversationModelOption";
+
+export interface InlineModelPickerProps {
+  isOpen?: boolean;
+  searchQuery: string;
+  onSearchQueryChange: (query: string) => void;
+  currentModel?: ModelCatalogItem | null;
+  featuredModels: ModelCatalogItem[];
+  searchResults: ModelCatalogItem[];
+  isLoading?: boolean;
+  onSelect: (modelId: string) => void;
+  className?: string;
+}
+
+export function InlineModelPicker({
+  isOpen = true,
+  searchQuery,
+  onSearchQueryChange,
+  currentModel,
+  featuredModels,
+  searchResults,
+  isLoading = false,
+  onSelect,
+  className = "",
+}: InlineModelPickerProps) {
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const isSearching = searchQuery.trim().length > 0;
+
+  return (
+    <div ref={dropdownRef} className={cn("w-full", className)}>
+      {isOpen && (
+        <div className="w-full overflow-hidden rounded-lg bg-white dark:bg-zinc-900">
+          <div className="border-b border-zinc-200 p-2 dark:border-zinc-700">
+            <SearchInput
+              value={searchQuery}
+              onChange={onSearchQueryChange}
+              placeholder="Search other models"
+              className="[&_input]:py-1.5 [&_input]:text-sm"
+              autoFocus
+            />
+          </div>
+          <div className="max-h-[calc(100vh-10rem)] overflow-y-auto p-2 sm:max-h-80">
+            {isLoading && (
+              <p className="px-2 py-3 text-sm text-zinc-500 dark:text-zinc-400">
+                Loading models...
+              </p>
+            )}
+            {currentModel && (
+              <>
+                <div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  Current Model
+                </div>
+                <ConversationModelOption model={currentModel} onSelect={onSelect} />
+              </>
+            )}
+            {isSearching && (
+              <div className={currentModel ? "mt-3" : ""}>
+                <div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  Search Results
+                </div>
+                {searchResults.length > 0 ? (
+                  searchResults.map((modelItem) => (
+                    <ConversationModelOption
+                      key={modelItem.id}
+                      model={modelItem}
+                      onSelect={onSelect}
+                    />
+                  ))
+                ) : (
+                  <p className="rounded-md border border-dashed border-zinc-300 px-2 py-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+                    No matching models.
+                  </p>
+                )}
+              </div>
+            )}
+            {featuredModels.length > 0 && (
+              <div className={currentModel || isSearching ? "mt-3" : ""}>
+                <div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  Featured Models
+                </div>
+                {featuredModels.map((modelItem) => (
+                  <ConversationModelOption
+                    key={modelItem.id}
+                    model={modelItem}
+                    onSelect={onSelect}
+                  />
+                ))}
+              </div>
+            )}
+            {!isLoading && !currentModel && !isSearching && featuredModels.length === 0 && (
+              <p className="rounded-md border border-dashed border-zinc-300 px-2 py-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+                No branch models are available.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

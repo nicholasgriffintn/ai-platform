@@ -1,97 +1,90 @@
-import { type ReactNode, useRef } from "react";
-import { Cloud, CloudOff, Menu, PanelLeftOpen } from "lucide-react";
-import { useLocation } from "react-router";
-
+import { ProductHeaderShell, ProductModeSwitch } from "@ngriffin_uk/polychat-component-navigation";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { useHeaderScrollEdge } from "@ngriffin_uk/polychat-utility-react";
+import { Cloud, CloudOff, Menu, PanelLeftOpen } from "lucide-react";
+import { type ReactNode, useRef } from "react";
+import { useLocation } from "react-router";
+
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { isProductModeRoute } from "~/lib/navigation/product-mode";
-import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
-import { ProductModeSwitch } from "@ngriffin_uk/polychat-component-navigation";
 
 interface ProductModeHeaderProps {
-	actions?: ReactNode;
-	context?: ReactNode;
-	showCloudToggle?: boolean;
-	showSidebarToggle?: boolean;
+  actions?: ReactNode;
+  context?: ReactNode;
+  showCloudToggle?: boolean;
+  showSidebarToggle?: boolean;
 }
 
 export function ProductModeHeader({
-	actions,
-	context,
-	showCloudToggle = false,
-	showSidebarToggle = true,
+  actions,
+  context,
+  showCloudToggle = false,
+  showSidebarToggle = true,
 }: ProductModeHeaderProps) {
-	const { pathname } = useLocation();
-	const showProductModeSwitch = isProductModeRoute(pathname);
-	const headerRef = useRef<HTMLElement>(null);
-	const isScrolled = useHeaderScrollEdge(headerRef, pathname);
-	const { trackEvent } = useTrackEvent();
-	const { isMobile, sidebarVisible, setSidebarVisible } = useUIStore();
-	const { isAuthenticated, localOnlyMode, setLocalOnlyMode } = useChatStore();
+  const { pathname } = useLocation();
+  const showProductModeSwitch = isProductModeRoute(pathname);
+  const headerRef = useRef<HTMLElement>(null);
+  const isScrolled = useHeaderScrollEdge(headerRef, pathname);
+  const { trackEvent } = useTrackEvent();
+  const { isMobile, sidebarVisible, setSidebarVisible } = useUIStore();
+  const { isAuthenticated, localOnlyMode, setLocalOnlyMode } = useChatStore();
 
-	const toggleLocalOnlyMode = () => {
-		const nextMode = !localOnlyMode;
-		setLocalOnlyMode(nextMode);
-		trackEvent({
-			name: "toggle_local_only_mode",
-			category: "header",
-			label: "toggle_local_only_mode",
-			value: nextMode ? "local-only" : "cloud",
-		});
-	};
+  const toggleLocalOnlyMode = () => {
+    const nextMode = !localOnlyMode;
+    setLocalOnlyMode(nextMode);
+    trackEvent({
+      name: "toggle_local_only_mode",
+      category: "header",
+      label: "toggle_local_only_mode",
+      value: nextMode ? "local-only" : "cloud",
+    });
+  };
 
-	return (
-		<header
-			ref={headerRef}
-			data-content-scrolled={isScrolled || undefined}
-			className="relative z-20 flex h-[53px] shrink-0 items-center gap-1 bg-off-white px-2 dark:bg-zinc-900 min-[769px]:px-4 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-2"
-		>
-			<div className="flex min-w-0 flex-1 items-center gap-1 sm:justify-self-stretch sm:gap-2">
-				{showSidebarToggle && !sidebarVisible && (
-					<Button
-						type="button"
-						variant="icon"
-						title="Show sidebar"
-						aria-label="Show sidebar"
-						icon={isMobile ? <Menu size={20} /> : <PanelLeftOpen size={20} />}
-						onClick={() => setSidebarVisible(true)}
-					/>
-				)}
-				{context ? <div className="min-w-0 flex-1">{context}</div> : null}
-			</div>
-			<div className="flex justify-center">
-				{showProductModeSwitch ? (
-					<ProductModeSwitch
-						activeMode={pathname.startsWith("/work") ? "work" : "chat"}
-						className="w-auto shrink-0 sm:w-44 sm:justify-self-center"
-						destinations={{ chat: "/chat", work: "/work" }}
-					/>
-				) : null}
-			</div>
-			<div className="flex min-w-0 shrink-0 items-center sm:justify-self-end">
-				{actions}
-				{showCloudToggle && isAuthenticated && (
-					<Button
-						type="button"
-						variant={localOnlyMode ? "iconActive" : "icon"}
-						title={localOnlyMode ? "Switch to cloud mode" : "Switch to local-only mode"}
-						aria-label={localOnlyMode ? "Switch to cloud mode" : "Switch to local-only mode"}
-						icon={localOnlyMode ? <CloudOff size={20} /> : <Cloud size={20} />}
-						onClick={toggleLocalOnlyMode}
-					/>
-				)}
-			</div>
-			<div
-				aria-hidden="true"
-				data-scroll-blur-edge
-				className={cn(
-					"pointer-events-none absolute inset-x-0 top-full h-3 bg-gradient-to-b from-zinc-950/[0.035] via-transparent to-transparent opacity-0 backdrop-blur-[2px] transition-opacity duration-300 ease-out [-webkit-mask-image:linear-gradient(to_bottom,black_0%,transparent_100%)] [mask-image:linear-gradient(to_bottom,black_0%,transparent_100%)] motion-reduce:transition-none dark:from-black/15",
-					isScrolled && "opacity-70",
-				)}
-			/>
-		</header>
-	);
+  return (
+    <ProductHeaderShell
+      headerRef={headerRef}
+      isScrolled={isScrolled}
+      start={
+        <>
+          {showSidebarToggle && !sidebarVisible && (
+            <Button
+              type="button"
+              variant="icon"
+              title="Show sidebar"
+              aria-label="Show sidebar"
+              icon={isMobile ? <Menu size={20} /> : <PanelLeftOpen size={20} />}
+              onClick={() => setSidebarVisible(true)}
+            />
+          )}
+          {context ? <div className="min-w-0 flex-1">{context}</div> : null}
+        </>
+      }
+      center={
+        showProductModeSwitch ? (
+          <ProductModeSwitch
+            activeMode={pathname.startsWith("/work") ? "work" : "chat"}
+            className="w-auto shrink-0 sm:w-44 sm:justify-self-center"
+            destinations={{ chat: "/chat", work: "/work" }}
+          />
+        ) : null
+      }
+      end={
+        <>
+          {actions}
+          {showCloudToggle && isAuthenticated && (
+            <Button
+              type="button"
+              variant={localOnlyMode ? "iconActive" : "icon"}
+              title={localOnlyMode ? "Switch to cloud mode" : "Switch to local-only mode"}
+              aria-label={localOnlyMode ? "Switch to cloud mode" : "Switch to local-only mode"}
+              icon={localOnlyMode ? <CloudOff size={20} /> : <Cloud size={20} />}
+              onClick={toggleLocalOnlyMode}
+            />
+          )}
+        </>
+      }
+    />
+  );
 }

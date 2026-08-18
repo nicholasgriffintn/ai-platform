@@ -1,121 +1,58 @@
+import {
+  ReplicateLoadError,
+  ReplicateLoading,
+  ReplicatePredictionList,
+} from "@ngriffin_uk/polychat-component-experiences/media";
+import { EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import { Link } from "react-router";
-import { useReplicatePredictions } from "~/hooks/useReplicate";
+
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Card, EmptyState } from "@ngriffin_uk/polychat-component-ui";
+import { useReplicatePredictions } from "~/hooks/useReplicate";
 import { isAuthenticationError } from "~/lib/errors";
 
 export function ReplicatePredictions({
-	basePath,
-	projectId,
+  basePath,
+  projectId,
 }: {
-	basePath: string;
-	projectId?: string;
+  basePath: string;
+  projectId?: string;
 }) {
-	const { data: predictions, isLoading, error } = useReplicatePredictions(projectId);
+  const { data: predictions, isLoading, error } = useReplicatePredictions(projectId);
 
-	if (isLoading) {
-		return (
-			<div className="flex justify-center items-center min-h-[400px]">
-				<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 dark:border-blue-400" />
-			</div>
-		);
-	}
+  if (isLoading) {
+    return <ReplicateLoading />;
+  }
 
-	if (error) {
-		if (isAuthenticationError(error)) {
-			return (
-				<SignInEmptyState
-					title="Sign in to view predictions"
-					message="Sign in to access your Replicate predictions."
-					className="min-h-[300px]"
-				/>
-			);
-		}
+  if (error) {
+    if (isAuthenticationError(error)) {
+      return (
+        <SignInEmptyState
+          title="Sign in to view predictions"
+          message="Sign in to access your Replicate predictions."
+          className="min-h-[300px]"
+        />
+      );
+    }
 
-		return (
-			<div className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800">
-				<h3 className="font-semibold mb-2">Failed to load predictions</h3>
-				<p>Please try again later.</p>
-			</div>
-		);
-	}
+    return <ReplicateLoadError title="Failed to load predictions" />;
+  }
 
-	if (!predictions || predictions.length === 0) {
-		return (
-			<EmptyState
-				title="No predictions yet"
-				message="You haven't created any predictions yet. Explore models to get started."
-				action={
-					<Link
-						to={basePath}
-						className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-					>
-						Explore Models
-					</Link>
-				}
-			/>
-		);
-	}
+  if (!predictions || predictions.length === 0) {
+    return (
+      <EmptyState
+        title="No predictions yet"
+        message="You haven't created any predictions yet. Explore models to get started."
+        action={
+          <Link
+            to={basePath}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+          >
+            Explore Models
+          </Link>
+        }
+      />
+    );
+  }
 
-	return (
-		<div className="space-y-4">
-			{predictions.map((prediction) => (
-				<PredictionCard key={prediction.id} basePath={basePath} prediction={prediction} />
-			))}
-		</div>
-	);
-}
-
-interface PredictionCardProps {
-	basePath: string;
-	prediction: any;
-}
-
-function PredictionCard({ basePath, prediction }: PredictionCardProps) {
-	const statusColors = {
-		processing: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
-		succeeded: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
-		completed: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
-		failed: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200",
-	};
-
-	return (
-		<Link
-			to={`${basePath}/predictions/${prediction.id}`}
-			className="group block no-underline hover:!no-underline"
-		>
-			<Card className="p-6 hover:shadow-lg transition-all">
-				<div className="flex items-start justify-between gap-4 mb-4">
-					<div className="flex-1 min-w-0">
-						<h3 className="text-lg font-semibold text-zinc-900 group-hover:underline dark:text-zinc-100 mb-1 break-words">
-							{prediction.input?.prompt || prediction.modelName || prediction.modelId}
-						</h3>
-						<div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
-							<span className="font-medium">{prediction.modelName || prediction.modelId}</span>
-							<span>•</span>
-							<span>{new Date(prediction.created_at).toLocaleString()}</span>
-						</div>
-					</div>
-					<span
-						className={`px-3 py-1 text-xs font-medium rounded-full whitespace-nowrap shrink-0 ${
-							statusColors[prediction.status as keyof typeof statusColors]
-						}`}
-					>
-						{prediction.status}
-					</span>
-				</div>
-
-				{prediction.status === "processing" && (
-					<div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-						<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-zinc-600 dark:border-zinc-400"></div>
-						<span>Processing...</span>
-					</div>
-				)}
-
-				{prediction.status === "failed" && prediction.error && (
-					<p className="text-sm text-red-600 dark:text-red-400">Error: {prediction.error}</p>
-				)}
-			</Card>
-		</Link>
-	);
+  return <ReplicatePredictionList predictions={predictions} basePath={basePath} />;
 }

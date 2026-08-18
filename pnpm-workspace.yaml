@@ -3,11 +3,11 @@ packages:
   - apps/*
 
 catalog:
-  '@cloudflare/workers-types': 5.20260809.1
-  '@testing-library/react': 16.3.2
-  '@types/node': 26.2.0
-  '@types/react': 19.2.18
-  '@types/react-dom': 19.2.4
+  "@cloudflare/workers-types": 5.20260809.1
+  "@testing-library/react": 16.3.2
+  "@types/node": 26.2.0
+  "@types/react": 19.2.18
+  "@types/react-dom": 19.2.4
   jsdom: 30.0.1
   oxfmt: 0.62.0
   oxlint: 1.77.0
@@ -21,8 +21,8 @@ catalog:
 
 catalogs:
   react-peer:
-    react: '>=19'
-    react-dom: '>=19'
+    react: ">=19"
+    react-dom: ">=19"
 
 allowBuilds:
   better-sqlite3: true
@@ -34,25 +34,26 @@ allowBuilds:
   workerd: false
 
 minimumReleaseAgeExclude:
-  - '@cloudflare/workers-types@4.20260523.1 || 4.20260530.1 || 5.20260808.1 || 5.20260809.1'
-  - '@scalar/client-side-rendering@0.1.12'
-  - '@scalar/hono-api-reference@0.10.19'
-  - '@scalar/schemas@0.3.2'
-  - '@scalar/types@0.12.2'
-  - '@tanstack/query-core@5.100.13'
-  - '@tanstack/query-devtools@5.100.13'
-  - '@tanstack/react-query-devtools@5.100.13'
-  - '@tanstack/react-query@5.100.13'
-  - '@aws-sdk/client-bedrock@3.1057.0'
-  - '@aws-sdk/client-s3@3.1057.0'
-  - '@aws-sdk/credential-provider-ini@3.972.46'
-  - '@aws-sdk/credential-provider-node@3.972.47'
-  - '@aws-sdk/s3-request-presigner@3.1057.0'
-  - '@aws-sdk/token-providers@3.1057.0'
+  - "@cloudflare/workers-types@4.20260523.1 || 4.20260530.1 || 5.20260808.1 || 5.20260809.1"
+  - "@scalar/client-side-rendering@0.1.12"
+  - "@scalar/hono-api-reference@0.10.19"
+  - "@scalar/schemas@0.3.2"
+  - "@scalar/types@0.12.2"
+  - "@tanstack/query-core@5.100.13"
+  - "@tanstack/query-devtools@5.100.13"
+  - "@tanstack/react-query-devtools@5.100.13"
+  - "@tanstack/react-query@5.100.13"
+  - "@aws-sdk/client-bedrock@3.1057.0"
+  - "@aws-sdk/client-s3@3.1057.0"
+  - "@aws-sdk/credential-provider-ini@3.972.46"
+  - "@aws-sdk/credential-provider-node@3.972.47"
+  - "@aws-sdk/s3-request-presigner@3.1057.0"
+  - "@aws-sdk/token-providers@3.1057.0"
   - miniflare@4.20260702.0
   - wrangler@4.107.1
-  - '@ngriffin_uk/*'
+  - "@ngriffin_uk/*"
   - partyserver@0.5.10
+  - playwright-visual-cloud@0.1.0 || 0.1.1 || 0.1.2 || 0.1.3
 
 onlyBuiltDependencies:
   - better-sqlite3

@@ -1,0 +1,302 @@
+import { Card, SignInEmptyState } from "@ngriffin_uk/polychat-component-ui";
+import {
+  formatUnknownValue,
+  getStringProperty,
+  isRecord,
+} from "@ngriffin_uk/polychat-utility-core";
+
+export interface ReplicatePrediction {
+  status?: string;
+  created_at?: string;
+  createdAt?: string;
+  input?: any;
+  output?: any;
+  response?: any;
+  error?: any;
+  [key: string]: any;
+}
+
+export interface ReplicatePredictionViewProps {
+  prediction?: ReplicatePrediction | null;
+  isLoading?: boolean;
+  requiresSignIn?: boolean;
+  hasError?: boolean;
+  onSignIn: () => void;
+}
+
+export function ReplicatePredictionView({
+  prediction,
+  isLoading = false,
+  requiresSignIn = false,
+  hasError = false,
+  onSignIn,
+}: ReplicatePredictionViewProps) {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 dark:border-blue-400" />
+      </div>
+    );
+  }
+
+  if (hasError || requiresSignIn || !prediction) {
+    if (requiresSignIn) {
+      return (
+        <SignInEmptyState
+          title="Sign in to view this prediction"
+          message="Sign in to access this Replicate prediction."
+          className="min-h-[300px]"
+          onSignIn={onSignIn}
+        />
+      );
+    }
+
+    return (
+      <div className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800">
+        <h3 className="font-semibold mb-2">Failed to load prediction</h3>
+        <p>Please try again later.</p>
+      </div>
+    );
+  }
+
+  const statusColors: Record<string, string> = {
+    queued: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
+    starting: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
+    processing: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
+    in_progress: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
+    succeeded: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
+    completed: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
+    failed: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200",
+    canceled: "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200",
+  };
+  const createdAt = prediction.created_at ?? prediction.createdAt;
+  const prompt = getStringProperty(prediction.input, "prompt");
+  const predictionOutput =
+    prediction.output ?? prediction.predictionData?.response ?? prediction.predictionData?.output;
+  const hasPredictionOutput =
+    predictionOutput !== undefined && predictionOutput !== null && predictionOutput !== "";
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2 break-words">
+            {prompt || prediction.modelName || prediction.modelId}
+          </h1>
+          <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+            <span className="font-medium">{prediction.modelName || prediction.modelId}</span>
+            {createdAt && (
+              <>
+                <span>•</span>
+                <span>{new Date(createdAt).toLocaleString()}</span>
+              </>
+            )}
+          </div>
+        </div>
+        <span
+          className={`px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap shrink-0 ${
+            statusColors[prediction.status ?? ""] ??
+            "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200"
+          }`}
+        >
+          {prediction.status}
+        </span>
+      </div>
+
+      {prediction.status === "processing" && (
+        <Card className="p-6 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+          <div className="flex items-center gap-3">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-800 dark:border-yellow-200"></div>
+            <div>
+              <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">Processing</h3>
+              <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                Your prediction is being processed. This page will automatically update when
+                complete.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {prediction.status === "failed" && prediction.error && (
+        <Card className="p-6 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+          <h3 className="font-semibold text-red-800 dark:text-red-200 mb-2">Prediction Failed</h3>
+          <p className="text-sm text-red-700 dark:text-red-300">{prediction.error}</p>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {(prediction.status === "succeeded" || prediction.status === "completed") &&
+          hasPredictionOutput && (
+            <Card className="p-6 lg:col-span-2 order-2 lg:order-1">
+              <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
+                Output
+              </h2>
+              <OutputRenderer output={predictionOutput} />
+            </Card>
+          )}
+
+        <Card
+          className={`p-6 order-1 lg:order-2 ${(prediction.status === "succeeded" || prediction.status === "completed") && hasPredictionOutput ? "" : "lg:col-span-3"}`}
+        >
+          <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
+            Input Parameters
+          </h2>
+          <div className="space-y-3">
+            {Object.entries(prediction.input || {}).map(([key, value]) => (
+              <div key={key} className="flex flex-col">
+                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  {key}:
+                </span>
+                <span className="text-sm text-zinc-600 dark:text-zinc-400 break-all font-mono bg-zinc-100 dark:bg-zinc-900 p-2 rounded">
+                  {formatUnknownValue(value)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+interface OutputRendererProps {
+  output: unknown;
+}
+
+function OutputRenderer({ output }: OutputRendererProps) {
+  if (Array.isArray(output)) {
+    return (
+      <div className="space-y-4">
+        {output.map((item, index) => {
+          if (isRecord(item)) {
+            if (item.type === "text") {
+              return (
+                <div key={index} className="prose dark:prose-invert max-w-none">
+                  {getStringProperty(item, "text")}
+                </div>
+              );
+            }
+            if (item.type === "image_url") {
+              const url = getStringProperty(item.image_url, "url");
+              if (url) return <OutputItem key={index} item={url} />;
+            }
+            if (item.type === "audio_url") {
+              const url = getStringProperty(item.audio_url, "url");
+              if (url) return <OutputItem key={index} item={url} />;
+            }
+            if (item.type === "video_url") {
+              const url = getStringProperty(item.video_url, "url");
+              if (url) return <OutputItem key={index} item={url} />;
+            }
+          }
+          return <OutputItem key={index} item={item} />;
+        })}
+      </div>
+    );
+  }
+
+  if (typeof output === "string") {
+    return <OutputItem item={output} />;
+  }
+
+  return (
+    <pre className="bg-zinc-100 dark:bg-zinc-900 p-4 rounded-lg overflow-auto text-sm font-mono">
+      {formatUnknownValue(output)}
+    </pre>
+  );
+}
+
+interface OutputItemProps {
+  item: unknown;
+}
+
+function OutputItem({ item }: OutputItemProps) {
+  const url =
+    typeof item === "string"
+      ? item
+      : getStringProperty(item, "url") || getStringProperty(item, "uri");
+
+  if (!url) {
+    return (
+      <pre className="bg-zinc-100 dark:bg-zinc-900 p-4 rounded-lg overflow-auto text-sm font-mono">
+        {formatUnknownValue(item)}
+      </pre>
+    );
+  }
+
+  const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+  const isVideo = /\.(mp4|webm|mov)$/i.test(url);
+  const isAudio = /\.(mp3|wav|ogg)$/i.test(url);
+
+  if (isImage) {
+    return (
+      <div>
+        <img
+          src={url}
+          alt="Generated output"
+          className="max-w-full rounded-lg"
+          decoding="async"
+          loading="lazy"
+        />
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 inline-block text-blue-600 dark:text-blue-400 no-underline hover:underline text-sm"
+        >
+          Open in new tab →
+        </a>
+      </div>
+    );
+  }
+
+  if (isVideo) {
+    return (
+      <div>
+        <video controls className="max-w-full rounded-lg">
+          <source src={url} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 inline-block text-blue-600 dark:text-blue-400 no-underline hover:underline text-sm"
+        >
+          Open in new tab →
+        </a>
+      </div>
+    );
+  }
+
+  if (isAudio) {
+    return (
+      <div>
+        <audio controls className="w-full">
+          <source src={url} />
+          Your browser does not support the audio tag.
+        </audio>
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 inline-block text-blue-600 dark:text-blue-400 no-underline hover:underline text-sm"
+        >
+          Open in new tab →
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-blue-600 dark:text-blue-400 no-underline hover:underline break-all"
+    >
+      {url}
+    </a>
+  );
+}

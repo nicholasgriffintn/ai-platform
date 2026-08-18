@@ -1,223 +1,170 @@
 import { groupAppsByCategory } from "@ngriffin_uk/polychat-component-capabilities";
-import { Sparkles } from "lucide-react";
+import {
+  ReplicateLoadError,
+  ReplicateModelCategoryGrid,
+  ReplicateModelFilters,
+} from "@ngriffin_uk/polychat-component-experiences/media";
+import { Button, EmptyState } from "@ngriffin_uk/polychat-component-ui";
+import { CardSkeleton } from "@ngriffin_uk/polychat-component-ui";
 import type { CapabilityCatalogItem as AppListItem } from "@ngriffin_uk/polychat-schemas";
+import { Sparkles } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { AppCard } from "~/components/Apps/AppCard";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, EmptyState, SearchInput } from "@ngriffin_uk/polychat-component-ui";
-import { CardSkeleton } from "@ngriffin_uk/polychat-component-ui";
 import { useReplicateModels } from "~/hooks/useReplicate";
-import { cn } from "~/lib/utils";
 import { isAuthenticationError } from "~/lib/errors";
 
 const DEFAULT_CATEGORY = "Creative Tools";
 
 const formatTypeLabel = (type: string): string =>
-	type.replace(/-/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+  type.replace(/-/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 
 export function ReplicateModels({ basePath, projectId }: { basePath: string; projectId?: string }) {
-	const { data: models, isLoading, error } = useReplicateModels(projectId);
-	const navigate = useNavigate();
-	const [selectedSignature, setSelectedSignature] = useState<string | null>(null);
-	const [searchQuery, setSearchQuery] = useState("");
+  const { data: models, isLoading, error } = useReplicateModels(projectId);
+  const navigate = useNavigate();
+  const [selectedSignature, setSelectedSignature] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-	const signatureFilters = useMemo(
-		() =>
-			Array.from(
-				new Map(
-					(models ?? []).map((model) => [model.modalitySignature, model.modalityLabel]),
-				).entries(),
-			)
-				.map(([signature, label]) => ({
-					signature,
-					label: label ?? formatTypeLabel(signature.replace("->", " to ")),
-				}))
-				.sort((a, b) => a.label.localeCompare(b.label)),
-		[models],
-	);
+  const signatureFilters = useMemo(
+    () =>
+      Array.from(
+        new Map(
+          (models ?? []).map((model) => [model.modalitySignature, model.modalityLabel]),
+        ).entries(),
+      )
+        .map(([signature, label]) => ({
+          signature,
+          label: label ?? formatTypeLabel(signature.replace("->", " to ")),
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [models],
+  );
 
-	const filteredModels = useMemo(() => {
-		const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredModels = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
 
-		return (models ?? []).filter((model) => {
-			if (selectedSignature && model.modalitySignature !== selectedSignature) {
-				return false;
-			}
+    return (models ?? []).filter((model) => {
+      if (selectedSignature && model.modalitySignature !== selectedSignature) {
+        return false;
+      }
 
-			if (!normalizedQuery) {
-				return true;
-			}
+      if (!normalizedQuery) {
+        return true;
+      }
 
-			const searchableFields = [
-				model.name,
-				model.description,
-				model.category,
-				model.modalityLabel,
-				...(model.tags ?? []),
-			]
-				.filter(Boolean)
-				.map((value) => value!.toLowerCase());
+      const searchableFields = [
+        model.name,
+        model.description,
+        model.category,
+        model.modalityLabel,
+        ...(model.tags ?? []),
+      ]
+        .filter(Boolean)
+        .map((value) => value!.toLowerCase());
 
-			return searchableFields.some((field) => field.includes(normalizedQuery));
-		});
-	}, [models, selectedSignature, searchQuery]);
+      return searchableFields.some((field) => field.includes(normalizedQuery));
+    });
+  }, [models, selectedSignature, searchQuery]);
 
-	const appItems = useMemo<AppListItem[]>(() => {
-		return filteredModels.map((model) => ({
-			id: model.id,
-			name: model.name,
-			description: model.description,
-			icon: model.icon ?? "sparkles",
-			category: model.category ?? model.modalityLabel ?? DEFAULT_CATEGORY,
-			theme: model.theme,
-			tags: model.tags ?? [model.modalityLabel],
-			href: `${basePath}/${model.id}`,
-			kind: model.kind ?? "frontend",
-			featured: model.featured,
-			type: "normal",
-		}));
-	}, [basePath, filteredModels]);
+  const appItems = useMemo<AppListItem[]>(() => {
+    return filteredModels.map((model) => ({
+      id: model.id,
+      name: model.name,
+      description: model.description,
+      icon: model.icon ?? "sparkles",
+      category: model.category ?? model.modalityLabel ?? DEFAULT_CATEGORY,
+      theme: model.theme,
+      tags: model.tags ?? [model.modalityLabel],
+      href: `${basePath}/${model.id}`,
+      kind: model.kind ?? "frontend",
+      featured: model.featured,
+      type: "normal",
+    }));
+  }, [basePath, filteredModels]);
 
-	const groupedApps = useMemo(() => groupAppsByCategory(appItems), [appItems]);
+  const groupedApps = useMemo(() => groupAppsByCategory(appItems), [appItems]);
 
-	const handleModelSelect = useCallback(
-		(app: AppListItem) => {
-			navigate(`${basePath}/${app.id}`);
-		},
-		[basePath, navigate],
-	);
+  const handleModelSelect = useCallback(
+    (app: AppListItem) => {
+      navigate(`${basePath}/${app.id}`);
+    },
+    [basePath, navigate],
+  );
 
-	const handlePredictionsClick = useCallback(() => {
-		navigate(`${basePath}/predictions`);
-	}, [basePath, navigate]);
+  const handlePredictionsClick = useCallback(() => {
+    navigate(`${basePath}/predictions`);
+  }, [basePath, navigate]);
 
-	const handleClearFilters = useCallback(() => {
-		setSearchQuery("");
-		setSelectedSignature(null);
-	}, []);
+  const handleClearFilters = useCallback(() => {
+    setSearchQuery("");
+    setSelectedSignature(null);
+  }, []);
 
-	if (isLoading) {
-		return (
-			<div className="container mx-auto px-4 max-w-7xl">
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-					<CardSkeleton count={6} showHeader showFooter />
-				</div>
-			</div>
-		);
-	}
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 max-w-7xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <CardSkeleton count={6} showHeader showFooter />
+        </div>
+      </div>
+    );
+  }
 
-	if (error) {
-		if (isAuthenticationError(error)) {
-			return (
-				<SignInEmptyState
-					title="Sign in to view Replicate models"
-					message="Sign in to access the models available to this project."
-					className="min-h-[300px]"
-				/>
-			);
-		}
+  if (error) {
+    if (isAuthenticationError(error)) {
+      return (
+        <SignInEmptyState
+          title="Sign in to view Replicate models"
+          message="Sign in to access the models available to this project."
+          className="min-h-[300px]"
+        />
+      );
+    }
 
-		return (
-			<div className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800">
-				<h3 className="font-semibold mb-2">Failed to load models</h3>
-				<p>Please try again later.</p>
-			</div>
-		);
-	}
+    return <ReplicateLoadError title="Failed to load models" />;
+  }
 
-	const hasResults = appItems.length > 0;
+  const hasResults = appItems.length > 0;
 
-	return (
-		<div>
-			<div className="flex flex-col gap-6 mb-6">
-				<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-					<SearchInput
-						value={searchQuery}
-						onChange={setSearchQuery}
-						placeholder="Search Replicate models..."
-						className="w-full md:max-w-md"
-					/>
-					<Button variant="secondary" onClick={handlePredictionsClick}>
-						View my predictions
-					</Button>
-				</div>
+  return (
+    <div>
+      <ReplicateModelFilters
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        signatureFilters={signatureFilters}
+        selectedSignature={selectedSignature}
+        onSelectedSignatureChange={setSelectedSignature}
+        onViewPredictions={handlePredictionsClick}
+      />
 
-				{signatureFilters.length > 0 && (
-					<div className="flex flex-wrap gap-2">
-						<button
-							type="button"
-							onClick={() => setSelectedSignature(null)}
-							className={cn(
-								"px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
-								selectedSignature === null
-									? "bg-zinc-900 text-white dark:bg-zinc-200 dark:text-zinc-900 border-zinc-900 dark:border-zinc-200"
-									: "bg-white text-zinc-700 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 border-zinc-200 dark:border-zinc-700",
-							)}
-						>
-							All models
-						</button>
-						{signatureFilters.map(({ signature, label }) => (
-							<button
-								type="button"
-								key={signature}
-								onClick={() => setSelectedSignature(signature)}
-								className={cn(
-									"px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
-									selectedSignature === signature
-										? "bg-zinc-900 text-white dark:bg-zinc-200 dark:text-zinc-900 border-zinc-900 dark:border-zinc-200"
-										: "bg-white text-zinc-700 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 border-zinc-200 dark:border-zinc-700",
-								)}
-							>
-								{label}
-							</button>
-						))}
-					</div>
-				)}
-			</div>
-
-			{hasResults ? (
-				groupedApps.map(([category, categoryApps]) => (
-					<div key={category} className="space-y-6 mb-8">
-						<h2
-							data-category={category}
-							className={cn(
-								"text-xl font-semibold text-zinc-800 dark:text-zinc-200 border-b border-zinc-200 dark:border-zinc-700 pb-2",
-							)}
-						>
-							{category}
-						</h2>
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-							{categoryApps.map((app) => (
-								<div
-									key={app.id}
-									className="transform transition-transform hover:scale-[1.02] h-[200px]"
-								>
-									<AppCard app={app} onSelect={() => handleModelSelect(app)} />
-								</div>
-							))}
-						</div>
-					</div>
-				))
-			) : (
-				<EmptyState
-					icon={<Sparkles className="h-8 w-8 text-zinc-400" />}
-					title="No models found"
-					message={
-						searchQuery || selectedSignature
-							? "Try adjusting your search or filters to discover different models."
-							: "No Replicate models are currently available."
-					}
-					action={
-						searchQuery || selectedSignature ? (
-							<Button variant="secondary" onClick={handleClearFilters}>
-								Clear filters
-							</Button>
-						) : undefined
-					}
-				/>
-			)}
-		</div>
-	);
+      {hasResults ? (
+        <ReplicateModelCategoryGrid
+          categories={groupedApps.map(([category, categoryApps]) => ({
+            category,
+            models: categoryApps,
+          }))}
+          renderModel={(app) => <AppCard app={app} onSelect={() => handleModelSelect(app)} />}
+        />
+      ) : (
+        <EmptyState
+          icon={<Sparkles className="h-8 w-8 text-zinc-400" />}
+          title="No models found"
+          message={
+            searchQuery || selectedSignature
+              ? "Try adjusting your search or filters to discover different models."
+              : "No Replicate models are currently available."
+          }
+          action={
+            searchQuery || selectedSignature ? (
+              <Button variant="secondary" onClick={handleClearFilters}>
+                Clear filters
+              </Button>
+            ) : undefined
+          }
+        />
+      )}
+    </div>
+  );
 }

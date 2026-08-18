@@ -1,672 +1,674 @@
-import {
-	getMessageTextContent,
-	serialiseMessagesForChatRequest,
-	serialiseMessagesForConversationUpdate,
-} from "@ngriffin_uk/polychat-library-chat/messages";
 import { readCompactionStatusMessage } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
-import type {
-	ChatMode,
-	ChatRequestOptions,
-	ChatSettings,
-	Conversation,
-	ConversationListOptions,
-	ConversationListPage,
-	Message,
-} from "~/types";
 import {
-	createChatStreamAssembler,
-	parseChatStreamSseBuffer,
-	type ChatStreamUpdate,
-	type ParsedChatStreamSseEvent,
+  getMessageTextContent,
+  serialiseMessagesForChatRequest,
+  serialiseMessagesForConversationUpdate,
+} from "@ngriffin_uk/polychat-library-chat/messages";
+import { filterUnavailableModelToolSelections } from "@ngriffin_uk/polychat-library-chat/model-tools";
+import {
+  ApiError,
+  createApiErrorFromResponse,
+  returnFetchedData,
+} from "@ngriffin_uk/polychat-library-client";
+import type {
+  ChatCompletionResponseBody,
+  ModelConfigItem,
+  ModelRouterMode,
+} from "@ngriffin_uk/polychat-schemas";
+import {
+  createChatStreamAssembler,
+  parseChatStreamSseBuffer,
+  type ChatStreamUpdate,
+  type ParsedChatStreamSseEvent,
 } from "@ngriffin_uk/polychat-schemas/chat-stream";
 import { normaliseToolIds } from "@ngriffin_uk/polychat-schemas/tool-ids";
-import type {
-	ChatCompletionResponseBody,
-	ModelConfigItem,
-	ModelRouterMode,
-} from "@ngriffin_uk/polychat-schemas";
-import { getSandboxTaskToolNames } from "~/lib/sandbox/task-tools";
-import { filterUnavailableModelToolSelections } from "~/lib/model-tools";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
-import {
-	createStreamingApiError,
-	toAppMessage,
-	toCompletionResponseAppMessage,
-} from "../chat-stream-response";
+
+import { getSandboxTaskToolNames } from "~/lib/sandbox/task-tools";
+import type {
+  ChatMode,
+  ChatRequestOptions,
+  ChatSettings,
+  Conversation,
+  ConversationListOptions,
+  ConversationListPage,
+  Message,
+} from "~/types";
+
 import { projectChatRequestSettings } from "../chat-request-settings";
+import {
+  createStreamingApiError,
+  toAppMessage,
+  toCompletionResponseAppMessage,
+} from "../chat-stream-response";
 import { parseCompactConversationResponse } from "../compact-conversation-response";
 import { normaliseConversationResponse } from "../conversation-response";
-import {
-	ApiError,
-	createApiErrorFromResponse,
-	returnFetchedData,
-} from "@ngriffin_uk/polychat-library-client";
 import { fetchApi, fetchApiOrThrow } from "../fetch-wrapper";
 
 export interface ConversationUpdateRequest {
-	archived?: boolean;
-	messages?: Message[];
-	parent_conversation_id?: string;
-	parent_message_id?: string;
-	title?: string;
+  archived?: boolean;
+  messages?: Message[];
+  parent_conversation_id?: string;
+  parent_message_id?: string;
+  title?: string;
 }
 
 export interface ConversationCompactionResult {
-	compacted: boolean;
-	conversation: Conversation;
+  compacted: boolean;
+  conversation: Conversation;
 }
 
 type StreamProgressHandler = (
-	text: string,
-	reasoning?: string,
-	toolResponses?: Message[],
-	done?: boolean,
-	assistantMessage?: Message,
+  text: string,
+  reasoning?: string,
+  toolResponses?: Message[],
+  done?: boolean,
+  assistantMessage?: Message,
 ) => void;
 
 export interface StreamChatCompletionsParams {
-	allowTools?: boolean;
-	chatSettings: ChatSettings;
-	completionId: string;
-	endpoint?: string;
-	messages: Message[];
-	mode: ChatMode;
-	model?: string;
-	modelConfig?: ModelConfigItem;
-	modelRouterMode?: ModelRouterMode;
-	models?: string[];
-	onProgress: StreamProgressHandler;
-	onStateChange: (state: string, data?: any) => void;
-	provider?: string;
-	requestOptions?: ChatRequestOptions;
-	selectedTools?: string[];
-	signal: AbortSignal;
-	store?: boolean;
-	streamingEnabled?: boolean;
-	useMultiModel?: boolean;
+  allowTools?: boolean;
+  chatSettings: ChatSettings;
+  completionId: string;
+  endpoint?: string;
+  messages: Message[];
+  mode: ChatMode;
+  model?: string;
+  modelConfig?: ModelConfigItem;
+  modelRouterMode?: ModelRouterMode;
+  models?: string[];
+  onProgress: StreamProgressHandler;
+  onStateChange: (state: string, data?: any) => void;
+  provider?: string;
+  requestOptions?: ChatRequestOptions;
+  selectedTools?: string[];
+  signal: AbortSignal;
+  store?: boolean;
+  streamingEnabled?: boolean;
+  useMultiModel?: boolean;
 }
 
 export class ChatService {
-	constructor(private getHeaders: () => Promise<Record<string, string>>) {}
-
-	async listChats(options: ConversationListOptions = {}): Promise<ConversationListPage> {
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error listing chats:", error);
-		}
-
-		const params = new URLSearchParams();
-		if (options.limit) params.set("limit", String(options.limit));
-		if (options.page) params.set("page", String(options.page));
-		if (options.archived) params.set("archived", options.archived);
-		if (options.sortBy) params.set("sort_by", options.sortBy);
-		if (options.query?.trim()) params.set("q", options.query.trim());
-
-		const queryString = params.toString();
-		const endpoint = queryString ? `/chat/completions?${queryString}` : "/chat/completions";
-
-		const response = await fetchApiOrThrow(endpoint, {
-			method: "GET",
-			headers,
-		});
-
-		const data = await returnFetchedData<{
-			conversations: {
-				id: string;
-				title: string;
-				messages: string[];
-				created_at?: string;
-				updated_at?: string;
-				last_message_at: string;
-				parent_conversation_id?: string;
-				parent_message_id?: string;
-				is_archived?: boolean;
-			}[];
-			pageNumber?: number;
-			pageSize?: number;
-			totalPages?: number;
-		}>(response);
-
-		if (!data.conversations || !Array.isArray(data.conversations)) {
-			console.error("Unexpected response format from /chat/completions endpoint:", data);
-			return {
-				conversations: [],
-				pageNumber: options.page ?? 1,
-				pageSize: options.limit ?? 25,
-				totalPages: 0,
-			};
-		}
-
-		const results = data.conversations.map((conversation) => ({
-			...conversation,
-			messages: [],
-			message_ids: conversation.messages,
-			parent_conversation_id: conversation.parent_conversation_id,
-			parent_message_id: conversation.parent_message_id,
-		}));
-
-		const conversations = results.sort((a, b) => {
-			const dateField = options.sortBy === "created" ? "created_at" : "updated_at";
-			const aTimestamp = new Date(a[dateField] || a.last_message_at).getTime();
-			const bTimestamp = new Date(b[dateField] || b.last_message_at).getTime();
-			return bTimestamp - aTimestamp;
-		});
-
-		return {
-			conversations,
-			pageNumber: data.pageNumber ?? options.page ?? 1,
-			pageSize: data.pageSize ?? options.limit ?? 25,
-			totalPages: data.totalPages ?? 0,
-		};
-	}
-
-	async getChat(
-		completion_id: string,
-		options?: { refreshPending?: boolean },
-	): Promise<Conversation> {
-		if (!completion_id) {
-			throw new Error("No completion ID provided");
-		}
-
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error getting chat:", error);
-		}
-
-		const refreshPending = options?.refreshPending ?? true;
-		const url = refreshPending
-			? `/chat/completions/${completion_id}?refresh_pending=true`
-			: `/chat/completions/${completion_id}`;
-
-		const response = await fetchApi(url, {
-			method: "GET",
-			headers,
-		});
-
-		if (!response.ok) {
-			throw await createApiErrorFromResponse(
-				response,
-				`Failed to get chat: ${response.statusText}`,
-			);
-		}
-
-		const conversation = await returnFetchedData<any>(response);
-
-		return normaliseConversationResponse(conversation, completion_id);
-	}
-
-	async compactConversation(completion_id: string): Promise<ConversationCompactionResult> {
-		if (!completion_id) {
-			throw new Error("No completion ID provided");
-		}
-
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error compacting chat:", error);
-		}
-
-		const response = await fetchApiOrThrow(`/chat/completions/${completion_id}/compact`, {
-			method: "POST",
-			headers,
-		});
-		const parsed = parseCompactConversationResponse(await returnFetchedData<unknown>(response));
-		if (!parsed) {
-			throw new Error("Invalid compact conversation response");
-		}
-
-		return {
-			compacted: parsed.compacted,
-			conversation: normaliseConversationResponse(parsed.conversation, completion_id),
-		};
-	}
-
-	async generateTitle(completion_id: string, messages: Message[]): Promise<string> {
-		if (!completion_id) {
-			throw new Error("No completion ID provided");
-		}
-
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error generating title:", error);
-		}
-
-		const formattedMessages = serialiseMessagesForChatRequest(messages);
-
-		const response = await fetchApi(`/chat/completions/${completion_id}/generate-title`, {
-			method: "POST",
-			headers,
-			body: {
-				completion_id,
-				messages: formattedMessages,
-			},
-		});
-
-		if (!response.ok) {
-			throw new Error(`Failed to generate title: ${response.statusText}`);
-		}
-
-		const data = await returnFetchedData<any>(response);
-		return data.title;
-	}
-
-	async updateConversationTitle(completion_id: string, newTitle: string): Promise<void> {
-		await this.updateConversation(completion_id, { title: newTitle });
-	}
-
-	async updateConversation(
-		completion_id: string,
-		updates: ConversationUpdateRequest,
-	): Promise<Conversation> {
-		if (!completion_id) {
-			throw new Error("No completion ID provided");
-		}
-
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error updating conversation:", error);
-		}
-
-		const updateResponse = await fetchApiOrThrow(`/chat/completions/${completion_id}`, {
-			method: "PUT",
-			headers,
-			body: {
-				completion_id,
-				...updates,
-				messages: updates.messages
-					? serialiseMessagesForConversationUpdate(updates.messages)
-					: undefined,
-			},
-		});
-
-		const data = await returnFetchedData<Conversation>(updateResponse);
-		return normaliseConversationResponse(data, completion_id);
-	}
-
-	async deleteConversation(completion_id: string): Promise<void> {
-		if (!completion_id) {
-			throw new Error("No completion ID provided");
-		}
-
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error deleting conversation:", error);
-		}
-
-		const response = await fetchApi(`/chat/completions/${completion_id}`, {
-			method: "DELETE",
-			headers,
-		});
-
-		if (!response.ok) {
-			throw new Error(`Failed to delete chat: ${response.statusText}`);
-		}
-	}
-
-	async deleteAllConversations(): Promise<void> {
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error deleting all conversations:", error);
-		}
-
-		const response = await fetchApi("/chat/completions", {
-			method: "DELETE",
-			headers,
-		});
-
-		if (!response.ok) {
-			throw new Error(`Failed to delete all conversations: ${response.statusText}`);
-		}
-	}
-
-	async shareConversation(completion_id: string): Promise<{ share_id: string }> {
-		if (!completion_id) {
-			throw new Error("No completion ID provided");
-		}
-
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error sharing conversation:", error);
-		}
-
-		const response = await fetchApi(`/chat/completions/${completion_id}/share`, {
-			method: "POST",
-			headers,
-		});
-
-		if (!response.ok) {
-			throw new Error(`Failed to share conversation: ${response.statusText}`);
-		}
-
-		return await returnFetchedData<{ share_id: string }>(response);
-	}
-
-	async unshareConversation(completion_id: string): Promise<void> {
-		if (!completion_id) {
-			throw new Error("No completion ID provided");
-		}
-
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error unsharing conversation:", error);
-		}
-
-		const response = await fetchApi(`/chat/completions/${completion_id}/share`, {
-			method: "DELETE",
-			headers,
-		});
-
-		if (!response.ok) {
-			throw new Error(`Failed to unshare conversation: ${response.statusText}`);
-		}
-	}
-
-	async submitFeedback(completion_id: string, log_id: string, feedback: 1 | -1): Promise<void> {
-		if (!completion_id) {
-			throw new Error("No completion ID provided");
-		}
-
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error submitting feedback:", error);
-		}
-
-		const response = await fetchApi(`/chat/completions/${completion_id}/feedback`, {
-			method: "POST",
-			headers,
-			body: {
-				log_id,
-				feedback,
-			},
-		});
-
-		if (!response.ok) {
-			throw new Error(`Failed to submit feedback: ${response.statusText}`);
-		}
-	}
-
-	async streamChatCompletions({
-		chatSettings,
-		completionId,
-		endpoint = "/chat/completions",
-		messages,
-		mode,
-		model,
-		modelConfig,
-		modelRouterMode,
-		models,
-		onProgress,
-		onStateChange,
-		provider,
-		requestOptions,
-		selectedTools,
-		signal,
-		store = true,
-		streamingEnabled = true,
-		useMultiModel = false,
-		allowTools = true,
-	}: StreamChatCompletionsParams): Promise<Message> {
-		let headers = {};
-		try {
-			headers = await this.getHeaders();
-		} catch (error) {
-			console.error("Error streaming chat completions:", error);
-		}
-
-		const formattedMessages = serialiseMessagesForChatRequest(messages);
-		if (formattedMessages.length === 0) {
-			throw new Error("Missing required parameter: messages");
-		}
-		const sandboxOptions =
-			allowTools && requestOptions?.options?.sandbox?.enabled
-				? requestOptions.options.sandbox
-				: undefined;
-		const selectedToolIds =
-			allowTools && selectedTools
-				? normaliseToolIds(filterUnavailableModelToolSelections(selectedTools, modelConfig))
-				: undefined;
-		const requestEnabledTools = sandboxOptions
-			? normaliseToolIds([
-					...(selectedToolIds ?? []),
-					...getSandboxTaskToolNames(sandboxOptions.taskType),
-				])
-			: selectedToolIds;
-		const requestApprovedTools = sandboxOptions
-			? getSandboxTaskToolNames(sandboxOptions.taskType)
-			: undefined;
-
-		const {
-			enabledTools: settingsEnabledTools,
-			generationSettings,
-			hostedToolOptions,
-			ragOptions: requestRagOptions,
-			useRag,
-		} = projectChatRequestSettings(chatSettings);
-		const enabledTools = allowTools ? (requestEnabledTools ?? settingsEnabledTools) : undefined;
-		const { options: featureOptions, ...requestOptionFields } = requestOptions ?? {};
-		const requestBody: Record<string, any> = {
-			...requestOptionFields,
-			completion_id: completionId,
-			messages: formattedMessages,
-			platform: "web",
-			store,
-			stream: streamingEnabled,
-			...generationSettings,
-			models,
-			model_router_mode: modelRouterMode,
-			provider,
-			mode,
-			use_multi_model: useMultiModel,
-			max_steps: sandboxOptions?.maxSteps ?? (sandboxOptions ? 2 : undefined),
-			use_rag: useRag,
-			rag_options: requestRagOptions,
-			enabled_tools: enabledTools,
-			approved_tools: allowTools ? requestApprovedTools : undefined,
-			tool_options: allowTools ? hostedToolOptions : undefined,
-			options: featureOptions,
-		};
-
-		if (model !== undefined) {
-			requestBody.model = model;
-		}
-		const response = await fetchApi(endpoint, {
-			method: "POST",
-			headers,
-			body: requestBody,
-			signal,
-		});
-
-		if (!response.ok) {
-			throw await createApiErrorFromResponse(response, "Failed to stream chat completions");
-		}
-
-		return this.processStreamingResponse(response, model, onProgress, onStateChange);
-	}
-
-	private async processStreamingResponse(
-		response: Response,
-		model: string | undefined,
-		onProgress: (
-			text: string,
-			reasoning?: string,
-			toolResponses?: Message[],
-			done?: boolean,
-			assistantMessage?: Message,
-		) => void,
-		onStateChange: (state: string, data?: any) => void,
-	): Promise<Message> {
-		const isStreamingResponse = response.headers.get("content-type")?.includes("text/event-stream");
-
-		if (!isStreamingResponse) {
-			const data = await returnFetchedData<ChatCompletionResponseBody>(response);
-
-			if ("error" in data) {
-				const error = data.error;
-				throw new Error(
-					isRecord(error) && typeof error.message === "string" ? error.message : "Unknown error",
-				);
-			}
-
-			const compactionMessage = readCompactionStatusMessage(
-				data.post_processing?.compaction?.message,
-			);
-			if (compactionMessage) {
-				onStateChange("compaction", {
-					type: "state",
-					state: "compaction",
-					message: compactionMessage,
-				});
-			}
-
-			return toCompletionResponseAppMessage(data, model);
-		}
-
-		const decoder = new TextDecoder();
-		const reader = response.body?.getReader();
-		if (!reader) {
-			throw new Error("Response body is not readable as a stream");
-		}
-
-		let buffer = "";
-		let lastAssistantMessage: Message | undefined;
-		const assembler = createChatStreamAssembler({ model });
-
-		const handleUpdate = (update: ChatStreamUpdate) => {
-			if (update.type === "assistant_metadata") {
-				onProgress(
-					typeof update.message.content === "string" ? update.message.content : "",
-					update.message.reasoning?.content,
-					undefined,
-					false,
-					toAppMessage(update.message),
-				);
-				return;
-			}
-
-			if (update.type === "assistant_delta") {
-				onProgress(update.content, update.reasoning, undefined, false);
-				return;
-			}
-
-			if (update.type === "assistant_final") {
-				lastAssistantMessage = toAppMessage(update.message);
-				onProgress(
-					getMessageTextContent(lastAssistantMessage),
-					lastAssistantMessage.reasoning?.content,
-					undefined,
-					true,
-					lastAssistantMessage,
-				);
-				return;
-			}
-
-			if (update.type === "tool_result") {
-				onProgress("", "", [toAppMessage(update.message)]);
-				return;
-			}
-
-			if (update.type === "state") {
-				onStateChange(update.state, update.event);
-				return;
-			}
-
-			if (update.type === "done" && update.message) {
-				lastAssistantMessage = toAppMessage(update.message);
-			}
-		};
-		const handleParsedEvent = (parsedData: ParsedChatStreamSseEvent) => {
-			if (parsedData.type === "error" && "error" in parsedData) {
-				throw createStreamingApiError(parsedData.error);
-			}
-			if (parsedData.type === "usage_limits" && "usage_limits" in parsedData) {
-				onStateChange("usage_limits", parsedData.usage_limits);
-			}
-			if (parsedData.type === "tool_use_start") {
-				onStateChange("tool_use_start", parsedData);
-			}
-			if (parsedData.type === "tool_use_stop") {
-				onStateChange("tool_use_stop", parsedData);
-			}
-
-			for (const update of assembler.ingest(parsedData)) {
-				handleUpdate(update);
-			}
-		};
-		const processBufferedEvents = (flush = false) => {
-			const parsed = parseChatStreamSseBuffer(buffer, { flush });
-			buffer = parsed.remainingBuffer;
-
-			for (const parsedData of parsed.events) {
-				try {
-					handleParsedEvent(parsedData);
-				} catch (error) {
-					if (error instanceof ApiError) {
-						throw error;
-					}
-					console.error("Error handling SSE data:", error, parsedData);
-				}
-			}
-		};
-
-		try {
-			while (true) {
-				const { done, value } = await reader.read();
-				if (done) {
-					break;
-				}
-
-				buffer += decoder.decode(value, { stream: true });
-				processBufferedEvents();
-			}
-
-			if (buffer.trim()) {
-				processBufferedEvents(true);
-			}
-
-			if (!assembler.getFinalMessage()) {
-				for (const update of assembler.ingest({ type: "done" })) {
-					handleUpdate(update);
-				}
-			}
-		} catch (error) {
-			console.error("Error reading stream:", error);
-			if (error instanceof Error && error.name !== "AbortError") {
-				throw error;
-			}
-		} finally {
-			reader.releaseLock();
-		}
-
-		const finalStreamMessage = assembler.getFinalMessage();
-		return (
-			lastAssistantMessage ||
-			(finalStreamMessage
-				? toAppMessage(finalStreamMessage)
-				: toAppMessage({
-						role: "assistant",
-						content: "",
-						id: crypto.randomUUID(),
-						model,
-					}))
-		);
-	}
+  constructor(private getHeaders: () => Promise<Record<string, string>>) {}
+
+  async listChats(options: ConversationListOptions = {}): Promise<ConversationListPage> {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error listing chats:", error);
+    }
+
+    const params = new URLSearchParams();
+    if (options.limit) params.set("limit", String(options.limit));
+    if (options.page) params.set("page", String(options.page));
+    if (options.archived) params.set("archived", options.archived);
+    if (options.sortBy) params.set("sort_by", options.sortBy);
+    if (options.query?.trim()) params.set("q", options.query.trim());
+
+    const queryString = params.toString();
+    const endpoint = queryString ? `/chat/completions?${queryString}` : "/chat/completions";
+
+    const response = await fetchApiOrThrow(endpoint, {
+      method: "GET",
+      headers,
+    });
+
+    const data = await returnFetchedData<{
+      conversations: {
+        id: string;
+        title: string;
+        messages: string[];
+        created_at?: string;
+        updated_at?: string;
+        last_message_at: string;
+        parent_conversation_id?: string;
+        parent_message_id?: string;
+        is_archived?: boolean;
+      }[];
+      pageNumber?: number;
+      pageSize?: number;
+      totalPages?: number;
+    }>(response);
+
+    if (!data.conversations || !Array.isArray(data.conversations)) {
+      console.error("Unexpected response format from /chat/completions endpoint:", data);
+      return {
+        conversations: [],
+        pageNumber: options.page ?? 1,
+        pageSize: options.limit ?? 25,
+        totalPages: 0,
+      };
+    }
+
+    const results = data.conversations.map((conversation) => ({
+      ...conversation,
+      messages: [],
+      message_ids: conversation.messages,
+      parent_conversation_id: conversation.parent_conversation_id,
+      parent_message_id: conversation.parent_message_id,
+    }));
+
+    const conversations = results.sort((a, b) => {
+      const dateField = options.sortBy === "created" ? "created_at" : "updated_at";
+      const aTimestamp = new Date(a[dateField] || a.last_message_at).getTime();
+      const bTimestamp = new Date(b[dateField] || b.last_message_at).getTime();
+      return bTimestamp - aTimestamp;
+    });
+
+    return {
+      conversations,
+      pageNumber: data.pageNumber ?? options.page ?? 1,
+      pageSize: data.pageSize ?? options.limit ?? 25,
+      totalPages: data.totalPages ?? 0,
+    };
+  }
+
+  async getChat(
+    completion_id: string,
+    options?: { refreshPending?: boolean },
+  ): Promise<Conversation> {
+    if (!completion_id) {
+      throw new Error("No completion ID provided");
+    }
+
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting chat:", error);
+    }
+
+    const refreshPending = options?.refreshPending ?? true;
+    const url = refreshPending
+      ? `/chat/completions/${completion_id}?refresh_pending=true`
+      : `/chat/completions/${completion_id}`;
+
+    const response = await fetchApi(url, {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(
+        response,
+        `Failed to get chat: ${response.statusText}`,
+      );
+    }
+
+    const conversation = await returnFetchedData<any>(response);
+
+    return normaliseConversationResponse(conversation, completion_id);
+  }
+
+  async compactConversation(completion_id: string): Promise<ConversationCompactionResult> {
+    if (!completion_id) {
+      throw new Error("No completion ID provided");
+    }
+
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error compacting chat:", error);
+    }
+
+    const response = await fetchApiOrThrow(`/chat/completions/${completion_id}/compact`, {
+      method: "POST",
+      headers,
+    });
+    const parsed = parseCompactConversationResponse(await returnFetchedData<unknown>(response));
+    if (!parsed) {
+      throw new Error("Invalid compact conversation response");
+    }
+
+    return {
+      compacted: parsed.compacted,
+      conversation: normaliseConversationResponse(parsed.conversation, completion_id),
+    };
+  }
+
+  async generateTitle(completion_id: string, messages: Message[]): Promise<string> {
+    if (!completion_id) {
+      throw new Error("No completion ID provided");
+    }
+
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error generating title:", error);
+    }
+
+    const formattedMessages = serialiseMessagesForChatRequest(messages);
+
+    const response = await fetchApi(`/chat/completions/${completion_id}/generate-title`, {
+      method: "POST",
+      headers,
+      body: {
+        completion_id,
+        messages: formattedMessages,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to generate title: ${response.statusText}`);
+    }
+
+    const data = await returnFetchedData<any>(response);
+    return data.title;
+  }
+
+  async updateConversationTitle(completion_id: string, newTitle: string): Promise<void> {
+    await this.updateConversation(completion_id, { title: newTitle });
+  }
+
+  async updateConversation(
+    completion_id: string,
+    updates: ConversationUpdateRequest,
+  ): Promise<Conversation> {
+    if (!completion_id) {
+      throw new Error("No completion ID provided");
+    }
+
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error updating conversation:", error);
+    }
+
+    const updateResponse = await fetchApiOrThrow(`/chat/completions/${completion_id}`, {
+      method: "PUT",
+      headers,
+      body: {
+        completion_id,
+        ...updates,
+        messages: updates.messages
+          ? serialiseMessagesForConversationUpdate(updates.messages)
+          : undefined,
+      },
+    });
+
+    const data = await returnFetchedData<Conversation>(updateResponse);
+    return normaliseConversationResponse(data, completion_id);
+  }
+
+  async deleteConversation(completion_id: string): Promise<void> {
+    if (!completion_id) {
+      throw new Error("No completion ID provided");
+    }
+
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+    }
+
+    const response = await fetchApi(`/chat/completions/${completion_id}`, {
+      method: "DELETE",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete chat: ${response.statusText}`);
+    }
+  }
+
+  async deleteAllConversations(): Promise<void> {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error deleting all conversations:", error);
+    }
+
+    const response = await fetchApi("/chat/completions", {
+      method: "DELETE",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete all conversations: ${response.statusText}`);
+    }
+  }
+
+  async shareConversation(completion_id: string): Promise<{ share_id: string }> {
+    if (!completion_id) {
+      throw new Error("No completion ID provided");
+    }
+
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error sharing conversation:", error);
+    }
+
+    const response = await fetchApi(`/chat/completions/${completion_id}/share`, {
+      method: "POST",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to share conversation: ${response.statusText}`);
+    }
+
+    return await returnFetchedData<{ share_id: string }>(response);
+  }
+
+  async unshareConversation(completion_id: string): Promise<void> {
+    if (!completion_id) {
+      throw new Error("No completion ID provided");
+    }
+
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error unsharing conversation:", error);
+    }
+
+    const response = await fetchApi(`/chat/completions/${completion_id}/share`, {
+      method: "DELETE",
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to unshare conversation: ${response.statusText}`);
+    }
+  }
+
+  async submitFeedback(completion_id: string, log_id: string, feedback: 1 | -1): Promise<void> {
+    if (!completion_id) {
+      throw new Error("No completion ID provided");
+    }
+
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+    }
+
+    const response = await fetchApi(`/chat/completions/${completion_id}/feedback`, {
+      method: "POST",
+      headers,
+      body: {
+        log_id,
+        feedback,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to submit feedback: ${response.statusText}`);
+    }
+  }
+
+  async streamChatCompletions({
+    chatSettings,
+    completionId,
+    endpoint = "/chat/completions",
+    messages,
+    mode,
+    model,
+    modelConfig,
+    modelRouterMode,
+    models,
+    onProgress,
+    onStateChange,
+    provider,
+    requestOptions,
+    selectedTools,
+    signal,
+    store = true,
+    streamingEnabled = true,
+    useMultiModel = false,
+    allowTools = true,
+  }: StreamChatCompletionsParams): Promise<Message> {
+    let headers = {};
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error streaming chat completions:", error);
+    }
+
+    const formattedMessages = serialiseMessagesForChatRequest(messages);
+    if (formattedMessages.length === 0) {
+      throw new Error("Missing required parameter: messages");
+    }
+    const sandboxOptions =
+      allowTools && requestOptions?.options?.sandbox?.enabled
+        ? requestOptions.options.sandbox
+        : undefined;
+    const selectedToolIds =
+      allowTools && selectedTools
+        ? normaliseToolIds(filterUnavailableModelToolSelections(selectedTools, modelConfig))
+        : undefined;
+    const requestEnabledTools = sandboxOptions
+      ? normaliseToolIds([
+          ...(selectedToolIds ?? []),
+          ...getSandboxTaskToolNames(sandboxOptions.taskType),
+        ])
+      : selectedToolIds;
+    const requestApprovedTools = sandboxOptions
+      ? getSandboxTaskToolNames(sandboxOptions.taskType)
+      : undefined;
+
+    const {
+      enabledTools: settingsEnabledTools,
+      generationSettings,
+      hostedToolOptions,
+      ragOptions: requestRagOptions,
+      useRag,
+    } = projectChatRequestSettings(chatSettings);
+    const enabledTools = allowTools ? (requestEnabledTools ?? settingsEnabledTools) : undefined;
+    const { options: featureOptions, ...requestOptionFields } = requestOptions ?? {};
+    const requestBody: Record<string, any> = {
+      ...requestOptionFields,
+      completion_id: completionId,
+      messages: formattedMessages,
+      platform: "web",
+      store,
+      stream: streamingEnabled,
+      ...generationSettings,
+      models,
+      model_router_mode: modelRouterMode,
+      provider,
+      mode,
+      use_multi_model: useMultiModel,
+      max_steps: sandboxOptions?.maxSteps ?? (sandboxOptions ? 2 : undefined),
+      use_rag: useRag,
+      rag_options: requestRagOptions,
+      enabled_tools: enabledTools,
+      approved_tools: allowTools ? requestApprovedTools : undefined,
+      tool_options: allowTools ? hostedToolOptions : undefined,
+      options: featureOptions,
+    };
+
+    if (model !== undefined) {
+      requestBody.model = model;
+    }
+    const response = await fetchApi(endpoint, {
+      method: "POST",
+      headers,
+      body: requestBody,
+      signal,
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Failed to stream chat completions");
+    }
+
+    return this.processStreamingResponse(response, model, onProgress, onStateChange);
+  }
+
+  private async processStreamingResponse(
+    response: Response,
+    model: string | undefined,
+    onProgress: (
+      text: string,
+      reasoning?: string,
+      toolResponses?: Message[],
+      done?: boolean,
+      assistantMessage?: Message,
+    ) => void,
+    onStateChange: (state: string, data?: any) => void,
+  ): Promise<Message> {
+    const isStreamingResponse = response.headers.get("content-type")?.includes("text/event-stream");
+
+    if (!isStreamingResponse) {
+      const data = await returnFetchedData<ChatCompletionResponseBody>(response);
+
+      if ("error" in data) {
+        const error = data.error;
+        throw new Error(
+          isRecord(error) && typeof error.message === "string" ? error.message : "Unknown error",
+        );
+      }
+
+      const compactionMessage = readCompactionStatusMessage(
+        data.post_processing?.compaction?.message,
+      );
+      if (compactionMessage) {
+        onStateChange("compaction", {
+          type: "state",
+          state: "compaction",
+          message: compactionMessage,
+        });
+      }
+
+      return toCompletionResponseAppMessage(data, model);
+    }
+
+    const decoder = new TextDecoder();
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error("Response body is not readable as a stream");
+    }
+
+    let buffer = "";
+    let lastAssistantMessage: Message | undefined;
+    const assembler = createChatStreamAssembler({ model });
+
+    const handleUpdate = (update: ChatStreamUpdate) => {
+      if (update.type === "assistant_metadata") {
+        onProgress(
+          typeof update.message.content === "string" ? update.message.content : "",
+          update.message.reasoning?.content,
+          undefined,
+          false,
+          toAppMessage(update.message),
+        );
+        return;
+      }
+
+      if (update.type === "assistant_delta") {
+        onProgress(update.content, update.reasoning, undefined, false);
+        return;
+      }
+
+      if (update.type === "assistant_final") {
+        lastAssistantMessage = toAppMessage(update.message);
+        onProgress(
+          getMessageTextContent(lastAssistantMessage),
+          lastAssistantMessage.reasoning?.content,
+          undefined,
+          true,
+          lastAssistantMessage,
+        );
+        return;
+      }
+
+      if (update.type === "tool_result") {
+        onProgress("", "", [toAppMessage(update.message)]);
+        return;
+      }
+
+      if (update.type === "state") {
+        onStateChange(update.state, update.event);
+        return;
+      }
+
+      if (update.type === "done" && update.message) {
+        lastAssistantMessage = toAppMessage(update.message);
+      }
+    };
+    const handleParsedEvent = (parsedData: ParsedChatStreamSseEvent) => {
+      if (parsedData.type === "error" && "error" in parsedData) {
+        throw createStreamingApiError(parsedData.error);
+      }
+      if (parsedData.type === "usage_limits" && "usage_limits" in parsedData) {
+        onStateChange("usage_limits", parsedData.usage_limits);
+      }
+      if (parsedData.type === "tool_use_start") {
+        onStateChange("tool_use_start", parsedData);
+      }
+      if (parsedData.type === "tool_use_stop") {
+        onStateChange("tool_use_stop", parsedData);
+      }
+
+      for (const update of assembler.ingest(parsedData)) {
+        handleUpdate(update);
+      }
+    };
+    const processBufferedEvents = (flush = false) => {
+      const parsed = parseChatStreamSseBuffer(buffer, { flush });
+      buffer = parsed.remainingBuffer;
+
+      for (const parsedData of parsed.events) {
+        try {
+          handleParsedEvent(parsedData);
+        } catch (error) {
+          if (error instanceof ApiError) {
+            throw error;
+          }
+          console.error("Error handling SSE data:", error, parsedData);
+        }
+      }
+    };
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+
+        buffer += decoder.decode(value, { stream: true });
+        processBufferedEvents();
+      }
+
+      if (buffer.trim()) {
+        processBufferedEvents(true);
+      }
+
+      if (!assembler.getFinalMessage()) {
+        for (const update of assembler.ingest({ type: "done" })) {
+          handleUpdate(update);
+        }
+      }
+    } catch (error) {
+      console.error("Error reading stream:", error);
+      if (error instanceof Error && error.name !== "AbortError") {
+        throw error;
+      }
+    } finally {
+      reader.releaseLock();
+    }
+
+    const finalStreamMessage = assembler.getFinalMessage();
+    return (
+      lastAssistantMessage ||
+      (finalStreamMessage
+        ? toAppMessage(finalStreamMessage)
+        : toAppMessage({
+            role: "assistant",
+            content: "",
+            id: crypto.randomUUID(),
+            model,
+          }))
+    );
+  }
 }

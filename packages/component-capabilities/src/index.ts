@@ -9,3 +9,7 @@ export * from "./ToolConfigurationDialog";
 export * from "./ToolResultCard";
 export * from "./ToolForm/FormStep";
 export * from "./ToolForm/ToolForm";
+export * from "./CapabilityDiscoveryList";
+export * from "./RecipeEventTriggerViews";
+export * from "./CapabilityGroupSection";
+export * from "./RecipeEventTriggerForm";

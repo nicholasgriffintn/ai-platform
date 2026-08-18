@@ -42,3 +42,4 @@ export * from "./toggle-group";
 export * from "./Uploader/BasicFileUploader";
 export * from "./Uploader/SingleFileUploader";
 export * from "./utils";
+export * from "./LogoMark";

@@ -1,200 +1,138 @@
-import { Check, Link2, Puzzle, Share2, Trash2 } from "lucide-react";
+import { Card, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
+import {
+  OutputCardGrid,
+  OutputDetailHeader,
+  ShareLinkList,
+} from "@ngriffin_uk/polychat-component-workspaces";
+import { Puzzle } from "lucide-react";
 import { useRef, useState } from "react";
-import { Link } from "react-router";
 
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import {
-	Button,
-	Card,
-	CardGridLoadingSkeleton,
-	EmptyState,
-} from "@ngriffin_uk/polychat-component-ui";
-import {
-	useCreateOutputShare,
-	useOutput,
-	useOutputs,
-	useOutputShares,
-	useRevokeOutputShare,
+  useCreateOutputShare,
+  useOutput,
+  useOutputs,
+  useOutputShares,
+  useRevokeOutputShare,
 } from "~/hooks/useOutputs";
-import { formatDate } from "@ngriffin_uk/polychat-utility-core";
 import { useRunnableTool } from "~/hooks/useRunnableTools";
 import { isAuthenticationError } from "~/lib/errors";
 
 export function ResponsesExperience({ basePath, projectId, subpath }: ExperienceProps) {
-	const [copiedOutputId, setCopiedOutputId] = useState<string | null>(null);
-	const [shareError, setShareError] = useState<{ outputId: string; message: string } | null>(null);
-	const mintedShareTokens = useRef(new Map<string, string>());
-	const createShare = useCreateOutputShare();
-	const revokeShare = useRevokeOutputShare();
-	const outputId = subpath.split("/").filter(Boolean)[0];
-	const { data: shares } = useOutputShares(outputId ?? null);
-	const {
-		data: outputs,
-		isLoading,
-		error,
-	} = useOutputs(projectId, undefined, {
-		enabled: !outputId,
-	});
-	const {
-		data: output,
-		isLoading: isOutputLoading,
-		error: outputError,
-	} = useOutput(outputId ?? null);
-	// The stored output keeps the raw payload; the tool it came from owns how to display it.
-	const { data: producingTool } = useRunnableTool(output?.capabilityId ?? null);
+  const [copiedOutputId, setCopiedOutputId] = useState<string | null>(null);
+  const [shareError, setShareError] = useState<{ outputId: string; message: string } | null>(null);
+  const mintedShareTokens = useRef(new Map<string, string>());
+  const createShare = useCreateOutputShare();
+  const revokeShare = useRevokeOutputShare();
+  const outputId = subpath.split("/").filter(Boolean)[0];
+  const { data: shares } = useOutputShares(outputId ?? null);
+  const {
+    data: outputs,
+    isLoading,
+    error,
+  } = useOutputs(projectId, undefined, {
+    enabled: !outputId,
+  });
+  const {
+    data: output,
+    isLoading: isOutputLoading,
+    error: outputError,
+  } = useOutput(outputId ?? null);
+  const { data: producingTool } = useRunnableTool(output?.capabilityId ?? null);
 
-	if (outputId) {
-		if (isOutputLoading) return <CardGridLoadingSkeleton count={1} label="Loading output" />;
-		if (isAuthenticationError(outputError)) {
-			return (
-				<SignInEmptyState
-					title="Sign in to view this output"
-					message="Sign in to open this output."
-				/>
-			);
-		}
-		if (outputError || !output)
-			return (
-				<EmptyState
-					title="Output unavailable"
-					message={outputError?.message ?? "Output not found"}
-				/>
-			);
-		return (
-			<Card className="gap-5 p-6 shadow-none">
-				<div className="flex items-start justify-between gap-4">
-					<div>
-						<p className="text-xs font-medium uppercase tracking-wide text-zinc-400">
-							{output.capabilityId}
-						</p>
-						<h1 className="mt-1 text-xl font-semibold text-zinc-950 dark:text-white">
-							{output.title}
-						</h1>
-					</div>
-					<Button
-						variant="outline"
-						disabled={createShare.isPending}
-						onClick={async () => {
-							setShareError(null);
-							try {
-								let token = mintedShareTokens.current.get(output.id);
-								if (!token) {
-									({ token } = await createShare.mutateAsync({ outputId: output.id }));
-									mintedShareTokens.current.set(output.id, token);
-								}
-								await navigator.clipboard.writeText(`${window.location.origin}/o/${token}`);
-								setCopiedOutputId(output.id);
-							} catch (error) {
-								setCopiedOutputId(null);
-								setShareError({
-									outputId: output.id,
-									message: error instanceof Error ? error.message : "Could not copy the share link",
-								});
-							}
-						}}
-					>
-						{copiedOutputId === output.id ? <Check size={16} /> : <Share2 size={16} />}
-						{copiedOutputId === output.id ? "Link copied" : "Share"}
-					</Button>
-				</div>
-				{shareError?.outputId === output.id && (
-					<p role="alert" className="text-sm text-red-700 dark:text-red-400">
-						{shareError.message}
-					</p>
-				)}
-				<ResponseRenderer app={producingTool ?? undefined} result={output.content} />
-				{shares?.length ? (
-					<section className="border-t border-zinc-200 pt-5 dark:border-zinc-800">
-						<div className="mb-3">
-							<h2 className="text-sm font-semibold text-zinc-950 dark:text-white">
-								Active share links
-							</h2>
-							<p className="mt-1 text-xs text-zinc-500">
-								Anyone with one of these links can view this output.
-							</p>
-						</div>
-						<div className="divide-y divide-zinc-100 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
-							{shares.map((share) => (
-								<div key={share.id} className="flex items-center gap-3 px-3 py-2.5">
-									<Link2 size={15} className="shrink-0 text-zinc-400" />
-									<div className="min-w-0 flex-1">
-										<p className="text-sm font-medium">Share link</p>
-										<p className="text-xs text-zinc-500">
-											Created {formatDate(share.createdAt)}
-											{share.expiresAt ? ` · Expires ${formatDate(share.expiresAt)}` : ""}
-										</p>
-									</div>
-									<Button
-										type="button"
-										size="sm"
-										variant="outline"
-										icon={<Trash2 size={14} />}
-										isLoading={revokeShare.isPending && revokeShare.variables?.shareId === share.id}
-										onClick={() => {
-											mintedShareTokens.current.delete(output.id);
-											if (copiedOutputId === output.id) setCopiedOutputId(null);
-											revokeShare.mutate({ outputId: output.id, shareId: share.id });
-										}}
-									>
-										Revoke
-									</Button>
-								</div>
-							))}
-						</div>
-					</section>
-				) : null}
-			</Card>
-		);
-	}
-	if (isLoading) return <CardGridLoadingSkeleton count={4} label="Loading outputs" />;
-	if (isAuthenticationError(error)) {
-		return (
-			<SignInEmptyState
-				title="Sign in to view saved outputs"
-				message="Saved outputs are kept against your account."
-			/>
-		);
-	}
-	if (error) return <EmptyState title="Outputs unavailable" message={error.message} />;
-	if (!outputs?.length)
-		return (
-			<EmptyState
-				icon={<Puzzle size={24} className="text-zinc-400" />}
-				title="Nothing saved yet"
-				message="Run an experience or tool and its result lands here."
-			/>
-		);
+  if (outputId) {
+    if (isOutputLoading) return <CardGridLoadingSkeleton count={1} label="Loading output" />;
+    if (isAuthenticationError(outputError)) {
+      return (
+        <SignInEmptyState
+          title="Sign in to view this output"
+          message="Sign in to open this output."
+        />
+      );
+    }
+    if (outputError || !output)
+      return (
+        <EmptyState
+          title="Output unavailable"
+          message={outputError?.message ?? "Output not found"}
+        />
+      );
+    return (
+      <Card className="gap-5 p-6 shadow-none">
+        <OutputDetailHeader
+          capabilityId={output.capabilityId}
+          title={output.title}
+          isSharing={createShare.isPending}
+          hasCopiedLink={copiedOutputId === output.id}
+          errorMessage={shareError?.outputId === output.id ? shareError.message : undefined}
+          onShare={async () => {
+            setShareError(null);
+            try {
+              let token = mintedShareTokens.current.get(output.id);
+              if (!token) {
+                ({ token } = await createShare.mutateAsync({ outputId: output.id }));
+                mintedShareTokens.current.set(output.id, token);
+              }
+              await navigator.clipboard.writeText(`${window.location.origin}/o/${token}`);
+              setCopiedOutputId(output.id);
+            } catch (error) {
+              setCopiedOutputId(null);
+              setShareError({
+                outputId: output.id,
+                message: error instanceof Error ? error.message : "Could not copy the share link",
+              });
+            }
+          }}
+        />
+        <ResponseRenderer app={producingTool ?? undefined} result={output.content} />
+        <ShareLinkList
+          shares={shares ?? []}
+          revokingShareId={revokeShare.isPending ? (revokeShare.variables?.shareId ?? null) : null}
+          onRevoke={(shareId) => {
+            mintedShareTokens.current.delete(output.id);
+            if (copiedOutputId === output.id) setCopiedOutputId(null);
+            revokeShare.mutate({ outputId: output.id, shareId });
+          }}
+        />
+      </Card>
+    );
+  }
+  if (isLoading) return <CardGridLoadingSkeleton count={4} label="Loading outputs" />;
+  if (isAuthenticationError(error)) {
+    return (
+      <SignInEmptyState
+        title="Sign in to view saved outputs"
+        message="Saved outputs are kept against your account."
+      />
+    );
+  }
+  if (error) return <EmptyState title="Outputs unavailable" message={error.message} />;
+  if (!outputs?.length)
+    return (
+      <EmptyState
+        icon={<Puzzle size={24} className="text-zinc-400" />}
+        title="Nothing saved yet"
+        message="Run an experience or tool and its result lands here."
+      />
+    );
 
-	return (
-		<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-			{outputs.map((item) => {
-				return (
-					<Link
-						key={item.id}
-						to={`${basePath}/${item.id}`}
-						className="group no-underline hover:!no-underline"
-					>
-						<Card className="h-full gap-3 p-5 shadow-none hover:border-zinc-400 dark:hover:border-zinc-600">
-							<p className="text-xs font-medium uppercase tracking-wide text-zinc-400">
-								{item.capabilityId}
-							</p>
-							<h2 className="font-semibold text-zinc-950 group-hover:underline dark:text-white">
-								{item.title}
-							</h2>
-							<p className="mt-auto pt-3 text-xs text-zinc-400">
-								{new Date(item.updatedAt ?? item.createdAt).toLocaleString()}
-							</p>
-						</Card>
-					</Link>
-				);
-			})}
-		</div>
-	);
+  return (
+    <OutputCardGrid
+      outputs={outputs.map((item) => ({
+        id: item.id,
+        title: item.title,
+        capabilityId: item.capabilityId,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        href: `${basePath}/${item.id}`,
+      }))}
+    />
+  );
 }
 
 interface ExperienceProps {
-	basePath: string;
-	projectId?: string;
-	subpath: string;
+  basePath: string;
+  projectId?: string;
+  subpath: string;
 }

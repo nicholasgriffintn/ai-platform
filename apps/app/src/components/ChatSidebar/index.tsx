@@ -1,360 +1,343 @@
-import {
-	type ConversationArchiveFilter,
-	type ConversationSortBy,
-} from "@ngriffin_uk/polychat-library-chat/conversation-types";
-import { type CanvasStudioState } from "~/components/Canvas/useCanvasStudio";
 import { CanvasSidebarControls } from "@ngriffin_uk/polychat-component-experiences/media";
 import {
-	Grid2X2,
-	Image as ImageIcon,
-	Loader2,
-	MessageCircle,
-	Search,
-	Settings2,
-	SquarePen,
+  ConversationList,
+  ConversationListControls,
+  ConversationListSection,
+  ConversationStorageNotice,
+  SidebarNavButton,
+  SidebarNavLink,
+  SidebarNavSection,
+} from "@ngriffin_uk/polychat-component-navigation";
+import { Button, ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
+import {
+  type ConversationArchiveFilter,
+  type ConversationSortBy,
+} from "@ngriffin_uk/polychat-library-chat/conversation-types";
+import { useLoadMoreOnIntersect } from "@ngriffin_uk/polychat-utility-react";
+import {
+  Grid2X2,
+  Image as ImageIcon,
+  Loader2,
+  MessageCircle,
+  Search,
+  Settings2,
+  SquarePen,
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
-import {
-	ConversationList,
-	ConversationListControls,
-	ConversationStorageNotice,
-	SidebarNavButton,
-	SidebarNavLink,
-	SidebarNavSection,
-} from "@ngriffin_uk/polychat-component-navigation";
-
-import { Button, ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
+import { type CanvasStudioState } from "~/components/Canvas/useCanvasStudio";
 import { useTrackEvent } from "~/hooks/use-track-event";
-import { useLoadMoreOnIntersect } from "@ngriffin_uk/polychat-utility-react";
 import { useChats, useDeleteChat, useUpdateChatTitle } from "~/hooks/useChat";
 import { categorizeItemsByDate } from "~/lib/sidebar";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
+
 import { SidebarFooter } from "../Sidebar/SidebarFooter";
 import { SidebarHeader } from "../Sidebar/SidebarHeader";
 
 interface ChatSidebarProps {
-	canvas?: CanvasStudioState;
-	isCanvasMode?: boolean;
-	onCanvasModeChange?: (isCanvasMode: boolean) => void;
+  canvas?: CanvasStudioState;
+  isCanvasMode?: boolean;
+  onCanvasModeChange?: (isCanvasMode: boolean) => void;
 }
 
 export const ChatSidebar = ({
-	canvas,
-	isCanvasMode = false,
-	onCanvasModeChange,
+  canvas,
+  isCanvasMode = false,
+  onCanvasModeChange,
 }: ChatSidebarProps) => {
-	const { trackEvent } = useTrackEvent();
-	const navigate = useNavigate();
-	const { pathname } = useLocation();
-	// The conversation only renders on the chat index, so the sub-pages must route back to it.
-	const isConversationRoute = pathname === "/" || pathname === "/chat";
-	const { sidebarVisible, setSidebarVisible, isMobile } = useUIStore();
-	const {
-		currentConversationId,
-		setCurrentConversationId,
-		clearCurrentConversation,
-		setShowSearch,
-		isAuthenticated,
-		isAuthenticationLoading,
-		isPro,
-		localOnlyMode,
-	} = useChatStore();
+  const { trackEvent } = useTrackEvent();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  // The conversation only renders on the chat index, so the sub-pages must route back to it.
+  const isConversationRoute = pathname === "/" || pathname === "/chat";
+  const { sidebarVisible, setSidebarVisible, isMobile } = useUIStore();
+  const {
+    currentConversationId,
+    setCurrentConversationId,
+    clearCurrentConversation,
+    setShowSearch,
+    isAuthenticated,
+    isAuthenticationLoading,
+    isPro,
+    localOnlyMode,
+  } = useChatStore();
 
-	const [archiveFilter, setArchiveFilter] = useState<ConversationArchiveFilter>("active");
-	const [sortBy, setSortBy] = useState<ConversationSortBy>("updated");
-	const {
-		data: conversations = [],
-		error: conversationsError,
-		fetchNextPage,
-		hasNextPage,
-		isFetchingNextPage,
-		isLoading,
-		refetch: refetchConversations,
-	} = useChats({
-		archived: archiveFilter,
-		sortBy,
-	});
-	const deleteChat = useDeleteChat();
-	const updateTitle = useUpdateChatTitle();
-	const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-	const loadMoreConversations = useCallback(() => {
-		if (hasNextPage && !isFetchingNextPage) {
-			void fetchNextPage();
-		}
-	}, [fetchNextPage, hasNextPage, isFetchingNextPage]);
-	const loadMoreRef = useLoadMoreOnIntersect({
-		enabled: Boolean(hasNextPage),
-		isLoading: isFetchingNextPage,
-		onLoadMore: loadMoreConversations,
-	});
+  const [archiveFilter, setArchiveFilter] = useState<ConversationArchiveFilter>("active");
+  const [sortBy, setSortBy] = useState<ConversationSortBy>("updated");
+  const {
+    data: conversations = [],
+    error: conversationsError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    refetch: refetchConversations,
+  } = useChats({
+    archived: archiveFilter,
+    sortBy,
+  });
+  const deleteChat = useDeleteChat();
+  const updateTitle = useUpdateChatTitle();
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const loadMoreConversations = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+  const loadMoreRef = useLoadMoreOnIntersect({
+    enabled: Boolean(hasNextPage),
+    isLoading: isFetchingNextPage,
+    onLoadMore: loadMoreConversations,
+  });
 
-	const categorizedChats = categorizeItemsByDate(conversations, (c) => {
-		if (sortBy === "created" && c.created_at) return new Date(c.created_at);
-		if (sortBy === "updated" && c.updated_at) return new Date(c.updated_at);
-		if (c.last_message_at) return new Date(c.last_message_at);
-		if (c.created_at) return new Date(c.created_at);
-		return new Date(0);
-	});
+  const categorizedChats = categorizeItemsByDate(conversations, (c) => {
+    if (sortBy === "created" && c.created_at) return new Date(c.created_at);
+    if (sortBy === "updated" && c.updated_at) return new Date(c.updated_at);
+    if (c.last_message_at) return new Date(c.last_message_at);
+    if (c.created_at) return new Date(c.created_at);
+    return new Date(0);
+  });
 
-	const closeOnMobile = () => {
-		if (isMobile) setSidebarVisible(false);
-	};
+  const closeOnMobile = () => {
+    if (isMobile) setSidebarVisible(false);
+  };
 
-	const handleNewChatClick = () => {
-		clearCurrentConversation();
+  const handleNewChatClick = () => {
+    clearCurrentConversation();
 
-		if (!isConversationRoute) {
-			navigate("/chat");
-		}
+    if (!isConversationRoute) {
+      navigate("/chat");
+    }
 
-		trackEvent({
-			name: "new_chat",
-			category: "sidebar",
-			label: "new_chat",
-			value: 1,
-		});
+    trackEvent({
+      name: "new_chat",
+      category: "sidebar",
+      label: "new_chat",
+      value: 1,
+    });
 
-		closeOnMobile();
-	};
+    closeOnMobile();
+  };
 
-	const handleConversationClick = (id: string | undefined) => {
-		setCurrentConversationId(id);
+  const handleConversationClick = (id: string | undefined) => {
+    setCurrentConversationId(id);
 
-		if (!isConversationRoute) {
-			navigate(id ? `/chat?completion_id=${encodeURIComponent(id)}` : "/chat");
-		}
+    if (!isConversationRoute) {
+      navigate(id ? `/chat?completion_id=${encodeURIComponent(id)}` : "/chat");
+    }
 
-		trackEvent({
-			name: "conversation_click",
-			category: "sidebar",
-			label: "conversation_click",
-			value: 1,
-		});
+    trackEvent({
+      name: "conversation_click",
+      category: "sidebar",
+      label: "conversation_click",
+      value: 1,
+    });
 
-		closeOnMobile();
-	};
+    closeOnMobile();
+  };
 
-	const handleEditTitle = async (completion_id: string, currentTitle: string) => {
-		const newTitle = prompt("Enter new title:", currentTitle);
-		if (newTitle && newTitle !== currentTitle) {
-			try {
-				trackEvent({
-					name: "edit_title",
-					category: "sidebar",
-					label: "edit_title",
-					value: 1,
-				});
+  const handleEditTitle = async (completion_id: string, currentTitle: string) => {
+    const newTitle = prompt("Enter new title:", currentTitle);
+    if (newTitle && newTitle !== currentTitle) {
+      try {
+        trackEvent({
+          name: "edit_title",
+          category: "sidebar",
+          label: "edit_title",
+          value: 1,
+        });
 
-				await updateTitle.mutateAsync({ completion_id, title: newTitle });
-			} catch (error) {
-				console.error("Failed to update title:", error);
-				alert("Failed to update title. Please try again.");
-			}
-		}
-	};
+        await updateTitle.mutateAsync({ completion_id, title: newTitle });
+      } catch (error) {
+        console.error("Failed to update title:", error);
+        alert("Failed to update title. Please try again.");
+      }
+    }
+  };
 
-	const confirmDeleteChat = async () => {
-		if (!confirmDelete) return;
+  const confirmDeleteChat = async () => {
+    if (!confirmDelete) return;
 
-		try {
-			trackEvent({
-				name: "delete_chat",
-				category: "sidebar",
-				label: "delete_chat",
-				value: 1,
-			});
+    try {
+      trackEvent({
+        name: "delete_chat",
+        category: "sidebar",
+        label: "delete_chat",
+        value: 1,
+      });
 
-			await deleteChat.mutateAsync(confirmDelete);
-			if (currentConversationId === confirmDelete) {
-				const firstConversation = conversations.find((c) => c.id !== confirmDelete);
-				setCurrentConversationId(firstConversation?.id);
-			}
-			setConfirmDelete(null);
-		} catch (error) {
-			console.error("Failed to delete chat:", error);
-		}
-	};
+      await deleteChat.mutateAsync(confirmDelete);
+      if (currentConversationId === confirmDelete) {
+        const firstConversation = conversations.find((c) => c.id !== confirmDelete);
+        setCurrentConversationId(firstConversation?.id);
+      }
+      setConfirmDelete(null);
+    } catch (error) {
+      console.error("Failed to delete chat:", error);
+    }
+  };
 
-	const toggleCanvasMode = () => {
-		onCanvasModeChange?.(!isCanvasMode);
+  const toggleCanvasMode = () => {
+    onCanvasModeChange?.(!isCanvasMode);
 
-		trackEvent({
-			name: isCanvasMode ? "switch_to_chat" : "switch_to_canvas",
-			category: "sidebar",
-			label: isCanvasMode ? "switch_to_chat" : "switch_to_canvas",
-			value: 1,
-		});
-	};
+    trackEvent({
+      name: isCanvasMode ? "switch_to_chat" : "switch_to_canvas",
+      category: "sidebar",
+      label: isCanvasMode ? "switch_to_chat" : "switch_to_canvas",
+      value: 1,
+    });
+  };
 
-	const conversationGroups = [
-		{ title: "Today", conversations: categorizedChats.today },
-		{ title: "Yesterday", conversations: categorizedChats.yesterday },
-		{ title: "This Week", conversations: categorizedChats.thisWeek },
-		{ title: "This Month", conversations: categorizedChats.thisMonth },
-		{ title: "Last Month", conversations: categorizedChats.lastMonth },
-		{ title: "Older", conversations: categorizedChats.older },
-	].map(({ title, conversations: group }) => ({
-		title,
-		conversations: group.map((conversation) => ({
-			id: conversation.id,
-			title: conversation.title,
-			isLocalOnly: conversation.isLocalOnly,
-			parentConversationId: conversation.parent_conversation_id,
-		})),
-	}));
+  const conversationGroups = [
+    { title: "Today", conversations: categorizedChats.today },
+    { title: "Yesterday", conversations: categorizedChats.yesterday },
+    { title: "This Week", conversations: categorizedChats.thisWeek },
+    { title: "This Month", conversations: categorizedChats.thisMonth },
+    { title: "Last Month", conversations: categorizedChats.lastMonth },
+    { title: "Older", conversations: categorizedChats.older },
+  ].map(({ title, conversations: group }) => ({
+    title,
+    conversations: group.map((conversation) => ({
+      id: conversation.id,
+      title: conversation.title,
+      isLocalOnly: conversation.isLocalOnly,
+      parentConversationId: conversation.parent_conversation_id,
+    })),
+  }));
 
-	const sidebarHeader = (
-		<SidebarHeader
-			actions={
-				canvas && onCanvasModeChange ? (
-					<Button
-						type="button"
-						variant={isCanvasMode ? "iconActive" : "icon"}
-						title={isCanvasMode ? "Switch to chat" : "Switch to image generation"}
-						aria-label={isCanvasMode ? "Switch to chat" : "Switch to image generation"}
-						icon={isCanvasMode ? <MessageCircle size={20} /> : <ImageIcon size={20} />}
-						onClick={toggleCanvasMode}
-					/>
-				) : undefined
-			}
-		/>
-	);
+  const sidebarHeader = (
+    <SidebarHeader
+      actions={
+        canvas && onCanvasModeChange ? (
+          <Button
+            type="button"
+            variant={isCanvasMode ? "iconActive" : "icon"}
+            title={isCanvasMode ? "Switch to chat" : "Switch to image generation"}
+            aria-label={isCanvasMode ? "Switch to chat" : "Switch to image generation"}
+            icon={isCanvasMode ? <MessageCircle size={20} /> : <ImageIcon size={20} />}
+            onClick={toggleCanvasMode}
+          />
+        ) : undefined
+      }
+    />
+  );
 
-	return (
-		<>
-			<SidebarShell
-				visible={sidebarVisible}
-				isMobile={isMobile}
-				onClose={() => setSidebarVisible(false)}
-				header={sidebarHeader}
-				footer={<SidebarFooter />}
-			>
-				{sidebarVisible && !isCanvasMode && !isAuthenticationLoading && (
-					<div>
-						<ConversationStorageNotice
-							isAuthenticated={isAuthenticated}
-							isPro={isPro}
-							localOnlyMode={localOnlyMode}
-						/>
-					</div>
-				)}
+  return (
+    <>
+      <SidebarShell
+        visible={sidebarVisible}
+        isMobile={isMobile}
+        onClose={() => setSidebarVisible(false)}
+        header={sidebarHeader}
+        footer={<SidebarFooter />}
+      >
+        {sidebarVisible && !isCanvasMode && !isAuthenticationLoading && (
+          <div>
+            <ConversationStorageNotice
+              isAuthenticated={isAuthenticated}
+              isPro={isPro}
+              localOnlyMode={localOnlyMode}
+            />
+          </div>
+        )}
 
-				{isCanvasMode && canvas ? (
-					<CanvasSidebarControls canvas={canvas} />
-				) : isAuthenticationLoading ? (
-					<div className="flex items-center gap-2 p-2">
-						<Loader2 size={20} className="animate-spin text-zinc-600 dark:text-zinc-400" />
-					</div>
-				) : (
-					<div>
-						<div className="px-2 pb-3">
-							<SidebarNavSection>
-								<SidebarNavButton
-									icon={<SquarePen size={17} />}
-									isActive={isConversationRoute && !currentConversationId}
-									onClick={handleNewChatClick}
-								>
-									New chat
-								</SidebarNavButton>
-								<SidebarNavButton
-									icon={<Search size={17} />}
-									onClick={() => setShowSearch(true)}
-									shortcut="⌘K"
-								>
-									Search
-								</SidebarNavButton>
-								{isAuthenticated && (
-									<>
-										<SidebarNavLink
-											href="/chat/experiences"
-											icon={<Grid2X2 size={16} />}
-											onClick={closeOnMobile}
-										>
-											Experiences
-										</SidebarNavLink>
-										<SidebarNavLink
-											href="/chat/capabilities"
-											icon={<Settings2 size={16} />}
-											onClick={closeOnMobile}
-										>
-											Capabilities
-										</SidebarNavLink>
-									</>
-								)}
-							</SidebarNavSection>
-						</div>
-						<div className="px-2 pt-4">
-							<div className="flex items-center justify-between px-2 pb-2">
-								<p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-									Recent conversations
-								</p>
-								<ConversationListControls
-									archiveFilter={archiveFilter}
-									onArchiveFilterChange={setArchiveFilter}
-									onSortByChange={setSortBy}
-									sortBy={sortBy}
-								/>
-							</div>
-							{isLoading ? (
-								<div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
-									Loading conversations...
-								</div>
-							) : conversationsError && conversations.length === 0 ? (
-								<div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
-									<p>Could not load conversations.</p>
-									<Button
-										type="button"
-										variant="secondary"
-										className="mt-2"
-										onClick={() => refetchConversations()}
-									>
-										Retry
-									</Button>
-								</div>
-							) : conversations.length === 0 ? (
-								<div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
-									No conversations yet.
-								</div>
-							) : (
-								<ConversationList
-									groups={conversationGroups}
-									activeConversationId={currentConversationId}
-									isConversationRoute={isConversationRoute}
-									localOnlyMode={localOnlyMode}
-									loadMoreRef={loadMoreRef}
-									loadMoreSlot={
-										isFetchingNextPage ? (
-											<div className="flex justify-center py-2">
-												<Loader2
-													size={16}
-													className="animate-spin text-zinc-500 dark:text-zinc-400"
-												/>
-											</div>
-										) : null
-									}
-									onSelect={handleConversationClick}
-									onEditTitle={handleEditTitle}
-									onDelete={(conversationId) => setConfirmDelete(conversationId)}
-								/>
-							)}
-						</div>
-					</div>
-				)}
-			</SidebarShell>
+        {isCanvasMode && canvas ? (
+          <CanvasSidebarControls canvas={canvas} />
+        ) : isAuthenticationLoading ? (
+          <div className="flex items-center gap-2 p-2">
+            <Loader2 size={20} className="animate-spin text-zinc-600 dark:text-zinc-400" />
+          </div>
+        ) : (
+          <div>
+            <div className="px-2 pb-3">
+              <SidebarNavSection>
+                <SidebarNavButton
+                  icon={<SquarePen size={17} />}
+                  isActive={isConversationRoute && !currentConversationId}
+                  onClick={handleNewChatClick}
+                >
+                  New chat
+                </SidebarNavButton>
+                <SidebarNavButton
+                  icon={<Search size={17} />}
+                  onClick={() => setShowSearch(true)}
+                  shortcut="⌘K"
+                >
+                  Search
+                </SidebarNavButton>
+                {isAuthenticated && (
+                  <>
+                    <SidebarNavLink
+                      href="/chat/experiences"
+                      icon={<Grid2X2 size={16} />}
+                      onClick={closeOnMobile}
+                    >
+                      Experiences
+                    </SidebarNavLink>
+                    <SidebarNavLink
+                      href="/chat/capabilities"
+                      icon={<Settings2 size={16} />}
+                      onClick={closeOnMobile}
+                    >
+                      Capabilities
+                    </SidebarNavLink>
+                  </>
+                )}
+              </SidebarNavSection>
+            </div>
+            <ConversationListSection
+              isLoading={isLoading}
+              hasError={!!conversationsError && conversations.length === 0}
+              onRetry={() => refetchConversations()}
+              isEmpty={conversations.length === 0}
+              controls={
+                <ConversationListControls
+                  archiveFilter={archiveFilter}
+                  onArchiveFilterChange={setArchiveFilter}
+                  onSortByChange={setSortBy}
+                  sortBy={sortBy}
+                />
+              }
+            >
+              {
+                <ConversationList
+                  groups={conversationGroups}
+                  activeConversationId={currentConversationId}
+                  isConversationRoute={isConversationRoute}
+                  localOnlyMode={localOnlyMode}
+                  loadMoreRef={loadMoreRef}
+                  loadMoreSlot={
+                    isFetchingNextPage ? (
+                      <div className="flex justify-center py-2">
+                        <Loader2
+                          size={16}
+                          className="animate-spin text-zinc-500 dark:text-zinc-400"
+                        />
+                      </div>
+                    ) : null
+                  }
+                  onSelect={handleConversationClick}
+                  onEditTitle={handleEditTitle}
+                  onDelete={(conversationId) => setConfirmDelete(conversationId)}
+                />
+              }
+            </ConversationListSection>
+          </div>
+        )}
+      </SidebarShell>
 
-			<ConfirmationDialog
-				open={confirmDelete !== null}
-				onOpenChange={(open) => !open && setConfirmDelete(null)}
-				title="Delete Conversation"
-				description="Are you sure you want to delete this conversation? This action cannot be undone."
-				confirmText="Delete"
-				variant="destructive"
-				onConfirm={confirmDeleteChat}
-				isLoading={deleteChat.isPending}
-			/>
-		</>
-	);
+      <ConfirmationDialog
+        open={confirmDelete !== null}
+        onOpenChange={(open) => !open && setConfirmDelete(null)}
+        title="Delete Conversation"
+        description="Are you sure you want to delete this conversation? This action cannot be undone."
+        confirmText="Delete"
+        variant="destructive"
+        onConfirm={confirmDeleteChat}
+        isLoading={deleteChat.isPending}
+      />
+    </>
+  );
 };

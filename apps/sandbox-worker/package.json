@@ -1,36 +1,30 @@
 {
-	"name": "@assistant/sandbox-worker",
-	"version": "0.0.1",
-	"private": true,
-	"license": "Apache-2.0",
-	"main": "src/index.ts",
-	"scripts": {
-		"dev": "pnpm --filter @ngriffin_uk/polychat-schemas build && wrangler dev src/index.ts",
-		"start": "pnpm --filter @ngriffin_uk/polychat-schemas build && wrangler dev src/index.ts",
-		"test": "vitest run",
-		"test:watch": "vitest",
-		"coverage": "vitest run --coverage",
-		"ci:test": "pnpm run coverage",
-		"cf-typegen": "wrangler types",
-		"format": "oxfmt",
-		"format:check": "oxfmt --check",
-		"lint": "pnpm oxlint",
-		"check": "pnpm lint && pnpm format:check",
-		"typecheck": "pnpm --filter @ngriffin_uk/polychat-schemas build && tsc --noEmit",
-		"deploy": "pnpm --filter @ngriffin_uk/polychat-schemas build && pnpm typecheck && wrangler deploy"
-	},
-	"dependencies": {
-		"@cloudflare/sandbox": "0.12.5",
-		"@ngriffin_uk/polychat-library-agent-core": "workspace:^",
-		"@ngriffin_uk/polychat-schemas": "workspace:^",
-		"zod": "catalog:"
-	},
-	"devDependencies": {
-		"@cloudflare/workers-types": "catalog:",
-		"@types/node": "catalog:",
-		"oxfmt": "catalog:",
-		"oxlint": "catalog:",
-		"typescript": "catalog:",
-		"wrangler": "catalog:"
-	}
+  "name": "@assistant/sandbox-worker",
+  "version": "0.0.1",
+  "private": true,
+  "license": "Apache-2.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "cf-typegen": "wrangler types",
+    "ci:test": "pnpm run coverage",
+    "coverage": "vitest run --coverage",
+    "deploy": "pnpm --filter @ngriffin_uk/polychat-schemas build && pnpm typecheck && wrangler deploy",
+    "dev": "pnpm --filter @ngriffin_uk/polychat-schemas build && wrangler dev src/index.ts",
+    "start": "pnpm --filter @ngriffin_uk/polychat-schemas build && wrangler dev src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "pnpm --filter @ngriffin_uk/polychat-schemas build && tsc --noEmit"
+  },
+  "dependencies": {
+    "@cloudflare/sandbox": "0.12.5",
+    "@ngriffin_uk/polychat-library-agent-core": "workspace:^",
+    "@ngriffin_uk/polychat-schemas": "workspace:^",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "wrangler": "catalog:"
+  }
 }

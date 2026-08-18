@@ -1,96 +1,90 @@
 {
-	"name": "@ngriffin_uk/polychat-schemas",
-	"version": "0.1.0",
-	"private": false,
-	"description": "Validated wire contracts and product schemas shared across Polychat runtimes",
-	"license": "Apache-2.0",
-	"files": [
-		"dist",
-		"README.md"
-	],
-	"sideEffects": false,
-	"main": "dist/index.js",
-	"module": "dist/index.mjs",
-	"types": "dist/index.d.ts",
-	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.mjs",
-			"require": "./dist/index.js"
-		},
-		"./analytics": {
-			"types": "./dist/analytics.d.ts",
-			"import": "./dist/analytics.mjs",
-			"require": "./dist/analytics.js"
-		},
-		"./chat-stream": {
-			"types": "./dist/chat-stream.d.ts",
-			"import": "./dist/chat-stream.mjs",
-			"require": "./dist/chat-stream.js"
-		},
-		"./compaction-status": {
-			"types": "./dist/compaction-status.d.ts",
-			"import": "./dist/compaction-status.mjs",
-			"require": "./dist/compaction-status.js"
-		},
-		"./conversation-replacement": {
-			"types": "./dist/conversation-replacement.d.ts",
-			"import": "./dist/conversation-replacement.mjs",
-			"require": "./dist/conversation-replacement.js"
-		},
-		"./council-data": {
-			"types": "./dist/council-data.d.ts",
-			"import": "./dist/council-data.mjs",
-			"require": "./dist/council-data.js"
-		},
-		"./message-part-utils": {
-			"types": "./dist/message-part-utils.d.ts",
-			"import": "./dist/message-part-utils.mjs",
-			"require": "./dist/message-part-utils.js"
-		},
-		"./provider-messages": {
-			"types": "./dist/provider-messages.d.ts",
-			"import": "./dist/provider-messages.mjs",
-			"require": "./dist/provider-messages.js"
-		},
-		"./sandbox-constants": {
-			"types": "./dist/sandbox-constants.d.ts",
-			"import": "./dist/sandbox-constants.mjs",
-			"require": "./dist/sandbox-constants.js"
-		},
-		"./tool-ids": {
-			"types": "./dist/tool-ids.d.ts",
-			"import": "./dist/tool-ids.mjs",
-			"require": "./dist/tool-ids.js"
-		}
-	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"scripts": {
-		"build": "tsup",
-		"dev": "tsup --watch",
-		"typecheck": "tsc --noEmit",
-		"format": "oxfmt",
-		"format:check": "oxfmt --check",
-		"lint": "pnpm oxlint",
-		"check": "pnpm lint && pnpm format:check",
-		"test": "vitest run --config vitest.config.mts",
-		"test:package": "pnpm build && node scripts/check-package-exports.mjs"
-	},
-	"dependencies": {
-		"@ngriffin_uk/polychat-utility-core": "workspace:^",
-		"zod": "catalog:"
-	},
-	"devDependencies": {
-		"@ngriffin_uk/polychat-config": "workspace:^",
-		"@types/node": "catalog:",
-		"oxfmt": "catalog:",
-		"oxlint": "catalog:",
-		"tsup": "catalog:",
-		"typescript": "catalog:"
-	},
-	"peerDependencies": {
-		"zod": "catalog:"
-	}
+  "name": "@ngriffin_uk/polychat-schemas",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Validated wire contracts and product schemas shared across Polychat runtimes",
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./analytics": {
+      "types": "./dist/analytics.d.ts",
+      "import": "./dist/analytics.mjs",
+      "require": "./dist/analytics.js"
+    },
+    "./chat-stream": {
+      "types": "./dist/chat-stream.d.ts",
+      "import": "./dist/chat-stream.mjs",
+      "require": "./dist/chat-stream.js"
+    },
+    "./compaction-status": {
+      "types": "./dist/compaction-status.d.ts",
+      "import": "./dist/compaction-status.mjs",
+      "require": "./dist/compaction-status.js"
+    },
+    "./conversation-replacement": {
+      "types": "./dist/conversation-replacement.d.ts",
+      "import": "./dist/conversation-replacement.mjs",
+      "require": "./dist/conversation-replacement.js"
+    },
+    "./council-data": {
+      "types": "./dist/council-data.d.ts",
+      "import": "./dist/council-data.mjs",
+      "require": "./dist/council-data.js"
+    },
+    "./message-part-utils": {
+      "types": "./dist/message-part-utils.d.ts",
+      "import": "./dist/message-part-utils.mjs",
+      "require": "./dist/message-part-utils.js"
+    },
+    "./provider-messages": {
+      "types": "./dist/provider-messages.d.ts",
+      "import": "./dist/provider-messages.mjs",
+      "require": "./dist/provider-messages.js"
+    },
+    "./sandbox-constants": {
+      "types": "./dist/sandbox-constants.d.ts",
+      "import": "./dist/sandbox-constants.mjs",
+      "require": "./dist/sandbox-constants.js"
+    },
+    "./tool-ids": {
+      "types": "./dist/tool-ids.d.ts",
+      "import": "./dist/tool-ids.mjs",
+      "require": "./dist/tool-ids.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run --config vitest.config.mts",
+    "test:package": "pnpm build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@ngriffin_uk/polychat-config": "workspace:^",
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "zod": "catalog:"
+  }
 }

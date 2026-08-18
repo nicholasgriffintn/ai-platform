@@ -69,6 +69,11 @@ jobs:
     name: E2E (${{ github.event_name == 'pull_request' && format('{0}/2', matrix.shard) || 'smoke' }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      PVC_SERVER_URL: ${{ vars.PVC_SERVER_URL }}
+      PVC_TOKEN: ${{ secrets.PVC_TOKEN }}
+      PVC_FAIL_ON_DIFF: "0"
+      PVC_ON_MISSING: pending
     strategy:
       fail-fast: false
       matrix:
@@ -86,6 +91,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
+      - name: Build packages and app for end-to-end tests
+        run: pnpm build:e2e
       # One day this might be needed but i think 100% smoke is fine for now.
       # - name: Run end-to-end release tests
       #   if: github.event_name == 'pull_request'
@@ -93,6 +100,9 @@ jobs:
       - name: Run end-to-end smoke tests
         # if: github.event_name == 'push'
         run: pnpm test:e2e:smoke
+      - name: Gate on visual review
+        if: env.PVC_SERVER_URL != '' && env.PVC_TOKEN != ''
+        run: pnpm exec pvc status
       - name: Upload failure artefacts
         if: failure()
         uses: actions/upload-artifact@v7

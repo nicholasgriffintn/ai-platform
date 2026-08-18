@@ -1,65 +1,69 @@
 import {
-	PodcastWorkflowStep,
-	ProcessingStep,
-	ProcessStep,
-	ProgressStepper,
+  PodcastWorkflowStep,
+  ProcessingStep,
+  ProcessStep,
+  ProgressStepper,
+  UploadStep,
 } from "@ngriffin_uk/polychat-component-experiences/content";
 import { useNavigate } from "react-router";
 
-import { UploadStep } from "./UploadStep";
+import { useFileUploadAnalytics } from "~/hooks/useFileUploadAnalytics";
+
 import { usePodcastWorkflow } from "./usePodcastWorkflow";
 
 export function PodcastWorkflow({ basePath, projectId }: PodcastWorkflowProps) {
-	const navigate = useNavigate();
-	const workflow = usePodcastWorkflow(basePath, projectId);
+  const navigate = useNavigate();
+  const workflow = usePodcastWorkflow(basePath, projectId);
+  const uploaderAnalytics = useFileUploadAnalytics("audioFile");
 
-	return (
-		<div className="mx-auto max-w-3xl">
-			<ProgressStepper currentStep={workflow.currentStep} />
-			{workflow.workflowError && (
-				<p role="alert" className="mb-4 text-sm text-red-700 dark:text-red-400">
-					{workflow.workflowError}
-				</p>
-			)}
+  return (
+    <div className="mx-auto max-w-3xl">
+      <ProgressStepper currentStep={workflow.currentStep} />
+      {workflow.workflowError && (
+        <p role="alert" className="mb-4 text-sm text-red-700 dark:text-red-400">
+          {workflow.workflowError}
+        </p>
+      )}
 
-			{workflow.currentStep === PodcastWorkflowStep.Upload && (
-				<UploadStep
-					formData={workflow.formData}
-					handleChange={workflow.actions.handleChange}
-					handleFileChange={workflow.actions.handleFileChange}
-					handleUpload={workflow.actions.upload}
-					isUploading={workflow.isUploading}
-					setFormData={workflow.setFormData}
-				/>
-			)}
+      {workflow.currentStep === PodcastWorkflowStep.Upload && (
+        <UploadStep
+          formData={workflow.formData}
+          handleChange={workflow.actions.handleChange}
+          handleFileChange={workflow.actions.handleFileChange}
+          handleUpload={workflow.actions.upload}
+          isUploading={workflow.isUploading}
+          setFormData={workflow.setFormData}
+          uploaderAnalytics={uploaderAnalytics}
+        />
+      )}
 
-			{workflow.currentStep === PodcastWorkflowStep.Process && (
-				<ProcessStep
-					formData={workflow.formData}
-					handleChange={workflow.actions.handleChange}
-					handleProcess={workflow.actions.process}
-					isProcessing={workflow.isProcessing}
-				/>
-			)}
+      {workflow.currentStep === PodcastWorkflowStep.Process && (
+        <ProcessStep
+          formData={workflow.formData}
+          handleChange={workflow.actions.handleChange}
+          handleProcess={workflow.actions.process}
+          isProcessing={workflow.isProcessing}
+        />
+      )}
 
-			{workflow.currentStep === PodcastWorkflowStep.Processing && (
-				<ProcessingStep
-					formData={workflow.formData}
-					processingStatus={workflow.processingStatus}
-					processingErrors={workflow.processingErrors}
-					processingComplete={workflow.processingComplete}
-					handleRetry={workflow.actions.retry}
-					setCurrentStep={workflow.setCurrentStep}
-					uploadedPodcastId={workflow.uploadedPodcastId}
-					basePath={basePath}
-					navigate={navigate}
-				/>
-			)}
-		</div>
-	);
+      {workflow.currentStep === PodcastWorkflowStep.Processing && (
+        <ProcessingStep
+          formData={workflow.formData}
+          processingStatus={workflow.processingStatus}
+          processingErrors={workflow.processingErrors}
+          processingComplete={workflow.processingComplete}
+          handleRetry={workflow.actions.retry}
+          setCurrentStep={workflow.setCurrentStep}
+          uploadedPodcastId={workflow.uploadedPodcastId}
+          basePath={basePath}
+          navigate={navigate}
+        />
+      )}
+    </div>
+  );
 }
 
 interface PodcastWorkflowProps {
-	basePath: string;
-	projectId?: string;
+  basePath: string;
+  projectId?: string;
 }
