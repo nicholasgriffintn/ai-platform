@@ -3713,4 +3713,28 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "qwen",
 	}),
+	createModelConfig("qwen3.8-27b", PROVIDER, {
+		name: "Qwen3.8 27B",
+		matchingModel: "qwen3.8-27b",
+		family: "qwen",
+		openWeights: true,
+		releaseDate: "August 14, 2026",
+		lastUpdated: "August 14, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 262144,
+		maxTokens: 262144,
+		costPer1kInputTokens: 0.000334,
+		costPer1kOutputTokens: 0.002451,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);

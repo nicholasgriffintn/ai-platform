@@ -979,7 +979,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
 		family: "qwen",
-		openWeights: true,
+		openWeights: false,
 	}),
 
 	createModelConfig("alibaba/qwen3-embedding-0.6b", PROVIDER, {
@@ -1115,7 +1115,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen3 Next 80B A3B Instruct",
 		matchingModel: "alibaba/qwen3-next-80b-a3b-instruct",
 		knowledgeCutoffDate: "April 2025",
-		releaseDate: "September 11, 2025",
+		releaseDate: "September 2025",
 		lastUpdated: "September 2025",
 		modalities: {
 			input: ["text"],
@@ -1145,8 +1145,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("alibaba/qwen3-next-80b-a3b-thinking", PROVIDER, {
 		name: "Qwen3 Next 80B A3B Thinking",
 		matchingModel: "alibaba/qwen3-next-80b-a3b-thinking",
-		knowledgeCutoffDate: "September 2025",
-		releaseDate: "September 11, 2025",
+		knowledgeCutoffDate: "April 2025",
+		releaseDate: "September 2025",
 		lastUpdated: "September 2025",
 		modalities: {
 			input: ["text"],
@@ -1768,7 +1768,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "deepseek",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek/deepseek-v3.1", PROVIDER, {
@@ -1802,7 +1802,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "deepseek",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek/deepseek-v3.1-terminus", PROVIDER, {
@@ -1872,7 +1872,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "deepseek",
-		openWeights: false,
+		openWeights: true,
 		supportsResponseFormat: true,
 	}),
 
@@ -2196,7 +2196,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Nano Banana Pro (Gemini 3 Pro Image)",
 		matchingModel: "google/gemini-3-pro-image",
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "September 1, 2025",
+		releaseDate: "May 28, 2026",
 		lastUpdated: "May 28, 2026",
 		modalities: {
 			input: ["text"],
@@ -2284,7 +2284,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0,
 		knowledgeCutoffDate: "May 2025",
-		family: "gemini-embedding",
+		family: "gemini",
 		openWeights: false,
 	}),
 
@@ -2761,7 +2761,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "minimax",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("minimax/minimax-m2.1-lightning", PROVIDER, {
@@ -3058,7 +3058,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "kimi-thinking",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("moonshotai/kimi-k2-turbo", PROVIDER, {
@@ -3091,7 +3091,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Kimi K2.5",
 		matchingModel: "moonshotai/kimi-k2.5",
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "January 26, 2026",
+		releaseDate: "January 2026",
 		lastUpdated: "January 2026",
 		modalities: {
 			input: ["text", "image", "video"],
@@ -3194,7 +3194,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "nemotron",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("nvidia/nemotron-nano-12b-v2-vl", PROVIDER, {
@@ -3229,7 +3229,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "nemotron",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("nvidia/nemotron-nano-9b-v2", PROVIDER, {
@@ -3264,7 +3264,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "nemotron",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("openai/codex-mini", PROVIDER, {
@@ -3420,14 +3420,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "gpt",
+		family: "gpt-codex",
 		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5-pro", PROVIDER, {
 		name: "GPT-5 pro",
 		matchingModel: "openai/gpt-5-pro",
-		knowledgeCutoffDate: "October 2024",
+		knowledgeCutoffDate: "September 30, 2024",
 		releaseDate: "October 6, 2025",
 		lastUpdated: "October 6, 2025",
 		modalities: {
@@ -3446,15 +3446,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 		supportsResponseFormat: true,
-		family: "gpt",
+		family: "gpt-pro",
 		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex", PROVIDER, {
 		name: "GPT-5.1-Codex",
 		matchingModel: "openai/gpt-5.1-codex",
-		knowledgeCutoffDate: "October 2024",
-		releaseDate: "November 12, 2025",
+		knowledgeCutoffDate: "September 30, 2024",
+		releaseDate: "November 13, 2025",
 		lastUpdated: "November 13, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -3482,15 +3482,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "gpt",
+		family: "gpt-codex",
 		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex-max", PROVIDER, {
 		name: "GPT 5.1 Codex Max",
 		matchingModel: "openai/gpt-5.1-codex-max",
-		knowledgeCutoffDate: "October 2024",
-		releaseDate: "November 19, 2025",
+		knowledgeCutoffDate: "September 30, 2024",
+		releaseDate: "November 13, 2025",
 		lastUpdated: "November 13, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -3508,15 +3508,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 		supportsResponseFormat: true,
-		family: "gpt",
+		family: "gpt-codex",
 		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex-mini", PROVIDER, {
 		name: "GPT-5.1 Codex mini",
 		matchingModel: "openai/gpt-5.1-codex-mini",
-		knowledgeCutoffDate: "October 2024",
-		releaseDate: "November 12, 2025",
+		knowledgeCutoffDate: "September 30, 2024",
+		releaseDate: "November 13, 2025",
 		lastUpdated: "November 13, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -3544,7 +3544,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "gpt",
+		family: "gpt-codex",
 		openWeights: false,
 	}),
 
@@ -3662,8 +3662,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-5.2-codex", PROVIDER, {
 		name: "GPT-5.2-Codex",
 		matchingModel: "openai/gpt-5.2-codex",
-		knowledgeCutoffDate: "October 2024",
-		releaseDate: "December 18, 2025",
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "December 11, 2025",
 		lastUpdated: "December 11, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -3698,7 +3698,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-5.2-pro", PROVIDER, {
 		name: "GPT 5.2 ",
 		matchingModel: "openai/gpt-5.2-pro",
-		knowledgeCutoffDate: "October 2024",
+		knowledgeCutoffDate: "August 31, 2025",
 		releaseDate: "December 11, 2025",
 		lastUpdated: "December 11, 2025",
 		modalities: {
@@ -3727,7 +3727,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "gpt",
+		family: "gpt-pro",
 		openWeights: false,
 	}),
 
@@ -3831,8 +3831,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/o3-deep-research", PROVIDER, {
 		name: "o3-deep-research",
 		matchingModel: "openai/o3-deep-research",
-		knowledgeCutoffDate: "October 2024",
-		releaseDate: "June 26, 2025",
+		knowledgeCutoffDate: "May 2024",
+		releaseDate: "June 26, 2024",
 		lastUpdated: "June 26, 2024",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -4800,8 +4800,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("zai/glm-4.6v", PROVIDER, {
 		name: "GLM-4.6V",
 		matchingModel: "zai/glm-4.6v",
-		knowledgeCutoffDate: "October 2024",
-		releaseDate: "September 30, 2025",
+		knowledgeCutoffDate: "April 2025",
+		releaseDate: "December 8, 2025",
 		lastUpdated: "December 8, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -4829,7 +4829,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "glm",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("zai/glm-4.6v-flash", PROVIDER, {
@@ -4858,7 +4858,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("zai/glm-4.7", PROVIDER, {
 		name: "GLM 4.7",
 		matchingModel: "zai/glm-4.7",
-		knowledgeCutoffDate: "October 2024",
+		knowledgeCutoffDate: "April 2025",
 		releaseDate: "December 22, 2025",
 		lastUpdated: "December 22, 2025",
 		modalities: {
@@ -4887,7 +4887,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "glm",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("zai/glm-4.7-flashx", PROVIDER, {
@@ -4941,7 +4941,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("alibaba/qwen3-coder-next", PROVIDER, {
 		name: "Qwen3 Coder Next",
 		matchingModel: "alibaba/qwen3-coder-next",
-		releaseDate: "July 22, 2025",
+		releaseDate: "February 3, 2026",
 		lastUpdated: "February 3, 2026",
 		modalities: {
 			input: ["text"],
@@ -4969,7 +4969,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "qwen",
-		openWeights: false,
+		openWeights: true,
 		knowledgeCutoffDate: "September 2025",
 		supportsResponseFormat: true,
 	}),
@@ -4978,7 +4978,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen3 VL 235B A22B Instruct",
 		matchingModel: "alibaba/qwen3-vl-235b-a22b-instruct",
 		releaseDate: "September 23, 2025",
-		lastUpdated: "May 1, 2026",
+		lastUpdated: "September 23, 2025",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -5001,13 +5001,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "qwen",
-		openWeights: false,
+		openWeights: true,
+		knowledgeCutoffDate: "March 31, 2025",
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("alibaba/qwen3.5-flash", PROVIDER, {
 		name: "Qwen 3.5 Flash",
 		matchingModel: "alibaba/qwen3.5-flash",
-		releaseDate: "February 24, 2026",
+		releaseDate: "February 23, 2026",
 		lastUpdated: "February 23, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -5085,8 +5087,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "qwen3.6",
-		openWeights: false,
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("alibaba/qwen3.6-plus", PROVIDER, {
@@ -5231,7 +5233,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("deepseek/deepseek-v4-flash", PROVIDER, {
 		name: "DeepSeek V4 Flash",
 		matchingModel: "deepseek/deepseek-v4-flash",
-		releaseDate: "April 23, 2026",
+		releaseDate: "April 24, 2026",
 		lastUpdated: "April 24, 2026",
 		modalities: {
 			input: ["text"],
@@ -5242,8 +5244,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 1000000,
 		maxTokens: 384000,
-		costPer1kInputTokens: 0.0002,
-		costPer1kOutputTokens: 0.0004,
+		costPer1kInputTokens: 0.00013,
+		costPer1kOutputTokens: 0.00026,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -5260,14 +5262,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "deepseek",
+		family: "deepseek-flash",
 		openWeights: true,
 	}),
 
 	createModelConfig("deepseek/deepseek-v4-pro", PROVIDER, {
 		name: "DeepSeek V4 Pro",
 		matchingModel: "deepseek/deepseek-v4-pro",
-		releaseDate: "April 23, 2026",
+		releaseDate: "April 24, 2026",
 		lastUpdated: "April 24, 2026",
 		modalities: {
 			input: ["text"],
@@ -5296,7 +5298,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "deepseek",
+		family: "deepseek-thinking",
 		openWeights: true,
 	}),
 
@@ -5321,7 +5323,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 		knowledgeCutoffDate: "January 2025",
-		family: "gemini",
+		family: "gemini-flash",
 		openWeights: false,
 	}),
 
@@ -5357,7 +5359,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 6.2,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "gemini",
+		family: "gemini-flash-lite",
 		openWeights: false,
 	}),
 
@@ -5429,14 +5431,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 21.4,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "gemini",
+		family: "gemini-pro",
 		openWeights: false,
 	}),
 
 	createModelConfig("google/gemini-embedding-2", PROVIDER, {
 		name: "Gemini Embedding 2",
 		matchingModel: "google/gemini-embedding-2",
-		releaseDate: "March 10, 2026",
+		releaseDate: "April 22, 2026",
 		lastUpdated: "April 22, 2026",
 		modalities: {
 			input: ["text"],
@@ -5447,7 +5449,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
-		family: "gemini-embedding",
+		family: "gemini",
 		openWeights: false,
 		knowledgeCutoffDate: "November 2025",
 	}),
@@ -5474,7 +5476,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsResponseFormat: true,
 		family: "gemma",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("google/gemma-4-31b-it", PROVIDER, {
@@ -5499,7 +5501,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsResponseFormat: true,
 		family: "gemma",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("inception/mercury-2", PROVIDER, {
@@ -5636,13 +5638,13 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "minimax",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("minimax/minimax-m2.5-highspeed", PROVIDER, {
 		name: "MiniMax M2.5 High Speed",
 		matchingModel: "minimax/minimax-m2.5-highspeed",
-		releaseDate: "February 12, 2026",
+		releaseDate: "February 13, 2026",
 		lastUpdated: "February 13, 2026",
 		modalities: {
 			input: ["text"],
@@ -5660,7 +5662,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 		family: "minimax",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("minimax/minimax-m2.7", PROVIDER, {
@@ -5724,7 +5726,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("moonshotai/kimi-k2.6", PROVIDER, {
 		name: "Kimi K2.6",
 		matchingModel: "moonshotai/kimi-k2.6",
-		releaseDate: "April 20, 2026",
+		releaseDate: "April 21, 2026",
 		lastUpdated: "April 21, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -5787,7 +5789,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "nemotron",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("openai/gpt-5.3-chat", PROVIDER, {
@@ -5846,7 +5848,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "gpt",
+		family: "gpt-codex",
 		openWeights: false,
 	}),
 
@@ -5918,7 +5920,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "gpt",
+		family: "gpt-mini",
 		openWeights: false,
 	}),
 
@@ -5954,7 +5956,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "gpt",
+		family: "gpt-nano",
 		openWeights: false,
 	}),
 
@@ -5988,14 +5990,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "gpt",
+		family: "gpt-pro",
 		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.5", PROVIDER, {
 		name: "GPT 5.5",
 		matchingModel: "openai/gpt-5.5",
-		releaseDate: "April 24, 2026",
+		releaseDate: "April 23, 2026",
 		lastUpdated: "April 23, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -6031,7 +6033,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-5.5-pro", PROVIDER, {
 		name: "GPT 5.5 Pro",
 		matchingModel: "openai/gpt-5.5-pro",
-		releaseDate: "April 24, 2026",
+		releaseDate: "April 23, 2026",
 		lastUpdated: "April 23, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -6058,7 +6060,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "gpt",
+		family: "gpt-pro",
 		openWeights: false,
 	}),
 
@@ -6265,7 +6267,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("xai/grok-4.3", PROVIDER, {
 		name: "Grok 4.3",
 		matchingModel: "xai/grok-4.3",
-		releaseDate: "April 30, 2026",
+		releaseDate: "April 17, 2026",
 		lastUpdated: "April 17, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -6433,8 +6435,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "mimo-v2.5",
-		openWeights: false,
+		family: "mimo",
+		openWeights: true,
 	}),
 
 	createModelConfig("xiaomi/mimo-v2.5-pro", PROVIDER, {
@@ -6468,8 +6470,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 29.1,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "mimo-v2.5-pro",
-		openWeights: false,
+		family: "mimo",
+		openWeights: true,
 	}),
 
 	createModelConfig("zai/glm-4.7-flash", PROVIDER, {
@@ -6503,8 +6505,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "glm",
-		openWeights: false,
+		family: "glm-flash",
+		openWeights: true,
 	}),
 
 	createModelConfig("zai/glm-5", PROVIDER, {
@@ -6544,7 +6546,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("zai/glm-5-turbo", PROVIDER, {
 		name: "GLM 5 Turbo",
 		matchingModel: "zai/glm-5-turbo",
-		releaseDate: "March 15, 2026",
+		releaseDate: "March 16, 2026",
 		lastUpdated: "March 16, 2026",
 		modalities: {
 			input: ["text"],
@@ -6607,7 +6609,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "glm",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("zai/glm-5v-turbo", PROVIDER, {
@@ -6708,7 +6710,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 37.4,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "gemini",
+		family: "gemini-flash",
 		openWeights: false,
 	}),
 
@@ -6749,7 +6751,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("xai/grok-build-0.1", PROVIDER, {
 		name: "Grok Build 0.1",
 		matchingModel: "xai/grok-build-0.1",
-		releaseDate: "May 20, 2026",
+		releaseDate: "April 16, 2026",
 		lastUpdated: "April 16, 2026",
 		modalities: {
 			input: ["text", "image"],
@@ -6835,7 +6837,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 20.8,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "qwen3.7-plus",
+		family: "qwen",
 		openWeights: false,
 	}),
 
@@ -6886,7 +6888,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("minimax/minimax-m3", PROVIDER, {
 		name: "MiniMax M3",
 		matchingModel: "minimax/minimax-m3",
-		releaseDate: "May 31, 2026",
+		releaseDate: "June 1, 2026",
 		lastUpdated: "June 1, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -6913,7 +6915,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 35.4,
 			intelligenceIndexVersion: 4.1,
 		},
-		family: "minimax-m3",
+		family: "minimax",
 		openWeights: true,
 	}),
 
@@ -6948,7 +6950,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "nemotron",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("stepfun/step-3.5-flash", PROVIDER, {
@@ -6983,13 +6985,13 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "step",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("stepfun/step-3.7-flash", PROVIDER, {
 		name: "Step 3.7 Flash",
 		matchingModel: "stepfun/step-3.7-flash",
-		releaseDate: "May 28, 2026",
+		releaseDate: "May 29, 2026",
 		lastUpdated: "May 29, 2026",
 		modalities: {
 			input: ["text", "image"],
@@ -7018,7 +7020,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "step",
-		openWeights: false,
+		openWeights: true,
 	}),
 	createModelConfig("alibaba/wan-v2.5-t2v-preview", PROVIDER, {
 		name: "Wan v2.5 Text-to-Video Preview",
@@ -7872,7 +7874,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-image-1", PROVIDER, {
 		name: "GPT Image 1",
 		matchingModel: "openai/gpt-image-1",
-		releaseDate: "March 25, 2025",
+		releaseDate: "April 24, 2025",
 		lastUpdated: "April 24, 2025",
 		modalities: {
 			input: ["text"],
@@ -7948,7 +7950,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-image-1.5", PROVIDER, {
 		name: "GPT Image 1.5",
 		matchingModel: "openai/gpt-image-1.5",
-		releaseDate: "December 16, 2025",
+		releaseDate: "November 25, 2025",
 		lastUpdated: "November 25, 2025",
 		modalities: {
 			input: ["text"],
@@ -8365,7 +8367,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("anthropic/claude-fable-5", PROVIDER, {
 		name: "Claude Fable 5",
 		matchingModel: "anthropic/claude-fable-5",
-		releaseDate: "July 1, 2026",
+		releaseDate: "June 9, 2026",
 		lastUpdated: "June 9, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -8457,12 +8459,12 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		family: "kimi-k2",
-		openWeights: false,
+		openWeights: true,
 	}),
 	createModelConfig("moonshotai/kimi-k2.7-code-highspeed", PROVIDER, {
 		name: "Kimi K2.7 Code High Speed",
 		matchingModel: "moonshotai/kimi-k2.7-code-highspeed",
-		releaseDate: "June 15, 2026",
+		releaseDate: "June 12, 2026",
 		lastUpdated: "June 12, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -8482,13 +8484,13 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "January 2025",
 		supportsResponseFormat: true,
 		family: "kimi-k2",
-		openWeights: false,
+		openWeights: true,
 	}),
 
 	createModelConfig("zai/glm-5.2", PROVIDER, {
 		name: "GLM 5.2",
 		matchingModel: "zai/glm-5.2",
-		releaseDate: "June 16, 2026",
+		releaseDate: "June 13, 2026",
 		lastUpdated: "June 13, 2026",
 		modalities: {
 			input: ["text"],
@@ -8522,7 +8524,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("sakana/fugu-ultra", PROVIDER, {
 		name: "Fugu Ultra",
 		matchingModel: "sakana/fugu-ultra",
-		releaseDate: "June 21, 2026",
+		releaseDate: "June 15, 2026",
 		lastUpdated: "June 15, 2026",
 		modalities: {
 			input: ["text", "image"],
@@ -8539,7 +8541,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
-		family: "aura",
+		family: "fugu",
 		openWeights: false,
 		supportsResponseFormat: true,
 	}),
@@ -8886,7 +8888,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "xai/grok-imagine-video-1.5",
 		family: "grok",
 		openWeights: false,
-		releaseDate: "June 22, 2026",
+		releaseDate: "May 30, 2026",
 		lastUpdated: "May 30, 2026",
 		modalities: {
 			input: ["text"],
@@ -8903,8 +8905,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "GLM 5.2 Fast",
 		matchingModel: "zai/glm-5.2-fast",
 		family: "glm",
-		openWeights: false,
-		releaseDate: "June 23, 2026",
+		openWeights: true,
+		releaseDate: "June 13, 2026",
 		lastUpdated: "June 13, 2026",
 		modalities: {
 			input: ["text"],
@@ -8976,7 +8978,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		family: "claude-sonnet",
 		openWeights: false,
 		knowledgeCutoffDate: "January 31, 2026",
-		releaseDate: "June 29, 2026",
+		releaseDate: "June 30, 2026",
 		lastUpdated: "June 30, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -8998,7 +9000,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("google/gemini-3.1-flash-lite-image", PROVIDER, {
 		name: "Gemini 3.1 Flash Lite Image (Nano Banana 2 Lite)",
 		matchingModel: "google/gemini-3.1-flash-lite-image",
-		family: "gemini",
+		family: "gemini-flash-lite",
 		openWeights: false,
 		releaseDate: "June 30, 2026",
 		lastUpdated: "June 30, 2026",
@@ -9137,7 +9139,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "meta/muse-spark-1.1",
 		family: "muse",
 		openWeights: false,
-		releaseDate: "July 9, 2026",
+		releaseDate: "April 8, 2026",
 		lastUpdated: "July 9, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -9201,8 +9203,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 		contextWindow: 1050000,
 		maxTokens: 128000,
-		costPer1kInputTokens: 0.005,
-		costPer1kOutputTokens: 0.03,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.015,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -9288,7 +9290,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		family: "gpt",
 		openWeights: false,
 		knowledgeCutoffDate: "September 30, 2024",
-		releaseDate: "July 9, 2026",
+		releaseDate: "July 6, 2026",
 		lastUpdated: "July 6, 2026",
 		modalities: {
 			input: ["text", "audio"],
@@ -9398,7 +9400,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Kimi K3",
 		matchingModel: "moonshotai/kimi-k3",
 		family: "kimi-k3",
-		openWeights: false,
+		openWeights: true,
 		releaseDate: "July 16, 2026",
 		lastUpdated: "July 16, 2026",
 		modalities: {
@@ -9463,7 +9465,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("google/gemini-3.5-flash-lite", PROVIDER, {
 		name: "Gemini 3.5 Flash Lite",
 		matchingModel: "google/gemini-3.5-flash-lite",
-		family: "gemini",
+		family: "gemini-flash-lite",
 		openWeights: false,
 		knowledgeCutoffDate: "March 2026",
 		releaseDate: "July 21, 2026",
@@ -9489,7 +9491,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("google/gemini-3.6-flash", PROVIDER, {
 		name: "Gemini 3.6 Flash",
 		matchingModel: "google/gemini-3.6-flash",
-		family: "gemini",
+		family: "gemini-flash",
 		openWeights: false,
 		knowledgeCutoffDate: "March 2026",
 		releaseDate: "July 21, 2026",
@@ -9504,8 +9506,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 		contextWindow: 1000000,
 		maxTokens: 64000,
-		costPer1kInputTokens: 0.0015,
-		costPer1kOutputTokens: 0.0075,
+		costPer1kInputTokens: 0.00075,
+		costPer1kOutputTokens: 0.00375,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -9514,9 +9516,9 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("poolside/laguna-s-2.1", PROVIDER, {
 		name: "Laguna S 2.1",
 		matchingModel: "poolside/laguna-s-2.1",
-		family: "laguna-s",
+		family: "laguna",
 		openWeights: true,
-		releaseDate: "July 20, 2026",
+		releaseDate: "July 21, 2026",
 		lastUpdated: "July 21, 2026",
 		modalities: {
 			input: ["text"],
@@ -9539,7 +9541,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("poolside/laguna-s-2.1-free", PROVIDER, {
 		name: "Laguna S 2.1 Free",
 		matchingModel: "poolside/laguna-s-2.1-free",
-		family: "laguna-s",
+		family: "laguna",
 		openWeights: true,
 		releaseDate: "July 21, 2026",
 		lastUpdated: "July 21, 2026",
@@ -9564,7 +9566,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("tencent/hy3", PROVIDER, {
 		name: "Hy3",
 		matchingModel: "tencent/hy3",
-		family: "hy3",
+		family: "Hy",
 		openWeights: true,
 		releaseDate: "July 6, 2026",
 		lastUpdated: "July 6, 2026",
@@ -9669,8 +9671,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Kimi K3 Fast",
 		matchingModel: "moonshotai/kimi-k3-fast",
 		family: "kimi-k3",
-		openWeights: false,
-		releaseDate: "July 27, 2026",
+		openWeights: true,
+		releaseDate: "July 16, 2026",
 		lastUpdated: "July 16, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -9694,7 +9696,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "alibaba/qwen3.7-flash",
 		family: "qwen",
 		openWeights: false,
-		releaseDate: "July 28, 2026",
+		releaseDate: "July 15, 2026",
 		lastUpdated: "July 15, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -9750,7 +9752,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Inkling Small",
 		matchingModel: "thinkingmachines/inkling-small",
 		family: "ling",
-		openWeights: false,
+		openWeights: true,
 		releaseDate: "July 30, 2026",
 		lastUpdated: "July 30, 2026",
 		modalities: {
@@ -9790,7 +9792,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "alibaba/qwen3.8-max",
 		family: "qwen",
 		openWeights: false,
-		releaseDate: "August 2, 2026",
+		releaseDate: "July 19, 2026",
 		lastUpdated: "July 19, 2026",
 		modalities: {
 			input: ["text", "image"],
@@ -10160,7 +10162,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "alibaba/qwen3.8-2.4t-a95b",
 		family: "qwen",
 		openWeights: true,
-		releaseDate: "August 3, 2026",
+		releaseDate: "August 12, 2026",
 		lastUpdated: "August 12, 2026",
 		modalities: {
 			input: ["text"],
@@ -10183,7 +10185,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("google/gemini-3.7-flash", PROVIDER, {
 		name: "Gemini 3.7 Flash",
 		matchingModel: "google/gemini-3.7-flash",
-		family: "gemini",
+		family: "gemini-flash",
 		openWeights: false,
 		knowledgeCutoffDate: "March 2026",
 		releaseDate: "August 13, 2026",
@@ -10203,6 +10205,636 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+	}),
+	createModelConfig("alibaba/qwen3.8-27b", PROVIDER, {
+		name: "Qwen3.8 27B",
+		matchingModel: "alibaba/qwen3.8-27b",
+		family: "qwen",
+		openWeights: true,
+		releaseDate: "August 14, 2026",
+		lastUpdated: "August 14, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 262144,
+		maxTokens: 262133,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("nvidia/nemotron-3.5-lightning", PROVIDER, {
+		name: "Nemotron 3.5 Lightning 30B",
+		matchingModel: "nvidia/nemotron-3.5-lightning",
+		family: "nemotron",
+		openWeights: true,
+		releaseDate: "August 11, 2026",
+		lastUpdated: "August 11, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 262144,
+		maxTokens: 131072,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("openai/gpt-4.1-fast", PROVIDER, {
+		name: "GPT-4.1 (Fast)",
+		matchingModel: "openai/gpt-4.1-fast",
+		family: "gpt",
+		openWeights: false,
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "April 14, 2025",
+		lastUpdated: "April 14, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1047576,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0.0035,
+		costPer1kOutputTokens: 0.014,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 19.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+
+	createModelConfig("openai/gpt-4.1-mini-fast", PROVIDER, {
+		name: "GPT-4.1 mini (Fast)",
+		matchingModel: "openai/gpt-4.1-mini-fast",
+		family: "gpt-mini",
+		openWeights: false,
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "April 14, 2025",
+		lastUpdated: "April 14, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1047576,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0.0007,
+		costPer1kOutputTokens: 0.0028,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 16.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+
+	createModelConfig("openai/gpt-4.1-nano-fast", PROVIDER, {
+		name: "GPT-4.1 nano (Fast)",
+		matchingModel: "openai/gpt-4.1-nano-fast",
+		family: "gpt-nano",
+		openWeights: false,
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "April 14, 2025",
+		lastUpdated: "April 14, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1047576,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0.0002,
+		costPer1kOutputTokens: 0.0008,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 7.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+
+	createModelConfig("openai/gpt-4o-fast", PROVIDER, {
+		name: "GPT-4o (Fast)",
+		matchingModel: "openai/gpt-4o-fast",
+		family: "gpt",
+		openWeights: false,
+		knowledgeCutoffDate: "September 2023",
+		releaseDate: "May 13, 2024",
+		lastUpdated: "August 6, 2024",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 128000,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.00425,
+		costPer1kOutputTokens: 0.017,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 9.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+
+	createModelConfig("openai/gpt-4o-mini-fast", PROVIDER, {
+		name: "GPT-4o mini (Fast)",
+		matchingModel: "openai/gpt-4o-mini-fast",
+		family: "gpt-mini",
+		openWeights: false,
+		knowledgeCutoffDate: "September 2023",
+		releaseDate: "July 18, 2024",
+		lastUpdated: "July 18, 2024",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 128000,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.00025,
+		costPer1kOutputTokens: 0.001,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 6.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+
+	createModelConfig("openai/gpt-5-fast", PROVIDER, {
+		name: "GPT-5 (Fast)",
+		matchingModel: "openai/gpt-5-fast",
+		family: "gpt",
+		openWeights: false,
+		knowledgeCutoffDate: "September 30, 2024",
+		releaseDate: "August 7, 2025",
+		lastUpdated: "August 7, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 400000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.02,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 15.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+
+	createModelConfig("openai/gpt-5-mini-fast", PROVIDER, {
+		name: "GPT-5 mini (Fast)",
+		matchingModel: "openai/gpt-5-mini-fast",
+		family: "gpt-mini",
+		openWeights: false,
+		knowledgeCutoffDate: "May 30, 2024",
+		releaseDate: "August 7, 2025",
+		lastUpdated: "August 7, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 400000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.00045,
+		costPer1kOutputTokens: 0.0036,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 2,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 33,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+
+	createModelConfig("openai/gpt-5.1-thinking-fast", PROVIDER, {
+		name: "GPT 5.1 Thinking (Fast)",
+		matchingModel: "openai/gpt-5.1-thinking-fast",
+		family: "gpt",
+		openWeights: false,
+		releaseDate: "November 12, 2025",
+		lastUpdated: "November 12, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsToolCalls: true,
+		contextWindow: 400000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.02,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("openai/gpt-5.2-fast", PROVIDER, {
+		name: "GPT 5.2 (Fast)",
+		matchingModel: "openai/gpt-5.2-fast",
+		family: "gpt",
+		openWeights: false,
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "December 11, 2025",
+		lastUpdated: "December 11, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 400000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.0035,
+		costPer1kOutputTokens: 0.028,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 26,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+
+	createModelConfig("openai/gpt-5.3-codex-fast", PROVIDER, {
+		name: "GPT 5.3 Codex (Fast)",
+		matchingModel: "openai/gpt-5.3-codex-fast",
+		family: "gpt-codex",
+		openWeights: false,
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "February 5, 2026",
+		lastUpdated: "February 5, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 400000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.0035,
+		costPer1kOutputTokens: 0.028,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 2,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 44.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+
+	createModelConfig("openai/gpt-5.4-fast", PROVIDER, {
+		name: "GPT 5.4 (Fast)",
+		matchingModel: "openai/gpt-5.4-fast",
+		family: "gpt",
+		openWeights: false,
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "March 5, 2026",
+		lastUpdated: "March 5, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1050000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.03,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		speed: 4,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 27.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+
+	createModelConfig("openai/gpt-5.4-mini-fast", PROVIDER, {
+		name: "GPT 5.4 Mini (Fast)",
+		matchingModel: "openai/gpt-5.4-mini-fast",
+		family: "gpt-mini",
+		openWeights: false,
+		knowledgeCutoffDate: "August 31, 2025",
+		releaseDate: "March 17, 2026",
+		lastUpdated: "March 17, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 400000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.0015,
+		costPer1kOutputTokens: 0.009,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 16.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+
+	createModelConfig("openai/gpt-5.5-fast", PROVIDER, {
+		name: "GPT 5.5 (Fast)",
+		matchingModel: "openai/gpt-5.5-fast",
+		family: "gpt",
+		openWeights: false,
+		knowledgeCutoffDate: "December 1, 2025",
+		releaseDate: "April 23, 2026",
+		lastUpdated: "April 23, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.0125,
+		costPer1kOutputTokens: 0.075,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 2,
+		speed: 3,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 35.4,
+			codingIndex: 56.5,
+			agenticIndex: 25.8,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+
+	createModelConfig("openai/gpt-5.6-luna-fast", PROVIDER, {
+		name: "GPT 5.6 Luna (Fast)",
+		matchingModel: "openai/gpt-5.6-luna-fast",
+		family: "gpt-luna",
+		openWeights: false,
+		knowledgeCutoffDate: "February 16, 2026",
+		releaseDate: "July 9, 2026",
+		lastUpdated: "July 9, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1050000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.0004,
+		costPer1kOutputTokens: 0.0024,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("openai/gpt-5.6-sol-fast", PROVIDER, {
+		name: "GPT 5.6 Sol (Fast)",
+		matchingModel: "openai/gpt-5.6-sol-fast",
+		family: "gpt-sol",
+		openWeights: false,
+		knowledgeCutoffDate: "February 16, 2026",
+		releaseDate: "July 9, 2026",
+		lastUpdated: "July 9, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1050000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.03,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("openai/gpt-5.6-terra-fast", PROVIDER, {
+		name: "GPT 5.6 Terra (Fast)",
+		matchingModel: "openai/gpt-5.6-terra-fast",
+		family: "gpt-terra",
+		openWeights: false,
+		knowledgeCutoffDate: "February 16, 2026",
+		releaseDate: "July 9, 2026",
+		lastUpdated: "July 9, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1050000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.004,
+		costPer1kOutputTokens: 0.024,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("openai/o3-fast", PROVIDER, {
+		name: "o3 (Fast)",
+		matchingModel: "openai/o3-fast",
+		family: "o",
+		openWeights: false,
+		knowledgeCutoffDate: "May 2024",
+		releaseDate: "April 16, 2025",
+		lastUpdated: "April 16, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 200000,
+		maxTokens: 100000,
+		costPer1kInputTokens: 0.0035,
+		costPer1kOutputTokens: 0.014,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 30.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+
+	createModelConfig("openai/o4-mini-fast", PROVIDER, {
+		name: "o4-mini (Fast)",
+		matchingModel: "openai/o4-mini-fast",
+		family: "o-mini",
+		openWeights: false,
+		knowledgeCutoffDate: "May 2024",
+		releaseDate: "April 16, 2025",
+		lastUpdated: "April 16, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 200000,
+		maxTokens: 100000,
+		costPer1kInputTokens: 0.002,
+		costPer1kOutputTokens: 0.008,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 25.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 ]);
