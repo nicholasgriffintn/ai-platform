@@ -398,16 +398,28 @@ export function useComposerCommandActions({
     [allowedActionItems],
   );
 
-  const slashCommands = useMemo(
-    () => [
+  const slashCommands = useMemo(() => {
+    const commands = [
       ...actionVerbCommands,
       ...modeCommands,
       ...skillCommands,
       ...compactionCommands,
       ...settingCommands,
-    ],
-    [actionVerbCommands, compactionCommands, modeCommands, settingCommands, skillCommands],
-  );
+    ];
+    // A mode and a skill can share a name — Council is both. The mode wins: selecting it pins the
+    // skill anyway, and two identical `/` entries are indistinguishable to the person typing.
+    const seen = new Set<string>();
+
+    return commands.filter((command) => {
+      if (seen.has(command.command)) {
+        return false;
+      }
+
+      seen.add(command.command);
+
+      return true;
+    });
+  }, [actionVerbCommands, compactionCommands, modeCommands, settingCommands, skillCommands]);
   const filteredSlashCommands = useMemo(() => {
     const query = directive?.trigger === "/" ? directive.query : "";
 

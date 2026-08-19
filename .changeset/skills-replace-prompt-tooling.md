@@ -35,6 +35,10 @@ returns front-page data without an auxiliary-model pass.
 `select_council_members` raises a member picker in the conversation, pre-ticked with the members the
 model recommends, so the user convenes the council themselves.
 
+The composer now de-duplicates slash commands by name. A mode and a skill can share one — Council is
+both — and two identical `/` entries are indistinguishable to the person typing; the mode wins,
+because selecting it pins the skill anyway.
+
 `component-content` gains `CouncilTurnView` and `CouncilMemberPickerView`, and exports a shared
 `ToolInteractionHandler` type. Tool interactions gain a `submitPrompt` action alongside
 `useAsPrompt`, for views whose control is itself the decision.
