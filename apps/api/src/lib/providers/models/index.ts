@@ -25,6 +25,7 @@ import { githubCopilotModelConfig } from "~/data-model/models/githubcopilot";
 import { githubModelsConfig } from "~/data-model/models/githubmodels";
 import { googleAiStudioModelConfig } from "~/data-model/models/google-ai-studio";
 import { groqModelConfig } from "~/data-model/models/groq";
+import { hetznerModelConfig } from "~/data-model/models/hetzner";
 import { huggingfaceModelConfig } from "~/data-model/models/huggingface";
 import { hyperbolicModelConfig } from "~/data-model/models/hyperbolic";
 import { ideogramModelConfig } from "~/data-model/models/ideogram";
@@ -125,6 +126,7 @@ const modelConfig: ModelConfig = mergeModelConfigs(
   cortecsModelConfig,
   novaModelConfig,
   poolsideModelConfig,
+  hetznerModelConfig,
 );
 
 const MODEL_CACHE_TTL = 14400;
