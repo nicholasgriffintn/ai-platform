@@ -20,7 +20,7 @@
     "sync": "npx cap sync",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "pnpm --filter @ngriffin_uk/polychat-schemas build && react-router typegen && tsc -b",
+    "typecheck": "react-router typegen && tsc -b",
     "watch": "react-router build --watch",
     "wrangler:dev": "pnpm run build && wrangler dev --remote"
   },

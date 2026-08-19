@@ -13,7 +13,7 @@
     "dev": "pnpm --filter @ngriffin_uk/polychat-schemas build && wrangler dev",
     "start": "pnpm --filter @ngriffin_uk/polychat-schemas build && wrangler dev",
     "test": "vitest run",
-    "typecheck": "pnpm --filter @ngriffin_uk/polychat-schemas build && tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock": "3.1106.0",

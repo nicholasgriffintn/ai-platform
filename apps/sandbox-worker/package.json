@@ -13,7 +13,7 @@
     "start": "pnpm --filter @ngriffin_uk/polychat-schemas build && wrangler dev src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "pnpm --filter @ngriffin_uk/polychat-schemas build && tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@cloudflare/sandbox": "0.12.5",
