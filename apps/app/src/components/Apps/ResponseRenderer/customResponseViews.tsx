@@ -1,4 +1,5 @@
 import {
+  CouncilMemberPickerView,
   CouncilTurnView,
   type CustomResponseViewRegistry,
   WeatherView,
@@ -19,6 +20,13 @@ export const customResponseViews: CustomResponseViewRegistry = {
   ),
   get_weather: ({ data, embedded }) => <WeatherView data={data} embedded={embedded} />,
   council_turn: ({ data, embedded }) => <CouncilTurnView data={data} embedded={embedded} />,
+  select_council_members: ({ data, embedded, onToolInteraction }) => (
+    <CouncilMemberPickerView
+      data={data}
+      embedded={embedded}
+      onToolInteraction={onToolInteraction}
+    />
+  ),
   discover_capabilities: ({ data }) => <CapabilityDiscoveryView data={data} />,
   research: ({ data, embedded }) => <ResearchView data={data} embedded={embedded} />,
   sandbox_plan: ({ data }) => <SandboxView type="sandbox_plan" data={data as never} />,

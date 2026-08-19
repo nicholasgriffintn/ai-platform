@@ -30,7 +30,7 @@ To let a mode-like feature run under a skill without a `load_skill` round trip, 
 
 Let a skill widen the tool set it needs. `polychat-tools` stays a hard requirement that marks a skill unavailable when the tool is off; new `polychat-suggests-tools` names tools a ready skill grants for the turn, merged into enabled tools at preparation alongside the existing memory-tool merge. Without this a skill that needs `web_search` silently disappears rather than working.
 
-Generate `apps/api/src/data-model/skills/index.ts` from the directory tree with `pnpm --filter @assistant/api skills:generate`, and assert in the catalogue suite that the committed file matches, that every declared tool exists in the registry, and that every description states a trigger.
+Keep `apps/api/src/data-model/skills/index.ts` hand-written, as ADR 0018 decided. Cover the risk it was protecting against — a skill or resource added on disk and never registered — with a catalogue test that compares the index against the directory tree, rather than with generated output and a synchronisation command. The same suite asserts that every declared tool exists in the registry and that every description states a trigger.
 
 ## Trade-offs
 

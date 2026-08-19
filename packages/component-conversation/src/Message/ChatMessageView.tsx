@@ -1,3 +1,4 @@
+import type { ToolInteractionHandler } from "@ngriffin_uk/polychat-component-content";
 import type { ArtifactProps } from "@ngriffin_uk/polychat-component-content";
 import { ModelIcon } from "@ngriffin_uk/polychat-component-models";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
@@ -44,7 +45,7 @@ export const ChatMessageView = ({
   canSubmitFeedback?: boolean;
   message: Message;
   modelConfig?: ModelConfigItem;
-  onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
+  onToolInteraction?: ToolInteractionHandler;
   onConnectorApproval?: (approvalId: string, resolution: "approved" | "rejected") => Promise<void>;
   onArtifactOpen?: (
     artifact: ArtifactProps,

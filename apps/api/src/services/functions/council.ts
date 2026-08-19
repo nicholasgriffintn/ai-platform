@@ -88,6 +88,66 @@ function buildTurnResponse(turn: PanelTurn) {
   };
 }
 
+export const select_council_members: ApiToolDefinition = {
+  name: "select_council_members",
+  description:
+    "Ask the user which council members should debate their question. Renders a picker in the conversation, pre-ticked with the members you recommend. Call this before run_council whenever the user has not already named the members they want, then convene the council with what they choose.",
+  type: "normal",
+  costPerCall: 0,
+  permissions: ["human"],
+  inputSchema: z.object({
+    question: z
+      .string()
+      .min(1)
+      .max(4000)
+      .describe("The question the council would debate, so the picker can show what is at stake."),
+    recommended: z
+      .array(z.enum(councilMemberIds))
+      .max(MAX_COUNCIL_MEMBERS)
+      .optional()
+      .describe(
+        "Members to pre-tick. Choose perspectives that genuinely disagree about this question. Defaults to sceptic, architect, strategist, synthesiser.",
+      ),
+    reason: z
+      .string()
+      .max(280)
+      .optional()
+      .describe("One short line on why you recommend those members. Shown above the picker."),
+  }),
+  execute: async (args, context) => {
+    const recommended =
+      Array.isArray(args.recommended) && args.recommended.length > 0
+        ? resolveMembers(args.recommended).map((member) => member.id)
+        : DEFAULT_COUNCIL_MEMBER_IDS;
+
+    return {
+      status: "pending",
+      name: "select_council_members",
+      content:
+        "Waiting for the user to choose the council. Do not convene it or answer the question until they have.",
+      data: {
+        responseType: "council_member_picker",
+        completion_id: context.completionId,
+        question: args.question,
+        // The picker renders from this roster, so the render package needs no contract import.
+        members: (councilMembers as readonly CouncilMemberDefinition[]).map((member) => ({
+          id: member.id,
+          name: member.name,
+          role: member.role,
+        })),
+        recommended,
+        reason: args.reason,
+        maxSelection: MAX_COUNCIL_MEMBERS,
+        humanInTheLoop: {
+          type: "selection",
+          status: "pending",
+          requires_user_action: true,
+        },
+      },
+    };
+  },
+};
+
 export const run_council: ApiToolDefinition = {
   name: "run_council",
   description:

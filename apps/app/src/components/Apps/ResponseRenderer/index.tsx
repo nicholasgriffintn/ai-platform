@@ -1,4 +1,5 @@
 import { ToolResultCard } from "@ngriffin_uk/polychat-component-capabilities";
+import type { ToolInteractionHandler } from "@ngriffin_uk/polychat-component-content";
 import { ResponseView, type ResponseDisplay } from "@ngriffin_uk/polychat-component-content";
 import type { RenderableTool } from "@ngriffin_uk/polychat-schemas";
 
@@ -10,7 +11,7 @@ interface ResponseRendererProps {
   responseDisplay?: ResponseDisplay;
   className?: string;
   embedded?: boolean;
-  onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
+  onToolInteraction?: ToolInteractionHandler;
 }
 
 export const ResponseRenderer = ({

@@ -1,11 +1,11 @@
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 
 import { describe, expect, it } from "vitest";
 
+import { builtInSkillDocuments } from "~/data-model/skills";
 import { buildSkillsSection } from "~/lib/prompts/sections/skills";
 import { toolRegistry } from "~/services/functions";
 
-import { buildSkillIndex } from "../../../../scripts/generate-skill-index.mjs";
 import { listSkillAvailability } from "../availability";
 import {
   SkillCatalog,
@@ -226,11 +226,27 @@ describe("built-in skill catalogue", () => {
     expect(prompt).not.toContain("# Artifacts");
   });
 
-  it("keeps the generated index in step with the skills on disk", async () => {
-    const generated = await buildSkillIndex();
-    const committed = await readFile(new URL("index.ts", skillsRoot), "utf8");
+  it("registers every skill and resource that exists on disk", async () => {
+    const entries = await readdir(new URL(skillsRoot), { withFileTypes: true });
+    const directories = entries
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort();
+    const registered = builtInSkillDocuments.map((document) => document.directory).sort();
 
-    expect(generated).toBe(committed);
+    expect(registered).toEqual(directories);
+
+    for (const document of builtInSkillDocuments) {
+      const files = await readdir(new URL(`${document.directory}/references/`, skillsRoot), {
+        withFileTypes: true,
+      }).catch(() => []);
+      const onDisk = files
+        .filter((file) => file.isFile())
+        .map((file) => `references/${file.name}`)
+        .sort();
+
+      expect(document.resources.map((resource) => resource.path).sort()).toEqual(onDisk);
+    }
   });
 
   it("only requires and suggests tools the registry actually publishes", async () => {

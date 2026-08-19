@@ -6,7 +6,7 @@ metadata:
   polychat-display-name: Council
   polychat-category: Reasoning
   polychat-tags: "debate, perspectives, decisions, review"
-  polychat-suggests-tools: "run_council"
+  polychat-suggests-tools: "run_council, select_council_members"
 ---
 
 # Council
@@ -28,6 +28,14 @@ A council exists to find the objection nobody in the room has raised. It is expe
 - You would be inventing disagreement to fill the roster. Two members who genuinely conflict beat five who take turns agreeing.
 
 When it is borderline, answer directly and say which part you would take to a council if the user wants that.
+
+## Choosing the room
+
+Unless the user has already named the members they want, call `select_council_members` first. It renders a picker in the conversation, pre-ticked with the members you recommend, and the user convenes the council themselves. Pass a one-line `reason` for your recommendation — the point is to give them a considered starting position to adjust, not a blank list.
+
+Wait for their choice. Do not convene the council or start answering the question while the picker is open.
+
+When the user has already said who they want — "ask the sceptic and the architect" — skip the picker and convene directly. Asking twice is friction.
 
 ## Running it
 

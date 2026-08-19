@@ -1,3 +1,4 @@
+import type { ToolInteractionHandler } from "@ngriffin_uk/polychat-component-content";
 import type { ArtifactProps } from "@ngriffin_uk/polychat-component-content";
 import {
   getMessageListScrollKey,
@@ -41,7 +42,7 @@ import type { Message } from "~/types";
 import { ChatMessage } from "./ChatMessage";
 
 interface MessageListProps {
-  onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
+  onToolInteraction?: ToolInteractionHandler;
   onConnectorApproval?: (approvalId: string, resolution: "approved" | "rejected") => Promise<void>;
   onArtifactOpen?: (
     artifact: ArtifactProps,

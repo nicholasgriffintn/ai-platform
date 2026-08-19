@@ -10,7 +10,7 @@ import { getLogger } from "~/utils/logger";
 import type { ApiToolDefinition } from "../../types/functions";
 import { call_api } from "./api_call";
 import { apply_edit_completion } from "./apply_edit";
-import { run_council } from "./council";
+import { run_council, select_council_members } from "./council";
 import { create_note } from "./create_note";
 import { discover_capabilities } from "./discover_capabilities";
 import { extract_content } from "./extract_content";
@@ -90,6 +90,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   discover_capabilities,
   load_skill,
   run_council,
+  select_council_members,
   get_hacker_news_stories,
   request_approval,
   ask_user,

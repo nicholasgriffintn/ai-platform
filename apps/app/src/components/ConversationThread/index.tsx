@@ -3,6 +3,7 @@ import {
   findLatestArtifactByIdentifier,
   ArtifactPanel,
 } from "@ngriffin_uk/polychat-component-content";
+import type { ToolInteractionHandler } from "@ngriffin_uk/polychat-component-content";
 import type {
   ComposerActionCatalogConfig,
   ComposerAssistantActionCapability,
@@ -15,11 +16,11 @@ import {
 } from "@ngriffin_uk/polychat-component-conversation";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { isCompactConversationCommand } from "@ngriffin_uk/polychat-library-chat/compaction-command";
-import { mergeChatRequestOptions } from "@ngriffin_uk/polychat-library-chat/request-options";
 
 import "~/styles/scrollbar.css";
 import "~/styles/github.css";
 import "~/styles/github-dark.css";
+import { mergeChatRequestOptions } from "@ngriffin_uk/polychat-library-chat/request-options";
 import {
   createModelReferenceMap,
   EMPTY_MODEL_CONFIG,
@@ -545,26 +546,38 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     [currentConversationId, trackFeatureUsage, setChatInput],
   );
 
-  const handleToolInteraction = useCallback(
-    (toolName: string, action: "useAsPrompt", data: Record<string, any>) => {
+  const handleToolInteraction = useCallback<ToolInteractionHandler>(
+    (toolName, action, data) => {
       trackFeatureUsage("tool_interaction", {
         tool_name: toolName,
         action: action,
         conversation_id: currentConversationId || "new",
       });
 
+      if (action === "submitPrompt") {
+        if (typeof data.input === "string" && data.input.trim()) {
+          void sendMessage(data.input, undefined, modeConfig?.requestOptions);
+        }
+
+        return;
+      }
+
       switch (toolName) {
         case "web_search":
-          if (action === "useAsPrompt") {
-            setChatInput(data.question);
-          }
+          setChatInput(data.question);
 
           break;
         default:
           break;
       }
     },
-    [currentConversationId, trackFeatureUsage, setChatInput],
+    [
+      currentConversationId,
+      trackFeatureUsage,
+      setChatInput,
+      sendMessage,
+      modeConfig?.requestOptions,
+    ],
   );
 
   const showWelcomeScreen =

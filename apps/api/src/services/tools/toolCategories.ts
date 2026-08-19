@@ -38,6 +38,7 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
   Collaboration: [
     "ask_user",
     "run_council",
+    "select_council_members",
     "delegate_to_team_member",
     "delegate_to_team_member_by_role",
     "get_team_members",
