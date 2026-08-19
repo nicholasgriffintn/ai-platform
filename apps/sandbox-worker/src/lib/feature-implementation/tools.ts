@@ -1,8 +1,9 @@
 import {
+  defineTool,
   finishToolDefinition,
   updatePlanToolDefinition,
-  type AgentToolDefinition,
-} from "@ngriffin_uk/polychat-library-agent-core";
+  type ToolDefinition,
+} from "@ngriffin_uk/polychat-library-tool-runtime";
 
 import { MAX_PARALLEL_COMMANDS, MAX_READ_FILES_BATCH } from "./constants";
 
@@ -31,82 +32,62 @@ export interface RunScriptAction {
   language: ScriptLanguage;
 }
 
-const runCommandToolDefinition: AgentToolDefinition = {
-  type: "function",
-  function: {
-    name: RUN_COMMAND_TOOL_NAME,
-    description:
-      "Run one or more shell commands in the repository. Pass several commands only when they are independent and safe to run together.",
-    parameters: {
-      type: "object",
-      properties: {
-        commands: {
-          type: "array",
-          items: { type: "string" },
-          minItems: 1,
-          maxItems: MAX_PARALLEL_COMMANDS,
-          description: "Shell commands to run, in order.",
-        },
-      },
-      required: ["commands"],
+const runCommandToolDefinition = defineTool({
+  name: RUN_COMMAND_TOOL_NAME,
+  description:
+    "Run one or more shell commands in the repository. Pass several commands only when they are independent and safe to run together.",
+  parameters: {
+    commands: {
+      type: "array",
+      items: { type: "string" },
+      minItems: 1,
+      maxItems: MAX_PARALLEL_COMMANDS,
+      description: "Shell commands to run, in order.",
     },
   },
-};
+  required: ["commands"],
+});
 
-const readFilesToolDefinition: AgentToolDefinition = {
-  type: "function",
-  function: {
-    name: READ_FILES_TOOL_NAME,
-    description:
-      "Read one or more files from the repository, optionally limited to a line range. Prefer reading several related files in one call.",
-    parameters: {
-      type: "object",
-      properties: {
-        files: {
-          type: "array",
-          minItems: 1,
-          maxItems: MAX_READ_FILES_BATCH,
-          items: {
-            type: "object",
-            properties: {
-              path: { type: "string", description: "Repository-relative file path." },
-              startLine: { type: "number", description: "First line to read, 1-indexed." },
-              endLine: { type: "number", description: "Last line to read, inclusive." },
-            },
-            required: ["path"],
-          },
+const readFilesToolDefinition = defineTool({
+  name: READ_FILES_TOOL_NAME,
+  description:
+    "Read one or more files from the repository, optionally limited to a line range. Prefer reading several related files in one call.",
+  parameters: {
+    files: {
+      type: "array",
+      minItems: 1,
+      maxItems: MAX_READ_FILES_BATCH,
+      items: {
+        type: "object",
+        properties: {
+          path: { type: "string", description: "Repository-relative file path." },
+          startLine: { type: "number", description: "First line to read, 1-indexed." },
+          endLine: { type: "number", description: "Last line to read, inclusive." },
         },
+        required: ["path"],
       },
-      required: ["files"],
     },
   },
-};
+  required: ["files"],
+});
 
-const runScriptToolDefinition: AgentToolDefinition = {
-  type: "function",
-  function: {
-    name: RUN_SCRIPT_TOOL_NAME,
-    description:
-      "Run a short script in the repository when a shell command would be awkward. Use for multi-step file edits or data processing.",
-    parameters: {
-      type: "object",
-      properties: {
-        code: { type: "string", description: "The script source to run." },
-        language: {
-          type: "string",
-          enum: ["python", "javascript", "typescript"],
-          description: "Script language. Defaults to javascript.",
-        },
-      },
-      required: ["code"],
+const runScriptToolDefinition = defineTool({
+  name: RUN_SCRIPT_TOOL_NAME,
+  description:
+    "Run a short script in the repository when a shell command would be awkward. Use for multi-step file edits or data processing.",
+  parameters: {
+    code: { type: "string", description: "The script source to run." },
+    language: {
+      type: "string",
+      enum: ["python", "javascript", "typescript"],
+      description: "Script language. Defaults to javascript.",
     },
   },
-};
+  required: ["code"],
+});
 
-export function getSandboxAgentTools(options: {
-  readOnlyCommands: boolean;
-}): AgentToolDefinition[] {
-  const tools: AgentToolDefinition[] = [
+export function getSandboxAgentTools(options: { readOnlyCommands: boolean }): ToolDefinition[] {
+  const tools: ToolDefinition[] = [
     runCommandToolDefinition,
     readFilesToolDefinition,
     updatePlanToolDefinition,

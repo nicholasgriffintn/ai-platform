@@ -41,6 +41,7 @@
     "@ngriffin_uk/auth-webauthn": "^0.4.6",
     "@ngriffin_uk/polychat-library-agent-core": "workspace:^",
     "@ngriffin_uk/polychat-library-registry": "workspace:^",
+    "@ngriffin_uk/polychat-library-tool-runtime": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@scalar/hono-api-reference": "0.11.13",
     "@sentry/cloudflare": "10.70.0",

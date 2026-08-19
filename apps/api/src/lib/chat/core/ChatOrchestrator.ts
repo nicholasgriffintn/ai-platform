@@ -20,6 +20,7 @@ import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { captureTrainingExample } from "~/lib/providers/capabilities/training/captureTrainingExample";
 import { SessionManager } from "~/lib/session/SessionManager";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
+import { acquireThread, releaseThread } from "~/services/conversations/coordinator/client";
 import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
 import { GOAL_STATUS_MARKER_EVENTS, recordGoalMarker } from "~/services/goals/goalMarker";
 import { GoalService } from "~/services/goals/GoalService";
@@ -57,6 +58,26 @@ export class ChatOrchestrator {
   constructor(env: any) {
     this.validator = new ValidationPipeline();
     this.preparer = new RequestPreparer(env);
+  }
+
+  /**
+   * A turn owns the conversation's history while it runs, so compaction and
+   * other thread work queue behind it instead of interleaving. A streaming turn
+   * keeps writing after this returns, so it is deliberately not held here — the
+   * stream releases the thread itself when it closes.
+   */
+  private async holdThreadForTurn(options: CoreChatOptions): Promise<boolean> {
+    if (!options.completion_id || options.store === false) {
+      return false;
+    }
+
+    const lock = await acquireThread({
+      env: options.env,
+      conversationId: options.completion_id,
+      kind: "user_message",
+    });
+
+    return lock.acquired;
   }
 
   private async resolveGoalFinishGate(
@@ -125,7 +146,18 @@ export class ChatOrchestrator {
 
       const prepared = await this.preparer.prepare(options, validationResult.context);
 
-      return await this.executeRequest(options, prepared);
+      const heldThread = await this.holdThreadForTurn(options);
+
+      try {
+        return await this.executeRequest(options, prepared);
+      } finally {
+        if (heldThread) {
+          await releaseThread({
+            env: options.env,
+            conversationId: options.completion_id,
+          });
+        }
+      }
     } catch (error: any) {
       logger.error("Error in chat orchestration", {
         error,
