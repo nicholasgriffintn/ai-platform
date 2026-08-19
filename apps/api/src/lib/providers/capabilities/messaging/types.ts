@@ -22,6 +22,7 @@ export interface MessagingProviderMetadata {
 
 export interface IncomingMessage {
   kind: "message";
+  messageId: string;
   from: string;
   to?: string;
   body: string;
@@ -50,6 +51,7 @@ export interface MessagingProvider {
 export interface TwilioSmsCredentials {
   accountSid: string;
   authToken: string;
+  allowedSenders: string[];
   fromNumber?: string;
   messagingServiceSid?: string;
 }
@@ -57,6 +59,7 @@ export interface TwilioSmsCredentials {
 export interface AwsSmsCredentials {
   accessKeyId: string;
   secretAccessKey: string;
+  allowedSenders: string[];
   region: string;
   originationIdentity: string;
   configurationSetName?: string;

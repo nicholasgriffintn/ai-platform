@@ -18,6 +18,7 @@ export interface InstalledRecipeMatchCandidate {
   recipeId: string;
   title: string;
   score: number;
+  namedScore: number;
 }
 
 export interface InstalledRecipeMatchResult {
@@ -69,21 +70,26 @@ function buildRecipeSearchText(recipe: AssistantRecipe): string {
     .join(" ");
 }
 
-function scoreRecipe(query: string, queryTokens: string[], recipe: AssistantRecipe): number {
+function scoreRecipe(
+  query: string,
+  queryTokens: string[],
+  recipe: AssistantRecipe,
+): { score: number; namedScore: number } {
   const querySlug = slugify(query);
   const titleSlug = slugify(recipe.title);
   const recipeSlug = slugify(recipe.id);
-  let score = 0;
+  let namedScore = 0;
+  let incidentalScore = 0;
 
   if (querySlug === recipeSlug || querySlug === titleSlug) {
-    score += 100;
+    namedScore += 100;
   } else {
     if (querySlug.includes(recipeSlug) || recipeSlug.includes(querySlug)) {
-      score += 60;
+      namedScore += 60;
     }
 
     if (querySlug.includes(titleSlug) || titleSlug.includes(querySlug)) {
-      score += 60;
+      namedScore += 60;
     }
   }
 
@@ -91,19 +97,19 @@ function scoreRecipe(query: string, queryTokens: string[], recipe: AssistantReci
 
   for (const token of queryTokens) {
     if (recipe.id.includes(token)) {
-      score += 8;
+      namedScore += 8;
     }
 
     if (recipe.title.toLowerCase().includes(token)) {
-      score += 6;
+      namedScore += 6;
     }
 
     if (searchableText.includes(token)) {
-      score += 2;
+      incidentalScore += 2;
     }
   }
 
-  return score;
+  return { score: namedScore + incidentalScore, namedScore };
 }
 
 function isGenericTrigger(queryTokens: string[]) {
@@ -137,7 +143,11 @@ export function matchInstalledRecipe({
   const trimmedQuery = query.trim();
   const queryTokens = tokenise(trimmedQuery);
 
-  if (!trimmedQuery || queryTokens.length === 0 || isGenericTrigger(queryTokens)) {
+  if (!trimmedQuery || queryTokens.length === 0) {
+    return { status: "not_found", candidates: [] };
+  }
+
+  if (isGenericTrigger(queryTokens)) {
     if (installedRecipes.length === 1) {
       const [{ recipe, installation }] = installedRecipes;
 
@@ -145,7 +155,7 @@ export function matchInstalledRecipe({
         status: "matched",
         recipe,
         installation,
-        candidates: [{ recipeId: recipe.id, title: recipe.title, score: 1 }],
+        candidates: [{ recipeId: recipe.id, title: recipe.title, score: 1, namedScore: 1 }],
       };
     }
 
@@ -155,22 +165,23 @@ export function matchInstalledRecipe({
         recipeId: recipe.id,
         title: recipe.title,
         score: 1,
+        namedScore: 1,
       })),
     };
   }
 
   const candidates = installedRecipes
-    .map(({ recipe }) => ({
-      recipeId: recipe.id,
-      title: recipe.title,
-      score: scoreRecipe(trimmedQuery, queryTokens, recipe),
-    }))
+    .map(({ recipe }) => {
+      const { score, namedScore } = scoreRecipe(trimmedQuery, queryTokens, recipe);
+
+      return { recipeId: recipe.id, title: recipe.title, score, namedScore };
+    })
     .filter((candidate) => candidate.score > 0)
     .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title));
 
   const [best, second] = candidates;
 
-  if (!best || best.score < 8) {
+  if (!best || best.score < 8 || best.namedScore === 0) {
     return { status: "not_found", candidates };
   }
 

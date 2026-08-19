@@ -6,6 +6,7 @@ import type { MessagingProvider, MessagingProviderCredentials, MessagingProvider
 export * from "./credentials";
 export * from "./metadata";
 export * from "./providers";
+export * from "./senders";
 export type * from "./types";
 
 export function getMessagingProvider(

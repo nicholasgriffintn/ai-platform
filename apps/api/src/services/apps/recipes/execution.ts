@@ -1,4 +1,7 @@
-import type { RecipeInvocationResponse } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ConversationChannelRequestOptions,
+  RecipeInvocationResponse,
+} from "@ngriffin_uk/polychat-schemas";
 import { createRecipeChatRequestOptions } from "@ngriffin_uk/polychat-schemas";
 
 import { defaultModel } from "~/constants/models";
@@ -15,20 +18,13 @@ const logger = getLogger({ prefix: "services/apps/recipes/execution" });
 
 function buildRecipeExecutionOptions(params: {
   invocation: RecipeInvocationResponse;
-  sms?: {
-    from?: string;
-    to?: string;
-  };
+  channel?: ConversationChannelRequestOptions;
 }): ChatRequestOptions {
   return {
-    ...(params.sms
+    ...(params.channel
       ? {
-          source: "sms",
-          sms: {
-            enabled: true,
-            from: params.sms.from,
-            to: params.sms.to,
-          },
+          source: params.channel.id,
+          channel: params.channel,
         }
       : {}),
     ...(params.invocation.enabledTools.length > 0
@@ -117,10 +113,7 @@ export async function executeRecipeInvocationChat(params: {
   projectId?: string;
   titleConversation?: boolean;
   priorMessages?: Message[];
-  sms?: {
-    from?: string;
-    to?: string;
-  };
+  channel?: ConversationChannelRequestOptions;
 }): Promise<{
   conversationId: string;
   response: CreateChatCompletionsResponse;

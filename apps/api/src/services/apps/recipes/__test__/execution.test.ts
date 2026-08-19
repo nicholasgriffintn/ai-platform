@@ -157,13 +157,14 @@ describe("executeRecipeInvocationChat", () => {
     });
   });
 
-  it("passes SMS context into chat completion options for text-message recipe runs", async () => {
+  it("passes channel context into chat completion options for text-message recipe runs", async () => {
     await executeRecipeInvocationChat({
       env,
       context,
       user,
       invocation,
-      sms: {
+      channel: {
+        id: "sms",
         from: "+15551234567",
         to: "+15557654321",
       },
@@ -176,8 +177,8 @@ describe("executeRecipeInvocationChat", () => {
       request: expect.objectContaining({
         options: expect.objectContaining({
           source: "sms",
-          sms: {
-            enabled: true,
+          channel: {
+            id: "sms",
             from: "+15551234567",
             to: "+15557654321",
           },
@@ -200,7 +201,8 @@ describe("executeRecipeInvocationChat", () => {
           content: "run my action log recipe",
         },
       ],
-      sms: {
+      channel: {
+        id: "sms",
         from: "+15551234567",
         to: "+15557654321",
       },
@@ -227,8 +229,8 @@ describe("executeRecipeInvocationChat", () => {
         ],
         options: expect.objectContaining({
           source: "sms",
-          sms: {
-            enabled: true,
+          channel: {
+            id: "sms",
             from: "+15551234567",
             to: "+15557654321",
           },
