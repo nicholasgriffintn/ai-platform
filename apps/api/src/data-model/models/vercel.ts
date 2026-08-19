@@ -8503,8 +8503,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     contextWindow: 1000000,
     maxTokens: 128000,
-    costPer1kInputTokens: 0.0011,
-    costPer1kOutputTokens: 0.003851,
+    costPer1kInputTokens: 0.0008,
+    costPer1kOutputTokens: 0.00255,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",
@@ -10229,6 +10229,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",
     },
+  	costPer1kInputTokens: 0.0001,
+  	costPer1kOutputTokens: 0.0004,
   }),
 
   createModelConfig("nvidia/nemotron-3.5-lightning", PROVIDER, {
@@ -10252,6 +10254,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",
     },
+  	costPer1kInputTokens: 0.00005,
+  	costPer1kOutputTokens: 0.0002,
   }),
 
   createModelConfig("openai/gpt-4.1-fast", PROVIDER, {
@@ -10837,5 +10841,29 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
       agenticIndex: null,
       intelligenceIndexVersion: 4.1,
     },
+  }),
+  createModelConfig("zai/glm-5.3", PROVIDER, {
+  	name: "GLM 5.3",
+  	matchingModel: "zai/glm-5.3",
+  	family: "glm",
+  	openWeights: false,
+  	releaseDate: "August 14, 2026",
+  	lastUpdated: "August 14, 2026",
+  	modalities: {
+  		input: ["text"],
+  		output: ["text"],
+  	},
+  	supportsAttachments: false,
+  	supportsTemperature: true,
+  	supportsToolCalls: true,
+  	supportsResponseFormat: true,
+  	contextWindow: 1000000,
+  	maxTokens: 12800,
+  	costPer1kInputTokens: 0.0014,
+  	costPer1kOutputTokens: 0.0044,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "thinking"],
+  		defaultEffort: "none",
+  	},
   }),
 ]);

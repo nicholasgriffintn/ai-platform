@@ -611,4 +611,28 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
       defaultEffort: "none",
     },
   }),
+  createModelConfig("muse-spark-1.2", PROVIDER, {
+  	name: "Muse Spark 1.2",
+  	matchingModel: "muse-spark-1.2",
+  	family: "muse",
+  	openWeights: false,
+  	releaseDate: "August 5, 2026",
+  	lastUpdated: "August 5, 2026",
+  	modalities: {
+  		input: ["text", "image", "video", "pdf", "audio"],
+  		output: ["text"],
+  	},
+  	supportsAttachments: true,
+  	supportsTemperature: true,
+  	supportsToolCalls: true,
+  	supportsResponseFormat: true,
+  	contextWindow: 1048576,
+  	maxTokens: 131072,
+  	costPer1kInputTokens: 0.0001,
+  	costPer1kOutputTokens: 0.0002,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "thinking"],
+  		defaultEffort: "none",
+  	},
+  }),
 ]);
