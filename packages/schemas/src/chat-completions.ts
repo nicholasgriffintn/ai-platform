@@ -708,6 +708,22 @@ export const createChatCompletionsResponseSchema = z
         prompt_tokens: z.number().describe("Prompt token count."),
         completion_tokens: z.number().describe("Completion token count."),
         total_tokens: z.number().describe("Total token count."),
+        input_tokens: z.number().optional().describe("Provider-normalised input token count."),
+        output_tokens: z.number().optional().describe("Provider-normalised output token count."),
+        cached_input_tokens: z
+          .number()
+          .optional()
+          .describe("Input tokens served from the provider prompt cache."),
+        cache_creation_tokens: z
+          .number()
+          .optional()
+          .describe("Input tokens billed for writing to the provider prompt cache."),
+        reasoning_tokens: z
+          .number()
+          .optional()
+          .describe("Output tokens spent on reasoning or thinking."),
+        audio_input_tokens: z.number().optional().describe("Audio input token count."),
+        audio_output_tokens: z.number().optional().describe("Audio output token count."),
       })
       .describe("Token usage for the response."),
     post_processing: chatPostProcessingSchema.optional().describe("Post-processing metadata."),

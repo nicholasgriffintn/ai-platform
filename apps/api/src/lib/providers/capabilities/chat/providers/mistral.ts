@@ -37,6 +37,8 @@ export class MistralProvider extends BaseProvider {
   supportsStreaming = true;
   isOpenAiCompatible = false;
 
+  protected supportsStreamUsageOption = false;
+
   protected getProviderKeyName(): string {
     return "MISTRAL_API_KEY";
   }
