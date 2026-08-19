@@ -24,7 +24,7 @@ Replace the auxiliary-model tools with skills: `prompt-craft`, `tutoring`, and `
 
 Split `analyse_hacker_news` along the same line. Retrieval is capability, so `get_hacker_news_stories` keeps it and returns data only; the interpretation moves to a `hacker-news` skill. Add an `article-analysis` skill so chat can analyse a shared article, which it previously could not — the Articles app keeps its own prompts, because those back its routes and experience rather than chat.
 
-Split council in two. The personas and the process become a `council` skill. The multi-turn debate becomes `run_council`, a server-side tool built on a generic `runPanel` primitive in `lib/chat/panel.ts`. The client loop, the routing tag, its parser, the prompt mode, and the duplicated roster are all removed.
+Split council in two. The personas and the process become a `council` skill. The multi-turn debate becomes `run_council`, a server-side tool built on a generic `runPanel` primitive in `lib/chat/panel.ts`. The debate keeps the behaviour the client loop had — each member answers in its own completion on the conversation's model, each turn names who speaks next, turns stream into the conversation as they finish through `emitToolResult`, and the panel ends on consensus or a turn budget. What moves is ownership: the loop, the routing contract, and the transcript live in the API rather than in `useChatManager`, so the same primitive serves any future panel. The prompt mode and the duplicated frontend roster are removed.
 
 To let a mode-like feature run under a skill without a `load_skill` round trip, introduce **pinned skills**. `chatRequestOptions.skills.pinned` names skills whose full bodies render into a `<pinned_skills>` prompt section up front. Pinning is presentation, not authorisation: a skill the scope has not made ready is never pinned, however the request asks. The Home Council mode becomes exactly this — pin the `council` skill — rather than a parallel prompt path.
 
@@ -38,9 +38,11 @@ Behaviour that was deterministic code is now model judgement. A skill can be ign
 
 Removing `POST /apps/prompt-coach`, `POST /apps/retrieval/tutor`, and the seven deleted tool names is a breaking API change. Nothing in `apps/app` consumed the prompt-coach route, and the tutor route's UI is gone with it, but an external caller would break without warning.
 
-Council loses its member picker and its live per-member streaming. Members are now chosen by the model from the tool schema, and the debate arrives as one tool result rather than as separate messages appearing in turn. The chamber runs on the auxiliary model rather than the conversation's model, which is cheaper and faster but less capable. In exchange council conversations regain memory, skills, tool guidance, and model metadata, which the prompt-mode bypass had silently denied them.
+Council loses its member picker. Membership is now the model's choice from the tool schema, informed by the skill, rather than a composer control the user sets before asking. Per-member streaming, dynamic routing, and the conversation's model are all retained. In exchange council conversations regain memory, skills, tool guidance, and model metadata, which the prompt-mode bypass had silently denied them.
 
-`runPanel` deliberately fixes the roster and ordering at call time. A member cannot elect the next speaker, so a panel cannot extend itself past the caller's budget — the failure mode the old routing tag allowed.
+`runPanel` enforces the turn budget itself, so routing can shorten a panel but never extend it — the failure mode the old client loop allowed, where a malformed or adversarial routing tag could keep the debate running. A turn that omits or malforms the tag ends the panel rather than guessing at a next speaker, and a member whose completion fails is skipped rather than aborting the chamber.
+
+Running the debate on the conversation's model rather than an auxiliary one costs materially more per council. That is the right default — a council on a weak model produces agreeable noise, which is the one thing a council exists to prevent — but it makes `run_council` one of the more expensive tools in the registry, and the skill is explicit that most questions do not warrant it.
 
 Pinned skills spend tokens up front, which is what ADR 0018 avoids by default. It is bounded to four skills and only applies when a mode or the user asks for it; the roster remains the default disclosure.
 

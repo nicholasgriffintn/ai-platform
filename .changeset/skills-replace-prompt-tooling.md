@@ -27,6 +27,9 @@ Removed API surface: `POST /apps/prompt-coach`, `POST /apps/retrieval/tutor`, an
 `prompt_coach`, `tutor`, `add_reasoning_step`, `compose_functions`, `if_then_else`,
 `parallel_execute`, `retry_with_backoff`, `fallback`, and `analyse_hacker_news` tools.
 
-Added: `run_council`, backed by a reusable panel primitive that runs a fixed roster of perspectives
-as separate completions, and `get_hacker_news_stories`, which returns front-page data without an
-auxiliary-model pass.
+Added: `run_council`, backed by a reusable panel primitive that debates a question turn by turn on
+the conversation's model, streaming each member's turn into the chat as it lands and letting each
+turn route to the next speaker until the chamber converges; and `get_hacker_news_stories`, which
+returns front-page data without an auxiliary-model pass.
+
+`component-content` gains `CouncilTurnView`, registered against the `council_turn` tool response.

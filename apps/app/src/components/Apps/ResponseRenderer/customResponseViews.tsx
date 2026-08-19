@@ -1,4 +1,5 @@
 import {
+  CouncilTurnView,
   type CustomResponseViewRegistry,
   WeatherView,
   WebSearchView,
@@ -17,6 +18,7 @@ export const customResponseViews: CustomResponseViewRegistry = {
     <WebSearchView data={data} embedded={embedded} onToolInteraction={onToolInteraction} />
   ),
   get_weather: ({ data, embedded }) => <WeatherView data={data} embedded={embedded} />,
+  council_turn: ({ data, embedded }) => <CouncilTurnView data={data} embedded={embedded} />,
   discover_capabilities: ({ data }) => <CapabilityDiscoveryView data={data} />,
   research: ({ data, embedded }) => <ResearchView data={data} embedded={embedded} />,
   sandbox_plan: ({ data }) => <SandboxView type="sandbox_plan" data={data as never} />,

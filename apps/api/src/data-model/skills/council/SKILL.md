@@ -35,13 +35,15 @@ Call `run_council` with the question stated in full — the members do not see t
 
 Choose members who will actually collide on _this_ question. The tool's schema lists the roster; three or four is usually right, and more than that dilutes rather than deepens. A security question wants `security` and `operator`; an architecture question wants `architect` and `sceptic`; a product bet wants `strategist`, `customer`, and `contrarian`. Include `synthesiser` when the threads need pulling together, and `joker` or `wildcard` only when the problem has gone stale and needs reframing.
 
-Order matters: the first member speaks blind, and each one after reads the transcript. Put the perspective that sets the frame first and the one that integrates last.
+You choose who is in the room; the council decides the running order itself. `chair` opens if present, each member then names who should speak next, and the debate ends when no member has new input or the turn budget runs out. `synthesiser` closes if you included it. Raise `maxTurns` when the question genuinely needs more rounds, but a council that cannot converge in eight turns usually has an underspecified question rather than too few turns.
 
 If you do not pass members, the tool convenes a sensible default.
 
+Turns stream into the conversation as they happen, so the user watches the debate unfold. Do not narrate it while it runs, and do not repeat the turns back afterwards — they are already on screen.
+
 ## Using what comes back
 
-The tool returns the transcript and the chamber's conclusion. Neither is your answer — they are input to it.
+The tool returns the chamber's conclusion, with the full transcript in its data. Neither is your answer — they are input to it.
 
 - Lead with the answer the council reached and what changed your view, not with a summary of the proceedings.
 - Name a member only when their specific objection survived and matters to the user. "The security reviewer flagged X" earns its place; "the strategist agreed" does not.
@@ -49,7 +51,7 @@ The tool returns the transcript and the chamber's conclusion. Neither is your an
 - If the council was wrong or missed something you can see, say so. You are not bound by it.
 - If the debate did not settle the question, say what would settle it. That is a useful result, not a failure.
 
-Do not paste the raw transcript into your reply unless the user asks to see it.
+Do not paste the transcript into your reply. The user has already watched it.
 
 ## Without the tool
 
