@@ -111,7 +111,7 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "6.0.5",
     "babel-plugin-react-compiler": "1.0.0",
-    "globals": "17.9.0",
+    "globals": "17.11.0",
     "jsdom": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
