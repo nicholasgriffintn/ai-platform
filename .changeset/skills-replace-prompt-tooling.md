@@ -32,4 +32,9 @@ the conversation's model, streaming each member's turn into the chat as it lands
 turn route to the next speaker until the chamber converges; and `get_hacker_news_stories`, which
 returns front-page data without an auxiliary-model pass.
 
-`component-content` gains `CouncilTurnView`, registered against the `council_turn` tool response.
+`select_council_members` raises a member picker in the conversation, pre-ticked with the members the
+model recommends, so the user convenes the council themselves.
+
+`component-content` gains `CouncilTurnView` and `CouncilMemberPickerView`, and exports a shared
+`ToolInteractionHandler` type. Tool interactions gain a `submitPrompt` action alongside
+`useAsPrompt`, for views whose control is itself the decision.
