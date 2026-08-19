@@ -51,13 +51,6 @@ catalogs:
     zod:
       specifier: 4.4.3
       version: 4.4.3
-  react-peer:
-    react:
-      specifier: '>=19'
-      version: 19.2.8
-    react-dom:
-      specifier: '>=19'
-      version: 19.2.8
 
 overrides:
   fast-uri@>=3.0.0 <3.1.5: 3.1.5
@@ -188,7 +181,7 @@ importers:
         version: 5.2.1
       posthog-node:
         specifier: ^5.48.1
-        version: 5.48.1
+        version: 5.48.2
       stripe:
         specifier: 22.4.0
         version: 22.4.0(@types/node@26.2.0)
@@ -3483,9 +3476,6 @@ packages:
   '@posthog/browser-common@0.5.0':
     resolution: {integrity: sha512-8DaxVZS1bQPbA514RePurLNbYjei3P4jhnC206DwVv5XThmZM3QdlsXenI2ujE3pLbgQ79hYn9o1Kda8I3WK/Q==}
 
-  '@posthog/core@1.46.9':
-    resolution: {integrity: sha512-EXO6y5ih+jBkTCpUCuYgQmajuDZuvy6vMvflkub6pLQyi0GPlCPWVSvZZkOeQw9e2MxoD5GteeGCt9R8+UJ/yQ==}
-
   '@posthog/core@1.48.3':
     resolution: {integrity: sha512-kwVDVvwtCTXctApA2tpnwDjDDan8LrkwCW1Wv6PABaVs/s5ahbQ9W3pvdXcqr71HCuqukSA1jp7MySczebubGg==}
 
@@ -6632,8 +6622,8 @@ packages:
   posthog-js@1.416.0:
     resolution: {integrity: sha512-9Rd0tq2WTA1U07VucWuCMwlzr+YvODglyN4mOf61TVrxPeMA7KVBiOEAThqaIvAv2kHbZvwTjbd8Ww2oTs221w==}
 
-  posthog-node@5.48.1:
-    resolution: {integrity: sha512-BxLX2SqGEQhPqCPTalpyo0RRv1NMbf7UaN7q9d/ED77ksD6XOmE7ko2vIKO8F0zPL1NtKxIi+DYXap9lvR0RaA==}
+  posthog-node@5.48.2:
+    resolution: {integrity: sha512-3Ni5upqpbUXL1QM2oU4sL9Y3OycDGgrKI9aJOGHbcF9xkPwR18cq481Tkvn6/CCPbl04p3tjdwQNkGHVveQcag==}
     engines: {node: ^20.20.0 || >=22.22.0}
     peerDependencies:
       rxjs: ^7.0.0
@@ -9372,10 +9362,6 @@ snapshots:
   '@posthog/browser-common@0.5.0':
     dependencies:
       '@posthog/core': 1.48.3
-      '@posthog/types': 1.402.2
-
-  '@posthog/core@1.46.9':
-    dependencies:
       '@posthog/types': 1.402.2
 
   '@posthog/core@1.48.3':
@@ -12739,9 +12725,9 @@ snapshots:
     transitivePeerDependencies:
       - preact-render-to-string
 
-  posthog-node@5.48.1:
+  posthog-node@5.48.2:
     dependencies:
-      '@posthog/core': 1.46.9
+      '@posthog/core': 1.48.3
 
   powershell-utils@0.1.0: {}
 
