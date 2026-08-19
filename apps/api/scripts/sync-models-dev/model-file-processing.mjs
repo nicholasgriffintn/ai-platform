@@ -436,13 +436,16 @@ export async function processFile({
   });
 
   if (newEntries.length > 0) {
+    const isEmptyContainer = containerElements.length === 0;
     const closeTokenPosition = containerNode.end - 1;
-    const insertionPoint = getLineStart(originalText, closeTokenPosition);
+    const insertionPoint = isEmptyContainer
+      ? containerNode.getStart(sourceFile) + 1
+      : getLineStart(originalText, closeTokenPosition);
 
     patches.push({
       start: insertionPoint,
       end: insertionPoint,
-      text: `${newEntries.join("\n\n")}\n`,
+      text: isEmptyContainer ? `\n${newEntries.join("\n\n")}\n` : `${newEntries.join("\n\n")}\n`,
     });
   }
 

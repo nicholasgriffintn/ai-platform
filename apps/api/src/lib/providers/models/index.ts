@@ -40,6 +40,7 @@ import { opencodeGoModelConfig } from "~/data-model/models/opencode-go";
 import { openrouterModelConfig } from "~/data-model/models/openrouter";
 import { parallelModelConfig } from "~/data-model/models/parallel";
 import { perplexityModelConfig } from "~/data-model/models/perplexity";
+import { poolsideModelConfig } from "~/data-model/models/poolside";
 import { replicateModelConfig } from "~/data-model/models/replicate";
 import { requestyModelConfig } from "~/data-model/models/requesty";
 import { togetherAiModelConfig } from "~/data-model/models/together-ai";
@@ -123,6 +124,7 @@ const modelConfig: ModelConfig = mergeModelConfigs(
   opencodeGoModelConfig,
   cortecsModelConfig,
   novaModelConfig,
+  poolsideModelConfig,
 );
 
 const MODEL_CACHE_TTL = 14400;

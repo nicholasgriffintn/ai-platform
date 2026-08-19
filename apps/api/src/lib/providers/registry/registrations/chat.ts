@@ -34,6 +34,7 @@ import { OpenRouterProvider } from "../../capabilities/chat/providers/openrouter
 import { ParallelProvider } from "../../capabilities/chat/providers/parallel";
 import { PerplexityProvider } from "../../capabilities/chat/providers/perplexity";
 import { PollyProvider } from "../../capabilities/chat/providers/polly";
+import { PoolsideProvider } from "../../capabilities/chat/providers/poolside";
 import { ReplicateProvider } from "../../capabilities/chat/providers/replicate";
 import { RequestyProvider } from "../../capabilities/chat/providers/requesty";
 import { SageMakerProvider } from "../../capabilities/chat/providers/sagemaker";
@@ -271,6 +272,11 @@ const chatProviders: ProviderRegistration<AIProvider>[] = [
     name: "cortecs",
     create: () => new CortecsProvider(),
     metadata: { vendor: "Cortecs", categories: ["chat"] },
+  },
+  {
+    name: "poolside",
+    create: () => new PoolsideProvider(),
+    metadata: { vendor: "Poolside", categories: ["chat"], tags: ["coding"] },
   },
 ];
 
