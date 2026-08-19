@@ -49,6 +49,7 @@ import {
 } from "./sandbox";
 import { capture_screenshot } from "./screenshot";
 import { create_speech } from "./speech";
+import { get_task_status } from "./tasks";
 import { delegateToTeamMember, delegateToTeamMemberByRole, getTeamMembers } from "./teamDelegation";
 import { tutor } from "./tutor";
 import { v0_code_generation } from "./v0_code_generation";
@@ -85,6 +86,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   get_recipe,
   configure_recipe,
   trigger_recipe,
+  get_task_status,
   capture_screenshot,
   create_speech,
   tutor,

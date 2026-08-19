@@ -11,6 +11,7 @@ export const TASK_TYPES = [
   "training_quality_scoring",
   "usage_update",
   "recipe_execution",
+  "inbound_message",
   "artificial_analysis_ingest",
   "artificial_analysis_scoring",
   SANDBOX_RUN_DISPATCH_TASK_TYPE,

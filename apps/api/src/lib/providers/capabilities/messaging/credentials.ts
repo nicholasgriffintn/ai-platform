@@ -3,6 +3,7 @@ import { safeParseJson } from "~/utils/json";
 import { getStringRecordValue } from "~/utils/objects";
 
 import { isMessagingProviderId } from "./metadata";
+import { parseAllowedSenders } from "./senders";
 import type {
   AwsSmsCredentials,
   MessagingProviderCredentials,
@@ -160,6 +161,9 @@ export function createMessagingCredentialEnvelope(params: {
       "messagingServiceSid",
       existing?.messagingServiceSid,
     );
+    const allowedSenders = parseAllowedSenders(
+      getOptionalStringRecordValue(config, "allowedSenders", existing?.allowedSenders?.join(", ")),
+    );
 
     if (!accountSid || !authToken) {
       throw new AssistantError("Twilio SMS credentials are incomplete", ErrorType.PARAMS_ERROR);
@@ -178,6 +182,7 @@ export function createMessagingCredentialEnvelope(params: {
       credentials: {
         accountSid,
         authToken,
+        allowedSenders,
         fromNumber,
         messagingServiceSid,
       },
@@ -266,6 +271,9 @@ export function createMessagingCredentialEnvelope(params: {
     const mediaKeyPrefix = normaliseAwsS3KeyPrefix(
       getOptionalStringRecordValue(config, "mediaKeyPrefix", existing?.mediaKeyPrefix),
     );
+    const allowedSenders = parseAllowedSenders(
+      getOptionalStringRecordValue(config, "allowedSenders", existing?.allowedSenders?.join(", ")),
+    );
 
     if (!accessKeyId || !secretAccessKey || !region || !originationIdentity) {
       throw new AssistantError("AWS SMS credentials are incomplete", ErrorType.PARAMS_ERROR);
@@ -292,6 +300,7 @@ export function createMessagingCredentialEnvelope(params: {
       credentials: {
         accessKeyId,
         secretAccessKey,
+        allowedSenders,
         region,
         originationIdentity,
         configurationSetName,
@@ -381,6 +390,9 @@ export function getMessagingCredentialConfigurationValues(
 ): Record<string, string> {
   if (isTwilioSmsCredentials(credentials)) {
     return {
+      ...(credentials.allowedSenders?.length
+        ? { allowedSenders: credentials.allowedSenders.join(", ") }
+        : {}),
       ...(credentials.fromNumber ? { fromNumber: credentials.fromNumber } : {}),
       ...(credentials.messagingServiceSid
         ? { messagingServiceSid: credentials.messagingServiceSid }
@@ -390,6 +402,9 @@ export function getMessagingCredentialConfigurationValues(
 
   if (isAwsSmsCredentials(credentials)) {
     return {
+      ...(credentials.allowedSenders?.length
+        ? { allowedSenders: credentials.allowedSenders.join(", ") }
+        : {}),
       region: credentials.region,
       originationIdentity: credentials.originationIdentity,
       ...(credentials.configurationSetName

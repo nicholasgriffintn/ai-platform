@@ -349,14 +349,17 @@ export function parseIncomingAwsSmsMessage(envelope: SnsEnvelope): IncomingMessa
     getStringRecordValue(messageRecord, "destinationNumber") ??
     getStringRecordValue(messageRecord, "to");
 
-  if (!from || !body) {
+  const messageId =
+    envelope.MessageId?.trim() || getStringRecordValue(messageRecord, "messageId")?.trim();
+
+  if (!messageId || !from || !body) {
     throw new AssistantError(
-      "AWS End User Messaging inbound payload is missing sender or content",
+      "AWS End User Messaging inbound payload is missing a message id, sender, or content",
       ErrorType.PARAMS_ERROR,
     );
   }
 
-  return { kind: "message", from, to, body };
+  return { kind: "message", messageId, from, to, body };
 }
 
 async function confirmSnsSubscription(

@@ -1,6 +1,7 @@
 import {
   parseChatRequestOptions,
   readRecipeChatRequestOptions,
+  type ConversationChannelRequestOptions,
 } from "@ngriffin_uk/polychat-schemas";
 
 export interface ActiveRecipeSetup {
@@ -53,26 +54,21 @@ export function getActiveRecipeSetup(options: unknown): ActiveRecipeSetup | unde
 }
 
 export function getTriggerRecipeChannel(options: unknown): "sms" | "tool" {
-  const requestOptions = parseChatRequestOptions(options);
-
-  if (requestOptions?.sms?.enabled) {
-    return "sms";
-  }
-
-  return "tool";
+  return parseChatRequestOptions(options)?.channel?.id ?? "tool";
 }
 
-export function getSmsRecipeExecutionContext(
+export function getRecipeExecutionChannelContext(
   options: unknown,
-): { from?: string; to?: string } | undefined {
-  const sms = parseChatRequestOptions(options)?.sms;
+): ConversationChannelRequestOptions | undefined {
+  const channel = parseChatRequestOptions(options)?.channel;
 
-  if (!sms?.enabled) {
+  if (!channel) {
     return undefined;
   }
 
   return {
-    ...(sms.from ? { from: sms.from } : {}),
-    ...(sms.to ? { to: sms.to } : {}),
+    id: channel.id,
+    ...(channel.from ? { from: channel.from } : {}),
+    ...(channel.to ? { to: channel.to } : {}),
   };
 }

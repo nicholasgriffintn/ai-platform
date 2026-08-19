@@ -11,11 +11,10 @@ import { getTextToImageSystemPrompt } from "./image";
 import { returnSandboxPrompt } from "./sandbox";
 import { buildAssistantMetadataSection, type PromptModelMetadata } from "./sections/metadata";
 import type { PromptMemoryPolicy } from "./sections/session-config";
-import { returnSmsPrompt } from "./sms";
 import { returnStandardPrompt } from "./standard";
 import { emptyPrompt } from "./utils";
 
-export type PromptMode = "council" | "sms";
+export type PromptMode = "council";
 export type PromptRequest = IBody & { promptMode?: PromptMode };
 
 export interface PromptSessionOptions {
@@ -44,10 +43,6 @@ export async function getSystemPrompt(
 
   if (promptMode === "council" || request.options?.council?.enabled) {
     return trimTemplateWhitespace(returnCouncilPrompt(request.options?.council));
-  }
-
-  if (promptMode === "sms" || request.options?.sms?.enabled) {
-    return trimTemplateWhitespace(returnSmsPrompt(request, userSettings, modelMetadata));
   }
 
   if (!modelConfig) {

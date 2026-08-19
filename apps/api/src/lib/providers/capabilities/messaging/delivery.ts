@@ -7,6 +7,7 @@ import { isPashiQrPngUrl } from "~/utils/qr";
 import { providerLibrary } from "../../library";
 import { parseMessagingCredentialEnvelope } from "./credentials";
 import { isMessagingProviderId } from "./metadata";
+import { readAllowedSenders } from "./senders";
 import type { MessagingProvider, MessagingProviderId } from "./types";
 
 export interface ConfiguredMessagingProviderSettings {
@@ -123,6 +124,29 @@ export function selectConfiguredMessagingProviderSettings(
   return delivery ? { id: delivery.id, providerId: delivery.providerId } : null;
 }
 
+export function resolveStoredMessagingProvider(params: {
+  providerId: MessagingProviderId;
+  value: string;
+  env: IEnv;
+  user: IUser;
+  context?: ServiceContext;
+}): { provider: MessagingProvider; allowedSenders: string[] } {
+  const envelope = parseMessagingCredentialEnvelope({
+    providerId: params.providerId,
+    value: params.value,
+  });
+
+  return {
+    provider: providerLibrary.messaging(params.providerId, {
+      env: params.env,
+      user: params.user,
+      serviceContext: params.context,
+      config: envelope.credentials,
+    }),
+    allowedSenders: readAllowedSenders(envelope.credentials),
+  };
+}
+
 export function getMessagingProviderFromStoredCredential(params: {
   providerId: MessagingProviderId;
   value: string;
@@ -130,15 +154,5 @@ export function getMessagingProviderFromStoredCredential(params: {
   user: IUser;
   context?: ServiceContext;
 }): MessagingProvider {
-  const envelope = parseMessagingCredentialEnvelope({
-    providerId: params.providerId,
-    value: params.value,
-  });
-
-  return providerLibrary.messaging(params.providerId, {
-    env: params.env,
-    user: params.user,
-    serviceContext: params.context,
-    config: envelope.credentials,
-  });
+  return resolveStoredMessagingProvider(params).provider;
 }

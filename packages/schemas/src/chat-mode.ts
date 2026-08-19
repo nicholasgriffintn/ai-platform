@@ -4,8 +4,10 @@ import { councilChatOptionsSchema } from "./council";
 
 export const homeChatModeIdSchema = z.enum(["background", "chat", "council", "live", "sms"]);
 
-export const conversationSmsRequestOptionsSchema = z.object({
-  enabled: z.boolean(),
+export const inboundChannelIdSchema = z.enum(["sms"]);
+
+export const conversationChannelRequestOptionsSchema = z.object({
+  id: inboundChannelIdSchema,
   from: z.string().trim().optional(),
   to: z.string().trim().optional(),
 });
@@ -13,7 +15,7 @@ export const conversationSmsRequestOptionsSchema = z.object({
 export const conversationModeRequestOptionsSchema = z
   .object({
     council: councilChatOptionsSchema.optional(),
-    sms: conversationSmsRequestOptionsSchema.optional(),
+    channel: conversationChannelRequestOptionsSchema.optional(),
   })
   .passthrough();
 
@@ -31,6 +33,9 @@ export const conversationModeMetadataSchema = z
   .passthrough();
 
 export type HomeChatModeId = z.infer<typeof homeChatModeIdSchema>;
-export type ConversationSmsRequestOptions = z.infer<typeof conversationSmsRequestOptionsSchema>;
+export type InboundChannelId = z.infer<typeof inboundChannelIdSchema>;
+export type ConversationChannelRequestOptions = z.infer<
+  typeof conversationChannelRequestOptionsSchema
+>;
 export type ConversationModeRequestOptions = z.infer<typeof conversationModeRequestOptionsSchema>;
 export type ConversationModeMetadata = z.infer<typeof conversationModeMetadataSchema>;
