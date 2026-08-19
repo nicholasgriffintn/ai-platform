@@ -30,6 +30,7 @@ describe("model router modes", () => {
     expect(isActiveRouterModel(makeModel("free", { isFree: true }))).toBe(true);
     expect(isActiveRouterModel(makeModel("legacy", { deprecated: true }))).toBe(false);
     expect(isActiveRouterModel(makeModel("preview", { status: "alpha" }))).toBe(false);
+    expect(isActiveRouterModel(makeModel("beta-preview", { status: "beta" }))).toBe(false);
     expect(
       isActiveRouterModel(makeModel("openrouter/free", { provider: "openrouter", isFree: true })),
     ).toBe(false);
