@@ -136,6 +136,16 @@ vi.mock("~/utils/logger", () => ({
   }),
 }));
 
+function normalisedUsage(total: number, input = 0, output = 0) {
+  return {
+    input_tokens: input,
+    output_tokens: output,
+    total_tokens: total,
+    prompt_tokens: input,
+    completion_tokens: output,
+  };
+}
+
 describe("Team Delegation Integration", () => {
   let orchestrator: ChatOrchestrator;
   let mockEnv: any;
@@ -446,6 +456,7 @@ describe("Team Delegation Integration", () => {
                 stepType: "tool-call",
                 toolCallCount: 1,
                 toolResultCount: 1,
+                usage: normalisedUsage(150),
               }),
               expect.objectContaining({
                 stepNumber: 2,
@@ -544,6 +555,7 @@ describe("Team Delegation Integration", () => {
                 stepType: "tool-call",
                 toolCallCount: 1,
                 toolResultCount: 1,
+                usage: normalisedUsage(100),
               }),
               expect.objectContaining({
                 stepNumber: 2,

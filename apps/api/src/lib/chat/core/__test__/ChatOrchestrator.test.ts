@@ -273,7 +273,11 @@ describe("ChatOrchestrator", () => {
         expect(mockGuardrails.validateOutput).toHaveBeenCalled();
         expect(mockConversationManager.add).toHaveBeenCalled();
         expect(result).toEqual({
-          response: mockResponse,
+          response: expect.objectContaining({
+            response: "Test response",
+            usage: expect.objectContaining({ total_tokens: 100 }),
+            totalUsage: expect.objectContaining({ total_tokens: 100 }),
+          }),
           toolResponses: [],
           selectedModel: "test-model",
           completion_id: "test-completion-id",
@@ -316,7 +320,10 @@ describe("ChatOrchestrator", () => {
         );
         expect(result).toEqual(
           expect.objectContaining({
-            response: mockResponse,
+            response: expect.objectContaining({
+              response: "Test response",
+              usage: expect.objectContaining({ total_tokens: 100 }),
+            }),
             toolResponses: [],
             selectedModel: "test-model",
             completion_id: "test-completion-id",
@@ -802,9 +809,11 @@ describe("ChatOrchestrator", () => {
           response: {
             ...finalResponse,
             usage: {
+              input_tokens: 60,
+              output_tokens: 40,
+              total_tokens: 150,
               prompt_tokens: 60,
               completion_tokens: 40,
-              total_tokens: 150,
             },
             steps: [
               expect.objectContaining({
@@ -812,20 +821,34 @@ describe("ChatOrchestrator", () => {
                 stepType: "tool-call",
                 toolCallCount: 1,
                 toolResultCount: 1,
-                usage: { total_tokens: 50 },
+                usage: {
+                  input_tokens: 0,
+                  output_tokens: 0,
+                  total_tokens: 50,
+                  prompt_tokens: 0,
+                  completion_tokens: 0,
+                },
               }),
               expect.objectContaining({
                 stepNumber: 2,
                 stepType: "final",
                 toolCallCount: 0,
                 toolResultCount: 0,
-                usage: { prompt_tokens: 60, completion_tokens: 40, total_tokens: 100 },
+                usage: {
+                  input_tokens: 60,
+                  output_tokens: 40,
+                  total_tokens: 100,
+                  prompt_tokens: 60,
+                  completion_tokens: 40,
+                },
               }),
             ],
             totalUsage: {
+              input_tokens: 60,
+              output_tokens: 40,
+              total_tokens: 150,
               prompt_tokens: 60,
               completion_tokens: 40,
-              total_tokens: 150,
             },
           },
           toolResponses: mockToolResults,

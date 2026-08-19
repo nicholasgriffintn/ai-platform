@@ -8,6 +8,8 @@ export class CohereProvider extends BaseProvider {
   supportsStreaming = true;
   isOpenAiCompatible = false;
 
+  protected supportsStreamUsageOption = false;
+
   protected getProviderKeyName(): string {
     return "COHERE_API_KEY";
   }
