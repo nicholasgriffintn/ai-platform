@@ -1,6 +1,9 @@
 import { ToolResultCard } from "@ngriffin_uk/polychat-component-capabilities";
-import type { ToolInteractionHandler } from "@ngriffin_uk/polychat-component-content";
-import { ResponseView, type ResponseDisplay } from "@ngriffin_uk/polychat-component-content";
+import {
+  ResponseView,
+  type ResponseDisplay,
+  type ToolInteractionHandler,
+} from "@ngriffin_uk/polychat-component-content";
 import type { RenderableTool } from "@ngriffin_uk/polychat-schemas";
 
 interface ResponseRendererProps {

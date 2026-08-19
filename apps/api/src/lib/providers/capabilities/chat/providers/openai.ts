@@ -19,7 +19,7 @@ import { isRecord } from "~/utils/objects";
 import {
   createCommonParameters,
   getToolsForProvider,
-  shouldEnableStreaming,
+  createStreamingParameters,
 } from "~/utils/parameters";
 import { resolveRequestUser } from "~/utils/requestUser";
 import { appendUrlPath } from "~/utils/urls";
@@ -417,13 +417,11 @@ export class OpenAIProvider extends BaseProvider {
       this.isOpenAiCompatible,
     );
 
-    const streamingParams = shouldEnableStreaming(
+    const streamingParams = createStreamingParameters(
       modelConfig,
       this.supportsStreaming,
       providerParams.stream,
-    )
-      ? { stream: true }
-      : {};
+    );
 
     const toolsParams = getToolsForProvider(providerParams, modelConfig, this.name);
     const enabledTools = providerParams.enabled_tools || [];
@@ -459,7 +457,9 @@ export class OpenAIProvider extends BaseProvider {
         providerParams,
         modelConfig,
         toolsParams.tools || [],
-        streamingParams,
+        createStreamingParameters(modelConfig, this.supportsStreaming, providerParams.stream, {
+          includeUsage: false,
+        }),
       );
     }
 

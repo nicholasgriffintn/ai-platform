@@ -224,7 +224,7 @@ export function getModelInteractionCapabilities(
 }
 
 export function isStealthModel(model?: Pick<ModelConfigItem, "status">) {
-  return model?.status === "alpha";
+  return model?.status === "alpha" || model?.status === "beta";
 }
 
 export function isTextOnlyModel(model: ModelConfigItem) {

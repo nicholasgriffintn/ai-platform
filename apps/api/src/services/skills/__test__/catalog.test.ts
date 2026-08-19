@@ -231,8 +231,10 @@ describe("built-in skill catalogue", () => {
     const directories = entries
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
-      .sort();
-    const registered = builtInSkillDocuments.map((document) => document.directory).sort();
+      .sort((left, right) => left.localeCompare(right));
+    const registered = builtInSkillDocuments
+      .map((document) => document.directory)
+      .sort((left, right) => left.localeCompare(right));
 
     expect(registered).toEqual(directories);
 
@@ -243,9 +245,13 @@ describe("built-in skill catalogue", () => {
       const onDisk = files
         .filter((file) => file.isFile())
         .map((file) => `references/${file.name}`)
-        .sort();
+        .sort((left, right) => left.localeCompare(right));
 
-      expect(document.resources.map((resource) => resource.path).sort()).toEqual(onDisk);
+      expect(
+        document.resources
+          .map((resource) => resource.path)
+          .sort((left, right) => left.localeCompare(right)),
+      ).toEqual(onDisk);
     }
   });
 

@@ -1,6 +1,8 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 
 import { StreamingFormatter } from "~/lib/formatter";
+import { extractUsagePayload } from "~/lib/usage/extractUsage";
+import { mergeStreamedTokenUsage } from "~/lib/usage/tokenUsage";
 import type { ChatCompletionParameters, Message } from "~/types";
 import { isRecord } from "~/utils/objects";
 import { parseSseBuffer } from "~/utils/streaming";
@@ -38,11 +40,7 @@ export function captureProviderGenerationResult<T>(
 
   const response: Record<string, unknown> = isRecord(result) ? result : {};
   const content = response.response as Message["content"] | undefined;
-  const usage = isRecord(response.usage)
-    ? response.usage
-    : isRecord(response.usageMetadata)
-      ? response.usageMetadata
-      : undefined;
+  const usage = extractUsagePayload(response) ?? undefined;
 
   captureProviderGeneration(context, capture, content, usage, false);
 
@@ -104,7 +102,7 @@ function observeProviderStream(
             const extractedUsage = StreamingFormatter.extractUsageData(event);
 
             if (isRecord(extractedUsage)) {
-              usage = extractedUsage;
+              usage = mergeStreamedTokenUsage(usage, extractedUsage) ?? usage;
             }
           },
           onError: onParseError,

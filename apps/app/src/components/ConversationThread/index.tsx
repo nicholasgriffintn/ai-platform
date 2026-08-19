@@ -2,8 +2,8 @@ import {
   type ArtifactProps,
   findLatestArtifactByIdentifier,
   ArtifactPanel,
+  type ToolInteractionHandler,
 } from "@ngriffin_uk/polychat-component-content";
-import type { ToolInteractionHandler } from "@ngriffin_uk/polychat-component-content";
 import type {
   ComposerActionCatalogConfig,
   ComposerAssistantActionCapability,

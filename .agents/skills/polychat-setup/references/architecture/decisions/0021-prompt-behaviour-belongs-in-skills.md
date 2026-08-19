@@ -1,4 +1,4 @@
-# ADR 0020: Move prompt-shaped tooling into skills
+# ADR 0021: Move prompt-shaped tooling into skills
 
 ## Status
 

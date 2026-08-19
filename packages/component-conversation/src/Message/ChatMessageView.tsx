@@ -1,5 +1,7 @@
-import type { ToolInteractionHandler } from "@ngriffin_uk/polychat-component-content";
-import type { ArtifactProps } from "@ngriffin_uk/polychat-component-content";
+import type {
+  ArtifactProps,
+  ToolInteractionHandler,
+} from "@ngriffin_uk/polychat-component-content";
 import { ModelIcon } from "@ngriffin_uk/polychat-component-models";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";

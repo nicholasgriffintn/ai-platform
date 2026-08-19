@@ -12,8 +12,8 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import {
   createCommonParameters,
+  createStreamingParameters,
   getToolsForProvider,
-  shouldEnableStreaming,
 } from "~/utils/parameters";
 import { detectStreaming } from "~/utils/streaming";
 
@@ -46,6 +46,8 @@ export abstract class BaseProvider implements AIProvider {
   abstract name: string;
   abstract supportsStreaming: boolean;
   abstract isOpenAiCompatible?: boolean;
+
+  protected supportsStreamUsageOption = true;
 
   /**
    * Gets the environment variable name for the provider's API key
@@ -89,13 +91,12 @@ export abstract class BaseProvider implements AIProvider {
       this.isOpenAiCompatible,
     );
 
-    const streamingParams = shouldEnableStreaming(
+    const streamingParams = createStreamingParameters(
       modelConfig,
       this.supportsStreaming,
       providerParams.stream,
-    )
-      ? { stream: true }
-      : {};
+      { includeUsage: this.supportsStreamUsageOption },
+    );
 
     const toolsParams = getToolsForProvider(providerParams, modelConfig, this.name);
 

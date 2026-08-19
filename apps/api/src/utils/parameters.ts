@@ -369,3 +369,18 @@ export function shouldEnableStreaming(
 
   return stream && supportsStreaming && modelTypeSupportsStreaming;
 }
+
+export function createStreamingParameters(
+  modelConfig: ModelConfigItem,
+  supportsStreaming: boolean,
+  stream: boolean,
+  options: { includeUsage?: boolean } = {},
+): Record<string, any> {
+  if (!shouldEnableStreaming(modelConfig, supportsStreaming, stream)) {
+    return {};
+  }
+
+  return options.includeUsage === false
+    ? { stream: true }
+    : { stream: true, stream_options: { include_usage: true } };
+}

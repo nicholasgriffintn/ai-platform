@@ -1,5 +1,7 @@
-import type { ToolInteractionHandler } from "@ngriffin_uk/polychat-component-content";
-import type { ArtifactProps } from "@ngriffin_uk/polychat-component-content";
+import type {
+  ArtifactProps,
+  ToolInteractionHandler,
+} from "@ngriffin_uk/polychat-component-content";
 import {
   getMessageListScrollKey,
   CompactionStatusRow,

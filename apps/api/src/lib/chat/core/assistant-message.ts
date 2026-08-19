@@ -1,4 +1,6 @@
 import { buildAssistantMessageData } from "~/lib/chat/mode-metadata";
+import { extractUsagePayload } from "~/lib/usage/extractUsage";
+import { normaliseTokenUsage } from "~/lib/usage/tokenUsage";
 import type { ChatMode, ChatRequestOptions, Message, Platform } from "~/types";
 import { generateId } from "~/utils/id";
 import { nonEmptyToolCallsOrNull } from "~/utils/toolCalls";
@@ -36,7 +38,7 @@ export function buildStoredAssistantMessage(params: BuildStoredAssistantMessageP
     timestamp: Date.now(),
     model: params.model,
     platform: params.platform,
-    usage: params.response.usage || params.response.usageMetadata,
+    usage: normaliseTokenUsage(extractUsagePayload(params.response)) ?? undefined,
     tool_calls: nonEmptyToolCallsOrNull(params.response.tool_calls),
     status: params.response.status || undefined,
   };

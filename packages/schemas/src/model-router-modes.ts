@@ -1,4 +1,5 @@
 import type { ModelRouterMode } from "./chat-completions";
+import { isStealthModel } from "./model-selection";
 import type { ModelConfigItem, ModelModality } from "./models";
 
 const advancedStrengths: ModelModality[] = [
@@ -54,7 +55,7 @@ function isFlashFamily(model: ModelConfigItem) {
 export function isActiveRouterModel(model: ModelConfigItem) {
   return (
     !model.deprecated &&
-    model.status !== "alpha" &&
+    !isStealthModel(model) &&
     !isOpenRouterFreeModel(model) &&
     hasRequiredRouterScores(model)
   );

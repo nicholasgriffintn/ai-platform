@@ -3,6 +3,8 @@ import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { findModelConfig } from "~/lib/providers/models";
 import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 import { StorageService } from "~/lib/storage";
+import { extractUsagePayload } from "~/lib/usage/extractUsage";
+import { normaliseTokenUsage } from "~/lib/usage/tokenUsage";
 import type { AssistantMessageData, ChatCompletionParameters, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -59,10 +61,12 @@ export function formatAssistantMessage({
 
   const determinedFinishReason = finish_reason || (tool_calls?.length ? "tool_calls" : "stop");
 
-  const finalUsage = usage || {
+  const finalUsage = normaliseTokenUsage(usage) || {
+    input_tokens: 0,
+    output_tokens: 0,
+    total_tokens: 0,
     prompt_tokens: 0,
     completion_tokens: 0,
-    total_tokens: 0,
   };
 
   let messageContent: string | Array<any> = content;
@@ -300,10 +304,7 @@ export async function getAIResponse(request: ChatCompletionParameters) {
   }
 
   const durationMs = Date.now() - startTime;
-  const usageTokens =
-    typeof response === "object" && response && "usage" in response
-      ? response.usage.total_tokens
-      : null;
+  const usageTokens = normaliseTokenUsage(extractUsagePayload(response))?.total_tokens ?? null;
 
   logger.debug("Model invocation metrics", {
     model: requestedModel,

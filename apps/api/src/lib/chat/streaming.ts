@@ -11,8 +11,10 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { ResponseFormatter, StreamingFormatter } from "~/lib/formatter";
 import { MemoryManager } from "~/lib/memory";
+import { trackTokenUsage } from "~/lib/monitoring";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { findModelConfig } from "~/lib/providers/models";
+import { mergeStreamedTokenUsage, type NormalisedTokenUsage } from "~/lib/usage/tokenUsage";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
 import {
   type ChatCompletionParameters,
@@ -187,7 +189,7 @@ export async function createStreamWithPostProcessing(
   let signature = "";
   let citationsResponse = [];
   let toolCallsData: any[] = [];
-  let usageData: any = null;
+  let usageData: NormalisedTokenUsage | null = null;
   let structuredData: any = null;
   let postProcessingDone = false;
   let streamFailed = false;
@@ -367,13 +369,24 @@ export async function createStreamWithPostProcessing(
       const processedContent = preprocessQwQResponse(fullContent, model);
       const messageData = buildAssistantMessageData({ responseData: structuredData });
 
+      const auditedUsage = trackTokenUsage({
+        usage: usageData,
+        provider: options.provider,
+        model,
+        env,
+        userId: user?.id,
+        completion_id,
+        streamed: true,
+        expectUsage: true,
+      });
+
       const assistantMessage = formatAssistantMessage({
         content: processedContent,
         thinking: getFullThinking(),
         signature: signature,
         citations: citationsResponse,
         tool_calls: toolCallsData,
-        usage: usageData,
+        usage: auditedUsage,
         data: messageData,
         guardrails: {
           passed: !guardrailsFailed,
@@ -956,7 +969,7 @@ export async function createStreamWithPostProcessing(
                 const extractedUsage = StreamingFormatter.extractUsageData(data);
 
                 if (extractedUsage) {
-                  usageData = extractedUsage;
+                  usageData = mergeStreamedTokenUsage(usageData, extractedUsage);
                 }
 
                 const extractedStructuredData = StreamingFormatter.extractStructuredData(data);

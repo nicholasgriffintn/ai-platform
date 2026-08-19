@@ -21,7 +21,8 @@ Read the relevant accepted records before changing product structure, ownership,
 - [0017](decisions/0017-scope-capability-configuration.md): Store capability configuration against an explicit scope without coupling it to enablement or one capability family.
 - [0018](decisions/0018-skills-as-loadable-instructions.md): Move specialised instructions into portable Agent Skills documents the model loads on demand, and drop the per-model artifact flag.
 - [0019](decisions/0019-store-authored-skills-as-r2-documents.md): Keep user-authored skills as scope-keyed private R2 documents, using project capabilities and audit records for Work governance instead of adding a skill table.
-- [0020](decisions/0020-prompt-behaviour-belongs-in-skills.md): Move prompt-shaped tooling — prompt coaching, tutoring, reasoning steps, orchestration helpers, and council — into skills, add pinned skills and skill-suggested tools, and replace the client council loop with a server-side panel tool.
+- [0020](decisions/0020-backend-shared-package-boundaries.md): Extract a backend package only where a second consumer already exists; judge candidates by duplication and coupling rather than module size.
+- [0021](decisions/0021-prompt-behaviour-belongs-in-skills.md): Move prompt-shaped tooling — prompt coaching, tutoring, reasoning steps, orchestration helpers, and council — into skills, add pinned skills and skill-suggested tools, and replace the client council loop with a server-side panel tool.
 
 [context.md](context.md) holds the current domain vocabulary, workspace map, seams, and data flows.
 

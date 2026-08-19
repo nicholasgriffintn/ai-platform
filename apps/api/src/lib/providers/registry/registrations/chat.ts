@@ -18,6 +18,7 @@ import { GithubCopilotProvider } from "../../capabilities/chat/providers/githubc
 import { GoogleStudioProvider } from "../../capabilities/chat/providers/googlestudio";
 import { GrokProvider } from "../../capabilities/chat/providers/grok";
 import { GroqProvider } from "../../capabilities/chat/providers/groq";
+import { HetznerProvider } from "../../capabilities/chat/providers/hetzner";
 import { HuggingFaceProvider } from "../../capabilities/chat/providers/huggingface";
 import { HyperbolicProvider } from "../../capabilities/chat/providers/hyperbolic";
 import { IdeogramProvider } from "../../capabilities/chat/providers/ideogram";
@@ -277,6 +278,11 @@ const chatProviders: ProviderRegistration<AIProvider>[] = [
     name: "poolside",
     create: () => new PoolsideProvider(),
     metadata: { vendor: "Poolside", categories: ["chat"], tags: ["coding"] },
+  },
+  {
+    name: "hetzner",
+    create: () => new HetznerProvider(),
+    metadata: { vendor: "Hetzner", categories: ["chat"], tags: ["free"] },
   },
 ];
 
