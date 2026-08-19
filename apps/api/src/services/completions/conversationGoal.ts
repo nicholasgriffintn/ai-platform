@@ -21,6 +21,63 @@ function createService(context: ConversationGoalContext): GoalService {
   return new GoalService(context.repositories.goals);
 }
 
+export async function handleGetRunGoal(
+  context: ConversationGoalContext,
+  runId: string,
+): Promise<GoalResponse> {
+  const user = context.requireUser();
+  const service = createService(context);
+
+  service.assertPro(user);
+
+  const goal = await service.getActiveGoal({ sandboxRunId: runId });
+
+  return goalResponseSchema.parse({ goal });
+}
+
+export async function handleSetRunGoal(
+  context: ConversationGoalContext,
+  runId: string,
+  objective: string,
+): Promise<GoalResponse> {
+  const user = context.requireUser();
+  const service = createService(context);
+
+  const goal = await service.setGoal({
+    owner: { sandboxRunId: runId },
+    user,
+    objective,
+    source: "user",
+  });
+
+  return goalResponseSchema.parse({ goal });
+}
+
+export async function handleUpdateRunGoal(
+  context: ConversationGoalContext,
+  runId: string,
+  update: UpdateGoalRequest,
+): Promise<GoalResponse> {
+  const user = context.requireUser();
+  const service = createService(context);
+
+  service.assertPro(user);
+
+  const active = await service.getActiveGoal({ sandboxRunId: runId });
+
+  if (!active) {
+    throw new AssistantError("There is no goal on this run", ErrorType.NOT_FOUND);
+  }
+
+  const goal = await service.transition({
+    goalId: active.id,
+    actor: "user",
+    status: update.status,
+  });
+
+  return goalResponseSchema.parse({ goal });
+}
+
 export async function handleGetConversationGoal(
   context: ConversationGoalContext,
   completionId: string,

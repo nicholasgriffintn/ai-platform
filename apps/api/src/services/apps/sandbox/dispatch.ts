@@ -10,9 +10,10 @@ import {
 
 import { MAX_STORED_STREAM_EVENTS, SANDBOX_RUNS_APP_ID } from "~/constants/app";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { GoalService } from "~/services/goals/GoalService";
 import { executeSandboxWorker } from "~/services/sandbox/worker";
 import { TaskService } from "~/services/tasks/TaskService";
-import type { IEnv } from "~/types";
+import type { IEnv, IUser } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 import { parseSseBuffer } from "~/utils/streaming";
@@ -129,6 +130,30 @@ async function persistRunData(params: {
   return runData;
 }
 
+async function ensureRunGoal(params: {
+  context: ServiceContext;
+  runId: string;
+  user: IUser;
+  objective: string;
+}): Promise<void> {
+  if (params.user.plan_id !== "pro" || !params.objective?.trim()) {
+    return;
+  }
+
+  try {
+    const service = new GoalService(params.context.repositories.goals);
+
+    await service.setGoal({
+      owner: { sandboxRunId: params.runId },
+      user: params.user,
+      objective: params.objective.trim(),
+      source: "user",
+    });
+  } catch (error) {
+    logger.error("Failed to create the run goal", { error, run_id: params.runId });
+  }
+}
+
 export async function processSandboxRunDispatch(params: {
   env: IEnv;
   message: SandboxRunDispatchMessage;
@@ -164,6 +189,15 @@ export async function processSandboxRunDispatch(params: {
   if (isTerminalStatus(runData.status)) {
     return;
   }
+
+  // A run is a thread in its own right, so it owns its goal: the task it was
+  // dispatched with becomes the objective its finish gate audits against.
+  await ensureRunGoal({
+    context,
+    runId: message.runId,
+    user,
+    objective: message.payload.task,
+  });
 
   const startedAt = new Date().toISOString();
 

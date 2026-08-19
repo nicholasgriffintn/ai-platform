@@ -218,3 +218,34 @@ describe("GoalService", () => {
     expect(goal.progress.at(-1)).toMatchObject({ steer: "Check the staging config too" });
   });
 });
+
+describe("run-owned goals", () => {
+  it("keeps a run goal and its conversation's goal independent", async () => {
+    const runRepository = createRepository(
+      createGoal({ id: "run-goal", conversation_id: null, sandbox_run_id: "run-1" }),
+    );
+    const runService = new GoalService(runRepository);
+
+    const runGoal = await runService.getActiveGoal({ sandboxRunId: "run-1" });
+
+    expect(runGoal).toMatchObject({ sandbox_run_id: "run-1", conversation_id: null });
+    expect(runRepository.getActiveGoal).toHaveBeenCalledWith({ sandboxRunId: "run-1" });
+  });
+
+  it("promotes a run task into an objective without touching the conversation", async () => {
+    const runRepository = createRepository(null);
+    const runService = new GoalService(runRepository);
+
+    const goal = await runService.setGoal({
+      owner: { sandboxRunId: "run-2" },
+      user: proUser,
+      objective: "Make the checkout suite pass on this branch",
+      source: "user",
+    });
+
+    expect(goal.objective).toBe("Make the checkout suite pass on this branch");
+    expect(runRepository.createGoal).toHaveBeenCalledWith(
+      expect.objectContaining({ owner: { sandboxRunId: "run-2" } }),
+    );
+  });
+});
