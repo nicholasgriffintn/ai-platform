@@ -8,7 +8,6 @@ import {
   weatherResponseSchema,
   deepWebSearchSchema,
   deepResearchSchema,
-  tutorSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { type Context, Hono } from "hono";
 import z from "zod/v4";
@@ -37,7 +36,6 @@ import {
   type DeepWebSearchParams,
   performDeepWebSearch,
 } from "~/services/apps/retrieval/web-search";
-import { type TutorRequestParams, completeTutorRequest } from "~/services/apps/tutor";
 import { getResearchTaskStatus, startResearchTask } from "~/services/research/task";
 import type { IEnv, IUser, ResearchProviderName } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -354,31 +352,6 @@ addRoute(app, "get", "/research/:runId", {
       });
 
       return ResponseFactory.success(context, result, 200);
-    })(raw),
-});
-
-addRoute(app, "post", "/tutor", {
-  tags: ["apps"],
-  description: "Get tutoring on a specific topic",
-  bodySchema: tutorSchema,
-  responses: {
-    200: {
-      description: "Tutoring response with educational content",
-      schema: apiResponseSchema,
-    },
-    400: {
-      description: "Bad request or validation error",
-      schema: errorResponseSchema,
-    },
-  },
-  middleware: [requirePlan("pro")],
-  handler: async ({ raw }) =>
-    (async (context: Context) => {
-      const body = context.req.valid("json" as never) as TutorRequestParams;
-      const user = context.get("user");
-      const response = await completeTutorRequest(context.env as IEnv, user, body);
-
-      return ResponseFactory.success(context, { response });
     })(raw),
 });
 

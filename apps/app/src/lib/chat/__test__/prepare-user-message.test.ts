@@ -7,7 +7,7 @@ describe("prepareUserMessage", () => {
     expect(
       prepareUserMessage("  hello  ", undefined, "model-1", {
         mode: "council",
-        requestOptions: { council: { enabled: true } },
+        requestOptions: { skills: { pinned: ["council"] } },
       } as any),
     ).toMatchObject({
       role: "user",

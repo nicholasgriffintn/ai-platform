@@ -6,6 +6,7 @@ export const skillCategorySchema = z.enum([
   "Output",
   "Automation",
   "Research",
+  "Reasoning",
   "Development",
   "Communication",
   "Data",
@@ -15,6 +16,7 @@ export const skillCategorySchema = z.enum([
 export const skillRequirementSchema = z.object({
   modelCapabilities: z.array(z.string()).default([]),
   tools: z.array(z.string()).default([]),
+  suggestedTools: z.array(z.string()).default([]),
 });
 
 export const skillSourceSchema = z.enum(["built-in", "user-authored"]);
@@ -43,6 +45,10 @@ export const skillSummarySchema = z.object({
   source: skillSourceSchema.optional(),
 });
 
+export const pinnedSkillsOptionsSchema = z.object({
+  pinned: z.array(skillIdSchema).max(4).default([]),
+});
+
 export const skillAvailabilityStateSchema = z.enum(["ready", "disabled", "unavailable"]);
 
 export const skillAvailabilitySchema = skillSummarySchema.extend({
@@ -58,11 +64,27 @@ export const setSkillEnabledSchema = z.object({
   enabled: z.boolean(),
 });
 
+export const authoredSkillResourceSchema = z.object({
+  path: z
+    .string()
+    .min(1)
+    .max(512)
+    .regex(
+      /^(references|scripts|assets)\/[^/]+(?:\/[^/]+)*$/,
+      "Resource paths live under references/, scripts/, or assets/",
+    ),
+  content: z
+    .string()
+    .min(1)
+    .max(128 * 1024),
+});
+
 export const authoredSkillInputSchema = z.object({
   content: z
     .string()
     .min(1)
     .max(128 * 1024),
+  resources: z.array(authoredSkillResourceSchema).max(32).optional(),
 });
 
 export const authoredSkillScopeSchema = z.discriminatedUnion("type", [
@@ -82,6 +104,7 @@ export const authoredSkillSchema = z.object({
 
 export const authoredSkillDocumentSchema = authoredSkillSchema.extend({
   content: z.string().min(1),
+  resources: z.array(authoredSkillResourceSchema).default([]),
 });
 
 export const authoredSkillListResponseSchema = z.object({
@@ -103,11 +126,13 @@ export type SkillRequirement = z.infer<typeof skillRequirementSchema>;
 export type SkillSource = z.infer<typeof skillSourceSchema>;
 export type SkillResourceSummary = z.infer<typeof skillResourceSummarySchema>;
 export type SkillSummary = z.infer<typeof skillSummarySchema>;
+export type PinnedSkillsOptions = z.infer<typeof pinnedSkillsOptionsSchema>;
 export type SkillAvailabilityState = z.infer<typeof skillAvailabilityStateSchema>;
 export type SkillAvailability = z.infer<typeof skillAvailabilitySchema>;
 export type SkillAvailabilityResponse = z.infer<typeof skillAvailabilityResponseSchema>;
 export type SetSkillEnabledInput = z.infer<typeof setSkillEnabledSchema>;
 export type AuthoredSkillInput = z.infer<typeof authoredSkillInputSchema>;
+export type AuthoredSkillResource = z.infer<typeof authoredSkillResourceSchema>;
 export type AuthoredSkillScope = z.infer<typeof authoredSkillScopeSchema>;
 export type AuthoredSkill = z.infer<typeof authoredSkillSchema>;
 export type AuthoredSkillDocument = z.infer<typeof authoredSkillDocumentSchema>;

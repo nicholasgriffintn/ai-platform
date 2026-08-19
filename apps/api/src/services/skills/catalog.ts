@@ -39,6 +39,7 @@ function cloneDefinition(skill: SkillDefinition): SkillDefinition {
     requirement: {
       modelCapabilities: [...skill.requirement.modelCapabilities],
       tools: [...skill.requirement.tools],
+      suggestedTools: [...skill.requirement.suggestedTools],
     },
   };
 }
@@ -208,7 +209,7 @@ export async function resolveSkillCatalog(
             directory: skill.name,
             rawContent: document.content,
             trust: "user-authored",
-            resources: [],
+            resources: document.resources,
           }
         : null;
     }),

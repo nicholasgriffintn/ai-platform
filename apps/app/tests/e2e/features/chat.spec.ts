@@ -513,7 +513,6 @@ test.describe("Pro message attachments", () => {
   test("sends a Council conversation", async ({ homePage, page }) => {
     await homePage.navigate("/chat");
     await homePage.selectChatMode("Council");
-    await homePage.selectCouncilResponseMode("Single");
     await homePage.selectModel(TEXT_MODEL);
     await homePage.sendMessageAndRequireCompletion("Choose the safest release validation approach");
     await homePage.waitForChatResponse(0);

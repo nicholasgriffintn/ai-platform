@@ -168,18 +168,6 @@ export interface MessageData {
     };
     [key: string]: any;
   };
-  council?: {
-    responseMode?: "single" | "debate";
-    phase?: "debate" | "conclusion";
-    memberId?: string;
-    memberName?: string;
-    memberRole?: string;
-    round?: number;
-    turn?: number;
-    shouldContinue?: boolean;
-    nextMemberIds?: string[];
-    nextReason?: string;
-  };
   opinion?: {
     mode: "second-opinion" | "consensus";
     sourceMessageId: string;

@@ -8,15 +8,15 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 import type { ApiToolDefinition } from "../../types/functions";
-import { analyse_hacker_news } from "./analyse_hacker_news";
 import { call_api } from "./api_call";
 import { apply_edit_completion } from "./apply_edit";
+import { run_council } from "./council";
 import { create_note } from "./create_note";
 import { discover_capabilities } from "./discover_capabilities";
-import { retry_with_backoff, fallback } from "./error_recovery";
 import { extract_content } from "./extract_content";
 import { fill_in_middle_completion } from "./fill_in_middle";
 import { get_note } from "./get_note";
+import { get_hacker_news_stories } from "./hacker_news";
 import { request_approval, ask_user } from "./human_in_the_loop";
 import { create_image } from "./image";
 import { load_skill } from "./load_skill";
@@ -26,9 +26,7 @@ import { create_music } from "./music";
 import { next_edit_completion } from "./next_edit";
 import { extract_text_from_document } from "./ocr";
 import { run_pashi_tools, search_pashi_tools } from "./pashi";
-import { prompt_coach } from "./prompt_coach";
 import { create_qr_code } from "./qr";
-import { add_reasoning_step } from "./reasoning";
 import { configure_recipe } from "./recipes/configure_recipe";
 import { get_recipe } from "./recipes/get_recipe";
 import { trigger_recipe } from "./recipes/trigger_recipe";
@@ -50,12 +48,10 @@ import {
 import { capture_screenshot } from "./screenshot";
 import { create_speech } from "./speech";
 import { delegateToTeamMember, delegateToTeamMemberByRole, getTeamMembers } from "./teamDelegation";
-import { tutor } from "./tutor";
 import { v0_code_generation } from "./v0_code_generation";
 import { create_video } from "./video";
 import { get_weather } from "./weather";
 import { web_search } from "./web_search";
-import { compose_functions, if_then_else, parallel_execute } from "./workflow";
 
 const logger = getLogger({ prefix: "services/functions" });
 const FUNCTIONS_TOOL_CATEGORY = "functions";
@@ -87,21 +83,14 @@ const functionDefinitions: ApiToolDefinition[] = [
   trigger_recipe,
   capture_screenshot,
   create_speech,
-  tutor,
-  prompt_coach,
-  add_reasoning_step,
-  analyse_hacker_news,
   v0_code_generation,
   delegateToTeamMember,
   delegateToTeamMemberByRole,
   getTeamMembers,
   discover_capabilities,
   load_skill,
-  retry_with_backoff,
-  fallback,
-  compose_functions,
-  if_then_else,
-  parallel_execute,
+  run_council,
+  get_hacker_news_stories,
   request_approval,
   ask_user,
   run_feature_implementation,

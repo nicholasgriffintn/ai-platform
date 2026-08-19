@@ -1,5 +1,3 @@
-import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
-
 import type { IBody, IUser, IUserSettings } from "~/types";
 import { getLogger } from "~/utils/logger";
 
@@ -16,7 +14,7 @@ import {
   buildSessionConfigSection,
   type PromptMemoryPolicy,
 } from "./sections/session-config";
-import { buildSkillsSection } from "./sections/skills";
+import { buildSkillsSection, type PromptSkillContext } from "./sections/skills";
 import { buildUserContextSection } from "./sections/user-context";
 import { getResponseStyle, resolvePromptCapabilities } from "./utils";
 
@@ -28,7 +26,7 @@ export async function returnStandardPrompt(
   userSettings?: IUserSettings,
   supportsToolCalls?: boolean,
   modelMetadata?: PromptModelMetadata,
-  skills?: readonly SkillAvailability[],
+  skills?: PromptSkillContext,
   memoryPolicy: PromptMemoryPolicy = DISABLED_PROMPT_MEMORY_POLICY,
 ): Promise<string> {
   try {

@@ -25,20 +25,14 @@ interface ProjectCapabilityReference {
 }
 
 const INTERNAL_FUNCTION_TOOLS = new Set([
-  "add_reasoning_step",
   "ask_user",
-  "compose_functions",
   "configure_recipe",
   "delegate_to_team_member",
   "delegate_to_team_member_by_role",
-  "fallback",
   "get_recipe",
   "get_team_members",
-  "if_then_else",
   "load_skill",
-  "parallel_execute",
   "request_approval",
-  "retry_with_backoff",
   "search_pashi_tools",
   "trigger_recipe",
   "use_recipe_connector",

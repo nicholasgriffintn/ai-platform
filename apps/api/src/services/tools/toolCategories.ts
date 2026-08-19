@@ -2,7 +2,7 @@ import { toolCategories, type ToolCategory } from "@ngriffin_uk/polychat-schemas
 
 const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
   Research: [
-    "analyse_hacker_news",
+    "get_hacker_news_stories",
     "capture_screenshot",
     "extract_content",
     "extract_text_from_document",
@@ -34,25 +34,15 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "trigger_recipe",
     "use_recipe_connector",
   ],
-  Automation: [
-    "call_api",
-    "compose_functions",
-    "discover_capabilities",
-    "fallback",
-    "if_then_else",
-    "parallel_execute",
-    "retry_with_backoff",
-    "run_pashi_tools",
-    "search_pashi_tools",
-  ],
+  Automation: ["call_api", "discover_capabilities", "run_pashi_tools", "search_pashi_tools"],
   Collaboration: [
     "ask_user",
+    "run_council",
     "delegate_to_team_member",
     "delegate_to_team_member_by_role",
     "get_team_members",
     "request_approval",
   ],
-  Guidance: ["add_reasoning_step", "prompt_coach", "tutor"],
 };
 
 export function getToolCategory(toolId: string): ToolCategory {

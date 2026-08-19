@@ -11,6 +11,7 @@ const METADATA_KEYS = {
   alwaysOn: "polychat-always-on",
   modelCapabilities: "polychat-model-capabilities",
   tools: "polychat-tools",
+  suggestedTools: "polychat-suggests-tools",
 } as const;
 
 export type SkillResourceKind = "reference" | "script" | "asset" | "file";
@@ -52,6 +53,7 @@ export interface SkillDefinition {
   requirement: {
     modelCapabilities: string[];
     tools: string[];
+    suggestedTools: string[];
   };
   source?: "built-in" | "user-authored";
 }
@@ -138,6 +140,7 @@ export function toSkillDefinition(
         ]),
       ],
       tools: readMetadataList(descriptor, METADATA_KEYS.tools),
+      suggestedTools: readMetadataList(descriptor, METADATA_KEYS.suggestedTools),
     },
     source: options.source,
   };

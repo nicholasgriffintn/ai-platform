@@ -151,7 +151,6 @@ const ICON_MAP: Record<string, LucideIcon> = {
   "next-edit-completion": Code2,
   pencil: Pencil,
   "plus-circle": PlusCircle,
-  "prompt-coach": Sparkles,
   research: BookOpen,
   search: Search,
   sparkles: Sparkles,

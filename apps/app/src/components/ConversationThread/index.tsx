@@ -26,7 +26,7 @@ import {
   getModelByReference,
   isImageGenerationOutputModel,
 } from "@ngriffin_uk/polychat-schemas";
-import type { ConversationModeMetadata, CouncilMemberId } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -100,11 +100,6 @@ export interface ConversationThreadModeConfig {
   contextAttachmentsReady?: boolean;
   onRemoveContextAttachment?: (index: number) => void;
   onClearContextAttachments?: () => void;
-  councilDebate?: {
-    enabled: boolean;
-    memberIds: CouncilMemberId[];
-    requireConsensus?: boolean;
-  };
 }
 
 interface ConversationThreadProps {
@@ -131,7 +126,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     controller,
     compactConversation,
     sendMessage,
-    sendCouncilDebate,
     respondToExistingConversation,
     abortStream,
     branchConversation,
@@ -407,9 +401,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           modeConfig?.requestOptions,
           actionSubmit.requestOptions,
         );
-        const result = modeConfig?.councilDebate?.enabled
-          ? await sendCouncilDebate(actionSubmit.input, attachments, modeConfig.councilDebate)
-          : await sendMessage(actionSubmit.input, attachments, requestOptions);
+        const result = await sendMessage(actionSubmit.input, attachments, requestOptions);
 
         if (result?.status === "error") {
           setChatInput(originalInput);
@@ -443,7 +435,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       messages,
       compactConversation,
       sendMessage,
-      sendCouncilDebate,
       resolveAssistantActionSubmit,
       trackEvent,
       trackError,
@@ -454,7 +445,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       selectedAssistantAction?.item,
       selectedModelConfig,
       modeConfig?.analyticsSource,
-      modeConfig?.councilDebate,
       navigate,
     ],
   );

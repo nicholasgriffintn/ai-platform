@@ -153,12 +153,6 @@ export class HomePage extends BasePage {
     await this.waitForChatResponse(previousCount);
   }
 
-  async selectCouncilResponseMode(mode: "Chamber" | "Single") {
-    await this.page.getByRole("button", { name: "Open commands" }).click();
-    await this.page.getByRole("button", { name: mode, exact: true }).click();
-    await this.page.keyboard.press("Escape");
-  }
-
   async openCanvas() {
     await this.page
       .getByRole("button", { name: "Switch to local-only mode" })

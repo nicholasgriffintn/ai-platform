@@ -5,7 +5,6 @@ import { prependCompactionStateEvent } from "~/lib/chat/core/compaction-stream";
 import { createChatExecutionRequest } from "~/lib/chat/core/execution-request";
 import { buildToolRequestContext } from "~/lib/chat/core/request-context";
 import { runNonStreamingToolSteps } from "~/lib/chat/core/tool-step-runner";
-import { extractCouncilTurnRouting } from "~/lib/chat/council";
 import { isAgentExecutionMode } from "~/lib/chat/mode-metadata";
 import { createMultiModelStream } from "~/lib/chat/multiModalStreaming";
 import { RequestPreparer, type PreparedRequest } from "~/lib/chat/preparation/RequestPreparer";
@@ -335,23 +334,17 @@ export class ChatOrchestrator {
       }
     }
 
-    const councilTurn = extractCouncilTurnRouting(
-      response.response || "",
-      prepared.requestOptions?.council,
-    );
-
     if (!responseAlreadyStored) {
       await conversationManager.add(
         chatOptions.completion_id,
         buildStoredAssistantMessage({
           response,
-          content: councilTurn.content,
+          content: response.response || "",
           envLogId: chatOptions.env.AI.aiGatewayLogId,
           mode: currentMode,
           model: primaryModel,
           platform: platform || "api",
           requestOptions: prepared.requestOptions,
-          councilRouting: councilTurn.routing,
         }),
       );
     }
@@ -385,7 +378,7 @@ export class ChatOrchestrator {
     }
 
     return {
-      response: { ...response, response: councilTurn.content },
+      response,
       toolResponses,
       selectedModel: primaryModel,
       selectedModels: modelConfigs.length > 1 ? modelConfigs.map((m) => m.model) : undefined,

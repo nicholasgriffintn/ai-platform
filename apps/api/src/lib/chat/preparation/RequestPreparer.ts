@@ -2,10 +2,8 @@ import type {
   ChatHostedToolSettings,
   ModelConfigInfo,
   RecipeConnectorProvider,
-  SkillAvailability,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { shouldSkipCouncilInputStorage } from "~/lib/chat/council";
 import {
   buildMemoryPromptContext,
   mergeEnabledMemoryToolNames,
@@ -21,6 +19,7 @@ import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
 import { MemoryManager } from "~/lib/memory";
 import { getSystemPrompt } from "~/lib/prompts";
+import type { PromptSkillContext } from "~/lib/prompts/sections/skills";
 import {
   getEmbeddingProvider,
   augmentPrompt,
@@ -36,6 +35,8 @@ import {
   buildSkillAvailabilityInput,
   createProjectSkillScope,
   listSkillAvailability,
+  mergeSkillSuggestedToolNames,
+  resolvePinnedSkillContent,
   resolveSkillCatalog,
   resolvePersonalSkillScope,
   type RequestSkillScope,
@@ -290,6 +291,12 @@ export class RequestPreparer {
       }),
       scopedSkillCatalog?.listDefinitions(),
     );
+    const pinnedSkills = await resolvePinnedSkillContent({
+      requested: options.options?.skills?.pinned,
+      available: skills,
+      catalog: scopedSkillCatalog,
+    });
+    const skillContext: PromptSkillContext = { available: skills, pinned: pinnedSkills };
 
     const systemPromptTask = this.buildSystemPrompt(
       options,
@@ -300,7 +307,7 @@ export class RequestPreparer {
       memoryPolicy,
       projectContext,
       memoryScope,
-      skills,
+      skillContext,
     );
 
     if (storeMessagesTask) {
@@ -344,11 +351,14 @@ export class RequestPreparer {
       userSettings,
       currentMode: mode,
       isProUser,
-      enabledTools: mergeEnabledMemoryToolNames({
-        enabledTools,
-        user,
-        userSettings,
-        store: options.store,
+      enabledTools: mergeSkillSuggestedToolNames({
+        enabledTools: mergeEnabledMemoryToolNames({
+          enabledTools,
+          user,
+          userSettings,
+          store: options.store,
+        }),
+        skills,
       }),
       toolOptions,
       requestOptions: options.options,
@@ -488,10 +498,6 @@ export class RequestPreparer {
     platform: Platform,
     mode: ChatMode,
   ): Promise<void> {
-    if (shouldSkipCouncilInputStorage(options.options?.council)) {
-      return;
-    }
-
     const messageData = buildUserMessageData(options.options, options.background);
 
     const messageToStore: Message = {
@@ -593,7 +599,7 @@ export class RequestPreparer {
     memoryPolicy: ReturnType<typeof resolveMemoryPolicy>,
     projectContext: ProjectChatContext | null,
     memoryScope: MemoryScope = { type: "personal" },
-    skills?: readonly SkillAvailability[],
+    skills?: PromptSkillContext,
   ): Promise<string> {
     const {
       system_prompt,

@@ -7,11 +7,11 @@ import {
   type RecipeChatRequestOptions,
 } from "./apps";
 import { conversationSmsRequestOptionsSchema } from "./chat-mode";
-import { councilChatOptionsSchema } from "./council";
 import { hasCompactionPart, messagePartsSchema } from "./message-parts";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
 import { sandboxRequestOptionsSchema } from "./sandbox";
 import { messageSchema } from "./shared";
+import { pinnedSkillsOptionsSchema } from "./skills";
 import { toolIdsSchema } from "./tools";
 
 const recordSchema = z.record(z.string(), z.unknown());
@@ -317,9 +317,9 @@ export const connectorChatRequestOptionsSchema = z
 export const chatRequestOptionsSchema = z
   .object({
     source: z.string().optional().describe("Request source marker for server-created flows."),
-    council: councilChatOptionsSchema
+    skills: pinnedSkillsOptionsSchema
       .optional()
-      .describe("Settings for council mode, which enables multi-perspective responses."),
+      .describe("Skills pinned for this turn, whose instructions load up front."),
     sms: conversationSmsRequestOptionsSchema
       .optional()
       .describe("Settings for SMS mode, which enables SMS-based conversations."),
