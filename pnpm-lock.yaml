@@ -374,8 +374,8 @@ importers:
         specifier: 5.2.1
         version: 5.2.1
       lucide-react:
-        specifier: 1.30.0
-        version: 1.30.0(react@19.2.8)
+        specifier: 1.31.0
+        version: 1.31.0(react@19.2.8)
       next-themes:
         specifier: 0.4.6
         version: 0.4.6(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -580,8 +580,8 @@ importers:
         specifier: workspace:^
         version: link:../utility-core
       lucide-react:
-        specifier: 1.30.0
-        version: 1.30.0(react@19.2.8)
+        specifier: 1.31.0
+        version: 1.31.0(react@19.2.8)
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
@@ -635,8 +635,8 @@ importers:
         specifier: workspace:^
         version: link:../utility-core
       lucide-react:
-        specifier: 1.30.0
-        version: 1.30.0(react@19.2.8)
+        specifier: 1.31.0
+        version: 1.31.0(react@19.2.8)
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
@@ -684,8 +684,8 @@ importers:
         specifier: workspace:^
         version: link:../utility-core
       lucide-react:
-        specifier: 1.30.0
-        version: 1.30.0(react@19.2.8)
+        specifier: 1.31.0
+        version: 1.31.0(react@19.2.8)
       react-markdown:
         specifier: 10.1.0
         version: 10.1.0(@types/react@19.2.18)(react@19.2.8)(supports-color@10.2.2)
@@ -775,8 +775,8 @@ importers:
         specifier: workspace:^
         version: link:../utility-core
       lucide-react:
-        specifier: 1.30.0
-        version: 1.30.0(react@19.2.8)
+        specifier: 1.31.0
+        version: 1.31.0(react@19.2.8)
       sonner:
         specifier: 2.0.8
         version: 2.0.8(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -836,8 +836,8 @@ importers:
         specifier: workspace:^
         version: link:../utility-core
       lucide-react:
-        specifier: 1.30.0
-        version: 1.30.0(react@19.2.8)
+        specifier: 1.31.0
+        version: 1.31.0(react@19.2.8)
       sonner:
         specifier: 2.0.8
         version: 2.0.8(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -921,8 +921,8 @@ importers:
         specifier: workspace:^
         version: link:../utility-react
       lucide-react:
-        specifier: 1.30.0
-        version: 1.30.0(react@19.2.8)
+        specifier: 1.31.0
+        version: 1.31.0(react@19.2.8)
       react:
         specifier: catalog:react-peer
         version: 19.2.8
@@ -961,8 +961,8 @@ importers:
         specifier: workspace:^
         version: link:../component-ui
       lucide-react:
-        specifier: 1.30.0
-        version: 1.30.0(react@19.2.8)
+        specifier: 1.31.0
+        version: 1.31.0(react@19.2.8)
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
@@ -1046,8 +1046,8 @@ importers:
         specifier: 2.1.1
         version: 2.1.1
       lucide-react:
-        specifier: 1.30.0
-        version: 1.30.0(react@19.2.8)
+        specifier: 1.31.0
+        version: 1.31.0(react@19.2.8)
       next-themes:
         specifier: 0.4.6
         version: 0.4.6(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -1122,8 +1122,8 @@ importers:
         specifier: workspace:^
         version: link:../utility-core
       lucide-react:
-        specifier: 1.30.0
-        version: 1.30.0(react@19.2.8)
+        specifier: 1.31.0
+        version: 1.31.0(react@19.2.8)
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
@@ -6207,8 +6207,8 @@ packages:
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  lucide-react@1.30.0:
-    resolution: {integrity: sha512-tUIr2jXLbWpCkdtH8XP7P7YppM9ueWgTky99lpWDY6z5REs6B+O6ZQ3U5tHkUUY59ANyOv/PBcs8E4Fe3KO3eA==}
+  lucide-react@1.31.0:
+    resolution: {integrity: sha512-G8u2eEtoHUnUa9f8lbvqDhCiORMnYLdUEo06EEG9MQvHQrInKcX3Pa2TH39MM5qyzRcWETxB0+aOwAPI1g1kEg==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -12297,7 +12297,7 @@ snapshots:
     dependencies:
       react: 19.2.8
 
-  lucide-react@1.30.0(react@19.2.8):
+  lucide-react@1.31.0(react@19.2.8):
     dependencies:
       react: 19.2.8
 
