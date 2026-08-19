@@ -1,11 +1,10 @@
 import {
-  createCommandActionHandler,
-  createReadFileActionHandler,
   executeAgentLoop as executeSharedAgentLoop,
-  parseAgentDecision,
+  parseToolCallArguments,
   type AgentActionContext,
   type AgentLoopState,
   type AgentMessage,
+  type AgentToolCall,
 } from "@ngriffin_uk/polychat-library-agent-core";
 
 import { throwIfAborted } from "../cancellation";
@@ -27,6 +26,15 @@ import {
   MODEL_RETRY_OPTIONS,
 } from "./constants";
 import { buildAgentKickoffPrompt, buildAgentSystemPrompt } from "./prompts";
+import {
+  getSandboxAgentTools,
+  parseReadFilesAction,
+  parseRunCommandAction,
+  parseRunScriptAction,
+  READ_FILES_TOOL_NAME,
+  RUN_COMMAND_TOOL_NAME,
+  RUN_SCRIPT_TOOL_NAME,
+} from "./tools";
 import type { ExecuteAgentLoopParams } from "./types";
 
 interface SandboxAgentLoopState extends AgentLoopState {
@@ -210,6 +218,8 @@ export async function executeAgentLoop(
     }
   };
 
+  const agentTools = getSandboxAgentTools({ readOnlyCommands });
+
   const result = await executeSharedAgentLoop({
     initialMessages: messages,
     initialPlan,
@@ -219,16 +229,16 @@ export async function executeAgentLoop(
     emit,
     config: {
       maxSteps: MAX_AGENT_STEPS,
-      maxConsecutiveDecisionFailures: MAX_CONSECUTIVE_DECISION_FAILURES,
+      maxConsecutiveTurnFailures: MAX_CONSECUTIVE_DECISION_FAILURES,
       maxRecoveryReplans: MAX_RECOVERY_REPLANS,
       maxObservationChars: MAX_OBSERVATION_CHARS,
     },
-    shouldAbortOnDecisionError: (error) => error instanceof PolychatApiError,
+    shouldAbortOnTurnError: (error) => error instanceof PolychatApiError,
     getCommandCount: (runtimeState) => runtimeState.commandCount,
-    resolveDecision: async ({ messages: currentMessages, step }) => {
+    resolveTurn: async ({ messages: currentMessages, step }) => {
       await ingestOperatorInstructions(currentMessages, step);
 
-      const decisionResponse = await client.chatCompletion(
+      const completion = await client.chatCompletion(
         {
           messages: currentMessages.map((message) => ({
             role: message.role,
@@ -238,37 +248,71 @@ export async function executeAgentLoop(
                 : JSON.stringify(message.content),
           })),
           model,
+          tools: agentTools,
           ...modelSettings,
         },
         MODEL_RETRY_OPTIONS,
       );
 
+      const toolCalls: AgentToolCall[] = completion.toolCalls.map((toolCall, index) => ({
+        id: toolCall.id ?? `call_${step}_${index}`,
+        name: toolCall.function?.name ?? toolCall.name ?? "",
+        arguments: parseToolCallArguments(toolCall.function?.arguments ?? toolCall.arguments),
+        raw: toolCall,
+      }));
+
+      if (toolCalls.length === 0 && !completion.content.trim()) {
+        throw new Error("Model returned neither a tool call nor a response");
+      }
+
       return {
-        rawResponse: decisionResponse,
-        decision: parseAgentDecision(decisionResponse),
+        toolCalls,
+        text: completion.content,
+        assistantMessage: {
+          role: "assistant",
+          content: completion.content || JSON.stringify(completion.toolCalls),
+        },
       };
     },
-    handlers: [
-      createReadFileActionHandler<SandboxAgentSharedContext, SandboxAgentLoopState>({
-        onReadFile: async (decision, context) => {
-          await handleReadFileAction(toSandboxActionContext(context), decision);
-        },
-        onReadFiles: async (decision, context) => {
-          await handleReadFilesAction(toSandboxActionContext(context), decision);
-        },
-      }),
-      createCommandActionHandler<SandboxAgentSharedContext, SandboxAgentLoopState>({
-        onRunCommand: async (decision, context) => {
-          await handleRunCommandAction(toSandboxActionContext(context), decision);
-        },
-        onRunParallel: async (decision, context) => {
-          await handleRunParallelAction(toSandboxActionContext(context), decision);
-        },
-        onRunScript: async (decision, context) => {
-          await handleRunScriptAction(toSandboxActionContext(context), decision);
-        },
-      }),
-    ],
+    executeToolCalls: async (toolCalls, context) => {
+      const actionContext = toSandboxActionContext(context);
+
+      for (const toolCall of toolCalls) {
+        if (toolCall.name === READ_FILES_TOOL_NAME) {
+          const action = parseReadFilesAction(toolCall.arguments);
+
+          if (action.files.length === 1) {
+            await handleReadFileAction(actionContext, action.files[0]);
+            continue;
+          }
+
+          await handleReadFilesAction(actionContext, action);
+          continue;
+        }
+
+        if (toolCall.name === RUN_COMMAND_TOOL_NAME) {
+          const action = parseRunCommandAction(toolCall.arguments);
+
+          if (action.commands.length === 1) {
+            await handleRunCommandAction(actionContext, { command: action.commands[0] });
+            continue;
+          }
+
+          await handleRunParallelAction(actionContext, { commands: action.commands });
+          continue;
+        }
+
+        if (toolCall.name === RUN_SCRIPT_TOOL_NAME) {
+          await handleRunScriptAction(actionContext, parseRunScriptAction(toolCall.arguments));
+          continue;
+        }
+
+        context.messages.push({
+          role: "user",
+          content: `Unknown tool "${toolCall.name}". Use one of the provided tools.`,
+        });
+      }
+    },
     onPlanRecovery: ({ state: runtimeState }) => {
       runtimeState.consecutiveCommandFailures = 0;
       runtimeState.lastActionSignature = undefined;
@@ -301,9 +345,9 @@ export async function executeAgentLoop(
 
       return null;
     },
-    buildSummary: ({ decision, state: runtimeState }) => {
+    buildSummary: ({ summary, state: runtimeState }) => {
       return (
-        decision.summary.trim() ||
+        summary.trim() ||
         buildSummary(task, repoDisplayName, runtimeState.commandCount, undefined, taskType)
       );
     },

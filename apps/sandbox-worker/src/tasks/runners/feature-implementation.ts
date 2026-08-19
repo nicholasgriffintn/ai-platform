@@ -218,7 +218,7 @@ export async function executeFeatureImplementation(
       message: "Creating implementation plan",
     });
 
-    const plan = await client.chatCompletion(
+    const planResponse = await client.chatCompletion(
       {
         messages: [
           {
@@ -236,6 +236,7 @@ export async function executeFeatureImplementation(
       },
       MODEL_RETRY_OPTIONS,
     );
+    const plan = planResponse.content;
 
     await checkpoint("Sandbox run cancelled during planning");
 

@@ -3,92 +3,33 @@ export interface AgentMessage {
   content: string | null | Record<string, unknown> | unknown[];
 }
 
-export interface RunCommandDecision {
-  action: "run_command";
-  command: string;
-  reasoning?: string;
-}
-
-export interface ReadFileTarget {
-  path: string;
-  startLine?: number;
-  endLine?: number;
-}
-
-export interface ReadFileDecision extends ReadFileTarget {
-  action: "read_file";
-  reasoning?: string;
-}
-
-export interface ReadFilesDecision {
-  action: "read_files";
-  files: ReadFileTarget[];
-  reasoning?: string;
-}
-
-export interface UpdatePlanDecision {
-  action: "update_plan";
-  plan: string;
-  reasoning?: string;
-}
-
-export interface FinishDecision {
-  action: "finish";
-  summary: string;
-  reasoning?: string;
-}
-
-export interface ContinueDecision {
-  action: "continue";
-  instruction: string;
-  reasoning?: string;
-}
-
-export type ScriptLanguage = "python" | "javascript" | "typescript";
-
-export interface RunScriptDecision {
-  action: "run_script";
-  code: string;
-  language?: ScriptLanguage;
-  reasoning?: string;
-}
-
-export interface RunParallelDecision {
-  action: "run_parallel";
-  commands: string[];
-  reasoning?: string;
-}
-
-export interface ToolCallInvocation {
-  id?: string;
+export interface AgentToolCall {
+  id: string;
   name: string;
-  arguments?: string | Record<string, unknown>;
+  arguments: Record<string, unknown>;
   raw?: unknown;
 }
 
-export interface ToolCallsDecision {
-  action: "tool_calls";
-  toolCalls: ToolCallInvocation[];
-  responseText?: string;
-  reasoning?: string;
+export interface AgentTurn {
+  toolCalls: AgentToolCall[];
+  text?: string;
+  assistantMessage?: AgentMessage;
+  raw?: unknown;
 }
 
-export type AgentDecision =
-  | RunCommandDecision
-  | RunParallelDecision
-  | ReadFileDecision
-  | ReadFilesDecision
-  | UpdatePlanDecision
-  | FinishDecision
-  | ContinueDecision
-  | RunScriptDecision
-  | ToolCallsDecision;
+export interface AgentFinishAssessment {
+  allow: boolean;
+  instruction?: string;
+  outcome?: AgentGoalOutcome;
+}
+
+export type AgentGoalOutcome = "satisfied" | "unsatisfied" | "blocked" | "stalled";
 
 export interface AgentConfig {
   maxSteps: number;
   maxStepExtensions: number;
   maxRecoveryReplans: number;
-  maxConsecutiveDecisionFailures: number;
+  maxConsecutiveTurnFailures: number;
   maxObservationChars: number;
 }
 
@@ -97,7 +38,7 @@ export interface AgentEvent {
   [key: string]: unknown;
 }
 
-export interface AgentDecisionContext<TShared = unknown> {
+export interface AgentTurnContext<TShared = unknown> {
   step: number;
   messages: AgentMessage[];
   shared: TShared;
@@ -106,15 +47,9 @@ export interface AgentDecisionContext<TShared = unknown> {
   recoveryReason?: string;
 }
 
-export interface AgentDecisionResult {
-  decision: AgentDecision;
-  rawResponse?: string;
-  assistantMessage?: AgentMessage;
-}
-
-export type AgentDecisionResolver<TShared = unknown> = (
-  context: AgentDecisionContext<TShared>,
-) => Promise<AgentDecisionResult>;
+export type AgentTurnResolver<TShared = unknown> = (
+  context: AgentTurnContext<TShared>,
+) => Promise<AgentTurn>;
 
 export interface AgentLoopState {
   commandCount?: number;
@@ -134,15 +69,10 @@ export interface AgentActionContext<
   beginPlanRecovery: (reason: string) => void;
 }
 
-export interface ActionHandler<
-  TDecision extends AgentDecision = AgentDecision,
+export type AgentToolCallExecutor<
   TShared = unknown,
   TState extends AgentLoopState = AgentLoopState,
-> {
-  name: string;
-  canHandle(decision: AgentDecision): decision is TDecision;
-  execute(decision: TDecision, context: AgentActionContext<TShared, TState>): Promise<void>;
-}
+> = (toolCalls: AgentToolCall[], context: AgentActionContext<TShared, TState>) => Promise<void>;
 
 export interface ExecuteAgentLoopParams<
   TShared = unknown,
@@ -152,24 +82,30 @@ export interface ExecuteAgentLoopParams<
   initialPlan: string;
   shared: TShared;
   state: TState;
-  resolveDecision: AgentDecisionResolver<TShared>;
-  handlers: ActionHandler<any, TShared, TState>[];
+  resolveTurn: AgentTurnResolver<TShared>;
+  executeToolCalls: AgentToolCallExecutor<TShared, TState>;
   emit?: (event: AgentEvent) => Promise<void>;
   guardExecution?: (abortMessage: string) => Promise<void>;
   config?: Partial<AgentConfig>;
   getCommandCount?: (state: TState) => number;
-  serializeDecision?: (decision: AgentDecision, rawResponse?: string) => AgentMessage;
   buildSummary?: (context: {
-    decision: FinishDecision;
+    summary: string;
     state: TState;
     currentPlan: string;
     shared: TShared;
   }) => Promise<string> | string;
-  formatInvalidDecisionMessage?: (errorMessage: string) => string;
+  assessFinish?: (context: {
+    summary: string;
+    step: number;
+    messages: AgentMessage[];
+    shared: TShared;
+    state: TState;
+  }) => Promise<AgentFinishAssessment> | AgentFinishAssessment;
+  formatMissingToolCallMessage?: (errorMessage: string) => string;
   formatRecoveryRequiredMessage?: (recoveryReason: string) => string;
   formatRecoveryEnforcementMessage?: (recoveryReason: string) => string;
   formatPlanUpdatedMessage?: (plan: string) => string;
-  shouldAbortOnDecisionError?: (error: unknown) => boolean;
+  shouldAbortOnTurnError?: (error: unknown) => boolean;
   onStepBudgetExceeded?: (context: {
     step: number;
     maxSteps: number;
@@ -189,4 +125,5 @@ export interface AgentLoopResult {
   finalPlan: string;
   commandCount: number;
   stepsTaken: number;
+  goalOutcome?: AgentGoalOutcome;
 }

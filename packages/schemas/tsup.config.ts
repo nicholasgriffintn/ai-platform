@@ -6,6 +6,7 @@ export default defineConfig({
     "src/analytics.ts",
     "src/chat-stream.ts",
     "src/compaction-status.ts",
+    "src/goals.ts",
     "src/conversation-replacement.ts",
     "src/council-data.ts",
     "src/message-part-utils.ts",

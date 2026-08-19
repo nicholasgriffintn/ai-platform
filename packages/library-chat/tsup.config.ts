@@ -7,6 +7,8 @@ export default defineConfig({
     "src/verbosity.ts",
     "src/attachments.ts",
     "src/compaction-command.ts",
+    "src/goal-command.ts",
+    "src/message-goal-status.ts",
     "src/conversation-storage-policy.ts",
     "src/conversation-types.ts",
     "src/message-parts.ts",

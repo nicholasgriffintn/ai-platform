@@ -12,7 +12,7 @@ import { requireAuthenticatedUser, requireAuthenticatedUserOrAnonymous } from "~
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import type { AnonymousUser, IUser } from "~/types";
 
-type HttpMethod = "get" | "post" | "put" | "delete";
+type HttpMethod = "get" | "post" | "put" | "patch" | "delete";
 
 interface RouteResponseSpec {
   description: string;

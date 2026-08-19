@@ -1,4 +1,8 @@
-import type { AgentMessage, ToolCallInvocation } from "@ngriffin_uk/polychat-library-agent-core";
+import {
+  parseToolCallArguments,
+  type AgentMessage,
+  type AgentToolCall,
+} from "@ngriffin_uk/polychat-library-agent-core";
 
 import type { Message, MessageContent } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -139,16 +143,16 @@ class AgentProviderIO {
     };
   }
 
-  toolCallInvocations(toolCalls: AgentModelToolCall[]): ToolCallInvocation[] {
+  agentToolCalls(toolCalls: AgentModelToolCall[]): AgentToolCall[] {
     return toolCalls.map((toolCall) => ({
-      id: toolCall.id,
+      id: toolCall.id || this.createId(),
       name: toolCall.function?.name || toolCall.name || "unknown",
-      arguments: toolCall.function?.arguments || toolCall.arguments,
+      arguments: parseToolCallArguments(toolCall.function?.arguments ?? toolCall.arguments),
       raw: toolCall,
     }));
   }
 
-  providerToolCalls(toolCalls: ToolCallInvocation[]): Record<string, unknown>[] {
+  providerToolCalls(toolCalls: AgentToolCall[]): Record<string, unknown>[] {
     return toolCalls.map((toolCall) => {
       if (isPlainObject(toolCall.raw)) {
         if (typeof toolCall.raw.id === "string" && toolCall.raw.id.length > 0) {
@@ -157,19 +161,16 @@ class AgentProviderIO {
 
         return {
           ...toolCall.raw,
-          id: toolCall.id || this.createId(),
+          id: toolCall.id,
         };
       }
 
       return {
-        id: toolCall.id || this.createId(),
+        id: toolCall.id,
         type: "function",
         function: {
           name: toolCall.name,
-          arguments:
-            typeof toolCall.arguments === "string"
-              ? toolCall.arguments
-              : JSON.stringify(toolCall.arguments || {}),
+          arguments: JSON.stringify(toolCall.arguments),
         },
       };
     });

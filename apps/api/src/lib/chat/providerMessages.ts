@@ -8,7 +8,7 @@ import type { Message } from "~/types";
 import { isRecord } from "~/utils/objects";
 
 export type ProviderMessage = Message & {
-  role: Exclude<Message["role"], "compaction">;
+  role: Exclude<Message["role"], "compaction" | "goal">;
 };
 
 export type ProviderResponseMessage = Omit<ProviderMessage, "timestamp"> & {

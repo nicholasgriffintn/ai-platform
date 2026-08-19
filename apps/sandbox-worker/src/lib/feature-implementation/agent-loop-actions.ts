@@ -1,11 +1,4 @@
-import type {
-  AgentMessage,
-  ReadFileDecision,
-  ReadFilesDecision,
-  RunCommandDecision,
-  RunParallelDecision,
-  RunScriptDecision,
-} from "@ngriffin_uk/polychat-library-agent-core";
+import type { AgentMessage } from "@ngriffin_uk/polychat-library-agent-core";
 import type { SandboxTrustLevel } from "@ngriffin_uk/polychat-schemas";
 
 import {
@@ -25,6 +18,13 @@ import {
 } from "./constants";
 import { readRepositoryFileSnippet } from "./context";
 import { formatCommandObservation, formatReadObservation } from "./prompts";
+import type {
+  ReadFileDecision,
+  ReadFilesDecision,
+  RunCommandDecision,
+  RunParallelDecision,
+  RunScriptDecision,
+} from "./tools";
 import type { ExecuteAgentLoopParams } from "./types";
 import { truncateForModel } from "./utils";
 

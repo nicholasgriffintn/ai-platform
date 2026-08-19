@@ -17,6 +17,7 @@ import { retry_with_backoff, fallback } from "./error_recovery";
 import { extract_content } from "./extract_content";
 import { fill_in_middle_completion } from "./fill_in_middle";
 import { get_note } from "./get_note";
+import { complete_goal, set_goal } from "./goal";
 import { request_approval, ask_user } from "./human_in_the_loop";
 import { create_image } from "./image";
 import { load_skill } from "./load_skill";
@@ -96,6 +97,8 @@ const functionDefinitions: ApiToolDefinition[] = [
   delegateToTeamMemberByRole,
   getTeamMembers,
   discover_capabilities,
+  set_goal,
+  complete_goal,
   load_skill,
   retry_with_backoff,
   fallback,

@@ -11,6 +11,24 @@ interface PolychatChatCompletionParams extends SandboxModelSettings {
   messages: Array<{ role: string; content: string }>;
   model: string;
   stream?: boolean;
+  tools?: unknown[];
+  tool_choice?: string;
+}
+
+export interface PolychatToolCall {
+  id?: string;
+  type?: string;
+  function?: {
+    name?: string;
+    arguments?: string;
+  };
+  name?: string;
+  arguments?: string;
+}
+
+export interface PolychatCompletionMessage {
+  content: string;
+  toolCalls: PolychatToolCall[];
 }
 
 export class PolychatApiError extends Error {
@@ -98,7 +116,9 @@ export class PolychatClient {
     return error.name === "TypeError";
   }
 
-  private async requestChatCompletion(params: PolychatChatCompletionParams): Promise<string> {
+  private async requestChatCompletion(
+    params: PolychatChatCompletionParams,
+  ): Promise<PolychatCompletionMessage> {
     const chatId = crypto.randomUUID();
 
     const response = await this.fetchPolychat("/chat/completions", {
@@ -130,24 +150,27 @@ export class PolychatClient {
     const data = (await response.json()) as {
       choices: Array<{
         message: {
-          content: string;
+          content: string | null;
+          tool_calls?: PolychatToolCall[];
         };
       }>;
     };
 
-    const content = data.choices?.[0]?.message?.content;
+    const message = data.choices?.[0]?.message;
+    const toolCalls = Array.isArray(message?.tool_calls) ? message.tool_calls : [];
+    const content = typeof message?.content === "string" ? message.content : "";
 
-    if (!content) {
+    if (!content && toolCalls.length === 0) {
       throw new Error("Polychat API returned an empty completion response");
     }
 
-    return content;
+    return { content, toolCalls };
   }
 
   async chatCompletion(
     params: PolychatChatCompletionParams,
     retryOptions?: PolychatRetryOptions,
-  ): Promise<string> {
+  ): Promise<PolychatCompletionMessage> {
     const maxAttempts = Math.max(1, Math.min(retryOptions?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS, 5));
     const baseDelayMs = Math.max(100, retryOptions?.baseDelayMs ?? DEFAULT_BASE_DELAY_MS);
     const maxDelayMs = Math.max(baseDelayMs, retryOptions?.maxDelayMs ?? DEFAULT_MAX_DELAY_MS);

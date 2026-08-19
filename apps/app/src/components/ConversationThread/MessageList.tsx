@@ -2,6 +2,7 @@ import type { ArtifactProps } from "@ngriffin_uk/polychat-component-content";
 import {
   getMessageListScrollKey,
   CompactionStatusRow,
+  GoalStatusRow,
   MessageSkeleton,
   ScrollButton,
 } from "@ngriffin_uk/polychat-component-conversation";
@@ -9,6 +10,7 @@ import {
   getCompactionMessageLabel,
   isCompactionLoadingMessage,
 } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
+import { getGoalMessageMarker } from "@ngriffin_uk/polychat-library-chat/message-goal-status";
 import {
   canOfferOpinionRequestForMessage,
   type OpinionRequest,
@@ -223,10 +225,13 @@ export const MessageList = ({
               }
 
               const compactionLabel = getCompactionMessageLabel(message);
+              const goalMarker = getGoalMessageMarker(message);
 
               return (
                 <div key={`${message.id || index}-${index}`} className={index > 0 ? "mt-4" : ""}>
-                  {compactionLabel ? (
+                  {goalMarker ? (
+                    <GoalStatusRow label={goalMarker.label} objective={goalMarker.objective} />
+                  ) : compactionLabel ? (
                     <CompactionStatusRow label={compactionLabel} />
                   ) : (
                     <ChatMessage

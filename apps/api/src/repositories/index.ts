@@ -13,6 +13,7 @@ import { ComposioConnectorSessionRepository } from "./ComposioConnectorSessionRe
 import { ConnectorOperationApprovalRepository } from "./ConnectorOperationApprovalRepository";
 import { ConversationRepository } from "./ConversationRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
+import { GoalRepository } from "./GoalRepository";
 import { MemorySynthesisRepository } from "./MemorySynthesisRepository";
 import { MessageRepository } from "./MessageRepository";
 import { OAuthStateRepository } from "./OAuthStateRepository";
@@ -45,6 +46,7 @@ export {
   ComposioConnectorSessionRepository,
   ConnectorOperationApprovalRepository,
   EmbeddingRepository,
+  GoalRepository,
   MemorySynthesisRepository,
   MessageRepository,
   OAuthStateRepository,
@@ -78,6 +80,7 @@ export class RepositoryManager {
   private connectorOperationApprovalRepo: ConnectorOperationApprovalRepository;
   private messageRepo: MessageRepository;
   private embeddingRepo: EmbeddingRepository;
+  private goalRepo: GoalRepository;
   private webAuthnRepo: WebAuthnRepository;
   private apiKeyRepo: ApiKeyRepository;
   private artificialAnalysisRepo: ArtificialAnalysisRepository;
@@ -109,6 +112,7 @@ export class RepositoryManager {
     this.connectorOperationApprovalRepo = new ConnectorOperationApprovalRepository(env);
     this.messageRepo = new MessageRepository(env);
     this.embeddingRepo = new EmbeddingRepository(env);
+    this.goalRepo = new GoalRepository(env);
     this.webAuthnRepo = new WebAuthnRepository(env);
     this.apiKeyRepo = new ApiKeyRepository(env);
     this.artificialAnalysisRepo = new ArtificialAnalysisRepository(env);
@@ -173,6 +177,10 @@ export class RepositoryManager {
 
   public get conversations(): ConversationRepository {
     return this.conversationRepo;
+  }
+
+  public get goals(): GoalRepository {
+    return this.goalRepo;
   }
 
   public get composioConnectorSessions(): ComposioConnectorSessionRepository {

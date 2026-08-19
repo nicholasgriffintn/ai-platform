@@ -1,11 +1,12 @@
 import { MAX_BUFFER_LENGTH, MAX_CONTENT_LENGTH, MAX_THINKING_LENGTH } from "~/constants/app";
 import { extractCouncilTurnRouting } from "~/lib/chat/council";
+import { resolveStreamingGoalContinuation } from "~/lib/chat/goal-continuation";
 import { MEMORY_STORE_TOOL_NAME } from "~/lib/chat/memoryPolicy";
 import { appendReasoningPart, appendTextPart, buildMessageParts } from "~/lib/chat/messageParts";
 import { buildAssistantMessageData } from "~/lib/chat/mode-metadata";
 import { formatAssistantMessage, getAIResponse } from "~/lib/chat/responses";
-import { resolveToolStepBudget, shouldContinueAfterToolResults } from "~/lib/chat/tool-results";
 import { handleToolCalls } from "~/lib/chat/tools";
+import { evaluateTurnContinuation } from "~/lib/chat/turn-continuation";
 import { getToolEventPayload } from "~/lib/chat/utils";
 import { preprocessQwQResponse } from "~/lib/chat/utils/qwq";
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -549,14 +550,22 @@ export async function createStreamWithPostProcessing(
       }
 
       if (toolCallsData.length > 0) {
-        const recoveredUnknownTool = toolResults.some(
-          (message) =>
-            message.data?.errorCode === "UNKNOWN_TOOL" && message.data?.recoverable === true,
-        );
-        const resolvedMaxSteps = resolveToolStepBudget(max_steps, toolCallsData, toolResults);
-        const withinStepBudget = Boolean(resolvedMaxSteps && current_step < resolvedMaxSteps);
+        const continuation = evaluateTurnContinuation({
+          toolCalls: toolCallsData,
+          toolResults,
+          currentStep: current_step,
+          maxSteps: max_steps,
+          unknownToolRecoveryUsed,
+        });
+        const resolvedMaxSteps = continuation.maxSteps;
+        const recoveredUnknownTool = continuation.unknownToolRecoveryUsed;
 
-        if (!withinStepBudget && !recoveredUnknownTool) {
+        if (!continuation.shouldContinue) {
+          logger.info("Stopping multi-step streaming execution", {
+            completion_id,
+            current_step,
+            reason: continuation.reason,
+          });
           emitEvent(controller, "state", {
             state: StreamState.DONE,
           });
@@ -565,17 +574,7 @@ export async function createStreamWithPostProcessing(
           return;
         }
 
-        const shouldContinue = shouldContinueAfterToolResults(toolCallsData, toolResults);
-
-        if (!shouldContinue) {
-          logger.warn(
-            "Tool execution did not complete successfully, stopping multi-step execution",
-            {
-              completion_id,
-              current_step,
-            },
-          );
-        } else {
+        {
           try {
             const history = await conversationManager.get(completion_id);
             const continuationBase = options.continuationRequest ?? options;
@@ -619,6 +618,65 @@ export async function createStreamWithPostProcessing(
             return;
           } catch (error: any) {
             console.error("Next stream error:", {
+              error_message: error instanceof Error ? error.message : "Unknown error",
+            });
+          }
+        }
+      }
+
+      if (toolCallsData.length === 0) {
+        const goalContinuation = await resolveStreamingGoalContinuation({
+          completionId: completion_id,
+          context,
+          summary: fullContent || "",
+          producedEvidence: false,
+        });
+
+        if (goalContinuation) {
+          try {
+            const history = await conversationManager.get(completion_id);
+            const continuationBase = options.continuationRequest ?? options;
+            const nextStream = await getAIResponse({
+              ...continuationBase,
+              env,
+              completion_id,
+              model,
+              provider: options.provider,
+              messages: [
+                ...history,
+                { role: "user" as const, content: goalContinuation.instruction },
+              ],
+              message: undefined,
+              tools,
+              enabled_tools,
+              current_step: current_step + 1,
+              stream: true,
+            });
+            const nextTransformed = await createStreamWithPostProcessing(
+              nextStream,
+              {
+                ...options,
+                current_step: current_step + 1,
+                continuationRequest: continuationBase,
+              },
+              conversationManager,
+            );
+            const reader = nextTransformed.getReader();
+
+            while (true) {
+              const { done, value } = await reader.read();
+
+              if (done) {
+                break;
+              }
+
+              controller.enqueue(value);
+            }
+
+            return;
+          } catch (error) {
+            logger.error("Goal continuation stream failed", {
+              completion_id,
               error_message: error instanceof Error ? error.message : "Unknown error",
             });
           }

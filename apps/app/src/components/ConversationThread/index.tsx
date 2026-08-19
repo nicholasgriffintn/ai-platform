@@ -11,22 +11,28 @@ import type {
 import {
   ConversationComposerDock,
   ConversationMessageColumn,
+  GoalStatusCard,
   WelcomeScreen,
 } from "@ngriffin_uk/polychat-component-conversation";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { isCompactConversationCommand } from "@ngriffin_uk/polychat-library-chat/compaction-command";
+import {
+  parseGoalCommand,
+  type GoalCommand,
+} from "@ngriffin_uk/polychat-library-chat/goal-command";
 import { mergeChatRequestOptions } from "@ngriffin_uk/polychat-library-chat/request-options";
-
-import "~/styles/scrollbar.css";
-import "~/styles/github.css";
-import "~/styles/github-dark.css";
 import {
   createModelReferenceMap,
   EMPTY_MODEL_CONFIG,
   getModelByReference,
   isImageGenerationOutputModel,
 } from "@ngriffin_uk/polychat-schemas";
+
+import "~/styles/scrollbar.css";
+import "~/styles/github.css";
+import "~/styles/github-dark.css";
 import type { ConversationModeMetadata, CouncilMemberId } from "@ngriffin_uk/polychat-schemas";
+import { goalStatusLabels } from "@ngriffin_uk/polychat-schemas/goals";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -37,8 +43,10 @@ import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
+import { useGoal } from "~/hooks/useGoal";
 import { useModels } from "~/hooks/useModels";
 import { resolveConnectorOperationApproval } from "~/lib/api/connectors";
+import { getErrorMessage } from "~/lib/errors";
 import { openExternalUrl } from "~/lib/external-navigation";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -126,6 +134,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     setSelectedAssistantAction,
   } = useChatStore();
   const { data: currentConversation } = useChat(currentConversationId);
+  const { goal, canUseGoals, setGoal, updateGoal } = useGoal(currentConversationId);
   const {
     streamStarted,
     controller,
@@ -319,6 +328,68 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     }
   }, [currentArtifact, isCombinedPanel, isPanelVisible, messages]);
 
+  const goalState = useMemo(
+    () => ({ canUseGoals, goal: goal ? { status: goal.status } : null }),
+    [canUseGoals, goal],
+  );
+
+  const handleGoalCommand = useCallback(
+    async (command: GoalCommand): Promise<boolean> => {
+      if (!canUseGoals) {
+        toast.error("Goals are a Pro feature.");
+
+        return false;
+      }
+
+      if (!currentConversationId) {
+        toast.error("Start the conversation before setting a goal.");
+
+        return false;
+      }
+
+      try {
+        if (command.kind === "status") {
+          toast.message(
+            goal
+              ? `${goalStatusLabels[goal.status]}: ${goal.objective}`
+              : "No goal on this conversation yet.",
+          );
+
+          return true;
+        }
+
+        if (command.kind === "set") {
+          const next = await setGoal.mutateAsync(command.objective);
+
+          toast.success(next ? `Goal set: ${next.objective}` : "Goal set.");
+
+          return true;
+        }
+
+        if (!goal) {
+          toast.error("No goal on this conversation yet.");
+
+          return false;
+        }
+
+        const status =
+          command.kind === "pause" ? "paused" : command.kind === "resume" ? "active" : "cleared";
+        const next = await updateGoal.mutateAsync(status);
+
+        toast.success(
+          command.kind === "clear" ? "Goal cleared." : goalStatusLabels[next?.status ?? status],
+        );
+
+        return true;
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Could not update the goal"));
+
+        return false;
+      }
+    },
+    [canUseGoals, currentConversationId, goal, setGoal, updateGoal],
+  );
+
   const canSubmit = useMemo(
     () =>
       (chatInput.trim() || selectedAssistantAction?.item) &&
@@ -331,6 +402,22 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     async (attachments?: AttachmentData[]) => {
       if (!chatInput.trim() && !attachments?.length && !selectedAssistantAction?.item) {
         return false;
+      }
+
+      const goalCommand = selectedAssistantAction?.item ? null : parseGoalCommand(chatInput);
+
+      if (goalCommand) {
+        const originalInput = chatInput;
+
+        setChatInput("");
+
+        const handled = await handleGoalCommand(goalCommand);
+
+        if (!handled) {
+          setChatInput(originalInput);
+        }
+
+        return handled;
       }
 
       if (isCompactConversationCommand(chatInput) && !selectedAssistantAction?.item) {
@@ -632,7 +719,21 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           model={selectedModelConfig}
           hideSuggestions={modeConfig?.hideComposerSuggestions}
         />
+        {goal ? (
+          <GoalStatusCard
+            objective={goal.objective}
+            status={goal.status}
+            statusLabel={goalStatusLabels[goal.status]}
+            iterationCount={goal.iteration_count}
+            stoppedReason={goal.stopped_reason}
+            busy={setGoal.isPending || updateGoal.isPending}
+            onPause={() => void handleGoalCommand({ kind: "pause" })}
+            onResume={() => void handleGoalCommand({ kind: "resume" })}
+            onClear={() => void handleGoalCommand({ kind: "clear" })}
+          />
+        ) : null}
         <ChatInput
+          goalState={goalState}
           ref={chatInputRef}
           handleSubmit={handleSubmit}
           isLoading={isStreamLoading || isModelInitializing}

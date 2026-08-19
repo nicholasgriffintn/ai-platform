@@ -1,10 +1,10 @@
+import { createGoalFinishGate } from "~/lib/chat/agent/goal-gate";
 import { runAgentLoop, type ModelResponse } from "~/lib/chat/agent/runAgentLoop";
 import { createAgentExecutionStream } from "~/lib/chat/core/agent-stream";
 import { buildStoredAssistantMessage } from "~/lib/chat/core/assistant-message";
 import { prependCompactionStateEvent } from "~/lib/chat/core/compaction-stream";
 import { createChatExecutionRequest } from "~/lib/chat/core/execution-request";
 import { buildToolRequestContext } from "~/lib/chat/core/request-context";
-import { runNonStreamingToolSteps } from "~/lib/chat/core/tool-step-runner";
 import { extractCouncilTurnRouting } from "~/lib/chat/council";
 import { isAgentExecutionMode } from "~/lib/chat/mode-metadata";
 import { createMultiModelStream } from "~/lib/chat/multiModalStreaming";
@@ -14,13 +14,16 @@ import { createStreamWithPostProcessing } from "~/lib/chat/streaming";
 import { pruneMessagesToFitContext } from "~/lib/chat/utils";
 import { ValidationPipeline } from "~/lib/chat/validation/ValidationPipeline";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
+import type { ConversationManager } from "~/lib/conversationManager";
 import { resolveModeMaxSteps } from "~/lib/permissions/PermissionChecker";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { captureTrainingExample } from "~/lib/providers/capabilities/training/captureTrainingExample";
 import { SessionManager } from "~/lib/session/SessionManager";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
 import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
-import type { CoreChatOptions, Message } from "~/types";
+import { GOAL_STATUS_MARKER_EVENTS, recordGoalMarker } from "~/services/goals/goalMarker";
+import { GoalService } from "~/services/goals/GoalService";
+import type { ChatMode, CoreChatOptions, Message } from "~/types";
 import { isAbortError } from "~/utils/abort";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -54,6 +57,41 @@ export class ChatOrchestrator {
   constructor(env: any) {
     this.validator = new ValidationPipeline();
     this.preparer = new RequestPreparer(env);
+  }
+
+  private async resolveGoalFinishGate(
+    chatOptions: CoreChatOptions,
+    currentMode: ChatMode,
+    conversationManager: ConversationManager,
+  ) {
+    const user = chatOptions.context?.user;
+
+    if (!user?.id || user.plan_id !== "pro" || !chatOptions.completion_id) {
+      return undefined;
+    }
+
+    const goalService = new GoalService(chatOptions.context.repositories.goals);
+    const goal = await goalService.getActiveGoal({
+      conversationId: chatOptions.completion_id,
+    });
+
+    if (!goal || goal.status !== "active") {
+      return undefined;
+    }
+
+    return createGoalFinishGate({
+      goalService,
+      goal,
+      surface: isAgentExecutionMode(currentMode) ? "agent" : "chat",
+      onTerminalStatus: async (terminalGoal) => {
+        await recordGoalMarker({
+          conversationManager,
+          completionId: chatOptions.completion_id,
+          goal: terminalGoal,
+          event: GOAL_STATUS_MARKER_EVENTS[terminalGoal.status] ?? "cleared",
+        });
+      },
+    });
   }
 
   async process(options: CoreChatOptions) {
@@ -237,9 +275,11 @@ export class ChatOrchestrator {
 
     const toolResponses: Message[] = [];
     let response: ModelResponse | ReadableStream;
-    let responseAlreadyStored = false;
+    const responseAlreadyStored = false;
 
-    if (isAgentExecutionMode(currentMode) && !stream) {
+    if (stream) {
+      response = await getAIResponse(requestParams);
+    } else {
       let agentResult;
 
       try {
@@ -248,7 +288,12 @@ export class ChatOrchestrator {
           completionId: chatOptions.completion_id,
           conversationManager,
           toolRequestContext,
-          maxSteps: resolveModeMaxSteps(currentMode, max_steps),
+          maxSteps: resolveModeMaxSteps(currentMode, resolvedMaxSteps ?? max_steps),
+          assessFinish: await this.resolveGoalFinishGate(
+            chatOptions,
+            currentMode,
+            conversationManager,
+          ),
         });
       } finally {
         if (toolRequestContext.context) {
@@ -258,40 +303,6 @@ export class ChatOrchestrator {
 
       response = agentResult.response;
       toolResponses.push(...agentResult.toolResponses);
-    } else {
-      response = await getAIResponse(requestParams);
-      if (!(response instanceof ReadableStream)) {
-        let toolStepResult;
-
-        try {
-          toolStepResult = await runNonStreamingToolSteps({
-            response,
-            requestParams,
-            completionId: chatOptions.completion_id,
-            conversationManager,
-            toolRequestContext,
-            maxSteps: resolvedMaxSteps,
-            buildAssistantMessage: (stepResponse) =>
-              buildStoredAssistantMessage({
-                response: stepResponse,
-                content: stepResponse.response || "",
-                envLogId: chatOptions.env.AI.aiGatewayLogId,
-                mode: currentMode,
-                model: primaryModel,
-                platform: platform || "api",
-                requestOptions: prepared.requestOptions,
-              }),
-          });
-        } finally {
-          if (toolRequestContext.context) {
-            await closeComposioConnectorRun(toolRequestContext.context);
-          }
-        }
-
-        response = toolStepResult.response;
-        responseAlreadyStored = toolStepResult.responseAlreadyStored;
-        toolResponses.push(...toolStepResult.toolResponses);
-      }
     }
 
     if (response instanceof ReadableStream) {

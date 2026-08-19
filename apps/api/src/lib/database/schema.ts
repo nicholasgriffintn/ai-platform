@@ -381,6 +381,50 @@ export const conversation = sqliteTable(
 
 export type Conversation = typeof conversation.$inferSelect;
 
+export const goal = sqliteTable(
+  "goal",
+  {
+    id: text().primaryKey(),
+    conversation_id: text().references(() => conversation.id, { onDelete: "cascade" }),
+    sandbox_run_id: text(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    objective: text().notNull(),
+    status: text({
+      enum: ["active", "paused", "completed", "cleared", "blocked", "stalled", "limit_reached"],
+    })
+      .notNull()
+      .default("active"),
+    source: text({ enum: ["user", "model"] })
+      .notNull()
+      .default("user"),
+    iteration_count: integer().notNull().default(0),
+    stall_streak: integer().notNull().default(0),
+    tokens_spent: integer().notNull().default(0),
+    progress: text({ mode: "json" }),
+    evidence: text({ mode: "json" }),
+    stopped_reason: text(),
+    created_from_message_id: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+    completed_at: text(),
+    last_continued_at: text(),
+  },
+  (table) => ({
+    conversationIdx: index("goal_conversation_id_idx").on(table.conversation_id),
+    sandboxRunIdx: index("goal_sandbox_run_id_idx").on(table.sandbox_run_id),
+    userIdx: index("goal_user_id_idx").on(table.user_id),
+    statusIdx: index("goal_status_idx").on(table.status),
+  }),
+);
+
+export type Goal = typeof goal.$inferSelect;
+
 export const message = sqliteTable(
   "message",
   {

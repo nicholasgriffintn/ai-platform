@@ -6,7 +6,7 @@ import {
 } from "./message-part-utils";
 import type { MessageRole } from "./shared";
 
-export type ProviderChatMessageRole = Exclude<MessageRole, "compaction">;
+export type ProviderChatMessageRole = Exclude<MessageRole, "compaction" | "goal">;
 export type ProviderChatMessageContent =
   | string
   | ProviderChatMessageContentPart[]
