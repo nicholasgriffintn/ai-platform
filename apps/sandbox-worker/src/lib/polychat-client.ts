@@ -1,3 +1,8 @@
+import {
+  parseRetryAfterBodyMs,
+  parseRetryAfterHeaderMs,
+  withRetry,
+} from "@ngriffin_uk/polychat-library-client/retry";
 import type { SandboxModelSettings } from "@ngriffin_uk/polychat-schemas";
 
 const POLYCHAT_SANDBOX_USER_AGENT = "Polychat-Sandbox-Worker/1.0 (+https://polychat.app)";
@@ -47,44 +52,6 @@ export interface PolychatRetryOptions {
   maxAttempts?: number;
   baseDelayMs?: number;
   maxDelayMs?: number;
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
-function parseRetryAfterMs(value: string | null): number | undefined {
-  if (!value) {
-    return undefined;
-  }
-
-  const seconds = Number(value);
-
-  if (Number.isFinite(seconds) && seconds >= 0) {
-    return seconds * 1000;
-  }
-
-  const dateMs = Date.parse(value);
-
-  if (!Number.isNaN(dateMs)) {
-    return Math.max(0, dateMs - Date.now());
-  }
-
-  return undefined;
-}
-
-function parseJsonRetryAfterMs(errorText: string): number | undefined {
-  try {
-    const data = JSON.parse(errorText) as { retryAfter?: unknown };
-
-    return typeof data.retryAfter === "number" && Number.isFinite(data.retryAfter)
-      ? data.retryAfter * 1000
-      : undefined;
-  } catch {
-    return undefined;
-  }
 }
 
 export class PolychatClient {
@@ -143,7 +110,8 @@ export class PolychatClient {
         response.status,
         `Polychat API request failed (${response.status}): ${errorText.slice(0, 500)}`,
         RETRYABLE_HTTP_STATUS_CODES.has(response.status),
-        parseRetryAfterMs(response.headers.get("Retry-After")) ?? parseJsonRetryAfterMs(errorText),
+        parseRetryAfterHeaderMs(response.headers.get("Retry-After")) ??
+          parseRetryAfterBodyMs(errorText),
       );
     }
 
@@ -171,32 +139,15 @@ export class PolychatClient {
     params: PolychatChatCompletionParams,
     retryOptions?: PolychatRetryOptions,
   ): Promise<PolychatCompletionMessage> {
-    const maxAttempts = Math.max(1, Math.min(retryOptions?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS, 5));
     const baseDelayMs = Math.max(100, retryOptions?.baseDelayMs ?? DEFAULT_BASE_DELAY_MS);
-    const maxDelayMs = Math.max(baseDelayMs, retryOptions?.maxDelayMs ?? DEFAULT_MAX_DELAY_MS);
 
-    let lastError: unknown;
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-      try {
-        return await this.requestChatCompletion(params);
-      } catch (error) {
-        lastError = error;
-        if (!this.isRetryableError(error) || attempt === maxAttempts) {
-          throw error;
-        }
-
-        const retryAfterMs = error instanceof PolychatApiError ? error.retryAfterMs : undefined;
-        const jitter = Math.floor(Math.random() * 125);
-        const exponentialDelayMs = baseDelayMs * 2 ** (attempt - 1) + jitter;
-        const delayMs = Math.min(retryAfterMs ?? exponentialDelayMs, maxDelayMs);
-
-        await sleep(delayMs);
-      }
-    }
-
-    throw lastError instanceof Error
-      ? lastError
-      : new Error("Polychat API request failed with unknown retry error");
+    return withRetry(() => this.requestChatCompletion(params), {
+      maxAttempts: Math.max(1, Math.min(retryOptions?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS, 5)),
+      baseDelayMs,
+      maxDelayMs: Math.max(baseDelayMs, retryOptions?.maxDelayMs ?? DEFAULT_MAX_DELAY_MS),
+      isRetryable: (error) => this.isRetryableError(error),
+      getRetryAfterMs: (error) =>
+        error instanceof PolychatApiError ? error.retryAfterMs : undefined,
+    });
   }
 }
