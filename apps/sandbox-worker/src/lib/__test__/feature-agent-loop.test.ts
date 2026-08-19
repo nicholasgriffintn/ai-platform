@@ -68,6 +68,108 @@ describe("executeAgentLoop", () => {
     expect(emitted.some((event) => event.type === "agent_turn_invalid")).toBe(false);
   });
 
+  it("keeps the run working while its goal is unsatisfied", async () => {
+    const emitted: Array<Record<string, unknown>> = [];
+    const chatCompletion = vi
+      .fn()
+      .mockResolvedValueOnce(toolCallResponse("run_command", { commands: ["pnpm test"] }))
+      .mockResolvedValueOnce(toolCallResponse("finish", { summary: "looks done" }))
+      .mockResolvedValueOnce(toolCallResponse("run_command", { commands: ["pnpm test"] }))
+      .mockResolvedValueOnce(toolCallResponse("finish", { summary: "actually done" }));
+    const recordGoalIteration = vi
+      .fn()
+      .mockResolvedValueOnce({
+        shouldContinue: true,
+        instruction: "The objective is not satisfied yet.",
+      })
+      .mockResolvedValueOnce({ shouldContinue: false });
+
+    const result = await executeAgentLoop({
+      sandbox: {
+        exec: vi.fn().mockResolvedValue({
+          success: true,
+          exitCode: 0,
+          stdout: "ok",
+          stderr: "",
+        }),
+      } as any,
+      client: { chatCompletion } as any,
+      approvalClient: {
+        recordGoalIteration,
+        listInstructions: vi.fn().mockResolvedValue([]),
+      } as any,
+      model: "test-model",
+      repoDisplayName: "owner/repo",
+      repoTargetDir: "repo",
+      task: "test",
+      taskType: "feature-implementation",
+      promptStrategy: {
+        strategy: "feature-delivery",
+        definition: {
+          strategy: "feature-delivery",
+          label: "Feature delivery",
+          planningFocus: ["focus"],
+          executionFocus: ["focus"],
+          examples: [],
+        },
+        reason: "test",
+        source: "explicit",
+      },
+      initialPlan: "plan",
+      repoContext: {
+        topLevelEntries: [],
+        files: [],
+        taskInstructionSource: "none",
+      },
+      executionLogs: [],
+      emit: async (event) => {
+        emitted.push(event);
+      },
+    });
+
+    expect(recordGoalIteration).toHaveBeenCalledTimes(2);
+    expect(result.summary).toBe("actually done");
+    expect(emitted.some((event) => event.type === "run_goal_continued")).toBe(true);
+  });
+
+  it("finishes normally when the run has no goal control plane", async () => {
+    const chatCompletion = vi
+      .fn()
+      .mockResolvedValueOnce(toolCallResponse("finish", { summary: "done" }));
+
+    const result = await executeAgentLoop({
+      sandbox: { exec: vi.fn() } as any,
+      client: { chatCompletion } as any,
+      model: "test-model",
+      repoDisplayName: "owner/repo",
+      repoTargetDir: "repo",
+      task: "test",
+      taskType: "feature-implementation",
+      promptStrategy: {
+        strategy: "feature-delivery",
+        definition: {
+          strategy: "feature-delivery",
+          label: "Feature delivery",
+          planningFocus: ["focus"],
+          executionFocus: ["focus"],
+          examples: [],
+        },
+        reason: "test",
+        source: "explicit",
+      },
+      initialPlan: "plan",
+      repoContext: {
+        topLevelEntries: [],
+        files: [],
+        taskInstructionSource: "none",
+      },
+      executionLogs: [],
+      emit: vi.fn(),
+    });
+
+    expect(result.summary).toBe("done");
+  });
+
   it("continues after a policy-blocked command", async () => {
     const emitted: Array<Record<string, unknown>> = [];
     const chatCompletion = vi
@@ -530,6 +632,7 @@ describe("executeAgentLoop", () => {
       .fn()
       .mockResolvedValue(toolCallResponse("finish", { summary: "done" }));
     const approvalClient = {
+      recordGoalIteration: vi.fn().mockResolvedValue({ shouldContinue: false }),
       listInstructions: vi
         .fn()
         .mockResolvedValueOnce([

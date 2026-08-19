@@ -278,6 +278,63 @@ export class RunControlClient {
     return mapApprovalInstructionToApproval(match?.instruction ?? null);
   }
 
+  /**
+   * Records the run's progress against its goal and asks whether it should keep
+   * working. A run that cannot reach its control plane keeps its old behaviour
+   * and finishes, rather than looping without oversight.
+   */
+  public async recordGoalIteration(
+    iteration: {
+      summary: string;
+      producedEvidence: boolean;
+      calledTool: boolean;
+      evidence?: string[];
+      next?: string;
+    },
+    signal?: AbortSignal,
+  ): Promise<{ shouldContinue: boolean; instruction?: string }> {
+    if (!this.runId) {
+      return { shouldContinue: false };
+    }
+
+    try {
+      const response = await fetchWithTimeout(
+        (timeoutSignal) =>
+          this.fetchApi(
+            `/apps/sandbox/runs/${encodeURIComponent(this.runId as string)}/goal/iteration`,
+            {
+              method: "POST",
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${this.userToken}`,
+              },
+              body: JSON.stringify(iteration),
+            },
+            timeoutSignal,
+          ),
+        this.requestTimeoutMs,
+        signal,
+      );
+
+      if (!response.ok) {
+        return { shouldContinue: false };
+      }
+
+      const data = (await response.json()) as {
+        shouldContinue?: boolean;
+        instruction?: string;
+      };
+
+      return {
+        shouldContinue: data?.shouldContinue === true,
+        ...(typeof data?.instruction === "string" ? { instruction: data.instruction } : {}),
+      };
+    } catch {
+      return { shouldContinue: false };
+    }
+  }
+
   public async listInstructions(
     after = 0,
     signal?: AbortSignal,

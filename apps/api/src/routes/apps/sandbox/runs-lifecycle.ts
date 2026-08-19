@@ -1,6 +1,7 @@
 import {
   listRunInstructionsQuerySchema,
   sandboxRunParamsSchema,
+  recordGoalIterationRequestSchema,
   setGoalRequestSchema,
   submitRunInstructionSchema,
   updateGoalRequestSchema,
@@ -15,6 +16,7 @@ import {
 } from "~/services/apps/sandbox/runs";
 import {
   handleGetRunGoal,
+  handleRecordRunGoalIteration,
   handleSetRunGoal,
   handleUpdateRunGoal,
 } from "~/services/completions/conversationGoal";
@@ -42,6 +44,20 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
     },
     handler: async ({ body, params, serviceContext }) =>
       handleSetRunGoal(serviceContext, params.runId, body.objective),
+  });
+
+  addRoute(app, "post", "/runs/:runId/goal/iteration", {
+    tags: ["apps"],
+    description:
+      "Record one unit of work against a run goal and learn whether the run should keep going",
+    auth: true,
+    bodySchema: recordGoalIterationRequestSchema,
+    paramSchema: sandboxRunParamsSchema,
+    responses: {
+      200: { description: "The updated run goal and the continuation decision" },
+    },
+    handler: async ({ body, params, serviceContext }) =>
+      handleRecordRunGoalIteration(serviceContext, params.runId, body),
   });
 
   addRoute(app, "patch", "/runs/:runId/goal", {

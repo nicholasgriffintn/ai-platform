@@ -157,6 +157,78 @@ export interface StreamPostProcessingOptions {
   unknownToolRecoveryUsed?: boolean;
 }
 
+interface StreamContinuationParams {
+  controller: TransformStreamDefaultController;
+  conversationManager: ConversationManager;
+  options: StreamPostProcessingOptions;
+  completionId: string;
+  env: IEnv;
+  model: string;
+  tools: unknown;
+  enabledTools: unknown;
+  currentStep: number;
+  nextOptions: Record<string, unknown>;
+  instruction?: string;
+}
+
+/**
+ * Runs the next streaming turn and pumps it into the current stream. Both
+ * reasons a turn continues — pending tool results and an unsatisfied goal —
+ * take this path, so the continuation request is built once.
+ */
+async function continueStreamingTurn(params: StreamContinuationParams): Promise<boolean> {
+  try {
+    const history = await params.conversationManager.get(params.completionId);
+    const continuationBase = params.options.continuationRequest ?? params.options;
+    const messages = params.instruction
+      ? [...history, { role: "user" as const, content: params.instruction }]
+      : history;
+    const nextStream = await getAIResponse({
+      ...continuationBase,
+      env: params.env,
+      completion_id: params.completionId,
+      model: params.model,
+      provider: params.options.provider,
+      messages,
+      message: undefined,
+      tools: params.tools,
+      enabled_tools: params.enabledTools,
+      current_step: params.currentStep + 1,
+      stream: true,
+    } as Parameters<typeof getAIResponse>[0]);
+    const nextTransformed = await createStreamWithPostProcessing(
+      nextStream as ReadableStream,
+      {
+        ...params.options,
+        ...params.nextOptions,
+        current_step: params.currentStep + 1,
+        continuationRequest: continuationBase,
+      },
+      params.conversationManager,
+    );
+    const reader = nextTransformed.getReader();
+
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      params.controller.enqueue(value);
+    }
+
+    return true;
+  } catch (error) {
+    logger.error("Streaming continuation failed", {
+      completion_id: params.completionId,
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
+
+    return false;
+  }
+}
+
 export async function createStreamWithPostProcessing(
   providerStream: ReadableStream,
   options: StreamPostProcessingOptions,
@@ -587,53 +659,24 @@ export async function createStreamWithPostProcessing(
           return;
         }
 
-        {
-          try {
-            const history = await conversationManager.get(completion_id);
-            const continuationBase = options.continuationRequest ?? options;
-            const nextStream = await getAIResponse({
-              ...continuationBase,
-              env,
-              completion_id,
-              model,
-              provider: options.provider,
-              messages: history,
-              message: undefined,
-              tools,
-              enabled_tools,
-              current_step: current_step + 1,
-              stream: true,
-            });
-            const nextTransformed = await createStreamWithPostProcessing(
-              nextStream,
-              {
-                ...options,
-                max_steps: resolvedMaxSteps,
-                current_step: current_step + 1,
-                unknownToolRecoveryUsed: unknownToolRecoveryUsed || recoveredUnknownTool,
-                continuationRequest: continuationBase,
-              },
-              conversationManager,
-            );
+        const continued = await continueStreamingTurn({
+          controller,
+          conversationManager,
+          options,
+          completionId: completion_id,
+          env,
+          model,
+          tools,
+          enabledTools: enabled_tools,
+          currentStep: current_step,
+          nextOptions: {
+            max_steps: resolvedMaxSteps,
+            unknownToolRecoveryUsed: unknownToolRecoveryUsed || recoveredUnknownTool,
+          },
+        });
 
-            const reader = nextTransformed.getReader();
-
-            while (true) {
-              const { done, value } = await reader.read();
-
-              if (done) {
-                break;
-              }
-
-              controller.enqueue(value);
-            }
-
-            return;
-          } catch (error: any) {
-            console.error("Next stream error:", {
-              error_message: error instanceof Error ? error.message : "Unknown error",
-            });
-          }
+        if (continued) {
+          return;
         }
       }
 
@@ -646,52 +689,22 @@ export async function createStreamWithPostProcessing(
         });
 
         if (goalContinuation) {
-          try {
-            const history = await conversationManager.get(completion_id);
-            const continuationBase = options.continuationRequest ?? options;
-            const nextStream = await getAIResponse({
-              ...continuationBase,
-              env,
-              completion_id,
-              model,
-              provider: options.provider,
-              messages: [
-                ...history,
-                { role: "user" as const, content: goalContinuation.instruction },
-              ],
-              message: undefined,
-              tools,
-              enabled_tools,
-              current_step: current_step + 1,
-              stream: true,
-            });
-            const nextTransformed = await createStreamWithPostProcessing(
-              nextStream,
-              {
-                ...options,
-                current_step: current_step + 1,
-                continuationRequest: continuationBase,
-              },
-              conversationManager,
-            );
-            const reader = nextTransformed.getReader();
+          const continued = await continueStreamingTurn({
+            controller,
+            conversationManager,
+            options,
+            completionId: completion_id,
+            env,
+            model,
+            tools,
+            enabledTools: enabled_tools,
+            currentStep: current_step,
+            nextOptions: {},
+            instruction: goalContinuation.instruction,
+          });
 
-            while (true) {
-              const { done, value } = await reader.read();
-
-              if (done) {
-                break;
-              }
-
-              controller.enqueue(value);
-            }
-
+          if (continued) {
             return;
-          } catch (error) {
-            logger.error("Goal continuation stream failed", {
-              completion_id,
-              error_message: error instanceof Error ? error.message : "Unknown error",
-            });
           }
         }
       }

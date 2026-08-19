@@ -524,3 +524,51 @@ test.describe("Pro message attachments", () => {
     });
   });
 });
+
+test.describe("Goals as pro", () => {
+  test.use({ persona: "pro" });
+
+  test("sets, pauses, and clears a conversation goal", async ({ homePage }) => {
+    await homePage.navigate("/chat");
+    await homePage.selectModel(TEXT_MODEL);
+    await homePage.sendMessage("Start a conversation to hold a goal");
+    await homePage.waitForChatResponse(0);
+
+    const objective = "Make the release checks pass without changing public API behaviour";
+    const setResponse = await homePage.setGoal(objective);
+
+    expect(setResponse.status()).toBe(200);
+    await expect(homePage.goalCard()).toContainText(objective);
+    await expect(homePage.goalCard()).toContainText("Goal active");
+
+    const pauseResponse = await homePage.updateGoal("Pause");
+
+    expect(pauseResponse.status()).toBe(200);
+    await expect(homePage.goalCard()).toContainText("Goal paused");
+
+    const resumeResponse = await homePage.updateGoal("Resume");
+
+    expect(resumeResponse.status()).toBe(200);
+    await expect(homePage.goalCard()).toContainText("Goal active");
+
+    const clearResponse = await homePage.updateGoal("Clear goal");
+
+    expect(clearResponse.status()).toBe(200);
+    await expect(homePage.goalCard()).toHaveCount(0);
+  });
+});
+
+test.describe("Goals as free", () => {
+  test.use({ persona: "free" });
+
+  test("does not offer goals without a pro plan", async ({ homePage, page }) => {
+    await homePage.navigate("/chat");
+    await homePage.selectModel(TEXT_MODEL);
+    await homePage.sendMessage("Start a free conversation");
+    await homePage.waitForChatResponse(0);
+
+    await page.getByPlaceholder(/Ask follow-up|Say the word/i).fill("/goal");
+
+    await expect(page.getByRole("button", { name: /^\/goal/ })).toHaveCount(0);
+  });
+});

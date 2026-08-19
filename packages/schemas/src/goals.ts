@@ -110,6 +110,23 @@ export const goalResponseSchema = z.object({
   goal: goalSchema.nullable(),
 });
 
+export const recordGoalIterationRequestSchema = z.object({
+  summary: z.string().trim().max(4000),
+  producedEvidence: z.boolean(),
+  calledTool: z.boolean(),
+  evidence: z.array(z.string().trim().min(1)).max(20).optional(),
+  next: z.string().trim().max(2000).optional(),
+});
+
+export const recordGoalIterationResponseSchema = z.object({
+  goal: goalSchema.nullable(),
+  shouldContinue: z.boolean(),
+  instruction: z.string().optional(),
+});
+
+export type RecordGoalIterationRequest = z.infer<typeof recordGoalIterationRequestSchema>;
+export type RecordGoalIterationResponse = z.infer<typeof recordGoalIterationResponseSchema>;
+
 export type SetGoalRequest = z.infer<typeof setGoalRequestSchema>;
 export type UpdateGoalRequest = z.infer<typeof updateGoalRequestSchema>;
 export type GoalResponse = z.infer<typeof goalResponseSchema>;

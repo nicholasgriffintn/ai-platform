@@ -1,9 +1,13 @@
 import {
   goalResponseSchema,
+  recordGoalIterationResponseSchema,
   type GoalResponse,
+  type RecordGoalIterationRequest,
+  type RecordGoalIterationResponse,
   type UpdateGoalRequest,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { GOAL_CONTINUATION_INSTRUCTION } from "~/lib/chat/goal-continuation";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { recordGoalMarker } from "~/services/goals/goalMarker";
@@ -76,6 +80,41 @@ export async function handleUpdateRunGoal(
   });
 
   return goalResponseSchema.parse({ goal });
+}
+
+export async function handleRecordRunGoalIteration(
+  context: ConversationGoalContext,
+  runId: string,
+  iteration: RecordGoalIterationRequest,
+): Promise<RecordGoalIterationResponse> {
+  const user = context.requireUser();
+  const service = createService(context);
+
+  service.assertPro(user);
+
+  const active = await service.getActiveGoal({ sandboxRunId: runId });
+
+  if (!active || active.status !== "active") {
+    return recordGoalIterationResponseSchema.parse({ goal: active, shouldContinue: false });
+  }
+
+  const { goal, shouldContinue } = await service.recordIteration({
+    goal: active,
+    iteration: {
+      surface: "sandbox",
+      summary: iteration.summary,
+      evidence: iteration.evidence,
+      next: iteration.next,
+      producedEvidence: iteration.producedEvidence,
+      calledTool: iteration.calledTool,
+    },
+  });
+
+  return recordGoalIterationResponseSchema.parse({
+    goal,
+    shouldContinue,
+    ...(shouldContinue ? { instruction: GOAL_CONTINUATION_INSTRUCTION } : {}),
+  });
 }
 
 export async function handleGetConversationGoal(

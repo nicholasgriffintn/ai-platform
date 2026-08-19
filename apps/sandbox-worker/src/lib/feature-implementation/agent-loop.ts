@@ -219,6 +219,7 @@ export async function executeAgentLoop(
   };
 
   const agentTools = getSandboxAgentTools({ readOnlyCommands });
+  let lastAuditedCommandCount = 0;
 
   const result = await executeSharedAgentLoop({
     initialMessages: messages,
@@ -312,6 +313,39 @@ export async function executeAgentLoop(
           content: `Unknown tool "${toolCall.name}". Use one of the provided tools.`,
         });
       }
+    },
+    assessFinish: async ({ summary, state: runtimeState }) => {
+      if (!approvalClient) {
+        return { allow: true };
+      }
+
+      const progressed = runtimeState.commandCount > lastAuditedCommandCount;
+
+      lastAuditedCommandCount = runtimeState.commandCount;
+
+      const decision = await approvalClient.recordGoalIteration(
+        {
+          summary,
+          producedEvidence: progressed,
+          calledTool: progressed,
+        },
+        abortSignal,
+      );
+
+      if (!decision.shouldContinue) {
+        return { allow: true, outcome: "satisfied" };
+      }
+
+      await emit({
+        type: "run_goal_continued",
+        commandCount: runtimeState.commandCount,
+        message: "Run goal is not satisfied yet; continuing",
+      });
+
+      return {
+        allow: false,
+        instruction: decision.instruction,
+      };
     },
     onPlanRecovery: ({ state: runtimeState }) => {
       runtimeState.consecutiveCommandFailures = 0;
