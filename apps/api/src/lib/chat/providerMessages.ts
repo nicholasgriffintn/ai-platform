@@ -5,6 +5,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { Message } from "~/types";
+import { isRecord } from "~/utils/objects";
 
 export type ProviderMessage = Message & {
   role: Exclude<Message["role"], "compaction">;
@@ -13,10 +14,6 @@ export type ProviderMessage = Message & {
 export type ProviderResponseMessage = Omit<ProviderMessage, "timestamp"> & {
   timestamp?: number | string;
 };
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 
 function isApiMessageContent(value: unknown): value is Message["content"] {
   return typeof value === "string" || Array.isArray(value) || isRecord(value);

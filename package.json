@@ -9,7 +9,7 @@
     "build:packages": "pnpm -r --filter './packages/**' --if-present build",
     "changeset": "changeset",
     "changeset:version": "changeset version",
-    "check": "pnpm fix && pnpm -r check",
+    "check": "pnpm lint && pnpm format:check && pnpm -r --if-present check",
     "ci:test": "pnpm run coverage",
     "coverage": "vitest run --coverage",
     "deploy": "pnpm --filter @assistant/api --filter @assistant/app deploy",
