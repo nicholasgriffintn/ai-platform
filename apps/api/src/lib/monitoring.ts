@@ -7,6 +7,8 @@ import type {
   BackendAnalytics,
   BackendAnalyticsEnv,
 } from "~/lib/analytics/types";
+import { extractUsagePayload } from "~/lib/usage/extractUsage";
+import { normaliseTokenUsage, type NormalisedTokenUsage } from "~/lib/usage/tokenUsage";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -215,6 +217,19 @@ export function trackProviderMetrics<T>({
         status: "success",
       });
 
+      if (!(result instanceof ReadableStream)) {
+        trackTokenUsage({
+          usage: extractUsagePayload(result),
+          provider,
+          model,
+          env: request?.env ?? { ANALYTICS: analyticsEngine },
+          executionCtx: request?.executionCtx,
+          userId,
+          completion_id: traceId,
+          streamed: false,
+        });
+      }
+
       return captureProviderGenerationResult(
         result,
         { provider, model, traceId, request, startTime },
@@ -240,6 +255,69 @@ export function trackProviderMetrics<T>({
       });
       throw error;
     });
+}
+
+export function trackTokenUsage({
+  usage,
+  provider,
+  model,
+  env,
+  executionCtx,
+  userId,
+  completion_id,
+  streamed,
+  expectUsage = false,
+}: {
+  usage: unknown;
+  provider?: string;
+  model?: string;
+  env?: BackendAnalyticsEnv;
+  executionCtx?: ExecutionContext;
+  userId?: number;
+  completion_id?: string;
+  streamed: boolean;
+  expectUsage?: boolean;
+}): NormalisedTokenUsage | null {
+  const normalised = normaliseTokenUsage(usage);
+  const traceId = completion_id || generateId();
+  const metadata = {
+    provider: provider || "unknown",
+    model: model || "unknown",
+    userId: userId?.toString(),
+    streamed,
+    reported: normalised !== null,
+    input_tokens: normalised?.input_tokens ?? 0,
+    output_tokens: normalised?.output_tokens ?? 0,
+    total_tokens: normalised?.total_tokens ?? 0,
+    cached_input_tokens: normalised?.cached_input_tokens ?? 0,
+    cache_creation_tokens: normalised?.cache_creation_tokens ?? 0,
+    reasoning_tokens: normalised?.reasoning_tokens ?? 0,
+  };
+
+  if (!normalised && expectUsage) {
+    logger.warn("Provider returned no token usage", {
+      provider: metadata.provider,
+      model: metadata.model,
+      streamed,
+      completion_id,
+    });
+  }
+
+  try {
+    Monitoring.getInstance(env, executionCtx).recordMetric({
+      traceId,
+      timestamp: Date.now(),
+      type: "usage",
+      name: "ai_token_usage",
+      value: normalised?.total_tokens ?? 0,
+      metadata,
+      status: normalised ? "success" : "info",
+    });
+  } catch (error) {
+    logger.debug("Failed to record token usage metric", { error });
+  }
+
+  return normalised;
 }
 
 export function trackGuardrailViolation(

@@ -1,3 +1,4 @@
+import { extractUsagePayload } from "~/lib/usage/extractUsage";
 import { generateId } from "~/utils/id";
 
 /**
@@ -336,23 +337,7 @@ export class StreamingFormatter {
    * @returns The extracted usage
    */
   static extractUsageData(data: any): any {
-    if (data.usage) {
-      return data.usage;
-    }
-
-    if (data.response?.usage) {
-      return data.response.usage;
-    }
-
-    if (data.type === "message-end" && data.delta?.usage) {
-      return data.delta.usage;
-    }
-
-    if (data.usageMetadata) {
-      return data.usageMetadata;
-    }
-
-    return null;
+    return extractUsagePayload(data);
   }
 
   /**

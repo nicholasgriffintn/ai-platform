@@ -18,7 +18,7 @@ import { isRecord, omitUndefinedValues } from "~/utils/objects";
 import {
   createCommonParameters,
   getToolsForProvider,
-  shouldEnableStreaming,
+  createStreamingParameters,
 } from "~/utils/parameters";
 
 import type { FetchAIResponseOptions } from "../../../lib/fetch";
@@ -77,13 +77,11 @@ export class HuggingFaceProvider extends BaseProvider {
       this.isOpenAiCompatible,
     );
 
-    const streamingParams = shouldEnableStreaming(
+    const streamingParams = createStreamingParameters(
       modelConfig,
       this.supportsStreaming,
       params.stream,
-    )
-      ? { stream: true }
-      : {};
+    );
 
     return omitUndefinedValues({
       ...commonParams,

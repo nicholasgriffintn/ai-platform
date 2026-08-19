@@ -2,6 +2,8 @@ import { getAIResponse } from "~/lib/chat/responses";
 import { resolveToolStepBudget, shouldContinueAfterToolResults } from "~/lib/chat/tool-results";
 import { handleToolCalls } from "~/lib/chat/tools";
 import type { ConversationManager } from "~/lib/conversationManager";
+import { extractUsagePayload } from "~/lib/usage/extractUsage";
+import { normaliseTokenUsage, sumTokenUsage } from "~/lib/usage/tokenUsage";
 import type { ChatCompletionParameters, IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -64,33 +66,14 @@ function getToolCalls(response: ToolStepResponse): ToolStepToolCall[] {
 }
 
 function getUsage(response: ToolStepResponse): ToolStepUsage | undefined {
-  return response.usage || response.usageMetadata;
+  return normaliseTokenUsage(extractUsagePayload(response)) ?? undefined;
 }
 
 function addUsage(
   totalUsage: ToolStepUsage | undefined,
   stepUsage: ToolStepUsage | undefined,
 ): ToolStepUsage | undefined {
-  if (!stepUsage) {
-    return totalUsage;
-  }
-
-  const nextUsage: ToolStepUsage = totalUsage ? { ...totalUsage } : {};
-
-  for (const [key, value] of Object.entries(stepUsage)) {
-    if (typeof value === "number") {
-      const existing = nextUsage[key];
-
-      nextUsage[key] = typeof existing === "number" ? existing + value : value;
-      continue;
-    }
-
-    if (!(key in nextUsage)) {
-      nextUsage[key] = value;
-    }
-  }
-
-  return nextUsage;
+  return sumTokenUsage(totalUsage, stepUsage) ?? totalUsage;
 }
 
 function withStepMetadata<Response extends ToolStepResponse>(

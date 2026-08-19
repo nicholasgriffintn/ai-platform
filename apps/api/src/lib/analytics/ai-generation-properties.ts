@@ -1,11 +1,6 @@
-import {
-  AI_INPUT_TOKEN_USAGE_FIELDS,
-  AI_OUTPUT_TOKEN_USAGE_FIELDS,
-  AI_TOTAL_TOKEN_USAGE_FIELDS,
-} from "~/constants/analytics";
+import { normaliseTokenUsage } from "~/lib/usage/tokenUsage";
 import type { Message } from "~/types";
 import { omitNullishValues } from "~/utils/objects";
-import { readNumberFieldAlias } from "~/utils/recordFields";
 
 import type { AnalyticsProperties } from "./types";
 
@@ -28,14 +23,7 @@ type AiGenerationPropertiesInput = {
 export function buildAiGenerationProperties(
   input: AiGenerationPropertiesInput,
 ): AnalyticsProperties {
-  const usage = input.usage || {};
-  const inputTokens = readNumberFieldAlias(usage, AI_INPUT_TOKEN_USAGE_FIELDS);
-  const outputTokens = readNumberFieldAlias(usage, AI_OUTPUT_TOKEN_USAGE_FIELDS);
-  const totalTokens =
-    readNumberFieldAlias(usage, AI_TOTAL_TOKEN_USAGE_FIELDS) ??
-    (inputTokens !== undefined && outputTokens !== undefined
-      ? inputTokens + outputTokens
-      : undefined);
+  const usage = normaliseTokenUsage(input.usage);
   const outputChoices = input.output
     ? [{ role: input.output.role, content: input.output.content }]
     : undefined;
@@ -48,9 +36,12 @@ export function buildAiGenerationProperties(
       $ai_span_name: input.spanName,
       $ai_model: input.model || "unknown",
       $ai_provider: input.provider || "unknown",
-      $ai_input_tokens: inputTokens,
-      $ai_output_tokens: outputTokens,
-      $ai_total_tokens: totalTokens,
+      $ai_input_tokens: usage?.input_tokens,
+      $ai_output_tokens: usage?.output_tokens,
+      $ai_total_tokens: usage?.total_tokens,
+      $ai_cache_read_input_tokens: usage?.cached_input_tokens,
+      $ai_cache_creation_input_tokens: usage?.cache_creation_tokens,
+      $ai_reasoning_tokens: usage?.reasoning_tokens,
       $ai_latency: typeof input.latencyMs === "number" ? input.latencyMs / 1000 : undefined,
       $ai_stream: input.stream ?? false,
     }),
