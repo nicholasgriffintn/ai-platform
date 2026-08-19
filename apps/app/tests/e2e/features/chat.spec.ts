@@ -567,7 +567,7 @@ test.describe("Goals as free", () => {
     await homePage.sendMessage("Start a free conversation");
     await homePage.waitForChatResponse(0);
 
-    await page.getByPlaceholder(/Ask follow-up|Say the word/i).fill("/goal");
+    await page.getByRole("textbox", { name: "Message input" }).fill("/goal");
 
     await expect(page.getByRole("button", { name: /^\/goal/ })).toHaveCount(0);
   });
