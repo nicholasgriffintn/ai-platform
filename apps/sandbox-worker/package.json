@@ -18,6 +18,7 @@
   "dependencies": {
     "@cloudflare/sandbox": "0.12.5",
     "@ngriffin_uk/polychat-library-agent-core": "workspace:^",
+    "@ngriffin_uk/polychat-library-client": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "zod": "catalog:"
   },
