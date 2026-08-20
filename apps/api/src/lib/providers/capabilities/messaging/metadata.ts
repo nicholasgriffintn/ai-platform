@@ -22,6 +22,15 @@ export const messagingProviderMetadata = [
         description: "Used to verify Twilio webhook signatures and send replies.",
       },
       {
+        key: "allowedSenders",
+        label: "Allowed Senders",
+        type: "text",
+        required: true,
+        placeholder: "+15551234567, +15557654321",
+        description:
+          "Comma separated E.164 numbers allowed to message the assistant. Messages from anyone else are ignored without a reply.",
+      },
+      {
         key: "fromNumber",
         label: "From Phone Number",
         type: "text",
@@ -57,6 +66,15 @@ export const messagingProviderMetadata = [
         type: "password",
         required: true,
         description: "Used to sign AWS End User Messaging API requests.",
+      },
+      {
+        key: "allowedSenders",
+        label: "Allowed Senders",
+        type: "text",
+        required: true,
+        placeholder: "+15551234567, +15557654321",
+        description:
+          "Comma separated E.164 numbers allowed to message the assistant. Messages from anyone else are ignored without a reply.",
       },
       {
         key: "region",

@@ -8,6 +8,7 @@ export * from "./ResponseView";
 export * from "./TableView";
 export * from "./TemplateView";
 export * from "./TextView";
-export * from "./Views/TutorView";
+export * from "./Views/CouncilMemberPickerView";
+export * from "./Views/CouncilTurnView";
 export * from "./Views/WeatherView";
 export * from "./Views/WebSearchView";

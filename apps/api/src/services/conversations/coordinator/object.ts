@@ -16,11 +16,23 @@ const QUEUE_KEY = "queue";
 const STATUS_KEY = "status";
 const INDEX_KEY = "queue-index";
 const MAX_QUEUE_LENGTH = 100;
+// A turn that dies without releasing must not wedge the conversation. The lease
+// is longer than any real turn and short enough that a wedged thread heals.
+const LOCK_LEASE_MS = 5 * 60 * 1000;
 
 interface StoredStatus {
   status: "idle" | "running";
   currentOperation: ThreadInstructionKind | null;
   updatedAt: string;
+  expiresAt?: string;
+}
+
+function hasExpired(status: StoredStatus, now: number): boolean {
+  if (status.status !== "running" || !status.expiresAt) {
+    return false;
+  }
+
+  return Date.parse(status.expiresAt) <= now;
 }
 
 const IDLE_STATUS: StoredStatus = {
@@ -53,8 +65,9 @@ export class ConversationCoordinator extends Agent<IEnv> {
 
   private async getStatus(): Promise<StoredStatus> {
     const raw = await this.storage.get<string>(STATUS_KEY);
+    const stored = raw ? (safeParseJson<StoredStatus>(raw) ?? IDLE_STATUS) : IDLE_STATUS;
 
-    return raw ? (safeParseJson<StoredStatus>(raw) ?? IDLE_STATUS) : IDLE_STATUS;
+    return hasExpired(stored, Date.now()) ? IDLE_STATUS : stored;
   }
 
   private async putStatus(status: StoredStatus): Promise<void> {
@@ -137,10 +150,13 @@ export class ConversationCoordinator extends Agent<IEnv> {
         return Response.json({ acquired: false, currentOperation: status.currentOperation });
       }
 
+      const acquiredAt = Date.now();
+
       await this.putStatus({
         status: "running",
         currentOperation: parsed.data.kind,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date(acquiredAt).toISOString(),
+        expiresAt: new Date(acquiredAt + LOCK_LEASE_MS).toISOString(),
       });
 
       return Response.json({ acquired: true, currentOperation: parsed.data.kind });
@@ -168,6 +184,7 @@ export class ConversationCoordinator extends Agent<IEnv> {
         status: "running",
         currentOperation: claimed.kind,
         updatedAt: now,
+        expiresAt: new Date(Date.parse(now) + LOCK_LEASE_MS).toISOString(),
       });
 
       return Response.json({ instruction: claimed, reason: decision.reason });

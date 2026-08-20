@@ -8,7 +8,6 @@ export default defineConfig({
     "src/compaction-status.ts",
     "src/goals.ts",
     "src/conversation-replacement.ts",
-    "src/council-data.ts",
     "src/message-part-utils.ts",
     "src/provider-messages.ts",
     "src/sandbox-constants.ts",

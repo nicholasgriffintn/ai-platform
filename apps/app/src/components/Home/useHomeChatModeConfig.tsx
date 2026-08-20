@@ -1,4 +1,3 @@
-import { CouncilChatControls } from "@ngriffin_uk/polychat-component-conversation";
 import {
   getComposedRealtimeReasoningModelId,
   getDefaultLiveModelId,
@@ -14,10 +13,6 @@ import {
   getModelByReference,
 } from "@ngriffin_uk/polychat-schemas";
 import type { HomeChatModeId } from "@ngriffin_uk/polychat-schemas";
-import {
-  defaultCouncilMemberIds,
-  type CouncilMemberId,
-} from "@ngriffin_uk/polychat-schemas/council-data";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 
@@ -43,8 +38,6 @@ import {
   resolveHomeChatModeId,
 } from "./chatModes";
 import { LiveChatModeControls, LiveSessionComposerControls } from "./LiveChatModeControls";
-
-type CouncilResponseMode = "debate" | "single";
 
 function supportsBackgroundResponses(modelConfig: { provider?: string } | null | undefined) {
   return modelConfig?.provider === "openai";
@@ -86,10 +79,6 @@ export function useHomeChatModeConfig(): {
   );
   const effectiveActiveModeId =
     activeModeId === "background" && !canUseBackgroundMode ? "chat" : activeModeId;
-  const [selectedCouncilMemberIds, setSelectedCouncilMemberIds] = useState<CouncilMemberId[]>([
-    ...defaultCouncilMemberIds,
-  ]);
-  const [councilResponseMode, setCouncilResponseMode] = useState<CouncilResponseMode>("debate");
   const hydratedConversationIdRef = useRef<string | undefined>(undefined);
   const liveConversationMode = useMemo(
     () =>
@@ -328,15 +317,6 @@ export function useHomeChatModeConfig(): {
     activeModeId: HomeChatModeId;
     modeConfig: ConversationThreadModeConfig;
   }>(() => {
-    const councilControls = (
-      <CouncilChatControls
-        selectedMemberIds={selectedCouncilMemberIds}
-        onSelectedMemberIdsChange={setSelectedCouncilMemberIds}
-        responseMode={councilResponseMode}
-        onResponseModeChange={setCouncilResponseMode}
-        showHeader={effectiveActiveModeId !== "council"}
-      />
-    );
     const liveControls = (
       <LiveChatModeControls
         cameraDevices={liveCameraDevices}
@@ -380,12 +360,7 @@ export function useHomeChatModeConfig(): {
         videoSupported={supportsRealtimeLiveVideoInput(effectiveLiveProvider)}
       />
     );
-    const activeModeControls =
-      effectiveActiveModeId === "council"
-        ? councilControls
-        : effectiveActiveModeId === "live"
-          ? liveControls
-          : undefined;
+    const activeModeControls = effectiveActiveModeId === "live" ? liveControls : undefined;
     const modeControls = {
       activeModeControls,
       commands: HOME_CHAT_MODE_OPTIONS.map((option) => {
@@ -469,55 +444,12 @@ export function useHomeChatModeConfig(): {
       };
     }
 
-    if (effectiveActiveModeId !== "council") {
-      return {
-        activeModeId: effectiveActiveModeId,
-        modeConfig: {
-          assistantActionRoutes: { recipes: "/chat/capabilities" },
-          modeControls,
-          onModelChange: handleModelChange,
-        },
-      };
-    }
-
-    const councilRequestOptions = {
-      options: {
-        council: {
-          enabled: true,
-          responseMode: councilResponseMode,
-          memberIds: selectedCouncilMemberIds,
-          requireConsensus: true,
-        },
-      },
-    };
-
     return {
       activeModeId: effectiveActiveModeId,
       modeConfig: {
         assistantActionRoutes: { recipes: "/chat/capabilities" },
-        analyticsSource: "council",
-        welcomeTitle: "What should the council debate?",
-        welcomeDescription:
-          "Pick the council, give them a problem, and let them argue it out properly before answering.",
-        inputPlaceholder: {
-          newConversation: "Give the council a problem to debate...",
-          followUp: "Ask the council to refine its decision...",
-        },
-        requestOptions: councilRequestOptions,
-        modelScope: "text-only",
-        conversationMode: buildConversationModeMetadata({
-          mode: "council",
-          requestOptions: councilRequestOptions,
-        }),
-        councilDebate:
-          councilResponseMode === "debate"
-            ? {
-                enabled: true,
-                memberIds: selectedCouncilMemberIds,
-                requireConsensus: true,
-              }
-            : undefined,
         modeControls,
+        onModelChange: handleModelChange,
       },
     };
   }, [
@@ -525,8 +457,6 @@ export function useHomeChatModeConfig(): {
     handleModeChange,
     handleLiveProviderChange,
     handleModelChange,
-    selectedCouncilMemberIds,
-    councilResponseMode,
     selectedModel,
     liveCameraDevices,
     liveError,

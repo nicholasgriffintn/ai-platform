@@ -6,17 +6,14 @@ import type { ChatMode, IBody, IUser, IUserSettings } from "~/types";
 import { trimTemplateWhitespace } from "~/utils/strings";
 
 import { returnCodingPrompt } from "./coding";
-import { returnCouncilPrompt } from "./council";
 import { getTextToImageSystemPrompt } from "./image";
 import { returnSandboxPrompt } from "./sandbox";
 import { buildAssistantMetadataSection, type PromptModelMetadata } from "./sections/metadata";
 import type { PromptMemoryPolicy } from "./sections/session-config";
-import { returnSmsPrompt } from "./sms";
 import { returnStandardPrompt } from "./standard";
 import { emptyPrompt } from "./utils";
 
-export type PromptMode = "council" | "sms";
-export type PromptRequest = IBody & { promptMode?: PromptMode };
+export type PromptRequest = IBody;
 
 export interface PromptSessionOptions {
   memory?: PromptMemoryPolicy;
@@ -35,19 +32,10 @@ export async function getSystemPrompt(
   const memoryPolicy = session?.memory ?? resolveMemoryPolicy({ user, userSettings });
 
   let prompt: string;
-  const promptMode = request.promptMode;
   const modelMetadata = modelConfig ? { modelId: model, modelConfig } : { modelId: model };
 
   if (request.options?.sandbox?.enabled) {
     return trimTemplateWhitespace(returnSandboxPrompt(request, userSettings, modelMetadata));
-  }
-
-  if (promptMode === "council" || request.options?.council?.enabled) {
-    return trimTemplateWhitespace(returnCouncilPrompt(request.options?.council));
-  }
-
-  if (promptMode === "sms" || request.options?.sms?.enabled) {
-    return trimTemplateWhitespace(returnSmsPrompt(request, userSettings, modelMetadata));
   }
 
   if (!modelConfig) {
@@ -271,30 +259,4 @@ export function guessDrawingPrompt(usedGuesses: Set<string>): string {
 IMPORTANT: Do not use any of these previously guessed words: ${Array.from(usedGuesses).join(", ")}
 
 Your response should contain only one word, which represents your best guess for the image described. Ensure that your answer is concise and accurately reflects the main subject of the image.`;
-}
-
-export function tutorSystemPrompt(sources: string, level: string): string {
-  return `You are a profession personal tutor who is an expert at explaining various topics.
-	
-Given a topic and contextual information about what to teach, please educate the user about the topic at a ${level} level.
-
-Start your response by greeting the learner, provide them with a short overview about the topic and then ask them what they specifically want to learn about.
-
-Keep your responses interactive, please do provide the user with informative responses and quiz the user occasionally after you have taught them new material but do not quiz them in the first overview message.
-
-Keep your first message short and concise.
-
-Here is the contextual information about what you should be teaching:
-
-<teaching_materials>
-${sources}
-</teaching_materials>
-
-You should teach at this level:
-
-<teaching_level>
-${level}
-</teaching_level>
-
-Please return your answer in markdown, the user will follow up with their topic and further questions throughout the chat, make sure to consider this context throughout.`;
 }

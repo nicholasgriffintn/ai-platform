@@ -48,18 +48,6 @@ export const getFunctionIcon = (name: string): string => {
     return "folder-open";
   }
 
-  if (name === "compose_functions") {
-    return "braces";
-  }
-
-  if (name === "if_then_else") {
-    return "brain-circuit";
-  }
-
-  if (name === "parallel_execute") {
-    return "users";
-  }
-
   if (name.startsWith("mcp_")) {
     return "file-text";
   }
@@ -96,10 +84,6 @@ export const getFunctionResponseType = (name: string): ResponseDisplayType => {
     return ResponseDisplayType.TEXT;
   }
 
-  if (name.includes("prompt_coach")) {
-    return ResponseDisplayType.TEMPLATE;
-  }
-
   if (
     name === "run_feature_implementation" ||
     name === "run_code_review" ||
@@ -121,10 +105,6 @@ export const getFunctionResponseType = (name: string): ResponseDisplayType => {
   }
 
   if (name === "ask_user") {
-    return ResponseDisplayType.TEMPLATE;
-  }
-
-  if (name === "compose_functions" || name === "if_then_else" || name === "parallel_execute") {
     return ResponseDisplayType.TEMPLATE;
   }
 
@@ -197,52 +177,6 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
       <div class="speech-response">
         <h2>Generated Speech</h2>
         <p>{{content}}</p>
-      </div>
-    `;
-  } else if (name.includes("prompt_coach")) {
-    display.template = `
-      <div class="prompt-coach-response prose dark:prose-invert">
-        <h2>Prompt Coach</h2>
-        {{#if data.analysis}}
-          <div class="analysis">
-            <h3>Analysis</h3>
-            <p>{{data.analysis}}</p>
-          </div>
-        {{/if}}
-        {{#if data.suggested_prompt}}
-          <div class="suggested-prompt">
-            <h3>Suggested Prompt</h3>
-            <p>{{data.suggested_prompt}}</p>
-          </div>
-        {{/if}}
-        {{#if data.suggestions}}
-          <div class="suggestions">
-            <h3>Suggestions</h3>
-            <ul>
-              {{#each data.suggestions}}
-                <li>{{this}}</li>
-              {{/each}}
-            </ul>
-          </div>
-        {{/if}}
-        {{#if data.format_optimization}}
-          <div class="format-optimization">
-            <h3>Format Optimization</h3>
-            <p>{{data.format_optimization}}</p>
-          </div>
-        {{/if}}
-        {{#if data.confidence_score}}
-          <div class="confidence-score">
-            <h3>Confidence Score</h3>
-            <p>{{data.confidence_score}}</p>
-          </div>
-        {{/if}}
-        {{#if data.prompt_type}}
-          <div class="prompt-type">
-            <h3>Prompt Type</h3>
-            <p>{{data.prompt_type}}</p>
-          </div>
-        {{/if}}
       </div>
     `;
   } else if (
@@ -358,60 +292,6 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
         <div class="text-xs text-zinc-500 dark:text-zinc-400">
           {{data.timestamp}}
         </div>
-      </div>
-    `;
-  } else if (
-    name === "compose_functions" ||
-    name === "parallel_execute" ||
-    name === "if_then_else"
-  ) {
-    const headerTitle =
-      name === "compose_functions"
-        ? "Workflow Results"
-        : name === "parallel_execute"
-          ? "Parallel Execution"
-          : "Conditional Workflow";
-
-    display.template = `
-      <div class="workflow-response rounded-lg border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-zinc-800 p-5 space-y-4">
-        <div class="workflow-header flex items-start justify-between gap-4">
-          <div>
-            <h2 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">${headerTitle}</h2>
-            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Execution summary</p>
-          </div>
-          <div class="flex flex-wrap gap-2 text-xs">
-            {{#if data.branch}}
-              <span class="workflow-branch rounded-full bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100 px-2 py-0.5">Branch: {{data.branch}}</span>
-            {{/if}}
-            {{#if data.condition}}
-              <span class="workflow-condition rounded-full bg-zinc-100 text-zinc-700 dark:bg-zinc-700/50 dark:text-zinc-200 px-2 py-0.5">Condition: {{data.condition.name}}</span>
-            {{/if}}
-          </div>
-        </div>
-        {{#if data.steps}}
-          <ol class="workflow-steps space-y-3">
-            {{#each data.steps}}
-              <li class="workflow-step rounded-md border border-zinc-200/70 dark:border-zinc-700/60 bg-white/70 dark:bg-zinc-900/40 p-3 space-y-2">
-                <div class="workflow-step-header flex items-center justify-between text-xs">
-                  <span class="step-name font-medium text-zinc-900 dark:text-zinc-100">{{this.name}}</span>
-                  <span class="step-status uppercase tracking-wide text-[10px] text-zinc-500 dark:text-zinc-400">{{this.status}}</span>
-                </div>
-                {{#if this.output_var}}
-                  <div class="step-output text-xs text-zinc-600 dark:text-zinc-300">Output: {{this.output_var}}</div>
-                {{/if}}
-                {{#if this.result_preview}}
-                  <pre class="step-preview text-xs whitespace-pre-wrap rounded-md bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-zinc-700/60 p-2 text-zinc-700 dark:text-zinc-200">{{this.result_preview}}</pre>
-                {{/if}}
-                {{#if this.error}}
-                  <div class="step-error text-xs text-red-600 dark:text-red-400">{{this.error}}</div>
-                {{/if}}
-              </li>
-            {{/each}}
-          </ol>
-        {{/if}}
-        {{#if data.failed_count}}
-          <div class="workflow-summary text-xs text-red-600 dark:text-red-400">Failed: {{data.failed_count}}</div>
-        {{/if}}
       </div>
     `;
   }

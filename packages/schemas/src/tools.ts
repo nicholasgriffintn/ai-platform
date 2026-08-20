@@ -18,7 +18,6 @@ export const toolCategories = [
   "Productivity",
   "Automation",
   "Collaboration",
-  "Guidance",
   "Other",
 ] as const;
 

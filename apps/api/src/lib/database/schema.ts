@@ -455,17 +455,7 @@ export const message = sqliteTable(
       enum: ["web", "mobile", "api", "tool-run"],
     }),
     mode: text({
-      enum: [
-        "normal",
-        "local",
-        "remote",
-        "prompt_coach",
-        "no_system",
-        "agent",
-        "plan",
-        "build",
-        "explore",
-      ],
+      enum: ["normal", "local", "remote", "no_system", "agent", "plan", "build", "explore"],
     }),
     log_id: text(),
     data: text({

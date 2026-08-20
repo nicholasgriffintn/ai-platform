@@ -33,6 +33,7 @@ Do not extract the following, and record the trigger that would change the answe
 - **Prompt composition** (`PromptBuilder` and the section modules). `apps/sandbox-worker` assembles prompts with array joins and template literals rather than reimplementing the fluent builder, so there is no duplication to remove. The section modules are Polychat product copy bound to `IBody` and `IUserSettings` and belong in the API regardless.
 - **Provider message and response formatting** (`apps/api/src/lib/formatter`). The transformation is pure enough to move, but only the API consumes it. Extract when a second runtime talks to model providers directly.
 - **Compaction planning** (`apps/api/src/lib/session`). Planning is separable from persistence and summarisation, but it currently reaches for `ServiceContext`, the chat provider, and prompt modules. Invert those dependencies before considering a package.
+- **Inbound channel profiles** (`apps/api/src/lib/chat/channels.ts`). A profile carries a step budget, an allowed tool list, and channel constraints — the same shape as `AGENT_MODE_CONFIGS`, which now lives in `library-tool-runtime`. There is one consumer today, and the budgets already compose correctly (`resolveModeMaxSteps` clamps a channel's tighter budget under the mode ceiling). Extract when a second runtime answers inbound messages.
 - **Provider capability adapters, memory, guardrails, model routing, services, repositories, and database access.** These are single-consumer and correctly owned by `apps/api` under ADR 0001.
 
 ## Trade-offs

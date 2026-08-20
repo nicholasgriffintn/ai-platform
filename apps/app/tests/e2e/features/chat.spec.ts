@@ -108,7 +108,7 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
       });
     });
 
-    test("moves between Council, Live and Canvas surfaces", async ({
+    test("moves between Background, Live and Canvas surfaces", async ({
       externalServices,
       homePage,
       page,
@@ -116,29 +116,25 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
       await externalServices.mockGeminiLiveWebSocket();
       await homePage.navigate("/chat");
       await homePage.waitForPersonaReady(persona);
-      await homePage.selectChatMode("Council");
-      await expect(page).toHaveURL(/\/chat\?mode=council$/);
-      await expect(
-        page.getByRole("heading", { name: "What should the council debate?" }),
-      ).toBeVisible();
-      await captureVisualSnapshots(page, "release-chat-mode-council", {
-        ...DEFAULT_VISUAL_CHECKPOINTS,
-        viewports: [{ name: "desktop", width: 1280, height: 720 }],
-      });
-      await homePage.clearChatMode("Council");
 
       if (persona === "pro") {
         await homePage.selectModel("GPT-5.2");
+        await homePage.selectChatMode("Background");
+        await expect(page).toHaveURL(/\/chat\?mode=background$/);
+        await expect(
+          page.getByRole("heading", { name: "What should keep running?" }),
+        ).toBeVisible();
+        await captureVisualSnapshots(page, "release-chat-mode-background", {
+          ...DEFAULT_VISUAL_CHECKPOINTS,
+          viewports: [{ name: "desktop", width: 1280, height: 720 }],
+        });
+        await homePage.clearChatMode("Background");
+      } else {
+        // Background needs an OpenAI Responses model, which these personas cannot select.
+        expect(await homePage.getDisabledChatModeReason("Background")).toContain(
+          "OpenAI Responses model",
+        );
       }
-
-      await homePage.selectChatMode("Background");
-      await expect(page).toHaveURL(/\/chat\?mode=background$/);
-      await expect(page.getByRole("heading", { name: "What should keep running?" })).toBeVisible();
-      await captureVisualSnapshots(page, "release-chat-mode-background", {
-        ...DEFAULT_VISUAL_CHECKPOINTS,
-        viewports: [{ name: "desktop", width: 1280, height: 720 }],
-      });
-      await homePage.clearChatMode("Background");
 
       await homePage.selectChatMode("Live");
       await expect(page).toHaveURL(/\/chat\?mode=live$/);
@@ -510,15 +506,26 @@ test.describe("Pro message attachments", () => {
     });
   });
 
-  test("sends a Council conversation", async ({ homePage, page }) => {
+  test("chooses council members from the picker and convenes them", async ({ homePage, page }) => {
     await homePage.navigate("/chat");
-    await homePage.selectChatMode("Council");
-    await homePage.selectCouncilResponseMode("Single");
     await homePage.selectModel(TEXT_MODEL);
-    await homePage.sendMessageAndRequireCompletion("Choose the safest release validation approach");
-    await homePage.waitForChatResponse(0);
+    await homePage.sendMessageAndRequireCompletion(
+      "Convene a council on the safest release validation approach",
+    );
+
+    await homePage.waitForCouncilMemberPicker();
+    await expect(
+      page.getByText("These two disagree most about release risk.", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole("checkbox", { name: "Sceptic" })).toBeChecked();
+    await expect(page.getByRole("checkbox", { name: "Operator" })).not.toBeChecked();
+
+    await homePage.toggleCouncilMember("Operator");
+    await homePage.conveneCouncil();
+
     await homePage.waitForResponseText(/E2E response:/);
-    await captureVisualSnapshots(page, "release-chat-council", {
+    await expect(page.getByText("Council convened.")).toBeVisible();
+    await captureVisualSnapshots(page, "release-chat-council-picker", {
       ...DEFAULT_VISUAL_CHECKPOINTS,
       viewports: [{ name: "desktop", width: 1280, height: 720 }],
     });

@@ -24,7 +24,6 @@ export interface BuildStoredAssistantMessageParams {
   model: string;
   platform: Platform;
   requestOptions?: ChatRequestOptions;
-  councilRouting?: Parameters<typeof buildAssistantMessageData>[0]["councilRouting"];
 }
 
 export function buildStoredAssistantMessage(params: BuildStoredAssistantMessageParams): Message {
@@ -32,11 +31,7 @@ export function buildStoredAssistantMessage(params: BuildStoredAssistantMessageP
     role: "assistant",
     content: params.content,
     citations: params.response.citations || null,
-    data: buildAssistantMessageData({
-      responseData: params.response.data,
-      requestOptions: params.requestOptions,
-      councilRouting: params.councilRouting,
-    }),
+    data: buildAssistantMessageData({ responseData: params.response.data }),
     log_id: params.envLogId || params.response.log_id,
     mode: params.mode,
     id: generateId(),

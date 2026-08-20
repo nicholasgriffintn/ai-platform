@@ -113,6 +113,9 @@ export class TwilioSmsProvider implements MessagingProvider {
       throw new AssistantError("Invalid Twilio signature", ErrorType.AUTHENTICATION_ERROR);
     }
 
+    const messageId = String(
+      form.get("MessageSid") || form.get("SmsMessageSid") || form.get("SmsSid") || "",
+    ).trim();
     const from = String(form.get("From") || "").trim();
     const to = String(form.get("To") || "").trim();
     const body = String(form.get("Body") || "").trim();
@@ -137,11 +140,14 @@ export class TwilioSmsProvider implements MessagingProvider {
       .filter((item): item is IncomingMessageMedia => item !== null);
     const mediaUrls = media.map((item) => item.url);
 
-    if (!from || (!body && mediaUrls.length === 0)) {
-      throw new AssistantError("Missing Twilio SMS sender or content", ErrorType.PARAMS_ERROR);
+    if (!messageId || !from || (!body && mediaUrls.length === 0)) {
+      throw new AssistantError(
+        "Missing Twilio SMS message id, sender, or content",
+        ErrorType.PARAMS_ERROR,
+      );
     }
 
-    return { kind: "message", from, to, body, media, mediaUrls };
+    return { kind: "message", messageId, from, to, body, media, mediaUrls };
   }
 
   async send(params: { to: string; body: string; mediaUrls?: string[] }): Promise<void> {

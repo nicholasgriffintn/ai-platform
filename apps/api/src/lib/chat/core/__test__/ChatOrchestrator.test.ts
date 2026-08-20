@@ -16,7 +16,15 @@ const {
   mockCreateStreamWithPostProcessing,
   mockHandleToolCalls,
   mockSessionCompact,
+  mockAcquireThread,
+  mockReleaseThread,
 } = vi.hoisted(() => ({
+  mockAcquireThread: vi.fn(
+    async (): Promise<{ acquired: boolean; currentOperation?: string | null }> => ({
+      acquired: true,
+    }),
+  ),
+  mockReleaseThread: vi.fn(async () => undefined),
   mockValidator: {
     validate: vi.fn(),
   },
@@ -81,6 +89,11 @@ vi.mock("~/lib/chat/preparation/RequestPreparer", () => ({
       return mockPreparer;
     }
   },
+}));
+
+vi.mock("~/services/conversations/coordinator/client", () => ({
+  acquireThread: mockAcquireThread,
+  releaseThread: mockReleaseThread,
 }));
 
 vi.mock("~/lib/chat/responses", () => ({
@@ -1008,6 +1021,36 @@ describe("ChatOrchestrator", () => {
           violations: ["inappropriate"],
           rawViolations: { blockedResponse: "Content blocked" },
         });
+      });
+
+      it("refuses a turn while another operation holds the conversation", async () => {
+        mockAcquireThread.mockResolvedValueOnce({
+          acquired: false,
+          currentOperation: "user_message",
+        });
+
+        await expect(orchestrator.process(mockOptions)).rejects.toMatchObject({
+          type: ErrorType.CONFLICT_ERROR,
+        });
+
+        // Refused before preparation so the incoming message is never stored
+        // without a reply, and nothing is released that was never taken.
+        expect(mockPreparer.prepare).not.toHaveBeenCalled();
+        expect(mockReleaseThread).not.toHaveBeenCalled();
+      });
+
+      it("releases the conversation once the turn finishes", async () => {
+        mockGetAIResponse.mockResolvedValue({ response: "Test response" });
+        mockGuardrails.validateOutput.mockResolvedValue({ isValid: true });
+
+        await orchestrator.process(mockOptions);
+
+        expect(mockAcquireThread).toHaveBeenCalledWith(
+          expect.objectContaining({ conversationId: "test-completion-id", kind: "user_message" }),
+        );
+        expect(mockReleaseThread).toHaveBeenCalledWith(
+          expect.objectContaining({ conversationId: "test-completion-id" }),
+        );
       });
 
       it("should throw error when no response generated", async () => {

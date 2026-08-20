@@ -1,13 +1,21 @@
 import { createContext, type ReactNode, useContext } from "react";
 
+/**
+ * `useAsPrompt` fills the composer and leaves sending to the user; `submitPrompt` sends straight
+ * away, for views whose control *is* the decision — a picker, a chooser, a confirmation.
+ */
+export type ToolInteractionAction = "useAsPrompt" | "submitPrompt";
+
+export type ToolInteractionHandler = (
+  toolName: string,
+  action: ToolInteractionAction,
+  data: Record<string, any>,
+) => void;
+
 export interface CustomResponseViewProps {
   data: unknown;
   embedded: boolean;
-  onToolInteraction?: (
-    toolName: string,
-    action: "useAsPrompt",
-    data: Record<string, unknown>,
-  ) => void;
+  onToolInteraction?: ToolInteractionHandler;
 }
 
 export type CustomResponseViewRenderer = (props: CustomResponseViewProps) => ReactNode;

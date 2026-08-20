@@ -1,5 +1,4 @@
 import { MAX_BUFFER_LENGTH, MAX_CONTENT_LENGTH, MAX_THINKING_LENGTH } from "~/constants/app";
-import { extractCouncilTurnRouting } from "~/lib/chat/council";
 import { resolveStreamingGoalContinuation } from "~/lib/chat/goal-continuation";
 import { MEMORY_STORE_TOOL_NAME } from "~/lib/chat/memoryPolicy";
 import { appendReasoningPart, appendTextPart, buildMessageParts } from "~/lib/chat/messageParts";
@@ -441,15 +440,7 @@ export async function createStreamWithPostProcessing(
       const logId = env.AI?.aiGatewayLogId;
 
       const processedContent = preprocessQwQResponse(fullContent, model);
-      const councilTurn = extractCouncilTurnRouting(
-        processedContent,
-        options.requestOptions?.council,
-      );
-      const messageData = buildAssistantMessageData({
-        responseData: structuredData,
-        requestOptions: options.requestOptions,
-        councilRouting: councilTurn.routing,
-      });
+      const messageData = buildAssistantMessageData({ responseData: structuredData });
 
       const auditedUsage = trackTokenUsage({
         usage: usageData,
@@ -463,7 +454,7 @@ export async function createStreamWithPostProcessing(
       });
 
       const assistantMessage = formatAssistantMessage({
-        content: councilTurn.content,
+        content: processedContent,
         thinking: getFullThinking(),
         signature: signature,
         citations: citationsResponse,

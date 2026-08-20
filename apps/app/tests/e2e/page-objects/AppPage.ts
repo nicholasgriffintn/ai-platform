@@ -12,9 +12,22 @@ export class AppPage extends BasePage {
     });
   }
 
+  private get settingsMenuItem() {
+    return this.page.getByRole("button", { name: "Keyboard shortcuts" });
+  }
+
+  /**
+   * The settings control toggles, so a caller that reopens an already-open popover closes it and
+   * races the exit animation. Ensure it is open, then wait for its contents to settle.
+   */
   async openSettings(plan: "Guest" | "Free" | "Pro") {
     await this.settingsButton.getByText(plan, { exact: true }).waitFor();
-    await this.clickElement(this.settingsButton);
+
+    if (!(await this.settingsMenuItem.isVisible())) {
+      await this.clickElement(this.settingsButton);
+    }
+
+    await this.waitForElement(this.settingsMenuItem);
   }
 
   async openSettingsDestination(name: string) {
@@ -35,7 +48,7 @@ export class AppPage extends BasePage {
   }
 
   async openKeyboardShortcuts() {
-    await this.clickElement(this.page.getByRole("button", { name: "Keyboard shortcuts" }));
+    await this.clickElement(this.settingsMenuItem);
     await this.page.getByRole("dialog").getByText("Keyboard Shortcuts", { exact: true }).waitFor();
   }
 

@@ -49,7 +49,6 @@ VALUES
   ('msg_mode_normal',     'conv_mode','user','Content for mode normal','normal', 'gpt-4o'),
   ('msg_mode_local',      'conv_mode','user','Content for mode local','local', 'gpt-4o'),
   ('msg_mode_remote',     'conv_mode','user','Content for mode remote','remote', 'gpt-4o'),
-  ('msg_mode_prompt_coach','conv_mode','user','Content for mode prompt_coach','prompt_coach', 'gpt-4o'),
   ('msg_mode_no_system',  'conv_mode','user','Content for mode no_system','no_system', 'gpt-4o');
 
 -- Seed status variation messages

@@ -1,11 +1,11 @@
 import {
+  CouncilMemberPickerView,
+  CouncilTurnView,
   type CustomResponseViewRegistry,
-  TutorView,
   WeatherView,
   WebSearchView,
 } from "@ngriffin_uk/polychat-component-content";
 
-import { AddReasoningStepView } from "./CustomView/Views/AddReasoningStepView";
 import { CapabilityDiscoveryView } from "./CustomView/Views/CapabilityDiscoveryView";
 import { ResearchView } from "./CustomView/Views/ResearchView";
 import { SandboxView } from "./CustomView/Views/SandboxView";
@@ -18,13 +18,17 @@ export const customResponseViews: CustomResponseViewRegistry = {
   web_search: ({ data, embedded, onToolInteraction }) => (
     <WebSearchView data={data} embedded={embedded} onToolInteraction={onToolInteraction} />
   ),
-  tutor: ({ data, embedded }) => <TutorView data={data} embedded={embedded} />,
   get_weather: ({ data, embedded }) => <WeatherView data={data} embedded={embedded} />,
+  council_turn: ({ data, embedded }) => <CouncilTurnView data={data} embedded={embedded} />,
+  select_council_members: ({ data, embedded, onToolInteraction }) => (
+    <CouncilMemberPickerView
+      data={data}
+      embedded={embedded}
+      onToolInteraction={onToolInteraction}
+    />
+  ),
   discover_capabilities: ({ data }) => <CapabilityDiscoveryView data={data} />,
   research: ({ data, embedded }) => <ResearchView data={data} embedded={embedded} />,
-  add_reasoning_step: ({ data, embedded }) => (
-    <AddReasoningStepView data={data as never} embedded={embedded} />
-  ),
   sandbox_plan: ({ data }) => <SandboxView type="sandbox_plan" data={data as never} />,
   sandbox_event: ({ data }) => <SandboxView type="sandbox_event" data={data as never} />,
   sandbox_result: ({ data }) => <SandboxView type="sandbox_result" data={data as never} />,

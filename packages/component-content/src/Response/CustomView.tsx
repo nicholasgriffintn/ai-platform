@@ -1,5 +1,6 @@
 import { MemoizedMarkdown } from "../markdown";
 import { JsonView } from "./JsonView";
+import type { ToolInteractionHandler } from "./registry";
 import { useCustomResponseView } from "./registry";
 
 export interface CustomViewProps {
@@ -7,7 +8,7 @@ export interface CustomViewProps {
   data: any;
   toolName?: string;
   embedded: boolean;
-  onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
+  onToolInteraction?: ToolInteractionHandler;
 }
 
 export function CustomView({

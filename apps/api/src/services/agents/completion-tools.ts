@@ -8,16 +8,13 @@ import {
   type AgentMCPToolDefinition,
   type MCPServerConfig,
 } from "~/services/agents/mcp-client";
-import { retry_with_backoff, fallback } from "~/services/functions/error_recovery";
 import { request_approval, ask_user } from "~/services/functions/human_in_the_loop";
 import { registerMCPClient } from "~/services/functions/mcp";
-import { add_reasoning_step } from "~/services/functions/reasoning";
 import {
   delegateToTeamMember,
   delegateToTeamMemberByRole,
   getTeamMembers,
 } from "~/services/functions/teamDelegation";
-import { compose_functions, if_then_else, parallel_execute } from "~/services/functions/workflow";
 import type { IEnv } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -26,16 +23,7 @@ import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/agents/completion-tools" });
 
-const CORE_AGENT_TOOLS: ApiToolDefinition[] = [
-  add_reasoning_step,
-  compose_functions,
-  if_then_else,
-  parallel_execute,
-  request_approval,
-  ask_user,
-  retry_with_backoff,
-  fallback,
-];
+const CORE_AGENT_TOOLS: ApiToolDefinition[] = [request_approval, ask_user];
 
 type CompletionAgent = Pick<
   Agent,

@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { MemoizedMarkdown } from "../../markdown";
 import { Favicon } from "../../prose";
+import type { ToolInteractionHandler } from "../registry";
 
 export function WebSearchView({
   data,
@@ -12,7 +13,7 @@ export function WebSearchView({
 }: {
   data: any;
   embedded: boolean;
-  onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
+  onToolInteraction?: ToolInteractionHandler;
 }) {
   const [showAllSources, setShowAllSources] = useState(false);
 

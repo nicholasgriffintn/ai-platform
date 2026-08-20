@@ -1,7 +1,3 @@
-import { z } from "zod";
-
-export const COUNCIL_APP_ID = "council";
-
 export const councilMemberIds = [
   "chair",
   "sceptic",
@@ -145,17 +141,3 @@ export const councilMembers = [
 ] as const satisfies readonly CouncilMemberDefinition[];
 
 export const defaultCouncilMemberIds = councilMemberIds;
-
-export const councilChatOptionsSchema = z.object({
-  enabled: z.boolean().optional().default(false),
-  responseMode: z.enum(["single", "debate"]).optional().default("single"),
-  phase: z.enum(["debate", "conclusion"]).optional().default("debate"),
-  memberIds: z.array(z.enum(councilMemberIds)).optional(),
-  activeMemberId: z.enum(councilMemberIds).optional(),
-  round: z.number().int().min(1).optional(),
-  turn: z.number().int().min(1).optional(),
-  requireConsensus: z.boolean().optional().default(true),
-  skipInputStorage: z.boolean().optional().default(false),
-});
-
-export type CouncilChatOptions = z.input<typeof councilChatOptionsSchema>;

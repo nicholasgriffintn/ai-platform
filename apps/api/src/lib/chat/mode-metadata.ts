@@ -3,40 +3,22 @@ import {
   type ConversationModeMetadata,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { buildCouncilMessageData, type CouncilTurnRouting } from "~/lib/chat/council";
 import type { ChatMode, ChatRequestOptions } from "~/types";
 
 const AGENT_EXECUTION_MODES = new Set<ChatMode>(["agent", "plan", "build", "explore"]);
 
-export type ChatPromptMode = "council" | "sms";
-export type ChatConversationMode = ChatPromptMode | "background";
+export type ChatConversationMode = "sms" | "background";
 
 export function isAgentExecutionMode(mode: ChatMode): boolean {
   return AGENT_EXECUTION_MODES.has(mode);
-}
-
-export function resolveChatPromptMode(
-  options: ChatRequestOptions | undefined,
-): ChatPromptMode | undefined {
-  if (options?.council?.enabled) {
-    return "council";
-  }
-
-  if (options?.sms?.enabled) {
-    return "sms";
-  }
-
-  return undefined;
 }
 
 export function resolveChatConversationMode(
   options: ChatRequestOptions | undefined,
   background?: boolean,
 ): ChatConversationMode | undefined {
-  const promptMode = resolveChatPromptMode(options);
-
-  if (promptMode) {
-    return promptMode;
+  if (options?.channel) {
+    return options.channel.id;
   }
 
   if (background) {
@@ -54,16 +36,8 @@ function asResponseDataRecord(data: unknown): Record<string, unknown> | null {
 
 export function buildAssistantMessageData(params: {
   responseData?: unknown;
-  requestOptions?: ChatRequestOptions;
-  councilRouting?: CouncilTurnRouting | null;
 }): Record<string, unknown> | null {
-  const responseData = asResponseDataRecord(params.responseData);
-  const councilData = buildCouncilMessageData(
-    params.requestOptions?.council,
-    params.councilRouting,
-  );
-
-  return councilData ? { ...responseData, ...councilData } : responseData;
+  return asResponseDataRecord(params.responseData);
 }
 
 export function buildUserMessageData(
@@ -96,12 +70,13 @@ export function buildConversationModeMetadataFromRequestOptions(
   const parsed = conversationModeMetadataSchema.safeParse({
     mode,
     requestOptions: mode === "background" ? undefined : options,
-    smsSettings: options?.sms?.enabled
-      ? {
-          from: options.sms.from,
-          to: options.sms.to,
-        }
-      : undefined,
+    smsSettings:
+      options?.channel?.id === "sms"
+        ? {
+            from: options.channel.from,
+            to: options.channel.to,
+          }
+        : undefined,
   });
 
   return parsed.success ? parsed.data : undefined;

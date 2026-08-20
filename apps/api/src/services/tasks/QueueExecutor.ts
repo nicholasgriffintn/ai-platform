@@ -7,6 +7,7 @@ import { getLogger } from "~/utils/logger";
 import { ArtificialAnalysisIngestHandler } from "./handlers/ArtificialAnalysisIngestHandler";
 import { ArtificialAnalysisScoringHandler } from "./handlers/ArtificialAnalysisScoringHandler";
 import { AsyncMessagePollingHandler } from "./handlers/AsyncMessagePollingHandler";
+import { InboundMessageHandler } from "./handlers/InboundMessageHandler";
 import { MemorySynthesisHandler } from "./handlers/MemorySynthesisHandler";
 import { PodcastTranscriptionPollingHandler } from "./handlers/PodcastTranscriptionPollingHandler";
 import { RecipeExecutionHandler } from "./handlers/RecipeExecutionHandler";
@@ -38,6 +39,7 @@ export class QueueExecutor {
       ["training_quality_scoring", new TrainingQualityHandler()],
       ["usage_update", new UsageUpdateHandler()],
       ["recipe_execution", new RecipeExecutionHandler()],
+      ["inbound_message", new InboundMessageHandler()],
       ["artificial_analysis_ingest", new ArtificialAnalysisIngestHandler()],
       ["artificial_analysis_scoring", new ArtificialAnalysisScoringHandler()],
       [SANDBOX_RUN_DISPATCH_TASK_TYPE, new SandboxRunDispatchHandler()],

@@ -5,7 +5,6 @@ import { buildStoredAssistantMessage } from "~/lib/chat/core/assistant-message";
 import { prependCompactionStateEvent } from "~/lib/chat/core/compaction-stream";
 import { createChatExecutionRequest } from "~/lib/chat/core/execution-request";
 import { buildToolRequestContext } from "~/lib/chat/core/request-context";
-import { extractCouncilTurnRouting } from "~/lib/chat/council";
 import { isAgentExecutionMode } from "~/lib/chat/mode-metadata";
 import { createMultiModelStream } from "~/lib/chat/multiModalStreaming";
 import { RequestPreparer, type PreparedRequest } from "~/lib/chat/preparation/RequestPreparer";
@@ -62,9 +61,10 @@ export class ChatOrchestrator {
 
   /**
    * A turn owns the conversation's history while it runs, so compaction and
-   * other thread work queue behind it instead of interleaving. A streaming turn
-   * keeps writing after this returns, so it is deliberately not held here — the
-   * stream releases the thread itself when it closes.
+   * other thread work queue behind it instead of interleaving. Inbound channel
+   * turns arrive from a queue that can deliver a batch at once, so refusing
+   * here is what stops two messages from the same sender interleaving on one
+   * conversation; the queue redelivers the refused one.
    */
   private async holdThreadForTurn(options: CoreChatOptions): Promise<boolean> {
     if (!options.completion_id || options.store === false) {
@@ -77,7 +77,14 @@ export class ChatOrchestrator {
       kind: "user_message",
     });
 
-    return lock.acquired;
+    if (!lock.acquired) {
+      throw new AssistantError(
+        "This conversation is already working on something. Try again once it finishes.",
+        ErrorType.CONFLICT_ERROR,
+      );
+    }
+
+    return true;
   }
 
   private async resolveGoalFinishGate(
@@ -144,11 +151,13 @@ export class ChatOrchestrator {
         };
       }
 
-      const prepared = await this.preparer.prepare(options, validationResult.context);
-
+      // Taken before preparation, which persists the incoming message: refusing
+      // after that point would leave the user's message stored with no reply.
       const heldThread = await this.holdThreadForTurn(options);
 
       try {
+        const prepared = await this.preparer.prepare(options, validationResult.context);
+
         return await this.executeRequest(options, prepared);
       } finally {
         if (heldThread) {
@@ -378,23 +387,17 @@ export class ChatOrchestrator {
       }
     }
 
-    const councilTurn = extractCouncilTurnRouting(
-      response.response || "",
-      prepared.requestOptions?.council,
-    );
-
     if (!responseAlreadyStored) {
       await conversationManager.add(
         chatOptions.completion_id,
         buildStoredAssistantMessage({
           response,
-          content: councilTurn.content,
+          content: response.response || "",
           envLogId: chatOptions.env.AI.aiGatewayLogId,
           mode: currentMode,
           model: primaryModel,
           platform: platform || "api",
           requestOptions: prepared.requestOptions,
-          councilRouting: councilTurn.routing,
         }),
       );
     }
@@ -428,7 +431,7 @@ export class ChatOrchestrator {
     }
 
     return {
-      response: { ...response, response: councilTurn.content },
+      response,
       toolResponses,
       selectedModel: primaryModel,
       selectedModels: modelConfigs.length > 1 ? modelConfigs.map((m) => m.model) : undefined,

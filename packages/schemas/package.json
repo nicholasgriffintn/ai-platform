@@ -43,11 +43,6 @@
       "import": "./dist/conversation-replacement.mjs",
       "require": "./dist/conversation-replacement.js"
     },
-    "./council-data": {
-      "types": "./dist/council-data.d.ts",
-      "import": "./dist/council-data.mjs",
-      "require": "./dist/council-data.js"
-    },
     "./message-part-utils": {
       "types": "./dist/message-part-utils.d.ts",
       "import": "./dist/message-part-utils.mjs",

@@ -2,6 +2,7 @@ import {
   type ArtifactProps,
   findLatestArtifactByIdentifier,
   ArtifactPanel,
+  type ToolInteractionHandler,
 } from "@ngriffin_uk/polychat-component-content";
 import type {
   ComposerActionCatalogConfig,
@@ -20,6 +21,10 @@ import {
   parseGoalCommand,
   type GoalCommand,
 } from "@ngriffin_uk/polychat-library-chat/goal-command";
+
+import "~/styles/scrollbar.css";
+import "~/styles/github.css";
+import "~/styles/github-dark.css";
 import { mergeChatRequestOptions } from "@ngriffin_uk/polychat-library-chat/request-options";
 import {
   createModelReferenceMap,
@@ -27,11 +32,7 @@ import {
   getModelByReference,
   isImageGenerationOutputModel,
 } from "@ngriffin_uk/polychat-schemas";
-
-import "~/styles/scrollbar.css";
-import "~/styles/github.css";
-import "~/styles/github-dark.css";
-import type { ConversationModeMetadata, CouncilMemberId } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
 import { goalStatusLabels } from "@ngriffin_uk/polychat-schemas/goals";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
@@ -108,11 +109,6 @@ export interface ConversationThreadModeConfig {
   contextAttachmentsReady?: boolean;
   onRemoveContextAttachment?: (index: number) => void;
   onClearContextAttachments?: () => void;
-  councilDebate?: {
-    enabled: boolean;
-    memberIds: CouncilMemberId[];
-    requireConsensus?: boolean;
-  };
 }
 
 interface ConversationThreadProps {
@@ -140,7 +136,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     controller,
     compactConversation,
     sendMessage,
-    sendCouncilDebate,
     respondToExistingConversation,
     abortStream,
     branchConversation,
@@ -494,9 +489,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           modeConfig?.requestOptions,
           actionSubmit.requestOptions,
         );
-        const result = modeConfig?.councilDebate?.enabled
-          ? await sendCouncilDebate(actionSubmit.input, attachments, modeConfig.councilDebate)
-          : await sendMessage(actionSubmit.input, attachments, requestOptions);
+        const result = await sendMessage(actionSubmit.input, attachments, requestOptions);
 
         if (result?.status === "error") {
           setChatInput(originalInput);
@@ -530,7 +523,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       messages,
       compactConversation,
       sendMessage,
-      sendCouncilDebate,
       resolveAssistantActionSubmit,
       trackEvent,
       trackError,
@@ -541,7 +533,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       selectedAssistantAction?.item,
       selectedModelConfig,
       modeConfig?.analyticsSource,
-      modeConfig?.councilDebate,
       navigate,
     ],
   );
@@ -642,26 +633,38 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     [currentConversationId, trackFeatureUsage, setChatInput],
   );
 
-  const handleToolInteraction = useCallback(
-    (toolName: string, action: "useAsPrompt", data: Record<string, any>) => {
+  const handleToolInteraction = useCallback<ToolInteractionHandler>(
+    (toolName, action, data) => {
       trackFeatureUsage("tool_interaction", {
         tool_name: toolName,
         action: action,
         conversation_id: currentConversationId || "new",
       });
 
+      if (action === "submitPrompt") {
+        if (typeof data.input === "string" && data.input.trim()) {
+          void sendMessage(data.input, undefined, modeConfig?.requestOptions);
+        }
+
+        return;
+      }
+
       switch (toolName) {
         case "web_search":
-          if (action === "useAsPrompt") {
-            setChatInput(data.question);
-          }
+          setChatInput(data.question);
 
           break;
         default:
           break;
       }
     },
-    [currentConversationId, trackFeatureUsage, setChatInput],
+    [
+      currentConversationId,
+      trackFeatureUsage,
+      setChatInput,
+      sendMessage,
+      modeConfig?.requestOptions,
+    ],
   );
 
   const showWelcomeScreen =

@@ -20,10 +20,10 @@ export function buildConversationModeMetadata(params: {
     mode,
     requestOptions: mode === "background" ? undefined : requestOptions?.options,
     smsSettings:
-      mode === "sms" && requestOptions?.options?.sms?.enabled
+      mode === "sms" && requestOptions?.options?.channel?.id === "sms"
         ? {
-            from: requestOptions.options.sms.from,
-            to: requestOptions.options.sms.to,
+            from: requestOptions.options.channel.from,
+            to: requestOptions.options.channel.to,
           }
         : undefined,
   });

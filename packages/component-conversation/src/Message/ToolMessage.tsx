@@ -1,3 +1,4 @@
+import type { ToolInteractionHandler } from "@ngriffin_uk/polychat-component-content";
 import { ResponseView } from "@ngriffin_uk/polychat-component-content";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { readConnectorApprovalRequest } from "@ngriffin_uk/polychat-schemas";
@@ -8,7 +9,7 @@ import { ConnectorApprovalCard } from "./ConnectorApprovalCard";
 
 interface ToolMessageProps {
   message: Message;
-  onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
+  onToolInteraction?: ToolInteractionHandler;
   onConnectorApproval?: (approvalId: string, resolution: "approved" | "rejected") => Promise<void>;
 }
 

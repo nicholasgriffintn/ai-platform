@@ -6,7 +6,6 @@ export * from "./Composer/ComposerSourceMenu";
 export * from "./Composer/CompactSettingControls";
 export * from "./Composer/HostedToolSettings";
 export * from "./Composer/TokenizedComposerInput";
-export * from "./CouncilChatControls";
 export * from "./KeyboardShortcutsHelp";
 export * from "./AgentTracePanel";
 export * from "./composerCommandTypes";
