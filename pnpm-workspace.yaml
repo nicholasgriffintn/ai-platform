@@ -16,7 +16,7 @@ catalog:
   tsup: 8.5.1
   typescript: 6.0.3
   vitest: 4.1.10
-  wrangler: 4.120.1
+  wrangler: 4.122.0
   zod: 4.4.3
 
 catalogs:
