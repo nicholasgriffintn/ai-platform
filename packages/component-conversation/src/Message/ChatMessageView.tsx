@@ -5,7 +5,6 @@ import type {
 import { ModelIcon } from "@ngriffin_uk/polychat-component-models";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
-import type { OpinionRequest } from "@ngriffin_uk/polychat-library-chat/opinion";
 import { isHiddenToolResponse } from "@ngriffin_uk/polychat-library-chat/tool-results";
 import { getModelDisplayName } from "@ngriffin_uk/polychat-schemas";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
@@ -34,15 +33,14 @@ export const ChatMessageView = ({
   onCancelEdit,
   onBranch,
   isBranching = false,
-  onRequestOpinion,
-  isRequestingOpinion = false,
+  onRequestSecondOpinion,
+  isRequestingSecondOpinion = false,
   isArchivedByCompaction = false,
   responseDurationMs,
   copied,
   onCopy,
   onSubmitFeedback,
   renderModelSelector,
-  renderOpinionSelector,
 }: {
   conversationId?: string;
   canSubmitFeedback?: boolean;
@@ -64,8 +62,8 @@ export const ChatMessageView = ({
   onCancelEdit?: () => void;
   onBranch?: (messageId: string, modelId?: string) => void;
   isBranching?: boolean;
-  onRequestOpinion?: (messageId: string, request: OpinionRequest) => void;
-  isRequestingOpinion?: boolean;
+  onRequestSecondOpinion?: (messageId: string) => void;
+  isRequestingSecondOpinion?: boolean;
   isArchivedByCompaction?: boolean;
   responseDurationMs?: number;
   copied: boolean;
@@ -74,11 +72,6 @@ export const ChatMessageView = ({
   renderModelSelector: (args: {
     onModelSelect: (modelId: string) => void;
     onCancel: () => void;
-  }) => ReactNode;
-  renderOpinionSelector: (args: {
-    onSubmit: (request: OpinionRequest) => void;
-    onCancel: () => void;
-    sourceModelId?: string;
   }) => ReactNode;
 }) => {
   const [feedbackState, setFeedbackState] = useState<"none" | "liked" | "disliked">("none");
@@ -199,7 +192,6 @@ export const ChatMessageView = ({
             (message.log_id || message.created) && (
               <MessageActions
                 renderModelSelector={renderModelSelector}
-                renderOpinionSelector={renderOpinionSelector}
                 message={message}
                 copied={copied}
                 copyMessageToClipboard={copyMessageToClipboard}
@@ -214,8 +206,8 @@ export const ChatMessageView = ({
                 isEditing={isEditing}
                 onBranch={onBranch}
                 isBranching={isBranching}
-                onRequestOpinion={onRequestOpinion}
-                isRequestingOpinion={isRequestingOpinion}
+                onRequestSecondOpinion={onRequestSecondOpinion}
+                isRequestingSecondOpinion={isRequestingSecondOpinion}
                 isArchivedByCompaction={isArchivedByCompaction}
                 responseDurationMs={responseDurationMs}
                 modelConfig={modelConfig}

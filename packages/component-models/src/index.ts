@@ -13,4 +13,3 @@ export * from "./Selector/ModelSelectorTrigger";
 export * from "./Selector/ModelsList";
 export * from "./Selector/useHoverPreviewDismiss";
 export * from "./InlineModelPicker";
-export * from "./OpinionModelPicker";

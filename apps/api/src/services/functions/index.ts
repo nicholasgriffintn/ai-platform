@@ -47,6 +47,7 @@ import {
   run_test_suite,
 } from "./sandbox";
 import { capture_screenshot } from "./screenshot";
+import { second_opinion } from "./second_opinion";
 import { create_speech } from "./speech";
 import { get_task_status } from "./tasks";
 import { delegateToTeamMember, delegateToTeamMemberByRole, getTeamMembers } from "./teamDelegation";
@@ -96,6 +97,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   load_skill,
   run_council,
   select_council_members,
+  second_opinion,
   get_hacker_news_stories,
   request_approval,
   ask_user,

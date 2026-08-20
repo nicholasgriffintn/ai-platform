@@ -9,6 +9,6 @@ export * from "./TableView";
 export * from "./TemplateView";
 export * from "./TextView";
 export * from "./Views/CouncilMemberPickerView";
-export * from "./Views/CouncilTurnView";
+export * from "./Views/PanelTurnView";
 export * from "./Views/WeatherView";
 export * from "./Views/WebSearchView";

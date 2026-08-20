@@ -189,7 +189,7 @@ describe("useConversationActions", () => {
     );
   });
 
-  it("appends a second opinion request and generates with the selected model", async () => {
+  it("asks for a second opinion as a plain request the model acts on", async () => {
     const queryClient = createQueryClient();
     const conversation: Conversation = {
       id: "conversation-1",
@@ -213,81 +213,31 @@ describe("useConversationActions", () => {
     });
 
     await act(async () => {
-      await result.current.requestOpinion("assistant-1", {
-        mode: "second-opinion",
-        modelIds: ["opinion-model"],
-      });
+      await result.current.requestSecondOpinion("assistant-1");
     });
 
     const updatedConversation = queryClient.getQueryData<Conversation>([
       CHATS_QUERY_KEY,
       "conversation-1",
     ]);
-    const opinionMessage = updatedConversation?.messages[2];
+    const request = updatedConversation?.messages[2];
 
-    expect(opinionMessage).toEqual(
+    expect(request).toEqual(
       expect.objectContaining({
         role: "user",
-        content: expect.stringContaining("Second opinion request"),
-        data: {
-          opinion: {
-            mode: "second-opinion",
-            sourceMessageId: "assistant-1",
-            modelIds: ["opinion-model"],
-          },
-        },
+        content: "Get a second opinion on that answer from other models.",
       }),
     );
-    expect(opinionMessage?.content).toContain("Source user message:");
-    expect(opinionMessage?.content).toContain("Question");
-    expect(opinionMessage?.content).toContain("Assistant answer to review:");
-    expect(opinionMessage?.content).toContain("Answer");
-    expect(apiService.updateConversation).not.toHaveBeenCalled();
+    expect(request?.data).toBeUndefined();
     expect(generateResponse).toHaveBeenCalledWith(
-      expect.arrayContaining([expect.objectContaining({ content: "Answer" }), opinionMessage]),
+      expect.arrayContaining([expect.objectContaining({ content: "Answer" }), request]),
       "conversation-1",
       undefined,
-      {
-        generateTitle: false,
-        model: "opinion-model",
-      },
+      { generateTitle: false },
     );
   });
 
-  it("requests consensus through the multi-model API contract", async () => {
-    const queryClient = createQueryClient();
-
-    queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"], {
-      id: "conversation-1",
-      title: "Original conversation",
-      isLocalOnly: false,
-      messages: [
-        { id: "user-1", role: "user", content: "Question", model: "test-model" },
-        { id: "assistant-1", role: "assistant", content: "Answer", model: "test-model" },
-      ],
-    });
-    const generateResponse = vi.fn().mockResolvedValue({
-      status: "success",
-      response: "Consensus",
-    });
-    const { result } = renderHook(() => useConversationActions(generateResponse, vi.fn()), {
-      wrapper: wrapper(queryClient),
-    });
-
-    await act(async () => {
-      await result.current.requestOpinion("assistant-1", {
-        mode: "consensus",
-        modelIds: ["opinion-model", "review-model"],
-      });
-    });
-
-    expect(generateResponse).toHaveBeenCalledWith(expect.any(Array), "conversation-1", undefined, {
-      generateTitle: false,
-      models: ["opinion-model", "review-model"],
-    });
-  });
-
-  it("does not replace stored compacted history when requesting an opinion", async () => {
+  it("does not replace stored compacted history when asking for a second opinion", async () => {
     const queryClient = createQueryClient();
     const conversation: Conversation = {
       id: "conversation-1",
@@ -318,10 +268,7 @@ describe("useConversationActions", () => {
     });
 
     await act(async () => {
-      await result.current.requestOpinion("assistant-1", {
-        mode: "second-opinion",
-        modelIds: ["opinion-model"],
-      });
+      await result.current.requestSecondOpinion("assistant-1");
     });
 
     const updatedConversation = queryClient.getQueryData<Conversation>([
@@ -334,21 +281,18 @@ describe("useConversationActions", () => {
     expect(opinionMessage).toEqual(
       expect.objectContaining({
         role: "user",
-        content: expect.stringContaining("Current answer"),
+        content: expect.stringContaining("second opinion"),
       }),
     );
     expect(generateResponse).toHaveBeenCalledWith(
       expect.arrayContaining([opinionMessage]),
       "conversation-1",
       undefined,
-      expect.objectContaining({
-        generateTitle: false,
-        model: "opinion-model",
-      }),
+      { generateTitle: false },
     );
   });
 
-  it("keeps the stream loading state active while requesting an opinion", async () => {
+  it("keeps the stream loading state active while asking for a second opinion", async () => {
     const queryClient = createQueryClient();
     const conversation: Conversation = {
       id: "conversation-1",
@@ -383,10 +327,7 @@ describe("useConversationActions", () => {
     let requestPromise: Promise<void> = Promise.resolve();
 
     act(() => {
-      requestPromise = result.current.actions.requestOpinion("assistant-1", {
-        mode: "second-opinion",
-        modelIds: ["opinion-model"],
-      });
+      requestPromise = result.current.actions.requestSecondOpinion("assistant-1");
     });
 
     await waitFor(() => expect(result.current.isStreaming).toBe(true));
@@ -399,35 +340,5 @@ describe("useConversationActions", () => {
 
     expect(result.current.isStreaming).toBe(false);
     expect(setStreamStarted).toHaveBeenLastCalledWith(false);
-  });
-
-  it("requires at least two models for consensus requests", async () => {
-    const queryClient = createQueryClient();
-    const conversation: Conversation = {
-      id: "conversation-1",
-      title: "Original conversation",
-      isLocalOnly: false,
-      messages: [
-        { id: "user-1", role: "user", content: "Question", model: "test-model" },
-        { id: "assistant-1", role: "assistant", content: "Answer", model: "test-model" },
-      ],
-    };
-
-    queryClient.setQueryData([CHATS_QUERY_KEY, "conversation-1"], conversation);
-
-    const generateResponse = vi.fn();
-    const generateTitle = vi.fn();
-    const { result } = renderHook(() => useConversationActions(generateResponse, generateTitle), {
-      wrapper: wrapper(queryClient),
-    });
-
-    await act(async () => {
-      await result.current.requestOpinion("assistant-1", {
-        mode: "consensus",
-        modelIds: ["one-model"],
-      });
-    });
-
-    expect(generateResponse).not.toHaveBeenCalled();
   });
 });

@@ -15,11 +15,6 @@ import {
   isCompactionLoadingMessage,
 } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
 import { getGoalMessageMarker } from "@ngriffin_uk/polychat-library-chat/message-goal-status";
-import {
-  canOfferOpinionRequestForMessage,
-  type OpinionRequest,
-  shouldPromoteOpinionRequest,
-} from "@ngriffin_uk/polychat-library-chat/opinion";
 import { isHiddenToolResponse } from "@ngriffin_uk/polychat-library-chat/tool-results";
 import {
   createModelReferenceMap,
@@ -59,8 +54,8 @@ interface MessageListProps {
   isSharedView?: boolean;
   onBranch?: (messageId: string, modelId?: string) => void;
   isBranching?: boolean;
-  onRequestOpinion?: (messageId: string, request: OpinionRequest) => void;
-  isRequestingOpinion?: boolean;
+  onRequestSecondOpinion?: (messageId: string) => void;
+  isRequestingSecondOpinion?: boolean;
 }
 
 function hasCurrentResponseCompactionMarker(messages: Message[]): boolean {
@@ -83,8 +78,8 @@ export const MessageList = ({
   isSharedView = false,
   onBranch,
   isBranching = false,
-  onRequestOpinion,
-  isRequestingOpinion = false,
+  onRequestSecondOpinion,
+  isRequestingSecondOpinion = false,
 }: MessageListProps) => {
   const { chatMode, currentConversationId } = useChatStore();
 
@@ -113,30 +108,6 @@ export const MessageList = ({
     () => createModelReferenceMap(availableModels),
     [availableModels],
   );
-  const opinionAvailability = useMemo(() => {
-    const availability = new Map<
-      string,
-      {
-        canRequest: boolean;
-        shouldPromote: boolean;
-      }
-    >();
-
-    for (const message of messages) {
-      const canRequest = canOfferOpinionRequestForMessage(
-        messages,
-        message.id,
-        canAccessProFeatures,
-      );
-
-      availability.set(message.id, {
-        canRequest,
-        shouldPromote: canRequest && shouldPromoteOpinionRequest(messages, message.id),
-      });
-    }
-
-    return availability;
-  }, [canAccessProFeatures, messages]);
   const lastMessageScrollKey = useMemo(
     () => getMessageListScrollKey({ conversationId: currentConversationId, messages }),
     [currentConversationId, messages],
@@ -264,12 +235,10 @@ export const MessageList = ({
                       onCancelEdit={stopEditingMessage}
                       onBranch={onBranch}
                       isBranching={isBranching}
-                      onRequestOpinion={
-                        opinionAvailability.get(message.id)?.canRequest
-                          ? onRequestOpinion
-                          : undefined
+                      onRequestSecondOpinion={
+                        canAccessProFeatures ? onRequestSecondOpinion : undefined
                       }
-                      isRequestingOpinion={isRequestingOpinion}
+                      isRequestingSecondOpinion={isRequestingSecondOpinion}
                       isArchivedByCompaction={
                         latestCompactionMarkerIndex !== -1 && index < latestCompactionMarkerIndex
                       }

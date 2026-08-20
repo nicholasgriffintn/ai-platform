@@ -3,12 +3,6 @@ import {
   getBranchPoint,
 } from "@ngriffin_uk/polychat-library-chat/branching";
 import { normalizeMessage } from "@ngriffin_uk/polychat-library-chat/messages";
-import {
-  buildOpinionRequestPrompt,
-  canRequestOpinionForMessage,
-  getOpinionSourceContext,
-  type OpinionRequest,
-} from "@ngriffin_uk/polychat-library-chat/opinion";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -53,9 +47,9 @@ export function useConversationActions(
 
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [isBranching, setIsBranching] = useState(false);
-  const [isRequestingOpinion, setIsRequestingOpinion] = useState(false);
+  const [isRequestingSecondOpinion, setIsRequestingSecondOpinion] = useState(false);
   const branchInFlightRef = useRef(false);
-  const opinionInFlightRef = useRef(false);
+  const secondOpinionInFlightRef = useRef(false);
 
   const generateResponseWithLoading = useCallback(
     async (
@@ -297,9 +291,9 @@ export function useConversationActions(
     ],
   );
 
-  const requestOpinion = useCallback(
-    async (messageId: string, request: OpinionRequest) => {
-      if (opinionInFlightRef.current) {
+  const requestSecondOpinion = useCallback(
+    async (messageId: string) => {
+      if (secondOpinionInFlightRef.current) {
         return;
       }
 
@@ -315,67 +309,52 @@ export function useConversationActions(
       ]);
 
       if (!conversation?.messages || !currentConversationId) {
-        toast.error("Unable to request opinion: conversation not found");
+        toast.error("Unable to request a second opinion: conversation not found");
 
         return;
       }
 
-      if (!canRequestOpinionForMessage(conversation.messages, messageId)) {
-        toast.error("Second opinions are only available on the latest answer");
+      const source = conversation.messages.find((message) => message.id === messageId);
 
-        return;
-      }
-
-      if (
-        request.modelIds.length === 0 ||
-        (request.mode === "consensus" && request.modelIds.length < 2)
-      ) {
-        toast.error("Select enough models to request an opinion");
+      if (!source) {
+        toast.error("Unable to request a second opinion: message not found");
 
         return;
       }
 
       try {
-        opinionInFlightRef.current = true;
-        setIsRequestingOpinion(true);
-        const sourceContext = getOpinionSourceContext(conversation.messages, messageId);
+        secondOpinionInFlightRef.current = true;
+        setIsRequestingSecondOpinion(true);
 
-        const opinionMessage = normalizeMessage({
-          role: "user",
-          content: buildOpinionRequestPrompt(request, sourceContext),
-          id: crypto.randomUUID(),
-          created: Date.now(),
-          model: request.modelIds[0] || model || "",
-          data: {
-            opinion: {
-              mode: request.mode,
-              sourceMessageId: messageId,
-              modelIds: request.modelIds,
-            },
-          },
-        });
-        const messagesWithOpinionRequest = [...conversation.messages, opinionMessage];
+        const messages = [
+          ...conversation.messages,
+          normalizeMessage({
+            role: "user",
+            content: "Get a second opinion on that answer from other models.",
+            id: crypto.randomUUID(),
+            created: Date.now(),
+            model: model || "",
+          }),
+        ];
 
         await updateConversation(currentConversationId, (prev) => ({
           ...prev!,
-          messages: messagesWithOpinionRequest,
+          messages,
         }));
 
         await generateResponseWithLoading(
-          messagesWithOpinionRequest,
+          messages,
           currentConversationId,
-          request.mode === "consensus" ? "Requesting consensus..." : "Requesting second opinion...",
+          "Asking for a second opinion...",
           undefined,
-          request.mode === "consensus"
-            ? { generateTitle: false, models: request.modelIds }
-            : { generateTitle: false, model: request.modelIds[0] },
+          { generateTitle: false },
         );
       } catch (error) {
-        console.error("Error requesting second opinion:", error);
-        toast.error("Failed to request second opinion");
+        console.error("Error requesting a second opinion:", error);
+        toast.error("Failed to request a second opinion");
       } finally {
-        opinionInFlightRef.current = false;
-        setIsRequestingOpinion(false);
+        secondOpinionInFlightRef.current = false;
+        setIsRequestingSecondOpinion(false);
       }
     },
     [
@@ -392,12 +371,12 @@ export function useConversationActions(
   return {
     editingMessageId,
     isBranching,
-    isRequestingOpinion,
+    isRequestingSecondOpinion,
     retryMessage,
     updateUserMessage,
     startEditingMessage,
     stopEditingMessage,
     branchConversation,
-    requestOpinion,
+    requestSecondOpinion,
   };
 }

@@ -9,7 +9,6 @@ import { canBranchFromMessage } from "@ngriffin_uk/polychat-library-chat/branchi
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { isCompactionMarkerMessage } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
 import { resolveMessageSpeechAudioSource } from "@ngriffin_uk/polychat-library-chat/message-speech";
-import type { OpinionRequest } from "@ngriffin_uk/polychat-library-chat/opinion";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import {
   Check,
@@ -45,8 +44,8 @@ export interface MessageActionsProps {
   isEditing?: boolean;
   onBranch?: (messageId: string, modelId?: string) => void;
   isBranching?: boolean;
-  onRequestOpinion?: (messageId: string, request: OpinionRequest) => void;
-  isRequestingOpinion?: boolean;
+  onRequestSecondOpinion?: (messageId: string) => void;
+  isRequestingSecondOpinion?: boolean;
   isArchivedByCompaction?: boolean;
   responseDurationMs?: number;
   modelConfig?: ModelConfigItem;
@@ -54,11 +53,6 @@ export interface MessageActionsProps {
   renderModelSelector: (props: {
     onModelSelect: (modelId: string) => void;
     onCancel: () => void;
-  }) => ReactNode;
-  renderOpinionSelector: (props: {
-    onSubmit: (request: OpinionRequest) => void;
-    onCancel: () => void;
-    sourceModelId?: string;
   }) => ReactNode;
 }
 
@@ -80,16 +74,14 @@ export const MessageActions = ({
   isEditing = false,
   onBranch,
   isBranching = false,
-  onRequestOpinion,
-  isRequestingOpinion = false,
+  onRequestSecondOpinion,
+  isRequestingSecondOpinion = false,
   isArchivedByCompaction = false,
   responseDurationMs,
   modelConfig,
   renderModelSelector,
-  renderOpinionSelector,
 }: MessageActionsProps) => {
   const [showBranchModelSelector, setShowBranchModelSelector] = useState(false);
-  const [showOpinionModelSelector, setShowOpinionModelSelector] = useState(false);
   const [isPlayingSpeech, setIsPlayingSpeech] = useState(false);
   const speechAudioRef = useRef<HTMLAudioElement | null>(null);
   const isCompactionMarker = isCompactionMarkerMessage(message);
@@ -97,8 +89,8 @@ export const MessageActions = ({
   const canBranch = Boolean(
     onBranch && !isSharedView && canMutateConversation && canBranchFromMessage(message),
   );
-  const canRequestOpinion = Boolean(
-    onRequestOpinion &&
+  const canRequestSecondOpinion = Boolean(
+    onRequestSecondOpinion &&
     !isSharedView &&
     canMutateConversation &&
     !isCompactionMarker &&
@@ -132,19 +124,9 @@ export const MessageActions = ({
     setShowBranchModelSelector(false);
   }, []);
 
-  const handleOpinionSubmit = useCallback(
-    (request: OpinionRequest) => {
-      setShowOpinionModelSelector(false);
-      if (onRequestOpinion) {
-        onRequestOpinion(message.id, request);
-      }
-    },
-    [message.id, onRequestOpinion],
-  );
-
-  const handleCancelOpinionSelection = useCallback(() => {
-    setShowOpinionModelSelector(false);
-  }, []);
+  const handleSecondOpinionClick = useCallback(() => {
+    onRequestSecondOpinion?.(message.id);
+  }, [message.id, onRequestSecondOpinion]);
 
   const stopSpeechPlayback = useCallback(() => {
     const currentAudio = speechAudioRef.current;
@@ -269,37 +251,23 @@ export const MessageActions = ({
             <RefreshCw size={14} className={isRetrying ? "animate-spin" : ""} />
           </Button>
         )}
-        {canRequestOpinion && (
-          <Popover open={showOpinionModelSelector} onOpenChange={setShowOpinionModelSelector}>
-            <PopoverTrigger asChild>
-              <Button
-                type="button"
-                variant="icon"
-                disabled={isRequestingOpinion}
-                className={cn(
-                  messageActionButtonClassName,
-                  isRequestingOpinion && "cursor-not-allowed opacity-50",
-                )}
-                title={isRequestingOpinion ? "Requesting opinion..." : "Get second opinion"}
-                aria-label={isRequestingOpinion ? "Requesting opinion..." : "Get second opinion"}
-              >
-                <MessageSquareQuote size={14} />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent
-              side="top"
-              align="end"
-              sideOffset={8}
-              collisionPadding={{ top: 64, right: 8, bottom: 112, left: 8 }}
-              className="w-[calc(100vw-1rem)] max-w-[24rem] overflow-hidden border-zinc-200 bg-white p-0 shadow-2xl dark:border-zinc-700 dark:bg-zinc-900"
-            >
-              {renderOpinionSelector({
-                onSubmit: handleOpinionSubmit,
-                onCancel: handleCancelOpinionSelection,
-                sourceModelId: message.model,
-              })}
-            </PopoverContent>
-          </Popover>
+        {canRequestSecondOpinion && (
+          <Button
+            type="button"
+            variant="icon"
+            onClick={handleSecondOpinionClick}
+            disabled={isRequestingSecondOpinion}
+            className={cn(
+              messageActionButtonClassName,
+              isRequestingSecondOpinion && "cursor-not-allowed opacity-50",
+            )}
+            title={isRequestingSecondOpinion ? "Asking for a second opinion..." : "Second opinion"}
+            aria-label={
+              isRequestingSecondOpinion ? "Asking for a second opinion..." : "Second opinion"
+            }
+          >
+            <MessageSquareQuote size={14} />
+          </Button>
         )}
         {canBranch && (
           <div className="relative flex items-center">

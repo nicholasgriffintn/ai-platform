@@ -54,6 +54,7 @@ const BUILT_IN_SKILL_IDS = [
   "hacker-news",
   "prompt-craft",
   "recipes",
+  "second-opinion",
   "structured-reasoning",
   "task-decomposition",
   "tutoring",

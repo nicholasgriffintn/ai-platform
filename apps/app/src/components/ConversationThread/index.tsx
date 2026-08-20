@@ -140,8 +140,8 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     abortStream,
     branchConversation,
     isBranching,
-    requestOpinion,
-    isRequestingOpinion,
+    requestSecondOpinion,
+    isRequestingSecondOpinion,
   } = useChatManager(modeConfig?.requestOptions, modeConfig?.conversationMode);
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
   const modelReferences = useMemo(() => createModelReferenceMap(apiModels), [apiModels]);
@@ -711,8 +711,8 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
             onArtifactOpen={handleArtifactOpen}
             onBranch={handleBranch}
             isBranching={isBranching}
-            onRequestOpinion={requestOpinion}
-            isRequestingOpinion={isRequestingOpinion}
+            onRequestSecondOpinion={requestSecondOpinion}
+            isRequestingSecondOpinion={isRequestingSecondOpinion}
           />
         </ConversationMessageColumn>
       )}
