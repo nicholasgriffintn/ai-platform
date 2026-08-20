@@ -1,12 +1,12 @@
 import type { SandboxTaskType } from "@ngriffin_uk/polychat-schemas";
 
-import type { Question } from "~/types/sampleQuestions";
+import type { ChatSuggestion } from "~/lib/chat-suggestions";
 
 export interface ProjectCodingPresentation {
   title: string;
   description: string;
   placeholder: string;
-  sampleQuestions: Question[];
+  suggestions: ChatSuggestion[];
 }
 
 const presentations: Record<SandboxTaskType, ProjectCodingPresentation> = {
@@ -14,7 +14,7 @@ const presentations: Record<SandboxTaskType, ProjectCodingPresentation> = {
     title: "What should we build?",
     description: "Describe a change for the project repository.",
     placeholder: "Describe the feature you want to build…",
-    sampleQuestions: [
+    suggestions: [
       question(
         "feature-implementation-1",
         "Implement a focused feature",
@@ -41,7 +41,7 @@ const presentations: Record<SandboxTaskType, ProjectCodingPresentation> = {
     title: "What should we fix?",
     description: "Describe the bug and the behaviour you expect instead.",
     placeholder: "Describe the bug, expected behaviour, and useful repro steps…",
-    sampleQuestions: [
+    suggestions: [
       question(
         "bug-fix-1",
         "Diagnose and fix a bug",
@@ -68,7 +68,7 @@ const presentations: Record<SandboxTaskType, ProjectCodingPresentation> = {
     title: "What should we review?",
     description: "Point the review at a change, path, or concern in the repository.",
     placeholder: "Describe the change or code you want reviewed…",
-    sampleQuestions: [
+    suggestions: [
       question(
         "code-review-1",
         "Review a risky change",
@@ -95,7 +95,7 @@ const presentations: Record<SandboxTaskType, ProjectCodingPresentation> = {
     title: "What should we test?",
     description: "Describe the behaviour that needs coverage in the project repository.",
     placeholder: "Describe the behaviour that needs tests…",
-    sampleQuestions: [
+    suggestions: [
       question(
         "test-suite-1",
         "Add regression coverage",
@@ -122,7 +122,7 @@ const presentations: Record<SandboxTaskType, ProjectCodingPresentation> = {
     title: "What should we refactor?",
     description: "Describe the structural improvement and constraints to preserve.",
     placeholder: "Describe the refactor and what must keep working…",
-    sampleQuestions: [
+    suggestions: [
       question(
         "refactoring-1",
         "Simplify a module",
@@ -149,7 +149,7 @@ const presentations: Record<SandboxTaskType, ProjectCodingPresentation> = {
     title: "What should we document?",
     description: "Describe the code, workflow, or decision that needs clear documentation.",
     placeholder: "Describe what needs documenting…",
-    sampleQuestions: [
+    suggestions: [
       question(
         "documentation-1",
         "Document the setup",
@@ -176,7 +176,7 @@ const presentations: Record<SandboxTaskType, ProjectCodingPresentation> = {
     title: "What should we migrate?",
     description: "Describe the migration, affected data, and compatibility constraints.",
     placeholder: "Describe the migration and its constraints…",
-    sampleQuestions: [
+    suggestions: [
       question(
         "migration-1",
         "Plan a safe migration",
@@ -201,8 +201,8 @@ const presentations: Record<SandboxTaskType, ProjectCodingPresentation> = {
   },
 };
 
-function question(id: string, text: string, prompt: string): Question {
-  return { id, text, question: prompt, category: "coding" };
+function question(id: string, label: string, prompt: string): ChatSuggestion {
+  return { id, label, prompt, category: "engineering" };
 }
 
 export function getProjectCodingPresentation(taskType: SandboxTaskType): ProjectCodingPresentation {

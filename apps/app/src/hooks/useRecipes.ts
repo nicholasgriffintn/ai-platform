@@ -45,10 +45,11 @@ function upsertRecipeInstallation(
   );
 }
 
-export function useAssistantRecipes() {
+export function useAssistantRecipes({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ASSISTANT_RECIPES_QUERY_KEY,
     queryFn: listAssistantRecipes,
+    enabled,
     staleTime: RECIPE_CATALOG_STALE_TIME,
     gcTime: RECIPE_CATALOG_GC_TIME,
   });
@@ -94,21 +95,25 @@ export function useInvokeAssistantRecipe() {
   });
 }
 
-export function useRecipeInstallations(projectId?: string) {
+export function useRecipeInstallations(
+  projectId?: string,
+  { enabled = true }: { enabled?: boolean } = {},
+) {
   const canAccessProFeatures = useCanAccessProFeatures();
+  const isEnabled = canAccessProFeatures && enabled;
   const query = useQuery({
     queryKey: recipeInstallationsQueryKey(projectId),
     queryFn: () => listRecipeInstallations(projectId),
-    enabled: canAccessProFeatures,
+    enabled: isEnabled,
     staleTime: 60 * 1000,
   });
 
   return {
     ...query,
-    data: canAccessProFeatures ? query.data : undefined,
-    error: canAccessProFeatures ? query.error : null,
-    isFetching: canAccessProFeatures ? query.isFetching : false,
-    isLoading: canAccessProFeatures ? query.isLoading : false,
+    data: isEnabled ? query.data : undefined,
+    error: isEnabled ? query.error : null,
+    isFetching: isEnabled ? query.isFetching : false,
+    isLoading: isEnabled ? query.isLoading : false,
   };
 }
 

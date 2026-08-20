@@ -8,7 +8,7 @@ export interface WelcomeScreenProps {
   /** The product mark, supplied by the host so branding stays a host decision. */
   logo: ReactNode;
   /** Prompt suggestions, supplied by the host that owns their selection and tracking. */
-  sampleQuestions: ReactNode;
+  suggestions: ReactNode;
 }
 
 export const WelcomeScreen = ({
@@ -16,7 +16,7 @@ export const WelcomeScreen = ({
   description,
   isLoading = false,
   logo,
-  sampleQuestions,
+  suggestions,
 }: WelcomeScreenProps) => {
   const resolvedTitle = title ?? "What shall we get into?";
   const resolvedDescription =
@@ -56,7 +56,7 @@ export const WelcomeScreen = ({
           {resolvedDescription}
         </span>
       </p>
-      {sampleQuestions}
+      {suggestions}
     </div>
   );
 };

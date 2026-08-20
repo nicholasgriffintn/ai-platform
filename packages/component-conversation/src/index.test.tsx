@@ -1,56 +1,57 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ConversationSurface, SampleQuestionList, type SuggestedQuestion } from "./index";
+import { type ChatSuggestion, ChatSuggestionList, ConversationSurface } from "./index";
 
 afterEach(cleanup);
 
-describe("SampleQuestionList", () => {
-  it("reports controlled question, refresh, and difficulty choices", () => {
-    const question: SuggestedQuestion = {
-      category: "coding",
+describe("ChatSuggestionList", () => {
+  it("reports controlled suggestion and shuffle choices", () => {
+    const suggestion: ChatSuggestion = {
+      category: "engineering",
       id: "one",
       label: "Explain this project",
       prompt: "Explain this project to me",
+      hint: "Switches to Council mode",
     };
     const onSelect = vi.fn();
     const onRefresh = vi.fn();
-    const onChallengingChange = vi.fn();
 
     render(
-      <SampleQuestionList
-        questions={[question]}
+      <ChatSuggestionList
+        suggestions={[suggestion]}
         showRefresh
         onRefresh={onRefresh}
-        onChallengingChange={onChallengingChange}
         onSelect={onSelect}
       />,
     );
-    const questionButton = screen.getByRole("button", { name: question.label });
-    const refreshButton = screen.getByRole("button", { name: "Refresh" });
-    const challengingInput = screen.getByRole("checkbox", { name: "Hard" });
+    const suggestionButton = screen.getByRole("button", { name: suggestion.label });
+    const shuffleButton = screen.getByRole("button", { name: "Shuffle" });
 
-    expect(questionButton.querySelector("svg")).not.toBeNull();
-    expect(refreshButton.querySelector("svg")).not.toBeNull();
-    expect(
-      challengingInput.nextElementSibling?.classList.contains(
-        "polychat-conversation-challenging-track",
-      ),
-    ).toBe(true);
+    expect(suggestionButton.querySelector("svg")).not.toBeNull();
+    expect(suggestionButton.getAttribute("title")).toBe(suggestion.hint);
+    expect(shuffleButton.querySelector("svg")).not.toBeNull();
 
-    fireEvent.click(questionButton);
-    fireEvent.click(refreshButton);
-    fireEvent.click(challengingInput);
+    fireEvent.click(suggestionButton);
+    fireEvent.click(shuffleButton);
 
-    expect(onSelect).toHaveBeenCalledWith(question);
+    expect(onSelect).toHaveBeenCalledWith(suggestion);
     expect(onRefresh).toHaveBeenCalledOnce();
-    expect(onChallengingChange).toHaveBeenCalledWith(true);
-    expect(challengingInput).toHaveProperty("checked", false);
+  });
+
+  it("hides the shuffle control when the host supplies its own suggestions", () => {
+    render(
+      <ChatSuggestionList
+        suggestions={[{ category: "engineering", id: "one", label: "Fix a bug" }]}
+        onSelect={vi.fn()}
+      />,
+    );
+    expect(screen.queryByRole("button", { name: "Shuffle" })).toBeNull();
   });
 
   it("exposes its loading state instead of stale choices", () => {
-    render(<SampleQuestionList questions={[]} isLoading onSelect={vi.fn()} />);
-    expect(screen.getByRole("status", { name: "Loading suggested questions" })).toBeTruthy();
+    render(<ChatSuggestionList suggestions={[]} isLoading onSelect={vi.fn()} />);
+    expect(screen.getByRole("status", { name: "Loading suggestions" })).toBeTruthy();
     expect(screen.queryByRole("button")).toBeNull();
   });
 });

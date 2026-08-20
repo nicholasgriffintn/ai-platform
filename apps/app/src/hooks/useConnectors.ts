@@ -19,21 +19,22 @@ export const RECIPE_CONNECTORS_QUERY_KEY = ["recipe-connectors"] as const;
 export const recipeConnectorAccountsQueryKey = (provider: RecipeConnectorProvider) =>
   [...RECIPE_CONNECTORS_QUERY_KEY, provider, "accounts"] as const;
 
-export function useRecipeConnectors() {
+export function useRecipeConnectors({ enabled = true }: { enabled?: boolean } = {}) {
   const canAccessProFeatures = useCanAccessProFeatures();
+  const isEnabled = canAccessProFeatures && enabled;
   const query = useQuery({
     queryKey: RECIPE_CONNECTORS_QUERY_KEY,
     queryFn: listRecipeConnectors,
-    enabled: canAccessProFeatures,
+    enabled: isEnabled,
     staleTime: 60 * 1000,
   });
 
   return {
     ...query,
-    data: canAccessProFeatures ? query.data : undefined,
-    error: canAccessProFeatures ? query.error : null,
-    isFetching: canAccessProFeatures ? query.isFetching : false,
-    isLoading: canAccessProFeatures ? query.isLoading : false,
+    data: isEnabled ? query.data : undefined,
+    error: isEnabled ? query.error : null,
+    isFetching: isEnabled ? query.isFetching : false,
+    isLoading: isEnabled ? query.isLoading : false,
   };
 }
 

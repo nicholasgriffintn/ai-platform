@@ -183,7 +183,8 @@ export function ProjectConversationPage({
           ? codingPresentation.description
           : project?.description ||
             "This conversation uses the project's instructions and capabilities.",
-        welcomeSampleQuestions: codingEnvironment ? codingPresentation.sampleQuestions : undefined,
+        welcomeSuggestions: codingEnvironment ? codingPresentation.suggestions : undefined,
+        welcomeCapabilitySuggestions: false,
         inputPlaceholder: {
           newConversation: codingEnvironment
             ? codingPresentation.placeholder

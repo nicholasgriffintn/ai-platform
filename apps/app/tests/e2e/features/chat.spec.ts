@@ -47,6 +47,33 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
       });
     });
 
+    test("suggests prompts, shuffles them, and loads one into the composer", async ({
+      homePage,
+      page,
+    }) => {
+      await homePage.navigate("/chat");
+      await homePage.selectModel(TEXT_MODEL);
+
+      const initialIds = await homePage.getSuggestionIds();
+
+      expect(initialIds).toHaveLength(4);
+      expect(new Set(initialIds).size).toBe(4);
+
+      await homePage.shuffleSuggestions();
+      await expect.poll(() => homePage.getSuggestionIds()).not.toEqual(initialIds);
+
+      await homePage.selectEverydaySuggestion();
+      await expect(homePage.chatInput).not.toBeEmpty();
+      await captureVisualSnapshots(page, `release-chat-suggestions-${persona}`, {
+        ...DEFAULT_VISUAL_CHECKPOINTS,
+        viewports: [{ name: "desktop", width: 1280, height: 720 }],
+      });
+
+      await homePage.sendMessageAndRequireCompletion(`Follow up as ${persona}`);
+      await homePage.waitForChatResponse(0);
+      await expect(homePage.suggestions).toHaveCount(0);
+    });
+
     test("edits, retries, copies and rates message content", async ({ homePage, page }) => {
       await homePage.navigate("/chat");
       await homePage.selectModel(TEXT_MODEL);
