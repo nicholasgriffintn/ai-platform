@@ -323,7 +323,12 @@ export const MessageActions = ({
           </div>
         )}
         {message.role !== "user" && (message.created || message.timestamp) && (
-          <MessageInfo message={message} buttonClassName={messageActionButtonClassName} />
+          <MessageInfo
+            message={message}
+            modelConfig={modelConfig}
+            responseDurationMs={responseDurationMs}
+            buttonClassName={messageActionButtonClassName}
+          />
         )}
       </div>
       {canSubmitFeedback && !isSharedView && message.role !== "user" && message.log_id && (

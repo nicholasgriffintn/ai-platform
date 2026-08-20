@@ -1,90 +1,90 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@ngriffin_uk/polychat-component-ui";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
+import {
+  formatStatsCost,
+  formatStatsDuration,
+  formatStatsTokens,
+  getMessageStats,
+  readTokenUsageCounts,
+} from "@ngriffin_uk/polychat-library-chat/response-stats";
+import { getModelDisplayName } from "@ngriffin_uk/polychat-schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { Info } from "lucide-react";
 
 interface MessageInfoProps {
   message: Message;
+  modelConfig?: ModelConfigItem;
+  responseDurationMs?: number;
   buttonClassName?: string;
 }
 
-export const MessageInfo = ({ message, buttonClassName }: MessageInfoProps) => {
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleString();
-  };
+const formatTimestamp = (timestamp: number) => new Date(timestamp).toLocaleString();
 
-  const getMessageInfo = () => (
-    <div className="space-y-2">
-      <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Message Information</h4>
-      <div className="space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
-        <p>
-          Time:{" "}
-          {message.created
-            ? formatDate(message.created)
-            : message.timestamp
-              ? formatDate(message.timestamp)
-              : "Unknown"}
-        </p>
-        {message.model && <p>Model: {message.model}</p>}
-        {message.platform && <p>Platform: {message.platform}</p>}
-        {message.usage && (
-          <div className="space-y-1">
-            <p className="font-medium">Token Usage:</p>
-            <ul className="list-disc pl-4 space-y-0.5">
-              {(message.usage.prompt_tokens ?? message.usage.promptTokenCount) != null && (
-                <li>Prompt: {message.usage.prompt_tokens ?? message.usage.promptTokenCount}</li>
-              )}
-              {(message.usage.completion_tokens ?? message.usage.candidatesTokenCount) != null && (
-                <li>
-                  Completion:{" "}
-                  {message.usage.completion_tokens ?? message.usage.candidatesTokenCount}
-                </li>
-              )}
-              {(message.usage.total_tokens ?? message.usage.totalTokenCount) != null && (
-                <li>Total: {message.usage.total_tokens ?? message.usage.totalTokenCount}</li>
-              )}
-              {message.usage?.promptTokensDetails ? (
-                <li>
-                  Prompt Details:{" "}
-                  {(() => {
-                    const details = message.usage.promptTokensDetails;
+const Row = ({ label, value }: { label: string; value: string }) => (
+  <div className="flex items-baseline justify-between gap-4">
+    <dt className="text-zinc-500 dark:text-zinc-400">{label}</dt>
+    <dd className="m-0 text-right tabular-nums text-zinc-800 dark:text-zinc-200">{value}</dd>
+  </div>
+);
 
-                    return details.map((detail, i) => (
-                      <span key={i}>
-                        {detail.modality}: {detail.tokenCount}
-                        {i < details.length - 1 ? ", " : ""}
-                      </span>
-                    ));
-                  })()}
-                </li>
-              ) : null}
-              {message.usage?.candidatesTokensDetails ? (
-                <li>
-                  Completion Details:{" "}
-                  {(() => {
-                    const details = message.usage.candidatesTokensDetails;
-
-                    return details.map((detail, i) => (
-                      <span key={i}>
-                        {detail.modality}: {detail.tokenCount}
-                        {i < details.length - 1 ? ", " : ""}
-                      </span>
-                    ));
-                  })()}
-                </li>
-              ) : null}
-            </ul>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+/**
+ * The detail behind the inline stats row. Both read the same `response-stats` helpers so the
+ * popover cannot disagree with the summary rendered directly beneath it.
+ */
+export const MessageInfo = ({
+  message,
+  modelConfig,
+  responseDurationMs,
+  buttonClassName,
+}: MessageInfoProps) => {
+  const timestamp = message.created ?? message.timestamp;
+  const stats = getMessageStats(message, {
+    durationMs: responseDurationMs,
+    pricing: modelConfig,
+  });
+  const usage = readTokenUsageCounts(message.usage);
+  const modelName = modelConfig ? getModelDisplayName(modelConfig) : message.model;
+  const provider = modelConfig?.provider ?? message.provider;
 
   return (
     <Popover>
-      <PopoverTrigger className={buttonClassName}>
+      <PopoverTrigger className={buttonClassName} aria-label="Message details">
         <Info size={14} />
       </PopoverTrigger>
-      <PopoverContent>{getMessageInfo()}</PopoverContent>
+      <PopoverContent className="w-72">
+        <div className="space-y-3 text-sm">
+          <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Message details</h4>
+          <dl className="space-y-1">
+            <Row label="Time" value={timestamp ? formatTimestamp(timestamp) : "Unknown"} />
+            {modelName && <Row label="Model" value={modelName} />}
+            {provider && <Row label="Provider" value={provider} />}
+            {message.platform && <Row label="Platform" value={message.platform} />}
+            {stats.durationMs !== undefined && (
+              <Row label="Duration" value={formatStatsDuration(stats.durationMs)} />
+            )}
+            {stats.toolCount !== undefined && <Row label="Tools" value={String(stats.toolCount)} />}
+          </dl>
+          {usage && (
+            <div className="space-y-1 border-t border-zinc-200 pt-2 dark:border-zinc-700">
+              <p className="font-medium text-zinc-700 dark:text-zinc-300">Tokens</p>
+              <dl className="space-y-1">
+                {usage.inputTokens !== undefined && (
+                  <Row label="Input" value={formatStatsTokens(usage.inputTokens)} />
+                )}
+                {usage.outputTokens !== undefined && (
+                  <Row label="Output" value={formatStatsTokens(usage.outputTokens)} />
+                )}
+                {usage.totalTokens !== undefined && (
+                  <Row label="Total" value={formatStatsTokens(usage.totalTokens)} />
+                )}
+                {stats.estimatedCostUsd !== undefined && (
+                  <Row label="Cost" value={`~${formatStatsCost(stats.estimatedCostUsd)}`} />
+                )}
+              </dl>
+            </div>
+          )}
+        </div>
+      </PopoverContent>
     </Popover>
   );
 };
