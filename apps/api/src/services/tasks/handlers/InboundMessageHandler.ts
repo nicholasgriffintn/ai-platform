@@ -40,10 +40,6 @@ export class InboundMessageHandler implements TaskHandler {
     }
 
     const context = createServiceContext({ env, user });
-    // A batch can deliver two messages from the same sender at once. The second
-    // one is refused with a conflict while the first holds the conversation;
-    // letting that throw returns the message to the queue rather than
-    // interleaving two turns on one thread, so it must not be swallowed here.
     const result = await handleInboundChannelMessage({ env, context, user, data });
 
     if (result.status === "unauthorised_sender") {

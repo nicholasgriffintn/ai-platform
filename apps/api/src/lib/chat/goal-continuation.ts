@@ -45,8 +45,6 @@ export async function resolveStreamingGoalContinuation(
       return null;
     }
 
-    // A goal spends a model call per continuation, so it stops at the usage
-    // limit and ends as limit_reached rather than spending past it.
     const usageLimitsExhausted = params.conversationManager
       ? await isUsageExhausted(params.conversationManager)
       : false;

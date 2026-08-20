@@ -150,7 +150,6 @@ export function buildObjectPatches({ fileText, sourceFile, objectNode, values })
       continue;
     }
 
-    // Preserve provider-specific reasoning config details if already present.
     if (fieldName === "reasoningConfig") {
       continue;
     }

@@ -123,18 +123,11 @@ export async function runAgentLoop(
     shouldAbortOnTurnError: shouldAbortAgentTurnError,
     assessFinish: params.assessFinish
       ? ({ summary, step }) =>
-          // Stopping for the limit is not the goal failing, so it exits without
-          // claiming an outcome. The goal ends as limit_reached the next time
-          // it is asked, which is where the usage state is read.
           state.stoppedForUsageLimit
             ? { allow: true }
             : params.assessFinish({ summary, step, commandCount: state.commandCount })
       : undefined,
     resolveTurn: async ({ messages, step }) => {
-      // One request can spend many model calls. The check at the request
-      // boundary only covers the first, so every later step re-checks. Running
-      // out stops the loop and returns the work already done, rather than
-      // discarding a turn the user has already paid for.
       if (step > 1 && (await isUsageExhausted(params.conversationManager))) {
         state.stoppedForUsageLimit = true;
 

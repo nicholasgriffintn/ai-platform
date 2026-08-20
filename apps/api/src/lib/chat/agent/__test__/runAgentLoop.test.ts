@@ -145,8 +145,6 @@ describe("runAgentLoop", () => {
 
     const result = await runAgentLoop(params);
 
-    // The turn is returned rather than thrown away: the user keeps the work
-    // they already paid for, and is told why it stopped.
     expect(result.response.status).toBe("usage_limit_reached");
     expect(result.response.response).toContain("reached your usage limit");
     expect(result.toolResponses).toHaveLength(1);

@@ -111,8 +111,6 @@ addRoute(app, "get", "/composio/verify", {
           }),
     });
 
-    // This single-use callback must retain the app window that opened it so the
-    // verified popup can report completion and close itself.
     raw.header("Cross-Origin-Opener-Policy", "unsafe-none");
 
     return raw.redirect(redirectUrl);

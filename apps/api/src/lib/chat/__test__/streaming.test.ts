@@ -258,8 +258,6 @@ describe("createStreamWithPostProcessing", () => {
 
     const output = await readStream(stream);
 
-    // Without this the stream just ends, which reads as the model losing
-    // interest rather than the account running out.
     expect(output).toContain("reached your usage limit");
   });
 

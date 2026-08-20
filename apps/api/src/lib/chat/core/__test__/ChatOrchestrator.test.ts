@@ -545,9 +545,6 @@ describe("ChatOrchestrator", () => {
           }),
           mockConversationManager,
         );
-        // The stream is wrapped so the conversation lock outlives the response
-        // it is protecting, so identity is not preserved — the contract is that
-        // a readable stream reaches the caller.
         expect(result).toMatchObject({
           stream: expect.any(ReadableStream),
           selectedModel: "test-model",
@@ -1041,8 +1038,6 @@ describe("ChatOrchestrator", () => {
           stream: ReadableStream;
         };
 
-        // Releasing when process() returns would let compaction or a second
-        // turn interleave with a response that is still being written.
         expect(mockReleaseThread).not.toHaveBeenCalled();
 
         const reader = result.stream.getReader();
@@ -1066,8 +1061,6 @@ describe("ChatOrchestrator", () => {
           type: ErrorType.CONFLICT_ERROR,
         });
 
-        // Refused before preparation so the incoming message is never stored
-        // without a reply, and nothing is released that was never taken.
         expect(mockPreparer.prepare).not.toHaveBeenCalled();
         expect(mockReleaseThread).not.toHaveBeenCalled();
       });

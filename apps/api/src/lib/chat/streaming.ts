@@ -178,16 +178,11 @@ interface StreamContinuationParams {
  */
 async function continueStreamingTurn(params: StreamContinuationParams): Promise<boolean> {
   try {
-    // Each continuation is another model call inside the same request, so the
-    // limit is re-checked here rather than only at the request boundary.
     if (await isUsageExhausted(params.conversationManager)) {
       logger.info("Stopping streaming continuation at the usage limit", {
         completion_id: params.completionId,
       });
 
-      // Say why the response stopped short. Without this the stream simply
-      // ends, which reads as the model losing interest rather than the
-      // account running out.
       emitEvent(params.controller, "content_block_delta", {
         content: `\n\n${USAGE_LIMIT_NOTICE}`,
       });
@@ -872,7 +867,6 @@ export async function createStreamWithPostProcessing(
                 }
 
                 if (contentDelta) {
-                  // Handle QwQ models: add <think> tag if needed on first content chunk
                   const isQwQModel = model.toLowerCase().includes("qwq");
 
                   if (isQwQModel && isFirstContentChunk && !qwqThinkTagAdded) {

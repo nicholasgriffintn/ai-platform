@@ -23,7 +23,6 @@ export function getMemoryProvider({
   serviceContext,
   memoryScope = { type: "personal" },
 }: GetMemoryProviderContext): MemoryProvider {
-  // User-owned provider connections cannot become workspace credentials implicitly.
   const providerName = (
     memoryScope.type === "project" ? "built-in" : userSettings?.memory_provider || "built-in"
   ) as MemoryProviderId;

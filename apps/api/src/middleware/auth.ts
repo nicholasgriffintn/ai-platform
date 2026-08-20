@@ -283,8 +283,6 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
     const isSharePath = /^\/chat\/completions\/[^/]+\/share$/.test(path) && method === "POST";
     const isUnsharePath = /^\/chat\/completions\/[^/]+\/share$/.test(path) && method === "DELETE";
     const isGetSharedPath = /^\/chat\/shared\/[^/]+$/.test(path) && method === "GET";
-    // Goal routes are reached so the Pro gate can answer with an upgrade error
-    // rather than this middleware answering with an authentication one.
     const isGoalPath = /^\/chat\/completions\/[^/]+\/goal$/.test(path);
 
     const isAllowedPath =

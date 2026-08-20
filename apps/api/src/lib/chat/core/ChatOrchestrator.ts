@@ -163,8 +163,6 @@ export class ChatOrchestrator {
         };
       }
 
-      // Taken before preparation, which persists the incoming message: refusing
-      // after that point would leave the user's message stored with no reply.
       const heldThread = await this.holdThreadForTurn(options);
       const release = async () => {
         if (heldThread) {
@@ -187,9 +185,6 @@ export class ChatOrchestrator {
         throw error;
       }
 
-      // A streaming turn keeps writing after this returns, so the thread is
-      // held until the stream actually closes. Releasing here would let
-      // compaction or a second turn interleave with a response mid-flight.
       if (isStreamingResult(result)) {
         return {
           ...result,

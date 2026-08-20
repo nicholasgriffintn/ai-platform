@@ -190,8 +190,6 @@ export async function processSandboxRunDispatch(params: {
     return;
   }
 
-  // A run is a thread in its own right, so it owns its goal: the task it was
-  // dispatched with becomes the objective its finish gate audits against.
   await ensureRunGoal({
     context,
     runId: message.runId,

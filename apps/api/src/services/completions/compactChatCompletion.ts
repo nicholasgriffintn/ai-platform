@@ -22,8 +22,6 @@ export async function handleCompactChatCompletion(
 
   context.ensureDatabase();
 
-  // Compaction rewrites the conversation's history, so it takes the thread
-  // rather than racing whatever is already working on it.
   const lock = await acquireThread({
     env: context.env,
     conversationId: completion_id,

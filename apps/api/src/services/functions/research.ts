@@ -254,7 +254,6 @@ export const research: ApiToolDefinition = {
         ? options.polling.interval_ms
         : 5000;
 
-    // Get the correct ID field based on provider
     const runId =
       "run_id" in handle.run
         ? handle.run.run_id

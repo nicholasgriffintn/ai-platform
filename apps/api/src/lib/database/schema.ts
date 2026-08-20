@@ -1116,7 +1116,6 @@ export const workspaceAuditRecord = sqliteTable(
   "workspace_audit_record",
   {
     id: text().primaryKey(),
-    // Audit history must outlive a workspace hard deletion.
     workspace_id: text().notNull(),
     actor_user_id: integer().references(() => user.id),
     action: text().notNull(),

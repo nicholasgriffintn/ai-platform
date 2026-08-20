@@ -16,8 +16,6 @@ const QUEUE_KEY = "queue";
 const STATUS_KEY = "status";
 const INDEX_KEY = "queue-index";
 const MAX_QUEUE_LENGTH = 100;
-// A turn that dies without releasing must not wedge the conversation. The lease
-// is longer than any real turn and short enough that a wedged thread heals.
 const LOCK_LEASE_MS = 5 * 60 * 1000;
 
 interface StoredStatus {
@@ -134,8 +132,6 @@ export class ConversationCoordinator extends Agent<IEnv> {
       return Response.json({ instruction, preempted: false });
     }
 
-    // A synchronous caller wants the thread now or an honest refusal, not a
-    // queue slot nobody will drain.
     if (pathname === "/acquire" && request.method === "POST") {
       const body = (await request.json()) as { kind?: unknown };
       const parsed = submitThreadInstructionSchema.safeParse({ kind: body?.kind });

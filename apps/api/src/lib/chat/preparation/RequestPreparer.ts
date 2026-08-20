@@ -163,7 +163,6 @@ export class RequestPreparer {
       ? { type: "project", projectId: projectContext.projectId }
       : { type: "personal" };
 
-    // Project coding settings are authoritative; conversation options may only refine the task.
     options = { ...options, ...applyProjectCodingEnvironment(options, projectContext) };
 
     const isProUser = user?.plan_id === "pro";
