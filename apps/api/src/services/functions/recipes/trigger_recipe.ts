@@ -2,7 +2,7 @@ import { invokeAssistantRecipe, resolveInstalledAssistantRecipe } from "~/servic
 import { getRecipeConversationContext } from "~/services/apps/recipes/conversationContext";
 import { executeRecipeInvocationChat } from "~/services/apps/recipes/execution";
 import {
-  getSmsRecipeExecutionContext,
+  getRecipeExecutionChannelContext,
   getTriggerRecipeChannel,
 } from "~/services/apps/recipes/toolContext";
 import { extractChatCompletionNotification } from "~/utils/messages";
@@ -89,7 +89,7 @@ export const trigger_recipe: ApiToolDefinition = {
     }
 
     const recipeChannel = getTriggerRecipeChannel(request.request?.options);
-    const sms = getSmsRecipeExecutionContext(request.request?.options);
+    const channel = getRecipeExecutionChannelContext(request.request?.options);
     const invocation = await invokeAssistantRecipe(resolvedRecipeId, {
       context: request.context,
       userId: request.user.id,
@@ -118,7 +118,7 @@ export const trigger_recipe: ApiToolDefinition = {
         user: request.user,
         invocation,
         priorMessages,
-        ...(sms ? { sms } : {}),
+        ...(channel ? { channel } : {}),
       });
       const notification = extractChatCompletionNotification(execution.response, {
         streamingMessage: "Recipe execution cannot return a streaming response",

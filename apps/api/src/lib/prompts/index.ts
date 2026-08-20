@@ -10,12 +10,10 @@ import { getTextToImageSystemPrompt } from "./image";
 import { returnSandboxPrompt } from "./sandbox";
 import { buildAssistantMetadataSection, type PromptModelMetadata } from "./sections/metadata";
 import type { PromptMemoryPolicy } from "./sections/session-config";
-import { returnSmsPrompt } from "./sms";
 import { returnStandardPrompt } from "./standard";
 import { emptyPrompt } from "./utils";
 
-export type PromptMode = "sms";
-export type PromptRequest = IBody & { promptMode?: PromptMode };
+export type PromptRequest = IBody;
 
 export interface PromptSessionOptions {
   memory?: PromptMemoryPolicy;
@@ -34,15 +32,10 @@ export async function getSystemPrompt(
   const memoryPolicy = session?.memory ?? resolveMemoryPolicy({ user, userSettings });
 
   let prompt: string;
-  const promptMode = request.promptMode;
   const modelMetadata = modelConfig ? { modelId: model, modelConfig } : { modelId: model };
 
   if (request.options?.sandbox?.enabled) {
     return trimTemplateWhitespace(returnSandboxPrompt(request, userSettings, modelMetadata));
-  }
-
-  if (promptMode === "sms" || request.options?.sms?.enabled) {
-    return trimTemplateWhitespace(returnSmsPrompt(request, userSettings, modelMetadata));
   }
 
   if (!modelConfig) {
