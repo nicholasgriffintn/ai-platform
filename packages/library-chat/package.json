@@ -111,6 +111,11 @@
       "import": "./dist/provider-messages.js",
       "require": "./dist/provider-messages.cjs"
     },
+    "./response-stats": {
+      "types": "./dist/response-stats.d.ts",
+      "import": "./dist/response-stats.js",
+      "require": "./dist/response-stats.cjs"
+    },
     "./request-options": {
       "types": "./dist/request-options.d.ts",
       "import": "./dist/request-options.js",

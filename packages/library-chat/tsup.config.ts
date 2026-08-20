@@ -28,6 +28,7 @@ export default defineConfig({
     "src/conversations.ts",
     "src/model-selection.ts",
     "src/request-options.ts",
+    "src/response-stats.ts",
   ],
   format: ["cjs", "esm"],
   dts: true,

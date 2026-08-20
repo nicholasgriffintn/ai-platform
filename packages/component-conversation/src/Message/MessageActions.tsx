@@ -27,6 +27,7 @@ import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { MessageInfo } from "./MessageInfo";
+import { MessageStats } from "./MessageStats";
 
 export interface MessageActionsProps {
   message: Message;
@@ -46,6 +47,7 @@ export interface MessageActionsProps {
   onRequestOpinion?: (messageId: string, request: OpinionRequest) => void;
   isRequestingOpinion?: boolean;
   isArchivedByCompaction?: boolean;
+  responseDurationMs?: number;
   /** Model pickers stay host-owned because they read the catalogue and account entitlements. */
   renderModelSelector: (props: {
     onModelSelect: (modelId: string) => void;
@@ -79,6 +81,7 @@ export const MessageActions = ({
   onRequestOpinion,
   isRequestingOpinion = false,
   isArchivedByCompaction = false,
+  responseDurationMs,
   renderModelSelector,
   renderOpinionSelector,
 }: MessageActionsProps) => {
@@ -190,6 +193,7 @@ export const MessageActions = ({
 
   return (
     <div className="flex flex-wrap justify-end items-center gap-2">
+      <MessageStats message={message} responseDurationMs={responseDurationMs} className="mr-auto" />
       <div className="flex items-center space-x-1">
         {message.role !== "user" && message.content && (
           <Button
