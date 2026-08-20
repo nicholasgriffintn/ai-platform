@@ -1,7 +1,6 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
-import { webSearchAnswerSystemPrompt, webSearchSimilarQuestionsSystemPrompt } from "~/lib/prompts";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 import { handleWebSearch } from "~/services/search/web";
@@ -10,6 +9,10 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
 import { safeParseJson } from "../../../utils/json";
+import {
+  webSearchAnswerSystemPrompt,
+  webSearchSimilarQuestionsSystemPrompt,
+} from "./web-search-prompts";
 
 export interface DeepWebSearchParams {
   query: string;

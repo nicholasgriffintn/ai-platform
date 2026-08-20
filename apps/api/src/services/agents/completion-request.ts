@@ -1,7 +1,7 @@
 import type { ParsedChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
 
 import type { Agent } from "~/lib/database/schema";
-import type { ChatCompletionParameters, Message } from "~/types";
+import type { AssistantPersona, ChatCompletionParameters, Message } from "~/types";
 
 type CompletionAgent = Pick<Agent, "id" | "model" | "temperature" | "max_steps">;
 
@@ -10,7 +10,7 @@ export interface AgentCompletionRequestInput {
   body: ParsedChatCompletionRequestBody;
   modelProvider: string;
   formattedTools: NonNullable<ChatCompletionParameters["tools"]>;
-  systemPrompt: string;
+  persona: AssistantPersona;
 }
 
 type PreparedAgentCompletionRequest = Omit<ChatCompletionParameters, "env">;
@@ -34,7 +34,7 @@ class AgentCompletionRequestPreparer {
         ...message,
         content: message.content ?? "",
       })),
-      system_prompt: this.input.systemPrompt,
+      persona: this.input.persona,
       model: this.input.agent.model || this.input.body.model,
       provider: this.input.agent.model ? this.input.modelProvider : this.input.body.provider,
       tools: this.input.formattedTools,
@@ -50,7 +50,6 @@ class AgentCompletionRequestPreparer {
       stop: requestStop ? (Array.isArray(requestStop) ? requestStop : [requestStop]) : undefined,
       enabled_tools: this.input.body.enabled_tools,
       approved_tools: this.input.body.approved_tools,
-      use_rag: this.input.body.use_rag,
       rag_options: this.input.body.rag_options,
       use_multi_model: this.input.body.use_multi_model,
       models: this.input.body.models,

@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import { finishToolDefinition, UPDATE_PLAN_TOOL_NAME } from "../control-tools";
 import { defineTool, getToolDefinitionNames, isToolDefinition } from "../define-tool";
+import { flattenObjectRootSchema } from "../json-schema";
 import { PermissionChecker, resolveModeMaxSteps, resolveToolPermissions } from "../permissions";
+import { toProviderToolDefinitions } from "../provider-tools";
 
 describe("defineTool", () => {
   it("produces the provider-facing function shape", () => {
@@ -41,6 +43,96 @@ describe("defineTool", () => {
 
   it("lists definition names", () => {
     expect(getToolDefinitionNames([finishToolDefinition])).toEqual(["finish"]);
+  });
+});
+
+describe("defineTool with a generated schema", () => {
+  it("keeps schema keys the convenience form cannot express", () => {
+    const definition = defineTool({
+      name: "trigger_recipe",
+      description: "Run a recipe",
+      schema: {
+        properties: { recipeId: { type: "string" } },
+        required: ["recipeId"],
+        additionalProperties: false,
+      },
+    });
+
+    expect(definition.function.parameters).toEqual({
+      type: "object",
+      properties: { recipeId: { type: "string" } },
+      required: ["recipeId"],
+      additionalProperties: false,
+    });
+  });
+});
+
+describe("toProviderToolDefinitions", () => {
+  const definition = defineTool({
+    name: "get_weather",
+    description: "Look up the weather",
+    parameters: { location: { type: "string" } },
+    required: ["location"],
+  });
+
+  it("wraps definitions in the bedrock tool spec", () => {
+    expect(toProviderToolDefinitions("bedrock", [definition])).toEqual([
+      {
+        toolSpec: {
+          name: "get_weather",
+          description: "Look up the weather",
+          inputSchema: { json: definition.function.parameters },
+        },
+      },
+    ]);
+  });
+
+  it("uses anthropic's input_schema envelope", () => {
+    expect(toProviderToolDefinitions("anthropic", [definition])).toEqual([
+      {
+        name: "get_weather",
+        description: "Look up the weather",
+        input_schema: definition.function.parameters,
+      },
+    ]);
+  });
+
+  it("passes the canonical shape through for every other provider", () => {
+    expect(toProviderToolDefinitions("openai", [definition])).toEqual([definition]);
+  });
+});
+
+describe("flattenObjectRootSchema", () => {
+  it("merges object alternatives into a single root", () => {
+    expect(
+      flattenObjectRootSchema({
+        anyOf: [
+          {
+            type: "object",
+            properties: { recipeId: { type: "string" } },
+            required: ["recipeId", "scope"],
+            additionalProperties: false,
+          },
+          {
+            type: "object",
+            properties: { query: { type: "string" } },
+            required: ["query", "scope"],
+            additionalProperties: false,
+          },
+        ],
+      }),
+    ).toEqual({
+      type: "object",
+      properties: { recipeId: { type: "string" }, query: { type: "string" } },
+      required: ["scope"],
+      additionalProperties: false,
+    });
+  });
+
+  it("leaves a schema without object alternatives untouched", () => {
+    const schema = { type: "object", properties: { query: { type: "string" } } };
+
+    expect(flattenObjectRootSchema(schema)).toBe(schema);
   });
 });
 

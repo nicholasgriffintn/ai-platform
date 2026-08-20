@@ -14,7 +14,6 @@ export interface PromptModelMetadata {
 
 interface AssistantMetadataSectionOptions extends PromptModelMetadata {
   request: Partial<IBody>;
-  format?: "full" | "compact";
 }
 
 function asList(values?: string[]): string {
@@ -25,7 +24,6 @@ export function buildAssistantMetadataSection({
   request,
   modelId,
   modelConfig,
-  format = "full",
 }: AssistantMetadataSectionOptions): string {
   const activeModelId = modelId || request.model || modelConfig?.matchingModel || "unknown";
   const requestedMaxTokens =
@@ -51,26 +49,6 @@ export function buildAssistantMetadataSection({
     modelConfig?.supportsAttachments ? "attachments" : null,
     modelConfig?.supportsResponseFormat ? "response_format" : null,
   ].filter(Boolean);
-
-  if (format === "compact") {
-    builder
-      .addLine("<model_card>")
-      .addLine(`<model_id>${activeModelId}</model_id>`)
-      .addLine(`<provider>${modelConfig?.provider ?? "unknown"}</provider>`)
-      .addLine(`<context_window>${modelConfig?.contextWindow ?? "unspecified"}</context_window>`)
-      .addLine(
-        `<effective_max_output_tokens>${effectiveMaxOutputTokens}</effective_max_output_tokens>`,
-      )
-      .addLine(
-        `<supported_capabilities>${
-          enabledCapabilities.length > 0 ? enabledCapabilities.join(", ") : "none"
-        }</supported_capabilities>`,
-      )
-      .addLine("</model_card>")
-      .addLine();
-
-    return builder.build();
-  }
 
   builder
     .addLine("<model_card>")

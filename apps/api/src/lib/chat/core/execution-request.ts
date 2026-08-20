@@ -1,7 +1,4 @@
-import type { ModelConfigInfo } from "@ngriffin_uk/polychat-schemas";
-
 import { toProviderMessages } from "~/lib/chat/providerMessages";
-import type { StreamPostProcessingOptions } from "~/lib/chat/streaming";
 import type { ChatCompletionParameters, CoreChatOptions, Message, Platform } from "~/types";
 
 import type { PreparedRequest } from "../preparation/RequestPreparer";
@@ -12,10 +9,6 @@ export interface ChatExecutionRequestInput {
   messages: Message[];
   resolvedMaxSteps?: number;
 }
-
-export type MultiModelStreamRequest = Omit<Partial<ChatCompletionParameters>, "models"> & {
-  models: ModelConfigInfo[];
-};
 
 class ChatExecutionRequest {
   private readonly enabledTools: string[];
@@ -33,53 +26,6 @@ class ChatExecutionRequest {
       provider: this.input.prepared.primaryProvider,
       stream: this.input.chatOptions.stream ?? false,
     };
-  }
-
-  multiModelStreamRequest(): MultiModelStreamRequest {
-    return {
-      ...this.providerBase(),
-      models: this.input.prepared.modelConfigs,
-      provider: this.input.prepared.primaryProvider,
-      stream: true,
-    };
-  }
-
-  streamOptions(model: string, provider: string): StreamPostProcessingOptions {
-    const { chatOptions, prepared, resolvedMaxSteps } = this.input;
-
-    return {
-      env: chatOptions.env,
-      completion_id: chatOptions.completion_id,
-      model,
-      provider,
-      platform: this.platform,
-      context: chatOptions.context,
-      userSettings: prepared.userSettings,
-      app_url: chatOptions.app_url,
-      mode: prepared.currentMode,
-      max_steps: resolvedMaxSteps,
-      current_step: chatOptions.current_step,
-      tools: chatOptions.tools,
-      enabled_tools: this.enabledTools,
-      approved_tools: chatOptions.approved_tools ?? [],
-      current_agent_id: chatOptions.current_agent_id,
-      delegation_stack: chatOptions.delegation_stack,
-      max_delegation_depth: chatOptions.max_delegation_depth,
-      requestOptions: prepared.requestOptions || {},
-      memoryScope: prepared.memoryScope,
-      continuationRequest: {
-        ...this.providerRequest(),
-        model,
-        provider,
-      },
-    };
-  }
-
-  multiModelStreamOptions(): StreamPostProcessingOptions {
-    return this.streamOptions(
-      this.input.prepared.primaryModel,
-      this.input.prepared.primaryProvider,
-    );
   }
 
   private providerBase() {

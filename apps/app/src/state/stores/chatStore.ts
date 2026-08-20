@@ -16,7 +16,6 @@ const defaultSettings: ChatSettings = {
   top_p: 0.8,
   presence_penalty: 0,
   frequency_penalty: 0,
-  use_rag: false,
   enabled_tools: [],
   rag_options: {
     topK: 3,

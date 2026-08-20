@@ -1,5 +1,4 @@
 import { createServiceContext } from "~/lib/context/serviceContext";
-import { extractContentsystem_prompt } from "~/lib/prompts";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
 import { extractContent } from "~/services/apps/retrieval/content-extract";
@@ -112,7 +111,8 @@ export const extract_content: ApiToolDefinition = {
     const messages: Message[] = [
       {
         role: "system",
-        content: extractContentsystem_prompt(),
+        content:
+          "You are a helpful assistant that summarizes web content. Focus on providing accurate, relevant information while maintaining proper citation of sources.",
       },
       {
         role: "user",

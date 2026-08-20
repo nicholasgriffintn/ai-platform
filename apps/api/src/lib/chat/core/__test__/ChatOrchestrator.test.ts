@@ -1,7 +1,7 @@
 import { parseChatStreamSseBuffer } from "@ngriffin_uk/polychat-schemas";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { CoreChatOptions, IUser } from "~/types";
+import type { CoreChatOptions } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { ChatOrchestrator } from "../ChatOrchestrator";
@@ -12,8 +12,7 @@ const {
   mockGuardrails,
   mockConversationManager,
   mockGetAIResponse,
-  mockCreateMultiModelStream,
-  mockCreateStreamWithPostProcessing,
+  mockConsumeProviderStream,
   mockHandleToolCalls,
   mockSessionCompact,
   mockAcquireThread,
@@ -37,10 +36,11 @@ const {
   mockConversationManager: {
     checkUsageLimits: vi.fn(),
     add: vi.fn(),
+    get: vi.fn(async () => []),
+    getUsageLimits: vi.fn(async () => null),
   },
   mockGetAIResponse: vi.fn(),
-  mockCreateMultiModelStream: vi.fn(),
-  mockCreateStreamWithPostProcessing: vi.fn(),
+  mockConsumeProviderStream: vi.fn(),
   mockHandleToolCalls: vi.fn(),
   mockSessionCompact: vi.fn(),
 }));
@@ -48,24 +48,6 @@ const {
 let validationFactory: (() => any) | undefined;
 let preparerFactory: ((env: any) => any) | undefined;
 let guardrailsFactory: (() => any) | undefined;
-
-const proUser: IUser = {
-  id: 42,
-  name: "Pro user",
-  avatar_url: null,
-  email: "pro@example.com",
-  github_username: null,
-  company: null,
-  site: null,
-  location: null,
-  bio: null,
-  twitter_username: null,
-  created_at: "2026-08-14T00:00:00.000Z",
-  updated_at: "2026-08-14T00:00:00.000Z",
-  setup_at: null,
-  terms_accepted_at: null,
-  plan_id: "pro",
-};
 
 vi.mock("~/lib/chat/validation/ValidationPipeline", () => ({
   ValidationPipeline: class {
@@ -100,12 +82,8 @@ vi.mock("~/lib/chat/responses", () => ({
   getAIResponse: mockGetAIResponse,
 }));
 
-vi.mock("~/lib/chat/streaming", () => ({
-  createStreamWithPostProcessing: mockCreateStreamWithPostProcessing,
-}));
-
-vi.mock("~/lib/chat/multiModalStreaming", () => ({
-  createMultiModelStream: mockCreateMultiModelStream,
+vi.mock("~/lib/chat/agent/provider-stream", () => ({
+  consumeProviderStream: mockConsumeProviderStream,
 }));
 
 vi.mock("~/lib/chat/tools", () => ({
@@ -138,6 +116,9 @@ vi.mock("~/utils/id", () => ({
 
 vi.mock("~/utils/logger", () => ({
   getLogger: () => ({
+    trace: vi.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
   }),
@@ -179,6 +160,11 @@ describe("ChatOrchestrator", () => {
       messages: input.messages,
       compacted: false,
     }));
+    mockConsumeProviderStream.mockImplementation(async (_stream: unknown, sink: any) => {
+      await sink.writeEvent("content_block_delta", { content: "Hello" });
+
+      return { content: "Hello", toolCalls: [], parts: [], error: null };
+    });
 
     mockOptions = {
       completion_id: "test-completion-id",
@@ -378,9 +364,11 @@ describe("ChatOrchestrator", () => {
           userSettings: {},
           currentMode: "agent",
         });
-        mockGetAIResponse.mockResolvedValue({
-          response: "Agent final answer",
-          usage: { total_tokens: 25 },
+        mockGetAIResponse.mockResolvedValue(new ReadableStream());
+        mockConsumeProviderStream.mockImplementation(async (_stream: unknown, sink: any) => {
+          await sink.writeEvent("content_block_delta", { content: "Agent final answer" });
+
+          return { content: "Agent final answer", toolCalls: [], parts: [], error: null };
         });
         mockConversationManager.add.mockResolvedValue(undefined);
 
@@ -438,19 +426,23 @@ describe("ChatOrchestrator", () => {
           currentMode: "chat",
         });
 
-        const mockStream = new ReadableStream();
-
-        mockCreateMultiModelStream.mockReturnValue(mockStream);
+        mockGetAIResponse.mockResolvedValue(new ReadableStream());
 
         const result = await orchestrator.process({
           ...mockOptions,
           stream: true,
         });
 
+        if (!("stream" in result)) {
+          throw new Error("Expected streamed result");
+        }
+
+        await readStream(result.stream);
+
         expect(mockConversationManager.checkUsageLimits.mock.calls.map(([model]) => model)).toEqual(
           ["model-1", "model-2"],
         );
-        expect(mockCreateMultiModelStream).toHaveBeenCalled();
+        expect(mockConsumeProviderStream).toHaveBeenCalled();
         expect(result).toMatchObject({
           stream: expect.any(ReadableStream),
           selectedModel: "model-1",
@@ -490,18 +482,7 @@ describe("ChatOrchestrator", () => {
           compacted: true,
           compactionMessage,
         });
-        mockCreateMultiModelStream.mockReturnValue(
-          new ReadableStream({
-            start(controller) {
-              controller.enqueue(
-                new TextEncoder().encode(
-                  'data: {"type":"content_block_delta","content":"Hello"}\n\n',
-                ),
-              );
-              controller.close();
-            },
-          }),
-        );
+        mockGetAIResponse.mockResolvedValue(new ReadableStream());
 
         const result = await orchestrator.process({
           ...mockOptions,
@@ -516,35 +497,30 @@ describe("ChatOrchestrator", () => {
           flush: true,
         }).events;
 
-        expect(events).toEqual([
-          {
-            type: "state",
-            state: "compaction",
-            message: compactionMessage,
-          },
-          { type: "content_block_delta", content: "Hello" },
-        ]);
+        expect(events[0]).toEqual({
+          type: "state",
+          state: "compaction",
+          message: compactionMessage,
+        });
+        expect(events).toContainEqual({ type: "content_block_delta", content: "Hello" });
       });
 
       it("should handle single model streaming request", async () => {
-        const mockStream = new ReadableStream();
-        const transformedStream = new ReadableStream();
-
-        mockGetAIResponse.mockResolvedValue(mockStream);
-        mockCreateStreamWithPostProcessing.mockResolvedValue(transformedStream);
+        mockGetAIResponse.mockResolvedValue(new ReadableStream());
 
         const result = await orchestrator.process({
           ...mockOptions,
           stream: true,
         });
 
-        expect(mockCreateStreamWithPostProcessing).toHaveBeenCalledWith(
-          mockStream,
-          expect.objectContaining({
-            context: mockOptions.context,
-          }),
-          mockConversationManager,
-        );
+        if (!("stream" in result)) {
+          throw new Error("Expected streamed result");
+        }
+
+        const body = await readStream(result.stream);
+
+        expect(mockConsumeProviderStream).toHaveBeenCalled();
+        expect(body).toContain('"type":"message_delta"');
         expect(result).toMatchObject({
           stream: expect.any(ReadableStream),
           selectedModel: "test-model",
@@ -566,16 +542,6 @@ describe("ChatOrchestrator", () => {
           ],
         };
         const providerStream = new ReadableStream();
-        const transformedStream = new ReadableStream({
-          start(controller) {
-            controller.enqueue(
-              new TextEncoder().encode(
-                'data: {"type":"content_block_delta","content":"Hello"}\n\n',
-              ),
-            );
-            controller.close();
-          },
-        });
 
         mockSessionCompact.mockResolvedValueOnce({
           messages: [{ role: "assistant", content: "Conversation snapshot" }],
@@ -583,7 +549,6 @@ describe("ChatOrchestrator", () => {
           compactionMessage,
         });
         mockGetAIResponse.mockResolvedValue(providerStream);
-        mockCreateStreamWithPostProcessing.mockResolvedValue(transformedStream);
 
         const result = await orchestrator.process({
           ...mockOptions,
@@ -598,122 +563,12 @@ describe("ChatOrchestrator", () => {
           flush: true,
         }).events;
 
-        expect(events).toEqual([
-          {
-            type: "state",
-            state: "compaction",
-            message: compactionMessage,
-          },
-          { type: "content_block_delta", content: "Hello" },
-        ]);
-      });
-
-      it("should give recipe streaming chats enough steps to use context tools and save setup", async () => {
-        const mockStream = new ReadableStream();
-        const transformedStream = new ReadableStream();
-
-        mockGetAIResponse.mockResolvedValue(mockStream);
-        mockCreateStreamWithPostProcessing.mockResolvedValue(transformedStream);
-
-        await orchestrator.process({
-          ...mockOptions,
-          stream: true,
-          enabled_tools: ["get_weather", "get_recipe", "configure_recipe"],
-          options: {
-            recipe: {
-              id: "bad-weather-alerts",
-              installationId: "installation-1",
-              channel: "web",
-            },
-          },
+        expect(events[0]).toEqual({
+          type: "state",
+          state: "compaction",
+          message: compactionMessage,
         });
-
-        expect(mockCreateStreamWithPostProcessing).toHaveBeenCalledWith(
-          mockStream,
-          expect.objectContaining({
-            max_steps: 4,
-            requestOptions: {
-              recipe: {
-                id: "bad-weather-alerts",
-                installationId: "installation-1",
-                channel: "web",
-              },
-            },
-          }),
-          mockConversationManager,
-        );
-      });
-
-      it("should give connector streaming chats enough steps to discover, execute, and respond", async () => {
-        const mockStream = new ReadableStream();
-        const transformedStream = new ReadableStream();
-
-        mockGetAIResponse.mockResolvedValue(mockStream);
-        mockCreateStreamWithPostProcessing.mockResolvedValue(transformedStream);
-
-        await orchestrator.process({
-          ...mockOptions,
-          stream: true,
-          enabled_tools: ["use_recipe_connector"],
-        });
-
-        expect(mockCreateStreamWithPostProcessing).toHaveBeenCalledWith(
-          mockStream,
-          expect.objectContaining({ max_steps: 8 }),
-          mockConversationManager,
-        );
-      });
-
-      it("should give signed-in Pro chats the connector step budget when the gateway is automatic", async () => {
-        const mockStream = new ReadableStream();
-        const transformedStream = new ReadableStream();
-
-        mockGetAIResponse.mockResolvedValue(mockStream);
-        mockCreateStreamWithPostProcessing.mockResolvedValue(transformedStream);
-
-        await orchestrator.process({
-          ...mockOptions,
-          stream: true,
-          context: {
-            ...mockOptions.context,
-            user: proUser,
-          },
-        });
-
-        expect(mockCreateStreamWithPostProcessing).toHaveBeenCalledWith(
-          mockStream,
-          expect.objectContaining({ max_steps: 8 }),
-          mockConversationManager,
-        );
-      });
-
-      it("should preserve explicit max steps for recipe streaming chats", async () => {
-        const mockStream = new ReadableStream();
-        const transformedStream = new ReadableStream();
-
-        mockGetAIResponse.mockResolvedValue(mockStream);
-        mockCreateStreamWithPostProcessing.mockResolvedValue(transformedStream);
-
-        await orchestrator.process({
-          ...mockOptions,
-          stream: true,
-          max_steps: 2,
-          options: {
-            recipe: {
-              id: "bad-weather-alerts",
-              installationId: "installation-1",
-              channel: "web",
-            },
-          },
-        });
-
-        expect(mockCreateStreamWithPostProcessing).toHaveBeenCalledWith(
-          mockStream,
-          expect.objectContaining({
-            max_steps: 2,
-          }),
-          mockConversationManager,
-        );
+        expect(events).toContainEqual({ type: "content_block_delta", content: "Hello" });
       });
 
       it("should handle response with tool calls", async () => {
@@ -737,14 +592,13 @@ describe("ChatOrchestrator", () => {
         expect(mockHandleToolCalls).toHaveBeenCalledWith(
           "test-completion-id",
           expect.objectContaining({
-            response: "Test response",
             tool_calls: [expect.objectContaining({ id: "tool-1" })],
           }),
           mockConversationManager,
           expect.objectContaining({
             context: mockOptions.context,
           }),
-          { recoverUnknownToolCalls: true },
+          expect.objectContaining({ recoverUnknownToolCalls: true }),
         );
         if ("toolResponses" in result) {
           expect(result.toolResponses).toEqual(mockToolResults);
@@ -818,9 +672,9 @@ describe("ChatOrchestrator", () => {
         expect(mockConversationManager.add.mock.invocationCallOrder[0]).toBeLessThan(
           mockHandleToolCalls.mock.invocationCallOrder[0],
         );
-        expect(result).toEqual({
+        expect(result).toMatchObject({
           response: {
-            ...finalResponse,
+            response: finalResponse.response,
             usage: {
               input_tokens: 60,
               output_tokens: 40,
@@ -915,7 +769,7 @@ describe("ChatOrchestrator", () => {
               max_delegation_depth: 3,
             }),
           }),
-          { recoverUnknownToolCalls: true },
+          expect.objectContaining({ recoverUnknownToolCalls: true }),
         );
       });
 
@@ -934,9 +788,7 @@ describe("ChatOrchestrator", () => {
           currentMode: "chat",
         });
 
-        const mockStream = new ReadableStream();
-
-        mockCreateMultiModelStream.mockReturnValue(mockStream);
+        mockGetAIResponse.mockResolvedValue(new ReadableStream());
 
         const optionsWithDelegation = {
           ...mockOptions,
@@ -946,18 +798,21 @@ describe("ChatOrchestrator", () => {
           max_delegation_depth: 5,
         };
 
-        await orchestrator.process(optionsWithDelegation);
+        const result = await orchestrator.process(optionsWithDelegation);
 
-        expect(mockCreateMultiModelStream).toHaveBeenCalledWith(
+        if (!("stream" in result)) {
+          throw new Error("Expected streamed result");
+        }
+
+        await readStream(result.stream);
+
+        expect(mockHandleToolCalls).not.toHaveBeenCalled();
+        expect(mockGetAIResponse).toHaveBeenCalledWith(
           expect.objectContaining({
             current_agent_id: "agent-789",
             delegation_stack: ["agent-101"],
             max_delegation_depth: 5,
           }),
-          expect.objectContaining({
-            context: mockOptions.context,
-          }),
-          mockConversationManager,
         );
       });
 
@@ -977,25 +832,25 @@ describe("ChatOrchestrator", () => {
           enabledTools: ["run_code"],
         });
 
-        const mockStream = new ReadableStream();
+        mockGetAIResponse.mockResolvedValue(new ReadableStream());
 
-        mockCreateMultiModelStream.mockReturnValue(mockStream);
-
-        await orchestrator.process({
+        const result = await orchestrator.process({
           ...mockOptions,
           stream: true,
           approved_tools: ["run_code"],
         });
 
-        expect(mockCreateMultiModelStream).toHaveBeenCalledWith(
-          expect.objectContaining({
-            approved_tools: ["run_code"],
-          }),
+        if (!("stream" in result)) {
+          throw new Error("Expected streamed result");
+        }
+
+        await readStream(result.stream);
+
+        expect(mockGetAIResponse).toHaveBeenCalledWith(
           expect.objectContaining({
             approved_tools: ["run_code"],
             enabled_tools: ["run_code"],
           }),
-          mockConversationManager,
         );
       });
 
@@ -1017,22 +872,13 @@ describe("ChatOrchestrator", () => {
         expect(result).toEqual({
           selectedModel: "test-model",
           validation: "output",
-          error: "Content blocked",
+          error: "Response did not pass safety checks",
           violations: ["inappropriate"],
-          rawViolations: { blockedResponse: "Content blocked" },
         });
       });
 
       it("holds the conversation until a streaming response actually finishes", async () => {
-        const transformedStream = new ReadableStream({
-          start(controller) {
-            controller.enqueue("chunk");
-            controller.close();
-          },
-        });
-
         mockGetAIResponse.mockResolvedValue(new ReadableStream());
-        mockCreateStreamWithPostProcessing.mockResolvedValue(transformedStream);
 
         const result = (await orchestrator.process({ ...mockOptions, stream: true })) as {
           stream: ReadableStream;

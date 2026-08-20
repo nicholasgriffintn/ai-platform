@@ -126,8 +126,8 @@ export function useChatManager(
     startEditingMessage,
     stopEditingMessage,
     branchConversation,
-    isRequestingOpinion,
-    requestOpinion,
+    isRequestingSecondOpinion,
+    requestSecondOpinion,
   } = useConversationActions(
     streamResponse,
     generateConversationTitle,
@@ -325,7 +325,7 @@ export function useChatManager(
     startEditingMessage,
     stopEditingMessage,
     branchConversation,
-    isRequestingOpinion,
-    requestOpinion,
+    isRequestingSecondOpinion,
+    requestSecondOpinion,
   };
 }

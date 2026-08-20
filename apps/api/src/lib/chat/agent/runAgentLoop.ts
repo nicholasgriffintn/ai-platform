@@ -6,21 +6,38 @@ import {
   type AgentToolCall,
 } from "@ngriffin_uk/polychat-library-agent-core";
 
-import {
-  createAgentProviderIO,
-  type AgentModelResponse,
-  type AgentModelToolCall,
-} from "~/lib/chat/agent/provider-io";
+import { finaliseAssistantTurn, type TurnOutput } from "~/lib/chat/agent/assistant-turn";
+import { ensureConversationTitle } from "~/lib/chat/agent/conversation-title";
+import { captureRunMemories } from "~/lib/chat/agent/memory-capture";
+import { createAgentProviderIO } from "~/lib/chat/agent/provider-io";
+import type { ChatTurnTransport } from "~/lib/chat/agent/turn-transport";
+import { DISCARDING_EVENT_SINK, type ChatEventSink } from "~/lib/chat/emitter";
 import { toProviderMessages } from "~/lib/chat/providerMessages";
-import { getAIResponse } from "~/lib/chat/responses";
 import { isSuccessfulToolStatus } from "~/lib/chat/tool-results";
 import { handleToolCalls } from "~/lib/chat/tools";
+import { getToolEventPayload } from "~/lib/chat/utils";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
-import { extractUsagePayload } from "~/lib/usage/extractUsage";
 import { isUsageExhausted, USAGE_LIMIT_NOTICE } from "~/lib/usage/limitState";
 import { sumTokenUsage, type NormalisedTokenUsage } from "~/lib/usage/tokenUsage";
-import type { IRequest, Message } from "~/types";
+import {
+  StreamState,
+  ToolStage,
+  type ChatCompletionParameters,
+  type ChatMode,
+  type ChatRequestOptions,
+  type IEnv,
+  type IRequest,
+  type IUserSettings,
+  type MemoryScope,
+  type Message,
+  type Platform,
+  type ToolCall,
+} from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger({ prefix: "lib/chat/agent/runAgentLoop" });
 
 const AGENT_MAX_RECOVERY_REPLANS = 2;
 const AGENT_MAX_TURN_FAILURES = 2;
@@ -30,28 +47,18 @@ function shouldAbortAgentTurnError(error: unknown): boolean {
   return error instanceof AssistantError && error.type !== ErrorType.PARAMS_ERROR;
 }
 
-interface ApiAgentLoopState extends AgentLoopState {
+interface ChatAgentLoopState extends AgentLoopState {
   commandCount: number;
   unknownToolRecoveryUsed: boolean;
   pendingUserAction?: string;
-  lastTurnText: string;
-  lastTurnToolCallCount: number;
   stoppedForUsageLimit?: boolean;
 }
 
-function buildUsageLimitSummary(lastTurnText: string): string {
-  const progress = lastTurnText.trim();
-
-  return progress ? `${progress}\n\n${USAGE_LIMIT_NOTICE}` : USAGE_LIMIT_NOTICE;
-}
-
-interface ApiAgentSharedContext {
+interface ChatAgentSharedContext {
   completionId: string;
   conversationManager: ConversationManager;
   toolRequestContext: IRequest;
 }
-
-export type ModelToolCall = AgentModelToolCall;
 
 export interface AgentStepSummary {
   stepNumber: number;
@@ -61,17 +68,38 @@ export interface AgentStepSummary {
   usage?: NormalisedTokenUsage;
 }
 
-export type ModelResponse = AgentModelResponse & {
-  steps?: AgentStepSummary[];
+export interface ModelResponse {
+  response?: string;
+  tool_calls?: Record<string, unknown>[] | null;
+  citations?: string[] | null;
+  data?: unknown;
+  log_id?: string;
+  usage?: NormalisedTokenUsage;
+  usageMetadata?: NormalisedTokenUsage;
   totalUsage?: NormalisedTokenUsage;
-};
+  refusal?: string | null;
+  annotations?: unknown;
+  status?: string;
+  steps?: AgentStepSummary[];
+}
 
 export interface AgentLoopExecutionParams {
-  requestParams: Parameters<typeof getAIResponse>[0];
+  requestParams: ChatCompletionParameters;
   completionId: string;
   conversationManager: ConversationManager;
   toolRequestContext: IRequest;
+  transport: ChatTurnTransport;
   maxSteps: number;
+  env: IEnv;
+  model: string;
+  provider: string;
+  platform: Platform;
+  mode: ChatMode;
+  memoryScope: MemoryScope;
+  sink?: ChatEventSink;
+  context?: ServiceContext;
+  userSettings?: IUserSettings;
+  requestOptions?: ChatRequestOptions;
   emit?: (event: AgentEvent) => Promise<void>;
   assessFinish?: (context: {
     summary: string;
@@ -82,29 +110,87 @@ export interface AgentLoopExecutionParams {
 
 export interface AgentLoopExecutionResult {
   response: ModelResponse;
+  conversationTitle?: string;
+  finalMessage?: Message;
   toolResponses: Message[];
+  memoryMessages: Message[];
+  guardrailsPassed: boolean;
+  guardrailViolations: unknown[];
 }
 
 export async function runAgentLoop(
   params: AgentLoopExecutionParams,
 ): Promise<AgentLoopExecutionResult> {
-  const requestParams = params.requestParams;
+  const sink = params.sink ?? DISCARDING_EVENT_SINK;
   const providerIO = createAgentProviderIO();
-  const runtimeMessages = providerIO.initialMessages(toProviderMessages(requestParams.messages));
+  const runtimeMessages = providerIO.initialMessages(
+    toProviderMessages(params.requestParams.messages),
+  );
 
-  const state: ApiAgentLoopState = {
+  const state: ChatAgentLoopState = {
     commandCount: 0,
     unknownToolRecoveryUsed: false,
-    lastTurnText: "",
-    lastTurnToolCallCount: 0,
   };
   const toolResponses: Message[] = [];
+  const allToolCalls: ToolCall[] = [];
   const steps: AgentStepSummary[] = [];
-  let totalUsage: NormalisedTokenUsage | undefined;
-  let stepNumber = 0;
-  let finalResponse: ModelResponse | null = null;
 
-  await executeAgentLoop<ApiAgentSharedContext, ApiAgentLoopState>({
+  let totalUsage: NormalisedTokenUsage | undefined;
+  let finalMessage: Message | undefined;
+  let finalStatus: string | undefined;
+  let guardrailsPassed = true;
+  let guardrailViolations: unknown[] = [];
+
+  const transportContext = {
+    env: params.env,
+    completionId: params.completionId,
+    model: params.model,
+    provider: params.provider,
+    userId: params.context?.user?.id,
+  };
+
+  const finalise = async (turn: TurnOutput) => {
+    await sink.writeEvent("state", { state: StreamState.POST_PROCESSING });
+
+    const finalised = await finaliseAssistantTurn({
+      turn,
+      sink,
+      conversationManager: params.conversationManager,
+      completionId: params.completionId,
+      env: params.env,
+      model: params.model,
+      provider: params.provider,
+      platform: params.platform,
+      mode: params.mode,
+      context: params.context,
+      userSettings: params.userSettings,
+      requestOptions: params.requestOptions,
+    });
+
+    guardrailsPassed = finalised.guardrailsPassed;
+    guardrailViolations = finalised.guardrailViolations;
+    finalMessage = finalised.message;
+
+    return finalised.message;
+  };
+
+  const closingTurn = async (text: string, status?: string) => {
+    finalStatus = status;
+
+    if (params.transport.streams && text) {
+      await sink.writeEvent("content_block_delta", { content: text });
+    }
+
+    await finalise({ content: text, toolCalls: [], status });
+
+    return {
+      toolCalls: [],
+      text,
+      assistantMessage: { role: "assistant" as const, content: text },
+    };
+  };
+
+  await executeAgentLoop<ChatAgentSharedContext, ChatAgentLoopState>({
     initialMessages: runtimeMessages,
     initialPlan: DEFAULT_INITIAL_PLAN,
     shared: {
@@ -131,121 +217,88 @@ export async function runAgentLoop(
       if (step > 1 && (await isUsageExhausted(params.conversationManager))) {
         state.stoppedForUsageLimit = true;
 
-        const summary = buildUsageLimitSummary(state.lastTurnText);
-
-        finalResponse = {
-          ...finalResponse,
-          response: summary,
-          status: "usage_limit_reached",
-        };
-
-        return {
-          toolCalls: [],
-          text: summary,
-          assistantMessage: { role: "assistant", content: summary },
-        };
+        return closingTurn(USAGE_LIMIT_NOTICE, "usage_limit_reached");
       }
 
       if (state.pendingUserAction) {
-        const response = state.pendingUserAction;
+        const pending = state.pendingUserAction;
 
         state.pendingUserAction = undefined;
-        finalResponse = { response, status: "pending" };
 
-        return {
-          toolCalls: [],
-          text: response,
-          assistantMessage: { role: "assistant", content: response },
-        };
+        return closingTurn(pending, "pending");
       }
 
-      const providerResponse = await getAIResponse({
-        ...requestParams,
-        messages: providerIO.providerMessages(messages),
-        stream: false,
+      await sink.writeEvent("message_start", {
+        id: params.completionId,
+        created: Date.now(),
+        model: params.model,
+        provider: params.provider,
+        platform: params.platform,
+      });
+      await sink.writeEvent("state", { state: StreamState.THINKING });
+
+      const turn = await params.transport.runTurn({
+        request: { ...params.requestParams, messages: providerIO.providerMessages(messages) },
+        sink,
+        context: transportContext,
       });
 
-      if (providerResponse instanceof ReadableStream) {
-        throw new AssistantError(
-          "Agent mode expected non-streaming model response",
-          ErrorType.PROVIDER_ERROR,
-        );
+      if (turn.error) {
+        throw new AssistantError(resolveProviderErrorMessage(turn.error), ErrorType.PROVIDER_ERROR);
       }
 
-      const modelResponse = providerIO.modelResponse(providerResponse);
-      const turnUsage = sumTokenUsage(undefined, extractUsagePayload(providerResponse));
+      totalUsage = sumTokenUsage(totalUsage, turn.usage) ?? totalUsage;
 
-      totalUsage = sumTokenUsage(totalUsage, extractUsagePayload(providerResponse)) ?? totalUsage;
+      const message = await finalise(turn);
+      const hasToolCalls = turn.toolCalls.length > 0;
 
-      if (!modelResponse.response && !modelResponse.tool_calls?.length) {
-        throw new AssistantError("No response generated by the model", ErrorType.PROVIDER_ERROR);
-      }
-
-      if (modelResponse.tool_calls?.length) {
-        state.lastTurnText = modelResponse.response ?? "";
-        state.lastTurnToolCallCount = modelResponse.tool_calls.length;
-        stepNumber += 1;
-        steps.push({
-          stepNumber,
-          stepType: "tool-call",
-          toolCallCount: modelResponse.tool_calls.length,
-          toolResultCount: 0,
-          ...(turnUsage ? { usage: turnUsage } : {}),
-        });
-
-        return {
-          toolCalls: providerIO.agentToolCalls(modelResponse.tool_calls),
-          text: modelResponse.response ?? "",
-          assistantMessage: {
-            role: "assistant",
-            content: modelResponse.response || "",
-            tool_calls: modelResponse.tool_calls,
-          },
-        };
-      }
-
-      finalResponse = modelResponse;
-      stepNumber += 1;
       steps.push({
-        stepNumber,
-        stepType: "final",
-        toolCallCount: 0,
+        stepNumber: steps.length + 1,
+        stepType: hasToolCalls ? "tool-call" : "final",
+        toolCallCount: turn.toolCalls.length,
         toolResultCount: 0,
-        ...(turnUsage ? { usage: turnUsage } : {}),
+        ...(turn.usage ? { usage: turn.usage } : {}),
       });
+
+      if (hasToolCalls) {
+        allToolCalls.push(...turn.toolCalls);
+      }
 
       return {
-        toolCalls: [],
-        text:
-          typeof modelResponse.response === "string"
-            ? modelResponse.response
-            : JSON.stringify(modelResponse.response ?? ""),
+        toolCalls: hasToolCalls ? providerIO.agentToolCalls(turn.toolCalls) : [],
+        text: turn.content,
         assistantMessage: {
           role: "assistant",
-          content: modelResponse.response || "",
+          content: message.content,
+          ...(hasToolCalls ? { tool_calls: turn.toolCalls } : {}),
         },
       };
     },
     executeToolCalls: async (toolCalls: AgentToolCall[], context) => {
       const providerToolCalls = providerIO.providerToolCalls(toolCalls);
-      const responseText = context.state.lastTurnText;
 
-      await context.shared.conversationManager.add(context.shared.completionId, {
-        role: "assistant",
-        content: responseText,
-        tool_calls: providerToolCalls,
-      });
+      await emitToolCallEvents(sink, providerToolCalls as unknown as ToolCall[]);
+      await sink.writeEvent("tool_response_start", { tool_calls: providerToolCalls });
 
       const toolResults = await handleToolCalls(
         context.shared.completionId,
-        {
-          response: responseText,
-          tool_calls: providerToolCalls,
-        },
+        { response: "", tool_calls: providerToolCalls },
         context.shared.conversationManager,
         context.shared.toolRequestContext,
-        { recoverUnknownToolCalls: !context.state.unknownToolRecoveryUsed },
+        {
+          persistResults: "immediate",
+          recoverUnknownToolCalls: !context.state.unknownToolRecoveryUsed,
+          onToolResult: async (toolResult) => {
+            await sink.writeEvent("tool_response", {
+              tool_id: toolResult.id,
+              result: toolResult,
+            });
+          },
+        },
       );
+
+      await sink.writeEvent("tool_response_end", {});
+      await emitUsageLimits(sink, context.shared.conversationManager);
 
       if (toolResults.some((message) => message.data?.errorCode === "UNKNOWN_TOOL")) {
         context.state.unknownToolRecoveryUsed = true;
@@ -266,7 +319,7 @@ export async function runAgentLoop(
 
       const currentStep = steps[steps.length - 1];
 
-      if (currentStep && currentStep.stepType === "tool-call") {
+      if (currentStep?.stepType === "tool-call") {
         currentStep.toolResultCount = toolResults.length;
       }
 
@@ -275,25 +328,100 @@ export async function runAgentLoop(
     },
   });
 
-  if (!finalResponse) {
+  if (!finalMessage) {
     throw new AssistantError(
       "Agent loop finished without a final response",
       ErrorType.PROVIDER_ERROR,
     );
   }
 
+  const memoryMessages = await captureRunMemories({
+    env: params.env,
+    completionId: params.completionId,
+    conversationManager: params.conversationManager,
+    context: params.context,
+    userSettings: params.userSettings,
+    memoryScope: params.memoryScope,
+    model: params.model,
+    platform: params.platform,
+    toolCalls: allToolCalls,
+  });
+
+  for (const memoryMessage of memoryMessages) {
+    await sink.writeEvent("tool_response", {
+      tool_id: memoryMessage.id,
+      result: memoryMessage,
+    });
+  }
+
+  const title = await ensureConversationTitle({
+    completionId: params.completionId,
+    conversationManager: params.conversationManager,
+    context: params.context,
+    store: params.requestParams.store,
+  });
+
+  if (title) {
+    await sink.writeEvent("state", { state: "conversation_title", title });
+  }
+
   const usedTools = steps.some((step) => step.stepType === "tool-call");
 
   return {
-    response: usedTools
-      ? {
-          ...finalResponse,
-          ...(totalUsage ? { usage: totalUsage, totalUsage } : {}),
-          steps,
-        }
-      : totalUsage
-        ? { ...finalResponse, usage: totalUsage, totalUsage }
-        : finalResponse,
+    response: {
+      response: typeof finalMessage.content === "string" ? finalMessage.content : "",
+      citations: finalMessage.citations ?? null,
+      data: finalMessage.data,
+      log_id: finalMessage.log_id,
+      tool_calls: finalMessage.tool_calls ?? null,
+      status: finalStatus,
+      ...(totalUsage ? { usage: totalUsage, totalUsage } : {}),
+      ...(usedTools ? { steps } : {}),
+    },
+    finalMessage,
+    ...(title ? { conversationTitle: title } : {}),
     toolResponses,
+    memoryMessages,
+    guardrailsPassed,
+    guardrailViolations,
   };
+}
+
+async function emitToolCallEvents(sink: ChatEventSink, toolCalls: readonly ToolCall[]) {
+  for (const toolCall of toolCalls) {
+    try {
+      await sink.writeEvent("tool_use_start", getToolEventPayload(toolCall, ToolStage.START));
+      await sink.writeEvent(
+        "tool_use_delta",
+        getToolEventPayload(toolCall, ToolStage.DELTA, toolCall.function?.arguments || "{}"),
+      );
+      await sink.writeEvent("tool_use_stop", getToolEventPayload(toolCall, ToolStage.STOP));
+    } catch (error) {
+      logger.error("Failed to emit tool events", { error, toolCall });
+    }
+  }
+}
+
+async function emitUsageLimits(sink: ChatEventSink, conversationManager: ConversationManager) {
+  try {
+    const usageLimits = await conversationManager.getUsageLimits();
+
+    if (usageLimits) {
+      await sink.writeEvent("usage_limits", { usage_limits: usageLimits });
+    }
+  } catch (error) {
+    logger.error("Failed to read updated usage limits", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+}
+
+function resolveProviderErrorMessage(error: unknown): string {
+  if (typeof error === "string") {
+    return error;
+  }
+
+  const message = (error as { message?: unknown })?.message;
+
+  return typeof message === "string" ? message : "The model provider returned an error";
 }

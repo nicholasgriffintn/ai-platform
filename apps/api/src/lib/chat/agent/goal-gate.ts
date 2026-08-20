@@ -13,7 +13,7 @@ export interface GoalGateParams {
   onTerminalStatus?: (goal: Goal) => Promise<void>;
 }
 
-const UNSATISFIED_INSTRUCTION = [
+export const GOAL_UNSATISFIED_INSTRUCTION = [
   "The active goal is not satisfied yet.",
   "Audit the objective against the evidence in this thread: files changed, commands run, tool results, artifacts produced.",
   "If it is genuinely satisfied, call complete_goal with the evidence ledger.",
@@ -21,11 +21,6 @@ const UNSATISFIED_INSTRUCTION = [
   "Otherwise take the single next best action.",
 ].join(" ");
 
-/**
- * Turns a `finish` into a question rather than an exit while a goal is live.
- * The model only leaves the loop by calling complete_goal (evidence-checked in
- * GoalService) or by the goal reaching a terminal state.
- */
 export function createGoalFinishGate(params: GoalGateParams) {
   let currentGoal = params.goal;
 
@@ -78,6 +73,6 @@ export function createGoalFinishGate(params: GoalGateParams) {
       };
     }
 
-    return { allow: false, instruction: UNSATISFIED_INSTRUCTION };
+    return { allow: false, instruction: GOAL_UNSATISFIED_INSTRUCTION };
   };
 }

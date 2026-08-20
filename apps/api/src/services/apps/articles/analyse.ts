@@ -1,6 +1,5 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { analyseArticlePrompt } from "~/lib/prompts";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { findModelConfig, getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
 import type { IEnv, IUser } from "~/types";
@@ -8,6 +7,8 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractQuotes } from "~/utils/extract";
 import { getLogger } from "~/utils/logger";
 import { verifyQuotes } from "~/utils/verify";
+
+import { analyseArticlePrompt } from "./prompts";
 
 const logger = getLogger({ prefix: "services/apps/articles/analyse" });
 

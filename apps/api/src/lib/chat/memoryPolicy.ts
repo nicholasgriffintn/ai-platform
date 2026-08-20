@@ -18,7 +18,6 @@ export interface MemoryPolicy {
 
 export interface MemoryPromptContextInput {
   synthesisText?: string | null;
-  recentMemories?: Array<{ text: string; score?: number }>;
 }
 
 export function resolveMemoryPolicy(params: {
@@ -71,21 +70,10 @@ export function mergeEnabledMemoryToolNames(params: {
   );
 }
 
-export function buildMemoryPromptContext({
-  synthesisText,
-  recentMemories = [],
-}: MemoryPromptContextInput): string {
-  let memoryContext = "";
-
-  if (synthesisText) {
-    memoryContext += `\n\n# Memory Summary\nThe following is a consolidated summary of your long-term memories about this user:\n<memory_synthesis>\n${synthesisText}\n</memory_synthesis>`;
+export function buildMemoryPromptContext({ synthesisText }: MemoryPromptContextInput): string {
+  if (!synthesisText) {
+    return "";
   }
 
-  if (recentMemories.length > 0) {
-    memoryContext += `\n\n# Recently Relevant Memories\nThe following specific memories are most relevant to this conversation:\n<recent_memories>\n${recentMemories
-      .map((memory) => `- ${memory.text}`)
-      .join("\n")}\n</recent_memories>`;
-  }
-
-  return memoryContext;
+  return `\n\n# Memory Summary\nThe following is a consolidated summary of your long-term memories about this user. Call ${MEMORY_SEARCH_TOOL_NAME} when the turn needs a specific memory this summary does not carry.\n<memory_synthesis>\n${synthesisText}\n</memory_synthesis>`;
 }

@@ -169,6 +169,17 @@ export interface Message {
 
 export type ChatInput = string | { prompt: string };
 
+export interface AssistantPersonaExample {
+  input: string;
+  output: string;
+}
+
+export interface AssistantPersona {
+  name?: string;
+  instructions?: string;
+  examples?: AssistantPersonaExample[];
+}
+
 export interface IBody {
   completion_id: string;
   input: ChatInput;
@@ -217,13 +228,14 @@ export interface IRequest {
   user?: IUser;
   anonymousUser?: AnonymousUser;
   mode?: ChatMode;
-  use_rag?: boolean;
   rag_options?: RagOptions;
   context?: ServiceContext;
   memoryScope?: MemoryScope;
 }
 
 type InternalExecutionParams = {
+  // The persona layered into the generated system prompt, for saved agents.
+  persona?: AssistantPersona;
   // Minimum output tokens requested by internal orchestration.
   min_tokens?: number;
   // Current orchestration step for streamed multi-step responses.

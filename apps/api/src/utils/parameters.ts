@@ -1,5 +1,7 @@
+import { agentControlToolDefinitions } from "@ngriffin_uk/polychat-library-tool-runtime";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
+import { isAgentExecutionMode } from "~/lib/chat/mode-metadata";
 import { listFunctionTools } from "~/services/functions";
 import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
 import type { ChatCompletionParameters } from "~/types";
@@ -270,6 +272,7 @@ export function getToolsForProvider(
     | "tool_choice"
     | "context"
     | "connectedConnectorProviders"
+    | "mode"
   >,
   modelConfig: any,
   providerName: string,
@@ -307,6 +310,10 @@ export function getToolsForProvider(
       const filteredFunctions = availableTools.filter((func) => enabledTools.has(func.name));
 
       tools = formatToolCalls(providerName, filteredFunctions);
+    }
+
+    if (isAgentExecutionMode(params.mode)) {
+      tools = [...tools, ...formatToolCalls(providerName, agentControlToolDefinitions)];
     }
 
     const result: {

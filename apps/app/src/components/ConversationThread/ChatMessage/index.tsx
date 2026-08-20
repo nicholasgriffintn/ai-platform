@@ -5,11 +5,10 @@ import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { apiService } from "~/lib/api/api-service";
 
 import { InlineModelSelector } from "../InlineModelSelector";
-import { OpinionModelSelector } from "../OpinionModelSelector";
 
 type ChatMessageProps = Omit<
   ComponentProps<typeof ChatMessageView>,
-  "copied" | "onCopy" | "onSubmitFeedback" | "renderModelSelector" | "renderOpinionSelector"
+  "copied" | "onCopy" | "onSubmitFeedback" | "renderModelSelector"
 >;
 
 export function ChatMessage(props: ChatMessageProps) {
@@ -29,14 +28,6 @@ export function ChatMessage(props: ChatMessageProps) {
       }}
       renderModelSelector={({ onModelSelect, onCancel }) => (
         <InlineModelSelector onModelSelect={onModelSelect} onCancel={onCancel} className="w-full" />
-      )}
-      renderOpinionSelector={({ onSubmit, onCancel, sourceModelId }) => (
-        <OpinionModelSelector
-          onSubmit={onSubmit}
-          onCancel={onCancel}
-          sourceModelId={sourceModelId}
-          className="w-full"
-        />
       )}
     />
   );

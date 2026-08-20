@@ -1,3 +1,11 @@
+import {
+  defineTool,
+  flattenObjectRootSchema,
+  isToolDefinition,
+  toProviderToolDefinitions,
+  type ProviderToolDefinition,
+  type ToolDefinition,
+} from "@ngriffin_uk/polychat-library-tool-runtime";
 import z from "zod/v4";
 
 import type { ConversationManager } from "~/lib/conversationManager";
@@ -7,7 +15,6 @@ import type { IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
-import { ensureObjectRootJsonSchema } from "~/utils/jsonSchema";
 import { getLogger } from "~/utils/logger";
 import { formatToolErrorResponse, formatToolResponse } from "~/utils/tool-responses";
 
@@ -408,82 +415,60 @@ export const handleToolCalls = async (
   return functionResults;
 };
 
-export function formatToolCalls(provider: string, functions: any[]) {
+export function formatToolCalls(provider: string, functions: unknown[]): ProviderToolDefinition[] {
   if (!functions || !Array.isArray(functions)) {
     logger.warn("Invalid functions provided to formatToolCalls");
 
     return [];
   }
 
-  if (provider === "bedrock") {
-    return functions
-      .map((func) => {
-        const parameters = resolveFunctionParameters(func);
+  const definitions = functions
+    .map((func) => toCanonicalToolDefinition(func))
+    .filter((definition): definition is ToolDefinition => definition !== null);
 
-        if (!parameters) {
-          logger.warn(`Missing parameters for function ${func.name}`);
-
-          return null;
-        }
-
-        return {
-          toolSpec: {
-            name: func.name,
-            description: func.description,
-            inputSchema: {
-              json: parameters,
-            },
-          },
-        };
-      })
-      .filter(Boolean);
-  }
-
-  if (provider === "anthropic") {
-    return functions
-      .map((func) => {
-        const parameters = resolveFunctionParameters(func);
-
-        if (!parameters) {
-          logger.warn(`Missing parameters for function ${func.name}`);
-
-          return null;
-        }
-
-        return {
-          name: func.name,
-          description: func.description,
-          input_schema: parameters,
-        };
-      })
-      .filter(Boolean);
-  }
-
-  return functions
-    .map((func) => {
-      const parameters = resolveFunctionParameters(func);
-
-      if (!parameters) {
-        logger.warn(`Missing parameters for function ${func.name}`);
-
-        return null;
-      }
-
-      return {
-        type: "function",
-        function: {
-          name: func.name,
-          description: func.description,
-          parameters,
-        },
-      };
-    })
-    .filter(Boolean);
+  return toProviderToolDefinitions(provider, definitions);
 }
 
-function resolveFunctionParameters(func: any): Record<string, unknown> | null {
+function toCanonicalToolDefinition(func: unknown): ToolDefinition | null {
+  if (isToolDefinition(func)) {
+    return func;
+  }
+
+  const candidate = func as {
+    name?: string;
+    description?: string;
+    parameters?: { jsonSchema?: Record<string, unknown> } & Record<string, unknown>;
+    inputSchema?: unknown;
+  };
+
+  if (!candidate?.name) {
+    logger.warn("Skipping tool definition without a name");
+
+    return null;
+  }
+
+  const parameters = resolveFunctionParameters(candidate);
+
+  if (!parameters) {
+    logger.warn(`Missing parameters for function ${candidate.name}`);
+
+    return null;
+  }
+
+  return defineTool({
+    name: candidate.name,
+    description: candidate.description ?? "",
+    schema: parameters,
+  });
+}
+
+function resolveFunctionParameters(func: {
+  name?: string;
+  parameters?: { jsonSchema?: Record<string, unknown> } & Record<string, unknown>;
+  inputSchema?: unknown;
+}): Record<string, unknown> | null {
   if (func.parameters) {
-    return func.parameters?.jsonSchema || func.parameters;
+    return func.parameters.jsonSchema || func.parameters;
   }
 
   if (!func.inputSchema) {
@@ -491,7 +476,7 @@ function resolveFunctionParameters(func: any): Record<string, unknown> | null {
   }
 
   try {
-    return ensureObjectRootJsonSchema(z.toJSONSchema(func.inputSchema));
+    return flattenObjectRootSchema(z.toJSONSchema(func.inputSchema as z.ZodType));
   } catch (error) {
     logger.warn("Failed to convert tool input schema to JSON schema", {
       name: func.name,

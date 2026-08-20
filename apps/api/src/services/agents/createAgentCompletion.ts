@@ -8,7 +8,7 @@ import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { prepareAgentCompletionRequest } from "./completion-request";
-import { buildAgentCompletionTools, buildAgentSystemPrompt } from "./completion-tools";
+import { buildAgentCompletionTools, buildAgentPersona } from "./completion-tools";
 
 export async function createAgentCompletion({
   env,
@@ -47,14 +47,12 @@ export async function createAgentCompletion({
 
   const formattedTools = formatToolCalls(modelDetails.provider, functionSchemas);
 
-  const systemPrompt = buildAgentSystemPrompt(agent);
-
   const requestParams = prepareAgentCompletionRequest({
     agent,
     body,
     modelProvider: modelDetails.provider,
     formattedTools,
-    systemPrompt,
+    persona: buildAgentPersona(agent),
   });
 
   const response = await handleCreateChatCompletions({

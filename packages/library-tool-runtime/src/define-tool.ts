@@ -7,6 +7,7 @@ export interface ToolDefinitionInput {
   description: string;
   parameters?: Record<string, unknown>;
   required?: string[];
+  schema?: Record<string, unknown>;
 }
 
 export interface ToolDefinition {
@@ -18,11 +19,6 @@ export interface ToolDefinition {
   };
 }
 
-/**
- * The one place a provider-facing tool definition is shaped. Every agent
- * runtime describes its tools through this so the JSON schema sent to a model
- * cannot drift between them.
- */
 export function defineTool(input: ToolDefinitionInput): ToolDefinition {
   const properties = input.parameters ?? {};
   const required = input.required ?? [];
@@ -32,11 +28,13 @@ export function defineTool(input: ToolDefinitionInput): ToolDefinition {
     function: {
       name: input.name,
       description: input.description,
-      parameters: {
-        type: "object",
-        properties,
-        ...(required.length > 0 ? { required } : {}),
-      },
+      parameters: input.schema
+        ? { type: "object", ...input.schema }
+        : {
+            type: "object",
+            properties,
+            ...(required.length > 0 ? { required } : {}),
+          },
     },
   };
 }

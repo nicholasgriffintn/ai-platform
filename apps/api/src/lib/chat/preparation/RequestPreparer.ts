@@ -19,13 +19,8 @@ import { restoreStoredAttachmentContent } from "~/lib/chat/storedAttachments";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
-import { MemoryManager } from "~/lib/memory";
 import { getSystemPrompt } from "~/lib/prompts";
 import { buildGoalContractSection } from "~/lib/prompts/sections/goal";
-import {
-  getEmbeddingProvider,
-  augmentPrompt,
-} from "~/lib/providers/capabilities/embedding/helpers";
 import { findModelConfig } from "~/lib/providers/models";
 import { RepositoryManager } from "~/repositories";
 import {
@@ -210,11 +205,7 @@ export class RequestPreparer {
       user?.id,
     );
 
-    const finalMessagePromise = (async () => {
-      const resolvedSettings = await userSettingsPromise;
-
-      return this.processMessageContent(options, validationContext, resolvedSettings);
-    })();
+    const finalMessagePromise = this.processMessageContent(options, validationContext);
 
     const [
       modelConfigs,
@@ -456,34 +447,13 @@ export class RequestPreparer {
   private async processMessageContent(
     options: CoreChatOptions,
     validationContext: ValidationContext,
-    userSettings: any,
   ): Promise<string> {
     const { lastMessage } = validationContext;
-    const { use_rag, rag_options, env } = options;
-    const user = options.context?.user;
-
     const lastMessageContent = Array.isArray(lastMessage!.content)
       ? lastMessage!.content
       : [{ type: "text" as const, text: lastMessage!.content as string }];
 
-    const lastMessageContentText = lastMessageContent.find((c) => c.type === "text")?.text || "";
-
-    const finalUserMessage = sanitiseInput(lastMessageContentText);
-
-    if (use_rag) {
-      const embedding = getEmbeddingProvider(env, user, userSettings);
-      const augmentedPrompt = await augmentPrompt({
-        provider: embedding,
-        query: finalUserMessage,
-        options: rag_options || {},
-        env,
-        user,
-      });
-
-      return augmentedPrompt ? `${finalUserMessage}\n\n${augmentedPrompt}` : finalUserMessage;
-    }
-
-    return finalUserMessage;
+    return sanitiseInput(lastMessageContent.find((c) => c.type === "text")?.text || "");
   }
 
   private async storeMessages(
@@ -647,8 +617,8 @@ export class RequestPreparer {
       return this.appendProjectInstructions(enhancedPrompt, projectContext, activeGoal);
     }
 
-    const generatedPrompt = await getSystemPrompt(
-      {
+    const generatedPrompt = await getSystemPrompt({
+      request: {
         completion_id: completion_id,
         input: finalMessage,
         model: primaryModel,
@@ -661,12 +631,13 @@ export class RequestPreparer {
         max_tokens,
         options: options.options,
       },
-      primaryModel,
-      user || undefined,
+      model: primaryModel,
+      user: user || undefined,
       userSettings,
       skills,
-      { memory: memoryPolicy },
-    );
+      memory: memoryPolicy,
+      persona: options.persona,
+    });
 
     const enhancedPrompt = await this.enhanceSystemPromptWithMemory(
       generatedPrompt,
@@ -726,45 +697,29 @@ export class RequestPreparer {
     finalMessage: string,
     user: any,
     memoriesEnabled: boolean,
-    userSettings: any,
-    serviceContext?: ServiceContext,
+    _userSettings: any,
+    _serviceContext?: ServiceContext,
     memoryScope: MemoryScope = { type: "personal" },
   ): Promise<string> {
-    const isProUser = user?.plan_id === "pro";
-
-    if (memoriesEnabled && isProUser && finalMessage && user?.id) {
-      try {
-        const memoryManager = MemoryManager.getInstance(
-          this.env,
-          user,
-          serviceContext,
-          memoryScope,
-        );
-        const [synthesis, recentMemories] = await Promise.all([
-          memoryScope.type === "personal"
-            ? this.repositories.memorySyntheses.getActiveSynthesis(user.id, "global")
-            : Promise.resolve(null),
-          memoryManager.retrieveMemories(finalMessage, {
-            topK: 3,
-            scoreThreshold: 0.5,
-            userSettings,
-          }),
-        ]);
-
-        const memoryContext = buildMemoryPromptContext({
-          synthesisText: synthesis?.synthesis_text,
-          recentMemories,
-        });
-
-        if (memoryContext) {
-          return systemPrompt ? `${systemPrompt}\n${memoryContext}` : memoryContext;
-        }
-      } catch (error) {
-        logger.warn("Failed to retrieve memories", { error, userId: user?.id });
-      }
+    if (!memoriesEnabled || !finalMessage || !user?.id || memoryScope.type !== "personal") {
+      return systemPrompt;
     }
 
-    return systemPrompt;
+    try {
+      const synthesis = await this.repositories.memorySyntheses.getActiveSynthesis(
+        user.id,
+        "global",
+      );
+      const memoryContext = buildMemoryPromptContext({
+        synthesisText: synthesis?.synthesis_text,
+      });
+
+      return memoryContext ? `${systemPrompt}\n${memoryContext}` : systemPrompt;
+    } catch (error) {
+      logger.warn("Failed to read the memory synthesis", { error, userId: user?.id });
+
+      return systemPrompt;
+    }
   }
 
   private buildFinalMessages(

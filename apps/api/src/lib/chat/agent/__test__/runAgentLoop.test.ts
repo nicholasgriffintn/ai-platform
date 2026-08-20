@@ -1,29 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  getAIResponse: vi.fn(),
   handleToolCalls: vi.fn(),
-}));
-
-vi.mock("~/lib/chat/responses", () => ({
-  getAIResponse: mocks.getAIResponse,
 }));
 
 vi.mock("~/lib/chat/tools", () => ({
   handleToolCalls: mocks.handleToolCalls,
 }));
 
+import type { TurnOutput } from "../assistant-turn";
 import { runAgentLoop } from "../runAgentLoop";
+import type { ChatTurnTransport } from "../turn-transport";
 
-const artifactToolResponse = {
-  response: "",
-  tool_calls: [
-    {
-      id: "call-artifact",
-      function: { name: "artifact", arguments: "{}" },
-    },
-  ],
+const artifactToolCall = {
+  id: "call-artifact",
+  function: { name: "artifact", arguments: "{}" },
 };
+
+const artifactTurn: TurnOutput = { content: "", toolCalls: [artifactToolCall] as never };
 
 const recoverableUnknownToolResult = {
   role: "tool",
@@ -34,17 +28,52 @@ const recoverableUnknownToolResult = {
   data: { errorCode: "UNKNOWN_TOOL", recoverable: true },
 };
 
-function createParams(maxSteps = 8) {
+function textTurn(content: string): TurnOutput {
+  return { content, toolCalls: [] };
+}
+
+function toolTurn(name: string, id = "call-1"): TurnOutput {
+  return { content: "", toolCalls: [{ id, function: { name, arguments: "{}" } }] as never };
+}
+
+function createTransport(turns: TurnOutput[]) {
+  const runTurn = vi.fn(async () => {
+    const turn = turns.length > 1 ? turns.shift() : turns[0];
+
+    if (!turn) {
+      throw new Error("The transport ran out of queued turns");
+    }
+
+    return turn;
+  });
+
+  return { transport: { streams: false, runTurn } as ChatTurnTransport, runTurn };
+}
+
+function createParams(turns: TurnOutput[], maxSteps = 8) {
+  const { transport, runTurn } = createTransport(turns);
+
   return {
-    requestParams: { messages: [{ role: "user", content: "hi" }] } as any,
-    completionId: "completion-123",
-    conversationManager: {
-      add: vi.fn(),
-      checkUsageLimits: vi.fn(),
-      getUsageLimits: vi.fn(async () => ({ daily: { used: 1, limit: 100 } })),
-    } as any,
-    toolRequestContext: { env: { AI: {} } } as any,
-    maxSteps,
+    params: {
+      requestParams: { messages: [{ role: "user", content: "hi" }] } as any,
+      completionId: "completion-123",
+      conversationManager: {
+        add: vi.fn(),
+        get: vi.fn(async () => []),
+        checkUsageLimits: vi.fn(),
+        getUsageLimits: vi.fn(async () => ({ daily: { used: 1, limit: 100 } })),
+      } as any,
+      toolRequestContext: { env: { AI: {} } } as any,
+      transport,
+      maxSteps,
+      env: { AI: {} } as any,
+      model: "test-model",
+      provider: "test-provider",
+      platform: "api" as const,
+      mode: "normal",
+      memoryScope: { type: "personal" } as const,
+    },
+    runTurn,
   };
 }
 
@@ -54,64 +83,88 @@ describe("runAgentLoop", () => {
   });
 
   it("returns the model text when no tools are called", async () => {
-    mocks.getAIResponse.mockResolvedValueOnce({ response: "Just an answer." });
+    const { params } = createParams([textTurn("Just an answer.")]);
 
-    const result = await runAgentLoop(createParams());
+    const result = await runAgentLoop(params);
 
     expect(result.response.response).toBe("Just an answer.");
     expect(mocks.handleToolCalls).not.toHaveBeenCalled();
   });
 
-  it("executes tool calls then finishes on the follow-up text turn", async () => {
-    mocks.getAIResponse
-      .mockResolvedValueOnce({
-        response: "",
-        tool_calls: [{ id: "call-1", function: { name: "get_weather", arguments: "{}" } }],
-      })
-      .mockResolvedValueOnce({ response: "It is sunny." });
+  it("stores the assistant message for every turn it runs", async () => {
+    const { params } = createParams([toolTurn("get_weather"), textTurn("It is sunny.")]);
+
     mocks.handleToolCalls.mockResolvedValueOnce([
       { role: "tool", name: "get_weather", content: "sunny", status: "success" },
     ]);
 
-    const result = await runAgentLoop(createParams());
+    await runAgentLoop(params);
+
+    expect(params.conversationManager.add).toHaveBeenCalledTimes(2);
+  });
+
+  it("executes tool calls then finishes on the follow-up text turn", async () => {
+    const { params, runTurn } = createParams([toolTurn("get_weather"), textTurn("It is sunny.")]);
+
+    mocks.handleToolCalls.mockResolvedValueOnce([
+      { role: "tool", name: "get_weather", content: "sunny", status: "success" },
+    ]);
+
+    const result = await runAgentLoop(params);
 
     expect(mocks.handleToolCalls).toHaveBeenCalledTimes(1);
+    expect(runTurn).toHaveBeenCalledTimes(2);
     expect(result.response.response).toBe("It is sunny.");
     expect(result.toolResponses).toHaveLength(1);
   });
 
+  it("keeps working after a tool fails rather than ending the turn", async () => {
+    const { params } = createParams([toolTurn("get_weather"), textTurn("I could not check.")]);
+
+    mocks.handleToolCalls.mockResolvedValueOnce([
+      { role: "tool", name: "get_weather", content: "upstream is down", status: "error" },
+    ]);
+
+    const result = await runAgentLoop(params);
+
+    expect(result.response.response).toBe("I could not check.");
+  });
+
   it("gives an unknown tool call one corrective model turn", async () => {
-    mocks.getAIResponse
-      .mockResolvedValueOnce(artifactToolResponse)
-      .mockResolvedValueOnce({ response: "Recovered without the tool." });
+    const { params } = createParams([artifactTurn, textTurn("Recovered without the tool.")]);
+
     mocks.handleToolCalls.mockResolvedValueOnce([recoverableUnknownToolResult]);
 
-    const result = await runAgentLoop(createParams());
+    const result = await runAgentLoop(params);
 
     expect(mocks.handleToolCalls).toHaveBeenCalledTimes(1);
-    expect(mocks.handleToolCalls.mock.calls[0][4]).toEqual({ recoverUnknownToolCalls: true });
+    expect(mocks.handleToolCalls.mock.calls[0][4]).toMatchObject({
+      recoverUnknownToolCalls: true,
+    });
     expect(result.response.response).toBe("Recovered without the tool.");
   });
 
   it("does not grant a second recovery turn for a repeated unknown tool call", async () => {
-    mocks.getAIResponse
-      .mockResolvedValueOnce(artifactToolResponse)
-      .mockResolvedValueOnce(artifactToolResponse)
-      .mockResolvedValueOnce({ response: "Giving up on that tool." });
+    const { params } = createParams([
+      artifactTurn,
+      artifactTurn,
+      textTurn("Giving up on that tool."),
+    ]);
+
     mocks.handleToolCalls
       .mockResolvedValueOnce([recoverableUnknownToolResult])
       .mockResolvedValueOnce([recoverableUnknownToolResult]);
 
-    await runAgentLoop(createParams());
+    await runAgentLoop(params);
 
-    expect(mocks.handleToolCalls.mock.calls[1][4]).toEqual({ recoverUnknownToolCalls: false });
+    expect(mocks.handleToolCalls.mock.calls[1][4]).toMatchObject({
+      recoverUnknownToolCalls: false,
+    });
   });
 
   it("stops for user approval when a tool result is pending", async () => {
-    mocks.getAIResponse.mockResolvedValueOnce({
-      response: "",
-      tool_calls: [{ id: "call-1", function: { name: "request_approval", arguments: "{}" } }],
-    });
+    const { params, runTurn } = createParams([toolTurn("request_approval")]);
+
     mocks.handleToolCalls.mockResolvedValueOnce([
       {
         role: "tool",
@@ -121,24 +174,19 @@ describe("runAgentLoop", () => {
       },
     ]);
 
-    const result = await runAgentLoop(createParams());
+    const result = await runAgentLoop(params);
 
     expect(result.response.status).toBe("pending");
     expect(result.response.response).toBe("Waiting on you to approve the deploy.");
-    expect(mocks.getAIResponse).toHaveBeenCalledTimes(1);
+    expect(runTurn).toHaveBeenCalledTimes(1);
   });
 
   it("ends with the work already done when the user runs out mid-run", async () => {
-    mocks.getAIResponse.mockResolvedValue({
-      response: "Checked the first thing",
-      tool_calls: [{ id: "call-1", function: { name: "get_weather", arguments: "{}" } }],
-    });
+    const { params, runTurn } = createParams([toolTurn("get_weather")]);
+
     mocks.handleToolCalls.mockResolvedValue([
       { role: "tool", name: "get_weather", content: "sunny", status: "success" },
     ]);
-
-    const params = createParams();
-
     params.conversationManager.getUsageLimits = vi.fn(async () => ({
       daily: { used: 100, limit: 100 },
     }));
@@ -148,13 +196,11 @@ describe("runAgentLoop", () => {
     expect(result.response.status).toBe("usage_limit_reached");
     expect(result.response.response).toContain("reached your usage limit");
     expect(result.toolResponses).toHaveLength(1);
-    expect(mocks.getAIResponse).toHaveBeenCalledTimes(1);
+    expect(runTurn).toHaveBeenCalledTimes(1);
   });
 
   it("does not re-check the limit for the first step, which the request boundary already covered", async () => {
-    mocks.getAIResponse.mockResolvedValueOnce({ response: "Just an answer." });
-
-    const params = createParams();
+    const { params } = createParams([textTurn("Just an answer.")]);
 
     await runAgentLoop(params);
 
@@ -162,13 +208,11 @@ describe("runAgentLoop", () => {
   });
 
   it("holds the loop open while assessFinish withholds approval", async () => {
-    mocks.getAIResponse
-      .mockResolvedValueOnce({ response: "All done." })
-      .mockResolvedValueOnce({ response: "Actually done now." });
+    const { params, runTurn } = createParams([textTurn("All done."), textTurn("Actually done.")]);
 
     let allow = false;
     const result = await runAgentLoop({
-      ...createParams(),
+      ...params,
       assessFinish: () => {
         if (allow) {
           return { allow: true, outcome: "satisfied" as const };
@@ -180,7 +224,13 @@ describe("runAgentLoop", () => {
       },
     });
 
-    expect(mocks.getAIResponse).toHaveBeenCalledTimes(2);
-    expect(result.response.response).toBe("Actually done now.");
+    expect(runTurn).toHaveBeenCalledTimes(2);
+    expect(result.response.response).toBe("Actually done.");
+  });
+
+  it("gives up on a turn the provider could not deliver", async () => {
+    const { params } = createParams([{ content: "", toolCalls: [], error: { message: "boom" } }]);
+
+    await expect(runAgentLoop(params)).rejects.toThrow("boom");
   });
 });

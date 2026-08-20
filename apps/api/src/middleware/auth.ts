@@ -300,13 +300,6 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
       try {
         const body = await context.req.json();
 
-        if (body?.use_rag) {
-          throw new AssistantError(
-            "RAG features require authentication. Please provide a valid access token.",
-            ErrorType.AUTHENTICATION_ERROR,
-          );
-        }
-
         if (
           body?.tools?.length > 0 ||
           body?.tool_choice ||

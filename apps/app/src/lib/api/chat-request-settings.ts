@@ -12,7 +12,7 @@ type ChatCompactionMode = NonNullable<ChatSettings["compaction"]>;
 
 type RequestGenerationSettings = Omit<
   ChatSettings,
-  "compaction" | "enabled_tools" | "localOnly" | "rag_options" | "tool_options" | "use_rag"
+  "compaction" | "enabled_tools" | "localOnly" | "rag_options" | "tool_options"
 > & {
   compaction?: ChatCompactionMode;
 };
@@ -22,7 +22,6 @@ export interface ChatRequestSettingsProjection {
   generationSettings: RequestGenerationSettings;
   hostedToolOptions?: ChatSettings["tool_options"];
   ragOptions?: RequestRagOptions;
-  useRag?: boolean;
 }
 
 function isChatCompactionMode(value: unknown): value is ChatCompactionMode {
@@ -42,7 +41,6 @@ export function projectChatRequestSettings(
     localOnly: _localOnly,
     rag_options: ragOptions,
     tool_options: hostedToolOptions,
-    use_rag: useRag,
     ...generationSettings
   } = chatSettings;
 
@@ -68,6 +66,5 @@ export function projectChatRequestSettings(
 
       return hasDefinedValue(requestRagOptions) ? requestRagOptions : undefined;
     })(),
-    useRag,
   };
 }

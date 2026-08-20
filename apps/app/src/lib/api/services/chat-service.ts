@@ -529,21 +529,15 @@ export class ChatService {
         ? normaliseToolIds(filterUnavailableModelToolSelections(selectedTools, modelConfig))
         : undefined;
     const requestEnabledTools = sandboxOptions
-      ? normaliseToolIds([
-          ...(selectedToolIds ?? []),
-          ...getSandboxTaskToolNames(sandboxOptions.taskType),
-        ])
+      ? normaliseToolIds([...(selectedToolIds ?? []), ...getSandboxTaskToolNames()])
       : selectedToolIds;
-    const requestApprovedTools = sandboxOptions
-      ? getSandboxTaskToolNames(sandboxOptions.taskType)
-      : undefined;
+    const requestApprovedTools = sandboxOptions ? getSandboxTaskToolNames() : undefined;
 
     const {
       enabledTools: settingsEnabledTools,
       generationSettings,
       hostedToolOptions,
       ragOptions: requestRagOptions,
-      useRag,
     } = projectChatRequestSettings(chatSettings);
     const enabledTools = allowTools ? (requestEnabledTools ?? settingsEnabledTools) : undefined;
     const { options: featureOptions, ...requestOptionFields } = requestOptions ?? {};
@@ -561,7 +555,6 @@ export class ChatService {
       mode,
       use_multi_model: useMultiModel,
       max_steps: sandboxOptions?.maxSteps ?? (sandboxOptions ? 2 : undefined),
-      use_rag: useRag,
       rag_options: requestRagOptions,
       enabled_tools: enabledTools,
       approved_tools: allowTools ? requestApprovedTools : undefined,

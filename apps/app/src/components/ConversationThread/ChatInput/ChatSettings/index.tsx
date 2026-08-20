@@ -31,9 +31,6 @@ type NumericChatSettingKey =
   | "presence_penalty"
   | "frequency_penalty";
 
-type RagNumericOptionKey = "topK" | "scoreThreshold";
-type RagBooleanOptionKey = "includeMetadata";
-type RagStringOptionKey = "type" | "namespace";
 type ChatCompactionMode = NonNullable<ChatSettingsType["compaction"]>;
 
 function isChatCompactionMode(value: string): value is ChatCompactionMode {
@@ -87,13 +84,6 @@ export const ChatSettings = ({
     });
   };
 
-  const handleBooleanSettingChange = (key: "use_rag", value: boolean) => {
-    setChatSettings({
-      ...chatSettings,
-      [key]: value,
-    });
-  };
-
   const handleCompactionChange = (value: string) => {
     if (!isChatCompactionMode(value)) {
       return;
@@ -144,42 +134,6 @@ export const ChatSettings = ({
     });
   };
 
-  const handleRagNumericOptionChange = (key: RagNumericOptionKey, value: string) => {
-    const numValue = Number.parseFloat(value);
-
-    if (Number.isNaN(numValue)) {
-      return;
-    }
-
-    setChatSettings({
-      ...chatSettings,
-      rag_options: {
-        ...chatSettings.rag_options,
-        [key]: numValue,
-      },
-    });
-  };
-
-  const handleRagBooleanOptionChange = (key: RagBooleanOptionKey, value: boolean) => {
-    setChatSettings({
-      ...chatSettings,
-      rag_options: {
-        ...chatSettings.rag_options,
-        [key]: value,
-      },
-    });
-  };
-
-  const handleRagStringOptionChange = (key: RagStringOptionKey, value: string) => {
-    setChatSettings({
-      ...chatSettings,
-      rag_options: {
-        ...chatSettings.rag_options,
-        [key]: value,
-      },
-    });
-  };
-
   return (
     <ChatSettingsPanel
       showSettings={showSettings}
@@ -198,20 +152,10 @@ export const ChatSettings = ({
       showToolSelector={showToolSelector}
       toolSelectionLocked={toolSelectionLocked}
       toolSelectorSlot={<ToolSelector isDisabled={isDisabled} />}
-      onBooleanSettingChange={(key, value) => handleBooleanSettingChange(key as "use_rag", value)}
       onNumericSettingChange={(key, value) =>
         handleNumericSettingChange(key as NumericChatSettingKey, value)
       }
       onCompactionChange={handleCompactionChange}
-      onRagBooleanOptionChange={(key, value) =>
-        handleRagBooleanOptionChange(key as RagBooleanOptionKey, value)
-      }
-      onRagNumericOptionChange={(key, value) =>
-        handleRagNumericOptionChange(key as RagNumericOptionKey, value)
-      }
-      onRagStringOptionChange={(key, value) =>
-        handleRagStringOptionChange(key as RagStringOptionKey, value)
-      }
       onReasoningEffortChange={handleReasoningEffortChange}
       onVerbosityChange={handleVerbosityChange}
     />

@@ -15,6 +15,16 @@ export {
   UPDATE_PLAN_TOOL_NAME,
 } from "./control-tools";
 
+export { flattenObjectRootSchema } from "./json-schema";
+
+export {
+  toProviderToolDefinition,
+  toProviderToolDefinitions,
+  type AnthropicToolDefinition,
+  type BedrockToolDefinition,
+  type ProviderToolDefinition,
+} from "./provider-tools";
+
 export {
   PermissionChecker,
   resolveModeMaxSteps,

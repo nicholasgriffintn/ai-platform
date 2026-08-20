@@ -1,7 +1,8 @@
+import { FINISH_TOOL_NAME, UPDATE_PLAN_TOOL_NAME } from "@ngriffin_uk/polychat-library-agent-core";
+
 import { defineTool, type ToolDefinition } from "./define-tool";
 
-export const UPDATE_PLAN_TOOL_NAME = "update_plan";
-export const FINISH_TOOL_NAME = "finish";
+export { FINISH_TOOL_NAME, UPDATE_PLAN_TOOL_NAME };
 
 export const updatePlanToolDefinition: ToolDefinition = defineTool({
   name: UPDATE_PLAN_TOOL_NAME,

@@ -611,36 +611,6 @@ describe("Auth Middleware", () => {
       }
     });
 
-    it("should block RAG usage for unauthenticated users", async () => {
-      const context = createMockContext({
-        req: {
-          ...createMockContext().req,
-          path: "/chat/completions",
-          method: "POST",
-          json: vi.fn().mockResolvedValue({ use_rag: true }),
-        },
-      });
-      const mockAnonymousUser = { id: "anon-123" };
-
-      // @ts-expect-error - mock implementation
-      context.get.mockImplementation((key: string) => {
-        if (key === "anonymousUser") {
-          return mockAnonymousUser;
-        }
-
-        if (key === "user") {
-          return null;
-        }
-
-        return null;
-      });
-
-      await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(AssistantError);
-      await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(
-        "RAG features require authentication",
-      );
-    });
-
     it("should block tool usage for unauthenticated users", async () => {
       const context = createMockContext({
         req: {

@@ -1,26 +1,25 @@
 import { createGoalFinishGate } from "~/lib/chat/agent/goal-gate";
-import { runAgentLoop, type ModelResponse } from "~/lib/chat/agent/runAgentLoop";
-import { createAgentExecutionStream } from "~/lib/chat/core/agent-stream";
-import { buildStoredAssistantMessage } from "~/lib/chat/core/assistant-message";
+import { runAgentLoop } from "~/lib/chat/agent/runAgentLoop";
+import {
+  createBufferedTurnTransport,
+  createStreamingTurnTransport,
+} from "~/lib/chat/agent/turn-transport";
+import { createChatTurnStream } from "~/lib/chat/core/chat-stream";
 import { prependCompactionStateEvent } from "~/lib/chat/core/compaction-stream";
 import { createChatExecutionRequest } from "~/lib/chat/core/execution-request";
+import { createModelEnsembleStream } from "~/lib/chat/core/model-ensemble";
 import { buildToolRequestContext } from "~/lib/chat/core/request-context";
 import { isAgentExecutionMode } from "~/lib/chat/mode-metadata";
-import { createMultiModelStream } from "~/lib/chat/multiModalStreaming";
 import { RequestPreparer, type PreparedRequest } from "~/lib/chat/preparation/RequestPreparer";
-import { getAIResponse } from "~/lib/chat/responses";
-import { createStreamWithPostProcessing } from "~/lib/chat/streaming";
+import { resolveTurnStepBudget } from "~/lib/chat/step-budget";
 import { pruneMessagesToFitContext } from "~/lib/chat/utils";
 import { ValidationPipeline } from "~/lib/chat/validation/ValidationPipeline";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
-import { resolveModeMaxSteps } from "~/lib/permissions/PermissionChecker";
-import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { captureTrainingExample } from "~/lib/providers/capabilities/training/captureTrainingExample";
 import { SessionManager } from "~/lib/session/SessionManager";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
 import { acquireThread, releaseThread } from "~/services/conversations/coordinator/client";
-import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
 import { GOAL_STATUS_MARKER_EVENTS, recordGoalMarker } from "~/services/goals/goalMarker";
 import { GoalService } from "~/services/goals/GoalService";
 import type { ChatMode, CoreChatOptions, Message } from "~/types";
@@ -38,27 +37,6 @@ function isStreamingResult(result: unknown): result is { stream: ReadableStream 
     "stream" in result &&
     (result as { stream?: unknown }).stream instanceof ReadableStream
   );
-}
-
-const RECIPE_CHAT_DEFAULT_MAX_STEPS = 4;
-const RECIPE_CONNECTOR_DEFAULT_MAX_STEPS = 8;
-const RECIPE_CONNECTOR_TOOL_NAME = "use_recipe_connector";
-
-function resolveChatMaxSteps(chatOptions: CoreChatOptions): number | undefined {
-  if (typeof chatOptions.max_steps === "number") {
-    return chatOptions.max_steps;
-  }
-
-  const enabledFunctionTools = resolveEnabledFunctionToolNames(
-    chatOptions.enabled_tools,
-    chatOptions.context?.user,
-  );
-
-  if (enabledFunctionTools.has(RECIPE_CONNECTOR_TOOL_NAME)) {
-    return RECIPE_CONNECTOR_DEFAULT_MAX_STEPS;
-  }
-
-  return chatOptions.options?.recipe ? RECIPE_CHAT_DEFAULT_MAX_STEPS : undefined;
 }
 
 export class ChatOrchestrator {
@@ -221,10 +199,7 @@ export class ChatOrchestrator {
       store = true,
       enabled_tools: requestedEnabledTools = [],
       approved_tools = [],
-      max_steps,
     } = chatOptions;
-    const resolvedMaxSteps = resolveChatMaxSteps(chatOptions);
-
     const startTime = Date.now();
 
     const {
@@ -281,28 +256,8 @@ export class ChatOrchestrator {
         enabledTools: enabled_tools,
       },
       messages,
-      resolvedMaxSteps,
+      resolvedMaxSteps: resolveTurnStepBudget(chatOptions, currentMode),
     });
-
-    if (!isAgentExecutionMode(currentMode) && modelConfigs.length > 1 && stream) {
-      const transformedStream = createMultiModelStream(
-        executionRequest.multiModelStreamRequest(),
-        executionRequest.multiModelStreamOptions(),
-        conversationManager,
-      );
-
-      return {
-        stream:
-          didCompact && compactionMessage
-            ? prependCompactionStateEvent(transformedStream, compactionMessage)
-            : transformedStream,
-        selectedModel: primaryModel,
-        selectedModels: modelConfigs.map((m) => m.model),
-        completion_id: chatOptions.completion_id,
-      };
-    }
-
-    const requestParams = executionRequest.providerRequest();
 
     const toolRequestContext = buildToolRequestContext({
       chatOptions: {
@@ -318,122 +273,65 @@ export class ChatOrchestrator {
       memoryScope: prepared.memoryScope,
     });
 
-    if (isAgentExecutionMode(currentMode) && stream) {
-      const agentStream = createAgentExecutionStream({
-        requestParams,
-        completionId: chatOptions.completion_id,
-        conversationManager,
-        toolRequestContext,
-        maxSteps: resolveModeMaxSteps(currentMode, max_steps),
-        envLogId: chatOptions.env.AI.aiGatewayLogId,
-        mode: currentMode,
-        model: primaryModel,
-        platform: platform || "api",
-        requestOptions: prepared.requestOptions,
-      });
-
-      return {
-        stream:
-          didCompact && compactionMessage
-            ? prependCompactionStateEvent(agentStream, compactionMessage)
-            : agentStream,
-        selectedModel: primaryModel,
-        completion_id: chatOptions.completion_id,
-      };
-    }
-
-    const toolResponses: Message[] = [];
-    let response: ModelResponse | ReadableStream;
-    const responseAlreadyStored = false;
+    const runParams = {
+      requestParams: executionRequest.providerRequest(),
+      completionId: chatOptions.completion_id,
+      conversationManager,
+      toolRequestContext,
+      transport: stream ? createStreamingTurnTransport() : createBufferedTurnTransport(),
+      maxSteps: resolveTurnStepBudget(chatOptions, currentMode),
+      env: chatOptions.env,
+      model: primaryModel,
+      provider: primaryProvider,
+      platform: platform || "api",
+      mode: currentMode,
+      memoryScope: prepared.memoryScope,
+      context: chatOptions.context,
+      userSettings,
+      requestOptions: prepared.requestOptions,
+      assessFinish: await this.resolveGoalFinishGate(chatOptions, currentMode, conversationManager),
+    };
 
     if (stream) {
-      response = await getAIResponse(requestParams);
-    } else {
-      let agentResult;
-
-      try {
-        agentResult = await runAgentLoop({
-          requestParams,
-          completionId: chatOptions.completion_id,
-          conversationManager,
-          toolRequestContext,
-          maxSteps: resolveModeMaxSteps(currentMode, resolvedMaxSteps ?? max_steps),
-          assessFinish: await this.resolveGoalFinishGate(
-            chatOptions,
-            currentMode,
-            conversationManager,
-          ),
-        });
-      } finally {
-        if (toolRequestContext.context) {
-          await closeComposioConnectorRun(toolRequestContext.context);
-        }
-      }
-
-      response = agentResult.response;
-      toolResponses.push(...agentResult.toolResponses);
-    }
-
-    if (response instanceof ReadableStream) {
-      const transformedStream = await createStreamWithPostProcessing(
-        response,
-        executionRequest.streamOptions(primaryModel, primaryProvider),
-        conversationManager,
-      );
+      const runsEnsemble = !isAgentExecutionMode(currentMode) && modelConfigs.length > 1;
+      const turnStream = runsEnsemble
+        ? createModelEnsembleStream({ ...runParams, models: modelConfigs })
+        : createChatTurnStream(runParams);
 
       return {
         stream:
           didCompact && compactionMessage
-            ? prependCompactionStateEvent(transformedStream, compactionMessage)
-            : transformedStream,
+            ? prependCompactionStateEvent(turnStream, compactionMessage)
+            : turnStream,
         selectedModel: primaryModel,
+        ...(runsEnsemble ? { selectedModels: modelConfigs.map((m) => m.model) } : {}),
         completion_id: chatOptions.completion_id,
       };
     }
 
-    if (!response.response && !response.tool_calls) {
-      throw new AssistantError("No response generated by the model", ErrorType.PARAMS_ERROR);
-    }
+    let runResult: Awaited<ReturnType<typeof runAgentLoop>>;
 
-    if (response.response) {
-      const guardrails = new Guardrails(chatOptions.env, chatOptions.context?.user, userSettings);
-      const outputValidation = await guardrails.validateOutput(
-        response.response,
-        chatOptions.context?.user?.id,
-        chatOptions.completion_id,
-      );
-
-      if (!outputValidation?.isValid) {
-        return {
-          selectedModel: primaryModel,
-          validation: "output",
-          error:
-            outputValidation.rawResponse?.blockedResponse || "Response did not pass safety checks",
-          violations: outputValidation.violations,
-          rawViolations: outputValidation.rawResponse,
-        };
+    try {
+      runResult = await runAgentLoop(runParams);
+    } finally {
+      if (toolRequestContext.context) {
+        await closeComposioConnectorRun(toolRequestContext.context);
       }
     }
 
-    if (!responseAlreadyStored) {
-      await conversationManager.add(
-        chatOptions.completion_id,
-        buildStoredAssistantMessage({
-          response,
-          content: response.response || "",
-          envLogId: chatOptions.env.AI.aiGatewayLogId,
-          mode: currentMode,
-          model: primaryModel,
-          platform: platform || "api",
-          requestOptions: prepared.requestOptions,
-        }),
-      );
+    if (!runResult.guardrailsPassed) {
+      return {
+        selectedModel: primaryModel,
+        validation: "output",
+        error: "Response did not pass safety checks",
+        violations: runResult.guardrailViolations,
+      };
     }
 
     if (userSettings?.tracking_enabled) {
       const userMessage = messages.find((m) => m.role === "user");
 
-      if (userMessage && response.response && store) {
+      if (userMessage && runResult.response.response && store) {
         const context = resolveServiceContext({
           env: chatOptions.env,
           user: chatOptions.context?.user || undefined,
@@ -446,7 +344,7 @@ export class ChatOrchestrator {
             typeof userMessage.content === "string"
               ? userMessage.content
               : JSON.stringify(userMessage.content),
-          assistantResponse: response.response,
+          assistantResponse: runResult.response.response,
           systemPrompt,
           modelUsed: primaryModel,
           conversationId: chatOptions.completion_id,
@@ -459,8 +357,8 @@ export class ChatOrchestrator {
     }
 
     return {
-      response,
-      toolResponses,
+      response: runResult.response,
+      toolResponses: runResult.toolResponses,
       selectedModel: primaryModel,
       selectedModels: modelConfigs.length > 1 ? modelConfigs.map((m) => m.model) : undefined,
       completion_id: chatOptions.completion_id,

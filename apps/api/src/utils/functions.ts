@@ -84,15 +84,7 @@ export const getFunctionResponseType = (name: string): ResponseDisplayType => {
     return ResponseDisplayType.TEXT;
   }
 
-  if (
-    name === "run_feature_implementation" ||
-    name === "run_code_review" ||
-    name === "run_test_suite" ||
-    name === "run_bug_fix" ||
-    name === "run_refactoring" ||
-    name === "run_documentation" ||
-    name === "run_migration"
-  ) {
+  if (name === "run_sandbox_task") {
     return ResponseDisplayType.TEMPLATE;
   }
 

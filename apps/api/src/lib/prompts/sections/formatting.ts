@@ -2,13 +2,9 @@ import { PromptBuilder } from "../builder";
 
 interface FormattingOptions {
   isCoding?: boolean;
-  format?: "full" | "compact";
 }
 
-export function buildFormattingSection({
-  isCoding = false,
-  format = "full",
-}: FormattingOptions): string {
+export function buildFormattingSection({ isCoding = false }: FormattingOptions): string {
   const builder = new PromptBuilder("<formatting>")
     .addLine()
     .addLine(
@@ -23,9 +19,7 @@ export function buildFormattingSection({
 
   if (isCoding) {
     builder.addLine(
-      format === "compact"
-        ? "<rule>Present runnable code and note material assumptions, edge cases, and validation.</rule>"
-        : "<rule>Present runnable code in fenced blocks. Explain material assumptions and edge cases, and report relevant tests or checks rather than implying validation that did not run.</rule>",
+      "<rule>Present runnable code in fenced blocks. Explain material assumptions and edge cases, and report relevant tests or checks rather than implying validation that did not run.</rule>",
     );
   }
 

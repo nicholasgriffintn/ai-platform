@@ -15,6 +15,8 @@ export interface PanelMember {
   name: string;
   role: string;
   instruction: string;
+  model?: string;
+  provider?: string;
 }
 
 export interface PanelTurn {
@@ -23,6 +25,7 @@ export interface PanelTurn {
   memberRole: string;
   content: string;
   turn: number;
+  model: string;
 }
 
 export interface PanelRouting {
@@ -73,9 +76,7 @@ function buildMemberSystemPrompt(params: {
   members: readonly PanelMember[];
   brief: string;
 }): string {
-  const roster = params.members
-    .map((member) => `- ${member.id} — ${member.name} (${member.role}): ${member.instruction}`)
-    .join("\n");
+  const roster = params.members.map(buildRosterEntry).join("\n");
 
   return `${params.brief}
 
@@ -98,6 +99,12 @@ function buildTranscript(turns: readonly PanelTurn[]): string {
   return turns
     .map((turn) => `${turn.memberName} (${turn.memberRole}): ${turn.content}`)
     .join("\n\n");
+}
+
+function buildRosterEntry(member: PanelMember): string {
+  const model = member.model ? ` [${member.model}]` : "";
+
+  return `- ${member.id} — ${member.name} (${member.role})${model}: ${member.instruction}`;
 }
 
 /**
@@ -163,14 +170,18 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
   const provider = params.provider ?? fallback?.provider;
   const context = createServiceContext({ env: params.env, user: params.user });
 
-  const complete = async (systemPrompt: string, userContent: string): Promise<string> => {
+  const complete = async (
+    systemPrompt: string,
+    userContent: string,
+    speaker?: PanelMember,
+  ): Promise<string> => {
     const messages: Message[] = [
       { role: "system", content: systemPrompt },
       { role: "user", content: userContent },
     ];
     const payload: ChatCompletionParameters = {
-      model,
-      provider,
+      model: speaker?.model ?? model,
+      provider: speaker?.model ? speaker.provider : provider,
       messages,
       temperature: 0.7,
       max_tokens: 900,
@@ -215,6 +226,7 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
       raw = await complete(
         buildMemberSystemPrompt({ member, members, brief: params.turnBrief }),
         userContent,
+        member,
       );
     } catch (error) {
       logger.warn("Panel member turn failed", { error, memberId: member.id });
@@ -228,6 +240,7 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
       memberRole: member.role,
       content,
       turn: turns.length + 1,
+      model: member.model ?? model,
     };
 
     turns.push(turn);

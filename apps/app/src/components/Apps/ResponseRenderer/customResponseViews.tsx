@@ -1,6 +1,6 @@
 import {
   CouncilMemberPickerView,
-  CouncilTurnView,
+  PanelTurnView,
   type CustomResponseViewRegistry,
   WeatherView,
   WebSearchView,
@@ -10,16 +10,17 @@ import { CapabilityDiscoveryView } from "./CustomView/Views/CapabilityDiscoveryV
 import { ResearchView } from "./CustomView/Views/ResearchView";
 import { SandboxView } from "./CustomView/Views/SandboxView";
 
-/**
- * Every tool response the web host can render. Views without host dependencies ship inside
- * `@ngriffin_uk/polychat-component-content`; the rest live here because they need app data.
- */
 export const customResponseViews: CustomResponseViewRegistry = {
   web_search: ({ data, embedded, onToolInteraction }) => (
     <WebSearchView data={data} embedded={embedded} onToolInteraction={onToolInteraction} />
   ),
   get_weather: ({ data, embedded }) => <WeatherView data={data} embedded={embedded} />,
-  council_turn: ({ data, embedded }) => <CouncilTurnView data={data} embedded={embedded} />,
+  council_turn: ({ data, embedded }) => (
+    <PanelTurnView data={data} embedded={embedded} fallbackName="Council member" />
+  ),
+  second_opinion_turn: ({ data, embedded }) => (
+    <PanelTurnView data={data} embedded={embedded} fallbackName="Reviewer" />
+  ),
   select_council_members: ({ data, embedded, onToolInteraction }) => (
     <CouncilMemberPickerView
       data={data}

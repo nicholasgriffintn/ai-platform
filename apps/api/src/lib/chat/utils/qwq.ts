@@ -1,31 +1,14 @@
-/**
- * Utilities for handling QwQ model responses
- * QwQ models generate thinking content but don't include the opening <think> tag
- */
+export function modelEmitsUnterminatedThinking(model?: string): boolean {
+  return Boolean(model) && model.toLowerCase().includes("qwq");
+}
 
-/**
- * Preprocesses QwQ model responses to ensure proper <think> tag formatting
- * @param content - The response content to preprocess
- * @param model - The model identifier
- * @returns The preprocessed content with <think> tag if needed
- */
 export function preprocessQwQResponse(content: string, model?: string): string {
-  if (!model || !content) {
-    return content;
-  }
-
-  const isQwQModel = model.toLowerCase().includes("qwq");
-
-  if (!isQwQModel) {
+  if (!modelEmitsUnterminatedThinking(model) || !content) {
     return content;
   }
 
   const hasClosingThink = content.includes("</think>");
   const startsWithThink = content.trim().startsWith("<think>");
 
-  if (hasClosingThink && !startsWithThink) {
-    return `<think>\n${content}`;
-  }
-
-  return content;
+  return hasClosingThink && !startsWithThink ? `<think>\n${content}` : content;
 }

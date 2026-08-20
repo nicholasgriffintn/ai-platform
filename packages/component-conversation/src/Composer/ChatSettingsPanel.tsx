@@ -37,12 +37,8 @@ export interface ChatSettingsPanelProps {
   onUseMultiModelChange: (value: boolean) => void;
   showToolSelector?: boolean;
   toolSelectionLocked?: boolean;
-  onBooleanSettingChange: (key: string, value: boolean) => void;
   onNumericSettingChange: (key: string, value: string) => void;
   onCompactionChange: (value: string) => void;
-  onRagBooleanOptionChange: (key: string, value: boolean) => void;
-  onRagNumericOptionChange: (key: string, value: string) => void;
-  onRagStringOptionChange: (key: string, value: string) => void;
   onReasoningEffortChange: (value: string) => void;
   onVerbosityChange: (value: string) => void;
   onChatSettingsChange: (settings: Record<string, any>) => void;
@@ -64,12 +60,8 @@ export function ChatSettingsPanel({
   onUseMultiModelChange,
   showToolSelector = false,
   toolSelectionLocked = false,
-  onBooleanSettingChange,
   onNumericSettingChange,
   onCompactionChange,
-  onRagBooleanOptionChange,
-  onRagNumericOptionChange,
-  onRagStringOptionChange,
   onReasoningEffortChange,
   onVerbosityChange,
   onChatSettingsChange,
@@ -147,14 +139,6 @@ export function ChatSettingsPanel({
                   description="Controls randomness in responses."
                 />
 
-                <CompactSettingSwitch
-                  id="use_rag"
-                  label="Enable RAG"
-                  checked={chatSettings.use_rag ?? false}
-                  disabled={isDisabled}
-                  onChange={(checked) => onBooleanSettingChange("use_rag", checked)}
-                  description="RAG stands for Retrieval-Augmented Generation, which enhances the model with external data."
-                />
                 {showMultiModelToggle && (
                   <CompactSettingSwitch
                     id="use_multi_model"
@@ -250,68 +234,6 @@ export function ChatSettingsPanel({
                     </p>
                   </div>
                 </details>
-
-                {chatSettings.use_rag && (
-                  <div className="space-y-3 border-t border-zinc-200 px-1 pt-3 dark:border-zinc-700">
-                    <div className="px-1 text-[11px] font-semibold uppercase text-zinc-500 dark:text-zinc-400">
-                      RAG Settings
-                    </div>
-
-                    <CompactSettingNumber
-                      id="rag_top_k"
-                      label="Top K Results"
-                      min={1}
-                      max={20}
-                      value={chatSettings.rag_options?.topK ?? 3}
-                      disabled={isDisabled}
-                      onChange={(value) => onRagNumericOptionChange("topK", value)}
-                    />
-
-                    <CompactSettingRange
-                      id="rag_score_threshold"
-                      label="Score Threshold"
-                      min={0}
-                      max={1}
-                      step={0.05}
-                      value={chatSettings.rag_options?.scoreThreshold ?? 0.5}
-                      disabled={isDisabled}
-                      onChange={(value) => onRagNumericOptionChange("scoreThreshold", value)}
-                      markers={["0", "0.5", "1"]}
-                    />
-
-                    <CompactSettingSwitch
-                      id="rag_include_metadata"
-                      label="Include Metadata"
-                      checked={chatSettings.rag_options?.includeMetadata ?? false}
-                      disabled={isDisabled}
-                      onChange={(checked) => onRagBooleanOptionChange("includeMetadata", checked)}
-                      description="Include additional information about the retrieved documents."
-                    />
-
-                    <div className="space-y-1.5">
-                      <label
-                        htmlFor="rag_namespace"
-                        className="text-xs font-medium text-zinc-700 dark:text-zinc-300"
-                      >
-                        Namespace
-                      </label>
-                      <input
-                        id="rag_namespace"
-                        value={chatSettings.rag_options?.namespace ?? ""}
-                        disabled={isDisabled}
-                        onChange={(event) =>
-                          onRagStringOptionChange("namespace", event.target.value)
-                        }
-                        placeholder="e.g., docs"
-                        aria-describedby="namespace-description"
-                        className="h-8 w-full rounded-md border border-zinc-200 bg-off-white px-2 text-sm text-zinc-900 outline-none transition-colors placeholder:text-zinc-400 focus:border-zinc-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500"
-                      />
-                      <p id="namespace-description" className="sr-only">
-                        Specify a namespace to restrict document retrieval to a specific collection.
-                      </p>
-                    </div>
-                  </div>
-                )}
 
                 <HostedToolSettings
                   chatSettings={chatSettings}

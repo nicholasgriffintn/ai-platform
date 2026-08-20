@@ -301,19 +301,6 @@ export function useComposerCommandActions({
                   },
           }),
       })),
-      {
-        id: "rag-toggle",
-        label: chatSettings.use_rag ? "Disable RAG" : "Enable RAG",
-        description: "Toggle retrieval-augmented generation.",
-        command: "rag",
-        icon: <Database className="h-4 w-4" aria-hidden="true" />,
-        isActive: Boolean(chatSettings.use_rag),
-        onSelect: () =>
-          setChatSettings({
-            ...chatSettings,
-            use_rag: !chatSettings.use_rag,
-          }),
-      },
     ];
 
     if (isPro && !model && chatMode === "remote") {
