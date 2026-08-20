@@ -1332,6 +1332,9 @@ importers:
 
   packages/library-tool-runtime:
     dependencies:
+      '@ngriffin_uk/polychat-library-agent-core':
+        specifier: workspace:^
+        version: link:../library-agent-core
       '@ngriffin_uk/polychat-library-registry':
         specifier: workspace:^
         version: link:../library-registry

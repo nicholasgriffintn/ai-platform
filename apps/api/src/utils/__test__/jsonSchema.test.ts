@@ -1,7 +1,8 @@
+import { flattenObjectRootSchema } from "@ngriffin_uk/polychat-library-tool-runtime";
 import { describe, expect, it } from "vitest";
 import z from "zod/v4";
 
-import { ensureObjectRootJsonSchema, jsonSchemaToZod } from "../jsonSchema";
+import { jsonSchemaToZod } from "../jsonSchema";
 
 describe("jsonSchemaToZod", () => {
   it("preserves nested Composio constraints and closed objects", () => {
@@ -87,9 +88,9 @@ describe("jsonSchemaToZod", () => {
   });
 });
 
-describe("ensureObjectRootJsonSchema", () => {
+describe("flattenObjectRootSchema", () => {
   it("flattens object alternatives into a single object root", () => {
-    const schema = ensureObjectRootJsonSchema(
+    const schema = flattenObjectRootSchema(
       z.toJSONSchema(
         jsonSchemaToZod({
           type: "object",
@@ -113,7 +114,7 @@ describe("ensureObjectRootJsonSchema", () => {
   });
 
   it("keeps requirements shared by every alternative", () => {
-    const schema = ensureObjectRootJsonSchema(
+    const schema = flattenObjectRootSchema(
       z.toJSONSchema(
         jsonSchemaToZod({
           type: "object",

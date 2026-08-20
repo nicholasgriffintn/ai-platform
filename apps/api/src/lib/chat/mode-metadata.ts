@@ -9,8 +9,8 @@ const AGENT_EXECUTION_MODES = new Set<ChatMode>(["agent", "plan", "build", "expl
 
 export type ChatConversationMode = "sms" | "background";
 
-export function isAgentExecutionMode(mode: ChatMode): boolean {
-  return AGENT_EXECUTION_MODES.has(mode);
+export function isAgentExecutionMode(mode: ChatMode | null | undefined): boolean {
+  return typeof mode === "string" && AGENT_EXECUTION_MODES.has(mode);
 }
 
 export function resolveChatConversationMode(

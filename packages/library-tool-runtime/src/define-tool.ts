@@ -7,6 +7,13 @@ export interface ToolDefinitionInput {
   description: string;
   parameters?: Record<string, unknown>;
   required?: string[];
+  /**
+   * A complete object schema to use verbatim, for tools whose schema is
+   * generated rather than written out property by property. Keys the
+   * convenience form cannot express — `additionalProperties`, `$defs` — survive
+   * only on this path.
+   */
+  schema?: Record<string, unknown>;
 }
 
 export interface ToolDefinition {
@@ -32,11 +39,13 @@ export function defineTool(input: ToolDefinitionInput): ToolDefinition {
     function: {
       name: input.name,
       description: input.description,
-      parameters: {
-        type: "object",
-        properties,
-        ...(required.length > 0 ? { required } : {}),
-      },
+      parameters: input.schema
+        ? { type: "object", ...input.schema }
+        : {
+            type: "object",
+            properties,
+            ...(required.length > 0 ? { required } : {}),
+          },
     },
   };
 }

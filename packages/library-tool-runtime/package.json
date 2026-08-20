@@ -31,6 +31,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ngriffin_uk/polychat-library-agent-core": "workspace:^",
     "@ngriffin_uk/polychat-library-registry": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^"
   },
