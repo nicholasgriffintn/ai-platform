@@ -206,6 +206,8 @@ export class RequestPreparer {
       user?.id ? repositories : null,
       user?.id,
     );
+    const scopedSkillCatalogPromise = this.resolveScopedSkillCatalog(options, projectContext);
+    const activeGoalPromise = this.loadActiveGoal(options);
 
     const finalMessagePromise = this.processMessageContent(options, validationContext);
 
@@ -257,25 +259,10 @@ export class RequestPreparer {
           )
         : null;
 
-    const skillScope = await skillScopePromise;
-    const scopedSkillCatalog =
-      options.context && (projectContext || user?.id)
-        ? await resolveSkillCatalog(
-            options.context,
-            projectContext
-              ? { type: "project", id: projectContext.projectId }
-              : { type: "personal", id: user.id },
-            projectContext ? new Set(projectContext.enabledSkillIds) : undefined,
-          ).catch((error) => {
-            logger.warn("Failed to load authored skills", {
-              error,
-              projectId: projectContext?.projectId,
-              userId: user?.id,
-            });
-
-            return null;
-          })
-        : null;
+    const [skillScope, scopedSkillCatalog] = await Promise.all([
+      skillScopePromise,
+      scopedSkillCatalogPromise,
+    ]);
     const skills = await listSkillAvailability(
       buildSkillAvailabilityInput({
         skillScope,
@@ -285,7 +272,7 @@ export class RequestPreparer {
       scopedSkillCatalog?.listDefinitions(),
     );
 
-    const activeGoal = await this.loadActiveGoal(options);
+    const activeGoal = await activeGoalPromise;
 
     const systemPromptTask = this.buildSystemPrompt(
       options,
@@ -376,6 +363,35 @@ export class RequestPreparer {
       logger.warn("Failed to load personal skill configuration", { error, userId });
 
       return { scope: "personal" };
+    }
+  }
+
+  private async resolveScopedSkillCatalog(
+    options: CoreChatOptions,
+    projectContext: ProjectChatContext | null,
+  ) {
+    const user = options.context?.user;
+
+    if (!options.context || !(projectContext || user?.id)) {
+      return null;
+    }
+
+    try {
+      return await resolveSkillCatalog(
+        options.context,
+        projectContext
+          ? { type: "project", id: projectContext.projectId }
+          : { type: "personal", id: user.id },
+        projectContext ? new Set(projectContext.enabledSkillIds) : undefined,
+      );
+    } catch (error) {
+      logger.warn("Failed to load authored skills", {
+        error,
+        projectId: projectContext?.projectId,
+        userId: user?.id,
+      });
+
+      return null;
     }
   }
 
