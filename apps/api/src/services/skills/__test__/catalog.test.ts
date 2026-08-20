@@ -21,7 +21,6 @@ import {
   SkillDocumentError,
   validateSkillResourcePath,
 } from "../document";
-import { resolvePinnedSkillContent } from "../pinned";
 import {
   createSkillInstructionsResponse,
   createSkillResourceResponse,
@@ -218,7 +217,7 @@ describe("built-in skill catalogue", () => {
     expect(project.find((skill) => skill.id === "council")?.state).toBe("disabled");
     expect(project.find((skill) => skill.id === "recipes")?.state).toBe("ready");
 
-    const prompt = buildSkillsSection({ available: project });
+    const prompt = buildSkillsSection(project);
 
     expect(prompt).toContain("<name>artifacts</name>");
     expect(prompt).toContain("<name>recipes</name>");
@@ -275,26 +274,5 @@ describe("built-in skill catalogue", () => {
 
     expect(getSkillSuggestedToolNames(skills)).toContain("web_search");
     expect(getSkillSuggestedToolNames(skills)).not.toContain("run_council");
-  });
-
-  it("pins ready skills up front and refuses to pin ones the scope withheld", async () => {
-    const skills = await listSkillAvailability({
-      scope: "personal",
-      modelCapabilities: { supportsToolCalls: true },
-      disabledSkillIds: new Set(["council"]),
-    });
-    const pinned = await resolvePinnedSkillContent({
-      requested: ["artifacts", "council", "artifacts", "not-a-skill"],
-      available: skills,
-    });
-
-    expect(pinned.map((skill) => skill.name)).toEqual(["artifacts"]);
-
-    const prompt = buildSkillsSection({ available: skills, pinned });
-
-    expect(prompt).toContain("<pinned_skills>");
-    expect(prompt).toContain("# Artifacts");
-    expect(prompt).not.toContain("<name>artifacts</name>");
-    expect(prompt).toContain("<name>recipes</name>");
   });
 });

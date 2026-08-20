@@ -45,10 +45,6 @@ export const skillSummarySchema = z.object({
   source: skillSourceSchema.optional(),
 });
 
-export const pinnedSkillsOptionsSchema = z.object({
-  pinned: z.array(skillIdSchema).max(4).default([]),
-});
-
 export const skillAvailabilityStateSchema = z.enum(["ready", "disabled", "unavailable"]);
 
 export const skillAvailabilitySchema = skillSummarySchema.extend({
@@ -126,7 +122,6 @@ export type SkillRequirement = z.infer<typeof skillRequirementSchema>;
 export type SkillSource = z.infer<typeof skillSourceSchema>;
 export type SkillResourceSummary = z.infer<typeof skillResourceSummarySchema>;
 export type SkillSummary = z.infer<typeof skillSummarySchema>;
-export type PinnedSkillsOptions = z.infer<typeof pinnedSkillsOptionsSchema>;
 export type SkillAvailabilityState = z.infer<typeof skillAvailabilityStateSchema>;
 export type SkillAvailability = z.infer<typeof skillAvailabilitySchema>;
 export type SkillAvailabilityResponse = z.infer<typeof skillAvailabilityResponseSchema>;

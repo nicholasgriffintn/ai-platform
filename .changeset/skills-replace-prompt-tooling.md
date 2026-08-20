@@ -15,8 +15,9 @@ Breaking changes:
 
 - `councilChatOptionsSchema`, `COUNCIL_APP_ID`, and the `@ngriffin_uk/polychat-schemas/council-data`
   subpath are removed. `councilMembers` and `councilMemberIds` remain on the package root.
-- `chatRequestOptions.council` is replaced by `chatRequestOptions.skills.pinned`, which names skills
-  whose instructions load up front instead of on demand.
+- `chatRequestOptions.council` is removed with no replacement, and the Home Council mode goes with
+  it. Council is reached from ordinary chat through its skill and `/council` command.
+- `homeChatModeId` drops `council`.
 - `component-conversation` no longer exports `CouncilChatControls`, and messages no longer carry
   `data.council`; `library-chat` drops the matching message-data type.
 - `component-content` no longer exports `TutorView`.

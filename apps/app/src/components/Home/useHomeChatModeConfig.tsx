@@ -444,42 +444,12 @@ export function useHomeChatModeConfig(): {
       };
     }
 
-    if (effectiveActiveModeId !== "council") {
-      return {
-        activeModeId: effectiveActiveModeId,
-        modeConfig: {
-          assistantActionRoutes: { recipes: "/chat/capabilities" },
-          modeControls,
-          onModelChange: handleModelChange,
-        },
-      };
-    }
-
-    const councilRequestOptions = {
-      options: {
-        skills: { pinned: ["council"] },
-      },
-    };
-
     return {
       activeModeId: effectiveActiveModeId,
       modeConfig: {
         assistantActionRoutes: { recipes: "/chat/capabilities" },
-        analyticsSource: "council",
-        welcomeTitle: "What should the council debate?",
-        welcomeDescription:
-          "Give the council a problem and it will put opposing perspectives against it before answering.",
-        inputPlaceholder: {
-          newConversation: "Give the council a problem to debate...",
-          followUp: "Ask the council to refine its decision...",
-        },
-        requestOptions: councilRequestOptions,
-        modelScope: "text-only",
-        conversationMode: buildConversationModeMetadata({
-          mode: "council",
-          requestOptions: councilRequestOptions,
-        }),
         modeControls,
+        onModelChange: handleModelChange,
       },
     };
   }, [

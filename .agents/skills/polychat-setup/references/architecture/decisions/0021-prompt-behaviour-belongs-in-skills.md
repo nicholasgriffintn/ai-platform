@@ -28,7 +28,7 @@ Split council in two. The personas and the process become a `council` skill. The
 
 Give tool responses a way to act as well as display. `ToolInteractionHandler` gains a `submitPrompt` action beside the existing `useAsPrompt`: `useAsPrompt` fills the composer and leaves sending to the user, while `submitPrompt` sends straight away, for views whose control _is_ the decision. The picker is the first user; the seam is general.
 
-To let a mode-like feature run under a skill without a `load_skill` round trip, introduce **pinned skills**. `chatRequestOptions.skills.pinned` names skills whose full bodies render into a `<pinned_skills>` prompt section up front. Pinning is presentation, not authorisation: a skill the scope has not made ready is never pinned, however the request asks. The Home Council mode becomes exactly this — pin the `council` skill — rather than a parallel prompt path.
+Remove the Home Council mode rather than reimplementing it. Once the debate is a skill plus a tool, the mode's only remaining jobs were a welcome screen and loading the skill's instructions up front; the skill's own description and `/council` command already reach it from ordinary chat. A skill that needs a mode wrapper to be discoverable has a description problem, not a routing problem.
 
 Let a skill widen the tool set it needs. `polychat-tools` stays a hard requirement that marks a skill unavailable when the tool is off; new `polychat-suggests-tools` names tools a ready skill grants for the turn, merged into enabled tools at preparation alongside the existing memory-tool merge. Without this a skill that needs `web_search` silently disappears rather than working.
 
@@ -40,12 +40,14 @@ Behaviour that was deterministic code is now model judgement. A skill can be ign
 
 Removing `POST /apps/prompt-coach`, `POST /apps/retrieval/tutor`, and the seven deleted tool names is a breaking API change. Nothing in `apps/app` consumed the prompt-coach route, and the tutor route's UI is gone with it, but an external caller would break without warning.
 
-The member picker moves from a composer control set before asking into `select_council_members`, a tool the model raises mid-conversation with a recommended selection already ticked. The user still decides the room, but now against a considered starting position and with the question already stated. Per-member streaming, dynamic routing, and the conversation's model are all retained. In exchange council conversations regain memory, skills, tool guidance, and model metadata, which the prompt-mode bypass had silently denied them.
+The member picker moves from a composer control set before asking into `select_council_members`, a tool the model raises mid-conversation with a recommended selection already ticked. The user still decides the room, but now against a considered starting position and with the question already stated. Per-member streaming, dynamic routing, and the conversation's model are all retained.
+
+Two names for one thing is a real cost: the skill and the removed mode both registered `/council`, which duplicated the composer entry until the release journey caught it. The composer now de-duplicates slash commands by name. In exchange council conversations regain memory, skills, tool guidance, and model metadata, which the prompt-mode bypass had silently denied them.
 
 `runPanel` enforces the turn budget itself, so routing can shorten a panel but never extend it — the failure mode the old client loop allowed, where a malformed or adversarial routing tag could keep the debate running. A turn that omits or malforms the tag ends the panel rather than guessing at a next speaker, and a member whose completion fails is skipped rather than aborting the chamber.
 
 Running the debate on the conversation's model rather than an auxiliary one costs materially more per council. That is the right default — a council on a weak model produces agreeable noise, which is the one thing a council exists to prevent — but it makes `run_council` one of the more expensive tools in the registry, and the skill is explicit that most questions do not warrant it.
 
-Pinned skills spend tokens up front, which is what ADR 0018 avoids by default. It is bounded to four skills and only applies when a mode or the user asks for it; the roster remains the default disclosure.
+Dropping the Council mode costs its landing screen and makes the model responsible for loading the skill rather than receiving it pinned. That is the ordinary skill contract, and accepting it here avoids keeping a request-option, a prompt section, and a mode branch alive for one caller.
 
 `polychat-suggests-tools` lets skill metadata widen the enabled tool set, which ADR 0018 explicitly refused for `allowed-tools`. The distinction is that suggestion applies only to skills the scope has already made ready, and it grants registered function tools for the turn; it does not bypass permission checks, approval policy, or project capability boundaries.

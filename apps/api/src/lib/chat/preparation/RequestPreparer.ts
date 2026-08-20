@@ -2,6 +2,7 @@ import type {
   ChatHostedToolSettings,
   ModelConfigInfo,
   RecipeConnectorProvider,
+  SkillAvailability,
 } from "@ngriffin_uk/polychat-schemas";
 
 import {
@@ -19,7 +20,6 @@ import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
 import { MemoryManager } from "~/lib/memory";
 import { getSystemPrompt } from "~/lib/prompts";
-import type { PromptSkillContext } from "~/lib/prompts/sections/skills";
 import {
   getEmbeddingProvider,
   augmentPrompt,
@@ -36,7 +36,6 @@ import {
   createProjectSkillScope,
   listSkillAvailability,
   mergeSkillSuggestedToolNames,
-  resolvePinnedSkillContent,
   resolveSkillCatalog,
   resolvePersonalSkillScope,
   type RequestSkillScope,
@@ -291,12 +290,6 @@ export class RequestPreparer {
       }),
       scopedSkillCatalog?.listDefinitions(),
     );
-    const pinnedSkills = await resolvePinnedSkillContent({
-      requested: options.options?.skills?.pinned,
-      available: skills,
-      catalog: scopedSkillCatalog,
-    });
-    const skillContext: PromptSkillContext = { available: skills, pinned: pinnedSkills };
 
     const systemPromptTask = this.buildSystemPrompt(
       options,
@@ -307,7 +300,7 @@ export class RequestPreparer {
       memoryPolicy,
       projectContext,
       memoryScope,
-      skillContext,
+      skills,
     );
 
     if (storeMessagesTask) {
@@ -599,7 +592,7 @@ export class RequestPreparer {
     memoryPolicy: ReturnType<typeof resolveMemoryPolicy>,
     projectContext: ProjectChatContext | null,
     memoryScope: MemoryScope = { type: "personal" },
-    skills?: PromptSkillContext,
+    skills?: readonly SkillAvailability[],
   ): Promise<string> {
     const {
       system_prompt,

@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test";
 import type { Dialog, Locator, Page, Response } from "@playwright/test";
 
 import { BasePage } from "./BasePage";
@@ -72,7 +73,7 @@ export class HomePage extends BasePage {
     await this.clickElement(option);
   }
 
-  async selectChatMode(mode: "Chat" | "Council" | "Background" | "Live") {
+  async selectChatMode(mode: "Chat" | "Background" | "Live") {
     const command = `/${mode.toLowerCase()}`;
 
     await this.chatInput.fill(command);
@@ -80,6 +81,22 @@ export class HomePage extends BasePage {
     if (mode === "Live") {
       await this.page.keyboard.press("Escape");
     }
+  }
+
+  get councilMemberPicker() {
+    return this.page.getByText("Choose the council", { exact: true });
+  }
+
+  async waitForCouncilMemberPicker() {
+    await this.waitForElement(this.councilMemberPicker);
+  }
+
+  async toggleCouncilMember(memberName: string) {
+    await this.clickElement(this.page.getByRole("checkbox", { name: memberName }));
+  }
+
+  async conveneCouncil() {
+    await this.clickElement(this.page.getByRole("button", { name: "Convene", exact: true }));
   }
 
   async sendMessageWithSkillCommand(skillName: string, message: string) {
@@ -114,7 +131,22 @@ export class HomePage extends BasePage {
     await this.page.getByRole("button", { name: "Switch to local-only mode" }).waitFor();
   }
 
-  async clearChatMode(mode: "Council" | "Background" | "Live") {
+  async getDisabledChatModeReason(mode: "Background" | "Live") {
+    const command = `/${mode.toLowerCase()}`;
+
+    await this.chatInput.fill(command);
+    const option = this.page.getByRole("button", { name: new RegExp(`^${command}`) });
+
+    await this.waitForElement(option);
+    await expect(option).toBeDisabled();
+    const reason = (await option.getAttribute("title")) ?? "";
+
+    await this.chatInput.fill("");
+
+    return reason;
+  }
+
+  async clearChatMode(mode: "Background" | "Live") {
     await this.page.getByRole("button", { name: `Clear ${mode} mode` }).click();
   }
 

@@ -27,7 +27,6 @@ export {
 } from "./scope";
 export { getPersonalSkillAvailability, setPersonalSkillEnabled } from "./configuration";
 export { getSkillSuggestedToolNames, mergeSkillSuggestedToolNames } from "./suggested-tools";
-export { MAX_PINNED_SKILLS, resolvePinnedSkillContent } from "./pinned";
 export { listScopedSkillSummaries } from "./listing";
 export {
   createPersonalSkill,

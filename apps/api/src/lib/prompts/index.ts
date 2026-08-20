@@ -1,3 +1,5 @@
+import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
+
 import { resolveMemoryPolicy } from "~/lib/chat/memoryPolicy";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { ChatMode, IBody, IUser, IUserSettings } from "~/types";
@@ -8,7 +10,6 @@ import { getTextToImageSystemPrompt } from "./image";
 import { returnSandboxPrompt } from "./sandbox";
 import { buildAssistantMetadataSection, type PromptModelMetadata } from "./sections/metadata";
 import type { PromptMemoryPolicy } from "./sections/session-config";
-import type { PromptSkillContext } from "./sections/skills";
 import { returnSmsPrompt } from "./sms";
 import { returnStandardPrompt } from "./standard";
 import { emptyPrompt } from "./utils";
@@ -25,7 +26,7 @@ export async function getSystemPrompt(
   model: string,
   user?: IUser,
   userSettings?: IUserSettings,
-  skills?: PromptSkillContext,
+  skills?: readonly SkillAvailability[],
   session?: PromptSessionOptions,
 ): Promise<string> {
   const modelConfig = await getModelConfigByMatchingModel(model, undefined, request.provider);

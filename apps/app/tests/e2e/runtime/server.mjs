@@ -128,6 +128,85 @@ function openAiResponse(content) {
   };
 }
 
+function openAiToolCallResponse(toolCall) {
+  return {
+    id: "e2e-completion",
+    object: "chat.completion",
+    created: 0,
+    model: "e2e-model",
+    choices: [
+      {
+        index: 0,
+        message: { role: "assistant", content: null, tool_calls: [toolCall] },
+        finish_reason: "tool_calls",
+      },
+    ],
+    usage: { prompt_tokens: 8, completion_tokens: 4, total_tokens: 12 },
+  };
+}
+
+function toolCallStreamingResponse(toolCall) {
+  const chunks = [
+    {
+      id: "e2e-completion",
+      object: "chat.completion.chunk",
+      created: 0,
+      model: "e2e-model",
+      choices: [
+        {
+          index: 0,
+          delta: { role: "assistant", tool_calls: [{ index: 0, ...toolCall }] },
+          finish_reason: null,
+        },
+      ],
+    },
+    {
+      id: "e2e-completion",
+      object: "chat.completion.chunk",
+      created: 0,
+      model: "e2e-model",
+      choices: [{ index: 0, delta: {}, finish_reason: "tool_calls" }],
+      usage: { prompt_tokens: 8, completion_tokens: 4, total_tokens: 12 },
+    },
+  ];
+  const body = `${chunks.map((chunk) => `data: ${JSON.stringify(chunk)}\n\n`).join("")}data: [DONE]\n\n`;
+
+  return new Response(body, {
+    headers: { "content-type": "text/event-stream; charset=utf-8" },
+  });
+}
+
+/**
+ * Deterministic tool calls for journeys that exercise tool-driven UI. The marker phrase keeps the
+ * provider mock free of model behaviour: a test asks for the tool by name in its prompt.
+ */
+const TOOL_CALL_TRIGGERS = [
+  {
+    marker: "Convene a council on",
+    name: "select_council_members",
+    arguments: () =>
+      JSON.stringify({
+        question: "Which release validation approach is safest?",
+        recommended: ["sceptic", "architect"],
+        reason: "These two disagree most about release risk.",
+      }),
+  },
+];
+
+function resolveToolCallTrigger(prompt) {
+  const trigger = TOOL_CALL_TRIGGERS.find((candidate) => prompt.includes(candidate.marker));
+
+  if (!trigger) {
+    return null;
+  }
+
+  return {
+    id: `e2e-tool-call-${trigger.name}`,
+    type: "function",
+    function: { name: trigger.name, arguments: trigger.arguments() },
+  };
+}
+
 function streamingResponse(content) {
   const chunks = [
     {
@@ -394,6 +473,14 @@ async function mockExternalRequest(request) {
 
   if (prompt.includes("Trigger an error")) {
     return Response.json({ error: { message: "Deterministic provider failure" } }, { status: 503 });
+  }
+
+  const toolCall = resolveToolCallTrigger(prompt);
+
+  if (toolCall) {
+    return body.stream
+      ? toolCallStreamingResponse(toolCall)
+      : Response.json(openAiToolCallResponse(toolCall));
   }
 
   const content = prompt.includes("You are a title generator")
