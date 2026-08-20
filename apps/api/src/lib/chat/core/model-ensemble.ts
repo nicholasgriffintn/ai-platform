@@ -1,11 +1,12 @@
 import type { ModelConfigInfo } from "@ngriffin_uk/polychat-schemas";
 
 import { runAgentLoop, type AgentLoopExecutionParams } from "~/lib/chat/agent/runAgentLoop";
+import { createConnectorRunCloser } from "~/lib/chat/core/chat-stream";
 import { createChatSseStreamWriter, type ChatEventSink } from "~/lib/chat/emitter";
 import { getAIResponse } from "~/lib/chat/responses";
-import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
 import { StreamState, type Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { finaliseReadableStream } from "~/utils/finalise-readable-stream";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/chat/core/model-ensemble" });
@@ -18,6 +19,7 @@ export type CreateModelEnsembleStreamParams = Omit<AgentLoopExecutionParams, "si
 
 export function createModelEnsembleStream(params: CreateModelEnsembleStreamParams): ReadableStream {
   const stream = createChatSseStreamWriter();
+  const closeConnectorRun = createConnectorRunCloser(params);
   const secondaryModels = params.models.slice(1);
   const secondaryResponses = secondaryModels.map((modelConfig) =>
     requestSecondaryAnswer(params, modelConfig),
@@ -89,9 +91,7 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
         type: error instanceof AssistantError ? error.type : ErrorType.PROVIDER_ERROR,
       });
     } finally {
-      if (params.toolRequestContext.context) {
-        await closeComposioConnectorRun(params.toolRequestContext.context);
-      }
+      await closeConnectorRun();
 
       try {
         await stream.writeDone();
@@ -107,7 +107,7 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
     void stream.abort(error);
   });
 
-  return stream.readable;
+  return finaliseReadableStream({ stream: stream.readable, cleanup: closeConnectorRun });
 }
 
 async function requestSecondaryAnswer(

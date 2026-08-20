@@ -6,6 +6,7 @@ import { isAgentExecutionMode } from "~/lib/chat/mode-metadata";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
 import { StreamState } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { finaliseReadableStream } from "~/utils/finalise-readable-stream";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/chat/core/chat-stream" });
@@ -15,6 +16,7 @@ export type CreateChatTurnStreamParams = Omit<AgentLoopExecutionParams, "sink" |
 export function createChatTurnStream(params: CreateChatTurnStreamParams): ReadableStream {
   const stream = createChatSseStreamWriter();
   const tracesAgentEvents = isAgentExecutionMode(params.mode);
+  const closeConnectorRun = createConnectorRunCloser(params);
 
   const run = async () => {
     try {
@@ -47,9 +49,7 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
         type: error instanceof AssistantError ? error.type : ErrorType.PROVIDER_ERROR,
       });
     } finally {
-      if (params.toolRequestContext.context) {
-        await closeComposioConnectorRun(params.toolRequestContext.context);
-      }
+      await closeConnectorRun();
 
       try {
         await stream.writeDone();
@@ -65,5 +65,25 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
     void stream.abort(error);
   });
 
-  return stream.readable;
+  return finaliseReadableStream({ stream: stream.readable, cleanup: closeConnectorRun });
+}
+
+export function createConnectorRunCloser(params: {
+  toolRequestContext: AgentLoopExecutionParams["toolRequestContext"];
+}): () => Promise<void> {
+  let closed: Promise<void> | undefined;
+
+  return () => {
+    const context = params.toolRequestContext.context;
+
+    if (!context) {
+      return Promise.resolve();
+    }
+
+    closed ??= Promise.resolve(closeComposioConnectorRun(context)).catch((error) => {
+      logger.error("Failed to close the connector run", { error });
+    });
+
+    return closed;
+  };
 }

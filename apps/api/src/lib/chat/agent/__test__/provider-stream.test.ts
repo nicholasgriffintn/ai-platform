@@ -58,6 +58,58 @@ describe("consumeProviderStream", () => {
     expect(events.filter((event) => event.type === "content_block_delta")).toHaveLength(2);
   });
 
+  it("forwards deltas while the provider is still sending, not once it finishes", async () => {
+    const { sink, events } = createSink();
+    let releaseSecondChunk: () => void = () => {};
+
+    const secondChunkReleased = new Promise<void>((resolve) => {
+      releaseSecondChunk = resolve;
+    });
+    const encoder = new TextEncoder();
+
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(textDelta("first")));
+      },
+      async pull(controller) {
+        await secondChunkReleased;
+        controller.enqueue(encoder.encode(textDelta("second")));
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+        controller.close();
+      },
+    });
+
+    const turn = consumeProviderStream(stream, sink, context);
+
+    await vi.waitFor(() =>
+      expect(events.filter((event) => event.type === "content_block_delta")).toHaveLength(1),
+    );
+
+    releaseSecondChunk();
+
+    expect((await turn).content).toBe("firstsecond");
+  });
+
+  it("reports streamed usage as the provider sends it", async () => {
+    const { sink, events } = createSink();
+
+    const turn = await consumeProviderStream(
+      providerStream([
+        textDelta("Hello"),
+        `data: ${JSON.stringify({
+          choices: [{ delta: {} }],
+          usage: { prompt_tokens: 10, completion_tokens: 4, total_tokens: 14 },
+        })}\n\n`,
+        "data: [DONE]\n\n",
+      ]),
+      sink,
+      context,
+    );
+
+    expect(turn.usage).toMatchObject({ total_tokens: 14 });
+    expect(events.some((event) => event.type === "usage")).toBe(true);
+  });
+
   it("reassembles a delta split across two network chunks", async () => {
     const { sink } = createSink();
     const event = textDelta("split");
