@@ -1,6 +1,7 @@
 import { MAX_BUFFER_LENGTH, MAX_CONTENT_LENGTH, MAX_THINKING_LENGTH } from "~/constants/app";
 import type { ChatEventSink } from "~/lib/chat/emitter";
 import { appendReasoningPart, appendTextPart } from "~/lib/chat/messageParts";
+import { modelEmitsUnterminatedThinking } from "~/lib/chat/utils/qwq";
 import { ResponseFormatter, StreamingFormatter } from "~/lib/formatter";
 import { findModelConfig } from "~/lib/providers/models";
 import {
@@ -107,7 +108,7 @@ export async function consumeProviderStream(
   const partialToolCalls: Record<string, any> = {};
   let currentEventType = "";
   let isFirstContentChunk = true;
-  let qwqThinkTagAdded = false;
+  let openedThinkTag = false;
   let completed = false;
 
   const finaliseToolCalls = () => {
@@ -169,14 +170,14 @@ export async function consumeProviderStream(
 
     if (contentDelta) {
       if (
-        model.toLowerCase().includes("qwq") &&
+        modelEmitsUnterminatedThinking(model) &&
         isFirstContentChunk &&
-        !qwqThinkTagAdded &&
+        !openedThinkTag &&
         !contentDelta.trim().startsWith("<think>")
       ) {
         await sink.writeEvent("content_block_delta", { content: "<think>\n" });
         content.add("<think>\n");
-        qwqThinkTagAdded = true;
+        openedThinkTag = true;
       }
 
       content.add(contentDelta);

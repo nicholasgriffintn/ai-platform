@@ -1,7 +1,6 @@
 import { gatewayId } from "~/constants/app";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
-import { drawingDescriptionPrompt } from "~/lib/prompts";
 import {
   StorageService,
   type StoredOutputFileResult,
@@ -10,6 +9,8 @@ import {
 import type { ChatRole, IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+
+import { drawingDescriptionPrompt } from "./prompts";
 
 interface ImageFromDrawingResponse extends IFunctionResponse {
   completion_id?: string;

@@ -1,5 +1,4 @@
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { generateArticleReportPrompt } from "~/lib/prompts";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { findModelConfig, getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
 import type { IEnv, IUser } from "~/types";
@@ -9,6 +8,7 @@ import { getLogger } from "~/utils/logger";
 import { verifyQuotes } from "~/utils/verify";
 
 import { safeParseJson } from "../../../utils/json";
+import { generateArticleReportPrompt } from "./prompts";
 
 const logger = getLogger({
   prefix: "services/apps/articles/generate-report",

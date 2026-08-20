@@ -4,7 +4,6 @@ import type { AssistantPersona, IBody, IUser, IUserSettings } from "~/types";
 import { getLogger } from "~/utils/logger";
 
 import { PromptBuilder } from "./builder";
-import { resolvePromptLayout } from "./layout";
 import { buildAgentGuidelinesSection } from "./sections/agent-guidelines";
 import { buildChannelSection } from "./sections/channel";
 import { buildCodingConductSection } from "./sections/coding-conduct";
@@ -73,16 +72,11 @@ export function returnStandardPrompt({
       simulatedThinking,
       modelMetadata,
     });
-    const layout = resolvePromptLayout({
-      contextWindow: modelMetadata?.modelConfig?.contextWindow,
-    });
-
     const builder = new PromptBuilder(
       buildAssistantMetadataSection({
         request: preferredLanguage ? { ...request, lang: preferredLanguage } : request,
         modelId: modelMetadata?.modelId,
         modelConfig: modelMetadata?.modelConfig,
-        format: layout.metadataFormat,
       }),
     )
       .addLine(buildInstructionPrecedence(isCoding))
@@ -93,7 +87,6 @@ export function returnStandardPrompt({
           supportsToolCalls: capabilities.supportsToolCalls,
           simulatedThinking: capabilities.simulatedThinking,
           preferredLanguage,
-          format: layout.principlesFormat,
         }),
       )
       .add(buildPersonaSection(persona))
@@ -106,11 +99,10 @@ export function returnStandardPrompt({
             isCoding,
             isAgent,
             capabilities.simulatedThinking,
-            layout.principlesFormat,
           ),
         ),
       )
-      .add(buildFormattingSection({ isCoding, format: layout.principlesFormat }))
+      .add(buildFormattingSection({ isCoding }))
       .addIf(isCoding, buildCodingConductSection())
       .add(buildSafetyStandardsSection())
       .addIf(isAgent, buildAgentGuidelinesSection())

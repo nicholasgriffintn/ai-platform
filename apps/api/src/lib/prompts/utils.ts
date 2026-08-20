@@ -38,7 +38,6 @@ export function getResponseStyle(
   isCoding = false,
   isAgent = false,
   simulatedThinking = false,
-  instructionVariant: "full" | "compact" = "full",
 ): ResponseStyle {
   if (verbosity === "caveman") {
     const cavemanPreferences = `Respond terse like smart caveman: all technical substance stays, fluff dies.
@@ -64,14 +63,11 @@ export function getResponseStyle(
   const traits =
     userTraits ||
     "direct, intellectually curious, clear, practical, and systematic when reasoning through complex problems";
-  const basePreferences =
-    instructionVariant === "compact"
-      ? ["Answer directly without filler.", "Match explanation depth to the task's complexity."]
-      : [
-          "Answer directly without unnecessary filler.",
-          "Match response length to question complexity—concise for simple questions and thorough for complex ones.",
-          "Offer to elaborate when the user asks; avoid over-explaining upfront.",
-        ];
+  const basePreferences = [
+    "Answer directly without unnecessary filler.",
+    "Match response length to question complexity—concise for simple questions and thorough for complex ones.",
+    "Offer to elaborate when the user asks; avoid over-explaining upfront.",
+  ];
 
   if (simulatedThinking) {
     basePreferences.push(

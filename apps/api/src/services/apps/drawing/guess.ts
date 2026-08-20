@@ -1,9 +1,10 @@
 import { gatewayId } from "~/constants/app";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { guessDrawingPrompt } from "~/lib/prompts";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+
+import { guessDrawingPrompt } from "./prompts";
 
 interface ImageFromDrawingResponse extends IFunctionResponse {
   completion_id?: string;
