@@ -58,7 +58,7 @@ function createServerId(url: string): string {
   return `server-${hash.toString(36)}`;
 }
 
-function createServerName(config: MCPServerConfig): string {
+export function createServerName(config: MCPServerConfig): string {
   if (config.name?.trim()) {
     return config.name.trim();
   }

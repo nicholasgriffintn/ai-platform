@@ -75,6 +75,7 @@ export * from "./conversation-replacement";
 export * from "./conversation-title";
 export * from "./council";
 export * from "./cron";
+export * from "./deferred-tools";
 export * from "./goals";
 export * from "./thread-instructions";
 export * from "./edit";

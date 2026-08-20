@@ -14,7 +14,7 @@ import {
 import { toProviderMessages } from "~/lib/chat/providerMessages";
 import { getAIResponse } from "~/lib/chat/responses";
 import { isSuccessfulToolStatus } from "~/lib/chat/tool-results";
-import { handleToolCalls } from "~/lib/chat/tools";
+import { formatToolCalls, handleToolCalls } from "~/lib/chat/tools";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
 import { isUsageExhausted, USAGE_LIMIT_NOTICE } from "~/lib/usage/limitState";
@@ -85,12 +85,36 @@ export interface AgentLoopExecutionResult {
   toolResponses: Message[];
 }
 
+type TurnToolOverride = Partial<Pick<AgentLoopExecutionParams["requestParams"], "tools">>;
+
+function createTurnToolResolver(params: AgentLoopExecutionParams): () => TurnToolOverride {
+  const deferredTools = params.toolRequestContext.deferredTools;
+
+  if (!deferredTools) {
+    return () => ({});
+  }
+
+  const baseTools = params.requestParams.tools ?? [];
+  const provider = params.requestParams.provider ?? "";
+
+  return () => {
+    const activated = deferredTools.activatedDefinitions();
+
+    if (activated.length === 0) {
+      return {};
+    }
+
+    return { tools: [...baseTools, ...formatToolCalls(provider, activated)] };
+  };
+}
+
 export async function runAgentLoop(
   params: AgentLoopExecutionParams,
 ): Promise<AgentLoopExecutionResult> {
   const requestParams = params.requestParams;
   const providerIO = createAgentProviderIO();
   const runtimeMessages = providerIO.initialMessages(toProviderMessages(requestParams.messages));
+  const resolveTurnTools = createTurnToolResolver(params);
 
   const state: ApiAgentLoopState = {
     commandCount: 0,
@@ -161,6 +185,7 @@ export async function runAgentLoop(
 
       const providerResponse = await getAIResponse({
         ...requestParams,
+        ...resolveTurnTools(),
         messages: providerIO.providerMessages(messages),
         stream: false,
       });

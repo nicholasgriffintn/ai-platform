@@ -21,6 +21,7 @@ import { get_hacker_news_stories } from "./hacker_news";
 import { request_approval, ask_user } from "./human_in_the_loop";
 import { create_image } from "./image";
 import { load_skill } from "./load_skill";
+import { load_tools } from "./load_tools";
 import { handleMCPTool } from "./mcp";
 import { search_memories, store_memory } from "./memory";
 import { create_music } from "./music";
@@ -94,6 +95,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   set_goal,
   complete_goal,
   load_skill,
+  load_tools,
   run_council,
   select_council_members,
   get_hacker_news_stories,

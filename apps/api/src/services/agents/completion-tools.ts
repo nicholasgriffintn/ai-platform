@@ -1,14 +1,16 @@
 import type { MCPClientManager } from "agents/mcp/client";
 
 import type { Agent } from "~/lib/database/schema";
+import { DeferredToolRegistry, type DeferredToolEntry } from "~/lib/tools/DeferredToolRegistry";
 import {
   connectMCPServerReady,
+  createServerName,
   parseMCPServerConfigs,
   resolveMCPAIToolDefinition,
-  type AgentMCPToolDefinition,
   type MCPServerConfig,
 } from "~/services/agents/mcp-client";
 import { request_approval, ask_user } from "~/services/functions/human_in_the_loop";
+import { buildLoadToolsDescription, load_tools } from "~/services/functions/load_tools";
 import { registerMCPClient } from "~/services/functions/mcp";
 import {
   delegateToTeamMember,
@@ -25,6 +27,12 @@ const logger = getLogger({ prefix: "services/agents/completion-tools" });
 
 const CORE_AGENT_TOOLS: ApiToolDefinition[] = [request_approval, ask_user];
 
+/**
+ * Below this many MCP tools the schemas are cheaper to send up front than the
+ * extra model turn a deferred load costs.
+ */
+const MCP_DEFERRED_TOOL_THRESHOLD = 12;
+
 type CompletionAgent = Pick<
   Agent,
   "id" | "servers" | "system_prompt" | "few_shot_examples" | "team_role"
@@ -38,14 +46,31 @@ export type AgentCompletionToolDefinition =
       parameters: Record<string, unknown>;
     };
 
+export interface AgentCompletionTools {
+  definitions: AgentCompletionToolDefinition[];
+  deferredTools?: DeferredToolRegistry;
+}
+
 export async function buildAgentCompletionTools(
   agent: CompletionAgent,
   env: IEnv,
-): Promise<AgentCompletionToolDefinition[]> {
-  const mcpFunctions = await setupMCPFunctions(agent, env);
-  const teamDelegationTools = setupTeamDelegationTools(agent);
+): Promise<AgentCompletionTools> {
+  const mcpEntries = await setupMCPFunctions(agent, env);
+  const baseTools = [...CORE_AGENT_TOOLS, ...setupTeamDelegationTools(agent)];
 
-  return [...CORE_AGENT_TOOLS, ...teamDelegationTools, ...mcpFunctions];
+  if (mcpEntries.length <= MCP_DEFERRED_TOOL_THRESHOLD) {
+    return { definitions: [...baseTools, ...mcpEntries.map((entry) => entry.definition)] };
+  }
+
+  const deferredTools = new DeferredToolRegistry(mcpEntries);
+
+  return {
+    definitions: [
+      ...baseTools,
+      { ...load_tools, description: buildLoadToolsDescription(deferredTools) },
+    ],
+    deferredTools,
+  };
 }
 
 export function buildAgentSystemPrompt(agent: CompletionAgent): string {
@@ -99,7 +124,7 @@ function formatFewShotExamples(rawExamples: unknown): string {
 }
 
 async function setupMCPFunctions(agent: CompletionAgent, env: IEnv) {
-  const mcpFunctions: AgentMCPToolDefinition[] = [];
+  const mcpFunctions: DeferredToolEntry[] = [];
 
   if (!agent.servers) {
     return mcpFunctions;
@@ -141,7 +166,7 @@ async function collectServerTools(
   agent: CompletionAgent,
   mcp: MCPClientManager,
   cfg: MCPServerConfig,
-  mcpFunctions: AgentMCPToolDefinition[],
+  mcpFunctions: DeferredToolEntry[],
 ) {
   try {
     const readyConnection = await connectMCPServerReady(mcp, cfg);
@@ -156,13 +181,13 @@ async function collectServerTools(
     }
 
     const rawTools = await Promise.resolve(mcp.getAITools());
-    const defs = Object.entries(rawTools);
+    const serverName = createServerName(cfg);
 
-    for (const [name, def] of defs) {
-      const toolDefinition = resolveMCPAIToolDefinition(agent.id, name, def);
+    for (const [name, def] of Object.entries(rawTools)) {
+      const definition = resolveMCPAIToolDefinition(agent.id, name, def);
 
-      if (toolDefinition) {
-        mcpFunctions.push(toolDefinition);
+      if (definition) {
+        mcpFunctions.push({ group: serverName, definition });
       }
     }
   } catch (error) {
