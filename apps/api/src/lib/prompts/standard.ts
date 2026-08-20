@@ -1,14 +1,16 @@
 import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 
-import type { IBody, IUser, IUserSettings } from "~/types";
+import type { AssistantPersona, IBody, IUser, IUserSettings } from "~/types";
 import { getLogger } from "~/utils/logger";
 
 import { PromptBuilder } from "./builder";
 import { resolvePromptLayout } from "./layout";
 import { buildAgentGuidelinesSection } from "./sections/agent-guidelines";
 import { buildChannelSection } from "./sections/channel";
+import { buildCodingConductSection } from "./sections/coding-conduct";
 import { buildFormattingSection } from "./sections/formatting";
 import { buildAssistantMetadataSection, type PromptModelMetadata } from "./sections/metadata";
+import { buildPersonaSection } from "./sections/persona";
 import { buildAssistantPrinciplesSection } from "./sections/principles";
 import { buildResponseStyleSection } from "./sections/response-style";
 import { buildSafetyStandardsSection } from "./sections/safety";
@@ -23,97 +25,106 @@ import { getResponseStyle, resolvePromptCapabilities } from "./utils";
 
 const logger = getLogger({ prefix: "lib/prompts/standard" });
 
-export async function returnStandardPrompt(
-  request: IBody,
-  user?: IUser,
-  userSettings?: IUserSettings,
-  supportsToolCalls?: boolean,
-  modelMetadata?: PromptModelMetadata,
-  skills?: readonly SkillAvailability[],
-  memoryPolicy: PromptMemoryPolicy = DISABLED_PROMPT_MEMORY_POLICY,
-): Promise<string> {
+const AGENT_MODES = new Set(["agent", "plan", "build", "explore"]);
+
+export interface StandardPromptOptions {
+  request: IBody;
+  user?: IUser;
+  userSettings?: IUserSettings;
+  supportsToolCalls?: boolean;
+  modelMetadata?: PromptModelMetadata;
+  skills?: readonly SkillAvailability[];
+  memoryPolicy?: PromptMemoryPolicy;
+  persona?: AssistantPersona | null;
+  isCoding?: boolean;
+}
+
+function buildInstructionPrecedence(isCoding: boolean): string {
+  const order = isCoding
+    ? "safety_standards > channel_context > behaviour > coding_conduct > persona > response_style > formatting > available_skills > session_config"
+    : "safety_standards > channel_context > behaviour > persona > response_style > formatting > available_skills > session_config";
+
+  return `<instruction_precedence>\n<order>${order}</order>\n<conflict_rule>Resolve conflicts silently in this order. Surface only limitations that materially change what the user receives.</conflict_rule>\n</instruction_precedence>`;
+}
+
+export function returnStandardPrompt({
+  request,
+  user,
+  userSettings,
+  supportsToolCalls,
+  modelMetadata,
+  skills,
+  memoryPolicy = DISABLED_PROMPT_MEMORY_POLICY,
+  persona,
+  isCoding = false,
+}: StandardPromptOptions): string {
   try {
     const chatMode = request.mode || "standard";
-
-    const userNickname = userSettings?.nickname || null;
-    const userJobRole = userSettings?.job_role || null;
     const userTraits = userSettings?.traits || null;
     const userPreferences = userSettings?.preferences || null;
-    const latitude = request.location?.latitude || user?.latitude;
-    const longitude = request.location?.longitude || user?.longitude;
-    const date = request.date || new Date().toISOString().split("T")[0];
     const verbosity = request.text?.verbosity ?? request.verbosity ?? "medium";
     const reasoningEffort = request.reasoning?.effort ?? request.reasoning_effort ?? "none";
     const simulatedThinking = reasoningEffort === "simulated-thinking";
     const preferredLanguage = request.lang?.trim() || null;
-
-    const isAgent =
-      chatMode === "agent" || chatMode === "plan" || chatMode === "build" || chatMode === "explore";
+    const isAgent = AGENT_MODES.has(chatMode);
 
     const capabilities = resolvePromptCapabilities({
       supportsToolCalls,
       simulatedThinking,
       modelMetadata,
     });
-
     const layout = resolvePromptLayout({
       contextWindow: modelMetadata?.modelConfig?.contextWindow,
     });
 
-    const metadataSection = buildAssistantMetadataSection({
-      request: preferredLanguage ? { ...request, lang: preferredLanguage } : request,
-      modelId: modelMetadata?.modelId,
-      modelConfig: modelMetadata?.modelConfig,
-      format: layout.metadataFormat,
-    });
-
-    const principlesSection = buildAssistantPrinciplesSection({
-      isAgent,
-      supportsToolCalls: capabilities.supportsToolCalls,
-      simulatedThinking: capabilities.simulatedThinking,
-      preferredLanguage,
-      format: layout.principlesFormat,
-    });
-    const responseStyle = getResponseStyle(
-      verbosity,
-      userTraits,
-      userPreferences,
-      false,
-      isAgent,
-      capabilities.simulatedThinking,
-      layout.principlesFormat,
-    );
-
-    const userContextSection = buildUserContextSection({
-      date,
-      userNickname,
-      userJobRole,
-      latitude,
-      longitude,
-    });
-
-    const builder = new PromptBuilder(metadataSection)
-      .addLine(
-        "<instruction_precedence>\n<order>safety_standards > channel_context > behaviour > response_style > formatting > available_skills > session_config</order>\n<conflict_rule>Resolve conflicts silently in this order. Surface only limitations that materially change what the user receives.</conflict_rule>\n</instruction_precedence>",
-      )
+    const builder = new PromptBuilder(
+      buildAssistantMetadataSection({
+        request: preferredLanguage ? { ...request, lang: preferredLanguage } : request,
+        modelId: modelMetadata?.modelId,
+        modelConfig: modelMetadata?.modelConfig,
+        format: layout.metadataFormat,
+      }),
+    )
+      .addLine(buildInstructionPrecedence(isCoding))
       .addLine()
-      .add(principlesSection)
-      .add(buildResponseStyleSection(responseStyle))
       .add(
-        buildFormattingSection({
+        buildAssistantPrinciplesSection({
+          isAgent,
+          supportsToolCalls: capabilities.supportsToolCalls,
+          simulatedThinking: capabilities.simulatedThinking,
+          preferredLanguage,
           format: layout.principlesFormat,
         }),
       )
-      .add(buildSafetyStandardsSection());
-
-    if (isAgent) {
-      builder.add(buildAgentGuidelinesSection());
-    }
-
-    builder
+      .add(buildPersonaSection(persona))
+      .add(
+        buildResponseStyleSection(
+          getResponseStyle(
+            verbosity,
+            userTraits,
+            userPreferences,
+            isCoding,
+            isAgent,
+            capabilities.simulatedThinking,
+            layout.principlesFormat,
+          ),
+        ),
+      )
+      .add(buildFormattingSection({ isCoding, format: layout.principlesFormat }))
+      .addIf(isCoding, buildCodingConductSection())
+      .add(buildSafetyStandardsSection())
+      .addIf(isAgent, buildAgentGuidelinesSection())
       .add(buildChannelSection(request.options?.channel))
       .add(buildSkillsSection(skills))
-      .add(userContextSection)
+      .add(
+        buildUserContextSection({
+          date: request.date || new Date().toISOString().split("T")[0],
+          userNickname: userSettings?.nickname || null,
+          userJobRole: userSettings?.job_role || null,
+          latitude: request.location?.latitude || user?.latitude,
+          longitude: request.location?.longitude || user?.longitude,
+        }),
+      )
       .add(
         buildSessionConfigSection({
           mode: chatMode,

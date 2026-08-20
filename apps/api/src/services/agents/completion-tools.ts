@@ -15,7 +15,7 @@ import {
   delegateToTeamMemberByRole,
   getTeamMembers,
 } from "~/services/functions/teamDelegation";
-import type { IEnv } from "~/types";
+import type { AssistantPersona, AssistantPersonaExample, IEnv } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";
@@ -48,53 +48,38 @@ export async function buildAgentCompletionTools(
   return [...CORE_AGENT_TOOLS, ...teamDelegationTools, ...mcpFunctions];
 }
 
-export function buildAgentSystemPrompt(agent: CompletionAgent): string {
-  const fewShotExamples = formatFewShotExamples(agent.few_shot_examples);
-  const systemPrompt = agent.system_prompt || "";
-
-  return fewShotExamples ? `${systemPrompt}\n\n${fewShotExamples}` : systemPrompt;
+export function buildAgentPersona(agent: CompletionAgent): AssistantPersona {
+  return {
+    instructions: agent.system_prompt || undefined,
+    examples: parseFewShotExamples(agent.few_shot_examples),
+  };
 }
 
-function formatFewShotExamples(rawExamples: unknown): string {
+function parseFewShotExamples(rawExamples: unknown): AssistantPersonaExample[] {
   if (!rawExamples) {
-    return "";
+    return [];
   }
 
   try {
     const parsed = typeof rawExamples === "string" ? safeParseJson(rawExamples) : rawExamples;
 
     if (!Array.isArray(parsed)) {
-      return "";
+      return [];
     }
 
-    const examples = parsed
-      .filter(
-        (example): example is { input: string; output: string } =>
-          typeof example === "object" &&
-          example !== null &&
-          typeof (example as { input?: unknown }).input === "string" &&
-          typeof (example as { output?: unknown }).output === "string",
-      )
-      .map(
-        (example) => `
-          User: ${example.input}
-          Assistant: ${example.output}
-        `,
-      )
-      .join("\n");
-
-    return examples
-      ? `
-        Examples:
-        ${examples}
-      `
-      : "";
+    return parsed.filter(
+      (example): example is AssistantPersonaExample =>
+        typeof example === "object" &&
+        example !== null &&
+        typeof (example as { input?: unknown }).input === "string" &&
+        typeof (example as { output?: unknown }).output === "string",
+    );
   } catch (error) {
     logger.error("Error parsing few-shot examples", {
       error_message: error instanceof Error ? error.message : "Unknown error",
     });
 
-    return "";
+    return [];
   }
 }
 

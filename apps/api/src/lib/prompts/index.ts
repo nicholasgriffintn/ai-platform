@@ -2,10 +2,9 @@ import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveMemoryPolicy } from "~/lib/chat/memoryPolicy";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
-import type { ChatMode, IBody, IUser, IUserSettings } from "~/types";
+import type { AssistantPersona, ChatMode, IBody, IUser, IUserSettings } from "~/types";
 import { trimTemplateWhitespace } from "~/utils/strings";
 
-import { returnCodingPrompt } from "./coding";
 import { getTextToImageSystemPrompt } from "./image";
 import { returnSandboxPrompt } from "./sandbox";
 import { buildAssistantMetadataSection, type PromptModelMetadata } from "./sections/metadata";
@@ -15,77 +14,51 @@ import { emptyPrompt } from "./utils";
 
 export type PromptRequest = IBody;
 
-export interface PromptSessionOptions {
+export interface SystemPromptOptions {
+  request: PromptRequest;
+  model: string;
+  user?: IUser;
+  userSettings?: IUserSettings;
+  skills?: readonly SkillAvailability[];
   memory?: PromptMemoryPolicy;
+  persona?: AssistantPersona | null;
 }
 
-export async function getSystemPrompt(
-  request: PromptRequest,
-  model: string,
-  user?: IUser,
-  userSettings?: IUserSettings,
-  skills?: readonly SkillAvailability[],
-  session?: PromptSessionOptions,
-): Promise<string> {
+export async function getSystemPrompt(options: SystemPromptOptions): Promise<string> {
+  const { request, model, user, userSettings, skills, persona } = options;
   const modelConfig = await getModelConfigByMatchingModel(model, undefined, request.provider);
   const supportsToolCalls = modelConfig?.supportsToolCalls || false;
-  const memoryPolicy = session?.memory ?? resolveMemoryPolicy({ user, userSettings });
-
-  let prompt: string;
+  const memoryPolicy = options.memory ?? resolveMemoryPolicy({ user, userSettings });
   const modelMetadata = modelConfig ? { modelId: model, modelConfig } : { modelId: model };
 
   if (request.options?.sandbox?.enabled) {
     return trimTemplateWhitespace(returnSandboxPrompt(request, userSettings, modelMetadata));
   }
 
-  if (!modelConfig) {
-    prompt = await returnStandardPrompt(
+  const inputs = modelConfig?.modalities?.input ?? ["text"];
+  const outputs = modelConfig?.modalities?.output ?? inputs;
+  const supportsTextOutput =
+    outputs.includes("text") || (!outputs.length && inputs.includes("text"));
+
+  if (modelConfig && !supportsTextOutput) {
+    return trimTemplateWhitespace(
+      outputs.includes("image") ? getTextToImageSystemPrompt(request.image_style) : emptyPrompt(),
+    );
+  }
+
+  return trimTemplateWhitespace(
+    returnStandardPrompt({
       request,
       user,
       userSettings,
       supportsToolCalls,
-      { modelId: model },
+      modelMetadata,
       skills,
       memoryPolicy,
-    );
-  } else {
-    const inputs = modelConfig.modalities?.input ?? ["text"];
-    const outputs = modelConfig.modalities?.output ?? inputs;
-    const supportsTextOutput =
-      outputs.includes("text") || (!outputs.length && inputs.includes("text"));
-    const isCodingModel = modelConfig?.promptTemplate === "coding";
-
-    if (isCodingModel) {
-      prompt = returnCodingPrompt(
-        request,
-        userSettings,
-        supportsToolCalls,
-        { modelId: model, modelConfig },
-        skills,
-        memoryPolicy,
-      );
-    } else {
-      const isTextToImageModel = outputs.includes("image") && !supportsTextOutput;
-
-      if (isTextToImageModel) {
-        prompt = getTextToImageSystemPrompt(request.image_style);
-      } else if (!supportsTextOutput) {
-        prompt = emptyPrompt();
-      } else {
-        prompt = await returnStandardPrompt(
-          request,
-          user,
-          userSettings,
-          supportsToolCalls,
-          { modelId: model, modelConfig },
-          skills,
-          memoryPolicy,
-        );
-      }
-    }
-  }
-
-  return trimTemplateWhitespace(prompt);
+      persona,
+      isCoding: modelConfig?.promptTemplate === "coding",
+    }),
+  );
 }
 
 function buildArticlePromptMetadata(

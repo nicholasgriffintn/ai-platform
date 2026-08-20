@@ -647,8 +647,8 @@ export class RequestPreparer {
       return this.appendProjectInstructions(enhancedPrompt, projectContext, activeGoal);
     }
 
-    const generatedPrompt = await getSystemPrompt(
-      {
+    const generatedPrompt = await getSystemPrompt({
+      request: {
         completion_id: completion_id,
         input: finalMessage,
         model: primaryModel,
@@ -661,12 +661,13 @@ export class RequestPreparer {
         max_tokens,
         options: options.options,
       },
-      primaryModel,
-      user || undefined,
+      model: primaryModel,
+      user: user || undefined,
       userSettings,
       skills,
-      { memory: memoryPolicy },
-    );
+      memory: memoryPolicy,
+      persona: options.persona,
+    });
 
     const enhancedPrompt = await this.enhanceSystemPromptWithMemory(
       generatedPrompt,
