@@ -2102,8 +2102,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     contextWindow: 262144,
     maxTokens: 65536,
-    costPer1kInputTokens: 0.00045,
-    costPer1kOutputTokens: 0.0032,
+    costPer1kInputTokens: 0.0004,
+    costPer1kOutputTokens: 0.003,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",

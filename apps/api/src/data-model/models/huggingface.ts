@@ -2091,4 +2091,28 @@ export const huggingfaceModelConfig: ModelConfig = {
       defaultEffort: "none",
     },
   },
+  "zai-org/GLM-4.6V-Flash": {
+  	name: "GLM-4.6V-Flash",
+  	matchingModel: "zai-org/GLM-4.6V-Flash",
+  	provider: "huggingface",
+  	family: "glm",
+  	openWeights: true,
+  	releaseDate: "December 8, 2025",
+  	lastUpdated: "December 8, 2025",
+  	modalities: {
+  		input: ["text", "image"],
+  		output: ["text"],
+  	},
+  	supportsAttachments: true,
+  	supportsTemperature: true,
+  	supportsToolCalls: true,
+  	contextWindow: 131072,
+  	maxTokens: 32768,
+  	costPer1kInputTokens: 0.0003,
+  	costPer1kOutputTokens: 0.0009,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "thinking"],
+  		defaultEffort: "none",
+  	},
+  },
 };
