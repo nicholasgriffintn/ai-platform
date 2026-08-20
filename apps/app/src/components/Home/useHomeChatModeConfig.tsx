@@ -398,7 +398,7 @@ export function useHomeChatModeConfig(): {
           welcomeTitle: "Start a live session",
           welcomeDescription:
             "Choose a live-capable model, then use voice or camera input in the active session.",
-          welcomeSampleQuestions: [],
+          welcomeSuggestions: [],
           inputPlaceholder: {
             newConversation: "Live mode is running. Transcripts can still be edited here...",
             followUp: "Live mode is running. Add notes or follow-up text...",

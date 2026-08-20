@@ -1,3 +1,5 @@
+import { type FocusRole, resolveFocusRole } from "./focus-role";
+
 export interface ChatWelcome {
   title: string;
   description: string;
@@ -83,53 +85,32 @@ const NAMED_RETURNING_WELCOMES: WelcomeTemplate[] = [
 
 const FOCUS_WELCOME_WEIGHT = 0.6;
 
-const FOCUS_WELCOMES: Array<{
-  keywords: string[];
-  template: WelcomeTemplate;
-}> = [
-  {
-    keywords: ["engineer", "developer", "software", "technical", "programmer"],
-    template: (name) => ({
-      title: `What are we taking apart, ${name}?`,
-      description: "Code knot, system puzzle, or the suspiciously simple thing that isn’t.",
-    }),
-  },
-  {
-    keywords: ["design", "creative", "artist", "illustrator"],
-    template: (name) => ({
-      title: `What are we sketching, ${name}?`,
-      description: "A rough concept, a tricky detail, or the version before the polished one.",
-    }),
-  },
-  {
-    keywords: ["manager", "founder", "leader", "product", "director", "executive"],
-    template: (name) => ({
-      title: `What needs a clearer shape, ${name}?`,
-      description: "A decision, a knotty trade-off, or a plan still finding its feet.",
-    }),
-  },
-  {
-    keywords: ["writer", "editor", "content", "marketing", "communications"],
-    template: (name) => ({
-      title: `What are we untangling, ${name}?`,
-      description: "A stubborn sentence, a fresh angle, or an idea that needs a voice.",
-    }),
-  },
-  {
-    keywords: ["research", "scientist", "analyst", "academic"],
-    template: (name) => ({
-      title: `Which question are we following, ${name}?`,
-      description: "Bring the evidence, the gap, or the question behind the question.",
-    }),
-  },
-  {
-    keywords: ["student", "teacher", "educator"],
-    template: (name) => ({
-      title: `What are we working through, ${name}?`,
-      description: "An essay, a difficult concept, or the next step in an assignment.",
-    }),
-  },
-];
+const FOCUS_WELCOMES: Record<FocusRole, WelcomeTemplate> = {
+  engineering: (name) => ({
+    title: `What are we taking apart, ${name}?`,
+    description: "Code knot, system puzzle, or the suspiciously simple thing that isn’t.",
+  }),
+  design: (name) => ({
+    title: `What are we sketching, ${name}?`,
+    description: "A rough concept, a tricky detail, or the version before the polished one.",
+  }),
+  leadership: (name) => ({
+    title: `What needs a clearer shape, ${name}?`,
+    description: "A decision, a knotty trade-off, or a plan still finding its feet.",
+  }),
+  writing: (name) => ({
+    title: `What are we untangling, ${name}?`,
+    description: "A stubborn sentence, a fresh angle, or an idea that needs a voice.",
+  }),
+  research: (name) => ({
+    title: `Which question are we following, ${name}?`,
+    description: "Bring the evidence, the gap, or the question behind the question.",
+  }),
+  education: (name) => ({
+    title: `What are we working through, ${name}?`,
+    description: "An essay, a difficult concept, or the next step in an assignment.",
+  }),
+};
 
 function getDisplayName({ preferredName, accountName }: ChatWelcomeContext): string | null {
   const nickname = preferredName?.trim();
@@ -144,18 +125,14 @@ function getDisplayName({ preferredName, accountName }: ChatWelcomeContext): str
 }
 
 function getFocusWelcome(jobRole: string | null | undefined, name: string): ChatWelcome | null {
-  const normalisedRole = jobRole?.trim().toLocaleLowerCase();
-
-  if (!normalisedRole) {
+  if (!jobRole?.trim()) {
     return null;
   }
 
-  const match = FOCUS_WELCOMES.find(({ keywords }) =>
-    keywords.some((keyword) => normalisedRole.includes(keyword)),
-  );
+  const role = resolveFocusRole(jobRole);
 
-  return match
-    ? match.template(name)
+  return role
+    ? FOCUS_WELCOMES[role](name)
     : {
         title: `What are we working on, ${name}?`,
         description: "Bring the tricky bit from work, or anything else on your mind.",

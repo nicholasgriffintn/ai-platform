@@ -47,6 +47,7 @@ import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { useGoal } from "~/hooks/useGoal";
 import { useModels } from "~/hooks/useModels";
 import { resolveConnectorOperationApproval } from "~/lib/api/connectors";
+import type { ChatSuggestion } from "~/lib/chat-suggestions";
 import { getErrorMessage } from "~/lib/errors";
 import { openExternalUrl } from "~/lib/external-navigation";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
@@ -54,9 +55,9 @@ import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatRequestOptions, ModelSelectionChangeHandler, ModelSelectorScope } from "~/types";
 
 import { ChatInput, type ChatInputHandle } from "./ChatInput";
+import { ChatSuggestions } from "./ChatSuggestions";
 import { FooterInfo } from "./FooterInfo";
 import { MessageList } from "./MessageList";
-import { SampleQuestions } from "./SampleQuestions";
 import { useAssistantActionSubmit } from "./useAssistantActionSubmit";
 import { useAutoPlayResponses } from "./useAutoPlayResponses";
 
@@ -73,12 +74,9 @@ export interface ConversationThreadModeConfig {
   welcomeTitle?: string;
   welcomeDescription?: string;
   welcomeLoading?: boolean;
-  welcomeSampleQuestions?: Array<{
-    id: string;
-    text: string;
-    question: string;
-    category: string;
-  }> | null;
+  welcomeSuggestions?: ChatSuggestion[] | null;
+  /** Work surfaces opt out: their capabilities are project-scoped, not personal. */
+  welcomeCapabilitySuggestions?: boolean;
   inputPlaceholder?: {
     newConversation: string;
     followUp: string;
@@ -692,11 +690,14 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
               description={modeConfig?.welcomeDescription}
               isLoading={modeConfig?.welcomeLoading}
               logo={<Logo variant="logo_control" />}
-              sampleQuestions={
-                <SampleQuestions
+              suggestions={
+                <ChatSuggestions
                   setInput={setChatInput}
-                  questionsOverride={modeConfig?.welcomeSampleQuestions}
+                  suggestionsOverride={modeConfig?.welcomeSuggestions}
                   isLoading={modeConfig?.welcomeLoading}
+                  modeCommands={modeConfig?.modeControls?.commands}
+                  modelConfig={selectedModelConfig}
+                  includeCapabilities={modeConfig?.welcomeCapabilitySuggestions !== false}
                 />
               }
             />

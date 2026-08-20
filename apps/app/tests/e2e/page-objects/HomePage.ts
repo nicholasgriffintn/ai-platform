@@ -5,8 +5,8 @@ import { BasePage } from "./BasePage";
 
 export class HomePage extends BasePage {
   readonly chatInput: Locator;
+  readonly suggestions: Locator;
   private readonly sendButton: Locator;
-  private readonly welcomeMessage: Locator;
   private readonly modelSelector: Locator;
   private readonly newChatButton: Locator;
   private readonly assistantMessages: Locator;
@@ -14,8 +14,8 @@ export class HomePage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.chatInput = page.getByRole("textbox", { name: "Message input" });
+    this.suggestions = page.locator("[data-suggestion-id]");
     this.sendButton = page.getByRole("button", { name: /send message/i });
-    this.welcomeMessage = page.getByText(/What shall we get into/i).first();
     this.modelSelector = page.getByLabel("Select a model", { exact: true });
     this.newChatButton = page.getByRole("button", { name: /New Chat/i });
     this.assistantMessages = page.locator('[data-role="assistant"]');
@@ -502,18 +502,27 @@ export class HomePage extends BasePage {
     await this.clickElement(this.newChatButton);
   }
 
-  async waitForWelcomeMessage() {
-    await this.waitForElement(this.welcomeMessage);
+  async waitForSuggestions() {
+    await this.waitForElement(this.suggestions.first());
   }
 
-  async isWelcomeScreenVisible(): Promise<boolean> {
-    try {
-      await this.welcomeMessage.waitFor({ timeout: 5000 });
+  async getSuggestionIds(): Promise<string[]> {
+    await this.waitForSuggestions();
+    const ids = await this.suggestions.evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute("data-suggestion-id") ?? ""),
+    );
 
-      return true;
-    } catch {
-      return false;
-    }
+    return ids;
+  }
+
+  async selectEverydaySuggestion() {
+    await this.waitForSuggestions();
+    await this.clickElement(this.page.locator('[data-suggestion-id^="everyday-"]').first());
+  }
+
+  async shuffleSuggestions() {
+    await this.waitForSuggestions();
+    await this.clickElement(this.page.getByRole("button", { name: "Shuffle" }));
   }
 
   async waitForChatResponse(previousAssistantMessageCount?: number) {
