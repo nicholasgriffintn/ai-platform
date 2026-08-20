@@ -1,4 +1,4 @@
-import { toProviderMessages } from "~/lib/chat/providerMessages";
+import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { resolveModelConfig } from "~/lib/providers/models";

@@ -1,4 +1,4 @@
-import { createEventData, encodeEventData } from "~/lib/chat/emitter";
+import { createEventData, encodeEventData } from "~/lib/chat/streaming/emitter";
 import type { ApprovedConnectorReplay } from "~/services/apps/connectors/approved-operation-replay";
 import type { Message } from "~/types";
 

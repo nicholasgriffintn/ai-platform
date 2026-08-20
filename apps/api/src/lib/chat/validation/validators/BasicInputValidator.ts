@@ -1,4 +1,4 @@
-import { sanitiseMessages } from "~/lib/chat/utils";
+import { sanitiseMessages } from "~/lib/chat/messages/sanitise";
 import type {
   ValidationContext,
   Validator,
@@ -10,9 +10,9 @@ export class BasicInputValidator implements Validator {
   async validate(options: CoreChatOptions, _context: ValidationContext): Promise<ValidatorResult> {
     const { messages: rawMessages } = options;
 
-    const sanitizedMessages = Array.isArray(rawMessages) ? sanitiseMessages(rawMessages) : [];
+    const sanitisedMessages = Array.isArray(rawMessages) ? sanitiseMessages(rawMessages) : [];
 
-    if (!sanitizedMessages || sanitizedMessages.length === 0) {
+    if (!sanitisedMessages || sanitisedMessages.length === 0) {
       return {
         validation: {
           isValid: false,
@@ -23,7 +23,7 @@ export class BasicInputValidator implements Validator {
       };
     }
 
-    const lastMessage = sanitizedMessages[sanitizedMessages.length - 1] || null;
+    const lastMessage = sanitisedMessages[sanitisedMessages.length - 1] || null;
 
     if (!lastMessage) {
       return {
@@ -39,7 +39,7 @@ export class BasicInputValidator implements Validator {
     return {
       validation: { isValid: true },
       context: {
-        sanitizedMessages,
+        sanitisedMessages,
         lastMessage,
       },
     };

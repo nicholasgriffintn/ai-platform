@@ -6,7 +6,7 @@ import type { CoreChatOptions } from "~/types";
 import type { ValidationContext } from "../../ValidationPipeline";
 import { BasicInputValidator } from "../BasicInputValidator";
 
-vi.mock("~/lib/chat/utils", () => ({
+vi.mock("~/lib/chat/messages/sanitise", () => ({
   sanitiseMessages: vi.fn(),
 }));
 
@@ -19,8 +19,9 @@ describe("BasicInputValidator", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
-    const { sanitiseMessages } =
-      await vi.importMock<typeof import("~/lib/chat/utils")>("~/lib/chat/utils");
+    const { sanitiseMessages } = await vi.importMock<typeof import("~/lib/chat/messages/sanitise")>(
+      "~/lib/chat/messages/sanitise",
+    );
 
     mockSanitiseMessages = vi.mocked(sanitiseMessages);
 
@@ -56,18 +57,18 @@ describe("BasicInputValidator", () => {
 
   describe("validate", () => {
     it("should successfully validate with proper messages", async () => {
-      const sanitizedMessages = [
+      const sanitisedMessages = [
         { role: "user", content: "Hello world" },
         { role: "assistant", content: "Hi there!" },
         { role: "user", content: "How are you?" },
       ];
 
-      mockSanitiseMessages.mockReturnValue(sanitizedMessages);
+      mockSanitiseMessages.mockReturnValue(sanitisedMessages);
 
       const result = await validator.validate(baseOptions, baseContext);
 
       expect(result.validation.isValid).toBe(true);
-      expect(result.context.sanitizedMessages).toEqual(sanitizedMessages);
+      expect(result.context.sanitisedMessages).toEqual(sanitisedMessages);
       expect(result.context.lastMessage).toEqual({
         role: "user",
         content: "How are you?",
@@ -102,9 +103,9 @@ describe("BasicInputValidator", () => {
     });
 
     it("should fail validation when no valid last message found", async () => {
-      const sanitizedMessages = [null, undefined, false] as any;
+      const sanitisedMessages = [null, undefined, false] as any;
 
-      mockSanitiseMessages.mockReturnValue(sanitizedMessages);
+      mockSanitiseMessages.mockReturnValue(sanitisedMessages);
 
       const result = await validator.validate(baseOptions, baseContext);
 
@@ -115,14 +116,14 @@ describe("BasicInputValidator", () => {
     });
 
     it("should handle single message successfully", async () => {
-      const sanitizedMessages = [{ role: "user", content: "Single message" }];
+      const sanitisedMessages = [{ role: "user", content: "Single message" }];
 
-      mockSanitiseMessages.mockReturnValue(sanitizedMessages);
+      mockSanitiseMessages.mockReturnValue(sanitisedMessages);
 
       const result = await validator.validate(baseOptions, baseContext);
 
       expect(result.validation.isValid).toBe(true);
-      expect(result.context.sanitizedMessages).toEqual(sanitizedMessages);
+      expect(result.context.sanitisedMessages).toEqual(sanitisedMessages);
       expect(result.context.lastMessage).toEqual({
         role: "user",
         content: "Single message",
@@ -130,7 +131,7 @@ describe("BasicInputValidator", () => {
     });
 
     it("should handle messages with complex content", async () => {
-      const sanitizedMessages = [
+      const sanitisedMessages = [
         {
           role: "user",
           content: [
@@ -140,12 +141,12 @@ describe("BasicInputValidator", () => {
         },
       ];
 
-      mockSanitiseMessages.mockReturnValue(sanitizedMessages);
+      mockSanitiseMessages.mockReturnValue(sanitisedMessages);
 
       const result = await validator.validate(baseOptions, baseContext);
 
       expect(result.validation.isValid).toBe(true);
-      expect(result.context.lastMessage).toEqual(sanitizedMessages[0]);
+      expect(result.context.lastMessage).toEqual(sanitisedMessages[0]);
     });
 
     it("should handle undefined messages property", async () => {
@@ -177,20 +178,20 @@ describe("BasicInputValidator", () => {
     });
 
     it("should pass through existing context", async () => {
-      const sanitizedMessages = [{ role: "user", content: "Test message" }];
+      const sanitisedMessages = [{ role: "user", content: "Test message" }];
       const contextWithExistingData = {
         existingField: "value",
         anotherField: 123,
       };
 
-      mockSanitiseMessages.mockReturnValue(sanitizedMessages);
+      mockSanitiseMessages.mockReturnValue(sanitisedMessages);
 
       const result = await validator.validate(baseOptions, contextWithExistingData as any);
 
       expect(result.validation.isValid).toBe(true);
       expect(result.context).toEqual({
-        sanitizedMessages,
-        lastMessage: sanitizedMessages[0],
+        sanitisedMessages,
+        lastMessage: sanitisedMessages[0],
       });
     });
 
@@ -204,12 +205,12 @@ describe("BasicInputValidator", () => {
     });
 
     it("should handle messages with empty content", async () => {
-      const sanitizedMessages = [
+      const sanitisedMessages = [
         { role: "user", content: "" },
         { role: "assistant", content: "Response" },
       ];
 
-      mockSanitiseMessages.mockReturnValue(sanitizedMessages);
+      mockSanitiseMessages.mockReturnValue(sanitisedMessages);
 
       const result = await validator.validate(baseOptions, baseContext);
 

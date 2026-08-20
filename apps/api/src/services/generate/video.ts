@@ -1,4 +1,3 @@
-import { sanitiseInput } from "~/lib/chat/utils";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { generateWithProviderFallback } from "~/lib/providers/capabilities/utils";
 import { getVideoProvider } from "~/lib/providers/capabilities/video";
@@ -6,6 +5,7 @@ import { resolveModelProvider } from "~/lib/providers/models";
 import { hasUserProviderApiKey } from "~/lib/providers/utils/apiKeys";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { sanitiseInput } from "~/utils/sanitise";
 
 export interface VideoGenerationParams {
   prompt: string;

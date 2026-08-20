@@ -1,4 +1,4 @@
-import { toProviderMessages } from "~/lib/chat/providerMessages";
+import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
 import type { ChatCompletionParameters, CoreChatOptions, Message, Platform } from "~/types";
 
 import type { PreparedRequest } from "../preparation/RequestPreparer";

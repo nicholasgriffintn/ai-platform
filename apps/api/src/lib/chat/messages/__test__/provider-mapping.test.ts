@@ -5,7 +5,7 @@ import {
   toProviderMessages,
   toProviderResponseMessagePartSource,
   toProviderResponseMessages,
-} from "../providerMessages";
+} from "../provider-mapping";
 
 describe("isProviderMessage", () => {
   it("excludes compaction status messages represented by role or parts", () => {

@@ -1,5 +1,5 @@
-import { sanitiseInput } from "~/lib/chat/utils";
 import { insertEmbedding } from "~/services/apps/embeddings/insert";
+import { sanitiseInput } from "~/utils/sanitise";
 
 import type { ApiToolDefinition } from "../../types/functions";
 import { jsonSchemaToZod } from "../../utils/jsonSchema";

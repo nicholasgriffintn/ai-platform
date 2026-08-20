@@ -1,4 +1,4 @@
-import { hasCompactionPart, isCompactionMarkerMessage } from "~/lib/chat/messageParts";
+import { hasCompactionPart, isCompactionMarkerMessage } from "~/lib/chat/messages/parts";
 import {
   estimateConversationTokens,
   estimateMessageTokens,

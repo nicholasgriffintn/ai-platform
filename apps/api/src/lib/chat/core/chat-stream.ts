@@ -1,8 +1,8 @@
 import type { AgentEvent } from "@ngriffin_uk/polychat-library-agent-core";
 
-import { runAgentLoop, type AgentLoopExecutionParams } from "~/lib/chat/agent/runAgentLoop";
-import { createChatSseStreamWriter } from "~/lib/chat/emitter";
-import { isAgentExecutionMode } from "~/lib/chat/mode-metadata";
+import { runAgentLoop, type AgentLoopExecutionParams } from "~/lib/chat/agent/agent-loop";
+import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
+import { createChatSseStreamWriter } from "~/lib/chat/streaming/emitter";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
 import { StreamState } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";

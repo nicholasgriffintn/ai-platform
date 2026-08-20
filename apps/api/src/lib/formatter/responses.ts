@@ -1,6 +1,6 @@
 import type { ModelModalities } from "@ngriffin_uk/polychat-schemas";
 
-import { preprocessQwQResponse } from "~/lib/chat/utils/qwq";
+import { preprocessQwQResponse } from "~/lib/chat/messages/unterminated-thinking";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import {
   hasPrivateAssetStorage,

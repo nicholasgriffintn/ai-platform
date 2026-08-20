@@ -2,10 +2,10 @@ import {
   MEMORY_SEARCH_TOOL_NAME,
   MEMORY_STORE_TOOL_NAME,
   getEnabledMemoryToolNames,
-} from "~/lib/chat/memoryPolicy";
-import { sanitiseInput } from "~/lib/chat/utils";
+} from "~/lib/chat/policy/memory";
 import { MemoryManager } from "~/lib/memory";
 import type { IUserSettings } from "~/types";
+import { sanitiseInput } from "~/utils/sanitise";
 
 import type { ApiToolDefinition } from "../../types/functions";
 import { jsonSchemaToZod } from "../../utils/jsonSchema";

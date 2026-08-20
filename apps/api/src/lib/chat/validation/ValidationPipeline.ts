@@ -1,4 +1,6 @@
-import type { CoreChatOptions } from "~/types";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+
+import type { CoreChatOptions, Message } from "~/types";
 
 import { AuthValidator } from "./validators/AuthValidator";
 import { BasicInputValidator } from "./validators/BasicInputValidator";
@@ -15,10 +17,10 @@ export interface ValidationResult {
 }
 
 export interface ValidationContext {
-  sanitizedMessages?: any[];
-  lastMessage?: any;
+  sanitisedMessages?: Message[];
+  lastMessage?: Message;
   messageWithContext?: string;
-  modelConfig?: any;
+  modelConfig?: ModelConfigItem;
   guardrails?: any;
   selectedModels?: string[];
 }

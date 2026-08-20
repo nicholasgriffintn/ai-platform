@@ -1,6 +1,6 @@
 import { createConversationTitleExcerpt } from "@ngriffin_uk/polychat-schemas";
 
-import { isCompactionMarkerMessage } from "~/lib/chat/messageParts";
+import { isCompactionMarkerMessage } from "~/lib/chat/messages/parts";
 import { MessageFormatter } from "~/lib/formatter/messages";
 import type { Message } from "~/types";
 

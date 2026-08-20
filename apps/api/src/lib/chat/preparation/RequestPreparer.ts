@@ -6,16 +6,16 @@ import type {
   SkillAvailability,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { messagesMatchStoredPrefix } from "~/lib/chat/messages/comparison";
+import { hasSnapshotPart } from "~/lib/chat/messages/parts";
+import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
+import { restoreStoredAttachmentContent } from "~/lib/chat/messages/stored-attachments";
 import {
   buildMemoryPromptContext,
   mergeEnabledMemoryToolNames,
   resolveMemoryPolicy,
-} from "~/lib/chat/memoryPolicy";
-import { messagesMatchStoredPrefix } from "~/lib/chat/messageComparison";
-import { hasSnapshotPart } from "~/lib/chat/messageParts";
-import { buildUserMessageData } from "~/lib/chat/mode-metadata";
-import { toProviderMessages } from "~/lib/chat/providerMessages";
-import { restoreStoredAttachmentContent } from "~/lib/chat/storedAttachments";
+} from "~/lib/chat/policy/memory";
+import { buildUserMessageData } from "~/lib/chat/policy/mode-metadata";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
@@ -52,8 +52,10 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { memoizeRequest } from "~/utils/requestCache";
+import { sanitiseInput } from "~/utils/sanitise";
 
-import { getAllAttachments, pruneMessagesToFitContext, sanitiseInput } from "../utils";
+import { getAllAttachments } from "../messages/attachments";
+import { pruneMessagesToFitContext } from "../policy/context-window";
 import type { ValidationContext } from "../validation/ValidationPipeline";
 
 const logger = getLogger({ prefix: "lib/chat/preparation/RequestPreparer" });
@@ -76,7 +78,7 @@ function assertBackgroundRequestIsSupported(options: CoreChatOptions, primaryPro
 export interface PreparedRequest {
   modelConfigs: ModelConfigInfo[];
   primaryModel: string;
-  primaryModelConfig: ModelConfigInfo;
+  primaryModelConfig: ProviderModelConfig;
   primaryProvider: string;
   conversationManager: ConversationManager;
   messages: Message[];
@@ -136,13 +138,13 @@ export class RequestPreparer {
     validationContext: ValidationContext,
   ): Promise<PreparedRequest> {
     const {
-      sanitizedMessages,
+      sanitisedMessages,
       lastMessage,
       modelConfig: primaryModelConfig,
       messageWithContext,
     } = validationContext;
 
-    if (!sanitizedMessages || !primaryModelConfig || !messageWithContext) {
+    if (!sanitisedMessages || !primaryModelConfig || !messageWithContext) {
       throw new AssistantError("Missing required validation context", ErrorType.PARAMS_ERROR);
     }
 
@@ -204,6 +206,8 @@ export class RequestPreparer {
       user?.id ? repositories : null,
       user?.id,
     );
+    const scopedSkillCatalogPromise = this.resolveScopedSkillCatalog(options, projectContext);
+    const activeGoalPromise = this.loadActiveGoal(options);
 
     const finalMessagePromise = this.processMessageContent(options, validationContext);
 
@@ -255,25 +259,10 @@ export class RequestPreparer {
           )
         : null;
 
-    const skillScope = await skillScopePromise;
-    const scopedSkillCatalog =
-      options.context && (projectContext || user?.id)
-        ? await resolveSkillCatalog(
-            options.context,
-            projectContext
-              ? { type: "project", id: projectContext.projectId }
-              : { type: "personal", id: user.id },
-            projectContext ? new Set(projectContext.enabledSkillIds) : undefined,
-          ).catch((error) => {
-            logger.warn("Failed to load authored skills", {
-              error,
-              projectId: projectContext?.projectId,
-              userId: user?.id,
-            });
-
-            return null;
-          })
-        : null;
+    const [skillScope, scopedSkillCatalog] = await Promise.all([
+      skillScopePromise,
+      scopedSkillCatalogPromise,
+    ]);
     const skills = await listSkillAvailability(
       buildSkillAvailabilityInput({
         skillScope,
@@ -283,11 +272,11 @@ export class RequestPreparer {
       scopedSkillCatalog?.listDefinitions(),
     );
 
-    const activeGoal = await this.loadActiveGoal(options);
+    const activeGoal = await activeGoalPromise;
 
     const systemPromptTask = this.buildSystemPrompt(
       options,
-      sanitizedMessages,
+      sanitisedMessages,
       finalMessage,
       primaryModel,
       userSettings,
@@ -308,7 +297,7 @@ export class RequestPreparer {
       conversationManager,
       completionId: options.completion_id,
       shouldStoreMessages: shouldStoreMessages && !shouldAppendConversationHistory,
-      fallbackMessages: sanitizedMessages,
+      fallbackMessages: sanitisedMessages,
       messageWithContext,
       primaryModelConfig,
     });
@@ -374,6 +363,35 @@ export class RequestPreparer {
       logger.warn("Failed to load personal skill configuration", { error, userId });
 
       return { scope: "personal" };
+    }
+  }
+
+  private async resolveScopedSkillCatalog(
+    options: CoreChatOptions,
+    projectContext: ProjectChatContext | null,
+  ) {
+    const user = options.context?.user;
+
+    if (!options.context || !(projectContext || user?.id)) {
+      return null;
+    }
+
+    try {
+      return await resolveSkillCatalog(
+        options.context,
+        projectContext
+          ? { type: "project", id: projectContext.projectId }
+          : { type: "personal", id: user.id },
+        projectContext ? new Set(projectContext.enabledSkillIds) : undefined,
+      );
+    } catch (error) {
+      logger.warn("Failed to load authored skills", {
+        error,
+        projectId: projectContext?.projectId,
+        userId: user?.id,
+      });
+
+      return null;
     }
   }
 
@@ -559,7 +577,7 @@ export class RequestPreparer {
 
   private async buildSystemPrompt(
     options: CoreChatOptions,
-    sanitizedMessages: Message[],
+    sanitisedMessages: Message[],
     finalMessage: string,
     primaryModel: string,
     userSettings: any,
@@ -601,7 +619,7 @@ export class RequestPreparer {
       return this.appendProjectInstructions(enhancedPrompt, projectContext, activeGoal);
     }
 
-    const systemPromptFromMessages = sanitizedMessages.find((message) => message.role === "system");
+    const systemPromptFromMessages = sanitisedMessages.find((message) => message.role === "system");
 
     if (systemPromptFromMessages?.content && typeof systemPromptFromMessages.content === "string") {
       const enhancedPrompt = await this.enhanceSystemPromptWithMemory(
@@ -723,11 +741,11 @@ export class RequestPreparer {
   }
 
   private buildFinalMessages(
-    sanitizedMessages: Message[],
+    sanitisedMessages: Message[],
     messageWithContext: string,
     modelConfig: any,
   ): Message[] {
-    const messagesWithAttachments = restoreStoredAttachmentContent(sanitizedMessages);
+    const messagesWithAttachments = restoreStoredAttachmentContent(sanitisedMessages);
     const prunedWithAttachments =
       messagesWithAttachments.length > 0
         ? pruneMessagesToFitContext(messagesWithAttachments, messageWithContext, modelConfig)
@@ -766,7 +784,7 @@ export class RequestPreparer {
     shouldStoreMessages: boolean;
     fallbackMessages: Message[];
     messageWithContext: string;
-    primaryModelConfig: ModelConfigInfo;
+    primaryModelConfig: ProviderModelConfig;
   }): Promise<Message[]> {
     if (!shouldStoreMessages || !completionId) {
       return this.buildFinalMessages(fallbackMessages, messageWithContext, primaryModelConfig);

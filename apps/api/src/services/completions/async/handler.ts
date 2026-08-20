@@ -3,7 +3,7 @@ import {
   mergeAsyncInvocationMetadata,
 } from "~/lib/async/asyncInvocation";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
-import { buildMessageParts } from "~/lib/chat/messageParts";
+import { buildMessageParts } from "~/lib/chat/messages/parts";
 import { getChatProvider, listChatProviders } from "~/lib/providers/capabilities/chat";
 import type { ChatCompletionParameters, Message } from "~/types";
 import { getLogger } from "~/utils/logger";

@@ -1,6 +1,6 @@
 import type { InboundChannelId } from "@ngriffin_uk/polychat-schemas";
 
-import { getInboundChannelProfile } from "~/lib/chat/channels";
+import { getInboundChannelProfile } from "~/lib/chat/policy/channels";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import {
