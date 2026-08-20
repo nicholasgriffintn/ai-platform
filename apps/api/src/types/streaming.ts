@@ -4,6 +4,7 @@
 export type SSEEventType =
   | "state"
   | "error"
+  | "usage"
   | "usage_limits"
   | "content_block_delta"
   | "content_block_stop"

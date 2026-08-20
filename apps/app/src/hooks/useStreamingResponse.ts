@@ -16,6 +16,7 @@ import { getChatStreamLoadingMessage } from "~/lib/chat/stream-state";
 import { normaliseUsageLimits } from "~/lib/usage-limits";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUsageStore } from "~/state/stores/usageStore";
 import type { ChatRequestOptions, Message } from "~/types";
 
@@ -54,6 +55,14 @@ export function useStreamingResponse(
     setModel,
   } = useChatStore();
   const setUsageLimits = useUsageStore((state) => state.setUsageLimits);
+  const {
+    beginStreamActivity,
+    completeStreamActivityMessage,
+    endStreamActivity,
+    recordStreamActivityState,
+    recordStreamActivityText,
+    recordStreamActivityToolResult,
+  } = useStreamActivityStore.getState();
 
   const [streamStarted, setStreamStarted] = useState(false);
   const [controller, setController] = useState(() => new AbortController());
@@ -103,6 +112,8 @@ export function useStreamingResponse(
       const pendingMessageTasks: Promise<unknown>[] = [];
       const assistantMessageData = options?.assistantMessageData;
       let shouldRefreshStoredConversation = false;
+
+      beginStreamActivity();
 
       const placeholderMessage = await addAssistantMessage(
         conversationId,
@@ -159,7 +170,11 @@ export function useStreamingResponse(
         done?: boolean,
         assistantMessage?: Message,
       ) => {
+        recordStreamActivityText({ content, reasoning });
+
         if (done && assistantMessage) {
+          completeStreamActivityMessage(assistantMessage.id);
+
           const updatedAssistantMessage = withAssistantMessageData(assistantMessage);
 
           generatedMessages.push(updatedAssistantMessage);
@@ -224,6 +239,10 @@ export function useStreamingResponse(
 
         if (toolResponses && toolResponses.length > 0) {
           for (const toolResponse of toolResponses) {
+            recordStreamActivityToolResult({
+              toolCallId: toolResponse.tool_call_id,
+              name: toolResponse.name,
+            });
             toolResponseMessages.push(toolResponse);
             generatedMessages.push(toolResponse);
             pendingMessageTasks.push(
@@ -291,6 +310,8 @@ export function useStreamingResponse(
           const modelConfigToSend = selectedModel ? apiModels[selectedModel] : undefined;
 
           const handleStateChange = (state: string, data?: any) => {
+            recordStreamActivityState(state, data);
+
             if (state === "usage_limits") {
               const usageLimits = normaliseUsageLimits(data);
 
@@ -359,6 +380,8 @@ export function useStreamingResponse(
               : getMessageTextContent(assistantMessage);
 
           if (generatedMessage?.id !== assistantMessage.id) {
+            completeStreamActivityMessage(assistantMessage.id);
+
             const targetMessage = activeAssistantMessage || placeholderMessage;
             const updatedAssistantMessage = withAssistantMessageData(assistantMessage);
 
@@ -422,6 +445,11 @@ export function useStreamingResponse(
       markConversationRemoteAvailable,
       setUsageLimits,
       queryClient,
+      beginStreamActivity,
+      completeStreamActivityMessage,
+      recordStreamActivityState,
+      recordStreamActivityText,
+      recordStreamActivityToolResult,
     ],
   );
 
@@ -494,6 +522,7 @@ export function useStreamingResponse(
       } finally {
         setStreamStarted(false);
         stopLoading("stream-response");
+        endStreamActivity();
         if (controllerRef.current === requestController) {
           const nextController = new AbortController();
 
@@ -502,7 +531,7 @@ export function useStreamingResponse(
         }
       }
     },
-    [generateResponse, stopLoading, model, setModel, onTitleGeneration],
+    [generateResponse, stopLoading, endStreamActivity, model, setModel, onTitleGeneration],
   );
 
   const abortStream = useCallback(() => {

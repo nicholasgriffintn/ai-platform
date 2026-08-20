@@ -37,6 +37,7 @@ export const ChatMessageView = ({
   onRequestOpinion,
   isRequestingOpinion = false,
   isArchivedByCompaction = false,
+  responseDurationMs,
   copied,
   onCopy,
   onSubmitFeedback,
@@ -66,6 +67,7 @@ export const ChatMessageView = ({
   onRequestOpinion?: (messageId: string, request: OpinionRequest) => void;
   isRequestingOpinion?: boolean;
   isArchivedByCompaction?: boolean;
+  responseDurationMs?: number;
   copied: boolean;
   onCopy: (value: string) => void;
   onSubmitFeedback?: (value: 1 | -1) => Promise<void>;
@@ -215,6 +217,8 @@ export const ChatMessageView = ({
                 onRequestOpinion={onRequestOpinion}
                 isRequestingOpinion={isRequestingOpinion}
                 isArchivedByCompaction={isArchivedByCompaction}
+                responseDurationMs={responseDurationMs}
+                modelConfig={modelConfig}
               />
             )}
         </div>

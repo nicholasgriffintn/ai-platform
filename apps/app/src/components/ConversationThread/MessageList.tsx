@@ -8,6 +8,7 @@ import {
   GoalStatusRow,
   MessageSkeleton,
   ScrollButton,
+  StreamActivityIndicator,
 } from "@ngriffin_uk/polychat-component-conversation";
 import {
   getCompactionMessageLabel,
@@ -41,6 +42,7 @@ import {
   useLoadingProgress,
 } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { Message } from "~/types";
 
 import { ChatMessage } from "./ChatMessage";
@@ -139,6 +141,9 @@ export const MessageList = ({
     () => getMessageListScrollKey({ conversationId: currentConversationId, messages }),
     [currentConversationId, messages],
   );
+
+  const streamActivity = useStreamActivityStore((state) => state.activity);
+  const responseDurations = useStreamActivityStore((state) => state.responseDurations);
 
   const isStreamLoading = useIsLoading("stream-response");
   const isModelInitializing = useIsLoading("model-init");
@@ -268,6 +273,7 @@ export const MessageList = ({
                       isArchivedByCompaction={
                         latestCompactionMarkerIndex !== -1 && index < latestCompactionMarkerIndex
                       }
+                      responseDurationMs={responseDurations[message.id]}
                     />
                   )}
                 </div>
@@ -281,10 +287,7 @@ export const MessageList = ({
                   <CompactionStatusRow label={streamLoadingMessage} pending />
                 ) : null
               ) : (
-                <div className="flex items-center gap-2 py-2 px-4 text-sm text-zinc-600 dark:text-zinc-400">
-                  <Loader2 className="h-4 w-4 animate-spin text-blue-500 flex-shrink-0" />
-                  <span>{streamLoadingMessage}</span>
-                </div>
+                <StreamActivityIndicator label={streamLoadingMessage} activity={streamActivity} />
               )}
             </>
           )}

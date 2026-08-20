@@ -15,6 +15,8 @@ export * from "./Message/FunctionCallMessage";
 export * from "./Message/MessageActions";
 export * from "./Message/MessageContent";
 export * from "./Message/MessageInfo";
+export * from "./Message/MessageStats";
+export * from "./Message/StreamActivityIndicator";
 export * from "./Message/ToolMessage";
 export * from "./ToolSelectorFilters";
 export * from "./WelcomeScreen";

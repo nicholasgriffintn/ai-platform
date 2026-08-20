@@ -10,6 +10,7 @@ import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-ty
 import { isCompactionMarkerMessage } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
 import { resolveMessageSpeechAudioSource } from "@ngriffin_uk/polychat-library-chat/message-speech";
 import type { OpinionRequest } from "@ngriffin_uk/polychat-library-chat/opinion";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import {
   Check,
   Copy,
@@ -27,6 +28,7 @@ import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { MessageInfo } from "./MessageInfo";
+import { MessageStats } from "./MessageStats";
 
 export interface MessageActionsProps {
   message: Message;
@@ -46,6 +48,8 @@ export interface MessageActionsProps {
   onRequestOpinion?: (messageId: string, request: OpinionRequest) => void;
   isRequestingOpinion?: boolean;
   isArchivedByCompaction?: boolean;
+  responseDurationMs?: number;
+  modelConfig?: ModelConfigItem;
   /** Model pickers stay host-owned because they read the catalogue and account entitlements. */
   renderModelSelector: (props: {
     onModelSelect: (modelId: string) => void;
@@ -79,6 +83,8 @@ export const MessageActions = ({
   onRequestOpinion,
   isRequestingOpinion = false,
   isArchivedByCompaction = false,
+  responseDurationMs,
+  modelConfig,
   renderModelSelector,
   renderOpinionSelector,
 }: MessageActionsProps) => {
@@ -190,6 +196,12 @@ export const MessageActions = ({
 
   return (
     <div className="flex flex-wrap justify-end items-center gap-2">
+      <MessageStats
+        message={message}
+        responseDurationMs={responseDurationMs}
+        pricing={modelConfig}
+        className="mr-auto"
+      />
       <div className="flex items-center space-x-1">
         {message.role !== "user" && message.content && (
           <Button
