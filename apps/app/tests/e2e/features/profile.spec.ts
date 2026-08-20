@@ -153,6 +153,7 @@ test.describe("Provider configuration", () => {
     await profilePage.configureProviderFields("Twilio SMS", {
       "Account SID": "AC00000000000000000000000000000000",
       "Auth Token": "e2e-twilio-auth-token",
+      "Allowed Senders": "+15557654321",
       "From Phone Number": "+15551234567",
     });
     await expect(page.getByLabel("Connected")).toBeVisible();
@@ -171,6 +172,7 @@ test.describe("Provider configuration", () => {
       "AWS Access Key ID": "AKIAE2EMESSAGINGVALIDATION",
       "AWS Secret Access Key": "e2e-messaging-secret-access-key",
       "AWS Region": "eu-west-2",
+      "Allowed Senders": "+447700900456",
       "Origination Identity": "+447700900123",
     });
     await expect(page.getByLabel("Connected")).toBeVisible();
