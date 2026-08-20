@@ -15,7 +15,7 @@ import { MemoryManager } from "~/lib/memory";
 import { trackTokenUsage } from "~/lib/monitoring";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { findModelConfig } from "~/lib/providers/models";
-import { isUsageExhausted } from "~/lib/usage/limitState";
+import { isUsageExhausted, USAGE_LIMIT_NOTICE } from "~/lib/usage/limitState";
 import { mergeStreamedTokenUsage, type NormalisedTokenUsage } from "~/lib/usage/tokenUsage";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
 import {
@@ -183,6 +183,13 @@ async function continueStreamingTurn(params: StreamContinuationParams): Promise<
     if (await isUsageExhausted(params.conversationManager)) {
       logger.info("Stopping streaming continuation at the usage limit", {
         completion_id: params.completionId,
+      });
+
+      // Say why the response stopped short. Without this the stream simply
+      // ends, which reads as the model losing interest rather than the
+      // account running out.
+      emitEvent(params.controller, "content_block_delta", {
+        content: `\n\n${USAGE_LIMIT_NOTICE}`,
       });
 
       return false;

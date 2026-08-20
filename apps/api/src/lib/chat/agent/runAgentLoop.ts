@@ -17,7 +17,7 @@ import { isSuccessfulToolStatus } from "~/lib/chat/tool-results";
 import { handleToolCalls } from "~/lib/chat/tools";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
-import { isUsageExhausted } from "~/lib/usage/limitState";
+import { isUsageExhausted, USAGE_LIMIT_NOTICE } from "~/lib/usage/limitState";
 import { sumTokenUsage, type NormalisedTokenUsage } from "~/lib/usage/tokenUsage";
 import type { IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -38,9 +38,6 @@ interface ApiAgentLoopState extends AgentLoopState {
   lastTurnToolCallCount: number;
   stoppedForUsageLimit?: boolean;
 }
-
-const USAGE_LIMIT_NOTICE =
-  "You have reached your usage limit, so I stopped here rather than continuing.";
 
 function buildUsageLimitSummary(lastTurnText: string): string {
   const progress = lastTurnText.trim();

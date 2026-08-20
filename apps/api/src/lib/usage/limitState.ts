@@ -3,6 +3,9 @@ import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/usage/limitState" });
 
+export const USAGE_LIMIT_NOTICE =
+  "You have reached your usage limit, so I stopped here rather than continuing.";
+
 export interface UsageLimitState {
   exhausted: boolean;
   used: number;
