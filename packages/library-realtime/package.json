@@ -13,40 +13,48 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "polychat-source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./audio": {
+      "polychat-source": "./src/audio.ts",
       "types": "./dist/audio.d.ts",
       "import": "./dist/audio.js",
       "require": "./dist/audio.cjs"
     },
     "./audio-commit-gate": {
+      "polychat-source": "./src/audio-commit-gate.ts",
       "types": "./dist/audio-commit-gate.d.ts",
       "import": "./dist/audio-commit-gate.js",
       "require": "./dist/audio-commit-gate.cjs"
     },
     "./audio-levels": {
+      "polychat-source": "./src/audio-levels.ts",
       "types": "./dist/audio-levels.d.ts",
       "import": "./dist/audio-levels.js",
       "require": "./dist/audio-levels.cjs"
     },
     "./errors": {
+      "polychat-source": "./src/errors.ts",
       "types": "./dist/errors.d.ts",
       "import": "./dist/errors.js",
       "require": "./dist/errors.cjs"
     },
     "./live-providers": {
+      "polychat-source": "./src/live-providers.ts",
       "types": "./dist/live-providers.d.ts",
       "import": "./dist/live-providers.js"
     },
     "./messages": {
+      "polychat-source": "./src/messages.ts",
       "types": "./dist/messages.d.ts",
       "import": "./dist/messages.js",
       "require": "./dist/messages.cjs"
     },
     "./websocket-protocols": {
+      "polychat-source": "./src/websocket-protocols.ts",
       "types": "./dist/websocket-protocols.d.ts",
       "import": "./dist/websocket-protocols.js",
       "require": "./dist/websocket-protocols.cjs"

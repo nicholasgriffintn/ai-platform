@@ -13,11 +13,13 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "polychat-source": "./src/index.tsx",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./conversation-cache": {
+      "polychat-source": "./src/conversation-cache.ts",
       "types": "./dist/conversation-cache.d.ts",
       "import": "./dist/conversation-cache.js",
       "require": "./dist/conversation-cache.cjs"

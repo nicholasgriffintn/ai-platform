@@ -7,10 +7,11 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "tsc",
+    "build:deps": "pnpm --filter \"@assistant/training^...\" --if-present build",
     "ci:test": "pnpm run coverage",
     "coverage": "vitest run --coverage",
-    "deploy": "pnpm --filter @ngriffin_uk/polychat-schemas build && pnpm typecheck && wrangler deploy",
-    "dev": "pnpm --filter @ngriffin_uk/polychat-schemas build && wrangler dev",
+    "deploy": "pnpm run build:deps && pnpm typecheck && wrangler deploy",
+    "dev": "WRANGLER_BUILD_CONDITIONS=polychat-source,workerd,worker,browser wrangler dev",
     "start": "pnpm --filter @ngriffin_uk/polychat-schemas build && wrangler dev",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"

@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "license": "Apache-2.0",
   "files": [
-    "dist"
+    "dist",
+    "src/styles.css"
   ],
   "type": "module",
   "sideEffects": [
@@ -11,22 +12,30 @@
   ],
   "exports": {
     "./content": {
+      "polychat-source": "./src/content/index.tsx",
       "types": "./dist/content.d.ts",
       "import": "./dist/content.js"
     },
     "./media": {
+      "polychat-source": "./src/media/index.tsx",
       "types": "./dist/media.d.ts",
       "import": "./dist/media.js"
     },
     "./music": {
+      "polychat-source": "./src/music/index.tsx",
       "types": "./dist/music.d.ts",
       "import": "./dist/music.js"
     },
     "./training": {
+      "polychat-source": "./src/training/index.tsx",
       "types": "./dist/training.d.ts",
       "import": "./dist/training.js"
     },
-    "./styles.css": "./dist/content.css"
+    "./styles.css": {
+      "polychat-source": "./src/styles.css",
+      "style": "./src/styles.css",
+      "default": "./dist/content.css"
+    }
   },
   "publishConfig": {
     "access": "public"

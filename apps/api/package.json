@@ -5,7 +5,8 @@
   "license": "Apache-2.0",
   "main": "src/index.ts",
   "scripts": {
-    "build": "pnpm --filter @ngriffin_uk/polychat-schemas build",
+    "build": "pnpm run build:deps",
+    "build:deps": "pnpm --filter \"@assistant/api^...\" --if-present build",
     "cf-typegen": "wrangler types",
     "ci:test": "pnpm run coverage",
     "connectors:sync": "node ./scripts/sync-composio-toolkit-manifest.mjs",
@@ -20,7 +21,7 @@
     "db:sync:preview": "bash ./scripts/db-sync-preview.sh",
     "db:up": "drizzle-kit up:sqlite",
     "deploy": "pnpm build && pnpm typecheck && wrangler deploy src/index.ts --name=assistant",
-    "dev": "pnpm --filter @ngriffin_uk/polychat-schemas build && wrangler dev src/index.ts",
+    "dev": "WRANGLER_BUILD_CONDITIONS=polychat-source,workerd,worker,browser wrangler dev src/index.ts",
     "models:sync": "node ./scripts/sync-models-dev.mjs",
     "start": "wrangler dev src/index.ts",
     "test": "vitest run",

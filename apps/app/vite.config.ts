@@ -4,7 +4,7 @@ import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { reactCompilerPreset } from "@vitejs/plugin-react";
 import { visualizer } from "rollup-plugin-visualizer";
-import { defineConfig } from "vite";
+import { defaultClientConditions, defaultServerConditions, defineConfig } from "vite";
 
 export default defineConfig(({ command }) => ({
   build: {
@@ -53,6 +53,12 @@ export default defineConfig(({ command }) => ({
   ].filter(Boolean),
   resolve: {
     tsconfigPaths: true,
+    conditions: command === "serve" ? ["polychat-source", ...defaultClientConditions] : undefined,
+  },
+  ssr: {
+    resolve: {
+      conditions: command === "serve" ? ["polychat-source", ...defaultServerConditions] : undefined,
+    },
   },
   optimizeDeps: {
     include: [

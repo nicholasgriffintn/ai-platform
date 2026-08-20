@@ -13,144 +13,173 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "polychat-source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./agent-trace": {
+      "polychat-source": "./src/agent-trace.ts",
       "types": "./dist/agent-trace.d.ts",
       "import": "./dist/agent-trace.js",
       "require": "./dist/agent-trace.cjs"
     },
     "./agent-trace-display": {
+      "polychat-source": "./src/agent-trace-display.ts",
       "types": "./dist/agent-trace-display.d.ts",
       "import": "./dist/agent-trace-display.js",
       "require": "./dist/agent-trace-display.cjs"
     },
     "./attachments": {
+      "polychat-source": "./src/attachments.ts",
       "types": "./dist/attachments.d.ts",
       "import": "./dist/attachments.js",
       "require": "./dist/attachments.cjs"
     },
     "./branching": {
+      "polychat-source": "./src/branching.ts",
       "types": "./dist/branching.d.ts",
       "import": "./dist/branching.js",
       "require": "./dist/branching.cjs"
     },
     "./compaction-command": {
+      "polychat-source": "./src/compaction-command.ts",
       "types": "./dist/compaction-command.d.ts",
       "import": "./dist/compaction-command.js",
       "require": "./dist/compaction-command.cjs"
     },
     "./message-goal-status": {
+      "polychat-source": "./src/message-goal-status.ts",
       "types": "./dist/message-goal-status.d.ts",
       "import": "./dist/message-goal-status.js",
       "require": "./dist/message-goal-status.cjs"
     },
     "./goal-command": {
+      "polychat-source": "./src/goal-command.ts",
       "types": "./dist/goal-command.d.ts",
       "import": "./dist/goal-command.js",
       "require": "./dist/goal-command.cjs"
     },
     "./composer-commands": {
+      "polychat-source": "./src/composer-commands.ts",
       "types": "./dist/composer-commands.d.ts",
       "import": "./dist/composer-commands.js",
       "require": "./dist/composer-commands.cjs"
     },
     "./conversation-storage-policy": {
+      "polychat-source": "./src/conversation-storage-policy.ts",
       "types": "./dist/conversation-storage-policy.d.ts",
       "import": "./dist/conversation-storage-policy.js",
       "require": "./dist/conversation-storage-policy.cjs"
     },
     "./conversation-types": {
+      "polychat-source": "./src/conversation-types.ts",
       "types": "./dist/conversation-types.d.ts",
       "import": "./dist/conversation-types.js",
       "require": "./dist/conversation-types.cjs"
     },
     "./conversations": {
+      "polychat-source": "./src/conversations.ts",
       "types": "./dist/conversations.d.ts",
       "import": "./dist/conversations.js",
       "require": "./dist/conversations.cjs"
     },
     "./markdown-editor": {
+      "polychat-source": "./src/markdown-editor.ts",
       "types": "./dist/markdown-editor.d.ts",
       "import": "./dist/markdown-editor.js",
       "require": "./dist/markdown-editor.cjs"
     },
     "./message-compaction-status": {
+      "polychat-source": "./src/message-compaction-status.ts",
       "types": "./dist/message-compaction-status.d.ts",
       "import": "./dist/message-compaction-status.js",
       "require": "./dist/message-compaction-status.cjs"
     },
     "./message-parts": {
+      "polychat-source": "./src/message-parts.ts",
       "types": "./dist/message-parts.d.ts",
       "import": "./dist/message-parts.js",
       "require": "./dist/message-parts.cjs"
     },
     "./message-speech": {
+      "polychat-source": "./src/message-speech.ts",
       "types": "./dist/message-speech.d.ts",
       "import": "./dist/message-speech.js",
       "require": "./dist/message-speech.cjs"
     },
     "./message-utils": {
+      "polychat-source": "./src/message-utils.ts",
       "types": "./dist/message-utils.d.ts",
       "import": "./dist/message-utils.js",
       "require": "./dist/message-utils.cjs"
     },
     "./messages": {
+      "polychat-source": "./src/messages.ts",
       "types": "./dist/messages.d.ts",
       "import": "./dist/messages.js",
       "require": "./dist/messages.cjs"
     },
     "./model-selection": {
+      "polychat-source": "./src/model-selection.ts",
       "types": "./dist/model-selection.d.ts",
       "import": "./dist/model-selection.js",
       "require": "./dist/model-selection.cjs"
     },
     "./model-tools": {
+      "polychat-source": "./src/model-tools.ts",
       "types": "./dist/model-tools.d.ts",
       "import": "./dist/model-tools.js"
     },
     "./opinion": {
+      "polychat-source": "./src/opinion.ts",
       "types": "./dist/opinion.d.ts",
       "import": "./dist/opinion.js",
       "require": "./dist/opinion.cjs"
     },
     "./provider-messages": {
+      "polychat-source": "./src/provider-messages.ts",
       "types": "./dist/provider-messages.d.ts",
       "import": "./dist/provider-messages.js",
       "require": "./dist/provider-messages.cjs"
     },
     "./response-stats": {
+      "polychat-source": "./src/response-stats.ts",
       "types": "./dist/response-stats.d.ts",
       "import": "./dist/response-stats.js",
       "require": "./dist/response-stats.cjs"
     },
     "./request-options": {
+      "polychat-source": "./src/request-options.ts",
       "types": "./dist/request-options.d.ts",
       "import": "./dist/request-options.js",
       "require": "./dist/request-options.cjs"
     },
     "./textarea-selection-position": {
+      "polychat-source": "./src/textarea-selection-position.ts",
       "types": "./dist/textarea-selection-position.d.ts",
       "import": "./dist/textarea-selection-position.js",
       "require": "./dist/textarea-selection-position.cjs"
     },
     "./tool-filters": {
+      "polychat-source": "./src/tool-filters.ts",
       "types": "./dist/tool-filters.d.ts",
       "import": "./dist/tool-filters.js",
       "require": "./dist/tool-filters.cjs"
     },
     "./tool-results": {
+      "polychat-source": "./src/tool-results.ts",
       "types": "./dist/tool-results.d.ts",
       "import": "./dist/tool-results.js",
       "require": "./dist/tool-results.cjs"
     },
     "./verbosity": {
+      "polychat-source": "./src/verbosity.ts",
       "types": "./dist/verbosity.d.ts",
       "import": "./dist/verbosity.js"
     },
     "./weather": {
+      "polychat-source": "./src/weather.ts",
       "types": "./dist/weather.d.ts",
       "import": "./dist/weather.js",
       "require": "./dist/weather.cjs"

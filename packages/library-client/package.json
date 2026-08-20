@@ -13,16 +13,19 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "polychat-source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./project-scope": {
+      "polychat-source": "./src/project-scope.ts",
       "types": "./dist/project-scope.d.ts",
       "import": "./dist/project-scope.js",
       "require": "./dist/project-scope.cjs"
     },
     "./retry": {
+      "polychat-source": "./src/retry.ts",
       "types": "./dist/retry.d.ts",
       "import": "./dist/retry.js",
       "require": "./dist/retry.cjs"

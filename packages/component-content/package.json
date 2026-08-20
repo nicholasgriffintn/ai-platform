@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "license": "Apache-2.0",
   "files": [
-    "dist"
+    "dist",
+    "src/styles.css"
   ],
   "type": "module",
   "sideEffects": [
@@ -14,10 +15,15 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "polychat-source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./styles.css": "./dist/index.css"
+    "./styles.css": {
+      "polychat-source": "./src/styles.css",
+      "style": "./src/styles.css",
+      "default": "./dist/index.css"
+    }
   },
   "publishConfig": {
     "access": "public"

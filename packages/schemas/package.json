@@ -14,51 +14,61 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "polychat-source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
     "./analytics": {
+      "polychat-source": "./src/analytics.ts",
       "types": "./dist/analytics.d.ts",
       "import": "./dist/analytics.mjs",
       "require": "./dist/analytics.js"
     },
     "./chat-stream": {
+      "polychat-source": "./src/chat-stream.ts",
       "types": "./dist/chat-stream.d.ts",
       "import": "./dist/chat-stream.mjs",
       "require": "./dist/chat-stream.js"
     },
     "./compaction-status": {
+      "polychat-source": "./src/compaction-status.ts",
       "types": "./dist/compaction-status.d.ts",
       "import": "./dist/compaction-status.mjs",
       "require": "./dist/compaction-status.js"
     },
     "./goals": {
+      "polychat-source": "./src/goals.ts",
       "types": "./dist/goals.d.ts",
       "import": "./dist/goals.mjs",
       "require": "./dist/goals.js"
     },
     "./conversation-replacement": {
+      "polychat-source": "./src/conversation-replacement.ts",
       "types": "./dist/conversation-replacement.d.ts",
       "import": "./dist/conversation-replacement.mjs",
       "require": "./dist/conversation-replacement.js"
     },
     "./message-part-utils": {
+      "polychat-source": "./src/message-part-utils.ts",
       "types": "./dist/message-part-utils.d.ts",
       "import": "./dist/message-part-utils.mjs",
       "require": "./dist/message-part-utils.js"
     },
     "./provider-messages": {
+      "polychat-source": "./src/provider-messages.ts",
       "types": "./dist/provider-messages.d.ts",
       "import": "./dist/provider-messages.mjs",
       "require": "./dist/provider-messages.js"
     },
     "./sandbox-constants": {
+      "polychat-source": "./src/sandbox-constants.ts",
       "types": "./dist/sandbox-constants.d.ts",
       "import": "./dist/sandbox-constants.mjs",
       "require": "./dist/sandbox-constants.js"
     },
     "./tool-ids": {
+      "polychat-source": "./src/tool-ids.ts",
       "types": "./dist/tool-ids.d.ts",
       "import": "./dist/tool-ids.mjs",
       "require": "./dist/tool-ids.js"

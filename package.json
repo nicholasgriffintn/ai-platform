@@ -16,7 +16,7 @@
     "deploy:api": "pnpm --filter @assistant/api deploy",
     "deploy:app": "pnpm --filter @assistant/app deploy",
     "deploy:training": "pnpm --filter @assistant/training deploy",
-    "dev": "pnpm --filter @assistant/api --filter @assistant/app dev",
+    "dev": "pnpm --filter @assistant/api --filter @assistant/app --parallel dev",
     "dev:api": "pnpm --filter @assistant/api dev",
     "dev:app": "pnpm --filter @assistant/app dev",
     "dev:mobile": "sh scripts/xcodebuild-mobile.sh build",
