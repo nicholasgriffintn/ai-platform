@@ -26,6 +26,7 @@
     "**/build/**",
     "**/coverage/**",
     "**/.wrangler/**",
-    "**/generated/**"
+    "**/generated/**",
+    "apps/api/src/data-model/models/**"
   ]
 }

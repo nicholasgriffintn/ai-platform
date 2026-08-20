@@ -22,6 +22,8 @@ pnpm exec oxfmt --check apps/api/src
 
 Linting and formatting are root tools, and `@assistant/app` is the only workspace that defines its own `check`. Point oxlint and oxfmt at the changed directory for every other workspace; `pnpm --filter @assistant/api check` does not exist and fails with `ERR_PNPM_RECURSIVE_RUN_NO_SCRIPT`.
 
+`apps/api/src/data-model/models/**` is excluded from both tools. `models:sync` text-patches those files with its own indentation, so every sync reintroduced formatting failures that no author caused and no author should have to fix. Typecheck still covers them; keep new model entries consistent with the surrounding file by hand.
+
 Run relevant Vitest suites for behaviour changes. Use the root `pnpm typecheck`, `pnpm check`, or `pnpm test` only when the blast radius justifies repo-wide validation.
 
 ## Optional components
