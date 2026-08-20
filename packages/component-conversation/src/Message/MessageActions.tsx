@@ -196,7 +196,12 @@ export const MessageActions = ({
 
   return (
     <div className="flex flex-wrap justify-end items-center gap-2">
-      <MessageStats message={message} responseDurationMs={responseDurationMs} className="mr-auto" />
+      <MessageStats
+        message={message}
+        responseDurationMs={responseDurationMs}
+        pricing={modelConfig}
+        className="mr-auto"
+      />
       <div className="flex items-center space-x-1">
         {message.role !== "user" && message.content && (
           <Button
