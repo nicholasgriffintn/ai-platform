@@ -13,8 +13,6 @@ vi.mock("~/lib/chat/tools", () => ({
   handleToolCalls: mocks.handleToolCalls,
 }));
 
-import { AssistantError, ErrorType } from "~/utils/errors";
-
 import { runAgentLoop } from "../runAgentLoop";
 
 const artifactToolResponse = {
@@ -40,7 +38,11 @@ function createParams(maxSteps = 8) {
   return {
     requestParams: { messages: [{ role: "user", content: "hi" }] } as any,
     completionId: "completion-123",
-    conversationManager: { add: vi.fn(), checkUsageLimits: vi.fn() } as any,
+    conversationManager: {
+      add: vi.fn(),
+      checkUsageLimits: vi.fn(),
+      getUsageLimits: vi.fn(async () => ({ daily: { used: 1, limit: 100 } })),
+    } as any,
     toolRequestContext: { env: { AI: {} } } as any,
     maxSteps,
   };
@@ -126,17 +128,9 @@ describe("runAgentLoop", () => {
     expect(mocks.getAIResponse).toHaveBeenCalledTimes(1);
   });
 
-  it("stops the loop when the user runs out mid-run", async () => {
-    // The request boundary covered step 1, so the loop's first re-check is the
-    // one guarding the second model call.
-    const checkUsageLimits = vi
-      .fn()
-      .mockRejectedValue(
-        new AssistantError("Daily message limit reached.", ErrorType.USAGE_LIMIT_ERROR),
-      );
-
+  it("ends with the work already done when the user runs out mid-run", async () => {
     mocks.getAIResponse.mockResolvedValue({
-      response: "",
+      response: "Checked the first thing",
       tool_calls: [{ id: "call-1", function: { name: "get_weather", arguments: "{}" } }],
     });
     mocks.handleToolCalls.mockResolvedValue([
@@ -145,14 +139,17 @@ describe("runAgentLoop", () => {
 
     const params = createParams();
 
-    params.conversationManager.checkUsageLimits = checkUsageLimits;
+    params.conversationManager.getUsageLimits = vi.fn(async () => ({
+      daily: { used: 100, limit: 100 },
+    }));
 
-    await expect(runAgentLoop(params)).rejects.toMatchObject({
-      type: ErrorType.USAGE_LIMIT_ERROR,
-    });
+    const result = await runAgentLoop(params);
 
-    // One model call spent, then the limit stops the next one rather than
-    // letting a long tool chain run past the allowance.
+    // The turn is returned rather than thrown away: the user keeps the work
+    // they already paid for, and is told why it stopped.
+    expect(result.response.status).toBe("usage_limit_reached");
+    expect(result.response.response).toContain("reached your usage limit");
+    expect(result.toolResponses).toHaveLength(1);
     expect(mocks.getAIResponse).toHaveBeenCalledTimes(1);
   });
 
@@ -163,7 +160,7 @@ describe("runAgentLoop", () => {
 
     await runAgentLoop(params);
 
-    expect(params.conversationManager.checkUsageLimits).not.toHaveBeenCalled();
+    expect(params.conversationManager.getUsageLimits).not.toHaveBeenCalled();
   });
 
   it("holds the loop open while assessFinish withholds approval", async () => {

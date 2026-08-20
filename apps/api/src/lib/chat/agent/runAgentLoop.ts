@@ -17,6 +17,7 @@ import { isSuccessfulToolStatus } from "~/lib/chat/tool-results";
 import { handleToolCalls } from "~/lib/chat/tools";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
+import { isUsageExhausted } from "~/lib/usage/limitState";
 import { sumTokenUsage, type NormalisedTokenUsage } from "~/lib/usage/tokenUsage";
 import type { IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -35,6 +36,16 @@ interface ApiAgentLoopState extends AgentLoopState {
   pendingUserAction?: string;
   lastTurnText: string;
   lastTurnToolCallCount: number;
+  stoppedForUsageLimit?: boolean;
+}
+
+const USAGE_LIMIT_NOTICE =
+  "You have reached your usage limit, so I stopped here rather than continuing.";
+
+function buildUsageLimitSummary(lastTurnText: string): string {
+  const progress = lastTurnText.trim();
+
+  return progress ? `${progress}\n\n${USAGE_LIMIT_NOTICE}` : USAGE_LIMIT_NOTICE;
 }
 
 interface ApiAgentSharedContext {
@@ -115,14 +126,34 @@ export async function runAgentLoop(
     shouldAbortOnTurnError: shouldAbortAgentTurnError,
     assessFinish: params.assessFinish
       ? ({ summary, step }) =>
-          params.assessFinish({ summary, step, commandCount: state.commandCount })
+          // Stopping for the limit is not the goal failing, so it exits without
+          // claiming an outcome. The goal ends as limit_reached the next time
+          // it is asked, which is where the usage state is read.
+          state.stoppedForUsageLimit
+            ? { allow: true }
+            : params.assessFinish({ summary, step, commandCount: state.commandCount })
       : undefined,
     resolveTurn: async ({ messages, step }) => {
       // One request can spend many model calls. The check at the request
-      // boundary only covers the first, so every later step re-checks: when a
-      // user has run out, the loop stops rather than spending past the limit.
-      if (step > 1) {
-        await params.conversationManager.checkUsageLimits(requestParams.model);
+      // boundary only covers the first, so every later step re-checks. Running
+      // out stops the loop and returns the work already done, rather than
+      // discarding a turn the user has already paid for.
+      if (step > 1 && (await isUsageExhausted(params.conversationManager))) {
+        state.stoppedForUsageLimit = true;
+
+        const summary = buildUsageLimitSummary(state.lastTurnText);
+
+        finalResponse = {
+          ...finalResponse,
+          response: summary,
+          status: "usage_limit_reached",
+        };
+
+        return {
+          toolCalls: [],
+          text: summary,
+          assistantMessage: { role: "assistant", content: summary },
+        };
       }
 
       if (state.pendingUserAction) {
