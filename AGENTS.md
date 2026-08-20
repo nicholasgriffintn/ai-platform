@@ -45,6 +45,15 @@ Start from the user's global agent contract. These instructions make that contra
 - Use Drizzle for API database schema and migrations. Update `apps/api/src/lib/database/schema.ts`, then use the `@assistant/api` database scripts such as `db:generate`, `db:up`, and `db:migrate:*`; do not hand-edit generated migrations.
 - When touching generated Cloudflare types, Drizzle migrations, or other generated output, use the workspace scripts rather than hand-editing generated files.
 
+## Model and provider icons
+
+- `packages/component-models/src/ModelIcon` owns every model and provider icon. Treat it as part of the definition of done whenever you add a model to `apps/api/src/data-model/models/*` or register a provider in `apps/api/src/lib/providers/registry/registrations/*`.
+- Check the new model family and provider id resolve to an icon before you finish. Without a match the surface falls back to a coloured initial, which reads as a bug.
+- Source new artwork from the svgl API at `https://svgl.app/docs/api` first. Search with `https://api.svgl.app?search=<brand>` and fetch the file from `https://api.svgl.app/svg/<name>.svg`. Only hand-draw a mark when svgl has no entry, and keep hand-drawn marks simple and neutral rather than imitating a trademark you cannot verify.
+- Add the artwork as `Icons/<name>.tsx` following the existing component shape, register it in `iconLoaders.ts`, then point at it from `iconDefinitions.ts`.
+- `MODEL_ICONS` keys are lowercase substrings tested against the model name in declaration order, so declare a longer pattern before any shorter pattern it contains. `PROVIDER_ICONS` keys are exact lowercased provider ids, including aliases.
+- Prefer an existing icon over a new file when the vendor already has one. Map the model family to it instead of duplicating artwork.
+
 ## Security
 
 - Treat OWASP Top 10 risks as active concerns.
@@ -94,4 +103,5 @@ Start from the user's global agent contract. These instructions make that contra
 - The changed code follows the user's global contract and these app instructions.
 - No structural violations remain in changed files.
 - Relevant validation has run, or a blocker is stated explicitly.
+- New models and providers resolve to an icon in `packages/component-models/src/ModelIcon`.
 - Residual risks, assumptions, and follow-ups are stated briefly.
