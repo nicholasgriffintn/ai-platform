@@ -97,32 +97,15 @@ describe("resolveMemoryPolicy", () => {
 });
 
 describe("buildMemoryPromptContext", () => {
-  it("formats synthesis and relevant memories in a stable prompt block", () => {
-    expect(
-      buildMemoryPromptContext({
-        synthesisText: "Prefers concise answers.",
-        recentMemories: [
-          { text: "Uses Neovim.", score: 0.8 },
-          { text: "Works in London.", score: 0.7 },
-        ],
-      }),
-    ).toBe(
-      [
-        "",
-        "",
-        "# Memory Summary",
-        "The following is a consolidated summary of your long-term memories about this user:",
-        "<memory_synthesis>",
-        "Prefers concise answers.",
-        "</memory_synthesis>",
-        "",
-        "# Recently Relevant Memories",
-        "The following specific memories are most relevant to this conversation:",
-        "<recent_memories>",
-        "- Uses Neovim.",
-        "- Works in London.",
-        "</recent_memories>",
-      ].join("\n"),
-    );
+  it("carries the synthesis and points at the tool for anything it does not hold", () => {
+    const context = buildMemoryPromptContext({ synthesisText: "Prefers concise answers." });
+
+    expect(context).toContain("<memory_synthesis>");
+    expect(context).toContain("Prefers concise answers.");
+    expect(context).toContain(MEMORY_SEARCH_TOOL_NAME);
+  });
+
+  it("returns nothing when there is no synthesis to carry", () => {
+    expect(buildMemoryPromptContext({})).toBe("");
   });
 });

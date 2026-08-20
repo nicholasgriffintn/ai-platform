@@ -7,6 +7,7 @@ import {
 } from "@ngriffin_uk/polychat-library-agent-core";
 
 import { finaliseAssistantTurn, type TurnOutput } from "~/lib/chat/agent/assistant-turn";
+import { ensureConversationTitle } from "~/lib/chat/agent/conversation-title";
 import { captureRunMemories } from "~/lib/chat/agent/memory-capture";
 import { createAgentProviderIO } from "~/lib/chat/agent/provider-io";
 import type { ChatTurnTransport } from "~/lib/chat/agent/turn-transport";
@@ -109,6 +110,7 @@ export interface AgentLoopExecutionParams {
 
 export interface AgentLoopExecutionResult {
   response: ModelResponse;
+  conversationTitle?: string;
   finalMessage?: Message;
   toolResponses: Message[];
   memoryMessages: Message[];
@@ -352,6 +354,17 @@ export async function runAgentLoop(
     });
   }
 
+  const title = await ensureConversationTitle({
+    completionId: params.completionId,
+    conversationManager: params.conversationManager,
+    context: params.context,
+    store: params.requestParams.store,
+  });
+
+  if (title) {
+    await sink.writeEvent("state", { state: "conversation_title", title });
+  }
+
   const usedTools = steps.some((step) => step.stepType === "tool-call");
 
   return {
@@ -366,6 +379,7 @@ export async function runAgentLoop(
       ...(usedTools ? { steps } : {}),
     },
     finalMessage,
+    ...(title ? { conversationTitle: title } : {}),
     toolResponses,
     memoryMessages,
     guardrailsPassed,

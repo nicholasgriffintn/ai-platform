@@ -39,6 +39,7 @@ import { applyFunctionRequestContext } from "./request-context";
 import { research } from "./research";
 import { run_sandbox_task } from "./sandbox";
 import { capture_screenshot } from "./screenshot";
+import { search_documents } from "./search_documents";
 import { second_opinion } from "./second_opinion";
 import { create_speech } from "./speech";
 import { get_task_status } from "./tasks";
@@ -66,6 +67,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   run_pashi_tools,
   call_api,
   research,
+  search_documents,
   extract_content,
   search_memories,
   store_memory,

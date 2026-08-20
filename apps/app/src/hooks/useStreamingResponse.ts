@@ -90,6 +90,7 @@ export function useStreamingResponse(
       message?: Message;
       messages?: Message[];
       toolResponses?: Message[];
+      titled?: boolean;
     }> => {
       const requestSignal = controllerRef.current.signal;
       const effectiveRequestOptions = overrideRequestOptions ?? requestOptions;
@@ -110,6 +111,7 @@ export function useStreamingResponse(
       const toolResponseMessages: Message[] = [];
       let messageWriteQueue: Promise<unknown> = Promise.resolve();
       const pendingMessageTasks: Promise<unknown>[] = [];
+      let serverTitle = "";
       const assistantMessageData = options?.assistantMessageData;
       let shouldRefreshStoredConversation = false;
 
@@ -312,6 +314,21 @@ export function useStreamingResponse(
           const handleStateChange = (state: string, data?: any) => {
             recordStreamActivityState(state, data);
 
+            if (state === "conversation_title") {
+              const title = typeof data?.title === "string" ? data.title.trim() : "";
+
+              if (title) {
+                serverTitle = title;
+                queryClient.setQueryData(
+                  [CHATS_QUERY_KEY, conversationId],
+                  (existing: { title?: string } | undefined) =>
+                    existing ? { ...existing, title } : existing,
+                );
+              }
+
+              return;
+            }
+
             if (state === "usage_limits") {
               const usageLimits = normaliseUsageLimits(data);
 
@@ -415,6 +432,7 @@ export function useStreamingResponse(
           message: generatedMessage,
           messages: generatedMessages,
           toolResponses: toolResponseMessages,
+          titled: Boolean(serverTitle),
         };
       } catch (error) {
         if (requestSignal.aborted) {
@@ -482,6 +500,7 @@ export function useStreamingResponse(
         if (
           shouldGenerateTitle &&
           response.status === "success" &&
+          !response.titled &&
           messages.length <= 1 &&
           onTitleGeneration
         ) {

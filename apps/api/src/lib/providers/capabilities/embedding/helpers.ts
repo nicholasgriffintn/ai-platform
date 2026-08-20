@@ -124,7 +124,15 @@ export function getEmbeddingNamespace(user?: IUser, options?: RagOptions): strin
 /**
  * Augment a prompt with relevant context from the embedding provider.
  */
-export async function augmentPrompt({
+export interface RetrievedDocument {
+  id: string;
+  type?: string;
+  title?: string;
+  score?: number;
+  content: string;
+}
+
+export async function searchDocuments({
   provider,
   query,
   options = {},
@@ -136,9 +144,9 @@ export async function augmentPrompt({
   options?: RagOptions;
   env: IEnv;
   user?: IUser;
-}) {
+}): Promise<RetrievedDocument[]> {
   try {
-    logger.debug("augmentPrompt called", { query, options });
+    logger.debug("searchDocuments called", { query, options });
     const namespace = getEmbeddingNamespace(user, options);
     const trimmedQuery = query.trim();
     const topK =
@@ -164,7 +172,7 @@ export async function augmentPrompt({
     );
 
     if (!docs || docs.length === 0) {
-      return "";
+      return [];
     }
 
     let ranked = docs;
@@ -193,7 +201,7 @@ export async function augmentPrompt({
           ranked = reordered as typeof docs;
         }
       } catch (error) {
-        logger.warn("augmentPrompt reranking failed, using original order", {
+        logger.warn("searchDocuments reranking failed, using original order", {
           error,
         });
         ranked = docs;
@@ -219,35 +227,23 @@ export async function augmentPrompt({
 
           doc.content = sumRes.content || sumRes.response || doc.content;
         } catch (error) {
-          logger.warn("augmentPrompt summarization failed, using original", {
+          logger.warn("searchDocuments summarisation failed, using original", {
             error,
           });
         }
       }
     }
 
-    const contexts = selected.map((doc) => ({
+    return selected.map((doc) => ({
       id: doc.id,
       type: doc.type,
       title: doc.title,
       score: doc.score,
       content: doc.content,
     }));
-
-    const prompt = `
-Contexts (JSON array):
-+---------------------
-${JSON.stringify(contexts, null, 2)}
-+---------------------
-Answer the query "${trimmedQuery}" using *only* these contexts.
-`.trim();
-
-    logger.debug("augmentPrompt prompt", { prompt });
-
-    return prompt;
   } catch (error) {
-    logger.error("augmentPrompt error", { error });
+    logger.error("searchDocuments error", { error });
 
-    return "";
+    return [];
   }
 }

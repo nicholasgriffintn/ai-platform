@@ -228,7 +228,6 @@ export interface IRequest {
   user?: IUser;
   anonymousUser?: AnonymousUser;
   mode?: ChatMode;
-  use_rag?: boolean;
   rag_options?: RagOptions;
   context?: ServiceContext;
   memoryScope?: MemoryScope;
