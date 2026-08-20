@@ -11,6 +11,18 @@ describe("icon registry", () => {
     expect(missing).toEqual([]);
   });
 
+  it("orders model patterns so a broader pattern never shadows a narrower one", () => {
+    const patterns = Object.keys(MODEL_ICONS).map((pattern) => pattern.toLowerCase());
+    const shadowed = patterns.flatMap((pattern, index) =>
+      patterns
+        .slice(index + 1)
+        .filter((later) => later !== pattern && later.includes(pattern))
+        .map((later) => `${pattern} shadows ${later}`),
+    );
+
+    expect(shadowed).toEqual([]);
+  });
+
   it("resolves a registered icon to a renderable module", async () => {
     const module = await ICON_LOADERS.anthropic();
 

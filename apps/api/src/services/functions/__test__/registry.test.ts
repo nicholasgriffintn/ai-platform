@@ -94,8 +94,12 @@ describe("functions tool registry", () => {
     expect(triggerRecipe.inputSchema.safeParse({ query: "run my alert" }).success).toBe(true);
     expect(formattedTriggerRecipe).toMatchObject({
       type: "function",
-      function: { parameters: { type: "object" } },
+      function: { parameters: { type: "object", additionalProperties: false } },
     });
+    expect((formattedTriggerRecipe as any).function.parameters.anyOf).toBeUndefined();
+    expect(Object.keys((formattedTriggerRecipe as any).function.parameters.properties)).toEqual(
+      expect.arrayContaining(["recipeId", "query", "input"]),
+    );
     expect(triggerRecipeSchema.anyOf).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ required: ["recipeId"], additionalProperties: false }),

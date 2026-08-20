@@ -75,6 +75,8 @@ export * from "./conversation-replacement";
 export * from "./conversation-title";
 export * from "./council";
 export * from "./cron";
+export * from "./goals";
+export * from "./thread-instructions";
 export * from "./edit";
 export * from "./fim";
 export * from "./magicLink";

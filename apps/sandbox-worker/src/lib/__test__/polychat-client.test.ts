@@ -34,7 +34,7 @@ describe("PolychatClient", () => {
       verbosity: "low",
     });
 
-    expect(result).toBe("ok");
+    expect(result).toEqual({ content: "ok", toolCalls: [] });
     expect(serviceFetchMock).toHaveBeenCalledTimes(1);
     const request = serviceFetchMock.mock.calls[0][0] as Request;
 
@@ -89,7 +89,7 @@ describe("PolychatClient", () => {
       },
     );
 
-    expect(result).toBe("recovered");
+    expect(result).toEqual({ content: "recovered", toolCalls: [] });
     expect(serviceFetchMock).toHaveBeenCalledTimes(2);
   });
 

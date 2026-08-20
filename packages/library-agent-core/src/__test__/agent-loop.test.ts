@@ -1,35 +1,25 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { executeAgentLoop } from "../agent-loop";
-import type { ActionHandler, AgentDecision, AgentDecisionContext } from "../types";
+import type { AgentToolCall, AgentTurn } from "../types";
 
-function createRunCommandHandler(
-  onExecute?: (context: { step: number; beginPlanRecovery: (reason: string) => void }) => void,
-): ActionHandler {
-  return {
-    name: "run_command",
-    canHandle: (decision): decision is Extract<AgentDecision, { action: "run_command" }> =>
-      decision.action === "run_command",
-    execute: async (_decision, context) => {
-      onExecute?.({
-        step: context.step,
-        beginPlanRecovery: context.beginPlanRecovery,
-      });
-    },
-  };
+function toolCall(name: string, args: Record<string, unknown> = {}): AgentToolCall {
+  return { id: `call-${name}`, name, arguments: args };
+}
+
+function turn(toolCalls: AgentToolCall[], text?: string): AgentTurn {
+  return { toolCalls, text };
 }
 
 describe("executeAgentLoop", () => {
-  it("exits immediately when the model returns finish", async () => {
+  it("finishes when the model calls the finish tool", async () => {
     const result = await executeAgentLoop({
       initialMessages: [{ role: "user", content: "start" }],
       initialPlan: "Complete the task",
       shared: {},
       state: { commandCount: 0 },
-      resolveDecision: async () => ({
-        decision: { action: "finish", summary: "Completed." },
-      }),
-      handlers: [],
+      resolveTurn: async () => turn([toolCall("finish", { summary: "Completed." })]),
+      executeToolCalls: async () => {},
     });
 
     expect(result).toEqual({
@@ -37,10 +27,147 @@ describe("executeAgentLoop", () => {
       finalPlan: "Complete the task",
       commandCount: 0,
       stepsTaken: 1,
+      goalOutcome: undefined,
     });
   });
 
-  it("triggers recovery flow after consecutive decision failures", async () => {
+  it("finishes on a plain text turn so single-step chat needs no special path", async () => {
+    const executeToolCalls = vi.fn();
+    const result = await executeAgentLoop({
+      initialMessages: [{ role: "user", content: "hello" }],
+      initialPlan: "Answer",
+      shared: {},
+      state: { commandCount: 0 },
+      config: { maxSteps: 1 },
+      resolveTurn: async () => turn([], "Here is the answer."),
+      executeToolCalls,
+    });
+
+    expect(result.summary).toBe("Here is the answer.");
+    expect(result.stepsTaken).toBe(1);
+    expect(executeToolCalls).not.toHaveBeenCalled();
+  });
+
+  it("executes action tool calls and keeps going until finish", async () => {
+    const executed: string[][] = [];
+    let step = 0;
+
+    const result = await executeAgentLoop({
+      initialMessages: [{ role: "user", content: "start" }],
+      initialPlan: "Plan",
+      shared: {},
+      state: { commandCount: 0 },
+      resolveTurn: async () => {
+        step += 1;
+
+        if (step === 1) {
+          return turn([toolCall("run_command", { command: "ls" })]);
+        }
+
+        return turn([toolCall("finish", { summary: "Done." })]);
+      },
+      executeToolCalls: async (toolCalls, context) => {
+        executed.push(toolCalls.map((call) => call.name));
+        context.state.commandCount = (context.state.commandCount ?? 0) + toolCalls.length;
+      },
+    });
+
+    expect(executed).toEqual([["run_command"]]);
+    expect(result.commandCount).toBe(1);
+    expect(result.summary).toBe("Done.");
+  });
+
+  it("applies update_plan without consuming a finish", async () => {
+    const emitted: string[] = [];
+    let step = 0;
+
+    const result = await executeAgentLoop({
+      initialMessages: [{ role: "user", content: "start" }],
+      initialPlan: "Original plan",
+      shared: {},
+      state: { commandCount: 0 },
+      emit: async (event) => {
+        emitted.push(event.type);
+      },
+      resolveTurn: async () => {
+        step += 1;
+
+        if (step === 1) {
+          return turn([toolCall("update_plan", { plan: "Revised plan" })]);
+        }
+
+        return turn([toolCall("finish", { summary: "Finished." })]);
+      },
+      executeToolCalls: async () => {},
+    });
+
+    expect(result.finalPlan).toBe("Revised plan");
+    expect(emitted).toContain("plan_updated");
+  });
+
+  it("rejects finish while assessFinish withholds approval", async () => {
+    const summaries: string[] = [];
+    let allow = false;
+    let step = 0;
+
+    const result = await executeAgentLoop({
+      initialMessages: [{ role: "user", content: "start" }],
+      initialPlan: "Plan",
+      shared: {},
+      state: { commandCount: 0 },
+      resolveTurn: async () => {
+        step += 1;
+
+        return turn([toolCall("finish", { summary: `attempt-${step}` })]);
+      },
+      executeToolCalls: async () => {},
+      assessFinish: ({ summary }) => {
+        summaries.push(summary);
+
+        if (allow) {
+          return { allow: true, outcome: "satisfied" as const };
+        }
+
+        allow = true;
+
+        return {
+          allow: false,
+          instruction: "The objective is not satisfied yet. Check the tests.",
+        };
+      },
+    });
+
+    expect(summaries).toEqual(["attempt-1", "attempt-2"]);
+    expect(result.summary).toBe("attempt-2");
+    expect(result.goalOutcome).toBe("satisfied");
+  });
+
+  it("pushes the rejection instruction back to the model", async () => {
+    const messages = [{ role: "user" as const, content: "start" }];
+    let allow = false;
+
+    await executeAgentLoop({
+      initialMessages: messages,
+      initialPlan: "Plan",
+      shared: {},
+      state: { commandCount: 0 },
+      resolveTurn: async () => turn([toolCall("finish", { summary: "done?" })]),
+      executeToolCalls: async () => {},
+      assessFinish: () => {
+        if (allow) {
+          return { allow: true };
+        }
+
+        allow = true;
+
+        return { allow: false, instruction: "Run the suite first." };
+      },
+    });
+
+    expect(messages.some((message) => message.content === "Run the suite first.")).toBe(true);
+  });
+
+  it("triggers recovery after consecutive turn failures and requires update_plan first", async () => {
     const onPlanRecovery = vi.fn();
     let attempts = 0;
 
@@ -51,167 +178,102 @@ describe("executeAgentLoop", () => {
       state: { commandCount: 0 },
       config: {
         maxSteps: 6,
-        maxConsecutiveDecisionFailures: 2,
+        maxConsecutiveTurnFailures: 2,
         maxRecoveryReplans: 2,
       },
       onPlanRecovery,
-      resolveDecision: async ({ requiresPlanRecovery }) => {
+      resolveTurn: async ({ requiresPlanRecovery }) => {
         attempts += 1;
+
         if (attempts <= 2) {
-          throw new Error("Malformed decision");
+          throw new Error("Provider returned nothing usable");
         }
 
         if (requiresPlanRecovery) {
-          return {
-            decision: {
-              action: "update_plan",
-              plan: "Recovered plan with safer steps",
-            },
-          };
+          return turn([toolCall("update_plan", { plan: "Recovered plan with safer steps" })]);
         }
 
-        return {
-          decision: { action: "finish", summary: "Recovered and finished." },
-        };
+        return turn([toolCall("finish", { summary: "Recovered and finished." })]);
       },
-      handlers: [createRunCommandHandler()],
+      executeToolCalls: async () => {},
     });
 
     expect(onPlanRecovery).toHaveBeenCalledTimes(1);
     expect(result.summary).toBe("Recovered and finished.");
-    expect(result.stepsTaken).toBe(4);
+    expect(result.finalPlan).toBe("Recovered plan with safer steps");
   });
 
-  it("aborts terminal decision provider errors without treating them as invalid decisions", async () => {
-    const emitted: Array<Record<string, unknown>> = [];
-    const providerError = new Error("Provider rate limited");
-
-    await expect(
-      executeAgentLoop({
-        initialMessages: [{ role: "user", content: "start" }],
-        initialPlan: "Initial plan",
-        shared: {},
-        state: { commandCount: 0 },
-        resolveDecision: async () => {
-          throw providerError;
-        },
-        shouldAbortOnDecisionError: (error) => error === providerError,
-        emit: async (event) => {
-          emitted.push(event);
-        },
-        handlers: [createRunCommandHandler()],
-      }),
-    ).rejects.toThrow(providerError);
-
-    expect(emitted.some((event) => event.type === "agent_decision_failed")).toBe(true);
-    expect(emitted.some((event) => event.type === "agent_decision_invalid")).toBe(false);
-  });
-
-  it("enforces maxSteps and throws when the loop cannot finish", async () => {
-    await expect(
-      executeAgentLoop({
-        initialMessages: [{ role: "user", content: "start" }],
-        initialPlan: "Initial plan",
-        shared: {},
-        state: { commandCount: 0 },
-        config: {
-          maxSteps: 2,
-        },
-        resolveDecision: async () => ({
-          decision: { action: "run_command", command: "echo still-running" },
-        }),
-        handlers: [createRunCommandHandler()],
-      }),
-    ).rejects.toThrow("Agent exceeded maximum step budget (2)");
-  });
-
-  it("extends step budget when continuation is requested", async () => {
+  it("blocks non-plan tool calls while recovery is pending", async () => {
+    const executeToolCalls = vi.fn();
     let attempts = 0;
-    const result = await executeAgentLoop({
+
+    await executeAgentLoop({
       initialMessages: [{ role: "user", content: "start" }],
       initialPlan: "Initial plan",
       shared: {},
       state: { commandCount: 0 },
-      config: {
-        maxSteps: 2,
-        maxStepExtensions: 1,
-      },
-      onStepBudgetExceeded: () => ({
-        extendBy: 2,
-        reason: "continue requested",
-      }),
-      resolveDecision: async () => {
+      config: { maxSteps: 8, maxConsecutiveTurnFailures: 1, maxRecoveryReplans: 2 },
+      resolveTurn: async ({ requiresPlanRecovery }) => {
         attempts += 1;
-        if (attempts < 4) {
-          return {
-            decision: { action: "run_command", command: "echo progress" },
-          };
+
+        if (attempts === 1) {
+          throw new Error("unusable");
         }
 
-        return {
-          decision: { action: "finish", summary: "done after extension" },
-        };
+        if (attempts === 2) {
+          return turn([toolCall("run_command", { command: "rm -rf /" })]);
+        }
+
+        if (requiresPlanRecovery) {
+          return turn([toolCall("update_plan", { plan: "Safer plan" })]);
+        }
+
+        return turn([toolCall("finish", { summary: "Done." })]);
       },
-      handlers: [createRunCommandHandler()],
+      executeToolCalls,
     });
 
-    expect(result.summary).toBe("done after extension");
-    expect(result.stepsTaken).toBe(4);
+    expect(executeToolCalls).not.toHaveBeenCalled();
   });
 
-  it("requires update_plan on the step after beginPlanRecovery", async () => {
-    const contexts: AgentDecisionContext[] = [];
-    let callCount = 0;
+  it("extends the step budget through onStepBudgetExceeded", async () => {
+    const onStepBudgetExceeded = vi.fn().mockResolvedValue({ extendBy: 2, reason: "more work" });
+    let step = 0;
 
     const result = await executeAgentLoop({
       initialMessages: [{ role: "user", content: "start" }],
-      initialPlan: "Initial plan",
+      initialPlan: "Plan",
       shared: {},
       state: { commandCount: 0 },
-      config: {
-        maxSteps: 6,
-        maxRecoveryReplans: 2,
+      config: { maxSteps: 1, maxStepExtensions: 1 },
+      resolveTurn: async () => {
+        step += 1;
+
+        if (step <= 1) {
+          return turn([toolCall("run_command", { command: "ls" })]);
+        }
+
+        return turn([toolCall("finish", { summary: "Done." })]);
       },
-      resolveDecision: async (context) => {
-        contexts.push({
-          ...context,
-          messages: [...context.messages],
-        });
-        callCount += 1;
-
-        if (callCount === 1) {
-          return {
-            decision: { action: "run_command", command: "echo first" },
-          };
-        }
-
-        if (callCount === 2) {
-          return {
-            decision: { action: "run_command", command: "echo blocked" },
-          };
-        }
-
-        if (callCount === 3) {
-          return {
-            decision: { action: "update_plan", plan: "Safer revised plan" },
-          };
-        }
-
-        return {
-          decision: { action: "finish", summary: "Done after recovery." },
-        };
-      },
-      handlers: [
-        createRunCommandHandler(({ step, beginPlanRecovery }) => {
-          if (step === 1) {
-            beginPlanRecovery("Tool execution failed");
-          }
-        }),
-      ],
+      executeToolCalls: async () => {},
+      onStepBudgetExceeded,
     });
 
-    expect(contexts[1]?.requiresPlanRecovery).toBe(true);
-    expect(result.summary).toBe("Done after recovery.");
-    expect(result.stepsTaken).toBe(4);
+    expect(onStepBudgetExceeded).toHaveBeenCalledTimes(1);
+    expect(result.summary).toBe("Done.");
+  });
+
+  it("throws once the step budget cannot be extended further", async () => {
+    await expect(
+      executeAgentLoop({
+        initialMessages: [{ role: "user", content: "start" }],
+        initialPlan: "Plan",
+        shared: {},
+        state: { commandCount: 0 },
+        config: { maxSteps: 1 },
+        resolveTurn: async () => turn([toolCall("run_command", { command: "ls" })]),
+        executeToolCalls: async () => {},
+      }),
+    ).rejects.toThrow("Agent exceeded maximum step budget (1)");
   });
 });

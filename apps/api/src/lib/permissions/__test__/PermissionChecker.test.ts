@@ -190,6 +190,6 @@ describe("permission helpers", () => {
   it("resolves max steps by mode", () => {
     expect(resolveModeMaxSteps("plan", 30)).toBe(24);
     expect(resolveModeMaxSteps("build", 10)).toBe(10);
-    expect(resolveModeMaxSteps("normal")).toBe(1);
+    expect(resolveModeMaxSteps("normal")).toBe(8);
   });
 });

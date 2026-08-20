@@ -83,6 +83,34 @@ export class HomePage extends BasePage {
     }
   }
 
+  async setGoal(objective: string) {
+    const goalResponse = this.page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        new URL(response.url()).pathname.endsWith("/goal"),
+    );
+
+    await this.sendMessage(`/goal ${objective}`);
+
+    return goalResponse;
+  }
+
+  async updateGoal(action: "Pause" | "Resume" | "Clear goal") {
+    const goalResponse = this.page.waitForResponse(
+      (response) =>
+        response.request().method() === "PATCH" &&
+        new URL(response.url()).pathname.endsWith("/goal"),
+    );
+
+    await this.page.getByRole("button", { name: action }).click();
+
+    return goalResponse;
+  }
+
+  goalCard() {
+    return this.page.getByRole("status").filter({ hasText: "Goal" });
+  }
+
   get councilMemberPicker() {
     return this.page.getByText("Choose the council", { exact: true });
   }

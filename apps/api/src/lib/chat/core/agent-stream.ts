@@ -23,7 +23,7 @@ export interface CreateAgentExecutionStreamParams {
   completionId: string;
   conversationManager: ConversationManager;
   toolRequestContext: IRequest;
-  maxSteps?: number;
+  maxSteps: number;
   envLogId?: string;
   mode: ChatMode;
   model: string;

@@ -1,5 +1,8 @@
 import {
   compactChatCompletionResponseSchema,
+  goalResponseSchema,
+  setGoalRequestSchema,
+  updateGoalRequestSchema,
   chatCompletionResponseSchema,
   editCompletionResponseSchema,
   checkChatCompletionJsonSchema,
@@ -47,6 +50,11 @@ import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
 import { handleCheckChatCompletion } from "~/services/completions/checkChatCompletion";
 import { handleCompactChatCompletion } from "~/services/completions/compactChatCompletion";
+import {
+  handleGetConversationGoal,
+  handleSetConversationGoal,
+  handleUpdateConversationGoal,
+} from "~/services/completions/conversationGoal";
 import { handleCountTokens } from "~/services/completions/countTokens";
 import { handleCreateApplyEditCompletions } from "~/services/completions/createApplyEditCompletions";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
@@ -411,6 +419,82 @@ addRoute(app, "post", "/completions/:completion_id/compact", {
 
       const serviceContext = getServiceContext(context);
       const response = await handleCompactChatCompletion(serviceContext, completion_id);
+
+      return ResponseFactory.success(context, response);
+    })(raw),
+});
+
+addRoute(app, "get", "/completions/:completion_id/goal", {
+  tags: ["chat"],
+  summary: "Get the conversation goal",
+  description: "Returns the active goal for a conversation, if one is set.",
+  paramSchema: getChatCompletionParamsSchema,
+  responses: {
+    200: { description: "The active goal, or null", schema: goalResponseSchema },
+    404: { description: "Completion not found", schema: errorResponseSchema },
+  },
+  handler: async ({ raw }) =>
+    (async (context: Context) => {
+      const { completion_id } = context.req.valid("param" as never) as {
+        completion_id: string;
+      };
+
+      const response = await handleGetConversationGoal(getServiceContext(context), completion_id);
+
+      return ResponseFactory.success(context, response);
+    })(raw),
+});
+
+addRoute(app, "post", "/completions/:completion_id/goal", {
+  tags: ["chat"],
+  summary: "Set the conversation goal",
+  description:
+    "Sets a persistent objective for the conversation. Replaces the objective in place when one is already active.",
+  paramSchema: getChatCompletionParamsSchema,
+  bodySchema: setGoalRequestSchema,
+  responses: {
+    200: { description: "The stored goal", schema: goalResponseSchema },
+    400: { description: "Bad request or validation error", schema: errorResponseSchema },
+  },
+  handler: async ({ raw }) =>
+    (async (context: Context) => {
+      const { completion_id } = context.req.valid("param" as never) as {
+        completion_id: string;
+      };
+      const body = context.req.valid("json" as never) as z.infer<typeof setGoalRequestSchema>;
+
+      const response = await handleSetConversationGoal(
+        getServiceContext(context),
+        completion_id,
+        body.objective,
+      );
+
+      return ResponseFactory.success(context, response);
+    })(raw),
+});
+
+addRoute(app, "patch", "/completions/:completion_id/goal", {
+  tags: ["chat"],
+  summary: "Update the conversation goal lifecycle",
+  description: "Pauses, resumes, or clears the active goal.",
+  paramSchema: getChatCompletionParamsSchema,
+  bodySchema: updateGoalRequestSchema,
+  responses: {
+    200: { description: "The updated goal", schema: goalResponseSchema },
+    404: { description: "No goal on this conversation", schema: errorResponseSchema },
+  },
+  handler: async ({ raw }) =>
+    (async (context: Context) => {
+      const { completion_id } = context.req.valid("param" as never) as {
+        completion_id: string;
+      };
+      const body = context.req.valid("json" as never) as z.infer<typeof updateGoalRequestSchema>;
+
+      const response = await handleUpdateConversationGoal(
+        getServiceContext(context),
+        completion_id,
+        body,
+      );
 
       return ResponseFactory.success(context, response);
     })(raw),

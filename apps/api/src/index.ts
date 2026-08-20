@@ -27,6 +27,7 @@ import { apiInfoDescription } from "./openapi/content/apiDescription";
 import { tagDescriptions } from "./openapi/documentation";
 import { registerApiRoutes } from "./routes/register";
 import { SandboxRunCoordinator } from "./services/apps/sandbox/run-coordinator/object";
+import { ConversationCoordinator } from "./services/conversations/coordinator/object";
 import { handleGetMetrics } from "./services/metrics/getMetrics";
 import { QueueExecutor } from "./services/tasks/QueueExecutor";
 import { ScheduleExecutor } from "./services/tasks/ScheduleExecutor";
@@ -80,7 +81,7 @@ app.use(
   "*",
   cors({
     origin: corsOrigin,
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization", "X-CSRF-Token", "x-captcha-token"],
     credentials: true,
     maxAge: 86400,
@@ -332,4 +333,4 @@ const handler = {
 
 export default withSentry<IEnv>(getSentryOptions, handler);
 
-export { SandboxRunCoordinator };
+export { ConversationCoordinator, SandboxRunCoordinator };

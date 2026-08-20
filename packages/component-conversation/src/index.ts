@@ -31,6 +31,8 @@ export * from "./ToolSelectorPopover";
 export * from "./ToolToggleMenu";
 export * from "./InlineSettingSelect";
 export * from "./CompactionStatusRow";
+export * from "./GoalStatusCard";
+export * from "./GoalStatusRow";
 export * from "./Message/ChatMessageView";
 export * from "./Composer/ComposerBannerCard";
 export * from "./Composer/ConversationFooterInfo";

@@ -47,6 +47,26 @@ export interface CompactionMessagePart extends MessagePartBase {
   label?: string;
 }
 
+export const goalMarkerEventNames = [
+  "set",
+  "paused",
+  "resumed",
+  "cleared",
+  "completed",
+  "blocked",
+  "stalled",
+  "limit_reached",
+  "steered",
+] as const;
+export type GoalMarkerEventName = (typeof goalMarkerEventNames)[number];
+
+export interface GoalMessagePart extends MessagePartBase {
+  type: "goal";
+  event: GoalMarkerEventName;
+  label?: string;
+  objective?: string;
+}
+
 export interface FileMessagePart extends MessagePartBase {
   type: "file";
   name?: string;
@@ -62,6 +82,7 @@ export type MessagePart =
   | ReasoningMessagePart
   | SnapshotMessagePart
   | CompactionMessagePart
+  | GoalMessagePart
   | FileMessagePart;
 
 export const compactionStatusLabels = {
@@ -167,6 +188,17 @@ export function isCompactionMarkerMessage(message: { role?: unknown; parts?: unk
   return message.role === "compaction" || hasValidCompactionPart(message.parts);
 }
 
+export function isGoalMarkerMessage(message: { role?: unknown; parts?: unknown }): boolean {
+  if (message.role === "goal") {
+    return true;
+  }
+
+  return (
+    Array.isArray(message.parts) &&
+    message.parts.some((part) => isRecord(part) && part.type === "goal")
+  );
+}
+
 function normaliseMessagePart(part: unknown, fallbackTimestamp?: number): MessagePart | null {
   if (!isRecord(part)) {
     return null;
@@ -246,6 +278,22 @@ function normaliseMessagePart(part: unknown, fallbackTimestamp?: number): Messag
         type: "compaction",
         status,
         label: readOptionalString(part.label),
+      };
+    }
+
+    case "goal": {
+      const event = goalMarkerEventNames.find((name) => name === part.event);
+
+      if (!event) {
+        return null;
+      }
+
+      return {
+        ...base,
+        type: "goal",
+        event,
+        label: readOptionalString(part.label),
+        objective: readOptionalString(part.objective),
       };
     }
 

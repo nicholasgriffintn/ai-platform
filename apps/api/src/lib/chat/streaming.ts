@@ -1,10 +1,11 @@
 import { MAX_BUFFER_LENGTH, MAX_CONTENT_LENGTH, MAX_THINKING_LENGTH } from "~/constants/app";
+import { resolveStreamingGoalContinuation } from "~/lib/chat/goal-continuation";
 import { MEMORY_STORE_TOOL_NAME } from "~/lib/chat/memoryPolicy";
 import { appendReasoningPart, appendTextPart, buildMessageParts } from "~/lib/chat/messageParts";
 import { buildAssistantMessageData } from "~/lib/chat/mode-metadata";
 import { formatAssistantMessage, getAIResponse } from "~/lib/chat/responses";
-import { resolveToolStepBudget, shouldContinueAfterToolResults } from "~/lib/chat/tool-results";
 import { handleToolCalls } from "~/lib/chat/tools";
+import { evaluateTurnContinuation } from "~/lib/chat/turn-continuation";
 import { getToolEventPayload } from "~/lib/chat/utils";
 import { preprocessQwQResponse } from "~/lib/chat/utils/qwq";
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -14,6 +15,7 @@ import { MemoryManager } from "~/lib/memory";
 import { trackTokenUsage } from "~/lib/monitoring";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { findModelConfig } from "~/lib/providers/models";
+import { isUsageExhausted, USAGE_LIMIT_NOTICE } from "~/lib/usage/limitState";
 import {
   hasTokenUsageChanged,
   mergeStreamedTokenUsage,
@@ -157,6 +159,90 @@ export interface StreamPostProcessingOptions {
   continuationRequest?: ChatCompletionParameters;
   memoryScope?: MemoryScope;
   unknownToolRecoveryUsed?: boolean;
+}
+
+interface StreamContinuationParams {
+  controller: TransformStreamDefaultController;
+  conversationManager: ConversationManager;
+  options: StreamPostProcessingOptions;
+  completionId: string;
+  env: IEnv;
+  model: string;
+  tools: unknown;
+  enabledTools: unknown;
+  currentStep: number;
+  nextOptions: Record<string, unknown>;
+  instruction?: string;
+}
+
+/**
+ * Runs the next streaming turn and pumps it into the current stream. Both
+ * reasons a turn continues — pending tool results and an unsatisfied goal —
+ * take this path, so the continuation request is built once.
+ */
+async function continueStreamingTurn(params: StreamContinuationParams): Promise<boolean> {
+  try {
+    if (await isUsageExhausted(params.conversationManager)) {
+      logger.info("Stopping streaming continuation at the usage limit", {
+        completion_id: params.completionId,
+      });
+
+      emitEvent(params.controller, "content_block_delta", {
+        content: `\n\n${USAGE_LIMIT_NOTICE}`,
+      });
+
+      return false;
+    }
+
+    const history = await params.conversationManager.get(params.completionId);
+    const continuationBase = params.options.continuationRequest ?? params.options;
+    const messages = params.instruction
+      ? [...history, { role: "user" as const, content: params.instruction }]
+      : history;
+    const nextStream = await getAIResponse({
+      ...continuationBase,
+      env: params.env,
+      completion_id: params.completionId,
+      model: params.model,
+      provider: params.options.provider,
+      messages,
+      message: undefined,
+      tools: params.tools,
+      enabled_tools: params.enabledTools,
+      current_step: params.currentStep + 1,
+      stream: true,
+    } as Parameters<typeof getAIResponse>[0]);
+    const nextTransformed = await createStreamWithPostProcessing(
+      nextStream as ReadableStream,
+      {
+        ...params.options,
+        ...params.nextOptions,
+        current_step: params.currentStep + 1,
+        continuationRequest: continuationBase,
+      },
+      params.conversationManager,
+    );
+    const reader = nextTransformed.getReader();
+
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      params.controller.enqueue(value);
+    }
+
+    return true;
+  } catch (error) {
+    logger.error("Streaming continuation failed", {
+      completion_id: params.completionId,
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
+
+    return false;
+  }
 }
 
 export async function createStreamWithPostProcessing(
@@ -557,14 +643,22 @@ export async function createStreamWithPostProcessing(
       }
 
       if (toolCallsData.length > 0) {
-        const recoveredUnknownTool = toolResults.some(
-          (message) =>
-            message.data?.errorCode === "UNKNOWN_TOOL" && message.data?.recoverable === true,
-        );
-        const resolvedMaxSteps = resolveToolStepBudget(max_steps, toolCallsData, toolResults);
-        const withinStepBudget = Boolean(resolvedMaxSteps && current_step < resolvedMaxSteps);
+        const continuation = evaluateTurnContinuation({
+          toolCalls: toolCallsData,
+          toolResults,
+          currentStep: current_step,
+          maxSteps: max_steps,
+          unknownToolRecoveryUsed,
+        });
+        const resolvedMaxSteps = continuation.maxSteps;
+        const recoveredUnknownTool = continuation.unknownToolRecoveryUsed;
 
-        if (!withinStepBudget && !recoveredUnknownTool) {
+        if (!continuation.shouldContinue) {
+          logger.info("Stopping multi-step streaming execution", {
+            completion_id,
+            current_step,
+            reason: continuation.reason,
+          });
           emitEvent(controller, "state", {
             state: StreamState.DONE,
           });
@@ -573,62 +667,53 @@ export async function createStreamWithPostProcessing(
           return;
         }
 
-        const shouldContinue = shouldContinueAfterToolResults(toolCallsData, toolResults);
+        const continued = await continueStreamingTurn({
+          controller,
+          conversationManager,
+          options,
+          completionId: completion_id,
+          env,
+          model,
+          tools,
+          enabledTools: enabled_tools,
+          currentStep: current_step,
+          nextOptions: {
+            max_steps: resolvedMaxSteps,
+            unknownToolRecoveryUsed: unknownToolRecoveryUsed || recoveredUnknownTool,
+          },
+        });
 
-        if (!shouldContinue) {
-          logger.warn(
-            "Tool execution did not complete successfully, stopping multi-step execution",
-            {
-              completion_id,
-              current_step,
-            },
-          );
-        } else {
-          try {
-            const history = await conversationManager.get(completion_id);
-            const continuationBase = options.continuationRequest ?? options;
-            const nextStream = await getAIResponse({
-              ...continuationBase,
-              env,
-              completion_id,
-              model,
-              provider: options.provider,
-              messages: history,
-              message: undefined,
-              tools,
-              enabled_tools,
-              current_step: current_step + 1,
-              stream: true,
-            });
-            const nextTransformed = await createStreamWithPostProcessing(
-              nextStream,
-              {
-                ...options,
-                max_steps: resolvedMaxSteps,
-                current_step: current_step + 1,
-                unknownToolRecoveryUsed: unknownToolRecoveryUsed || recoveredUnknownTool,
-                continuationRequest: continuationBase,
-              },
-              conversationManager,
-            );
+        if (continued) {
+          return;
+        }
+      }
 
-            const reader = nextTransformed.getReader();
+      if (toolCallsData.length === 0) {
+        const goalContinuation = await resolveStreamingGoalContinuation({
+          completionId: completion_id,
+          context,
+          conversationManager,
+          summary: fullContent || "",
+          producedEvidence: false,
+        });
 
-            while (true) {
-              const { done, value } = await reader.read();
+        if (goalContinuation) {
+          const continued = await continueStreamingTurn({
+            controller,
+            conversationManager,
+            options,
+            completionId: completion_id,
+            env,
+            model,
+            tools,
+            enabledTools: enabled_tools,
+            currentStep: current_step,
+            nextOptions: {},
+            instruction: goalContinuation.instruction,
+          });
 
-              if (done) {
-                break;
-              }
-
-              controller.enqueue(value);
-            }
-
+          if (continued) {
             return;
-          } catch (error: any) {
-            console.error("Next stream error:", {
-              error_message: error instanceof Error ? error.message : "Unknown error",
-            });
           }
         }
       }
@@ -786,7 +871,6 @@ export async function createStreamWithPostProcessing(
                 }
 
                 if (contentDelta) {
-                  // Handle QwQ models: add <think> tag if needed on first content chunk
                   const isQwQModel = model.toLowerCase().includes("qwq");
 
                   if (isQwQModel && isFirstContentChunk && !qwqThinkTagAdded) {

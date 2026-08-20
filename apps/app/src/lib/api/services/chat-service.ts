@@ -12,6 +12,7 @@ import {
 } from "@ngriffin_uk/polychat-library-client";
 import type {
   ChatCompletionResponseBody,
+  Goal,
   ModelConfigItem,
   ModelRouterMode,
 } from "@ngriffin_uk/polychat-schemas";
@@ -21,6 +22,7 @@ import {
   type ChatStreamUpdate,
   type ParsedChatStreamSseEvent,
 } from "@ngriffin_uk/polychat-schemas/chat-stream";
+import { goalSchema } from "@ngriffin_uk/polychat-schemas/goals";
 import { normaliseToolIds } from "@ngriffin_uk/polychat-schemas/tool-ids";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
@@ -247,6 +249,53 @@ export class ChatService {
       compacted: parsed.compacted,
       conversation: normaliseConversationResponse(parsed.conversation, completion_id),
     };
+  }
+
+  async getConversationGoal(completion_id: string): Promise<Goal | null> {
+    return this.requestGoal(completion_id, { method: "GET" });
+  }
+
+  async setConversationGoal(completion_id: string, objective: string): Promise<Goal | null> {
+    return this.requestGoal(completion_id, {
+      method: "POST",
+      body: JSON.stringify({ objective }),
+    });
+  }
+
+  async updateConversationGoal(
+    completion_id: string,
+    status: "active" | "paused" | "cleared",
+  ): Promise<Goal | null> {
+    return this.requestGoal(completion_id, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  private async requestGoal(
+    completion_id: string,
+    init: { method: string; body?: string },
+  ): Promise<Goal | null> {
+    if (!completion_id) {
+      throw new Error("No completion ID provided");
+    }
+
+    let headers: Record<string, string> = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error resolving goal request headers:", error);
+    }
+
+    const response = await fetchApiOrThrow(`/chat/completions/${completion_id}/goal`, {
+      ...init,
+      headers: init.body ? { ...headers, "Content-Type": "application/json" } : headers,
+    });
+    const data = await returnFetchedData<{ goal?: unknown }>(response);
+    const parsed = goalSchema.nullable().safeParse(data?.goal ?? null);
+
+    return parsed.success ? parsed.data : null;
   }
 
   async generateTitle(completion_id: string, messages: Message[]): Promise<string> {

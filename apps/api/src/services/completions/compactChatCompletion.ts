@@ -6,6 +6,8 @@ import {
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { SessionManager } from "~/lib/session/SessionManager";
+import { acquireThread, releaseThread } from "~/services/conversations/coordinator/client";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 export type CompactChatCompletionContext = Pick<
   ServiceContext,
@@ -20,34 +22,51 @@ export async function handleCompactChatCompletion(
 
   context.ensureDatabase();
 
-  const conversationManager = ConversationManager.getInstance({
-    database: context.database,
-    user,
+  const lock = await acquireThread({
     env: context.env,
+    conversationId: completion_id,
+    kind: "compact",
   });
 
-  const messages = await conversationManager.getAllMessages(completion_id, {
-    includeArchived: false,
-  });
-  const sessionManager = new SessionManager({
-    env: context.env,
-    conversationManager,
-    user,
-  });
-  const compactedSession = await sessionManager.compact({
-    completionId: completion_id,
-    messages,
-    compaction: "manual",
-    mode: messages.at(-1)?.mode,
-  });
+  if (!lock.acquired) {
+    throw new AssistantError(
+      "This conversation is busy. Try compacting again once the current response finishes.",
+      ErrorType.CONFLICT_ERROR,
+    );
+  }
 
-  const conversation = await conversationManager.getConversationDetails(completion_id, {
-    includeArchived: true,
-    includeSnapshots: false,
-  });
+  try {
+    const conversationManager = ConversationManager.getInstance({
+      database: context.database,
+      user,
+      env: context.env,
+    });
 
-  return compactChatCompletionResponseSchema.parse({
-    compacted: compactedSession.compacted,
-    conversation,
-  });
+    const messages = await conversationManager.getAllMessages(completion_id, {
+      includeArchived: false,
+    });
+    const sessionManager = new SessionManager({
+      env: context.env,
+      conversationManager,
+      user,
+    });
+    const compactedSession = await sessionManager.compact({
+      completionId: completion_id,
+      messages,
+      compaction: "manual",
+      mode: messages.at(-1)?.mode,
+    });
+
+    const conversation = await conversationManager.getConversationDetails(completion_id, {
+      includeArchived: true,
+      includeSnapshots: false,
+    });
+
+    return compactChatCompletionResponseSchema.parse({
+      compacted: compactedSession.compacted,
+      conversation,
+    });
+  } finally {
+    await releaseThread({ env: context.env, conversationId: completion_id });
+  }
 }

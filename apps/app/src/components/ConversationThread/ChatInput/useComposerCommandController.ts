@@ -29,10 +29,12 @@ export function useComposerCommandController({
   isLoading,
   allowedAssistantActionCapabilities,
   assistantActionCatalog,
+  goalState,
   modeControls,
   toolSelectionLocked,
 }: {
   isLoading: boolean;
+  goalState?: { canUseGoals: boolean; goal: { status: string } | null };
   allowedAssistantActionCapabilities?: readonly ComposerAssistantActionCapability[];
   assistantActionCatalog?: ComposerActionCatalogConfig;
   modeControls?: ComposerCommandControls;
@@ -91,6 +93,7 @@ export function useComposerCommandController({
     assistantActionCatalog,
     chatInput,
     directive: directiveQuery,
+    goalState,
     includeSettingCommands: modeControls?.includeSettingCommands,
     modeCommands,
     setChatInput,

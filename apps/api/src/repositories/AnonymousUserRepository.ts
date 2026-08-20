@@ -88,12 +88,10 @@ export class AnonymousUserRepository extends BaseRepository {
       return null;
     }
 
-    // Filter out undefined and null values
     const filteredUserData = Object.fromEntries(
       Object.entries(userData).filter(([_, value]) => value !== undefined && value !== null),
     ) as Partial<AnonymousUser>;
 
-    // Get all field names except 'id'
     const fieldsToUpdate = Object.keys(filteredUserData).filter((key) => key !== "id");
 
     const result = this.buildUpdateQuery(

@@ -3,6 +3,19 @@ import { describe, expect, it, vi } from "vitest";
 import { executeAgentLoop } from "../feature-implementation/agent-loop";
 import { PolychatApiError } from "../polychat-client";
 
+function toolCallResponse(name: string, args: Record<string, unknown>) {
+  return {
+    content: "",
+    toolCalls: [
+      {
+        id: `call-${name}`,
+        type: "function",
+        function: { name, arguments: JSON.stringify(args) },
+      },
+    ],
+  };
+}
+
 describe("executeAgentLoop", () => {
   it("stops when the model provider is unavailable instead of recording invalid decisions", async () => {
     const emitted: Array<Record<string, unknown>> = [];
@@ -51,28 +64,118 @@ describe("executeAgentLoop", () => {
     ).rejects.toBeInstanceOf(PolychatApiError);
 
     expect(chatCompletion).toHaveBeenCalledTimes(1);
-    expect(emitted.some((event) => event.type === "agent_decision_failed")).toBe(true);
-    expect(emitted.some((event) => event.type === "agent_decision_invalid")).toBe(false);
+    expect(emitted.some((event) => event.type === "agent_turn_failed")).toBe(true);
+    expect(emitted.some((event) => event.type === "agent_turn_invalid")).toBe(false);
+  });
+
+  it("keeps the run working while its goal is unsatisfied", async () => {
+    const emitted: Array<Record<string, unknown>> = [];
+    const chatCompletion = vi
+      .fn()
+      .mockResolvedValueOnce(toolCallResponse("run_command", { commands: ["pnpm test"] }))
+      .mockResolvedValueOnce(toolCallResponse("finish", { summary: "looks done" }))
+      .mockResolvedValueOnce(toolCallResponse("run_command", { commands: ["pnpm test"] }))
+      .mockResolvedValueOnce(toolCallResponse("finish", { summary: "actually done" }));
+    const recordGoalIteration = vi
+      .fn()
+      .mockResolvedValueOnce({
+        shouldContinue: true,
+        instruction: "The objective is not satisfied yet.",
+      })
+      .mockResolvedValueOnce({ shouldContinue: false });
+
+    const result = await executeAgentLoop({
+      sandbox: {
+        exec: vi.fn().mockResolvedValue({
+          success: true,
+          exitCode: 0,
+          stdout: "ok",
+          stderr: "",
+        }),
+      } as any,
+      client: { chatCompletion } as any,
+      approvalClient: {
+        recordGoalIteration,
+        listInstructions: vi.fn().mockResolvedValue([]),
+      } as any,
+      model: "test-model",
+      repoDisplayName: "owner/repo",
+      repoTargetDir: "repo",
+      task: "test",
+      taskType: "feature-implementation",
+      promptStrategy: {
+        strategy: "feature-delivery",
+        definition: {
+          strategy: "feature-delivery",
+          label: "Feature delivery",
+          planningFocus: ["focus"],
+          executionFocus: ["focus"],
+          examples: [],
+        },
+        reason: "test",
+        source: "explicit",
+      },
+      initialPlan: "plan",
+      repoContext: {
+        topLevelEntries: [],
+        files: [],
+        taskInstructionSource: "none",
+      },
+      executionLogs: [],
+      emit: async (event) => {
+        emitted.push(event);
+      },
+    });
+
+    expect(recordGoalIteration).toHaveBeenCalledTimes(2);
+    expect(result.summary).toBe("actually done");
+    expect(emitted.some((event) => event.type === "run_goal_continued")).toBe(true);
+  });
+
+  it("finishes normally when the run has no goal control plane", async () => {
+    const chatCompletion = vi
+      .fn()
+      .mockResolvedValueOnce(toolCallResponse("finish", { summary: "done" }));
+
+    const result = await executeAgentLoop({
+      sandbox: { exec: vi.fn() } as any,
+      client: { chatCompletion } as any,
+      model: "test-model",
+      repoDisplayName: "owner/repo",
+      repoTargetDir: "repo",
+      task: "test",
+      taskType: "feature-implementation",
+      promptStrategy: {
+        strategy: "feature-delivery",
+        definition: {
+          strategy: "feature-delivery",
+          label: "Feature delivery",
+          planningFocus: ["focus"],
+          executionFocus: ["focus"],
+          examples: [],
+        },
+        reason: "test",
+        source: "explicit",
+      },
+      initialPlan: "plan",
+      repoContext: {
+        topLevelEntries: [],
+        files: [],
+        taskInstructionSource: "none",
+      },
+      executionLogs: [],
+      emit: vi.fn(),
+    });
+
+    expect(result.summary).toBe("done");
   });
 
   it("continues after a policy-blocked command", async () => {
     const emitted: Array<Record<string, unknown>> = [];
     const chatCompletion = vi
       .fn()
-      .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "run_command",
-          command: "pwd && ls -la",
-          reasoning: "inspect files",
-        }),
-      )
-      .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "finish",
-          summary: "done",
-          reasoning: "finished",
-        }),
-      );
+      .mockResolvedValueOnce(toolCallResponse("run_command", { commands: ["pwd && ls -la"] }))
+      .mockResolvedValueOnce(toolCallResponse("finish", { summary: "done" }));
 
     const result = await executeAgentLoop({
       sandbox: {
@@ -126,18 +229,11 @@ describe("executeAgentLoop", () => {
       .fn()
       .mockResolvedValueOnce("first invalid line\nsecond invalid line")
       .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "update_plan",
+        toolCallResponse("update_plan", {
           plan: "1. Inspect target file\n2. Apply focused fix\n3. Verify",
-          reasoning: "recovered plan",
         }),
       )
-      .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "finish",
-          summary: "done",
-        }),
-      );
+      .mockResolvedValueOnce(toolCallResponse("finish", { summary: "done" }));
 
     const result = await executeAgentLoop({
       sandbox: {
@@ -182,7 +278,7 @@ describe("executeAgentLoop", () => {
 
     expect(result.summary).toBe("done");
     expect(chatCompletion).toHaveBeenCalledTimes(3);
-    expect(emitted.some((event) => event.type === "agent_decision_invalid")).toBe(true);
+    expect(emitted.some((event) => event.type === "agent_turn_invalid")).toBe(true);
     expect(emitted.some((event) => event.type === "plan_updated")).toBe(true);
   });
 
@@ -190,36 +286,15 @@ describe("executeAgentLoop", () => {
     const emitted: Array<Record<string, unknown>> = [];
     const chatCompletion = vi
       .fn()
+      .mockResolvedValueOnce(toolCallResponse("run_command", { commands: ["npm run bad-command"] }))
+      .mockResolvedValueOnce(toolCallResponse("run_command", { commands: ["npm run bad-command"] }))
+      .mockResolvedValueOnce(toolCallResponse("run_command", { commands: ["npm run bad-command"] }))
       .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "run_command",
-          command: "npm run bad-command",
-        }),
-      )
-      .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "run_command",
-          command: "npm run bad-command",
-        }),
-      )
-      .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "run_command",
-          command: "npm run bad-command",
-        }),
-      )
-      .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "update_plan",
+        toolCallResponse("update_plan", {
           plan: "Use a safer inspection-first approach before retrying commands.",
         }),
       )
-      .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "finish",
-          summary: "recovered",
-        }),
-      );
+      .mockResolvedValueOnce(toolCallResponse("finish", { summary: "recovered" }));
 
     const exec = vi.fn().mockResolvedValue({
       success: false,
@@ -276,17 +351,9 @@ describe("executeAgentLoop", () => {
     const chatCompletion = vi
       .fn()
       .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "run_parallel",
-          commands: ["git status --short", "rg --files"],
-        }),
+        toolCallResponse("run_command", { commands: ["git status --short", "rg --files"] }),
       )
-      .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "finish",
-          summary: "parallel complete",
-        }),
-      );
+      .mockResolvedValueOnce(toolCallResponse("finish", { summary: "parallel complete" }));
 
     const exec = vi
       .fn()
@@ -349,18 +416,12 @@ describe("executeAgentLoop", () => {
     const chatCompletion = vi
       .fn()
       .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "run_script",
-          language: "python",
+        toolCallResponse("run_script", {
           code: "from pathlib import Path\nprint(Path('README.md').exists())",
+          language: "python",
         }),
       )
-      .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "finish",
-          summary: "script complete",
-        }),
-      );
+      .mockResolvedValueOnce(toolCallResponse("finish", { summary: "script complete" }));
 
     const runCode = vi.fn().mockResolvedValue({
       logs: {
@@ -440,17 +501,11 @@ describe("executeAgentLoop", () => {
     const chatCompletion = vi
       .fn()
       .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "read_files",
+        toolCallResponse("read_files", {
           files: [{ path: "src/a.ts" }, { path: "src/b.ts", startLine: 5 }],
         }),
       )
-      .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "finish",
-          summary: "read batch complete",
-        }),
-      );
+      .mockResolvedValueOnce(toolCallResponse("finish", { summary: "read batch complete" }));
 
     const exec = vi
       .fn()
@@ -513,35 +568,16 @@ describe("executeAgentLoop", () => {
     const chatCompletion = vi
       .fn()
       .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "read_file",
-          path: "src/worklog.js",
-        }),
+        toolCallResponse("read_files", { files: [{ path: "src/worklog.js" }] }),
       )
       .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "read_file",
-          path: "src/worklog.js",
-        }),
+        toolCallResponse("read_files", { files: [{ path: "src/worklog.js" }] }),
       )
       .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "read_file",
-          path: "src/worklog.js",
-        }),
+        toolCallResponse("read_files", { files: [{ path: "src/worklog.js" }] }),
       )
-      .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "update_plan",
-          plan: "Use a different approach",
-        }),
-      )
-      .mockResolvedValueOnce(
-        JSON.stringify({
-          action: "finish",
-          summary: "recovered",
-        }),
-      );
+      .mockResolvedValueOnce(toolCallResponse("update_plan", { plan: "Use a different approach" }))
+      .mockResolvedValueOnce(toolCallResponse("finish", { summary: "recovered" }));
 
     const exec = vi.fn().mockResolvedValue({
       success: true,
@@ -592,13 +628,11 @@ describe("executeAgentLoop", () => {
   });
 
   it("ingests operator instructions into model context", async () => {
-    const chatCompletion = vi.fn().mockResolvedValue(
-      JSON.stringify({
-        action: "finish",
-        summary: "done",
-      }),
-    );
+    const chatCompletion = vi
+      .fn()
+      .mockResolvedValue(toolCallResponse("finish", { summary: "done" }));
     const approvalClient = {
+      recordGoalIteration: vi.fn().mockResolvedValue({ shouldContinue: false }),
       listInstructions: vi
         .fn()
         .mockResolvedValueOnce([

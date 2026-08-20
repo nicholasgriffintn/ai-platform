@@ -42,6 +42,16 @@
       "import": "./dist/compaction-command.js",
       "require": "./dist/compaction-command.cjs"
     },
+    "./message-goal-status": {
+      "types": "./dist/message-goal-status.d.ts",
+      "import": "./dist/message-goal-status.js",
+      "require": "./dist/message-goal-status.cjs"
+    },
+    "./goal-command": {
+      "types": "./dist/goal-command.d.ts",
+      "import": "./dist/goal-command.js",
+      "require": "./dist/goal-command.cjs"
+    },
     "./composer-commands": {
       "types": "./dist/composer-commands.d.ts",
       "import": "./dist/composer-commands.js",

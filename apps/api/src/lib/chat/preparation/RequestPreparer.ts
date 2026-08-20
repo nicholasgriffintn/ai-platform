@@ -1,5 +1,6 @@
 import type {
   ChatHostedToolSettings,
+  Goal,
   ModelConfigInfo,
   RecipeConnectorProvider,
   SkillAvailability,
@@ -20,6 +21,7 @@ import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
 import { MemoryManager } from "~/lib/memory";
 import { getSystemPrompt } from "~/lib/prompts";
+import { buildGoalContractSection } from "~/lib/prompts/sections/goal";
 import {
   getEmbeddingProvider,
   augmentPrompt,
@@ -161,7 +163,6 @@ export class RequestPreparer {
       ? { type: "project", projectId: projectContext.projectId }
       : { type: "personal" };
 
-    // Project coding settings are authoritative; conversation options may only refine the task.
     options = { ...options, ...applyProjectCodingEnvironment(options, projectContext) };
 
     const isProUser = user?.plan_id === "pro";
@@ -291,6 +292,8 @@ export class RequestPreparer {
       scopedSkillCatalog?.listDefinitions(),
     );
 
+    const activeGoal = await this.loadActiveGoal(options);
+
     const systemPromptTask = this.buildSystemPrompt(
       options,
       sanitizedMessages,
@@ -301,6 +304,7 @@ export class RequestPreparer {
       projectContext,
       memoryScope,
       skills,
+      activeGoal,
     );
 
     if (storeMessagesTask) {
@@ -593,6 +597,7 @@ export class RequestPreparer {
     projectContext: ProjectChatContext | null,
     memoryScope: MemoryScope = { type: "personal" },
     skills?: readonly SkillAvailability[],
+    activeGoal?: Goal | null,
   ): Promise<string> {
     const {
       system_prompt,
@@ -609,7 +614,7 @@ export class RequestPreparer {
     const currentMode = mode;
 
     if (currentMode === "no_system") {
-      return this.appendProjectInstructions("", projectContext);
+      return this.appendProjectInstructions("", projectContext, activeGoal);
     }
 
     if (system_prompt) {
@@ -623,7 +628,7 @@ export class RequestPreparer {
         memoryScope,
       );
 
-      return this.appendProjectInstructions(enhancedPrompt, projectContext);
+      return this.appendProjectInstructions(enhancedPrompt, projectContext, activeGoal);
     }
 
     const systemPromptFromMessages = sanitizedMessages.find((message) => message.role === "system");
@@ -639,7 +644,7 @@ export class RequestPreparer {
         memoryScope,
       );
 
-      return this.appendProjectInstructions(enhancedPrompt, projectContext);
+      return this.appendProjectInstructions(enhancedPrompt, projectContext, activeGoal);
     }
 
     const generatedPrompt = await getSystemPrompt(
@@ -673,20 +678,47 @@ export class RequestPreparer {
       memoryScope,
     );
 
-    return this.appendProjectInstructions(enhancedPrompt, projectContext);
+    return this.appendProjectInstructions(enhancedPrompt, projectContext, activeGoal);
+  }
+
+  private async loadActiveGoal(options: CoreChatOptions): Promise<Goal | null> {
+    const user = options.context?.user;
+
+    if (!user?.id || user.plan_id !== "pro" || !options.completion_id) {
+      return null;
+    }
+
+    try {
+      return await options.context.repositories.goals.getActiveGoal({
+        conversationId: options.completion_id,
+      });
+    } catch (error) {
+      logger.error("Failed to load the active goal", { error });
+
+      return null;
+    }
   }
 
   private appendProjectInstructions(
     systemPrompt: string,
     projectContext: ProjectChatContext | null,
+    activeGoal?: Goal | null,
   ): string {
-    if (!projectContext?.instructions) {
-      return systemPrompt;
+    let prompt = systemPrompt;
+
+    if (projectContext?.instructions) {
+      const projectInstructions = `Project instructions:\n${projectContext.instructions}`;
+
+      prompt = prompt ? `${prompt}\n\n${projectInstructions}` : projectInstructions;
     }
 
-    const projectInstructions = `Project instructions:\n${projectContext.instructions}`;
+    if (activeGoal && activeGoal.status === "active") {
+      const goalContract = buildGoalContractSection(activeGoal);
 
-    return systemPrompt ? `${systemPrompt}\n\n${projectInstructions}` : projectInstructions;
+      prompt = prompt ? `${prompt}\n\n${goalContract}` : goalContract;
+    }
+
+    return prompt;
   }
 
   private async enhanceSystemPromptWithMemory(

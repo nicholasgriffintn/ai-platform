@@ -16,7 +16,15 @@ const {
   mockCreateStreamWithPostProcessing,
   mockHandleToolCalls,
   mockSessionCompact,
+  mockAcquireThread,
+  mockReleaseThread,
 } = vi.hoisted(() => ({
+  mockAcquireThread: vi.fn(
+    async (): Promise<{ acquired: boolean; currentOperation?: string | null }> => ({
+      acquired: true,
+    }),
+  ),
+  mockReleaseThread: vi.fn(async () => undefined),
   mockValidator: {
     validate: vi.fn(),
   },
@@ -81,6 +89,11 @@ vi.mock("~/lib/chat/preparation/RequestPreparer", () => ({
       return mockPreparer;
     }
   },
+}));
+
+vi.mock("~/services/conversations/coordinator/client", () => ({
+  acquireThread: mockAcquireThread,
+  releaseThread: mockReleaseThread,
 }));
 
 vi.mock("~/lib/chat/responses", () => ({
@@ -273,7 +286,11 @@ describe("ChatOrchestrator", () => {
         expect(mockGuardrails.validateOutput).toHaveBeenCalled();
         expect(mockConversationManager.add).toHaveBeenCalled();
         expect(result).toEqual({
-          response: mockResponse,
+          response: expect.objectContaining({
+            response: "Test response",
+            usage: expect.objectContaining({ total_tokens: 100 }),
+            totalUsage: expect.objectContaining({ total_tokens: 100 }),
+          }),
           toolResponses: [],
           selectedModel: "test-model",
           completion_id: "test-completion-id",
@@ -316,7 +333,10 @@ describe("ChatOrchestrator", () => {
         );
         expect(result).toEqual(
           expect.objectContaining({
-            response: mockResponse,
+            response: expect.objectContaining({
+              response: "Test response",
+              usage: expect.objectContaining({ total_tokens: 100 }),
+            }),
             toolResponses: [],
             selectedModel: "test-model",
             completion_id: "test-completion-id",
@@ -431,8 +451,8 @@ describe("ChatOrchestrator", () => {
           ["model-1", "model-2"],
         );
         expect(mockCreateMultiModelStream).toHaveBeenCalled();
-        expect(result).toEqual({
-          stream: mockStream,
+        expect(result).toMatchObject({
+          stream: expect.any(ReadableStream),
           selectedModel: "model-1",
           selectedModels: ["model-1", "model-2"],
           completion_id: "test-completion-id",
@@ -525,8 +545,8 @@ describe("ChatOrchestrator", () => {
           }),
           mockConversationManager,
         );
-        expect(result).toEqual({
-          stream: transformedStream,
+        expect(result).toMatchObject({
+          stream: expect.any(ReadableStream),
           selectedModel: "test-model",
           completion_id: "test-completion-id",
         });
@@ -705,7 +725,9 @@ describe("ChatOrchestrator", () => {
 
         const mockToolResults = [{ role: "tool", content: "tool result", tool_call_id: "tool-1" }];
 
-        mockGetAIResponse.mockResolvedValue(mockResponse);
+        mockGetAIResponse
+          .mockResolvedValueOnce(mockResponse)
+          .mockResolvedValueOnce({ response: "Answer using the tool result" });
         mockGuardrails.validateOutput.mockResolvedValue({ isValid: true });
         mockHandleToolCalls.mockResolvedValue(mockToolResults);
         mockConversationManager.add.mockResolvedValue(undefined);
@@ -714,7 +736,10 @@ describe("ChatOrchestrator", () => {
 
         expect(mockHandleToolCalls).toHaveBeenCalledWith(
           "test-completion-id",
-          mockResponse,
+          expect.objectContaining({
+            response: "Test response",
+            tool_calls: [expect.objectContaining({ id: "tool-1" })],
+          }),
           mockConversationManager,
           expect.objectContaining({
             context: mockOptions.context,
@@ -867,7 +892,9 @@ describe("ChatOrchestrator", () => {
           max_delegation_depth: 3,
         };
 
-        mockGetAIResponse.mockResolvedValue(mockResponse);
+        mockGetAIResponse
+          .mockResolvedValueOnce(mockResponse)
+          .mockResolvedValueOnce({ response: "Delegated and answered" });
         mockGuardrails.validateOutput.mockResolvedValue({ isValid: true });
         mockHandleToolCalls.mockResolvedValue(mockToolResults);
         mockConversationManager.add.mockResolvedValue(undefined);
@@ -876,7 +903,9 @@ describe("ChatOrchestrator", () => {
 
         expect(mockHandleToolCalls).toHaveBeenCalledWith(
           "test-completion-id",
-          mockResponse,
+          expect.objectContaining({
+            tool_calls: [expect.objectContaining({ id: "tool-1" })],
+          }),
           mockConversationManager,
           expect.objectContaining({
             context: mockOptions.context,
@@ -994,12 +1023,68 @@ describe("ChatOrchestrator", () => {
         });
       });
 
+      it("holds the conversation until a streaming response actually finishes", async () => {
+        const transformedStream = new ReadableStream({
+          start(controller) {
+            controller.enqueue("chunk");
+            controller.close();
+          },
+        });
+
+        mockGetAIResponse.mockResolvedValue(new ReadableStream());
+        mockCreateStreamWithPostProcessing.mockResolvedValue(transformedStream);
+
+        const result = (await orchestrator.process({ ...mockOptions, stream: true })) as {
+          stream: ReadableStream;
+        };
+
+        expect(mockReleaseThread).not.toHaveBeenCalled();
+
+        const reader = result.stream.getReader();
+
+        while (!(await reader.read()).done) {
+          // drain
+        }
+
+        expect(mockReleaseThread).toHaveBeenCalledWith(
+          expect.objectContaining({ conversationId: "test-completion-id" }),
+        );
+      });
+
+      it("refuses a turn while another operation holds the conversation", async () => {
+        mockAcquireThread.mockResolvedValueOnce({
+          acquired: false,
+          currentOperation: "user_message",
+        });
+
+        await expect(orchestrator.process(mockOptions)).rejects.toMatchObject({
+          type: ErrorType.CONFLICT_ERROR,
+        });
+
+        expect(mockPreparer.prepare).not.toHaveBeenCalled();
+        expect(mockReleaseThread).not.toHaveBeenCalled();
+      });
+
+      it("releases the conversation once the turn finishes", async () => {
+        mockGetAIResponse.mockResolvedValue({ response: "Test response" });
+        mockGuardrails.validateOutput.mockResolvedValue({ isValid: true });
+
+        await orchestrator.process(mockOptions);
+
+        expect(mockAcquireThread).toHaveBeenCalledWith(
+          expect.objectContaining({ conversationId: "test-completion-id", kind: "user_message" }),
+        );
+        expect(mockReleaseThread).toHaveBeenCalledWith(
+          expect.objectContaining({ conversationId: "test-completion-id" }),
+        );
+      });
+
       it("should throw error when no response generated", async () => {
         mockGetAIResponse.mockResolvedValue({});
 
         await expect(orchestrator.process(mockOptions)).rejects.toMatchObject({
           message: "No response generated by the model",
-          type: ErrorType.PARAMS_ERROR,
+          type: ErrorType.PROVIDER_ERROR,
           name: "AssistantError",
         });
       });

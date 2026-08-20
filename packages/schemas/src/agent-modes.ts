@@ -37,7 +37,7 @@ const allPermissions = [...TOOL_PERMISSIONS];
 
 export const AGENT_MODE_CONFIGS: Record<AgentMode, AgentModeConfig> = {
   chat: {
-    maxSteps: 1,
+    maxSteps: 8,
     allowedPermissions: allPermissions,
     deniedPermissions: [],
     requiresApprovalFor: [],

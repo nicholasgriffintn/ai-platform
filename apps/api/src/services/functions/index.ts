@@ -16,6 +16,7 @@ import { discover_capabilities } from "./discover_capabilities";
 import { extract_content } from "./extract_content";
 import { fill_in_middle_completion } from "./fill_in_middle";
 import { get_note } from "./get_note";
+import { complete_goal, set_goal } from "./goal";
 import { get_hacker_news_stories } from "./hacker_news";
 import { request_approval, ask_user } from "./human_in_the_loop";
 import { create_image } from "./image";
@@ -90,6 +91,8 @@ const functionDefinitions: ApiToolDefinition[] = [
   delegateToTeamMemberByRole,
   getTeamMembers,
   discover_capabilities,
+  set_goal,
+  complete_goal,
   load_skill,
   run_council,
   select_council_members,

@@ -33,6 +33,11 @@
       "import": "./dist/compaction-status.mjs",
       "require": "./dist/compaction-status.js"
     },
+    "./goals": {
+      "types": "./dist/goals.d.ts",
+      "import": "./dist/goals.mjs",
+      "require": "./dist/goals.js"
+    },
     "./conversation-replacement": {
       "types": "./dist/conversation-replacement.d.ts",
       "import": "./dist/conversation-replacement.mjs",

@@ -19,8 +19,6 @@ export async function listPatterns({
     context.ensureDatabase();
     const { repositories } = context;
 
-    // The detail, update, and delete paths all require a saved pattern, so the list must not
-    // surface other outputs stored against the same capability.
     const responses = projectId
       ? await repositories.outputs.listProjectOutputs(projectId, STRUDEL_APP_ID, {
           kind: PATTERN_OUTPUT_KIND,

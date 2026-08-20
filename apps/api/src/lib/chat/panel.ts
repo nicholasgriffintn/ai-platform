@@ -159,7 +159,7 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
   const maxTurns = Math.min(params.maxTurns ?? MAX_PANEL_TURNS, MAX_PANEL_TURNS);
 
   const fallback = params.model ? null : await getAuxiliaryModel(params.env, params.user);
-  const model = params.model ?? fallback!.model;
+  const model = params.model ?? fallback.model;
   const provider = params.provider ?? fallback?.provider;
   const context = createServiceContext({ env: params.env, user: params.user });
 
@@ -198,7 +198,7 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
       break;
     }
 
-    const member = memberById.get(queue.shift()!);
+    const member = memberById.get(queue.shift());
 
     if (!member) {
       continue;
