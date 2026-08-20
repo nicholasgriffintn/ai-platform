@@ -1,4 +1,4 @@
-import { getInboundChannelProfile } from "~/lib/chat/channels";
+import { getInboundChannelProfile } from "~/lib/chat/policy/channels";
 import type { ChatRequestOptions } from "~/types";
 import { escapeHtml } from "~/utils/html";
 

@@ -139,7 +139,7 @@ describe("ValidationPipeline", () => {
     mockBasicInputValidator.validate.mockResolvedValue({
       validation: { isValid: true },
       context: {
-        sanitizedMessages: [{ role: "user", content: "Hello world" }],
+        sanitisedMessages: [{ role: "user", content: "Hello world" }],
         lastMessage: { role: "user", content: "Hello world" },
       },
     });
@@ -181,7 +181,7 @@ describe("ValidationPipeline", () => {
 
       expect(result.validation.isValid).toBe(true);
       expect(result.context).toEqual({
-        sanitizedMessages: [{ role: "user", content: "Hello world" }],
+        sanitisedMessages: [{ role: "user", content: "Hello world" }],
         lastMessage: { role: "user", content: "Hello world" },
         modelConfig: {
           matchingModel: "claude-3-sonnet",
@@ -320,7 +320,7 @@ describe("ValidationPipeline", () => {
 
       expect(result.context).toEqual({
         existingKey: "value",
-        sanitizedMessages: [{ role: "user", content: "Hello world" }],
+        sanitisedMessages: [{ role: "user", content: "Hello world" }],
         lastMessage: { role: "user", content: "Hello world" },
         modelConfig: {
           matchingModel: "claude-3-sonnet",

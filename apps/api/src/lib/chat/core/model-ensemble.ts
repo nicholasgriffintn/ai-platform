@@ -1,9 +1,9 @@
 import type { ModelConfigInfo } from "@ngriffin_uk/polychat-schemas";
 
-import { runAgentLoop, type AgentLoopExecutionParams } from "~/lib/chat/agent/runAgentLoop";
+import { runAgentLoop, type AgentLoopExecutionParams } from "~/lib/chat/agent/agent-loop";
 import { createConnectorRunCloser } from "~/lib/chat/core/chat-stream";
-import { createChatSseStreamWriter, type ChatEventSink } from "~/lib/chat/emitter";
-import { getAIResponse } from "~/lib/chat/responses";
+import { createChatSseStreamWriter, type ChatEventSink } from "~/lib/chat/streaming/emitter";
+import { getAIResponse } from "~/lib/chat/streaming/responses";
 import { StreamState, type Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { finaliseReadableStream } from "~/utils/finalise-readable-stream";

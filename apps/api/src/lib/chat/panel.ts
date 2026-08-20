@@ -1,4 +1,4 @@
-import { getAIResponse } from "~/lib/chat/responses";
+import { getAIResponse } from "~/lib/chat/streaming/responses";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 import type { ChatCompletionParameters, IEnv, IUser, Message } from "~/types";

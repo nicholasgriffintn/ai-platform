@@ -1,4 +1,4 @@
-import { getAIResponse } from "~/lib/chat/responses";
+import { getAIResponse } from "~/lib/chat/streaming/responses";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import type { Agent } from "~/lib/database/schema";
 import { getAuxiliaryModel, getModelConfig } from "~/lib/providers/models";

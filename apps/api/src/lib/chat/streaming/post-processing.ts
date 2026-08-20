@@ -1,7 +1,6 @@
+import { buildChatCompactionMetadata } from "~/lib/chat/messages/compaction-metadata";
 import type { CreateChatCompletionsResponse } from "~/types";
 import { isPlainObject } from "~/utils/objects";
-
-import { buildChatCompactionMetadata } from "./compaction-metadata";
 
 type ChatPostProcessing = NonNullable<CreateChatCompletionsResponse["post_processing"]>;
 type ChatPostProcessingSteps = Partial<Pick<ChatPostProcessing, "steps" | "total_usage">>;

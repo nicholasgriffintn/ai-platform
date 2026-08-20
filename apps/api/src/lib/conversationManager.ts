@@ -15,13 +15,13 @@ import { getLogger } from "~/utils/logger";
 
 import type { AsyncInvocationMetadata } from "./async/asyncInvocation";
 import { isAsyncInvocationPending } from "./async/asyncInvocation";
-import { normaliseMessageTimestampsForStorage } from "./chat/messageOrdering";
+import { normaliseMessageTimestampsForStorage } from "./chat/messages/ordering";
 import {
   buildMessageParts,
   hasSnapshotPart,
   isCompactionMarkerMessage,
   normaliseMessageParts,
-} from "./chat/messageParts";
+} from "./chat/messages/parts";
 import { createInitialConversationTitle } from "./conversation/title-source";
 import { loadVisibleConversationMessagePage } from "./conversation/visibleMessagePagination";
 import type { Database } from "./database";

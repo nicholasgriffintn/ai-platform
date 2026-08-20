@@ -1,4 +1,4 @@
-import { buildAssistantMessageData } from "~/lib/chat/mode-metadata";
+import { buildAssistantMessageData } from "~/lib/chat/policy/mode-metadata";
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
 import { normaliseTokenUsage } from "~/lib/usage/tokenUsage";
 import type { ChatMode, ChatRequestOptions, Message, Platform } from "~/types";
