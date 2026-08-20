@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import z from "zod/v4";
 
-import { jsonSchemaToZod } from "../jsonSchema";
+import { ensureObjectRootJsonSchema, jsonSchemaToZod } from "../jsonSchema";
 
 describe("jsonSchemaToZod", () => {
   it("preserves nested Composio constraints and closed objects", () => {
@@ -84,5 +84,50 @@ describe("jsonSchemaToZod", () => {
         expect.objectContaining({ required: ["query"], additionalProperties: false }),
       ]),
     );
+  });
+});
+
+describe("ensureObjectRootJsonSchema", () => {
+  it("flattens object alternatives into a single object root", () => {
+    const schema = ensureObjectRootJsonSchema(
+      z.toJSONSchema(
+        jsonSchemaToZod({
+          type: "object",
+          properties: {
+            recipeId: { type: "string" },
+            query: { type: "string" },
+            input: { type: "string" },
+          },
+          anyOf: [{ required: ["recipeId"] }, { required: ["query"] }],
+          additionalProperties: false,
+        }),
+      ),
+    );
+
+    expect(schema.anyOf).toBeUndefined();
+    expect(schema).toMatchObject({ type: "object", additionalProperties: false });
+    expect(Object.keys(schema.properties as Record<string, unknown>)).toEqual(
+      expect.arrayContaining(["recipeId", "query", "input"]),
+    );
+    expect(schema.required).toBeUndefined();
+  });
+
+  it("keeps requirements shared by every alternative", () => {
+    const schema = ensureObjectRootJsonSchema(
+      z.toJSONSchema(
+        jsonSchemaToZod({
+          type: "object",
+          required: ["kind"],
+          properties: {
+            kind: { type: "string" },
+            recipeId: { type: "string" },
+            query: { type: "string" },
+          },
+          anyOf: [{ required: ["recipeId"] }, { required: ["query"] }],
+        }),
+      ),
+    );
+
+    expect(schema.required).toEqual(["kind"]);
   });
 });
