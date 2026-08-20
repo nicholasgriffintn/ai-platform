@@ -26,6 +26,7 @@ export {
   type RequestSkillScope,
 } from "./scope";
 export { getPersonalSkillAvailability, setPersonalSkillEnabled } from "./configuration";
+export { getSkillSuggestedToolNames, mergeSkillSuggestedToolNames } from "./suggested-tools";
 export { listScopedSkillSummaries } from "./listing";
 export {
   createPersonalSkill,

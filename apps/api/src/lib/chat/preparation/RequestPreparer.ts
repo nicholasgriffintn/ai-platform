@@ -5,7 +5,6 @@ import type {
   SkillAvailability,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { shouldSkipCouncilInputStorage } from "~/lib/chat/council";
 import {
   buildMemoryPromptContext,
   mergeEnabledMemoryToolNames,
@@ -13,7 +12,7 @@ import {
 } from "~/lib/chat/memoryPolicy";
 import { messagesMatchStoredPrefix } from "~/lib/chat/messageComparison";
 import { hasSnapshotPart } from "~/lib/chat/messageParts";
-import { buildUserMessageData, resolveChatPromptMode } from "~/lib/chat/mode-metadata";
+import { buildUserMessageData } from "~/lib/chat/mode-metadata";
 import { toProviderMessages } from "~/lib/chat/providerMessages";
 import { restoreStoredAttachmentContent } from "~/lib/chat/storedAttachments";
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -36,6 +35,7 @@ import {
   buildSkillAvailabilityInput,
   createProjectSkillScope,
   listSkillAvailability,
+  mergeSkillSuggestedToolNames,
   resolveSkillCatalog,
   resolvePersonalSkillScope,
   type RequestSkillScope,
@@ -344,11 +344,14 @@ export class RequestPreparer {
       userSettings,
       currentMode: mode,
       isProUser,
-      enabledTools: mergeEnabledMemoryToolNames({
-        enabledTools,
-        user,
-        userSettings,
-        store: options.store,
+      enabledTools: mergeSkillSuggestedToolNames({
+        enabledTools: mergeEnabledMemoryToolNames({
+          enabledTools,
+          user,
+          userSettings,
+          store: options.store,
+        }),
+        skills,
       }),
       toolOptions,
       requestOptions: options.options,
@@ -488,10 +491,6 @@ export class RequestPreparer {
     platform: Platform,
     mode: ChatMode,
   ): Promise<void> {
-    if (shouldSkipCouncilInputStorage(options.options?.council)) {
-      return;
-    }
-
     const messageData = buildUserMessageData(options.options, options.background);
 
     const messageToStore: Message = {
@@ -608,7 +607,6 @@ export class RequestPreparer {
     const memoriesEnabled = memoryPolicy.enabled;
 
     const currentMode = mode;
-    const promptMode = resolveChatPromptMode(options.options);
 
     if (currentMode === "no_system") {
       return this.appendProjectInstructions("", projectContext);
@@ -653,7 +651,6 @@ export class RequestPreparer {
         date: new Date().toISOString().split("T")[0],
         location,
         mode: currentMode,
-        promptMode,
         verbosity,
         reasoning_effort,
         max_tokens,

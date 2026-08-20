@@ -2,6 +2,7 @@ import { CustomView } from "./CustomView";
 import { GeneratedAudioView } from "./GeneratedAudioView";
 import { GeneratedImageView } from "./GeneratedImageView";
 import { JsonView } from "./JsonView";
+import type { ToolInteractionHandler } from "./registry";
 import {
   resolveGeneratedAudioResponseData,
   resolveGeneratedImageResponseData,
@@ -28,7 +29,7 @@ export interface ResponseViewProps {
   /** True when the tool's own schema described this result, which changes data resolution. */
   hasToolSchema?: boolean;
   embedded?: boolean;
-  onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
+  onToolInteraction?: ToolInteractionHandler;
 }
 
 export function ResponseView({

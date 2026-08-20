@@ -42,7 +42,7 @@ const artifactsSkill = {
   category: "Output",
   tags: [],
   alwaysOn: false,
-  requirement: { modelCapabilities: ["supportsToolCalls"], tools: [] },
+  requirement: { modelCapabilities: ["supportsToolCalls"], tools: [], suggestedTools: [] },
 } satisfies SkillSummary;
 
 const authoredSkill = {

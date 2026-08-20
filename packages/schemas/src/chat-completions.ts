@@ -7,7 +7,6 @@ import {
   type RecipeChatRequestOptions,
 } from "./apps";
 import { conversationChannelRequestOptionsSchema } from "./chat-mode";
-import { councilChatOptionsSchema } from "./council";
 import { hasCompactionPart, messagePartsSchema } from "./message-parts";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
 import { sandboxRequestOptionsSchema } from "./sandbox";
@@ -317,9 +316,6 @@ export const connectorChatRequestOptionsSchema = z
 export const chatRequestOptionsSchema = z
   .object({
     source: z.string().optional().describe("Request source marker for server-created flows."),
-    council: councilChatOptionsSchema
-      .optional()
-      .describe("Settings for council mode, which enables multi-perspective responses."),
     channel: conversationChannelRequestOptionsSchema
       .optional()
       .describe("The inbound messaging channel this turn arrived on, such as SMS."),

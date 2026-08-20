@@ -282,38 +282,6 @@ export const deepResearchSchema = z.object({
     .optional(),
 });
 
-export const tutorSchema = z.object({
-  topic: z.string(),
-  level: z.enum(["beginner", "intermediate", "advanced"]).prefault("advanced").optional(),
-  options: z
-    .object({
-      search_depth: z.enum(["basic", "advanced"]).optional(),
-      include_answer: z.boolean().optional(),
-      include_raw_content: z.boolean().optional(),
-      include_images: z.boolean().optional(),
-    })
-    .optional(),
-});
-
-export const promptCoachJsonSchema = z.object({
-  prompt: z.string().describe("The user's prompt to get suggestions for."),
-  promptType: z
-    .enum(["general", "creative", "technical", "instructional", "analytical"])
-    .optional()
-    .describe("The type of prompt to get suggestions for."),
-  recursionDepth: z
-    .number()
-    .optional()
-    .describe("The depth of the recursion for the prompt coach."),
-});
-
-export const promptCoachResponseSchema = z.object({
-  suggested_prompt: z
-    .string()
-    .nullable()
-    .describe("The suggested improvement for the user's prompt."),
-});
-
 export const toolFunctionTypes = ["normal", "premium", "byok"] as const;
 export const toolFunctionTypeSchema = z.enum(toolFunctionTypes);
 

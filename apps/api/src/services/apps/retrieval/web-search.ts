@@ -141,7 +141,7 @@ export async function performDeepWebSearch(
   }
 
   const completion_id_with_fallback = completion_id || generateId();
-  const new_completion_id = `${completion_id_with_fallback}-tutor`;
+  const new_completion_id = `${completion_id_with_fallback}-answer`;
 
   const answerContexts = sources
     .map((source: any, index: number) => {

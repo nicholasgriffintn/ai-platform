@@ -3,38 +3,20 @@ import {
   type ConversationModeMetadata,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { buildCouncilMessageData, type CouncilTurnRouting } from "~/lib/chat/council";
 import type { ChatMode, ChatRequestOptions } from "~/types";
 
 const AGENT_EXECUTION_MODES = new Set<ChatMode>(["agent", "plan", "build", "explore"]);
 
-export type ChatPromptMode = "council";
-export type ChatConversationMode = ChatPromptMode | "sms" | "background";
+export type ChatConversationMode = "sms" | "background";
 
 export function isAgentExecutionMode(mode: ChatMode): boolean {
   return AGENT_EXECUTION_MODES.has(mode);
-}
-
-export function resolveChatPromptMode(
-  options: ChatRequestOptions | undefined,
-): ChatPromptMode | undefined {
-  if (options?.council?.enabled) {
-    return "council";
-  }
-
-  return undefined;
 }
 
 export function resolveChatConversationMode(
   options: ChatRequestOptions | undefined,
   background?: boolean,
 ): ChatConversationMode | undefined {
-  const promptMode = resolveChatPromptMode(options);
-
-  if (promptMode) {
-    return promptMode;
-  }
-
   if (options?.channel) {
     return options.channel.id;
   }
@@ -54,16 +36,8 @@ function asResponseDataRecord(data: unknown): Record<string, unknown> | null {
 
 export function buildAssistantMessageData(params: {
   responseData?: unknown;
-  requestOptions?: ChatRequestOptions;
-  councilRouting?: CouncilTurnRouting | null;
 }): Record<string, unknown> | null {
-  const responseData = asResponseDataRecord(params.responseData);
-  const councilData = buildCouncilMessageData(
-    params.requestOptions?.council,
-    params.councilRouting,
-  );
-
-  return councilData ? { ...responseData, ...councilData } : responseData;
+  return asResponseDataRecord(params.responseData);
 }
 
 export function buildUserMessageData(

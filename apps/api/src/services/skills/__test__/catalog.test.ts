@@ -1,11 +1,19 @@
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 
 import { describe, expect, it } from "vitest";
 
+import { builtInSkillDocuments } from "~/data-model/skills";
 import { buildSkillsSection } from "~/lib/prompts/sections/skills";
+import { toolRegistry } from "~/services/functions";
 
 import { listSkillAvailability } from "../availability";
-import { SkillCatalog, getSkillResource, loadSkill, type SkillCatalogDocument } from "../catalog";
+import {
+  SkillCatalog,
+  getSkillResource,
+  listSkillDefinitions,
+  loadSkill,
+  type SkillCatalogDocument,
+} from "../catalog";
 import {
   MAX_USER_SKILL_DOCUMENT_BYTES,
   parseSkillDocument,
@@ -20,6 +28,7 @@ import {
   isSkillResourceWithinLoadLimit,
   MAX_SKILL_RESOURCE_CONTENT_BYTES,
 } from "../response";
+import { getSkillSuggestedToolNames } from "../suggested-tools";
 
 const skillsRoot = new URL("../../../data-model/skills/", import.meta.url);
 
@@ -38,14 +47,26 @@ function skillDocument(
   };
 }
 
+const BUILT_IN_SKILL_IDS = [
+  "article-analysis",
+  "artifacts",
+  "council",
+  "hacker-news",
+  "prompt-craft",
+  "recipes",
+  "structured-reasoning",
+  "task-decomposition",
+  "tutoring",
+];
+
 describe("built-in skill catalogue", () => {
-  it.each(["artifacts", "recipes"])("stores %s as an Agent Skills document", async (name) => {
+  it.each(BUILT_IN_SKILL_IDS)("stores %s as an Agent Skills document", async (name) => {
     const raw = await readBuiltInSkill(name);
 
     expect(raw).toMatch(/^---\n/);
     expect(raw).toContain(`\nname: ${name}\n`);
     expect(raw).toContain("description:");
-    expect(raw).toContain("Load when");
+    expect(raw).toMatch(/\bLoad (when|before)\b/);
     expect(raw).toMatch(/\n---\n\n# /);
   });
 
@@ -181,6 +202,7 @@ describe("built-in skill catalogue", () => {
     const personal = await listSkillAvailability({
       scope: "personal",
       modelCapabilities: { supportsToolCalls: true },
+      disabledSkillIds: new Set(["council"]),
     });
     const project = await listSkillAvailability({
       scope: "project",
@@ -188,18 +210,69 @@ describe("built-in skill catalogue", () => {
       enabledSkillIds: new Set(["artifacts"]),
     });
 
-    expect(personal.map(({ id, state }) => ({ id, state }))).toEqual([
-      { id: "artifacts", state: "ready" },
-      { id: "recipes", state: "ready" },
-    ]);
-    expect(project.map(({ id, state }) => ({ id, state }))).toEqual([
-      { id: "artifacts", state: "ready" },
-      { id: "recipes", state: "ready" },
-    ]);
+    expect(personal.map(({ id }) => id)).toEqual(BUILT_IN_SKILL_IDS);
+    expect(personal.find((skill) => skill.id === "council")?.state).toBe("disabled");
+    expect(personal.find((skill) => skill.id === "artifacts")?.state).toBe("ready");
+    expect(project.find((skill) => skill.id === "artifacts")?.state).toBe("ready");
+    expect(project.find((skill) => skill.id === "council")?.state).toBe("disabled");
+    expect(project.find((skill) => skill.id === "recipes")?.state).toBe("ready");
+
     const prompt = buildSkillsSection(project);
 
     expect(prompt).toContain("<name>artifacts</name>");
     expect(prompt).toContain("<name>recipes</name>");
+    expect(prompt).not.toContain("<name>council</name>");
     expect(prompt).not.toContain("# Artifacts");
+  });
+
+  it("registers every skill and resource that exists on disk", async () => {
+    const entries = await readdir(new URL(skillsRoot), { withFileTypes: true });
+    const directories = entries
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort((left, right) => left.localeCompare(right));
+    const registered = builtInSkillDocuments
+      .map((document) => document.directory)
+      .sort((left, right) => left.localeCompare(right));
+
+    expect(registered).toEqual(directories);
+
+    for (const document of builtInSkillDocuments) {
+      const files = await readdir(new URL(`${document.directory}/references/`, skillsRoot), {
+        withFileTypes: true,
+      }).catch(() => []);
+      const onDisk = files
+        .filter((file) => file.isFile())
+        .map((file) => `references/${file.name}`)
+        .sort((left, right) => left.localeCompare(right));
+
+      expect(
+        document.resources
+          .map((resource) => resource.path)
+          .sort((left, right) => left.localeCompare(right)),
+      ).toEqual(onDisk);
+    }
+  });
+
+  it("only requires and suggests tools the registry actually publishes", async () => {
+    const registered = new Set(toolRegistry.list().map((tool) => tool.name));
+    const declared = (await listSkillDefinitions()).flatMap((skill) => [
+      ...skill.requirement.tools,
+      ...skill.requirement.suggestedTools,
+    ]);
+
+    expect(declared.length).toBeGreaterThan(0);
+    expect(declared.filter((toolId) => !registered.has(toolId))).toEqual([]);
+  });
+
+  it("grants a ready skill's suggested tools and ignores a disabled one's", async () => {
+    const skills = await listSkillAvailability({
+      scope: "personal",
+      modelCapabilities: { supportsToolCalls: true },
+      disabledSkillIds: new Set(["council"]),
+    });
+
+    expect(getSkillSuggestedToolNames(skills)).toContain("web_search");
+    expect(getSkillSuggestedToolNames(skills)).not.toContain("run_council");
   });
 });

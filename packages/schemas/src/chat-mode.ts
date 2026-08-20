@@ -1,8 +1,6 @@
 import z from "zod/v4";
 
-import { councilChatOptionsSchema } from "./council";
-
-export const homeChatModeIdSchema = z.enum(["background", "chat", "council", "live", "sms"]);
+export const homeChatModeIdSchema = z.enum(["background", "chat", "live", "sms"]);
 
 export const inboundChannelIdSchema = z.enum(["sms"]);
 
@@ -14,7 +12,6 @@ export const conversationChannelRequestOptionsSchema = z.object({
 
 export const conversationModeRequestOptionsSchema = z
   .object({
-    council: councilChatOptionsSchema.optional(),
     channel: conversationChannelRequestOptionsSchema.optional(),
   })
   .passthrough();

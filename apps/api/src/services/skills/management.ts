@@ -60,6 +60,7 @@ export async function createPersonalSkill(
     name: document.frontmatter.name,
     description: document.frontmatter.description,
     content: input.content,
+    resources: input.resources,
     createdByUserId: userId,
   });
 
@@ -121,6 +122,7 @@ export async function updatePersonalSkill(
     name: skillId,
     description: document.frontmatter.description,
     content: input.content,
+    resources: input.resources,
     createdByUserId: existing.createdByUserId,
     overwrite: true,
   });
@@ -148,6 +150,7 @@ export async function publishProjectSkill(
     name: document.frontmatter.name,
     description: document.frontmatter.description,
     content: input.content,
+    resources: input.resources,
     createdByUserId: userId,
   });
 
@@ -238,6 +241,7 @@ export async function updateProjectSkill(
     name: skillId,
     description: document.frontmatter.description,
     content: input.content,
+    resources: input.resources,
     createdByUserId: existing.createdByUserId,
     overwrite: true,
   });
