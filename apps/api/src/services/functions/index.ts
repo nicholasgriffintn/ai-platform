@@ -37,15 +37,7 @@ import {
 } from "./recipes/use_recipe_connector";
 import { applyFunctionRequestContext } from "./request-context";
 import { research } from "./research";
-import {
-  run_bug_fix,
-  run_code_review,
-  run_documentation,
-  run_feature_implementation,
-  run_migration,
-  run_refactoring,
-  run_test_suite,
-} from "./sandbox";
+import { run_sandbox_task } from "./sandbox";
 import { capture_screenshot } from "./screenshot";
 import { second_opinion } from "./second_opinion";
 import { create_speech } from "./speech";
@@ -101,13 +93,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   get_hacker_news_stories,
   request_approval,
   ask_user,
-  run_feature_implementation,
-  run_code_review,
-  run_test_suite,
-  run_bug_fix,
-  run_refactoring,
-  run_documentation,
-  run_migration,
+  run_sandbox_task,
 ];
 
 export type RegisteredFunctionTool = ApiToolDefinition;

@@ -6,6 +6,7 @@ import {
   type SandboxModelSettings,
   type SandboxPromptStrategy,
   type SandboxTaskType,
+  SANDBOX_TASK_TYPES,
 } from "@ngriffin_uk/polychat-schemas";
 
 import {
@@ -22,6 +23,7 @@ import { jsonSchemaToZod } from "../../utils/jsonSchema";
 interface SandboxFunctionArgs {
   repo: string;
   task: string;
+  taskType?: SandboxTaskType;
   promptStrategy?: string;
   shouldCommit?: boolean;
   timeoutSeconds?: number;
@@ -46,6 +48,12 @@ const sandboxFunctionParameters = {
       type: "string",
       description: "Task to run against the repository",
     },
+    taskType: {
+      type: "string",
+      enum: SANDBOX_TASK_TYPES as unknown as string[],
+      description:
+        "The kind of work this is. Load the sandbox-tasks skill to choose: code-review and test-suite are read-only, the rest may change files.",
+    },
     promptStrategy: {
       type: "string",
       description:
@@ -65,7 +73,7 @@ const sandboxFunctionParameters = {
       description: "Optional GitHub App installation ID to force a specific connection",
     },
   },
-  required: ["task"],
+  required: ["task", "taskType"],
 } as const;
 
 function parsePromptStrategy(value: string | undefined): SandboxPromptStrategy | undefined {
@@ -317,79 +325,26 @@ async function parseSandboxSseBuffer(
   return rest;
 }
 
-function createSandboxFunction(params: {
-  name: string;
-  description: string;
-  taskType: SandboxTaskType;
-  permissions: ApiToolDefinition["permissions"];
-  forceShouldCommit?: boolean;
-}): ApiToolDefinition {
-  return {
-    name: params.name,
-    description: params.description,
-    type: "premium",
-    costPerCall: 0.1,
-    permissions: params.permissions,
-    inputSchema: jsonSchemaToZod(sandboxFunctionParameters),
-    execute: async (args, context) => {
-      return executeSandboxFunction({
-        request: context.request,
-        args: args as SandboxFunctionArgs,
-        taskType: params.taskType,
-        forceShouldCommit: params.forceShouldCommit,
-        emitToolResult: context.emitToolResult,
-      });
-    },
-  };
-}
+const READ_ONLY_TASK_TYPES = new Set<SandboxTaskType>(["code-review", "test-suite"]);
 
-export const run_feature_implementation: ApiToolDefinition = createSandboxFunction({
-  name: "run_feature_implementation",
-  description: "Implement a feature in a GitHub repository using the sandbox worker",
-  taskType: "feature-implementation",
+export const run_sandbox_task: ApiToolDefinition = {
+  name: "run_sandbox_task",
+  description:
+    "Run a coding task against a GitHub repository in the sandbox worker. Covers implementation, bug fixes, refactoring, migrations, documentation, code review and test runs; the task type decides whether the run may change files. Load the sandbox-tasks skill before calling this to pick the type and write the task properly.",
+  type: "premium",
+  costPerCall: 0.1,
   permissions: ["sandbox", "write"],
-});
+  inputSchema: jsonSchemaToZod(sandboxFunctionParameters),
+  execute: async (args, context) => {
+    const typedArgs = args as SandboxFunctionArgs;
+    const taskType = typedArgs.taskType ?? "feature-implementation";
 
-export const run_code_review: ApiToolDefinition = createSandboxFunction({
-  name: "run_code_review",
-  description: "Run a read-only code review task in a GitHub repository",
-  taskType: "code-review",
-  permissions: ["sandbox"],
-  forceShouldCommit: false,
-});
-
-export const run_test_suite: ApiToolDefinition = createSandboxFunction({
-  name: "run_test_suite",
-  description: "Run a read-only test-suite task in a GitHub repository",
-  taskType: "test-suite",
-  permissions: ["sandbox"],
-  forceShouldCommit: false,
-});
-
-export const run_bug_fix: ApiToolDefinition = createSandboxFunction({
-  name: "run_bug_fix",
-  description: "Diagnose and fix a bug in a GitHub repository using the sandbox worker",
-  taskType: "bug-fix",
-  permissions: ["sandbox", "write"],
-});
-
-export const run_refactoring: ApiToolDefinition = createSandboxFunction({
-  name: "run_refactoring",
-  description: "Refactor existing code in a GitHub repository while preserving behaviour",
-  taskType: "refactoring",
-  permissions: ["sandbox", "write"],
-});
-
-export const run_documentation: ApiToolDefinition = createSandboxFunction({
-  name: "run_documentation",
-  description: "Create or update documentation in a GitHub repository using the sandbox worker",
-  taskType: "documentation",
-  permissions: ["sandbox", "write"],
-});
-
-export const run_migration: ApiToolDefinition = createSandboxFunction({
-  name: "run_migration",
-  description: "Run a migration workflow in a GitHub repository using the sandbox worker",
-  taskType: "migration",
-  permissions: ["sandbox", "write"],
-});
+    return executeSandboxFunction({
+      request: context.request,
+      args: typedArgs,
+      taskType,
+      forceShouldCommit: READ_ONLY_TASK_TYPES.has(taskType) ? false : undefined,
+      emitToolResult: context.emitToolResult,
+    });
+  },
+};

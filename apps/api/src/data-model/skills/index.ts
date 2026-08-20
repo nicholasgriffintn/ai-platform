@@ -6,6 +6,7 @@ import council from "./council/SKILL.md";
 import hackerNews from "./hacker-news/SKILL.md";
 import promptCraft from "./prompt-craft/SKILL.md";
 import recipes from "./recipes/SKILL.md";
+import sandboxTasks from "./sandbox-tasks/SKILL.md";
 import secondOpinion from "./second-opinion/SKILL.md";
 import structuredReasoning from "./structured-reasoning/SKILL.md";
 import taskDecomposition from "./task-decomposition/SKILL.md";
@@ -43,6 +44,11 @@ export const builtInSkillDocuments = [
   {
     directory: "recipes",
     rawContent: recipes,
+    resources: [],
+  },
+  {
+    directory: "sandbox-tasks",
+    rawContent: sandboxTasks,
     resources: [],
   },
   {
