@@ -34,6 +34,35 @@ export type ResponsePresentation =
 const MAX_INFERRED_TABLE_COLUMNS = 8;
 const MIN_INFERRED_TABLE_ROWS = 2;
 
+/**
+ * The API attaches presentation metadata to the same `data` object that carries the tool's payload.
+ * Registered views still receive it, but shape resolution must not read the chrome as content — a
+ * result whose only other field was `formattedName` would otherwise render its own label as data.
+ */
+const PRESENTATION_KEYS = new Set([
+  "formattedName",
+  "icon",
+  "modelContext",
+  "name",
+  "renderer",
+  "responseDisplay",
+  "responseType",
+]);
+
+export function stripPresentationMetadata(payload: unknown): unknown {
+  if (!isRecord(payload)) {
+    return payload;
+  }
+
+  const entries = Object.entries(payload).filter(([key]) => !PRESENTATION_KEYS.has(key));
+
+  if (entries.length === Object.keys(payload).length) {
+    return payload;
+  }
+
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+}
+
 const VIDEO_URL_PATTERN = /\.(mp4|webm|mov|m4v|ogv)(?:[?#].*)?$/i;
 
 /**

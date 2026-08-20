@@ -94,16 +94,18 @@ export const ToolResultView = ({
         </pre>
       )}
 
-      <div className="mt-1">
-        <ResponseView
-          result={display.result}
-          responseType={display.responseType}
-          responseDisplay={display.responseDisplay as ResponseDisplay | undefined}
-          renderer={display.renderer}
-          embedded
-          onToolInteraction={onToolInteraction}
-        />
-      </div>
+      {display.result && (
+        <div className="mt-1">
+          <ResponseView
+            result={display.result}
+            responseType={display.responseType}
+            responseDisplay={display.responseDisplay as ResponseDisplay | undefined}
+            renderer={display.renderer}
+            embedded
+            onToolInteraction={onToolInteraction}
+          />
+        </div>
+      )}
     </div>
   );
 };

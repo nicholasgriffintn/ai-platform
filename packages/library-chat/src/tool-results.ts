@@ -16,8 +16,8 @@ export interface ToolResultDisplay {
   responseDisplay?: unknown;
   /** Explicit client view id declared by the tool. */
   renderer?: string;
-  /** The envelope `ResponseView` consumes. */
-  result: Record<string, unknown>;
+  /** The envelope `ResponseView` consumes. Absent while a call is still running. */
+  result?: Record<string, unknown>;
 }
 
 export function isHiddenToolResponse(message: Message): boolean {

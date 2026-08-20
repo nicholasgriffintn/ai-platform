@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveResponsePresentation } from "./presentation";
+import { resolveResponsePresentation, stripPresentationMetadata } from "./presentation";
 
 describe("resolveResponsePresentation", () => {
   it("detects generated media before anything else", () => {
@@ -87,5 +87,32 @@ describe("resolveResponsePresentation", () => {
 
   it("falls back to json for anything it cannot place", () => {
     expect(resolveResponsePresentation({ a: { b: [1, 2] }, c: [3] }).kind).toBe("json");
+  });
+});
+
+describe("stripPresentationMetadata", () => {
+  it("removes the chrome the API attaches beside the payload", () => {
+    expect(
+      stripPresentationMetadata({
+        formattedName: "Get Weather",
+        icon: "cloud",
+        renderer: "weather",
+        responseType: "custom",
+        name: "get_weather",
+        temperature: 12,
+      }),
+    ).toEqual({ temperature: 12 });
+  });
+
+  it("returns undefined when nothing but chrome was attached", () => {
+    expect(
+      stripPresentationMetadata({ formattedName: "Get Weather", icon: "cloud" }),
+    ).toBeUndefined();
+  });
+
+  it("leaves a payload without chrome untouched", () => {
+    const payload = { temperature: 12 };
+
+    expect(stripPresentationMetadata(payload)).toBe(payload);
   });
 });

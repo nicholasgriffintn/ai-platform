@@ -329,12 +329,7 @@ const renderPendingToolUsePart = (
 ): ReactNode => (
   <ToolResultView
     key={`tool-use-${part.toolCallId || part.name}-${index}`}
-    display={{
-      name: part.name,
-      label: part.name,
-      status: "in_progress",
-      result: { status: "in_progress", name: part.name, content: "", data: undefined },
-    }}
+    display={{ name: part.name, label: part.name, status: "in_progress" }}
     input={part.input}
   />
 );

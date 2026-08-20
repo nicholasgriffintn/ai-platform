@@ -4,7 +4,7 @@ import { GeneratedAudioView } from "./GeneratedAudioView";
 import { GeneratedImageView } from "./GeneratedImageView";
 import { GeneratedVideoView } from "./GeneratedVideoView";
 import { JsonView } from "./JsonView";
-import { resolveResponsePresentation } from "./presentation";
+import { resolveResponsePresentation, stripPresentationMetadata } from "./presentation";
 import type { ToolInteractionHandler } from "./registry";
 import { useCustomResponseView } from "./registry";
 import { SourceListView } from "./SourceListView";
@@ -35,7 +35,9 @@ export function CustomView({
     return registeredView({ data: customData, embedded, onToolInteraction, toolName });
   }
 
-  const presentation = resolveResponsePresentation(customData, { content: messageContent });
+  const presentation = resolveResponsePresentation(stripPresentationMetadata(customData), {
+    content: messageContent,
+  });
 
   switch (presentation.kind) {
     case "image":
