@@ -33,7 +33,7 @@ describe("StreamActivityIndicator", () => {
     render(<StreamActivityIndicator label="Thinking it through..." activity={activity} />);
 
     expect(screen.getByText("Thinking it through...")).toBeDefined();
-    expect(screen.getByText("12s · ~1.0k tokens")).toBeDefined();
+    expect(screen.getByText("12s · ~1.0k out")).toBeDefined();
   });
 
   it("renders just the label when no activity is tracked", () => {
@@ -48,12 +48,13 @@ describe("MessageStats", () => {
   it("summarises the finished response", () => {
     render(
       <MessageStats
-        message={assistantMessage({ usage: { total_tokens: 1400 } })}
+        message={assistantMessage({ usage: { prompt_tokens: 900, completion_tokens: 500 } })}
         responseDurationMs={12_400}
+        pricing={{ costPer1kInputTokens: 0.003, costPer1kOutputTokens: 0.015 }}
       />,
     );
 
-    expect(screen.getByTestId("message-stats").textContent).toBe("12s · 1.4k tokens");
+    expect(screen.getByTestId("message-stats").textContent).toBe("12s · 1.4k tokens · ~$0.010");
   });
 
   it("renders nothing without stats to show", () => {

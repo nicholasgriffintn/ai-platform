@@ -218,6 +218,7 @@ export const ChatMessageView = ({
                 isRequestingOpinion={isRequestingOpinion}
                 isArchivedByCompaction={isArchivedByCompaction}
                 responseDurationMs={responseDurationMs}
+                modelConfig={modelConfig}
               />
             )}
         </div>

@@ -124,13 +124,42 @@ describe("stream activity", () => {
 
     expect(getStreamActivityMetrics(activity, 197_000)).toEqual([
       "3m 17s",
-      "~1.0k tokens",
+      "~1.0k out",
       "web_search running",
     ]);
 
     activity = completeStreamActivityTool(activity, { toolCallId: "call_1" }, 2000);
 
-    expect(getStreamActivityMetrics(activity, 12_000)).toEqual(["12s", "~1.0k tokens", "1 tool"]);
+    expect(getStreamActivityMetrics(activity, 12_000)).toEqual(["12s", "~1.0k out", "1 tool"]);
+  });
+
+  it("prefers streamed provider usage over the character estimate", () => {
+    let activity = createStreamActivity(0);
+
+    activity = applyStreamActivityText(activity, { content: "a".repeat(4000) });
+    activity = applyStreamActivityState(
+      activity,
+      "usage",
+      { usage: { input_tokens: 1200, output_tokens: 0, total_tokens: 1200 } },
+      500,
+    );
+
+    expect(getStreamActivityMetrics(activity, 12_000)).toEqual(["12s", "1.2k in", "~1.0k out"]);
+
+    activity = applyStreamActivityState(
+      activity,
+      "usage",
+      { usage: { input_tokens: 1200, output_tokens: 512, total_tokens: 1712 } },
+      9000,
+    );
+
+    expect(getStreamActivityMetrics(activity, 12_000)).toEqual(["12s", "1.2k in", "512 out"]);
+  });
+
+  it("ignores usage events that carry no token counts", () => {
+    const activity = createStreamActivity(0);
+
+    expect(applyStreamActivityState(activity, "usage", { usage: {} }, 100)).toBe(activity);
   });
 });
 
@@ -152,22 +181,39 @@ describe("stats formatting", () => {
 });
 
 describe("message stats", () => {
-  it("summarises duration, tokens, tools, and cost", () => {
+  it("summarises duration, tokens, and tools", () => {
     const segments = getMessageStatsSegments(
       assistantMessage({
-        usage: { prompt_tokens: 900, completion_tokens: 500, cost_usd: 0.0123 },
+        usage: { prompt_tokens: 900, completion_tokens: 500 },
         tool_calls: [{ function: { name: "web_search", arguments: "{}" } }],
       }),
-      12_400,
+      { durationMs: 12_400 },
     );
 
-    expect(segments).toEqual(["12s", "1.4k tokens", "1 tool", "$0.012"]);
+    expect(segments).toEqual(["12s", "1.4k tokens", "1 tool"]);
+  });
+
+  it("estimates cost from model pricing and reported usage", () => {
+    const segments = getMessageStatsSegments(
+      assistantMessage({ usage: { prompt_tokens: 900, completion_tokens: 500 } }),
+      { pricing: { costPer1kInputTokens: 0.003, costPer1kOutputTokens: 0.015 } },
+    );
+
+    expect(segments).toEqual(["1.4k tokens", "~$0.010"]);
+  });
+
+  it("omits cost when the model has no pricing", () => {
+    const segments = getMessageStatsSegments(
+      assistantMessage({ usage: { prompt_tokens: 900, completion_tokens: 500 } }),
+      { pricing: {} },
+    );
+
+    expect(segments).toEqual(["1.4k tokens"]);
   });
 
   it("falls back to provider specific usage fields", () => {
     const segments = getMessageStatsSegments(
       assistantMessage({ usage: { totalTokenCount: 2740 } }),
-      undefined,
     );
 
     expect(segments).toEqual(["2.7k tokens"]);

@@ -1,6 +1,6 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import type { Message, MessageUsage } from "./conversation-types";
+import type { Message } from "./conversation-types";
 
 export interface StreamActivityTool {
   id: string;
@@ -9,11 +9,23 @@ export interface StreamActivityTool {
   completedAt?: number;
 }
 
+export interface TokenUsageCounts {
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
+}
+
 export interface StreamActivity {
   startedAt: number;
   contentChars: number;
   reasoningChars: number;
   tools: StreamActivityTool[];
+  usage?: TokenUsageCounts;
+}
+
+export interface ModelPricing {
+  costPer1kInputTokens?: number;
+  costPer1kOutputTokens?: number;
 }
 
 export interface MessageStats {
@@ -22,10 +34,14 @@ export interface MessageStats {
   inputTokens?: number;
   outputTokens?: number;
   toolCount?: number;
-  costUsd?: number;
+  estimatedCostUsd?: number;
 }
 
 const CHARS_PER_TOKEN = 4;
+
+const INPUT_TOKEN_FIELDS = ["prompt_tokens", "input_tokens", "promptTokenCount"];
+const OUTPUT_TOKEN_FIELDS = ["completion_tokens", "output_tokens", "candidatesTokenCount"];
+const TOTAL_TOKEN_FIELDS = ["total_tokens", "totalTokenCount"];
 
 export function createStreamActivity(startedAt: number): StreamActivity {
   return {
@@ -38,6 +54,43 @@ export function createStreamActivity(startedAt: number): StreamActivity {
 
 function readString(value: unknown): string | undefined {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
+}
+
+function readTokenCount(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : undefined;
+}
+
+function readField(source: Record<string, unknown>, fields: string[]): number | undefined {
+  for (const field of fields) {
+    const value = readTokenCount(source[field]);
+
+    if (value !== undefined) {
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
+export function readTokenUsageCounts(value: unknown): TokenUsageCounts | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const source = isRecord(value.usage) ? value.usage : value;
+  const inputTokens = readField(source, INPUT_TOKEN_FIELDS);
+  const outputTokens = readField(source, OUTPUT_TOKEN_FIELDS);
+  const totalTokens =
+    readField(source, TOTAL_TOKEN_FIELDS) ??
+    (inputTokens !== undefined && outputTokens !== undefined
+      ? inputTokens + outputTokens
+      : undefined);
+
+  if (inputTokens === undefined && outputTokens === undefined && totalTokens === undefined) {
+    return undefined;
+  }
+
+  return { inputTokens, outputTokens, totalTokens };
 }
 
 function completeRunningTools(activity: StreamActivity, completedAt: number): StreamActivity {
@@ -59,6 +112,12 @@ export function applyStreamActivityState(
   data: unknown,
   now: number,
 ): StreamActivity {
+  if (state === "usage") {
+    const usage = readTokenUsageCounts(data);
+
+    return usage ? { ...activity, usage } : activity;
+  }
+
   if (state === "post_processing") {
     return completeRunningTools(activity, now);
   }
@@ -168,16 +227,31 @@ export function formatStatsTokens(tokens: number): string {
   return `${(tokens / 1_000_000).toFixed(1)}m`;
 }
 
+export function formatStatsCost(costUsd: number): string {
+  return `$${costUsd.toFixed(costUsd >= 1 ? 2 : costUsd >= 0.01 ? 3 : 4)}`;
+}
+
 function formatToolCount(count: number): string {
   return `${count} ${count === 1 ? "tool" : "tools"}`;
 }
 
 export function getStreamActivityMetrics(activity: StreamActivity, now: number): string[] {
   const metrics = [formatStatsDuration(now - activity.startedAt)];
-  const tokens = estimateStreamActivityTokens(activity);
+  const inputTokens = activity.usage?.inputTokens;
+  const outputTokens = activity.usage?.outputTokens;
 
-  if (tokens > 0) {
-    metrics.push(`~${formatStatsTokens(tokens)} tokens`);
+  if (inputTokens) {
+    metrics.push(`${formatStatsTokens(inputTokens)} in`);
+  }
+
+  if (outputTokens) {
+    metrics.push(`${formatStatsTokens(outputTokens)} out`);
+  } else {
+    const estimatedTokens = estimateStreamActivityTokens(activity);
+
+    if (estimatedTokens > 0) {
+      metrics.push(`~${formatStatsTokens(estimatedTokens)} out`);
+    }
   }
 
   const running = getRunningStreamActivityTools(activity);
@@ -193,38 +267,45 @@ export function getStreamActivityMetrics(activity: StreamActivity, now: number):
   return metrics;
 }
 
-function readUsageCost(usage: MessageUsage): number | undefined {
-  const cost =
-    usage.cost_usd ?? usage.costUsd ?? usage.estimated_cost_usd ?? usage.estimatedCostUsd;
+export function estimateUsageCost(
+  usage: TokenUsageCounts,
+  pricing: ModelPricing | undefined,
+): number | undefined {
+  if (!pricing) {
+    return undefined;
+  }
 
-  return typeof cost === "number" && Number.isFinite(cost) && cost > 0 ? cost : undefined;
+  const inputCost =
+    usage.inputTokens !== undefined && pricing.costPer1kInputTokens !== undefined
+      ? (usage.inputTokens / 1000) * pricing.costPer1kInputTokens
+      : 0;
+  const outputCost =
+    usage.outputTokens !== undefined && pricing.costPer1kOutputTokens !== undefined
+      ? (usage.outputTokens / 1000) * pricing.costPer1kOutputTokens
+      : 0;
+  const cost = inputCost + outputCost;
+
+  return cost > 0 ? cost : undefined;
 }
 
-function readTokenCount(value: unknown): number | undefined {
-  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : undefined;
-}
-
-export function getMessageStats(message: Message, durationMs?: number): MessageStats {
-  const usage = message.usage;
-  const inputTokens = readTokenCount(usage?.prompt_tokens ?? usage?.promptTokenCount);
-  const outputTokens = readTokenCount(usage?.completion_tokens ?? usage?.candidatesTokenCount);
-  const totalTokens =
-    readTokenCount(usage?.total_tokens ?? usage?.totalTokenCount) ??
-    (inputTokens !== undefined && outputTokens !== undefined
-      ? inputTokens + outputTokens
-      : undefined);
+export function getMessageStats(
+  message: Message,
+  options: { durationMs?: number; pricing?: ModelPricing } = {},
+): MessageStats {
+  const usage = readTokenUsageCounts(message.usage) ?? {};
   const toolCount = Array.isArray(message.tool_calls) ? message.tool_calls.length : 0;
+  const durationMs = options.durationMs;
 
   return {
     durationMs:
       typeof durationMs === "number" && Number.isFinite(durationMs) && durationMs > 0
         ? durationMs
         : undefined,
-    inputTokens,
-    outputTokens,
-    totalTokens,
+    inputTokens: usage.inputTokens,
+    outputTokens: usage.outputTokens,
+    totalTokens: usage.totalTokens,
     toolCount: toolCount > 0 ? toolCount : undefined,
-    costUsd: usage ? readUsageCost(usage) : undefined,
+    estimatedCostUsd: estimateUsageCost(usage, options.pricing),
   };
 }
 
@@ -245,15 +326,16 @@ export function formatMessageStats(stats: MessageStats): string[] {
     segments.push(formatToolCount(stats.toolCount));
   }
 
-  if (stats.costUsd !== undefined) {
-    segments.push(
-      `$${stats.costUsd.toFixed(stats.costUsd >= 1 ? 2 : stats.costUsd >= 0.01 ? 3 : 4)}`,
-    );
+  if (stats.estimatedCostUsd !== undefined) {
+    segments.push(`~${formatStatsCost(stats.estimatedCostUsd)}`);
   }
 
   return segments;
 }
 
-export function getMessageStatsSegments(message: Message, durationMs?: number): string[] {
-  return formatMessageStats(getMessageStats(message, durationMs));
+export function getMessageStatsSegments(
+  message: Message,
+  options: { durationMs?: number; pricing?: ModelPricing } = {},
+): string[] {
+  return formatMessageStats(getMessageStats(message, options));
 }

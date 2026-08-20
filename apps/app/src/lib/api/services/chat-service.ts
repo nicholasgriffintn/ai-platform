@@ -647,6 +647,10 @@ export class ChatService {
         onStateChange("usage_limits", parsedData.usage_limits);
       }
 
+      if (parsedData.type === "usage" && "usage" in parsedData) {
+        onStateChange("usage", parsedData);
+      }
+
       if (parsedData.type === "tool_use_start") {
         onStateChange("tool_use_start", parsedData);
       }

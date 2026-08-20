@@ -10,6 +10,7 @@ import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-ty
 import { isCompactionMarkerMessage } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
 import { resolveMessageSpeechAudioSource } from "@ngriffin_uk/polychat-library-chat/message-speech";
 import type { OpinionRequest } from "@ngriffin_uk/polychat-library-chat/opinion";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import {
   Check,
   Copy,
@@ -48,6 +49,7 @@ export interface MessageActionsProps {
   isRequestingOpinion?: boolean;
   isArchivedByCompaction?: boolean;
   responseDurationMs?: number;
+  modelConfig?: ModelConfigItem;
   /** Model pickers stay host-owned because they read the catalogue and account entitlements. */
   renderModelSelector: (props: {
     onModelSelect: (modelId: string) => void;
@@ -82,6 +84,7 @@ export const MessageActions = ({
   isRequestingOpinion = false,
   isArchivedByCompaction = false,
   responseDurationMs,
+  modelConfig,
   renderModelSelector,
   renderOpinionSelector,
 }: MessageActionsProps) => {

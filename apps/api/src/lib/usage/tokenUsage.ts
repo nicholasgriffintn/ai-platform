@@ -264,6 +264,25 @@ export function mergeStreamedTokenUsage(
   return combineTokenUsage(previous, next, Math.max);
 }
 
+export function hasTokenUsageChanged(
+  previous: NormalisedTokenUsage | null,
+  next: NormalisedTokenUsage | null,
+): boolean {
+  if (!next) {
+    return false;
+  }
+
+  if (!previous) {
+    return true;
+  }
+
+  return (
+    previous.input_tokens !== next.input_tokens ||
+    previous.output_tokens !== next.output_tokens ||
+    previous.total_tokens !== next.total_tokens
+  );
+}
+
 export function sumTokenUsage(previous: unknown, next: unknown): NormalisedTokenUsage | null {
   return combineTokenUsage(previous, next, (a, b) => a + b);
 }

@@ -14,7 +14,11 @@ import { MemoryManager } from "~/lib/memory";
 import { trackTokenUsage } from "~/lib/monitoring";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { findModelConfig } from "~/lib/providers/models";
-import { mergeStreamedTokenUsage, type NormalisedTokenUsage } from "~/lib/usage/tokenUsage";
+import {
+  hasTokenUsageChanged,
+  mergeStreamedTokenUsage,
+  type NormalisedTokenUsage,
+} from "~/lib/usage/tokenUsage";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
 import {
   type ChatCompletionParameters,
@@ -969,7 +973,13 @@ export async function createStreamWithPostProcessing(
                 const extractedUsage = StreamingFormatter.extractUsageData(data);
 
                 if (extractedUsage) {
-                  usageData = mergeStreamedTokenUsage(usageData, extractedUsage);
+                  const mergedUsage = mergeStreamedTokenUsage(usageData, extractedUsage);
+
+                  if (hasTokenUsageChanged(usageData, mergedUsage)) {
+                    emitEvent(controller, "usage", { usage: mergedUsage });
+                  }
+
+                  usageData = mergedUsage;
                 }
 
                 const extractedStructuredData = StreamingFormatter.extractStructuredData(data);

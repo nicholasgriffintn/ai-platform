@@ -668,4 +668,48 @@ describe("createStreamWithPostProcessing", () => {
     });
     expect(memoryMocks.handleMemory).toHaveBeenCalledOnce();
   });
+
+  it("streams token usage to the client as the provider reports it", async () => {
+    const conversationManager = {
+      getUsageLimits: vi.fn().mockResolvedValue(null),
+      add: vi.fn(),
+    };
+
+    const stream = await createStreamWithPostProcessing(
+      createProviderStream([
+        `data: ${JSON.stringify({
+          choices: [{ delta: { content: "Hello" } }],
+          usage: { prompt_tokens: 1200, completion_tokens: 0 },
+        })}\n\n`,
+        `data: ${JSON.stringify({
+          choices: [{ delta: { content: " there" } }],
+          usage: { prompt_tokens: 1200, completion_tokens: 0 },
+        })}\n\n`,
+        `data: ${JSON.stringify({
+          choices: [{ delta: { content: "!" } }],
+          usage: { prompt_tokens: 1200, completion_tokens: 512 },
+        })}\n\n`,
+        "data: [DONE]\n\n",
+      ]),
+      {
+        env: { AI: {} } as any,
+        completion_id: "completion-1",
+        model: "gpt-5.4-mini",
+        provider: "openai",
+      },
+      conversationManager as any,
+    );
+
+    const output = await readStream(stream);
+    const usageEvents = output
+      .split("\n\n")
+      .map((block) => block.replace(/^data: /, ""))
+      .filter((block) => block.startsWith("{"))
+      .map((block) => JSON.parse(block))
+      .filter((event) => event.type === "usage");
+
+    expect(usageEvents).toHaveLength(2);
+    expect(usageEvents[0].usage).toMatchObject({ input_tokens: 1200, output_tokens: 0 });
+    expect(usageEvents[1].usage).toMatchObject({ input_tokens: 1200, output_tokens: 512 });
+  });
 });
