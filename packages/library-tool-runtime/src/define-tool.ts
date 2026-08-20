@@ -7,12 +7,6 @@ export interface ToolDefinitionInput {
   description: string;
   parameters?: Record<string, unknown>;
   required?: string[];
-  /**
-   * A complete object schema to use verbatim, for tools whose schema is
-   * generated rather than written out property by property. Keys the
-   * convenience form cannot express — `additionalProperties`, `$defs` — survive
-   * only on this path.
-   */
   schema?: Record<string, unknown>;
 }
 
@@ -25,11 +19,6 @@ export interface ToolDefinition {
   };
 }
 
-/**
- * The one place a provider-facing tool definition is shaped. Every agent
- * runtime describes its tools through this so the JSON schema sent to a model
- * cannot drift between them.
- */
 export function defineTool(input: ToolDefinitionInput): ToolDefinition {
   const properties = input.parameters ?? {};
   const required = input.required ?? [];

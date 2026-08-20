@@ -415,11 +415,6 @@ export const handleToolCalls = async (
   return functionResults;
 };
 
-/**
- * Projects the API's tool definitions onto a provider's wire format. The
- * canonical shape and the provider envelopes both come from the shared tool
- * runtime, so the schema a model sees cannot drift between runtimes.
- */
 export function formatToolCalls(provider: string, functions: unknown[]): ProviderToolDefinition[] {
   if (!functions || !Array.isArray(functions)) {
     logger.warn("Invalid functions provided to formatToolCalls");

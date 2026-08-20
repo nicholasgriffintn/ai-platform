@@ -1,6 +1,7 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { ChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
 
+import { formatAssistantMessage } from "~/lib/chat/assistant-message-format";
 import { processChatRequest } from "~/lib/chat/core";
 import { buildMessageParts } from "~/lib/chat/messageParts";
 import { buildChatPostProcessing } from "~/lib/chat/post-processing";
@@ -9,7 +10,6 @@ import {
   toProviderResponseMessagePartSource,
   toProviderResponseMessages,
 } from "~/lib/chat/providerMessages";
-import { formatAssistantMessage } from "~/lib/chat/responses";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";

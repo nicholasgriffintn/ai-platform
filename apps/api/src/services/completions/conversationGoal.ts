@@ -7,7 +7,7 @@ import {
   type UpdateGoalRequest,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { GOAL_CONTINUATION_INSTRUCTION } from "~/lib/chat/goal-continuation";
+import { GOAL_UNSATISFIED_INSTRUCTION } from "~/lib/chat/agent/goal-gate";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { recordGoalMarker } from "~/services/goals/goalMarker";
@@ -113,7 +113,7 @@ export async function handleRecordRunGoalIteration(
   return recordGoalIterationResponseSchema.parse({
     goal,
     shouldContinue,
-    ...(shouldContinue ? { instruction: GOAL_CONTINUATION_INSTRUCTION } : {}),
+    ...(shouldContinue ? { instruction: GOAL_UNSATISFIED_INSTRUCTION } : {}),
   });
 }
 

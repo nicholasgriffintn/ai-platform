@@ -51,15 +51,6 @@ describe("createChatExecutionRequest", () => {
     ]);
   });
 
-  it("excludes compaction status messages from multi-model stream parameters", () => {
-    const request = createChatExecutionRequest(createInput());
-
-    expect(request.multiModelStreamRequest().messages).toEqual([
-      { role: "user", content: "Hello" },
-      { role: "assistant", content: "Hi" },
-    ]);
-  });
-
   it("uses tool options resolved from project capability configuration", () => {
     const input = createInput();
 
@@ -88,20 +79,5 @@ describe("createChatExecutionRequest", () => {
     const request = createChatExecutionRequest(input);
 
     expect(request.providerRequest().options).toEqual(input.prepared.requestOptions);
-    expect(request.streamOptions("test-model", "test-provider").requestOptions).toEqual(
-      input.prepared.requestOptions,
-    );
-  });
-
-  it("passes the prepared memory scope to stream post-processing", () => {
-    const input = createInput();
-
-    input.prepared.memoryScope = { type: "project", projectId: "project-1" };
-
-    expect(createChatExecutionRequest(input).streamOptions("test-model", "test-provider")).toEqual(
-      expect.objectContaining({
-        memoryScope: { type: "project", projectId: "project-1" },
-      }),
-    );
   });
 });

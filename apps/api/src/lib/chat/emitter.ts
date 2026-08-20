@@ -9,12 +9,6 @@ const logger = getLogger({
   prefix: "CHAT:EMITTER",
 });
 
-/**
- * Creates a standardized SSE event data string
- * @param type - The type of event
- * @param payload - The payload of the event
- * @returns The formatted SSE event data string
- */
 export function createEventData(type: string, payload: SSEEventPayload = {}): string {
   try {
     return formatChatStreamSseEvent(type, payload);
@@ -24,18 +18,20 @@ export function createEventData(type: string, payload: SSEEventPayload = {}): st
   }
 }
 
-/**
- * Encodes a string to Uint8Array using TextEncoder
- * @param data - The string to encode
- * @returns The encoded Uint8Array
- */
 export function encodeEventData(data: string): Uint8Array {
   return encoder.encode(data);
 }
 
-export interface ChatSseStreamWriter {
-  readable: ReadableStream<Uint8Array>;
+export interface ChatEventSink {
   writeEvent: (type: string, payload?: SSEEventPayload) => Promise<void>;
+}
+
+export const DISCARDING_EVENT_SINK: ChatEventSink = {
+  writeEvent: async () => {},
+};
+
+export interface ChatSseStreamWriter extends ChatEventSink {
+  readable: ReadableStream<Uint8Array>;
   writeDone: () => Promise<void>;
   close: () => Promise<void>;
   abort: (error: unknown) => Promise<void>;
@@ -55,22 +51,12 @@ export function createChatSseStreamWriter(): ChatSseStreamWriter {
   };
 }
 
-/**
- * Helper to emit the [DONE] event to signal stream completion
- * @param controller - The stream controller
- */
 export function emitDoneEvent(controller: TransformStreamDefaultController) {
   const doneEvent = encodeEventData(formatChatStreamSseDone());
 
   controller.enqueue(doneEvent);
 }
 
-/**
- * Helper to emit a standardized SSE event to the stream controller
- * @param controller - The stream controller
- * @param type - The type of event
- * @param payload - The payload of the event
- */
 export function emitEvent(
   controller: TransformStreamDefaultController,
   type: string,

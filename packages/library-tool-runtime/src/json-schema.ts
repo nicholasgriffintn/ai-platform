@@ -2,12 +2,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/**
- * Providers accept a single object schema at a tool's root. Zod renders
- * mutually exclusive argument sets as `anyOf`, which several providers reject
- * outright, so the alternatives are merged into one object and only the
- * requirements every alternative shares survive as `required`.
- */
 export function flattenObjectRootSchema(schema: Record<string, unknown>): Record<string, unknown> {
   const alternatives = schema.anyOf;
 

@@ -19,11 +19,6 @@ export type ProviderToolDefinition =
   | BedrockToolDefinition
   | AnthropicToolDefinition;
 
-/**
- * The one place a canonical tool definition becomes provider wire format.
- * Every runtime projects through this, so a provider that needs a different
- * envelope is changed here rather than in each caller's own formatter.
- */
 export function toProviderToolDefinition(
   provider: string,
   definition: ToolDefinition,
