@@ -102,9 +102,15 @@ export type RegisteredFunctionTool = ApiToolDefinition;
 
 export const toolRegistry = new ToolRegistry();
 
+const toolRepeatLimits = new Map<string, number>();
+
 for (const fn of functionDefinitions) {
   if (!fn) {
     continue;
+  }
+
+  if (typeof fn.maxIdenticalCalls === "number") {
+    toolRepeatLimits.set(fn.name, fn.maxIdenticalCalls);
   }
 
   const resolvedPermissions = resolveToolPermissions(fn.name, fn.permissions);
@@ -167,6 +173,9 @@ export const listFunctionTools = (options?: {
     ];
   });
 };
+
+export const resolveToolRepeatLimit = (functionName: string): number | undefined =>
+  toolRepeatLimits.get(functionName);
 
 export const resolveFunctionTool = (functionName: string): RegisteredFunctionTool =>
   toolRegistry.resolve(FUNCTIONS_TOOL_CATEGORY, functionName) as RegisteredFunctionTool;

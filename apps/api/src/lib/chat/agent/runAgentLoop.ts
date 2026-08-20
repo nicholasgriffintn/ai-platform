@@ -13,6 +13,7 @@ import { createAgentProviderIO } from "~/lib/chat/agent/provider-io";
 import type { ChatTurnTransport } from "~/lib/chat/agent/turn-transport";
 import { DISCARDING_EVENT_SINK, type ChatEventSink } from "~/lib/chat/emitter";
 import { toProviderMessages } from "~/lib/chat/providerMessages";
+import { createToolCallLedger, type ToolCallLedger } from "~/lib/chat/tool-call-ledger";
 import { isSuccessfulToolStatus } from "~/lib/chat/tool-results";
 import { handleToolCalls } from "~/lib/chat/tools";
 import { getToolEventPayload } from "~/lib/chat/utils";
@@ -42,6 +43,8 @@ const logger = getLogger({ prefix: "lib/chat/agent/runAgentLoop" });
 const AGENT_MAX_RECOVERY_REPLANS = 2;
 const AGENT_MAX_TURN_FAILURES = 2;
 const DEFAULT_INITIAL_PLAN = "Use available tools as needed, then return a final answer.";
+const FINAL_ANSWER_NOTICE =
+  "You have used every tool step available for this response. No further tool calls are possible. Answer the user now with what you already have, and say plainly what you could not finish.";
 
 function shouldAbortAgentTurnError(error: unknown): boolean {
   return error instanceof AssistantError && error.type !== ErrorType.PARAMS_ERROR;
@@ -50,8 +53,10 @@ function shouldAbortAgentTurnError(error: unknown): boolean {
 interface ChatAgentLoopState extends AgentLoopState {
   commandCount: number;
   unknownToolRecoveryUsed: boolean;
+  toolCallLedger: ToolCallLedger;
   pendingUserAction?: string;
   stoppedForUsageLimit?: boolean;
+  finalAnswerForced?: boolean;
 }
 
 interface ChatAgentSharedContext {
@@ -130,6 +135,7 @@ export async function runAgentLoop(
   const state: ChatAgentLoopState = {
     commandCount: 0,
     unknownToolRecoveryUsed: false,
+    toolCallLedger: createToolCallLedger(),
   };
   const toolResponses: Message[] = [];
   const allToolCalls: ToolCall[] = [];
@@ -205,6 +211,15 @@ export async function runAgentLoop(
       maxRecoveryReplans: AGENT_MAX_RECOVERY_REPLANS,
     },
     emit: params.emit,
+    onStepBudgetExceeded: () => {
+      if (state.finalAnswerForced) {
+        return undefined;
+      }
+
+      state.finalAnswerForced = true;
+
+      return { extendBy: 1, reason: "Step budget reached; asking for a final answer." };
+    },
     getCommandCount: (runtimeState) => runtimeState.commandCount,
     shouldAbortOnTurnError: shouldAbortAgentTurnError,
     assessFinish: params.assessFinish
@@ -237,8 +252,15 @@ export async function runAgentLoop(
       });
       await sink.writeEvent("state", { state: StreamState.THINKING });
 
+      const providerMessages = providerIO.providerMessages(messages);
       const turn = await params.transport.runTurn({
-        request: { ...params.requestParams, messages: providerIO.providerMessages(messages) },
+        request: state.finalAnswerForced
+          ? {
+              ...params.requestParams,
+              messages: [...providerMessages, { role: "user", content: FINAL_ANSWER_NOTICE }],
+              disable_functions: true,
+            }
+          : { ...params.requestParams, messages: providerMessages },
         sink,
         context: transportContext,
       });
@@ -287,6 +309,7 @@ export async function runAgentLoop(
         context.shared.toolRequestContext,
         {
           persistResults: "immediate",
+          callLedger: context.state.toolCallLedger,
           recoverUnknownToolCalls: !context.state.unknownToolRecoveryUsed,
           onToolResult: async (toolResult) => {
             await sink.writeEvent("tool_response", {

@@ -10,7 +10,7 @@ import z from "zod/v4";
 
 import type { ConversationManager } from "~/lib/conversationManager";
 import { PermissionChecker } from "~/lib/permissions/PermissionChecker";
-import { handleFunctions } from "~/services/functions";
+import { handleFunctions, resolveToolRepeatLimit } from "~/services/functions";
 import type { IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -19,6 +19,11 @@ import { getLogger } from "~/utils/logger";
 import { formatToolErrorResponse, formatToolResponse } from "~/utils/tool-responses";
 
 import { buildMessageParts } from "./messageParts";
+import {
+  buildRepeatedToolCallMessage,
+  checkToolCallRepeat,
+  type ToolCallLedger,
+} from "./tool-call-ledger";
 
 const logger = getLogger({ prefix: "lib/chat/tools" });
 const permissionChecker = new PermissionChecker();
@@ -66,6 +71,7 @@ export const handleToolCalls = async (
     persistResults?: ToolResultPersistenceMode;
     onToolResult?: (message: Message) => Promise<void> | void;
     recoverUnknownToolCalls?: boolean;
+    callLedger?: ToolCallLedger;
   },
 ): Promise<Message[]> => {
   const functionResults: Message[] = [];
@@ -113,6 +119,42 @@ export const handleToolCalls = async (
     try {
       if (!toolCall.id) {
         throw new AssistantError("Missing tool call ID", ErrorType.TOOL_CALL_ERROR);
+      }
+
+      if (options?.callLedger) {
+        const repeat = checkToolCallRepeat(
+          options.callLedger,
+          functionName,
+          toolCall.function?.arguments ?? toolCall.arguments,
+          resolveToolRepeatLimit(functionName),
+        );
+
+        if (repeat.repeated) {
+          logger.warn(`Tool "${functionName}" repeated with identical arguments`, {
+            attempts: repeat.attempts,
+          });
+          const repeatError = formatToolErrorResponse(
+            functionName,
+            buildRepeatedToolCallMessage(functionName, repeat.attempts),
+            "REPEATED_TOOL_CALL",
+          );
+
+          await recordToolResult({
+            role: "tool",
+            name: functionName,
+            content: repeatError.content,
+            status: "error",
+            data: { ...repeatError.data, errorCode: "REPEATED_TOOL_CALL" },
+            log_id: modelResponseLogId || "",
+            id: generateId(),
+            tool_call_id: toolCall.id,
+            tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
+            timestamp,
+            model: req.request?.model || "unknown",
+            platform: req.request?.platform || "api",
+          });
+          continue;
+        }
       }
 
       const permissionResult = permissionChecker.checkRequestToolAccess({

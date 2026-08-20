@@ -17,6 +17,7 @@ export const load_skill: ApiToolDefinition = {
   type: "normal",
   costPerCall: 0,
   isDefault: true,
+  maxIdenticalCalls: 1,
   permissions: ["read"],
   inputSchema: loadSkillInputSchema,
   execute: async (args, toolContext) => {

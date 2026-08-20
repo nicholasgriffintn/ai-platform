@@ -8,4 +8,5 @@ export type ApiToolDefinition = Omit<
   "execute"
 > & {
   execute: (input: any, context: ToolExecutionContext) => Promise<IFunctionResponse>;
+  maxIdenticalCalls?: number;
 };

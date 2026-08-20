@@ -17,6 +17,9 @@ export function buildSkillsSection(skills: readonly SkillAvailability[] | undefi
     )
     .addLine(
       `When a request matches one, call ${SKILL_LOAD_TOOL_NAME} with that skill's name and follow what it returns. Load it before starting the work, not after. Never guess at a skill's contents, and never name a skill that is not listed here.`,
+    )
+    .addLine(
+      `Load each skill and each of its resources once. What ${SKILL_LOAD_TOOL_NAME} returns stays in effect for the rest of the conversation, so repeating a load returns nothing new: do the work instead.`,
     );
 
   for (const skill of ready) {

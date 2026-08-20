@@ -8,6 +8,8 @@ vi.mock("~/lib/chat/tools", () => ({
   handleToolCalls: mocks.handleToolCalls,
 }));
 
+import type { ChatCompletionParameters } from "~/types";
+
 import type { TurnOutput } from "../assistant-turn";
 import { runAgentLoop } from "../runAgentLoop";
 import type { ChatTurnTransport } from "../turn-transport";
@@ -37,7 +39,7 @@ function toolTurn(name: string, id = "call-1"): TurnOutput {
 }
 
 function createTransport(turns: TurnOutput[]) {
-  const runTurn = vi.fn(async () => {
+  const runTurn = vi.fn(async (_input: { request: ChatCompletionParameters }) => {
     const turn = turns.length > 1 ? turns.shift() : turns[0];
 
     if (!turn) {
@@ -226,6 +228,46 @@ describe("runAgentLoop", () => {
 
     expect(runTurn).toHaveBeenCalledTimes(2);
     expect(result.response.response).toBe("Actually done.");
+  });
+
+  it("shares one tool call ledger across every step of a run", async () => {
+    const { params } = createParams([
+      toolTurn("load_skill", "call-1"),
+      toolTurn("load_skill", "call-2"),
+      textTurn("Done."),
+    ]);
+
+    mocks.handleToolCalls.mockResolvedValue([
+      { role: "tool", name: "load_skill", content: "loaded", status: "success" },
+    ]);
+
+    await runAgentLoop(params);
+
+    const [firstOptions, secondOptions] = mocks.handleToolCalls.mock.calls.map((call) => call[4]);
+
+    expect(firstOptions.callLedger).toBeInstanceOf(Map);
+    expect(secondOptions.callLedger).toBe(firstOptions.callLedger);
+  });
+
+  it("answers with what it has when the step budget runs out, rather than failing the turn", async () => {
+    const { params, runTurn } = createParams(
+      [toolTurn("get_weather"), toolTurn("get_weather"), textTurn("Here is what I found.")],
+      2,
+    );
+
+    mocks.handleToolCalls.mockResolvedValue([
+      { role: "tool", name: "get_weather", content: "sunny", status: "success" },
+    ]);
+
+    const result = await runAgentLoop(params);
+
+    expect(result.response.response).toBe("Here is what I found.");
+    expect(runTurn).toHaveBeenCalledTimes(3);
+
+    const finalRequest = runTurn.mock.calls[2][0].request;
+
+    expect(finalRequest.disable_functions).toBe(true);
+    expect(finalRequest.messages.at(-1)).toMatchObject({ role: "user" });
   });
 
   it("gives up on a turn the provider could not deliver", async () => {
