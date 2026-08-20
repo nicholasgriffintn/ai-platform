@@ -65,6 +65,7 @@ const FOLLOW_UP_PLACEHOLDERS = [
 ];
 
 interface ChatInputProps {
+  goalState?: { canUseGoals: boolean; goal: { status: string } | null };
   handleSubmit: (attachments?: AttachmentData[]) => void | Promise<boolean>;
   isLoading: boolean;
   streamStarted: boolean;
@@ -111,6 +112,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
   (
     {
       handleSubmit,
+      goalState,
       isLoading,
       streamStarted,
       controller,
@@ -199,6 +201,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       moveActiveSuggestion,
       setTextareaCursorPosition,
     } = useComposerCommandController({
+      goalState,
       isLoading,
       allowedAssistantActionCapabilities,
       assistantActionCatalog,

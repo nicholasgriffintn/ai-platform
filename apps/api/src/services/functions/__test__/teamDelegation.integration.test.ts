@@ -407,7 +407,9 @@ describe("Team Delegation Integration", () => {
         },
       ];
 
-      mockGetAIResponse.mockResolvedValue(mockResponse);
+      mockGetAIResponse
+        .mockResolvedValueOnce(mockResponse)
+        .mockResolvedValueOnce({ response: "Delegation complete" });
       mockAgentRepository.getAgentById
         .mockResolvedValueOnce(mockCurrentAgent)
         .mockResolvedValueOnce(mockTargetAgent);
@@ -447,8 +449,7 @@ describe("Team Delegation Integration", () => {
       expect(result).toEqual(
         expect.objectContaining({
           response: expect.objectContaining({
-            ...mockResponse,
-            usage: normalisedUsage(150),
+            response: "Delegation complete",
             steps: [
               expect.objectContaining({
                 stepNumber: 1,
@@ -457,8 +458,12 @@ describe("Team Delegation Integration", () => {
                 toolResultCount: 1,
                 usage: normalisedUsage(150),
               }),
+              expect.objectContaining({
+                stepNumber: 2,
+                stepType: "final",
+                toolCallCount: 0,
+              }),
             ],
-            totalUsage: normalisedUsage(150),
           }),
           toolResponses: [
             {
@@ -474,7 +479,9 @@ describe("Team Delegation Integration", () => {
 
       expect(mockHandleToolCalls).toHaveBeenCalledWith(
         "test-completion-id",
-        mockResponse,
+        expect.objectContaining({
+          tool_calls: [expect.objectContaining({ id: "call-1" })],
+        }),
         mockConversationManager,
         expect.objectContaining({
           request: expect.objectContaining({
@@ -506,7 +513,9 @@ describe("Team Delegation Integration", () => {
         usage: { total_tokens: 100 },
       };
 
-      mockGetAIResponse.mockResolvedValue(mockResponse);
+      mockGetAIResponse
+        .mockResolvedValueOnce(mockResponse)
+        .mockResolvedValueOnce({ response: "Could not delegate" });
       mockHandleToolCalls.mockResolvedValue([
         {
           role: "tool",
@@ -539,8 +548,7 @@ describe("Team Delegation Integration", () => {
       expect(result).toEqual(
         expect.objectContaining({
           response: expect.objectContaining({
-            ...mockResponse,
-            usage: normalisedUsage(100),
+            response: "Could not delegate",
             steps: [
               expect.objectContaining({
                 stepNumber: 1,
@@ -549,8 +557,11 @@ describe("Team Delegation Integration", () => {
                 toolResultCount: 1,
                 usage: normalisedUsage(100),
               }),
+              expect.objectContaining({
+                stepNumber: 2,
+                stepType: "final",
+              }),
             ],
-            totalUsage: normalisedUsage(100),
           }),
           toolResponses: [
             {

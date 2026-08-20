@@ -10,6 +10,7 @@ export const messageRoleSchema = z.enum([
   "tool",
   "developer",
   "compaction",
+  "goal",
 ]);
 export type MessageRole = z.infer<typeof messageRoleSchema>;
 

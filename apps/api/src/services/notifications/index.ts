@@ -153,7 +153,6 @@ function createEmailTemplate({ subject, title, content, footer, userName }: Emai
   return { subject, bodyText, bodyHtml };
 }
 
-// Subscription Notifications
 export async function sendSubscriptionEmail(
   env: IEnv,
   email: string,
@@ -259,7 +258,6 @@ export async function sendTrialEndingEmail(env: IEnv, email: string): Promise<vo
   }
 }
 
-// Agent Notifications
 export interface AgentModerationNotification {
   agentName: string;
   agentId: string;
@@ -352,7 +350,6 @@ export async function sendAgentFeaturedNotification(
   }
 }
 
-// Authentication Notifications
 export async function sendMagicLinkEmail(
   env: IEnv,
   email: string,

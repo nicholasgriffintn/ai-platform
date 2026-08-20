@@ -129,7 +129,6 @@ export const select_council_members: ApiToolDefinition = {
         responseType: "council_member_picker",
         completion_id: context.completionId,
         question: args.question,
-        // The picker renders from this roster, so the render package needs no contract import.
         members: (councilMembers as readonly CouncilMemberDefinition[]).map((member) => ({
           id: member.id,
           name: member.name,
@@ -184,7 +183,6 @@ export const run_council: ApiToolDefinition = {
     const result = await runPanel({
       env: request.env,
       user: request.user,
-      // The council debates on the conversation's model, not a cheaper auxiliary one.
       model: request.request?.model,
       provider: request.request?.provider,
       question: String(args.question),

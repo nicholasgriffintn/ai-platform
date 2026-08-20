@@ -584,6 +584,33 @@ describe("Auth Middleware", () => {
       expect(mockNext).toHaveBeenCalled();
     });
 
+    it("lets non-pro users reach the goal routes so the plan gate answers, not this one", async () => {
+      for (const method of ["GET", "POST", "PATCH"]) {
+        (mockNext as unknown as { mockClear: () => void }).mockClear();
+
+        const context = createMockContext({
+          req: {
+            ...createMockContext().req,
+            path: "/chat/completions/conversation-1/goal",
+            method,
+          },
+        });
+
+        // @ts-expect-error - mock implementation
+        context.get.mockImplementation((key: string) => {
+          if (key === "user") {
+            return { id: "user-123", plan_id: "free" };
+          }
+
+          return null;
+        });
+
+        await allowRestrictedPaths(context, mockNext);
+
+        expect(mockNext).toHaveBeenCalled();
+      }
+    });
+
     it("should block RAG usage for unauthenticated users", async () => {
       const context = createMockContext({
         req: {

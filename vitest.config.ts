@@ -3,7 +3,6 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    // Only workspaces with their own Vitest config; `packages/config` ships presets and uses node:test.
     projects: ["apps/*", "packages/*/vitest.config.{ts,mts}"],
     coverage: {
       provider: "v8",

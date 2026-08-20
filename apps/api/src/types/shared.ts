@@ -38,6 +38,7 @@ export type IEnv = {
   TRAINING_WORKER?: WorkerCacheFetcher<{ userId: string }>;
   TRAINING_WORKER_TOKEN?: string;
   SANDBOX_RUN_COORDINATOR?: DurableObjectNamespace;
+  CONVERSATION_COORDINATOR?: DurableObjectNamespace;
   GROK_API_KEY?: string;
   HUGGINGFACE_TOKEN?: string;
   REPLICATE_API_TOKEN?: string;

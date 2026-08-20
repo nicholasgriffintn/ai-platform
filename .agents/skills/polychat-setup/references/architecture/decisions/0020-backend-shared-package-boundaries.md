@@ -22,12 +22,18 @@ The package throws `RegistryError` with a `code` of `duplicate_registration`, `u
 
 Extend `packages/library-client` rather than adding a retry package. It gains `withRetry`, `parseRetryAfterHeaderMs`, and `parseRetryAfterBodyMs`. `apps/sandbox-worker` keeps its own retryable-status policy and clamps and supplies them to `withRetry`. Retryable-status sets stay with their callers because `library-client`'s React Query predicate and the sandbox Worker's request loop deliberately classify different statuses.
 
+Add `packages/library-tool-runtime`. Its recorded trigger fired: the agent-first rebuild gave the sandbox Worker its own tool definitions, so three places were shaping the same provider-facing `{ type: "function" }` payload by hand. The package owns `defineTool`, the `finish` and `update_plan` definitions, and the permission and mode-budget gating lifted from `apps/api/src/lib/permissions`.
+
+`PermissionChecker` no longer takes the API's `ChatMode` and `IUser`. It takes a `string` mode, which `resolveAgentModeFromChatMode` already narrows, and a `ToolAccessSubject` of `{ id?, plan_id? }` — the only fields gating ever read. `apps/api` keeps a facade that restores its own types at the call site, so no API call site changed.
+
+`library-agent-core` keeps the control tool _names_, because which calls the loop handles itself is loop semantics, and gives up the _definitions_, because describing a tool to a provider is not. That keeps `library-agent-core` a zero-dependency leaf and points the dependency one way: `library-tool-runtime` may know about agent loops, not the reverse.
+
 Do not extract the following, and record the trigger that would change the answer:
 
-- **Tool runtime** (`PermissionChecker`, `resolveToolPermissions`, `resolveModeMaxSteps`, and a shared tool-definition builder). These have one consumer inside `apps/api`. Extract when a second runtime needs the same mode budgets and permission gating, which agent-mode work outside the API would create.
 - **Prompt composition** (`PromptBuilder` and the section modules). `apps/sandbox-worker` assembles prompts with array joins and template literals rather than reimplementing the fluent builder, so there is no duplication to remove. The section modules are Polychat product copy bound to `IBody` and `IUserSettings` and belong in the API regardless.
 - **Provider message and response formatting** (`apps/api/src/lib/formatter`). The transformation is pure enough to move, but only the API consumes it. Extract when a second runtime talks to model providers directly.
 - **Compaction planning** (`apps/api/src/lib/session`). Planning is separable from persistence and summarisation, but it currently reaches for `ServiceContext`, the chat provider, and prompt modules. Invert those dependencies before considering a package.
+- **Inbound channel profiles** (`apps/api/src/lib/chat/channels.ts`). A profile carries a step budget, an allowed tool list, and channel constraints — the same shape as `AGENT_MODE_CONFIGS`, which now lives in `library-tool-runtime`. There is one consumer today, and the budgets already compose correctly (`resolveModeMaxSteps` clamps a channel's tighter budget under the mode ceiling). Extract when a second runtime answers inbound messages.
 - **Provider capability adapters, memory, guardrails, model routing, services, repositories, and database access.** These are single-consumer and correctly owned by `apps/api` under ADR 0001.
 
 ## Trade-offs

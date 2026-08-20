@@ -218,6 +218,49 @@ describe("createStreamWithPostProcessing", () => {
     expect(conversationManager.add).not.toHaveBeenCalled();
   });
 
+  it("tells the user why a streamed response stopped at the usage limit", async () => {
+    const conversationManager = {
+      getUsageLimits: vi.fn().mockResolvedValue({ daily: { used: 50, limit: 50 } }),
+      add: vi.fn(),
+      get: vi.fn().mockResolvedValue([]),
+    };
+
+    const stream = await createStreamWithPostProcessing(
+      createProviderStream([
+        `data: ${JSON.stringify({
+          choices: [
+            {
+              delta: {
+                tool_calls: [
+                  {
+                    index: 0,
+                    id: "call_recipe",
+                    type: "function",
+                    function: { name: "get_recipe", arguments: "{}" },
+                  },
+                ],
+              },
+            },
+          ],
+        })}\n\n`,
+        "data: [DONE]\n\n",
+      ]),
+      {
+        env: { AI: {} } as any,
+        completion_id: "completion-1",
+        model: "gpt-5.4-mini",
+        provider: "openai",
+        max_steps: 5,
+        current_step: 1,
+      },
+      conversationManager as any,
+    );
+
+    const output = await readStream(stream);
+
+    expect(output).toContain("reached your usage limit");
+  });
+
   it("stores streamed assistant messages without empty tool calls", async () => {
     const conversationManager = {
       getUsageLimits: vi.fn().mockResolvedValue({

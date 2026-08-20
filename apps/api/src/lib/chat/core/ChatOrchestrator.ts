@@ -1,10 +1,10 @@
+import { createGoalFinishGate } from "~/lib/chat/agent/goal-gate";
 import { runAgentLoop, type ModelResponse } from "~/lib/chat/agent/runAgentLoop";
 import { createAgentExecutionStream } from "~/lib/chat/core/agent-stream";
 import { buildStoredAssistantMessage } from "~/lib/chat/core/assistant-message";
 import { prependCompactionStateEvent } from "~/lib/chat/core/compaction-stream";
 import { createChatExecutionRequest } from "~/lib/chat/core/execution-request";
 import { buildToolRequestContext } from "~/lib/chat/core/request-context";
-import { runNonStreamingToolSteps } from "~/lib/chat/core/tool-step-runner";
 import { isAgentExecutionMode } from "~/lib/chat/mode-metadata";
 import { createMultiModelStream } from "~/lib/chat/multiModalStreaming";
 import { RequestPreparer, type PreparedRequest } from "~/lib/chat/preparation/RequestPreparer";
@@ -13,18 +13,33 @@ import { createStreamWithPostProcessing } from "~/lib/chat/streaming";
 import { pruneMessagesToFitContext } from "~/lib/chat/utils";
 import { ValidationPipeline } from "~/lib/chat/validation/ValidationPipeline";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
+import type { ConversationManager } from "~/lib/conversationManager";
 import { resolveModeMaxSteps } from "~/lib/permissions/PermissionChecker";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { captureTrainingExample } from "~/lib/providers/capabilities/training/captureTrainingExample";
 import { SessionManager } from "~/lib/session/SessionManager";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
+import { acquireThread, releaseThread } from "~/services/conversations/coordinator/client";
 import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
-import type { CoreChatOptions, Message } from "~/types";
+import { GOAL_STATUS_MARKER_EVENTS, recordGoalMarker } from "~/services/goals/goalMarker";
+import { GoalService } from "~/services/goals/GoalService";
+import type { ChatMode, CoreChatOptions, Message } from "~/types";
 import { isAbortError } from "~/utils/abort";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { finaliseReadableStream } from "~/utils/finalise-readable-stream";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/chat/core/ChatOrchestrator" });
+
+function isStreamingResult(result: unknown): result is { stream: ReadableStream } {
+  return (
+    typeof result === "object" &&
+    result !== null &&
+    "stream" in result &&
+    (result as { stream?: unknown }).stream instanceof ReadableStream
+  );
+}
+
 const RECIPE_CHAT_DEFAULT_MAX_STEPS = 4;
 const RECIPE_CONNECTOR_DEFAULT_MAX_STEPS = 8;
 const RECIPE_CONNECTOR_TOOL_NAME = "use_recipe_connector";
@@ -53,6 +68,70 @@ export class ChatOrchestrator {
   constructor(env: any) {
     this.validator = new ValidationPipeline();
     this.preparer = new RequestPreparer(env);
+  }
+
+  /**
+   * A turn owns the conversation's history while it runs, so compaction and
+   * other thread work queue behind it instead of interleaving. Inbound channel
+   * turns arrive from a queue that can deliver a batch at once, so refusing
+   * here is what stops two messages from the same sender interleaving on one
+   * conversation; the queue redelivers the refused one.
+   */
+  private async holdThreadForTurn(options: CoreChatOptions): Promise<boolean> {
+    if (!options.completion_id || options.store === false) {
+      return false;
+    }
+
+    const lock = await acquireThread({
+      env: options.env,
+      conversationId: options.completion_id,
+      kind: "user_message",
+    });
+
+    if (!lock.acquired) {
+      throw new AssistantError(
+        "This conversation is already working on something. Try again once it finishes.",
+        ErrorType.CONFLICT_ERROR,
+      );
+    }
+
+    return true;
+  }
+
+  private async resolveGoalFinishGate(
+    chatOptions: CoreChatOptions,
+    currentMode: ChatMode,
+    conversationManager: ConversationManager,
+  ) {
+    const user = chatOptions.context?.user;
+
+    if (!user?.id || user.plan_id !== "pro" || !chatOptions.completion_id) {
+      return undefined;
+    }
+
+    const goalService = new GoalService(chatOptions.context.repositories.goals);
+    const goal = await goalService.getActiveGoal({
+      conversationId: chatOptions.completion_id,
+    });
+
+    if (!goal || goal.status !== "active") {
+      return undefined;
+    }
+
+    return createGoalFinishGate({
+      goalService,
+      goal,
+      conversationManager,
+      surface: isAgentExecutionMode(currentMode) ? "agent" : "chat",
+      onTerminalStatus: async (terminalGoal) => {
+        await recordGoalMarker({
+          conversationManager,
+          completionId: chatOptions.completion_id,
+          goal: terminalGoal,
+          event: GOAL_STATUS_MARKER_EVENTS[terminalGoal.status] ?? "cleared",
+        });
+      },
+    });
   }
 
   async process(options: CoreChatOptions) {
@@ -84,9 +163,38 @@ export class ChatOrchestrator {
         };
       }
 
-      const prepared = await this.preparer.prepare(options, validationResult.context);
+      const heldThread = await this.holdThreadForTurn(options);
+      const release = async () => {
+        if (heldThread) {
+          await releaseThread({
+            env: options.env,
+            conversationId: options.completion_id,
+          });
+        }
+      };
 
-      return await this.executeRequest(options, prepared);
+      let result: Awaited<ReturnType<typeof this.executeRequest>>;
+
+      try {
+        const prepared = await this.preparer.prepare(options, validationResult.context);
+
+        result = await this.executeRequest(options, prepared);
+      } catch (error) {
+        await release();
+
+        throw error;
+      }
+
+      if (isStreamingResult(result)) {
+        return {
+          ...result,
+          stream: finaliseReadableStream({ stream: result.stream, cleanup: release }),
+        };
+      }
+
+      await release();
+
+      return result;
     } catch (error: any) {
       logger.error("Error in chat orchestration", {
         error,
@@ -236,9 +344,11 @@ export class ChatOrchestrator {
 
     const toolResponses: Message[] = [];
     let response: ModelResponse | ReadableStream;
-    let responseAlreadyStored = false;
+    const responseAlreadyStored = false;
 
-    if (isAgentExecutionMode(currentMode) && !stream) {
+    if (stream) {
+      response = await getAIResponse(requestParams);
+    } else {
       let agentResult;
 
       try {
@@ -247,7 +357,12 @@ export class ChatOrchestrator {
           completionId: chatOptions.completion_id,
           conversationManager,
           toolRequestContext,
-          maxSteps: resolveModeMaxSteps(currentMode, max_steps),
+          maxSteps: resolveModeMaxSteps(currentMode, resolvedMaxSteps ?? max_steps),
+          assessFinish: await this.resolveGoalFinishGate(
+            chatOptions,
+            currentMode,
+            conversationManager,
+          ),
         });
       } finally {
         if (toolRequestContext.context) {
@@ -257,40 +372,6 @@ export class ChatOrchestrator {
 
       response = agentResult.response;
       toolResponses.push(...agentResult.toolResponses);
-    } else {
-      response = await getAIResponse(requestParams);
-      if (!(response instanceof ReadableStream)) {
-        let toolStepResult;
-
-        try {
-          toolStepResult = await runNonStreamingToolSteps({
-            response,
-            requestParams,
-            completionId: chatOptions.completion_id,
-            conversationManager,
-            toolRequestContext,
-            maxSteps: resolvedMaxSteps,
-            buildAssistantMessage: (stepResponse) =>
-              buildStoredAssistantMessage({
-                response: stepResponse,
-                content: stepResponse.response || "",
-                envLogId: chatOptions.env.AI.aiGatewayLogId,
-                mode: currentMode,
-                model: primaryModel,
-                platform: platform || "api",
-                requestOptions: prepared.requestOptions,
-              }),
-          });
-        } finally {
-          if (toolRequestContext.context) {
-            await closeComposioConnectorRun(toolRequestContext.context);
-          }
-        }
-
-        response = toolStepResult.response;
-        responseAlreadyStored = toolStepResult.responseAlreadyStored;
-        toolResponses.push(...toolStepResult.toolResponses);
-      }
     }
 
     if (response instanceof ReadableStream) {

@@ -29,6 +29,8 @@ vi.mock("~/services/completions/createChatCompletions", () => ({
   handleCreateChatCompletions: mocks.handleCreateChatCompletions,
 }));
 
+import { AssistantError, ErrorType } from "~/utils/errors";
+
 import { handleInboundChannelMessage, type InboundChannelTaskData } from "../inbound";
 
 const env = { DB: {}, API_BASE_URL: "https://api.polychat.test" } as any;
@@ -116,6 +118,26 @@ describe("inbound channel messages", () => {
       to: "+15551234567",
       body: "chat reply",
     });
+  });
+
+  it("surfaces a busy conversation so the queue redelivers instead of interleaving", async () => {
+    mocks.handleCreateChatCompletions.mockRejectedValueOnce(
+      new AssistantError(
+        "This conversation is already working on something.",
+        ErrorType.CONFLICT_ERROR,
+      ),
+    );
+
+    await expect(
+      handleInboundChannelMessage({
+        env,
+        context: createContext(),
+        user,
+        data: createTaskData(),
+      }),
+    ).rejects.toMatchObject({ type: ErrorType.CONFLICT_ERROR });
+
+    expect(mocks.providerSend).not.toHaveBeenCalled();
   });
 
   it("does not run a turn when the sender is no longer allowed", async () => {

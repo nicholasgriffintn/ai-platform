@@ -81,6 +81,18 @@ class ApiService {
     return this.chatService.compactConversation(completion_id);
   };
 
+  getConversationGoal = (completion_id: string) => {
+    return this.chatService.getConversationGoal(completion_id);
+  };
+
+  setConversationGoal = (completion_id: string, objective: string) => {
+    return this.chatService.setConversationGoal(completion_id, objective);
+  };
+
+  updateConversationGoal = (completion_id: string, status: "active" | "paused" | "cleared") => {
+    return this.chatService.updateConversationGoal(completion_id, status);
+  };
+
   updateConversationTitle = (completion_id: string, newTitle: string): Promise<void> => {
     return this.chatService.updateConversationTitle(completion_id, newTitle);
   };

@@ -7,6 +7,7 @@ export {
   hasInvalidCompactionPart,
   hasValidCompactionPart,
   isCompactionMarkerMessage,
+  isGoalMarkerMessage,
   normaliseCompactionParts,
   normaliseMessageParts,
 } from "./message-part-utils";
@@ -22,6 +23,7 @@ export type {
   ToolResultMessagePart,
   ToolUseMessagePart,
 } from "./message-part-utils";
+import { goalMarkerEvents } from "./goals";
 import { compactionPartStatuses } from "./message-part-utils";
 
 const partBaseSchema = z.object({
@@ -72,6 +74,13 @@ export const compactionPartSchema = partBaseSchema.extend({
   label: z.string().optional(),
 });
 
+export const goalPartSchema = partBaseSchema.extend({
+  type: z.literal("goal"),
+  event: z.enum(goalMarkerEvents),
+  label: z.string().optional(),
+  objective: z.string().optional(),
+});
+
 export const filePartSchema = partBaseSchema.extend({
   type: z.literal("file"),
   name: z.string().optional(),
@@ -87,6 +96,7 @@ export const messagePartSchema = z.discriminatedUnion("type", [
   reasoningPartSchema,
   snapshotPartSchema,
   compactionPartSchema,
+  goalPartSchema,
   filePartSchema,
 ]);
 

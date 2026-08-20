@@ -156,6 +156,9 @@ importers:
       '@ngriffin_uk/polychat-library-registry':
         specifier: workspace:^
         version: link:../../packages/library-registry
+      '@ngriffin_uk/polychat-library-tool-runtime':
+        specifier: workspace:^
+        version: link:../../packages/library-tool-runtime
       '@ngriffin_uk/polychat-schemas':
         specifier: workspace:^
         version: link:../../packages/schemas
@@ -520,6 +523,9 @@ importers:
       '@ngriffin_uk/polychat-library-client':
         specifier: workspace:^
         version: link:../../packages/library-client
+      '@ngriffin_uk/polychat-library-tool-runtime':
+        specifier: workspace:^
+        version: link:../../packages/library-tool-runtime
       '@ngriffin_uk/polychat-schemas':
         specifier: workspace:^
         version: link:../../packages/schemas
@@ -1317,6 +1323,31 @@ importers:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
         version: link:../config
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@30.0.1)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(tsx@4.23.11)(yaml@2.9.0))
+
+  packages/library-tool-runtime:
+    dependencies:
+      '@ngriffin_uk/polychat-library-registry':
+        specifier: workspace:^
+        version: link:../library-registry
+      '@ngriffin_uk/polychat-schemas':
+        specifier: workspace:^
+        version: link:../schemas
+    devDependencies:
+      '@ngriffin_uk/polychat-config':
+        specifier: workspace:^
+        version: link:../config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.2.0
+      tsup:
+        specifier: 'catalog:'
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.26)(supports-color@10.2.2)(tsx@4.23.11)(typescript@6.0.3)(yaml@2.9.0)
       typescript:
         specifier: 'catalog:'
         version: 6.0.3

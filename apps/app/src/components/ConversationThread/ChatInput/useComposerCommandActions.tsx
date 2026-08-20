@@ -12,6 +12,7 @@ import {
   removeComposerDirective,
   replaceComposerDirectiveWithCursor,
 } from "@ngriffin_uk/polychat-library-chat/composer-commands";
+import { GOAL_COMMAND } from "@ngriffin_uk/polychat-library-chat/goal-command";
 import type { ModelToolId } from "@ngriffin_uk/polychat-library-chat/model-tools";
 import {
   formatVerbosityLabel,
@@ -43,6 +44,7 @@ import {
   Link,
   ListFilter,
   Search,
+  Target,
   Terminal,
   type LucideIcon,
 } from "lucide-react";
@@ -94,6 +96,7 @@ export function useComposerCommandActions({
   assistantActionCatalog,
   chatInput,
   directive,
+  goalState,
   includeSettingCommands = true,
   modeCommands,
   setChatInput,
@@ -103,6 +106,7 @@ export function useComposerCommandActions({
   assistantActionCatalog?: ComposerActionCatalogConfig;
   chatInput: string;
   directive: ComposerDirectiveQuery | null;
+  goalState?: { canUseGoals: boolean; goal: { status: string } | null };
   includeSettingCommands?: boolean;
   modeCommands: ComposerCommandAction[];
   setChatInput: (value: string) => void;
@@ -381,6 +385,67 @@ export function useComposerCommandActions({
     ],
     [setChatInput],
   );
+  const goalCommands = useMemo<ComposerCommandAction[]>(() => {
+    if (!goalState?.canUseGoals) {
+      return [];
+    }
+
+    const commands: ComposerCommandAction[] = [
+      {
+        id: "goal-set",
+        label: goalState.goal ? "Replace goal" : "Set a goal",
+        description: "Keep working until an objective is met, checked against evidence.",
+        command: "goal",
+        icon: <Target className="h-4 w-4" aria-hidden="true" />,
+        isActive: Boolean(goalState.goal),
+        selectionText: `${GOAL_COMMAND} `,
+        selectionCursorOffset: GOAL_COMMAND.length + 1,
+        onSelect: () => undefined,
+      },
+    ];
+
+    if (goalState.goal?.status === "active") {
+      commands.push({
+        id: "goal-pause",
+        label: "Pause goal",
+        description: "Stop continuing the goal until you resume it.",
+        command: "goal pause",
+        icon: <Target className="h-4 w-4" aria-hidden="true" />,
+        isActive: false,
+        selectionText: `${GOAL_COMMAND} pause`,
+        onSelect: () => undefined,
+      });
+    }
+
+    if (goalState.goal?.status === "paused") {
+      commands.push({
+        id: "goal-resume",
+        label: "Resume goal",
+        description: "Pick the objective back up.",
+        command: "goal resume",
+        icon: <Target className="h-4 w-4" aria-hidden="true" />,
+        isActive: false,
+        selectionText: `${GOAL_COMMAND} resume`,
+        onSelect: () => undefined,
+      });
+    }
+
+    if (goalState.goal) {
+      commands.push({
+        id: "goal-clear",
+        label: "Clear goal",
+        description: "Drop the objective without completing it.",
+        command: "goal clear",
+        icon: <Target className="h-4 w-4" aria-hidden="true" />,
+        isActive: false,
+        selectionText: `${GOAL_COMMAND} clear`,
+        onSelect: () => undefined,
+      });
+    }
+
+    return commands;
+  }, [goalState?.canUseGoals, goalState?.goal]);
+
   const skillCommands = useMemo<ComposerCommandAction[]>(
     () =>
       allowedActionItems
@@ -403,6 +468,7 @@ export function useComposerCommandActions({
       ...actionVerbCommands,
       ...modeCommands,
       ...skillCommands,
+      ...goalCommands,
       ...compactionCommands,
       ...settingCommands,
     ];
@@ -419,7 +485,14 @@ export function useComposerCommandActions({
 
       return true;
     });
-  }, [actionVerbCommands, compactionCommands, modeCommands, settingCommands, skillCommands]);
+  }, [
+    actionVerbCommands,
+    compactionCommands,
+    goalCommands,
+    modeCommands,
+    settingCommands,
+    skillCommands,
+  ]);
   const filteredSlashCommands = useMemo(() => {
     const query = directive?.trigger === "/" ? directive.query : "";
 

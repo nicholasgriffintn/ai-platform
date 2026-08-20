@@ -1,10 +1,11 @@
+import { AGENT_CONTROL_TOOL_NAMES, FINISH_TOOL_NAME, UPDATE_PLAN_TOOL_NAME } from "./control-tools";
 import type {
-  ActionHandler,
   AgentConfig,
-  AgentDecision,
   AgentEvent,
+  AgentGoalOutcome,
   AgentLoopResult,
   AgentLoopState,
+  AgentToolCall,
   ExecuteAgentLoopParams,
 } from "./types";
 import { truncateForModel } from "./utils";
@@ -13,7 +14,7 @@ const DEFAULT_CONFIG: AgentConfig = {
   maxSteps: 48,
   maxStepExtensions: 2,
   maxRecoveryReplans: 4,
-  maxConsecutiveDecisionFailures: 3,
+  maxConsecutiveTurnFailures: 3,
   maxObservationChars: 5000,
 };
 
@@ -21,29 +22,19 @@ function defaultGetCommandCount(state: AgentLoopState): number {
   return typeof state.commandCount === "number" ? state.commandCount : 0;
 }
 
-function defaultSerializeDecision(decision: AgentDecision): {
-  role: "assistant";
-  content: string;
-} {
-  return {
-    role: "assistant",
-    content: JSON.stringify(decision),
-  };
-}
-
-function defaultInvalidDecisionMessage(errorMessage: string): string {
+function defaultMissingToolCallMessage(errorMessage: string): string {
   return [
-    "Your previous response could not be used as a valid decision.",
-    `Error: ${errorMessage}`,
-    "Respond with exactly one JSON object using a supported action.",
-    "If uncertain, use update_plan first to revise the next steps.",
+    "Your previous response could not be used.",
+    `Reason: ${errorMessage}`,
+    "Respond with a tool call.",
+    `If uncertain, call ${UPDATE_PLAN_TOOL_NAME} first to revise the next steps.`,
   ].join("\n");
 }
 
 function defaultRecoveryRequiredMessage(recoveryReason: string): string {
   return [
     "Execution has entered recovery mode.",
-    "First action must be update_plan with a corrected, safer strategy.",
+    `First action must be ${UPDATE_PLAN_TOOL_NAME} with a corrected, safer strategy.`,
     `Recovery reason: ${recoveryReason}`,
   ].join("\n");
 }
@@ -52,7 +43,7 @@ function defaultRecoveryEnforcementMessage(recoveryReason: string): string {
   return [
     "Recovery mode is active after recent failures.",
     `Recovery reason: ${recoveryReason}`,
-    "Before any other action, return update_plan with a revised approach and safer next steps.",
+    `Before any other action, call ${UPDATE_PLAN_TOOL_NAME} with a revised approach and safer next steps.`,
   ].join("\n");
 }
 
@@ -60,17 +51,10 @@ function defaultPlanUpdatedMessage(plan: string): string {
   return ["Plan updated.", "", "Current plan:", plan, "", "Choose the next action."].join("\n");
 }
 
-function resolveHandler<TShared, TState extends AgentLoopState>(
-  handlers: ActionHandler<any, TShared, TState>[],
-  decision: AgentDecision,
-): ActionHandler<any, TShared, TState> | null {
-  for (const handler of handlers) {
-    if (handler.canHandle(decision)) {
-      return handler;
-    }
-  }
+function readStringArgument(toolCall: AgentToolCall, key: string): string {
+  const value = toolCall.arguments[key];
 
-  return null;
+  return typeof value === "string" ? value : "";
 }
 
 export async function executeAgentLoop<
@@ -85,20 +69,18 @@ export async function executeAgentLoop<
   const emit = params.emit ?? (async (_event: AgentEvent) => {});
   const guardExecution = params.guardExecution ?? (async (_abortMessage: string) => {});
   const getCommandCount = params.getCommandCount ?? defaultGetCommandCount;
-  const serializeDecision =
-    params.serializeDecision ?? ((decision: AgentDecision) => defaultSerializeDecision(decision));
-  const formatInvalidDecisionMessage =
-    params.formatInvalidDecisionMessage ?? defaultInvalidDecisionMessage;
+  const formatMissingToolCallMessage =
+    params.formatMissingToolCallMessage ?? defaultMissingToolCallMessage;
   const formatRecoveryRequiredMessage =
     params.formatRecoveryRequiredMessage ?? defaultRecoveryRequiredMessage;
   const formatRecoveryEnforcementMessage =
     params.formatRecoveryEnforcementMessage ?? defaultRecoveryEnforcementMessage;
   const formatPlanUpdatedMessage = params.formatPlanUpdatedMessage ?? defaultPlanUpdatedMessage;
-  const shouldAbortOnDecisionError = params.shouldAbortOnDecisionError ?? (() => false);
+  const shouldAbortOnTurnError = params.shouldAbortOnTurnError ?? (() => false);
 
   const messages = params.initialMessages;
   let currentPlan = params.initialPlan;
-  let consecutiveDecisionFailures = 0;
+  let consecutiveTurnFailures = 0;
   let recoveryReplans = 0;
   let requiresPlanRecovery = false;
   let recoveryReason: string | undefined;
@@ -111,7 +93,7 @@ export async function executeAgentLoop<
 
     requiresPlanRecovery = true;
     recoveryReason = truncateForModel(reason, config.maxObservationChars);
-    consecutiveDecisionFailures = 0;
+    consecutiveTurnFailures = 0;
 
     params.onPlanRecovery?.({
       reason: recoveryReason,
@@ -160,6 +142,35 @@ export async function executeAgentLoop<
     return true;
   };
 
+  const finishLoop = async (
+    rawSummary: string,
+    outcome: AgentGoalOutcome | undefined,
+  ): Promise<AgentLoopResult> => {
+    const summary =
+      (await params.buildSummary?.({
+        summary: rawSummary,
+        state: params.state,
+        currentPlan,
+        shared: params.shared,
+      })) ?? rawSummary;
+
+    await emit({
+      type: "agent_finished",
+      agentStep: step,
+      commandCount: getCommandCount(params.state),
+      plan: truncateForModel(currentPlan, 1000),
+      summary,
+    });
+
+    return {
+      summary,
+      finalPlan: currentPlan,
+      commandCount: getCommandCount(params.state),
+      stepsTaken: step,
+      goalOutcome: outcome,
+    };
+  };
+
   while (true) {
     if (step > maxSteps) {
       const extended = await tryExtendStepBudget();
@@ -185,10 +196,10 @@ export async function executeAgentLoop<
       commandCount: getCommandCount(params.state),
     });
 
-    let decisionResult: Awaited<ReturnType<typeof params.resolveDecision>>;
+    let turn: Awaited<ReturnType<typeof params.resolveTurn>>;
 
     try {
-      decisionResult = await params.resolveDecision({
+      turn = await params.resolveTurn({
         step,
         messages,
         shared: params.shared,
@@ -196,39 +207,36 @@ export async function executeAgentLoop<
         requiresPlanRecovery,
         recoveryReason,
       });
-      consecutiveDecisionFailures = 0;
+      consecutiveTurnFailures = 0;
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Failed to parse or produce an agent decision";
+        error instanceof Error ? error.message : "Failed to produce an agent turn";
 
-      if (shouldAbortOnDecisionError(error)) {
+      if (shouldAbortOnTurnError(error)) {
         await emit({
-          type: "agent_decision_failed",
+          type: "agent_turn_failed",
           agentStep: step,
           error: truncateForModel(errorMessage, config.maxObservationChars),
         });
         throw error;
       }
 
-      consecutiveDecisionFailures += 1;
+      consecutiveTurnFailures += 1;
       await emit({
-        type: "agent_decision_invalid",
+        type: "agent_turn_invalid",
         agentStep: step,
         error: truncateForModel(errorMessage, config.maxObservationChars),
       });
       messages.push({
         role: "user",
-        content: formatInvalidDecisionMessage(
+        content: formatMissingToolCallMessage(
           truncateForModel(errorMessage, config.maxObservationChars),
         ),
       });
 
-      if (
-        consecutiveDecisionFailures >= config.maxConsecutiveDecisionFailures &&
-        !requiresPlanRecovery
-      ) {
+      if (consecutiveTurnFailures >= config.maxConsecutiveTurnFailures && !requiresPlanRecovery) {
         beginPlanRecovery(
-          `Model produced ${config.maxConsecutiveDecisionFailures} unusable decisions in a row.`,
+          `Model produced ${config.maxConsecutiveTurnFailures} unusable turns in a row.`,
         );
         messages.push({
           role: "user",
@@ -240,14 +248,22 @@ export async function executeAgentLoop<
       continue;
     }
 
-    const { decision } = decisionResult;
+    if (turn.assistantMessage) {
+      messages.push(turn.assistantMessage);
+    }
 
-    if (requiresPlanRecovery && decision.action !== "update_plan") {
+    const planCall = turn.toolCalls.find((toolCall) => toolCall.name === UPDATE_PLAN_TOOL_NAME);
+    const finishCall = turn.toolCalls.find((toolCall) => toolCall.name === FINISH_TOOL_NAME);
+    const actionCalls = turn.toolCalls.filter(
+      (toolCall) => !AGENT_CONTROL_TOOL_NAMES.has(toolCall.name),
+    );
+
+    if (requiresPlanRecovery && !planCall) {
       await emit({
-        type: "agent_decision_invalid",
+        type: "agent_turn_invalid",
         agentStep: step,
-        error: "Recovery mode requires update_plan before other actions.",
-        action: decision.action,
+        error: `Recovery mode requires ${UPDATE_PLAN_TOOL_NAME} before other actions.`,
+        toolNames: turn.toolCalls.map((toolCall) => toolCall.name),
       });
       messages.push({
         role: "user",
@@ -258,18 +274,13 @@ export async function executeAgentLoop<
     }
 
     await emit({
-      type: "agent_decision",
+      type: "agent_turn",
       agentStep: step,
-      action: decision.action,
-      reasoning: decision.reasoning,
+      toolNames: turn.toolCalls.map((toolCall) => toolCall.name),
     });
 
-    messages.push(
-      decisionResult.assistantMessage ?? serializeDecision(decision, decisionResult.rawResponse),
-    );
-
-    if (decision.action === "update_plan") {
-      currentPlan = truncateForModel(decision.plan, 2500);
+    if (planCall) {
+      currentPlan = truncateForModel(readStringArgument(planCall, "plan"), 2500);
       requiresPlanRecovery = false;
       recoveryReason = undefined;
       await emit({
@@ -281,64 +292,49 @@ export async function executeAgentLoop<
         role: "user",
         content: formatPlanUpdatedMessage(currentPlan),
       });
-      step += 1;
-      continue;
     }
 
-    if (decision.action === "continue") {
+    if (actionCalls.length > 0) {
+      await params.executeToolCalls(actionCalls, {
+        step,
+        messages,
+        shared: params.shared,
+        state: params.state,
+        emit,
+        guardExecution,
+        beginPlanRecovery,
+      });
+    }
+
+    const hasFinished = Boolean(finishCall) || turn.toolCalls.length === 0;
+
+    if (hasFinished) {
+      const rawSummary = finishCall ? readStringArgument(finishCall, "summary") : (turn.text ?? "");
+      const assessment = (await params.assessFinish?.({
+        summary: rawSummary,
+        step,
+        messages,
+        shared: params.shared,
+        state: params.state,
+      })) ?? { allow: true };
+
+      if (assessment.allow) {
+        return finishLoop(rawSummary, assessment.outcome);
+      }
+
       await emit({
-        type: "agent_continued",
+        type: "agent_finish_rejected",
         agentStep: step,
-        reasoning: decision.reasoning,
+        reason: assessment.instruction,
       });
       messages.push({
         role: "user",
-        content: truncateForModel(decision.instruction, config.maxObservationChars),
+        content: truncateForModel(
+          assessment.instruction ?? "The objective is not satisfied yet. Continue working.",
+          config.maxObservationChars,
+        ),
       });
-      step += 1;
-      continue;
     }
-
-    if (decision.action === "finish") {
-      const summary =
-        (await params.buildSummary?.({
-          decision,
-          state: params.state,
-          currentPlan,
-          shared: params.shared,
-        })) ?? decision.summary;
-
-      await emit({
-        type: "agent_finished",
-        agentStep: step,
-        commandCount: getCommandCount(params.state),
-        plan: truncateForModel(currentPlan, 1000),
-        summary,
-      });
-
-      return {
-        summary,
-        finalPlan: currentPlan,
-        commandCount: getCommandCount(params.state),
-        stepsTaken: step,
-      };
-    }
-
-    const handler = resolveHandler(params.handlers, decision);
-
-    if (!handler) {
-      throw new Error(`No action handler registered for action "${decision.action}"`);
-    }
-
-    await handler.execute(decision, {
-      step,
-      messages,
-      shared: params.shared,
-      state: params.state,
-      emit,
-      guardExecution,
-      beginPlanRecovery,
-    });
 
     step += 1;
   }
