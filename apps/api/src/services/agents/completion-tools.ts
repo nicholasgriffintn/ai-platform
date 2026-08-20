@@ -1,11 +1,12 @@
 import type { MCPClientManager } from "agents/mcp/client";
 
 import type { Agent } from "~/lib/database/schema";
+import type { DeferredToolEntry } from "~/lib/tools/DeferredToolSession";
 import {
   connectMCPServerReady,
+  createServerName,
   parseMCPServerConfigs,
   resolveMCPAIToolDefinition,
-  type AgentMCPToolDefinition,
   type MCPServerConfig,
 } from "~/services/agents/mcp-client";
 import { request_approval, ask_user } from "~/services/functions/human_in_the_loop";
@@ -38,14 +39,19 @@ export type AgentCompletionToolDefinition =
       parameters: Record<string, unknown>;
     };
 
+export interface AgentCompletionTools {
+  definitions: AgentCompletionToolDefinition[];
+  deferrableEntries: DeferredToolEntry[];
+}
+
 export async function buildAgentCompletionTools(
   agent: CompletionAgent,
   env: IEnv,
-): Promise<AgentCompletionToolDefinition[]> {
-  const mcpFunctions = await setupMCPFunctions(agent, env);
-  const teamDelegationTools = setupTeamDelegationTools(agent);
-
-  return [...CORE_AGENT_TOOLS, ...teamDelegationTools, ...mcpFunctions];
+): Promise<AgentCompletionTools> {
+  return {
+    definitions: [...CORE_AGENT_TOOLS, ...setupTeamDelegationTools(agent)],
+    deferrableEntries: await setupMCPFunctions(agent, env),
+  };
 }
 
 export function buildAgentSystemPrompt(agent: CompletionAgent): string {
@@ -99,7 +105,7 @@ function formatFewShotExamples(rawExamples: unknown): string {
 }
 
 async function setupMCPFunctions(agent: CompletionAgent, env: IEnv) {
-  const mcpFunctions: AgentMCPToolDefinition[] = [];
+  const mcpFunctions: DeferredToolEntry[] = [];
 
   if (!agent.servers) {
     return mcpFunctions;
@@ -141,7 +147,7 @@ async function collectServerTools(
   agent: CompletionAgent,
   mcp: MCPClientManager,
   cfg: MCPServerConfig,
-  mcpFunctions: AgentMCPToolDefinition[],
+  mcpFunctions: DeferredToolEntry[],
 ) {
   try {
     const readyConnection = await connectMCPServerReady(mcp, cfg);
@@ -156,13 +162,13 @@ async function collectServerTools(
     }
 
     const rawTools = await Promise.resolve(mcp.getAITools());
-    const defs = Object.entries(rawTools);
+    const serverName = createServerName(cfg);
 
-    for (const [name, def] of defs) {
-      const toolDefinition = resolveMCPAIToolDefinition(agent.id, name, def);
+    for (const [name, def] of Object.entries(rawTools)) {
+      const definition = resolveMCPAIToolDefinition(agent.id, name, def);
 
-      if (toolDefinition) {
-        mcpFunctions.push(toolDefinition);
+      if (definition) {
+        mcpFunctions.push({ group: serverName, origin: "external", definition });
       }
     }
   } catch (error) {

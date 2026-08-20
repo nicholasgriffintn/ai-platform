@@ -1,5 +1,6 @@
 import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 
+import type { DeferredToolSession } from "~/lib/tools/DeferredToolSession";
 import type { IBody, IUser, IUserSettings } from "~/types";
 import { getLogger } from "~/utils/logger";
 
@@ -7,6 +8,7 @@ import { PromptBuilder } from "./builder";
 import { resolvePromptLayout } from "./layout";
 import { buildAgentGuidelinesSection } from "./sections/agent-guidelines";
 import { buildChannelSection } from "./sections/channel";
+import { buildDeferredToolsSection } from "./sections/deferred-tools";
 import { buildFormattingSection } from "./sections/formatting";
 import { buildAssistantMetadataSection, type PromptModelMetadata } from "./sections/metadata";
 import { buildAssistantPrinciplesSection } from "./sections/principles";
@@ -31,6 +33,7 @@ export async function returnStandardPrompt(
   modelMetadata?: PromptModelMetadata,
   skills?: readonly SkillAvailability[],
   memoryPolicy: PromptMemoryPolicy = DISABLED_PROMPT_MEMORY_POLICY,
+  deferredTools?: DeferredToolSession,
 ): Promise<string> {
   try {
     const chatMode = request.mode || "standard";
@@ -94,7 +97,7 @@ export async function returnStandardPrompt(
 
     const builder = new PromptBuilder(metadataSection)
       .addLine(
-        "<instruction_precedence>\n<order>safety_standards > channel_context > behaviour > response_style > formatting > available_skills > session_config</order>\n<conflict_rule>Resolve conflicts silently in this order. Surface only limitations that materially change what the user receives.</conflict_rule>\n</instruction_precedence>",
+        "<instruction_precedence>\n<order>safety_standards > channel_context > behaviour > response_style > formatting > available_skills > deferred_tools > session_config</order>\n<conflict_rule>Resolve conflicts silently in this order. Surface only limitations that materially change what the user receives.</conflict_rule>\n</instruction_precedence>",
       )
       .addLine()
       .add(principlesSection)
@@ -113,6 +116,7 @@ export async function returnStandardPrompt(
     builder
       .add(buildChannelSection(request.options?.channel))
       .add(buildSkillsSection(skills))
+      .add(buildDeferredToolsSection(deferredTools))
       .add(userContextSection)
       .add(
         buildSessionConfigSection({

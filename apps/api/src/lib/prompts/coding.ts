@@ -1,10 +1,12 @@
 import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 
+import type { DeferredToolSession } from "~/lib/tools/DeferredToolSession";
 import type { IBody, IUserSettings } from "~/types";
 
 import { PromptBuilder } from "./builder";
 import { resolvePromptLayout } from "./layout";
 import { buildCodingConductSection } from "./sections/coding-conduct";
+import { buildDeferredToolsSection } from "./sections/deferred-tools";
 import { buildFormattingSection } from "./sections/formatting";
 import { buildAssistantMetadataSection, type PromptModelMetadata } from "./sections/metadata";
 import { buildAssistantPrinciplesSection } from "./sections/principles";
@@ -26,6 +28,7 @@ export function returnCodingPrompt(
   modelMetadata?: PromptModelMetadata,
   skills?: readonly SkillAvailability[],
   memoryPolicy: PromptMemoryPolicy = DISABLED_PROMPT_MEMORY_POLICY,
+  deferredTools?: DeferredToolSession,
 ): string {
   const chatMode = request.mode || "standard";
 
@@ -95,6 +98,7 @@ export function returnCodingPrompt(
     .add(buildCodingConductSection())
     .add(buildSafetyStandardsSection())
     .add(buildSkillsSection(skills))
+    .add(buildDeferredToolsSection(deferredTools))
     .add(
       buildUserContextSection({
         date,

@@ -270,6 +270,7 @@ export function getToolsForProvider(
     | "tool_choice"
     | "context"
     | "connectedConnectorProviders"
+    | "deferred_tools"
   >,
   modelConfig: any,
   providerName: string,
@@ -287,26 +288,25 @@ export function getToolsForProvider(
   try {
     const user = resolveRequestUser(params);
     const enabledTools = resolveEnabledFunctionToolNames(params.enabled_tools, user);
+    const deferredTools = params.deferred_tools;
     let tools: any[] = [];
     const availableTools = listFunctionTools({
       connectedConnectorProviders: params.connectedConnectorProviders,
       selectedConnectorProvider: params.options?.connector?.provider,
-    });
+    }).filter((func) => enabledTools.has(func.name) && !deferredTools?.isWithheld(func.name));
+    const loadedExternalTools = deferredTools?.loadedDefinitions("external") ?? [];
 
     if (params.tools) {
-      const providedTools = params.tools;
-      const filteredFunctions = availableTools
-        .filter((func) => enabledTools.has(func.name))
-        .filter(
-          (func) => func.name !== "web_search" || Boolean(modelConfig?.supportsSearchGrounding),
-        );
-      const availableToolDeclarations = formatToolCalls(providerName, filteredFunctions);
+      const filteredFunctions = availableTools.filter(
+        (func) => func.name !== "web_search" || Boolean(modelConfig?.supportsSearchGrounding),
+      );
 
-      tools = [...availableToolDeclarations, ...providedTools];
+      tools = [
+        ...formatToolCalls(providerName, [...filteredFunctions, ...loadedExternalTools]),
+        ...params.tools,
+      ];
     } else {
-      const filteredFunctions = availableTools.filter((func) => enabledTools.has(func.name));
-
-      tools = formatToolCalls(providerName, filteredFunctions);
+      tools = formatToolCalls(providerName, [...availableTools, ...loadedExternalTools]);
     }
 
     const result: {

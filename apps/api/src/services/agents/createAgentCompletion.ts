@@ -36,7 +36,10 @@ export async function createAgentCompletion({
 
   const agent = await getValidatedAgent(serviceContext, agentId, user?.id);
 
-  const functionSchemas = await buildAgentCompletionTools(agent, serviceContext.env);
+  const { definitions, deferrableEntries } = await buildAgentCompletionTools(
+    agent,
+    serviceContext.env,
+  );
 
   const modelToUse = agent.model || body.model;
   const modelDetails = await findModelConfig(modelToUse || "", env, body.provider);
@@ -45,7 +48,7 @@ export async function createAgentCompletion({
     throw new AssistantError("Invalid model", ErrorType.PARAMS_ERROR);
   }
 
-  const formattedTools = formatToolCalls(modelDetails.provider, functionSchemas);
+  const formattedTools = formatToolCalls(modelDetails.provider, definitions);
 
   const systemPrompt = buildAgentSystemPrompt(agent);
 
@@ -55,6 +58,7 @@ export async function createAgentCompletion({
     modelProvider: modelDetails.provider,
     formattedTools,
     systemPrompt,
+    deferrableEntries,
   });
 
   const response = await handleCreateChatCompletions({

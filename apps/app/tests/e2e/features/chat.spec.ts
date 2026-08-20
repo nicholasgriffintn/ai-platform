@@ -392,6 +392,7 @@ test.describe("Response controls as pro", () => {
         top_k: 6,
       },
       temperature: 0.4,
+      tool_loading: "deferred",
       top_p: 0.75,
       use_rag: true,
     });

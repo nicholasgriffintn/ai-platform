@@ -111,6 +111,7 @@ export * from "./stripe";
 export * from "./tasks";
 export * from "./templates";
 export * from "./tool-registry";
+export * from "./tool-loading";
 export * from "./tools";
 export * from "./tool-configurations";
 export * from "./uploads";

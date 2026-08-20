@@ -35,9 +35,14 @@ type RagNumericOptionKey = "topK" | "scoreThreshold";
 type RagBooleanOptionKey = "includeMetadata";
 type RagStringOptionKey = "type" | "namespace";
 type ChatCompactionMode = NonNullable<ChatSettingsType["compaction"]>;
+type ChatToolLoadingMode = NonNullable<ChatSettingsType["tool_loading"]>;
 
 function isChatCompactionMode(value: string): value is ChatCompactionMode {
   return value === "auto" || value === "off";
+}
+
+function isChatToolLoadingMode(value: string): value is ChatToolLoadingMode {
+  return value === "auto" || value === "eager" || value === "deferred";
 }
 
 export const ChatSettings = ({
@@ -102,6 +107,17 @@ export const ChatSettings = ({
     setChatSettings({
       ...chatSettings,
       compaction: value,
+    });
+  };
+
+  const handleToolLoadingChange = (value: string) => {
+    if (!isChatToolLoadingMode(value)) {
+      return;
+    }
+
+    setChatSettings({
+      ...chatSettings,
+      tool_loading: value,
     });
   };
 
@@ -203,6 +219,7 @@ export const ChatSettings = ({
         handleNumericSettingChange(key as NumericChatSettingKey, value)
       }
       onCompactionChange={handleCompactionChange}
+      onToolLoadingChange={handleToolLoadingChange}
       onRagBooleanOptionChange={(key, value) =>
         handleRagBooleanOptionChange(key as RagBooleanOptionKey, value)
       }

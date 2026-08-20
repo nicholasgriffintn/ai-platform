@@ -1,6 +1,7 @@
 import type { ParsedChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
 
 import type { Agent } from "~/lib/database/schema";
+import type { DeferredToolEntry } from "~/lib/tools/DeferredToolSession";
 import type { ChatCompletionParameters, Message } from "~/types";
 
 type CompletionAgent = Pick<Agent, "id" | "model" | "temperature" | "max_steps">;
@@ -11,6 +12,7 @@ export interface AgentCompletionRequestInput {
   modelProvider: string;
   formattedTools: NonNullable<ChatCompletionParameters["tools"]>;
   systemPrompt: string;
+  deferrableEntries?: DeferredToolEntry[];
 }
 
 type PreparedAgentCompletionRequest = Omit<ChatCompletionParameters, "env">;
@@ -38,6 +40,7 @@ class AgentCompletionRequestPreparer {
       model: this.input.agent.model || this.input.body.model,
       provider: this.input.agent.model ? this.input.modelProvider : this.input.body.provider,
       tools: this.input.formattedTools,
+      deferred_tool_entries: this.input.deferrableEntries,
       stream: false,
       mode: "agent",
       max_steps: this.input.agent.max_steps || this.input.body.max_steps || 20,

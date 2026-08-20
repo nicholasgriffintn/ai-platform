@@ -656,6 +656,7 @@ export class HomePage extends BasePage {
     await settings.getByLabel("Enable RAG", { exact: true }).check();
     await settings.getByRole("tab", { name: "Advanced", exact: true }).click();
     await settings.getByLabel("Context compaction", { exact: true }).selectOption("off");
+    await settings.getByLabel("Tool loading", { exact: true }).selectOption("deferred");
     await settings.getByLabel("Top P", { exact: true }).fill("0.75");
     await settings.getByLabel("Max Tokens", { exact: true }).fill("1024");
     await settings.getByLabel("Presence penalty", { exact: true }).fill("0.4");

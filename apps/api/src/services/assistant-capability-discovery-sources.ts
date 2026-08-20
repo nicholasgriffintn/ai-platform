@@ -40,6 +40,7 @@ const INTERNAL_FUNCTION_TOOLS = new Set([
 
 export function scopeCapabilityDiscoverySourcesToProject(params: {
   connectors: readonly RecipeConnectorManifest[];
+  deferredToolIds?: ReadonlySet<string>;
   enabledToolIds: ReadonlySet<string>;
   recipes: readonly AssistantRecipe[];
   references: readonly ProjectCapabilityReference[];
@@ -62,7 +63,9 @@ export function scopeCapabilityDiscoverySourcesToProject(params: {
   return {
     recipes,
     connectors: params.connectors.filter((connector) => connectorIds.has(connector.id)),
-    tools: params.tools.filter((tool) => params.enabledToolIds.has(tool.id)),
+    tools: params.tools.filter(
+      (tool) => params.enabledToolIds.has(tool.id) || params.deferredToolIds?.has(tool.id),
+    ),
   };
 }
 
@@ -71,6 +74,16 @@ export async function loadCapabilityDiscoverySources(
 ): Promise<CapabilityDiscoverySources> {
   const user = request.user;
   const context = request.context;
+  const deferredTools = request.deferredTools;
+  const deferredToolIdSet = new Set(deferredTools?.withheldNames() ?? []);
+  const externalTools: DiscoverableFunctionTool[] = (deferredTools?.list("external") ?? []).map(
+    (entry) => ({
+      id: entry.definition.name,
+      name: formatFunctionName(entry.definition.name),
+      description: entry.definition.description ?? `${entry.group} tool.`,
+      type: "normal" as const,
+    }),
+  );
   let tools: DiscoverableFunctionTool[] = listFunctionTools()
     .filter(
       (tool) =>
@@ -81,7 +94,8 @@ export async function loadCapabilityDiscoverySources(
       name: formatFunctionName(tool.name),
       description: tool.description,
       type: tool.type,
-    }));
+    }))
+    .concat(externalTools);
   let recipes: AssistantRecipe[] = [];
   let connectors: RecipeConnectorManifest[] = [];
   let installations: RecipeInstallation[] = [];
@@ -123,6 +137,7 @@ export async function loadCapabilityDiscoverySources(
       const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
       const projectSources = scopeCapabilityDiscoverySourcesToProject({
         connectors,
+        deferredToolIds: deferredToolIdSet,
         enabledToolIds: new Set(resolveProjectTools(capabilities).enabledTools),
         recipes,
         references: capabilities,
@@ -137,7 +152,11 @@ export async function loadCapabilityDiscoverySources(
 
   return {
     connectors,
-    enabledToolIds: resolveEnabledFunctionToolNames(request.request?.enabled_tools, user),
+    deferredToolIds: deferredToolIdSet,
+    enabledToolIds: new Set([
+      ...resolveEnabledFunctionToolNames(request.request?.enabled_tools, user),
+      ...(deferredTools?.loadedDefinitions("external").map((definition) => definition.name) ?? []),
+    ]),
     installations,
     isPro: user?.plan_id === "pro",
     isSignedIn: Boolean(user?.id),

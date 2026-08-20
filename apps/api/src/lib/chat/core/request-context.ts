@@ -64,5 +64,6 @@ export function buildToolRequestContext(params: {
     user,
     context: chatOptions.context,
     memoryScope,
+    deferredTools: chatOptions.deferred_tools,
   };
 }
