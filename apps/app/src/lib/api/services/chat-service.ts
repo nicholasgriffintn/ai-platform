@@ -435,6 +435,25 @@ export class ChatService {
     return await returnFetchedData<{ share_id: string }>(response);
   }
 
+  async cancelChatCompletion(completion_id: string): Promise<void> {
+    if (!completion_id) {
+      return;
+    }
+
+    let headers = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error cancelling chat completion:", error);
+    }
+
+    await fetchApi(`/chat/completions/${completion_id}/cancel`, {
+      method: "POST",
+      headers,
+    });
+  }
+
   async unshareConversation(completion_id: string): Promise<void> {
     if (!completion_id) {
       throw new Error("No completion ID provided");

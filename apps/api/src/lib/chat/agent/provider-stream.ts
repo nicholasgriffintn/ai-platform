@@ -21,6 +21,7 @@ export interface ProviderStreamContext {
   provider: string;
   completionId: string;
   userId?: number;
+  shouldStop?: () => boolean;
 }
 
 export interface StreamedTurn {
@@ -35,6 +36,7 @@ export interface StreamedTurn {
   annotations: unknown;
   parts: MessagePart[];
   error: unknown;
+  stopped?: boolean;
 }
 
 class BoundedText {
@@ -258,6 +260,12 @@ export async function consumeProviderStream(
 
   try {
     while (!completed) {
+      if (context.shouldStop?.()) {
+        turn.stopped = true;
+        await reader.cancel().catch(() => {});
+        break;
+      }
+
       const { done, value } = await reader.read();
 
       if (done) {

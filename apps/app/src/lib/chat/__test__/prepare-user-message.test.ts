@@ -6,7 +6,7 @@ describe("prepareUserMessage", () => {
   it("builds a text message with conversation mode metadata", () => {
     expect(
       prepareUserMessage("  hello  ", undefined, "model-1", {
-        mode: "background",
+        mode: "live",
       } as any),
     ).toMatchObject({
       role: "user",
@@ -14,7 +14,7 @@ describe("prepareUserMessage", () => {
       model: "model-1",
       data: {
         conversationMode: {
-          mode: "background",
+          mode: "live",
         },
       },
     });

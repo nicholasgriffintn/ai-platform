@@ -135,33 +135,10 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
       });
     });
 
-    test("moves between Background, Live and Canvas surfaces", async ({
-      externalServices,
-      homePage,
-      page,
-    }) => {
+    test("moves between Live and Canvas surfaces", async ({ externalServices, homePage, page }) => {
       await externalServices.mockGeminiLiveWebSocket();
       await homePage.navigate("/chat");
       await homePage.waitForPersonaReady(persona);
-
-      if (persona === "pro") {
-        await homePage.selectModel("GPT-5.2");
-        await homePage.selectChatMode("Background");
-        await expect(page).toHaveURL(/\/chat\?mode=background$/);
-        await expect(
-          page.getByRole("heading", { name: "What should keep running?" }),
-        ).toBeVisible();
-        await captureVisualSnapshots(page, "release-chat-mode-background", {
-          ...DEFAULT_VISUAL_CHECKPOINTS,
-          viewports: [{ name: "desktop", width: 1280, height: 720 }],
-        });
-        await homePage.clearChatMode("Background");
-      } else {
-        // Background needs an OpenAI Responses model, which these personas cannot select.
-        expect(await homePage.getDisabledChatModeReason("Background")).toContain(
-          "OpenAI Responses model",
-        );
-      }
 
       await homePage.selectChatMode("Live");
       await expect(page).toHaveURL(/\/chat\?mode=live$/);
@@ -283,34 +260,6 @@ test.describe("Canvas generation", () => {
         ...DEFAULT_VISUAL_CHECKPOINTS,
         viewports: [{ name: "desktop", width: 1280, height: 720 }],
       });
-    });
-  });
-});
-
-test.describe("Background work as pro", () => {
-  test.use({ persona: "pro" });
-
-  test("completes an asynchronous response and reports its task", async ({
-    homePage,
-    page,
-    profilePage,
-  }) => {
-    await homePage.navigate("/chat");
-    await homePage.runBackgroundResponse("Complete this release task in the background");
-    await profilePage.openTab("tasks", "Tasks");
-    await expect(page.getByText(/Async Message Polling - COMPLETED/)).toBeVisible();
-    await captureVisualSnapshots(page, "release-chat-background-task", {
-      ...DEFAULT_VISUAL_CHECKPOINTS,
-      viewports: [{ name: "desktop", width: 1280, height: 720 }],
-    });
-    await homePage.navigate("/chat");
-    await homePage.openConversation(/Release validation chat/);
-    await expect(homePage.getLatestAssistantMessage()).toContainText(
-      "E2E background response completed",
-    );
-    await captureVisualSnapshots(page, "release-chat-background-response", {
-      ...DEFAULT_VISUAL_CHECKPOINTS,
-      viewports: [{ name: "desktop", width: 1280, height: 720 }],
     });
   });
 });

@@ -465,7 +465,7 @@ export class RequestPreparer {
     platform: Platform,
     mode: ChatMode,
   ): Promise<void> {
-    const messageData = buildUserMessageData(options.options, options.background);
+    const messageData = buildUserMessageData(options.options);
 
     const messageToStore: Message = {
       role: lastMessage.role,

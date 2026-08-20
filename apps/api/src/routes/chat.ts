@@ -1,4 +1,5 @@
 import {
+  cancelChatCompletionResponseSchema,
   compactChatCompletionResponseSchema,
   goalResponseSchema,
   setGoalRequestSchema,
@@ -47,6 +48,7 @@ import { sseResponse } from "~/lib/http/streaming";
 import { allowRestrictedPaths } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { handleCancelChatCompletion } from "~/services/completions/cancelChatCompletion";
 import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
 import { handleCheckChatCompletion } from "~/services/completions/checkChatCompletion";
 import { handleCompactChatCompletion } from "~/services/completions/compactChatCompletion";
@@ -391,6 +393,32 @@ addRoute(app, "get", "/completions/:completion_id/messages", {
         messages,
         conversation_id,
       });
+    })(raw),
+});
+
+addRoute(app, "post", "/completions/:completion_id/cancel", {
+  tags: ["chat"],
+  summary: "Cancel an in-flight chat completion",
+  description:
+    "Asks the running turn for this conversation to stop. The partial response is kept, and cancelling an already-finished turn is a no-op.",
+  paramSchema: getChatCompletionParamsSchema,
+  responses: {
+    200: {
+      description: "Cancellation requested",
+      schema: cancelChatCompletionResponseSchema,
+    },
+    404: { description: "Completion not found", schema: errorResponseSchema },
+  },
+  handler: async ({ raw }) =>
+    (async (context: Context) => {
+      const { completion_id } = context.req.valid("param" as never) as {
+        completion_id: string;
+      };
+
+      const serviceContext = getServiceContext(context);
+      const response = await handleCancelChatCompletion(serviceContext, completion_id);
+
+      return ResponseFactory.success(context, response);
     })(raw),
 });
 

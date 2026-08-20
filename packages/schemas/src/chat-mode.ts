@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-export const homeChatModeIdSchema = z.enum(["background", "chat", "live", "sms"]);
+export const homeChatModeIdSchema = z.enum(["chat", "live", "sms"]);
 
 export const inboundChannelIdSchema = z.enum(["sms"]);
 

@@ -39,10 +39,6 @@ import {
 } from "./chatModes";
 import { LiveChatModeControls, LiveSessionComposerControls } from "./LiveChatModeControls";
 
-function supportsBackgroundResponses(modelConfig: { provider?: string } | null | undefined) {
-  return modelConfig?.provider === "openai";
-}
-
 export function useHomeChatModeConfig(): {
   activeModeId: HomeChatModeId;
   modeConfig: ConversationThreadModeConfig;
@@ -68,7 +64,6 @@ export function useHomeChatModeConfig(): {
     () => getModelByReference(modelReferences, selectedModel),
     [modelReferences, selectedModel],
   );
-  const canUseBackgroundMode = supportsBackgroundResponses(selectedModelConfig);
   const composedReasoningModel = useMemo(
     () => getComposedRealtimeReasoningModelId(apiModels, selectedModel),
     [apiModels, selectedModel],
@@ -77,8 +72,7 @@ export function useHomeChatModeConfig(): {
   const [activeModeId, setActiveModeId] = useState<HomeChatModeId>(() =>
     resolveHomeChatModeId(searchParams.has("mode") ? searchParams.get("mode") : homeChatMode),
   );
-  const effectiveActiveModeId =
-    activeModeId === "background" && !canUseBackgroundMode ? "chat" : activeModeId;
+  const effectiveActiveModeId = activeModeId;
   const hydratedConversationIdRef = useRef<string | undefined>(undefined);
   const liveConversationMode = useMemo(
     () =>
@@ -172,19 +166,6 @@ export function useHomeChatModeConfig(): {
   }, [effectiveActiveModeId, liveProvider, selectedModelLiveProvider, setLiveProvider]);
 
   useEffect(() => {
-    if (activeModeId !== "background" || canUseBackgroundMode) {
-      return;
-    }
-
-    const next = new URLSearchParams(searchParams);
-
-    next.delete("mode");
-    setActiveModeId("chat");
-    setHomeChatMode("chat");
-    setSearchParams(next, { replace: true });
-  }, [activeModeId, canUseBackgroundMode, searchParams, setHomeChatMode, setSearchParams]);
-
-  useEffect(() => {
     if (currentConversationId && conversationModeMetadata) {
       return;
     }
@@ -220,10 +201,6 @@ export function useHomeChatModeConfig(): {
 
   const handleModeChange = useCallback(
     (modeId: HomeChatModeId) => {
-      if (modeId === "background" && !canUseBackgroundMode) {
-        return;
-      }
-
       setActiveModeId(modeId);
       setHomeChatMode(modeId);
       const next = new URLSearchParams(searchParams);
@@ -250,7 +227,6 @@ export function useHomeChatModeConfig(): {
       setSearchParams(next, { replace: true });
     },
     [
-      canUseBackgroundMode,
       effectiveActiveModeId,
       liveProvider,
       searchParams,
@@ -364,13 +340,7 @@ export function useHomeChatModeConfig(): {
     const modeControls = {
       activeModeControls,
       commands: HOME_CHAT_MODE_OPTIONS.map((option) => {
-        const availability =
-          option.id === "background" && !canUseBackgroundMode
-            ? {
-                disabled: true,
-                reason: "Background mode requires an OpenAI Responses model.",
-              }
-            : getHomeChatModeAvailability(option, effectiveActiveModeId);
+        const availability = getHomeChatModeAvailability(option, effectiveActiveModeId);
         const Icon = option.icon;
 
         return {
@@ -414,32 +384,6 @@ export function useHomeChatModeConfig(): {
           forceAutoPlayResponses: forceLiveResponseAudio,
           conversationMode: liveConversationMode,
           modeControls,
-        },
-      };
-    }
-
-    if (effectiveActiveModeId === "background") {
-      return {
-        activeModeId: effectiveActiveModeId,
-        modeConfig: {
-          assistantActionRoutes: { recipes: "/chat/capabilities" },
-          analyticsSource: "background",
-          welcomeTitle: "What should keep running?",
-          welcomeDescription:
-            "Describe the work to start, then track approvals, retries, and completion from the conversation.",
-          inputPlaceholder: {
-            newConversation: "Start background work...",
-            followUp: "Add instructions or continue the background response...",
-          },
-          requestOptions: {
-            background: true,
-          },
-          modelScope: "text-only",
-          conversationMode: buildConversationModeMetadata({
-            mode: "background",
-          }),
-          modeControls,
-          onModelChange: handleModelChange,
         },
       };
     }

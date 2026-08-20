@@ -1,12 +1,17 @@
+import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { ModelConfigInfo } from "@ngriffin_uk/polychat-schemas";
 
 import { runAgentLoop, type AgentLoopExecutionParams } from "~/lib/chat/agent/runAgentLoop";
 import { createConnectorRunCloser } from "~/lib/chat/core/chat-stream";
-import { createChatSseStreamWriter, type ChatEventSink } from "~/lib/chat/emitter";
+import {
+  createChatSseStreamWriter,
+  startChatStreamHeartbeat,
+  type ChatEventSink,
+} from "~/lib/chat/emitter";
 import { getAIResponse } from "~/lib/chat/responses";
+import { watchDetachedTurnCancellation } from "~/lib/chat/turn-cancellation";
 import { StreamState, type Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { finaliseReadableStream } from "~/utils/finalise-readable-stream";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/chat/core/model-ensemble" });
@@ -15,11 +20,18 @@ const SUPPRESSED_PRIMARY_EVENTS = new Set(["message_delta", "message_stop"]);
 
 export type CreateModelEnsembleStreamParams = Omit<AgentLoopExecutionParams, "sink" | "emit"> & {
   models: ModelConfigInfo[];
+  executionCtx?: ExecutionContext;
 };
 
 export function createModelEnsembleStream(params: CreateModelEnsembleStreamParams): ReadableStream {
   const stream = createChatSseStreamWriter();
   const closeConnectorRun = createConnectorRunCloser(params);
+  const stopHeartbeat = startChatStreamHeartbeat(stream);
+  const stopSignal = watchDetachedTurnCancellation({
+    env: params.env,
+    completionId: params.completionId,
+    isDetached: stream.isDetached,
+  });
   const secondaryModels = params.models.slice(1);
   const secondaryResponses = secondaryModels.map((modelConfig) =>
     requestSecondaryAnswer(params, modelConfig),
@@ -51,7 +63,11 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
 
       await stream.writeEvent("content_block_delta", { content: header });
 
-      const primary = await runAgentLoop({ ...params, sink: primarySink });
+      const primary = await runAgentLoop({
+        ...params,
+        sink: primarySink,
+        shouldStop: stopSignal.shouldStop,
+      });
       const secondaryText = await streamSecondaryAnswers(
         stream,
         secondaryModels,
@@ -91,6 +107,8 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
         type: error instanceof AssistantError ? error.type : ErrorType.PROVIDER_ERROR,
       });
     } finally {
+      stopHeartbeat();
+      stopSignal.stop();
       await closeConnectorRun();
 
       try {
@@ -102,12 +120,16 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
     }
   };
 
-  void run().catch((error) => {
+  const running = run().catch(async (error) => {
     logger.error("Model ensemble runner crashed", { error, completionId: params.completionId });
-    void stream.abort(error);
+    stopHeartbeat();
+    stopSignal.stop();
+    await stream.abort(error);
   });
 
-  return finaliseReadableStream({ stream: stream.readable, cleanup: closeConnectorRun });
+  params.executionCtx?.waitUntil(running);
+
+  return stream.readable;
 }
 
 async function requestSecondaryAnswer(

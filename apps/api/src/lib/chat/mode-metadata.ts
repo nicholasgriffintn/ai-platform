@@ -7,7 +7,7 @@ import type { ChatMode, ChatRequestOptions } from "~/types";
 
 const AGENT_EXECUTION_MODES = new Set<ChatMode>(["agent", "plan", "build", "explore"]);
 
-export type ChatConversationMode = "sms" | "background";
+export type ChatConversationMode = "sms";
 
 export function isAgentExecutionMode(mode: ChatMode | null | undefined): boolean {
   return typeof mode === "string" && AGENT_EXECUTION_MODES.has(mode);
@@ -15,17 +15,8 @@ export function isAgentExecutionMode(mode: ChatMode | null | undefined): boolean
 
 export function resolveChatConversationMode(
   options: ChatRequestOptions | undefined,
-  background?: boolean,
 ): ChatConversationMode | undefined {
-  if (options?.channel) {
-    return options.channel.id;
-  }
-
-  if (background) {
-    return "background";
-  }
-
-  return undefined;
+  return options?.channel?.id;
 }
 
 function asResponseDataRecord(data: unknown): Record<string, unknown> | null {
@@ -42,9 +33,8 @@ export function buildAssistantMessageData(params: {
 
 export function buildUserMessageData(
   options: ChatRequestOptions | undefined,
-  background?: boolean,
 ): Record<string, unknown> | undefined {
-  const conversationMode = buildConversationModeMetadataFromRequestOptions(options, background);
+  const conversationMode = buildConversationModeMetadataFromRequestOptions(options);
   const codingTaskType = options?.sandbox?.enabled ? options.sandbox.taskType : undefined;
 
   if (!conversationMode && !codingTaskType) {
@@ -59,9 +49,8 @@ export function buildUserMessageData(
 
 export function buildConversationModeMetadataFromRequestOptions(
   options: ChatRequestOptions | undefined,
-  background?: boolean,
 ): ConversationModeMetadata | undefined {
-  const mode = resolveChatConversationMode(options, background);
+  const mode = resolveChatConversationMode(options);
 
   if (!mode) {
     return undefined;
@@ -69,7 +58,7 @@ export function buildConversationModeMetadataFromRequestOptions(
 
   const parsed = conversationModeMetadataSchema.safeParse({
     mode,
-    requestOptions: mode === "background" ? undefined : options,
+    requestOptions: options,
     smsSettings:
       options?.channel?.id === "sms"
         ? {

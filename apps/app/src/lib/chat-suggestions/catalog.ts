@@ -22,14 +22,6 @@ export const CAPABILITY_SUGGESTIONS: ChatSuggestionDefinition[] = [
     isEligible: (context) => context.availableModes.includes("live"),
   },
   {
-    id: "capability-background",
-    label: "Set something running",
-    category: "background",
-    hint: "Switches to Background mode",
-    action: { type: "mode", modeId: "background" },
-    isEligible: (context) => context.availableModes.includes("background"),
-  },
-  {
     id: "capability-image",
     label: "Make an image",
     prompt:

@@ -20,6 +20,7 @@ function createParams() {
     conversationManager: { getUsageLimits: vi.fn(async () => null) },
     toolRequestContext: { context: connectorContext },
     mode: "normal",
+    env: {},
   } as never;
 }
 
@@ -28,18 +29,21 @@ describe("createChatTurnStream", () => {
     vi.clearAllMocks();
   });
 
-  it("closes the connector run when the client disconnects mid-turn", async () => {
+  it("keeps the turn running when the client disconnects mid-turn", async () => {
     let startTurn: () => void = () => {};
+    let finishTurn: () => void = () => {};
 
     const turnStarted = new Promise<void>((resolve) => {
       startTurn = resolve;
     });
 
-    mocks.runAgentLoop.mockImplementation(() => {
-      startTurn();
-
-      return new Promise(() => {});
-    });
+    mocks.runAgentLoop.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishTurn = () => resolve();
+          startTurn();
+        }),
+    );
 
     const stream = createChatTurnStream(createParams());
     const reader = stream.getReader();
@@ -48,7 +52,10 @@ describe("createChatTurnStream", () => {
     await turnStarted;
     await reader.cancel("client disconnected");
 
-    expect(mocks.closeComposioConnectorRun).toHaveBeenCalledWith(connectorContext);
+    expect(mocks.closeComposioConnectorRun).not.toHaveBeenCalled();
+
+    finishTurn();
+    await vi.waitFor(() => expect(mocks.closeComposioConnectorRun).toHaveBeenCalledOnce());
   });
 
   it("closes the connector run once for a turn that finishes normally", async () => {
