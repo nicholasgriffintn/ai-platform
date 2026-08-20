@@ -16,6 +16,7 @@ export interface DiscoverableFunctionTool {
 
 export interface CapabilityDiscoverySources {
   connectors: readonly RecipeConnectorManifest[];
+  deferredToolIds: ReadonlySet<string>;
   enabledToolIds: ReadonlySet<string>;
   installations: readonly RecipeInstallation[];
   isPro: boolean;
@@ -37,13 +38,17 @@ export interface CapabilityDiscoveryFilters {
 
 function createToolItem(
   tool: DiscoverableFunctionTool,
-  access: Pick<CapabilityDiscoverySources, "enabledToolIds" | "isPro" | "isSignedIn">,
+  access: Pick<
+    CapabilityDiscoverySources,
+    "deferredToolIds" | "enabledToolIds" | "isPro" | "isSignedIn"
+  >,
 ): CapabilityDiscoveryItem {
   const available =
     tool.type === "normal" ||
     (tool.type === "premium" && access.isPro) ||
     (tool.type === "byok" && access.isSignedIn);
-  const enabled = access.enabledToolIds.has(tool.id);
+  const deferred = access.deferredToolIds.has(tool.id);
+  const enabled = deferred || access.enabledToolIds.has(tool.id);
   const ready = available && enabled;
   const unavailableReason =
     tool.type === "premium"
@@ -58,7 +63,9 @@ function createToolItem(
     configured: available,
     state: ready ? "ready" : "unavailable",
     reason: ready
-      ? "This tool is enabled and ready to use."
+      ? deferred
+        ? "This tool is now loaded for this conversation."
+        : "This tool is enabled and ready to use."
       : available
         ? `This tool exists but is not enabled in the current conversation. Enable ${tool.id} before using it.`
         : unavailableReason,
@@ -67,7 +74,9 @@ function createToolItem(
       toolName: tool.id,
       availableNow: ready,
       instruction: ready
-        ? `Call ${tool.id} using its declared parameter schema.`
+        ? deferred
+          ? `${tool.id} is now loaded. Call it on your next turn using its declared parameter schema.`
+          : `Call ${tool.id} using its declared parameter schema.`
         : available
           ? `Do not invent a replacement tool call. Ask the user to enable ${tool.id}, then call that exact tool using its declared schema.`
           : `Do not call ${tool.id}. ${unavailableReason}`,

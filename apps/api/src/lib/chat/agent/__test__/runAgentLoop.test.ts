@@ -11,11 +11,7 @@ vi.mock("~/lib/chat/responses", () => ({
 
 vi.mock("~/lib/chat/tools", () => ({
   handleToolCalls: mocks.handleToolCalls,
-  formatToolCalls: (_provider: string, functions: { name: string }[]) =>
-    functions.map((definition) => ({ name: definition.name })),
 }));
-
-import { DeferredToolRegistry } from "~/lib/tools/DeferredToolRegistry";
 
 import { runAgentLoop } from "../runAgentLoop";
 
@@ -186,63 +182,5 @@ describe("runAgentLoop", () => {
 
     expect(mocks.getAIResponse).toHaveBeenCalledTimes(2);
     expect(result.response.response).toBe("Actually done now.");
-  });
-
-  describe("deferred tools", () => {
-    const createDeferredParams = () => {
-      const deferredTools = new DeferredToolRegistry([
-        {
-          group: "GitHub",
-          definition: {
-            name: "mcp_a1b2_create_issue",
-            description: "Open a new issue on a repository.",
-            parameters: { type: "object", properties: {} },
-          },
-        },
-      ]);
-      const params = createParams();
-
-      params.requestParams = {
-        messages: [{ role: "user", content: "hi" }],
-        provider: "anthropic",
-        tools: [{ name: "load_tools" }],
-      } as any;
-      params.toolRequestContext = { env: { AI: {} }, deferredTools } as any;
-
-      return { params, deferredTools };
-    };
-
-    it("sends only the base tools until something is loaded", async () => {
-      const { params } = createDeferredParams();
-
-      mocks.getAIResponse.mockResolvedValueOnce({ response: "Nothing to load." });
-
-      await runAgentLoop(params);
-
-      expect(mocks.getAIResponse.mock.calls[0][0].tools).toEqual([{ name: "load_tools" }]);
-    });
-
-    it("adds loaded tools to the following turns", async () => {
-      const { params, deferredTools } = createDeferredParams();
-
-      mocks.getAIResponse
-        .mockResolvedValueOnce({
-          response: "",
-          tool_calls: [{ id: "call-1", function: { name: "load_tools", arguments: "{}" } }],
-        })
-        .mockResolvedValueOnce({ response: "Issue opened." });
-      mocks.handleToolCalls.mockImplementationOnce(async () => {
-        deferredTools.activate(["mcp_a1b2_create_issue"]);
-
-        return [{ role: "tool", name: "load_tools", content: "Loaded 1 tool", status: "success" }];
-      });
-
-      await runAgentLoop(params);
-
-      expect(mocks.getAIResponse.mock.calls[1][0].tools).toEqual([
-        { name: "load_tools" },
-        { name: "mcp_a1b2_create_issue" },
-      ]);
-    });
   });
 });

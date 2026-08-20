@@ -1,4 +1,3 @@
-import { LOAD_TOOLS_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -41,52 +40,42 @@ function mockServerTools(count: number) {
   );
 }
 
-function toolNames(definitions: { name: string }[]): string[] {
-  return definitions.map((definition) => definition.name);
-}
-
 describe("buildAgentCompletionTools", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("sends a small MCP catalogue up front", async () => {
+  it("keeps MCP tools out of the inline definitions and offers them as deferrable entries", async () => {
     mockServerTools(3);
 
-    const { definitions, deferredTools } = await buildAgentCompletionTools(agent, env);
+    const { definitions, deferrableEntries } = await buildAgentCompletionTools(agent, env);
 
-    expect(deferredTools).toBeUndefined();
-    expect(toolNames(definitions)).toContain("mcp_agent-12_tool_0");
-    expect(toolNames(definitions)).not.toContain(LOAD_TOOLS_TOOL_NAME);
+    expect(definitions.map((definition) => definition.name)).toEqual([
+      "request_approval",
+      "ask_user",
+    ]);
+    expect(deferrableEntries).toHaveLength(3);
   });
 
-  it("defers a large MCP catalogue behind the load tool", async () => {
-    mockServerTools(40);
+  it("groups every entry by its server and marks it external", async () => {
+    mockServerTools(2);
 
-    const { definitions, deferredTools } = await buildAgentCompletionTools(agent, env);
+    const { deferrableEntries } = await buildAgentCompletionTools(agent, env);
 
-    expect(deferredTools?.size).toBe(40);
-    expect(toolNames(definitions)).toContain(LOAD_TOOLS_TOOL_NAME);
-    expect(toolNames(definitions).some((name) => name.startsWith("mcp_"))).toBe(false);
+    expect(deferrableEntries[0]).toMatchObject({ group: "Example", origin: "external" });
+    expect(deferrableEntries.map((entry) => entry.definition.name)).toEqual([
+      "mcp_agent-12_tool_0",
+      "mcp_agent-12_tool_1",
+    ]);
   });
 
-  it("describes the deferred catalogue on the load tool", async () => {
-    mockServerTools(40);
-
-    const { definitions } = await buildAgentCompletionTools(agent, env);
-    const loadTool = definitions.find((definition) => definition.name === LOAD_TOOLS_TOOL_NAME);
-
-    expect(loadTool?.description).toContain("40 tools can be loaded");
-    expect(loadTool?.description).toContain("Example");
-  });
-
-  it("keeps the core agent tools whether or not the catalogue is deferred", async () => {
-    mockServerTools(40);
-
-    const { definitions } = await buildAgentCompletionTools(agent, env);
-
-    expect(toolNames(definitions)).toEqual(
-      expect.arrayContaining(["request_approval", "ask_user"]),
+  it("returns no entries for an agent with no servers", async () => {
+    const { definitions, deferrableEntries } = await buildAgentCompletionTools(
+      { ...agent, servers: null },
+      env,
     );
+
+    expect(deferrableEntries).toEqual([]);
+    expect(definitions).toHaveLength(2);
   });
 });

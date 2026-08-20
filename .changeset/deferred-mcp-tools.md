@@ -1,15 +1,25 @@
 ---
+"@ngriffin_uk/polychat-component-conversation": minor
+"@ngriffin_uk/polychat-library-chat": minor
 "@ngriffin_uk/polychat-schemas": minor
 ---
 
-Add `load_tools`, the contract for loading a tool definition mid-turn instead of sending every
-schema up front.
+Add `tool_loading`, so a conversation can hold tool definitions back and let the assistant load them
+when it needs them.
 
-An agent wired to a large MCP server used to spend its whole context budget on tool schemas before
-the model read a word of the conversation: every tool from every configured server was inlined on
-every step, unbounded. Agents with more than twelve MCP tools now receive `load_tools` instead,
-whose description indexes the catalogue by server, and the tools it returns become callable from the
-next turn. Smaller catalogues are still sent up front, where the schemas cost less than the extra
-model turn a deferred load would.
+Every enabled tool used to be serialised into every request, on every step. That is fine for a
+handful of tools and wasteful for a full set, and unbounded for an agent wired to a large MCP
+server, where every tool from every configured server was inlined with no ceiling.
 
-`schemas` gains `LOAD_TOOLS_TOOL_NAME`, `loadToolsInputSchema`, and the load limits.
+`tool_loading` takes `auto` (the default), `eager`, or `deferred`. When tools are deferred, the
+request carries only the control-plane tools plus a name-only index in the system prompt;
+`discover_capabilities` — which already searched tools, recipes, and connectors — now also loads
+what it finds, and the tool becomes callable on the next turn. Loads carry across turns of the same
+conversation, so the assistant pays for a lookup once.
+
+Deferral never widens what a conversation may run: only already-enabled tools enter the catalogue,
+and plan and mode gating still apply to everything discovery returns.
+
+`schemas` gains `toolLoadingModeSchema` and `chat_completions.tool_loading`; `library-chat`'s
+`ChatSettings` gains `tool_loading`; `ChatSettingsPanel` gains a Tool loading control and a required
+`onToolLoadingChange` prop.

@@ -2,6 +2,7 @@ import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveMemoryPolicy } from "~/lib/chat/memoryPolicy";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
+import type { DeferredToolSession } from "~/lib/tools/DeferredToolSession";
 import type { ChatMode, IBody, IUser, IUserSettings } from "~/types";
 import { trimTemplateWhitespace } from "~/utils/strings";
 
@@ -17,6 +18,7 @@ export type PromptRequest = IBody;
 
 export interface PromptSessionOptions {
   memory?: PromptMemoryPolicy;
+  deferredTools?: DeferredToolSession;
 }
 
 export async function getSystemPrompt(
@@ -47,6 +49,7 @@ export async function getSystemPrompt(
       { modelId: model },
       skills,
       memoryPolicy,
+      session?.deferredTools,
     );
   } else {
     const inputs = modelConfig.modalities?.input ?? ["text"];
@@ -63,6 +66,7 @@ export async function getSystemPrompt(
         { modelId: model, modelConfig },
         skills,
         memoryPolicy,
+        session?.deferredTools,
       );
     } else {
       const isTextToImageModel = outputs.includes("image") && !supportsTextOutput;
@@ -80,6 +84,7 @@ export async function getSystemPrompt(
           { modelId: model, modelConfig },
           skills,
           memoryPolicy,
+          session?.deferredTools,
         );
       }
     }

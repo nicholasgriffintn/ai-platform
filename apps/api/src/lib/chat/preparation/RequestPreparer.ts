@@ -27,6 +27,7 @@ import {
   augmentPrompt,
 } from "~/lib/providers/capabilities/embedding/helpers";
 import { findModelConfig } from "~/lib/providers/models";
+import type { DeferredToolSession } from "~/lib/tools/DeferredToolSession";
 import { RepositoryManager } from "~/repositories";
 import {
   getConnectedRecipeConnectorProviders,
@@ -60,6 +61,7 @@ import { memoizeRequest } from "~/utils/requestCache";
 
 import { getAllAttachments, pruneMessagesToFitContext, sanitiseInput } from "../utils";
 import type { ValidationContext } from "../validation/ValidationPipeline";
+import { collectLoadedToolNames, resolveToolLoading } from "./toolLoading";
 
 const logger = getLogger({ prefix: "lib/chat/preparation/RequestPreparer" });
 
@@ -91,6 +93,8 @@ export interface PreparedRequest {
   currentMode: ChatMode;
   isProUser: boolean;
   enabledTools: string[];
+  tools?: Record<string, any>[];
+  deferredTools?: DeferredToolSession;
   toolOptions?: ChatHostedToolSettings;
   requestOptions: CoreChatOptions["options"];
   memoryScope: MemoryScope;
@@ -294,6 +298,37 @@ export class RequestPreparer {
 
     const activeGoal = await this.loadActiveGoal(options);
 
+    const enabledTools = projectContext?.enabledTools ?? options.enabled_tools;
+    const toolOptions = projectContext
+      ? projectContext.toolOptions
+      : mergePersonalModelToolOptions({
+          configured: resolveModelToolConfigurations(
+            savedToolConfigurations.map((configuration) => ({
+              toolId: configuration.capabilityId,
+              configuration: configuration.configuration,
+            })),
+          ),
+          requestedEnabledTools: enabledTools,
+          requestedToolOptions: options.tool_options,
+        });
+    const resolvedEnabledTools = mergeSkillSuggestedToolNames({
+      enabledTools: mergeEnabledMemoryToolNames({
+        enabledTools,
+        user,
+        userSettings,
+        store: options.store,
+      }),
+      skills,
+    });
+    const toolLoading = resolveToolLoading({
+      options,
+      enabledToolNames: resolvedEnabledTools,
+      user,
+      provider: primaryProvider,
+      supportsToolCalls: Boolean(primaryModelConfig.supportsToolCalls),
+      connectedConnectorProviders,
+    });
+
     const systemPromptTask = this.buildSystemPrompt(
       options,
       sanitizedMessages,
@@ -305,6 +340,7 @@ export class RequestPreparer {
       memoryScope,
       skills,
       activeGoal,
+      toolLoading.deferredTools,
     );
 
     if (storeMessagesTask) {
@@ -322,19 +358,7 @@ export class RequestPreparer {
       primaryModelConfig,
     });
 
-    const enabledTools = projectContext?.enabledTools ?? options.enabled_tools;
-    const toolOptions = projectContext
-      ? projectContext.toolOptions
-      : mergePersonalModelToolOptions({
-          configured: resolveModelToolConfigurations(
-            savedToolConfigurations.map((configuration) => ({
-              toolId: configuration.capabilityId,
-              configuration: configuration.configuration,
-            })),
-          ),
-          requestedEnabledTools: enabledTools,
-          requestedToolOptions: options.tool_options,
-        });
+    toolLoading.deferredTools?.load(collectLoadedToolNames(messages));
 
     return {
       modelConfigs,
@@ -348,15 +372,9 @@ export class RequestPreparer {
       userSettings,
       currentMode: mode,
       isProUser,
-      enabledTools: mergeSkillSuggestedToolNames({
-        enabledTools: mergeEnabledMemoryToolNames({
-          enabledTools,
-          user,
-          userSettings,
-          store: options.store,
-        }),
-        skills,
-      }),
+      enabledTools: resolvedEnabledTools,
+      tools: toolLoading.tools,
+      deferredTools: toolLoading.deferredTools,
       toolOptions,
       requestOptions: options.options,
       memoryScope,
@@ -598,6 +616,7 @@ export class RequestPreparer {
     memoryScope: MemoryScope = { type: "personal" },
     skills?: readonly SkillAvailability[],
     activeGoal?: Goal | null,
+    deferredTools?: DeferredToolSession,
   ): Promise<string> {
     const {
       system_prompt,
@@ -665,7 +684,7 @@ export class RequestPreparer {
       user || undefined,
       userSettings,
       skills,
-      { memory: memoryPolicy },
+      { memory: memoryPolicy, deferredTools },
     );
 
     const enhancedPrompt = await this.enhanceSystemPromptWithMemory(

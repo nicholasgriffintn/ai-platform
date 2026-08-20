@@ -40,6 +40,7 @@ export interface ChatSettingsPanelProps {
   onBooleanSettingChange: (key: string, value: boolean) => void;
   onNumericSettingChange: (key: string, value: string) => void;
   onCompactionChange: (value: string) => void;
+  onToolLoadingChange: (value: string) => void;
   onRagBooleanOptionChange: (key: string, value: boolean) => void;
   onRagNumericOptionChange: (key: string, value: string) => void;
   onRagStringOptionChange: (key: string, value: string) => void;
@@ -67,6 +68,7 @@ export function ChatSettingsPanel({
   onBooleanSettingChange,
   onNumericSettingChange,
   onCompactionChange,
+  onToolLoadingChange,
   onRagBooleanOptionChange,
   onRagNumericOptionChange,
   onRagStringOptionChange,
@@ -186,6 +188,20 @@ export function ChatSettingsPanel({
                     { value: "off", label: "Off" },
                   ]}
                   description="Controls whether stored context is compacted near the model limit."
+                />
+
+                <CompactSettingSelect
+                  id="tool_loading"
+                  label="Tool loading"
+                  value={chatSettings.tool_loading ?? "auto"}
+                  onChange={onToolLoadingChange}
+                  disabled={isDisabled}
+                  options={[
+                    { value: "auto", label: "Automatic" },
+                    { value: "eager", label: "Send every tool" },
+                    { value: "deferred", label: "Load on demand" },
+                  ]}
+                  description="Sending every enabled tool costs context. Loading on demand sends names only, and the assistant fetches a definition when it needs one."
                 />
 
                 <CompactSettingRange

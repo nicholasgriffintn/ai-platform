@@ -41,6 +41,12 @@ export const discover_capabilities: ApiToolDefinition = {
     const sources = await loadCapabilityDiscoverySources(toolContext.request);
     const result = discoverAssistantCapabilities(sources, args);
 
+    toolContext.request.deferredTools?.load(
+      result.items
+        .filter((item) => item.kind === "tool" && item.invocation.availableNow)
+        .map((item) => item.invocation.toolName),
+    );
+
     return createCapabilityDiscoveryResponse(result);
   },
 };

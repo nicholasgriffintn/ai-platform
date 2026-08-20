@@ -310,6 +310,7 @@ export class ChatOrchestrator {
         approved_tools,
         enabled_tools,
         options: prepared.requestOptions,
+        deferred_tools: prepared.deferredTools,
       },
       input: messageWithContext,
       mode: currentMode,

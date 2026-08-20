@@ -11,6 +11,7 @@ import { hasCompactionPart, messagePartsSchema } from "./message-parts";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
 import { sandboxRequestOptionsSchema } from "./sandbox";
 import { messageSchema } from "./shared";
+import { toolLoadingModeSchema } from "./tool-loading";
 import { toolIdsSchema } from "./tools";
 
 const recordSchema = z.record(z.string(), z.unknown());
@@ -462,6 +463,11 @@ export const chatCompletionsRequestFieldsSchema = z.object({
     .optional()
     .describe("Optional budget constraint for model routing."),
   enabled_tools: toolIdsSchema.optional().describe("Tool IDs enabled for this request."),
+  tool_loading: toolLoadingModeSchema
+    .optional()
+    .describe(
+      "Whether enabled tools are sent to the model up front, discovered on demand, or chosen by payload size.",
+    ),
   approved_tools: toolIdsSchema
     .optional()
     .describe("Tool IDs pre-approved for approval-gated modes."),

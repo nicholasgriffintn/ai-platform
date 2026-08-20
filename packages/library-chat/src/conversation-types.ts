@@ -26,6 +26,7 @@ export interface ChatSettings {
   presence_penalty?: number;
   frequency_penalty?: number;
   compaction?: SchemaChatCompletionRequestBody["compaction"];
+  tool_loading?: SchemaChatCompletionRequestBody["tool_loading"];
   use_rag?: boolean;
   localOnly?: boolean;
   enabled_tools?: string[];

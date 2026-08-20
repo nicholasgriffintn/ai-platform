@@ -9,7 +9,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "../lib/context/serviceContext";
-import type { DeferredToolRegistry } from "../lib/tools/DeferredToolRegistry";
+import type { DeferredToolEntry, DeferredToolSession } from "../lib/tools/DeferredToolSession";
 import type { AnonymousUser } from "./anonymous-user";
 import type { MemoryScope } from "./memory";
 import type { IEnv, ReasoningEffortLevel, VerbosityLevel } from "./shared";
@@ -222,7 +222,7 @@ export interface IRequest {
   rag_options?: RagOptions;
   context?: ServiceContext;
   memoryScope?: MemoryScope;
-  deferredTools?: DeferredToolRegistry;
+  deferredTools?: DeferredToolSession;
 }
 
 type InternalExecutionParams = {
@@ -252,8 +252,8 @@ type InternalExecutionParams = {
   messages?: Message[];
   // Provider-formatted tools.
   tools?: Record<string, any>[];
-  // Tools the model can load on demand instead of receiving up front.
-  deferred_tools?: DeferredToolRegistry;
+  deferred_tools?: DeferredToolSession;
+  deferred_tool_entries?: DeferredToolEntry[];
   // Provider thinking configuration after request preparation.
   thinking?: {
     type: "enabled" | "disabled";
