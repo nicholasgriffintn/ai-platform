@@ -1,4 +1,6 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { ConversationManager } from "~/lib/conversationManager";
+import { isUsageExhausted } from "~/lib/usage/limitState";
 import { GoalService } from "~/services/goals/GoalService";
 import { getLogger } from "~/utils/logger";
 
@@ -15,6 +17,7 @@ export const GOAL_CONTINUATION_INSTRUCTION = [
 export interface StreamingGoalContinuationParams {
   completionId: string;
   context?: ServiceContext;
+  conversationManager?: Pick<ConversationManager, "getUsageLimits">;
   summary: string;
   producedEvidence: boolean;
 }
@@ -42,6 +45,11 @@ export async function resolveStreamingGoalContinuation(
       return null;
     }
 
+    // A goal spends a model call per continuation, so it stops at the usage
+    // limit and ends as limit_reached rather than spending past it.
+    const usageLimitsExhausted = params.conversationManager
+      ? await isUsageExhausted(params.conversationManager)
+      : false;
     const { shouldContinue } = await service.recordIteration({
       goal,
       iteration: {
@@ -49,6 +57,7 @@ export async function resolveStreamingGoalContinuation(
         summary: params.summary || "Model responded without calling a tool",
         producedEvidence: params.producedEvidence,
         calledTool: params.producedEvidence,
+        usageLimitsExhausted,
       },
     });
 

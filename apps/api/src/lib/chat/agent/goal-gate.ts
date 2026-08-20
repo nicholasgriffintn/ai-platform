@@ -1,12 +1,15 @@
 import type { AgentFinishAssessment } from "@ngriffin_uk/polychat-library-agent-core";
 import type { Goal, GoalSurface } from "@ngriffin_uk/polychat-schemas";
 
+import type { ConversationManager } from "~/lib/conversationManager";
+import { isUsageExhausted } from "~/lib/usage/limitState";
 import type { GoalService } from "~/services/goals/GoalService";
 
 export interface GoalGateParams {
   goalService: GoalService;
   goal: Goal;
   surface: GoalSurface;
+  conversationManager?: Pick<ConversationManager, "getUsageLimits">;
   onTerminalStatus?: (goal: Goal) => Promise<void>;
 }
 
@@ -42,6 +45,9 @@ export function createGoalFinishGate(params: GoalGateParams) {
     }
 
     const progressed = context.commandCount > currentGoal.iteration_count;
+    const usageLimitsExhausted = params.conversationManager
+      ? await isUsageExhausted(params.conversationManager)
+      : false;
     const { goal, shouldContinue } = await params.goalService.recordIteration({
       goal: latest,
       iteration: {
@@ -50,6 +56,7 @@ export function createGoalFinishGate(params: GoalGateParams) {
         evidence: [],
         producedEvidence: progressed,
         calledTool: progressed,
+        usageLimitsExhausted,
       },
     });
 

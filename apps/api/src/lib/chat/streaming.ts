@@ -15,6 +15,7 @@ import { MemoryManager } from "~/lib/memory";
 import { trackTokenUsage } from "~/lib/monitoring";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { findModelConfig } from "~/lib/providers/models";
+import { isUsageExhausted } from "~/lib/usage/limitState";
 import { mergeStreamedTokenUsage, type NormalisedTokenUsage } from "~/lib/usage/tokenUsage";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
 import {
@@ -177,6 +178,16 @@ interface StreamContinuationParams {
  */
 async function continueStreamingTurn(params: StreamContinuationParams): Promise<boolean> {
   try {
+    // Each continuation is another model call inside the same request, so the
+    // limit is re-checked here rather than only at the request boundary.
+    if (await isUsageExhausted(params.conversationManager)) {
+      logger.info("Stopping streaming continuation at the usage limit", {
+        completion_id: params.completionId,
+      });
+
+      return false;
+    }
+
     const history = await params.conversationManager.get(params.completionId);
     const continuationBase = params.options.continuationRequest ?? params.options;
     const messages = params.instruction
@@ -675,6 +686,7 @@ export async function createStreamWithPostProcessing(
         const goalContinuation = await resolveStreamingGoalContinuation({
           completionId: completion_id,
           context,
+          conversationManager,
           summary: fullContent || "",
           producedEvidence: false,
         });

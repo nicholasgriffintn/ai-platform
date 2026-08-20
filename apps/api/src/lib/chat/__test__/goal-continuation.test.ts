@@ -91,6 +91,43 @@ describe("resolveStreamingGoalContinuation", () => {
     );
   });
 
+  it("ends the goal at the usage limit instead of spending past it", async () => {
+    const context = createContext(createGoal());
+    const conversationManager = {
+      getUsageLimits: vi.fn(async () => ({ daily: { used: 100, limit: 100 } })),
+    } as any;
+
+    const result = await resolveStreamingGoalContinuation({
+      completionId: "conversation-1",
+      context,
+      conversationManager,
+      summary: "Still working",
+      producedEvidence: true,
+    });
+
+    expect(result).toBeNull();
+    expect(context.repositories.goals.updateGoal).toHaveBeenCalledWith(
+      "goal-1",
+      expect.objectContaining({ status: "limit_reached" }),
+    );
+  });
+
+  it("keeps going while the user still has allowance", async () => {
+    const conversationManager = {
+      getUsageLimits: vi.fn(async () => ({ daily: { used: 3, limit: 100 } })),
+    } as any;
+
+    await expect(
+      resolveStreamingGoalContinuation({
+        completionId: "conversation-1",
+        context: createContext(createGoal()),
+        conversationManager,
+        summary: "Still working",
+        producedEvidence: true,
+      }),
+    ).resolves.toEqual({ instruction: GOAL_CONTINUATION_INSTRUCTION });
+  });
+
   it("does nothing without an active goal", async () => {
     await expect(
       resolveStreamingGoalContinuation({

@@ -13,6 +13,8 @@ vi.mock("~/lib/chat/tools", () => ({
   handleToolCalls: mocks.handleToolCalls,
 }));
 
+import { AssistantError, ErrorType } from "~/utils/errors";
+
 import { runAgentLoop } from "../runAgentLoop";
 
 const artifactToolResponse = {
@@ -38,7 +40,7 @@ function createParams(maxSteps = 8) {
   return {
     requestParams: { messages: [{ role: "user", content: "hi" }] } as any,
     completionId: "completion-123",
-    conversationManager: { add: vi.fn() } as any,
+    conversationManager: { add: vi.fn(), checkUsageLimits: vi.fn() } as any,
     toolRequestContext: { env: { AI: {} } } as any,
     maxSteps,
   };
@@ -122,6 +124,46 @@ describe("runAgentLoop", () => {
     expect(result.response.status).toBe("pending");
     expect(result.response.response).toBe("Waiting on you to approve the deploy.");
     expect(mocks.getAIResponse).toHaveBeenCalledTimes(1);
+  });
+
+  it("stops the loop when the user runs out mid-run", async () => {
+    // The request boundary covered step 1, so the loop's first re-check is the
+    // one guarding the second model call.
+    const checkUsageLimits = vi
+      .fn()
+      .mockRejectedValue(
+        new AssistantError("Daily message limit reached.", ErrorType.USAGE_LIMIT_ERROR),
+      );
+
+    mocks.getAIResponse.mockResolvedValue({
+      response: "",
+      tool_calls: [{ id: "call-1", function: { name: "get_weather", arguments: "{}" } }],
+    });
+    mocks.handleToolCalls.mockResolvedValue([
+      { role: "tool", name: "get_weather", content: "sunny", status: "success" },
+    ]);
+
+    const params = createParams();
+
+    params.conversationManager.checkUsageLimits = checkUsageLimits;
+
+    await expect(runAgentLoop(params)).rejects.toMatchObject({
+      type: ErrorType.USAGE_LIMIT_ERROR,
+    });
+
+    // One model call spent, then the limit stops the next one rather than
+    // letting a long tool chain run past the allowance.
+    expect(mocks.getAIResponse).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not re-check the limit for the first step, which the request boundary already covered", async () => {
+    mocks.getAIResponse.mockResolvedValueOnce({ response: "Just an answer." });
+
+    const params = createParams();
+
+    await runAgentLoop(params);
+
+    expect(params.conversationManager.checkUsageLimits).not.toHaveBeenCalled();
   });
 
   it("holds the loop open while assessFinish withholds approval", async () => {

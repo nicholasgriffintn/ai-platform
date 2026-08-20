@@ -451,8 +451,8 @@ describe("ChatOrchestrator", () => {
           ["model-1", "model-2"],
         );
         expect(mockCreateMultiModelStream).toHaveBeenCalled();
-        expect(result).toEqual({
-          stream: mockStream,
+        expect(result).toMatchObject({
+          stream: expect.any(ReadableStream),
           selectedModel: "model-1",
           selectedModels: ["model-1", "model-2"],
           completion_id: "test-completion-id",
@@ -545,8 +545,11 @@ describe("ChatOrchestrator", () => {
           }),
           mockConversationManager,
         );
-        expect(result).toEqual({
-          stream: transformedStream,
+        // The stream is wrapped so the conversation lock outlives the response
+        // it is protecting, so identity is not preserved — the contract is that
+        // a readable stream reaches the caller.
+        expect(result).toMatchObject({
+          stream: expect.any(ReadableStream),
           selectedModel: "test-model",
           completion_id: "test-completion-id",
         });
@@ -1021,6 +1024,36 @@ describe("ChatOrchestrator", () => {
           violations: ["inappropriate"],
           rawViolations: { blockedResponse: "Content blocked" },
         });
+      });
+
+      it("holds the conversation until a streaming response actually finishes", async () => {
+        const transformedStream = new ReadableStream({
+          start(controller) {
+            controller.enqueue("chunk");
+            controller.close();
+          },
+        });
+
+        mockGetAIResponse.mockResolvedValue(new ReadableStream());
+        mockCreateStreamWithPostProcessing.mockResolvedValue(transformedStream);
+
+        const result = (await orchestrator.process({ ...mockOptions, stream: true })) as {
+          stream: ReadableStream;
+        };
+
+        // Releasing when process() returns would let compaction or a second
+        // turn interleave with a response that is still being written.
+        expect(mockReleaseThread).not.toHaveBeenCalled();
+
+        const reader = result.stream.getReader();
+
+        while (!(await reader.read()).done) {
+          // drain
+        }
+
+        expect(mockReleaseThread).toHaveBeenCalledWith(
+          expect.objectContaining({ conversationId: "test-completion-id" }),
+        );
       });
 
       it("refuses a turn while another operation holds the conversation", async () => {

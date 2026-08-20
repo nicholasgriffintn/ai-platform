@@ -26,9 +26,20 @@ import { GoalService } from "~/services/goals/GoalService";
 import type { ChatMode, CoreChatOptions, Message } from "~/types";
 import { isAbortError } from "~/utils/abort";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { finaliseReadableStream } from "~/utils/finalise-readable-stream";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/chat/core/ChatOrchestrator" });
+
+function isStreamingResult(result: unknown): result is { stream: ReadableStream } {
+  return (
+    typeof result === "object" &&
+    result !== null &&
+    "stream" in result &&
+    (result as { stream?: unknown }).stream instanceof ReadableStream
+  );
+}
+
 const RECIPE_CHAT_DEFAULT_MAX_STEPS = 4;
 const RECIPE_CONNECTOR_DEFAULT_MAX_STEPS = 8;
 const RECIPE_CONNECTOR_TOOL_NAME = "use_recipe_connector";
@@ -110,6 +121,7 @@ export class ChatOrchestrator {
     return createGoalFinishGate({
       goalService,
       goal,
+      conversationManager,
       surface: isAgentExecutionMode(currentMode) ? "agent" : "chat",
       onTerminalStatus: async (terminalGoal) => {
         await recordGoalMarker({
@@ -154,19 +166,40 @@ export class ChatOrchestrator {
       // Taken before preparation, which persists the incoming message: refusing
       // after that point would leave the user's message stored with no reply.
       const heldThread = await this.holdThreadForTurn(options);
-
-      try {
-        const prepared = await this.preparer.prepare(options, validationResult.context);
-
-        return await this.executeRequest(options, prepared);
-      } finally {
+      const release = async () => {
         if (heldThread) {
           await releaseThread({
             env: options.env,
             conversationId: options.completion_id,
           });
         }
+      };
+
+      let result: Awaited<ReturnType<typeof this.executeRequest>>;
+
+      try {
+        const prepared = await this.preparer.prepare(options, validationResult.context);
+
+        result = await this.executeRequest(options, prepared);
+      } catch (error) {
+        await release();
+
+        throw error;
       }
+
+      // A streaming turn keeps writing after this returns, so the thread is
+      // held until the stream actually closes. Releasing here would let
+      // compaction or a second turn interleave with a response mid-flight.
+      if (isStreamingResult(result)) {
+        return {
+          ...result,
+          stream: finaliseReadableStream({ stream: result.stream, cleanup: release }),
+        };
+      }
+
+      await release();
+
+      return result;
     } catch (error: any) {
       logger.error("Error in chat orchestration", {
         error,

@@ -117,7 +117,14 @@ export async function runAgentLoop(
       ? ({ summary, step }) =>
           params.assessFinish({ summary, step, commandCount: state.commandCount })
       : undefined,
-    resolveTurn: async ({ messages }) => {
+    resolveTurn: async ({ messages, step }) => {
+      // One request can spend many model calls. The check at the request
+      // boundary only covers the first, so every later step re-checks: when a
+      // user has run out, the loop stops rather than spending past the limit.
+      if (step > 1) {
+        await params.conversationManager.checkUsageLimits(requestParams.model);
+      }
+
       if (state.pendingUserAction) {
         const response = state.pendingUserAction;
 
