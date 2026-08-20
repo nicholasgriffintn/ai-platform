@@ -12,10 +12,6 @@ function resolveContextWindow(modelConfig: ContextWindowSource): number {
   return modelConfig?.contextWindow || FALLBACK_CONTEXT_WINDOW;
 }
 
-/**
- * Guard the request before it reaches a provider. Pruning runs first at every call
- * site, so this only fires when the incoming content alone overruns the window.
- */
 export function checkContextWindowLimits(
   messages: Message[],
   newContent: string,
@@ -34,9 +30,6 @@ export function checkContextWindowLimits(
   }
 }
 
-/**
- * Drop whole messages from the front until the history plus the incoming content fits.
- */
 export function pruneMessagesToFitContext(
   messages: Message[],
   newContent: string,
