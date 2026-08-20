@@ -1,107 +1,107 @@
 # Agent Instructions
 
-Start from the user's global agent contract. These instructions make that contract concrete for the application workspaces in this repo. If instructions conflict, follow the stricter, safer, and more maintainable rule.
+Polychat is a multi-model assistant platform: personal **Chat**, collaborative **Work**, and the capabilities behind both — agents, retrieval, generated media, realtime sessions, recipes, training, and sandboxed coding runs. It runs on Cloudflare Workers with D1, R2, and Durable Objects, and ships web, iOS, and API surfaces from one pnpm monorepo.
 
-## Principles
+These are good defaults, not law. They make repo-specific behaviour predictable; they do not override the user's global contract, and the user's stated preference overrides both. If a rule fights the task in front of you, say so plainly and get sign-off rather than following it into a worse change. Prefer the smallest change that makes the correct behaviour obvious. Do not preserve complexity because it is already there, and do not add machinery because it looks thorough.
 
-- Leave each app easier to understand than you found it.
-- Prefer small, explicit changes over speculative abstractions.
-- Keep feature internals out of route and page entry points.
-- Fix types at the source. Do not cast around type errors to silence tooling.
-- Add dependencies only when necessary and agreed. Use `pnpm` and commit lockfile changes with package changes.
-- Comments should explain why. Use them sparingly for I/O boundaries, validation rules, security-sensitive behaviour, and edge cases.
+## Vocabulary
+
+`.agents/skills/polychat-setup/references/` holds the durable product, setup, component, and architecture documentation, and is written as `references/` below. `references/architecture/context.md` carries the full vocabulary and seam map; read it before any large implementation. These terms collide most often:
+
+- **app** — `apps/*` is a deployable workspace. An _app_ in product language is a capability presented in a project library or Chat discovery, never a top-level route.
+- **capability** — an app, recipe, skill, connector, agent, or tool that a project curates or a person already has. Configuration is not enablement, and enablement is not authorisation.
+- **experience** — a rich frontend workflow published by `/capabilities`, living below the project rather than beside it.
+- **scope** — personal or project. It is a parameter to one set of components, not a fork of them.
+- **source / output** — durable inputs and results. Personal without a project, collaborative with one.
+- **Chat / Work** — product modes that share the conversation runtime and split navigation, not the reverse.
+
+## Ways to hurt yourself
+
+- **Applying migrations beyond local.** `db:migrate:prod` and `db:migrate:preview` run `wrangler d1 migrations apply --remote` against real D1. Only `db:migrate:local` is safe unprompted. Generate migrations freely; never apply them remotely.
+- **Deploying.** `deploy`, `deploy:api`, `deploy:app`, and `deploy:training` publish live Workers. Never run one unless asked, and never to prove the build works — use the workspace `build` script for that.
+- **Writing to external state.** `models:sync`, `connectors:sync`, `db:sync:preview`, and `db:studio:*` reach live provider, Composio, and database state. Treat them as production writes.
+- **Reaching for repo-wide checks.** Root `typecheck` builds every package and then typechecks every workspace serially; `check`, `test`, and `release:check` are similarly wide. They are CI-shaped commands, not a feedback loop.
+- **Running git.** Do not run any git or pull request command unless asked. When asked to commit, use short conventional messages.
+
+## Hit every surface
+
+The most common defect here is a change that is correct on the path you edited and missing everywhere else. Before calling work done, say which of these applied:
+
+- **Deployables.** `apps/api` (Hono Worker), `apps/app` (React Router web), `apps/mobile` (Swift iOS), `apps/sandbox-worker`, `apps/training`. A shared concept needs a decision per surface, even when the decision is "not applicable here".
+- **The contract seam.** Anything crossing the wire is typed in `packages/schemas` and published as `@ngriffin_uk/polychat-schemas`. Change the schema and the API, web, iOS, sandbox, and training consumers follow. Build the package before validating consumers.
+- **Presentation packages.** `packages/component-*` render data and emit typed intents; they never import a router, store, or API client. `apps/app` owns the controllers that bind them.
+- **Both scopes.** Personal and project scope share components, so a capability change usually lands in Chat and Work together.
+- **Reverse states.** If you added a way in, add the way out and the way to see it. Enable needs disable, invite needs revoke. A one-way door is a bug.
+- **Docs.** Behaviour a user would notice belongs in `references/`. New load-bearing vocabulary, module responsibilities, or cross-app seams belong in `references/architecture/context.md` in the same patch. A durable, hard-to-reverse, or likely-to-be-relitigated decision belongs in a numbered ADR under `references/architecture/decisions/` with `decisions.md` updated — not routine implementation details or choices obvious from local code.
+
+### Models, providers, and icons
+
+`packages/component-models/src/ModelIcon` owns every model and provider icon, and is part of done whenever you add a model under `apps/api/src/data-model/models/*` or register a provider in `apps/api/src/lib/providers/registry/registrations/*`. Without a match the surface falls back to a coloured initial, which reads as a bug.
+
+- Source artwork from svgl first: search `https://api.svgl.app?search=<brand>`, then fetch `https://api.svgl.app/svg/<name>.svg`. Hand-draw only when svgl has no entry, and keep it simple rather than imitating a trademark you cannot verify.
+- Add `Icons/<name>.tsx` following the existing component shape, register it in `iconLoaders.ts`, then point at it from `iconDefinitions.ts`.
+- `MODEL_ICONS` keys are lowercase substrings matched against the model name in declaration order, so declare a longer pattern before any shorter one it contains. `PROVIDER_ICONS` keys are exact lowercased provider ids, aliases included.
+- Prefer mapping a family to an existing icon over duplicating artwork.
 
 ## Structure
 
-- Treat route files as orchestration layers for data loading, validation, and composition.
-- Move non-trivial logic into dedicated modules immediately. This includes state machines, parsers, measurements, timers, multi-step validation, and code longer than roughly 25-40 lines.
-- Put reusable helpers in shared modules under the app's `src/lib`, `src/utils`, or existing equivalent directory.
-- Search for an existing helper before adding a new one.
-- Do not define generic helpers inside feature files, route files, page files, service files, or tests unless the helper is test-only and local to that test.
-- Generic helpers include serialisation, parsing, string, date, number, type guard, validator, formatter, mapper, and error utilities.
-- If you introduce an inline helper during a task and it is generic, move it to a shared utility module in the same patch.
+`references/architecture/context.md` carries the seam map and review defaults. The short version:
 
-## Repository layout
+- Route, page, and entry files orchestrate. Move parsing, state machines, timers, retries, measurement, multi-step validation, or anything past roughly 25-40 lines behind a deeper module.
+- Prefer an existing seam — `routeBuilder`, `ServiceContext`, repositories, provider registrations, `fetch-wrapper`, React Query hooks, shared schemas, `library-agent-core`, `library-registry` — over a new one.
+- Generic helpers (serialisation, parsing, string, date, number, guards, validators, formatters, mappers, errors) belong in `src/lib` or `src/utils`, not inline in a feature, route, service, or test file. If you write one inline during a task, move it in the same patch.
+- Enforce Work access through workspace membership on the server. A project ID, route nesting, or `created_by` is not proof of authorisation.
+- `apps/*` are deployable workspaces; `packages/*` are consumed by more than one of them. Keep package APIs narrow rather than leaking folder structure across workspaces.
+- Database schema is Drizzle: edit `apps/api/src/lib/database/schema.ts`, then use the `@assistant/api` scripts (`db:generate`, `db:up`). Use the workspace script for Cloudflare types too. Never hand-edit generated output.
+- `scripts/` is for automation reused by package scripts, hooks, CI, or operators. Do not add a one-off script for work an existing package script, test, or migration command already covers.
+- Fix types at the source. Do not cast around a type error to quiet the tooling.
+- Add dependencies only when necessary and agreed, and commit lockfile changes with the package change.
+- Comments explain why, at I/O boundaries, validation rules, security-sensitive behaviour, and edge cases. Do not annotate ordinary lines.
 
-- Use `apps/*` for deployable application workspaces. Each app owns its request handling, UI routes, app-local components, app-local utilities, and app-specific validation.
-- Use `packages/*` for shared workspace libraries consumed by more than one app or by app and tooling code. Keep shared schemas, domain primitives, generated contract surfaces, and reusable runtime logic there when the code is not app-specific.
-- Keep package APIs explicit and stable. Prefer exporting narrow functions, types, and schemas over leaking internal folder structure across workspaces.
-- Build shared packages before validating consumers when the package emits build output. `@ngriffin_uk/polychat-schemas` is a common prerequisite for app typechecks and builds.
-- Use `.agents/skills/polychat-setup/references/` for durable Polychat setup, product, component, and architecture documentation. Keep supporting README images under `docs/images`.
-- Use `.agents/skills/polychat-setup/references/architecture/context.md` for durable architecture vocabulary, product concepts, module responsibilities, and cross-app seams that architecture reviews should inherit.
-- Use `.agents/skills/polychat-setup/references/architecture/decisions/` for Architecture Decision Records. Record accepted decisions that are hard to reverse, surprising without context, or likely to be re-litigated later, and update the adjacent `decisions.md` index.
-- Use `scripts/` for checked-in automation that is intentionally reused by package scripts, hooks, CI, or operators. Prefer package scripts for ordinary validation commands and keep shell scripts small, portable, and explicit about side effects.
-- Do not add one-off scripts for work that can be handled by an existing package script, test, migration command, or local utility.
+## Validation
 
-## App conventions
+Run the narrowest thing that proves the change, then widen only when the blast radius justifies it.
 
-- Use `pnpm --filter <workspace> <script>` from the repo root for app-specific commands.
-- Use root scripts for repo-wide checks only when the wider blast radius is justified. Prefer filtered workspace commands for focused changes.
-- Cloudflare Worker apps live in `apps/api`, `apps/sandbox-worker`, and `apps/training`. Keep request handling, service logic, repository access, and shared utilities separated by the existing folder structure.
-- React apps live in `apps/app`. Keep pages/routes thin and move UI behaviour into components, hooks, state modules, or shared libraries.
-- Preserve existing formatter and linter choices. Most app workspaces use `oxfmt`, `oxlint`, TypeScript, and Vitest.
-- Use Vitest for unit and integration-style tests in apps and packages. Keep tests near the behaviour they cover and use existing workspace `vitest.config.ts` files instead of adding ad hoc config.
-- Use Playwright only for browser end-to-end coverage that genuinely needs a running app. Follow the root `test:e2e` script and do not start dev servers outside the documented test flow unless the task explicitly requires live browser validation.
-- Use Drizzle for API database schema and migrations. Update `apps/api/src/lib/database/schema.ts`, then use the `@assistant/api` database scripts such as `db:generate`, `db:up`, and `db:migrate:*`; do not hand-edit generated migrations.
-- When touching generated Cloudflare types, Drizzle migrations, or other generated output, use the workspace scripts rather than hand-editing generated files.
+```sh
+pnpm --filter @ngriffin_uk/polychat-schemas build   # first, when consumers import generated output
+pnpm --filter @assistant/api typecheck
+pnpm --filter @assistant/app typecheck
+pnpm --filter @assistant/api check
+pnpm --filter @assistant/app check
+pnpm --filter @assistant/api test <path>
+```
 
-## Model and provider icons
+- Preserve the existing tooling: oxlint, oxfmt, TypeScript, Vitest, Playwright. Use the workspace `vitest.config.ts` rather than adding ad hoc config.
+- Do not start a dev server for routine validation. When you genuinely need signed-in browser validation, use the development magic-link flow in `references/setup.md` and stop anything you started.
+- If validation cannot run, say so plainly rather than implying it passed.
 
-- `packages/component-models/src/ModelIcon` owns every model and provider icon. Treat it as part of the definition of done whenever you add a model to `apps/api/src/data-model/models/*` or register a provider in `apps/api/src/lib/providers/registry/registrations/*`.
-- Check the new model family and provider id resolve to an icon before you finish. Without a match the surface falls back to a coloured initial, which reads as a bug.
-- Source new artwork from the svgl API at `https://svgl.app/docs/api` first. Search with `https://api.svgl.app?search=<brand>` and fetch the file from `https://api.svgl.app/svg/<name>.svg`. Only hand-draw a mark when svgl has no entry, and keep hand-drawn marks simple and neutral rather than imitating a trademark you cannot verify.
-- Add the artwork as `Icons/<name>.tsx` following the existing component shape, register it in `iconLoaders.ts`, then point at it from `iconDefinitions.ts`.
-- `MODEL_ICONS` keys are lowercase substrings tested against the model name in declaration order, so declare a longer pattern before any shorter pattern it contains. `PROVIDER_ICONS` keys are exact lowercased provider ids, including aliases.
-- Prefer an existing icon over a new file when the vendor already has one. Map the model family to it instead of duplicating artwork.
+## Testing
+
+- Add a test when it protects user-visible behaviour, an authorisation boundary, a validation rule, a state transition, a persistence or integration contract, or a regression that actually happened.
+- Do not test static copy, CSS classes, headings, simple delegation, getters and setters, type-level guarantees, or anything Zod, the router, or the framework already guarantees.
+- Extend the nearest existing suite instead of adding a file. Test count and suite runtime are maintenance costs; if a change materially grows a suite, measure that workspace's test command before and after.
+- Coverage percentages are not a goal and global thresholds are not welcome. Review uncovered risky boundaries directly.
+- Prefer integration-style tests over unit tests of glue, and cover failure paths when changing parsing, auth, persistence, external APIs, or Worker boundaries.
+- Playwright is release validation for real journeys — logged-out, Free, Pro, Chat, Work, configuration, message, and responsive. Preserve those journeys when modernising the suite: update Page Objects and assertions rather than narrowing coverage to make tests pass. Follow `references/testing/e2e.md` and mock only outbound third-party services at their boundary.
+- A failing journey is product evidence. Do not skip it, weaken its outcome, mock a Polychat route to get past it, or edit fixtures to hide it. Correct a test only when its expectation is demonstrably wrong.
 
 ## Security
 
-- Treat OWASP Top 10 risks as active concerns.
-- Fix insecure code you touch or clearly call out why it cannot be fixed in the same patch.
-- Pay particular attention to command injection, XSS, SQL injection, auth bypass, unsafe redirects, exposed secrets, insecure defaults, and overly broad CORS or cookie settings.
-- Validate and normalise data at app boundaries before passing it into services or persistence layers.
+- Treat OWASP Top 10 as an active concern at real boundaries: command injection, XSS, SQL injection, auth bypass, unsafe redirects, exposed secrets, insecure defaults, and broad CORS or cookie settings.
+- Validate and normalise at app boundaries, then trust the value inwards. Re-validating the same data at every layer is noise, not defence.
+- Fix insecure code you touch, or say clearly why it cannot be fixed in the same patch.
+- Do not over-index. A maintainer-only script or dev-mode affordance does not need the treatment an authenticated write path gets, and threat modelling one is a way of not doing the task.
 
-## Testing and validation
+## Writing
 
-- New behaviour needs relevant coverage.
-- Treat Playwright E2E tests as release validation for user-facing behaviour. Every user-facing change must explicitly consider whether the logged-out, Free, Pro, Chat, Work, configuration, message, and responsive journeys need to change.
-- Preserve existing E2E journeys when modernising the suite. Update their Page Objects and assertions; do not narrow or delete behavioural coverage to make tests pass.
-- Follow `.agents/skills/polychat-setup/references/testing/e2e.md`. Exercise the Polychat app and API together, and mock only outbound third-party services at their boundary.
-- Treat a failing release journey as product evidence. Do not skip it, weaken its outcome, replace a Polychat API route with a mock, or change test data to conceal the failure. Correct a test only when its boundary or expectation is demonstrably inaccurate, and keep product fixes within the authorised task scope.
-- Prefer integration-style tests that cover validation, state transitions, and error handling.
-- Avoid tests that only prove language or framework behaviour.
-- Cover edge cases and failure paths when changing parsing, auth, persistence, external API, or Worker boundary logic.
-- Treat test-suite runtime and file count as maintenance costs. Prefer extending an existing behavioural suite at the same seam over creating another test file.
-- Add a test only when it protects user-visible behaviour, a security or authorisation boundary, a validation rule, a state transition, a persistence contract, an external integration contract, or a previously observed regression.
-- Do not add tests for static copy, CSS classes, standard headings, simple delegation, framework behaviour, type-level guarantees, or direct getters and setters unless they previously caused a real regression.
-- Do not add tests solely to increase a coverage percentage. Use coverage reports to inform review, not to manufacture low-value assertions.
-- When a change adds several test files or materially expands a web or API suite, measure the relevant workspace test command before and after. Consolidate or remove low-value coverage if runtime regresses noticeably.
-- Do not introduce global coverage thresholds. Review uncovered high-risk boundaries directly instead of using a percentage target as a proxy for test quality.
-- Run the narrowest meaningful validation first, then broader checks when risk justifies it.
-- For signed-in local browser validation, use the development magic-link flow in `.agents/skills/polychat-setup/references/setup.md`. Do not require a real inbox or production credentials.
-- If validation cannot run, state the blocker clearly.
-
-## Documentation and communication
-
-- Edit prose conservatively and preserve the original voice.
-- Use imperative mood and lead with the problem before the solution.
-- Keep paragraphs short and prefer bullets when they improve scanning.
-- Use British English unless nearby project text uses another convention.
-- Be concise, direct, and opinionated. Acknowledge trade-offs honestly.
-- Before large implementations, read `.agents/skills/polychat-setup/references/architecture/context.md` and the relevant ADRs under `.agents/skills/polychat-setup/references/architecture/decisions/` so new work respects existing architecture decisions.
-- When a large implementation introduces or changes load-bearing concepts, module responsibilities, cross-app flows, provider seams, persistence seams, or frontend/backend ownership, update `.agents/skills/polychat-setup/references/architecture/context.md` in the same patch.
-- When a large implementation makes a durable architecture decision, add a short ADR under `.agents/skills/polychat-setup/references/architecture/decisions/` using the next sequential number and update `decisions.md`. Prefer concise ADRs that explain the problem, decision, and trade-off.
-- Do not create ADRs for routine implementation details, easy-to-reverse choices, or decisions already obvious from local code.
-
-## Git and pull requests
-
-- Do not run any git command or pull request workflow unless you are explicitly asked to do so.
-- When you are asked to commit, use short conventional commit messages.
+- British English, imperative mood. Lead with the problem, then the change.
+- Edit existing prose conservatively and keep its voice.
+- Be concise, direct, and opinionated. Name trade-offs rather than hedging.
 
 ## Definition of done
 
-- The changed code follows the user's global contract and these app instructions.
-- No structural violations remain in changed files.
-- Relevant validation has run, or a blocker is stated explicitly.
-- New models and providers resolve to an icon in `packages/component-models/src/ModelIcon`.
-- Residual risks, assumptions, and follow-ups are stated briefly.
+- The change follows the user's global contract and these defaults, and any conflict was raised rather than quietly resolved.
+- Every surface above was considered, and the ones that applied were changed.
+- New models and providers resolve to an icon.
+- The narrowest useful validation ran, or the blocker is stated.
+- Residual risk, assumptions, and follow-ups are stated briefly.
