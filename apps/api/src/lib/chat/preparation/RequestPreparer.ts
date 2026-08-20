@@ -1,27 +1,14 @@
 import type {
   ChatHostedToolSettings,
-  Goal,
   ModelConfigInfo,
+  ModelConfigItem,
   RecipeConnectorProvider,
   SkillAvailability,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { messagesMatchStoredPrefix } from "~/lib/chat/messages/comparison";
-import { hasSnapshotPart } from "~/lib/chat/messages/parts";
-import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
-import { restoreStoredAttachmentContent } from "~/lib/chat/messages/stored-attachments";
-import {
-  buildMemoryPromptContext,
-  mergeEnabledMemoryToolNames,
-  resolveMemoryPolicy,
-} from "~/lib/chat/policy/memory";
-import { buildUserMessageData } from "~/lib/chat/policy/mode-metadata";
-import type { ServiceContext } from "~/lib/context/serviceContext";
+import { mergeEnabledMemoryToolNames, resolveMemoryPolicy } from "~/lib/chat/policy/memory";
 import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
-import { getSystemPrompt } from "~/lib/prompts";
-import { buildGoalContractSection } from "~/lib/prompts/sections/goal";
-import { findModelConfig } from "~/lib/providers/models";
 import { RepositoryManager } from "~/repositories";
 import {
   getConnectedRecipeConnectorProviders,
@@ -30,17 +17,14 @@ import {
 import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
 import {
   buildSkillAvailabilityInput,
-  createProjectSkillScope,
   listSkillAvailability,
   mergeSkillSuggestedToolNames,
-  resolveSkillCatalog,
-  resolvePersonalSkillScope,
-  type RequestSkillScope,
 } from "~/services/skills";
 import {
   getModelToolDefinition,
   mergePersonalModelToolOptions,
   resolveModelToolConfigurations,
+  type StoredModelToolConfiguration,
 } from "~/services/tools/modelToolConfiguration";
 import {
   applyProjectCodingEnvironment,
@@ -49,18 +33,19 @@ import {
 } from "~/services/workspaces/chatContext";
 import type { ChatMode, CoreChatOptions, MemoryScope, Message, Platform } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { memoizeRequest } from "~/utils/requestCache";
 import { sanitiseInput } from "~/utils/sanitise";
 
-import { getAllAttachments } from "../messages/attachments";
-import { pruneMessagesToFitContext } from "../policy/context-window";
 import type { ValidationContext } from "../validation/ValidationPipeline";
+import { loadActiveGoal } from "./goal";
+import { storeUserTurn } from "./message-store";
+import { buildModelConfigs, clearModelConfigCache } from "./model-configs";
+import { buildProviderContext } from "./provider-context";
+import { resolveScopedSkillCatalog, resolveSkillScope } from "./skills";
+import { buildSystemPrompt } from "./system-prompt";
 
 const logger = getLogger({ prefix: "lib/chat/preparation/RequestPreparer" });
-
-type ProviderModelConfig = NonNullable<Awaited<ReturnType<typeof findModelConfig>>>;
 
 function assertBackgroundRequestIsSupported(options: CoreChatOptions, primaryProvider: string) {
   if (!options.background) {
@@ -78,7 +63,7 @@ function assertBackgroundRequestIsSupported(options: CoreChatOptions, primaryPro
 export interface PreparedRequest {
   modelConfigs: ModelConfigInfo[];
   primaryModel: string;
-  primaryModelConfig: ProviderModelConfig;
+  primaryModelConfig: ModelConfigItem;
   primaryProvider: string;
   conversationManager: ConversationManager;
   messages: Message[];
@@ -94,43 +79,150 @@ export interface PreparedRequest {
   connectedConnectorProviders?: RecipeConnectorProvider[];
 }
 
+interface SavedToolConfiguration {
+  capabilityId: string;
+  configuration: StoredModelToolConfiguration["configuration"];
+}
+
+/** The request-scoped values every later step reads. */
+interface RequestScope {
+  options: CoreChatOptions;
+  user: CoreChatOptions["context"] extends { user: infer U } ? U : any;
+  database: Database;
+  repositories: RepositoryManager;
+  projectContext: ProjectChatContext | null;
+  memoryScope: MemoryScope;
+  isProUser: boolean;
+  platform: Platform;
+  mode: ChatMode;
+}
+
 export class RequestPreparer {
   private repositories: RepositoryManager;
-  private static modelConfigCache = new Map<string, Promise<ProviderModelConfig | null>>();
 
   constructor(private env: any) {
     this.repositories = new RepositoryManager(env);
   }
 
   public static clearModelConfigCache() {
-    RequestPreparer.modelConfigCache.clear();
+    clearModelConfigCache();
   }
 
-  private static getCachedModelConfig(model: string, env: any, provider?: string, userId?: number) {
-    const cacheKey = [userId ?? "anonymous", provider ?? "any", model].join(":");
+  /**
+   * Project context can rewrite the request's coding environment, so it is
+   * resolved before anything else reads `options`.
+   */
+  private async resolveScope(options: CoreChatOptions): Promise<RequestScope> {
+    const { platform = "api", mode = "normal" } = options;
+    const user = options.context?.user;
+    const database = options.context?.database ?? new Database(this.env);
+    const repositories = options.context?.repositories ?? database.repositories;
+    const projectContext = options.context
+      ? await resolveProjectChatContext(options.context, options)
+      : null;
 
-    if (!RequestPreparer.modelConfigCache.has(cacheKey)) {
-      const fetchPromise = (async () => {
-        try {
-          const config = await findModelConfig(model, env, provider, userId);
+    return {
+      options: { ...options, ...applyProjectCodingEnvironment(options, projectContext) },
+      user,
+      database,
+      repositories,
+      projectContext,
+      memoryScope: projectContext
+        ? { type: "project", projectId: projectContext.projectId }
+        : { type: "personal" },
+      isProUser: user?.plan_id === "pro",
+      platform,
+      mode,
+    };
+  }
 
-          if (!config) {
-            RequestPreparer.modelConfigCache.delete(cacheKey);
+  private resolveUserSettings(scope: RequestScope) {
+    const { options, user, repositories } = scope;
 
-            return null;
-          }
-
-          return config;
-        } catch (error) {
-          RequestPreparer.modelConfigCache.delete(cacheKey);
-          throw error;
-        }
-      })();
-
-      RequestPreparer.modelConfigCache.set(cacheKey, fetchPromise);
+    if (options.context?.getUserSettings) {
+      return options.context.getUserSettings();
     }
 
-    return RequestPreparer.modelConfigCache.get(cacheKey);
+    if (!user?.id) {
+      return Promise.resolve(null);
+    }
+
+    return memoizeRequest(options.context?.requestCache, `user-settings:${user.id}`, () =>
+      repositories.userSettings.getUserSettings(user.id),
+    );
+  }
+
+  /**
+   * Only resolved when the connector tool is actually enabled; a failure degrades
+   * to an empty list rather than failing the turn.
+   */
+  private resolveConnectedConnectorProviders(scope: RequestScope) {
+    const { options, user, projectContext } = scope;
+    const enabledFunctionTools = resolveEnabledFunctionToolNames(
+      projectContext?.enabledTools ?? options.enabled_tools,
+      user,
+    );
+
+    if (!user?.id || !options.context || !enabledFunctionTools.has("use_recipe_connector")) {
+      return Promise.resolve(undefined);
+    }
+
+    return listRecipeConnectors({
+      context: options.context,
+      userId: user.id,
+      requestUrl: options.app_url,
+    })
+      .then(({ connectors }) => getConnectedRecipeConnectorProviders(connectors))
+      .catch((error) => {
+        logger.warn("Failed to resolve connected recipe providers", { error, userId: user.id });
+
+        return [];
+      });
+  }
+
+  private resolveSavedToolConfigurations(scope: RequestScope) {
+    const { options, user, projectContext, repositories } = scope;
+    const needsSavedToolConfiguration = options.enabled_tools?.some(
+      (toolId) => getModelToolDefinition(toolId)?.requiresConfiguration,
+    );
+
+    if (!user?.id || projectContext || !needsSavedToolConfiguration) {
+      return Promise.resolve([]);
+    }
+
+    return repositories.capabilityConfigurations.list({ type: "user", id: user.id }, "tool");
+  }
+
+  private resolveMessageText(validationContext: ValidationContext): string {
+    const { lastMessage } = validationContext;
+    const lastMessageContent = Array.isArray(lastMessage!.content)
+      ? lastMessage!.content
+      : [{ type: "text" as const, text: lastMessage!.content as string }];
+
+    return sanitiseInput(lastMessageContent.find((c) => c.type === "text")?.text || "");
+  }
+
+  private resolveToolOptions(
+    scope: RequestScope,
+    savedToolConfigurations: SavedToolConfiguration[],
+    enabledTools?: string[],
+  ): ChatHostedToolSettings | undefined {
+    const { options, projectContext } = scope;
+
+    if (projectContext) {
+      return projectContext.toolOptions;
+    }
+
+    return mergePersonalModelToolOptions({
+      configured: resolveModelToolConfigurations(
+        savedToolConfigurations.map((configuration) => ({
+          toolId: configuration.capabilityId,
+          configuration: configuration.configuration,
+        })),
+      ),
+      requestedEnabledTools: enabledTools,
+      requestedToolOptions: options.tool_options,
+    });
   }
 
   async prepare(
@@ -148,134 +240,82 @@ export class RequestPreparer {
       throw new AssistantError("Missing required validation context", ErrorType.PARAMS_ERROR);
     }
 
-    const { platform = "api", anonymousUser, mode = "normal" } = options;
-    const user = options.context?.user;
-    const requestCache = options.context?.requestCache;
-    const database = options.context?.database ?? new Database(this.env);
-    const repositories = options.context?.repositories ?? database.repositories;
-    const projectContext = options.context
-      ? await resolveProjectChatContext(options.context, options)
-      : null;
-    const memoryScope: MemoryScope = projectContext
-      ? { type: "project", projectId: projectContext.projectId }
-      : { type: "personal" };
+    const scope = await this.resolveScope(options);
+    const { user, database, repositories, projectContext, memoryScope, platform, mode } = scope;
 
-    options = { ...options, ...applyProjectCodingEnvironment(options, projectContext) };
-
-    const isProUser = user?.plan_id === "pro";
-
-    const userSettingsPromise = options.context?.getUserSettings
-      ? options.context.getUserSettings()
-      : user?.id
-        ? memoizeRequest(requestCache, `user-settings:${user.id}`, () =>
-            repositories.userSettings.getUserSettings(user.id),
-          )
-        : Promise.resolve(null);
-
-    const modelConfigsPromise = this.buildModelConfigs(options, validationContext);
-    const enabledFunctionTools = resolveEnabledFunctionToolNames(
-      projectContext?.enabledTools ?? options.enabled_tools,
-      user,
-    );
-    const connectedConnectorProvidersPromise =
-      user?.id && options.context && enabledFunctionTools.has("use_recipe_connector")
-        ? listRecipeConnectors({
-            context: options.context,
-            userId: user.id,
-            requestUrl: options.app_url,
-          })
-            .then(({ connectors }) => getConnectedRecipeConnectorProviders(connectors))
-            .catch((error) => {
-              logger.warn("Failed to resolve connected recipe providers", {
-                error,
-                userId: user.id,
-              });
-
-              return [];
-            })
-        : Promise.resolve(undefined);
-    const needsSavedToolConfiguration = options.enabled_tools?.some(
-      (toolId) => getModelToolDefinition(toolId)?.requiresConfiguration,
-    );
-    const savedToolConfigurationsPromise =
-      user?.id && !projectContext && needsSavedToolConfiguration
-        ? repositories.capabilityConfigurations.list({ type: "user", id: user.id }, "tool")
-        : Promise.resolve([]);
-    const skillScopePromise = this.resolveSkillScope(
+    // Everything here is independent, so it all starts before the first await.
+    const modelConfigsPromise = buildModelConfigs(scope.options, validationContext);
+    const userSettingsPromise = this.resolveUserSettings(scope);
+    const connectedConnectorProvidersPromise = this.resolveConnectedConnectorProviders(scope);
+    const savedToolConfigurationsPromise = this.resolveSavedToolConfigurations(scope);
+    const skillScopePromise = resolveSkillScope(
       projectContext,
       user?.id ? repositories : null,
       user?.id,
     );
-    const scopedSkillCatalogPromise = this.resolveScopedSkillCatalog(options, projectContext);
-    const activeGoalPromise = this.loadActiveGoal(options);
+    const scopedSkillCatalogPromise = resolveScopedSkillCatalog(scope.options, projectContext);
+    const activeGoalPromise = loadActiveGoal(scope.options);
 
-    const finalMessagePromise = this.processMessageContent(options, validationContext);
+    const finalMessage = this.resolveMessageText(validationContext);
 
-    const [
-      modelConfigs,
-      userSettings,
-      finalMessage,
-      savedToolConfigurations,
-      connectedConnectorProviders,
-    ] = await Promise.all([
-      modelConfigsPromise,
-      userSettingsPromise,
-      finalMessagePromise,
-      savedToolConfigurationsPromise,
-      connectedConnectorProvidersPromise,
-    ]);
+    const [modelConfigs, userSettings, savedToolConfigurations, connectedConnectorProviders] =
+      await Promise.all([
+        modelConfigsPromise,
+        userSettingsPromise,
+        savedToolConfigurationsPromise,
+        connectedConnectorProvidersPromise,
+      ]);
 
-    const memoryPolicy = resolveMemoryPolicy({ user, userSettings, store: options.store });
-
+    const memoryPolicy = resolveMemoryPolicy({ user, userSettings, store: scope.options.store });
     const primaryModel = primaryModelConfig.matchingModel;
     const primaryProvider = primaryModelConfig.provider;
 
-    assertBackgroundRequestIsSupported(options, primaryProvider);
+    assertBackgroundRequestIsSupported(scope.options, primaryProvider);
 
     const conversationManager = ConversationManager.getInstance({
       database,
       repositories,
       user: user || undefined,
-      anonymousUser: anonymousUser,
+      anonymousUser: scope.options.anonymousUser,
       model: primaryModel,
       platform,
-      store: options.store,
+      store: scope.options.store,
       env: this.env,
-      requestCache,
+      requestCache: scope.options.context?.requestCache,
     });
 
-    const shouldStoreMessages = options.store;
-    const shouldAppendConversationHistory = options.conversation_history_write_mode === "append";
-    const storeMessagesTask =
-      shouldStoreMessages && !shouldAppendConversationHistory
-        ? this.storeMessages(
-            options,
-            conversationManager,
-            lastMessage,
-            finalMessage,
-            primaryModel,
-            platform,
-            mode,
-          )
-        : null;
+    // Append mode means the caller owns history, so we must not write the turn.
+    const shouldStoreMessages =
+      Boolean(scope.options.store) && scope.options.conversation_history_write_mode !== "append";
+
+    const storeMessagesTask = shouldStoreMessages
+      ? storeUserTurn({
+          options: scope.options,
+          conversationManager,
+          lastMessage,
+          finalMessage,
+          primaryModel,
+          platform,
+          mode,
+        })
+      : null;
 
     const [skillScope, scopedSkillCatalog] = await Promise.all([
       skillScopePromise,
       scopedSkillCatalogPromise,
     ]);
-    const skills = await listSkillAvailability(
+    const skills: readonly SkillAvailability[] = await listSkillAvailability(
       buildSkillAvailabilityInput({
         skillScope,
         supportsToolCalls: Boolean(primaryModelConfig.supportsToolCalls),
-        enabledToolIds: new Set(projectContext?.enabledTools ?? options.enabled_tools ?? []),
+        enabledToolIds: new Set(projectContext?.enabledTools ?? scope.options.enabled_tools ?? []),
       }),
       scopedSkillCatalog?.listDefinitions(),
     );
 
-    const activeGoal = await activeGoalPromise;
-
-    const systemPromptTask = this.buildSystemPrompt(
-      options,
+    const systemPromptTask = buildSystemPrompt({
+      options: scope.options,
+      repositories: this.repositories,
       sanitisedMessages,
       finalMessage,
       primaryModel,
@@ -284,37 +324,26 @@ export class RequestPreparer {
       projectContext,
       memoryScope,
       skills,
-      activeGoal,
-    );
+      activeGoal: await activeGoalPromise,
+    });
 
+    // The provider context is read back from storage, so the write must land first.
     if (storeMessagesTask) {
       await storeMessagesTask;
     }
 
     const systemPrompt = await systemPromptTask;
 
-    const messages = await this.buildProviderMessages({
+    const messages = await buildProviderContext({
       conversationManager,
-      completionId: options.completion_id,
-      shouldStoreMessages: shouldStoreMessages && !shouldAppendConversationHistory,
+      completionId: scope.options.completion_id,
+      shouldStoreMessages,
       fallbackMessages: sanitisedMessages,
       messageWithContext,
       primaryModelConfig,
     });
 
-    const enabledTools = projectContext?.enabledTools ?? options.enabled_tools;
-    const toolOptions = projectContext
-      ? projectContext.toolOptions
-      : mergePersonalModelToolOptions({
-          configured: resolveModelToolConfigurations(
-            savedToolConfigurations.map((configuration) => ({
-              toolId: configuration.capabilityId,
-              configuration: configuration.configuration,
-            })),
-          ),
-          requestedEnabledTools: enabledTools,
-          requestedToolOptions: options.tool_options,
-        });
+    const enabledTools = projectContext?.enabledTools ?? scope.options.enabled_tools;
 
     return {
       modelConfigs,
@@ -327,494 +356,20 @@ export class RequestPreparer {
       messageWithContext,
       userSettings,
       currentMode: mode,
-      isProUser,
+      isProUser: scope.isProUser,
       enabledTools: mergeSkillSuggestedToolNames({
         enabledTools: mergeEnabledMemoryToolNames({
           enabledTools,
           user,
           userSettings,
-          store: options.store,
+          store: scope.options.store,
         }),
         skills,
       }),
-      toolOptions,
-      requestOptions: options.options,
+      toolOptions: this.resolveToolOptions(scope, savedToolConfigurations, enabledTools),
+      requestOptions: scope.options.options,
       memoryScope,
       connectedConnectorProviders,
     };
-  }
-
-  private async resolveSkillScope(
-    projectContext: ProjectChatContext | null,
-    repositories: RepositoryManager | null,
-    userId?: number,
-  ): Promise<RequestSkillScope> {
-    if (projectContext) {
-      return createProjectSkillScope(projectContext.enabledSkillIds);
-    }
-
-    if (!repositories || !userId) {
-      return { scope: "personal" };
-    }
-
-    try {
-      return await resolvePersonalSkillScope(repositories.capabilityConfigurations, userId);
-    } catch (error) {
-      logger.warn("Failed to load personal skill configuration", { error, userId });
-
-      return { scope: "personal" };
-    }
-  }
-
-  private async resolveScopedSkillCatalog(
-    options: CoreChatOptions,
-    projectContext: ProjectChatContext | null,
-  ) {
-    const user = options.context?.user;
-
-    if (!options.context || !(projectContext || user?.id)) {
-      return null;
-    }
-
-    try {
-      return await resolveSkillCatalog(
-        options.context,
-        projectContext
-          ? { type: "project", id: projectContext.projectId }
-          : { type: "personal", id: user.id },
-        projectContext ? new Set(projectContext.enabledSkillIds) : undefined,
-      );
-    } catch (error) {
-      logger.warn("Failed to load authored skills", {
-        error,
-        projectId: projectContext?.projectId,
-        userId: user?.id,
-      });
-
-      return null;
-    }
-  }
-
-  private async buildModelConfigs(
-    options: CoreChatOptions,
-    validationContext: ValidationContext,
-  ): Promise<ModelConfigInfo[]> {
-    const { env, provider: requestedProvider } = options;
-    const user = options.context?.user;
-    const { selectedModels, modelConfig } = validationContext;
-    const primaryModelConfig = modelConfig as ProviderModelConfig | undefined;
-
-    if (!selectedModels || selectedModels.length === 0) {
-      throw new AssistantError(
-        "No selected models available from validation context",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-
-    const successfulConfigs: ModelConfigInfo[] = [];
-    const seenModels = new Set<string>();
-    const addConfig = (config: ProviderModelConfig | null) => {
-      const modelKey = config ? `${config.provider}::${config.matchingModel}` : undefined;
-
-      if (!config || !modelKey || seenModels.has(modelKey)) {
-        return;
-      }
-
-      seenModels.add(modelKey);
-      successfulConfigs.push({
-        model: config.matchingModel,
-        provider: config.provider,
-        displayName: config.name || config.matchingModel,
-      });
-    };
-
-    const shouldSkipPrimaryFetch = Boolean(primaryModelConfig) && selectedModels.length > 0;
-
-    if (shouldSkipPrimaryFetch && primaryModelConfig) {
-      addConfig(primaryModelConfig);
-    }
-
-    const modelsToFetch = shouldSkipPrimaryFetch ? selectedModels.slice(1) : selectedModels.slice();
-
-    const configPromises = modelsToFetch.map((model) =>
-      RequestPreparer.getCachedModelConfig(model, env, requestedProvider, user?.id),
-    );
-    const configResults = await Promise.allSettled(configPromises);
-
-    configResults.forEach((result, index) => {
-      if (result.status === "fulfilled" && result.value) {
-        addConfig(result.value);
-      } else {
-        logger.warn("Failed to get model configuration", {
-          model: modelsToFetch[index],
-          error: result.status === "rejected" ? result.reason : "No config returned",
-        });
-      }
-    });
-
-    if (successfulConfigs.length === 0) {
-      throw new AssistantError(
-        "No valid model configurations available",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
-
-    return successfulConfigs;
-  }
-
-  private async processMessageContent(
-    options: CoreChatOptions,
-    validationContext: ValidationContext,
-  ): Promise<string> {
-    const { lastMessage } = validationContext;
-    const lastMessageContent = Array.isArray(lastMessage!.content)
-      ? lastMessage!.content
-      : [{ type: "text" as const, text: lastMessage!.content as string }];
-
-    return sanitiseInput(lastMessageContent.find((c) => c.type === "text")?.text || "");
-  }
-
-  private async storeMessages(
-    options: CoreChatOptions,
-    conversationManager: ConversationManager,
-    lastMessage: any,
-    finalMessage: string,
-    primaryModel: string,
-    platform: Platform,
-    mode: ChatMode,
-  ): Promise<void> {
-    const messageData = buildUserMessageData(options.options, options.background);
-
-    const messageToStore: Message = {
-      role: lastMessage.role,
-      content: finalMessage,
-      data: messageData,
-      id: generateId(),
-      timestamp: Date.now(),
-      model: primaryModel,
-      platform: platform || "api",
-      mode,
-    };
-
-    const messagesToStore: Message[] = [messageToStore];
-
-    const lastMessageContent = Array.isArray(lastMessage.content)
-      ? lastMessage.content
-      : [{ type: "text" as const, text: lastMessage.content as string }];
-
-    const { allAttachments } = getAllAttachments(lastMessageContent);
-
-    if (allAttachments.length > 0) {
-      const attachmentMessage: Message = {
-        role: lastMessage.role,
-        content: "Attachments",
-        data: { attachments: allAttachments },
-        id: generateId(),
-        timestamp: Date.now(),
-        model: primaryModel,
-        platform: platform || "api",
-        mode: mode,
-      };
-
-      messagesToStore.push(attachmentMessage);
-    }
-
-    let existingMessages: Message[] | null = null;
-
-    try {
-      if (options.completion_id) {
-        existingMessages = await conversationManager.get(options.completion_id);
-      }
-    } catch {
-      // We can ignore this.
-    }
-
-    const incomingMessages = Array.isArray(options.messages) ? options.messages : [];
-    const hasCompactedActiveHistory = existingMessages?.some(hasSnapshotPart) ?? false;
-    const incomingHasSnapshot = incomingMessages.some(hasSnapshotPart);
-    const latestExistingMessage = existingMessages?.at(-1);
-
-    if (
-      hasCompactedActiveHistory &&
-      !incomingHasSnapshot &&
-      latestExistingMessage?.role === lastMessage.role &&
-      latestExistingMessage.content === finalMessage
-    ) {
-      return;
-    }
-
-    const canReplaceFromIncoming =
-      incomingMessages.length > 0 && (!hasCompactedActiveHistory || incomingHasSnapshot);
-
-    if (
-      canReplaceFromIncoming &&
-      existingMessages &&
-      existingMessages.length > incomingMessages.length
-    ) {
-      await conversationManager.replaceMessages(options.completion_id, incomingMessages);
-
-      return;
-    }
-
-    if (
-      canReplaceFromIncoming &&
-      existingMessages &&
-      existingMessages.length === incomingMessages.length
-    ) {
-      if (messagesMatchStoredPrefix(existingMessages, incomingMessages)) {
-        return;
-      }
-
-      await conversationManager.replaceMessages(options.completion_id, incomingMessages);
-
-      return;
-    }
-
-    await conversationManager.addBatch(options.completion_id, messagesToStore, {
-      metadata: options.metadata || {},
-    });
-  }
-
-  private async buildSystemPrompt(
-    options: CoreChatOptions,
-    sanitisedMessages: Message[],
-    finalMessage: string,
-    primaryModel: string,
-    userSettings: any,
-    memoryPolicy: ReturnType<typeof resolveMemoryPolicy>,
-    projectContext: ProjectChatContext | null,
-    memoryScope: MemoryScope = { type: "personal" },
-    skills?: readonly SkillAvailability[],
-    activeGoal?: Goal | null,
-  ): Promise<string> {
-    const {
-      system_prompt,
-      mode = "normal",
-      verbosity,
-      reasoning_effort,
-      max_tokens,
-      location,
-      completion_id,
-    } = options;
-    const user = options.context?.user;
-    const memoriesEnabled = memoryPolicy.enabled;
-
-    const currentMode = mode;
-
-    if (currentMode === "no_system") {
-      return this.appendProjectInstructions("", projectContext, activeGoal);
-    }
-
-    if (system_prompt) {
-      const enhancedPrompt = await this.enhanceSystemPromptWithMemory(
-        system_prompt,
-        finalMessage,
-        user,
-        memoriesEnabled,
-        userSettings,
-        options.context,
-        memoryScope,
-      );
-
-      return this.appendProjectInstructions(enhancedPrompt, projectContext, activeGoal);
-    }
-
-    const systemPromptFromMessages = sanitisedMessages.find((message) => message.role === "system");
-
-    if (systemPromptFromMessages?.content && typeof systemPromptFromMessages.content === "string") {
-      const enhancedPrompt = await this.enhanceSystemPromptWithMemory(
-        systemPromptFromMessages.content,
-        finalMessage,
-        user,
-        memoriesEnabled,
-        userSettings,
-        options.context,
-        memoryScope,
-      );
-
-      return this.appendProjectInstructions(enhancedPrompt, projectContext, activeGoal);
-    }
-
-    const generatedPrompt = await getSystemPrompt({
-      request: {
-        completion_id: completion_id,
-        input: finalMessage,
-        model: primaryModel,
-        provider: options.provider,
-        date: new Date().toISOString().split("T")[0],
-        location,
-        mode: currentMode,
-        verbosity,
-        reasoning_effort,
-        max_tokens,
-        options: options.options,
-      },
-      model: primaryModel,
-      user: user || undefined,
-      userSettings,
-      skills,
-      memory: memoryPolicy,
-      persona: options.persona,
-    });
-
-    const enhancedPrompt = await this.enhanceSystemPromptWithMemory(
-      generatedPrompt,
-      finalMessage,
-      user,
-      memoriesEnabled,
-      userSettings,
-      options.context,
-      memoryScope,
-    );
-
-    return this.appendProjectInstructions(enhancedPrompt, projectContext, activeGoal);
-  }
-
-  private async loadActiveGoal(options: CoreChatOptions): Promise<Goal | null> {
-    const user = options.context?.user;
-
-    if (!user?.id || user.plan_id !== "pro" || !options.completion_id) {
-      return null;
-    }
-
-    try {
-      return await options.context.repositories.goals.getActiveGoal({
-        conversationId: options.completion_id,
-      });
-    } catch (error) {
-      logger.error("Failed to load the active goal", { error });
-
-      return null;
-    }
-  }
-
-  private appendProjectInstructions(
-    systemPrompt: string,
-    projectContext: ProjectChatContext | null,
-    activeGoal?: Goal | null,
-  ): string {
-    let prompt = systemPrompt;
-
-    if (projectContext?.instructions) {
-      const projectInstructions = `Project instructions:\n${projectContext.instructions}`;
-
-      prompt = prompt ? `${prompt}\n\n${projectInstructions}` : projectInstructions;
-    }
-
-    if (activeGoal && activeGoal.status === "active") {
-      const goalContract = buildGoalContractSection(activeGoal);
-
-      prompt = prompt ? `${prompt}\n\n${goalContract}` : goalContract;
-    }
-
-    return prompt;
-  }
-
-  private async enhanceSystemPromptWithMemory(
-    systemPrompt: string,
-    finalMessage: string,
-    user: any,
-    memoriesEnabled: boolean,
-    _userSettings: any,
-    _serviceContext?: ServiceContext,
-    memoryScope: MemoryScope = { type: "personal" },
-  ): Promise<string> {
-    if (!memoriesEnabled || !finalMessage || !user?.id || memoryScope.type !== "personal") {
-      return systemPrompt;
-    }
-
-    try {
-      const synthesis = await this.repositories.memorySyntheses.getActiveSynthesis(
-        user.id,
-        "global",
-      );
-      const memoryContext = buildMemoryPromptContext({
-        synthesisText: synthesis?.synthesis_text,
-      });
-
-      return memoryContext ? `${systemPrompt}\n${memoryContext}` : systemPrompt;
-    } catch (error) {
-      logger.warn("Failed to read the memory synthesis", { error, userId: user?.id });
-
-      return systemPrompt;
-    }
-  }
-
-  private buildFinalMessages(
-    sanitisedMessages: Message[],
-    messageWithContext: string,
-    modelConfig: any,
-  ): Message[] {
-    const messagesWithAttachments = restoreStoredAttachmentContent(sanitisedMessages);
-    const prunedWithAttachments =
-      messagesWithAttachments.length > 0
-        ? pruneMessagesToFitContext(messagesWithAttachments, messageWithContext, modelConfig)
-        : [];
-
-    const chatMessages = prunedWithAttachments.map((msg, index) => {
-      if (index === prunedWithAttachments.length - 1) {
-        if (Array.isArray(msg.content)) {
-          return {
-            ...msg,
-            content: msg.content.map((part) =>
-              part.type === "text" ? { ...part, text: messageWithContext } : part,
-            ),
-          };
-        }
-
-        return { ...msg, content: messageWithContext };
-      }
-
-      return msg;
-    });
-
-    return toProviderMessages(chatMessages).filter((msg) => msg.role !== "system");
-  }
-
-  private async buildProviderMessages({
-    conversationManager,
-    completionId,
-    shouldStoreMessages,
-    fallbackMessages,
-    messageWithContext,
-    primaryModelConfig,
-  }: {
-    conversationManager: ConversationManager;
-    completionId?: string;
-    shouldStoreMessages: boolean;
-    fallbackMessages: Message[];
-    messageWithContext: string;
-    primaryModelConfig: ProviderModelConfig;
-  }): Promise<Message[]> {
-    if (!shouldStoreMessages || !completionId) {
-      return this.buildFinalMessages(fallbackMessages, messageWithContext, primaryModelConfig);
-    }
-
-    try {
-      const activeMessages = await conversationManager.get(completionId);
-
-      if (Array.isArray(activeMessages) && activeMessages.length > 0) {
-        const providerMessages = this.buildFinalMessages(
-          activeMessages,
-          messageWithContext,
-          primaryModelConfig,
-        );
-
-        if (providerMessages.length > 0) {
-          return providerMessages;
-        }
-      }
-
-      throw new AssistantError(
-        "Stored conversation has no active messages for provider context",
-        ErrorType.PARAMS_ERROR,
-      );
-    } catch (error) {
-      logger.warn("Failed to load active conversation messages for provider context", {
-        error,
-        completionId,
-      });
-      throw error;
-    }
   }
 }
