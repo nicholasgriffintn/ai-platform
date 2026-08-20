@@ -5,7 +5,7 @@ Configure the smallest viable capability set. The tracked examples define availa
 ## Sources of truth
 
 - API local secrets and optional providers: `apps/api/.dev.vars.example`
-- API Cloudflare topology: `apps/api/wrangler.jsonc.example` and the active ignored manifest
+- API Cloudflare topology: `apps/api/wrangler.jsonc.example` and the active ignored `apps/api/wrangler.json`
 - Web build-time values: `apps/app/.env*`, `apps/app/src/constants.ts`, and `apps/app/wrangler.jsonc`
 - Sandbox secrets and bindings: `apps/sandbox-worker/.dev.vars.example` and `apps/sandbox-worker/wrangler.json`
 - Training secrets and bindings: `apps/training/.dev.vars.example` and `apps/training/wrangler.json`
