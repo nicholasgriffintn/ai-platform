@@ -23,6 +23,8 @@ Read the relevant accepted records before changing product structure, ownership,
 - [0019](decisions/0019-store-authored-skills-as-r2-documents.md): Keep user-authored skills as scope-keyed private R2 documents, using project capabilities and audit records for Work governance instead of adding a skill table.
 - [0020](decisions/0020-backend-shared-package-boundaries.md): Extract a backend package only where a second consumer already exists; judge candidates by duplication and coupling rather than module size.
 - [0021](decisions/0021-prompt-behaviour-belongs-in-skills.md): Move prompt-shaped tooling — prompt coaching, tutoring, reasoning steps, orchestration helpers, and council — into skills, add skill-suggested tools, and replace the client council loop and its chat mode with a server-side panel tool.
+- [0022](decisions/0022-one-turn-engine.md): Run every chat turn through the shared agent loop, with streaming as a transport rather than a pipeline of its own.
+- [0023](decisions/0023-agents-are-chat-completions-with-a-persona.md): Layer a saved agent's identity into the generated prompt as a persona, and keep `system_prompt` as a full override for API callers.
 
 [context.md](context.md) holds the current domain vocabulary, workspace map, seams, and data flows.
 
