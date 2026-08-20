@@ -5,6 +5,7 @@ import {
   normalizeMessage,
 } from "@ngriffin_uk/polychat-library-chat/messages";
 import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
+import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import { EMPTY_MODEL_CONFIG, getModelProvider } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
@@ -443,7 +444,7 @@ export function useStreamingResponse(
           return { status: "error" as const, response: "Request aborted" };
         }
 
-        if (isLocal || !storageMode.shouldSyncRemote) {
+        if (isLocal || !storageMode.shouldSyncRemote || error instanceof ApiError) {
           throw error;
         }
 

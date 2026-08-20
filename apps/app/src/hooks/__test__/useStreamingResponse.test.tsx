@@ -1,3 +1,4 @@
+import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
@@ -18,12 +19,16 @@ import { useStreamingResponse } from "../useStreamingResponse";
 const mocks = vi.hoisted(() => ({
   fetchModels: vi.fn(),
   streamChatCompletions: vi.fn(),
+  getChat: vi.fn(),
+  cancelChatCompletion: vi.fn(),
 }));
 
 vi.mock("~/lib/api/api-service", () => ({
   apiService: {
     fetchModels: mocks.fetchModels,
     streamChatCompletions: mocks.streamChatCompletions,
+    getChat: mocks.getChat,
+    cancelChatCompletion: mocks.cancelChatCompletion,
   },
 }));
 
@@ -311,6 +316,84 @@ describe("useStreamingResponse", () => {
 
     expect(mocks.streamChatCompletions).toHaveBeenCalledOnce();
     expect(submittedSignal?.aborted).toBe(false);
+  });
+
+  it("reports a server-reported failure instead of waiting for a detached turn", async () => {
+    const queryClient = createQueryClient();
+    const userMessage: Message = {
+      id: "user-1",
+      role: "user",
+      content: "Trigger a provider failure",
+      model: "deepseek-v4-flash",
+    };
+
+    queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"], {
+      id: "conversation-1",
+      title: "Failure",
+      isLocalOnly: false,
+      messages: [userMessage],
+    });
+
+    mocks.streamChatCompletions.mockRejectedValue(
+      new ApiError("External service temporarily unavailable", 502),
+    );
+    mocks.cancelChatCompletion.mockResolvedValue(undefined);
+
+    const { result } = renderHook(() => useStreamingResponse(undefined), {
+      wrapper: wrapper(queryClient),
+    });
+
+    await act(async () => {
+      await expect(
+        result.current.streamResponse([userMessage], "conversation-1", undefined, {
+          generateTitle: false,
+        }),
+      ).rejects.toThrow("External service temporarily unavailable");
+    });
+
+    expect(mocks.getChat).not.toHaveBeenCalled();
+  });
+
+  it("recovers a detached turn from the persisted conversation", async () => {
+    const queryClient = createQueryClient();
+    const userMessage: Message = {
+      id: "user-1",
+      role: "user",
+      content: "Keep going without me",
+      model: "deepseek-v4-flash",
+    };
+
+    queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"], {
+      id: "conversation-1",
+      title: "Detached",
+      isLocalOnly: false,
+      messages: [userMessage],
+    });
+
+    mocks.streamChatCompletions.mockRejectedValue(new TypeError("network error"));
+    mocks.cancelChatCompletion.mockResolvedValue(undefined);
+    mocks.getChat.mockResolvedValue({
+      id: "conversation-1",
+      messages: [
+        userMessage,
+        { id: "assistant-1", role: "assistant", content: "Finished while you were away" },
+      ],
+    });
+
+    const { result } = renderHook(() => useStreamingResponse(undefined), {
+      wrapper: wrapper(queryClient),
+    });
+
+    let outcome: Awaited<ReturnType<typeof result.current.streamResponse>> | undefined;
+
+    await act(async () => {
+      outcome = await result.current.streamResponse([userMessage], "conversation-1", undefined, {
+        generateTitle: false,
+      });
+    });
+
+    expect(outcome?.status).toBe("success");
+    expect(outcome?.response).toContain("Finished while you were away");
   });
 
   it("updates local guest conversations from streamed content deltas", async () => {
