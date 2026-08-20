@@ -689,6 +689,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
   createModelConfig("gpt-5.1-codex", PROVIDER, {
     name: "GPT-5.1 Codex",
     matchingModel: "gpt-5.1-codex",
+    requiresResponsesApi: true,
     description:
       "GPT-5.1 Codex is a specialized version of GPT-5.1, fine-tuned for code generation and understanding tasks.",
     knowledgeCutoffDate: "September 30, 2024",
@@ -736,6 +737,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
   createModelConfig("gpt-5.1-codex-mini", PROVIDER, {
     name: "GPT-5.1 Codex mini",
     matchingModel: "gpt-5.1-codex-mini",
+    requiresResponsesApi: true,
     description:
       "GPT-5.1 Codex Mini is a lightweight version of GPT-5.1 Codex, optimized for faster performance and lower resource usage.",
     knowledgeCutoffDate: "September 30, 2024",
@@ -920,6 +922,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
   createModelConfig("codex-mini-latest", PROVIDER, {
     name: "Codex Mini",
     matchingModel: "codex-mini-latest",
+    requiresResponsesApi: true,
     knowledgeCutoffDate: "April 2024",
     releaseDate: "May 16, 2025",
     lastUpdated: "May 16, 2025",
@@ -972,6 +975,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
   createModelConfig("gpt-5-codex", PROVIDER, {
     name: "GPT-5-Codex",
     matchingModel: "gpt-5-codex",
+    requiresResponsesApi: true,
     knowledgeCutoffDate: "September 30, 2024",
     releaseDate: "September 15, 2025",
     lastUpdated: "September 15, 2025",
@@ -1014,6 +1018,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
   createModelConfig("gpt-5-pro", PROVIDER, {
     name: "GPT-5 Pro",
     matchingModel: "gpt-5-pro",
+    requiresResponsesApi: true,
     knowledgeCutoffDate: "September 30, 2024",
     releaseDate: "October 6, 2025",
     lastUpdated: "October 6, 2025",
@@ -1128,6 +1133,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
   createModelConfig("gpt-5.1-codex-max", PROVIDER, {
     name: "GPT-5.1 Codex Max",
     matchingModel: "gpt-5.1-codex-max",
+    requiresResponsesApi: true,
     knowledgeCutoffDate: "September 30, 2024",
     releaseDate: "November 13, 2025",
     lastUpdated: "November 13, 2025",
@@ -1160,6 +1166,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
   createModelConfig("gpt-5.2-codex", PROVIDER, {
     name: "GPT-5.2 Codex",
     matchingModel: "gpt-5.2-codex",
+    requiresResponsesApi: true,
     knowledgeCutoffDate: "August 31, 2025",
     releaseDate: "December 11, 2025",
     lastUpdated: "December 11, 2025",
@@ -1202,6 +1209,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
   createModelConfig("gpt-5.2-pro", PROVIDER, {
     name: "GPT-5.2 Pro",
     matchingModel: "gpt-5.2-pro",
+    requiresResponsesApi: true,
     knowledgeCutoffDate: "August 31, 2025",
     releaseDate: "December 11, 2025",
     lastUpdated: "December 11, 2025",
@@ -1237,6 +1245,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     name: "GPT-5.3 Codex",
     description: "The most capable agentic coding model to date.",
     matchingModel: "gpt-5.3-codex",
+    requiresResponsesApi: true,
     knowledgeCutoffDate: "August 31, 2025",
     releaseDate: "February 5, 2026",
     lastUpdated: "February 5, 2026",
@@ -1281,6 +1290,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
   createModelConfig("gpt-5.3-codex-spark", PROVIDER, {
     name: "GPT-5.3 Codex Spark",
     matchingModel: "gpt-5.3-codex-spark",
+    requiresResponsesApi: true,
     knowledgeCutoffDate: "August 31, 2025",
     releaseDate: "February 5, 2026",
     lastUpdated: "February 5, 2026",
@@ -1317,6 +1327,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
   createModelConfig("o3-deep-research", PROVIDER, {
     name: "o3-deep-research",
     matchingModel: "o3-deep-research",
+    requiresResponsesApi: true,
     knowledgeCutoffDate: "May 2024",
     releaseDate: "June 26, 2024",
     lastUpdated: "June 26, 2024",
@@ -1343,6 +1354,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
   createModelConfig("o3-pro", PROVIDER, {
     name: "o3-pro",
     matchingModel: "o3-pro",
+    requiresResponsesApi: true,
     knowledgeCutoffDate: "May 2024",
     releaseDate: "June 10, 2025",
     lastUpdated: "June 10, 2025",
@@ -1380,6 +1392,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
   createModelConfig("o4-mini-deep-research", PROVIDER, {
     name: "o4-mini-deep-research",
     matchingModel: "o4-mini-deep-research",
+    requiresResponsesApi: true,
     knowledgeCutoffDate: "May 2024",
     releaseDate: "June 26, 2024",
     lastUpdated: "June 26, 2024",
@@ -1690,6 +1703,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     name: "GPT-5.4 Pro",
     description: "Version of GPT-5.4 that produces smarter and more precise responses.",
     matchingModel: "gpt-5.4-pro",
+    requiresResponsesApi: true,
     knowledgeCutoffDate: "August 31, 2025",
     releaseDate: "March 5, 2026",
     lastUpdated: "March 5, 2026",
@@ -1804,6 +1818,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
   createModelConfig("gpt-5.5-pro", PROVIDER, {
     name: "GPT-5.5 Pro",
     matchingModel: "gpt-5.5-pro",
+    requiresResponsesApi: true,
     description: "Version of GPT-5.5 that produces smarter and more precise responses.",
     knowledgeCutoffDate: "December 1, 2025",
     releaseDate: "April 23, 2026",

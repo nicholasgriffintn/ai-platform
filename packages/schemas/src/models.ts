@@ -183,6 +183,7 @@ export const modelConfigItemSchema = z.object({
   supportsPresencePenalty: z.boolean().optional(),
   restrictsCombinedTopPAndTemperature: z.boolean().optional(),
   apiOperation: z.string().optional(),
+  requiresResponsesApi: z.boolean().optional(),
   bedrockApiOperation: z.string().optional(),
   bedrockStreamingApiOperation: z.string().optional(),
   timeout: z.number().optional(),

@@ -15,27 +15,23 @@ import { createSamplingParameters, getEffectiveMaxTokens } from "~/utils/paramet
 
 import { buildOpenAIResponsesTools } from "./openaiResponsesTools";
 
-function supportsOpenAIResponsesModel(modelConfig: ModelConfigItem): boolean {
-  return (
-    !!modelConfig.supportsToolCalls &&
-    hasModelTextOutput(modelConfig) &&
-    !producesNonTextPrimaryOutput(modelConfig)
-  );
+function requiresOpenAIResponsesApi(modelConfig: ModelConfigItem): boolean {
+  return modelConfig.requiresResponsesApi === true;
 }
 
 export function shouldUseOpenAIResponsesApi(
   params: ChatCompletionParameters,
   modelConfig: ModelConfigItem,
 ): boolean {
+  if (requiresOpenAIResponsesApi(modelConfig)) {
+    return true;
+  }
+
   if (!params.use_responses) {
     return false;
   }
 
-  if (params.use_responses) {
-    return hasModelTextOutput(modelConfig) && !producesNonTextPrimaryOutput(modelConfig);
-  }
-
-  return supportsOpenAIResponsesModel(modelConfig);
+  return hasModelTextOutput(modelConfig) && !producesNonTextPrimaryOutput(modelConfig);
 }
 
 function getOpenAIResponseId(message: Message): string | undefined {
