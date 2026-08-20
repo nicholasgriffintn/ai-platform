@@ -1,3 +1,5 @@
+import { MemoizedMarkdown } from "../markdown";
+
 interface TextViewProps {
   data: {
     content: string;
@@ -7,26 +9,20 @@ interface TextViewProps {
 export const TextView = ({ data }: TextViewProps) => {
   const { content } = data;
 
-  if (!content) {
+  if (!content || !content.trim()) {
     return (
       <div
         data-responsetype="text"
-        className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800"
+        className="rounded-md border border-amber-200 bg-amber-100 p-4 text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300"
       >
         No content available.
       </div>
     );
   }
 
-  const lines = content.split("\n");
-
   return (
-    <div data-responsetype="text" className="prose dark:prose-invert max-w-none">
-      {lines.map((line, index) => (
-        <p key={index} className={line.trim() === "" ? "h-4" : ""}>
-          {line}
-        </p>
-      ))}
+    <div data-responsetype="text">
+      <MemoizedMarkdown className="max-w-none">{content}</MemoizedMarkdown>
     </div>
   );
 };

@@ -1,29 +1,30 @@
+import { useCopyToClipboard } from "@ngriffin_uk/polychat-utility-react";
+import { Check, Copy } from "lucide-react";
 import { type JSX, useState } from "react";
 
 interface JsonViewProps {
-  data: Record<string, any>;
-  expandedByDefault?: boolean;
+  data: unknown;
+  /** Levels expanded on first render. The root and its immediate children read as a summary. */
+  defaultExpandedDepth?: number;
 }
 
-export const JsonView = ({ data, expandedByDefault = false }: JsonViewProps) => {
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({
-    root: expandedByDefault,
-  });
+const MAX_INLINE_STRING = 400;
 
-  const toggleExpand = (path: string) => {
-    setExpanded((prev) => ({
-      ...prev,
-      [path]: !prev[path],
-    }));
+export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
+  const [overrides, setOverrides] = useState<Record<string, boolean>>({});
+  const { copied, copy } = useCopyToClipboard();
+
+  const toggleExpand = (path: string, isExpanded: boolean) => {
+    setOverrides((prev) => ({ ...prev, [path]: !isExpanded }));
   };
 
-  const renderValue = (value: any, path: string, depth = 0): JSX.Element => {
+  const renderValue = (value: unknown, path: string, depth: number): JSX.Element => {
     if (value === null) {
-      return <span className="text-gray-500 dark:text-zinc-400">null</span>;
+      return <span className="text-zinc-500 dark:text-zinc-400">null</span>;
     }
 
     if (value === undefined) {
-      return <span className="text-gray-500 dark:text-zinc-400">undefined</span>;
+      return <span className="text-zinc-500 dark:text-zinc-400">undefined</span>;
     }
 
     if (typeof value === "boolean") {
@@ -35,95 +36,105 @@ export const JsonView = ({ data, expandedByDefault = false }: JsonViewProps) => 
     }
 
     if (typeof value === "string") {
-      return <span className="text-red-600 dark:text-red-400">"{value}"</span>;
+      const truncated =
+        value.length > MAX_INLINE_STRING ? `${value.slice(0, MAX_INLINE_STRING)}…` : value;
+
+      return (
+        <span className="break-words text-red-600 dark:text-red-400" title={value}>
+          "{truncated}"
+        </span>
+      );
     }
 
     if (Array.isArray(value)) {
       if (value.length === 0) {
-        return <span className="text-gray-500 dark:text-zinc-400">[]</span>;
+        return <span className="text-zinc-500 dark:text-zinc-400">[]</span>;
       }
 
-      const isExpanded = expanded[path];
-
-      return (
-        <div>
-          <button
-            type="button"
-            className="cursor-pointer text-gray-700 dark:text-zinc-300 hover:text-blue-500 dark:hover:text-blue-400"
-            onClick={() => toggleExpand(path)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                toggleExpand(path);
-              }
-            }}
-            tabIndex={0}
-          >
-            {isExpanded ? "▼" : "▶"} Array[{value.length}]
-          </button>
-
-          {isExpanded && (
-            <div className="pl-4 border-l border-gray-300 dark:border-zinc-600 ml-2">
-              {value.map((item, index) => (
-                <div key={`${path}-${index}`} className="my-1">
-                  <span className="text-gray-500 dark:text-zinc-400">{index}: </span>
-                  {renderValue(item, `${path}-${index}`, depth + 1)}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+      return renderBranch(
+        path,
+        depth,
+        `Array[${value.length}]`,
+        value.map((item, index) => ({
+          key: `${path}-${index}`,
+          label: String(index),
+          value: item,
+        })),
       );
     }
 
     if (typeof value === "object") {
-      const keys = Object.keys(value);
+      const record = value as Record<string, unknown>;
+      const keys = Object.keys(record);
 
       if (keys.length === 0) {
-        return <span className="text-gray-500 dark:text-zinc-400">{"{}"}</span>;
+        return <span className="text-zinc-500 dark:text-zinc-400">{"{}"}</span>;
       }
 
-      const isExpanded = expanded[path];
-
-      return (
-        <div>
-          <button
-            type="button"
-            className="cursor-pointer text-gray-700 dark:text-zinc-300 hover:text-blue-500 dark:hover:text-blue-400"
-            onClick={() => toggleExpand(path)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                toggleExpand(path);
-              }
-            }}
-            tabIndex={0}
-          >
-            {isExpanded ? "▼" : "▶"} Object{"{"}
-            {keys.length}
-            {"}"}
-          </button>
-          {isExpanded && (
-            <div className="pl-4 border-l border-gray-300 dark:border-zinc-600 ml-2">
-              {keys.map((key) => (
-                <div key={`${path}-${key}`} className="my-1">
-                  <span className="text-gray-800 dark:text-zinc-200 font-medium">{key}: </span>
-                  {renderValue(value[key], `${path}-${key}`, depth + 1)}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+      return renderBranch(
+        path,
+        depth,
+        `Object{${keys.length}}`,
+        keys.map((key) => ({
+          key: `${path}-${key}`,
+          label: key,
+          value: record[key],
+        })),
       );
     }
 
-    return <span>{String(value)}</span>;
+    return <span>{JSON.stringify(value)}</span>;
+  };
+
+  const renderBranch = (
+    path: string,
+    depth: number,
+    summary: string,
+    children: Array<{ key: string; label: string; value: unknown }>,
+  ): JSX.Element => {
+    const isExpanded = overrides[path] ?? depth < defaultExpandedDepth;
+
+    return (
+      <div>
+        <button
+          type="button"
+          className="cursor-pointer text-zinc-700 hover:text-blue-500 dark:text-zinc-300 dark:hover:text-blue-400"
+          onClick={() => toggleExpand(path, isExpanded)}
+          aria-expanded={isExpanded}
+        >
+          {isExpanded ? "▼" : "▶"} {summary}
+        </button>
+        {isExpanded && (
+          <div className="ml-2 border-l border-zinc-300 pl-4 dark:border-zinc-600">
+            {children.map((child) => (
+              <div key={child.key} className="my-1">
+                <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                  {child.label}:{" "}
+                </span>
+                {renderValue(child.value, child.key, depth + 1)}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
     <div
       data-responsetype="json"
-      className="mt-1 overflow-x-auto text-xs rounded bg-off-white-highlight/50 p-2 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700"
+      className="relative mt-1 overflow-x-auto rounded border border-zinc-200 bg-off-white-highlight/50 p-2 pr-9 text-xs dark:border-zinc-700 dark:bg-zinc-800/50"
     >
-      {renderValue(data, "root")}
+      <button
+        type="button"
+        onClick={() => copy(JSON.stringify(data, null, 2))}
+        className="absolute right-1.5 top-1.5 cursor-pointer rounded p-1 text-zinc-500 transition-colors hover:bg-zinc-200/60 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700/60 dark:hover:text-zinc-100"
+        aria-label={copied ? "Payload copied" : "Copy payload"}
+        title={copied ? "Copied" : "Copy payload"}
+      >
+        {copied ? <Check size={13} /> : <Copy size={13} />}
+      </button>
+      {renderValue(data, "root", 0)}
     </div>
   );
 };

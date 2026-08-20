@@ -4,7 +4,7 @@ import {
   type ArtifactProps,
   ImageModal,
   MemoizedMarkdown,
-  ResponseView,
+  type ToolInteractionHandler,
   canCombineArtifacts,
   isInlinePreviewArtifact,
 } from "@ngriffin_uk/polychat-component-content";
@@ -18,13 +18,17 @@ import {
   splitContentByArtifacts,
 } from "@ngriffin_uk/polychat-library-chat/message-utils";
 import { formattedMessageContent } from "@ngriffin_uk/polychat-library-chat/messages";
-import { resolveRenderableToolResult } from "@ngriffin_uk/polychat-library-chat/tool-results";
+import {
+  isHiddenToolResultPart,
+  resolveToolResultPartDisplay,
+} from "@ngriffin_uk/polychat-library-chat/tool-results";
 import { File, FileText, Loader2, Volume2 } from "lucide-react";
 import { Fragment, type ReactNode, memo, useMemo } from "react";
 
 import { CitationList } from "./CitationList";
 import { ReasoningSection } from "./ReasoningSection";
 import { SearchGroundingSection } from "./SearchGroundingSection";
+import { ToolResultView } from "./ToolResultView";
 
 interface MessageContentProps {
   message: Message;
@@ -33,6 +37,7 @@ interface MessageContentProps {
     combine?: boolean,
     artifacts?: ArtifactProps[],
   ) => void;
+  onToolInteraction?: ToolInteractionHandler;
 }
 
 const renderTextContent = (
@@ -48,10 +53,9 @@ const renderTextContent = (
   ) => void,
   key?: string,
 ): ReactNode => {
-  const { reasoning, artifacts } = formattedMessageContent(role, textContent);
-  let { content } = formattedMessageContent(role, textContent);
-
-  content = processCustomXmlTags(content);
+  const formatted = formattedMessageContent(role, textContent);
+  const { reasoning, artifacts } = formatted;
+  const content = processCustomXmlTags(formatted.content);
 
   const hasOpenReasoning = reasoning.some((item) => item.isOpen);
 
@@ -295,65 +299,45 @@ const renderAudioContent = (audioUrl: string, audioName?: string, index?: number
   );
 };
 
-const renderToolUsePart = (
-  part: Extract<NonNullable<Message["parts"]>[number], { type: "tool_use" }>,
-  index: number,
-): ReactNode => {
-  const formattedInput =
-    typeof part.input === "string"
-      ? part.input
-      : part.input
-        ? JSON.stringify(part.input, null, 2)
-        : "{}";
-
-  return (
-    <div
-      key={`tool-use-${part.toolCallId || part.name}-${index}`}
-      className="rounded border border-amber-200/60 bg-amber-50/80 p-3 dark:border-amber-900/50 dark:bg-amber-950/20"
-    >
-      <div className="text-xs font-semibold text-amber-700 dark:text-amber-300">
-        Tool call: {part.name}
-      </div>
-      <pre className="mt-2 overflow-x-auto text-xs text-zinc-700 dark:text-zinc-300">
-        {formattedInput}
-      </pre>
-    </div>
-  );
-};
-
 const renderToolResultPart = (
   part: Extract<NonNullable<Message["parts"]>[number], { type: "tool_result" }>,
   index: number,
+  input: unknown,
+  onToolInteraction?: ToolInteractionHandler,
 ): ReactNode => {
-  const renderableResult = resolveRenderableToolResult(part);
-  const content =
-    typeof part.content === "string"
-      ? part.content
-      : part.content
-        ? JSON.stringify(part.content, null, 2)
-        : "";
+  if (isHiddenToolResultPart(part)) {
+    return null;
+  }
 
   return (
-    <div
+    <ToolResultView
       key={`tool-result-${part.toolCallId || part.name || "tool"}-${index}`}
-      className="rounded border border-blue-200/60 bg-blue-50/80 p-3 dark:border-blue-900/50 dark:bg-blue-950/20"
-    >
-      <div className="text-xs font-semibold text-blue-700 dark:text-blue-300">
-        Tool result{part.name ? `: ${part.name}` : ""}
-        {part.status ? ` (${part.status})` : ""}
-      </div>
-      {renderableResult ? (
-        <div className="mt-3">
-          <ResponseView result={renderableResult.result} embedded />
-        </div>
-      ) : content ? (
-        <MemoizedMarkdown className="mt-2 text-sm">{content}</MemoizedMarkdown>
-      ) : (
-        <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">No tool output</div>
-      )}
-    </div>
+      display={resolveToolResultPartDisplay(part)}
+      input={input}
+      onToolInteraction={onToolInteraction}
+    />
   );
 };
+
+/**
+ * A call and its result are one exchange, so the arguments are folded into the result row rather
+ * than rendered as a separate box above it. A call still awaiting its result keeps its own row.
+ */
+const renderPendingToolUsePart = (
+  part: Extract<NonNullable<Message["parts"]>[number], { type: "tool_use" }>,
+  index: number,
+): ReactNode => (
+  <ToolResultView
+    key={`tool-use-${part.toolCallId || part.name}-${index}`}
+    display={{
+      name: part.name,
+      label: part.name,
+      status: "in_progress",
+      result: { status: "in_progress", name: part.name, content: "", data: undefined },
+    }}
+    input={part.input}
+  />
+);
 
 const renderSnapshotPart = (
   part: Extract<NonNullable<Message["parts"]>[number], { type: "snapshot" }>,
@@ -374,7 +358,8 @@ const renderSnapshotPart = (
   );
 };
 
-export const MessageContent = memo(({ message, onArtifactOpen }: MessageContentProps) => {
+export const MessageContent = memo((props: MessageContentProps) => {
+  const { message, onArtifactOpen, onToolInteraction } = props;
   const content = useMemo(() => {
     const handleArtifactOpen = (
       artifact: ArtifactProps,
@@ -401,6 +386,19 @@ export const MessageContent = memo(({ message, onArtifactOpen }: MessageContentP
     }
 
     const messageParts = Array.isArray(message.parts) ? message.parts : [];
+    const toolInputsByCallId = new Map<string, unknown>();
+    const resolvedToolCallIds = new Set<string>();
+
+    for (const part of messageParts) {
+      if (part.type === "tool_use" && part.toolCallId) {
+        toolInputsByCallId.set(part.toolCallId, part.input);
+      }
+
+      if (part.type === "tool_result" && part.toolCallId) {
+        resolvedToolCallIds.add(part.toolCallId);
+      }
+    }
+
     const hasReasoningPart = messageParts.some((part) => part.type === "reasoning");
     const hasTextPart = messageParts.some(
       (part) => part.type === "text" && part.text.trim().length > 0,
@@ -456,11 +454,19 @@ export const MessageContent = memo(({ message, onArtifactOpen }: MessageContentP
             }
 
             if (part.type === "tool_use") {
-              return renderToolUsePart(part, index);
+              /** Answered calls render inside their result row; only orphans need their own. */
+              return part.toolCallId && resolvedToolCallIds.has(part.toolCallId)
+                ? null
+                : renderPendingToolUsePart(part, index);
             }
 
             if (part.type === "tool_result") {
-              return renderToolResultPart(part, index);
+              return renderToolResultPart(
+                part,
+                index,
+                part.toolCallId ? toolInputsByCallId.get(part.toolCallId) : undefined,
+                onToolInteraction,
+              );
             }
 
             if (part.type === "snapshot") {
@@ -517,7 +523,7 @@ export const MessageContent = memo(({ message, onArtifactOpen }: MessageContentP
                   },
                   message.citations,
                   message.data,
-                  onArtifactOpen,
+                  handleArtifactOpen,
                   `text-${i}`,
                 );
               }
@@ -632,6 +638,7 @@ export const MessageContent = memo(({ message, onArtifactOpen }: MessageContentP
     message.data,
     message.citations,
     onArtifactOpen,
+    onToolInteraction,
   ]);
 
   const asyncInvocation = message.data?.asyncInvocation;

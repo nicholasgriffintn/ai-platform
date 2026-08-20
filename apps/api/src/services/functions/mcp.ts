@@ -172,7 +172,6 @@ async function executeTool(
           answer,
           name: originalToolName,
           formattedName: "MCP",
-          responseType: "custom",
         },
         timestamp: Date.now(),
         platform: "api",
@@ -187,7 +186,6 @@ async function executeTool(
         answer,
         name: originalToolName,
         formattedName: "MCP",
-        responseType: "custom",
       },
     };
   } catch (error) {

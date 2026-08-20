@@ -1,20 +1,17 @@
-import { type ResponseDisplay, ResponseDisplayType } from "@ngriffin_uk/polychat-schemas";
-
 import type { MessageContent } from "~/types/chat";
 
 import {
   formatFunctionName,
   getFunctionIcon,
+  getFunctionRenderer,
   getFunctionResponseDisplay,
   getFunctionResponseType,
 } from "./functions";
 
 /**
- * Formats a tool response for display in the UI
- * @param toolName The name of the tool
- * @param content The content of the tool response
- * @param data Additional data from the tool response
- * @returns Formatted tool response with display information
+ * Decorates a tool response with the presentation metadata the conversation renderer reads:
+ * a stable renderer id, an icon, a human label, and any response type the tool declares. A tool
+ * that declares nothing is rendered from the shape of its payload.
  */
 export const formatToolResponse = (
   toolName: string,
@@ -26,6 +23,7 @@ export const formatToolResponse = (
 } => {
   const responseType = data?.responseType ?? getFunctionResponseType(toolName);
   const responseDisplay = data?.responseDisplay ?? getFunctionResponseDisplay(toolName);
+  const renderer = data?.renderer ?? getFunctionRenderer(toolName);
   const icon = data?.icon ?? getFunctionIcon(toolName);
   const formattedName = data?.formattedName ?? formatFunctionName(toolName);
 
@@ -33,8 +31,9 @@ export const formatToolResponse = (
     content,
     data: {
       ...data,
-      responseType,
-      responseDisplay,
+      ...(responseType ? { responseType } : {}),
+      ...(responseDisplay ? { responseDisplay } : {}),
+      ...(renderer ? { renderer } : {}),
       icon,
       formattedName,
       name: data?.name ?? toolName,
@@ -43,10 +42,8 @@ export const formatToolResponse = (
 };
 
 /**
- * Formats a tool error response for display in the UI
- * @param toolName The name of the tool
- * @param errorMessage The error message
- * @returns Formatted error response with display information
+ * Failures carry no response type: the client renders them from `status`, so a broken tool cannot
+ * pass for a working one by borrowing a successful tool's presentation.
  */
 export const formatToolErrorResponse = (
   toolName: string,
@@ -56,25 +53,11 @@ export const formatToolErrorResponse = (
   content: string;
   data: Record<string, any>;
 } => {
-  const responseType = ResponseDisplayType.TEXT;
-  const responseDisplay: ResponseDisplay = {
-    fields: [
-      { key: "status", label: "Status" },
-      { key: "content", label: "Error" },
-    ],
-    template: `
-      <div class="error-response">
-        <h2>${errorType}: ${formatFunctionName(toolName)}</h2>
-        <p>{{content}}</p>
-      </div>
-    `,
-  };
-
   return {
     content: errorMessage,
     data: {
-      responseType,
-      responseDisplay,
+      error: errorMessage,
+      errorType,
       icon: "alert-triangle",
       formattedName: formatFunctionName(toolName),
       name: toolName,

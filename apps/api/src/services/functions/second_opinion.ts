@@ -61,7 +61,7 @@ function buildTurnResponse(turn: PanelTurn) {
     name: "second_opinion_turn",
     content: turn.content,
     data: {
-      responseType: "second_opinion_turn",
+      renderer: "second_opinion_turn",
       memberId: turn.memberId,
       memberName: turn.memberName,
       memberRole: turn.memberRole,
@@ -172,7 +172,7 @@ export const second_opinion: ApiToolDefinition = {
       name: "second_opinion",
       content: `<second_opinion>\n${result.conclusion}\n</second_opinion>`,
       data: {
-        responseType: "second_opinion",
+        renderer: "second_opinion",
         models: members.map((member) => member.model),
         turns: result.turns,
         conclusion: result.conclusion,

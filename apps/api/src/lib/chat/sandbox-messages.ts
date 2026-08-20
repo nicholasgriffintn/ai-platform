@@ -163,6 +163,8 @@ export function buildSandboxPlanToolResponse(params: {
     content: "Sandbox plan updated",
     data: {
       formattedName: "Sandbox plan",
+      renderer: "sandbox_plan",
+      icon: "terminal",
       responseType: ResponseDisplayType.CUSTOM,
       modelContext: false,
       result: {
@@ -187,6 +189,8 @@ export function buildSandboxEventToolResponse(event: SandboxRunEvent): IFunction
     content: describeSandboxEvent(event),
     data: {
       formattedName: formatSandboxEventName(event.type),
+      renderer: "sandbox_event",
+      icon: "terminal",
       responseType: ResponseDisplayType.CUSTOM,
       modelContext: false,
       result: {
@@ -210,6 +214,8 @@ export function buildSandboxResultToolResponse(run: SandboxRunSummary): IFunctio
     content: summariseSandboxRunResult(run),
     data: {
       formattedName: "Sandbox result",
+      renderer: "sandbox_result",
+      icon: "terminal",
       responseType: ResponseDisplayType.CUSTOM,
       result: {
         name: "sandbox_result",

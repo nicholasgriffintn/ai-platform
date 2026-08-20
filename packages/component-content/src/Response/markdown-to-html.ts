@@ -123,7 +123,7 @@ function processInlineMarkdown(text: string): string {
   return newText;
 }
 
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")

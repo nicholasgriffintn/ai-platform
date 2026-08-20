@@ -40,6 +40,8 @@ export function createCapabilityDiscoveryResponse(
     content: createModelInstructions(result, requiresSetup),
     data: {
       formattedName: "Capability discovery",
+      renderer: "capability_discovery",
+      icon: "sparkles",
       responseType: requiresSetup ? ResponseDisplayType.CUSTOM : ResponseDisplayType.HIDDEN,
       [CAPABILITY_DISCOVERY_DATA_KEY]: result,
     },

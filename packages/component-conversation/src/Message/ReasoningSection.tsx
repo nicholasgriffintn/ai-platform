@@ -1,6 +1,6 @@
 import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface ReasoningSectionProps {
   reasoning: {
@@ -11,14 +11,20 @@ interface ReasoningSectionProps {
 
 export const ReasoningSection = ({ reasoning }: ReasoningSectionProps) => {
   const [collapsed, setCollapsed] = useState(reasoning.collapsed);
+  const previousCollapsed = useRef(reasoning.collapsed);
 
   const content = reasoning.content;
 
+  /**
+   * Follow the message only when it actually changes its mind — reacting to the local state as well
+   * meant a user collapsing an open block was immediately overridden by this effect.
+   */
   useEffect(() => {
-    if (!reasoning.collapsed && collapsed) {
-      setCollapsed(false);
+    if (previousCollapsed.current !== reasoning.collapsed) {
+      previousCollapsed.current = reasoning.collapsed;
+      setCollapsed(reasoning.collapsed);
     }
-  }, [reasoning.collapsed, collapsed]);
+  }, [reasoning.collapsed]);
 
   if (!content || content.trim() === "") {
     return null;
@@ -33,6 +39,7 @@ export const ReasoningSection = ({ reasoning }: ReasoningSectionProps) => {
         }}
         className="cursor-pointer flex items-center text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
         aria-label="Toggle reasoning"
+        aria-expanded={!collapsed}
       >
         <span>Reasoning</span>
         {!collapsed ? <ChevronDown size={16} /> : <ChevronRight size={16} />}

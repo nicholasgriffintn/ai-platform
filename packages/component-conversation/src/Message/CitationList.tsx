@@ -46,7 +46,7 @@ export const CitationList = ({ citations, maxDisplayed = 3 }: CitationListProps)
               aria-label={`Citation source: ${typeof url === "string" ? url : url.title || url.url}`}
             >
               <Favicon
-                url={typeof url === "string" ? url : url.title || url.url}
+                url={typeof url === "string" ? url : url.url}
                 className={`w-6 h-6 rounded-full border border-zinc-200 dark:border-zinc-700 
                   bg-white object-contain p-[2px] ${hoveredIndex === index ? "shadow-md" : ""} `}
               />

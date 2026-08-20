@@ -1,0 +1,311 @@
+import { isRecord, readOptionalString } from "@ngriffin_uk/polychat-utility-core";
+
+import {
+  resolveGeneratedAudioResponseData,
+  resolveGeneratedImageResponseData,
+  type GeneratedAudioResponseData,
+  type GeneratedImageResponseData,
+  type ResponseDisplayField,
+} from "./response-data";
+
+export interface SourceRecord {
+  url: string;
+  title?: string;
+  snippet?: string;
+}
+
+export interface DefinitionEntry {
+  key: string;
+  label: string;
+  value: string;
+}
+
+export type ResponsePresentation =
+  | { kind: "image"; data: GeneratedImageResponseData }
+  | { kind: "audio"; data: GeneratedAudioResponseData }
+  | { kind: "video"; url: string; title: string; content: string }
+  | { kind: "sources"; sources: SourceRecord[] }
+  | { kind: "table"; headers: ResponseDisplayField[]; rows: Record<string, unknown>[] }
+  | { kind: "markdown"; content: string }
+  | { kind: "definitions"; entries: DefinitionEntry[] }
+  | { kind: "json"; data: unknown };
+
+/** Beyond this a "table" is really a data dump, and the JSON view serves the reader better. */
+const MAX_INFERRED_TABLE_COLUMNS = 8;
+const MIN_INFERRED_TABLE_ROWS = 2;
+
+const VIDEO_URL_PATTERN = /\.(mp4|webm|mov|m4v|ogv)(?:[?#].*)?$/i;
+
+/**
+ * Chooses how an undeclared tool result should be presented by reading its shape. Tool names cannot
+ * be enumerated ahead of time — MCP servers, recipes and connectors all register at runtime — so the
+ * fallback has to work from the payload rather than from an identifier.
+ *
+ * Ordered most specific first; every branch is reachable from a plain JSON payload.
+ */
+export function resolveResponsePresentation(
+  payload: unknown,
+  options?: { content?: string; fields?: ResponseDisplayField[] },
+): ResponsePresentation {
+  const image = resolveGeneratedImageResponseData(payload);
+
+  if (image) {
+    return { kind: "image", data: image };
+  }
+
+  const audio = resolveGeneratedAudioResponseData(payload);
+
+  if (audio) {
+    return { kind: "audio", data: audio };
+  }
+
+  const video = resolveVideoPresentation(payload);
+
+  if (video) {
+    return video;
+  }
+
+  const records = resolveRecordArray(payload);
+
+  if (records) {
+    const sources = resolveSources(records);
+
+    if (sources) {
+      return { kind: "sources", sources };
+    }
+
+    const table = resolveTable(records, options?.fields);
+
+    if (table) {
+      return table;
+    }
+  }
+
+  const prose = resolveProse(payload, options?.content);
+
+  if (prose !== undefined) {
+    return { kind: "markdown", content: prose };
+  }
+
+  const definitions = resolveDefinitions(payload);
+
+  if (definitions) {
+    return { kind: "definitions", entries: definitions };
+  }
+
+  return { kind: "json", data: payload };
+}
+
+function resolveVideoPresentation(payload: unknown): ResponsePresentation | null {
+  if (!isRecord(payload)) {
+    return null;
+  }
+
+  const nested = isRecord(payload.data) ? payload.data : payload;
+  const url =
+    readOptionalString(nested.videoUrl) ??
+    readOptionalString(nested.video_url) ??
+    resolveAttachmentUrl(nested.attachments, "video") ??
+    resolveDirectVideoUrl(nested.url);
+
+  if (!url) {
+    return null;
+  }
+
+  return {
+    kind: "video",
+    url,
+    title: "Generated Video",
+    content: readOptionalString(payload.content) ?? "",
+  };
+}
+
+function resolveDirectVideoUrl(url: unknown): string | undefined {
+  const value = readOptionalString(url);
+
+  if (!value) {
+    return undefined;
+  }
+
+  return VIDEO_URL_PATTERN.test(value) ? value : undefined;
+}
+
+function resolveAttachmentUrl(attachments: unknown, type: string): string | undefined {
+  if (!Array.isArray(attachments)) {
+    return undefined;
+  }
+
+  for (const attachment of attachments) {
+    if (!isRecord(attachment)) {
+      continue;
+    }
+
+    const url = readOptionalString(attachment.url);
+
+    if (url && readOptionalString(attachment.type) === type) {
+      return url;
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Accepts the array itself, or the single-array-property envelope most search-shaped tools return
+ * (`{ results: [...] }`, `{ documents: [...] }`, `{ stories: [...] }`).
+ */
+function resolveRecordArray(payload: unknown): Record<string, unknown>[] | null {
+  if (Array.isArray(payload)) {
+    const records = payload.filter(isRecord);
+
+    return records.length === payload.length && records.length > 0 ? records : null;
+  }
+
+  if (!isRecord(payload)) {
+    return null;
+  }
+
+  const arrayEntries = Object.values(payload).filter(Array.isArray);
+
+  if (arrayEntries.length !== 1) {
+    return null;
+  }
+
+  const [candidate] = arrayEntries;
+  const records = candidate.filter(isRecord);
+
+  return records.length === candidate.length && records.length > 0 ? records : null;
+}
+
+function resolveSources(records: Record<string, unknown>[]): SourceRecord[] | null {
+  const sources: SourceRecord[] = [];
+
+  for (const record of records) {
+    const url =
+      readOptionalString(record.url) ??
+      readOptionalString(record.link) ??
+      readOptionalString(record.uri) ??
+      readOptionalString(record.href);
+
+    if (!url || !/^https?:\/\//i.test(url)) {
+      return null;
+    }
+
+    const title =
+      readOptionalString(record.title) ??
+      readOptionalString(record.name) ??
+      readOptionalString(record.heading);
+    const snippet =
+      readOptionalString(record.snippet) ??
+      readOptionalString(record.description) ??
+      readOptionalString(record.summary) ??
+      readOptionalString(record.content);
+
+    sources.push({ url, title, snippet });
+  }
+
+  return sources.length > 0 ? sources : null;
+}
+
+function resolveTable(
+  records: Record<string, unknown>[],
+  fields?: ResponseDisplayField[],
+): ResponsePresentation | null {
+  if (fields && fields.length > 0) {
+    return { kind: "table", headers: fields, rows: records };
+  }
+
+  if (records.length < MIN_INFERRED_TABLE_ROWS) {
+    return null;
+  }
+
+  /**
+   * Only columns every row carries — a ragged union produces a table of mostly empty cells, which
+   * reads worse than the JSON it replaced.
+   */
+  const sharedKeys = Object.keys(records[0]).filter((key) =>
+    records.every((record) => key in record),
+  );
+
+  if (sharedKeys.length === 0 || sharedKeys.length > MAX_INFERRED_TABLE_COLUMNS) {
+    return null;
+  }
+
+  const scalarKeys = sharedKeys.filter((key) =>
+    records.every((record) => isScalar(record[key]) || record[key] == null),
+  );
+
+  if (scalarKeys.length !== sharedKeys.length) {
+    return null;
+  }
+
+  return {
+    kind: "table",
+    headers: scalarKeys.map((key) => ({ key, label: humanise(key) })),
+    rows: records,
+  };
+}
+
+function resolveProse(payload: unknown, content?: string): string | undefined {
+  if (typeof payload === "string" && payload.trim().length > 0) {
+    return payload;
+  }
+
+  if (isRecord(payload)) {
+    const keys = Object.keys(payload);
+    const prose =
+      readOptionalString(payload.markdown) ??
+      readOptionalString(payload.text) ??
+      readOptionalString(payload.content) ??
+      readOptionalString(payload.answer);
+
+    /**
+     * A lone prose field is the whole result; the same field beside other data is one column of it,
+     * and dropping the rest would silently hide information.
+     */
+    if (prose && keys.length === 1) {
+      return prose;
+    }
+  }
+
+  if (payload == null && content && content.trim().length > 0) {
+    return content;
+  }
+
+  return undefined;
+}
+
+function resolveDefinitions(payload: unknown): DefinitionEntry[] | null {
+  if (!isRecord(payload)) {
+    return null;
+  }
+
+  const entries = Object.entries(payload).filter(([, value]) => isScalar(value) || value == null);
+
+  if (entries.length === 0 || entries.length !== Object.keys(payload).length) {
+    return null;
+  }
+
+  return entries.map(([key, value]) => ({
+    key,
+    label: humanise(key),
+    value: isScalar(value) ? String(value) : "—",
+  }));
+}
+
+function isScalar(value: unknown): value is string | number | boolean {
+  return typeof value === "string" || typeof value === "number" || typeof value === "boolean";
+}
+
+export function humanise(key: string): string {
+  const spaced = key
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z\d])([A-Z])/g, "$1 $2")
+    .trim();
+
+  if (!spaced) {
+    return key;
+  }
+
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}

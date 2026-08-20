@@ -1,6 +1,6 @@
 import { memo, useEffect, useMemo, useRef } from "react";
 
-import { markdownToHtml } from "./markdown-to-html";
+import { escapeHtml, markdownToHtml } from "./markdown-to-html";
 
 interface TemplateViewProps {
   template?: string;
@@ -27,8 +27,14 @@ const eachRegex = /\{\{#each\s+([^}]+)\}\}([\s\S]*?)\{\{\/each\}\}/g;
 const thisPropertyRegex = /\{\{this\.([^}]+)\}\}/g;
 const thisValueRegex = /\{\{this\}\}/g;
 const markdownRegex = /\{\{md\s+([^}]+)\}\}/g;
+const jsonRegex = /\{\{json\s+([^}]+)\}\}/g;
 
-const processVariable = (data: Record<string, any>, key: string): string => {
+/**
+ * Templates are authored by the tool schema, but the values interpolated into them come from web
+ * pages, third-party APIs and MCP servers. Every value crossing into the rendered HTML is escaped;
+ * only `{{md …}}`, which runs through the escaping markdown converter, may emit markup.
+ */
+const formatVariable = (data: Record<string, any>, key: string): string => {
   const trimmedKey = key.trim();
   const value = getNestedValue(data, trimmedKey);
 
@@ -51,8 +57,15 @@ const processVariable = (data: Record<string, any>, key: string): string => {
     }
   }
 
+  if (typeof value === "object") {
+    return JSON.stringify(value, null, 2);
+  }
+
   return String(value);
 };
+
+const processVariable = (data: Record<string, any>, key: string): string =>
+  escapeHtml(formatVariable(data, key));
 
 const renderTemplate = (template: string, data: Record<string, any>): string => {
   let rendered = template;
@@ -70,13 +83,16 @@ const renderTemplate = (template: string, data: Record<string, any>): string => 
         let itemContent = content;
 
         if (typeof item === "object") {
-          itemContent = itemContent.replace(thisPropertyRegex, (_match: string, prop: string) => {
-            const value = item[prop.trim()];
+          itemContent = itemContent.replace(
+            thisPropertyRegex,
+            (_itemMatch: string, prop: string) => {
+              const value = item[prop.trim()];
 
-            return value !== undefined ? String(value) : "";
-          });
+              return value !== undefined ? escapeHtml(String(value)) : "";
+            },
+          );
         } else {
-          itemContent = itemContent.replace(thisValueRegex, String(item));
+          itemContent = itemContent.replace(thisValueRegex, () => escapeHtml(String(item)));
         }
 
         return itemContent;
@@ -89,6 +105,16 @@ const renderTemplate = (template: string, data: Record<string, any>): string => 
     const value = getNestedValue(data, trimmedCondition);
 
     return value ? ifContent : elseContent;
+  });
+
+  rendered = rendered.replace(jsonRegex, (_match, key) => {
+    const value = getNestedValue(data, key.trim());
+
+    if (value === undefined || value === null) {
+      return "";
+    }
+
+    return escapeHtml(JSON.stringify(value, null, 2));
   });
 
   rendered = rendered.replace(markdownRegex, (_match, key) => {
@@ -112,46 +138,55 @@ const renderTemplate = (template: string, data: Record<string, any>): string => 
 export const TemplateView = memo(({ template, data }: TemplateViewProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const renderedHtml = useMemo(() => {
+  const rendered = useMemo((): { html: string } | { error: string } | null => {
     if (!template) {
       return null;
     }
 
     try {
-      return renderTemplate(template, data);
+      return { html: renderTemplate(template, data) };
     } catch (error) {
       console.error("Error rendering template:", error);
 
-      return `
-        <div data-responsetype="template" class="p-4 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-md border border-red-300 dark:border-red-800">
-          <h3 class="font-semibold">Error rendering template</h3>
-          <p>${error instanceof Error ? error.message : "Unknown error"}</p>
-        </div>
-      `;
+      return { error: error instanceof Error ? error.message : "Unknown error" };
     }
   }, [template, data]);
 
+  const html = rendered && "html" in rendered ? rendered.html : null;
+
   useEffect(() => {
-    if (!renderedHtml || !containerRef.current) {
-      return;
+    const container = containerRef.current;
+
+    if (html === null || !container) {
+      return undefined;
     }
 
-    containerRef.current.innerHTML = renderedHtml;
+    container.innerHTML = html;
 
     return () => {
-      if (containerRef.current) {
-        containerRef.current.innerHTML = "";
-      }
+      container.innerHTML = "";
     };
-  }, [renderedHtml]);
+  }, [html]);
 
   if (!template) {
     return (
       <div
         data-responsetype="template"
-        className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800"
+        className="rounded-md border border-amber-200 bg-amber-100 p-4 text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300"
       >
         No response is available.
+      </div>
+    );
+  }
+
+  if (rendered && "error" in rendered) {
+    return (
+      <div
+        data-responsetype="template"
+        className="rounded-md border border-red-300 bg-red-100 p-4 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
+      >
+        <h3 className="font-semibold">Error rendering template</h3>
+        <p>{rendered.error}</p>
       </div>
     );
   }
@@ -159,7 +194,7 @@ export const TemplateView = memo(({ template, data }: TemplateViewProps) => {
   return (
     <div
       data-responsetype="template"
-      className="custom-template text-zinc-900 dark:text-zinc-100"
+      className="custom-template prose prose-sm prose-zinc max-w-none text-zinc-900 dark:prose-invert dark:text-zinc-100"
       ref={containerRef}
     />
   );

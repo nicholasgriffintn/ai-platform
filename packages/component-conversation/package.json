@@ -43,6 +43,7 @@
     "@ngriffin_uk/polychat-library-realtime": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
+    "@ngriffin_uk/polychat-utility-react": "workspace:^",
     "lucide-react": "1.31.0",
     "sonner": "2.0.8"
   },

@@ -1,11 +1,11 @@
 import type { ToolInteractionHandler } from "@ngriffin_uk/polychat-component-content";
-import { ResponseView } from "@ngriffin_uk/polychat-component-content";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
+import { resolveToolMessageDisplay } from "@ngriffin_uk/polychat-library-chat/tool-results";
 import { readConnectorApprovalRequest } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
-import { Terminal } from "lucide-react";
 
 import { ConnectorApprovalCard } from "./ConnectorApprovalCard";
+import { ToolResultView } from "./ToolResultView";
 
 interface ToolMessageProps {
   message: Message;
@@ -29,33 +29,10 @@ export const ToolMessage = ({
   }
 
   return (
-    <div className="mb-2">
-      <div className="text-xs font-medium text-blue-700 dark:text-blue-300 pt-1">
-        <div className="flex items-start gap-2">
-          <ToolIcon />
-          {message.data?.formattedName || message.name} {message.status && `(${message.status})`}
-        </div>
-      </div>
-      <div>
-        <div className="mt-1">
-          <ResponseView
-            result={{
-              status: message.status || "success",
-              name: message.name || "Tool",
-              content: message.content || "",
-              data: message.data,
-            }}
-            responseType={typeof message.data === "object" ? message.data.responseType : undefined}
-            responseDisplay={
-              typeof message.data === "object" ? message.data.responseDisplay : undefined
-            }
-            embedded
-            onToolInteraction={onToolInteraction}
-          />
-        </div>
-      </div>
-    </div>
+    <ToolResultView
+      display={resolveToolMessageDisplay(message)}
+      input={message.tool_call_arguments}
+      onToolInteraction={onToolInteraction}
+    />
   );
 };
-
-export const ToolIcon = () => <Terminal size={18} className="text-blue-600 dark:text-blue-400" />;

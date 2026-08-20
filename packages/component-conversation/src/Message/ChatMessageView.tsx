@@ -16,6 +16,31 @@ import { MessageActions } from "./MessageActions";
 import { MessageContent } from "./MessageContent";
 import { ToolMessage } from "./ToolMessage";
 
+/**
+ * Whether the view will produce anything. The list uses this to skip the row entirely — returning
+ * null from inside the view still leaves the caller's wrapper behind as an unexplained gap.
+ */
+export const isRenderableMessage = (message: Message): boolean => {
+  if (message.role === "system" || message.role === "developer") {
+    return false;
+  }
+
+  if (isHiddenToolResponse(message)) {
+    return false;
+  }
+
+  const hasParts = Array.isArray(message.parts) && message.parts.length > 0;
+  const isToolResponse = message.role === "tool" && Boolean(message.name);
+
+  return Boolean(
+    message.content ||
+    message.reasoning ||
+    hasParts ||
+    isToolResponse ||
+    (message.role === "assistant" && message.model),
+  );
+};
+
 export const ChatMessageView = ({
   conversationId,
   canSubmitFeedback = false,
@@ -84,10 +109,6 @@ export const ChatMessageView = ({
       : undefined;
 
   const isToolResponse = message.role === "tool" && message.name;
-  const isExternalFunctionCall =
-    message.name === "External Functions" &&
-    Array.isArray(message.tool_calls) &&
-    message.tool_calls.length > 0;
   const isSystemMessage = message.role === "system" || message.role === "developer";
   const hasPartContent = Array.isArray(message.parts) && message.parts.length > 0;
 
@@ -138,7 +159,6 @@ export const ChatMessageView = ({
       className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
       data-role={message.role}
       data-tool-response={isToolResponse}
-      data-external-function-call={isExternalFunctionCall}
       data-tool-name={message.name}
       data-tool-status={message.status}
       data-id={message.id}
@@ -148,7 +168,7 @@ export const ChatMessageView = ({
         className={`flex flex-col ${
           message.role === "user"
             ? "max-w-[80%] rounded-2xl border border-zinc-200/10 bg-off-white-highlight text-black dark:bg-[#2D2D2D] dark:text-white"
-            : "dark:bg-off-white-highlight dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 w-full"
+            : "w-full text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100"
         } `}
       >
         <div className={`flex flex-col gap-2 py-2 ${message.role === "user" ? "px-3" : ""}`}>
@@ -180,9 +200,11 @@ export const ChatMessageView = ({
                   isUpdating={isRetrying}
                 />
               ) : (
-                (!isExternalFunctionCall || message?.content) && (
-                  <MessageContent message={message} onArtifactOpen={onArtifactOpen} />
-                )
+                <MessageContent
+                  message={message}
+                  onArtifactOpen={onArtifactOpen}
+                  onToolInteraction={onToolInteraction}
+                />
               )}
             </div>
           </div>

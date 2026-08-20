@@ -54,7 +54,7 @@ export const SearchGroundingSection = ({ searchGrounding }: SearchGroundingProps
                 className="text-xs bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-full text-zinc-700 dark:text-zinc-300"
               >
                 <a
-                  href={`https://www.google.com/search?q=${query}`}
+                  href={`https://www.google.com/search?q=${encodeURIComponent(query)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

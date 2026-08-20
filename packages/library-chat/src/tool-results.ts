@@ -2,13 +2,21 @@ import { ResponseDisplayType } from "@ngriffin_uk/polychat-schemas";
 import { isRecord, readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message } from "./conversation-types";
-import { isWeatherData } from "./weather";
 
 type ToolResultPart = Extract<NonNullable<Message["parts"]>[number], { type: "tool_result" }>;
 
-export interface RenderableToolResult {
+export interface ToolResultDisplay {
+  /** Tool name, for data attributes and interaction handlers. */
   name: string;
-  content: string;
+  /** Human label for the header row. */
+  label: string;
+  icon?: string;
+  status?: string;
+  responseType?: string;
+  responseDisplay?: unknown;
+  /** Explicit client view id declared by the tool. */
+  renderer?: string;
+  /** The envelope `ResponseView` consumes. */
   result: Record<string, unknown>;
 }
 
@@ -20,24 +28,69 @@ export function isHiddenToolResponse(message: Message): boolean {
   );
 }
 
-export function resolveRenderableToolResult(part: ToolResultPart): RenderableToolResult | null {
-  const data = isRecord(part.data) ? part.data : undefined;
-  const name = part.name ?? readOptionalString(data?.name);
+export function isHiddenToolResultPart(part: ToolResultPart): boolean {
+  return isRecord(part.data) && part.data.responseType === ResponseDisplayType.HIDDEN;
+}
 
-  if (name === "get_weather" && data && isWeatherData(data)) {
-    return {
-      name,
-      content: resolveToolResultContent(part.content),
-      result: {
-        status: part.status,
-        name,
-        content: resolveToolResultContent(part.content),
-        data,
-      },
-    };
-  }
+const humaniseToolName = (name: string): string =>
+  name
+    .split(/[_\-\s]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 
-  return null;
+const buildDisplay = ({
+  name,
+  data,
+  status,
+  content,
+}: {
+  name?: string;
+  data?: Record<string, unknown>;
+  status?: string;
+  content: string;
+}): ToolResultDisplay => {
+  const toolName = name ?? readOptionalString(data?.name) ?? "Tool";
+
+  return {
+    name: toolName,
+    label: readOptionalString(data?.formattedName) ?? humaniseToolName(toolName),
+    icon: readOptionalString(data?.icon),
+    status,
+    responseType: readOptionalString(data?.responseType),
+    responseDisplay: data?.responseDisplay,
+    renderer: readOptionalString(data?.renderer),
+    result: {
+      status: status ?? "success",
+      name: toolName,
+      content,
+      data,
+    },
+  };
+};
+
+/**
+ * Builds the render input for a tool result carried on an assistant turn. The part already holds the
+ * presentation metadata the API attached, so this reads it rather than matching on the tool name —
+ * a name-based whitelist could never cover MCP or recipe tools.
+ */
+export function resolveToolResultPartDisplay(part: ToolResultPart): ToolResultDisplay {
+  return buildDisplay({
+    name: part.name,
+    data: isRecord(part.data) ? part.data : undefined,
+    status: part.status,
+    content: resolveToolResultContent(part.content),
+  });
+}
+
+/** The same render input, built from a legacy `role: "tool"` message. */
+export function resolveToolMessageDisplay(message: Message): ToolResultDisplay {
+  return buildDisplay({
+    name: message.name,
+    data: isRecord(message.data) ? message.data : undefined,
+    status: message.status,
+    content: typeof message.content === "string" ? message.content : "",
+  });
 }
 
 function resolveToolResultContent(content: ToolResultPart["content"]) {

@@ -9,6 +9,7 @@ import { canBranchFromMessage } from "@ngriffin_uk/polychat-library-chat/branchi
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { isCompactionMarkerMessage } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
 import { resolveMessageSpeechAudioSource } from "@ngriffin_uk/polychat-library-chat/message-speech";
+import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import {
   Check,
@@ -85,6 +86,8 @@ export const MessageActions = ({
   const [isPlayingSpeech, setIsPlayingSpeech] = useState(false);
   const speechAudioRef = useRef<HTMLAudioElement | null>(null);
   const isCompactionMarker = isCompactionMarkerMessage(message);
+  /** Text can live on `content` or in `parts`; gating on `content` alone hides actions on turns. */
+  const hasText = Boolean(getMessageTextContent(message)?.trim());
   const canMutateConversation = !isArchivedByCompaction;
   const canBranch = Boolean(
     onBranch && !isSharedView && canMutateConversation && canBranchFromMessage(message),
@@ -95,7 +98,7 @@ export const MessageActions = ({
     canMutateConversation &&
     !isCompactionMarker &&
     message.role === "assistant" &&
-    message.content,
+    hasText,
   );
   const speechAudioSource =
     message.role === "assistant" && !isCompactionMarker
@@ -185,7 +188,7 @@ export const MessageActions = ({
         className="mr-auto"
       />
       <div className="flex items-center space-x-1">
-        {message.role !== "user" && message.content && (
+        {message.role !== "user" && hasText && (
           <Button
             type="button"
             variant="icon"

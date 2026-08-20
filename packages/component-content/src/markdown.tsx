@@ -1,17 +1,97 @@
 import { fixMarkdown } from "@ngriffin_uk/polychat-utility-core";
-import type { ComponentPropsWithoutRef } from "react";
-import { memo, useMemo } from "react";
+import { useCopyToClipboard } from "@ngriffin_uk/polychat-utility-react";
+import { Check, Copy } from "lucide-react";
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import { Children, isValidElement, memo, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
 
-type CodeProps = ComponentPropsWithoutRef<"code"> & { node?: unknown };
-type TableProps = ComponentPropsWithoutRef<"div"> & { children?: React.ReactNode };
+type PreProps = ComponentPropsWithoutRef<"pre">;
+type TableProps = ComponentPropsWithoutRef<"table">;
+
+/**
+ * `rehype-highlight` writes the resolved language onto the `<code>` element as `language-*`, so the
+ * label and the copy payload both come from the child rather than from the fence text.
+ */
+const readFencedCode = (children: ReactNode): { language?: string; text: string } => {
+  const child = Children.toArray(children).find(isValidElement) as
+    | { props: { className?: string; children?: ReactNode } }
+    | undefined;
+
+  if (!child) {
+    return { text: "" };
+  }
+
+  const languageClass = child.props.className
+    ?.split(/\s+/)
+    .find((name) => name.startsWith("language-"));
+
+  return {
+    language: languageClass?.slice("language-".length),
+    text: readTextContent(child.props.children),
+  };
+};
+
+const readTextContent = (node: ReactNode): string => {
+  if (typeof node === "string") {
+    return node;
+  }
+
+  if (typeof node === "number") {
+    return String(node);
+  }
+
+  if (Array.isArray(node)) {
+    return node.map(readTextContent).join("");
+  }
+
+  if (isValidElement(node)) {
+    return readTextContent((node.props as { children?: ReactNode }).children);
+  }
+
+  return "";
+};
+
+const CodeBlock = ({ children, ...props }: PreProps) => {
+  const { copied, copy } = useCopyToClipboard();
+  const { language, text } = readFencedCode(children);
+
+  return (
+    <div className="group/code relative my-4 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700">
+      <div className="flex items-center justify-between gap-2 border-b border-zinc-200 bg-zinc-50 px-3 py-1.5 dark:border-zinc-700 dark:bg-zinc-800/60">
+        <span className="font-mono text-[0.68rem] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+          {language || "code"}
+        </span>
+        <button
+          type="button"
+          onClick={() => text && copy(text)}
+          className="flex cursor-pointer items-center gap-1 rounded px-1.5 py-0.5 text-[0.68rem] text-zinc-500 transition-colors hover:bg-zinc-200/60 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700/60 dark:hover:text-zinc-100"
+          aria-label={copied ? "Code copied" : "Copy code"}
+          title={copied ? "Copied" : "Copy code"}
+        >
+          {copied ? <Check size={12} /> : <Copy size={12} />}
+          <span>{copied ? "Copied" : "Copy"}</span>
+        </button>
+      </div>
+      <pre {...props} className="!my-0 overflow-x-auto !rounded-none !border-0 p-3 text-sm">
+        {children}
+      </pre>
+    </div>
+  );
+};
 
 const components = {
-  code: ({ node: _node, ...props }: CodeProps) => <code {...props}>{props.children}</code>,
-  table: ({ children }: TableProps) => <div className="overflow-x-scroll text-sm">{children}</div>,
+  pre: CodeBlock,
+  table: ({ children, ...props }: TableProps) => (
+    <div className="my-4 overflow-x-auto">
+      <table {...props} className="text-sm">
+        {children}
+      </table>
+    </div>
+  ),
 };
+
 const rehypePlugins = [() => rehypeHighlight({ detect: true })];
 const remarkPlugins = [remarkGfm];
 
@@ -41,7 +121,10 @@ export function Markdown({ children, className, isStreaming = false }: MarkdownP
         {processedMarkdown}
       </ReactMarkdown>
       {isStreaming && (
-        <span className="ml-1 inline-block h-4 w-2 animate-pulse bg-blue-500" aria-hidden="true" />
+        <span
+          className="ml-1 inline-block h-4 w-2 animate-pulse bg-blue-500 align-text-bottom"
+          aria-hidden="true"
+        />
       )}
     </div>
   );
