@@ -159,7 +159,7 @@ function isMessageContentPart(part: unknown): part is MessageContent {
   return isRecord(part) && typeof part.type === "string";
 }
 
-function extractTextFromMessageContent(content: unknown): string {
+export function extractTextFromMessageContent(content: unknown): string {
   if (typeof content === "string") {
     return content.trim();
   }
