@@ -106,6 +106,7 @@ export interface AgentLoopExecutionParams {
   userSettings?: IUserSettings;
   requestOptions?: ChatRequestOptions;
   emit?: (event: AgentEvent) => Promise<void>;
+  shouldStop?: () => boolean;
   assessFinish?: (context: {
     summary: string;
     step: number;
@@ -153,6 +154,7 @@ export async function runAgentLoop(
     model: params.model,
     provider: params.provider,
     userId: params.context?.user?.id,
+    shouldStop: params.shouldStop,
   };
 
   const finalise = async (turn: TurnOutput) => {
@@ -270,6 +272,26 @@ export async function runAgentLoop(
       }
 
       totalUsage = sumTokenUsage(totalUsage, turn.usage) ?? totalUsage;
+
+      if (turn.stopped) {
+        finalStatus = "stopped";
+
+        if (!turn.content) {
+          return {
+            toolCalls: [],
+            text: "",
+            assistantMessage: { role: "assistant", content: "" },
+          };
+        }
+
+        const stoppedMessage = await finalise({ ...turn, toolCalls: [], status: "stopped" });
+
+        return {
+          toolCalls: [],
+          text: turn.content,
+          assistantMessage: { role: "assistant", content: stoppedMessage.content },
+        };
+      }
 
       const message = await finalise(turn);
       const hasToolCalls = turn.toolCalls.length > 0;

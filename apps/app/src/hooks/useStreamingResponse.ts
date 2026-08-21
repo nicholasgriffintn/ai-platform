@@ -5,6 +5,7 @@ import {
   normalizeMessage,
 } from "@ngriffin_uk/polychat-library-chat/messages";
 import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
+import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import { EMPTY_MODEL_CONFIG, getModelProvider } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
@@ -13,6 +14,7 @@ import { toast } from "sonner";
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
 import { getChatStreamLoadingMessage } from "~/lib/chat/stream-state";
+import { recoverDetachedTurn } from "~/lib/chat/turn-recovery";
 import { normaliseUsageLimits } from "~/lib/usage-limits";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -112,6 +114,9 @@ export function useStreamingResponse(
       let messageWriteQueue: Promise<unknown> = Promise.resolve();
       const pendingMessageTasks: Promise<unknown>[] = [];
       let serverTitle = "";
+      const knownMessageIds = new Set(
+        messages.map((message) => message.id).filter((id): id is string => Boolean(id)),
+      );
       const assistantMessageData = options?.assistantMessageData;
       let shouldRefreshStoredConversation = false;
 
@@ -439,7 +444,51 @@ export function useStreamingResponse(
           return { status: "error" as const, response: "Request aborted" };
         }
 
-        throw error;
+        if (isLocal || !storageMode.shouldSyncRemote || error instanceof ApiError) {
+          throw error;
+        }
+
+        updateLoading("stream-response", undefined, "Reconnecting to the response...");
+
+        const recoveredMessages = await recoverDetachedTurn({
+          completionId: conversationId,
+          knownMessageIds,
+          fetchMessages: async (completionId) =>
+            (await apiService.getChat(completionId)).messages ?? [],
+          signal: requestSignal,
+        });
+
+        const recoveredAssistantMessage = recoveredMessages.find(
+          (message) => message.role === "assistant",
+        );
+
+        if (!recoveredAssistantMessage) {
+          throw error;
+        }
+
+        markConversationRemoteAvailable(conversationId);
+        completeStreamActivityMessage(recoveredAssistantMessage.id);
+
+        const updatedAssistantMessage = withAssistantMessageData(recoveredAssistantMessage);
+
+        await messageWriteQueue;
+        await updateAssistantMessage(
+          conversationId,
+          updatedAssistantMessage.content,
+          updatedAssistantMessage.reasoning?.content,
+          updatedAssistantMessage,
+          { messageId: (activeAssistantMessage || placeholderMessage).id },
+        );
+        await queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY, conversationId] });
+
+        return {
+          status: "success",
+          response: getMessageTextContent(updatedAssistantMessage),
+          message: updatedAssistantMessage,
+          messages: [updatedAssistantMessage],
+          toolResponses: recoveredMessages.filter((message) => message.role === "tool"),
+          titled: Boolean(serverTitle),
+        };
       }
     },
     [
@@ -484,6 +533,19 @@ export function useStreamingResponse(
       }
 
       const requestController = new AbortController();
+      let streamSettled = false;
+
+      requestController.signal.addEventListener(
+        "abort",
+        () => {
+          if (streamSettled) {
+            return;
+          }
+
+          void apiService.cancelChatCompletion(conversationId).catch(() => {});
+        },
+        { once: true },
+      );
 
       controllerRef.current = requestController;
       setController(requestController);
@@ -539,6 +601,7 @@ export function useStreamingResponse(
           response: (error as Error).message || "Failed",
         };
       } finally {
+        streamSettled = true;
         setStreamStarted(false);
         stopLoading("stream-response");
         endStreamActivity();

@@ -81,6 +81,10 @@ class ApiService {
     return this.chatService.compactConversation(completion_id);
   };
 
+  async cancelChatCompletion(completion_id: string): Promise<void> {
+    return this.chatService.cancelChatCompletion(completion_id);
+  }
+
   getConversationGoal = (completion_id: string) => {
     return this.chatService.getConversationGoal(completion_id);
   };

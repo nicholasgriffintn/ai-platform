@@ -1,4 +1,3 @@
-import { expect } from "@playwright/test";
 import type { Dialog, Locator, Page, Response } from "@playwright/test";
 
 import { BasePage } from "./BasePage";
@@ -73,7 +72,7 @@ export class HomePage extends BasePage {
     await this.clickElement(option);
   }
 
-  async selectChatMode(mode: "Chat" | "Background" | "Live") {
+  async selectChatMode(mode: "Chat" | "Live") {
     const command = `/${mode.toLowerCase()}`;
 
     await this.chatInput.fill(command);
@@ -159,22 +158,7 @@ export class HomePage extends BasePage {
     await this.page.getByRole("button", { name: "Switch to local-only mode" }).waitFor();
   }
 
-  async getDisabledChatModeReason(mode: "Background" | "Live") {
-    const command = `/${mode.toLowerCase()}`;
-
-    await this.chatInput.fill(command);
-    const option = this.page.getByRole("button", { name: new RegExp(`^${command}`) });
-
-    await this.waitForElement(option);
-    await expect(option).toBeDisabled();
-    const reason = (await option.getAttribute("title")) ?? "";
-
-    await this.chatInput.fill("");
-
-    return reason;
-  }
-
-  async clearChatMode(mode: "Background" | "Live") {
+  async clearChatMode(mode: "Live") {
     await this.page.getByRole("button", { name: `Clear ${mode} mode` }).click();
   }
 
@@ -201,16 +185,6 @@ export class HomePage extends BasePage {
     await this.page.getByRole("button", { name: "Start live session" }).waitFor();
 
     return response.status();
-  }
-
-  async runBackgroundResponse(message: string) {
-    await this.waitForPersonaReady("pro");
-    await this.selectModel("GPT-5.2");
-    await this.selectChatMode("Background");
-    const previousCount = await this.getAssistantMessageCount();
-
-    await this.sendMessageAndRequireCompletion(message);
-    await this.waitForChatResponse(previousCount);
   }
 
   async openCanvas() {

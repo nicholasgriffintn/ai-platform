@@ -1,22 +1,31 @@
+import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { AgentEvent } from "@ngriffin_uk/polychat-library-agent-core";
 
 import { runAgentLoop, type AgentLoopExecutionParams } from "~/lib/chat/agent/agent-loop";
 import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
-import { createChatSseStreamWriter } from "~/lib/chat/streaming/emitter";
+import { createChatSseStreamWriter, startChatStreamHeartbeat } from "~/lib/chat/streaming/emitter";
+import { watchDetachedTurnCancellation } from "~/lib/chat/streaming/turn-cancellation";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
 import { StreamState } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { finaliseReadableStream } from "~/utils/finalise-readable-stream";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/chat/core/chat-stream" });
 
-export type CreateChatTurnStreamParams = Omit<AgentLoopExecutionParams, "sink" | "emit">;
+export type CreateChatTurnStreamParams = Omit<AgentLoopExecutionParams, "sink" | "emit"> & {
+  executionCtx?: ExecutionContext;
+};
 
 export function createChatTurnStream(params: CreateChatTurnStreamParams): ReadableStream {
   const stream = createChatSseStreamWriter();
   const tracesAgentEvents = isAgentExecutionMode(params.mode);
   const closeConnectorRun = createConnectorRunCloser(params);
+  const stopHeartbeat = startChatStreamHeartbeat(stream);
+  const stopSignal = watchDetachedTurnCancellation({
+    env: params.env,
+    completionId: params.completionId,
+    isDetached: stream.isDetached,
+  });
 
   const run = async () => {
     try {
@@ -31,6 +40,7 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
       await runAgentLoop({
         ...params,
         sink: stream,
+        shouldStop: stopSignal.shouldStop,
         emit: tracesAgentEvents
           ? async (event: AgentEvent) => {
               await stream.writeEvent("state", { state: "agent_event", event: { ...event } });
@@ -49,6 +59,8 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
         type: error instanceof AssistantError ? error.type : ErrorType.PROVIDER_ERROR,
       });
     } finally {
+      stopHeartbeat();
+      stopSignal.stop();
       await closeConnectorRun();
 
       try {
@@ -60,12 +72,16 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
     }
   };
 
-  void run().catch((error) => {
+  const running = run().catch(async (error) => {
     logger.error("Chat turn stream runner crashed", { error, completionId: params.completionId });
-    void stream.abort(error);
+    stopHeartbeat();
+    stopSignal.stop();
+    await stream.abort(error);
   });
 
-  return finaliseReadableStream({ stream: stream.readable, cleanup: closeConnectorRun });
+  params.executionCtx?.waitUntil(running);
+
+  return stream.readable;
 }
 
 export function createConnectorRunCloser(params: {

@@ -290,6 +290,7 @@ export class ChatOrchestrator {
       userSettings,
       requestOptions: prepared.requestOptions,
       assessFinish: await this.resolveGoalFinishGate(chatOptions, currentMode, conversationManager),
+      executionCtx: chatOptions.executionCtx,
     };
 
     if (stream) {

@@ -7,6 +7,7 @@ import {
 import type { Message, MessageContent } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { extractTextFromMessageContent } from "~/utils/messages";
 import { isPlainObject } from "~/utils/objects";
 
 const CHAT_ROLES = new Set(["user", "assistant", "tool", "developer", "system"]);
@@ -125,7 +126,7 @@ class AgentProviderIO {
       : undefined;
 
     return {
-      response: typeof value.response === "string" ? value.response : undefined,
+      response: resolveModelResponseText(value.response),
       tool_calls: toolCalls,
       citations,
       data: value.data,
@@ -225,6 +226,18 @@ class AgentProviderIO {
 
     return true;
   }
+}
+
+function resolveModelResponseText(value: unknown): string | undefined {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+
+  return extractTextFromMessageContent(value) || undefined;
 }
 
 export function createAgentProviderIO(options?: AgentProviderIOOptions): AgentProviderIO {

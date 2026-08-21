@@ -35,7 +35,7 @@ function buildMessagesToStore({
     {
       ...base,
       content: finalMessage,
-      data: buildUserMessageData(options.options, options.background),
+      data: buildUserMessageData(options.options),
       id: generateId(),
       timestamp: Date.now(),
     },

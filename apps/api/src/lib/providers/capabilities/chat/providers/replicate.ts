@@ -1,3 +1,4 @@
+import { gatewayId } from "~/constants/app";
 import {
   createAsyncInvocationMetadata,
   type AsyncInvocationMetadata,
@@ -6,10 +7,11 @@ import { trackProviderMetrics } from "~/lib/monitoring";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { formatProviderError } from "~/lib/providers/utils/errors";
 import type { StorageService } from "~/lib/storage";
-import type { ChatCompletionParameters } from "~/types";
+import type { ChatCompletionParameters, IEnv } from "~/types";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
+import { appendUrlPath } from "~/utils/urls";
 
 import { fetchAIResponse } from "../../../lib/fetch";
 import { BaseProvider } from "./base";
@@ -34,6 +36,16 @@ export class ReplicateProvider extends BaseProvider {
     if (!hasContent && !hasBodyInput) {
       throw new AssistantError("Missing last message content", ErrorType.PARAMS_ERROR);
     }
+  }
+
+  private async resolvePredictionUrl(predictionId: string, env: IEnv): Promise<string> {
+    const endpoint = `v1/predictions/${encodeURIComponent(predictionId)}`;
+
+    if (!env?.AI) {
+      return `https://api.replicate.com/${endpoint}`;
+    }
+
+    return appendUrlPath(await env.AI.gateway(gatewayId).getUrl(this.name), endpoint);
   }
 
   protected async getEndpoint(): Promise<string> {
@@ -188,7 +200,7 @@ export class ReplicateProvider extends BaseProvider {
       "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
     };
 
-    const response = await fetch(`https://api.replicate.com/v1/predictions/${metadata.id}`, {
+    const response = await fetch(await this.resolvePredictionUrl(metadata.id, params.env), {
       headers: pollHeaders,
     });
 

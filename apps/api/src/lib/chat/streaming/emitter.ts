@@ -5,6 +5,8 @@ import { getLogger } from "~/utils/logger";
 
 const encoder = new TextEncoder();
 
+const HEARTBEAT_INTERVAL_MS = 15_000;
+
 const logger = getLogger({
   prefix: "CHAT:EMITTER",
 });
@@ -32,6 +34,8 @@ export const DISCARDING_EVENT_SINK: ChatEventSink = {
 
 export interface ChatSseStreamWriter extends ChatEventSink {
   readable: ReadableStream<Uint8Array>;
+  isDetached: () => boolean;
+  writeComment: (text: string) => Promise<void>;
   writeDone: () => Promise<void>;
   close: () => Promise<void>;
   abort: (error: unknown) => Promise<void>;
@@ -40,13 +44,56 @@ export interface ChatSseStreamWriter extends ChatEventSink {
 export function createChatSseStreamWriter(): ChatSseStreamWriter {
   const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
   const writer = writable.getWriter();
+  let detached = false;
+
+  writer.closed.catch(() => {
+    detached = true;
+  });
+
+  const write = async (chunk: Uint8Array) => {
+    if (detached) {
+      return;
+    }
+
+    try {
+      await writer.write(chunk);
+    } catch {
+      detached = true;
+    }
+  };
+
+  const settle = async (settleWriter: () => Promise<void>) => {
+    if (detached) {
+      return;
+    }
+
+    try {
+      await settleWriter();
+    } catch {
+      detached = true;
+    }
+  };
 
   return {
     readable,
+    isDetached: () => detached,
     writeEvent: (type: string, payload: SSEEventPayload = {}) =>
-      writer.write(encodeEventData(createEventData(type, payload))),
-    writeDone: () => writer.write(encodeEventData(formatChatStreamSseDone())),
-    close: () => writer.close(),
-    abort: (error: unknown) => writer.abort(error),
+      write(encodeEventData(createEventData(type, payload))),
+    writeComment: (text: string) => write(encoder.encode(`: ${text}\n\n`)),
+    writeDone: () => write(encodeEventData(formatChatStreamSseDone())),
+    close: () => settle(() => writer.close()),
+    abort: (error: unknown) => settle(() => writer.abort(error)),
   };
+}
+
+export function startChatStreamHeartbeat(stream: ChatSseStreamWriter): () => void {
+  const timer = setInterval(() => {
+    if (stream.isDetached()) {
+      return;
+    }
+
+    void stream.writeComment("ping");
+  }, HEARTBEAT_INTERVAL_MS);
+
+  return () => clearInterval(timer);
 }

@@ -257,6 +257,12 @@ export const compactChatCompletionResponseSchema = z
     }
   });
 
+export const cancelChatCompletionResponseSchema = z.object({
+  cancelled: z.literal(true),
+  completion_id: z.string(),
+});
+
+export type CancelChatCompletionResponse = z.infer<typeof cancelChatCompletionResponseSchema>;
 export type CompactChatCompletionResponse = z.infer<typeof compactChatCompletionResponseSchema>;
 export type SubmitChatCompletionFeedbackInput = z.infer<
   typeof submitChatCompletionFeedbackJsonSchema

@@ -25,7 +25,7 @@ describe("createChatSuggestions", () => {
   it("leads with capabilities, then the focus role, then everyday prompts", () => {
     const suggestions = createChatSuggestions(
       contextWith({
-        availableModes: ["live", "background"],
+        availableModes: ["live"],
         availableToolIds: ["web_search", "create_image"],
         focusRole: "writing",
       }),

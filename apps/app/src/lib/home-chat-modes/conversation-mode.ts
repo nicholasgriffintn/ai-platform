@@ -18,7 +18,7 @@ export function buildConversationModeMetadata(params: {
 
   const parsed = conversationModeMetadataSchema.safeParse({
     mode,
-    requestOptions: mode === "background" ? undefined : requestOptions?.options,
+    requestOptions: requestOptions?.options,
     smsSettings:
       mode === "sms" && requestOptions?.options?.channel?.id === "sms"
         ? {

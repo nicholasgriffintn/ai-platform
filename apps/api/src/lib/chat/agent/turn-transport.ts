@@ -14,6 +14,7 @@ export interface TurnTransportContext {
   model: string;
   provider: string;
   userId?: number;
+  shouldStop?: () => boolean;
 }
 
 export interface ChatTurnTransport {
@@ -80,6 +81,7 @@ export function createStreamingTurnTransport(): ChatTurnTransport {
         provider: context.provider,
         completionId: context.completionId,
         userId: context.userId,
+        shouldStop: context.shouldStop,
       });
 
       return {
@@ -94,6 +96,7 @@ export function createStreamingTurnTransport(): ChatTurnTransport {
         annotations: streamed.annotations,
         parts: streamed.parts,
         error: streamed.error,
+        stopped: streamed.stopped,
       };
     },
   };

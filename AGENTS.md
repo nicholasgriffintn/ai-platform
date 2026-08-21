@@ -66,14 +66,15 @@ Run the narrowest thing that proves the change, then widen only when the blast r
 pnpm --filter @ngriffin_uk/polychat-schemas build   # first, when consumers import generated output
 pnpm --filter @assistant/api typecheck
 pnpm --filter @assistant/app typecheck
-pnpm --filter @assistant/api check
-pnpm --filter @assistant/app check
+pnpm --filter @assistant/app check                  # @assistant/app is the only workspace with its own check
+npx oxlint <changed dirs> && npx oxfmt <changed dirs>   # every other workspace, including @assistant/api
 pnpm --filter @assistant/api test <path>
 ```
 
 - Preserve the existing tooling: oxlint, oxfmt, TypeScript, Vitest, Playwright. Use the workspace `vitest.config.ts` rather than adding ad hoc config.
 - Do not start a dev server for routine validation. When you genuinely need signed-in browser validation, use the development magic-link flow in `references/setup.md` and stop anything you started.
-- If validation cannot run, say so plainly rather than implying it passed.
+- `@assistant/api` has no `check` script. Lint and format it with oxlint and oxfmt directly, or CI's repo-wide `pnpm check` will catch what you skipped.
+- If validation cannot run, say so plainly rather than implying it passed. Not having tried is not a blocker — Playwright needs ports 8787 and 5173 free, and `pnpm build:e2e` before `pnpm test:e2e`.
 
 ## Testing
 

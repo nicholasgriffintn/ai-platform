@@ -34,6 +34,7 @@ export interface TurnOutput {
   parts?: MessagePart[];
   status?: string;
   logId?: string;
+  stopped?: boolean;
 }
 
 export interface FinaliseAssistantTurnParams {

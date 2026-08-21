@@ -1,5 +1,5 @@
 import type { HomeChatModeId } from "@ngriffin_uk/polychat-schemas";
-import { Clock3, MessageCircle, RadioTower, type LucideIcon } from "lucide-react";
+import { MessageCircle, RadioTower, type LucideIcon } from "lucide-react";
 
 export type SelectableHomeChatModeId = Exclude<HomeChatModeId, "sms">;
 
@@ -21,13 +21,6 @@ export const HOME_CHAT_MODE_OPTIONS: HomeChatModeOption[] = [
     icon: MessageCircle,
   },
   {
-    id: "background",
-    label: "Background",
-    description: "Start resumable work that can continue outside the active chat stream.",
-    icon: Clock3,
-    exclusiveGroup: "chat-orchestration",
-  },
-  {
     id: "live",
     label: "Live",
     description: "Start a low-latency voice or vision session.",
@@ -37,11 +30,11 @@ export const HOME_CHAT_MODE_OPTIONS: HomeChatModeOption[] = [
 ];
 
 export function resolveHomeChatModeId(value: string | null): HomeChatModeId {
-  return value === "background" || value === "live" ? value : "chat";
+  return value === "live" ? value : "chat";
 }
 
 export function isSelectableHomeChatModeId(value: string): value is SelectableHomeChatModeId {
-  return value === "background" || value === "chat" || value === "live";
+  return value === "chat" || value === "live";
 }
 
 export function getHomeChatModeAvailability(
