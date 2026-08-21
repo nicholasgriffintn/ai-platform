@@ -210,6 +210,7 @@ export function buildMessageParts(message: Message): MessagePart[] | undefined {
       if (contentPart.type === "tool_result") {
         parts.push({
           type: "tool_result",
+          name: contentPart.name,
           content:
             typeof contentPart.content === "string" || isObjectOrArray(contentPart.content)
               ? contentPart.content
