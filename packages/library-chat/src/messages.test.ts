@@ -68,4 +68,13 @@ describe("formattedMessageContent artifacts", () => {
 
     expect(performance.now() - startedAt).toBeLessThan(100);
   });
+
+  it("stays linear on many unterminated artifact tags", () => {
+    const hostile = "<artifact   ".repeat(20_000);
+    const startedAt = performance.now();
+
+    formattedMessageContent("assistant", hostile);
+
+    expect(performance.now() - startedAt).toBeLessThan(100);
+  });
 });

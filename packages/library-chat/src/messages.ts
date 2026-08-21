@@ -477,6 +477,8 @@ export function formatMessageContent(messageContent: string): {
 }
 
 const WHITESPACE_PREFIX = /^\s/;
+const ARTIFACT_OPEN = "<artifact";
+const ARTIFACT_CLOSE = "</artifact>";
 
 export const formattedMessageContent = (role: Message["role"], originalContent: string) => {
   let content = originalContent;
@@ -530,31 +532,43 @@ export const formattedMessageContent = (role: Message["role"], originalContent: 
   }
 
   if (role === "assistant") {
-    const artifactRegex = /<artifact([^>]*)>([\s\S]*?)(<\/artifact>|$)/g;
-    let artifactMatch: RegExpExecArray | null = null;
     const tempContent = content;
+    let cursor = 0;
 
-    artifactRegex.lastIndex = 0;
+    while (cursor < tempContent.length) {
+      const tagStart = tempContent.indexOf(ARTIFACT_OPEN, cursor);
 
-    while (true) {
-      artifactMatch = artifactRegex.exec(tempContent);
-      if (artifactMatch === null) {
+      if (tagStart === -1) {
         break;
       }
 
-      const attributesStr = artifactMatch[1];
+      const tagEnd = tempContent.indexOf(">", tagStart);
+
+      if (tagEnd === -1) {
+        break;
+      }
+
+      const attributesStr = tempContent.slice(tagStart + ARTIFACT_OPEN.length, tagEnd);
+
+      cursor = tagEnd + 1;
 
       if (attributesStr && !WHITESPACE_PREFIX.test(attributesStr)) {
         continue;
       }
 
-      const artifactContent = typeof artifactMatch[2] === "string" ? artifactMatch[2].trim() : "";
-      const isOpen = !artifactMatch[0].includes("</artifact>");
+      const closeIndex = tempContent.indexOf(ARTIFACT_CLOSE, cursor);
+      const isOpen = closeIndex === -1;
+      const bodyEnd = isOpen ? tempContent.length : closeIndex;
+      const matchEnd = isOpen ? tempContent.length : closeIndex + ARTIFACT_CLOSE.length;
+      const matched = tempContent.slice(tagStart, matchEnd);
+      const artifactContent = tempContent.slice(cursor, bodyEnd).trim();
+
+      cursor = matchEnd;
 
       const identifier = attributesStr.match(/identifier="([^"]*)"/)?.[1] || "";
 
       if (!identifier) {
-        console.warn("Artifact missing identifier:", artifactMatch[0]?.substring(0, 50));
+        console.warn("Artifact missing identifier:", matched.substring(0, 50));
         continue;
       }
 
@@ -576,7 +590,7 @@ export const formattedMessageContent = (role: Message["role"], originalContent: 
 
       const placeholder = `[[ARTIFACT:${identifier}]]`;
 
-      artifactReplacements.push({ matched: artifactMatch[0], placeholder });
+      artifactReplacements.push({ matched, placeholder });
 
       artifacts.push({
         identifier,
