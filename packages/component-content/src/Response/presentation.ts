@@ -1,4 +1,4 @@
-import { isRecord, readOptionalString } from "@ngriffin_uk/polychat-utility-core";
+import { hasUrlExtension, isRecord, readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 
 import {
   resolveGeneratedAudioResponseData,
@@ -57,7 +57,7 @@ export function stripPresentationMetadata(payload: unknown): unknown {
   return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 }
 
-const VIDEO_URL_PATTERN = /\.(mp4|webm|mov|m4v|ogv)(?:[?#].*)?$/i;
+const VIDEO_EXTENSIONS = new Set(["mp4", "webm", "mov", "m4v", "ogv"]);
 
 export function resolveResponsePresentation(
   payload: unknown,
@@ -143,7 +143,7 @@ function resolveDirectVideoUrl(url: unknown): string | undefined {
     return undefined;
   }
 
-  return VIDEO_URL_PATTERN.test(value) ? value : undefined;
+  return hasUrlExtension(value, VIDEO_EXTENSIONS) ? value : undefined;
 }
 
 function resolveAttachmentUrl(attachments: unknown, type: string): string | undefined {
