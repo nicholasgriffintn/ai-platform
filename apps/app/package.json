@@ -116,7 +116,7 @@
     "jsdom": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
-    "rollup-plugin-visualizer": "7.0.1",
+    "rollup-plugin-visualizer": "7.1.1",
     "terser": "5.50.0",
     "typescript": "catalog:",
     "vite": "8.2.1",
