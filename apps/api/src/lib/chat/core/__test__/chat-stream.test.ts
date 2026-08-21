@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({
   closeComposioConnectorRun: vi.fn(async () => {}),
 }));
 
-vi.mock("~/lib/chat/agent/runAgentLoop", () => ({ runAgentLoop: mocks.runAgentLoop }));
+vi.mock("~/lib/chat/agent/agent-loop", () => ({ runAgentLoop: mocks.runAgentLoop }));
 vi.mock("~/services/apps/connectors/composio-run", () => ({
   closeComposioConnectorRun: mocks.closeComposioConnectorRun,
 }));

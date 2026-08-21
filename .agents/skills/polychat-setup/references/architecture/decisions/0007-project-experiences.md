@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted, superseded in part by ADR 0016. Experiences are no longer project-only: they are published from `/capabilities` rather than `/dynamic-apps`, a person reaches the same surfaces under `/chat` without an enablement record, and function tools are no longer registered as apps.
 
 ## Context
 

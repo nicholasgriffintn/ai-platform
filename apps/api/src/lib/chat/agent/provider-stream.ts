@@ -1,7 +1,7 @@
 import { MAX_BUFFER_LENGTH, MAX_CONTENT_LENGTH, MAX_THINKING_LENGTH } from "~/constants/app";
-import type { ChatEventSink } from "~/lib/chat/emitter";
-import { appendReasoningPart, appendTextPart } from "~/lib/chat/messageParts";
-import { modelEmitsUnterminatedThinking } from "~/lib/chat/utils/qwq";
+import { appendReasoningPart, appendTextPart } from "~/lib/chat/messages/parts";
+import { modelEmitsUnterminatedThinking } from "~/lib/chat/messages/unterminated-thinking";
+import type { ChatEventSink } from "~/lib/chat/streaming/emitter";
 import { ResponseFormatter, StreamingFormatter } from "~/lib/formatter";
 import { findModelConfig } from "~/lib/providers/models";
 import {

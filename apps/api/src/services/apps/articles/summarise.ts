@@ -1,4 +1,3 @@
-import { sanitiseInput } from "~/lib/chat/utils";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { findModelConfig, getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
@@ -6,6 +5,7 @@ import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractQuotes } from "~/utils/extract";
 import { getLogger } from "~/utils/logger";
+import { sanitiseInput } from "~/utils/sanitise";
 import { verifyQuotes } from "~/utils/verify";
 
 import { summariseArticlePrompt } from "./prompts";

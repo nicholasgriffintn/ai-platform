@@ -37,7 +37,8 @@
     "**/coverage/**",
     "**/.wrangler/**",
     "**/generated/**",
-    "**/worker-configuration.d.ts"
+    "**/worker-configuration.d.ts",
+    "apps/api/src/data-model/models/**"
   ],
   "rules": {
     "curly": ["error", "all"],

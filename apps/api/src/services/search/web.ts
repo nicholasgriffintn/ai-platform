@@ -1,8 +1,8 @@
-import { sanitiseInput } from "~/lib/chat/utils";
 import { getSearchProvider } from "~/lib/providers/capabilities/search";
 import { getAuxiliarySearchProvider } from "~/lib/providers/models";
 import type { IEnv, IFunctionResponse, IUser, SearchOptions, SearchProviderName } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { sanitiseInput } from "~/utils/sanitise";
 
 type WebSearchRequest = {
   env: IEnv;

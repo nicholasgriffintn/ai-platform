@@ -1,4 +1,4 @@
-import { toProviderMessages } from "~/lib/chat/providerMessages";
+import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { findModelConfig } from "~/lib/providers/models";
 import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
@@ -13,7 +13,7 @@ import { mergeParametersWithDefaults, shouldEnableStreaming } from "~/utils/para
 import { isProviderRateLimitError, isRetryableProviderError } from "~/utils/providerErrors";
 import { withRetry } from "~/utils/retries";
 
-const logger = getLogger({ prefix: "lib/chat/responses" });
+const logger = getLogger({ prefix: "lib/chat/streaming/responses" });
 
 /**
  * Formats assistant message data into a standardized structure that can be used

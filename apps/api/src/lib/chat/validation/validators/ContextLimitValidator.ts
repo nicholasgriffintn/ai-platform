@@ -1,19 +1,19 @@
+import { getAllAttachments } from "~/lib/chat/messages/attachments";
 import {
   checkContextWindowLimits,
-  getAllAttachments,
   pruneMessagesToFitContext,
-  sanitiseInput,
-} from "~/lib/chat/utils";
+} from "~/lib/chat/policy/context-window";
 import type {
   ValidationContext,
   Validator,
   ValidatorResult,
 } from "~/lib/chat/validation/ValidationPipeline";
 import type { CoreChatOptions } from "~/types";
+import { sanitiseInput } from "~/utils/sanitise";
 
 export class ContextLimitValidator implements Validator {
   async validate(_options: CoreChatOptions, context: ValidationContext): Promise<ValidatorResult> {
-    if (!context.sanitizedMessages || !context.lastMessage || !context.modelConfig) {
+    if (!context.sanitisedMessages || !context.lastMessage || !context.modelConfig) {
       return {
         validation: {
           isValid: false,
@@ -47,9 +47,9 @@ export class ContextLimitValidator implements Validator {
           : finalUserMessage;
 
       const prunedWithAttachments =
-        context.sanitizedMessages.length > 0
+        context.sanitisedMessages.length > 0
           ? pruneMessagesToFitContext(
-              context.sanitizedMessages,
+              context.sanitisedMessages,
               messageWithContext,
               context.modelConfig,
             )

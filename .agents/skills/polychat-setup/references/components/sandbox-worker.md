@@ -15,7 +15,7 @@ This allows for resource intensive tasks, workloads that require a full filesyst
 
 As it is serverless, this can also be done at a larger scale and with increased demand vs what our main API can handle.
 
-The current implementation focuses on just one task, feature implementation, but it has been designed to be extended for more task types in the future.
+One agent runner now serves seven task types, from feature implementation through code review, tests, bug fixes, refactoring, documentation, and migrations. A new task type is a profile and a prompt strategy rather than a new runner.
 
 Here's the current workflow:
 
@@ -95,108 +95,18 @@ pnpm run deploy
 - Agent script execution uses the Sandbox code interpreter for Python, JavaScript, and TypeScript.
 - The worker still returns terminal results inline to the API, but the API persists logs, diffs, events, and result manifests to R2 when `ASSETS_BUCKET` is configured.
 
-## Roadmap - Generated with AI Assistance
+## What is shipped
 
-This section outlines planned improvements to make the sandbox worker production-ready.
+The worker registers one agent runner across seven task types — `feature-implementation`, `code-review`, `test-suite`, `bug-fix`, `refactoring`, `documentation`, and `migration` — selected by `resolveSandboxTaskProfile`. The following are complete and are not open work:
 
-### Phase 1: Agent-based Execution
+- The iterative agent loop, plan refinement, mid-run file reads, the post-implementation quality gate, and commit gating on that gate.
+- Repository-aware planning, PRD support (`prd.json`, `tasks/prd-*.md`, with an `.implement` fallback), story progress tracking, and per-task prompt strategies.
+- Typed failure classification, transient model retry, graceful degradation, and contextual error logging.
+- Client cancellation, per-task timeouts, pause and resume, per-user quotas and rate limiting, and per-command approval before execution.
+- GitHub `/implement`, `/review`, `/test`, and `/fix` commands from both issue and PR comments.
+- R2-backed terminal logs, diffs, events, and result manifests written by the API dispatcher.
 
-**Current limitation:** Initial implementation is complete, but the loop still supports a single task family (`feature-implementation`).
+## Open work
 
-**Planned improvements:**
-
-- [x] Implement agentic loop that can react to command outputs using the existing agents setup for the API (extended as required for the sandbox context but maintainable and consistent with the main API)
-- [x] Add multi-step reasoning where the agent can:
-  - Run a command and inspect output
-  - Decide next action based on results
-  - Handle errors and retry with different approaches
-  - Request additional context when needed
-- [x] Support iterative refinement of implementation plan
-- [x] Add ability to read file contents mid-execution for context
-- [x] Add a post-implementation quality gate that runs validation commands from the plan
-- [x] Gate commits on quality-gate outcomes
-
-### Phase 2: Enhanced Prompting
-
-**Current limitation:** Prompting is now context-aware, but it still needs richer task-specific examples/strategy variants.
-
-**Planned improvements:**
-
-- [x] Analyse repository structure before planning (package.json, config files)
-- [x] Include relevant code snippets in context
-- [x] Support for PRD-style task files (`prd.json`, `tasks/prd-*.md`) for repo-specific instructions (with `.implement` fallback)
-- [x] Track PRD story progress by updating `prd.json` `passes` and logging to `progress.txt`
-- [x] Add examples of good implementations for the model to follow
-- [x] Support different prompt strategies per task type
-
-### Phase 3: Error Handling and Resilience
-
-**Current status:** Error handling is structured for runs, with typed failures, cancellation, timeout handling, and transient model retry support.
-
-**Planned improvements:**
-
-- [x] Comprehensive error classification and user-friendly messages
-- [x] Retry logic for transient failures (network, rate limits)
-- [x] Graceful degradation when AI model unavailable
-- [x] Detailed error logging with context for debugging
-
-### Phase 4: UI and UX Improvements
-
-**Current limitation:** Basic implementation, not a conversational interface.
-
-**Planned improvements:**
-
-- [ ] Reuse existing chat UI components for continuous conversation flow
-- [ ] Allow user to provide feedback mid-execution
-- [ ] Show AI reasoning alongside command execution
-- [ ] Add ability to approve/reject individual commands before execution
-- [x] Implement run cancellation from client (abort SSE stream and sandbox)
-- [ ] Better diff viewer with syntax highlighting
-
-### Phase 5: Stream and Execution Control
-
-**Current status:** Core execution controls are implemented; remaining work is production hardening and artifact-backed observability.
-
-**Planned improvements:**
-
-- [x] Implement cancellation signal from client to API to worker
-- [x] Add timeout configuration per task
-- [x] Support pause/resume for long-running tasks
-- [x] Add execution quotas and rate limiting per user
-
-### Phase 6: Webhook Expansion
-
-**Current status:** Handles `/implement`, `/review`, `/test`, and `/fix` commands from issue and PR comments.
-
-**Planned improvements:**
-
-- [x] Support issue comments (not just PRs)
-- [x] Add `/review` command for code review
-- [x] Add `/test` command to run test suites
-- [x] Add `/fix` command for automated bug fixes
-
-### Phase 7: Storage and Observability
-
-**Current limitation:** Logs stored inline, not suitable for high volumes.
-
-**Planned improvements:**
-
-- [x] Store terminal run logs, diffs, events, and result manifests in R2-backed artifacts from the API dispatcher
-- [ ] Add signed URL support for private artifact retrieval
-- [ ] Implement log retention policies (configurable per user/org)
-- [ ] Add user controls for log storage (auto-delete, archive)
-- [ ] Add execution metrics and dashboards
-- [ ] Support log streaming to external systems
-
-### Phase 8: Expanded Task Types
-
-**Current status:** Supports feature implementation, code review, test suite, bug fix, refactoring, documentation, and migration task modes.
-
-**Planned improvements:**
-
-- [x] **Code Review** - Automated PR reviews with actionable feedback
-- [x] **Bug Fix** - Diagnose and fix issues from error reports
-- [x] **Refactoring** - Apply consistent code improvements
-- [x] **Documentation** - Generate/update docs from code
-- [x] **Testing** - Generate test cases for existing code
-- [x] **Migration** - Automated dependency/framework upgrades
+- Reuse the chat UI components for a continuous conversation flow, accept user feedback mid-execution, show model reasoning beside command execution, and improve the diff viewer.
+- Signed URLs for private artefact retrieval, configurable log retention, user controls for log storage, execution metrics and dashboards, and log streaming to external systems.

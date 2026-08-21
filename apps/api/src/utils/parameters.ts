@@ -1,7 +1,7 @@
 import { agentControlToolDefinitions } from "@ngriffin_uk/polychat-library-tool-runtime";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
-import { isAgentExecutionMode } from "~/lib/chat/mode-metadata";
+import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
 import { listFunctionTools } from "~/services/functions";
 import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
 import type { ChatCompletionParameters } from "~/types";
@@ -9,7 +9,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { omitNullishValues } from "~/utils/objects";
 import { resolveRequestUser } from "~/utils/requestUser";
 
-import { formatToolCalls } from "../lib/chat/tools";
+import { formatToolCalls } from "../lib/chat/tools/execution";
 import { resolveReasoningModel } from "../lib/providers/models/reasoning";
 
 /**

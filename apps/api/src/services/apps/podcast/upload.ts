@@ -1,9 +1,9 @@
-import { sanitiseInput } from "~/lib/chat/utils";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { StorageService, type StoredSourceFileResult } from "~/lib/storage";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { sanitiseInput } from "~/utils/sanitise";
 
 export type UploadRequest = {
   context?: ServiceContext;

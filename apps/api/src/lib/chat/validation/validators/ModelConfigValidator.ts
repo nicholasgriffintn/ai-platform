@@ -1,5 +1,5 @@
-import { selectModels } from "~/lib/chat/modelSelection";
-import { getAllAttachments } from "~/lib/chat/utils";
+import { getAllAttachments } from "~/lib/chat/messages/attachments";
+import { selectModels } from "~/lib/chat/policy/model-access";
 import type {
   ValidationContext,
   Validator,
@@ -28,7 +28,7 @@ export class ModelConfigValidator implements Validator {
     } = options;
     const user = resolveRequestUser(options);
 
-    if (!context.sanitizedMessages || !context.lastMessage) {
+    if (!context.sanitisedMessages || !context.lastMessage) {
       return {
         validation: {
           isValid: false,

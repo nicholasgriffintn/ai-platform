@@ -1,15 +1,15 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { ChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
 
-import { formatAssistantMessage } from "~/lib/chat/assistant-message-format";
 import { processChatRequest } from "~/lib/chat/core";
-import { buildMessageParts } from "~/lib/chat/messageParts";
-import { buildChatPostProcessing } from "~/lib/chat/post-processing";
+import { formatAssistantMessage } from "~/lib/chat/messages/assistant-format";
+import { buildMessageParts } from "~/lib/chat/messages/parts";
 import {
   toProviderMessages,
   toProviderResponseMessagePartSource,
   toProviderResponseMessages,
-} from "~/lib/chat/providerMessages";
+} from "~/lib/chat/messages/provider-mapping";
+import { buildChatPostProcessing } from "~/lib/chat/streaming/post-processing";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";

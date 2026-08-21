@@ -13,7 +13,7 @@ import {
   buildSandboxEventToolResponse,
   buildSandboxPlanToolResponse,
   buildSandboxResultToolResponse,
-} from "~/lib/chat/sandbox-messages";
+} from "~/lib/chat/messages/sandbox-messages";
 import { executeSandboxRunStream } from "~/services/apps/sandbox/execute-stream";
 import type { IFunctionResponse, IRequest } from "~/types";
 

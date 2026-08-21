@@ -1,5 +1,5 @@
+import { runAgentLoop } from "~/lib/chat/agent/agent-loop";
 import { createGoalFinishGate } from "~/lib/chat/agent/goal-gate";
-import { runAgentLoop } from "~/lib/chat/agent/runAgentLoop";
 import {
   createBufferedTurnTransport,
   createStreamingTurnTransport,
@@ -9,10 +9,10 @@ import { prependCompactionStateEvent } from "~/lib/chat/core/compaction-stream";
 import { createChatExecutionRequest } from "~/lib/chat/core/execution-request";
 import { createModelEnsembleStream } from "~/lib/chat/core/model-ensemble";
 import { buildToolRequestContext } from "~/lib/chat/core/request-context";
-import { isAgentExecutionMode } from "~/lib/chat/mode-metadata";
+import { pruneMessagesToFitContext } from "~/lib/chat/policy/context-window";
+import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
+import { resolveTurnStepBudget } from "~/lib/chat/policy/step-budget";
 import { RequestPreparer, type PreparedRequest } from "~/lib/chat/preparation/RequestPreparer";
-import { resolveTurnStepBudget } from "~/lib/chat/step-budget";
-import { pruneMessagesToFitContext } from "~/lib/chat/utils";
 import { ValidationPipeline } from "~/lib/chat/validation/ValidationPipeline";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
@@ -239,7 +239,7 @@ export class ChatOrchestrator {
         compaction: chatOptions.compaction,
         mode: currentMode,
         modelConfig: {
-          contextWindow: (primaryModelConfig as { contextWindow?: number })?.contextWindow,
+          contextWindow: primaryModelConfig?.contextWindow,
         },
       });
 

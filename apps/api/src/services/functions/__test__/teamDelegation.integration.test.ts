@@ -79,7 +79,7 @@ vi.mock("~/lib/chat/preparation/RequestPreparer", () => ({
   },
 }));
 
-vi.mock("~/lib/chat/responses", () => ({
+vi.mock("~/lib/chat/streaming/responses", () => ({
   getAIResponse: mockGetAIResponse,
 }));
 
@@ -119,7 +119,7 @@ vi.mock("~/lib/agents/team/TeamDelegation", () => ({
   },
 }));
 
-vi.mock("~/lib/chat/tools", () => ({
+vi.mock("~/lib/chat/tools/execution", () => ({
   handleToolCalls: mockHandleToolCalls,
 }));
 

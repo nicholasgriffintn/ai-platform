@@ -15,9 +15,14 @@ Run the narrowest checks that cover the changed surfaces. Build shared schemas f
 pnpm --filter @ngriffin_uk/polychat-schemas build
 pnpm --filter @assistant/api typecheck
 pnpm --filter @assistant/app typecheck
-pnpm --filter @assistant/api check
 pnpm --filter @assistant/app check
+pnpm exec oxlint apps/api/src
+pnpm exec oxfmt --check apps/api/src
 ```
+
+Linting and formatting are root tools, and `@assistant/app` is the only workspace that defines its own `check`. Point oxlint and oxfmt at the changed directory for every other workspace; `pnpm --filter @assistant/api check` does not exist and fails with `ERR_PNPM_RECURSIVE_RUN_NO_SCRIPT`.
+
+`apps/api/src/data-model/models/**` is excluded from both tools. `models:sync` text-patches those files with its own indentation, so every sync reintroduced formatting failures that no author caused and no author should have to fix. Typecheck still covers them; keep new model entries consistent with the surrounding file by hand.
 
 Run relevant Vitest suites for behaviour changes. Use the root `pnpm typecheck`, `pnpm check`, or `pnpm test` only when the blast radius justifies repo-wide validation.
 
@@ -25,9 +30,8 @@ Run relevant Vitest suites for behaviour changes. Use the root `pnpm typecheck`,
 
 ```sh
 pnpm --filter @assistant/sandbox-worker typecheck
-pnpm --filter @assistant/sandbox-worker check
 pnpm --filter @assistant/training typecheck
-pnpm --filter @assistant/training check
+pnpm exec oxlint apps/sandbox-worker/src apps/training/src
 pnpm test:mobile
 ```
 

@@ -1,4 +1,4 @@
-import { toProviderMessages } from "~/lib/chat/providerMessages";
+import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";

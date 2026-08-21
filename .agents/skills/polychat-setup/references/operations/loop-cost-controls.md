@@ -5,22 +5,25 @@ removes a bound is visible as a change to this file rather than as a bill.
 
 ## Every loop and what stops it
 
-| Loop                        | Bound                                                                                                    | Enforced in                                           |
-| --------------------------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| Agent loop steps            | `AGENT_MODE_CONFIGS[mode].maxSteps`, clamped by any requested `max_steps`                                | `resolveModeMaxSteps`, `executeAgentLoop`             |
-| Streaming tool continuation | `evaluateTurnContinuation`: step budget, all results continuable                                         | `turn-continuation.ts`                                |
-| Goal continuation           | `evaluateGoalContinuation`: stalls after two evidence-free turns, plus blocked, paused, and usage states | `packages/schemas/src/goals.ts`                       |
-| Sandbox run loop            | `MAX_AGENT_STEPS`, `MAX_COMMANDS`, run timeout, and the run goal's own stall rule                        | sandbox worker constants, run goal iteration endpoint |
-| Inbound channel turns       | channel profile `maxSteps`, and one turn at a time per conversation                                      | `channels.ts`, `ConversationCoordinator`              |
+| Loop                  | Bound                                                                                                    | Enforced in                                           |
+| --------------------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Chat turn steps       | the request's own ceiling, the recipe and connector defaults, and `AGENT_MODE_CONFIGS[mode].maxSteps`    | `resolveTurnStepBudget`, `resolveModeMaxSteps`        |
+| Agent loop steps      | that budget, extended once so a turn that hits it is asked for a final answer rather than cut off        | `executeAgentLoop`, `runAgentLoop`                    |
+| Goal continuation     | `evaluateGoalContinuation`: stalls after two evidence-free turns, plus blocked, paused, and usage states | `packages/schemas/src/goals.ts`                       |
+| Sandbox run loop      | `MAX_AGENT_STEPS`, `MAX_COMMANDS`, run timeout, and the run goal's own stall rule                        | sandbox worker constants, run goal iteration endpoint |
+| Inbound channel turns | channel profile `maxSteps`, and one turn at a time per conversation                                      | `channels.ts`, `ConversationCoordinator`              |
+
+Streaming is a transport, not a loop of its own (ADR 0022). A streamed turn and a buffered one draw the
+same budget through the same loop, so there is one place to change a bound and one place it can be lost.
 
 ## Usage limits are checked as the work is spent, not once per request
 
 `checkUsageLimits` at the request boundary only covers the first model call. Every loop that can spend
 more re-checks before spending the next one:
 
-- **Agent loop**: `runAgentLoop` re-checks before each step after the first. Exhaustion throws
-  `USAGE_LIMIT_ERROR` and the loop stops.
-- **Streaming continuation**: `continueStreamingTurn` checks before recursing, and stops instead.
+- **Agent loop**: `runAgentLoop` re-checks before every step after the first. Exhaustion closes the turn
+  with `USAGE_LIMIT_NOTICE` and a `usage_limit_reached` finish reason, and allows the finish gate, so the
+  user gets an answer explaining the stop rather than an error.
 - **Goals**: `readUsageLimitState` feeds `usageLimitsExhausted` into the continuation policy, so a goal
   ends as `limit_reached` rather than erroring.
 
@@ -39,8 +42,9 @@ at most three storage operations on a single object.
 The lock carries a five-minute lease, so a worker that dies mid-turn cannot wedge a conversation and
 cannot leave an object spinning.
 
-Nothing calls the coordinator inside a loop. Continuations recurse below `ChatOrchestrator.process`,
-which is the only place a turn acquires, so a long tool chain is still two DO calls in total.
+Nothing calls the coordinator inside a loop. `ChatOrchestrator.process` is the only place a turn acquires,
+and it releases through the stream's cleanup when the response finishes writing, so a long tool chain is
+still two DO calls in total.
 
 ## When adding a new loop
 

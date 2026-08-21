@@ -10,7 +10,7 @@ Accepted
 
 That success invites a broader question. `apps/api` holds roughly 60,000 lines of backend logic, including 22,700 lines under `src/lib/providers`, 7,200 under `src/lib/chat`, and 2,600 in `src/lib/formatter`. Deciding by directory size would extract the largest modules first, which are also the ones most entangled with `IEnv`, `ServiceContext`, D1 repositories, and AI Gateway configuration. Moving those into packages relocates the coupling instead of hiding it, and ADR 0001 already puts provider, persistence, sandbox, and training behaviour behind app-owned seams.
 
-ADR 0014 set the bar for frontend packages: a package must provide a stable interface, hide meaningful implementation, and have a credible independent consumer or release reason. The same bar applies to backend code, and most backend modules fail its third clause.
+The frontend extraction set the bar: a package must provide a stable interface, hide meaningful implementation, and have a credible independent consumer or release reason. The same bar applies to backend code, and most backend modules fail its third clause.
 
 ## Decision
 

@@ -1,6 +1,6 @@
 import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 
-import { resolveMemoryPolicy } from "~/lib/chat/memoryPolicy";
+import { resolveMemoryPolicy } from "~/lib/chat/policy/memory";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { AssistantPersona, IBody, IUser, IUserSettings } from "~/types";
 import { trimTemplateWhitespace } from "~/utils/strings";

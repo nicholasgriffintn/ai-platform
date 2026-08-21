@@ -50,20 +50,3 @@ export function createChatSseStreamWriter(): ChatSseStreamWriter {
     abort: (error: unknown) => writer.abort(error),
   };
 }
-
-export function emitDoneEvent(controller: TransformStreamDefaultController) {
-  const doneEvent = encodeEventData(formatChatStreamSseDone());
-
-  controller.enqueue(doneEvent);
-}
-
-export function emitEvent(
-  controller: TransformStreamDefaultController,
-  type: string,
-  payload: SSEEventPayload = {},
-) {
-  const eventData = createEventData(type, payload);
-  const encodedEvent = encodeEventData(eventData);
-
-  controller.enqueue(encodedEvent);
-}

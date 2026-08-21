@@ -3,7 +3,7 @@ import type { AssistantMessageData } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "lib/chat/assistant-message-format" });
+const logger = getLogger({ prefix: "lib/chat/messages/assistant-format" });
 
 export function formatAssistantMessage({
   content = "",
