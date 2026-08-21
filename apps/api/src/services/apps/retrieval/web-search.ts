@@ -200,7 +200,7 @@ export async function performDeepWebSearch(
         providerWarning,
         name: "web_search",
         formattedName: "Web Search",
-        responseType: "custom",
+        renderer: "web_search",
       },
       name: "web_search",
       timestamp: Date.now(),

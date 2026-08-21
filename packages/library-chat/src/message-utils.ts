@@ -3,21 +3,21 @@
  * Example: <custom_tag>content</custom_tag> becomes **Custom Tag**\n\ncontent\n\n
  */
 export function processCustomXmlTags(text: string): string {
-  const codeFenceRegex = /```[\s\S]*?```/g;
-  const fences: string[] = [];
-  const placeholderPrefix = "<<CODE_BLOCK_";
-  let idx = 0;
+  const protectedRegionRegex = /(```[\s\S]*?```|~~~[\s\S]*?~~~|`[^`\n]*`|^(?: {4}|\t).*$)/gm;
+  const protectedRegions: string[] = [];
+  const placeholderPrefix = "\u0000polychat-protected-";
+  const placeholderSuffix = "\u0000";
 
-  const textNoFences = text.replace(codeFenceRegex, (match) => {
-    const placeholder = `${placeholderPrefix}${idx}>>`;
+  const masked = text.replace(protectedRegionRegex, (match) => {
+    const placeholder = `${placeholderPrefix}${protectedRegions.length}${placeholderSuffix}`;
 
-    fences[idx++] = match;
+    protectedRegions.push(match);
 
     return placeholder;
   });
 
   const xmlTagRegex = /<([A-Za-z][\w-]*)\b[^>]*>([\s\S]*?)<\/\1>/g;
-  const processed = textNoFences.replace(xmlTagRegex, (_match, tagName, inner) => {
+  const processed = masked.replace(xmlTagRegex, (_match, tagName, inner) => {
     const title = tagName
       .split(/[_-]/)
       .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
@@ -26,15 +26,10 @@ export function processCustomXmlTags(text: string): string {
     return `**${title}**\n\n${inner}\n\n`;
   });
 
-  let result = processed;
-
-  fences.forEach((fence, i) => {
-    const placeholder = `${placeholderPrefix}${i}>>`;
-
-    result = result.replace(placeholder, fence);
-  });
-
-  return result;
+  return processed.replace(
+    new RegExp(`${placeholderPrefix}(\\d+)${placeholderSuffix}`, "g"),
+    (match, index: string) => protectedRegions[Number(index)] ?? match,
+  );
 }
 
 /**

@@ -53,7 +53,7 @@ export const search_documents: ApiToolDefinition = {
         status: "success",
         name: "search_documents",
         content: "No matching passages were found in the user's documents.",
-        data: { responseType: "document_search", query: args.query, documents: [] },
+        data: { renderer: "document_search", query: args.query, documents: [] },
       };
     }
 
@@ -61,7 +61,7 @@ export const search_documents: ApiToolDefinition = {
       status: "success",
       name: "search_documents",
       content: JSON.stringify(documents, null, 2),
-      data: { responseType: "document_search", query: args.query, documents },
+      data: { renderer: "document_search", query: args.query, documents },
     };
   },
 };

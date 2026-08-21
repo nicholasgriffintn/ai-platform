@@ -16,13 +16,15 @@ export interface CustomResponseViewProps {
   data: unknown;
   embedded: boolean;
   onToolInteraction?: ToolInteractionHandler;
+  toolName?: string;
 }
 
 export type CustomResponseViewRenderer = (props: CustomResponseViewProps) => ReactNode;
 
 /**
  * Tool responses that need host data — sandbox runs, research status, connector setup — are
- * registered by the application. Unknown names fall back to the raw JSON view.
+ * registered by the application, keyed by the renderer id the tool declares. Anything unregistered
+ * falls through to shape resolution, which is what MCP and recipe tools rely on.
  */
 export type CustomResponseViewRegistry = Record<string, CustomResponseViewRenderer>;
 

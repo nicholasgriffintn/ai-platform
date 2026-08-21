@@ -14,6 +14,7 @@ interface ResponseRendererProps {
   responseDisplay?: ResponseDisplay;
   className?: string;
   embedded?: boolean;
+  renderer?: string;
   onToolInteraction?: ToolInteractionHandler;
 }
 
@@ -25,6 +26,7 @@ export const ResponseRenderer = ({
   responseDisplay,
   className = "",
   embedded = false,
+  renderer,
   onToolInteraction,
 }: ResponseRendererProps) => {
   const response = (
@@ -32,6 +34,7 @@ export const ResponseRenderer = ({
       result={result}
       responseType={responseType || app?.responseSchema.type}
       responseDisplay={responseDisplay || app?.responseSchema.display}
+      renderer={renderer}
       hasToolSchema={Boolean(app)}
       embedded={embedded}
       onToolInteraction={onToolInteraction}

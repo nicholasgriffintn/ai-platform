@@ -1,5 +1,7 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 
+import { MemoizedMarkdown } from "../../markdown";
+
 interface PanelTurnData {
   memberName?: string;
   memberRole?: string;
@@ -35,7 +37,9 @@ export function PanelTurnView({
         {data.model && <span className="font-mono">{data.model}</span>}
         {typeof data.turn === "number" && <span>Turn {data.turn}</span>}
       </div>
-      <p className="whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-100">{data.content}</p>
+      <MemoizedMarkdown className="max-w-none text-sm text-zinc-800 dark:text-zinc-100">
+        {data.content}
+      </MemoizedMarkdown>
     </div>
   );
 }

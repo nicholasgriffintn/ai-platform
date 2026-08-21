@@ -6,6 +6,7 @@ import {
   getMessageListScrollKey,
   CompactionStatusRow,
   GoalStatusRow,
+  isRenderableMessage,
   MessageSkeleton,
   ScrollButton,
   StreamActivityIndicator,
@@ -134,6 +135,24 @@ export const MessageList = ({
     [messages],
   );
 
+  const visibleRows = useMemo(
+    () =>
+      messages
+        .map((message, index) => ({
+          message,
+          index,
+          compactionLabel: getCompactionMessageLabel(message),
+          goalMarker: getGoalMessageMarker(message),
+        }))
+        .filter(
+          ({ message, compactionLabel, goalMarker }) =>
+            Boolean(compactionLabel) ||
+            Boolean(goalMarker) ||
+            (!isHiddenToolResponse(message) && isRenderableMessage(message)),
+        ),
+    [messages],
+  );
+
   const virtualRef = useRef<VListHandle>(null);
   const prevCount = useRef(0);
   const isNearBottomRef = useRef(true);
@@ -190,24 +209,11 @@ export const MessageList = ({
         className="flex-1 pt-4 pr-2 h-full overflow-auto w-full"
         onScroll={handleScroll}
       >
-        <div className="space-y-4">
-          {!isSharedView && isLoadingConversation ? (
-            <>
-              {[...Array(3)].map((_, i) => (
-                <MessageSkeleton key={`skeleton-item-${i}`} />
-              ))}
-            </>
-          ) : (
-            messages.map((message, index) => {
-              if (isHiddenToolResponse(message)) {
-                return null;
-              }
-
-              const compactionLabel = getCompactionMessageLabel(message);
-              const goalMarker = getGoalMessageMarker(message);
-
+        {!isSharedView && isLoadingConversation
+          ? [...Array(3)].map((_, i) => <MessageSkeleton key={`skeleton-item-${i}`} />)
+          : visibleRows.map(({ message, index, compactionLabel, goalMarker }) => {
               return (
-                <div key={`${message.id || index}-${index}`} className={index > 0 ? "mt-4" : ""}>
+                <div key={message.id || `message-${index}`} className="pb-4">
                   {goalMarker ? (
                     <GoalStatusRow label={goalMarker.label} objective={goalMarker.objective} />
                   ) : compactionLabel ? (
@@ -247,29 +253,25 @@ export const MessageList = ({
                   )}
                 </div>
               );
-            })
-          )}
-          {!isSharedView && (isStreamLoading || streamStarted) && (
-            <>
-              {isCompactionLoadingMessage(streamLoadingMessage) ? (
-                showCompactionLoadingDivider ? (
-                  <CompactionStatusRow label={streamLoadingMessage} pending />
-                ) : null
-              ) : (
-                <StreamActivityIndicator label={streamLoadingMessage} activity={streamActivity} />
-              )}
-            </>
-          )}
-          {!isSharedView && isModelInitializing && (
-            <div className="flex items-center gap-2 py-2 px-4 text-sm text-zinc-600 dark:text-zinc-400">
-              <Loader2 className="h-4 w-4 animate-spin text-blue-500 flex-shrink-0" />
-              <span>
-                {modelInitMessage}
-                {modelInitProgress !== undefined ? ` ${Math.round(modelInitProgress)}%` : null}
-              </span>
-            </div>
-          )}
-        </div>
+            })}
+        {!isSharedView && (isStreamLoading || streamStarted) ? (
+          isCompactionLoadingMessage(streamLoadingMessage) ? (
+            showCompactionLoadingDivider ? (
+              <CompactionStatusRow label={streamLoadingMessage} pending />
+            ) : null
+          ) : (
+            <StreamActivityIndicator label={streamLoadingMessage} activity={streamActivity} />
+          )
+        ) : null}
+        {!isSharedView && isModelInitializing && (
+          <div className="flex items-center gap-2 py-2 px-4 text-sm text-zinc-600 dark:text-zinc-400">
+            <Loader2 className="h-4 w-4 animate-spin text-blue-500 flex-shrink-0" />
+            <span>
+              {modelInitMessage}
+              {modelInitProgress !== undefined ? ` ${Math.round(modelInitProgress)}%` : null}
+            </span>
+          </div>
+        )}
       </VList>
       {showScroll && !isSharedView && (
         <div className="absolute bottom-2 right-2 z-10">

@@ -2,14 +2,18 @@ import { ResponseDisplayType } from "@ngriffin_uk/polychat-schemas";
 import { isRecord, readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message } from "./conversation-types";
-import { isWeatherData } from "./weather";
 
 type ToolResultPart = Extract<NonNullable<Message["parts"]>[number], { type: "tool_result" }>;
 
-export interface RenderableToolResult {
+export interface ToolResultDisplay {
   name: string;
-  content: string;
-  result: Record<string, unknown>;
+  label: string;
+  icon?: string;
+  status?: string;
+  responseType?: string;
+  responseDisplay?: unknown;
+  renderer?: string;
+  result?: Record<string, unknown>;
 }
 
 export function isHiddenToolResponse(message: Message): boolean {
@@ -20,24 +24,63 @@ export function isHiddenToolResponse(message: Message): boolean {
   );
 }
 
-export function resolveRenderableToolResult(part: ToolResultPart): RenderableToolResult | null {
-  const data = isRecord(part.data) ? part.data : undefined;
-  const name = part.name ?? readOptionalString(data?.name);
+export function isHiddenToolResultPart(part: ToolResultPart): boolean {
+  return isRecord(part.data) && part.data.responseType === ResponseDisplayType.HIDDEN;
+}
 
-  if (name === "get_weather" && data && isWeatherData(data)) {
-    return {
-      name,
-      content: resolveToolResultContent(part.content),
-      result: {
-        status: part.status,
-        name,
-        content: resolveToolResultContent(part.content),
-        data,
-      },
-    };
-  }
+const humaniseToolName = (name: string): string =>
+  name
+    .split(/[_\-\s]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 
-  return null;
+const buildDisplay = ({
+  name,
+  data,
+  status,
+  content,
+}: {
+  name?: string;
+  data?: Record<string, unknown>;
+  status?: string;
+  content: string;
+}): ToolResultDisplay => {
+  const toolName = name ?? readOptionalString(data?.name) ?? "Tool";
+
+  return {
+    name: toolName,
+    label: readOptionalString(data?.formattedName) ?? humaniseToolName(toolName),
+    icon: readOptionalString(data?.icon),
+    status,
+    responseType: readOptionalString(data?.responseType),
+    responseDisplay: data?.responseDisplay,
+    renderer: readOptionalString(data?.renderer),
+    result: {
+      status: status ?? "success",
+      name: toolName,
+      content,
+      data,
+    },
+  };
+};
+
+export function resolveToolResultPartDisplay(part: ToolResultPart): ToolResultDisplay {
+  return buildDisplay({
+    name: part.name,
+    data: isRecord(part.data) ? part.data : undefined,
+    status: part.status,
+    content: resolveToolResultContent(part.content),
+  });
+}
+
+export function resolveToolMessageDisplay(message: Message): ToolResultDisplay {
+  return buildDisplay({
+    name: message.name,
+    data: isRecord(message.data) ? message.data : undefined,
+    status: message.status,
+    content: typeof message.content === "string" ? message.content : "",
+  });
 }
 
 function resolveToolResultContent(content: ToolResultPart["content"]) {

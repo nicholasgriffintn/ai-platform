@@ -10,10 +10,12 @@ export function WebSearchView({
   data,
   embedded,
   onToolInteraction,
+  toolName = "web_search",
 }: {
   data: any;
   embedded: boolean;
   onToolInteraction?: ToolInteractionHandler;
+  toolName?: string;
 }) {
   const [showAllSources, setShowAllSources] = useState(false);
 
@@ -48,7 +50,7 @@ export function WebSearchView({
 
   return (
     <div className="max-w-full overflow-x-hidden">
-      <div className="mb-6">
+      <div className={embedded ? "mb-4" : "mb-6"}>
         {sources && sources.length > 0 && (
           <div className="flex items-center text-sm mb-2 text-zinc-600 dark:text-zinc-300">
             <ArrowRight className="h-5 w-5 mr-2" aria-hidden="true" />
@@ -64,7 +66,7 @@ export function WebSearchView({
                 href={source.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group no-underline hover:!no-underline flex-1 min-w-[150px] border border-gray-700 rounded-md p-3 hover:bg-gray-800 transition-colors"
+                className="group no-underline hover:!no-underline flex-1 min-w-[150px] rounded-md border border-zinc-200 p-3 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/60"
                 aria-label={`View source: ${source.title}`}
               >
                 <div className="flex items-center mb-2">
@@ -83,7 +85,7 @@ export function WebSearchView({
               <button
                 type="button"
                 onClick={handleToggleSources}
-                className="flex items-center justify-center min-w-[100px] p-3 border border-gray-700 rounded-md hover:bg-gray-800 transition-colors cursor-pointer"
+                className="flex min-w-[100px] cursor-pointer items-center justify-center rounded-md border border-zinc-200 p-3 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/60"
                 aria-expanded={showAllSources}
                 aria-controls="source-list"
               >
@@ -97,7 +99,7 @@ export function WebSearchView({
               <button
                 type="button"
                 onClick={handleToggleSources}
-                className="flex items-center justify-center min-w-[100px] p-3 border border-gray-700 rounded-md hover:bg-gray-800 transition-colors cursor-pointer"
+                className="flex min-w-[100px] cursor-pointer items-center justify-center rounded-md border border-zinc-200 p-3 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/60"
                 aria-expanded={showAllSources}
                 aria-controls="source-list"
               >
@@ -117,17 +119,17 @@ export function WebSearchView({
         )}
       </div>
 
-      <div className="mb-6 text-zinc-600 dark:text-zinc-300">
+      <div className={`text-zinc-600 dark:text-zinc-300 ${embedded ? "mb-4" : "mb-6"}`}>
         <div className="prose dark:prose-invert text-zinc-600 dark:text-zinc-300">
           <MemoizedMarkdown>{answer}</MemoizedMarkdown>
         </div>
       </div>
 
       {similarQuestions && similarQuestions.length > 0 && (
-        <div className="mt-8" aria-labelledby="similar-questions-heading">
+        <div className={embedded ? "mt-4" : "mt-8"} aria-labelledby="similar-questions-heading">
           <h2
             id="similar-questions-heading"
-            className="text-xl font-medium mb-4 text-zinc-600 dark:text-zinc-300"
+            className={`mb-3 font-medium text-zinc-600 dark:text-zinc-300 ${embedded ? "text-sm" : "text-xl"}`}
           >
             People also ask
           </h2>
@@ -135,7 +137,7 @@ export function WebSearchView({
             {similarQuestions.map((question: string, index: number) => (
               <li
                 key={`question-${question}`}
-                className={`border-t border-gray-700 py-4 ${
+                className={`border-t border-zinc-200 py-4 dark:border-zinc-700 ${
                   index === similarQuestions.length - 1 ? "border-b" : ""
                 }`}
               >
@@ -149,7 +151,7 @@ export function WebSearchView({
                       aria-label={`Use question "${question}" as a prompt`}
                       title="Use this question as a prompt"
                       onClick={() => {
-                        onToolInteraction?.(data.name, "useAsPrompt", {
+                        onToolInteraction?.(toolName, "useAsPrompt", {
                           question,
                         });
                       }}

@@ -688,6 +688,9 @@ importers:
       '@ngriffin_uk/polychat-utility-core':
         specifier: workspace:^
         version: link:../utility-core
+      '@ngriffin_uk/polychat-utility-react':
+        specifier: workspace:^
+        version: link:../utility-react
       lucide-react:
         specifier: 1.31.0
         version: 1.31.0(react@19.2.8)
@@ -779,6 +782,9 @@ importers:
       '@ngriffin_uk/polychat-utility-core':
         specifier: workspace:^
         version: link:../utility-core
+      '@ngriffin_uk/polychat-utility-react':
+        specifier: workspace:^
+        version: link:../utility-react
       lucide-react:
         specifier: 1.31.0
         version: 1.31.0(react@19.2.8)

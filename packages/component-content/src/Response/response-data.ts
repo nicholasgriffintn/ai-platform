@@ -1,4 +1,4 @@
-import { isRecord, readOptionalString } from "@ngriffin_uk/polychat-utility-core";
+import { hasUrlExtension, isRecord, readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 
 interface ResolveResponseDataOptions {
   hasAppSchema: boolean;
@@ -26,6 +26,9 @@ export interface TableResponseData {
   headers: ResponseDisplayField[];
   rows: Record<string, unknown>[];
 }
+
+const AUDIO_EXTENSIONS = new Set(["mp3", "wav", "ogg", "m4a", "aac", "flac"]);
+const IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "gif", "webp"]);
 
 export function resolveResponseData(
   result: Record<string, unknown>,
@@ -244,7 +247,7 @@ function resolveDirectAudioUrl(url: unknown): string | undefined {
     return undefined;
   }
 
-  return /\.(mp3|wav|ogg|m4a|aac|flac)(?:[?#].*)?$/i.test(value) ? value : undefined;
+  return hasUrlExtension(value, AUDIO_EXTENSIONS) ? value : undefined;
 }
 
 function resolveDirectImageUrl(url: unknown): string | undefined {
@@ -254,7 +257,7 @@ function resolveDirectImageUrl(url: unknown): string | undefined {
     return undefined;
   }
 
-  return /\.(jpg|jpeg|png|gif|webp)(?:[?#].*)?$/i.test(value) ? value : undefined;
+  return hasUrlExtension(value, IMAGE_EXTENSIONS) ? value : undefined;
 }
 
 function resolveGeneratedImageContent(

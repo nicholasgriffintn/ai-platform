@@ -1,21 +1,13 @@
-import { type ResponseDisplay, ResponseDisplayType } from "@ngriffin_uk/polychat-schemas";
-
 import type { MessageContent } from "~/types/chat";
 
 import {
   formatFunctionName,
   getFunctionIcon,
+  getFunctionRenderer,
   getFunctionResponseDisplay,
   getFunctionResponseType,
 } from "./functions";
 
-/**
- * Formats a tool response for display in the UI
- * @param toolName The name of the tool
- * @param content The content of the tool response
- * @param data Additional data from the tool response
- * @returns Formatted tool response with display information
- */
 export const formatToolResponse = (
   toolName: string,
   content: string | MessageContent[],
@@ -26,6 +18,7 @@ export const formatToolResponse = (
 } => {
   const responseType = data?.responseType ?? getFunctionResponseType(toolName);
   const responseDisplay = data?.responseDisplay ?? getFunctionResponseDisplay(toolName);
+  const renderer = data?.renderer ?? getFunctionRenderer(toolName);
   const icon = data?.icon ?? getFunctionIcon(toolName);
   const formattedName = data?.formattedName ?? formatFunctionName(toolName);
 
@@ -33,8 +26,9 @@ export const formatToolResponse = (
     content,
     data: {
       ...data,
-      responseType,
-      responseDisplay,
+      ...(responseType ? { responseType } : {}),
+      ...(responseDisplay ? { responseDisplay } : {}),
+      ...(renderer ? { renderer } : {}),
       icon,
       formattedName,
       name: data?.name ?? toolName,
@@ -42,12 +36,6 @@ export const formatToolResponse = (
   };
 };
 
-/**
- * Formats a tool error response for display in the UI
- * @param toolName The name of the tool
- * @param errorMessage The error message
- * @returns Formatted error response with display information
- */
 export const formatToolErrorResponse = (
   toolName: string,
   errorMessage: string,
@@ -56,25 +44,11 @@ export const formatToolErrorResponse = (
   content: string;
   data: Record<string, any>;
 } => {
-  const responseType = ResponseDisplayType.TEXT;
-  const responseDisplay: ResponseDisplay = {
-    fields: [
-      { key: "status", label: "Status" },
-      { key: "content", label: "Error" },
-    ],
-    template: `
-      <div class="error-response">
-        <h2>${errorType}: ${formatFunctionName(toolName)}</h2>
-        <p>{{content}}</p>
-      </div>
-    `,
-  };
-
   return {
     content: errorMessage,
     data: {
-      responseType,
-      responseDisplay,
+      error: errorMessage,
+      errorType,
       icon: "alert-triangle",
       formattedName: formatFunctionName(toolName),
       name: toolName,

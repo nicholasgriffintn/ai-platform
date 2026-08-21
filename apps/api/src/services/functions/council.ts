@@ -78,7 +78,7 @@ function buildTurnResponse(turn: PanelTurn) {
     name: "council_turn",
     content: turn.content,
     data: {
-      responseType: "council_turn",
+      renderer: "council_turn",
       memberId: turn.memberId,
       memberName: turn.memberName,
       memberRole: turn.memberRole,
@@ -126,7 +126,7 @@ export const select_council_members: ApiToolDefinition = {
       content:
         "Waiting for the user to choose the council. Do not convene it or answer the question until they have.",
       data: {
-        responseType: "council_member_picker",
+        renderer: "council_member_picker",
         completion_id: context.completionId,
         question: args.question,
         members: (councilMembers as readonly CouncilMemberDefinition[]).map((member) => ({
@@ -202,7 +202,7 @@ export const run_council: ApiToolDefinition = {
       name: "run_council",
       content: `<council_conclusion>\n${result.conclusion}\n</council_conclusion>`,
       data: {
-        responseType: "council_conclusion",
+        renderer: "council_conclusion",
         question: args.question,
         members: members.map((member) => member.id),
         turns: result.turns,
