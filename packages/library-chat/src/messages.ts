@@ -527,7 +527,7 @@ export const formattedMessageContent = (role: Message["role"], originalContent: 
   }
 
   if (role === "assistant") {
-    const artifactRegex = /<artifact\s+([^>]*)>([\s\S]*?)(<\/artifact>|$)/g;
+    const artifactRegex = /<artifact\s([^>]*)>([\s\S]*?)(<\/artifact>|$)/g;
     let artifactMatch: RegExpExecArray | null = null;
     const tempContent = content;
 

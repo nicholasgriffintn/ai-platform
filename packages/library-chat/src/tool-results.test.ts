@@ -32,7 +32,7 @@ describe("resolveToolResultPartDisplay", () => {
       responseType: "table",
       status: "success",
     });
-    expect(display.result.content).toBe("Found 3 issues");
+    expect(display.result?.content).toBe("Found 3 issues");
   });
 
   it("falls back to a humanised tool name when the API supplied no label", () => {
@@ -52,7 +52,7 @@ describe("resolveToolResultPartDisplay", () => {
       content: { ok: true },
     } as unknown as ToolResultPart;
 
-    expect(resolveToolResultPartDisplay(part).result.content).toBe('{\n  "ok": true\n}');
+    expect(resolveToolResultPartDisplay(part).result?.content).toBe('{\n  "ok": true\n}');
   });
 });
 
