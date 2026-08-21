@@ -51,6 +51,13 @@ catalogs:
     zod:
       specifier: 4.4.3
       version: 4.4.3
+  react-peer:
+    react:
+      specifier: '>=19'
+      version: 19.2.8
+    react-dom:
+      specifier: '>=19'
+      version: 19.2.8
 
 overrides:
   fast-uri@>=3.0.0 <3.1.5: 4.1.2
@@ -542,8 +549,8 @@ importers:
   apps/training:
     dependencies:
       '@aws-sdk/client-bedrock':
-        specifier: 3.1109.0
-        version: 3.1109.0
+        specifier: 3.1110.0
+        version: 3.1110.0
       '@ngriffin_uk/polychat-schemas':
         specifier: workspace:^
         version: link:../../packages/schemas
@@ -1437,8 +1444,8 @@ packages:
     resolution: {integrity: sha512-93Z1N+BQNXysodoicpOIyNh2drHfz/CTf9nnT0FEx72GJcIiwgydD7tGAr78j41LsYn3hlRn+LdGPuBLn1Bl8Q==}
     engines: {node: ^22.13.0 || >=24.0.0}
 
-  '@aws-sdk/client-bedrock@3.1109.0':
-    resolution: {integrity: sha512-5NsXLkaxJQhnsp2xK11UTodUcwqGQ2B8Hysf+ONLIoUGZPMi64pDARz5Kv8J7FCDUgRDD5V2aBlHbKbnB2S3Kg==}
+  '@aws-sdk/client-bedrock@3.1110.0':
+    resolution: {integrity: sha512-sKEJOmsIkqtkL6PLAnSeVGSyn1DzXe8DV24AzjEqYeD3bBecPkKnOBq8fduo2z3m/YzihqDc/k9sbFRf0ME1wQ==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/core@3.977.8':
@@ -1485,8 +1492,8 @@ packages:
     resolution: {integrity: sha512-bBuyztukzXq6plzFGHAWiQt0QXo+HL8b8lX5cFTzkez/74PtS1c0qPFCIVuHkyoT+miH2qOjAcm1/yoro2ESPA==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/token-providers@3.1109.0':
-    resolution: {integrity: sha512-cAfGUyROpaYPgNrURNCX7JTSWKYtLEt6MDJQNjvgLoFHDYrFdl6qswvnOTZe4hag/8xlLbV6hxB0cOQg0jT2dw==}
+  '@aws-sdk/token-providers@3.1110.0':
+    resolution: {integrity: sha512-QM6f+d90+azDh0zlLKc6ALWdbz3v+2MV0gLmZWqBiRrLud39yf/n/IpcSo0rXwl3/jlt0mhJqdA3tJsA/yYlew==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/token-providers@3.1111.0':
@@ -5775,10 +5782,6 @@ packages:
       hono:
         optional: true
 
-  hono@4.13.1:
-    resolution: {integrity: sha512-kdJoFVv2xmayw6cY09H7AbMJMt8Jn5jdlEdXsP7AGBdF2DIptVlKlOLKXP41yPip4/a3yQPv9gVcJYI8YY04dw==}
-    engines: {node: '>=16.9.0'}
-
   hono@4.13.2:
     resolution: {integrity: sha512-JydRilDRkYBQMt9qR9U92mXxmbGqsqSn/IKOrh4e7/gEbn+0zSr8igTu0obwJoNGN4sez28DIql7FBHWydoJpA==}
     engines: {node: '>=16.9.0'}
@@ -7676,11 +7679,11 @@ snapshots:
       is-potential-custom-element-name: 1.0.1
       lru-cache: 11.5.2
 
-  '@aws-sdk/client-bedrock@3.1109.0':
+  '@aws-sdk/client-bedrock@3.1110.0':
     dependencies:
       '@aws-sdk/core': 3.977.8
       '@aws-sdk/credential-provider-node': 3.972.80
-      '@aws-sdk/token-providers': 3.1109.0
+      '@aws-sdk/token-providers': 3.1110.0
       '@aws-sdk/types': 3.974.4
       '@smithy/core': 3.31.1
       '@smithy/fetch-http-handler': 5.6.13
@@ -7801,7 +7804,7 @@ snapshots:
       '@smithy/types': 4.16.1
       tslib: 2.8.1
 
-  '@aws-sdk/token-providers@3.1109.0':
+  '@aws-sdk/token-providers@3.1110.0':
     dependencies:
       '@aws-sdk/core': 3.977.8
       '@aws-sdk/nested-clients': 3.997.43
@@ -8920,9 +8923,9 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@hono/node-server@2.1.0(hono@4.13.1)':
+  '@hono/node-server@2.1.0(hono@4.13.2)':
     dependencies:
-      hono: 4.13.1
+      hono: 4.13.2
 
   '@hono/standard-validator@0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.2)':
     dependencies:
@@ -9149,7 +9152,7 @@ snapshots:
 
   '@modelcontextprotocol/sdk@1.30.0(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.4.3)':
     dependencies:
-      '@hono/node-server': 2.1.0(hono@4.13.1)
+      '@hono/node-server': 2.1.0(hono@4.13.2)
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       content-type: 1.0.5
@@ -9159,7 +9162,7 @@ snapshots:
       eventsource-parser: 3.1.0
       express: 5.2.1(supports-color@10.2.2)
       express-rate-limit: 8.6.2(express@5.2.1(supports-color@10.2.2))(supports-color@10.2.2)
-      hono: 4.13.1
+      hono: 4.13.2
       jose: 6.2.8
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
@@ -11735,8 +11738,6 @@ snapshots:
     optionalDependencies:
       '@hono/standard-validator': 0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.2)
       hono: 4.13.2
-
-  hono@4.13.1: {}
 
   hono@4.13.2: {}
 
