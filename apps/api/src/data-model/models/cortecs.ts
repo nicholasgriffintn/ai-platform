@@ -1084,7 +1084,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     contextWindow: 196680,
     maxTokens: 196608,
     costPer1kInputTokens: 0.000296,
-    costPer1kOutputTokens: 0.001087,
+    costPer1kOutputTokens: 0.001186,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",
@@ -3530,8 +3530,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     contextWindow: 1050000,
     maxTokens: 1050000,
-    costPer1kInputTokens: 0.0011,
-    costPer1kOutputTokens: 0.006599,
+    costPer1kInputTokens: 0.000219,
+    costPer1kOutputTokens: 0.00132,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",
@@ -3582,8 +3582,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     contextWindow: 1050000,
     maxTokens: 1050000,
-    costPer1kInputTokens: 0.002749,
-    costPer1kOutputTokens: 0.016498,
+    costPer1kInputTokens: 0.0022,
+    costPer1kOutputTokens: 0.013199,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",

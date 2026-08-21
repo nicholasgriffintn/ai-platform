@@ -4,7 +4,7 @@ import { extractPanelRouting, runPanel, type PanelMember } from "../panel";
 
 const getAIResponse = vi.hoisted(() => vi.fn());
 
-vi.mock("~/lib/chat/responses", () => ({ getAIResponse }));
+vi.mock("~/lib/chat/streaming/responses", () => ({ getAIResponse }));
 vi.mock("~/lib/context/serviceContext", () => ({ createServiceContext: () => ({}) }));
 vi.mock("~/lib/providers/models", () => ({
   getAuxiliaryModel: vi.fn(async () => ({ model: "auxiliary-model", provider: "auxiliary" })),

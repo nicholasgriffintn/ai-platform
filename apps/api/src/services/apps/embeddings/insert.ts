@@ -1,4 +1,3 @@
-import { sanitiseInput } from "~/lib/chat/utils";
 import {
   getEmbeddingProvider,
   getEmbeddingNamespace,
@@ -9,6 +8,7 @@ import { chunkText } from "~/utils/embeddings";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+import { sanitiseInput } from "~/utils/sanitise";
 
 const logger = getLogger({ prefix: "services/apps/embeddings/insert" });
 

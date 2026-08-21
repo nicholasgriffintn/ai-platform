@@ -1,4 +1,4 @@
-import { toProviderMessages } from "~/lib/chat/providerMessages";
+import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { getMemoryClassifierPrompt } from "~/lib/prompts/memoryClassifier";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";

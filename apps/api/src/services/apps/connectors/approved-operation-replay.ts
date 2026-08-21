@@ -1,6 +1,6 @@
 import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
 
-import { handleToolCalls } from "~/lib/chat/tools";
+import { handleToolCalls } from "~/lib/chat/tools/execution";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { isComposioConnectorSessionHandle } from "~/lib/providers/capabilities/connectors/composio/session-handle";

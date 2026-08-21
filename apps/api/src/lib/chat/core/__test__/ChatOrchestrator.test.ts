@@ -78,7 +78,7 @@ vi.mock("~/services/conversations/coordinator/client", () => ({
   releaseThread: mockReleaseThread,
 }));
 
-vi.mock("~/lib/chat/responses", () => ({
+vi.mock("~/lib/chat/streaming/responses", () => ({
   getAIResponse: mockGetAIResponse,
 }));
 
@@ -86,7 +86,7 @@ vi.mock("~/lib/chat/agent/provider-stream", () => ({
   consumeProviderStream: mockConsumeProviderStream,
 }));
 
-vi.mock("~/lib/chat/tools", () => ({
+vi.mock("~/lib/chat/tools/execution", () => ({
   handleToolCalls: mockHandleToolCalls,
 }));
 

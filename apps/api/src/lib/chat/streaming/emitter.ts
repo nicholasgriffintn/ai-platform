@@ -97,20 +97,3 @@ export function startChatStreamHeartbeat(stream: ChatSseStreamWriter): () => voi
 
   return () => clearInterval(timer);
 }
-
-export function emitDoneEvent(controller: TransformStreamDefaultController) {
-  const doneEvent = encodeEventData(formatChatStreamSseDone());
-
-  controller.enqueue(doneEvent);
-}
-
-export function emitEvent(
-  controller: TransformStreamDefaultController,
-  type: string,
-  payload: SSEEventPayload = {},
-) {
-  const eventData = createEventData(type, payload);
-  const encodedEvent = encodeEventData(eventData);
-
-  controller.enqueue(encodedEvent);
-}

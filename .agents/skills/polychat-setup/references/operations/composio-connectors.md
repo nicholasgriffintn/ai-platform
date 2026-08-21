@@ -96,9 +96,9 @@ Disconnecting a connector removes all matching Composio accounts. Managed OAuth 
 - **Discover:** `use_recipe_connector` creates a Session scoped to the namespaced user, explicit account, toolkit, auth config, recipe operation allowlist, connector run, completion, recipe, and installation. Session search supplies current schemas and execution guidance.
 - **Handle:** the model receives an opaque `ccs_…` local handle, never the upstream `trs_…` Session ID. Execution atomically claims that handle and rechecks its full scope and exact operation allowlist.
 - **Execute:** arguments pass to Composio unchanged after authorised Source or Output file references are staged. Polychat verifies the selected connected account is still active immediately before the call.
-- **Close:** normal, streaming, agent, failure, and cancellation paths delete tracked upstream tool Sessions. A failed deletion marks the local row for retry.
+- **Close:** every turn closes its run exactly once. The streamed and model-ensemble finalisers close in a `finally` block and again when the response stream is cancelled; the buffered path closes in `ChatOrchestrator`. A failed deletion is logged and marks the local row for retry rather than failing the turn.
 - **Recover:** the 15-minute recipe schedule also leases and deletes expired or cleanup-pending Sessions in batches of 50. One cleanup failure does not block recipe scheduling or approval cleanup.
-- **Function registry:** Composio actions are not registered as thousands of Polychat functions. Only the stable connector function enters the global function and dynamic-app catalogues.
+- **Function registry:** Composio actions are not registered as thousands of Polychat functions. Only the stable connector function enters the global function catalogue.
 
 Tool Sessions expire locally after 30 minutes. Hosted credential connection-management Sessions enter the same journal with a one-hour expiry. The cleanup lease lasts five minutes; a failed reaper deletion is retried after 15 minutes.
 

@@ -6,10 +6,14 @@ import type { CoreChatOptions } from "~/types";
 import type { ValidationContext } from "../../ValidationPipeline";
 import { ContextLimitValidator } from "../ContextLimitValidator";
 
-vi.mock("~/lib/chat/utils", () => ({
-  checkContextWindowLimits: vi.fn(),
+vi.mock("~/lib/chat/messages/attachments", () => ({
   getAllAttachments: vi.fn(),
+}));
+vi.mock("~/lib/chat/policy/context-window", () => ({
+  checkContextWindowLimits: vi.fn(),
   pruneMessagesToFitContext: vi.fn(),
+}));
+vi.mock("~/utils/sanitise", () => ({
   sanitiseInput: vi.fn(),
 }));
 
@@ -25,12 +29,14 @@ describe("ContextLimitValidator", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
-    const {
-      checkContextWindowLimits,
-      getAllAttachments,
-      pruneMessagesToFitContext,
-      sanitiseInput,
-    } = await vi.importMock<typeof import("~/lib/chat/utils")>("~/lib/chat/utils");
+    const { getAllAttachments } = await vi.importMock<
+      typeof import("~/lib/chat/messages/attachments")
+    >("~/lib/chat/messages/attachments");
+    const { checkContextWindowLimits, pruneMessagesToFitContext } = await vi.importMock<
+      typeof import("~/lib/chat/policy/context-window")
+    >("~/lib/chat/policy/context-window");
+    const { sanitiseInput } =
+      await vi.importMock<typeof import("~/utils/sanitise")>("~/utils/sanitise");
 
     mockCheckContextWindowLimits = vi.mocked(checkContextWindowLimits);
     mockGetAllAttachments = vi.mocked(getAllAttachments);
@@ -67,13 +73,12 @@ describe("ContextLimitValidator", () => {
     };
 
     baseContext = {
-      sanitizedMessages: [{ role: "user", content: "Hello world" }],
+      sanitisedMessages: [{ role: "user", content: "Hello world" }],
       lastMessage: { role: "user", content: "Hello world" },
       modelConfig: {
         matchingModel: "claude-3-sonnet",
         provider: "anthropic",
         contextWindow: 200000,
-        maxOutputTokens: 4096,
       },
     };
 
@@ -96,7 +101,7 @@ describe("ContextLimitValidator", () => {
       expect(mockGetAllAttachments).toHaveBeenCalledWith([{ type: "text", text: "Hello world" }]);
       expect(mockSanitiseInput).toHaveBeenCalledWith("Hello world");
       expect(mockPruneMessagesToFitContext).toHaveBeenCalledWith(
-        baseContext.sanitizedMessages,
+        baseContext.sanitisedMessages,
         "Hello world",
         baseContext.modelConfig,
       );
@@ -107,8 +112,8 @@ describe("ContextLimitValidator", () => {
       );
     });
 
-    it("should fail validation when sanitizedMessages is missing", async () => {
-      const contextWithoutMessages = {
+    it("should fail validation when sanitisedMessages is missing", async () => {
+      const contextWithoutMessages: ValidationContext = {
         lastMessage: { role: "user", content: "Hello world" },
         modelConfig: baseContext.modelConfig,
       };
@@ -122,8 +127,8 @@ describe("ContextLimitValidator", () => {
     });
 
     it("should fail validation when lastMessage is missing", async () => {
-      const contextWithoutLastMessage = {
-        sanitizedMessages: [{ role: "user", content: "Hello world" }],
+      const contextWithoutLastMessage: ValidationContext = {
+        sanitisedMessages: [{ role: "user", content: "Hello world" }],
         modelConfig: baseContext.modelConfig,
       };
 
@@ -136,8 +141,8 @@ describe("ContextLimitValidator", () => {
     });
 
     it("should fail validation when modelConfig is missing", async () => {
-      const contextWithoutModelConfig = {
-        sanitizedMessages: [{ role: "user", content: "Hello world" }],
+      const contextWithoutModelConfig: ValidationContext = {
+        sanitisedMessages: [{ role: "user", content: "Hello world" }],
         lastMessage: { role: "user", content: "Hello world" },
       };
 
@@ -150,13 +155,13 @@ describe("ContextLimitValidator", () => {
     });
 
     it("should handle array content in last message", async () => {
-      const contextWithArrayContent = {
+      const contextWithArrayContent: ValidationContext = {
         ...baseContext,
         lastMessage: {
           role: "user",
           content: [
             { type: "text", text: "Hello world" },
-            { type: "image", image_url: { url: "data:image/jpeg;base64,..." } },
+            { type: "image_url", image_url: { url: "data:image/jpeg;base64,..." } },
           ],
         },
       };
@@ -166,12 +171,12 @@ describe("ContextLimitValidator", () => {
       expect(result.validation.isValid).toBe(true);
       expect(mockGetAllAttachments).toHaveBeenCalledWith([
         { type: "text", text: "Hello world" },
-        { type: "image", image_url: { url: "data:image/jpeg;base64,..." } },
+        { type: "image_url", image_url: { url: "data:image/jpeg;base64,..." } },
       ]);
     });
 
     it("should handle string content in last message", async () => {
-      const contextWithStringContent = {
+      const contextWithStringContent: ValidationContext = {
         ...baseContext,
         lastMessage: { role: "user", content: "Simple text message" },
       };
@@ -185,11 +190,11 @@ describe("ContextLimitValidator", () => {
     });
 
     it("should handle content with no text part", async () => {
-      const contextWithNoTextContent = {
+      const contextWithNoTextContent: ValidationContext = {
         ...baseContext,
         lastMessage: {
           role: "user",
-          content: [{ type: "image", image_url: { url: "data:image/jpeg;base64,..." } }],
+          content: [{ type: "image_url", image_url: { url: "data:image/jpeg;base64,..." } }],
         },
       };
 
@@ -237,7 +242,7 @@ describe("ContextLimitValidator", () => {
     it("should handle empty sanitized messages array", async () => {
       const contextWithEmptyMessages = {
         ...baseContext,
-        sanitizedMessages: [],
+        sanitisedMessages: [],
       };
 
       const result = await validator.validate(baseOptions, contextWithEmptyMessages);

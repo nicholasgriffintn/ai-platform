@@ -11,12 +11,12 @@ import { ensureConversationTitle } from "~/lib/chat/agent/conversation-title";
 import { captureRunMemories } from "~/lib/chat/agent/memory-capture";
 import { createAgentProviderIO } from "~/lib/chat/agent/provider-io";
 import type { ChatTurnTransport } from "~/lib/chat/agent/turn-transport";
-import { DISCARDING_EVENT_SINK, type ChatEventSink } from "~/lib/chat/emitter";
-import { toProviderMessages } from "~/lib/chat/providerMessages";
-import { createToolCallLedger, type ToolCallLedger } from "~/lib/chat/tool-call-ledger";
-import { isSuccessfulToolStatus } from "~/lib/chat/tool-results";
-import { handleToolCalls } from "~/lib/chat/tools";
-import { getToolEventPayload } from "~/lib/chat/utils";
+import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
+import { DISCARDING_EVENT_SINK, type ChatEventSink } from "~/lib/chat/streaming/emitter";
+import { createToolCallLedger, type ToolCallLedger } from "~/lib/chat/tools/call-ledger";
+import { isSuccessfulToolStatus } from "~/lib/chat/tools/continuation";
+import { getToolEventPayload } from "~/lib/chat/tools/events";
+import { handleToolCalls } from "~/lib/chat/tools/execution";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { isUsageExhausted, USAGE_LIMIT_NOTICE } from "~/lib/usage/limitState";
@@ -38,7 +38,7 @@ import {
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "lib/chat/agent/runAgentLoop" });
+const logger = getLogger({ prefix: "lib/chat/agent/agent-loop" });
 
 const AGENT_MAX_RECOVERY_REPLANS = 2;
 const AGENT_MAX_TURN_FAILURES = 2;

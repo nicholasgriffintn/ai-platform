@@ -1,4 +1,3 @@
-import { sanitiseInput } from "~/lib/chat/utils";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
@@ -7,6 +6,7 @@ import { handleWebSearch } from "~/services/search/web";
 import type { IEnv, IUser, SearchOptions, SearchProviderName } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { sanitiseInput } from "~/utils/sanitise";
 
 import { safeParseJson } from "../../../utils/json";
 import {

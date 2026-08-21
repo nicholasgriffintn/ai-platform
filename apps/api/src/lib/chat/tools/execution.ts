@@ -8,6 +8,7 @@ import {
 } from "@ngriffin_uk/polychat-library-tool-runtime";
 import z from "zod/v4";
 
+import { buildMessageParts } from "~/lib/chat/messages/parts";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { PermissionChecker } from "~/lib/permissions/PermissionChecker";
 import { handleFunctions, resolveToolRepeatLimit } from "~/services/functions";
@@ -18,14 +19,13 @@ import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 import { formatToolErrorResponse, formatToolResponse } from "~/utils/tool-responses";
 
-import { buildMessageParts } from "./messageParts";
 import {
   buildRepeatedToolCallMessage,
   checkToolCallRepeat,
   type ToolCallLedger,
-} from "./tool-call-ledger";
+} from "./call-ledger";
 
-const logger = getLogger({ prefix: "lib/chat/tools" });
+const logger = getLogger({ prefix: "lib/chat/tools/execution" });
 const permissionChecker = new PermissionChecker();
 
 interface ToolCallError extends Error {

@@ -33,7 +33,7 @@ Optional integrations should fail as unavailable rather than force a new adopter
 3. Create local, ignored configuration only for the selected components:
 
    - Copy `apps/api/.dev.vars.example` to `apps/api/.dev.vars`, then fill only required values.
-   - Copy `apps/api/wrangler.jsonc.example` to `apps/api/wrangler.jsonc` when a local or deployment-specific API manifest is needed.
+   - Copy `apps/api/wrangler.jsonc.example` to `apps/api/wrangler.json` when a local or deployment-specific API manifest is needed. That filename is the one the repository ignores; `wrangler.jsonc` would be tracked and would commit account topology.
    - Copy `apps/sandbox-worker/.dev.vars.example` to `apps/sandbox-worker/.dev.vars` when enabling sandbox execution.
    - Copy `apps/training/.dev.vars.example` to `apps/training/.dev.vars` when enabling training.
 

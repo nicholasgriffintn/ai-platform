@@ -1,4 +1,4 @@
-import { requestTurnCancellation } from "~/lib/chat/turn-cancellation";
+import { requestTurnCancellation } from "~/lib/chat/streaming/turn-cancellation";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { AssistantError, ErrorType } from "~/utils/errors";

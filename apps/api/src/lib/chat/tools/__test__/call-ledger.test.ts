@@ -13,8 +13,8 @@ vi.mock("~/services/functions", () => ({
 import type { ConversationManager } from "~/lib/conversationManager";
 import type { IRequest } from "~/types";
 
-import { createToolCallLedger } from "../tool-call-ledger";
-import { handleToolCalls } from "../tools";
+import { createToolCallLedger } from "../call-ledger";
+import { handleToolCalls } from "../execution";
 
 function toolCall(name: string, args: Record<string, unknown>, id: string) {
   return { id, type: "function", function: { name, arguments: JSON.stringify(args) } };

@@ -5,11 +5,11 @@ import type {
   NoteUpdateRequest,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { sanitiseInput } from "~/lib/chat/utils";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 import type { OutputRecord } from "~/repositories/OutputRepository";
+import { sanitiseInput } from "~/utils/sanitise";
 
 const NOTE_OUTPUT_KIND = "note";
 

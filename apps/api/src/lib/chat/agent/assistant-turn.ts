@@ -1,7 +1,7 @@
-import { formatAssistantMessage } from "~/lib/chat/assistant-message-format";
-import type { ChatEventSink } from "~/lib/chat/emitter";
-import { buildMessageParts } from "~/lib/chat/messageParts";
-import { buildAssistantMessageData } from "~/lib/chat/mode-metadata";
+import { formatAssistantMessage } from "~/lib/chat/messages/assistant-format";
+import { buildMessageParts } from "~/lib/chat/messages/parts";
+import { buildAssistantMessageData } from "~/lib/chat/policy/mode-metadata";
+import type { ChatEventSink } from "~/lib/chat/streaming/emitter";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { trackTokenUsage } from "~/lib/monitoring";

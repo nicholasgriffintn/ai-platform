@@ -43,7 +43,7 @@ Native iOS client for the Polychat AI platform.
 
 ## Deployment
 
-The app is automatically built and archived on pushes to main branch via GitHub Actions.
+CI runs the test suite only, and only on pull requests that touch `apps/mobile/ios/**` (`.github/workflows/ios.yml`). There is no automated archive or release build; every distribution build is manual.
 
 For manual deployment:
 

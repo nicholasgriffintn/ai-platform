@@ -1,6 +1,6 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
-import { formatToolCalls } from "~/lib/chat/tools";
+import { formatToolCalls } from "~/lib/chat/tools/execution";
 import { listFunctionTools } from "~/services/functions";
 import type { ChatCompletionParameters } from "~/types";
 import { hasAnyEnabledTool } from "~/utils/enabledTools";

@@ -6,7 +6,7 @@ const CANCELLATION_TTL_SECONDS = 120;
 const DETACHED_CHECK_INTERVAL_MS = 1_000;
 const DETACHED_CHECK_LIMIT = 5;
 
-const logger = getLogger({ prefix: "lib/chat/turn-cancellation" });
+const logger = getLogger({ prefix: "lib/chat/streaming/turn-cancellation" });
 
 function cancellationKey(completionId: string): string {
   return `${CANCELLATION_KEY_PREFIX}${completionId}`;

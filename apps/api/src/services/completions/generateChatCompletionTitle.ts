@@ -1,5 +1,5 @@
-import { toProviderMessages } from "~/lib/chat/providerMessages";
-import { sanitiseMessages } from "~/lib/chat/utils";
+import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
+import { sanitiseMessages } from "~/lib/chat/messages/sanitise";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { createInitialConversationTitle } from "~/lib/conversation/title-source";
 import { ConversationManager } from "~/lib/conversationManager";

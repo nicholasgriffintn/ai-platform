@@ -1,8 +1,8 @@
 import type { TurnOutput } from "~/lib/chat/agent/assistant-turn";
 import { createAgentProviderIO } from "~/lib/chat/agent/provider-io";
 import { consumeProviderStream } from "~/lib/chat/agent/provider-stream";
-import type { ChatEventSink } from "~/lib/chat/emitter";
-import { getAIResponse } from "~/lib/chat/responses";
+import type { ChatEventSink } from "~/lib/chat/streaming/emitter";
+import { getAIResponse } from "~/lib/chat/streaming/responses";
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
 import { normaliseTokenUsage } from "~/lib/usage/tokenUsage";
 import type { ChatCompletionParameters, IEnv, ToolCall } from "~/types";

@@ -9,7 +9,7 @@ import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
-import { sanitiseInput } from "../../lib/chat/utils";
+import { sanitiseInput } from "../../utils/sanitise";
 import { prepareSpeechInput } from "./input";
 
 export type SpeechProvider = "polly" | "cartesia" | "elevenlabs" | "melotts" | "mistral";

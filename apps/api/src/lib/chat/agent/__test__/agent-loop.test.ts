@@ -4,14 +4,14 @@ const mocks = vi.hoisted(() => ({
   handleToolCalls: vi.fn(),
 }));
 
-vi.mock("~/lib/chat/tools", () => ({
+vi.mock("~/lib/chat/tools/execution", () => ({
   handleToolCalls: mocks.handleToolCalls,
 }));
 
 import type { ChatCompletionParameters } from "~/types";
 
+import { runAgentLoop } from "../agent-loop";
 import type { TurnOutput } from "../assistant-turn";
-import { runAgentLoop } from "../runAgentLoop";
 import type { ChatTurnTransport } from "../turn-transport";
 
 const artifactToolCall = {

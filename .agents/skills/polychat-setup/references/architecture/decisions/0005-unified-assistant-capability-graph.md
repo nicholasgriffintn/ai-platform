@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted. Completes and replaces the earlier separate launch-contract and capability-descriptor records.
 
 ## Context
 

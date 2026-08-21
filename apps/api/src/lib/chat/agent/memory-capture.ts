@@ -1,4 +1,4 @@
-import { MEMORY_STORE_TOOL_NAME } from "~/lib/chat/memoryPolicy";
+import { MEMORY_STORE_TOOL_NAME } from "~/lib/chat/policy/memory";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { MemoryManager, type MemoryEvent } from "~/lib/memory";

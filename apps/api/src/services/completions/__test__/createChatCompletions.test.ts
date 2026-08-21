@@ -6,7 +6,7 @@ vi.mock("~/lib/chat/core", () => ({
   processChatRequest: vi.fn(),
 }));
 
-vi.mock("~/lib/chat/assistant-message-format", () => ({
+vi.mock("~/lib/chat/messages/assistant-format", () => ({
   formatAssistantMessage: vi.fn(),
 }));
 
@@ -41,7 +41,7 @@ describe("handleCreateChatCompletions", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     const { processChatRequest } = await import("~/lib/chat/core");
-    const { formatAssistantMessage } = await import("~/lib/chat/assistant-message-format");
+    const { formatAssistantMessage } = await import("~/lib/chat/messages/assistant-format");
 
     mockProcessChatRequest = vi.mocked(processChatRequest);
     mockFormatAssistantMessage = vi.mocked(formatAssistantMessage);

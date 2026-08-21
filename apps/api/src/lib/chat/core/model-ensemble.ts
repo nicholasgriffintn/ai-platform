@@ -1,15 +1,15 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { ModelConfigInfo } from "@ngriffin_uk/polychat-schemas";
 
-import { runAgentLoop, type AgentLoopExecutionParams } from "~/lib/chat/agent/runAgentLoop";
+import { runAgentLoop, type AgentLoopExecutionParams } from "~/lib/chat/agent/agent-loop";
 import { createConnectorRunCloser } from "~/lib/chat/core/chat-stream";
 import {
   createChatSseStreamWriter,
   startChatStreamHeartbeat,
   type ChatEventSink,
-} from "~/lib/chat/emitter";
-import { getAIResponse } from "~/lib/chat/responses";
-import { watchDetachedTurnCancellation } from "~/lib/chat/turn-cancellation";
+} from "~/lib/chat/streaming/emitter";
+import { getAIResponse } from "~/lib/chat/streaming/responses";
+import { watchDetachedTurnCancellation } from "~/lib/chat/streaming/turn-cancellation";
 import { StreamState, type Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";

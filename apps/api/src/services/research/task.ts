@@ -1,4 +1,3 @@
-import { sanitiseInput } from "~/lib/chat/utils";
 import { getResearchProvider } from "~/lib/providers/capabilities/research";
 import { getAuxiliaryResearchProvider } from "~/lib/providers/models";
 import { OutputRepository } from "~/repositories/OutputRepository";
@@ -17,6 +16,7 @@ import type {
   ResearchResult,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { sanitiseInput } from "~/utils/sanitise";
 
 import { safeParseJson } from "../../utils/json";
 

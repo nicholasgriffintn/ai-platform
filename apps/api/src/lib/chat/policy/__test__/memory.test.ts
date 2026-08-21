@@ -8,7 +8,7 @@ import {
   buildMemoryPromptContext,
   mergeEnabledMemoryToolNames,
   resolveMemoryPolicy,
-} from "../memoryPolicy";
+} from "../memory";
 
 function createUser(planId: string | null): IUser {
   return {
