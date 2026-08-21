@@ -23,11 +23,6 @@ import type { ComponentType } from "react";
 
 type IconComponent = ComponentType<{ size?: number; className?: string }>;
 
-/**
- * Keys are the icon names the API assigns in `getFunctionIcon`, plus the lucide names a tool or
- * connector may declare directly. Unknown keys fall back to the generic tool glyph rather than
- * disappearing.
- */
 const TOOL_ICONS: Record<string, IconComponent> = {
   "alert-triangle": AlertTriangle,
   app: Wrench,

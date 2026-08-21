@@ -27,10 +27,6 @@ const Row = ({ label, value }: { label: string; value: string }) => (
   </div>
 );
 
-/**
- * The detail behind the inline stats row. Both read the same `response-stats` helpers so the
- * popover cannot disagree with the summary rendered directly beneath it.
- */
 export const MessageInfo = ({
   message,
   modelConfig,

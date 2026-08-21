@@ -86,7 +86,6 @@ export const MessageActions = ({
   const [isPlayingSpeech, setIsPlayingSpeech] = useState(false);
   const speechAudioRef = useRef<HTMLAudioElement | null>(null);
   const isCompactionMarker = isCompactionMarkerMessage(message);
-  /** Text can live on `content` or in `parts`; gating on `content` alone hides actions on turns. */
   const hasText = Boolean(getMessageTextContent(message)?.trim());
   const canMutateConversation = !isArchivedByCompaction;
   const canBranch = Boolean(

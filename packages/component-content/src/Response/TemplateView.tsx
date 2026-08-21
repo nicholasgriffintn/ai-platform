@@ -29,11 +29,6 @@ const thisValueRegex = /\{\{this\}\}/g;
 const markdownRegex = /\{\{md\s+([^}]+)\}\}/g;
 const jsonRegex = /\{\{json\s+([^}]+)\}\}/g;
 
-/**
- * Templates are authored by the tool schema, but the values interpolated into them come from web
- * pages, third-party APIs and MCP servers. Every value crossing into the rendered HTML is escaped;
- * only `{{md …}}`, which runs through the escaping markdown converter, may emit markup.
- */
 const formatVariable = (data: Record<string, any>, key: string): string => {
   const trimmedKey = key.trim();
   const value = getNestedValue(data, trimmedKey);

@@ -16,7 +16,6 @@ export interface CustomResponseViewProps {
   data: unknown;
   embedded: boolean;
   onToolInteraction?: ToolInteractionHandler;
-  /** The tool that produced this result, so a view can raise an interaction against it. */
   toolName?: string;
 }
 

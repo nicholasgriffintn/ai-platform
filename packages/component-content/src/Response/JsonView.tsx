@@ -4,7 +4,6 @@ import { type JSX, useState } from "react";
 
 interface JsonViewProps {
   data: unknown;
-  /** Levels expanded on first render. The root and its immediate children read as a summary. */
   defaultExpandedDepth?: number;
 }
 

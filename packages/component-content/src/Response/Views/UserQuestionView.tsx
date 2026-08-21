@@ -29,10 +29,6 @@ function readQuestionData(data: unknown): UserQuestionData {
   };
 }
 
-/**
- * Replaces a server-rendered HTML template that painted an input and a Submit button with no
- * handlers attached. Typing an answer here now actually answers the question.
- */
 export function UserQuestionView({
   data,
   onToolInteraction,

@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-/**
- * Shared by the message actions, the code block header and the JSON payload view, so the "Copied"
- * acknowledgement behaves the same wherever a copy control appears.
- */
 export const useCopyToClipboard = (timeout = 2000) => {
   const [copied, setCopied] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -16,7 +12,6 @@ export const useCopyToClipboard = (timeout = 2000) => {
     };
   }, []);
 
-  /** Deliberately fire-and-forget: callers are click handlers, which must not return a promise. */
   const copy = useCallback(
     (content: string): void => {
       const write = async () => {

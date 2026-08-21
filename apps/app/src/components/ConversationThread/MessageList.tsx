@@ -135,10 +135,6 @@ export const MessageList = ({
     [messages],
   );
 
-  /**
-   * Rows are decided before rendering. Returning null from inside the row left the wrapper behind,
-   * which showed up in the thread as unexplained gaps between messages.
-   */
   const visibleRows = useMemo(
     () =>
       messages

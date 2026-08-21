@@ -12,7 +12,6 @@ import { ToolIcon } from "./toolIcons";
 
 interface ToolResultViewProps {
   display: ToolResultDisplay;
-  /** Arguments the model supplied, when the matching `tool_use` part is available. */
   input?: unknown;
   onToolInteraction?: ToolInteractionHandler;
   className?: string;
@@ -42,11 +41,6 @@ const formatInput = (input: unknown): string | null => {
   return JSON.stringify(input, null, 2);
 };
 
-/**
- * The single presentation for a tool result, whether it arrived as a `role: "tool"` message or as a
- * `tool_result` part on an assistant turn. Both paths render the same chrome so a fix to one is a
- * fix to both.
- */
 export const ToolResultView = ({
   display,
   input,

@@ -14,7 +14,6 @@ export interface CustomViewProps {
   messageContent: string;
   data: any;
   toolName?: string;
-  /** Explicit view id declared by the tool. Preferred over the tool name, which MCP tools mint. */
   renderer?: string;
   embedded: boolean;
   onToolInteraction?: ToolInteractionHandler;
@@ -86,10 +85,6 @@ export function CustomView({
 
     case "json":
     default:
-      /**
-       * The tool's own prose leads; the payload stays reachable but folded, so an unrecognised
-       * result reads as a result rather than as a debug dump.
-       */
       return (
         <div className="space-y-2">
           <ToolNarrative content={messageContent} />

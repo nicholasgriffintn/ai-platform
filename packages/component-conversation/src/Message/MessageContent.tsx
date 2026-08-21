@@ -319,10 +319,6 @@ const renderToolResultPart = (
   );
 };
 
-/**
- * A call and its result are one exchange, so the arguments are folded into the result row rather
- * than rendered as a separate box above it. A call still awaiting its result keeps its own row.
- */
 const renderPendingToolUsePart = (
   part: Extract<NonNullable<Message["parts"]>[number], { type: "tool_use" }>,
   index: number,
@@ -449,7 +445,6 @@ export const MessageContent = memo((props: MessageContentProps) => {
             }
 
             if (part.type === "tool_use") {
-              /** Answered calls render inside their result row; only orphans need their own. */
               return part.toolCallId && resolvedToolCallIds.has(part.toolCallId)
                 ? null
                 : renderPendingToolUsePart(part, index);

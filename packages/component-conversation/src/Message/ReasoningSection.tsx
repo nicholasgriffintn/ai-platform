@@ -15,10 +15,6 @@ export const ReasoningSection = ({ reasoning }: ReasoningSectionProps) => {
 
   const content = reasoning.content;
 
-  /**
-   * Follow the message only when it actually changes its mind — reacting to the local state as well
-   * meant a user collapsing an open block was immediately overridden by this effect.
-   */
   useEffect(() => {
     if (previousCollapsed.current !== reasoning.collapsed) {
       previousCollapsed.current = reasoning.collapsed;

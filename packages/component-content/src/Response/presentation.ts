@@ -30,15 +30,9 @@ export type ResponsePresentation =
   | { kind: "definitions"; entries: DefinitionEntry[] }
   | { kind: "json"; data: unknown };
 
-/** Beyond this a "table" is really a data dump, and the JSON view serves the reader better. */
 const MAX_INFERRED_TABLE_COLUMNS = 8;
 const MIN_INFERRED_TABLE_ROWS = 2;
 
-/**
- * The API attaches presentation metadata to the same `data` object that carries the tool's payload.
- * Registered views still receive it, but shape resolution must not read the chrome as content — a
- * result whose only other field was `formattedName` would otherwise render its own label as data.
- */
 const PRESENTATION_KEYS = new Set([
   "formattedName",
   "icon",
@@ -65,13 +59,6 @@ export function stripPresentationMetadata(payload: unknown): unknown {
 
 const VIDEO_URL_PATTERN = /\.(mp4|webm|mov|m4v|ogv)(?:[?#].*)?$/i;
 
-/**
- * Chooses how an undeclared tool result should be presented by reading its shape. Tool names cannot
- * be enumerated ahead of time — MCP servers, recipes and connectors all register at runtime — so the
- * fallback has to work from the payload rather than from an identifier.
- *
- * Ordered most specific first; every branch is reachable from a plain JSON payload.
- */
 export function resolveResponsePresentation(
   payload: unknown,
   options?: { content?: string; fields?: ResponseDisplayField[] },
@@ -179,10 +166,6 @@ function resolveAttachmentUrl(attachments: unknown, type: string): string | unde
   return undefined;
 }
 
-/**
- * Accepts the array itself, or the single-array-property envelope most search-shaped tools return
- * (`{ results: [...] }`, `{ documents: [...] }`, `{ stories: [...] }`).
- */
 function resolveRecordArray(payload: unknown): Record<string, unknown>[] | null {
   if (Array.isArray(payload)) {
     const records = payload.filter(isRecord);
@@ -248,10 +231,6 @@ function resolveTable(
     return null;
   }
 
-  /**
-   * Only columns every row carries — a ragged union produces a table of mostly empty cells, which
-   * reads worse than the JSON it replaced.
-   */
   const sharedKeys = Object.keys(records[0]).filter((key) =>
     records.every((record) => key in record),
   );
@@ -288,10 +267,6 @@ function resolveProse(payload: unknown, content?: string): string | undefined {
       readOptionalString(payload.content) ??
       readOptionalString(payload.answer);
 
-    /**
-     * A lone prose field is the whole result; the same field beside other data is one column of it,
-     * and dropping the rest would silently hide information.
-     */
     if (prose && keys.length === 1) {
       return prose;
     }

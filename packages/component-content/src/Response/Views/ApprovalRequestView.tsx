@@ -29,10 +29,6 @@ function readApprovalData(data: unknown): ApprovalRequestData {
   };
 }
 
-/**
- * Replaces a server-rendered HTML template whose buttons were never wired to anything. The choice
- * is the decision, so it submits rather than filling the composer.
- */
 export function ApprovalRequestView({
   data,
   onToolInteraction,

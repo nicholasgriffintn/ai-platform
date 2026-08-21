@@ -1,7 +1,6 @@
 import { type ResponseDisplay, ResponseDisplayType } from "@ngriffin_uk/polychat-schemas";
 
 export interface ToolPresentation {
-  /** Client view id. The conversation registry keys on this rather than on the tool name. */
   renderer?: string;
   icon?: string;
   responseType?: ResponseDisplayType;
@@ -17,14 +16,6 @@ export const formatFunctionName = (name: string): string => {
 
 const DEFAULT_ICON = "app";
 
-/**
- * Presentation is declared per tool, not inferred from its name. Substring matching was
- * order-dependent and misrouted quietly — `search_memories` was typed as a web search, and
- * `create_video` resolved to a template that did not exist.
- *
- * A tool with no entry falls through to shape resolution on the client, which is what MCP, recipe
- * and connector tools rely on: their names are minted at runtime and cannot be enumerated here.
- */
 const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   get_weather: { renderer: "weather", icon: "cloud" },
   web_search: { renderer: "web_search", icon: "search" },

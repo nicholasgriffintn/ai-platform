@@ -14,10 +14,6 @@ import { DocumentSearchView } from "./CustomView/Views/DocumentSearchView";
 import { ResearchView } from "./CustomView/Views/ResearchView";
 import { SandboxView } from "./CustomView/Views/SandboxView";
 
-/**
- * Keyed on the renderer id a tool declares, not on its name — MCP, recipe and connector tools mint
- * names at runtime, so anything not listed here is rendered from the shape of its payload instead.
- */
 export const customResponseViews: CustomResponseViewRegistry = {
   approval_request: ({ data, embedded, onToolInteraction }) => (
     <ApprovalRequestView data={data} embedded={embedded} onToolInteraction={onToolInteraction} />

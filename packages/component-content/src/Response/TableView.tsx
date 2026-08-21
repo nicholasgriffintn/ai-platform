@@ -9,10 +9,6 @@ interface TableViewProps {
   };
 }
 
-/**
- * `format` is declared on the tool response schema, so a tool can ask for a presentation its raw
- * value cannot carry — an ISO timestamp shown as a date, a ratio shown as a percentage.
- */
 const formatCell = (value: unknown, format?: string): string => {
   if (value === null || value === undefined || value === "") {
     return "—";

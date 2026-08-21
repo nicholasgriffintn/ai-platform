@@ -16,10 +16,6 @@ import { MessageActions } from "./MessageActions";
 import { MessageContent } from "./MessageContent";
 import { ToolMessage } from "./ToolMessage";
 
-/**
- * Whether the view will produce anything. The list uses this to skip the row entirely — returning
- * null from inside the view still leaves the caller's wrapper behind as an unexplained gap.
- */
 export const isRenderableMessage = (message: Message): boolean => {
   if (message.role === "system" || message.role === "developer") {
     return false;

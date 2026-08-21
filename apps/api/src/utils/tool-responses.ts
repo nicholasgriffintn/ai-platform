@@ -8,11 +8,6 @@ import {
   getFunctionResponseType,
 } from "./functions";
 
-/**
- * Decorates a tool response with the presentation metadata the conversation renderer reads:
- * a stable renderer id, an icon, a human label, and any response type the tool declares. A tool
- * that declares nothing is rendered from the shape of its payload.
- */
 export const formatToolResponse = (
   toolName: string,
   content: string | MessageContent[],
@@ -41,10 +36,6 @@ export const formatToolResponse = (
   };
 };
 
-/**
- * Failures carry no response type: the client renders them from `status`, so a broken tool cannot
- * pass for a working one by borrowing a successful tool's presentation.
- */
 export const formatToolErrorResponse = (
   toolName: string,
   errorMessage: string,

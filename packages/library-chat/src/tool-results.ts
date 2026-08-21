@@ -6,17 +6,13 @@ import type { Message } from "./conversation-types";
 type ToolResultPart = Extract<NonNullable<Message["parts"]>[number], { type: "tool_result" }>;
 
 export interface ToolResultDisplay {
-  /** Tool name, for data attributes and interaction handlers. */
   name: string;
-  /** Human label for the header row. */
   label: string;
   icon?: string;
   status?: string;
   responseType?: string;
   responseDisplay?: unknown;
-  /** Explicit client view id declared by the tool. */
   renderer?: string;
-  /** The envelope `ResponseView` consumes. Absent while a call is still running. */
   result?: Record<string, unknown>;
 }
 
@@ -69,11 +65,6 @@ const buildDisplay = ({
   };
 };
 
-/**
- * Builds the render input for a tool result carried on an assistant turn. The part already holds the
- * presentation metadata the API attached, so this reads it rather than matching on the tool name —
- * a name-based whitelist could never cover MCP or recipe tools.
- */
 export function resolveToolResultPartDisplay(part: ToolResultPart): ToolResultDisplay {
   return buildDisplay({
     name: part.name,
@@ -83,7 +74,6 @@ export function resolveToolResultPartDisplay(part: ToolResultPart): ToolResultDi
   });
 }
 
-/** The same render input, built from a legacy `role: "tool"` message. */
 export function resolveToolMessageDisplay(message: Message): ToolResultDisplay {
   return buildDisplay({
     name: message.name,

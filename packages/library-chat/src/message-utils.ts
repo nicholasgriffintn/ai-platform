@@ -3,10 +3,6 @@
  * Example: <custom_tag>content</custom_tag> becomes **Custom Tag**\n\ncontent\n\n
  */
 export function processCustomXmlTags(text: string): string {
-  /**
-   * Fenced blocks, indented blocks and inline spans all legitimately contain markup that must
-   * survive verbatim — a documented `<div>…</div>` is not a custom tag.
-   */
   const protectedRegionRegex = /(```[\s\S]*?```|~~~[\s\S]*?~~~|`[^`\n]*`|^(?: {4}|\t).*$)/gm;
   const protectedRegions: string[] = [];
   const placeholderPrefix = "\u0000polychat-protected-";
@@ -30,10 +26,6 @@ export function processCustomXmlTags(text: string): string {
     return `**${title}**\n\n${inner}\n\n`;
   });
 
-  /**
-   * A function replacer, because a restored block containing `$&` or `$'` would otherwise be
-   * mangled by replacement-pattern expansion.
-   */
   return processed.replace(
     new RegExp(`${placeholderPrefix}(\\d+)${placeholderSuffix}`, "g"),
     (match, index: string) => protectedRegions[Number(index)] ?? match,

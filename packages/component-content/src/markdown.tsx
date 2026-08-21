@@ -10,10 +10,6 @@ import remarkGfm from "remark-gfm";
 type PreProps = ComponentPropsWithoutRef<"pre">;
 type TableProps = ComponentPropsWithoutRef<"table">;
 
-/**
- * `rehype-highlight` writes the resolved language onto the `<code>` element as `language-*`, so the
- * label and the copy payload both come from the child rather than from the fence text.
- */
 const readFencedCode = (children: ReactNode): { language?: string; text: string } => {
   const child = Children.toArray(children).find(isValidElement) as
     | { props: { className?: string; children?: ReactNode } }

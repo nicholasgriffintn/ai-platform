@@ -29,7 +29,6 @@ export interface ResponseViewProps {
   /** Declared by the tool schema, or overridden by the caller for a stored result. */
   responseType?: string;
   responseDisplay?: ResponseDisplay;
-  /** Explicit client view id declared by the tool. Preferred over matching on the tool name. */
   renderer?: string;
   /** True when the tool's own schema described this result, which changes data resolution. */
   hasToolSchema?: boolean;
@@ -95,10 +94,6 @@ export function ResponseView({
     responseType,
   });
 
-  /**
-   * Status is checked ahead of shape: a failed call carries whatever payload it managed to build,
-   * and rendering that as a success is how a broken tool passes for a working one.
-   */
   if (typeof result.status === "string" && FAILURE_STATUSES.has(result.status.toLowerCase())) {
     const hasPayload = responseData !== null && responseData !== undefined;
 
@@ -125,11 +120,6 @@ export function ResponseView({
     return customView;
   }
 
-  /**
-   * Conversations stored before tools declared their own presentation carry response types inferred
-   * from the tool name — generated media was typed `template`, which has no template to render.
-   * Media detected in the payload wins over the stored type so that history still renders.
-   */
   if (!renderer) {
     const media = resolveMediaPresentation(result, responseData);
 
