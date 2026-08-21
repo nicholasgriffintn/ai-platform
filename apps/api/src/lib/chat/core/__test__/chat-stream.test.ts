@@ -31,6 +31,7 @@ describe("createChatTurnStream", () => {
 
   it("keeps the turn running when the client disconnects mid-turn", async () => {
     let startTurn: () => void = () => {};
+
     let finishTurn: () => void = () => {};
 
     const turnStarted = new Promise<void>((resolve) => {
