@@ -51,6 +51,13 @@ catalogs:
     zod:
       specifier: 4.4.3
       version: 4.4.3
+  react-peer:
+    react:
+      specifier: '>=19'
+      version: 19.2.8
+    react-dom:
+      specifier: '>=19'
+      version: 19.2.8
 
 overrides:
   fast-uri@>=3.0.0 <3.1.5: 4.1.2
@@ -508,8 +515,8 @@ importers:
   apps/sandbox-worker:
     dependencies:
       '@cloudflare/sandbox':
-        specifier: 0.12.6
-        version: 0.12.6
+        specifier: 0.12.7
+        version: 0.12.7
       '@ngriffin_uk/polychat-library-agent-core':
         specifier: workspace:^
         version: link:../../packages/library-agent-core
@@ -1879,8 +1886,8 @@ packages:
     resolution: {integrity: sha512-jxQYkj8dSIzc0cD6cMMNdOc1UVjqSqu8BZdor5s8cGjW2I8BjODt/kWPVdY+u9zj3ms75Q5qaZgnxUad83+eAg==}
     engines: {node: '>=22.0.0'}
 
-  '@cloudflare/sandbox@0.12.6':
-    resolution: {integrity: sha512-UmA1XH6TZp9VKArSnTAUd2HuTw3f29qfDY6q2lAmdPQZYTFHxY/0Dn1LzjxhMiKZkyyQhvOHBHOYnwga9sVlag==}
+  '@cloudflare/sandbox@0.12.7':
+    resolution: {integrity: sha512-7nDEiqrxZfBuUc2y1RxWJMTPe+5q5+QZlZ5k+KXaQRv/Tgimdu4XyFGzMQuQYuI9IFXiPJVfMMPLKUmPg0VWpA==}
     peerDependencies:
       '@openai/agents': ^0.3.3
       '@opencode-ai/sdk': ^1.1.40
@@ -8333,7 +8340,7 @@ snapshots:
 
   '@cloudflare/kv-asset-handler@0.5.0': {}
 
-  '@cloudflare/sandbox@0.12.6':
+  '@cloudflare/sandbox@0.12.7':
     dependencies:
       '@cloudflare/containers': 0.3.7
       aws4fetch: 1.0.20
