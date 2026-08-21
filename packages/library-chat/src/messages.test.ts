@@ -23,6 +23,43 @@ describe("formattedMessageContent artifacts", () => {
     expect(artifacts[0]).toMatchObject({ identifier: "b", title: "Spaced" });
   });
 
+  it("replaces only the matched tag, leaving surrounding prose intact", () => {
+    const { content } = formattedMessageContent(
+      "assistant",
+      'one <artifact identifier="a">x</artifact> two <artifact identifier="b">y</artifact> three',
+    );
+
+    expect(content).toBe("one [[ARTIFACT:a]] two [[ARTIFACT:b]] three");
+  });
+
+  it("keeps an unterminated artifact and marks it open", () => {
+    const { artifacts, content } = formattedMessageContent(
+      "assistant",
+      '<artifact identifier="a">partial',
+    );
+
+    expect(artifacts[0]).toMatchObject({ identifier: "a", isOpen: true, content: "partial" });
+    expect(content).toBe("[[ARTIFACT:a]]");
+  });
+
+  it("ignores a tag whose name merely starts with artifact", () => {
+    const { artifacts } = formattedMessageContent(
+      "assistant",
+      '<artifactoid identifier="a">body</artifactoid>',
+    );
+
+    expect(artifacts).toHaveLength(0);
+  });
+
+  it("leaves artifacts alone for non-assistant roles", () => {
+    const { artifacts } = formattedMessageContent(
+      "user",
+      '<artifact identifier="a">body</artifact>',
+    );
+
+    expect(artifacts).toHaveLength(0);
+  });
+
   it("stays linear on an unterminated artifact tag padded with whitespace", () => {
     const hostile = `<artifact ${" ".repeat(200_000)}`;
     const startedAt = performance.now();

@@ -1,4 +1,4 @@
-import { escapeRegExp, isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message, MessageContent } from "./conversation-types";
 import { normaliseMessageParts } from "./message-parts";
@@ -476,6 +476,8 @@ export function formatMessageContent(messageContent: string): {
   };
 }
 
+const WHITESPACE_PREFIX = /^\s/;
+
 export const formattedMessageContent = (role: Message["role"], originalContent: string) => {
   let content = originalContent;
   const reasoning: Array<{ type: string; content: string; isOpen: boolean }> = [];
@@ -489,6 +491,7 @@ export const formattedMessageContent = (role: Message["role"], originalContent: 
     placeholder: string;
     isOpen: boolean;
   }> = [];
+  const artifactReplacements: Array<{ matched: string; placeholder: string }> = [];
 
   const thinkRegex = /<think>([\s\S]*?)(<\/think>|$)/g;
 
@@ -527,7 +530,7 @@ export const formattedMessageContent = (role: Message["role"], originalContent: 
   }
 
   if (role === "assistant") {
-    const artifactRegex = /<artifact\s([^>]*)>([\s\S]*?)(<\/artifact>|$)/g;
+    const artifactRegex = /<artifact([^>]*)>([\s\S]*?)(<\/artifact>|$)/g;
     let artifactMatch: RegExpExecArray | null = null;
     const tempContent = content;
 
@@ -540,6 +543,11 @@ export const formattedMessageContent = (role: Message["role"], originalContent: 
       }
 
       const attributesStr = artifactMatch[1];
+
+      if (attributesStr && !WHITESPACE_PREFIX.test(attributesStr)) {
+        continue;
+      }
+
       const artifactContent = typeof artifactMatch[2] === "string" ? artifactMatch[2].trim() : "";
       const isOpen = !artifactMatch[0].includes("</artifact>");
 
@@ -566,6 +574,10 @@ export const formattedMessageContent = (role: Message["role"], originalContent: 
           ? displayAttribute
           : undefined;
 
+      const placeholder = `[[ARTIFACT:${identifier}]]`;
+
+      artifactReplacements.push({ matched: artifactMatch[0], placeholder });
+
       artifacts.push({
         identifier,
         type,
@@ -573,19 +585,14 @@ export const formattedMessageContent = (role: Message["role"], originalContent: 
         title,
         display,
         content: artifactContent,
-        placeholder: `[[ARTIFACT:${identifier}]]`,
+        placeholder,
         isOpen: isOpen,
       });
     }
   }
 
-  for (const artifact of artifacts) {
-    const artifactRegex = new RegExp(
-      `<artifact[^>]*identifier="${escapeRegExp(artifact.identifier)}"[^>]*>[\\s\\S]*?(?:</artifact>|$)`,
-      "g",
-    );
-
-    content = content.replace(artifactRegex, artifact.placeholder);
+  for (const { matched, placeholder } of artifactReplacements) {
+    content = content.split(matched).join(placeholder);
   }
 
   const answerRegex = /<answer>([\s\S]*?)(<\/answer>|$)/g;
