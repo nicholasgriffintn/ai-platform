@@ -1318,9 +1318,9 @@ export const workersAiModelConfig: ModelConfig = {
     matchingModel: "@cf/deepseek-ai/deepseek-v4-pro-0813",
     provider: "workers-ai",
     family: "deepseek-thinking",
-    openWeights: false,
+    openWeights: true,
     releaseDate: "August 12, 2026",
-    lastUpdated: "August 12, 2026",
+    lastUpdated: "August 22, 2026",
     modalities: {
       input: ["text"],
       output: ["text"],

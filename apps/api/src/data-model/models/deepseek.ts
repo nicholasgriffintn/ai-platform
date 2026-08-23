@@ -117,7 +117,7 @@ export const deepseekModelConfig: ModelConfig = {
     provider: "deepseek",
     knowledgeCutoffDate: "May 2025",
     releaseDate: "August 12, 2026",
-    lastUpdated: "August 12, 2026",
+    lastUpdated: "August 22, 2026",
     modalities: {
       input: ["text"],
       output: ["text"],
@@ -148,7 +148,7 @@ export const deepseekModelConfig: ModelConfig = {
       intelligenceIndexVersion: 4.1,
     },
     family: "deepseek-thinking",
-    openWeights: false,
+    openWeights: true,
     costPer1kReasoningTokens: 0.00087,
   },
   "deepseek-v4-flash-vision-exp": {
