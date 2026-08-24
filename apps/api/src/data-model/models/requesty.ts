@@ -3709,8 +3709,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     contextWindow: 1050000,
     maxTokens: 128000,
-    costPer1kInputTokens: 0.0045,
-    costPer1kOutputTokens: 0.027,
+    costPer1kInputTokens: 0.0036,
+    costPer1kOutputTokens: 0.018,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",
