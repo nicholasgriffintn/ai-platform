@@ -707,4 +707,27 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
   		defaultEffort: "none",
   	},
   }),
+  createModelConfig("longcat-2.0", PROVIDER, {
+  	name: "LongCat-2.0",
+  	matchingModel: "longcat-2.0",
+  	family: "longcat",
+  	openWeights: false,
+  	releaseDate: "June 30, 2026",
+  	lastUpdated: "June 30, 2026",
+  	modalities: {
+  		input: ["text"],
+  		output: ["text"],
+  	},
+  	supportsAttachments: false,
+  	supportsTemperature: true,
+  	supportsToolCalls: true,
+  	contextWindow: 1000000,
+  	maxTokens: 131072,
+  	costPer1kInputTokens: 0.0003,
+  	costPer1kOutputTokens: 0.0012,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "thinking"],
+  		defaultEffort: "none",
+  	},
+  }),
 ]);

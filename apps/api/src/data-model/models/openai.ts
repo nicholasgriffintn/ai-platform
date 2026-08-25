@@ -2121,8 +2121,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     contextWindow: 1050000,
     maxTokens: 128000,
-    costPer1kInputTokens: 0.005,
-    costPer1kOutputTokens: 0.03,
+    costPer1kInputTokens: 0.004,
+    costPer1kOutputTokens: 0.02,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",
@@ -2177,8 +2177,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     isFeatured: true,
     contextWindow: 1050000,
     maxTokens: 128000,
-    costPer1kInputTokens: 0.005,
-    costPer1kOutputTokens: 0.03,
+    costPer1kInputTokens: 0.004,
+    costPer1kOutputTokens: 0.02,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",
