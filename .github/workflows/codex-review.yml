@@ -1,0 +1,90 @@
+name: Codex review
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+concurrency:
+  group: codex-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: Codex review
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    outputs:
+      result: ${{ steps.codex.outputs.final-message }}
+      reviewed-sha: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Check out pull request merge
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Review with Codex
+        id: codex
+        uses: openai/codex-action@f367b1e9572fd064ea71ef925ca24ee0f01080af # v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: .github/codex/review.md
+          output-schema-file: .github/codex/review-output.schema.json
+          permission-profile: :read-only
+          safety-strategy: drop-sudo
+          effort: high
+          allow-bot-users: nicholas-clanker,renovate
+
+  publish:
+    name: Publish Codex review
+    needs: review
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      CODEX_RESULT: ${{ needs.review.outputs.result }}
+      REVIEWED_SHA: ${{ needs.review.outputs.reviewed-sha }}
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      REPOSITORY: ${{ github.repository }}
+    steps:
+      - name: Validate and publish review
+        shell: bash
+        run: |
+          set -euo pipefail
+          current_sha=$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq .head.sha)
+          if [[ "$current_sha" != "$REVIEWED_SHA" ]]; then
+            echo "The pull request changed after review; refusing to publish a stale verdict." >&2
+            exit 1
+          fi
+          verdict=$(jq -er '.verdict' <<< "$CODEX_RESULT")
+          blocking_count=$(jq -er '[.findings[] | select(.blocking == true)] | length' <<< "$CODEX_RESULT")
+          event=REQUEST_CHANGES
+          if [[ "$verdict" == "APPROVE" && "$blocking_count" == "0" ]]; then
+            event=APPROVE
+          fi
+          body=$(jq -r '
+            "## Codex review\n\n" +
+            (.summary | gsub("@"; "@​")) +
+            (if (.findings | length) == 0 then
+              "\n\nNo blocking findings."
+            else
+              "\n\n### Findings\n\n" +
+              ([.findings[] |
+                "- **" + (.severity | ascii_upcase) +
+                (if .blocking then " · blocking" else "" end) +
+                ": " + (.title | gsub("@"; "@​")) + "**" +
+                (if .file == "" then "" else " — `" + .file + (if .line == 0 then "" else ":" + (.line | tostring) end) + "`" end) +
+                "\n  " + (.details | gsub("@"; "@​"))
+              ] | join("\n"))
+            end)
+          ' <<< "$CODEX_RESULT")
+          jq -n --arg body "$body" --arg event "$event" \
+            '{body: $body, event: $event}' > review-request.json
+          gh api --method POST "repos/$REPOSITORY/pulls/$PR_NUMBER/reviews" \
+            --input review-request.json
