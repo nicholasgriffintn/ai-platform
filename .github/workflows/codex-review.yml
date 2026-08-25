@@ -33,9 +33,10 @@ jobs:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           prompt-file: .github/codex/review.md
           output-schema-file: .github/codex/review-output.schema.json
+          model: gpt-5.6-luna
           permission-profile: :read-only
           safety-strategy: drop-sudo
-          effort: high
+          effort: medium
           allow-bot-users: nicholas-clanker,renovate
 
   publish:
