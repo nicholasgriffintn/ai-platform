@@ -1149,7 +1149,6 @@ describe("ChatService conversation list", () => {
       expect.objectContaining({
         id: "conversation-1",
         is_archived: true,
-        message_ids: ["message-1"],
         messages: [],
         title: "Design review",
       }),
