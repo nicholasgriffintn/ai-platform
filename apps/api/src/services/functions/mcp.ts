@@ -1,12 +1,17 @@
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
-import { parseMCPToolName } from "~/services/agents/mcp-client";
+import { parseMCPToolName, toMCPAgentKey } from "~/services/agents/mcp-client";
 import type { IFunctionResponse } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/functions/mcp" });
 
-interface RegisteredMCPClient {
+export const MCP_TOOL_CALL_TIMEOUT_MS = 30_000;
+
+const MCP_CLIENTS_CACHE_KEY = "mcp-clients";
+
+export interface RegisteredMCPClient {
   mcpConnections: Record<string, unknown>;
   getAITools(): Record<string, unknown> | Promise<Record<string, unknown>>;
   callTool(
@@ -18,18 +23,84 @@ interface RegisteredMCPClient {
     requestId: undefined,
     options: { signal: AbortSignal },
   ): Record<string, unknown> | Promise<Record<string, unknown>>;
+  dispose?(): void | Promise<void>;
 }
 
 interface MCPToolExecutionRequest {
   request?: Record<string, unknown> & {
     functionName?: string;
   };
+  context?: ServiceContext;
 }
 
-const mcpClients = new Map<string, RegisteredMCPClient>();
+type MCPClientRegistry = Map<string, RegisteredMCPClient>;
 
-export const registerMCPClient = (agentId: string, client: RegisteredMCPClient): void => {
-  mcpClients.set(agentId, client);
+function findMCPClients(context: ServiceContext | undefined): MCPClientRegistry | undefined {
+  const existing = context?.requestCache?.get(MCP_CLIENTS_CACHE_KEY);
+
+  return existing instanceof Map ? (existing as MCPClientRegistry) : undefined;
+}
+
+function ensureMCPClients(context: ServiceContext): MCPClientRegistry {
+  const existing = findMCPClients(context);
+
+  if (existing) {
+    return existing;
+  }
+
+  const registry: MCPClientRegistry = new Map();
+
+  context.requestCache.set(MCP_CLIENTS_CACHE_KEY, registry);
+
+  return registry;
+}
+
+async function disposeMCPClient(client: RegisteredMCPClient): Promise<void> {
+  try {
+    await client.dispose?.();
+  } catch (error) {
+    logger.warn("Failed to dispose MCP client", {
+      error_message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+}
+
+/**
+ * Registration is scoped to the in-flight request so concurrent completions on
+ * the same agent cannot resolve each other's live MCP sessions.
+ */
+export const registerMCPClient = async (
+  context: ServiceContext,
+  agentId: string,
+  client: RegisteredMCPClient,
+): Promise<void> => {
+  const clients = ensureMCPClients(context);
+  const key = toMCPAgentKey(agentId);
+  const previous = clients.get(key);
+
+  clients.set(key, client);
+
+  if (previous && previous !== client) {
+    await disposeMCPClient(previous);
+  }
+};
+
+/**
+ * Closes every MCP session opened during a completion. Without this the
+ * manager's connections stay open for the lifetime of the isolate.
+ */
+export const disposeMCPClients = async (context: ServiceContext | undefined): Promise<void> => {
+  const clients = findMCPClients(context);
+
+  if (!clients?.size) {
+    return;
+  }
+
+  const registered = [...clients.values()];
+
+  clients.clear();
+
+  await Promise.all(registered.map(disposeMCPClient));
 };
 
 export const handleMCPTool = async (
@@ -52,22 +123,12 @@ export const handleMCPTool = async (
       throw new AssistantError(`Invalid MCP tool format: ${functionName}`, ErrorType.PARAMS_ERROR);
     }
 
-    const fullAgentId = Array.from(mcpClients.keys()).find((id) =>
-      id.startsWith(mcpToolName.shortAgentId),
-    );
-
-    if (!fullAgentId) {
-      throw new AssistantError(
-        `No agent found with ID starting with ${mcpToolName.shortAgentId}`,
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-
-    const client = mcpClients.get(fullAgentId);
+    const { shortAgentId } = mcpToolName;
+    const client = findMCPClients(request.context)?.get(shortAgentId);
 
     if (!client) {
       throw new AssistantError(
-        `MCP client not found for agent ${fullAgentId}`,
+        `MCP client not found for agent ${shortAgentId}`,
         ErrorType.PARAMS_ERROR,
       );
     }
@@ -76,7 +137,7 @@ export const handleMCPTool = async (
 
     if (!toolsResponse || !Object.keys(toolsResponse).length) {
       throw new AssistantError(
-        `No tools available for agent ${fullAgentId}`,
+        `No tools available for agent ${shortAgentId}`,
         ErrorType.EXTERNAL_API_ERROR,
       );
     }
@@ -158,7 +219,7 @@ async function executeTool(
         arguments: argsObj,
       },
       undefined,
-      { signal: new AbortController().signal },
+      { signal: AbortSignal.timeout(MCP_TOOL_CALL_TIMEOUT_MS) },
     );
     const answer = "content" in fallbackResult ? fallbackResult.content : fallbackResult;
 
