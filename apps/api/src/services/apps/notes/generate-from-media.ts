@@ -8,6 +8,7 @@ import { handleTranscribe } from "~/services/audio/transcribe";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { fetchPublicUrl, parsePublicHttpUrl } from "~/utils/outbound-url";
 
 export async function generateNotesFromMedia({
   env,
@@ -43,6 +44,11 @@ export async function generateNotesFromMedia({
   if (!url) {
     throw new AssistantError("Missing media URL", ErrorType.PARAMS_ERROR);
   }
+
+  // Validate at the boundary: this URL is attacker-controlled and is used for
+  // outbound requests below (HEAD probe, transcription fetch, and the model
+  // provider's video fetch), so reject unsafe schemes/hosts before any of them run.
+  parsePublicHttpUrl(url);
 
   try {
     const outputLabels: Record<string, string> = {
@@ -176,20 +182,11 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
       return { content: videoResult.response };
     }
 
-    const isS3Url = url.startsWith("s3://");
     let transcriptText = "";
-
-    if (isS3Url) {
-      throw new AssistantError(
-        "S3 URLs are not supported for transcription",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-
     let contentLengthBytes = 0;
 
     try {
-      const head = await fetch(url, { method: "HEAD" });
+      const head = await fetchPublicUrl(url, { method: "HEAD" });
       const len = head.headers.get("content-length");
 
       contentLengthBytes = len ? Number(len) : 0;
