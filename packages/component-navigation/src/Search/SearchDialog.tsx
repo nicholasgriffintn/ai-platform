@@ -155,7 +155,7 @@ export function SearchDialog({
         >
           {results.length > 0 ? (
             <div className="space-y-1">
-              <p className="px-3 pb-2 pt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+              <p className="px-3 pb-2 pt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
                 {hasQuery ? "Best matches" : "Recent"}
               </p>
               {results.map((result, index) => (
@@ -222,7 +222,7 @@ export function SearchDialog({
           )}
         </div>
 
-        <div className="hidden items-center justify-between border-t border-zinc-200 px-5 py-2.5 text-[11px] text-zinc-400 dark:border-zinc-700 sm:flex">
+        <div className="hidden items-center justify-between border-t border-zinc-200 px-5 py-2.5 text-[11px] text-zinc-500 dark:text-zinc-400 dark:border-zinc-700 sm:flex">
           <span>Search across your accessible Polychat</span>
           <span>↑↓ Navigate · ↵ Open · Esc Close</span>
         </div>

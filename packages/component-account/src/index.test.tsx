@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { AccountNavigation, AccountPrompt, type AccountSection } from "./index";
+import { AccountNavigation, AccountPrompt, type AccountSection, TeamCard } from "./index";
 
 afterEach(cleanup);
 
@@ -47,5 +47,26 @@ describe("account controls", () => {
     expect(screen.getByText("Contact the workspace owner")).toBeTruthy();
     fireEvent.click(action);
     expect(onAction).not.toHaveBeenCalled();
+  });
+
+  it("names every icon-only team action for screen readers", () => {
+    const team = {
+      id: "team-1",
+      name: "Research",
+      orchestrator: { id: "lead-1", name: "Kea" },
+      members: [{ id: "member-1", name: "Macaw", team_role: "specialist" }],
+    };
+
+    render(<TeamCard team={team} onEdit={vi.fn()} onShare={vi.fn()} onDelete={vi.fn()} />);
+
+    const expand = screen.getByRole("button", { name: "Show Research members" });
+
+    expect(screen.getByRole("button", { name: "More actions for team Research" })).toBeTruthy();
+
+    fireEvent.click(expand);
+
+    expect(screen.getByRole("button", { name: "Hide Research members" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "More actions for Kea" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "More actions for Macaw" })).toBeTruthy();
   });
 });

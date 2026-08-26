@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 
 import { ModelIcon } from "../ModelIcon/ModelIcon";
 
@@ -23,6 +23,8 @@ export interface ModelSelectorTriggerProps {
   label: ReactNode;
   title: string;
   onToggle: () => void;
+  /** Lets the host return focus here when the panel closes. */
+  ref?: Ref<HTMLButtonElement>;
 }
 
 export function ModelSelectorTrigger({
@@ -37,9 +39,11 @@ export function ModelSelectorTrigger({
   label,
   title,
   onToggle,
+  ref,
 }: ModelSelectorTriggerProps) {
   return (
     <button
+      ref={ref}
       type="button"
       onClick={onToggle}
       disabled={disabled}

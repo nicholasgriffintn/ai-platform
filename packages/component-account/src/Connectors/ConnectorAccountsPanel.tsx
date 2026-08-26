@@ -210,7 +210,7 @@ export function ConnectorAccountsPanel({
           </p>
         </div>
         {accounts.length > 0 && (
-          <span className="shrink-0 font-mono text-[11px] text-zinc-400">
+          <span className="shrink-0 font-mono text-[11px] text-zinc-500 dark:text-zinc-400">
             {accounts.length} {accounts.length === 1 ? "account" : "accounts"}
           </span>
         )}

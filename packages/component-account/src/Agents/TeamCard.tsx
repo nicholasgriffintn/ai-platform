@@ -115,6 +115,8 @@ export function TeamCard({
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
               className="h-8 w-8 p-0"
+              aria-expanded={isExpanded}
+              aria-label={isExpanded ? `Hide ${team.name} members` : `Show ${team.name} members`}
             >
               {isExpanded ? (
                 <ChevronDown className="h-4 w-4" />
@@ -128,6 +130,8 @@ export function TeamCard({
                 variant: "ghost",
                 size: "sm",
                 className: "h-8 w-8 p-0",
+                "aria-label": `More actions for team ${team.name}`,
+                title: `More actions for team ${team.name}`,
                 disabled: isUpdating || isSharing || isDeleting,
               }}
             >
@@ -190,6 +194,8 @@ export function TeamCard({
                   variant: "ghost",
                   size: "sm",
                   className: "h-6 w-6 p-0",
+                  "aria-label": `More actions for ${orchestrator.name}`,
+                  title: `More actions for ${orchestrator.name}`,
                   disabled: isUpdating || isSharing || isDeleting,
                 }}
               >
@@ -260,6 +266,8 @@ export function TeamCard({
                     variant: "ghost",
                     size: "sm",
                     className: "h-6 w-6 p-0",
+                    "aria-label": `More actions for ${member.name}`,
+                    title: `More actions for ${member.name}`,
                     disabled: isUpdating || isSharing || isDeleting,
                   }}
                 >

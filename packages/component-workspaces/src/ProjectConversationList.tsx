@@ -26,7 +26,9 @@ export function ProjectConversationList({
         <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
           Recent conversations
         </h2>
-        <span className="text-xs text-zinc-400">{conversationCount} conversations</span>
+        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+          {conversationCount} conversations
+        </span>
       </div>
       {conversations.length === 0 ? (
         <EmptyState

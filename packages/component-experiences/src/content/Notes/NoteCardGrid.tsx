@@ -58,7 +58,7 @@ export function NoteCardGrid({
                 <p className="line-clamp-3 text-sm leading-6 text-zinc-500">
                   {item.content || "Empty note"}
                 </p>
-                <p className="mt-auto pt-3 text-xs text-zinc-400">
+                <p className="mt-auto pt-3 text-xs text-zinc-500 dark:text-zinc-400">
                   Updated {new Date(item.updatedAt).toLocaleDateString()}
                 </p>
               </Card>

@@ -22,7 +22,7 @@ export function OutputDetailHeader({
     <>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-zinc-400">
+          <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
             {capabilityId}
           </p>
           <h1 className="mt-1 text-xl font-semibold text-zinc-950 dark:text-white">{title}</h1>
