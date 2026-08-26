@@ -10,14 +10,13 @@ import {
 import { GOAL_UNSATISFIED_INSTRUCTION } from "~/lib/chat/agent/goal-gate";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
+import { getSandboxRunRecordForUser } from "~/services/apps/sandbox/runs";
+import { requireConversationAccess } from "~/services/conversations/access";
 import { recordGoalMarker } from "~/services/goals/goalMarker";
 import { GoalService } from "~/services/goals/GoalService";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-export type ConversationGoalContext = Pick<
-  ServiceContext,
-  "database" | "ensureDatabase" | "env" | "repositories" | "requireUser"
->;
+export type ConversationGoalContext = ServiceContext;
 
 function createService(context: ConversationGoalContext): GoalService {
   context.ensureDatabase();
@@ -34,6 +33,8 @@ export async function handleGetRunGoal(
 
   service.assertPro(user);
 
+  await getSandboxRunRecordForUser({ context, userId: user.id, runId });
+
   const goal = await service.getActiveGoal({ sandboxRunId: runId });
 
   return goalResponseSchema.parse({ goal });
@@ -46,6 +47,8 @@ export async function handleSetRunGoal(
 ): Promise<GoalResponse> {
   const user = context.requireUser();
   const service = createService(context);
+
+  await getSandboxRunRecordForUser({ context, userId: user.id, runId });
 
   const goal = await service.setGoal({
     owner: { sandboxRunId: runId },
@@ -66,6 +69,8 @@ export async function handleUpdateRunGoal(
   const service = createService(context);
 
   service.assertPro(user);
+
+  await getSandboxRunRecordForUser({ context, userId: user.id, runId });
 
   const active = await service.getActiveGoal({ sandboxRunId: runId });
 
@@ -91,6 +96,8 @@ export async function handleRecordRunGoalIteration(
   const service = createService(context);
 
   service.assertPro(user);
+
+  await getSandboxRunRecordForUser({ context, userId: user.id, runId });
 
   const active = await service.getActiveGoal({ sandboxRunId: runId });
 
@@ -126,6 +133,8 @@ export async function handleGetConversationGoal(
 
   service.assertPro(user);
 
+  await requireConversationAccess(context, completionId);
+
   const goal = await service.getActiveGoal({ conversationId: completionId });
 
   return goalResponseSchema.parse({ goal });
@@ -138,6 +147,8 @@ export async function handleSetConversationGoal(
 ): Promise<GoalResponse> {
   const user = context.requireUser();
   const service = createService(context);
+
+  await requireConversationAccess(context, completionId);
 
   const goal = await service.setGoal({
     owner: { conversationId: completionId },
@@ -169,6 +180,8 @@ export async function handleUpdateConversationGoal(
   const service = createService(context);
 
   service.assertPro(user);
+
+  await requireConversationAccess(context, completionId);
 
   const active = await service.getActiveGoal({ conversationId: completionId });
 

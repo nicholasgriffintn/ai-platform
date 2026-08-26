@@ -247,7 +247,6 @@ export interface Conversation {
   id?: string;
   title: string;
   messages: Message[];
-  message_ids?: string[];
   created_at?: string;
   updated_at?: string;
   last_message_at?: string;

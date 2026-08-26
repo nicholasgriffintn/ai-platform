@@ -126,8 +126,7 @@ export class ConversationRepository extends BaseRepository {
     const totalPages = Math.ceil(total / safeLimit);
 
     const listQuery = `
-        SELECT c.*,
-        (SELECT GROUP_CONCAT(m.id) FROM message m WHERE m.conversation_id = c.id) as messages
+        SELECT c.*
         FROM conversation c
         WHERE ${whereClause}
         ORDER BY ${orderByColumn} DESC, c.id DESC
@@ -220,35 +219,6 @@ export class ConversationRepository extends BaseRepository {
         .prepare("DELETE FROM conversation WHERE user_id = ? AND project_id IS NULL")
         .bind(userId),
     ]);
-  }
-
-  public async searchConversations(
-    userId: number,
-    query: string,
-    limit = 25,
-    offset = 0,
-  ): Promise<Record<string, unknown>[]> {
-    const searchTerm = `%${query}%`;
-
-    const result = await this.runQuery<Record<string, unknown>>(
-      `SELECT c.* 
-       FROM conversation c
-       WHERE c.user_id = ?
-	   AND c.project_id IS NULL
-       AND (
-         c.title LIKE ?
-         OR c.id IN (
-           SELECT DISTINCT conversation_id 
-           FROM message 
-           WHERE content LIKE ?
-         )
-       )
-       ORDER BY c.updated_at DESC
-       LIMIT ? OFFSET ?`,
-      [userId, searchTerm, searchTerm, limit, offset],
-    );
-
-    return Array.isArray(result) ? result : [];
   }
 
   public async searchAccessibleConversations(

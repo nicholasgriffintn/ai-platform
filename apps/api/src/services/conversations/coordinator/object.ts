@@ -43,8 +43,10 @@ const IDLE_STATUS: StoredStatus = {
  * One coordinator per conversation. Every operation that mutates a
  * conversation's history — turns, goal continuations, compaction, goal
  * lifecycle, title generation — goes through this queue, so they serialise
- * against each other instead of racing. The Durable Object is single-threaded
- * per conversation, which is what makes the ordering real rather than hopeful.
+ * against each other instead of racing. A Durable Object is single-threaded per
+ * conversation, but it still interleaves concurrent fetches at every await, so
+ * each read-modify-write below runs inside blockConcurrencyWhile — that, not the
+ * single thread, is what makes the ordering real rather than hopeful.
  */
 export class ConversationCoordinator extends Agent<IEnv> {
   private get storage(): DurableObjectStorage {
@@ -107,29 +109,33 @@ export class ConversationCoordinator extends Agent<IEnv> {
         return Response.json({ error: "Invalid thread instruction" }, { status: 400 });
       }
 
-      const instruction: ThreadInstruction = {
-        ...parsed.data,
-        id: generateId(),
-        index: await this.nextIndex(),
-        enqueuedAt: new Date().toISOString(),
-      };
+      return Response.json(
+        await this.ctx.blockConcurrencyWhile(async () => {
+          const instruction: ThreadInstruction = {
+            ...parsed.data,
+            id: generateId(),
+            index: await this.nextIndex(),
+            enqueuedAt: new Date().toISOString(),
+          };
 
-      if (isPreemptiveInstruction(instruction.kind)) {
-        await this.putQueue([]);
-        await this.putStatus({
-          status: "idle",
-          currentOperation: null,
-          updatedAt: instruction.enqueuedAt,
-        });
+          if (isPreemptiveInstruction(instruction.kind)) {
+            await this.putQueue([]);
+            await this.putStatus({
+              status: "idle",
+              currentOperation: null,
+              updatedAt: instruction.enqueuedAt,
+            });
 
-        return Response.json({ instruction, preempted: true });
-      }
+            return { instruction, preempted: true };
+          }
 
-      const queue = await this.readQueue();
+          const queue = await this.readQueue();
 
-      await this.putQueue([...queue, instruction]);
+          await this.putQueue([...queue, instruction]);
 
-      return Response.json({ instruction, preempted: false });
+          return { instruction, preempted: false };
+        }),
+      );
     }
 
     if (pathname === "/acquire" && request.method === "POST") {
@@ -140,50 +146,58 @@ export class ConversationCoordinator extends Agent<IEnv> {
         return Response.json({ error: "Invalid thread instruction" }, { status: 400 });
       }
 
-      const status = await this.getStatus();
+      return Response.json(
+        await this.ctx.blockConcurrencyWhile(async () => {
+          const status = await this.getStatus();
 
-      if (status.status === "running") {
-        return Response.json({ acquired: false, currentOperation: status.currentOperation });
-      }
+          if (status.status === "running") {
+            return { acquired: false, currentOperation: status.currentOperation };
+          }
 
-      const acquiredAt = Date.now();
+          const acquiredAt = Date.now();
 
-      await this.putStatus({
-        status: "running",
-        currentOperation: parsed.data.kind,
-        updatedAt: new Date(acquiredAt).toISOString(),
-        expiresAt: new Date(acquiredAt + LOCK_LEASE_MS).toISOString(),
-      });
+          await this.putStatus({
+            status: "running",
+            currentOperation: parsed.data.kind,
+            updatedAt: new Date(acquiredAt).toISOString(),
+            expiresAt: new Date(acquiredAt + LOCK_LEASE_MS).toISOString(),
+          });
 
-      return Response.json({ acquired: true, currentOperation: parsed.data.kind });
+          return { acquired: true, currentOperation: parsed.data.kind };
+        }),
+      );
     }
 
     if (pathname === "/claim" && request.method === "POST") {
-      const [queue, status] = await Promise.all([this.readQueue(), this.getStatus()]);
-      const decision = resolveNextInstruction({ status: status.status, queue });
+      return Response.json(
+        await this.ctx.blockConcurrencyWhile(async () => {
+          const [queue, status] = await Promise.all([this.readQueue(), this.getStatus()]);
+          const decision = resolveNextInstruction({ status: status.status, queue });
 
-      if (!decision.next) {
-        if (decision.reason === "superseded") {
-          await this.putQueue(
-            queue.filter((instruction) => instruction.kind !== "goal_continuation"),
-          );
-        }
+          if (!decision.next) {
+            if (decision.reason === "superseded") {
+              await this.putQueue(
+                queue.filter((instruction) => instruction.kind !== "goal_continuation"),
+              );
+            }
 
-        return Response.json({ instruction: null, reason: decision.reason });
-      }
+            return { instruction: null, reason: decision.reason };
+          }
 
-      const claimed = decision.next;
-      const now = new Date().toISOString();
+          const claimed = decision.next;
+          const now = new Date().toISOString();
 
-      await this.putQueue(queue.filter((instruction) => instruction.id !== claimed.id));
-      await this.putStatus({
-        status: "running",
-        currentOperation: claimed.kind,
-        updatedAt: now,
-        expiresAt: new Date(Date.parse(now) + LOCK_LEASE_MS).toISOString(),
-      });
+          await this.putQueue(queue.filter((instruction) => instruction.id !== claimed.id));
+          await this.putStatus({
+            status: "running",
+            currentOperation: claimed.kind,
+            updatedAt: now,
+            expiresAt: new Date(Date.parse(now) + LOCK_LEASE_MS).toISOString(),
+          });
 
-      return Response.json({ instruction: claimed, reason: decision.reason });
+          return { instruction: claimed, reason: decision.reason };
+        }),
+      );
     }
 
     if (pathname === "/release" && request.method === "POST") {

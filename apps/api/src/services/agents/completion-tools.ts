@@ -1,5 +1,6 @@
 import type { MCPClientManager } from "agents/mcp/client";
 
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { Agent } from "~/lib/database/schema";
 import {
   connectMCPServerReady,
@@ -15,7 +16,7 @@ import {
   delegateToTeamMemberByRole,
   getTeamMembers,
 } from "~/services/functions/teamDelegation";
-import type { AssistantPersona, AssistantPersonaExample, IEnv } from "~/types";
+import type { AssistantPersona, AssistantPersonaExample } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";
@@ -40,9 +41,9 @@ export type AgentCompletionToolDefinition =
 
 export async function buildAgentCompletionTools(
   agent: CompletionAgent,
-  env: IEnv,
+  context: ServiceContext,
 ): Promise<AgentCompletionToolDefinition[]> {
-  const mcpFunctions = await setupMCPFunctions(agent, env);
+  const mcpFunctions = await setupMCPFunctions(agent, context);
   const teamDelegationTools = setupTeamDelegationTools(agent);
 
   return [...CORE_AGENT_TOOLS, ...teamDelegationTools, ...mcpFunctions];
@@ -83,7 +84,7 @@ function parseFewShotExamples(rawExamples: unknown): AssistantPersonaExample[] {
   }
 }
 
-async function setupMCPFunctions(agent: CompletionAgent, env: IEnv) {
+async function setupMCPFunctions(agent: CompletionAgent, context: ServiceContext) {
   const mcpFunctions: AgentMCPToolDefinition[] = [];
 
   if (!agent.servers) {
@@ -99,16 +100,16 @@ async function setupMCPFunctions(agent: CompletionAgent, env: IEnv) {
       return mcpFunctions;
     }
 
-    if (!env.MCP_STORAGE) {
+    if (!context.env.MCP_STORAGE) {
       throw new AssistantError("MCP storage not configured", ErrorType.CONFIGURATION_ERROR);
     }
 
     const { MCPClientManager } = await import("agents/mcp/client");
 
     mcp = new MCPClientManager(agent.id, "1.0.0", {
-      storage: env.MCP_STORAGE,
+      storage: context.env.MCP_STORAGE,
     });
-    registerMCPClient(agent.id, mcp);
+    await registerMCPClient(context, agent.id, mcp);
 
     for (const cfg of serverConfigs) {
       await collectServerTools(agent, mcp, cfg, mcpFunctions);

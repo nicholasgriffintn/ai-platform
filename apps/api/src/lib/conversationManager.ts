@@ -823,21 +823,7 @@ export class ConversationManager {
       },
     );
 
-    const conversations = result.conversations.map((conversation) => {
-      const messagesString = conversation.messages as string;
-
-      return {
-        ...conversation,
-        messages: messagesString ? messagesString.split(",") : [],
-        parent_conversation_id: conversation.parent_conversation_id,
-        parent_message_id: conversation.parent_message_id,
-      };
-    });
-
-    return {
-      ...result,
-      conversations,
-    };
+    return result;
   }
 
   /**

@@ -163,7 +163,6 @@ export class ChatService {
     const results = data.conversations.map((conversation) => ({
       ...conversation,
       messages: [],
-      message_ids: conversation.messages,
       parent_conversation_id: conversation.parent_conversation_id,
       parent_message_id: conversation.parent_message_id,
     }));
