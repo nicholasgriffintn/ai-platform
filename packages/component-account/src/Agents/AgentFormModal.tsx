@@ -314,6 +314,7 @@ export function AgentFormModal({
                         variant="destructive"
                         size="icon"
                         icon={<Trash2 className="h-4 w-4" />}
+                        aria-label="Remove MCP server"
                         className={cn(form.servers.length <= 1 && "invisible")}
                         onClick={() => form.setServers((all) => all.filter((s) => s.id !== srv.id))}
                         disabled={form.servers.length <= 1}
@@ -410,6 +411,7 @@ export function AgentFormModal({
                           variant="destructive"
                           size="icon"
                           icon={<Trash2 className="h-4 w-4" />}
+                          aria-label={`Remove example ${index + 1}`}
                           className={cn(form.fewShotExamples.length <= 1 && "invisible")}
                           onClick={() =>
                             form.setFewShotExamples((all) =>

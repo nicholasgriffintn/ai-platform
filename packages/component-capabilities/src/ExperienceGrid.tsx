@@ -35,7 +35,7 @@ export function ExperienceGrid({ experiences }: { experiences: ExperienceGridIte
               <ArrowRight size={17} className="text-zinc-400" />
             </div>
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-zinc-400">
+              <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                 {experience.category}
               </p>
               <h2 className="mt-1 text-lg font-semibold text-zinc-950 group-hover:underline dark:text-white">

@@ -37,7 +37,7 @@ export function ArticleReportGrid({ reports, newReportHref }: ArticleReportGridP
                   ? "Open this report to review its analysis."
                   : "This report is still being generated."}
               </p>
-              <p className="mt-auto pt-3 text-xs text-zinc-400">
+              <p className="mt-auto pt-3 text-xs text-zinc-500 dark:text-zinc-400">
                 {item.sourceCount ?? 0} sources · {new Date(item.createdAt).toLocaleDateString()}
               </p>
             </Card>

@@ -114,7 +114,7 @@ export function WorkSidebarNav({
 
       {workspace && workspace.projects.length > 0 && (
         <div>
-          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
             Projects
           </p>
           <ul className="space-y-1">
@@ -209,7 +209,7 @@ export function WorkSidebarNav({
 
       {workspaceShortcuts?.length ? (
         <div>
-          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
             Your workspaces
           </p>
           <ul className="space-y-1">

@@ -149,7 +149,9 @@ export function ArtificialAnalysisScorePanel({
               <span className="flex items-center gap-1 text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
                 {formatScore(item.value)}
                 {typeof item.confidenceInterval95 === "number" ? (
-                  <span className="text-zinc-400">±{formatScore(item.confidenceInterval95)}</span>
+                  <span className="text-zinc-500 dark:text-zinc-400">
+                    ±{formatScore(item.confidenceInterval95)}
+                  </span>
                 ) : null}
                 <ExternalLink className="h-3 w-3 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-200" />
               </span>

@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { SidebarBackdrop } from "./SidebarBackdrop";
+import { useOverlayDismiss } from "./useOverlayDismiss";
 import { cn } from "./utils";
 
 interface SidebarShellProps {
@@ -19,6 +21,8 @@ interface SidebarShellProps {
   className?: string;
   /** Custom className for the content wrapper */
   contentClassName?: string;
+  /** Names the drawer for screen readers while it overlays the page */
+  label?: string;
 }
 
 export function SidebarShell({
@@ -30,19 +34,22 @@ export function SidebarShell({
   children,
   className,
   contentClassName,
+  label = "Sidebar",
 }: SidebarShellProps) {
+  // Only the mobile drawer overlays the page, so only it takes focus and Escape.
+  const isDrawer = visible && isMobile;
+  const drawerRef = useOverlayDismiss<HTMLDivElement>({ open: isDrawer, onClose });
+
   return (
     <>
-      {visible && isMobile && (
-        <div
-          className="md:hidden fixed inset-0 bg-black/30 z-20"
-          onClick={onClose}
-          onKeyDown={(e) => e.key === "Enter" && onClose()}
-          aria-hidden="true"
-        />
-      )}
+      {isDrawer && <SidebarBackdrop onClose={onClose} />}
 
       <div
+        ref={drawerRef}
+        role={isDrawer ? "dialog" : undefined}
+        aria-modal={isDrawer ? true : undefined}
+        aria-label={isDrawer ? label : undefined}
+        tabIndex={isDrawer ? -1 : undefined}
         className={cn(
           "fixed md:relative z-50 h-full w-64",
           "bg-off-white dark:bg-zinc-900",

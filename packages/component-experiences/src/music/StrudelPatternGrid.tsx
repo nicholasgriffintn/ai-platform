@@ -42,7 +42,7 @@ export function StrudelPatternGrid({ patterns, newPatternHref }: StrudelPatternG
                   <h2 className="font-semibold text-zinc-950 group-hover:underline dark:text-white">
                     {pattern.name}
                   </h2>
-                  <p className="text-xs text-zinc-400">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
                     Updated {new Date(pattern.updatedAt).toLocaleDateString()}
                   </p>
                 </div>

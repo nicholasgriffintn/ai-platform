@@ -46,6 +46,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
       visible={sidebarVisible}
       isMobile={isMobile}
       onClose={() => setSidebarVisible(false)}
+      label="Workspace navigation"
       header={<SidebarHeader />}
       footer={<SidebarFooter />}
     >

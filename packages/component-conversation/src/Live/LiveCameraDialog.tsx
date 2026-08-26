@@ -112,7 +112,7 @@ export function LiveCameraDialog({
           <div className="overflow-hidden rounded-lg border border-zinc-200 bg-zinc-950 dark:border-zinc-800">
             <LiveCameraPreview stream={videoPreviewStream} />
             {!videoPreviewStream && (
-              <div className="flex aspect-video items-center justify-center text-sm text-zinc-400">
+              <div className="flex aspect-video items-center justify-center text-sm text-zinc-500 dark:text-zinc-400">
                 Preview starting
               </div>
             )}

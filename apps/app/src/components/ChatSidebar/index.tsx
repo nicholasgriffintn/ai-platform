@@ -249,6 +249,7 @@ export const ChatSidebar = ({
         visible={sidebarVisible}
         isMobile={isMobile}
         onClose={() => setSidebarVisible(false)}
+        label="Conversations"
         header={sidebarHeader}
         footer={<SidebarFooter />}
       >

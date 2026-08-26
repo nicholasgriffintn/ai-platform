@@ -62,7 +62,7 @@ export default function SharedOutputPage() {
           <div className="flex items-center gap-3">
             <FileQuestion size={20} className="text-zinc-400" />
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-zinc-400">
+              <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                 {output.capabilityId}
               </p>
               <h1 className="text-xl font-semibold">{output.title}</h1>

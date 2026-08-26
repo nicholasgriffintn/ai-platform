@@ -1,3 +1,4 @@
+import { useOverlayDismiss } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { Code2, Copy, FileText, Play, X } from "lucide-react";
 import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
@@ -178,6 +179,11 @@ export const ArtifactPanel = ({
     }
   }, [activeTab]);
 
+  // The panel sits beside the conversation rather than over it, so it is a
+  // non-modal dialog: focus moves in, Escape closes, focus returns to the opener.
+  const isOpen = isVisible && allArtifacts.length > 0;
+  const panelRef = useOverlayDismiss<HTMLDivElement>({ open: isOpen, onClose });
+
   const handleCopyCurrentFile = useCallback(() => {
     if (currentArtifact) {
       onCopy(currentArtifact.content);
@@ -207,12 +213,20 @@ export const ArtifactPanel = ({
   }
 
   return (
-    <div className={`absolute right-0 top-0 h-full 
+    <div
+      ref={panelRef}
+      role="dialog"
+      aria-labelledby="artifact-panel-title"
+      tabIndex={-1}
+      // Closed, the panel is only translated off-screen, so hide it from tab order too.
+      inert={!isVisible}
+      className={`absolute right-0 top-0 h-full 
         w-[90%] sm:w-[350px] md:w-[400px] lg:w-[650px] 
         bg-white dark:bg-zinc-800 
         border-l border-zinc-200 dark:border-zinc-700 
         shadow-xl z-50 
-        transition-transform duration-300 ease-in-out ${isVisible ? "translate-x-0" : "translate-x-full"} `} aria-labelledby="artifact-panel-title" aria-modal="true">
+        transition-transform duration-300 ease-in-out ${isVisible ? "translate-x-0" : "translate-x-full"} `}
+    >
       <div className="flex flex-col h-full">
         <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-700">
           <div className="flex items-center gap-2 text-zinc-900 dark:text-zinc-100 min-w-0 flex-1 overflow-hidden">
