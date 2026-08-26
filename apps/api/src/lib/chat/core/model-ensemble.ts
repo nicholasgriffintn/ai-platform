@@ -2,7 +2,7 @@ import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { ModelConfigInfo } from "@ngriffin_uk/polychat-schemas";
 
 import { runAgentLoop, type AgentLoopExecutionParams } from "~/lib/chat/agent/agent-loop";
-import { createConnectorRunCloser } from "~/lib/chat/core/chat-stream";
+import { createRunResourceCloser } from "~/lib/chat/core/chat-stream";
 import {
   createChatSseStreamWriter,
   startChatStreamHeartbeat,
@@ -25,7 +25,7 @@ export type CreateModelEnsembleStreamParams = Omit<AgentLoopExecutionParams, "si
 
 export function createModelEnsembleStream(params: CreateModelEnsembleStreamParams): ReadableStream {
   const stream = createChatSseStreamWriter();
-  const closeConnectorRun = createConnectorRunCloser(params);
+  const closeRunResources = createRunResourceCloser(params);
   const stopHeartbeat = startChatStreamHeartbeat(stream);
   const stopSignal = watchDetachedTurnCancellation({
     env: params.env,
@@ -109,7 +109,7 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
     } finally {
       stopHeartbeat();
       stopSignal.stop();
-      await closeConnectorRun();
+      await closeRunResources();
 
       try {
         await stream.writeDone();
