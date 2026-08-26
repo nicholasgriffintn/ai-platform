@@ -399,9 +399,8 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
 
     if (pathname === "/events" && request.method === "POST") {
       const event = (await request.json()) as SandboxRunEvent;
-      const envelope = await this.appendEvent(event);
 
-      return Response.json(envelope);
+      return Response.json(await this.ctx.blockConcurrencyWhile(() => this.appendEvent(event)));
     }
 
     if (pathname === "/events" && request.method === "GET") {
@@ -417,129 +416,132 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
 
     if (pathname === "/instructions" && request.method === "POST") {
       const body = (await request.json()) as Record<string, unknown>;
-      const parsedKind = sandboxRunInstructionKindSchema.safeParse(body.kind);
-      const kind = parsedKind.success ? parsedKind.data : "message";
-      const contentRaw = typeof body.content === "string" ? body.content.trim() : "";
 
-      if (kind === "message" && !contentRaw) {
-        return Response.json(
-          { error: "content is required for message instructions" },
-          { status: 400 },
-        );
-      }
+      return this.ctx.blockConcurrencyWhile(async () => {
+        const parsedKind = sandboxRunInstructionKindSchema.safeParse(body.kind);
+        const kind = parsedKind.success ? parsedKind.data : "message";
+        const contentRaw = typeof body.content === "string" ? body.content.trim() : "";
 
-      const control = await this.getControl();
-      const nowIso = new Date().toISOString();
-
-      if (kind === "approval_request") {
-        const command = typeof body.command === "string" ? body.command.trim() : "";
-
-        if (!command) {
-          return Response.json({ error: "command is required" }, { status: 400 });
-        }
-
-        const timeoutSeconds =
-          parsePositiveInt(
-            body.timeoutSeconds,
-            MIN_APPROVAL_TIMEOUT_SECONDS,
-            MAX_APPROVAL_TIMEOUT_SECONDS,
-          ) ?? DEFAULT_APPROVAL_TIMEOUT_SECONDS;
-        const requestedEscalateAfterSeconds = parsePositiveInt(
-          body.escalateAfterSeconds,
-          MIN_APPROVAL_ESCALATE_SECONDS,
-          MAX_APPROVAL_ESCALATE_SECONDS,
-        );
-        const escalateAfterSeconds = Math.min(
-          requestedEscalateAfterSeconds ?? DEFAULT_APPROVAL_ESCALATE_AFTER_SECONDS,
-          Math.max(1, timeoutSeconds - 1),
-        );
-        const instruction: SandboxRunInstruction = {
-          id: crypto.randomUUID(),
-          runId: control?.runId ?? "unknown",
-          kind,
-          content: contentRaw || undefined,
-          command,
-          approvalStatus: "pending",
-          timeoutSeconds,
-          escalateAfterSeconds,
-          expiresAt: addSecondsIso(nowIso, timeoutSeconds),
-          escalationAt: addSecondsIso(nowIso, escalateAfterSeconds),
-          createdAt: nowIso,
-        };
-        const envelope = await this.appendInstruction(instruction);
-
-        return Response.json({ instruction: envelope.instruction, envelope });
-      }
-
-      if (kind === "approval_response") {
-        const requestId = typeof body.requestId === "string" ? body.requestId.trim() : "";
-        const approvalStatus =
-          body.approvalStatus === "approved" || body.approvalStatus === "rejected"
-            ? body.approvalStatus
-            : undefined;
-
-        if (!requestId || !approvalStatus) {
+        if (kind === "message" && !contentRaw) {
           return Response.json(
-            { error: "requestId and approvalStatus are required" },
+            { error: "content is required for message instructions" },
             { status: 400 },
           );
         }
 
-        const instructions = await this.getInstructionsWithLifecycle();
-        const requestIndex = instructions.findIndex(
-          (entry) =>
-            entry.instruction.kind === "approval_request" && entry.instruction.id === requestId,
-        );
+        const control = await this.getControl();
+        const nowIso = new Date().toISOString();
 
-        if (requestIndex < 0) {
-          return Response.json({ error: "Approval request not found" }, { status: 404 });
+        if (kind === "approval_request") {
+          const command = typeof body.command === "string" ? body.command.trim() : "";
+
+          if (!command) {
+            return Response.json({ error: "command is required" }, { status: 400 });
+          }
+
+          const timeoutSeconds =
+            parsePositiveInt(
+              body.timeoutSeconds,
+              MIN_APPROVAL_TIMEOUT_SECONDS,
+              MAX_APPROVAL_TIMEOUT_SECONDS,
+            ) ?? DEFAULT_APPROVAL_TIMEOUT_SECONDS;
+          const requestedEscalateAfterSeconds = parsePositiveInt(
+            body.escalateAfterSeconds,
+            MIN_APPROVAL_ESCALATE_SECONDS,
+            MAX_APPROVAL_ESCALATE_SECONDS,
+          );
+          const escalateAfterSeconds = Math.min(
+            requestedEscalateAfterSeconds ?? DEFAULT_APPROVAL_ESCALATE_AFTER_SECONDS,
+            Math.max(1, timeoutSeconds - 1),
+          );
+          const instruction: SandboxRunInstruction = {
+            id: crypto.randomUUID(),
+            runId: control?.runId ?? "unknown",
+            kind,
+            content: contentRaw || undefined,
+            command,
+            approvalStatus: "pending",
+            timeoutSeconds,
+            escalateAfterSeconds,
+            expiresAt: addSecondsIso(nowIso, timeoutSeconds),
+            escalationAt: addSecondsIso(nowIso, escalateAfterSeconds),
+            createdAt: nowIso,
+          };
+          const envelope = await this.appendInstruction(instruction);
+
+          return Response.json({ instruction: envelope.instruction, envelope });
         }
 
-        const requestInstruction = instructions[requestIndex].instruction;
+        if (kind === "approval_response") {
+          const requestId = typeof body.requestId === "string" ? body.requestId.trim() : "";
+          const approvalStatus =
+            body.approvalStatus === "approved" || body.approvalStatus === "rejected"
+              ? body.approvalStatus
+              : undefined;
 
-        if (
-          requestInstruction.approvalStatus === "approved" ||
-          requestInstruction.approvalStatus === "rejected" ||
-          requestInstruction.approvalStatus === "timed_out"
-        ) {
-          return Response.json({ error: "Approval request already resolved" }, { status: 409 });
-        }
+          if (!requestId || !approvalStatus) {
+            return Response.json(
+              { error: "requestId and approvalStatus are required" },
+              { status: 400 },
+            );
+          }
 
-        instructions[requestIndex] = {
-          ...instructions[requestIndex],
-          instruction: {
-            ...requestInstruction,
+          const instructions = await this.getInstructionsWithLifecycle();
+          const requestIndex = instructions.findIndex(
+            (entry) =>
+              entry.instruction.kind === "approval_request" && entry.instruction.id === requestId,
+          );
+
+          if (requestIndex < 0) {
+            return Response.json({ error: "Approval request not found" }, { status: 404 });
+          }
+
+          const requestInstruction = instructions[requestIndex].instruction;
+
+          if (
+            requestInstruction.approvalStatus === "approved" ||
+            requestInstruction.approvalStatus === "rejected" ||
+            requestInstruction.approvalStatus === "timed_out"
+          ) {
+            return Response.json({ error: "Approval request already resolved" }, { status: 409 });
+          }
+
+          instructions[requestIndex] = {
+            ...instructions[requestIndex],
+            instruction: {
+              ...requestInstruction,
+              approvalStatus,
+              resolvedAt: nowIso,
+              resolutionReason: contentRaw || requestInstruction.resolutionReason,
+            },
+          };
+          await this.putInstructions(instructions);
+
+          const instruction: SandboxRunInstruction = {
+            id: crypto.randomUUID(),
+            runId: control?.runId ?? "unknown",
+            kind,
+            requestId,
             approvalStatus,
-            resolvedAt: nowIso,
-            resolutionReason: contentRaw || requestInstruction.resolutionReason,
-          },
-        };
-        await this.putInstructions(instructions);
+            content: contentRaw || undefined,
+            createdAt: nowIso,
+          };
+          const envelope = await this.appendInstruction(instruction);
+
+          return Response.json({ instruction: envelope.instruction, envelope });
+        }
 
         const instruction: SandboxRunInstruction = {
           id: crypto.randomUUID(),
           runId: control?.runId ?? "unknown",
           kind,
-          requestId,
-          approvalStatus,
           content: contentRaw || undefined,
           createdAt: nowIso,
         };
         const envelope = await this.appendInstruction(instruction);
 
         return Response.json({ instruction: envelope.instruction, envelope });
-      }
-
-      const instruction: SandboxRunInstruction = {
-        id: crypto.randomUUID(),
-        runId: control?.runId ?? "unknown",
-        kind,
-        content: contentRaw || undefined,
-        createdAt: nowIso,
-      };
-      const envelope = await this.appendInstruction(instruction);
-
-      return Response.json({ instruction: envelope.instruction, envelope });
+      });
     }
 
     if (pathname === "/instructions" && request.method === "GET") {
