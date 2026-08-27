@@ -1,4 +1,5 @@
 import { SandboxConnectionList } from "@ngriffin_uk/polychat-component-account";
+import { ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import { Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
@@ -35,6 +36,7 @@ export function ProfileSandboxTab() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isConnectionModalOpen, setIsConnectionModalOpen] = useState(false);
   const [form, setForm] = useState<ConnectionFormState>(INITIAL_FORM);
+  const [installationIdToDelete, setInstallationIdToDelete] = useState<number | null>(null);
   const processedInstallationRef = useRef<string | null>(null);
 
   const { data: connections = [], isLoading, error } = useSandboxConnections();
@@ -116,19 +118,21 @@ export function ProfileSandboxTab() {
     setSearchParams,
   ]);
 
-  const handleDeleteConnection = async (installationId: number) => {
-    if (!window.confirm(`Delete the connection for installation ${installationId}?`)) {
+  const handleDeleteConnection = async () => {
+    if (installationIdToDelete === null) {
       return;
     }
 
     try {
-      await deleteConnectionMutation.mutateAsync(installationId);
+      await deleteConnectionMutation.mutateAsync(installationIdToDelete);
       toast.success("Connection deleted");
     } catch (mutationError) {
       toast.error(
         mutationError instanceof Error ? mutationError.message : "Failed to delete connection",
       );
     }
+
+    setInstallationIdToDelete(null);
   };
 
   return (
@@ -159,8 +163,10 @@ export function ProfileSandboxTab() {
             : undefined
         }
         onSignIn={() => setShowLoginModal(true)}
-        onDelete={handleDeleteConnection}
-        isDeleting={deleteConnectionMutation.isPending}
+        onDelete={setInstallationIdToDelete}
+        deletingInstallationId={
+          deleteConnectionMutation.isPending ? (deleteConnectionMutation.variables ?? null) : null
+        }
       />
 
       <SandboxAddGitHubConnection
@@ -168,6 +174,21 @@ export function ProfileSandboxTab() {
         onClose={() => setIsConnectionModalOpen(false)}
         form={form}
         setForm={setForm}
+      />
+
+      <ConfirmationDialog
+        open={installationIdToDelete !== null}
+        onOpenChange={(open) => !open && setInstallationIdToDelete(null)}
+        title="Delete connection"
+        description={
+          installationIdToDelete === null
+            ? ""
+            : `Delete the connection for installation ${installationIdToDelete}? Sandbox tasks using it will stop working.`
+        }
+        confirmText="Delete connection"
+        variant="destructive"
+        isLoading={deleteConnectionMutation.isPending}
+        onConfirm={handleDeleteConnection}
       />
     </div>
   );
