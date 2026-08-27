@@ -26,6 +26,32 @@ describe("WorkspaceRepository", () => {
     expect(calls[0]?.params).toEqual([123, "conversation-1"]);
   });
 
+  it("denies access when the row reports allowed: 0", async () => {
+    const database = {
+      prepare: vi.fn(() => ({
+        bind: () => ({
+          first: vi.fn(async () => ({ allowed: 0 })),
+        }),
+      })),
+    };
+    const repository = new WorkspaceRepository({ DB: database } as any);
+
+    await expect(repository.canAccessConversation("conversation-1", 123)).resolves.toBe(false);
+  });
+
+  it("denies access when no row is found for the conversation", async () => {
+    const database = {
+      prepare: vi.fn(() => ({
+        bind: () => ({
+          first: vi.fn(async () => null),
+        }),
+      })),
+    };
+    const repository = new WorkspaceRepository({ DB: database } as any);
+
+    await expect(repository.canAccessConversation("conversation-1", 123)).resolves.toBe(false);
+  });
+
   it("consumes an invitation before granting membership", async () => {
     const statements: { query: string; params: unknown[] }[] = [];
     const database = {
