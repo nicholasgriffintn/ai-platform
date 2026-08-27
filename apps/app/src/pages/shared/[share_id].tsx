@@ -1,4 +1,3 @@
-import type { ArtifactProps } from "@ngriffin_uk/polychat-component-content";
 import { ArtifactPanel } from "@ngriffin_uk/polychat-component-content";
 import { LoadingSpinner, PageStatus } from "@ngriffin_uk/polychat-component-ui";
 import { ApiError } from "@ngriffin_uk/polychat-library-client";
@@ -12,6 +11,7 @@ import { Link, useParams } from "react-router";
 
 import { MessageList } from "~/components/ConversationThread/MessageList";
 import { PageShell } from "~/components/Core/PageShell";
+import { useArtifactPanel } from "~/hooks/useArtifactPanel";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { fetchSharedConversationHistory } from "~/lib/api/shared-conversation";
 import type { Message } from "~/types";
@@ -28,10 +28,14 @@ export default function SharedConversationPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentArtifact, setCurrentArtifact] = useState<ArtifactProps | null>(null);
-  const [isPanelVisible, setIsPanelVisible] = useState(false);
-  const [currentArtifacts, setCurrentArtifacts] = useState<ArtifactProps[]>([]);
-  const [isCombinedPanel, setIsCombinedPanel] = useState(false);
+  const {
+    currentArtifact,
+    currentArtifacts,
+    isPanelVisible,
+    isCombinedPanel,
+    openArtifact,
+    closePanel,
+  } = useArtifactPanel({ closeOnEscape: true });
 
   useEffect(() => {
     const fetchSharedConversation = async () => {
@@ -66,49 +70,6 @@ export default function SharedConversationPage() {
   }, [share_id]);
 
   const { copied: artifactCopied, copy: copyArtifact } = useCopyToClipboard();
-
-  const handleArtifactOpen = (
-    artifact: ArtifactProps,
-    combine?: boolean,
-    artifacts?: ArtifactProps[],
-  ) => {
-    setCurrentArtifact(artifact);
-    setIsPanelVisible(true);
-
-    if (combine && artifacts && artifacts.length > 1) {
-      setCurrentArtifacts(artifacts);
-      setIsCombinedPanel(true);
-
-      return;
-    }
-
-    setCurrentArtifacts([]);
-    setIsCombinedPanel(false);
-  };
-
-  const handlePanelClose = () => {
-    setIsPanelVisible(false);
-    setIsCombinedPanel(false);
-
-    setTimeout(() => {
-      setCurrentArtifact(null);
-      setCurrentArtifacts([]);
-    }, 300);
-  };
-
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isPanelVisible) {
-        handlePanelClose();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyPress);
-    };
-  }, [isPanelVisible]);
 
   if (isLoading) {
     return (
@@ -164,11 +125,7 @@ export default function SharedConversationPage() {
             {messages.length > 0 ? (
               <div className="flex-1">
                 <div className="mx-auto w-full max-w-3xl h-full flex flex-col gap-8 px-4">
-                  <MessageList
-                    messages={messages}
-                    isSharedView
-                    onArtifactOpen={handleArtifactOpen}
-                  />
+                  <MessageList messages={messages} isSharedView onArtifactOpen={openArtifact} />
                 </div>
               </div>
             ) : (
@@ -187,7 +144,7 @@ export default function SharedConversationPage() {
         onCopy={copyArtifact}
         artifact={currentArtifact}
         artifacts={currentArtifacts}
-        onClose={handlePanelClose}
+        onClose={closePanel}
         isVisible={isPanelVisible}
         isCombined={isCombinedPanel}
       />
