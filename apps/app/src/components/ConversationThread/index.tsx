@@ -1,5 +1,4 @@
 import {
-  type ArtifactProps,
   findLatestArtifactByIdentifier,
   ArtifactPanel,
   type ToolInteractionHandler,
@@ -41,6 +40,7 @@ import { toast } from "sonner";
 import { ComposerBanner } from "~/components/ConversationThread/ComposerBanner";
 import { Logo } from "~/components/Core/Logo";
 import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
+import { useArtifactPanel } from "~/hooks/useArtifactPanel";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
@@ -148,10 +148,27 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     [modelReferences, model],
   );
 
-  const [currentArtifact, setCurrentArtifact] = useState<ArtifactProps | null>(null);
-  const [isPanelVisible, setIsPanelVisible] = useState(false);
-  const [currentArtifacts, setCurrentArtifacts] = useState<ArtifactProps[]>([]);
-  const [isCombinedPanel, setIsCombinedPanel] = useState(false);
+  const {
+    currentArtifact,
+    currentArtifacts,
+    isPanelVisible,
+    isCombinedPanel,
+    openArtifact: handleArtifactOpen,
+    replaceArtifact,
+    closePanel: handlePanelClose,
+  } = useArtifactPanel({
+    onOpen: (artifact, combined) =>
+      trackFeatureUsage("view_artifact", {
+        artifact_type: artifact.type,
+        conversation_id: currentConversationId || "none",
+        combined_view: combined,
+      }),
+    onClose: (artifact) =>
+      trackFeatureUsage("close_artifact", {
+        artifact_type: artifact.type,
+        conversation_id: currentConversationId || "none",
+      }),
+  });
   const [artifactContextAttachments, setArtifactContextAttachments] = useState<AttachmentData[]>(
     [],
   );
@@ -218,47 +235,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     setAutoPlayResponsesEnabled(!autoPlayResponsesEnabled);
   }, [autoPlayResponsesEnabled, stopPlayback]);
 
-  const handleArtifactOpen = useCallback(
-    (artifact: ArtifactProps, combine?: boolean, artifacts?: ArtifactProps[]) => {
-      setCurrentArtifact(artifact);
-      setIsPanelVisible(true);
-
-      trackFeatureUsage("view_artifact", {
-        artifact_type: artifact.type,
-        conversation_id: currentConversationId || "none",
-        combined_view: Boolean(combine && artifacts && artifacts.length > 1),
-      });
-
-      if (combine && artifacts && artifacts.length > 1) {
-        setCurrentArtifacts(artifacts);
-        setIsCombinedPanel(true);
-
-        return;
-      }
-
-      setCurrentArtifacts([]);
-      setIsCombinedPanel(false);
-    },
-    [currentConversationId, trackFeatureUsage],
-  );
-
-  const handlePanelClose = useCallback(() => {
-    if (currentArtifact) {
-      trackFeatureUsage("close_artifact", {
-        artifact_type: currentArtifact.type,
-        conversation_id: currentConversationId || "none",
-      });
-    }
-
-    setIsPanelVisible(false);
-    setIsCombinedPanel(false);
-
-    setTimeout(() => {
-      setCurrentArtifact(null);
-      setCurrentArtifacts([]);
-    }, 300);
-  }, [currentArtifact, currentConversationId, trackFeatureUsage]);
-
   const handleAddArtifactSelectionToChat = useCallback(
     (attachment: AttachmentData) => {
       setArtifactContextAttachments((currentAttachments) => [...currentAttachments, attachment]);
@@ -317,9 +293,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     const latestArtifact = findLatestArtifactByIdentifier(messages, currentArtifact.identifier);
 
     if (latestArtifact && latestArtifact.content !== currentArtifact.content) {
-      setCurrentArtifact(latestArtifact);
+      replaceArtifact(latestArtifact);
     }
-  }, [currentArtifact, isCombinedPanel, isPanelVisible, messages]);
+  }, [currentArtifact, isCombinedPanel, isPanelVisible, messages, replaceArtifact]);
 
   const goalState = useMemo(
     () => ({ canUseGoals, goal: goal ? { status: goal.status } : null }),
