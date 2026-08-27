@@ -5,6 +5,8 @@ import { generateId } from "~/utils/id";
 
 import { BaseRepository } from "./BaseRepository";
 
+const MAX_BOUND_PARAMETERS = 100;
+
 export interface SourceRecord {
   id: string;
   created_by_user_id: number;
@@ -100,6 +102,32 @@ export class SourceRepository extends BaseRepository {
 
   async getSource(sourceId: string): Promise<SourceRecord | null> {
     return this.selectOne({ id: sourceId });
+  }
+
+  async getSourcesByIds(sourceIds: string[]): Promise<SourceRecord[]> {
+    const uniqueIds = [...new Set(sourceIds)];
+
+    if (uniqueIds.length === 0) {
+      return [];
+    }
+
+    // D1 caps the bound parameters a single statement may carry, so long id lists are paged.
+    const pages: string[][] = [];
+
+    for (let start = 0; start < uniqueIds.length; start += MAX_BOUND_PARAMETERS) {
+      pages.push(uniqueIds.slice(start, start + MAX_BOUND_PARAMETERS));
+    }
+
+    const results = await Promise.all(
+      pages.map((page) =>
+        this.runQuery<SourceRecord>(
+          `SELECT * FROM source WHERE id IN (${page.map(() => "?").join(", ")})`,
+          page,
+        ),
+      ),
+    );
+
+    return results.flat();
   }
 
   async getSourceByVectorId(vectorId: string): Promise<SourceRecord | null> {

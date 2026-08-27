@@ -103,6 +103,40 @@ async function requireSourceAccess(
   return source;
 }
 
+async function requireSourcesAccess(
+  context: ServiceContext,
+  userId: number,
+  sourceIds: string[],
+  validate?: (source: SourceRecord) => void,
+): Promise<SourceRecord[]> {
+  const records = await context.repositories.sources.getSourcesByIds(sourceIds);
+  const recordsById = new Map(records.map((record) => [record.id, record]));
+  const verifiedProjects = new Set<string>();
+  const sources: SourceRecord[] = [];
+
+  for (const sourceId of sourceIds) {
+    const source = recordsById.get(sourceId);
+
+    if (!source) {
+      throw new AssistantError("Source not found", ErrorType.NOT_FOUND, 404);
+    }
+
+    if (!source.project_id) {
+      if (source.created_by_user_id !== userId) {
+        throw new AssistantError("Source not found", ErrorType.NOT_FOUND, 404);
+      }
+    } else if (!verifiedProjects.has(source.project_id)) {
+      await requireProjectAccess(context, source.project_id);
+      verifiedProjects.add(source.project_id);
+    }
+
+    validate?.(source);
+    sources.push(source);
+  }
+
+  return sources;
+}
+
 async function requireCollectionAccess(
   context: ServiceContext,
   userId: number,
@@ -393,9 +427,7 @@ export async function setProjectContextSources(
     throw new AssistantError("Project context sources must be unique", ErrorType.PARAMS_ERROR, 400);
   }
 
-  for (const sourceId of sourceIds) {
-    const source = await requireSourceAccess(context, userId, sourceId);
-
+  await requireSourcesAccess(context, userId, sourceIds, (source) => {
     if (source.project_id !== projectId || source.status !== "available") {
       throw new AssistantError(
         "Project context sources must be available in this project",
@@ -403,7 +435,7 @@ export async function setProjectContextSources(
         400,
       );
     }
-  }
+  });
 
   const collection = await context.repositories.sources.ensureProjectContextCollection({
     projectId,
@@ -430,9 +462,7 @@ export async function addCollectionSources(
 ): Promise<{ added: number }> {
   const collection = await requireCollectionAccess(context, userId, collectionId, true);
 
-  for (const sourceId of sourceIds) {
-    const source = await requireSourceAccess(context, userId, sourceId);
-
+  await requireSourcesAccess(context, userId, sourceIds, (source) => {
     if (source.project_id !== collection.project_id) {
       throw new AssistantError(
         "Source is outside this collection scope",
@@ -440,7 +470,7 @@ export async function addCollectionSources(
         400,
       );
     }
-  }
+  });
 
   return {
     added: await context.repositories.sources.addCollectionSources(collectionId, sourceIds),

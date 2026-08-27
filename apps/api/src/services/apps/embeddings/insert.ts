@@ -3,6 +3,7 @@ import {
   getEmbeddingNamespace,
 } from "~/lib/providers/capabilities/embedding/helpers";
 import { RepositoryManager } from "~/repositories";
+import type { EmbeddingInsertRecord } from "~/repositories/EmbeddingRepository";
 import type { EmbeddingProvider, EmbeddingVector, IRequest, RagOptions } from "~/types";
 import { chunkText } from "~/utils/embeddings";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -11,14 +12,6 @@ import { getLogger } from "~/utils/logger";
 import { sanitiseInput } from "~/utils/sanitise";
 
 const logger = getLogger({ prefix: "services/apps/embeddings/insert" });
-
-type PendingEmbeddingRecord = {
-  id: string;
-  metadata: Record<string, any>;
-  title: string;
-  content: string;
-  type: string;
-};
 
 // @ts-ignore
 export interface IInsertEmbeddingRequest extends IRequest {
@@ -96,7 +89,7 @@ export const insertEmbedding = async (req: IInsertEmbeddingRequest): Promise<any
       ...(file && { fileData: file.data, mimeType: file.mimeType }),
     };
 
-    const pendingDbRecords: PendingEmbeddingRecord[] = [];
+    const pendingDbRecords: EmbeddingInsertRecord[] = [];
 
     if (type === "blog") {
       const blogExists = await repositories.embeddings.getEmbeddingIdByType(id, "blog");
@@ -162,7 +155,7 @@ export const insertEmbedding = async (req: IInsertEmbeddingRequest): Promise<any
     }
 
     try {
-      await insertEmbeddingRecords(repositories, pendingDbRecords, embeddingScope);
+      await repositories.embeddings.insertEmbeddings(pendingDbRecords, embeddingScope);
     } catch (error) {
       await cleanupInsertedVectors(embedding, allGenerated);
       throw error;
@@ -188,44 +181,6 @@ export const insertEmbedding = async (req: IInsertEmbeddingRequest): Promise<any
     throw new AssistantError("Error inserting embedding");
   }
 };
-
-async function insertEmbeddingRecords(
-  repositories: RepositoryManager,
-  records: PendingEmbeddingRecord[],
-  scope: { namespace: string; userId?: number | string },
-) {
-  const insertedIds: string[] = [];
-
-  try {
-    for (const record of records) {
-      await repositories.embeddings.insertEmbedding(
-        record.id,
-        record.metadata,
-        record.title,
-        record.content,
-        record.type,
-        scope,
-      );
-      insertedIds.push(record.id);
-    }
-  } catch (error) {
-    await cleanupInsertedEmbeddingRecords(repositories, insertedIds);
-    throw error;
-  }
-}
-
-async function cleanupInsertedEmbeddingRecords(repositories: RepositoryManager, ids: string[]) {
-  for (const id of ids) {
-    try {
-      await repositories.embeddings.deleteEmbedding(id);
-    } catch (error) {
-      logger.warn("Failed to clean up inserted embedding record after database insert failure", {
-        id,
-        error,
-      });
-    }
-  }
-}
 
 async function cleanupInsertedVectors(embedding: EmbeddingProvider, vectors: EmbeddingVector[]) {
   const ids = vectors.map((vector) => vector.id);
