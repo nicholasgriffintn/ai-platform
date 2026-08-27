@@ -30,7 +30,7 @@ export interface SandboxConnectionListProps {
   loadErrorMessage?: string;
   onSignIn: () => void;
   onDelete: (installationId: number) => void;
-  isDeleting?: boolean;
+  deletingInstallationId?: number | null;
 }
 
 export function SandboxConnectionList({
@@ -40,7 +40,7 @@ export function SandboxConnectionList({
   loadErrorMessage,
   onSignIn,
   onDelete,
-  isDeleting = false,
+  deletingInstallationId = null,
 }: SandboxConnectionListProps) {
   return (
     <Card>
@@ -98,7 +98,7 @@ export function SandboxConnectionList({
                     size="sm"
                     icon={<Trash2 className="h-4 w-4" />}
                     onClick={() => onDelete(connection.installationId)}
-                    isLoading={isDeleting}
+                    isLoading={deletingInstallationId === connection.installationId}
                   >
                     Remove
                   </Button>

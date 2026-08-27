@@ -1,7 +1,12 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { AccountNavigation, AccountPrompt, type AccountSection } from "./index";
+import {
+  AccountNavigation,
+  AccountPrompt,
+  type AccountSection,
+  SandboxConnectionList,
+} from "./index";
 
 afterEach(cleanup);
 
@@ -47,5 +52,33 @@ describe("account controls", () => {
     expect(screen.getByText("Contact the workspace owner")).toBeTruthy();
     fireEvent.click(action);
     expect(onAction).not.toHaveBeenCalled();
+  });
+});
+
+describe("sandbox connection list", () => {
+  const connections = [
+    { installationId: 1, appId: "app-1", updatedAt: new Date().toISOString(), repositories: [] },
+    { installationId: 2, appId: "app-2", updatedAt: new Date().toISOString(), repositories: [] },
+  ];
+
+  it("only blocks the row whose deletion is in flight", () => {
+    const onDelete = vi.fn<(installationId: number) => void>();
+
+    render(
+      <SandboxConnectionList
+        connections={connections}
+        onSignIn={vi.fn()}
+        onDelete={onDelete}
+        deletingInstallationId={1}
+      />,
+    );
+
+    const [deleting, other] = screen.getAllByRole("button", { name: /Remove/ });
+
+    expect(deleting.hasAttribute("disabled")).toBe(true);
+    expect(other.hasAttribute("disabled")).toBe(false);
+
+    fireEvent.click(other);
+    expect(onDelete).toHaveBeenCalledExactlyOnceWith(2);
   });
 });
