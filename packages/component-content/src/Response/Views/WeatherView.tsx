@@ -68,7 +68,7 @@ export function WeatherView({ data, embedded }: WeatherViewProps) {
             {hasWeatherMinMax(data) && (
               <p className="text-base font-semibold text-zinc-800 dark:text-zinc-100">
                 {formatWeatherTemperature(data.main.temp_max)}{" "}
-                <span className="font-normal text-zinc-400">
+                <span className="font-normal text-zinc-500 dark:text-zinc-400">
                   {formatWeatherTemperature(data.main.temp_min)}
                 </span>
               </p>
@@ -157,7 +157,9 @@ function DailyForecastRow({
         {precipitation > 0 ? `${precipitation}%` : ""}
       </div>
       <div className="grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-2">
-        <span className="text-right text-zinc-400">{formatWeatherTemperature(item.tempMin)}</span>
+        <span className="text-right text-zinc-500 dark:text-zinc-400">
+          {formatWeatherTemperature(item.tempMin)}
+        </span>
         <span
           aria-label={`${label} temperature range`}
           className="h-1.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800"

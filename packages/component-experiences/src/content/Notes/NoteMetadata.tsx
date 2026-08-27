@@ -286,7 +286,12 @@ export function NoteMetadata({
             </Button>
           )}
           {isEditable && (
-            <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditing(true)}
+              aria-label="Edit note metadata"
+            >
               <Edit3 size={14} />
             </Button>
           )}

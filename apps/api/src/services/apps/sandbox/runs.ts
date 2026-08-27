@@ -43,7 +43,7 @@ function parseSandboxRunRecordData(value: string): SandboxRunData | null {
   return parseSandboxRunData(safeParseJson(value));
 }
 
-async function getSandboxRunRecordForUser(params: {
+export async function getSandboxRunRecordForUser(params: {
   context: ServiceContext;
   userId: number;
   runId: string;

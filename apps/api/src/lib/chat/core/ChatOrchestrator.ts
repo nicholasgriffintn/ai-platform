@@ -20,6 +20,7 @@ import { captureTrainingExample } from "~/lib/providers/capabilities/training/ca
 import { SessionManager } from "~/lib/session/SessionManager";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
 import { acquireThread, releaseThread } from "~/services/conversations/coordinator/client";
+import { disposeMCPClients } from "~/services/functions/mcp";
 import { GOAL_STATUS_MARKER_EVENTS, recordGoalMarker } from "~/services/goals/goalMarker";
 import { GoalService } from "~/services/goals/GoalService";
 import type { ChatMode, CoreChatOptions, Message } from "~/types";
@@ -316,7 +317,11 @@ export class ChatOrchestrator {
       runResult = await runAgentLoop(runParams);
     } finally {
       if (toolRequestContext.context) {
-        await closeComposioConnectorRun(toolRequestContext.context);
+        try {
+          await closeComposioConnectorRun(toolRequestContext.context);
+        } finally {
+          await disposeMCPClients(toolRequestContext.context);
+        }
       }
     }
 

@@ -33,29 +33,6 @@
     color: #3f3f46;
     text-decoration: none;
   }
-  .polychat-content-image-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    display: grid;
-    place-items: center;
-    padding: 1rem;
-    background: rgb(0 0 0 / 0.72);
-  }
-  .polychat-content-image-modal img {
-    max-width: 100%;
-    border-radius: 0.75rem;
-  }
-  .polychat-content-image-close {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    border: 0;
-    background: transparent;
-    color: white;
-    font-size: 2rem;
-    cursor: pointer;
-  }
   .polychat-content-favicon {
     width: 1.5rem;
     height: 1.5rem;

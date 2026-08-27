@@ -6,6 +6,7 @@ import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
 import { createChatSseStreamWriter, startChatStreamHeartbeat } from "~/lib/chat/streaming/emitter";
 import { watchDetachedTurnCancellation } from "~/lib/chat/streaming/turn-cancellation";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
+import { disposeMCPClients } from "~/services/functions/mcp";
 import { StreamState } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -19,7 +20,7 @@ export type CreateChatTurnStreamParams = Omit<AgentLoopExecutionParams, "sink" |
 export function createChatTurnStream(params: CreateChatTurnStreamParams): ReadableStream {
   const stream = createChatSseStreamWriter();
   const tracesAgentEvents = isAgentExecutionMode(params.mode);
-  const closeConnectorRun = createConnectorRunCloser(params);
+  const closeRunResources = createRunResourceCloser(params);
   const stopHeartbeat = startChatStreamHeartbeat(stream);
   const stopSignal = watchDetachedTurnCancellation({
     env: params.env,
@@ -61,7 +62,7 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
     } finally {
       stopHeartbeat();
       stopSignal.stop();
-      await closeConnectorRun();
+      await closeRunResources();
 
       try {
         await stream.writeDone();
@@ -84,7 +85,7 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
   return stream.readable;
 }
 
-export function createConnectorRunCloser(params: {
+export function createRunResourceCloser(params: {
   toolRequestContext: AgentLoopExecutionParams["toolRequestContext"];
 }): () => Promise<void> {
   let closed: Promise<void> | undefined;
@@ -96,9 +97,15 @@ export function createConnectorRunCloser(params: {
       return Promise.resolve();
     }
 
-    closed ??= Promise.resolve(closeComposioConnectorRun(context)).catch((error) => {
-      logger.error("Failed to close the connector run", { error });
-    });
+    closed ??= (async () => {
+      try {
+        await closeComposioConnectorRun(context);
+      } catch (error) {
+        logger.error("Failed to close the connector run", { error });
+      }
+
+      await disposeMCPClients(context);
+    })();
 
     return closed;
   };

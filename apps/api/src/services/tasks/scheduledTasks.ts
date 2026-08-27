@@ -8,6 +8,8 @@ import { TaskService } from "./TaskService";
 
 const logger = getLogger({ prefix: "services/tasks/scheduled" });
 
+const MIN_NEW_MEMORIES_FOR_SYNTHESIS = 5;
+
 export async function scheduleDailyUsageReset(env: IEnv, now = new Date()): Promise<void> {
   try {
     const repositories = RepositoryManager.getInstance(env);
@@ -40,13 +42,26 @@ export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
     const repositories = RepositoryManager.getInstance(env);
 
     const result = await env.DB.prepare(
-      `SELECT DISTINCT u.id
+      `SELECT u.id AS id, COUNT(s.id) AS new_memory_count
        FROM user u
        INNER JOIN user_settings us ON u.id = us.user_id
-       WHERE us.memories_save_enabled = 1`,
+       LEFT JOIN (
+         SELECT user_id, MAX(created_at) AS created_at
+         FROM memory_syntheses
+         WHERE namespace = 'global' AND is_active = 1
+         GROUP BY user_id
+       ) ms ON ms.user_id = u.id
+       LEFT JOIN source s
+         ON s.created_by_user_id = u.id
+        AND s.kind = 'memory'
+        AND s.status != 'archived'
+        AND COALESCE(json_extract(s.metadata, '$.namespace'), 'global') = 'global'
+        AND (ms.created_at IS NULL OR s.created_at > ms.created_at)
+       WHERE us.memories_save_enabled = 1
+       GROUP BY u.id`,
     ).all();
 
-    const users = result.results as Array<{ id: number }>;
+    const users = result.results as Array<{ id: number; new_memory_count: number }>;
 
     if (!users || users.length === 0) {
       logger.info("No users with memories enabled for daily synthesis");
@@ -58,28 +73,19 @@ export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
     let scheduledCount = 0;
 
     for (const user of users) {
+      if (user.new_memory_count < MIN_NEW_MEMORIES_FOR_SYNTHESIS) {
+        continue;
+      }
+
       try {
-        const lastSynthesis = await repositories.memorySyntheses.getActiveSynthesis(
-          user.id,
-          "global",
-        );
+        await taskService.enqueueTask({
+          task_type: "memory_synthesis",
+          user_id: user.id,
+          task_data: { namespace: "global" },
+          priority: 5,
+        });
 
-        const newMemoryCount = await repositories.memorySyntheses.countMemoriesSince(
-          user.id,
-          lastSynthesis?.created_at,
-          "global",
-        );
-
-        if (newMemoryCount >= 5) {
-          await taskService.enqueueTask({
-            task_type: "memory_synthesis",
-            user_id: user.id,
-            task_data: { namespace: "global" },
-            priority: 5,
-          });
-
-          scheduledCount++;
-        }
+        scheduledCount++;
       } catch (error) {
         logger.error(`Failed to schedule synthesis for user ${user.id}:`, error);
       }

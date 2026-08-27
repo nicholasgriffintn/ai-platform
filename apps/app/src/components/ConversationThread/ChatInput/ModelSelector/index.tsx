@@ -96,6 +96,7 @@ export const ModelSelector = ({
   const isModelListOnlyScope = isTextOnlyScope || isLiveScope || isChatAndLiveScope;
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const triggerWrapperRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const hoverPreviewRef = useRef<HTMLDivElement | null>(null);
@@ -309,9 +310,15 @@ export const ModelSelector = ({
     dismissHoverPreview();
   }, [dismissHoverPreview, isOpen]);
 
+  // Dismissing from inside the panel leaves focus nowhere, so hand it back to the trigger.
+  const closeSelector = useCallback(() => {
+    setIsOpen(false);
+    triggerRef.current?.focus();
+  }, []);
+
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Escape") {
-      setIsOpen(false);
+      closeSelector();
 
       return;
     }
@@ -466,7 +473,7 @@ export const ModelSelector = ({
       localOnly: false,
     });
     onModelChange?.(null);
-    setIsOpen(false);
+    closeSelector();
 
     trackEvent({
       name: "set_auto_mode",
@@ -515,6 +522,7 @@ export const ModelSelector = ({
   return (
     <div ref={triggerWrapperRef} className="relative">
       <ModelSelectorTrigger
+        ref={triggerRef}
         isOpen={isOpen}
         disabled={isDisabled}
         minimal={minimal}
@@ -599,7 +607,7 @@ export const ModelSelector = ({
               is_free_model: String(modelInfo.isFree),
             });
             handleModelChange(id);
-            setIsOpen(false);
+            closeSelector();
           }}
           onInfoHoverStart={handleInfoHoverStart}
           onInfoHoverEnd={handleInfoHoverEnd}

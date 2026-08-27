@@ -10,3 +10,19 @@
     color-scheme: dark;
   }
 }
+
+/*
+ * Decorative motion is opt-out for everyone at once rather than per animation.
+ * Deliberately unlayered so it outranks the Tailwind `utilities` layer.
+ * Spinners and skeleton pulses are exempt: their motion is the status, not decoration.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *:not(.animate-spin):not(.animate-pulse):not([data-motion="essential"]),
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

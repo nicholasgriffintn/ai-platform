@@ -36,7 +36,7 @@ export async function createAgentCompletion({
 
   const agent = await getValidatedAgent(serviceContext, agentId, user?.id);
 
-  const functionSchemas = await buildAgentCompletionTools(agent, serviceContext.env);
+  const functionSchemas = await buildAgentCompletionTools(agent, serviceContext);
 
   const modelToUse = agent.model || body.model;
   const modelDetails = await findModelConfig(modelToUse || "", env, body.provider);

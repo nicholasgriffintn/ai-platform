@@ -5,6 +5,7 @@ import { MemoryManager } from "~/lib/memory";
 import type { SourceCollectionRecord, SourceRecord } from "~/repositories/SourceRepository";
 
 import {
+  addCollectionSources,
   deleteSource,
   deleteSourceCollection,
   listProjectConversationSources,
@@ -188,7 +189,7 @@ describe("project conversation context", () => {
       user: { id: 42 },
       repositories: {
         sources: {
-          getSource: vi.fn().mockResolvedValue(projectSource),
+          getSourcesByIds: vi.fn().mockResolvedValue([projectSource]),
           ensureProjectContextCollection: vi.fn().mockResolvedValue(contextCollection),
           replaceCollectionSources,
           getProjectContextCollection: vi.fn().mockResolvedValue(contextCollection),
@@ -252,7 +253,9 @@ describe("project conversation context", () => {
       user: { id: 42 },
       repositories: {
         sources: {
-          getSource: vi.fn().mockResolvedValue({ ...projectSource, project_id: "project-2" }),
+          getSourcesByIds: vi
+            .fn()
+            .mockResolvedValue([{ ...projectSource, project_id: "project-2" }]),
           ensureProjectContextCollection: vi.fn(),
           replaceCollectionSources: vi.fn(),
         },
@@ -263,6 +266,61 @@ describe("project conversation context", () => {
       setProjectContextSources(context, 42, "project-1", [projectSource.id]),
     ).rejects.toMatchObject({ statusCode: 400 });
     expect(context.repositories.sources.replaceCollectionSources).not.toHaveBeenCalled();
+  });
+
+  it("rejects the whole batch when one of several source ids is missing", async () => {
+    const otherSource = { ...projectSource, id: "source-2" };
+    const context = {
+      env: {},
+      user: { id: 42 },
+      repositories: {
+        sources: {
+          // Only one of the two requested ids comes back from the batched lookup.
+          getSourcesByIds: vi.fn().mockResolvedValue([projectSource]),
+          ensureProjectContextCollection: vi.fn(),
+          replaceCollectionSources: vi.fn(),
+        },
+      },
+    } as unknown as ServiceContext;
+
+    await expect(
+      setProjectContextSources(context, 42, "project-1", [projectSource.id, otherSource.id]),
+    ).rejects.toMatchObject({ statusCode: 404 });
+    expect(context.repositories.sources.replaceCollectionSources).not.toHaveBeenCalled();
+  });
+
+  it("validates every source id in a batch and checks project access once per project", async () => {
+    const addCollectionSourcesRepo = vi.fn().mockResolvedValue(2);
+    const context = {
+      env: {},
+      user: { id: 42 },
+      repositories: {
+        sources: {
+          getSourcesByIds: vi
+            .fn()
+            .mockResolvedValue([projectSource, { ...projectSource, id: "source-2" }]),
+          addCollectionSources: addCollectionSourcesRepo,
+          getCollection: vi.fn().mockResolvedValue({
+            id: contextCollection.id,
+            project_id: "project-1",
+            created_by_user_id: 42,
+          }),
+        },
+      },
+    } as unknown as ServiceContext;
+
+    const result = await addCollectionSources(context, 42, contextCollection.id, [
+      projectSource.id,
+      "source-2",
+    ]);
+
+    // Once for the collection itself, once for the two sources (deduped since they share a project).
+    expect(requireProjectAccessMock).toHaveBeenCalledTimes(2);
+    expect(addCollectionSourcesRepo).toHaveBeenCalledWith(contextCollection.id, [
+      projectSource.id,
+      "source-2",
+    ]);
+    expect(result).toEqual({ added: 2 });
   });
 
   it("prevents the reserved project context collection from generic deletion", async () => {

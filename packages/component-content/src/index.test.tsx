@@ -1,7 +1,7 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { CopyButton, ShareDialog } from "./index";
+import { CopyButton, ImageModal, ShareDialog } from "./index";
 
 afterEach(cleanup);
 
@@ -37,5 +37,23 @@ describe("content actions", () => {
     render(<CopyButton value="Reusable text" label="Copy response" onCopy={onCopy} />);
     fireEvent.click(screen.getByRole("button", { name: "Copy response" }));
     expect(onCopy).toHaveBeenCalledWith("Reusable text");
+  });
+
+  it("traps and restores focus around the enlarged image", async () => {
+    render(<ImageModal src="https://example.com/parrot.png" alt="A parrot" />);
+
+    const trigger = screen.getByRole("button", { name: "View A parrot larger" });
+
+    trigger.focus();
+    fireEvent.click(trigger);
+
+    const dialog = await screen.findByRole("dialog", { name: "A parrot" });
+
+    expect(dialog.contains(document.activeElement)).toBe(true);
+
+    fireEvent.keyDown(dialog, { key: "Escape" });
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(document.activeElement).toBe(trigger);
   });
 });

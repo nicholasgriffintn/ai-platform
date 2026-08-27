@@ -6,6 +6,7 @@ import {
   AccountPrompt,
   type AccountSection,
   SandboxConnectionList,
+  TeamCard,
 } from "./index";
 
 afterEach(cleanup);
@@ -53,12 +54,45 @@ describe("account controls", () => {
     fireEvent.click(action);
     expect(onAction).not.toHaveBeenCalled();
   });
+
+  it("names every icon-only team action for screen readers", () => {
+    const team = {
+      id: "team-1",
+      name: "Research",
+      orchestrator: { id: "lead-1", name: "Kea" },
+      members: [{ id: "member-1", name: "Macaw", team_role: "specialist" }],
+    };
+
+    render(<TeamCard team={team} onEdit={vi.fn()} onShare={vi.fn()} onDelete={vi.fn()} />);
+
+    const expand = screen.getByRole("button", {
+      name: "Show Research members",
+    });
+
+    expect(screen.getByRole("button", { name: "More actions for team Research" })).toBeTruthy();
+
+    fireEvent.click(expand);
+
+    expect(screen.getByRole("button", { name: "Hide Research members" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "More actions for Kea" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "More actions for Macaw" })).toBeTruthy();
+  });
 });
 
 describe("sandbox connection list", () => {
   const connections = [
-    { installationId: 1, appId: "app-1", updatedAt: new Date().toISOString(), repositories: [] },
-    { installationId: 2, appId: "app-2", updatedAt: new Date().toISOString(), repositories: [] },
+    {
+      installationId: 1,
+      appId: "app-1",
+      updatedAt: new Date().toISOString(),
+      repositories: [],
+    },
+    {
+      installationId: 2,
+      appId: "app-2",
+      updatedAt: new Date().toISOString(),
+      repositories: [],
+    },
   ];
 
   it("only blocks the row whose deletion is in flight", () => {

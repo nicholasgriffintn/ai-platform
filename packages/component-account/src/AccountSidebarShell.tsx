@@ -1,4 +1,10 @@
-import { Button, cn, Link } from "@ngriffin_uk/polychat-component-ui";
+import {
+  Button,
+  cn,
+  Link,
+  SidebarBackdrop,
+  useOverlayDismiss,
+} from "@ngriffin_uk/polychat-component-ui";
 import { Home, Loader2, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -34,17 +40,19 @@ export function AccountSidebarShell({
   isLoggingOut = false,
   onLogout,
 }: AccountSidebarShellProps) {
+  // Only the mobile drawer overlays the page, so only it takes focus and Escape.
+  const isDrawer = sidebarVisible && isMobile;
+  const drawerRef = useOverlayDismiss<HTMLDivElement>({ open: isDrawer, onClose });
+
   return (
     <>
-      {sidebarVisible && isMobile && (
-        <div
-          className="md:hidden fixed inset-0 bg-black/30 z-20"
-          onClick={onClose}
-          onKeyDown={(event) => event.key === "Enter" && onClose()}
-          aria-hidden="true"
-        />
-      )}
+      {isDrawer && <SidebarBackdrop onClose={onClose} label="Close account navigation" />}
       <div
+        ref={drawerRef}
+        role={isDrawer ? "dialog" : undefined}
+        aria-modal={isDrawer ? true : undefined}
+        aria-label={isDrawer ? "Account navigation" : undefined}
+        tabIndex={isDrawer ? -1 : undefined}
         className={`fixed md:relative z-50 h-full w-64 bg-off-white dark:bg-zinc-900 transition-transform duration-300 ease-in-out border-r border-zinc-200 dark:border-zinc-800 ${
           sidebarVisible ? "translate-x-0" : "-translate-x-full md:translate-x-0 md:w-0 md:border-0"
         }`}
