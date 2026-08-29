@@ -1,5 +1,6 @@
 import { Button, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
+  TaskAttentionList,
   WorkAccessEmptyState,
   WorkspaceCardGrid,
 } from "@ngriffin_uk/polychat-component-workspaces";
@@ -8,6 +9,7 @@ import { useState } from "react";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
+import { useTaskAttention } from "~/hooks/useProjectTasks";
 import { isAuthenticationError } from "~/lib/errors";
 import { useChatStore } from "~/state/stores/chatStore";
 
@@ -22,6 +24,7 @@ export function WorkOverview() {
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
   const isPro = useChatStore((state) => state.isPro);
   const canAccessWork = isAuthenticated && isPro;
+  const { items: attentionItems } = useTaskAttention();
 
   return (
     <>
@@ -98,6 +101,22 @@ export function WorkOverview() {
             }))}
           />
         ) : null}
+
+        {canAccessWork && attentionItems.length > 0 && (
+          <section className="mt-10">
+            <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+              Waiting on you
+            </h2>
+            <TaskAttentionList
+              items={attentionItems}
+              itemHref={(item) =>
+                item.conversationId
+                  ? `/work/${item.workspaceId}/projects/${item.projectId}/chat?completion_id=${item.conversationId}`
+                  : `/work/${item.workspaceId}/projects/${item.projectId}/tasks`
+              }
+            />
+          </section>
+        )}
       </PageShell.Content>
       <CreateWorkspaceDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
     </>

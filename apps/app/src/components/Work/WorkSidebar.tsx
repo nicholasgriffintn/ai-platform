@@ -4,6 +4,7 @@ import { useLocation, useSearchParams } from "react-router";
 
 import { SidebarFooter } from "~/components/Sidebar/SidebarFooter";
 import { SidebarHeader } from "~/components/Sidebar/SidebarHeader";
+import { useTaskAttention } from "~/hooks/useProjectTasks";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
@@ -32,6 +33,10 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
   const activeConversationId =
     routedConversationId ??
     project?.conversations.find((conversation) => conversation.id === currentConversationId)?.id;
+  const { items: attentionItems } = useTaskAttention();
+  const projectAttentionCount = projectId
+    ? attentionItems.filter((item) => item.projectId === projectId).length
+    : 0;
   const projectBasePath = `/work/${workspaceId ?? ""}/projects/${projectId ?? ""}`;
   const projectChatPath = `${projectBasePath}/chat`;
 
@@ -78,6 +83,8 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
                 experiencesHref: `${projectBasePath}/experiences`,
                 outputsHref: `${projectBasePath}/outputs`,
                 sourcesHref: `${projectBasePath}/sources`,
+                tasksHref: `${projectBasePath}/tasks`,
+                attentionCount: projectAttentionCount,
                 activityHref: `${projectBasePath}/activity`,
                 capabilitiesHref: `${projectBasePath}/library`,
                 conversations: (project?.conversations ?? []).map((conversation) => ({

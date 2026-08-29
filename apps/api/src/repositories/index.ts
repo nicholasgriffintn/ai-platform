@@ -19,6 +19,7 @@ import { MessageRepository } from "./MessageRepository";
 import { OAuthStateRepository } from "./OAuthStateRepository";
 import { OutputRepository } from "./OutputRepository";
 import { PlanRepository } from "./PlanRepository";
+import { ProjectTaskRepository } from "./ProjectTaskRepository";
 import { ProviderConnectionRepository } from "./ProviderConnectionRepository";
 import { RecipeComposioTriggerRepository } from "./RecipeComposioTriggerRepository";
 import { SessionRepository } from "./SessionRepository";
@@ -59,6 +60,7 @@ export {
   UserSettingsRepository,
   WebAuthnRepository,
   PlanRepository,
+  ProjectTaskRepository,
   ProviderConnectionRepository,
   RecipeComposioTriggerRepository,
   SharedAgentRepository,
@@ -70,6 +72,7 @@ export class RepositoryManager {
   private activityRepo: ActivityRepository;
   private agentRepo: AgentRepository;
   private planRepo: PlanRepository;
+  private projectTaskRepo: ProjectTaskRepository;
   private userRepo: UserRepository;
   private anonymousUserRepo: AnonymousUserRepository;
   private sessionRepo: SessionRepository;
@@ -102,6 +105,7 @@ export class RepositoryManager {
     this.activityRepo = new ActivityRepository(env);
     this.agentRepo = new AgentRepository(env);
     this.planRepo = new PlanRepository(env);
+    this.projectTaskRepo = new ProjectTaskRepository(env);
     this.userRepo = new UserRepository(env);
     this.anonymousUserRepo = new AnonymousUserRepository(env);
     this.sessionRepo = new SessionRepository(env);
@@ -141,6 +145,10 @@ export class RepositoryManager {
 
   public get activities(): ActivityRepository {
     return this.activityRepo;
+  }
+
+  public get projectTasks(): ProjectTaskRepository {
+    return this.projectTaskRepo;
   }
 
   public get users(): UserRepository {

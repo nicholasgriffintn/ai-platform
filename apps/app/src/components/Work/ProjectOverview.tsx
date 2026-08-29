@@ -58,6 +58,7 @@ export function ProjectOverview({
   const canManage = workspace?.role === "owner" || workspace?.role === "admin";
   const capabilitiesPath = `/work/${workspaceId}/projects/${projectId}/library`;
   const conversationPath = `/work/${workspaceId}/projects/${projectId}/chat`;
+  const tasksPath = `/work/${workspaceId}/projects/${projectId}/tasks`;
   const handleSaveTemplate = async () => {
     try {
       await templates.create.mutateAsync({
@@ -97,6 +98,7 @@ export function ProjectOverview({
               canManage={canManage}
               capabilitiesPath={capabilitiesPath}
               conversationPath={conversationPath}
+              tasksPath={tasksPath}
               isSavingTemplate={templates.create.isPending}
               onArchive={() => setIsArchiveOpen(true)}
               onSaveTemplate={() => void handleSaveTemplate()}

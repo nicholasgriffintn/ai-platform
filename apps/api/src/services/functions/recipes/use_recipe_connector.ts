@@ -36,6 +36,7 @@ import { redactSensitiveTokens } from "~/utils/redaction";
 
 import type { ApiToolDefinition } from "../../../types/functions";
 import { jsonSchemaToZod } from "../../../utils/jsonSchema";
+import { resolveRequestProjectId } from "../request-context";
 
 function buildConnectorToolError(params: {
   provider: string;
@@ -164,9 +165,7 @@ export const use_recipe_connector: ApiToolDefinition = {
     const projectId =
       request.memoryScope?.type === "project"
         ? request.memoryScope.projectId
-        : typeof request.request?.metadata?.project_id === "string"
-          ? request.request.metadata.project_id
-          : undefined;
+        : (resolveRequestProjectId(request) ?? undefined);
     const recipeAllowedConnectorProviders = getRecipeAllowedConnectorProviders(
       request.request?.options,
     );

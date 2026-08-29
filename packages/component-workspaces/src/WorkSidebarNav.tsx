@@ -8,6 +8,7 @@ import {
   FolderKanban,
   Grid2X2,
   LayoutDashboard,
+  ListChecks,
   MessageSquareText,
   PanelsTopLeft,
   Search,
@@ -46,9 +47,11 @@ export interface WorkSidebarProject {
   experiencesHref: string;
   outputsHref: string;
   sourcesHref: string;
+  tasksHref: string;
   activityHref: string;
   capabilitiesHref: string;
   conversations: WorkSidebarConversationLink[];
+  attentionCount?: number;
   /** True while the project chat route is open, which decides conversation highlighting. */
   isConversationRoute: boolean;
   activeConversationId?: string;
@@ -165,6 +168,14 @@ export function WorkSidebarNav({
           </NavLink>
           <NavLink href={project.sourcesHref} className={linkClass} onClick={onNavigate}>
             <Database size={16} /> Sources
+          </NavLink>
+          <NavLink href={project.tasksHref} className={linkClass} onClick={onNavigate}>
+            <ListChecks size={16} /> Tasks
+            {project.attentionCount ? (
+              <span className="ml-auto rounded-full bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                {project.attentionCount}
+              </span>
+            ) : null}
           </NavLink>
           <NavLink href={project.activityHref} className={linkClass} onClick={onNavigate}>
             <Activity size={16} /> Activity

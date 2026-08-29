@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const SANDBOX_RUN_DISPATCH_TASK_TYPE = "sandbox_run_dispatch";
+export const PROJECT_TASK_RUN_TASK_TYPE = "project_task_run";
 
 export const TASK_TYPES = [
   "memory_synthesis",
@@ -15,6 +16,7 @@ export const TASK_TYPES = [
   "artificial_analysis_ingest",
   "artificial_analysis_scoring",
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
+  PROJECT_TASK_RUN_TASK_TYPE,
 ] as const;
 
 export const PUBLIC_TASK_TYPES = ["memory_synthesis"] as const;

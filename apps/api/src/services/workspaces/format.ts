@@ -2,12 +2,13 @@ import type {
   ProjectCapability,
   ProjectConversation,
   ProjectDetail,
+  ProjectFlow,
   ProjectSummary,
   WorkspaceInvitation,
   WorkspaceMember,
   WorkspaceSummary,
 } from "@ngriffin_uk/polychat-schemas";
-import { projectCodingEnvironmentSchema } from "@ngriffin_uk/polychat-schemas";
+import { projectCodingEnvironmentSchema, projectFlowSchema } from "@ngriffin_uk/polychat-schemas";
 
 import type {
   ProjectCapabilityRow,
@@ -118,6 +119,18 @@ export function formatProjectConversation(row: ProjectConversationRow): ProjectC
   };
 }
 
+export function parseProjectFlow(raw: string | null | undefined): ProjectFlow | null {
+  if (!raw) {
+    return null;
+  }
+
+  const parsed = projectFlowSchema.safeParse(
+    typeof raw === "string" ? safeParseJson<unknown>(raw) : raw,
+  );
+
+  return parsed.success ? parsed.data : null;
+}
+
 export function formatProjectDetail(params: {
   project: ProjectRow;
   capabilities: ProjectCapabilityRow[];
@@ -127,5 +140,6 @@ export function formatProjectDetail(params: {
     ...formatProjectSummary(params.project),
     capabilities: params.capabilities.map(formatProjectCapability),
     conversations: params.conversations.map(formatProjectConversation),
+    flow: parseProjectFlow(params.project.flow),
   };
 }
