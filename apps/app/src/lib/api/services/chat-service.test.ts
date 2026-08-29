@@ -1132,6 +1132,7 @@ describe("ChatService conversation list", () => {
 
     const service = new ChatService(async () => ({}));
     const result = await service.listChats({
+      activity: "week",
       archived: "archived",
       limit: 30,
       page: 2,
@@ -1142,7 +1143,7 @@ describe("ChatService conversation list", () => {
     const [url, request] = fetchMock.mock.calls[0];
 
     expect(String(url)).toContain(
-      "/chat/completions?limit=30&page=2&archived=archived&sort_by=created&q=design+review",
+      "/chat/completions?limit=30&page=2&archived=archived&activity=week&sort_by=created&q=design+review",
     );
     expect(request?.method).toBe("GET");
     expect(result.conversations).toEqual([

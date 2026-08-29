@@ -452,12 +452,21 @@ export class HomePage extends BasePage {
     await this.page.getByRole("textbox", { name: "Search Polychat" }).waitFor({ state: "hidden" });
   }
 
+  async setConversationListOption(section: string, option: string) {
+    const trigger = this.page.getByRole("button", { name: "Conversation list options" });
+
+    await trigger.click();
+    await this.page.getByRole("menuitem", { name: new RegExp(`^${section}`) }).click();
+
+    const choice = this.page.getByRole("menuitemradio", { name: option, exact: true });
+
+    await choice.click();
+    // Selecting an option dismisses the whole menu, so wait for it before asserting on the list.
+    await choice.waitFor({ state: "hidden" });
+  }
+
   async setConversationArchiveFilter(state: "Active" | "Archived" | "All") {
-    await this.page.getByRole("button", { name: "Conversation list options" }).click();
-    await this.page
-      .getByLabel("Conversation archive filter", { exact: true })
-      .selectOption(state.toLowerCase());
-    await this.page.keyboard.press("Escape");
+    await this.setConversationListOption("Status", state);
   }
 
   async deleteConversation(title: string | RegExp) {

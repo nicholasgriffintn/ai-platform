@@ -9,10 +9,6 @@ import {
   SidebarNavSection,
 } from "@ngriffin_uk/polychat-component-navigation";
 import { Button, ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
-import type {
-  ConversationArchiveFilter,
-  ConversationSortBy,
-} from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { useLoadMoreOnIntersect } from "@ngriffin_uk/polychat-utility-react";
 import {
   Grid2X2,
@@ -29,7 +25,7 @@ import { useLocation, useNavigate } from "react-router";
 import type { CanvasStudioState } from "~/components/Canvas/useCanvasStudio";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useChats, useDeleteChat, useUpdateChatTitle } from "~/hooks/useChat";
-import { categorizeItemsByDate } from "~/lib/sidebar";
+import { buildConversationGroups } from "~/lib/conversation-groups";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
@@ -52,7 +48,14 @@ export const ChatSidebar = ({
   const { pathname } = useLocation();
   // The conversation only renders on the chat index, so the sub-pages must route back to it.
   const isConversationRoute = pathname === "/" || pathname === "/chat";
-  const { sidebarVisible, setSidebarVisible, isMobile } = useUIStore();
+  const {
+    sidebarVisible,
+    setSidebarVisible,
+    isMobile,
+    conversationListFilters,
+    setConversationListFilters,
+    resetConversationListFilters,
+  } = useUIStore();
   const {
     currentConversationId,
     setCurrentConversationId,
@@ -64,8 +67,6 @@ export const ChatSidebar = ({
     localOnlyMode,
   } = useChatStore();
 
-  const [archiveFilter, setArchiveFilter] = useState<ConversationArchiveFilter>("active");
-  const [sortBy, setSortBy] = useState<ConversationSortBy>("updated");
   const {
     data: conversations,
     error: conversationsError,
@@ -75,8 +76,9 @@ export const ChatSidebar = ({
     isLoading,
     refetch: refetchConversations,
   } = useChats({
-    archived: archiveFilter,
-    sortBy,
+    activity: conversationListFilters.activity,
+    archived: conversationListFilters.archiveFilter,
+    sortBy: conversationListFilters.sortBy,
   });
   const deleteChat = useDeleteChat();
   const updateTitle = useUpdateChatTitle();
@@ -90,26 +92,6 @@ export const ChatSidebar = ({
     enabled: Boolean(hasNextPage),
     isLoading: isFetchingNextPage,
     onLoadMore: loadMoreConversations,
-  });
-
-  const categorizedChats = categorizeItemsByDate(conversations, (c) => {
-    if (sortBy === "created" && c.created_at) {
-      return new Date(c.created_at);
-    }
-
-    if (sortBy === "updated" && c.updated_at) {
-      return new Date(c.updated_at);
-    }
-
-    if (c.last_message_at) {
-      return new Date(c.last_message_at);
-    }
-
-    if (c.created_at) {
-      return new Date(c.created_at);
-    }
-
-    return new Date(0);
   });
 
   const closeOnMobile = () => {
@@ -209,22 +191,10 @@ export const ChatSidebar = ({
     });
   };
 
-  const conversationGroups = [
-    { title: "Today", conversations: categorizedChats.today },
-    { title: "Yesterday", conversations: categorizedChats.yesterday },
-    { title: "This Week", conversations: categorizedChats.thisWeek },
-    { title: "This Month", conversations: categorizedChats.thisMonth },
-    { title: "Last Month", conversations: categorizedChats.lastMonth },
-    { title: "Older", conversations: categorizedChats.older },
-  ].map(({ title, conversations: group }) => ({
-    title,
-    conversations: group.map((conversation) => ({
-      id: conversation.id,
-      title: conversation.title,
-      isLocalOnly: conversation.isLocalOnly,
-      parentConversationId: conversation.parent_conversation_id,
-    })),
-  }));
+  const conversationGroups = buildConversationGroups(conversations, {
+    groupBy: conversationListFilters.groupBy,
+    sortBy: conversationListFilters.sortBy,
+  });
 
   const sidebarHeader = (
     <SidebarHeader
@@ -314,10 +284,9 @@ export const ChatSidebar = ({
               isEmpty={conversations.length === 0}
               controls={
                 <ConversationListControls
-                  archiveFilter={archiveFilter}
-                  onArchiveFilterChange={setArchiveFilter}
-                  onSortByChange={setSortBy}
-                  sortBy={sortBy}
+                  filters={conversationListFilters}
+                  onFiltersChange={setConversationListFilters}
+                  onReset={resetConversationListFilters}
                 />
               }
             >

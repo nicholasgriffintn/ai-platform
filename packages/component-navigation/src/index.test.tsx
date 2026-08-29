@@ -3,7 +3,12 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { forwardRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ConversationList, ProductModeSwitch } from "./index";
+import {
+  ConversationList,
+  ConversationListControls,
+  DEFAULT_CONVERSATION_LIST_FILTERS,
+  ProductModeSwitch,
+} from "./index";
 
 afterEach(cleanup);
 
@@ -37,13 +42,14 @@ describe("ProductModeSwitch", () => {
 describe("ConversationList", () => {
   const groups = [
     {
+      id: "today",
       title: "Today",
       conversations: [
         { id: "one", title: "Roadmap", parentConversationId: "root" },
         { id: "two", title: "Ideas" },
       ],
     },
-    { title: "Older", conversations: [] },
+    { id: "older", title: "Older", conversations: [] },
   ];
 
   it("emits selection, edit, and delete intents without owning the data", () => {
@@ -89,5 +95,57 @@ describe("ConversationList", () => {
 
     fireEvent.click(screen.getByLabelText("Go to original conversation"));
     expect(onSelect).toHaveBeenCalledWith("root");
+  });
+});
+
+describe("ConversationListControls", () => {
+  it("reports the selected option for the section the reader opens", async () => {
+    const onFiltersChange = vi.fn();
+
+    render(
+      <ConversationListControls
+        filters={DEFAULT_CONVERSATION_LIST_FILTERS}
+        onFiltersChange={onFiltersChange}
+        onReset={vi.fn()}
+      />,
+    );
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Conversation list options" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: /^Last activity/ }));
+
+    const current = await screen.findByRole("menuitemradio", { name: "Any time" });
+
+    expect(current.getAttribute("aria-checked")).toBe("true");
+
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "Past 7 days" }));
+
+    expect(onFiltersChange).toHaveBeenCalledWith({ activity: "week" });
+  });
+
+  it("offers a way back to the defaults only once a filter has been changed", async () => {
+    const onReset = vi.fn();
+
+    const { rerender } = render(
+      <ConversationListControls
+        filters={DEFAULT_CONVERSATION_LIST_FILTERS}
+        onFiltersChange={vi.fn()}
+        onReset={onReset}
+      />,
+    );
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Conversation list options" }));
+    expect(await screen.findByRole("menuitem", { name: /^Status/ })).toBeTruthy();
+    expect(screen.queryByText("Reset to defaults")).toBeNull();
+
+    rerender(
+      <ConversationListControls
+        filters={{ ...DEFAULT_CONVERSATION_LIST_FILTERS, groupBy: "none" }}
+        onFiltersChange={vi.fn()}
+        onReset={onReset}
+      />,
+    );
+
+    fireEvent.click(await screen.findByText("Reset to defaults"));
+    expect(onReset).toHaveBeenCalledOnce();
   });
 });

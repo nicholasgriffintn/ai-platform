@@ -1,7 +1,32 @@
-export interface ConversationListOptions {
-  archived?: "active" | "archived" | "all";
-  query?: string;
-  sortBy?: "updated" | "created";
+import type {
+  ConversationActivityWindow,
+  ConversationListOptions,
+  ConversationSortBy,
+} from "./conversation-types";
+
+export type { ConversationListOptions };
+
+const ACTIVITY_WINDOW_DAYS: Record<Exclude<ConversationActivityWindow, "all">, number> = {
+  day: 1,
+  week: 7,
+  month: 30,
+};
+
+const UNTITLED_CONVERSATION = "New conversation";
+
+/**
+ * Rolling windows rather than calendar buckets, so the local cutoff matches the
+ * `datetime('now', '-N days')` the API applies to stored conversations.
+ */
+export function conversationActivityCutoff(
+  activity: ConversationActivityWindow | undefined,
+  now: number = Date.now(),
+): number | null {
+  if (!activity || activity === "all") {
+    return null;
+  }
+
+  return now - ACTIVITY_WINDOW_DAYS[activity] * 24 * 60 * 60 * 1000;
 }
 
 export interface ConversationSummary {
@@ -28,7 +53,7 @@ export interface ConversationWithMessages extends ConversationSummary {
 
 function getConversationDate(
   conversation: ConversationSummary,
-  sortBy: NonNullable<ConversationListOptions["sortBy"]>,
+  sortBy: ConversationSortBy,
 ): number {
   const value =
     sortBy === "created"
@@ -38,13 +63,37 @@ function getConversationDate(
   return value ? new Date(value).getTime() : 0;
 }
 
+export function getConversationActivityDate(conversation: ConversationSummary): number {
+  return getConversationDate(conversation, "updated");
+}
+
+function compareConversations(
+  a: ConversationSummary,
+  b: ConversationSummary,
+  sortBy: ConversationSortBy,
+): number {
+  if (sortBy === "title") {
+    return (a.title || UNTITLED_CONVERSATION).localeCompare(
+      b.title || UNTITLED_CONVERSATION,
+      undefined,
+      {
+        sensitivity: "base",
+      },
+    );
+  }
+
+  return getConversationDate(b, sortBy) - getConversationDate(a, sortBy);
+}
+
 export function filterConversationsByListOptions<T extends ConversationSummary>(
   conversations: T[],
   options: ConversationListOptions = {},
+  now: number = Date.now(),
 ): T[] {
   const archiveFilter = options.archived ?? "active";
   const query = options.query?.trim().toLowerCase();
   const sortBy = options.sortBy ?? "updated";
+  const activityCutoff = conversationActivityCutoff(options.activity, now);
 
   return conversations
     .filter((conversation) => {
@@ -56,13 +105,17 @@ export function filterConversationsByListOptions<T extends ConversationSummary>(
         return false;
       }
 
+      if (activityCutoff !== null && getConversationActivityDate(conversation) < activityCutoff) {
+        return false;
+      }
+
       if (!query) {
         return true;
       }
 
-      return (conversation.title || "New conversation").toLowerCase().includes(query);
+      return (conversation.title || UNTITLED_CONVERSATION).toLowerCase().includes(query);
     })
-    .sort((a, b) => getConversationDate(b, sortBy) - getConversationDate(a, sortBy));
+    .sort((a, b) => compareConversations(a, b, sortBy));
 }
 
 function hasRenderableMessagePayload(message: ConversationMessage): boolean {

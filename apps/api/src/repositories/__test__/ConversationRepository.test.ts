@@ -53,6 +53,35 @@ describe("ConversationRepository", () => {
     expect(calls[1]?.params).toEqual([123, "%50\\%\\_plan%", 10, 10]);
   });
 
+  it("bounds the activity window with a database-resolved cutoff and sorts titles case-insensitively", async () => {
+    const { calls, db } = createMockD1();
+    const repository = new ConversationRepository({ DB: db } as any);
+
+    await repository.getUserConversations(123, {
+      activity: "week",
+      limit: 10,
+      page: 1,
+      sortBy: "title",
+    });
+
+    expect(calls[0]?.query).toContain(
+      "datetime(COALESCE(c.updated_at, c.last_message_at, c.created_at)) >= datetime('now', ?)",
+    );
+    expect(calls[0]?.params).toEqual([123, "-7 days"]);
+    expect(calls[1]?.query).toContain("ORDER BY c.title COLLATE NOCASE ASC, c.id DESC");
+    expect(calls[1]?.params).toEqual([123, "-7 days", 10, 0]);
+  });
+
+  it("leaves the activity clause out when every conversation is wanted", async () => {
+    const { calls, db } = createMockD1();
+    const repository = new ConversationRepository({ DB: db } as any);
+
+    await repository.getUserConversations(123, { activity: "all" });
+
+    expect(calls[0]?.query).not.toContain("datetime('now', ?)");
+    expect(calls[0]?.params).toEqual([123]);
+  });
+
   it("bulk deletes every personal conversation without touching project conversations", async () => {
     const { batch, calls, db } = createMockD1();
     const repository = new ConversationRepository({ DB: db } as any);

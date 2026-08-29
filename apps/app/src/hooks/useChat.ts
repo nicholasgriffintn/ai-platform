@@ -31,12 +31,13 @@ export function useChats(options: ConversationListOptions = {}) {
   const localScope = getLocalChatScope(user?.id);
   const queryOptions = useMemo<Omit<ConversationListOptions, "page">>(
     () => ({
+      activity: options.activity ?? "all",
       archived: options.archived ?? "active",
       limit: options.limit ?? DEFAULT_CHAT_LIST_LIMIT,
       query: options.query?.trim() || undefined,
       sortBy: options.sortBy ?? "updated",
     }),
-    [options.archived, options.limit, options.query, options.sortBy],
+    [options.activity, options.archived, options.limit, options.query, options.sortBy],
   );
 
   const remoteChatsQuery = useInfiniteQuery({

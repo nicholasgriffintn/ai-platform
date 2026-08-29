@@ -1,3 +1,7 @@
+import {
+  type ConversationListFilters,
+  DEFAULT_CONVERSATION_LIST_FILTERS,
+} from "@ngriffin_uk/polychat-component-navigation";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -20,6 +24,9 @@ export interface UIStore {
   setShowLoginModal: (showLoginModal: boolean) => void;
   showKeyboardShortcuts: boolean;
   setShowKeyboardShortcuts: (showKeyboardShortcuts: boolean) => void;
+  conversationListFilters: ConversationListFilters;
+  setConversationListFilters: (filters: Partial<ConversationListFilters>) => void;
+  resetConversationListFilters: () => void;
 }
 
 export const useUIStore = create<UIStore>()(
@@ -35,6 +42,13 @@ export const useUIStore = create<UIStore>()(
       setShowLoginModal: (showLoginModal) => set({ showLoginModal }),
       showKeyboardShortcuts: false,
       setShowKeyboardShortcuts: (showKeyboardShortcuts) => set({ showKeyboardShortcuts }),
+      conversationListFilters: DEFAULT_CONVERSATION_LIST_FILTERS,
+      setConversationListFilters: (filters) =>
+        set((state) => ({
+          conversationListFilters: { ...state.conversationListFilters, ...filters },
+        })),
+      resetConversationListFilters: () =>
+        set({ conversationListFilters: DEFAULT_CONVERSATION_LIST_FILTERS }),
     }),
     {
       name: "ui-store",
@@ -43,10 +57,19 @@ export const useUIStore = create<UIStore>()(
           isMobile: _m,
           isMobileLoading: _l,
           sidebarVisible: _s,
+          conversationListFilters,
           ...rest
         } = (persisted ?? {}) as Partial<UIStore>;
 
-        return { ...current, ...rest };
+        return {
+          ...current,
+          ...rest,
+          // A stored shape from an older release can be missing keys the menu reads.
+          conversationListFilters: {
+            ...DEFAULT_CONVERSATION_LIST_FILTERS,
+            ...conversationListFilters,
+          },
+        };
       },
     },
   ),

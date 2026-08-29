@@ -116,6 +116,10 @@ export class ChatService {
       params.set("archived", options.archived);
     }
 
+    if (options.activity && options.activity !== "all") {
+      params.set("activity", options.activity);
+    }
+
     if (options.sortBy) {
       params.set("sort_by", options.sortBy);
     }
