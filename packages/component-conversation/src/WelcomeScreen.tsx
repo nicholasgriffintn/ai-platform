@@ -5,9 +5,7 @@ export interface WelcomeScreenProps {
   title?: string;
   description?: string;
   isLoading?: boolean;
-  /** The product mark, supplied by the host so branding stays a host decision. */
   logo: ReactNode;
-  /** Prompt suggestions, supplied by the host that owns their selection and tracking. */
   suggestions: ReactNode;
 }
 

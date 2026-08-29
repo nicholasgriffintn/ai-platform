@@ -129,7 +129,6 @@ async function suggestRefactoring(code, instruction) {
 		},
 	);
 
-	// Handle streaming response
 	const reader = response.body.getReader();
 	const decoder = new TextDecoder();
 

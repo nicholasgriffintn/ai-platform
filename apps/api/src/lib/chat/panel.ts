@@ -45,7 +45,6 @@ export interface PanelResult {
 export interface RunPanelParams {
   env: IEnv;
   user?: IUser;
-  /** The conversation's model. Falls back to the auxiliary model only when absent. */
   model?: string;
   provider?: string;
   question: string;
@@ -55,7 +54,6 @@ export interface RunPanelParams {
   turnBrief: string;
   conclusionBrief: string;
   maxTurns?: number;
-  /** Called as each turn completes, so callers can stream turns rather than batching them. */
   onTurn?: (turn: PanelTurn) => Promise<void> | void;
 }
 

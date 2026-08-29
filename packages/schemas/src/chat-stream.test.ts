@@ -105,6 +105,35 @@ describe("chat stream assembler", () => {
     expect(finalMessage?.content).toBe("Second turn");
   });
 
+  it("starts a clean assistant message when a step follows without a tool call between them", () => {
+    const { updates, finalMessage } = collectUpdates([
+      { type: "message_start", id: "completion-1", model: "test-model" },
+      { type: "content_block_delta", content: "First turn" },
+      { type: "message_delta", message_id: "assistant-1" },
+      { type: "message_stop" },
+      { type: "message_start", id: "completion-1", model: "test-model" },
+      { type: "content_block_delta", content: "Second turn" },
+      { type: "message_delta", message_id: "assistant-2" },
+      { type: "message_stop" },
+    ]);
+
+    const metadataUpdates = updates.filter((update) => update.type === "assistant_metadata");
+    const secondStepMetadata = metadataUpdates.at(-1)?.message;
+
+    expect(secondStepMetadata?.content).toBe("");
+    expect(secondStepMetadata?.parts ?? []).toEqual([]);
+
+    const finalisedMessages = updates
+      .filter((update) => update.type === "assistant_final")
+      .map((update) => update.message);
+
+    expect(finalisedMessages.map((message) => message.content)).toEqual([
+      "First turn",
+      "Second turn",
+    ]);
+    expect(finalMessage?.content).toBe("Second turn");
+  });
+
   it("uses final message_delta content and parts when a stream revises the assistant message", () => {
     const { updates, finalMessage } = collectUpdates([
       { type: "content_block_delta", content: "Primary answer" },

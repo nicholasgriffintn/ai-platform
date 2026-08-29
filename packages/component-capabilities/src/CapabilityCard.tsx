@@ -20,7 +20,6 @@ import {
 import { getIcon, getIconContainerClass } from "./capability-theme";
 export interface CapabilityCardProps {
   app?: CapabilityCatalogItem;
-  /** True when the capability is already attached to the current scope. */
   isEnabled?: boolean;
   isConfigured?: boolean;
   item: AssistantActionItem;
@@ -36,7 +35,6 @@ export interface CapabilityCardProps {
   tool?: ModelToolDefinition;
   skill?: SkillCardState;
   authoredSkill?: AuthoredSkillCardState;
-  /** Supplied when the host can open the capability; the host owns the destination. */
   onOpen?: () => void;
 }
 

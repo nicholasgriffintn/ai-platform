@@ -14,15 +14,20 @@ export interface GoalGateParams {
 }
 
 export const GOAL_UNSATISFIED_INSTRUCTION = [
-  "The active goal is not satisfied yet.",
+  "The active goal is not satisfied yet. Nobody is speaking to you; this is the goal tracker.",
   "Audit the objective against the evidence in this thread: files changed, commands run, tool results, artifacts produced.",
-  "If it is genuinely satisfied, call complete_goal with the evidence ledger.",
+  "Do not apologise or address the user about this check. Just carry on with the work.",
+  "Only call complete_goal once every part of the objective is done; a ledger covering part of it is not a completion.",
   "If no defensible path remains, say what was tried, what blocked it, and what would unblock it.",
   "Otherwise take the single next best action.",
 ].join(" ");
 
 export function createGoalFinishGate(params: GoalGateParams) {
   let currentGoal = params.goal;
+  let lastCommandCount = 0;
+  const seenSummaries = new Set<string>();
+  let markedTerminal = false;
+  const isNewWork = (summary: string) => summary.length > 0 && !seenSummaries.has(summary);
 
   return async (context: {
     summary: string;
@@ -36,10 +41,28 @@ export function createGoalFinishGate(params: GoalGateParams) {
     );
 
     if (!latest || latest.status !== "active") {
-      return { allow: true, outcome: latest?.status === "completed" ? "satisfied" : "unsatisfied" };
+      const resolved = latest ?? (await params.goalService.getGoalById(currentGoal.id));
+
+      if (resolved && resolved.status !== "active" && !markedTerminal) {
+        markedTerminal = true;
+        await params.onTerminalStatus?.(resolved);
+      }
+
+      return {
+        allow: true,
+        outcome: resolved?.status === "completed" ? "satisfied" : "unsatisfied",
+      };
     }
 
-    const progressed = context.commandCount > currentGoal.iteration_count;
+    const summary = context.summary.trim();
+    const progressed = context.commandCount > lastCommandCount || isNewWork(summary);
+
+    lastCommandCount = context.commandCount;
+
+    if (summary) {
+      seenSummaries.add(summary);
+    }
+
     const usageLimitsExhausted = params.conversationManager
       ? await isUsageExhausted(params.conversationManager)
       : false;
@@ -58,7 +81,8 @@ export function createGoalFinishGate(params: GoalGateParams) {
     currentGoal = goal;
 
     if (!shouldContinue) {
-      if (goal.status !== "active") {
+      if (goal.status !== "active" && !markedTerminal) {
+        markedTerminal = true;
         await params.onTerminalStatus?.(goal);
       }
 

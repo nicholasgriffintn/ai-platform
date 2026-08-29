@@ -295,3 +295,27 @@ export function buildAgentTraceEntries(messages: readonly Message[]): AgentTrace
 
   return entries;
 }
+
+export function collectResolvedToolCallIds(
+  messages: readonly { role?: string; tool_call_id?: string; parts?: unknown }[] | undefined,
+): Set<string> {
+  const resolved = new Set<string>();
+
+  for (const message of messages ?? []) {
+    if (message?.role === "tool" && typeof message.tool_call_id === "string") {
+      resolved.add(message.tool_call_id);
+    }
+
+    if (!Array.isArray(message?.parts)) {
+      continue;
+    }
+
+    for (const part of message.parts as { type?: string; toolCallId?: string }[]) {
+      if (part?.type === "tool_result" && typeof part.toolCallId === "string") {
+        resolved.add(part.toolCallId);
+      }
+    }
+  }
+
+  return resolved;
+}

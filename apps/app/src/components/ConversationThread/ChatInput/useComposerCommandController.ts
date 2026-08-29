@@ -10,6 +10,7 @@ import {
   getComposerInlineTokenRange,
   getComposerInlineTokenText,
 } from "@ngriffin_uk/polychat-library-chat/composer-commands";
+import type { GoalCommand } from "@ngriffin_uk/polychat-library-chat/goal-command";
 import type { AssistantActionItem } from "@ngriffin_uk/polychat-schemas";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 
@@ -34,7 +35,11 @@ export function useComposerCommandController({
   toolSelectionLocked,
 }: {
   isLoading: boolean;
-  goalState?: { canUseGoals: boolean; goal: { status: string } | null };
+  goalState?: {
+    canUseGoals: boolean;
+    goal: { status: string } | null;
+    onCommand?: (command: GoalCommand) => void;
+  };
   allowedAssistantActionCapabilities?: readonly ComposerAssistantActionCapability[];
   assistantActionCatalog?: ComposerActionCatalogConfig;
   modeControls?: ComposerCommandControls;

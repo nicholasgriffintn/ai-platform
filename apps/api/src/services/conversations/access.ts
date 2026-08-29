@@ -31,3 +31,35 @@ export async function requireConversationAccess(
 
   return conversation;
 }
+
+export async function requireOwnConversationForWrite(
+  context: ServiceContext,
+  conversationId: string,
+  options?: { projectId?: string },
+): Promise<Record<string, unknown>> {
+  const user = context.requireUser();
+  const conversation = await context.repositories.conversations.getConversation(conversationId);
+
+  if (conversation) {
+    return requireConversationAccess(context, conversationId);
+  }
+
+  const projectId = options?.projectId;
+
+  if (projectId) {
+    await requireProjectAccess(context, projectId);
+  }
+
+  const created = await context.repositories.conversations.createConversation(
+    conversationId,
+    user.id,
+    undefined,
+    projectId ? { project_id: projectId } : {},
+  );
+
+  if (!created) {
+    throw new AssistantError("Could not create the conversation", ErrorType.DATABASE_ERROR);
+  }
+
+  return created;
+}

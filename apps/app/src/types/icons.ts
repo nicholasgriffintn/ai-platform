@@ -449,9 +449,7 @@ export type IconType = ForwardRefExoticComponent<
     | "onPointerCancel"
     | "onPointerCancelCapture"
     | "onPointerEnter"
-    // | 'onPointerEnterCapture'
     | "onPointerLeave"
-    // | 'onPointerLeaveCapture'
     | "onPointerOver"
     | "onPointerOverCapture"
     | "onPointerOut"

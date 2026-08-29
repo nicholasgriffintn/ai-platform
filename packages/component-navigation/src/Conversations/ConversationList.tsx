@@ -18,9 +18,7 @@ export interface ConversationGroup {
 export interface ConversationListProps {
   groups: ConversationGroup[];
   activeConversationId?: string;
-  /** True when the active conversation is actually on screen, not just remembered. */
   isConversationRoute: boolean;
-  /** Marks every conversation as device-local, regardless of its own flag. */
   localOnlyMode?: boolean;
   loadMoreRef?: Ref<HTMLDivElement>;
   loadMoreSlot?: React.ReactNode;

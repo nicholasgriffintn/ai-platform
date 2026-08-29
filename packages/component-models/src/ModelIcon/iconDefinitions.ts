@@ -93,7 +93,6 @@ export const MODEL_ICONS: Record<string, string> = {
   "tts-": "openai",
 };
 
-/** Provider keys are matched on an exact, lowercased provider id. */
 export const PROVIDER_ICONS: Record<string, string> = {
   openai: "openai",
   anthropic: "anthropic",

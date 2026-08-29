@@ -14,7 +14,6 @@ export interface ProductModeDestination {
 export interface ProductModeSwitchProps {
   activeMode: ProductMode;
   className?: string;
-  /** Resolved host routes for each mode, keyed by mode. */
   destinations: Record<ProductMode, string>;
 }
 

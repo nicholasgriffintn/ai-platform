@@ -28,7 +28,6 @@ export interface UserSettingsFormProps {
   isSaving?: boolean;
   onSignIn: () => void;
   onSave: (settings: Partial<UserSettings>) => Promise<void>;
-  /** Called when saving throws, so the host can report it however it reports failures. */
   onSaveError?: (error: unknown) => void;
 }
 

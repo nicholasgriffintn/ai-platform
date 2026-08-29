@@ -26,11 +26,9 @@ export interface ResponseDisplay {
 
 export interface ResponseViewProps {
   result: Record<string, any>;
-  /** Declared by the tool schema, or overridden by the caller for a stored result. */
   responseType?: string;
   responseDisplay?: ResponseDisplay;
   renderer?: string;
-  /** True when the tool's own schema described this result, which changes data resolution. */
   hasToolSchema?: boolean;
   embedded?: boolean;
   onToolInteraction?: ToolInteractionHandler;

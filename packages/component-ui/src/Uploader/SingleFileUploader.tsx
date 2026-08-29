@@ -17,9 +17,7 @@ interface SingleFileUploaderProps {
   maxSize?: number;
   onFilesAdded?: (files: FileWithPreview[]) => void;
   onFilesChange?: (files: FileWithPreview[]) => void;
-  /** Raw drop payload, so a host can distinguish dialog uploads from drag and drop. */
   onFilesDropped?: (files: FileList) => void;
-  /** Fired before a file leaves the uploader, with the files still present. */
   onFileRemove?: (files: FileWithPreview[]) => void;
 }
 

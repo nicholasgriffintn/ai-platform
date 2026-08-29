@@ -535,6 +535,7 @@ addRoute(app, "post", "/completions/:completion_id/goal", {
         getServiceContext(context),
         completion_id,
         body.objective,
+        { projectId: body.project_id },
       );
 
       return ResponseFactory.success(context, response);

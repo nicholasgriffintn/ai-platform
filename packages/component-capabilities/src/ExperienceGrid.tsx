@@ -50,7 +50,6 @@ export function ExperienceGrid({ experiences }: { experiences: ExperienceGridIte
   );
 }
 
-/** Header affordance shared by the Chat and Work experience surfaces. */
 export function ManageCapabilitiesLink({ href }: { href: string }) {
   return (
     <Link

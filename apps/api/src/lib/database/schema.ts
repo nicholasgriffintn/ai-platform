@@ -421,8 +421,6 @@ export const goal = sqliteTable(
     sandboxRunIdx: index("goal_sandbox_run_id_idx").on(table.sandbox_run_id),
     userIdx: index("goal_user_id_idx").on(table.user_id),
     statusIdx: index("goal_status_idx").on(table.status),
-    // A goal belongs to a thread or a sandbox run, never both and never neither,
-    // and only one of them can be live at a time.
     ownerCheck: check(
       "goal_owner_check",
       sql`(${table.conversation_id} IS NULL) <> (${table.sandbox_run_id} IS NULL)`,

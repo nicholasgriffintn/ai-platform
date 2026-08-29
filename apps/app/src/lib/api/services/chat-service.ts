@@ -293,10 +293,14 @@ export class ChatService {
     return this.requestGoal(completion_id, { method: "GET" });
   }
 
-  async setConversationGoal(completion_id: string, objective: string): Promise<Goal | null> {
+  async setConversationGoal(
+    completion_id: string,
+    objective: string,
+    projectId?: string,
+  ): Promise<Goal | null> {
     return this.requestGoal(completion_id, {
       method: "POST",
-      body: JSON.stringify({ objective }),
+      body: JSON.stringify(projectId ? { objective, project_id: projectId } : { objective }),
     });
   }
 

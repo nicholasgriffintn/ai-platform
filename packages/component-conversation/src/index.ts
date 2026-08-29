@@ -49,3 +49,4 @@ export * from "./Live/LiveSessionButton";
 export * from "./ConversationSurfaceLayout";
 export * from "./ConversationColumn";
 export * from "./Live/LiveStatusHeader";
+export { ResolvedToolCallsProvider, useResolvedToolCallIds } from "./Message/ResolvedToolCalls";

@@ -56,6 +56,10 @@ export class GoalService {
     return this.goals.getActiveGoal(owner);
   }
 
+  async getGoalById(goalId: string): Promise<Goal | null> {
+    return this.goals.getGoalById(goalId);
+  }
+
   async setGoal(params: {
     owner: GoalOwner;
     user: IUser;
@@ -101,8 +105,6 @@ export class GoalService {
         createdFromMessageId: params.createdFromMessageId,
       });
     } catch (error) {
-      // A concurrent set for the same thread wins the partial unique index
-      // rather than the read above, so adopt its goal instead of erroring.
       const raced = await reuseActiveGoal();
 
       if (!raced) {

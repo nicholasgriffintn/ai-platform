@@ -330,7 +330,9 @@ export async function executeAgentLoop<
       messages.push({
         role: "user",
         content: truncateForModel(
-          assessment.instruction ?? "The objective is not satisfied yet. Continue working.",
+          `[automated check, not a message from the user] ${
+            assessment.instruction ?? "The objective is not satisfied yet. Continue working."
+          }`,
           config.maxObservationChars,
         ),
       });

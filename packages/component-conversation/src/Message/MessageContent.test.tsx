@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { MessageContent } from "./MessageContent";
+import { ResolvedToolCallsProvider } from "./ResolvedToolCalls";
 
 afterEach(cleanup);
 
@@ -151,5 +152,27 @@ describe("tool results carried as message parts", () => {
 
     expect(screen.getByText("Custom rendering")).toBeTruthy();
     expect(renderCustom).toHaveBeenCalledOnce();
+  });
+});
+
+describe("pending tool call chips", () => {
+  const pendingCall = assistantWithParts([
+    { type: "tool_use", name: "complete_goal", toolCallId: "call-1", input: {} },
+  ]);
+
+  it("keeps showing a call as running while no result exists anywhere", () => {
+    render(<MessageContent message={pendingCall} />);
+
+    expect(screen.queryByText("complete_goal")).not.toBeNull();
+  });
+
+  it("stops showing a call as running once its result arrived as a separate tool message", () => {
+    render(
+      <ResolvedToolCallsProvider resolvedToolCallIds={new Set(["call-1"])}>
+        <MessageContent message={pendingCall} />
+      </ResolvedToolCallsProvider>,
+    );
+
+    expect(screen.queryByText("complete_goal")).toBeNull();
   });
 });

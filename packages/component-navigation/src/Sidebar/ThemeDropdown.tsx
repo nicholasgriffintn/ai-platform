@@ -18,7 +18,6 @@ export const themeOptions: ThemeOption[] = [
 
 export interface ThemeDropdownProps {
   position?: "top" | "bottom";
-  /** Undefined until the host has resolved the stored preference, which keeps SSR output stable. */
   theme?: ThemePreference;
   onThemeChange: (theme: ThemePreference) => void;
 }

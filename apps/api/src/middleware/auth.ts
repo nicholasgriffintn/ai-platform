@@ -114,7 +114,6 @@ export async function authMiddleware(context: Context, next: Next) {
   const sessionId = cookies.session;
 
   if (sessionId) {
-    // The request context must be created after authentication so downstream services receive its user.
     const authenticationContext = createServiceContext({
       env: context.env,
       requestId: context.get("requestId"),

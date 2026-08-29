@@ -11,12 +11,23 @@ export function useGoal(conversationId?: string, options?: { enabled?: boolean }
   const queryClient = useQueryClient();
   const isPro = useChatStore((state) => state.isPro);
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
-  const enabled = Boolean(conversationId) && isPro && isAuthenticated && options?.enabled !== false;
+  const isLocalModel = useChatStore((state) => state.chatMode === "local");
+  const isAwaitingRemoteConversation = useChatStore((state) =>
+    Boolean(conversationId && state.locallyCreatedConversationIds[conversationId]),
+  );
+  const enabled =
+    Boolean(conversationId) &&
+    !isAwaitingRemoteConversation &&
+    !isLocalModel &&
+    isPro &&
+    isAuthenticated &&
+    options?.enabled !== false;
 
   const query = useQuery<Goal | null>({
     queryKey: [GOAL_QUERY_KEY, conversationId],
     queryFn: () => apiService.getConversationGoal(conversationId as string),
     enabled,
+    retry: false,
     staleTime: 15_000,
   });
 
@@ -42,7 +53,7 @@ export function useGoal(conversationId?: string, options?: { enabled?: boolean }
   return {
     goal: query.data ?? null,
     isLoadingGoal: query.isLoading,
-    canUseGoals: isPro && isAuthenticated,
+    canUseGoals: isPro && isAuthenticated && !isLocalModel,
     setGoal,
     updateGoal,
     writeGoal,

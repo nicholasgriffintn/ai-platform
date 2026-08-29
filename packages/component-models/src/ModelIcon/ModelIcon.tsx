@@ -7,7 +7,6 @@ import { MODEL_ICONS, PROVIDER_ICONS } from "./iconDefinitions";
 import { ICON_LOADERS } from "./iconLoaders";
 import { getProviderColor } from "./providerColor";
 
-/** Rendered when an icon chunk fails to load, so the surface degrades to the text fallback. */
 const MissingIcon: IconType = forwardRef(() => null);
 
 export interface ModelIconProps extends ComponentProps<"div"> {

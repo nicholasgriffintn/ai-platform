@@ -20,7 +20,6 @@ export interface MemorySynthesisRecord {
 
 export interface MemorySynthesisPanelProps {
   synthesis?: MemorySynthesisRecord | null;
-  /** Earlier syntheses, already excluding the current one. */
   previousSyntheses: MemorySynthesisRecord[];
   isLoadingSynthesis: boolean;
   isLoadingHistory: boolean;

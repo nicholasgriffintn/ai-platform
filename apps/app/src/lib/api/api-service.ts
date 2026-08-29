@@ -103,8 +103,8 @@ class ApiService {
     return this.chatService.getConversationGoal(completion_id);
   };
 
-  setConversationGoal = (completion_id: string, objective: string) => {
-    return this.chatService.setConversationGoal(completion_id, objective);
+  setConversationGoal = (completion_id: string, objective: string, projectId?: string) => {
+    return this.chatService.setConversationGoal(completion_id, objective, projectId);
   };
 
   updateConversationGoal = (completion_id: string, status: "active" | "paused" | "cleared") => {

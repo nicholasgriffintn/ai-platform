@@ -14,16 +14,13 @@ export interface ModelSelectorTriggerProps {
   disabled?: boolean;
   minimal?: boolean;
   mono?: boolean;
-  /** Present while a local model initialises; replaces the model identity with progress. */
   loading?: ModelSelectorLoadingState | null;
-  /** Rendered in place of the model icon, for example the automatic router mode glyph. */
   icon?: ReactNode;
   modelName?: string;
   modelProvider?: string;
   label: ReactNode;
   title: string;
   onToggle: () => void;
-  /** Lets the host return focus here when the panel closes. */
   ref?: Ref<HTMLButtonElement>;
 }
 

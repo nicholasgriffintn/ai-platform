@@ -354,9 +354,7 @@ describe("formatMessagesForSummary", () => {
     };
     const output = formatMessagesForSummary([msg]);
 
-    // Should contain truncation indicator
     expect(output).toContain("…");
-    // Should not contain the full 2000-char string
     expect(output.length).toBeLessThan(600);
   });
 

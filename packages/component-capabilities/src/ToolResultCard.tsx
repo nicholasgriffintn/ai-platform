@@ -8,13 +8,11 @@ export interface ToolResultCardProps {
   theme?: string;
   icon?: string;
   message?: string;
-  /** ISO timestamp recorded with the result, shown when the runtime supplied one. */
   timestamp?: string;
   children: ReactNode;
   onReset: () => void;
 }
 
-/** The framed "run a capability, read the result" surface used by tool and app runners. */
 export function ToolResultCard({
   name,
   theme,

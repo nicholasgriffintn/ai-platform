@@ -46,6 +46,8 @@ const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   call_api: { icon: "braces", responseType: ResponseDisplayType.JSON },
   get_task_status: { icon: "terminal" },
   load_skill: { icon: "sparkles" },
+  set_goal: { icon: "target", responseType: ResponseDisplayType.HIDDEN },
+  complete_goal: { icon: "target", responseType: ResponseDisplayType.HIDDEN },
 };
 
 export const getToolPresentation = (name: string): ToolPresentation => {

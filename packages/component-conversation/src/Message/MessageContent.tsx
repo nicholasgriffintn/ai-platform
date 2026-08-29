@@ -27,6 +27,7 @@ import { Fragment, type ReactNode, memo, useMemo } from "react";
 
 import { CitationList } from "./CitationList";
 import { ReasoningSection } from "./ReasoningSection";
+import { useResolvedToolCallIds } from "./ResolvedToolCalls";
 import { SearchGroundingSection } from "./SearchGroundingSection";
 import { ToolResultView } from "./ToolResultView";
 
@@ -350,6 +351,7 @@ const renderSnapshotPart = (
 };
 
 export const MessageContent = memo((props: MessageContentProps) => {
+  const conversationResolvedToolCallIds = useResolvedToolCallIds();
   const { message, onArtifactOpen, onToolInteraction } = props;
   const content = useMemo(() => {
     const handleArtifactOpen = (
@@ -445,9 +447,12 @@ export const MessageContent = memo((props: MessageContentProps) => {
             }
 
             if (part.type === "tool_use") {
-              return part.toolCallId && resolvedToolCallIds.has(part.toolCallId)
-                ? null
-                : renderPendingToolUsePart(part, index);
+              const resolved =
+                part.toolCallId &&
+                (resolvedToolCallIds.has(part.toolCallId) ||
+                  conversationResolvedToolCallIds.has(part.toolCallId));
+
+              return resolved ? null : renderPendingToolUsePart(part, index);
             }
 
             if (part.type === "tool_result") {
@@ -621,6 +626,7 @@ export const MessageContent = memo((props: MessageContentProps) => {
       </>
     );
   }, [
+    conversationResolvedToolCallIds,
     message.role,
     message.content,
     message.parts,

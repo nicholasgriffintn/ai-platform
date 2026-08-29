@@ -47,3 +47,30 @@ export function parseGoalCommand(input: string): GoalCommand | null {
 export function isGoalCommand(input: string): boolean {
   return parseGoalCommand(input) !== null;
 }
+
+export interface GoalSubmission {
+  command: GoalCommand | null;
+  messageInput: string | null;
+}
+
+export function resolveGoalSubmission(params: {
+  input: string;
+  isComposingGoal: boolean;
+}): GoalSubmission {
+  const trimmed = params.input.trim();
+
+  if (params.isComposingGoal && trimmed) {
+    return { command: { kind: "set", objective: trimmed }, messageInput: trimmed };
+  }
+
+  const command = parseGoalCommand(params.input);
+
+  if (!command) {
+    return { command: null, messageInput: params.input };
+  }
+
+  return {
+    command,
+    messageInput: command.kind === "set" ? command.objective : null,
+  };
+}

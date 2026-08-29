@@ -1,11 +1,13 @@
 import type {
   ChatHostedToolSettings,
+  Goal,
   ModelConfigInfo,
   ModelConfigItem,
   RecipeConnectorProvider,
   SkillAvailability,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { mergeEnabledGoalToolNames } from "~/lib/chat/policy/goal-tools";
 import { mergeEnabledMemoryToolNames, resolveMemoryPolicy } from "~/lib/chat/policy/memory";
 import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
@@ -73,6 +75,7 @@ export interface PreparedRequest {
   currentMode: ChatMode;
   isProUser: boolean;
   enabledTools: string[];
+  activeGoal: Goal | null;
   toolOptions?: ChatHostedToolSettings;
   requestOptions: CoreChatOptions["options"];
   memoryScope: MemoryScope;
@@ -244,7 +247,6 @@ export class RequestPreparer {
       user?.id,
     );
     const scopedSkillCatalogPromise = resolveScopedSkillCatalog(scope.options, projectContext);
-    const activeGoalPromise = loadActiveGoal(scope.options);
 
     const finalMessage = this.resolveMessageText(validationContext);
 
@@ -302,6 +304,8 @@ export class RequestPreparer {
       scopedSkillCatalog?.listDefinitions(),
     );
 
+    const activeGoal = await loadActiveGoal(scope.options);
+
     const systemPromptTask = buildSystemPrompt({
       options: scope.options,
       repositories: this.repositories,
@@ -313,7 +317,7 @@ export class RequestPreparer {
       projectContext,
       memoryScope,
       skills,
-      activeGoal: await activeGoalPromise,
+      activeGoal,
     });
 
     if (storeMessagesTask) {
@@ -346,14 +350,19 @@ export class RequestPreparer {
       currentMode: mode,
       isProUser: scope.isProUser,
       enabledTools: mergeSkillSuggestedToolNames({
-        enabledTools: mergeEnabledMemoryToolNames({
-          enabledTools,
-          user,
-          userSettings,
-          store: scope.options.store,
+        enabledTools: mergeEnabledGoalToolNames({
+          enabledTools: mergeEnabledMemoryToolNames({
+            enabledTools,
+            user,
+            userSettings,
+            store: scope.options.store,
+          }),
+          activeGoal,
+          isProUser: scope.isProUser,
         }),
         skills,
       }),
+      activeGoal,
       toolOptions: this.resolveToolOptions(scope, savedToolConfigurations, enabledTools),
       requestOptions: scope.options.options,
       memoryScope,

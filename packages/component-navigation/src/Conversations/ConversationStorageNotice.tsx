@@ -4,7 +4,6 @@ export interface ConversationStorageNoticeProps {
   localOnlyMode: boolean;
 }
 
-/** Tells people where their conversations are actually stored before they start one. */
 export function ConversationStorageNotice({
   isAuthenticated,
   isPro,

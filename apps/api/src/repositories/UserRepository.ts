@@ -204,11 +204,9 @@ export class UserRepository extends BaseRepository {
     twitter_username?: string;
     site?: string;
   }): Promise<User> {
-    // Check if user exists by GitHub ID
     const existingUser = await this.getUserByGithubId(userData.githubId);
 
     if (existingUser) {
-      // Update existing user
       await this.updateUser(existingUser.id, {
         name: userData.name || null,
         avatar_url: userData.avatar_url || null,
@@ -221,7 +219,6 @@ export class UserRepository extends BaseRepository {
         site: userData.site || null,
       });
 
-      // Get updated user
       const updatedUser = await this.getUserById(existingUser.id);
 
       if (!updatedUser) {
@@ -231,17 +228,13 @@ export class UserRepository extends BaseRepository {
       return updatedUser;
     }
 
-    // Check if user exists by email
     const userByEmail = await this.getUserByEmail(userData.email);
 
     if (userByEmail) {
-      // Link GitHub account to existing user
       await this.createOauthAccount(userByEmail.id, "github", userData.githubId);
 
-      // Update user with GitHub data
       await this.updateUserWithGithubData(userByEmail.id, userData);
 
-      // Get updated user
       const updatedUser = await this.getUserById(userByEmail.id);
 
       if (!updatedUser) {
@@ -251,17 +244,14 @@ export class UserRepository extends BaseRepository {
       return updatedUser;
     }
 
-    // Create new user
     const result = await this.createUser(userData);
 
     if (!result) {
       throw new Error("Failed to create user");
     }
 
-    // Link GitHub account to new user
     await this.createOauthAccount(result.id, "github", userData.githubId);
 
-    // Get created user
     const newUser = await this.getUserById(result.id);
 
     if (!newUser) {

@@ -180,6 +180,41 @@ describe("useChatManager", () => {
     );
   });
 
+  it("sends into the conversation started just before the send, not a fresh one", async () => {
+    const queryClient = createQueryClient();
+    const assistantFinal: Message = {
+      id: "assistant-final",
+      role: "assistant",
+      content: "10",
+      model: "deepseek-v4-flash",
+    };
+
+    mocks.streamChatCompletions.mockImplementation(async ({ onProgress }) => {
+      onProgress("10", undefined, undefined, true, assistantFinal);
+
+      return assistantFinal;
+    });
+
+    const { result } = renderHook(() => useChatManager(), {
+      wrapper: wrapper(queryClient),
+    });
+
+    const startedId = useChatStore.getState().startNewConversation();
+
+    await act(async () => {
+      await result.current.sendMessage("count to 100 in tens");
+    });
+
+    expect(useChatStore.getState().currentConversationId).toBe(startedId);
+    expect(mocks.streamChatCompletions).toHaveBeenCalledWith(
+      expect.objectContaining({ completionId: startedId }),
+    );
+
+    const conversation = queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, startedId]);
+
+    expect(conversation?.messages.map((message) => message.role)).toEqual(["user", "assistant"]);
+  });
+
   it("compacts a stored remote conversation without sending a chat message", async () => {
     const queryClient = createQueryClient();
 

@@ -27,7 +27,6 @@ export interface ModelSelectorPanelProps {
 
   selectedTab: ModelSelectorTab;
   onTabChange: (tab: ModelSelectorTab) => void;
-  /** Hides the auto tab entirely when the surface only offers a model list. */
   showAutoTab: boolean;
 
   searchQuery: string;
@@ -36,7 +35,6 @@ export interface ModelSelectorPanelProps {
   selectedCapability: ModelModality | null;
   onCapabilityChange: (capability: ModelModality | null) => void;
 
-  /** Omitted on surfaces such as live sessions where local models are not offered. */
   chatMode?: ChatMode;
   onChatModeChange?: (mode: ChatMode) => void;
 

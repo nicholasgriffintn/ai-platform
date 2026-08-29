@@ -1,5 +1,11 @@
-import { goalEvidenceEntrySchema, type GoalEvidenceEntry } from "@ngriffin_uk/polychat-schemas";
+import {
+  goalEvidenceEntrySchema,
+  type Goal,
+  type GoalEvidenceEntry,
+  type GoalMarkerEvent,
+} from "@ngriffin_uk/polychat-schemas";
 
+import { recordGoalMarker } from "~/services/goals/goalMarker";
 import { GoalService } from "~/services/goals/GoalService";
 
 import type { ApiToolDefinition } from "../../types/functions";
@@ -24,6 +30,52 @@ function isDelegatedRun(context: any): boolean {
   const stack = context?.request?.request?.delegation_stack;
 
   return Array.isArray(stack) && stack.length > 0;
+}
+
+async function markGoal(
+  context: any,
+  completionId: string,
+  goal: Goal,
+  event: GoalMarkerEvent,
+): Promise<void> {
+  const conversationManager = context?.conversationManager;
+
+  if (!conversationManager) {
+    return;
+  }
+
+  await recordGoalMarker({ conversationManager, completionId, goal, event });
+}
+
+async function hasAnsweredSince(
+  context: any,
+  completionId: string,
+  goalCreatedAt: string,
+): Promise<boolean> {
+  const messages =
+    await context?.request?.context?.repositories?.messages?.getConversationMessages(completionId);
+
+  if (!Array.isArray(messages)) {
+    return true;
+  }
+
+  const goalCreated = Date.parse(goalCreatedAt);
+
+  return messages.some((message: any) => {
+    if (message?.role !== "assistant") {
+      return false;
+    }
+
+    const at = Number(message.timestamp);
+
+    if (Number.isFinite(goalCreated) && Number.isFinite(at) && at < goalCreated) {
+      return false;
+    }
+
+    return typeof message.content === "string"
+      ? message.content.trim().length > 0
+      : Array.isArray(message.content) && message.content.length > 0;
+  });
 }
 
 function parseEvidence(rawEvidence: unknown): GoalEvidenceEntry[] {
@@ -77,6 +129,8 @@ export const set_goal: ApiToolDefinition = {
       objective: args.objective,
       source: "model",
     });
+
+    await markGoal(context, completionId, goal, "set");
 
     return {
       status: "success",
@@ -163,6 +217,16 @@ export const complete_goal: ApiToolDefinition = {
         status: "error",
         name: "complete_goal",
         content: "There is no active goal to complete",
+        data: {},
+      };
+    }
+
+    if (!(await hasAnsweredSince(context, completionId, active.created_at))) {
+      return {
+        status: "error",
+        name: "complete_goal",
+        content:
+          "Nothing has been produced for this objective yet. Give the user your answer in this turn first, then call complete_goal citing that answer as evidence.",
         data: {},
       };
     }

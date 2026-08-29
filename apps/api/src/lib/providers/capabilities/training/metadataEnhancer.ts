@@ -97,7 +97,7 @@ export class TrainingMetadataEnhancer {
       return {
         previousMessages: previousMessages.map((msg) => ({
           ...msg,
-          timestamp: new Date().toISOString(), // In real implementation, use actual timestamps
+          timestamp: new Date().toISOString(),
         })),
         totalTurns: Math.ceil(previousMessages.length / 2),
         conversationStartTime:

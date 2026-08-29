@@ -14,11 +14,9 @@ import { type FormEvent, type ReactNode, useState } from "react";
 export interface InviteMemberDialogProps {
   canInviteAdmin: boolean;
   open: boolean;
-  /** Present once the invitation exists; the form locks and the link is offered instead. */
   inviteUrl?: string | null;
   errorMessage?: string;
   isSubmitting?: boolean;
-  /** Host-owned clipboard control, so the render package never touches the clipboard itself. */
   renderCopyControl: (value: string) => ReactNode;
   onOpenChange: (open: boolean) => void;
   onSubmit: (input: { email: string; role: "admin" | "member" }) => Promise<void> | void;

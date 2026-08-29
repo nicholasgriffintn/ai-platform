@@ -510,6 +510,10 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
   }
 
   private ingestMessageStart(event: Record<string, unknown>): ChatStreamUpdate[] {
+    if (this.currentAssistantFinalised) {
+      this.resetAssistantState();
+    }
+
     const anthropicMessage = isRecord(event.message) ? event.message : null;
 
     if (typeof event.message_id === "string") {

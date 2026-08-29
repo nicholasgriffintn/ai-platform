@@ -20,8 +20,6 @@ describe("listPatterns", () => {
     listProjectOutputs.mockResolvedValue([]);
   });
 
-  // Tool runs also store outputs against the strudel capability, and the detail, update, and
-  // delete paths reject anything that is not a saved pattern.
   it("lists only saved patterns personally", async () => {
     await listPatterns({ context: createContext(), userId: 42 });
 

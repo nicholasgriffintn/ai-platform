@@ -16,6 +16,7 @@ import {
 } from "@ngriffin_uk/polychat-component-conversation";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
+import type { GoalCommand } from "@ngriffin_uk/polychat-library-chat/goal-command";
 import { getModelInteractionCapabilities } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { File, FileText, Paperclip, Pause, Send, Volume2 } from "lucide-react";
@@ -65,7 +66,11 @@ const FOLLOW_UP_PLACEHOLDERS = [
 ];
 
 interface ChatInputProps {
-  goalState?: { canUseGoals: boolean; goal: { status: string } | null };
+  goalState?: {
+    canUseGoals: boolean;
+    goal: { status: string } | null;
+    onCommand?: (command: GoalCommand) => void;
+  };
   handleSubmit: (attachments?: AttachmentData[]) => void | Promise<boolean>;
   isLoading: boolean;
   streamStarted: boolean;
@@ -157,6 +162,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       setSelectedAssistantAction,
     } = useChatStore();
     const { isPro, currentConversationId } = useChatStore();
+    const isComposingGoal = useChatStore((state) => state.isComposingGoal);
+    const setComposingGoal = useChatStore((state) => state.setComposingGoal);
     const { isRecording, isTranscribing, startRecording, stopRecording } = useVoiceRecorder({
       onTranscribe,
     });
@@ -617,6 +624,14 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
             <ComposerCommandChips
               {...commandState}
               attachments={attachmentChips}
+              goal={
+                isComposingGoal
+                  ? {
+                      label: goalState?.goal ? "Replacing goal" : "Setting a goal",
+                      onClear: () => setComposingGoal(false),
+                    }
+                  : undefined
+              }
               hideAgentChip={hasInlineAgentToken}
               onClearMode={modeControls?.onClearActive}
             />
@@ -654,13 +669,15 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                 onTokenPositionsChange={handleComposerTokenPositionsChange}
                 onKeyDown={handleKeyDown}
                 placeholder={
-                  !currentConversationId
-                    ? (placeholder?.newConversation ??
-                      NEW_CONVERSATION_PLACEHOLDERS[
-                        placeholderSeed % NEW_CONVERSATION_PLACEHOLDERS.length
-                      ])
-                    : (placeholder?.followUp ??
-                      FOLLOW_UP_PLACEHOLDERS[placeholderSeed % FOLLOW_UP_PLACEHOLDERS.length])
+                  isComposingGoal
+                    ? "Describe what done looks like..."
+                    : !currentConversationId
+                      ? (placeholder?.newConversation ??
+                        NEW_CONVERSATION_PLACEHOLDERS[
+                          placeholderSeed % NEW_CONVERSATION_PLACEHOLDERS.length
+                        ])
+                      : (placeholder?.followUp ??
+                        FOLLOW_UP_PLACEHOLDERS[placeholderSeed % FOLLOW_UP_PLACEHOLDERS.length])
                 }
                 disabled={isRecording || isTranscribing || isLoading || isAuthenticationLoading}
                 ariaLabel="Message input"

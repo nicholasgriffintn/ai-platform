@@ -262,7 +262,9 @@ export class ChatOrchestrator {
         enabledTools: enabled_tools,
       },
       messages,
-      resolvedMaxSteps: resolveTurnStepBudget(chatOptions, currentMode),
+      resolvedMaxSteps: resolveTurnStepBudget(chatOptions, currentMode, {
+        hasActiveGoal: Boolean(prepared.activeGoal),
+      }),
     });
 
     const toolRequestContext = buildToolRequestContext({
@@ -285,7 +287,9 @@ export class ChatOrchestrator {
       conversationManager,
       toolRequestContext,
       transport: stream ? createStreamingTurnTransport() : createBufferedTurnTransport(),
-      maxSteps: resolveTurnStepBudget(chatOptions, currentMode),
+      maxSteps: resolveTurnStepBudget(chatOptions, currentMode, {
+        hasActiveGoal: Boolean(prepared.activeGoal),
+      }),
       env: chatOptions.env,
       model: primaryModel,
       provider: primaryProvider,

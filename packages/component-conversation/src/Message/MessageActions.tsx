@@ -50,7 +50,6 @@ export interface MessageActionsProps {
   isArchivedByCompaction?: boolean;
   responseDurationMs?: number;
   modelConfig?: ModelConfigItem;
-  /** Model pickers stay host-owned because they read the catalogue and account entitlements. */
   renderModelSelector: (props: {
     onModelSelect: (modelId: string) => void;
     onCancel: () => void;

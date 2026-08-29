@@ -11,7 +11,6 @@ export interface UserMenuItemProps {
   isAuthenticated: boolean;
   isLoading: boolean;
   isLoggingOut: boolean;
-  /** False until the host has hydrated, so the server and client markup agree. */
   isReady: boolean;
   profileHref: string;
   onSignIn: () => void;

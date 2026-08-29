@@ -6,7 +6,6 @@ import { getBadgeClass, getCardGradient, getIcon, getIconContainerClass } from "
 
 export interface AppCardProps {
   app: AppListItem;
-  /** Account facts the host resolves; the card only presents the resulting state. */
   isAuthenticated: boolean;
   isPro: boolean;
   onSelect: () => void;

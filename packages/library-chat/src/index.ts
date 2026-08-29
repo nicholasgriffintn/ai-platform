@@ -1,6 +1,13 @@
 export type { AttachmentData } from "./attachments";
 export { COMPACT_CONVERSATION_COMMAND, isCompactConversationCommand } from "./compaction-command";
-export { GOAL_COMMAND, isGoalCommand, parseGoalCommand, type GoalCommand } from "./goal-command";
+export {
+  GOAL_COMMAND,
+  isGoalCommand,
+  parseGoalCommand,
+  resolveGoalSubmission,
+  type GoalCommand,
+  type GoalSubmission,
+} from "./goal-command";
 export { getGoalMessageMarker, type GoalMessageMarker } from "./message-goal-status";
 export { resolveConversationStorageMode } from "./conversation-storage-policy";
 export {

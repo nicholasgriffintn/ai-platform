@@ -7,7 +7,6 @@ export interface MoreOptionsDropdownProps {
   privacyHref: string;
   termsHref: string;
   sourceCodeUrl: string;
-  /** Brand glyph for the source repository, supplied by the host so navigation owns no registry. */
   sourceCodeIcon: ReactNode;
   onShowKeyboardShortcuts: () => void;
 }

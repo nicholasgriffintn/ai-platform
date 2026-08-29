@@ -177,7 +177,6 @@ export async function searchDocuments({
 
     let ranked = docs;
 
-    // Rerank if we have more docs than needed
     if (docs.length > topK) {
       try {
         const reranker = getChatProvider("workers", { env, user });
@@ -212,7 +211,6 @@ export async function searchDocuments({
 
     const summaryThreshold = options.summaryThreshold || DEFAULT_SUMMARY_THRESHOLD;
 
-    // Summarize long documents
     for (const doc of selected) {
       if (doc.content.length > summaryThreshold) {
         try {

@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 export interface ArticleReportHeaderProps {
   report: ArticleReportItem;
   isShared?: boolean;
-  /** Host control that re-runs the analysis; omitted on shared, read-only reports. */
   rerunControl?: ReactNode;
 }
 

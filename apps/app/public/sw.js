@@ -11,10 +11,8 @@ self.addEventListener("message", (event) => {
   }
 });
 
-// Cache name with version
 const CACHE_NAME = "polychat-pwa-v1";
 
-// Activate event - clean up old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
@@ -30,7 +28,6 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// Cache static assets
 registerRoute(
   ({ request }) => request.destination === "assets",
   new CacheFirst({
@@ -47,7 +44,6 @@ registerRoute(
   }),
 );
 
-// Default handler
 setDefaultHandler(
   new NetworkOnly({
     cacheName: "default-cache",

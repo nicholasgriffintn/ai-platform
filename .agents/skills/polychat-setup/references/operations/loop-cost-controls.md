@@ -5,13 +5,13 @@ removes a bound is visible as a change to this file rather than as a bill.
 
 ## Every loop and what stops it
 
-| Loop                  | Bound                                                                                                    | Enforced in                                           |
-| --------------------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| Chat turn steps       | the request's own ceiling, the recipe and connector defaults, and `AGENT_MODE_CONFIGS[mode].maxSteps`    | `resolveTurnStepBudget`, `resolveModeMaxSteps`        |
-| Agent loop steps      | that budget, extended once so a turn that hits it is asked for a final answer rather than cut off        | `executeAgentLoop`, `runAgentLoop`                    |
-| Goal continuation     | `evaluateGoalContinuation`: stalls after two evidence-free turns, plus blocked, paused, and usage states | `packages/schemas/src/goals.ts`                       |
-| Sandbox run loop      | `MAX_AGENT_STEPS`, `MAX_COMMANDS`, run timeout, and the run goal's own stall rule                        | sandbox worker constants, run goal iteration endpoint |
-| Inbound channel turns | channel profile `maxSteps`, and one turn at a time per conversation                                      | `channels.ts`, `ConversationCoordinator`              |
+| Loop                  | Bound                                                                                                                                                                                                | Enforced in                                           |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Chat turn steps       | the request's own ceiling, the recipe and connector defaults, and `AGENT_MODE_CONFIGS[mode].maxSteps`; a turn under an active goal is raised to `GOAL_TURN_MAX_STEPS` unless the request set its own | `resolveTurnStepBudget`, `resolveModeMaxSteps`        |
+| Agent loop steps      | that budget, extended once so a turn that hits it is asked for a final answer rather than cut off                                                                                                    | `executeAgentLoop`, `runAgentLoop`                    |
+| Goal continuation     | `evaluateGoalContinuation`: stalls after two evidence-free turns, plus blocked, paused, and usage states                                                                                             | `packages/schemas/src/goals.ts`                       |
+| Sandbox run loop      | `MAX_AGENT_STEPS`, `MAX_COMMANDS`, run timeout, and the run goal's own stall rule                                                                                                                    | sandbox worker constants, run goal iteration endpoint |
+| Inbound channel turns | channel profile `maxSteps`, and one turn at a time per conversation                                                                                                                                  | `channels.ts`, `ConversationCoordinator`              |
 
 Streaming is a transport, not a loop of its own (ADR 0022). A streamed turn and a buffered one draw the
 same budget through the same loop, so there is one place to change a bound and one place it can be lost.

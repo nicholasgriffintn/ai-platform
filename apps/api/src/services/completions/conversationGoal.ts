@@ -11,7 +11,10 @@ import { GOAL_UNSATISFIED_INSTRUCTION } from "~/lib/chat/agent/goal-gate";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { getSandboxRunRecordForUser } from "~/services/apps/sandbox/runs";
-import { requireConversationAccess } from "~/services/conversations/access";
+import {
+  requireConversationAccess,
+  requireOwnConversationForWrite,
+} from "~/services/conversations/access";
 import { recordGoalMarker } from "~/services/goals/goalMarker";
 import { GoalService } from "~/services/goals/GoalService";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -144,11 +147,12 @@ export async function handleSetConversationGoal(
   context: ConversationGoalContext,
   completionId: string,
   objective: string,
+  options?: { projectId?: string },
 ): Promise<GoalResponse> {
   const user = context.requireUser();
   const service = createService(context);
 
-  await requireConversationAccess(context, completionId);
+  await requireOwnConversationForWrite(context, completionId, options);
 
   const goal = await service.setGoal({
     owner: { conversationId: completionId },

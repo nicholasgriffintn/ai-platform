@@ -18,7 +18,6 @@ export interface ConnectorDetailsModalProps {
   onDisconnect: (connector: RecipeConnectorManifest) => void;
   isStarting: boolean;
   isDisconnecting: boolean;
-  /** Account management for Composio connectors, mounted by the host that owns the data. */
   accountsSlot?: ReactNode;
 }
 

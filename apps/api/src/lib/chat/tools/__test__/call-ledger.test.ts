@@ -66,6 +66,20 @@ describe("repeated tool call guard", () => {
     expect(second.tool_call_id).toBe("call-2");
   });
 
+  it("does not spend the repeat budget on calls that failed", async () => {
+    mocks.resolveToolRepeatLimit.mockReturnValue(1);
+    const ledger = createToolCallLedger();
+
+    mocks.handleFunctions.mockResolvedValueOnce({ status: "error", content: "not ready yet" });
+
+    const [first] = await run([toolCall("complete_goal", { summary: "done" }, "call-1")], ledger);
+    const [second] = await run([toolCall("complete_goal", { summary: "done" }, "call-2")], ledger);
+
+    expect(first.status).toBe("error");
+    expect(second.status).toBe("success");
+    expect(mocks.handleFunctions).toHaveBeenCalledTimes(2);
+  });
+
   it("still answers the model when it repeats a call, so the provider keeps a result per call", async () => {
     mocks.resolveToolRepeatLimit.mockReturnValue(1);
     const ledger = createToolCallLedger();

@@ -310,7 +310,6 @@ export const ModelSelector = ({
     dismissHoverPreview();
   }, [dismissHoverPreview, isOpen]);
 
-  // Dismissing from inside the panel leaves focus nowhere, so hand it back to the trigger.
   const closeSelector = useCallback(() => {
     setIsOpen(false);
     triggerRef.current?.focus();

@@ -8,9 +8,11 @@ import {
   GoalStatusRow,
   isRenderableMessage,
   MessageSkeleton,
+  ResolvedToolCallsProvider,
   ScrollButton,
   StreamActivityIndicator,
 } from "@ngriffin_uk/polychat-component-conversation";
+import { collectResolvedToolCallIds } from "@ngriffin_uk/polychat-library-chat/agent-trace";
 import {
   getCompactionMessageLabel,
   isCompactionLoadingMessage,
@@ -101,6 +103,7 @@ export const MessageList = ({
   } = useChatManager();
 
   const messages = propMessages || conversation?.messages || [];
+  const resolvedToolCallIds = useMemo(() => collectResolvedToolCallIds(messages), [messages]);
   const availableModels = useMemo(
     () => getAvailableModels(apiModels, chatMode === "local", webLLMModels),
     [apiModels, chatMode, webLLMModels],
@@ -195,96 +198,98 @@ export const MessageList = ({
   };
 
   return (
-    <div
-      className="flex flex-col flex-1 relative"
-      data-conversation-id={currentConversationId || undefined}
-      role="log"
-      aria-live="polite"
-      aria-label="Conversation messages"
-      aria-atomic="false"
-    >
-      <VList
-        ref={virtualRef}
-        data-header-scroll-source
-        className="flex-1 pt-4 pr-2 h-full overflow-auto w-full"
-        onScroll={handleScroll}
+    <ResolvedToolCallsProvider resolvedToolCallIds={resolvedToolCallIds}>
+      <div
+        className="flex flex-col flex-1 relative"
+        data-conversation-id={currentConversationId || undefined}
+        role="log"
+        aria-live="polite"
+        aria-label="Conversation messages"
+        aria-atomic="false"
       >
-        {!isSharedView && isLoadingConversation
-          ? [...Array(3)].map((_, i) => <MessageSkeleton key={`skeleton-item-${i}`} />)
-          : visibleRows.map(({ message, index, compactionLabel, goalMarker }) => {
-              return (
-                <div key={message.id || `message-${index}`} className="pb-4">
-                  {goalMarker ? (
-                    <GoalStatusRow label={goalMarker.label} objective={goalMarker.objective} />
-                  ) : compactionLabel ? (
-                    <CompactionStatusRow label={compactionLabel} />
-                  ) : (
-                    <ChatMessage
-                      conversationId={currentConversationId}
-                      canSubmitFeedback={Boolean(conversation && !conversation.isLocalOnly)}
-                      message={message}
-                      modelConfig={getModelByReference(modelReferences, message.model)}
-                      onToolInteraction={onToolInteraction}
-                      onConnectorApproval={onConnectorApproval}
-                      onArtifactOpen={onArtifactOpen}
-                      isSharedView={isSharedView}
-                      onRetry={retryMessage}
-                      isRetrying={streamStarted}
-                      onEdit={message.id ? () => startEditingMessage(message.id) : undefined}
-                      isEditing={editingMessageId === message.id}
-                      onSaveEdit={(newContent) => {
-                        if (message.id) {
-                          void updateUserMessage(message.id, newContent);
-                          stopEditingMessage();
+        <VList
+          ref={virtualRef}
+          data-header-scroll-source
+          className="flex-1 pt-4 pr-2 h-full overflow-auto w-full"
+          onScroll={handleScroll}
+        >
+          {!isSharedView && isLoadingConversation
+            ? [...Array(3)].map((_, i) => <MessageSkeleton key={`skeleton-item-${i}`} />)
+            : visibleRows.map(({ message, index, compactionLabel, goalMarker }) => {
+                return (
+                  <div key={message.id || `message-${index}`} className="pb-4">
+                    {goalMarker ? (
+                      <GoalStatusRow label={goalMarker.label} objective={goalMarker.objective} />
+                    ) : compactionLabel ? (
+                      <CompactionStatusRow label={compactionLabel} />
+                    ) : (
+                      <ChatMessage
+                        conversationId={currentConversationId}
+                        canSubmitFeedback={Boolean(conversation && !conversation.isLocalOnly)}
+                        message={message}
+                        modelConfig={getModelByReference(modelReferences, message.model)}
+                        onToolInteraction={onToolInteraction}
+                        onConnectorApproval={onConnectorApproval}
+                        onArtifactOpen={onArtifactOpen}
+                        isSharedView={isSharedView}
+                        onRetry={retryMessage}
+                        isRetrying={streamStarted}
+                        onEdit={message.id ? () => startEditingMessage(message.id) : undefined}
+                        isEditing={editingMessageId === message.id}
+                        onSaveEdit={(newContent) => {
+                          if (message.id) {
+                            void updateUserMessage(message.id, newContent);
+                            stopEditingMessage();
+                          }
+                        }}
+                        onCancelEdit={stopEditingMessage}
+                        onBranch={onBranch}
+                        isBranching={isBranching}
+                        onRequestSecondOpinion={
+                          canAccessProFeatures ? onRequestSecondOpinion : undefined
                         }
-                      }}
-                      onCancelEdit={stopEditingMessage}
-                      onBranch={onBranch}
-                      isBranching={isBranching}
-                      onRequestSecondOpinion={
-                        canAccessProFeatures ? onRequestSecondOpinion : undefined
-                      }
-                      isRequestingSecondOpinion={isRequestingSecondOpinion}
-                      isArchivedByCompaction={
-                        latestCompactionMarkerIndex !== -1 && index < latestCompactionMarkerIndex
-                      }
-                      responseDurationMs={responseDurations[message.id]}
-                    />
-                  )}
-                </div>
-              );
-            })}
-        {!isSharedView && (isStreamLoading || streamStarted) ? (
-          isCompactionLoadingMessage(streamLoadingMessage) ? (
-            showCompactionLoadingDivider ? (
-              <CompactionStatusRow label={streamLoadingMessage} pending />
-            ) : null
-          ) : (
-            <StreamActivityIndicator label={streamLoadingMessage} activity={streamActivity} />
-          )
-        ) : null}
-        {!isSharedView && isModelInitializing && (
-          <div className="flex items-center gap-2 py-2 px-4 text-sm text-zinc-600 dark:text-zinc-400">
-            <Loader2 className="h-4 w-4 animate-spin text-blue-500 flex-shrink-0" />
-            <span>
-              {modelInitMessage}
-              {modelInitProgress !== undefined ? ` ${Math.round(modelInitProgress)}%` : null}
-            </span>
+                        isRequestingSecondOpinion={isRequestingSecondOpinion}
+                        isArchivedByCompaction={
+                          latestCompactionMarkerIndex !== -1 && index < latestCompactionMarkerIndex
+                        }
+                        responseDurationMs={responseDurations[message.id]}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+          {!isSharedView && (isStreamLoading || streamStarted) ? (
+            isCompactionLoadingMessage(streamLoadingMessage) ? (
+              showCompactionLoadingDivider ? (
+                <CompactionStatusRow label={streamLoadingMessage} pending />
+              ) : null
+            ) : (
+              <StreamActivityIndicator label={streamLoadingMessage} activity={streamActivity} />
+            )
+          ) : null}
+          {!isSharedView && isModelInitializing && (
+            <div className="flex items-center gap-2 py-2 px-4 text-sm text-zinc-600 dark:text-zinc-400">
+              <Loader2 className="h-4 w-4 animate-spin text-blue-500 flex-shrink-0" />
+              <span>
+                {modelInitMessage}
+                {modelInitProgress !== undefined ? ` ${Math.round(modelInitProgress)}%` : null}
+              </span>
+            </div>
+          )}
+        </VList>
+        {showScroll && !isSharedView && (
+          <div className="absolute bottom-2 right-2 z-10">
+            <ScrollButton
+              onClick={() => {
+                isNearBottomRef.current = true;
+                virtualRef.current?.scrollToIndex(messages.length - 1, {
+                  align: "end",
+                });
+              }}
+            />
           </div>
         )}
-      </VList>
-      {showScroll && !isSharedView && (
-        <div className="absolute bottom-2 right-2 z-10">
-          <ScrollButton
-            onClick={() => {
-              isNearBottomRef.current = true;
-              virtualRef.current?.scrollToIndex(messages.length - 1, {
-                align: "end",
-              });
-            }}
-          />
-        </div>
-      )}
-    </div>
+      </div>
+    </ResolvedToolCallsProvider>
   );
 };

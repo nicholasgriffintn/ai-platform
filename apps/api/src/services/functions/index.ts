@@ -189,8 +189,12 @@ export const validateFunctionArgs = (toolDefinition: RegisteredFunctionTool, arg
       message: issue.message,
     }));
 
+    const detail = validationErrors
+      .map((issue) => `${issue.path || "(root)"}: ${issue.message}`)
+      .join("; ");
+
     throw new AssistantError(
-      `Invalid arguments for ${toolDefinition.name}`,
+      `Invalid arguments for ${toolDefinition.name}. ${detail}`,
       ErrorType.PARAMS_ERROR,
       400,
       { validationErrors },

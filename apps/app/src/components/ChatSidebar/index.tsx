@@ -52,7 +52,6 @@ export const ChatSidebar = ({
   const { trackEvent } = useTrackEvent();
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  // The conversation only renders on the chat index, so the sub-pages must route back to it.
   const isConversationRoute = pathname === "/" || pathname === "/chat";
   const {
     sidebarVisible,

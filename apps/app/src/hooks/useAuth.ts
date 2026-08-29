@@ -69,7 +69,6 @@ export function useAuthStatus() {
       if (success) {
         clearAuthenticatedUserConfiguration();
         setIsAuthenticationLoading(false);
-        // Clear usage limits when user logs out
         useUsageStore.getState().setUsageLimits(null);
 
         return true;

@@ -12,7 +12,7 @@ function createGoal(overrides: Partial<Goal> = {}): Goal {
     objective: "Make the checkout suite pass",
     status: "active",
     source: "user",
-    iteration_count: 0,
+    iteration_count: 1,
     stall_streak: 0,
     tokens_spent: 0,
     progress: [],
@@ -26,10 +26,18 @@ function createGoal(overrides: Partial<Goal> = {}): Goal {
   };
 }
 
-function createContext(options: { goal?: Goal | null; delegationStack?: string[] } = {}) {
+const addMessage = vi.fn();
+
+function createContext(
+  options: { goal?: Goal | null; delegationStack?: string[]; messages?: any[] } = {},
+) {
   let current = options.goal === undefined ? createGoal() : options.goal;
+  const messages = options.messages ?? [
+    { role: "assistant", content: "Here is the answer", timestamp: Date.now() },
+  ];
 
   return {
+    conversationManager: { add: addMessage },
     request: {
       user: { id: 1, plan_id: "pro" },
       request: {
@@ -53,6 +61,9 @@ function createContext(options: { goal?: Goal | null; delegationStack?: string[]
             }),
             listGoals: vi.fn(),
           },
+          messages: {
+            getConversationMessages: vi.fn(async () => messages),
+          },
         },
       },
     },
@@ -62,6 +73,65 @@ function createContext(options: { goal?: Goal | null; delegationStack?: string[]
 describe("complete_goal", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("leaves the completion marker to the turn, so it lands after the tool result", async () => {
+    const result = await complete_goal.execute(
+      {
+        summary: "Suite is green",
+        evidence: [
+          {
+            claim: "Checkout suite passes",
+            route: "ran the suite",
+            evidence_surface: "tool result",
+            status: "confirmed",
+          },
+        ],
+      },
+      createContext({ goal: createGoal({ iteration_count: 2 }) }),
+    );
+
+    expect(result.status).toBe("success");
+    expect(addMessage).not.toHaveBeenCalled();
+  });
+
+  it("refuses to complete before the turn has produced anything", async () => {
+    const result = await complete_goal.execute(
+      {
+        summary: "Done already",
+        evidence: [
+          {
+            claim: "Nothing yet",
+            route: "none",
+            evidence_surface: "none",
+            status: "confirmed",
+          },
+        ],
+      },
+      createContext({ messages: [{ role: "user", content: "do it", timestamp: Date.now() }] }),
+    );
+
+    expect(result.status).toBe("error");
+    expect(addMessage).not.toHaveBeenCalled();
+  });
+
+  it("completes once the assistant has answered", async () => {
+    const result = await complete_goal.execute(
+      {
+        summary: "Answered",
+        evidence: [
+          {
+            claim: "Returned the JSON",
+            route: "answered in this turn",
+            evidence_surface: "assistant message",
+            status: "confirmed",
+          },
+        ],
+      },
+      createContext(),
+    );
+
+    expect(result.status).toBe("success");
   });
 
   it("completes with a real evidence ledger", async () => {

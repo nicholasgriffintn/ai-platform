@@ -20,7 +20,6 @@ export interface AccountSidebarShellProps {
   isMobile: boolean;
   sidebarVisible: boolean;
   onClose: () => void;
-  /** Sign-out is only offered once the host knows there is a session to end. */
   isAuthenticated: boolean;
   isLoggingOut?: boolean;
   onLogout: () => void;

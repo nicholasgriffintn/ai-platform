@@ -186,6 +186,135 @@ describe("useStreamingResponse", () => {
     ]);
   });
 
+  it("keeps two text-only assistant turns from one stream as separate messages", async () => {
+    const queryClient = createQueryClient();
+    const userMessage: Message = {
+      id: "user-1",
+      role: "user",
+      content: "count to 20 in tens",
+      model: "deepseek-v4-flash",
+    };
+
+    queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"], {
+      id: "conversation-1",
+      title: "Test",
+      isLocalOnly: false,
+      messages: [userMessage],
+    });
+
+    const firstTurn: Message = {
+      id: "assistant-first",
+      role: "assistant",
+      content: "10",
+      model: "deepseek-v4-flash",
+    };
+    const secondTurn: Message = {
+      id: "assistant-second",
+      role: "assistant",
+      content: "20",
+      model: "deepseek-v4-flash",
+    };
+
+    mocks.streamChatCompletions.mockImplementation(async ({ onProgress }) => {
+      onProgress("10");
+      onProgress("", undefined, undefined, true, firstTurn);
+      onProgress("20");
+      onProgress("", undefined, undefined, true, secondTurn);
+
+      return secondTurn;
+    });
+
+    const { result } = renderHook(() => useStreamingResponse(undefined), {
+      wrapper: wrapper(queryClient),
+    });
+
+    let streamResult: Awaited<ReturnType<typeof result.current.streamResponse>> | undefined;
+
+    await act(async () => {
+      streamResult = await result.current.streamResponse(
+        [userMessage],
+        "conversation-1",
+        undefined,
+        { generateTitle: false },
+      );
+    });
+
+    expect(streamResult?.status).not.toBe("error");
+
+    const conversation = queryClient.getQueryData<Conversation>([
+      CHATS_QUERY_KEY,
+      "conversation-1",
+    ]);
+    const assistantIds = conversation?.messages
+      .filter((message) => message.role === "assistant")
+      .map((message) => message.id);
+
+    expect(assistantIds).toEqual(["assistant-first", "assistant-second"]);
+    expect(new Set(conversation?.messages.map((message) => message.id)).size).toBe(
+      conversation?.messages.length,
+    );
+  });
+
+  it("does not leave an empty assistant bubble for a step that produced nothing", async () => {
+    const queryClient = createQueryClient();
+    const userMessage: Message = {
+      id: "user-1",
+      role: "user",
+      content: "planets please",
+      model: "deepseek-v4-flash",
+    };
+
+    queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"], {
+      id: "conversation-1",
+      title: "Test",
+      isLocalOnly: false,
+      messages: [userMessage],
+    });
+
+    const emptyStep: Message = {
+      id: "assistant-empty",
+      role: "assistant",
+      content: "",
+      model: "deepseek-v4-flash",
+    };
+    const realStep: Message = {
+      id: "assistant-real",
+      role: "assistant",
+      content: "Mercury is the smallest planet.",
+      model: "deepseek-v4-flash",
+    };
+
+    mocks.streamChatCompletions.mockImplementation(async ({ onProgress }) => {
+      onProgress("", undefined, undefined, true, emptyStep);
+      onProgress("Mercury is the smallest planet.");
+      onProgress("", undefined, undefined, true, realStep);
+
+      return realStep;
+    });
+
+    const { result } = renderHook(() => useStreamingResponse(undefined), {
+      wrapper: wrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.streamResponse([userMessage], "conversation-1", undefined, {
+        generateTitle: false,
+      });
+    });
+
+    const conversation = queryClient.getQueryData<Conversation>([
+      CHATS_QUERY_KEY,
+      "conversation-1",
+    ]);
+    const emptyAssistants = conversation?.messages.filter(
+      (message) =>
+        message.role === "assistant" &&
+        (typeof message.content === "string" ? message.content.trim() === "" : false),
+    );
+
+    expect(emptyAssistants).toHaveLength(0);
+  });
+
   it("stores project conversations remotely even when personal Chat is in local mode", async () => {
     const queryClient = createQueryClient();
 

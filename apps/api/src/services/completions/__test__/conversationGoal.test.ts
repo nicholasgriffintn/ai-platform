@@ -41,6 +41,7 @@ vi.mock("~/services/workspaces/access", () => ({
 }));
 
 const owner = { id: 7, plan_id: "pro" };
+const createConversation = vi.fn();
 
 function createContext(overrides: {
   conversation?: Record<string, unknown> | null;
@@ -55,6 +56,7 @@ function createContext(overrides: {
       goals: {},
       conversations: {
         getConversation: vi.fn().mockResolvedValue(overrides.conversation ?? null),
+        createConversation: createConversation,
       },
       activities: {
         getActivityByGroup: vi.fn().mockResolvedValue(overrides.activity ?? null),
@@ -104,6 +106,38 @@ describe("conversation goal authorisation", () => {
         "Conversation not found",
       );
       expect(setGoal).not.toHaveBeenCalled();
+    });
+
+    it("creates the thread when a goal is set before the first message", async () => {
+      const context = createContext({ conversation: null });
+
+      createConversation.mockResolvedValue({ id: "c-1", user_id: owner.id });
+      setGoal.mockResolvedValue({
+        id: "goal-1",
+        conversation_id: "c-1",
+        sandbox_run_id: null,
+        user_id: owner.id,
+        objective: "count to 100",
+        status: "active",
+        source: "user",
+        iteration_count: 0,
+        stall_streak: 0,
+        tokens_spent: 0,
+        progress: [],
+        evidence: null,
+        stopped_reason: null,
+        created_at: "2026-08-29T00:00:00.000Z",
+        updated_at: null,
+        completed_at: null,
+        last_continued_at: null,
+      });
+
+      await handleSetConversationGoal(context, "c-1", "count to 100");
+
+      expect(createConversation).toHaveBeenCalledWith("c-1", owner.id, undefined, {});
+      expect(setGoal).toHaveBeenCalledWith(
+        expect.objectContaining({ owner: { conversationId: "c-1" }, objective: "count to 100" }),
+      );
     });
 
     it("refuses to change goal lifecycle on someone else's personal conversation", async () => {

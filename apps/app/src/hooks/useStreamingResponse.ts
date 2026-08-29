@@ -12,6 +12,7 @@ import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { CHATS_QUERY_KEY } from "~/constants";
+import { GOAL_QUERY_KEY } from "~/hooks/useGoal";
 import { apiService } from "~/lib/api/api-service";
 import { getChatStreamLoadingMessage } from "~/lib/chat/stream-state";
 import { recoverDetachedTurn } from "~/lib/chat/turn-recovery";
@@ -131,11 +132,15 @@ export function useStreamingResponse(
       let activeAssistantMessage: Message | undefined = placeholderMessage;
       let activeAssistantMessagePromise: Promise<Message> | null =
         Promise.resolve(placeholderMessage);
+      let assistantMessageCycle = 0;
 
       const enqueueMessageWrite = <T>(operation: () => Promise<T>): Promise<T> => {
         const queuedWrite = messageWriteQueue.then(operation);
 
-        messageWriteQueue = queuedWrite.then(() => undefined);
+        messageWriteQueue = queuedWrite.then(
+          () => undefined,
+          () => undefined,
+        );
 
         return queuedWrite;
       };
@@ -149,15 +154,35 @@ export function useStreamingResponse(
           return activeAssistantMessagePromise;
         }
 
+        const cycle = assistantMessageCycle;
+
         activeAssistantMessagePromise = enqueueMessageWrite(() =>
           addAssistantMessage(conversationId, "", undefined, assistantMessageData),
         ).then((message) => {
-          activeAssistantMessage = message;
+          if (cycle === assistantMessageCycle) {
+            activeAssistantMessage = message;
+          }
 
           return message;
         });
 
         return activeAssistantMessagePromise;
+      };
+
+      const hasRenderableAssistantPayload = (candidate: Message): boolean => {
+        if (typeof candidate.content === "string" && candidate.content.trim().length > 0) {
+          return true;
+        }
+
+        if (Array.isArray(candidate.content) && candidate.content.length > 0) {
+          return true;
+        }
+
+        return (
+          (Array.isArray(candidate.parts) && candidate.parts.length > 0) ||
+          Boolean(candidate.tool_calls?.length) ||
+          Boolean(candidate.reasoning?.content)
+        );
       };
 
       const withAssistantMessageData = (assistantMessage: Message): Message => ({
@@ -184,10 +209,15 @@ export function useStreamingResponse(
 
           const updatedAssistantMessage = withAssistantMessageData(assistantMessage);
 
+          if (!hasRenderableAssistantPayload(updatedAssistantMessage)) {
+            return;
+          }
+
           generatedMessages.push(updatedAssistantMessage);
           generatedMessage = updatedAssistantMessage;
           const activeMessagePromise = ensureActiveAssistantMessage();
 
+          assistantMessageCycle += 1;
           activeAssistantMessage = undefined;
           activeAssistantMessagePromise = null;
           pendingMessageTasks.push(
@@ -260,9 +290,15 @@ export function useStreamingResponse(
           pendingMessageTasks.push(
             ensureActiveAssistantMessage().then((message) =>
               enqueueMessageWrite(() =>
-                updateAssistantMessage(conversationId, content, reasoning, activeAssistantMessage, {
-                  messageId: message.id,
-                }),
+                updateAssistantMessage(
+                  conversationId,
+                  content,
+                  reasoning,
+                  activeAssistantMessage
+                    ? { ...activeAssistantMessage, parts: undefined }
+                    : undefined,
+                  { messageId: message.id },
+                ),
               ),
             ),
           );
@@ -423,13 +459,15 @@ export function useStreamingResponse(
           }
         }
 
-        await Promise.all(pendingMessageTasks);
+        await Promise.allSettled(pendingMessageTasks);
         await messageWriteQueue;
         if (shouldRefreshStoredConversation) {
           await queryClient.invalidateQueries({
             queryKey: [CHATS_QUERY_KEY, conversationId],
           });
         }
+
+        await queryClient.invalidateQueries({ queryKey: [GOAL_QUERY_KEY, conversationId] });
 
         return {
           status: "success",
@@ -480,6 +518,7 @@ export function useStreamingResponse(
           { messageId: (activeAssistantMessage || placeholderMessage).id },
         );
         await queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY, conversationId] });
+        await queryClient.invalidateQueries({ queryKey: [GOAL_QUERY_KEY, conversationId] });
 
         return {
           status: "success",

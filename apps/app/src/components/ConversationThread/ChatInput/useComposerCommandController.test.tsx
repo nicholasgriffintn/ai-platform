@@ -23,6 +23,8 @@ const mocks = vi.hoisted(() => ({
     setSelectedAgentTokenPosition: vi.fn(),
     setUseMultiModel: vi.fn(),
     useMultiModel: false,
+    isComposingGoal: false,
+    setComposingGoal: vi.fn(),
   },
   actionCatalog: {
     verbs: [] as Array<{
@@ -70,7 +72,8 @@ vi.mock("~/hooks/useWebLLMModels", () => ({
 }));
 
 vi.mock("~/state/stores/chatStore", () => ({
-  useChatStore: () => mocks.store,
+  useChatStore: (selector?: (state: typeof mocks.store) => unknown) =>
+    selector ? selector(mocks.store) : mocks.store,
 }));
 
 describe("useComposerCommandController", () => {
@@ -83,7 +86,45 @@ describe("useComposerCommandController", () => {
     mocks.store.selectedAssistantAction = null;
     mocks.actionCatalog.verbs = [];
     mocks.actionCatalog.items = [];
+    mocks.store.isComposingGoal = false;
     mocks.useAssistantActionCatalog.mockReturnValue(mocks.actionCatalog);
+  });
+
+  it("arms goal composing from /goal instead of leaving the command as text", () => {
+    mocks.store.chatInput = "/goal";
+
+    const { result } = renderHook(() =>
+      useComposerCommandController({
+        isLoading: false,
+        goalState: { canUseGoals: true, goal: null, onCommand: vi.fn() },
+      }),
+    );
+
+    act(() => result.current.setTextareaCursorPosition("/goal".length));
+
+    expect(result.current.applyDirectiveSelection()).toBe(true);
+    expect(mocks.store.setComposingGoal).toHaveBeenCalledWith(true);
+    expect(mocks.store.setChatInput).toHaveBeenCalledWith("");
+  });
+
+  it("runs a goal subcommand directly rather than inserting it", () => {
+    mocks.store.chatInput = "/goal pause";
+    const onCommand = vi.fn();
+
+    const { result } = renderHook(() =>
+      useComposerCommandController({
+        isLoading: false,
+        goalState: { canUseGoals: true, goal: { status: "active" }, onCommand },
+      }),
+    );
+
+    act(() => result.current.setTextareaCursorPosition("/goal".length));
+    act(() => {
+      result.current.moveActiveSuggestion(1);
+    });
+    act(() => result.current.applyDirectiveSelection());
+
+    expect(onCommand).toHaveBeenCalledWith({ kind: "pause" });
   });
 
   it("limits project action suggestions to enabled capabilities", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseGoalCommand } from "./goal-command";
+import { parseGoalCommand, resolveGoalSubmission } from "./goal-command";
 import { getGoalMessageMarker } from "./message-goal-status";
 
 describe("parseGoalCommand", () => {
@@ -68,5 +68,43 @@ describe("getGoalMessageMarker", () => {
       getGoalMessageMarker({ role: "assistant", parts: [{ type: "text", text: "hi" }] }),
     ).toBeNull();
     expect(getGoalMessageMarker(null)).toBeNull();
+  });
+});
+
+describe("resolveGoalSubmission", () => {
+  it("sets the goal and sends the objective as the message while composing", () => {
+    expect(resolveGoalSubmission({ input: "count to 100 in tens", isComposingGoal: true })).toEqual(
+      {
+        command: { kind: "set", objective: "count to 100 in tens" },
+        messageInput: "count to 100 in tens",
+      },
+    );
+  });
+
+  it("sends the objective for a typed set command without the command prefix", () => {
+    expect(resolveGoalSubmission({ input: "/goal count to 100", isComposingGoal: false })).toEqual({
+      command: { kind: "set", objective: "count to 100" },
+      messageInput: "count to 100",
+    });
+  });
+
+  it("keeps subcommands and status off the wire as messages", () => {
+    for (const input of ["/goal", "/goal pause", "/goal resume", "/goal clear"]) {
+      expect(resolveGoalSubmission({ input, isComposingGoal: false }).messageInput).toBeNull();
+    }
+  });
+
+  it("leaves an ordinary message untouched", () => {
+    expect(resolveGoalSubmission({ input: "hello there", isComposingGoal: false })).toEqual({
+      command: null,
+      messageInput: "hello there",
+    });
+  });
+
+  it("does not treat an empty composer as an objective", () => {
+    expect(resolveGoalSubmission({ input: "   ", isComposingGoal: true })).toEqual({
+      command: null,
+      messageInput: "   ",
+    });
   });
 });

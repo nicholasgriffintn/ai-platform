@@ -35,10 +35,12 @@ const defaultSettings: ChatSettings = {
 export interface ChatStore {
   currentConversationId: string | undefined;
   locallyCreatedConversationIds: Record<string, true>;
+  isComposingGoal: boolean;
   setCurrentConversationId: (id: string | undefined) => void;
-  startNewConversation: (id?: string) => void;
+  startNewConversation: (id?: string) => string;
   markConversationRemoteAvailable: (id: string) => void;
   clearCurrentConversation: () => void;
+  setComposingGoal: (composing: boolean) => void;
 
   hasApiKey: boolean;
   setHasApiKey: (hasApiKey: boolean) => void;
@@ -94,19 +96,22 @@ export const useChatStore = create<ChatStore>()(
     (set, get) => ({
       currentConversationId: undefined,
       locallyCreatedConversationIds: {},
-      setCurrentConversationId: (id) => set({ currentConversationId: id }),
-      startNewConversation: (id?: string) =>
-        set((state) => {
-          const conversationId = id || createConversationId();
+      isComposingGoal: false,
+      setCurrentConversationId: (id) => set({ currentConversationId: id, isComposingGoal: false }),
+      setComposingGoal: (composing) => set({ isComposingGoal: composing }),
+      startNewConversation: (id?: string) => {
+        const conversationId = id || createConversationId();
 
-          return {
-            currentConversationId: conversationId,
-            locallyCreatedConversationIds: {
-              ...state.locallyCreatedConversationIds,
-              [conversationId]: true,
-            },
-          };
-        }),
+        set((state) => ({
+          currentConversationId: conversationId,
+          locallyCreatedConversationIds: {
+            ...state.locallyCreatedConversationIds,
+            [conversationId]: true,
+          },
+        }));
+
+        return conversationId;
+      },
       markConversationRemoteAvailable: (id: string) =>
         set((state) => {
           if (!state.locallyCreatedConversationIds[id]) {
@@ -117,7 +122,8 @@ export const useChatStore = create<ChatStore>()(
 
           return { locallyCreatedConversationIds: remainingIds };
         }),
-      clearCurrentConversation: () => set({ currentConversationId: undefined }),
+      clearCurrentConversation: () =>
+        set({ currentConversationId: undefined, isComposingGoal: false }),
 
       hasApiKey: false,
       setHasApiKey: (hasApiKey) => set({ hasApiKey }),

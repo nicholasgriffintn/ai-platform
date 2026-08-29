@@ -11,7 +11,6 @@ export interface StandardSidebarContentProps {
   onClose: () => void;
 }
 
-/** A sidebar for surfaces that only need a route back to the product home. */
 export function StandardSidebarContent({
   footer,
   header,

@@ -100,6 +100,7 @@ export type Goal = z.infer<typeof goalSchema>;
 
 export const setGoalRequestSchema = z.object({
   objective: z.string().trim().min(1).max(2000),
+  project_id: z.string().min(1).optional(),
 });
 
 export const updateGoalRequestSchema = z.object({

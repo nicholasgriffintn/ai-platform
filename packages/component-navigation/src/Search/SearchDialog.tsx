@@ -33,7 +33,6 @@ export interface SearchDialogProps {
   isOpen: boolean;
   query: string;
   results: SearchResult[];
-  /** True once the debounced query is non-empty, which switches the heading to matches. */
   hasQuery: boolean;
   hasError: boolean;
   isLoading: boolean;

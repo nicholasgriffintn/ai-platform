@@ -111,7 +111,6 @@ export class SourceRepository extends BaseRepository {
       return [];
     }
 
-    // D1 caps the bound parameters a single statement may carry, so long id lists are paged.
     const pages: string[][] = [];
 
     for (let start = 0; start < uniqueIds.length; start += MAX_BOUND_PARAMETERS) {

@@ -16,6 +16,7 @@ import {
   Plug,
   ScrollText,
   Search,
+  Target,
   Wrench,
   X,
 } from "lucide-react";
@@ -206,9 +207,15 @@ interface ComposerAttachmentChipState {
   preview: ReactNode;
 }
 
+export interface ComposerGoalChipState {
+  label: string;
+  onClear?: () => void;
+}
+
 export function ComposerCommandChips(
   props: ComposerCommandsState & {
     attachments?: ComposerAttachmentChipState[];
+    goal?: ComposerGoalChipState;
     hideAgentChip?: boolean;
     onClearMode?: () => void;
   },
@@ -220,7 +227,7 @@ export function ComposerCommandChips(
 
   const shouldShowAgent = selectedAgent && !props.hideAgentChip;
 
-  if (!props.attachments?.length && !activeMode && !shouldShowAgent) {
+  if (!props.attachments?.length && !activeMode && !shouldShowAgent && !props.goal) {
     return null;
   }
 
@@ -262,6 +269,25 @@ export function ComposerCommandChips(
               onClick={props.onClearMode}
               className="rounded-sm text-emerald-700 hover:text-emerald-950 dark:text-emerald-200 dark:hover:text-emerald-50"
               label={`Clear ${activeMode.label} mode`}
+            />
+          )}
+        </ContextChip>
+      )}
+      {props.goal && (
+        <ContextChip
+          kind="mode"
+          className="border-violet-200 bg-violet-50 text-violet-800 dark:border-violet-900/60 dark:bg-violet-950/35 dark:text-violet-100"
+        >
+          <Target
+            className="h-3.5 w-3.5 shrink-0 text-violet-700 dark:text-violet-200"
+            aria-hidden="true"
+          />
+          <span className="truncate">{props.goal.label}</span>
+          {props.goal.onClear && (
+            <ChipRemoveButton
+              onClick={props.goal.onClear}
+              className="rounded-sm text-violet-700 hover:text-violet-950 dark:text-violet-200 dark:hover:text-violet-50"
+              label="Cancel goal"
             />
           )}
         </ContextChip>

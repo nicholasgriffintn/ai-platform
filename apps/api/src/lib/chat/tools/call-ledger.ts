@@ -33,17 +33,19 @@ export function checkToolCallRepeat(
   functionName: string,
   rawArguments: unknown,
   limit: number = DEFAULT_MAX_IDENTICAL_TOOL_CALLS,
-): { repeated: boolean; attempts: number } {
+): { repeated: boolean; attempts: number; record: () => void } {
   const signature = `${functionName} ${normaliseToolCallArguments(rawArguments)}`;
   const attempts = ledger.get(signature) ?? 0;
 
   if (attempts >= Math.max(1, limit)) {
-    return { repeated: true, attempts };
+    return { repeated: true, attempts, record: () => undefined };
   }
 
-  ledger.set(signature, attempts + 1);
-
-  return { repeated: false, attempts };
+  return {
+    repeated: false,
+    attempts,
+    record: () => ledger.set(signature, (ledger.get(signature) ?? 0) + 1),
+  };
 }
 
 export function buildRepeatedToolCallMessage(functionName: string, attempts: number): string {

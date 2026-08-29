@@ -176,7 +176,6 @@ export interface ConnectorAccountsPanelProps {
   providerName: string;
   isLoading: boolean;
   hasLoadError: boolean;
-  /** Set while an account update is in flight, so only that row shows progress. */
   updatingAccountId?: string | null;
   hasUpdateError: boolean;
   onRetry: () => void;

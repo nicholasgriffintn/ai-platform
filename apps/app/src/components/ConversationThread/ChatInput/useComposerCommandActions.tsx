@@ -12,7 +12,7 @@ import {
   removeComposerDirective,
   replaceComposerDirectiveWithCursor,
 } from "@ngriffin_uk/polychat-library-chat/composer-commands";
-import { GOAL_COMMAND } from "@ngriffin_uk/polychat-library-chat/goal-command";
+import type { GoalCommand } from "@ngriffin_uk/polychat-library-chat/goal-command";
 import type { ModelToolId } from "@ngriffin_uk/polychat-library-chat/model-tools";
 import {
   formatVerbosityLabel,
@@ -106,7 +106,11 @@ export function useComposerCommandActions({
   assistantActionCatalog?: ComposerActionCatalogConfig;
   chatInput: string;
   directive: ComposerDirectiveQuery | null;
-  goalState?: { canUseGoals: boolean; goal: { status: string } | null };
+  goalState?: {
+    canUseGoals: boolean;
+    goal: { status: string } | null;
+    onCommand?: (command: GoalCommand) => void;
+  };
   includeSettingCommands?: boolean;
   modeCommands: ComposerCommandAction[];
   setChatInput: (value: string) => void;
@@ -128,6 +132,8 @@ export function useComposerCommandActions({
     setUseMultiModel,
     useMultiModel,
   } = useChatStore();
+  const isComposingGoal = useChatStore((state) => state.isComposingGoal);
+  const setComposingGoal = useChatStore((state) => state.setComposingGoal);
   const includeAgents = assistantActionCatalog?.includeAgents !== false;
   const { chatAgents, isLoadingAgents } = useAgents({ enabled: includeAgents });
   const agents = chatAgents as AgentCommand[];
@@ -380,58 +386,65 @@ export function useComposerCommandActions({
     const commands: ComposerCommandAction[] = [
       {
         id: "goal-set",
-        label: goalState.goal ? "Replace goal" : "Set a goal",
-        description: "Keep working until an objective is met, checked against evidence.",
+        label: isComposingGoal ? "Cancel goal" : goalState.goal ? "Replace goal" : "Set a goal",
+        description: isComposingGoal
+          ? "Stop writing an objective and send an ordinary message."
+          : "Keep working until an objective is met, checked against evidence.",
         command: "goal",
         icon: <Target className="h-4 w-4" aria-hidden="true" />,
-        isActive: Boolean(goalState.goal),
-        selectionText: `${GOAL_COMMAND} `,
-        selectionCursorOffset: GOAL_COMMAND.length + 1,
-        onSelect: () => undefined,
+        isActive: isComposingGoal || Boolean(goalState.goal),
+        onSelect: () => setComposingGoal(!isComposingGoal),
       },
     ];
 
-    if (goalState.goal?.status === "active") {
-      commands.push({
-        id: "goal-pause",
-        label: "Pause goal",
-        description: "Stop continuing the goal until you resume it.",
-        command: "goal pause",
-        icon: <Target className="h-4 w-4" aria-hidden="true" />,
-        isActive: false,
-        selectionText: `${GOAL_COMMAND} pause`,
-        onSelect: () => undefined,
-      });
-    }
+    const runGoalCommand = goalState.onCommand;
 
-    if (goalState.goal?.status === "paused") {
-      commands.push({
-        id: "goal-resume",
-        label: "Resume goal",
-        description: "Pick the objective back up.",
-        command: "goal resume",
-        icon: <Target className="h-4 w-4" aria-hidden="true" />,
-        isActive: false,
-        selectionText: `${GOAL_COMMAND} resume`,
-        onSelect: () => undefined,
-      });
-    }
+    if (runGoalCommand) {
+      if (goalState.goal?.status === "active") {
+        commands.push({
+          id: "goal-pause",
+          label: "Pause goal",
+          description: "Stop continuing the goal until you resume it.",
+          command: "goal pause",
+          icon: <Target className="h-4 w-4" aria-hidden="true" />,
+          isActive: false,
+          onSelect: () => runGoalCommand({ kind: "pause" }),
+        });
+      }
 
-    if (goalState.goal) {
-      commands.push({
-        id: "goal-clear",
-        label: "Clear goal",
-        description: "Drop the objective without completing it.",
-        command: "goal clear",
-        icon: <Target className="h-4 w-4" aria-hidden="true" />,
-        isActive: false,
-        selectionText: `${GOAL_COMMAND} clear`,
-        onSelect: () => undefined,
-      });
+      if (goalState.goal?.status === "paused") {
+        commands.push({
+          id: "goal-resume",
+          label: "Resume goal",
+          description: "Pick the objective back up.",
+          command: "goal resume",
+          icon: <Target className="h-4 w-4" aria-hidden="true" />,
+          isActive: false,
+          onSelect: () => runGoalCommand({ kind: "resume" }),
+        });
+      }
+
+      if (goalState.goal) {
+        commands.push({
+          id: "goal-clear",
+          label: "Clear goal",
+          description: "Drop the objective without completing it.",
+          command: "goal clear",
+          icon: <Target className="h-4 w-4" aria-hidden="true" />,
+          isActive: false,
+          onSelect: () => runGoalCommand({ kind: "clear" }),
+        });
+      }
     }
 
     return commands;
-  }, [goalState?.canUseGoals, goalState?.goal]);
+  }, [
+    goalState?.canUseGoals,
+    goalState?.goal,
+    goalState?.onCommand,
+    isComposingGoal,
+    setComposingGoal,
+  ]);
 
   const skillCommands = useMemo<ComposerCommandAction[]>(
     () =>
@@ -459,8 +472,6 @@ export function useComposerCommandActions({
       ...compactionCommands,
       ...settingCommands,
     ];
-    // A mode and a skill can share a name — Council is both. The mode wins: selecting it pins the
-    // skill anyway, and two identical `/` entries are indistinguishable to the person typing.
     const seen = new Set<string>();
 
     return commands.filter((command) => {

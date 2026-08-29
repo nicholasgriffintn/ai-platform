@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 export interface ConnectorApiKeyModalProps {
   open: boolean;
   providerName: string;
-  /** Overrides the generic "API key" wording when a connector names its credential. */
   credentialLabel?: string;
   isSubmitting?: boolean;
   onOpenChange: (open: boolean) => void;

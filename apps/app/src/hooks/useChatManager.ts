@@ -154,7 +154,7 @@ export function useChatManager(
       const currentModel = normalizeSelectedModel(model);
 
       try {
-        let conversationId = currentConversationId;
+        let conversationId = useChatStore.getState().currentConversationId;
 
         if (!conversationId) {
           conversationId = createConversationId();

@@ -121,6 +121,8 @@ export const handleToolCalls = async (
         throw new AssistantError("Missing tool call ID", ErrorType.TOOL_CALL_ERROR);
       }
 
+      let recordToolCallAttempt: (() => void) | undefined;
+
       if (options?.callLedger) {
         const repeat = checkToolCallRepeat(
           options.callLedger,
@@ -155,6 +157,8 @@ export const handleToolCalls = async (
           });
           continue;
         }
+
+        recordToolCallAttempt = repeat.record;
       }
 
       const permissionResult = permissionChecker.checkRequestToolAccess({
@@ -322,6 +326,10 @@ export const handleToolCalls = async (
             });
           },
         });
+
+        if (result?.status !== "error") {
+          recordToolCallAttempt?.();
+        }
       } catch (functionError: any) {
         logger.error(`Function execution error for ${functionName}:`, functionError);
         const errorType = functionError.type || "FUNCTION_EXECUTION_ERROR";

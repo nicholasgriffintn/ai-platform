@@ -10,7 +10,6 @@ const CLOSE_TRANSITION_MS = 300;
 interface UseArtifactPanelOptions {
   onOpen?: (artifact: ArtifactProps, combined: boolean) => void;
   onClose?: (artifact: ArtifactProps) => void;
-  /** Opt out when the host already owns a keydown handler covering Escape. */
   closeOnEscape?: boolean;
 }
 
@@ -20,7 +19,6 @@ export interface ArtifactPanel {
   isPanelVisible: boolean;
   isCombinedPanel: boolean;
   openArtifact: (artifact: ArtifactProps, combine?: boolean, artifacts?: ArtifactProps[]) => void;
-  /** Swap the open artifact for a fresher revision without reopening the panel. */
   replaceArtifact: (artifact: ArtifactProps) => void;
   closePanel: () => void;
 }
@@ -45,7 +43,6 @@ export function useArtifactPanel(options: UseArtifactPanelOptions = {}): Artifac
 
   const openArtifact = useCallback(
     (artifact: ArtifactProps, combine?: boolean, artifacts?: ArtifactProps[]) => {
-      // A reopen inside the close window would otherwise be wiped by the pending clear.
       cancelPendingClear();
 
       const combined = Boolean(combine && artifacts && artifacts.length > 1);

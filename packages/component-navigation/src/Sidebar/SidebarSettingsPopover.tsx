@@ -32,7 +32,6 @@ export interface SidebarUsageMeter {
   label: string;
   value: string;
   assistiveLabel: string;
-  /** Null means the lane is unmetered, which renders as a dot rather than a bar. */
   percentage: number | null;
   tone: "blue" | "emerald" | "amber";
 }
@@ -169,7 +168,6 @@ export interface SidebarSettingsPopoverProps {
   isLoading: boolean;
   links: SidebarSettingsLinks;
   sourceCodeIcon: ReactNode;
-  /** Undefined until the host resolves the stored preference, which keeps SSR output stable. */
   theme?: ThemePreference;
   usage: SidebarUsageMeter[];
   onShowKeyboardShortcuts: () => void;
