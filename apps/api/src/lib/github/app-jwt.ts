@@ -2,18 +2,12 @@ import { createPrivateKey, createSign } from "node:crypto";
 
 import { encodeBase64Url } from "~/utils/base64url";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { stripSurroundingQuotes } from "~/utils/strings";
 
 const APP_JWT_EXP_SECONDS = 9 * 60;
 
 export function normalizeGitHubPrivateKey(privateKeyRaw: string): string {
-  let normalized = privateKeyRaw.trim();
-
-  if (
-    (normalized.startsWith('"') && normalized.endsWith('"')) ||
-    (normalized.startsWith("'") && normalized.endsWith("'"))
-  ) {
-    normalized = normalized.slice(1, -1).trim();
-  }
+  const normalized = stripSurroundingQuotes(privateKeyRaw);
 
   return normalized.replace(/\\n/g, "\n").replace(/\r\n?/g, "\n").trim();
 }

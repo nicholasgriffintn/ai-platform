@@ -6,6 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-library-chat/messages";
 import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
 import { ApiError } from "@ngriffin_uk/polychat-library-client";
+import { updateConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
 import { EMPTY_MODEL_CONFIG, getModelProvider } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
@@ -16,12 +17,13 @@ import { GOAL_QUERY_KEY } from "~/hooks/useGoal";
 import { apiService } from "~/lib/api/api-service";
 import { getChatStreamLoadingMessage } from "~/lib/chat/stream-state";
 import { recoverDetachedTurn } from "~/lib/chat/turn-recovery";
+import { getLocalChatScope } from "~/lib/local/local-chat-scope";
 import { normaliseUsageLimits } from "~/lib/usage-limits";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUsageStore } from "~/state/stores/usageStore";
-import type { ChatRequestOptions, Message } from "~/types";
+import type { ChatRequestOptions, Conversation, Message } from "~/types";
 
 import { useMessageOperations } from "./useMessageOperations";
 import { useModels } from "./useModels";
@@ -56,6 +58,7 @@ export function useStreamingResponse(
     selectedAgentId,
     markConversationRemoteAvailable,
     setModel,
+    user,
   } = useChatStore();
   const setUsageLimits = useUsageStore((state) => state.setUsageLimits);
   const {
@@ -360,10 +363,12 @@ export function useStreamingResponse(
 
               if (title) {
                 serverTitle = title;
-                queryClient.setQueryData(
-                  [CHATS_QUERY_KEY, conversationId],
-                  (existing: { title?: string } | undefined) =>
-                    existing ? { ...existing, title } : existing,
+                updateConversationInChatCaches<Conversation>(
+                  queryClient,
+                  conversationId,
+                  (conversation) => ({ ...conversation, title }),
+                  CHATS_QUERY_KEY,
+                  getLocalChatScope(user?.id),
                 );
               }
 
@@ -556,6 +561,7 @@ export function useStreamingResponse(
       recordStreamActivityState,
       recordStreamActivityText,
       recordStreamActivityToolResult,
+      user?.id,
     ],
   );
 

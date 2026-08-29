@@ -852,14 +852,11 @@ export class ConversationManager {
   }
 
   /**
-   * Get conversation details
-   * @param conversation_id - The ID of the conversation to get the details from
-   * @returns The details of the conversation
+   * Get a conversation record without loading its messages
+   * @param conversation_id - The ID of the conversation to get the record for
+   * @returns The conversation record the caller is allowed to read
    */
-  async getConversationDetails(
-    conversation_id: string,
-    options: { includeArchived?: boolean; includeSnapshots?: boolean } = {},
-  ): Promise<ConversationDetails> {
+  async getConversationMetadata(conversation_id: string): Promise<Record<string, unknown>> {
     if (!this.user?.id) {
       throw new AssistantError(
         "User ID is required to get conversation details",
@@ -880,6 +877,20 @@ export class ConversationManager {
         ErrorType.FORBIDDEN,
       );
     }
+
+    return conversation;
+  }
+
+  /**
+   * Get conversation details
+   * @param conversation_id - The ID of the conversation to get the details from
+   * @returns The details of the conversation
+   */
+  async getConversationDetails(
+    conversation_id: string,
+    options: { includeArchived?: boolean; includeSnapshots?: boolean } = {},
+  ): Promise<ConversationDetails> {
+    const conversation = await this.getConversationMetadata(conversation_id);
 
     const storedConversationId =
       typeof conversation.id === "string" ? conversation.id : conversation_id;

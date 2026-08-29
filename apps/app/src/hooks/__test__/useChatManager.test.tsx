@@ -364,6 +364,84 @@ describe("useChatManager", () => {
     );
   });
 
+  it("takes the title the server streams and skips generating one", async () => {
+    const queryClient = createQueryClient();
+    const conversationId = "titled-conversation";
+    const listQueryKey = [CHATS_QUERY_KEY, "remote", { archived: "active", sortBy: "updated" }];
+
+    useChatStore.setState({
+      isAuthenticated: true,
+      isPro: true,
+      currentConversationId: conversationId,
+      model: "deepseek-v4-pro",
+    });
+    queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, conversationId], {
+      id: conversationId,
+      title: "Help me brainstorm c...",
+      messages: [],
+    });
+    queryClient.setQueryData(listQueryKey, {
+      pageParams: [1],
+      pages: [
+        {
+          conversations: [{ id: conversationId, title: "Help me brainstorm c..." }],
+          pageNumber: 1,
+          pageSize: 25,
+          totalPages: 1,
+        },
+      ],
+    });
+
+    const finalText = "Bottles make decent lamps.";
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        createSseResponse([
+          data({ state: "init", type: "state" }),
+          data({ state: "conversation_title", title: "Wine bottle upcycling", type: "state" }),
+          data({ content: finalText, type: "content_block_delta" }),
+          data({
+            id: conversationId,
+            message_id: "assistant-final",
+            object: "chat.completion",
+            created: 1782930814829,
+            model: "deepseek-v4-pro",
+            provider: "deepseek",
+            platform: "web",
+            finish_reason: "stop",
+            parts: [{ type: "text", text: finalText, timestamp: 1782930795186 }],
+            type: "message_delta",
+          }),
+          data({ type: "message_stop" }),
+          data({ state: "done", type: "state" }),
+          data("[DONE]"),
+        ]),
+      ),
+    );
+    mocks.streamChatCompletions.mockImplementation((params) =>
+      new ChatService(async () => ({})).streamChatCompletions(params),
+    );
+
+    const { result } = renderHook(() => useChatManager(), {
+      wrapper: wrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.sendMessage("Help me brainstorm creative uses for old wine bottles.");
+    });
+
+    const listData = queryClient.getQueryData<{
+      pages: { conversations: { id: string; title: string }[] }[];
+    }>(listQueryKey);
+
+    expect(queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, conversationId])?.title).toBe(
+      "Wine bottle upcycling",
+    );
+    expect(listData?.pages[0].conversations[0].title).toBe("Wine bottle upcycling");
+    expect(mocks.generateTitle).not.toHaveBeenCalled();
+  });
+
   it("keeps streamed remote content when the post-stream refetch returns a stale reasoning-only assistant row", async () => {
     const queryClient = createQueryClient();
 

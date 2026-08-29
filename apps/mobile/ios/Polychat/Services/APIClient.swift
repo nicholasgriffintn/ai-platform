@@ -530,6 +530,7 @@ enum ChatStreamEvent: Equatable {
     case content(String)
     case reasoning(String)
     case state(String)
+    case conversationTitle(String)
     case compaction(ChatMessage)
     case metadata(ChatStreamMetadata)
     case done
