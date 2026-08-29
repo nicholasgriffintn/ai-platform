@@ -1,34 +1,19 @@
-import type {
-  ConversationActivityWindow,
-  ConversationArchiveFilter,
-  ConversationSortBy,
-} from "@ngriffin_uk/polychat-schemas";
+import type { ConversationArchiveFilter, ConversationSortBy } from "@ngriffin_uk/polychat-schemas";
 
 import { PaginationHelper } from "~/lib/database/PaginationHelper";
 import { escapeSqlLikePattern } from "~/utils/sql";
 
 import { BaseRepository } from "./BaseRepository";
 
-export type {
-  ConversationActivityWindow,
-  ConversationArchiveFilter,
-  ConversationSortBy,
-} from "@ngriffin_uk/polychat-schemas";
-
-/** SQLite date modifiers, so the cutoff is resolved by the database clock rather than the Worker's. */
-const ACTIVITY_WINDOW_MODIFIERS: Record<Exclude<ConversationActivityWindow, "all">, string> = {
-  day: "-1 day",
-  week: "-7 days",
-  month: "-30 days",
-};
+export type { ConversationArchiveFilter, ConversationSortBy } from "@ngriffin_uk/polychat-schemas";
 
 export interface GetUserConversationsOptions {
-  activity?: ConversationActivityWindow;
   archiveFilter?: ConversationArchiveFilter;
   limit?: number;
   page?: number;
   query?: string;
   sortBy?: ConversationSortBy;
+  updatedAfter?: string;
 }
 
 export interface GlobalConversationSearchRow {
@@ -115,12 +100,12 @@ export class ConversationRepository extends BaseRepository {
           }
         : optionsOrLimit;
     const {
-      activity = "all",
       archiveFilter = "active",
       limit = 25,
       page = 1,
       query,
       sortBy = "updated",
+      updatedAfter,
     } = options;
     const { limit: safeLimit, offset } = PaginationHelper.calculate(page, limit);
     const whereClauses = ["c.user_id = ?", "c.project_id IS NULL"];
@@ -132,12 +117,11 @@ export class ConversationRepository extends BaseRepository {
       whereClauses.push("c.is_archived = 1");
     }
 
-    if (activity !== "all") {
-      // Timestamps are written in both ISO-8601 and SQLite's own format, so normalise before comparing.
+    if (updatedAfter) {
       whereClauses.push(
-        "datetime(COALESCE(c.updated_at, c.last_message_at, c.created_at)) >= datetime('now', ?)",
+        "datetime(COALESCE(c.updated_at, c.last_message_at, c.created_at)) >= datetime(?)",
       );
-      values.push(ACTIVITY_WINDOW_MODIFIERS[activity]);
+      values.push(updatedAfter);
     }
 
     const trimmedQuery = query?.trim();

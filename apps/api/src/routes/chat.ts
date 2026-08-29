@@ -8,7 +8,6 @@ import {
   editCompletionResponseSchema,
   checkChatCompletionJsonSchema,
   checkChatCompletionParamsSchema,
-  conversationActivityWindowSchema,
   conversationArchiveFilterSchema,
   conversationSortBySchema,
   countTokensJsonSchema,
@@ -93,11 +92,11 @@ const chatMessageListQuerySchema = z.object({
 const chatCompletionsListQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional().default(25),
   page: z.coerce.number().int().min(1).optional().default(1),
-  activity: conversationActivityWindowSchema.optional().default("all"),
   archived: conversationArchiveFilterSchema.optional(),
   include_archived: z.enum(["true", "false"]).optional().default("false"),
   q: z.string().trim().max(200).optional(),
   sort_by: conversationSortBySchema.optional().default("updated"),
+  updated_after: z.iso.datetime().optional(),
 });
 
 function respondWithStreamOrJson(_context: Context, result: unknown, stream?: boolean): Response {
@@ -603,20 +602,19 @@ addRoute(app, "get", "/completions", {
   middleware: [validateCaptcha],
   handler: async ({ raw }) =>
     (async (context: Context) => {
-      const { activity, archived, include_archived, limit, page, q, sort_by } = context.req.valid(
-        "query" as never,
-      ) as z.infer<typeof chatCompletionsListQuerySchema>;
+      const { archived, include_archived, limit, page, q, sort_by, updated_after } =
+        context.req.valid("query" as never) as z.infer<typeof chatCompletionsListQuerySchema>;
       const archiveFilter = archived ?? (include_archived === "true" ? "all" : "active");
 
       const serviceContext = getServiceContext(context);
 
       const response = await handleListChatCompletions(serviceContext, {
-        activity,
         archiveFilter,
         limit,
         page,
         query: q,
         sortBy: sort_by,
+        updatedAfter: updated_after,
       });
 
       return ResponseFactory.success(context, response);

@@ -11,7 +11,6 @@ const rowClassName =
   "flex w-full cursor-pointer select-none items-center rounded px-2 py-1.5 text-zinc-700 outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-zinc-100 data-[state=open]:bg-zinc-100 dark:text-zinc-200 dark:data-[highlighted]:bg-zinc-800 dark:data-[state=open]:bg-zinc-800";
 
 export interface OptionsMenuProps {
-  /** Rendered as the menu trigger, so it must forward a ref and accept the popup props. */
   trigger: ReactNode;
   align?: "start" | "center" | "end";
   sideOffset?: number;
@@ -79,7 +78,6 @@ export function OptionsMenuSection<TValue extends string>({
           collisionPadding={8}
           className={surfaceClassName}
         >
-          {/* The radio group only tracks the checked option; each item reports its own typed value. */}
           <DropdownMenuPrimitive.RadioGroup value={value}>
             {options.map((option) => (
               <DropdownMenuPrimitive.RadioItem

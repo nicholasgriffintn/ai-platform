@@ -461,7 +461,6 @@ export class HomePage extends BasePage {
     const choice = this.page.getByRole("menuitemradio", { name: option, exact: true });
 
     await choice.click();
-    // Selecting an option dismisses the whole menu, so wait for it before asserting on the list.
     await choice.waitFor({ state: "hidden" });
   }
 

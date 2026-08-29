@@ -267,9 +267,6 @@ export type ConversationArchiveFilter = SchemaConversationArchiveFilter;
 export type ConversationSortBy = SchemaConversationSortBy;
 export type ConversationActivityWindow = SchemaConversationActivityWindow;
 
-/** Presentation-only: the API never groups, the sidebar does. */
-export type ConversationGroupBy = "date" | "none";
-
 export interface ConversationListOptions {
   activity?: ConversationActivityWindow;
   archived?: ConversationArchiveFilter;

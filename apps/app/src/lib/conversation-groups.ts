@@ -1,6 +1,9 @@
-import type { ConversationGroup } from "@ngriffin_uk/polychat-component-navigation";
+import type {
+  ConversationGroup,
+  ConversationGroupBy,
+} from "@ngriffin_uk/polychat-component-navigation";
 
-import type { Conversation, ConversationGroupBy, ConversationSortBy } from "~/types";
+import type { Conversation, ConversationSortBy } from "~/types";
 
 import { categorizeItemsByDate, type CategorizedItems } from "./sidebar";
 
@@ -13,7 +16,6 @@ const DATE_GROUPS: readonly { key: keyof CategorizedItems<Conversation>; title: 
   { key: "older", title: "Older" },
 ];
 
-/** Title sort has no date of its own, so its buckets fall back to last activity. */
 function getGroupDate(conversation: Conversation, sortBy: ConversationSortBy): Date {
   if (sortBy === "created" && conversation.created_at) {
     return new Date(conversation.created_at);

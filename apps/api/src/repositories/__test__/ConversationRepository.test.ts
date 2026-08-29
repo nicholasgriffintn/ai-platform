@@ -53,32 +53,32 @@ describe("ConversationRepository", () => {
     expect(calls[1]?.params).toEqual([123, "%50\\%\\_plan%", 10, 10]);
   });
 
-  it("bounds the activity window with a database-resolved cutoff and sorts titles case-insensitively", async () => {
+  it("normalises both sides of the activity cutoff and sorts titles case-insensitively", async () => {
     const { calls, db } = createMockD1();
     const repository = new ConversationRepository({ DB: db } as any);
 
     await repository.getUserConversations(123, {
-      activity: "week",
       limit: 10,
       page: 1,
       sortBy: "title",
+      updatedAfter: "2026-06-01T00:00:00.000Z",
     });
 
     expect(calls[0]?.query).toContain(
-      "datetime(COALESCE(c.updated_at, c.last_message_at, c.created_at)) >= datetime('now', ?)",
+      "datetime(COALESCE(c.updated_at, c.last_message_at, c.created_at)) >= datetime(?)",
     );
-    expect(calls[0]?.params).toEqual([123, "-7 days"]);
+    expect(calls[0]?.params).toEqual([123, "2026-06-01T00:00:00.000Z"]);
     expect(calls[1]?.query).toContain("ORDER BY c.title COLLATE NOCASE ASC, c.id DESC");
-    expect(calls[1]?.params).toEqual([123, "-7 days", 10, 0]);
+    expect(calls[1]?.params).toEqual([123, "2026-06-01T00:00:00.000Z", 10, 0]);
   });
 
-  it("leaves the activity clause out when every conversation is wanted", async () => {
+  it("leaves the activity clause out when no cutoff is supplied", async () => {
     const { calls, db } = createMockD1();
     const repository = new ConversationRepository({ DB: db } as any);
 
-    await repository.getUserConversations(123, { activity: "all" });
+    await repository.getUserConversations(123, {});
 
-    expect(calls[0]?.query).not.toContain("datetime('now', ?)");
+    expect(calls[0]?.query).not.toContain("datetime(?)");
     expect(calls[0]?.params).toEqual([123]);
   });
 

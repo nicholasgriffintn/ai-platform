@@ -7,26 +7,27 @@ import type {
 export type { ConversationListOptions };
 
 const ACTIVITY_WINDOW_DAYS: Record<Exclude<ConversationActivityWindow, "all">, number> = {
-  day: 1,
+  today: 1,
   week: 7,
   month: 30,
 };
 
 const UNTITLED_CONVERSATION = "New conversation";
 
-/**
- * Rolling windows rather than calendar buckets, so the local cutoff matches the
- * `datetime('now', '-N days')` the API applies to stored conversations.
- */
 export function conversationActivityCutoff(
   activity: ConversationActivityWindow | undefined,
-  now: number = Date.now(),
-): number | null {
+  now: Date = new Date(),
+): Date | null {
   if (!activity || activity === "all") {
     return null;
   }
 
-  return now - ACTIVITY_WINDOW_DAYS[activity] * 24 * 60 * 60 * 1000;
+  const cutoff = new Date(now);
+
+  cutoff.setHours(0, 0, 0, 0);
+  cutoff.setDate(cutoff.getDate() - (ACTIVITY_WINDOW_DAYS[activity] - 1));
+
+  return cutoff;
 }
 
 export interface ConversationSummary {
@@ -88,12 +89,12 @@ function compareConversations(
 export function filterConversationsByListOptions<T extends ConversationSummary>(
   conversations: T[],
   options: ConversationListOptions = {},
-  now: number = Date.now(),
+  now: Date = new Date(),
 ): T[] {
   const archiveFilter = options.archived ?? "active";
   const query = options.query?.trim().toLowerCase();
   const sortBy = options.sortBy ?? "updated";
-  const activityCutoff = conversationActivityCutoff(options.activity, now);
+  const activityCutoff = conversationActivityCutoff(options.activity, now)?.getTime() ?? null;
 
   return conversations
     .filter((conversation) => {

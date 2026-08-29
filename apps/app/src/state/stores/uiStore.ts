@@ -64,7 +64,6 @@ export const useUIStore = create<UIStore>()(
         return {
           ...current,
           ...rest,
-          // A stored shape from an older release can be missing keys the menu reads.
           conversationListFilters: {
             ...DEFAULT_CONVERSATION_LIST_FILTERS,
             ...conversationListFilters,

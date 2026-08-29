@@ -12,7 +12,6 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { RotateCcw, SlidersHorizontal } from "lucide-react";
 
-/** Presentation-only: the API never groups, the sidebar does. */
 export type ConversationGroupBy = "date" | "none";
 
 export interface ConversationListFilters {
@@ -37,7 +36,7 @@ const ARCHIVE_OPTIONS: readonly OptionsMenuOption<ConversationArchiveFilter>[] =
 
 const ACTIVITY_OPTIONS: readonly OptionsMenuOption<ConversationActivityWindow>[] = [
   { value: "all", label: "Any time" },
-  { value: "day", label: "Past 24 hours" },
+  { value: "today", label: "Today" },
   { value: "week", label: "Past 7 days" },
   { value: "month", label: "Past 30 days" },
 ];

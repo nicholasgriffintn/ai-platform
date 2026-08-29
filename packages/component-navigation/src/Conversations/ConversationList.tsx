@@ -11,7 +11,6 @@ export interface ConversationSummary {
 
 export interface ConversationGroup {
   id: string;
-  /** Omitted when the list is ungrouped, so no heading is rendered. */
   title?: string;
   conversations: ConversationSummary[];
 }
