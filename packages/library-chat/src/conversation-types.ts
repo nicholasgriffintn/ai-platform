@@ -1,4 +1,7 @@
 import type {
+  ConversationActivityWindow as SchemaConversationActivityWindow,
+  ConversationArchiveFilter as SchemaConversationArchiveFilter,
+  ConversationSortBy as SchemaConversationSortBy,
   MessagePart as SchemaMessagePart,
   ResponseDisplayType as SchemaResponseDisplayType,
   SandboxTaskType,
@@ -260,10 +263,12 @@ export interface Conversation {
   is_archived?: boolean;
 }
 
-export type ConversationArchiveFilter = "active" | "archived" | "all";
-export type ConversationSortBy = "updated" | "created";
+export type ConversationArchiveFilter = SchemaConversationArchiveFilter;
+export type ConversationSortBy = SchemaConversationSortBy;
+export type ConversationActivityWindow = SchemaConversationActivityWindow;
 
 export interface ConversationListOptions {
+  activity?: ConversationActivityWindow;
   archived?: ConversationArchiveFilter;
   limit?: number;
   page?: number;

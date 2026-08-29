@@ -1,3 +1,4 @@
+import { conversationActivityCutoff } from "@ngriffin_uk/polychat-library-chat/conversations";
 import { readCompactionStatusMessage } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
 import {
   getMessageTextContent,
@@ -114,6 +115,12 @@ export class ChatService {
 
     if (options.archived) {
       params.set("archived", options.archived);
+    }
+
+    const activityCutoff = conversationActivityCutoff(options.activity);
+
+    if (activityCutoff) {
+      params.set("updated_after", activityCutoff.toISOString());
     }
 
     if (options.sortBy) {

@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@ngriffin_uk/polychat-component-ui": "workspace:^",
+    "@ngriffin_uk/polychat-schemas": "workspace:^",
     "lucide-react": "1.31.0"
   },
   "devDependencies": {

@@ -26,7 +26,19 @@ vi.mock("~/state/stores/chatStore", () => ({
 }));
 
 vi.mock("~/state/stores/uiStore", () => ({
-  useUIStore: () => ({ sidebarVisible: true, setSidebarVisible: vi.fn(), isMobile: false }),
+  useUIStore: () => ({
+    sidebarVisible: true,
+    setSidebarVisible: vi.fn(),
+    isMobile: false,
+    conversationListFilters: {
+      activity: "all",
+      archiveFilter: "active",
+      groupBy: "date",
+      sortBy: "updated",
+    },
+    setConversationListFilters: vi.fn(),
+    resetConversationListFilters: vi.fn(),
+  }),
 }));
 
 vi.mock("~/hooks/useChat", () => ({

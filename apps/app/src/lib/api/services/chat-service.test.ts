@@ -1155,6 +1155,28 @@ describe("ChatService conversation list", () => {
     ]);
     expect(result.totalPages).toBe(4);
   });
+
+  it("resolves the activity window to an absolute cutoff the API can compare directly", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+      Response.json({
+        data: { conversations: [], pageNumber: 1, pageSize: 25, totalPages: 1 },
+      }),
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const service = new ChatService(async () => ({}));
+
+    await service.listChats({ activity: "today" });
+
+    const requested = new URL(String(fetchMock.mock.calls[0][0]), "https://example.test");
+    const cutoff = new Date(requested.searchParams.get("updated_after") as string);
+    const startOfToday = new Date();
+
+    startOfToday.setHours(0, 0, 0, 0);
+
+    expect(cutoff.getTime()).toBe(startOfToday.getTime());
+  });
 });
 
 describe("ChatService conversation updates", () => {

@@ -21,6 +21,7 @@ export * from "./Link";
 export * from "./ListItem";
 export * from "./LoadingSpinner";
 export * from "./NotificationBar";
+export * from "./OptionsMenu";
 export * from "./Page/BackLink";
 export * from "./Page/PageHeader";
 export * from "./Page/PageShellContent";

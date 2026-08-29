@@ -46,4 +46,46 @@ describe("filterConversationsByListOptions", () => {
 
     expect(result.map((conversation) => conversation.id)).toEqual(["active-new", "active-old"]);
   });
+
+  it("cuts the activity window at the local start of day rather than a rolling 24 hours", () => {
+    const now = new Date(2026, 5, 6, 10, 0, 0);
+    const sameDay = new Date(2026, 5, 6, 1, 0, 0).toISOString();
+    const dayBefore = new Date(2026, 5, 5, 23, 0, 0).toISOString();
+
+    const result = filterConversationsByListOptions(
+      [
+        { id: "early-today", title: "Early", updated_at: sameDay },
+        { id: "late-yesterday", title: "Late", updated_at: dayBefore },
+      ],
+      { activity: "today", archived: "all" },
+      now,
+    );
+
+    expect(result.map((conversation) => conversation.id)).toEqual(["early-today"]);
+  });
+
+  it("keeps every conversation when the activity window is unbounded", () => {
+    const now = new Date("2026-07-01T10:00:00.000Z");
+
+    const result = filterConversationsByListOptions(
+      conversations,
+      { activity: "all", archived: "all" },
+      now,
+    );
+
+    expect(result).toHaveLength(3);
+  });
+
+  it("sorts by title without regard to case when title sort is selected", () => {
+    const result = filterConversationsByListOptions(conversations, {
+      archived: "all",
+      sortBy: "title",
+    });
+
+    expect(result.map((conversation) => conversation.title)).toEqual([
+      "Design archive",
+      "Design review",
+      "Quarterly planning",
+    ]);
+  });
 });

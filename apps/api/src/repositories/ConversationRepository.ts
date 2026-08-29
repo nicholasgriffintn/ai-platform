@@ -1,10 +1,11 @@
+import type { ConversationArchiveFilter, ConversationSortBy } from "@ngriffin_uk/polychat-schemas";
+
 import { PaginationHelper } from "~/lib/database/PaginationHelper";
 import { escapeSqlLikePattern } from "~/utils/sql";
 
 import { BaseRepository } from "./BaseRepository";
 
-export type ConversationArchiveFilter = "active" | "archived" | "all";
-export type ConversationSortBy = "created" | "updated";
+export type { ConversationArchiveFilter, ConversationSortBy } from "@ngriffin_uk/polychat-schemas";
 
 export interface GetUserConversationsOptions {
   archiveFilter?: ConversationArchiveFilter;
@@ -12,6 +13,7 @@ export interface GetUserConversationsOptions {
   page?: number;
   query?: string;
   sortBy?: ConversationSortBy;
+  updatedAfter?: string;
 }
 
 export interface GlobalConversationSearchRow {
@@ -97,7 +99,14 @@ export class ConversationRepository extends BaseRepository {
             page: pageArg,
           }
         : optionsOrLimit;
-    const { archiveFilter = "active", limit = 25, page = 1, query, sortBy = "updated" } = options;
+    const {
+      archiveFilter = "active",
+      limit = 25,
+      page = 1,
+      query,
+      sortBy = "updated",
+      updatedAfter,
+    } = options;
     const { limit: safeLimit, offset } = PaginationHelper.calculate(page, limit);
     const whereClauses = ["c.user_id = ?", "c.project_id IS NULL"];
     const values: unknown[] = [userId];
@@ -108,6 +117,13 @@ export class ConversationRepository extends BaseRepository {
       whereClauses.push("c.is_archived = 1");
     }
 
+    if (updatedAfter) {
+      whereClauses.push(
+        "datetime(COALESCE(c.updated_at, c.last_message_at, c.created_at)) >= datetime(?)",
+      );
+      values.push(updatedAfter);
+    }
+
     const trimmedQuery = query?.trim();
 
     if (trimmedQuery) {
@@ -116,7 +132,10 @@ export class ConversationRepository extends BaseRepository {
     }
 
     const whereClause = whereClauses.join(" AND ");
-    const orderByColumn = sortBy === "created" ? "c.created_at" : "c.updated_at";
+    const orderByClause =
+      sortBy === "title"
+        ? "c.title COLLATE NOCASE ASC, c.id DESC"
+        : `${sortBy === "created" ? "c.created_at" : "c.updated_at"} DESC, c.id DESC`;
 
     const countQuery = `SELECT COUNT(*) as total FROM conversation c WHERE ${whereClause}`;
 
@@ -129,7 +148,7 @@ export class ConversationRepository extends BaseRepository {
         SELECT c.*
         FROM conversation c
         WHERE ${whereClause}
-        ORDER BY ${orderByColumn} DESC, c.id DESC
+        ORDER BY ${orderByClause}
         LIMIT ? OFFSET ?
       `;
 

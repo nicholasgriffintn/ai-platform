@@ -99,6 +99,16 @@ export const generateChatCompletionTitleJsonSchema = z.object({
   store: z.boolean().optional(),
 });
 
+export const conversationArchiveFilterSchema = z.enum(["active", "archived", "all"]);
+
+export const conversationSortBySchema = z.enum(["updated", "created", "title"]);
+
+export const conversationActivityWindowSchema = z.enum(["all", "today", "week", "month"]);
+
+export type ConversationArchiveFilter = z.infer<typeof conversationArchiveFilterSchema>;
+export type ConversationSortBy = z.infer<typeof conversationSortBySchema>;
+export type ConversationActivityWindow = z.infer<typeof conversationActivityWindowSchema>;
+
 export const updateChatCompletionParamsSchema = z.object({
   completion_id: z.string().meta({
     description: "The ID of the chat completion to retrieve.",

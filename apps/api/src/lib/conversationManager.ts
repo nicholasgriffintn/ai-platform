@@ -35,6 +35,7 @@ export interface ConversationListOptions {
   page?: number;
   query?: string;
   sortBy?: ConversationSortBy;
+  updatedAfter?: string;
 }
 
 export interface ConversationDetails extends Record<string, unknown> {
@@ -810,7 +811,14 @@ export class ConversationManager {
       );
     }
 
-    const { archiveFilter = "active", limit = 25, page = 1, query, sortBy = "updated" } = options;
+    const {
+      archiveFilter = "active",
+      limit = 25,
+      page = 1,
+      query,
+      sortBy = "updated",
+      updatedAfter,
+    } = options;
 
     const result = await this.database.repositories.conversations.getUserConversations(
       this.user?.id,
@@ -820,6 +828,7 @@ export class ConversationManager {
         page,
         query,
         sortBy,
+        updatedAfter,
       },
     );
 
