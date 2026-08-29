@@ -9,10 +9,6 @@ import type { Message } from "~/types";
 
 const UNTITLED = new Set(["", DEFAULT_CONVERSATION_TITLE.toLowerCase(), "untitled"]);
 
-/**
- * An opening message this short rarely says what the conversation is about, so
- * a title taken from it alone is worth replacing once the reply lands.
- */
 const RICHER_CONTEXT_LENGTH = 40;
 
 export function getConversationTitleSourceText(messages: Message[]): string {

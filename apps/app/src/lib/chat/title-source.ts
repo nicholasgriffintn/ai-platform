@@ -23,10 +23,6 @@ export function createTemporaryConversationTitle(messages: Message[], maxLength?
   return createConversationTitleExcerpt(titleText, maxLength);
 }
 
-/**
- * The server titles stored conversations as they open, so the client only steps
- * in while the title is still the excerpt taken from the opening message.
- */
 export function isPlaceholderConversationTitle(
   title: string | undefined,
   messages: Message[],

@@ -11,11 +11,6 @@ import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/chat/agent/conversation-title" });
 
-/**
- * The opening turn stores the user message and, when it carries files, a second
- * message for the attachments. Anything beyond that is a conversation someone
- * has already been reading, so its title stays put.
- */
 const OPENING_TURN_MAX_MESSAGES = 2;
 
 export interface ConversationTitleRunParams {
@@ -33,11 +28,6 @@ export interface ConversationTitleRun {
 
 const NO_TITLE_RUN: ConversationTitleRun = { complete: async () => null };
 
-/**
- * Titles a conversation from the message that opened it, in parallel with the
- * answer rather than after it, and settles on `complete` — replacing the title
- * with one drawn from the answer when the opening said too little.
- */
 export function startConversationTitle(params: ConversationTitleRunParams): ConversationTitleRun {
   const context = params.context;
 

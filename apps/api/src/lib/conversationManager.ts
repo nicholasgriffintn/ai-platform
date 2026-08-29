@@ -851,11 +851,6 @@ export class ConversationManager {
     );
   }
 
-  /**
-   * Get a conversation record without loading its messages
-   * @param conversation_id - The ID of the conversation to get the record for
-   * @returns The conversation record the caller is allowed to read
-   */
   async getConversationMetadata(conversation_id: string): Promise<Record<string, unknown>> {
     if (!this.user?.id) {
       throw new AssistantError(
