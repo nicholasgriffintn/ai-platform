@@ -149,4 +149,12 @@ struct UtilityTests {
 
         #expect(events == [.state("compaction")])
     }
+
+    @Test func chatStreamParserReadsConversationTitle() throws {
+        let events = try ChatStreamEventParser.events(
+            from: #"{"type":"state","state":"conversation_title","title":"Durable Object concurrency"}"#
+        )
+
+        #expect(events == [.conversationTitle("Durable Object concurrency")])
+    }
 }

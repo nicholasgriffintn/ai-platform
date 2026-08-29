@@ -15,3 +15,13 @@ export function compactNonEmptyStrings(values: Array<string | null | undefined>)
 export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
+
+export function stripSurroundingQuotes(value: string): string {
+  const trimmed = value.trim();
+  const isQuoted =
+    trimmed.length >= 2 &&
+    ((trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+      (trimmed.startsWith("'") && trimmed.endsWith("'")));
+
+  return isQuoted ? trimmed.slice(1, -1).trim() : trimmed;
+}

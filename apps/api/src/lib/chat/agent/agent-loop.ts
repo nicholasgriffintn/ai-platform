@@ -7,7 +7,7 @@ import {
 } from "@ngriffin_uk/polychat-library-agent-core";
 
 import { finaliseAssistantTurn, type TurnOutput } from "~/lib/chat/agent/assistant-turn";
-import { ensureConversationTitle } from "~/lib/chat/agent/conversation-title";
+import { startConversationTitle } from "~/lib/chat/agent/conversation-title";
 import { captureRunMemories } from "~/lib/chat/agent/memory-capture";
 import { createAgentProviderIO } from "~/lib/chat/agent/provider-io";
 import type { ChatTurnTransport } from "~/lib/chat/agent/turn-transport";
@@ -128,6 +128,14 @@ export async function runAgentLoop(
   params: AgentLoopExecutionParams,
 ): Promise<AgentLoopExecutionResult> {
   const sink = params.sink ?? DISCARDING_EVENT_SINK;
+  const titleRun = startConversationTitle({
+    completionId: params.completionId,
+    conversationManager: params.conversationManager,
+    messages: params.requestParams.messages,
+    sink,
+    context: params.context,
+    store: params.requestParams.store,
+  });
   const providerIO = createAgentProviderIO();
   const runtimeMessages = providerIO.initialMessages(
     toProviderMessages(params.requestParams.messages),
@@ -399,16 +407,7 @@ export async function runAgentLoop(
     });
   }
 
-  const title = await ensureConversationTitle({
-    completionId: params.completionId,
-    conversationManager: params.conversationManager,
-    context: params.context,
-    store: params.requestParams.store,
-  });
-
-  if (title) {
-    await sink.writeEvent("state", { state: "conversation_title", title });
-  }
+  const title = await titleRun.complete(finalMessage);
 
   const usedTools = steps.some((step) => step.stepType === "tool-call");
 

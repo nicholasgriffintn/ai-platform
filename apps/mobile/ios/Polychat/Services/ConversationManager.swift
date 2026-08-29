@@ -414,6 +414,8 @@ class ConversationManager: ObservableObject {
                             beforeMessageId: assistantMessageId
                         )
                     }
+                case .conversationTitle(let title):
+                    applyConversationTitle(conversationId, title: title)
                 case .compaction(let message):
                     insertCompactionMessage(
                         conversationId: conversationId,
@@ -721,20 +723,29 @@ class ConversationManager: ObservableObject {
         }
     }
     
-    func updateConversationTitle(_ conversationId: String, title: String) async {
-        if let index = conversations.firstIndex(where: { $0.id == conversationId }) {
-            conversations[index].title = title
-            if currentConversation?.id == conversationId {
-                currentConversation?.title = title
-            }
+    func applyConversationTitle(_ conversationId: String, title: String) {
+        guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
+            return
+        }
 
-            if conversations[index].isLoadedFromAPI {
-                do {
-                    try await apiClient?.updateConversation(id: conversationId, title: title)
-                } catch {
-                    self.error = "Failed to update title: \(error.localizedDescription)"
-                }
-            }
+        conversations[index].title = title
+        if currentConversation?.id == conversationId {
+            currentConversation?.title = title
+        }
+    }
+
+    func updateConversationTitle(_ conversationId: String, title: String) async {
+        applyConversationTitle(conversationId, title: title)
+
+        guard let index = conversations.firstIndex(where: { $0.id == conversationId }),
+              conversations[index].isLoadedFromAPI else {
+            return
+        }
+
+        do {
+            try await apiClient?.updateConversation(id: conversationId, title: title)
+        } catch {
+            self.error = "Failed to update title: \(error.localizedDescription)"
         }
     }
 
