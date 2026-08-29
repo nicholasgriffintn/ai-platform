@@ -62,6 +62,7 @@ export interface AwsSmsCredentials {
   allowedSenders: string[];
   region: string;
   originationIdentity: string;
+  topicArn?: string;
   configurationSetName?: string;
   context?: Record<string, string>;
   destinationCountryParameters?: Partial<Record<"IN_ENTITY_ID" | "IN_TEMPLATE_ID", string>>;

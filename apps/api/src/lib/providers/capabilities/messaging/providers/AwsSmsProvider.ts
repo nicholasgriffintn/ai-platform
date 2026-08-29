@@ -137,6 +137,21 @@ function assertTopicRegion(topicArn: string, region: string): void {
   }
 }
 
+/**
+ * AWS signs the whole notification, including a body the publisher controls, so
+ * a valid signature only proves *some* AWS account sent this. Without pinning
+ * the topic, anyone who learns the webhook URL can publish from their own topic
+ * and claim any origination number, including an authorised sender's.
+ */
+function assertTopicArn(topicArn: string, expected: string | undefined): void {
+  if (expected && topicArn !== expected) {
+    throw new AssistantError(
+      "AWS SNS topic does not match configuration",
+      ErrorType.AUTHENTICATION_ERROR,
+    );
+  }
+}
+
 function validateSnsUrl(rawUrl: string, region: string, options?: { certificate?: boolean }): URL {
   let url: URL;
 
@@ -303,8 +318,13 @@ function extractSpkiFromCertificate(pem: string): Uint8Array {
   return der.slice(subjectPublicKeyInfo.start, subjectPublicKeyInfo.end);
 }
 
-async function verifySnsSignature(envelope: SnsEnvelope, region: string): Promise<void> {
+async function verifySnsSignature(
+  envelope: SnsEnvelope,
+  region: string,
+  expectedTopicArn?: string,
+): Promise<void> {
   assertTopicRegion(envelope.TopicArn, region);
+  assertTopicArn(envelope.TopicArn, expectedTopicArn);
   const certificateUrl = validateSnsUrl(envelope.SigningCertURL, region, { certificate: true });
   const certificateResponse = await fetch(certificateUrl);
 
@@ -567,7 +587,7 @@ export class AwsSmsProvider implements MessagingProvider {
   async parseIncoming(c: Context): Promise<MessagingWebhookMessage> {
     const envelope = parseSnsEnvelope(await c.req.json());
 
-    await verifySnsSignature(envelope, this.credentials.region);
+    await verifySnsSignature(envelope, this.credentials.region, this.credentials.topicArn);
 
     if (envelope.Type === "SubscriptionConfirmation") {
       return confirmSnsSubscription(envelope, this.credentials.region);

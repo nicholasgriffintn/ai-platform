@@ -93,6 +93,14 @@ export const messagingProviderMetadata = [
         description: "Phone number, pool, sender ID, or RCS agent used by SendTextMessage.",
       },
       {
+        key: "topicArn",
+        label: "SNS Topic ARN",
+        type: "text",
+        placeholder: "arn:aws:sns:us-east-1:123456789012:polychat-inbound",
+        description:
+          "The two-way SNS topic allowed to deliver inbound messages. Leave blank to accept any topic in the region, which lets anyone who learns your webhook URL publish as an allowed sender.",
+      },
+      {
         key: "configurationSetName",
         label: "Configuration Set",
         type: "text",

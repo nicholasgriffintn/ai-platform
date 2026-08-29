@@ -19,12 +19,12 @@ CREATE TABLE `goal` (
 	`last_continued_at` text,
 	FOREIGN KEY (`conversation_id`) REFERENCES `conversation`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action,
-	CHECK ((`conversation_id` IS NULL) <> (`sandbox_run_id` IS NULL))
+	CONSTRAINT "goal_owner_check" CHECK(("goal"."conversation_id" IS NULL) <> ("goal"."sandbox_run_id" IS NULL))
 );
 --> statement-breakpoint
 CREATE INDEX `goal_conversation_id_idx` ON `goal` (`conversation_id`);--> statement-breakpoint
 CREATE INDEX `goal_sandbox_run_id_idx` ON `goal` (`sandbox_run_id`);--> statement-breakpoint
 CREATE INDEX `goal_user_id_idx` ON `goal` (`user_id`);--> statement-breakpoint
 CREATE INDEX `goal_status_idx` ON `goal` (`status`);--> statement-breakpoint
-CREATE UNIQUE INDEX `goal_active_conversation_idx` ON `goal` (`conversation_id`) WHERE `status` IN ('active','paused') AND `conversation_id` IS NOT NULL;--> statement-breakpoint
-CREATE UNIQUE INDEX `goal_active_sandbox_run_idx` ON `goal` (`sandbox_run_id`) WHERE `status` IN ('active','paused') AND `sandbox_run_id` IS NOT NULL;
+CREATE UNIQUE INDEX `goal_active_conversation_idx` ON `goal` (`conversation_id`) WHERE "goal"."status" IN ('active','paused') AND "goal"."conversation_id" IS NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX `goal_active_sandbox_run_idx` ON `goal` (`sandbox_run_id`) WHERE "goal"."status" IN ('active','paused') AND "goal"."sandbox_run_id" IS NOT NULL;

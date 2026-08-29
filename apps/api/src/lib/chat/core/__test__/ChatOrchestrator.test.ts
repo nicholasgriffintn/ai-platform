@@ -897,6 +897,31 @@ describe("ChatOrchestrator", () => {
         );
       });
 
+      it("keeps holding the conversation when the client stops reading mid-turn", async () => {
+        let startTurn: (stream: ReadableStream) => void = () => {};
+
+        mockGetAIResponse.mockReturnValue(
+          new Promise<ReadableStream>((resolve) => {
+            startTurn = resolve;
+          }),
+        );
+
+        const result = (await orchestrator.process({ ...mockOptions, stream: true })) as {
+          stream: ReadableStream;
+        };
+
+        await result.stream.cancel("client went away");
+
+        expect(mockReleaseThread).not.toHaveBeenCalled();
+
+        startTurn(new ReadableStream());
+        await vi.waitFor(() => expect(mockReleaseThread).toHaveBeenCalledTimes(1));
+
+        expect(mockReleaseThread).toHaveBeenCalledWith(
+          expect.objectContaining({ conversationId: "test-completion-id" }),
+        );
+      });
+
       it("refuses a turn while another operation holds the conversation", async () => {
         mockAcquireThread.mockResolvedValueOnce({
           acquired: false,

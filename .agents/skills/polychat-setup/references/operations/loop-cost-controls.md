@@ -43,8 +43,8 @@ The lock carries a five-minute lease, so a worker that dies mid-turn cannot wedg
 cannot leave an object spinning.
 
 Nothing calls the coordinator inside a loop. `ChatOrchestrator.process` is the only place a turn acquires,
-and it releases through the stream's cleanup when the response finishes writing, so a long tool chain is
-still two DO calls in total.
+and it releases through `onTurnEnd` when the turn itself finishes — not when the client stops reading, which
+a detached turn outlives — so a long tool chain is still two DO calls in total.
 
 ## When adding a new loop
 

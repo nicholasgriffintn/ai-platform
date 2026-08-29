@@ -65,9 +65,13 @@ export class GoalService {
   }): Promise<Goal> {
     this.assertPro(params.user);
 
-    const existing = await this.goals.getActiveGoal(params.owner);
+    const reuseActiveGoal = async (): Promise<Goal | undefined> => {
+      const existing = await this.goals.getActiveGoal(params.owner);
 
-    if (existing) {
+      if (!existing) {
+        return undefined;
+      }
+
       const updated = await this.goals.updateGoal(existing.id, {
         objective: params.objective,
         status: "active",
@@ -80,15 +84,33 @@ export class GoalService {
       }
 
       return updated;
+    };
+
+    const existing = await reuseActiveGoal();
+
+    if (existing) {
+      return existing;
     }
 
-    return this.goals.createGoal({
-      owner: params.owner,
-      userId: params.user.id,
-      objective: params.objective,
-      source: params.source,
-      createdFromMessageId: params.createdFromMessageId,
-    });
+    try {
+      return await this.goals.createGoal({
+        owner: params.owner,
+        userId: params.user.id,
+        objective: params.objective,
+        source: params.source,
+        createdFromMessageId: params.createdFromMessageId,
+      });
+    } catch (error) {
+      // A concurrent set for the same thread wins the partial unique index
+      // rather than the read above, so adopt its goal instead of erroring.
+      const raced = await reuseActiveGoal();
+
+      if (!raced) {
+        throw error;
+      }
+
+      return raced;
+    }
   }
 
   async transition(params: {

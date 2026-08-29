@@ -211,6 +211,7 @@ export function createMessagingCredentialEnvelope(params: {
       "configurationSetName",
       existing?.configurationSetName,
     );
+    const topicArn = getOptionalStringRecordValue(config, "topicArn", existing?.topicArn);
     const context = normaliseAwsContext(
       getOptionalStringRecordValue(
         config,
@@ -303,6 +304,7 @@ export function createMessagingCredentialEnvelope(params: {
         allowedSenders,
         region,
         originationIdentity,
+        topicArn,
         configurationSetName,
         context,
         destinationCountryParameters,
@@ -407,6 +409,7 @@ export function getMessagingCredentialConfigurationValues(
         : {}),
       region: credentials.region,
       originationIdentity: credentials.originationIdentity,
+      ...(credentials.topicArn ? { topicArn: credentials.topicArn } : {}),
       ...(credentials.configurationSetName
         ? { configurationSetName: credentials.configurationSetName }
         : {}),

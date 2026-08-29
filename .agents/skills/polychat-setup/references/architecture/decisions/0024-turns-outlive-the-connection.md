@@ -38,7 +38,7 @@ Cancellation is best-effort and eventually consistent. KV read-after-write is fa
 
 Abandoned turns now cost money that abandoned turns used to save. Closing the tab used to kill generation; it now pays for the rest of the answer in exchange for having it when you come back. That is the intended trade, and it is a real spend increase on turns nobody returns to.
 
-`finaliseReadableStream` is gone from both chat streams. Its cleanup hook fired on cancellation, which is precisely the moment that must no longer be treated as the end of the turn.
+`finaliseReadableStream` is gone entirely. Its cleanup hook fired on cancellation, which is precisely the moment that must no longer be treated as the end of the turn. Anything the turn holds is released through `onTurnEnd`, which `createChatTurnStream` and `createModelEnsembleStream` call from the run's own `finally` — the conversation thread lock above all, since releasing that on disconnect would let a second turn interleave with the first while it is still writing. The hook runs before the stream closes, so a follow-up sent the moment the client sees `done` cannot race the release.
 
 iOS inherits durability without changing: it parses the same stream, ignores `: ping` as an SSE comment, and has no stop control to break. It also has no equivalent of `recoverDetachedTurn`, so a dropped stream there still waits for the next conversation fetch rather than recovering in place.
 

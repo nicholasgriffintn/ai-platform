@@ -1,6 +1,7 @@
 import type { AuthChallengeKind } from "@ngriffin_uk/auth-protocol";
 import { sql } from "drizzle-orm";
 import {
+  check,
   index,
   integer,
   primaryKey,
@@ -420,6 +421,18 @@ export const goal = sqliteTable(
     sandboxRunIdx: index("goal_sandbox_run_id_idx").on(table.sandbox_run_id),
     userIdx: index("goal_user_id_idx").on(table.user_id),
     statusIdx: index("goal_status_idx").on(table.status),
+    // A goal belongs to a thread or a sandbox run, never both and never neither,
+    // and only one of them can be live at a time.
+    ownerCheck: check(
+      "goal_owner_check",
+      sql`(${table.conversation_id} IS NULL) <> (${table.sandbox_run_id} IS NULL)`,
+    ),
+    activeConversationIdx: uniqueIndex("goal_active_conversation_idx")
+      .on(table.conversation_id)
+      .where(sql`${table.status} IN ('active','paused') AND ${table.conversation_id} IS NOT NULL`),
+    activeSandboxRunIdx: uniqueIndex("goal_active_sandbox_run_idx")
+      .on(table.sandbox_run_id)
+      .where(sql`${table.status} IN ('active','paused') AND ${table.sandbox_run_id} IS NOT NULL`),
   }),
 );
 

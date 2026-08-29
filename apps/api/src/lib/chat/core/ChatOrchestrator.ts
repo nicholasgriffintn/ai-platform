@@ -26,7 +26,6 @@ import { GoalService } from "~/services/goals/GoalService";
 import type { ChatMode, CoreChatOptions, Message } from "~/types";
 import { isAbortError } from "~/utils/abort";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { finaliseReadableStream } from "~/utils/finalise-readable-stream";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/chat/core/ChatOrchestrator" });
@@ -143,13 +142,18 @@ export class ChatOrchestrator {
       }
 
       const heldThread = await this.holdThreadForTurn(options);
+      let released = false;
       const release = async () => {
-        if (heldThread) {
-          await releaseThread({
-            env: options.env,
-            conversationId: options.completion_id,
-          });
+        if (!heldThread || released) {
+          return;
         }
+
+        released = true;
+
+        await releaseThread({
+          env: options.env,
+          conversationId: options.completion_id,
+        });
       };
 
       let result: Awaited<ReturnType<typeof this.executeRequest>>;
@@ -157,7 +161,7 @@ export class ChatOrchestrator {
       try {
         const prepared = await this.preparer.prepare(options, validationResult.context);
 
-        result = await this.executeRequest(options, prepared);
+        result = await this.executeRequest(options, prepared, release);
       } catch (error) {
         await release();
 
@@ -165,10 +169,7 @@ export class ChatOrchestrator {
       }
 
       if (isStreamingResult(result)) {
-        return {
-          ...result,
-          stream: finaliseReadableStream({ stream: result.stream, cleanup: release }),
-        };
+        return result;
       }
 
       await release();
@@ -193,7 +194,11 @@ export class ChatOrchestrator {
     }
   }
 
-  private async executeRequest(chatOptions: CoreChatOptions, prepared: PreparedRequest) {
+  private async executeRequest(
+    chatOptions: CoreChatOptions,
+    prepared: PreparedRequest,
+    onTurnEnd?: () => Promise<void>,
+  ) {
     const {
       platform = "api",
       stream = false,
@@ -297,8 +302,8 @@ export class ChatOrchestrator {
     if (stream) {
       const runsEnsemble = !isAgentExecutionMode(currentMode) && modelConfigs.length > 1;
       const turnStream = runsEnsemble
-        ? createModelEnsembleStream({ ...runParams, models: modelConfigs })
-        : createChatTurnStream(runParams);
+        ? createModelEnsembleStream({ ...runParams, models: modelConfigs, onTurnEnd })
+        : createChatTurnStream({ ...runParams, onTurnEnd });
 
       return {
         stream:

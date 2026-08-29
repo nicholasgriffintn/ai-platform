@@ -85,6 +85,8 @@ export class ResponseFormatter {
       huggingface: ResponseFormatter.formatOpenAIResponse,
       "github-models": ResponseFormatter.formatOpenAIResponse,
       "together-ai": ResponseFormatter.formatOpenAIResponse,
+      hetzner: ResponseFormatter.formatOpenAIResponse,
+      poolside: ResponseFormatter.formatOpenAIResponse,
       replicate: ResponseFormatter.formatReplicateResponse,
       fal: ResponseFormatter.formatReplicateResponse,
       ideogram: ResponseFormatter.formatReplicateResponse,

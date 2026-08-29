@@ -1,4 +1,4 @@
-# ADR 0024: Tool result presentation by declared renderer and payload shape
+# ADR 0025: Tool result presentation by declared renderer and payload shape
 
 ## Status
 

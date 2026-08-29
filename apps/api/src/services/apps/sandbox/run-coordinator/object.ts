@@ -357,44 +357,47 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
     }
 
     if (pathname === "/control/update" && request.method === "POST") {
-      const existing = await this.getControl();
-
-      if (!existing) {
-        return Response.json({ error: "Control state not initialised" }, { status: 404 });
-      }
-
       const payload = (await request.json()) as Record<string, unknown>;
-      const nextState =
-        payload.state === "queued" ||
-        payload.state === "running" ||
-        payload.state === "paused" ||
-        payload.state === "cancelled"
-          ? payload.state
-          : undefined;
-      const next: CoordinatorState = {
-        ...existing,
-        ...(nextState ? { state: nextState } : {}),
-        ...(typeof payload.updatedAt === "string"
-          ? { updatedAt: payload.updatedAt }
-          : { updatedAt: new Date().toISOString() }),
-        ...(typeof payload.cancellationReason === "string"
-          ? { cancellationReason: payload.cancellationReason }
-          : {}),
-        ...(typeof payload.pauseReason === "string" ? { pauseReason: payload.pauseReason } : {}),
-        ...(typeof payload.timeoutSeconds === "number"
-          ? { timeoutSeconds: payload.timeoutSeconds }
-          : {}),
-        ...(typeof payload.timeoutAt === "string" ? { timeoutAt: payload.timeoutAt } : {}),
-      };
-      const validated = sandboxRunControlSchema.safeParse(next);
 
-      if (!validated.success) {
-        return Response.json({ error: "Invalid control update payload" }, { status: 400 });
-      }
+      return this.ctx.blockConcurrencyWhile(async () => {
+        const existing = await this.getControl();
 
-      await this.putControl(validated.data);
+        if (!existing) {
+          return Response.json({ error: "Control state not initialised" }, { status: 404 });
+        }
 
-      return Response.json(validated.data);
+        const nextState =
+          payload.state === "queued" ||
+          payload.state === "running" ||
+          payload.state === "paused" ||
+          payload.state === "cancelled"
+            ? payload.state
+            : undefined;
+        const next: CoordinatorState = {
+          ...existing,
+          ...(nextState ? { state: nextState } : {}),
+          ...(typeof payload.updatedAt === "string"
+            ? { updatedAt: payload.updatedAt }
+            : { updatedAt: new Date().toISOString() }),
+          ...(typeof payload.cancellationReason === "string"
+            ? { cancellationReason: payload.cancellationReason }
+            : {}),
+          ...(typeof payload.pauseReason === "string" ? { pauseReason: payload.pauseReason } : {}),
+          ...(typeof payload.timeoutSeconds === "number"
+            ? { timeoutSeconds: payload.timeoutSeconds }
+            : {}),
+          ...(typeof payload.timeoutAt === "string" ? { timeoutAt: payload.timeoutAt } : {}),
+        };
+        const validated = sandboxRunControlSchema.safeParse(next);
+
+        if (!validated.success) {
+          return Response.json({ error: "Invalid control update payload" }, { status: 400 });
+        }
+
+        await this.putControl(validated.data);
+
+        return Response.json(validated.data);
+      });
     }
 
     if (pathname === "/events" && request.method === "POST") {

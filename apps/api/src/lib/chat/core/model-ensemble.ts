@@ -21,6 +21,12 @@ const SUPPRESSED_PRIMARY_EVENTS = new Set(["message_delta", "message_stop"]);
 export type CreateModelEnsembleStreamParams = Omit<AgentLoopExecutionParams, "sink" | "emit"> & {
   models: ModelConfigInfo[];
   executionCtx?: ExecutionContext;
+  /**
+   * Runs when the turn ends, not when the client stops reading. A detached
+   * turn keeps writing to the conversation, so whatever it holds — the thread
+   * lock above all — has to be released on this hook rather than on cancel.
+   */
+  onTurnEnd?: () => Promise<void>;
 };
 
 export function createModelEnsembleStream(params: CreateModelEnsembleStreamParams): ReadableStream {
@@ -110,6 +116,15 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
       stopHeartbeat();
       stopSignal.stop();
       await closeRunResources();
+
+      try {
+        await params.onTurnEnd?.();
+      } catch (error) {
+        logger.error("Failed to finalise the turn", {
+          error,
+          completionId: params.completionId,
+        });
+      }
 
       try {
         await stream.writeDone();
