@@ -1179,6 +1179,54 @@ describe("ChatService conversation list", () => {
   });
 });
 
+describe("ChatService bulk archiving", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("sends the resolved activity cutoff so the bulk update matches the visible list", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+      Response.json({ data: { success: true, archived: 7 } }),
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const service = new ChatService(async () => ({}));
+    const archived = await service.setAllConversationsArchived({
+      archived: true,
+      activity: "week",
+      query: "  design  ",
+    });
+
+    const [url, request] = fetchMock.mock.calls[0];
+    const body = JSON.parse(String(request?.body));
+
+    expect(String(url)).toContain("/chat/completions");
+    expect(request?.method).toBe("PATCH");
+    expect(body.archived).toBe(true);
+    expect(body.q).toBe("design");
+    expect(new Date(body.updated_after).getTime()).not.toBeNaN();
+    expect(archived).toBe(7);
+  });
+
+  it("omits the cutoff when no activity window is selected", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+      Response.json({ data: { success: true, archived: 0 } }),
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const service = new ChatService(async () => ({}));
+
+    await service.setAllConversationsArchived({ archived: false });
+
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+
+    expect(body.updated_after).toBeUndefined();
+    expect(body.q).toBeUndefined();
+  });
+});
+
 describe("ChatService conversation updates", () => {
   afterEach(() => {
     vi.unstubAllGlobals();

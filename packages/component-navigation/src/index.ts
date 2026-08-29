@@ -1,4 +1,5 @@
 export * from "./Conversations/ConversationList";
+export * from "./Conversations/ConversationListActions";
 export * from "./Conversations/ConversationListControls";
 export * from "./Conversations/ConversationStorageNotice";
 export * from "./NavbarSidebarToggle";

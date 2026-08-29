@@ -468,6 +468,16 @@ export class HomePage extends BasePage {
     await this.setConversationListOption("Status", state);
   }
 
+  async archiveAllConversations() {
+    await this.page.getByRole("button", { name: "Conversation list actions" }).click();
+    await this.page.getByRole("menuitem", { name: /^Archive all/ }).click();
+
+    const confirmation = this.page.getByRole("dialog", { name: "Archive all conversations" });
+
+    await confirmation.getByRole("button", { name: "Archive all", exact: true }).click();
+    await confirmation.waitFor({ state: "hidden" });
+  }
+
   async deleteConversation(title: string | RegExp) {
     const item = this.conversationItem(title);
 

@@ -1,4 +1,9 @@
-import type { Conversation, Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
+import type {
+  Conversation,
+  ConversationListOptions,
+  Message,
+} from "@ngriffin_uk/polychat-library-chat/conversation-types";
+import { filterConversationsByListOptions } from "@ngriffin_uk/polychat-library-chat/conversations";
 import type { IDBPDatabase } from "idb";
 
 import { getDatabase, isIndexedDBSupported, storeName } from "~/hooks/useIndexedDB";
@@ -239,6 +244,28 @@ class LocalChatService {
       console.error("Error updating chat title:", error);
       throw error;
     }
+  }
+
+  /**
+   * Set the archived state of every local chat matching the supplied list options.
+   * @param archived The state to move matching chats into
+   * @param options The same filters the sidebar list is showing
+   * @returns The number of chats whose state changed
+   */
+  public async setLocalChatsArchived(
+    archived: boolean,
+    options: ConversationListOptions = {},
+  ): Promise<number> {
+    const matching = filterConversationsByListOptions(await this.listLocalChats(), {
+      ...options,
+      archived: archived ? "active" : "archived",
+    });
+
+    await Promise.all(
+      matching.map((chat) => this.saveLocalChat({ ...chat, is_archived: archived })),
+    );
+
+    return matching.length;
   }
 
   /**

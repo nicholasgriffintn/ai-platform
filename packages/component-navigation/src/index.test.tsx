@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   ConversationList,
+  ConversationListActions,
   ConversationListControls,
   DEFAULT_CONVERSATION_LIST_FILTERS,
   ProductModeSwitch,
@@ -147,5 +148,80 @@ describe("ConversationListControls", () => {
 
     fireEvent.click(await screen.findByText("Reset to defaults"));
     expect(onReset).toHaveBeenCalledOnce();
+  });
+});
+
+describe("ConversationListActions", () => {
+  const openMenu = () =>
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Conversation list actions" }));
+
+  it("archives the active list and restores the archived one", async () => {
+    const onArchiveAll = vi.fn();
+    const onRestoreAll = vi.fn();
+
+    const { rerender } = render(
+      <ConversationListActions
+        archiveFilter="active"
+        matchingCount={12}
+        onArchiveAll={onArchiveAll}
+        onRestoreAll={onRestoreAll}
+      />,
+    );
+
+    openMenu();
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Archive all (12)" }));
+    expect(onArchiveAll).toHaveBeenCalledOnce();
+
+    rerender(
+      <ConversationListActions
+        archiveFilter="archived"
+        matchingCount={3}
+        onArchiveAll={onArchiveAll}
+        onRestoreAll={onRestoreAll}
+      />,
+    );
+
+    openMenu();
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Restore all (3)" }));
+    expect(onRestoreAll).toHaveBeenCalledOnce();
+  });
+
+  it("withholds the bulk action when the count would not describe what changes", async () => {
+    const onArchiveAll = vi.fn();
+
+    render(
+      <ConversationListActions
+        archiveFilter="all"
+        matchingCount={12}
+        onArchiveAll={onArchiveAll}
+        onRestoreAll={vi.fn()}
+      />,
+    );
+
+    openMenu();
+
+    const action = await screen.findByRole("menuitem", { name: "Archive all" });
+
+    expect(action.getAttribute("data-disabled")).not.toBeNull();
+
+    fireEvent.click(action);
+    expect(onArchiveAll).not.toHaveBeenCalled();
+  });
+
+  it("has nothing to offer when the filtered list is empty", async () => {
+    const onArchiveAll = vi.fn();
+
+    render(
+      <ConversationListActions
+        archiveFilter="active"
+        matchingCount={0}
+        onArchiveAll={onArchiveAll}
+        onRestoreAll={vi.fn()}
+      />,
+    );
+
+    openMenu();
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Archive all" }));
+    expect(onArchiveAll).not.toHaveBeenCalled();
   });
 });

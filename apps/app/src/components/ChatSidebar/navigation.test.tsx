@@ -44,6 +44,7 @@ vi.mock("~/state/stores/uiStore", () => ({
 vi.mock("~/hooks/useChat", () => ({
   useChats: () => ({
     data: [{ id: "conversation-1", title: "Roadmap chat", updated_at: new Date().toISOString() }],
+    total: 1,
     error: null,
     fetchNextPage: vi.fn(),
     hasNextPage: false,
@@ -53,6 +54,7 @@ vi.mock("~/hooks/useChat", () => ({
   }),
   useDeleteChat: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useUpdateChatTitle: () => ({ mutateAsync: vi.fn() }),
+  useSetAllChatsArchived: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
 vi.mock("~/hooks/use-track-event", () => ({ useTrackEvent: () => ({ trackEvent: vi.fn() }) }));

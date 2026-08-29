@@ -28,6 +28,7 @@ function remotePages(conversations: Conversation[]): InfiniteData<ConversationLi
         conversations,
         pageNumber: 1,
         pageSize: 30,
+        total: conversations.length,
         totalPages: 1,
       },
     ],
