@@ -107,6 +107,24 @@ describe("useComposerCommandController", () => {
     expect(mocks.store.setChatInput).toHaveBeenCalledWith("");
   });
 
+  it("still offers resume and clear when the client has lost track of the goal", () => {
+    mocks.store.chatInput = "/goal";
+
+    const { result } = renderHook(() =>
+      useComposerCommandController({
+        isLoading: false,
+        goalState: { canUseGoals: true, goal: null, onCommand: vi.fn() },
+      }),
+    );
+
+    const ids = result.current.commandActions.filteredSlashCommands.map(
+      (command: any) => command.id,
+    );
+
+    expect(ids).toContain("goal-resume");
+    expect(ids).toContain("goal-clear");
+  });
+
   it("runs a goal subcommand directly rather than inserting it", () => {
     mocks.store.chatInput = "/goal pause";
     const onCommand = vi.fn();
