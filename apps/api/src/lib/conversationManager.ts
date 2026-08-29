@@ -4,6 +4,7 @@ import type { RepositoryManager } from "~/repositories";
 import type {
   ConversationArchiveFilter,
   ConversationSortBy,
+  SetConversationsArchivedOptions,
 } from "~/repositories/ConversationRepository";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { TaskService } from "~/services/tasks/TaskService";
@@ -800,6 +801,7 @@ export class ConversationManager {
    */
   async list(options: ConversationListOptions = {}): Promise<{
     conversations: Record<string, unknown>[];
+    total: number;
     totalPages: number;
     pageNumber: number;
     pageSize: number;
@@ -833,6 +835,20 @@ export class ConversationManager {
     );
 
     return result;
+  }
+
+  async setArchivedForAll(options: SetConversationsArchivedOptions): Promise<number> {
+    if (!this.user?.id) {
+      throw new AssistantError(
+        "Manager: User ID is required to archive conversations",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    return await this.database.repositories.conversations.setPersonalConversationsArchived(
+      this.user.id,
+      options,
+    );
   }
 
   /**

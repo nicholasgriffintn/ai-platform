@@ -1,4 +1,7 @@
-import { conversationActivityCutoff } from "@ngriffin_uk/polychat-library-chat/conversations";
+import {
+  compareConversationsBySort,
+  conversationActivityCutoff,
+} from "@ngriffin_uk/polychat-library-chat/conversations";
 import { readCompactionStatusMessage } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
 import {
   getMessageTextContent,
@@ -33,6 +36,7 @@ import type {
   ChatRequestOptions,
   ChatSettings,
   Conversation,
+  ConversationActivityWindow,
   ConversationListOptions,
   ConversationListPage,
   Message,
@@ -153,6 +157,7 @@ export class ChatService {
       }[];
       pageNumber?: number;
       pageSize?: number;
+      total?: number;
       totalPages?: number;
     }>(response);
 
@@ -163,6 +168,7 @@ export class ChatService {
         conversations: [],
         pageNumber: options.page ?? 1,
         pageSize: options.limit ?? 25,
+        total: 0,
         totalPages: 0,
       };
     }
@@ -174,20 +180,46 @@ export class ChatService {
       parent_message_id: conversation.parent_message_id,
     }));
 
-    const conversations = results.sort((a, b) => {
-      const dateField = options.sortBy === "created" ? "created_at" : "updated_at";
-      const aTimestamp = new Date(a[dateField] || a.last_message_at).getTime();
-      const bTimestamp = new Date(b[dateField] || b.last_message_at).getTime();
-
-      return bTimestamp - aTimestamp;
-    });
+    const sortBy = options.sortBy ?? "updated";
+    const conversations = results.sort((a, b) => compareConversationsBySort(a, b, sortBy));
 
     return {
       conversations,
       pageNumber: data.pageNumber ?? options.page ?? 1,
       pageSize: data.pageSize ?? options.limit ?? 25,
+      total: data.total ?? conversations.length,
       totalPages: data.totalPages ?? 0,
     };
+  }
+
+  async setAllConversationsArchived(options: {
+    archived: boolean;
+    activity?: ConversationActivityWindow;
+    query?: string;
+  }): Promise<number> {
+    let headers = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error archiving conversations:", error);
+    }
+
+    const activityCutoff = conversationActivityCutoff(options.activity);
+
+    const response = await fetchApiOrThrow("/chat/completions", {
+      method: "PATCH",
+      headers,
+      body: {
+        archived: options.archived,
+        q: options.query?.trim() || undefined,
+        updated_after: activityCutoff?.toISOString(),
+      },
+    });
+
+    const data = await returnFetchedData<{ archived?: number }>(response);
+
+    return data.archived ?? 0;
   }
 
   async getChat(

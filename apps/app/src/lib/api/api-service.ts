@@ -8,7 +8,13 @@ import type {
 
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
-import type { Conversation, ConversationListOptions, ConversationListPage, Message } from "~/types";
+import type {
+  Conversation,
+  ConversationActivityWindow,
+  ConversationListOptions,
+  ConversationListPage,
+  Message,
+} from "~/types";
 
 import { AgentService } from "./services/agent-service";
 import { AudioService, type SpeechGenerationResponse } from "./services/audio-service";
@@ -64,6 +70,14 @@ class ApiService {
 
   listChats = (options?: ConversationListOptions): Promise<ConversationListPage> => {
     return this.chatService.listChats(options);
+  };
+
+  setAllConversationsArchived = (options: {
+    archived: boolean;
+    activity?: ConversationActivityWindow;
+    query?: string;
+  }): Promise<number> => {
+    return this.chatService.setAllConversationsArchived(options);
   };
 
   getChat = (

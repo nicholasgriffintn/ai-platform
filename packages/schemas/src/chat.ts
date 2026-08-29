@@ -109,6 +109,17 @@ export type ConversationArchiveFilter = z.infer<typeof conversationArchiveFilter
 export type ConversationSortBy = z.infer<typeof conversationSortBySchema>;
 export type ConversationActivityWindow = z.infer<typeof conversationActivityWindowSchema>;
 
+export const bulkArchiveChatCompletionsJsonSchema = z.object({
+  archived: z.boolean(),
+  q: z.string().trim().max(200).optional(),
+  updated_after: z.iso.datetime().optional(),
+});
+
+export const bulkArchiveChatCompletionsResponseSchema = z.object({
+  success: z.boolean(),
+  archived: z.number(),
+});
+
 export const updateChatCompletionParamsSchema = z.object({
   completion_id: z.string().meta({
     description: "The ID of the chat completion to retrieve.",

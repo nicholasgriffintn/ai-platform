@@ -8,6 +8,8 @@ import {
   editCompletionResponseSchema,
   checkChatCompletionJsonSchema,
   checkChatCompletionParamsSchema,
+  bulkArchiveChatCompletionsJsonSchema,
+  bulkArchiveChatCompletionsResponseSchema,
   conversationArchiveFilterSchema,
   conversationSortBySchema,
   countTokensJsonSchema,
@@ -50,6 +52,7 @@ import { sseResponse } from "~/lib/http/streaming";
 import { allowRestrictedPaths } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { handleArchiveAllChatCompletions } from "~/services/completions/archiveAllChatCompletions";
 import { handleCancelChatCompletion } from "~/services/completions/cancelChatCompletion";
 import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
 import { handleCheckChatCompletion } from "~/services/completions/checkChatCompletion";
@@ -314,6 +317,40 @@ addRoute(app, "delete", "/completions", {
       const serviceContext = getServiceContext(context);
 
       const response = await handleDeleteAllChatCompletions(serviceContext);
+
+      return ResponseFactory.success(context, response);
+    })(raw),
+});
+
+addRoute(app, "patch", "/completions", {
+  tags: ["chat"],
+  summary: "Archive or restore many chat completions",
+  description:
+    "Set the archived state of every stored personal chat completion matching the supplied filters. Only conversations that are not already in the requested state are changed.",
+  bodySchema: bulkArchiveChatCompletionsJsonSchema,
+  responses: {
+    200: {
+      description: "Number of chat completions whose archived state changed",
+      schema: bulkArchiveChatCompletionsResponseSchema,
+    },
+    400: {
+      description: "Bad request or validation error",
+      schema: errorResponseSchema,
+    },
+  },
+  handler: async ({ raw }) =>
+    (async (context: Context) => {
+      const { archived, q, updated_after } = context.req.valid("json" as never) as z.infer<
+        typeof bulkArchiveChatCompletionsJsonSchema
+      >;
+
+      const serviceContext = getServiceContext(context);
+
+      const response = await handleArchiveAllChatCompletions(serviceContext, {
+        archived,
+        query: q,
+        updatedAfter: updated_after,
+      });
 
       return ResponseFactory.success(context, response);
     })(raw),

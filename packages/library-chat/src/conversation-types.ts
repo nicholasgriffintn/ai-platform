@@ -280,6 +280,7 @@ export interface ConversationListPage {
   conversations: Conversation[];
   pageNumber: number;
   pageSize: number;
+  total: number;
   totalPages: number;
 }
 
