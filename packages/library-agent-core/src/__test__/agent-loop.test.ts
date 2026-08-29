@@ -164,7 +164,13 @@ describe("executeAgentLoop", () => {
       },
     });
 
-    expect(messages.some((message) => message.content === "Run the suite first.")).toBe(true);
+    const pushed = messages.find(
+      (message) =>
+        typeof message.content === "string" && message.content.includes("Run the suite first."),
+    );
+
+    expect(pushed).toBeDefined();
+    expect(pushed?.content).toContain("not a message from the user");
   });
 
   it("triggers recovery after consecutive turn failures and requires update_plan first", async () => {
