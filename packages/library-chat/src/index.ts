@@ -4,6 +4,7 @@ export { GOAL_COMMAND, isGoalCommand, parseGoalCommand, type GoalCommand } from 
 export { getGoalMessageMarker, type GoalMessageMarker } from "./message-goal-status";
 export { resolveConversationStorageMode } from "./conversation-storage-policy";
 export {
+  compareConversationsBySort,
   conversationActivityCutoff,
   createConversationId,
   filterConversationsByListOptions,

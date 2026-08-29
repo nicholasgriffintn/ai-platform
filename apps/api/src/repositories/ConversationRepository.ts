@@ -16,6 +16,12 @@ export interface GetUserConversationsOptions {
   updatedAfter?: string;
 }
 
+export interface SetConversationsArchivedOptions {
+  archived: boolean;
+  query?: string;
+  updatedAfter?: string;
+}
+
 export interface GlobalConversationSearchRow {
   id: string;
   title: string | null;
@@ -87,6 +93,7 @@ export class ConversationRepository extends BaseRepository {
     includeArchivedArg = false,
   ): Promise<{
     conversations: Record<string, unknown>[];
+    total: number;
     totalPages: number;
     pageNumber: number;
     pageSize: number;
@@ -160,10 +167,43 @@ export class ConversationRepository extends BaseRepository {
 
     return {
       conversations,
+      total,
       totalPages,
       pageNumber: page,
       pageSize: safeLimit,
     };
+  }
+
+  public async setPersonalConversationsArchived(
+    userId: number,
+    options: SetConversationsArchivedOptions,
+  ): Promise<number> {
+    const { archived, query, updatedAfter } = options;
+    const whereClauses = ["user_id = ?", "project_id IS NULL", "is_archived = ?"];
+    const values: unknown[] = [archived ? 1 : 0, userId, archived ? 0 : 1];
+
+    const trimmedQuery = query?.trim();
+
+    if (trimmedQuery) {
+      whereClauses.push("title LIKE ? ESCAPE '\\'");
+      values.push(`%${escapeSqlLikePattern(trimmedQuery)}%`);
+    }
+
+    if (updatedAfter) {
+      whereClauses.push(
+        "datetime(COALESCE(updated_at, last_message_at, created_at)) >= datetime(?)",
+      );
+      values.push(updatedAfter);
+    }
+
+    const result = await this.executeRun(
+      `UPDATE conversation
+		 SET is_archived = ?, updated_at = datetime('now')
+		 WHERE ${whereClauses.join(" AND ")}`,
+      values,
+    );
+
+    return result?.meta?.changes ?? 0;
   }
 
   public async updateConversation(

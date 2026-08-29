@@ -14,6 +14,7 @@ function createMockD1() {
 
         return {
           first: vi.fn(async () => ({ allowed: 1, total: 1 })),
+          run: vi.fn(async () => ({ success: true, meta: { changes: 2 } })),
           all: vi.fn(async () => ({
             results: [
               {
@@ -80,6 +81,30 @@ describe("ConversationRepository", () => {
 
     expect(calls[0]?.query).not.toContain("datetime(?)");
     expect(calls[0]?.params).toEqual([123]);
+  });
+
+  it("only moves conversations that are not already in the requested archived state", async () => {
+    const { calls, db } = createMockD1();
+    const repository = new ConversationRepository({ DB: db } as any);
+
+    await repository.setPersonalConversationsArchived(123, {
+      archived: true,
+      query: "50%_plan",
+      updatedAfter: "2026-06-01T00:00:00.000Z",
+    });
+
+    expect(calls[0]?.query).toContain("project_id IS NULL");
+    expect(calls[0]?.query).toContain("is_archived = ?");
+    expect(calls[0]?.params).toEqual([1, 123, 0, "%50\\%\\_plan%", "2026-06-01T00:00:00.000Z"]);
+  });
+
+  it("restores conversations by inverting the state it matches on", async () => {
+    const { calls, db } = createMockD1();
+    const repository = new ConversationRepository({ DB: db } as any);
+
+    await repository.setPersonalConversationsArchived(123, { archived: false });
+
+    expect(calls[0]?.params).toEqual([0, 123, 1]);
   });
 
   it("bulk deletes every personal conversation without touching project conversations", async () => {

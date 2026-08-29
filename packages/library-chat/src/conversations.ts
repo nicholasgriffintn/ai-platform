@@ -68,7 +68,7 @@ export function getConversationActivityDate(conversation: ConversationSummary): 
   return getConversationDate(conversation, "updated");
 }
 
-function compareConversations(
+export function compareConversationsBySort(
   a: ConversationSummary,
   b: ConversationSummary,
   sortBy: ConversationSortBy,
@@ -116,7 +116,7 @@ export function filterConversationsByListOptions<T extends ConversationSummary>(
 
       return (conversation.title || UNTITLED_CONVERSATION).toLowerCase().includes(query);
     })
-    .sort((a, b) => compareConversations(a, b, sortBy));
+    .sort((a, b) => compareConversationsBySort(a, b, sortBy));
 }
 
 function hasRenderableMessagePayload(message: ConversationMessage): boolean {

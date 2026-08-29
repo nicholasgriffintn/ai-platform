@@ -64,22 +64,27 @@ export function useChats(options: ConversationListOptions = {}) {
     gcTime: CHAT_QUERY_GC_TIME,
   });
 
-  const allChats = useMemo(() => {
+  const { chats: allChats, total } = useMemo(() => {
     const remoteChats = remoteChatsQuery.data?.pages.flatMap((page) => page.conversations) || [];
     const localChats = filterConversationsByListOptions(localChatsQuery.data || [], queryOptions);
 
     if (localOnlyMode || !isAuthenticated) {
-      return localChats;
+      return { chats: localChats, total: localChats.length };
     }
 
     const remoteIds = new Set(remoteChats.map((chat) => chat.id));
     const uniqueLocalChats = localChats.filter((chat) => !remoteIds.has(chat.id));
+    const remoteTotal = remoteChatsQuery.data?.pages[0]?.total ?? remoteChats.length;
 
-    return [...remoteChats, ...uniqueLocalChats];
+    return {
+      chats: [...remoteChats, ...uniqueLocalChats],
+      total: remoteTotal + uniqueLocalChats.length,
+    };
   }, [remoteChatsQuery.data, localChatsQuery.data, localOnlyMode, isAuthenticated, queryOptions]);
 
   return {
     data: allChats,
+    total,
     error: remoteChatsQuery.error ?? localChatsQuery.error,
     fetchNextPage: remoteChatsQuery.fetchNextPage,
     hasNextPage: remoteChatsQuery.hasNextPage && !localOnlyMode && isAuthenticated && isPro,
@@ -218,6 +223,41 @@ export function useDeleteChat() {
         CHATS_QUERY_KEY,
         getLocalChatScope(user?.id),
       );
+    },
+  });
+}
+
+export function useSetAllChatsArchived() {
+  const queryClient = useQueryClient();
+  const { isAuthenticated, isPro, localOnlyMode, user } = useChatStore();
+
+  return useMutation({
+    mutationFn: async ({
+      archived,
+      options = {},
+    }: {
+      archived: boolean;
+      options?: ConversationListOptions;
+    }) => {
+      const local = await localChatService.setLocalChatsArchived(archived, options);
+
+      if (!isAuthenticated || !isPro || localOnlyMode) {
+        return local;
+      }
+
+      const remote = await apiService.setAllConversationsArchived({
+        archived,
+        activity: options.activity,
+        query: options.query,
+      });
+
+      return local + remote;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY, "remote"] });
+      void queryClient.invalidateQueries({
+        queryKey: [CHATS_QUERY_KEY, "local", getLocalChatScope(user?.id)],
+      });
     },
   });
 }

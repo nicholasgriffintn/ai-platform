@@ -1,6 +1,7 @@
 import { CanvasSidebarControls } from "@ngriffin_uk/polychat-component-experiences/media";
 import {
   ConversationList,
+  ConversationListActions,
   ConversationListControls,
   ConversationListSection,
   ConversationStorageNotice,
@@ -24,7 +25,12 @@ import { useLocation, useNavigate } from "react-router";
 
 import type { CanvasStudioState } from "~/components/Canvas/useCanvasStudio";
 import { useTrackEvent } from "~/hooks/use-track-event";
-import { useChats, useDeleteChat, useUpdateChatTitle } from "~/hooks/useChat";
+import {
+  useChats,
+  useDeleteChat,
+  useSetAllChatsArchived,
+  useUpdateChatTitle,
+} from "~/hooks/useChat";
 import { buildConversationGroups } from "~/lib/conversation-groups";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
@@ -69,6 +75,7 @@ export const ChatSidebar = ({
 
   const {
     data: conversations,
+    total: matchingConversationCount,
     error: conversationsError,
     fetchNextPage,
     hasNextPage,
@@ -82,7 +89,9 @@ export const ChatSidebar = ({
   });
   const deleteChat = useDeleteChat();
   const updateTitle = useUpdateChatTitle();
+  const setAllArchived = useSetAllChatsArchived();
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [confirmArchiveAll, setConfirmArchiveAll] = useState<boolean | null>(null);
   const loadMoreConversations = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       void fetchNextPage();
@@ -177,6 +186,33 @@ export const ChatSidebar = ({
       setConfirmDelete(null);
     } catch (error) {
       console.error("Failed to delete chat:", error);
+    }
+  };
+
+  const confirmSetAllArchived = async () => {
+    if (confirmArchiveAll === null) {
+      return;
+    }
+
+    try {
+      trackEvent({
+        name: confirmArchiveAll ? "archive_all_chats" : "restore_all_chats",
+        category: "sidebar",
+        label: confirmArchiveAll ? "archive_all_chats" : "restore_all_chats",
+        value: matchingConversationCount,
+      });
+
+      await setAllArchived.mutateAsync({
+        archived: confirmArchiveAll,
+        options: {
+          activity: conversationListFilters.activity,
+          archived: conversationListFilters.archiveFilter,
+        },
+      });
+
+      setConfirmArchiveAll(null);
+    } catch (error) {
+      console.error("Failed to update archived conversations:", error);
     }
   };
 
@@ -283,11 +319,20 @@ export const ChatSidebar = ({
               onRetry={() => refetchConversations()}
               isEmpty={conversations.length === 0}
               controls={
-                <ConversationListControls
-                  filters={conversationListFilters}
-                  onFiltersChange={setConversationListFilters}
-                  onReset={resetConversationListFilters}
-                />
+                <div className="flex items-center gap-0.5">
+                  <ConversationListActions
+                    archiveFilter={conversationListFilters.archiveFilter}
+                    matchingCount={matchingConversationCount}
+                    isBusy={setAllArchived.isPending}
+                    onArchiveAll={() => setConfirmArchiveAll(true)}
+                    onRestoreAll={() => setConfirmArchiveAll(false)}
+                  />
+                  <ConversationListControls
+                    filters={conversationListFilters}
+                    onFiltersChange={setConversationListFilters}
+                    onReset={resetConversationListFilters}
+                  />
+                </div>
               }
             >
               {
@@ -316,6 +361,20 @@ export const ChatSidebar = ({
           </div>
         )}
       </SidebarShell>
+
+      <ConfirmationDialog
+        open={confirmArchiveAll !== null}
+        onOpenChange={(open) => !open && setConfirmArchiveAll(null)}
+        title={confirmArchiveAll ? "Archive all conversations" : "Restore all conversations"}
+        description={
+          confirmArchiveAll
+            ? `Archive the ${matchingConversationCount} conversations matching your current filters. You can bring them back from the Archived view.`
+            : `Restore the ${matchingConversationCount} archived conversations matching your current filters back to your active list.`
+        }
+        confirmText={confirmArchiveAll ? "Archive all" : "Restore all"}
+        onConfirm={confirmSetAllArchived}
+        isLoading={setAllArchived.isPending}
+      />
 
       <ConfirmationDialog
         open={confirmDelete !== null}
