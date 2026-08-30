@@ -6,36 +6,11 @@ import type {
   ProjectTaskStatus,
 } from "@ngriffin_uk/polychat-schemas";
 
+import type { ProjectTaskRow } from "~/lib/database/schema";
 import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
 
 import { BaseRepository } from "./BaseRepository";
-
-interface ProjectTaskRow {
-  id: string;
-  project_id: string;
-  workspace_id: string;
-  objective: string;
-  acceptance: string | null;
-  status: ProjectTaskStatus;
-  source: ProjectTaskSource;
-  blocked_reason: ProjectTaskBlockedReason | null;
-  blocked_detail: string | null;
-  stage_id: string | null;
-  runner: string | null;
-  created_by_user_id: number;
-  assignee_user_id: number | null;
-  runner_identity_user_id: number | null;
-  conversation_id: string | null;
-  goal_id: string | null;
-  position: number;
-  token_budget: number | null;
-  tokens_spent: number;
-  created_at: string;
-  updated_at: string | null;
-  started_at: string | null;
-  completed_at: string | null;
-}
 
 export interface CreateProjectTaskParams {
   projectId: string;
@@ -76,6 +51,14 @@ export interface ListProjectTaskFilters {
   includeDone?: boolean;
 }
 
+function parseRunner(value: ProjectTaskRow["runner"]): ProjectTaskRunner | null {
+  if (!value) {
+    return null;
+  }
+
+  return typeof value === "string" ? safeParseJson<ProjectTaskRunner>(value) : value;
+}
+
 function formatProjectTask(row: ProjectTaskRow): ProjectTask {
   return {
     id: row.id,
@@ -88,7 +71,7 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
     blockedReason: row.blocked_reason,
     blockedDetail: row.blocked_detail,
     stageId: row.stage_id,
-    runner: row.runner ? safeParseJson<ProjectTaskRunner>(row.runner) : null,
+    runner: parseRunner(row.runner),
     createdByUserId: row.created_by_user_id,
     assigneeUserId: row.assignee_user_id,
     runnerIdentityUserId: row.runner_identity_user_id,

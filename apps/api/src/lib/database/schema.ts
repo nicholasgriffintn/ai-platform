@@ -1,4 +1,5 @@
 import type { AuthChallengeKind } from "@ngriffin_uk/auth-protocol";
+import type { ProjectTaskRunner } from "@ngriffin_uk/polychat-schemas";
 import { sql } from "drizzle-orm";
 import {
   check,
@@ -1626,10 +1627,19 @@ export const projectTask = sqliteTable(
     source: text({ enum: ["user", "model"] })
       .default("user")
       .notNull(),
-    blocked_reason: text(),
+    blocked_reason: text({
+      enum: [
+        "awaiting_approval",
+        "stalled",
+        "usage_limits",
+        "token_budget",
+        "missing_capability",
+        "run_failed",
+      ],
+    }),
     blocked_detail: text(),
     stage_id: text(),
-    runner: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
+    runner: text({ mode: "json" }).$type<ProjectTaskRunner>(),
     created_by_user_id: integer()
       .notNull()
       .references(() => user.id),
