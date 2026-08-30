@@ -170,7 +170,7 @@ export async function instantiateProjectTemplate(
   const capabilities = [];
 
   for (const capability of configuration.capabilities) {
-    await validateCapabilityReference(capability.kind, capability.capabilityId);
+    await validateCapabilityReference(capability.kind, capability.capabilityId, context);
     capabilities.push({
       id: generateId(),
       kind: capability.kind,

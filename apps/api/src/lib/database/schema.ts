@@ -1,4 +1,5 @@
 import type { AuthChallengeKind } from "@ngriffin_uk/auth-protocol";
+import type { ProjectTaskRunner } from "@ngriffin_uk/polychat-schemas";
 import { sql } from "drizzle-orm";
 import {
   check,
@@ -293,6 +294,7 @@ export const project = sqliteTable(
     coding_prompt_strategy: text().default("auto").notNull(),
     coding_should_commit: integer({ mode: "boolean" }).default(true).notNull(),
     coding_timeout_seconds: integer().default(900).notNull(),
+    flow: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
     created_by: integer()
       .notNull()
       .references(() => user.id),
@@ -321,7 +323,7 @@ export const projectCapability = sqliteTable(
     project_id: text()
       .notNull()
       .references(() => project.id, { onDelete: "cascade" }),
-    kind: text({ enum: ["app", "recipe", "skill", "tool"] }).notNull(),
+    kind: text({ enum: ["app", "recipe", "skill", "tool", "agent"] }).notNull(),
     capability_id: text().notNull(),
     configuration: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
     created_by: integer()
@@ -1604,3 +1606,74 @@ export const trainingJobEvents = sqliteTable(
 );
 
 export type TrainingJobEvent = typeof trainingJobEvents.$inferSelect;
+
+export const projectTask = sqliteTable(
+  "project_task",
+  {
+    id: text().primaryKey(),
+    project_id: text()
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    objective: text().notNull(),
+    acceptance: text(),
+    status: text({
+      enum: ["backlog", "queued", "running", "blocked", "review", "done", "cancelled"],
+    })
+      .default("backlog")
+      .notNull(),
+    source: text({ enum: ["user", "model"] })
+      .default("user")
+      .notNull(),
+    blocked_reason: text({
+      enum: [
+        "awaiting_approval",
+        "stalled",
+        "usage_limits",
+        "token_budget",
+        "missing_capability",
+        "run_failed",
+      ],
+    }),
+    blocked_detail: text(),
+    stage_id: text(),
+    runner: text({ mode: "json" }).$type<ProjectTaskRunner>(),
+    created_by_user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    assignee_user_id: integer().references(() => user.id),
+    runner_identity_user_id: integer().references(() => user.id),
+    conversation_id: text().references(() => conversation.id, { onDelete: "set null" }),
+    goal_id: text(),
+    position: real().default(0).notNull(),
+    token_budget: integer(),
+    tokens_spent: integer().default(0).notNull(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+    started_at: text(),
+    completed_at: text(),
+  },
+  (table) => ({
+    projectStatusIdx: index("project_task_project_status_idx").on(
+      table.project_id,
+      table.status,
+      table.position,
+    ),
+    workspaceStatusIdx: index("project_task_workspace_status_idx").on(
+      table.workspace_id,
+      table.status,
+    ),
+    assigneeIdx: index("project_task_assignee_idx").on(table.assignee_user_id),
+    conversationIdx: uniqueIndex("project_task_conversation_idx")
+      .on(table.conversation_id)
+      .where(sql`${table.conversation_id} IS NOT NULL`),
+  }),
+);
+
+export type ProjectTaskRow = typeof projectTask.$inferSelect;

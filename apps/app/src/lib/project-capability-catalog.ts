@@ -16,9 +16,10 @@ const KIND_LABELS: Record<ProjectCapabilityKind, string> = {
   recipe: "Recipes",
   skill: "Skills",
   tool: "Tools",
+  agent: "Agents",
 };
 
-const KIND_ORDER: ProjectCapabilityKind[] = ["app", "recipe", "skill", "tool"];
+const KIND_ORDER: ProjectCapabilityKind[] = ["app", "recipe", "skill", "tool", "agent"];
 
 export function getProjectCapabilityKind(item: AssistantActionItem): ProjectCapabilityKind | null {
   if (item.kind === "app") {
@@ -35,6 +36,10 @@ export function getProjectCapabilityKind(item: AssistantActionItem): ProjectCapa
 
   if (item.kind === "tool") {
     return "tool";
+  }
+
+  if (item.kind === "agent") {
+    return "agent";
   }
 
   return null;

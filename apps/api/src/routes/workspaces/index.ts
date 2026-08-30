@@ -3,6 +3,7 @@ import {
   createWorkspaceInvitationSchema,
   createWorkspaceSchema,
   projectDetailSchema,
+  projectTaskAttentionResponseSchema,
   updateWorkspaceSchema,
   updateWorkspaceMemberSchema,
   transferWorkspaceOwnershipSchema,
@@ -17,6 +18,7 @@ import z from "zod/v4";
 
 import { addRoute } from "~/lib/http/routeBuilder";
 import { listWorkspaceAudit } from "~/services/audit";
+import { listProjectTaskAttention } from "~/services/project-tasks";
 import {
   createProject,
   createWorkspace,
@@ -167,6 +169,23 @@ addRoute(app, "post", "/:workspaceId/projects", {
   responses: { 200: { description: "Created project", schema: projectDetailSchema } },
   handler: ({ serviceContext, params, body }) =>
     createProject(serviceContext, params.workspaceId, body),
+});
+
+addRoute(app, "get", "/attention", {
+  auth: true,
+  tags: ["workspaces", "tasks"],
+  summary: "List task board work waiting on you",
+  description:
+    "Aggregates blocked, in-review, and assigned tasks across every workspace you belong to.",
+  querySchema: z.object({ limit: z.coerce.number().int().min(1).max(100).optional() }),
+  responses: {
+    200: {
+      description: "Work waiting on you",
+      schema: projectTaskAttentionResponseSchema,
+    },
+  },
+  handler: ({ serviceContext, query }) =>
+    listProjectTaskAttention(serviceContext, { limit: query.limit }),
 });
 
 export default app;

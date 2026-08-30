@@ -1,5 +1,6 @@
 import { ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import {
+  TaskAttentionList,
   WorkspaceOverviewActions,
   WorkspaceOverviewSkeleton,
   WorkspaceProjectsSection,
@@ -9,6 +10,7 @@ import { useNavigate } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
+import { useTaskAttention } from "~/hooks/useProjectTasks";
 import { useDeleteWorkspace } from "~/hooks/useWorkspaces";
 import { isAuthenticationError } from "~/lib/errors";
 
@@ -18,6 +20,7 @@ import { useWorkData } from "./WorkContext";
 
 export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
   const { workspaceQuery } = useWorkData();
+  const { items: attentionItems } = useTaskAttention();
   const { data: workspace, isLoading, error } = workspaceQuery;
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
@@ -45,6 +48,7 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
     );
   }
 
+  const workspaceAttention = attentionItems.filter((item) => item.workspaceId === workspaceId);
   const canManage = workspace.role === "owner" || workspace.role === "admin";
 
   return (
@@ -77,6 +81,22 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
           canManage={canManage}
           onCreateProject={() => setIsCreateOpen(true)}
         />
+
+        {workspaceAttention.length > 0 && (
+          <section className="mt-10">
+            <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+              Waiting on you
+            </h2>
+            <TaskAttentionList
+              items={workspaceAttention}
+              itemHref={(item) =>
+                item.conversationId
+                  ? `/work/${item.workspaceId}/projects/${item.projectId}/chat?completion_id=${item.conversationId}`
+                  : `/work/${item.workspaceId}/projects/${item.projectId}/tasks`
+              }
+            />
+          </section>
+        )}
       </PageShell.Content>
       <CreateProjectDialog
         workspaceId={workspaceId}

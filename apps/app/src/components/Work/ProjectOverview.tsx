@@ -20,6 +20,7 @@ import { ProjectCodingEnvironmentCard } from "./ProjectCodingEnvironmentCard";
 import { ProjectConversationStarter } from "./ProjectConversationStarter";
 import { ProjectKnowledgeCard } from "./ProjectKnowledgeCard";
 import { ProjectSchedulesCard } from "./ProjectSchedulesCard";
+import { ProjectTasksCard } from "./ProjectTasksCard";
 import { useWorkData } from "./WorkContext";
 
 export function ProjectOverview({
@@ -58,6 +59,7 @@ export function ProjectOverview({
   const canManage = workspace?.role === "owner" || workspace?.role === "admin";
   const capabilitiesPath = `/work/${workspaceId}/projects/${projectId}/library`;
   const conversationPath = `/work/${workspaceId}/projects/${projectId}/chat`;
+  const tasksPath = `/work/${workspaceId}/projects/${projectId}/tasks`;
   const handleSaveTemplate = async () => {
     try {
       await templates.create.mutateAsync({
@@ -97,6 +99,7 @@ export function ProjectOverview({
               canManage={canManage}
               capabilitiesPath={capabilitiesPath}
               conversationPath={conversationPath}
+              tasksPath={tasksPath}
               isSavingTemplate={templates.create.isPending}
               onArchive={() => setIsArchiveOpen(true)}
               onSaveTemplate={() => void handleSaveTemplate()}
@@ -110,6 +113,7 @@ export function ProjectOverview({
         <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_420px]">
           <section className="min-w-0 space-y-6">
             <ProjectConversationStarter workspaceId={workspaceId} projectId={projectId} />
+            <ProjectTasksCard workspaceId={workspaceId} projectId={projectId} />
             <ProjectConversationList
               conversationCount={project.conversationCount}
               newConversationHref={`/work/${workspaceId}/projects/${projectId}/chat`}

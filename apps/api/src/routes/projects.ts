@@ -3,15 +3,33 @@ import {
   authoredSkillDocumentSchema,
   authoredSkillInputSchema,
   authoredSkillListResponseSchema,
+  createProjectTaskSchema,
   errorResponseSchema,
   projectDetailSchema,
+  projectFlowResponseSchema,
+  projectTaskListQuerySchema,
+  projectTaskListResponseSchema,
+  projectTaskResponseSchema,
+  setProjectFlowSchema,
   skillIdSchema,
   updateProjectSchema,
+  updateProjectTaskSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
 
 import { addRoute } from "~/lib/http/routeBuilder";
+import {
+  acceptProjectTask,
+  createProjectTask,
+  deleteProjectTask,
+  getProjectFlow,
+  getProjectTask,
+  listProjectTasks,
+  setProjectFlow,
+  startProjectTask,
+  updateProjectTask,
+} from "~/services/project-tasks";
 import {
   deleteProjectSkill,
   getProjectSkill,
@@ -151,6 +169,124 @@ addRoute(app, "delete", "/:projectId/skills/:skillId", {
 
     return { success: true };
   },
+});
+
+const projectTaskParams = projectParams.extend({ taskId: z.string().min(1) });
+
+addRoute(app, "get", "/:projectId/tasks", {
+  auth: true,
+  tags: ["projects", "tasks"],
+  summary: "List the project task board",
+  paramSchema: projectParams,
+  querySchema: projectTaskListQuerySchema,
+  responses: {
+    200: { description: "Tasks and the project flow", schema: projectTaskListResponseSchema },
+  },
+  handler: ({ serviceContext, params, query }) =>
+    listProjectTasks(serviceContext, params.projectId, query),
+});
+
+addRoute(app, "post", "/:projectId/tasks", {
+  auth: true,
+  tags: ["projects", "tasks"],
+  summary: "Add a task to the project board",
+  paramSchema: projectParams,
+  bodySchema: createProjectTaskSchema,
+  responses: {
+    200: { description: "The created task", schema: projectTaskResponseSchema },
+    400: { description: "Invalid task", schema: errorResponseSchema },
+  },
+  handler: ({ serviceContext, params, body }) =>
+    createProjectTask(serviceContext, params.projectId, body),
+});
+
+addRoute(app, "get", "/:projectId/tasks/:taskId", {
+  auth: true,
+  tags: ["projects", "tasks"],
+  summary: "Get one project task",
+  paramSchema: projectTaskParams,
+  responses: {
+    200: { description: "The task", schema: projectTaskResponseSchema },
+    404: { description: "Task not found", schema: errorResponseSchema },
+  },
+  handler: ({ serviceContext, params }) =>
+    getProjectTask(serviceContext, params.projectId, params.taskId),
+});
+
+addRoute(app, "patch", "/:projectId/tasks/:taskId", {
+  auth: true,
+  tags: ["projects", "tasks"],
+  summary: "Update a project task",
+  paramSchema: projectTaskParams,
+  bodySchema: updateProjectTaskSchema,
+  responses: {
+    200: { description: "The updated task", schema: projectTaskResponseSchema },
+    403: { description: "Transition not allowed", schema: errorResponseSchema },
+  },
+  handler: ({ serviceContext, params, body }) =>
+    updateProjectTask(serviceContext, params.projectId, params.taskId, body),
+});
+
+addRoute(app, "post", "/:projectId/tasks/:taskId/start", {
+  auth: true,
+  tags: ["projects", "tasks"],
+  summary: "Queue a project task for its runner",
+  description:
+    "The caller becomes the run's identity: it executes with their connections and installations.",
+  paramSchema: projectTaskParams,
+  responses: {
+    200: { description: "The queued task", schema: projectTaskResponseSchema },
+    409: { description: "Too many tasks already in flight", schema: errorResponseSchema },
+  },
+  handler: ({ serviceContext, params }) =>
+    startProjectTask(serviceContext, params.projectId, params.taskId),
+});
+
+addRoute(app, "post", "/:projectId/tasks/:taskId/accept", {
+  auth: true,
+  tags: ["projects", "tasks"],
+  summary: "Accept a reviewed task",
+  description: "Moves the task to done, or to the next flow stage when the project has one.",
+  paramSchema: projectTaskParams,
+  responses: {
+    200: { description: "The accepted task", schema: projectTaskResponseSchema },
+    400: { description: "The task is not in review", schema: errorResponseSchema },
+  },
+  handler: ({ serviceContext, params }) =>
+    acceptProjectTask(serviceContext, params.projectId, params.taskId),
+});
+
+addRoute(app, "delete", "/:projectId/tasks/:taskId", {
+  auth: true,
+  tags: ["projects", "tasks"],
+  summary: "Delete a project task",
+  paramSchema: projectTaskParams,
+  handler: ({ serviceContext, params }) =>
+    deleteProjectTask(serviceContext, params.projectId, params.taskId),
+});
+
+addRoute(app, "get", "/:projectId/flow", {
+  auth: true,
+  tags: ["projects", "tasks"],
+  summary: "Get the project flow",
+  paramSchema: projectParams,
+  responses: { 200: { description: "The flow", schema: projectFlowResponseSchema } },
+  handler: ({ serviceContext, params }) => getProjectFlow(serviceContext, params.projectId),
+});
+
+addRoute(app, "put", "/:projectId/flow", {
+  auth: true,
+  tags: ["projects", "tasks"],
+  summary: "Set or clear the project flow",
+  paramSchema: projectParams,
+  bodySchema: setProjectFlowSchema,
+  responses: {
+    200: { description: "The stored flow", schema: projectFlowResponseSchema },
+    400: { description: "Invalid flow", schema: errorResponseSchema },
+    403: { description: "Project admin access required", schema: errorResponseSchema },
+  },
+  handler: ({ serviceContext, params, body }) =>
+    setProjectFlow(serviceContext, params.projectId, body.flow),
 });
 
 export default app;

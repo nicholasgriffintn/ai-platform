@@ -95,6 +95,7 @@ export * from "./recipe-presentation";
 export * from "./models";
 export * from "./navigation";
 export * from "./outputs";
+export * from "./project-tasks";
 export * from "./plans";
 export * from "./workspaces";
 export * from "./provider-messages";

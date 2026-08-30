@@ -19,6 +19,7 @@ import type { IFunctionResponse, IRequest } from "~/types";
 
 import type { ApiToolDefinition } from "../../types/functions";
 import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import { resolveRequestProjectId } from "./request-context";
 
 interface SandboxFunctionArgs {
   repo: string;
@@ -166,10 +167,7 @@ async function executeSandboxFunction(params: {
     context: request.context,
     user: request.user,
     payload,
-    projectId:
-      typeof request.request?.metadata?.project_id === "string"
-        ? request.request.metadata.project_id
-        : undefined,
+    projectId: resolveRequestProjectId(request) ?? undefined,
     conversationId: request.request?.completion_id,
   });
 

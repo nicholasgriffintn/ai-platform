@@ -76,6 +76,7 @@ export interface ProjectRow {
   coding_prompt_strategy?: string;
   coding_should_commit?: number;
   coding_timeout_seconds?: number;
+  flow?: string | null;
   created_by: number;
   archived_at: string | null;
   created_at: string;
@@ -573,6 +574,7 @@ export class WorkspaceRepository extends BaseRepository {
         "coding_prompt_strategy",
         "coding_should_commit",
         "coding_timeout_seconds",
+        "flow",
         "archived_at",
       ],
       "id = ?",

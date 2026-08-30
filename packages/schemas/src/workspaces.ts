@@ -1,7 +1,9 @@
 import z from "zod/v4";
 
+import { projectFlowSchema } from "./project-tasks";
+
 export const workspaceRoleSchema = z.enum(["owner", "admin", "member"]);
-export const projectCapabilityKindSchema = z.enum(["app", "recipe", "skill", "tool"]);
+export const projectCapabilityKindSchema = z.enum(["app", "recipe", "skill", "tool", "agent"]);
 export const projectCodingPromptStrategySchema = z.enum([
   "auto",
   "feature-delivery",
@@ -182,6 +184,7 @@ export const projectConversationSchema = z.object({
 export const projectDetailSchema = projectSummarySchema.extend({
   capabilities: z.array(projectCapabilitySchema),
   conversations: z.array(projectConversationSchema),
+  flow: projectFlowSchema.nullable(),
 });
 
 export type WorkspaceRole = z.infer<typeof workspaceRoleSchema>;

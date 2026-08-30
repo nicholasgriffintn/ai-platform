@@ -1,10 +1,11 @@
 import { DropdownMenu, DropdownMenuItem, Link } from "@ngriffin_uk/polychat-component-ui";
-import { Archive, Ellipsis, LayoutTemplate, Settings2, SquarePen } from "lucide-react";
+import { Archive, Ellipsis, LayoutTemplate, ListChecks, Settings2, SquarePen } from "lucide-react";
 
 interface ProjectOverviewActionsProps {
   canManage: boolean;
   capabilitiesPath: string;
   conversationPath: string;
+  tasksPath: string;
   isSavingTemplate: boolean;
   onArchive: () => void;
   onSaveTemplate: () => void;
@@ -14,6 +15,7 @@ export function ProjectOverviewActions({
   canManage,
   capabilitiesPath,
   conversationPath,
+  tasksPath,
   isSavingTemplate,
   onArchive,
   onSaveTemplate,
@@ -49,6 +51,9 @@ export function ProjectOverviewActions({
             </DropdownMenuItem>
           </>
         ) : null}
+        <DropdownMenuItem asChild icon={<ListChecks size={16} />}>
+          <Link href={tasksPath}>Tasks</Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild icon={<Settings2 size={16} />}>
           <Link href={capabilitiesPath}>Capabilities</Link>
         </DropdownMenuItem>

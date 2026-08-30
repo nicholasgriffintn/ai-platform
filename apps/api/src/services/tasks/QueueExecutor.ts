@@ -1,4 +1,8 @@
-import { SANDBOX_RUN_DISPATCH_TASK_TYPE, type TaskType } from "@ngriffin_uk/polychat-schemas";
+import {
+  PROJECT_TASK_RUN_TASK_TYPE,
+  SANDBOX_RUN_DISPATCH_TASK_TYPE,
+  type TaskType,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { TaskRepository } from "~/repositories/TaskRepository";
 import type { IEnv } from "~/types";
@@ -10,6 +14,7 @@ import { AsyncMessagePollingHandler } from "./handlers/AsyncMessagePollingHandle
 import { InboundMessageHandler } from "./handlers/InboundMessageHandler";
 import { MemorySynthesisHandler } from "./handlers/MemorySynthesisHandler";
 import { PodcastTranscriptionPollingHandler } from "./handlers/PodcastTranscriptionPollingHandler";
+import { ProjectTaskRunHandler } from "./handlers/ProjectTaskRunHandler";
 import { RecipeExecutionHandler } from "./handlers/RecipeExecutionHandler";
 import { ReplicatePollingHandler } from "./handlers/ReplicatePollingHandler";
 import { ResearchPollingHandler } from "./handlers/ResearchPollingHandler";
@@ -43,6 +48,7 @@ export class QueueExecutor {
       ["artificial_analysis_ingest", new ArtificialAnalysisIngestHandler()],
       ["artificial_analysis_scoring", new ArtificialAnalysisScoringHandler()],
       [SANDBOX_RUN_DISPATCH_TASK_TYPE, new SandboxRunDispatchHandler()],
+      [PROJECT_TASK_RUN_TASK_TYPE, new ProjectTaskRunHandler()],
     ]);
 
     const taskExecutor = new TaskExecutor(env, handlers);

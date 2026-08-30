@@ -15,6 +15,9 @@ vi.mock("~/hooks/useWorkspaces", () => ({
     mutateAsync: mocks.deleteWorkspace,
   }),
 }));
+vi.mock("~/hooks/useProjectTasks", () => ({
+  useTaskAttention: () => ({ items: [], total: 0, isLoading: false }),
+}));
 vi.mock("./WorkContext", () => ({
   useWorkData: () => ({
     workspaceQuery: {

@@ -542,7 +542,7 @@ export async function addProjectCapability(
     );
   }
 
-  await validateCapabilityReference(input.kind, input.capabilityId);
+  await validateCapabilityReference(input.kind, input.capabilityId, context);
   const configuration =
     input.kind === "tool"
       ? validateProjectToolConfiguration(input.capabilityId, input.configuration)

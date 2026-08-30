@@ -1,4 +1,4 @@
-import type { WorkspaceRole } from "@ngriffin_uk/polychat-schemas";
+import type { ProjectCapabilityKind, WorkspaceRole } from "@ngriffin_uk/polychat-schemas";
 import { z } from "zod/v4";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -66,7 +66,7 @@ export async function requireProjectAccess(
 export async function requireProjectCapabilityAccess(
   context: ServiceContext,
   projectId: string,
-  kind: "app" | "recipe" | "skill" | "tool",
+  kind: ProjectCapabilityKind,
   capabilityId: string,
 ): Promise<void> {
   await requireProjectAccess(context, projectId);
