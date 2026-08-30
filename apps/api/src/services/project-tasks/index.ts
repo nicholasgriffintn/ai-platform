@@ -19,6 +19,7 @@ import { parseProjectFlow } from "~/services/workspaces/format";
 import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
+import { approveLatestProjectTaskCompletion } from "./completions";
 import { answerProjectTaskQuestions, getPendingProjectTaskQuestions } from "./questions";
 import { queueProjectTaskRun } from "./runner";
 import { assertProjectTaskTransition } from "./transitions";
@@ -364,9 +365,16 @@ export async function acceptProjectTask(
   let updated: ProjectTask | null;
 
   if (nextStage) {
+    const completions = approveLatestProjectTaskCompletion(task.completions, user.id);
+    const reviewed = await context.repositories.projectTasks.updateTask(taskId, { completions });
+
+    if (!reviewed) {
+      throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
+    }
+
     updated = await queueProjectTaskRun({
       context,
-      task,
+      task: reviewed,
       runnerIdentityUserId: user.id,
       stageId: nextStage,
     });
@@ -375,6 +383,7 @@ export async function acceptProjectTask(
       status: "done",
       blockedReason: null,
       blockedDetail: null,
+      completions: approveLatestProjectTaskCompletion(task.completions, user.id),
       completedAt: new Date().toISOString(),
     });
   }

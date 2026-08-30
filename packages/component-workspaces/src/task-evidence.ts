@@ -12,7 +12,7 @@ export function isTaskCriterionMet(
   criterion: string,
   evidence: readonly GoalEvidenceEntry[],
 ): boolean {
-  if (status === "done") {
+  if (status === "review" || status === "done") {
     return true;
   }
 

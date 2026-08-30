@@ -1,7 +1,7 @@
 import z from "zod/v4";
 
 import { agentModeSchema, toolPermissionSchema } from "./agent-modes";
-import { goalSchema } from "./goals";
+import { goalEvidenceEntrySchema, goalSchema } from "./goals";
 import { answerUserQuestionsSchema, userQuestionSetSchema } from "./user-questions";
 
 export const projectTaskStatusSchema = z.enum([
@@ -71,7 +71,7 @@ export const projectTaskStatusLabels: Record<ProjectTaskStatus, string> = {
   queued: "Queued",
   running: "Running",
   blocked: "Needs you",
-  review: "Review",
+  review: "Approval",
   done: "Done",
   cancelled: "Cancelled",
 };
@@ -127,6 +127,24 @@ export const projectTaskRunnerSchema = z.object({
 
 export type ProjectTaskRunner = z.infer<typeof projectTaskRunnerSchema>;
 
+export const projectTaskCompletionSchema = z.object({
+  id: z.string().min(1),
+  stageId: z.string().min(1).nullable(),
+  conversationId: z.string().min(1),
+  goalId: z.string().min(1),
+  output: z.string(),
+  evidence: z.array(goalEvidenceEntrySchema).default([]),
+  approval: z.object({
+    mode: z.enum(["human", "automated"]),
+    status: z.enum(["pending", "approved", "rejected"]),
+    reviewedByUserId: z.number().int().positive().nullable(),
+    reviewedAt: z.string().nullable(),
+  }),
+  createdAt: z.string(),
+});
+
+export type ProjectTaskCompletion = z.infer<typeof projectTaskCompletionSchema>;
+
 export const projectTaskSchema = z.object({
   id: z.string(),
   projectId: z.string(),
@@ -150,6 +168,7 @@ export const projectTaskSchema = z.object({
   conversationId: z.string().nullable(),
   goalId: z.string().nullable(),
   dispatchTaskId: z.string().nullable(),
+  completions: z.array(projectTaskCompletionSchema).default([]),
   position: z.number(),
   tokenBudget: z.number().int().positive().nullable(),
   tokensSpent: z.number().int().nonnegative(),

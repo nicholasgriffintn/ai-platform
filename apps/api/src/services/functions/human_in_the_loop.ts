@@ -10,6 +10,7 @@ import { getLogger } from "~/utils/logger";
 
 import type { ApiToolDefinition } from "../../types/functions";
 import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import { findAnsweredQuestion } from "./userQuestionHistory";
 
 const logger = getLogger({ prefix: "services/functions/human_in_the_loop" });
 
@@ -19,6 +20,7 @@ export const request_approval: ApiToolDefinition = {
     "Request human approval before proceeding with an action. Use this for critical operations, irreversible changes, or when user confirmation is needed. Returns approval/rejection status.",
   type: "normal",
   costPerCall: 0,
+  maxIdenticalCalls: 1,
   permissions: ["human"],
   inputSchema: jsonSchemaToZod({
     type: "object",
@@ -124,9 +126,10 @@ export const request_approval: ApiToolDefinition = {
 export const ask_user: ApiToolDefinition = {
   name: "ask_user",
   description:
-    "Ask the user up to three concise questions and wait for their response. Use this instead of writing questions as ordinary assistant text whenever missing information or a decision prevents you from continuing. Offer useful choices where possible and allow a written answer when the choices are incomplete.",
+    "Ask the user up to three concise questions and wait for their response. Use this only when missing information or an unresolved decision prevents progress, never to ask the user to approve or confirm your output. Reuse answers already present in the conversation. Offer useful choices where possible and allow a written answer when the choices are incomplete.",
   type: "normal",
   costPerCall: 0,
+  maxIdenticalCalls: 1,
   permissions: ["human"],
   inputSchema: jsonSchemaToZod({
     type: "object",
@@ -142,7 +145,8 @@ export const ask_user: ApiToolDefinition = {
           properties: {
             id: {
               type: "string",
-              description: "A short lowercase identifier such as pricing or audience.",
+              description:
+                "A stable lowercase identifier for this decision, such as pricing or audience. Reuse the same identifier if referring to the same decision again.",
             },
             prompt: {
               type: "string",
@@ -182,6 +186,22 @@ export const ask_user: ApiToolDefinition = {
         "questions must contain between one and three valid questions",
         ErrorType.PARAMS_ERROR,
       );
+    }
+
+    if (context.conversationManager) {
+      const history = await context.conversationManager.get(completion_id);
+
+      for (const question of parsed.data) {
+        const answered = findAnsweredQuestion(history, question);
+
+        if (answered) {
+          throw new AssistantError(
+            `The question "${answered.prompt}" has already been answered in this conversation. Continue with the recorded answer instead of asking again.`,
+            ErrorType.CONFLICT_ERROR,
+            409,
+          );
+        }
+      }
     }
 
     const interactionId = generateId();

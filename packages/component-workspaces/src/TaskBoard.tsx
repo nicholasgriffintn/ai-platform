@@ -161,7 +161,7 @@ function TaskRow({
       <div className="flex items-center gap-2 lg:justify-end">
         {task.status === "review" ? (
           <Button variant="primary" size="sm" onClick={onAccept} disabled={isPending}>
-            Accept
+            Approve
           </Button>
         ) : null}
         {task.status === "backlog" ? (
@@ -186,7 +186,7 @@ function TaskRow({
             Retry
           </Button>
         ) : null}
-        {needsInput && conversationHref ? (
+        {task.status === "blocked" && !canRetry && conversationHref ? (
           <ButtonLink
             href={conversationHref}
             variant="primary"
@@ -194,10 +194,10 @@ function TaskRow({
             icon={<MessageSquareText size={13} />}
             className="no-underline hover:!no-underline"
           >
-            Answer questions
+            {needsInput ? "Answer questions" : "Respond"}
           </ButtonLink>
         ) : null}
-        {task.status === "blocked" && !canRetry && (!needsInput || !conversationHref) ? (
+        {task.status === "blocked" && !canRetry && !conversationHref ? (
           <ButtonLink
             href={href}
             variant="outline"

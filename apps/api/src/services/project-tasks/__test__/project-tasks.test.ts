@@ -49,6 +49,7 @@ const baseTask = {
   conversationId: null,
   goalId: null,
   dispatchTaskId: null,
+  completions: [],
   position: 1000,
   tokenBudget: null,
   tokensSpent: 0,
@@ -152,6 +153,17 @@ describe("buildTaskPrompt", () => {
     expect(
       buildTaskPrompt({ task: baseTask, stageInstructions: null, contextNotes: null }),
     ).toContain("Project task ID: task-1");
+  });
+
+  it("reserves output review for the project flow", () => {
+    const prompt = buildTaskPrompt({
+      task: baseTask,
+      stageInstructions: null,
+      contextNotes: null,
+    });
+
+    expect(prompt).toContain("never ask the user to approve, confirm, review, or accept");
+    expect(prompt).toContain("Never ask the same decision again");
   });
 });
 

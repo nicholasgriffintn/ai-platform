@@ -18,7 +18,9 @@ import type { IEnv, Message } from "~/types";
 import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+import { extractTextFromMessageContent } from "~/utils/messages";
 
+import { createProjectTaskCompletion, projectTaskStatusAfterCompletedGoal } from "./completions";
 import { buildStageInstructions, resolveTaskRuntime } from "./flow";
 import { getPendingProjectTaskQuestions } from "./questions";
 import { projectTaskStatusForGoal } from "./transitions";
@@ -229,7 +231,7 @@ export function buildTaskPrompt(params: {
   }
 
   lines.push(
-    "Work the objective and call complete_goal only once every part of it is done. If missing information or a person's decision prevents progress, call ask_user with up to three concise questions and useful choices instead of writing the questions as ordinary text.",
+    "Work the objective and call complete_goal once the current stage deliverable is complete. The project flow owns stage approval and advancement: never ask the user to approve, confirm, review, or accept your stage output. If concrete missing information or a still-unresolved decision prevents progress, first reuse every answer already present in the conversation, then call ask_user with up to three concise questions and useful choices instead of writing questions as ordinary text. Never ask the same decision again with a different identifier or wording.",
   );
 
   return lines.join("\n\n");
@@ -373,6 +375,7 @@ export async function runProjectTaskDispatch(params: {
     data: { taskId, stageId: claimed.stageId },
   });
   let responseTokens = 0;
+  let responseOutput = "";
 
   try {
     const conversationManager = ConversationManager.getInstance({
@@ -417,6 +420,7 @@ export async function runProjectTaskDispatch(params: {
     }
 
     responseTokens = response.usage?.total_tokens ?? 0;
+    responseOutput = extractTextFromMessageContent(response.choices[0]?.message.content).trim();
   } catch (error) {
     const detail = getErrorMessage(error);
 
@@ -476,16 +480,34 @@ export async function runProjectTaskDispatch(params: {
     goal?.status === "completed" && runtime.stage?.advance === "on_goal_complete"
       ? nextFlowStageId(flow, claimed.stageId)
       : null;
+  const completion =
+    goal?.status === "completed"
+      ? createProjectTaskCompletion({
+          stage: runtime.stage,
+          conversationId,
+          goal,
+          output: responseOutput,
+        })
+      : null;
+  const nextStatus =
+    goal?.status === "completed"
+      ? projectTaskStatusAfterCompletedGoal(runtime.stage, nextStageId)
+      : projection.status;
 
   await context.repositories.projectTasks.updateTask(taskId, {
-    status: projection.status,
+    status: nextStatus,
     blockedReason: projection.blockedReason,
     blockedDetail: goal?.stopped_reason ?? null,
     tokensSpent,
-    ...(projection.status === "review" ? { completedAt: null } : {}),
+    ...(completion ? { completions: [...claimed.completions, completion] } : {}),
+    ...(nextStatus === "done"
+      ? { completedAt: new Date().toISOString() }
+      : nextStatus === "review"
+        ? { completedAt: null }
+        : {}),
   });
   await context.repositories.activities.updateActivity(activity.id, {
-    status: projection.status === "blocked" ? "waiting" : "succeeded",
+    status: nextStatus === "blocked" ? "waiting" : "succeeded",
     summary: goal?.objective.slice(0, 200) ?? claimed.objective.slice(0, 200),
   });
 
@@ -493,7 +515,12 @@ export async function runProjectTaskDispatch(params: {
     try {
       await queueProjectTaskRun({
         context,
-        task: { ...claimed, status: projection.status, tokensSpent },
+        task: {
+          ...claimed,
+          status: nextStatus,
+          tokensSpent,
+          completions: completion ? [...claimed.completions, completion] : claimed.completions,
+        },
         runnerIdentityUserId,
         stageId: nextStageId,
       });

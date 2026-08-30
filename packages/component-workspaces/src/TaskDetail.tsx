@@ -105,6 +105,7 @@ export function TaskDetail({
   const needsInput = isProjectTaskAwaitingInput(task);
   const progress = reverseCopy(goal?.progress ?? []);
   const evidence = goal?.evidence ?? [];
+  const latestCompletion = task.completions.at(-1) ?? null;
 
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
@@ -133,7 +134,7 @@ export function TaskDetail({
               onClick={onAccept}
               disabled={isBusy}
             >
-              Accept result
+              Approve result
             </Button>
           )}
           {task.status === "backlog" && (
@@ -201,6 +202,39 @@ export function TaskDetail({
             </p>
           )}
         </section>
+
+        {latestCompletion ? (
+          <section className="space-y-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Latest result
+              </h2>
+              <Badge
+                variant={latestCompletion.approval.status === "approved" ? "success" : "warning"}
+              >
+                {latestCompletion.approval.status === "approved"
+                  ? latestCompletion.approval.mode === "automated"
+                    ? "Automatically approved"
+                    : "Approved"
+                  : "Awaiting approval"}
+              </Badge>
+            </div>
+            {latestCompletion.output ? (
+              <div className="text-sm leading-6 text-zinc-900 dark:text-zinc-100">
+                {renderProgressSummary ? (
+                  renderProgressSummary(latestCompletion.output)
+                ) : (
+                  <p className="whitespace-pre-wrap">{latestCompletion.output}</p>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-zinc-500">
+                This stage completed without a written result. Open the conversation to inspect its
+                tool evidence.
+              </p>
+            )}
+          </section>
+        ) : null}
 
         {flow ? (
           <section className="space-y-3">
@@ -318,7 +352,7 @@ export function TaskDetail({
             </ol>
           )}
 
-          {goal?.stopped_reason && (
+          {goal?.stopped_reason && goal.status !== "completed" && (
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
               Stopped: {goal.stopped_reason}
             </p>

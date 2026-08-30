@@ -1,6 +1,7 @@
 import type {
   ProjectTask,
   ProjectTaskBlockedReason,
+  ProjectTaskCompletion,
   ProjectTaskConstraints,
   ProjectTaskContext,
   ProjectTaskCriterion,
@@ -54,6 +55,7 @@ export interface UpdateProjectTaskParams {
   conversationId?: string | null;
   goalId?: string | null;
   dispatchTaskId?: string | null;
+  completions?: ProjectTaskCompletion[];
   position?: number;
   tokenBudget?: number | null;
   tokensSpent?: number;
@@ -99,6 +101,7 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
     conversationId: row.conversation_id,
     goalId: row.goal_id,
     dispatchTaskId: row.dispatch_task_id,
+    completions: parseJsonColumn<ProjectTaskCompletion[]>(row.completions) ?? [],
     position: row.position,
     tokenBudget: row.token_budget,
     tokensSpent: row.tokens_spent,
@@ -124,6 +127,7 @@ export class ProjectTaskRepository extends BaseRepository {
         constraints: params.constraints ?? null,
         depends_on_task_ids: params.dependsOnTaskIds ?? [],
         require_approval_for: params.requireApprovalFor ?? [],
+        completions: [],
         status: "backlog",
         source: params.source,
         created_by_user_id: params.createdByUserId,
@@ -140,6 +144,7 @@ export class ProjectTaskRepository extends BaseRepository {
           "constraints",
           "depends_on_task_ids",
           "require_approval_for",
+          "completions",
           "runner",
         ],
         returning: "*",
@@ -329,6 +334,10 @@ export class ProjectTaskRepository extends BaseRepository {
 
     if (updates.dispatchTaskId !== undefined) {
       set("dispatch_task_id", updates.dispatchTaskId);
+    }
+
+    if (updates.completions !== undefined) {
+      set("completions", JSON.stringify(updates.completions));
     }
 
     if (updates.position !== undefined) {

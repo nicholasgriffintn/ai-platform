@@ -26,11 +26,17 @@ export const TASK_ATTENTION_QUERY_KEY = ["task-attention"] as const;
 export const projectTaskDetailQueryKey = (projectId: string, taskId: string) =>
   ["project-task", projectId, taskId] as const;
 
-const IDLE_REFETCH_MS = 60_000;
-const ACTIVE_REFETCH_MS = 5_000;
+const IDLE_REFETCH_MS = 30_000;
+const ACTIVE_REFETCH_MS = 2_000;
 
-function hasWorkInFlight(tasks: ProjectTask[] | undefined): boolean {
+function hasWorkInFlight(tasks: readonly Pick<ProjectTask, "status">[] | undefined): boolean {
   return Boolean(tasks?.some((task) => task.status === "running" || task.status === "queued"));
+}
+
+export function projectTasksRefetchInterval(
+  tasks: readonly Pick<ProjectTask, "status">[] | undefined,
+): number {
+  return hasWorkInFlight(tasks) ? ACTIVE_REFETCH_MS : IDLE_REFETCH_MS;
 }
 
 export function useProjectTask(projectId: string, taskId: string) {
@@ -41,6 +47,11 @@ export function useProjectTask(projectId: string, taskId: string) {
     queryKey: projectTaskDetailQueryKey(projectId, taskId),
     queryFn: () => getProjectTask(projectId, taskId),
     enabled: Boolean(projectId && taskId) && isAuthenticated && isPro,
+    refetchInterval: (currentQuery) =>
+      projectTasksRefetchInterval(
+        currentQuery.state.data ? [currentQuery.state.data.task] : undefined,
+      ),
+    refetchIntervalInBackground: true,
   });
 }
 
@@ -53,9 +64,36 @@ export function useProjectTasks(projectId: string) {
     queryKey: projectTasksQueryKey(projectId),
     queryFn: () => listProjectTasks(projectId),
     enabled: Boolean(projectId) && isAuthenticated && isPro,
-    refetchInterval: (currentQuery) =>
-      hasWorkInFlight(currentQuery.state.data?.tasks) ? ACTIVE_REFETCH_MS : IDLE_REFETCH_MS,
+    refetchInterval: (currentQuery) => projectTasksRefetchInterval(currentQuery.state.data?.tasks),
+    refetchIntervalInBackground: true,
   });
+
+  const writeTask = (task: ProjectTask) => {
+    queryClient.setQueryData<{ tasks: ProjectTask[]; flow: ProjectFlow | null }>(
+      projectTasksQueryKey(projectId),
+      (current) => {
+        if (!current) {
+          return current;
+        }
+
+        const exists = current.tasks.some((candidate) => candidate.id === task.id);
+
+        return {
+          ...current,
+          tasks: exists
+            ? current.tasks.map((candidate) => (candidate.id === task.id ? task : candidate))
+            : [task, ...current.tasks],
+        };
+      },
+    );
+    queryClient.setQueryData(projectTaskDetailQueryKey(projectId, task.id), (current: unknown) =>
+      current && typeof current === "object" ? { ...current, task } : current,
+    );
+
+    if (task.conversationId) {
+      void queryClient.invalidateQueries({ queryKey: ["goal", task.conversationId] });
+    }
+  };
 
   const invalidate = () => {
     void queryClient.invalidateQueries({
@@ -67,34 +105,59 @@ export function useProjectTasks(projectId: string) {
 
   const create = useMutation({
     mutationFn: (input: CreateProjectTaskInput) => createProjectTask(projectId, input),
-    onSuccess: invalidate,
+    onSuccess: ({ task }) => {
+      writeTask(task);
+      invalidate();
+    },
   });
 
   const update = useMutation({
     mutationFn: ({ taskId, input }: { taskId: string; input: UpdateProjectTaskInput }) =>
       updateProjectTask(projectId, taskId, input),
-    onSuccess: invalidate,
+    onSuccess: ({ task }) => {
+      writeTask(task);
+      invalidate();
+    },
   });
 
   const start = useMutation({
     mutationFn: (taskId: string) => startProjectTask(projectId, taskId),
-    onSuccess: invalidate,
+    onSuccess: ({ task }) => {
+      writeTask(task);
+      invalidate();
+    },
   });
 
   const accept = useMutation({
     mutationFn: (taskId: string) => acceptProjectTask(projectId, taskId),
-    onSuccess: invalidate,
+    onSuccess: ({ task }) => {
+      writeTask(task);
+      invalidate();
+    },
   });
 
   const answer = useMutation({
     mutationFn: ({ taskId, input }: { taskId: string; input: AnswerUserQuestionsInput }) =>
       answerProjectTaskQuestions(projectId, taskId, input),
-    onSuccess: invalidate,
+    onSuccess: ({ task }) => {
+      writeTask(task);
+      invalidate();
+    },
   });
 
   const remove = useMutation({
     mutationFn: (taskId: string) => deleteProjectTask(projectId, taskId),
-    onSuccess: invalidate,
+    onSuccess: (_result, taskId) => {
+      queryClient.setQueryData<{ tasks: ProjectTask[]; flow: ProjectFlow | null }>(
+        projectTasksQueryKey(projectId),
+        (current) =>
+          current
+            ? { ...current, tasks: current.tasks.filter((task) => task.id !== taskId) }
+            : current,
+      );
+      queryClient.removeQueries({ queryKey: projectTaskDetailQueryKey(projectId, taskId) });
+      invalidate();
+    },
   });
 
   const saveFlow = useMutation({

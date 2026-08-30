@@ -1,0 +1,1 @@
+ALTER TABLE `project_task` ADD `completions` text;

@@ -93,6 +93,7 @@ const task: ProjectTask = {
   conversationId: null,
   goalId: null,
   dispatchTaskId: null,
+  completions: [],
   position: 1000,
   tokenBudget: 20_000,
   tokensSpent: 0,
@@ -152,7 +153,7 @@ describe("TaskBoard", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: "Accept" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Approve" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
   });
 

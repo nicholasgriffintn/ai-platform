@@ -1,6 +1,7 @@
 import type { AuthChallengeKind } from "@ngriffin_uk/auth-protocol";
 import type {
   ProjectTaskConstraints,
+  ProjectTaskCompletion,
   ProjectTaskContext,
   ProjectTaskCriterion,
   ProjectTaskRunner,
@@ -1663,6 +1664,7 @@ export const projectTask = sqliteTable(
     conversation_id: text().references(() => conversation.id, { onDelete: "set null" }),
     goal_id: text(),
     dispatch_task_id: text(),
+    completions: text({ mode: "json" }).$type<ProjectTaskCompletion[]>(),
     position: real().default(0).notNull(),
     token_budget: integer(),
     tokens_spent: integer().default(0).notNull(),
