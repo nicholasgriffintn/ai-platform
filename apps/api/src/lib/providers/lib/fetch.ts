@@ -3,13 +3,13 @@ import { listFunctionTools } from "~/services/functions";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { readHttpResponseBody, setDefaultHeader } from "~/utils/http";
-import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 import { omitUndefinedValues } from "~/utils/objects";
 import {
+  buildProviderResponseErrorDetails,
   getProviderErrorMessage,
+  getProviderResponseErrorMessage,
   isProviderRateLimit,
-  type ProviderErrorBody,
 } from "~/utils/providerErrors";
 import { redactSensitiveTokens } from "~/utils/redaction";
 import { detectStreaming } from "~/utils/streaming";
@@ -137,42 +137,34 @@ export async function fetchAIResponse<
       );
     }
 
-    const responseJson = safeParseJson<ProviderErrorBody>(responseText);
-    const redactedResponseJson = redactSensitiveTokens(responseJson);
-    const redactedResponseText = redactSensitiveTokens(responseText);
+    const errorDetails = buildProviderResponseErrorDetails({
+      provider,
+      endpoint: endpointOrUrl,
+      status: response.status,
+      statusText: response.statusText,
+      requestId,
+      responseText,
+    });
 
-    logger.error(
-      `Failed to get response for ${provider} from ${endpointOrUrl}`,
-      redactedResponseJson,
-    );
+    logger.error(`Failed to get response for ${provider} from ${endpointOrUrl}`, errorDetails);
 
-    if (isProviderRateLimit(response.status, responseJson)) {
+    if (isProviderRateLimit(response.status, errorDetails.responseJson)) {
       throw new AssistantError(
-        getProviderErrorMessage(redactedResponseJson) || "Rate limit exceeded",
+        getProviderErrorMessage(errorDetails.responseJson) || "Rate limit exceeded",
         ErrorType.RATE_LIMIT_ERROR,
         response.status,
         {
-          requestId,
-          provider,
-          upstreamStatus: responseJson?.raw_status_code ?? response.status,
-          responseJson: redactedResponseJson,
-          responseText: redactedResponseText,
+          ...errorDetails,
+          upstreamStatus: errorDetails.responseJson?.raw_status_code ?? response.status,
         },
       );
     }
 
     throw new AssistantError(
-      `Failed to get response for ${provider} from ${endpointOrUrl}`,
+      getProviderResponseErrorMessage(errorDetails),
       ErrorType.PROVIDER_ERROR,
       response.status,
-      {
-        requestId,
-        provider,
-        endpoint: endpointOrUrl,
-        responseStatus: response.status,
-        responseJson: redactedResponseJson,
-        responseText: redactedResponseText,
-      },
+      errorDetails,
     );
   }
 
@@ -243,22 +235,21 @@ export async function fetchProviderJson<T>(
   const responseBody = await readHttpResponseBody(response);
 
   if (!response.ok) {
-    const redactedResponseJson = redactSensitiveTokens(responseBody.parsed);
-    const redactedResponseText = redactSensitiveTokens(responseBody.raw);
+    const errorDetails = buildProviderResponseErrorDetails({
+      provider,
+      endpoint: url,
+      status: response.status,
+      statusText: response.statusText,
+      responseText: responseBody.raw,
+    });
 
-    logger.error(`Failed to get response for ${provider} from ${url}`, redactedResponseJson);
+    logger.error(`Failed to get response for ${provider} from ${url}`, errorDetails);
 
     throw new AssistantError(
-      `Failed to get response for ${provider} from ${url}`,
+      getProviderResponseErrorMessage(errorDetails),
       ErrorType.PROVIDER_ERROR,
       response.status,
-      {
-        provider,
-        endpoint: url,
-        responseStatus: response.status,
-        responseJson: redactedResponseJson,
-        responseText: redactedResponseText,
-      },
+      errorDetails,
     );
   }
 
