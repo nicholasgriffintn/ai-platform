@@ -25,3 +25,4 @@ export * from "./OutputDetailHeader";
 export * from "./TaskBoard";
 export * from "./TaskAttentionList";
 export * from "./CreateTaskDialog";
+export * from "./ProjectTasksSummary";

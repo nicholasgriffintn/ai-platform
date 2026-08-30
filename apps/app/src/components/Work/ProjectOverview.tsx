@@ -20,6 +20,7 @@ import { ProjectCodingEnvironmentCard } from "./ProjectCodingEnvironmentCard";
 import { ProjectConversationStarter } from "./ProjectConversationStarter";
 import { ProjectKnowledgeCard } from "./ProjectKnowledgeCard";
 import { ProjectSchedulesCard } from "./ProjectSchedulesCard";
+import { ProjectTasksCard } from "./ProjectTasksCard";
 import { useWorkData } from "./WorkContext";
 
 export function ProjectOverview({
@@ -112,6 +113,7 @@ export function ProjectOverview({
         <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_420px]">
           <section className="min-w-0 space-y-6">
             <ProjectConversationStarter workspaceId={workspaceId} projectId={projectId} />
+            <ProjectTasksCard workspaceId={workspaceId} projectId={projectId} />
             <ProjectConversationList
               conversationCount={project.conversationCount}
               newConversationHref={`/work/${workspaceId}/projects/${projectId}/chat`}
