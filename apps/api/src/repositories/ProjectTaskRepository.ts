@@ -1,9 +1,15 @@
 import type {
   ProjectTask,
   ProjectTaskBlockedReason,
+  ProjectTaskConstraints,
+  ProjectTaskContext,
+  ProjectTaskCriterion,
+  ProjectTaskDeliverable,
+  ProjectTaskPriority,
   ProjectTaskRunner,
   ProjectTaskSource,
   ProjectTaskStatus,
+  ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ProjectTaskRow } from "~/lib/database/schema";
@@ -17,6 +23,14 @@ export interface CreateProjectTaskParams {
   workspaceId: string;
   objective: string;
   acceptance?: string | null;
+  acceptanceCriteria?: ProjectTaskCriterion[];
+  deliverable?: ProjectTaskDeliverable | null;
+  context?: ProjectTaskContext | null;
+  constraints?: ProjectTaskConstraints | null;
+  dependsOnTaskIds?: string[];
+  requireApprovalFor?: ToolPermission[];
+  priority?: ProjectTaskPriority;
+  dueAt?: string | null;
   source: ProjectTaskSource;
   createdByUserId: number;
   assigneeUserId?: number | null;
@@ -29,6 +43,14 @@ export interface CreateProjectTaskParams {
 export interface UpdateProjectTaskParams {
   objective?: string;
   acceptance?: string | null;
+  acceptanceCriteria?: ProjectTaskCriterion[];
+  deliverable?: ProjectTaskDeliverable | null;
+  context?: ProjectTaskContext | null;
+  constraints?: ProjectTaskConstraints | null;
+  dependsOnTaskIds?: string[];
+  requireApprovalFor?: ToolPermission[];
+  priority?: ProjectTaskPriority;
+  dueAt?: string | null;
   status?: ProjectTaskStatus;
   blockedReason?: ProjectTaskBlockedReason | null;
   blockedDetail?: string | null;
@@ -51,12 +73,12 @@ export interface ListProjectTaskFilters {
   includeDone?: boolean;
 }
 
-function parseRunner(value: ProjectTaskRow["runner"]): ProjectTaskRunner | null {
-  if (!value) {
+function parseJsonColumn<T>(value: unknown): T | null {
+  if (value === null || value === undefined) {
     return null;
   }
 
-  return typeof value === "string" ? safeParseJson<ProjectTaskRunner>(value) : value;
+  return typeof value === "string" ? safeParseJson<T>(value) : (value as T);
 }
 
 function formatProjectTask(row: ProjectTaskRow): ProjectTask {
@@ -71,7 +93,15 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
     blockedReason: row.blocked_reason,
     blockedDetail: row.blocked_detail,
     stageId: row.stage_id,
-    runner: parseRunner(row.runner),
+    runner: parseJsonColumn<ProjectTaskRunner>(row.runner),
+    acceptanceCriteria: parseJsonColumn<ProjectTaskCriterion[]>(row.acceptance_criteria) ?? [],
+    deliverable: parseJsonColumn<ProjectTaskDeliverable>(row.deliverable),
+    context: parseJsonColumn<ProjectTaskContext>(row.context),
+    constraints: parseJsonColumn<ProjectTaskConstraints>(row.constraints),
+    dependsOnTaskIds: parseJsonColumn<string[]>(row.depends_on_task_ids) ?? [],
+    requireApprovalFor: parseJsonColumn<ToolPermission[]>(row.require_approval_for) ?? [],
+    priority: row.priority,
+    dueAt: row.due_at,
     createdByUserId: row.created_by_user_id,
     assigneeUserId: row.assignee_user_id,
     runnerIdentityUserId: row.runner_identity_user_id,
@@ -91,9 +121,10 @@ export class ProjectTaskRepository extends BaseRepository {
   async createTask(params: CreateProjectTaskParams): Promise<ProjectTask> {
     const row = await this.runQuery<ProjectTaskRow>(
       `INSERT INTO project_task
-        (id, project_id, workspace_id, objective, acceptance, status, source,
-         created_by_user_id, assignee_user_id, runner, stage_id, token_budget, position)
-       VALUES (?, ?, ?, ?, ?, 'backlog', ?, ?, ?, ?, ?, ?, ?)
+        (id, project_id, workspace_id, objective, acceptance, acceptance_criteria, deliverable,
+         context, constraints, depends_on_task_ids, require_approval_for, priority, due_at,
+         status, source, created_by_user_id, assignee_user_id, runner, stage_id, token_budget, position)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'backlog', ?, ?, ?, ?, ?, ?, ?)
        RETURNING *`,
       [
         generateId(),
@@ -101,6 +132,14 @@ export class ProjectTaskRepository extends BaseRepository {
         params.workspaceId,
         params.objective,
         params.acceptance ?? null,
+        JSON.stringify(params.acceptanceCriteria ?? []),
+        params.deliverable ? JSON.stringify(params.deliverable) : null,
+        params.context ? JSON.stringify(params.context) : null,
+        params.constraints ? JSON.stringify(params.constraints) : null,
+        JSON.stringify(params.dependsOnTaskIds ?? []),
+        JSON.stringify(params.requireApprovalFor ?? []),
+        params.priority ?? "normal",
+        params.dueAt ?? null,
         params.source,
         params.createdByUserId,
         params.assigneeUserId ?? null,
@@ -225,6 +264,38 @@ export class ProjectTaskRepository extends BaseRepository {
 
     if (updates.acceptance !== undefined) {
       set("acceptance", updates.acceptance);
+    }
+
+    if (updates.acceptanceCriteria !== undefined) {
+      set("acceptance_criteria", JSON.stringify(updates.acceptanceCriteria));
+    }
+
+    if (updates.deliverable !== undefined) {
+      set("deliverable", updates.deliverable ? JSON.stringify(updates.deliverable) : null);
+    }
+
+    if (updates.context !== undefined) {
+      set("context", updates.context ? JSON.stringify(updates.context) : null);
+    }
+
+    if (updates.constraints !== undefined) {
+      set("constraints", updates.constraints ? JSON.stringify(updates.constraints) : null);
+    }
+
+    if (updates.dependsOnTaskIds !== undefined) {
+      set("depends_on_task_ids", JSON.stringify(updates.dependsOnTaskIds));
+    }
+
+    if (updates.requireApprovalFor !== undefined) {
+      set("require_approval_for", JSON.stringify(updates.requireApprovalFor));
+    }
+
+    if (updates.priority !== undefined) {
+      set("priority", updates.priority);
+    }
+
+    if (updates.dueAt !== undefined) {
+      set("due_at", updates.dueAt);
     }
 
     if (updates.status !== undefined) {

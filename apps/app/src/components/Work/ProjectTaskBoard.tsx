@@ -13,6 +13,7 @@ import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { useProjectTasks } from "~/hooks/useProjectTasks";
 import { getErrorMessage, isAuthenticationError } from "~/lib/errors";
 
+import { useProjectTaskAgents } from "./useProjectTaskAgents";
 import { useWorkData } from "./WorkContext";
 
 export function ProjectTaskBoard({
@@ -23,7 +24,8 @@ export function ProjectTaskBoard({
   projectId: string;
 }) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const { workspaceQuery } = useWorkData();
+  const { projectQuery, workspaceQuery } = useWorkData();
+  const agents = useProjectTaskAgents(projectQuery.data?.capabilities);
   const { tasks, flow, isLoading, error, create, start, accept } = useProjectTasks(projectId);
 
   if (isAuthenticationError(error)) {
@@ -118,6 +120,8 @@ export function ProjectTaskBoard({
         open={isCreateOpen}
         flow={flow}
         members={members}
+        agents={agents}
+        boardTasks={tasks}
         isSubmitting={create.isPending}
         errorMessage={create.error ? getErrorMessage(create.error, "") : undefined}
         onOpenChange={setIsCreateOpen}
