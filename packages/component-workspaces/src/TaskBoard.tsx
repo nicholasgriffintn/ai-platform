@@ -20,7 +20,7 @@ import {
   SlidersHorizontal,
   Sparkles,
 } from "lucide-react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 import {
   DEFAULT_TASK_QUEUE_FILTERS,
@@ -90,7 +90,7 @@ function PipelineProgress({ task, flow }: { task: ProjectTask; flow: ProjectFlow
         const isCurrent = showsCurrentStage && index === currentIndex;
 
         return (
-          <div key={stage.id} className="flex min-w-0 flex-1 items-center gap-1 first:pl-0">
+          <Fragment key={stage.id}>
             {index > 0 ? (
               <span
                 className={`h-px min-w-1 flex-1 ${
@@ -115,7 +115,7 @@ function PipelineProgress({ task, flow }: { task: ProjectTask; flow: ProjectFlow
                     : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900"
               }`}
             />
-          </div>
+          </Fragment>
         );
       })}
     </div>

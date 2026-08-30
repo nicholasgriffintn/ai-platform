@@ -127,6 +127,9 @@ describe("TaskBoard", () => {
     expect(progress.querySelector('[title="Research"]')?.className).not.toContain(
       "border-blue-500",
     );
+    expect(
+      Array.from(progress.children).map((part) => part.getAttribute("title") ?? "connector"),
+    ).toEqual(["Research", "connector", "Publish"]);
   });
 
   it("filters queued work by search, status, and pipeline stage", () => {
