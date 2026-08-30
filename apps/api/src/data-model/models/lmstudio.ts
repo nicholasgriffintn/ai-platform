@@ -29,6 +29,16 @@ export const lmstudioModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 14.9,
+			codingIndex: 20.7,
+			agenticIndex: 3.1,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 	createModelConfig("qwen/qwen3-coder-30b", PROVIDER, {
 		name: "Qwen3 Coder 30B",
@@ -68,5 +78,15 @@ export const lmstudioModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 15.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 ]);

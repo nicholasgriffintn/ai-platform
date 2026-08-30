@@ -1803,30 +1803,6 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
     },
   }),
 
-  createModelConfig("hy3-free", PROVIDER, {
-    name: "Hy3 Free",
-    matchingModel: "hy3-free",
-    family: "hy3-free",
-    openWeights: true,
-    releaseDate: "July 6, 2026",
-    lastUpdated: "July 6, 2026",
-    modalities: {
-      input: ["text"],
-      output: ["text"],
-    },
-    supportsAttachments: false,
-    supportsTemperature: true,
-    supportsToolCalls: true,
-    supportsResponseFormat: true,
-    contextWindow: 190000,
-    maxTokens: 64000,
-    costPer1kInputTokens: 0,
-    costPer1kOutputTokens: 0,
-    reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
-    },
-  }),
   createModelConfig("gemini-3.7-flash", PROVIDER, {
     name: "Gemini 3.7 Flash",
     matchingModel: "gemini-3.7-flash",

@@ -24,6 +24,16 @@ export const regoloModelConfig: ModelConfig = createModelConfigObject([
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
   	},
+  	strengths: ["tool_use"],
+  	contextComplexity: 3,
+  	reliability: 1,
+  	speed: 5,
+  	artificialAnalysis: {
+  		intelligenceIndex: 23.8,
+  		codingIndex: 30.4,
+  		agenticIndex: 13.2,
+  		intelligenceIndexVersion: 4.1,
+  	},
   }),
   createModelConfig("qwen3-coder-next", PROVIDER, {
     name: "Qwen3 Coder Next",
@@ -43,6 +53,16 @@ export const regoloModelConfig: ModelConfig = createModelConfigObject([
   	reasoningConfig: {
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
+  	},
+  	strengths: ["tool_use"],
+  	contextComplexity: 3,
+  	reliability: 1,
+  	speed: 4,
+  	artificialAnalysis: {
+  		intelligenceIndex: 21.2,
+  		codingIndex: null,
+  		agenticIndex: null,
+  		intelligenceIndexVersion: 4.1,
   	},
   }),
   createModelConfig("apertus-70b", PROVIDER, {
@@ -190,6 +210,16 @@ export const regoloModelConfig: ModelConfig = createModelConfigObject([
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
   	},
+  	strengths: ["coding", "tool_use"],
+  	contextComplexity: 4,
+  	reliability: 3,
+  	speed: 4,
+  	artificialAnalysis: {
+  		intelligenceIndex: 51.1,
+  		codingIndex: 68.8,
+  		agenticIndex: 43.1,
+  		intelligenceIndexVersion: 4.1,
+  	},
   }),
 
   createModelConfig("gpt-oss-20b", PROVIDER, {
@@ -213,6 +243,16 @@ export const regoloModelConfig: ModelConfig = createModelConfigObject([
   	reasoningConfig: {
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
+  	},
+  	strengths: ["tool_use"],
+  	contextComplexity: 3,
+  	reliability: 1,
+  	speed: 5,
+  	artificialAnalysis: {
+  		intelligenceIndex: 14.9,
+  		codingIndex: 20.7,
+  		agenticIndex: 3.1,
+  		intelligenceIndexVersion: 4.1,
   	},
   }),
 
@@ -278,6 +318,23 @@ export const regoloModelConfig: ModelConfig = createModelConfigObject([
   	maxTokens: 4096,
   	costPer1kInputTokens: 0.0005,
   	costPer1kOutputTokens: 0.002,
+  	strengths: ["image"],
+  	contextComplexity: 1,
+  	reliability: 3,
+  	artificialAnalysis: {
+  		intelligenceIndex: null,
+  		codingIndex: null,
+  		agenticIndex: null,
+  		intelligenceIndexVersion: null,
+  		mediaScores: [{
+  			key: "text_to_imageElo",
+  			label: "Text-to-image arena",
+  			value: 1060,
+  			min: 800,
+  			max: 1400,
+  			confidenceInterval95: 8,
+  		}],
+  	},
   }),
 
   createModelConfig("qwen3-embedding-8b", PROVIDER, {
@@ -365,6 +422,15 @@ export const regoloModelConfig: ModelConfig = createModelConfigObject([
   	reasoningConfig: {
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
+  	},
+  	strengths: ["vision", "document", "tool_use"],
+  	contextComplexity: 4,
+  	reliability: 1,
+  	artificialAnalysis: {
+  		intelligenceIndex: 20.3,
+  		codingIndex: 23.5,
+  		agenticIndex: null,
+  		intelligenceIndexVersion: 4.1,
   	},
   }),
 

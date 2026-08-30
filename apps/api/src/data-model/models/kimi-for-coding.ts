@@ -26,6 +26,16 @@ export const kimiForCodingModelConfig: ModelConfig = createModelConfigObject([
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
   	},
+  	strengths: ["document", "tool_use", "coding"],
+  	contextComplexity: 4,
+  	reliability: 2,
+  	speed: 3,
+  	artificialAnalysis: {
+  		intelligenceIndex: 41.9,
+  		codingIndex: 60.8,
+  		agenticIndex: 29.6,
+  		intelligenceIndexVersion: 4.1,
+  	},
   }),
   createModelConfig("k3", PROVIDER, {
     name: "Kimi K3",

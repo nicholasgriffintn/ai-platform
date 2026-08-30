@@ -27,6 +27,17 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.0006,
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 23.8,
+			codingIndex: 30.4,
+			agenticIndex: 13.2,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 	createModelConfig("gpt-oss:20b", PROVIDER, {
 		name: "GPT OSS 20B",
@@ -46,6 +57,17 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		costPer1kInputTokens: 0.00005,
+		costPer1kOutputTokens: 0.0002,
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 14.9,
+			codingIndex: 20.7,
+			agenticIndex: 3.1,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 	createModelConfig("deepseek-v4-flash", PROVIDER, {
@@ -67,6 +89,18 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		costPer1kInputTokens: 0.00014,
+		costPer1kOutputTokens: 0.00028,
+		strengths: ["tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 28.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("deepseek-v4-pro", PROVIDER, {
@@ -87,6 +121,18 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		costPer1kInputTokens: 0.00043,
+		costPer1kOutputTokens: 0.00087,
+		strengths: ["tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 31.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -131,6 +177,18 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		costPer1kInputTokens: 0.0014,
+		costPer1kOutputTokens: 0.0044,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 35.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("glm-5.2", PROVIDER, {
@@ -153,6 +211,18 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		costPer1kInputTokens: 0.0014,
+		costPer1kOutputTokens: 0.0044,
+		strengths: ["coding", "tool_use"],
+		contextComplexity: 4,
+		reliability: 3,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 51.1,
+			codingIndex: 68.8,
+			agenticIndex: 43.1,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -198,6 +268,18 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		costPer1kInputTokens: 0.0006,
+		costPer1kOutputTokens: 0.003,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 29.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("kimi-k2.6", PROVIDER, {
@@ -218,6 +300,18 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		costPer1kInputTokens: 0.00095,
+		costPer1kOutputTokens: 0.004,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 42.8,
+			codingIndex: 56,
+			agenticIndex: 30.3,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -242,6 +336,18 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		costPer1kInputTokens: 0.00095,
+		costPer1kOutputTokens: 0.004,
+		strengths: ["vision", "document", "tool_use", "coding"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 41.9,
+			codingIndex: 60.8,
+			agenticIndex: 29.6,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -288,6 +394,18 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		costPer1kInputTokens: 0.0003,
+		costPer1kOutputTokens: 0.0012,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 33.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("minimax-m2.7", PROVIDER, {
@@ -308,6 +426,18 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		costPer1kInputTokens: 0.0003,
+		costPer1kOutputTokens: 0.0012,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 38.1,
+			codingIndex: 52.6,
+			agenticIndex: 25.6,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -331,6 +461,18 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		costPer1kInputTokens: 0.0003,
+		costPer1kOutputTokens: 0.0012,
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 44.4,
+			codingIndex: 58.6,
+			agenticIndex: 35.4,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -432,6 +574,28 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 65536,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+	createModelConfig("glm-5.3", PROVIDER, {
+		name: "GLM-5.3",
+		matchingModel: "glm-5.3",
+		family: "glm",
+		openWeights: true,
+		releaseDate: "August 14, 2026",
+		lastUpdated: "August 14, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1048576,
+		maxTokens: 131072,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

@@ -82,6 +82,16 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	maxTokens: 16384,
   	costPer1kInputTokens: 0.00057,
   	costPer1kOutputTokens: 0.002736,
+  	strengths: ["tool_use"],
+  	contextComplexity: 3,
+  	reliability: 1,
+  	speed: 2,
+  	artificialAnalysis: {
+  		intelligenceIndex: 15.5,
+  		codingIndex: null,
+  		agenticIndex: null,
+  		intelligenceIndexVersion: 4.1,
+  	},
   }),
 
   createModelConfig("gemma-3-27b-it", PROVIDER, {
@@ -104,6 +114,15 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	maxTokens: 8192,
   	costPer1kInputTokens: 0.000342,
   	costPer1kOutputTokens: 0.000684,
+  	strengths: ["vision", "document", "tool_use"],
+  	contextComplexity: 3,
+  	reliability: 1,
+  	artificialAnalysis: {
+  		intelligenceIndex: 4.8,
+  		codingIndex: null,
+  		agenticIndex: null,
+  		intelligenceIndexVersion: 4.1,
+  	},
   }),
 
   createModelConfig("gemma4", PROVIDER, {
@@ -153,6 +172,16 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	reasoningConfig: {
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
+  	},
+  	strengths: ["coding", "tool_use"],
+  	contextComplexity: 5,
+  	reliability: 3,
+  	speed: 4,
+  	artificialAnalysis: {
+  		intelligenceIndex: 51.1,
+  		codingIndex: 68.8,
+  		agenticIndex: 43.1,
+  		intelligenceIndexVersion: 4.1,
   	},
   }),
 
@@ -404,6 +433,16 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
   	},
+  	strengths: ["vision", "document", "tool_use"],
+  	contextComplexity: 4,
+  	reliability: 1,
+  	speed: 5,
+  	artificialAnalysis: {
+  		intelligenceIndex: 23.8,
+  		codingIndex: 30.4,
+  		agenticIndex: 13.2,
+  		intelligenceIndexVersion: 4.1,
+  	},
   }),
 
   createModelConfig("green-l", PROVIDER, {
@@ -544,6 +583,16 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
   	},
+  	strengths: ["vision", "document", "tool_use"],
+  	contextComplexity: 4,
+  	reliability: 2,
+  	speed: 3,
+  	artificialAnalysis: {
+  		intelligenceIndex: 42.8,
+  		codingIndex: 56,
+  		agenticIndex: 30.3,
+  		intelligenceIndexVersion: 4.1,
+  	},
   }),
 
   createModelConfig("kimi-k2.7-code", PROVIDER, {
@@ -569,6 +618,16 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	reasoningConfig: {
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
+  	},
+  	strengths: ["tool_use", "coding"],
+  	contextComplexity: 4,
+  	reliability: 2,
+  	speed: 3,
+  	artificialAnalysis: {
+  		intelligenceIndex: 41.9,
+  		codingIndex: 60.8,
+  		agenticIndex: 29.6,
+  		intelligenceIndexVersion: 4.1,
   	},
   }),
 
@@ -640,6 +699,16 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
   	},
+  	strengths: ["tool_use"],
+  	contextComplexity: 4,
+  	reliability: 1,
+  	speed: 4,
+  	artificialAnalysis: {
+  		intelligenceIndex: 33.7,
+  		codingIndex: null,
+  		agenticIndex: null,
+  		intelligenceIndexVersion: 4.1,
+  	},
   }),
 
   createModelConfig("mistral-medium-3.5-128b", PROVIDER, {
@@ -665,6 +734,16 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
   	},
+  	strengths: ["vision", "document", "tool_use"],
+  	contextComplexity: 4,
+  	reliability: 2,
+  	speed: 4,
+  	artificialAnalysis: {
+  		intelligenceIndex: 29.9,
+  		codingIndex: 46.9,
+  		agenticIndex: 19,
+  		intelligenceIndexVersion: 4.1,
+  	},
   }),
 
   createModelConfig("mistral-small-3.2-24b-instruct-2506", PROVIDER, {
@@ -686,6 +765,16 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	maxTokens: 32768,
   	costPer1kInputTokens: 0.000228,
   	costPer1kOutputTokens: 0.000456,
+  	strengths: ["vision", "document", "tool_use"],
+  	contextComplexity: 4,
+  	reliability: 1,
+  	speed: 4,
+  	artificialAnalysis: {
+  		intelligenceIndex: 9.1,
+  		codingIndex: null,
+  		agenticIndex: null,
+  		intelligenceIndexVersion: 4.1,
+  	},
   }),
 
   createModelConfig("pixtral-12b-2409", PROVIDER, {
@@ -729,6 +818,16 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	maxTokens: 16384,
   	costPer1kInputTokens: 0.001026,
   	costPer1kOutputTokens: 0.003078,
+  	strengths: ["tool_use"],
+  	contextComplexity: 3,
+  	reliability: 1,
+  	speed: 3,
+  	artificialAnalysis: {
+  		intelligenceIndex: 18.2,
+  		codingIndex: null,
+  		agenticIndex: null,
+  		intelligenceIndexVersion: 4.1,
+  	},
   }),
 
   createModelConfig("qwen3-coder-30b-a3b-instruct", PROVIDER, {
@@ -750,6 +849,16 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	maxTokens: 32768,
   	costPer1kInputTokens: 0.000285,
   	costPer1kOutputTokens: 0.001083,
+  	strengths: ["tool_use"],
+  	contextComplexity: 3,
+  	reliability: 1,
+  	speed: 4,
+  	artificialAnalysis: {
+  		intelligenceIndex: 13.6,
+  		codingIndex: null,
+  		agenticIndex: null,
+  		intelligenceIndexVersion: 4.1,
+  	},
   }),
 
   createModelConfig("qwen3.5-397b-a17b", PROVIDER, {
@@ -775,6 +884,16 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
   	},
+  	strengths: ["tool_use"],
+  	contextComplexity: 3,
+  	reliability: 1,
+  	speed: 2,
+  	artificialAnalysis: {
+  		intelligenceIndex: 32,
+  		codingIndex: null,
+  		agenticIndex: null,
+  		intelligenceIndexVersion: 4.1,
+  	},
   }),
 
   createModelConfig("qwen3.6-35b-a3b", PROVIDER, {
@@ -799,6 +918,16 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	reasoningConfig: {
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
+  	},
+  	strengths: ["vision", "document", "tool_use"],
+  	contextComplexity: 4,
+  	reliability: 1,
+  	speed: 4,
+  	artificialAnalysis: {
+  		intelligenceIndex: 24.2,
+  		codingIndex: null,
+  		agenticIndex: null,
+  		intelligenceIndexVersion: 4.1,
   	},
   }),
 

@@ -29,6 +29,15 @@ export const minimaxModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 28.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 	createModelConfig("MiniMax-M2.7", PROVIDER, {
 		name: "MiniMax M2.7",
@@ -50,6 +59,15 @@ export const minimaxModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 38.1,
+			codingIndex: 52.6,
+			agenticIndex: 25.6,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 	createModelConfig("MiniMax-M2.1", PROVIDER, {
@@ -74,6 +92,16 @@ export const minimaxModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 31.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("MiniMax-M2.5", PROVIDER, {
@@ -97,6 +125,16 @@ export const minimaxModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 33.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -169,6 +207,16 @@ export const minimaxModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 44.4,
+			codingIndex: 58.6,
+			agenticIndex: 35.4,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 ]);
