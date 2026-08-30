@@ -55,6 +55,7 @@ export function buildToolRequestContext(params: {
       approved_tools: chatOptions.approved_tools ?? [],
       enabled_tools: chatOptions.enabled_tools ?? [],
       tool_permissions_map: buildToolPermissionsMap(chatOptions.tools),
+      require_approval_for: chatOptions.require_approval_for,
       options: chatOptions.options || {},
       current_agent_id: chatOptions.current_agent_id,
       delegation_stack: chatOptions.delegation_stack,

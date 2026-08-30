@@ -25,6 +25,7 @@ export interface PermissionCheckInput {
   user?: ToolAccessSubject | null;
   toolType?: "normal" | "premium" | "byok";
   toolPermissions?: string[];
+  requireApprovalFor?: readonly ToolPermission[];
 }
 
 export interface RequestPermissionCheckInput extends PermissionCheckInput {
@@ -171,7 +172,10 @@ export class PermissionChecker {
       }
     }
 
-    const requiredApprovalFor = this.intersectPermissions(permissions, config.requiresApprovalFor);
+    const requiredApprovalFor = this.intersectPermissions(permissions, [
+      ...config.requiresApprovalFor,
+      ...(input.requireApprovalFor ?? []),
+    ]);
     const requiresApproval = requiredApprovalFor.length > 0 && toolName !== "request_approval";
 
     return {
@@ -185,7 +189,10 @@ export class PermissionChecker {
     };
   }
 
-  private intersectPermissions(permissions: ToolPermission[], candidates: ToolPermission[]) {
+  private intersectPermissions(
+    permissions: ToolPermission[],
+    candidates: readonly ToolPermission[],
+  ) {
     const candidateSet = new Set(candidates);
 
     return permissions.filter((permission) => candidateSet.has(permission));

@@ -3,6 +3,7 @@ import {
   type ProjectFlow,
   type ProjectFlowStage,
   type ProjectTask,
+  type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -16,6 +17,7 @@ export interface ResolvedTaskRuntime {
   model: string | null;
   mode: string;
   enabledTools: string[];
+  requireApprovalFor: ToolPermission[];
 }
 
 export function intersectAgentTools(
@@ -75,9 +77,10 @@ export async function resolveTaskRuntime(params: {
   return {
     stage,
     agent,
-    model: stage?.mode ? null : (task.runner?.model ?? agent?.model ?? null),
+    model: task.runner?.model ?? agent?.model ?? null,
     mode: stage?.mode ?? task.runner?.mode ?? "agent",
     enabledTools: agent ? intersectAgentTools(agent.enabled_tools, projectTools) : projectTools,
+    requireApprovalFor: stage?.requiresApprovalFor ?? [],
   };
 }
 

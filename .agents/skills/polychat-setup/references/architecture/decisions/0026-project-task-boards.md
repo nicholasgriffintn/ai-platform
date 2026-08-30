@@ -18,7 +18,7 @@ Two prior attempts at multi-agent work stopped short of this. `runPanel` (ADR 00
 
 Make the unit of work in Work a **task**: a durable, project-scoped objective that carries its own conversation and goal.
 
-Persist it as `project_task`, namespaced to avoid the existing `tasks` queue table. Board columns are the task's own lifecycle — backlog, queued, running, blocked, review, done — because status is intrinsic and never needs configuring. A project may define one **flow** whose stages layer on top; a stage names an agent, a skill, a mode, and an approval policy.
+Persist it as `project_task`, namespaced to avoid the existing `tasks` queue table. Board columns are the task's own lifecycle — backlog, queued, running, blocked, review, done — because status is intrinsic and never needs configuring. A project may define one **flow** whose stages layer on top; a stage names an agent, a skill, a mode, and an approval policy. A stage's approval policy is unioned with its mode's rather than replacing it, so a stage can raise what needs a person's say-so but never lower it.
 
 **The model never reaches `done`.** A completed goal projects to `review`; only a person accepts. `PROJECT_TASK_ACTOR_TRANSITIONS` encodes this, and `update_task` withholds `done` from the model at the tool boundary as well as the service boundary.
 

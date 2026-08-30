@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 
-import { intersectAgentTools } from "../flow";
+import { intersectAgentTools, resolveTaskRuntime } from "../flow";
 import {
   acceptProjectTask,
   createProjectTask,
@@ -278,5 +278,55 @@ describe("intersectAgentTools", () => {
 
   it("gives an agent with no declared tools exactly the project's tools", () => {
     expect(intersectAgentTools(null, ["web_search"])).toEqual(["web_search"]);
+  });
+});
+
+describe("resolveTaskRuntime", () => {
+  const flow = {
+    stages: [
+      {
+        id: "build",
+        name: "Build",
+        agentId: null,
+        skillId: null,
+        mode: "build",
+        requiresApprovalFor: ["network", "write"] as const,
+        advance: "on_human_accept" as const,
+      },
+    ],
+  };
+
+  it("carries the stage approval policy into the run", async () => {
+    const { context } = createContext();
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: { ...baseTask, stageId: "build" },
+      flow: flow as never,
+    });
+
+    expect(runtime.requireApprovalFor).toEqual(["network", "write"]);
+    expect(runtime.mode).toBe("build");
+  });
+
+  it("keeps the runner model when the stage sets a mode", async () => {
+    const { context } = createContext();
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: {
+        ...baseTask,
+        stageId: "build",
+        runner: { kind: "conversation", agentId: null, model: "gpt-5", mode: null },
+      },
+      flow: flow as never,
+    });
+
+    expect(runtime.model).toBe("gpt-5");
+  });
+
+  it("asks for no extra approvals when the task has no stage", async () => {
+    const { context } = createContext();
+    const runtime = await resolveTaskRuntime({ context, task: baseTask, flow: null });
+
+    expect(runtime.requireApprovalFor).toEqual([]);
   });
 });
