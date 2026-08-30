@@ -4,7 +4,7 @@ import {
   ConversationListSection,
   DEFAULT_WORK_CONVERSATION_LIST_FILTERS,
 } from "@ngriffin_uk/polychat-component-navigation";
-import { SidebarShell } from "@ngriffin_uk/polychat-component-ui";
+import { ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
 import { WorkSidebarNav } from "@ngriffin_uk/polychat-component-workspaces";
 import { useLocation, useNavigate, useSearchParams } from "react-router";
 
@@ -15,6 +15,7 @@ import { buildConversationGroups } from "~/lib/conversation-groups";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
+import { useProjectConversationActions } from "./useProjectConversationActions";
 import { useWorkData } from "./WorkDataContext";
 
 interface WorkSidebarProps {
@@ -54,6 +55,18 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
     : 0;
   const projectBasePath = `/work/${workspaceId ?? ""}/projects/${projectId ?? ""}`;
   const projectChatPath = `${projectBasePath}/chat`;
+  const {
+    confirmDeleteConversation,
+    conversationToDelete,
+    deletePending,
+    editConversationTitle,
+    requestDeleteConversation,
+    setConversationToDelete,
+  } = useProjectConversationActions({
+    activeConversationId,
+    projectChatPath,
+    refreshProject: projectQuery.refetch,
+  });
   const conversationGroups = buildConversationGroups(
     (project?.conversations ?? []).map((conversation) => ({
       id: conversation.id,
@@ -148,6 +161,10 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
                         activeConversationId={activeConversationId}
                         isConversationRoute={pathname === projectChatPath}
                         onSelect={selectConversation}
+                        onEditTitle={(conversationId, currentTitle) => {
+                          void editConversationTitle(conversationId, currentTitle);
+                        }}
+                        onDelete={requestDeleteConversation}
                       />
                     </ConversationListSection>
                   </div>
@@ -169,6 +186,17 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
         onSearch={() => setShowSearch(true)}
         onNavigate={closeOnMobile}
         onNewConversation={clearCurrentConversation}
+      />
+
+      <ConfirmationDialog
+        open={conversationToDelete !== null}
+        onOpenChange={(open) => !open && setConversationToDelete(null)}
+        title="Delete conversation"
+        description="Are you sure you want to delete this conversation? This action cannot be undone."
+        confirmText="Delete"
+        variant="destructive"
+        onConfirm={confirmDeleteConversation}
+        isLoading={deletePending}
       />
     </SidebarShell>
   );

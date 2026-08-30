@@ -114,6 +114,12 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
 
       await homePage.waitForConversationInHistory(generatedTitle);
 
+      await homePage.hoverConversation(generatedTitle);
+      await captureVisualSnapshots(page, `release-chat-conversation-hover-${persona}`, {
+        ...DEFAULT_VISUAL_CHECKPOINTS,
+        viewports: [{ name: "desktop", width: 1280, height: 720 }],
+      });
+
       const renamedTitle = `${persona} managed release conversation`;
 
       await homePage.renameConversation(generatedTitle, renamedTitle);

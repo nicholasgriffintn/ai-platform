@@ -3,6 +3,9 @@ import type { ReactNode } from "react";
 import { Button } from "./Button";
 import { cn } from "./utils";
 
+const hoverActionButtonClassName =
+  "min-h-0 min-w-0 border-0 p-2 rounded-lg font-normal hover:bg-off-white-highlight dark:hover:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-500";
+
 interface HoverAction {
   /** Unique identifier */
   id: string;
@@ -61,7 +64,7 @@ export function HoverActions({
           aria-label={action.label}
           icon={action.icon}
           size="icon"
-          className={action.className}
+          className={cn(hoverActionButtonClassName, action.className)}
         />
       ))}
     </div>

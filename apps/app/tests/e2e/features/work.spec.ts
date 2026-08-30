@@ -193,6 +193,7 @@ test.describe("Work experience", () => {
       await homePage.sendMessage("Use the project instructions for this Work conversation");
       await homePage.waitForChatResponse(0);
       await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
+      await homePage.hoverConversation(/Use the project instructions|Release validation chat/);
       await workPage.openProjectSurface("Sources");
       await expect(page.getByText("release-work-context.md", { exact: true })).toBeVisible();
       await captureVisualSnapshots(page, "release-work-project-conversation", {

@@ -24,8 +24,8 @@ export interface ConversationListProps {
   loadMoreRef?: Ref<HTMLDivElement>;
   loadMoreSlot?: React.ReactNode;
   onSelect: (conversationId: string | undefined) => void;
-  onEditTitle?: (conversationId: string, currentTitle: string) => void;
-  onDelete?: (conversationId: string) => void;
+  onEditTitle: (conversationId: string, currentTitle: string) => void;
+  onDelete: (conversationId: string) => void;
 }
 
 export function ConversationList({
@@ -91,7 +91,7 @@ export function ConversationList({
                   }
                   onClick={() => onSelect(conversation.id)}
                   actions={
-                    conversation.id && onEditTitle && onDelete ? (
+                    conversation.id ? (
                       <HoverActions
                         actions={[
                           {
