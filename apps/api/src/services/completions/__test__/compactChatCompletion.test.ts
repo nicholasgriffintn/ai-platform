@@ -52,6 +52,9 @@ describe("handleCompactChatCompletion", () => {
     database,
     ensureDatabase: vi.fn(),
     env,
+    repositories: {
+      conversationLocks: { isLocked: vi.fn(async () => false) },
+    } as unknown as CompactChatCompletionContext["repositories"],
     requireUser: vi.fn(() => user),
   };
 

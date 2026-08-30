@@ -55,43 +55,47 @@ struct ChatView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            MessageListView(
-                messages: messages,
-                conversationModelId: activeModelId,
-                isLoadingConversation: conversationManager.loadingConversationID == conversationManager.currentConversation?.id,
-                onSuggestionSelected: { suggestion in
-                    messageText = suggestion
-                },
-                onDismissKeyboard: {
-                    isMessageInputFocused = false
-                }
-            )
-            MessageInputView(
-                messageText: $messageText,
-                selectedAttachments: $selectedAttachments,
-                inputFocus: $isMessageInputFocused,
-                isUploadingAttachments: isUploadingAttachments,
-                isRecordingVoice: voiceRecorder.isRecording,
-                isTranscribingVoice: isTranscribingVoice,
-                uploadError: uploadError,
-                voiceError: voiceError,
-                activeModelName: activeModelName,
-                activeModelProvider: activeModelProvider,
-                onFilesPicked: uploadFiles,
-                onVoiceTapped: {
-                    isMessageInputFocused = false
-                    toggleVoiceRecording()
-                },
-                onModelTapped: {
-                    isMessageInputFocused = false
-                    showingModelSelector = true
-                },
-                onSettingsTapped: {
-                    isMessageInputFocused = false
-                    showingChatSettings = true
-                },
-                sendMessage: sendMessage
-            )
+            if conversationManager.currentConversation?.isLocked == true {
+                LockedConversationView()
+            } else {
+                MessageListView(
+                    messages: messages,
+                    conversationModelId: activeModelId,
+                    isLoadingConversation: conversationManager.loadingConversationID == conversationManager.currentConversation?.id,
+                    onSuggestionSelected: { suggestion in
+                        messageText = suggestion
+                    },
+                    onDismissKeyboard: {
+                        isMessageInputFocused = false
+                    }
+                )
+                MessageInputView(
+                    messageText: $messageText,
+                    selectedAttachments: $selectedAttachments,
+                    inputFocus: $isMessageInputFocused,
+                    isUploadingAttachments: isUploadingAttachments,
+                    isRecordingVoice: voiceRecorder.isRecording,
+                    isTranscribingVoice: isTranscribingVoice,
+                    uploadError: uploadError,
+                    voiceError: voiceError,
+                    activeModelName: activeModelName,
+                    activeModelProvider: activeModelProvider,
+                    onFilesPicked: uploadFiles,
+                    onVoiceTapped: {
+                        isMessageInputFocused = false
+                        toggleVoiceRecording()
+                    },
+                    onModelTapped: {
+                        isMessageInputFocused = false
+                        showingModelSelector = true
+                    },
+                    onSettingsTapped: {
+                        isMessageInputFocused = false
+                        showingChatSettings = true
+                    },
+                    sendMessage: sendMessage
+                )
+            }
         }
         .background(Color.polychat.background)
         .navigationTitle(conversationManager.currentConversation?.title ?? "New Chat")

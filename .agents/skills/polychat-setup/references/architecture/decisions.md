@@ -24,6 +24,7 @@ Read the relevant accepted records before changing product structure, ownership,
 - [0023](decisions/0023-agents-are-chat-completions-with-a-persona.md): Layer a saved agent's identity into the generated prompt as a persona, and keep `system_prompt` as a full override for API callers.
 - [0024](decisions/0024-turns-outlive-the-connection.md): Keep SSE and let the turn outlive the client with `waitUntil`, recover by polling for the persisted answer, and delete background mode.
 - [0025](decisions/0025-tool-result-presentation-by-shape.md): Render every tool result through one view, let tools declare a renderer id, and resolve anything undeclared from the payload's shape.
+- [0026](decisions/0026-locked-conversations-are-client-encrypted.md): Encrypt locked conversations on the device, refuse every plaintext-deriving capability at the API, and keep locked turns out of the gateway log.
 
 [context.md](context.md) holds the current domain vocabulary, workspace map, seams, and data flows.
 

@@ -7,8 +7,10 @@ import { useMemo } from "react";
 
 import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
 import { useChat } from "~/hooks/useChat";
+import { isConversationLocked } from "~/hooks/useConversationLock";
 import { useChatStore } from "~/state/stores/chatStore";
 
+import { ConversationLockControls } from "./ConversationLockControls";
 import { ShareButton } from "./ShareButton";
 
 interface ConversationProductHeaderProps {
@@ -24,6 +26,7 @@ export function ConversationProductHeader({
     () => buildAgentTraceEntries(conversation?.messages ?? []),
     [conversation?.messages],
   );
+  const isLocked = isConversationLocked(conversation);
   const title =
     currentConversationId && isLoading
       ? "Loading conversation…"
@@ -42,8 +45,12 @@ export function ConversationProductHeader({
       actions={
         <div className="flex shrink-0 items-center gap-0.5">
           <AgentTraceButton entries={traceEntries} compactOnMobile />
+          {!isLoading && currentConversationId && isAuthenticated && (
+            <ConversationLockControls conversationId={currentConversationId} />
+          )}
           {!conversation?.isLocalOnly &&
             !conversation?.project_id &&
+            !isLocked &&
             !isLoading &&
             currentConversationId &&
             isAuthenticated && (

@@ -52,6 +52,7 @@ import { sseResponse } from "~/lib/http/streaming";
 import { allowRestrictedPaths } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import conversationLockRoutes from "~/routes/conversation-lock";
 import { handleArchiveAllChatCompletions } from "~/services/completions/archiveAllChatCompletions";
 import { handleCancelChatCompletion } from "~/services/completions/cancelChatCompletion";
 import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
@@ -115,6 +116,8 @@ app.use("/*", async (context: Context, next: Next) => {
 
   await allowRestrictedPaths(context, next);
 });
+
+app.route("/", conversationLockRoutes);
 
 addRoute(app, "post", "/completions", {
   tags: ["chat"],

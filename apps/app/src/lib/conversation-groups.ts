@@ -41,6 +41,7 @@ function toGroupItem(conversation: Conversation) {
     id: conversation.id,
     title: conversation.title,
     isLocalOnly: conversation.isLocalOnly,
+    isLocked: Boolean(conversation.locked_at),
     parentConversationId: conversation.parent_conversation_id,
   };
 }

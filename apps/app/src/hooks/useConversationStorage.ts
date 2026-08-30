@@ -4,9 +4,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
 import { CHATS_QUERY_KEY } from "~/constants";
+import { persistLockedConversation } from "~/lib/chat/locked-conversation";
 import { getLocalChatScope } from "~/lib/local/local-chat-scope";
 import { localChatService } from "~/lib/local/local-chat-service";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useConversationLockStore } from "~/state/stores/conversationLockStore";
 import type { ChatRequestOptions, Conversation } from "~/types";
 
 /**
@@ -18,11 +20,14 @@ export function useConversationStorage(requestOptions?: ChatRequestOptions) {
   const { isAuthenticated, isPro, localOnlyMode, chatSettings, chatMode, user } = useChatStore();
 
   const determineStorageMode = useCallback(
-    () =>
+    (conversationId?: string) =>
       resolveConversationStorageMode(
         {
           chatMode,
           isAuthenticated,
+          isLocked: conversationId
+            ? Boolean(useConversationLockStore.getState().unlocked[conversationId])
+            : false,
           isPro,
           localOnlyMode,
           settingsLocalOnly: chatSettings.localOnly === true,
@@ -37,7 +42,13 @@ export function useConversationStorage(requestOptions?: ChatRequestOptions) {
       conversationId: string,
       updater: (conversation: Conversation | undefined) => Conversation,
     ) => {
-      const { isLocalOnly, isProjectScoped } = determineStorageMode();
+      const {
+        isLocalOnly,
+        isLocked,
+        isProjectScoped,
+        shouldPersistPlaintext,
+        shouldSyncEnvelopes,
+      } = determineStorageMode(conversationId);
 
       const currentConversation = queryClient.getQueryData<Conversation>([
         CHATS_QUERY_KEY,
@@ -55,12 +66,31 @@ export function useConversationStorage(requestOptions?: ChatRequestOptions) {
       };
 
       upsertConversationInChatCaches(queryClient, updatedConversation, {
-        includeLocalList: isLocalOnly,
-        includeRemoteLists: !isLocalOnly,
+        includeLocalList: isLocalOnly && !isLocked,
+        includeRemoteLists: !isLocalOnly || isLocked,
         localScope: getLocalChatScope(user?.id),
       });
 
-      if (isLocalOnly) {
+      // A locked conversation keeps its plaintext in memory only; the durable copy is the
+      // sealed envelope, which is why device storage is skipped rather than encrypted twice.
+      if (isLocked) {
+        if (shouldSyncEnvelopes) {
+          const conversationKey =
+            useConversationLockStore.getState().unlocked[conversationId]?.key ?? null;
+
+          if (conversationKey) {
+            await persistLockedConversation({
+              conversationId,
+              conversationKey,
+              messages: updatedConversation.messages,
+            });
+          }
+        }
+
+        return;
+      }
+
+      if (isLocalOnly && shouldPersistPlaintext) {
         await localChatService.saveLocalChat({
           ...updatedConversation,
           isLocalOnly: true,

@@ -9,6 +9,7 @@ import {
   toProviderResponseMessagePartSource,
   toProviderResponseMessages,
 } from "~/lib/chat/messages/provider-mapping";
+import { assertLockedTurnIsPermitted } from "~/lib/chat/policy/locked-conversation";
 import { buildChatPostProcessing } from "~/lib/chat/streaming/post-processing";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -55,6 +56,15 @@ export const handleCreateChatCompletions = async (req: {
   }
 
   const completionIdWithFallback = request.completion_id || `chat_${generateId()}`;
+
+  if (chatRequest.locked) {
+    await assertLockedTurnIsPermitted({
+      request: chatRequest,
+      completionId: completionIdWithFallback,
+      context: serviceContext,
+      user,
+    });
+  }
 
   if (chatRequest.connector_approval_id && !user?.id) {
     throw new AssistantError(

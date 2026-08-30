@@ -190,6 +190,7 @@ export const getChatCompletionResponseSchema = z.object({
   user_id: z.string().nullable(),
   share_id: z.string().nullable(),
   project_id: z.string().nullable().optional(),
+  locked_at: z.string().nullable().optional(),
   settings: z.record(z.string(), z.any()).optional(),
 });
 

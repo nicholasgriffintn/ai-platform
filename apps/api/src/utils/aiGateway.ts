@@ -8,15 +8,23 @@ type AiGatewayMetadataSource = {
   user?: Pick<IUser, "email" | "id">;
   platform?: ChatCompletionParameters["platform"];
   completion_id?: ChatCompletionParameters["completion_id"];
+  locked?: ChatCompletionParameters["locked"];
 };
 
-type AiGatewayCacheTtlSource = Pick<ChatCompletionParameters, "cache_ttl_seconds">;
+type AiGatewayCacheTtlSource = Pick<ChatCompletionParameters, "cache_ttl_seconds"> & {
+  locked?: ChatCompletionParameters["locked"];
+};
 
 type AiGatewayMetadataValue = string | number | bigint | boolean;
 
 export function getAiGatewayMetadataHeaders(
   params: AiGatewayMetadataSource,
 ): Record<string, AiGatewayMetadataValue> {
+  // A locked turn is the one case where the gateway must not learn who sent what.
+  if (params.locked) {
+    return {};
+  }
+
   const metadata: Record<string, AiGatewayMetadataValue | null | undefined> = {
     email: params.context?.user?.email ?? params.user?.email,
     userId: params.context?.user?.id ?? params.user?.id,
@@ -28,6 +36,11 @@ export function getAiGatewayMetadataHeaders(
 }
 
 export function resolveAiGatewayCacheTtl(params?: AiGatewayCacheTtlSource): number {
+  // Caching a locked prompt would leave readable plaintext in the gateway.
+  if (params?.locked) {
+    return 0;
+  }
+
   const ttl = params?.cache_ttl_seconds;
 
   if (typeof ttl === "number" && Number.isFinite(ttl) && ttl >= 0) {
@@ -35,4 +48,26 @@ export function resolveAiGatewayCacheTtl(params?: AiGatewayCacheTtlSource): numb
   }
 
   return DEFAULT_AI_GATEWAY_CACHE_TTL_SECONDS;
+}
+
+/**
+ * The gateway logs request and response bodies by default. "Polychat cannot read this
+ * conversation" is only true while locked turns opt out of that log.
+ */
+export function shouldCollectAiGatewayLog(params?: { locked?: boolean }): boolean {
+  return params?.locked !== true;
+}
+
+/**
+ * Every provider sends the same three gateway controls. Building them in one place is
+ * what stops a new provider from quietly logging a locked conversation.
+ */
+export function buildAiGatewayControlHeaders(
+  params: AiGatewayMetadataSource & AiGatewayCacheTtlSource,
+): Record<string, string> {
+  return {
+    "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
+    "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+    "cf-aig-collect-log": shouldCollectAiGatewayLog(params) ? "true" : "false",
+  };
 }

@@ -12,6 +12,7 @@ import {
   ConversationComposerDock,
   ConversationMessageColumn,
   GoalStatusCard,
+  LockedConversationNotice,
   WelcomeScreen,
 } from "@ngriffin_uk/polychat-component-conversation";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
@@ -47,6 +48,7 @@ import type { ChatSuggestion } from "~/lib/chat-suggestions";
 import { openExternalUrl } from "~/lib/external-navigation";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useConversationLockStore } from "~/state/stores/conversationLockStore";
 import type { ChatRequestOptions, ModelSelectionChangeHandler, ModelSelectorScope } from "~/types";
 
 import { ChatInput, type ChatInputHandle } from "./ChatInput";
@@ -55,6 +57,7 @@ import { FooterInfo } from "./FooterInfo";
 import { MessageList } from "./MessageList";
 import { useAssistantActionSubmit } from "./useAssistantActionSubmit";
 import { useAutoPlayResponses } from "./useAutoPlayResponses";
+import { useLockedConversationView } from "./useLockedConversationView";
 
 export interface ConversationThreadModeConfig {
   assistantActionRoutes?: {
@@ -107,7 +110,7 @@ interface ConversationThreadProps {
   modeConfig?: ConversationThreadModeConfig;
 }
 
-export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
+export const ConversationThread = ({ modeConfig: providedModeConfig }: ConversationThreadProps) => {
   const { copied: artifactCopied, copy: copyArtifact } = useCopyToClipboard();
 
   const navigate = useNavigate();
@@ -125,6 +128,16 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const setComposingGoal = useChatStore((state) => state.setComposingGoal);
   const startNewConversation = useChatStore((state) => state.startNewConversation);
   const { data: currentConversation } = useChat(currentConversationId);
+  const messages = useMemo(
+    () => currentConversation?.messages || [],
+    [currentConversation?.messages],
+  );
+  const {
+    capMessage: lockedCapMessage,
+    isSealed: isSealedConversation,
+    modeConfig,
+  } = useLockedConversationView(providedModeConfig, currentConversationId, messages);
+  const requestConversationUnlock = useConversationLockStore((state) => state.requestUnlock);
   const {
     goalView,
     canUseGoals,
@@ -183,10 +196,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const isStreamLoading = useIsLoading("stream-response");
   const isModelInitializing = useIsLoading("model-init");
 
-  const messages = useMemo(
-    () => currentConversation?.messages || [],
-    [currentConversation?.messages],
-  );
   const handleConnectorApproval = useCallback(
     async (approvalId: string, resolution: "approved" | "rejected") => {
       await resolveConnectorOperationApproval(approvalId, resolution);
@@ -618,7 +627,17 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     <div
       className={`relative flex h-full min-h-0 w-full flex-col ${isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""}`}
     >
-      {showWelcomeScreen ? (
+      {isSealedConversation ? (
+        <ConversationMessageColumn>
+          <LockedConversationNotice
+            onUnlock={() => {
+              if (currentConversationId) {
+                requestConversationUnlock(currentConversationId);
+              }
+            }}
+          />
+        </ConversationMessageColumn>
+      ) : showWelcomeScreen ? (
         <div
           data-header-scroll-source
           className="flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-0 py-6 sm:py-8"
@@ -662,6 +681,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           model={selectedModelConfig}
           hideSuggestions={modeConfig?.hideComposerSuggestions}
         />
+        {lockedCapMessage ? (
+          <p className="px-3 py-2 text-sm text-amber-700 dark:text-amber-400">{lockedCapMessage}</p>
+        ) : null}
         {goalView ? (
           <GoalStatusCard
             objective={goalView.objective}

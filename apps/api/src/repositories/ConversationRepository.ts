@@ -218,6 +218,7 @@ export class ConversationRepository extends BaseRepository {
       "message_count",
       "is_public",
       "share_id",
+      "locked_at",
     ];
 
     const result = this.buildUpdateQuery("conversation", updates, allowedFields, "id = ?", [
@@ -295,6 +296,7 @@ export class ConversationRepository extends BaseRepository {
 			 LEFT JOIN project p ON p.id = c.project_id AND p.archived_at IS NULL
 			 LEFT JOIN workspace w ON w.id = p.workspace_id
 			 WHERE c.is_archived = 0
+			   AND c.locked_at IS NULL
 			   AND (
 			     (c.project_id IS NULL AND c.user_id = ?)
 			     OR (

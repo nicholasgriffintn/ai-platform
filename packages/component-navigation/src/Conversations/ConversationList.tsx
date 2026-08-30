@@ -1,11 +1,12 @@
 import { HoverActions, ListItem } from "@ngriffin_uk/polychat-component-ui";
-import { CloudOff, Edit, GitBranch, Trash2 } from "lucide-react";
+import { CloudOff, Edit, GitBranch, Lock, Trash2 } from "lucide-react";
 import type { Ref } from "react";
 
 export interface ConversationSummary {
   id?: string;
   title?: string | null;
   isLocalOnly?: boolean;
+  isLocked?: boolean;
   parentConversationId?: string | null;
 }
 
@@ -84,22 +85,33 @@ export function ConversationList({
                     </>
                   }
                   label={
-                    <span data-dynamic-copy="">{conversation.title || "New conversation"}</span>
+                    conversation.isLocked ? (
+                      <span className="inline-flex items-center gap-1.5">
+                        <Lock size={14} aria-hidden="true" />
+                        <span>{conversation.title || "Locked chat"}</span>
+                      </span>
+                    ) : (
+                      <span data-dynamic-copy="">{conversation.title || "New conversation"}</span>
+                    )
                   }
                   onClick={() => onSelect(conversation.id)}
                   actions={
                     conversation.id ? (
                       <HoverActions
                         actions={[
-                          {
-                            id: "edit",
-                            icon: <Edit size={14} />,
-                            label: "Edit conversation title",
-                            onClick: (event) => {
-                              event.stopPropagation();
-                              onEditTitle(conversation.id || "", conversation.title || "");
-                            },
-                          },
+                          ...(conversation.isLocked
+                            ? []
+                            : [
+                                {
+                                  id: "edit",
+                                  icon: <Edit size={14} />,
+                                  label: "Edit conversation title",
+                                  onClick: (event: React.MouseEvent) => {
+                                    event.stopPropagation();
+                                    onEditTitle(conversation.id || "", conversation.title || "");
+                                  },
+                                },
+                              ]),
                           {
                             id: "delete",
                             icon: <Trash2 size={14} />,

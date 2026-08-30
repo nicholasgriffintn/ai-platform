@@ -2,6 +2,7 @@ import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 
 import { API_BASE_URL } from "~/constants";
 import { apiKeyService } from "~/lib/api/api-key";
+import { useConversationLockStore } from "~/state/stores/conversationLockStore";
 import type { AnonymousUser, User, UserSettings } from "~/types";
 
 import { fetchApi } from "./fetch-wrapper";
@@ -192,6 +193,8 @@ class AuthService {
       if (response.ok) {
         this.clearTokenRefresh();
         apiKeyService.removeApiKey();
+        // Signing out must take every unlocked conversation key with it.
+        useConversationLockStore.getState().lockAll();
         this.user = null;
         this.anonymousUser = null;
         this.userSettings = null;

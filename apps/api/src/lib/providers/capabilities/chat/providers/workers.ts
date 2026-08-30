@@ -6,7 +6,7 @@ import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { StorageService } from "~/lib/storage";
 import { persistGeneratedOutput } from "~/lib/storage/generated-media";
 import type { ChatCompletionParameters } from "~/types";
-import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
+import { getAiGatewayMetadataHeaders, shouldCollectAiGatewayLog } from "~/utils/aiGateway";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
 import { getLogger } from "~/utils/logger";
@@ -381,8 +381,9 @@ export class WorkersProvider extends BaseProvider {
         const modelResponse = await env.AI.run(model, body, {
           gateway: {
             id: gatewayId,
-            skipCache: false,
-            cacheTtl: 7200,
+            skipCache: params.locked === true,
+            cacheTtl: params.locked ? 0 : 7200,
+            collectLog: shouldCollectAiGatewayLog(params),
             metadata: getAiGatewayMetadataHeaders(params),
           },
         });

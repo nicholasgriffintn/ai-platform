@@ -214,7 +214,7 @@ export function useChatManager(
       };
     }
 
-    const isRemoteStoredConversation = determineStorageMode().shouldSyncRemote;
+    const isRemoteStoredConversation = determineStorageMode(currentConversationId).shouldSyncRemote;
 
     if (!isRemoteStoredConversation) {
       return {

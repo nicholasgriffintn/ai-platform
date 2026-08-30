@@ -1,4 +1,8 @@
 import { resolveConversationStorageMode } from "@ngriffin_uk/polychat-library-chat/conversation-storage-policy";
+import {
+  LOCKED_CONTEXT_CAP_MESSAGE,
+  measureLockedContext,
+} from "@ngriffin_uk/polychat-library-chat/locked-conversation-cap";
 import { readCompactionStatusMessage } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
 import {
   getMessageTextContent,
@@ -19,6 +23,7 @@ import { recoverDetachedTurn } from "~/lib/chat/turn-recovery";
 import { normaliseUsageLimits } from "~/lib/usage-limits";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useConversationLockStore } from "~/state/stores/conversationLockStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUsageStore } from "~/state/stores/usageStore";
 import type { ChatRequestOptions, Message } from "~/types";
@@ -97,17 +102,29 @@ export function useStreamingResponse(
     }> => {
       const requestSignal = controllerRef.current.signal;
       const effectiveRequestOptions = overrideRequestOptions ?? requestOptions;
+      const isLockedConversation = Boolean(
+        useConversationLockStore.getState().unlocked[conversationId],
+      );
       const storageMode = resolveConversationStorageMode(
         {
           chatMode,
           isAuthenticated,
+          isLocked: isLockedConversation,
           isPro,
           localOnlyMode,
           settingsLocalOnly: chatSettings.localOnly === true,
         },
         effectiveRequestOptions,
       );
-      const isLocal = !storageMode.shouldSyncRemote && chatMode === "local";
+      const isLocal =
+        !storageMode.shouldSyncRemote && chatMode === "local" && !isLockedConversation;
+
+      // Locked threads are never compacted on a server that cannot read them, so the
+      // composer stops at the cap rather than silently dropping the oldest turns.
+      if (isLockedConversation && measureLockedContext(messages).isOverCap) {
+        throw new Error(LOCKED_CONTEXT_CAP_MESSAGE);
+      }
+
       let response = "";
       let generatedMessage: Message | undefined;
       const generatedMessages: Message[] = [];
@@ -423,8 +440,13 @@ export function useStreamingResponse(
             requestOptions: effectiveRequestOptions,
             signal: requestSignal,
             store: shouldStore,
+            locked: isLockedConversation,
+            allowTools: !isLockedConversation,
             streamingEnabled: true,
-            useMultiModel: modelsToSend && modelsToSend.length > 1 ? true : useMultiModel,
+            useMultiModel:
+              !isLockedConversation && modelsToSend && modelsToSend.length > 1
+                ? true
+                : !isLockedConversation && useMultiModel,
           });
 
           if (shouldStore) {

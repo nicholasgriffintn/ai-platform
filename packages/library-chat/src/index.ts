@@ -9,7 +9,11 @@ export {
   type GoalSubmission,
 } from "./goal-command";
 export { getGoalMessageMarker, type GoalMessageMarker } from "./message-goal-status";
-export { resolveConversationStorageMode } from "./conversation-storage-policy";
+export {
+  canLockConversations,
+  resolveConversationStorageMode,
+} from "./conversation-storage-policy";
+export { LOCKED_CONTEXT_CAP_MESSAGE, measureLockedContext } from "./locked-conversation-cap";
 export {
   compareConversationsBySort,
   conversationActivityCutoff,

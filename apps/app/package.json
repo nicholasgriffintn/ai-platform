@@ -28,6 +28,7 @@
   "dependencies": {
     "@babel/standalone": "8.0.4",
     "@mlc-ai/web-llm": "0.2.84",
+    "@ngriffin_uk/auth-crypto": "^1.1.1",
     "@ngriffin_uk/auth-encoding": "^0.2.4",
     "@ngriffin_uk/auth-react": "^0.7.1",
     "@ngriffin_uk/polychat-component-account": "workspace:^",

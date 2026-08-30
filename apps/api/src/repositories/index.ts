@@ -11,6 +11,7 @@ import { BaseRepository } from "./BaseRepository";
 import { CapabilityConfigurationRepository } from "./CapabilityConfigurationRepository";
 import { ComposioConnectorSessionRepository } from "./ComposioConnectorSessionRepository";
 import { ConnectorOperationApprovalRepository } from "./ConnectorOperationApprovalRepository";
+import { ConversationLockRepository } from "./ConversationLockRepository";
 import { ConversationRepository } from "./ConversationRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
 import { GoalRepository } from "./GoalRepository";
@@ -41,6 +42,7 @@ export {
   AuthChallengeRepository,
   AuditRepository,
   BaseRepository,
+  ConversationLockRepository,
   ConversationRepository,
   CapabilityConfigurationRepository,
   ComposioConnectorSessionRepository,
@@ -76,6 +78,7 @@ export class RepositoryManager {
   private userSettingsRepo: UserSettingsRepository;
   private capabilityConfigurationRepo: CapabilityConfigurationRepository;
   private conversationRepo: ConversationRepository;
+  private conversationLockRepo: ConversationLockRepository;
   private composioConnectorSessionRepo: ComposioConnectorSessionRepository;
   private connectorOperationApprovalRepo: ConnectorOperationApprovalRepository;
   private messageRepo: MessageRepository;
@@ -108,6 +111,7 @@ export class RepositoryManager {
     this.userSettingsRepo = new UserSettingsRepository(env);
     this.capabilityConfigurationRepo = new CapabilityConfigurationRepository(env);
     this.conversationRepo = new ConversationRepository(env);
+    this.conversationLockRepo = new ConversationLockRepository(env);
     this.composioConnectorSessionRepo = new ComposioConnectorSessionRepository(env);
     this.connectorOperationApprovalRepo = new ConnectorOperationApprovalRepository(env);
     this.messageRepo = new MessageRepository(env);
@@ -177,6 +181,10 @@ export class RepositoryManager {
 
   public get conversations(): ConversationRepository {
     return this.conversationRepo;
+  }
+
+  public get conversationLocks(): ConversationLockRepository {
+    return this.conversationLockRepo;
   }
 
   public get goals(): GoalRepository {

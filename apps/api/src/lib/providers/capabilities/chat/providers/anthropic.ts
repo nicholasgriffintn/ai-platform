@@ -8,7 +8,7 @@ import { formatProviderError } from "~/lib/providers/utils/errors";
 import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
-import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
+import { buildAiGatewayControlHeaders } from "~/utils/aiGateway";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import {
   calculateReasoningBudget,
@@ -172,8 +172,7 @@ export class AnthropicProvider extends BaseProvider {
           "x-api-key": apiKey,
           "anthropic-version": "2023-06-01",
           "Content-Type": "application/json",
-          "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-          "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+          ...buildAiGatewayControlHeaders(params),
         };
 
         const endpoint = `https://gateway.ai.cloudflare.com/v1/${params.env.ACCOUNT_ID}/${gatewayId}/anthropic/v1/messages/count_tokens`;

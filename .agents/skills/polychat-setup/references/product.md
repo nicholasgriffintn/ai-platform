@@ -24,6 +24,16 @@ Do not reintroduce global apps or recipes as another top-level product mode. Cap
 
 The normal starting scope is `apps/app` plus `apps/api`. Add other deployable components only when the user needs their capability.
 
+## Respect what a locked conversation gives up
+
+A Pro user can lock a personal conversation. It is then encrypted on their device with a passkey or a password, and Polychat stores only wrapped keys and sealed envelopes. The model provider still receives plaintext, because a model cannot answer ciphertext, and any copy that claims otherwise is wrong.
+
+- Locking removes tools, retrieval, memory, attachments, sharing, search, titles, projects, agents, goals, and server-side compaction. That list is the feature, not a gap to close.
+- Locking an existing conversation destroys the plaintext and files the server holds for it. Confirm it explicitly; it cannot be undone.
+- There is no password reset. Every lock carries a recovery key, shown once.
+- Replies stop when the tab closes, because a locked turn has nowhere to save its answer.
+- iOS lists locked conversations and points at the web app. Do not render envelopes as message text anywhere.
+
 ## Preserve the ownership model
 
 - A workspace membership grants access to its active projects; roles separately protect management operations.

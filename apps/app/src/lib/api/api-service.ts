@@ -23,6 +23,7 @@ import {
   type ConversationUpdateRequest,
   type StreamChatCompletionsParams,
 } from "./services/chat-service";
+import { ConversationLockService } from "./services/conversation-lock-service";
 import { ResearchService } from "./services/research-service";
 import { SubscriptionService } from "./services/subscription-service";
 import { UploadService, type UploadFileOptions } from "./services/upload-service";
@@ -39,6 +40,7 @@ class ApiService {
   private static instance: ApiService;
 
   private chatService: ChatService;
+  private conversationLockService: ConversationLockService;
   private audioService: AudioService;
   private agentService: AgentService;
   private userService: UserService;
@@ -48,6 +50,7 @@ class ApiService {
 
   private constructor() {
     this.chatService = new ChatService(getHeaders);
+    this.conversationLockService = new ConversationLockService(getHeaders);
     this.audioService = new AudioService(getHeaders);
     this.agentService = new AgentService(getHeaders);
     this.userService = new UserService(getHeaders);
@@ -79,6 +82,10 @@ class ApiService {
   }): Promise<number> => {
     return this.chatService.setAllConversationsArchived(options);
   };
+
+  get conversationLocks(): ConversationLockService {
+    return this.conversationLockService;
+  }
 
   getChat = (
     completion_id: string,

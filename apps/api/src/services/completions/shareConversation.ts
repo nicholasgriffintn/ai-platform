@@ -1,5 +1,6 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
+import { assertConversationNotLocked } from "~/services/conversations/lock";
 
 export async function handleShareConversation(
   context: ServiceContext,
@@ -8,6 +9,8 @@ export async function handleShareConversation(
   const user = context.requireUser();
 
   context.ensureDatabase();
+
+  await assertConversationNotLocked(context, completion_id, "Sharing");
 
   const conversationManager = ConversationManager.getInstance({
     database: context.database,

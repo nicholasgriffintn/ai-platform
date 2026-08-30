@@ -216,7 +216,7 @@ export function useConversationActions(
         setIsBranching(true);
 
         const newConversationId = createConversationId();
-        const shouldStore = determineStorageMode().shouldSyncRemote;
+        const shouldStore = determineStorageMode(currentConversationId).shouldSyncRemote;
         let branchConversation = createBranchConversation({
           conversation,
           conversationId: newConversationId,

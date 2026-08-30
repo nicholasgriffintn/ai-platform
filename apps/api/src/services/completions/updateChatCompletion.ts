@@ -6,6 +6,7 @@ import {
 } from "~/lib/chat/messages/branch-cloning";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
+import { assertConversationNotLocked } from "~/services/conversations/lock";
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -25,6 +26,8 @@ export const handleUpdateChatCompletion = async (
   const user = context.requireUser();
 
   context.ensureDatabase();
+
+  await assertConversationNotLocked(context, completion_id, "Editing stored messages");
 
   const conversationManager = ConversationManager.getInstance({
     database: context.database,

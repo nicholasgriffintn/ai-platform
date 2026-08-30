@@ -359,6 +359,7 @@ export const conversation = sqliteTable(
     parent_conversation_id: text().references(() => conversation.id),
     parent_message_id: text(),
     project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    locked_at: text(),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
@@ -381,6 +382,73 @@ export const conversation = sqliteTable(
 );
 
 export type Conversation = typeof conversation.$inferSelect;
+
+export const conversationLock = sqliteTable("conversation_lock", {
+  conversation_id: text()
+    .primaryKey()
+    .references(() => conversation.id, { onDelete: "cascade" }),
+  version: integer().notNull().default(1),
+  title_envelope: text({ mode: "json" }).$type<Record<string, unknown>>(),
+  created_at: text()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updated_at: text()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+});
+
+export type ConversationLockRow = typeof conversationLock.$inferSelect;
+
+export const conversationLockKey = sqliteTable(
+  "conversation_lock_key",
+  {
+    id: text().primaryKey(),
+    conversation_id: text()
+      .notNull()
+      .references(() => conversation.id, { onDelete: "cascade" }),
+    type: text({ enum: ["passkey", "password", "recovery"] }).notNull(),
+    credential_id: text(),
+    label: text(),
+    salt: text().notNull(),
+    kdf: text(),
+    kdf_iterations: integer(),
+    wrapped_key: text({ mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    last_used_at: text(),
+  },
+  (table) => ({
+    conversationIdx: index("conversation_lock_key_conversation_id_idx").on(table.conversation_id),
+    credentialIdx: uniqueIndex("conversation_lock_key_credential_idx")
+      .on(table.conversation_id, table.credential_id)
+      .where(sql`${table.credential_id} IS NOT NULL`),
+  }),
+);
+
+export type ConversationLockKeyRow = typeof conversationLockKey.$inferSelect;
+
+export const lockedMessage = sqliteTable(
+  "locked_message",
+  {
+    id: text().primaryKey(),
+    conversation_id: text()
+      .notNull()
+      .references(() => conversation.id, { onDelete: "cascade" }),
+    seq: integer().notNull(),
+    role: text({ enum: ["user", "assistant"] }).notNull(),
+    envelope: text({ mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    conversationIdx: index("locked_message_conversation_id_idx").on(table.conversation_id),
+    seqIdx: uniqueIndex("locked_message_conversation_seq_idx").on(table.conversation_id, table.seq),
+  }),
+);
+
+export type LockedMessageRow = typeof lockedMessage.$inferSelect;
 
 export const goal = sqliteTable(
   "goal",

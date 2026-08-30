@@ -250,7 +250,9 @@ export const chatCompletionMessageSchema = z
 
 export const chatResponseFormatSchema = z.union([
   z.object({ type: z.literal("text").describe("Plain text response format.") }),
-  z.object({ type: z.literal("json_object").describe("JSON object response format.") }),
+  z.object({
+    type: z.literal("json_object").describe("JSON object response format."),
+  }),
   z.object({
     type: z.literal("json_schema").describe("JSON schema response format."),
     json_schema: z
@@ -553,6 +555,12 @@ export const chatCompletionsRequestFieldsSchema = z.object({
   max_tool_calls: z.number().optional().describe("Maximum provider tool calls."),
   safety_identifier: z.string().optional().describe("Provider safety identifier."),
   store: z.boolean().optional().describe("Whether to store the conversation and response."),
+  locked: z
+    .boolean()
+    .optional()
+    .describe(
+      "Whether this turn belongs to a password-locked conversation. Locked turns are never persisted, logged, or cached, and refuse every capability that would derive plaintext.",
+    ),
   completion_id: z.string().optional().describe("Existing or new completion ID."),
   platform: z.string().min(1).optional().describe("Client platform sending the request."),
   options: chatRequestOptionsSchema

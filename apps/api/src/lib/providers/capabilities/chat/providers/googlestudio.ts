@@ -8,7 +8,7 @@ import {
 } from "~/lib/providers/utils/googleStudio";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
-import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
+import { buildAiGatewayControlHeaders } from "~/utils/aiGateway";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { omitUndefinedValues } from "~/utils/objects";
 import { getToolsForProvider } from "~/utils/parameters";
@@ -44,8 +44,7 @@ export class GoogleStudioProvider extends BaseProvider {
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
       "x-goog-api-key": apiKey,
       "Content-Type": "application/json",
-      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-      "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+      ...buildAiGatewayControlHeaders(params),
     };
   }
 

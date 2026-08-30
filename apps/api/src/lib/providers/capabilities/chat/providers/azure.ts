@@ -3,7 +3,7 @@ import { fetchAIResponse } from "~/lib/providers/lib/fetch";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
-import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
+import { buildAiGatewayControlHeaders } from "~/utils/aiGateway";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { detectStreaming } from "~/utils/streaming";
 
@@ -77,8 +77,7 @@ export class AzureOpenAIProvider extends BaseProvider {
       "Content-Type": "application/json",
       "api-key": token,
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
-      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-      "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+      ...buildAiGatewayControlHeaders(params),
     };
   }
 

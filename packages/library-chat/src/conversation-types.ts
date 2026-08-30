@@ -261,6 +261,7 @@ export interface Conversation {
   is_public?: boolean;
   share_id?: string;
   is_archived?: boolean;
+  locked_at?: string | null;
 }
 
 export type ConversationArchiveFilter = SchemaConversationArchiveFilter;

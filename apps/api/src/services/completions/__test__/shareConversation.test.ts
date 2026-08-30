@@ -36,7 +36,9 @@ describe("handleShareConversation", () => {
       user: mockUser,
       ensureDatabase: vi.fn(),
       database: {} as any,
-      repositories: {} as any,
+      repositories: {
+        conversationLocks: { isLocked: vi.fn().mockResolvedValue(false) },
+      } as any,
       requireUser: vi.fn().mockReturnValue(mockUser),
     };
 

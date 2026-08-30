@@ -71,6 +71,7 @@ export * from "./chat-stream";
 export * from "./capability-discovery";
 export * from "./skills";
 export * from "./compaction-status";
+export * from "./conversation-lock";
 export * from "./conversation-replacement";
 export * from "./conversation-title";
 export * from "./council";

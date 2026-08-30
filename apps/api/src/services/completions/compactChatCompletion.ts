@@ -7,11 +7,12 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { SessionManager } from "~/lib/session/SessionManager";
 import { acquireThread, releaseThread } from "~/services/conversations/coordinator/client";
+import { assertConversationNotLocked } from "~/services/conversations/lock";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export type CompactChatCompletionContext = Pick<
   ServiceContext,
-  "database" | "ensureDatabase" | "env" | "requireUser"
+  "database" | "ensureDatabase" | "env" | "repositories" | "requireUser"
 >;
 
 export async function handleCompactChatCompletion(
@@ -21,6 +22,8 @@ export async function handleCompactChatCompletion(
   const user = context.requireUser();
 
   context.ensureDatabase();
+
+  await assertConversationNotLocked(context, completion_id, "Compaction");
 
   const lock = await acquireThread({
     env: context.env,

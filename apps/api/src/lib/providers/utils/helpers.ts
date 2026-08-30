@@ -1,5 +1,5 @@
 import type { ChatCompletionParameters } from "~/types";
-import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
+import { buildAiGatewayControlHeaders } from "~/utils/aiGateway";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { redactSensitiveTokens } from "~/utils/redaction";
 
@@ -28,8 +28,7 @@ export function buildAiGatewayHeaders(
     "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
     Authorization: `Bearer ${apiKey}`,
     "Content-Type": "application/json",
-    "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-    "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+    ...buildAiGatewayControlHeaders(params),
   };
 }
 

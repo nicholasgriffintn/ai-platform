@@ -40,15 +40,18 @@ class ConversationManager: ObservableObject {
             let response = try await apiClient.fetchConversations()
 
             conversations = response.conversations.map { summary in
-                Conversation(
+                let isLocked = summary.lockedAt != nil
+
+                return Conversation(
                     id: summary.id,
-                    title: summary.title ?? "New Conversation",
+                    title: summary.title ?? (isLocked ? "Locked chat" : "New Conversation"),
                     messages: [],
                     createdAt: AppDateParser.parse(summary.createdAt, fallback: Date()),
                     modelId: summary.model,
                     isLoadedFromAPI: true,
                     lastMessageAt: AppDateParser.parse(summary.lastMessageAt ?? summary.updatedAt),
-                    messageCount: summary.messageCount ?? summary.messages.count
+                    messageCount: summary.messageCount ?? summary.messages.count,
+                    isLocked: isLocked
                 )
             }
 
@@ -79,6 +82,13 @@ class ConversationManager: ObservableObject {
     
     func loadConversationMessages(_ conversation: Conversation) async {
         guard !Task.isCancelled else {
+            return
+        }
+
+        // A locked conversation has no plaintext to fetch; only the web app holds its key.
+        if conversation.isLocked {
+            loadingConversationID = nil
+            currentConversation = conversation
             return
         }
 

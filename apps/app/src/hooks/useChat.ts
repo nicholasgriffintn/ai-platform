@@ -13,10 +13,12 @@ import { useMemo } from "react";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
+import { loadLockedConversationMessages } from "~/lib/chat/locked-conversation";
 import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
 import { getLocalChatScope } from "~/lib/local/local-chat-scope";
 import { localChatService } from "~/lib/local/local-chat-service";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useConversationLockStore } from "~/state/stores/conversationLockStore";
 import type { ChatRequestOptions, Conversation, ConversationListOptions, Message } from "~/types";
 
 import { useConversationStorage } from "./useConversationStorage";
@@ -97,6 +99,33 @@ export function useChats(options: ConversationListOptions = {}) {
   };
 }
 
+/**
+ * A locked conversation arrives with no messages and no title. The transcript only exists
+ * if this tab still holds the key, so an unopened lock renders as a sealed placeholder
+ * rather than an empty chat.
+ */
+async function loadLockedConversation(
+  conversationId: string,
+  conversation: Conversation,
+): Promise<Conversation> {
+  const unlocked = useConversationLockStore.getState().unlocked[conversationId];
+
+  if (!unlocked) {
+    return { ...conversation, title: "Locked chat", messages: [] };
+  }
+
+  const messages = await loadLockedConversationMessages({
+    conversationId,
+    conversationKey: unlocked.key,
+  });
+
+  return {
+    ...conversation,
+    title: unlocked.title ?? "Locked chat",
+    messages,
+  };
+}
+
 export function useChat(completion_id: string | undefined) {
   const {
     isAuthenticated,
@@ -135,6 +164,10 @@ export function useChat(completion_id: string | undefined) {
 
         if (remoteChat) {
           markConversationRemoteAvailable(completion_id);
+        }
+
+        if (remoteChat?.locked_at) {
+          return loadLockedConversation(completion_id, remoteChat);
         }
 
         return preserveOptimisticMessages(remoteChat || localChat, getCachedConversation());
@@ -336,16 +369,23 @@ export function useGenerateTitle(requestOptions?: ChatRequestOptions) {
       const localChat = await localChatService.getLocalChat(completion_id);
       const isLocalOnly = localChat?.isLocalOnly || false;
 
-      const storageMode = determineStorageMode();
+      const storageMode = determineStorageMode(completion_id);
       let newTitle;
 
-      if (!storageMode.shouldSyncRemote || (isLocalOnly && !storageMode.isProjectScoped)) {
+      if (
+        storageMode.isLocked ||
+        !storageMode.shouldSyncRemote ||
+        (isLocalOnly && !storageMode.isProjectScoped)
+      ) {
+        // A locked thread cannot be titled by the server, which cannot read it.
         newTitle = createTemporaryConversationTitle(messages);
       } else {
         newTitle = await apiService.generateTitle(completion_id, messages);
       }
 
-      await localChatService.updateLocalChatTitle(completion_id, newTitle);
+      if (!storageMode.isLocked) {
+        await localChatService.updateLocalChatTitle(completion_id, newTitle);
+      }
 
       return newTitle;
     },

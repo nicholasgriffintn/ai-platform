@@ -503,9 +503,11 @@ public struct ConversationListResponse: Codable {
         public let messages: [String]
         public let lastMessageAt: String?
         public let messageCount: Int?
+        public let lockedAt: String?
 
         enum CodingKeys: String, CodingKey {
             case id, title, model, messages
+            case lockedAt = "locked_at"
             case createdAt = "created_at"
             case updatedAt = "updated_at"
             case isArchived = "is_archived"
@@ -528,6 +530,7 @@ public struct ConversationListResponse: Codable {
             messages = try container.decodeIfPresent([String].self, forKey: .messages) ?? []
             lastMessageAt = try container.decodeIfPresent(String.self, forKey: .lastMessageAt)
             messageCount = try container.decodeIfPresent(Int.self, forKey: .messageCount)
+            lockedAt = try container.decodeIfPresent(String.self, forKey: .lockedAt)
         }
     }
 }

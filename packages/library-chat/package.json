@@ -183,6 +183,12 @@
       "types": "./dist/weather.d.ts",
       "import": "./dist/weather.js",
       "require": "./dist/weather.cjs"
+    },
+    "./locked-conversation-cap": {
+      "polychat-source": "./src/locked-conversation-cap.ts",
+      "types": "./dist/locked-conversation-cap.d.ts",
+      "import": "./dist/locked-conversation-cap.js",
+      "require": "./dist/locked-conversation-cap.cjs"
     }
   },
   "publishConfig": {

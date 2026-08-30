@@ -89,6 +89,7 @@ export interface StreamChatCompletionsParams {
   provider?: string;
   requestOptions?: ChatRequestOptions;
   selectedTools?: string[];
+  locked?: boolean;
   signal: AbortSignal;
   store?: boolean;
   streamingEnabled?: boolean;
@@ -558,6 +559,7 @@ export class ChatService {
     models,
     onProgress,
     onStateChange,
+    locked = false,
     provider,
     requestOptions,
     selectedTools,
@@ -607,7 +609,7 @@ export class ChatService {
       completion_id: completionId,
       messages: formattedMessages,
       platform: "web",
-      store,
+      store: locked ? false : store,
       stream: streamingEnabled,
       ...generationSettings,
       models,
@@ -622,6 +624,23 @@ export class ChatService {
       tool_options: allowTools ? hostedToolOptions : undefined,
       options: featureOptions,
     };
+
+    // Locked turns must arrive with nothing that would make the API write plaintext.
+    // The API refuses them anyway; stripping here keeps the composer honest about it.
+    if (locked) {
+      Object.assign(requestBody, {
+        locked: true,
+        approved_tools: undefined,
+        cache_ttl_seconds: 0,
+        compaction: "off",
+        enabled_tools: undefined,
+        models: undefined,
+        rag_options: undefined,
+        tool_options: undefined,
+        use_multi_model: false,
+        use_rag: false,
+      });
+    }
 
     if (model !== undefined) {
       requestBody.model = model;

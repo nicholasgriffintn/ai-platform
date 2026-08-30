@@ -10,6 +10,7 @@ export default defineConfig({
     "src/goal-command.ts",
     "src/message-goal-status.ts",
     "src/conversation-storage-policy.ts",
+    "src/locked-conversation-cap.ts",
     "src/conversation-types.ts",
     "src/message-parts.ts",
     "src/message-speech.ts",

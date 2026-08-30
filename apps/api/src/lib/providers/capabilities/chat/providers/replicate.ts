@@ -8,7 +8,7 @@ import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { formatProviderError } from "~/lib/providers/utils/errors";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters, IEnv } from "~/types";
-import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
+import { buildAiGatewayControlHeaders } from "~/utils/aiGateway";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
 import { appendUrlPath } from "~/utils/urls";
@@ -65,8 +65,7 @@ export class ReplicateProvider extends BaseProvider {
       Authorization: `Token ${apiKey}`,
       "Content-Type": "application/json",
       Prefer: `wait=${waitSeconds}`,
-      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-      "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+      ...buildAiGatewayControlHeaders(params),
     };
   }
 
@@ -196,8 +195,7 @@ export class ReplicateProvider extends BaseProvider {
     const pollHeaders: Record<string, string> = {
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
       Authorization: `Token ${apiKey}`,
-      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-      "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+      ...buildAiGatewayControlHeaders(params),
     };
 
     const response = await fetch(await this.resolvePredictionUrl(metadata.id, params.env), {

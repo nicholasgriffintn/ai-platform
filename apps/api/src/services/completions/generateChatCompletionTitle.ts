@@ -5,6 +5,7 @@ import { createInitialConversationTitle } from "~/lib/conversation/title-source"
 import { ConversationManager } from "~/lib/conversationManager";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getAuxiliaryModel } from "~/lib/providers/models";
+import { assertConversationNotLocked } from "~/services/conversations/lock";
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -25,6 +26,9 @@ export const handleGenerateChatCompletionTitle = async (
   const user = context.requireUser();
 
   context.ensureDatabase();
+
+  await assertConversationNotLocked(context, completion_id, "Title generation");
+
   const conversationManager = ConversationManager.getInstance({
     database: context.database,
     user,

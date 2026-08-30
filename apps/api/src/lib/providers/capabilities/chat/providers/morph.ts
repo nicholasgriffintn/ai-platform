@@ -1,5 +1,5 @@
 import type { ChatCompletionParameters } from "~/types";
-import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
+import { buildAiGatewayControlHeaders } from "~/utils/aiGateway";
 
 import { BaseProvider } from "./base";
 
@@ -26,8 +26,7 @@ export class MorphProvider extends BaseProvider {
     return {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-      "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+      ...buildAiGatewayControlHeaders(params),
     };
   }
 }
