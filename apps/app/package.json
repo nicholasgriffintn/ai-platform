@@ -119,7 +119,7 @@
     "rollup-plugin-visualizer": "7.1.1",
     "terser": "5.50.0",
     "typescript": "catalog:",
-    "vite": "8.2.1",
+    "vite": "8.2.2",
     "vitest": "catalog:",
     "wrangler": "catalog:"
   }
