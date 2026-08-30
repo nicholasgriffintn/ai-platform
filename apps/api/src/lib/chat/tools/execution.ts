@@ -167,6 +167,7 @@ export const handleToolCalls = async (
         user: req.user,
         toolPermissions: toolPermissionsMap[functionName],
         approvedTools: req.request?.approved_tools,
+        requireApprovalFor: req.request?.require_approval_for,
       });
 
       if (!permissionResult.allowed) {

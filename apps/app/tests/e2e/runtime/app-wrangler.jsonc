@@ -2,19 +2,13 @@
   "$schema": "../../../node_modules/wrangler/config-schema.json",
   "name": "polychat-e2e-app",
   "compatibility_date": "2026-08-28",
-  "compatibility_flags": [
-    "nodejs_compat",
-    "nodejs_compat_populate_process_env"
-  ],
+  "compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env"],
   "main": "../../../build/server/index.js",
   "no_bundle": true,
   "rules": [
     {
       "type": "ESModule",
-      "globs": [
-        "**/*.js",
-        "**/*.mjs"
-      ],
+      "globs": ["**/*.js", "**/*.mjs"],
     },
   ],
   "assets": {

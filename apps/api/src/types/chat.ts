@@ -6,6 +6,7 @@ import type {
   MessageRole as SchemaMessageRole,
   MessagePart as SchemaMessagePart,
   RecipeConnectorProvider,
+  ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "../lib/context/serviceContext";
@@ -196,6 +197,7 @@ export interface IBody {
   approved_tools?: string[];
   connector_approval_id?: string;
   tool_permissions_map?: Record<string, string[]>;
+  require_approval_for?: ToolPermission[];
   verbosity?: VerbosityLevel;
   role?: ChatRole;
   [other: string]: any;
@@ -292,6 +294,8 @@ type InternalExecutionParams = {
   delegation_stack?: string[];
   // Maximum delegation depth allowed
   max_delegation_depth?: number;
+  // Extra tool permissions this turn must seek approval for, on top of its mode's.
+  require_approval_for?: ToolPermission[];
 };
 
 export type ChatRequestOptions = SchemaChatRequestOptions;

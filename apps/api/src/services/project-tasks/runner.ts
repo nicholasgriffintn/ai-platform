@@ -217,6 +217,7 @@ export async function runProjectTaskDispatch(params: {
         stream: false,
         store: true,
         enabled_tools: runtime.enabledTools,
+        require_approval_for: runtime.requireApprovalFor,
         tool_choice: "auto",
         metadata: { project_id: claimed.projectId },
         ...(runtime.agent?.system_prompt ? { system_prompt: runtime.agent.system_prompt } : {}),

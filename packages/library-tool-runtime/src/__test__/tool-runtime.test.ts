@@ -188,6 +188,36 @@ describe("PermissionChecker", () => {
     ).toMatchObject({ allowed: true });
   });
 
+  it("requires approval for a permission the caller adds beyond the mode's", () => {
+    expect(
+      checker.checkToolAccess({
+        toolName: "web_search",
+        mode: "chat",
+        toolPermissions: ["network"],
+      }),
+    ).toMatchObject({ allowed: true, requiresApproval: false });
+
+    expect(
+      checker.checkToolAccess({
+        toolName: "web_search",
+        mode: "chat",
+        toolPermissions: ["network"],
+        requireApprovalFor: ["network"],
+      }),
+    ).toMatchObject({ allowed: true, requiresApproval: true });
+  });
+
+  it("ignores an added permission the tool does not hold", () => {
+    expect(
+      checker.checkToolAccess({
+        toolName: "web_search",
+        mode: "chat",
+        toolPermissions: ["network"],
+        requireApprovalFor: ["sandbox"],
+      }),
+    ).toMatchObject({ allowed: true, requiresApproval: false });
+  });
+
   it("blocks a tool whose permission the mode denies", () => {
     expect(
       checker.checkToolAccess({
