@@ -65,21 +65,16 @@ export const projectTaskStatusLabels: Record<ProjectTaskStatus, string> = {
   cancelled: "Cancelled",
 };
 
-export const PROJECT_TASK_ACTOR_TRANSITIONS = {
-  user: [
-    "backlog",
-    "queued",
-    "running",
-    "blocked",
-    "review",
-    "done",
-    "cancelled",
-  ] as ProjectTaskStatus[],
-  model: ["backlog", "queued", "review", "cancelled"] as ProjectTaskStatus[],
-  system: ["queued", "running", "blocked", "review"] as ProjectTaskStatus[],
-} as const;
+export type ProjectTaskActor = "user" | "model" | "system";
 
-export type ProjectTaskActor = keyof typeof PROJECT_TASK_ACTOR_TRANSITIONS;
+export const PROJECT_TASK_ACTOR_TRANSITIONS: Record<
+  ProjectTaskActor,
+  readonly ProjectTaskStatus[]
+> = {
+  user: ["backlog", "queued", "running", "blocked", "review", "done", "cancelled"],
+  model: ["backlog", "queued", "review", "cancelled"],
+  system: ["queued", "running", "blocked", "review"],
+};
 
 export function canActorSetProjectTaskStatus(
   actor: ProjectTaskActor,
