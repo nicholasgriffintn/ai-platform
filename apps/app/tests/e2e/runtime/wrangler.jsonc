@@ -4,10 +4,15 @@
   "rules": [
     {
       "type": "Text",
-      "globs": ["**/*.md"],
+      "globs": [
+        "**/*.md"
+      ],
       "fallthrough": true,
     },
   ],
-  "compatibility_date": "2026-06-16",
-  "compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env"],
+  "compatibility_date": "2026-08-28",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "nodejs_compat_populate_process_env"
+  ],
 }
