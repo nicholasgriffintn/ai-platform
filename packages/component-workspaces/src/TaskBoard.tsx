@@ -17,9 +17,17 @@ import {
   Pause,
   Play,
   Settings2,
+  SlidersHorizontal,
   Sparkles,
 } from "lucide-react";
+import { useState } from "react";
 
+import {
+  DEFAULT_TASK_QUEUE_FILTERS,
+  filterTaskQueue,
+  type TaskQueueFilters,
+} from "./task-board-filters";
+import { TaskBoardFilters } from "./TaskBoardFilters";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 
 const NO_PENDING_TASKS: string[] = [];
@@ -65,27 +73,43 @@ function PipelineProgress({ task, flow }: { task: ProjectTask; flow: ProjectFlow
     return null;
   }
 
-  const currentStageId = task.stageId ?? flow.stages[0]?.id;
+  const showsCurrentStage =
+    task.status === "queued" ||
+    task.status === "running" ||
+    task.status === "blocked" ||
+    task.status === "review";
+  const currentStageId = task.stageId ?? (showsCurrentStage ? flow.stages[0]?.id : null);
   const currentIndex = flow.stages.findIndex((stage) => stage.id === currentStageId);
+  const isDone = task.status === "done";
 
   return (
     <div className="flex min-w-0 items-center gap-1" aria-label="Pipeline progress">
       {flow.stages.map((stage, index) => {
-        const isComplete = task.status === "done" || (currentIndex >= 0 && index < currentIndex);
-        const isCurrent = index === currentIndex && task.status !== "done";
+        const isComplete =
+          isDone || (task.status !== "backlog" && currentIndex >= 0 && index < currentIndex);
+        const isCurrent = showsCurrentStage && index === currentIndex;
 
         return (
           <div key={stage.id} className="flex min-w-0 flex-1 items-center gap-1 first:pl-0">
             {index > 0 ? (
               <span
-                className={`h-px min-w-1 flex-1 ${isComplete || isCurrent ? "bg-blue-400" : "bg-zinc-200 dark:bg-zinc-800"}`}
+                className={`h-px min-w-1 flex-1 ${
+                  isDone
+                    ? "bg-emerald-500"
+                    : isComplete || isCurrent
+                      ? "bg-blue-400"
+                      : "bg-zinc-200 dark:bg-zinc-800"
+                }`}
               />
             ) : null}
             <span
               title={stage.name}
+              aria-current={isCurrent ? "step" : undefined}
               className={`h-2.5 w-2.5 shrink-0 rounded-full border ${
                 isComplete
-                  ? "border-blue-500 bg-blue-500"
+                  ? isDone
+                    ? "border-emerald-500 bg-emerald-500"
+                    : "border-blue-500 bg-blue-500"
                   : isCurrent
                     ? "border-blue-500 bg-white ring-2 ring-blue-100 dark:bg-zinc-900 dark:ring-blue-950"
                     : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900"
@@ -324,6 +348,7 @@ export function TaskBoard({
   canCreateTask,
   canManageFlow,
 }: TaskBoardProps) {
+  const [filters, setFilters] = useState<TaskQueueFilters>(DEFAULT_TASK_QUEUE_FILTERS);
   const sortedTasks = sortCopy(
     tasks,
     (left, right) =>
@@ -334,6 +359,7 @@ export function TaskBoard({
   const running = tasks.filter((task) => task.status === "running" || task.status === "queued");
   const attention = tasks.filter((task) => task.status === "blocked" || task.status === "review");
   const completed = tasks.filter((task) => task.status === "done");
+  const filteredTasks = filterTaskQueue(sortedTasks, filters);
 
   return (
     <div className="space-y-5">
@@ -382,9 +408,20 @@ export function TaskBoard({
           ) : null}
         </header>
 
-        {sortedTasks.length ? (
+        {tasks.length ? (
+          <TaskBoardFilters
+            filters={filters}
+            flow={flow}
+            matchCount={filteredTasks.length}
+            totalCount={tasks.length}
+            onChange={setFilters}
+            onClear={() => setFilters(DEFAULT_TASK_QUEUE_FILTERS)}
+          />
+        ) : null}
+
+        {filteredTasks.length ? (
           <div>
-            {sortedTasks.map((task) => (
+            {filteredTasks.map((task) => (
               <TaskRow
                 key={task.id}
                 task={task}
@@ -399,6 +436,18 @@ export function TaskBoard({
               />
             ))}
           </div>
+        ) : tasks.length ? (
+          <EmptyState
+            icon={<SlidersHorizontal className="text-zinc-400" size={24} />}
+            title="No work matches"
+            message="Adjust the queue filters to see more work."
+            action={
+              <Button variant="secondary" onClick={() => setFilters(DEFAULT_TASK_QUEUE_FILTERS)}>
+                Clear filters
+              </Button>
+            }
+            className="min-h-[240px]"
+          />
         ) : (
           <EmptyState
             icon={<ListChecks className="text-zinc-400" size={24} />}

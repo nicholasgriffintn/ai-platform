@@ -104,6 +104,92 @@ const task: ProjectTask = {
 };
 
 describe("TaskBoard", () => {
+  it("does not mark a pipeline stage as active before backlog work starts", () => {
+    render(
+      <TaskBoard
+        tasks={[{ ...task, status: "backlog", stageId: "research" }]}
+        flow={flow}
+        members={[]}
+        agents={[]}
+        taskHref={() => "/tasks/task-1"}
+        conversationHref={() => null}
+        onStartTask={vi.fn()}
+        onAcceptTask={vi.fn()}
+        onCreateTask={vi.fn()}
+        onConfigureFlow={vi.fn()}
+        canCreateTask
+        canManageFlow
+      />,
+    );
+
+    const progress = screen.getByLabelText("Pipeline progress");
+
+    expect(progress.querySelector('[title="Research"]')?.className).not.toContain(
+      "border-blue-500",
+    );
+  });
+
+  it("filters queued work by search, status, and pipeline stage", () => {
+    render(
+      <TaskBoard
+        tasks={[
+          { ...task, id: "task-backlog", objective: "Write the launch spec", status: "backlog" },
+          {
+            ...task,
+            id: "task-attention",
+            objective: "Publish the launch note",
+            status: "blocked",
+            blockedReason: "awaiting_input",
+            stageId: "publish",
+          },
+          {
+            ...task,
+            id: "task-done",
+            objective: "Summarise the launch",
+            status: "done",
+            stageId: "publish",
+          },
+        ]}
+        flow={flow}
+        members={[]}
+        agents={[]}
+        taskHref={(item) => `/tasks/${item.id}`}
+        conversationHref={() => null}
+        onStartTask={vi.fn()}
+        onAcceptTask={vi.fn()}
+        onCreateTask={vi.fn()}
+        onConfigureFlow={vi.fn()}
+        canCreateTask
+        canManageFlow
+      />,
+    );
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search work queue" }), {
+      target: { value: "publish" },
+    });
+    expect(screen.getByText("Publish the launch note")).toBeTruthy();
+    expect(screen.queryByText("Write the launch spec")).toBeNull();
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search work queue" }), {
+      target: { value: "" },
+    });
+    fireEvent.change(screen.getByRole("combobox", { name: "Filter work by status" }), {
+      target: { value: "attention" },
+    });
+    expect(screen.getByText("Publish the launch note")).toBeTruthy();
+    expect(screen.queryByText("Summarise the launch")).toBeNull();
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Filter work by status" }), {
+      target: { value: "all" },
+    });
+    fireEvent.change(screen.getByRole("combobox", { name: "Filter work by stage" }), {
+      target: { value: "research" },
+    });
+    expect(screen.getByText("Write the launch spec")).toBeTruthy();
+    expect(screen.queryByText("Publish the launch note")).toBeNull();
+    expect(screen.getByText("1 of 3")).toBeTruthy();
+  });
+
   it("shows the configured agent pipeline and recovers queued work without a dispatch", () => {
     const onStartTask = vi.fn();
 
@@ -130,6 +216,9 @@ describe("TaskBoard", () => {
     expect(screen.getByText("Auto hand-off")).toBeTruthy();
     expect(screen.getByText("Human review")).toBeTruthy();
     expect(screen.getAllByText("Researcher").length).toBeGreaterThan(0);
+    expect(
+      screen.getByLabelText("Pipeline progress").querySelector('[aria-current="step"]'),
+    ).not.toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(onStartTask).toHaveBeenCalledWith(task);
@@ -209,6 +298,11 @@ describe("TaskBoard", () => {
 
     expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
     expect(screen.getByRole("link", { name: "View result" })).toBeTruthy();
+    expect(
+      Array.from(screen.getByLabelText("Pipeline progress").querySelectorAll("[title]")).every(
+        (marker) => marker.className.includes("bg-emerald-500"),
+      ),
+    ).toBe(true);
   });
 });
 
