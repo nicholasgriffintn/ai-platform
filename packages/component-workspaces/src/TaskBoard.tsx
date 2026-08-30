@@ -127,8 +127,8 @@ function PipelineProgress({ task, flow }: { task: ProjectTask; flow: ProjectFlow
                 isComplete
                   ? "border-blue-500 bg-blue-500"
                   : isCurrent
-                    ? "border-blue-500 bg-white ring-2 ring-blue-100 dark:bg-zinc-950 dark:ring-blue-950"
-                    : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-950"
+                    ? "border-blue-500 bg-white ring-2 ring-blue-100 dark:bg-zinc-900 dark:ring-blue-950"
+                    : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900"
               }`}
             />
           </div>
@@ -167,7 +167,7 @@ function TaskRow({
   const activityAt = task.updatedAt ?? task.createdAt;
 
   return (
-    <article className="group grid gap-4 border-b border-zinc-100 px-4 py-4 last:border-b-0 hover:bg-zinc-50/70 dark:border-zinc-800 dark:hover:bg-zinc-900/40 lg:grid-cols-[minmax(0,1fr)_190px_130px] lg:items-center">
+    <article className="group grid gap-4 border-b border-zinc-100 px-4 py-4 last:border-b-0 hover:bg-zinc-50/70 dark:border-zinc-800/80 dark:hover:bg-white/[0.025] lg:grid-cols-[minmax(0,1fr)_190px_130px] lg:items-center">
       <div className="min-w-0 space-y-2">
         <div className="flex flex-wrap items-center gap-2">
           <span
@@ -228,7 +228,7 @@ function FlowStrip({
   onConfigure: () => void;
 }) {
   return (
-    <section className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
+    <section className="rounded-xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-zinc-800 dark:bg-zinc-900/35">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
           <p className="flex items-center gap-2 text-sm font-semibold">
@@ -253,7 +253,7 @@ function FlowStrip({
             return (
               <li
                 key={stage.id}
-                className="relative rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/60"
+                className="relative rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-700/70 dark:bg-white/[0.035]"
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-950 text-[11px] font-semibold text-white dark:bg-white dark:text-zinc-950">
@@ -349,8 +349,8 @@ export function TaskBoard({
         </div>
       </div>
 
-      <section className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+      <section className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/30">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800/80">
           <div>
             <h2 className="text-sm font-semibold">Work queue</h2>
             <p className="mt-0.5 text-xs text-zinc-500">

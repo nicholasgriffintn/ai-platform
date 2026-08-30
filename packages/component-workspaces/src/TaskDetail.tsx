@@ -31,6 +31,7 @@ export interface TaskDetailProps {
   onCancel: () => void;
   onReopen: () => void;
   onDelete: () => void;
+  renderProgressSummary?: (summary: string) => React.ReactNode;
 }
 
 const EVIDENCE_TONE: Record<string, string> = {
@@ -73,6 +74,7 @@ export function TaskDetail({
   onCancel,
   onReopen,
   onDelete,
+  renderProgressSummary,
 }: TaskDetailProps) {
   const owner = members.find((member) => member.userId === task.assigneeUserId);
   const stage = flow?.stages.find((candidate) => candidate.id === task.stageId);
@@ -84,7 +86,7 @@ export function TaskDetail({
   const evidence = goal?.evidence ?? [];
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_260px]">
+    <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
       <div className="min-w-0 space-y-6">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary">{projectTaskStatusLabels[task.status]}</Badge>
@@ -164,7 +166,7 @@ export function TaskDetail({
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
               Agent pipeline
             </h2>
-            <ol className="grid gap-2 sm:grid-cols-2">
+            <ol className="grid gap-2 md:grid-cols-3">
               {flow.stages.map((flowStage, index) => {
                 const currentIndex = flow.stages.findIndex(
                   (candidate) => candidate.id === task.stageId,
@@ -245,7 +247,13 @@ export function TaskDetail({
               {progress.map((entry) => (
                 <li key={`${entry.iteration}-${entry.at}`} className="relative">
                   <span className="absolute top-1.5 -left-[21px] h-2 w-2 rounded-full bg-zinc-300 dark:bg-zinc-600" />
-                  <p className="text-sm text-zinc-900 dark:text-zinc-100">{entry.summary}</p>
+                  <div className="min-w-0 text-sm text-zinc-900 dark:text-zinc-100">
+                    {renderProgressSummary ? (
+                      renderProgressSummary(entry.summary)
+                    ) : (
+                      <p className="whitespace-pre-wrap">{entry.summary}</p>
+                    )}
+                  </div>
                   {entry.evidence.length > 0 && (
                     <ul className="mt-1 space-y-0.5">
                       {entry.evidence.map((item) => (

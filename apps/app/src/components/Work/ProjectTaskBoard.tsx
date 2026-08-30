@@ -95,7 +95,7 @@ export function ProjectTaskBoard({
 
   return (
     <>
-      <PageShell.Content className="max-w-full">
+      <PageShell.Content className="max-w-6xl">
         <PageShell.Header
           title="Tasks"
           actionContent={

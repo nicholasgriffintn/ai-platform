@@ -1,8 +1,8 @@
-import type { ProjectFlow, ProjectTask } from "@ngriffin_uk/polychat-schemas";
+import type { Goal, ProjectFlow, ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { CreateTaskDialog, ProjectBriefCard, TaskBoard } from "./index";
+import { CreateTaskDialog, ProjectBriefCard, TaskBoard, TaskDetail } from "./index";
 
 afterEach(cleanup);
 
@@ -125,6 +125,61 @@ describe("TaskBoard", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(onStartTask).toHaveBeenCalledWith(task);
+  });
+});
+
+describe("TaskDetail", () => {
+  it("uses the host content renderer for agent progress", () => {
+    const renderProgressSummary = vi.fn((summary: string) => <strong>Rendered: {summary}</strong>);
+    const goal: Goal = {
+      id: "goal-1",
+      conversation_id: "conversation-1",
+      sandbox_run_id: null,
+      user_id: 1,
+      objective: task.objective,
+      status: "stalled",
+      source: "user",
+      iteration_count: 1,
+      stall_streak: 2,
+      tokens_spent: 500,
+      progress: [
+        {
+          iteration: 1,
+          surface: "agent",
+          summary: "**Checked** the release inputs",
+          evidence: [],
+          at: "2026-08-30T10:05:00.000Z",
+        },
+      ],
+      evidence: null,
+      stopped_reason: "Missing release date",
+      created_at: "2026-08-30T10:00:00.000Z",
+      updated_at: "2026-08-30T10:05:00.000Z",
+      completed_at: null,
+      last_continued_at: "2026-08-30T10:05:00.000Z",
+    };
+
+    render(
+      <TaskDetail
+        task={task}
+        goal={goal}
+        flow={flow}
+        members={[]}
+        agents={[]}
+        blockedBy={[]}
+        conversationHref={null}
+        taskHref={() => "/tasks/task-1"}
+        onRun={vi.fn()}
+        onAccept={vi.fn()}
+        onCancel={vi.fn()}
+        onReopen={vi.fn()}
+        onDelete={vi.fn()}
+        renderProgressSummary={renderProgressSummary}
+      />,
+    );
+
+    expect(renderProgressSummary).toHaveBeenCalledWith("**Checked** the release inputs");
+    expect(screen.getByText("Rendered: **Checked** the release inputs")).toBeTruthy();
   });
 });
 

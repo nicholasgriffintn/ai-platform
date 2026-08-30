@@ -1,3 +1,4 @@
+import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
 import { BackLink } from "@ngriffin_uk/polychat-component-ui";
 import { TaskDetail } from "@ngriffin_uk/polychat-component-workspaces";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
@@ -32,7 +33,7 @@ export function ProjectTaskDetail({
 
   if (isLoading || detailQuery.isLoading) {
     return (
-      <PageShell.Content className="max-w-3xl">
+      <PageShell.Content className="max-w-6xl">
         <p className="text-sm text-zinc-500">Loading the task…</p>
       </PageShell.Content>
     );
@@ -40,7 +41,7 @@ export function ProjectTaskDetail({
 
   if (error || detailQuery.error || !task) {
     return (
-      <PageShell.Content className="max-w-3xl">
+      <PageShell.Content className="max-w-6xl">
         <BackLink href={`${basePath}/tasks`} label="Back to tasks" />
         <PageShell.Header title="Task" />
         <p className="text-sm text-red-700 dark:text-red-400">
@@ -90,7 +91,7 @@ export function ProjectTaskDetail({
   };
 
   return (
-    <PageShell.Content className="max-w-3xl">
+    <PageShell.Content className="max-w-6xl">
       <BackLink href={`${basePath}/tasks`} label="Back to tasks" />
       <PageShell.Header title={task.objective} />
       <TaskDetail
@@ -110,6 +111,9 @@ export function ProjectTaskDetail({
         onCancel={() => void setStatus("cancelled", "Task cancelled")}
         onReopen={() => void setStatus("backlog", "Task reopened")}
         onDelete={() => void deleteTask()}
+        renderProgressSummary={(summary) => (
+          <MemoizedMarkdown className="max-w-none text-sm leading-6">{summary}</MemoizedMarkdown>
+        )}
       />
     </PageShell.Content>
   );
