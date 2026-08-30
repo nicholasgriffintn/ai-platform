@@ -1,4 +1,4 @@
-import { useOverlayDismiss } from "@ngriffin_uk/polychat-component-ui";
+import { Button, useOverlayDismiss } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { Code2, Copy, FileText, Play, X } from "lucide-react";
 import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
@@ -75,15 +75,15 @@ const ContentViewer = ({
           <span className="font-medium">{artifact.title || artifact.identifier}</span>
         </div>
         {showCopyButton && (
-          <button
-            type="button"
+          <Button
+            variant="icon"
+            size="sm"
             onClick={onCopy}
-            className="p-1.5 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
             title={copied ? "Copied!" : "Copy file"}
             aria-label={copied ? "Copied to clipboard" : "Copy file"}
           >
             <Copy size={14} className={copied ? "text-green-500" : ""} />
-          </button>
+          </Button>
         )}
       </div>
       <div className="artifact-content-full">
@@ -242,25 +242,18 @@ export const ArtifactPanel = ({
           </div>
           <div className="flex gap-2 flex-shrink-0 ml-2">
             {!showFileTabs && !isDocument && (
-              <button
-                type="button"
+              <Button
+                variant="icon"
                 onClick={handleCopyCurrentFile}
-                className="p-2 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
                 title={copied ? "Copied!" : "Copy content"}
                 aria-label={copied ? "Copied to clipboard" : "Copy to clipboard"}
               >
                 <Copy size={16} className={copied ? "text-green-500" : ""} />
-              </button>
+              </Button>
             )}
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
-              title="Close panel"
-              aria-label="Close panel"
-            >
+            <Button variant="icon" onClick={onClose} title="Close panel" aria-label="Close panel">
               <X size={16} />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -296,15 +289,14 @@ export const ArtifactPanel = ({
             </button>
             {activeTab === "preview" && showFileTabs && (
               <div className="ml-auto pr-2">
-                <button
-                  type="button"
+                <Button
+                  variant="icon"
                   onClick={handleCopyAllFiles}
-                  className="p-2 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
                   title={copied ? "Copied!" : "Copy all files"}
                   aria-label={copied ? "Copied to clipboard" : "Copy all files"}
                 >
                   <Copy size={16} className={copied ? "text-green-500" : ""} />
-                </button>
+                </Button>
               </div>
             )}
           </div>

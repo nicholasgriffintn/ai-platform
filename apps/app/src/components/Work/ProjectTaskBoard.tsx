@@ -7,6 +7,7 @@ import {
   type CreateTaskIntent,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -101,7 +102,16 @@ export function ProjectTaskBoard({
         <PageShell.Header
           title="Tasks"
           actionContent={
-            <Button variant="primary" onClick={() => setIsCreateOpen(true)}>
+            <Button
+              variant="primary"
+              size="sm"
+              collapseLabel
+              className="shrink-0"
+              aria-label="Add a task"
+              title="Add a task"
+              icon={<Plus size={16} />}
+              onClick={() => setIsCreateOpen(true)}
+            >
               Add a task
             </Button>
           }

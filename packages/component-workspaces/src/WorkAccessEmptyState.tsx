@@ -1,4 +1,4 @@
-import { Link } from "@ngriffin_uk/polychat-component-ui";
+import { ButtonLink } from "@ngriffin_uk/polychat-component-ui";
 import {
   ArrowUpRight,
   BriefcaseBusiness,
@@ -47,20 +47,18 @@ export function WorkAccessEmptyState() {
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-3">
-            <Link
+            <ButtonLink
+              variant="primary"
+              size="lg"
               href="/profile?tab=billing"
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 px-5 py-2.5 text-base font-medium text-white no-underline shadow-sm transition-colors hover:bg-blue-700 hover:!no-underline focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-2"
+              icon={<Crown size={17} />}
             >
-              <Crown size={17} />
               Upgrade to Pro
-            </Link>
-            <Link
-              href="/chat"
-              className="inline-flex items-center gap-1.5 rounded-md px-3 py-2.5 text-sm font-medium text-zinc-600 no-underline transition-colors hover:bg-zinc-100 hover:text-zinc-950 hover:!no-underline dark:text-zinc-300 dark:hover:bg-zinc-900 dark:hover:text-white"
-            >
+            </ButtonLink>
+            <ButtonLink variant="ghost" size="lg" href="/chat">
               Open Chat
               <ArrowUpRight size={15} />
-            </Link>
+            </ButtonLink>
           </div>
 
           <div className="mt-9 grid max-w-xl gap-3 border-t border-zinc-200 pt-5 sm:grid-cols-3 dark:border-zinc-800">

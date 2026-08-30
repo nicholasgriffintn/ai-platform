@@ -8,6 +8,7 @@ import {
   canCombineArtifacts,
   isInlinePreviewArtifact,
 } from "@ngriffin_uk/polychat-component-content";
+import { textLinkClassName } from "@ngriffin_uk/polychat-component-ui";
 import type {
   Attachment,
   Message,
@@ -245,7 +246,7 @@ const renderDocumentContent = (
           href={documentUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+          className={textLinkClassName({ tone: "accent", size: "xs" })}
         >
           View document
         </a>

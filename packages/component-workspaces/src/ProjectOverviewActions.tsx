@@ -1,4 +1,9 @@
-import { DropdownMenu, DropdownMenuItem, Link } from "@ngriffin_uk/polychat-component-ui";
+import {
+  ButtonLink,
+  DropdownMenu,
+  DropdownMenuItem,
+  Link,
+} from "@ngriffin_uk/polychat-component-ui";
 import { Archive, Ellipsis, LayoutTemplate, ListChecks, Settings2, SquarePen } from "lucide-react";
 
 interface ProjectOverviewActionsProps {
@@ -59,14 +64,18 @@ export function ProjectOverviewActions({
         </DropdownMenuItem>
       </DropdownMenu>
 
-      <Link
+      <ButtonLink
+        variant="primary"
+        size="sm"
+        collapseLabel
         href={conversationPath}
         aria-label="New conversation"
-        className="inline-flex h-8 shrink-0 items-center justify-center gap-2 rounded-md bg-blue-600 px-2 text-sm font-medium text-white no-underline shadow-sm transition-colors hover:bg-blue-700 hover:no-underline focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-2 xl:px-3"
+        title="New conversation"
+        className="shrink-0"
+        icon={<SquarePen size={16} />}
       >
-        <SquarePen size={16} />
-        <span className="hidden xl:inline">New conversation</span>
-      </Link>
+        New conversation
+      </ButtonLink>
     </div>
   );
 }

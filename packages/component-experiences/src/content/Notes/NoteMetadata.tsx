@@ -1,4 +1,11 @@
-import { Button, Textarea, Badge, Input, cn } from "@ngriffin_uk/polychat-component-ui";
+import {
+  Badge,
+  Button,
+  cn,
+  Input,
+  Textarea,
+  textLinkClassName,
+} from "@ngriffin_uk/polychat-component-ui";
 import type { NoteMetadata as NoteMetadataType } from "@ngriffin_uk/polychat-schemas";
 import { Calendar, Clock, Edit3, FileText, Hash, Monitor, Tag, User } from "lucide-react";
 import { useState } from "react";
@@ -412,7 +419,7 @@ export function NoteMetadata({
                     href={metadata.tabSource.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 dark:text-blue-400 no-underline hover:underline ml-1"
+                    className={textLinkClassName({ tone: "accent", className: "ml-1" })}
                   >
                     {metadata.tabSource.url}
                   </a>

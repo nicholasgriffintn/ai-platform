@@ -5,6 +5,8 @@ import { ServerRouter } from "react-router";
 
 import { generateCSP } from "./constants";
 
+export const streamTimeout = 5_000;
+
 export default async function handleRequest(
   request: Request,
   responseStatusCode: number,
@@ -20,7 +22,9 @@ export default async function handleRequest(
   const body = await renderToReadableStream(
     <ServerRouter context={routerContext} url={request.url} />,
     {
+      signal: AbortSignal.timeout(streamTimeout + 1_000),
       onError(error: unknown) {
+        responseStatusCode = 500;
         if (shellRendered) {
           console.error(error);
         }

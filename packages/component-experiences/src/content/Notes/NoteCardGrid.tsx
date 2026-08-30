@@ -1,4 +1,11 @@
-import { Button, Card, EmptyState, Link, SearchInput } from "@ngriffin_uk/polychat-component-ui";
+import {
+  Button,
+  ButtonLink,
+  Card,
+  EmptyState,
+  Link,
+  SearchInput,
+} from "@ngriffin_uk/polychat-component-ui";
 import { Plus } from "lucide-react";
 
 export interface NoteSummary {
@@ -31,11 +38,9 @@ export function NoteCardGrid({
           placeholder="Search notes..."
           className="max-w-md"
         />
-        <Link href={newNoteHref}>
-          <Button variant="primary" icon={<Plus size={16} />}>
-            New note
-          </Button>
-        </Link>
+        <ButtonLink variant="primary" icon={<Plus size={16} />} href={newNoteHref}>
+          New note
+        </ButtonLink>
       </div>
       {notes.length === 0 ? (
         <EmptyState

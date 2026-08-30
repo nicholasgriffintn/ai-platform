@@ -1,3 +1,4 @@
+import { textLinkClassName } from "@ngriffin_uk/polychat-component-ui";
 import type { ReactNode } from "react";
 
 export interface ReplicateModelDetailModel {
@@ -50,7 +51,7 @@ export function ReplicateModelDetailView({
                 href={model.reference}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 dark:text-blue-400 no-underline hover:underline"
+                className={textLinkClassName({ tone: "accent" })}
               >
                 View documentation
               </a>

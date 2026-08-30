@@ -44,15 +44,14 @@ export function WorkspaceOverviewActions({
       <Button
         variant="primary"
         size="sm"
-        className="h-8 w-8 shrink-0 px-0 xl:w-auto xl:px-3"
+        collapseLabel="xl"
+        className="shrink-0"
         aria-label="New project"
         title="New project"
+        icon={<Plus size={16} />}
         onClick={onCreateProject}
       >
-        <span className="flex items-center gap-2">
-          <Plus size={16} />
-          <span className="hidden xl:inline">New project</span>
-        </span>
+        New project
       </Button>
     </div>
   );

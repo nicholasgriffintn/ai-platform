@@ -1,3 +1,4 @@
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import type { ReplicateModel, ReplicateInputField } from "@ngriffin_uk/polychat-schemas";
 import { getNumberInputValue, parseNumberInputValue } from "@ngriffin_uk/polychat-utility-core";
 import { useEffect, useId, useState } from "react";
@@ -71,13 +72,9 @@ export function ReplicateModelForm({ model, onSubmit, isSubmitting }: ReplicateM
       ))}
 
       <div className="pt-4">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-400 text-white font-medium rounded-lg transition-colors"
-        >
+        <Button type="submit" variant="primary" size="lg" fullWidth isLoading={isSubmitting}>
           {isSubmitting ? "Generating..." : "Generate"}
-        </button>
+        </Button>
       </div>
     </form>
   );

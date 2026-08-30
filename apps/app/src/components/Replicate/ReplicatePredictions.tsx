@@ -3,8 +3,7 @@ import {
   ReplicateLoading,
   ReplicatePredictionList,
 } from "@ngriffin_uk/polychat-component-experiences/media";
-import { EmptyState } from "@ngriffin_uk/polychat-component-ui";
-import { Link } from "react-router";
+import { ButtonLink, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { useReplicatePredictions } from "~/hooks/useReplicate";
@@ -43,12 +42,9 @@ export function ReplicatePredictions({
         title="No predictions yet"
         message="You haven't created any predictions yet. Explore models to get started."
         action={
-          <Link
-            to={basePath}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-          >
+          <ButtonLink variant="primary" href={basePath}>
             Explore Models
-          </Link>
+          </ButtonLink>
         }
       />
     );

@@ -3,10 +3,9 @@ import {
   ManageCapabilitiesLink,
 } from "@ngriffin_uk/polychat-component-capabilities";
 import {
-  Button,
+  ButtonLink,
   CardGridLoadingSkeleton,
   EmptyState,
-  Link,
 } from "@ngriffin_uk/polychat-component-ui";
 import { Puzzle } from "lucide-react";
 
@@ -73,9 +72,9 @@ export function ProjectExperiences({
           title="No rich experiences enabled"
           message="Add an app or recipe capability to use its project workspace."
           action={
-            <Link href={libraryPath}>
-              <Button variant="primary">Browse capabilities</Button>
-            </Link>
+            <ButtonLink variant="primary" href={libraryPath}>
+              Browse capabilities
+            </ButtonLink>
           }
           className="min-h-[260px]"
         />

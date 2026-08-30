@@ -132,18 +132,18 @@ export function RecipeCard({
         </CardHeader>
         <CardContent className="flex flex-1 flex-col gap-4">
           {recipe.integrations.length > 0 && !inactiveAction && (
-            <button
-              type="button"
+            <Button
+              variant="outline"
               aria-label={`Connections, ${recipe.integrations.length}`}
               onClick={() => setConnectionsOpen(true)}
-              className="group flex w-fit items-center gap-2 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition-colors hover:border-zinc-400 hover:bg-zinc-50 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-offset-zinc-900"
+              className="group w-fit"
             >
               <span>Connections</span>
               <span className="min-w-5 rounded-full bg-zinc-100 px-1.5 text-center text-xs tabular-nums text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                 {recipe.integrations.length}
               </span>
               <ChevronRight className="size-4 shrink-0 text-zinc-400 transition-transform group-hover:translate-x-0.5" />
-            </button>
+            </Button>
           )}
 
           <div className="mt-auto space-y-3 border-t border-zinc-200 pt-4 dark:border-zinc-800">

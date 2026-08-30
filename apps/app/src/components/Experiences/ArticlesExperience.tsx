@@ -1,7 +1,10 @@
 import { ArticleReportGrid } from "@ngriffin_uk/polychat-component-experiences/content";
-import { Button, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
+import {
+  ButtonLink,
+  CardGridLoadingSkeleton,
+  EmptyState,
+} from "@ngriffin_uk/polychat-component-ui";
 import { FileText, Plus } from "lucide-react";
-import { Link } from "react-router";
 
 import { ArticleAnalysisSession } from "~/components/Apps/Articles/ArticleAnalysisSession";
 import { ArticleView } from "~/components/Apps/Articles/View";
@@ -89,11 +92,9 @@ export function ArticlesExperience({ basePath, projectId, subpath }: ExperienceP
         title="No reports yet"
         message="Analyse one or more source URLs to create a reusable report."
         action={
-          <Link to={`${basePath}/new`}>
-            <Button variant="primary" icon={<Plus size={16} />}>
-              New report
-            </Button>
-          </Link>
+          <ButtonLink variant="primary" icon={<Plus size={16} />} href={`${basePath}/new`}>
+            New report
+          </ButtonLink>
         }
       />
     );

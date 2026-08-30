@@ -1,8 +1,13 @@
-import { Card, PageStatus } from "@ngriffin_uk/polychat-component-ui";
+import {
+  ButtonLink,
+  Card,
+  PageStatus,
+  textLinkClassName,
+} from "@ngriffin_uk/polychat-component-ui";
 import type { SharedOutput } from "@ngriffin_uk/polychat-schemas";
 import { FileQuestion, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router";
+import { useParams } from "react-router";
 
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import { PageShell } from "~/components/Core/PageShell";
@@ -41,7 +46,9 @@ export default function SharedOutputPage() {
     return (
       <PageShell title="Shared output unavailable" displayNavBar={false}>
         <PageStatus message={error}>
-          <Link to="/">Return home</Link>
+          <ButtonLink variant="outline" href="/">
+            Return home
+          </ButtonLink>
         </PageStatus>
       </PageShell>
     );
@@ -73,6 +80,7 @@ export default function SharedOutputPage() {
               href={`${API_BASE_URL}/outputs/shared/${encodeURIComponent(token)}/content`}
               target="_blank"
               rel="noreferrer"
+              className={textLinkClassName({ tone: "accent" })}
             >
               Open {output.file.filename || "shared file"}
             </a>

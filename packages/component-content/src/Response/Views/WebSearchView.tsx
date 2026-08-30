@@ -166,16 +166,15 @@ export function WebSearchView({
 
       {completion_id && !embedded && (
         <div className="mt-6">
-          <button
-            type="button"
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+          <Button
+            variant="primary"
             onClick={() => {
               window.open(`/?completion_id=${completion_id}`, "_blank");
             }}
             aria-label="Continue the conversation in a new window"
           >
             Continue the conversation
-          </button>
+          </Button>
         </div>
       )}
 

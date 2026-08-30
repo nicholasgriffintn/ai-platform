@@ -1,4 +1,4 @@
-import { Card, cn, Link } from "@ngriffin_uk/polychat-component-ui";
+import { ButtonLink, Card, cn, Link } from "@ngriffin_uk/polychat-component-ui";
 import { ArrowRight, Settings2 } from "lucide-react";
 
 import { getIcon, getIconContainerClass } from "./capability-theme";
@@ -52,14 +52,17 @@ export function ExperienceGrid({ experiences }: { experiences: ExperienceGridIte
 
 export function ManageCapabilitiesLink({ href }: { href: string }) {
   return (
-    <Link
+    <ButtonLink
+      variant="outline"
+      size="sm"
+      collapseLabel
       href={href}
       aria-label="Manage capabilities"
       title="Manage capabilities"
-      className="inline-flex h-8 w-8 shrink-0 items-center justify-center gap-2 rounded-md border border-zinc-300 text-sm text-zinc-900 no-underline transition-colors hover:bg-zinc-100 hover:no-underline focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-2 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800 sm:w-auto sm:px-3"
+      className="shrink-0"
+      icon={<Settings2 size={16} />}
     >
-      <Settings2 size={16} />
-      <span className="hidden sm:inline">Manage capabilities</span>
-    </Link>
+      Manage capabilities
+    </ButtonLink>
   );
 }

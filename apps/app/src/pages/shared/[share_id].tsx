@@ -1,5 +1,5 @@
 import { ArtifactPanel } from "@ngriffin_uk/polychat-component-content";
-import { LoadingSpinner, PageStatus } from "@ngriffin_uk/polychat-component-ui";
+import { ButtonLink, LoadingSpinner, PageStatus } from "@ngriffin_uk/polychat-component-ui";
 import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import { PlusCircle } from "lucide-react";
 
@@ -7,7 +7,7 @@ import "~/styles/scrollbar.css";
 import "~/styles/github.css";
 import "~/styles/github-dark.css";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router";
+import { useParams } from "react-router";
 
 import { MessageList } from "~/components/ConversationThread/MessageList";
 import { PageShell } from "~/components/Core/PageShell";
@@ -90,12 +90,9 @@ export default function SharedConversationPage() {
         displayNavBar={false}
       >
         <PageStatus message={error}>
-          <Link
-            to="/"
-            className="inline-flex items-center rounded-md bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-foreground focus:ring-offset-2"
-          >
+          <ButtonLink variant="outline" href="/">
             Return Home
-          </Link>
+          </ButtonLink>
         </PageStatus>
       </PageShell>
     );
@@ -105,13 +102,9 @@ export default function SharedConversationPage() {
     <PageShell
       title="Shared Conversation"
       headerActions={
-        <Link
-          to="/"
-          className="no-underline inline-flex items-center gap-1 rounded-md bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-foreground focus:ring-offset-2"
-        >
-          <PlusCircle size={16} />
-          <span>New Chat</span>
-        </Link>
+        <ButtonLink variant="outline" size="sm" href="/" icon={<PlusCircle size={16} />}>
+          New Chat
+        </ButtonLink>
       }
       displayNavBar={false}
       fullBleed

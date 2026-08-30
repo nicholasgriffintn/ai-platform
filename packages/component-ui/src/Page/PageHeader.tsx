@@ -20,20 +20,15 @@ export function PageHeaderActions({ actions }: { actions: PageHeaderAction[] }) 
           onClick={action.onClick}
           variant={action.variant || "primary"}
           size="sm"
-          className="h-8 w-8 shrink-0 px-0 sm:w-auto sm:px-3"
+          collapseLabel
+          className="shrink-0"
+          icon={action.isLoading ? undefined : action.icon}
           aria-label={action.label}
           title={action.label}
           disabled={action.disabled}
           isLoading={action.isLoading}
         >
-          {action.isLoading ? (
-            <span className="hidden sm:inline">{action.label}</span>
-          ) : (
-            <span className="flex items-center gap-2">
-              {action.icon}
-              <span className="hidden sm:inline">{action.label}</span>
-            </span>
-          )}
+          {action.label}
         </Button>
       ))}
     </div>

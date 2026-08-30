@@ -1,4 +1,4 @@
-import { Badge, Button, Card, Link } from "@ngriffin_uk/polychat-component-ui";
+import { Badge, ButtonLink, Card, Link } from "@ngriffin_uk/polychat-component-ui";
 import { Music4, Plus } from "lucide-react";
 
 export interface StrudelPatternSummary {
@@ -20,11 +20,9 @@ export function StrudelPatternGrid({ patterns, newPatternHref }: StrudelPatternG
   return (
     <div>
       <div className="mb-5 flex justify-end">
-        <Link href={newPatternHref}>
-          <Button variant="primary" icon={<Plus size={16} />}>
-            New pattern
-          </Button>
-        </Link>
+        <ButtonLink variant="primary" icon={<Plus size={16} />} href={newPatternHref}>
+          New pattern
+        </ButtonLink>
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {patterns.map((pattern) => (

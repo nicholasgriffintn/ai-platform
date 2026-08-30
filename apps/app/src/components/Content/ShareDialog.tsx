@@ -3,6 +3,7 @@ import {
   type ShareDialogLabels,
   type ShareableContentType,
 } from "@ngriffin_uk/polychat-component-content";
+import type { ButtonCollapse } from "@ngriffin_uk/polychat-component-ui";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -16,6 +17,7 @@ interface ShareDialogProps {
   onShare: (itemId: string) => Promise<{ share_id: string }>;
   onUnshare: (itemId: string) => Promise<void>;
   getShareUrl: (shareId: string) => string;
+  collapseLabel?: ButtonCollapse;
   className?: string;
   labels?: ShareDialogLabels;
 }
@@ -28,6 +30,7 @@ export function ShareDialog({
   onShare,
   onUnshare,
   getShareUrl,
+  collapseLabel = false,
   className,
   labels,
 }: ShareDialogProps) {
@@ -81,6 +84,7 @@ export function ShareDialog({
       isSharing={isSharing}
       isUnsharing={isUnsharing}
       copied={copied}
+      collapseLabel={collapseLabel}
       className={className}
       labels={labels}
       onOpenChange={setIsOpen}

@@ -1,11 +1,10 @@
 import {
   BackLink,
-  Button,
+  ButtonLink,
   ContentLoadingSkeleton,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
 import { Puzzle } from "lucide-react";
-import { Link } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
@@ -87,9 +86,12 @@ export function ProjectExperienceRoute({
             title="Capability not enabled"
             message={`Add ${title} to the project before opening this experience.`}
             action={
-              <Link to={`/work/${workspaceId}/projects/${projectId}/library`}>
-                <Button variant="primary">Manage capabilities</Button>
-              </Link>
+              <ButtonLink
+                variant="primary"
+                href={`/work/${workspaceId}/projects/${projectId}/library`}
+              >
+                Manage capabilities
+              </ButtonLink>
             }
           />
         ) : (

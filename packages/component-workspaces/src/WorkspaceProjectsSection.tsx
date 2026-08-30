@@ -1,4 +1,4 @@
-import { Button, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
+import { Button, EmptyState, TextLink } from "@ngriffin_uk/polychat-component-ui";
 import { FolderKanban } from "lucide-react";
 
 import { ProjectCardGrid, type ProjectCardItem } from "./WorkspaceCards";
@@ -25,12 +25,9 @@ export function WorkspaceProjectsSection({
           <h2 className="text-lg font-semibold">Projects</h2>
           <p className="text-sm text-zinc-500">Projects in this workspace.</p>
         </div>
-        <Link
-          href={membersHref}
-          className="text-sm text-zinc-600 underline-offset-4 hover:underline dark:text-zinc-300"
-        >
+        <TextLink href={membersHref}>
           {memberCount} {memberCount === 1 ? "member" : "members"}
-        </Link>
+        </TextLink>
       </div>
       {projects.length === 0 ? (
         <EmptyState

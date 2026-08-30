@@ -1,4 +1,4 @@
-import { Button, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
+import { Button, EmptyState, Link, TextLink } from "@ngriffin_uk/polychat-component-ui";
 import {
   projectTaskStatusLabels,
   type ProjectTask,
@@ -51,9 +51,9 @@ export function ProjectTasksSummary({
     <div>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Tasks</h2>
-        <Link href={boardHref} className="text-xs text-zinc-500 hover:text-zinc-700">
+        <TextLink href={boardHref} size="xs" trailingIcon={<ArrowRight size={13} />}>
           Open tasks
-        </Link>
+        </TextLink>
       </div>
 
       {isLoading ? (

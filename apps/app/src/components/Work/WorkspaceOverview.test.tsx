@@ -49,8 +49,8 @@ describe("WorkspaceOverview", () => {
 
     expect(workspaceActions).not.toHaveClass("flex-wrap");
     expect(within(workspaceActions).getByRole("button", { name: "New project" })).toHaveClass(
-      "w-8",
-      "xl:w-auto",
+      "min-w-8",
+      "xl:min-w-0",
     );
     expect(within(workspaceActions).queryByRole("button", { name: "Delete" })).toBeNull();
 
