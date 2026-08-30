@@ -28,7 +28,7 @@ vi.mock("~/hooks/useGovernance", () => ({
   }),
 }));
 
-vi.mock("./WorkContext", () => ({
+vi.mock("./WorkDataContext", () => ({
   useWorkData: () => ({
     workspaceQuery: {
       data: { role: "owner" },

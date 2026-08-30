@@ -8,7 +8,7 @@ import { useTaskAttention } from "~/hooks/useProjectTasks";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
-import { useWorkData } from "./WorkContext";
+import { useWorkData } from "./WorkDataContext";
 
 interface WorkSidebarProps {
   workspaceId?: string;

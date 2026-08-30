@@ -18,7 +18,7 @@ vi.mock("~/hooks/useWorkspaces", () => ({
 vi.mock("~/hooks/useProjectTasks", () => ({
   useTaskAttention: () => ({ items: [], total: 0, isLoading: false }),
 }));
-vi.mock("./WorkContext", () => ({
+vi.mock("./WorkDataContext", () => ({
   useWorkData: () => ({
     workspaceQuery: {
       data: {

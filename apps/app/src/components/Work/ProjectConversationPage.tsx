@@ -23,7 +23,7 @@ import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 
 import { ProjectCodingTaskControl } from "./ProjectCodingTaskControl";
-import { useWorkData } from "./WorkContext";
+import { useWorkData } from "./WorkDataContext";
 
 export function ProjectConversationPage({
   workspaceId,

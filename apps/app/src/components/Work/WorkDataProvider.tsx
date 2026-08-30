@@ -1,16 +1,8 @@
-import { createContext, useContext, useMemo, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 
 import { useProject, useWorkspace, useWorkspaces } from "~/hooks/useWorkspaces";
 
-interface WorkContextValue {
-  projectId?: string;
-  projectQuery: ReturnType<typeof useProject>;
-  workspaceId?: string;
-  workspaceQuery: ReturnType<typeof useWorkspace>;
-  workspacesQuery: ReturnType<typeof useWorkspaces>;
-}
-
-const WorkContext = createContext<WorkContextValue | null>(null);
+import { WorkContext } from "./WorkDataContext";
 
 export function WorkDataProvider({
   children,
@@ -36,14 +28,4 @@ export function WorkDataProvider({
   );
 
   return <WorkContext.Provider value={value}>{children}</WorkContext.Provider>;
-}
-
-export function useWorkData() {
-  const context = useContext(WorkContext);
-
-  if (!context) {
-    throw new Error("useWorkData must be used inside WorkDataProvider");
-  }
-
-  return context;
 }

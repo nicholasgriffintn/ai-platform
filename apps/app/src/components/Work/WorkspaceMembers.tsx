@@ -16,7 +16,7 @@ import { useRevokeWorkspaceInvitation } from "~/hooks/useWorkspaces";
 import { isAuthenticationError } from "~/lib/errors";
 
 import { InviteMemberDialog } from "./InviteMemberDialog";
-import { useWorkData } from "./WorkContext";
+import { useWorkData } from "./WorkDataContext";
 
 export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
   const { workspaceQuery } = useWorkData();

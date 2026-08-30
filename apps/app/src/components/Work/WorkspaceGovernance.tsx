@@ -14,7 +14,7 @@ import {
   useWorkspaceTemplates,
 } from "~/hooks/useGovernance";
 
-import { useWorkData } from "./WorkContext";
+import { useWorkData } from "./WorkDataContext";
 
 export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
   const navigate = useNavigate();

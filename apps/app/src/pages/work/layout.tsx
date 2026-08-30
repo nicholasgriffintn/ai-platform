@@ -1,6 +1,6 @@
 import { Outlet, useParams } from "react-router";
 
-import { WorkDataProvider } from "~/components/Work/WorkContext";
+import { WorkDataProvider } from "~/components/Work/WorkDataProvider";
 import { WorkPageShell } from "~/components/Work/WorkPageShell";
 
 export default function WorkLayout() {

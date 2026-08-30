@@ -19,7 +19,7 @@ import {
 } from "~/lib/capability-surfaces";
 import { isAuthenticationError } from "~/lib/errors";
 
-import { useWorkData } from "./WorkContext";
+import { useWorkData } from "./WorkDataContext";
 
 export function ProjectExperiences({
   workspaceId,

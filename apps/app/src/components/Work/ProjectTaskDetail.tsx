@@ -11,7 +11,7 @@ import { useProjectTask, useProjectTasks } from "~/hooks/useProjectTasks";
 import { getErrorMessage } from "~/lib/errors";
 
 import { useProjectTaskAgents } from "./useProjectTaskAgents";
-import { useWorkData } from "./WorkContext";
+import { useWorkData } from "./WorkDataContext";
 
 export function ProjectTaskDetail({
   workspaceId,

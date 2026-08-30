@@ -34,7 +34,7 @@ vi.mock("~/hooks/useWorkspaces", () => ({
   }),
 }));
 
-vi.mock("./WorkContext", () => ({
+vi.mock("./WorkDataContext", () => ({
   useWorkData: () => ({
     workspaceQuery: {
       data: {

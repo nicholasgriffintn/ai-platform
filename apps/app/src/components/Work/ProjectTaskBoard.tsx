@@ -18,7 +18,7 @@ import { useProjectTasks } from "~/hooks/useProjectTasks";
 import { getErrorMessage, isAuthenticationError } from "~/lib/errors";
 
 import { projectTaskSkills, useProjectTaskAgents } from "./useProjectTaskAgents";
-import { useWorkData } from "./WorkContext";
+import { useWorkData } from "./WorkDataContext";
 
 export function ProjectTaskBoard({
   workspaceId,

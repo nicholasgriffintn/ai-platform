@@ -21,7 +21,7 @@ import { ProjectConversationStarter } from "./ProjectConversationStarter";
 import { ProjectKnowledgeCard } from "./ProjectKnowledgeCard";
 import { ProjectSchedulesCard } from "./ProjectSchedulesCard";
 import { ProjectTasksCard } from "./ProjectTasksCard";
-import { useWorkData } from "./WorkContext";
+import { useWorkData } from "./WorkDataContext";
 
 export function ProjectOverview({
   workspaceId,

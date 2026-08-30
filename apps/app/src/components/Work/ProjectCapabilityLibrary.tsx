@@ -1,7 +1,7 @@
 import { CapabilityLibrary } from "~/components/Capabilities/CapabilityLibrary";
 import { useProjectCapabilityScope } from "~/components/Capabilities/useCapabilityLibraryController";
 
-import { useWorkData } from "./WorkContext";
+import { useWorkData } from "./WorkDataContext";
 
 export function ProjectCapabilityLibrary({
   workspaceId,
