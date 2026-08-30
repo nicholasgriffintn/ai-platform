@@ -53,5 +53,5 @@
     "sherif": "^1.11.1",
     "vitest": "catalog:"
   },
-  "packageManager": "pnpm@11.22.0"
+  "packageManager": "pnpm@11.23.0"
 }
