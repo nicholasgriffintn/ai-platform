@@ -1,28 +1,14 @@
 import { Button, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
 import {
-  isTerminalProjectTaskStatus,
   projectTaskBlockedReasonLabels,
-  projectTaskStatusLabels,
   type ProjectFlow,
   type ProjectTask,
   type ProjectTaskStatus,
 } from "@ngriffin_uk/polychat-schemas";
 import { formatRelativeTime, sortCopy } from "@ngriffin_uk/polychat-utility-core";
-import {
-  AlertTriangle,
-  Bot,
-  Check,
-  CheckCircle2,
-  Circle,
-  Clock3,
-  GitBranch,
-  ListChecks,
-  Loader2,
-  Pause,
-  Play,
-  Settings2,
-  Sparkles,
-} from "lucide-react";
+import { Bot, GitBranch, ListChecks, Pause, Play, Settings2, Sparkles } from "lucide-react";
+
+import { TaskStatusBadge } from "./TaskStatusBadge";
 
 const NO_PENDING_TASKS: string[] = [];
 
@@ -51,21 +37,6 @@ export interface TaskBoardProps {
   canManageFlow: boolean;
 }
 
-const STATUS_TONE: Record<ProjectTaskStatus, string> = {
-  backlog: "border-zinc-300 bg-zinc-50 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900",
-  queued:
-    "border-sky-300 bg-sky-50 text-sky-800 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-200",
-  running:
-    "border-blue-300 bg-blue-50 text-blue-800 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200",
-  blocked:
-    "border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200",
-  review:
-    "border-violet-300 bg-violet-50 text-violet-800 dark:border-violet-900 dark:bg-violet-950/40 dark:text-violet-200",
-  done: "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200",
-  cancelled:
-    "border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400",
-};
-
 const STATUS_ORDER: Record<ProjectTaskStatus, number> = {
   blocked: 0,
   review: 1,
@@ -75,30 +46,6 @@ const STATUS_ORDER: Record<ProjectTaskStatus, number> = {
   done: 5,
   cancelled: 6,
 };
-
-function TaskStatusIcon({ status }: { status: ProjectTaskStatus }) {
-  if (status === "running") {
-    return <Loader2 className="animate-spin" size={14} />;
-  }
-
-  if (status === "blocked") {
-    return <AlertTriangle size={14} />;
-  }
-
-  if (status === "review") {
-    return <CheckCircle2 size={14} />;
-  }
-
-  if (status === "done") {
-    return <Check size={14} />;
-  }
-
-  if (status === "queued") {
-    return <Clock3 size={14} />;
-  }
-
-  return <Circle size={13} />;
-}
 
 function PipelineProgress({ task, flow }: { task: ProjectTask; flow: ProjectFlow | null }) {
   if (!flow) {
@@ -163,19 +110,17 @@ function TaskRow({
     (task.status === "done" || task.status === "cancelled" ? null : flow?.stages[0]);
   const agentId = stage?.agentId ?? task.runner?.agentId;
   const agent = agents.find((candidate) => candidate.id === agentId);
-  const canStart = !isTerminalProjectTaskStatus(task.status) && task.status !== "running";
+  const canStart =
+    task.status === "backlog" ||
+    task.status === "blocked" ||
+    (task.status === "queued" && !task.dispatchTaskId);
   const activityAt = task.updatedAt ?? task.createdAt;
 
   return (
     <article className="group grid gap-4 border-b border-zinc-100 px-4 py-4 last:border-b-0 hover:bg-zinc-50/70 dark:border-zinc-800/80 dark:hover:bg-white/[0.025] lg:grid-cols-[minmax(0,1fr)_190px_130px] lg:items-center">
       <div className="min-w-0 space-y-2">
         <div className="flex flex-wrap items-center gap-2">
-          <span
-            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${STATUS_TONE[task.status]}`}
-          >
-            <TaskStatusIcon status={task.status} />
-            {projectTaskStatusLabels[task.status]}
-          </span>
+          <TaskStatusBadge status={task.status} />
           {stage ? <span className="text-xs text-zinc-500">{stage.name}</span> : null}
         </div>
         <Link
@@ -206,9 +151,15 @@ function TaskRow({
             Accept
           </Button>
         ) : null}
-        {canStart && (task.status !== "queued" || !task.dispatchTaskId) ? (
-          <Button variant="secondary" size="sm" onClick={onStart} disabled={isPending}>
-            <Play size={13} /> {task.status === "backlog" ? "Run" : "Retry"}
+        {canStart ? (
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<Play size={13} />}
+            onClick={onStart}
+            disabled={isPending}
+          >
+            {task.status === "backlog" ? "Run" : "Retry"}
           </Button>
         ) : null}
       </div>
@@ -239,8 +190,13 @@ function FlowStrip({
           </p>
         </div>
         {canManage ? (
-          <Button variant="secondary" size="sm" onClick={onConfigure}>
-            <Settings2 size={14} /> Configure
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<Settings2 size={14} />}
+            onClick={onConfigure}
+          >
+            Configure
           </Button>
         ) : null}
       </div>

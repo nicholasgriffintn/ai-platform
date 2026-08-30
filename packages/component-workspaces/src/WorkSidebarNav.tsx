@@ -1,5 +1,5 @@
 import { SidebarNavButton, sidebarNavLinkClass } from "@ngriffin_uk/polychat-component-navigation";
-import { cn, Link, NavLink } from "@ngriffin_uk/polychat-component-ui";
+import { Badge, cn, Link, NavLink } from "@ngriffin_uk/polychat-component-ui";
 import {
   Activity,
   ChevronRight,
@@ -172,9 +172,13 @@ export function WorkSidebarNav({
           <NavLink href={project.tasksHref} className={linkClass} onClick={onNavigate}>
             <ListChecks size={16} /> Tasks
             {project.attentionCount ? (
-              <span className="ml-auto rounded-full bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+              <Badge
+                variant="warning"
+                className="ml-auto min-w-5 px-1.5"
+                aria-label={`${project.attentionCount} tasks need attention`}
+              >
                 {project.attentionCount}
-              </span>
+              </Badge>
             ) : null}
           </NavLink>
           <NavLink href={project.activityHref} className={linkClass} onClick={onNavigate}>

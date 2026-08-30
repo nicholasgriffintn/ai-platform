@@ -1,9 +1,8 @@
-import { Badge, Button, Link } from "@ngriffin_uk/polychat-component-ui";
+import { Badge, Button, ButtonLink, Link } from "@ngriffin_uk/polychat-component-ui";
 import type { Goal, ProjectFlow, ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import {
   isTerminalProjectTaskStatus,
   projectTaskBlockedReasonLabels,
-  projectTaskStatusLabels,
 } from "@ngriffin_uk/polychat-schemas";
 import { formatRelativeTime, reverseCopy } from "@ngriffin_uk/polychat-utility-core";
 import {
@@ -13,8 +12,11 @@ import {
   Loader2,
   MessageSquareText,
   Play,
+  RotateCcw,
   Trash2,
 } from "lucide-react";
+
+import { TaskStatusBadge } from "./TaskStatusBadge";
 
 export interface TaskDetailProps {
   task: ProjectTask;
@@ -81,7 +83,7 @@ export function TaskDetail({
   const agentId = stage?.agentId ?? task.runner?.agentId;
   const agent = agents.find((candidate) => candidate.id === agentId);
   const isFinished = isTerminalProjectTaskStatus(task.status);
-  const canRun = !isFinished && task.status !== "running" && task.status !== "queued";
+  const canRun = task.status === "backlog" || task.status === "blocked";
   const progress = reverseCopy(goal?.progress ?? []);
   const evidence = goal?.evidence ?? [];
 
@@ -89,7 +91,7 @@ export function TaskDetail({
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
       <div className="min-w-0 space-y-6">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="secondary">{projectTaskStatusLabels[task.status]}</Badge>
+          <TaskStatusBadge status={task.status} />
           {stage && <Badge variant="outline">{stage.name}</Badge>}
           {task.source === "model" && <Badge variant="outline">Drafted by assistant</Badge>}
         </div>
@@ -104,42 +106,56 @@ export function TaskDetail({
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2">
-          {task.status === "review" && (
-            <Button variant="primary" onClick={onAccept} disabled={isBusy}>
-              Accept
-            </Button>
-          )}
-          {canRun && (
-            <Button variant="secondary" onClick={onRun} disabled={isBusy}>
-              <Play size={14} />
-              {task.status === "backlog" ? "Run" : "Run again"}
-            </Button>
-          )}
-          {conversationHref && (
-            <Link
-              href={conversationHref}
-              className="inline-flex h-9 items-center gap-2 rounded-md border border-zinc-200 px-3 text-sm no-underline hover:!no-underline dark:border-zinc-700"
-            >
-              <MessageSquareText size={14} /> Open its conversation
-            </Link>
-          )}
-          {isFinished ? (
-            <Button variant="secondary" onClick={onReopen} disabled={isBusy}>
-              Reopen
-            </Button>
-          ) : (
-            <Button variant="secondary" onClick={onCancel} disabled={isBusy}>
-              Cancel
-            </Button>
-          )}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {task.status === "review" && (
+              <Button
+                variant="primary"
+                icon={<Check size={14} />}
+                onClick={onAccept}
+                disabled={isBusy}
+              >
+                Accept
+              </Button>
+            )}
+            {canRun && (
+              <Button variant="primary" icon={<Play size={14} />} onClick={onRun} disabled={isBusy}>
+                {task.status === "backlog" ? "Run" : "Run again"}
+              </Button>
+            )}
+            {conversationHref && (
+              <ButtonLink
+                href={conversationHref}
+                variant="outline"
+                icon={<MessageSquareText size={14} />}
+                className="no-underline hover:!no-underline"
+              >
+                Open its conversation
+              </ButtonLink>
+            )}
+            {isFinished ? (
+              <Button
+                variant="primary"
+                icon={<RotateCcw size={14} />}
+                onClick={onReopen}
+                disabled={isBusy}
+              >
+                Reopen
+              </Button>
+            ) : (
+              <Button variant="ghost" onClick={onCancel} disabled={isBusy}>
+                Cancel
+              </Button>
+            )}
+          </div>
           <Button
-            variant="secondary"
-            className="text-red-700 dark:text-red-400"
+            variant="ghost"
+            icon={<Trash2 size={14} />}
+            className="text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
             onClick={onDelete}
             disabled={isBusy || task.status === "running"}
           >
-            <Trash2 size={14} /> Delete
+            Delete
           </Button>
         </div>
 

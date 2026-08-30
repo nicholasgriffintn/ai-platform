@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { Button } from "./Button";
+import { Button, ButtonLink } from "./Button";
 
 describe("Button", () => {
   it("keeps destructive actions visibly red", () => {
@@ -22,5 +22,14 @@ describe("Button", () => {
     expect(button).toBeDisabled();
     expect(button).toHaveAttribute("aria-busy", "true");
     expect(button.querySelector("[aria-hidden='true']")).toBeInTheDocument();
+  });
+
+  it("renders button-styled navigation as a link", () => {
+    render(<ButtonLink href="/conversation/1">Open conversation</ButtonLink>);
+
+    expect(screen.getByRole("link", { name: "Open conversation" })).toHaveAttribute(
+      "href",
+      "/conversation/1",
+    );
   });
 });

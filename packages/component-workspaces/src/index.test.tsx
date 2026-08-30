@@ -126,6 +126,27 @@ describe("TaskBoard", () => {
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(onStartTask).toHaveBeenCalledWith(task);
   });
+
+  it("offers acceptance without retry after an agent succeeds", () => {
+    render(
+      <TaskBoard
+        tasks={[{ ...task, status: "review" }]}
+        flow={flow}
+        members={[]}
+        agents={[]}
+        taskHref={() => "/tasks/task-1"}
+        onStartTask={vi.fn()}
+        onAcceptTask={vi.fn()}
+        onCreateTask={vi.fn()}
+        onConfigureFlow={vi.fn()}
+        canCreateTask
+        canManageFlow
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Accept" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+  });
 });
 
 describe("TaskDetail", () => {
