@@ -1,5 +1,6 @@
 import type {
   CreateProjectTaskInput,
+  ProjectFlow,
   ProjectTask,
   UpdateProjectTaskInput,
 } from "@ngriffin_uk/polychat-schemas";
@@ -9,21 +10,36 @@ import {
   acceptProjectTask,
   createProjectTask,
   deleteProjectTask,
+  getProjectTask,
   listProjectTasks,
   listTaskAttention,
   startProjectTask,
+  setProjectFlow,
   updateProjectTask,
 } from "~/lib/api/project-tasks";
 import { useChatStore } from "~/state/stores/chatStore";
 
 export const projectTasksQueryKey = (projectId: string) => ["project-tasks", projectId] as const;
 export const TASK_ATTENTION_QUERY_KEY = ["task-attention"] as const;
+export const projectTaskDetailQueryKey = (projectId: string, taskId: string) =>
+  ["project-task", projectId, taskId] as const;
 
 const IDLE_REFETCH_MS = 60_000;
 const ACTIVE_REFETCH_MS = 5_000;
 
 function hasWorkInFlight(tasks: ProjectTask[] | undefined): boolean {
   return Boolean(tasks?.some((task) => task.status === "running" || task.status === "queued"));
+}
+
+export function useProjectTask(projectId: string, taskId: string) {
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+  const isPro = useChatStore((state) => state.isPro);
+
+  return useQuery({
+    queryKey: projectTaskDetailQueryKey(projectId, taskId),
+    queryFn: () => getProjectTask(projectId, taskId),
+    enabled: Boolean(projectId && taskId) && isAuthenticated && isPro,
+  });
 }
 
 export function useProjectTasks(projectId: string) {
@@ -44,6 +60,7 @@ export function useProjectTasks(projectId: string) {
       queryKey: projectTasksQueryKey(projectId),
     });
     void queryClient.invalidateQueries({ queryKey: TASK_ATTENTION_QUERY_KEY });
+    void queryClient.invalidateQueries({ queryKey: ["project-task", projectId] });
   };
 
   const create = useMutation({
@@ -72,6 +89,11 @@ export function useProjectTasks(projectId: string) {
     onSuccess: invalidate,
   });
 
+  const saveFlow = useMutation({
+    mutationFn: (flow: ProjectFlow) => setProjectFlow(projectId, flow),
+    onSuccess: invalidate,
+  });
+
   return {
     tasks: query.data?.tasks ?? [],
     flow: query.data?.flow ?? null,
@@ -82,6 +104,7 @@ export function useProjectTasks(projectId: string) {
     start,
     accept,
     remove,
+    saveFlow,
   };
 }
 

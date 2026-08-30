@@ -3,11 +3,9 @@ import type { Goal, ProjectFlow, ProjectTask } from "@ngriffin_uk/polychat-schem
 import {
   isTerminalProjectTaskStatus,
   projectTaskBlockedReasonLabels,
-  projectTaskCapabilityLabels,
-  projectTaskConsequenceLabels,
-  projectTaskEffortLabels,
   projectTaskStatusLabels,
 } from "@ngriffin_uk/polychat-schemas";
+import { formatRelativeTime, reverseCopy } from "@ngriffin_uk/polychat-utility-core";
 import {
   AlertTriangle,
   Check,
@@ -23,6 +21,7 @@ export interface TaskDetailProps {
   goal: Goal | null;
   flow: ProjectFlow | null;
   members: { userId: number; name: string | null }[];
+  agents: { id: string; name: string }[];
   blockedBy: ProjectTask[];
   conversationHref: string | null;
   taskHref: (task: ProjectTask) => string;
@@ -64,6 +63,7 @@ export function TaskDetail({
   goal,
   flow,
   members,
+  agents,
   blockedBy,
   conversationHref,
   taskHref,
@@ -76,9 +76,11 @@ export function TaskDetail({
 }: TaskDetailProps) {
   const owner = members.find((member) => member.userId === task.assigneeUserId);
   const stage = flow?.stages.find((candidate) => candidate.id === task.stageId);
+  const agentId = stage?.agentId ?? task.runner?.agentId;
+  const agent = agents.find((candidate) => candidate.id === agentId);
   const isFinished = isTerminalProjectTaskStatus(task.status);
   const canRun = !isFinished && task.status !== "running" && task.status !== "queued";
-  const progress = [...(goal?.progress ?? [])].reverse();
+  const progress = reverseCopy(goal?.progress ?? []);
   const evidence = goal?.evidence ?? [];
 
   return (
@@ -152,11 +154,66 @@ export function TaskDetail({
             </ul>
           ) : (
             <p className="text-sm text-zinc-500">
-              {task.acceptance ??
-                "No acceptance criteria, so the goal has nothing to check itself against."}
+              No acceptance criteria, so the goal has nothing to check itself against.
             </p>
           )}
         </section>
+
+        {flow ? (
+          <section className="space-y-3">
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Agent pipeline
+            </h2>
+            <ol className="grid gap-2 sm:grid-cols-2">
+              {flow.stages.map((flowStage, index) => {
+                const currentIndex = flow.stages.findIndex(
+                  (candidate) => candidate.id === task.stageId,
+                );
+                const completed = task.status === "done" || index < currentIndex;
+                const current = flowStage.id === task.stageId && task.status !== "done";
+                const flowAgent = agents.find((candidate) => candidate.id === flowStage.agentId);
+
+                return (
+                  <li
+                    key={flowStage.id}
+                    className={`rounded-lg border p-3 ${
+                      current
+                        ? "border-blue-300 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30"
+                        : "border-zinc-200 dark:border-zinc-800"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {completed ? (
+                        <Check size={14} className="text-emerald-500" />
+                      ) : current ? (
+                        <Loader2
+                          size={14}
+                          className={
+                            task.status === "running"
+                              ? "animate-spin text-blue-500"
+                              : "text-blue-500"
+                          }
+                        />
+                      ) : (
+                        <Circle size={14} className="text-zinc-400" />
+                      )}
+                      <p className="text-sm font-medium">{flowStage.name}</p>
+                    </div>
+                    <p className="mt-1 pl-[22px] text-xs text-zinc-500">
+                      {flowAgent?.name ?? "Project default agent"} ·{" "}
+                      {flowStage.mode ?? "default mode"}
+                    </p>
+                    {flowStage.instructions ? (
+                      <p className="mt-2 pl-[22px] text-xs text-zinc-600 dark:text-zinc-400">
+                        {flowStage.instructions}
+                      </p>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        ) : null}
 
         <section className="space-y-3">
           <div className="flex items-baseline justify-between">
@@ -191,8 +248,8 @@ export function TaskDetail({
                   <p className="text-sm text-zinc-900 dark:text-zinc-100">{entry.summary}</p>
                   {entry.evidence.length > 0 && (
                     <ul className="mt-1 space-y-0.5">
-                      {entry.evidence.map((item, index) => (
-                        <li key={index} className="text-xs text-zinc-500">
+                      {entry.evidence.map((item) => (
+                        <li key={`${entry.iteration}:${item}`} className="text-xs text-zinc-500">
                           {item}
                         </li>
                       ))}
@@ -225,9 +282,9 @@ export function TaskDetail({
               Evidence it gave
             </h2>
             <ul className="space-y-3">
-              {evidence.map((entry, index) => (
+              {evidence.map((entry) => (
                 <li
-                  key={index}
+                  key={`${entry.claim}:${entry.evidence_surface}`}
                   className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -255,32 +312,32 @@ export function TaskDetail({
       <aside className="min-w-0">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
           <Fact label="Owner" value={owner?.name ?? "Nobody yet"} />
-          <Fact label="Priority" value={task.priority} />
-          <Fact label="Effort" value={projectTaskEffortLabels[task.effort]} />
+          <Fact label="Active agent" value={agent?.name ?? "Project default"} />
+          <Fact label="Stage" value={stage?.name ?? "No pipeline stage"} />
+          <Fact
+            label="Last activity"
+            value={formatRelativeTime(task.updatedAt ?? task.createdAt)}
+          />
         </div>
 
         <div className="mt-4">
-          <Aside label="May use">
-            {task.capabilities.length > 0
-              ? task.capabilities
-                  .map((capability) => projectTaskCapabilityLabels[capability])
-                  .join(", ")
-              : "Reading and reasoning only"}
+          {task.expectedOutput ? (
+            <Aside label="Expected output">{task.expectedOutput}</Aside>
+          ) : null}
+          <Aside label="Approval gates">
+            {task.requireApprovalFor.length
+              ? task.requireApprovalFor.join(", ")
+              : "Use the selected agent and stage policy"}
           </Aside>
-          <Aside label="Asks first before">
-            {task.approvalConsequences.length > 0
-              ? task.approvalConsequences
-                  .map((consequence) => projectTaskConsequenceLabels[consequence])
-                  .join(", ")
-              : "Nothing"}
+          <Aside label="Run budget">
+            {task.tokenBudget
+              ? `${task.tokensSpent.toLocaleString()} of ${task.tokenBudget.toLocaleString()} tokens used`
+              : `${task.tokensSpent.toLocaleString()} tokens used`}
           </Aside>
-          {task.deliverable && (
-            <Aside label="Deliverable">
-              {task.deliverable.kind.replaceAll("_", " ")}
-              {task.deliverable.description ? ` — ${task.deliverable.description}` : ""}
-            </Aside>
-          )}
           {task.context?.notes && <Aside label="Context">{task.context.notes}</Aside>}
+          {task.constraints?.notes ? (
+            <Aside label="Constraints">{task.constraints.notes}</Aside>
+          ) : null}
           {blockedBy.length > 0 && (
             <Aside label="Blocked by">
               <ul className="space-y-1">
@@ -297,7 +354,6 @@ export function TaskDetail({
               </ul>
             </Aside>
           )}
-          {task.dueAt && <Aside label="Due">{new Date(task.dueAt).toLocaleString()}</Aside>}
         </div>
       </aside>
     </div>

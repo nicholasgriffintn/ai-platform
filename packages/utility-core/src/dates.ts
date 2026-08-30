@@ -11,7 +11,11 @@ export function formatDate(dateString: string): string {
 }
 
 export function formatRelativeTime(dateString: string, now = new Date()): string {
-  const date = new Date(dateString);
+  const date = new Date(
+    /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dateString)
+      ? `${dateString.replace(" ", "T")}Z`
+      : dateString,
+  );
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);

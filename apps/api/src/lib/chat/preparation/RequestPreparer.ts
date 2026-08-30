@@ -34,6 +34,7 @@ import {
   type ProjectChatContext,
 } from "~/services/workspaces/chatContext";
 import type { ChatMode, CoreChatOptions, MemoryScope, Message, Platform } from "~/types";
+import { intersectEnabledTools } from "~/utils/enabledTools";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { memoizeRequest } from "~/utils/requestCache";
@@ -152,10 +153,10 @@ export class RequestPreparer {
 
   private resolveConnectedConnectorProviders(scope: RequestScope) {
     const { options, user, projectContext } = scope;
-    const enabledFunctionTools = resolveEnabledFunctionToolNames(
-      projectContext?.enabledTools ?? options.enabled_tools,
-      user,
-    );
+    const requestedTools = projectContext
+      ? intersectEnabledTools(projectContext.enabledTools, options.enabled_tools)
+      : options.enabled_tools;
+    const enabledFunctionTools = resolveEnabledFunctionToolNames(requestedTools, user);
 
     if (!user?.id || !options.context || !enabledFunctionTools.has("use_recipe_connector")) {
       return Promise.resolve(undefined);
@@ -295,11 +296,14 @@ export class RequestPreparer {
       skillScopePromise,
       scopedSkillCatalogPromise,
     ]);
+    const enabledTools = projectContext
+      ? intersectEnabledTools(projectContext.enabledTools, scope.options.enabled_tools)
+      : scope.options.enabled_tools;
     const skills: readonly SkillAvailability[] = await listSkillAvailability(
       buildSkillAvailabilityInput({
         skillScope,
         supportsToolCalls: Boolean(primaryModelConfig.supportsToolCalls),
-        enabledToolIds: new Set(projectContext?.enabledTools ?? scope.options.enabled_tools ?? []),
+        enabledToolIds: new Set(enabledTools ?? []),
       }),
       scopedSkillCatalog?.listDefinitions(),
     );
@@ -334,8 +338,6 @@ export class RequestPreparer {
       messageWithContext,
       primaryModelConfig,
     });
-
-    const enabledTools = projectContext?.enabledTools ?? scope.options.enabled_tools;
 
     return {
       modelConfigs,

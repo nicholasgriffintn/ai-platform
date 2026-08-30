@@ -1,4 +1,8 @@
-import { SANDBOX_RUN_DISPATCH_TASK_TYPE, type TaskType } from "@ngriffin_uk/polychat-schemas";
+import {
+  PROJECT_TASK_RUN_TASK_TYPE,
+  SANDBOX_RUN_DISPATCH_TASK_TYPE,
+  type TaskType,
+} from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { TaskExecutor } from "../TaskExecutor";
@@ -90,6 +94,17 @@ describe("TaskExecutor", () => {
     );
   });
 
+  it("executes project task runs without a separate feature-flag allowlist", async () => {
+    const handler: TaskHandler = {
+      handle: vi.fn().mockResolvedValue({ status: "success", data: {} }),
+    };
+    const executor = new TaskExecutor({} as any, new Map([[PROJECT_TASK_RUN_TASK_TYPE, handler]]));
+
+    await executor.execute(createTaskMessage(PROJECT_TASK_RUN_TASK_TYPE));
+
+    expect(handler.handle).toHaveBeenCalledTimes(1);
+  });
+
   it("skips duplicate deliveries that cannot claim the task", async () => {
     const handler: TaskHandler = {
       handle: vi.fn().mockResolvedValue({ status: "success", data: {} }),
@@ -108,7 +123,7 @@ describe("TaskExecutor", () => {
     expect(mockTaskRepository.updateTask).not.toHaveBeenCalled();
   });
 
-  it("returns early for unknown task types with no feature-flag mapping", async () => {
+  it("cancels unknown task types explicitly", async () => {
     const handler: TaskHandler = {
       handle: vi.fn().mockResolvedValue({ status: "success" }),
     };
@@ -122,7 +137,7 @@ describe("TaskExecutor", () => {
       "task-1",
       expect.objectContaining({
         status: "cancelled",
-        error_message: "Task type invalid_type has no feature-flag configuration",
+        error_message: "Unknown task type: invalid_type",
       }),
     );
   });

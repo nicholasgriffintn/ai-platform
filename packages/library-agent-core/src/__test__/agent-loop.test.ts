@@ -79,10 +79,11 @@ describe("executeAgentLoop", () => {
 
   it("applies update_plan without consuming a finish", async () => {
     const emitted: string[] = [];
+    const messages = [{ role: "user" as const, content: "start" }];
     let step = 0;
 
     const result = await executeAgentLoop({
-      initialMessages: [{ role: "user", content: "start" }],
+      initialMessages: messages,
       initialPlan: "Original plan",
       shared: {},
       state: { commandCount: 0 },
@@ -103,6 +104,54 @@ describe("executeAgentLoop", () => {
 
     expect(result.finalPlan).toBe("Revised plan");
     expect(emitted).toContain("plan_updated");
+    expect(messages).toContainEqual(
+      expect.objectContaining({
+        role: "tool",
+        name: "update_plan",
+        tool_call_id: "call-update_plan",
+        content: expect.stringContaining("Revised plan"),
+      }),
+    );
+    expect(messages).not.toContainEqual(
+      expect.objectContaining({ role: "user", content: expect.stringContaining("Plan updated") }),
+    );
+  });
+
+  it("records control results before requesting another provider turn", async () => {
+    const messages = [{ role: "user" as const, content: "start" }];
+    const recordControlToolResults = vi.fn(async (calls: AgentToolCall[]) =>
+      calls.map((call) => ({
+        role: "tool" as const,
+        name: call.name,
+        content: "recorded",
+        tool_call_id: call.id,
+      })),
+    );
+    let step = 0;
+
+    await executeAgentLoop({
+      initialMessages: messages,
+      initialPlan: "Plan",
+      shared: {},
+      state: { commandCount: 0 },
+      resolveTurn: async () => {
+        step += 1;
+
+        if (step === 1) {
+          return turn([toolCall("update_plan", { plan: "Revised plan" })]);
+        }
+
+        expect(messages.at(-2)).toEqual(
+          expect.objectContaining({ role: "tool", tool_call_id: "call-update_plan" }),
+        );
+
+        return turn([toolCall("finish", { summary: "Finished." })]);
+      },
+      executeToolCalls: async () => {},
+      recordControlToolResults,
+    });
+
+    expect(recordControlToolResults).toHaveBeenCalledTimes(2);
   });
 
   it("rejects finish while assessFinish withholds approval", async () => {

@@ -1,6 +1,6 @@
 import type { TaskType } from "@ngriffin_uk/polychat-schemas";
 
-import { ENABLED_SCHEDULES_FLAGS, ALWAYS_ENABLED_SCHEDULES } from "~/constants/schedules";
+import { ENABLED_SCHEDULES_FLAGS } from "~/constants/schedules";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import type { IEnv } from "~/types";
 import { generateId } from "~/utils/id";
@@ -10,11 +10,6 @@ import type { TaskHandler, TaskResult } from "./TaskHandler";
 import type { TaskMessage } from "./TaskService";
 
 const logger = getLogger({ prefix: "services/tasks/executor" });
-const ALWAYS_ENABLED_TASK_SET = new Set<TaskType>(ALWAYS_ENABLED_SCHEDULES);
-
-function isAlwaysEnabledTask(taskType: TaskType): boolean {
-  return ALWAYS_ENABLED_TASK_SET.has(taskType);
-}
 
 function hasFeatureFlag(taskType: TaskType): taskType is keyof typeof ENABLED_SCHEDULES_FLAGS {
   return taskType in ENABLED_SCHEDULES_FLAGS;
@@ -35,22 +30,7 @@ export class TaskExecutor {
     const startTime = Date.now();
 
     try {
-      if (!isAlwaysEnabledTask(message.task_type)) {
-        if (!hasFeatureFlag(message.task_type)) {
-          const completedAt = new Date().toISOString();
-
-          await this.taskRepository.updateTask(message.taskId, {
-            status: "cancelled",
-            completed_at: completedAt,
-            error_message: `Task type ${message.task_type} has no feature-flag configuration`,
-          });
-          logger.warn(
-            `Task type ${message.task_type} has no feature-flag configuration and is disabled`,
-          );
-
-          return;
-        }
-
+      if (hasFeatureFlag(message.task_type)) {
         const isEnabledEnvVar = ENABLED_SCHEDULES_FLAGS[message.task_type];
 
         if (this.env[isEnabledEnvVar] !== "true") {
@@ -70,7 +50,14 @@ export class TaskExecutor {
       const handler = this.handlers.get(message.task_type);
 
       if (!handler) {
-        throw new Error(`Unknown task type: ${message.task_type}`);
+        await this.taskRepository.updateTask(message.taskId, {
+          status: "cancelled",
+          completed_at: new Date().toISOString(),
+          error_message: `Unknown task type: ${message.task_type}`,
+        });
+        logger.warn(`Unknown task type ${message.task_type} was cancelled`);
+
+        return;
       }
 
       const claimedTask = await this.taskRepository.claimTaskForExecution(message.taskId);

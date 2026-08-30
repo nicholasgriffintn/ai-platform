@@ -1,6 +1,6 @@
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { nonEmptyToolCallsOrNull } from "~/utils/toolCalls";
+import { nonEmptyToolCallsOrNull, serialiseToolCallArguments } from "~/utils/toolCalls";
 
 import { BaseRepository } from "./BaseRepository";
 
@@ -132,7 +132,7 @@ export class MessageRepository extends BaseRepository {
       data,
       usage,
       messageData.tool_call_id || null,
-      messageData.tool_call_arguments || null,
+      serialiseToolCallArguments(messageData.tool_call_arguments),
       messageData.app || null,
       parts,
     ];

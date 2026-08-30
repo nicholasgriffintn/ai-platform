@@ -186,7 +186,7 @@ export const complete_goal: ApiToolDefinition = {
   }),
   type: "premium",
   costPerCall: 0,
-  permissions: ["write"],
+  permissions: ["reasoning"],
   execute: async (args, context) => {
     const service = resolveGoalService(context);
     const completionId = resolveCompletionId(context);

@@ -1,11 +1,8 @@
 import type { AuthChallengeKind } from "@ngriffin_uk/auth-protocol";
 import type {
-  ProjectTaskCapability,
-  ProjectTaskConsequence,
   ProjectTaskConstraints,
   ProjectTaskContext,
   ProjectTaskCriterion,
-  ProjectTaskDeliverable,
   ProjectTaskRunner,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
@@ -1629,22 +1626,12 @@ export const projectTask = sqliteTable(
       .notNull()
       .references(() => workspace.id, { onDelete: "cascade" }),
     objective: text().notNull(),
-    acceptance: text(),
     acceptance_criteria: text({ mode: "json" }).$type<ProjectTaskCriterion[]>(),
-    deliverable: text({ mode: "json" }).$type<ProjectTaskDeliverable>(),
+    expected_output: text(),
     context: text({ mode: "json" }).$type<ProjectTaskContext>(),
     constraints: text({ mode: "json" }).$type<ProjectTaskConstraints>(),
     depends_on_task_ids: text({ mode: "json" }).$type<string[]>(),
-    capabilities: text({ mode: "json" }).$type<ProjectTaskCapability[]>(),
-    approval_consequences: text({ mode: "json" }).$type<ProjectTaskConsequence[]>(),
-    effort: text({ enum: ["quick", "standard", "thorough"] })
-      .default("standard")
-      .notNull(),
     require_approval_for: text({ mode: "json" }).$type<ToolPermission[]>(),
-    priority: text({ enum: ["low", "normal", "high"] })
-      .default("normal")
-      .notNull(),
-    due_at: text(),
     status: text({
       enum: ["backlog", "queued", "running", "blocked", "review", "done", "cancelled"],
     })
@@ -1660,6 +1647,7 @@ export const projectTask = sqliteTable(
         "usage_limits",
         "token_budget",
         "missing_capability",
+        "dispatch_failed",
         "run_failed",
         "dependencies_unmet",
       ],
@@ -1674,6 +1662,7 @@ export const projectTask = sqliteTable(
     runner_identity_user_id: integer().references(() => user.id),
     conversation_id: text().references(() => conversation.id, { onDelete: "set null" }),
     goal_id: text(),
+    dispatch_task_id: text(),
     position: real().default(0).notNull(),
     token_budget: integer(),
     tokens_spent: integer().default(0).notNull(),
@@ -1697,7 +1686,6 @@ export const projectTask = sqliteTable(
       table.status,
     ),
     assigneeIdx: index("project_task_assignee_idx").on(table.assignee_user_id),
-    dueAtIdx: index("project_task_due_at_idx").on(table.due_at),
     conversationIdx: uniqueIndex("project_task_conversation_idx")
       .on(table.conversation_id)
       .where(sql`${table.conversation_id} IS NOT NULL`),

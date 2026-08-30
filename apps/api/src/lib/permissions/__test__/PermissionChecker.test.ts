@@ -62,6 +62,20 @@ describe("PermissionChecker", () => {
     expect(result.requiresApproval).toBe(false);
   });
 
+  it("allows goal completion as a reasoning operation in plan mode", () => {
+    const checker = new PermissionChecker();
+    const result = checker.checkToolAccess({
+      toolName: "complete_goal",
+      mode: "plan",
+      user: proUser,
+      toolType: "premium",
+      toolPermissions: ["reasoning"],
+    });
+
+    expect(result.allowed).toBe(true);
+    expect(result.requiresApproval).toBe(false);
+  });
+
   it("blocks network tools in plan mode", () => {
     const checker = new PermissionChecker();
     const result = checker.checkToolAccess({

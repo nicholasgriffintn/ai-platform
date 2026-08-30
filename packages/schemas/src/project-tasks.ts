@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
-import { TOOL_PERMISSIONS, toolPermissionSchema, type ToolPermission } from "./agent-modes";
+import { agentModeSchema, toolPermissionSchema } from "./agent-modes";
+import { goalSchema } from "./goals";
 
 export const projectTaskStatusSchema = z.enum([
   "backlog",
@@ -13,15 +14,6 @@ export const projectTaskStatusSchema = z.enum([
 ]);
 
 export type ProjectTaskStatus = z.infer<typeof projectTaskStatusSchema>;
-
-export const PROJECT_TASK_BOARD_COLUMNS: readonly ProjectTaskStatus[] = [
-  "backlog",
-  "queued",
-  "running",
-  "blocked",
-  "review",
-  "done",
-];
 
 export const TERMINAL_PROJECT_TASK_STATUSES: readonly ProjectTaskStatus[] = ["done", "cancelled"];
 
@@ -41,6 +33,7 @@ export const projectTaskBlockedReasonSchema = z.enum([
   "usage_limits",
   "token_budget",
   "missing_capability",
+  "dispatch_failed",
   "run_failed",
   "dependencies_unmet",
 ]);
@@ -53,6 +46,7 @@ export const projectTaskBlockedReasonLabels: Record<ProjectTaskBlockedReason, st
   usage_limits: "Stopped at the usage limit",
   token_budget: "Reached its token budget",
   missing_capability: "Needs a capability it does not have",
+  dispatch_failed: "Could not start the agent run",
   run_failed: "The run failed",
   dependencies_unmet: "Waiting on another task",
 };
@@ -74,7 +68,7 @@ export const PROJECT_TASK_ACTOR_TRANSITIONS: Record<
   readonly ProjectTaskStatus[]
 > = {
   user: ["backlog", "queued", "running", "blocked", "review", "done", "cancelled"],
-  model: ["backlog", "queued", "review", "cancelled"],
+  model: ["backlog", "review", "cancelled"],
   system: ["queued", "running", "blocked", "review"],
 };
 
@@ -83,168 +77,6 @@ export function canActorSetProjectTaskStatus(
   status: ProjectTaskStatus,
 ): boolean {
   return PROJECT_TASK_ACTOR_TRANSITIONS[actor].includes(status);
-}
-
-export const projectTaskEffortSchema = z.enum(["quick", "standard", "thorough"]);
-export type ProjectTaskEffort = z.infer<typeof projectTaskEffortSchema>;
-
-export const PROJECT_TASK_EFFORT_BUDGETS: Record<ProjectTaskEffort, number> = {
-  quick: 100_000,
-  standard: 400_000,
-  thorough: 1_500_000,
-};
-
-export const projectTaskEffortLabels: Record<ProjectTaskEffort, string> = {
-  quick: "Quick",
-  standard: "Standard",
-  thorough: "Thorough",
-};
-
-export const projectTaskCapabilitySchema = z.enum([
-  "web_access",
-  "code_execution",
-  "file_editing",
-  "external_actions",
-]);
-export type ProjectTaskCapability = z.infer<typeof projectTaskCapabilitySchema>;
-
-export const projectTaskCapabilityLabels: Record<ProjectTaskCapability, string> = {
-  web_access: "Web and API calls",
-  code_execution: "Code execution",
-  file_editing: "File editing",
-  external_actions: "External actions",
-};
-
-export const PROJECT_TASK_BASELINE_PERMISSIONS: readonly ToolPermission[] = [
-  "read",
-  "reasoning",
-  "human",
-];
-
-export const PROJECT_TASK_CAPABILITY_PERMISSIONS: Record<
-  ProjectTaskCapability,
-  readonly ToolPermission[]
-> = {
-  web_access: ["network"],
-  code_execution: ["sandbox"],
-  file_editing: ["write"],
-  external_actions: ["orchestration", "delegate"],
-};
-
-export const PROJECT_TASK_DEFAULT_CAPABILITIES: readonly ProjectTaskCapability[] = [
-  "web_access",
-  "file_editing",
-];
-
-export function permissionsForCapabilities(
-  capabilities: readonly ProjectTaskCapability[],
-): ToolPermission[] {
-  const allowed = new Set<ToolPermission>(PROJECT_TASK_BASELINE_PERMISSIONS);
-
-  for (const capability of capabilities) {
-    for (const permission of PROJECT_TASK_CAPABILITY_PERMISSIONS[capability]) {
-      allowed.add(permission);
-    }
-  }
-
-  return [...allowed];
-}
-
-export const projectTaskConsequenceSchema = z.enum([
-  "publish",
-  "message_people",
-  "spend_money",
-  "modify_external_data",
-  "delete",
-  "merge_or_deploy",
-]);
-export type ProjectTaskConsequence = z.infer<typeof projectTaskConsequenceSchema>;
-
-export const projectTaskConsequenceLabels: Record<ProjectTaskConsequence, string> = {
-  publish: "Publish something",
-  message_people: "Message people",
-  spend_money: "Spend money",
-  modify_external_data: "Change data in another system",
-  delete: "Delete something",
-  merge_or_deploy: "Merge or deploy",
-};
-
-export const PROJECT_TASK_CONSEQUENCE_PERMISSIONS: Record<
-  ProjectTaskConsequence,
-  readonly ToolPermission[]
-> = {
-  publish: ["network"],
-  message_people: ["network"],
-  spend_money: ["network"],
-  modify_external_data: ["network"],
-  delete: ["network"],
-  merge_or_deploy: ["sandbox", "orchestration"],
-};
-
-export const PROJECT_TASK_DEFAULT_CONSEQUENCES: readonly ProjectTaskConsequence[] = [
-  "publish",
-  "message_people",
-  "spend_money",
-  "modify_external_data",
-  "delete",
-  "merge_or_deploy",
-];
-
-export function permissionsForConsequences(
-  consequences: readonly ProjectTaskConsequence[],
-): ToolPermission[] {
-  const required = new Set<ToolPermission>();
-
-  for (const consequence of consequences) {
-    for (const permission of PROJECT_TASK_CONSEQUENCE_PERMISSIONS[consequence]) {
-      required.add(permission);
-    }
-  }
-
-  return [...required];
-}
-
-export const projectTaskPrioritySchema = z.enum(["low", "normal", "high"]);
-export type ProjectTaskPriority = z.infer<typeof projectTaskPrioritySchema>;
-
-export const projectTaskDeliverableKindSchema = z.enum([
-  "pull_request",
-  "document",
-  "analysis",
-  "message",
-  "data",
-  "other",
-]);
-export type ProjectTaskDeliverableKind = z.infer<typeof projectTaskDeliverableKindSchema>;
-
-export const projectTaskDeliverableSchema = z.object({
-  kind: projectTaskDeliverableKindSchema,
-  description: z.string().trim().max(500).nullable().default(null),
-});
-export type ProjectTaskDeliverable = z.infer<typeof projectTaskDeliverableSchema>;
-
-const DELIVERABLE_HINTS: [ProjectTaskDeliverableKind, RegExp][] = [
-  ["pull_request", /\b(pull request|\bpr\b|patch|refactor|implement|fix the bug|migrate)\b/i],
-  ["message", /\b(email|message|reply|announce|post|notify|slack)\b/i],
-  ["analysis", /\b(analys|investigat|compare|evaluate|assess|review the)\b/i],
-  ["data", /\b(dataset|export|spreadsheet|csv|query|numbers)\b/i],
-  ["document", /\b(draft|write|document|note|spec|summary|report|brief)\b/i],
-];
-
-export function inferDeliverableKind(objective: string): ProjectTaskDeliverableKind | "" {
-  const text = objective.trim();
-
-  if (!text) {
-    return "";
-  }
-
-  for (const [kind, pattern] of DELIVERABLE_HINTS) {
-    if (pattern.test(text)) {
-      return kind;
-    }
-  }
-
-  return "";
 }
 
 export const projectTaskCriterionSchema = z.object({
@@ -275,7 +107,7 @@ export const projectTaskRunnerSchema = z.object({
   kind: projectTaskRunnerKindSchema,
   agentId: z.string().min(1).nullable().default(null),
   model: z.string().min(1).nullable().default(null),
-  mode: z.string().min(1).nullable().default(null),
+  mode: agentModeSchema.nullable().default(null),
 });
 
 export type ProjectTaskRunner = z.infer<typeof projectTaskRunnerSchema>;
@@ -285,18 +117,12 @@ export const projectTaskSchema = z.object({
   projectId: z.string(),
   workspaceId: z.string(),
   objective: z.string(),
-  acceptance: z.string().nullable(),
   acceptanceCriteria: z.array(projectTaskCriterionSchema).default([]),
-  deliverable: projectTaskDeliverableSchema.nullable(),
+  expectedOutput: z.string().nullable(),
   context: projectTaskContextSchema.nullable(),
   constraints: projectTaskConstraintsSchema.nullable(),
   dependsOnTaskIds: z.array(z.string().min(1)).default([]),
   requireApprovalFor: z.array(toolPermissionSchema).default([]),
-  capabilities: z.array(projectTaskCapabilitySchema).default([]),
-  approvalConsequences: z.array(projectTaskConsequenceSchema).default([]),
-  effort: projectTaskEffortSchema,
-  priority: projectTaskPrioritySchema,
-  dueAt: z.string().nullable(),
   status: projectTaskStatusSchema,
   source: projectTaskSourceSchema,
   blockedReason: projectTaskBlockedReasonSchema.nullable(),
@@ -308,6 +134,7 @@ export const projectTaskSchema = z.object({
   runnerIdentityUserId: z.number().int().positive().nullable(),
   conversationId: z.string().nullable(),
   goalId: z.string().nullable(),
+  dispatchTaskId: z.string().nullable(),
   position: z.number(),
   tokenBudget: z.number().int().positive().nullable(),
   tokensSpent: z.number().int().nonnegative(),
@@ -327,9 +154,10 @@ export const projectFlowStageSchema = z.object({
     .max(40)
     .regex(/^[a-z0-9][a-z0-9_-]*$/, "Stage ids are lowercase, and use - or _ as separators"),
   name: z.string().trim().min(1).max(60),
+  instructions: z.string().trim().max(2000).nullable().default(null),
   agentId: z.string().trim().min(1).nullable().default(null),
   skillId: z.string().trim().min(1).nullable().default(null),
-  mode: z.string().trim().min(1).nullable().default(null),
+  mode: agentModeSchema.nullable().default(null),
   requiresApprovalFor: z.array(toolPermissionSchema).default([]),
   advance: z.enum(["on_goal_complete", "on_human_accept"]),
 });
@@ -401,23 +229,15 @@ export const projectTaskAttentionResponseSchema = z.object({
 export type ProjectTaskAttentionResponse = z.infer<typeof projectTaskAttentionResponseSchema>;
 
 const objectiveField = z.string().trim().min(1).max(2000);
-const acceptanceField = z.string().trim().max(4000);
-
 const taskWorkItemFields = {
-  acceptance: acceptanceField.nullable(),
   acceptanceCriteria: z
     .array(projectTaskCriterionSchema.omit({ id: true }).extend({ id: z.string().optional() }))
     .max(PROJECT_TASK_MAX_CRITERIA),
-  deliverable: projectTaskDeliverableSchema.nullable(),
+  expectedOutput: z.string().trim().max(1000).nullable(),
   context: projectTaskContextSchema.nullable(),
   constraints: projectTaskConstraintsSchema.nullable(),
   dependsOnTaskIds: z.array(z.string().min(1)).max(50),
-  requireApprovalFor: z.array(toolPermissionSchema).max(TOOL_PERMISSIONS.length),
-  capabilities: z.array(projectTaskCapabilitySchema).max(10),
-  approvalConsequences: z.array(projectTaskConsequenceSchema).max(10),
-  effort: projectTaskEffortSchema,
-  priority: projectTaskPrioritySchema,
-  dueAt: z.iso.datetime().nullable(),
+  requireApprovalFor: z.array(toolPermissionSchema).max(8),
   assigneeUserId: z.number().int().positive().nullable(),
   runner: projectTaskRunnerSchema.nullable(),
   stageId: z.string().trim().min(1).max(40).nullable(),
@@ -457,6 +277,13 @@ export const projectTaskListQuerySchema = z.object({
 
 export const projectTaskResponseSchema = z.object({ task: projectTaskSchema });
 
+export const projectTaskDetailResponseSchema = z.object({
+  task: projectTaskSchema,
+  goal: goalSchema.nullable(),
+});
+
+export type ProjectTaskDetailResponse = z.infer<typeof projectTaskDetailResponseSchema>;
+
 export const projectTaskListResponseSchema = z.object({
   tasks: z.array(projectTaskSchema),
   flow: projectFlowSchema.nullable(),
@@ -473,9 +300,11 @@ export const projectFlowResponseSchema = z.object({
 });
 
 export const projectTaskRunDispatchPayloadSchema = z.object({
+  dispatchTaskId: z.string().min(1),
   taskId: z.string().min(1),
   projectId: z.string().min(1),
   runnerIdentityUserId: z.number().int().positive(),
+  conversationId: z.string().min(1).nullable(),
 });
 
 export type ProjectTaskRunDispatchPayload = z.infer<typeof projectTaskRunDispatchPayloadSchema>;

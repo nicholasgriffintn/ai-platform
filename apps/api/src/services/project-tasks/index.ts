@@ -1,17 +1,13 @@
 import {
   isTerminalProjectTaskStatus,
   nextFlowStageId,
-  PROJECT_TASK_DEFAULT_CAPABILITIES,
   PROJECT_TASK_DEFAULT_CONCURRENCY,
-  PROJECT_TASK_DEFAULT_CONSEQUENCES,
-  PROJECT_TASK_EFFORT_BUDGETS,
   type CreateProjectTaskInput,
   type ProjectFlow,
   type ProjectTask,
   type ProjectTaskActor,
   type ProjectTaskCriterion,
   type ProjectTaskSource,
-  type ProjectTaskStatus,
   type UpdateProjectTaskInput,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -22,7 +18,7 @@ import { parseProjectFlow } from "~/services/workspaces/format";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
-import { enqueueProjectTaskRun } from "./runner";
+import { queueProjectTaskRun } from "./runner";
 import { assertProjectTaskTransition } from "./transitions";
 
 const POSITION_STEP = 1000;
@@ -149,8 +145,10 @@ export async function listProjectTasks(
 
 export async function getProjectTask(context: ServiceContext, projectId: string, taskId: string) {
   await requireProjectAccess(context, projectId);
+  const task = await requireTask(context, projectId, taskId);
+  const goal = task.goalId ? await context.repositories.goals.getGoalById(task.goalId) : null;
 
-  return { task: await requireTask(context, projectId, taskId) };
+  return { task, goal };
 }
 
 export async function createProjectTask(
@@ -172,18 +170,12 @@ export async function createProjectTask(
     projectId,
     workspaceId: project.workspace_id,
     objective: input.objective,
-    acceptance: input.acceptance ?? null,
     acceptanceCriteria: withCriterionIds(input.acceptanceCriteria) ?? [],
-    deliverable: input.deliverable ?? null,
+    expectedOutput: input.expectedOutput ?? null,
     context: input.context ?? null,
     constraints: input.constraints ?? null,
     dependsOnTaskIds: input.dependsOnTaskIds ?? [],
     requireApprovalFor: input.requireApprovalFor ?? [],
-    capabilities: input.capabilities ?? [...PROJECT_TASK_DEFAULT_CAPABILITIES],
-    approvalConsequences: input.approvalConsequences ?? [...PROJECT_TASK_DEFAULT_CONSEQUENCES],
-    effort: input.effort ?? "standard",
-    priority: input.priority ?? "normal",
-    dueAt: input.dueAt ?? null,
     source: options.source ?? "user",
     createdByUserId: user.id,
     assigneeUserId: input.assigneeUserId ?? null,
@@ -259,8 +251,9 @@ export async function startProjectTask(context: ServiceContext, projectId: strin
   const user = context.requireUser();
   const { project } = await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
+  const flow = parseProjectFlow(project.flow);
 
-  if (task.status === "running" || task.status === "queued") {
+  if (task.status === "running" || (task.status === "queued" && task.dispatchTaskId)) {
     return { task };
   }
 
@@ -301,25 +294,13 @@ export async function startProjectTask(context: ServiceContext, projectId: strin
     );
   }
 
-  const queued = await context.repositories.projectTasks.updateTask(taskId, {
-    status: "queued",
-    blockedReason: null,
-    blockedDetail: null,
+  const queued = await queueProjectTaskRun({
+    context,
+    task,
     runnerIdentityUserId: user.id,
-    tokenBudget: task.tokenBudget ?? PROJECT_TASK_EFFORT_BUDGETS[task.effort],
-    runner: task.runner ?? {
-      kind: "conversation",
-      agentId: null,
-      model: null,
-      mode: null,
-    },
+    stageId: task.stageId ?? flow?.stages[0]?.id ?? null,
   });
 
-  if (!queued) {
-    throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
-  }
-
-  await enqueueProjectTaskRun(context, queued, user.id);
   await context.repositories.audit.createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
@@ -347,14 +328,23 @@ export async function acceptProjectTask(
 
   const flow = parseProjectFlow(project.flow);
   const nextStage = nextFlowStageId(flow, task.stageId);
-  const nextStatus: ProjectTaskStatus = nextStage ? "backlog" : "done";
-  const updated = await context.repositories.projectTasks.updateTask(taskId, {
-    status: nextStatus,
-    stageId: nextStage ?? task.stageId,
-    blockedReason: null,
-    blockedDetail: null,
-    ...(nextStage ? {} : { completedAt: new Date().toISOString() }),
-  });
+  let updated: ProjectTask | null;
+
+  if (nextStage) {
+    updated = await queueProjectTaskRun({
+      context,
+      task,
+      runnerIdentityUserId: user.id,
+      stageId: nextStage,
+    });
+  } else {
+    updated = await context.repositories.projectTasks.updateTask(taskId, {
+      status: "done",
+      blockedReason: null,
+      blockedDetail: null,
+      completedAt: new Date().toISOString(),
+    });
+  }
 
   if (!updated) {
     throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
@@ -363,7 +353,7 @@ export async function acceptProjectTask(
   await context.repositories.audit.createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
-    action: nextStage ? "project.task.stage_advanced" : "project.task.accepted",
+    action: nextStage ? "project.task.stage_started" : "project.task.accepted",
     targetType: "project_task",
     targetId: taskId,
     metadata: { projectId, stageId: nextStage ?? task.stageId },
@@ -426,6 +416,23 @@ export async function setProjectFlow(
     if (missing.length > 0) {
       throw new AssistantError(
         `Attach these agents to the project before using them in a flow: ${missing.join(", ")}`,
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+
+    const attachedSkills = new Set(
+      capabilities
+        .filter((capability) => capability.kind === "skill")
+        .map((capability) => capability.capability_id),
+    );
+    const missingSkills = flow.stages
+      .map((stage) => stage.skillId)
+      .filter((skillId): skillId is string => Boolean(skillId) && !attachedSkills.has(skillId));
+
+    if (missingSkills.length > 0) {
+      throw new AssistantError(
+        `Attach these skills to the project before using them in a flow: ${missingSkills.join(", ")}`,
         ErrorType.PARAMS_ERROR,
         400,
       );

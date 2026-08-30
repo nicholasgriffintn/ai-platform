@@ -1,23 +1,15 @@
 import type {
-  ProjectTaskCapability,
-  ProjectTaskConsequence,
-  ProjectTaskEffort,
-  ProjectTaskPriority,
+  ProjectFlow,
   ProjectTaskSource,
   ProjectTaskStatus,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
-import {
-  permissionsForConsequences,
-  PROJECT_TASK_DEFAULT_CAPABILITIES,
-  PROJECT_TASK_DEFAULT_CONSEQUENCES,
-  PROJECT_TASK_EFFORT_BUDGETS,
-} from "@ngriffin_uk/polychat-schemas";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { intersectEnabledTools } from "~/utils/enabledTools";
 
-import { intersectAgentTools, resolveTaskRuntime, toolsWithinCapabilities } from "../flow";
+import { resolveTaskRuntime } from "../flow";
 import {
   acceptProjectTask,
   createProjectTask,
@@ -25,6 +17,11 @@ import {
   startProjectTask,
   updateProjectTask,
 } from "../index";
+import {
+  ensureProjectTaskConversation,
+  projectTaskConversationId,
+  queueProjectTaskRun,
+} from "../runner";
 import { assertProjectTaskTransition, projectTaskStatusForGoal } from "../transitions";
 
 const baseTask = {
@@ -32,18 +29,12 @@ const baseTask = {
   projectId: "project-1",
   workspaceId: "workspace-1",
   objective: "Ship the pricing note",
-  acceptance: null,
   acceptanceCriteria: [],
-  deliverable: null,
+  expectedOutput: null,
   context: null,
   constraints: null,
   dependsOnTaskIds: [] as string[],
   requireApprovalFor: [] as ToolPermission[],
-  capabilities: [] as ProjectTaskCapability[],
-  approvalConsequences: [] as ProjectTaskConsequence[],
-  effort: "standard" as ProjectTaskEffort,
-  priority: "normal" as ProjectTaskPriority,
-  dueAt: null,
   status: "backlog" as ProjectTaskStatus,
   source: "user" as ProjectTaskSource,
   blockedReason: null,
@@ -55,6 +46,7 @@ const baseTask = {
   runnerIdentityUserId: null,
   conversationId: null,
   goalId: null,
+  dispatchTaskId: null,
   position: 1000,
   tokenBudget: null,
   tokensSpent: 0,
@@ -82,6 +74,7 @@ function createContext(
       ...task,
       ...updates,
     }));
+  const createConversation = vi.fn().mockResolvedValue({ id: "task_task-1" });
 
   return {
     context: {
@@ -113,17 +106,44 @@ function createContext(
           updateTask,
         },
         audit: { createRecord: vi.fn().mockResolvedValue(undefined) },
+        conversations: {
+          getConversation: vi.fn().mockResolvedValue(null),
+          createConversation,
+        },
         tasks: {},
       },
     } as unknown as ServiceContext,
     updateTask,
+    createConversation,
   };
 }
 
-vi.mock("../runner", () => ({
-  enqueueProjectTaskRun: vi.fn().mockResolvedValue(undefined),
-  projectTaskConversationId: (taskId: string) => `task_${taskId}`,
-}));
+vi.mock("../runner", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../runner")>();
+
+  return {
+    ...actual,
+    queueProjectTaskRun: vi
+      .fn()
+      .mockImplementation(async ({ context, task, runnerIdentityUserId, stageId }) =>
+        context.repositories.projectTasks.updateTask(task.id, {
+          status: "queued",
+          runnerIdentityUserId,
+          stageId: stageId ?? task.stageId,
+        }),
+      ),
+  };
+});
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+describe("projectTaskConversationId", () => {
+  it("isolates a retry attempt from a failed conversation", () => {
+    expect(projectTaskConversationId("task-1", "attempt-2")).toBe("task_task-1_attempt-2");
+  });
+});
 
 describe("project task transitions", () => {
   it("refuses to let the model mark a task done", () => {
@@ -139,6 +159,16 @@ describe("project task transitions", () => {
         statusCode: 403,
       }),
     );
+  });
+
+  it("refuses to let the model create a queued card without dispatching work", () => {
+    expect(() =>
+      assertProjectTaskTransition({
+        actor: "model",
+        from: "backlog",
+        to: "queued",
+      }),
+    ).toThrow(expect.objectContaining({ statusCode: 403 }));
   });
 
   it("lets a person accept work the model put up for review", () => {
@@ -224,10 +254,38 @@ describe("startProjectTask", () => {
       statusCode: 409,
     });
   });
+
+  it("recovers a queued task that has no dispatch", async () => {
+    const flow = JSON.stringify({
+      stages: [
+        {
+          id: "plan",
+          name: "Plan",
+          instructions: null,
+          agentId: null,
+          skillId: null,
+          mode: "plan",
+          requiresApprovalFor: [],
+          advance: "on_goal_complete",
+        },
+      ],
+    });
+    const { context, updateTask } = createContext({
+      task: { status: "queued", dispatchTaskId: null },
+      flow,
+    });
+
+    await startProjectTask(context, "project-1", "task-1");
+
+    expect(updateTask).toHaveBeenCalledWith(
+      "task-1",
+      expect.objectContaining({ status: "queued", runnerIdentityUserId: 7, stageId: "plan" }),
+    );
+  });
 });
 
 describe("acceptProjectTask", () => {
-  it("advances to the next flow stage instead of finishing when one exists", async () => {
+  it("queues the next flow stage immediately after a person accepts the current one", async () => {
     const flow = JSON.stringify({
       stages: [
         {
@@ -259,8 +317,9 @@ describe("acceptProjectTask", () => {
 
     expect(updateTask).toHaveBeenCalledWith(
       "task-1",
-      expect.objectContaining({ status: "backlog", stageId: "build" }),
+      expect.objectContaining({ status: "queued", stageId: "build", runnerIdentityUserId: 7 }),
     );
+    expect(vi.mocked(queueProjectTaskRun)).toHaveBeenCalledTimes(1);
   });
 
   it("finishes the task when it is on the last stage", async () => {
@@ -284,6 +343,7 @@ describe("setProjectFlow", () => {
           {
             id: "build",
             name: "Build",
+            instructions: null,
             agentId: "agent-1",
             skillId: null,
             mode: null,
@@ -296,29 +356,30 @@ describe("setProjectFlow", () => {
   });
 });
 
-describe("intersectAgentTools", () => {
+describe("intersectEnabledTools", () => {
   it("narrows an agent's tools to the project's rather than widening them", () => {
-    expect(intersectAgentTools(["web_search", "run_sandbox_task"], ["web_search"])).toEqual([
+    expect(intersectEnabledTools(["web_search"], ["web_search", "run_sandbox_task"])).toEqual([
       "web_search",
     ]);
   });
 
   it("gives an agent with no declared tools exactly the project's tools", () => {
-    expect(intersectAgentTools(null, ["web_search"])).toEqual(["web_search"]);
+    expect(intersectEnabledTools(["web_search"], null)).toEqual(["web_search"]);
   });
 });
 
 describe("resolveTaskRuntime", () => {
-  const flow = {
+  const flow: ProjectFlow = {
     stages: [
       {
         id: "build",
         name: "Build",
+        instructions: null,
         agentId: null,
         skillId: null,
         mode: "build",
-        requiresApprovalFor: ["network", "write"] as const,
-        advance: "on_human_accept" as const,
+        requiresApprovalFor: ["network", "write"],
+        advance: "on_human_accept",
       },
     ],
   };
@@ -328,7 +389,7 @@ describe("resolveTaskRuntime", () => {
     const runtime = await resolveTaskRuntime({
       context,
       task: { ...baseTask, stageId: "build" },
-      flow: flow as never,
+      flow,
     });
 
     expect(runtime.requireApprovalFor).toEqual(["network", "write"]);
@@ -344,7 +405,7 @@ describe("resolveTaskRuntime", () => {
         stageId: "build",
         runner: { kind: "conversation", agentId: null, model: "gpt-5", mode: null },
       },
-      flow: flow as never,
+      flow,
     });
 
     expect(runtime.model).toBe("gpt-5");
@@ -355,6 +416,23 @@ describe("resolveTaskRuntime", () => {
     const runtime = await resolveTaskRuntime({ context, task: baseTask, flow: null });
 
     expect(runtime.requireApprovalFor).toEqual([]);
+  });
+});
+
+describe("ensureProjectTaskConversation", () => {
+  it("creates the project conversation before a conversation-owned goal is persisted", async () => {
+    const { context, createConversation } = createContext();
+
+    await ensureProjectTaskConversation({
+      context,
+      task: baseTask,
+      conversationId: "task_task-1",
+      userId: 7,
+    });
+
+    expect(createConversation).toHaveBeenCalledWith("task_task-1", 7, baseTask.objective, {
+      project_id: "project-1",
+    });
   });
 });
 
@@ -426,89 +504,5 @@ describe("task constraints", () => {
     });
 
     expect(runtime.requireApprovalFor).toContain("network");
-  });
-});
-
-describe("capabilities and consequences", () => {
-  const permissions = new Map<string, ToolPermission[]>([
-    ["web_search", ["network"]],
-    ["run_sandbox_task", ["sandbox"]],
-    ["create_note", ["write"]],
-    ["search_documents", ["read"]],
-  ]);
-  const allTools = ["web_search", "run_sandbox_task", "create_note", "search_documents"];
-
-  it("keeps only read-level tools when no capability is granted", () => {
-    expect(toolsWithinCapabilities(allTools, [], permissions)).toEqual(["search_documents"]);
-  });
-
-  it("admits a tool once its capability is granted", () => {
-    expect(toolsWithinCapabilities(allTools, ["web_access"], permissions)).toEqual([
-      "web_search",
-      "search_documents",
-    ]);
-  });
-
-  it("turns a consequence into the permissions that gate it", async () => {
-    const { context } = createContext();
-    const runtime = await resolveTaskRuntime({
-      context,
-      task: { ...baseTask, approvalConsequences: ["delete"] },
-      flow: null,
-    });
-
-    expect(runtime.requireApprovalFor).toContain("network");
-  });
-
-  it("never asks for approval on reading or reasoning", async () => {
-    const { context } = createContext();
-    const runtime = await resolveTaskRuntime({
-      context,
-      task: {
-        ...baseTask,
-        approvalConsequences: ["publish", "message_people", "spend_money", "delete"],
-      },
-      flow: null,
-    });
-
-    expect(runtime.requireApprovalFor).not.toContain("read");
-    expect(runtime.requireApprovalFor).not.toContain("reasoning");
-  });
-});
-
-describe("effort presets", () => {
-  it("resolves a task's budget from its effort rather than a raw number", async () => {
-    const { context, updateTask } = createContext({ task: { effort: "quick" } });
-
-    await startProjectTask(context, "project-1", "task-1");
-
-    expect(updateTask).toHaveBeenCalledWith(
-      "task-1",
-      expect.objectContaining({ tokenBudget: PROJECT_TASK_EFFORT_BUDGETS.quick }),
-    );
-  });
-});
-
-describe("default capabilities and approvals", () => {
-  it("gives a task created without them the safe defaults", async () => {
-    const { context } = createContext();
-    const createTask = context.repositories.projectTasks.createTask as ReturnType<typeof vi.fn>;
-
-    await createProjectTask(context, "project-1", { objective: "Ship the pricing note" });
-
-    expect(createTask).toHaveBeenCalledWith(
-      expect.objectContaining({
-        capabilities: [...PROJECT_TASK_DEFAULT_CAPABILITIES],
-        approvalConsequences: [...PROJECT_TASK_DEFAULT_CONSEQUENCES],
-      }),
-    );
-  });
-
-  it("leaves drafting ungated while every outward consequence is gated", () => {
-    const gated = permissionsForConsequences([...PROJECT_TASK_DEFAULT_CONSEQUENCES]);
-
-    expect(gated).not.toContain("read");
-    expect(gated).not.toContain("write");
-    expect(gated).toContain("network");
   });
 });

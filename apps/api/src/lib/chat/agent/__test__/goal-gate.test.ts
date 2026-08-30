@@ -72,7 +72,7 @@ describe("createGoalFinishGate", () => {
     expect(onTerminalStatus).toHaveBeenCalledTimes(1);
   });
 
-  it("counts new prose as progress but a repeated answer as a stall", async () => {
+  it("does not count reworded prose as progress without tool evidence", async () => {
     const recordIteration = vi
       .fn()
       .mockImplementation(({ goal }) => Promise.resolve({ goal, shouldContinue: true }));
@@ -83,8 +83,8 @@ describe("createGoalFinishGate", () => {
     await gate({ summary: "30, 40", step: 3, commandCount: 0 });
 
     expect(recordIteration.mock.calls.map((call) => call[0].iteration.producedEvidence)).toEqual([
-      true,
-      true,
+      false,
+      false,
       false,
     ]);
   });

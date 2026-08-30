@@ -9,6 +9,7 @@ import {
   projectFlowResponseSchema,
   projectTaskListQuerySchema,
   projectTaskListResponseSchema,
+  projectTaskDetailResponseSchema,
   projectTaskResponseSchema,
   setProjectFlowSchema,
   skillIdSchema,
@@ -176,7 +177,7 @@ const projectTaskParams = projectParams.extend({ taskId: z.string().min(1) });
 addRoute(app, "get", "/:projectId/tasks", {
   auth: true,
   tags: ["projects", "tasks"],
-  summary: "List the project task board",
+  summary: "List project tasks",
   paramSchema: projectParams,
   querySchema: projectTaskListQuerySchema,
   responses: {
@@ -206,7 +207,10 @@ addRoute(app, "get", "/:projectId/tasks/:taskId", {
   summary: "Get one project task",
   paramSchema: projectTaskParams,
   responses: {
-    200: { description: "The task", schema: projectTaskResponseSchema },
+    200: {
+      description: "The task and its latest run goal",
+      schema: projectTaskDetailResponseSchema,
+    },
     404: { description: "Task not found", schema: errorResponseSchema },
   },
   handler: ({ serviceContext, params }) =>

@@ -25,5 +25,6 @@ export * from "./OutputDetailHeader";
 export * from "./TaskBoard";
 export * from "./TaskAttentionList";
 export * from "./CreateTaskDialog";
+export * from "./FlowEditorDialog";
 export * from "./ProjectTasksSummary";
 export * from "./TaskDetail";

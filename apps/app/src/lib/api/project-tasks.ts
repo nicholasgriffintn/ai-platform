@@ -4,6 +4,7 @@ import type {
   ProjectFlow,
   ProjectTask,
   ProjectTaskAttentionResponse,
+  ProjectTaskDetailResponse,
   ProjectTaskListResponse,
   UpdateProjectTaskInput,
 } from "@ngriffin_uk/polychat-schemas";
@@ -17,6 +18,18 @@ async function authHeaders() {
 
 export async function listProjectTasks(projectId: string): Promise<ProjectTaskListResponse> {
   const response = await fetchApiOrThrow(`/projects/${projectId}/tasks`, {
+    method: "GET",
+    headers: await authHeaders(),
+  });
+
+  return returnFetchedData(response);
+}
+
+export async function getProjectTask(
+  projectId: string,
+  taskId: string,
+): Promise<ProjectTaskDetailResponse> {
+  const response = await fetchApiOrThrow(`/projects/${projectId}/tasks/${taskId}`, {
     method: "GET",
     headers: await authHeaders(),
   });

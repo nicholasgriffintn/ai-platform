@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
+import { useAuthStatus } from "~/hooks/useAuth";
 import { authService } from "~/lib/api/auth-service";
 
 export function meta() {
@@ -18,6 +19,7 @@ const VerifyMagicLink = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState<string | null>(null);
+  const { refreshAuthStatus } = useAuthStatus();
 
   const token = searchParams.get("token");
 
@@ -25,6 +27,7 @@ const VerifyMagicLink = () => {
     mutationFn: (token: string) => authService.verifyMagicLink(token),
     onSuccess: async (data) => {
       if (data.success) {
+        await refreshAuthStatus();
         void navigate("/");
       } else {
         setError(data.error || "Failed to verify magic link. Please request a new one.");
@@ -42,7 +45,7 @@ const VerifyMagicLink = () => {
     } else {
       setError("Invalid verification link. Missing required token.");
     }
-  }, []);
+  }, [token, verify]);
 
   return (
     <PageShell title="Magic Link Verification" displayNavBar={false}>

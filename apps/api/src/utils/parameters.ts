@@ -2,6 +2,7 @@ import { agentControlToolDefinitions } from "@ngriffin_uk/polychat-library-tool-
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
 import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
+import { PermissionChecker } from "~/lib/permissions/PermissionChecker";
 import { listFunctionTools } from "~/services/functions";
 import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
 import type { ChatCompletionParameters } from "~/types";
@@ -11,6 +12,8 @@ import { resolveRequestUser } from "~/utils/requestUser";
 
 import { formatToolCalls } from "../lib/chat/tools/execution";
 import { resolveReasoningModel } from "../lib/providers/models/reasoning";
+
+const permissionChecker = new PermissionChecker();
 
 /**
  * Restricts max_tokens to the model's configured maximum
@@ -301,13 +304,34 @@ export function getToolsForProvider(
       const filteredFunctions = availableTools
         .filter((func) => enabledTools.has(func.name))
         .filter(
+          (func) =>
+            permissionChecker.checkToolAccess({
+              toolName: func.name,
+              mode: params.mode,
+              user,
+              toolType: func.type,
+              toolPermissions: func.permissions,
+            }).allowed,
+        )
+        .filter(
           (func) => func.name !== "web_search" || Boolean(modelConfig?.supportsSearchGrounding),
         );
       const availableToolDeclarations = formatToolCalls(providerName, filteredFunctions);
 
       tools = [...availableToolDeclarations, ...providedTools];
     } else {
-      const filteredFunctions = availableTools.filter((func) => enabledTools.has(func.name));
+      const filteredFunctions = availableTools
+        .filter((func) => enabledTools.has(func.name))
+        .filter(
+          (func) =>
+            permissionChecker.checkToolAccess({
+              toolName: func.name,
+              mode: params.mode,
+              user,
+              toolType: func.type,
+              toolPermissions: func.permissions,
+            }).allowed,
+        );
 
       tools = formatToolCalls(providerName, filteredFunctions);
     }

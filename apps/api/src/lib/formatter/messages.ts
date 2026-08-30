@@ -77,22 +77,6 @@ export class MessageFormatter {
     return instructionParts.length ? instructionParts.join("\n\n") : undefined;
   }
 
-  static ensureAssistantAfterTool(messages: Message[]): Message[] {
-    if (
-      messages.length >= 2 &&
-      messages[messages.length - 1].role === "user" &&
-      messages[messages.length - 2].role === "tool"
-    ) {
-      return [
-        ...messages.slice(0, messages.length - 1),
-        { role: "assistant", content: "" },
-        messages[messages.length - 1],
-      ];
-    }
-
-    return messages;
-  }
-
   static formatTextGenerationPrompt(
     messages: Message[],
     options: MessageFormatOptions = {},
@@ -143,10 +127,6 @@ export class MessageFormatter {
         provider,
         model,
       );
-    }
-
-    if (provider === "mistral") {
-      formattedMessages = MessageFormatter.ensureAssistantAfterTool(formattedMessages);
     }
 
     return formattedMessages;

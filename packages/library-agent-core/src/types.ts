@@ -1,6 +1,11 @@
 export interface AgentMessage {
   role: "system" | "user" | "assistant" | "tool" | "developer";
   content: string | null | Record<string, unknown> | unknown[];
+  name?: string;
+  tool_calls?: unknown[];
+  tool_call_id?: string;
+  tool_call_arguments?: string | Record<string, unknown>;
+  status?: string;
 }
 
 export interface AgentToolCall {
@@ -84,6 +89,10 @@ export interface ExecuteAgentLoopParams<
   state: TState;
   resolveTurn: AgentTurnResolver<TShared>;
   executeToolCalls: AgentToolCallExecutor<TShared, TState>;
+  recordControlToolResults?: (
+    toolCalls: AgentToolCall[],
+    context: AgentActionContext<TShared, TState>,
+  ) => Promise<AgentMessage[]> | AgentMessage[];
   emit?: (event: AgentEvent) => Promise<void>;
   guardExecution?: (abortMessage: string) => Promise<void>;
   config?: Partial<AgentConfig>;
@@ -104,7 +113,6 @@ export interface ExecuteAgentLoopParams<
   formatMissingToolCallMessage?: (errorMessage: string) => string;
   formatRecoveryRequiredMessage?: (recoveryReason: string) => string;
   formatRecoveryEnforcementMessage?: (recoveryReason: string) => string;
-  formatPlanUpdatedMessage?: (plan: string) => string;
   shouldAbortOnTurnError?: (error: unknown) => boolean;
   onStepBudgetExceeded?: (context: {
     step: number;

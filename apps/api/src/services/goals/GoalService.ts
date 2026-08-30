@@ -166,6 +166,28 @@ export class GoalService {
       );
     }
 
+    const current = await this.goals.getGoalById(params.goalId);
+
+    if (!current) {
+      throw new AssistantError("Goal not found", ErrorType.NOT_FOUND);
+    }
+
+    const recorded = await this.goals.updateGoal(current.id, {
+      iterationCount: current.iteration_count + 1,
+      progress: appendProgress(current.progress, {
+        iteration: current.iteration_count + 1,
+        surface: current.conversation_id ? "agent" : "sandbox",
+        summary: params.summary,
+        evidence: params.evidence.map((entry) => entry.claim),
+        at: new Date().toISOString(),
+      }),
+      lastContinuedAt: new Date().toISOString(),
+    });
+
+    if (!recorded) {
+      throw new AssistantError("Failed to record goal completion", ErrorType.DATABASE_ERROR);
+    }
+
     if (params.evidence.every((entry) => entry.status === "blocked")) {
       return this.transition({
         goalId: params.goalId,

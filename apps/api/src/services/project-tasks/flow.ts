@@ -1,18 +1,15 @@
 import {
   findFlowStage,
-  permissionsForCapabilities,
-  permissionsForConsequences,
   type ProjectFlow,
   type ProjectFlowStage,
   type ProjectTask,
-  type ProjectTaskCapability,
   type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { Agent } from "~/lib/database/schema";
-import { listFunctionTools } from "~/services/functions";
 import { resolveProjectTools } from "~/services/workspaces/projectTools";
+import { intersectEnabledTools } from "~/utils/enabledTools";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export interface ResolvedTaskRuntime {
@@ -22,19 +19,6 @@ export interface ResolvedTaskRuntime {
   mode: string;
   enabledTools: string[];
   requireApprovalFor: ToolPermission[];
-}
-
-export function intersectAgentTools(
-  agentTools: unknown,
-  projectTools: readonly string[],
-): string[] {
-  if (!Array.isArray(agentTools)) {
-    return [...projectTools];
-  }
-
-  const allowed = new Set(projectTools);
-
-  return agentTools.filter((tool): tool is string => typeof tool === "string" && allowed.has(tool));
 }
 
 async function resolveProjectAgent(
@@ -62,35 +46,6 @@ async function resolveProjectAgent(
   }
 
   return agent;
-}
-
-/**
- * A task's capabilities decide which permissions its tools may hold. A tool is
- * withheld unless every permission it declares is allowed, so selecting nothing
- * leaves only read, reasoning and human tools.
- */
-export function toolsWithinCapabilities(
-  tools: string[],
-  capabilities: readonly ProjectTaskCapability[],
-  permissionsByTool: Map<string, readonly ToolPermission[]>,
-): string[] {
-  const allowed = new Set(permissionsForCapabilities(capabilities));
-
-  return tools.filter((tool) => {
-    const required = permissionsByTool.get(tool);
-
-    if (!required || required.length === 0) {
-      return true;
-    }
-
-    return required.every((permission) => allowed.has(permission));
-  });
-}
-
-function permissionsByTool(): Map<string, readonly ToolPermission[]> {
-  return new Map(
-    listFunctionTools().map((tool) => [tool.name, (tool.permissions ?? []) as ToolPermission[]]),
-  );
 }
 
 export function withoutForbiddenTools(
@@ -125,18 +80,12 @@ export async function resolveTaskRuntime(params: {
     agent,
     model: task.runner?.model ?? agent?.model ?? null,
     mode: stage?.mode ?? task.runner?.mode ?? "agent",
-    enabledTools: toolsWithinCapabilities(
-      withoutForbiddenTools(
-        agent ? intersectAgentTools(agent.enabled_tools, projectTools) : projectTools,
-        task.constraints?.forbiddenTools,
-      ),
-      task.capabilities,
-      permissionsByTool(),
+    enabledTools: withoutForbiddenTools(
+      agent ? intersectEnabledTools(projectTools, agent.enabled_tools) : projectTools,
+      task.constraints?.forbiddenTools,
     ),
     requireApprovalFor: [
-      ...(stage?.requiresApprovalFor ?? []),
-      ...task.requireApprovalFor,
-      ...permissionsForConsequences(task.approvalConsequences),
+      ...new Set([...(stage?.requiresApprovalFor ?? []), ...task.requireApprovalFor]),
     ],
   };
 }
@@ -147,6 +96,10 @@ export function buildStageInstructions(stage: ProjectFlowStage | null): string |
   }
 
   const lines = [`You are working the "${stage.name}" stage of this project's flow.`];
+
+  if (stage.instructions) {
+    lines.push(stage.instructions);
+  }
 
   if (stage.skillId) {
     lines.push(`Load the ${stage.skillId} skill before you start and follow it.`);

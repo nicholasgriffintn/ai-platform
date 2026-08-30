@@ -12,7 +12,7 @@ function paramsForMode(mode: string): Parameters<typeof getToolsForProvider>[0] 
   return {
     model: "gpt-5",
     mode,
-    enabled_tools: ["get_weather"],
+    enabled_tools: ["get_weather", "delegate_to_team_member"],
   };
 }
 
@@ -32,5 +32,14 @@ describe("getToolsForProvider", () => {
 
     expect(names).not.toContain("update_plan");
     expect(names).not.toContain("finish");
+  });
+
+  it("withholds tools blocked by the execution mode", () => {
+    const names = toolNames(
+      getToolsForProvider(paramsForMode("plan"), modelConfig, "openai").tools,
+    );
+
+    expect(names).not.toContain("delegate_to_team_member");
+    expect(names).toContain("get_weather");
   });
 });

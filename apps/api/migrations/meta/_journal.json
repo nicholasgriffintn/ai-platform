@@ -484,6 +484,20 @@
       "when": 1788086755119,
       "tag": "0068_project_task_effort",
       "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "6",
+      "when": 1788091598883,
+      "tag": "0069_quiet_supernaut",
+      "breakpoints": true
+    },
+    {
+      "idx": 70,
+      "version": "6",
+      "when": 1788093396401,
+      "tag": "0070_mean_guardsmen",
+      "breakpoints": true
     }
   ]
 }

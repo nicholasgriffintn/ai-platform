@@ -6,6 +6,7 @@ import { useProjectCapabilityCatalog } from "./useProjectCapabilityCatalog";
 
 const mocks = vi.hoisted(() => ({
   appsData: vi.fn(),
+  agents: vi.fn(),
   catalogueScope: vi.fn(),
   recipes: vi.fn(),
   tools: vi.fn(),
@@ -49,6 +50,13 @@ vi.mock("./useRecipes", () => ({
     isLoading: false,
   }),
 }));
+vi.mock("./useAgents", () => ({
+  useAgents: () => ({
+    agents: mocks.agents(),
+    errorAgents: null,
+    isLoadingAgents: false,
+  }),
+}));
 vi.mock("./useTools", () => ({
   useTools: () => ({
     data: mocks.tools(),
@@ -60,6 +68,7 @@ vi.mock("./useTools", () => ({
 describe("useProjectCapabilityCatalog", () => {
   it("loads the catalogue for the current project scope", () => {
     mocks.appsData.mockReturnValue({ experiences: [], modelTools: [], skills: [] });
+    mocks.agents.mockReturnValue([]);
     mocks.recipes.mockReturnValue([]);
     mocks.tools.mockReturnValue([]);
 
@@ -95,6 +104,7 @@ describe("useProjectCapabilityCatalog", () => {
         },
       ],
     });
+    mocks.agents.mockReturnValue([]);
     mocks.recipes.mockReturnValue([
       recipe,
       { ...recipe, id: "weekly-briefing", title: "Weekly Briefing" },
@@ -121,8 +131,33 @@ describe("useProjectCapabilityCatalog", () => {
     );
   });
 
+  it("publishes personal agents so a project can attach them", () => {
+    mocks.appsData.mockReturnValue({ experiences: [], modelTools: [], skills: [] });
+    mocks.agents.mockReturnValue([
+      {
+        id: "research-agent",
+        name: "Research Agent",
+        description: "Investigates sources",
+        model: "gpt-5",
+      },
+    ]);
+    mocks.recipes.mockReturnValue([]);
+    mocks.tools.mockReturnValue([]);
+
+    const { result } = renderHook(() => useProjectCapabilityCatalog("project-1"));
+
+    expect(result.current.items).toContainEqual(
+      expect.objectContaining({
+        id: "agent:research-agent",
+        kind: "agent",
+        label: "Research Agent",
+      }),
+    );
+  });
+
   it("publishes a function tool only as a runnable tool, never as an app", () => {
     mocks.appsData.mockReturnValue({ experiences: [], modelTools: [] });
+    mocks.agents.mockReturnValue([]);
     mocks.recipes.mockReturnValue([]);
     mocks.tools.mockReturnValue([
       {
