@@ -3,6 +3,7 @@ import {
   nextFlowStageId,
   PROJECT_TASK_DEFAULT_CONCURRENCY,
   type CreateProjectTaskInput,
+  type AnswerUserQuestionsInput,
   type ProjectFlow,
   type ProjectTask,
   type ProjectTaskActor,
@@ -15,9 +16,10 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ListProjectTaskFilters } from "~/repositories/ProjectTaskRepository";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { parseProjectFlow } from "~/services/workspaces/format";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
+import { answerProjectTaskQuestions, getPendingProjectTaskQuestions } from "./questions";
 import { queueProjectTaskRun } from "./runner";
 import { assertProjectTaskTransition } from "./transitions";
 
@@ -146,9 +148,40 @@ export async function listProjectTasks(
 export async function getProjectTask(context: ServiceContext, projectId: string, taskId: string) {
   await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
-  const goal = task.goalId ? await context.repositories.goals.getGoalById(task.goalId) : null;
+  const [goal, pendingQuestions] = await Promise.all([
+    task.goalId ? context.repositories.goals.getGoalById(task.goalId) : null,
+    getPendingProjectTaskQuestions(context, task),
+  ]);
 
-  return { task, goal };
+  return { task, goal, pendingQuestions };
+}
+
+export async function respondToProjectTaskQuestions(
+  context: ServiceContext,
+  projectId: string,
+  taskId: string,
+  input: AnswerUserQuestionsInput,
+) {
+  await requireProjectAccess(context, projectId);
+  const task = await requireTask(context, projectId, taskId);
+
+  await answerProjectTaskQuestions({ context, task, input });
+
+  try {
+    return await startProjectTask(context, projectId, taskId);
+  } catch (error) {
+    await context.repositories.projectTasks.updateTask(taskId, {
+      status: "blocked",
+      blockedReason: "dispatch_failed",
+      blockedDetail:
+        `Your answers were saved, but the task could not resume: ${getErrorMessage(error)}`.slice(
+          0,
+          500,
+        ),
+    });
+
+    throw error;
+  }
 }
 
 export async function createProjectTask(

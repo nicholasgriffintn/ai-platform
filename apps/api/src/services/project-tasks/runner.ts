@@ -2,22 +2,25 @@ import {
   nextFlowStageId,
   PROJECT_TASK_DEFAULT_TOKEN_BUDGET,
   PROJECT_TASK_RUN_TASK_TYPE,
+  isTerminalGoalStatus,
   type ProjectTask,
   type ProjectTaskBlockedReason,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { ConversationManager } from "~/lib/conversationManager";
 import { buildAgentPersona } from "~/services/agents/completion-tools";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { GoalService } from "~/services/goals/GoalService";
 import { TaskService } from "~/services/tasks/TaskService";
 import { parseProjectFlow } from "~/services/workspaces/format";
-import type { IEnv } from "~/types";
+import type { IEnv, Message } from "~/types";
 import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
 import { buildStageInstructions, resolveTaskRuntime } from "./flow";
+import { getPendingProjectTaskQuestions } from "./questions";
 import { projectTaskStatusForGoal } from "./transitions";
 
 const logger = getLogger({ prefix: "services/project-tasks/runner" });
@@ -226,10 +229,14 @@ export function buildTaskPrompt(params: {
   }
 
   lines.push(
-    "Work the objective and call complete_goal only once every part of it is done. Nobody is watching this run, so stop and explain rather than guessing at anything that needs a person's decision.",
+    "Work the objective and call complete_goal only once every part of it is done. If missing information or a person's decision prevents progress, call ask_user with up to three concise questions and useful choices instead of writing the questions as ordinary text.",
   );
 
   return lines.join("\n\n");
+}
+
+export function buildTaskRunMessages(history: Message[], prompt: string): Message[] {
+  return [...history, { role: "user", content: prompt }];
 }
 
 async function blockTask(
@@ -368,22 +375,28 @@ export async function runProjectTaskDispatch(params: {
   let responseTokens = 0;
 
   try {
+    const conversationManager = ConversationManager.getInstance({
+      database: context.database,
+      repositories: context.repositories,
+      user,
+      env,
+      store: true,
+    });
+    const history = await conversationManager.get(conversationId);
     const response = await handleCreateChatCompletions({
       env,
       context,
       user,
       request: {
         completion_id: conversationId,
-        messages: [
-          {
-            role: "user",
-            content: buildTaskPrompt({
-              task: claimed,
-              stageInstructions: buildStageInstructions(runtime.stage),
-              contextNotes: buildContextNotes(claimed),
-            }),
-          },
-        ],
+        messages: buildTaskRunMessages(
+          history,
+          buildTaskPrompt({
+            task: claimed,
+            stageInstructions: buildStageInstructions(runtime.stage),
+            contextNotes: buildContextNotes(claimed),
+          }),
+        ),
         ...(runtime.model ? { model: runtime.model } : {}),
         mode: runtime.mode,
         stream: false,
@@ -408,6 +421,26 @@ export async function runProjectTaskDispatch(params: {
     const detail = getErrorMessage(error);
 
     logger.error("Project task run failed", { taskId, error: detail });
+    if (goalId) {
+      try {
+        const failedGoal = await goalService.getGoalById(goalId);
+
+        if (failedGoal && !isTerminalGoalStatus(failedGoal.status)) {
+          await goalService.transition({
+            goalId,
+            actor: "system",
+            status: "blocked",
+            reason: `The agent run failed: ${detail}`,
+          });
+        }
+      } catch (goalError) {
+        logger.error("Failed to close the goal after the task run failed", {
+          taskId,
+          error: getErrorMessage(goalError),
+        });
+      }
+    }
+
     await blockTask(context, taskId, "run_failed", detail);
     await context.repositories.activities.updateActivity(activity.id, {
       status: "failed",
@@ -417,10 +450,25 @@ export async function runProjectTaskDispatch(params: {
     return { status: "blocked", detail };
   }
 
-  const goal = goalId ? await goalService.getGoalById(goalId) : null;
+  let goal = goalId ? await goalService.getGoalById(goalId) : null;
+
+  if (goal?.status === "active") {
+    goal = await goalService.transition({
+      goalId: goal.id,
+      actor: "system",
+      status: "stalled",
+      reason: "The agent run ended without completing the goal or requesting input.",
+    });
+  }
+
+  const pendingQuestions = await getPendingProjectTaskQuestions(context, { conversationId });
   const projection = goal
     ? projectTaskStatusForGoal(goal)
     : { status: "review" as const, blockedReason: null };
+
+  if (projection.status === "blocked" && pendingQuestions) {
+    projection.blockedReason = "awaiting_input";
+  }
 
   const tokensSpent = claimed.tokensSpent + Math.max(goal?.tokens_spent ?? 0, responseTokens);
   const flow = parseProjectFlow(project.flow);

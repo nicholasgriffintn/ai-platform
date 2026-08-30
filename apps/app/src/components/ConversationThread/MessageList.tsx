@@ -59,6 +59,7 @@ interface MessageListProps {
   isBranching?: boolean;
   onRequestSecondOpinion?: (messageId: string) => void;
   isRequestingSecondOpinion?: boolean;
+  hideInlineUserQuestions?: boolean;
 }
 
 function hasCurrentResponseCompactionMarker(messages: Message[]): boolean {
@@ -83,6 +84,7 @@ export const MessageList = ({
   isBranching = false,
   onRequestSecondOpinion,
   isRequestingSecondOpinion = false,
+  hideInlineUserQuestions = false,
 }: MessageListProps) => {
   const { chatMode, currentConversationId } = useChatStore();
 
@@ -149,11 +151,17 @@ export const MessageList = ({
         }))
         .filter(
           ({ message, compactionLabel, goalMarker }) =>
-            Boolean(compactionLabel) ||
-            Boolean(goalMarker) ||
-            (!isHiddenToolResponse(message) && isRenderableMessage(message)),
+            !(
+              hideInlineUserQuestions &&
+              message.role === "tool" &&
+              message.name === "ask_user" &&
+              message.status === "pending"
+            ) &&
+            (Boolean(compactionLabel) ||
+              Boolean(goalMarker) ||
+              (!isHiddenToolResponse(message) && isRenderableMessage(message))),
         ),
-    [messages],
+    [hideInlineUserQuestions, messages],
   );
 
   const virtualRef = useRef<VListHandle>(null);
@@ -200,7 +208,7 @@ export const MessageList = ({
   return (
     <ResolvedToolCallsProvider resolvedToolCallIds={resolvedToolCallIds}>
       <div
-        className="flex flex-col flex-1 relative"
+        className="relative flex flex-1 flex-col"
         data-conversation-id={currentConversationId || undefined}
         role="log"
         aria-live="polite"

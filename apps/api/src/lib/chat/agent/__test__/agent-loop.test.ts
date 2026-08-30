@@ -183,6 +183,26 @@ describe("runAgentLoop", () => {
     expect(runTurn).toHaveBeenCalledTimes(1);
   });
 
+  it("tells the goal gate that a pending question is waiting for the user", async () => {
+    const { params } = createParams([toolTurn("ask_user")]);
+    const assessFinish = vi.fn().mockResolvedValue({ allow: true, outcome: "blocked" });
+
+    mocks.handleToolCalls.mockResolvedValueOnce([
+      {
+        role: "tool",
+        name: "ask_user",
+        content: "Which tone should I use?",
+        status: "pending",
+      },
+    ]);
+
+    await runAgentLoop({ ...params, assessFinish });
+
+    expect(assessFinish).toHaveBeenCalledWith(
+      expect.objectContaining({ awaitingUserAction: "question" }),
+    );
+  });
+
   it("ends with the work already done when the user runs out mid-run", async () => {
     const { params, runTurn } = createParams([toolTurn("get_weather")]);
 

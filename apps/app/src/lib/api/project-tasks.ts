@@ -1,5 +1,6 @@
 import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
 import type {
+  AnswerUserQuestionsInput,
   CreateProjectTaskInput,
   ProjectFlow,
   ProjectTask,
@@ -83,6 +84,20 @@ export async function acceptProjectTask(
   const response = await fetchApiOrThrow(`/projects/${projectId}/tasks/${taskId}/accept`, {
     method: "POST",
     headers: await authHeaders(),
+  });
+
+  return returnFetchedData(response);
+}
+
+export async function answerProjectTaskQuestions(
+  projectId: string,
+  taskId: string,
+  input: AnswerUserQuestionsInput,
+): Promise<{ task: ProjectTask }> {
+  const response = await fetchApiOrThrow(`/projects/${projectId}/tasks/${taskId}/answers`, {
+    method: "POST",
+    headers: await authHeaders(),
+    body: input,
   });
 
   return returnFetchedData(response);

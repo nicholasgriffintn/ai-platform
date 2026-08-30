@@ -91,6 +91,9 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
                   id: conversation.id,
                   title: conversation.title,
                   href: `${projectChatPath}?completion_id=${encodeURIComponent(conversation.id)}`,
+                  needsInput: attentionItems.some(
+                    (item) => item.kind === "input" && item.conversationId === conversation.id,
+                  ),
                 })),
                 isConversationRoute: pathname === projectChatPath,
                 activeConversationId,

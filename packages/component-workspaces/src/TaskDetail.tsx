@@ -1,4 +1,4 @@
-import { Badge, Button, ButtonLink, Link } from "@ngriffin_uk/polychat-component-ui";
+import { Badge, Button, ButtonLink, TextLink } from "@ngriffin_uk/polychat-component-ui";
 import type {
   Goal,
   GoalEvidenceStatus,
@@ -163,7 +163,7 @@ export function TaskDetail({
               icon={<MessageSquareText size={14} />}
               className="no-underline hover:!no-underline"
             >
-              {needsInput ? "Open conversation to respond" : "Open conversation"}
+              {needsInput ? "Answer questions" : "Open conversation"}
             </ButtonLink>
           ) : null}
         </div>
@@ -444,7 +444,9 @@ export function TaskDetail({
                     ) : (
                       <Circle size={13} className="mt-0.5 shrink-0 text-zinc-400" />
                     )}
-                    <Link href={taskHref(dependency)}>{dependency.objective}</Link>
+                    <TextLink href={taskHref(dependency)} size="xs">
+                      {dependency.objective}
+                    </TextLink>
                   </li>
                 ))}
               </ul>

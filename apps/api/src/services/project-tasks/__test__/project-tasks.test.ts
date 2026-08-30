@@ -18,6 +18,7 @@ import {
   updateProjectTask,
 } from "../index";
 import {
+  buildTaskRunMessages,
   buildTaskPrompt,
   ensureProjectTaskConversation,
   projectTaskConversationId,
@@ -151,6 +152,20 @@ describe("buildTaskPrompt", () => {
     expect(
       buildTaskPrompt({ task: baseTask, stageInstructions: null, contextNotes: null }),
     ).toContain("Project task ID: task-1");
+  });
+});
+
+describe("buildTaskRunMessages", () => {
+  it("keeps the conversation history when a task resumes", () => {
+    const history = [
+      { id: "question", role: "tool" as const, content: "Waiting for answers" },
+      { id: "answer", role: "user" as const, content: "Audience: Developers" },
+    ];
+
+    expect(buildTaskRunMessages(history, "Continue the project task")).toEqual([
+      ...history,
+      { role: "user", content: "Continue the project task" },
+    ]);
   });
 });
 

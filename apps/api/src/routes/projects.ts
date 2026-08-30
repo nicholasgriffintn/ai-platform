@@ -1,5 +1,6 @@
 import {
   addProjectCapabilitySchema,
+  answerProjectTaskQuestionsSchema,
   authoredSkillDocumentSchema,
   authoredSkillInputSchema,
   authoredSkillListResponseSchema,
@@ -27,6 +28,7 @@ import {
   getProjectFlow,
   getProjectTask,
   listProjectTasks,
+  respondToProjectTaskQuestions,
   setProjectFlow,
   startProjectTask,
   updateProjectTask,
@@ -244,6 +246,24 @@ addRoute(app, "post", "/:projectId/tasks/:taskId/start", {
   },
   handler: ({ serviceContext, params }) =>
     startProjectTask(serviceContext, params.projectId, params.taskId),
+});
+
+addRoute(app, "post", "/:projectId/tasks/:taskId/answers", {
+  auth: true,
+  tags: ["projects", "tasks"],
+  summary: "Answer a task runner's pending questions",
+  description: "Records the answers in the task conversation and queues the same task to resume.",
+  paramSchema: projectTaskParams,
+  bodySchema: answerProjectTaskQuestionsSchema,
+  responses: {
+    200: { description: "The resumed task", schema: projectTaskResponseSchema },
+    409: {
+      description: "The task is no longer waiting for these answers",
+      schema: errorResponseSchema,
+    },
+  },
+  handler: ({ serviceContext, params, body }) =>
+    respondToProjectTaskQuestions(serviceContext, params.projectId, params.taskId, body),
 });
 
 addRoute(app, "post", "/:projectId/tasks/:taskId/accept", {

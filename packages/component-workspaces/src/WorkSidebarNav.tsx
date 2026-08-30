@@ -3,6 +3,7 @@ import { Badge, cn, Link, NavLink } from "@ngriffin_uk/polychat-component-ui";
 import {
   Activity,
   ChevronRight,
+  CircleQuestionMark,
   ClipboardList,
   Database,
   FolderKanban,
@@ -40,6 +41,7 @@ export interface WorkSidebarConversationLink {
   id: string;
   title?: string | null;
   href: string;
+  needsInput?: boolean;
 }
 
 export interface WorkSidebarProject {
@@ -208,7 +210,15 @@ export function WorkSidebarNav({
                           onNavigate();
                         }}
                       >
-                        <MessageSquareText size={16} className="shrink-0" />
+                        {conversation.needsInput ? (
+                          <CircleQuestionMark
+                            size={16}
+                            className="shrink-0 text-amber-500"
+                            aria-label="Waiting for your answers"
+                          />
+                        ) : (
+                          <MessageSquareText size={16} className="shrink-0" />
+                        )}
                         <span className="truncate">
                           {conversation.title || "New project conversation"}
                         </span>

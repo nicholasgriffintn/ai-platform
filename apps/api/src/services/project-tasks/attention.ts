@@ -12,6 +12,10 @@ const DEFAULT_ATTENTION_LIMIT = 50;
 
 function attentionKindFor(task: ProjectTask, userId: number): ProjectTaskAttentionKind | null {
   if (task.status === "blocked") {
+    if (task.blockedReason === "awaiting_input") {
+      return "input";
+    }
+
     return task.blockedReason === "awaiting_approval" ? "approval" : "blocked";
   }
 

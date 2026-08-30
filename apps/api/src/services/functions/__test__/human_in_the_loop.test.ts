@@ -85,9 +85,9 @@ describe("request_approval", () => {
 });
 
 describe("ask_user", () => {
-  it("creates a question with minimal parameters", async () => {
+  it("creates one structured question", async () => {
     const result = await ask_user.execute(
-      { question: "What is your email address?" },
+      { questions: [{ id: "email", prompt: "What is your email address?" }] },
       createToolContext(baseRequest),
     );
 
@@ -98,68 +98,62 @@ describe("ask_user", () => {
     expect(result.data?.humanInTheLoop.type).toBe("question");
     expect(result.data?.humanInTheLoop.status).toBe("pending");
     expect(result.data?.humanInTheLoop.requires_user_action).toBe(true);
+    expect(result.data?.questions).toEqual([
+      {
+        id: "email",
+        prompt: "What is your email address?",
+        options: [],
+        allowOther: true,
+      },
+    ]);
+    expect(result.data?.interactionId).toEqual(expect.any(String));
   });
 
-  it("creates a question with expected format", async () => {
+  it("creates up to three questions with described choices", async () => {
     const result = await ask_user.execute(
       {
-        question: "How many items?",
-        expected_format: "a number between 1-100",
+        questions: [
+          {
+            id: "tone",
+            prompt: "Which tone should the launch note use?",
+            options: [
+              { label: "Friendly", description: "Warm and conversational." },
+              { label: "Direct", description: "Concise and factual." },
+            ],
+          },
+          {
+            id: "audience",
+            prompt: "Who is the audience?",
+            options: [{ label: "Existing customers" }],
+          },
+        ],
       },
       createToolContext(baseRequest),
     );
 
     expect(result.status).toBe("pending");
-    expect(result.data?.expected_format).toBe("a number between 1-100");
+    expect(result.content).toBe("Waiting for answers to 2 questions.");
+    expect(result.data?.questions[0].options).toEqual([
+      { label: "Friendly", description: "Warm and conversational." },
+      { label: "Direct", description: "Concise and factual." },
+    ]);
   });
 
-  it("creates a question with suggestions", async () => {
-    const result = await ask_user.execute(
-      {
-        question: "Which color?",
-        suggestions: ["Red", "Green", "Blue"],
-      },
-      createToolContext(baseRequest),
-    );
-
-    expect(result.status).toBe("pending");
-    expect(result.data?.suggestions).toEqual(["Red", "Green", "Blue"]);
-  });
-
-  it("includes context data when provided", async () => {
-    const result = await ask_user.execute(
-      {
-        question: "Confirm details?",
-        context: { step: 3, workflow: "onboarding" },
-      },
-      createToolContext(baseRequest),
-    );
-
-    expect(result.data?.context).toEqual({
-      step: 3,
-      workflow: "onboarding",
-    });
-  });
-
-  it("parses JSON string suggestions", async () => {
-    const result = await ask_user.execute(
-      {
-        question: "Test",
-        suggestions: JSON.stringify(["Yes", "No"]),
-      },
-      createToolContext(baseRequest),
-    );
-
-    expect(result.data?.suggestions).toEqual(["Yes", "No"]);
-  });
-
-  it("throws error for empty question", async () => {
+  it("rejects duplicate question ids", async () => {
     await expect(
-      ask_user.execute({ question: "" }, createToolContext(baseRequest)),
-    ).rejects.toThrow("non-empty string");
+      ask_user.execute(
+        {
+          questions: [
+            { id: "detail", prompt: "First detail?" },
+            { id: "detail", prompt: "Second detail?" },
+          ],
+        },
+        createToolContext(baseRequest),
+      ),
+    ).rejects.toThrow("between one and three valid questions");
   });
 
-  it("throws error for missing question", async () => {
+  it("rejects missing questions", async () => {
     await expect(ask_user.execute({}, createToolContext(baseRequest))).rejects.toThrow();
   });
 });

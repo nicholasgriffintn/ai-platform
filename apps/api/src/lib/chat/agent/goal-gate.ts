@@ -31,6 +31,7 @@ export function createGoalFinishGate(params: GoalGateParams) {
     summary: string;
     step: number;
     commandCount: number;
+    awaitingUserAction?: "approval" | "question";
   }): Promise<AgentFinishAssessment> => {
     const latest = await params.goalService.getActiveGoal(
       currentGoal.conversation_id
@@ -67,6 +68,7 @@ export function createGoalFinishGate(params: GoalGateParams) {
         evidence: [],
         producedEvidence: calledTool,
         calledTool,
+        awaitingUserAction: context.awaitingUserAction,
         usageLimitsExhausted,
       },
     });

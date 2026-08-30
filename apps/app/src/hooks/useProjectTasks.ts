@@ -1,4 +1,5 @@
 import type {
+  AnswerUserQuestionsInput,
   CreateProjectTaskInput,
   ProjectFlow,
   ProjectTask,
@@ -8,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   acceptProjectTask,
+  answerProjectTaskQuestions,
   createProjectTask,
   deleteProjectTask,
   getProjectTask,
@@ -84,6 +86,12 @@ export function useProjectTasks(projectId: string) {
     onSuccess: invalidate,
   });
 
+  const answer = useMutation({
+    mutationFn: ({ taskId, input }: { taskId: string; input: AnswerUserQuestionsInput }) =>
+      answerProjectTaskQuestions(projectId, taskId, input),
+    onSuccess: invalidate,
+  });
+
   const remove = useMutation({
     mutationFn: (taskId: string) => deleteProjectTask(projectId, taskId),
     onSuccess: invalidate,
@@ -103,6 +111,7 @@ export function useProjectTasks(projectId: string) {
     update,
     start,
     accept,
+    answer,
     remove,
     saveFlow,
   };

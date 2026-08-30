@@ -58,7 +58,8 @@ interface ChatAgentLoopState extends AgentLoopState {
   commandCount: number;
   unknownToolRecoveryUsed: boolean;
   toolCallLedger: ToolCallLedger;
-  pendingUserAction?: string;
+  pendingUserAction?: { message: string; kind: "approval" | "question" };
+  waitingForUserAction?: "approval" | "question";
   stoppedForUsageLimit?: boolean;
   finalAnswerForced?: boolean;
 }
@@ -115,6 +116,7 @@ export interface AgentLoopExecutionParams {
     summary: string;
     step: number;
     commandCount: number;
+    awaitingUserAction?: "approval" | "question";
   }) => Promise<AgentFinishAssessment> | AgentFinishAssessment;
 }
 
@@ -240,7 +242,12 @@ export async function runAgentLoop(
       ? ({ summary, step }) =>
           state.stoppedForUsageLimit
             ? { allow: true }
-            : params.assessFinish({ summary, step, commandCount: state.commandCount })
+            : params.assessFinish({
+                summary,
+                step,
+                commandCount: state.commandCount,
+                awaitingUserAction: state.waitingForUserAction,
+              })
       : undefined,
     recordControlToolResults: async (toolCalls) => {
       const results = toolCalls.map((toolCall): Message & AgentMessage => {
@@ -294,7 +301,7 @@ export async function runAgentLoop(
 
         state.pendingUserAction = undefined;
 
-        return closingTurn(pending, "pending");
+        return closingTurn(pending.message, "pending");
       }
 
       await sink.writeEvent("message_start", {
@@ -408,10 +415,18 @@ export async function runAgentLoop(
       const pendingResult = toolResults.find((message) => message.status === "pending");
 
       if (pendingResult) {
-        context.state.pendingUserAction =
-          typeof pendingResult.content === "string" && pendingResult.content.trim()
-            ? pendingResult.content
-            : "This action is waiting for user approval.";
+        const kind = pendingResult.name === "ask_user" ? "question" : "approval";
+
+        context.state.waitingForUserAction = kind;
+        context.state.pendingUserAction = {
+          kind,
+          message:
+            typeof pendingResult.content === "string" && pendingResult.content.trim()
+              ? pendingResult.content
+              : kind === "question"
+                ? "This work is waiting for your answer."
+                : "This action is waiting for user approval.",
+        };
       }
 
       const currentStep = steps[steps.length - 1];

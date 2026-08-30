@@ -88,4 +88,27 @@ describe("createGoalFinishGate", () => {
       false,
     ]);
   });
+
+  it("records a pending question as a user-action boundary", async () => {
+    const recordIteration = vi
+      .fn()
+      .mockImplementation(({ goal }) =>
+        Promise.resolve({ goal: { ...goal, status: "blocked" }, shouldContinue: false }),
+      );
+    const gate = buildGate(recordIteration);
+
+    const result = await gate({
+      summary: "Which tone should I use?",
+      step: 1,
+      commandCount: 1,
+      awaitingUserAction: "question",
+    });
+
+    expect(recordIteration).toHaveBeenCalledWith(
+      expect.objectContaining({
+        iteration: expect.objectContaining({ awaitingUserAction: "question" }),
+      }),
+    );
+    expect(result).toMatchObject({ allow: true, outcome: "blocked" });
+  });
 });

@@ -32,7 +32,7 @@ export interface RecordIterationParams {
   tokens?: number;
   producedEvidence: boolean;
   calledTool: boolean;
-  awaitingApproval?: boolean;
+  awaitingUserAction?: "approval" | "question";
   usageLimitsExhausted?: boolean;
 }
 
@@ -255,7 +255,7 @@ export class GoalService {
         producedEvidence: iteration.producedEvidence,
         calledTool: iteration.calledTool,
         aborted: false,
-        awaitingApproval: iteration.awaitingApproval === true,
+        awaitingApproval: iteration.awaitingUserAction !== undefined,
       },
       usageLimitsExhausted: iteration.usageLimitsExhausted === true,
       queuedInstructionCount: 0,
@@ -286,7 +286,12 @@ export class GoalService {
       tokensSpent: goal.tokens_spent + (iteration.tokens ?? 0),
       progress,
       lastContinuedAt: new Date().toISOString(),
-      ...(nextStatus ? { status: nextStatus, stoppedReason: stoppedReasonFor(nextStatus) } : {}),
+      ...(nextStatus
+        ? {
+            status: nextStatus,
+            stoppedReason: stoppedReasonFor(nextStatus, iteration.awaitingUserAction),
+          }
+        : {}),
     });
 
     if (!updated) {
@@ -297,7 +302,10 @@ export class GoalService {
   }
 }
 
-function stoppedReasonFor(status: GoalStatus): string {
+function stoppedReasonFor(
+  status: GoalStatus,
+  awaitingUserAction?: "approval" | "question",
+): string {
   if (status === "stalled") {
     return "Consecutive continuations produced no new evidence.";
   }
@@ -306,7 +314,9 @@ function stoppedReasonFor(status: GoalStatus): string {
     return "The account's usage limits were reached.";
   }
 
-  return "The work needs your input before it can continue.";
+  return awaitingUserAction === "question"
+    ? "The work is waiting for your answers."
+    : "The work is waiting for your approval.";
 }
 
 function appendProgress(

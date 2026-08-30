@@ -1,4 +1,11 @@
+import {
+  USER_QUESTION_MAX_OPTIONS,
+  USER_QUESTION_SET_MAX_QUESTIONS,
+  userQuestionsSchema,
+} from "@ngriffin_uk/polychat-schemas";
+
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
 import type { ApiToolDefinition } from "../../types/functions";
@@ -117,106 +124,92 @@ export const request_approval: ApiToolDefinition = {
 export const ask_user: ApiToolDefinition = {
   name: "ask_user",
   description:
-    "Ask the user a question and wait for their response. Use this when you need additional information, clarification, or input from the user to continue. Returns the user's answer.",
+    "Ask the user up to three concise questions and wait for their response. Use this instead of writing questions as ordinary assistant text whenever missing information or a decision prevents you from continuing. Offer useful choices where possible and allow a written answer when the choices are incomplete.",
   type: "normal",
   costPerCall: 0,
   permissions: ["human"],
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {
-      question: {
-        type: "string",
-        description:
-          "The question to ask the user. Be clear and specific about what information you need.",
-      },
-      expected_format: {
-        type: "string",
-        description:
-          "Optional description of the expected answer format (e.g., 'yes/no', 'a number between 1-10', 'a valid email address')",
-      },
-      suggestions: {
+      questions: {
         type: "array",
-        description: "Optional array of suggested answers to display as quick-reply buttons",
+        description:
+          "One to three questions that can be answered together. Every item must use the exact fields id and prompt. Options use label and may include description.",
+        minItems: 1,
+        maxItems: USER_QUESTION_SET_MAX_QUESTIONS,
         items: {
-          type: "string",
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              description: "A short lowercase identifier such as pricing or audience.",
+            },
+            prompt: {
+              type: "string",
+              description: "A clear, specific question that explains the decision needed.",
+            },
+            options: {
+              type: "array",
+              maxItems: USER_QUESTION_MAX_OPTIONS,
+              description: "Useful choices. Omit when a free-form answer is more appropriate.",
+              items: {
+                type: "object",
+                properties: {
+                  label: { type: "string" },
+                  description: { type: "string" },
+                },
+                required: ["label"],
+              },
+            },
+            allowOther: {
+              type: "boolean",
+              description: "Allow a written answer in addition to the choices. Defaults to true.",
+            },
+          },
+          required: ["id", "prompt"],
         },
       },
-      context: {
-        type: "object",
-        description: "Optional context data about why this question is being asked",
-      },
     },
-    required: ["question"],
+    required: ["questions"],
   }),
   execute: async (args, context) => {
     const req = context.request;
     const completion_id = context.completionId;
+    const parsed = userQuestionsSchema.safeParse(args?.questions);
 
-    const { question, expected_format, suggestions, context: requestContext } = args || {};
-
-    if (!question || typeof question !== "string" || question.trim().length === 0) {
+    if (!parsed.success) {
       throw new AssistantError(
-        "question is required and must be a non-empty string",
+        "questions must contain between one and three valid questions",
         ErrorType.PARAMS_ERROR,
       );
     }
 
-    let parsedSuggestions = suggestions;
-
-    if (typeof suggestions === "string") {
-      const normalizedSuggestions = suggestions.replace(/'/g, '"');
-
-      try {
-        parsedSuggestions = JSON.parse(normalizedSuggestions);
-      } catch {
-        parsedSuggestions = suggestions
-          .split(",")
-          .map((s) => s.trim())
-          .filter((s) => s.length > 0);
-
-        if (parsedSuggestions.length === 0) {
-          parsedSuggestions = undefined;
-        }
-      }
-    }
-
-    let parsedContext = requestContext;
-
-    if (typeof requestContext === "string") {
-      try {
-        parsedContext = JSON.parse(requestContext);
-      } catch {
-        throw new AssistantError(
-          "context must be valid JSON when provided as a string",
-          ErrorType.PARAMS_ERROR,
-        );
-      }
-    }
+    const interactionId = generateId();
+    const requestedAt = new Date().toISOString();
 
     logger.info("User question created", {
       completion_id,
-      question: question.substring(0, 100),
-      expected_format,
+      question_count: parsed.data.length,
       user_id: req.user?.id,
     });
 
     return {
       name: "ask_user",
       status: "pending",
-      content: question,
+      content:
+        parsed.data.length === 1
+          ? parsed.data[0].prompt
+          : `Waiting for answers to ${parsed.data.length} questions.`,
       data: {
         completion_id,
-        question,
-        expected_format,
-        suggestions: parsedSuggestions,
-        context: parsedContext,
-        timestamp: new Date().toISOString(),
+        interactionId,
+        questions: parsed.data,
+        requestedAt,
         humanInTheLoop: {
           type: "question",
           status: "pending",
-          question,
-          expected_format,
-          suggestions: parsedSuggestions,
+          interactionId,
+          questions: parsed.data,
           requires_user_action: true,
         },
       },

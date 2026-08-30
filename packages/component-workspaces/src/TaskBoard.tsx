@@ -194,7 +194,7 @@ function TaskRow({
             icon={<MessageSquareText size={13} />}
             className="no-underline hover:!no-underline"
           >
-            Respond
+            Answer questions
           </ButtonLink>
         ) : null}
         {task.status === "blocked" && !canRetry && (!needsInput || !conversationHref) ? (

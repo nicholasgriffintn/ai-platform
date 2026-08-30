@@ -2,6 +2,7 @@ import z from "zod/v4";
 
 import { agentModeSchema, toolPermissionSchema } from "./agent-modes";
 import { goalSchema } from "./goals";
+import { answerUserQuestionsSchema, userQuestionSetSchema } from "./user-questions";
 
 export const projectTaskStatusSchema = z.enum([
   "backlog",
@@ -35,6 +36,7 @@ export const projectTaskRunnerKindSchema = z.enum(["conversation"]);
 export type ProjectTaskRunnerKind = z.infer<typeof projectTaskRunnerKindSchema>;
 
 export const projectTaskBlockedReasonSchema = z.enum([
+  "awaiting_input",
   "awaiting_approval",
   "stalled",
   "usage_limits",
@@ -53,6 +55,7 @@ export const RETRYABLE_PROJECT_TASK_BLOCKED_REASONS: readonly ProjectTaskBlocked
 ];
 
 export const projectTaskBlockedReasonLabels: Record<ProjectTaskBlockedReason, string> = {
+  awaiting_input: "Waiting for your answers",
   awaiting_approval: "Waiting for an approval",
   stalled: "Stopped making progress",
   usage_limits: "Stopped at the usage limit",
@@ -175,7 +178,7 @@ export function isProjectTaskRetryable(
 export function isProjectTaskAwaitingInput(
   task: Pick<ProjectTask, "status" | "blockedReason">,
 ): boolean {
-  return task.status === "blocked" && task.blockedReason === "stalled";
+  return task.status === "blocked" && task.blockedReason === "awaiting_input";
 }
 
 export const projectFlowStageSchema = z
@@ -239,7 +242,13 @@ export function nextFlowStageId(flow: ProjectFlow | null, stageId: string | null
   return flow.stages[index + 1].id;
 }
 
-export const PROJECT_TASK_ATTENTION_KINDS = ["approval", "review", "blocked", "assigned"] as const;
+export const PROJECT_TASK_ATTENTION_KINDS = [
+  "input",
+  "approval",
+  "review",
+  "blocked",
+  "assigned",
+] as const;
 
 export const projectTaskAttentionKindSchema = z.enum(PROJECT_TASK_ATTENTION_KINDS);
 export type ProjectTaskAttentionKind = z.infer<typeof projectTaskAttentionKindSchema>;
@@ -317,9 +326,12 @@ export const projectTaskResponseSchema = z.object({ task: projectTaskSchema });
 export const projectTaskDetailResponseSchema = z.object({
   task: projectTaskSchema,
   goal: goalSchema.nullable(),
+  pendingQuestions: userQuestionSetSchema.nullable(),
 });
 
 export type ProjectTaskDetailResponse = z.infer<typeof projectTaskDetailResponseSchema>;
+
+export const answerProjectTaskQuestionsSchema = answerUserQuestionsSchema;
 
 export const projectTaskListResponseSchema = z.object({
   tasks: z.array(projectTaskSchema),
