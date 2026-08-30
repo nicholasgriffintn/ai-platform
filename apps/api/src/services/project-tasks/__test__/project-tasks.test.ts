@@ -1,14 +1,23 @@
 import type {
+  ProjectTaskCapability,
+  ProjectTaskConsequence,
+  ProjectTaskEffort,
   ProjectTaskPriority,
   ProjectTaskSource,
   ProjectTaskStatus,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
+import {
+  permissionsForConsequences,
+  PROJECT_TASK_DEFAULT_CAPABILITIES,
+  PROJECT_TASK_DEFAULT_CONSEQUENCES,
+  PROJECT_TASK_EFFORT_BUDGETS,
+} from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 
-import { intersectAgentTools, resolveTaskRuntime } from "../flow";
+import { intersectAgentTools, resolveTaskRuntime, toolsWithinCapabilities } from "../flow";
 import {
   acceptProjectTask,
   createProjectTask,
@@ -30,6 +39,9 @@ const baseTask = {
   constraints: null,
   dependsOnTaskIds: [] as string[],
   requireApprovalFor: [] as ToolPermission[],
+  capabilities: [] as ProjectTaskCapability[],
+  approvalConsequences: [] as ProjectTaskConsequence[],
+  effort: "standard" as ProjectTaskEffort,
   priority: "normal" as ProjectTaskPriority,
   dueAt: null,
   status: "backlog" as ProjectTaskStatus,
@@ -414,5 +426,89 @@ describe("task constraints", () => {
     });
 
     expect(runtime.requireApprovalFor).toContain("network");
+  });
+});
+
+describe("capabilities and consequences", () => {
+  const permissions = new Map<string, ToolPermission[]>([
+    ["web_search", ["network"]],
+    ["run_sandbox_task", ["sandbox"]],
+    ["create_note", ["write"]],
+    ["search_documents", ["read"]],
+  ]);
+  const allTools = ["web_search", "run_sandbox_task", "create_note", "search_documents"];
+
+  it("keeps only read-level tools when no capability is granted", () => {
+    expect(toolsWithinCapabilities(allTools, [], permissions)).toEqual(["search_documents"]);
+  });
+
+  it("admits a tool once its capability is granted", () => {
+    expect(toolsWithinCapabilities(allTools, ["web_access"], permissions)).toEqual([
+      "web_search",
+      "search_documents",
+    ]);
+  });
+
+  it("turns a consequence into the permissions that gate it", async () => {
+    const { context } = createContext();
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: { ...baseTask, approvalConsequences: ["delete"] },
+      flow: null,
+    });
+
+    expect(runtime.requireApprovalFor).toContain("network");
+  });
+
+  it("never asks for approval on reading or reasoning", async () => {
+    const { context } = createContext();
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: {
+        ...baseTask,
+        approvalConsequences: ["publish", "message_people", "spend_money", "delete"],
+      },
+      flow: null,
+    });
+
+    expect(runtime.requireApprovalFor).not.toContain("read");
+    expect(runtime.requireApprovalFor).not.toContain("reasoning");
+  });
+});
+
+describe("effort presets", () => {
+  it("resolves a task's budget from its effort rather than a raw number", async () => {
+    const { context, updateTask } = createContext({ task: { effort: "quick" } });
+
+    await startProjectTask(context, "project-1", "task-1");
+
+    expect(updateTask).toHaveBeenCalledWith(
+      "task-1",
+      expect.objectContaining({ tokenBudget: PROJECT_TASK_EFFORT_BUDGETS.quick }),
+    );
+  });
+});
+
+describe("default capabilities and approvals", () => {
+  it("gives a task created without them the safe defaults", async () => {
+    const { context } = createContext();
+    const createTask = context.repositories.projectTasks.createTask as ReturnType<typeof vi.fn>;
+
+    await createProjectTask(context, "project-1", { objective: "Ship the pricing note" });
+
+    expect(createTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        capabilities: [...PROJECT_TASK_DEFAULT_CAPABILITIES],
+        approvalConsequences: [...PROJECT_TASK_DEFAULT_CONSEQUENCES],
+      }),
+    );
+  });
+
+  it("leaves drafting ungated while every outward consequence is gated", () => {
+    const gated = permissionsForConsequences([...PROJECT_TASK_DEFAULT_CONSEQUENCES]);
+
+    expect(gated).not.toContain("read");
+    expect(gated).not.toContain("write");
+    expect(gated).toContain("network");
   });
 });

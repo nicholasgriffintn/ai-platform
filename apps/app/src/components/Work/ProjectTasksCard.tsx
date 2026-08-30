@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { useProjectTasks } from "~/hooks/useProjectTasks";
 import { getErrorMessage } from "~/lib/errors";
 
-import { useProjectTaskAgents } from "./useProjectTaskAgents";
+import { useProjectTaskAgents, useProjectTaskDefaults } from "./useProjectTaskAgents";
 import { useWorkData } from "./WorkContext";
 
 export function ProjectTasksCard({
@@ -23,6 +23,11 @@ export function ProjectTasksCard({
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { projectQuery, workspaceQuery } = useWorkData();
   const agents = useProjectTaskAgents(projectQuery.data?.capabilities);
+  const taskDefaults = useProjectTaskDefaults(
+    projectQuery.data?.capabilities,
+    agents,
+    Boolean(projectQuery.data?.codingEnvironment),
+  );
   const { tasks, flow, isLoading, create } = useProjectTasks(projectId);
   const boardHref = `/work/${workspaceId}/projects/${projectId}/tasks`;
   const members = (workspaceQuery.data?.members ?? []).map((member) => ({
@@ -31,9 +36,7 @@ export function ProjectTasksCard({
   }));
 
   const taskHref = (task: ProjectTask) =>
-    task.conversationId
-      ? `/work/${workspaceId}/projects/${projectId}/chat?completion_id=${task.conversationId}`
-      : boardHref;
+    `/work/${workspaceId}/projects/${projectId}/tasks/${task.id}`;
 
   const addTask = async (input: CreateTaskInput) => {
     try {
@@ -60,6 +63,7 @@ export function ProjectTasksCard({
         members={members}
         agents={agents}
         boardTasks={tasks}
+        defaults={taskDefaults}
         isSubmitting={create.isPending}
         errorMessage={create.error ? getErrorMessage(create.error, "") : undefined}
         onOpenChange={setIsCreateOpen}

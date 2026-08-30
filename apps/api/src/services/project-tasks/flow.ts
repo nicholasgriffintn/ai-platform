@@ -1,13 +1,17 @@
 import {
   findFlowStage,
+  permissionsForCapabilities,
+  permissionsForConsequences,
   type ProjectFlow,
   type ProjectFlowStage,
   type ProjectTask,
+  type ProjectTaskCapability,
   type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { Agent } from "~/lib/database/schema";
+import { listFunctionTools } from "~/services/functions";
 import { resolveProjectTools } from "~/services/workspaces/projectTools";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -60,6 +64,35 @@ async function resolveProjectAgent(
   return agent;
 }
 
+/**
+ * A task's capabilities decide which permissions its tools may hold. A tool is
+ * withheld unless every permission it declares is allowed, so selecting nothing
+ * leaves only read, reasoning and human tools.
+ */
+export function toolsWithinCapabilities(
+  tools: string[],
+  capabilities: readonly ProjectTaskCapability[],
+  permissionsByTool: Map<string, readonly ToolPermission[]>,
+): string[] {
+  const allowed = new Set(permissionsForCapabilities(capabilities));
+
+  return tools.filter((tool) => {
+    const required = permissionsByTool.get(tool);
+
+    if (!required || required.length === 0) {
+      return true;
+    }
+
+    return required.every((permission) => allowed.has(permission));
+  });
+}
+
+function permissionsByTool(): Map<string, readonly ToolPermission[]> {
+  return new Map(
+    listFunctionTools().map((tool) => [tool.name, (tool.permissions ?? []) as ToolPermission[]]),
+  );
+}
+
 export function withoutForbiddenTools(
   tools: string[],
   forbidden: readonly string[] | undefined,
@@ -92,11 +125,19 @@ export async function resolveTaskRuntime(params: {
     agent,
     model: task.runner?.model ?? agent?.model ?? null,
     mode: stage?.mode ?? task.runner?.mode ?? "agent",
-    enabledTools: withoutForbiddenTools(
-      agent ? intersectAgentTools(agent.enabled_tools, projectTools) : projectTools,
-      task.constraints?.forbiddenTools,
+    enabledTools: toolsWithinCapabilities(
+      withoutForbiddenTools(
+        agent ? intersectAgentTools(agent.enabled_tools, projectTools) : projectTools,
+        task.constraints?.forbiddenTools,
+      ),
+      task.capabilities,
+      permissionsByTool(),
     ),
-    requireApprovalFor: [...(stage?.requiresApprovalFor ?? []), ...task.requireApprovalFor],
+    requireApprovalFor: [
+      ...(stage?.requiresApprovalFor ?? []),
+      ...task.requireApprovalFor,
+      ...permissionsForConsequences(task.approvalConsequences),
+    ],
   };
 }
 

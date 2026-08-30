@@ -57,6 +57,23 @@ addRoute(app, "post", "/", {
   handler: ({ serviceContext, body }) => createWorkspace(serviceContext, body),
 });
 
+addRoute(app, "get", "/attention", {
+  auth: true,
+  tags: ["workspaces", "tasks"],
+  summary: "List task board work waiting on you",
+  description:
+    "Aggregates blocked, in-review, and assigned tasks across every workspace you belong to.",
+  querySchema: z.object({ limit: z.coerce.number().int().min(1).max(100).optional() }),
+  responses: {
+    200: {
+      description: "Work waiting on you",
+      schema: projectTaskAttentionResponseSchema,
+    },
+  },
+  handler: ({ serviceContext, query }) =>
+    listProjectTaskAttention(serviceContext, { limit: query.limit }),
+});
+
 addRoute(app, "get", "/:workspaceId", {
   auth: true,
   tags: ["workspaces"],
@@ -169,23 +186,6 @@ addRoute(app, "post", "/:workspaceId/projects", {
   responses: { 200: { description: "Created project", schema: projectDetailSchema } },
   handler: ({ serviceContext, params, body }) =>
     createProject(serviceContext, params.workspaceId, body),
-});
-
-addRoute(app, "get", "/attention", {
-  auth: true,
-  tags: ["workspaces", "tasks"],
-  summary: "List task board work waiting on you",
-  description:
-    "Aggregates blocked, in-review, and assigned tasks across every workspace you belong to.",
-  querySchema: z.object({ limit: z.coerce.number().int().min(1).max(100).optional() }),
-  responses: {
-    200: {
-      description: "Work waiting on you",
-      schema: projectTaskAttentionResponseSchema,
-    },
-  },
-  handler: ({ serviceContext, query }) =>
-    listProjectTaskAttention(serviceContext, { limit: query.limit }),
 });
 
 export default app;

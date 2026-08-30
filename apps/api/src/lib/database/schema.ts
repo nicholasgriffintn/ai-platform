@@ -1,5 +1,7 @@
 import type { AuthChallengeKind } from "@ngriffin_uk/auth-protocol";
 import type {
+  ProjectTaskCapability,
+  ProjectTaskConsequence,
   ProjectTaskConstraints,
   ProjectTaskContext,
   ProjectTaskCriterion,
@@ -1347,6 +1349,8 @@ export const tasks = sqliteTable(
         "sandbox_run_dispatch",
         "artificial_analysis_ingest",
         "artificial_analysis_scoring",
+        "inbound_message",
+        "project_task_run",
       ],
     }).notNull(),
     status: text({
@@ -1631,6 +1635,11 @@ export const projectTask = sqliteTable(
     context: text({ mode: "json" }).$type<ProjectTaskContext>(),
     constraints: text({ mode: "json" }).$type<ProjectTaskConstraints>(),
     depends_on_task_ids: text({ mode: "json" }).$type<string[]>(),
+    capabilities: text({ mode: "json" }).$type<ProjectTaskCapability[]>(),
+    approval_consequences: text({ mode: "json" }).$type<ProjectTaskConsequence[]>(),
+    effort: text({ enum: ["quick", "standard", "thorough"] })
+      .default("standard")
+      .notNull(),
     require_approval_for: text({ mode: "json" }).$type<ToolPermission[]>(),
     priority: text({ enum: ["low", "normal", "high"] })
       .default("normal")

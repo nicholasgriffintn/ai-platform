@@ -110,9 +110,7 @@ export function WorkOverview() {
             <TaskAttentionList
               items={attentionItems}
               itemHref={(item) =>
-                item.conversationId
-                  ? `/work/${item.workspaceId}/projects/${item.projectId}/chat?completion_id=${item.conversationId}`
-                  : `/work/${item.workspaceId}/projects/${item.projectId}/tasks`
+                `/work/${item.workspaceId}/projects/${item.projectId}/tasks/${item.taskId}`
               }
             />
           </section>

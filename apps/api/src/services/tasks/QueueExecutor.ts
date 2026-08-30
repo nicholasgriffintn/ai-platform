@@ -28,6 +28,24 @@ import { MAX_QUEUE_DELAY_SECONDS } from "./TaskService";
 
 const logger = getLogger({ prefix: "services/tasks/queue-executor" });
 
+export function createTaskHandlers(): Map<TaskType, TaskHandler> {
+  return new Map<TaskType, TaskHandler>([
+    ["memory_synthesis", new MemorySynthesisHandler()],
+    ["research_polling", new ResearchPollingHandler()],
+    ["replicate_polling", new ReplicatePollingHandler()],
+    ["async_message_polling", new AsyncMessagePollingHandler()],
+    ["podcast_transcription_polling", new PodcastTranscriptionPollingHandler()],
+    ["training_quality_scoring", new TrainingQualityHandler()],
+    ["usage_update", new UsageUpdateHandler()],
+    ["recipe_execution", new RecipeExecutionHandler()],
+    ["inbound_message", new InboundMessageHandler()],
+    ["artificial_analysis_ingest", new ArtificialAnalysisIngestHandler()],
+    ["artificial_analysis_scoring", new ArtificialAnalysisScoringHandler()],
+    [SANDBOX_RUN_DISPATCH_TASK_TYPE, new SandboxRunDispatchHandler()],
+    [PROJECT_TASK_RUN_TASK_TYPE, new ProjectTaskRunHandler()],
+  ]);
+}
+
 export class QueueExecutor {
   public static async respondToCronQueue(
     env: IEnv,
@@ -35,22 +53,7 @@ export class QueueExecutor {
   ): Promise<void> {
     logger.info(`Processing batch of ${batch.messages.length} tasks`);
 
-    const handlers = new Map<TaskType, TaskHandler>([
-      ["memory_synthesis", new MemorySynthesisHandler()],
-      ["research_polling", new ResearchPollingHandler()],
-      ["replicate_polling", new ReplicatePollingHandler()],
-      ["async_message_polling", new AsyncMessagePollingHandler()],
-      ["podcast_transcription_polling", new PodcastTranscriptionPollingHandler()],
-      ["training_quality_scoring", new TrainingQualityHandler()],
-      ["usage_update", new UsageUpdateHandler()],
-      ["recipe_execution", new RecipeExecutionHandler()],
-      ["inbound_message", new InboundMessageHandler()],
-      ["artificial_analysis_ingest", new ArtificialAnalysisIngestHandler()],
-      ["artificial_analysis_scoring", new ArtificialAnalysisScoringHandler()],
-      [SANDBOX_RUN_DISPATCH_TASK_TYPE, new SandboxRunDispatchHandler()],
-      [PROJECT_TASK_RUN_TASK_TYPE, new ProjectTaskRunHandler()],
-    ]);
-
+    const handlers = createTaskHandlers();
     const taskExecutor = new TaskExecutor(env, handlers);
     const taskRepository = new TaskRepository(env);
 

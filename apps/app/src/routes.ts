@@ -25,6 +25,7 @@ export default [
     route(":workspaceId/projects/:projectId/library", "pages/work/project-library.tsx"),
     route(":workspaceId/projects/:projectId/sources", "pages/work/project-sources.tsx"),
     route(":workspaceId/projects/:projectId/tasks", "pages/work/project-tasks.tsx"),
+    route(":workspaceId/projects/:projectId/tasks/:taskId", "pages/work/project-task.tsx"),
     route(":workspaceId/projects/:projectId/activity", "pages/work/project-activity.tsx"),
     route(":workspaceId/projects/:projectId/outputs/*", "pages/work/project-outputs.tsx"),
     route(":workspaceId/projects/:projectId/tools/:toolId", "pages/work/project-tool.tsx"),

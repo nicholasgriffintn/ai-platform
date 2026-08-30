@@ -26,3 +26,4 @@ export * from "./TaskBoard";
 export * from "./TaskAttentionList";
 export * from "./CreateTaskDialog";
 export * from "./ProjectTasksSummary";
+export * from "./TaskDetail";

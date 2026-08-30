@@ -1,4 +1,8 @@
-import { SANDBOX_RUN_DISPATCH_TASK_TYPE, type TaskType } from "@ngriffin_uk/polychat-schemas";
+import {
+  PROJECT_TASK_RUN_TASK_TYPE,
+  SANDBOX_RUN_DISPATCH_TASK_TYPE,
+  type TaskType,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { IEnv } from "../types";
 
@@ -27,4 +31,5 @@ export const ALWAYS_ENABLED_SCHEDULES = [
   "artificial_analysis_ingest",
   "artificial_analysis_scoring",
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
+  PROJECT_TASK_RUN_TASK_TYPE,
 ] as const satisfies readonly TaskType[];

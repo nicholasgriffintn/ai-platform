@@ -1,10 +1,13 @@
 import type {
   ProjectTask,
   ProjectTaskBlockedReason,
+  ProjectTaskCapability,
+  ProjectTaskConsequence,
   ProjectTaskConstraints,
   ProjectTaskContext,
   ProjectTaskCriterion,
   ProjectTaskDeliverable,
+  ProjectTaskEffort,
   ProjectTaskPriority,
   ProjectTaskRunner,
   ProjectTaskSource,
@@ -13,6 +16,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ProjectTaskRow } from "~/lib/database/schema";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
 
@@ -29,6 +33,9 @@ export interface CreateProjectTaskParams {
   constraints?: ProjectTaskConstraints | null;
   dependsOnTaskIds?: string[];
   requireApprovalFor?: ToolPermission[];
+  capabilities?: ProjectTaskCapability[];
+  approvalConsequences?: ProjectTaskConsequence[];
+  effort?: ProjectTaskEffort;
   priority?: ProjectTaskPriority;
   dueAt?: string | null;
   source: ProjectTaskSource;
@@ -49,6 +56,9 @@ export interface UpdateProjectTaskParams {
   constraints?: ProjectTaskConstraints | null;
   dependsOnTaskIds?: string[];
   requireApprovalFor?: ToolPermission[];
+  capabilities?: ProjectTaskCapability[];
+  approvalConsequences?: ProjectTaskConsequence[];
+  effort?: ProjectTaskEffort;
   priority?: ProjectTaskPriority;
   dueAt?: string | null;
   status?: ProjectTaskStatus;
@@ -100,6 +110,10 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
     constraints: parseJsonColumn<ProjectTaskConstraints>(row.constraints),
     dependsOnTaskIds: parseJsonColumn<string[]>(row.depends_on_task_ids) ?? [],
     requireApprovalFor: parseJsonColumn<ToolPermission[]>(row.require_approval_for) ?? [],
+    capabilities: parseJsonColumn<ProjectTaskCapability[]>(row.capabilities) ?? [],
+    approvalConsequences:
+      parseJsonColumn<ProjectTaskConsequence[]>(row.approval_consequences) ?? [],
+    effort: row.effort,
     priority: row.priority,
     dueAt: row.due_at,
     createdByUserId: row.created_by_user_id,
@@ -119,37 +133,59 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
 
 export class ProjectTaskRepository extends BaseRepository {
   async createTask(params: CreateProjectTaskParams): Promise<ProjectTask> {
-    const row = await this.runQuery<ProjectTaskRow>(
-      `INSERT INTO project_task
-        (id, project_id, workspace_id, objective, acceptance, acceptance_criteria, deliverable,
-         context, constraints, depends_on_task_ids, require_approval_for, priority, due_at,
-         status, source, created_by_user_id, assignee_user_id, runner, stage_id, token_budget, position)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'backlog', ?, ?, ?, ?, ?, ?, ?)
-       RETURNING *`,
-      [
-        generateId(),
-        params.projectId,
-        params.workspaceId,
-        params.objective,
-        params.acceptance ?? null,
-        JSON.stringify(params.acceptanceCriteria ?? []),
-        params.deliverable ? JSON.stringify(params.deliverable) : null,
-        params.context ? JSON.stringify(params.context) : null,
-        params.constraints ? JSON.stringify(params.constraints) : null,
-        JSON.stringify(params.dependsOnTaskIds ?? []),
-        JSON.stringify(params.requireApprovalFor ?? []),
-        params.priority ?? "normal",
-        params.dueAt ?? null,
-        params.source,
-        params.createdByUserId,
-        params.assigneeUserId ?? null,
-        params.runner ? JSON.stringify(params.runner) : null,
-        params.stageId ?? null,
-        params.tokenBudget ?? null,
-        params.position,
-      ],
-      true,
+    const insert = this.buildInsertQuery(
+      "project_task",
+      {
+        id: generateId(),
+        project_id: params.projectId,
+        workspace_id: params.workspaceId,
+        objective: params.objective,
+        acceptance: params.acceptance ?? null,
+        acceptance_criteria: params.acceptanceCriteria ?? [],
+        deliverable: params.deliverable ?? null,
+        context: params.context ?? null,
+        constraints: params.constraints ?? null,
+        depends_on_task_ids: params.dependsOnTaskIds ?? [],
+        require_approval_for: params.requireApprovalFor ?? [],
+        capabilities: params.capabilities ?? [],
+        approval_consequences: params.approvalConsequences ?? [],
+        effort: params.effort ?? "standard",
+        priority: params.priority ?? "normal",
+        due_at: params.dueAt ?? null,
+        status: "backlog",
+        source: params.source,
+        created_by_user_id: params.createdByUserId,
+        assignee_user_id: params.assigneeUserId ?? null,
+        runner: params.runner ?? null,
+        stage_id: params.stageId ?? null,
+        token_budget: params.tokenBudget ?? null,
+        position: params.position,
+      },
+      {
+        jsonFields: [
+          "acceptance_criteria",
+          "deliverable",
+          "context",
+          "constraints",
+          "depends_on_task_ids",
+          "require_approval_for",
+          "capabilities",
+          "approval_consequences",
+          "runner",
+        ],
+        returning: "*",
+      },
     );
+
+    if (!insert) {
+      throw new AssistantError("Failed to build the task insert", ErrorType.INTERNAL_ERROR);
+    }
+
+    const row = await this.runQuery<ProjectTaskRow>(insert.query, insert.values, true);
+
+    if (!row) {
+      throw new AssistantError("Failed to create the task", ErrorType.DATABASE_ERROR);
+    }
 
     return formatProjectTask(row);
   }
@@ -288,6 +324,18 @@ export class ProjectTaskRepository extends BaseRepository {
 
     if (updates.requireApprovalFor !== undefined) {
       set("require_approval_for", JSON.stringify(updates.requireApprovalFor));
+    }
+
+    if (updates.capabilities !== undefined) {
+      set("capabilities", JSON.stringify(updates.capabilities));
+    }
+
+    if (updates.approvalConsequences !== undefined) {
+      set("approval_consequences", JSON.stringify(updates.approvalConsequences));
+    }
+
+    if (updates.effort !== undefined) {
+      set("effort", updates.effort);
     }
 
     if (updates.priority !== undefined) {

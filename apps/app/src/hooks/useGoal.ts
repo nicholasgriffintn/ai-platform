@@ -7,7 +7,10 @@ import { useChatStore } from "~/state/stores/chatStore";
 
 export const GOAL_QUERY_KEY = "goal";
 
-export function useGoal(conversationId?: string, options?: { enabled?: boolean }) {
+export function useGoal(
+  conversationId?: string,
+  options?: { enabled?: boolean; refetchInterval?: number },
+) {
   const queryClient = useQueryClient();
   const isPro = useChatStore((state) => state.isPro);
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
@@ -29,6 +32,7 @@ export function useGoal(conversationId?: string, options?: { enabled?: boolean }
     enabled,
     retry: false,
     staleTime: 15_000,
+    refetchInterval: options?.refetchInterval,
   });
 
   const writeGoal = useCallback(
