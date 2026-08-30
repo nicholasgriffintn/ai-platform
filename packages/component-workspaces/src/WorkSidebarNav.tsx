@@ -1,5 +1,5 @@
 import { SidebarNavButton, sidebarNavLinkClass } from "@ngriffin_uk/polychat-component-navigation";
-import { cn, Link, NavLink } from "@ngriffin_uk/polychat-component-ui";
+import { Badge, cn, Link, NavLink } from "@ngriffin_uk/polychat-component-ui";
 import {
   Activity,
   ChevronRight,
@@ -9,13 +9,13 @@ import {
   Grid2X2,
   LayoutDashboard,
   ListChecks,
-  MessageSquareText,
   PanelsTopLeft,
   Search,
   Settings2,
   SquarePen,
   Users,
 } from "lucide-react";
+import type { ReactNode } from "react";
 
 import type { WorkspaceRole } from "./WorkspaceMemberList";
 
@@ -36,12 +36,6 @@ export interface WorkSidebarWorkspace {
   projects: WorkSidebarProjectLink[];
 }
 
-export interface WorkSidebarConversationLink {
-  id: string;
-  title?: string | null;
-  href: string;
-}
-
 export interface WorkSidebarProject {
   newConversationHref: string;
   experiencesHref: string;
@@ -50,7 +44,7 @@ export interface WorkSidebarProject {
   tasksHref: string;
   activityHref: string;
   capabilitiesHref: string;
-  conversations: WorkSidebarConversationLink[];
+  conversationList?: ReactNode;
   attentionCount?: number;
   /** True while the project chat route is open, which decides conversation highlighting. */
   isConversationRoute: boolean;
@@ -67,7 +61,6 @@ export interface WorkSidebarNavProps {
   onSearch: () => void;
   onNavigate: () => void;
   onNewConversation: () => void;
-  onSelectConversation: (conversationId: string) => void;
 }
 
 export function WorkSidebarNav({
@@ -79,7 +72,6 @@ export function WorkSidebarNav({
   onSearch,
   onNavigate,
   onNewConversation,
-  onSelectConversation,
 }: WorkSidebarNavProps) {
   const linkClass = sidebarNavLinkClass;
 
@@ -172,9 +164,13 @@ export function WorkSidebarNav({
           <NavLink href={project.tasksHref} className={linkClass} onClick={onNavigate}>
             <ListChecks size={16} /> Tasks
             {project.attentionCount ? (
-              <span className="ml-auto rounded-full bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+              <Badge
+                variant="warning"
+                className="ml-auto min-w-5 px-1.5"
+                aria-label={`${project.attentionCount} tasks need attention`}
+              >
                 {project.attentionCount}
-              </span>
+              </Badge>
             ) : null}
           </NavLink>
           <NavLink href={project.activityHref} className={linkClass} onClick={onNavigate}>
@@ -183,38 +179,7 @@ export function WorkSidebarNav({
           <NavLink href={project.capabilitiesHref} className={linkClass} onClick={onNavigate}>
             <Settings2 size={16} /> Capabilities
           </NavLink>
-          {project.conversations.length ? (
-            <div className="pt-4">
-              <p className="px-2 pb-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-                Recent conversations
-              </p>
-              <ul className="space-y-1">
-                {project.conversations.map((conversation) => {
-                  const isActive =
-                    project.isConversationRoute && project.activeConversationId === conversation.id;
-
-                  return (
-                    <li key={conversation.id}>
-                      <Link
-                        href={conversation.href}
-                        aria-current={isActive ? "page" : undefined}
-                        className={linkClass({ isActive })}
-                        onClick={() => {
-                          onSelectConversation(conversation.id);
-                          onNavigate();
-                        }}
-                      >
-                        <MessageSquareText size={16} className="shrink-0" />
-                        <span className="truncate">
-                          {conversation.title || "New project conversation"}
-                        </span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ) : null}
+          {project.conversationList}
         </div>
       )}
 

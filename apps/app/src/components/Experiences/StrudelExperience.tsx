@@ -3,11 +3,15 @@ import {
   StrudelPatternGrid,
   StrudelPlayer,
 } from "@ngriffin_uk/polychat-component-experiences/music";
-import { Button, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
+import {
+  ButtonLink,
+  CardGridLoadingSkeleton,
+  EmptyState,
+} from "@ngriffin_uk/polychat-component-ui";
 import { parseCommaSeparatedTags } from "@ngriffin_uk/polychat-utility-core";
 import { Music2, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 import { StrudelCreateStudio } from "~/components/Apps/Strudel/StrudelCreateStudio";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
@@ -68,11 +72,9 @@ export function StrudelExperience({ basePath, projectId, subpath }: ExperiencePr
         title="No patterns yet"
         message="Write or generate a live-coded music pattern."
         action={
-          <Link to={`${basePath}/new`}>
-            <Button variant="primary" icon={<Plus size={16} />}>
-              New pattern
-            </Button>
-          </Link>
+          <ButtonLink variant="primary" icon={<Plus size={16} />} href={`${basePath}/new`}>
+            New pattern
+          </ButtonLink>
         }
       />
     );

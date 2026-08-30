@@ -39,6 +39,7 @@ export * from "./sonner";
 export * from "./Status/icons";
 export * from "./tabs";
 export * from "./Textarea";
+export * from "./TextLink";
 export * from "./toggle";
 export * from "./toggle-group";
 export * from "./Uploader/BasicFileUploader";

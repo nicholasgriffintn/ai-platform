@@ -1,4 +1,4 @@
-import { Checkbox, cn } from "@ngriffin_uk/polychat-component-ui";
+import { Button, Checkbox, cn } from "@ngriffin_uk/polychat-component-ui";
 import { UsersRound } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -155,14 +155,9 @@ export function CouncilMemberPickerView({
               ? "Pick at least one member."
               : "Members debate in the order the chamber decides."}
         </span>
-        <button
-          type="button"
-          onClick={convene}
-          disabled={isResolved || selected.length === 0}
-          className="rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200"
-        >
+        <Button size="xs" onClick={convene} disabled={isResolved || selected.length === 0}>
           Convene
-        </button>
+        </Button>
       </div>
     </div>
   );

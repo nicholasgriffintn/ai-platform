@@ -1,6 +1,5 @@
 import { ShareDialog } from "~/components/Content/ShareDialog";
 import { apiService } from "~/lib/api/api-service";
-import { cn } from "~/lib/utils";
 
 interface ShareButtonProps {
   conversationId: string;
@@ -26,11 +25,8 @@ export const ShareButton = ({
       onShare={async (id) => apiService.shareConversation(id)}
       onUnshare={async (id) => apiService.unshareConversation(id)}
       getShareUrl={(shareId) => `${window.location.origin}/s/${shareId}`}
-      className={cn(
-        className,
-        compactOnMobile &&
-          "px-2 [&>div>span:first-child]:mr-0 [&>div>span:last-child]:hidden sm:px-3 sm:[&>div>span:first-child]:mr-2 sm:[&>div>span:last-child]:inline",
-      )}
+      collapseLabel={compactOnMobile}
+      className={className}
     />
   );
 };

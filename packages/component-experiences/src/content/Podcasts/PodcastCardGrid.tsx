@@ -1,4 +1,4 @@
-import { Button, Card, Link } from "@ngriffin_uk/polychat-component-ui";
+import { ButtonLink, Card, Link } from "@ngriffin_uk/polychat-component-ui";
 import { Plus } from "lucide-react";
 
 export interface PodcastSummary {
@@ -19,11 +19,9 @@ export function PodcastCardGrid({ podcasts, newPodcastHref }: PodcastCardGridPro
   return (
     <div>
       <div className="mb-5 flex justify-end">
-        <Link href={newPodcastHref}>
-          <Button variant="primary" icon={<Plus size={16} />}>
-            New podcast
-          </Button>
-        </Link>
+        <ButtonLink variant="primary" icon={<Plus size={16} />} href={newPodcastHref}>
+          New podcast
+        </ButtonLink>
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {podcasts.map((item) => (

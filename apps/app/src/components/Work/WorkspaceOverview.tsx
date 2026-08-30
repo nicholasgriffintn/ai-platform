@@ -16,7 +16,7 @@ import { isAuthenticationError } from "~/lib/errors";
 
 import { CreateProjectDialog } from "./CreateProjectDialog";
 import { InviteMemberDialog } from "./InviteMemberDialog";
-import { useWorkData } from "./WorkContext";
+import { useWorkData } from "./WorkDataContext";
 
 export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
   const { workspaceQuery } = useWorkData();

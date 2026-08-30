@@ -2,6 +2,7 @@ import {
   findLatestArtifactByIdentifier,
   ArtifactPanel,
   type ToolInteractionHandler,
+  UserQuestionView,
 } from "@ngriffin_uk/polychat-component-content";
 import type {
   ComposerActionCatalogConfig,
@@ -28,7 +29,7 @@ import {
   getModelByReference,
   isImageGenerationOutputModel,
 } from "@ngriffin_uk/polychat-schemas";
-import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationModeMetadata, UserQuestionSet } from "@ngriffin_uk/polychat-schemas";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -101,6 +102,12 @@ export interface ConversationThreadModeConfig {
   contextAttachmentsReady?: boolean;
   onRemoveContextAttachment?: (index: number) => void;
   onClearContextAttachments?: () => void;
+  pendingUserQuestions?: UserQuestionSet | null;
+  onToolInteraction?: (
+    toolName: string,
+    action: Parameters<ToolInteractionHandler>[1],
+    data: Parameters<ToolInteractionHandler>[2],
+  ) => boolean;
 }
 
 interface ConversationThreadProps {
@@ -109,6 +116,7 @@ interface ConversationThreadProps {
 
 export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const { copied: artifactCopied, copy: copyArtifact } = useCopyToClipboard();
+  const modeToolInteraction = modeConfig?.onToolInteraction;
 
   const navigate = useNavigate();
   const { trackEvent, trackFeatureUsage, trackError } = useTrackEvent();
@@ -578,6 +586,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         conversation_id: currentConversationId || "new",
       });
 
+      if (modeToolInteraction?.(toolName, action, data)) {
+        return;
+      }
+
       if (action === "submitPrompt") {
         if (typeof data.input === "string" && data.input.trim()) {
           void sendMessage(data.input, undefined, modeConfig?.requestOptions);
@@ -601,6 +613,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       setChatInput,
       sendMessage,
       modeConfig?.requestOptions,
+      modeToolInteraction,
     ],
   );
 
@@ -646,6 +659,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         <ConversationMessageColumn>
           <MessageList
             messages={messages}
+            hideInlineUserQuestions={Boolean(modeConfig?.pendingUserQuestions)}
             onToolInteraction={handleToolInteraction}
             onConnectorApproval={handleConnectorApproval}
             onArtifactOpen={handleArtifactOpen}
@@ -662,6 +676,13 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           model={selectedModelConfig}
           hideSuggestions={modeConfig?.hideComposerSuggestions}
         />
+        {modeConfig?.pendingUserQuestions ? (
+          <UserQuestionView
+            data={modeConfig.pendingUserQuestions}
+            embedded
+            onToolInteraction={handleToolInteraction}
+          />
+        ) : null}
         {goalView ? (
           <GoalStatusCard
             objective={goalView.objective}

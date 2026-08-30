@@ -1,10 +1,16 @@
-import { AGENT_CONTROL_TOOL_NAMES, FINISH_TOOL_NAME, UPDATE_PLAN_TOOL_NAME } from "./control-tools";
+import {
+  AGENT_CONTROL_TOOL_NAMES,
+  controlToolResultContent,
+  FINISH_TOOL_NAME,
+  UPDATE_PLAN_TOOL_NAME,
+} from "./control-tools";
 import type {
   AgentConfig,
   AgentEvent,
   AgentGoalOutcome,
   AgentLoopResult,
   AgentLoopState,
+  AgentMessage,
   AgentToolCall,
   ExecuteAgentLoopParams,
 } from "./types";
@@ -47,14 +53,21 @@ function defaultRecoveryEnforcementMessage(recoveryReason: string): string {
   ].join("\n");
 }
 
-function defaultPlanUpdatedMessage(plan: string): string {
-  return ["Plan updated.", "", "Current plan:", plan, "", "Choose the next action."].join("\n");
-}
-
 function readStringArgument(toolCall: AgentToolCall, key: string): string {
   const value = toolCall.arguments[key];
 
   return typeof value === "string" ? value : "";
+}
+
+function controlToolResult(toolCall: AgentToolCall): AgentMessage {
+  return {
+    role: "tool",
+    name: toolCall.name,
+    content: controlToolResultContent(toolCall),
+    tool_call_id: toolCall.id,
+    tool_call_arguments: toolCall.arguments,
+    status: "success",
+  };
 }
 
 export async function executeAgentLoop<
@@ -75,7 +88,6 @@ export async function executeAgentLoop<
     params.formatRecoveryRequiredMessage ?? defaultRecoveryRequiredMessage;
   const formatRecoveryEnforcementMessage =
     params.formatRecoveryEnforcementMessage ?? defaultRecoveryEnforcementMessage;
-  const formatPlanUpdatedMessage = params.formatPlanUpdatedMessage ?? defaultPlanUpdatedMessage;
   const shouldAbortOnTurnError = params.shouldAbortOnTurnError ?? (() => false);
 
   const messages = params.initialMessages;
@@ -254,6 +266,9 @@ export async function executeAgentLoop<
 
     const planCall = turn.toolCalls.find((toolCall) => toolCall.name === UPDATE_PLAN_TOOL_NAME);
     const finishCall = turn.toolCalls.find((toolCall) => toolCall.name === FINISH_TOOL_NAME);
+    const controlCalls = turn.toolCalls.filter((toolCall) =>
+      AGENT_CONTROL_TOOL_NAMES.has(toolCall.name),
+    );
     const actionCalls = turn.toolCalls.filter(
       (toolCall) => !AGENT_CONTROL_TOOL_NAMES.has(toolCall.name),
     );
@@ -273,6 +288,22 @@ export async function executeAgentLoop<
       continue;
     }
 
+    if (controlCalls.length > 0) {
+      const controlResults = params.recordControlToolResults
+        ? await params.recordControlToolResults(controlCalls, {
+            step,
+            messages,
+            shared: params.shared,
+            state: params.state,
+            emit,
+            guardExecution,
+            beginPlanRecovery,
+          })
+        : controlCalls.map(controlToolResult);
+
+      messages.push(...controlResults);
+    }
+
     await emit({
       type: "agent_turn",
       agentStep: step,
@@ -287,10 +318,6 @@ export async function executeAgentLoop<
         type: "plan_updated",
         agentStep: step,
         plan: currentPlan,
-      });
-      messages.push({
-        role: "user",
-        content: formatPlanUpdatedMessage(currentPlan),
       });
     }
 

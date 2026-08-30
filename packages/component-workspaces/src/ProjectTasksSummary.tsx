@@ -1,4 +1,4 @@
-import { Button, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
+import { Button, EmptyState, Link, TextLink } from "@ngriffin_uk/polychat-component-ui";
 import {
   projectTaskStatusLabels,
   type ProjectTask,
@@ -6,7 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AlertTriangle, ArrowRight, CheckCircle2, ListChecks, Loader2 } from "lucide-react";
 
-const HIGHLIGHTED_STATUSES: ProjectTaskStatus[] = ["running", "blocked", "review"];
+const HIGHLIGHTED_STATUSES = new Set<ProjectTaskStatus>(["running", "blocked", "review"]);
 const MAX_VISIBLE_TASKS = 4;
 
 function statusIcon(status: ProjectTaskStatus) {
@@ -41,7 +41,7 @@ export function ProjectTasksSummary({
   isLoading = false,
 }: ProjectTasksSummaryProps) {
   const openTasks = tasks.filter((task) => task.status !== "done" && task.status !== "cancelled");
-  const needsAttention = openTasks.filter((task) => HIGHLIGHTED_STATUSES.includes(task.status));
+  const needsAttention = openTasks.filter((task) => HIGHLIGHTED_STATUSES.has(task.status));
   const visible = (needsAttention.length > 0 ? needsAttention : openTasks).slice(
     0,
     MAX_VISIBLE_TASKS,
@@ -51,9 +51,9 @@ export function ProjectTasksSummary({
     <div>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Tasks</h2>
-        <Link href={boardHref} className="text-xs text-zinc-500 hover:text-zinc-700">
-          Open the board
-        </Link>
+        <TextLink href={boardHref} size="xs" trailingIcon={<ArrowRight size={13} />}>
+          Open tasks
+        </TextLink>
       </div>
 
       {isLoading ? (

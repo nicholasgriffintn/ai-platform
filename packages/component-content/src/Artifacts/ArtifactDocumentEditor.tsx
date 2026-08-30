@@ -1,3 +1,4 @@
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import {
   applyMarkdownEdit,
@@ -234,14 +235,9 @@ export const ArtifactDocumentEditor = ({
           <span>{documentStats.characters} chars</span>
         </div>
 
-        <button
-          type="button"
-          onClick={handleDownload}
-          className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-2 py-1 font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200"
-        >
-          <Download size={13} />
+        <Button size="xs" onClick={handleDownload} icon={<Download size={13} />}>
           Download
-        </button>
+        </Button>
       </div>
 
       {outline.length > 0 && (
@@ -275,16 +271,17 @@ export const ArtifactDocumentEditor = ({
             spellCheck
           />
           {selection && onAddSelectionToChat && (
-            <button
-              type="button"
+            <Button
+              variant="outline"
+              size="xs"
               onClick={handleAddSelectionToChat}
               data-selection-action="true"
               style={{ top: selection.top, left: selection.left }}
-              className="absolute z-10 flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-800 shadow-lg transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+              className="absolute z-10 bg-white shadow-lg dark:bg-zinc-900"
+              icon={<MessageSquarePlus size={13} />}
             >
-              <MessageSquarePlus size={13} />
               Add selection to chat
-            </button>
+            </Button>
           )}
         </div>
       ) : (

@@ -34,18 +34,13 @@ export function AgentTraceButton({ entries, compactOnMobile = false }: AgentTrac
         <Button
           variant="ghost"
           size="sm"
-          className={cn(
-            "flex-shrink-0 text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200",
-            compactOnMobile &&
-              "px-2 [&>div>span:first-child]:mr-0 sm:px-3 sm:[&>div>span:first-child]:mr-2",
-          )}
+          collapseLabel={compactOnMobile}
+          className="flex-shrink-0 text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
           title="View conversation trace"
           aria-label="View conversation trace"
           icon={<Activity className="h-3.5 w-3.5" />}
         >
-          <span className={cn("whitespace-nowrap", compactOnMobile && "hidden sm:inline")}>
-            Trace
-          </span>
+          Trace
         </Button>
       </PopoverTrigger>
       <PopoverContent

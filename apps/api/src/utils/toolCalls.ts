@@ -8,6 +8,16 @@ export function nonEmptyToolCallsOrNull(toolCalls: unknown): ToolCallsArray | nu
   return hasToolCalls(toolCalls) ? toolCalls : null;
 }
 
+export function serialiseToolCallArguments(
+  argumentsValue: string | Record<string, unknown> | undefined,
+): string | null {
+  if (!argumentsValue) {
+    return null;
+  }
+
+  return typeof argumentsValue === "string" ? argumentsValue : JSON.stringify(argumentsValue);
+}
+
 export function hasToolCallNamed(toolCalls: unknown, toolName: string): boolean {
   if (!hasToolCalls(toolCalls)) {
     return false;

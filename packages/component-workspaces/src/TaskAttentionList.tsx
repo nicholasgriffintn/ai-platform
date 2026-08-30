@@ -3,9 +3,17 @@ import type {
   ProjectTaskAttentionItem,
   ProjectTaskAttentionKind,
 } from "@ngriffin_uk/polychat-schemas";
-import { AlertTriangle, CheckCircle2, Inbox, ShieldQuestion, UserCheck } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  CircleQuestionMark,
+  Inbox,
+  ShieldQuestion,
+  UserCheck,
+} from "lucide-react";
 
 const KIND_LABELS: Record<ProjectTaskAttentionKind, string> = {
+  input: "Questions",
   approval: "Approval",
   review: "Review",
   blocked: "Blocked",
@@ -13,6 +21,10 @@ const KIND_LABELS: Record<ProjectTaskAttentionKind, string> = {
 };
 
 function kindIcon(kind: ProjectTaskAttentionKind) {
+  if (kind === "input") {
+    return <CircleQuestionMark className="text-amber-500" size={16} />;
+  }
+
   if (kind === "approval") {
     return <ShieldQuestion className="text-amber-500" size={16} />;
   }

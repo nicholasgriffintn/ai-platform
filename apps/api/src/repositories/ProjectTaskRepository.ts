@@ -1,14 +1,10 @@
 import type {
   ProjectTask,
   ProjectTaskBlockedReason,
-  ProjectTaskCapability,
-  ProjectTaskConsequence,
+  ProjectTaskCompletion,
   ProjectTaskConstraints,
   ProjectTaskContext,
   ProjectTaskCriterion,
-  ProjectTaskDeliverable,
-  ProjectTaskEffort,
-  ProjectTaskPriority,
   ProjectTaskRunner,
   ProjectTaskSource,
   ProjectTaskStatus,
@@ -26,18 +22,12 @@ export interface CreateProjectTaskParams {
   projectId: string;
   workspaceId: string;
   objective: string;
-  acceptance?: string | null;
   acceptanceCriteria?: ProjectTaskCriterion[];
-  deliverable?: ProjectTaskDeliverable | null;
+  expectedOutput?: string | null;
   context?: ProjectTaskContext | null;
   constraints?: ProjectTaskConstraints | null;
   dependsOnTaskIds?: string[];
   requireApprovalFor?: ToolPermission[];
-  capabilities?: ProjectTaskCapability[];
-  approvalConsequences?: ProjectTaskConsequence[];
-  effort?: ProjectTaskEffort;
-  priority?: ProjectTaskPriority;
-  dueAt?: string | null;
   source: ProjectTaskSource;
   createdByUserId: number;
   assigneeUserId?: number | null;
@@ -49,18 +39,12 @@ export interface CreateProjectTaskParams {
 
 export interface UpdateProjectTaskParams {
   objective?: string;
-  acceptance?: string | null;
   acceptanceCriteria?: ProjectTaskCriterion[];
-  deliverable?: ProjectTaskDeliverable | null;
+  expectedOutput?: string | null;
   context?: ProjectTaskContext | null;
   constraints?: ProjectTaskConstraints | null;
   dependsOnTaskIds?: string[];
   requireApprovalFor?: ToolPermission[];
-  capabilities?: ProjectTaskCapability[];
-  approvalConsequences?: ProjectTaskConsequence[];
-  effort?: ProjectTaskEffort;
-  priority?: ProjectTaskPriority;
-  dueAt?: string | null;
   status?: ProjectTaskStatus;
   blockedReason?: ProjectTaskBlockedReason | null;
   blockedDetail?: string | null;
@@ -70,6 +54,8 @@ export interface UpdateProjectTaskParams {
   runnerIdentityUserId?: number | null;
   conversationId?: string | null;
   goalId?: string | null;
+  dispatchTaskId?: string | null;
+  completions?: ProjectTaskCompletion[];
   position?: number;
   tokenBudget?: number | null;
   tokensSpent?: number;
@@ -97,7 +83,6 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
     projectId: row.project_id,
     workspaceId: row.workspace_id,
     objective: row.objective,
-    acceptance: row.acceptance,
     status: row.status,
     source: row.source,
     blockedReason: row.blocked_reason,
@@ -105,22 +90,18 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
     stageId: row.stage_id,
     runner: parseJsonColumn<ProjectTaskRunner>(row.runner),
     acceptanceCriteria: parseJsonColumn<ProjectTaskCriterion[]>(row.acceptance_criteria) ?? [],
-    deliverable: parseJsonColumn<ProjectTaskDeliverable>(row.deliverable),
+    expectedOutput: row.expected_output,
     context: parseJsonColumn<ProjectTaskContext>(row.context),
     constraints: parseJsonColumn<ProjectTaskConstraints>(row.constraints),
     dependsOnTaskIds: parseJsonColumn<string[]>(row.depends_on_task_ids) ?? [],
     requireApprovalFor: parseJsonColumn<ToolPermission[]>(row.require_approval_for) ?? [],
-    capabilities: parseJsonColumn<ProjectTaskCapability[]>(row.capabilities) ?? [],
-    approvalConsequences:
-      parseJsonColumn<ProjectTaskConsequence[]>(row.approval_consequences) ?? [],
-    effort: row.effort,
-    priority: row.priority,
-    dueAt: row.due_at,
     createdByUserId: row.created_by_user_id,
     assigneeUserId: row.assignee_user_id,
     runnerIdentityUserId: row.runner_identity_user_id,
     conversationId: row.conversation_id,
     goalId: row.goal_id,
+    dispatchTaskId: row.dispatch_task_id,
+    completions: parseJsonColumn<ProjectTaskCompletion[]>(row.completions) ?? [],
     position: row.position,
     tokenBudget: row.token_budget,
     tokensSpent: row.tokens_spent,
@@ -140,18 +121,13 @@ export class ProjectTaskRepository extends BaseRepository {
         project_id: params.projectId,
         workspace_id: params.workspaceId,
         objective: params.objective,
-        acceptance: params.acceptance ?? null,
         acceptance_criteria: params.acceptanceCriteria ?? [],
-        deliverable: params.deliverable ?? null,
+        expected_output: params.expectedOutput ?? null,
         context: params.context ?? null,
         constraints: params.constraints ?? null,
         depends_on_task_ids: params.dependsOnTaskIds ?? [],
         require_approval_for: params.requireApprovalFor ?? [],
-        capabilities: params.capabilities ?? [],
-        approval_consequences: params.approvalConsequences ?? [],
-        effort: params.effort ?? "standard",
-        priority: params.priority ?? "normal",
-        due_at: params.dueAt ?? null,
+        completions: [],
         status: "backlog",
         source: params.source,
         created_by_user_id: params.createdByUserId,
@@ -164,13 +140,11 @@ export class ProjectTaskRepository extends BaseRepository {
       {
         jsonFields: [
           "acceptance_criteria",
-          "deliverable",
           "context",
           "constraints",
           "depends_on_task_ids",
           "require_approval_for",
-          "capabilities",
-          "approval_consequences",
+          "completions",
           "runner",
         ],
         returning: "*",
@@ -298,16 +272,12 @@ export class ProjectTaskRepository extends BaseRepository {
       set("objective", updates.objective);
     }
 
-    if (updates.acceptance !== undefined) {
-      set("acceptance", updates.acceptance);
-    }
-
     if (updates.acceptanceCriteria !== undefined) {
       set("acceptance_criteria", JSON.stringify(updates.acceptanceCriteria));
     }
 
-    if (updates.deliverable !== undefined) {
-      set("deliverable", updates.deliverable ? JSON.stringify(updates.deliverable) : null);
+    if (updates.expectedOutput !== undefined) {
+      set("expected_output", updates.expectedOutput);
     }
 
     if (updates.context !== undefined) {
@@ -324,26 +294,6 @@ export class ProjectTaskRepository extends BaseRepository {
 
     if (updates.requireApprovalFor !== undefined) {
       set("require_approval_for", JSON.stringify(updates.requireApprovalFor));
-    }
-
-    if (updates.capabilities !== undefined) {
-      set("capabilities", JSON.stringify(updates.capabilities));
-    }
-
-    if (updates.approvalConsequences !== undefined) {
-      set("approval_consequences", JSON.stringify(updates.approvalConsequences));
-    }
-
-    if (updates.effort !== undefined) {
-      set("effort", updates.effort);
-    }
-
-    if (updates.priority !== undefined) {
-      set("priority", updates.priority);
-    }
-
-    if (updates.dueAt !== undefined) {
-      set("due_at", updates.dueAt);
     }
 
     if (updates.status !== undefined) {
@@ -382,6 +332,14 @@ export class ProjectTaskRepository extends BaseRepository {
       set("goal_id", updates.goalId);
     }
 
+    if (updates.dispatchTaskId !== undefined) {
+      set("dispatch_task_id", updates.dispatchTaskId);
+    }
+
+    if (updates.completions !== undefined) {
+      set("completions", JSON.stringify(updates.completions));
+    }
+
     if (updates.position !== undefined) {
       set("position", updates.position);
     }
@@ -418,18 +376,87 @@ export class ProjectTaskRepository extends BaseRepository {
     return row ? formatProjectTask(row) : null;
   }
 
-  async claimQueuedTask(taskId: string, runnerIdentityUserId: number): Promise<ProjectTask | null> {
+  async queueTaskForRun(params: {
+    taskId: string;
+    projectId: string;
+    runnerIdentityUserId: number;
+    dispatchTaskId: string;
+    runner: ProjectTaskRunner;
+    tokenBudget: number;
+    stageId?: string | null;
+  }): Promise<ProjectTask | null> {
+    const row = await this.runQuery<ProjectTaskRow>(
+      `UPDATE project_task
+       SET status = 'queued',
+           runner_identity_user_id = ?,
+           dispatch_task_id = ?,
+           runner = ?,
+           token_budget = ?,
+           stage_id = COALESCE(?, stage_id),
+           goal_id = NULL,
+           blocked_reason = NULL,
+           blocked_detail = NULL,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?
+         AND project_id = ?
+         AND status IN ('backlog', 'queued', 'blocked', 'review', 'running')
+       RETURNING *`,
+      [
+        params.runnerIdentityUserId,
+        params.dispatchTaskId,
+        JSON.stringify(params.runner),
+        params.tokenBudget,
+        params.stageId ?? null,
+        params.taskId,
+        params.projectId,
+      ],
+      true,
+    );
+
+    return row ? formatProjectTask(row) : null;
+  }
+
+  async claimQueuedTask(params: {
+    taskId: string;
+    projectId: string;
+    runnerIdentityUserId: number;
+    dispatchTaskId: string;
+  }): Promise<ProjectTask | null> {
     const row = await this.runQuery<ProjectTaskRow>(
       `UPDATE project_task
        SET status = 'running',
-           runner_identity_user_id = ?,
            blocked_reason = NULL,
            blocked_detail = NULL,
            started_at = COALESCE(started_at, CURRENT_TIMESTAMP),
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = ? AND status = 'queued'
+       WHERE id = ?
+         AND project_id = ?
+         AND runner_identity_user_id = ?
+         AND dispatch_task_id = ?
+         AND status = 'queued'
        RETURNING *`,
-      [runnerIdentityUserId, taskId],
+      [params.taskId, params.projectId, params.runnerIdentityUserId, params.dispatchTaskId],
+      true,
+    );
+
+    return row ? formatProjectTask(row) : null;
+  }
+
+  async failDispatch(params: {
+    taskId: string;
+    projectId: string;
+    dispatchTaskId: string;
+    detail: string;
+  }): Promise<ProjectTask | null> {
+    const row = await this.runQuery<ProjectTaskRow>(
+      `UPDATE project_task
+       SET status = 'blocked',
+           blocked_reason = 'dispatch_failed',
+           blocked_detail = ?,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? AND project_id = ? AND dispatch_task_id = ?
+       RETURNING *`,
+      [params.detail.slice(0, 500), params.taskId, params.projectId, params.dispatchTaskId],
       true,
     );
 

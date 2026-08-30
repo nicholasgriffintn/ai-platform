@@ -94,6 +94,7 @@ export async function recordRecipeInvocationFailure(params: {
   if (messagesToAdd.length > 0) {
     await conversationManager.addBatch(params.conversationId, messagesToAdd, {
       metadata: params.projectId ? { project_id: params.projectId } : undefined,
+      type: "task",
     });
   }
 
@@ -126,6 +127,7 @@ export async function executeRecipeInvocationChat(params: {
     user: params.user,
     request: {
       completion_id: conversationId,
+      conversation_type: "task",
       messages: [
         ...(params.priorMessages ?? []),
         {

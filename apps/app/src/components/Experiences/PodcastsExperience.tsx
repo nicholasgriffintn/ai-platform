@@ -2,10 +2,13 @@ import {
   PodcastCardGrid,
   PodcastNextActionCard,
 } from "@ngriffin_uk/polychat-component-experiences/content";
-import { Button, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
+import {
+  ButtonLink,
+  CardGridLoadingSkeleton,
+  EmptyState,
+} from "@ngriffin_uk/polychat-component-ui";
 import type { Podcast } from "@ngriffin_uk/polychat-schemas";
 import { Mic2, Plus } from "lucide-react";
-import { Link } from "react-router";
 
 import { PodcastWorkflow } from "~/components/Apps/Podcasts/PodcastWorkflow";
 import { PodcastView } from "~/components/Apps/Podcasts/View";
@@ -84,11 +87,9 @@ export function PodcastsExperience({ basePath, projectId, subpath }: ExperienceP
         title="No podcasts yet"
         message="Upload a recording or audio URL to begin processing it."
         action={
-          <Link to={`${basePath}/new`}>
-            <Button variant="primary" icon={<Plus size={16} />}>
-              New podcast
-            </Button>
-          </Link>
+          <ButtonLink variant="primary" icon={<Plus size={16} />} href={`${basePath}/new`}>
+            New podcast
+          </ButtonLink>
         }
       />
     );

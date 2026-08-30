@@ -46,11 +46,11 @@ export const AGENT_MODE_CONFIGS: Record<AgentMode, AgentModeConfig> = {
   },
   plan: {
     maxSteps: 24,
-    allowedPermissions: ["read", "reasoning"],
-    deniedPermissions: ["network", "write", "sandbox", "orchestration", "human", "delegate"],
+    allowedPermissions: ["read", "reasoning", "human"],
+    deniedPermissions: ["network", "write", "sandbox", "orchestration", "delegate"],
     requiresApprovalFor: [],
     allowedTools: [],
-    deniedTools: [],
+    deniedTools: ["request_approval"],
   },
   build: {
     maxSteps: 48,
@@ -62,11 +62,11 @@ export const AGENT_MODE_CONFIGS: Record<AgentMode, AgentModeConfig> = {
   },
   explore: {
     maxSteps: 24,
-    allowedPermissions: ["read", "reasoning"],
-    deniedPermissions: ["network", "write", "sandbox", "orchestration", "human", "delegate"],
+    allowedPermissions: ["read", "reasoning", "human"],
+    deniedPermissions: ["network", "write", "sandbox", "orchestration", "delegate"],
     requiresApprovalFor: [],
     allowedTools: [],
-    deniedTools: [],
+    deniedTools: ["request_approval"],
   },
 };
 

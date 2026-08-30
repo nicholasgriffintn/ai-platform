@@ -16,6 +16,7 @@ export function normaliseConversationResponse(
   if (!conversation) {
     return {
       id: fallbackId,
+      type: "chat",
       title: fallbackTitle,
       messages: [],
     };
@@ -24,6 +25,7 @@ export function normaliseConversationResponse(
   return {
     ...conversation,
     id: typeof conversation.id === "string" ? conversation.id : fallbackId,
+    type: conversation.type === "task" ? "task" : "chat",
     title: typeof conversation.title === "string" ? conversation.title : fallbackTitle,
     messages: Array.isArray(conversation.messages)
       ? conversation.messages.map((message) => normalizeMessage(message))

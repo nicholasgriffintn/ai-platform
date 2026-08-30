@@ -124,14 +124,15 @@ function ConnectorAccountRow({
               <span className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
                 {label}
               </span>
-              <button
-                type="button"
-                className="shrink-0 rounded p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+              <Button
+                variant="icon"
+                size="xs"
+                className="shrink-0"
                 onClick={() => setIsEditing(true)}
                 aria-label={`Rename ${label}`}
               >
                 <Pencil className="size-3.5" />
-              </button>
+              </Button>
             </div>
           )}
           {!isEditing && (

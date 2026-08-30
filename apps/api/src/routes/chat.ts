@@ -12,6 +12,7 @@ import {
   bulkArchiveChatCompletionsResponseSchema,
   conversationArchiveFilterSchema,
   conversationSortBySchema,
+  conversationTypeSchema,
   countTokensJsonSchema,
   countTokensResponseSchema,
   createChatCompletionsJsonSchema,
@@ -617,6 +618,7 @@ addRoute(app, "get", "/completions", {
         data: z.array(
           z.object({
             id: z.string(),
+            type: conversationTypeSchema,
             title: z.string().nullable(),
             created_at: z.string(),
             updated_at: z.string(),

@@ -1,3 +1,4 @@
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { fixMarkdown } from "@ngriffin_uk/polychat-utility-core";
 import { useCopyToClipboard } from "@ngriffin_uk/polychat-utility-react";
 import { Check, Copy } from "lucide-react";
@@ -59,16 +60,17 @@ const CodeBlock = ({ children, ...props }: PreProps) => {
         <span className="font-mono text-[0.68rem] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
           {language || "code"}
         </span>
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="xs"
           onClick={() => text && copy(text)}
-          className="flex cursor-pointer items-center gap-1 rounded px-1.5 py-0.5 text-[0.68rem] text-zinc-500 transition-colors hover:bg-zinc-200/60 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700/60 dark:hover:text-zinc-100"
+          className="gap-1 px-1.5 text-[0.68rem]"
           aria-label={copied ? "Code copied" : "Copy code"}
           title={copied ? "Copied" : "Copy code"}
+          icon={copied ? <Check size={12} /> : <Copy size={12} />}
         >
-          {copied ? <Check size={12} /> : <Copy size={12} />}
-          <span>{copied ? "Copied" : "Copy"}</span>
-        </button>
+          {copied ? "Copied" : "Copy"}
+        </Button>
       </div>
       <pre {...props} className="!my-0 overflow-x-auto !rounded-none !border-0 p-3 text-sm">
         {children}

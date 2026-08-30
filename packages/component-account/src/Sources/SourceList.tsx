@@ -1,4 +1,10 @@
-import { Button, Card, EmptyState, FormSelect } from "@ngriffin_uk/polychat-component-ui";
+import {
+  Button,
+  Card,
+  EmptyState,
+  FormSelect,
+  textLinkClassName,
+} from "@ngriffin_uk/polychat-component-ui";
 import { formatDate } from "@ngriffin_uk/polychat-utility-core";
 import { Database, FileText, Link2, Trash2 } from "lucide-react";
 
@@ -77,10 +83,7 @@ export function SourceList({
             </p>
           </div>
           {source.file && fileHref ? (
-            <a
-              href={fileHref(source)}
-              className="shrink-0 text-sm text-zinc-600 underline-offset-4 hover:underline dark:text-zinc-300"
-            >
+            <a href={fileHref(source)} className={textLinkClassName({ className: "shrink-0" })}>
               Open file
             </a>
           ) : null}

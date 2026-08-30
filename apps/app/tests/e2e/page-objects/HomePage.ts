@@ -421,10 +421,19 @@ export class HomePage extends BasePage {
     return this.page.getByRole("button").filter({ hasText: title }).first();
   }
 
-  async renameConversation(title: string | RegExp, replacement: string) {
+  async hoverConversation(title: string | RegExp) {
     const item = this.conversationItem(title);
 
     await item.hover();
+    await item.getByRole("button", { name: "Edit conversation title" }).waitFor();
+    await item.getByRole("button", { name: "Delete", exact: true }).waitFor();
+
+    return item;
+  }
+
+  async renameConversation(title: string | RegExp, replacement: string) {
+    const item = await this.hoverConversation(title);
+
     this.page.once("dialog", async (dialog) => {
       if (dialog.type() !== "prompt") {
         await dialog.dismiss();
@@ -479,9 +488,8 @@ export class HomePage extends BasePage {
   }
 
   async deleteConversation(title: string | RegExp) {
-    const item = this.conversationItem(title);
+    const item = await this.hoverConversation(title);
 
-    await item.hover();
     await item.getByRole("button", { name: "Delete", exact: true }).click();
     const confirmation = this.page.getByRole("dialog", { name: "Delete Conversation" });
 

@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Button, ButtonLink } from "@ngriffin_uk/polychat-component-ui";
 
 import { Logo } from "~/components/Core/Logo";
 import { PageShell } from "~/components/Core/PageShell";
@@ -33,20 +33,13 @@ export default function ErrorRoute({ message, details, stack }: ErrorRouteProps)
         {shouldShowStack ? (
           <div className="text-sm text-zinc-500 dark:text-zinc-400 break-words">{stack}</div>
         ) : null}
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="rounded bg-black px-3 py-2 text-sm text-white transition-colors hover:bg-zinc-800"
-          >
+        <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" onClick={() => window.location.reload()}>
             Try again
-          </button>
-          <Link
-            to="/"
-            className="rounded border border-zinc-300 px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800 no-underline"
-          >
+          </Button>
+          <ButtonLink variant="outline" size="sm" href="/">
             Back to the nest
-          </Link>
+          </ButtonLink>
         </div>
       </div>
     </PageShell>

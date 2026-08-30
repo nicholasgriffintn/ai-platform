@@ -12,7 +12,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { RotateCcw, SlidersHorizontal } from "lucide-react";
 
-export type ConversationGroupBy = "date" | "none";
+export type ConversationGroupBy = "date" | "type" | "none";
 
 export interface ConversationListFilters {
   activity: ConversationActivityWindow;
@@ -26,6 +26,11 @@ export const DEFAULT_CONVERSATION_LIST_FILTERS: ConversationListFilters = {
   archiveFilter: "active",
   groupBy: "date",
   sortBy: "updated",
+};
+
+export const DEFAULT_WORK_CONVERSATION_LIST_FILTERS: ConversationListFilters = {
+  ...DEFAULT_CONVERSATION_LIST_FILTERS,
+  groupBy: "type",
 };
 
 const ARCHIVE_OPTIONS: readonly OptionsMenuOption<ConversationArchiveFilter>[] = [
@@ -43,6 +48,7 @@ const ACTIVITY_OPTIONS: readonly OptionsMenuOption<ConversationActivityWindow>[]
 
 const GROUP_BY_OPTIONS: readonly OptionsMenuOption<ConversationGroupBy>[] = [
   { value: "date", label: "Date" },
+  { value: "type", label: "Type" },
   { value: "none", label: "None" },
 ];
 
@@ -52,27 +58,34 @@ const SORT_BY_OPTIONS: readonly OptionsMenuOption<ConversationSortBy>[] = [
   { value: "title", label: "Title" },
 ];
 
-export function isDefaultConversationListFilters(filters: ConversationListFilters): boolean {
+export function isDefaultConversationListFilters(
+  filters: ConversationListFilters,
+  defaults: ConversationListFilters = DEFAULT_CONVERSATION_LIST_FILTERS,
+): boolean {
   return (
-    filters.activity === DEFAULT_CONVERSATION_LIST_FILTERS.activity &&
-    filters.archiveFilter === DEFAULT_CONVERSATION_LIST_FILTERS.archiveFilter &&
-    filters.groupBy === DEFAULT_CONVERSATION_LIST_FILTERS.groupBy &&
-    filters.sortBy === DEFAULT_CONVERSATION_LIST_FILTERS.sortBy
+    filters.activity === defaults.activity &&
+    filters.archiveFilter === defaults.archiveFilter &&
+    filters.groupBy === defaults.groupBy &&
+    filters.sortBy === defaults.sortBy
   );
 }
 
 export interface ConversationListControlsProps {
+  defaults?: ConversationListFilters;
   filters: ConversationListFilters;
+  showListFilters?: boolean;
   onFiltersChange: (filters: Partial<ConversationListFilters>) => void;
   onReset: () => void;
 }
 
 export function ConversationListControls({
+  defaults = DEFAULT_CONVERSATION_LIST_FILTERS,
   filters,
+  showListFilters = true,
   onFiltersChange,
   onReset,
 }: ConversationListControlsProps) {
-  const isCustomised = !isDefaultConversationListFilters(filters);
+  const isCustomised = !isDefaultConversationListFilters(filters, defaults);
 
   return (
     <OptionsMenu
@@ -90,19 +103,23 @@ export function ConversationListControls({
         </button>
       }
     >
-      <OptionsMenuSection
-        label="Status"
-        value={filters.archiveFilter}
-        options={ARCHIVE_OPTIONS}
-        onChange={(archiveFilter) => onFiltersChange({ archiveFilter })}
-      />
-      <OptionsMenuSection
-        label="Last activity"
-        value={filters.activity}
-        options={ACTIVITY_OPTIONS}
-        onChange={(activity) => onFiltersChange({ activity })}
-      />
-      <OptionsMenuSeparator />
+      {showListFilters && (
+        <>
+          <OptionsMenuSection
+            label="Status"
+            value={filters.archiveFilter}
+            options={ARCHIVE_OPTIONS}
+            onChange={(archiveFilter) => onFiltersChange({ archiveFilter })}
+          />
+          <OptionsMenuSection
+            label="Last activity"
+            value={filters.activity}
+            options={ACTIVITY_OPTIONS}
+            onChange={(activity) => onFiltersChange({ activity })}
+          />
+          <OptionsMenuSeparator />
+        </>
+      )}
       <OptionsMenuSection
         label="Group by"
         value={filters.groupBy}

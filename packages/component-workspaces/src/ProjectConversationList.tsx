@@ -1,4 +1,4 @@
-import { Button, Card, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
+import { ButtonLink, Card, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
 import { ArrowRight, MessageSquareText } from "lucide-react";
 
 export interface ProjectConversationSummary {
@@ -36,9 +36,9 @@ export function ProjectConversationList({
           title="No conversations yet"
           message="Start a project conversation to use its instructions and capabilities."
           action={
-            <Link href={newConversationHref}>
-              <Button variant="primary">New conversation</Button>
-            </Link>
+            <ButtonLink variant="primary" href={newConversationHref}>
+              New conversation
+            </ButtonLink>
           }
           className="min-h-[220px]"
         />

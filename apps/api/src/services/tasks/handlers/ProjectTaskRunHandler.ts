@@ -1,5 +1,6 @@
 import { projectTaskRunDispatchPayloadSchema } from "@ngriffin_uk/polychat-schemas";
 
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { runProjectTaskDispatch } from "~/services/project-tasks/runner";
 import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
@@ -29,9 +30,11 @@ export class ProjectTaskRunHandler implements TaskHandler {
     try {
       const result = await runProjectTaskDispatch({
         env,
+        dispatchTaskId: payload.data.dispatchTaskId,
         taskId: payload.data.taskId,
         projectId: payload.data.projectId,
         runnerIdentityUserId: payload.data.runnerIdentityUserId,
+        conversationId: payload.data.conversationId,
       });
 
       if (result.status === "skipped") {
@@ -52,12 +55,23 @@ export class ProjectTaskRunHandler implements TaskHandler {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Project task run failed";
 
+      await createServiceContext({ env }).repositories.projectTasks.failDispatch({
+        taskId: payload.data.taskId,
+        projectId: payload.data.projectId,
+        dispatchTaskId: payload.data.dispatchTaskId,
+        detail: "The agent run failed before it could start. Try again.",
+      });
+
       logger.error("Project task run task failed", {
         task_id: message.taskId,
         error_message: errorMessage,
       });
 
-      return { status: "error", message: errorMessage };
+      return {
+        status: "success",
+        message: "Task run stopped before execution and was returned for attention",
+        data: { taskId: payload.data.taskId, outcome: "blocked" },
+      };
     }
   }
 }

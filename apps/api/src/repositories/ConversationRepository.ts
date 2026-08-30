@@ -1,4 +1,8 @@
-import type { ConversationArchiveFilter, ConversationSortBy } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ConversationArchiveFilter,
+  ConversationSortBy,
+  ConversationType,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { PaginationHelper } from "~/lib/database/PaginationHelper";
 import { escapeSqlLikePattern } from "~/utils/sql";
@@ -22,6 +26,13 @@ export interface SetConversationsArchivedOptions {
   updatedAfter?: string;
 }
 
+export interface CreateConversationOptions {
+  parent_conversation_id?: string;
+  parent_message_id?: string;
+  project_id?: string;
+  type?: ConversationType;
+}
+
 export interface GlobalConversationSearchRow {
   id: string;
   title: string | null;
@@ -37,16 +48,18 @@ export class ConversationRepository extends BaseRepository {
     conversationId: string,
     userId: number,
     title?: string,
-    options: Record<string, unknown> = {},
+    options: CreateConversationOptions = {},
   ): Promise<Record<string, unknown> | null> {
     const parentConversationId = options.parent_conversation_id;
     const parentMessageId = options.parent_message_id;
     const projectId = options.project_id;
+    const type = options.type ?? "chat";
 
     const result = this.runQuery<Record<string, unknown>>(
       `INSERT INTO conversation (
          id, 
          user_id, 
+         type,
          title, 
          parent_conversation_id,
 		 parent_message_id,
@@ -54,11 +67,12 @@ export class ConversationRepository extends BaseRepository {
          created_at, 
          updated_at
        )
-		 VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+		 VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
        RETURNING *`,
       [
         conversationId,
         userId,
+        type,
         title ?? null,
         parentConversationId ?? null,
         parentMessageId ?? null,

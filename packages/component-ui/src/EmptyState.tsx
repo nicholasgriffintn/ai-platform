@@ -80,14 +80,9 @@ export const EmptyState = ({
       {suggestions && suggestions.length > 0 && (
         <div className="flex flex-wrap gap-2 justify-center mt-4 mb-4">
           {suggestions.map((suggestion, index) => (
-            <button
-              key={index}
-              onClick={suggestion.onClick}
-              className="px-4 py-2 text-sm rounded-lg border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 transition-colors"
-              type="button"
-            >
+            <Button key={index} variant="outline" onClick={suggestion.onClick}>
               {suggestion.label}
-            </button>
+            </Button>
           ))}
         </div>
       )}

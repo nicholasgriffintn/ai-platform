@@ -7,6 +7,8 @@ Polychat is an experimental, multi-model assistant platform. It combines persona
 - **Chat** is personal and conversation-first. It can use the signed-in user's models, agents, connected providers, tools, memories, and installed recipes.
 - **Work** is collaborative and workspace-first. Workspaces are the sharing and authorisation boundary; projects contain instructions, conversations, sources, outputs, and selected capabilities.
 - **Project experiences** give rich workflows—such as notes, podcasts, generated media, training, or music—more room than a chat turn while keeping their outputs in the project.
+- Conversation lists can group threads by date or by their persisted `chat` and `task` purpose. Chat starts with date grouping; Work starts with type grouping, and the project overview keeps its recent list focused on the five latest ordinary chats.
+- The project work queue can be searched and filtered by execution status or pipeline stage. Pipeline progress reflects execution rather than configuration: backlog work remains visually inactive, active progress is blue, and completed pipelines are emerald.
 
 Do not reintroduce global apps or recipes as another top-level product mode. Capabilities belong in Chat discovery or a project's library and experiences.
 

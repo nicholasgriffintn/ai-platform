@@ -1,8 +1,10 @@
 import {
   executeAgentLoop,
+  controlToolResultContent,
   type AgentEvent,
   type AgentFinishAssessment,
   type AgentLoopState,
+  type AgentMessage,
   type AgentToolCall,
 } from "@ngriffin_uk/polychat-library-agent-core";
 
@@ -11,6 +13,7 @@ import { startConversationTitle } from "~/lib/chat/agent/conversation-title";
 import { captureRunMemories } from "~/lib/chat/agent/memory-capture";
 import { createAgentProviderIO } from "~/lib/chat/agent/provider-io";
 import type { ChatTurnTransport } from "~/lib/chat/agent/turn-transport";
+import { buildMessageParts } from "~/lib/chat/messages/parts";
 import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
 import { DISCARDING_EVENT_SINK, type ChatEventSink } from "~/lib/chat/streaming/emitter";
 import { createToolCallLedger, type ToolCallLedger } from "~/lib/chat/tools/call-ledger";
@@ -36,6 +39,7 @@ import {
   type ToolCall,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/chat/agent/agent-loop" });
@@ -54,7 +58,8 @@ interface ChatAgentLoopState extends AgentLoopState {
   commandCount: number;
   unknownToolRecoveryUsed: boolean;
   toolCallLedger: ToolCallLedger;
-  pendingUserAction?: string;
+  pendingUserAction?: { message: string; kind: "approval" | "question" };
+  waitingForUserAction?: "approval" | "question";
   stoppedForUsageLimit?: boolean;
   finalAnswerForced?: boolean;
 }
@@ -111,6 +116,7 @@ export interface AgentLoopExecutionParams {
     summary: string;
     step: number;
     commandCount: number;
+    awaitingUserAction?: "approval" | "question";
   }) => Promise<AgentFinishAssessment> | AgentFinishAssessment;
 }
 
@@ -236,8 +242,53 @@ export async function runAgentLoop(
       ? ({ summary, step }) =>
           state.stoppedForUsageLimit
             ? { allow: true }
-            : params.assessFinish({ summary, step, commandCount: state.commandCount })
+            : params.assessFinish({
+                summary,
+                step,
+                commandCount: state.commandCount,
+                awaitingUserAction: state.waitingForUserAction,
+              })
       : undefined,
+    recordControlToolResults: async (toolCalls) => {
+      const results = toolCalls.map((toolCall): Message & AgentMessage => {
+        const content = controlToolResultContent(toolCall);
+
+        return {
+          role: "tool",
+          name: toolCall.name,
+          content,
+          status: "success",
+          log_id: "",
+          id: generateId(),
+          tool_call_id: toolCall.id,
+          tool_call_arguments: toolCall.arguments,
+          timestamp: Date.now(),
+          model: params.model,
+          platform: params.platform,
+          parts: buildMessageParts({
+            role: "tool",
+            name: toolCall.name,
+            content,
+            status: "success",
+            tool_call_id: toolCall.id,
+            tool_call_arguments: toolCall.arguments,
+            timestamp: Date.now(),
+          }),
+        };
+      });
+
+      for (const result of results) {
+        await params.conversationManager.add(params.completionId, result);
+        await sink.writeEvent("tool_response", {
+          tool_id: result.id,
+          result,
+        });
+      }
+
+      toolResponses.push(...results);
+
+      return results;
+    },
     resolveTurn: async ({ messages, step }) => {
       if (step > 1 && (await isUsageExhausted(params.conversationManager))) {
         state.stoppedForUsageLimit = true;
@@ -250,7 +301,7 @@ export async function runAgentLoop(
 
         state.pendingUserAction = undefined;
 
-        return closingTurn(pending, "pending");
+        return closingTurn(pending.message, "pending");
       }
 
       await sink.writeEvent("message_start", {
@@ -364,10 +415,18 @@ export async function runAgentLoop(
       const pendingResult = toolResults.find((message) => message.status === "pending");
 
       if (pendingResult) {
-        context.state.pendingUserAction =
-          typeof pendingResult.content === "string" && pendingResult.content.trim()
-            ? pendingResult.content
-            : "This action is waiting for user approval.";
+        const kind = pendingResult.name === "ask_user" ? "question" : "approval";
+
+        context.state.waitingForUserAction = kind;
+        context.state.pendingUserAction = {
+          kind,
+          message:
+            typeof pendingResult.content === "string" && pendingResult.content.trim()
+              ? pendingResult.content
+              : kind === "question"
+                ? "This work is waiting for your answer."
+                : "This action is waiting for user approval.",
+        };
       }
 
       const currentStep = steps[steps.length - 1];

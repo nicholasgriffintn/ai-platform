@@ -48,6 +48,14 @@ describe("functions tool registry", () => {
     expect(names).not.toContain("get_function_schema");
   });
 
+  it("registers exact task lookup as a read-only project tool", () => {
+    const getTask = resolveFunctionTool("get_task");
+
+    expect(getTask.permissions).toEqual(["read"]);
+    expect(getTask.inputSchema.safeParse({ taskId: "task-1" }).success).toBe(true);
+    expect(getTask.inputSchema.safeParse({}).success).toBe(false);
+  });
+
   it("keeps the defaulted discovery limit optional in the model schema", () => {
     const discovery = resolveFunctionTool(CAPABILITY_DISCOVERY_TOOL_NAME);
     const schema = z.toJSONSchema(discovery.inputSchema);

@@ -21,7 +21,7 @@ import { ProjectConversationStarter } from "./ProjectConversationStarter";
 import { ProjectKnowledgeCard } from "./ProjectKnowledgeCard";
 import { ProjectSchedulesCard } from "./ProjectSchedulesCard";
 import { ProjectTasksCard } from "./ProjectTasksCard";
-import { useWorkData } from "./WorkContext";
+import { useWorkData } from "./WorkDataContext";
 
 export function ProjectOverview({
   workspaceId,
@@ -60,6 +60,9 @@ export function ProjectOverview({
   const capabilitiesPath = `/work/${workspaceId}/projects/${projectId}/library`;
   const conversationPath = `/work/${workspaceId}/projects/${projectId}/chat`;
   const tasksPath = `/work/${workspaceId}/projects/${projectId}/tasks`;
+  const recentChats = project.conversations
+    .filter((conversation) => conversation.type === "chat")
+    .slice(0, 5);
   const handleSaveTemplate = async () => {
     try {
       await templates.create.mutateAsync({
@@ -115,9 +118,9 @@ export function ProjectOverview({
             <ProjectConversationStarter workspaceId={workspaceId} projectId={projectId} />
             <ProjectTasksCard workspaceId={workspaceId} projectId={projectId} />
             <ProjectConversationList
-              conversationCount={project.conversationCount}
+              conversationCount={recentChats.length}
               newConversationHref={`/work/${workspaceId}/projects/${projectId}/chat`}
-              conversations={project.conversations.map((conversation) => ({
+              conversations={recentChats.map((conversation) => ({
                 id: conversation.id,
                 title: conversation.title,
                 messageCount: conversation.messageCount,

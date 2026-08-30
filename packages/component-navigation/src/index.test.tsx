@@ -123,6 +123,24 @@ describe("ConversationListControls", () => {
     expect(onFiltersChange).toHaveBeenCalledWith({ activity: "week" });
   });
 
+  it("offers type grouping alongside date grouping", async () => {
+    const onFiltersChange = vi.fn();
+
+    render(
+      <ConversationListControls
+        filters={DEFAULT_CONVERSATION_LIST_FILTERS}
+        onFiltersChange={onFiltersChange}
+        onReset={vi.fn()}
+      />,
+    );
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Conversation list options" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: /^Group by/ }));
+    fireEvent.click(await screen.findByRole("menuitemradio", { name: "Type" }));
+
+    expect(onFiltersChange).toHaveBeenCalledWith({ groupBy: "type" });
+  });
+
   it("offers a way back to the defaults only once a filter has been changed", async () => {
     const onReset = vi.fn();
 

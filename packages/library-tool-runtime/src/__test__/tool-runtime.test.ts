@@ -228,6 +228,24 @@ describe("PermissionChecker", () => {
     ).toMatchObject({ allowed: false, mode: "plan" });
   });
 
+  it("allows questions but not side-effect approval requests in plan mode", () => {
+    expect(
+      checker.checkToolAccess({
+        toolName: "ask_user",
+        mode: "plan",
+        toolPermissions: ["human"],
+      }),
+    ).toMatchObject({ allowed: true, requiresApproval: false, mode: "plan" });
+
+    expect(
+      checker.checkToolAccess({
+        toolName: "request_approval",
+        mode: "plan",
+        toolPermissions: ["human"],
+      }),
+    ).toMatchObject({ allowed: false, mode: "plan" });
+  });
+
   it("marks approval-required permissions in build mode", () => {
     expect(
       checker.checkToolAccess({

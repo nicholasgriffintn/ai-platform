@@ -14,7 +14,7 @@ import { isAuthenticationError } from "~/lib/errors";
 import { useChatStore } from "~/state/stores/chatStore";
 
 import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog";
-import { useWorkData } from "./WorkContext";
+import { useWorkData } from "./WorkDataContext";
 
 export function WorkOverview() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);

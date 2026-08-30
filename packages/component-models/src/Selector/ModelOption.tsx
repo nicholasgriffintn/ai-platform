@@ -1,4 +1,4 @@
-import { cn } from "@ngriffin_uk/polychat-component-ui";
+import { Button, cn } from "@ngriffin_uk/polychat-component-ui";
 import {
   getModelDisplayName,
   hasProviderReasoningOptions,
@@ -235,9 +235,10 @@ export const ModelOption = ({
             </div>
           )}
           {canShowHoverPreview && (
-            <button
-              type="button"
-              className="cursor-help rounded-full p-1 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+            <Button
+              variant="icon"
+              size="xs"
+              className="cursor-help rounded-full"
               onClick={showModelDetails}
               onFocus={showModelDetails}
               onMouseEnter={showModelDetails}
@@ -245,7 +246,7 @@ export const ModelOption = ({
               aria-label="View model details"
             >
               <Info size={13} className="text-zinc-500" />
-            </button>
+            </Button>
           )}
         </div>
       </div>

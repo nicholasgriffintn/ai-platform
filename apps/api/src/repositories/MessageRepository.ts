@@ -1,6 +1,6 @@
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { nonEmptyToolCallsOrNull } from "~/utils/toolCalls";
+import { nonEmptyToolCallsOrNull, serialiseToolCallArguments } from "~/utils/toolCalls";
 
 import { BaseRepository } from "./BaseRepository";
 
@@ -132,7 +132,7 @@ export class MessageRepository extends BaseRepository {
       data,
       usage,
       messageData.tool_call_id || null,
-      messageData.tool_call_arguments || null,
+      serialiseToolCallArguments(messageData.tool_call_arguments),
       messageData.app || null,
       parts,
     ];
@@ -203,6 +203,30 @@ export class MessageRepository extends BaseRepository {
     );
 
     return result;
+  }
+
+  public async getLatestPendingToolMessage(
+    conversationId: string,
+    toolNames: readonly string[],
+  ): Promise<Record<string, unknown> | null> {
+    if (toolNames.length === 0) {
+      return null;
+    }
+
+    const placeholders = toolNames.map(() => "?").join(", ");
+
+    return this.runQuery<Record<string, unknown>>(
+      `SELECT * FROM message
+       WHERE conversation_id = ?
+         AND role = 'tool'
+         AND status = 'pending'
+         AND name IN (${placeholders})
+         AND is_archived = 0
+       ORDER BY ${MESSAGE_ORDER_BY_DESC}
+       LIMIT 1`,
+      [conversationId, ...toolNames],
+      true,
+    );
   }
 
   public async getConversationMessages(

@@ -1,9 +1,3 @@
-import {
-  PROJECT_TASK_RUN_TASK_TYPE,
-  SANDBOX_RUN_DISPATCH_TASK_TYPE,
-  type TaskType,
-} from "@ngriffin_uk/polychat-schemas";
-
 import type { IEnv } from "../types";
 
 export const SCHEDULES = {
@@ -19,17 +13,3 @@ export const ENABLED_SCHEDULES_FLAGS: Record<FeatureFlaggedTaskType, keyof IEnv>
   memory_synthesis: "MEMORY_SYNTHESIS_ENABLED",
   training_quality_scoring: "TRAINING_QUALITY_SCORING_ENABLED",
 };
-
-export const ALWAYS_ENABLED_SCHEDULES = [
-  "research_polling",
-  "replicate_polling",
-  "async_message_polling",
-  "podcast_transcription_polling",
-  "usage_update",
-  "recipe_execution",
-  "inbound_message",
-  "artificial_analysis_ingest",
-  "artificial_analysis_scoring",
-  SANDBOX_RUN_DISPATCH_TASK_TYPE,
-  PROJECT_TASK_RUN_TASK_TYPE,
-] as const satisfies readonly TaskType[];

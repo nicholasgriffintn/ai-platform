@@ -484,6 +484,41 @@
       "when": 1788086755119,
       "tag": "0068_project_task_effort",
       "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "6",
+      "when": 1788091598883,
+      "tag": "0069_quiet_supernaut",
+      "breakpoints": true
+    },
+    {
+      "idx": 70,
+      "version": "6",
+      "when": 1788093396401,
+      "tag": "0070_mean_guardsmen",
+      "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "6",
+      "when": 1788102851725,
+      "tag": "0071_talented_swarm",
+      "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "6",
+      "when": 1788104755556,
+      "tag": "0072_high_red_skull",
+      "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "6",
+      "when": 1788104898781,
+      "tag": "0073_backfill_conversation_types",
+      "breakpoints": true
     }
   ]
 }

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 
 export function sidebarNavLinkClass({ isActive }: { isActive: boolean }): string {
   return cn(
-    "flex w-full items-center gap-2 rounded-lg p-2 text-sm no-underline transition-colors",
+    "flex w-full items-center gap-2 rounded-lg p-2 text-sm no-underline transition-colors hover:!no-underline",
     isActive
       ? "bg-off-white-highlight text-black dark:bg-[#2D2D2D] dark:text-white"
       : "text-zinc-600 hover:bg-zinc-200 hover:text-black dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white",

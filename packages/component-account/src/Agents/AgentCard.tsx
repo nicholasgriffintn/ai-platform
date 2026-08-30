@@ -67,22 +67,42 @@ export function AgentCard({
 
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => onEdit(agent)} disabled={isUpdating}>
-              {isUpdating ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Edit className="h-4 w-4" />
-              )}
-              <span className="ml-2 hidden sm:inline">Edit</span>
+            <Button
+              variant="outline"
+              size="sm"
+              collapseLabel
+              onClick={() => onEdit(agent)}
+              disabled={isUpdating}
+              aria-label="Edit"
+              title="Edit"
+              icon={
+                isUpdating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Edit className="h-4 w-4" />
+                )
+              }
+            >
+              Edit
             </Button>
 
-            <Button variant="outline" size="sm" onClick={() => onShare(agent)} disabled={isSharing}>
-              {isSharing ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Star className="h-4 w-4" />
-              )}
-              <span className="ml-2 hidden sm:inline">Share</span>
+            <Button
+              variant="outline"
+              size="sm"
+              collapseLabel
+              onClick={() => onShare(agent)}
+              disabled={isSharing}
+              aria-label="Share"
+              title="Share"
+              icon={
+                isSharing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Star className="h-4 w-4" />
+                )
+              }
+            >
+              Share
             </Button>
           </div>
 

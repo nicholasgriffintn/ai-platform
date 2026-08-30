@@ -3,10 +3,9 @@ import {
   ManageCapabilitiesLink,
 } from "@ngriffin_uk/polychat-component-capabilities";
 import {
-  Button,
+  ButtonLink,
   CardGridLoadingSkeleton,
   EmptyState,
-  Link,
 } from "@ngriffin_uk/polychat-component-ui";
 import { Puzzle } from "lucide-react";
 
@@ -56,9 +55,9 @@ export function PersonalExperiences() {
           title="Nothing to open yet"
           message="Experiences will appear here once the catalogue loads."
           action={
-            <Link href={libraryPath}>
-              <Button variant="primary">Browse capabilities</Button>
-            </Link>
+            <ButtonLink variant="primary" href={libraryPath}>
+              Browse capabilities
+            </ButtonLink>
           }
           className="min-h-[260px]"
         />

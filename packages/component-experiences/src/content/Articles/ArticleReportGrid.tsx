@@ -1,4 +1,4 @@
-import { Button, Card, Link } from "@ngriffin_uk/polychat-component-ui";
+import { ButtonLink, Card, Link } from "@ngriffin_uk/polychat-component-ui";
 import { Plus } from "lucide-react";
 
 export interface ArticleReportSummary {
@@ -19,11 +19,9 @@ export function ArticleReportGrid({ reports, newReportHref }: ArticleReportGridP
   return (
     <div>
       <div className="mb-5 flex justify-end">
-        <Link href={newReportHref}>
-          <Button variant="primary" icon={<Plus size={16} />}>
-            New report
-          </Button>
-        </Link>
+        <ButtonLink variant="primary" icon={<Plus size={16} />} href={newReportHref}>
+          New report
+        </ButtonLink>
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {reports.map((item) => (

@@ -1,4 +1,4 @@
-import { cn, Link } from "@ngriffin_uk/polychat-component-ui";
+import { Button, ButtonLink, cn } from "@ngriffin_uk/polychat-component-ui";
 import { X } from "lucide-react";
 
 export type ComposerBannerTone = "info" | "warning" | "critical";
@@ -54,27 +54,27 @@ export function ComposerBannerCard({ banner, onDismiss }: ComposerBannerCardProp
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {banner.action && (
-            <Link
+            <ButtonLink
+              variant="outline"
+              size="xs"
               href={banner.action.to}
-              className={cn(
-                "rounded-md border px-2.5 py-1 text-xs font-medium whitespace-nowrap no-underline",
-                actionClasses[banner.tone],
-              )}
+              className={actionClasses[banner.tone]}
             >
               {banner.action.label}
-            </Link>
+            </ButtonLink>
           )}
           {onDismiss && (
-            <button
-              type="button"
+            <Button
+              variant="icon"
+              size="xs"
               aria-label={
                 banner.dismissal?.scope === "day" ? "Dismiss for today" : "Dismiss notification"
               }
-              className="rounded p-1 opacity-60 hover:bg-black/5 hover:opacity-100 dark:hover:bg-white/10"
+              className="text-current opacity-60 hover:bg-black/5 hover:text-current hover:opacity-100 dark:hover:bg-white/10"
               onClick={onDismiss}
             >
               <X size={14} aria-hidden="true" />
-            </button>
+            </Button>
           )}
         </div>
       </div>

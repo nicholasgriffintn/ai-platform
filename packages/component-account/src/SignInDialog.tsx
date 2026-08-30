@@ -3,6 +3,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogTitle,
+  textLinkClassName,
 } from "@ngriffin_uk/polychat-component-ui";
 import { Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -26,11 +27,11 @@ export function SignInDialog({ open, onOpenChange, appName, children }: SignInDi
           {children}
           <p className="mx-auto max-w-[375px] text-center text-sm text-zinc-500 dark:text-zinc-400">
             By continuing, you agree to our{" "}
-            <a href="/terms" className="text-blue-600">
+            <a href="/terms" className={textLinkClassName({ tone: "accent" })}>
               Terms of Service
             </a>{" "}
             and{" "}
-            <a href="/privacy" className="text-blue-600">
+            <a href="/privacy" className={textLinkClassName({ tone: "accent" })}>
               Privacy Policy
             </a>
             .

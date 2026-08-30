@@ -25,14 +25,13 @@ export const GOAL_UNSATISFIED_INSTRUCTION = [
 export function createGoalFinishGate(params: GoalGateParams) {
   let currentGoal = params.goal;
   let lastCommandCount = 0;
-  const seenSummaries = new Set<string>();
   let markedTerminal = false;
-  const isNewWork = (summary: string) => summary.length > 0 && !seenSummaries.has(summary);
 
   return async (context: {
     summary: string;
     step: number;
     commandCount: number;
+    awaitingUserAction?: "approval" | "question";
   }): Promise<AgentFinishAssessment> => {
     const latest = await params.goalService.getActiveGoal(
       currentGoal.conversation_id
@@ -54,14 +53,9 @@ export function createGoalFinishGate(params: GoalGateParams) {
       };
     }
 
-    const summary = context.summary.trim();
-    const progressed = context.commandCount > lastCommandCount || isNewWork(summary);
+    const calledTool = context.commandCount > lastCommandCount;
 
     lastCommandCount = context.commandCount;
-
-    if (summary) {
-      seenSummaries.add(summary);
-    }
 
     const usageLimitsExhausted = params.conversationManager
       ? await isUsageExhausted(params.conversationManager)
@@ -72,8 +66,9 @@ export function createGoalFinishGate(params: GoalGateParams) {
         surface: params.surface,
         summary: context.summary || "Model returned without calling a tool",
         evidence: [],
-        producedEvidence: progressed,
-        calledTool: progressed,
+        producedEvidence: calledTool,
+        calledTool,
+        awaitingUserAction: context.awaitingUserAction,
         usageLimitsExhausted,
       },
     });

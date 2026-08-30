@@ -60,7 +60,7 @@ addRoute(app, "post", "/", {
 addRoute(app, "get", "/attention", {
   auth: true,
   tags: ["workspaces", "tasks"],
-  summary: "List task board work waiting on you",
+  summary: "List task work waiting on you",
   description:
     "Aggregates blocked, in-review, and assigned tasks across every workspace you belong to.",
   querySchema: z.object({ limit: z.coerce.number().int().min(1).max(100).optional() }),

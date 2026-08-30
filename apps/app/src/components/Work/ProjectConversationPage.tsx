@@ -1,16 +1,20 @@
 import {
   getModelInteractionCapabilities,
+  answerUserQuestionsSchema,
   type SandboxTaskType,
   sandboxTaskTypeSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import type { ConversationThreadModeConfig } from "~/components/ConversationThread";
 import { ConversationPage } from "~/components/ConversationThread/ConversationPage";
+import { CHATS_QUERY_KEY } from "~/constants";
 import { useChat } from "~/hooks/useChat";
 import { useModels } from "~/hooks/useModels";
 import { useProjectConversationSources } from "~/hooks/useProjectConversationSources";
+import { useProjectTask, useProjectTasks } from "~/hooks/useProjectTasks";
 import { projectQueryKey } from "~/hooks/useWorkspaces";
 import { getCapabilityLibraryPath, getProjectSurface } from "~/lib/capability-surfaces";
 import { getErrorMessage } from "~/lib/errors";
@@ -19,7 +23,7 @@ import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 
 import { ProjectCodingTaskControl } from "./ProjectCodingTaskControl";
-import { useWorkData } from "./WorkContext";
+import { useWorkData } from "./WorkDataContext";
 
 export function ProjectConversationPage({
   workspaceId,
@@ -44,6 +48,14 @@ export function ProjectConversationPage({
     };
   }, [model, models]);
   const { data: currentConversation } = useChat(currentConversationId);
+  const { tasks, answer } = useProjectTasks(projectId);
+  const pendingTask = tasks.find(
+    (task) =>
+      task.conversationId === currentConversationId &&
+      task.status === "blocked" &&
+      task.blockedReason === "awaiting_input",
+  );
+  const pendingTaskQuery = useProjectTask(projectId, pendingTask?.id ?? "");
   const isNewConversation = !currentConversationId;
   const projectSources = useProjectConversationSources(projectId, sourceCapabilities, {
     enabled: isNewConversation,
@@ -69,6 +81,38 @@ export function ProjectConversationPage({
     : draftTaskType;
   const codingPresentation = getProjectCodingPresentation(taskType);
   const recipeManagementPath = getCapabilityLibraryPath(getProjectSurface(workspaceId, projectId));
+  const handleTaskQuestionInteraction = useCallback<
+    NonNullable<ConversationThreadModeConfig["onToolInteraction"]>
+  >(
+    (toolName, action, data) => {
+      if (toolName !== "ask_user" || action !== "submitPrompt" || !pendingTask) {
+        return false;
+      }
+
+      const parsed = answerUserQuestionsSchema.safeParse(data);
+
+      if (!parsed.success) {
+        toast.error("The answers could not be read. Refresh the conversation and try again.");
+
+        return true;
+      }
+
+      void (async () => {
+        try {
+          await answer.mutateAsync({ taskId: pendingTask.id, input: parsed.data });
+          await queryClient.invalidateQueries({
+            queryKey: [CHATS_QUERY_KEY, currentConversationId],
+          });
+          toast.success("Answers sent. The task is continuing.");
+        } catch (mutationError) {
+          toast.error(getErrorMessage(mutationError, "Unable to continue this task"));
+        }
+      })();
+
+      return true;
+    },
+    [answer, currentConversationId, pendingTask, queryClient],
+  );
 
   useEffect(() => {
     setDraftTaskType("feature-implementation");
@@ -214,6 +258,8 @@ export function ProjectConversationPage({
         },
         analyticsSource: "project",
         hideComposerSuggestions: true,
+        pendingUserQuestions: pendingTaskQuery.data?.pendingQuestions ?? null,
+        onToolInteraction: handleTaskQuestionInteraction,
       }}
     />
   );

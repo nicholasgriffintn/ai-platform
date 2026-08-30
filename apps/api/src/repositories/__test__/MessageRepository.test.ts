@@ -43,6 +43,24 @@ describe("MessageRepository", () => {
     expect(bind).toHaveBeenLastCalledWith("message-2", 2, "conversation-1");
   });
 
+  it("serialises structured tool arguments before binding them", async () => {
+    const { bind, repository } = createRepository();
+
+    await repository.createMessagesAndUpdateConversation("conversation-1", [
+      {
+        id: "message-1",
+        role: "tool",
+        content: "Plan updated.",
+        data: {
+          tool_call_id: "call-1",
+          tool_call_arguments: { plan: ["Research", "Draft"] },
+        },
+      },
+    ]);
+
+    expect(bind.mock.calls[0][17]).toBe('{"plan":["Research","Draft"]}');
+  });
+
   it("orders conversation messages by persisted message timestamp before insert time", async () => {
     const { prepare, repository } = createRepository();
 

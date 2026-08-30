@@ -133,5 +133,6 @@ export async function storeUserTurn({
 
   await conversationManager.addBatch(options.completion_id, messagesToStore, {
     metadata: options.metadata || {},
+    type: options.conversation_type ?? (options.options?.recipe ? "task" : "chat"),
   });
 }

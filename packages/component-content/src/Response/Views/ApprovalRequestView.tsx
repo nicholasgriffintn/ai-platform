@@ -1,3 +1,4 @@
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
 
@@ -88,18 +89,14 @@ export function ApprovalRequestView({
       ) : onToolInteraction ? (
         <div className="flex flex-wrap gap-2">
           {options.map((option, index) => (
-            <button
+            <Button
               key={option}
-              type="button"
+              size="xs"
+              variant={index === 0 ? "default" : "outline"}
               onClick={() => choose(option)}
-              className={
-                index === 0
-                  ? "cursor-pointer rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200"
-                  : "cursor-pointer rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
-              }
             >
               {option}
-            </button>
+            </Button>
           ))}
         </div>
       ) : null}

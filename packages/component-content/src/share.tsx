@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  type ButtonCollapse,
   type ButtonVariant,
 } from "@ngriffin_uk/polychat-component-ui";
 import { Check, Copy, Share2 } from "lucide-react";
@@ -36,6 +37,7 @@ export interface ShareDialogProps {
   isUnsharing?: boolean;
   copied?: boolean;
   variant?: ButtonVariant;
+  collapseLabel?: ButtonCollapse;
   className?: string;
   labels?: ShareDialogLabels;
   onOpenChange: (open: boolean) => void;
@@ -53,6 +55,7 @@ export function ShareDialog({
   isUnsharing = false,
   copied = false,
   variant = "ghost",
+  collapseLabel = false,
   className,
   labels,
   onOpenChange,
@@ -78,6 +81,7 @@ export function ShareDialog({
       <Button
         variant={variant}
         size="sm"
+        collapseLabel={collapseLabel}
         onClick={() => onOpenChange(true)}
         className={[
           variant === "ghost" &&
@@ -90,9 +94,7 @@ export function ShareDialog({
         aria-label={isPublic ? `Manage shared ${type}` : `Share ${type}`}
         icon={<Share2 className="h-3.5 w-3.5" />}
       >
-        <span className="whitespace-nowrap">
-          {isPublic ? finalLabels.manage : finalLabels.share}
-        </span>
+        {isPublic ? finalLabels.manage : finalLabels.share}
       </Button>
 
       <Dialog open={isOpen} onOpenChange={onOpenChange}>

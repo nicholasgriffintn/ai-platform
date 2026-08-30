@@ -1,3 +1,4 @@
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { useCopyToClipboard } from "@ngriffin_uk/polychat-utility-react";
 import { Check, Copy } from "lucide-react";
 import { type JSX, useState } from "react";
@@ -124,15 +125,16 @@ export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
       data-responsetype="json"
       className="relative mt-1 overflow-x-auto rounded border border-zinc-200 bg-off-white-highlight/50 p-2 pr-9 text-xs dark:border-zinc-700 dark:bg-zinc-800/50"
     >
-      <button
-        type="button"
+      <Button
+        variant="icon"
+        size="xs"
         onClick={() => copy(JSON.stringify(data, null, 2))}
-        className="absolute right-1.5 top-1.5 cursor-pointer rounded p-1 text-zinc-500 transition-colors hover:bg-zinc-200/60 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700/60 dark:hover:text-zinc-100"
+        className="absolute right-1.5 top-1.5"
         aria-label={copied ? "Payload copied" : "Copy payload"}
         title={copied ? "Copied" : "Copy payload"}
       >
         {copied ? <Check size={13} /> : <Copy size={13} />}
-      </button>
+      </Button>
       {renderValue(data, "root", 0)}
     </div>
   );

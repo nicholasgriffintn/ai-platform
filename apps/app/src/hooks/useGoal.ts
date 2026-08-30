@@ -6,6 +6,11 @@ import { apiService } from "~/lib/api/api-service";
 import { useChatStore } from "~/state/stores/chatStore";
 
 export const GOAL_QUERY_KEY = "goal";
+const ACTIVE_GOAL_REFETCH_MS = 2_000;
+
+export function goalRefetchInterval(goal: Pick<Goal, "status"> | null | undefined): number | false {
+  return goal?.status === "active" ? ACTIVE_GOAL_REFETCH_MS : false;
+}
 
 export function useGoal(
   conversationId?: string,
@@ -32,7 +37,9 @@ export function useGoal(
     enabled,
     retry: false,
     staleTime: 15_000,
-    refetchInterval: options?.refetchInterval,
+    refetchInterval:
+      options?.refetchInterval ?? ((currentQuery) => goalRefetchInterval(currentQuery.state.data)),
+    refetchIntervalInBackground: true,
   });
 
   const writeGoal = useCallback(

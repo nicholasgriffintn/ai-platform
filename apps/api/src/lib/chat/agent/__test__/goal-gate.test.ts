@@ -72,7 +72,7 @@ describe("createGoalFinishGate", () => {
     expect(onTerminalStatus).toHaveBeenCalledTimes(1);
   });
 
-  it("counts new prose as progress but a repeated answer as a stall", async () => {
+  it("does not count reworded prose as progress without tool evidence", async () => {
     const recordIteration = vi
       .fn()
       .mockImplementation(({ goal }) => Promise.resolve({ goal, shouldContinue: true }));
@@ -83,9 +83,32 @@ describe("createGoalFinishGate", () => {
     await gate({ summary: "30, 40", step: 3, commandCount: 0 });
 
     expect(recordIteration.mock.calls.map((call) => call[0].iteration.producedEvidence)).toEqual([
-      true,
-      true,
+      false,
+      false,
       false,
     ]);
+  });
+
+  it("records a pending question as a user-action boundary", async () => {
+    const recordIteration = vi
+      .fn()
+      .mockImplementation(({ goal }) =>
+        Promise.resolve({ goal: { ...goal, status: "blocked" }, shouldContinue: false }),
+      );
+    const gate = buildGate(recordIteration);
+
+    const result = await gate({
+      summary: "Which tone should I use?",
+      step: 1,
+      commandCount: 1,
+      awaitingUserAction: "question",
+    });
+
+    expect(recordIteration).toHaveBeenCalledWith(
+      expect.objectContaining({
+        iteration: expect.objectContaining({ awaitingUserAction: "question" }),
+      }),
+    );
+    expect(result).toMatchObject({ allow: true, outcome: "blocked" });
   });
 });

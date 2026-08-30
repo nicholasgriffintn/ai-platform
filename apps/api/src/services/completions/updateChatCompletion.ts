@@ -71,6 +71,7 @@ export const handleUpdateChatCompletion = async (
         cloneMessagesForBranch(branchSourceMessages, completion_id),
         {
           metadata: branchMetadata,
+          type: parentConversation.type === "task" ? "task" : "chat",
         },
       );
     } else {

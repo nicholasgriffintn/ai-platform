@@ -1,4 +1,4 @@
-import { Card, SignInEmptyState } from "@ngriffin_uk/polychat-component-ui";
+import { Card, SignInEmptyState, textLinkClassName } from "@ngriffin_uk/polychat-component-ui";
 import {
   formatUnknownValue,
   getStringProperty,
@@ -307,7 +307,7 @@ function OutputItem({ item }: OutputItemProps) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-blue-600 dark:text-blue-400 no-underline hover:underline break-all"
+      className={textLinkClassName({ tone: "accent", className: "break-all" })}
     >
       {url}
     </a>

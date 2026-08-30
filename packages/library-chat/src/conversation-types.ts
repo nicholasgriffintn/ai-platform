@@ -2,6 +2,7 @@ import type {
   ConversationActivityWindow as SchemaConversationActivityWindow,
   ConversationArchiveFilter as SchemaConversationArchiveFilter,
   ConversationSortBy as SchemaConversationSortBy,
+  ConversationType as SchemaConversationType,
   MessagePart as SchemaMessagePart,
   ResponseDisplayType as SchemaResponseDisplayType,
   SandboxTaskType,
@@ -248,6 +249,7 @@ export interface Message {
 
 export interface Conversation {
   id?: string;
+  type?: SchemaConversationType;
   title: string;
   messages: Message[];
   created_at?: string;
@@ -266,6 +268,7 @@ export interface Conversation {
 export type ConversationArchiveFilter = SchemaConversationArchiveFilter;
 export type ConversationSortBy = SchemaConversationSortBy;
 export type ConversationActivityWindow = SchemaConversationActivityWindow;
+export type ConversationType = SchemaConversationType;
 
 export interface ConversationListOptions {
   activity?: ConversationActivityWindow;

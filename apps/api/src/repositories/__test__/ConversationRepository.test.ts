@@ -33,6 +33,18 @@ function createMockD1() {
 }
 
 describe("ConversationRepository", () => {
+  it("persists the caller-owned conversation type and defaults ordinary chats", async () => {
+    const { calls, db } = createMockD1();
+    const repository = new ConversationRepository({ DB: db } as any);
+
+    await repository.createConversation("task-1", 123, "Review release", { type: "task" });
+    await repository.createConversation("chat-1", 123, "Talk through release");
+
+    expect(calls[0]?.query).toContain("user_id, \n         type,");
+    expect(calls[0]?.params.slice(0, 4)).toEqual(["task-1", 123, "task", "Review release"]);
+    expect(calls[1]?.params.slice(0, 4)).toEqual(["chat-1", 123, "chat", "Talk through release"]);
+  });
+
   it("lists conversations by title search, archive state, and selected date sort", async () => {
     const { calls, db } = createMockD1();
     const repository = new ConversationRepository({ DB: db } as any);

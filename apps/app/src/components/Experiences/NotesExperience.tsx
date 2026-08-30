@@ -1,9 +1,13 @@
 import { NoteCardGrid } from "@ngriffin_uk/polychat-component-experiences/content";
-import { Button, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
+import {
+  ButtonLink,
+  CardGridLoadingSkeleton,
+  EmptyState,
+} from "@ngriffin_uk/polychat-component-ui";
 import type { NoteMetadata } from "@ngriffin_uk/polychat-schemas";
 import { NotebookPen, Plus } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 import { NoteEditor } from "~/components/Apps/Notes/NoteEditor";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
@@ -161,11 +165,9 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
         title="No notes yet"
         message="Create a note for decisions, research, and working context."
         action={
-          <Link to={`${basePath}/new`}>
-            <Button variant="primary" icon={<Plus size={16} />}>
-              New note
-            </Button>
-          </Link>
+          <ButtonLink variant="primary" icon={<Plus size={16} />} href={`${basePath}/new`}>
+            New note
+          </ButtonLink>
         }
       />
     );

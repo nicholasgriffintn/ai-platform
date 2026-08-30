@@ -45,18 +45,15 @@ export function ActionButtons({ actions, align = "right", className }: ActionBut
           <Button
             key={action.id}
             type="button"
-            variant="icon"
+            variant={action.variant === "active" ? "iconActive" : "icon"}
+            size="sm"
             onClick={action.onClick}
             disabled={action.disabled || action.loading}
             className={cn(
-              "cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400",
               action.variant === "success" &&
-                "text-green-500 dark:text-green-400 bg-green-100/50 dark:bg-green-900/20",
+                "bg-green-100/50 text-green-500 dark:bg-green-900/20 dark:text-green-400",
               action.variant === "destructive" &&
-                "text-red-500 dark:text-red-400 hover:bg-red-100/50 dark:hover:bg-red-900/20",
-              action.variant === "active" &&
-                "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100",
-              (action.disabled || action.loading) && "opacity-50 cursor-not-allowed",
+                "text-red-500 hover:bg-red-100/50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300",
               action.className,
             )}
             title={action.loading ? `${action.label}...` : action.label}

@@ -2,6 +2,7 @@ import {
   CreateTaskDialog,
   ProjectTasksSummary,
   type CreateTaskInput,
+  type CreateTaskIntent,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { useState } from "react";
@@ -10,8 +11,8 @@ import { toast } from "sonner";
 import { useProjectTasks } from "~/hooks/useProjectTasks";
 import { getErrorMessage } from "~/lib/errors";
 
-import { useProjectTaskAgents, useProjectTaskDefaults } from "./useProjectTaskAgents";
-import { useWorkData } from "./WorkContext";
+import { useProjectTaskAgents } from "./useProjectTaskAgents";
+import { useWorkData } from "./WorkDataContext";
 
 export function ProjectTasksCard({
   workspaceId,
@@ -23,12 +24,7 @@ export function ProjectTasksCard({
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { projectQuery, workspaceQuery } = useWorkData();
   const agents = useProjectTaskAgents(projectQuery.data?.capabilities);
-  const taskDefaults = useProjectTaskDefaults(
-    projectQuery.data?.capabilities,
-    agents,
-    Boolean(projectQuery.data?.codingEnvironment),
-  );
-  const { tasks, flow, isLoading, create } = useProjectTasks(projectId);
+  const { tasks, flow, isLoading, create, start } = useProjectTasks(projectId);
   const boardHref = `/work/${workspaceId}/projects/${projectId}/tasks`;
   const members = (workspaceQuery.data?.members ?? []).map((member) => ({
     userId: member.userId,
@@ -38,11 +34,16 @@ export function ProjectTasksCard({
   const taskHref = (task: ProjectTask) =>
     `/work/${workspaceId}/projects/${projectId}/tasks/${task.id}`;
 
-  const addTask = async (input: CreateTaskInput) => {
+  const addTask = async (input: CreateTaskInput, intent: CreateTaskIntent) => {
     try {
-      await create.mutateAsync(input);
+      const { task } = await create.mutateAsync(input);
+
+      if (intent === "run") {
+        await start.mutateAsync(task.id);
+      }
+
       setIsCreateOpen(false);
-      toast.success("Task added");
+      toast.success(intent === "run" ? "Task added and queued" : "Task added to the backlog");
     } catch (mutationError) {
       toast.error(getErrorMessage(mutationError, "Unable to add this task"));
     }
@@ -63,8 +64,7 @@ export function ProjectTasksCard({
         members={members}
         agents={agents}
         boardTasks={tasks}
-        defaults={taskDefaults}
-        isSubmitting={create.isPending}
+        isSubmitting={create.isPending || start.isPending}
         errorMessage={create.error ? getErrorMessage(create.error, "") : undefined}
         onOpenChange={setIsCreateOpen}
         onSubmit={addTask}

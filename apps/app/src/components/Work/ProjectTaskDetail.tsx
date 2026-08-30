@@ -1,15 +1,17 @@
-import { BackLink } from "@ngriffin_uk/polychat-component-ui";
+import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
+import { BackLink, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import { TaskDetail } from "@ngriffin_uk/polychat-component-workspaces";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { PageShell } from "~/components/Core/PageShell";
-import { useGoal } from "~/hooks/useGoal";
-import { useProjectTasks } from "~/hooks/useProjectTasks";
+import { useProjectTask, useProjectTasks } from "~/hooks/useProjectTasks";
 import { getErrorMessage } from "~/lib/errors";
 
-import { useWorkData } from "./WorkContext";
+import { useProjectTaskAgents } from "./useProjectTaskAgents";
+import { useWorkData } from "./WorkDataContext";
 
 export function ProjectTaskDetail({
   workspaceId,
@@ -20,31 +22,32 @@ export function ProjectTaskDetail({
   projectId: string;
   taskId: string;
 }) {
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const navigate = useNavigate();
-  const { workspaceQuery } = useWorkData();
+  const { projectQuery, workspaceQuery } = useWorkData();
+  const agents = useProjectTaskAgents(projectQuery.data?.capabilities);
   const { tasks, flow, isLoading, error, start, accept, update, remove } =
     useProjectTasks(projectId);
-  const task = tasks.find((candidate) => candidate.id === taskId);
-  const { goal } = useGoal(task?.conversationId ?? undefined, {
-    refetchInterval: task?.status === "running" ? 5000 : undefined,
-  });
+  const detailQuery = useProjectTask(projectId, taskId);
+  const task = detailQuery.data?.task ?? tasks.find((candidate) => candidate.id === taskId);
+  const goal = detailQuery.data?.goal ?? null;
   const basePath = `/work/${workspaceId}/projects/${projectId}`;
 
-  if (isLoading) {
+  if (isLoading || detailQuery.isLoading) {
     return (
-      <PageShell.Content className="max-w-3xl">
+      <PageShell.Content className="max-w-6xl">
         <p className="text-sm text-zinc-500">Loading the task…</p>
       </PageShell.Content>
     );
   }
 
-  if (error || !task) {
+  if (error || detailQuery.error || !task) {
     return (
-      <PageShell.Content className="max-w-3xl">
-        <BackLink href={`${basePath}/tasks`} label="Back to the board" />
+      <PageShell.Content className="max-w-6xl">
+        <BackLink href={`${basePath}/tasks`} label="Back to tasks" />
         <PageShell.Header title="Task" />
         <p className="text-sm text-red-700 dark:text-red-400">
-          {error?.message ?? "This task is no longer on the board."}
+          {error?.message ?? detailQuery.error?.message ?? "This task is no longer available."}
         </p>
       </PageShell.Content>
     );
@@ -69,43 +72,64 @@ export function ProjectTaskDetail({
     }
   };
 
-  return (
-    <PageShell.Content className="max-w-3xl">
-      <BackLink href={`${basePath}/tasks`} label="Back to the board" />
-      <PageShell.Header title={task.objective} />
-      <TaskDetail
-        task={task}
-        goal={goal}
-        flow={flow}
-        members={workspaceQuery.data?.members ?? []}
-        blockedBy={tasks.filter((candidate) => task.dependsOnTaskIds.includes(candidate.id))}
-        conversationHref={
-          task.conversationId ? `${basePath}/chat?completion_id=${task.conversationId}` : null
-        }
-        taskHref={(candidate) => `${basePath}/tasks/${candidate.id}`}
-        isBusy={isBusy}
-        onRun={() => void run()}
-        onAccept={async () => {
-          try {
-            const { task: accepted } = await accept.mutateAsync(task.id);
+  const acceptTask = async () => {
+    try {
+      const { task: accepted } = await accept.mutateAsync(task.id);
 
-            toast.success(accepted.status === "done" ? "Task accepted" : "Moved to the next stage");
-          } catch (mutationError) {
-            toast.error(getErrorMessage(mutationError, "Unable to accept this task"));
+      toast.success(accepted.status === "done" ? "Task accepted" : "Moved to the next stage");
+    } catch (mutationError) {
+      toast.error(getErrorMessage(mutationError, "Unable to accept this task"));
+    }
+  };
+
+  const deleteTask = async () => {
+    try {
+      await remove.mutateAsync(task.id);
+      toast.success("Task deleted");
+      void navigate(`${basePath}/tasks`, { replace: true });
+    } catch (mutationError) {
+      toast.error(getErrorMessage(mutationError, "Unable to delete this task"));
+    }
+  };
+
+  return (
+    <>
+      <PageShell.Content className="max-w-6xl">
+        <BackLink href={`${basePath}/tasks`} label="Back to tasks" />
+        <PageShell.Header title={task.objective} />
+        <TaskDetail
+          task={task}
+          goal={goal}
+          flow={flow}
+          members={workspaceQuery.data?.members ?? []}
+          agents={agents}
+          blockedBy={tasks.filter((candidate) => task.dependsOnTaskIds.includes(candidate.id))}
+          conversationHref={
+            task.conversationId ? `${basePath}/chat?completion_id=${task.conversationId}` : null
           }
-        }}
-        onCancel={() => void setStatus("cancelled", "Task cancelled")}
-        onReopen={() => void setStatus("backlog", "Task reopened")}
-        onDelete={async () => {
-          try {
-            await remove.mutateAsync(task.id);
-            toast.success("Task deleted");
-            void navigate(`${basePath}/tasks`, { replace: true });
-          } catch (mutationError) {
-            toast.error(getErrorMessage(mutationError, "Unable to delete this task"));
-          }
-        }}
+          taskHref={(candidate) => `${basePath}/tasks/${candidate.id}`}
+          isBusy={isBusy}
+          onRun={() => void run()}
+          onAccept={() => void acceptTask()}
+          onCancel={() => void setStatus("cancelled", "Task cancelled")}
+          onReopen={() => void setStatus("backlog", "Task reopened")}
+          onDelete={() => setIsDeleteOpen(true)}
+          renderProgressSummary={(summary) => (
+            <MemoizedMarkdown className="max-w-none text-sm leading-6">{summary}</MemoizedMarkdown>
+          )}
+        />
+      </PageShell.Content>
+
+      <ConfirmationDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        title="Delete task?"
+        description="This removes the task from the project. Its conversation remains in project history. This cannot be undone."
+        confirmText="Delete task"
+        variant="destructive"
+        isLoading={remove.isPending}
+        onConfirm={deleteTask}
       />
-    </PageShell.Content>
+    </>
   );
 }

@@ -62,6 +62,34 @@ describe("PermissionChecker", () => {
     expect(result.requiresApproval).toBe(false);
   });
 
+  it("allows goal completion as a reasoning operation in plan mode", () => {
+    const checker = new PermissionChecker();
+    const result = checker.checkToolAccess({
+      toolName: "complete_goal",
+      mode: "plan",
+      user: proUser,
+      toolType: "premium",
+      toolPermissions: ["reasoning"],
+    });
+
+    expect(result.allowed).toBe(true);
+    expect(result.requiresApproval).toBe(false);
+  });
+
+  it("allows the agent to ask a user for planning input", () => {
+    const checker = new PermissionChecker();
+    const result = checker.checkToolAccess({
+      toolName: "ask_user",
+      mode: "plan",
+      user: proUser,
+      toolType: "normal",
+      toolPermissions: ["human"],
+    });
+
+    expect(result.allowed).toBe(true);
+    expect(result.requiresApproval).toBe(false);
+  });
+
   it("blocks network tools in plan mode", () => {
     const checker = new PermissionChecker();
     const result = checker.checkToolAccess({

@@ -57,9 +57,9 @@ export const ChatSidebar = ({
     sidebarVisible,
     setSidebarVisible,
     isMobile,
-    conversationListFilters,
-    setConversationListFilters,
-    resetConversationListFilters,
+    chatConversationListFilters: conversationListFilters,
+    setChatConversationListFilters: setConversationListFilters,
+    resetChatConversationListFilters: resetConversationListFilters,
   } = useUIStore();
   const {
     currentConversationId,
@@ -226,10 +226,22 @@ export const ChatSidebar = ({
     });
   };
 
-  const conversationGroups = buildConversationGroups(conversations, {
-    groupBy: conversationListFilters.groupBy,
-    sortBy: conversationListFilters.sortBy,
-  });
+  const conversationGroups = buildConversationGroups(
+    conversations.map((conversation) => ({
+      id: conversation.id,
+      type: conversation.type,
+      title: conversation.title,
+      createdAt: conversation.created_at,
+      updatedAt: conversation.updated_at,
+      lastMessageAt: conversation.last_message_at,
+      isLocalOnly: conversation.isLocalOnly,
+      parentConversationId: conversation.parent_conversation_id,
+    })),
+    {
+      groupBy: conversationListFilters.groupBy,
+      sortBy: conversationListFilters.sortBy,
+    },
+  );
 
   const sidebarHeader = (
     <SidebarHeader

@@ -32,7 +32,7 @@ export interface RecordIterationParams {
   tokens?: number;
   producedEvidence: boolean;
   calledTool: boolean;
-  awaitingApproval?: boolean;
+  awaitingUserAction?: "approval" | "question";
   usageLimitsExhausted?: boolean;
 }
 
@@ -166,6 +166,28 @@ export class GoalService {
       );
     }
 
+    const current = await this.goals.getGoalById(params.goalId);
+
+    if (!current) {
+      throw new AssistantError("Goal not found", ErrorType.NOT_FOUND);
+    }
+
+    const recorded = await this.goals.updateGoal(current.id, {
+      iterationCount: current.iteration_count + 1,
+      progress: appendProgress(current.progress, {
+        iteration: current.iteration_count + 1,
+        surface: current.conversation_id ? "agent" : "sandbox",
+        summary: params.summary,
+        evidence: params.evidence.map((entry) => entry.claim),
+        at: new Date().toISOString(),
+      }),
+      lastContinuedAt: new Date().toISOString(),
+    });
+
+    if (!recorded) {
+      throw new AssistantError("Failed to record goal completion", ErrorType.DATABASE_ERROR);
+    }
+
     if (params.evidence.every((entry) => entry.status === "blocked")) {
       return this.transition({
         goalId: params.goalId,
@@ -233,7 +255,7 @@ export class GoalService {
         producedEvidence: iteration.producedEvidence,
         calledTool: iteration.calledTool,
         aborted: false,
-        awaitingApproval: iteration.awaitingApproval === true,
+        awaitingApproval: iteration.awaitingUserAction !== undefined,
       },
       usageLimitsExhausted: iteration.usageLimitsExhausted === true,
       queuedInstructionCount: 0,
@@ -264,7 +286,12 @@ export class GoalService {
       tokensSpent: goal.tokens_spent + (iteration.tokens ?? 0),
       progress,
       lastContinuedAt: new Date().toISOString(),
-      ...(nextStatus ? { status: nextStatus, stoppedReason: stoppedReasonFor(nextStatus) } : {}),
+      ...(nextStatus
+        ? {
+            status: nextStatus,
+            stoppedReason: stoppedReasonFor(nextStatus, iteration.awaitingUserAction),
+          }
+        : {}),
     });
 
     if (!updated) {
@@ -275,7 +302,10 @@ export class GoalService {
   }
 }
 
-function stoppedReasonFor(status: GoalStatus): string {
+function stoppedReasonFor(
+  status: GoalStatus,
+  awaitingUserAction?: "approval" | "question",
+): string {
   if (status === "stalled") {
     return "Consecutive continuations produced no new evidence.";
   }
@@ -284,7 +314,9 @@ function stoppedReasonFor(status: GoalStatus): string {
     return "The account's usage limits were reached.";
   }
 
-  return "The work needs your input before it can continue.";
+  return awaitingUserAction === "question"
+    ? "The work is waiting for your answers."
+    : "The work is waiting for your approval.";
 }
 
 function appendProgress(

@@ -105,9 +105,12 @@ export const conversationSortBySchema = z.enum(["updated", "created", "title"]);
 
 export const conversationActivityWindowSchema = z.enum(["all", "today", "week", "month"]);
 
+export const conversationTypeSchema = z.enum(["chat", "task"]);
+
 export type ConversationArchiveFilter = z.infer<typeof conversationArchiveFilterSchema>;
 export type ConversationSortBy = z.infer<typeof conversationSortBySchema>;
 export type ConversationActivityWindow = z.infer<typeof conversationActivityWindowSchema>;
+export type ConversationType = z.infer<typeof conversationTypeSchema>;
 
 export const bulkArchiveChatCompletionsJsonSchema = z.object({
   archived: z.boolean(),
@@ -182,6 +185,7 @@ export const getSharedConversationParamsSchema = z.object({
 
 export const getChatCompletionResponseSchema = z.object({
   id: z.string(),
+  type: conversationTypeSchema,
   title: z.string().nullable(),
   created_at: z.string(),
   updated_at: z.string(),

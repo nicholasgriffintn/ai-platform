@@ -1,5 +1,10 @@
 export { executeAgentLoop } from "./agent-loop";
-export { AGENT_CONTROL_TOOL_NAMES, FINISH_TOOL_NAME, UPDATE_PLAN_TOOL_NAME } from "./control-tools";
+export {
+  AGENT_CONTROL_TOOL_NAMES,
+  controlToolResultContent,
+  FINISH_TOOL_NAME,
+  UPDATE_PLAN_TOOL_NAME,
+} from "./control-tools";
 export { parseToolCallArguments, truncateForModel } from "./utils";
 export {
   resolveApproval,

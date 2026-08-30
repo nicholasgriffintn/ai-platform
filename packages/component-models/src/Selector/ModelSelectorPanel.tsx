@@ -191,7 +191,7 @@ export function ModelSelectorPanel({
                       className={`cursor-pointer flex items-center justify-center gap-1 rounded px-2 py-1 text-xs ${
                         chatMode === "remote"
                           ? "bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100"
-                          : "text-zinc-600 dark:text-zinc-400"
+                          : "text-zinc-600 hover:bg-zinc-200/60 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-700/60 dark:hover:text-zinc-100"
                       }`}
                       onClick={() => chatMode !== "remote" && onChatModeChange?.("remote")}
                       aria-pressed={chatMode === "remote"}
@@ -204,7 +204,7 @@ export function ModelSelectorPanel({
                       className={`cursor-pointer flex items-center justify-center gap-1 rounded px-2 py-1 text-xs ${
                         chatMode === "local"
                           ? "bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100"
-                          : "text-zinc-600 dark:text-zinc-400"
+                          : "text-zinc-600 hover:bg-zinc-200/60 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-700/60 dark:hover:text-zinc-100"
                       }`}
                       onClick={() => chatMode !== "local" && onChatModeChange?.("local")}
                       aria-pressed={chatMode === "local"}

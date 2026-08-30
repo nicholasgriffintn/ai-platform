@@ -1,58 +1,142 @@
 import {
+  nextFlowStageId,
+  PROJECT_TASK_DEFAULT_TOKEN_BUDGET,
   PROJECT_TASK_RUN_TASK_TYPE,
+  isTerminalGoalStatus,
   type ProjectTask,
   type ProjectTaskBlockedReason,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { ConversationManager } from "~/lib/conversationManager";
+import { buildAgentPersona } from "~/services/agents/completion-tools";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { GoalService } from "~/services/goals/GoalService";
 import { TaskService } from "~/services/tasks/TaskService";
 import { parseProjectFlow } from "~/services/workspaces/format";
-import type { IEnv } from "~/types";
+import type { IEnv, Message } from "~/types";
 import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+import { extractTextFromMessageContent } from "~/utils/messages";
 
+import { createProjectTaskCompletion, projectTaskStatusAfterCompletedGoal } from "./completions";
 import { buildStageInstructions, resolveTaskRuntime } from "./flow";
+import { getPendingProjectTaskQuestions } from "./questions";
 import { projectTaskStatusForGoal } from "./transitions";
 
 const logger = getLogger({ prefix: "services/project-tasks/runner" });
 
-export function projectTaskConversationId(taskId: string): string {
-  return `task_${taskId}`;
+export function projectTaskConversationId(taskId: string, attemptId?: string): string {
+  return attemptId ? `task_${taskId}_${attemptId}` : `task_${taskId}`;
 }
 
 export async function enqueueProjectTaskRun(
   context: ServiceContext,
   task: ProjectTask,
   runnerIdentityUserId: number,
+  dispatchTaskId: string,
+  conversationId: string | null,
 ): Promise<void> {
   const taskService = new TaskService(context.env, context.repositories.tasks);
 
   await taskService.enqueueTask({
+    id: dispatchTaskId,
     task_type: PROJECT_TASK_RUN_TASK_TYPE,
     user_id: runnerIdentityUserId,
     project_id: task.projectId,
     priority: 4,
     task_data: {
+      dispatchTaskId,
       taskId: task.id,
       projectId: task.projectId,
       runnerIdentityUserId,
+      conversationId,
     },
   });
 }
 
+export async function queueProjectTaskRun(params: {
+  context: ServiceContext;
+  task: ProjectTask;
+  runnerIdentityUserId: number;
+  stageId?: string | null;
+}): Promise<ProjectTask> {
+  const { context, task, runnerIdentityUserId, stageId } = params;
+
+  if (!context.env.TASK_QUEUE) {
+    throw new AssistantError(
+      "Task execution is unavailable because the task queue is not configured",
+      ErrorType.CONFIGURATION_ERROR,
+      503,
+    );
+  }
+
+  const dispatchTaskId = generateId();
+  const conversationId =
+    task.blockedReason === "run_failed" && task.conversationId
+      ? projectTaskConversationId(task.id, dispatchTaskId)
+      : null;
+  const queued = await context.repositories.projectTasks.queueTaskForRun({
+    taskId: task.id,
+    projectId: task.projectId,
+    runnerIdentityUserId,
+    dispatchTaskId,
+    runner: task.runner ?? {
+      kind: "conversation",
+      agentId: null,
+      model: null,
+      mode: null,
+    },
+    tokenBudget: task.tokenBudget ?? PROJECT_TASK_DEFAULT_TOKEN_BUDGET,
+    stageId,
+  });
+
+  if (!queued) {
+    throw new AssistantError(
+      "This task changed before it could be queued. Refresh and try again.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  try {
+    await enqueueProjectTaskRun(
+      context,
+      queued,
+      runnerIdentityUserId,
+      dispatchTaskId,
+      conversationId,
+    );
+  } catch (error) {
+    await context.repositories.projectTasks.failDispatch({
+      taskId: task.id,
+      projectId: task.projectId,
+      dispatchTaskId,
+      detail: "The agent run could not be added to the execution queue. Try again.",
+    });
+    throw error;
+  }
+
+  return queued;
+}
+
 function buildGoalObjective(task: ProjectTask): string {
+  const lines = [task.objective];
+
+  if (task.expectedOutput) {
+    lines.push("", `Expected output: ${task.expectedOutput}`);
+  }
+
   if (task.acceptanceCriteria.length > 0) {
-    return [
-      task.objective,
+    lines.push(
       "",
       "Done when:",
       ...task.acceptanceCriteria.map((criterion, index) => `${index + 1}. ${criterion.text}`),
-    ].join("\n");
+    );
   }
 
-  return task.acceptance ? `${task.objective}\n\nDone when: ${task.acceptance}` : task.objective;
+  return lines.join("\n");
 }
 
 function buildContextNotes(task: ProjectTask): string | null {
@@ -75,7 +159,29 @@ function buildContextNotes(task: ProjectTask): string | null {
   return lines.length > 0 ? lines.join("\n") : null;
 }
 
-function buildTaskPrompt(params: {
+export async function ensureProjectTaskConversation(params: {
+  context: ServiceContext;
+  task: ProjectTask;
+  conversationId: string;
+  userId: number;
+}): Promise<void> {
+  const existing = await params.context.repositories.conversations.getConversation(
+    params.conversationId,
+  );
+
+  if (existing) {
+    return;
+  }
+
+  await params.context.repositories.conversations.createConversation(
+    params.conversationId,
+    params.userId,
+    params.task.objective.slice(0, 200),
+    { project_id: params.task.projectId, type: "task" },
+  );
+}
+
+export function buildTaskPrompt(params: {
   task: ProjectTask;
   stageInstructions: string | null;
   contextNotes: string | null;
@@ -86,14 +192,11 @@ function buildTaskPrompt(params: {
     lines.push(params.stageInstructions);
   }
 
+  lines.push(`Project task ID: ${params.task.id}`);
   lines.push(`Objective: ${params.task.objective}`);
 
-  if (params.task.deliverable) {
-    const description = params.task.deliverable.description
-      ? `: ${params.task.deliverable.description}`
-      : "";
-
-    lines.push(`Deliverable — produce a ${params.task.deliverable.kind}${description}`);
+  if (params.task.expectedOutput) {
+    lines.push(`Expected output: ${params.task.expectedOutput}`);
   }
 
   if (params.task.acceptanceCriteria.length > 0) {
@@ -105,8 +208,6 @@ function buildTaskPrompt(params: {
         ),
       ].join("\n"),
     );
-  } else if (params.task.acceptance) {
-    lines.push(`This is done when: ${params.task.acceptance}`);
   }
 
   if (params.contextNotes) {
@@ -130,10 +231,14 @@ function buildTaskPrompt(params: {
   }
 
   lines.push(
-    "Work the objective and call complete_goal only once every part of it is done. Nobody is watching this run, so stop and explain rather than guessing at anything that needs a person's decision.",
+    "Work the objective and call complete_goal once the current stage deliverable is complete. The project flow owns stage approval and advancement: never ask the user to approve, confirm, review, or accept your stage output. If concrete missing information or a still-unresolved decision prevents progress, first reuse every answer already present in the conversation, then call ask_user with up to three concise questions and useful choices instead of writing questions as ordinary text. Never ask the same decision again with a different identifier or wording.",
   );
 
   return lines.join("\n\n");
+}
+
+export function buildTaskRunMessages(history: Message[], prompt: string): Message[] {
+  return [...history, { role: "user", content: prompt }];
 }
 
 async function blockTask(
@@ -151,11 +256,13 @@ async function blockTask(
 
 export async function runProjectTaskDispatch(params: {
   env: IEnv;
+  dispatchTaskId: string;
   taskId: string;
   projectId: string;
   runnerIdentityUserId: number;
+  conversationId: string | null;
 }): Promise<{ status: "completed" | "blocked" | "skipped"; detail?: string }> {
-  const { env, taskId, runnerIdentityUserId } = params;
+  const { env, taskId, projectId, runnerIdentityUserId } = params;
   const baseContext = createServiceContext({ env });
   const user = await baseContext.repositories.users.getUserById(runnerIdentityUserId);
 
@@ -164,16 +271,18 @@ export async function runProjectTaskDispatch(params: {
   }
 
   const context = createServiceContext({ env, user });
-  const claimed = await context.repositories.projectTasks.claimQueuedTask(
+  const claimed = await context.repositories.projectTasks.claimQueuedTask({
     taskId,
+    projectId,
     runnerIdentityUserId,
-  );
+    dispatchTaskId: params.dispatchTaskId,
+  });
 
   if (!claimed) {
     return { status: "skipped", detail: "Task was not queued" };
   }
 
-  const project = await context.repositories.workspaces.getProject(claimed.projectId);
+  const project = await context.repositories.workspaces.getProject(projectId);
 
   if (!project) {
     await blockTask(context, taskId, "run_failed", "The project is no longer available");
@@ -208,7 +317,8 @@ export async function runProjectTaskDispatch(params: {
     return { status: "blocked", detail: "Token budget exhausted" };
   }
 
-  const conversationId = claimed.conversationId ?? projectTaskConversationId(taskId);
+  const conversationId =
+    params.conversationId ?? claimed.conversationId ?? projectTaskConversationId(taskId);
   let runtime: Awaited<ReturnType<typeof resolveTaskRuntime>>;
 
   try {
@@ -229,6 +339,13 @@ export async function runProjectTaskDispatch(params: {
   let goalId = claimed.goalId;
 
   try {
+    await ensureProjectTaskConversation({
+      context,
+      task: claimed,
+      conversationId,
+      userId: runnerIdentityUserId,
+    });
+    await context.repositories.projectTasks.updateTask(taskId, { conversationId });
     const goal = await goalService.setGoal({
       owner: { conversationId },
       user,
@@ -237,6 +354,7 @@ export async function runProjectTaskDispatch(params: {
     });
 
     goalId = goal.id;
+    await context.repositories.projectTasks.updateTask(taskId, { goalId });
   } catch (error) {
     const detail = getErrorMessage(error);
 
@@ -244,11 +362,6 @@ export async function runProjectTaskDispatch(params: {
 
     return { status: "blocked", detail };
   }
-
-  await context.repositories.projectTasks.updateTask(taskId, {
-    conversationId,
-    goalId,
-  });
 
   const activity = await context.repositories.activities.createActivity({
     createdByUserId: runnerIdentityUserId,
@@ -261,24 +374,33 @@ export async function runProjectTaskDispatch(params: {
     summary: claimed.objective.slice(0, 200),
     data: { taskId, stageId: claimed.stageId },
   });
+  let responseTokens = 0;
+  let responseOutput = "";
 
   try {
+    const conversationManager = ConversationManager.getInstance({
+      database: context.database,
+      repositories: context.repositories,
+      user,
+      env,
+      store: true,
+    });
+    const history = await conversationManager.get(conversationId);
     const response = await handleCreateChatCompletions({
       env,
       context,
       user,
       request: {
         completion_id: conversationId,
-        messages: [
-          {
-            role: "user",
-            content: buildTaskPrompt({
-              task: claimed,
-              stageInstructions: buildStageInstructions(runtime.stage),
-              contextNotes: buildContextNotes(claimed),
-            }),
-          },
-        ],
+        conversation_type: "task",
+        messages: buildTaskRunMessages(
+          history,
+          buildTaskPrompt({
+            task: claimed,
+            stageInstructions: buildStageInstructions(runtime.stage),
+            contextNotes: buildContextNotes(claimed),
+          }),
+        ),
         ...(runtime.model ? { model: runtime.model } : {}),
         mode: runtime.mode,
         stream: false,
@@ -287,7 +409,7 @@ export async function runProjectTaskDispatch(params: {
         require_approval_for: runtime.requireApprovalFor,
         tool_choice: "auto",
         metadata: { project_id: claimed.projectId },
-        ...(runtime.agent?.system_prompt ? { system_prompt: runtime.agent.system_prompt } : {}),
+        ...(runtime.agent ? { persona: buildAgentPersona(runtime.agent) } : {}),
       },
     });
 
@@ -297,10 +419,33 @@ export async function runProjectTaskDispatch(params: {
         ErrorType.INTERNAL_ERROR,
       );
     }
+
+    responseTokens = response.usage?.total_tokens ?? 0;
+    responseOutput = extractTextFromMessageContent(response.choices[0]?.message.content).trim();
   } catch (error) {
     const detail = getErrorMessage(error);
 
     logger.error("Project task run failed", { taskId, error: detail });
+    if (goalId) {
+      try {
+        const failedGoal = await goalService.getGoalById(goalId);
+
+        if (failedGoal && !isTerminalGoalStatus(failedGoal.status)) {
+          await goalService.transition({
+            goalId,
+            actor: "system",
+            status: "blocked",
+            reason: `The agent run failed: ${detail}`,
+          });
+        }
+      } catch (goalError) {
+        logger.error("Failed to close the goal after the task run failed", {
+          taskId,
+          error: getErrorMessage(goalError),
+        });
+      }
+    }
+
     await blockTask(context, taskId, "run_failed", detail);
     await context.repositories.activities.updateActivity(activity.id, {
       status: "failed",
@@ -310,22 +455,84 @@ export async function runProjectTaskDispatch(params: {
     return { status: "blocked", detail };
   }
 
-  const goal = goalId ? await goalService.getGoalById(goalId) : null;
+  let goal = goalId ? await goalService.getGoalById(goalId) : null;
+
+  if (goal?.status === "active") {
+    goal = await goalService.transition({
+      goalId: goal.id,
+      actor: "system",
+      status: "stalled",
+      reason: "The agent run ended without completing the goal or requesting input.",
+    });
+  }
+
+  const pendingQuestions = await getPendingProjectTaskQuestions(context, { conversationId });
   const projection = goal
     ? projectTaskStatusForGoal(goal)
     : { status: "review" as const, blockedReason: null };
 
+  if (projection.status === "blocked" && pendingQuestions) {
+    projection.blockedReason = "awaiting_input";
+  }
+
+  const tokensSpent = claimed.tokensSpent + Math.max(goal?.tokens_spent ?? 0, responseTokens);
+  const flow = parseProjectFlow(project.flow);
+  const nextStageId =
+    goal?.status === "completed" && runtime.stage?.advance === "on_goal_complete"
+      ? nextFlowStageId(flow, claimed.stageId)
+      : null;
+  const completion =
+    goal?.status === "completed"
+      ? createProjectTaskCompletion({
+          stage: runtime.stage,
+          conversationId,
+          goal,
+          output: responseOutput,
+        })
+      : null;
+  const nextStatus =
+    goal?.status === "completed"
+      ? projectTaskStatusAfterCompletedGoal(runtime.stage, nextStageId)
+      : projection.status;
+
   await context.repositories.projectTasks.updateTask(taskId, {
-    status: projection.status,
+    status: nextStatus,
     blockedReason: projection.blockedReason,
     blockedDetail: goal?.stopped_reason ?? null,
-    tokensSpent: (claimed.tokensSpent ?? 0) + (goal?.tokens_spent ?? 0),
-    ...(projection.status === "review" ? { completedAt: null } : {}),
+    tokensSpent,
+    ...(completion ? { completions: [...claimed.completions, completion] } : {}),
+    ...(nextStatus === "done"
+      ? { completedAt: new Date().toISOString() }
+      : nextStatus === "review"
+        ? { completedAt: null }
+        : {}),
   });
   await context.repositories.activities.updateActivity(activity.id, {
-    status: projection.status === "blocked" ? "waiting" : "succeeded",
+    status: nextStatus === "blocked" ? "waiting" : "succeeded",
     summary: goal?.objective.slice(0, 200) ?? claimed.objective.slice(0, 200),
   });
+
+  if (nextStageId) {
+    try {
+      await queueProjectTaskRun({
+        context,
+        task: {
+          ...claimed,
+          status: nextStatus,
+          tokensSpent,
+          completions: completion ? [...claimed.completions, completion] : claimed.completions,
+        },
+        runnerIdentityUserId,
+        stageId: nextStageId,
+      });
+    } catch (error) {
+      const detail = getErrorMessage(error);
+
+      logger.error("Project task stage dispatch failed", { taskId, nextStageId, error: detail });
+
+      return { status: "blocked", detail };
+    }
+  }
 
   return projection.status === "blocked"
     ? { status: "blocked", detail: goal?.stopped_reason ?? undefined }

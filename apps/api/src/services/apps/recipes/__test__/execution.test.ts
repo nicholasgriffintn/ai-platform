@@ -90,6 +90,7 @@ describe("executeRecipeInvocationChat", () => {
       user,
       request: expect.objectContaining({
         completion_id: "recipe_generated-id",
+        conversation_type: "task",
         model: "deepseek-v4-flash",
         mode: "agent",
         stream: false,
