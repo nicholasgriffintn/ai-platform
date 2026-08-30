@@ -1336,7 +1336,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
     supportsTemperature: true,
     supportsToolCalls: true,
     supportsResponseFormat: true,
-    isFeatured: true,
     contextWindow: 1048576,
     maxTokens: 65536,
     costPer1kInputTokens: 0.00075,
@@ -1471,6 +1470,9 @@ export const googleAiStudioModelConfig: ModelConfig = {
 
   "gemini-3.1-flash-image": {
     name: "Nano Banana 2",
+    description:
+      "Google's Nano Banana 2 image model, generating and editing images from text prompts and reference pictures.",
+    isFeatured: true,
     matchingModel: "gemini-3.1-flash-image",
     provider: "google-ai-studio",
     family: "gemini-flash",
@@ -1772,6 +1774,9 @@ export const googleAiStudioModelConfig: ModelConfig = {
   },
   "gemini-3.7-flash": {
     name: "Gemini 3.7 Flash",
+    description:
+      "Google's newest Flash model, pairing a million-token multimodal context with fast, tool-capable reasoning.",
+    isFeatured: true,
     matchingModel: "gemini-3.7-flash",
     provider: "google-ai-studio",
     family: "gemini-flash",

@@ -1,3 +1,4 @@
+import { AlibabaProvider } from "../../capabilities/chat/providers/alibaba";
 import { AnthropicProvider } from "../../capabilities/chat/providers/anthropic";
 import { AzureOpenAIProvider } from "../../capabilities/chat/providers/azure";
 import type { AIProvider } from "../../capabilities/chat/providers/base";
@@ -15,7 +16,9 @@ import { FalAIProvider } from "../../capabilities/chat/providers/fal";
 import { FireworksProvider } from "../../capabilities/chat/providers/fireworks";
 import { GithubModelsProvider } from "../../capabilities/chat/providers/github";
 import { GithubCopilotProvider } from "../../capabilities/chat/providers/githubcopilot";
+import { GoogleVertexProvider } from "../../capabilities/chat/providers/google-vertex";
 import { GoogleStudioProvider } from "../../capabilities/chat/providers/googlestudio";
+import { GreenPtProvider } from "../../capabilities/chat/providers/greenpt";
 import { GrokProvider } from "../../capabilities/chat/providers/grok";
 import { GroqProvider } from "../../capabilities/chat/providers/groq";
 import { HetznerProvider } from "../../capabilities/chat/providers/hetzner";
@@ -24,26 +27,40 @@ import { HyperbolicProvider } from "../../capabilities/chat/providers/hyperbolic
 import { IdeogramProvider } from "../../capabilities/chat/providers/ideogram";
 import { InceptionProvider } from "../../capabilities/chat/providers/inception";
 import { InferenceProvider } from "../../capabilities/chat/providers/inference";
+import { KimiForCodingProvider } from "../../capabilities/chat/providers/kimi-for-coding";
+import { LMStudioProvider } from "../../capabilities/chat/providers/lmstudio";
+import { LucidQueryProvider } from "../../capabilities/chat/providers/lucidquery";
+import { MetaProvider } from "../../capabilities/chat/providers/meta";
+import { MiniMaxProvider } from "../../capabilities/chat/providers/minimax";
 import { MistralProvider } from "../../capabilities/chat/providers/mistral";
+import { MoonshotProvider } from "../../capabilities/chat/providers/moonshot";
 import { MorphProvider } from "../../capabilities/chat/providers/morph";
 import { AmazonNovaProvider } from "../../capabilities/chat/providers/nova";
 import { OllamaProvider } from "../../capabilities/chat/providers/ollama";
+import { OllamaCloudProvider } from "../../capabilities/chat/providers/ollama-cloud";
 import { OpenAIProvider } from "../../capabilities/chat/providers/openai";
 import { OpencodeProvider } from "../../capabilities/chat/providers/opencode";
 import { OpencodeGoProvider } from "../../capabilities/chat/providers/opencode-go";
 import { OpenRouterProvider } from "../../capabilities/chat/providers/openrouter";
+import { OvhCloudProvider } from "../../capabilities/chat/providers/ovhcloud";
 import { ParallelProvider } from "../../capabilities/chat/providers/parallel";
 import { PerplexityProvider } from "../../capabilities/chat/providers/perplexity";
 import { PollyProvider } from "../../capabilities/chat/providers/polly";
 import { PoolsideProvider } from "../../capabilities/chat/providers/poolside";
+import { RegoloProvider } from "../../capabilities/chat/providers/regolo-ai";
 import { ReplicateProvider } from "../../capabilities/chat/providers/replicate";
 import { RequestyProvider } from "../../capabilities/chat/providers/requesty";
 import { SageMakerProvider } from "../../capabilities/chat/providers/sagemaker";
+import { SakanaProvider } from "../../capabilities/chat/providers/sakana";
+import { StandardComputeProvider } from "../../capabilities/chat/providers/standardcompute";
+import { TheGridProvider } from "../../capabilities/chat/providers/the-grid-ai";
+import { ThinkingMachinesProvider } from "../../capabilities/chat/providers/thinkingmachines";
 import { TogetherAiProvider } from "../../capabilities/chat/providers/together-ai";
 import { UpstageProvider } from "../../capabilities/chat/providers/upstage";
 import { V0Provider } from "../../capabilities/chat/providers/v0";
 import { VercelGatewayProvider } from "../../capabilities/chat/providers/vercel";
 import { WorkersProvider } from "../../capabilities/chat/providers/workers";
+import { ZaiProvider } from "../../capabilities/chat/providers/zai";
 import type { ProviderRegistry } from "../ProviderRegistry";
 import type { ProviderRegistration } from "../types";
 
@@ -283,6 +300,101 @@ const chatProviders: ProviderRegistration<AIProvider>[] = [
     name: "hetzner",
     create: () => new HetznerProvider(),
     metadata: { vendor: "Hetzner", categories: ["chat"], tags: ["free"] },
+  },
+  {
+    name: "alibaba",
+    aliases: ["dashscope", "qwen"],
+    create: () => new AlibabaProvider(),
+    metadata: { vendor: "Alibaba", categories: ["chat"], tags: ["qwen"] },
+  },
+  {
+    name: "zai",
+    aliases: ["z-ai"],
+    create: () => new ZaiProvider(),
+    metadata: { vendor: "Z.AI", categories: ["chat"], tags: ["glm"] },
+  },
+  {
+    name: "moonshot",
+    aliases: ["moonshotai", "kimi"],
+    create: () => new MoonshotProvider(),
+    metadata: { vendor: "Moonshot AI", categories: ["chat"], tags: ["kimi"] },
+  },
+  {
+    name: "minimax",
+    create: () => new MiniMaxProvider(),
+    metadata: { vendor: "MiniMax", categories: ["chat"] },
+  },
+  {
+    name: "google-vertex",
+    aliases: ["vertex"],
+    create: () => new GoogleVertexProvider(),
+    metadata: { vendor: "Google", categories: ["chat"] },
+  },
+  {
+    name: "ollama-cloud",
+    create: () => new OllamaCloudProvider(),
+    metadata: { vendor: "Ollama", categories: ["chat"] },
+  },
+  {
+    name: "meta",
+    create: () => new MetaProvider(),
+    metadata: { vendor: "Meta", categories: ["chat"], tags: ["muse"] },
+  },
+  {
+    name: "lmstudio",
+    aliases: ["lm-studio"],
+    create: () => new LMStudioProvider(),
+    metadata: { vendor: "LM Studio", categories: ["chat"], tags: ["local"] },
+  },
+  {
+    name: "greenpt",
+    create: () => new GreenPtProvider(),
+    metadata: { vendor: "GreenPT", categories: ["chat"] },
+  },
+  {
+    name: "lucidquery",
+    create: () => new LucidQueryProvider(),
+    metadata: { vendor: "LucidQuery", categories: ["chat"] },
+  },
+  {
+    name: "ovhcloud",
+    aliases: ["ovh"],
+    create: () => new OvhCloudProvider(),
+    metadata: { vendor: "OVHcloud", categories: ["chat"] },
+  },
+  {
+    name: "regolo-ai",
+    aliases: ["regolo"],
+    create: () => new RegoloProvider(),
+    metadata: { vendor: "Regolo AI", categories: ["chat"] },
+  },
+  {
+    name: "sakana",
+    create: () => new SakanaProvider(),
+    metadata: { vendor: "Sakana AI", categories: ["chat"] },
+  },
+  {
+    name: "standardcompute",
+    create: () => new StandardComputeProvider(),
+    metadata: { vendor: "Standard Compute", categories: ["chat"] },
+  },
+  {
+    name: "the-grid-ai",
+    aliases: ["thegrid"],
+    create: () => new TheGridProvider(),
+    metadata: { vendor: "The Grid AI", categories: ["chat"] },
+  },
+  {
+    name: "kimi-for-coding",
+    aliases: ["kimi-coding"],
+    create: () => new KimiForCodingProvider(),
+    metadata: { vendor: "Moonshot AI", categories: ["chat"], tags: ["coding"] },
+  },
+  {
+    name: "thinkingmachines",
+    aliases: ["tinker"],
+    create: () => new ThinkingMachinesProvider(),
+    metadata: { vendor: "Thinking Machines", categories: ["chat"] },
   },
 ];
 

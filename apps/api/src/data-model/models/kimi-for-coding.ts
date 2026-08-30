@@ -1,0 +1,101 @@
+import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
+
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
+
+const PROVIDER = "kimi-for-coding";
+
+export const kimiForCodingModelConfig: ModelConfig = createModelConfigObject([
+  createModelConfig("kimi-for-coding", PROVIDER, {
+    name: "Kimi For Coding",
+    matchingModel: "kimi-for-coding",
+    modalities: { input: ["text"], output: ["text"] },
+    supportsTemperature: false,
+    supportsToolCalls: true,
+  	family: "kimi-k2",
+  	openWeights: true,
+  	knowledgeCutoffDate: "January 2025",
+  	releaseDate: "June 12, 2026",
+  	lastUpdated: "June 12, 2026",
+  	supportsAttachments: true,
+  	supportsResponseFormat: true,
+  	contextWindow: 262144,
+  	maxTokens: 32768,
+  	costPer1kInputTokens: 0,
+  	costPer1kOutputTokens: 0,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "thinking"],
+  		defaultEffort: "none",
+  	},
+  }),
+  createModelConfig("k3", PROVIDER, {
+    name: "Kimi K3",
+    matchingModel: "k3",
+    modalities: { input: ["text"], output: ["text"] },
+    supportsTemperature: false,
+    supportsToolCalls: true,
+  	family: "kimi-k3",
+  	openWeights: true,
+  	releaseDate: "July 16, 2026",
+  	lastUpdated: "July 16, 2026",
+  	supportsAttachments: false,
+  	supportsResponseFormat: true,
+  	contextWindow: 1048576,
+  	maxTokens: 131072,
+  	costPer1kInputTokens: 0,
+  	costPer1kOutputTokens: 0,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "thinking"],
+  		defaultEffort: "none",
+  	},
+  }),
+  createModelConfig("k3-256k", PROVIDER, {
+  	name: "Kimi K3-256K",
+  	matchingModel: "k3-256k",
+  	family: "kimi-k3",
+  	openWeights: true,
+  	releaseDate: "July 16, 2026",
+  	lastUpdated: "July 16, 2026",
+  	modalities: {
+  		input: ["text", "image"],
+  		output: ["text"],
+  	},
+  	supportsAttachments: false,
+  	supportsTemperature: false,
+  	supportsToolCalls: true,
+  	supportsResponseFormat: true,
+  	contextWindow: 262144,
+  	maxTokens: 131072,
+  	costPer1kInputTokens: 0,
+  	costPer1kOutputTokens: 0,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "thinking"],
+  		defaultEffort: "none",
+  	},
+  }),
+
+  createModelConfig("kimi-for-coding-highspeed", PROVIDER, {
+  	name: "Kimi For Coding HighSpeed",
+  	matchingModel: "kimi-for-coding-highspeed",
+  	family: "kimi-k2",
+  	openWeights: true,
+  	knowledgeCutoffDate: "January 2025",
+  	releaseDate: "June 12, 2026",
+  	lastUpdated: "June 12, 2026",
+  	modalities: {
+  		input: ["text", "image", "video"],
+  		output: ["text"],
+  	},
+  	supportsAttachments: true,
+  	supportsTemperature: false,
+  	supportsToolCalls: true,
+  	supportsResponseFormat: true,
+  	contextWindow: 262144,
+  	maxTokens: 32768,
+  	costPer1kInputTokens: 0,
+  	costPer1kOutputTokens: 0,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "thinking"],
+  		defaultEffort: "none",
+  	},
+  }),
+]);

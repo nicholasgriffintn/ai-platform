@@ -792,7 +792,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     contextComplexity: 4,
     reliability: 5,
     speed: 3,
-    isFeatured: false,
+    isFeatured: true,
     supportsImageEdits: true,
     timeout: 1000000,
     modalities: {

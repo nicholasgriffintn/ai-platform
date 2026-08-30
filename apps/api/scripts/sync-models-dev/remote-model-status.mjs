@@ -34,7 +34,13 @@ export function hasAnyTag(remoteModel, tagSet) {
 }
 
 export function isIgnoredRemoteModelId(provider, modelId) {
-  return IGNORED_REMOTE_MODEL_IDS[provider]?.has(modelId) ?? false;
+  const ignored = IGNORED_REMOTE_MODEL_IDS[provider];
+
+  if (typeof ignored === "function") {
+    return ignored(modelId);
+  }
+
+  return ignored?.has(modelId) ?? false;
 }
 
 export function anthropicModelFamilyKey(modelId) {

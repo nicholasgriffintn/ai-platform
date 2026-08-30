@@ -914,6 +914,9 @@ export const xaiModelConfig: ModelConfig = {
   },
   "grok-4.6": {
     name: "Grok 4.6",
+    description:
+      "xAI's latest Grok, with a 500k context window, vision and PDF input, and optional extended thinking.",
+    isFeatured: true,
     matchingModel: "grok-4.6",
     provider: "grok",
     family: "grok",

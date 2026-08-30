@@ -82,7 +82,6 @@ export const workersAiModelConfig: ModelConfig = {
     supportsTemperature: true,
     supportsResponseFormat: true,
     maxTokens: 256000,
-    isFeatured: true,
     knowledgeCutoffDate: "January 2025",
     releaseDate: "April 21, 2026",
     lastUpdated: "April 21, 2026",
@@ -1056,7 +1055,6 @@ export const workersAiModelConfig: ModelConfig = {
     releaseDate: "January 19, 2026",
     lastUpdated: "January 19, 2026",
     supportsAttachments: false,
-    isFeatured: true,
     supportsTemperature: true,
     maxTokens: 131072,
     costPer1kInputTokens: 0.0000605,
@@ -1217,6 +1215,9 @@ export const workersAiModelConfig: ModelConfig = {
   },
   "@cf/moonshotai/kimi-k2.7-code": {
     name: "Kimi K2.7 Code",
+    description:
+      "Kimi K2.7 Code is Moonshot's coding and agentic open model, with vision input, tool calling and a 262.1k token context window.",
+    isFeatured: true,
     matchingModel: "@cf/moonshotai/kimi-k2.7-code",
     provider: "workers-ai",
     knowledgeCutoffDate: "January 2025",
@@ -1391,6 +1392,9 @@ export const workersAiModelConfig: ModelConfig = {
 
   "@cf/zai-org/glm-5.3-flash": {
   	name: "Glm 5.3 Flash",
+  	description:
+  	  "GLM-5.3 Flash is Z.ai's low-cost, fast model, with vision input, multi-turn tool calling and a 1.31M token context window.",
+  	isFeatured: true,
   	matchingModel: "@cf/zai-org/glm-5.3-flash",
   	provider: "workers-ai",
   	family: "glm",

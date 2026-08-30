@@ -87,6 +87,23 @@ export class ResponseFormatter {
       "together-ai": ResponseFormatter.formatOpenAIResponse,
       hetzner: ResponseFormatter.formatOpenAIResponse,
       poolside: ResponseFormatter.formatOpenAIResponse,
+      alibaba: ResponseFormatter.formatOpenAIResponse,
+      zai: ResponseFormatter.formatOpenAIResponse,
+      moonshot: ResponseFormatter.formatOpenAIResponse,
+      minimax: ResponseFormatter.formatOpenAIResponse,
+      "ollama-cloud": ResponseFormatter.formatOpenAIResponse,
+      lmstudio: ResponseFormatter.formatOpenAIResponse,
+      meta: ResponseFormatter.formatOpenAIResponse,
+      "google-vertex": ResponseFormatter.formatGoogleStudioResponse,
+      greenpt: ResponseFormatter.formatOpenAIResponse,
+      lucidquery: ResponseFormatter.formatOpenAIResponse,
+      ovhcloud: ResponseFormatter.formatOpenAIResponse,
+      "regolo-ai": ResponseFormatter.formatOpenAIResponse,
+      sakana: ResponseFormatter.formatOpenAIResponse,
+      standardcompute: ResponseFormatter.formatOpenAIResponse,
+      "the-grid-ai": ResponseFormatter.formatOpenAIResponse,
+      "kimi-for-coding": ResponseFormatter.formatAnthropicResponse,
+      thinkingmachines: ResponseFormatter.formatAnthropicResponse,
       replicate: ResponseFormatter.formatReplicateResponse,
       fal: ResponseFormatter.formatReplicateResponse,
       ideogram: ResponseFormatter.formatReplicateResponse,
@@ -695,8 +712,12 @@ export class ResponseFormatter {
     const parts = data.candidates[0].content.parts;
     const toolCalls: Record<string, any>[] = [];
     const responseParts: Array<Record<string, any>> = [];
-    const assets: Array<{ key?: string; url: string; mimeType: string; type: "image" | "audio" }> =
-      [];
+    const assets: Array<{
+      key?: string;
+      url: string;
+      mimeType: string;
+      type: "image" | "audio";
+    }> = [];
 
     let textResponse = "";
     let thinkingResponse = "";
@@ -842,7 +863,11 @@ export class ResponseFormatter {
               image_url: { url: storedImage.url },
             },
           ],
-          data: { url: storedImage.url, key: storedImage.key, outputId: storedImage.outputId },
+          data: {
+            url: storedImage.url,
+            key: storedImage.key,
+            outputId: storedImage.outputId,
+          },
         };
       }
 
@@ -874,7 +899,11 @@ export class ResponseFormatter {
               audio_url: { url: storedAudio.url },
             },
           ],
-          data: { url: storedAudio.url, key: storedAudio.key, outputId: storedAudio.outputId },
+          data: {
+            url: storedAudio.url,
+            key: storedAudio.key,
+            outputId: storedAudio.outputId,
+          },
         };
       }
 

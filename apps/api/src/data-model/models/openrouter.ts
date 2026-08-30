@@ -8613,7 +8613,6 @@ export const openrouterModelConfig: ModelConfig = {
     maxTokens: 235929,
     costPer1kInputTokens: 0.00095,
     costPer1kOutputTokens: 0.004,
-    isFeatured: true,
     knowledgeCutoffDate: "January 2025",
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
@@ -11911,7 +11910,6 @@ export const openrouterModelConfig: ModelConfig = {
     maxTokens: 900000,
     costPer1kInputTokens: 0.00125,
     costPer1kOutputTokens: 0.0025,
-    isFeatured: true,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",
@@ -13626,6 +13624,9 @@ export const openrouterModelConfig: ModelConfig = {
 
   "moonshotai/kimi-k3": {
     name: "Kimi K3",
+    description:
+      "Kimi K3 is Moonshot's frontier agentic open model, with a million-token context window and vision input.",
+    isFeatured: true,
     matchingModel: "moonshotai/kimi-k3",
     provider: "openrouter",
     family: "kimi-k3",
@@ -13746,7 +13747,6 @@ export const openrouterModelConfig: ModelConfig = {
     supportsTemperature: true,
     supportsToolCalls: true,
     supportsResponseFormat: true,
-    isFeatured: true,
     contextWindow: 1048576,
     maxTokens: 65536,
     costPer1kInputTokens: 0.00075,
@@ -14303,6 +14303,9 @@ export const openrouterModelConfig: ModelConfig = {
 
   "x-ai/grok-4.6": {
     name: "Grok 4.6",
+    description:
+      "xAI's latest Grok, with a 500k context window, vision and PDF input, and optional extended thinking.",
+    isFeatured: true,
     matchingModel: "x-ai/grok-4.6",
     provider: "openrouter",
     family: "grok",
@@ -14355,6 +14358,9 @@ export const openrouterModelConfig: ModelConfig = {
 
   "google/gemini-3.7-flash": {
     name: "Gemini 3.7 Flash",
+    description:
+      "Google's newest Flash model, pairing a million-token multimodal context with fast, tool-capable reasoning.",
+    isFeatured: true,
     matchingModel: "google/gemini-3.7-flash",
     provider: "openrouter",
     family: "gemini-flash",

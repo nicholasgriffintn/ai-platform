@@ -1,0 +1,72 @@
+import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
+
+import {
+	createModelConfig,
+	createModelConfigObject,
+} from "~/lib/providers/models/utils";
+
+const PROVIDER = "lmstudio";
+
+export const lmstudioModelConfig: ModelConfig = createModelConfigObject([
+	createModelConfig("openai/gpt-oss-20b", PROVIDER, {
+		name: "GPT OSS 20B",
+		matchingModel: "openai/gpt-oss-20b",
+		family: "gpt-oss",
+		openWeights: true,
+		modalities: { input: ["text"], output: ["text"] },
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		isFree: true,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		releaseDate: "August 5, 2025",
+		lastUpdated: "August 5, 2025",
+		supportsAttachments: false,
+		contextWindow: 131072,
+		maxTokens: 32768,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+	createModelConfig("qwen/qwen3-coder-30b", PROVIDER, {
+		name: "Qwen3 Coder 30B",
+		matchingModel: "qwen/qwen3-coder-30b",
+		family: "qwen",
+		openWeights: true,
+		modalities: { input: ["text"], output: ["text"] },
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		isFree: true,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		knowledgeCutoffDate: "April 2025",
+		releaseDate: "July 23, 2025",
+		lastUpdated: "July 23, 2025",
+		supportsAttachments: false,
+		contextWindow: 262144,
+		maxTokens: 65536,
+	}),
+	createModelConfig("qwen/qwen3-30b-a3b-2507", PROVIDER, {
+		name: "Qwen3 30B A3B 2507",
+		matchingModel: "qwen/qwen3-30b-a3b-2507",
+		family: "qwen",
+		openWeights: true,
+		knowledgeCutoffDate: "April 2025",
+		releaseDate: "July 30, 2025",
+		lastUpdated: "July 30, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 262144,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+	}),
+]);
