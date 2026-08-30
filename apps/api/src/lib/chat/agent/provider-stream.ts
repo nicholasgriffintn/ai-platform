@@ -36,6 +36,7 @@ export interface StreamedTurn {
   annotations: unknown;
   parts: MessagePart[];
   error: unknown;
+  interrupted?: boolean;
   stopped?: boolean;
 }
 
@@ -113,6 +114,24 @@ export async function consumeProviderStream(
   let openedThinkTag = false;
   let completed = false;
 
+  const markInterrupted = (error: unknown, source: "error_event" | "stream_read"): boolean => {
+    const partialContent = content.toString();
+
+    if (!partialContent) {
+      return false;
+    }
+
+    turn.interrupted = true;
+    logger.warn("Provider stream interrupted after partial content", {
+      error,
+      source,
+      completion_id: completionId,
+      contentLength: partialContent.length,
+    });
+
+    return true;
+  };
+
   const finaliseToolCalls = () => {
     if (turn.toolCalls.length === 0 && Object.keys(partialToolCalls).length > 0) {
       turn.toolCalls = Object.values(partialToolCalls);
@@ -152,7 +171,9 @@ export async function consumeProviderStream(
       data.error || (data.type === "response.failed" ? data.response?.error : null);
 
     if (streamError) {
-      turn.error = streamError;
+      if (!markInterrupted(streamError, "error_event")) {
+        turn.error = streamError;
+      }
 
       return true;
     }
@@ -208,7 +229,9 @@ export async function consumeProviderStream(
 
     if (currentEventType === "content_block_start" || currentEventType === "content_block_stop") {
       await sink.writeEvent(currentEventType, data);
+    }
 
+    if (currentEventType === "content_block_stop") {
       const completedToolCall = closeAnthropicToolCall(data, partialToolCalls);
 
       if (completedToolCall) {
@@ -288,6 +311,10 @@ export async function consumeProviderStream(
           logger.error("Failed to handle provider stream line", { error, line });
         }
       }
+    }
+  } catch (error) {
+    if (!markInterrupted(error, "stream_read")) {
+      throw error;
     }
   } finally {
     reader.releaseLock();

@@ -119,13 +119,16 @@ export const MessageList = ({
     [currentConversationId, messages],
   );
 
-  const streamActivity = useStreamActivityStore((state) => state.activity);
+  const currentStream = useStreamActivityStore((state) =>
+    currentConversationId ? state.streams[currentConversationId] : undefined,
+  );
+  const streamActivity = currentStream?.activity ?? null;
   const responseDurations = useStreamActivityStore((state) => state.responseDurations);
 
-  const isStreamLoading = useIsLoading("stream-response");
+  const isStreamLoading = currentStream?.status === "streaming";
   const isModelInitializing = useIsLoading("model-init");
 
-  const streamLoadingMessage = useLoadingMessage("stream-response") || "Generating response...";
+  const streamLoadingMessage = currentStream?.loadingMessage || "Generating response...";
   const modelInitMessage = useLoadingMessage("model-init") || "Initializing model...";
   const modelInitProgress = useLoadingProgress("model-init") || 0;
   const showCompactionLoadingDivider =

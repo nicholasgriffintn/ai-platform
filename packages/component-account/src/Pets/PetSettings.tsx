@@ -1,7 +1,9 @@
 import { Button, Switch, TextLink } from "@ngriffin_uk/polychat-component-ui";
-import type { PetSheetLayout, PetSource } from "@ngriffin_uk/polychat-schemas";
+import type { PetModelOverrides, PetSheetLayout, PetSource } from "@ngriffin_uk/polychat-schemas";
 import { ArrowRight, Sparkles, Trash2, Upload } from "lucide-react";
 import type { ReactNode } from "react";
+
+import { PetModelAssignments, type PetModelTargetOption } from "./PetModelAssignments";
 
 export interface PetSettingsOption {
   id: string;
@@ -19,14 +21,20 @@ export interface PetSettingsProps {
   travelEnabled: boolean;
   animationEnabled: boolean;
   canAuthor: boolean;
-  limitReached: boolean;
-  libraryLimit: number;
+  modelTargets: PetModelTargetOption[];
+  modelOverrides: PetModelOverrides;
+  customPetPage: number;
+  hasPreviousCustomPets: boolean;
+  hasNextCustomPets: boolean;
   isBusy?: boolean;
   error?: string | null;
   renderPreview: (option: PetSettingsOption) => ReactNode;
   onSelect: (option: PetSettingsOption) => void;
   onTravelChange: (enabled: boolean) => void;
   onAnimationChange: (enabled: boolean) => void;
+  onModelOverridesChange: (overrides: PetModelOverrides) => void;
+  onPreviousCustomPets: () => void;
+  onNextCustomPets: () => void;
   onDelete: (option: PetSettingsOption) => void;
   onUpload: () => void;
   onGenerate: () => void;
@@ -38,14 +46,20 @@ export function PetSettings({
   travelEnabled,
   animationEnabled,
   canAuthor,
-  limitReached,
-  libraryLimit,
+  modelTargets,
+  modelOverrides,
+  customPetPage,
+  hasPreviousCustomPets,
+  hasNextCustomPets,
   isBusy = false,
   error = null,
   renderPreview,
   onSelect,
   onTravelChange,
   onAnimationChange,
+  onModelOverridesChange,
+  onPreviousCustomPets,
+  onNextCustomPets,
   onDelete,
   onUpload,
   onGenerate,
@@ -65,7 +79,7 @@ export function PetSettings({
             <Button
               type="button"
               variant="outline"
-              disabled={isBusy || !canAuthor || limitReached}
+              disabled={isBusy || !canAuthor}
               onClick={onUpload}
             >
               <Upload className="mr-2 h-4 w-4" />
@@ -74,7 +88,7 @@ export function PetSettings({
             <Button
               type="button"
               variant="outline"
-              disabled={isBusy || !canAuthor || limitReached}
+              disabled={isBusy || !canAuthor}
               onClick={onGenerate}
             >
               <Sparkles className="mr-2 h-4 w-4" />
@@ -88,12 +102,6 @@ export function PetSettings({
             Uploading a sprite sheet, or having Polychat draw one, needs a Pro plan.
           </p>
         )}
-
-        {canAuthor && limitReached ? (
-          <p className="rounded-lg border border-zinc-200 p-3 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
-            You are keeping the maximum of {libraryLimit} pets. Delete one to add another.
-          </p>
-        ) : null}
 
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {options.map((option) => {
@@ -142,6 +150,30 @@ export function PetSettings({
           })}
         </ul>
 
+        {hasPreviousCustomPets || hasNextCustomPets ? (
+          <div className="flex items-center justify-center gap-3">
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={isBusy || !hasPreviousCustomPets}
+              onClick={onPreviousCustomPets}
+            >
+              Previous
+            </Button>
+            <span className="text-sm text-zinc-500 dark:text-zinc-400">
+              Custom pets, page {customPetPage}
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={isBusy || !hasNextCustomPets}
+              onClick={onNextCustomPets}
+            >
+              Next
+            </Button>
+          </div>
+        ) : null}
+
         {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
 
         <div className="flex justify-end">
@@ -150,6 +182,14 @@ export function PetSettings({
           </TextLink>
         </div>
       </section>
+
+      <PetModelAssignments
+        targets={modelTargets}
+        pets={options}
+        overrides={modelOverrides}
+        disabled={isBusy}
+        onChange={onModelOverridesChange}
+      />
 
       <section className="space-y-3">
         <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100">Movement</h3>

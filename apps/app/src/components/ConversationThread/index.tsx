@@ -51,6 +51,7 @@ import type { ChatSuggestion } from "~/lib/chat-suggestions";
 import { openExternalUrl } from "~/lib/external-navigation";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { ChatRequestOptions, ModelSelectionChangeHandler, ModelSelectorScope } from "~/types";
 
 import { ChatInput, type ChatInputHandle } from "./ChatInput";
@@ -156,7 +157,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     requestSecondOpinion,
     isRequestingSecondOpinion,
   } = useChatManager(modeConfig?.requestOptions, modeConfig?.conversationMode);
-  const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
+  const { data: apiModels = EMPTY_MODEL_CONFIG, isLoading: isModelsLoading } = useModels();
   const modelReferences = useMemo(() => createModelReferenceMap(apiModels), [apiModels]);
   const selectedModelConfig = useMemo(
     () => getModelByReference(modelReferences, model),
@@ -191,7 +192,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const effectiveAutoPlayResponsesEnabled =
     autoPlayResponsesEnabled || Boolean(modeConfig?.forceAutoPlayResponses);
 
-  const isStreamLoading = useIsLoading("stream-response");
+  const isStreamLoading = streamStarted;
   const isModelInitializing = useIsLoading("model-init");
 
   const messages = useMemo(
@@ -202,6 +203,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     async (approvalId: string, resolution: "approved" | "rejected") => {
       await resolveConnectorOperationApproval(approvalId, resolution);
       if (resolution === "rejected") {
+        if (currentConversationId) {
+          useStreamActivityStore.getState().clearStreamStatus(currentConversationId);
+        }
+
         return;
       }
 
@@ -646,7 +651,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
   return (
     <div
-      className={`relative flex h-full min-h-0 w-full flex-col ${isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""}`}
+      className={`relative flex h-full min-h-0 w-full flex-col ${isPanelVisible ? "2xl:pr-[650px]" : ""}`}
     >
       {showWelcomeScreen ? (
         <div
@@ -658,7 +663,14 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
               title={modeConfig?.welcomeTitle}
               description={modeConfig?.welcomeDescription}
               isLoading={modeConfig?.welcomeLoading}
-              pet={<Pet size={128} placement="top" />}
+              pet={
+                <Pet
+                  size={128}
+                  placement="top"
+                  model={selectedModelConfig}
+                  modelReady={!model || !isModelsLoading}
+                />
+              }
               suggestions={
                 <ChatSuggestions
                   setInput={setChatInput}
@@ -690,7 +702,18 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
       <ConversationComposerDock>
         {showWelcomeScreen || !petFollows ? null : (
-          <PetPerch pet={<Pet size={44} facing="left" placement="left" />} status={petStatus} />
+          <PetPerch
+            pet={
+              <Pet
+                size={44}
+                facing="left"
+                placement="left"
+                model={selectedModelConfig}
+                modelReady={!model || !isModelsLoading}
+              />
+            }
+            status={petStatus}
+          />
         )}
         <ComposerBanner
           model={selectedModelConfig}

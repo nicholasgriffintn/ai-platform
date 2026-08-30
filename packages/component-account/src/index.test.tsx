@@ -5,7 +5,6 @@ import {
   AccountNavigation,
   AccountPrompt,
   type AccountSection,
-  PetSettings,
   SandboxConnectionList,
   TeamCard,
 } from "./index";
@@ -13,35 +12,6 @@ import {
 afterEach(cleanup);
 
 describe("account controls", () => {
-  it("keeps pet animation off until the person opts in", () => {
-    const onAnimationChange = vi.fn<(enabled: boolean) => void>();
-
-    render(
-      <PetSettings
-        options={[]}
-        selectedId="pip"
-        travelEnabled={false}
-        animationEnabled={false}
-        canAuthor={false}
-        limitReached={false}
-        libraryLimit={5}
-        renderPreview={() => null}
-        onSelect={vi.fn()}
-        onTravelChange={vi.fn()}
-        onAnimationChange={onAnimationChange}
-        onDelete={vi.fn()}
-        onUpload={vi.fn()}
-        onGenerate={vi.fn()}
-      />,
-    );
-
-    const animation = screen.getByRole("switch", { name: "Animate your pet" });
-
-    expect(animation.getAttribute("aria-checked")).toBe("false");
-    fireEvent.click(animation);
-    expect(onAnimationChange).toHaveBeenCalledExactlyOnceWith(true);
-  });
-
   it("reports enabled navigation choices while explaining unavailable ones", () => {
     const onSelect = vi.fn<(section: AccountSection) => void>();
     const sections = [

@@ -16,9 +16,13 @@ public struct ChatSettings: Codable, Equatable {
         case none = "none"
         case simulatedThinking = "simulated-thinking"
         case thinking = "thinking"
+        case `default` = "default"
+        case minimal = "minimal"
         case low = "low"
         case medium = "medium"
         case high = "high"
+        case xhigh = "xhigh"
+        case max = "max"
 
         public var displayName: String {
             switch self {
@@ -28,12 +32,20 @@ public struct ChatSettings: Codable, Equatable {
                 return "Thinking"
             case .thinking:
                 return "Thinking"
+            case .default:
+                return "Default"
+            case .minimal:
+                return "Minimal"
             case .low:
                 return "Low"
             case .medium:
                 return "Medium"
             case .high:
                 return "High"
+            case .xhigh:
+                return "X-high"
+            case .max:
+                return "Max"
             }
         }
     }

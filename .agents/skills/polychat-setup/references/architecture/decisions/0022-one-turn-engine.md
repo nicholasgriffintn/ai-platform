@@ -32,6 +32,8 @@ Resolve the step budget in one place. `resolveTurnStepBudget` combines the reque
 
 Offer the loop's control tools where the loop can act on them. `update_plan` and `finish` reach the model in agent execution modes, so plan recovery, plan events and finish rejection stop being machinery judged against tools the model was never given.
 
+Create the goal finish gate for every eligible Pro conversation turn, even when no goal exists at its start. The gate adopts a goal created during that turn, and a rejected finish extends the loop with its goal tools still available so the model can complete or deliberately block the objective instead of leaving it active when the ordinary step budget expires.
+
 Delete `streaming.ts`, `multiModalStreaming.ts`, `turn-continuation.ts` and `goal-continuation.ts`. Multi-model keeps its behaviour as `createModelEnsembleStream` on top of the unified engine.
 
 ## Trade-offs

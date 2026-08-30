@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { openaiModelConfig } from "~/data-model/models/openai";
 import type { ChatCompletionParameters } from "~/types";
 
-import { shouldUseOpenAIResponsesApi } from "./openaiResponses";
+import { buildOpenAIResponsesBody, shouldUseOpenAIResponsesApi } from "./openaiResponses";
 
 const baseParams = {
   model: "test",
@@ -29,11 +29,88 @@ describe("shouldUseOpenAIResponsesApi", () => {
     );
   });
 
+  it("uses the responses API for hosted tools", () => {
+    const modelConfig = openaiModelConfig["gpt-5.4"];
+
+    expect(
+      shouldUseOpenAIResponsesApi(
+        { ...baseParams, enabled_tools: ["code_execution"] },
+        modelConfig,
+      ),
+    ).toBe(true);
+  });
+
+  it("uses the responses API for function tools with reasoning", () => {
+    const modelConfig = openaiModelConfig["gpt-5.4"];
+
+    expect(
+      shouldUseOpenAIResponsesApi(
+        {
+          ...baseParams,
+          enabled_tools: ["get_weather"],
+          reasoning_effort: "medium",
+        },
+        modelConfig,
+      ),
+    ).toBe(true);
+    expect(
+      shouldUseOpenAIResponsesApi(
+        {
+          ...baseParams,
+          enabled_tools: ["get_weather"],
+          reasoning_effort: "none",
+        },
+        modelConfig,
+      ),
+    ).toBe(false);
+  });
+
   it("does not force the responses API for non-text output models", () => {
     const imageModel = openaiModelConfig["gpt-image-2"];
 
     expect(shouldUseOpenAIResponsesApi({ ...baseParams, use_responses: true }, imageModel)).toBe(
       false,
     );
+  });
+});
+
+describe("current OpenAI model capabilities", () => {
+  it("exposes Responses hosted tools on every GPT-5.6 model", () => {
+    for (const modelId of ["gpt-5.6", "gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra"]) {
+      const modelConfig = openaiModelConfig[modelId];
+      const body = buildOpenAIResponsesBody(
+        {
+          ...baseParams,
+          enabled_tools: ["code_execution", "hosted_shell", "computer_use"],
+        },
+        modelConfig,
+      );
+
+      expect(modelConfig, `${modelId} is missing from the catalogue`).toBeDefined();
+      expect(body.tools, modelId).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ type: "code_interpreter" }),
+          expect.objectContaining({ type: "shell" }),
+          expect.objectContaining({ type: "computer" }),
+        ]),
+      );
+      expect(modelConfig.supportsToolSearch, modelId).toBe(true);
+    }
+  });
+
+  it("keeps pro-model hosted tool restrictions accurate", () => {
+    expect(openaiModelConfig["gpt-5.4-pro"]).toMatchObject({
+      supportsCodeExecution: false,
+      supportsComputerUse: true,
+      supportsToolSearch: true,
+    });
+    expect(openaiModelConfig["gpt-5.4-pro"].supportsHostedShell).toBeUndefined();
+    expect(openaiModelConfig["gpt-5.5-pro"]).toMatchObject({
+      supportsCodeExecution: true,
+      supportsHostedShell: true,
+      supportsStreaming: false,
+    });
+    expect(openaiModelConfig["gpt-5.5-pro"].supportsComputerUse).toBeUndefined();
+    expect(openaiModelConfig["gpt-5.5-pro"].supportsToolSearch).toBeUndefined();
   });
 });

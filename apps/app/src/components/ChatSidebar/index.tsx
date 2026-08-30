@@ -33,6 +33,7 @@ import {
 } from "~/hooks/useChat";
 import { buildConversationGroups } from "~/lib/conversation-groups";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
 import { SidebarFooter } from "../Sidebar/SidebarFooter";
@@ -87,6 +88,7 @@ export const ChatSidebar = ({
     sortBy: conversationListFilters.sortBy,
   });
   const deleteChat = useDeleteChat();
+  const conversationStreams = useStreamActivityStore((state) => state.streams);
   const updateTitle = useUpdateChatTitle();
   const setAllArchived = useSetAllChatsArchived();
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -236,6 +238,8 @@ export const ChatSidebar = ({
       lastMessageAt: conversation.last_message_at,
       isLocalOnly: conversation.isLocalOnly,
       parentConversationId: conversation.parent_conversation_id,
+      isStreaming: conversationStreams[conversation.id ?? ""]?.status === "streaming",
+      needsInput: conversationStreams[conversation.id ?? ""]?.status === "action-required",
     })),
     {
       groupBy: conversationListFilters.groupBy,

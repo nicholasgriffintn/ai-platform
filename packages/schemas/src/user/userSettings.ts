@@ -1,5 +1,7 @@
 import * as z from "zod/v4";
 
+import { petModelOverridesSchema } from "../pets";
+
 export const updateUserSettingsResponseSchema = z.object({
   success: z.boolean(),
   message: z.string(),
@@ -35,6 +37,7 @@ export const updateUserSettingsSchema = z.object({
   pet_id: z.string().trim().min(1).max(60).optional(),
   pet_travel_enabled: z.boolean().optional(),
   pet_animation_enabled: z.boolean().optional(),
+  pet_model_overrides: petModelOverridesSchema.optional(),
 });
 
 export const userModelsResponseSchema = z.object({

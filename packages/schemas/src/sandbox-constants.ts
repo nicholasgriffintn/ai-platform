@@ -36,12 +36,25 @@ export interface SandboxModelSettings {
     | "none"
     | "simulated-thinking"
     | "thinking"
+    | "default"
+    | "minimal"
     | "low"
     | "medium"
     | "high"
-    | "xhigh";
+    | "xhigh"
+    | "max";
   reasoning?: {
-    effort?: "none" | "simulated-thinking" | "thinking" | "low" | "medium" | "high" | "xhigh";
+    effort?:
+      | "none"
+      | "simulated-thinking"
+      | "thinking"
+      | "default"
+      | "minimal"
+      | "low"
+      | "medium"
+      | "high"
+      | "xhigh"
+      | "max";
   };
   verbosity?: "low" | "medium" | "high" | "caveman";
 }

@@ -19,6 +19,7 @@ import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 import { formatToolErrorResponse, formatToolResponse } from "~/utils/tool-responses";
 
+import { ARTIFACT_MARKUP_TOOL_CORRECTION, isArtifactMarkupToolName } from "./artifact-markup";
 import {
   buildRepeatedToolCallMessage,
   checkToolCallRepeat,
@@ -27,6 +28,10 @@ import {
 
 const logger = getLogger({ prefix: "lib/chat/tools/execution" });
 const permissionChecker = new PermissionChecker();
+const DETERMINISTIC_TOOL_CALL_ERROR_TYPES = new Set<string>([
+  ErrorType.PARAMS_ERROR,
+  ErrorType.TOOL_CALL_ERROR,
+]);
 
 interface ToolCallError extends Error {
   functionName?: string;
@@ -42,8 +47,8 @@ function isUnknownToolError(error: ToolCallError): boolean {
 }
 
 function buildUnknownToolCorrection(functionName: string): string {
-  if (functionName.toLowerCase() === "artifact") {
-    return "Artifacts are response markup, not tools. Return the artifact as assistant text using <artifact ...>...</artifact>.";
+  if (isArtifactMarkupToolName(functionName)) {
+    return ARTIFACT_MARKUP_TOOL_CORRECTION;
   }
 
   return `Tool "${functionName}" is not available. Continue using only the tools provided in this request, or answer directly without a tool.`;
@@ -60,6 +65,10 @@ function isRecoverableToolCallError(params: {
     params.toolCallId.length > 0 &&
     params.functionName !== "unknown"
   );
+}
+
+function isDeterministicToolCallError(errorType: string): boolean {
+  return DETERMINISTIC_TOOL_CALL_ERROR_TYPES.has(errorType);
 }
 
 export const handleToolCalls = async (
@@ -113,6 +122,7 @@ export const handleToolCalls = async (
 
   for (const toolCall of toolCalls) {
     const functionName = toolCall.function?.name || toolCall.name || "unknown";
+    let recordToolCallAttempt: (() => void) | undefined;
 
     logger.info(`Tool call: ${functionName}`);
 
@@ -120,8 +130,6 @@ export const handleToolCalls = async (
       if (!toolCall.id) {
         throw new AssistantError("Missing tool call ID", ErrorType.TOOL_CALL_ERROR);
       }
-
-      let recordToolCallAttempt: (() => void) | undefined;
 
       if (options?.callLedger) {
         const repeat = checkToolCallRepeat(
@@ -334,7 +342,13 @@ export const handleToolCalls = async (
       } catch (functionError: any) {
         logger.error(`Function execution error for ${functionName}:`, functionError);
         const errorType = functionError.type || "FUNCTION_EXECUTION_ERROR";
+
+        if (isDeterministicToolCallError(errorType)) {
+          recordToolCallAttempt?.();
+        }
+
         const unknownTool = isUnknownToolError(functionError);
+        const artifactMarkupCall = unknownTool && isArtifactMarkupToolName(functionName);
         const recoverable = unknownTool && options?.recoverUnknownToolCalls;
         const formattedError = formatToolErrorResponse(
           functionName,
@@ -353,6 +367,7 @@ export const handleToolCalls = async (
             ? {
                 ...formattedError.data,
                 errorCode: "UNKNOWN_TOOL",
+                ...(artifactMarkupCall ? { responseType: "hidden" } : {}),
                 ...(recoverable ? { recoverable: true } : {}),
               }
             : formattedError.data,
@@ -415,6 +430,10 @@ export const handleToolCalls = async (
     } catch (error) {
       const functionError = error as ToolCallError;
       const errorType = functionError.type || "TOOL_CALL_ERROR";
+
+      if (isDeterministicToolCallError(errorType)) {
+        recordToolCallAttempt?.();
+      }
 
       logger.error(`Tool call error for ${functionName}:`, {
         error,

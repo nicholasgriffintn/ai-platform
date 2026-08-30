@@ -120,7 +120,7 @@ interface ChatInputProps {
   handleSubmit: (attachments?: AttachmentData[]) => void | Promise<boolean>;
   isLoading: boolean;
   streamStarted: boolean;
-  controller: AbortController;
+  controller?: AbortController;
   onTranscribe: (data: { response: { content: string } }) => void;
   placeholder?: {
     newConversation: string;
@@ -752,7 +752,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
             )
           }
           actions={
-            hideDefaultControls ? undefined : isLoading && streamStarted ? (
+            hideDefaultControls ? undefined : isLoading && streamStarted && controller ? (
               <Button
                 type="button"
                 onClick={() => controller.abort()}

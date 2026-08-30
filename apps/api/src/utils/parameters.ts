@@ -97,7 +97,7 @@ export function createTextGenerationParameters(
 }
 
 export function calculateReasoningBudget(
-  params: ChatCompletionParameters,
+  params: Pick<ChatCompletionParameters, "max_tokens" | "reasoning_effort">,
   modelConfig?: ModelConfigItem,
 ): number {
   const reasoningEffort = params.reasoning_effort;
@@ -113,13 +113,18 @@ export function calculateReasoningBudget(
   }
 
   switch (reasoningEffort) {
+    case "minimal":
+      return Math.max(Math.floor(effectiveMaxTokens * 0.25), 1024);
     case "low":
       return Math.max(Math.floor(effectiveMaxTokens * 0.5), 1024);
+    case "default":
     case "medium":
+    case "thinking":
       return Math.max(Math.floor(effectiveMaxTokens * 0.75), 1024);
     case "high":
       return Math.max(Math.floor(effectiveMaxTokens * 0.9), 1024);
     case "xhigh":
+    case "max":
       return effectiveMaxTokens;
     default:
       return Math.max(Math.floor(effectiveMaxTokens * 0.75), 1024);
@@ -398,7 +403,12 @@ export function shouldEnableStreaming(
   const isCodingModel = modelConfig?.promptTemplate === "coding";
   const modelTypeSupportsStreaming = supportsTextOutput || isCodingModel;
 
-  return stream && supportsStreaming && modelTypeSupportsStreaming;
+  return (
+    stream &&
+    supportsStreaming &&
+    modelConfig.supportsStreaming !== false &&
+    modelTypeSupportsStreaming
+  );
 }
 
 export function createStreamingParameters(

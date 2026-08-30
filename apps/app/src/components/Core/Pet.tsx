@@ -1,6 +1,7 @@
 import { cn, PetBubble, PetSprite, useMediaQuery } from "@ngriffin_uk/polychat-component-ui";
 import {
   PET_IDLE_FLOURISH_CLIPS,
+  type ModelConfigItem,
   type PetClipName,
   resolvePetClipIn,
 } from "@ngriffin_uk/polychat-schemas";
@@ -9,6 +10,7 @@ import { useNavigate } from "react-router";
 
 import { usePetPresence } from "~/hooks/usePetPresence";
 import { useActivePet } from "~/hooks/usePets";
+import { PET_SWAP_FADE_MS, usePetSwapTransition } from "~/hooks/usePetSwapTransition";
 import { usePetAnimationEnabled, usePetFollowEnabled, usePetTravel } from "~/hooks/usePetTravel";
 import { usePetStore } from "~/state/stores/petStore";
 
@@ -22,14 +24,29 @@ export interface PetProps {
   facing?: "left" | "right";
   placement?: "left" | "top";
   className?: string;
+  model?: Pick<ModelConfigItem, "family" | "provider">;
+  modelReady?: boolean;
 }
 
-export function Pet({ size = 96, facing = "right", placement = "left", className }: PetProps) {
-  const pet = useActivePet();
+export function Pet({
+  size = 96,
+  facing = "right",
+  placement = "left",
+  className,
+  model,
+  modelReady = true,
+}: PetProps) {
+  const activePet = useActivePet(model, modelReady);
   const presence = usePetPresence();
   const follows = usePetFollowEnabled();
   const animationEnabled = usePetAnimationEnabled();
   const prefersReducedMotion = useMediaQuery(REDUCED_MOTION_QUERY);
+  const { displayed: pet, visible } = usePetSwapTransition(
+    activePet,
+    `${activePet.source}:${activePet.id}`,
+    activePet.isReady,
+    !prefersReducedMotion,
+  );
   const shouldAnimate = animationEnabled && !prefersReducedMotion;
   const isTravelling = usePetTravel(follows && shouldAnimate);
   const navigate = useNavigate();
@@ -42,7 +59,7 @@ export function Pet({ size = 96, facing = "right", placement = "left", className
 
   useEffect(() => {
     if (!pet.isReady || !shouldAnimate || presence.clip !== "idle" || flourish !== null) {
-      return;
+      return undefined;
     }
 
     const timeout = window.setTimeout(
@@ -71,13 +88,17 @@ export function Pet({ size = 96, facing = "right", placement = "left", className
   );
   const showHint = nudge === null && isHinting;
 
-  if (!pet.isReady) {
+  if (!activePet.isReady || !pet.isReady) {
     return null;
   }
 
   return (
     <span
-      className="relative inline-flex"
+      className={cn(
+        "relative inline-flex transition-opacity",
+        visible ? "opacity-100" : "pointer-events-none opacity-0",
+      )}
+      style={{ transitionDuration: `${PET_SWAP_FADE_MS}ms` }}
       onMouseEnter={() => setIsHinting(true)}
       onMouseLeave={() => setIsHinting(false)}
     >

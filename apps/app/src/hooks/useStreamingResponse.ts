@@ -9,7 +9,7 @@ import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import { updateConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
 import { EMPTY_MODEL_CONFIG, getModelProvider } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { toast } from "sonner";
 
 import { CHATS_QUERY_KEY } from "~/constants";
@@ -68,11 +68,12 @@ export function useStreamingResponse(
     recordStreamActivityState,
     recordStreamActivityText,
     recordStreamActivityToolResult,
+    updateStreamLoadingMessage,
   } = useStreamActivityStore.getState();
-
-  const [streamStarted, setStreamStarted] = useState(false);
-  const [controller, setController] = useState(() => new AbortController());
-  const controllerRef = useRef(controller);
+  const currentConversationId = useChatStore((state) => state.currentConversationId);
+  const currentStream = useStreamActivityStore((state) =>
+    currentConversationId ? state.streams[currentConversationId] : undefined,
+  );
   const assistantResponseRef = useRef<string>("");
   const assistantReasoningRef = useRef<string>("");
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
@@ -98,7 +99,9 @@ export function useStreamingResponse(
       toolResponses?: Message[];
       titled?: boolean;
     }> => {
-      const requestSignal = controllerRef.current.signal;
+      const requestSignal =
+        useStreamActivityStore.getState().streams[conversationId]?.controller?.signal ??
+        new AbortController().signal;
       const effectiveRequestOptions = overrideRequestOptions ?? requestOptions;
       const storageMode = resolveConversationStorageMode(
         {
@@ -123,8 +126,6 @@ export function useStreamingResponse(
       );
       const assistantMessageData = options?.assistantMessageData;
       let shouldRefreshStoredConversation = false;
-
-      beginStreamActivity();
 
       const placeholderMessage = await addAssistantMessage(
         conversationId,
@@ -205,10 +206,10 @@ export function useStreamingResponse(
         done?: boolean,
         assistantMessage?: Message,
       ) => {
-        recordStreamActivityText({ content, reasoning });
+        recordStreamActivityText(conversationId, { content, reasoning });
 
         if (done && assistantMessage) {
-          completeStreamActivityMessage(assistantMessage.id);
+          completeStreamActivityMessage(conversationId, assistantMessage.id);
 
           const updatedAssistantMessage = withAssistantMessageData(assistantMessage);
 
@@ -279,9 +280,10 @@ export function useStreamingResponse(
 
         if (toolResponses && toolResponses.length > 0) {
           for (const toolResponse of toolResponses) {
-            recordStreamActivityToolResult({
+            recordStreamActivityToolResult(conversationId, {
               toolCallId: toolResponse.tool_call_id,
               name: toolResponse.name,
+              status: toolResponse.status,
             });
             toolResponseMessages.push(toolResponse);
             generatedMessages.push(toolResponse);
@@ -356,7 +358,7 @@ export function useStreamingResponse(
           const modelConfigToSend = selectedModel ? apiModels[selectedModel] : undefined;
 
           const handleStateChange = (state: string, data?: any) => {
-            recordStreamActivityState(state, data);
+            recordStreamActivityState(conversationId, state, data);
 
             if (state === "conversation_title") {
               const title = typeof data?.title === "string" ? data.title.trim() : "";
@@ -409,6 +411,7 @@ export function useStreamingResponse(
               return;
             }
 
+            updateStreamLoadingMessage(conversationId, msg);
             updateLoading("stream-response", undefined, msg);
           };
 
@@ -443,7 +446,7 @@ export function useStreamingResponse(
               : getMessageTextContent(assistantMessage);
 
           if (generatedMessage?.id !== assistantMessage.id) {
-            completeStreamActivityMessage(assistantMessage.id);
+            completeStreamActivityMessage(conversationId, assistantMessage.id);
 
             const targetMessage = activeAssistantMessage || placeholderMessage;
             const updatedAssistantMessage = withAssistantMessageData(assistantMessage);
@@ -491,6 +494,7 @@ export function useStreamingResponse(
           throw error;
         }
 
+        updateStreamLoadingMessage(conversationId, "Reconnecting to the response...");
         updateLoading("stream-response", undefined, "Reconnecting to the response...");
 
         const recoveredMessages = await recoverDetachedTurn({
@@ -510,7 +514,7 @@ export function useStreamingResponse(
         }
 
         markConversationRemoteAvailable(conversationId);
-        completeStreamActivityMessage(recoveredAssistantMessage.id);
+        completeStreamActivityMessage(conversationId, recoveredAssistantMessage.id);
 
         const updatedAssistantMessage = withAssistantMessageData(recoveredAssistantMessage);
 
@@ -556,11 +560,11 @@ export function useStreamingResponse(
       markConversationRemoteAvailable,
       setUsageLimits,
       queryClient,
-      beginStreamActivity,
       completeStreamActivityMessage,
       recordStreamActivityState,
       recordStreamActivityText,
       recordStreamActivityToolResult,
+      updateStreamLoadingMessage,
       user?.id,
     ],
   );
@@ -592,8 +596,7 @@ export function useStreamingResponse(
         { once: true },
       );
 
-      controllerRef.current = requestController;
-      setController(requestController);
+      beginStreamActivity(conversationId, requestController);
 
       try {
         const response = await generateResponse(messages, conversationId, overrideRequestOptions, {
@@ -619,56 +622,48 @@ export function useStreamingResponse(
         return response;
       } catch (error) {
         if (requestController.signal.aborted) {
-          toast.error("Request aborted");
-        } else {
-          const streamError = error as Error & {
-            status?: number;
-            code?: string;
-            message?: string;
+          return {
+            status: "error" as const,
+            response: (error as Error).message || "Request aborted",
           };
-
-          console.error("Error generating response:", streamError);
-
-          if (streamError.status === 429) {
-            toast.error("Rate limit exceeded. Please try again later.");
-          } else if (streamError.code === "model_not_found") {
-            toast.error(`Model not found: ${model}`);
-            setModel(null);
-          } else {
-            toast.error(streamError.message || "Failed to generate response");
-          }
-
-          throw streamError;
         }
 
-        return {
-          status: "error" as const,
-          response: (error as Error).message || "Failed",
+        const streamError = error as Error & {
+          status?: number;
+          code?: string;
+          message?: string;
         };
+
+        console.error("Error generating response:", streamError);
+
+        if (streamError.code === "model_not_found") {
+          setModel(null);
+        }
+
+        throw streamError;
       } finally {
         streamSettled = true;
-        setStreamStarted(false);
         stopLoading("stream-response");
-        endStreamActivity();
-        if (controllerRef.current === requestController) {
-          const nextController = new AbortController();
-
-          controllerRef.current = nextController;
-          setController(nextController);
-        }
+        endStreamActivity(conversationId);
       }
     },
-    [generateResponse, stopLoading, endStreamActivity, model, setModel, onTitleGeneration],
+    [
+      beginStreamActivity,
+      generateResponse,
+      stopLoading,
+      endStreamActivity,
+      setModel,
+      onTitleGeneration,
+    ],
   );
 
   const abortStream = useCallback(() => {
-    controllerRef.current.abort();
-  }, []);
+    currentStream?.controller?.abort();
+  }, [currentStream?.controller]);
 
   return {
-    streamStarted,
-    setStreamStarted,
-    controller,
+    streamStarted: currentStream?.status === "streaming",
+    controller: currentStream?.controller,
     assistantResponseRef,
     assistantReasoningRef,
     streamResponse,

@@ -209,7 +209,7 @@ export const PET_NAME_MAX_LENGTH = 60;
 export const PET_DESCRIPTION_MAX_LENGTH = 500;
 export const PET_PROMPT_MAX_LENGTH = 500;
 export const PET_SHEET_MAX_BYTES = 20 * 1024 * 1024;
-export const PET_LIBRARY_LIMIT = 5;
+export const PET_LIBRARY_PAGE_SIZE = 8;
 
 export const PET_SHEET_MIME_TYPES = ["image/png", "image/webp"] as const;
 
@@ -229,6 +229,13 @@ export const userPetSchema = z.object({
 
 export const userPetsResponseSchema = z.object({
   pets: z.array(userPetSchema),
+  page: z.number().int().min(1),
+  has_more: z.boolean(),
+});
+
+export const userPetsQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(PET_LIBRARY_PAGE_SIZE),
 });
 
 export const userPetResponseSchema = z.object({
@@ -246,11 +253,41 @@ export const petSelectionSchema = z.object({
   pet_id: z.string().trim().min(1).max(PET_NAME_MAX_LENGTH),
 });
 
+const petModelSelectionMapSchema = z.record(z.string().trim().min(1).max(100), petSelectionSchema);
+
+function normalisePetModelSelectionMap(
+  selections: Record<string, PetSelection>,
+): Record<string, PetSelection> {
+  return Object.fromEntries(
+    Object.entries(selections).map(([target, selection]) => [
+      target.trim().toLowerCase(),
+      selection,
+    ]),
+  );
+}
+
+export const petModelOverridesSchema = z
+  .object({
+    families: petModelSelectionMapSchema.default({}),
+    providers: petModelSelectionMapSchema.default({}),
+  })
+  .transform((overrides) => ({
+    families: normalisePetModelSelectionMap(overrides.families),
+    providers: normalisePetModelSelectionMap(overrides.providers),
+  }));
+
 export type PetSource = z.infer<typeof petSourceSchema>;
 export type PetOrigin = z.infer<typeof petOriginSchema>;
 export type UserPet = z.infer<typeof userPetSchema>;
+export type UserPetsPage = z.infer<typeof userPetsResponseSchema>;
 export type GenerateUserPetInput = z.infer<typeof generateUserPetSchema>;
 export type PetSelection = z.infer<typeof petSelectionSchema>;
+export type PetModelOverrides = z.infer<typeof petModelOverridesSchema>;
+
+export const EMPTY_PET_MODEL_OVERRIDES: PetModelOverrides = {
+  families: {},
+  providers: {},
+};
 
 export interface ResolvedPet {
   source: PetSource;
@@ -258,6 +295,46 @@ export interface ResolvedPet {
   name: string;
   sheetUrl: string;
   layout: PetSheetLayout;
+}
+
+function normalisePetModelTarget(value: string | null | undefined): string | undefined {
+  const normalised = value?.trim().toLowerCase();
+
+  return normalised || undefined;
+}
+
+export function parsePetModelOverrides(value: unknown): PetModelOverrides {
+  const parsed = petModelOverridesSchema.safeParse(value);
+
+  return parsed.success ? parsed.data : { families: {}, providers: {} };
+}
+
+export function resolvePetSelectionForModel(
+  selection: PetSelection,
+  overrides: PetModelOverrides | null | undefined,
+  model: { family?: string | null; provider?: string | null } | null | undefined,
+): PetSelection {
+  const family = normalisePetModelTarget(model?.family);
+  const provider = normalisePetModelTarget(model?.provider);
+
+  return (
+    (family ? overrides?.families[family] : undefined) ??
+    (provider ? overrides?.providers[provider] : undefined) ??
+    selection
+  );
+}
+
+export function removeCustomPetFromModelOverrides(
+  overrides: PetModelOverrides,
+  petId: string,
+): PetModelOverrides {
+  const keepSelection = ([, selection]: [string, PetSelection]) =>
+    selection.pet_source !== "custom" || selection.pet_id !== petId;
+
+  return {
+    families: Object.fromEntries(Object.entries(overrides.families).filter(keepSelection)),
+    providers: Object.fromEntries(Object.entries(overrides.providers).filter(keepSelection)),
+  };
 }
 
 export function resolvePet(
@@ -287,4 +364,19 @@ export function resolvePet(
     sheetUrl: preset.sheetUrl,
     layout: POLYCHAT_SHEET_LAYOUT,
   };
+}
+
+export function resolvePetForModel(
+  selection: PetSelection,
+  overrides: PetModelOverrides | null | undefined,
+  model: { family?: string | null; provider?: string | null } | null | undefined,
+  customPets: readonly UserPet[] = [],
+): ResolvedPet {
+  const modelSelection = resolvePetSelectionForModel(selection, overrides, model);
+  const modelSelectionExists =
+    (modelSelection.pet_source === "preset" && isPetPresetSlug(modelSelection.pet_id)) ||
+    (modelSelection.pet_source === "custom" &&
+      customPets.some((pet) => pet.id === modelSelection.pet_id));
+
+  return resolvePet(modelSelectionExists ? modelSelection : selection, customPets);
 }

@@ -14,16 +14,30 @@ import { runAgentLoop } from "../agent-loop";
 import type { TurnOutput } from "../assistant-turn";
 import type { ChatTurnTransport } from "../turn-transport";
 
-const artifactToolCall = {
-  id: "call-artifact",
-  function: { name: "artifact", arguments: "{}" },
+const unknownToolCall = {
+  id: "call-missing",
+  function: { name: "missing_tool", arguments: "{}" },
 };
 
-const artifactTurn: TurnOutput = { content: "", toolCalls: [artifactToolCall] as never };
+const unknownToolTurn: TurnOutput = { content: "", toolCalls: [unknownToolCall] as never };
 
 const recoverableUnknownToolResult = {
   role: "tool",
-  name: "artifact",
+  name: "missing_tool",
+  content: "That tool is not available.",
+  status: "error",
+  tool_call_id: "call-missing",
+  data: { errorCode: "UNKNOWN_TOOL", recoverable: true },
+};
+
+const artifactToolTurn = toolTurn(
+  "artifact_identifier</arg_key><arg_value>orbital-visualisation</arg_value>",
+  "call-artifact",
+);
+
+const artifactToolResult = {
+  role: "tool",
+  name: "artifact_identifier</arg_key><arg_value>orbital-visualisation</arg_value>",
   content: "Artifacts are response markup, not tools.",
   status: "error",
   tool_call_id: "call-artifact",
@@ -133,7 +147,10 @@ describe("runAgentLoop", () => {
   });
 
   it("gives an unknown tool call one corrective model turn", async () => {
-    const { params } = createParams([artifactTurn, textTurn("Recovered without the tool.")]);
+    const { params, runTurn } = createParams([
+      unknownToolTurn,
+      textTurn("Recovered without the tool."),
+    ]);
 
     mocks.handleToolCalls.mockResolvedValueOnce([recoverableUnknownToolResult]);
 
@@ -143,13 +160,14 @@ describe("runAgentLoop", () => {
     expect(mocks.handleToolCalls.mock.calls[0][4]).toMatchObject({
       recoverUnknownToolCalls: true,
     });
+    expect(runTurn.mock.calls[1][0].request.disable_functions).toBeUndefined();
     expect(result.response.response).toBe("Recovered without the tool.");
   });
 
   it("does not grant a second recovery turn for a repeated unknown tool call", async () => {
-    const { params } = createParams([
-      artifactTurn,
-      artifactTurn,
+    const { params, runTurn } = createParams([
+      unknownToolTurn,
+      unknownToolTurn,
       textTurn("Giving up on that tool."),
     ]);
 
@@ -162,6 +180,24 @@ describe("runAgentLoop", () => {
     expect(mocks.handleToolCalls.mock.calls[1][4]).toMatchObject({
       recoverUnknownToolCalls: false,
     });
+    expect(runTurn.mock.calls[2][0].request.disable_functions).toBe(true);
+  });
+
+  it("forces artifact-shaped unknown tools into a tool-free response", async () => {
+    const { params, runTurn } = createParams([
+      artifactToolTurn,
+      textTurn('<artifact identifier="orbit" type="text/html">...</artifact>'),
+    ]);
+
+    mocks.handleToolCalls.mockResolvedValueOnce([artifactToolResult]);
+
+    const result = await runAgentLoop(params);
+
+    expect(runTurn.mock.calls[1][0].request.disable_functions).toBe(true);
+    expect(runTurn.mock.calls[1][0].request.messages.at(-1)?.content).toContain(
+      "Artifacts are response markup, not tools",
+    );
+    expect(result.response.response).toContain("<artifact");
   });
 
   it("stops for user approval when a tool result is pending", async () => {
@@ -250,6 +286,35 @@ describe("runAgentLoop", () => {
     expect(result.response.response).toBe("Actually done.");
   });
 
+  it("keeps tools available when a finish gate needs work beyond the ordinary step budget", async () => {
+    const { params, runTurn } = createParams(
+      [textTurn("The artifact is ready."), toolTurn("complete_goal"), textTurn("Done.")],
+      1,
+    );
+    let assessed = false;
+
+    mocks.handleToolCalls.mockResolvedValueOnce([
+      { role: "tool", name: "complete_goal", content: "Goal completed", status: "success" },
+    ]);
+
+    const result = await runAgentLoop({
+      ...params,
+      assessFinish: () => {
+        if (assessed) {
+          return { allow: true, outcome: "satisfied" as const };
+        }
+
+        assessed = true;
+
+        return { allow: false, instruction: "Complete the active goal." };
+      },
+    });
+
+    expect(runTurn.mock.calls[1][0].request.disable_functions).toBeUndefined();
+    expect(mocks.handleToolCalls).toHaveBeenCalledOnce();
+    expect(result.response.response).toBe("Done.");
+  });
+
   it("shares one tool call ledger across every step of a run", async () => {
     const { params } = createParams([
       toolTurn("load_skill", "call-1"),
@@ -267,6 +332,33 @@ describe("runAgentLoop", () => {
 
     expect(firstOptions.callLedger).toBeInstanceOf(Map);
     expect(secondOptions.callLedger).toBe(firstOptions.callLedger);
+  });
+
+  it("disables tools after the repeated-call guard fires", async () => {
+    const { params, runTurn } = createParams([
+      toolTurn("load_skill", "call-1"),
+      toolTurn("load_skill", "call-2"),
+      textTurn("I could not load that skill."),
+    ]);
+
+    mocks.handleToolCalls
+      .mockResolvedValueOnce([
+        { role: "tool", name: "load_skill", content: "skill is required", status: "error" },
+      ])
+      .mockResolvedValueOnce([
+        {
+          role: "tool",
+          name: "load_skill",
+          content: "call already repeated",
+          status: "error",
+          data: { errorCode: "REPEATED_TOOL_CALL" },
+        },
+      ]);
+
+    const result = await runAgentLoop(params);
+
+    expect(result.response.response).toBe("I could not load that skill.");
+    expect(runTurn.mock.calls[2][0].request.disable_functions).toBe(true);
   });
 
   it("answers with what it has when the step budget runs out, rather than failing the turn", async () => {

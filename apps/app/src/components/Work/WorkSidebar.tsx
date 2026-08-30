@@ -13,6 +13,7 @@ import { SidebarHeader } from "~/components/Sidebar/SidebarHeader";
 import { useTaskAttention } from "~/hooks/useProjectTasks";
 import { buildConversationGroups } from "~/lib/conversation-groups";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
 import { useProjectConversationActions } from "./useProjectConversationActions";
@@ -50,6 +51,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
     routedConversationId ??
     project?.conversations.find((conversation) => conversation.id === currentConversationId)?.id;
   const { items: attentionItems } = useTaskAttention();
+  const conversationStreams = useStreamActivityStore((state) => state.streams);
   const projectAttentionCount = projectId
     ? attentionItems.filter((item) => item.projectId === projectId).length
     : 0;
@@ -75,9 +77,11 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
       createdAt: conversation.createdAt,
       updatedAt: conversation.updatedAt,
       lastMessageAt: conversation.lastMessageAt,
-      needsInput: attentionItems.some(
-        (item) => item.kind === "input" && item.conversationId === conversation.id,
-      ),
+      isStreaming: conversationStreams[conversation.id]?.status === "streaming",
+      needsInput:
+        attentionItems.some(
+          (item) => item.kind === "input" && item.conversationId === conversation.id,
+        ) || conversationStreams[conversation.id]?.status === "action-required",
     })),
     {
       groupBy: workConversationListFilters.groupBy,

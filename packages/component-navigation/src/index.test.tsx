@@ -97,6 +97,29 @@ describe("ConversationList", () => {
     fireEvent.click(screen.getByLabelText("Go to original conversation"));
     expect(onSelect).toHaveBeenCalledWith("root");
   });
+
+  it("shows conversation-scoped running and action-required states", () => {
+    render(
+      <ConversationList
+        groups={[
+          {
+            id: "today",
+            conversations: [
+              { id: "running", title: "Running", isStreaming: true },
+              { id: "waiting", title: "Waiting", needsInput: true },
+            ],
+          },
+        ]}
+        isConversationRoute
+        onSelect={vi.fn()}
+        onEditTitle={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByLabelText("Response in progress")).toBeTruthy();
+    expect(screen.getByLabelText("Action required")).toBeTruthy();
+  });
 });
 
 describe("ConversationListControls", () => {

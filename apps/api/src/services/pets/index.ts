@@ -1,15 +1,17 @@
 import {
   DEFAULT_PET_PRESET_SLUG,
   PET_DESCRIPTION_MAX_LENGTH,
-  PET_LIBRARY_LIMIT,
   PET_NAME_MAX_LENGTH,
   PET_SHEET_MAX_BYTES,
   PET_SHEET_MIME_TYPES,
   describePetSheetSizes,
   matchPetSheetLayout,
+  parsePetModelOverrides,
+  removeCustomPetFromModelOverrides,
   type PetOrigin,
   type PetSheetLayout,
   type UserPet,
+  type UserPetsPage,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -20,11 +22,13 @@ import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { readImageDimensions } from "~/utils/imageDimensions";
+import { getLogger } from "~/utils/logger";
 
 const PET_STYLE_PROMPT =
   "A single small chibi mascot character, front facing, standing, full body, centred, " +
   "simple flat colours, bold dark outline, large expressive eyes, friendly, " +
   "plain solid white background, no text, no shadow, sticker style, square composition.";
+const logger = getLogger({ prefix: "services/pets" });
 
 function assertPetAuthoring(user: IUser): void {
   if (user.plan_id !== "pro") {
@@ -126,27 +130,40 @@ function assertSheetIsValid(bytes: Uint8Array): {
   };
 }
 
-export async function listPets(context: ServiceContext): Promise<UserPet[]> {
+export async function listPets(
+  context: ServiceContext,
+  page: number,
+  limit: number,
+): Promise<UserPetsPage> {
   const user = context.requireUser();
-  const records = await context.repositories.userPets.listUserPets(user.id);
+  const { records, hasMore } = await context.repositories.userPets.listUserPetsPage(
+    user.id,
+    page,
+    limit,
+  );
 
-  return records.map((record) => toUserPet(context, record));
+  return {
+    pets: records.map((record) => toUserPet(context, record)),
+    page,
+    has_more: hasMore,
+  };
+}
+
+export async function getPet(context: ServiceContext, petId: string): Promise<UserPet> {
+  const user = context.requireUser();
+  const record = await context.repositories.userPets.getUserPet(user.id, petId);
+
+  if (!record) {
+    throw new AssistantError("Pet not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  return toUserPet(context, record);
 }
 
 export async function createPet(context: ServiceContext, formData: FormData): Promise<UserPet> {
   const user = context.requireUser();
 
   assertPetAuthoring(user);
-
-  const existing = await context.repositories.userPets.countUserPets(user.id);
-
-  if (existing >= PET_LIBRARY_LIMIT) {
-    throw new AssistantError(
-      `You can keep ${PET_LIBRARY_LIMIT} pets. Delete one to make room.`,
-      ErrorType.PARAMS_ERROR,
-      400,
-    );
-  }
 
   const name = readRequiredText(formData, "name", PET_NAME_MAX_LENGTH);
   const description = readOptionalText(formData, "description", PET_DESCRIPTION_MAX_LENGTH);
@@ -207,18 +224,36 @@ export async function deletePet(context: ServiceContext, petId: string): Promise
 
   const settings = await context.repositories.userSettings.getUserSettings(user.id);
 
-  if (settings?.pet_source === "custom" && settings.pet_id === petId) {
-    await context.repositories.userSettings.updateUserSettings(user.id, {
-      pet_source: "preset",
-      pet_id: DEFAULT_PET_PRESET_SLUG,
-    });
+  if (settings) {
+    const overrides = parsePetModelOverrides(settings.pet_model_overrides);
+    const update: Record<string, unknown> = {
+      pet_model_overrides: removeCustomPetFromModelOverrides(overrides, petId),
+    };
+
+    if (settings.pet_source === "custom" && settings.pet_id === petId) {
+      Object.assign(update, {
+        pet_source: "preset",
+        pet_id: DEFAULT_PET_PRESET_SLUG,
+      });
+    }
+
+    await context.repositories.userSettings.updateUserSettings(user.id, update);
   }
 
   await context.repositories.userPets.deleteUserPet(user.id, petId);
 
   const storage = StorageService.forPrivateAssets(context);
 
-  await storage.deleteObject(record.sheet_key);
+  try {
+    await storage.deleteObject(record.sheet_key);
+  } catch (error) {
+    logger.warn("Failed to delete a pet sprite sheet after removing its database record", {
+      userId: user.id,
+      petId,
+      sheetKey: record.sheet_key,
+      error,
+    });
+  }
 }
 
 export async function readPetSheet(

@@ -1,3 +1,5 @@
+import type { PetModelOverrides } from "@ngriffin_uk/polychat-schemas";
+
 export interface UserSettings {
   id: string;
   nickname: string;
@@ -29,4 +31,5 @@ export interface UserSettings {
   pet_id?: string;
   pet_travel_enabled?: boolean;
   pet_animation_enabled?: boolean;
+  pet_model_overrides?: PetModelOverrides;
 }

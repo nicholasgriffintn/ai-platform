@@ -16,6 +16,7 @@ export * from "./Connectors/ConnectorAccountsPanel";
 export * from "./Connectors/ConnectorDetailsModal";
 export * from "./Connectors/ConnectorLogo";
 export * from "./Pets/PetGenerateDialog";
+export * from "./Pets/PetModelAssignments";
 export * from "./Pets/PetSettings";
 export * from "./Pets/PetUploadDialog";
 export * from "./ProviderApiKeyModal";

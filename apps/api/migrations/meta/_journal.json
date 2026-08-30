@@ -36,6 +36,13 @@
       "when": 1788125260118,
       "tag": "0004_fuzzy_tag",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1788128725943,
+      "tag": "0005_woozy_meteorite",
+      "breakpoints": true
     }
   ]
 }

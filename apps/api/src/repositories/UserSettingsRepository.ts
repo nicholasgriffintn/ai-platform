@@ -1,3 +1,4 @@
+import { parsePetModelOverrides } from "@ngriffin_uk/polychat-schemas";
 import { decodeBase64 } from "hono/utils/encode";
 
 import {
@@ -267,6 +268,10 @@ export class UserSettingsRepository extends BaseRepository {
             ? 1
             : 0
           : null,
+      pet_model_overrides:
+        settings.pet_model_overrides !== undefined
+          ? JSON.stringify(settings.pet_model_overrides)
+          : null,
     };
 
     if (!Object.hasOwn(settings, "memory_provider")) {
@@ -282,6 +287,7 @@ export class UserSettingsRepository extends BaseRepository {
       "pet_id",
       "pet_travel_enabled",
       "pet_animation_enabled",
+      "pet_model_overrides",
     ]) {
       if (!Object.hasOwn(settings, petField)) {
         delete updates[petField];
@@ -338,6 +344,7 @@ export class UserSettingsRepository extends BaseRepository {
       "pet_id",
       "pet_travel_enabled",
       "pet_animation_enabled",
+      "pet_model_overrides",
     ];
     const { query, values } = this.buildSelectQuery(
       "user_settings",
@@ -359,6 +366,11 @@ export class UserSettingsRepository extends BaseRepository {
       temporary_chats_default: Boolean(result.temporary_chats_default),
       pet_travel_enabled: Boolean(result.pet_travel_enabled),
       pet_animation_enabled: Boolean(result.pet_animation_enabled),
+      pet_model_overrides: parsePetModelOverrides(
+        typeof result.pet_model_overrides === "string"
+          ? safeParseJson(result.pet_model_overrides)
+          : result.pet_model_overrides,
+      ),
     } as IUserSettings;
   }
 

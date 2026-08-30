@@ -88,7 +88,7 @@ export function createStreamingTurnTransport(): ChatTurnTransport {
         content: streamed.content,
         thinking: streamed.thinking,
         signature: streamed.signature,
-        toolCalls: streamed.toolCalls,
+        toolCalls: streamed.interrupted ? [] : streamed.toolCalls,
         citations: streamed.citations,
         usage: streamed.usage,
         structuredData: streamed.structuredData,
@@ -96,6 +96,7 @@ export function createStreamingTurnTransport(): ChatTurnTransport {
         annotations: streamed.annotations,
         parts: streamed.parts,
         error: streamed.error,
+        status: streamed.interrupted ? "incomplete" : undefined,
         stopped: streamed.stopped,
       };
     },

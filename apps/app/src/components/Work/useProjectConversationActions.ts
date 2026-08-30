@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { apiService } from "~/lib/api/api-service";
+import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 
 interface ProjectConversationActionsOptions {
   activeConversationId?: string;
@@ -47,6 +48,7 @@ export function useProjectConversationActions({
     }
 
     await deleteConversation.mutateAsync(conversationToDelete);
+    useStreamActivityStore.getState().clearStreamStatus(conversationToDelete);
     await refreshProject();
 
     if (activeConversationId === conversationToDelete) {

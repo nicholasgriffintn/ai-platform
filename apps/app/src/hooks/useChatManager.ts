@@ -19,6 +19,7 @@ import { createConversationId } from "~/lib/conversations";
 import { getErrorMessage } from "~/lib/errors";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { ChatRequestOptions, Conversation, Message } from "~/types";
 
 import { useGenerateTitle } from "./useChat";
@@ -41,6 +42,8 @@ export function useChatManager(
   const generateTitleMutation = useGenerateTitle(requestOptions);
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
   const { startLoading, stopLoading } = useLoadingActions();
+  const beginStreamActivity = useStreamActivityStore((state) => state.beginStreamActivity);
+  const endStreamActivity = useStreamActivityStore((state) => state.endStreamActivity);
 
   const { currentConversationId, model, startNewConversation } = useChatStore();
 
@@ -123,7 +126,6 @@ export function useChatManager(
 
   const {
     streamStarted,
-    setStreamStarted,
     controller,
     assistantResponseRef,
     assistantReasoningRef,
@@ -141,12 +143,7 @@ export function useChatManager(
     branchConversation,
     isRequestingSecondOpinion,
     requestSecondOpinion,
-  } = useConversationActions(
-    streamResponse,
-    generateConversationTitle,
-    setStreamStarted,
-    requestOptions,
-  );
+  } = useConversationActions(streamResponse, generateConversationTitle, requestOptions);
 
   const sendMessage = useCallback(
     async (
@@ -162,7 +159,6 @@ export function useChatManager(
         };
       }
 
-      setStreamStarted(true);
       startLoading("stream-response", "Generating response...");
 
       const currentModel = normalizeSelectedModel(model);
@@ -215,7 +211,6 @@ export function useChatManager(
     },
     [
       model,
-      currentConversationId,
       startNewConversation,
       queryClient,
       cancelConversationQueries,
@@ -223,7 +218,6 @@ export function useChatManager(
       startLoading,
       addMessageToConversation,
       insertMessageBeforeConversationMessage,
-      setStreamStarted,
       conversationMode,
     ],
   );
@@ -245,7 +239,7 @@ export function useChatManager(
       };
     }
 
-    setStreamStarted(true);
+    beginStreamActivity(currentConversationId, undefined, compactionStatusLabels.manualPending);
     startLoading("stream-response", compactionStatusLabels.manualPending);
 
     try {
@@ -270,8 +264,8 @@ export function useChatManager(
         response: getErrorMessage(error, "Failed to compact conversation"),
       };
     } finally {
-      setStreamStarted(false);
       stopLoading("stream-response");
+      endStreamActivity(currentConversationId);
     }
   }, [
     currentConversationId,
@@ -280,6 +274,8 @@ export function useChatManager(
     cancelConversationQueries,
     startLoading,
     stopLoading,
+    beginStreamActivity,
+    endStreamActivity,
   ]);
 
   const respondToExistingConversation = useCallback(
@@ -303,7 +299,6 @@ export function useChatManager(
         };
       }
 
-      setStreamStarted(true);
       startLoading("stream-response", "Generating response...");
 
       try {
@@ -325,7 +320,7 @@ export function useChatManager(
         };
       }
     },
-    [queryClient, setStreamStarted, startLoading, streamResponse],
+    [queryClient, startLoading, streamResponse],
   );
 
   return {

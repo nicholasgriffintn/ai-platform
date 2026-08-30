@@ -90,6 +90,29 @@ describe("consumeProviderStream", () => {
     expect((await turn).content).toBe("firstsecond");
   });
 
+  it("preserves content received before the provider stream disconnects", async () => {
+    const { sink } = createSink();
+    const encoder = new TextEncoder();
+    let sentContent = false;
+    const stream = new ReadableStream({
+      pull(controller) {
+        if (!sentContent) {
+          sentContent = true;
+          controller.enqueue(encoder.encode(textDelta("partial answer")));
+
+          return;
+        }
+
+        controller.error(new Error("upstream disconnected"));
+      },
+    });
+
+    await expect(consumeProviderStream(stream, sink, context)).resolves.toMatchObject({
+      content: "partial answer",
+      interrupted: true,
+    });
+  });
+
   it("reports streamed usage as the provider sends it", async () => {
     const { sink, events } = createSink();
 
@@ -140,6 +163,25 @@ describe("consumeProviderStream", () => {
     expect(turn.content).toBe("");
   });
 
+  it("preserves content received before a provider error event", async () => {
+    const { sink } = createSink();
+
+    const turn = await consumeProviderStream(
+      providerStream([
+        textDelta("partial answer"),
+        `data: ${JSON.stringify({ error: { message: "Upstream disconnected" } })}\n\n`,
+      ]),
+      sink,
+      context,
+    );
+
+    expect(turn).toMatchObject({
+      content: "partial answer",
+      error: null,
+      interrupted: true,
+    });
+  });
+
   it("collects streamed openai tool call arguments into one call", async () => {
     const { sink } = createSink();
 
@@ -172,6 +214,30 @@ describe("consumeProviderStream", () => {
         id: "call-1",
         type: "function",
         function: { name: "get_weather", arguments: '{"location":"SF"}' },
+      },
+    ]);
+  });
+
+  it("waits for Anthropic tool input deltas before completing the call", async () => {
+    const { sink } = createSink();
+
+    const turn = await consumeProviderStream(
+      providerStream([
+        'event: content_block_start\ndata: {"type":"content_block_start","index":0,"content_block":{"type":"tool_use","id":"toolu-1","name":"load_skill","input":{}}}\n\n',
+        'event: content_block_delta\ndata: {"type":"content_block_delta","index":0,"delta":{"type":"input_json_delta","partial_json":"{\\"skill\\":\\"arti"}}\n\n',
+        'event: content_block_delta\ndata: {"type":"content_block_delta","index":0,"delta":{"type":"input_json_delta","partial_json":"facts\\"}"}}\n\n',
+        'event: content_block_stop\ndata: {"type":"content_block_stop","index":0}\n\n',
+        'event: message_stop\ndata: {"type":"message_stop"}\n\n',
+      ]),
+      sink,
+      { ...context, provider: "anthropic", model: "claude-opus-5" },
+    );
+
+    expect(turn.toolCalls).toEqual([
+      {
+        id: "toolu-1",
+        type: "function",
+        function: { name: "load_skill", arguments: '{"skill":"artifacts"}' },
       },
     ]);
   });

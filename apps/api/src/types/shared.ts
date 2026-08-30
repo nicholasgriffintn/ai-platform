@@ -7,6 +7,7 @@ import type {
   Vectorize,
   SendEmail,
 } from "@cloudflare/workers-types";
+import type { ReasoningEffort } from "@ngriffin_uk/polychat-schemas";
 import type { MCPClientManagerOptions } from "agents/mcp/client";
 
 export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<T, Exclude<keyof T, Keys>> &
@@ -158,12 +159,5 @@ export type IEnv = {
   SEND_EMAIL?: SendEmail;
 };
 
-export type ReasoningEffortLevel =
-  | "none"
-  | "simulated-thinking"
-  | "thinking"
-  | "low"
-  | "medium"
-  | "high"
-  | "xhigh";
+export type ReasoningEffortLevel = ReasoningEffort;
 export type VerbosityLevel = "low" | "medium" | "high" | "caveman";

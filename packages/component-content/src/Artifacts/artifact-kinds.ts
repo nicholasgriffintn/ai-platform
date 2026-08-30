@@ -109,6 +109,28 @@ export function isStylesheetArtifact(artifact: Pick<ArtifactProps, "type" | "lan
   return type === "text/css" || language === "css";
 }
 
+export function isPreviewableArtifact(artifact: Pick<ArtifactProps, "type" | "language">): boolean {
+  const type = artifact.type.toLowerCase();
+  const language = artifact.language?.toLowerCase();
+
+  return (
+    type === "image/svg+xml" ||
+    type === "application/vnd.svg" ||
+    type === "text/html" ||
+    type === "application/vnd.html" ||
+    type === "text/javascript" ||
+    type === "text/jsx" ||
+    type === "application/vnd.react" ||
+    language === "svg" ||
+    language === "html" ||
+    language === "javascript" ||
+    language === "js" ||
+    language === "jsx" ||
+    language === "react" ||
+    language === "tsx"
+  );
+}
+
 export function canCombineArtifacts(
   artifacts: Array<Pick<ArtifactProps, "type" | "language">>,
 ): boolean {
@@ -116,25 +138,9 @@ export function canCombineArtifacts(
     return false;
   }
 
-  const hasScript = artifacts.some((artifact) => {
-    const type = artifact.type.toLowerCase();
-    const language = artifact.language?.toLowerCase();
-
-    return (
-      type === "text/javascript" ||
-      type === "text/jsx" ||
-      type === "application/vnd.react" ||
-      language === "javascript" ||
-      language === "js" ||
-      language === "jsx" ||
-      language === "react" ||
-      language === "tsx" ||
-      language === "typescript" ||
-      language === "ts"
-    );
-  });
+  const hasPreviewableArtifact = artifacts.some((artifact) => isPreviewableArtifact(artifact));
 
   const hasStylesheet = artifacts.some((artifact) => isStylesheetArtifact(artifact));
 
-  return hasScript && hasStylesheet;
+  return hasPreviewableArtifact && hasStylesheet;
 }

@@ -60,6 +60,19 @@ export const SUPPORTED_MODALITIES = new Set([
   "transcription",
 ]);
 
+export const SUPPORTED_REASONING_EFFORT_LEVELS = new Set([
+  "none",
+  "simulated-thinking",
+  "thinking",
+  "default",
+  "minimal",
+  "low",
+  "medium",
+  "high",
+  "xhigh",
+  "max",
+]);
+
 export const UPDATE_FIELD_ORDER = [
   "name",
   "matchingModel",

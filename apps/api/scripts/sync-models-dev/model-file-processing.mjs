@@ -37,6 +37,7 @@ import {
   findProviderFromConstant,
   getIndentAtPosition,
   getLineStart,
+  getObjectPropertyValue,
   getReasoningOverrideModelIds,
   getStringPropertyValue,
   inferProviderFromObjectEntries,
@@ -333,6 +334,11 @@ export async function processFile({
             isNewEntry: false,
             includeProvider: false,
             provider: localProvider,
+            existingReasoningConfig: getObjectPropertyValue(
+              entry.objectNode,
+              "reasoningConfig",
+              sourceFile,
+            ),
           })
         : {};
 

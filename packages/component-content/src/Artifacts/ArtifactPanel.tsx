@@ -5,7 +5,12 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react
 
 import { MemoizedMarkdown } from "../markdown";
 import type { ArtifactProps } from "./artifact";
-import { isCodeArtifact, isDocumentArtifact, isStylesheetArtifact } from "./artifact-kinds";
+import {
+  isCodeArtifact,
+  isDocumentArtifact,
+  isPreviewableArtifact,
+  isStylesheetArtifact,
+} from "./artifact-kinds";
 import { ArtifactDocumentEditor } from "./ArtifactDocumentEditor";
 
 const ArtifactSandbox = lazy(() =>
@@ -110,9 +115,11 @@ export interface ArtifactPanelProps {
   onCopy: (value: string) => void;
 }
 
+const EMPTY_ARTIFACTS: ArtifactProps[] = [];
+
 export const ArtifactPanel = ({
   artifact,
-  artifacts = [],
+  artifacts = EMPTY_ARTIFACTS,
   onClose,
   onAddSelectionToChat,
   isVisible,
@@ -138,12 +145,12 @@ export const ArtifactPanel = ({
   }, [artifact, artifacts, isCombined]);
 
   const codeArtifact = useMemo(
-    () => allArtifacts.find((artifact) => isCodeArtifact(artifact)),
+    () => allArtifacts.find((candidate) => isPreviewableArtifact(candidate)),
     [allArtifacts],
   );
 
   const cssArtifact = useMemo(
-    () => allArtifacts.find((artifact) => isStylesheetArtifact(artifact)),
+    () => allArtifacts.find((candidate) => isStylesheetArtifact(candidate)),
     [allArtifacts],
   );
 
@@ -179,8 +186,8 @@ export const ArtifactPanel = ({
     }
   }, [activeTab]);
 
-  // The panel sits beside the conversation rather than over it, so it is a
-  // non-modal dialog: focus moves in, Escape closes, focus returns to the opener.
+  // Keep the conversation interactive whether the panel overlays it or sits beside it.
+  // Focus still moves in, Escape closes, and focus returns to the opener.
   const isOpen = isVisible && allArtifacts.length > 0;
   const panelRef = useOverlayDismiss<HTMLDivElement>({ open: isOpen, onClose });
 
@@ -221,7 +228,7 @@ export const ArtifactPanel = ({
       // Closed, the panel is only translated off-screen, so hide it from tab order too.
       inert={!isVisible}
       className={`absolute right-0 top-0 h-full 
-        w-[90%] sm:w-[350px] md:w-[400px] lg:w-[650px] 
+        w-full 2xl:w-[650px]
         bg-white dark:bg-zinc-800 
         border-l border-zinc-200 dark:border-zinc-700 
         shadow-xl z-50 

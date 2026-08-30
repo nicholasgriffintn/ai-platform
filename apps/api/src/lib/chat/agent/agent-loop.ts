@@ -16,6 +16,10 @@ import type { ChatTurnTransport } from "~/lib/chat/agent/turn-transport";
 import { buildMessageParts } from "~/lib/chat/messages/parts";
 import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
 import { DISCARDING_EVENT_SINK, type ChatEventSink } from "~/lib/chat/streaming/emitter";
+import {
+  ARTIFACT_MARKUP_FINAL_ANSWER_NOTICE,
+  isArtifactMarkupToolName,
+} from "~/lib/chat/tools/artifact-markup";
 import { createToolCallLedger, type ToolCallLedger } from "~/lib/chat/tools/call-ledger";
 import { isSuccessfulToolStatus } from "~/lib/chat/tools/continuation";
 import { getToolEventPayload } from "~/lib/chat/tools/events";
@@ -49,6 +53,10 @@ const AGENT_MAX_TURN_FAILURES = 2;
 const DEFAULT_INITIAL_PLAN = "Use available tools as needed, then return a final answer.";
 const FINAL_ANSWER_NOTICE =
   "You have used every tool step available for this response. No further tool calls are possible. Answer the user now with what you already have, and say plainly what you could not finish.";
+const REPEATED_TOOL_CALL_NOTICE =
+  "The same tool call has already failed with identical arguments. Do not call another tool. Answer the user now with what you have, and say plainly what you could not finish.";
+const UNKNOWN_TOOL_FINAL_ANSWER_NOTICE =
+  "Another unavailable tool was called after a correction. Do not call another tool. Answer the user now using only the information already available.";
 
 function shouldAbortAgentTurnError(error: unknown): boolean {
   return error instanceof AssistantError && error.type !== ErrorType.PARAMS_ERROR;
@@ -62,6 +70,8 @@ interface ChatAgentLoopState extends AgentLoopState {
   waitingForUserAction?: "approval" | "question";
   stoppedForUsageLimit?: boolean;
   finalAnswerForced?: boolean;
+  finalAnswerNotice?: string;
+  finishRejected?: boolean;
 }
 
 interface ChatAgentSharedContext {
@@ -228,26 +238,35 @@ export async function runAgentLoop(
     },
     emit: params.emit,
     onStepBudgetExceeded: () => {
+      if (state.finishRejected && !state.finalAnswerForced) {
+        return { extendBy: 2, reason: "Finish check requires more work." };
+      }
+
       if (state.finalAnswerForced) {
         return undefined;
       }
 
-      state.finalAnswerForced = true;
+      state.finalAnswerNotice ??= FINAL_ANSWER_NOTICE;
 
       return { extendBy: 1, reason: "Step budget reached; asking for a final answer." };
     },
     getCommandCount: (runtimeState) => runtimeState.commandCount,
     shouldAbortOnTurnError: shouldAbortAgentTurnError,
     assessFinish: params.assessFinish
-      ? ({ summary, step }) =>
-          state.stoppedForUsageLimit
+      ? async ({ summary, step }) => {
+          const assessment = state.stoppedForUsageLimit
             ? { allow: true }
-            : params.assessFinish({
+            : await params.assessFinish?.({
                 summary,
                 step,
                 commandCount: state.commandCount,
                 awaitingUserAction: state.waitingForUserAction,
-              })
+              });
+
+          state.finishRejected = assessment?.allow === false;
+
+          return assessment ?? { allow: true };
+        }
       : undefined,
     recordControlToolResults: async (toolCalls) => {
       const results = toolCalls.map((toolCall): Message & AgentMessage => {
@@ -314,11 +333,17 @@ export async function runAgentLoop(
       await sink.writeEvent("state", { state: StreamState.THINKING });
 
       const providerMessages = providerIO.providerMessages(messages);
+      const finalAnswerNotice = state.finalAnswerNotice;
+
+      if (finalAnswerNotice) {
+        state.finalAnswerForced = true;
+      }
+
       const turn = await params.transport.runTurn({
-        request: state.finalAnswerForced
+        request: finalAnswerNotice
           ? {
               ...params.requestParams,
-              messages: [...providerMessages, { role: "user", content: FINAL_ANSWER_NOTICE }],
+              messages: [...providerMessages, { role: "user", content: finalAnswerNotice }],
               disable_functions: true,
             }
           : { ...params.requestParams, messages: providerMessages },
@@ -404,8 +429,24 @@ export async function runAgentLoop(
       await sink.writeEvent("tool_response_end", {});
       await emitUsageLimits(sink, context.shared.conversationManager);
 
-      if (toolResults.some((message) => message.data?.errorCode === "UNKNOWN_TOOL")) {
+      const unknownToolResults = toolResults.filter(
+        (message) => message.data?.errorCode === "UNKNOWN_TOOL",
+      );
+
+      if (unknownToolResults.length > 0) {
+        const recoveryAlreadyUsed = context.state.unknownToolRecoveryUsed;
+
         context.state.unknownToolRecoveryUsed = true;
+
+        if (unknownToolResults.some((message) => isArtifactMarkupToolName(message.name))) {
+          context.state.finalAnswerNotice ??= ARTIFACT_MARKUP_FINAL_ANSWER_NOTICE;
+        } else if (recoveryAlreadyUsed || unknownToolResults.length > 1) {
+          context.state.finalAnswerNotice ??= UNKNOWN_TOOL_FINAL_ANSWER_NOTICE;
+        }
+      }
+
+      if (toolResults.some((message) => message.data?.errorCode === "REPEATED_TOOL_CALL")) {
+        context.state.finalAnswerNotice ??= REPEATED_TOOL_CALL_NOTICE;
       }
 
       context.state.commandCount += toolResults.filter((message) =>

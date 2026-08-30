@@ -150,10 +150,6 @@ export function buildObjectPatches({ fileText, sourceFile, objectNode, values })
       continue;
     }
 
-    if (fieldName === "reasoningConfig") {
-      continue;
-    }
-
     const parsedValue = parseLiteralValue(property.initializer, sourceFile);
 
     if (parsedValue !== UNPARSEABLE && deepEqual(parsedValue, nextValue)) {

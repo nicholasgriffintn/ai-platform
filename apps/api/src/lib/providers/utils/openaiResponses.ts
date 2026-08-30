@@ -1,5 +1,6 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
+import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
 import { MessageFormatter } from "~/lib/formatter";
 import {
   hasProviderReasoningOptions,
@@ -19,6 +20,55 @@ function requiresOpenAIResponsesApi(modelConfig: ModelConfigItem): boolean {
   return modelConfig.requiresResponsesApi === true;
 }
 
+const OPENAI_HOSTED_TOOL_NAMES = new Set([
+  "code_execution",
+  "code_interpreter",
+  "computer_use",
+  "file_search",
+  "hosted_shell",
+  "image_generation",
+  "mcp",
+  "remote_mcp",
+  "search_grounding",
+  "shell",
+  "tool_search",
+  "web_search",
+]);
+
+function requestsSupportedHostedTool(
+  params: ChatCompletionParameters,
+  modelConfig: ModelConfigItem,
+): boolean {
+  const enabledTools = coerceStringArray(params.enabled_tools);
+
+  return (
+    (modelConfig.supportsSearchGrounding &&
+      enabledTools.some((tool) => tool === "search_grounding" || tool === "web_search")) ||
+    (modelConfig.supportsCodeExecution &&
+      enabledTools.some((tool) => tool === "code_execution" || tool === "code_interpreter")) ||
+    (modelConfig.supportsFileSearch && enabledTools.includes("file_search")) ||
+    (modelConfig.supportsMcp &&
+      enabledTools.some((tool) => tool === "mcp" || tool === "remote_mcp")) ||
+    (modelConfig.supportsComputerUse && enabledTools.includes("computer_use")) ||
+    (modelConfig.supportsImageGenerationTool && enabledTools.includes("image_generation")) ||
+    (modelConfig.supportsHostedShell &&
+      enabledTools.some((tool) => tool === "hosted_shell" || tool === "shell")) ||
+    (modelConfig.supportsToolSearch && enabledTools.includes("tool_search"))
+  );
+}
+
+function requestsFunctionToolsWithReasoning(params: ChatCompletionParameters): boolean {
+  if (!params.reasoning_effort || params.reasoning_effort === "none") {
+    return false;
+  }
+
+  const hasEnabledFunctionTool = coerceStringArray(params.enabled_tools).some(
+    (tool) => !OPENAI_HOSTED_TOOL_NAMES.has(tool),
+  );
+
+  return hasEnabledFunctionTool || isAgentExecutionMode(params.mode);
+}
+
 export function shouldUseOpenAIResponsesApi(
   params: ChatCompletionParameters,
   modelConfig: ModelConfigItem,
@@ -27,11 +77,15 @@ export function shouldUseOpenAIResponsesApi(
     return true;
   }
 
-  if (!params.use_responses) {
+  if (!hasModelTextOutput(modelConfig) || producesNonTextPrimaryOutput(modelConfig)) {
     return false;
   }
 
-  return hasModelTextOutput(modelConfig) && !producesNonTextPrimaryOutput(modelConfig);
+  return (
+    params.use_responses === true ||
+    requestsSupportedHostedTool(params, modelConfig) ||
+    requestsFunctionToolsWithReasoning(params)
+  );
 }
 
 function getOpenAIResponseId(message: Message): string | undefined {

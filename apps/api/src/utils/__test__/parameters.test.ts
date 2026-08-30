@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { getToolsForProvider } from "../parameters";
+import {
+  calculateReasoningBudget,
+  getToolsForProvider,
+  shouldEnableStreaming,
+} from "../parameters";
 
 const modelConfig = { supportsToolCalls: true, supportsToolChoice: false };
 
@@ -41,5 +45,40 @@ describe("getToolsForProvider", () => {
 
     expect(names).not.toContain("delegate_to_team_member");
     expect(names).toContain("get_weather");
+  });
+});
+
+describe("shouldEnableStreaming", () => {
+  it("respects models that only support buffered upstream responses", () => {
+    expect(
+      shouldEnableStreaming(
+        {
+          matchingModel: "test-model",
+          provider: "test-provider",
+          modalities: { input: ["text"], output: ["text"] },
+          supportsStreaming: false,
+        },
+        true,
+        true,
+      ),
+    ).toBe(false);
+  });
+});
+
+describe("calculateReasoningBudget", () => {
+  it("allocates the full output budget for maximum reasoning", () => {
+    expect(
+      calculateReasoningBudget(
+        {
+          reasoning_effort: "max",
+          max_tokens: 10_000,
+        },
+        {
+          matchingModel: "gpt-5.6",
+          provider: "openai",
+          maxTokens: 10_000,
+        },
+      ),
+    ).toBe(10_000);
   });
 });

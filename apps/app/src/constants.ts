@@ -96,6 +96,8 @@ const SCRIPT_SRC = [
   "https://us-assets.i.posthog.com",
   "beacon.polychat.app",
   "https://appleid.cdn-apple.com",
+  "https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js",
   "https://unpkg.com/react@18/umd/react.development.js",
   "https://unpkg.com/react-dom@18/umd/react-dom.development.js",
   "https://unpkg.com/@strudel/embed@latest",

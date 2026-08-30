@@ -79,6 +79,7 @@ pnpm --filter @assistant/api test <path>
 ## Testing
 
 - Add a test when it protects user-visible behaviour, an authorisation boundary, a validation rule, a state transition, a persistence or integration contract, or a regression that actually happened.
+- Do not add a test solely because code is new. A test that mirrors implementation instead of protecting behaviour is a defect, not coverage.
 - Do not test static copy, CSS classes, headings, simple delegation, getters and setters, type-level guarantees, or anything Zod, the router, or the framework already guarantees.
 - Extend the nearest existing suite instead of adding a file. Test count and suite runtime are maintenance costs; if a change materially grows a suite, measure that workspace's test command before and after.
 - Coverage percentages are not a goal and global thresholds are not welcome. Review uncovered risky boundaries directly.

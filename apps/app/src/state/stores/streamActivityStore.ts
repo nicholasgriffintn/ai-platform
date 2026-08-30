@@ -9,16 +9,36 @@ import { create } from "zustand";
 
 const MAX_TRACKED_RESPONSE_DURATIONS = 100;
 
-interface StreamActivityStore {
+export interface ConversationStreamState {
   activity: StreamActivity | null;
+  controller?: AbortController;
+  loadingMessage: string;
   messageStartedAt: number | null;
+  requiresAction: boolean;
+  status: "streaming" | "action-required";
+}
+
+interface StreamActivityStore {
+  streams: Record<string, ConversationStreamState>;
   responseDurations: Record<string, number>;
-  beginStreamActivity: () => void;
-  recordStreamActivityState: (state: string, data?: unknown) => void;
-  recordStreamActivityText: (text: { content?: unknown; reasoning?: unknown }) => void;
-  recordStreamActivityToolResult: (toolResult: { toolCallId?: string; name?: string }) => void;
-  completeStreamActivityMessage: (messageId?: string) => void;
-  endStreamActivity: () => void;
+  beginStreamActivity: (
+    conversationId: string,
+    controller?: AbortController,
+    loadingMessage?: string,
+  ) => void;
+  recordStreamActivityState: (conversationId: string, state: string, data?: unknown) => void;
+  recordStreamActivityText: (
+    conversationId: string,
+    text: { content?: unknown; reasoning?: unknown },
+  ) => void;
+  recordStreamActivityToolResult: (
+    conversationId: string,
+    toolResult: { toolCallId?: string; name?: string; status?: string },
+  ) => void;
+  completeStreamActivityMessage: (conversationId: string, messageId?: string) => void;
+  updateStreamLoadingMessage: (conversationId: string, loadingMessage: string) => void;
+  endStreamActivity: (conversationId: string) => void;
+  clearStreamStatus: (conversationId: string) => void;
 }
 
 function trimResponseDurations(durations: Record<string, number>): Record<string, number> {
@@ -32,51 +52,156 @@ function trimResponseDurations(durations: Record<string, number>): Record<string
 }
 
 export const useStreamActivityStore = create<StreamActivityStore>()((set) => ({
-  activity: null,
-  messageStartedAt: null,
+  streams: {},
   responseDurations: {},
-  beginStreamActivity: () => {
+  beginStreamActivity: (conversationId, controller, loadingMessage = "Generating response...") => {
     const startedAt = Date.now();
 
-    set({ activity: createStreamActivity(startedAt), messageStartedAt: startedAt });
+    set((current) => ({
+      streams: {
+        ...current.streams,
+        [conversationId]: {
+          activity: createStreamActivity(startedAt),
+          controller,
+          loadingMessage,
+          messageStartedAt: startedAt,
+          requiresAction: false,
+          status: "streaming",
+        },
+      },
+    }));
   },
-  recordStreamActivityState: (state, data) =>
-    set((current) =>
-      current.activity
-        ? { activity: applyStreamActivityState(current.activity, state, data, Date.now()) }
-        : current,
-    ),
-  recordStreamActivityText: (text) =>
-    set((current) =>
-      current.activity ? { activity: applyStreamActivityText(current.activity, text) } : current,
-    ),
-  recordStreamActivityToolResult: (toolResult) =>
-    set((current) =>
-      current.activity
-        ? { activity: completeStreamActivityTool(current.activity, toolResult, Date.now()) }
-        : current,
-    ),
-  completeStreamActivityMessage: (messageId) =>
+  recordStreamActivityState: (conversationId, state, data) =>
     set((current) => {
-      const completedAt = Date.now();
+      const stream = current.streams[conversationId];
 
-      if (!current.activity) {
+      if (!stream?.activity) {
         return current;
       }
 
-      const startedAt = current.messageStartedAt ?? current.activity.startedAt;
+      return {
+        streams: {
+          ...current.streams,
+          [conversationId]: {
+            ...stream,
+            activity: applyStreamActivityState(stream.activity, state, data, Date.now()),
+          },
+        },
+      };
+    }),
+  recordStreamActivityText: (conversationId, text) =>
+    set((current) => {
+      const stream = current.streams[conversationId];
 
-      if (!messageId) {
-        return { messageStartedAt: completedAt };
+      if (!stream?.activity) {
+        return current;
       }
 
       return {
-        messageStartedAt: completedAt,
+        streams: {
+          ...current.streams,
+          [conversationId]: {
+            ...stream,
+            activity: applyStreamActivityText(stream.activity, text),
+          },
+        },
+      };
+    }),
+  recordStreamActivityToolResult: (conversationId, toolResult) =>
+    set((current) => {
+      const stream = current.streams[conversationId];
+
+      if (!stream?.activity) {
+        return current;
+      }
+
+      return {
+        streams: {
+          ...current.streams,
+          [conversationId]: {
+            ...stream,
+            activity: completeStreamActivityTool(stream.activity, toolResult, Date.now()),
+            requiresAction: stream.requiresAction || toolResult.status === "pending",
+          },
+        },
+      };
+    }),
+  completeStreamActivityMessage: (conversationId, messageId) =>
+    set((current) => {
+      const stream = current.streams[conversationId];
+
+      if (!stream?.activity) {
+        return current;
+      }
+
+      const completedAt = Date.now();
+      const startedAt = stream.messageStartedAt ?? stream.activity.startedAt;
+      const updatedStream = { ...stream, messageStartedAt: completedAt };
+
+      if (!messageId) {
+        return {
+          streams: { ...current.streams, [conversationId]: updatedStream },
+        };
+      }
+
+      return {
+        streams: { ...current.streams, [conversationId]: updatedStream },
         responseDurations: trimResponseDurations({
           ...current.responseDurations,
           [messageId]: completedAt - startedAt,
         }),
       };
     }),
-  endStreamActivity: () => set({ activity: null, messageStartedAt: null }),
+  updateStreamLoadingMessage: (conversationId, loadingMessage) =>
+    set((current) => {
+      const stream = current.streams[conversationId];
+
+      if (!stream || stream.loadingMessage === loadingMessage) {
+        return current;
+      }
+
+      return {
+        streams: {
+          ...current.streams,
+          [conversationId]: { ...stream, loadingMessage },
+        },
+      };
+    }),
+  endStreamActivity: (conversationId) =>
+    set((current) => {
+      const stream = current.streams[conversationId];
+
+      if (!stream) {
+        return current;
+      }
+
+      if (stream.requiresAction) {
+        return {
+          streams: {
+            ...current.streams,
+            [conversationId]: {
+              ...stream,
+              activity: null,
+              controller: undefined,
+              messageStartedAt: null,
+              status: "action-required",
+            },
+          },
+        };
+      }
+
+      const { [conversationId]: _finished, ...remainingStreams } = current.streams;
+
+      return { streams: remainingStreams };
+    }),
+  clearStreamStatus: (conversationId) =>
+    set((current) => {
+      if (!current.streams[conversationId]) {
+        return current;
+      }
+
+      const { [conversationId]: _cleared, ...remainingStreams } = current.streams;
+
+      return { streams: remainingStreams };
+    }),
 }));

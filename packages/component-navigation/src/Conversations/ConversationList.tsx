@@ -1,5 +1,5 @@
 import { HoverActions, ListItem } from "@ngriffin_uk/polychat-component-ui";
-import { CircleQuestionMark, CloudOff, Edit, GitBranch, Trash2 } from "lucide-react";
+import { CircleQuestionMark, CloudOff, Edit, GitBranch, LoaderCircle, Trash2 } from "lucide-react";
 import type { Ref } from "react";
 
 export interface ConversationSummary {
@@ -8,6 +8,7 @@ export interface ConversationSummary {
   isLocalOnly?: boolean;
   parentConversationId?: string | null;
   needsInput?: boolean;
+  isStreaming?: boolean;
 }
 
 export interface ConversationGroup {
@@ -57,11 +58,18 @@ export function ConversationList({
                   isActive={isConversationRoute && activeConversationId === conversation.id}
                   badge={
                     <>
+                      {conversation.isStreaming && (
+                        <LoaderCircle
+                          size={16}
+                          className="animate-spin text-blue-500"
+                          aria-label="Response in progress"
+                        />
+                      )}
                       {conversation.needsInput && (
                         <CircleQuestionMark
                           size={16}
                           className="text-amber-500"
-                          aria-label="Waiting for your answers"
+                          aria-label="Action required"
                         />
                       )}
                       {(conversation.isLocalOnly || localOnlyMode) && (

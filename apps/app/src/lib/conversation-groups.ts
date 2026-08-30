@@ -19,6 +19,7 @@ export interface ConversationGroupSource {
   isLocalOnly?: boolean;
   parentConversationId?: string | null;
   needsInput?: boolean;
+  isStreaming?: boolean;
 }
 
 const DATE_GROUPS: readonly {
@@ -60,6 +61,7 @@ function toGroupItem(conversation: ConversationGroupSource) {
     isLocalOnly: conversation.isLocalOnly,
     parentConversationId: conversation.parentConversationId,
     needsInput: conversation.needsInput,
+    isStreaming: conversation.isStreaming,
   };
 }
 

@@ -10,7 +10,9 @@ describe("artifact sandbox isolation", () => {
     );
 
     expect(document).toContain("default-src 'none'");
-    expect(document).toContain("script-src 'unsafe-inline' https://cdnjs.cloudflare.com");
+    expect(document).toContain(
+      "script-src 'unsafe-inline' https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js",
+    );
     expect(document).toContain("connect-src 'none'");
     expect(document).toContain("form-action 'none'");
     expect(document).toContain("navigate-to 'none'");

@@ -1,5 +1,66 @@
-import { SUPPORTED_MODALITIES } from "./constants.mjs";
+import { SUPPORTED_MODALITIES, SUPPORTED_REASONING_EFFORT_LEVELS } from "./constants.mjs";
 import { hasOwn } from "./value-utils.mjs";
+
+export function getReasoningEffortLevels(remoteModel) {
+  const reasoningOptions = Array.isArray(remoteModel.reasoning_options)
+    ? remoteModel.reasoning_options
+    : [];
+  const effortLevels = [];
+
+  for (const option of reasoningOptions) {
+    if (!option || typeof option !== "object" || option.type !== "effort") {
+      continue;
+    }
+
+    const values = Array.isArray(option.values) ? option.values : [];
+
+    for (const value of values) {
+      if (
+        typeof value === "string" &&
+        SUPPORTED_REASONING_EFFORT_LEVELS.has(value) &&
+        !effortLevels.includes(value)
+      ) {
+        effortLevels.push(value);
+      }
+    }
+  }
+
+  return effortLevels;
+}
+
+function buildReasoningConfig(remoteModel, existingReasoningConfig, isNewEntry) {
+  const effortLevels = getReasoningEffortLevels(remoteModel);
+  const existingConfig =
+    existingReasoningConfig &&
+    typeof existingReasoningConfig === "object" &&
+    !Array.isArray(existingReasoningConfig)
+      ? existingReasoningConfig
+      : {};
+
+  if (effortLevels.length > 0) {
+    const existingDefault = existingConfig.defaultEffort;
+    const defaultEffort = effortLevels.includes(existingDefault)
+      ? existingDefault
+      : effortLevels.includes("none")
+        ? "none"
+        : effortLevels[0];
+
+    return {
+      ...existingConfig,
+      supportedEffortLevels: effortLevels,
+      defaultEffort,
+    };
+  }
+
+  if (!isNewEntry || !remoteModel.reasoning) {
+    return undefined;
+  }
+
+  return {
+    supportedEffortLevels: ["none", "thinking"],
+    defaultEffort: "none",
+  };
+}
 
 export function formatMonth(year, month) {
   const months = [
@@ -130,6 +191,7 @@ export function buildUpdateValues(
     isNewEntry,
     includeProvider,
     provider,
+    existingReasoningConfig,
   },
 ) {
   const values = {};
@@ -237,11 +299,10 @@ export function buildUpdateValues(
     }
   }
 
-  if (hasOwn(remoteModel, "reasoning") && remoteModel.reasoning) {
-    values.reasoningConfig = {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
-    };
+  const reasoningConfig = buildReasoningConfig(remoteModel, existingReasoningConfig, isNewEntry);
+
+  if (reasoningConfig) {
+    values.reasoningConfig = reasoningConfig;
   }
 
   return values;

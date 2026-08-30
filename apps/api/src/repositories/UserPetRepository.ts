@@ -1,5 +1,6 @@
 import type { PetOrigin } from "@ngriffin_uk/polychat-schemas";
 
+import { PaginationHelper } from "~/lib/database/PaginationHelper";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
@@ -40,14 +41,42 @@ export interface CreateUserPetInput {
 }
 
 export class UserPetRepository extends BaseRepository {
-  public async listUserPets(userId: number): Promise<UserPetRecord[]> {
+  public async listUserPetsPage(
+    userId: number,
+    page: number,
+    limit: number,
+  ): Promise<{ records: UserPetRecord[]; hasMore: boolean }> {
+    const { limit: safeLimit, offset } = PaginationHelper.calculate(page, limit);
     const { query, values } = this.buildSelectQuery(
       "user_pet",
       { user_id: userId },
-      { columns: COLUMNS, orderBy: "created_at DESC" },
+      {
+        columns: COLUMNS,
+        orderBy: "created_at DESC, id DESC",
+        limit: safeLimit + 1,
+        offset,
+      },
+    );
+    const records = await this.runQuery<UserPetRecord>(query, values);
+
+    return {
+      records: records.slice(0, safeLimit),
+      hasMore: records.length > safeLimit,
+    };
+  }
+
+  public async listOwnedPetIds(userId: number, petIds: readonly string[]): Promise<Set<string>> {
+    if (petIds.length === 0) {
+      return new Set();
+    }
+
+    const placeholders = petIds.map(() => "?").join(", ");
+    const records = await this.runQuery<{ id: string }>(
+      `SELECT id FROM user_pet WHERE user_id = ? AND id IN (${placeholders})`,
+      [userId, ...petIds],
     );
 
-    return this.runQuery<UserPetRecord>(query, values);
+    return new Set(records.map((record) => record.id));
   }
 
   public async getUserPet(userId: number, petId: string): Promise<UserPetRecord | null> {
@@ -58,16 +87,6 @@ export class UserPetRepository extends BaseRepository {
     );
 
     return this.runQuery<UserPetRecord>(query, values, true);
-  }
-
-  public async countUserPets(userId: number): Promise<number> {
-    const result = await this.runQuery<{ total: number }>(
-      "SELECT COUNT(*) AS total FROM user_pet WHERE user_id = ?",
-      [userId],
-      true,
-    );
-
-    return result?.total ?? 0;
   }
 
   public async createUserPet(input: CreateUserPetInput): Promise<UserPetRecord> {

@@ -19,8 +19,8 @@ import { projectQueryKey } from "~/hooks/useWorkspaces";
 import { getCapabilityLibraryPath, getProjectSurface } from "~/lib/capability-surfaces";
 import { getErrorMessage } from "~/lib/errors";
 import { getProjectCodingPresentation } from "~/lib/project-coding-presentation";
-import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 
 import { ProjectCodingTaskControl } from "./ProjectCodingTaskControl";
 import { useWorkData } from "./WorkDataContext";
@@ -66,7 +66,11 @@ export function ProjectConversationPage({
     (state) => state.setSelectedAgentTokenPosition,
   );
   const setSelectedAssistantAction = useChatStore((state) => state.setSelectedAssistantAction);
-  const isStreamLoading = useIsLoading("stream-response");
+  const isStreamLoading = useStreamActivityStore(
+    (state) =>
+      Boolean(currentConversationId) &&
+      state.streams[currentConversationId as string]?.status === "streaming",
+  );
   const refreshedConversationIdRef = useRef<string | null>(null);
   const capabilities =
     project?.capabilities.map(({ kind, capabilityId }) => ({ kind, capabilityId })) ?? [];

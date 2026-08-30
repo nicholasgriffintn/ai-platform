@@ -1,6 +1,6 @@
 const ARTIFACT_SANDBOX_CSP = [
   "default-src 'none'",
-  "script-src 'unsafe-inline' https://cdnjs.cloudflare.com",
+  "script-src 'unsafe-inline' https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js",
   "style-src 'unsafe-inline'",
   "img-src data: blob:",
   "font-src data:",

@@ -3,6 +3,7 @@ import {
   generateUserPetSchema,
   successResponseSchema,
   userPetResponseSchema,
+  userPetsQuerySchema,
   userPetsResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
@@ -10,7 +11,14 @@ import * as z from "zod/v4";
 
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { addRoute } from "~/lib/http/routeBuilder";
-import { createPet, deletePet, generatePetImage, listPets, readPetSheet } from "~/services/pets";
+import {
+  createPet,
+  deletePet,
+  generatePetImage,
+  getPet,
+  listPets,
+  readPetSheet,
+} from "~/services/pets";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
@@ -24,6 +32,7 @@ addRoute(app, "get", "/", {
   summary: "List pets",
   description: "List the pets the user has uploaded or generated",
   auth: true,
+  querySchema: userPetsQuerySchema,
   responses: {
     200: {
       description: "Pets fetched successfully",
@@ -34,11 +43,7 @@ addRoute(app, "get", "/", {
       schema: errorResponseSchema,
     },
   },
-  handler: async ({ serviceContext }) => {
-    const pets = await listPets(serviceContext);
-
-    return { pets };
-  },
+  handler: async ({ query, serviceContext }) => listPets(serviceContext, query.page, query.limit),
 });
 
 addRoute(app, "post", "/", {
@@ -92,6 +97,27 @@ addRoute(app, "post", "/generate", {
     },
   },
   handler: async ({ body, serviceContext }) => generatePetImage(serviceContext, body.prompt),
+});
+
+addRoute(app, "get", "/:petId", {
+  tags: ["user"],
+  summary: "Read a pet",
+  description: "Read one of the user's custom pets",
+  auth: true,
+  paramSchema: petParamsSchema,
+  responses: {
+    200: {
+      description: "Pet fetched successfully",
+      schema: userPetResponseSchema,
+    },
+    404: {
+      description: "Pet not found",
+      schema: errorResponseSchema,
+    },
+  },
+  handler: async ({ params, serviceContext }) => ({
+    pet: await getPet(serviceContext, params.petId),
+  }),
 });
 
 addRoute(app, "get", "/:petId/sheet", {

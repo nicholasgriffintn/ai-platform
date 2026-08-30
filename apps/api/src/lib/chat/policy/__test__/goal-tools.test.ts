@@ -6,8 +6,11 @@ import { resolveTurnStepBudget } from "../step-budget";
 const activeGoal = { id: "goal-1", objective: "count to 100" } as never;
 
 describe("mergeEnabledGoalToolNames", () => {
-  it("offers complete_goal only once a goal is active, so a goal can actually end", () => {
-    expect(mergeEnabledGoalToolNames({ isProUser: true, activeGoal: null })).toEqual(["set_goal"]);
+  it("keeps goal completion available when a goal is created during the turn", () => {
+    expect(mergeEnabledGoalToolNames({ isProUser: true, activeGoal: null })).toEqual([
+      "set_goal",
+      "complete_goal",
+    ]);
     expect(mergeEnabledGoalToolNames({ isProUser: true, activeGoal })).toEqual([
       "set_goal",
       "complete_goal",

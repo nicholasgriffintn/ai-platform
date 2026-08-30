@@ -35,7 +35,6 @@ export function useConversationActions(
     messages: Message[],
     assistantMessage: Message,
   ) => Promise<void>,
-  setStreamStarted?: (started: boolean) => void,
   requestOptions?: ChatRequestOptions,
 ) {
   const queryClient = useQueryClient();
@@ -59,16 +58,14 @@ export function useConversationActions(
       overrideRequestOptions?: ChatRequestOptions,
       options?: { generateTitle?: boolean; model?: string; models?: string[] },
     ) => {
-      setStreamStarted?.(true);
       startLoading("stream-response", loadingMessage);
       try {
         return await generateResponse(messages, conversationId, overrideRequestOptions, options);
       } finally {
-        setStreamStarted?.(false);
         stopLoading("stream-response");
       }
     },
-    [generateResponse, setStreamStarted, startLoading, stopLoading],
+    [generateResponse, startLoading, stopLoading],
   );
 
   const retryMessage = useCallback(

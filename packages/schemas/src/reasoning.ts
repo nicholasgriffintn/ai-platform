@@ -4,10 +4,13 @@ export const REASONING_EFFORT_LEVELS = [
   "none",
   "simulated-thinking",
   "thinking",
+  "default",
+  "minimal",
   "low",
   "medium",
   "high",
   "xhigh",
+  "max",
 ] as const;
 
 export const reasoningEffortSchema = z.enum(REASONING_EFFORT_LEVELS);

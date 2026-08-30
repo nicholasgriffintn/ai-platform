@@ -1,5 +1,6 @@
 import { KVCache } from "~/lib/cache";
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { validatePetSettingsUpdate } from "~/services/pets/settings";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/user/operations" });
@@ -31,8 +32,9 @@ export async function updateUserSettings(
 ): Promise<{ success: boolean; message: string }> {
   const repo = ensureRepo(context);
   const id = userId ?? context.requireUser().id;
+  const validatedSettings = await validatePetSettingsUpdate(context, id, settings);
 
-  await repo.updateUserSettings(id, settings);
+  await repo.updateUserSettings(id, validatedSettings);
 
   const cache = getUserCache(context.env);
 

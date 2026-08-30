@@ -339,6 +339,10 @@ export function formatReasoningLabel(value: ReasoningEffort): string {
       return "Simulated";
     case "thinking":
       return "Thinking";
+    case "default":
+      return "Default";
+    case "minimal":
+      return "Minimal";
     case "low":
       return "Low";
     case "medium":
@@ -347,6 +351,8 @@ export function formatReasoningLabel(value: ReasoningEffort): string {
       return "High";
     case "xhigh":
       return "X-high";
+    case "max":
+      return "Max";
     default:
       return value;
   }

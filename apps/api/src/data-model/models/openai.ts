@@ -1739,7 +1739,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     speed: 2,
     multimodal: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+      supportedEffortLevels: ["medium", "high", "xhigh"],
       defaultEffort: "medium",
     },
     verbosityConfig: {
@@ -1832,6 +1832,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     supportsToolCalls: true,
     ...openaiResponsesHostedTools,
     supportsHostedShell: true,
+    supportsStreaming: false,
     supportsResponseFormat: true,
     contextWindow: 1050000,
     maxTokens: 128000,
@@ -1854,8 +1855,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     multimodal: true,
 
     reasoningConfig: {
-      supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
-      defaultEffort: "medium",
+      supportedEffortLevels: ["medium", "high", "xhigh"],
+      defaultEffort: "high",
     },
     verbosityConfig: {
       supportedVerbosityLevels: ["low", "medium", "high"],
@@ -2118,14 +2119,18 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     supportsAttachments: true,
     supportsTemperature: false,
     supportsToolCalls: true,
+    ...openaiResponsesHostedTools,
+    ...openaiHostedShellTools,
+    ...openaiToolSearchTool,
+    ...openaiComputerUseTool,
     supportsResponseFormat: true,
     contextWindow: 1050000,
     maxTokens: 128000,
     costPer1kInputTokens: 0.004,
     costPer1kOutputTokens: 0.02,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+      supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+      defaultEffort: "medium",
     },
   }),
 
@@ -2145,6 +2150,10 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     supportsAttachments: true,
     supportsTemperature: false,
     supportsToolCalls: true,
+    ...openaiResponsesHostedTools,
+    ...openaiHostedShellTools,
+    ...openaiToolSearchTool,
+    ...openaiComputerUseTool,
     supportsResponseFormat: true,
     isFeatured: true,
     contextWindow: 1050000,
@@ -2152,8 +2161,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0002,
     costPer1kOutputTokens: 0.0012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+      supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+      defaultEffort: "medium",
     },
   }),
 
@@ -2173,6 +2182,10 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     supportsAttachments: true,
     supportsTemperature: false,
     supportsToolCalls: true,
+    ...openaiResponsesHostedTools,
+    ...openaiHostedShellTools,
+    ...openaiToolSearchTool,
+    ...openaiComputerUseTool,
     supportsResponseFormat: true,
     isFeatured: true,
     contextWindow: 1050000,
@@ -2180,8 +2193,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.004,
     costPer1kOutputTokens: 0.02,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+      supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+      defaultEffort: "medium",
     },
   }),
 
@@ -2201,6 +2214,10 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     supportsAttachments: true,
     supportsTemperature: false,
     supportsToolCalls: true,
+    ...openaiResponsesHostedTools,
+    ...openaiHostedShellTools,
+    ...openaiToolSearchTool,
+    ...openaiComputerUseTool,
     supportsResponseFormat: true,
     isFeatured: true,
     contextWindow: 1050000,
@@ -2208,8 +2225,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+      supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+      defaultEffort: "medium",
     },
   }),
   createModelConfig("gpt-realtime-2.1", PROVIDER, {

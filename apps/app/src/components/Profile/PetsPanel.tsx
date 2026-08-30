@@ -8,18 +8,22 @@ import {
 } from "@ngriffin_uk/polychat-component-account";
 import {
   DEFAULT_PET_PRESET_SLUG,
-  PET_LIBRARY_LIMIT,
+  EMPTY_PET_MODEL_OVERRIDES,
   PET_PRESETS,
   PET_SHEET_MAX_BYTES,
   findPetSheetLayout,
+  parsePetModelOverrides,
   resolvePetPreset,
+  type PetModelOverrides,
 } from "@ngriffin_uk/polychat-schemas";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { PetPreview } from "~/components/Core/PetPreview";
 import { useAuthStatus } from "~/hooks/useAuth";
-import { usePets } from "~/hooks/usePets";
+import { useModels } from "~/hooks/useModels";
+import { usePet, usePets } from "~/hooks/usePets";
 import { composePetSheet } from "~/lib/pet/compose-sheet";
+import { getPetModelTargetOptions } from "~/lib/pet/model-targets";
 
 const MAX_MEBIBYTES = Math.round(PET_SHEET_MAX_BYTES / 1024 / 1024);
 
@@ -34,8 +38,19 @@ function messageFrom(error: unknown, fallback: string): string {
 }
 
 export function PetsPanel() {
-  const { user, userSettings, updateUserSettings } = useAuthStatus();
-  const { pets, createPet, isCreatingPet, deletePet, generatePet, isGeneratingPet } = usePets();
+  const { user, userSettings, updateUserSettings, isUpdatingUserSettings } = useAuthStatus();
+  const [petPage, setPetPage] = useState(1);
+  const {
+    pets,
+    hasMorePets,
+    createPet,
+    isCreatingPet,
+    deletePet,
+    isDeletingPet,
+    generatePet,
+    isGeneratingPet,
+  } = usePets(petPage);
+  const { data: models = {} } = useModels();
 
   const [error, setError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -45,6 +60,10 @@ export function PetsPanel() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const canAuthor = user?.plan_id === "pro";
+  const modelTargets = useMemo(() => getPetModelTargetOptions(models), [models]);
+  const modelOverrides = parsePetModelOverrides(
+    userSettings?.pet_model_overrides ?? EMPTY_PET_MODEL_OVERRIDES,
+  );
 
   useEffect(() => {
     if (!isGenerateOpen) {
@@ -63,6 +82,14 @@ export function PetsPanel() {
     userSettings?.pet_source === "custom"
       ? (userSettings.pet_id ?? "")
       : (userSettings?.pet_id ?? DEFAULT_PET_PRESET_SLUG);
+  const selectedCustomPetId = userSettings?.pet_source === "custom" ? selectedId : undefined;
+  const selectedPetIsOnPage = pets.some((pet) => pet.id === selectedCustomPetId);
+  const { data: selectedCustomPet } = usePet(
+    selectedCustomPetId,
+    Boolean(selectedCustomPetId) && !selectedPetIsOnPage,
+  );
+  const visibleCustomPets =
+    selectedCustomPet && !selectedPetIsOnPage ? [...pets, selectedCustomPet] : pets;
 
   const options: PetSettingsOption[] = [
     ...PET_PRESETS.map((preset) => ({
@@ -72,7 +99,7 @@ export function PetsPanel() {
       description: preset.description,
       canDelete: false,
     })),
-    ...pets.map((pet) => ({
+    ...visibleCustomPets.map((pet) => ({
       id: pet.id,
       source: "custom" as const,
       name: pet.name,
@@ -122,17 +149,33 @@ export function PetsPanel() {
     [updateUserSettings],
   );
 
+  const handleModelOverridesChange = useCallback(
+    async (overrides: PetModelOverrides) => {
+      setError(null);
+
+      try {
+        await updateUserSettings({ pet_model_overrides: overrides });
+      } catch (overrideError) {
+        setError(messageFrom(overrideError, "Those model pet settings could not be saved."));
+      }
+    },
+    [updateUserSettings],
+  );
+
   const handleDelete = useCallback(
     async (option: PetSettingsOption) => {
       setError(null);
 
       try {
         await deletePet(option.id);
+        if (pets.length === 1 && petPage > 1) {
+          setPetPage((page) => page - 1);
+        }
       } catch (deleteError) {
         setError(messageFrom(deleteError, "That pet could not be deleted."));
       }
     },
-    [deletePet],
+    [deletePet, petPage, pets.length],
   );
 
   const handleUpload = useCallback(
@@ -147,6 +190,7 @@ export function PetsPanel() {
           sheet: submission.sheet,
           filename: submission.sheet.name,
         });
+        setPetPage(1);
         setIsUploadOpen(false);
       } catch (submitError) {
         setUploadError(messageFrom(submitError, "The upload failed."));
@@ -188,6 +232,7 @@ export function PetsPanel() {
           sheet,
           filename: "pet.webp",
         });
+        setPetPage(1);
         setIsGenerateOpen(false);
       } catch (saveError) {
         setGenerateError(messageFrom(saveError, "The pet could not be saved."));
@@ -204,13 +249,19 @@ export function PetsPanel() {
         travelEnabled={Boolean(userSettings?.pet_travel_enabled)}
         animationEnabled={Boolean(userSettings?.pet_animation_enabled)}
         canAuthor={canAuthor}
-        limitReached={pets.length >= PET_LIBRARY_LIMIT}
-        libraryLimit={PET_LIBRARY_LIMIT}
-        isBusy={isCreatingPet || isGeneratingPet}
+        modelTargets={modelTargets}
+        modelOverrides={modelOverrides}
+        customPetPage={petPage}
+        hasPreviousCustomPets={petPage > 1}
+        hasNextCustomPets={hasMorePets}
+        isBusy={isCreatingPet || isDeletingPet || isGeneratingPet || isUpdatingUserSettings}
         error={error}
         onSelect={(option) => void handleSelect(option)}
         onTravelChange={(enabled) => void handleTravelChange(enabled)}
         onAnimationChange={(enabled) => void handleAnimationChange(enabled)}
+        onModelOverridesChange={(overrides) => void handleModelOverridesChange(overrides)}
+        onPreviousCustomPets={() => setPetPage((page) => Math.max(1, page - 1))}
+        onNextCustomPets={() => setPetPage((page) => page + 1)}
         onDelete={(option) => void handleDelete(option)}
         onUpload={() => setIsUploadOpen(true)}
         onGenerate={() => setIsGenerateOpen(true)}
@@ -227,6 +278,7 @@ export function PetsPanel() {
               layout={option.layout}
               size={64}
               paused={!userSettings?.pet_animation_enabled}
+              deferLoading={option.source === "custom"}
             />
           ) : null;
         }}

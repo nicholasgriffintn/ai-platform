@@ -2,7 +2,7 @@ import {
   createApiErrorFromResponse,
   returnFetchedData,
 } from "@ngriffin_uk/polychat-library-client";
-import type { PetOrigin, UserPet } from "@ngriffin_uk/polychat-schemas";
+import type { PetOrigin, UserPet, UserPetsPage } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service";
 import { fetchApi } from "./fetch-wrapper";
@@ -11,8 +11,9 @@ async function readHeaders(): Promise<Record<string, string>> {
   return await apiService.getHeaders();
 }
 
-export async function fetchUserPets(): Promise<UserPet[]> {
-  const response = await fetchApi("/user/pets", {
+export async function fetchUserPets(page = 1): Promise<UserPetsPage> {
+  const params = new URLSearchParams({ page: String(page) });
+  const response = await fetchApi(`/user/pets?${params.toString()}`, {
     method: "GET",
     headers: await readHeaders(),
   });
@@ -21,9 +22,22 @@ export async function fetchUserPets(): Promise<UserPet[]> {
     throw await createApiErrorFromResponse(response, "Failed to load pets");
   }
 
-  const data = await returnFetchedData<{ pets: UserPet[] }>(response);
+  return await returnFetchedData<UserPetsPage>(response);
+}
 
-  return data.pets ?? [];
+export async function fetchUserPet(petId: string): Promise<UserPet> {
+  const response = await fetchApi(`/user/pets/${encodeURIComponent(petId)}`, {
+    method: "GET",
+    headers: await readHeaders(),
+  });
+
+  if (!response.ok) {
+    throw await createApiErrorFromResponse(response, "Failed to load the pet");
+  }
+
+  const data = await returnFetchedData<{ pet: UserPet }>(response);
+
+  return data.pet;
 }
 
 export interface CreateUserPetInput {

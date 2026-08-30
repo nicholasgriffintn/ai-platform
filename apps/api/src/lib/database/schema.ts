@@ -5,6 +5,7 @@ import type {
   ProjectTaskContext,
   ProjectTaskCriterion,
   ProjectTaskRunner,
+  PetModelOverrides,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 import { sql } from "drizzle-orm";
@@ -561,6 +562,10 @@ export const userSettings = sqliteTable(
     pet_id: text().default("pip"),
     pet_travel_enabled: integer({ mode: "boolean" }).default(false),
     pet_animation_enabled: integer({ mode: "boolean" }).default(false),
+    pet_model_overrides: text({ mode: "json" })
+      .$type<PetModelOverrides>()
+      .default({ families: {}, providers: {} })
+      .notNull(),
     tracking_enabled: integer({ mode: "boolean" }).default(true),
     public_key: text(),
     private_key: text(),

@@ -80,6 +80,48 @@ describe("repeated tool call guard", () => {
     expect(mocks.handleFunctions).toHaveBeenCalledTimes(2);
   });
 
+  it("spends the repeat budget on deterministic argument failures", async () => {
+    mocks.resolveToolRepeatLimit.mockReturnValue(1);
+    const ledger = createToolCallLedger();
+    const validationError = Object.assign(new Error("skill is required"), {
+      type: "PARAMS_ERROR",
+    });
+
+    mocks.handleFunctions.mockRejectedValueOnce(validationError);
+
+    const [first] = await run([toolCall("load_skill", {}, "call-1")], ledger);
+    const [second] = await run([toolCall("load_skill", {}, "call-2")], ledger);
+
+    expect(first.status).toBe("error");
+    expect(second.data.errorCode).toBe("REPEATED_TOOL_CALL");
+    expect(mocks.handleFunctions).toHaveBeenCalledTimes(1);
+  });
+
+  it("corrects malformed artifact-shaped tool names as response markup", async () => {
+    const ledger = createToolCallLedger();
+    const unknownToolError = Object.assign(new Error("unknown tool"), {
+      type: "PARAMS_ERROR",
+      context: { reason: "unknown_tool" },
+    });
+
+    mocks.handleFunctions.mockRejectedValueOnce(unknownToolError);
+
+    const [result] = await run(
+      [
+        toolCall(
+          "artifact_identifier</arg_key><arg_value>orbital-visualisation</arg_value>",
+          {},
+          "call-1",
+        ),
+      ],
+      ledger,
+    );
+
+    expect(result.content).toContain("Artifacts are response markup, not tools");
+    expect(result.content).toContain("<artifact ...>...</artifact>");
+    expect(result.data.responseType).toBe("hidden");
+  });
+
   it("still answers the model when it repeats a call, so the provider keeps a result per call", async () => {
     mocks.resolveToolRepeatLimit.mockReturnValue(1);
     const ledger = createToolCallLedger();
