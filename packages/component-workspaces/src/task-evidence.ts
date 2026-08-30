@@ -1,10 +1,20 @@
 import type { GoalEvidenceEntry, ProjectTaskStatus } from "@ngriffin_uk/polychat-schemas";
 
 function comparableClaim(value: string): string {
-  return value
-    .trim()
-    .toLocaleLowerCase()
-    .replace(/[.!?]+$/, "");
+  const normalised = value.trim().toLocaleLowerCase();
+  let end = normalised.length;
+
+  while (end > 0) {
+    const character = normalised[end - 1];
+
+    if (character !== "." && character !== "!" && character !== "?") {
+      break;
+    }
+
+    end -= 1;
+  }
+
+  return normalised.slice(0, end);
 }
 
 export function isTaskCriterionMet(
