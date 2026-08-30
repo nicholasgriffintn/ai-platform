@@ -1,4 +1,5 @@
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
+import { createGoalMarkerMessage } from "@ngriffin_uk/polychat-library-chat/message-goal-status";
 import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
 import { upsertConversationInChatCaches } from "@ngriffin_uk/polychat-library-react/conversation-cache";
 import { EMPTY_MODEL_CONFIG } from "@ngriffin_uk/polychat-schemas";
@@ -45,8 +46,12 @@ export function useChatManager(
 
   const { webLLMService } = useWebLLMInitialization(apiModels);
   const { determineStorageMode, updateConversation } = useConversationStorage(requestOptions);
-  const { addMessageToConversation, addAssistantMessage, updateAssistantMessage } =
-    useMessageOperations(requestOptions);
+  const {
+    addMessageToConversation,
+    insertMessageBeforeConversationMessage,
+    addAssistantMessage,
+    updateAssistantMessage,
+  } = useMessageOperations(requestOptions);
 
   const cancelConversationQueries = useCallback(
     async (conversationId: string) => {
@@ -148,6 +153,7 @@ export function useChatManager(
       input: string,
       attachments?: AttachmentData[],
       overrideRequestOptions?: ChatRequestOptions,
+      timelineOptions?: { goalStarted?: string },
     ) => {
       if (!input.trim() && !attachments?.length) {
         return {
@@ -172,17 +178,24 @@ export function useChatManager(
         const userMessage = prepareUserMessage(input, attachments, currentModel, conversationMode);
 
         await cancelConversationQueries(conversationId);
+        await addMessageToConversation(conversationId, userMessage);
 
-        const previousConversation = queryClient.getQueryData<Conversation>([
+        if (timelineOptions?.goalStarted) {
+          await insertMessageBeforeConversationMessage(
+            conversationId,
+            createGoalMarkerMessage({
+              event: "set",
+              objective: timelineOptions.goalStarted,
+            }),
+            userMessage.id,
+          );
+        }
+
+        const updatedConversation = queryClient.getQueryData<Conversation>([
           CHATS_QUERY_KEY,
           conversationId,
         ]);
-
-        await addMessageToConversation(conversationId, userMessage);
-
-        const updatedMessages = previousConversation?.messages?.length
-          ? [...previousConversation.messages, userMessage]
-          : [userMessage];
+        const updatedMessages = updatedConversation?.messages ?? [userMessage];
 
         const response = await streamResponse(
           updatedMessages,
@@ -209,6 +222,7 @@ export function useChatManager(
       streamResponse,
       startLoading,
       addMessageToConversation,
+      insertMessageBeforeConversationMessage,
       setStreamStarted,
       conversationMode,
     ],

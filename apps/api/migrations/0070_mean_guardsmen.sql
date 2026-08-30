@@ -1,1 +1,0 @@
-ALTER TABLE `project_task` DROP COLUMN `acceptance`;

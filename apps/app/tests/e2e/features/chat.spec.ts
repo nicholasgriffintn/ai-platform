@@ -527,6 +527,7 @@ test.describe("Goals as pro", () => {
     const setResponse = await homePage.setGoal(objective);
 
     expect(setResponse.status()).toBe(200);
+    await expect(page.getByRole("status", { name: "Goal started" })).toBeVisible();
     await expect(homePage.goalCard()).toContainText(objective);
     await expect(homePage.goalCard()).toContainText("Goal active");
 

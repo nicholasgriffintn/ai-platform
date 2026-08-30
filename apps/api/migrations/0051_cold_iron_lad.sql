@@ -1,1 +1,0 @@
-ALTER TABLE `project` DROP COLUMN `coding_task_type`;

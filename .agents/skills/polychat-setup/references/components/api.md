@@ -20,6 +20,8 @@ The API provides a unified interface to multiple AI providers, following OpenAI'
 - **Content Safety** - Llamaguard and AWS Bedrock Guardrails
 - **Flexible Auth** - OAuth, API keys, JWT, magic links, passkeys
 - **Real-time** - Streaming responses and WebSocket support
+- **Durable goal history** - Goal lifecycle markers remain in stored conversation timelines while
+  staying out of model context
 
 Use the skill's [local setup](../setup.md), [configuration](../configuration.md), and [deployment](../deployment.md) workflows rather than maintaining component-specific setup steps here.
 

@@ -8,7 +8,7 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "services/goals/goalMarker" });
 
 const EVENT_LABELS: Record<GoalMarkerEvent, string> = {
-  set: "Goal set",
+  set: "Goal started",
   paused: goalStatusLabels.paused,
   resumed: "Goal resumed",
   cleared: goalStatusLabels.cleared,

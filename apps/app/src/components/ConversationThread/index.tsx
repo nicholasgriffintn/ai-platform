@@ -434,7 +434,12 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           modeConfig?.requestOptions,
           actionSubmit.requestOptions,
         );
-        const result = await sendMessage(actionSubmit.input, attachments, requestOptions);
+        const result = await sendMessage(
+          actionSubmit.input,
+          attachments,
+          requestOptions,
+          goalToSend ? { goalStarted: goalToSend } : undefined,
+        );
 
         if (result?.status === "error") {
           setChatInput(originalInput);

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { parseGoalCommand, resolveGoalSubmission } from "./goal-command";
-import { getGoalMessageMarker } from "./message-goal-status";
+import { createGoalMarkerMessage, getGoalMessageMarker } from "./message-goal-status";
 
 describe("parseGoalCommand", () => {
   it("reports status for a bare command, whatever the casing or padding", () => {
@@ -54,7 +54,7 @@ describe("getGoalMessageMarker", () => {
           { type: "goal", event: "set", label: "Goal set", objective: "Make the suite pass" },
         ],
       }),
-    ).toEqual({ label: "Goal set", objective: "Make the suite pass" });
+    ).toEqual({ event: "set", label: "Goal set", objective: "Make the suite pass" });
   });
 
   it("falls back to the event label when none was stored", () => {
@@ -68,6 +68,27 @@ describe("getGoalMessageMarker", () => {
       getGoalMessageMarker({ role: "assistant", parts: [{ type: "text", text: "hi" }] }),
     ).toBeNull();
     expect(getGoalMessageMarker(null)).toBeNull();
+  });
+
+  it("creates an optimistic marker with the shared start label", () => {
+    const message = createGoalMarkerMessage({
+      event: "set",
+      objective: "Make the suite pass",
+      id: "goal-marker-1",
+      timestamp: 123,
+    });
+
+    expect(message).toMatchObject({
+      id: "goal-marker-1",
+      role: "goal",
+      content: "Goal started",
+      timestamp: 123,
+    });
+    expect(getGoalMessageMarker(message)).toEqual({
+      event: "set",
+      label: "Goal started",
+      objective: "Make the suite pass",
+    });
   });
 });
 

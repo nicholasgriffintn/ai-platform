@@ -1,1 +1,0 @@
-ALTER TABLE `anonymous_user` ADD `captcha_verified` integer DEFAULT false;

@@ -17,6 +17,16 @@ function snapshotMessage(content: string): Message {
   } as unknown as Message;
 }
 
+function goalMarkerMessage(timestamp = 10): Message {
+  return {
+    id: "goal-marker-1",
+    role: "goal",
+    content: "Goal started",
+    timestamp,
+    parts: [{ type: "goal", event: "set", objective: "Ship it", timestamp }],
+  };
+}
+
 function createConversationManager(stored: Message[] | null) {
   return {
     get: vi.fn().mockResolvedValue(stored),
@@ -103,6 +113,35 @@ describe("storeUserTurn", () => {
 
     expect(conversationManager.replaceMessages).toHaveBeenCalledWith("conv-1", incoming);
     expect(conversationManager.addBatch).not.toHaveBeenCalled();
+  });
+
+  it("preserves a goal marker omitted from model context when appending the next turn", async () => {
+    const marker = goalMarkerMessage();
+    const conversationManager = createConversationManager([marker]);
+    const incoming = [userMessage("hello", { id: "user-1", timestamp: 20 })];
+
+    await run(conversationManager, baseOptions({ messages: incoming }), incoming[0]);
+
+    expect(conversationManager.replaceMessages).not.toHaveBeenCalled();
+    expect(conversationManager.addBatch).toHaveBeenCalledTimes(1);
+  });
+
+  it("retains stored goal markers when divergent client history must replace messages", async () => {
+    const marker = goalMarkerMessage(20);
+    const stored = [
+      userMessage("one", { id: "m1", timestamp: 10 }),
+      marker,
+      userMessage("two", { id: "m2", timestamp: 30 }),
+    ];
+    const incoming = [userMessage("edited", { id: "m1", timestamp: 10 })];
+    const conversationManager = createConversationManager(stored);
+
+    await run(conversationManager, baseOptions({ messages: incoming }));
+
+    expect(conversationManager.replaceMessages).toHaveBeenCalledWith("conv-1", [
+      incoming[0],
+      marker,
+    ]);
   });
 
   it("refuses to replace compacted history from a snapshot-unaware client", async () => {
