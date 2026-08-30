@@ -89,6 +89,7 @@ export function InlineResponseControls({ isDisabled = false }: InlineResponseCon
             label: formatReasoningLabel(option),
           }))}
           isDisabled={isDisabled}
+          shortcut="/reasoning"
           onChange={handleReasoningChange}
         />
       )}
@@ -107,6 +108,7 @@ export function InlineResponseControls({ isDisabled = false }: InlineResponseCon
           label: formatVerbosityLabel(option),
         }))}
         isDisabled={isDisabled}
+        shortcut="/verbosity"
         onChange={handleVerbosityChange}
       />
     </div>

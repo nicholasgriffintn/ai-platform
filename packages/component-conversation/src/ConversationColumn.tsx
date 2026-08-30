@@ -14,7 +14,7 @@ export function ConversationMessageColumn({ children }: ConversationColumnProps)
 
 export function ConversationComposerDock({ children }: ConversationColumnProps) {
   return (
-    <div className="relative z-10 shrink-0 px-4 pt-2">
+    <div className="relative z-10 shrink-0 px-4 pt-2 md:z-auto">
       <div className="max-w-3xl mx-auto">{children}</div>
     </div>
   );

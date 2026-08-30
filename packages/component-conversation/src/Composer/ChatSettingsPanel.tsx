@@ -3,6 +3,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  ShortcutTooltip,
   Tabs,
   TabsContent,
   TabsList,
@@ -70,17 +71,18 @@ export function ChatSettingsPanel({
   return (
     <div className="flex items-center">
       <Popover open={showSettings} onOpenChange={onShowSettingsChange}>
-        <PopoverTrigger asChild>
-          <Button
-            variant={showSettings ? "iconActive" : "icon"}
-            icon={<Settings className="h-4 w-4" />}
-            disabled={isDisabled}
-            aria-haspopup="dialog"
-            aria-expanded={showSettings}
-            title="Chat settings"
-            aria-label="Open chat settings"
-          />
-        </PopoverTrigger>
+        <ShortcutTooltip keys={["/settings"]} label="Settings">
+          <PopoverTrigger asChild>
+            <Button
+              variant={showSettings ? "iconActive" : "icon"}
+              icon={<Settings className="h-4 w-4" />}
+              disabled={isDisabled}
+              aria-haspopup="dialog"
+              aria-expanded={showSettings}
+              aria-label="Open chat settings"
+            />
+          </PopoverTrigger>
+        </ShortcutTooltip>
         <PopoverContent
           side="top"
           align="end"

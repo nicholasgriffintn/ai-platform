@@ -9,6 +9,7 @@ import {
   ModelSelectorTrigger,
   useHoverPreviewDismiss,
 } from "@ngriffin_uk/polychat-component-models";
+import { ShortcutTooltip } from "@ngriffin_uk/polychat-component-ui";
 import { getDefaultLiveModelId } from "@ngriffin_uk/polychat-library-realtime/live-providers";
 import {
   createModelReferenceMap,
@@ -520,57 +521,59 @@ export const ModelSelector = ({
 
   return (
     <div ref={triggerWrapperRef} className="relative">
-      <ModelSelectorTrigger
-        ref={triggerRef}
-        isOpen={isOpen}
-        disabled={isDisabled}
-        minimal={minimal}
-        mono={mono}
-        loading={
-          isModelLoading
-            ? {
-                message: modelLoadingMessage,
-                progress: modelLoadingProgress,
-                title: selectedModelLabel,
-              }
-            : null
-        }
-        icon={
-          model === null ? (
-            <span
-              className="inline-flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center"
-              role="img"
-              aria-label={`${selectedAutoMode.label} automatic mode icon`}
-            >
-              <SelectedAutoModeIcon className="h-4 w-4" aria-hidden="true" />
-            </span>
-          ) : undefined
-        }
-        modelName={selectedModelInfo?.name || ""}
-        modelProvider={selectedModelInfo?.provider}
-        label={
-          <>
-            {triggerLabel}
-            {isModelLockedByAgent && !selectedAgent && " (set by agent)"}
-          </>
-        }
-        title={triggerTitle}
-        onToggle={() => {
-          const opening = !isOpen;
-
-          if (opening) {
-            if (isModelListOnlyScope) {
-              setSelectedTab("models");
-            } else if (model === null) {
-              setSelectedTab("auto");
-            } else {
-              setSelectedTab("models");
-            }
+      <ShortcutTooltip keys={["/model"]} label="Select model">
+        <ModelSelectorTrigger
+          ref={triggerRef}
+          isOpen={isOpen}
+          disabled={isDisabled}
+          minimal={minimal}
+          mono={mono}
+          loading={
+            isModelLoading
+              ? {
+                  message: modelLoadingMessage,
+                  progress: modelLoadingProgress,
+                  title: selectedModelLabel,
+                }
+              : null
           }
+          icon={
+            model === null ? (
+              <span
+                className="inline-flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center"
+                role="img"
+                aria-label={`${selectedAutoMode.label} automatic mode icon`}
+              >
+                <SelectedAutoModeIcon className="h-4 w-4" aria-hidden="true" />
+              </span>
+            ) : undefined
+          }
+          modelName={selectedModelInfo?.name || ""}
+          modelProvider={selectedModelInfo?.provider}
+          label={
+            <>
+              {triggerLabel}
+              {isModelLockedByAgent && !selectedAgent && " (set by agent)"}
+            </>
+          }
+          title={triggerTitle}
+          onToggle={() => {
+            const opening = !isOpen;
 
-          setIsOpen(opening);
-        }}
-      />
+            if (opening) {
+              if (isModelListOnlyScope) {
+                setSelectedTab("models");
+              } else if (model === null) {
+                setSelectedTab("auto");
+              } else {
+                setSelectedTab("models");
+              }
+            }
+
+            setIsOpen(opening);
+          }}
+        />
+      </ShortcutTooltip>
 
       {isOpen && (
         <ModelSelectorPanel

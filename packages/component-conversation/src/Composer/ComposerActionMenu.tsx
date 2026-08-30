@@ -1,15 +1,30 @@
 import {
   Button,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+  OptionsMenu,
+  OptionsMenuAction,
+  OptionsMenuSeparator,
+  OptionsMenuSubmenu,
+  ShortcutTooltip,
   cn,
+  useMediaQuery,
 } from "@ngriffin_uk/polychat-component-ui";
+import type { ComposerDirectiveQuery } from "@ngriffin_uk/polychat-library-chat/composer-commands";
 import type { SourceSummary } from "@ngriffin_uk/polychat-schemas";
-import { Database, Loader2, Mic, Plus, Square, Volume1, Volume2, VolumeX } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Database, FileText, Loader2, Plus, Volume1, Volume2, VolumeX, Wrench } from "lucide-react";
+import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 
-import { ComposerSourceMenu } from "./ComposerSourceMenu";
+import {
+  AssistantActionItemIcon,
+  describeAssistantActionItem,
+  groupAssistantActionItems,
+} from "./assistantActionPresentation";
+import { useComposerCommandActions } from "./commandActions";
+import { getComposerActionMenuLayout } from "./composerActionMenuLayout";
+import { ComposerActionMenuMobile } from "./ComposerActionMenuMobile";
+import {
+  composerActionMenuRowClassName as menuRowClassName,
+  ComposerActionMenuRow as MenuRow,
+} from "./ComposerActionMenuRow";
 
 interface ComposerActionMenuProps {
   autoPlayResponses?: {
@@ -20,15 +35,11 @@ interface ComposerActionMenuProps {
   };
   attachingSourceId?: string | null;
   canAttachSources?: boolean;
-  canUseVoice: boolean;
   canUploadFiles: boolean;
+  directive?: ComposerDirectiveQuery | null;
   isDisabled?: boolean;
   isLoadingSources?: boolean;
-  isRecording: boolean;
-  isTranscribing: boolean;
   isUploading: boolean;
-  onStartRecording: () => void;
-  onStopRecording: () => void;
   onUploadClick: () => void;
   onAttachSource?: (sourceId: string) => boolean | Promise<boolean>;
   sourceScopeLabel?: string;
@@ -38,49 +49,14 @@ interface ComposerActionMenuProps {
   uploadLabel: string;
 }
 
-function ComposerActionButton({
-  children,
-  description,
-  icon,
-  isActive = false,
-  onClick,
-  title,
-  disabled,
-}: {
-  children: ReactNode;
-  description?: string;
-  icon: ReactNode;
-  isActive?: boolean;
-  onClick: () => void;
-  title: string;
-  disabled?: boolean;
-}) {
+const submenuClassName = "w-80 max-w-[calc(100vw-1rem)] rounded-xl p-2 text-sm";
+const EMPTY_SOURCES: SourceSummary[] = [];
+
+function wrapAddMenuTrigger(trigger: ReactNode, isOpen?: boolean) {
   return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      className={cn(
-        "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
-        isActive
-          ? "bg-zinc-100 text-zinc-950 dark:bg-zinc-800 dark:text-zinc-50"
-          : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800",
-        disabled && "cursor-not-allowed opacity-50 hover:bg-transparent",
-      )}
-      title={title}
-    >
-      <span className="flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden="true">
-        {icon}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block font-medium leading-5">{children}</span>
-        {description && (
-          <span className="block truncate text-xs text-zinc-500 dark:text-zinc-400">
-            {description}
-          </span>
-        )}
-      </span>
-    </button>
+    <ShortcutTooltip disabled={isOpen} keys={["@", "or", "/"]} label="Add">
+      {trigger}
+    </ShortcutTooltip>
   );
 }
 
@@ -89,73 +65,88 @@ export function ComposerActionMenu({
   attachingSourceId,
   canAttachSources = false,
   canUploadFiles,
-  canUseVoice,
+  directive,
   isDisabled = false,
   isLoadingSources = false,
-  isRecording,
-  isTranscribing,
   isUploading,
-  onStartRecording,
-  onStopRecording,
   onUploadClick,
   onAttachSource,
   sourceScopeLabel = "Sources",
-  sources = [],
+  sources = EMPTY_SOURCES,
   tools,
   uploadIcon,
   uploadLabel,
 }: ComposerActionMenuProps) {
+  const { actionItems, canUseAgents, isLoadingAgents, selectActionItem, selectedAgent } =
+    useComposerCommandActions();
   const [isOpen, setIsOpen] = useState(false);
-  const [view, setView] = useState<"actions" | "sources">("actions");
-  const wasTranscribing = useRef(isTranscribing);
+  const [menuWidth, setMenuWidth] = useState<number>();
+  const [alignOffset, setAlignOffset] = useState(0);
+  const [sideOffset, setSideOffset] = useState(10);
+  const usesDrilldownNavigation = useMediaQuery(
+    "(max-width: 1279px), (hover: none), (pointer: coarse)",
+  );
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuActionItems = tools ? actionItems.filter((item) => item.kind !== "tool") : actionItems;
+  const actionGroups = groupAssistantActionItems(menuActionItems);
+  const toolGroup = actionGroups.find((group) => group.label === "Tools");
+  const capabilityGroups = actionGroups.filter((group) => group.label !== "Tools");
   const hasActions =
-    canUploadFiles || canAttachSources || canUseVoice || Boolean(autoPlayResponses) || tools;
+    Boolean(directive) ||
+    canUploadFiles ||
+    canAttachSources ||
+    Boolean(autoPlayResponses) ||
+    Boolean(tools) ||
+    (canUseAgents && (isLoadingAgents || actionGroups.length > 0));
+  const isDirectiveOpen = Boolean(directive) && !isDisabled;
+  const menuIsOpen = isDirectiveOpen || isOpen;
 
-  useEffect(() => {
-    if (wasTranscribing.current && !isTranscribing) {
-      setIsOpen(false);
+  useLayoutEffect(() => {
+    const trigger = triggerRef.current;
+    const shell = trigger?.closest<HTMLElement>("[data-chat-input-shell]");
+
+    if (!trigger || !shell || !isOpen) {
+      return undefined;
     }
 
-    wasTranscribing.current = isTranscribing;
-  }, [isTranscribing]);
+    const updateLayout = () => {
+      const triggerRect = trigger.getBoundingClientRect();
+      const shellRect = shell.getBoundingClientRect();
+      const layout = getComposerActionMenuLayout(triggerRect, shellRect);
+
+      setMenuWidth(layout.width);
+      setAlignOffset(layout.alignOffset);
+      setSideOffset(layout.sideOffset);
+    };
+
+    updateLayout();
+    const observer = new ResizeObserver(updateLayout);
+
+    observer.observe(shell);
+
+    return () => observer.disconnect();
+  }, [isOpen]);
 
   if (!hasActions) {
     return null;
   }
 
-  const handleUploadClick = () => {
-    setIsOpen(false);
-    onUploadClick();
-  };
-
-  const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
-    if (!open) {
-      setView("actions");
-    }
-  };
-
-  const handleSourceSelect = async (sourceId: string) => {
-    if (!onAttachSource) {
-      return;
-    }
-
-    const didAttach = await onAttachSource(sourceId);
-
-    if (didAttach) {
-      handleOpenChange(false);
+  const handleSourceSelect = (sourceId: string) => {
+    if (onAttachSource) {
+      void onAttachSource(sourceId);
     }
   };
 
   return (
-    <Popover open={isOpen} onOpenChange={handleOpenChange}>
-      <PopoverTrigger asChild>
+    <OptionsMenu
+      trigger={
         <Button
+          ref={triggerRef}
           type="button"
-          variant="icon"
+          variant={menuIsOpen ? "iconActive" : "icon"}
           className="h-8 w-8 shrink-0 p-1.5"
-          title="Open composer actions"
-          aria-label="Open composer actions"
+          aria-label="Add files or capabilities"
+          aria-keyshortcuts="/ @"
         >
           {isUploading ? (
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -163,64 +154,179 @@ export function ComposerActionMenu({
             <Plus className="h-4 w-4" aria-hidden="true" />
           )}
         </Button>
-      </PopoverTrigger>
-      <PopoverContent side="top" align="start" sideOffset={10} className="w-80 rounded-xl p-2">
-        {view === "sources" ? (
-          <ComposerSourceMenu
-            attachingSourceId={attachingSourceId}
-            isLoading={isLoadingSources}
-            onBack={() => setView("actions")}
-            onSelect={(sourceId) => void handleSourceSelect(sourceId)}
-            scopeLabel={sourceScopeLabel}
-            sources={sources}
-          />
-        ) : (
-          <>
-            <div className="space-y-1">
-              {canUploadFiles && (
-                <ComposerActionButton
-                  icon={isUploading ? <Loader2 className="h-5 w-5 animate-spin" /> : uploadIcon}
-                  onClick={handleUploadClick}
-                  disabled={isDisabled || isUploading}
-                  title={uploadLabel}
-                  description="Images, documents, audio, and code when supported"
-                >
-                  Attach file
-                </ComposerActionButton>
-              )}
-              {canAttachSources && (
-                <ComposerActionButton
+      }
+      triggerWrapper={wrapAddMenuTrigger}
+      triggerWrapperActive={menuIsOpen}
+      align="end"
+      alignOffset={alignOffset}
+      side="top"
+      sideOffset={sideOffset}
+      className="max-w-[calc(100vw-1rem)] rounded-xl p-2 text-sm"
+      contentStyle={menuWidth ? { width: menuWidth } : undefined}
+      modal={false}
+      open={isOpen && !isDirectiveOpen}
+      onOpenChange={setIsOpen}
+    >
+      {usesDrilldownNavigation ? (
+        <ComposerActionMenuMobile
+          actionItems={canUseAgents ? menuActionItems : []}
+          attachingSourceId={attachingSourceId}
+          autoPlayResponses={autoPlayResponses}
+          canAttachSources={canAttachSources}
+          canUploadFiles={canUploadFiles}
+          isDisabled={isDisabled}
+          isLoadingActions={isLoadingAgents}
+          isLoadingSources={isLoadingSources}
+          isUploading={isUploading}
+          onAttachSource={handleSourceSelect}
+          onSelectActionItem={selectActionItem}
+          onUploadClick={onUploadClick}
+          selectedAgentId={selectedAgent?.id}
+          sourceScopeLabel={sourceScopeLabel}
+          sources={sources}
+          tools={tools}
+          uploadIcon={uploadIcon}
+          uploadLabel={uploadLabel}
+        />
+      ) : (
+        <>
+          {canUploadFiles ? (
+            <OptionsMenuAction
+              className={menuRowClassName}
+              disabled={isDisabled || isUploading}
+              onSelect={onUploadClick}
+            >
+              <MenuRow
+                icon={isUploading ? <Loader2 className="h-5 w-5 animate-spin" /> : uploadIcon}
+                label="Attach file"
+                description={uploadLabel}
+              />
+            </OptionsMenuAction>
+          ) : null}
+
+          {canAttachSources ? (
+            <OptionsMenuSubmenu
+              className={menuRowClassName}
+              contentClassName={cn(submenuClassName, "max-h-80 overflow-y-auto")}
+              trigger={
+                <MenuRow
                   icon={<Database className="h-5 w-5" />}
-                  onClick={() => setView("sources")}
-                  disabled={isDisabled}
-                  title="Attach an existing source"
+                  label="Attach source"
                   description={sourceScopeLabel}
-                >
-                  Attach source
-                </ComposerActionButton>
+                />
+              }
+            >
+              {isLoadingSources ? (
+                <div className="flex items-center gap-2 px-3 py-4 text-sm text-zinc-500">
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  Loading sources…
+                </div>
+              ) : sources.length > 0 ? (
+                sources.map((source) => (
+                  <OptionsMenuAction
+                    key={source.id}
+                    className={menuRowClassName}
+                    disabled={Boolean(attachingSourceId)}
+                    onSelect={() => handleSourceSelect(source.id)}
+                  >
+                    <MenuRow
+                      icon={
+                        attachingSourceId === source.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <FileText className="h-4 w-4" />
+                        )
+                      }
+                      label={source.title}
+                      description={source.kind}
+                    />
+                  </OptionsMenuAction>
+                ))
+              ) : (
+                <p className="px-3 py-4 text-sm text-zinc-500 dark:text-zinc-400">
+                  No available sources.
+                </p>
               )}
-              {canUseVoice && (
-                <ComposerActionButton
-                  icon={
-                    isRecording ? (
-                      <Square className="h-5 w-5 text-red-500" />
-                    ) : isTranscribing ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <Mic className="h-5 w-5" />
-                    )
-                  }
-                  onClick={isRecording ? onStopRecording : onStartRecording}
-                  disabled={isDisabled || isTranscribing}
-                  title={isRecording ? "Stop recording" : "Start recording"}
-                  description={isTranscribing ? "Transcribing voice input" : "Dictate a message"}
-                  isActive={isRecording}
+            </OptionsMenuSubmenu>
+          ) : null}
+
+          {(canUploadFiles || canAttachSources) &&
+          (capabilityGroups.length > 0 || toolGroup || tools || autoPlayResponses) ? (
+            <OptionsMenuSeparator />
+          ) : null}
+
+          {canUseAgents
+            ? capabilityGroups.map((group) => {
+                const GroupIcon = group.icon;
+
+                return (
+                  <OptionsMenuSubmenu
+                    key={group.label}
+                    className={menuRowClassName}
+                    contentClassName={cn(submenuClassName, "max-h-80 overflow-y-auto")}
+                    trigger={
+                      <MenuRow icon={<GroupIcon className="h-5 w-5" />} label={group.label} />
+                    }
+                  >
+                    {group.items.map((item) => (
+                      <OptionsMenuAction
+                        key={item.id}
+                        className={menuRowClassName}
+                        onSelect={() => selectActionItem(item)}
+                      >
+                        <MenuRow
+                          icon={<AssistantActionItemIcon item={item} />}
+                          label={item.label}
+                          description={describeAssistantActionItem(item)}
+                          isActive={item.id === `agent:${selectedAgent?.id}`}
+                        />
+                      </OptionsMenuAction>
+                    ))}
+                  </OptionsMenuSubmenu>
+                );
+              })
+            : null}
+
+          {isLoadingAgents && actionGroups.length === 0 ? (
+            <div className="flex items-center gap-2 px-3 py-2.5 text-sm text-zinc-500">
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              Loading capabilities…
+            </div>
+          ) : null}
+
+          {toolGroup || tools ? (
+            <OptionsMenuSubmenu
+              className={menuRowClassName}
+              contentClassName={cn(submenuClassName, "max-h-96 overflow-y-auto")}
+              trigger={<MenuRow icon={<Wrench className="h-5 w-5" />} label="Tools" />}
+            >
+              {toolGroup?.items.map((item) => (
+                <OptionsMenuAction
+                  key={item.id}
+                  className={menuRowClassName}
+                  onSelect={() => selectActionItem(item)}
                 >
-                  {isRecording ? "Stop voice input" : "Voice input"}
-                </ComposerActionButton>
-              )}
-              {autoPlayResponses && (
-                <ComposerActionButton
+                  <MenuRow
+                    icon={<AssistantActionItemIcon item={item} />}
+                    label={item.label}
+                    description={describeAssistantActionItem(item)}
+                  />
+                </OptionsMenuAction>
+              ))}
+              {toolGroup?.items.length && tools ? <OptionsMenuSeparator /> : null}
+              {tools}
+            </OptionsMenuSubmenu>
+          ) : null}
+
+          {autoPlayResponses ? (
+            <>
+              <OptionsMenuSeparator />
+              <OptionsMenuAction
+                className={menuRowClassName}
+                disabled={isDisabled}
+                onSelect={autoPlayResponses.onToggle}
+              >
+                <MenuRow
                   icon={
                     autoPlayResponses.isPlaying ? (
                       <Volume1 className="h-5 w-5" />
@@ -232,22 +338,19 @@ export function ComposerActionMenu({
                       <VolumeX className="h-5 w-5" />
                     )
                   }
-                  onClick={autoPlayResponses.onToggle}
-                  disabled={isDisabled}
-                  title={
-                    autoPlayResponses.enabled ? "Disable response audio" : "Enable response audio"
+                  label="Response audio"
+                  description={
+                    autoPlayResponses.enabled
+                      ? "Play assistant replies automatically"
+                      : "Assistant replies stay silent"
                   }
-                  description="Play assistant replies automatically"
                   isActive={autoPlayResponses.enabled}
-                >
-                  Response audio
-                </ComposerActionButton>
-              )}
-            </div>
-            {tools && <div className="mt-2">{tools}</div>}
-          </>
-        )}
-      </PopoverContent>
-    </Popover>
+                />
+              </OptionsMenuAction>
+            </>
+          ) : null}
+        </>
+      )}
+    </OptionsMenu>
   );
 }

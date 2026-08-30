@@ -32,6 +32,7 @@ export function useComposerCommandController({
   assistantActionCatalog,
   goalState,
   modeControls,
+  onCursorPositionRequest,
   toolSelectionLocked,
 }: {
   isLoading: boolean;
@@ -43,6 +44,7 @@ export function useComposerCommandController({
   allowedAssistantActionCapabilities?: readonly ComposerAssistantActionCapability[];
   assistantActionCatalog?: ComposerActionCatalogConfig;
   modeControls?: ComposerCommandControls;
+  onCursorPositionRequest?: (position: number) => void;
   toolSelectionLocked?: boolean;
 }) {
   const {
@@ -125,6 +127,7 @@ export function useComposerCommandController({
 
     if (selection) {
       setTextareaCursorPosition(selection.cursorPosition);
+      onCursorPositionRequest?.(selection.cursorPosition);
     }
   };
 
@@ -133,6 +136,16 @@ export function useComposerCommandController({
 
     if (selection) {
       setTextareaCursorPosition(selection.cursorPosition);
+      onCursorPositionRequest?.(selection.cursorPosition);
+    }
+  };
+
+  const exitSlashSubmenu = () => {
+    const selection = commandActions.exitSlashSubmenu();
+
+    if (selection) {
+      setTextareaCursorPosition(selection.cursorPosition);
+      onCursorPositionRequest?.(selection.cursorPosition);
     }
   };
 
@@ -209,6 +222,7 @@ export function useComposerCommandController({
       onActiveSuggestionIndexChange: setActiveSuggestionIndex,
       onActionItemSelect: applyActionItem,
       onSlashCommandSelect: applySlashCommand,
+      onSlashCommandBack: exitSlashSubmenu,
       clearAgent: commandActions.clearAgent,
       selectedAgent: commandActions.selectedAgent,
       toolSelectionLocked,

@@ -28,7 +28,8 @@ interface ComposerDirectiveReplacementOptions {
   appendTrailingSpace?: boolean;
 }
 
-const COMMAND_TRIGGER_PATTERN = /(^|\s)([/@][^\s]*)$/;
+const MENTION_TRIGGER_PATTERN = /(^|\s)(@[^\s]*)$/;
+const SLASH_TRIGGER_PATTERN = /(^|\s)(\/[^\n]*)$/;
 
 export function getComposerDirectiveQuery(
   input: string,
@@ -36,7 +37,8 @@ export function getComposerDirectiveQuery(
   options: ComposerDirectiveQueryOptions = {},
 ): ComposerDirectiveQuery | null {
   const beforeCursor = input.slice(0, cursorPosition);
-  const match = beforeCursor.match(COMMAND_TRIGGER_PATTERN);
+  const match =
+    beforeCursor.match(SLASH_TRIGGER_PATTERN) ?? beforeCursor.match(MENTION_TRIGGER_PATTERN);
 
   if (!match?.[2]) {
     return null;
@@ -44,7 +46,8 @@ export function getComposerDirectiveQuery(
 
   const token = match[2];
   const start = beforeCursor.length - token.length;
-  const tokenSuffix = input.slice(cursorPosition).match(/^[^\s]*/)?.[0] ?? "";
+  const tokenSuffix =
+    input.slice(cursorPosition).match(token.startsWith("/") ? /^[^\n]*/ : /^[^\s]*/)?.[0] ?? "";
   const directive = {
     trigger: token[0] as ComposerCommandTrigger,
     query: token.slice(1).toLowerCase(),
@@ -187,4 +190,14 @@ export function matchesComposerCommand(query: string, values: Array<string | und
   }
 
   return values.some((value) => value?.toLowerCase().includes(normalizedQuery));
+}
+
+export function matchesComposerSlashCommand(query: string, command: string): boolean {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  if (!normalizedQuery) {
+    return true;
+  }
+
+  return command.trim().toLowerCase().startsWith(normalizedQuery);
 }

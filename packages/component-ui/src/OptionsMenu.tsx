@@ -1,11 +1,11 @@
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import { Check, ChevronRight } from "lucide-react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { cn } from "./utils";
 
 const surfaceClassName =
-  "z-50 min-w-44 rounded-md border border-zinc-200 bg-off-white p-1 text-xs shadow-lg dark:border-zinc-700 dark:bg-zinc-900";
+  "z-[70] min-w-44 rounded-md border border-zinc-200 bg-off-white p-1 text-xs shadow-lg dark:border-zinc-700 dark:bg-zinc-900";
 
 const rowClassName =
   "flex w-full cursor-pointer select-none items-center rounded px-2 py-1.5 text-zinc-700 outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-zinc-100 data-[state=open]:bg-zinc-100 dark:text-zinc-200 dark:data-[highlighted]:bg-zinc-800 dark:data-[state=open]:bg-zinc-800";
@@ -13,27 +13,53 @@ const rowClassName =
 export interface OptionsMenuProps {
   trigger: ReactNode;
   align?: "start" | "center" | "end";
+  alignOffset?: number;
+  side?: "top" | "right" | "bottom" | "left";
   sideOffset?: number;
   className?: string;
+  contentStyle?: CSSProperties;
   children: ReactNode;
+  modal?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  open?: boolean;
+  preserveTriggerFocus?: boolean;
+  triggerWrapper?: (trigger: ReactNode, open?: boolean) => ReactNode;
+  triggerWrapperActive?: boolean;
 }
 
 export function OptionsMenu({
   trigger,
   align = "start",
+  alignOffset,
+  side,
   sideOffset = 6,
   className,
+  contentStyle,
   children,
+  modal,
+  onOpenChange,
+  open,
+  preserveTriggerFocus = false,
+  triggerWrapper,
+  triggerWrapperActive,
 }: OptionsMenuProps) {
+  const menuTrigger = (
+    <DropdownMenuPrimitive.Trigger asChild>{trigger}</DropdownMenuPrimitive.Trigger>
+  );
+
   return (
-    <DropdownMenuPrimitive.Root>
-      <DropdownMenuPrimitive.Trigger asChild>{trigger}</DropdownMenuPrimitive.Trigger>
+    <DropdownMenuPrimitive.Root modal={modal} onOpenChange={onOpenChange} open={open}>
+      {triggerWrapper ? triggerWrapper(menuTrigger, triggerWrapperActive ?? open) : menuTrigger}
       <DropdownMenuPrimitive.Portal>
         <DropdownMenuPrimitive.Content
           align={align}
+          alignOffset={alignOffset}
+          side={side}
           sideOffset={sideOffset}
           collisionPadding={8}
           className={cn(surfaceClassName, className)}
+          style={contentStyle}
+          onCloseAutoFocus={preserveTriggerFocus ? (event) => event.preventDefault() : undefined}
         >
           {children}
         </DropdownMenuPrimitive.Content>
@@ -107,22 +133,71 @@ export function OptionsMenuSection<TValue extends string>({
   );
 }
 
+export interface OptionsMenuSubmenuProps {
+  trigger: ReactNode;
+  children: ReactNode;
+  className?: string;
+  contentClassName?: string;
+}
+
+export function OptionsMenuSubmenu({
+  trigger,
+  children,
+  className,
+  contentClassName,
+}: OptionsMenuSubmenuProps) {
+  return (
+    <DropdownMenuPrimitive.Sub>
+      <DropdownMenuPrimitive.SubTrigger
+        className={cn(rowClassName, "justify-between gap-4", className)}
+      >
+        <span className="min-w-0 flex-1">{trigger}</span>
+        <ChevronRight size={13} className="shrink-0" aria-hidden="true" />
+      </DropdownMenuPrimitive.SubTrigger>
+      <DropdownMenuPrimitive.Portal>
+        <DropdownMenuPrimitive.SubContent
+          sideOffset={2}
+          alignOffset={-5}
+          collisionPadding={8}
+          className={cn(surfaceClassName, contentClassName)}
+        >
+          {children}
+        </DropdownMenuPrimitive.SubContent>
+      </DropdownMenuPrimitive.Portal>
+    </DropdownMenuPrimitive.Sub>
+  );
+}
+
 export function OptionsMenuSeparator() {
   return <DropdownMenuPrimitive.Separator className="my-1 h-px bg-zinc-200 dark:bg-zinc-700" />;
 }
 
 export interface OptionsMenuActionProps {
   children: ReactNode;
+  className?: string;
   disabled?: boolean;
+  keepOpen?: boolean;
   onSelect: () => void;
 }
 
-export function OptionsMenuAction({ children, disabled, onSelect }: OptionsMenuActionProps) {
+export function OptionsMenuAction({
+  children,
+  className,
+  disabled,
+  keepOpen = false,
+  onSelect,
+}: OptionsMenuActionProps) {
   return (
     <DropdownMenuPrimitive.Item
       disabled={disabled}
-      onSelect={onSelect}
-      className={cn(rowClassName, "justify-start")}
+      onSelect={(event) => {
+        if (keepOpen) {
+          event.preventDefault();
+        }
+
+        onSelect();
+      }}
+      className={cn(rowClassName, "justify-start", className)}
     >
       {children}
     </DropdownMenuPrimitive.Item>

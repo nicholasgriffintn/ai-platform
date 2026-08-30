@@ -9,10 +9,10 @@ import {
   TokenizedComposerInput,
   type TokenizedComposerInputHandle,
   ComposerCommandActionsProvider,
-  ComposerCommandButton,
   ComposerCommandChips,
+  ComposerDirectiveMenu,
+  ComposerVoiceControls,
   ComposerShell,
-  ComposerCommandSuggestions,
 } from "@ngriffin_uk/polychat-component-conversation";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
@@ -25,9 +25,11 @@ import {
   type KeyboardEvent,
   type ReactNode,
   forwardRef,
+  useCallback,
   useEffect,
   useId,
   useImperativeHandle,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -46,6 +48,7 @@ import { InlineResponseControls } from "./InlineResponseControls";
 import { ModelSelector } from "./ModelSelector";
 import { uploadComposerAttachment } from "./uploadAttachment";
 import { useComposerCommandController } from "./useComposerCommandController";
+import { useComposerShortcuts } from "./useComposerShortcuts";
 import { useComposerSources } from "./useComposerSources";
 
 export interface ChatInputHandle {
@@ -64,6 +67,49 @@ const FOLLOW_UP_PLACEHOLDERS = [
   "Keep the thread going...",
   "Push back, dig deeper, or change tack...",
 ];
+const EMPTY_ATTACHMENTS: AttachmentData[] = [];
+
+function getAttachmentIconAndLabel(attachment: AttachmentData) {
+  if (attachment.type === "image") {
+    return {
+      preview: (
+        <Image
+          src={attachment.data}
+          alt="Selected"
+          className="h-4 w-4 rounded object-cover"
+          crossOrigin="use-credentials"
+        />
+      ),
+      label: "Image attached",
+    };
+  }
+
+  if (attachment.type === "document" || attachment.type === "markdown_document") {
+    return {
+      preview: <File className="h-3.5 w-3.5" aria-hidden="true" />,
+      label:
+        attachment.type === "markdown_document"
+          ? `${attachment.name || "Document"} (converted to text)`
+          : attachment.name || "Document attached",
+    };
+  }
+
+  if (attachment.type === "artifact_selection") {
+    return {
+      preview: <FileText className="h-3.5 w-3.5" aria-hidden="true" />,
+      label: attachment.name,
+    };
+  }
+
+  if (attachment.type === "audio") {
+    return {
+      preview: <Volume2 className="h-3.5 w-3.5" aria-hidden="true" />,
+      label: attachment.name || "Audio attached",
+    };
+  }
+
+  return { preview: null, label: "" };
+}
 
 interface ChatInputProps {
   goalState?: {
@@ -139,7 +185,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       hideInlineResponseControls = false,
       hideChatSettings = false,
       autoPlayResponses,
-      contextAttachments = [],
+      contextAttachments = EMPTY_ATTACHMENTS,
       readonlyContextAttachmentCount = 0,
       onRemoveContextAttachment,
       onClearContextAttachments,
@@ -198,6 +244,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     });
 
     const composerInputRef = useRef<TokenizedComposerInputHandle>(null);
+    const [requestedComposerCursorPosition, setRequestedComposerCursorPosition] = useState<
+      number | null
+    >(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const fileInputId = useId();
     const {
@@ -216,8 +265,19 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         ...modeControls,
         includeSettingCommands: modeControls?.includeSettingCommands ?? !hideChatSettings,
       },
+      onCursorPositionRequest: setRequestedComposerCursorPosition,
       toolSelectionLocked,
     });
+
+    useLayoutEffect(() => {
+      if (requestedComposerCursorPosition === null) {
+        return;
+      }
+
+      composerInputRef.current?.setCursorPosition(requestedComposerCursorPosition);
+      setTextareaCursorPosition(requestedComposerCursorPosition);
+      setRequestedComposerCursorPosition(null);
+    }, [requestedComposerCursorPosition, setTextareaCursorPosition]);
 
     useImperativeHandle(
       ref,
@@ -506,48 +566,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       return fileTypes.join(",");
     };
 
-    const getAttachmentIconAndLabel = (attachment: AttachmentData) => {
-      if (attachment.type === "image") {
-        return {
-          preview: (
-            <Image
-              src={attachment.data}
-              alt="Selected"
-              className="h-4 w-4 rounded object-cover"
-              crossOrigin="use-credentials"
-            />
-          ),
-          label: "Image attached",
-        };
-      }
-
-      if (attachment.type === "document" || attachment.type === "markdown_document") {
-        return {
-          preview: <File className="h-3.5 w-3.5" aria-hidden="true" />,
-          label:
-            attachment.type === "markdown_document"
-              ? `${attachment.name || "Document"} (converted to text)`
-              : attachment.name || "Document attached",
-        };
-      }
-
-      if (attachment.type === "artifact_selection") {
-        return {
-          preview: <FileText className="h-3.5 w-3.5" aria-hidden="true" />,
-          label: attachment.name,
-        };
-      }
-
-      if (attachment.type === "audio") {
-        return {
-          preview: <Volume2 className="h-3.5 w-3.5" aria-hidden="true" />,
-          label: attachment.name || "Audio attached",
-        };
-      }
-
-      return { preview: null, label: "" };
-    };
-
     const canUploadFiles = !disableAttachments && !isTextToImageOnlyModel;
 
     const contextAttachmentChips = contextAttachments.flatMap((attachment, index) => {
@@ -556,6 +574,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       return preview
         ? [
             {
+              id: `context-${index}-${attachment.type}`,
               label,
               onClear:
                 index < readonlyContextAttachmentCount
@@ -573,6 +592,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       return preview
         ? [
             {
+              id: `selected-${index}-${attachment.type}`,
               label,
               onClear: () => removeSelectedAttachment(index),
               preview,
@@ -586,6 +606,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       return preview
         ? [
             {
+              id: `source-${index}-${attachment.type}`,
               label,
               onClear: () => composerSources.removeAttachment(index),
               preview,
@@ -605,7 +626,25 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     const showInlineMultiModelToggle = isPro && !model && chatMode === "remote";
     const canShowToolMenu =
       !isToolSelectionLocked && (showInlineMultiModelToggle || supportsToolCalls);
-    const canShowActionMenu = canUseProComposerActions || canShowToolMenu;
+    const canShowActionMenu =
+      Boolean(directiveQuery) ||
+      canUseProComposerActions ||
+      canShowToolMenu ||
+      commandActions.actionItems.length > 0;
+    const liveModeCommand = commandActions.modeCommands.find(
+      (command) => command.command === "live",
+    );
+    const chatModeCommand = commandActions.modeCommands.find(
+      (command) => command.command === "chat",
+    );
+    const handleLiveToggle = useCallback(() => {
+      const command = liveModeCommand?.isActive ? chatModeCommand : liveModeCommand;
+
+      if (command && !command.disabled) {
+        commandActions.selectSlashCommand(command);
+      }
+    }, [chatModeCommand, commandActions, liveModeCommand]);
+    const canUseDictation = canUseProComposerActions && !liveModeCommand?.isActive;
     const shouldRenderInputControls = hideTextInput && controls;
     const isComposerSubmitDisabled =
       (!chatInput?.trim() &&
@@ -615,6 +654,23 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       isLoading ||
       isUploading ||
       isAuthenticationLoading;
+
+    useComposerShortcuts({
+      dictate: canUseDictation
+        ? {
+            enabled: !isLoading && !isAuthenticationLoading && !isTranscribing,
+            isRecording,
+            onStart: startRecording,
+            onStop: stopRecording,
+          }
+        : undefined,
+      live: liveModeCommand
+        ? {
+            enabled: !isLoading && !liveModeCommand.disabled,
+            onToggle: handleLiveToggle,
+          }
+        : undefined,
+    });
 
     return (
       <ComposerCommandActionsProvider actions={commandActions}>
@@ -642,7 +698,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                 type="file"
                 ref={fileInputRef}
                 accept={getFileTypeAccept()}
-                onChange={handleFileUpload}
+                onChange={(event) => void handleFileUpload(event)}
                 className="hidden"
                 id={fileInputId}
                 aria-label="Upload a file (images, documents, audio, and code)"
@@ -650,7 +706,17 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
               />
             ) : undefined
           }
-          suggestions={<ComposerCommandSuggestions {...commandState} />}
+          suggestions={
+            <ComposerDirectiveMenu
+              activeSuggestionIndex={commandState.activeSuggestionIndex}
+              directive={directiveQuery}
+              isDisabled={commandState.isDisabled}
+              onActiveSuggestionIndexChange={commandState.onActiveSuggestionIndexChange}
+              onActionItemSelect={commandState.onActionItemSelect}
+              onSlashCommandBack={commandState.onSlashCommandBack}
+              onSlashCommandSelect={commandState.onSlashCommandSelect}
+            />
+          }
           leadingControls={shouldRenderInputControls ? controls : undefined}
           inputHelp={
             hideTextInput
@@ -686,65 +752,80 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
             )
           }
           actions={
-            hideDefaultControls ? undefined : (
+            hideDefaultControls ? undefined : isLoading && streamStarted ? (
+              <Button
+                type="button"
+                onClick={() => controller.abort()}
+                variant="icon"
+                className="cursor-pointer p-2 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-md text-zinc-600 dark:text-zinc-400"
+                title="Stop generating"
+                aria-label="Stop generating"
+              >
+                <Pause className="h-5 w-5" />
+              </Button>
+            ) : (
               <>
-                {isLoading && streamStarted ? (
+                {!hideComposerActionMenu && canShowActionMenu && (
+                  <ComposerActionMenu
+                    autoPlayResponses={canUseProComposerActions ? autoPlayResponses : undefined}
+                    attachingSourceId={composerSources.attachingSourceId}
+                    canAttachSources={canUseProComposerActions}
+                    canUploadFiles={canUseProComposerActions && canUploadFiles}
+                    directive={directiveQuery}
+                    isDisabled={isLoading}
+                    isLoadingSources={composerSources.isLoading}
+                    isUploading={isUploading}
+                    onUploadClick={() => fileInputRef.current?.click()}
+                    onAttachSource={composerSources.attachSource}
+                    sourceScopeLabel={attachmentProjectId ? "Project sources" : "Personal sources"}
+                    sources={composerSources.availableSources}
+                    tools={
+                      canShowToolMenu ? (
+                        <ToolToggles
+                          isDisabled={isLoading || isToolSelectionLocked}
+                          showHeading={false}
+                        />
+                      ) : undefined
+                    }
+                    uploadIcon={<Paperclip className="h-4 w-4" aria-hidden="true" />}
+                    uploadLabel={`Upload ${isMultimodalModel || supportsAudio ? "files (images, audio, documents, code)" : "a Document or Code file"}`}
+                  />
+                )}
+                <ComposerVoiceControls
+                  className={liveModeCommand?.isActive ? "-ml-2" : undefined}
+                  dictate={
+                    canUseDictation
+                      ? {
+                          disabled: isLoading || isAuthenticationLoading,
+                          isRecording,
+                          isTranscribing,
+                          onStart: startRecording,
+                          onStop: stopRecording,
+                        }
+                      : undefined
+                  }
+                  live={
+                    liveModeCommand
+                      ? {
+                          disabled: isLoading || Boolean(liveModeCommand.disabled),
+                          isActive: liveModeCommand.isActive,
+                          onToggle: handleLiveToggle,
+                        }
+                      : undefined
+                  }
+                />
+                {!hideSubmitButton && (
                   <Button
-                    type="button"
-                    onClick={() => controller.abort()}
-                    variant="icon"
-                    className="cursor-pointer p-2 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-md text-zinc-600 dark:text-zinc-400"
-                    title="Stop generating"
-                    aria-label="Stop generating"
+                    type="submit"
+                    onClick={() => void submitSelectedAttachments()}
+                    disabled={isComposerSubmitDisabled}
+                    className="cursor-pointer p-2.5 bg-black hover:bg-zinc-800 dark:bg-off-white dark:hover:bg-zinc-200 rounded-md text-white dark:text-black shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    title="Send message"
+                    aria-label="Send message"
                   >
-                    <Pause className="h-5 w-5" />
+                    <Send className="h-5 w-5" />
+                    <span className="sr-only">Send message</span>
                   </Button>
-                ) : (
-                  <>
-                    {!hideComposerActionMenu && canShowActionMenu && (
-                      <ComposerActionMenu
-                        autoPlayResponses={canUseProComposerActions ? autoPlayResponses : undefined}
-                        attachingSourceId={composerSources.attachingSourceId}
-                        canAttachSources={canUseProComposerActions}
-                        canUseVoice={canUseProComposerActions}
-                        canUploadFiles={canUseProComposerActions && canUploadFiles}
-                        isDisabled={isLoading}
-                        isLoadingSources={composerSources.isLoading}
-                        isRecording={isRecording}
-                        isTranscribing={isTranscribing}
-                        isUploading={isUploading}
-                        onStartRecording={startRecording}
-                        onStopRecording={stopRecording}
-                        onUploadClick={() => fileInputRef.current?.click()}
-                        onAttachSource={composerSources.attachSource}
-                        sourceScopeLabel={
-                          attachmentProjectId ? "Project sources" : "Personal sources"
-                        }
-                        sources={composerSources.availableSources}
-                        tools={
-                          canShowToolMenu ? (
-                            <ToolToggles isDisabled={isLoading || isToolSelectionLocked} />
-                          ) : undefined
-                        }
-                        uploadIcon={<Paperclip className="h-4 w-4" aria-hidden="true" />}
-                        uploadLabel={`Upload ${isMultimodalModel || supportsAudio ? "files (images, audio, documents, code)" : "a Document or Code file"}`}
-                      />
-                    )}
-                    <ComposerCommandButton {...commandState} />
-                    {!hideSubmitButton && (
-                      <Button
-                        type="submit"
-                        onClick={submitSelectedAttachments}
-                        disabled={isComposerSubmitDisabled}
-                        className="cursor-pointer p-2.5 bg-black hover:bg-zinc-800 dark:bg-off-white dark:hover:bg-zinc-200 rounded-md text-white dark:text-black shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        title="Send message"
-                        aria-label="Send message"
-                      >
-                        <Send className="h-5 w-5" />
-                        <span className="sr-only">Send message</span>
-                      </Button>
-                    )}
-                  </>
                 )}
               </>
             )

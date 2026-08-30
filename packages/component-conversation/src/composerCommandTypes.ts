@@ -35,5 +35,6 @@ export interface ComposerCommandAction {
   selectionText?: string;
   selectionCursorOffset?: number;
   actionItem?: AssistantActionItem;
+  options?: ComposerCommandAction[];
   onSelect: () => void;
 }

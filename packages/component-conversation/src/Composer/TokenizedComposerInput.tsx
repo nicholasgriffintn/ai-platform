@@ -455,18 +455,25 @@ export const TokenizedComposerInput = forwardRef<
       }
     }, [expectedTokenSignature, onCursorPositionChange, orderedTokens, value]);
 
-    const emitCurrentState = () => {
+    const emitCurrentState = (isComposing = false) => {
       const editable = editableRef.current;
 
       if (!editable) {
         return;
       }
 
+      const cursorPosition = getCursorPosition(editable);
+
+      if (!isComposing) {
+        editable.normalize();
+        setCursorPosition(editable, cursorPosition);
+      }
+
       const current = readComposerDom(editable);
 
       onChange(current.text);
       onTokenPositionsChange(current.tokenPositions);
-      onCursorPositionChange(getCursorPosition(editable));
+      onCursorPositionChange(cursorPosition);
     };
 
     const handlePaste = (event: ClipboardEvent<HTMLDivElement>) => {
@@ -505,7 +512,11 @@ export const TokenizedComposerInput = forwardRef<
           contentEditable={!disabled}
           suppressContentEditableWarning
           className="min-h-[36px] w-full whitespace-pre-wrap break-words bg-transparent text-base leading-6 outline-none dark:text-white"
-          onInput={emitCurrentState}
+          onInput={(event) =>
+            emitCurrentState(
+              event.nativeEvent instanceof InputEvent && event.nativeEvent.isComposing,
+            )
+          }
           onKeyDown={onKeyDown}
           onKeyUp={() => {
             if (editableRef.current) {

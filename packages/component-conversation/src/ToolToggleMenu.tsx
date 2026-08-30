@@ -70,14 +70,21 @@ export interface ToolToggleOption {
 export interface ToolToggleMenuProps {
   options: ToolToggleOption[];
   isDisabled?: boolean;
+  showHeading?: boolean;
 }
 
-export function ToolToggleMenu({ options, isDisabled = false }: ToolToggleMenuProps) {
+export function ToolToggleMenu({
+  options,
+  isDisabled = false,
+  showHeading = true,
+}: ToolToggleMenuProps) {
   return (
-    <div className="border-t border-zinc-200 pt-2 dark:border-zinc-700">
-      <div className="px-3 pb-1 text-[11px] font-semibold uppercase text-zinc-500 dark:text-zinc-400">
-        Tools
-      </div>
+    <div className={showHeading ? "border-t border-zinc-200 pt-2 dark:border-zinc-700" : undefined}>
+      {showHeading ? (
+        <div className="px-3 pb-1 text-[11px] font-semibold uppercase text-zinc-500 dark:text-zinc-400">
+          Tools
+        </div>
+      ) : null}
       <div className="space-y-1">
         {options.map((option) => (
           <MenuToggleButton

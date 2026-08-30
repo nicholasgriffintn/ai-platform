@@ -50,10 +50,6 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
     <ConversationThread
       modeConfig={{
         ...modeConfig,
-        modeControls: {
-          ...modeConfig?.modeControls,
-          includeSettingCommands: false,
-        },
         welcomeTitle: hasModeWelcome ? modeConfig?.welcomeTitle : welcome.title,
         welcomeDescription: hasModeWelcome ? modeConfig?.welcomeDescription : welcome.description,
         welcomeLoading: isWelcomeLoading,

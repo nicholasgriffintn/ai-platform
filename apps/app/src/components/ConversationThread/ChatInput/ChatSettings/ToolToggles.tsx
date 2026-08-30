@@ -19,6 +19,7 @@ import { useToolsStore } from "~/state/stores/toolsStore";
 
 interface ToolTogglesProps {
   isDisabled?: boolean;
+  showHeading?: boolean;
 }
 
 const MODEL_TOOL_ICONS: Record<ModelToolId, LucideIcon> = {
@@ -32,7 +33,7 @@ const MODEL_TOOL_ICONS: Record<ModelToolId, LucideIcon> = {
   web_fetch: Link,
 };
 
-export const ToolToggles = ({ isDisabled = false }: ToolTogglesProps) => {
+export const ToolToggles = ({ isDisabled = false, showHeading = true }: ToolTogglesProps) => {
   const { model, chatMode, isPro, useMultiModel, setUseMultiModel } = useChatStore();
   const { selectedTools, setSelectedTools } = useToolsStore();
   const { data: apiModels } = useModels();
@@ -81,5 +82,5 @@ export const ToolToggles = ({ isDisabled = false }: ToolTogglesProps) => {
     }),
   ].filter((option) => option !== null);
 
-  return <ToolToggleMenu options={menuOptions} isDisabled={isDisabled} />;
+  return <ToolToggleMenu options={menuOptions} isDisabled={isDisabled} showHeading={showHeading} />;
 };

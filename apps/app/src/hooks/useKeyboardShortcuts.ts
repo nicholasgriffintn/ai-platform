@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 
+import { type AppKeyboardShortcutId, matchesAppKeyboardShortcut } from "~/lib/keyboard-shortcuts";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
@@ -12,41 +13,29 @@ export function useKeyboardShortcuts() {
     useChatStore();
 
   useEffect(() => {
-    const handlers: Record<string, ShortcutHandler> = {
-      k: (e: KeyboardEvent) => {
-        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-          e.preventDefault();
-          setShowSearch(true);
-        }
+    const handlers: Partial<Record<AppKeyboardShortcutId, ShortcutHandler>> = {
+      search: (e) => {
+        e.preventDefault();
+        setShowSearch(true);
       },
-      o: (e: KeyboardEvent) => {
-        if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "o") {
-          e.preventDefault();
-          clearCurrentConversation();
-        }
+      "new-chat": (e) => {
+        e.preventDefault();
+        clearCurrentConversation();
       },
-      b: (e: KeyboardEvent) => {
-        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
-          e.preventDefault();
-          setSidebarVisible(!sidebarVisible);
-        }
+      "toggle-sidebar": (e) => {
+        e.preventDefault();
+        setSidebarVisible(!sidebarVisible);
       },
-      "/": (e: KeyboardEvent) => {
-        if ((e.metaKey || e.ctrlKey) && e.key === "/") {
-          e.preventDefault();
-          setShowKeyboardShortcuts(!showKeyboardShortcuts);
-        }
+      "toggle-keyboard-shortcuts": (e) => {
+        e.preventDefault();
+        setShowKeyboardShortcuts(!showKeyboardShortcuts);
       },
-      l: (e: KeyboardEvent) => {
-        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "l") {
-          e.preventDefault();
-          setLocalOnlyMode(!localOnlyMode);
-        }
+      "toggle-local-only-mode": (e) => {
+        e.preventDefault();
+        setLocalOnlyMode(!localOnlyMode);
       },
     };
     const handleKeyDown = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-
       if (
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement ||
@@ -56,10 +45,12 @@ export function useKeyboardShortcuts() {
         return;
       }
 
-      const handler = handlers[key];
+      for (const [id, handler] of Object.entries(handlers)) {
+        if (handler && matchesAppKeyboardShortcut(e, id as AppKeyboardShortcutId)) {
+          handler(e);
 
-      if (handler) {
-        handler(e);
+          return;
+        }
       }
     };
 

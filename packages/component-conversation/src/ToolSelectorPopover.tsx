@@ -4,6 +4,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  ShortcutTooltip,
 } from "@ngriffin_uk/polychat-component-ui";
 import type { ToolCategoryFilter } from "@ngriffin_uk/polychat-library-chat/tool-filters";
 import type { Tool, ToolCategory } from "@ngriffin_uk/polychat-schemas";
@@ -50,21 +51,22 @@ export function ToolSelectorPopover({
 }: ToolSelectorPopoverProps) {
   return (
     <Popover open={isOpen} onOpenChange={onOpenChange}>
-      <PopoverTrigger asChild>
-        <Button
-          variant={isOpen ? "iconActive" : "icon"}
-          icon={<Blocks className="h-4 w-4" />}
-          disabled={isDisabled}
-          aria-haspopup="dialog"
-          aria-expanded={isOpen}
-          title="Manage AI tools"
-          aria-label="Manage AI tools"
-        >
-          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-zinc-100 px-1 text-xs dark:bg-zinc-800">
-            {selectedTools.length}
-          </span>
-        </Button>
-      </PopoverTrigger>
+      <ShortcutTooltip keys={["/tools"]} label="Tools">
+        <PopoverTrigger asChild>
+          <Button
+            variant={isOpen ? "iconActive" : "icon"}
+            icon={<Blocks className="h-4 w-4" />}
+            disabled={isDisabled}
+            aria-haspopup="dialog"
+            aria-expanded={isOpen}
+            aria-label="Manage AI tools"
+          >
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-zinc-100 px-1 text-xs dark:bg-zinc-800">
+              {selectedTools.length}
+            </span>
+          </Button>
+        </PopoverTrigger>
+      </ShortcutTooltip>
       <PopoverContent
         side="top"
         align="end"

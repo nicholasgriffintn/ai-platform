@@ -59,6 +59,14 @@ export function useComposerBanner({ model, hideSuggestions }: ComposerBannerOpti
     if (suggestionsAllowed) {
       const messageCount = user?.message_count ?? 0;
 
+      candidates.push({
+        id: "composer-shortcuts",
+        tone: "info",
+        title: "Find actions and capabilities as you type",
+        message: "Type / for actions or @ for recipes, agents, connectors, and tools.",
+        dismissal: { scope: "forever", suggestion: true },
+      });
+
       if (!isLoadingProviderSettings && !providerSettings.some((p) => p.hasApiKey)) {
         candidates.push({
           id: "provider-setup",

@@ -8,10 +8,12 @@ import type { ComposerAgentOption, ComposerCommandAction } from "../composerComm
  * and supplies the result. The composer surface only presents and emits selections.
  */
 export interface ComposerCommandActions {
+  activeSlashCommand: ComposerCommandAction | null;
   agents: ComposerAgentOption[];
   actionItems: AssistantActionItem[];
   canUseAgents: boolean;
   clearAgent: () => void;
+  exitSlashSubmenu: () => void;
   filteredActionItems: AssistantActionItem[];
   filteredSlashCommands: ComposerCommandAction[];
   isLoadingAgents: boolean;

@@ -1,4 +1,10 @@
-import { cn, Popover, PopoverContent, PopoverTrigger } from "@ngriffin_uk/polychat-component-ui";
+import {
+  cn,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  ShortcutTooltip,
+} from "@ngriffin_uk/polychat-component-ui";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { type ReactNode, useState } from "react";
 
@@ -10,6 +16,7 @@ export interface InlineSettingSelectProps<T extends string> {
   displayLabel: string;
   options: Array<{ value: T | ""; label: string }>;
   isDisabled?: boolean;
+  shortcut?: string;
   onChange: (value: T | "") => void;
 }
 
@@ -21,42 +28,45 @@ export function InlineSettingSelect<T extends string>({
   displayLabel,
   options,
   isDisabled = false,
+  shortcut,
   onChange,
 }: InlineSettingSelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          disabled={isDisabled}
-          aria-label={`${label}: ${displayLabel}`}
-          aria-haspopup="menu"
-          aria-expanded={isOpen}
-          className={cn(
-            "inline-flex h-8 min-w-8 items-center gap-1.5 rounded-md px-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-60",
-            isOpen
-              ? "bg-off-white-highlight text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100"
-              : "text-zinc-700 hover:bg-off-white-highlight dark:text-zinc-200 dark:hover:bg-zinc-900",
-          )}
-        >
-          <span
-            className="flex h-4 w-4 flex-shrink-0 items-center justify-center"
-            aria-hidden="true"
+      <ShortcutTooltip keys={shortcut ? [shortcut] : []} label={`Select ${label.toLowerCase()}`}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            disabled={isDisabled}
+            aria-label={`${label}: ${displayLabel}`}
+            aria-haspopup="menu"
+            aria-expanded={isOpen}
+            className={cn(
+              "inline-flex h-8 min-w-8 items-center gap-1.5 rounded-md px-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+              isOpen
+                ? "bg-off-white-highlight text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100"
+                : "text-zinc-700 hover:bg-off-white-highlight dark:text-zinc-200 dark:hover:bg-zinc-900",
+            )}
           >
-            {icon}
-          </span>
-          <span className="hidden max-w-[130px] truncate lg:inline" title={displayLabel}>
-            {displayLabel}
-          </span>
-          {isOpen ? (
-            <ChevronUp className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
-          ) : (
-            <ChevronDown className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
-          )}
-        </button>
-      </PopoverTrigger>
+            <span
+              className="flex h-4 w-4 flex-shrink-0 items-center justify-center"
+              aria-hidden="true"
+            >
+              {icon}
+            </span>
+            <span className="hidden max-w-[130px] truncate lg:inline" title={displayLabel}>
+              {displayLabel}
+            </span>
+            {isOpen ? (
+              <ChevronUp className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
+            )}
+          </button>
+        </PopoverTrigger>
+      </ShortcutTooltip>
       <PopoverContent
         side="top"
         align="start"

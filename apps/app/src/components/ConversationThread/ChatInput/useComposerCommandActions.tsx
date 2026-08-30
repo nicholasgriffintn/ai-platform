@@ -1,7 +1,8 @@
-import type {
-  ComposerActionCatalogConfig,
-  ComposerAssistantActionCapability,
-  ComposerCommandAction,
+import {
+  getComposerCommandMenuState,
+  type ComposerActionCatalogConfig,
+  type ComposerAssistantActionCapability,
+  type ComposerCommandAction,
 } from "@ngriffin_uk/polychat-component-conversation";
 import { COMPACT_CONVERSATION_COMMAND } from "@ngriffin_uk/polychat-library-chat/compaction-command";
 import {
@@ -38,6 +39,7 @@ import {
   BookOpen,
   Brain,
   Code,
+  Cpu,
   Database,
   Image,
   Layers,
@@ -223,6 +225,49 @@ export function useComposerCommandActions({
     setChatInput(removeComposerDirective(chatInput, directive));
   }, [chatInput, directive, setChatInput]);
 
+  const modelCommands = useMemo<ComposerCommandAction[]>(
+    () => [
+      {
+        id: "model-auto",
+        label: "Model: Automatic",
+        description: "Let Polychat choose the model for each response.",
+        command: "model auto",
+        icon: <Cpu className="h-4 w-4" aria-hidden="true" />,
+        isActive: model === null,
+        disabled: selectedAgentId !== null,
+        disabledReason: "The selected agent controls the model.",
+        onSelect: () => selectModelWithDefaults(null),
+      },
+      ...Object.entries(availableModels)
+        .filter(([modelId]) => modelId !== "auto")
+        .map(([modelId, modelConfig]) => ({
+          id: `model-${modelId}`,
+          label: `Model: ${modelConfig.name}`,
+          description: `Use ${modelConfig.name} for the next response.`,
+          command: `model ${modelId}`,
+          icon: <Cpu className="h-4 w-4" aria-hidden="true" />,
+          isActive: model === modelId,
+          disabled: selectedAgentId !== null,
+          disabledReason: "The selected agent controls the model.",
+          onSelect: () => selectModelWithDefaults(modelId),
+        })),
+    ],
+    [availableModels, model, selectModelWithDefaults, selectedAgentId],
+  );
+  const modelCommand = useMemo<ComposerCommandAction>(
+    () => ({
+      id: "model-options",
+      label: "Model",
+      description: "Choose the model for the next response.",
+      command: "model",
+      icon: <Cpu className="h-4 w-4" aria-hidden="true" />,
+      isActive: false,
+      options: modelCommands,
+      onSelect: () => undefined,
+    }),
+    [modelCommands],
+  );
+
   const clearAgent = useCallback(() => {
     setSelectedAgentId(null);
     setSelectedAgentTokenPosition(null);
@@ -269,13 +314,9 @@ export function useComposerCommandActions({
     [actionCatalog.verbs],
   );
 
-  const settingCommands = useMemo<ComposerCommandAction[]>(() => {
-    if (!includeSettingCommands) {
-      return [];
-    }
-
-    const commands: ComposerCommandAction[] = [
-      ...verbosityOptions.map((option) => ({
+  const verbosityCommands = useMemo<ComposerCommandAction[]>(
+    () =>
+      verbosityOptions.map((option) => ({
         id: `verbosity-${option}`,
         label: `Verbosity: ${formatVerbosityLabel(option)}`,
         description: "Choose how detailed responses should be.",
@@ -288,7 +329,11 @@ export function useComposerCommandActions({
             verbosity: option,
           }),
       })),
-      ...reasoningOptions.map((option) => ({
+    [chatSettings, selectedVerbosity, setChatSettings, verbosityOptions],
+  );
+  const reasoningCommands = useMemo<ComposerCommandAction[]>(
+    () =>
+      reasoningOptions.map((option) => ({
         id: `reasoning-${option}`,
         label: `Reasoning: ${formatReasoningLabel(option)}`,
         description: "Choose configured thinking depth.",
@@ -307,7 +352,69 @@ export function useComposerCommandActions({
                   },
           }),
       })),
+    [chatSettings, reasoningOptions, selectedReasoning, setChatSettings],
+  );
+  const toolCommands = useMemo<ComposerCommandAction[]>(
+    () =>
+      modelToolOptions.map((tool) => {
+        const Icon = MODEL_TOOL_ICONS[tool.id];
+
+        return {
+          id: `${tool.id}-toggle`,
+          label: selectedTools.includes(tool.id) ? `Disable ${tool.label}` : `Enable ${tool.label}`,
+          description: tool.available ? tool.description : tool.availabilityReason,
+          command: `tools ${tool.id}`,
+          icon: <Icon className="h-4 w-4" aria-hidden="true" />,
+          isActive: selectedTools.includes(tool.id),
+          disabled: !tool.available || toolSelectionLocked,
+          disabledReason: toolSelectionLocked
+            ? "Agent tools are controlled by the selected agent."
+            : tool.availabilityReason,
+          onSelect: () => toggleTool(tool.id),
+        };
+      }),
+    [modelToolOptions, selectedTools, toggleTool, toolSelectionLocked],
+  );
+  const settingCommands = useMemo<ComposerCommandAction[]>(() => {
+    if (!includeSettingCommands) {
+      return [];
+    }
+
+    const commands: ComposerCommandAction[] = [
+      {
+        id: "reasoning-options",
+        label: "Reasoning",
+        description: "Choose how deeply the model should reason.",
+        command: "reasoning",
+        icon: <Brain className="h-4 w-4" aria-hidden="true" />,
+        isActive: false,
+        options: reasoningCommands,
+        onSelect: () => undefined,
+      },
+      {
+        id: "verbosity-options",
+        label: "Verbosity",
+        description: "Choose how detailed responses should be.",
+        command: "verbosity",
+        icon: <ListFilter className="h-4 w-4" aria-hidden="true" />,
+        isActive: false,
+        options: verbosityCommands,
+        onSelect: () => undefined,
+      },
     ];
+
+    if (toolCommands.length > 0) {
+      commands.push({
+        id: "tool-options",
+        label: "Tools",
+        description: "Enable or disable tools for the selected model.",
+        command: "tools",
+        icon: <ListFilter className="h-4 w-4" aria-hidden="true" />,
+        isActive: false,
+        options: toolCommands,
+        onSelect: () => undefined,
+      });
+    }
 
     if (isPro && !model && chatMode === "remote") {
       commands.push({
@@ -321,46 +428,17 @@ export function useComposerCommandActions({
       });
     }
 
-    if (availableModelTools.length > 0 && !toolSelectionLocked) {
-      for (const tool of availableModelTools) {
-        const Icon = MODEL_TOOL_ICONS[tool.id];
-
-        commands.push({
-          id: `${tool.id}-toggle`,
-          label: selectedTools.includes(tool.id)
-            ? `Disable ${tool.command}`
-            : `Enable ${tool.command}`,
-          description: tool.description,
-          command: tool.command,
-          icon: <Icon className="h-4 w-4" aria-hidden="true" />,
-          isActive: selectedTools.includes(tool.id),
-          disabled: toolSelectionLocked,
-          disabledReason: "Agent tools are controlled by the selected agent.",
-          onSelect: () => toggleTool(tool.id),
-        });
-      }
-    }
-
     return commands;
   }, [
     chatMode,
-    chatSettings,
-    availableModelTools,
-    defaultReasoningEffort,
-    defaultVerbosity,
     includeSettingCommands,
     isPro,
     model,
-    reasoningOptions,
-    selectedReasoning,
-    selectedTools,
-    selectedVerbosity,
-    setChatSettings,
+    reasoningCommands,
     setUseMultiModel,
-    toggleTool,
-    toolSelectionLocked,
+    toolCommands,
     useMultiModel,
-    verbosityOptions,
+    verbosityCommands,
   ]);
 
   const compactionCommands = useMemo<ComposerCommandAction[]>(
@@ -435,7 +513,22 @@ export function useComposerCommandActions({
       });
     }
 
-    return commands;
+    if (commands.length === 1) {
+      return commands;
+    }
+
+    return [
+      {
+        id: "goal-options",
+        label: "Goal",
+        description: "Set, pause, resume, replace, or clear the current goal.",
+        command: "goal",
+        icon: <Target className="h-4 w-4" aria-hidden="true" />,
+        isActive: false,
+        options: commands,
+        onSelect: () => undefined,
+      },
+    ];
   }, [
     goalState?.canUseGoals,
     goalState?.goal,
@@ -465,6 +558,7 @@ export function useComposerCommandActions({
     const commands = [
       ...actionVerbCommands,
       ...modeCommands,
+      modelCommand,
       ...skillCommands,
       ...goalCommands,
       ...compactionCommands,
@@ -486,16 +580,17 @@ export function useComposerCommandActions({
     compactionCommands,
     goalCommands,
     modeCommands,
+    modelCommand,
     settingCommands,
     skillCommands,
   ]);
-  const filteredSlashCommands = useMemo(() => {
+  const slashCommandMenu = useMemo(() => {
     const query = directive?.trigger === "/" ? directive.query : "";
 
-    return slashCommands.filter((command) =>
-      matchesComposerCommand(query, [command.label, command.command, command.description]),
-    );
+    return getComposerCommandMenuState(query, slashCommands);
   }, [directive, slashCommands]);
+  const filteredSlashCommands = slashCommandMenu.commands;
+  const activeSlashCommand = slashCommandMenu.parent;
   const filteredActionItems = useMemo(() => {
     const query = directive?.trigger === "@" ? directive.query : "";
 
@@ -555,7 +650,7 @@ export function useComposerCommandActions({
 
       if (item.kind === "agent") {
         const agentId = item.id.replace(/^agent:/, "");
-        const agent = agents.find((item) => item.id === agentId);
+        const agent = agents.find((candidate) => candidate.id === agentId);
 
         if (agent) {
           return selectAgent(agent);
@@ -604,6 +699,19 @@ export function useComposerCommandActions({
         return undefined;
       }
 
+      if (command.options?.length && directive) {
+        const selection = replaceComposerDirectiveWithCursor(
+          chatInput,
+          directive,
+          `/${command.command}`,
+          { appendTrailingSpace: true },
+        );
+
+        setChatInput(selection.input);
+
+        return selection;
+      }
+
       if (command.actionItem) {
         return selectActionItem(command.actionItem, `/${command.command}`);
       }
@@ -650,13 +758,27 @@ export function useComposerCommandActions({
     ],
   );
 
+  const exitSlashSubmenu = useCallback(() => {
+    if (!directive || directive.trigger !== "/" || !activeSlashCommand) {
+      return undefined;
+    }
+
+    const selection = replaceComposerDirectiveWithCursor(chatInput, directive, "/");
+
+    setChatInput(selection.input);
+
+    return selection;
+  }, [activeSlashCommand, chatInput, directive, setChatInput]);
+
   return {
+    activeSlashCommand,
     agents,
     actionItems: allowedActionItems,
     canUseAgents,
     clearAgent,
     filteredActionItems,
     filteredSlashCommands,
+    exitSlashSubmenu,
     isLoadingAgents,
     modeCommands,
     selectActionItem,
