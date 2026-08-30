@@ -15,6 +15,13 @@ export const projectTaskStatusSchema = z.enum([
 
 export type ProjectTaskStatus = z.infer<typeof projectTaskStatusSchema>;
 
+export const PROJECT_TASK_TOOL_IDS = [
+  "create_task",
+  "get_task",
+  "list_tasks",
+  "update_task",
+] as const;
+
 export const TERMINAL_PROJECT_TASK_STATUSES: readonly ProjectTaskStatus[] = ["done", "cancelled"];
 
 export function isTerminalProjectTaskStatus(status: ProjectTaskStatus): boolean {
@@ -39,6 +46,11 @@ export const projectTaskBlockedReasonSchema = z.enum([
 ]);
 
 export type ProjectTaskBlockedReason = z.infer<typeof projectTaskBlockedReasonSchema>;
+
+export const RETRYABLE_PROJECT_TASK_BLOCKED_REASONS: readonly ProjectTaskBlockedReason[] = [
+  "dispatch_failed",
+  "run_failed",
+];
 
 export const projectTaskBlockedReasonLabels: Record<ProjectTaskBlockedReason, string> = {
   awaiting_approval: "Waiting for an approval",
@@ -146,21 +158,46 @@ export const projectTaskSchema = z.object({
 
 export type ProjectTask = z.infer<typeof projectTaskSchema>;
 
-export const projectFlowStageSchema = z.object({
-  id: z
-    .string()
-    .trim()
-    .min(1)
-    .max(40)
-    .regex(/^[a-z0-9][a-z0-9_-]*$/, "Stage ids are lowercase, and use - or _ as separators"),
-  name: z.string().trim().min(1).max(60),
-  instructions: z.string().trim().max(2000).nullable().default(null),
-  agentId: z.string().trim().min(1).nullable().default(null),
-  skillId: z.string().trim().min(1).nullable().default(null),
-  mode: agentModeSchema.nullable().default(null),
-  requiresApprovalFor: z.array(toolPermissionSchema).default([]),
-  advance: z.enum(["on_goal_complete", "on_human_accept"]),
-});
+export function isProjectTaskRetryable(
+  task: Pick<ProjectTask, "status" | "blockedReason" | "dispatchTaskId">,
+): boolean {
+  if (task.status === "queued") {
+    return !task.dispatchTaskId;
+  }
+
+  return (
+    task.status === "blocked" &&
+    task.blockedReason !== null &&
+    RETRYABLE_PROJECT_TASK_BLOCKED_REASONS.includes(task.blockedReason)
+  );
+}
+
+export function isProjectTaskAwaitingInput(
+  task: Pick<ProjectTask, "status" | "blockedReason">,
+): boolean {
+  return task.status === "blocked" && task.blockedReason === "stalled";
+}
+
+export const projectFlowStageSchema = z
+  .object({
+    id: z
+      .string()
+      .trim()
+      .min(1)
+      .max(40)
+      .regex(/^[a-z0-9][a-z0-9_-]*$/, "Stage ids are lowercase, and use - or _ as separators"),
+    name: z.string().trim().min(1).max(60),
+    instructions: z.string().trim().max(2000).nullable().default(null),
+    agentId: z.string().trim().min(1).nullable().default(null),
+    skillIds: z.array(z.string().trim().min(1)).default([]),
+    mode: agentModeSchema.nullable().default(null),
+    requiresApprovalFor: z.array(toolPermissionSchema).default([]),
+    advance: z.enum(["on_goal_complete", "on_human_accept"]),
+  })
+  .refine((stage) => new Set(stage.skillIds).size === stage.skillIds.length, {
+    error: "Stage skills must be unique",
+    path: ["skillIds"],
+  });
 
 export type ProjectFlowStage = z.infer<typeof projectFlowStageSchema>;
 

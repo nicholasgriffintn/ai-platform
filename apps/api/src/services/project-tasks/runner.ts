@@ -176,7 +176,7 @@ export async function ensureProjectTaskConversation(params: {
   );
 }
 
-function buildTaskPrompt(params: {
+export function buildTaskPrompt(params: {
   task: ProjectTask;
   stageInstructions: string | null;
   contextNotes: string | null;
@@ -187,6 +187,7 @@ function buildTaskPrompt(params: {
     lines.push(params.stageInstructions);
   }
 
+  lines.push(`Project task ID: ${params.task.id}`);
   lines.push(`Objective: ${params.task.objective}`);
 
   if (params.task.expectedOutput) {

@@ -27,7 +27,7 @@ import { create_music } from "./music";
 import { next_edit_completion } from "./next_edit";
 import { extract_text_from_document } from "./ocr";
 import { run_pashi_tools, search_pashi_tools } from "./pashi";
-import { create_task, list_tasks, update_task } from "./projectTasks";
+import { create_task, get_task, list_tasks, update_task } from "./projectTasks";
 import { create_qr_code } from "./qr";
 import { configure_recipe } from "./recipes/configure_recipe";
 import { get_recipe } from "./recipes/get_recipe";
@@ -81,6 +81,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   trigger_recipe,
   get_task_status,
   create_task,
+  get_task,
   list_tasks,
   update_task,
   capture_screenshot,

@@ -1,10 +1,16 @@
 import {
   projectTaskStatusLabels,
+  type Goal,
   type ProjectTask,
   type ProjectTaskStatus,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { createProjectTask, listProjectTasks, updateProjectTask } from "~/services/project-tasks";
+import {
+  createProjectTask,
+  getProjectTask,
+  listProjectTasks,
+  updateProjectTask,
+} from "~/services/project-tasks";
 import type { IRequest } from "~/types";
 
 import type { ApiToolDefinition } from "../../types/functions";
@@ -23,6 +29,41 @@ function formatTask(task: ProjectTask): string {
   const blocked = task.blockedDetail ? ` — ${task.blockedDetail}` : "";
 
   return `${task.id}${stage}: ${task.objective}${criteria} (${projectTaskStatusLabels[task.status]})${blocked}`;
+}
+
+function formatTaskDetail(task: ProjectTask, goal: Goal | null): string {
+  const lines = [formatTask(task)];
+
+  if (task.expectedOutput) {
+    lines.push(`Expected output: ${task.expectedOutput}`);
+  }
+
+  if (task.acceptanceCriteria.length > 0) {
+    lines.push(
+      "Done when:",
+      ...task.acceptanceCriteria.map((criterion) => `- ${criterion.id}: ${criterion.text}`),
+    );
+  }
+
+  if (goal) {
+    lines.push(`Goal: ${goal.status}`);
+
+    if (goal.stopped_reason) {
+      lines.push(`Stopped reason: ${goal.stopped_reason}`);
+    }
+
+    if (goal.evidence?.length) {
+      lines.push(
+        "Evidence:",
+        ...goal.evidence.map(
+          (entry) =>
+            `- ${entry.status}: ${entry.claim} — ${entry.route} (${entry.evidence_surface})`,
+        ),
+      );
+    }
+  }
+
+  return lines.join("\n");
 }
 
 function requireProjectId(request: IRequest): string {
@@ -144,6 +185,40 @@ export const list_tasks: ApiToolDefinition = {
         ? `Work queue:\n${visible.map(formatTask).join("\n")}`
         : "This work queue has no tasks matching that filter.",
       data: { tasks: visible, total: tasks.length },
+    };
+  },
+};
+
+export const get_task: ApiToolDefinition = {
+  name: "get_task",
+  description:
+    "Get one task from this project, including its acceptance criteria, execution state, and goal evidence. Use it before changing a task or when the person asks about one exact task.",
+  type: "normal",
+  costPerCall: 0,
+  permissions: ["read"],
+  inputSchema: jsonSchemaToZod({
+    type: "object",
+    properties: {
+      taskId: { type: "string", description: "The exact id of the task to retrieve." },
+    },
+    required: ["taskId"],
+    additionalProperties: false,
+  }),
+  execute: async (args, toolContext) => {
+    const request = toolContext.request;
+    const projectId = requireProjectId(request);
+
+    if (!request.context) {
+      throw new Error("Signed-in project context is required for project task tools");
+    }
+
+    const result = await getProjectTask(request.context, projectId, String(args.taskId ?? ""));
+
+    return {
+      status: "success",
+      name: "get_task",
+      content: formatTaskDetail(result.task, result.goal),
+      data: result,
     };
   },
 };

@@ -2,7 +2,13 @@ import type { Goal, ProjectFlow, ProjectTask } from "@ngriffin_uk/polychat-schem
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { CreateTaskDialog, ProjectBriefCard, TaskBoard, TaskDetail } from "./index";
+import {
+  CreateTaskDialog,
+  FlowEditorDialog,
+  ProjectBriefCard,
+  TaskBoard,
+  TaskDetail,
+} from "./index";
 
 afterEach(cleanup);
 
@@ -46,7 +52,7 @@ const flow: ProjectFlow = {
       name: "Research",
       instructions: null,
       agentId: "agent-research",
-      skillId: null,
+      skillIds: [],
       mode: "explore",
       requiresApprovalFor: [],
       advance: "on_goal_complete",
@@ -56,7 +62,7 @@ const flow: ProjectFlow = {
       name: "Publish",
       instructions: null,
       agentId: "agent-publish",
-      skillId: null,
+      skillIds: [],
       mode: "build",
       requiresApprovalFor: ["write"],
       advance: "on_human_accept",
@@ -110,6 +116,7 @@ describe("TaskBoard", () => {
           { id: "agent-publish", name: "Publisher" },
         ]}
         taskHref={() => "/tasks/task-1"}
+        conversationHref={() => null}
         onStartTask={onStartTask}
         onAcceptTask={vi.fn()}
         onCreateTask={vi.fn()}
@@ -135,6 +142,7 @@ describe("TaskBoard", () => {
         members={[]}
         agents={[]}
         taskHref={() => "/tasks/task-1"}
+        conversationHref={() => null}
         onStartTask={vi.fn()}
         onAcceptTask={vi.fn()}
         onCreateTask={vi.fn()}
@@ -146,6 +154,60 @@ describe("TaskBoard", () => {
 
     expect(screen.getByRole("button", { name: "Accept" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+  });
+
+  it("sends stalled work to its conversation instead of retrying it", () => {
+    render(
+      <TaskBoard
+        tasks={[
+          {
+            ...task,
+            status: "blocked",
+            blockedReason: "stalled",
+            blockedDetail: "Needs a person to confirm the launch date",
+            conversationId: "conversation-1",
+          },
+        ]}
+        flow={flow}
+        members={[]}
+        agents={[]}
+        taskHref={() => "/tasks/task-1"}
+        conversationHref={() => "/chat?completion_id=conversation-1"}
+        onStartTask={vi.fn()}
+        onAcceptTask={vi.fn()}
+        onCreateTask={vi.fn()}
+        onConfigureFlow={vi.fn()}
+        canCreateTask
+        canManageFlow
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Respond" }).getAttribute("href")).toBe(
+      "/chat?completion_id=conversation-1",
+    );
+  });
+
+  it("links completed work to its result without offering retry", () => {
+    render(
+      <TaskBoard
+        tasks={[{ ...task, status: "done", conversationId: "conversation-1" }]}
+        flow={flow}
+        members={[]}
+        agents={[]}
+        taskHref={() => "/tasks/task-1"}
+        conversationHref={() => "/chat?completion_id=conversation-1"}
+        onStartTask={vi.fn()}
+        onAcceptTask={vi.fn()}
+        onCreateTask={vi.fn()}
+        onConfigureFlow={vi.fn()}
+        canCreateTask
+        canManageFlow
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+    expect(screen.getByRole("link", { name: "View result" })).toBeTruthy();
   });
 });
 
@@ -201,6 +263,100 @@ describe("TaskDetail", () => {
 
     expect(renderProgressSummary).toHaveBeenCalledWith("**Checked** the release inputs");
     expect(screen.getByText("Rendered: **Checked** the release inputs")).toBeTruthy();
+  });
+
+  it("makes the accepted result primary and shows confirmed criteria as met", () => {
+    const criterion = "The note includes the confirmed launch date";
+    const completedGoal: Goal = {
+      id: "goal-2",
+      conversation_id: "conversation-2",
+      sandbox_run_id: null,
+      user_id: 1,
+      objective: task.objective,
+      status: "completed",
+      source: "user",
+      iteration_count: 1,
+      stall_streak: 0,
+      tokens_spent: 250,
+      progress: [],
+      evidence: [
+        {
+          claim: criterion,
+          route: "Reviewed the final note",
+          evidence_surface: "Task conversation",
+          status: "confirmed",
+        },
+      ],
+      stopped_reason: null,
+      created_at: "2026-08-30T10:00:00.000Z",
+      updated_at: "2026-08-30T10:05:00.000Z",
+      completed_at: "2026-08-30T10:05:00.000Z",
+      last_continued_at: "2026-08-30T10:05:00.000Z",
+    };
+
+    render(
+      <TaskDetail
+        task={{
+          ...task,
+          status: "done",
+          conversationId: "conversation-2",
+          acceptanceCriteria: [{ id: "criterion-1", text: criterion }],
+        }}
+        goal={completedGoal}
+        flow={flow}
+        members={[]}
+        agents={[]}
+        blockedBy={[]}
+        conversationHref="/chat?completion_id=conversation-2"
+        taskHref={() => "/tasks/task-1"}
+        onRun={vi.fn()}
+        onAccept={vi.fn()}
+        onCancel={vi.fn()}
+        onReopen={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("link", { name: "View result" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Reopen" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Reopen task" })).toBeTruthy();
+    expect(screen.getByLabelText(`Met: ${criterion}`)).toBeTruthy();
+    expect(screen.getByText("Confirmed").getAttribute("data-slot")).toBe("badge");
+  });
+});
+
+describe("FlowEditorDialog", () => {
+  it("focuses its heading and saves multiple skills on one stage", async () => {
+    const onSave = vi.fn(async () => undefined);
+
+    render(
+      <FlowEditorDialog
+        open
+        flow={{ stages: [flow.stages[0]] }}
+        agents={[{ id: "agent-research", name: "Researcher" }]}
+        skills={[
+          { id: "source-research", name: "Source research" },
+          { id: "fact-checking", name: "Fact checking" },
+        ]}
+        capabilitiesHref="/projects/project-1/library"
+        agentsHref="/profile?tab=agents"
+        onOpenChange={vi.fn()}
+        onSave={onSave}
+      />,
+    );
+
+    const heading = screen.getByRole("heading", { name: "Configure the agent pipeline" });
+
+    await waitFor(() => expect(document.activeElement).toBe(heading));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Source research" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Fact checking" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save pipeline" }));
+
+    await waitFor(() =>
+      expect(onSave).toHaveBeenCalledWith({
+        stages: [expect.objectContaining({ skillIds: ["source-research", "fact-checking"] })],
+      }),
+    );
   });
 });
 

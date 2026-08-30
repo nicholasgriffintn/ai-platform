@@ -1,6 +1,13 @@
 import { Badge, Button, ButtonLink, Link } from "@ngriffin_uk/polychat-component-ui";
-import type { Goal, ProjectFlow, ProjectTask } from "@ngriffin_uk/polychat-schemas";
+import type {
+  Goal,
+  GoalEvidenceStatus,
+  ProjectFlow,
+  ProjectTask,
+} from "@ngriffin_uk/polychat-schemas";
 import {
+  isProjectTaskAwaitingInput,
+  isProjectTaskRetryable,
   isTerminalProjectTaskStatus,
   projectTaskBlockedReasonLabels,
 } from "@ngriffin_uk/polychat-schemas";
@@ -16,6 +23,7 @@ import {
   Trash2,
 } from "lucide-react";
 
+import { isTaskCriterionMet } from "./task-evidence";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 
 export interface TaskDetailProps {
@@ -36,11 +44,21 @@ export interface TaskDetailProps {
   renderProgressSummary?: (summary: string) => React.ReactNode;
 }
 
-const EVIDENCE_TONE: Record<string, string> = {
-  confirmed: "text-emerald-700 dark:text-emerald-400",
-  approximate: "text-amber-700 dark:text-amber-400",
-  supporting: "text-zinc-600 dark:text-zinc-400",
-  blocked: "text-rose-700 dark:text-rose-400",
+const EVIDENCE_BADGE_VARIANT: Record<
+  GoalEvidenceStatus,
+  "success" | "warning" | "outline" | "destructive"
+> = {
+  confirmed: "success",
+  approximate: "warning",
+  supporting: "outline",
+  blocked: "destructive",
+};
+
+const EVIDENCE_STATUS_LABEL: Record<GoalEvidenceStatus, string> = {
+  confirmed: "Confirmed",
+  approximate: "Approximate",
+  supporting: "Supporting",
+  blocked: "Blocked",
 };
 
 function Fact({ label, value }: { label: string; value: string }) {
@@ -83,7 +101,8 @@ export function TaskDetail({
   const agentId = stage?.agentId ?? task.runner?.agentId;
   const agent = agents.find((candidate) => candidate.id === agentId);
   const isFinished = isTerminalProjectTaskStatus(task.status);
-  const canRun = task.status === "backlog" || task.status === "blocked";
+  const canRetry = isProjectTaskRetryable(task);
+  const needsInput = isProjectTaskAwaitingInput(task);
   const progress = reverseCopy(goal?.progress ?? []);
   const evidence = goal?.evidence ?? [];
 
@@ -106,69 +125,75 @@ export function TaskDetail({
           </div>
         )}
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            {task.status === "review" && (
-              <Button
-                variant="primary"
-                icon={<Check size={14} />}
-                onClick={onAccept}
-                disabled={isBusy}
-              >
-                Accept
-              </Button>
-            )}
-            {canRun && (
-              <Button variant="primary" icon={<Play size={14} />} onClick={onRun} disabled={isBusy}>
-                {task.status === "backlog" ? "Run" : "Run again"}
-              </Button>
-            )}
-            {conversationHref && (
-              <ButtonLink
-                href={conversationHref}
-                variant="outline"
-                icon={<MessageSquareText size={14} />}
-                className="no-underline hover:!no-underline"
-              >
-                Open its conversation
-              </ButtonLink>
-            )}
-            {isFinished ? (
-              <Button
-                variant="primary"
-                icon={<RotateCcw size={14} />}
-                onClick={onReopen}
-                disabled={isBusy}
-              >
-                Reopen
-              </Button>
-            ) : (
-              <Button variant="ghost" onClick={onCancel} disabled={isBusy}>
-                Cancel
-              </Button>
-            )}
-          </div>
-          <Button
-            variant="ghost"
-            icon={<Trash2 size={14} />}
-            className="text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
-            onClick={onDelete}
-            disabled={isBusy || task.status === "running"}
-          >
-            Delete
-          </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {task.status === "review" && (
+            <Button
+              variant="primary"
+              icon={<Check size={14} />}
+              onClick={onAccept}
+              disabled={isBusy}
+            >
+              Accept result
+            </Button>
+          )}
+          {task.status === "backlog" && (
+            <Button variant="primary" icon={<Play size={14} />} onClick={onRun} disabled={isBusy}>
+              Run
+            </Button>
+          )}
+          {canRetry && (
+            <Button variant="secondary" icon={<Play size={14} />} onClick={onRun} disabled={isBusy}>
+              Run again
+            </Button>
+          )}
+          {conversationHref && task.status === "done" ? (
+            <ButtonLink
+              href={conversationHref}
+              variant="primary"
+              icon={<MessageSquareText size={14} />}
+              className="no-underline hover:!no-underline"
+            >
+              View result
+            </ButtonLink>
+          ) : null}
+          {conversationHref && task.status !== "done" ? (
+            <ButtonLink
+              href={conversationHref}
+              variant={needsInput ? "primary" : "outline"}
+              icon={<MessageSquareText size={14} />}
+              className="no-underline hover:!no-underline"
+            >
+              {needsInput ? "Open conversation to respond" : "Open conversation"}
+            </ButtonLink>
+          ) : null}
         </div>
 
         <section className="space-y-3">
           <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Done when</h2>
           {task.acceptanceCriteria.length > 0 ? (
             <ul className="space-y-2">
-              {task.acceptanceCriteria.map((criterion) => (
-                <li key={criterion.id} className="flex items-start gap-2 text-sm">
-                  <Circle size={14} className="mt-0.5 shrink-0 text-zinc-400" />
-                  <span>{criterion.text}</span>
-                </li>
-              ))}
+              {task.acceptanceCriteria.map((criterion) => {
+                const isMet = isTaskCriterionMet(task.status, criterion.text, evidence);
+
+                return (
+                  <li key={criterion.id} className="flex items-start gap-2 text-sm">
+                    {isMet ? (
+                      <Check
+                        size={14}
+                        className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400"
+                        aria-label={`Met: ${criterion.text}`}
+                      />
+                    ) : (
+                      <Circle
+                        size={14}
+                        className="mt-0.5 shrink-0 text-zinc-400"
+                        aria-label={`Not yet met: ${criterion.text}`}
+                      />
+                    )}
+                    <span>{criterion.text}</span>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <p className="text-sm text-zinc-500">
@@ -313,11 +338,9 @@ export function TaskDetail({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <p className="text-sm text-zinc-900 dark:text-zinc-100">{entry.claim}</p>
-                    <span
-                      className={`shrink-0 text-xs ${EVIDENCE_TONE[entry.status] ?? "text-zinc-500"}`}
-                    >
-                      {entry.status}
-                    </span>
+                    <Badge variant={EVIDENCE_BADGE_VARIANT[entry.status]}>
+                      {EVIDENCE_STATUS_LABEL[entry.status]}
+                    </Badge>
                   </div>
                   <p className="mt-1 text-xs text-zinc-500">{entry.route}</p>
                   <p className="mt-0.5 text-xs text-zinc-500">Where: {entry.evidence_surface}</p>
@@ -362,6 +385,55 @@ export function TaskDetail({
           {task.constraints?.notes ? (
             <Aside label="Constraints">{task.constraints.notes}</Aside>
           ) : null}
+          <Aside label="Task management">
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs text-zinc-500">
+                  {isFinished
+                    ? "Reopen returns this task to the backlog without removing its history."
+                    : "Cancel stops this task but keeps its conversation and history so it can be reopened."}
+                </p>
+                {isFinished ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={<RotateCcw size={13} />}
+                    className="mt-2"
+                    onClick={onReopen}
+                    disabled={isBusy}
+                  >
+                    Reopen task
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    onClick={onCancel}
+                    disabled={isBusy}
+                  >
+                    Cancel task
+                  </Button>
+                )}
+              </div>
+              <div className="border-t border-zinc-200 pt-3 dark:border-zinc-800">
+                <p className="text-xs text-zinc-500">
+                  Delete removes the task from this project. Its conversation remains in project
+                  history.
+                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon={<Trash2 size={13} />}
+                  className="mt-2 text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+                  onClick={onDelete}
+                  disabled={isBusy || task.status === "running"}
+                >
+                  Delete task
+                </Button>
+              </div>
+            </div>
+          </Aside>
           {blockedBy.length > 0 && (
             <Aside label="Blocked by">
               <ul className="space-y-1">

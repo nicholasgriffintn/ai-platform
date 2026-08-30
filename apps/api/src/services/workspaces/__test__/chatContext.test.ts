@@ -106,6 +106,10 @@ describe("project chat context", () => {
         "tool_search",
         "hosted_shell",
         "web_fetch",
+        "create_task",
+        "get_task",
+        "list_tasks",
+        "update_task",
       ],
       enabledSkillIds: ["artifacts"],
       toolOptions: undefined,
@@ -180,6 +184,10 @@ describe("project chat context", () => {
       "tool_search",
       "hosted_shell",
       "web_fetch",
+      "create_task",
+      "get_task",
+      "list_tasks",
+      "update_task",
       "get_weather",
     ]);
   });

@@ -1,5 +1,6 @@
 import {
   findFlowStage,
+  PROJECT_TASK_TOOL_IDS,
   type ProjectFlow,
   type ProjectFlowStage,
   type ProjectTask,
@@ -74,6 +75,9 @@ export async function resolveTaskRuntime(params: {
   const projectTools = resolveProjectTools(capabilities).enabledTools;
   const agentId = stage?.agentId ?? task.runner?.agentId ?? null;
   const agent = agentId ? await resolveProjectAgent(context, task.projectId, agentId) : null;
+  const configuredTools = agent
+    ? intersectEnabledTools(projectTools, agent.enabled_tools)
+    : projectTools;
 
   return {
     stage,
@@ -81,7 +85,7 @@ export async function resolveTaskRuntime(params: {
     model: task.runner?.model ?? agent?.model ?? null,
     mode: stage?.mode ?? task.runner?.mode ?? "agent",
     enabledTools: withoutForbiddenTools(
-      agent ? intersectEnabledTools(projectTools, agent.enabled_tools) : projectTools,
+      [...new Set([...configuredTools, ...PROJECT_TASK_TOOL_IDS])],
       task.constraints?.forbiddenTools,
     ),
     requireApprovalFor: [
@@ -101,8 +105,8 @@ export function buildStageInstructions(stage: ProjectFlowStage | null): string |
     lines.push(stage.instructions);
   }
 
-  if (stage.skillId) {
-    lines.push(`Load the ${stage.skillId} skill before you start and follow it.`);
+  if (stage.skillIds.length > 0) {
+    lines.push(`Load these skills before you start and follow them: ${stage.skillIds.join(", ")}.`);
   }
 
   if (stage.advance === "on_human_accept") {

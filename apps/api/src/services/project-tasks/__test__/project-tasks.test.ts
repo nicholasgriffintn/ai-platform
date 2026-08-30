@@ -18,6 +18,7 @@ import {
   updateProjectTask,
 } from "../index";
 import {
+  buildTaskPrompt,
   ensureProjectTaskConversation,
   projectTaskConversationId,
   queueProjectTaskRun,
@@ -145,6 +146,14 @@ describe("projectTaskConversationId", () => {
   });
 });
 
+describe("buildTaskPrompt", () => {
+  it("gives the task conversation the exact task id used by its tools", () => {
+    expect(
+      buildTaskPrompt({ task: baseTask, stageInstructions: null, contextNotes: null }),
+    ).toContain("Project task ID: task-1");
+  });
+});
+
 describe("project task transitions", () => {
   it("refuses to let the model mark a task done", () => {
     expect(() =>
@@ -263,7 +272,7 @@ describe("startProjectTask", () => {
           name: "Plan",
           instructions: null,
           agentId: null,
-          skillId: null,
+          skillIds: [],
           mode: "plan",
           requiresApprovalFor: [],
           advance: "on_goal_complete",
@@ -292,7 +301,7 @@ describe("acceptProjectTask", () => {
           id: "spec",
           name: "Spec",
           agentId: null,
-          skillId: null,
+          skillIds: [],
           mode: null,
           requiresApprovalFor: [],
           advance: "on_human_accept",
@@ -301,7 +310,7 @@ describe("acceptProjectTask", () => {
           id: "build",
           name: "Build",
           agentId: null,
-          skillId: null,
+          skillIds: [],
           mode: null,
           requiresApprovalFor: [],
           advance: "on_human_accept",
@@ -345,7 +354,7 @@ describe("setProjectFlow", () => {
             name: "Build",
             instructions: null,
             agentId: "agent-1",
-            skillId: null,
+            skillIds: [],
             mode: null,
             requiresApprovalFor: [],
             advance: "on_goal_complete",
@@ -353,6 +362,34 @@ describe("setProjectFlow", () => {
         ],
       }),
     ).rejects.toMatchObject({ statusCode: 400 });
+  });
+
+  it("accepts multiple skills when every one is attached to the project", async () => {
+    const { context } = createContext({
+      capabilities: [
+        { kind: "skill", capability_id: "research" },
+        { kind: "skill", capability_id: "fact-checking" },
+      ],
+    });
+    const flow: ProjectFlow = {
+      stages: [
+        {
+          id: "research",
+          name: "Research",
+          instructions: null,
+          agentId: null,
+          skillIds: ["research", "fact-checking"],
+          mode: "explore",
+          requiresApprovalFor: [],
+          advance: "on_goal_complete",
+        },
+      ],
+    };
+
+    await expect(setProjectFlow(context, "project-1", flow)).resolves.toEqual({ flow });
+    expect(context.repositories.workspaces.updateProject).toHaveBeenCalledWith("project-1", {
+      flow: JSON.stringify(flow),
+    });
   });
 });
 
@@ -376,7 +413,7 @@ describe("resolveTaskRuntime", () => {
         name: "Build",
         instructions: null,
         agentId: null,
-        skillId: null,
+        skillIds: [],
         mode: "build",
         requiresApprovalFor: ["network", "write"],
         advance: "on_human_accept",
@@ -394,6 +431,9 @@ describe("resolveTaskRuntime", () => {
 
     expect(runtime.requireApprovalFor).toEqual(["network", "write"]);
     expect(runtime.mode).toBe("build");
+    expect(runtime.enabledTools).toEqual(
+      expect.arrayContaining(["get_task", "list_tasks", "update_task"]),
+    );
   });
 
   it("keeps the runner model when the stage sets a mode", async () => {

@@ -1,12 +1,24 @@
-import { Button, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
+import { Button, ButtonLink, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
 import {
+  isProjectTaskAwaitingInput,
+  isProjectTaskRetryable,
   projectTaskBlockedReasonLabels,
   type ProjectFlow,
   type ProjectTask,
   type ProjectTaskStatus,
 } from "@ngriffin_uk/polychat-schemas";
 import { formatRelativeTime, sortCopy } from "@ngriffin_uk/polychat-utility-core";
-import { Bot, GitBranch, ListChecks, Pause, Play, Settings2, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Bot,
+  GitBranch,
+  ListChecks,
+  MessageSquareText,
+  Pause,
+  Play,
+  Settings2,
+  Sparkles,
+} from "lucide-react";
 
 import { TaskStatusBadge } from "./TaskStatusBadge";
 
@@ -29,6 +41,7 @@ export interface TaskBoardProps {
   agents: TaskBoardAgentSummary[];
   pendingTaskIds?: string[];
   taskHref: (task: ProjectTask) => string;
+  conversationHref: (task: ProjectTask) => string | null;
   onStartTask: (task: ProjectTask) => void;
   onAcceptTask: (task: ProjectTask) => void;
   onCreateTask: () => void;
@@ -91,6 +104,7 @@ function TaskRow({
   members,
   agents,
   href,
+  conversationHref,
   isPending,
   onStart,
   onAccept,
@@ -100,6 +114,7 @@ function TaskRow({
   members: TaskBoardMemberSummary[];
   agents: TaskBoardAgentSummary[];
   href: string;
+  conversationHref: string | null;
   isPending: boolean;
   onStart: () => void;
   onAccept: () => void;
@@ -110,10 +125,8 @@ function TaskRow({
     (task.status === "done" || task.status === "cancelled" ? null : flow?.stages[0]);
   const agentId = stage?.agentId ?? task.runner?.agentId;
   const agent = agents.find((candidate) => candidate.id === agentId);
-  const canStart =
-    task.status === "backlog" ||
-    task.status === "blocked" ||
-    (task.status === "queued" && !task.dispatchTaskId);
+  const canRetry = isProjectTaskRetryable(task);
+  const needsInput = isProjectTaskAwaitingInput(task);
   const activityAt = task.updatedAt ?? task.createdAt;
 
   return (
@@ -151,7 +164,18 @@ function TaskRow({
             Accept
           </Button>
         ) : null}
-        {canStart ? (
+        {task.status === "backlog" ? (
+          <Button
+            variant="primary"
+            size="sm"
+            icon={<Play size={13} />}
+            onClick={onStart}
+            disabled={isPending}
+          >
+            Run
+          </Button>
+        ) : null}
+        {canRetry ? (
           <Button
             variant="secondary"
             size="sm"
@@ -159,8 +183,41 @@ function TaskRow({
             onClick={onStart}
             disabled={isPending}
           >
-            {task.status === "backlog" ? "Run" : "Retry"}
+            Retry
           </Button>
+        ) : null}
+        {needsInput && conversationHref ? (
+          <ButtonLink
+            href={conversationHref}
+            variant="primary"
+            size="sm"
+            icon={<MessageSquareText size={13} />}
+            className="no-underline hover:!no-underline"
+          >
+            Respond
+          </ButtonLink>
+        ) : null}
+        {task.status === "blocked" && !canRetry && (!needsInput || !conversationHref) ? (
+          <ButtonLink
+            href={href}
+            variant="outline"
+            size="sm"
+            icon={<ArrowRight size={13} />}
+            className="no-underline hover:!no-underline"
+          >
+            Review
+          </ButtonLink>
+        ) : null}
+        {task.status === "done" && conversationHref ? (
+          <ButtonLink
+            href={conversationHref}
+            variant="outline"
+            size="sm"
+            icon={<MessageSquareText size={13} />}
+            className="no-underline hover:!no-underline"
+          >
+            View result
+          </ButtonLink>
         ) : null}
       </div>
     </article>
@@ -259,6 +316,7 @@ export function TaskBoard({
   agents,
   pendingTaskIds = NO_PENDING_TASKS,
   taskHref,
+  conversationHref,
   onStartTask,
   onAcceptTask,
   onCreateTask,
@@ -299,9 +357,13 @@ export function TaskBoard({
           </p>
           <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">Waiting for attention</p>
         </div>
-        <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-800 dark:bg-zinc-900/40">
-          <p className="text-2xl font-semibold">{completed.length}</p>
-          <p className="mt-1 text-xs text-zinc-500">Completed and accepted</p>
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 dark:border-emerald-900 dark:bg-emerald-950/30">
+          <p className="text-2xl font-semibold text-emerald-950 dark:text-emerald-100">
+            {completed.length}
+          </p>
+          <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">
+            Completed and accepted
+          </p>
         </div>
       </div>
 
@@ -330,6 +392,7 @@ export function TaskBoard({
                 members={members}
                 agents={agents}
                 href={taskHref(task)}
+                conversationHref={conversationHref(task)}
                 isPending={pendingTaskIds.includes(task.id)}
                 onStart={() => onStartTask(task)}
                 onAccept={() => onAcceptTask(task)}

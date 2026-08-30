@@ -38,13 +38,15 @@ const variantStyles: Record<ButtonVariant, string> = {
   primary: "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
   secondary:
     "bg-off-white-highlight dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-600",
-  ghost: "hover:bg-off-white-highlight dark:hover:bg-zinc-900 text-zinc-600 dark:text-zinc-400",
-  icon: "p-2 rounded-lg hover:bg-off-white-highlight dark:hover:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-500",
+  ghost:
+    "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/70 dark:hover:text-zinc-100",
+  icon: "p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800/70 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100",
   iconActive:
     "p-2 rounded-lg bg-off-white-highlight dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100",
   destructive: "bg-red-800 text-white hover:bg-red-900 shadow-sm",
   link: "text-blue-500 hover:text-blue-600 p-0",
-  outline: "border border-zinc-300 dark:border-zinc-700",
+  outline:
+    "border border-zinc-300 bg-transparent hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800/70",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {

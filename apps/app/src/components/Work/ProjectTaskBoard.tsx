@@ -55,9 +55,11 @@ export function ProjectTaskBoard({
   ];
   const canManageFlow =
     workspaceQuery.data?.role === "owner" || workspaceQuery.data?.role === "admin";
+  const basePath = `/work/${workspaceId}/projects/${projectId}`;
 
-  const taskHref = (task: ProjectTask) =>
-    `/work/${workspaceId}/projects/${projectId}/tasks/${task.id}`;
+  const taskHref = (task: ProjectTask) => `${basePath}/tasks/${task.id}`;
+  const conversationHref = (task: ProjectTask) =>
+    task.conversationId ? `${basePath}/chat?completion_id=${task.conversationId}` : null;
 
   const runTask = async (task: ProjectTask) => {
     try {
@@ -121,6 +123,7 @@ export function ProjectTaskBoard({
             agents={agents}
             pendingTaskIds={pendingTaskIds}
             taskHref={taskHref}
+            conversationHref={conversationHref}
             onStartTask={(task) => void runTask(task)}
             onAcceptTask={(task) => void acceptTask(task)}
             onCreateTask={() => setIsCreateOpen(true)}
@@ -148,6 +151,8 @@ export function ProjectTaskBoard({
         flow={flow}
         agents={agents}
         skills={skills}
+        capabilitiesHref={`${basePath}/library`}
+        agentsHref="/profile?tab=agents"
         isSaving={saveFlow.isPending}
         errorMessage={saveFlow.error ? getErrorMessage(saveFlow.error, "") : undefined}
         onOpenChange={setIsFlowOpen}

@@ -1,7 +1,8 @@
 import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
-import { BackLink } from "@ngriffin_uk/polychat-component-ui";
+import { BackLink, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import { TaskDetail } from "@ngriffin_uk/polychat-component-workspaces";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
@@ -21,6 +22,7 @@ export function ProjectTaskDetail({
   projectId: string;
   taskId: string;
 }) {
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const navigate = useNavigate();
   const { projectQuery, workspaceQuery } = useWorkData();
   const agents = useProjectTaskAgents(projectQuery.data?.capabilities);
@@ -91,30 +93,43 @@ export function ProjectTaskDetail({
   };
 
   return (
-    <PageShell.Content className="max-w-6xl">
-      <BackLink href={`${basePath}/tasks`} label="Back to tasks" />
-      <PageShell.Header title={task.objective} />
-      <TaskDetail
-        task={task}
-        goal={goal}
-        flow={flow}
-        members={workspaceQuery.data?.members ?? []}
-        agents={agents}
-        blockedBy={tasks.filter((candidate) => task.dependsOnTaskIds.includes(candidate.id))}
-        conversationHref={
-          task.conversationId ? `${basePath}/chat?completion_id=${task.conversationId}` : null
-        }
-        taskHref={(candidate) => `${basePath}/tasks/${candidate.id}`}
-        isBusy={isBusy}
-        onRun={() => void run()}
-        onAccept={() => void acceptTask()}
-        onCancel={() => void setStatus("cancelled", "Task cancelled")}
-        onReopen={() => void setStatus("backlog", "Task reopened")}
-        onDelete={() => void deleteTask()}
-        renderProgressSummary={(summary) => (
-          <MemoizedMarkdown className="max-w-none text-sm leading-6">{summary}</MemoizedMarkdown>
-        )}
+    <>
+      <PageShell.Content className="max-w-6xl">
+        <BackLink href={`${basePath}/tasks`} label="Back to tasks" />
+        <PageShell.Header title={task.objective} />
+        <TaskDetail
+          task={task}
+          goal={goal}
+          flow={flow}
+          members={workspaceQuery.data?.members ?? []}
+          agents={agents}
+          blockedBy={tasks.filter((candidate) => task.dependsOnTaskIds.includes(candidate.id))}
+          conversationHref={
+            task.conversationId ? `${basePath}/chat?completion_id=${task.conversationId}` : null
+          }
+          taskHref={(candidate) => `${basePath}/tasks/${candidate.id}`}
+          isBusy={isBusy}
+          onRun={() => void run()}
+          onAccept={() => void acceptTask()}
+          onCancel={() => void setStatus("cancelled", "Task cancelled")}
+          onReopen={() => void setStatus("backlog", "Task reopened")}
+          onDelete={() => setIsDeleteOpen(true)}
+          renderProgressSummary={(summary) => (
+            <MemoizedMarkdown className="max-w-none text-sm leading-6">{summary}</MemoizedMarkdown>
+          )}
+        />
+      </PageShell.Content>
+
+      <ConfirmationDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        title="Delete task?"
+        description="This removes the task from the project. Its conversation remains in project history. This cannot be undone."
+        confirmText="Delete task"
+        variant="destructive"
+        isLoading={remove.isPending}
+        onConfirm={deleteTask}
       />
-    </PageShell.Content>
+    </>
   );
 }

@@ -1,4 +1,5 @@
 import {
+  PROJECT_TASK_TOOL_IDS,
   projectCodingEnvironmentSchema,
   type ChatHostedToolSettings,
   type SandboxRequestOptions,
@@ -103,6 +104,7 @@ export async function resolveProjectChatContext(
   });
   const toolIds = [
     ...projectTools.enabledTools,
+    ...PROJECT_TASK_TOOL_IDS,
     ...(project.coding_enabled === 1 && codingEnvironment.success ? PROJECT_CODING_TOOL_IDS : []),
   ];
   const recipeId = options.options?.recipe?.id;

@@ -426,9 +426,13 @@ export async function setProjectFlow(
         .filter((capability) => capability.kind === "skill")
         .map((capability) => capability.capability_id),
     );
-    const missingSkills = flow.stages
-      .map((stage) => stage.skillId)
-      .filter((skillId): skillId is string => Boolean(skillId) && !attachedSkills.has(skillId));
+    const missingSkills = [
+      ...new Set(
+        flow.stages.flatMap((stage) =>
+          stage.skillIds.filter((skillId) => !attachedSkills.has(skillId)),
+        ),
+      ),
+    ];
 
     if (missingSkills.length > 0) {
       throw new AssistantError(
