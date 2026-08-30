@@ -1,6 +1,7 @@
 import {
   type ConversationListFilters,
   DEFAULT_CONVERSATION_LIST_FILTERS,
+  DEFAULT_WORK_CONVERSATION_LIST_FILTERS,
 } from "@ngriffin_uk/polychat-component-navigation";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -24,9 +25,12 @@ export interface UIStore {
   setShowLoginModal: (showLoginModal: boolean) => void;
   showKeyboardShortcuts: boolean;
   setShowKeyboardShortcuts: (showKeyboardShortcuts: boolean) => void;
-  conversationListFilters: ConversationListFilters;
-  setConversationListFilters: (filters: Partial<ConversationListFilters>) => void;
-  resetConversationListFilters: () => void;
+  chatConversationListFilters: ConversationListFilters;
+  setChatConversationListFilters: (filters: Partial<ConversationListFilters>) => void;
+  resetChatConversationListFilters: () => void;
+  workConversationListFilters: ConversationListFilters;
+  setWorkConversationListFilters: (filters: Partial<ConversationListFilters>) => void;
+  resetWorkConversationListFilters: () => void;
 }
 
 export const useUIStore = create<UIStore>()(
@@ -42,13 +46,20 @@ export const useUIStore = create<UIStore>()(
       setShowLoginModal: (showLoginModal) => set({ showLoginModal }),
       showKeyboardShortcuts: false,
       setShowKeyboardShortcuts: (showKeyboardShortcuts) => set({ showKeyboardShortcuts }),
-      conversationListFilters: DEFAULT_CONVERSATION_LIST_FILTERS,
-      setConversationListFilters: (filters) =>
+      chatConversationListFilters: DEFAULT_CONVERSATION_LIST_FILTERS,
+      setChatConversationListFilters: (filters) =>
         set((state) => ({
-          conversationListFilters: { ...state.conversationListFilters, ...filters },
+          chatConversationListFilters: { ...state.chatConversationListFilters, ...filters },
         })),
-      resetConversationListFilters: () =>
-        set({ conversationListFilters: DEFAULT_CONVERSATION_LIST_FILTERS }),
+      resetChatConversationListFilters: () =>
+        set({ chatConversationListFilters: DEFAULT_CONVERSATION_LIST_FILTERS }),
+      workConversationListFilters: DEFAULT_WORK_CONVERSATION_LIST_FILTERS,
+      setWorkConversationListFilters: (filters) =>
+        set((state) => ({
+          workConversationListFilters: { ...state.workConversationListFilters, ...filters },
+        })),
+      resetWorkConversationListFilters: () =>
+        set({ workConversationListFilters: DEFAULT_WORK_CONVERSATION_LIST_FILTERS }),
     }),
     {
       name: "ui-store",
@@ -57,16 +68,21 @@ export const useUIStore = create<UIStore>()(
           isMobile: _m,
           isMobileLoading: _l,
           sidebarVisible: _s,
-          conversationListFilters,
+          chatConversationListFilters,
+          workConversationListFilters,
           ...rest
         } = (persisted ?? {}) as Partial<UIStore>;
 
         return {
           ...current,
           ...rest,
-          conversationListFilters: {
+          chatConversationListFilters: {
             ...DEFAULT_CONVERSATION_LIST_FILTERS,
-            ...conversationListFilters,
+            ...chatConversationListFilters,
+          },
+          workConversationListFilters: {
+            ...DEFAULT_WORK_CONVERSATION_LIST_FILTERS,
+            ...workConversationListFilters,
           },
         };
       },

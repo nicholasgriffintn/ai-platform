@@ -32,6 +32,7 @@ export function conversationActivityCutoff(
 
 export interface ConversationSummary {
   id?: string;
+  type?: "chat" | "task";
   title: string;
   created_at?: string;
   updated_at?: string;

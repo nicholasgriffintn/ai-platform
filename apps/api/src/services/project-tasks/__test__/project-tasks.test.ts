@@ -499,6 +499,7 @@ describe("ensureProjectTaskConversation", () => {
 
     expect(createConversation).toHaveBeenCalledWith("task_task-1", 7, baseTask.objective, {
       project_id: "project-1",
+      type: "task",
     });
   });
 });

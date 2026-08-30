@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { conversationTypeSchema } from "./chat";
 import { projectFlowSchema } from "./project-tasks";
 
 export const workspaceRoleSchema = z.enum(["owner", "admin", "member"]);
@@ -169,6 +170,7 @@ export const addProjectCapabilitySchema = z.object({
 
 export const projectConversationSchema = z.object({
   id: z.string(),
+  type: conversationTypeSchema,
   title: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string().nullable(),

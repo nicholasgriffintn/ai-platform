@@ -1,5 +1,5 @@
 import { HoverActions, ListItem } from "@ngriffin_uk/polychat-component-ui";
-import { CloudOff, Edit, GitBranch, Trash2 } from "lucide-react";
+import { CircleQuestionMark, CloudOff, Edit, GitBranch, Trash2 } from "lucide-react";
 import type { Ref } from "react";
 
 export interface ConversationSummary {
@@ -7,6 +7,7 @@ export interface ConversationSummary {
   title?: string | null;
   isLocalOnly?: boolean;
   parentConversationId?: string | null;
+  needsInput?: boolean;
 }
 
 export interface ConversationGroup {
@@ -23,8 +24,8 @@ export interface ConversationListProps {
   loadMoreRef?: Ref<HTMLDivElement>;
   loadMoreSlot?: React.ReactNode;
   onSelect: (conversationId: string | undefined) => void;
-  onEditTitle: (conversationId: string, currentTitle: string) => void;
-  onDelete: (conversationId: string) => void;
+  onEditTitle?: (conversationId: string, currentTitle: string) => void;
+  onDelete?: (conversationId: string) => void;
 }
 
 export function ConversationList({
@@ -56,6 +57,13 @@ export function ConversationList({
                   isActive={isConversationRoute && activeConversationId === conversation.id}
                   badge={
                     <>
+                      {conversation.needsInput && (
+                        <CircleQuestionMark
+                          size={16}
+                          className="text-amber-500"
+                          aria-label="Waiting for your answers"
+                        />
+                      )}
                       {(conversation.isLocalOnly || localOnlyMode) && (
                         <span className="text-xs text-blue-500 dark:text-blue-400 inline-flex items-center">
                           <CloudOff size={14} className="mr-1" />
@@ -63,7 +71,8 @@ export function ConversationList({
                         </span>
                       )}
                       {conversation.parentConversationId && (
-                        <span
+                        <button
+                          type="button"
                           className="text-xs text-zinc-600 dark:text-zinc-400 inline-flex items-center cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100"
                           title="Go to original conversation"
                           aria-label="Go to original conversation"
@@ -71,15 +80,9 @@ export function ConversationList({
                             event?.stopPropagation();
                             onSelect(conversation.parentConversationId ?? undefined);
                           }}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter" || event.key === " ") {
-                              event.stopPropagation();
-                              onSelect(conversation.parentConversationId ?? undefined);
-                            }
-                          }}
                         >
                           <GitBranch size={14} className="mr-1" />
-                        </span>
+                        </button>
                       )}
                     </>
                   }
@@ -88,7 +91,7 @@ export function ConversationList({
                   }
                   onClick={() => onSelect(conversation.id)}
                   actions={
-                    conversation.id ? (
+                    conversation.id && onEditTitle && onDelete ? (
                       <HoverActions
                         actions={[
                           {

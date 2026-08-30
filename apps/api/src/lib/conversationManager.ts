@@ -1,4 +1,4 @@
-import type { FunctionType } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationType, FunctionType } from "@ngriffin_uk/polychat-schemas";
 
 import type { RepositoryManager } from "~/repositories";
 import type {
@@ -42,6 +42,11 @@ export interface ConversationListOptions {
 export interface ConversationDetails extends Record<string, unknown> {
   messages: Message[];
   project_id?: string | null;
+}
+
+interface ConversationWriteOptions {
+  metadata?: Record<string, string>;
+  type?: ConversationType;
 }
 
 export class ConversationManager {
@@ -211,7 +216,7 @@ export class ConversationManager {
     }
   }
 
-  private getBranchParentIds(options?: { metadata?: Record<string, string> }): {
+  private getBranchParentIds(options?: ConversationWriteOptions): {
     parentConversationId?: string;
     parentMessageId?: string;
   } {
@@ -244,7 +249,7 @@ export class ConversationManager {
   private async ensureWritableConversation(
     conversation_id: string,
     authErrorMessage: string,
-    options?: { metadata?: Record<string, string> },
+    options?: ConversationWriteOptions,
     initialMessages: Message[] = [],
   ): Promise<Record<string, unknown> | null> {
     if (!this.user?.id) {
@@ -281,6 +286,7 @@ export class ConversationManager {
           parent_conversation_id: parentConversationId,
           parent_message_id: parentMessageId,
           project_id: projectId,
+          type: options?.type,
         },
       );
     }
@@ -437,7 +443,7 @@ export class ConversationManager {
   async addBatch(
     conversation_id: string,
     messages: Message[],
-    options?: { metadata?: Record<string, string> },
+    options?: ConversationWriteOptions,
   ): Promise<Message[]> {
     if (!messages.length) {
       return [];
@@ -483,7 +489,7 @@ export class ConversationManager {
   async replaceMessages(
     conversation_id: string,
     messages: Message[],
-    options?: { metadata?: Record<string, string> },
+    options?: ConversationWriteOptions,
   ): Promise<Message[]> {
     const normalisedMessages = this.dedupeMessagesForReplacement(
       this.prepareMessagesForStorage(messages),

@@ -65,6 +65,7 @@ export function createBranchConversation({
 
   return {
     id: conversationId,
+    type: conversation.type,
     title: conversation.title || "Branched Conversation",
     messages,
     parent_conversation_id: parentConversationId,

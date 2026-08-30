@@ -1,4 +1,5 @@
 import type {
+  ConversationType,
   ProjectCapabilityKind,
   ProjectCodingEnvironment,
   WorkspaceRole,
@@ -97,6 +98,7 @@ export interface ProjectCapabilityRow {
 
 export interface ProjectConversationRow {
   id: string;
+  type: ConversationType;
   title: string | null;
   created_at: string;
   updated_at: string | null;
@@ -684,7 +686,7 @@ export class WorkspaceRepository extends BaseRepository {
 
   async listProjectConversations(projectId: string): Promise<ProjectConversationRow[]> {
     return this.runQuery<ProjectConversationRow>(
-      `SELECT c.id, c.title, c.created_at, c.updated_at, c.last_message_at, c.message_count,
+      `SELECT c.id, c.type, c.title, c.created_at, c.updated_at, c.last_message_at, c.message_count,
 				u.id AS created_by, u.name AS created_by_name, u.avatar_url AS created_by_avatar_url
 			 FROM conversation c
 			 JOIN user u ON u.id = c.user_id

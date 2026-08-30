@@ -48,6 +48,7 @@ export function useConversationStorage(requestOptions?: ChatRequestOptions) {
       const nextConversation = updater(currentConversation);
       const updatedConversation = {
         ...nextConversation,
+        type: nextConversation.type ?? (requestOptions?.options?.recipe ? "task" : "chat"),
         isLocalOnly: isProjectScoped ? false : nextConversation.isLocalOnly || isLocalOnly,
         created_at: nextConversation.created_at || now,
         updated_at: now,
@@ -67,7 +68,7 @@ export function useConversationStorage(requestOptions?: ChatRequestOptions) {
         });
       }
     },
-    [queryClient, determineStorageMode, user?.id],
+    [queryClient, determineStorageMode, requestOptions?.options?.recipe, user?.id],
   );
 
   return {

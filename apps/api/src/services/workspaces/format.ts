@@ -106,6 +106,7 @@ export function formatProjectCapability(row: ProjectCapabilityRow): ProjectCapab
 export function formatProjectConversation(row: ProjectConversationRow): ProjectConversation {
   return {
     id: row.id,
+    type: row.type,
     title: row.title,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

@@ -177,7 +177,7 @@ export async function ensureProjectTaskConversation(params: {
     params.conversationId,
     params.userId,
     params.task.objective.slice(0, 200),
-    { project_id: params.task.projectId },
+    { project_id: params.task.projectId, type: "task" },
   );
 }
 
@@ -392,6 +392,7 @@ export async function runProjectTaskDispatch(params: {
       user,
       request: {
         completion_id: conversationId,
+        conversation_type: "task",
         messages: buildTaskRunMessages(
           history,
           buildTaskPrompt({

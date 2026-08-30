@@ -30,14 +30,14 @@ vi.mock("~/state/stores/uiStore", () => ({
     sidebarVisible: true,
     setSidebarVisible: vi.fn(),
     isMobile: false,
-    conversationListFilters: {
+    chatConversationListFilters: {
       activity: "all",
       archiveFilter: "active",
       groupBy: "date",
       sortBy: "updated",
     },
-    setConversationListFilters: vi.fn(),
-    resetConversationListFilters: vi.fn(),
+    setChatConversationListFilters: vi.fn(),
+    resetChatConversationListFilters: vi.fn(),
   }),
 }));
 

@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { DropdownMenu, DropdownMenuItem } from "./DropdownMenu";
+import { OptionsMenu, OptionsMenuSection } from "./OptionsMenu";
 
 afterEach(cleanup);
 
@@ -48,5 +49,29 @@ describe("DropdownMenu", () => {
     expect(screen.getByRole("menu")).toBeTruthy();
     fireEvent.pointerDown(document.body);
     expect(screen.queryByRole("menu")).toBeNull();
+  });
+
+  it("reports the selected value from an options submenu", () => {
+    const onChange = vi.fn();
+
+    render(
+      <OptionsMenu trigger={<button type="button">Options</button>}>
+        <OptionsMenuSection
+          label="Group by"
+          value="type"
+          options={[
+            { value: "date", label: "Date" },
+            { value: "type", label: "Type" },
+          ]}
+          onChange={onChange}
+        />
+      </OptionsMenu>,
+    );
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Options" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: /Group by\s*Type/ }));
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "Date" }));
+
+    expect(onChange).toHaveBeenCalledWith("date");
   });
 });

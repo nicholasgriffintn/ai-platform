@@ -1,10 +1,17 @@
+import {
+  ConversationList,
+  ConversationListControls,
+  ConversationListSection,
+  DEFAULT_WORK_CONVERSATION_LIST_FILTERS,
+} from "@ngriffin_uk/polychat-component-navigation";
 import { SidebarShell } from "@ngriffin_uk/polychat-component-ui";
 import { WorkSidebarNav } from "@ngriffin_uk/polychat-component-workspaces";
-import { useLocation, useSearchParams } from "react-router";
+import { useLocation, useNavigate, useSearchParams } from "react-router";
 
 import { SidebarFooter } from "~/components/Sidebar/SidebarFooter";
 import { SidebarHeader } from "~/components/Sidebar/SidebarHeader";
 import { useTaskAttention } from "~/hooks/useProjectTasks";
+import { buildConversationGroups } from "~/lib/conversation-groups";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
@@ -16,13 +23,21 @@ interface WorkSidebarProps {
 }
 
 export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
-  const { sidebarVisible, setSidebarVisible, isMobile } = useUIStore();
+  const {
+    sidebarVisible,
+    setSidebarVisible,
+    isMobile,
+    workConversationListFilters,
+    setWorkConversationListFilters,
+    resetWorkConversationListFilters,
+  } = useUIStore();
   const { workspacesQuery, workspaceQuery, projectQuery } = useWorkData();
   const { data } = workspacesQuery;
   const { data: workspace } = workspaceQuery;
   const { data: project } = projectQuery;
   const { pathname } = useLocation();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const {
     clearCurrentConversation,
     currentConversationId,
@@ -39,6 +54,33 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
     : 0;
   const projectBasePath = `/work/${workspaceId ?? ""}/projects/${projectId ?? ""}`;
   const projectChatPath = `${projectBasePath}/chat`;
+  const conversationGroups = buildConversationGroups(
+    (project?.conversations ?? []).map((conversation) => ({
+      id: conversation.id,
+      type: conversation.type,
+      title: conversation.title,
+      createdAt: conversation.createdAt,
+      updatedAt: conversation.updatedAt,
+      lastMessageAt: conversation.lastMessageAt,
+      needsInput: attentionItems.some(
+        (item) => item.kind === "input" && item.conversationId === conversation.id,
+      ),
+    })),
+    {
+      groupBy: workConversationListFilters.groupBy,
+      sortBy: workConversationListFilters.sortBy,
+    },
+  );
+
+  const selectConversation = (conversationId: string | undefined) => {
+    if (!conversationId) {
+      return;
+    }
+
+    setCurrentConversationId(conversationId);
+    void navigate(`${projectChatPath}?completion_id=${encodeURIComponent(conversationId)}`);
+    closeOnMobile();
+  };
 
   const closeOnMobile = () => {
     if (isMobile) {
@@ -87,14 +129,29 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
                 attentionCount: projectAttentionCount,
                 activityHref: `${projectBasePath}/activity`,
                 capabilitiesHref: `${projectBasePath}/library`,
-                conversations: (project?.conversations ?? []).map((conversation) => ({
-                  id: conversation.id,
-                  title: conversation.title,
-                  href: `${projectChatPath}?completion_id=${encodeURIComponent(conversation.id)}`,
-                  needsInput: attentionItems.some(
-                    (item) => item.kind === "input" && item.conversationId === conversation.id,
-                  ),
-                })),
+                conversationList: (
+                  <div className="-mx-2 pt-3">
+                    <ConversationListSection
+                      isEmpty={(project?.conversations.length ?? 0) === 0}
+                      controls={
+                        <ConversationListControls
+                          defaults={DEFAULT_WORK_CONVERSATION_LIST_FILTERS}
+                          filters={workConversationListFilters}
+                          showListFilters={false}
+                          onFiltersChange={setWorkConversationListFilters}
+                          onReset={resetWorkConversationListFilters}
+                        />
+                      }
+                    >
+                      <ConversationList
+                        groups={conversationGroups}
+                        activeConversationId={activeConversationId}
+                        isConversationRoute={pathname === projectChatPath}
+                        onSelect={selectConversation}
+                      />
+                    </ConversationListSection>
+                  </div>
+                ),
                 isConversationRoute: pathname === projectChatPath,
                 activeConversationId,
               }
@@ -112,7 +169,6 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
         onSearch={() => setShowSearch(true)}
         onNavigate={closeOnMobile}
         onNewConversation={clearCurrentConversation}
-        onSelectConversation={setCurrentConversationId}
       />
     </SidebarShell>
   );

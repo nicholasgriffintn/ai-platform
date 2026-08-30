@@ -1,27 +1,25 @@
 import { describe, expect, it } from "vitest";
 
-import type { Conversation } from "~/types";
-
 import { buildConversationGroups } from "../conversation-groups";
 
 const now = new Date();
 const daysAgo = (days: number) =>
   new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
 
-const conversations: Conversation[] = [
+const conversations = [
   {
     id: "recent",
+    type: "task" as const,
     title: "Design review",
-    messages: [],
-    created_at: daysAgo(90),
-    updated_at: now.toISOString(),
+    createdAt: daysAgo(90),
+    updatedAt: now.toISOString(),
   },
   {
     id: "stale",
+    type: "chat" as const,
     title: "Quarterly planning",
-    messages: [],
-    created_at: daysAgo(90),
-    updated_at: daysAgo(90),
+    createdAt: daysAgo(90),
+    updatedAt: daysAgo(90),
   },
 ];
 
@@ -51,5 +49,13 @@ describe("buildConversationGroups", () => {
       "recent",
       "stale",
     ]);
+  });
+
+  it("separates task runs from ordinary chats when grouping by type", () => {
+    const groups = buildConversationGroups(conversations, { groupBy: "type", sortBy: "updated" });
+
+    expect(groups.map((group) => group.title)).toEqual(["Tasks", "Chats"]);
+    expect(groups[0].conversations.map((conversation) => conversation.id)).toEqual(["recent"]);
+    expect(groups[1].conversations.map((conversation) => conversation.id)).toEqual(["stale"]);
   });
 });

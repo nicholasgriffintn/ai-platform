@@ -358,6 +358,9 @@ export const conversation = sqliteTable(
     user_id: integer()
       .notNull()
       .references(() => user.id),
+    type: text({ enum: ["chat", "task"] })
+      .notNull()
+      .default("chat"),
     title: text().default("New Conversation"),
     is_archived: integer({ mode: "boolean" }).default(false),
     is_public: integer({ mode: "boolean" }).default(false),
@@ -381,6 +384,7 @@ export const conversation = sqliteTable(
     publicIdx: index("conversation_public_idx").on(table.is_public),
     shareIdIdx: index("conversation_share_id_idx").on(table.share_id),
     userIdIdx: index("conversation_user_id_idx").on(table.user_id),
+    typeIdx: index("conversation_type_idx").on(table.type),
     parentConversationIdIdx: index("conversation_parent_conversation_id_idx").on(
       table.parent_conversation_id,
     ),

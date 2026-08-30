@@ -3,6 +3,7 @@ import type {
   ChatCompletionRequestBody as SchemaChatCompletionRequestBody,
   ChatCompletionResponseBody as SchemaChatCompletionResponseBody,
   ChatRequestOptions as SchemaChatRequestOptions,
+  ConversationType,
   MessageRole as SchemaMessageRole,
   MessagePart as SchemaMessagePart,
   RecipeConnectorProvider,
@@ -236,6 +237,8 @@ export interface IRequest {
 }
 
 type InternalExecutionParams = {
+  // Durable product classification chosen by trusted task and recipe entry points.
+  conversation_type?: ConversationType;
   // The persona layered into the generated system prompt, for saved agents.
   persona?: AssistantPersona;
   // Minimum output tokens requested by internal orchestration.

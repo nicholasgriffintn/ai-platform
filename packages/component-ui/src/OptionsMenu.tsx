@@ -78,12 +78,20 @@ export function OptionsMenuSection<TValue extends string>({
           collisionPadding={8}
           className={surfaceClassName}
         >
-          <DropdownMenuPrimitive.RadioGroup value={value}>
+          <DropdownMenuPrimitive.RadioGroup
+            value={value}
+            onValueChange={(nextValue) => {
+              const nextOption = options.find((option) => option.value === nextValue);
+
+              if (nextOption) {
+                onChange(nextOption.value);
+              }
+            }}
+          >
             {options.map((option) => (
               <DropdownMenuPrimitive.RadioItem
                 key={option.value}
                 value={option.value}
-                onSelect={() => onChange(option.value)}
                 className={cn(rowClassName, "justify-between gap-4")}
               >
                 <span className="truncate">{option.label}</span>
