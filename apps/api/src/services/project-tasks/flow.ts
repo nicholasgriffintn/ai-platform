@@ -60,6 +60,19 @@ async function resolveProjectAgent(
   return agent;
 }
 
+export function withoutForbiddenTools(
+  tools: string[],
+  forbidden: readonly string[] | undefined,
+): string[] {
+  if (!forbidden?.length) {
+    return tools;
+  }
+
+  const denied = new Set(forbidden);
+
+  return tools.filter((tool) => !denied.has(tool));
+}
+
 export async function resolveTaskRuntime(params: {
   context: ServiceContext;
   task: ProjectTask;
@@ -79,8 +92,11 @@ export async function resolveTaskRuntime(params: {
     agent,
     model: task.runner?.model ?? agent?.model ?? null,
     mode: stage?.mode ?? task.runner?.mode ?? "agent",
-    enabledTools: agent ? intersectAgentTools(agent.enabled_tools, projectTools) : projectTools,
-    requireApprovalFor: stage?.requiresApprovalFor ?? [],
+    enabledTools: withoutForbiddenTools(
+      agent ? intersectAgentTools(agent.enabled_tools, projectTools) : projectTools,
+      task.constraints?.forbiddenTools,
+    ),
+    requireApprovalFor: [...(stage?.requiresApprovalFor ?? []), ...task.requireApprovalFor],
   };
 }
 

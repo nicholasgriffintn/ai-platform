@@ -1,6 +1,7 @@
 import {
   projectTaskStatusLabels,
   type ProjectTask,
+  type ProjectTaskDeliverableKind,
   type ProjectTaskStatus,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -17,9 +18,12 @@ const MODEL_SETTABLE_STATUSES: ProjectTaskStatus[] = ["backlog", "queued", "revi
 
 function formatTask(task: ProjectTask): string {
   const stage = task.stageId ? ` [${task.stageId}]` : "";
+  const criteria = task.acceptanceCriteria.length
+    ? ` (${task.acceptanceCriteria.length} criteria)`
+    : "";
   const blocked = task.blockedDetail ? ` — ${task.blockedDetail}` : "";
 
-  return `${task.id}${stage}: ${task.objective} (${projectTaskStatusLabels[task.status]})${blocked}`;
+  return `${task.id}${stage}: ${task.objective}${criteria} (${projectTaskStatusLabels[task.status]})${blocked}`;
 }
 
 function requireProjectId(request: IRequest): string {
@@ -50,7 +54,19 @@ export const create_task: ApiToolDefinition = {
       },
       acceptance: {
         type: "string",
-        description: "How someone would tell the task is genuinely finished.",
+        description: "How someone would tell the task is genuinely finished, as prose.",
+      },
+      acceptanceCriteria: {
+        type: "array",
+        description:
+          "Separate checkable statements the task must satisfy. Prefer these over prose: the goal gate checks the work against them.",
+        items: { type: "string" },
+      },
+      deliverable: {
+        type: "string",
+        description:
+          "The artifact expected: pull_request, document, analysis, message, data, or other.",
+        enum: ["pull_request", "document", "analysis", "message", "data", "other"],
       },
       stageId: {
         type: "string",
@@ -74,6 +90,15 @@ export const create_task: ApiToolDefinition = {
       {
         objective: String(args.objective ?? "").trim(),
         acceptance: typeof args.acceptance === "string" ? args.acceptance.trim() : null,
+        acceptanceCriteria: Array.isArray(args.acceptanceCriteria)
+          ? args.acceptanceCriteria
+              .filter((entry): entry is string => typeof entry === "string" && entry.trim() !== "")
+              .map((text) => ({ text: text.trim() }))
+          : undefined,
+        deliverable:
+          typeof args.deliverable === "string"
+            ? { kind: args.deliverable as ProjectTaskDeliverableKind, description: null }
+            : null,
         stageId: typeof args.stageId === "string" ? args.stageId : null,
       },
       { source: "model" },

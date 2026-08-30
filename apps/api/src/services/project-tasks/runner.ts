@@ -42,7 +42,44 @@ export async function enqueueProjectTaskRun(
   });
 }
 
-function buildTaskPrompt(params: { task: ProjectTask; stageInstructions: string | null }): string {
+function buildGoalObjective(task: ProjectTask): string {
+  if (task.acceptanceCriteria.length > 0) {
+    return [
+      task.objective,
+      "",
+      "Done when:",
+      ...task.acceptanceCriteria.map((criterion, index) => `${index + 1}. ${criterion.text}`),
+    ].join("\n");
+  }
+
+  return task.acceptance ? `${task.objective}\n\nDone when: ${task.acceptance}` : task.objective;
+}
+
+function buildContextNotes(task: ProjectTask): string | null {
+  const context = task.context;
+
+  if (!context) {
+    return null;
+  }
+
+  const lines: string[] = [];
+
+  if (context.notes) {
+    lines.push(context.notes);
+  }
+
+  for (const link of context.links) {
+    lines.push(link.label ? `- ${link.label}: ${link.url}` : `- ${link.url}`);
+  }
+
+  return lines.length > 0 ? lines.join("\n") : null;
+}
+
+function buildTaskPrompt(params: {
+  task: ProjectTask;
+  stageInstructions: string | null;
+  contextNotes: string | null;
+}): string {
   const lines: string[] = [];
 
   if (params.stageInstructions) {
@@ -51,8 +88,39 @@ function buildTaskPrompt(params: { task: ProjectTask; stageInstructions: string 
 
   lines.push(`Objective: ${params.task.objective}`);
 
-  if (params.task.acceptance) {
+  if (params.task.deliverable) {
+    const description = params.task.deliverable.description
+      ? `: ${params.task.deliverable.description}`
+      : "";
+
+    lines.push(`Deliverable — produce a ${params.task.deliverable.kind}${description}`);
+  }
+
+  if (params.task.acceptanceCriteria.length > 0) {
+    lines.push(
+      [
+        "This is done when every one of these holds:",
+        ...params.task.acceptanceCriteria.map(
+          (criterion, index) => `${index + 1}. ${criterion.text}`,
+        ),
+      ].join("\n"),
+    );
+  } else if (params.task.acceptance) {
     lines.push(`This is done when: ${params.task.acceptance}`);
+  }
+
+  if (params.contextNotes) {
+    lines.push(`Context you were given:\n${params.contextNotes}`);
+  }
+
+  if (params.task.constraints?.notes) {
+    lines.push(`Constraints: ${params.task.constraints.notes}`);
+  }
+
+  if (params.task.constraints?.forbiddenTools?.length) {
+    lines.push(
+      `You must not use these tools: ${params.task.constraints.forbiddenTools.join(", ")}. They have been withheld.`,
+    );
   }
 
   if (params.task.source === "model") {
@@ -164,9 +232,7 @@ export async function runProjectTaskDispatch(params: {
     const goal = await goalService.setGoal({
       owner: { conversationId },
       user,
-      objective: claimed.acceptance
-        ? `${claimed.objective}\n\nDone when: ${claimed.acceptance}`
-        : claimed.objective,
+      objective: buildGoalObjective(claimed),
       source: "user",
     });
 
@@ -209,6 +275,7 @@ export async function runProjectTaskDispatch(params: {
             content: buildTaskPrompt({
               task: claimed,
               stageInstructions: buildStageInstructions(runtime.stage),
+              contextNotes: buildContextNotes(claimed),
             }),
           },
         ],

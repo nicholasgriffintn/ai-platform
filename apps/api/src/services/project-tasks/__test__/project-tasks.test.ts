@@ -1,4 +1,9 @@
-import type { ProjectTaskSource, ProjectTaskStatus } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ProjectTaskPriority,
+  ProjectTaskSource,
+  ProjectTaskStatus,
+  ToolPermission,
+} from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -19,6 +24,14 @@ const baseTask = {
   workspaceId: "workspace-1",
   objective: "Ship the pricing note",
   acceptance: null,
+  acceptanceCriteria: [],
+  deliverable: null,
+  context: null,
+  constraints: null,
+  dependsOnTaskIds: [] as string[],
+  requireApprovalFor: [] as ToolPermission[],
+  priority: "normal" as ProjectTaskPriority,
+  dueAt: null,
   status: "backlog" as ProjectTaskStatus,
   source: "user" as ProjectTaskSource,
   blockedReason: null,
@@ -47,6 +60,7 @@ function createContext(
     memberships?: Record<number, boolean>;
     capabilities?: { kind: string; capability_id: string }[];
     activeCount?: number;
+    boardTasks?: unknown[];
   } = {},
 ) {
   const task = { ...baseTask, ...overrides.task };
@@ -80,6 +94,7 @@ function createContext(
         },
         projectTasks: {
           getTaskById: vi.fn().mockResolvedValue(task),
+          listProjectTasks: vi.fn().mockResolvedValue(overrides.boardTasks ?? [task]),
           getMaxPosition: vi.fn().mockResolvedValue(0),
           countActiveTasks: vi.fn().mockResolvedValue(overrides.activeCount ?? 0),
           createTask: vi.fn().mockResolvedValue(task),
@@ -328,5 +343,76 @@ describe("resolveTaskRuntime", () => {
     const runtime = await resolveTaskRuntime({ context, task: baseTask, flow: null });
 
     expect(runtime.requireApprovalFor).toEqual([]);
+  });
+});
+
+describe("task dependencies", () => {
+  it("refuses to start a task whose dependency is not done", async () => {
+    const blocker = { ...baseTask, id: "task-blocker", status: "running" as ProjectTaskStatus };
+    const { context, updateTask } = createContext({
+      task: { dependsOnTaskIds: ["task-blocker"] },
+      boardTasks: [blocker, { ...baseTask, dependsOnTaskIds: ["task-blocker"] }],
+    });
+
+    await expect(startProjectTask(context, "project-1", "task-1")).rejects.toMatchObject({
+      statusCode: 409,
+    });
+
+    expect(updateTask).toHaveBeenCalledWith(
+      "task-1",
+      expect.objectContaining({ status: "blocked", blockedReason: "dependencies_unmet" }),
+    );
+  });
+
+  it("starts a task once its dependency is done", async () => {
+    const blocker = { ...baseTask, id: "task-blocker", status: "done" as ProjectTaskStatus };
+    const { context, updateTask } = createContext({
+      task: { dependsOnTaskIds: ["task-blocker"] },
+      boardTasks: [blocker, { ...baseTask, dependsOnTaskIds: ["task-blocker"] }],
+    });
+
+    await startProjectTask(context, "project-1", "task-1");
+
+    expect(updateTask).toHaveBeenCalledWith(
+      "task-1",
+      expect.objectContaining({ status: "queued" }),
+    );
+  });
+
+  it("rejects a task that depends on itself", async () => {
+    const { context } = createContext();
+
+    await expect(
+      updateProjectTask(context, "project-1", "task-1", { dependsOnTaskIds: ["task-1"] }),
+    ).rejects.toMatchObject({ statusCode: 400 });
+  });
+});
+
+describe("task constraints", () => {
+  it("withholds a forbidden tool from the run", async () => {
+    const { context } = createContext({
+      capabilities: [
+        { kind: "tool", capability_id: "web_search" },
+        { kind: "tool", capability_id: "run_sandbox_task" },
+      ],
+    });
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: { ...baseTask, constraints: { forbiddenTools: ["run_sandbox_task"], notes: null } },
+      flow: null,
+    });
+
+    expect(runtime.enabledTools).not.toContain("run_sandbox_task");
+  });
+
+  it("carries a task's own approval policy alongside the stage's", async () => {
+    const { context } = createContext();
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: { ...baseTask, requireApprovalFor: ["network"] },
+      flow: null,
+    });
+
+    expect(runtime.requireApprovalFor).toContain("network");
   });
 });

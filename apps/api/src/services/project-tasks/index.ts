@@ -7,6 +7,7 @@ import {
   type ProjectFlow,
   type ProjectTask,
   type ProjectTaskActor,
+  type ProjectTaskCriterion,
   type ProjectTaskSource,
   type ProjectTaskStatus,
   type UpdateProjectTaskInput,
@@ -17,6 +18,7 @@ import type { ListProjectTaskFilters } from "~/repositories/ProjectTaskRepositor
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { parseProjectFlow } from "~/services/workspaces/format";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 
 import { enqueueProjectTaskRun } from "./runner";
 import { assertProjectTaskTransition } from "./transitions";
@@ -70,6 +72,68 @@ function assertStageExists(flow: ProjectFlow | null, stageId: string | null | un
   }
 }
 
+function withCriterionIds(
+  criteria: { id?: string; text: string }[] | undefined,
+): ProjectTaskCriterion[] | undefined {
+  if (criteria === undefined) {
+    return undefined;
+  }
+
+  return criteria.map((criterion) => ({
+    id: criterion.id ?? generateId(),
+    text: criterion.text,
+  }));
+}
+
+async function assertDependenciesExist(
+  context: ServiceContext,
+  projectId: string,
+  taskId: string | null,
+  dependsOnTaskIds: string[] | undefined,
+): Promise<void> {
+  if (!dependsOnTaskIds?.length) {
+    return;
+  }
+
+  if (taskId && dependsOnTaskIds.includes(taskId)) {
+    throw new AssistantError("A task cannot depend on itself", ErrorType.PARAMS_ERROR, 400);
+  }
+
+  const tasks = await context.repositories.projectTasks.listProjectTasks(projectId, {
+    includeDone: true,
+  });
+  const known = new Set(tasks.map((task) => task.id));
+  const missing = dependsOnTaskIds.filter((id) => !known.has(id));
+
+  if (missing.length > 0) {
+    throw new AssistantError(
+      `These tasks are not on this board: ${missing.join(", ")}`,
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+}
+
+export async function resolveUnmetDependencies(
+  context: ServiceContext,
+  task: ProjectTask,
+): Promise<ProjectTask[]> {
+  if (task.dependsOnTaskIds.length === 0) {
+    return [];
+  }
+
+  const tasks = await context.repositories.projectTasks.listProjectTasks(task.projectId, {
+    includeDone: true,
+  });
+  const byId = new Map(tasks.map((candidate) => [candidate.id, candidate]));
+
+  return task.dependsOnTaskIds
+    .map((id) => byId.get(id))
+    .filter(
+      (candidate): candidate is ProjectTask => Boolean(candidate) && candidate.status !== "done",
+    );
+}
+
 export async function listProjectTasks(
   context: ServiceContext,
   projectId: string,
@@ -99,6 +163,7 @@ export async function createProjectTask(
 
   await assertAssigneeIsMember(context, project.workspace_id, input.assigneeUserId);
   assertStageExists(flow, input.stageId);
+  await assertDependenciesExist(context, projectId, null, input.dependsOnTaskIds);
 
   const maxPosition = await context.repositories.projectTasks.getMaxPosition(projectId);
   const task = await context.repositories.projectTasks.createTask({
@@ -106,6 +171,14 @@ export async function createProjectTask(
     workspaceId: project.workspace_id,
     objective: input.objective,
     acceptance: input.acceptance ?? null,
+    acceptanceCriteria: withCriterionIds(input.acceptanceCriteria) ?? [],
+    deliverable: input.deliverable ?? null,
+    context: input.context ?? null,
+    constraints: input.constraints ?? null,
+    dependsOnTaskIds: input.dependsOnTaskIds ?? [],
+    requireApprovalFor: input.requireApprovalFor ?? [],
+    priority: input.priority ?? "normal",
+    dueAt: input.dueAt ?? null,
     source: options.source ?? "user",
     createdByUserId: user.id,
     assigneeUserId: input.assigneeUserId ?? null,
@@ -146,11 +219,13 @@ export async function updateProjectTask(
 
   await assertAssigneeIsMember(context, project.workspace_id, input.assigneeUserId);
   assertStageExists(flow, input.stageId);
+  await assertDependenciesExist(context, projectId, taskId, input.dependsOnTaskIds);
 
   const nextStatus = input.status ?? task.status;
   const isFinishing = isTerminalProjectTaskStatus(nextStatus) && nextStatus !== task.status;
   const updated = await context.repositories.projectTasks.updateTask(taskId, {
     ...input,
+    acceptanceCriteria: withCriterionIds(input.acceptanceCriteria),
     ...(input.status !== undefined && input.status !== "blocked"
       ? { blockedReason: null, blockedDetail: null }
       : {}),
@@ -189,6 +264,25 @@ export async function startProjectTask(context: ServiceContext, projectId: strin
       "This task is finished. Reopen it before running it again.",
       ErrorType.PARAMS_ERROR,
       400,
+    );
+  }
+
+  const unmet = await resolveUnmetDependencies(context, task);
+
+  if (unmet.length > 0) {
+    await context.repositories.projectTasks.updateTask(taskId, {
+      status: "blocked",
+      blockedReason: "dependencies_unmet",
+      blockedDetail:
+        `Waiting on: ${unmet.map((dependency) => dependency.objective).join("; ")}`.slice(0, 500),
+    });
+
+    throw new AssistantError(
+      `This task depends on work that is not done yet: ${unmet
+        .map((dependency) => dependency.objective)
+        .join("; ")}`,
+      ErrorType.CONFLICT_ERROR,
+      409,
     );
   }
 

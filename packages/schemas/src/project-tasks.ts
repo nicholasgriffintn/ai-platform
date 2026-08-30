@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { toolPermissionSchema } from "./agent-modes";
+import { TOOL_PERMISSIONS, toolPermissionSchema } from "./agent-modes";
 
 export const projectTaskStatusSchema = z.enum([
   "backlog",
@@ -42,6 +42,7 @@ export const projectTaskBlockedReasonSchema = z.enum([
   "token_budget",
   "missing_capability",
   "run_failed",
+  "dependencies_unmet",
 ]);
 
 export type ProjectTaskBlockedReason = z.infer<typeof projectTaskBlockedReasonSchema>;
@@ -53,6 +54,7 @@ export const projectTaskBlockedReasonLabels: Record<ProjectTaskBlockedReason, st
   token_budget: "Reached its token budget",
   missing_capability: "Needs a capability it does not have",
   run_failed: "The run failed",
+  dependencies_unmet: "Waiting on another task",
 };
 
 export const projectTaskStatusLabels: Record<ProjectTaskStatus, string> = {
@@ -83,6 +85,50 @@ export function canActorSetProjectTaskStatus(
   return PROJECT_TASK_ACTOR_TRANSITIONS[actor].includes(status);
 }
 
+export const projectTaskPrioritySchema = z.enum(["low", "normal", "high"]);
+export type ProjectTaskPriority = z.infer<typeof projectTaskPrioritySchema>;
+
+export const projectTaskDeliverableKindSchema = z.enum([
+  "pull_request",
+  "document",
+  "analysis",
+  "message",
+  "data",
+  "other",
+]);
+export type ProjectTaskDeliverableKind = z.infer<typeof projectTaskDeliverableKindSchema>;
+
+export const projectTaskDeliverableSchema = z.object({
+  kind: projectTaskDeliverableKindSchema,
+  description: z.string().trim().max(500).nullable().default(null),
+});
+export type ProjectTaskDeliverable = z.infer<typeof projectTaskDeliverableSchema>;
+
+export const projectTaskCriterionSchema = z.object({
+  id: z.string().min(1).max(60),
+  text: z.string().trim().min(1).max(500),
+});
+export type ProjectTaskCriterion = z.infer<typeof projectTaskCriterionSchema>;
+
+export const PROJECT_TASK_MAX_CRITERIA = 20;
+export const PROJECT_TASK_MAX_CONTEXT_ITEMS = 20;
+
+export const projectTaskContextSchema = z.object({
+  sourceIds: z.array(z.string().min(1)).max(PROJECT_TASK_MAX_CONTEXT_ITEMS).default([]),
+  links: z
+    .array(z.object({ url: z.url(), label: z.string().trim().max(120).nullable().default(null) }))
+    .max(PROJECT_TASK_MAX_CONTEXT_ITEMS)
+    .default([]),
+  notes: z.string().trim().max(4000).nullable().default(null),
+});
+export type ProjectTaskContext = z.infer<typeof projectTaskContextSchema>;
+
+export const projectTaskConstraintsSchema = z.object({
+  forbiddenTools: z.array(z.string().trim().min(1)).max(50).default([]),
+  notes: z.string().trim().max(2000).nullable().default(null),
+});
+export type ProjectTaskConstraints = z.infer<typeof projectTaskConstraintsSchema>;
+
 export const projectTaskRunnerSchema = z.object({
   kind: projectTaskRunnerKindSchema,
   agentId: z.string().min(1).nullable().default(null),
@@ -98,6 +144,14 @@ export const projectTaskSchema = z.object({
   workspaceId: z.string(),
   objective: z.string(),
   acceptance: z.string().nullable(),
+  acceptanceCriteria: z.array(projectTaskCriterionSchema).default([]),
+  deliverable: projectTaskDeliverableSchema.nullable(),
+  context: projectTaskContextSchema.nullable(),
+  constraints: projectTaskConstraintsSchema.nullable(),
+  dependsOnTaskIds: z.array(z.string().min(1)).default([]),
+  requireApprovalFor: z.array(toolPermissionSchema).default([]),
+  priority: projectTaskPrioritySchema,
+  dueAt: z.string().nullable(),
   status: projectTaskStatusSchema,
   source: projectTaskSourceSchema,
   blockedReason: projectTaskBlockedReasonSchema.nullable(),
@@ -247,27 +301,41 @@ export type ProjectTaskAttentionResponse = z.infer<typeof projectTaskAttentionRe
 const objectiveField = z.string().trim().min(1).max(2000);
 const acceptanceField = z.string().trim().max(4000);
 
-export const createProjectTaskSchema = z.object({
-  objective: objectiveField,
-  acceptance: acceptanceField.nullable().optional(),
-  assigneeUserId: z.number().int().positive().nullable().optional(),
-  runner: projectTaskRunnerSchema.nullable().optional(),
-  stageId: z.string().trim().min(1).max(40).nullable().optional(),
-  tokenBudget: z.number().int().positive().max(10_000_000).nullable().optional(),
-});
+const taskWorkItemFields = {
+  acceptance: acceptanceField.nullable(),
+  acceptanceCriteria: z
+    .array(projectTaskCriterionSchema.omit({ id: true }).extend({ id: z.string().optional() }))
+    .max(PROJECT_TASK_MAX_CRITERIA),
+  deliverable: projectTaskDeliverableSchema.nullable(),
+  context: projectTaskContextSchema.nullable(),
+  constraints: projectTaskConstraintsSchema.nullable(),
+  dependsOnTaskIds: z.array(z.string().min(1)).max(50),
+  requireApprovalFor: z.array(toolPermissionSchema).max(TOOL_PERMISSIONS.length),
+  priority: projectTaskPrioritySchema,
+  dueAt: z.iso.datetime().nullable(),
+  assigneeUserId: z.number().int().positive().nullable(),
+  runner: projectTaskRunnerSchema.nullable(),
+  stageId: z.string().trim().min(1).max(40).nullable(),
+  tokenBudget: z.number().int().positive().max(10_000_000).nullable(),
+};
+
+export const createProjectTaskSchema = z
+  .object({ objective: objectiveField, ...taskWorkItemFields })
+  .partial(
+    Object.fromEntries(Object.keys(taskWorkItemFields).map((key) => [key, true])) as Record<
+      keyof typeof taskWorkItemFields,
+      true
+    >,
+  );
 
 export type CreateProjectTaskInput = z.infer<typeof createProjectTaskSchema>;
 
 export const updateProjectTaskSchema = z
   .object({
     objective: objectiveField,
-    acceptance: acceptanceField.nullable(),
     status: projectTaskStatusSchema,
-    assigneeUserId: z.number().int().positive().nullable(),
-    runner: projectTaskRunnerSchema.nullable(),
-    stageId: z.string().trim().min(1).max(40).nullable(),
-    tokenBudget: z.number().int().positive().max(10_000_000).nullable(),
     position: z.number(),
+    ...taskWorkItemFields,
   })
   .partial()
   .refine((value) => Object.keys(value).length > 0, {
