@@ -59,6 +59,10 @@ export interface IUserSettings {
   search_provider: string | null;
   tracking_enabled: boolean;
   sandbox_model: string | null;
+  pet_source: "preset" | "custom" | null;
+  pet_id: string | null;
+  pet_travel_enabled: boolean;
+  pet_animation_enabled: boolean;
 }
 
 export interface UserSettings {

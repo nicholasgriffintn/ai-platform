@@ -8,6 +8,34 @@
       "when": 1788109021097,
       "tag": "0000_baseline",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788117461444,
+      "tag": "0001_low_proudstar",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788120998620,
+      "tag": "0002_empty_zarda",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1788125253008,
+      "tag": "0003_nice_rictor",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1788125260118,
+      "tag": "0004_fuzzy_tag",
+      "breakpoints": true
     }
   ]
 }

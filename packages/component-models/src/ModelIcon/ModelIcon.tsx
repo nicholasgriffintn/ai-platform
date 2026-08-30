@@ -1,6 +1,6 @@
 import { Wand2 } from "lucide-react";
 import type { ComponentProps, FC } from "react";
-import { Suspense, forwardRef, lazy, useMemo, useState } from "react";
+import { Suspense, forwardRef, lazy, useMemo } from "react";
 
 import type { IconType } from "./icon-type";
 import { MODEL_ICONS, PROVIDER_ICONS } from "./iconDefinitions";
@@ -75,8 +75,6 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
       return { iconName: "", iconType: "fallback" };
     }, [modelName, provider]);
 
-    const [isLoaded, setIsLoaded] = useState(false);
-
     const IconComponent = useMemo(() => {
       const loadIcon = iconName ? ICON_LOADERS[iconName] : undefined;
 
@@ -84,19 +82,7 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
         return null;
       }
 
-      return lazy(() =>
-        loadIcon()
-          .then((module) => {
-            setIsLoaded(true);
-
-            return module;
-          })
-          .catch(() => {
-            setIsLoaded(true);
-
-            return { default: MissingIcon };
-          }),
-      );
+      return lazy(() => loadIcon().catch(() => ({ default: MissingIcon })));
     }, [iconName]);
 
     if (!IconComponent && iconType === "fallback" && !showFallback) {
@@ -133,21 +119,19 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
           </div>
         ) : (
           <>
-            {(iconType === "fallback" || !isLoaded) && showFallback && (
+            {iconType === "fallback" && showFallback && (
               <TextFallback text={modelName} provider={provider} size={containerSize} />
             )}
 
             {iconType !== "fallback" && IconComponent && (
               <Suspense
                 fallback={
-                  showFallback ? null : (
+                  showFallback ? (
                     <TextFallback text={modelName} provider={provider} size={containerSize} />
-                  )
+                  ) : null
                 }
               >
-                <div
-                  className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${isLoaded ? "opacity-100" : "opacity-0"}`}
-                >
+                <div className="absolute inset-0 flex items-center justify-center">
                   <div className={mono ? "text-black dark:text-white" : ""}>
                     <IconComponent
                       size={containerSize}

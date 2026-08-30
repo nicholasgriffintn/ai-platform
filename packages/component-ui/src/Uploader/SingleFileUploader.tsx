@@ -13,8 +13,11 @@ import { Button } from "../Button";
 
 interface SingleFileUploaderProps {
   id: string;
+  accept?: string;
   initialFiles?: FileMetadata[];
   maxSize?: number;
+  label?: string;
+  hint?: string;
   onFilesAdded?: (files: FileWithPreview[]) => void;
   onFilesChange?: (files: FileWithPreview[]) => void;
   onFilesDropped?: (files: FileList) => void;
@@ -23,8 +26,11 @@ interface SingleFileUploaderProps {
 
 export function SingleFileUploader({
   id,
+  accept = "*",
   initialFiles,
   maxSize = 10 * 1024 * 1024, // 10MB default
+  label = "Upload file",
+  hint,
   onFilesAdded,
   onFilesChange,
   onFilesDropped,
@@ -43,6 +49,7 @@ export function SingleFileUploader({
     },
   ] = useFileUpload({
     maxFiles: 1,
+    accept,
     maxSize,
     initialFiles,
     onFilesAdded,
@@ -99,9 +106,9 @@ export function SingleFileUploader({
           >
             <UploadIcon className="size-4 opacity-60" />
           </div>
-          <p className="mb-1.5 text-sm font-medium">Upload file</p>
+          <p className="mb-1.5 text-sm font-medium">{label}</p>
           <p className="text-muted-foreground text-xs">
-            Drag & drop or click to browse (max. {formatBytes(maxSize)})
+            {hint ?? `Drag & drop or click to browse (max. ${formatBytes(maxSize)})`}
           </p>
         </div>
       </button>

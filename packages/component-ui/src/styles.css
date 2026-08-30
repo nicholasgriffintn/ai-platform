@@ -26,3 +26,65 @@
     scroll-behavior: auto !important;
   }
 }
+
+@layer polychat-ui-tokens {
+  .polychat-pet {
+    display: block;
+    transform: scaleX(var(--polychat-pet-facing, 1));
+    width: var(--polychat-pet-width);
+    height: var(--polychat-pet-height);
+    background-repeat: no-repeat;
+    background-size: var(--polychat-pet-sheet-width) var(--polychat-pet-sheet-height);
+    background-position-x: 0;
+    background-position-y: calc(var(--polychat-pet-row) * var(--polychat-pet-height) * -1);
+  }
+}
+
+@keyframes polychat-pet-play {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: calc(var(--polychat-pet-frames) * var(--polychat-pet-width) * -1);
+  }
+}
+
+.polychat-pet {
+  animation: polychat-pet-play var(--polychat-pet-duration) steps(var(--polychat-pet-frames))
+    var(--polychat-pet-iterations) backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .polychat-pet {
+    animation: none !important;
+    background-position-x: 0 !important;
+  }
+}
+
+@keyframes polychat-pet-arrive {
+  from {
+    transform: translate(2.5rem, -0.75rem) scaleX(var(--polychat-pet-facing, 1));
+    opacity: 0;
+  }
+  to {
+    transform: translate(0, 0) scaleX(var(--polychat-pet-facing, 1));
+    opacity: 1;
+  }
+}
+
+.polychat-pet-perched {
+  transition: transform 200ms ease-out;
+}
+
+.polychat-pet-arriving {
+  animation:
+    polychat-pet-play var(--polychat-pet-duration) steps(var(--polychat-pet-frames))
+      var(--polychat-pet-iterations) backwards,
+    polychat-pet-arrive 600ms cubic-bezier(0.22, 0.8, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .polychat-pet-arriving {
+    animation: none !important;
+  }
+}

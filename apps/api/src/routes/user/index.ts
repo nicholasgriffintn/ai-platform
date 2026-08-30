@@ -29,6 +29,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 
 import apiKeys from "./apiKeys";
 import exportHistoryRoute from "./export-history";
+import pets from "./pets";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("user");
@@ -271,5 +272,6 @@ addRoute(app, "post", "/sync-providers", {
 
 app.route("/api-keys", apiKeys);
 app.route("/export-chat-history", exportHistoryRoute);
+app.route("/pets", pets);
 
 export default app;

@@ -11,6 +11,7 @@ import type {
 } from "@ngriffin_uk/polychat-component-conversation";
 import {
   ConversationComposerDock,
+  PetPerch,
   ConversationMessageColumn,
   GoalStatusCard,
   WelcomeScreen,
@@ -36,13 +37,15 @@ import { toast } from "sonner";
 
 import { ComposerBanner } from "~/components/ConversationThread/ComposerBanner";
 import { useGoalCommands } from "~/components/ConversationThread/useGoalCommands";
-import { Logo } from "~/components/Core/Logo";
+import { Pet, usePetStatus } from "~/components/Core/Pet";
 import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useArtifactPanel } from "~/hooks/useArtifactPanel";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { useModels } from "~/hooks/useModels";
+import { usePetNudgeSources } from "~/hooks/usePetNudgeSources";
+import { usePetFollowEnabled } from "~/hooks/usePetTravel";
 import { resolveConnectorOperationApproval } from "~/lib/api/connectors";
 import type { ChatSuggestion } from "~/lib/chat-suggestions";
 import { openExternalUrl } from "~/lib/external-navigation";
@@ -622,6 +625,15 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     ],
   );
 
+  const petStatus = usePetStatus();
+  const petFollows = usePetFollowEnabled();
+
+  usePetNudgeSources({
+    goalStatus: goalView?.status,
+    goalStoppedReason: goalView?.stoppedReason,
+    hasPendingQuestion: Boolean(modeConfig?.pendingUserQuestions),
+  });
+
   const showWelcomeScreen =
     messages.length === 0 && !currentConversationId && !isStreamLoading && !streamStarted;
 
@@ -646,7 +658,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
               title={modeConfig?.welcomeTitle}
               description={modeConfig?.welcomeDescription}
               isLoading={modeConfig?.welcomeLoading}
-              logo={<Logo variant="logo_control" />}
+              pet={<Pet size={128} placement="top" />}
               suggestions={
                 <ChatSuggestions
                   setInput={setChatInput}
@@ -677,6 +689,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       )}
 
       <ConversationComposerDock>
+        {showWelcomeScreen || !petFollows ? null : (
+          <PetPerch pet={<Pet size={44} facing="left" placement="left" />} status={petStatus} />
+        )}
         <ComposerBanner
           model={selectedModelConfig}
           hideSuggestions={modeConfig?.hideComposerSuggestions}

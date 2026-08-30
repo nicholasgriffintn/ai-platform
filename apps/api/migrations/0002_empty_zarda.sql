@@ -1,0 +1,1 @@
+ALTER TABLE `user_settings` ADD `pet_animation_enabled` integer DEFAULT false;

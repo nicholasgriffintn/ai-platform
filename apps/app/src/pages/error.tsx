@@ -1,6 +1,6 @@
-import { Button, ButtonLink } from "@ngriffin_uk/polychat-component-ui";
+import { Button, ButtonLink, PetSprite } from "@ngriffin_uk/polychat-component-ui";
+import { PET_CLIPS, PET_SHEET_LAYOUT } from "@ngriffin_uk/polychat-schemas";
 
-import { Logo } from "~/components/Core/Logo";
 import { PageShell } from "~/components/Core/PageShell";
 import { shouldShowDevTools } from "~/constants";
 
@@ -23,9 +23,14 @@ export default function ErrorRoute({ message, details, stack }: ErrorRouteProps)
   return (
     <PageShell className="flex h-dvh w-full max-w-full overflow-hidden bg-off-white dark:bg-zinc-900">
       <div className="flex-1 overflow-auto w-full space-y-3 p-4">
-        <div className="h-16 w-16">
-          <Logo variant="logo_minimalist" />
-        </div>
+        <PetSprite
+          sheetUrl="/pets/ash.webp"
+          layout={PET_SHEET_LAYOUT}
+          clip={PET_CLIPS.fret}
+          label="Ash, out of sorts"
+          size={64}
+          paused
+        />
         <div className="text-base font-semibold text-zinc-600 dark:text-zinc-200 truncate">
           {message}
         </div>

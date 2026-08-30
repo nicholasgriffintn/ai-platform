@@ -12,6 +12,7 @@ import { ProfileBillingTab } from "./Tabs/ProfileBillingTab";
 import { ProfileCustomisationTab } from "./Tabs/ProfileCustomisationTab";
 import { ProfileHistoryTab } from "./Tabs/ProfileHistoryTab";
 import { ProfilePasskeysTab } from "./Tabs/ProfilePasskeysTab";
+import { ProfilePetsTab } from "./Tabs/ProfilePetsTab";
 import { ProfileProvidersTab } from "./Tabs/ProfileProvidersTab";
 import { ProfileSandboxTab } from "./Tabs/ProfileSandboxTab";
 import { ProfileSourcesTab } from "./Tabs/ProfileSourcesTab";
@@ -32,6 +33,12 @@ export const profileSidebarItems: ProfileSidebarItem[] = [
     label: "Customisation",
     pageTitle: "Customise Chat",
     component: ProfileCustomisationTab,
+  },
+  {
+    id: "pets",
+    label: "Pets",
+    pageTitle: "Your pet",
+    component: ProfilePetsTab,
   },
   { id: "history", label: "Chat History", component: ProfileHistoryTab },
   {

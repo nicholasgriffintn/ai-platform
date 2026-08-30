@@ -29,6 +29,7 @@ export * from "./Message/SearchGroundingSection";
 export * from "./messageListScroll";
 export * from "./ChatSuggestionList";
 export * from "./ConversationSurface";
+export * from "./PetPerch";
 export * from "./ScrollButton";
 export * from "./ToolSelectorPopover";
 export * from "./ToolToggleMenu";

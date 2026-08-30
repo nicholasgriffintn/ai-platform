@@ -63,4 +63,8 @@ export interface UserSettings {
   speech_model?: string;
   search_provider?: string;
   sandbox_model?: string;
+  pet_source?: "preset" | "custom";
+  pet_id?: string;
+  pet_travel_enabled?: boolean;
+  pet_animation_enabled?: boolean;
 }

@@ -6,7 +6,7 @@ export function securityHeaders() {
     c.header("X-Frame-Options", "DENY");
     c.header("X-XSS-Protection", "1; mode=block");
     c.header("Cross-Origin-Opener-Policy", "same-origin");
-    c.header("Cross-Origin-Resource-Policy", "same-origin");
+    c.header("Cross-Origin-Resource-Policy", "same-site");
     c.header("X-DNS-Prefetch-Control", "off");
     c.header("Cross-Origin-Embedder-Policy", "require-corp");
     c.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");

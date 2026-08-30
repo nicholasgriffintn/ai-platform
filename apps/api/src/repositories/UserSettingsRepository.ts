@@ -257,6 +257,16 @@ export class UserSettingsRepository extends BaseRepository {
       speech_model: settings.speech_model ?? null,
       search_provider: settings.search_provider ?? null,
       sandbox_model: settings.sandbox_model ?? null,
+      pet_source: settings.pet_source ?? null,
+      pet_id: settings.pet_id ?? null,
+      pet_travel_enabled:
+        settings.pet_travel_enabled !== undefined ? (settings.pet_travel_enabled ? 1 : 0) : null,
+      pet_animation_enabled:
+        settings.pet_animation_enabled !== undefined
+          ? settings.pet_animation_enabled
+            ? 1
+            : 0
+          : null,
     };
 
     if (!Object.hasOwn(settings, "memory_provider")) {
@@ -265,6 +275,17 @@ export class UserSettingsRepository extends BaseRepository {
 
     if (!Object.hasOwn(settings, "temporary_chats_default")) {
       delete updates.temporary_chats_default;
+    }
+
+    for (const petField of [
+      "pet_source",
+      "pet_id",
+      "pet_travel_enabled",
+      "pet_animation_enabled",
+    ]) {
+      if (!Object.hasOwn(settings, petField)) {
+        delete updates[petField];
+      }
     }
 
     const allowedFields = Object.keys(updates);
@@ -313,6 +334,10 @@ export class UserSettingsRepository extends BaseRepository {
       "speech_model",
       "search_provider",
       "sandbox_model",
+      "pet_source",
+      "pet_id",
+      "pet_travel_enabled",
+      "pet_animation_enabled",
     ];
     const { query, values } = this.buildSelectQuery(
       "user_settings",
@@ -332,6 +357,8 @@ export class UserSettingsRepository extends BaseRepository {
       memories_save_enabled: Boolean(result.memories_save_enabled),
       memories_chat_history_enabled: Boolean(result.memories_chat_history_enabled),
       temporary_chats_default: Boolean(result.temporary_chats_default),
+      pet_travel_enabled: Boolean(result.pet_travel_enabled),
+      pet_animation_enabled: Boolean(result.pet_animation_enabled),
     } as IUserSettings;
   }
 

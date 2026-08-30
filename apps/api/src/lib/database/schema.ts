@@ -399,7 +399,9 @@ export const goal = sqliteTable(
   "goal",
   {
     id: text().primaryKey(),
-    conversation_id: text().references(() => conversation.id, { onDelete: "cascade" }),
+    conversation_id: text().references(() => conversation.id, {
+      onDelete: "cascade",
+    }),
     sandbox_run_id: text(),
     user_id: integer()
       .notNull()
@@ -553,6 +555,12 @@ export const userSettings = sqliteTable(
       enum: ["duckduckgo", "tavily", "serper", "parallel", "perplexity", "exa"],
     }),
     sandbox_model: text(),
+    pet_source: text({
+      enum: ["preset", "custom"],
+    }).default("preset"),
+    pet_id: text().default("pip"),
+    pet_travel_enabled: integer({ mode: "boolean" }).default(false),
+    pet_animation_enabled: integer({ mode: "boolean" }).default(false),
     tracking_enabled: integer({ mode: "boolean" }).default(true),
     public_key: text(),
     private_key: text(),
@@ -569,6 +577,32 @@ export const userSettings = sqliteTable(
 );
 
 export type UserSettings = typeof userSettings.$inferSelect;
+
+export const userPet = sqliteTable(
+  "user_pet",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    name: text().notNull(),
+    description: text(),
+    origin: text({
+      enum: ["upload", "generated"],
+    }).notNull(),
+    sheet_key: text().notNull(),
+    layout_id: text().notNull().default("polychat-v1"),
+    prompt: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    userIdIdx: index("user_pet_user_id_idx").on(table.user_id),
+  }),
+);
+
+export type UserPet = typeof userPet.$inferSelect;
 
 export const capabilityConfiguration = sqliteTable(
   "capability_configuration",
@@ -750,9 +784,15 @@ export const source = sqliteTable(
       .notNull()
       .references(() => user.id),
     project_id: text().references(() => project.id, { onDelete: "cascade" }),
-    conversation_id: text().references(() => conversation.id, { onDelete: "set null" }),
-    connection_id: text().references(() => providerConnection.id, { onDelete: "set null" }),
-    kind: text({ enum: ["file", "memory", "text", "url", "connector", "repository"] }).notNull(),
+    conversation_id: text().references(() => conversation.id, {
+      onDelete: "set null",
+    }),
+    connection_id: text().references(() => providerConnection.id, {
+      onDelete: "set null",
+    }),
+    kind: text({
+      enum: ["file", "memory", "text", "url", "connector", "repository"],
+    }).notNull(),
     title: text().notNull(),
     status: text({ enum: ["processing", "available", "failed", "archived"] })
       .default("available")
@@ -840,7 +880,9 @@ export const output = sqliteTable(
       .notNull()
       .references(() => user.id),
     project_id: text().references(() => project.id, { onDelete: "cascade" }),
-    conversation_id: text().references(() => conversation.id, { onDelete: "set null" }),
+    conversation_id: text().references(() => conversation.id, {
+      onDelete: "set null",
+    }),
     parent_output_id: text(),
     capability_id: text().notNull(),
     group_id: text(),
@@ -849,7 +891,9 @@ export const output = sqliteTable(
     status: text({ enum: ["pending", "ready", "failed", "archived"] })
       .default("ready")
       .notNull(),
-    sensitivity: text({ enum: ["personal", "internal", "confidential"] }).notNull(),
+    sensitivity: text({
+      enum: ["personal", "internal", "confidential"],
+    }).notNull(),
     content: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
     storage_key: text().unique(),
     mime_type: text(),
@@ -889,8 +933,12 @@ export const outputRevision = sqliteTable(
       .references(() => output.id, { onDelete: "cascade" }),
     revision: integer().notNull(),
     title: text().notNull(),
-    status: text({ enum: ["pending", "ready", "failed", "archived"] }).notNull(),
-    sensitivity: text({ enum: ["personal", "internal", "confidential"] }).notNull(),
+    status: text({
+      enum: ["pending", "ready", "failed", "archived"],
+    }).notNull(),
+    sensitivity: text({
+      enum: ["personal", "internal", "confidential"],
+    }).notNull(),
     content: text({ mode: "json" }).$type<Record<string, unknown>>().notNull(),
     created_by_user_id: integer()
       .notNull()
@@ -959,7 +1007,9 @@ export const template = sqliteTable(
     created_by_user_id: integer()
       .notNull()
       .references(() => user.id),
-    workspace_id: text().references(() => workspace.id, { onDelete: "cascade" }),
+    workspace_id: text().references(() => workspace.id, {
+      onDelete: "cascade",
+    }),
     project_id: text().references(() => project.id, { onDelete: "cascade" }),
     kind: text({ enum: ["project", "recipe", "capability"] }).notNull(),
     capability_id: text(),
@@ -1040,7 +1090,9 @@ export const composioConnectorSession = sqliteTable(
     run_id: text().notNull(),
     completion_id: text(),
     recipe_id: text(),
-    installation_id: text().references(() => template.id, { onDelete: "cascade" }),
+    installation_id: text().references(() => template.id, {
+      onDelete: "cascade",
+    }),
     state: text({ enum: ["active", "claimed", "cleanup_pending"] }).notNull(),
     created_at: text().notNull(),
     expires_at: text().notNull(),
@@ -1081,7 +1133,9 @@ export const connectorOperationApproval = sqliteTable(
     connected_account_id: text().notNull(),
     channel: text().notNull(),
     argument_digest: text().notNull(),
-    state: text({ enum: ["pending", "approved", "rejected", "consumed"] }).notNull(),
+    state: text({
+      enum: ["pending", "approved", "rejected", "consumed"],
+    }).notNull(),
     created_at: text().notNull(),
     expires_at: text().notNull(),
     resolved_at: text(),
@@ -1110,7 +1164,9 @@ export const activityRecord = sqliteTable(
       .notNull()
       .references(() => user.id),
     project_id: text().references(() => project.id, { onDelete: "cascade" }),
-    conversation_id: text().references(() => conversation.id, { onDelete: "set null" }),
+    conversation_id: text().references(() => conversation.id, {
+      onDelete: "set null",
+    }),
     capability_id: text().notNull(),
     group_id: text(),
     kind: text().notNull(),
@@ -1665,7 +1721,9 @@ export const projectTask = sqliteTable(
       .references(() => user.id),
     assignee_user_id: integer().references(() => user.id),
     runner_identity_user_id: integer().references(() => user.id),
-    conversation_id: text().references(() => conversation.id, { onDelete: "set null" }),
+    conversation_id: text().references(() => conversation.id, {
+      onDelete: "set null",
+    }),
     goal_id: text(),
     dispatch_task_id: text(),
     completions: text({ mode: "json" }).$type<ProjectTaskCompletion[]>(),

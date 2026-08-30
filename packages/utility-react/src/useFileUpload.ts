@@ -7,6 +7,7 @@ import {
   type DragEvent,
   type InputHTMLAttributes,
   useCallback,
+  useEffect,
   useRef,
   useState,
 } from "react";
@@ -83,6 +84,21 @@ export const useFileUpload = (
   });
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const onFilesChangeRef = useRef(onFilesChange);
+  const notifiedFilesRef = useRef(state.files);
+
+  useEffect(() => {
+    onFilesChangeRef.current = onFilesChange;
+  }, [onFilesChange]);
+
+  useEffect(() => {
+    if (notifiedFilesRef.current === state.files) {
+      return;
+    }
+
+    notifiedFilesRef.current = state.files;
+    onFilesChangeRef.current?.(state.files);
+  }, [state.files]);
 
   const validateFile = useCallback(
     (file: File | FileMetadata): string | null => {
@@ -159,17 +175,13 @@ export const useFileUpload = (
         inputRef.current.value = "";
       }
 
-      const newState = {
+      return {
         ...prev,
         files: [],
         errors: [],
       };
-
-      onFilesChange?.(newState.files);
-
-      return newState;
     });
-  }, [onFilesChange]);
+  }, []);
 
   const addFiles = useCallback(
     (newFiles: FileList | File[]) => {
@@ -235,17 +247,11 @@ export const useFileUpload = (
       if (validFiles.length > 0) {
         onFilesAdded?.(validFiles);
 
-        setState((prev) => {
-          const newFiles = !multiple ? validFiles : [...prev.files, ...validFiles];
-
-          onFilesChange?.(newFiles);
-
-          return {
-            ...prev,
-            files: newFiles,
-            errors,
-          };
-        });
+        setState((prev) => ({
+          ...prev,
+          files: !multiple ? validFiles : [...prev.files, ...validFiles],
+          errors,
+        }));
       } else if (errors.length > 0) {
         setState((prev) => ({
           ...prev,
@@ -267,37 +273,29 @@ export const useFileUpload = (
       createPreview,
       generateUniqueId,
       clearFiles,
-      onFilesChange,
       onFilesAdded,
     ],
   );
 
-  const removeFile = useCallback(
-    (id: string) => {
-      setState((prev) => {
-        const fileToRemove = prev.files.find((file) => file.id === id);
+  const removeFile = useCallback((id: string) => {
+    setState((prev) => {
+      const fileToRemove = prev.files.find((file) => file.id === id);
 
-        if (
-          fileToRemove?.preview &&
-          fileToRemove?.file instanceof File &&
-          fileToRemove?.file.type.startsWith("image/")
-        ) {
-          URL.revokeObjectURL(fileToRemove.preview);
-        }
+      if (
+        fileToRemove?.preview &&
+        fileToRemove?.file instanceof File &&
+        fileToRemove?.file.type.startsWith("image/")
+      ) {
+        URL.revokeObjectURL(fileToRemove.preview);
+      }
 
-        const newFiles = prev.files.filter((file) => file.id !== id);
-
-        onFilesChange?.(newFiles);
-
-        return {
-          ...prev,
-          files: newFiles,
-          errors: [],
-        };
-      });
-    },
-    [onFilesChange],
-  );
+      return {
+        ...prev,
+        files: prev.files.filter((file) => file.id !== id),
+        errors: [],
+      };
+    });
+  }, []);
 
   const clearErrors = useCallback(() => {
     setState((prev) => ({

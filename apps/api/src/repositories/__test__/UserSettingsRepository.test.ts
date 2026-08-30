@@ -192,4 +192,17 @@ describe("UserSettingsRepository", () => {
     expect(executeRunSpy.mock.calls[0]?.[0]).toContain("temporary_chats_default = ?");
     expect(executeRunSpy.mock.calls[0]?.[1]).toContain(1);
   });
+
+  it("persists pet animation as an opt-in boolean setting", async () => {
+    const repo = new UserSettingsRepository({ DB: {} as any } as IEnv);
+    const executeRunSpy = vi
+      .spyOn(repo as any, "executeRun")
+      .mockResolvedValue({ success: true } as any);
+
+    await repo.updateUserSettings(42, { pet_animation_enabled: true });
+
+    expect(executeRunSpy).toHaveBeenCalledTimes(1);
+    expect(executeRunSpy.mock.calls[0]?.[0]).toContain("pet_animation_enabled = ?");
+    expect(executeRunSpy.mock.calls[0]?.[1]).toContain(1);
+  });
 });

@@ -31,6 +31,10 @@ export const updateUserSettingsSchema = z.object({
   speech_model: z.string().optional(),
   search_provider: z.string().optional(),
   sandbox_model: z.string().optional(),
+  pet_source: z.enum(["preset", "custom"]).optional(),
+  pet_id: z.string().trim().min(1).max(60).optional(),
+  pet_travel_enabled: z.boolean().optional(),
+  pet_animation_enabled: z.boolean().optional(),
 });
 
 export const userModelsResponseSchema = z.object({

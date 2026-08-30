@@ -95,6 +95,7 @@ export * from "./recipe-presentation";
 export * from "./models";
 export * from "./navigation";
 export * from "./outputs";
+export * from "./pets";
 export * from "./project-tasks";
 export * from "./user-questions";
 export * from "./plans";

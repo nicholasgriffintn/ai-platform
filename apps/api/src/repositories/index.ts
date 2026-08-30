@@ -28,6 +28,7 @@ import { SourceRepository } from "./SourceRepository";
 import { TaskRepository } from "./TaskRepository";
 import { TemplateRepository } from "./TemplateRepository";
 import { TrainingExampleRepository } from "./TrainingExampleRepository";
+import { UserPetRepository } from "./UserPetRepository";
 import { UserRepository } from "./UserRepository";
 import { UserSettingsRepository } from "./UserSettingsRepository";
 import { WebAuthnRepository } from "./WebAuthnRepository";
@@ -56,6 +57,7 @@ export {
   TaskRepository,
   TemplateRepository,
   TrainingExampleRepository,
+  UserPetRepository,
   UserRepository,
   UserSettingsRepository,
   WebAuthnRepository,
@@ -77,6 +79,7 @@ export class RepositoryManager {
   private anonymousUserRepo: AnonymousUserRepository;
   private sessionRepo: SessionRepository;
   private userSettingsRepo: UserSettingsRepository;
+  private userPetRepo: UserPetRepository;
   private capabilityConfigurationRepo: CapabilityConfigurationRepository;
   private conversationRepo: ConversationRepository;
   private composioConnectorSessionRepo: ComposioConnectorSessionRepository;
@@ -110,6 +113,7 @@ export class RepositoryManager {
     this.anonymousUserRepo = new AnonymousUserRepository(env);
     this.sessionRepo = new SessionRepository(env);
     this.userSettingsRepo = new UserSettingsRepository(env);
+    this.userPetRepo = new UserPetRepository(env);
     this.capabilityConfigurationRepo = new CapabilityConfigurationRepository(env);
     this.conversationRepo = new ConversationRepository(env);
     this.composioConnectorSessionRepo = new ComposioConnectorSessionRepository(env);
@@ -177,6 +181,10 @@ export class RepositoryManager {
 
   public get userSettings(): UserSettingsRepository {
     return this.userSettingsRepo;
+  }
+
+  public get userPets(): UserPetRepository {
+    return this.userPetRepo;
   }
 
   public get capabilityConfigurations(): CapabilityConfigurationRepository {

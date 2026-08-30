@@ -30,6 +30,7 @@ export default [
     route(":workspaceId/projects/:projectId/outputs/*", "pages/work/project-outputs.tsx"),
     route(":workspaceId/projects/:projectId/tools/:toolId", "pages/work/project-tool.tsx"),
   ]),
+  route("/pets", "pages/pets.tsx"),
   route("/terms", "pages/terms.tsx"),
   route("/privacy", "pages/privacy.tsx"),
   route("/auth/callback", "pages/auth/callback.tsx"),

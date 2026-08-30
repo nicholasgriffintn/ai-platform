@@ -5,7 +5,7 @@ export interface WelcomeScreenProps {
   title?: string;
   description?: string;
   isLoading?: boolean;
-  logo: ReactNode;
+  pet: ReactNode;
   suggestions: ReactNode;
 }
 
@@ -13,7 +13,7 @@ export const WelcomeScreen = ({
   title,
   description,
   isLoading = false,
-  logo,
+  pet,
   suggestions,
 }: WelcomeScreenProps) => {
   const resolvedTitle = title ?? "What shall we get into?";
@@ -23,9 +23,7 @@ export const WelcomeScreen = ({
 
   return (
     <div className="w-full px-4 pt-4 pb-2 text-center" aria-busy={isLoading} aria-live="polite">
-      <div className="w-32 h-32 mx-auto hover:animate-flutter motion-reduce:animate-none">
-        {logo}
-      </div>
+      <div className="mx-auto flex h-32 w-32 items-end justify-center">{pet}</div>
       <h2 className="flex min-h-16 items-end justify-center text-2xl font-semibold text-zinc-800 md:min-h-12 md:text-4xl dark:text-zinc-200">
         <span
           key={resolvedTitle}
