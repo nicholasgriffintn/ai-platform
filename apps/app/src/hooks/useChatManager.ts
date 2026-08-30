@@ -10,7 +10,10 @@ import { useCallback } from "react";
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
 import { prepareUserMessage } from "~/lib/chat/prepare-user-message";
-import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
+import {
+  createTemporaryConversationTitle,
+  isPlaceholderConversationTitle,
+} from "~/lib/chat/title-source";
 import { createConversationId } from "~/lib/conversations";
 import { getErrorMessage } from "~/lib/errors";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
@@ -94,15 +97,20 @@ export function useChatManager(
         conversationId,
       ]);
 
-      if (conversation?.messages) {
-        const lastAssistantMessage = conversation.messages
-          .slice()
-          .reverse()
-          .find((msg) => msg.role === "assistant");
+      if (
+        !conversation?.messages ||
+        !isPlaceholderConversationTitle(conversation.title, messages)
+      ) {
+        return;
+      }
 
-        if (lastAssistantMessage) {
-          await generateConversationTitle(conversationId, messages, lastAssistantMessage);
-        }
+      const lastAssistantMessage = conversation.messages
+        .slice()
+        .reverse()
+        .find((msg) => msg.role === "assistant");
+
+      if (lastAssistantMessage) {
+        await generateConversationTitle(conversationId, messages, lastAssistantMessage);
       }
     },
     [queryClient, generateConversationTitle],

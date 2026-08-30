@@ -41,7 +41,7 @@
     "@ngriffin_uk/polychat-library-react": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
-    "lucide-react": "1.31.0"
+    "lucide-react": "1.33.0"
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",
@@ -55,7 +55,7 @@
     "tailwindcss": "4.3.3",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "8.2.1",
+    "vite": "8.2.2",
     "vitest": "catalog:"
   },
   "peerDependencies": {

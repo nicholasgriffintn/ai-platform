@@ -210,7 +210,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.0006,
     supportsResponseFormat: true,
     family: "gpt-oss",
-    openWeights: false,
+    openWeights: true,
   }),
 
   createModelConfig("openai.gpt-oss-safeguard-20b", PROVIDER, {
@@ -233,7 +233,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.0002,
     supportsResponseFormat: true,
     family: "gpt-oss",
-    openWeights: false,
+    openWeights: true,
   }),
 
   createModelConfig("minimax.minimax-m2", PROVIDER, {
@@ -2237,7 +2237,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
       intelligenceIndexVersion: 4.1,
     },
     family: "gpt-oss",
-    openWeights: false,
+    openWeights: true,
   }),
 
   createModelConfig("openai.gpt-oss-20b-1:0", PROVIDER, {
@@ -2272,7 +2272,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
       intelligenceIndexVersion: 4.1,
     },
     family: "gpt-oss",
-    openWeights: false,
+    openWeights: true,
   }),
 
   createModelConfig("qwen.qwen3-235b-a22b-2507-v1:0", PROVIDER, {
@@ -3816,7 +3816,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
       output: ["text"],
     },
     supportsAttachments: true,
-    supportsTemperature: false,
+    supportsTemperature: true,
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 272000,
@@ -3909,7 +3909,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
       intelligenceIndexVersion: 4.1,
     },
     family: "gpt-oss",
-    openWeights: false,
+    openWeights: true,
   }),
 
   createModelConfig("openai.gpt-oss-20b", PROVIDER, {
@@ -3944,7 +3944,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
       intelligenceIndexVersion: 4.1,
     },
     family: "gpt-oss",
-    openWeights: false,
+    openWeights: true,
   }),
   createModelConfig("eu.anthropic.claude-fable-5", PROVIDER, {
     name: "Claude Fable 5 (EU)",
@@ -4338,8 +4338,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     contextWindow: 1050000,
     maxTokens: 128000,
-    costPer1kInputTokens: 0.0055,
-    costPer1kOutputTokens: 0.033,
+    costPer1kInputTokens: 0.0044,
+    costPer1kOutputTokens: 0.022,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",
@@ -4535,11 +4535,11 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsAttachments: true,
     supportsTemperature: false,
     supportsToolCalls: true,
-    supportsResponseFormat: true,
+    supportsResponseFormat: false,
     contextWindow: 1050000,
     maxTokens: 128000,
-    costPer1kInputTokens: 0.00022,
-    costPer1kOutputTokens: 0.00132,
+    costPer1kInputTokens: 0.0002,
+    costPer1kOutputTokens: 0.0012,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",
@@ -4561,11 +4561,11 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsAttachments: true,
     supportsTemperature: false,
     supportsToolCalls: true,
-    supportsResponseFormat: true,
+    supportsResponseFormat: false,
     contextWindow: 1050000,
     maxTokens: 128000,
-    costPer1kInputTokens: 0.0055,
-    costPer1kOutputTokens: 0.033,
+    costPer1kInputTokens: 0.004,
+    costPer1kOutputTokens: 0.02,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",
@@ -4587,11 +4587,11 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsAttachments: true,
     supportsTemperature: false,
     supportsToolCalls: true,
-    supportsResponseFormat: true,
+    supportsResponseFormat: false,
     contextWindow: 1050000,
     maxTokens: 128000,
-    costPer1kInputTokens: 0.0022,
-    costPer1kOutputTokens: 0.0132,
+    costPer1kInputTokens: 0.002,
+    costPer1kOutputTokens: 0.012,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",

@@ -74,6 +74,11 @@ enum ChatStreamEventParser {
                let message = extractCompactionMessage(from: object) {
                 return [.compaction(message)]
             }
+            if object["state"] as? String == "conversation_title",
+               let title = (object["title"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !title.isEmpty {
+                return [.conversationTitle(title)]
+            }
             return (object["state"] as? String).map { [.state($0)] } ?? []
         case "message_stop":
             return [.done]

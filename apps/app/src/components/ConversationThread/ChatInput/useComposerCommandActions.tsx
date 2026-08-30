@@ -412,7 +412,7 @@ export function useComposerCommandActions({
         });
       }
 
-      if (goalState.goal?.status === "paused") {
+      if (goalState.goal?.status !== "active") {
         commands.push({
           id: "goal-resume",
           label: "Resume goal",
@@ -424,17 +424,15 @@ export function useComposerCommandActions({
         });
       }
 
-      if (goalState.goal) {
-        commands.push({
-          id: "goal-clear",
-          label: "Clear goal",
-          description: "Drop the objective without completing it.",
-          command: "goal clear",
-          icon: <Target className="h-4 w-4" aria-hidden="true" />,
-          isActive: false,
-          onSelect: () => runGoalCommand({ kind: "clear" }),
-        });
-      }
+      commands.push({
+        id: "goal-clear",
+        label: "Clear goal",
+        description: "Drop the objective without completing it.",
+        command: "goal clear",
+        icon: <Target className="h-4 w-4" aria-hidden="true" />,
+        isActive: false,
+        onSelect: () => runGoalCommand({ kind: "clear" }),
+      });
     }
 
     return commands;

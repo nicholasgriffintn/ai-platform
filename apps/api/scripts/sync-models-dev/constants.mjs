@@ -9,7 +9,7 @@ export const PROVIDER_ALIASES = {
   "together-ai": "togetherai",
   "google-ai-studio": "google",
   fireworks: "fireworks-ai",
-  ollama: "ollama-cloud",
+  moonshot: "moonshotai",
   grok: "xai",
   "perplexity-ai": "perplexity",
 };
@@ -24,6 +24,7 @@ export const CURRENT_ALIAS_SUFFIX_REGEX = /^(.*?)[-_:](0|latest)$/i;
 
 export const IGNORED_REMOTE_MODEL_IDS = {
   mistral: new Set(["mistral-nemo"]),
+  "google-vertex": (modelId) => !modelId.startsWith("gemini-"),
 };
 
 export const SUPPORTED_MODALITIES = new Set([

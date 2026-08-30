@@ -87,12 +87,6 @@ export function useGoalCommands(conversationId: string | undefined): UseGoalComm
           return true;
         }
 
-        if (!goal) {
-          toast.error("No goal on this conversation yet.");
-
-          return false;
-        }
-
         const status =
           command.kind === "pause" ? "paused" : command.kind === "resume" ? "active" : "cleared";
         const next = await updateGoalAsync(status);

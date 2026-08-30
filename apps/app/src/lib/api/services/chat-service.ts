@@ -337,7 +337,13 @@ export class ChatService {
     const data = await returnFetchedData<{ goal?: unknown }>(response);
     const parsed = goalSchema.nullable().safeParse(data?.goal ?? null);
 
-    return parsed.success ? parsed.data : null;
+    if (!parsed.success) {
+      console.error("Unexpected goal response shape", parsed.error.issues);
+
+      throw new Error("Could not read the goal for this conversation");
+    }
+
+    return parsed.data;
   }
 
   async generateTitle(completion_id: string, messages: Message[]): Promise<string> {

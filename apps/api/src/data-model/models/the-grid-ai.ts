@@ -1,0 +1,203 @@
+import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
+
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
+
+const PROVIDER = "the-grid-ai";
+
+export const theGridModelConfig: ModelConfig = createModelConfigObject([
+  createModelConfig("agent-prime", PROVIDER, {
+    name: "Agent Prime",
+    matchingModel: "agent-prime",
+    modalities: { input: ["text"], output: ["text"] },
+    supportsTemperature: true,
+    supportsToolCalls: true,
+  	status: "beta",
+  	openWeights: false,
+  	releaseDate: "May 4, 2026",
+  	lastUpdated: "July 15, 2026",
+  	supportsAttachments: false,
+  	supportsResponseFormat: true,
+  	contextWindow: 196608,
+  	maxTokens: 30000,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "thinking"],
+  		defaultEffort: "none",
+  	},
+  }),
+  createModelConfig("code-prime", PROVIDER, {
+    name: "Code Prime",
+    matchingModel: "code-prime",
+    modalities: { input: ["text"], output: ["text"] },
+    supportsTemperature: true,
+    supportsToolCalls: true,
+  	status: "beta",
+  	openWeights: false,
+  	releaseDate: "May 4, 2026",
+  	lastUpdated: "July 15, 2026",
+  	supportsAttachments: false,
+  	supportsResponseFormat: true,
+  	contextWindow: 196608,
+  	maxTokens: 30000,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "thinking"],
+  		defaultEffort: "none",
+  	},
+  }),
+  createModelConfig("agent-max", PROVIDER, {
+  	name: "Agent Max",
+  	matchingModel: "agent-max",
+  	status: "beta",
+  	openWeights: false,
+  	releaseDate: "May 4, 2026",
+  	lastUpdated: "July 24, 2026",
+  	modalities: {
+  		input: ["text", "image"],
+  		output: ["text"],
+  	},
+  	supportsAttachments: true,
+  	supportsTemperature: false,
+  	supportsToolCalls: true,
+  	supportsResponseFormat: true,
+  	contextWindow: 1000000,
+  	maxTokens: 128000,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "thinking"],
+  		defaultEffort: "none",
+  	},
+  }),
+
+  createModelConfig("agent-standard", PROVIDER, {
+  	name: "Agent Standard",
+  	matchingModel: "agent-standard",
+  	status: "beta",
+  	openWeights: false,
+  	releaseDate: "May 4, 2026",
+  	lastUpdated: "July 15, 2026",
+  	modalities: {
+  		input: ["text"],
+  		output: ["text"],
+  	},
+  	supportsAttachments: false,
+  	supportsTemperature: true,
+  	supportsToolCalls: true,
+  	supportsResponseFormat: true,
+  	contextWindow: 128000,
+  	maxTokens: 16000,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "thinking"],
+  		defaultEffort: "none",
+  	},
+  }),
+
+  createModelConfig("code-max", PROVIDER, {
+  	name: "Code Max",
+  	matchingModel: "code-max",
+  	status: "beta",
+  	openWeights: false,
+  	releaseDate: "May 4, 2026",
+  	lastUpdated: "July 24, 2026",
+  	modalities: {
+  		input: ["text", "image"],
+  		output: ["text"],
+  	},
+  	supportsAttachments: true,
+  	supportsTemperature: false,
+  	supportsToolCalls: true,
+  	supportsResponseFormat: true,
+  	contextWindow: 1000000,
+  	maxTokens: 128000,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "thinking"],
+  		defaultEffort: "none",
+  	},
+  }),
+
+  createModelConfig("code-standard", PROVIDER, {
+  	name: "Code Standard",
+  	matchingModel: "code-standard",
+  	status: "beta",
+  	openWeights: false,
+  	releaseDate: "May 4, 2026",
+  	lastUpdated: "July 15, 2026",
+  	modalities: {
+  		input: ["text"],
+  		output: ["text"],
+  	},
+  	supportsAttachments: false,
+  	supportsTemperature: true,
+  	supportsToolCalls: true,
+  	supportsResponseFormat: true,
+  	contextWindow: 128000,
+  	maxTokens: 16000,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "thinking"],
+  		defaultEffort: "none",
+  	},
+  }),
+
+  createModelConfig("text-max", PROVIDER, {
+  	name: "Text Max",
+  	matchingModel: "text-max",
+  	openWeights: false,
+  	releaseDate: "February 26, 2026",
+  	lastUpdated: "July 24, 2026",
+  	modalities: {
+  		input: ["text", "image"],
+  		output: ["text"],
+  	},
+  	supportsAttachments: true,
+  	supportsTemperature: false,
+  	supportsToolCalls: true,
+  	supportsResponseFormat: true,
+  	contextWindow: 1000000,
+  	maxTokens: 128000,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "thinking"],
+  		defaultEffort: "none",
+  	},
+  }),
+
+  createModelConfig("text-prime", PROVIDER, {
+  	name: "Text Prime",
+  	matchingModel: "text-prime",
+  	openWeights: false,
+  	releaseDate: "February 26, 2026",
+  	lastUpdated: "July 15, 2026",
+  	modalities: {
+  		input: ["text"],
+  		output: ["text"],
+  	},
+  	supportsAttachments: false,
+  	supportsTemperature: true,
+  	supportsToolCalls: true,
+  	supportsResponseFormat: true,
+  	contextWindow: 196608,
+  	maxTokens: 30000,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "thinking"],
+  		defaultEffort: "none",
+  	},
+  }),
+
+  createModelConfig("text-standard", PROVIDER, {
+  	name: "Text Standard",
+  	matchingModel: "text-standard",
+  	openWeights: false,
+  	releaseDate: "February 26, 2026",
+  	lastUpdated: "July 15, 2026",
+  	modalities: {
+  		input: ["text"],
+  		output: ["text"],
+  	},
+  	supportsAttachments: false,
+  	supportsTemperature: true,
+  	supportsToolCalls: true,
+  	supportsResponseFormat: true,
+  	contextWindow: 128000,
+  	maxTokens: 16000,
+  	reasoningConfig: {
+  		supportedEffortLevels: ["none", "thinking"],
+  		defaultEffort: "none",
+  	},
+  }),
+]);

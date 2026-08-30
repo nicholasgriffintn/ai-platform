@@ -1,4 +1,6 @@
+import { safeParseJson } from "~/utils/json";
 import { isPlainObject } from "~/utils/objects";
+import { redactSensitiveTokens } from "~/utils/redaction";
 
 export interface ProviderErrorBody {
   raw_status_code?: unknown;
@@ -71,6 +73,61 @@ export function getProviderErrorMessage(
   }
 
   return undefined;
+}
+
+const MAX_LOGGED_RESPONSE_TEXT_LENGTH = 1000;
+const MAX_SURFACED_RESPONSE_TEXT_LENGTH = 200;
+
+export interface ProviderResponseErrorDetails {
+  provider: string;
+  endpoint: string;
+  requestId?: string;
+  responseStatus: number;
+  responseStatusText?: string;
+  responseJson: ProviderErrorBody | null;
+  responseText: string;
+}
+
+export interface BuildProviderResponseErrorDetailsOptions {
+  provider: string;
+  endpoint: string;
+  status: number;
+  statusText?: string;
+  requestId?: string;
+  responseText: string;
+}
+
+export function buildProviderResponseErrorDetails({
+  provider,
+  endpoint,
+  status,
+  statusText,
+  requestId,
+  responseText,
+}: BuildProviderResponseErrorDetailsOptions): ProviderResponseErrorDetails {
+  const responseJson = safeParseJson<ProviderErrorBody>(responseText);
+
+  return {
+    provider,
+    endpoint,
+    requestId,
+    responseStatus: status,
+    responseStatusText: statusText || undefined,
+    responseJson: redactSensitiveTokens(responseJson),
+    responseText: redactSensitiveTokens(responseText).slice(0, MAX_LOGGED_RESPONSE_TEXT_LENGTH),
+  };
+}
+
+export function getProviderResponseErrorMessage(details: ProviderResponseErrorDetails): string {
+  const status = details.responseStatusText
+    ? `${details.responseStatus} ${details.responseStatusText}`
+    : `${details.responseStatus}`;
+  const reason =
+    getProviderErrorMessage(details.responseJson) ||
+    details.responseText.slice(0, MAX_SURFACED_RESPONSE_TEXT_LENGTH) ||
+    "empty response body";
+
+  return `Failed to get response for ${details.provider} from ${details.endpoint} (${status}): ${reason}`;
 }
 
 export function isProviderRateLimit(

@@ -46,6 +46,7 @@ export function listChatProviders(): string[] {
 export function listConfigurableChatProviders(): string[] {
   const ignoredProviders = new Set([
     "ollama",
+    "lmstudio",
     "workers",
     "workers-ai",
     "google",
