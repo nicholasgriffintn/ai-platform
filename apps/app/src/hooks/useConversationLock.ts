@@ -54,10 +54,6 @@ export function useConversationLock(conversationId: string | undefined, enabled 
   });
 }
 
-/**
- * Locking an existing conversation is a one-way migration: seal the thread, upload the
- * envelopes, and only then does the API destroy the plaintext it holds.
- */
 export function useLockConversation() {
   const queryClient = useQueryClient();
   const unlock = useConversationLockStore((state) => state.unlock);
@@ -141,7 +137,6 @@ export function useUnlockConversation() {
   });
 }
 
-/** Removing the lock writes the decrypted thread back before the envelopes are dropped. */
 export function useRemoveConversationLock() {
   const queryClient = useQueryClient();
   const lockConversation = useConversationLockStore((state) => state.lock);
@@ -179,10 +174,6 @@ export function useRemoveConversationLock() {
   });
 }
 
-/**
- * Adding a second way in requires proving you can already open the conversation, so the
- * key material is unwrapped fresh rather than kept around for the purpose.
- */
 export function useAddConversationLockKey() {
   const queryClient = useQueryClient();
 

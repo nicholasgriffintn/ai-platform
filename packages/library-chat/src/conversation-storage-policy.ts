@@ -16,18 +16,11 @@ export interface ConversationStorageMode {
   isLocalOnly: boolean;
   isLocked: boolean;
   isProjectScoped: boolean;
-  /** Whether plaintext may be written anywhere it outlives the tab. */
   shouldPersistPlaintext: boolean;
-  /** Whether sealed envelopes are mirrored to the API. */
   shouldSyncEnvelopes: boolean;
   shouldSyncRemote: boolean;
 }
 
-/**
- * Locked conversations extend local-only mode rather than replacing it: neither sends
- * plaintext to the API. A locked conversation goes further and keeps plaintext out of
- * device storage too, so the only durable copy anywhere is the sealed envelope.
- */
 export function resolveConversationStorageMode(
   state: ConversationStorageState,
   requestOptions?: ChatRequestOptions,
@@ -62,7 +55,6 @@ export function resolveConversationStorageMode(
   };
 }
 
-/** Locking is a Pro capability because it depends on server-side conversation sync. */
 export function canLockConversations(state: { isAuthenticated: boolean; isPro: boolean }): boolean {
   return state.isAuthenticated && state.isPro;
 }

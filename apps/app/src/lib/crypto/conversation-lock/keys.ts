@@ -25,10 +25,6 @@ async function importWrappingKey(secret: Uint8Array): Promise<CryptoKey> {
   ]);
 }
 
-/**
- * The conversation key is non-extractable, so an unlocked tab holds something it can
- * decrypt with but cannot read back out of memory and send anywhere.
- */
 async function importConversationKey(raw: Uint8Array): Promise<CryptoKey> {
   return crypto.subtle.importKey("raw", toArrayBuffer(raw), "AES-GCM", false, [
     "encrypt",
@@ -44,10 +40,6 @@ export function createConversationKeyMaterial(): Uint8Array {
   return randomBytes(CONVERSATION_KEY_BYTES);
 }
 
-/**
- * Recovery keys are read off a screen and typed back in, so they are base32 in short
- * groups. Case and dashes are normalised away on the way back.
- */
 export function createRecoveryKey(): string {
   const encoded = encodeBase32(randomBytes(RECOVERY_KEY_BYTES), false);
 
@@ -84,7 +76,6 @@ export async function deriveKeyFromPassword(
   return importWrappingKey(new Uint8Array(bits));
 }
 
-/** Recovery keys carry 160 bits, which is not a valid AES key length on its own. */
 export async function deriveKeyFromRecoveryKey(recoveryKey: string): Promise<CryptoKey> {
   return deriveWrappingKeyFromSecret(
     decodeBase32(normaliseRecoveryKey(recoveryKey)),
@@ -110,10 +101,6 @@ async function deriveWrappingKeyFromSecret(secret: Uint8Array, info: string): Pr
   return importWrappingKey(new Uint8Array(bits));
 }
 
-/**
- * A passkey's PRF output is already a high-entropy secret, so it needs domain
- * separation and stretching to the AES key length rather than a slow KDF.
- */
 export async function deriveKeyFromPrfOutput(output: Uint8Array): Promise<CryptoKey> {
   return deriveWrappingKeyFromSecret(output, "polychat.conversation-lock.passkey");
 }

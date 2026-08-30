@@ -71,8 +71,6 @@ export function useConversationStorage(requestOptions?: ChatRequestOptions) {
         localScope: getLocalChatScope(user?.id),
       });
 
-      // A locked conversation keeps its plaintext in memory only; the durable copy is the
-      // sealed envelope, which is why device storage is skipped rather than encrypted twice.
       if (isLocked) {
         if (shouldSyncEnvelopes) {
           const conversationKey =

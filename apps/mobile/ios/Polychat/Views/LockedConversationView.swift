@@ -1,7 +1,5 @@
 import SwiftUI
 
-/// Locked conversations are encrypted with a key that only the web app holds, so iOS
-/// shows why the thread is empty rather than rendering nothing.
 struct LockedConversationView: View {
     var body: some View {
         VStack(spacing: 12) {

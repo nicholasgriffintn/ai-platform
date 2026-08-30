@@ -625,8 +625,6 @@ export class ChatService {
       options: featureOptions,
     };
 
-    // Locked turns must arrive with nothing that would make the API write plaintext.
-    // The API refuses them anyway; stripping here keeps the composer honest about it.
     if (locked) {
       Object.assign(requestBody, {
         locked: true,

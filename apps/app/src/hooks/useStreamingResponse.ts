@@ -119,8 +119,6 @@ export function useStreamingResponse(
       const isLocal =
         !storageMode.shouldSyncRemote && chatMode === "local" && !isLockedConversation;
 
-      // Locked threads are never compacted on a server that cannot read them, so the
-      // composer stops at the cap rather than silently dropping the oldest turns.
       if (isLockedConversation && measureLockedContext(messages).isOverCap) {
         throw new Error(LOCKED_CONTEXT_CAP_MESSAGE);
       }

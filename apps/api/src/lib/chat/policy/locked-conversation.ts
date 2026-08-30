@@ -11,11 +11,6 @@ export interface LockedTurnGuardInput {
   user?: IUser;
 }
 
-/**
- * A locked turn is the one request shape where the server promises to write nothing and
- * log nothing. Refusing here — rather than trusting the composer — is what makes the
- * promise real, so every forbidden capability is rejected before a provider is reached.
- */
 export async function assertLockedTurnIsPermitted({
   request,
   completionId,
@@ -67,10 +62,6 @@ export async function assertLockedTurnIsPermitted({
   }
 }
 
-/**
- * Locked turns never reach the gateway log or its cache. Everything else about the
- * request is ordinary, so this is the only provider-facing difference.
- */
 export function isLockedTurn(params: { locked?: boolean } | undefined): boolean {
   return params?.locked === true;
 }

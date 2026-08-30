@@ -99,11 +99,6 @@ export function useChats(options: ConversationListOptions = {}) {
   };
 }
 
-/**
- * A locked conversation arrives with no messages and no title. The transcript only exists
- * if this tab still holds the key, so an unopened lock renders as a sealed placeholder
- * rather than an empty chat.
- */
 async function loadLockedConversation(
   conversationId: string,
   conversation: Conversation,
@@ -377,7 +372,6 @@ export function useGenerateTitle(requestOptions?: ChatRequestOptions) {
         !storageMode.shouldSyncRemote ||
         (isLocalOnly && !storageMode.isProjectScoped)
       ) {
-        // A locked thread cannot be titled by the server, which cannot read it.
         newTitle = createTemporaryConversationTitle(messages);
       } else {
         newTitle = await apiService.generateTitle(completion_id, messages);

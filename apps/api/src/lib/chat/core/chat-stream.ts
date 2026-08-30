@@ -90,8 +90,6 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
     await stream.abort(error);
   });
 
-  // ADR 0024 keeps ordinary turns alive past the client so their answer is still saved.
-  // A locked turn has nowhere to save to, so surviving detachment would only spend money.
   if (params.requestParams?.locked !== true) {
     params.executionCtx?.waitUntil(running);
   }

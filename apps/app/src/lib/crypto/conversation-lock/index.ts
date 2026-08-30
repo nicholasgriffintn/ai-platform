@@ -26,7 +26,6 @@ import { createPrfSalt, evaluatePasskeyPrf } from "./passkey";
 export { isPasskeyEncryptionSupported, PasskeyPrfUnavailableError } from "./passkey";
 export { createRecoveryKey, normaliseRecoveryKey } from "./keys";
 
-/** The plaintext shape of one sealed message. */
 export interface LockedMessagePayload {
   content: string;
   model?: string | null;
@@ -67,10 +66,6 @@ export type LockEntryMethod =
   | { type: "passkey"; credentialId?: string | null; label?: string | null }
   | { type: "password"; password: string };
 
-/**
- * Builds the wrapped-key set for a new lock. The recovery key is always created, because
- * a passkey can be lost and a password can be forgotten with no server-side reset.
- */
 export async function createLockMaterial(
   conversationId: string,
   method: LockEntryMethod,
@@ -139,10 +134,6 @@ export async function createLockMaterial(
   };
 }
 
-/**
- * Wraps the already-open conversation key with another entry method, so a conversation
- * unlocked by passkey can also gain a password without re-encrypting a single message.
- */
 export async function createAdditionalLockKey(params: {
   conversationId: string;
   conversationKeyMaterial: Uint8Array;
@@ -195,7 +186,6 @@ export type UnlockAttempt =
   | { type: "recovery"; recoveryKey: string };
 
 export interface UnlockResult {
-  /** Raw key material. Held only for as long as an unlock flow needs it. */
   material: Uint8Array;
   keyId: string;
 }
@@ -219,10 +209,6 @@ async function unwrapWith(
   }
 }
 
-/**
- * Wrong credentials fail the AES-GCM tag, which is why there is no separate verifier
- * stored anywhere: the wrapped key is its own proof.
- */
 export async function unlockConversation(
   lock: ConversationLock,
   attempt: UnlockAttempt,

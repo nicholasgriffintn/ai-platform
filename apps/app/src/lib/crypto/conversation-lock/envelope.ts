@@ -9,10 +9,6 @@ const AES_GCM_IV_BYTES = 12;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-/**
- * Envelopes are bound to where they live. Moving one between conversations, or replaying
- * it at a different position, fails the GCM tag rather than decrypting into the wrong thread.
- */
 export function buildEnvelopeContext(parts: readonly string[]): Uint8Array {
   return encoder.encode(parts.join(" "));
 }

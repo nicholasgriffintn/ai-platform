@@ -11,10 +11,8 @@ import type { Message } from "~/types";
 import type { ConversationThreadModeConfig } from ".";
 
 export interface LockedConversationView {
-  /** The conversation is sealed and this tab does not hold its key. */
   isSealed: boolean;
   isLocked: boolean;
-  /** Set when the thread has grown past what a locked conversation can carry. */
   capMessage: string | null;
   modeConfig: ConversationThreadModeConfig | undefined;
 }
@@ -29,11 +27,6 @@ const SEALED_PLACEHOLDER = {
   followUp: "Unlock this chat to keep going",
 };
 
-/**
- * A locked conversation is the ordinary thread with every capability that would write
- * plaintext taken away. Deriving the composer config here keeps that list in one place
- * instead of scattering conditionals through the thread.
- */
 export function useLockedConversationView(
   modeConfig: ConversationThreadModeConfig | undefined,
   conversationId: string | undefined,

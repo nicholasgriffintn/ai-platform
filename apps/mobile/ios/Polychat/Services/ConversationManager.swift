@@ -85,7 +85,6 @@ class ConversationManager: ObservableObject {
             return
         }
 
-        // A locked conversation has no plaintext to fetch; only the web app holds its key.
         if conversation.isLocked {
             loadingConversationID = nil
             currentConversation = conversation
@@ -183,7 +182,6 @@ class ConversationManager: ObservableObject {
             generateTitle: true
         )
     }
-
 
     func branchConversation(from messageId: String, settings: ChatSettings? = nil) async {
         guard let parentConversation = currentConversation else {

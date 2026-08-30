@@ -17,10 +17,6 @@ import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/conversations/lock" });
 
-/**
- * Locking is a Pro capability because it depends on server-side conversation sync;
- * a free conversation never leaves the device, so there is nothing to seal.
- */
 function requireProUser(context: ServiceContext) {
   const user = context.requireUser();
 
@@ -64,10 +60,6 @@ export async function getConversationLock(
   return lock;
 }
 
-/**
- * A locked conversation must be able to lose every derived plaintext the server holds.
- * Anything that survives the lock would make "we cannot read this" untrue.
- */
 async function purgeConversationPlaintext(
   context: ServiceContext,
   conversationId: string,
@@ -114,7 +106,6 @@ async function purgeConversationPlaintext(
     try {
       await storage.deleteObject(row.storage_key);
     } catch (error) {
-      // A stranded object is better than a half-locked conversation, so log and continue.
       logger.error("Failed to delete a conversation asset while locking", {
         conversationId,
         error,
@@ -163,10 +154,6 @@ export async function createConversationLock(
   return getConversationLock(context, conversationId);
 }
 
-/**
- * A password can be forgotten and a passkey can be lost, so a lock always keeps a
- * recovery key alongside whatever the user actually types.
- */
 function assertUsableKeySet(keys: ConversationLockKeyInput[]): void {
   if (!keys.some((key) => key.type === "recovery")) {
     throw new AssistantError(
@@ -268,10 +255,6 @@ export async function appendLockedMessages(
   return context.repositories.conversationLocks.listMessages(conversationId);
 }
 
-/**
- * Unlocking is the reverse migration: the client hands back the plaintext it decrypted,
- * the server writes it, and only then is the sealed copy dropped.
- */
 export async function deleteConversationLock(
   context: ServiceContext,
   conversationId: string,
@@ -312,10 +295,6 @@ export async function deleteConversationLock(
   await context.repositories.conversationLocks.deleteLock(conversationId);
 }
 
-/**
- * Plaintext write paths call this so a locked conversation cannot be reopened by a
- * request that simply does not mention the lock.
- */
 export async function assertConversationNotLocked(
   context: Pick<ServiceContext, "repositories">,
   conversationId: string,

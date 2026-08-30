@@ -20,7 +20,6 @@ type AiGatewayMetadataValue = string | number | bigint | boolean;
 export function getAiGatewayMetadataHeaders(
   params: AiGatewayMetadataSource,
 ): Record<string, AiGatewayMetadataValue> {
-  // A locked turn is the one case where the gateway must not learn who sent what.
   if (params.locked) {
     return {};
   }
@@ -36,7 +35,6 @@ export function getAiGatewayMetadataHeaders(
 }
 
 export function resolveAiGatewayCacheTtl(params?: AiGatewayCacheTtlSource): number {
-  // Caching a locked prompt would leave readable plaintext in the gateway.
   if (params?.locked) {
     return 0;
   }
@@ -50,18 +48,10 @@ export function resolveAiGatewayCacheTtl(params?: AiGatewayCacheTtlSource): numb
   return DEFAULT_AI_GATEWAY_CACHE_TTL_SECONDS;
 }
 
-/**
- * The gateway logs request and response bodies by default. "Polychat cannot read this
- * conversation" is only true while locked turns opt out of that log.
- */
 export function shouldCollectAiGatewayLog(params?: { locked?: boolean }): boolean {
   return params?.locked !== true;
 }
 
-/**
- * Every provider sends the same three gateway controls. Building them in one place is
- * what stops a new provider from quietly logging a locked conversation.
- */
 export function buildAiGatewayControlHeaders(
   params: AiGatewayMetadataSource & AiGatewayCacheTtlSource,
 ): Record<string, string> {

@@ -31,11 +31,6 @@ export function createPrfSalt(): string {
   return encodeBase64Url(randomBytes(PRF_SALT_BYTES), false);
 }
 
-/**
- * WebAuthn's PRF extension turns a passkey into a stable secret for a given salt, so the
- * conversation key can be wrapped by the authenticator without the server ever holding it.
- * Not every authenticator implements it, and the only reliable feature test is asking.
- */
 export async function evaluatePasskeyPrf(params: {
   salt: string;
   credentialId?: string | null;

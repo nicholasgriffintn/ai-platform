@@ -193,7 +193,6 @@ class AuthService {
       if (response.ok) {
         this.clearTokenRefresh();
         apiKeyService.removeApiKey();
-        // Signing out must take every unlocked conversation key with it.
         useConversationLockStore.getState().lockAll();
         this.user = null;
         this.anonymousUser = null;

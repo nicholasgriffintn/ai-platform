@@ -1,6 +1,5 @@
 import { CONVERSATION_LOCK_CONTEXT_TOKEN_CAP } from "@ngriffin_uk/polychat-schemas";
 
-/** Rough characters-per-token ratio, good enough to stop a thread before a provider does. */
 const CHARS_PER_TOKEN = 4;
 
 export interface LockedContextUsage {
@@ -28,11 +27,6 @@ function textLength(content: unknown): number {
   return 0;
 }
 
-/**
- * A locked conversation cannot be compacted on the server, because the server cannot read
- * it. Rather than silently dropping the oldest turns, the composer stops at the cap and
- * says so, leaving the user to start a new locked conversation.
- */
 export function measureLockedContext(
   messages: readonly { content?: unknown }[],
   cap = CONVERSATION_LOCK_CONTEXT_TOKEN_CAP,

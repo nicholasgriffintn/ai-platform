@@ -1,17 +1,9 @@
 import z from "zod/v4";
 
-/**
- * A locked conversation is encrypted on the device before it reaches the API. The server
- * stores wrapped keys and sealed envelopes, so every schema here describes opaque material
- * the API is never expected to interpret.
- */
-
 export const CONVERSATION_LOCK_VERSION = 1;
 
-/** OWASP's 2023 floor for PBKDF2-HMAC-SHA256. Raise it, never lower it. */
 export const CONVERSATION_LOCK_PBKDF2_ITERATIONS = 600_000;
 
-/** Locked turns have no server-side compaction, so the client refuses to send past this. */
 export const CONVERSATION_LOCK_CONTEXT_TOKEN_CAP = 96_000;
 
 const base64UrlSchema = z
@@ -169,10 +161,6 @@ export const conversationLockMutationResponseSchema = z.object({
   success: z.boolean(),
 });
 
-/**
- * Capabilities a locked conversation cannot have. Each one would write plaintext, or
- * something derived from it, to a server the user has been told cannot read the thread.
- */
 export const LOCKED_CONVERSATION_FORBIDDEN_CAPABILITIES = [
   "tools",
   "retrieval",
@@ -217,10 +205,6 @@ function hasEntries(value: unknown): boolean {
   return Boolean(value && typeof value === "object" && Object.keys(value).length > 0);
 }
 
-/**
- * The single definition of what a locked turn may ask for, shared by the composer and the
- * API so the interface never offers something the server will refuse.
- */
 export function findLockedTurnViolations(request: LockedTurnRequestShape): string[] {
   const violations: string[] = [];
 

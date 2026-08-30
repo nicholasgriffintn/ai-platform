@@ -11,7 +11,6 @@ import {
 } from "~/lib/crypto/conversation-lock";
 import type { Message } from "~/types";
 
-/** Roles that survive the round trip. Everything else is a server-side concept. */
 const SEALABLE_ROLES = new Set(["user", "assistant"]);
 
 function messageText(message: Message): string {
@@ -102,11 +101,6 @@ export async function sealConversationMessages(params: {
   );
 }
 
-/**
- * The whole thread is resealed on every write. Envelopes are small, the cap keeps the
- * thread short, and one write path is far easier to reason about than incremental
- * sequence bookkeeping across retries, edits, and branches.
- */
 export async function persistLockedConversation(params: {
   conversationId: string;
   conversationKey: CryptoKey;

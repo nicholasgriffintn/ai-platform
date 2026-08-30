@@ -26,7 +26,6 @@ export interface LockConversationDialogProps {
   onOpenChange: (open: boolean) => void;
   step: LockConversationStep;
   onStepChange: (step: LockConversationStep) => void;
-  /** Whether locking will destroy plaintext the server already holds. */
   hasExistingMessages: boolean;
   isPasskeySupported: boolean;
   isSubmitting: boolean;

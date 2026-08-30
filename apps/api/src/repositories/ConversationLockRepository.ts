@@ -43,10 +43,6 @@ interface LockedMessageRow {
   created_at: string;
 }
 
-/**
- * D1 returns JSON columns as strings, but the seed and test harnesses hand back parsed
- * objects. Envelopes are opaque either way, so normalise before the schema sees them.
- */
 function readEnvelope(value: string | null): SealedEnvelope | null {
   if (!value) {
     return null;
