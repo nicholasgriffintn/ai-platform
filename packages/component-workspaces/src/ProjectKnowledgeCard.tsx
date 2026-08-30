@@ -1,5 +1,5 @@
-import { Button, Card, Checkbox, FormDialog, Link } from "@ngriffin_uk/polychat-component-ui";
-import { Brain, Database } from "lucide-react";
+import { Button, Card, Checkbox, FormDialog, TextLink } from "@ngriffin_uk/polychat-component-ui";
+import { Brain, Database, ArrowRight } from "lucide-react";
 import { useState } from "react";
 
 export interface ProjectSourceSummary {
@@ -84,7 +84,7 @@ export function ProjectKnowledgeCard({
             </div>
           </div>
           {canManage ? (
-            <Button variant="ghost" size="sm" onClick={openContext}>
+            <Button variant="outline" size="sm" onClick={openContext}>
               Manage
             </Button>
           ) : null}
@@ -100,12 +100,14 @@ export function ProjectKnowledgeCard({
         ) : (
           <p className="pl-11 text-sm text-zinc-500">No persistent context selected.</p>
         )}
-        <Link
+        <TextLink
           href={sourcesHref}
-          className="ml-11 inline-block text-xs text-zinc-500 underline-offset-4 hover:underline"
+          size="xs"
+          trailingIcon={<ArrowRight size={13} />}
+          className="ml-11"
         >
           Browse project sources
-        </Link>
+        </TextLink>
       </section>
     </>
   );
@@ -135,9 +137,11 @@ export function ProjectKnowledgeCard({
             {contextCandidates.map((source) => (
               <label
                 key={source.id}
+                htmlFor={`context-source-${source.id}`}
                 className="flex items-center gap-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
               >
                 <Checkbox
+                  id={`context-source-${source.id}`}
                   checked={selectedContextIds.includes(source.id)}
                   onCheckedChange={(checked) =>
                     setSelectedContextIds((current) =>
