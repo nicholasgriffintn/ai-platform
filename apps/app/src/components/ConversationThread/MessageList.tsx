@@ -148,15 +148,18 @@ export const MessageList = ({
           index,
           compactionLabel: getCompactionMessageLabel(message),
           goalMarker: getGoalMessageMarker(message),
+          goalStarted:
+            message.role === "user" && getGoalMessageMarker(messages[index - 1])?.event === "set",
         }))
         .filter(
-          ({ message, compactionLabel, goalMarker }) =>
+          ({ message, index, compactionLabel, goalMarker }) =>
             !(
               hideInlineUserQuestions &&
               message.role === "tool" &&
               message.name === "ask_user" &&
               message.status === "pending"
             ) &&
+            !(goalMarker?.event === "set" && messages[index + 1]?.role === "user") &&
             (Boolean(compactionLabel) ||
               Boolean(goalMarker) ||
               (!isHiddenToolResponse(message) && isRenderableMessage(message))),
@@ -223,7 +226,7 @@ export const MessageList = ({
         >
           {!isSharedView && isLoadingConversation
             ? [...Array(3)].map((_, i) => <MessageSkeleton key={`skeleton-item-${i}`} />)
-            : visibleRows.map(({ message, index, compactionLabel, goalMarker }) => {
+            : visibleRows.map(({ message, index, compactionLabel, goalMarker, goalStarted }) => {
                 return (
                   <div key={message.id || `message-${index}`} className="pb-4">
                     {goalMarker ? (
@@ -261,6 +264,7 @@ export const MessageList = ({
                           latestCompactionMarkerIndex !== -1 && index < latestCompactionMarkerIndex
                         }
                         responseDurationMs={responseDurations[message.id]}
+                        goalStarted={goalStarted}
                       />
                     )}
                   </div>

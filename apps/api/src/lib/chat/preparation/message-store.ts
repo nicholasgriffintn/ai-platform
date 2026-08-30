@@ -1,5 +1,9 @@
 import { getAllAttachments } from "~/lib/chat/messages/attachments";
 import { messagesMatchStoredPrefix } from "~/lib/chat/messages/comparison";
+import {
+  mergeStoredGoalMarkers,
+  withoutGoalMarkerMessages,
+} from "~/lib/chat/messages/goal-marker-history";
 import { hasSnapshotPart } from "~/lib/chat/messages/parts";
 import { buildUserMessageData } from "~/lib/chat/policy/mode-metadata";
 import type { ConversationManager } from "~/lib/conversationManager";
@@ -94,11 +98,14 @@ export async function storeUserTurn({
   });
 
   const existingMessages = await readExistingMessages(conversationManager, options.completion_id);
+  const comparableExistingMessages = existingMessages
+    ? withoutGoalMarkerMessages(existingMessages)
+    : null;
 
   const incomingMessages = Array.isArray(options.messages) ? options.messages : [];
   const hasCompactedActiveHistory = existingMessages?.some(hasSnapshotPart) ?? false;
   const incomingHasSnapshot = incomingMessages.some(hasSnapshotPart);
-  const latestExistingMessage = existingMessages?.at(-1);
+  const latestExistingMessage = comparableExistingMessages?.at(-1);
 
   const isDuplicateOfCompactedTail =
     hasCompactedActiveHistory &&
@@ -113,19 +120,25 @@ export async function storeUserTurn({
   const canReplaceFromIncoming =
     incomingMessages.length > 0 && (!hasCompactedActiveHistory || incomingHasSnapshot);
 
-  if (canReplaceFromIncoming && existingMessages) {
-    if (existingMessages.length > incomingMessages.length) {
-      await conversationManager.replaceMessages(options.completion_id, incomingMessages);
+  if (canReplaceFromIncoming && existingMessages && comparableExistingMessages) {
+    if (comparableExistingMessages.length > incomingMessages.length) {
+      await conversationManager.replaceMessages(
+        options.completion_id,
+        mergeStoredGoalMarkers(existingMessages, incomingMessages),
+      );
 
       return;
     }
 
-    if (existingMessages.length === incomingMessages.length) {
-      if (messagesMatchStoredPrefix(existingMessages, incomingMessages)) {
+    if (comparableExistingMessages.length === incomingMessages.length) {
+      if (messagesMatchStoredPrefix(comparableExistingMessages, incomingMessages)) {
         return;
       }
 
-      await conversationManager.replaceMessages(options.completion_id, incomingMessages);
+      await conversationManager.replaceMessages(
+        options.completion_id,
+        mergeStoredGoalMarkers(existingMessages, incomingMessages),
+      );
 
       return;
     }

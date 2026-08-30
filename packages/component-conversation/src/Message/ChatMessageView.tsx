@@ -8,6 +8,7 @@ import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messag
 import { isHiddenToolResponse } from "@ngriffin_uk/polychat-library-chat/tool-results";
 import { getModelDisplayName } from "@ngriffin_uk/polychat-schemas";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import { Target } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 
@@ -58,6 +59,7 @@ export const ChatMessageView = ({
   isRequestingSecondOpinion = false,
   isArchivedByCompaction = false,
   responseDurationMs,
+  goalStarted = false,
   copied,
   onCopy,
   onSubmitFeedback,
@@ -87,6 +89,7 @@ export const ChatMessageView = ({
   isRequestingSecondOpinion?: boolean;
   isArchivedByCompaction?: boolean;
   responseDurationMs?: number;
+  goalStarted?: boolean;
   copied: boolean;
   onCopy: (value: string) => void;
   onSubmitFeedback?: (value: 1 | -1) => Promise<void>;
@@ -152,7 +155,7 @@ export const ChatMessageView = ({
 
   return (
     <article
-      className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+      className={`flex ${message.role === "user" ? "flex-col items-end" : "justify-start"}`}
       data-role={message.role}
       data-tool-response={isToolResponse}
       data-tool-name={message.name}
@@ -160,6 +163,15 @@ export const ChatMessageView = ({
       data-id={message.id}
       aria-roledescription={`${message.role} message`}
     >
+      {message.role === "user" && goalStarted ? (
+        <output
+          aria-label="Goal started"
+          className="mb-1.5 mr-2 flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400"
+        >
+          <Target className="h-3.5 w-3.5" aria-hidden="true" />
+          <span>Goal started</span>
+        </output>
+      ) : null}
       <div
         className={`flex flex-col ${
           message.role === "user"

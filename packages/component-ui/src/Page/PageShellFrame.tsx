@@ -67,11 +67,8 @@ export function PageShellFrame({
       ) : header ? (
         <div className="flex h-full min-h-0 flex-col overflow-hidden">
           {header}
-          <div
-            data-header-scroll-source
-            className={cn(pageShellContentClassName, "flex-1 overflow-y-auto", className)}
-          >
-            {children}
+          <div data-header-scroll-source className="min-h-0 w-full flex-1 overflow-y-auto">
+            <div className={cn(pageShellContentClassName, className)}>{children}</div>
           </div>
         </div>
       ) : (

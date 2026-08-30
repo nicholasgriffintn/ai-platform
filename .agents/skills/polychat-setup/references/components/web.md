@@ -10,5 +10,7 @@ This is Polychat's responsive web application and PWA, built with React, Tailwin
 - Local conversation storage with IndexedDB (falls back to LocalStorage)
 - Settings configuration for models and preferences
 - Web LLM support for offline usage
+- Conversation goals show a compact start marker attached to the message that set the objective;
+  later lifecycle events remain full-width timeline markers.
 
 Use the skill's [local setup](../setup.md), [configuration](../configuration.md), [deployment](../deployment.md), and [validation](../validation.md) workflows for current commands and environment guidance.

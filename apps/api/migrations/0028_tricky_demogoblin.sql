@@ -1,1 +1,0 @@
-CREATE INDEX `agents_team_id_idx` ON `agents` (`team_id`);

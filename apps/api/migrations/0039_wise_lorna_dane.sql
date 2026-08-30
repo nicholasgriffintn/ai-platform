@@ -1,1 +1,0 @@
-ALTER TABLE `agents` ADD `enabled_tools` text;
