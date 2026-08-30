@@ -20,7 +20,7 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		strengths: ["reasoning", "coding", "analysis", "multilingual", "tool_use"],
+		strengths: ["reasoning", "coding", "analysis", "multilingual", "tool_use", "vision", "document", "audio", "video"],
 		openWeights: false,
 		knowledgeCutoffDate: "January 2025",
 		releaseDate: "June 17, 2025",
@@ -32,6 +32,15 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 27,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 	createModelConfig("gemini-2.5-flash", PROVIDER, {
@@ -46,7 +55,7 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		strengths: ["summarization", "coding", "tool_use"],
+		strengths: ["summarization", "coding", "tool_use", "vision", "document", "audio", "video"],
 		openWeights: false,
 		knowledgeCutoffDate: "January 2025",
 		releaseDate: "June 17, 2025",
@@ -58,6 +67,15 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 14.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 	createModelConfig("gemini-2.5-flash-image", PROVIDER, {
@@ -79,6 +97,23 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.03,
+		strengths: ["vision", "document", "image", "creative"],
+		contextComplexity: 3,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [{
+				key: "text_to_imageElo",
+				label: "Text-to-image arena",
+				value: 1159,
+				min: 800,
+				max: 1400,
+				confidenceInterval95: 8,
+			}],
+		},
 	}),
 
 	createModelConfig("gemini-2.5-flash-lite", PROVIDER, {
@@ -104,6 +139,23 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["audio", "vision", "document", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [{
+				key: "text_to_speechElo",
+				label: "Text-to-speech arena",
+				value: 1088,
+				min: 800,
+				max: 1400,
+				confidenceInterval95: 12,
+			}],
+		},
 	}),
 
 	createModelConfig("gemini-2.5-flash-tts", PROVIDER, {
@@ -125,6 +177,23 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.01,
+		strengths: ["audio"],
+		contextComplexity: 2,
+		reliability: 2,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [{
+				key: "text_to_speechElo",
+				label: "Text-to-speech arena",
+				value: 1036,
+				min: 800,
+				max: 1400,
+				confidenceInterval95: 12,
+			}],
+		},
 	}),
 
 	createModelConfig("gemini-2.5-pro-tts", PROVIDER, {
@@ -172,6 +241,16 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 27.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("gemini-3-pro-image", PROVIDER, {
@@ -197,6 +276,23 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "image", "creative"],
+		contextComplexity: 3,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [{
+				key: "text_to_imageElo",
+				label: "Text-to-image arena",
+				value: 1219,
+				min: 800,
+				max: 1400,
+				confidenceInterval95: 9,
+			}],
+		},
 	}),
 
 	createModelConfig("gemini-3.1-flash-image", PROVIDER, {
@@ -221,6 +317,23 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "video", "image", "creative"],
+		contextComplexity: 3,
+		reliability: 5,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [{
+				key: "text_to_imageElo",
+				label: "Text-to-image arena",
+				value: 1254,
+				min: 800,
+				max: 1400,
+				confidenceInterval95: 9,
+			}],
 		},
 	}),
 
@@ -248,6 +361,16 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 25,
+			codingIndex: 34.7,
+			agenticIndex: 6.2,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("gemini-3.1-pro-preview", PROVIDER, {
@@ -273,6 +396,16 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 46.5,
+			codingIndex: 68.8,
+			agenticIndex: 21.4,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -325,6 +458,16 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 3,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 50.2,
+			codingIndex: 70.1,
+			agenticIndex: 37.4,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 

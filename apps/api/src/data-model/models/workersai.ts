@@ -1410,7 +1410,7 @@ export const workersAiModelConfig: ModelConfig = {
   	supportsToolCalls: true,
   	supportsResponseFormat: true,
   	contextWindow: 1310720,
-  	maxTokens: 1310720,
+  	maxTokens: 1048576,
   	costPer1kInputTokens: 0.00015,
   	costPer1kOutputTokens: 0.0005,
   	reasoningConfig: {

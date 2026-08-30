@@ -24,6 +24,16 @@ export const ovhCloudModelConfig: ModelConfig = createModelConfigObject([
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
   	},
+  	strengths: ["tool_use"],
+  	contextComplexity: 4,
+  	reliability: 1,
+  	speed: 5,
+  	artificialAnalysis: {
+  		intelligenceIndex: 23.8,
+  		codingIndex: 30.4,
+  		agenticIndex: 13.2,
+  		intelligenceIndexVersion: 4.1,
+  	},
   }),
   createModelConfig("qwen3-32b", PROVIDER, {
     name: "Qwen3 32B",
@@ -43,6 +53,16 @@ export const ovhCloudModelConfig: ModelConfig = createModelConfigObject([
   	reasoningConfig: {
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
+  	},
+  	strengths: ["tool_use"],
+  	contextComplexity: 3,
+  	reliability: 1,
+  	speed: 3,
+  	artificialAnalysis: {
+  		intelligenceIndex: 8.6,
+  		codingIndex: null,
+  		agenticIndex: null,
+  		intelligenceIndexVersion: 4.1,
   	},
   }),
   createModelConfig("gpt-oss-20b", PROVIDER, {
@@ -65,6 +85,16 @@ export const ovhCloudModelConfig: ModelConfig = createModelConfigObject([
   	reasoningConfig: {
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
+  	},
+  	strengths: ["tool_use"],
+  	contextComplexity: 4,
+  	reliability: 1,
+  	speed: 5,
+  	artificialAnalysis: {
+  		intelligenceIndex: 14.9,
+  		codingIndex: 20.7,
+  		agenticIndex: 3.1,
+  		intelligenceIndexVersion: 4.1,
   	},
   }),
 
@@ -186,6 +216,16 @@ export const ovhCloudModelConfig: ModelConfig = createModelConfigObject([
   	maxTokens: 262144,
   	costPer1kInputTokens: 0.00007,
   	costPer1kOutputTokens: 0.00026,
+  	strengths: ["tool_use"],
+  	contextComplexity: 4,
+  	reliability: 1,
+  	speed: 4,
+  	artificialAnalysis: {
+  		intelligenceIndex: 13.6,
+  		codingIndex: null,
+  		agenticIndex: null,
+  		intelligenceIndexVersion: 4.1,
+  	},
   }),
 
   createModelConfig("qwen3.5-397b-a17b", PROVIDER, {
@@ -209,6 +249,16 @@ export const ovhCloudModelConfig: ModelConfig = createModelConfigObject([
   	reasoningConfig: {
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
+  	},
+  	strengths: ["vision", "document", "tool_use"],
+  	contextComplexity: 4,
+  	reliability: 1,
+  	speed: 2,
+  	artificialAnalysis: {
+  		intelligenceIndex: 32,
+  		codingIndex: null,
+  		agenticIndex: null,
+  		intelligenceIndexVersion: 4.1,
   	},
   }),
 
@@ -234,6 +284,15 @@ export const ovhCloudModelConfig: ModelConfig = createModelConfigObject([
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
   	},
+  	strengths: ["vision", "document", "tool_use"],
+  	contextComplexity: 4,
+  	reliability: 1,
+  	artificialAnalysis: {
+  		intelligenceIndex: 20.3,
+  		codingIndex: 23.5,
+  		agenticIndex: null,
+  		intelligenceIndexVersion: 4.1,
+  	},
   }),
 
   createModelConfig("qwen3.6-27b", PROVIDER, {
@@ -257,6 +316,16 @@ export const ovhCloudModelConfig: ModelConfig = createModelConfigObject([
   	reasoningConfig: {
   		supportedEffortLevels: ["none", "thinking"],
   		defaultEffort: "none",
+  	},
+  	strengths: ["vision", "document", "tool_use"],
+  	contextComplexity: 4,
+  	reliability: 1,
+  	speed: 3,
+  	artificialAnalysis: {
+  		intelligenceIndex: 29.3,
+  		codingIndex: null,
+  		agenticIndex: null,
+  		intelligenceIndexVersion: 4.1,
   	},
   }),
 
