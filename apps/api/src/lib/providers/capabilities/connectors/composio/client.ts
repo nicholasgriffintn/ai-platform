@@ -1,3 +1,5 @@
+import { titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
+
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { isRecord } from "~/utils/objects";
@@ -695,11 +697,7 @@ function parseToolSchema(
 
   return {
     slug: identity.slug,
-    name: identity.slug
-      .toLowerCase()
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" "),
+    name: titleCaseSlug(identity.slug.toLowerCase()),
     description: identity.description,
     toolkitSlug: identity.toolkitSlug,
     access: identity.operation.access,

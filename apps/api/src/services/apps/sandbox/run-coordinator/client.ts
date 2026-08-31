@@ -9,19 +9,24 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import type { StartFiberResult } from "agents";
 
+import {
+  getDurableObjectStub,
+  postDurableObjectJson,
+  readDurableObjectJson,
+} from "~/lib/durable-objects/client";
 import type { IEnv } from "~/types";
 
 import { isStartFiberResult } from "./fibers";
 import type { CoordinatorEventEnvelope, CoordinatorInstructionEnvelope } from "./types";
 
 function getCoordinatorStub(env: IEnv | undefined, runId: string): DurableObjectStub {
-  if (!env?.SANDBOX_RUN_COORDINATOR) {
+  const stub = getDurableObjectStub(env?.SANDBOX_RUN_COORDINATOR, runId);
+
+  if (!stub) {
     throw new Error("SANDBOX_RUN_COORDINATOR binding is not configured");
   }
 
-  const id = env.SANDBOX_RUN_COORDINATOR.idFromName(runId);
-
-  return env.SANDBOX_RUN_COORDINATOR.get(id);
+  return stub;
 }
 
 export async function initRunCoordinatorControl(
@@ -34,11 +39,7 @@ export async function initRunCoordinatorControl(
 
   const stub = getCoordinatorStub(env, control.runId);
 
-  await stub.fetch("https://sandbox-run-coordinator/control/init", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(control),
-  });
+  await postDurableObjectJson(stub, "https://sandbox-run-coordinator/control/init", control);
 }
 
 export async function startRunCoordinatorDispatchFiber(params: {
@@ -51,11 +52,11 @@ export async function startRunCoordinatorDispatchFiber(params: {
   }
 
   const stub = getCoordinatorStub(params.env, params.runId);
-  const response = await stub.fetch("https://sandbox-run-coordinator/dispatch/fiber", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params.message),
-  });
+  const response = await postDurableObjectJson(
+    stub,
+    "https://sandbox-run-coordinator/dispatch/fiber",
+    params.message,
+  );
 
   if (!response.ok) {
     return null;
@@ -81,18 +82,18 @@ export async function updateRunCoordinatorControl(params: {
   }
 
   const stub = getCoordinatorStub(params.env, params.runId);
-  const response = await stub.fetch("https://sandbox-run-coordinator/control/update", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+  const response = await postDurableObjectJson(
+    stub,
+    "https://sandbox-run-coordinator/control/update",
+    {
       state: params.state,
       updatedAt: params.updatedAt,
       cancellationReason: params.cancellationReason,
       pauseReason: params.pauseReason,
       timeoutSeconds: params.timeoutSeconds,
       timeoutAt: params.timeoutAt,
-    }),
-  });
+    },
+  );
 
   if (!response.ok) {
     return null;
@@ -113,7 +114,7 @@ export async function getRunCoordinatorControl(
   }
 
   const stub = getCoordinatorStub(env, runId);
-  const response = await stub.fetch("https://sandbox-run-coordinator/control");
+  const response = await readDurableObjectJson(stub, "https://sandbox-run-coordinator/control");
 
   if (!response.ok) {
     return null;
@@ -136,11 +137,7 @@ export async function appendRunCoordinatorEvent(params: {
 
   const stub = getCoordinatorStub(params.env, params.runId);
 
-  await stub.fetch("https://sandbox-run-coordinator/events", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params.event),
-  });
+  await postDurableObjectJson(stub, "https://sandbox-run-coordinator/events", params.event);
 }
 
 export async function listRunCoordinatorEvents(params: {
@@ -159,10 +156,7 @@ export async function listRunCoordinatorEvents(params: {
     url.searchParams.set("after", String(params.after));
   }
 
-  const response = await stub.fetch(url.toString(), {
-    method: "GET",
-    headers: { Accept: "application/json" },
-  });
+  const response = await readDurableObjectJson(stub, url.toString());
 
   if (!response.ok) {
     return [];
@@ -217,10 +211,10 @@ export async function submitRunCoordinatorInstruction(params: {
   }
 
   const stub = getCoordinatorStub(params.env, params.runId);
-  const response = await stub.fetch("https://sandbox-run-coordinator/instructions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+  const response = await postDurableObjectJson(
+    stub,
+    "https://sandbox-run-coordinator/instructions",
+    {
       kind: params.kind,
       content: params.content,
       command: params.command,
@@ -228,8 +222,8 @@ export async function submitRunCoordinatorInstruction(params: {
       approvalStatus: params.approvalStatus,
       timeoutSeconds: params.timeoutSeconds,
       escalateAfterSeconds: params.escalateAfterSeconds,
-    }),
-  });
+    },
+  );
 
   if (!response.ok) {
     return null;
@@ -259,10 +253,7 @@ export async function listRunCoordinatorInstructions(params: {
     url.searchParams.set("after", String(params.after));
   }
 
-  const response = await stub.fetch(url.toString(), {
-    method: "GET",
-    headers: { Accept: "application/json" },
-  });
+  const response = await readDurableObjectJson(stub, url.toString());
 
   if (!response.ok) {
     return [];

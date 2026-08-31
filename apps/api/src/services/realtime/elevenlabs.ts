@@ -59,12 +59,6 @@ export function createElevenLabsUpstreamMessageMapper(): ElevenLabsUpstreamMessa
   };
 }
 
-export function toElevenLabsUpstreamMessage(
-  message: NormalizedClientRealtimeMessage,
-): string | null {
-  return createElevenLabsUpstreamMessageMapper()(message);
-}
-
 function createSegmentId(): string {
   return `elevenlabs-${generateId()}`;
 }
@@ -148,10 +142,6 @@ export function createElevenLabsClientMessageMapper(): ElevenLabsClientMessageMa
 
     return data;
   };
-}
-
-export function toElevenLabsClientMessage(data: unknown): string | string[] | undefined {
-  return createElevenLabsClientMessageMapper()(data);
 }
 
 export async function createElevenLabsRealtimeProxyResponse({

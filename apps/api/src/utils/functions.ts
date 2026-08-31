@@ -1,4 +1,5 @@
 import { ToolResponseType } from "@ngriffin_uk/polychat-schemas";
+import { titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
 
 export interface ToolPresentation {
   renderer?: string;
@@ -6,12 +7,7 @@ export interface ToolPresentation {
   responseType?: ToolResponseType;
 }
 
-export const formatFunctionName = (name: string): string => {
-  return name
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-};
+export const formatFunctionName = (name: string): string => titleCaseSlug(name);
 
 const DEFAULT_ICON = "app";
 

@@ -1,4 +1,4 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
 
 import { connectorApprovalIdSchema } from "./chat-completions";
 
@@ -49,10 +49,5 @@ export function readConnectorApprovalRequest(
 }
 
 export function formatConnectorLabel(value: string): string {
-  return value
-    .toLowerCase()
-    .split(/[_-]+/)
-    .filter(Boolean)
-    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
-    .join(" ");
+  return titleCaseSlug(value.toLowerCase());
 }

@@ -4,6 +4,7 @@ import type {
   SandboxTaskType,
 } from "@ngriffin_uk/polychat-schemas";
 import { ToolResponseType } from "@ngriffin_uk/polychat-schemas";
+import { titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
 
 import type { IFunctionResponse } from "~/types";
 
@@ -278,9 +279,5 @@ function getSandboxEventDetailLines(event: SandboxRunEvent): string[] {
 }
 
 function formatSandboxEventName(type: string): string {
-  return type
-    .split("_")
-    .filter(Boolean)
-    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
-    .join(" ");
+  return titleCaseSlug(type);
 }

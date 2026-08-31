@@ -18,20 +18,6 @@ function matchesRequestedModel(
   return modelId === requestedModel || model.matchingModel === requestedModel;
 }
 
-export async function userCanAccessRealtimeModel({
-  env,
-  user,
-  model,
-  provider,
-}: {
-  env: IEnv;
-  user: IUser;
-  model: string;
-  provider: string;
-}): Promise<boolean> {
-  return Boolean(await getAccessibleRealtimeModel({ env, user, model, provider }));
-}
-
 export async function getAccessibleRealtimeModel({
   env,
   user,

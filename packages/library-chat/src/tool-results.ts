@@ -1,5 +1,5 @@
 import { ToolResponseType } from "@ngriffin_uk/polychat-schemas";
-import { isRecord, readOptionalString } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, readOptionalString, titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message } from "./conversation-types";
 
@@ -76,13 +76,6 @@ export function getResolvedToolUseIndexes(
   return resolvedIndexes;
 }
 
-const humaniseToolName = (name: string): string =>
-  name
-    .split(/[_\-\s]+/)
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-
 const buildDisplay = ({
   name,
   data,
@@ -98,7 +91,7 @@ const buildDisplay = ({
 
   return {
     name: toolName,
-    label: readOptionalString(data?.formattedName) ?? humaniseToolName(toolName),
+    label: readOptionalString(data?.formattedName) ?? titleCaseSlug(toolName),
     icon: readOptionalString(data?.icon),
     status,
     responseType: readOptionalString(data?.responseType),
