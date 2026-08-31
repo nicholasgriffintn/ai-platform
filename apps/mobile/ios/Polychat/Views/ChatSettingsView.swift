@@ -2,7 +2,12 @@ import SwiftUI
 
 struct ChatSettingsView: View {
     @Binding var settings: ChatSettings
+    var modelConfig: ModelConfigItem?
     @Environment(\.dismiss) private var dismiss
+
+    private var reasoningOptions: [ChatSettings.ReasoningEffort] {
+        ChatSettings.ReasoningEffort.supportedLevels(for: modelConfig)
+    }
 
     var body: some View {
         NavigationView {
@@ -10,7 +15,7 @@ struct ChatSettingsView: View {
                 Section(header: Text("Response")) {
                     Picker("Reasoning", selection: reasoningSelection) {
                         Text("Default").tag("")
-                        ForEach(ChatSettings.ReasoningEffort.allCases, id: \.rawValue) { effort in
+                        ForEach(reasoningOptions, id: \.rawValue) { effort in
                             Text(effort.displayName).tag(effort.rawValue)
                         }
                     }
