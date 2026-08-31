@@ -2,7 +2,6 @@ import SwiftUI
 
 struct ChatSettingsView: View {
     @Binding var settings: ChatSettings
-    @EnvironmentObject var toolsStore: ToolsStore
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -99,27 +98,6 @@ struct ChatSettingsView: View {
                     }
                 }
 
-                Section(header: Text("Tools")) {
-                    if toolsStore.isLoading {
-                        ProgressView("Loading tools...")
-                    } else if toolsStore.tools.isEmpty {
-                        Text("No tools available")
-                            .foregroundColor(.secondary)
-                    } else {
-                        ForEach(toolsStore.tools) { tool in
-                            Toggle(isOn: toolBinding(tool.id)) {
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text(tool.name)
-                                    Text(tool.description)
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                        .lineLimit(2)
-                                }
-                            }
-                        }
-                    }
-                }
-
                 Section {
                     Button("Reset to Defaults", role: .destructive) {
                         settings = .default
@@ -133,11 +111,6 @@ struct ChatSettingsView: View {
                     Button("Done") {
                         dismiss()
                     }
-                }
-            }
-            .task {
-                if toolsStore.tools.isEmpty {
-                    await toolsStore.fetchTools()
                 }
             }
         }
@@ -160,24 +133,8 @@ struct ChatSettingsView: View {
             }
         )
     }
-
-    private func toolBinding(_ toolId: String) -> Binding<Bool> {
-        Binding(
-            get: { settings.enabledTools.contains(toolId) },
-            set: { enabled in
-                if enabled {
-                    if !settings.enabledTools.contains(toolId) {
-                        settings.enabledTools.append(toolId)
-                    }
-                } else {
-                    settings.enabledTools.removeAll { $0 == toolId }
-                }
-            }
-        )
-    }
 }
 
 #Preview {
     ChatSettingsView(settings: .constant(.default))
-        .environmentObject(ToolsStore())
 }

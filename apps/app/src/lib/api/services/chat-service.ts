@@ -19,6 +19,7 @@ import type {
   Goal,
   ModelConfigItem,
   ModelRouterMode,
+  ToolSelectionMode,
 } from "@ngriffin_uk/polychat-schemas";
 import {
   createChatStreamAssembler,
@@ -90,6 +91,7 @@ export interface StreamChatCompletionsParams {
   requestOptions?: ChatRequestOptions;
   selectedTools?: string[];
   signal: AbortSignal;
+  toolSelectionMode?: ToolSelectionMode;
   store?: boolean;
   streamingEnabled?: boolean;
   useMultiModel?: boolean;
@@ -569,6 +571,7 @@ export class ChatService {
     selectedTools,
     signal,
     store = true,
+    toolSelectionMode,
     streamingEnabled = true,
     useMultiModel = false,
     allowTools = true,
@@ -624,6 +627,7 @@ export class ChatService {
       max_steps: sandboxOptions?.maxSteps ?? (sandboxOptions ? 2 : undefined),
       rag_options: requestRagOptions,
       enabled_tools: enabledTools,
+      tool_selection_mode: allowTools ? toolSelectionMode : undefined,
       approved_tools: allowTools ? requestApprovedTools : undefined,
       tool_options: allowTools ? hostedToolOptions : undefined,
       options: featureOptions,

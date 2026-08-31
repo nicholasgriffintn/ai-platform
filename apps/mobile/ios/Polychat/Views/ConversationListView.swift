@@ -284,7 +284,6 @@ struct ConversationRow: View {
     @Previewable @StateObject var conversationManager = ConversationListPreviewData.conversationManager
     @Previewable @StateObject var authManager = AuthenticationManager()
     @Previewable @StateObject var modelsStore = ConversationListPreviewData.modelsStore
-    @Previewable @StateObject var toolsStore = ToolsStore()
     @Previewable @State var selectedConversationID: String? = ConversationListPreviewData.selectedConversationID
     @Previewable @State var showingSettings = false
 
@@ -302,7 +301,6 @@ struct ConversationRow: View {
             ChatView()
                 .environmentObject(conversationManager)
                 .environmentObject(modelsStore)
-                .environmentObject(toolsStore)
                 .environmentObject(APIClient.shared)
         } else {
             Text("Conversation")
@@ -313,7 +311,6 @@ struct ConversationRow: View {
     .environmentObject(authManager)
     .environmentObject(conversationManager)
     .environmentObject(modelsStore)
-    .environmentObject(toolsStore)
     .sheet(isPresented: $showingSettings) {
         SettingsView()
             .environmentObject(authManager)

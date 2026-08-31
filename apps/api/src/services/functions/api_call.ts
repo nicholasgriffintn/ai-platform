@@ -19,7 +19,6 @@ export const call_api: ApiToolDefinition = {
   type: "normal",
   costPerCall: 0,
   permissions: ["network"],
-  isDefault: true,
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {

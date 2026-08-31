@@ -1,3 +1,4 @@
+import { isModelToolId } from "@ngriffin_uk/polychat-library-chat/model-tools";
 import { readToolIds } from "@ngriffin_uk/polychat-schemas";
 import { useEffect, useRef } from "react";
 
@@ -9,6 +10,9 @@ type AgentWithTools = {
   enabled_tools?: string[] | string | null;
 };
 
+const areToolsEqual = (left: readonly string[], right: readonly string[]) =>
+  left.length === right.length && left.every((toolId, index) => toolId === right[index]);
+
 export const useAgentToolDefaults = ({
   agents,
   selectedAgentId,
@@ -18,72 +22,53 @@ export const useAgentToolDefaults = ({
   selectedAgentId: string | null;
   chatMode: ChatMode;
 }) => {
-  const { selectedTools, setSelectedTools, resetToDefaults, defaultTools } = useToolsStore();
-  const previousAgentIdRef = useRef<string | null>(null);
-  const pendingResetRef = useRef(false);
-
-  const arraysEqual = (left: string[], right: string[]) => {
-    if (left.length !== right.length) {
-      return false;
-    }
-
-    for (let i = 0; i < left.length; i += 1) {
-      if (left[i] !== right[i]) {
-        return false;
-      }
-    }
-
-    return true;
-  };
+  const { selectedTools, setSelectedTools, setToolSelectionMode, toolSelectionMode } =
+    useToolsStore();
+  const hadAgentToolsRef = useRef(false);
 
   useEffect(() => {
-    const isAgentMode = chatMode === "agent" && selectedAgentId;
-    const previousAgentId = previousAgentIdRef.current;
+    const agent =
+      chatMode === "agent" && selectedAgentId
+        ? agents.find((candidate) => candidate.id === selectedAgentId)
+        : undefined;
+    const agentTools = agent ? (readToolIds(agent.enabled_tools) ?? []) : [];
 
-    if (isAgentMode) {
-      pendingResetRef.current = false;
-      const agent = agents.find((a) => a.id === selectedAgentId);
-      const agentTools = readToolIds(agent?.enabled_tools);
+    if (agentTools.length > 0) {
+      hadAgentToolsRef.current = true;
 
-      if (agentTools && agentTools.length > 0) {
-        if (!arraysEqual(selectedTools, agentTools)) {
-          setSelectedTools(agentTools);
-        }
-      } else if (defaultTools.length > 0) {
-        if (!arraysEqual(selectedTools, defaultTools)) {
-          resetToDefaults();
-        }
-      } else {
-        if (selectedTools.length > 0) {
-          setSelectedTools([]);
-        }
-      }
-    } else if (previousAgentId) {
-      if (defaultTools.length > 0) {
-        if (!arraysEqual(selectedTools, defaultTools)) {
-          resetToDefaults();
-        }
-
-        pendingResetRef.current = false;
-      } else {
-        pendingResetRef.current = true;
-      }
-    } else if (pendingResetRef.current && defaultTools.length > 0) {
-      if (!arraysEqual(selectedTools, defaultTools)) {
-        resetToDefaults();
+      if (toolSelectionMode !== "explicit") {
+        setToolSelectionMode("explicit");
       }
 
-      pendingResetRef.current = false;
+      if (!areToolsEqual(selectedTools, agentTools)) {
+        setSelectedTools(agentTools);
+      }
+
+      return;
     }
 
-    previousAgentIdRef.current = selectedAgentId;
+    if (toolSelectionMode !== "managed") {
+      setToolSelectionMode("managed");
+    }
+
+    if (!hadAgentToolsRef.current) {
+      return;
+    }
+
+    hadAgentToolsRef.current = false;
+
+    const modelTools = selectedTools.filter((toolId) => isModelToolId(toolId));
+
+    if (!areToolsEqual(selectedTools, modelTools)) {
+      setSelectedTools(modelTools);
+    }
   }, [
     agents,
     chatMode,
-    defaultTools,
-    resetToDefaults,
     selectedAgentId,
     selectedTools,
     setSelectedTools,
+    setToolSelectionMode,
+    toolSelectionMode,
   ]);
 };

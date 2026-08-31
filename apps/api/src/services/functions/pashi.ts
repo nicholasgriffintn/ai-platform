@@ -53,6 +53,7 @@ export function createPashiFunctionTools(client?: PashiClient): {
     type: "normal",
     costPerCall: 0,
     permissions: ["read"],
+    companionTools: ["search_pashi_tools"],
     inputSchema: jsonSchemaToZod({
       type: "object",
       properties: {
