@@ -27,27 +27,25 @@ struct ChatSettingsView: View {
                         }
                     }
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Temperature")
-                            Spacer()
-                            Text(String(format: "%.1f", settings.temperature))
-                                .foregroundColor(.secondary)
-                        }
-                        Slider(value: $settings.temperature, in: 0...2, step: 0.1)
-                    }
+                    automaticSlider(
+                        title: "Temperature",
+                        value: $settings.temperature,
+                        range: 0...2,
+                        step: 0.1,
+                        overrideValue: 1,
+                        format: "%.1f"
+                    )
                 }
 
                 Section(header: Text("Advanced")) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Top P")
-                            Spacer()
-                            Text(String(format: "%.2f", settings.topP))
-                                .foregroundColor(.secondary)
-                        }
-                        Slider(value: $settings.topP, in: 0...1, step: 0.05)
-                    }
+                    automaticSlider(
+                        title: "Top P",
+                        value: $settings.topP,
+                        range: 0...1,
+                        step: 0.05,
+                        overrideValue: 0.8,
+                        format: "%.2f"
+                    )
 
                     Toggle("Limit Max Tokens", isOn: Binding(
                         get: { settings.maxTokens != nil },
@@ -61,25 +59,23 @@ struct ChatSettingsView: View {
                         ), in: 256...Int.max, step: 256)
                     }
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Presence Penalty")
-                            Spacer()
-                            Text(String(format: "%.1f", settings.presencePenalty))
-                                .foregroundColor(.secondary)
-                        }
-                        Slider(value: $settings.presencePenalty, in: -2...2, step: 0.1)
-                    }
+                    automaticSlider(
+                        title: "Presence Penalty",
+                        value: $settings.presencePenalty,
+                        range: -2...2,
+                        step: 0.1,
+                        overrideValue: 0,
+                        format: "%.1f"
+                    )
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Frequency Penalty")
-                            Spacer()
-                            Text(String(format: "%.1f", settings.frequencyPenalty))
-                                .foregroundColor(.secondary)
-                        }
-                        Slider(value: $settings.frequencyPenalty, in: -2...2, step: 0.1)
-                    }
+                    automaticSlider(
+                        title: "Frequency Penalty",
+                        value: $settings.frequencyPenalty,
+                        range: -2...2,
+                        step: 0.1,
+                        overrideValue: 0,
+                        format: "%.1f"
+                    )
                 }
 
                 Section(header: Text("Retrieval")) {
@@ -117,6 +113,40 @@ struct ChatSettingsView: View {
                         dismiss()
                     }
                 }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func automaticSlider(
+        title: String,
+        value: Binding<Double?>,
+        range: ClosedRange<Double>,
+        step: Double,
+        overrideValue: Double,
+        format: String
+    ) -> some View {
+        Toggle("Set \(title)", isOn: Binding(
+            get: { value.wrappedValue != nil },
+            set: { enabled in value.wrappedValue = enabled ? overrideValue : nil }
+        ))
+
+        if let current = value.wrappedValue {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(title)
+                    Spacer()
+                    Text(String(format: format, current))
+                        .foregroundColor(.secondary)
+                }
+                Slider(
+                    value: Binding(
+                        get: { value.wrappedValue ?? overrideValue },
+                        set: { value.wrappedValue = $0 }
+                    ),
+                    in: range,
+                    step: step
+                )
             }
         }
     }
