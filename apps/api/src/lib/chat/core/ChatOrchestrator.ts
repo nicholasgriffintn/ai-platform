@@ -50,13 +50,6 @@ export class ChatOrchestrator {
     this.preparer = new RequestPreparer(env);
   }
 
-  /**
-   * A turn owns the conversation's history while it runs, so compaction and
-   * other thread work queue behind it instead of interleaving. Inbound channel
-   * turns arrive from a queue that can deliver a batch at once, so refusing
-   * here is what stops two messages from the same sender interleaving on one
-   * conversation; the queue redelivers the refused one.
-   */
   private async holdThreadForTurn(options: CoreChatOptions): Promise<boolean> {
     if (!options.completion_id || options.store === false) {
       return false;
@@ -219,11 +212,7 @@ export class ChatOrchestrator {
     } = prepared;
     const enabled_tools = enabledTools;
 
-    await Promise.all(
-      modelConfigs.map((modelConfig) =>
-        conversationManager.checkUsageLimits(modelConfig.model, modelConfig.provider),
-      ),
-    );
+    await conversationManager.checkUsageLimits();
 
     let messages = preparedMessages;
     let didCompact = false;
@@ -286,6 +275,8 @@ export class ChatOrchestrator {
     const runParams = {
       requestParams: executionRequest.providerRequest(),
       completionId: chatOptions.completion_id,
+      usageScopeId:
+        preparedMessages.at(-1)?.id ?? `${chatOptions.completion_id}:${preparedMessages.length}`,
       conversationManager,
       toolRequestContext,
       transport: stream ? createStreamingTurnTransport() : createBufferedTurnTransport(),

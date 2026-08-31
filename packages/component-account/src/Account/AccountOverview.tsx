@@ -1,25 +1,16 @@
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-  Badge,
-  Card,
-  cn,
-  SignInEmptyState,
-} from "@ngriffin_uk/polychat-component-ui";
+import { Badge, Card, cn, SignInEmptyState } from "@ngriffin_uk/polychat-component-ui";
+import type { UsageBalanceResponse } from "@ngriffin_uk/polychat-schemas";
 import { formatDate, getBoundedPercentage } from "@ngriffin_uk/polychat-utility-core";
 import { ExternalLink } from "lucide-react";
 import type { ReactNode } from "react";
 
 const AUTH_DAILY_MESSAGE_LIMIT = 50;
-const DAILY_LIMIT_PRO_MODELS = 200;
 
-type UsageTone = "blue" | "purple" | "emerald";
+type UsageTone = "blue" | "purple";
 
 const usageToneClasses: Record<UsageTone, string> = {
   blue: "bg-blue-500",
   purple: "bg-purple-500",
-  emerald: "bg-emerald-500",
 };
 
 export interface AccountUser {
@@ -38,16 +29,13 @@ export interface AccountUser {
   message_count?: number | null;
   daily_message_count?: number | null;
   daily_reset?: string | null;
-  daily_pro_message_count?: number | null;
-  daily_pro_reset?: string | null;
-  daily_byok_message_count?: number | null;
-  daily_byok_reset?: string | null;
 }
 
 export interface AccountOverviewProps {
   user?: AccountUser | null;
   isAuthenticated: boolean;
   isLoading?: boolean;
+  usageBalance?: UsageBalanceResponse | null;
   onSignIn: () => void;
 }
 
@@ -120,14 +108,14 @@ function UsageCard({
   resets: string;
   children?: ReactNode;
 }) {
-  const percentage = limit ? getBoundedPercentage(used, limit) : null;
+  const percentage = limit !== undefined && limit > 0 ? getBoundedPercentage(used, limit) : null;
 
   return (
     <Card className="gap-3 p-4 sm:p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <div className="font-medium text-zinc-900 dark:text-zinc-100">{title}</div>
         <div className="text-sm tabular-nums text-zinc-600 dark:text-zinc-300">
-          {limit ? `${used} / ${limit}` : `${used} today`}
+          {limit !== undefined ? `${used} / ${limit}` : `${used}`}
         </div>
       </div>
 
@@ -184,6 +172,7 @@ export function AccountOverview({
   user,
   isAuthenticated,
   isLoading = false,
+  usageBalance,
   onSignIn,
 }: AccountOverviewProps) {
   if (!isAuthenticated && !isLoading) {
@@ -196,7 +185,10 @@ export function AccountOverview({
     );
   }
 
-  const isPro = user?.plan_id === "pro";
+  const hasPaidPlan = user?.plan_id === "pro" || user?.plan_id === "enterprise";
+  const creditAllowance = usageBalance
+    ? usageBalance.credits.included + usageBalance.credits.grace
+    : null;
 
   const details: Array<{ label: string; value: string }> = [];
 
@@ -204,7 +196,10 @@ export function AccountOverview({
     details.push({ label: "Member since", value: formatDate(user.created_at) });
   }
 
-  details.push({ label: "Plan", value: isPro ? "Pro" : "Free" });
+  details.push({
+    label: "Plan",
+    value: user?.plan_id === "enterprise" ? "Enterprise" : hasPaidPlan ? "Pro" : "Free",
+  });
   if (user?.company) {
     details.push({ label: "Company", value: user.company });
   }
@@ -240,7 +235,13 @@ export function AccountOverview({
               <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
                 {user?.name || "Your Account"}
               </h2>
-              <Badge variant="secondary">{isPro ? "Pro plan" : "Free plan"}</Badge>
+              <Badge variant="secondary">
+                {user?.plan_id === "enterprise"
+                  ? "Enterprise plan"
+                  : hasPaidPlan
+                    ? "Pro plan"
+                    : "Free plan"}
+              </Badge>
             </div>
 
             {user?.email && (
@@ -293,7 +294,7 @@ export function AccountOverview({
         <div className="space-y-1">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Usage</h2>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Where the day's messages have gone.
+            Model, capability and infrastructure work in one account.
           </p>
         </div>
 
@@ -311,65 +312,26 @@ export function AccountOverview({
         </div>
 
         <div className="grid gap-4">
-          <UsageCard
-            title="Standard usage"
-            tone="blue"
-            used={user?.daily_message_count || 0}
-            limit={AUTH_DAILY_MESSAGE_LIMIT}
-            description={`${AUTH_DAILY_MESSAGE_LIMIT} messages per day`}
-            resets={formatResetCountdown(user?.daily_reset)}
-          />
-
-          {isPro && (
+          {hasPaidPlan && usageBalance && creditAllowance !== null ? (
             <UsageCard
-              title="Premium usage"
+              title="Credits"
               tone="purple"
-              used={user?.daily_pro_message_count || 0}
-              limit={DAILY_LIMIT_PRO_MODELS}
-              description={`${DAILY_LIMIT_PRO_MODELS} pro tokens per day`}
-              resets={formatResetCountdown(user?.daily_pro_reset)}
-            >
-              <div className="border-t border-zinc-200 pt-3 dark:border-zinc-800">
-                <div className="mb-2 text-sm text-zinc-500 dark:text-zinc-400">
-                  Approximate message equivalents
-                </div>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                  {[
-                    { label: "Expensive models", value: "~22 messages" },
-                    { label: "Mid-tier models", value: "~66 messages" },
-                    { label: "Cheaper models", value: "100-200 messages" },
-                  ].map((tier) => (
-                    <div
-                      key={tier.label}
-                      className="rounded-md bg-zinc-100 px-3 py-2 dark:bg-zinc-800"
-                    >
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400">{tier.label}</div>
-                      <div className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                        {tier.value}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </UsageCard>
+              used={usageBalance.credits.used}
+              limit={creditAllowance}
+              description="Usage across models and metered capabilities this month"
+              resets={formatDate(usageBalance.resets_at)}
+            />
+          ) : (
+            <UsageCard
+              title="Standard usage"
+              tone="blue"
+              used={user?.daily_message_count || 0}
+              limit={AUTH_DAILY_MESSAGE_LIMIT}
+              description={`${AUTH_DAILY_MESSAGE_LIMIT} messages per day`}
+              resets={formatResetCountdown(user?.daily_reset)}
+            />
           )}
-
-          <UsageCard
-            title="BYOK usage"
-            tone="emerald"
-            used={user?.daily_byok_message_count || 0}
-            description="Unlimited provider-key messages"
-            resets={formatResetCountdown(user?.daily_byok_reset)}
-          />
         </div>
-
-        <Alert variant="info">
-          <AlertTitle>Function call usage</AlertTitle>
-          <AlertDescription>
-            When a message triggers a function call it counts as additional usage against your
-            standard or premium limits, depending on the function that was called.
-          </AlertDescription>
-        </Alert>
       </section>
     </div>
   );

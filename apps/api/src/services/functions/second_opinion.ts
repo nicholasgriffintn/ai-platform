@@ -128,6 +128,8 @@ export const second_opinion: ApiToolDefinition = {
 
     const result = await runPanel({
       env: request.env,
+      completionId: context.completionId,
+      usageScopeId: context.toolCallId ?? context.completionId,
       user: request.user,
       model: request.request?.model,
       provider: request.request?.provider,

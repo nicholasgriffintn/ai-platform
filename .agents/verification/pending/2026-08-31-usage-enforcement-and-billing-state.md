@@ -1,14 +1,14 @@
-# Usage enforcement, plan ranking and billing state
+# Free-account abuse guard, plan ranking and billing state
 
-- **Change:** Daily usage counters are now incremented with relative SQL instead of read-modify-write, pro entitlement is decided by plan rank rather than string equality, anonymous text-to-speech is limited and gated, Stripe subscription status now drives entitlement, and the Analytics Engine dataset changed shape.
-- **Surfaces:** API. No web or iOS change; the web app reads `usage_limits` through the unchanged payload.
+- **Change:** The anonymous and Free daily message abuse guard increments with relative SQL instead of read-modify-write, pro entitlement is decided by plan rank rather than string equality, anonymous text-to-speech is limited and gated, Stripe subscription status now drives entitlement, and the Analytics Engine dataset changed shape. Paid and per-step cost accounting has moved to the vendor-unit ledger verified separately.
+- **Surfaces:** API. The shared `usage_limits` payload remains backwards compatible and may now carry an additive credit summary for web and iOS.
 - **Prerequisites:** `2026-08-31-00-deploy-prerequisites.md`. No migration is needed for this item.
-- **Risk if wrong:** paid access is granted or revoked incorrectly, or a daily limit stops holding under load.
+- **Risk if wrong:** paid access is granted or revoked incorrectly, or the Free/anonymous abuse guard stops holding under load.
 
 ## Verify
 
 - [ ] Sign in as a free account and send messages until the daily limit refuses the next one. Confirm the refusal is the usage-limit message, not a 500.
-- [ ] Send several chat requests in parallel from one free account near the limit and confirm the stored `daily_message_count` moved by the number of messages actually stored, not by one.
+- [ ] Send several chat requests in parallel from one Free account near the limit and confirm `daily_message_count` moved once per completed top-level response, not once per agent step and not merely once across all parallel turns.
 - [ ] Confirm the counter restarts on the next UTC day rather than continuing from yesterday's total.
 - [ ] Set an account's `plan_id` to `enterprise` and confirm it can reach a `requirePlan("pro")` route, for example the drawing or articles apps, and can select a pro model.
 - [ ] Confirm a free account still cannot select a pro model and receives the upgrade message.

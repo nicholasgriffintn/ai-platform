@@ -16,6 +16,5 @@ export const get_note: FunctionToolDescriptor = {
     required: ["query"],
   }),
   type: "premium",
-  costPerCall: 0,
   permissions: ["read"],
 };

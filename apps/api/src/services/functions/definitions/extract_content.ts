@@ -60,6 +60,5 @@ export const extract_content: FunctionToolDescriptor = {
     required: ["urls"],
   }),
   type: "premium",
-  costPerCall: 0.5,
   permissions: ["read", "write"],
 };

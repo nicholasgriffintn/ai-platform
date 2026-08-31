@@ -20,6 +20,5 @@ export const get_weather: FunctionToolDescriptor = {
     required: ["longitude", "latitude"],
   }),
   type: "normal",
-  costPerCall: 0,
   permissions: ["read"],
 };

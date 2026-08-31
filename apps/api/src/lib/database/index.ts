@@ -11,11 +11,6 @@ export interface Env {
   DB: D1Database;
 }
 
-/**
- * Database class - lightweight wrapper around RepositoryManager
- * Provides access to repositories and database connection
- * Most database operations should be done through repositories directly via ServiceContext
- */
 export class Database {
   private _repositories: RepositoryManager;
   private env: IEnv;
@@ -33,10 +28,6 @@ export class Database {
     return new Database(env);
   }
 
-  /**
-   * Get the repository manager for direct repository access
-   * Prefer using context.repositories in services
-   */
   public get repositories(): RepositoryManager {
     return this._repositories;
   }

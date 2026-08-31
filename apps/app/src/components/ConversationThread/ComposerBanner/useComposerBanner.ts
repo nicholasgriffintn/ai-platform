@@ -165,7 +165,12 @@ function buildUsageBanner(
     return null;
   }
 
-  const { daily, pro } = usageLimits;
+  const { daily } = usageLimits;
+
+  if (typeof daily.limit !== "number") {
+    return null;
+  }
+
   const dailyRemaining = daily.limit - daily.used;
 
   if (dailyRemaining <= 0) {
@@ -180,29 +185,6 @@ function buildUsageBanner(
         ? { label: "Open Providers", to: "/profile?tab=providers" }
         : { label: "See plans", to: "/profile?tab=billing" },
     };
-  }
-
-  if (isPro && pro) {
-    const proRemaining = pro.limit - pro.used;
-
-    if (proRemaining <= 0) {
-      return {
-        id: "usage-pro-exhausted",
-        tone: "warning",
-        message:
-          "That was the last of today's Pro messages. Standard models are still on the perch.",
-        dismissal: { scope: "day" },
-      };
-    }
-
-    if (proRemaining / pro.limit <= USAGE_WARNING_THRESHOLD) {
-      return {
-        id: "usage-pro-low",
-        tone: "warning",
-        message: `You have ${proRemaining} Pro ${proRemaining === 1 ? "message" : "messages"} left today.`,
-        dismissal: { scope: "day" },
-      };
-    }
   }
 
   if (daily.limit > 0 && dailyRemaining / daily.limit <= USAGE_WARNING_THRESHOLD) {

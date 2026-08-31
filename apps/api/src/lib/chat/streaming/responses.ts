@@ -16,10 +16,6 @@ import { withRetry } from "~/utils/retries";
 
 const logger = getLogger({ prefix: "lib/chat/streaming/responses" });
 
-/**
- * Formats assistant message data into a standardized structure that can be used
- * by both streaming and non-streaming response handlers
- */
 export async function getAIResponse(request: ChatCompletionParameters) {
   const {
     app_url,

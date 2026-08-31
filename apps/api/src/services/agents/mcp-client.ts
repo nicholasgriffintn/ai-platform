@@ -86,10 +86,6 @@ export function parseMCPServerConfigs(servers: unknown): MCPServerConfig[] {
 
 const MCP_AGENT_KEY_LENGTH = 8;
 
-/**
- * Tool names only carry a truncated agent id, so registration and lookup have
- * to agree on the same truncation for an exact client match to be possible.
- */
 export function toMCPAgentKey(agentId: string): string {
   return agentId.substring(0, MCP_AGENT_KEY_LENGTH);
 }

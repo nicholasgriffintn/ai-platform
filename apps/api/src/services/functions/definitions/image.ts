@@ -61,6 +61,5 @@ export const create_image: FunctionToolDescriptor = {
     required: ["prompt"],
   }),
   type: "byok",
-  costPerCall: 1,
   permissions: ["network"],
 };

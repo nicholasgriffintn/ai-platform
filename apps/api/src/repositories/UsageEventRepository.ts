@@ -1,5 +1,7 @@
 import type { UsageSource, UsageUnit } from "@ngriffin_uk/polychat-schemas";
 
+import { AssistantError, ErrorType } from "~/utils/errors";
+
 import { BaseRepository } from "./BaseRepository";
 
 export interface UsageEventInsert {
@@ -62,6 +64,12 @@ export interface ListUsageEventsParams {
   cursor?: { occurredAt: string; id: string } | null;
 }
 
+export interface UsageBalanceSeed {
+  planId: string | null;
+  includedCreditMicros: number;
+  graceCreditMicros: number;
+}
+
 const INSERT_COLUMNS = [
   "id",
   "idempotency_key",
@@ -93,7 +101,7 @@ const RECORD_COLUMNS = `id, occurred_at, period, source, vendor, resource, unit,
 	cost_micros, credit_micros, billable, byok, estimated, conversation_id, project_id, workspace_id`;
 
 export class UsageEventRepository extends BaseRepository {
-  async insertEvent(event: UsageEventInsert): Promise<boolean> {
+  private buildInsert(event: UsageEventInsert): { query: string; values: unknown[] } {
     const placeholders = INSERT_COLUMNS.map(() => "?").join(", ");
     const values = INSERT_COLUMNS.map((column) => {
       const value = event[column];
@@ -101,26 +109,66 @@ export class UsageEventRepository extends BaseRepository {
       return typeof value === "boolean" ? (value ? 1 : 0) : value;
     });
 
-    const result = await this.executeRun(
-      `INSERT INTO usage_event (${INSERT_COLUMNS.join(", ")})
+    return {
+      query: `INSERT INTO usage_event (${INSERT_COLUMNS.join(", ")})
 			 VALUES (${placeholders})
 			 ON CONFLICT (idempotency_key) DO NOTHING`,
       values,
-    );
+    };
+  }
+
+  private async insertEvent(event: UsageEventInsert): Promise<boolean> {
+    const insert = this.buildInsert(event);
+    const result = await this.executeRun(insert.query, insert.values);
 
     return (result.meta?.changes ?? 0) > 0;
   }
 
-  async insertEvents(events: readonly UsageEventInsert[]): Promise<number> {
-    let inserted = 0;
-
-    for (const event of events) {
-      if (await this.insertEvent(event)) {
-        inserted += 1;
-      }
+  async insertEventAndApplyBalance(
+    event: UsageEventInsert,
+    seed: UsageBalanceSeed,
+  ): Promise<boolean> {
+    if (!event.billable || event.credit_micros === 0) {
+      return this.insertEvent(event);
     }
 
-    return inserted;
+    const database = this.env.DB;
+
+    if (!database) {
+      throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
+    }
+
+    const insert = this.buildInsert(event);
+
+    const results = await database.batch([
+      database
+        .prepare(
+          `INSERT INTO usage_balance (
+				id, user_id, period, plan_id, included_credit_micros, grace_credit_micros
+			 ) VALUES (?, ?, ?, ?, ?, ?)
+			 ON CONFLICT (user_id, period) DO NOTHING`,
+        )
+        .bind(
+          `${event.user_id}:${event.period}`,
+          event.user_id,
+          event.period,
+          seed.planId,
+          seed.includedCreditMicros,
+          seed.graceCreditMicros,
+        ),
+      database.prepare(insert.query).bind(...insert.values),
+      database
+        .prepare(
+          `UPDATE usage_balance
+			 SET spent_credit_micros = spent_credit_micros + ?,
+			     last_event_at = MAX(COALESCE(last_event_at, ''), ?),
+			     updated_at = CURRENT_TIMESTAMP
+			 WHERE user_id = ? AND period = ? AND changes() = 1`,
+        )
+        .bind(event.credit_micros, event.occurred_at, event.user_id, event.period),
+    ]);
+
+    return (results[1]?.meta?.changes ?? 0) > 0;
   }
 
   async listUserEvents(params: ListUsageEventsParams): Promise<UsageEventRecordRow[]> {

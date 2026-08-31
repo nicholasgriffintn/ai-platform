@@ -17,7 +17,6 @@ export const set_goal: FunctionToolDescriptor = {
     required: ["objective"],
   }),
   type: "premium",
-  costPerCall: 0,
   permissions: ["write"],
 };
 
@@ -65,6 +64,5 @@ export const complete_goal: FunctionToolDescriptor = {
     required: ["summary", "evidence"],
   }),
   type: "premium",
-  costPerCall: 0,
   permissions: ["reasoning"],
 };

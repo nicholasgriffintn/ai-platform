@@ -3,7 +3,6 @@ import { PermissionChecker } from "~/lib/permissions/PermissionChecker";
 import { ToolRegistry } from "~/lib/tools/ToolRegistry";
 import type { IFunctionResponse, IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 import type { ApiToolDefinition } from "../../types/functions";
 import { call_api } from "./api_call";
@@ -49,7 +48,6 @@ import { create_video } from "./video";
 import { get_weather } from "./weather";
 import { web_search } from "./web_search";
 
-const logger = getLogger({ prefix: "services/functions" });
 const FUNCTIONS_TOOL_CATEGORY = "functions";
 const permissionChecker = new PermissionChecker();
 
@@ -125,7 +123,6 @@ for (const fn of functionDefinitions) {
     name: fn.name,
     metadata: {
       type: fn.type,
-      costPerCall: fn.costPerCall,
     },
     create: () => ({
       ...fn,
@@ -191,6 +188,7 @@ export const handleFunctions = async ({
   completion_id,
   app_url,
   functionName,
+  tool_call_id,
   args,
   request,
   conversationManager,
@@ -199,6 +197,7 @@ export const handleFunctions = async ({
   completion_id: string;
   app_url: string | undefined;
   functionName: string;
+  tool_call_id?: string;
   args: unknown;
   request: IRequest;
   conversationManager?: ConversationManager;
@@ -299,27 +298,9 @@ export const handleFunctions = async ({
     requestOptions: request.request?.options,
   });
   const validatedArgs = validateFunctionArgs(foundFunction, contextualArgs);
-  const isProUser = request.user?.plan_id === "pro";
-  const isByokTool = foundFunction.type === "byok";
-  const functionType = isByokTool
-    ? "byok"
-    : foundFunction.type === "premium"
-      ? "premium"
-      : "normal";
-
-  if (conversationManager) {
-    try {
-      await conversationManager.checkUsageLimits(functionType);
-    } catch (error) {
-      logger.error("Failed to check usage limits:", {
-        error_message: error instanceof Error ? error.message : "Unknown error",
-      });
-      throw error;
-    }
-  }
-
   const response = await foundFunction.execute(validatedArgs, {
     completionId: completion_id,
+    toolCallId: tool_call_id,
     env: request.env,
     user: request.user,
     request,
@@ -327,22 +308,6 @@ export const handleFunctions = async ({
     conversationManager,
     emitToolResult,
   });
-
-  if (conversationManager) {
-    try {
-      await conversationManager.incrementFunctionUsage(
-        functionType,
-        isProUser,
-        foundFunction.costPerCall,
-      );
-    } catch (error) {
-      logger.error("Failed to track function usage:", {
-        error_message: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  } else {
-    logger.info("No conversation manager provided, skipping usage tracking");
-  }
 
   return response;
 };

@@ -28,7 +28,7 @@ export function usePetNudgeSources({
   useEffect(() => {
     const daily = usageLimits?.daily;
 
-    if (!daily || daily.limit <= 0) {
+    if (!daily || typeof daily.limit !== "number" || daily.limit <= 0) {
       retractNudge(USAGE_NUDGE_ID);
 
       return;

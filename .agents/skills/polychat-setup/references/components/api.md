@@ -43,18 +43,28 @@ Forward a configured non-default `reasoning_effort` as a top-level field only th
 
 Bedrock's Anthropic path carries reasoning in Converse `additionalModelRequestFields` and follows the catalogue's `thinkingApi` discriminator. An `adaptive` model takes `thinking: {type: "adaptive"}` with `output_config.effort`, and rejects sampling, so temperature and top-p are dropped from `inferenceConfig`. A `budget` model takes `thinking: {type: "enabled"}` with a `budget_tokens` value held below the request's max tokens. A Bedrock model without the discriminator gets no reasoning payload, which keeps the Anthropic body shape away from the other families Bedrock serves.
 
-## Plan entitlement, usage counters and billing state
+## Plan entitlement, usage metering and billing state
 
 Plans are ranked, not compared for equality. `PLAN_RANKS` in `apps/api/src/constants/plans.ts` orders
 `free` below `pro` below `enterprise`, and `hasPlanEntitlement` in `apps/api/src/lib/plans.ts` is the only
 way to ask whether an account satisfies a requirement. `requirePlan("pro")` therefore admits an enterprise
-account. Use the same helper wherever a feature asks "is this person paid" so the check that admits a turn
-and the increment that bills it cannot disagree.
+account. Use the same helper wherever a feature asks "is this person paid" so admission and the Free-account
+abuse guard cannot disagree.
 
-Daily usage counters are written with relative SQL. `UserRepository.incrementUsageCounters` and
-`AnonymousUserRepository.incrementDailyCount` each apply a single `SET column = column + ?` statement whose
-`CASE` restarts the counter when the stored reset stamp is not today's UTC day. Never read a counter, add to
-it, and write the total back: concurrent requests all read the same value and a limit stops holding.
+Daily message counters are only an abuse guard for anonymous and Free accounts. Record one increment after
+the top-level assistant response, using the relative SQL in `UserRepository.incrementUsageCounters` or
+`AnonymousUserRepository.incrementDailyCount`; do not count agent steps, BYOK, or function calls here. Paid
+accounts have no daily message limit, and the old multiplier counters and `usage_update` reset task do not
+return. A new UTC day is handled inside the same relative statement.
+
+The vendor-unit ledger is the only cost record. Provider completions call `recordModelTurnUsage`, including
+ordinary and agent turns, model-ensemble secondary answers, and every panel turn and conclusion. A
+`usage_rollup` task or its inline fallback passes events through
+`UsageEventRepository.insertEventAndApplyBalance`, which inserts the idempotent event and conditionally moves
+the monthly balance in one D1 batch. Never insert a billable event through another repository method or
+derive cost from a message/function multiplier. `/user/usage`, `/user/usage/events`, and
+`/user/usage/breakdown` publish the shared credit contract; credits are visible accounting, not admission or
+mid-turn enforcement. See [ADR 0041](../architecture/decisions/0041-usage-metering-and-credits.md).
 
 Text-to-speech is reachable without an account, so `apps/api/src/lib/audio/access.ts` gates it. An anonymous
 caller may only use the platform-hosted provider and spends the anonymous daily message allowance; naming any
@@ -67,6 +77,12 @@ Stripe webhooks map subscription **status** to entitlement, not just deletion.
 `invoice.paid` restores. Every handler writes only when the stored state actually changes, so a redelivered
 event neither rewrites the row nor sends a second email. An account that outranks `pro` is never downgraded
 by a lapsed subscription, because enterprise entitlement is granted outside Stripe.
+
+Checkout validates that the selected plan has a non-empty Stripe Price ID before it creates a Stripe
+Customer, and it accepts only success and cancellation URLs on the configured app origin. It allows Stripe
+promotion codes so an operator can give a named staff customer a 100%-off, forever subscription without
+creating a second entitlement path. Follow the
+[Stripe billing runbook](../operations/stripe-billing.md); never use a shared unrestricted staff code.
 
 ## Embedding API safety and lifecycle
 

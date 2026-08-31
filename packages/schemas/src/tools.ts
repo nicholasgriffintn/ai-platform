@@ -36,7 +36,6 @@ export const toolSelectionModeSchema = z.enum(["managed", "explicit"]);
 export const runnableToolSchema = toolSchema.extend({
   icon: z.string().optional(),
   theme: capabilityThemeSchema.optional(),
-  costPerCall: z.number().optional(),
   type: toolFunctionTypeSchema.optional(),
   formSchema: toolFormSchema,
   responseSchema: toolResponseSchema,

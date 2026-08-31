@@ -6,6 +6,7 @@ export interface ToolExecutionContext<
   TConversationManager = unknown,
 > {
   completionId: string;
+  toolCallId?: string;
   env: TEnv;
   user?: TUser;
   conversationManager?: TConversationManager;
@@ -32,7 +33,6 @@ export interface ToolDefinition<
   inputSchema: z.ZodType<TInput>;
   execute: (input: TInput, context: TContext) => Promise<TResult>;
   type: "normal" | "premium" | "byok";
-  costPerCall: number;
   strict?: boolean;
   isDefault?: boolean;
   app_url?: string;

@@ -9,7 +9,6 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("../scheduledTasks", () => ({
   redispatchPendingTasks: mocks.redispatchPendingTasks,
-  scheduleDailyUsageReset: vi.fn(),
   scheduleDailySynthesis: vi.fn(),
   scheduleRecipeExecutions: mocks.scheduleRecipeExecutions,
   scheduleTrainingQualityScoring: vi.fn(),

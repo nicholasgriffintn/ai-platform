@@ -24,7 +24,6 @@ import { ResearchPollingHandler } from "./handlers/ResearchPollingHandler";
 import { SandboxRunDispatchHandler } from "./handlers/SandboxRunDispatchHandler";
 import { TrainingQualityHandler } from "./handlers/TrainingQualityHandler";
 import { UsageRollupHandler } from "./handlers/UsageRollupHandler";
-import { UsageUpdateHandler } from "./handlers/UsageUpdateHandler";
 import { TaskExecutor } from "./TaskExecutor";
 import type { TaskHandler } from "./TaskHandler";
 import type { TaskMessage } from "./TaskService";
@@ -40,7 +39,6 @@ export function createTaskHandlers(): Map<TaskType, TaskHandler> {
     ["async_message_polling", new AsyncMessagePollingHandler()],
     ["podcast_transcription_polling", new PodcastTranscriptionPollingHandler()],
     ["training_quality_scoring", new TrainingQualityHandler()],
-    ["usage_update", new UsageUpdateHandler()],
     ["recipe_execution", new RecipeExecutionHandler()],
     ["inbound_message", new InboundMessageHandler()],
     ["artificial_analysis_ingest", new ArtificialAnalysisIngestHandler()],

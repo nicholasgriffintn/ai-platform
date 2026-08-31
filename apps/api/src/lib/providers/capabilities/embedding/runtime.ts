@@ -40,11 +40,6 @@ const parseQueryVectorResult = (value: {
   return { data, status: value.status };
 };
 
-/**
- * Isolates the Phase 1 combined provider behind capability-specific interfaces. The
- * direct methods are temporary forwards for callers migrating to `embedder` and
- * `vectorStore`.
- */
 export const adaptVectorEmbeddingProvider = (
   provider: EmbeddingProvider,
 ): VectorEmbeddingRuntime => {

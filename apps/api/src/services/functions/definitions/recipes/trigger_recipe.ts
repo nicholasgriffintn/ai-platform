@@ -6,7 +6,6 @@ export const trigger_recipe: FunctionToolDescriptor = {
   description:
     "Trigger an installed recipe when the user's message asks to run a recipe or automation. Prefer query for natural language requests; use recipeId only when the exact installed recipe id is known.",
   type: "premium",
-  costPerCall: 0,
   permissions: ["read", "write"],
   inputSchema: jsonSchemaToZod({
     type: "object",

@@ -6,7 +6,6 @@ export const web_search: FunctionToolDescriptor = {
   description:
     "Performs a web search to find current information on any topic. Use for retrieving recent news, facts, or information beyond your knowledge cutoff.",
   type: "normal",
-  costPerCall: 1,
   permissions: ["read"],
   inputSchema: jsonSchemaToZod({
     type: "object",

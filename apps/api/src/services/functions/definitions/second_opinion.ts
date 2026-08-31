@@ -10,7 +10,6 @@ export const second_opinion: FunctionToolDescriptor = {
   description:
     "Put the answer you just gave in front of other models and report what they say. Each reviewer answers in its own completion on its own model, reads what earlier reviewers said, and the panel concludes with the answer to trust. Use when the user asks for a second opinion, a consensus, a sanity check, or whether an answer can be trusted; not for questions with a retrievable answer.",
   type: "premium",
-  costPerCall: 2,
   permissions: ["orchestration"],
   inputSchema: z.object({
     models: z

@@ -60,7 +60,6 @@ function createConversationManager(messages: unknown[]) {
     getAllMessages: vi.fn().mockResolvedValue(messages),
     add: vi.fn(),
     checkUsageLimits: vi.fn(),
-    incrementFunctionUsage: vi.fn(),
   };
 }
 

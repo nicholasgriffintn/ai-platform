@@ -123,14 +123,6 @@ export const ToolForm = ({
                 {tool.name}
               </h1>
               <p className={cn("text-zinc-600 dark:text-zinc-300")}>{tool.description}</p>
-              {tool.costPerCall !== undefined && (
-                <p className={cn("text-sm text-zinc-500 dark:text-zinc-400 mt-1")}>
-                  Cost per run:{" "}
-                  {tool.costPerCall === 0
-                    ? "Free"
-                    : `${tool.costPerCall} ${tool.costPerCall === 1 ? "request" : "requests"}`}
-                </p>
-              )}
             </div>
           </div>
 

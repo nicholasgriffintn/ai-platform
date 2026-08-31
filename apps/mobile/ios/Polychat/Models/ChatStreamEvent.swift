@@ -51,9 +51,32 @@ struct ChatUsageLimits: Decodable, Equatable {
         let limit: Int?
     }
 
+    struct Credits: Decodable, Equatable {
+        let included: Double
+        let used: Double
+        let reserved: Double
+        let grace: Double
+        let overrun: Double
+        let overage: Double
+        let overageEnabled: Bool
+        let state: String
+
+        enum CodingKeys: String, CodingKey {
+            case included, used, reserved, grace, overrun, overage, state
+            case overageEnabled = "overage_enabled"
+        }
+    }
+
     let daily: Allowance?
-    let pro: Allowance?
-    let byok: Allowance?
+    let credits: Credits?
+
+    init(
+        daily: Allowance?,
+        credits: Credits? = nil
+    ) {
+        self.daily = daily
+        self.credits = credits
+    }
 }
 
 struct ChatStreamMetadata: Decodable, Equatable {

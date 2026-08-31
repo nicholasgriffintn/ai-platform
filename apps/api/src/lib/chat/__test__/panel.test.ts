@@ -2,9 +2,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { extractPanelRouting, runPanel, type PanelMember } from "../panel";
 
-const getAIResponse = vi.hoisted(() => vi.fn());
+const mocks = vi.hoisted(() => ({
+  getAIResponse: vi.fn(),
+  recordModelTurnUsage: vi.fn(async (_params: { messageId?: string }) => undefined),
+}));
 
-vi.mock("~/lib/chat/streaming/responses", () => ({ getAIResponse }));
+vi.mock("~/lib/chat/streaming/responses", () => ({ getAIResponse: mocks.getAIResponse }));
+vi.mock("~/lib/usage/modelUsage", () => ({
+  recordModelTurnUsage: mocks.recordModelTurnUsage,
+}));
 vi.mock("~/lib/context/serviceContext", () => ({ createServiceContext: () => ({}) }));
 vi.mock("~/lib/providers/models", () => ({
   getAuxiliaryModel: vi.fn(async () => ({ model: "auxiliary-model", provider: "auxiliary" })),
@@ -22,6 +28,8 @@ function routingTag(payload: Record<string, unknown>): string {
 function baseParams() {
   return {
     env: {} as never,
+    completionId: "conversation-1",
+    usageScopeId: "tool-call-1",
     question: "Should we migrate?",
     members: MEMBERS,
     turnBrief: "Turn brief.",
@@ -61,11 +69,12 @@ describe("extractPanelRouting", () => {
 
 describe("runPanel", () => {
   beforeEach(() => {
-    getAIResponse.mockReset();
+    mocks.getAIResponse.mockReset();
+    mocks.recordModelTurnUsage.mockClear();
   });
 
   it("routes between members, streams each turn, and uses the caller's model", async () => {
-    getAIResponse
+    mocks.getAIResponse
       .mockResolvedValueOnce({
         response: `Chair opens.\n${routingTag({ shouldContinue: true, nextMemberIds: ["sceptic"] })}`,
       })
@@ -90,12 +99,18 @@ describe("runPanel", () => {
     expect(result.stoppedReason).toBe("consensus");
     expect(result.model).toBe("user-selected-model");
     expect(
-      getAIResponse.mock.calls.every(([payload]) => payload.model === "user-selected-model"),
+      mocks.getAIResponse.mock.calls.every(([payload]) => payload.model === "user-selected-model"),
     ).toBe(true);
+    expect(mocks.recordModelTurnUsage).toHaveBeenCalledTimes(3);
+    expect(mocks.recordModelTurnUsage.mock.calls.map(([call]) => call.messageId)).toEqual([
+      "panel:tool-call-1:0",
+      "panel:tool-call-1:1",
+      "panel:tool-call-1:2",
+    ]);
   });
 
   it("stops at the turn budget when members keep routing onward", async () => {
-    getAIResponse.mockResolvedValue({
+    mocks.getAIResponse.mockResolvedValue({
       response: `Still going.\n${routingTag({ shouldContinue: true, nextMemberIds: ["sceptic"] })}`,
     });
 
@@ -106,7 +121,7 @@ describe("runPanel", () => {
   });
 
   it("falls back to the auxiliary model only when no model is supplied", async () => {
-    getAIResponse.mockResolvedValue({ response: "Turn with no routing tag." });
+    mocks.getAIResponse.mockResolvedValue({ response: "Turn with no routing tag." });
 
     const result = await runPanel(baseParams());
 
@@ -115,7 +130,7 @@ describe("runPanel", () => {
   });
 
   it("continues the debate when one member's completion fails", async () => {
-    getAIResponse
+    mocks.getAIResponse
       .mockResolvedValueOnce({
         response: `Chair opens.\n${routingTag({ shouldContinue: true, nextMemberIds: ["sceptic"] })}`,
       })

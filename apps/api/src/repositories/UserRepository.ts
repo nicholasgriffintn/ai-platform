@@ -3,33 +3,18 @@ import { formatUtcDateKey } from "~/utils/date";
 
 import { BaseRepository } from "./BaseRepository";
 
-export interface DailyUsageResetResult {
-  regular: number;
-  pro: number;
-  byok: number;
-  total: number;
-}
+export type CumulativeUsageCounter = "message_count";
 
-export type CumulativeUsageCounter = "message_count" | "byok_message_count";
-
-export type DailyUsageCounter =
-  | "daily_message_count"
-  | "daily_pro_message_count"
-  | "daily_byok_message_count";
+export type DailyUsageCounter = "daily_message_count";
 
 export type UsageCounterIncrements = Partial<
   Record<CumulativeUsageCounter | DailyUsageCounter, number>
 >;
 
-const CUMULATIVE_USAGE_COUNTERS: readonly CumulativeUsageCounter[] = [
-  "message_count",
-  "byok_message_count",
-];
+const CUMULATIVE_USAGE_COUNTERS: readonly CumulativeUsageCounter[] = ["message_count"];
 
 const DAILY_USAGE_COUNTERS: readonly (readonly [DailyUsageCounter, string])[] = [
   ["daily_message_count", "daily_reset"],
-  ["daily_pro_message_count", "daily_pro_reset"],
-  ["daily_byok_message_count", "daily_byok_reset"],
 ];
 
 export class UserRepository extends BaseRepository {
@@ -138,48 +123,6 @@ export class UserRepository extends BaseRepository {
       values,
       true,
     );
-  }
-
-  public async resetDailyUsage(resetAt: string): Promise<DailyUsageResetResult> {
-    const regular = await this.resetDailyUsageCounter(
-      "daily_message_count",
-      "daily_reset",
-      resetAt,
-    );
-    const pro = await this.resetDailyUsageCounter(
-      "daily_pro_message_count",
-      "daily_pro_reset",
-      resetAt,
-    );
-    const byok = await this.resetDailyUsageCounter(
-      "daily_byok_message_count",
-      "daily_byok_reset",
-      resetAt,
-    );
-
-    return {
-      regular,
-      pro,
-      byok,
-      total: regular + pro + byok,
-    };
-  }
-
-  private async resetDailyUsageCounter(
-    countColumn: string,
-    resetColumn: string,
-    resetAt: string,
-  ): Promise<number> {
-    const result = await this.executeRun(
-      `UPDATE user
-			 SET ${countColumn} = 0,
-			     ${resetColumn} = ?,
-			     updated_at = datetime('now')
-			 WHERE ${resetColumn} IS NULL OR date(${resetColumn}) < date(?)`,
-      [resetAt, resetAt],
-    );
-
-    return result.meta?.changes ?? 0;
   }
 
   public async createUser(userData: Record<string, unknown>): Promise<User | null> {

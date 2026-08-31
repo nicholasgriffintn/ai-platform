@@ -1,4 +1,4 @@
-# ADR 0039: Resolve provider execution governance at the server boundary
+# ADR 0040: Resolve provider execution governance at the server boundary
 
 ## Status
 

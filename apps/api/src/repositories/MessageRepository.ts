@@ -98,11 +98,6 @@ export class MessageRepository extends BaseRepository {
     ]);
   }
 
-  /**
-   * Swaps a conversation's message set in one D1 transaction. Doing the delete,
-   * the upserts and the conversation counter separately lets a mid-sequence
-   * failure leave the conversation with a permanent gap in its history.
-   */
   public async replaceConversationMessages(
     conversationId: string,
     messages: Array<{

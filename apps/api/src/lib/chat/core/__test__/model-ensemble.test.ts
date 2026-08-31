@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   runAgentLoop: vi.fn(),
   getAIResponse: vi.fn(),
+  recordModelTurnUsage: vi.fn(async (_params: { messageId?: string }) => undefined),
   closeComposioConnectorRun: vi.fn(async () => {}),
 }));
 
@@ -13,6 +14,9 @@ vi.mock("~/lib/chat/streaming/responses", async (importOriginal) => ({
 }));
 vi.mock("~/services/apps/connectors/composio-run", () => ({
   closeComposioConnectorRun: mocks.closeComposioConnectorRun,
+}));
+vi.mock("~/lib/usage/modelUsage", () => ({
+  recordModelTurnUsage: mocks.recordModelTurnUsage,
 }));
 
 import type { Message } from "~/types";
@@ -39,6 +43,7 @@ function createParams(conversation: Message[]) {
     pending,
     params: {
       completionId: "completion-1",
+      usageScopeId: "user-message-1",
       conversationManager,
       toolRequestContext: { context: undefined },
       env: {},
@@ -86,6 +91,13 @@ describe("createModelEnsembleStream", () => {
     expect(replaced?.content).toContain("Primary answer");
     expect(replaced?.content).toContain("Secondary answer");
     expect(streamed).toContain("Secondary answer");
+    expect(mocks.recordModelTurnUsage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: "secondary-model",
+        provider: "test-provider",
+        messageId: "ensemble:user-message-1:0:secondary-model",
+      }),
+    );
   });
 
   it("does not rewrite the conversation when the primary message is no longer present", async () => {

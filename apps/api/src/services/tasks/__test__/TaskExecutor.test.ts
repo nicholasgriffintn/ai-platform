@@ -152,7 +152,10 @@ describe("TaskExecutor", () => {
     const handler: TaskHandler = {
       handle: vi.fn().mockResolvedValue({ status: "success" }),
     };
-    const executor = new TaskExecutor({} as any, new Map([["usage_update", handler]]));
+    const executor = new TaskExecutor(
+      {} as any,
+      new Map([[SANDBOX_RUN_DISPATCH_TASK_TYPE, handler]]),
+    );
 
     await executor.execute(createTaskMessage("invalid_type"));
 

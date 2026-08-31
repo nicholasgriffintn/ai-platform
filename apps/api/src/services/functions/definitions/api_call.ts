@@ -6,7 +6,6 @@ export const call_api: FunctionToolDescriptor = {
   description:
     "Calls a REST or GraphQL API and returns a structured response. Use this when you need to fetch data from external APIs.",
   type: "normal",
-  costPerCall: 0,
   permissions: ["network"],
   inputSchema: jsonSchemaToZod({
     type: "object",

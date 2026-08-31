@@ -24,16 +24,6 @@ export async function readUsageLimitState(
       return UNKNOWN_STATE;
     }
 
-    const pro = limits.pro;
-
-    if (pro && typeof pro.limit === "number") {
-      return {
-        exhausted: pro.used >= pro.limit,
-        used: pro.used,
-        limit: pro.limit,
-      };
-    }
-
     const daily = limits.daily;
 
     if (!daily || typeof daily.limit !== "number") {

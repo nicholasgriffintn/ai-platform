@@ -4,10 +4,6 @@ import { generateId } from "~/utils/id";
 
 import { extractReasoningContentBlocks } from "./content-blocks";
 
-/**
- * Formats streaming responses
- * Handles specific streaming event types and partial content
- */
 export class StreamingFormatter {
   /**
    * Extract text content from a streaming chunk of data

@@ -4,9 +4,6 @@ export const SANDBOX_RUN_DISPATCH_TASK_TYPE = "sandbox_run_dispatch";
 export const PROJECT_TASK_RUN_TASK_TYPE = "project_task_run";
 export const OCR_BATCH_POLLING_TASK_TYPE = "ocr_batch_polling";
 export const USAGE_ROLLUP_TASK_TYPE = "usage_rollup";
-export const REALTIME_RECONCILIATION_TASK_TYPE = "realtime_reconciliation";
-export const INFRA_RECONCILIATION_TASK_TYPE = "infra_reconciliation";
-export const STRIPE_USAGE_SYNC_TASK_TYPE = "stripe_usage_sync";
 
 export const TASK_TYPES = [
   "memory_synthesis",
@@ -15,7 +12,6 @@ export const TASK_TYPES = [
   "async_message_polling",
   "podcast_transcription_polling",
   "training_quality_scoring",
-  "usage_update",
   "recipe_execution",
   "inbound_message",
   "artificial_analysis_ingest",
@@ -24,9 +20,6 @@ export const TASK_TYPES = [
   PROJECT_TASK_RUN_TASK_TYPE,
   OCR_BATCH_POLLING_TASK_TYPE,
   USAGE_ROLLUP_TASK_TYPE,
-  REALTIME_RECONCILIATION_TASK_TYPE,
-  INFRA_RECONCILIATION_TASK_TYPE,
-  STRIPE_USAGE_SYNC_TASK_TYPE,
 ] as const;
 
 export const PUBLIC_TASK_TYPES = ["memory_synthesis"] as const;

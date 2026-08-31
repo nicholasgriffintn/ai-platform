@@ -17,33 +17,28 @@ removes a bound is visible as a change to this file rather than as a bill.
 Streaming is a transport, not a loop of its own (ADR 0022). A streamed turn and a buffered one draw the
 same budget through the same loop, so there is one place to change a bound and one place it can be lost.
 
-## Usage limits are checked as the work is spent, not once per request
+## Admission is checked once; spend is metered per provider call
 
-`checkUsageLimits` at the request boundary only covers the first model call. Every loop that can spend
-more re-checks before spending the next one:
+`checkUsageLimits` at the request boundary protects the anonymous and Free daily message allowance. It does
+not stop a paid turn and does not re-check between model steps. A top-level assistant response records one
+message-counter increment after it is stored, so an agent loop cannot truncate itself halfway through useful
+work.
 
-- **Agent loop**: `runAgentLoop` re-checks before every step after the first. Exhaustion closes the turn
-  with `USAGE_LIMIT_NOTICE` and a `usage_limit_reached` finish reason, and allows the finish gate, so the
-  user gets an answer explaining the stop rather than an error.
-- **Goals**: `readUsageLimitState` feeds `usageLimitsExhausted` into the continuation policy, so a goal
-  ends as `limit_reached` rather than erroring.
+Every provider completion inside a loop still records its own vendor units through
+`recordModelTurnUsage`. The ordinary agent transport, model-ensemble secondaries, and panel member and
+conclusion calls use that seam. Step budgets remain the hard in-turn cost bound; the monthly credit balance
+is accounting state until a separate admission/reservation decision is implemented.
 
-Usage increments per stored assistant message (`ConversationManager.addBatch`), so each loop step counts
-against the allowance rather than the whole loop counting as one.
-
-An unreadable limit is treated as **not** exhausted, so a storage blip cannot lock a paying user out.
-The throwing check at the request boundary still applies.
-
-## Counters are incremented relatively, never read-modify-written
+## The abuse guard and ledger both update atomically
 
 A bound is only real if the counter behind it survives parallel requests. Every usage increment is one
 statement that adds to the stored value and rolls the day over in the same `CASE`, so ten simultaneous
 turns record ten. The repository owns that SQL — `UserRepository.incrementUsageCounters` and
 `AnonymousUserRepository.incrementDailyCount` — and `UsageManager` only describes which counters move.
 
-The plan a turn is billed against comes from `hasPlanEntitlement`, both when the turn is admitted and when
-it is counted. Passing a hard-coded entitlement at increment time bills a free account at pro rates and lets
-it past the pro gate.
+The ledger separately inserts each idempotent `usage_event` and increments the matching `usage_balance` in
+one transactional D1 batch. The balance statement runs only when the preceding event insert changed one
+row, so a redelivery cannot charge twice and a partial failure cannot strand an event without its spend.
 
 ## Durable Object cost
 
@@ -61,7 +56,7 @@ a detached turn outlives — so a long tool chain is still two DO calls in total
 ## When adding a new loop
 
 1. Give it a bound that does not depend on the model behaving.
-2. Re-check usage before each unit of spend.
-3. Make sure the work increments usage, not just the request, through a relative counter update.
+2. Record every provider call through the vendor-unit ledger, including hidden synthesis and routing calls.
+3. Keep the daily message counter at one increment per top-level response; never use it to estimate cost.
 4. If it holds the conversation, release it when the work actually finishes — a streaming response is
    still writing after its handler returns.

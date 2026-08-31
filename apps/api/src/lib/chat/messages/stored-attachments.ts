@@ -66,10 +66,6 @@ function readStoredAttachmentContent(message: Message): MessageContent[] {
     .filter((content): content is MessageContent => content !== null);
 }
 
-/**
- * Attachment cards are persisted as a separate display message. Collapse that row back into
- * the preceding message before sending conversation history to a model.
- */
 export function restoreStoredAttachmentContent(messages: readonly Message[]): Message[] {
   const restoredMessages: Message[] = [];
 

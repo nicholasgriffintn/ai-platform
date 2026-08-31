@@ -30,7 +30,6 @@ export const discover_capabilities: FunctionToolDescriptor = {
   description:
     "Search tools, recipes, and connectors for a use case, including capabilities that need setup. Follow each result's invocation.toolName and instruction exactly; never invent a tool name or claim an unavailable invocation can run. This is read-only, so let the user complete suggested setup in the chat UI.",
   type: "normal",
-  costPerCall: 0,
   permissions: ["read"],
   inputSchema,
 };

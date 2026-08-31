@@ -7,7 +7,6 @@ export const get_hacker_news_stories: FunctionToolDescriptor = {
   description:
     "Retrieve the current top stories from the Hacker News front page as titles and links. Returns data only; interpret it yourself.",
   type: "normal",
-  costPerCall: 0.1,
   permissions: ["read"],
   inputSchema: z.object({
     count: z

@@ -133,9 +133,6 @@ export class KVCache {
     return `${prefix}:${parts.join(":")}`;
   }
 
-  /**
-   * Cache wrapper for database queries with automatic serialization
-   */
   async cacheQuery<T>(
     cacheKey: string,
     queryFn: () => Promise<T>,

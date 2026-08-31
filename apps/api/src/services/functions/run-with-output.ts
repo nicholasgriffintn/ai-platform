@@ -4,6 +4,7 @@ import type { OutputRecord } from "~/repositories/OutputRepository";
 import { handleFunctions } from "~/services/functions";
 import type { IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/functions/run-with-output" });
@@ -62,6 +63,7 @@ export const runFunctionWithOutput = async (
   try {
     let functionResult = await handleFunctions({
       completion_id: req.request?.completion_id || "function-execution",
+      tool_call_id: generateId(),
       app_url: req.app_url,
       functionName,
       args,

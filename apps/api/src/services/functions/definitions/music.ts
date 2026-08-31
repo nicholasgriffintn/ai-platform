@@ -48,6 +48,5 @@ export const create_music: FunctionToolDescriptor = {
     required: ["prompt"],
   }),
   type: "byok",
-  costPerCall: 1,
   permissions: ["network"],
 };

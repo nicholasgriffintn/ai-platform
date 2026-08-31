@@ -1,10 +1,6 @@
 import type { Message } from "~/types/chat";
 import { sanitiseInput } from "~/utils/sanitise";
 
-/**
- * Only user and developer turns carry untrusted text; assistant and tool turns
- * are our own output and must survive unmodified.
- */
 export function sanitiseMessages(messages: Message[]): Message[] {
   return messages.map((msg) => {
     if (msg.role === "user" || msg.role === "developer") {

@@ -6,7 +6,6 @@ export const get_recipe: FunctionToolDescriptor = {
   description:
     "Get the active recipe setup contract, including exact configuration field keys, saved configuration, trigger types, and enabled tools. Use this before configure_recipe when setting up or correcting a recipe.",
   type: "premium",
-  costPerCall: 0,
   permissions: ["read"],
   inputSchema: jsonSchemaToZod({
     type: "object",

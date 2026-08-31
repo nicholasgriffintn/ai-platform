@@ -16,6 +16,7 @@ This is Polychat's responsive web application and PWA, built with React, Tailwin
 - Composer menus and selectors render above banners, ask-user prompts, and conversation content. Tooltips sit above those interactive overlays, while the mobile sidebar drawer remains above the composer itself.
 - Default model tools appear once in the plus menu as switch controls. They remain discoverable through `@`, but their catalogue rows are suppressed when those canonical controls are present.
 - Surface a failed turn once at the conversation action boundary. Streaming hooks return or throw the failure without also showing a notification, so one provider error cannot produce duplicate messages.
+- Consume the shared `usage_limits` contract without rebuilding it. Free accounts show the daily message abuse guard; paid accounts show the current monthly credit balance in the sidebar and Account view. Credits are an accounting snapshot and do not disable the composer.
 - Use side submenus only on desktop layouts where hover and screen space support them; on mobile, tablet, coarse-pointer, or no-hover layouts, replace the menu contents with a tap-driven drilldown and an explicit Back action
 - Web LLM support for offline usage
 - Conversation goals show a compact start marker attached to the message that set the objective;

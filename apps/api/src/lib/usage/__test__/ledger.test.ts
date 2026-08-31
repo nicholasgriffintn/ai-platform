@@ -54,15 +54,17 @@ function tokenUsage(overrides: Partial<NormalisedTokenUsage> = {}): NormalisedTo
 }
 
 function createRepositories(options: { insert?: (event: UsageEventInsert) => boolean } = {}) {
-  const insertEvent = vi.fn(async (event: UsageEventInsert) => options.insert?.(event) ?? true);
-  const applyDeltas = vi.fn(async (_params: Record<string, unknown>) => {});
+  const insertEventAndApplyBalance = vi.fn(
+    async (
+      event: UsageEventInsert,
+      _seed: { planId: string | null; includedCreditMicros: number; graceCreditMicros: number },
+    ) => options.insert?.(event) ?? true,
+  );
 
   return {
-    insertEvent,
-    applyDeltas,
+    insertEventAndApplyBalance,
     repositories: {
-      usageEvents: { insertEvent },
-      usageBalances: { applyDeltas },
+      usageEvents: { insertEventAndApplyBalance },
       users: { getUserById: vi.fn(async () => ({ plan_id: "pro" })) },
       plans: { getPlanById: vi.fn(async () => ({ included_credits: 500, grace_credits: 50 })) },
       tasks: {},
@@ -133,8 +135,8 @@ describe("buildUsageEventRow", () => {
 });
 
 describe("applyUsageRollup", () => {
-  it("adds spend to the balance only for events it actually inserted", async () => {
-    const { applyDeltas, repositories } = createRepositories({
+  it("counts only events atomically inserted with their balance projection", async () => {
+    const { insertEventAndApplyBalance, repositories } = createRepositories({
       insert: (event) => event.unit === "input_tokens",
     });
 
@@ -152,44 +154,49 @@ describe("applyUsageRollup", () => {
     const result = await applyUsageRollup(repositories, events);
 
     expect(result.inserted).toBe(1);
-    expect(applyDeltas).toHaveBeenCalledTimes(1);
-    expect(applyDeltas.mock.calls[0][0]).toMatchObject({
-      userId: 7,
-      period: "2026-08",
-      deltas: { spent_credit_micros: 500_000 },
+    expect(insertEventAndApplyBalance).toHaveBeenCalledTimes(2);
+    expect(insertEventAndApplyBalance.mock.calls[0][1]).toEqual({
+      planId: "pro",
+      includedCreditMicros: 500_000_000,
+      graceCreditMicros: 50_000_000,
     });
   });
 
   it("moves no credits when every event is a replay of one already recorded", async () => {
-    const { applyDeltas, repositories } = createRepositories({ insert: () => false });
+    const { insertEventAndApplyBalance, repositories } = createRepositories({
+      insert: () => false,
+    });
 
     const result = await applyUsageRollup(repositories, [buildUsageEventRow(draft())]);
 
     expect(result.inserted).toBe(0);
-    expect(applyDeltas).not.toHaveBeenCalled();
+    expect(insertEventAndApplyBalance).toHaveBeenCalledOnce();
   });
 
-  it("does not charge credits for a BYOK model event", async () => {
-    const { applyDeltas, repositories } = createRepositories();
+  it("passes BYOK events through the same idempotent ledger seam", async () => {
+    const { insertEventAndApplyBalance, repositories } = createRepositories();
 
     await applyUsageRollup(repositories, [buildUsageEventRow(draft({ byok: true }))]);
 
-    expect(applyDeltas).not.toHaveBeenCalled();
+    expect(insertEventAndApplyBalance).toHaveBeenCalledWith(
+      expect.objectContaining({ billable: false, credit_micros: 0 }),
+      expect.any(Object),
+    );
   });
 });
 
 describe("emitUsageEvents", () => {
   it("writes the ledger directly when there is no queue binding", async () => {
-    const { insertEvent, repositories } = createRepositories();
+    const { insertEventAndApplyBalance, repositories } = createRepositories();
 
     await expect(
       emitUsageEvents({ env: {} as any, repositories, drafts: [draft()] }),
     ).resolves.toBe("written");
-    expect(insertEvent).toHaveBeenCalledTimes(1);
+    expect(insertEventAndApplyBalance).toHaveBeenCalledTimes(1);
   });
 
   it("falls back to a direct write when enqueueing fails rather than losing the event", async () => {
-    const { insertEvent, repositories } = createRepositories();
+    const { insertEventAndApplyBalance, repositories } = createRepositories();
 
     repositories.tasks = {
       createTask: vi.fn(async () => {
@@ -200,13 +207,13 @@ describe("emitUsageEvents", () => {
     await expect(
       emitUsageEvents({ env: { TASK_QUEUE: {} } as any, repositories, drafts: [draft()] }),
     ).resolves.toBe("written");
-    expect(insertEvent).toHaveBeenCalledTimes(1);
+    expect(insertEventAndApplyBalance).toHaveBeenCalledTimes(1);
   });
 
   it("never throws out of a billing path when the ledger is unwritable", async () => {
     const { repositories } = createRepositories();
 
-    repositories.usageEvents.insertEvent = vi.fn(async () => {
+    repositories.usageEvents.insertEventAndApplyBalance = vi.fn(async () => {
       throw new Error("d1 unavailable");
     });
 

@@ -89,11 +89,6 @@ export async function fetchAIResponse<
 
   let response: Response;
 
-  /**
-   * Bounds how long we wait for response headers without capping the stream
-   * that follows, so a provider that accepts the connection and then goes
-   * quiet cannot hold a turn (and its conversation lock) open indefinitely.
-   */
   const controller = new AbortController();
   const headersTimeout = setTimeout(
     () => controller.abort(),

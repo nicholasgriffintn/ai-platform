@@ -150,8 +150,6 @@ const usageCounterSchema = z.object({
 
 export const usageLimitsSchema = z.object({
   daily: usageCounterSchema,
-  pro: usageCounterSchema.optional(),
-  byok: usageCounterSchema.optional(),
   credits: usageCreditsSummarySchema.optional(),
 });
 

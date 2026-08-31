@@ -137,12 +137,6 @@ function assertTopicRegion(topicArn: string, region: string): void {
   }
 }
 
-/**
- * AWS signs the whole notification, including a body the publisher controls, so
- * a valid signature only proves *some* AWS account sent this. Without pinning
- * the topic, anyone who learns the webhook URL can publish from their own topic
- * and claim any origination number, including an authorised sender's.
- */
 function assertTopicArn(topicArn: string, expected: string | undefined): void {
   if (expected && topicArn !== expected) {
     throw new AssistantError(

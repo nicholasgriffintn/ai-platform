@@ -1,6 +1,9 @@
 import { getAIResponse } from "~/lib/chat/streaming/responses";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getAuxiliaryModel } from "~/lib/providers/models";
+import { extractUsagePayload } from "~/lib/usage/extractUsage";
+import { recordModelTurnUsage } from "~/lib/usage/modelUsage";
+import { normaliseTokenUsage } from "~/lib/usage/tokenUsage";
 import type { ChatCompletionParameters, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { parseAIResponseJson } from "~/utils/json";
@@ -44,6 +47,8 @@ export interface PanelResult {
 
 export interface RunPanelParams {
   env: IEnv;
+  completionId: string;
+  usageScopeId: string;
   user?: IUser;
   model?: string;
   provider?: string;
@@ -105,10 +110,6 @@ function buildRosterEntry(member: PanelMember): string {
   return `- ${member.id} — ${member.name} (${member.role})${model}: ${member.instruction}`;
 }
 
-/**
- * Splits a turn into the prose the user sees and the routing decision the loop consumes. A turn
- * that omits or malforms the tag ends the panel rather than guessing at a next speaker.
- */
 export function extractPanelRouting(
   content: string,
   memberIds: ReadonlySet<string>,
@@ -147,11 +148,6 @@ export function extractPanelRouting(
   };
 }
 
-/**
- * Runs a panel of perspectives as separate completions, each reading what came before, with each
- * turn choosing who speaks next. The turn budget is the caller's and is enforced here, so routing
- * can shorten a panel but never extend it.
- */
 export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
   const members = params.members;
 
@@ -167,19 +163,22 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
   const model = params.model ?? fallback.model;
   const provider = params.provider ?? fallback?.provider;
   const context = createServiceContext({ env: params.env, user: params.user });
+  let invocationIndex = 0;
 
   const complete = async (
     systemPrompt: string,
     userContent: string,
     speaker?: PanelMember,
   ): Promise<string> => {
+    const selectedModel = speaker?.model ?? model;
+    const selectedProvider = speaker?.model ? speaker.provider : provider;
     const messages: Message[] = [
       { role: "system", content: systemPrompt },
       { role: "user", content: userContent },
     ];
     const payload: ChatCompletionParameters = {
-      model: speaker?.model ?? model,
-      provider: speaker?.model ? speaker.provider : provider,
+      model: selectedModel,
+      provider: selectedProvider,
       messages,
       temperature: 0.7,
       max_tokens: 900,
@@ -190,6 +189,21 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
       context,
     };
     const result = await getAIResponse(payload);
+    const rawUsage = extractUsagePayload(result);
+    const currentInvocation = invocationIndex++;
+
+    await recordModelTurnUsage({
+      env: params.env,
+      repositories: context.repositories,
+      userId: params.user?.id,
+      usage: normaliseTokenUsage(rawUsage),
+      rawUsage,
+      model: selectedModel,
+      provider: selectedProvider ?? "unknown",
+      completionId: params.completionId,
+      messageId: `panel:${params.usageScopeId}:${currentInvocation}`,
+      conversationId: params.completionId,
+    });
 
     if (!result.response) {
       throw new AssistantError("A panel member returned no response", ErrorType.PROVIDER_ERROR);

@@ -68,6 +68,5 @@ export const capture_screenshot: FunctionToolDescriptor = {
     required: ["url"],
   }),
   type: "premium",
-  costPerCall: 0.5,
   permissions: ["read"],
 };

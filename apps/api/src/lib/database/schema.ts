@@ -1594,7 +1594,6 @@ export const tasks = sqliteTable(
         "async_message_polling",
         "podcast_transcription_polling",
         "training_quality_scoring",
-        "usage_update",
         "recipe_execution",
         "sandbox_run_dispatch",
         "artificial_analysis_ingest",
@@ -1603,9 +1602,6 @@ export const tasks = sqliteTable(
         "project_task_run",
         "ocr_batch_polling",
         "usage_rollup",
-        "realtime_reconciliation",
-        "infra_reconciliation",
-        "stripe_usage_sync",
       ],
     }).notNull(),
     status: text({

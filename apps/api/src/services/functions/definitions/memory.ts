@@ -25,7 +25,6 @@ export const search_memories: FunctionToolDescriptor = {
     required: ["query"],
   }),
   type: "premium",
-  costPerCall: 0,
   permissions: ["read"],
 };
 
@@ -48,6 +47,5 @@ export const store_memory: FunctionToolDescriptor = {
     required: ["text"],
   }),
   type: "premium",
-  costPerCall: 0,
   permissions: ["write"],
 };

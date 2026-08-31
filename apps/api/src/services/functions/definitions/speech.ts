@@ -46,6 +46,5 @@ export const create_speech: FunctionToolDescriptor = {
     required: ["prompt"],
   }),
   type: "byok",
-  costPerCall: 1,
   permissions: ["network"],
 };

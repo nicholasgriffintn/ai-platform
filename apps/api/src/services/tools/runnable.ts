@@ -103,7 +103,6 @@ export const buildRunnableTool = (tool: FunctionTool): RunnableTool => ({
   description: tool.description || `Run the ${tool.name} tool`,
   category: getToolCategory(tool.name),
   icon: getFunctionIcon(tool.name),
-  costPerCall: tool.costPerCall,
   type: tool.type,
   formSchema: buildFormSchema(tool),
   responseSchema: {

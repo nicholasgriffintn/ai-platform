@@ -6,7 +6,6 @@ export const search_pashi_tools: FunctionToolDescriptor = {
   description:
     "Search Pashi's live catalogue of generators and converters. Call this before run_pashi_tools to choose an exact tool ID and retrieve its current input fields.",
   type: "normal",
-  costPerCall: 0,
   permissions: ["read"],
   inputSchema: jsonSchemaToZod({
     type: "object",
@@ -42,7 +41,6 @@ export const run_pashi_tools: FunctionToolDescriptor = {
   description:
     "Run Pashi generator or text-converter operations sequentially. Discover current tool IDs and fields with search_pashi_tools first. Do not send existing passwords, private keys, access tokens, personal data, or other secrets as input.",
   type: "normal",
-  costPerCall: 0,
   permissions: ["read"],
   companionTools: ["search_pashi_tools"],
   inputSchema: jsonSchemaToZod({

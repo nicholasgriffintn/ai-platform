@@ -17,6 +17,7 @@ The skill is the single setup and decision-guidance entry point. Use these deepe
 - [Training worker](components/training-worker.md)
 - [iOS application](components/ios.md)
 - [Composio operator runbook](operations/composio-connectors.md)
+- [Stripe billing runbook](operations/stripe-billing.md)
 - [OCR capability and batch lifecycle](operations/ocr.md)
 - [Loop cost controls](operations/loop-cost-controls.md)
 - [End-to-end test conventions](testing/e2e.md)

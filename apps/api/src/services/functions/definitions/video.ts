@@ -91,6 +91,5 @@ export const create_video: FunctionToolDescriptor = {
     },
     required: ["prompt"],
   }),
-  costPerCall: 2,
   permissions: ["network"],
 };

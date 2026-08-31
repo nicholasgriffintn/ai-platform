@@ -1,4 +1,4 @@
-# ADR 0039: Meter in vendor units, bill in credits
+# ADR 0041: Meter in vendor units, bill in credits
 
 ## Status
 
@@ -26,11 +26,13 @@ Record one `usage_event` per billable unit of work, in the vendor's own unit —
 
 Money never touches a float. `cost_micros` is integer micro-USD, `credit_micros` is integer micro-credits, and rounding happens exactly once, at conversion, with `Math.round`. A balance is the sum of integers.
 
-`usage_event` is write-once. `usage_balance` is a derived aggregate, one row per user per period, and **every mutation is `SET column = column + ?`**. There is no read-modify-write in the ledger, because concurrent turns on the same account otherwise lose spend silently — the exact defect this work exists to fix.
+`usage_event` is write-once. `usage_balance` is a derived aggregate, one row per user per period, and **every mutation is `SET column = column + ?`**. Insert the event and move its balance in one transactional D1 batch. The balance update is conditional on the immediately preceding event insert changing one row, so a retry cannot charge twice and a failed balance projection cannot leave a permanently under-counted event. There is no read-modify-write in the ledger, because concurrent turns on the same account otherwise lose spend silently — the exact defect this work exists to fix.
 
 The rate card lives in `packages/schemas/src/pricing`. Model token rates are **derived** from the existing model catalogue rather than migrated out of it: an adapter turns a `ModelConfigItem` into rate entries, so the catalogue stays the single place a model is described. Cloudflare rates are a static table. A rate lookup that misses is not an error: it records the event with `cost_micros = 0` and `estimated = true`, and warns. Nothing in a billing path may throw, and no user request may fail because pricing data is absent.
 
 Emission is asynchronous. A request enqueues a `usage_rollup` task and the queue consumer inserts the events and aggregates the balance. If enqueueing fails the write happens inline. An event may be lost only if D1 itself is unavailable, and never at the cost of the user's turn.
+
+Every provider completion must enter the ledger at the provider-response seam, including internal work that is not stored as a top-level assistant message. The chat turn transport records ordinary and agent model steps; the model ensemble records each secondary answer; the panel runtime records every member turn and its conclusion. New model-producing paths must reuse `recordModelTurnUsage` rather than inventing a counter or a price. Capability and infrastructure units use the same event contract when their providers expose usage, but declaring a unit or rate does not pretend that an uninstrumented producer is measured.
 
 Attribution always carries `user_id`. Where a conversation belongs to a project we resolve and store `project_id` and the project's `workspace_id`, so Work spend can be billed to a workspace without re-deriving history.
 
@@ -44,6 +46,8 @@ The ledger is repriceable. Because `raw` holds what the provider actually said a
 
 Credits are a second number to explain. A user now sees credits where they saw messages, and the conversion is arbitrary until they trust it. The chosen scale keeps ordinary work legible — a Haiku reply is about 0.06 credits, a heavy agent turn about 190, a two-hour sandbox container about 5.6 — which is the point of picking one cent rather than one dollar.
 
-Metering is not enforcement. This decision records what work costs; it does not decide who may do it. Admission, the reserve, the overrun ceiling, and the no-cutoff rule are separate and build on the ledger rather than the other way round. Daily message counts survive only as an abuse guard for anonymous and free accounts.
+Metering is not enforcement. This decision records what work costs; it does not decide who may do it. Admission, the reserve, the overrun ceiling, and the no-cutoff rule are separate and build on the ledger rather than the other way round. Daily message counts survive only as an abuse guard for anonymous and free accounts. Paid, BYOK, and function-call multiplier counters and their daily reset task do not coexist with the ledger; keeping them would create a second, contradictory accounting system.
+
+The current balance is projected through the shared usage schema. Web account and sidebar surfaces display the monthly credit summary, and the iOS stream contract preserves it in `usage_limits`. Clients may display that snapshot but must not infer enforcement from it.
 
 Deriving model rates from the catalogue means an unpriced model meters silently at zero rather than blocking a turn. That is the correct trade for a billing path, but it makes `estimated` a metric worth watching: a rising share of estimated events is a catalogue gap, not noise.

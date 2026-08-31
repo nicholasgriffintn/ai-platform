@@ -51,13 +51,8 @@ beforeEach(() => {
     CREATE TABLE user (
       id integer PRIMARY KEY,
       message_count integer DEFAULT 0,
-      byok_message_count integer DEFAULT 0,
       daily_message_count integer DEFAULT 0,
-      daily_pro_message_count integer DEFAULT 0,
-      daily_byok_message_count integer DEFAULT 0,
       daily_reset text,
-      daily_pro_reset text,
-      daily_byok_reset text,
       last_active_at text,
       updated_at text
     );
@@ -104,12 +99,12 @@ describe("UserRepository.incrementUsageCounters", () => {
     expect(user.daily_reset).toBe("2026-08-31T00:05:00.000Z");
   });
 
-  it("rolls the daily counter over once on a new UTC day and accumulates the rest", async () => {
+  it("rolls the free-account counter over once on a new UTC day and accumulates the rest", async () => {
     const occurredAt = new Date("2026-09-01T00:30:00.000Z");
 
     sqlite
       .prepare(
-        "INSERT INTO user (id, message_count, daily_pro_message_count, daily_pro_reset) VALUES (?, ?, ?, ?)",
+        "INSERT INTO user (id, message_count, daily_message_count, daily_reset) VALUES (?, ?, ?, ?)",
       )
       .run(1, 40, 40, "2026-08-31T23:59:00.000Z");
 
@@ -119,7 +114,7 @@ describe("UserRepository.incrementUsageCounters", () => {
       Array.from({ length: 5 }, () =>
         repository.incrementUsageCounters(
           1,
-          { message_count: 1, daily_pro_message_count: 2 },
+          { message_count: 1, daily_message_count: 1 },
           occurredAt,
         ),
       ),
@@ -127,9 +122,9 @@ describe("UserRepository.incrementUsageCounters", () => {
 
     const user = readUser();
 
-    expect(user.daily_pro_message_count).toBe(10);
+    expect(user.daily_message_count).toBe(5);
     expect(user.message_count).toBe(45);
-    expect(user.daily_pro_reset).toBe("2026-09-01T00:30:00.000Z");
+    expect(user.daily_reset).toBe("2026-09-01T00:30:00.000Z");
   });
 
   it("returns the persisted row so callers see authoritative counters", async () => {

@@ -6,7 +6,6 @@ export const configure_recipe: FunctionToolDescriptor = {
   description:
     "Save configuration and triggers for the active recipe setup chat after the user confirms the details or asks you to choose sensible defaults. Call get_recipe first if you need the exact configuration field keys.",
   type: "premium",
-  costPerCall: 0,
   permissions: ["write"],
   inputSchema: jsonSchemaToZod({
     type: "object",

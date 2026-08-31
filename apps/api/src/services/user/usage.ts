@@ -10,7 +10,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { resolveCreditState } from "~/lib/usage/creditState";
+import { resolveUsageBalanceSnapshot } from "~/lib/usage/balanceSnapshot";
+import { usageCreditsFromBalance } from "~/lib/usage/creditSummary";
 import type { UsageEventGroupRow } from "~/repositories/UsageEventRepository";
 import { decodeCompositeCursor, encodeCompositeCursor } from "~/utils/cursor";
 
@@ -31,36 +32,29 @@ export async function getUsageBalance(
   userId: number,
   period = usagePeriodFromDate(),
 ): Promise<UsageBalanceResponse> {
-  const balance = await context.repositories.usageBalances.getBalance(userId, period);
+  const balance = await resolveUsageBalanceSnapshot(context.repositories, userId, period);
 
-  const included = balance?.included_credit_micros ?? 0;
-  const grace = balance?.grace_credit_micros ?? 0;
-  const spent = balance?.spent_credit_micros ?? 0;
-  const reserved = balance?.reserved_credit_micros ?? 0;
-  const overrun = balance?.overrun_credit_micros ?? 0;
-  const overage = balance?.overage_credit_micros ?? 0;
-  const overageEnabled = Boolean(balance?.overage_enabled);
+  const included = balance.included_credit_micros;
+  const grace = balance.grace_credit_micros;
+  const spent = balance.spent_credit_micros;
+  const reserved = balance.reserved_credit_micros;
+  const overrun = balance.overrun_credit_micros;
+  const overage = balance.overage_credit_micros;
+  const overageEnabled = Boolean(balance.overage_enabled);
 
   return {
     period,
     resets_at: usagePeriodResetsAt(period),
-    plan_id: balance?.plan_id ?? null,
-    credits: {
-      included: creditsFromCreditMicros(included),
-      used: creditsFromCreditMicros(spent),
-      reserved: creditsFromCreditMicros(reserved),
-      grace: creditsFromCreditMicros(grace),
-      overrun: creditsFromCreditMicros(overrun),
-      overage: creditsFromCreditMicros(overage),
-      overage_enabled: overageEnabled,
-      state: resolveCreditState({
-        includedCreditMicros: included,
-        graceCreditMicros: grace,
-        spentCreditMicros: spent,
-        reservedCreditMicros: reserved,
-        overageEnabled,
-      }),
-    },
+    plan_id: balance.plan_id,
+    credits: usageCreditsFromBalance({
+      included_credit_micros: included,
+      grace_credit_micros: grace,
+      spent_credit_micros: spent,
+      reserved_credit_micros: reserved,
+      overrun_credit_micros: overrun,
+      overage_credit_micros: overage,
+      overage_enabled: overageEnabled ? 1 : 0,
+    }),
     credit_micros: {
       included,
       spent,
@@ -69,7 +63,7 @@ export async function getUsageBalance(
       overrun,
       overage,
     },
-    last_event_at: balance?.last_event_at ?? null,
+    last_event_at: balance.last_event_at,
   };
 }
 

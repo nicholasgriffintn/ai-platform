@@ -132,6 +132,8 @@ export const run_council: ApiToolDefinition = {
     const members = resolveMembers(args.memberIds);
     const result = await runPanel({
       env: request.env,
+      completionId: context.completionId,
+      usageScopeId: context.toolCallId ?? context.completionId,
       user: request.user,
       model: request.request?.model,
       provider: request.request?.provider,

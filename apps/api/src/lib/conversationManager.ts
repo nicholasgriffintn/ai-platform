@@ -1,4 +1,4 @@
-import type { ConversationType, FunctionType } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationType } from "@ngriffin_uk/polychat-schemas";
 
 import type { RepositoryManager } from "~/repositories";
 import type {
@@ -27,7 +27,7 @@ import { createInitialConversationTitle } from "./conversation/title-source";
 import { loadVisibleConversationMessagePage } from "./conversation/visibleMessagePagination";
 import type { Database } from "./database";
 import { hasPlanEntitlement } from "./plans";
-import { type UsageLimits, UsageManager, type UsageUpdateTaskPayload } from "./usageManager";
+import { type UsageLimits, UsageManager } from "./usageManager";
 
 const logger = getLogger({ prefix: "lib/conversationManager" });
 
@@ -92,26 +92,8 @@ export class ConversationManager {
       this.taskService = new TaskService(env, new TaskRepository(env));
     }
 
-    const enqueueUsageTask = this.taskService
-      ? async (payload: UsageUpdateTaskPayload) => {
-          await this.taskService.enqueueTask({
-            task_type: "usage_update",
-            user_id:
-              "userId" in payload && typeof payload.userId === "number"
-                ? payload.userId
-                : undefined,
-            task_data: payload,
-            priority: 2,
-          });
-        }
-      : undefined;
-
     this.usageManager = resolvedRepositories
-      ? new UsageManager(resolvedRepositories, user, anonymousUser, {
-          requestCache,
-          enqueueUsageTask,
-          asyncUsageUpdates: true,
-        })
+      ? new UsageManager(resolvedRepositories, user ?? null, anonymousUser ?? null)
       : undefined;
   }
 
@@ -208,17 +190,8 @@ export class ConversationManager {
         this.usageManager
       ) {
         try {
-          const modelUsed = message.model || this.model;
-          const providerUsed = message.provider || this.provider;
-
-          if (modelUsed) {
-            await this.usageManager.incrementUsageByModel(
-              modelUsed,
-              hasPlanEntitlement(this.user?.plan_id, "pro"),
-              providerUsed,
-            );
-            break;
-          }
+          await this.usageManager.incrementUsage();
+          break;
         } catch (error) {
           logger.error("Failed to increment usage:", {
             error_message: error instanceof Error ? error.message : "Unknown error",
@@ -393,47 +366,11 @@ export class ConversationManager {
     }
   }
 
-  /**
-   * Check usage limits for the current user before generating a response
-   * @param modelId The model ID to check usage for
-   * @param provider The provider that owns the selected model configuration
-   */
-  async checkUsageLimits(modelId?: string, provider?: string): Promise<void> {
+  /** Check the free-account abuse guard before starting provider work. */
+  async checkUsageLimits(): Promise<void> {
     if ((this.user || this.anonymousUser) && this.usageManager) {
-      const model = modelId || this.model;
-
-      if (model) {
-        await this.usageManager.checkUsageByModel(
-          model,
-          hasPlanEntitlement(this.user?.plan_id, "pro"),
-          provider ?? this.provider,
-        );
-      }
+      await this.usageManager.checkUsage();
     }
-  }
-
-  async incrementFunctionUsage(
-    functionType: FunctionType,
-    isPro: boolean,
-    costPerCall: number,
-  ): Promise<void> {
-    if ((this.user || this.anonymousUser) && this.usageManager) {
-      await this.usageManager.incrementFunctionUsage(functionType, isPro, costPerCall);
-
-      return;
-    }
-
-    throw new AssistantError("User required to increment function usage", ErrorType.PARAMS_ERROR);
-  }
-
-  async incrementByokUsage(): Promise<void> {
-    if (this.user && this.usageManager) {
-      await this.usageManager.incrementByokUsage();
-
-      return;
-    }
-
-    throw new AssistantError("User required to increment BYOK usage", ErrorType.PARAMS_ERROR);
   }
 
   /**

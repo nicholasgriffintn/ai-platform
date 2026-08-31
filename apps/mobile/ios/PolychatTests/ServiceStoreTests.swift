@@ -259,9 +259,7 @@ struct ServiceStoreTests {
                 timestamp: 1_774_000_000
             )),
             .usageLimits(ChatUsageLimits(
-                daily: ChatUsageLimits.Allowance(used: 5, limit: 50),
-                pro: nil,
-                byok: nil
+                daily: ChatUsageLimits.Allowance(used: 5, limit: 50)
             )),
             .content("Found three results"),
             .done

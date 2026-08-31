@@ -1,6 +1,5 @@
 import {
   creditMicrosFromCostMicros,
-  creditMicrosFromCredits,
   DEFAULT_MARGIN,
   priceUsage,
   usagePeriodFromDate,
@@ -16,6 +15,8 @@ import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+
+import { resolveUsagePlanSeed, type UsagePlanSeed } from "./planSeed";
 
 const logger = getLogger({ prefix: "lib/usage/ledger" });
 
@@ -139,87 +140,28 @@ export async function resolveUsageAttribution(
   }
 }
 
-async function resolvePlanSeed(
-  repositories: RepositoryManager,
-  userId: number,
-): Promise<{ planId: string | null; includedCreditMicros: number; graceCreditMicros: number }> {
-  try {
-    const user = await repositories.users.getUserById(userId);
-    const planId = typeof user?.plan_id === "string" ? user.plan_id : null;
-
-    if (!planId) {
-      return { planId: null, includedCreditMicros: 0, graceCreditMicros: 0 };
-    }
-
-    const plan = await repositories.plans.getPlanById(planId);
-    const included = typeof plan?.included_credits === "number" ? plan.included_credits : 0;
-    const grace = typeof plan?.grace_credits === "number" ? plan.grace_credits : 0;
-
-    return {
-      planId,
-      includedCreditMicros: creditMicrosFromCredits(included),
-      graceCreditMicros: creditMicrosFromCredits(grace),
-    };
-  } catch (error) {
-    logger.warn("Failed to resolve plan seed for usage balance", { error, userId });
-
-    return { planId: null, includedCreditMicros: 0, graceCreditMicros: 0 };
-  }
-}
-
 export async function applyUsageRollup(
   repositories: RepositoryManager,
   events: readonly UsageEventInsert[],
 ): Promise<{ inserted: number }> {
-  const spend = new Map<
-    string,
-    { userId: number; period: string; creditMicros: number; lastEventAt: string }
-  >();
+  const seeds = new Map<number, UsagePlanSeed>();
   let inserted = 0;
 
   for (const event of events) {
-    const isNew = await repositories.usageEvents.insertEvent(event);
+    let seed = seeds.get(event.user_id);
+
+    if (!seed) {
+      seed = await resolveUsagePlanSeed(repositories, event.user_id);
+      seeds.set(event.user_id, seed);
+    }
+
+    const isNew = await repositories.usageEvents.insertEventAndApplyBalance(event, seed);
 
     if (!isNew) {
       continue;
     }
 
     inserted += 1;
-
-    if (!event.billable || event.credit_micros === 0) {
-      continue;
-    }
-
-    const key = `${event.user_id}:${event.period}`;
-    const existing = spend.get(key);
-
-    if (existing) {
-      existing.creditMicros += event.credit_micros;
-      existing.lastEventAt =
-        event.occurred_at > existing.lastEventAt ? event.occurred_at : existing.lastEventAt;
-      continue;
-    }
-
-    spend.set(key, {
-      userId: event.user_id,
-      period: event.period,
-      creditMicros: event.credit_micros,
-      lastEventAt: event.occurred_at,
-    });
-  }
-
-  for (const entry of spend.values()) {
-    const seed = await resolvePlanSeed(repositories, entry.userId);
-
-    await repositories.usageBalances.applyDeltas({
-      userId: entry.userId,
-      period: entry.period,
-      planId: seed.planId,
-      includedCreditMicros: seed.includedCreditMicros,
-      graceCreditMicros: seed.graceCreditMicros,
-      deltas: { spent_credit_micros: entry.creditMicros },
-      lastEventAt: entry.lastEventAt,
-    });
   }
 
   return { inserted };

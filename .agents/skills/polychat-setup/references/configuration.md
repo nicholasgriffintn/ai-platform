@@ -57,6 +57,12 @@ Use a shared `TRAINING_WORKER_TOKEN` in the API and training worker. Add AWS cre
 
 Treat Stripe, PostHog, Beacon, email, SMS, guardrails, and captcha as independent capabilities. Disable their user interface or runtime path when credentials are intentionally absent; do not fill placeholders with dummy production values.
 
+Stripe billing also needs a recurring Price for each paid plan and that Price ID stored on the matching
+`plans.stripe_price_id` row in D1. Keep test Price IDs with test secret keys and live Price IDs with live
+secret keys. A Stripe secret alone does not configure Checkout. Follow the
+[Stripe billing runbook](operations/stripe-billing.md) for webhook events, local configuration, and
+staff access.
+
 Shieldstral is an optional, self-hosted guardrail rather than a Mistral API model. Set
 `SHIELDSTRAL_BASE_URL` to the root of an OpenAI-compatible vLLM, llama.cpp, or SGLang endpoint and
 set `SHIELDSTRAL_API_KEY` when that endpoint requires bearer authentication. Pin the deployed

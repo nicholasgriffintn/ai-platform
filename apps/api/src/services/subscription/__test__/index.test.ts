@@ -15,6 +15,7 @@ const mockStripe = {
     create: vi.fn(),
   },
   subscriptions: {
+    list: vi.fn(),
     retrieve: vi.fn(),
     update: vi.fn(),
   },
@@ -71,6 +72,7 @@ vi.mock("~/services/notifications", () => ({
 
 const mockEnv: IEnv = {
   DB: {} as any,
+  APP_BASE_URL: "https://app.polychat.test",
   STRIPE_SECRET_KEY: "sk_test_123",
   STRIPE_WEBHOOK_SECRET: "whsec_test_123",
 } as IEnv;
@@ -111,8 +113,8 @@ describe("Subscription Service", () => {
         mockEnv,
         mockUser,
         "plan-123",
-        "https://success.com",
-        "https://cancel.com",
+        "https://app.polychat.test/profile?tab=billing",
+        "https://app.polychat.test/profile?tab=billing",
       );
 
       expect(mockRepositories.plans.getPlanById).toHaveBeenCalledWith("plan-123");
@@ -123,6 +125,9 @@ describe("Subscription Service", () => {
       expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(1, {
         stripe_customer_id: "cus_123",
       });
+      expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(
+        expect.objectContaining({ allow_promotion_codes: true }),
+      );
       expect(result).toEqual({
         session_id: "cs_123",
         url: "https://checkout.stripe.com/pay/cs_123",
@@ -144,8 +149,8 @@ describe("Subscription Service", () => {
           mockEnv,
           userWithSubscription,
           "plan-123",
-          "https://success.com",
-          "https://cancel.com",
+          "https://app.polychat.test/profile?tab=billing",
+          "https://app.polychat.test/profile?tab=billing",
         ),
       ).rejects.toThrow("User already has an active subscription");
     });
@@ -158,10 +163,60 @@ describe("Subscription Service", () => {
           mockEnv,
           mockUser,
           "nonexistent-plan",
-          "https://success.com",
-          "https://cancel.com",
+          "https://app.polychat.test/profile?tab=billing",
+          "https://app.polychat.test/profile?tab=billing",
         ),
       ).rejects.toThrow("Plan not found");
+    });
+
+    it.each([null, "", "   "])(
+      "should reject a missing Stripe price before creating Stripe resources (%j)",
+      async (stripePriceId) => {
+        mockRepositories.plans.getPlanById.mockResolvedValue({
+          id: "pro",
+          stripe_price_id: stripePriceId,
+        });
+
+        await expect(
+          createCheckoutSession(
+            mockEnv,
+            mockUser,
+            "pro",
+            "https://app.polychat.test/profile?tab=billing",
+            "https://app.polychat.test/profile?tab=billing",
+          ),
+        ).rejects.toMatchObject({
+          message: "Stripe price ID not configured for plan pro",
+          type: "CONFIGURATION_ERROR",
+        });
+
+        expect(mockStripe.customers.create).not.toHaveBeenCalled();
+        expect(mockStripe.checkout.sessions.create).not.toHaveBeenCalled();
+      },
+    );
+
+    it("should reject return URLs outside the configured app before creating Stripe resources", async () => {
+      mockRepositories.plans.getPlanById.mockResolvedValue({
+        id: "pro",
+        stripe_price_id: "price_123",
+      });
+
+      await expect(
+        createCheckoutSession(
+          mockEnv,
+          mockUser,
+          "pro",
+          "https://evil.example/paid",
+          "https://app.polychat.test/profile?tab=billing",
+        ),
+      ).rejects.toMatchObject({
+        message: "Checkout return URLs must use the configured app origin",
+        type: "PARAMS_ERROR",
+        statusCode: 400,
+      });
+
+      expect(mockStripe.customers.create).not.toHaveBeenCalled();
+      expect(mockStripe.checkout.sessions.create).not.toHaveBeenCalled();
     });
 
     it("should throw error if Stripe secret key missing", async () => {
@@ -175,8 +230,8 @@ describe("Subscription Service", () => {
           envWithoutKey,
           mockUser,
           "plan-123",
-          "https://success.com",
-          "https://cancel.com",
+          "https://app.polychat.test/profile?tab=billing",
+          "https://app.polychat.test/profile?tab=billing",
         ),
       ).rejects.toThrow("Stripe secret key not configured");
     });
@@ -215,6 +270,46 @@ describe("Subscription Service", () => {
       const result = await getSubscriptionStatus(mockEnv, userWithSubscription);
 
       expect(result).toEqual(mockSubscription);
+    });
+
+    it("should recover an entitled subscription when the completion webhook is delayed", async () => {
+      const userAwaitingWebhook = {
+        ...mockUser,
+        stripe_customer_id: "cus_123",
+      };
+      const mockSubscription = {
+        id: "sub_123",
+        status: "trialing",
+        days_until_due: null,
+        cancel_at_period_end: false,
+        cancel_at: null,
+        trial_end: 1_795_995_852,
+        currency: "gbp",
+        items: { data: [] },
+      };
+
+      mockStripe.subscriptions.list.mockResolvedValue({ data: [mockSubscription] });
+
+      const result = await getSubscriptionStatus(mockEnv, userAwaitingWebhook);
+
+      expect(mockStripe.subscriptions.list).toHaveBeenCalledWith({
+        customer: "cus_123",
+        limit: 10,
+        status: "all",
+      });
+      expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(1, {
+        stripe_subscription_id: "sub_123",
+        plan_id: "pro",
+      });
+      expect(result).toEqual({
+        status: "trialing",
+        days_until_due: null,
+        cancel_at_period_end: false,
+        cancel_at: null,
+        trial_end: 1_795_995_852,
+        currency: "gbp",
+        items: { data: [] },
+      });
     });
 
     it("should handle missing subscription and update user", async () => {

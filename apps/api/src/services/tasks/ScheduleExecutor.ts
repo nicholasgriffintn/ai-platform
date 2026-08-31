@@ -7,7 +7,6 @@ import { getLogger } from "~/utils/logger";
 
 import {
   redispatchPendingTasks,
-  scheduleDailyUsageReset,
   scheduleDailySynthesis,
   scheduleRecipeExecutions,
   scheduleTrainingQualityScoring,
@@ -24,11 +23,6 @@ export class ScheduleExecutor {
     }
 
     switch (event.cron) {
-      case SCHEDULES.USAGE_RESET:
-        logger.info(`Starting daily usage reset scheduling`);
-        await scheduleDailyUsageReset(env);
-        logger.info(`Daily usage reset scheduling completed`);
-        break;
       case SCHEDULES.MEMORIES_SYNTHESIS:
         const isMemorySynthesisEnabled = env.MEMORY_SYNTHESIS_ENABLED === "true";
 

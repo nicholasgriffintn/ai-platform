@@ -68,7 +68,7 @@ function UpgradeOffer({
         <div className="flex flex-col justify-center items-center md:items-start border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-700 pb-6 md:pb-0 md:pr-8">
           <h2 className="text-3xl font-bold mb-2">Upgrade to Pro</h2>
           <div className="text-5xl font-bold mb-4">
-            $8
+            £8
             <span className="text-lg font-normal text-zinc-500">/month</span>
           </div>
 

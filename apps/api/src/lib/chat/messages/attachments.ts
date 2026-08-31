@@ -63,10 +63,6 @@ export function parseAttachments(contents: readonly unknown[]): ParsedAttachment
   };
 }
 
-/**
- * Deduplicate on URL or markdown body; an attachment with neither is unaddressable
- * and dropped rather than kept as a blank duplicate.
- */
 export function dedupeAttachments(attachments: Attachment[]): Attachment[] {
   const seen = new Set<string>();
 

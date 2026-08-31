@@ -20,36 +20,30 @@ export function getSidebarUsageItems(usageLimits: UsageLimits | null): SidebarUs
     return [];
   }
 
-  const items: SidebarUsageItem[] = [
-    {
+  const items: SidebarUsageItem[] = [];
+
+  if (typeof usageLimits.daily.limit === "number") {
+    items.push({
       id: "standard",
       label: "Standard lane",
       value: `${usageLimits.daily.used} / ${usageLimits.daily.limit}`,
       assistiveLabel: `${usageLimits.daily.used} of ${usageLimits.daily.limit} standard messages used today`,
       percentage: getBoundedUsagePercentage(usageLimits.daily.used, usageLimits.daily.limit),
       tone: "blue",
-    },
-  ];
-
-  if (usageLimits.pro) {
-    items.push({
-      id: "pro",
-      label: "Pro runway",
-      value: `${usageLimits.pro.used} / ${usageLimits.pro.limit}`,
-      assistiveLabel: `${usageLimits.pro.used} of ${usageLimits.pro.limit} pro usage units used today`,
-      percentage: getBoundedUsagePercentage(usageLimits.pro.used, usageLimits.pro.limit),
-      tone: "amber",
     });
   }
 
-  if (usageLimits.byok) {
+  if (usageLimits.credits) {
+    const allowance = usageLimits.credits.included + usageLimits.credits.grace;
+
     items.push({
-      id: "byok",
-      label: "Your keys",
-      value: `${usageLimits.byok.used} today`,
-      assistiveLabel: `${usageLimits.byok.used} bring your own key messages used today`,
-      percentage: null,
-      tone: "emerald",
+      id: "credits",
+      label: "Credits",
+      value: `${usageLimits.credits.used} / ${allowance}`,
+      assistiveLabel: `${usageLimits.credits.used} of ${allowance} credits used this month`,
+      percentage:
+        allowance > 0 ? getBoundedUsagePercentage(usageLimits.credits.used, allowance) : 0,
+      tone: "amber",
     });
   }
 

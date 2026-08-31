@@ -313,6 +313,7 @@ export const handleToolCalls = async (
       try {
         result = await handleFunctions({
           completion_id,
+          tool_call_id: toolCall.id,
           app_url: req.app_url,
           functionName,
           args: functionArgs,

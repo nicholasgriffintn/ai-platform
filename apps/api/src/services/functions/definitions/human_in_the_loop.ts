@@ -11,7 +11,6 @@ export const request_approval: FunctionToolDescriptor = {
   description:
     "Request human approval before proceeding with an action. Use this for critical operations, irreversible changes, or when user confirmation is needed. Returns approval/rejection status.",
   type: "normal",
-  costPerCall: 0,
   maxIdenticalCalls: 1,
   permissions: ["human"],
   inputSchema: jsonSchemaToZod({
@@ -43,7 +42,6 @@ export const ask_user: FunctionToolDescriptor = {
   description:
     "Ask the user up to three concise questions and wait for their response. Use this only when missing information or an unresolved decision prevents progress, never to ask the user to approve or confirm your output. Reuse answers already present in the conversation. Offer useful choices where possible and allow a written answer when the choices are incomplete.",
   type: "normal",
-  costPerCall: 0,
   maxIdenticalCalls: 1,
   permissions: ["human"],
   inputSchema: jsonSchemaToZod({

@@ -2,6 +2,7 @@ import Stripe from "stripe";
 
 import { FREE_TRIAL_DAYS } from "~/constants/app";
 import type { PlanId } from "~/constants/plans";
+import { requireCheckoutReturnUrls, requireStripePriceId } from "~/lib/billing/checkout";
 import { resolvePlanForSubscriptionStatus } from "~/lib/billing/subscriptionStatus";
 import { hasPlanEntitlement, resolvePlanId } from "~/lib/plans";
 import { RepositoryManager } from "~/repositories";
@@ -28,6 +29,27 @@ function getStripeClient(env: IEnv): Stripe {
   return new Stripe(secret);
 }
 
+function inactiveSubscriptionStatus() {
+  return {
+    status: "inactive",
+    current_period_end: null,
+    cancel_at_period_end: false,
+    trial_end: null,
+  };
+}
+
+function subscriptionStatus(subscription: Stripe.Subscription) {
+  return {
+    status: subscription.status,
+    days_until_due: subscription.days_until_due,
+    cancel_at_period_end: subscription.cancel_at_period_end,
+    cancel_at: subscription.cancel_at,
+    trial_end: subscription.trial_end,
+    currency: subscription.currency,
+    items: subscription.items,
+  };
+}
+
 export async function createCheckoutSession(
   env: IEnv,
   user: IUser,
@@ -52,7 +74,9 @@ export async function createCheckoutSession(
     throw new AssistantError("Plan not found", ErrorType.NOT_FOUND);
   }
 
-  const priceId = plan.stripe_price_id as string;
+  const priceId = requireStripePriceId(plan, planId);
+
+  requireCheckoutReturnUrls(env.APP_BASE_URL, successUrl, cancelUrl);
   const stripe = getStripeClient(env);
 
   let customerId = user.stripe_customer_id;
@@ -73,6 +97,7 @@ export async function createCheckoutSession(
     mode: "subscription",
     customer: customerId,
     payment_method_types: ["card"],
+    allow_promotion_codes: true,
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: successUrl,
     cancel_url: cancelUrl,
@@ -96,30 +121,42 @@ export async function getSubscriptionStatus(
   | Record<string, any>
 > {
   const subscriptionId = user.stripe_subscription_id;
+  const customerId = user.stripe_customer_id;
 
-  if (!subscriptionId) {
-    return {
-      status: "inactive",
-      current_period_end: null,
-      cancel_at_period_end: false,
-      trial_end: null,
-    };
+  if (!subscriptionId && !customerId) {
+    return inactiveSubscriptionStatus();
   }
 
   const stripe = getStripeClient(env);
 
   try {
+    if (!subscriptionId) {
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        limit: 10,
+        status: "all",
+      });
+      const entitledSubscription = subscriptions.data.find(
+        (subscription) => resolvePlanForSubscriptionStatus(subscription.status) === "pro",
+      );
+
+      if (!entitledSubscription) {
+        return inactiveSubscriptionStatus();
+      }
+
+      const repositories = new RepositoryManager(env);
+
+      await applySubscriptionState(repositories, user, {
+        planId: "pro",
+        subscriptionId: entitledSubscription.id,
+      });
+
+      return subscriptionStatus(entitledSubscription);
+    }
+
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
-    return {
-      status: subscription.status,
-      days_until_due: subscription.days_until_due,
-      cancel_at_period_end: subscription.cancel_at_period_end,
-      cancel_at: subscription.cancel_at,
-      trial_end: subscription.trial_end,
-      currency: subscription.currency,
-      items: subscription.items,
-    };
+    return subscriptionStatus(subscription);
   } catch (error: any) {
     if (error.code === "resource_missing") {
       const repositories = new RepositoryManager(env);
@@ -129,12 +166,7 @@ export async function getSubscriptionStatus(
         plan_id: "free",
       });
 
-      return {
-        status: "inactive",
-        current_period_end: null,
-        cancel_at_period_end: false,
-        trial_end: null,
-      };
+      return inactiveSubscriptionStatus();
     }
 
     throw new AssistantError(`Stripe API error: ${error.message}`, ErrorType.INTERNAL_ERROR);

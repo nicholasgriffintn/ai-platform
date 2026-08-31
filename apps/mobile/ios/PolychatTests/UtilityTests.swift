@@ -252,14 +252,22 @@ struct UtilityTests {
 
     @Test func chatStreamParserReadsUsageLimits() throws {
         let events = try ChatStreamEventParser.events(
-            from: #"{"type":"usage_limits","usage_limits":{"daily":{"used":5,"limit":50}}}"#
+            from: #"{"type":"usage_limits","usage_limits":{"daily":{"used":0,"limit":null},"credits":{"included":500,"used":125,"reserved":25,"grace":50,"overrun":0,"overage":0,"overage_enabled":false,"state":"ok"}}}"#
         )
 
         #expect(events == [.usageLimits(
             ChatUsageLimits(
-                daily: ChatUsageLimits.Allowance(used: 5, limit: 50),
-                pro: nil,
-                byok: nil
+                daily: ChatUsageLimits.Allowance(used: 0, limit: nil),
+                credits: ChatUsageLimits.Credits(
+                    included: 500,
+                    used: 125,
+                    reserved: 25,
+                    grace: 50,
+                    overrun: 0,
+                    overage: 0,
+                    overageEnabled: false,
+                    state: "ok"
+                )
             )
         )])
     }

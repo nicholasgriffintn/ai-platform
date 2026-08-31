@@ -10,6 +10,9 @@ import {
 } from "~/lib/chat/streaming/emitter";
 import { getAIResponse } from "~/lib/chat/streaming/responses";
 import { watchDetachedTurnCancellation } from "~/lib/chat/streaming/turn-cancellation";
+import { extractUsagePayload } from "~/lib/usage/extractUsage";
+import { recordModelTurnUsage } from "~/lib/usage/modelUsage";
+import { normaliseTokenUsage } from "~/lib/usage/tokenUsage";
 import { StreamState, type Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -20,12 +23,8 @@ const SUPPRESSED_PRIMARY_EVENTS = new Set(["message_delta", "message_stop"]);
 
 export type CreateModelEnsembleStreamParams = Omit<AgentLoopExecutionParams, "sink" | "emit"> & {
   models: ModelConfigInfo[];
+  usageScopeId: string;
   executionCtx?: ExecutionContext;
-  /**
-   * Runs when the turn ends, not when the client stops reading. A detached
-   * turn keeps writing to the conversation, so whatever it holds — the thread
-   * lock above all — has to be released on this hook rather than on cancel.
-   */
   onTurnEnd?: () => Promise<void>;
 };
 
@@ -39,8 +38,8 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
     isDetached: stream.isDetached,
   });
   const secondaryModels = params.models.slice(1);
-  const secondaryResponses = secondaryModels.map((modelConfig) =>
-    requestSecondaryAnswer(params, modelConfig),
+  const secondaryResponses = secondaryModels.map((modelConfig, index) =>
+    requestSecondaryAnswer(params, modelConfig, index),
   );
 
   const primarySink: ChatEventSink = {
@@ -150,6 +149,7 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
 async function requestSecondaryAnswer(
   params: CreateModelEnsembleStreamParams,
   modelConfig: ModelConfigInfo,
+  index: number,
 ): Promise<string> {
   try {
     const response = await getAIResponse({
@@ -168,6 +168,21 @@ async function requestSecondaryAnswer(
         ErrorType.PROVIDER_ERROR,
       );
     }
+
+    const rawUsage = extractUsagePayload(response);
+
+    await recordModelTurnUsage({
+      env: params.env,
+      repositories: params.context?.repositories,
+      userId: params.context?.user?.id,
+      usage: normaliseTokenUsage(rawUsage),
+      rawUsage,
+      model: modelConfig.model,
+      provider: modelConfig.provider,
+      completionId: params.completionId,
+      messageId: `ensemble:${params.usageScopeId}:${index}:${modelConfig.model}`,
+      conversationId: params.completionId,
+    });
 
     return response.response || "";
   } catch (error) {

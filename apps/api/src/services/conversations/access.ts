@@ -2,10 +2,6 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-/**
- * A conversation id is not proof of access. Personal conversations belong to one user;
- * project conversations are gated on workspace membership, never on the id alone.
- */
 export async function requireConversationAccess(
   context: ServiceContext,
   conversationId: string,

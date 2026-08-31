@@ -24,6 +24,5 @@ export const v0_code_generation: FunctionToolDescriptor = {
     required: ["prompt"],
   }),
   type: "byok",
-  costPerCall: 0,
   permissions: ["network"],
 };

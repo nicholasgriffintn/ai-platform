@@ -1,491 +1,173 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { USAGE_CONFIG } from "~/constants/app";
-import type { RepositoryManager } from "~/repositories";
 import type { AnonymousUser, User } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { ErrorType } from "~/utils/errors";
 
 import { UsageManager } from "../usageManager";
 
-const mocks = vi.hoisted(() => ({
-  findModelConfig: vi.fn(),
-}));
-
-vi.mock("~/lib/providers/models", () => ({
-  findModelConfig: mocks.findModelConfig,
-}));
-
-function makeUser(overrides: Partial<User> = {}): User {
+function user(overrides: Partial<User> = {}): User {
   return {
-    id: 1,
-    name: "Test User",
-    avatar_url: null,
-    email: "user@example.com",
-    github_username: null,
-    company: null,
-    site: null,
-    location: null,
-    bio: null,
-    twitter_username: null,
-    created_at: "2026-01-01T00:00:00.000Z",
-    updated_at: "2026-01-01T00:00:00.000Z",
-    setup_at: null,
-    terms_accepted_at: null,
+    id: 7,
     plan_id: "free",
-    message_count: 0,
     daily_message_count: 0,
     daily_reset: new Date().toISOString(),
-    daily_pro_message_count: 0,
-    daily_pro_reset: new Date().toISOString(),
-    byok_message_count: 0,
-    daily_byok_message_count: 0,
-    daily_byok_reset: new Date().toISOString(),
     ...overrides,
-  };
+  } as User;
 }
 
-function makeAnonymousUser(overrides: Partial<AnonymousUser> = {}): AnonymousUser {
+function anonymousUser(overrides: Partial<AnonymousUser> = {}): AnonymousUser {
   return {
-    id: "anon-1",
+    id: "anonymous-1",
     ip_address: "127.0.0.1",
     daily_message_count: 0,
     daily_reset: new Date().toISOString(),
-    created_at: "2026-01-01T00:00:00.000Z",
-    updated_at: "2026-01-01T00:00:00.000Z",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
     ...overrides,
   };
 }
 
-function makeRepositories(overrides: Record<string, any> = {}, user?: User): RepositoryManager {
-  const counters: Record<string, number> = {
-    message_count: user?.message_count ?? 0,
-    byok_message_count: user?.byok_message_count ?? 0,
-    daily_message_count: user?.daily_message_count ?? 0,
-    daily_pro_message_count: user?.daily_pro_message_count ?? 0,
-    daily_byok_message_count: user?.daily_byok_message_count ?? 0,
-  };
+function repositories(
+  options: {
+    anonymousCount?: number;
+    balance?: Record<string, number> | null;
+    includedCredits?: number;
+    graceCredits?: number;
+  } = {},
+) {
+  const incrementUsageCounters = vi.fn(
+    async (_userId: number, increments: Record<string, number>) => user(increments),
+  );
+  const incrementDailyCount = vi.fn(async () => undefined);
 
   return {
-    users: {
-      updateUser: vi.fn(async () => {}),
-      incrementUsageCounters: vi.fn(async (_userId: number, increments: Record<string, number>) => {
-        for (const [field, amount] of Object.entries(increments)) {
-          counters[field] = (counters[field] ?? 0) + amount;
-        }
-
-        return user ? { ...user, ...counters } : null;
-      }),
+    incrementUsageCounters,
+    incrementDailyCount,
+    value: {
+      users: {
+        incrementUsageCounters,
+        getUserById: vi.fn(async () => ({ plan_id: "pro" })),
+      },
+      anonymousUsers: {
+        checkAndResetDailyLimit: vi.fn(async () => ({ count: options.anonymousCount ?? 0 })),
+        incrementDailyCount,
+      },
+      usageBalances: {
+        getBalance: vi.fn(async () => options.balance ?? null),
+      },
+      plans: {
+        getPlanById: vi.fn(async () => ({
+          included_credits: options.includedCredits ?? 0,
+          grace_credits: options.graceCredits ?? 0,
+        })),
+      },
     },
-    anonymousUsers: {
-      checkAndResetDailyLimit: vi.fn(async (_id: string) => ({
-        count: 0,
-        isNewDay: false,
-      })),
-      incrementDailyCount: vi.fn(async () => {}),
-    },
-    userSettings: {
-      hasProviderApiKey: vi.fn(async () => false),
-    },
-    ...overrides,
-  } as unknown as RepositoryManager;
-}
-
-async function expectAssistantError(promise: Promise<unknown>, type: ErrorType) {
-  await expect(promise).rejects.toBeInstanceOf(AssistantError);
-  await expect(promise).rejects.toMatchObject({ type });
+  };
 }
 
 describe("UsageManager", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mocks.findModelConfig.mockResolvedValue(undefined);
-  });
+  it("keeps the daily message guard for free accounts", async () => {
+    const repo = repositories();
+    const manager = new UsageManager(
+      repo.value as never,
+      user({ daily_message_count: USAGE_CONFIG.AUTH_DAILY_MESSAGE_LIMIT }),
+      null,
+    );
 
-  describe("checkUsage", () => {
-    it("does not throw one message below the daily limit", async () => {
-      const user = makeUser({
-        daily_message_count: USAGE_CONFIG.AUTH_DAILY_MESSAGE_LIMIT - 1,
-      });
-      const manager = new UsageManager(makeRepositories(), user, null);
-
-      await expect(manager.checkUsage()).resolves.toEqual({
-        dailyCount: USAGE_CONFIG.AUTH_DAILY_MESSAGE_LIMIT - 1,
-        dailyLimit: USAGE_CONFIG.AUTH_DAILY_MESSAGE_LIMIT,
-      });
-    });
-
-    it("throws USAGE_LIMIT_ERROR once the daily count reaches the limit", async () => {
-      const user = makeUser({
-        daily_message_count: USAGE_CONFIG.AUTH_DAILY_MESSAGE_LIMIT,
-      });
-      const manager = new UsageManager(makeRepositories(), user, null);
-
-      await expectAssistantError(manager.checkUsage(), ErrorType.USAGE_LIMIT_ERROR);
-    });
-
-    it("resets the count for a user whose last reset was on a previous UTC day", async () => {
-      const user = makeUser({
-        daily_message_count: USAGE_CONFIG.AUTH_DAILY_MESSAGE_LIMIT,
-        daily_reset: "2020-01-01T00:00:00.000Z",
-      });
-      const manager = new UsageManager(makeRepositories(), user, null);
-
-      await expect(manager.checkUsage()).resolves.toEqual({
-        dailyCount: 0,
-        dailyLimit: USAGE_CONFIG.AUTH_DAILY_MESSAGE_LIMIT,
-      });
+    await expect(manager.checkUsage()).rejects.toMatchObject({
+      type: ErrorType.USAGE_LIMIT_ERROR,
     });
   });
 
-  describe("incrementUsage", () => {
-    it("throws PARAMS_ERROR when there is no authenticated user", async () => {
-      const manager = new UsageManager(makeRepositories(), null, null);
+  it("does not apply the message guard to paid accounts", async () => {
+    const repo = repositories();
+    const manager = new UsageManager(
+      repo.value as never,
+      user({ plan_id: "enterprise", daily_message_count: 1_000_000 }),
+      null,
+    );
 
-      await expectAssistantError(manager.incrementUsage(), ErrorType.PARAMS_ERROR);
+    await expect(manager.checkUsage()).resolves.toEqual({ dailyCount: 0, dailyLimit: null });
+  });
+
+  it("records one free-account response without cutting off later model steps", async () => {
+    const repo = repositories();
+    const manager = new UsageManager(repo.value as never, user(), null);
+
+    await manager.checkUsage();
+    await manager.incrementUsage();
+    await manager.incrementUsage();
+
+    expect(repo.incrementUsageCounters).toHaveBeenCalledOnce();
+    expect(repo.incrementUsageCounters).toHaveBeenCalledWith(7, {
+      message_count: 1,
+      daily_message_count: 1,
     });
-
-    it("writes the incremented count directly when there is no task queue", async () => {
-      const user = makeUser({ message_count: 5, daily_message_count: 5 });
-      const repositories = makeRepositories({}, user);
-      const manager = new UsageManager(repositories, user, null);
-
-      await manager.incrementUsage();
-
-      expect(repositories.users.incrementUsageCounters).toHaveBeenCalledWith(
-        1,
-        expect.objectContaining({ message_count: 1, daily_message_count: 1 }),
-      );
-      await expect(manager.checkUsage()).resolves.toMatchObject({
-        dailyCount: 6,
-      });
-    });
-
-    it("leaves the local counter consistent when the task-queue fast path is used", async () => {
-      const user = makeUser({ message_count: 5, daily_message_count: 5 });
-      const repositories = makeRepositories();
-      const enqueueUsageTask = vi.fn(async () => {});
-      const manager = new UsageManager(repositories, user, null, {
-        enqueueUsageTask,
-      });
-
-      await manager.incrementUsage();
-
-      expect(enqueueUsageTask).toHaveBeenCalledWith(
-        expect.objectContaining({ action: "increment_usage", userId: 1 }),
-      );
-      expect(repositories.users.incrementUsageCounters).not.toHaveBeenCalled();
-      await expect(manager.checkUsage()).resolves.toMatchObject({
-        dailyCount: 6,
-      });
-    });
-
-    it("falls back to the direct DB write when enqueuing fails", async () => {
-      const user = makeUser({ message_count: 5, daily_message_count: 5 });
-      const repositories = makeRepositories();
-      const enqueueUsageTask = vi.fn(async () => {
-        throw new Error("queue unavailable");
-      });
-      const manager = new UsageManager(repositories, user, null, {
-        enqueueUsageTask,
-      });
-
-      await manager.incrementUsage();
-
-      expect(repositories.users.incrementUsageCounters).toHaveBeenCalledWith(
-        1,
-        expect.objectContaining({ daily_message_count: 1 }),
-      );
+    await expect(manager.getUsageLimits()).resolves.toMatchObject({
+      daily: { used: 1, limit: USAGE_CONFIG.AUTH_DAILY_MESSAGE_LIMIT },
     });
   });
 
-  describe("checkAnonymousUsage", () => {
-    it("throws PARAMS_ERROR when there is no anonymous user", async () => {
-      const manager = new UsageManager(makeRepositories(), null, null);
+  it("keeps cumulative activity but removes paid and BYOK counters", async () => {
+    const repo = repositories();
+    const manager = new UsageManager(repo.value as never, user({ plan_id: "pro" }), null);
 
-      await expectAssistantError(manager.checkAnonymousUsage(), ErrorType.PARAMS_ERROR);
-    });
+    await manager.incrementUsage();
 
-    it("does not throw one message below the anonymous daily limit", async () => {
-      const anonymousUser = makeAnonymousUser();
-      const repositories = makeRepositories({
-        anonymousUsers: {
-          checkAndResetDailyLimit: vi.fn(async () => ({
-            count: USAGE_CONFIG.NON_AUTH_DAILY_MESSAGE_LIMIT - 1,
-            isNewDay: false,
-          })),
-        },
-      });
-      const manager = new UsageManager(repositories, null, anonymousUser);
+    expect(repo.incrementUsageCounters).toHaveBeenCalledWith(7, { message_count: 1 });
+  });
 
-      await expect(manager.checkAnonymousUsage()).resolves.toEqual({
-        dailyCount: USAGE_CONFIG.NON_AUTH_DAILY_MESSAGE_LIMIT - 1,
-        dailyLimit: USAGE_CONFIG.NON_AUTH_DAILY_MESSAGE_LIMIT,
-      });
-    });
+  it("keeps the anonymous daily guard", async () => {
+    const repo = repositories({ anonymousCount: USAGE_CONFIG.NON_AUTH_DAILY_MESSAGE_LIMIT });
+    const manager = new UsageManager(repo.value as never, null, anonymousUser());
 
-    it("throws USAGE_LIMIT_ERROR once the anonymous daily count reaches the limit", async () => {
-      const anonymousUser = makeAnonymousUser();
-      const repositories = makeRepositories({
-        anonymousUsers: {
-          checkAndResetDailyLimit: vi.fn(async () => ({
-            count: USAGE_CONFIG.NON_AUTH_DAILY_MESSAGE_LIMIT,
-            isNewDay: false,
-          })),
-        },
-      });
-      const manager = new UsageManager(repositories, null, anonymousUser);
-
-      await expectAssistantError(manager.checkAnonymousUsage(), ErrorType.USAGE_LIMIT_ERROR);
+    await expect(manager.checkUsage()).rejects.toMatchObject({
+      type: ErrorType.USAGE_LIMIT_ERROR,
     });
   });
 
-  describe("incrementAnonymousUsage", () => {
-    it("throws PARAMS_ERROR when there is no anonymous user", async () => {
-      const manager = new UsageManager(makeRepositories(), null, null);
-
-      await expectAssistantError(manager.incrementAnonymousUsage(), ErrorType.PARAMS_ERROR);
+  it("publishes ledger credits with the compatibility usage event", async () => {
+    const repo = repositories({
+      balance: {
+        included_credit_micros: 10_000_000,
+        grace_credit_micros: 1_000_000,
+        spent_credit_micros: 2_500_000,
+        reserved_credit_micros: 500_000,
+        overrun_credit_micros: 0,
+        overage_credit_micros: 0,
+        overage_enabled: 0,
+      },
     });
+    const manager = new UsageManager(repo.value as never, user({ plan_id: "pro" }), null);
 
-    it("increments via the repository when there is no task queue", async () => {
-      const anonymousUser = makeAnonymousUser();
-      const repositories = makeRepositories();
-      const manager = new UsageManager(repositories, null, anonymousUser);
-
-      await manager.incrementAnonymousUsage();
-
-      expect(repositories.anonymousUsers.incrementDailyCount).toHaveBeenCalledWith("anon-1");
-    });
-
-    it("skips the direct increment when the task-queue fast path succeeds", async () => {
-      const anonymousUser = makeAnonymousUser();
-      const repositories = makeRepositories();
-      const enqueueUsageTask = vi.fn(async () => {});
-      const manager = new UsageManager(repositories, null, anonymousUser, {
-        enqueueUsageTask,
-      });
-
-      await manager.incrementAnonymousUsage();
-
-      expect(enqueueUsageTask).toHaveBeenCalledWith(
-        expect.objectContaining({
-          action: "increment_anonymous_usage",
-          anonymousUserId: "anon-1",
-        }),
-      );
-      expect(repositories.anonymousUsers.incrementDailyCount).not.toHaveBeenCalled();
+    await expect(manager.getUsageLimits()).resolves.toEqual({
+      daily: { used: 0, limit: null },
+      credits: {
+        included: 10,
+        used: 2.5,
+        reserved: 0.5,
+        grace: 1,
+        overrun: 0,
+        overage: 0,
+        overage_enabled: false,
+        state: "ok",
+      },
     });
   });
 
-  describe("checkProUsage", () => {
-    it("does not throw one message below the pro daily limit", async () => {
-      const user = makeUser({
-        daily_pro_message_count: USAGE_CONFIG.DAILY_LIMIT_PRO_MODELS - 1,
-      });
-      const manager = new UsageManager(makeRepositories(), user, null);
+  it("shows configured plan credits before the first ledger event", async () => {
+    const repo = repositories({ includedCredits: 500, graceCredits: 50 });
+    const manager = new UsageManager(repo.value as never, user({ plan_id: "pro" }), null);
 
-      await expect(manager.checkProUsage("pro-model")).resolves.toMatchObject({
-        dailyProCount: USAGE_CONFIG.DAILY_LIMIT_PRO_MODELS - 1,
-        limit: USAGE_CONFIG.DAILY_LIMIT_PRO_MODELS,
-      });
-    });
-
-    it("throws USAGE_LIMIT_ERROR once the pro daily count reaches the limit", async () => {
-      const user = makeUser({
-        daily_pro_message_count: USAGE_CONFIG.DAILY_LIMIT_PRO_MODELS,
-      });
-      const manager = new UsageManager(makeRepositories(), user, null);
-
-      await expectAssistantError(manager.checkProUsage("pro-model"), ErrorType.USAGE_LIMIT_ERROR);
-    });
-  });
-
-  describe("incrementProUsage", () => {
-    it("increments the pro count by the model's usage multiplier, not by one", async () => {
-      mocks.findModelConfig.mockResolvedValue({
-        matchingModel: "expensive-model",
-        provider: "test",
-        costPer1kInputTokens: 0.005,
-        costPer1kOutputTokens: 0.02,
-      });
-      const user = makeUser({ message_count: 10, daily_pro_message_count: 4 });
-      const repositories = makeRepositories();
-      const manager = new UsageManager(repositories, user, null);
-
-      await manager.incrementProUsage("expensive-model");
-
-      expect(repositories.users.incrementUsageCounters).toHaveBeenCalledWith(
-        1,
-        expect.objectContaining({
-          message_count: 1,
-          daily_pro_message_count: 3,
-        }),
-      );
-    });
-  });
-
-  describe("checkByokUsage", () => {
-    it("never enforces a cap, unlike the free and pro paths", async () => {
-      const user = makeUser({ daily_byok_message_count: 1_000_000 });
-      const manager = new UsageManager(makeRepositories(), user, null);
-
-      await expect(manager.checkByokUsage()).resolves.toEqual({
-        dailyByokCount: 1_000_000,
-        limit: null,
-      });
-    });
-  });
-
-  describe("incrementByokUsage", () => {
-    it("throws PARAMS_ERROR when there is no authenticated user", async () => {
-      const manager = new UsageManager(makeRepositories(), null, null);
-
-      await expectAssistantError(manager.incrementByokUsage(), ErrorType.PARAMS_ERROR);
-    });
-
-    it("increments message, byok, and daily byok counts together", async () => {
-      const user = makeUser({
-        message_count: 1,
-        byok_message_count: 2,
-        daily_byok_message_count: 3,
-      });
-      const repositories = makeRepositories();
-      const manager = new UsageManager(repositories, user, null);
-
-      await manager.incrementByokUsage();
-
-      expect(repositories.users.incrementUsageCounters).toHaveBeenCalledWith(
-        1,
-        expect.objectContaining({
-          message_count: 1,
-          byok_message_count: 1,
-          daily_byok_message_count: 1,
-        }),
-      );
-    });
-  });
-
-  describe("checkUsageByModel", () => {
-    it("blocks a non-pro user from a pro model without touching their free quota", async () => {
-      mocks.findModelConfig.mockResolvedValue({
-        matchingModel: "pro-model",
-        provider: "test",
-        isFree: false,
-      });
-      const user = makeUser();
-      const repositories = makeRepositories();
-      const manager = new UsageManager(repositories, user, null);
-
-      await expectAssistantError(
-        manager.checkUsageByModel("pro-model", false),
-        ErrorType.AUTHENTICATION_ERROR,
-      );
-      expect(repositories.users.incrementUsageCounters).not.toHaveBeenCalled();
-    });
-
-    it("routes a free model for an authenticated user to the free-tier check", async () => {
-      mocks.findModelConfig.mockResolvedValue({
-        matchingModel: "free-model",
-        provider: "test",
-        isFree: true,
-      });
-      const user = makeUser({ daily_message_count: 3 });
-      const manager = new UsageManager(makeRepositories(), user, null);
-
-      await expect(manager.checkUsageByModel("free-model", false)).resolves.toMatchObject({
-        dailyCount: 3,
-      });
-    });
-
-    it("preserves provider identity when matching model IDs are shared", async () => {
-      mocks.findModelConfig.mockImplementation(
-        async (_modelId: string, _env: unknown, provider?: string) => ({
-          matchingModel: "openai/gpt-oss-120b",
-          provider: provider ?? "paid-provider",
-          isFree: provider === "groq",
-        }),
-      );
-      const user = makeUser({ daily_message_count: 3 });
-      const manager = new UsageManager(makeRepositories(), user, null);
-
-      await expect(
-        manager.checkUsageByModel("openai/gpt-oss-120b", false, "groq"),
-      ).resolves.toMatchObject({ dailyCount: 3 });
-      expect(mocks.findModelConfig).toHaveBeenCalledWith("openai/gpt-oss-120b", undefined, "groq");
-    });
-  });
-
-  describe("getUsageLimits", () => {
-    it("throws PARAMS_ERROR when there is neither an authenticated nor anonymous user", async () => {
-      const manager = new UsageManager(makeRepositories(), null, null);
-
-      await expectAssistantError(manager.getUsageLimits(), ErrorType.PARAMS_ERROR);
-    });
-
-    it("returns the anonymous daily allowance for an anonymous user", async () => {
-      const anonymousUser = makeAnonymousUser();
-      const repositories = makeRepositories({
-        anonymousUsers: {
-          checkAndResetDailyLimit: vi.fn(async () => ({
-            count: 2,
-            isNewDay: false,
-          })),
-        },
-      });
-      const manager = new UsageManager(repositories, null, anonymousUser);
-
-      await expect(manager.getUsageLimits()).resolves.toEqual({
-        daily: { used: 2, limit: USAGE_CONFIG.NON_AUTH_DAILY_MESSAGE_LIMIT },
-      });
-    });
-
-    it("omits the pro allowance for a free-plan authenticated user", async () => {
-      const user = makeUser({ plan_id: "free", daily_message_count: 1 });
-      const manager = new UsageManager(makeRepositories(), user, null);
-
-      const limits = await manager.getUsageLimits();
-
-      expect(limits.pro).toBeUndefined();
-      expect(limits.daily).toEqual({
-        used: 1,
-        limit: USAGE_CONFIG.AUTH_DAILY_MESSAGE_LIMIT,
-      });
-      expect(limits.byok).toEqual({ used: 0, limit: null });
-    });
-
-    it("includes the pro allowance for a pro-plan authenticated user", async () => {
-      const user = makeUser({ plan_id: "pro", daily_pro_message_count: 7 });
-      const manager = new UsageManager(makeRepositories(), user, null);
-
-      await expect(manager.getUsageLimits()).resolves.toMatchObject({
-        pro: { used: 7, limit: USAGE_CONFIG.DAILY_LIMIT_PRO_MODELS },
-      });
-    });
-  });
-
-  describe("getModelUsageMultiplier", () => {
-    it("returns the calculated multiplier for a model with cost data", async () => {
-      mocks.findModelConfig.mockResolvedValue({
-        matchingModel: "expensive-model",
-        provider: "test",
-        costPer1kInputTokens: 0.005,
-        costPer1kOutputTokens: 0.02,
-      });
-      const manager = new UsageManager(makeRepositories(), makeUser(), null);
-
-      await expect(manager.getModelUsageMultiplier("expensive-model")).resolves.toEqual({
-        multiplier: 3,
-        modelCostInfo: { inputCost: 0.005, outputCost: 0.02 },
-      });
-    });
-
-    it("defaults to a multiplier of 1 for a model with no known config", async () => {
-      mocks.findModelConfig.mockResolvedValue(undefined);
-      const manager = new UsageManager(makeRepositories(), makeUser(), null);
-
-      await expect(manager.getModelUsageMultiplier("unknown-model")).resolves.toEqual({
-        multiplier: 1,
-        modelCostInfo: { inputCost: 0, outputCost: 0 },
-      });
+    await expect(manager.getUsageLimits()).resolves.toMatchObject({
+      daily: { used: 0, limit: null },
+      credits: {
+        included: 500,
+        grace: 50,
+        used: 0,
+        state: "ok",
+      },
     });
   });
 });

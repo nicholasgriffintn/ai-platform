@@ -1,95 +1,38 @@
-import type { FunctionType, ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import { usagePeriodFromDate, type UsageCreditsSummary } from "@ngriffin_uk/polychat-schemas";
 
 import { USAGE_CONFIG } from "~/constants/app";
-import { findModelConfig } from "~/lib/providers/models";
 import type { RepositoryManager } from "~/repositories";
-import type { UsageCounterIncrements } from "~/repositories/UserRepository";
 import type { AnonymousUser, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
-import { memoizeRequest, type RequestCache } from "~/utils/requestCache";
 
-const logger = getLogger({ prefix: "lib/usageManager" });
-
-export type UsageUpdateTaskInput =
-  | {
-      action: "increment_usage";
-      userId: number;
-    }
-  | {
-      action: "increment_pro_usage";
-      userId: number;
-      modelId?: string;
-      usageMultiplier: number;
-    }
-  | {
-      action: "increment_byok_usage";
-      userId: number;
-    }
-  | {
-      action: "increment_anonymous_usage";
-      anonymousUserId: string;
-    }
-  | {
-      action: "increment_function_usage";
-      userId: number;
-      functionType: FunctionType;
-      isProUser: boolean;
-      costPerCall: number;
-    }
-  | {
-      action: "reset_daily_usage";
-      resetAt?: string;
-    };
-
-export type UsageUpdateTaskPayload = UsageUpdateTaskInput & {
-  queuedAt?: number;
-};
-
-type UsageTaskEnqueuer = (payload: UsageUpdateTaskPayload) => Promise<void>;
+import { hasPlanEntitlement } from "./plans";
+import { resolveUsageBalanceSnapshot } from "./usage/balanceSnapshot";
+import { usageCreditsFromBalance } from "./usage/creditSummary";
 
 export interface UsageLimits {
   daily: {
     used: number;
-    limit: number;
+    limit: number | null;
   };
-  pro?: {
-    used: number;
-    limit: number;
-  };
-  byok?: {
-    used: number;
-    limit: null;
-  };
+  credits?: UsageCreditsSummary;
 }
 
+/**
+ * Keeps the deliberately small message-count abuse guard separate from the credit ledger.
+ * Paid work, BYOK cost and capability cost are never accounted for here.
+ */
 export class UsageManager {
-  private repositories: RepositoryManager;
-  private user: User | null;
-  private anonymousUser: AnonymousUser | null;
-  private requestCache?: RequestCache;
-  private enqueueUsageTask?: UsageTaskEnqueuer;
-  private asyncUsageUpdates: boolean;
   private regularUsageSnapshot?: { dailyCount: number; limit: number };
-  private proUsageSnapshot?: { dailyCount: number; limit: number };
-  private byokUsageSnapshot?: { dailyCount: number };
+  private recordedAssistantResponse = false;
 
   constructor(
-    repositories: RepositoryManager,
-    user: User | null,
-    anonymousUser: AnonymousUser | null,
-    options?: {
-      requestCache?: RequestCache;
-      enqueueUsageTask?: UsageTaskEnqueuer;
-      asyncUsageUpdates?: boolean;
-    },
-  ) {
-    this.repositories = repositories;
-    this.user = user;
-    this.anonymousUser = anonymousUser;
-    this.requestCache = options?.requestCache;
-    this.enqueueUsageTask = options?.enqueueUsageTask;
-    this.asyncUsageUpdates = options?.asyncUsageUpdates ?? Boolean(options?.enqueueUsageTask);
+    private readonly repositories: RepositoryManager,
+    private user: User | null,
+    private readonly anonymousUser: AnonymousUser | null,
+  ) {}
+
+  private isPaidUser(): boolean {
+    return hasPlanEntitlement(this.user?.plan_id, "pro");
   }
 
   private isNewUtcDay(now: Date, lastReset: Date | null): boolean {
@@ -115,13 +58,7 @@ export class UsageManager {
 
     const now = new Date();
     const lastReset = this.user.daily_reset ? new Date(this.user.daily_reset) : null;
-    const isNewDay = this.isNewUtcDay(now, lastReset);
-    const dailyCount = isNewDay ? 0 : (this.user.daily_message_count ?? 0);
-
-    if (isNewDay) {
-      this.user.daily_message_count = 0;
-      this.user.daily_reset = now.toISOString();
-    }
+    const dailyCount = this.isNewUtcDay(now, lastReset) ? 0 : (this.user.daily_message_count ?? 0);
 
     this.regularUsageSnapshot = {
       dailyCount,
@@ -131,212 +68,34 @@ export class UsageManager {
     return this.regularUsageSnapshot;
   }
 
-  private getProUsageSnapshot(): { dailyCount: number; limit: number } {
-    if (!this.user?.id) {
-      throw new AssistantError("User required to check pro usage", ErrorType.PARAMS_ERROR);
-    }
-
-    if (this.proUsageSnapshot) {
-      return this.proUsageSnapshot;
-    }
-
-    const now = new Date();
-    const lastReset = this.user.daily_pro_reset ? new Date(this.user.daily_pro_reset) : null;
-    const isNewDay = this.isNewUtcDay(now, lastReset);
-    const dailyCount = isNewDay ? 0 : (this.user.daily_pro_message_count ?? 0);
-
-    if (isNewDay) {
-      this.user.daily_pro_message_count = 0;
-      this.user.daily_pro_reset = now.toISOString();
-    }
-
-    this.proUsageSnapshot = {
-      dailyCount,
-      limit: USAGE_CONFIG.DAILY_LIMIT_PRO_MODELS,
-    };
-
-    return this.proUsageSnapshot;
-  }
-
-  private getByokUsageSnapshot(): { dailyCount: number } {
-    if (!this.user?.id) {
-      throw new AssistantError("User required to check BYOK usage", ErrorType.PARAMS_ERROR);
-    }
-
-    if (this.byokUsageSnapshot) {
-      return this.byokUsageSnapshot;
-    }
-
-    const now = new Date();
-    const lastReset = this.user.daily_byok_reset ? new Date(this.user.daily_byok_reset) : null;
-    const isNewDay = this.isNewUtcDay(now, lastReset);
-    const dailyCount = isNewDay ? 0 : (this.user.daily_byok_message_count ?? 0);
-
-    if (isNewDay) {
-      this.user.daily_byok_message_count = 0;
-      this.user.daily_byok_reset = now.toISOString();
-    }
-
-    this.byokUsageSnapshot = { dailyCount };
-
-    return this.byokUsageSnapshot;
-  }
-
-  private invalidateRegularUsageSnapshot() {
-    this.regularUsageSnapshot = undefined;
-  }
-
-  private invalidateProUsageSnapshot() {
-    this.proUsageSnapshot = undefined;
-  }
-
-  private invalidateByokUsageSnapshot() {
-    this.byokUsageSnapshot = undefined;
-  }
-
-  private memoize<T>(key: string, factory: () => Promise<T>): Promise<T> {
-    return memoizeRequest(this.requestCache, key, factory);
-  }
-
-  private async getModelConfig(
-    modelId: string,
-    provider?: string,
-  ): Promise<ModelConfigItem | null> {
-    return this.memoize(`usage:model-config:${provider ?? "any"}:${modelId}`, () =>
-      findModelConfig(modelId, undefined, provider),
-    );
-  }
-
-  private async isProModel(modelId: string, provider?: string): Promise<boolean> {
-    const config = await this.getModelConfig(modelId, provider);
-
-    return !!config && !config.isFree;
-  }
-
-  private async isByokRequest(modelId: string, provider?: string): Promise<boolean> {
-    if (!this.user?.id) {
-      return false;
-    }
-
-    return this.memoize(`usage:byok:${this.user.id}:${provider ?? "any"}:${modelId}`, async () => {
-      const config = await this.getModelConfig(modelId, provider);
-
-      if (!config?.provider) {
-        return false;
+  async checkUsage(): Promise<{ dailyCount: number; dailyLimit: number | null }> {
+    if (this.user?.id) {
+      if (this.isPaidUser()) {
+        return { dailyCount: 0, dailyLimit: null };
       }
 
-      return this.repositories.userSettings.hasProviderApiKey(this.user.id, config.provider);
-    });
-  }
+      const snapshot = this.getRegularUsageSnapshot();
 
-  private async calculateUsageMultiplier(modelId: string, provider?: string): Promise<number> {
-    return this.memoize(`usage:model-multiplier:${provider ?? "any"}:${modelId}`, async () => {
-      logger.debug("Calculating function usage multiplier", { modelId });
-      const config = await this.getModelConfig(modelId, provider);
-
-      if (!config) {
-        logger.warn(`No config found for model: ${modelId}, using default multiplier: 1`);
-
-        return 1;
+      if (snapshot.dailyCount >= snapshot.limit) {
+        throw new AssistantError(
+          "Daily message limit for authenticated users reached.",
+          ErrorType.USAGE_LIMIT_ERROR,
+        );
       }
 
-      if (!config.costPer1kInputTokens && !config.costPer1kOutputTokens) {
-        logger.warn(`No cost data for model: ${modelId}, using default multiplier: 1`);
+      return { dailyCount: snapshot.dailyCount, dailyLimit: snapshot.limit };
+    }
 
-        return 1;
-      }
-
-      const inputMultiplier =
-        (config.costPer1kInputTokens || 0) / USAGE_CONFIG.MULTIPLIER_BASELINE_INPUT_COST_PER_1K;
-      const outputMultiplier =
-        (config.costPer1kOutputTokens || 0) / USAGE_CONFIG.MULTIPLIER_BASELINE_OUTPUT_COST_PER_1K;
-      const avgMultiplier = (inputMultiplier + outputMultiplier) / 2;
-      const finalMultiplier = Math.ceil(avgMultiplier);
-
-      logger.debug(`Model: ${modelId} calculation:`, {
-        inputCost: config.costPer1kInputTokens,
-        outputCost: config.costPer1kOutputTokens,
-        inputMultiplier,
-        outputMultiplier,
-        avgMultiplier,
-        finalMultiplier,
-      });
-
-      return finalMultiplier;
-    });
+    return this.checkAnonymousUsage();
   }
 
-  async checkUsage() {
-    const snapshot = this.getRegularUsageSnapshot();
-
-    logger.debug("Checking usage limits", { userId: this.user?.id });
-
-    if (snapshot.dailyCount >= snapshot.limit) {
-      throw new AssistantError(
-        "Daily message limit for authenticated users reached.",
-        ErrorType.USAGE_LIMIT_ERROR,
-      );
-    }
-
-    logger.debug("Usage limits checked", { userId: this.user?.id });
-
-    return {
-      dailyCount: snapshot.dailyCount,
-      dailyLimit: snapshot.limit,
-    };
-  }
-
-  async incrementUsage() {
-    if (!this.user?.id) {
-      throw new AssistantError(
-        "User required to increment authenticated usage",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-
-    logger.debug("Incrementing usage", { userId: this.user.id });
-
-    if (
-      await this.tryEnqueueUsageTask({
-        action: "increment_usage",
-        userId: this.user.id,
-      })
-    ) {
-      this.incrementLocalCounts(["message_count", "daily_message_count"]);
-
-      return;
-    }
-
-    try {
-      const updatedUser = await UsageManager.applyAuthenticatedUsageUpdate(
-        this.repositories,
-        this.user,
-      );
-
-      this.user = updatedUser;
-      this.invalidateRegularUsageSnapshot();
-    } catch (error) {
-      logger.error("Failed to update usage data", {
-        error,
-        userId: this.user.id,
-      });
-      throw new AssistantError("Failed to update usage data", ErrorType.INTERNAL_ERROR);
-    }
-
-    logger.debug("Usage incremented", { userId: this.user.id });
-  }
-
-  async checkAnonymousUsage() {
+  async checkAnonymousUsage(): Promise<{ dailyCount: number; dailyLimit: number }> {
     if (!this.anonymousUser?.id) {
       throw new AssistantError(
         "Anonymous user required to check anonymous usage",
         ErrorType.PARAMS_ERROR,
       );
     }
-
-    logger.debug("Checking anonymous usage limits", {
-      anonymousUserId: this.anonymousUser.id,
-    });
 
     const dailyLimit = USAGE_CONFIG.NON_AUTH_DAILY_MESSAGE_LIMIT;
     const { count: dailyCount } = await this.repositories.anonymousUsers.checkAndResetDailyLimit(
@@ -350,14 +109,39 @@ export class UsageManager {
       );
     }
 
-    logger.debug("Anonymous usage limits checked", {
-      anonymousUserId: this.anonymousUser.id,
-    });
-
     return { dailyCount, dailyLimit };
   }
 
-  async incrementAnonymousUsage() {
+  async incrementUsage(): Promise<void> {
+    if (this.recordedAssistantResponse) {
+      return;
+    }
+
+    if (this.user?.id) {
+      const isPaid = this.isPaidUser();
+      const updatedUser = await this.repositories.users.incrementUsageCounters(this.user.id, {
+        message_count: 1,
+        ...(isPaid ? {} : { daily_message_count: 1 }),
+      });
+
+      if (updatedUser) {
+        this.user = updatedUser;
+      }
+
+      if (!isPaid && this.regularUsageSnapshot) {
+        this.regularUsageSnapshot.dailyCount += 1;
+      }
+
+      this.recordedAssistantResponse = true;
+
+      return;
+    }
+
+    await this.incrementAnonymousUsage();
+    this.recordedAssistantResponse = true;
+  }
+
+  async incrementAnonymousUsage(): Promise<void> {
     if (!this.anonymousUser?.id) {
       throw new AssistantError(
         "Anonymous user required to increment anonymous usage",
@@ -365,455 +149,42 @@ export class UsageManager {
       );
     }
 
-    logger.debug("Incrementing anonymous usage", {
-      anonymousUserId: this.anonymousUser.id,
-    });
-
-    if (
-      await this.tryEnqueueUsageTask({
-        action: "increment_anonymous_usage",
-        anonymousUserId: this.anonymousUser.id,
-      })
-    ) {
-      return;
-    }
-
-    await UsageManager.applyAnonymousUsageUpdate(this.repositories, this.anonymousUser.id);
-
-    logger.debug("Anonymous usage incremented", {
-      anonymousUserId: this.anonymousUser.id,
-    });
+    await this.repositories.anonymousUsers.incrementDailyCount(this.anonymousUser.id);
   }
 
-  async checkProUsage(modelId: string, provider?: string) {
-    logger.debug("Checking pro usage", { modelId });
-
-    const snapshot = this.getProUsageSnapshot();
-    const usageMultiplier = await this.calculateUsageMultiplier(modelId, provider);
-    const dailyProCount = snapshot.dailyCount;
-
-    if (dailyProCount >= snapshot.limit) {
-      throw new AssistantError("Daily Pro model limit reached.", ErrorType.USAGE_LIMIT_ERROR);
-    }
-
-    const modelConfig = await this.getModelConfig(modelId, provider);
-
-    logger.debug("Pro usage checked", { userId: this.user.id });
-
-    return {
-      dailyProCount,
-      limit: snapshot.limit,
-      costMultiplier: usageMultiplier,
-      modelCostInfo: {
-        inputCost: modelConfig?.costPer1kInputTokens || 0,
-        outputCost: modelConfig?.costPer1kOutputTokens || 0,
-      },
-    };
-  }
-
-  async incrementProUsage(modelId: string, provider?: string) {
-    if (!this.user?.id) {
-      throw new AssistantError("User required to increment pro usage", ErrorType.PARAMS_ERROR);
-    }
-
-    logger.debug("Incrementing pro usage", { userId: this.user.id });
-
-    const usageMultiplier = await this.calculateUsageMultiplier(modelId, provider);
-
-    if (
-      await this.tryEnqueueUsageTask({
-        action: "increment_pro_usage",
-        userId: this.user.id,
-        modelId,
-        usageMultiplier,
-      })
-    ) {
-      this.incrementLocalCounts(["message_count"]);
-      this.incrementLocalCounts(["daily_pro_message_count"], usageMultiplier);
-
-      return;
-    }
-
-    const updatedUser = await UsageManager.applyProUsageUpdate(
-      this.repositories,
-      this.user,
-      usageMultiplier,
-    );
-
-    this.user = updatedUser;
-    this.invalidateProUsageSnapshot();
-
-    logger.debug("Pro usage incremented", { userId: this.user.id });
-  }
-
-  async checkByokUsage() {
-    const snapshot = this.getByokUsageSnapshot();
-
-    logger.debug("Checking BYOK usage", { userId: this.user?.id });
-
-    return {
-      dailyByokCount: snapshot.dailyCount,
-      limit: null,
-    };
-  }
-
-  async incrementByokUsage() {
-    if (!this.user?.id) {
-      throw new AssistantError("User required to increment BYOK usage", ErrorType.PARAMS_ERROR);
-    }
-
-    logger.debug("Incrementing BYOK usage", { userId: this.user.id });
-
-    if (
-      await this.tryEnqueueUsageTask({
-        action: "increment_byok_usage",
-        userId: this.user.id,
-      })
-    ) {
-      this.incrementLocalCounts([
-        "message_count",
-        "byok_message_count",
-        "daily_byok_message_count",
-      ]);
-
-      return;
-    }
-
-    const updatedUser = await UsageManager.applyByokUsageUpdate(this.repositories, this.user);
-
-    this.user = updatedUser;
-    this.invalidateByokUsageSnapshot();
-
-    logger.debug("BYOK usage incremented", { userId: this.user.id });
-  }
-
-  async checkUsageByModel(modelId: string, isPro: boolean, provider?: string) {
-    logger.debug("Checking usage by model", { modelId, isPro });
-    if (await this.isByokRequest(modelId, provider)) {
-      return await this.checkByokUsage();
-    }
-
-    const modelIsPro = await this.isProModel(modelId, provider);
-
-    if (modelIsPro) {
-      if (!isPro) {
-        throw new AssistantError(
-          "You are not a paid user. Please upgrade to a paid plan to use this model.",
-          ErrorType.AUTHENTICATION_ERROR,
-        );
-      }
-
-      return await this.checkProUsage(modelId, provider);
-    }
-
-    if (this.user?.id) {
-      return await this.checkUsage();
-    }
-
-    if (this.anonymousUser?.id) {
-      return await this.checkAnonymousUsage();
-    }
-
-    throw new AssistantError(
-      "Either authenticated or anonymous user required for usage tracking",
-      ErrorType.PARAMS_ERROR,
-    );
-  }
-
-  async incrementUsageByModel(modelId: string, isPro: boolean, provider?: string) {
-    logger.debug("Incrementing usage by model", { modelId, isPro });
-    if (await this.isByokRequest(modelId, provider)) {
-      await this.incrementByokUsage();
-
-      return;
-    }
-
-    const modelIsPro = await this.isProModel(modelId, provider);
-
-    if (modelIsPro) {
-      if (isPro) {
-        await this.incrementProUsage(modelId, provider);
-      } else {
-        throw new AssistantError(
-          "You are not a paid user. Please upgrade to a paid plan to use this model.",
-          ErrorType.AUTHENTICATION_ERROR,
-        );
-      }
-    } else if (this.user?.id) {
-      await this.incrementUsage();
-    } else if (this.anonymousUser?.id) {
-      await this.incrementAnonymousUsage();
-    } else {
-      throw new AssistantError(
-        "Either authenticated or anonymous user required for usage tracking",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-  }
-
-  /**
-   * Get usage limit information for a user
-   * @returns UsageLimits object with information about regular and pro limits
-   */
   async getUsageLimits(): Promise<UsageLimits> {
-    logger.debug("Fetching usage limits");
     if (!this.user?.id) {
-      if (this.anonymousUser?.id) {
-        const { count: dailyCount } =
-          await this.repositories.anonymousUsers.checkAndResetDailyLimit(this.anonymousUser.id);
-
-        return {
-          daily: {
-            used: dailyCount,
-            limit: USAGE_CONFIG.NON_AUTH_DAILY_MESSAGE_LIMIT,
-          },
-        };
+      if (!this.anonymousUser?.id) {
+        throw new AssistantError("User required to get usage limits", ErrorType.PARAMS_ERROR);
       }
 
-      throw new AssistantError("User required to get usage limits", ErrorType.PARAMS_ERROR);
-    }
-
-    const regularSnapshot = this.getRegularUsageSnapshot();
-
-    const usageLimits: UsageLimits = {
-      daily: {
-        used: regularSnapshot.dailyCount,
-        limit: regularSnapshot.limit,
-      },
-    };
-
-    const byokSnapshot = this.getByokUsageSnapshot();
-
-    usageLimits.byok = {
-      used: byokSnapshot.dailyCount,
-      limit: null,
-    };
-
-    if (this.user.plan_id === "pro") {
-      const proSnapshot = this.getProUsageSnapshot();
-
-      usageLimits.pro = {
-        used: proSnapshot.dailyCount,
-        limit: proSnapshot.limit,
-      };
-    }
-
-    logger.debug("Usage limits fetched", { userId: this.user.id });
-
-    return usageLimits;
-  }
-
-  /**
-   * Get the cost multiplier for a specific model
-   * @param modelId The ID of the model to check
-   * @returns The cost multiplier for the model
-   */
-  async getModelUsageMultiplier(
-    modelId: string,
-    provider?: string,
-  ): Promise<{
-    multiplier: number;
-    modelCostInfo: {
-      inputCost: number;
-      outputCost: number;
-    };
-  }> {
-    logger.debug("Getting model usage multiplier", { modelId });
-    const usageMultiplier = await this.calculateUsageMultiplier(modelId, provider);
-    const modelConfig = await this.getModelConfig(modelId, provider);
-
-    logger.debug("Model config fetched", { modelId, modelConfig });
-
-    return {
-      multiplier: usageMultiplier,
-      modelCostInfo: {
-        inputCost: modelConfig?.costPer1kInputTokens || 0,
-        outputCost: modelConfig?.costPer1kOutputTokens || 0,
-      },
-    };
-  }
-
-  async incrementFunctionUsage(functionType: FunctionType, isPro: boolean, costPerCall = 1) {
-    if (!costPerCall) {
-      return;
-    }
-
-    if (!this.user?.id) {
-      throw new AssistantError("User required to increment function usage", ErrorType.PARAMS_ERROR);
-    }
-
-    logger.debug("Incrementing function usage", {
-      userId: this.user.id,
-      functionType,
-    });
-
-    if (
-      await this.tryEnqueueUsageTask({
-        action: "increment_function_usage",
-        userId: this.user.id,
-        functionType,
-        isProUser: isPro,
-        costPerCall,
-      })
-    ) {
-      this.incrementLocalCounts(["daily_message_count"]);
-      if (functionType === "premium") {
-        this.incrementLocalCounts(["daily_pro_message_count"], costPerCall);
-      }
-
-      return;
-    }
-
-    const updatedUser = await UsageManager.applyFunctionUsageUpdate(this.repositories, this.user, {
-      functionType,
-      isPro,
-      costPerCall,
-    });
-
-    this.user = updatedUser;
-    this.invalidateRegularUsageSnapshot();
-    this.invalidateProUsageSnapshot();
-
-    logger.debug("Function usage incremented", { userId: this.user.id });
-  }
-
-  private incrementLocalCounts(
-    fields: Array<
-      | "message_count"
-      | "daily_message_count"
-      | "daily_pro_message_count"
-      | "byok_message_count"
-      | "daily_byok_message_count"
-    >,
-    increment = 1,
-  ): void {
-    if (!this.user) {
-      return;
-    }
-
-    for (const field of fields) {
-      const current = Number(this.user[field] ?? 0);
-
-      this.user[field] = current + increment;
-
-      if (field === "daily_message_count" && this.regularUsageSnapshot) {
-        this.regularUsageSnapshot.dailyCount += increment;
-      }
-
-      if (field === "daily_pro_message_count" && this.proUsageSnapshot) {
-        this.proUsageSnapshot.dailyCount += increment;
-      }
-
-      if (field === "daily_byok_message_count" && this.byokUsageSnapshot) {
-        this.byokUsageSnapshot.dailyCount += increment;
-      }
-    }
-
-    this.user.last_active_at = new Date().toISOString();
-  }
-
-  private async tryEnqueueUsageTask(payload: UsageUpdateTaskInput): Promise<boolean> {
-    if (!this.shouldEnqueueUsage()) {
-      return false;
-    }
-
-    try {
-      const enrichedPayload: UsageUpdateTaskPayload = {
-        ...payload,
-        queuedAt: Date.now(),
-      };
-
-      await this.enqueueUsageTask(enrichedPayload);
-
-      return true;
-    } catch (error) {
-      logger.error("Failed to enqueue usage task", { error, payload });
-
-      return false;
-    }
-  }
-
-  private shouldEnqueueUsage(): boolean {
-    return Boolean(this.enqueueUsageTask && this.asyncUsageUpdates);
-  }
-
-  private static async applyUsageCounterIncrements(
-    repositories: RepositoryManager,
-    user: User,
-    increments: UsageCounterIncrements,
-  ): Promise<User> {
-    const updatedUser = await repositories.users.incrementUsageCounters(user.id, increments);
-
-    if (!updatedUser) {
-      logger.warn("Usage counters were not applied: user row missing", { userId: user.id });
-
-      return user;
-    }
-
-    return updatedUser;
-  }
-
-  public static async applyAuthenticatedUsageUpdate(
-    repositories: RepositoryManager,
-    user: User,
-  ): Promise<User> {
-    return UsageManager.applyUsageCounterIncrements(repositories, user, {
-      message_count: 1,
-      daily_message_count: 1,
-    });
-  }
-
-  public static async applyProUsageUpdate(
-    repositories: RepositoryManager,
-    user: User,
-    usageMultiplier: number,
-  ): Promise<User> {
-    return UsageManager.applyUsageCounterIncrements(repositories, user, {
-      message_count: 1,
-      daily_pro_message_count: usageMultiplier,
-    });
-  }
-
-  public static async applyByokUsageUpdate(
-    repositories: RepositoryManager,
-    user: User,
-  ): Promise<User> {
-    return UsageManager.applyUsageCounterIncrements(repositories, user, {
-      message_count: 1,
-      byok_message_count: 1,
-      daily_byok_message_count: 1,
-    });
-  }
-
-  public static async applyAnonymousUsageUpdate(
-    repositories: RepositoryManager,
-    anonymousUserId: string,
-  ): Promise<void> {
-    await repositories.anonymousUsers.incrementDailyCount(anonymousUserId);
-  }
-
-  public static async applyFunctionUsageUpdate(
-    repositories: RepositoryManager,
-    user: User,
-    options: {
-      functionType: FunctionType;
-      isPro: boolean;
-      costPerCall: number;
-    },
-  ): Promise<User> {
-    if (options.functionType === "premium" && !options.isPro) {
-      throw new AssistantError(
-        "You are not a paid user. Please upgrade to a paid plan to use premium functions.",
-        ErrorType.AUTHENTICATION_ERROR,
+      const { count } = await this.repositories.anonymousUsers.checkAndResetDailyLimit(
+        this.anonymousUser.id,
       );
+
+      return {
+        daily: { used: count, limit: USAGE_CONFIG.NON_AUTH_DAILY_MESSAGE_LIMIT },
+      };
     }
 
-    return UsageManager.applyUsageCounterIncrements(repositories, user, {
-      message_count: 1,
-      daily_message_count: 1,
-      ...(options.functionType === "premium"
-        ? { daily_pro_message_count: options.costPerCall }
-        : {}),
-    });
+    const isPaid = this.isPaidUser();
+    const daily = isPaid
+      ? { used: 0, limit: null }
+      : {
+          used: this.getRegularUsageSnapshot().dailyCount,
+          limit: USAGE_CONFIG.AUTH_DAILY_MESSAGE_LIMIT,
+        };
+
+    if (!isPaid) {
+      return { daily };
+    }
+
+    const balance = await resolveUsageBalanceSnapshot(
+      this.repositories,
+      this.user.id,
+      usagePeriodFromDate(),
+    );
+
+    return { daily, credits: usageCreditsFromBalance(balance) };
   }
 }

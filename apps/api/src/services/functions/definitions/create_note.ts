@@ -24,6 +24,5 @@ export const create_note: FunctionToolDescriptor = {
     required: ["title", "content"],
   }),
   type: "premium",
-  costPerCall: 0,
   permissions: ["write"],
 };

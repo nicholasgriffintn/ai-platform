@@ -18,11 +18,6 @@ export interface User {
   message_count?: number;
   daily_message_count?: number;
   daily_reset?: string | null;
-  daily_pro_message_count?: number;
-  daily_pro_reset?: string | null;
-  byok_message_count?: number;
-  daily_byok_message_count?: number;
-  daily_byok_reset?: string | null;
   last_active_at?: string | null;
 }
 

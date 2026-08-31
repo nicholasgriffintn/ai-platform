@@ -104,9 +104,6 @@ export function getResponseStyle(
   };
 }
 
-/**
- * Return an empty prompt string
- */
 export function emptyPrompt(): string {
   return "";
 }
