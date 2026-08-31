@@ -215,6 +215,9 @@ export const embeddingDocument = sqliteTable(
     provider: text().notNull(),
     provider_target: text().default("quarantined-legacy").notNull(),
     embedding_model: text().default("unknown-legacy").notNull(),
+    embedding_dimensions: integer().default(1).notNull(),
+    distance_metric: text().default("unknown").notNull(),
+    task_mode: text().default("unknown").notNull(),
     vector_space: text().notNull(),
     vector_space_version: text().default("legacy").notNull(),
     created_at: text()
@@ -259,6 +262,9 @@ export const embeddingChunk = sqliteTable(
     provider: text().notNull(),
     provider_target: text().default("quarantined-legacy").notNull(),
     embedding_model: text().default("unknown-legacy").notNull(),
+    embedding_dimensions: integer().default(1).notNull(),
+    distance_metric: text().default("unknown").notNull(),
+    task_mode: text().default("unknown").notNull(),
     vector_space: text().notNull(),
     vector_space_version: text().default("legacy").notNull(),
     created_at: text()

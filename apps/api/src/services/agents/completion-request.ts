@@ -62,7 +62,6 @@ class AgentCompletionRequestPreparer {
       stop: requestStop ? (Array.isArray(requestStop) ? requestStop : [requestStop]) : undefined,
       enabled_tools: this.resolveEnabledTools(),
       approved_tools: this.input.body.approved_tools,
-      rag_options: this.input.body.rag_options,
       use_multi_model: this.input.body.use_multi_model,
       models: this.input.body.models,
       reasoning_effort: this.input.body.reasoning_effort ?? this.input.body.reasoning?.effort,

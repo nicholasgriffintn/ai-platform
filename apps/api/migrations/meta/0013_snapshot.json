@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3502e465-c8c6-4490-958e-64d5d1cb1968",
-  "prevId": "2c5abd06-cd83-435c-8e47-8719c004e4b1",
+  "id": "776923ad-de64-434d-a068-61d981029143",
+  "prevId": "e5aa1597-da86-4d93-ba7d-530b935fa68d",
   "tables": {
     "activity_record": {
       "name": "activity_record",
@@ -1933,6 +1933,30 @@
           "autoincrement": false,
           "default": "'unknown-legacy'"
         },
+        "embedding_dimensions": {
+          "name": "embedding_dimensions",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "distance_metric": {
+          "name": "distance_metric",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'unknown'"
+        },
+        "task_mode": {
+          "name": "task_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'unknown'"
+        },
         "vector_space": {
           "name": "vector_space",
           "type": "text",
@@ -2086,6 +2110,30 @@
           "notNull": true,
           "autoincrement": false,
           "default": "'unknown-legacy'"
+        },
+        "embedding_dimensions": {
+          "name": "embedding_dimensions",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "distance_metric": {
+          "name": "distance_metric",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'unknown'"
+        },
+        "task_mode": {
+          "name": "task_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'unknown'"
         },
         "vector_space": {
           "name": "vector_space",

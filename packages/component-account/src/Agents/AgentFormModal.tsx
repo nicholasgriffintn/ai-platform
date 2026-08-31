@@ -16,6 +16,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@ngriffin_uk/polychat-component-ui";
+import type { AgentResponse, ModelConfig, Tool } from "@ngriffin_uk/polychat-schemas";
 import {
   getNumberInputValue,
   parseNumberInputValue,
@@ -24,17 +25,18 @@ import {
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import React, { type FormEvent } from "react";
 
+import type { AgentFormData, GroupedAgents } from "./types";
 import { useAgentForm } from "./useAgentForm";
 
 interface AgentFormModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: any, isEdit: boolean, agentId: string | null) => Promise<void>;
+  onSubmit: (data: AgentFormData, isEdit: boolean, agentId: string | null) => Promise<void>;
   isSubmitting: boolean;
-  apiModels: Record<string, any>;
-  groupedAgents: any;
-  agent?: any;
-  tools?: Array<any>;
+  apiModels: ModelConfig;
+  groupedAgents: GroupedAgents;
+  agent?: AgentResponse | null;
+  tools?: Tool[];
   isLoadingTools?: boolean;
 }
 
@@ -216,7 +218,7 @@ export function AgentFormModal({
                       placeholder="e.g., dev-team, marketing-team"
                       description="Unique identifier for the team this agent belongs to"
                     />
-                    {groupedAgents.teams && Object.keys(groupedAgents.teams).length > 0 && (
+                    {Object.keys(groupedAgents.teams).length > 0 && (
                       <div className="mt-2">
                         <p className="text-xs text-muted-foreground mb-2">Existing teams:</p>
                         <div className="flex flex-wrap gap-1">
@@ -349,7 +351,7 @@ export function AgentFormModal({
                   <p className="text-xs text-muted-foreground">No tools available.</p>
                 ) : (
                   <div className="space-y-2 border rounded-lg p-3 max-h-56 overflow-y-auto">
-                    {tools.map((tool: any) => {
+                    {tools.map((tool) => {
                       const isSelected = form.enabledTools.includes(tool.id);
 
                       return (

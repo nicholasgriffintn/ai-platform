@@ -648,7 +648,7 @@ export class HomePage extends BasePage {
     await this.page.getByRole("button", { name: `Verbosity: ${verbosity}` }).waitFor();
   }
 
-  async configureDetailedChatSettings() {
+  async configureDetailedGenerationSettings() {
     await this.page.getByRole("button", { name: "Open chat settings" }).click();
     const settings = this.page.getByRole("dialog", { name: "Chat settings" });
 

@@ -1,4 +1,4 @@
-# ADR 0033: Give a saved agent an owning scope
+# ADR 0034: Give a saved agent an owning scope
 
 ## Status
 

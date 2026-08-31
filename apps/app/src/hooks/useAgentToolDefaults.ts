@@ -1,14 +1,11 @@
 import { isModelToolId } from "@ngriffin_uk/polychat-library-chat/model-tools";
-import { readToolIds } from "@ngriffin_uk/polychat-schemas";
+import { readToolIds, type AgentResponse } from "@ngriffin_uk/polychat-schemas";
 import { useEffect, useRef } from "react";
 
 import { useToolsStore } from "~/state/stores/toolsStore";
 import type { ChatMode } from "~/types";
 
-type AgentWithTools = {
-  id: string;
-  enabled_tools?: string[] | string | null;
-};
+type AgentWithTools = Pick<AgentResponse, "id" | "enabled_tools">;
 
 const areToolsEqual = (left: readonly string[], right: readonly string[]) =>
   left.length === right.length && left.every((toolId, index) => toolId === right[index]);

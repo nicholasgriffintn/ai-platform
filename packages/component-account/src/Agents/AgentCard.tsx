@@ -1,15 +1,26 @@
 import { Button, Card, CardContent, Badge } from "@ngriffin_uk/polychat-component-ui";
+import type { AgentResponse } from "@ngriffin_uk/polychat-schemas";
 import { Edit, Loader2, Settings, Star, Trash2, Zap } from "lucide-react";
+
+export interface AgentCardProps {
+  agent: AgentResponse;
+  onEdit: (agent: AgentResponse) => void;
+  onShare: (agent: AgentResponse) => void;
+  onDelete: (agentId: string, agentName: string) => void;
+  isUpdating?: boolean;
+  isSharing?: boolean;
+  isDeleting?: boolean;
+}
 
 export function AgentCard({
   agent,
   onEdit,
   onShare,
   onDelete,
-  isUpdating,
-  isSharing,
-  isDeleting,
-}: any) {
+  isUpdating = false,
+  isSharing = false,
+  isDeleting = false,
+}: AgentCardProps) {
   return (
     <Card className="group hover:shadow-md transition-all duration-200">
       <CardContent className="p-6">
@@ -49,12 +60,12 @@ export function AgentCard({
                   System Prompt
                 </Badge>
               )}
-              {agent.few_shot_examples && (
+              {agent.few_shot_examples && agent.few_shot_examples.length > 0 && (
                 <Badge variant="outline" className="text-xs">
                   Examples
                 </Badge>
               )}
-              {agent.servers && JSON.parse(agent.servers).length > 0 && (
+              {agent.servers.length > 0 && (
                 <Badge variant="outline" className="text-xs">
                   MCP Servers
                 </Badge>

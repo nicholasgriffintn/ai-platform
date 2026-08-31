@@ -1,4 +1,4 @@
-# ADR 0034: Compose a saved agent from the platform's own capabilities
+# ADR 0035: Compose a saved agent from the platform's own capabilities
 
 ## Status
 

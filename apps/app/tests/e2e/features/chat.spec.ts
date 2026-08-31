@@ -346,7 +346,7 @@ test.describe("Response controls as pro", () => {
   test("applies detailed generation settings", async ({ homePage, page }) => {
     await homePage.navigate("/chat");
     await homePage.selectModel(TEXT_MODEL);
-    await homePage.configureDetailedChatSettings();
+    await homePage.configureDetailedGenerationSettings();
     const request = await homePage.sendMessageAndReadCompletionRequest(
       "Use the detailed settings for this release check",
     );

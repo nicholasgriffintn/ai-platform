@@ -908,7 +908,7 @@ describe("ChatService streaming", () => {
     expect(body.compaction).toBeUndefined();
   });
 
-  it("omits empty optional settings objects from chat requests", async () => {
+  it("omits empty hosted-tool options and retired persisted retrieval settings", async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
       createSseResponse([data("[DONE]")]),
     );
@@ -918,9 +918,7 @@ describe("ChatService streaming", () => {
     const service = new ChatService(async () => ({}));
 
     await service.streamChatCompletions({
-      chatSettings: {
-        tool_options: {},
-      },
+      chatSettings: JSON.parse('{"rag_options":{"topK":8},"tool_options":{},"use_rag":true}'),
       completionId: "conversation-1",
       endpoint: "/chat/completions",
       messages: [{ role: "user", content: "hello" } as Message],
@@ -934,6 +932,8 @@ describe("ChatService streaming", () => {
     const [, request] = fetchMock.mock.calls[0];
     const body = JSON.parse(String(request?.body));
 
+    expect(body.rag_options).toBeUndefined();
+    expect(body.use_rag).toBeUndefined();
     expect(body.tool_options).toBeUndefined();
   });
 

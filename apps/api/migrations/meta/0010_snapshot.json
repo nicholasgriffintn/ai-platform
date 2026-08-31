@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "be4bcd01-0657-40a2-8039-22bfec8e35e6",
+  "id": "fddb9bd9-f83e-4aa9-9e87-f0c4418694a7",
   "prevId": "5705e09b-733e-4ded-b838-7e06b45e4d87",
   "tables": {
     "activity_record": {
@@ -363,29 +363,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "owner_scope_type": {
-          "name": "owner_scope_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'user'"
-        },
-        "owner_scope_id": {
-          "name": "owner_scope_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "''"
-        },
-        "derived_from_agent_id": {
-          "name": "derived_from_agent_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "name": {
           "name": "name",
           "type": "text",
@@ -505,11 +482,6 @@
         "agents_team_id_idx": {
           "name": "agents_team_id_idx",
           "columns": ["team_id"],
-          "isUnique": false
-        },
-        "agents_owner_scope_idx": {
-          "name": "agents_owner_scope_idx",
-          "columns": ["owner_scope_type", "owner_scope_id"],
           "isUnique": false
         }
       },
@@ -1919,6 +1891,30 @@
           "autoincrement": false,
           "default": "'unknown-legacy'"
         },
+        "embedding_dimensions": {
+          "name": "embedding_dimensions",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "distance_metric": {
+          "name": "distance_metric",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'unknown'"
+        },
+        "task_mode": {
+          "name": "task_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'unknown'"
+        },
         "vector_space": {
           "name": "vector_space",
           "type": "text",
@@ -2072,6 +2068,30 @@
           "notNull": true,
           "autoincrement": false,
           "default": "'unknown-legacy'"
+        },
+        "embedding_dimensions": {
+          "name": "embedding_dimensions",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "distance_metric": {
+          "name": "distance_metric",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'unknown'"
+        },
+        "task_mode": {
+          "name": "task_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'unknown'"
         },
         "vector_space": {
           "name": "vector_space",
