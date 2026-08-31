@@ -34,18 +34,18 @@ export function ToolRunner({ backPath, projectId, toolId }: ToolRunnerProps) {
 
   if (error || !tool) {
     return (
-      <main className="mx-auto max-w-xl px-6 py-16">
+      <div className="mx-auto max-w-xl px-6 py-16">
         <Card className="p-8 text-center shadow-none">
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Tool unavailable</h1>
           <p className="text-sm leading-6 text-zinc-500">This tool no longer exists.</p>
           <BackLink href={backPath} label="Back to capabilities" />
         </Card>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-10 md:px-10 md:py-14">
+    <div className="mx-auto max-w-5xl px-6 py-10 md:px-10 md:py-14">
       <header className="mb-8">
         <BackLink href={backPath} label="Back to capabilities" />
       </header>
@@ -59,6 +59,6 @@ export function ToolRunner({ backPath, projectId, toolId }: ToolRunnerProps) {
           isSubmitting={executeTool.isPending}
         />
       )}
-    </main>
+    </div>
   );
 }
