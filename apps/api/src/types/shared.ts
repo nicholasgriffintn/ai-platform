@@ -46,6 +46,12 @@ export type IEnv = {
   ASSETS_BUCKET_ACCESS_KEY_ID: string;
   ASSETS_BUCKET_SECRET_ACCESS_KEY: string;
   MISTRAL_API_KEY?: string;
+  SHIELDSTRAL_BASE_URL?: string;
+  SHIELDSTRAL_API_KEY?: string;
+  SHIELDSTRAL_MODEL?: string;
+  SHIELDSTRAL_POLICY?: string;
+  SHIELDSTRAL_POLICY_VERSION?: string;
+  SHIELDSTRAL_THRESHOLD?: string;
   OPENROUTER_API_KEY?: string;
   FAL_KEY?: string;
   IDEOGRAM_API_KEY?: string;

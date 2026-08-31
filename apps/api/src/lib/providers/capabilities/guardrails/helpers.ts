@@ -1,5 +1,12 @@
 import { trackGuardrailViolation } from "~/lib/monitoring";
-import type { GuardrailResult, GuardrailsProvider, IEnv, IUser, IUserSettings } from "~/types";
+import type {
+  GuardrailInput,
+  GuardrailResult,
+  GuardrailsProvider,
+  IEnv,
+  IUser,
+  IUserSettings,
+} from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { providerLibrary } from "../../library";
@@ -47,6 +54,22 @@ export function getGuardrailsProvider(
     });
   }
 
+  if (userSettings.guardrails_provider === "shieldstral") {
+    return providerLibrary.guardrails("shieldstral", {
+      env,
+      user,
+      config: {
+        baseUrl: env.SHIELDSTRAL_BASE_URL,
+        apiKey: env.SHIELDSTRAL_API_KEY,
+        model: env.SHIELDSTRAL_MODEL,
+        policy: env.SHIELDSTRAL_POLICY,
+        policyVersion: env.SHIELDSTRAL_POLICY_VERSION,
+        threshold:
+          env.SHIELDSTRAL_THRESHOLD === undefined ? undefined : Number(env.SHIELDSTRAL_THRESHOLD),
+      },
+    });
+  }
+
   return providerLibrary.guardrails("llamaguard", {
     env,
     user,
@@ -70,7 +93,7 @@ export class Guardrails {
   }
 
   async validateInput(
-    message: string,
+    message: GuardrailInput,
     userId?: number,
     completionId?: string,
   ): Promise<GuardrailResult> {
@@ -83,7 +106,11 @@ export class Guardrails {
     if (!result?.isValid && result?.violations?.length) {
       trackGuardrailViolation(
         "input_violation",
-        { message, violations: result.violations },
+        {
+          provider: result.provider,
+          violations: result.violations,
+          contentLength: typeof message === "string" ? message.length : message.text.length,
+        },
         this.env.ANALYTICS,
         userId,
         completionId,
@@ -94,7 +121,7 @@ export class Guardrails {
   }
 
   async validateOutput(
-    response: string,
+    response: GuardrailInput,
     userId?: number,
     completionId?: string,
   ): Promise<GuardrailResult> {
@@ -107,7 +134,11 @@ export class Guardrails {
     if (!result?.isValid && result?.violations?.length) {
       trackGuardrailViolation(
         "output_violation",
-        { response, violations: result.violations },
+        {
+          provider: result.provider,
+          violations: result.violations,
+          contentLength: typeof response === "string" ? response.length : response.text.length,
+        },
         this.env.ANALYTICS,
         userId,
         completionId,

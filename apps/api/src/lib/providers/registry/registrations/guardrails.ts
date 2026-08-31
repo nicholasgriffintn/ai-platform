@@ -12,6 +12,10 @@ import {
   MistralGuardProvider,
   type MistralGuardConfig,
 } from "../../capabilities/guardrails/providers/mistral";
+import {
+  ShieldstralGuardProvider,
+  type ShieldstralGuardConfig,
+} from "../../capabilities/guardrails/providers/shieldstral";
 import type { ProviderRegistry } from "../ProviderRegistry";
 import type { ProviderRegistration } from "../types";
 import { ensureEnv, ensureConfig } from "./utils";
@@ -65,6 +69,24 @@ const guardrailsProviders: ProviderRegistration<GuardrailsProvider>[] = [
     metadata: {
       vendor: "Mistral AI",
       categories: ["guardrails"],
+    },
+  },
+  {
+    name: "shieldstral",
+    lifecycle: "transient",
+    create: (context) => {
+      ensureEnv(context);
+      const config = ensureConfig<ShieldstralGuardConfig>(
+        context,
+        "Shieldstral guardrails config required",
+      );
+
+      return new ShieldstralGuardProvider(config);
+    },
+    metadata: {
+      vendor: "Mistral AI",
+      categories: ["guardrails"],
+      tags: ["multimodal", "open-weights", "policy-adaptive"],
     },
   },
 ];

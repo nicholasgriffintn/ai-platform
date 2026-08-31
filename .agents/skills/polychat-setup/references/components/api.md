@@ -17,7 +17,7 @@ The API provides a unified interface to multiple AI providers, following OpenAI'
 - **Skills** - Specialised instructions the model loads on demand instead of carrying in every prompt
 - **RAG & Memories** - Vector-based context with Cloudflare Vectorize
 - **Training Control Plane** - A training and fine-tuning execution service
-- **Content Safety** - Llamaguard and AWS Bedrock Guardrails
+- **Content Safety** - LlamaGuard, Mistral Moderation, self-hosted Shieldstral, and AWS Bedrock Guardrails
 - **Flexible Auth** - OAuth, API keys, JWT, magic links, passkeys
 - **Real-time** - Streaming responses and WebSocket support
 - **Durable goal history** - Goal lifecycle markers remain in stored conversation timelines while
