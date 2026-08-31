@@ -96,6 +96,11 @@ export interface ProjectCapabilityRow {
   created_at: string;
 }
 
+export interface ProjectReferenceRow {
+  id: string;
+  name: string;
+}
+
 export interface ProjectConversationRow {
   id: string;
   type: ConversationType;
@@ -602,6 +607,36 @@ export class WorkspaceRepository extends BaseRepository {
 			 WHERE pc.project_id = ?
 			 ORDER BY pc.created_at`,
       [projectId],
+    );
+  }
+
+  async listProjectsWithCapability(
+    kind: ProjectCapabilityKind,
+    capabilityId: string,
+  ): Promise<ProjectReferenceRow[]> {
+    return this.runQuery<ProjectReferenceRow>(
+      `SELECT DISTINCT p.id, p.name
+			 FROM project p
+			 JOIN project_capability pc ON pc.project_id = p.id
+			 WHERE pc.kind = ? AND pc.capability_id = ? AND p.archived_at IS NULL
+			 ORDER BY p.name`,
+      [kind, capabilityId],
+    );
+  }
+
+  async listProjectsWithFlowStageAgent(agentId: string): Promise<ProjectReferenceRow[]> {
+    return this.runQuery<ProjectReferenceRow>(
+      `SELECT p.id, p.name
+			 FROM project p
+			 WHERE p.archived_at IS NULL
+				AND p.flow IS NOT NULL
+				AND json_valid(p.flow)
+				AND EXISTS (
+					SELECT 1 FROM json_each(p.flow, '$.stages') stage
+					WHERE json_extract(stage.value, '$.agentId') = ?
+				)
+			 ORDER BY p.name`,
+      [agentId],
     );
   }
 

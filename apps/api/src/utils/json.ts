@@ -1,3 +1,5 @@
+import type { ZodType } from "zod/v4";
+
 export function safeParseJson<T = any>(jsonString: string): T | null {
   try {
     return JSON.parse(jsonString) as T;
@@ -40,6 +42,20 @@ export function parseJsonStringArray(value: string | null | undefined): string[]
   const parsed = value ? safeParseJson<unknown>(value) : undefined;
 
   return Array.isArray(parsed) ? parsed.filter((entry) => typeof entry === "string") : undefined;
+}
+
+export function parseJsonArrayColumn<T>(value: unknown, itemSchema: ZodType<T>): T[] | null {
+  const parsed = typeof value === "string" ? safeParseJson<unknown>(value) : value;
+
+  if (!Array.isArray(parsed)) {
+    return null;
+  }
+
+  return parsed.flatMap((entry) => {
+    const result = itemSchema.safeParse(entry);
+
+    return result.success ? [result.data] : [];
+  });
 }
 
 export interface ParseResult<T> {

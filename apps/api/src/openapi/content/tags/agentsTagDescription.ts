@@ -70,16 +70,13 @@ Each server in the \`servers\` array supports:
 - \`type\` - \`"sse"\` (Server-Sent Events) or \`"stdio"\` (default: "sse")
 - \`command\` - Command for stdio transports
 - \`args\` - Arguments for stdio transports
-- \`env\` - Environment variables: \`[{key: "VAR", value: "value"}]\`
-- \`headers\` - HTTP headers for SSE: \`[{key: "Header", value: "value"}]\`
 
 **Example SSE Server:**
 
 ~~~json
 {
   "url": "https://mcp.example.com",
-  "type": "sse",
-  "headers": [{ "key": "Authorization", "value": "Bearer token123" }]
+  "type": "sse"
 }
 ~~~
 
@@ -90,8 +87,7 @@ Each server in the \`servers\` array supports:
   "url": "file:///path/to/server",
   "type": "stdio",
   "command": "node",
-  "args": ["server.js"],
-  "env": [{ "key": "API_KEY", "value": "key123" }]
+  "args": ["server.js"]
 }
 ~~~
 
@@ -197,8 +193,7 @@ Organize agents into teams:
   "servers": [
     {
       "url": "https://database-mcp.example.com",
-      "type": "sse",
-      "headers": [{ "key": "Authorization", "value": "Bearer db_token" }]
+      "type": "sse"
     }
   ]
 }

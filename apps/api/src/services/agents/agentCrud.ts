@@ -85,11 +85,50 @@ export async function updateAgent(
   return getAgentById(context, agentId, id);
 }
 
+async function findProjectsUsingAgent(context: ServiceContext, agentId: string) {
+  const [attached, inFlows] = await Promise.all([
+    context.repositories.workspaces.listProjectsWithCapability("agent", agentId),
+    context.repositories.workspaces.listProjectsWithFlowStageAgent(agentId),
+  ]);
+
+  return [...new Map([...attached, ...inFlows].map((project) => [project.id, project])).values()];
+}
+
+async function unpublishSharedAgent(context: ServiceContext, agentId: string, userId: number) {
+  const listing = await context.repositories.sharedAgents.getSharedAgentByAgentId(agentId);
+
+  if (listing) {
+    await context.repositories.sharedAgents.deleteSharedAgent(userId, listing.id);
+  }
+
+  const install = await context.repositories.sharedAgents.getInstallByAgentId(userId, agentId);
+
+  if (install) {
+    await context.repositories.sharedAgents.uninstallAgent(userId, agentId);
+  }
+}
+
 export async function deleteAgent(context: ServiceContext, agentId: string, userId?: number) {
   context.ensureDatabase();
   const id = userId ?? context.requireUser().id;
 
   await getAgentById(context, agentId, id);
+
+  const projects = await findProjectsUsingAgent(context, agentId);
+
+  if (projects.length > 0) {
+    throw new AssistantError(
+      `This agent is still used by ${projects.length} project${projects.length === 1 ? "" : "s"}: ${projects
+        .map((project) => project.name)
+        .join(
+          ", ",
+        )}. Detach it from each project, and remove it from any flow stage, before deleting it.`,
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  await unpublishSharedAgent(context, agentId, id);
   await context.repositories.agents.deleteAgent(agentId);
 
   return { success: true };

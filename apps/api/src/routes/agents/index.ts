@@ -1,4 +1,6 @@
 import {
+  agentListResponseSchema,
+  agentResponseSchema,
   createAgentSchema,
   updateAgentSchema,
   createChatCompletionsJsonSchema,
@@ -7,6 +9,7 @@ import {
 import { Hono } from "hono";
 import z from "zod/v4";
 
+import { requireCloudflareExecutionContext } from "~/lib/cloudflare/execution-context";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { addRoute } from "~/lib/http/routeBuilder";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
@@ -43,7 +46,7 @@ addRoute(app, "get", "/", {
   summary: "Get all agents",
   description: "Get all agents for the current user",
   auth: true,
-  responses: { 200: { description: "Success", schema: apiResponseSchema } },
+  responses: { 200: { description: "Agents", schema: agentListResponseSchema } },
   handler: async ({ serviceContext }) => {
     return getUserAgents(serviceContext);
   },
@@ -55,7 +58,7 @@ addRoute(app, "post", "/", {
   description: "Create an agent for the current user",
   auth: true,
   bodySchema: createAgentSchema,
-  responses: { 200: { description: "Success", schema: apiResponseSchema } },
+  responses: { 200: { description: "Created agent", schema: agentResponseSchema } },
   handler: async ({ serviceContext, body }) => {
     return createAgent(serviceContext, body);
   },
@@ -66,7 +69,7 @@ addRoute(app, "get", "/teams", {
   summary: "Get team agents",
   description: "Get all team agents for the current user",
   auth: true,
-  responses: { 200: { description: "Success", schema: apiResponseSchema } },
+  responses: { 200: { description: "Team agents", schema: agentListResponseSchema } },
   handler: async ({ serviceContext }) => {
     return getUserTeamAgents(serviceContext);
   },
@@ -78,7 +81,7 @@ addRoute(app, "get", "/teams/:teamId", {
   description: "Get all agents belonging to a specific team for the current user",
   auth: true,
   paramSchema: teamIdParamSchema,
-  responses: { 200: { description: "Success", schema: apiResponseSchema } },
+  responses: { 200: { description: "Team agents", schema: agentListResponseSchema } },
   handler: async ({ serviceContext, params }) => {
     return getAgentsByTeam(serviceContext, params.teamId);
   },
@@ -91,7 +94,7 @@ addRoute(app, "get", "/:agentId", {
   summary: "Get an agent by ID",
   auth: true,
   paramSchema: agentIdParamSchema,
-  responses: { 200: { description: "Success", schema: apiResponseSchema } },
+  responses: { 200: { description: "Agent", schema: agentResponseSchema } },
   handler: async ({ serviceContext, params }) => {
     return getAgentById(serviceContext, params.agentId);
   },
@@ -114,7 +117,7 @@ addRoute(app, "put", "/:agentId", {
   auth: true,
   paramSchema: agentIdParamSchema,
   bodySchema: updateAgentSchema,
-  responses: { 200: { description: "Success", schema: apiResponseSchema } },
+  responses: { 200: { description: "Updated agent", schema: agentResponseSchema } },
   handler: async ({ serviceContext, params, body }) => {
     return updateAgent(serviceContext, params.agentId, body);
   },
@@ -146,14 +149,22 @@ addRoute(app, "post", "/:agentId/completions", {
       return ResponseFactory.error(raw, "Unauthorized", 401);
     }
 
-    return createAgentCompletion({
+    const response = await createAgentCompletion({
       env: raw.env,
       context: serviceContext,
       body,
       agentId: params.agentId,
       user,
       anonymousUser,
+      executionCtx: requireCloudflareExecutionContext(raw.executionCtx),
+      signal: raw.req.raw.signal,
     });
+
+    if (response instanceof Response) {
+      return response;
+    }
+
+    return ResponseFactory.success(raw, response);
   },
 });
 
