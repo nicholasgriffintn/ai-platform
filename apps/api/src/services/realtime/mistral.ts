@@ -6,13 +6,17 @@ import {
   getRealtimeProvider,
   type RealtimeTranscriptionDelay,
 } from "~/lib/providers/capabilities/realtime";
-import { getMistralTargetStreamingDelayMs } from "~/lib/providers/capabilities/realtime/providers";
+import {
+  getMistralTargetStreamingDelayMs,
+  resolveMistralRealtimeProxyModel,
+} from "~/lib/providers/capabilities/realtime/providers";
 import type { IEnv, IUser } from "~/types";
 
+import { isMistralSessionCreatedMessage, toMistralUpstreamMessage } from "./mistralProtocol";
 import {
-  normalizeClientRealtimeMessage,
-  createRealtimeProxySessionEnd,
   createRealtimeProxyHandshakeFailure,
+  createRealtimeProxySessionEnd,
+  normalizeClientRealtimeMessage,
   REALTIME_PROXY_LIMITS,
   RealtimeProxyLimitError,
   RealtimeProxySessionLimits,
@@ -20,20 +24,6 @@ import {
 } from "./transcriptionProxy";
 
 const MISTRAL_REALTIME_USER_AGENT = "polychat-mistral-realtime-proxy/1.0";
-
-function isMistralSessionCreatedMessage(data: unknown): boolean {
-  if (typeof data !== "string") {
-    return false;
-  }
-
-  try {
-    const payload = JSON.parse(data) as { type?: unknown };
-
-    return payload.type === "session.created";
-  } catch {
-    return false;
-  }
-}
 
 function closeSocket(socket: WebSocket, code = 1000, reason = ""): void {
   try {
@@ -80,8 +70,9 @@ function bridgeMistralRealtimeSockets({
 
   client.addEventListener("message", (event) => {
     try {
-      const message = serializeNormalizedClientRealtimeMessage(
-        normalizeClientRealtimeMessage(event.data, limits),
+      const normalised = normalizeClientRealtimeMessage(event.data, limits);
+      const message = toMistralUpstreamMessage(
+        serializeNormalizedClientRealtimeMessage(normalised),
       );
 
       if (!hasSentSessionUpdate) {
@@ -188,6 +179,11 @@ export async function createMistralRealtimeProxyResponse({
   }
 
   const provider = getRealtimeProvider("mistral", context);
+  const modelToUse = resolveMistralRealtimeProxyModel(model);
+
+  if (!modelToUse) {
+    return ResponseFactory.error(context, "Invalid model specified", 400);
+  }
 
   const apiKey = await provider.getApiKey?.({
     env,
@@ -197,12 +193,6 @@ export async function createMistralRealtimeProxyResponse({
 
   if (!apiKey) {
     return ResponseFactory.error(context, "Failed to resolve API key for Mistral provider", 500);
-  }
-
-  const modelToUse = model || provider.getDefaultModel("transcription");
-
-  if (!modelToUse) {
-    return ResponseFactory.error(context, "Failed to resolve model for Mistral provider", 500);
   }
 
   const url = new URL("/v1/audio/transcriptions/realtime", "https://api.mistral.ai");
