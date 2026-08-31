@@ -2,7 +2,7 @@ import { CAPABILITY_DISCOVERY_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 import z from "zod/v4";
 
-import { formatToolCalls } from "~/lib/chat/tools/execution";
+import { formatToolCalls } from "~/lib/chat/tools/provider-tool-definitions";
 import {
   expandFunctionToolNames,
   listFunctionTools,

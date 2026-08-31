@@ -1,55 +1,10 @@
-import { replicateModelConfig } from "~/data-model/models/replicate";
-import { workersAiModelConfig } from "~/data-model/models/workersai";
 import { generateSpeech } from "~/services/generate/speech";
-import { getModelIdsByOutput } from "~/utils/models";
 
 import type { ApiToolDefinition } from "../../types/functions";
-import { jsonSchemaToZod } from "../../utils/jsonSchema";
-
-const SPEECH_PROVIDERS = ["workers-ai", "replicate"] as const;
-
-const SPEECH_MODELS = [
-  ...getModelIdsByOutput(workersAiModelConfig, "workers-ai", "speech"),
-  ...getModelIdsByOutput(replicateModelConfig, "replicate", "audio"),
-].sort();
+import { create_speech as create_speechDescriptor } from "./definitions/speech";
 
 export const create_speech: ApiToolDefinition = {
-  name: "create_speech",
-  description:
-    "Converts text to spoken audio with customizable voice characteristics. Use when users need audio narration, pronunciation guidance, or accessibility options.",
-  inputSchema: jsonSchemaToZod({
-    type: "object",
-    properties: {
-      prompt: {
-        type: "string",
-        description: "the exact prompt passed in",
-      },
-      lang: {
-        type: "string",
-        description: "The language code for the speech (e.g., 'en-US', 'fr-FR', 'ja-JP')",
-        default: "en-US",
-      },
-      provider: {
-        type: "string",
-        description: "Speech generation provider",
-        enum: Array.from(SPEECH_PROVIDERS),
-        default: "workers-ai",
-      },
-      model: {
-        type: "string",
-        description: "Specific speech generation model to use",
-        enum: SPEECH_MODELS,
-      },
-      voice: {
-        type: "string",
-        description: "Voice preset or identifier for speech synthesis",
-      },
-    },
-    required: ["prompt"],
-  }),
-  type: "byok",
-  costPerCall: 1,
-  permissions: ["network"],
+  ...create_speechDescriptor,
   execute: async (args, context) => {
     const req = context.request;
     const completion_id = context.completionId;

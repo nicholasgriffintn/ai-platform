@@ -1,13 +1,13 @@
-import z from "zod/v4";
-
 import { runPanel, type PanelMember, type PanelTurn } from "~/lib/chat/panel";
 import { findModelConfig } from "~/lib/providers/models";
 import { stringifyMessageContent } from "~/utils/messages";
 
 import type { ApiToolDefinition } from "../../types/functions";
-
-const MAX_REVIEWERS = 4;
-const MAX_SOURCE_LENGTH = 12000;
+import {
+  second_opinion as second_opinionDescriptor,
+  MAX_REVIEWERS,
+  MAX_SOURCE_LENGTH,
+} from "./definitions/second_opinion";
 
 const REVIEW_BRIEF = `You are reviewing another assistant's answer. You are not rewriting it and you are not being polite about it.
 
@@ -92,33 +92,7 @@ async function resolveAnswerUnderReview(
 }
 
 export const second_opinion: ApiToolDefinition = {
-  name: "second_opinion",
-  description:
-    "Put the answer you just gave in front of other models and report what they say. Each reviewer answers in its own completion on its own model, reads what earlier reviewers said, and the panel concludes with the answer to trust. Use when the user asks for a second opinion, a consensus, a sanity check, or whether an answer can be trusted; not for questions with a retrievable answer.",
-  type: "premium",
-  costPerCall: 2,
-  permissions: ["orchestration"],
-  inputSchema: z.object({
-    models: z
-      .array(z.string().min(1))
-      .min(1)
-      .max(MAX_REVIEWERS)
-      .describe(
-        "Model ids to review the answer. Pick models that differ from the one that answered, and from each other.",
-      ),
-    answer: z
-      .string()
-      .max(MAX_SOURCE_LENGTH)
-      .optional()
-      .describe(
-        "The answer to review. Leave this out to review the last assistant message in this conversation, which is the usual case.",
-      ),
-    focus: z
-      .string()
-      .max(280)
-      .optional()
-      .describe("What the user wants checked, if they said. Shown to every reviewer."),
-  }),
+  ...second_opinionDescriptor,
   execute: async (args, context) => {
     const request = context.request;
     const members = await resolveReviewers(args.models as string[], request.env, request.user?.id);

@@ -4,14 +4,10 @@ import { decodeBase64 } from "hono/utils/encode";
 import {
   createMessagingCredentialEnvelope,
   getMessagingCredentialConfigurationValues,
-  isMessagingProviderId,
   parseMessagingCredentialEnvelope,
-} from "~/lib/providers/capabilities/messaging";
+} from "~/lib/providers/capabilities/messaging/credentials";
+import { isMessagingProviderId } from "~/lib/providers/capabilities/messaging/metadata";
 import { getModels } from "~/lib/providers/models";
-import {
-  getUserConfigurableProviderMetadata,
-  listConfigurableUserProviderIds,
-} from "~/lib/providers/userConfigurableProviders";
 import type { IUserSettings } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -673,8 +669,11 @@ export class UserSettingsRepository extends BaseRepository {
     await this.executeRun(queryWithTimestamp, update.values);
   }
 
-  public async createUserProviderSettings(userId: number): Promise<void> {
-    const providers = listConfigurableUserProviderIds();
+  public async createUserProviderSettings(
+    userId: number,
+    configurableProviderIds: readonly string[],
+  ): Promise<void> {
+    const providers = configurableProviderIds;
     const alwaysEnabledProviders = this.env.ALWAYS_ENABLED_PROVIDERS || "";
     const defaultProviders = alwaysEnabledProviders?.split(",") || [];
 
@@ -734,7 +733,6 @@ export class UserSettingsRepository extends BaseRepository {
 
     return Promise.all(
       result.map(async (provider) => {
-        const metadata = getUserConfigurableProviderMetadata(provider.provider_id);
         let configurationValues: Record<string, string> | undefined;
 
         if (provider.api_key && isMessagingProviderId(provider.provider_id)) {
@@ -756,10 +754,6 @@ export class UserSettingsRepository extends BaseRepository {
         return {
           id: provider.id,
           provider_id: provider.provider_id,
-          type: metadata.type,
-          name: metadata.name,
-          description: metadata.description,
-          configurationFields: metadata.configurationFields,
           configurationValues,
           webhookUrl:
             isMessagingProviderId(provider.provider_id) && this.env.API_BASE_URL
@@ -774,7 +768,10 @@ export class UserSettingsRepository extends BaseRepository {
     );
   }
 
-  public async getProviderSyncStatus(userId: number): Promise<{
+  public async getProviderSyncStatus(
+    userId: number,
+    configurableProviderIds: readonly string[],
+  ): Promise<{
     required: boolean;
     missingProviderIds: string[];
   }> {
@@ -785,7 +782,7 @@ export class UserSettingsRepository extends BaseRepository {
     );
     const storedProviders = await this.runQuery<{ provider_id: string }>(query, values);
     const storedProviderIds = new Set(storedProviders.map(({ provider_id }) => provider_id));
-    const missingProviderIds = listConfigurableUserProviderIds().filter(
+    const missingProviderIds = configurableProviderIds.filter(
       (providerId) => !storedProviderIds.has(providerId),
     );
 

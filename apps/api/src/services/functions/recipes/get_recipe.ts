@@ -7,25 +7,10 @@ import {
 } from "~/services/apps/recipes/toolContext";
 
 import type { ApiToolDefinition } from "../../../types/functions";
-import { jsonSchemaToZod } from "../../../utils/jsonSchema";
+import { get_recipe as get_recipeDescriptor } from "../definitions/recipes/get_recipe";
 
 export const get_recipe: ApiToolDefinition = {
-  name: "get_recipe",
-  description:
-    "Get the active recipe setup contract, including exact configuration field keys, saved configuration, trigger types, and enabled tools. Use this before configure_recipe when setting up or correcting a recipe.",
-  type: "premium",
-  costPerCall: 0,
-  permissions: ["read"],
-  inputSchema: jsonSchemaToZod({
-    type: "object",
-    properties: {
-      recipeId: {
-        type: "string",
-        description:
-          "Optional recipe id. Defaults to the active recipe setup chat and must match it when provided.",
-      },
-    },
-  }),
+  ...get_recipeDescriptor,
   execute: async (args, context) => {
     const request = context.request;
 

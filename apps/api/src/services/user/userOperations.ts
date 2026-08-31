@@ -1,5 +1,9 @@
 import { KVCache } from "~/lib/cache";
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import {
+  getUserConfigurableProviderMetadata,
+  listConfigurableUserProviderIds,
+} from "~/lib/providers/userConfigurableProviders";
 import { validatePetSettingsUpdate } from "~/services/pets/settings";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -129,14 +133,26 @@ export async function getUserProviderSettings(
   const repo = ensureRepo(context);
   const id = userId ?? context.requireUser().id;
 
-  return repo.getUserProviderSettings(id);
+  const settings = await repo.getUserProviderSettings(id);
+
+  return settings.map((setting) => {
+    const metadata = getUserConfigurableProviderMetadata(setting.provider_id as string);
+
+    return {
+      ...setting,
+      type: metadata.type,
+      name: metadata.name,
+      description: metadata.description,
+      configurationFields: metadata.configurationFields,
+    };
+  });
 }
 
 export async function getUserProviderSyncStatus(context: ServiceContext, userId?: number) {
   const repo = ensureRepo(context);
   const id = userId ?? context.requireUser().id;
 
-  return repo.getProviderSyncStatus(id);
+  return repo.getProviderSyncStatus(id, listConfigurableUserProviderIds());
 }
 
 export async function syncUserProviders(
@@ -146,7 +162,7 @@ export async function syncUserProviders(
   const repo = ensureRepo(context);
   const id = userId ?? context.requireUser().id;
 
-  await repo.createUserProviderSettings(id);
+  await repo.createUserProviderSettings(id, listConfigurableUserProviderIds());
   await invalidateUserModelCache(context, id, "sync-user-providers");
 
   return {
