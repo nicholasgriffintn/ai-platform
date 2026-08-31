@@ -11,4 +11,17 @@ describe("load_skill", () => {
     expect(result.status).toBe("success");
     expect(result.content).toContain('<skill_content name="artifacts">');
   });
+
+  it("activates document search with the document research instructions", async () => {
+    const result = await load_skill.execute({ skill: "document-research" }, {
+      request: {},
+    } as never);
+
+    expect(result.status).toBe("success");
+    expect(result.content).toContain('<skill_content name="document-research">');
+    expect(result.data).toMatchObject({
+      skill: "document-research",
+      activatedTools: ["search_documents"],
+    });
+  });
 });
