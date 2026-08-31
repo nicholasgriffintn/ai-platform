@@ -3,6 +3,7 @@ import {
   connectRealtimeWebSocket,
   isRealtimeWebSocketConnection,
   preferOpusAudioCodec,
+  sendBinaryWhenOpen,
   sendJsonWhenOpen,
   type RealtimeConnection,
   type RealtimeWebSocketConnection,
@@ -130,7 +131,9 @@ function shouldWaitForConfiguredAudioEndEvent(
 ): boolean {
   return Boolean(
     getConnectionProviderOption(connection, providers)?.websocket?.audioInput
-      ?.waitForFinalEventTypeOnStop,
+      ?.waitForFinalEventTypeOnStop ||
+    getConnectionProviderOption(connection, providers)?.websocket?.audioInput
+      ?.waitForSocketCloseOnStop,
   );
 }
 
@@ -482,7 +485,12 @@ export function useRealtimeLiveSession({
       const controller = await startPcm16MicrophoneStream({
         stream,
         onChunk: (chunk) => {
-          sendJsonWhenOpen(connection, audioInput.buildAppendMessage(arrayBufferToBase64(chunk)));
+          if (audioInput.chunkEncoding === "binary") {
+            sendBinaryWhenOpen(connection, chunk);
+          } else {
+            sendJsonWhenOpen(connection, audioInput.buildAppendMessage(arrayBufferToBase64(chunk)));
+          }
+
           maybeCommitAudioAfterSilence(connection, chunk);
         },
       });
@@ -1063,6 +1071,17 @@ export function useRealtimeLiveSession({
       }
 
       if (!enabled) {
+        const audioInput = getConnectionProviderOption(connection, providerOptionsRef.current)
+          ?.websocket?.audioInput;
+
+        if (audioInput?.keepSendingSilenceWhenMuted) {
+          resetAudioTurnDetection();
+          setMediaStreamTrackEnabled(audioStreamRef.current, "audio", false);
+          stopInputAudioMeter();
+
+          return;
+        }
+
         resetAudioTurnDetection();
         stopInputAudio(true);
 
@@ -1073,11 +1092,30 @@ export function useRealtimeLiveSession({
         return;
       }
 
+      const audioInput = getConnectionProviderOption(connection, providerOptionsRef.current)
+        ?.websocket?.audioInput;
+
+      if (audioInput?.keepSendingSilenceWhenMuted && inputAudioControllerRef.current) {
+        setMediaStreamTrackEnabled(audioStreamRef.current, "audio", true);
+        if (audioStreamRef.current) {
+          startInputAudioMeter(audioStreamRef.current);
+        }
+
+        return;
+      }
+
       void startInputAudio(connection).catch((toggleError) => {
         failSession(getErrorMessage(toggleError, "Failed to start microphone input"));
       });
     },
-    [failSession, resetAudioTurnDetection, startInputAudio, startInputAudioMeter, stopInputAudio],
+    [
+      failSession,
+      resetAudioTurnDetection,
+      startInputAudio,
+      startInputAudioMeter,
+      stopInputAudio,
+      stopInputAudioMeter,
+    ],
   );
 
   const setVideoEnabled = useCallback(

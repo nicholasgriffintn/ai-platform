@@ -4,6 +4,7 @@ import {
   connectGeminiLiveWebSocket,
   connectRealtimeWebSocket,
   isRealtimeWebSocketConnection,
+  sendBinaryWhenOpen,
   sendJsonWhenOpen,
 } from "./websocket";
 
@@ -11,7 +12,7 @@ class FakeWebSocket extends EventTarget {
   static CLOSED = 3;
   static OPEN = 1;
 
-  sent: string[] = [];
+  sent: Array<string | ArrayBuffer> = [];
   closed = false;
   readyState = FakeWebSocket.OPEN;
 
@@ -22,7 +23,7 @@ class FakeWebSocket extends EventTarget {
     super();
   }
 
-  send(data: string) {
+  send(data: string | ArrayBuffer) {
     this.sent.push(data);
   }
 
@@ -79,6 +80,20 @@ describe("realtime websocket clients", () => {
     expect((connection.socket as unknown as FakeWebSocket).sent).toEqual([
       JSON.stringify({ type: "input_audio.flush" }),
     ]);
+  });
+
+  it("sends raw binary audio only while the socket is open", () => {
+    vi.stubGlobal("WebSocket", FakeWebSocket);
+    const connection = connectRealtimeWebSocket({
+      session: { transport: "websocket", url: "wss://example.test/live" },
+    });
+    const chunk = new Uint8Array([0, 1]).buffer;
+
+    sendBinaryWhenOpen(connection, chunk);
+    connection.close();
+    sendBinaryWhenOpen(connection, new Uint8Array([2]).buffer);
+
+    expect((connection.socket as unknown as FakeWebSocket).sent).toEqual([chunk]);
   });
 
   it("rejects non-WebSocket sessions before opening a socket", () => {

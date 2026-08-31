@@ -232,7 +232,7 @@ app.get("/cartesia/transcription", async (c) => {
     env,
     user,
     model: c.req.query("model"),
-    language: c.req.query("language"),
+    delay: parseRealtimeTranscriptionDelay(c.req.query("delay")),
   });
 });
 

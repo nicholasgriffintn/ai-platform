@@ -274,7 +274,7 @@ export const REALTIME_LIVE_PROVIDER_MANIFEST: RealtimeLiveProviderManifestItem[]
   },
   {
     id: "cartesia",
-    label: "Cartesia Ink Realtime",
+    label: "Cartesia Ink 2 Realtime",
     shortLabel: "Cartesia",
     liveMode: "composed",
     transport: "websocket",
@@ -282,8 +282,8 @@ export const REALTIME_LIVE_PROVIDER_MANIFEST: RealtimeLiveProviderManifestItem[]
     defaultDelay: "low",
     inputModalities: ["audio"],
     outputModalities: ["text"],
-    description: "Ink streaming speech-to-text",
-    defaultModelId: "ink-whisper",
+    description: "Ink 2 semantic turn detection and streaming speech-to-text",
+    defaultModelId: "ink-2",
     composeWith: { reasoning: true, speech: true },
   },
 ];

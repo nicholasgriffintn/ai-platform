@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
   listVideoDevices: vi.fn(async () => []),
   requestAudioStream: vi.fn(),
   requestVideoStream: vi.fn(),
+  setMediaStreamTrackEnabled: vi.fn(),
   startJpegFrameStream: vi.fn(),
   startPcm16MicrophoneStream: vi.fn(),
   stopMediaStream: vi.fn((stream?: MediaStream | null) => {
@@ -34,7 +35,7 @@ const mocks = vi.hoisted(() => ({
     options: ConnectRealtimeWebSocketOptions;
     sendJson: ReturnType<typeof vi.fn>;
     session: Record<string, unknown>;
-    socket: { readyState: number };
+    socket: { readyState: number; send: ReturnType<typeof vi.fn> };
   }>,
 }));
 
@@ -52,6 +53,10 @@ vi.mock("@ngriffin_uk/polychat-library-realtime", async (importOriginal) => {
     connectRealtimeWebRTC: mocks.connectWebRTC,
     connectRealtimeWebSocket: mocks.connectWebSocket,
     preferOpusAudioCodec: vi.fn(),
+    sendBinaryWhenOpen: (
+      connection: { socket: { send: (payload: ArrayBuffer) => void } },
+      payload: ArrayBuffer,
+    ) => connection.socket.send(payload),
     sendJsonWhenOpen: (connection: { sendJson: (payload: unknown) => void }, payload: unknown) =>
       connection.sendJson(payload),
   };
@@ -63,7 +68,7 @@ vi.mock("@ngriffin_uk/polychat-library-realtime/audio", () => ({
   listRealtimeVideoInputDevices: mocks.listVideoDevices,
   requestRealtimeAudioStream: mocks.requestAudioStream,
   requestRealtimeVideoStream: mocks.requestVideoStream,
-  setMediaStreamTrackEnabled: vi.fn(),
+  setMediaStreamTrackEnabled: mocks.setMediaStreamTrackEnabled,
   startJpegFrameStream: mocks.startJpegFrameStream,
   startPcm16MicrophoneStream: mocks.startPcm16MicrophoneStream,
   stopMediaStream: mocks.stopMediaStream,
@@ -86,28 +91,32 @@ function deferred<T>() {
 
 function fakeAudioStream() {
   const stop = vi.fn();
+  const track = { enabled: true, kind: "audio", stop };
   const stream = {
-    getAudioTracks: () => [{ enabled: true, stop }],
-    getTracks: () => [{ enabled: true, stop }],
+    getAudioTracks: () => [track],
+    getTracks: () => [track],
   } as unknown as MediaStream;
 
-  return { stop, stream };
+  return { stop, stream, track };
 }
 
 function provider(
-  id: "openai" | "mistral",
+  id: "cartesia" | "openai" | "mistral",
   transport: "webrtc" | "websocket",
 ): RealtimeLiveProviderOption {
+  const isOpenAI = id === "openai";
+  const isCartesia = id === "cartesia";
+
   return {
     id,
-    label: id === "openai" ? "OpenAI Realtime" : "Mistral Realtime",
-    shortLabel: id === "openai" ? "OpenAI" : "Mistral",
-    order: id === "openai" ? 0 : 1,
-    liveMode: id === "openai" ? "native" : "composed",
+    label: isOpenAI ? "OpenAI Realtime" : `${id} Realtime`,
+    shortLabel: isOpenAI ? "OpenAI" : id,
+    order: isOpenAI ? 0 : isCartesia ? 2 : 1,
+    liveMode: isOpenAI ? "native" : "composed",
     transport,
-    sessionType: id === "openai" ? "realtime" : "transcription",
+    sessionType: isOpenAI ? "realtime" : "transcription",
     inputModalities: ["audio"],
-    outputModalities: id === "openai" ? ["audio"] : ["text"],
+    outputModalities: isOpenAI ? ["audio"] : ["text"],
     description: "Test provider",
     defaultModelId: `${id}-model`,
     available: true,
@@ -117,9 +126,13 @@ function provider(
       transport === "websocket"
         ? {
             audioInput: {
-              buildAppendMessage: (audio) => ({ audio }),
+              ...(isCartesia
+                ? { chunkEncoding: "binary" as const }
+                : { buildAppendMessage: (audio: string) => ({ audio }) }),
               endMessages: [{ type: "input_audio.end" }],
-              waitForFinalEventTypeOnStop: "transcription.done",
+              ...(isCartesia
+                ? { keepSendingSilenceWhenMuted: true, waitForSocketCloseOnStop: true }
+                : { waitForFinalEventTypeOnStop: "transcription.done" }),
             },
             closeErrorLabel: "Mistral",
             connectedEventLabel: "Connected",
@@ -170,7 +183,7 @@ describe("useRealtimeLiveSession lifecycle", () => {
         options,
         sendJson: vi.fn(),
         session: options.session,
-        socket: { readyState: 1 },
+        socket: { readyState: 1, send: vi.fn() },
       };
 
       mocks.webSocketConnections.push(connection);
@@ -289,6 +302,74 @@ describe("useRealtimeLiveSession lifecycle", () => {
     });
 
     expect(mocks.webSocketConnections[0].close).toHaveBeenCalledOnce();
+  });
+
+  it("streams raw PCM to Cartesia and drains until the server closes", async () => {
+    const audio = fakeAudioStream();
+
+    mocks.requestAudioStream.mockResolvedValue(audio.stream);
+    mocks.createRealtimeSession.mockResolvedValue({
+      provider: "cartesia",
+      transport: "websocket",
+      url: "wss://api.polychat.test/realtime",
+    });
+    const providers = [provider("cartesia", "websocket")];
+    const { result } = renderHook(() => useRealtimeLiveSession({ providers }));
+
+    await act(async () => result.current.start("cartesia"));
+    await act(async () => {
+      mocks.webSocketConnections[0].options.onOpen?.(new Event("open"));
+      await flushMicrotasks();
+    });
+
+    const chunk = new Uint8Array([0, 1]).buffer;
+
+    act(() => mocks.startPcm16MicrophoneStream.mock.calls[0][0].onChunk(chunk));
+    expect(mocks.webSocketConnections[0].socket.send).toHaveBeenCalledWith(chunk);
+
+    act(() => result.current.stop());
+    expect(mocks.webSocketConnections[0].sendJson).toHaveBeenCalledWith({
+      type: "input_audio.end",
+    });
+    expect(mocks.webSocketConnections[0].close).not.toHaveBeenCalled();
+
+    act(() => {
+      mocks.webSocketConnections[0].options.onClose?.(
+        new CloseEvent("close", { code: 1000, reason: "drained" }),
+      );
+    });
+
+    expect(result.current.status).toBe("idle");
+    expect(mocks.toastError).not.toHaveBeenCalled();
+  });
+
+  it("keeps Cartesia audio flowing as silence while the microphone is muted", async () => {
+    const audio = fakeAudioStream();
+    const mediaController = { stop: vi.fn() };
+
+    mocks.startPcm16MicrophoneStream.mockResolvedValue(mediaController);
+    mocks.requestAudioStream.mockResolvedValue(audio.stream);
+    mocks.createRealtimeSession.mockResolvedValue({
+      provider: "cartesia",
+      transport: "websocket",
+      url: "wss://api.polychat.test/realtime",
+    });
+    const providers = [provider("cartesia", "websocket")];
+    const { result } = renderHook(() => useRealtimeLiveSession({ providers }));
+
+    await act(async () => result.current.start("cartesia"));
+    await act(async () => {
+      mocks.webSocketConnections[0].options.onOpen?.(new Event("open"));
+      await flushMicrotasks();
+    });
+
+    act(() => result.current.setMicrophoneEnabled(false));
+    expect(mocks.setMediaStreamTrackEnabled).toHaveBeenCalledWith(audio.stream, "audio", false);
+    expect(mediaController.stop).not.toHaveBeenCalled();
+
+    act(() => result.current.setMicrophoneEnabled(true));
+    expect(mocks.setMediaStreamTrackEnabled).toHaveBeenCalledWith(audio.stream, "audio", true);
+    expect(mocks.startPcm16MicrophoneStream).toHaveBeenCalledOnce();
   });
 
   it("releases media and closes the socket when the active provider leaves the catalogue", async () => {
