@@ -18,3 +18,17 @@ describe("goal tool presentation", () => {
     );
   });
 });
+
+describe("memory tool presentation", () => {
+  it("keeps retrieved memory context out of the visible conversation", () => {
+    expect(
+      formatToolResponse("search_memories", "Private retrieved context").data.responseType,
+    ).toBe(ResponseDisplayType.HIDDEN);
+  });
+
+  it("keeps memory storage confirmation visible", () => {
+    expect(formatToolResponse("store_memory", "Memory stored").data.responseType).not.toBe(
+      ResponseDisplayType.HIDDEN,
+    );
+  });
+});

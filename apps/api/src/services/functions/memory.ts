@@ -48,6 +48,7 @@ function errorResponse(name: string, content: string) {
 
 export const search_memories: ApiToolDefinition = {
   name: MEMORY_SEARCH_TOOL_NAME,
+  maxIdenticalCalls: 1,
   description:
     "Searches long-term memory in the current personal or workspace-project scope. Use when durable context would improve the answer and memory is enabled.",
   inputSchema: jsonSchemaToZod({

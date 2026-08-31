@@ -20,7 +20,7 @@ const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   get_weather: { renderer: "weather", icon: "cloud" },
   web_search: { renderer: "web_search", icon: "search" },
   search_documents: { renderer: "document_search", icon: "search" },
-  search_memories: { icon: "search" },
+  search_memories: { icon: "search", responseType: ResponseDisplayType.HIDDEN },
   store_memory: { icon: "plus-circle" },
   discover_capabilities: { renderer: "capability_discovery", icon: "sparkles" },
   research: { renderer: "research", icon: "search" },

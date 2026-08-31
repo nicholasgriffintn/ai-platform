@@ -69,6 +69,12 @@ describe("functions tool registry", () => {
     expect(getTask.inputSchema.safeParse({}).success).toBe(false);
   });
 
+  it("prevents an identical memory search from running twice in one response", () => {
+    const memorySearch = resolveFunctionTool("search_memories");
+
+    expect(memorySearch.maxIdenticalCalls).toBe(1);
+  });
+
   it("keeps the defaulted discovery limit optional in the model schema", () => {
     const discovery = resolveFunctionTool(CAPABILITY_DISCOVERY_TOOL_NAME);
     const schema = z.toJSONSchema(discovery.inputSchema);
