@@ -40,6 +40,7 @@ class AgentCompletionRequestPreparer {
       tools: this.input.formattedTools,
       stream: false,
       mode: "agent",
+      tool_policy_mode: "chat",
       max_steps: this.input.agent.max_steps || this.input.body.max_steps || 20,
       temperature: this.input.agent.temperature
         ? Number.parseFloat(this.input.agent.temperature)

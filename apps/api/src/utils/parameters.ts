@@ -356,6 +356,7 @@ export function getToolsForProvider(
     | "context"
     | "connectedConnectorProviders"
     | "mode"
+    | "tool_policy_mode"
     | "conversation_type"
     | "require_approval_for"
     | "enforce_mode_tool_policy"
@@ -375,6 +376,7 @@ export function getToolsForProvider(
 
   try {
     const user = resolveRequestUser(params);
+    const toolPolicyMode = params.tool_policy_mode ?? params.mode;
     const enabledTools = resolveEnabledFunctionToolNames(params.enabled_tools, user);
     let tools: any[] = [];
     const availableTools = listFunctionTools({
@@ -396,7 +398,7 @@ export function getToolsForProvider(
           (func) =>
             permissionChecker.checkToolAccess({
               toolName: func.name,
-              mode: params.mode,
+              mode: toolPolicyMode,
               user,
               toolType: func.type,
               toolPermissions: func.permissions,
@@ -414,7 +416,7 @@ export function getToolsForProvider(
           (func) =>
             permissionChecker.checkToolAccess({
               toolName: func.name,
-              mode: params.mode,
+              mode: toolPolicyMode,
               user,
               toolType: func.type,
               toolPermissions: func.permissions,

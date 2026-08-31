@@ -227,7 +227,7 @@ export const handleFunctions = async ({
   conversationManager?: ConversationManager;
   emitToolResult?: (response: IFunctionResponse) => Promise<void> | void;
 }): Promise<IFunctionResponse> => {
-  const requestMode = request.request?.mode || request.mode;
+  const requestMode = request.request?.tool_policy_mode || request.request?.mode || request.mode;
 
   if (functionName.startsWith("mcp_")) {
     const mcpPermissionResult = permissionChecker.checkRequestToolAccess({

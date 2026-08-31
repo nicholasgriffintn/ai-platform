@@ -117,7 +117,7 @@ export const handleToolCalls = async (
     return [];
   }
 
-  const mode = req.mode || req.request?.mode;
+  const mode = req.request?.tool_policy_mode || req.mode || req.request?.mode;
   const toolPermissionsMap = req.request?.tool_permissions_map ?? {};
 
   for (const toolCall of toolCalls) {

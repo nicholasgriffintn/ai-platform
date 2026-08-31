@@ -52,6 +52,7 @@ export function buildToolRequestContext(params: {
       model,
       provider,
       mode,
+      tool_policy_mode: chatOptions.tool_policy_mode,
       date: new Date().toISOString().slice(0, 10),
       approved_tools: chatOptions.approved_tools ?? [],
       enabled_tools: chatOptions.enabled_tools ?? [],

@@ -91,6 +91,36 @@ describe("MCP client lifecycle", () => {
     expect(client.callTool).toHaveBeenCalledTimes(1);
   });
 
+  it("uses the explicit tool policy mode for saved-agent execution", async () => {
+    const context = createContext();
+    const client = createClient("saved-agent-network");
+
+    await registerMCPClient(context, AGENT_ID, client);
+
+    const result = await handleFunctions({
+      completion_id: "agent-chat-1",
+      app_url: undefined,
+      functionName: TOOL_CALL_NAME,
+      args: {},
+      request: {
+        env: { AI: {} } as any,
+        context,
+        mode: "agent",
+        user: { id: 1, plan_id: "pro" } as any,
+        request: {
+          completion_id: "agent-chat-1",
+          input: "search",
+          date: "2026-08-31",
+          mode: "agent",
+          tool_policy_mode: "chat",
+        },
+      },
+    });
+
+    expect(result.data?.answer).toBe("saved-agent-network");
+    expect(client.callTool).toHaveBeenCalledTimes(1);
+  });
+
   it("refuses to resolve a client registered against another request", async () => {
     const owningContext = createContext();
 

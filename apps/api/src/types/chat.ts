@@ -3,6 +3,7 @@ import type {
   ChatCompletionRequestBody as SchemaChatCompletionRequestBody,
   ChatCompletionResponseBody as SchemaChatCompletionResponseBody,
   ChatRequestOptions as SchemaChatRequestOptions,
+  AgentMode,
   ConversationType,
   MessageRole as SchemaMessageRole,
   MessagePart as SchemaMessagePart,
@@ -196,6 +197,7 @@ export interface IBody {
   provider?: string;
   platform?: Platform;
   mode?: ChatMode;
+  tool_policy_mode?: AgentMode;
   approved_tools?: string[];
   connector_approval_id?: string;
   tool_permissions_map?: Record<string, string[]>;
@@ -300,6 +302,8 @@ type InternalExecutionParams = {
   max_delegation_depth?: number;
   // Tool permissions this turn must seek approval for.
   require_approval_for?: ToolPermission[];
+  // Permission policy can differ from the execution mode that controls the agent loop.
+  tool_policy_mode?: AgentMode;
   // Internal Work-task runs use the stage policy instead of the interactive mode defaults.
   enforce_mode_tool_policy?: boolean;
 };
