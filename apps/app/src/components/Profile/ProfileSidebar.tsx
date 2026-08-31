@@ -6,7 +6,6 @@ import { useUIStore } from "~/state/stores/uiStore";
 import { SidebarFooter } from "../Sidebar/SidebarFooter";
 import { SidebarHeader } from "../Sidebar/SidebarHeader";
 import { ProfileAccountTab } from "./Tabs/ProfileAccountTab";
-import { ProfileAgentsTab } from "./Tabs/ProfileAgentsTab";
 import { ProfileApiKeysTab } from "./Tabs/ProfileApiKeysTab";
 import { ProfileBillingTab } from "./Tabs/ProfileBillingTab";
 import { ProfileCustomisationTab } from "./Tabs/ProfileCustomisationTab";
@@ -48,7 +47,6 @@ export const profileSidebarItems: ProfileSidebarItem[] = [
     component: ProfileProvidersTab,
   },
   { id: "sandbox", label: "Sandbox", component: ProfileSandboxTab },
-  { id: "agents", label: "Agents", component: ProfileAgentsTab },
   { id: "billing", label: "Billing", component: ProfileBillingTab },
   { id: "api-keys", label: "API Keys", component: ProfileApiKeysTab },
   { id: "tasks", label: "Tasks", component: ProfileTasksTab },

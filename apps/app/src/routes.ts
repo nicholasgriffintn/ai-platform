@@ -7,6 +7,7 @@ export default [
     route("experiences", "pages/chat/experiences.tsx"),
     route("experiences/:experienceId/*", "pages/chat/experience.tsx"),
     route("tools/:toolId", "pages/chat/tool.tsx"),
+    route("agents/:agentId", "pages/chat/agent.tsx"),
     route(":completionId?", "pages/chat/index.tsx"),
   ]),
   route("/work", "pages/work/layout.tsx", [
@@ -29,6 +30,7 @@ export default [
     route(":workspaceId/projects/:projectId/activity", "pages/work/project-activity.tsx"),
     route(":workspaceId/projects/:projectId/outputs/*", "pages/work/project-outputs.tsx"),
     route(":workspaceId/projects/:projectId/tools/:toolId", "pages/work/project-tool.tsx"),
+    route(":workspaceId/projects/:projectId/agents/:agentId", "pages/work/project-agent.tsx"),
   ]),
   route("/pets", "pages/pets.tsx"),
   route("/terms", "pages/terms.tsx"),

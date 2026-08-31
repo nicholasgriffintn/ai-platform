@@ -8,6 +8,8 @@ export interface CapabilityFiltersProps {
   category: string;
   filters: CapabilityFilter[];
   query: string;
+  availableFilters?: CapabilityFilter[];
+  searchPlaceholder?: string;
   onCategoryChange: (category: string) => void;
   onFiltersChange: (filters: CapabilityFilter[]) => void;
   onQueryChange: (query: string) => void;
@@ -27,6 +29,8 @@ export function CapabilityFilters({
   category,
   filters,
   query,
+  availableFilters,
+  searchPlaceholder = "Search apps, recipes, and tools...",
   onCategoryChange,
   onFiltersChange,
   onQueryChange,
@@ -35,13 +39,16 @@ export function CapabilityFilters({
     { label: "All categories", value: "all" },
     ...categories.map((value) => ({ label: value, value })),
   ];
+  const visibleFilters = availableFilters
+    ? capabilityFilters.filter((filter) => availableFilters.includes(filter.value))
+    : capabilityFilters;
 
   return (
     <div className="mb-8 space-y-4">
       <SearchInput
         aria-label="Search capabilities"
         className="max-w-xl"
-        placeholder="Search apps, recipes, and tools..."
+        placeholder={searchPlaceholder}
         value={query}
         onChange={onQueryChange}
       />
@@ -59,7 +66,7 @@ export function CapabilityFilters({
           >
             All
           </button>
-          {capabilityFilters.map((filter) => (
+          {visibleFilters.map((filter) => (
             <button
               key={filter.value}
               type="button"

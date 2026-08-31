@@ -30,6 +30,19 @@ export function resolveDisabledSkillIds(
   );
 }
 
+interface ProjectCapabilityGrant {
+  kind: string;
+  capability_id: string;
+}
+
+export function resolveProjectSkillGrants(
+  capabilities: readonly ProjectCapabilityGrant[],
+): string[] {
+  return capabilities
+    .filter((capability) => capability.kind === SKILL_CAPABILITY_KIND)
+    .map((capability) => capability.capability_id);
+}
+
 export interface RequestSkillScope {
   scope: SkillScopeKind;
   enabledSkillIds?: ReadonlySet<string>;
@@ -76,11 +89,7 @@ export async function resolveSkillScope(request: IRequest): Promise<RequestSkill
     await requireProjectAccess(context, projectId);
     const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
 
-    return createProjectSkillScope(
-      capabilities
-        .filter((capability) => capability.kind === SKILL_CAPABILITY_KIND)
-        .map((capability) => capability.capability_id),
-    );
+    return createProjectSkillScope(resolveProjectSkillGrants(capabilities));
   }
 
   if (context && request.user?.id) {

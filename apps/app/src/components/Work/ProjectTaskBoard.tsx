@@ -11,10 +11,12 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { NEW_AGENT_ID } from "~/components/Agents/useAgentEditorController";
 import { PageShell } from "~/components/Core/PageShell";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { useCapabilityCatalog } from "~/hooks/useCapabilityCatalog";
 import { useProjectTasks } from "~/hooks/useProjectTasks";
+import { getAgentEditorPath, getProjectSurface } from "~/lib/capability-surfaces";
 import { getErrorMessage, isAuthenticationError } from "~/lib/errors";
 
 import { projectTaskSkills, useProjectTaskAgents } from "./useProjectTaskAgents";
@@ -164,7 +166,10 @@ export function ProjectTaskBoard({
         agents={agents}
         skills={skills}
         capabilitiesHref={`${basePath}/library`}
-        agentsHref="/profile?tab=agents"
+        createAgentHref={getAgentEditorPath(
+          getProjectSurface(workspaceId, projectId),
+          NEW_AGENT_ID,
+        )}
         isSaving={saveFlow.isPending}
         errorMessage={saveFlow.error ? getErrorMessage(saveFlow.error, "") : undefined}
         onOpenChange={setIsFlowOpen}

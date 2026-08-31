@@ -26,7 +26,7 @@ export function ProductHeaderShell({
         {start}
       </div>
       <div className="flex justify-center">{center}</div>
-      <div className="flex min-w-0 shrink-0 items-center sm:justify-self-end">{end}</div>
+      <div className="flex min-w-0 items-center justify-end sm:justify-self-end">{end}</div>
       <div
         aria-hidden="true"
         data-scroll-blur-edge

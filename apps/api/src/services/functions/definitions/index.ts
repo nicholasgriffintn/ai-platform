@@ -37,7 +37,6 @@ import { search_documents } from "./search_documents";
 import { second_opinion } from "./second_opinion";
 import { create_speech } from "./speech";
 import { get_task_status } from "./tasks";
-import { delegateToTeamMember, delegateToTeamMemberByRole, getTeamMembers } from "./teamDelegation";
 import type { FunctionToolDescriptor } from "./types";
 import { v0_code_generation } from "./v0_code_generation";
 import { create_video } from "./video";
@@ -84,9 +83,6 @@ const descriptors: FunctionToolDescriptor[] = [
   capture_screenshot,
   create_speech,
   v0_code_generation,
-  delegateToTeamMember,
-  delegateToTeamMemberByRole,
-  getTeamMembers,
   discover_capabilities,
   set_goal,
   complete_goal,

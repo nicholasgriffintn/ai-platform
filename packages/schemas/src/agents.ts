@@ -1,6 +1,10 @@
 import z from "zod/v4";
 
-import { toolIdsSchema } from "./tools";
+import { agentModeSchema } from "./agent-modes";
+import { skillIdSchema } from "./skills";
+import { toolIdsSchema } from "./tool-ids";
+
+const agentSkillIdsSchema = z.array(skillIdSchema);
 
 export const mcpServerSchema = z.object({
   url: z.url().meta({
@@ -50,20 +54,27 @@ export const createAgentSchema = z.object({
   enabled_tools: toolIdsSchema.optional().meta({
     description: "Tools enabled by default for this agent",
   }),
-  team_id: z.string().optional().meta({ description: "Team ID this agent belongs to" }),
-  team_role: z.string().optional().meta({ description: "Role of this agent within the team" }),
-  is_team_agent: z
-    .boolean()
-    .optional()
-    .prefault(false)
-    .meta({ description: "Whether this is a team agent" }),
+  skill_ids: agentSkillIdsSchema.optional().meta({
+    description: "Skills this agent loads, named as the skill catalogue names them",
+  }),
+  mode: agentModeSchema.nullable().optional().meta({
+    description: "Agent mode this agent runs in; null lets the caller's mode win",
+  }),
+  workspace_id: z.string().min(1).optional().meta({
+    description:
+      "Workspace that will own the agent; omit to create it in the caller's personal scope",
+  }),
 });
 
 export const updateAgentSchema = z
   .object({
     name: z.string().optional().meta({ description: "New agent name" }),
     description: z.string().optional().meta({ description: "New agent description" }),
-    avatar_url: z.url().optional().meta({ description: "New avatar URL" }).optional(),
+    avatar_url: z
+      .url()
+      .nullable()
+      .optional()
+      .meta({ description: "New avatar URL, or null to remove the existing one" }),
     servers: z.array(mcpServerSchema).optional().meta({ description: "Updated MCP servers list" }),
     model: z.string().optional().meta({ description: "Model ID to use with this agent" }),
     temperature: z
@@ -85,9 +96,12 @@ export const updateAgentSchema = z
     enabled_tools: toolIdsSchema.optional().meta({
       description: "Tools enabled by default for this agent",
     }),
-    team_id: z.string().optional().meta({ description: "Team ID this agent belongs to" }),
-    team_role: z.string().optional().meta({ description: "Role of this agent within the team" }),
-    is_team_agent: z.boolean().optional().meta({ description: "Whether this is a team agent" }),
+    skill_ids: agentSkillIdsSchema.optional().meta({
+      description: "Updated skills this agent loads",
+    }),
+    mode: agentModeSchema.nullable().optional().meta({
+      description: "Updated agent mode; null lets the caller's mode win",
+    }),
   })
   .refine((data) => Object.keys(data).length > 0, {
     error: "At least one field must be provided",
@@ -118,14 +132,30 @@ export const agentResponseSchema = z.object({
   system_prompt: z.string().nullable(),
   few_shot_examples: z.array(fewShotExampleSchema).nullable(),
   enabled_tools: toolIdsSchema.nullable(),
-  team_id: z.string().nullable(),
-  team_role: z.string().nullable(),
-  is_team_agent: z.boolean(),
+  skill_ids: agentSkillIdsSchema,
+  mode: agentModeSchema.nullable(),
   created_at: z.string(),
   updated_at: z.string().nullable(),
 });
 
 export const agentListResponseSchema = z.array(agentResponseSchema);
+
+export const agentSummarySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  avatarUrl: z.string().nullable(),
+  model: z.string().nullable(),
+  modelAvailable: z.boolean(),
+  mode: agentModeSchema.nullable(),
+  ownerScopeType: agentOwnerScopeTypeSchema,
+  skillIds: agentSkillIdsSchema,
+  toolIds: toolIdsSchema,
+  unavailableSkillIds: agentSkillIdsSchema,
+  unavailableToolIds: toolIdsSchema,
+});
+
+export const agentSummaryListResponseSchema = z.array(agentSummarySchema);
 
 export type AgentMcpServer = z.input<typeof mcpServerSchema>;
 export type AgentFewShotExample = z.input<typeof fewShotExampleSchema>;
@@ -134,3 +164,4 @@ export type UpdateAgentInput = z.input<typeof updateAgentSchema>;
 export type PublishAgentToWorkspaceInput = z.input<typeof publishAgentToWorkspaceSchema>;
 export type AgentOwnerScopeType = z.infer<typeof agentOwnerScopeTypeSchema>;
 export type AgentResponse = z.infer<typeof agentResponseSchema>;
+export type AgentSummary = z.infer<typeof agentSummarySchema>;

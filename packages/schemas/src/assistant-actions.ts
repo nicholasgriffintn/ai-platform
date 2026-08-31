@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import type { AgentSummary } from "./agents";
 import {
   assistantCapabilityDescriptorSchema,
   type AssistantCapabilityDescriptor,
@@ -235,12 +236,7 @@ export const assistantActionVerbs = [
   },
 ] satisfies AssistantActionVerb[];
 
-export interface AssistantActionAgentSource {
-  id: string;
-  name: string;
-  description?: string;
-  model?: string;
-}
+export type AssistantActionAgentSource = AgentSummary;
 
 export interface AssistantActionModelToolDefinition {
   availabilityReason?: string;
@@ -411,31 +407,69 @@ function createAppCapabilityDescriptor(app: CapabilityCatalogItem): AssistantCap
   };
 }
 
+function isWorkspaceOwnedAgent(agent: AssistantActionAgentSource): boolean {
+  return agent.ownerScopeType === "workspace";
+}
+
+function getAgentUnavailabilityReason(agent: AssistantActionAgentSource): string | undefined {
+  if (!agent.modelAvailable) {
+    return `${agent.model ?? "The pinned model"} cannot be run here.`;
+  }
+
+  if (agent.unavailableSkillIds.length > 0) {
+    return `These skills are not available here: ${agent.unavailableSkillIds.join(", ")}.`;
+  }
+
+  if (agent.unavailableToolIds.length > 0) {
+    return `These tools are not available here: ${agent.unavailableToolIds.join(", ")}.`;
+  }
+
+  return undefined;
+}
+
+function getAgentCapabilityCategory(agent: AssistantActionAgentSource): string {
+  return isWorkspaceOwnedAgent(agent) ? "Workspace" : "Personal";
+}
+
+function getAgentTags(agent: AssistantActionAgentSource): string[] {
+  return [
+    "agent",
+    isWorkspaceOwnedAgent(agent) ? "workspace" : "personal",
+    ...(agent.mode ? [agent.mode] : []),
+    ...(agent.skillIds.length > 0 ? ["skills"] : []),
+    ...(agent.toolIds.length > 0 ? ["tools"] : []),
+  ];
+}
+
 function createAgentCapabilityDescriptor(
   agent: AssistantActionAgentSource,
 ): AssistantCapabilityDescriptor {
+  const unavailabilityReason = getAgentUnavailabilityReason(agent);
+  const operationAccess = agent.toolIds.length > 0 ? "mixed" : "read";
+  const needsToolCalls = agent.toolIds.length > 0 || agent.skillIds.length > 0;
+
   return {
     id: agent.id,
     kind: "agent",
     name: agent.name,
-    description: agent.description,
-    availability: "available",
+    description: agent.description || undefined,
+    availability: unavailabilityReason ? "unavailable" : "available",
     launch: {
       method: "conversation",
       action: "ask_agent",
     },
     executionMode: "agent",
-    authRequirement: "signed_in",
-    authState: "unknown",
-    operationAccess: "mixed",
-    approvalPolicy: "on_write",
-    requiredModelCapabilities: [],
+    authRequirement: isWorkspaceOwnedAgent(agent) ? "pro" : "signed_in",
+    authState: isWorkspaceOwnedAgent(agent) ? "pro_required" : "signed_in",
+    operationAccess,
+    approvalPolicy: getApprovalPolicy(operationAccess),
+    requiredModelCapabilities: needsToolCalls ? ["supportsToolCalls"] : [],
     requiredConnectors: [],
-    availabilityReason: "Agent is available.",
+    availabilityReason: unavailabilityReason ?? "Agent is ready to run.",
     savedState: {
       supported: true,
     },
-    tags: [],
+    tags: getAgentTags(agent),
   };
 }
 
@@ -681,9 +715,15 @@ export function buildAssistantActionCatalog(
         kind: "agent" as const,
         label: agent.name,
         capability: createAgentCapabilityDescriptor(agent),
-        description: agent.description,
-        status: agent.model,
-        searchText: [agent.name, ...nonEmptyText(agent.description), ...nonEmptyText(agent.model)],
+        description: agent.description || undefined,
+        status: agent.model ?? undefined,
+        searchText: [
+          agent.name,
+          ...nonEmptyText(agent.description),
+          ...nonEmptyText(agent.model ?? undefined),
+          ...nonEmptyText(agent.mode ?? undefined),
+          ...agent.skillIds,
+        ],
         launch: {
           kind: "conversation" as const,
           operation: "ask_agent" as const,
@@ -691,6 +731,7 @@ export function buildAssistantActionCatalog(
         },
         metadata: {
           agentId: agent.id,
+          category: getAgentCapabilityCategory(agent),
         },
       })),
       ...(sources.skills ?? []).map((skill) => createSkillAssistantActionItem(skill)),

@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { agentSummarySchema } from "./agents";
 import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json";
 import { externalHttpUrlSchema } from "./navigation";
 import { outputSchema } from "./outputs";
@@ -528,6 +529,7 @@ export const renderableToolSchema = z.object({
 });
 
 export const capabilityCatalogResponseSchema = z.object({
+  agents: z.array(agentSummarySchema),
   experiences: z.array(projectExperienceDefinitionSchema),
   modelTools: z.array(modelToolDefinitionSchema),
   skills: z.array(skillSummarySchema),

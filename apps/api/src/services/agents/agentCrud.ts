@@ -1,6 +1,7 @@
 import type { CreateAgentInput, UpdateAgentInput } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { requireWorkspaceAccess } from "~/services/workspaces/access";
 import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -20,26 +21,24 @@ export async function getUserAgents(context: ServiceContext, userId?: number) {
   ).map(normaliseAgentResponse);
 }
 
-export async function getUserTeamAgents(context: ServiceContext, userId?: number) {
-  context.ensureDatabase();
-  const id = userId ?? context.requireUser().id;
-
-  return (await context.repositories.agents.getTeamAgents(id)).map(normaliseAgentResponse);
-}
-
-export async function getAgentsByTeam(context: ServiceContext, teamId: string, userId?: number) {
-  context.ensureDatabase();
-  const id = userId ?? context.requireUser().id;
-
-  return (await context.repositories.agents.getAgentsByTeamAndUser(teamId, id)).map(
-    normaliseAgentResponse,
-  );
-}
-
 export async function getAgentById(context: ServiceContext, agentId: string, userId?: number) {
   context.ensureDatabase();
 
   return normaliseAgentResponse(await requireAgentAccess(context, agentId, "read", userId));
+}
+
+async function resolveNewAgentOwnerScope(
+  context: ServiceContext,
+  userId: number,
+  workspaceId: string | undefined,
+) {
+  if (!workspaceId) {
+    return agentOwnerScopeForUser(userId);
+  }
+
+  await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
+
+  return { ownerScopeType: "workspace" as const, ownerScopeId: workspaceId };
 }
 
 export async function createAgent(context: ServiceContext, params: CreateAgentInput, user?: IUser) {
@@ -48,7 +47,7 @@ export async function createAgent(context: ServiceContext, params: CreateAgentIn
 
   const agent = await context.repositories.agents.createAgent({
     userId: currentUser.id,
-    ...agentOwnerScopeForUser(currentUser.id),
+    ...(await resolveNewAgentOwnerScope(context, currentUser.id, params.workspace_id)),
     name: params.name,
     description: params.description ?? "",
     avatarUrl: params.avatar_url || null,
@@ -59,9 +58,8 @@ export async function createAgent(context: ServiceContext, params: CreateAgentIn
     systemPrompt: params.system_prompt,
     fewShotExamples: params.few_shot_examples,
     enabledTools: params.enabled_tools,
-    teamId: params.team_id,
-    teamRole: params.team_role,
-    isTeamAgent: params.is_team_agent,
+    skillIds: params.skill_ids,
+    mode: params.mode,
   });
 
   return normaliseAgentResponse(agent);

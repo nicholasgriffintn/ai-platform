@@ -405,7 +405,7 @@ export async function runProjectTaskDispatch(params: {
           history,
           buildTaskPrompt({
             task: claimed,
-            stageInstructions: buildStageInstructions(runtime.stage),
+            stageInstructions: buildStageInstructions(runtime),
             contextNotes: buildContextNotes(claimed),
           }),
         ),
