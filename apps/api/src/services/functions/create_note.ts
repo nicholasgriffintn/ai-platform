@@ -1,8 +1,11 @@
 import { insertEmbedding } from "~/services/apps/embeddings/insert";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { isRecord } from "~/utils/objects";
 import { sanitiseInput } from "~/utils/sanitise";
 
 import type { ApiToolDefinition } from "../../types/functions";
 import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import { resolveRequestProjectId } from "./request-context";
 
 export const create_note: ApiToolDefinition = {
   name: "create_note",
@@ -32,6 +35,14 @@ export const create_note: ApiToolDefinition = {
   execute: async (args, context) => {
     const req = context.request;
 
+    if (resolveRequestProjectId(req)) {
+      throw new AssistantError(
+        "Project document storage is not available yet",
+        ErrorType.CONFIGURATION_ERROR,
+        501,
+      );
+    }
+
     const sanitisedTitle = sanitiseInput(args.title);
     const sanitisedContent = sanitiseInput(args.content);
 
@@ -47,8 +58,11 @@ export const create_note: ApiToolDefinition = {
     const response = await insertEmbedding({
       request: {
         type: "note",
-        ...args,
+        title: sanitisedTitle,
+        content: sanitisedContent,
+        ...(isRecord(args.metadata) && { metadata: args.metadata }),
       },
+      context: req.context,
       env: req.env,
       user: req.user,
     });

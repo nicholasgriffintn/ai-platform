@@ -34,6 +34,12 @@ function formatFile(record: SourceRecord): Source["file"] {
 }
 
 export function formatSource(record: SourceRecord): Source {
+  const metadata = safeParseJson<Record<string, unknown>>(record.metadata) ?? {};
+
+  if (record.kind === "memory") {
+    delete metadata.embedding_provider_target;
+  }
+
   return {
     id: record.id,
     createdByUserId: record.created_by_user_id,
@@ -47,7 +53,7 @@ export function formatSource(record: SourceRecord): Source {
     provider: record.provider,
     externalUri: record.external_uri,
     vectorId: record.vector_id,
-    metadata: safeParseJson<Record<string, unknown>>(record.metadata) ?? {},
+    metadata,
     file: formatFile(record),
     createdAt: record.created_at,
     updatedAt: record.updated_at,
@@ -266,6 +272,17 @@ export async function updateSource(
   input: UpdateSourceInput,
 ): Promise<Source> {
   const existing = await requireSourceAccess(context, userId, sourceId, true);
+
+  if (
+    existing.kind === "memory" &&
+    (input.status !== undefined || input.content !== undefined || input.metadata !== undefined)
+  ) {
+    throw new AssistantError(
+      "Memory content, lifecycle, and provider metadata are managed by the memory service",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
 
   await context.repositories.sources.updateSource(sourceId, input);
   const updated = await context.repositories.sources.getSource(sourceId);

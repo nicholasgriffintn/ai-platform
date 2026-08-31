@@ -199,6 +199,95 @@ export const embedding = sqliteTable(
 
 export type Embedding = typeof embedding.$inferSelect;
 
+export const embeddingDocument = sqliteTable(
+  "embedding_document",
+  {
+    id: text().primaryKey(),
+    scope_type: text().default("personal").notNull(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    logical_id: text().notNull(),
+    type: text().notNull(),
+    title: text().default("").notNull(),
+    metadata: text({ mode: "json" }).$type<Readonly<Record<string, unknown>>>().notNull(),
+    lifecycle_status: text().default("pending").notNull(),
+    provider: text().notNull(),
+    provider_target: text().default("quarantined-legacy").notNull(),
+    embedding_model: text().default("unknown-legacy").notNull(),
+    vector_space: text().notNull(),
+    vector_space_version: text().default("legacy").notNull(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    lifecycleCheck: check(
+      "embedding_document_lifecycle_check",
+      sql`${table.lifecycle_status} IN ('pending', 'active', 'delete_pending')`,
+    ),
+    personalScopeCheck: check(
+      "embedding_document_personal_scope_check",
+      sql`${table.scope_type} = 'personal'`,
+    ),
+    userLogicalIdIdx: uniqueIndex("embedding_document_user_logical_id_idx").on(
+      table.user_id,
+      table.logical_id,
+    ),
+    userLifecycleIdx: index("embedding_document_user_lifecycle_idx").on(
+      table.user_id,
+      table.lifecycle_status,
+    ),
+  }),
+);
+
+export const embeddingChunk = sqliteTable(
+  "embedding_chunk",
+  {
+    id: text().primaryKey(),
+    document_id: text()
+      .notNull()
+      .references(() => embeddingDocument.id, { onDelete: "cascade" }),
+    vector_id: text().notNull(),
+    chunk_index: integer().notNull(),
+    content: text().notNull(),
+    metadata: text({ mode: "json" }).$type<Readonly<Record<string, unknown>>>().notNull(),
+    lifecycle_status: text().default("pending").notNull(),
+    provider: text().notNull(),
+    provider_target: text().default("quarantined-legacy").notNull(),
+    embedding_model: text().default("unknown-legacy").notNull(),
+    vector_space: text().notNull(),
+    vector_space_version: text().default("legacy").notNull(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    lifecycleCheck: check(
+      "embedding_chunk_lifecycle_check",
+      sql`${table.lifecycle_status} IN ('pending', 'active', 'delete_pending')`,
+    ),
+    documentChunkIdx: uniqueIndex("embedding_chunk_document_index_idx").on(
+      table.document_id,
+      table.chunk_index,
+    ),
+    vectorIdIdx: uniqueIndex("embedding_chunk_vector_id_idx").on(table.vector_id),
+    documentLifecycleIdx: index("embedding_chunk_document_lifecycle_idx").on(
+      table.document_id,
+      table.lifecycle_status,
+    ),
+  }),
+);
+
+export type EmbeddingDocument = typeof embeddingDocument.$inferSelect;
+export type EmbeddingChunk = typeof embeddingChunk.$inferSelect;
+
 export const workspace = sqliteTable(
   "workspace",
   {
