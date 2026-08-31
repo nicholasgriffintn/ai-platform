@@ -15,7 +15,10 @@ import { resolveRequestUser } from "~/utils/requestUser";
 import { getCatalogueToolName } from "~/utils/toolNames";
 
 import { formatToolCalls } from "../lib/chat/tools/execution";
-import { resolveReasoningModel } from "../lib/providers/models/reasoning";
+import {
+  hasProviderReasoningOptions,
+  resolveReasoningModel,
+} from "../lib/providers/models/reasoning";
 
 const permissionChecker = new PermissionChecker();
 
@@ -28,12 +31,80 @@ const permissionChecker = new PermissionChecker();
 export function getEffectiveMaxTokens(
   requestedMaxTokens: number | undefined,
   modelMaxTokens: number | undefined,
+  defaultMaxTokens = 8192,
 ): number {
-  const defaultMaxTokens = 4096;
-  const modelLimit = modelMaxTokens || defaultMaxTokens;
-  const requested = requestedMaxTokens || modelLimit;
+  const requested = requestedMaxTokens ?? defaultMaxTokens;
 
-  return Math.min(requested, modelLimit);
+  if (modelMaxTokens === undefined) {
+    return requested;
+  }
+
+  return Math.min(requested, modelMaxTokens);
+}
+
+const MAX_OUTPUT_TOKEN_DEFAULTS = {
+  short: 2_048,
+  normal: 8_192,
+  long: 16_384,
+  reasoning: 32_768,
+} as const;
+
+type OutputTokenRequest = Pick<
+  ChatCompletionParameters,
+  "conversation_type" | "max_tokens" | "mode" | "options" | "reasoning_effort" | "response_format"
+>;
+
+function requestsStructuredJson(responseFormat: OutputTokenRequest["response_format"]): boolean {
+  return (
+    responseFormat !== undefined &&
+    "type" in responseFormat &&
+    (responseFormat.type === "json_object" || responseFormat.type === "json_schema")
+  );
+}
+
+function usesReasoningDefault(
+  params: OutputTokenRequest,
+  modelConfig: ModelConfigItem | undefined,
+): boolean {
+  if (params.reasoning_effort !== undefined) {
+    return params.reasoning_effort !== "none" && params.reasoning_effort !== "simulated-thinking";
+  }
+
+  return hasProviderReasoningOptions(modelConfig);
+}
+
+export function resolveDefaultMaxOutputTokens(
+  params: OutputTokenRequest,
+  modelConfig: ModelConfigItem | undefined,
+): number {
+  if (requestsStructuredJson(params.response_format)) {
+    return MAX_OUTPUT_TOKEN_DEFAULTS.short;
+  }
+
+  if (usesReasoningDefault(params, modelConfig)) {
+    return MAX_OUTPUT_TOKEN_DEFAULTS.reasoning;
+  }
+
+  if (
+    isAgentExecutionMode(params.mode) ||
+    params.conversation_type === "task" ||
+    params.options?.sandbox?.enabled
+  ) {
+    return MAX_OUTPUT_TOKEN_DEFAULTS.long;
+  }
+
+  return MAX_OUTPUT_TOKEN_DEFAULTS.normal;
+}
+
+export function resolveEffectiveMaxTokens(
+  params: OutputTokenRequest,
+  modelConfig: ModelConfigItem | undefined,
+): number {
+  return getEffectiveMaxTokens(
+    params.max_tokens,
+    modelConfig?.maxTokens,
+    resolveDefaultMaxOutputTokens(params, modelConfig),
+  );
 }
 
 /**
@@ -72,7 +143,7 @@ export function createSamplingParameters(
 export function isFimCompletionRequest(
   params: Pick<ChatCompletionParameters, "fim_mode" | "suffix">,
 ): boolean {
-  return Boolean(params.fim_mode || typeof params.suffix !== "undefined");
+  return params.fim_mode === true || typeof params.suffix !== "undefined";
 }
 
 export function createFimParameters(params: ChatCompletionParameters): Record<string, any> {
@@ -110,7 +181,7 @@ export function calculateReasoningBudget(
     return 0;
   }
 
-  const effectiveMaxTokens = getEffectiveMaxTokens(params.max_tokens, modelConfig?.maxTokens);
+  const effectiveMaxTokens = resolveEffectiveMaxTokens(params, modelConfig);
 
   if (!effectiveMaxTokens) {
     return 1024;
@@ -232,7 +303,7 @@ export function createCommonParameters(
     commonParams.metadata = params.metadata;
   }
 
-  const effectiveMaxTokens = getEffectiveMaxTokens(params.max_tokens, modelConfig?.maxTokens);
+  const effectiveMaxTokens = resolveEffectiveMaxTokens(params, modelConfig);
 
   if (providerName === "openai") {
     commonParams.max_completion_tokens = effectiveMaxTokens;

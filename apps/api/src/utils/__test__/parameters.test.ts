@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   calculateReasoningBudget,
+  getEffectiveMaxTokens,
   getToolsForProvider,
+  resolveEffectiveMaxTokens,
   shouldEnableStreaming,
 } from "../parameters";
 
@@ -177,5 +179,53 @@ describe("calculateReasoningBudget", () => {
         },
       ),
     ).toBe(10_000);
+  });
+});
+
+describe("resolveEffectiveMaxTokens", () => {
+  const capableModel = {
+    matchingModel: "test-model",
+    provider: "test-provider",
+    maxTokens: 262_144,
+  };
+
+  it("uses the normal chat default when no override is supplied", () => {
+    expect(resolveEffectiveMaxTokens({}, capableModel)).toBe(8_192);
+  });
+
+  it("uses the short default for structured JSON responses", () => {
+    expect(
+      resolveEffectiveMaxTokens({ response_format: { type: "json_object" } }, capableModel),
+    ).toBe(2_048);
+  });
+
+  it("uses the long default for agent and coding work", () => {
+    expect(resolveEffectiveMaxTokens({ mode: "build" }, capableModel)).toBe(16_384);
+    expect(
+      resolveEffectiveMaxTokens(
+        { options: { sandbox: { enabled: true, taskType: "feature-implementation" } } },
+        capableModel,
+      ),
+    ).toBe(16_384);
+  });
+
+  it("uses the reasoning default for reasoning models", () => {
+    expect(
+      resolveEffectiveMaxTokens(
+        {},
+        {
+          ...capableModel,
+          reasoningConfig: {
+            supportedEffortLevels: ["low", "medium", "high"],
+            defaultEffort: "medium",
+          },
+        },
+      ),
+    ).toBe(32_768);
+  });
+
+  it("allows explicit values above the defaults and clamps only to the model limit", () => {
+    expect(resolveEffectiveMaxTokens({ max_tokens: 131_072 }, capableModel)).toBe(131_072);
+    expect(getEffectiveMaxTokens(524_288, capableModel.maxTokens, 8_192)).toBe(262_144);
   });
 });

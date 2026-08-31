@@ -27,6 +27,8 @@ Use the skill's [local setup](../setup.md), [configuration](../configuration.md)
 
 The local API uses `http://localhost:8787` by default. The chat completion route is `/chat/completions`; use the generated OpenAPI reference for the current request contract.
 
+When a chat request omits its output-token limit, resolve a workload-aware default before calling the provider: 2,048 for structured JSON, 8,192 for ordinary chat, 16,384 for agent or coding work, and 32,768 for reasoning models. An explicit `max_tokens`, `max_completion_tokens`, or `max_output_tokens` value overrides that default and is clamped only to the selected model's catalogue limit.
+
 For OpenAI text models, keep Polychat's public route independent of the upstream transport. Route models that require Responses, requests for supported OpenAI-hosted tools, and function-tool requests with a non-`none` reasoning effort through `/v1/responses`; use Chat Completions for compatible requests. Model capability metadata is the authority for which hosted tools, reasoning levels, and upstream streaming modes the UI may offer.
 
 Import supported reasoning effort levels from models.dev `reasoning_options`. Preserve local defaults and model overrides when synchronising; models.dev does not own those product choices. Keep granular hosted-tool capabilities in the provider catalogue because models.dev exposes only general tool-calling support.

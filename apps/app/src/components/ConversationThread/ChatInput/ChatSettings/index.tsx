@@ -72,9 +72,18 @@ export const ChatSettings = ({
     isAuthenticated && (supportsToolCalls || (!model && chatMode === "remote"));
 
   const handleNumericSettingChange = (key: NumericChatSettingKey, value: string) => {
+    if (key === "max_tokens" && value.trim() === "") {
+      const nextSettings = { ...chatSettings };
+
+      delete nextSettings.max_tokens;
+      setChatSettings(nextSettings);
+
+      return;
+    }
+
     const numValue = Number.parseFloat(value);
 
-    if (Number.isNaN(numValue)) {
+    if (Number.isNaN(numValue) || (key === "max_tokens" && numValue < 1)) {
       return;
     }
 
@@ -146,6 +155,7 @@ export const ChatSettings = ({
       selectedModelConfig={selectedModelConfig}
       defaultReasoningEffort={defaultReasoningEffort}
       defaultVerbosity={defaultVerbosity}
+      maxOutputTokens={selectedModelConfig?.maxTokens}
       showMultiModelToggle={showMultiModelToggle}
       useMultiModel={useMultiModel}
       onUseMultiModelChange={setUseMultiModel}

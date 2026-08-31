@@ -35,6 +35,7 @@ import { ToolResultView } from "./ToolResultView";
 
 interface MessageContentProps {
   message: Message;
+  isGenerating?: boolean;
   onArtifactOpen?: (
     artifact: ArtifactProps,
     combine?: boolean,
@@ -55,6 +56,7 @@ const renderTextContent = (
     artifacts?: ArtifactProps[],
   ) => void,
   key?: string,
+  isGenerating = false,
 ): ReactNode => {
   const formatted = formattedMessageContent(role, textContent);
   const { reasoning, artifacts } = formatted;
@@ -96,6 +98,7 @@ const renderTextContent = (
                 key={`artifact-${identifier}-${i}`}
                 artifact={artifact}
                 artifacts={artifacts}
+                isGenerating={isGenerating}
               />
             ) : (
               <ArtifactCallout
@@ -354,7 +357,8 @@ const renderSnapshotPart = (
 
 export const MessageContent = memo((props: MessageContentProps) => {
   const conversationResolvedToolCallIds = useResolvedToolCallIds();
-  const { message, onArtifactOpen, onToolInteraction } = props;
+  const { message, isGenerating = false, onArtifactOpen, onToolInteraction } = props;
+  const previewIsGenerating = isGenerating || message.status === "in_progress";
   const content = useMemo(() => {
     const handleArtifactOpen = (
       artifact: ArtifactProps,
@@ -421,6 +425,7 @@ export const MessageContent = memo((props: MessageContentProps) => {
               undefined,
               handleArtifactOpen,
               "content-fallback",
+              previewIsGenerating,
             )}
           {messageParts.map((part, index) => {
             if (part.type === "text") {
@@ -432,6 +437,7 @@ export const MessageContent = memo((props: MessageContentProps) => {
                 undefined,
                 handleArtifactOpen,
                 `part-text-${index}`,
+                previewIsGenerating,
               );
             }
 
@@ -502,6 +508,8 @@ export const MessageContent = memo((props: MessageContentProps) => {
             message.citations,
             message.data,
             handleArtifactOpen,
+            undefined,
+            previewIsGenerating,
           )
         ) : Array.isArray(message.content) ? (
           <div className="space-y-4">
@@ -518,6 +526,7 @@ export const MessageContent = memo((props: MessageContentProps) => {
                   message.data,
                   handleArtifactOpen,
                   `text-${i}`,
+                  previewIsGenerating,
                 );
               }
 
@@ -570,6 +579,7 @@ export const MessageContent = memo((props: MessageContentProps) => {
                       key={`artifact-item-${item.artifact.identifier}`}
                       artifact={artifact}
                       artifacts={artifacts}
+                      isGenerating={previewIsGenerating}
                     />
                   );
                 }
@@ -631,6 +641,7 @@ export const MessageContent = memo((props: MessageContentProps) => {
     message.reasoning,
     message.data,
     message.citations,
+    previewIsGenerating,
     onArtifactOpen,
     onToolInteraction,
   ]);

@@ -57,39 +57,54 @@ export function CompactSettingSelect({
 }
 
 interface CompactSettingNumberProps {
+  description?: string;
   disabled?: boolean;
   id: string;
   label: string;
   max?: number;
   min?: number;
   onChange: (value: string) => void;
+  placeholder?: number | string;
   value: number | string;
 }
 
 export function CompactSettingNumber({
+  description,
   disabled,
   id,
   label,
   max,
   min,
   onChange,
+  placeholder,
   value,
 }: CompactSettingNumberProps) {
+  const descriptionId = description ? `${id}-description` : undefined;
+
   return (
-    <div className="flex items-center justify-between gap-3">
-      <label htmlFor={id} className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
-        {label}
-      </label>
-      <input
-        id={id}
-        type="number"
-        min={min}
-        max={max}
-        value={value}
-        disabled={disabled}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-8 w-24 rounded-md border border-zinc-200 bg-off-white px-2 text-right text-sm text-zinc-900 outline-none transition-colors focus:border-zinc-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500"
-      />
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between gap-3">
+        <label htmlFor={id} className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+          {label}
+        </label>
+        <input
+          id={id}
+          type="number"
+          min={min}
+          max={max}
+          value={value}
+          placeholder={placeholder?.toString()}
+          disabled={disabled}
+          onChange={(event) => onChange(event.target.value)}
+          aria-describedby={descriptionId}
+          className="h-8 w-28 rounded-md border border-zinc-200 bg-off-white px-2 text-right text-sm text-zinc-900 outline-none transition-colors focus:border-zinc-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500"
+        />
+      </div>
+      {description && (
+        <p id={descriptionId} className="text-xs text-zinc-500 dark:text-zinc-400">
+          {description}
+        </p>
+      )}
     </div>
   );
 }

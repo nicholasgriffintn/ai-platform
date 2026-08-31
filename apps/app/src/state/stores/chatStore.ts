@@ -7,12 +7,12 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { apiKeyService } from "~/lib/api/api-key";
+import { migrateLegacyMaxOutputTokens } from "~/lib/chat-settings";
 import { createConversationId } from "~/lib/conversations";
 import type { ChatMode, ChatSettings, User, UserSettings } from "~/types";
 
 const defaultSettings: ChatSettings = {
   temperature: 0.7,
-  max_tokens: 1024 * 8,
   top_p: 0.8,
   presence_penalty: 0,
   frequency_penalty: 0,
@@ -236,6 +236,8 @@ export const useChatStore = create<ChatStore>()(
     }),
     {
       name: "chat-store",
+      version: 1,
+      migrate: migrateLegacyMaxOutputTokens,
       partialize: (state) => ({
         localOnlyMode: state.localOnlyMode,
         chatMode: state.chatMode,

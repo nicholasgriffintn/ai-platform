@@ -5,7 +5,7 @@ import type { ChatCompletionParameters, ReasoningEffortLevel } from "~/types";
 import { hasAnyEnabledTool } from "~/utils/enabledTools";
 import { coerceStringArray, isRecord, omitUndefinedValues } from "~/utils/objects";
 import { readOptionBag, readRecordOption } from "~/utils/options";
-import { createSamplingParameters, getEffectiveMaxTokens } from "~/utils/parameters";
+import { createSamplingParameters, resolveEffectiveMaxTokens } from "~/utils/parameters";
 
 import { readGoogleThoughtSignature } from "./googleThoughtSignatures";
 
@@ -233,7 +233,7 @@ export function buildGoogleStudioGenerationConfig(
 
   return omitUndefinedValues({
     temperature: samplingParameters.temperature,
-    maxOutputTokens: getEffectiveMaxTokens(params.max_tokens, modelConfig.maxTokens),
+    maxOutputTokens: resolveEffectiveMaxTokens(params, modelConfig),
     topP: samplingParameters.top_p,
     topK: params.top_k,
     seed: params.seed,

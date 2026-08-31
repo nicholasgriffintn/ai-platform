@@ -12,7 +12,7 @@ import type { ChatCompletionParameters, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { coerceStringArray, isRecord } from "~/utils/objects";
 import { type OptionBag, readOptionBag, readRecordOption } from "~/utils/options";
-import { createSamplingParameters, getEffectiveMaxTokens } from "~/utils/parameters";
+import { createSamplingParameters, resolveEffectiveMaxTokens } from "~/utils/parameters";
 
 import { buildOpenAIResponsesTools } from "./openaiResponsesTools";
 
@@ -332,7 +332,7 @@ export function buildOpenAIResponsesBody(
     ...createSamplingParameters(params, modelConfig),
     ...buildResponsesTextParams(params, modelConfig),
     ...buildResponsesReasoningParams(params, modelConfig, toolOptions),
-    max_output_tokens: getEffectiveMaxTokens(params.max_tokens, modelConfig.maxTokens),
+    max_output_tokens: resolveEffectiveMaxTokens(params, modelConfig),
     parallel_tool_calls: params.parallel_tool_calls,
     tool_choice: buildResponsesToolChoice(params.tool_choice),
     store,

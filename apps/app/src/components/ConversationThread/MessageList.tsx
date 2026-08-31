@@ -126,6 +126,17 @@ export const MessageList = ({
   const responseDurations = useStreamActivityStore((state) => state.responseDurations);
 
   const isStreamLoading = currentStream?.status === "streaming";
+  let generatingAssistantMessageIndex = -1;
+
+  if (isStreamLoading || streamStarted) {
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      if (messages[index].role === "assistant") {
+        generatingAssistantMessageIndex = index;
+        break;
+      }
+    }
+  }
+
   const isModelInitializing = useIsLoading("model-init");
 
   const streamLoadingMessage = currentStream?.loadingMessage || "Generating response...";
@@ -242,6 +253,7 @@ export const MessageList = ({
                         conversationId={currentConversationId}
                         canSubmitFeedback={Boolean(conversation && !conversation.isLocalOnly)}
                         message={message}
+                        isGenerating={index === generatingAssistantMessageIndex}
                         modelConfig={getModelByReference(modelReferences, message.model)}
                         onToolInteraction={onToolInteraction}
                         onConnectorApproval={onConnectorApproval}

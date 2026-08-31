@@ -99,6 +99,7 @@ export const ChatMessageView = ({
   conversationId,
   canSubmitFeedback = false,
   message,
+  isGenerating = false,
   modelConfig,
   onToolInteraction,
   onConnectorApproval,
@@ -125,6 +126,7 @@ export const ChatMessageView = ({
   conversationId?: string;
   canSubmitFeedback?: boolean;
   message: Message;
+  isGenerating?: boolean;
   modelConfig?: ModelConfigItem;
   onToolInteraction?: ToolInteractionHandler;
   onConnectorApproval?: (approvalId: string, resolution: "approved" | "rejected") => Promise<void>;
@@ -257,6 +259,7 @@ export const ChatMessageView = ({
               ) : (
                 <MessageContent
                   message={message}
+                  isGenerating={isGenerating}
                   onArtifactOpen={onArtifactOpen}
                   onToolInteraction={onToolInteraction}
                 />

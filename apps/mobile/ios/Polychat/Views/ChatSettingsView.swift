@@ -54,7 +54,7 @@ struct ChatSettingsView: View {
                         Stepper("Max Tokens: \(settings.maxTokens ?? 8192)", value: Binding(
                             get: { settings.maxTokens ?? 8192 },
                             set: { settings.maxTokens = $0 }
-                        ), in: 256...32768, step: 256)
+                        ), in: 256...Int.max, step: 256)
                     }
 
                     VStack(alignment: .leading, spacing: 8) {

@@ -40,6 +40,7 @@ Native iOS client for the Polychat AI platform.
 - Conversation history
 - Siri integration via App Intents
 - Authentication
+- Optional max-output-token override without a client-side 32,768-token ceiling; leave it disabled to use the API's workload-aware default
 
 ## Deployment
 

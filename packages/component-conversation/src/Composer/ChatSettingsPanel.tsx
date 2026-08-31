@@ -33,6 +33,7 @@ export interface ChatSettingsPanelProps {
   selectedModelConfig?: any;
   defaultReasoningEffort: ReasoningEffort;
   defaultVerbosity: VerbosityLevel;
+  maxOutputTokens?: number;
   showMultiModelToggle?: boolean;
   useMultiModel?: boolean;
   onUseMultiModelChange: (value: boolean) => void;
@@ -56,6 +57,7 @@ export function ChatSettingsPanel({
   selectedModelConfig,
   defaultReasoningEffort,
   defaultVerbosity,
+  maxOutputTokens,
   showMultiModelToggle = false,
   useMultiModel = false,
   onUseMultiModelChange,
@@ -188,12 +190,14 @@ export function ChatSettingsPanel({
 
                 <CompactSettingNumber
                   id="max_tokens"
-                  label="Max Tokens"
+                  label="Max output tokens"
                   min={1}
-                  max={4096}
-                  value={chatSettings.max_tokens ?? 2048}
+                  max={maxOutputTokens}
+                  value={chatSettings.max_tokens ?? ""}
+                  placeholder="Automatic"
                   disabled={isDisabled}
                   onChange={(value) => onNumericSettingChange("max_tokens", value)}
+                  description="Automatic uses 2,048 for structured JSON, 8,192 for normal chat, 16,384 for agent or coding work, and 32,768 for reasoning. Enter a value to override it; the model's own limit still applies."
                 />
 
                 <CompactSettingRange
@@ -229,7 +233,8 @@ export function ChatSettingsPanel({
                       <strong>Top P:</strong> controls sampling diversity.
                     </p>
                     <p>
-                      <strong>Max Tokens:</strong> limits response length.
+                      <strong>Max output tokens:</strong> limits response length. Leave it empty to
+                      use the workload-aware default.
                     </p>
                     <p>
                       <strong>Penalties:</strong> tune repetition.

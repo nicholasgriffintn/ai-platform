@@ -3,7 +3,7 @@ import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { APP_DESCRIPTION, APP_NAME } from "~/constants/app";
 import { hasProviderReasoningOptions } from "~/lib/providers/models/reasoning";
 import type { IBody } from "~/types";
-import { getEffectiveMaxTokens } from "~/utils/parameters";
+import { resolveEffectiveMaxTokens } from "~/utils/parameters";
 
 import { PromptBuilder } from "../builder";
 
@@ -26,11 +26,12 @@ export function buildAssistantMetadataSection({
   modelConfig,
 }: AssistantMetadataSectionOptions): string {
   const activeModelId = modelId || request.model || modelConfig?.matchingModel || "unknown";
-  const requestedMaxTokens =
-    request.max_tokens ?? request.max_completion_tokens ?? request.max_output_tokens;
-  const effectiveMaxOutputTokens = getEffectiveMaxTokens(
-    typeof requestedMaxTokens === "number" ? requestedMaxTokens : undefined,
-    modelConfig?.maxTokens,
+  const effectiveMaxOutputTokens = resolveEffectiveMaxTokens(
+    {
+      ...request,
+      max_tokens: request.max_tokens ?? request.max_completion_tokens ?? request.max_output_tokens,
+    },
+    modelConfig,
   );
 
   const builder = new PromptBuilder("<assistant_identity>")
