@@ -286,32 +286,110 @@ describe("runAgentLoop", () => {
     expect(result.response.response).toBe("Actually done.");
   });
 
-  it("keeps tools available when a finish gate needs work beyond the ordinary step budget", async () => {
-    const { params, runTurn } = createParams(
-      [textTurn("The artifact is ready."), toolTurn("complete_goal"), textTurn("Done.")],
-      1,
-    );
-    let assessed = false;
-
-    mocks.handleToolCalls.mockResolvedValueOnce([
-      { role: "tool", name: "complete_goal", content: "Goal completed", status: "success" },
+  it("publishes tool results to the turn lifecycle before assessing finish", async () => {
+    const { params } = createParams([
+      toolTurn("set_goal", "set-call"),
+      textTurn("The artifact is ready."),
+      toolTurn("complete_goal", "complete-call"),
+      textTurn("Done."),
     ]);
+    let goalStatus: "none" | "active" | "completed" = "none";
+    const results = [
+      {
+        role: "tool",
+        name: "set_goal",
+        content: "Goal set",
+        status: "success",
+        data: { goal: { status: "active" } },
+      },
+      {
+        role: "tool",
+        name: "complete_goal",
+        content: "Goal completed",
+        status: "success",
+        data: { goal: { status: "completed" } },
+      },
+    ];
+
+    mocks.handleToolCalls.mockImplementation(async (...args: any[]) => {
+      const result = results.shift();
+
+      if (!result) {
+        return [];
+      }
+
+      await args[4]?.onToolResult?.(result);
+
+      return [result];
+    });
 
     const result = await runAgentLoop({
       ...params,
-      assessFinish: () => {
-        if (assessed) {
-          return { allow: true, outcome: "satisfied" as const };
-        }
-
-        assessed = true;
-
-        return { allow: false, instruction: "Complete the active goal." };
+      onToolResult: async (toolResult) => {
+        goalStatus = toolResult.data?.goal?.status ?? goalStatus;
       },
+      assessFinish: () =>
+        goalStatus === "active"
+          ? { allow: false, instruction: "Complete the active goal." }
+          : { allow: true, outcome: "satisfied" as const },
+    });
+
+    expect(result.response.response).toBe("Done.");
+    expect(mocks.handleToolCalls).toHaveBeenCalledTimes(2);
+  });
+
+  it("reserves tool-enabled finalisation steps for a goal created at the step ceiling", async () => {
+    const { params, runTurn } = createParams(
+      [
+        toolTurn("set_goal", "set-call"),
+        toolTurn("complete_goal", "complete-call"),
+        textTurn("Done."),
+      ],
+      1,
+    );
+    let goalActive = false;
+    const results = [
+      {
+        role: "tool",
+        name: "set_goal",
+        content: "Goal set",
+        status: "success",
+        data: { goal: { status: "active" } },
+      },
+      {
+        role: "tool",
+        name: "complete_goal",
+        content: "Goal completed",
+        status: "success",
+        data: { goal: { status: "completed" } },
+      },
+    ];
+
+    mocks.handleToolCalls.mockImplementation(async (...args: any[]) => {
+      const result = results.shift();
+
+      if (!result) {
+        return [];
+      }
+
+      await args[4]?.onToolResult?.(result);
+
+      return [result];
+    });
+
+    const result = await runAgentLoop({
+      ...params,
+      onToolResult: async (toolResult) => {
+        goalActive = toolResult.data?.goal?.status === "active";
+      },
+      shouldReserveGoalFinalisation: () => goalActive,
+      assessFinish: () => ({ allow: true, outcome: "satisfied" as const }),
     });
 
     expect(runTurn.mock.calls[1][0].request.disable_functions).toBeUndefined();
-    expect(mocks.handleToolCalls).toHaveBeenCalledOnce();
+    expect(runTurn.mock.calls[1][0].request.messages.at(-1)?.content).toContain(
+      "Resolve the active goal",
+    );
     expect(result.response.response).toBe("Done.");
   });
 

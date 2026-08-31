@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 
+import { resolveProjectTaskToolApproval } from "../approvals";
 import { answerProjectTaskQuestions, getPendingProjectTaskQuestions } from "../questions";
 
 const mocks = vi.hoisted(() => ({ add: vi.fn() }));
@@ -121,5 +122,68 @@ describe("project task questions", () => {
       }),
     ).rejects.toMatchObject({ statusCode: 400 });
     expect(updateMessage).not.toHaveBeenCalled();
+  });
+});
+
+describe("project task tool approvals", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("resolves the exact pending tool approval and records the decision", async () => {
+    const updateMessage = vi.fn().mockResolvedValue(undefined);
+    const getLatestPendingToolMessage = vi.fn().mockResolvedValue({
+      id: "approval-message-1",
+      name: "use_recipe_connector",
+      status: "pending",
+      data: JSON.stringify({
+        approvalRequired: true,
+        approval: {
+          interactionId: "approval-1",
+          toolName: "use_recipe_connector",
+          reason: "Read from the connected service",
+        },
+      }),
+      tool_call_id: "approval-1",
+      timestamp: 1_777_000_000_000,
+    });
+    const context = {
+      env: {},
+      database: {},
+      requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
+      repositories: {
+        messages: { getLatestPendingToolMessage, updateMessage },
+      },
+    } as unknown as ServiceContext;
+
+    await expect(
+      resolveProjectTaskToolApproval({
+        context,
+        task: {
+          ...task,
+          blockedReason: "awaiting_approval",
+        },
+        input: { interactionId: "approval-1", resolution: "approved" },
+      }),
+    ).resolves.toEqual({ toolName: "use_recipe_connector", resolution: "approved" });
+    expect(getLatestPendingToolMessage).toHaveBeenCalledWith("conversation-1");
+    expect(updateMessage).toHaveBeenCalledWith(
+      "conversation-1",
+      "approval-message-1",
+      expect.objectContaining({ status: "resolved" }),
+    );
+    expect(mocks.add).toHaveBeenCalledWith(
+      "conversation-1",
+      expect.objectContaining({
+        role: "user",
+        data: expect.objectContaining({
+          toolApprovalResponse: {
+            interactionId: "approval-1",
+            resolution: "approved",
+            toolName: "use_recipe_connector",
+          },
+        }),
+      }),
+    );
   });
 });

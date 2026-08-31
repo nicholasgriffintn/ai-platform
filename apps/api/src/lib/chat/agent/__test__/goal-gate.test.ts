@@ -1,36 +1,133 @@
+import type { Goal } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import { createGoalFinishGate } from "../goal-gate";
 
-function buildGate(recordIteration: ReturnType<typeof vi.fn>, onTerminalStatus?: any) {
-  const goal = {
+function createGoal(overrides: Partial<Goal> = {}): Goal {
+  return {
     id: "goal-1",
     conversation_id: "conv-1",
     sandbox_run_id: null,
+    user_id: 1,
+    objective: "Create the requested artefacts",
     status: "active",
+    source: "model",
     iteration_count: 0,
-  } as never;
+    stall_streak: 0,
+    tokens_spent: 0,
+    progress: [],
+    evidence: null,
+    stopped_reason: null,
+    created_at: "2026-08-30T00:00:00.000Z",
+    updated_at: null,
+    completed_at: null,
+    last_continued_at: null,
+    ...overrides,
+  };
+}
 
-  const goalService = {
-    getActiveGoal: vi.fn().mockResolvedValue(goal),
+function createGate(options: {
+  goal?: Goal | null;
+  recordIteration?: ReturnType<typeof vi.fn>;
+  onTerminalStatus?: (goal: Goal) => Promise<void>;
+}) {
+  const recordIteration =
+    options.recordIteration ??
+    vi.fn(async ({ goalId }) => ({
+      goal: createGoal({ id: goalId, iteration_count: 1 }),
+      shouldContinue: true,
+      transitioned: false,
+    }));
+
+  return {
+    gate: createGoalFinishGate({
+      goalService: { recordIteration } as never,
+      goal: options.goal,
+      surface: "chat",
+      onTerminalStatus: options.onTerminalStatus,
+    }),
     recordIteration,
-  } as never;
-
-  return createGoalFinishGate({ goalService, goal, surface: "chat", onTerminalStatus });
+  };
 }
 
 describe("createGoalFinishGate", () => {
-  it("counts a turn as progress from new commands, not against the growing iteration count", async () => {
-    const recordIteration = vi.fn().mockImplementation(({ goal }) =>
-      Promise.resolve({
-        goal: { ...goal, iteration_count: goal.iteration_count + 1 },
-        shouldContinue: true,
-      }),
-    );
-    const gate = buildGate(recordIteration);
+  it("adopts a goal from the successful set_goal result without querying for a latest goal", async () => {
+    const goal = createGoal();
+    const { gate, recordIteration } = createGate({ goal: null });
 
-    await gate({ summary: "used a tool", step: 1, commandCount: 1 });
-    await gate({ summary: "used another tool", step: 2, commandCount: 2 });
+    await gate.observeToolResult({
+      role: "tool",
+      name: "set_goal",
+      status: "success",
+      content: "Goal set",
+      data: { goal },
+    });
+
+    const result = await gate.assessFinish({
+      summary: "Artefacts produced",
+      step: 2,
+      commandCount: 1,
+    });
+
+    expect(recordIteration).toHaveBeenCalledWith(expect.objectContaining({ goalId: goal.id }));
+    expect(result).toMatchObject({ allow: false });
+  });
+
+  it("accepts a successful complete_goal result and reports its terminal transition once", async () => {
+    const onTerminalStatus = vi.fn(async () => undefined);
+    const { gate, recordIteration } = createGate({
+      goal: createGoal(),
+      onTerminalStatus,
+    });
+    const completed = createGoal({ status: "completed" });
+
+    await gate.observeToolResult({
+      role: "tool",
+      name: "complete_goal",
+      status: "success",
+      content: "Goal completed",
+      data: { goal: completed },
+    });
+
+    const result = await gate.assessFinish({ summary: "Done", step: 3, commandCount: 2 });
+
+    expect(result).toEqual({ allow: true, outcome: "satisfied" });
+    expect(recordIteration).not.toHaveBeenCalled();
+    expect(onTerminalStatus).toHaveBeenCalledOnce();
+    expect(onTerminalStatus).toHaveBeenCalledWith(completed);
+  });
+
+  it("does not report a paused goal as terminal", async () => {
+    const onTerminalStatus = vi.fn(async () => undefined);
+    const { gate, recordIteration } = createGate({
+      goal: createGoal({ status: "paused" }),
+      onTerminalStatus,
+    });
+
+    const result = await gate.assessFinish({ summary: "Paused", step: 1, commandCount: 0 });
+
+    expect(result).toEqual({ allow: true, outcome: "unsatisfied" });
+    expect(recordIteration).not.toHaveBeenCalled();
+    expect(onTerminalStatus).not.toHaveBeenCalled();
+  });
+
+  it("counts progress from new commands, not the growing iteration count", async () => {
+    const recordIteration = vi
+      .fn()
+      .mockResolvedValueOnce({
+        goal: createGoal({ iteration_count: 1 }),
+        shouldContinue: true,
+        transitioned: false,
+      })
+      .mockResolvedValueOnce({
+        goal: createGoal({ iteration_count: 2 }),
+        shouldContinue: true,
+        transitioned: false,
+      });
+    const { gate } = createGate({ goal: createGoal(), recordIteration });
+
+    await gate.assessFinish({ summary: "used a tool", step: 1, commandCount: 1 });
+    await gate.assessFinish({ summary: "used another tool", step: 2, commandCount: 2 });
 
     expect(recordIteration.mock.calls[0][0].iteration).toMatchObject({
       producedEvidence: true,
@@ -42,73 +139,19 @@ describe("createGoalFinishGate", () => {
     });
   });
 
-  it("marks a goal completed elsewhere once, at the end of the turn", async () => {
-    const goal = {
-      id: "goal-1",
-      conversation_id: "conv-1",
-      sandbox_run_id: null,
-      status: "active",
-      iteration_count: 1,
-    } as never;
-    const onTerminalStatus = vi.fn();
-    const goalService = {
-      getActiveGoal: vi.fn().mockResolvedValue(null),
-      getGoalById: vi.fn().mockResolvedValue({ ...(goal as any), status: "completed" }),
-      recordIteration: vi.fn(),
-    } as never;
-
-    const gate = createGoalFinishGate({
-      goalService,
-      goal,
-      surface: "chat",
-      onTerminalStatus,
+  it("reports a terminal status only when recording the iteration caused the transition", async () => {
+    const stalled = createGoal({ status: "stalled" });
+    const recordIteration = vi.fn().mockResolvedValue({
+      goal: stalled,
+      shouldContinue: false,
+      transitioned: true,
     });
+    const onTerminalStatus = vi.fn(async () => undefined);
+    const { gate } = createGate({ goal: createGoal(), recordIteration, onTerminalStatus });
 
-    const first = await gate({ summary: "done", step: 1, commandCount: 1 });
+    const result = await gate.assessFinish({ summary: "No progress", step: 2, commandCount: 0 });
 
-    await gate({ summary: "done again", step: 2, commandCount: 1 });
-
-    expect(first).toMatchObject({ allow: true, outcome: "satisfied" });
-    expect(onTerminalStatus).toHaveBeenCalledTimes(1);
-  });
-
-  it("does not count reworded prose as progress without tool evidence", async () => {
-    const recordIteration = vi
-      .fn()
-      .mockImplementation(({ goal }) => Promise.resolve({ goal, shouldContinue: true }));
-    const gate = buildGate(recordIteration);
-
-    await gate({ summary: "10, 20", step: 1, commandCount: 0 });
-    await gate({ summary: "30, 40", step: 2, commandCount: 0 });
-    await gate({ summary: "30, 40", step: 3, commandCount: 0 });
-
-    expect(recordIteration.mock.calls.map((call) => call[0].iteration.producedEvidence)).toEqual([
-      false,
-      false,
-      false,
-    ]);
-  });
-
-  it("records a pending question as a user-action boundary", async () => {
-    const recordIteration = vi
-      .fn()
-      .mockImplementation(({ goal }) =>
-        Promise.resolve({ goal: { ...goal, status: "blocked" }, shouldContinue: false }),
-      );
-    const gate = buildGate(recordIteration);
-
-    const result = await gate({
-      summary: "Which tone should I use?",
-      step: 1,
-      commandCount: 1,
-      awaitingUserAction: "question",
-    });
-
-    expect(recordIteration).toHaveBeenCalledWith(
-      expect.objectContaining({
-        iteration: expect.objectContaining({ awaitingUserAction: "question" }),
-      }),
-    );
-    expect(result).toMatchObject({ allow: true, outcome: "blocked" });
+    expect(result).toEqual({ allow: true, outcome: "stalled" });
+    expect(onTerminalStatus).toHaveBeenCalledWith(stalled);
   });
 });

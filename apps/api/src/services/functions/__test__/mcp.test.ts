@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { handleFunctions } from "~/services/functions";
 
 import {
   disposeMCPClients,
@@ -58,6 +59,36 @@ describe("MCP client lifecycle", () => {
     expect(clientB.callTool).toHaveBeenCalledTimes(1);
     expect(clientA.dispose).not.toHaveBeenCalled();
     expect(clientB.dispose).not.toHaveBeenCalled();
+  });
+
+  it("uses the authoritative task-stage policy for MCP execution", async () => {
+    const context = createContext();
+    const client = createClient("task-stage-network");
+
+    await registerMCPClient(context, AGENT_ID, client);
+
+    const result = await handleFunctions({
+      completion_id: "task-1",
+      app_url: undefined,
+      functionName: TOOL_CALL_NAME,
+      args: {},
+      request: {
+        env: { AI: {} } as any,
+        context,
+        mode: "plan",
+        user: { id: 1, plan_id: "pro" } as any,
+        request: {
+          completion_id: "task-1",
+          input: "validate",
+          date: "2026-08-31",
+          mode: "plan",
+          enforce_mode_tool_policy: false,
+        },
+      },
+    });
+
+    expect(result.data?.answer).toBe("task-stage-network");
+    expect(client.callTool).toHaveBeenCalledTimes(1);
   });
 
   it("refuses to resolve a client registered against another request", async () => {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
+import { resolveRequestProjectId } from "~/services/functions/request-context";
 
 import { buildToolPermissionsMap, buildToolRequestContext } from "../request-context";
 
@@ -37,6 +38,7 @@ describe("chat request context helpers", () => {
         current_agent_id: "agent-1",
         delegation_stack: ["agent-0"],
         max_delegation_depth: 2,
+        enforce_mode_tool_policy: false,
       } as any,
       input: "hello with context",
       mode: "build",
@@ -65,6 +67,7 @@ describe("chat request context helpers", () => {
         current_agent_id: "agent-1",
         delegation_stack: ["agent-0"],
         max_delegation_depth: 2,
+        enforce_mode_tool_policy: false,
       },
     });
     expect(context.request.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
@@ -89,5 +92,6 @@ describe("chat request context helpers", () => {
       type: "project",
       projectId: "validated-project",
     });
+    expect(resolveRequestProjectId(context)).toBe("validated-project");
   });
 });

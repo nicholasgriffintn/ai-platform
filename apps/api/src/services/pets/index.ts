@@ -294,8 +294,6 @@ export async function generatePetImage(
     context,
     args: {
       prompt: `${PET_STYLE_PROMPT} The character is: ${prompt}`,
-      width: 1024,
-      height: 1024,
     },
     user,
   });

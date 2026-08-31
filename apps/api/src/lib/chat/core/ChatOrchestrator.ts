@@ -1,3 +1,5 @@
+import type { Goal } from "@ngriffin_uk/polychat-schemas";
+
 import { runAgentLoop } from "~/lib/chat/agent/agent-loop";
 import { createGoalFinishGate } from "~/lib/chat/agent/goal-gate";
 import {
@@ -76,10 +78,11 @@ export class ChatOrchestrator {
     return true;
   }
 
-  private async resolveGoalFinishGate(
+  private resolveGoalFinishGate(
     chatOptions: CoreChatOptions,
     currentMode: ChatMode,
     conversationManager: ConversationManager,
+    goal: Goal | null | undefined,
   ) {
     const user = chatOptions.context?.user;
 
@@ -88,13 +91,6 @@ export class ChatOrchestrator {
     }
 
     const goalService = new GoalService(chatOptions.context.repositories.goals);
-    const goal = await goalService.getActiveGoal({
-      conversationId: chatOptions.completion_id,
-    });
-
-    if (!goal || goal.status !== "active") {
-      return undefined;
-    }
 
     return createGoalFinishGate({
       goalService,
@@ -281,6 +277,12 @@ export class ChatOrchestrator {
       memoryScope: prepared.memoryScope,
     });
 
+    const goalFinishGate = this.resolveGoalFinishGate(
+      chatOptions,
+      currentMode,
+      conversationManager,
+      prepared.activeGoal,
+    );
     const runParams = {
       requestParams: executionRequest.providerRequest(),
       completionId: chatOptions.completion_id,
@@ -299,7 +301,14 @@ export class ChatOrchestrator {
       context: chatOptions.context,
       userSettings,
       requestOptions: prepared.requestOptions,
-      assessFinish: await this.resolveGoalFinishGate(chatOptions, currentMode, conversationManager),
+      assessFinish: goalFinishGate
+        ? (finishContext) => goalFinishGate.assessFinish(finishContext)
+        : undefined,
+      onToolResult: goalFinishGate
+        ? (toolResult) => goalFinishGate.observeToolResult(toolResult)
+        : undefined,
+      shouldReserveGoalFinalisation: () =>
+        chatOptions.max_steps === undefined && (goalFinishGate?.hasActiveGoal() ?? false),
       executionCtx: chatOptions.executionCtx,
     };
 

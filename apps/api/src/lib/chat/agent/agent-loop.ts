@@ -53,6 +53,8 @@ const AGENT_MAX_TURN_FAILURES = 2;
 const DEFAULT_INITIAL_PLAN = "Use available tools as needed, then return a final answer.";
 const FINAL_ANSWER_NOTICE =
   "You have used every tool step available for this response. No further tool calls are possible. Answer the user now with what you already have, and say plainly what you could not finish.";
+const GOAL_FINALISATION_NOTICE =
+  "Resolve the active goal now. Call complete_goal with evidence if it is satisfied, or use ask_user or request_approval if progress is genuinely blocked.";
 const REPEATED_TOOL_CALL_NOTICE =
   "The same tool call has already failed with identical arguments. Do not call another tool. Answer the user now with what you have, and say plainly what you could not finish.";
 const UNKNOWN_TOOL_FINAL_ANSWER_NOTICE =
@@ -71,7 +73,8 @@ interface ChatAgentLoopState extends AgentLoopState {
   stoppedForUsageLimit?: boolean;
   finalAnswerForced?: boolean;
   finalAnswerNotice?: string;
-  finishRejected?: boolean;
+  goalFinalisationRequested?: boolean;
+  goalFinalisationNotice?: string;
 }
 
 interface ChatAgentSharedContext {
@@ -128,6 +131,8 @@ export interface AgentLoopExecutionParams {
     commandCount: number;
     awaitingUserAction?: "approval" | "question";
   }) => Promise<AgentFinishAssessment> | AgentFinishAssessment;
+  onToolResult?: (result: Message) => Promise<void> | void;
+  shouldReserveGoalFinalisation?: () => boolean;
 }
 
 export interface AgentLoopExecutionResult {
@@ -238,8 +243,11 @@ export async function runAgentLoop(
     },
     emit: params.emit,
     onStepBudgetExceeded: () => {
-      if (state.finishRejected && !state.finalAnswerForced) {
-        return { extendBy: 2, reason: "Finish check requires more work." };
+      if (params.shouldReserveGoalFinalisation?.() && !state.goalFinalisationRequested) {
+        state.goalFinalisationRequested = true;
+        state.goalFinalisationNotice = GOAL_FINALISATION_NOTICE;
+
+        return { extendBy: 2, reason: "Active goal requires a terminal tool result." };
       }
 
       if (state.finalAnswerForced) {
@@ -262,8 +270,6 @@ export async function runAgentLoop(
                 commandCount: state.commandCount,
                 awaitingUserAction: state.waitingForUserAction,
               });
-
-          state.finishRejected = assessment?.allow === false;
 
           return assessment ?? { allow: true };
         }
@@ -333,20 +339,28 @@ export async function runAgentLoop(
       await sink.writeEvent("state", { state: StreamState.THINKING });
 
       const providerMessages = providerIO.providerMessages(messages);
+      const goalFinalisationNotice = state.goalFinalisationNotice;
       const finalAnswerNotice = state.finalAnswerNotice;
+
+      state.goalFinalisationNotice = undefined;
 
       if (finalAnswerNotice) {
         state.finalAnswerForced = true;
       }
 
       const turn = await params.transport.runTurn({
-        request: finalAnswerNotice
+        request: goalFinalisationNotice
           ? {
               ...params.requestParams,
-              messages: [...providerMessages, { role: "user", content: finalAnswerNotice }],
-              disable_functions: true,
+              messages: [...providerMessages, { role: "user", content: goalFinalisationNotice }],
             }
-          : { ...params.requestParams, messages: providerMessages },
+          : finalAnswerNotice
+            ? {
+                ...params.requestParams,
+                messages: [...providerMessages, { role: "user", content: finalAnswerNotice }],
+                disable_functions: true,
+              }
+            : { ...params.requestParams, messages: providerMessages },
         sink,
         context: transportContext,
       });
@@ -422,6 +436,7 @@ export async function runAgentLoop(
               tool_id: toolResult.id,
               result: toolResult,
             });
+            await params.onToolResult?.(toolResult);
           },
         },
       );

@@ -158,4 +158,15 @@ export class ActivityRepository extends BaseRepository {
 
     return this.getActivityById(activityId);
   }
+
+  async cancelActiveActivitiesByGroup(capabilityId: string, groupId: string): Promise<void> {
+    await this.executeRun(
+      `UPDATE activity_record
+       SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP
+       WHERE capability_id = ?
+         AND group_id = ?
+         AND status IN ('queued', 'running', 'waiting')`,
+      [capabilityId, groupId],
+    );
+  }
 }

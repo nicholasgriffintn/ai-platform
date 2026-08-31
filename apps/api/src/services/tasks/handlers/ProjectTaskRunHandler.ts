@@ -5,7 +5,7 @@ import { runProjectTaskDispatch } from "~/services/project-tasks/runner";
 import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
 
-import type { TaskHandler, TaskResult } from "../TaskHandler";
+import type { TaskExecutionContext, TaskHandler, TaskResult } from "../TaskHandler";
 import type { TaskMessage } from "../TaskService";
 
 const logger = getLogger({
@@ -13,7 +13,11 @@ const logger = getLogger({
 });
 
 export class ProjectTaskRunHandler implements TaskHandler {
-  public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {
+  public async handle(
+    message: TaskMessage,
+    env: IEnv,
+    execution: TaskExecutionContext,
+  ): Promise<TaskResult> {
     const payload = projectTaskRunDispatchPayloadSchema.safeParse(message.task_data);
 
     if (!payload.success) {
@@ -35,6 +39,8 @@ export class ProjectTaskRunHandler implements TaskHandler {
         projectId: payload.data.projectId,
         runnerIdentityUserId: payload.data.runnerIdentityUserId,
         conversationId: payload.data.conversationId,
+        approvedTools: payload.data.approvedTools,
+        resumeInterrupted: execution.isRedelivery,
       });
 
       if (result.status === "skipped") {

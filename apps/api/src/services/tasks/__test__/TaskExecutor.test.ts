@@ -12,6 +12,7 @@ import type { TaskMessage } from "../TaskService";
 const mockTaskRepository = {
   updateTask: vi.fn(),
   claimTaskForExecution: vi.fn(),
+  failRunningTaskExecutions: vi.fn(),
   createTaskExecution: vi.fn(),
   updateTaskExecution: vi.fn(),
   getTaskById: vi.fn(),
@@ -21,6 +22,7 @@ vi.mock("~/repositories/TaskRepository", () => ({
   TaskRepository: class {
     public updateTask = mockTaskRepository.updateTask;
     public claimTaskForExecution = mockTaskRepository.claimTaskForExecution;
+    public failRunningTaskExecutions = mockTaskRepository.failRunningTaskExecutions;
     public createTaskExecution = mockTaskRepository.createTaskExecution;
     public updateTaskExecution = mockTaskRepository.updateTaskExecution;
     public getTaskById = mockTaskRepository.getTaskById;
@@ -45,6 +47,7 @@ describe("TaskExecutor", () => {
       status: "running",
     });
     mockTaskRepository.createTaskExecution.mockResolvedValue({ id: "exec-1" });
+    mockTaskRepository.failRunningTaskExecutions.mockResolvedValue(undefined);
     mockTaskRepository.updateTaskExecution.mockResolvedValue(undefined);
     mockTaskRepository.getTaskById.mockResolvedValue({
       id: "task-1",
@@ -86,12 +89,35 @@ describe("TaskExecutor", () => {
     await executor.execute(createTaskMessage(SANDBOX_RUN_DISPATCH_TASK_TYPE));
 
     expect(handler.handle).toHaveBeenCalledTimes(1);
-    expect(mockTaskRepository.claimTaskForExecution).toHaveBeenCalledWith("task-1");
+    expect(mockTaskRepository.claimTaskForExecution).toHaveBeenCalledWith("task-1", {
+      resumeInterrupted: false,
+    });
     expect(mockTaskRepository.updateTask).toHaveBeenNthCalledWith(
       1,
       "task-1",
       expect.objectContaining({ status: "completed" }),
     );
+  });
+
+  it("reclaims an interrupted task only for a queue redelivery", async () => {
+    const handler: TaskHandler = {
+      handle: vi.fn().mockResolvedValue({ status: "success", data: {} }),
+    };
+    const executor = new TaskExecutor({} as any, new Map([[PROJECT_TASK_RUN_TASK_TYPE, handler]]));
+
+    await executor.execute(createTaskMessage(PROJECT_TASK_RUN_TASK_TYPE), 2);
+
+    expect(mockTaskRepository.claimTaskForExecution).toHaveBeenCalledWith("task-1", {
+      resumeInterrupted: true,
+    });
+    expect(mockTaskRepository.failRunningTaskExecutions).toHaveBeenCalledWith(
+      "task-1",
+      "The previous queue delivery ended before recording an outcome.",
+    );
+    expect(handler.handle).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
+      deliveryAttempt: 2,
+      isRedelivery: true,
+    });
   });
 
   it("executes project task runs without a separate feature-flag allowlist", async () => {

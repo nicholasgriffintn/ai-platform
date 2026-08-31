@@ -3,18 +3,9 @@ import { describe, expect, it } from "vitest";
 import { mergeEnabledGoalToolNames } from "../goal-tools";
 import { resolveTurnStepBudget } from "../step-budget";
 
-const activeGoal = { id: "goal-1", objective: "count to 100" } as never;
-
 describe("mergeEnabledGoalToolNames", () => {
   it("keeps goal completion available when a goal is created during the turn", () => {
-    expect(mergeEnabledGoalToolNames({ isProUser: true, activeGoal: null })).toEqual([
-      "set_goal",
-      "complete_goal",
-    ]);
-    expect(mergeEnabledGoalToolNames({ isProUser: true, activeGoal })).toEqual([
-      "set_goal",
-      "complete_goal",
-    ]);
+    expect(mergeEnabledGoalToolNames({ isProUser: true })).toEqual(["set_goal", "complete_goal"]);
   });
 
   it("keeps the tools the request already enabled without duplicating them", () => {
@@ -22,15 +13,12 @@ describe("mergeEnabledGoalToolNames", () => {
       mergeEnabledGoalToolNames({
         enabledTools: ["web_search", "set_goal"],
         isProUser: true,
-        activeGoal,
       }),
     ).toEqual(["web_search", "set_goal", "complete_goal"]);
   });
 
   it("offers nothing to a free user", () => {
-    expect(mergeEnabledGoalToolNames({ enabledTools: ["web_search"], activeGoal })).toEqual([
-      "web_search",
-    ]);
+    expect(mergeEnabledGoalToolNames({ enabledTools: ["web_search"] })).toEqual(["web_search"]);
   });
 });
 

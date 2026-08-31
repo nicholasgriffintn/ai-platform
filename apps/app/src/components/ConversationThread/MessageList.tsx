@@ -165,9 +165,10 @@ export const MessageList = ({
             !(goalMarker?.event === "set" && messages[index + 1]?.role === "user") &&
             (Boolean(compactionLabel) ||
               Boolean(goalMarker) ||
-              (!isHiddenToolResponse(message) && isRenderableMessage(message))),
+              (!isHiddenToolResponse(message) &&
+                isRenderableMessage(message, resolvedToolCallIds))),
         ),
-    [hideInlineUserQuestions, messages],
+    [hideInlineUserQuestions, messages, resolvedToolCallIds],
   );
 
   const virtualRef = useRef<VListHandle>(null);

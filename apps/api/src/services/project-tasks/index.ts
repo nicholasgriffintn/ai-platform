@@ -1,4 +1,5 @@
 import {
+  isTerminalGoalStatus,
   isTerminalProjectTaskStatus,
   nextFlowStageId,
   PROJECT_TASK_DEFAULT_CONCURRENCY,
@@ -9,22 +10,75 @@ import {
   type ProjectTaskActor,
   type ProjectTaskCriterion,
   type ProjectTaskSource,
+  type ResolveProjectTaskToolApprovalInput,
   type UpdateProjectTaskInput,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ListProjectTaskFilters } from "~/repositories/ProjectTaskRepository";
+import { GoalService } from "~/services/goals/GoalService";
+import { TaskService } from "~/services/tasks/TaskService";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { parseProjectFlow } from "~/services/workspaces/format";
 import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { getLogger } from "~/utils/logger";
 
+import { resolveProjectTaskToolApproval } from "./approvals";
 import { approveLatestProjectTaskCompletion } from "./completions";
 import { answerProjectTaskQuestions, getPendingProjectTaskQuestions } from "./questions";
 import { queueProjectTaskRun } from "./runner";
 import { assertProjectTaskTransition } from "./transitions";
 
 const POSITION_STEP = 1000;
+const logger = getLogger({ prefix: "services/project-tasks" });
+
+async function settleCancelledTaskResources(
+  context: ServiceContext,
+  task: ProjectTask,
+): Promise<void> {
+  const settlements: Promise<unknown>[] = [
+    context.repositories.activities.cancelActiveActivitiesByGroup("project_task", task.id),
+  ];
+
+  const dispatchTaskId = task.dispatchTaskId;
+
+  if (dispatchTaskId) {
+    settlements.push(
+      new TaskService(context.env, context.repositories.tasks).cancelTask(dispatchTaskId),
+    );
+  }
+
+  const goalId = task.goalId;
+
+  if (goalId) {
+    settlements.push(
+      (async () => {
+        const goals = new GoalService(context.repositories.goals);
+        const goal = await goals.getGoalById(goalId);
+
+        if (goal && !isTerminalGoalStatus(goal.status)) {
+          await goals.transition({
+            goalId: goal.id,
+            actor: "user",
+            status: "cleared",
+            reason: "The project task was cancelled.",
+          });
+        }
+      })(),
+    );
+  }
+
+  const results = await Promise.allSettled(settlements);
+  const failures = results.filter((result) => result.status === "rejected");
+
+  if (failures.length > 0) {
+    logger.warn("Project task was cancelled but related runtime state did not all settle", {
+      taskId: task.id,
+      failureCount: failures.length,
+    });
+  }
+}
 
 async function requireTask(
   context: ServiceContext,
@@ -185,6 +239,52 @@ export async function respondToProjectTaskQuestions(
   }
 }
 
+export async function respondToProjectTaskToolApproval(
+  context: ServiceContext,
+  projectId: string,
+  taskId: string,
+  input: ResolveProjectTaskToolApprovalInput,
+) {
+  const user = context.requireUser();
+  const { project } = await requireProjectAccess(context, projectId);
+  const task = await requireTask(context, projectId, taskId);
+  const approval = await resolveProjectTaskToolApproval({ context, task, input });
+
+  try {
+    const resumed = await startProjectTask(context, projectId, taskId, {
+      approvalResolved: true,
+      approvedTools: approval.resolution === "approved" ? [approval.toolName] : [],
+    });
+
+    await context.repositories.audit.createRecord({
+      workspaceId: project.workspace_id,
+      actorUserId: user.id,
+      action: "project.task.tool_approval_resolved",
+      targetType: "project_task",
+      targetId: taskId,
+      metadata: {
+        projectId,
+        toolName: approval.toolName,
+        resolution: approval.resolution,
+      },
+    });
+
+    return resumed;
+  } catch (error) {
+    await context.repositories.projectTasks.updateTask(taskId, {
+      status: "blocked",
+      blockedReason: "dispatch_failed",
+      blockedDetail:
+        `Your decision was saved, but the task could not resume: ${getErrorMessage(error)}`.slice(
+          0,
+          500,
+        ),
+    });
+
+    throw error;
+  }
+}
+
 export async function createProjectTask(
   context: ServiceContext,
   projectId: string,
@@ -278,10 +378,19 @@ export async function updateProjectTask(
     });
   }
 
+  if (input.status === "cancelled" && task.status !== "cancelled") {
+    await settleCancelledTaskResources(context, task);
+  }
+
   return { task: updated };
 }
 
-export async function startProjectTask(context: ServiceContext, projectId: string, taskId: string) {
+export async function startProjectTask(
+  context: ServiceContext,
+  projectId: string,
+  taskId: string,
+  options: { approvalResolved?: boolean; approvedTools?: string[] } = {},
+) {
   const user = context.requireUser();
   const { project } = await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
@@ -296,6 +405,14 @@ export async function startProjectTask(context: ServiceContext, projectId: strin
       "This task is finished. Reopen it before running it again.",
       ErrorType.PARAMS_ERROR,
       400,
+    );
+  }
+
+  if (task.blockedReason === "awaiting_approval" && !options.approvalResolved) {
+    throw new AssistantError(
+      "Respond to the pending tool approval before continuing this task.",
+      ErrorType.CONFLICT_ERROR,
+      409,
     );
   }
 
@@ -333,6 +450,7 @@ export async function startProjectTask(context: ServiceContext, projectId: strin
     task,
     runnerIdentityUserId: user.id,
     stageId: task.stageId ?? flow?.stages[0]?.id ?? null,
+    approvedTools: options.approvedTools,
   });
 
   await context.repositories.audit.createRecord({

@@ -6,7 +6,7 @@ import type { IEnv } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
-import type { TaskHandler, TaskResult } from "./TaskHandler";
+import type { TaskExecutionContext, TaskHandler, TaskResult } from "./TaskHandler";
 import type { TaskMessage } from "./TaskService";
 
 const logger = getLogger({ prefix: "services/tasks/executor" });
@@ -26,8 +26,12 @@ export class TaskExecutor {
     this.taskRepository = new TaskRepository(env);
   }
 
-  public async execute(message: TaskMessage): Promise<void> {
+  public async execute(message: TaskMessage, deliveryAttempt = 1): Promise<void> {
     const startTime = Date.now();
+    const executionContext: TaskExecutionContext = {
+      deliveryAttempt,
+      isRedelivery: deliveryAttempt > 1,
+    };
 
     try {
       if (hasFeatureFlag(message.task_type)) {
@@ -60,7 +64,9 @@ export class TaskExecutor {
         return;
       }
 
-      const claimedTask = await this.taskRepository.claimTaskForExecution(message.taskId);
+      const claimedTask = await this.taskRepository.claimTaskForExecution(message.taskId, {
+        resumeInterrupted: executionContext.isRedelivery,
+      });
 
       if (!claimedTask) {
         logger.info(`Task ${message.taskId} is not claimable, skipping duplicate delivery`);
@@ -68,10 +74,17 @@ export class TaskExecutor {
         return;
       }
 
+      if (executionContext.isRedelivery) {
+        await this.taskRepository.failRunningTaskExecutions(
+          message.taskId,
+          "The previous queue delivery ended before recording an outcome.",
+        );
+      }
+
       const executionId = await this.recordExecutionStart(message.taskId);
 
       try {
-        const result = await handler.handle(message, this.env);
+        const result = await handler.handle(message, this.env, executionContext);
 
         if (result.status === "error") {
           throw new Error(result.message || "Unknown error during task execution");

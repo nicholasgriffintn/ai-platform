@@ -46,6 +46,40 @@ describe("getToolsForProvider", () => {
     expect(names).not.toContain("delegate_to_team_member");
     expect(names).toContain("get_weather");
   });
+
+  it("offers ask_user in plan mode so the model can pause for a person", () => {
+    const names = toolNames(
+      getToolsForProvider(
+        {
+          ...paramsForMode("plan"),
+          enabled_tools: ["ask_user"],
+        },
+        modelConfig,
+        "openai",
+      ).tools,
+    );
+
+    expect(names).toContain("ask_user");
+  });
+
+  it("uses the authoritative task-stage policy when preparing tools", () => {
+    const names = toolNames(
+      getToolsForProvider(
+        {
+          ...paramsForMode("plan"),
+          conversation_type: "task",
+          enabled_tools: ["delegate_to_team_member"],
+          enforce_mode_tool_policy: false,
+        },
+        modelConfig,
+        "openai",
+      ).tools,
+    );
+
+    expect(names).toContain("delegate_to_team_member");
+    expect(names).toContain("update_plan");
+    expect(names).not.toContain("finish");
+  });
 });
 
 describe("shouldEnableStreaming", () => {

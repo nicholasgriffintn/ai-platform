@@ -7,6 +7,7 @@ import type {
   ProjectTaskAttentionResponse,
   ProjectTaskDetailResponse,
   ProjectTaskListResponse,
+  ResolveProjectTaskToolApprovalInput,
   UpdateProjectTaskInput,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -95,6 +96,20 @@ export async function answerProjectTaskQuestions(
   input: AnswerUserQuestionsInput,
 ): Promise<{ task: ProjectTask }> {
   const response = await fetchApiOrThrow(`/projects/${projectId}/tasks/${taskId}/answers`, {
+    method: "POST",
+    headers: await authHeaders(),
+    body: input,
+  });
+
+  return returnFetchedData(response);
+}
+
+export async function resolveProjectTaskToolApproval(
+  projectId: string,
+  taskId: string,
+  input: ResolveProjectTaskToolApprovalInput,
+): Promise<{ task: ProjectTask }> {
+  const response = await fetchApiOrThrow(`/projects/${projectId}/tasks/${taskId}/tool-approval`, {
     method: "POST",
     headers: await authHeaders(),
     body: input,

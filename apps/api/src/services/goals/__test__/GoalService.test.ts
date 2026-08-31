@@ -128,7 +128,27 @@ describe("GoalService", () => {
     ).rejects.toThrow(/requires an evidence ledger/);
   });
 
-  it("treats an all-blocked ledger as blocked rather than complete", async () => {
+  it("refuses to complete a paused goal", async () => {
+    repository = createRepository(createGoal({ status: "paused" }));
+    service = new GoalService(repository);
+
+    await expect(
+      service.completeGoal({
+        goalId: "goal-1",
+        summary: "Done",
+        evidence: [
+          {
+            claim: "The work is complete",
+            route: "checked the result",
+            evidence_surface: "tool result",
+            status: "confirmed",
+          },
+        ],
+      }),
+    ).rejects.toThrow(/is paused/);
+  });
+
+  it("treats a ledger with a blocked dependency as blocked rather than complete", async () => {
     const goal = await service.completeGoal({
       goalId: "goal-1",
       summary: "Could not reach the benchmark",
@@ -138,6 +158,12 @@ describe("GoalService", () => {
           route: "ran the benchmark",
           evidence_surface: "benchmark output",
           status: "blocked",
+        },
+        {
+          claim: "benchmark binary exists",
+          route: "checked the workspace",
+          evidence_surface: "file listing",
+          status: "confirmed",
         },
       ],
     });
@@ -167,7 +193,7 @@ describe("GoalService", () => {
     service = new GoalService(repository);
 
     const result = await service.recordIteration({
-      goal: createGoal({ stall_streak: 1 }),
+      goalId: "goal-1",
       iteration: {
         surface: "chat",
         summary: "Read the same file again",
@@ -178,11 +204,12 @@ describe("GoalService", () => {
 
     expect(result.shouldContinue).toBe(false);
     expect(result.goal.status).toBe("stalled");
+    expect(result.transitioned).toBe(true);
   });
 
   it("keeps a productive goal running and records the journal entry", async () => {
     const result = await service.recordIteration({
-      goal: createGoal(),
+      goalId: "goal-1",
       iteration: {
         surface: "chat",
         summary: "Ran the suite, two failures left",
@@ -198,9 +225,59 @@ describe("GoalService", () => {
     expect(result.goal.status).toBe("active");
     expect(result.goal.iteration_count).toBe(1);
     expect(result.goal.tokens_spent).toBe(1200);
+    expect(result.transitioned).toBe(false);
     expect(result.goal.progress.at(-1)).toMatchObject({
       summary: "Ran the suite, two failures left",
       next: "Fix the currency rounding case",
+    });
+  });
+
+  it("does not record progress after the exact goal has been paused", async () => {
+    repository = createRepository(createGoal({ status: "paused" }));
+    service = new GoalService(repository);
+
+    const result = await service.recordIteration({
+      goalId: "goal-1",
+      iteration: {
+        surface: "chat",
+        summary: "This arrived after the pause",
+        producedEvidence: true,
+        calledTool: true,
+      },
+    });
+
+    expect(result).toMatchObject({
+      goal: { status: "paused" },
+      shouldContinue: false,
+      transitioned: false,
+    });
+    expect(repository.updateGoal).not.toHaveBeenCalled();
+  });
+
+  it("does not overwrite a concurrent terminal transition", async () => {
+    const active = createGoal();
+    const completed = createGoal({ status: "completed" });
+
+    repository.getGoalById.mockResolvedValueOnce(active).mockResolvedValueOnce(completed);
+    repository.updateGoal.mockResolvedValueOnce(null);
+
+    const result = await service.recordIteration({
+      goalId: active.id,
+      iteration: {
+        surface: "chat",
+        summary: "Progress arrived during completion",
+        producedEvidence: true,
+        calledTool: true,
+      },
+    });
+
+    expect(repository.updateGoal).toHaveBeenCalledWith(active.id, expect.any(Object), {
+      expectedStatus: "active",
+    });
+    expect(result).toEqual({
+      goal: completed,
+      shouldContinue: false,
+      transitioned: false,
     });
   });
 

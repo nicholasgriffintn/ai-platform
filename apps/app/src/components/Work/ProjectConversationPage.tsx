@@ -1,6 +1,7 @@
 import {
   getModelInteractionCapabilities,
   answerUserQuestionsSchema,
+  resolveProjectTaskToolApprovalSchema,
   type SandboxTaskType,
   sandboxTaskTypeSchema,
 } from "@ngriffin_uk/polychat-schemas";
@@ -48,7 +49,7 @@ export function ProjectConversationPage({
     };
   }, [model, models]);
   const { data: currentConversation } = useChat(currentConversationId);
-  const { tasks, answer } = useProjectTasks(projectId);
+  const { tasks, answer, approval } = useProjectTasks(projectId);
   const pendingTask = tasks.find(
     (task) =>
       task.conversationId === currentConversationId &&
@@ -56,6 +57,12 @@ export function ProjectConversationPage({
       task.blockedReason === "awaiting_input",
   );
   const pendingTaskQuery = useProjectTask(projectId, pendingTask?.id ?? "");
+  const pendingApprovalTask = tasks.find(
+    (task) =>
+      task.conversationId === currentConversationId &&
+      task.status === "blocked" &&
+      task.blockedReason === "awaiting_approval",
+  );
   const isNewConversation = !currentConversationId;
   const projectSources = useProjectConversationSources(projectId, sourceCapabilities, {
     enabled: isNewConversation,
@@ -89,7 +96,40 @@ export function ProjectConversationPage({
     NonNullable<ConversationThreadModeConfig["onToolInteraction"]>
   >(
     (toolName, action, data) => {
-      if (toolName !== "ask_user" || action !== "submitPrompt" || !pendingTask) {
+      if (action !== "submitPrompt") {
+        return false;
+      }
+
+      if (pendingApprovalTask) {
+        const parsedApproval = resolveProjectTaskToolApprovalSchema.safeParse(data);
+
+        if (!parsedApproval.success) {
+          return false;
+        }
+
+        void (async () => {
+          try {
+            await approval.mutateAsync({
+              taskId: pendingApprovalTask.id,
+              input: parsedApproval.data,
+            });
+            await queryClient.invalidateQueries({
+              queryKey: [CHATS_QUERY_KEY, currentConversationId],
+            });
+            toast.success(
+              parsedApproval.data.resolution === "approved"
+                ? "Approved. The task is continuing."
+                : "Rejected. The task is continuing without that tool.",
+            );
+          } catch (mutationError) {
+            toast.error(getErrorMessage(mutationError, "Unable to continue this task"));
+          }
+        })();
+
+        return true;
+      }
+
+      if (toolName !== "ask_user" || !pendingTask) {
         return false;
       }
 
@@ -115,7 +155,7 @@ export function ProjectConversationPage({
 
       return true;
     },
-    [answer, currentConversationId, pendingTask, queryClient],
+    [answer, approval, currentConversationId, pendingApprovalTask, pendingTask, queryClient],
   );
 
   useEffect(() => {

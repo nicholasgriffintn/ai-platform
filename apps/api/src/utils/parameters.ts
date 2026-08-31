@@ -1,4 +1,7 @@
-import { agentControlToolDefinitions } from "@ngriffin_uk/polychat-library-tool-runtime";
+import {
+  agentControlToolDefinitions,
+  FINISH_TOOL_NAME,
+} from "@ngriffin_uk/polychat-library-tool-runtime";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
 import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
@@ -281,6 +284,9 @@ export function getToolsForProvider(
     | "context"
     | "connectedConnectorProviders"
     | "mode"
+    | "conversation_type"
+    | "require_approval_for"
+    | "enforce_mode_tool_policy"
   >,
   modelConfig: any,
   providerName: string,
@@ -316,6 +322,8 @@ export function getToolsForProvider(
               user,
               toolType: func.type,
               toolPermissions: func.permissions,
+              requireApprovalFor: params.require_approval_for,
+              enforceModePolicy: params.enforce_mode_tool_policy,
             }).allowed,
         )
         .filter(
@@ -335,6 +343,8 @@ export function getToolsForProvider(
               user,
               toolType: func.type,
               toolPermissions: func.permissions,
+              requireApprovalFor: params.require_approval_for,
+              enforceModePolicy: params.enforce_mode_tool_policy,
             }).allowed,
         );
 
@@ -342,7 +352,12 @@ export function getToolsForProvider(
     }
 
     if (isAgentExecutionMode(params.mode)) {
-      tools = [...tools, ...formatToolCalls(providerName, agentControlToolDefinitions)];
+      const controlTools =
+        params.conversation_type === "task"
+          ? agentControlToolDefinitions.filter((tool) => tool.function.name !== FINISH_TOOL_NAME)
+          : agentControlToolDefinitions;
+
+      tools = [...tools, ...formatToolCalls(providerName, controlTools)];
     }
 
     const result: {

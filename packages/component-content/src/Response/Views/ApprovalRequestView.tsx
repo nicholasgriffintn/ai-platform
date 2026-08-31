@@ -13,6 +13,10 @@ interface ApprovalRequestData {
   context?: unknown;
   timestamp?: string;
   resolved?: boolean;
+  approval?: {
+    interactionId?: string;
+    toolName?: string;
+  };
 }
 
 function readApprovalData(data: unknown): ApprovalRequestData {
@@ -49,7 +53,22 @@ export function ApprovalRequestView({
     }
 
     setChosen(option);
-    onToolInteraction(TOOL_NAME, "submitPrompt", { option, message: approval.message });
+    const pendingTool = approval.approval;
+    const resolution = option.toLowerCase() === "approve" ? "approved" : "rejected";
+    const interactionInput = `${option}: ${approval.message ?? "the requested action"}`;
+
+    onToolInteraction(pendingTool?.toolName ?? TOOL_NAME, "submitPrompt", {
+      option,
+      message: approval.message,
+      input: interactionInput,
+      ...(pendingTool?.interactionId && pendingTool.toolName
+        ? {
+            interactionId: pendingTool.interactionId,
+            resolution,
+            ...(resolution === "approved" ? { approvedToolName: pendingTool.toolName } : {}),
+          }
+        : {}),
+    });
   };
 
   return (

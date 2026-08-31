@@ -184,7 +184,7 @@ export const list_tasks: ApiToolDefinition = {
       content: visible.length
         ? `Work queue:\n${visible.map(formatTask).join("\n")}`
         : "This work queue has no tasks matching that filter.",
-      data: { tasks: visible, total: tasks.length },
+      data: { renderer: "project_task_list", tasks: visible, total: tasks.length },
     };
   },
 };

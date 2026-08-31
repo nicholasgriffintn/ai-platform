@@ -152,17 +152,37 @@ export class TaskRepository extends BaseRepository {
     return this.runQuery<Task>(update.query, update.values, true);
   }
 
-  public async claimTaskForExecution(taskId: string): Promise<Task | null> {
+  public async claimTaskForExecution(
+    taskId: string,
+    options: { resumeInterrupted?: boolean } = {},
+  ): Promise<Task | null> {
     const task = await this.runQuery<Task>(
       `UPDATE tasks
-			 SET status = 'running', last_attempted_at = ?
-			 WHERE id = ? AND status IN ('pending', 'queued')
+			 SET status = 'running',
+           last_attempted_at = ?,
+           attempts = attempts + CASE WHEN status = 'running' THEN 1 ELSE 0 END
+			 WHERE id = ?
+         AND (
+           status IN ('pending', 'queued')
+           OR (? = 1 AND status = 'running')
+         )
 			 RETURNING *`,
-      [new Date().toISOString(), taskId],
+      [new Date().toISOString(), taskId, options.resumeInterrupted ? 1 : 0],
       true,
     );
 
     return task ? this.parseTask(task) : null;
+  }
+
+  public async failRunningTaskExecutions(taskId: string, reason: string): Promise<void> {
+    await this.executeRun(
+      `UPDATE task_executions
+       SET status = 'failed',
+           completed_at = ?,
+           error_message = ?
+       WHERE task_id = ? AND status = 'running'`,
+      [new Date().toISOString(), reason, taskId],
+    );
   }
 
   public async deleteTask(taskId: string): Promise<boolean> {

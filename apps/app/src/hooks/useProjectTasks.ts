@@ -3,6 +3,7 @@ import type {
   CreateProjectTaskInput,
   ProjectFlow,
   ProjectTask,
+  ResolveProjectTaskToolApprovalInput,
   UpdateProjectTaskInput,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -15,6 +16,7 @@ import {
   getProjectTask,
   listProjectTasks,
   listTaskAttention,
+  resolveProjectTaskToolApproval,
   startProjectTask,
   setProjectFlow,
   updateProjectTask,
@@ -145,6 +147,20 @@ export function useProjectTasks(projectId: string) {
     },
   });
 
+  const approval = useMutation({
+    mutationFn: ({
+      taskId,
+      input,
+    }: {
+      taskId: string;
+      input: ResolveProjectTaskToolApprovalInput;
+    }) => resolveProjectTaskToolApproval(projectId, taskId, input),
+    onSuccess: ({ task }) => {
+      writeTask(task);
+      invalidate();
+    },
+  });
+
   const remove = useMutation({
     mutationFn: (taskId: string) => deleteProjectTask(projectId, taskId),
     onSuccess: (_result, taskId) => {
@@ -175,6 +191,7 @@ export function useProjectTasks(projectId: string) {
     start,
     accept,
     answer,
+    approval,
     remove,
     saveFlow,
   };

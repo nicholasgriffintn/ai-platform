@@ -109,7 +109,7 @@ export async function handleRecordRunGoalIteration(
   }
 
   const { goal, shouldContinue } = await service.recordIteration({
-    goal: active,
+    goalId: active.id,
     iteration: {
       surface: "sandbox",
       summary: iteration.summary,

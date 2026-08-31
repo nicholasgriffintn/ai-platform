@@ -22,6 +22,7 @@ const DEFAULT_TOOL_PERMISSIONS: ToolPermission[] = ["read"];
 export interface PermissionCheckInput {
   toolName: string;
   mode?: string | null;
+  enforceModePolicy?: boolean;
   user?: ToolAccessSubject | null;
   toolType?: "normal" | "premium" | "byok";
   toolPermissions?: string[];
@@ -100,6 +101,7 @@ export class PermissionChecker {
   checkToolAccess(input: PermissionCheckInput): PermissionCheckResult {
     const resolvedMode = resolveAgentModeFromChatMode(input.mode);
     const config = AGENT_MODE_CONFIGS[resolvedMode];
+    const enforceModePolicy = input.enforceModePolicy !== false;
     const toolName = input.toolName;
     const configuredPermissions = resolveToolPermissions(toolName, input.toolPermissions || []);
     const permissions =
@@ -125,7 +127,7 @@ export class PermissionChecker {
       };
     }
 
-    if (config.deniedTools.includes(toolName)) {
+    if (enforceModePolicy && config.deniedTools.includes(toolName)) {
       return {
         allowed: false,
         requiresApproval: false,
@@ -135,7 +137,11 @@ export class PermissionChecker {
       };
     }
 
-    if (config.allowedTools.length > 0 && !config.allowedTools.includes(toolName)) {
+    if (
+      enforceModePolicy &&
+      config.allowedTools.length > 0 &&
+      !config.allowedTools.includes(toolName)
+    ) {
       return {
         allowed: false,
         requiresApproval: false,
@@ -145,7 +151,9 @@ export class PermissionChecker {
       };
     }
 
-    const deniedByPermissions = this.intersectPermissions(permissions, config.deniedPermissions);
+    const deniedByPermissions = enforceModePolicy
+      ? this.intersectPermissions(permissions, config.deniedPermissions)
+      : [];
 
     if (deniedByPermissions.length > 0) {
       return {
@@ -157,7 +165,7 @@ export class PermissionChecker {
       };
     }
 
-    if (config.allowedPermissions.length > 0) {
+    if (enforceModePolicy && config.allowedPermissions.length > 0) {
       const allowedSet = new Set(config.allowedPermissions);
       const disallowed = permissions.filter((permission) => !allowedSet.has(permission));
 
@@ -173,7 +181,7 @@ export class PermissionChecker {
     }
 
     const requiredApprovalFor = this.intersectPermissions(permissions, [
-      ...config.requiresApprovalFor,
+      ...(enforceModePolicy ? config.requiresApprovalFor : []),
       ...(input.requireApprovalFor ?? []),
     ]);
     const requiresApproval = requiredApprovalFor.length > 0 && toolName !== "request_approval";

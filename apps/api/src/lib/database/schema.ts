@@ -1708,6 +1708,7 @@ export const projectTask = sqliteTable(
       .notNull(),
     blocked_reason: text({
       enum: [
+        "awaiting_input",
         "awaiting_approval",
         "stalled",
         "usage_limits",

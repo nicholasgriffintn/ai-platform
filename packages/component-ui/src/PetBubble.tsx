@@ -1,3 +1,4 @@
+import { XIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Button } from "./Button";
@@ -35,31 +36,24 @@ export function PetBubble({
         className,
       )}
     >
-      <p className="m-0">{children}</p>
-      {actionLabel || onDismiss ? (
+      {onDismiss ? (
+        <Button
+          type="button"
+          variant="icon"
+          size="xs"
+          className="absolute top-1 left-1 h-5 min-h-0 w-5 min-w-0 p-0"
+          onClick={onDismiss}
+          aria-label="Dismiss"
+        >
+          <XIcon className="size-3.5" aria-hidden="true" />
+        </Button>
+      ) : null}
+      <p className={cn("m-0", onDismiss && "pl-5")}>{children}</p>
+      {actionLabel && onAction ? (
         <div className="mt-1.5 flex items-center gap-1.5">
-          {actionLabel && onAction ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-6 px-2"
-              onClick={onAction}
-            >
-              {actionLabel}
-            </Button>
-          ) : null}
-          {onDismiss ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2"
-              onClick={onDismiss}
-            >
-              Dismiss
-            </Button>
-          ) : null}
+          <Button type="button" variant="outline" size="sm" className="h-6 px-2" onClick={onAction}>
+            {actionLabel}
+          </Button>
         </div>
       ) : null}
     </div>

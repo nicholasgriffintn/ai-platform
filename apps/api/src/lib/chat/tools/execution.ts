@@ -123,6 +123,7 @@ export const handleToolCalls = async (
   for (const toolCall of toolCalls) {
     const functionName = toolCall.function?.name || toolCall.name || "unknown";
     let recordToolCallAttempt: (() => void) | undefined;
+    let recordDeterministicFailure: (() => void) | undefined;
 
     logger.info(`Tool call: ${functionName}`);
 
@@ -167,6 +168,7 @@ export const handleToolCalls = async (
         }
 
         recordToolCallAttempt = repeat.record;
+        recordDeterministicFailure = repeat.recordDeterministicFailure;
       }
 
       const permissionResult = permissionChecker.checkRequestToolAccess({
@@ -176,9 +178,11 @@ export const handleToolCalls = async (
         toolPermissions: toolPermissionsMap[functionName],
         approvedTools: req.request?.approved_tools,
         requireApprovalFor: req.request?.require_approval_for,
+        enforceModePolicy: req.request?.enforce_mode_tool_policy,
       });
 
       if (!permissionResult.allowed) {
+        recordDeterministicFailure?.();
         logger.warn(`Tool "${functionName}" blocked by permission check`, {
           reason: permissionResult.reason,
           mode,
@@ -208,6 +212,7 @@ export const handleToolCalls = async (
       }
 
       if (permissionResult.requiresApproval && !permissionResult.approved) {
+        recordDeterministicFailure?.();
         logger.warn(`Tool "${functionName}" requires approval but was not pre-approved`, {
           mode,
         });
@@ -224,14 +229,25 @@ export const handleToolCalls = async (
           role: "tool",
           name: functionName,
           content: approvalError.content,
-          status: "error",
+          status: "pending",
           data: {
             ...approvalError.data,
+            renderer: "approval_request",
+            message: approvalReason,
+            options: ["Approve", "Reject"],
             approvalRequired: true,
             approval: {
               toolName: functionName,
               toolCallId: toolCall.id,
+              interactionId: toolCall.id,
               reason: approvalReason,
+            },
+            humanInTheLoop: {
+              type: "approval",
+              status: "pending",
+              interactionId: toolCall.id,
+              toolName: functionName,
+              requires_user_action: true,
             },
           },
           log_id: modelResponseLogId || "",
@@ -280,6 +296,7 @@ export const handleToolCalls = async (
         };
 
         await recordToolResult(memMessage);
+        recordToolCallAttempt?.();
         continue;
       }
 
@@ -344,7 +361,7 @@ export const handleToolCalls = async (
         const errorType = functionError.type || "FUNCTION_EXECUTION_ERROR";
 
         if (isDeterministicToolCallError(errorType)) {
-          recordToolCallAttempt?.();
+          recordDeterministicFailure?.();
         }
 
         const unknownTool = isUnknownToolError(functionError);
@@ -432,7 +449,7 @@ export const handleToolCalls = async (
       const errorType = functionError.type || "TOOL_CALL_ERROR";
 
       if (isDeterministicToolCallError(errorType)) {
-        recordToolCallAttempt?.();
+        recordDeterministicFailure?.();
       }
 
       logger.error(`Tool call error for ${functionName}:`, {

@@ -27,6 +27,10 @@ export function applyFunctionRequestContext(params: {
 }
 
 export function resolveRequestProjectId(request: IRequest): string | null {
+  if (request.memoryScope?.type === "project") {
+    return request.memoryScope.projectId;
+  }
+
   const projectId = request.request?.metadata?.project_id;
 
   return typeof projectId === "string" && projectId ? projectId : null;

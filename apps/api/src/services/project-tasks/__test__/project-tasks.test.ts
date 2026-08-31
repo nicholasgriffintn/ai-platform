@@ -9,12 +9,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { intersectEnabledTools } from "~/utils/enabledTools";
 
+import { resolveProjectTaskToolApproval } from "../approvals";
 import { resolveTaskRuntime } from "../flow";
 import {
   acceptProjectTask,
   createProjectTask,
   setProjectFlow,
   startProjectTask,
+  respondToProjectTaskToolApproval,
   updateProjectTask,
 } from "../index";
 import {
@@ -78,6 +80,20 @@ function createContext(
       ...updates,
     }));
   const createConversation = vi.fn().mockResolvedValue({ id: "task_task-1" });
+  const cancelActiveActivitiesByGroup = vi.fn().mockResolvedValue(undefined);
+  const getDispatchTask = vi.fn().mockResolvedValue({
+    id: task.dispatchTaskId,
+    status: "running",
+  });
+  const updateDispatchTask = vi.fn().mockResolvedValue(undefined);
+  const getGoalById = vi.fn().mockResolvedValue({
+    id: task.goalId,
+    status: "active",
+  });
+  const updateGoal = vi.fn().mockResolvedValue({
+    id: task.goalId,
+    status: "cleared",
+  });
 
   return {
     context: {
@@ -113,11 +129,26 @@ function createContext(
           getConversation: vi.fn().mockResolvedValue(null),
           createConversation,
         },
-        tasks: {},
+        tasks: {
+          getTaskById: getDispatchTask,
+          updateTask: updateDispatchTask,
+        },
+        goals: {
+          getGoalById,
+          updateGoal,
+        },
+        activities: {
+          cancelActiveActivitiesByGroup,
+        },
       },
     } as unknown as ServiceContext,
     updateTask,
     createConversation,
+    cancelActiveActivitiesByGroup,
+    getDispatchTask,
+    updateDispatchTask,
+    getGoalById,
+    updateGoal,
   };
 }
 
@@ -138,8 +169,16 @@ vi.mock("../runner", async (importOriginal) => {
   };
 });
 
+vi.mock("../approvals", () => ({
+  resolveProjectTaskToolApproval: vi.fn(),
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(resolveProjectTaskToolApproval).mockResolvedValue({
+    toolName: "use_recipe_connector",
+    resolution: "approved",
+  });
 });
 
 describe("projectTaskConversationId", () => {
@@ -235,6 +274,10 @@ describe("project task transitions", () => {
   });
 
   it("maps a stalled or limited goal to blocked with its reason", () => {
+    expect(projectTaskStatusForGoal({ status: "blocked" })).toEqual({
+      status: "blocked",
+      blockedReason: "stalled",
+    });
     expect(projectTaskStatusForGoal({ status: "stalled" })).toEqual({
       status: "blocked",
       blockedReason: "stalled",
@@ -266,6 +309,33 @@ describe("updateProjectTask", () => {
     await expect(
       updateProjectTask(context, "project-1", "task-1", { status: "done" }, { actor: "model" }),
     ).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it("settles the dispatch, goal, and activity when a running task is cancelled", async () => {
+    const runtime = createContext({
+      task: {
+        status: "running",
+        dispatchTaskId: "dispatch-1",
+        goalId: "goal-1",
+      },
+    });
+
+    await updateProjectTask(runtime.context, "project-1", "task-1", {
+      status: "cancelled",
+    });
+
+    expect(runtime.updateDispatchTask).toHaveBeenCalledWith("dispatch-1", {
+      status: "cancelled",
+    });
+    expect(runtime.updateGoal).toHaveBeenCalledWith(
+      "goal-1",
+      expect.objectContaining({
+        status: "cleared",
+        stoppedReason: "The project task was cancelled.",
+      }),
+      { expectedStatus: "active" },
+    );
+    expect(runtime.cancelActiveActivitiesByGroup).toHaveBeenCalledWith("project_task", "task-1");
   });
 });
 
@@ -316,6 +386,32 @@ describe("startProjectTask", () => {
     expect(updateTask).toHaveBeenCalledWith(
       "task-1",
       expect.objectContaining({ status: "queued", runnerIdentityUserId: 7, stageId: "plan" }),
+    );
+  });
+
+  it("requires the pending approval response instead of treating a retry as approval", async () => {
+    const { context } = createContext({
+      task: { status: "blocked", blockedReason: "awaiting_approval" },
+    });
+
+    await expect(startProjectTask(context, "project-1", "task-1")).rejects.toMatchObject({
+      statusCode: 409,
+    });
+    expect(queueProjectTaskRun).not.toHaveBeenCalled();
+  });
+
+  it("resumes with only the approved tool authorised for the next run", async () => {
+    const { context } = createContext({
+      task: { status: "blocked", blockedReason: "awaiting_approval" },
+    });
+
+    await respondToProjectTaskToolApproval(context, "project-1", "task-1", {
+      interactionId: "approval-1",
+      resolution: "approved",
+    });
+
+    expect(queueProjectTaskRun).toHaveBeenCalledWith(
+      expect.objectContaining({ approvedTools: ["use_recipe_connector"] }),
     );
   });
 });
@@ -461,6 +557,26 @@ describe("resolveTaskRuntime", () => {
     expect(runtime.enabledTools).toEqual(
       expect.arrayContaining(["get_task", "list_tasks", "update_task"]),
     );
+  });
+
+  it("does not expose nested delegation inside a stage owned by the project flow", async () => {
+    const { context } = createContext({
+      capabilities: [
+        { kind: "tool", capability_id: "delegate_to_team_member" },
+        { kind: "tool", capability_id: "delegate_to_team_member_by_role" },
+        { kind: "tool", capability_id: "web_search" },
+      ],
+    });
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: baseTask,
+      flow: null,
+    });
+
+    expect(runtime.enabledTools).toContain("web_search");
+    expect(runtime.enabledTools).not.toContain("delegate_to_team_member");
+    expect(runtime.enabledTools).not.toContain("delegate_to_team_member_by_role");
+    expect(runtime.enforceModeToolPolicy).toBe(false);
   });
 
   it("keeps the runner model when the stage sets a mode", async () => {

@@ -66,6 +66,7 @@ describe("project chat context", () => {
         instructions: "",
         enabledTools: [],
         enabledSkillIds: [],
+        connectorProviders: [],
         sandboxOptions: {
           enabled: true,
           installationId: 123,
@@ -112,6 +113,7 @@ describe("project chat context", () => {
         "update_task",
       ],
       enabledSkillIds: ["artifacts"],
+      connectorProviders: [],
       toolOptions: undefined,
       sandboxOptions: undefined,
     });
@@ -208,6 +210,20 @@ describe("project chat context", () => {
       "OUTLOOK_SEARCH_MESSAGES",
       "OUTLOOK_CREATE_DRAFT",
     ]);
+  });
+
+  it("projects only recipe-enabled connector providers into project chat", async () => {
+    const { context, repositories } = createContext();
+
+    repositories.workspaces.listProjectCapabilities.mockResolvedValue([
+      { kind: "recipe", capability_id: "email-assistant" },
+    ]);
+
+    const result = await resolveProjectChatContext(context, {
+      metadata: { project_id: "project-1" },
+    });
+
+    expect(result?.connectorProviders).toEqual(["gmail", "outlook"]);
   });
 
   it("fails closed when a project recipe has no explicit connector operation allowlist", () => {

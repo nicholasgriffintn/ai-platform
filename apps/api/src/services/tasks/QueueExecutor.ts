@@ -73,7 +73,7 @@ export class QueueExecutor {
 
         logger.info(`Processing task ${message.body.taskId} of type ${message.body.task_type}`);
 
-        await taskExecutor.execute(message.body);
+        await taskExecutor.execute(message.body, message.attempts);
 
         message.ack();
 

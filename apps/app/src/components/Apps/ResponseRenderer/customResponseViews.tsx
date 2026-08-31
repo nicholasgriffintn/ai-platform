@@ -11,6 +11,7 @@ import {
 
 import { CapabilityDiscoveryView } from "./CustomView/Views/CapabilityDiscoveryView";
 import { DocumentSearchView } from "./CustomView/Views/DocumentSearchView";
+import { ProjectTaskListView } from "./CustomView/Views/ProjectTaskListView";
 import { ResearchView } from "./CustomView/Views/ResearchView";
 import { SandboxView } from "./CustomView/Views/SandboxView";
 
@@ -33,6 +34,8 @@ export const customResponseViews: CustomResponseViewRegistry = {
     />
   ),
   document_search: ({ data }) => <DocumentSearchView data={data} />,
+  list_tasks: ({ data }) => <ProjectTaskListView data={data} />,
+  project_task_list: ({ data }) => <ProjectTaskListView data={data} />,
   research: ({ data, embedded }) => <ResearchView data={data} embedded={embedded} />,
   sandbox_plan: ({ data }) => <SandboxView type="sandbox_plan" data={data as never} />,
   sandbox_event: ({ data }) => <SandboxView type="sandbox_event" data={data as never} />,

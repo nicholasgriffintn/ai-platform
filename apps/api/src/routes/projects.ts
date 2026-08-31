@@ -12,6 +12,7 @@ import {
   projectTaskListResponseSchema,
   projectTaskDetailResponseSchema,
   projectTaskResponseSchema,
+  resolveProjectTaskToolApprovalSchema,
   setProjectFlowSchema,
   skillIdSchema,
   updateProjectSchema,
@@ -29,6 +30,7 @@ import {
   getProjectTask,
   listProjectTasks,
   respondToProjectTaskQuestions,
+  respondToProjectTaskToolApproval,
   setProjectFlow,
   startProjectTask,
   updateProjectTask,
@@ -264,6 +266,25 @@ addRoute(app, "post", "/:projectId/tasks/:taskId/answers", {
   },
   handler: ({ serviceContext, params, body }) =>
     respondToProjectTaskQuestions(serviceContext, params.projectId, params.taskId, body),
+});
+
+addRoute(app, "post", "/:projectId/tasks/:taskId/tool-approval", {
+  auth: true,
+  tags: ["projects", "tasks"],
+  summary: "Resolve a task runner's pending tool approval",
+  description:
+    "Records the decision and resumes the task with that tool approved only for this run.",
+  paramSchema: projectTaskParams,
+  bodySchema: resolveProjectTaskToolApprovalSchema,
+  responses: {
+    200: { description: "The resumed task", schema: projectTaskResponseSchema },
+    409: {
+      description: "The task is no longer waiting for this approval",
+      schema: errorResponseSchema,
+    },
+  },
+  handler: ({ serviceContext, params, body }) =>
+    respondToProjectTaskToolApproval(serviceContext, params.projectId, params.taskId, body),
 });
 
 addRoute(app, "post", "/:projectId/tasks/:taskId/accept", {

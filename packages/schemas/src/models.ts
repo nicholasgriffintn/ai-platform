@@ -189,6 +189,7 @@ export const modelConfigItemSchema = z.object({
   timeout: z.number().optional(),
   InputSchemaInputSchema: inputSchemaDescriptorSchema.optional(),
   inputSchema: inputSchemaDescriptorSchema.optional(),
+  inputFormat: z.enum(["json", "multipart"]).optional(),
   supportsPromptCaching: z.boolean().optional(),
   promptTemplate: z.string().optional(),
   reasoningConfig: modelReasoningConfigSchema.optional(),

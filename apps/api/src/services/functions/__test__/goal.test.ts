@@ -29,7 +29,12 @@ function createGoal(overrides: Partial<Goal> = {}): Goal {
 const addMessage = vi.fn();
 
 function createContext(
-  options: { goal?: Goal | null; delegationStack?: string[]; messages?: any[] } = {},
+  options: {
+    goal?: Goal | null;
+    delegationStack?: string[];
+    messages?: any[];
+    conversationType?: "conversation" | "task";
+  } = {},
 ) {
   let current = options.goal === undefined ? createGoal() : options.goal;
   const messages = options.messages ?? [
@@ -42,6 +47,7 @@ function createContext(
       user: { id: 1, plan_id: "pro" },
       request: {
         completion_id: "conversation-1",
+        conversation_type: options.conversationType,
         delegation_stack: options.delegationStack,
       },
       context: {
@@ -134,6 +140,125 @@ describe("complete_goal", () => {
     expect(result.status).toBe("success");
   });
 
+  it("does not let a project task complete before producing its stage deliverable", async () => {
+    const result = await complete_goal.execute(
+      {
+        summary: "Stage deliverable complete",
+        evidence: [
+          {
+            claim: "The stage acceptance criterion is met",
+            route: "ran the stage validation",
+            evidence_surface: "tool result",
+            status: "confirmed",
+          },
+        ],
+      },
+      createContext({
+        conversationType: "task",
+        messages: [{ role: "user", content: "do it", timestamp: Date.now() }],
+      }),
+    );
+
+    expect(result.status).toBe("error");
+  });
+
+  it("does not let a project task call a failed tool successful evidence", async () => {
+    const now = Date.now();
+    const result = await complete_goal.execute(
+      {
+        summary: "Connector validation passed",
+        evidence: [
+          {
+            claim: "The connector worked",
+            route: "called the connector",
+            evidence_surface: "tool result",
+            status: "confirmed",
+          },
+        ],
+      },
+      createContext({
+        conversationType: "task",
+        messages: [
+          { role: "assistant", content: "Stage deliverable", timestamp: now },
+          {
+            role: "tool",
+            name: "use_recipe_connector",
+            status: "error",
+            content: "Connector unavailable",
+            timestamp: now + 1,
+          },
+        ],
+      }),
+    );
+
+    expect(result.status).toBe("error");
+    expect(result.content).toContain("still failing");
+  });
+
+  it("lets a project task report an unresolved stage as blocked", async () => {
+    const now = Date.now();
+    const result = await complete_goal.execute(
+      {
+        summary: "Connector validation is blocked",
+        evidence: [
+          {
+            claim: "The connector is available",
+            route: "called the connector",
+            evidence_surface: "tool error",
+            status: "blocked",
+            remaining_uncertainty: "The connector is not enabled.",
+          },
+        ],
+      },
+      createContext({
+        conversationType: "task",
+        messages: [
+          { role: "assistant", content: "Stage blocker report", timestamp: now },
+          {
+            role: "tool",
+            name: "use_recipe_connector",
+            status: "error",
+            content: "Connector unavailable",
+            timestamp: now + 1,
+          },
+        ],
+      }),
+    );
+
+    expect(result.status).toBe("success");
+    expect(result.content).toContain("blocked");
+  });
+
+  it("requires a real pending question instead of treating prose as a human block", async () => {
+    const result = await complete_goal.execute(
+      {
+        summary: "Waiting for the product name",
+        evidence: [
+          {
+            claim: "The product name is known",
+            route: "asked in an assistant message",
+            evidence_surface: "assistant message",
+            status: "blocked",
+            remaining_uncertainty: "The user has not answered yet.",
+          },
+        ],
+      },
+      createContext({
+        conversationType: "task",
+        messages: [
+          {
+            role: "assistant",
+            content: "What product name should I use?",
+            timestamp: Date.now(),
+          },
+        ],
+      }),
+    );
+
+    expect(result.status).toBe("error");
+    expect(result.content).toContain("Call ask_user");
+  });
+
   it("completes with a real evidence ledger", async () => {
     const result = await complete_goal.execute(
       {
@@ -217,6 +342,26 @@ describe("complete_goal", () => {
         ],
       },
       createContext({ goal: null }),
+    );
+
+    expect(result.status).toBe("error");
+    expect(result.content).toContain("no active goal");
+  });
+
+  it("does not complete a paused goal", async () => {
+    const result = await complete_goal.execute(
+      {
+        summary: "done",
+        evidence: [
+          {
+            claim: "a claim",
+            route: "a route",
+            evidence_surface: "a surface",
+            status: "confirmed",
+          },
+        ],
+      },
+      createContext({ goal: createGoal({ status: "paused" }) }),
     );
 
     expect(result.status).toBe("error");

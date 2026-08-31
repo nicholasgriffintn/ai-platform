@@ -605,7 +605,16 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
       if (action === "submitPrompt") {
         if (typeof data.input === "string" && data.input.trim()) {
-          void sendMessage(data.input, undefined, modeConfig?.requestOptions);
+          const approvedToolName =
+            typeof data.approvedToolName === "string" ? data.approvedToolName : null;
+          const requestOptions = approvedToolName
+            ? {
+                ...modeConfig?.requestOptions,
+                approved_tools: [approvedToolName],
+              }
+            : modeConfig?.requestOptions;
+
+          void sendMessage(data.input, undefined, requestOptions);
         }
 
         return;

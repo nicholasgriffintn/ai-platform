@@ -9,4 +9,5 @@ export type ApiToolDefinition = Omit<
 > & {
   execute: (input: any, context: ToolExecutionContext) => Promise<IFunctionResponse>;
   maxIdenticalCalls?: number;
+  normaliseInput?: (input: unknown) => unknown;
 };

@@ -184,6 +184,7 @@ export interface AssistantPersona {
 
 export interface IBody {
   completion_id: string;
+  conversation_type?: ConversationType;
   input: ChatInput;
   attachments?: Attachment[];
   date: string;
@@ -297,8 +298,10 @@ type InternalExecutionParams = {
   delegation_stack?: string[];
   // Maximum delegation depth allowed
   max_delegation_depth?: number;
-  // Extra tool permissions this turn must seek approval for, on top of its mode's.
+  // Tool permissions this turn must seek approval for.
   require_approval_for?: ToolPermission[];
+  // Internal Work-task runs use the stage policy instead of the interactive mode defaults.
+  enforce_mode_tool_policy?: boolean;
 };
 
 export type ChatRequestOptions = SchemaChatRequestOptions;

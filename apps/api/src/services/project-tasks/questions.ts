@@ -12,7 +12,8 @@ import { ConversationManager } from "~/lib/conversationManager";
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { safeParseJson } from "~/utils/json";
+
+import { readInteractionMessageData } from "./interaction-messages";
 
 interface PendingQuestionMessage {
   messageId: string;
@@ -22,16 +23,6 @@ interface PendingQuestionMessage {
   timestamp?: number;
 }
 
-function readRecord(value: unknown): Record<string, unknown> | null {
-  if (typeof value === "string") {
-    return safeParseJson<Record<string, unknown>>(value);
-  }
-
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
-}
-
 async function getPendingQuestionMessage(
   context: ServiceContext,
   conversationId: string,
@@ -39,7 +30,7 @@ async function getPendingQuestionMessage(
   const message = await context.repositories.messages.getLatestPendingToolMessage(conversationId, [
     "ask_user",
   ]);
-  const data = readRecord(message?.data);
+  const data = readInteractionMessageData(message?.data);
   const parsed = userQuestionSetSchema.safeParse(data);
 
   if (!message || !data || !parsed.success || typeof message.id !== "string") {

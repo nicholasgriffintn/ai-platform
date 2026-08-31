@@ -139,13 +139,17 @@ export class GoalService {
       throw new AssistantError(`This goal already ended as ${goal.status}`, ErrorType.PARAMS_ERROR);
     }
 
-    const updated = await this.goals.updateGoal(goal.id, {
-      status: params.status,
-      stoppedReason: params.reason ?? null,
-      ...(params.evidence ? { evidence: params.evidence } : {}),
-      ...(params.status === "completed" ? { completedAt: new Date().toISOString() } : {}),
-      ...(params.status === "active" ? { stallStreak: 0 } : {}),
-    });
+    const updated = await this.goals.updateGoal(
+      goal.id,
+      {
+        status: params.status,
+        stoppedReason: params.reason ?? null,
+        ...(params.evidence ? { evidence: params.evidence } : {}),
+        ...(params.status === "completed" ? { completedAt: new Date().toISOString() } : {}),
+        ...(params.status === "active" ? { stallStreak: 0 } : {}),
+      },
+      { expectedStatus: goal.status },
+    );
 
     if (!updated) {
       throw new AssistantError("Failed to update the goal", ErrorType.DATABASE_ERROR);
@@ -172,23 +176,34 @@ export class GoalService {
       throw new AssistantError("Goal not found", ErrorType.NOT_FOUND);
     }
 
-    const recorded = await this.goals.updateGoal(current.id, {
-      iterationCount: current.iteration_count + 1,
-      progress: appendProgress(current.progress, {
-        iteration: current.iteration_count + 1,
-        surface: current.conversation_id ? "agent" : "sandbox",
-        summary: params.summary,
-        evidence: params.evidence.map((entry) => entry.claim),
-        at: new Date().toISOString(),
-      }),
-      lastContinuedAt: new Date().toISOString(),
-    });
+    if (current.status !== "active") {
+      throw new AssistantError(
+        `This goal is ${current.status} and cannot be completed`,
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    const recorded = await this.goals.updateGoal(
+      current.id,
+      {
+        iterationCount: current.iteration_count + 1,
+        progress: appendProgress(current.progress, {
+          iteration: current.iteration_count + 1,
+          surface: current.conversation_id ? "agent" : "sandbox",
+          summary: params.summary,
+          evidence: params.evidence.map((entry) => entry.claim),
+          at: new Date().toISOString(),
+        }),
+        lastContinuedAt: new Date().toISOString(),
+      },
+      { expectedStatus: "active" },
+    );
 
     if (!recorded) {
       throw new AssistantError("Failed to record goal completion", ErrorType.DATABASE_ERROR);
     }
 
-    if (params.evidence.every((entry) => entry.status === "blocked")) {
+    if (params.evidence.some((entry) => entry.status === "blocked")) {
       return this.transition({
         goalId: params.goalId,
         actor: "system",
@@ -245,10 +260,20 @@ export class GoalService {
    * dispatcher and the sandbox coordinator apply exactly the same policy.
    */
   async recordIteration(params: {
-    goal: Goal;
+    goalId: string;
     iteration: RecordIterationParams;
-  }): Promise<{ goal: Goal; shouldContinue: boolean }> {
-    const { goal, iteration } = params;
+  }): Promise<{ goal: Goal; shouldContinue: boolean; transitioned: boolean }> {
+    const { iteration } = params;
+    const goal = await this.goals.getGoalById(params.goalId);
+
+    if (!goal) {
+      throw new AssistantError("Goal not found", ErrorType.NOT_FOUND);
+    }
+
+    if (goal.status !== "active") {
+      return { goal, shouldContinue: false, transitioned: false };
+    }
+
     const decision = evaluateGoalContinuation({
       goal,
       lastTurn: {
@@ -280,25 +305,39 @@ export class GoalService {
             ? "blocked"
             : undefined;
 
-    const updated = await this.goals.updateGoal(goal.id, {
-      iterationCount: goal.iteration_count + 1,
-      stallStreak: decision.nextStallStreak,
-      tokensSpent: goal.tokens_spent + (iteration.tokens ?? 0),
-      progress,
-      lastContinuedAt: new Date().toISOString(),
-      ...(nextStatus
-        ? {
-            status: nextStatus,
-            stoppedReason: stoppedReasonFor(nextStatus, iteration.awaitingUserAction),
-          }
-        : {}),
-    });
+    const updated = await this.goals.updateGoal(
+      goal.id,
+      {
+        iterationCount: goal.iteration_count + 1,
+        stallStreak: decision.nextStallStreak,
+        tokensSpent: goal.tokens_spent + (iteration.tokens ?? 0),
+        progress,
+        lastContinuedAt: new Date().toISOString(),
+        ...(nextStatus
+          ? {
+              status: nextStatus,
+              stoppedReason: stoppedReasonFor(nextStatus, iteration.awaitingUserAction),
+            }
+          : {}),
+      },
+      { expectedStatus: "active" },
+    );
 
     if (!updated) {
-      throw new AssistantError("Failed to record goal progress", ErrorType.DATABASE_ERROR);
+      const latest = await this.goals.getGoalById(goal.id);
+
+      if (!latest) {
+        throw new AssistantError("Goal not found", ErrorType.NOT_FOUND);
+      }
+
+      return { goal: latest, shouldContinue: false, transitioned: false };
     }
 
-    return { goal: updated, shouldContinue: decision.shouldContinue };
+    return {
+      goal: updated,
+      shouldContinue: decision.shouldContinue,
+      transitioned: nextStatus !== undefined,
+    };
   }
 }
 

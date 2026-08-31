@@ -2,6 +2,7 @@ import {
   PROJECT_TASK_TOOL_IDS,
   projectCodingEnvironmentSchema,
   type ChatHostedToolSettings,
+  type RecipeConnectorProvider,
   type SandboxRequestOptions,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -15,6 +16,7 @@ import type { CoreChatOptions } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { requireProjectAccess } from "./access";
+import { resolveProjectRecipeConnectorScope } from "./projectRecipeConnectorScope";
 import { resolveProjectTools } from "./projectTools";
 
 export interface ProjectChatContext {
@@ -22,6 +24,7 @@ export interface ProjectChatContext {
   instructions: string;
   enabledTools: string[];
   enabledSkillIds: string[];
+  connectorProviders: RecipeConnectorProvider[];
   toolOptions?: ChatHostedToolSettings;
   sandboxOptions?: SandboxRequestOptions;
 }
@@ -132,6 +135,7 @@ export async function resolveProjectChatContext(
     enabledSkillIds: capabilities
       .filter((capability) => capability.kind === "skill")
       .map((capability) => capability.capability_id),
+    connectorProviders: resolveProjectRecipeConnectorScope(capabilities).providers,
     toolOptions: projectTools.toolOptions,
     sandboxOptions:
       project.coding_enabled === 1 && codingEnvironment.success

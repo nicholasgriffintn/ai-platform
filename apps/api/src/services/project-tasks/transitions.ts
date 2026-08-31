@@ -20,7 +20,7 @@ const GOAL_STATUS_PROJECTION: Record<GoalStatus, ProjectTaskStatusProjection> = 
   paused: { status: "queued", blockedReason: null },
   completed: { status: "review", blockedReason: null },
   cleared: { status: "cancelled", blockedReason: null },
-  blocked: { status: "blocked", blockedReason: "awaiting_approval" },
+  blocked: { status: "blocked", blockedReason: "stalled" },
   stalled: { status: "blocked", blockedReason: "stalled" },
   limit_reached: { status: "blocked", blockedReason: "usage_limits" },
 };

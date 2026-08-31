@@ -265,6 +265,7 @@ export const workersAiModelConfig: ModelConfig = {
   "flux-2-dev": {
     name: "Black Forest Labs Flux 2 Dev",
     matchingModel: "@cf/black-forest-labs/flux-2-dev",
+    inputFormat: "multipart",
     description:
       "Flux 2 is an image generation and editing model by Black Forest Labs. It creates high-quality images from text prompts and can edit existing images using natural language instructions.",
     provider: "workers-ai",
@@ -297,6 +298,7 @@ export const workersAiModelConfig: ModelConfig = {
   "@cf/black-forest-labs/flux-2-klein-4b": {
     name: "Black Forest Labs Flux 2 Klein 4B",
     matchingModel: "@cf/black-forest-labs/flux-2-klein-4b",
+    inputFormat: "multipart",
     description: "",
     provider: "workers-ai",
     strengths: ["creative", "image"],
@@ -327,6 +329,7 @@ export const workersAiModelConfig: ModelConfig = {
   "@cf/black-forest-labs/flux-2-klein-9b": {
     name: "Black Forest Labs Flux 2 Klein 9B",
     matchingModel: "@cf/black-forest-labs/flux-2-klein-9b",
+    inputFormat: "multipart",
     description: "",
     provider: "workers-ai",
     strengths: ["creative", "image"],

@@ -5,7 +5,10 @@ import type {
 import { ModelIcon } from "@ngriffin_uk/polychat-component-models";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
-import { isHiddenToolResponse } from "@ngriffin_uk/polychat-library-chat/tool-results";
+import {
+  isHiddenToolResponse,
+  isHiddenToolResultPart,
+} from "@ngriffin_uk/polychat-library-chat/tool-results";
 import { getModelDisplayName } from "@ngriffin_uk/polychat-schemas";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { Target } from "lucide-react";
@@ -15,9 +18,35 @@ import { useState } from "react";
 import { EditableMessageContent } from "./EditableMessageContent";
 import { MessageActions } from "./MessageActions";
 import { MessageContent } from "./MessageContent";
+import { useResolvedToolCallIds } from "./ResolvedToolCalls";
 import { ToolMessage } from "./ToolMessage";
 
-export const isRenderableMessage = (message: Message): boolean => {
+const EMPTY_RESOLVED_TOOL_CALL_IDS: ReadonlySet<string> = new Set();
+
+const hasRenderableContentItem = (
+  item: Extract<Message["content"], unknown[]>[number],
+): boolean => {
+  if (!item || typeof item !== "object" || !("type" in item)) {
+    return false;
+  }
+
+  if (item.type === "text") {
+    return typeof item.text === "string" && item.text.trim().length > 0;
+  }
+
+  return (
+    (item.type === "image_url" && Boolean(item.image_url?.url)) ||
+    (item.type === "audio_url" && Boolean(item.audio_url?.url)) ||
+    (item.type === "input_audio" && Boolean(item.input_audio?.data)) ||
+    (item.type === "artifact" && Boolean(item.artifact)) ||
+    (item.type === "artifact_selection" && Boolean(item.artifact_selection))
+  );
+};
+
+export const isRenderableMessage = (
+  message: Message,
+  resolvedToolCallIds: ReadonlySet<string> = EMPTY_RESOLVED_TOOL_CALL_IDS,
+): boolean => {
   if (message.role === "system" || message.role === "developer") {
     return false;
   }
@@ -26,16 +55,44 @@ export const isRenderableMessage = (message: Message): boolean => {
     return false;
   }
 
-  const hasParts = Array.isArray(message.parts) && message.parts.length > 0;
-  const isToolResponse = message.role === "tool" && Boolean(message.name);
+  if (message.role === "tool") {
+    return Boolean(message.name && message.data);
+  }
 
-  return Boolean(
-    message.content ||
-    message.reasoning ||
-    hasParts ||
-    isToolResponse ||
-    (message.role === "assistant" && message.model),
-  );
+  const hasTextContent =
+    typeof message.content === "string"
+      ? message.content.trim().length > 0
+      : Array.isArray(message.content) && message.content.some(hasRenderableContentItem);
+  const hasReasoning = Boolean(message.reasoning?.content.trim());
+  const hasSupportingContent =
+    Boolean(message.citations?.length) ||
+    Boolean(message.data?.searchGrounding) ||
+    Boolean(
+      message.data?.attachments?.some(
+        (attachment: unknown) =>
+          typeof attachment === "object" &&
+          attachment !== null &&
+          "url" in attachment &&
+          Boolean(attachment.url),
+      ),
+    );
+  const hasRenderablePart = message.parts?.some((part) => {
+    if (part.type === "text" || part.type === "reasoning") {
+      return part.text.trim().length > 0;
+    }
+
+    if (part.type === "tool_use") {
+      return !part.toolCallId || !resolvedToolCallIds.has(part.toolCallId);
+    }
+
+    if (part.type === "tool_result") {
+      return !isHiddenToolResultPart(part);
+    }
+
+    return part.type === "snapshot" || part.type === "file";
+  });
+
+  return Boolean(hasTextContent || hasReasoning || hasSupportingContent || hasRenderablePart);
 };
 
 export const ChatMessageView = ({
@@ -100,6 +157,7 @@ export const ChatMessageView = ({
 }) => {
   const [feedbackState, setFeedbackState] = useState<"none" | "liked" | "disliked">("none");
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+  const resolvedToolCallIds = useResolvedToolCallIds();
   const assistantModelName =
     message.role === "assistant" && message.model
       ? modelConfig
@@ -108,20 +166,9 @@ export const ChatMessageView = ({
       : undefined;
 
   const isToolResponse = message.role === "tool" && message.name;
-  const isSystemMessage = message.role === "system" || message.role === "developer";
   const hasPartContent = Array.isArray(message.parts) && message.parts.length > 0;
 
-  if (isSystemMessage || isHiddenToolResponse(message)) {
-    return null;
-  }
-
-  if (
-    !message.content &&
-    !message.reasoning &&
-    !hasPartContent &&
-    !isToolResponse &&
-    !assistantModelName
-  ) {
+  if (!isRenderableMessage(message, resolvedToolCallIds)) {
     return null;
   }
 

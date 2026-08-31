@@ -1,5 +1,10 @@
 import type { AgentFinishAssessment } from "@ngriffin_uk/polychat-library-agent-core";
-import type { Goal, GoalSurface } from "@ngriffin_uk/polychat-schemas";
+import {
+  goalSchema,
+  isTerminalGoalStatus,
+  type Goal,
+  type GoalSurface,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ConversationManager } from "~/lib/conversationManager";
 import { isUsageExhausted } from "~/lib/usage/limitState";
@@ -7,10 +12,29 @@ import type { GoalService } from "~/services/goals/GoalService";
 
 export interface GoalGateParams {
   goalService: GoalService;
-  goal: Goal;
+  goal?: Goal | null;
   surface: GoalSurface;
   conversationManager?: Pick<ConversationManager, "getUsageLimits">;
   onTerminalStatus?: (goal: Goal) => Promise<void>;
+}
+
+interface GoalToolResult {
+  role?: string;
+  name?: string;
+  status?: string;
+  content?: unknown;
+  data?: unknown;
+}
+
+export interface GoalFinishGate {
+  assessFinish(context: {
+    summary: string;
+    step: number;
+    commandCount: number;
+    awaitingUserAction?: "approval" | "question";
+  }): Promise<AgentFinishAssessment>;
+  observeToolResult(result: GoalToolResult): Promise<void>;
+  hasActiveGoal(): boolean;
 }
 
 export const GOAL_UNSATISFIED_INSTRUCTION = [
@@ -22,34 +46,27 @@ export const GOAL_UNSATISFIED_INSTRUCTION = [
   "Otherwise take the single next best action.",
 ].join(" ");
 
-export function createGoalFinishGate(params: GoalGateParams) {
-  let currentGoal = params.goal;
+export function createGoalFinishGate(params: GoalGateParams): GoalFinishGate {
+  let currentGoal = params.goal ?? null;
   let lastCommandCount = 0;
-  let markedTerminal = false;
+  const reportedTransitions = new Set<string>();
 
-  return async (context: {
-    summary: string;
-    step: number;
-    commandCount: number;
-    awaitingUserAction?: "approval" | "question";
-  }): Promise<AgentFinishAssessment> => {
-    const latest = await params.goalService.getActiveGoal(
-      currentGoal.conversation_id
-        ? { conversationId: currentGoal.conversation_id }
-        : { sandboxRunId: currentGoal.sandbox_run_id },
-    );
+  const reportTransition = async (goal: Goal) => {
+    const transition = `${goal.id}:${goal.status}`;
 
-    if (!latest || latest.status !== "active") {
-      const resolved = latest ?? (await params.goalService.getGoalById(currentGoal.id));
+    if (!isTerminalGoalStatus(goal.status) || reportedTransitions.has(transition)) {
+      return;
+    }
 
-      if (resolved && resolved.status !== "active" && !markedTerminal) {
-        markedTerminal = true;
-        await params.onTerminalStatus?.(resolved);
-      }
+    reportedTransitions.add(transition);
+    await params.onTerminalStatus?.(goal);
+  };
 
+  const assessFinish: GoalFinishGate["assessFinish"] = async (context) => {
+    if (!currentGoal || currentGoal.status !== "active") {
       return {
         allow: true,
-        outcome: resolved?.status === "completed" ? "satisfied" : "unsatisfied",
+        outcome: currentGoal?.status === "completed" ? "satisfied" : "unsatisfied",
       };
     }
 
@@ -60,8 +77,8 @@ export function createGoalFinishGate(params: GoalGateParams) {
     const usageLimitsExhausted = params.conversationManager
       ? await isUsageExhausted(params.conversationManager)
       : false;
-    const { goal, shouldContinue } = await params.goalService.recordIteration({
-      goal: latest,
+    const { goal, shouldContinue, transitioned } = await params.goalService.recordIteration({
+      goalId: currentGoal.id,
       iteration: {
         surface: params.surface,
         summary: context.summary || "Model returned without calling a tool",
@@ -76,9 +93,8 @@ export function createGoalFinishGate(params: GoalGateParams) {
     currentGoal = goal;
 
     if (!shouldContinue) {
-      if (goal.status !== "active" && !markedTerminal) {
-        markedTerminal = true;
-        await params.onTerminalStatus?.(goal);
+      if (transitioned) {
+        await reportTransition(goal);
       }
 
       return {
@@ -93,5 +109,36 @@ export function createGoalFinishGate(params: GoalGateParams) {
     }
 
     return { allow: false, instruction: GOAL_UNSATISFIED_INSTRUCTION };
+  };
+
+  const observeToolResult: GoalFinishGate["observeToolResult"] = async (result) => {
+    if (
+      result.status !== "success" ||
+      (result.name !== "set_goal" && result.name !== "complete_goal")
+    ) {
+      return;
+    }
+
+    const parsed = goalSchema.safeParse(
+      typeof result.data === "object" && result.data !== null && "goal" in result.data
+        ? result.data.goal
+        : undefined,
+    );
+
+    if (!parsed.success) {
+      return;
+    }
+
+    currentGoal = parsed.data;
+
+    if (result.name === "complete_goal") {
+      await reportTransition(currentGoal);
+    }
+  };
+
+  return {
+    assessFinish,
+    observeToolResult,
+    hasActiveGoal: () => currentGoal?.status === "active",
   };
 }

@@ -11,6 +11,7 @@ import { getLogger } from "~/utils/logger";
 import type { ApiToolDefinition } from "../../types/functions";
 import { jsonSchemaToZod } from "../../utils/jsonSchema";
 import { findAnsweredQuestion } from "./userQuestionHistory";
+import { normaliseAskUserInput } from "./userQuestionInput";
 
 const logger = getLogger({ prefix: "services/functions/human_in_the_loop" });
 
@@ -131,6 +132,7 @@ export const ask_user: ApiToolDefinition = {
   costPerCall: 0,
   maxIdenticalCalls: 1,
   permissions: ["human"],
+  normaliseInput: normaliseAskUserInput,
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {

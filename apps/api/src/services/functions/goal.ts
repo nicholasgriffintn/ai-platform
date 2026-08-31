@@ -32,6 +32,10 @@ function isDelegatedRun(context: any): boolean {
   return Array.isArray(stack) && stack.length > 0;
 }
 
+function isProjectTaskRun(context: any): boolean {
+  return context?.request?.request?.conversation_type === "task";
+}
+
 async function markGoal(
   context: any,
   completionId: string,
@@ -76,6 +80,42 @@ async function hasAnsweredSince(
       ? message.content.trim().length > 0
       : Array.isArray(message.content) && message.content.length > 0;
   });
+}
+
+async function hasUnresolvedToolFailureSince(
+  context: any,
+  completionId: string,
+  goalCreatedAt: string,
+): Promise<boolean> {
+  const messages =
+    await context?.request?.context?.repositories?.messages?.getConversationMessages(completionId);
+
+  if (!Array.isArray(messages)) {
+    return false;
+  }
+
+  const goalCreated = Date.parse(goalCreatedAt);
+  const unresolved = new Set<string>();
+
+  for (const message of messages) {
+    const at = Number(message?.timestamp);
+
+    if (Number.isFinite(goalCreated) && Number.isFinite(at) && at < goalCreated) {
+      continue;
+    }
+
+    if (message?.role !== "tool" || typeof message.name !== "string") {
+      continue;
+    }
+
+    if (message.status === "error") {
+      unresolved.add(message.name);
+    } else if (message.status === "success") {
+      unresolved.delete(message.name);
+    }
+  }
+
+  return unresolved.size > 0;
 }
 
 function parseEvidence(rawEvidence: unknown): GoalEvidenceEntry[] {
@@ -144,7 +184,7 @@ export const set_goal: ApiToolDefinition = {
 export const complete_goal: ApiToolDefinition = {
   name: "complete_goal",
   description:
-    "Mark the active goal complete. Only call this once the objective is satisfied and you can cite the evidence for it. An empty or entirely blocked ledger is a blocker report, not a completion.",
+    "Mark the active goal complete. Only call this once the objective is satisfied and you can cite the evidence for it. An empty or entirely blocked ledger is a blocker report, not a completion. In a project task, use ask_user for missing human input; a blocked ledger must refer to a recorded failing tool dependency.",
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {
@@ -212,7 +252,7 @@ export const complete_goal: ApiToolDefinition = {
 
     const active = await service.getActiveGoal({ conversationId: completionId });
 
-    if (!active) {
+    if (!active || active.status !== "active") {
       return {
         status: "error",
         name: "complete_goal",
@@ -239,6 +279,36 @@ export const complete_goal: ApiToolDefinition = {
         name: "complete_goal",
         content:
           "Completing a goal requires an evidence ledger. Give one entry per claim, naming how it was established and where the evidence lives.",
+        data: {},
+      };
+    }
+
+    const projectTaskRun = isProjectTaskRun(context);
+    const unresolvedToolFailure = projectTaskRun
+      ? await hasUnresolvedToolFailureSince(context, completionId, active.created_at)
+      : false;
+    const hasBlockedEvidence = evidence.some((entry) => entry.status === "blocked");
+
+    if (projectTaskRun && hasBlockedEvidence && !unresolvedToolFailure) {
+      return {
+        status: "error",
+        name: "complete_goal",
+        content:
+          "A project task cannot use a blocked evidence ledger to wait for a person. Call ask_user so the task records a real pending question and can resume from the answer.",
+        data: {},
+      };
+    }
+
+    if (
+      projectTaskRun &&
+      evidence.some((entry) => entry.status !== "blocked") &&
+      unresolvedToolFailure
+    ) {
+      return {
+        status: "error",
+        name: "complete_goal",
+        content:
+          "A required tool call is still failing in this stage. Resolve it successfully, or report the stage as blocked with an entirely blocked evidence ledger.",
         data: {},
       };
     }

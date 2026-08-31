@@ -421,6 +421,7 @@ export class ProjectTaskRepository extends BaseRepository {
     projectId: string;
     runnerIdentityUserId: number;
     dispatchTaskId: string;
+    resumeInterrupted?: boolean;
   }): Promise<ProjectTask | null> {
     const row = await this.runQuery<ProjectTaskRow>(
       `UPDATE project_task
@@ -433,9 +434,15 @@ export class ProjectTaskRepository extends BaseRepository {
          AND project_id = ?
          AND runner_identity_user_id = ?
          AND dispatch_task_id = ?
-         AND status = 'queued'
+         AND (status = 'queued' OR (? = 1 AND status = 'running'))
        RETURNING *`,
-      [params.taskId, params.projectId, params.runnerIdentityUserId, params.dispatchTaskId],
+      [
+        params.taskId,
+        params.projectId,
+        params.runnerIdentityUserId,
+        params.dispatchTaskId,
+        params.resumeInterrupted ? 1 : 0,
+      ],
       true,
     );
 

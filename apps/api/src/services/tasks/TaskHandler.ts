@@ -8,6 +8,11 @@ export interface TaskResult {
   data?: Record<string, any>;
 }
 
+export interface TaskExecutionContext {
+  deliveryAttempt: number;
+  isRedelivery: boolean;
+}
+
 export interface TaskHandler {
-  handle(message: TaskMessage, env: IEnv): Promise<TaskResult>;
+  handle(message: TaskMessage, env: IEnv, context: TaskExecutionContext): Promise<TaskResult>;
 }

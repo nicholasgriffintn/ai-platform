@@ -25,6 +25,7 @@ Read the relevant accepted records before changing product structure, ownership,
 - [0024](decisions/0024-turns-outlive-the-connection.md): Keep SSE and let the turn outlive the client with `waitUntil`, recover by polling for the persisted answer, and delete background mode.
 - [0025](decisions/0025-tool-result-presentation-by-shape.md): Render every tool result through one view, let tools declare a renderer id, and resolve anything undeclared from the payload's shape.
 - [0026](decisions/0026-project-task-boards.md): Make the unit of work in Work a project task that carries its own conversation and goal; every stage stores a completion snapshot, and its flow policy selects automated hand-off or explicit human approval.
+- [0027](decisions/0027-project-flow-approval-authority.md): Make a Work stage's saved approval policy authoritative for its task run, and resume an approval-blocked task through an exact pending tool decision.
 
 [context.md](context.md) holds the current domain vocabulary, workspace map, seams, and data flows.
 

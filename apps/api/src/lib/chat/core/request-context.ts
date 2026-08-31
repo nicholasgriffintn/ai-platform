@@ -47,6 +47,7 @@ export function buildToolRequestContext(params: {
     mode,
     request: {
       completion_id: chatOptions.completion_id,
+      conversation_type: chatOptions.conversation_type,
       input,
       model,
       provider,
@@ -60,6 +61,7 @@ export function buildToolRequestContext(params: {
       current_agent_id: chatOptions.current_agent_id,
       delegation_stack: chatOptions.delegation_stack,
       max_delegation_depth: chatOptions.max_delegation_depth,
+      enforce_mode_tool_policy: chatOptions.enforce_mode_tool_policy,
     },
     app_url: chatOptions.app_url,
     user,

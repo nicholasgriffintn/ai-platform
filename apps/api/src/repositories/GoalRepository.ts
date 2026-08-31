@@ -55,6 +55,10 @@ export interface UpdateGoalParams {
   lastContinuedAt?: string | null;
 }
 
+export interface UpdateGoalOptions {
+  expectedStatus?: GoalStatus;
+}
+
 function formatGoal(row: GoalRow): Goal {
   return {
     id: row.id,
@@ -140,7 +144,11 @@ export class GoalRepository extends BaseRepository {
     return formatGoal(row);
   }
 
-  async updateGoal(id: string, updates: UpdateGoalParams): Promise<Goal | null> {
+  async updateGoal(
+    id: string,
+    updates: UpdateGoalParams,
+    options: UpdateGoalOptions = {},
+  ): Promise<Goal | null> {
     const columns: string[] = [];
     const values: unknown[] = [];
 
@@ -196,8 +204,14 @@ export class GoalRepository extends BaseRepository {
     columns.push("updated_at = CURRENT_TIMESTAMP");
     values.push(id);
 
+    if (options.expectedStatus !== undefined) {
+      values.push(options.expectedStatus);
+    }
+
     const row = await this.runQuery<GoalRow>(
-      `UPDATE goal SET ${columns.join(", ")} WHERE id = ? RETURNING *`,
+      `UPDATE goal SET ${columns.join(", ")} WHERE id = ?${
+        options.expectedStatus === undefined ? "" : " AND status = ?"
+      } RETURNING *`,
       values,
       true,
     );

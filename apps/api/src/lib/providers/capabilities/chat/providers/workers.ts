@@ -10,6 +10,7 @@ import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
 import { getLogger } from "~/utils/logger";
+import { buildMultipartInput, type MultipartInputFile } from "~/utils/multipartInput";
 import { isRecord } from "~/utils/objects";
 import {
   createCommonParameters,
@@ -153,6 +154,20 @@ function getResponseDescription(modelResponse: unknown) {
   return isRecord(modelResponse) && typeof modelResponse.description === "string"
     ? modelResponse.description
     : undefined;
+}
+
+function toMultipartImage(
+  imageData: NonNullable<WorkersMediaPayload["image"]>,
+): MultipartInputFile {
+  const source = typeof imageData === "string" ? atob(imageData) : imageData;
+  const buffer = new ArrayBuffer(source.length);
+  const view = new Uint8Array(buffer);
+
+  for (let index = 0; index < source.length; index += 1) {
+    view[index] = typeof source === "string" ? source.charCodeAt(index) : source[index];
+  }
+
+  return { field: "image", data: buffer, filename: "image.png", contentType: "image/png" };
 }
 
 export class WorkersProvider extends BaseProvider {
@@ -312,6 +327,13 @@ export class WorkersProvider extends BaseProvider {
 
       if (!imageData && !flags.isTextToImage) {
         throw new AssistantError("No image data found in the request", ErrorType.PARAMS_ERROR);
+      }
+
+      if (modelConfig.inputFormat === "multipart") {
+        return await buildMultipartInput(
+          { prompt },
+          imageData ? [toMultipartImage(imageData)] : [],
+        );
       }
 
       if (!prompt) {

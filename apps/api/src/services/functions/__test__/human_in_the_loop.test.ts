@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { IRequest } from "~/types";
 
 import { request_approval, ask_user } from "../human_in_the_loop";
+import { validateFunctionArgs } from "../index";
 
 const baseRequest: IRequest = {
   env: {} as any,
@@ -85,6 +86,93 @@ describe("request_approval", () => {
 });
 
 describe("ask_user", () => {
+  it("normalises a top-level question with string options", () => {
+    expect(
+      validateFunctionArgs(ask_user, {
+        question: "Which product name should we use?",
+        options: ["Polychat Connect", "FlowSync"],
+      }),
+    ).toEqual({
+      questions: [
+        {
+          id: "which-product-name-should-we-use",
+          prompt: "Which product name should we use?",
+          options: [{ label: "Polychat Connect" }, { label: "FlowSync" }],
+          allowOther: true,
+        },
+      ],
+    });
+  });
+
+  it("normalises the compact question shape emitted by providers", () => {
+    expect(
+      validateFunctionArgs(ask_user, {
+        message: "What product name should we use?",
+        choices: ["Polychat Connect", "FlowSync", "Nexus", "Orbit", "Pulse", "Extra"],
+      }),
+    ).toEqual({
+      questions: [
+        {
+          id: "what-product-name-should-we-use",
+          prompt: "What product name should we use?",
+          options: [
+            { label: "Polychat Connect" },
+            { label: "FlowSync" },
+            { label: "Nexus" },
+            { label: "Orbit" },
+            { label: "Pulse" },
+          ],
+          allowOther: true,
+        },
+      ],
+    });
+  });
+
+  it("normalises question fields and string choices inside the questions array", () => {
+    expect(
+      validateFunctionArgs(ask_user, {
+        questions: [
+          {
+            question: "Which audience is this for?",
+            choices: ["Customers", "Internal teams"],
+            allow_custom: false,
+          },
+        ],
+      }),
+    ).toEqual({
+      questions: [
+        {
+          id: "which-audience-is-this-for",
+          prompt: "Which audience is this for?",
+          options: [{ label: "Customers" }, { label: "Internal teams" }],
+          allowOther: false,
+        },
+      ],
+    });
+  });
+
+  it("normalises nested question fields and string options", () => {
+    expect(
+      validateFunctionArgs(ask_user, {
+        questions: [
+          {
+            question: "Which audience is this for?",
+            options: ["Customers", "Internal teams"],
+          },
+        ],
+      }),
+    ).toEqual({
+      questions: [
+        {
+          id: "which-audience-is-this-for",
+          prompt: "Which audience is this for?",
+          options: [{ label: "Customers" }, { label: "Internal teams" }],
+          allowOther: true,
+        },
+      ],
+    });
+  });
+
   it("creates one structured question", async () => {
     const result = await ask_user.execute(
       { questions: [{ id: "email", prompt: "What is your email address?" }] },

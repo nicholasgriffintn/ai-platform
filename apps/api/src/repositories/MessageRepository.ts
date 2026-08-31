@@ -207,24 +207,26 @@ export class MessageRepository extends BaseRepository {
 
   public async getLatestPendingToolMessage(
     conversationId: string,
-    toolNames: readonly string[],
+    toolNames?: readonly string[],
   ): Promise<Record<string, unknown> | null> {
-    if (toolNames.length === 0) {
+    if (toolNames?.length === 0) {
       return null;
     }
 
-    const placeholders = toolNames.map(() => "?").join(", ");
+    const toolNameClause = toolNames?.length
+      ? `\n         AND name IN (${toolNames.map(() => "?").join(", ")})`
+      : "";
 
     return this.runQuery<Record<string, unknown>>(
       `SELECT * FROM message
        WHERE conversation_id = ?
          AND role = 'tool'
          AND status = 'pending'
-         AND name IN (${placeholders})
+         ${toolNameClause}
          AND is_archived = 0
        ORDER BY ${MESSAGE_ORDER_BY_DESC}
        LIMIT 1`,
-      [conversationId, ...toolNames],
+      [conversationId, ...(toolNames ?? [])],
       true,
     );
   }

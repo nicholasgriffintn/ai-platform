@@ -167,7 +167,13 @@ export class RequestPreparer {
       userId: user.id,
       requestUrl: options.app_url,
     })
-      .then(({ connectors }) => getConnectedRecipeConnectorProviders(connectors))
+      .then(({ connectors }) => {
+        const connected = getConnectedRecipeConnectorProviders(connectors);
+
+        return projectContext
+          ? connected.filter((provider) => projectContext.connectorProviders.includes(provider))
+          : connected;
+      })
       .catch((error) => {
         logger.warn("Failed to resolve connected recipe providers", { error, userId: user.id });
 
@@ -359,7 +365,6 @@ export class RequestPreparer {
             userSettings,
             store: scope.options.store,
           }),
-          activeGoal,
           isProUser: scope.isProUser,
         }),
         skills,

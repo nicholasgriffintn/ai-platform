@@ -10,6 +10,7 @@ import type {
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
+import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
@@ -109,9 +110,7 @@ export class StorageService {
       return null;
     }
 
-    const arrayBuffer = await object.arrayBuffer();
-
-    return btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+    return bufferToBase64(await object.arrayBuffer());
   }
 
   async getObjectBody(key: string): Promise<R2ObjectBody | null> {

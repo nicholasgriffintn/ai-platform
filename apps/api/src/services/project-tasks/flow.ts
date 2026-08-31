@@ -13,6 +13,11 @@ import { resolveProjectTools } from "~/services/workspaces/projectTools";
 import { intersectEnabledTools } from "~/utils/enabledTools";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+const PROJECT_TASK_FLOW_OWNED_TOOLS = new Set([
+  "delegate_to_team_member",
+  "delegate_to_team_member_by_role",
+]);
+
 export interface ResolvedTaskRuntime {
   stage: ProjectFlowStage | null;
   agent: Agent | null;
@@ -20,6 +25,7 @@ export interface ResolvedTaskRuntime {
   mode: string;
   enabledTools: string[];
   requireApprovalFor: ToolPermission[];
+  enforceModeToolPolicy: false;
 }
 
 async function resolveProjectAgent(
@@ -62,6 +68,10 @@ export function withoutForbiddenTools(
   return tools.filter((tool) => !denied.has(tool));
 }
 
+function withoutFlowOwnedTools(tools: string[]): string[] {
+  return tools.filter((tool) => !PROJECT_TASK_FLOW_OWNED_TOOLS.has(tool));
+}
+
 export async function resolveTaskRuntime(params: {
   context: ServiceContext;
   task: ProjectTask;
@@ -85,12 +95,13 @@ export async function resolveTaskRuntime(params: {
     model: task.runner?.model ?? agent?.model ?? null,
     mode: stage?.mode ?? task.runner?.mode ?? "agent",
     enabledTools: withoutForbiddenTools(
-      [...new Set([...configuredTools, ...PROJECT_TASK_TOOL_IDS])],
+      withoutFlowOwnedTools([...new Set([...configuredTools, ...PROJECT_TASK_TOOL_IDS])]),
       task.constraints?.forbiddenTools,
     ),
     requireApprovalFor: [
       ...new Set([...(stage?.requiresApprovalFor ?? []), ...task.requireApprovalFor]),
     ],
+    enforceModeToolPolicy: false,
   };
 }
 

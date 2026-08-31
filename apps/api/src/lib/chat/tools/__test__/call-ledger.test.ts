@@ -97,6 +97,52 @@ describe("repeated tool call guard", () => {
     expect(mocks.handleFunctions).toHaveBeenCalledTimes(1);
   });
 
+  it("stops an identical call after an approval requirement cannot change within the run", async () => {
+    const ledger = createToolCallLedger();
+    const request = createRequest();
+
+    request.mode = "build";
+    request.request = {
+      completion_id: "completion-1",
+      input: "create the spec",
+      date: "2026-08-31",
+      model: "test-model",
+      platform: "api",
+      tool_permissions_map: { use_recipe_connector: ["network"] },
+    };
+
+    const runConnector = (id: string) =>
+      handleToolCalls(
+        "completion-1",
+        {
+          response: "",
+          tool_calls: [
+            toolCall(
+              "use_recipe_connector",
+              { provider: "hindsight", useCase: "create the spec" },
+              id,
+            ),
+          ],
+        },
+        createConversationManager(),
+        request,
+        { persistResults: "none", callLedger: ledger },
+      );
+
+    const [first] = await runConnector("call-1");
+    const [second] = await runConnector("call-2");
+
+    expect(first.data.errorType).toBe("APPROVAL_REQUIRED");
+    expect(first.status).toBe("pending");
+    expect(first.data).toMatchObject({
+      renderer: "approval_request",
+      approvalRequired: true,
+      approval: { toolName: "use_recipe_connector", interactionId: "call-1" },
+    });
+    expect(second.data.errorCode).toBe("REPEATED_TOOL_CALL");
+    expect(mocks.handleFunctions).not.toHaveBeenCalled();
+  });
+
   it("corrects malformed artifact-shaped tool names as response markup", async () => {
     const ledger = createToolCallLedger();
     const unknownToolError = Object.assign(new Error("unknown tool"), {

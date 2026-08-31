@@ -20,6 +20,7 @@ import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { extractTextFromMessageContent } from "~/utils/messages";
 
+import { getPendingProjectTaskToolApproval } from "./approvals";
 import { createProjectTaskCompletion, projectTaskStatusAfterCompletedGoal } from "./completions";
 import { buildStageInstructions, resolveTaskRuntime } from "./flow";
 import { getPendingProjectTaskQuestions } from "./questions";
@@ -37,6 +38,7 @@ export async function enqueueProjectTaskRun(
   runnerIdentityUserId: number,
   dispatchTaskId: string,
   conversationId: string | null,
+  approvedTools: string[] = [],
 ): Promise<void> {
   const taskService = new TaskService(context.env, context.repositories.tasks);
 
@@ -52,6 +54,7 @@ export async function enqueueProjectTaskRun(
       projectId: task.projectId,
       runnerIdentityUserId,
       conversationId,
+      approvedTools,
     },
   });
 }
@@ -61,6 +64,7 @@ export async function queueProjectTaskRun(params: {
   task: ProjectTask;
   runnerIdentityUserId: number;
   stageId?: string | null;
+  approvedTools?: string[];
 }): Promise<ProjectTask> {
   const { context, task, runnerIdentityUserId, stageId } = params;
 
@@ -107,6 +111,7 @@ export async function queueProjectTaskRun(params: {
       runnerIdentityUserId,
       dispatchTaskId,
       conversationId,
+      params.approvedTools,
     );
   } catch (error) {
     await context.repositories.projectTasks.failDispatch({
@@ -231,7 +236,7 @@ export function buildTaskPrompt(params: {
   }
 
   lines.push(
-    "Work the objective and call complete_goal once the current stage deliverable is complete. The project flow owns stage approval and advancement: never ask the user to approve, confirm, review, or accept your stage output. If concrete missing information or a still-unresolved decision prevents progress, first reuse every answer already present in the conversation, then call ask_user with up to three concise questions and useful choices instead of writing questions as ordinary text. Never ask the same decision again with a different identifier or wording.",
+    "Produce a concrete deliverable for this stage in an assistant response before calling complete_goal. A Plan stage must leave an actionable plan; Build must leave the implemented result and validation evidence; Review must leave an evidence-backed review decision. Never present a failed tool call as confirmed evidence. Resolve it successfully or submit an entirely blocked evidence ledger so the task stops for attention. Call complete_goal only once the stage deliverable genuinely satisfies its acceptance criteria. The project flow owns stage approval and advancement: never ask the user to approve, confirm, review, or accept your stage output. If concrete missing information or a still-unresolved decision prevents progress, first reuse every answer already present in the conversation, then call ask_user with up to three concise questions and useful choices instead of writing questions as ordinary text. Never ask the same decision again with a different identifier or wording.",
   );
 
   return lines.join("\n\n");
@@ -261,6 +266,8 @@ export async function runProjectTaskDispatch(params: {
   projectId: string;
   runnerIdentityUserId: number;
   conversationId: string | null;
+  approvedTools?: string[];
+  resumeInterrupted?: boolean;
 }): Promise<{ status: "completed" | "blocked" | "skipped"; detail?: string }> {
   const { env, taskId, projectId, runnerIdentityUserId } = params;
   const baseContext = createServiceContext({ env });
@@ -276,6 +283,7 @@ export async function runProjectTaskDispatch(params: {
     projectId,
     runnerIdentityUserId,
     dispatchTaskId: params.dispatchTaskId,
+    resumeInterrupted: params.resumeInterrupted,
   });
 
   if (!claimed) {
@@ -406,7 +414,9 @@ export async function runProjectTaskDispatch(params: {
         stream: false,
         store: true,
         enabled_tools: runtime.enabledTools,
+        approved_tools: params.approvedTools,
         require_approval_for: runtime.requireApprovalFor,
+        enforce_mode_tool_policy: runtime.enforceModeToolPolicy,
         tool_choice: "auto",
         metadata: { project_id: claimed.projectId },
         ...(runtime.agent ? { persona: buildAgentPersona(runtime.agent) } : {}),
@@ -467,12 +477,15 @@ export async function runProjectTaskDispatch(params: {
   }
 
   const pendingQuestions = await getPendingProjectTaskQuestions(context, { conversationId });
+  const pendingApproval = await getPendingProjectTaskToolApproval(context, { conversationId });
   const projection = goal
     ? projectTaskStatusForGoal(goal)
     : { status: "review" as const, blockedReason: null };
 
   if (projection.status === "blocked" && pendingQuestions) {
     projection.blockedReason = "awaiting_input";
+  } else if (projection.status === "blocked" && pendingApproval) {
+    projection.blockedReason = "awaiting_approval";
   }
 
   const tokensSpent = claimed.tokensSpent + Math.max(goal?.tokens_spent ?? 0, responseTokens);

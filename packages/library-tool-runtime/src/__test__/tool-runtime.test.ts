@@ -256,6 +256,27 @@ describe("PermissionChecker", () => {
     ).toMatchObject({ allowed: true, requiresApproval: true });
   });
 
+  it("uses the caller's approval policy without hidden mode restrictions when requested", () => {
+    expect(
+      checker.checkToolAccess({
+        toolName: "use_recipe_connector",
+        mode: "plan",
+        toolPermissions: ["network"],
+        enforceModePolicy: false,
+      }),
+    ).toMatchObject({ allowed: true, requiresApproval: false, mode: "plan" });
+
+    expect(
+      checker.checkToolAccess({
+        toolName: "update_file",
+        mode: "build",
+        toolPermissions: ["write"],
+        requireApprovalFor: ["write"],
+        enforceModePolicy: false,
+      }),
+    ).toMatchObject({ allowed: true, requiresApproval: true, mode: "build" });
+  });
+
   it("reports whether a tool was pre-approved", () => {
     expect(
       checker.checkRequestToolAccess({

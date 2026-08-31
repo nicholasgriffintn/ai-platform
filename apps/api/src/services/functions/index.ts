@@ -186,7 +186,8 @@ export const resolveFunctionTool = (functionName: string): RegisteredFunctionToo
   toolRegistry.resolve(FUNCTIONS_TOOL_CATEGORY, functionName) as RegisteredFunctionTool;
 
 export const validateFunctionArgs = (toolDefinition: RegisteredFunctionTool, args: unknown) => {
-  const validation = toolDefinition.inputSchema.safeParse(args);
+  const normalisedArgs = toolDefinition.normaliseInput?.(args) ?? args;
+  const validation = toolDefinition.inputSchema.safeParse(normalisedArgs);
 
   if (!validation.success) {
     const validationErrors = validation.error.issues.map((issue) => ({
@@ -236,6 +237,8 @@ export const handleFunctions = async ({
       toolType: "normal",
       toolPermissions: ["network"],
       approvedTools: request.request?.approved_tools,
+      requireApprovalFor: request.request?.require_approval_for,
+      enforceModePolicy: request.request?.enforce_mode_tool_policy,
     });
 
     if (!mcpPermissionResult.allowed) {
@@ -279,6 +282,8 @@ export const handleFunctions = async ({
     toolType: foundFunction.type,
     toolPermissions: foundFunction.permissions,
     approvedTools: request.request?.approved_tools,
+    requireApprovalFor: request.request?.require_approval_for,
+    enforceModePolicy: request.request?.enforce_mode_tool_policy,
   });
 
   if (!permissionResult.allowed) {

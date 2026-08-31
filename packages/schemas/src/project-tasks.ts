@@ -352,6 +352,23 @@ export type ProjectTaskDetailResponse = z.infer<typeof projectTaskDetailResponse
 
 export const answerProjectTaskQuestionsSchema = answerUserQuestionsSchema;
 
+export const projectTaskToolApprovalSchema = z.object({
+  interactionId: z.string().min(1),
+  toolName: z.string().min(1),
+  reason: z.string().min(1),
+});
+
+export type ProjectTaskToolApproval = z.infer<typeof projectTaskToolApprovalSchema>;
+
+export const resolveProjectTaskToolApprovalSchema = z.object({
+  interactionId: z.string().min(1),
+  resolution: z.enum(["approved", "rejected"]),
+});
+
+export type ResolveProjectTaskToolApprovalInput = z.infer<
+  typeof resolveProjectTaskToolApprovalSchema
+>;
+
 export const projectTaskListResponseSchema = z.object({
   tasks: z.array(projectTaskSchema),
   flow: projectFlowSchema.nullable(),
@@ -373,6 +390,7 @@ export const projectTaskRunDispatchPayloadSchema = z.object({
   projectId: z.string().min(1),
   runnerIdentityUserId: z.number().int().positive(),
   conversationId: z.string().min(1).nullable(),
+  approvedTools: z.array(z.string().min(1)).max(8).default([]),
 });
 
 export type ProjectTaskRunDispatchPayload = z.infer<typeof projectTaskRunDispatchPayloadSchema>;
