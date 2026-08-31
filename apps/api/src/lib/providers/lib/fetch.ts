@@ -17,6 +17,8 @@ import { appendUrlPath } from "~/utils/urls";
 
 const logger = getLogger({ prefix: "lib/providers/fetch" });
 
+const DEFAULT_REQUEST_TIMEOUT_MS = 100000;
+
 export interface FetchAIResponseOptions {
   requestTimeout?: number;
   retryDelay?: number;
@@ -79,37 +81,54 @@ export async function fetchAIResponse<
 
   let response: Response;
 
-  if (!isUrl) {
-    if (isFormData) {
-      throw new AssistantError(
-        "FormData requests are not supported through Cloudflare AI Gateway. Use direct URL endpoints for image edits.",
-        ErrorType.PARAMS_ERROR,
-      );
+  /**
+   * Bounds how long we wait for response headers without capping the stream
+   * that follows, so a provider that accepts the connection and then goes
+   * quiet cannot hold a turn (and its conversation lock) open indefinitely.
+   */
+  const controller = new AbortController();
+  const headersTimeout = setTimeout(
+    () => controller.abort(),
+    options.requestTimeout ?? DEFAULT_REQUEST_TIMEOUT_MS,
+  );
+
+  try {
+    if (!isUrl) {
+      if (isFormData) {
+        throw new AssistantError(
+          "FormData requests are not supported through Cloudflare AI Gateway. Use direct URL endpoints for image edits.",
+          ErrorType.PARAMS_ERROR,
+        );
+      }
+
+      if (!env?.AI) {
+        throw new AssistantError(
+          "AI binding is required to fetch gateway responses",
+          ErrorType.PARAMS_ERROR,
+        );
+      }
+
+      const gateway = env.AI.gateway(gatewayId);
+
+      const providerName = isOpenAiCompatible ? "compat" : provider;
+      const providerBaseUrl = await gateway.getUrl(providerName);
+
+      response = await fetch(appendUrlPath(providerBaseUrl, endpointOrUrl), {
+        method: "POST",
+        headers: getAiGatewayRequestHeaders(headers, options),
+        body: JSON.stringify(requestBody),
+        signal: controller.signal,
+      });
+    } else {
+      response = await fetch(endpointOrUrl, {
+        method: "POST",
+        headers,
+        body: isFormData ? (requestBody as FormData) : JSON.stringify(requestBody),
+        signal: controller.signal,
+      });
     }
-
-    if (!env?.AI) {
-      throw new AssistantError(
-        "AI binding is required to fetch gateway responses",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-
-    const gateway = env.AI.gateway(gatewayId);
-
-    const providerName = isOpenAiCompatible ? "compat" : provider;
-    const providerBaseUrl = await gateway.getUrl(providerName);
-
-    response = await fetch(appendUrlPath(providerBaseUrl, endpointOrUrl), {
-      method: "POST",
-      headers: getAiGatewayRequestHeaders(headers, options),
-      body: JSON.stringify(requestBody),
-    });
-  } else {
-    response = await fetch(endpointOrUrl, {
-      method: "POST",
-      headers,
-      body: isFormData ? (requestBody as FormData) : JSON.stringify(requestBody),
-    });
+  } finally {
+    clearTimeout(headersTimeout);
   }
 
   const requestId =
