@@ -105,7 +105,6 @@ describe("TaskService", () => {
   it("normalises scheduled timestamps before persistence and delivery", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-08-31T17:00:00.000Z"));
-
     const send = vi.fn();
     const service = new TaskService({ TASK_QUEUE: { send } } as any, taskRepository as any);
 

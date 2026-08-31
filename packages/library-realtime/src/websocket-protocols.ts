@@ -13,14 +13,25 @@ import type { RealtimeSession } from "./types";
 
 type RealtimeLiveProviderId = RealtimeLiveProviderDescriptor["id"];
 
-export interface RealtimeLiveWebSocketAudioInputConfig {
-  buildAppendMessage: (base64Audio: string) => unknown;
+interface RealtimeLiveWebSocketAudioInputBaseConfig {
   commitMessages?: unknown[];
   commitOnSilence?: AudioCommitGateConfig;
   endMessages?: unknown[];
   endOnMicrophonePause?: boolean;
+  keepSendingSilenceWhenMuted?: boolean;
   waitForFinalEventTypeOnStop?: string;
+  waitForSocketCloseOnStop?: boolean;
 }
+
+export type RealtimeLiveWebSocketAudioInputConfig =
+  | (RealtimeLiveWebSocketAudioInputBaseConfig & {
+      chunkEncoding: "binary";
+      buildAppendMessage?: never;
+    })
+  | (RealtimeLiveWebSocketAudioInputBaseConfig & {
+      buildAppendMessage: (base64Audio: string) => unknown;
+      chunkEncoding?: "base64-json";
+    });
 
 export interface RealtimeLiveWebSocketAudioOutputConfig {
   extractChunks: (payload: unknown) => string[];
@@ -158,12 +169,10 @@ export const REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG: Partial<
   },
   cartesia: {
     audioInput: {
-      buildAppendMessage: (base64Audio) => ({
-        type: "input_audio.append",
-        audio: base64Audio,
-      }),
+      chunkEncoding: "binary",
       endMessages: [{ type: "input_audio.end" }],
-      waitForFinalEventTypeOnStop: "transcription.done",
+      keepSendingSilenceWhenMuted: true,
+      waitForSocketCloseOnStop: true,
     },
     closeErrorLabel: "Cartesia realtime transcription",
     connectedEventLabel: "Cartesia realtime transcription connected",

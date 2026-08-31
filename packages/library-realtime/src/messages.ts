@@ -36,6 +36,12 @@ const REALTIME_EVENT_LABELS: Record<string, string> = {
   "response.output_audio.done": "Assistant audio complete",
   "response.interrupted": "Assistant interrupted",
   "response.done": "Assistant response complete",
+  connected: "Realtime transcription connected",
+  "turn.start": "Listening",
+  "turn.update": "Transcribing speech",
+  "turn.eager_end": "Checking whether speech is complete",
+  "turn.resume": "Listening",
+  "turn.end": "Speech captured",
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -107,6 +113,10 @@ function getTranscriptSource(value: Record<string, unknown>): RealtimeTranscript
   }
 
   if (type.startsWith("transcription.")) {
+    return "input";
+  }
+
+  if (type.startsWith("turn.")) {
     return "input";
   }
 
@@ -317,6 +327,15 @@ export function extractRealtimeTranscript(payload: unknown): RealtimeTranscriptR
   }
 
   const type = getString(payload.type)?.toLowerCase() ?? "";
+
+  if (type === "turn.update" || type === "turn.eager_end" || type === "turn.end") {
+    return {
+      text: directTranscript,
+      isDelta: false,
+      isFinal: type === "turn.end",
+      source: "input",
+    };
+  }
 
   if (type === "transcription.done" && !directTranscript) {
     return undefined;

@@ -10,6 +10,7 @@ import { MistralRealtimeProvider } from "./MistralRealtimeProvider";
 import { OpenAIRealtimeProvider } from "./OpenAIRealtimeProvider";
 
 const mocks = vi.hoisted(() => ({
+  buildGrantedRealtimeProxyUrl: vi.fn(),
   getModelConfigByModel: vi.fn(),
   resolveProviderApiKey: vi.fn(),
   sha256Hex: vi.fn(),
@@ -34,6 +35,10 @@ vi.mock("~/utils/crypto", () => ({
 
 vi.mock("~/utils/id", () => ({
   generateId: mocks.generateId,
+}));
+
+vi.mock("./proxyUrl", () => ({
+  buildGrantedRealtimeProxyUrl: mocks.buildGrantedRealtimeProxyUrl,
 }));
 
 const user: IUser = {
@@ -78,6 +83,24 @@ describe("realtime provider session contracts", () => {
     mocks.resolveProviderApiKey.mockResolvedValue("provider-api-key");
     mocks.sha256Hex.mockResolvedValue("hashed-user-42");
     mocks.generateId.mockReturnValue("session-fixture-id");
+    mocks.buildGrantedRealtimeProxyUrl.mockImplementation(
+      async ({ apiBaseUrl, model, params, path, sessionId }) => {
+        const url = new URL(path, apiBaseUrl);
+
+        url.protocol = "wss:";
+        for (const [key, value] of Object.entries(params ?? {})) {
+          if (value) {
+            url.searchParams.set(key, String(value));
+          }
+        }
+
+        url.searchParams.set("grant", "grant-fixture");
+        url.searchParams.set("model", model);
+        url.searchParams.set("session_id", sessionId);
+
+        return { expiresAt: 1_788_172_200, url: url.toString() };
+      },
+    );
     mocks.getModelConfigByModel.mockImplementation((model: string) => {
       const provider =
         model.startsWith("gpt-") || model === "openai-whisper"
@@ -287,7 +310,8 @@ describe("realtime provider session contracts", () => {
       type: "transcription",
       provider: "mistral",
       transport: "websocket",
-      url: "wss://api.polychat.test/realtime/mistral/transcription?model=voxtral-mini-transcribe-realtime-2602&delay=medium",
+      url: "wss://api.polychat.test/realtime/mistral/transcription?delay=medium&grant=grant-fixture&model=voxtral-mini-transcribe-realtime-2602&session_id=session-fixture-id",
+      proxy_grant_expires_at: 1_788_172_200,
       audio_format: { encoding: "pcm_s16le", sample_rate: 16000 },
       input_audio_format: "pcm_s16le",
       input_audio_transcription: { model: "voxtral-mini-transcribe-realtime-2602" },
@@ -310,14 +334,15 @@ describe("realtime provider session contracts", () => {
       type: "transcription",
       provider: "elevenlabs",
       transport: "websocket",
-      url: "wss://api.polychat.test/realtime/elevenlabs/transcription?model=scribe_v2_realtime&delay=minimal",
+      url: "wss://api.polychat.test/realtime/elevenlabs/transcription?delay=minimal&language=fr&grant=grant-fixture&model=scribe_v2_realtime&session_id=session-fixture-id",
+      proxy_grant_expires_at: 1_788_172_200,
       audio_format: { encoding: "pcm_s16le", sample_rate: 16000 },
       input_audio_format: "pcm_s16le",
       input_audio_transcription: { model: "scribe_v2_realtime", language_code: "fr" },
     });
   });
 
-  it("describes a Cartesia transcription proxy session with language metadata", async () => {
+  it("describes a Cartesia transcription proxy session", async () => {
     const provider = new CartesiaRealtimeProvider();
 
     await expect(
@@ -332,10 +357,11 @@ describe("realtime provider session contracts", () => {
       type: "transcription",
       provider: "cartesia",
       transport: "websocket",
-      url: "wss://api.polychat.test/realtime/cartesia/transcription?model=ink-2&delay=low",
+      url: "wss://api.polychat.test/realtime/cartesia/transcription?delay=low&grant=grant-fixture&model=ink-2&session_id=session-fixture-id",
+      proxy_grant_expires_at: 1_788_172_200,
       audio_format: { encoding: "pcm_s16le", sample_rate: 16000 },
       input_audio_format: "pcm_s16le",
-      input_audio_transcription: { model: "ink-2", language: "en" },
+      input_audio_transcription: { model: "ink-2" },
     });
   });
 });

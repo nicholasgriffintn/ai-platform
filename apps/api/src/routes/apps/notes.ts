@@ -357,7 +357,7 @@ addRoute(app, "post", "/generate-from-media", {
       }
 
       const result = await generateNotesFromMedia({
-        env: serviceContext.env,
+        context: serviceContext,
         user,
         url: body.url,
         outputs: body.outputs,

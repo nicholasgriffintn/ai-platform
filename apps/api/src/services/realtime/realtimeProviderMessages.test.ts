@@ -120,60 +120,19 @@ describe("Cartesia realtime proxy messages", () => {
     );
   });
 
-  it("maps Cartesia transcript lifecycle fixtures to normalised client events", () => {
-    const firstUpdate = toCartesiaClientMessage(
-      JSON.stringify({
-        type: "turn.update",
-        transcript: "Good",
-        request_id: "cartesia-turn-1",
-      }),
-    );
-    const secondUpdate = toCartesiaClientMessage(
-      JSON.stringify({
-        type: "turn.update",
-        transcript: "Good morning",
-        request_id: "cartesia-turn-1",
-      }),
-    );
+  it("preserves Cartesia turn snapshots for the shared client parser", () => {
+    const update = JSON.stringify({
+      type: "turn.update",
+      transcript: "Good morning",
+      request_id: "cartesia-turn-1",
+    });
+    const end = JSON.stringify({
+      type: "turn.end",
+      transcript: "Good morning.",
+      request_id: "cartesia-turn-1",
+    });
 
-    expect(typeof firstUpdate).toBe("string");
-    expect(typeof secondUpdate).toBe("string");
-    if (typeof firstUpdate !== "string" || typeof secondUpdate !== "string") {
-      throw new Error("Cartesia turn update fixture did not produce a client message");
-    }
-
-    expect([firstUpdate, secondUpdate].map((message) => JSON.parse(message))).toEqual([
-      {
-        type: "transcription.text",
-        item_id: "cartesia-turn-1",
-        text: "Good",
-      },
-      {
-        type: "transcription.text",
-        item_id: "cartesia-turn-1",
-        text: "Good morning",
-      },
-    ]);
-    const end = toCartesiaClientMessage(
-      JSON.stringify({
-        type: "turn.end",
-        transcript: "Good morning.",
-        request_id: "cartesia-turn-1",
-      }),
-    );
-
-    expect(Array.isArray(end)).toBe(true);
-    if (!Array.isArray(end)) {
-      throw new Error("Cartesia turn end fixture did not produce final client messages");
-    }
-
-    expect(end.map((message) => JSON.parse(message))).toEqual([
-      {
-        type: "transcription.segment",
-        item_id: "cartesia-turn-1",
-        text: "Good morning.",
-      },
-      { type: "transcription.done", item_id: "cartesia-turn-1" },
-    ]);
+    expect(toCartesiaClientMessage(update)).toBe(update);
+    expect(toCartesiaClientMessage(end)).toBe(end);
   });
 });

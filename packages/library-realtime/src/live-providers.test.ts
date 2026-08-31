@@ -8,6 +8,7 @@ import {
   getRealtimeLiveProviderIdForModel,
   getRealtimeLiveProviderOption,
   supportsRealtimeLiveVideoInput,
+  waitsForRealtimeLiveProviderFinalEventOnStop,
 } from "./live-providers";
 
 const providers: RealtimeLiveProviderCatalogueItem[] = [
@@ -100,5 +101,19 @@ describe("runtime realtime provider catalogue", () => {
       readiness: "unavailable",
       availabilityReason: "Gemini is not supported by this browser client.",
     });
+  });
+
+  it("defers message flushing for providers that finalize when the socket closes", () => {
+    const [cartesia] = createRealtimeLiveProviderOptions([
+      {
+        ...providers[1],
+        id: "cartesia",
+        label: "Cartesia Ink 2 Realtime",
+        shortLabel: "Cartesia",
+        defaultModelId: "ink-2",
+      },
+    ]);
+
+    expect(waitsForRealtimeLiveProviderFinalEventOnStop("cartesia", [cartesia])).toBe(true);
   });
 });
