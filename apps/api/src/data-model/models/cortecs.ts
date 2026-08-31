@@ -23,8 +23,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002989,
     costPer1kOutputTokens: 0.014945,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -59,8 +59,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.003196,
     costPer1kOutputTokens: 0.01594,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -95,8 +95,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.000996,
     costPer1kOutputTokens: 0.004982,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     family: "claude-haiku",
     openWeights: false,
@@ -121,8 +121,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005313,
     costPer1kOutputTokens: 0.026568,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -157,8 +157,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005313,
     costPer1kOutputTokens: 0.026561,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -193,8 +193,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005437,
     costPer1kOutputTokens: 0.027186,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -232,8 +232,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     openWeights: false,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   }),
 
@@ -277,8 +277,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.000652,
     costPer1kOutputTokens: 0.00257,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["tool_use"],
     contextComplexity: 4,
@@ -342,8 +342,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.000296,
     costPer1kOutputTokens: 0.000495,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["tool_use"],
     contextComplexity: 4,
@@ -377,8 +377,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00173,
     costPer1kOutputTokens: 0.00346,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["tool_use"],
     contextComplexity: 5,
@@ -755,8 +755,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     family: "gpt-oss",
     openWeights: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     supportsResponseFormat: true,
   }),
@@ -1654,8 +1654,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005437,
     costPer1kOutputTokens: 0.027186,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -1690,8 +1690,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.001649,
     costPer1kOutputTokens: 0.009899,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "audio", "document", "tool_use", "coding"],
     contextComplexity: 5,
@@ -1970,8 +1970,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002898,
     costPer1kOutputTokens: 0.015453,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     knowledgeCutoffDate: "August 31, 2025",
     supportsResponseFormat: true,
@@ -2306,8 +2306,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.000179,
     costPer1kOutputTokens: 0.000697,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     family: "gpt-oss",
     openWeights: true,
@@ -2391,8 +2391,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.001375,
     costPer1kOutputTokens: 0.01096,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -2515,8 +2515,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.001375,
     costPer1kOutputTokens: 0.01096,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -2575,8 +2575,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.000045,
     costPer1kOutputTokens: 0.000167,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["tool_use"],
     contextComplexity: 4,
@@ -3044,8 +3044,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.000279,
     costPer1kOutputTokens: 0.002192,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -3080,8 +3080,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00006,
     costPer1kOutputTokens: 0.000439,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -3300,8 +3300,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0012,
     costPer1kOutputTokens: 0.0042,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high", "max"],
+    	defaultEffort: "high",
     },
     strengths: ["coding", "tool_use"],
     contextComplexity: 5,
@@ -3456,8 +3456,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0055,
     costPer1kOutputTokens: 0.027498,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   }),
 
@@ -3482,8 +3482,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0022,
     costPer1kOutputTokens: 0.011,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   }),
 
@@ -3533,8 +3533,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.000219,
     costPer1kOutputTokens: 0.00132,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   }),
 
@@ -3559,8 +3559,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0055,
     costPer1kOutputTokens: 0.032998,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   }),
 
@@ -3585,8 +3585,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0022,
     costPer1kOutputTokens: 0.013199,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("gemini-3.5-flash-lite", PROVIDER, {
@@ -3610,8 +3610,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00033,
     costPer1kOutputTokens: 0.002749,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
   }),
   createModelConfig("deepseek-v4-flash-0731", PROVIDER, {
@@ -3634,8 +3634,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00013,
     costPer1kOutputTokens: 0.00028,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("gemini-3.6-flash", PROVIDER, {
@@ -3659,8 +3659,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00075,
     costPer1kOutputTokens: 0.00375,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   }),
 
@@ -3685,8 +3685,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00075,
     costPer1kOutputTokens: 0.00375,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   }),
 
@@ -3709,8 +3709,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0025,
     costPer1kOutputTokens: 0.006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "xhigh"],
+    	defaultEffort: "low",
     },
     family: "qwen",
   }),
@@ -3734,15 +3734,15 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.000334,
     costPer1kOutputTokens: 0.002451,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "xhigh"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("glm-5.3", PROVIDER, {
   	name: "GLM-5.3",
   	matchingModel: "glm-5.3",
   	family: "glm",
-  	openWeights: false,
+  	openWeights: true,
   	releaseDate: "August 14, 2026",
   	lastUpdated: "August 14, 2026",
   	modalities: {
@@ -3758,8 +3758,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.00175,
   	costPer1kOutputTokens: 0.004499,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   }),
 
@@ -3783,8 +3783,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.000201,
   	costPer1kOutputTokens: 0.0005,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   }),
 
@@ -3808,8 +3808,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.000201,
   	costPer1kOutputTokens: 0.0005,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "xhigh"],
+  		defaultEffort: "low",
   	},
   }),
 ]);

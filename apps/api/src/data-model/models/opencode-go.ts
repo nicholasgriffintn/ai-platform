@@ -24,8 +24,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00022,
     costPer1kOutputTokens: 0.00066,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "high", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["tool_use"],
     contextComplexity: 5,
@@ -60,8 +60,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00066,
     costPer1kOutputTokens: 0.00198,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high", "max"],
+    	defaultEffort: "high",
     },
     strengths: ["tool_use"],
     contextComplexity: 5,
@@ -440,8 +440,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0014,
     costPer1kOutputTokens: 0.0044,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high", "max"],
+    	defaultEffort: "high",
     },
     strengths: ["coding", "tool_use"],
     contextComplexity: 5,
@@ -476,8 +476,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.003,
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["max"],
+    	defaultEffort: "max",
     },
   }),
   createModelConfig("hy3", PROVIDER, {
@@ -503,8 +503,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "high"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 33.6,
@@ -534,8 +534,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0002,
     costPer1kOutputTokens: 0.0012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "none",
     },
   }),
   createModelConfig("qwen3.8-max", PROVIDER, {
@@ -558,15 +558,15 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "xhigh"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("glm-5.3", PROVIDER, {
     name: "GLM-5.3",
     matchingModel: "glm-5.3",
     family: "glm",
-    openWeights: false,
+    openWeights: true,
     releaseDate: "August 14, 2026",
     lastUpdated: "August 14, 2026",
     modalities: {
@@ -582,8 +582,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0014,
     costPer1kOutputTokens: 0.0044,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "high", "max"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("muse-spark-1.2", PROVIDER, {
@@ -630,8 +630,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.0001,
   	costPer1kOutputTokens: 0.0002,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["minimal", "low", "medium", "high", "xhigh"],
+  		defaultEffort: "minimal",
   	},
   }),
   createModelConfig("deepseek-v4-flash-vision-exp", PROVIDER, {
@@ -654,8 +654,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.00022,
   	costPer1kOutputTokens: 0.00066,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   }),
 
@@ -702,8 +702,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.000075,
   	costPer1kOutputTokens: 0.00025,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   }),
 
@@ -728,8 +728,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.002,
   	costPer1kOutputTokens: 0.006,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+  		defaultEffort: "low",
   	},
   }),
 
@@ -752,7 +752,7 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.000834,
   	costPer1kOutputTokens: 0.002501,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "high"],
   		defaultEffort: "none",
   	},
   }),
@@ -777,8 +777,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.00015,
   	costPer1kOutputTokens: 0.00047,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "xhigh"],
+  		defaultEffort: "low",
   	},
   }),
 ]);

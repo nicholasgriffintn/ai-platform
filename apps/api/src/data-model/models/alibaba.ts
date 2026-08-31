@@ -76,8 +76,8 @@ export const alibabaModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0004,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["high", "max"],
+			defaultEffort: "high",
 		},
 	}),
 
@@ -101,7 +101,7 @@ export const alibabaModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0014,
 		costPer1kOutputTokens: 0.0044,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
+			supportedEffortLevels: ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
 			defaultEffort: "none",
 		},
 		strengths: ["coding", "tool_use"],
@@ -1480,8 +1480,8 @@ export const alibabaModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00047,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["low", "medium", "xhigh"],
+			defaultEffort: "low",
 		},
 	}),
 
@@ -1505,8 +1505,8 @@ export const alibabaModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["low", "medium", "xhigh"],
+			defaultEffort: "low",
 		},
 	}),
 

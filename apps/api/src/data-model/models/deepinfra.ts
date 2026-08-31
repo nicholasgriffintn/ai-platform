@@ -371,8 +371,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.000037,
     costPer1kOutputTokens: 0.00017,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["tool_use"],
     contextComplexity: 3,
@@ -406,8 +406,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00003,
     costPer1kOutputTokens: 0.00014,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["tool_use"],
     contextComplexity: 3,
@@ -514,8 +514,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00009,
     costPer1kOutputTokens: 0.00018,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	defaultEffort: "low",
     },
     strengths: ["tool_use"],
     contextComplexity: 4,
@@ -550,8 +550,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0013,
     costPer1kOutputTokens: 0.0026,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	defaultEffort: "low",
     },
     strengths: ["tool_use"],
     contextComplexity: 4,
@@ -1199,8 +1199,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 51.1,
@@ -1636,8 +1636,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00285,
     costPer1kOutputTokens: 0.01425,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "high", "max"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("google/gemma-4-E4B-it", PROVIDER, {
@@ -1916,8 +1916,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0005,
     costPer1kOutputTokens: 0.003,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high"],
+    	defaultEffort: "none",
     },
   }),
   createModelConfig("ByteDance/Seed-2.0-mini", PROVIDER, {
@@ -2024,8 +2024,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "xhigh"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("Qwen/Qwen3-VL-235B-A22B-Instruct", PROVIDER, {
@@ -2080,15 +2080,15 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0004,
     costPer1kOutputTokens: 0.003,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "xhigh"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("zai-org/GLM-5.3", PROVIDER, {
   	name: "GLM-5.3",
   	matchingModel: "zai-org/GLM-5.3",
   	family: "glm",
-  	openWeights: false,
+  	openWeights: true,
   	releaseDate: "August 14, 2026",
   	lastUpdated: "August 14, 2026",
   	modalities: {
@@ -2104,8 +2104,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.0012,
   	costPer1kOutputTokens: 0.004,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   }),
 
@@ -2129,8 +2129,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.00015,
   	costPer1kOutputTokens: 0.0005,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   }),
 ]);

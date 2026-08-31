@@ -18,8 +18,8 @@ export const metaModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 		strengths: ["reasoning", "coding", "analysis", "tool_use"],
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["minimal", "low", "medium", "high", "xhigh"],
+			defaultEffort: "minimal",
 		},
 		openWeights: false,
 		releaseDate: "August 5, 2026",
@@ -40,8 +40,8 @@ export const metaModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 		strengths: ["reasoning", "coding", "analysis", "tool_use"],
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["minimal", "low", "medium", "high", "xhigh"],
+			defaultEffort: "minimal",
 		},
 		openWeights: false,
 		releaseDate: "April 8, 2026",
@@ -72,8 +72,8 @@ export const metaModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0002,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["minimal", "low", "medium", "high", "xhigh"],
+			defaultEffort: "minimal",
 		},
 	}),
 ]);

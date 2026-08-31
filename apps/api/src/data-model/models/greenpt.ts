@@ -58,7 +58,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.0001596,
   	costPer1kOutputTokens: 0.000399,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   }),
@@ -145,7 +145,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.00057,
   	costPer1kOutputTokens: 0.00171,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   }),
@@ -170,7 +170,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.001254,
   	costPer1kOutputTokens: 0.005016,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   	strengths: ["coding", "tool_use"],
@@ -205,7 +205,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.001254,
   	costPer1kOutputTokens: 0.005016,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   }),
@@ -230,7 +230,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.001254,
   	costPer1kOutputTokens: 0.005016,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   }),
@@ -255,7 +255,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.001254,
   	costPer1kOutputTokens: 0.005016,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   }),
@@ -280,7 +280,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.001254,
   	costPer1kOutputTokens: 0.005016,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   }),
@@ -305,7 +305,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.001254,
   	costPer1kOutputTokens: 0.005016,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   }),
@@ -330,7 +330,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.001254,
   	costPer1kOutputTokens: 0.005016,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   }),
@@ -355,7 +355,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.001254,
   	costPer1kOutputTokens: 0.005016,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   }),
@@ -380,7 +380,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.001254,
   	costPer1kOutputTokens: 0.005016,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   }),
@@ -405,7 +405,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.001254,
   	costPer1kOutputTokens: 0.005016,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   }),
@@ -430,8 +430,8 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.000228,
   	costPer1kOutputTokens: 0.000798,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high"],
+  		defaultEffort: "low",
   	},
   	strengths: ["vision", "document", "tool_use"],
   	contextComplexity: 4,
@@ -486,8 +486,8 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.000399,
   	costPer1kOutputTokens: 0.001083,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high"],
+  		defaultEffort: "low",
   	},
   }),
 
@@ -511,8 +511,8 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.000399,
   	costPer1kOutputTokens: 0.001083,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high"],
+  		defaultEffort: "low",
   	},
   }),
 
@@ -554,8 +554,8 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.000399,
   	costPer1kOutputTokens: 0.000969,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high"],
+  		defaultEffort: "low",
   	},
   }),
 
@@ -580,7 +580,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.0007524,
   	costPer1kOutputTokens: 0.004275,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   	strengths: ["vision", "document", "tool_use"],
@@ -616,7 +616,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.0009006,
   	costPer1kOutputTokens: 0.004389,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   	strengths: ["tool_use", "coding"],
@@ -651,7 +651,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.003762,
   	costPer1kOutputTokens: 0.01881,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   }),
@@ -696,7 +696,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.0001938,
   	costPer1kOutputTokens: 0.001129,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   	strengths: ["tool_use"],
@@ -731,7 +731,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.002052,
   	costPer1kOutputTokens: 0.01026,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "high"],
   		defaultEffort: "none",
   	},
   	strengths: ["vision", "document", "tool_use"],
@@ -881,7 +881,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.000798,
   	costPer1kOutputTokens: 0.004959,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   	strengths: ["tool_use"],
@@ -916,7 +916,7 @@ export const greenPtModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.000342,
   	costPer1kOutputTokens: 0.002052,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   	strengths: ["vision", "document", "tool_use"],

@@ -126,8 +126,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.008,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -212,8 +212,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -247,8 +247,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -615,8 +615,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00125,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -675,8 +675,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00125,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "tool_use"],
     contextComplexity: 4,
@@ -710,8 +710,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00025,
     costPer1kOutputTokens: 0.002,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -745,8 +745,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00005,
     costPer1kOutputTokens: 0.0004,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -781,8 +781,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.015,
     costPer1kOutputTokens: 0.12,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high"],
+    	defaultEffort: "high",
     },
     family: "gpt-pro",
     openWeights: false,
@@ -807,8 +807,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.01,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high"],
+    	defaultEffort: "none",
     },
     strengths: ["vision", "audio", "document", "tool_use"],
     contextComplexity: 4,
@@ -869,8 +869,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.01,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "audio", "tool_use"],
     contextComplexity: 4,
@@ -905,8 +905,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00125,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	defaultEffort: "low",
     },
     family: "gpt-codex",
     openWeights: false,
@@ -931,8 +931,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.002,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "tool_use"],
     contextComplexity: 4,
@@ -967,8 +967,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.014,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -1029,8 +1029,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.014,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "tool_use"],
     contextComplexity: 4,
@@ -2071,8 +2071,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.003,
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -2133,8 +2133,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00175,
     costPer1kOutputTokens: 0.014,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     strengths: ["vision", "tool_use"],
     contextComplexity: 4,
@@ -2169,8 +2169,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0025,
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -2205,8 +2205,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00075,
     costPer1kOutputTokens: 0.0045,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -2241,8 +2241,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0002,
     costPer1kOutputTokens: 0.00125,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -2277,8 +2277,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.03,
     costPer1kOutputTokens: 0.18,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["medium", "high", "xhigh"],
+    	defaultEffort: "medium",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -2311,8 +2311,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.03,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -2583,8 +2583,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.01,
     costPer1kOutputTokens: 0.05,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -2733,8 +2733,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use", "coding"],
     contextComplexity: 5,
@@ -2771,8 +2771,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("gpt-5.6-luna", PROVIDER, {
@@ -2797,8 +2797,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0002,
     costPer1kOutputTokens: 0.0012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -2824,8 +2824,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.03,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -2851,8 +2851,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -2877,8 +2877,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.03,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("claude-opus-5", PROVIDER, {
@@ -2902,8 +2902,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("kimi-k2.7-code", PROVIDER, {
@@ -2963,8 +2963,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.01,
     costPer1kOutputTokens: 0.05,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("claude-opus-4-7", PROVIDER, {
@@ -2991,8 +2991,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 2,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 53.5,

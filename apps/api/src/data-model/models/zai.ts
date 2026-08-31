@@ -420,8 +420,8 @@ export const zaiModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0014,
 		costPer1kOutputTokens: 0.0044,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["high", "max"],
+			defaultEffort: "high",
 		},
 		strengths: ["coding", "tool_use"],
 		contextComplexity: 5,
@@ -439,7 +439,7 @@ export const zaiModelConfig: ModelConfig = createModelConfigObject([
 		name: "GLM-5.3",
 		matchingModel: "glm-5.3",
 		family: "glm",
-		openWeights: false,
+		openWeights: true,
 		releaseDate: "August 14, 2026",
 		lastUpdated: "August 14, 2026",
 		modalities: {
@@ -455,8 +455,8 @@ export const zaiModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0014,
 		costPer1kOutputTokens: 0.0044,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["low", "high", "max"],
+			defaultEffort: "low",
 		},
 	}),
 
@@ -480,8 +480,8 @@ export const zaiModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.00025,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["low", "high", "max"],
+			defaultEffort: "low",
 		},
 	}),
 

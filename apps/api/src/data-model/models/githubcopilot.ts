@@ -370,8 +370,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -466,8 +466,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00025,
     costPer1kOutputTokens: 0.002,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     supportsResponseFormat: true,
     strengths: ["vision", "document", "tool_use"],
@@ -605,8 +605,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -640,8 +640,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.003,
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -676,8 +676,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -711,8 +711,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00175,
     costPer1kOutputTokens: 0.014,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	defaultEffort: "low",
     },
     supportsResponseFormat: true,
     strengths: ["vision", "document", "tool_use"],
@@ -747,8 +747,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0025,
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     supportsResponseFormat: true,
     strengths: ["vision", "document", "tool_use"],
@@ -784,8 +784,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00075,
     costPer1kOutputTokens: 0.0045,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -819,8 +819,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.03,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     supportsResponseFormat: true,
     strengths: ["vision", "document", "tool_use"],
@@ -855,8 +855,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0015,
     costPer1kOutputTokens: 0.009,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
     strengths: ["coding", "vision", "audio", "video", "document", "tool_use"],
     contextComplexity: 4,
@@ -889,8 +889,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -1007,8 +1007,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.01,
     costPer1kOutputTokens: 0.05,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -1042,8 +1042,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("kimi-k2.7-code", PROVIDER, {
@@ -1103,8 +1103,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00075,
     costPer1kOutputTokens: 0.0045,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("gpt-5.6-luna", PROVIDER, {
@@ -1128,8 +1128,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0002,
     costPer1kOutputTokens: 0.0012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -1154,8 +1154,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -1180,8 +1180,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "none",
     },
   }),
   createModelConfig("claude-opus-5", PROVIDER, {
@@ -1205,8 +1205,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("gemini-3.6-flash", PROVIDER, {
@@ -1230,8 +1230,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00075,
     costPer1kOutputTokens: 0.00375,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
   }),
 
@@ -1255,8 +1255,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("kimi-k3", PROVIDER, {
@@ -1279,8 +1279,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.003,
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "high", "max"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("mai-code-1.1-flash", PROVIDER, {
@@ -1302,8 +1302,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0002,
     costPer1kOutputTokens: 0.0012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   }),
   createModelConfig("gemini-3.7-flash", PROVIDER, {
@@ -1327,8 +1327,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00075,
     costPer1kOutputTokens: 0.00375,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   }),
 
@@ -1353,8 +1353,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	defaultEffort: "low",
     },
   }),
 ]);

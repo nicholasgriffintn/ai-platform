@@ -25,8 +25,8 @@ export const openrouterModelConfig: ModelConfig = {
     knowledgeCutoffDate: "June 30, 2024",
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 23.8,
@@ -136,8 +136,8 @@ export const openrouterModelConfig: ModelConfig = {
     multimodal: true,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
     artificialAnalysis: {
       intelligenceIndex: 19.9,
@@ -209,8 +209,8 @@ export const openrouterModelConfig: ModelConfig = {
     isFeatured: false,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
     artificialAnalysis: {
       intelligenceIndex: 15.3,
@@ -246,8 +246,8 @@ export const openrouterModelConfig: ModelConfig = {
     knowledgeCutoffDate: "June 30, 2024",
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 14.9,
@@ -318,8 +318,8 @@ export const openrouterModelConfig: ModelConfig = {
     multimodal: true,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
     artificialAnalysis: {
       intelligenceIndex: 33,
@@ -991,8 +991,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kOutputTokens: 0.025,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -1913,8 +1913,8 @@ export const openrouterModelConfig: ModelConfig = {
     supportsResponseFormat: true,
     costPer1kReasoningTokens: 0.003,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
     strengths: ["vision", "document", "audio", "video", "tool_use"],
     contextComplexity: 4,
@@ -2910,8 +2910,8 @@ export const openrouterModelConfig: ModelConfig = {
     supportsToolCalls: true,
     contextWindow: 262144,
     maxTokens: 235929,
-    costPer1kInputTokens: 0.0006,
-    costPer1kOutputTokens: 0.003,
+    costPer1kInputTokens: 0.00045,
+    costPer1kOutputTokens: 0.00225,
     supportsResponseFormat: true,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
@@ -3255,8 +3255,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kOutputTokens: 0.12,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high"],
+    	defaultEffort: "high",
     },
     family: "gpt-pro",
     openWeights: false,
@@ -3282,8 +3282,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00125,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high"],
+    	defaultEffort: "none",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -3342,8 +3342,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00125,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -3379,8 +3379,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00125,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	defaultEffort: "low",
     },
     family: "gpt-codex",
     openWeights: false,
@@ -3406,8 +3406,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00025,
     costPer1kOutputTokens: 0.002,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -3443,8 +3443,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kOutputTokens: 0.014,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -3503,8 +3503,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00175,
     costPer1kOutputTokens: 0.014,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -3540,8 +3540,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.021,
     costPer1kOutputTokens: 0.168,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["medium", "high", "xhigh"],
+    	defaultEffort: "medium",
     },
     family: "gpt-pro",
     openWeights: false,
@@ -3671,8 +3671,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kOutputTokens: 0.0003,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     family: "gpt-oss",
     openWeights: true,
@@ -5239,8 +5239,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     family: "claude-opus",
     openWeights: false,
@@ -5265,8 +5265,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     family: "claude-sonnet",
     openWeights: false,
@@ -5294,8 +5294,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kReasoningTokens: 0.00375,
     knowledgeCutoffDate: "January 1, 2025",
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     family: "gemini-flash",
     openWeights: false,
@@ -5321,8 +5321,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kOutputTokens: 0.012,
     costPer1kReasoningTokens: 0.012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     family: "gemini-pro",
     openWeights: false,
@@ -5348,8 +5348,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00255,
     costPer1kOutputTokens: 0.01275,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "high", "max"],
+    	defaultEffort: "low",
     },
     family: "kimi",
     openWeights: false,
@@ -5375,8 +5375,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "none",
     },
     family: "gpt",
     openWeights: false,
@@ -5402,8 +5402,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00075,
     costPer1kOutputTokens: 0.0045,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     family: "gpt-mini",
     openWeights: false,
@@ -5829,8 +5829,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -5865,8 +5865,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.03,
     costPer1kOutputTokens: 0.15,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -5904,8 +5904,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kOutputTokens: 0.015,
     isFeatured: false,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -6020,9 +6020,9 @@ export const openrouterModelConfig: ModelConfig = {
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 262144,
-    maxTokens: 235929,
-    costPer1kInputTokens: 0.00022,
-    costPer1kOutputTokens: 0.00085,
+    maxTokens: 80000,
+    costPer1kInputTokens: 0.00025,
+    costPer1kOutputTokens: 0.0008,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",
@@ -6371,8 +6371,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00025,
     costPer1kOutputTokens: 0.002,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
     family: "seed",
     openWeights: false,
@@ -6397,8 +6397,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0001,
     costPer1kOutputTokens: 0.0004,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
     family: "seed",
     openWeights: false,
@@ -6724,12 +6724,12 @@ export const openrouterModelConfig: ModelConfig = {
     supportsResponseFormat: true,
     contextWindow: 1048576,
     maxTokens: 384000,
-    costPer1kInputTokens: 0.00008064,
-    costPer1kOutputTokens: 0.00016128,
+    costPer1kInputTokens: 0.000088606,
+    costPer1kOutputTokens: 0.000177212,
     knowledgeCutoffDate: "May 2025",
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high", "xhigh"],
+    	defaultEffort: "high",
     },
     strengths: ["tool_use"],
     contextComplexity: 5,
@@ -6796,13 +6796,13 @@ export const openrouterModelConfig: ModelConfig = {
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1048576,
-    maxTokens: 384000,
-    costPer1kInputTokens: 0.000498336,
-    costPer1kOutputTokens: 0.000996672,
+    maxTokens: 393216,
+    costPer1kInputTokens: 0.0016,
+    costPer1kOutputTokens: 0.0032,
     knowledgeCutoffDate: "May 2025",
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high", "xhigh"],
+    	defaultEffort: "high",
     },
     strengths: ["tool_use"],
     contextComplexity: 5,
@@ -7014,8 +7014,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0005,
     costPer1kOutputTokens: 0.003,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "high"],
+    	defaultEffort: "minimal",
     },
     strengths: ["vision", "document", "image", "creative"],
     contextComplexity: 3,
@@ -7061,8 +7061,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kReasoningTokens: 0.0015,
     knowledgeCutoffDate: "January 2025",
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
     strengths: ["vision", "document", "audio", "video", "tool_use"],
     contextComplexity: 4,
@@ -7099,8 +7099,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kReasoningTokens: 0.0015,
     knowledgeCutoffDate: "January 2025",
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
     strengths: ["vision", "document", "audio", "video", "tool_use"],
     contextComplexity: 4,
@@ -7137,8 +7137,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kOutputTokens: 0.012,
     costPer1kReasoningTokens: 0.012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "audio", "video", "tool_use"],
     contextComplexity: 4,
@@ -7175,8 +7175,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kOutputTokens: 0.012,
     costPer1kReasoningTokens: 0.012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     family: "gemini-pro",
     openWeights: false,
@@ -7502,8 +7502,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00025,
     costPer1kOutputTokens: 0.00075,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high"],
+    	defaultEffort: "none",
     },
     strengths: ["tool_use"],
     contextComplexity: 3,
@@ -7912,9 +7912,9 @@ export const openrouterModelConfig: ModelConfig = {
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1048576,
-    maxTokens: 16384,
+    maxTokens: 115200,
     costPer1kInputTokens: 0.0002,
-    costPer1kOutputTokens: 0.0008,
+    costPer1kOutputTokens: 0.000696,
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
     reliability: 1,
@@ -8367,8 +8367,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0015,
     costPer1kOutputTokens: 0.0075,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "high"],
+    	defaultEffort: "none",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -8491,8 +8491,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00015,
     costPer1kOutputTokens: 0.0006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "high"],
+    	defaultEffort: "none",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -8873,8 +8873,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.000085,
     costPer1kOutputTokens: 0.0004,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium"],
+    	defaultEffort: "low",
     },
     strengths: ["tool_use"],
     contextComplexity: 4,
@@ -8911,8 +8911,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0,
     costPer1kOutputTokens: 0,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium"],
+    	defaultEffort: "low",
     },
     family: "nemotron",
     openWeights: true,
@@ -9131,11 +9131,11 @@ export const openrouterModelConfig: ModelConfig = {
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1047576,
-    maxTokens: 942818,
+    maxTokens: 32768,
     costPer1kInputTokens: 0.0001,
     costPer1kOutputTokens: 0.0004,
     strengths: ["vision", "document", "tool_use"],
-    contextComplexity: 5,
+    contextComplexity: 4,
     reliability: 1,
     speed: 5,
     artificialAnalysis: {
@@ -9322,8 +9322,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00175,
     costPer1kOutputTokens: 0.014,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -9374,8 +9374,8 @@ export const openrouterModelConfig: ModelConfig = {
     speed: 4,
     multimodal: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 27.7,
@@ -9406,8 +9406,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.008,
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     family: "gpt",
     openWeights: false,
@@ -9448,8 +9448,8 @@ export const openrouterModelConfig: ModelConfig = {
     speed: 4,
     multimodal: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 16.6,
@@ -9494,8 +9494,8 @@ export const openrouterModelConfig: ModelConfig = {
     speed: 4,
     multimodal: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 17.6,
@@ -9542,8 +9542,8 @@ export const openrouterModelConfig: ModelConfig = {
     speed: 2,
     multimodal: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["medium", "high", "xhigh"],
+    	defaultEffort: "medium",
     },
     artificialAnalysis: {
       intelligenceIndex: null,
@@ -9592,8 +9592,8 @@ export const openrouterModelConfig: ModelConfig = {
     speed: 3,
     multimodal: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 35.4,
@@ -9640,8 +9640,8 @@ export const openrouterModelConfig: ModelConfig = {
     speed: 2,
     multimodal: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["medium", "high", "xhigh"],
+    	defaultEffort: "medium",
     },
     artificialAnalysis: {
       intelligenceIndex: null,
@@ -9916,8 +9916,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0011,
     costPer1kOutputTokens: 0.0044,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high"],
+    	defaultEffort: "high",
     },
     strengths: ["document", "tool_use"],
     contextComplexity: 4,
@@ -10017,8 +10017,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0011,
     costPer1kOutputTokens: 0.0044,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high"],
+    	defaultEffort: "high",
     },
     family: "o",
     openWeights: false,
@@ -11642,8 +11642,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00018,
     costPer1kOutputTokens: 0.0006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "high"],
+    	defaultEffort: "none",
     },
     strengths: ["tool_use"],
     contextComplexity: 4,
@@ -11883,8 +11883,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00125,
     costPer1kOutputTokens: 0.0025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	defaultEffort: "low",
     },
     family: "grok",
     openWeights: false,
@@ -11911,8 +11911,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00125,
     costPer1kOutputTokens: 0.0025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high"],
+    	defaultEffort: "none",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -12274,8 +12274,8 @@ export const openrouterModelConfig: ModelConfig = {
     speed: 3,
     multimodal: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
     artificialAnalysis: {
       intelligenceIndex: 50.2,
@@ -12366,8 +12366,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -12418,8 +12418,8 @@ export const openrouterModelConfig: ModelConfig = {
     speed: 2,
     multimodal: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 55.7,
@@ -12486,8 +12486,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0002,
     costPer1kOutputTokens: 0.00115,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     knowledgeCutoffDate: "March 1, 2026",
     strengths: ["vision", "video", "document", "tool_use"],
@@ -12611,8 +12611,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0005,
     costPer1kOutputTokens: 0.0022,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["medium", "high"],
+    	defaultEffort: "medium",
     },
     strengths: ["tool_use"],
     contextComplexity: 3,
@@ -12648,8 +12648,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0,
     costPer1kOutputTokens: 0,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["medium", "high"],
+    	defaultEffort: "medium",
     },
     family: "nemotron",
     openWeights: true,
@@ -12724,8 +12724,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.01,
     costPer1kOutputTokens: 0.05,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     family: "claude-fable",
     openWeights: false,
@@ -12751,8 +12751,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.01,
     costPer1kOutputTokens: 0.05,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use", "coding"],
     contextComplexity: 5,
@@ -12821,8 +12821,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00119,
     costPer1kOutputTokens: 0.00374,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high", "xhigh"],
+    	defaultEffort: "high",
     },
     strengths: ["coding", "tool_use"],
     contextComplexity: 5,
@@ -12940,8 +12940,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0005,
     costPer1kOutputTokens: 0.003,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "high"],
+    	defaultEffort: "minimal",
     },
     strengths: ["vision", "document", "image", "creative"],
     contextComplexity: 3,
@@ -13061,8 +13061,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.03,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high", "xhigh", "max"],
+    	defaultEffort: "high",
     },
     family: "fugu",
   },
@@ -13088,8 +13088,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
   },
 
@@ -13115,8 +13115,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00025,
     costPer1kOutputTokens: 0.0015,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "high"],
+    	defaultEffort: "minimal",
     },
   },
   "poolside/laguna-xs-2.1": {
@@ -13222,8 +13222,8 @@ export const openrouterModelConfig: ModelConfig = {
     reliability: 1,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "high"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 33.6,
@@ -13339,8 +13339,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	defaultEffort: "low",
     },
   },
 
@@ -13365,8 +13365,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   },
   "cognitivecomputations/dolphin-mistral-24b-venice-edition": {
@@ -13414,8 +13414,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0002,
     costPer1kOutputTokens: 0.0012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "none",
     },
   },
 
@@ -13441,8 +13441,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0002,
     costPer1kOutputTokens: 0.0012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "none",
     },
   },
 
@@ -13468,8 +13468,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "none",
     },
   },
 
@@ -13495,8 +13495,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "none",
     },
   },
 
@@ -13522,8 +13522,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "none",
     },
   },
 
@@ -13549,8 +13549,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "none",
     },
   },
   "kwaipilot/kat-coder-air-v2.5": {
@@ -13617,8 +13617,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00125,
     costPer1kOutputTokens: 0.00425,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "minimal",
     },
   },
 
@@ -13646,8 +13646,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.003,
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "high", "max"],
+    	defaultEffort: "low",
     },
   },
   "thinkingmachines/inkling": {
@@ -13671,8 +13671,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.001,
     costPer1kOutputTokens: 0.00405,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "minimal", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   },
   "meituan/longcat-2.0": {
@@ -13723,8 +13723,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kOutputTokens: 0.0025,
     costPer1kReasoningTokens: 0.0025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
   },
 
@@ -13753,8 +13753,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kOutputTokens: 0.00375,
     costPer1kReasoningTokens: 0.00375,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
   },
 
@@ -13858,8 +13858,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
   },
 
@@ -13885,8 +13885,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.01,
     costPer1kOutputTokens: 0.05,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
   },
   "qwen/qwen3.7-flash": {
@@ -13934,8 +13934,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00045,
     costPer1kOutputTokens: 0.0012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "minimal", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     family: "ling",
   },
@@ -13960,8 +13960,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00003,
     costPer1kOutputTokens: 0.00016,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "high", "max"],
+    	defaultEffort: "low",
     },
   },
   "qwen/qwen3.8-max": {
@@ -13985,8 +13985,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "minimal",
     },
   },
   "inclusionai/ling-3.0-flash": {
@@ -14036,8 +14036,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00125,
     costPer1kOutputTokens: 0.00425,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "minimal",
     },
   },
   "inclusionai/ling-3.0-tiny:free": {
@@ -14088,8 +14088,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0003,
     costPer1kOutputTokens: 0.0012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	defaultEffort: "low",
     },
   },
 
@@ -14113,8 +14113,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00095,
     costPer1kOutputTokens: 0.004,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "high"],
+    	defaultEffort: "none",
     },
     family: "sakana-namazu",
   },
@@ -14165,8 +14165,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0005,
     costPer1kOutputTokens: 0.003,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   },
 
@@ -14296,8 +14296,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "xhigh"],
+    	defaultEffort: "low",
     },
   },
 
@@ -14326,8 +14326,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	defaultEffort: "low",
     },
   },
   "dots-studio/dots-3-note-preview:free": {
@@ -14382,8 +14382,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kOutputTokens: 0.00375,
     costPer1kReasoningTokens: 0.00375,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   },
   "qwen/qwen3.8-27b": {
@@ -14407,8 +14407,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.000425,
     costPer1kOutputTokens: 0.00255,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "xhigh"],
+    	defaultEffort: "low",
     },
   },
   "z-ai/glm-5.2:free": {
@@ -14437,8 +14437,8 @@ export const openrouterModelConfig: ModelConfig = {
     speed: 4,
     isFree: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high", "xhigh"],
+    	defaultEffort: "high",
     },
     artificialAnalysis: {
       intelligenceIndex: 51.1,
@@ -14452,7 +14452,7 @@ export const openrouterModelConfig: ModelConfig = {
     matchingModel: "z-ai/glm-5.3",
     provider: "openrouter",
     family: "glm",
-    openWeights: false,
+    openWeights: true,
     releaseDate: "August 14, 2026",
     lastUpdated: "August 14, 2026",
     modalities: {
@@ -14468,8 +14468,8 @@ export const openrouterModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0014,
     costPer1kOutputTokens: 0.0044,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "high", "max"],
+    	defaultEffort: "low",
     },
   },
   "~z-ai/glm-latest": {
@@ -14493,8 +14493,8 @@ export const openrouterModelConfig: ModelConfig = {
   	costPer1kInputTokens: 0.0011875,
   	costPer1kOutputTokens: 0.00418,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   },
   "stealth/ox-alpha": {
@@ -14587,8 +14587,8 @@ export const openrouterModelConfig: ModelConfig = {
   	costPer1kInputTokens: 0.00022,
   	costPer1kOutputTokens: 0.00066,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   },
 
@@ -14613,8 +14613,8 @@ export const openrouterModelConfig: ModelConfig = {
   	costPer1kInputTokens: 0.0001,
   	costPer1kOutputTokens: 0.0002,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["minimal", "low", "medium", "high", "xhigh"],
+  		defaultEffort: "minimal",
   	},
   },
 
@@ -14640,7 +14640,7 @@ export const openrouterModelConfig: ModelConfig = {
   	costPer1kOutputTokens: 0,
   	isFree: true,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high", "max"],
   		defaultEffort: "none",
   	},
   },
@@ -14667,7 +14667,7 @@ export const openrouterModelConfig: ModelConfig = {
   	costPer1kOutputTokens: 0,
   	isFree: true,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high", "max"],
   		defaultEffort: "none",
   	},
   },
@@ -14785,8 +14785,8 @@ export const openrouterModelConfig: ModelConfig = {
   	supportsResponseFormat: true,
   	contextWindow: 262144,
   	maxTokens: 209715,
-  	costPer1kInputTokens: 0.00044,
-  	costPer1kOutputTokens: 0.0022,
+  	costPer1kInputTokens: 0.0004,
+  	costPer1kOutputTokens: 0.002,
   	strengths: ["document", "tool_use"],
   	contextComplexity: 4,
   	reliability: 1,
@@ -14894,7 +14894,7 @@ export const openrouterModelConfig: ModelConfig = {
   	costPer1kInputTokens: 0.000834,
   	costPer1kOutputTokens: 0.002501,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "low", "high"],
   		defaultEffort: "none",
   	},
   },
@@ -14920,8 +14920,8 @@ export const openrouterModelConfig: ModelConfig = {
   	costPer1kInputTokens: 0.000075,
   	costPer1kOutputTokens: 0.00025,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   },
 };
