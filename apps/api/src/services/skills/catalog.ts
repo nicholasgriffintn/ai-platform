@@ -2,9 +2,10 @@ import { skillSummarySchema, type SkillSummary } from "@ngriffin_uk/polychat-sch
 
 import { builtInSkillDocuments } from "~/data-model/skills";
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { AuthoredSkillScope } from "~/repositories/AuthoredSkillRepository";
 
 import { parseSkillDocument, parseUserSkillDocument, validateSkillResourcePath } from "./document";
-import { SkillDocumentStorage, type SkillStorageScope } from "./storage";
+import { listStoredStableSkillDocuments } from "./persistence";
 import {
   toSkillDefinition,
   toSkillSummary,
@@ -191,34 +192,22 @@ const skillCatalog = new SkillCatalog(builtInSkillDocuments);
 
 export async function resolveSkillCatalog(
   context: ServiceContext,
-  scope: SkillStorageScope,
+  scope: AuthoredSkillScope,
   enabledNames?: ReadonlySet<string>,
 ): Promise<SkillCatalog> {
-  const storage = new SkillDocumentStorage(context);
-  const stored = await storage.list(scope);
+  const stored = await listStoredStableSkillDocuments(context, scope);
   const builtInNames = new Set(skillCatalog.listDefinitions().map((skill) => skill.id));
   const selected = stored.filter(
     (skill) => !builtInNames.has(skill.name) && (!enabledNames || enabledNames.has(skill.name)),
   );
-  const documents = await Promise.all(
-    selected.map(async (skill): Promise<SkillCatalogDocument | null> => {
-      const document = await storage.get(scope, skill.name);
+  const documents = selected.map((document): SkillCatalogDocument => ({
+    directory: document.name,
+    rawContent: document.content,
+    trust: "user-authored",
+    resources: document.resources,
+  }));
 
-      return document
-        ? {
-            directory: skill.name,
-            rawContent: document.content,
-            trust: "user-authored",
-            resources: document.resources,
-          }
-        : null;
-    }),
-  );
-
-  return new SkillCatalog([
-    ...builtInSkillDocuments,
-    ...documents.filter((document): document is SkillCatalogDocument => document !== null),
-  ]);
+  return new SkillCatalog([...builtInSkillDocuments, ...documents]);
 }
 
 export async function listSkillDefinitions(): Promise<SkillDefinition[]> {
