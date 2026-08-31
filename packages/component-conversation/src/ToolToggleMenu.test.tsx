@@ -10,7 +10,7 @@ describe("ToolToggleMenu", () => {
     const onToggle = vi.fn();
 
     render(
-      <div onPointerDown={onParentPointerDown} onClick={onParentClick}>
+      <div role="presentation" onPointerDown={onParentPointerDown} onClick={onParentClick}>
         <ToolToggleMenu
           showHeading={false}
           options={[

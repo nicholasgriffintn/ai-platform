@@ -53,7 +53,11 @@ export function ProjectOverview({
   }
 
   if (error || !project) {
-    return <div className="p-10 text-sm text-red-700">{error?.message ?? "Project not found"}</div>;
+    return (
+      <div role="alert" className="p-10 text-sm text-red-700">
+        {error?.message ?? "Project not found"}
+      </div>
+    );
   }
 
   const canManage = workspace?.role === "owner" || workspace?.role === "admin";
@@ -174,7 +178,9 @@ export function ProjectOverview({
         }}
       >
         {archiveProject.error && (
-          <p className="text-sm text-red-700 dark:text-red-400">{archiveProject.error.message}</p>
+          <p role="alert" className="text-sm text-red-700 dark:text-red-400">
+            {archiveProject.error.message}
+          </p>
         )}
       </ConfirmationDialog>
     </>

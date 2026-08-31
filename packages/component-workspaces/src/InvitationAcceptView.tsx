@@ -56,9 +56,17 @@ export function InvitationAcceptView({
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
           {acceptedWorkspace ? `Welcome to ${acceptedWorkspace.name}` : "Workspace invitation"}
         </h1>
-        {!hasToken && <p className="text-sm text-red-700">This invitation link is incomplete.</p>}
+        {!hasToken && (
+          <p role="alert" className="text-sm text-red-700">
+            This invitation link is incomplete.
+          </p>
+        )}
         {isAccepting && <p className="text-sm text-zinc-500">Checking your invitation…</p>}
-        {errorMessage && <p className="text-sm text-red-700">{errorMessage}</p>}
+        {errorMessage && (
+          <p role="alert" className="text-sm text-red-700">
+            {errorMessage}
+          </p>
+        )}
         {acceptedWorkspace && (
           <Button onClick={() => onOpenWorkspace(acceptedWorkspace.id)}>Open workspace</Button>
         )}

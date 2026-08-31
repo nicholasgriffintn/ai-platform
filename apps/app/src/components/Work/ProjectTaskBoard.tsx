@@ -124,7 +124,9 @@ export function ProjectTaskBoard({
         {isLoading ? (
           <p className="text-sm text-zinc-500">Loading project tasks…</p>
         ) : error ? (
-          <p className="text-sm text-red-700 dark:text-red-400">{error.message}</p>
+          <p role="alert" className="text-sm text-red-700 dark:text-red-400">
+            {error.message}
+          </p>
         ) : (
           <TaskBoard
             tasks={tasks}

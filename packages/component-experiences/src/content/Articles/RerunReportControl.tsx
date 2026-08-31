@@ -43,7 +43,10 @@ export function RerunReportControl({
       </Button>
 
       {errorMessage && (
-        <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm rounded">
+        <div
+          role="alert"
+          className="mt-2 p-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm rounded"
+        >
           {errorMessage}
         </div>
       )}

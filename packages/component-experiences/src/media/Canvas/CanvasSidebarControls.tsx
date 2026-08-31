@@ -168,7 +168,10 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
 
           <div className="shrink-0 space-y-2 border-t border-zinc-200/80 bg-white/95 pt-2 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95">
             {canvas.error && (
-              <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300">
+              <p
+                role="alert"
+                className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300"
+              >
                 {canvas.error instanceof Error
                   ? canvas.error.message
                   : "Could not load Canvas resources."}

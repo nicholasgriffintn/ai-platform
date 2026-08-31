@@ -65,7 +65,9 @@ export const AIFormattingModal = memo(function AIFormattingModal({
                   <Loader2 className="animate-spin text-gray-500" />
                 </div>
               ) : formatNoteMutation.status === "error" ? (
-                <p className="text-red-500 p-4">Formatting failed. Try again.</p>
+                <p role="alert" className="text-red-500 p-4">
+                  Formatting failed. Try again.
+                </p>
               ) : (
                 <>
                   <label htmlFor="ai-result" className="sr-only">
