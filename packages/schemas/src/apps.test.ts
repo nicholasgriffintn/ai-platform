@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { contentExtractSchema, recipeInstallationUpdateRequestSchema } from "./apps";
+import { buildAssistantActionCatalog, type AssistantActionAgentSource } from "./assistant-actions";
 import {
   deleteEmbeddingSchema,
   insertEmbeddingSchema,
@@ -221,5 +222,66 @@ describe("embedding provider configuration schemas", () => {
         urls: Array.from({ length: 11 }, (_, index) => `https://example.com/${index}`),
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("agent capability descriptors", () => {
+  const baseAgent: AssistantActionAgentSource = {
+    id: "agent-1",
+    name: "Researcher",
+    description: "Reads long documents.",
+    avatarUrl: null,
+    model: "claude-sonnet",
+    modelAvailable: true,
+    mode: "plan",
+    ownerScopeType: "user",
+    skillIds: [],
+    toolIds: [],
+    unavailableSkillIds: [],
+    unavailableToolIds: [],
+  };
+
+  function describeAgent(agent: AssistantActionAgentSource) {
+    const [item] = buildAssistantActionCatalog({ agents: [agent] }).items;
+
+    return item;
+  }
+
+  it("reports an agent unavailable and says why when its model cannot be run", () => {
+    const item = describeAgent({ ...baseAgent, modelAvailable: false });
+
+    expect(item.capability.availability).toBe("unavailable");
+    expect(item.capability.availabilityReason).toContain("claude-sonnet");
+  });
+
+  it("names the skills and tools this scope cannot give the agent", () => {
+    const item = describeAgent({
+      ...baseAgent,
+      skillIds: ["artifacts"],
+      unavailableSkillIds: ["artifacts"],
+    });
+
+    expect(item.capability.availability).toBe("unavailable");
+    expect(item.capability.availabilityReason).toContain("artifacts");
+  });
+
+  it("requires tool calling only from an agent that carries skills or tools", () => {
+    expect(describeAgent(baseAgent).capability.requiredModelCapabilities).toEqual([]);
+    expect(
+      describeAgent({ ...baseAgent, toolIds: ["web_search"] }).capability.requiredModelCapabilities,
+    ).toEqual(["supportsToolCalls"]);
+  });
+
+  it("separates a workspace agent from a personal one by auth and category", () => {
+    const personal = describeAgent(baseAgent);
+    const workspace = describeAgent({ ...baseAgent, ownerScopeType: "workspace" });
+
+    expect(personal.capability.authRequirement).toBe("signed_in");
+    expect(personal.metadata?.category).toBe("Personal");
+    expect(workspace.capability.authRequirement).toBe("pro");
+    expect(workspace.capability.authState).toBe("pro_required");
+    expect(workspace.metadata?.category).toBe("Workspace");
+    expect(workspace.capability.tags).toContain("workspace");
+    expect(workspace.capability.tags).toContain("plan");
   });
 });

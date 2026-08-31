@@ -9,11 +9,14 @@ import {
   ConfirmationDialog,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
-import { Plus, SearchX } from "lucide-react";
-import { useMemo, useState } from "react";
+import { SearchX } from "lucide-react";
 
 import { AddSkillDialog } from "~/components/Capabilities/AddSkillDialog";
+import { AttachAgentDialog } from "~/components/Capabilities/AttachAgentDialog";
 import { CapabilityGroups } from "~/components/Capabilities/CapabilityGroups";
+import { ShareAgentDialog } from "~/components/Capabilities/ShareAgentDialog";
+import { SharedAgentsDialog } from "~/components/Capabilities/SharedAgentsDialog";
+import { useCapabilityAuthoring } from "~/components/Capabilities/useCapabilityAuthoring";
 import {
   useCapabilityLibraryController,
   type CapabilityLibraryScope,
@@ -24,9 +27,15 @@ import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { isAuthenticationError } from "~/lib/errors";
 
 export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryProps) {
-  const [addSkillOpen, setAddSkillOpen] = useState(false);
-  const [skillToDelete, setSkillToDelete] = useState<{ id: string; label: string } | null>(null);
   const controller = useCapabilityLibraryController(scope);
+  const authoring = useCapabilityAuthoring({
+    capabilities: controller.capabilities,
+    currentUserId: controller.currentUserId,
+    projectActions: controller.projectActions,
+    projectAddError: controller.projectMutations?.add.error,
+    skillDeletion: controller.skillDeletion,
+    surface: controller.surface,
+  });
   const isLoading = controller.isLoadingScope || controller.catalog.isLoading;
   const recipeWorkflows = controller.recipes.workflows;
   const mutationError =
@@ -45,27 +54,11 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
     isAuthenticationError(controller.scopeError) ||
     isAuthenticationError(controller.catalog.error) ||
     isAuthenticationError(mutationError);
-  const canManageAuthoredSkills = controller.surface.projectId
-    ? controller.projectActions?.canManage === true
-    : Boolean(controller.currentUserId);
-  const headerActions = useMemo(
-    () =>
-      canManageAuthoredSkills
-        ? [
-            {
-              label: "Add skill",
-              icon: <Plus className="h-4 w-4" />,
-              onClick: () => setAddSkillOpen(true),
-            },
-          ]
-        : undefined,
-    [canManageAuthoredSkills],
-  );
 
   return (
     <>
       <PageShell.Content className="max-w-6xl">
-        <PageShell.Header title={title} actions={headerActions} />
+        <PageShell.Header title={title} actions={authoring.headerActions} />
         <p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">{subtitle}</p>
         <CapabilityFilters
           categories={controller.filters.categories}
@@ -120,14 +113,8 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
             toolById={controller.catalog.toolById}
             toolConfigurationById={controller.toolConfigurationById}
             surface={controller.surface}
-            authoredSkillActions={{
-              canDelete: canManageAuthoredSkills,
-              onDelete: (id, label) => {
-                controller.skillDeletion.reset();
-                setSkillToDelete({ id, label });
-              },
-              pendingSkillId: controller.skillDeletion.pendingSkillId,
-            }}
+            agentActions={authoring.agentActions}
+            authoredSkillActions={authoring.authoredSkillActions}
           />
         )}
       </PageShell.Content>
@@ -174,35 +161,43 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
         tool={controller.toolConfigurationDialog.tool}
       />
       <AddSkillDialog
-        open={addSkillOpen}
-        onOpenChange={setAddSkillOpen}
+        open={authoring.addSkill.open}
+        onOpenChange={authoring.addSkill.setOpen}
         projectId={controller.surface.projectId}
       />
+      <SharedAgentsDialog
+        open={authoring.browseSharedAgents.open}
+        onOpenChange={authoring.browseSharedAgents.setOpen}
+      />
+      <ShareAgentDialog agent={authoring.shareAgent.agent} onClose={authoring.shareAgent.close} />
+      <AttachAgentDialog
+        agents={authoring.attachAgent.agents}
+        error={authoring.attachAgent.error}
+        isLoading={authoring.attachAgent.isLoading}
+        onAttach={authoring.attachAgent.attach}
+        onOpenChange={authoring.attachAgent.setOpen}
+        open={authoring.attachAgent.open}
+        pendingAgentId={pendingAddCapabilityId}
+      />
       <ConfirmationDialog
-        open={skillToDelete !== null}
+        open={authoring.deletion.pending !== null}
         onOpenChange={(open) => {
-          if (!open && !controller.skillDeletion.isPending) {
-            controller.skillDeletion.reset();
-            setSkillToDelete(null);
+          if (!open && !authoring.deletion.isPending) {
+            authoring.deletion.cancel();
           }
         }}
-        title="Delete skill"
-        description={`Delete ${skillToDelete?.label ?? "this skill"}? This cannot be undone.`}
+        title={`Delete ${authoring.deletion.pending?.kind ?? "capability"}`}
+        description={`Delete ${
+          authoring.deletion.pending?.label ?? "this capability"
+        }? This cannot be undone.`}
         confirmText="Delete"
         variant="destructive"
-        isLoading={controller.skillDeletion.isPending}
-        onConfirm={async () => {
-          if (!skillToDelete) {
-            return;
-          }
-
-          await controller.skillDeletion.delete(skillToDelete.id);
-          setSkillToDelete(null);
-        }}
+        isLoading={authoring.deletion.isPending}
+        onConfirm={authoring.deletion.confirm}
       >
-        {controller.skillDeletion.error && (
+        {authoring.deletion.error && (
           <p role="alert" className="text-sm text-red-700 dark:text-red-400">
-            {controller.skillDeletion.error.message}
+            {authoring.deletion.error.message}
           </p>
         )}
       </ConfirmationDialog>

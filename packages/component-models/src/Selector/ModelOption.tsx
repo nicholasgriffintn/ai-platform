@@ -19,7 +19,6 @@ import {
   Info,
   Search,
   Sparkles,
-  Users,
 } from "lucide-react";
 
 import { ModelIcon } from "../ModelIcon/ModelIcon";
@@ -31,7 +30,6 @@ interface ModelOptionProps {
   onClick: () => void;
   disabled?: boolean;
   mono?: boolean;
-  isTeamAgent?: boolean;
   regionOptions?: ModelRegionOption[];
   selectedRegionModelId?: string;
   onRegionSelect?: (modelId: string) => void;
@@ -46,7 +44,6 @@ export const ModelOption = ({
   onClick,
   disabled,
   mono = false,
-  isTeamAgent = false,
   regionOptions = [],
   selectedRegionModelId,
   onRegionSelect,
@@ -142,14 +139,6 @@ export const ModelOption = ({
                 <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium leading-none text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
                   Stealth
                 </span>
-              ) : null}
-              {isTeamAgent ? (
-                <div
-                  className="rounded-full bg-blue-100 p-0.5 dark:bg-blue-900/30"
-                  title="Team Agent"
-                >
-                  <Users size={12} className="text-blue-600 dark:text-blue-400" />
-                </div>
               ) : null}
             </div>
             {model.description ? (

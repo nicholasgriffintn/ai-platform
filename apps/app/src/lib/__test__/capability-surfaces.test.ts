@@ -41,6 +41,14 @@ function capability(overrides: Partial<EnabledCapability> = {}): EnabledCapabili
   };
 }
 
+function agentItem(availability: "available" | "unavailable"): AssistantActionItem {
+  return {
+    kind: "agent",
+    capability: { id: "researcher", availability },
+    metadata: { agentId: "researcher" },
+  } as unknown as AssistantActionItem;
+}
+
 describe("capability surfaces", () => {
   it("builds the same paths for either scope from its base", () => {
     expect(getExperiencePath(PERSONAL_SURFACE, "notes")).toBe("/chat/experiences/notes");
@@ -100,5 +108,18 @@ describe("capability surfaces", () => {
 
     expect(getCapabilityOpenPath(runnable, PERSONAL_SURFACE, [])).toBe("/chat/tools/get_weather");
     expect(getCapabilityOpenPath(modelTool, PERSONAL_SURFACE, [])).toBeNull();
+  });
+
+  it("starts a conversation with an available agent in either scope", () => {
+    const agent = agentItem("available");
+
+    expect(getCapabilityOpenPath(agent, PERSONAL_SURFACE, [])).toBe("/chat?agent=researcher");
+    expect(getCapabilityOpenPath(agent, getProjectSurface("w1", "p1"), [])).toBe(
+      "/work/w1/projects/p1/chat?agent=researcher",
+    );
+  });
+
+  it("offers no way in to a capability the scope cannot run", () => {
+    expect(getCapabilityOpenPath(agentItem("unavailable"), PERSONAL_SURFACE, [])).toBeNull();
   });
 });

@@ -31,7 +31,6 @@ const addMessage = vi.fn();
 function createContext(
   options: {
     goal?: Goal | null;
-    delegationStack?: string[];
     messages?: any[];
     conversationType?: "conversation" | "task";
   } = {},
@@ -48,7 +47,6 @@ function createContext(
       request: {
         completion_id: "conversation-1",
         conversation_type: options.conversationType,
-        delegation_stack: options.delegationStack,
       },
       context: {
         repositories: {
@@ -306,26 +304,6 @@ describe("complete_goal", () => {
     );
 
     expect(result.content).toContain("blocked");
-  });
-
-  it("stops a delegated agent from completing the delegating thread's goal", async () => {
-    const result = await complete_goal.execute(
-      {
-        summary: "I did my bit",
-        evidence: [
-          {
-            claim: "handled the task",
-            route: "delegated work",
-            evidence_surface: "tool result",
-            status: "confirmed",
-          },
-        ],
-      },
-      createContext({ delegationStack: ["agent-1"] }),
-    );
-
-    expect(result.status).toBe("error");
-    expect(result.content).toContain("delegated agent cannot complete the goal");
   });
 
   it("errors when there is no active goal", async () => {

@@ -36,6 +36,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ngriffin_uk/polychat-component-capabilities": "workspace:^",
     "@ngriffin_uk/polychat-component-models": "workspace:^",
     "@ngriffin_uk/polychat-component-ui": "workspace:^",
     "@ngriffin_uk/polychat-library-react": "workspace:^",

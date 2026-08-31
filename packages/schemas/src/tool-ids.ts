@@ -1,4 +1,9 @@
+import z from "zod/v4";
+
 const TOOL_ID_PATTERN = /^[a-zA-Z0-9_:-]+$/;
+
+export const toolIdSchema = z.string().regex(TOOL_ID_PATTERN);
+export const toolIdsSchema = z.array(toolIdSchema);
 
 export function normaliseToolIds(value: string | string[] | undefined): string[] {
   const rawTools = Array.isArray(value) ? value : (value ?? "").split(",");

@@ -11,8 +11,81 @@ import type {
 
 import { fetchApi } from "../fetch-wrapper";
 
+function toAgentPayload(data: CreateAgentInput | UpdateAgentInput) {
+  return {
+    name: data.name,
+    description: data.description,
+    avatar_url: data.avatar_url || undefined,
+    servers: data.servers,
+    model: data.model,
+    temperature: data.temperature,
+    max_steps: data.max_steps,
+    system_prompt: data.system_prompt,
+    few_shot_examples: data.few_shot_examples,
+    enabled_tools: data.enabled_tools,
+    skill_ids: data.skill_ids,
+    mode: data.mode,
+  };
+}
+
 export class AgentService {
   constructor(private getHeaders: () => Promise<Record<string, string>>) {}
+
+  private async authHeaders(operation: string): Promise<Record<string, string>> {
+    try {
+      return await this.getHeaders();
+    } catch (error) {
+      console.error(`Error getting headers for ${operation}:`, error);
+
+      return {};
+    }
+  }
+
+  async getAgent(agentId: string): Promise<AgentResponse> {
+    let headers: Record<string, string> = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting headers for getAgent:", error);
+    }
+
+    const response = await fetchApi(`/agents/${agentId}`, { method: "GET", headers });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(
+        response,
+        `Failed to load agent: ${response.statusText}`,
+      );
+    }
+
+    return returnFetchedData<AgentResponse>(response);
+  }
+
+  async publishAgentToWorkspace(agentId: string, workspaceId: string): Promise<AgentResponse> {
+    let headers: Record<string, string> = {};
+
+    try {
+      headers = await this.getHeaders();
+    } catch (error) {
+      console.error("Error getting headers for publishAgentToWorkspace:", error);
+    }
+
+    const response = await fetchApi(`/agents/${agentId}/publish/workspace`, {
+      method: "POST",
+      headers,
+      body: { workspace_id: workspaceId },
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(
+        response,
+        `Failed to publish agent: ${response.statusText}`,
+      );
+    }
+
+    return returnFetchedData<AgentResponse>(response);
+  }
 
   async listAgents(): Promise<AgentResponse[]> {
     let headers: Record<string, string> = {};
@@ -114,16 +187,41 @@ export class AgentService {
     return responseData || [];
   }
 
-  async installSharedAgent(agentId: string): Promise<unknown> {
-    const response = await fetchApi(`/agents/shared/${agentId}/install`, {
+  async installSharedAgent(sharedAgentId: string): Promise<unknown> {
+    const response = await fetchApi(`/agents/shared/${sharedAgentId}/install`, {
       method: "POST",
+      headers: await this.authHeaders("installSharedAgent"),
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to install shared agent: ${response.statusText}`);
+      throw await createApiErrorFromResponse(
+        response,
+        `Failed to install shared agent: ${response.statusText}`,
+      );
     }
 
     return returnFetchedData<unknown>(response);
+  }
+
+  async getSharedAgentListingForAgent(agentId: string): Promise<SharedAgentSummary | null> {
+    const response = await fetchApi(`/agents/shared/check/${agentId}`, {
+      method: "GET",
+      headers: await this.authHeaders("getSharedAgentListingForAgent"),
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(
+        response,
+        `Failed to check agent sharing: ${response.statusText}`,
+      );
+    }
+
+    const responseData = await returnFetchedData<{
+      isShared: boolean;
+      sharedAgent: SharedAgentSummary | null;
+    }>(response);
+
+    return responseData?.sharedAgent ?? null;
   }
 
   async shareAgent(
@@ -144,45 +242,34 @@ export class AgentService {
     };
     const response = await fetchApi(`/agents/shared/share`, {
       method: "POST",
+      headers: await this.authHeaders("shareAgent"),
       body,
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to share agent: ${response.statusText}`);
+      throw await createApiErrorFromResponse(
+        response,
+        `Failed to share agent: ${response.statusText}`,
+      );
     }
 
     return returnFetchedData<unknown>(response);
   }
 
-  async rateSharedAgent(agentId: string, rating: number, review?: string): Promise<unknown> {
-    const body = { rating, review };
-    const response = await fetchApi(`/agents/shared/${agentId}/rate`, {
-      method: "POST",
-      body,
+  async unshareAgent(sharedAgentId: string): Promise<void> {
+    const response = await fetchApi(`/agents/shared/${sharedAgentId}`, {
+      method: "DELETE",
+      headers: await this.authHeaders("unshareAgent"),
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to rate shared agent: ${response.statusText}`);
+      throw await createApiErrorFromResponse(
+        response,
+        `Failed to stop sharing agent: ${response.statusText}`,
+      );
     }
 
-    return returnFetchedData<unknown>(response);
-  }
-
-  async getAgentRatings(agentId: string, limit = 10): Promise<unknown[]> {
-    const params = new URLSearchParams();
-
-    params.append("limit", String(limit));
-    const response = await fetchApi(`/agents/shared/${agentId}/ratings?${params.toString()}`, {
-      method: "GET",
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to get agent ratings: ${response.statusText}`);
-    }
-
-    const responseData = await returnFetchedData<unknown[]>(response);
-
-    return responseData || [];
+    await returnFetchedData<unknown>(response);
   }
 
   async getSharedCategories(): Promise<string[]> {
@@ -220,26 +307,10 @@ export class AgentService {
       console.error("Error getting headers for createAgent:", error);
     }
 
-    const body = {
-      name: data.name,
-      description: data.description || undefined,
-      avatar_url: data.avatar_url || undefined,
-      servers: data.servers || undefined,
-      model: data.model || undefined,
-      temperature: data.temperature !== undefined ? data.temperature : undefined,
-      max_steps: data.max_steps !== undefined ? data.max_steps : undefined,
-      system_prompt: data.system_prompt || undefined,
-      few_shot_examples: data.few_shot_examples || undefined,
-      enabled_tools: data.enabled_tools || undefined,
-      team_id: data.team_id || undefined,
-      team_role: data.team_role || undefined,
-      is_team_agent: data.is_team_agent ? data.is_team_agent : undefined,
-    };
-
     const response = await fetchApi("/agents", {
       method: "POST",
       headers,
-      body,
+      body: toAgentPayload(data),
     });
 
     if (!response.ok) {
@@ -258,23 +329,10 @@ export class AgentService {
       console.error("Error getting headers for updateAgent:", error);
     }
 
-    const body = {
-      name: data.name || undefined,
-      description: data.description || undefined,
-      avatar_url: data.avatar_url || undefined,
-      servers: data.servers || undefined,
-      model: data.model || undefined,
-      temperature: data.temperature !== undefined ? data.temperature : undefined,
-      max_steps: data.max_steps !== undefined ? data.max_steps : undefined,
-      system_prompt: data.system_prompt || undefined,
-      few_shot_examples: data.few_shot_examples || undefined,
-      enabled_tools: data.enabled_tools || undefined,
-    };
-
     const response = await fetchApi(`/agents/${agentId}`, {
       method: "PUT",
       headers,
-      body,
+      body: toAgentPayload(data),
     });
 
     if (!response.ok) {

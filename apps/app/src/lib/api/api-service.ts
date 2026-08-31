@@ -203,6 +203,14 @@ class ApiService {
     return this.agentService.listAgents();
   };
 
+  getAgent = (agentId: string): Promise<AgentResponse> => {
+    return this.agentService.getAgent(agentId);
+  };
+
+  publishAgentToWorkspace = (agentId: string, workspaceId: string): Promise<AgentResponse> => {
+    return this.agentService.publishAgentToWorkspace(agentId, workspaceId);
+  };
+
   listSharedAgents = (params?: {
     category?: string;
     tags?: string[];
@@ -219,8 +227,12 @@ class ApiService {
     return this.agentService.listFeaturedSharedAgents(limit);
   };
 
-  installSharedAgent = (agentId: string): Promise<unknown> => {
-    return this.agentService.installSharedAgent(agentId);
+  installSharedAgent = (sharedAgentId: string): Promise<unknown> => {
+    return this.agentService.installSharedAgent(sharedAgentId);
+  };
+
+  getSharedAgentListingForAgent = (agentId: string): Promise<SharedAgentSummary | null> => {
+    return this.agentService.getSharedAgentListingForAgent(agentId);
   };
 
   shareAgent = (
@@ -234,12 +246,8 @@ class ApiService {
     return this.agentService.shareAgent(agentId, name, description, avatarUrl, category, tags);
   };
 
-  rateSharedAgent = (agentId: string, rating: number, review?: string): Promise<unknown> => {
-    return this.agentService.rateSharedAgent(agentId, rating, review);
-  };
-
-  getAgentRatings = (agentId: string, limit = 10): Promise<unknown[]> => {
-    return this.agentService.getAgentRatings(agentId, limit);
+  unshareAgent = (sharedAgentId: string): Promise<void> => {
+    return this.agentService.unshareAgent(sharedAgentId);
   };
 
   getSharedCategories = (): Promise<string[]> => {

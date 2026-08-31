@@ -1,6 +1,7 @@
 import type {
   AgentFewShotExample,
   AgentMcpServer,
+  AgentMode,
   AgentOwnerScopeType,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -25,9 +26,8 @@ export interface CreateAgentRecord {
   systemPrompt?: string | null;
   fewShotExamples?: AgentFewShotExample[] | null;
   enabledTools?: string[] | null;
-  teamId?: string | null;
-  teamRole?: string | null;
-  isTeamAgent?: boolean;
+  skillIds?: string[] | null;
+  mode?: AgentMode | null;
 }
 
 export class AgentRepository extends BaseRepository {
@@ -54,12 +54,11 @@ export class AgentRepository extends BaseRepository {
         system_prompt: record.systemPrompt ?? null,
         few_shot_examples: record.fewShotExamples ?? null,
         enabled_tools: record.enabledTools ?? null,
-        team_id: record.teamId ?? null,
-        team_role: record.teamRole ?? null,
-        is_team_agent: record.isTeamAgent ? 1 : 0,
+        skill_ids: record.skillIds ?? null,
+        mode: record.mode ?? null,
       },
       {
-        jsonFields: ["servers", "few_shot_examples", "enabled_tools"],
+        jsonFields: ["servers", "few_shot_examples", "enabled_tools", "skill_ids"],
         returning: "*",
       },
     );
@@ -93,6 +92,21 @@ export class AgentRepository extends BaseRepository {
     );
   }
 
+  public async getAgentsByIds(agentIds: string[]): Promise<Agent[]> {
+    const uniqueIds = [...new Set(agentIds)];
+
+    if (uniqueIds.length === 0) {
+      return [];
+    }
+
+    return this.runQuery<Agent>(
+      `SELECT * FROM agents
+			 WHERE id IN (${uniqueIds.map(() => "?").join(", ")})
+			 ORDER BY created_at DESC`,
+      uniqueIds,
+    );
+  }
+
   public async getAgentById(agentId: string): Promise<Agent | null> {
     const { query, values } = this.buildSelectQuery("agents", { id: agentId });
 
@@ -104,17 +118,16 @@ export class AgentRepository extends BaseRepository {
     data: Partial<{
       name: string;
       description: string;
-      avatar_url: string;
-      servers: any[];
+      avatar_url: string | null;
+      servers: AgentMcpServer[];
       model: string;
       temperature: number;
       max_steps: number;
       system_prompt: string;
-      few_shot_examples: any[];
+      few_shot_examples: AgentFewShotExample[];
       enabled_tools: string[];
-      team_id: string;
-      team_role: string;
-      is_team_agent: boolean;
+      skill_ids: string[];
+      mode: AgentMode | null;
     }>,
   ): Promise<void> {
     const allowedFields = [
@@ -128,20 +141,15 @@ export class AgentRepository extends BaseRepository {
       "system_prompt",
       "few_shot_examples",
       "enabled_tools",
-      "team_id",
-      "team_role",
-      "is_team_agent",
+      "skill_ids",
+      "mode",
     ];
 
     const result = this.buildUpdateQuery("agents", data, allowedFields, "id = ?", [agentId], {
-      jsonFields: ["servers", "few_shot_examples", "enabled_tools"],
+      jsonFields: ["servers", "few_shot_examples", "enabled_tools", "skill_ids"],
       transformer: (field, value) => {
         if (field === "temperature" && value !== undefined && value !== null) {
           return value.toString();
-        }
-
-        if (field === "is_team_agent" && typeof value === "boolean") {
-          return value ? 1 : 0;
         }
 
         return value;
@@ -168,35 +176,5 @@ export class AgentRepository extends BaseRepository {
     }
 
     await this.executeRun(query, values);
-  }
-
-  public async getTeamAgents(userId: number): Promise<Agent[]> {
-    const { query, values } = this.buildSelectQuery(
-      "agents",
-      { user_id: userId, is_team_agent: 1 },
-      { orderBy: "created_at DESC" },
-    );
-
-    return this.runQuery<Agent>(query, values);
-  }
-
-  public async getAgentsByTeam(teamId: string): Promise<Agent[]> {
-    const { query, values } = this.buildSelectQuery(
-      "agents",
-      { team_id: teamId },
-      { orderBy: "created_at DESC" },
-    );
-
-    return this.runQuery<Agent>(query, values);
-  }
-
-  public async getAgentsByTeamAndUser(teamId: string, userId: number): Promise<Agent[]> {
-    const { query, values } = this.buildSelectQuery(
-      "agents",
-      { team_id: teamId, user_id: userId },
-      { orderBy: "created_at DESC" },
-    );
-
-    return this.runQuery<Agent>(query, values);
   }
 }

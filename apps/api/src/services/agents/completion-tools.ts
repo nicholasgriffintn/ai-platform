@@ -2,6 +2,7 @@ import type { MCPClientManager } from "agents/mcp/client";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { Agent } from "~/lib/database/schema";
+import { readAgentSkillIds } from "~/services/agents/agentResponse";
 import {
   connectMCPServerReady,
   parseMCPServerConfigs,
@@ -11,11 +12,6 @@ import {
 } from "~/services/agents/mcp-client";
 import { request_approval, ask_user } from "~/services/functions/human_in_the_loop";
 import { registerMCPClient } from "~/services/functions/mcp";
-import {
-  delegateToTeamMember,
-  delegateToTeamMemberByRole,
-  getTeamMembers,
-} from "~/services/functions/teamDelegation";
 import type { AssistantPersona, AssistantPersonaExample } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -28,7 +24,7 @@ const CORE_AGENT_TOOLS: ApiToolDefinition[] = [request_approval, ask_user];
 
 type CompletionAgent = Pick<
   Agent,
-  "id" | "servers" | "system_prompt" | "few_shot_examples" | "team_role"
+  "id" | "servers" | "system_prompt" | "few_shot_examples" | "skill_ids"
 >;
 
 export type AgentCompletionToolDefinition =
@@ -44,16 +40,27 @@ export async function buildAgentCompletionTools(
   context: ServiceContext,
 ): Promise<AgentCompletionToolDefinition[]> {
   const mcpFunctions = await setupMCPFunctions(agent, context);
-  const teamDelegationTools = setupTeamDelegationTools(agent);
 
-  return [...CORE_AGENT_TOOLS, ...teamDelegationTools, ...mcpFunctions];
+  return [...CORE_AGENT_TOOLS, ...mcpFunctions];
 }
 
 export function buildAgentPersona(agent: CompletionAgent): AssistantPersona {
   return {
-    instructions: agent.system_prompt || undefined,
+    instructions: buildPersonaInstructions(agent),
     examples: parseFewShotExamples(agent.few_shot_examples),
   };
+}
+
+function buildPersonaInstructions(agent: CompletionAgent): string | undefined {
+  const skillIds = readAgentSkillIds(agent.skill_ids);
+  const sections = [
+    agent.system_prompt?.trim() || undefined,
+    skillIds.length > 0
+      ? `Load these skills before you start and follow them: ${skillIds.join(", ")}.`
+      : undefined,
+  ].filter((section): section is string => Boolean(section));
+
+  return sections.length > 0 ? sections.join("\n\n") : undefined;
 }
 
 function parseFewShotExamples(rawExamples: unknown): AssistantPersonaExample[] {
@@ -157,12 +164,4 @@ async function collectServerTools(
       error_message: error instanceof Error ? error.message : "Unknown error",
     });
   }
-}
-
-function setupTeamDelegationTools(agent: CompletionAgent): ApiToolDefinition[] {
-  if (agent.team_role !== "orchestrator") {
-    return [];
-  }
-
-  return [delegateToTeamMember, delegateToTeamMemberByRole, getTeamMembers];
 }

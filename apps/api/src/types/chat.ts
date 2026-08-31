@@ -297,12 +297,6 @@ type InternalExecutionParams = {
   lang?: string;
   // The body of the request.
   body?: Record<string, any>;
-  // The ID of the current agent, used for team delegation.
-  current_agent_id?: string;
-  // The delegation call stack to prevent infinite loops
-  delegation_stack?: string[];
-  // Maximum delegation depth allowed
-  max_delegation_depth?: number;
   // Tool permissions this turn must seek approval for.
   require_approval_for?: ToolPermission[];
   // Permission policy can differ from the execution mode that controls the agent loop.

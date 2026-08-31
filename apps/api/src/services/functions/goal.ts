@@ -24,17 +24,6 @@ function resolveCompletionId(context: any): string | undefined {
   return context?.request?.request?.completion_id || context?.completionId || undefined;
 }
 
-/**
- * A delegated sub-agent works inside the delegating thread's conversation, so
- * it can see the goal but must not be able to declare it done on work it did
- * not do. Only the owning thread completes its own goal.
- */
-function isDelegatedRun(context: any): boolean {
-  const stack = context?.request?.request?.delegation_stack;
-
-  return Array.isArray(stack) && stack.length > 0;
-}
-
 function isProjectTaskRun(context: any): boolean {
   return context?.request?.request?.conversation_type === "task";
 }
@@ -179,16 +168,6 @@ export const complete_goal: ApiToolDefinition = {
         status: "error",
         name: "complete_goal",
         content: "Goals are not available for this conversation",
-        data: {},
-      };
-    }
-
-    if (isDelegatedRun(context)) {
-      return {
-        status: "error",
-        name: "complete_goal",
-        content:
-          "A delegated agent cannot complete the goal. Report your findings back to the thread that delegated to you, and let it audit the objective.",
         data: {},
       };
     }

@@ -21,9 +21,8 @@ function buildStoredAgent(overrides: Partial<Record<keyof Agent, unknown>> = {})
     system_prompt: null,
     few_shot_examples: null,
     enabled_tools: null,
-    team_id: null,
-    team_role: null,
-    is_team_agent: 0,
+    skill_ids: null,
+    mode: null,
     created_at: "2026-01-01T00:00:00.000Z",
     updated_at: null,
     ...overrides,
@@ -93,10 +92,27 @@ describe("normaliseAgentResponse", () => {
     expect(normaliseAgentResponse(buildStoredAgent({ temperature: null })).temperature).toBeNull();
   });
 
-  it("coerces the stored team flag integer to a boolean", () => {
-    expect(normaliseAgentResponse(buildStoredAgent({ is_team_agent: 1 })).is_team_agent).toBe(true);
-    expect(normaliseAgentResponse(buildStoredAgent({ is_team_agent: 0 })).is_team_agent).toBe(
-      false,
+  it("round-trips the composed capability columns", () => {
+    const response = normaliseAgentResponse(
+      buildStoredAgent({
+        skill_ids: '["research","fact-checking"]',
+        mode: "plan",
+      }),
     );
+
+    expect(response.skill_ids).toEqual(["research", "fact-checking"]);
+    expect(response.mode).toBe("plan");
+  });
+
+  it("drops composed capability entries it cannot trust", () => {
+    const response = normaliseAgentResponse(
+      buildStoredAgent({
+        skill_ids: '["research","Not A Skill Id"]',
+        mode: "orchestrate",
+      }),
+    );
+
+    expect(response.skill_ids).toEqual(["research"]);
+    expect(response.mode).toBeNull();
   });
 });

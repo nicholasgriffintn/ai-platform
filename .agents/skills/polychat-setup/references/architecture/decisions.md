@@ -34,6 +34,8 @@ Read the relevant accepted records before changing product structure, ownership,
 - [0033](decisions/0033-separate-embedding-runtime-and-retrieval-policy.md): Separate embedding generation and vector storage, persist exact vector-space provenance, and keep retrieval model-driven.
 - [0034](decisions/0034-agent-owning-scope.md): Give a saved agent an owning scope of user or workspace, keep `user_id` as the author, and publish to a workspace by copying rather than by reference.
 - [0035](decisions/0035-tool-catalogue-split-from-tool-implementations.md): Split tool descriptors from tool implementations so the provider layer reads the catalogue as data and never imports the provider registry.
+- [0036](decisions/0036-agents-composed-from-platform-capabilities.md): Let a saved agent name skills and a mode, treating each as a request checked at run time rather than a grant, and leave connectors and sources out until a request seam carries them.
+- [0037](decisions/0037-retire-team-agents-for-project-flows.md): Retire team agents and their delegation tools, since project flows already sequence multi-agent work with approval gates and durable stage snapshots.
 
 [context.md](context.md) holds the current domain vocabulary, workspace map, seams, and data flows.
 

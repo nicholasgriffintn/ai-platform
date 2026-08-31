@@ -19,7 +19,6 @@ export interface ComposerAgentOption {
   avatar_url?: string | null;
   model?: string | null;
   enabled_tools?: string[] | null;
-  is_team_agent?: boolean;
 }
 
 export interface ComposerCommandAction {
