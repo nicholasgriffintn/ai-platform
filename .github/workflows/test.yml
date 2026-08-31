@@ -112,3 +112,14 @@ jobs:
             playwright-report
             test-results
           retention-days: 7
+
+  e2e-gate:
+    name: E2E gate
+    if: always()
+    needs: e2e
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check end-to-end result
+        env:
+          E2E_RESULT: ${{ needs.e2e.result }}
+        run: test "$E2E_RESULT" = "success" || test "$E2E_RESULT" = "skipped"
