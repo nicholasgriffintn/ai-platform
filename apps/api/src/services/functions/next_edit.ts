@@ -1,30 +1,10 @@
 import { handleCreateNextEditCompletions } from "~/services/completions/createNextEditCompletions";
 
 import type { ApiToolDefinition } from "../../types/functions";
-import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import { next_edit_completion as next_edit_completionDescriptor } from "./definitions/next_edit";
 
 export const next_edit_completion: ApiToolDefinition = {
-  name: "next_edit_completion",
-  description:
-    "Request the next code edit suggestion from Mercury Coder using contextual project snippets.",
-  type: "premium",
-  costPerCall: 0,
-  permissions: ["network"],
-  inputSchema: jsonSchemaToZod({
-    type: "object",
-    properties: {
-      prompt: {
-        type: "string",
-        description:
-          "Structured prompt containing the current file state, edit history, and target region.",
-      },
-      model: {
-        type: "string",
-        description: "Optional Mercury model to use for the edit (defaults to the best available).",
-      },
-    },
-    required: ["prompt"],
-  }),
+  ...next_edit_completionDescriptor,
   execute: async (args, context) => {
     const req = context.request;
 

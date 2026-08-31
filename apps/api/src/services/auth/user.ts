@@ -1,3 +1,4 @@
+import { listConfigurableUserProviderIds } from "~/lib/providers/userConfigurableProviders";
 import type { RepositoryManager } from "~/repositories";
 import type { IUserSettings, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -45,5 +46,8 @@ export function createUserProviderSettings(
   repositories: RepositoryManager,
   userId: number,
 ): Promise<void> {
-  return repositories.userSettings.createUserProviderSettings(userId);
+  return repositories.userSettings.createUserProviderSettings(
+    userId,
+    listConfigurableUserProviderIds(),
+  );
 }

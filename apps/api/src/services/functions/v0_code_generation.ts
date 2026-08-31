@@ -2,33 +2,10 @@ import { createServiceContext } from "~/lib/context/serviceContext";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 
 import type { ApiToolDefinition } from "../../types/functions";
-import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import { v0_code_generation as v0_code_generationDescriptor } from "./definitions/v0_code_generation";
 
 export const v0_code_generation: ApiToolDefinition = {
-  name: "v0_code_generation",
-  description:
-    "Generate code for a web application using the v0 AI model, which is specifically designed for creating frontend and fullstack apps using frameworks like Next.JS.",
-  inputSchema: jsonSchemaToZod({
-    type: "object",
-    properties: {
-      prompt: {
-        type: "string",
-        description: "A prompt describing what code you want to generate.",
-      },
-      system_prompt: {
-        type: "string",
-        description: "A system prompt to guide the AI's behavior.",
-      },
-      image_base_64: {
-        type: "string",
-        description: "An image to include in the prompt for a multimodal input.",
-      },
-    },
-    required: ["prompt"],
-  }),
-  type: "byok",
-  costPerCall: 0,
-  permissions: ["network"],
+  ...v0_code_generationDescriptor,
   execute: async (args, context) => {
     const req = context.request;
 

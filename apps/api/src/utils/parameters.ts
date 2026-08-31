@@ -11,15 +11,15 @@ import { clampNumber } from "@ngriffin_uk/polychat-utility-core";
 
 import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
 import { PermissionChecker } from "~/lib/permissions/PermissionChecker";
-import { listFunctionTools } from "~/services/functions";
 import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
+import { listFunctionToolDefinitions } from "~/services/functions/definitions";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { omitNullishValues } from "~/utils/objects";
 import { resolveRequestUser } from "~/utils/requestUser";
 import { getCatalogueToolName } from "~/utils/toolNames";
 
-import { formatToolCalls } from "../lib/chat/tools/execution";
+import { formatToolCalls } from "../lib/chat/tools/provider-tool-definitions";
 import {
   hasProviderReasoningOptions,
   resolveReasoningModel,
@@ -414,7 +414,7 @@ export function getToolsForProvider(
     const toolPolicyMode = params.tool_policy_mode ?? params.mode;
     const enabledTools = resolveEnabledFunctionToolNames(params.enabled_tools, user);
     let tools: any[] = [];
-    const availableTools = listFunctionTools({
+    const availableTools = listFunctionToolDefinitions({
       connectedConnectorProviders: params.connectedConnectorProviders,
       selectedConnectorProvider: params.options?.connector?.provider,
     });

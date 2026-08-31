@@ -46,7 +46,10 @@ export class Database {
     return this.env.DB;
   }
 
-  public async createUser(userData: Record<string, unknown>): Promise<User | null> {
+  public async createUser(
+    userData: Record<string, unknown>,
+    configurableProviderIds: readonly string[],
+  ): Promise<User | null> {
     try {
       const user = await this._repositories.users.createUser(userData);
 
@@ -60,7 +63,10 @@ export class Database {
         }
 
         try {
-          await this._repositories.userSettings.createUserProviderSettings(user.id);
+          await this._repositories.userSettings.createUserProviderSettings(
+            user.id,
+            configurableProviderIds,
+          );
         } catch (providerSettingsError) {
           logError(
             "Failed to create user provider settings during user creation",
