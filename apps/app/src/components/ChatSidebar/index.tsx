@@ -294,7 +294,7 @@ export const ChatSidebar = ({
             <Loader2 size={20} className="animate-spin text-zinc-600 dark:text-zinc-400" />
           </div>
         ) : (
-          <div>
+          <nav aria-label="Conversations">
             <div className="px-2 pb-3">
               <SidebarNavSection>
                 <SidebarNavButton
@@ -376,7 +376,7 @@ export const ChatSidebar = ({
                 />
               }
             </ConversationListSection>
-          </div>
+          </nav>
         )}
       </SidebarShell>
 
