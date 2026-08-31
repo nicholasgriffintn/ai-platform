@@ -12,13 +12,13 @@ import {
 
 export function toCartesiaUpstreamMessage(
   message: NormalizedClientRealtimeMessage,
-): string | ArrayBuffer {
+): string | ArrayBuffer | null {
   if (message.type === "input_audio.flush") {
-    return "finalize";
+    return null;
   }
 
   if (message.type === "input_audio.end") {
-    return "done";
+    return JSON.stringify({ type: "close" });
   }
 
   return base64AudioToBuffer(message.audio);
@@ -28,7 +28,7 @@ function getString(value: unknown): string | undefined {
   return typeof value === "string" && value.trim().length > 0 ? value : undefined;
 }
 
-export function toCartesiaClientMessage(data: unknown): string | undefined {
+export function toCartesiaClientMessage(data: unknown): string | string[] | undefined {
   if (typeof data !== "string") {
     return undefined;
   }
@@ -42,17 +42,30 @@ export function toCartesiaClientMessage(data: unknown): string | undefined {
   }
 
   const type = getString(payload.type);
-  const text = getString(payload.text);
+  const transcript = getString(payload.transcript);
+  const itemId = getString(payload.request_id);
 
-  if (type === "transcript" && text) {
+  if (type === "turn.update" && transcript) {
     return JSON.stringify({
-      type: payload.is_final === true ? "transcription.segment" : "transcription.text.delta",
-      text,
+      type: "transcription.text",
+      ...(itemId ? { item_id: itemId } : {}),
+      text: transcript,
     });
   }
 
-  if (type === "flush_done" || type === "done") {
-    return JSON.stringify({ type: "transcription.done" });
+  if (type === "turn.end" && transcript) {
+    return [
+      JSON.stringify({
+        type: "transcription.segment",
+        ...(itemId ? { item_id: itemId } : {}),
+        text: transcript,
+      }),
+      JSON.stringify({ type: "transcription.done", ...(itemId ? { item_id: itemId } : {}) }),
+    ];
+  }
+
+  if (type === "connected") {
+    return JSON.stringify({ type: "session.created" });
   }
 
   if (type === "error") {
@@ -87,7 +100,7 @@ export async function createCartesiaRealtimeProxyResponse({
   }
 
   const modelToUse = model || provider.getDefaultModel("transcription");
-  const upstreamUrl = new URL("/stt/websocket", "https://api.cartesia.ai");
+  const upstreamUrl = new URL("/stt/turns/websocket", "https://api.cartesia.ai");
 
   upstreamUrl.searchParams.set("model", modelToUse);
   upstreamUrl.searchParams.set("encoding", "pcm_s16le");
@@ -102,7 +115,7 @@ export async function createCartesiaRealtimeProxyResponse({
     upstreamUrl,
     headers: {
       "X-API-Key": apiKey,
-      "Cartesia-Version": "2025-04-16",
+      "Cartesia-Version": "2026-03-01",
     },
     toUpstreamMessage: toCartesiaUpstreamMessage,
     toClientMessage: toCartesiaClientMessage,

@@ -5,5 +5,6 @@ export { GoogleRealtimeProvider } from "./GoogleRealtimeProvider";
 
 export {
   getMistralTargetStreamingDelayMs,
+  resolveMistralRealtimeProxyModel,
   MistralRealtimeProvider,
 } from "./MistralRealtimeProvider";
