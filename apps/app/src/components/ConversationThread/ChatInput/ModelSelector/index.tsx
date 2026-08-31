@@ -37,7 +37,7 @@ import { useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
 import { useRealtimeProviders } from "~/hooks/useRealtimeProviders";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
-import { applyModelResponseDefaults } from "~/lib/chat-settings";
+import { clearModelResponseSettings } from "~/lib/chat-settings";
 import {
   useIsLoading,
   useLoadingMessage,
@@ -220,18 +220,12 @@ export const ModelSelector = ({
     [availableModels, isPro],
   );
 
-  const getSettingsForModel = useCallback(
-    (nextModel: string | null, settings: ChatSettings) =>
-      applyModelResponseDefaults(settings, nextModel ? availableModels[nextModel] : undefined),
-    [availableModels],
-  );
-
   const selectModelWithDefaults = useCallback(
     (nextModel: string | null, settings: ChatSettings = chatSettings) => {
       setModel(nextModel);
-      setChatSettings(getSettingsForModel(nextModel, settings));
+      setChatSettings(clearModelResponseSettings(settings));
     },
-    [chatSettings, getSettingsForModel, setChatSettings, setModel],
+    [chatSettings, setChatSettings, setModel],
   );
 
   useEffect(() => {

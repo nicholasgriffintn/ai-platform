@@ -1,28 +1,22 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  applyModelResponseDefaults,
+  clearModelResponseSettings,
   migrateChatStore,
   migrateLegacyMaxOutputTokens,
   migrateLegacySamplingDefaults,
 } from "./chat-settings";
 
 describe("chat response token defaults", () => {
-  it("preserves an explicit output-token override when the model changes", () => {
+  it("drops the previous model's response settings but keeps the rest", () => {
     expect(
-      applyModelResponseDefaults(
-        { max_tokens: 65_536 },
-        {
-          matchingModel: "reasoning-model",
-          provider: "test-provider",
-          maxTokens: 131_072,
-          reasoningConfig: {
-            supportedEffortLevels: ["low", "medium", "high"],
-            defaultEffort: "medium",
-          },
-        },
-      ).max_tokens,
-    ).toBe(65_536);
+      clearModelResponseSettings({
+        max_tokens: 65_536,
+        temperature: 0.7,
+        reasoning: { effort: "high" },
+        verbosity: "low",
+      }),
+    ).toEqual({ max_tokens: 65_536, temperature: 0.7 });
   });
 
   it("returns the old persisted 8,192 default to automatic", () => {

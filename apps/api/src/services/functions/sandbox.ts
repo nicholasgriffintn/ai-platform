@@ -6,7 +6,6 @@ import {
   type SandboxModelSettings,
   type SandboxPromptStrategy,
   type SandboxTaskType,
-  SANDBOX_TASK_TYPES,
 } from "@ngriffin_uk/polychat-schemas";
 
 import {
@@ -18,7 +17,7 @@ import { executeSandboxRunStream } from "~/services/apps/sandbox/execute-stream"
 import type { IFunctionResponse, IRequest } from "~/types";
 
 import type { ApiToolDefinition } from "../../types/functions";
-import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import { run_sandbox_task as run_sandbox_taskDescriptor } from "./definitions/sandbox";
 import { resolveRequestProjectId } from "./request-context";
 
 interface SandboxFunctionArgs {
@@ -36,46 +35,6 @@ interface SandboxRunStreamResult {
   finalEvent?: SandboxRunEvent;
   lastEvent?: SandboxRunEvent;
 }
-
-const sandboxFunctionParameters = {
-  type: "object",
-  properties: {
-    repo: {
-      type: "string",
-      description: "GitHub repository (format: owner/name)",
-      pattern: "^[\\w.-]+/[\\w.-]+$",
-    },
-    task: {
-      type: "string",
-      description: "Task to run against the repository",
-    },
-    taskType: {
-      type: "string",
-      enum: SANDBOX_TASK_TYPES as unknown as string[],
-      description:
-        "The kind of work this is. Load the sandbox-tasks skill to choose: code-review and test-suite are read-only, the rest may change files.",
-    },
-    promptStrategy: {
-      type: "string",
-      description:
-        "Optional prompting strategy (auto, feature-delivery, bug-fix, refactor, test-hardening)",
-    },
-    shouldCommit: {
-      type: "boolean",
-      description:
-        "Whether to create a commit inside the sandbox repository after applying changes",
-    },
-    timeoutSeconds: {
-      type: "number",
-      description: "Optional sandbox run timeout in seconds",
-    },
-    installationId: {
-      type: "number",
-      description: "Optional GitHub App installation ID to force a specific connection",
-    },
-  },
-  required: ["task", "taskType"],
-} as const;
 
 function parsePromptStrategy(value: string | undefined): SandboxPromptStrategy | undefined {
   const parsed = sandboxPromptStrategySchema.safeParse(
@@ -326,13 +285,7 @@ async function parseSandboxSseBuffer(
 const READ_ONLY_TASK_TYPES = new Set<SandboxTaskType>(["code-review", "test-suite"]);
 
 export const run_sandbox_task: ApiToolDefinition = {
-  name: "run_sandbox_task",
-  description:
-    "Run a coding task against a GitHub repository in the sandbox worker. Covers implementation, bug fixes, refactoring, migrations, documentation, code review and test runs; the task type decides whether the run may change files. Load the sandbox-tasks skill before calling this to pick the type and write the task properly.",
-  type: "premium",
-  costPerCall: 0.1,
-  permissions: ["sandbox", "write"],
-  inputSchema: jsonSchemaToZod(sandboxFunctionParameters),
+  ...run_sandbox_taskDescriptor,
   execute: async (args, context) => {
     const typedArgs = args as SandboxFunctionArgs;
     const taskType = typedArgs.taskType ?? "feature-implementation";

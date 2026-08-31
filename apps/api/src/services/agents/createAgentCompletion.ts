@@ -1,7 +1,7 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { ParsedChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
 
-import { formatToolCalls } from "~/lib/chat/tools/execution";
+import { formatToolCalls } from "~/lib/chat/tools/provider-tool-definitions";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { findModelConfig } from "~/lib/providers/models";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";

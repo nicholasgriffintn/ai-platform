@@ -1,4 +1,4 @@
-import { loadSkillInputSchema, SKILL_LOAD_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
+import { SKILL_LOAD_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
 
 import { getSkillResource, loadSkill, resolveRequestSkillState } from "~/services/skills";
 import {
@@ -15,15 +15,10 @@ import {
 } from "~/services/skills/runtime-state";
 import type { ApiToolDefinition } from "~/types/functions";
 
+import { load_skill as load_skillDescriptor } from "./definitions/load_skill";
+
 export const load_skill: ApiToolDefinition = {
-  name: SKILL_LOAD_TOOL_NAME,
-  description:
-    "Load the full SKILL.md instructions for one of the skills listed in available_skills, or one relative resource path listed by that skill. Call this before starting work the skill covers, and follow what it returns.",
-  type: "normal",
-  costPerCall: 0,
-  maxIdenticalCalls: 1,
-  permissions: ["read"],
-  inputSchema: loadSkillInputSchema,
+  ...load_skillDescriptor,
   execute: async (args, toolContext) => {
     const skillId = String(args.skill).trim();
     const pinned = getRequestSkillRuntime(toolContext.request.context?.requestCache);

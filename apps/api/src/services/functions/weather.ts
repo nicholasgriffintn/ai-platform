@@ -1,29 +1,10 @@
 import { getWeatherForLocation } from "~/services/apps/retrieval/weather";
 
 import type { ApiToolDefinition } from "../../types/functions";
-import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import { get_weather as get_weatherDescriptor } from "./definitions/weather";
 
 export const get_weather: ApiToolDefinition = {
-  name: "get_weather",
-  description:
-    "Retrieves current weather conditions and forecasts for a specified location. Use when users ask about weather, temperature, or climate conditions for a specific place. Requires a location (city, region, or coordinates).",
-  inputSchema: jsonSchemaToZod({
-    type: "object",
-    properties: {
-      longitude: {
-        type: "number",
-        description: "The longitude to get the weather for",
-      },
-      latitude: {
-        type: "number",
-        description: "The latitude to get the weather for",
-      },
-    },
-    required: ["longitude", "latitude"],
-  }),
-  type: "normal",
-  costPerCall: 0,
-  permissions: ["read"],
+  ...get_weatherDescriptor,
   execute: async (args, context) => {
     const req = context.request;
     const location = {

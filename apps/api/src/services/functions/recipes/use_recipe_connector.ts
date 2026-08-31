@@ -1,13 +1,9 @@
-import {
-  recipeConnectorProviderSchema,
-  type RecipeConnectorProvider,
-} from "@ngriffin_uk/polychat-schemas";
+import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
 
 import {
   getConnectorProviderConfig,
   connectorOperationRequiresApproval,
 } from "~/lib/providers/capabilities/connectors";
-import { COMPOSIO_CONNECTOR_SESSION_HANDLE_PATTERN } from "~/lib/providers/capabilities/connectors/composio/session-handle";
 import {
   retainComposioConnectorSession,
   resolveComposioRunAccount,
@@ -35,7 +31,7 @@ import { isRecord } from "~/utils/objects";
 import { redactSensitiveTokens } from "~/utils/redaction";
 
 import type { ApiToolDefinition } from "../../../types/functions";
-import { jsonSchemaToZod } from "../../../utils/jsonSchema";
+import { use_recipe_connector as use_recipe_connectorDescriptor } from "../definitions/recipes/use_recipe_connector";
 import { resolveRequestProjectId } from "../request-context";
 
 function buildConnectorToolError(params: {
@@ -93,54 +89,8 @@ function mergeRecipeConfigurationIntoParams(
   };
 }
 
-export function createUseRecipeConnectorInputSchema(
-  providers: readonly RecipeConnectorProvider[] = recipeConnectorProviderSchema.options,
-) {
-  return jsonSchemaToZod({
-    type: "object",
-    properties: {
-      provider: {
-        type: "string",
-        enum: [...providers],
-        description:
-          providers.length === 1
-            ? `Use the connected provider: ${providers[0]}.`
-            : "The connected provider to use.",
-      },
-      operation: {
-        type: "string",
-        description: "The exact operation ID returned by connector discovery.",
-      },
-      useCase: {
-        type: "string",
-        minLength: 3,
-        maxLength: 1000,
-        description:
-          "Describe the connector task to discover the best exact tools and their current schemas.",
-      },
-      sessionId: {
-        type: "string",
-        pattern: COMPOSIO_CONNECTOR_SESSION_HANDLE_PATTERN,
-        description: "The opaque session handle returned by a preceding discovery call.",
-      },
-      params: {
-        type: "object",
-        description: "Parameters matching the exact schema returned by connector discovery.",
-      },
-    },
-    required: ["provider"],
-    additionalProperties: false,
-  });
-}
-
 export const use_recipe_connector: ApiToolDefinition = {
-  name: "use_recipe_connector",
-  description:
-    "Discover and use the exact tools available from a connector. Start with useCase to receive authoritative Composio schemas and a sessionId, then call again with an exact operation, its params, and that sessionId. Treat identifiers as operation-specific: never pass an ID returned by one operation to another unless their schemas explicitly describe the same identifier. Recipe configuration is merged into execution params as defaults.",
-  type: "premium",
-  costPerCall: 0,
-  permissions: ["network", "read"],
-  inputSchema: createUseRecipeConnectorInputSchema(),
+  ...use_recipe_connectorDescriptor,
   execute: async (args, context) => {
     const request = context.request;
 
