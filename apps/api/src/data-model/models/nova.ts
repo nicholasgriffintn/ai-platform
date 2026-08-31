@@ -32,7 +32,10 @@ export const novaModelConfig: ModelConfig = createModelConfigObject([
     reliability: 4,
     speed: 4,
     supportsDocuments: true,
-    reasoningConfig: NOVA_2_REASONING_CONFIG,
+    reasoningConfig: {
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
+    },
     family: "nova-lite",
     openWeights: false,
   }),

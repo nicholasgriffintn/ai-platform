@@ -1,11 +1,9 @@
+import { truncateForModel as truncateValueForModel } from "@ngriffin_uk/polychat-library-agent-core";
+
 import { MAX_OBSERVATION_CHARS } from "./constants";
 
 export function truncateForModel(value: string, maxChars = MAX_OBSERVATION_CHARS): string {
-  if (value.length <= maxChars) {
-    return value;
-  }
-
-  return `${value.slice(0, maxChars)}\n... (truncated)`;
+  return truncateValueForModel(value, maxChars);
 }
 
 export function normaliseRepoRelativePath(rawPath: string): string {

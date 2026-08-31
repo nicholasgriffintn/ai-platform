@@ -88,8 +88,8 @@ export const workersAiModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00095,
     costPer1kOutputTokens: 0.004,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -546,8 +546,8 @@ export const workersAiModelConfig: ModelConfig = {
     speed: 4,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     family: "gemma",
     openWeights: true,
@@ -1035,8 +1035,8 @@ export const workersAiModelConfig: ModelConfig = {
     costPer1kOutputTokens: 0.0015,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     family: "nemotron",
     openWeights: true,
@@ -1068,8 +1068,8 @@ export const workersAiModelConfig: ModelConfig = {
     speed: 4,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 15.5,
@@ -1104,8 +1104,8 @@ export const workersAiModelConfig: ModelConfig = {
     speed: 5,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 23.8,
@@ -1243,8 +1243,8 @@ export const workersAiModelConfig: ModelConfig = {
     reliability: 2,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 41.9,
@@ -1274,8 +1274,8 @@ export const workersAiModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0014,
     costPer1kOutputTokens: 0.0044,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "tool_use"],
     contextComplexity: 4,
@@ -1312,8 +1312,8 @@ export const workersAiModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00044,
     costPer1kOutputTokens: 0.00132,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high", "max"],
+    	defaultEffort: "high",
     },
   },
 
@@ -1338,8 +1338,8 @@ export const workersAiModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00132,
     costPer1kOutputTokens: 0.00396,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high", "max"],
+    	defaultEffort: "high",
     },
   },
   "@cf/qwen/qwen3.8-27b": {
@@ -1363,8 +1363,8 @@ export const workersAiModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00045,
     costPer1kOutputTokens: 0.0032,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "xhigh"],
+    	defaultEffort: "low",
     },
   },
   "@cf/zai-org/glm-5.3": {
@@ -1372,7 +1372,7 @@ export const workersAiModelConfig: ModelConfig = {
   	matchingModel: "@cf/zai-org/glm-5.3",
   	provider: "workers-ai",
   	family: "glm",
-  	openWeights: false,
+  	openWeights: true,
   	releaseDate: "August 14, 2026",
   	lastUpdated: "August 14, 2026",
   	modalities: {
@@ -1388,8 +1388,8 @@ export const workersAiModelConfig: ModelConfig = {
   	costPer1kInputTokens: 0.0014,
   	costPer1kOutputTokens: 0.0044,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high"],
+  		defaultEffort: "low",
   	},
   },
 

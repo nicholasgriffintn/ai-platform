@@ -7,18 +7,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
     description:
       "Gemini Flash delivers next-gen features and improved capabilities, including superior speed, native tool use, multimodal generation, and a 1M token context window.",
     provider: "google-ai-studio",
-    strengths: [
-      "coding",
-      "analysis",
-      "math",
-      "multilingual",
-      "vision",
-      "document",
-      "audio",
-      "video",
-      "tool_use",
-      "search",
-    ],
+    strengths: ["coding", "analysis", "math", "multilingual", "vision", "document", "audio", "video", "tool_use", "search", "research"],
     modalities: {
       input: ["text", "image", "video", "audio", "pdf"],
       output: ["text"],
@@ -45,8 +34,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
     lastUpdated: "December 17, 2025",
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking", "low", "medium", "high"],
-      defaultEffort: "high",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "high",
     },
     artificialAnalysis: {
       intelligenceIndex: 27.4,
@@ -88,8 +77,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
     lastUpdated: "July 21, 2026",
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking", "low", "medium", "high"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
     family: "gemini-flash-lite",
     openWeights: false,
@@ -212,7 +201,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",
     },
-    strengths: ["vision", "document", "audio", "video", "tool_use"],
+    strengths: ["vision", "document", "audio", "video", "tool_use", "search", "research", "coding"],
     contextComplexity: 4,
     reliability: 1,
     artificialAnalysis: {
@@ -321,7 +310,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
       supportedEffortLevels: ["none", "thinking"],
       defaultEffort: "none",
     },
-    strengths: ["vision", "document", "audio", "video", "tool_use"],
+    strengths: ["vision", "document", "audio", "video", "tool_use", "search", "research", "coding"],
     contextComplexity: 4,
     reliability: 3,
     artificialAnalysis: {
@@ -550,7 +539,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
       supportedEffortLevels: ["thinking"],
       defaultEffort: "thinking",
     },
-    strengths: ["vision", "document", "audio", "video", "tool_use"],
+    strengths: ["vision", "document", "audio", "video", "tool_use", "search", "research", "coding"],
     contextComplexity: 4,
     reliability: 1,
     artificialAnalysis: {
@@ -680,8 +669,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00075,
     costPer1kOutputTokens: 0.00375,
     reasoningConfig: {
-      supportedEffortLevels: ["thinking", "low", "medium", "high"],
-      defaultEffort: "high",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "high",
     },
     family: "gemini-flash",
     openWeights: false,
@@ -755,8 +744,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00075,
     costPer1kOutputTokens: 0.0045,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking", "low", "medium", "high"],
-      defaultEffort: "low",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "low",
     },
     family: "gemini-flash",
     openWeights: false,
@@ -784,8 +773,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0005,
     costPer1kOutputTokens: 0.06,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking", "low", "medium", "high"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "high"],
+    	defaultEffort: "minimal",
     },
     strengths: ["vision", "document", "search", "image", "creative"],
     contextComplexity: 4,
@@ -831,26 +820,15 @@ export const googleAiStudioModelConfig: ModelConfig = {
     maxTokens: 65536,
     costPer1kInputTokens: 0.00025,
     costPer1kOutputTokens: 0.0015,
-    strengths: [
-      "chat",
-      "general_knowledge",
-      "summarization",
-      "analysis",
-      "multilingual",
-      "vision",
-      "document",
-      "audio",
-      "video",
-      "tool_use",
-    ],
+    strengths: ["chat", "general_knowledge", "summarization", "analysis", "multilingual", "vision", "document", "audio", "video", "tool_use", "research"],
     contextComplexity: 4,
     reliability: 1,
     speed: 4,
     multimodal: true,
     isFree: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking", "low", "medium", "high"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
     artificialAnalysis: {
       intelligenceIndex: 25,
@@ -903,8 +881,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
     multimodal: true,
     isFree: true,
     reasoningConfig: {
-      supportedEffortLevels: ["thinking", "low", "medium", "high"],
-      defaultEffort: "high",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "high",
     },
     artificialAnalysis: {
       intelligenceIndex: 46.5,
@@ -939,8 +917,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.012,
     reasoningConfig: {
-      supportedEffortLevels: ["thinking", "low", "medium", "high"],
-      defaultEffort: "high",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "high",
     },
     family: "gemini-pro",
     openWeights: false,
@@ -1164,28 +1142,15 @@ export const googleAiStudioModelConfig: ModelConfig = {
     maxTokens: 65536,
     costPer1kInputTokens: 0.0015,
     costPer1kOutputTokens: 0.009,
-    strengths: [
-      "coding",
-      "reasoning",
-      "analysis",
-      "math",
-      "agents",
-      "chat",
-      "multilingual",
-      "vision",
-      "document",
-      "audio",
-      "video",
-      "tool_use",
-    ],
+    strengths: ["coding", "reasoning", "analysis", "math", "agents", "chat", "multilingual", "vision", "document", "audio", "video", "tool_use", "search", "research"],
     contextComplexity: 4,
     reliability: 3,
     speed: 3,
     multimodal: true,
     isFree: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking", "low", "medium", "high"],
-      defaultEffort: "medium",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "medium",
     },
     artificialAnalysis: {
       intelligenceIndex: 50.2,
@@ -1338,8 +1303,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0003,
     costPer1kOutputTokens: 0.0025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
   },
 
@@ -1371,8 +1336,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00075,
     costPer1kOutputTokens: 0.00375,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
   },
   "deep-research-max-preview-04-2026": {
@@ -1477,8 +1442,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
     contextComplexity: 3,
     reliability: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "high"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: null,
@@ -1525,8 +1490,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
     contextComplexity: 3,
     reliability: 5,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "high"],
+    	defaultEffort: "minimal",
     },
     artificialAnalysis: {
       intelligenceIndex: null,
@@ -1568,8 +1533,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00025,
     costPer1kOutputTokens: 0.03,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "high"],
+    	defaultEffort: "minimal",
     },
   },
 
@@ -1831,8 +1796,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00075,
     costPer1kOutputTokens: 0.00375,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   },
 };

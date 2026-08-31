@@ -95,8 +95,8 @@ export const deepseekModelConfig: ModelConfig = {
     reliability: 1,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "high", "max"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 28.7,
@@ -138,8 +138,8 @@ export const deepseekModelConfig: ModelConfig = {
     reliability: 1,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high", "max"],
+    	defaultEffort: "high",
     },
     artificialAnalysis: {
       intelligenceIndex: 31.2,
@@ -174,8 +174,8 @@ export const deepseekModelConfig: ModelConfig = {
   	costPer1kOutputTokens: 0.00028,
   	costPer1kReasoningTokens: 0.00028,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   },
 };

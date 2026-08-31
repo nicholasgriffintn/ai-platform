@@ -288,8 +288,8 @@ export const moonshotModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["low", "high", "max"],
+			defaultEffort: "low",
 		},
 	}),
 ]);

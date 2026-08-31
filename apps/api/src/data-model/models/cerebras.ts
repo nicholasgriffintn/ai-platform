@@ -31,8 +31,8 @@ export const cerebrasModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 5,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     supportsResponseFormat: true,
     artificialAnalysis: {
@@ -123,8 +123,8 @@ export const cerebrasModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 2,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 24.8,

@@ -1,10 +1,10 @@
+import { cn } from "@ngriffin_uk/polychat-component-ui";
 import React, { Suspense, lazy } from "react";
 
 import { ChatNavbar } from "~/components/Navbar";
 import { SearchDialog } from "~/components/Search/SearchDialog";
 import { useKeyboardShortcuts } from "~/hooks/useKeyboardShortcuts";
 import { APP_KEYBOARD_SHORTCUT_SECTIONS } from "~/lib/keyboard-shortcuts";
-import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 

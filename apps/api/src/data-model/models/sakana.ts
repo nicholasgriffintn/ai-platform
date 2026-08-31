@@ -20,8 +20,8 @@ export const sakanaModelConfig: ModelConfig = createModelConfigObject([
   	contextWindow: 1000000,
   	maxTokens: 1000000,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["high", "xhigh"],
+  		defaultEffort: "high",
   	},
   }),
   createModelConfig("fugu-ultra", PROVIDER, {
@@ -41,8 +41,8 @@ export const sakanaModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.005,
   	costPer1kOutputTokens: 0.03,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["high", "xhigh"],
+  		defaultEffort: "high",
   	},
   }),
   createModelConfig("sakana-namazu", PROVIDER, {

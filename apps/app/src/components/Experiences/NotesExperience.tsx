@@ -4,6 +4,7 @@ import {
   CardGridLoadingSkeleton,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
+import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { NoteMetadata } from "@ngriffin_uk/polychat-schemas";
 import { NotebookPen, Plus } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
@@ -19,7 +20,6 @@ import {
   useUpdateNote,
 } from "~/hooks/useNotes";
 import { isAuthenticationError } from "~/lib/errors";
-import { cn } from "~/lib/utils";
 
 export function NotesExperience({ basePath, projectId, subpath }: ExperienceProps) {
   const navigate = useNavigate();

@@ -26,8 +26,8 @@ export const lmstudioModelConfig: ModelConfig = createModelConfigObject([
 		contextWindow: 131072,
 		maxTokens: 32768,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["low", "medium", "high"],
+			defaultEffort: "low",
 		},
 		strengths: ["tool_use"],
 		contextComplexity: 3,

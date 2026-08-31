@@ -2,7 +2,12 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 
-import { requireProjectCapabilityAccess, requireWorkAccess } from "../access";
+import {
+  requireProjectAccess,
+  requireProjectCapabilityAccess,
+  requireWorkAccess,
+  requireWorkspaceAccess,
+} from "../access";
 
 function createContext(capabilityId: string) {
   return {
@@ -20,6 +25,27 @@ function createContext(capabilityId: string) {
   } as unknown as ServiceContext;
 }
 
+function createWorkspaceContext({
+  workspace = { id: "workspace-1" },
+  membership = { role: "member" },
+  project = { id: "project-1", workspace_id: "workspace-1" },
+}: {
+  workspace?: { id: string } | null;
+  membership?: { role: string } | null;
+  project?: { id: string; workspace_id: string } | null;
+} = {}) {
+  return {
+    requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
+    repositories: {
+      workspaces: {
+        getProject: vi.fn().mockResolvedValue(project),
+        getWorkspace: vi.fn().mockResolvedValue(workspace),
+        getMembership: vi.fn().mockResolvedValue(membership),
+      },
+    },
+  } as unknown as ServiceContext;
+}
+
 describe("requireWorkAccess", () => {
   it("rejects signed-in users without a Pro entitlement", () => {
     const context = {
@@ -32,6 +58,41 @@ describe("requireWorkAccess", () => {
         statusCode: 403,
       }),
     );
+  });
+});
+
+describe("requireWorkspaceAccess", () => {
+  it("rejects a user with no membership row", async () => {
+    const context = createWorkspaceContext({ membership: null });
+
+    await expect(requireWorkspaceAccess(context, "workspace-1")).rejects.toMatchObject({
+      message: "Workspace not found",
+      statusCode: 404,
+    });
+  });
+
+  it("rejects a member whose role is not in the allowed roles", async () => {
+    const context = createWorkspaceContext({ membership: { role: "member" } });
+
+    await expect(
+      requireWorkspaceAccess(context, "workspace-1", ["owner", "admin"]),
+    ).rejects.toMatchObject({
+      message: "You do not have access to this workspace",
+      statusCode: 403,
+    });
+  });
+});
+
+describe("requireProjectAccess", () => {
+  it("404s for a non-existent project before checking workspace role", async () => {
+    const context = createWorkspaceContext({ project: null });
+
+    await expect(requireProjectAccess(context, "missing-project")).rejects.toMatchObject({
+      message: "Project not found",
+      statusCode: 404,
+    });
+    expect(context.repositories.workspaces.getWorkspace).not.toHaveBeenCalled();
+    expect(context.repositories.workspaces.getMembership).not.toHaveBeenCalled();
   });
 });
 
