@@ -8,6 +8,8 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { StorageService } from "~/lib/storage";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+import { parseSkillBundle, serialiseSkillBundle, type SkillRevisionBundle } from "./bundle";
+
 export interface SkillStorageScope {
   type: "personal" | "project";
   id: string | number;
@@ -32,6 +34,9 @@ const skillKey = (scope: SkillStorageScope, name: string) =>
 
 const skillResourceKey = (scope: SkillStorageScope, name: string, path: string) =>
   `${skillDirectory(scope, name)}${path}`;
+
+export const skillRevisionKey = (skillId: string, revisionId: string) =>
+  `skills/authored/${skillId}/revisions/${revisionId}.json`;
 
 function formatStoredSkill(
   scope: SkillStorageScope,
@@ -64,6 +69,41 @@ export class SkillDocumentStorage {
 
   constructor(context: ServiceContext) {
     this.storage = StorageService.forPrivateAssets(context);
+  }
+
+  async writeRevision(
+    skillId: string,
+    revisionId: string,
+    bundle: SkillRevisionBundle,
+  ): Promise<string> {
+    const key = skillRevisionKey(skillId, revisionId);
+
+    if (await this.storage.headObject(key)) {
+      throw new AssistantError("Skill revision already exists", ErrorType.CONFLICT_ERROR, 409);
+    }
+
+    await this.storage.uploadObject(key, serialiseSkillBundle(bundle), {
+      httpMetadata: { contentType: "application/json; charset=utf-8" },
+      customMetadata: {
+        digest: bundle.digest,
+        sizeBytes: String(bundle.sizeBytes),
+      },
+    });
+
+    return key;
+  }
+
+  async getRevision(
+    storageKey: string,
+    expected: { digest: string; sizeBytes: number },
+  ): Promise<SkillRevisionBundle | null> {
+    const serialised = await this.storage.getTextObject(storageKey);
+
+    return serialised === null ? null : parseSkillBundle(serialised, expected);
+  }
+
+  async deleteRevision(storageKey: string): Promise<void> {
+    await this.storage.deleteObject(storageKey);
   }
 
   async write(
@@ -219,11 +259,9 @@ export class SkillDocumentStorage {
   async delete(scope: SkillStorageScope, name: string): Promise<void> {
     const resourcePaths = await this.listResourcePaths(scope, name);
 
-    await Promise.all([
-      this.storage.deleteObject(skillKey(scope, name)),
-      ...resourcePaths.map((path) =>
-        this.storage.deleteObject(skillResourceKey(scope, name, path)),
-      ),
-    ]);
+    await Promise.all(
+      resourcePaths.map((path) => this.storage.deleteObject(skillResourceKey(scope, name, path))),
+    );
+    await this.storage.deleteObject(skillKey(scope, name));
   }
 }

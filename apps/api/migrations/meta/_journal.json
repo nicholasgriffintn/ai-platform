@@ -50,6 +50,13 @@
       "when": 1788174151031,
       "tag": "0006_next_whirlwind",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1788188456014,
+      "tag": "0007_foamy_harpoon",
+      "breakpoints": true
     }
   ]
 }
