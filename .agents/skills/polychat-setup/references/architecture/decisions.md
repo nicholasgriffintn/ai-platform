@@ -27,6 +27,7 @@ Read the relevant accepted records before changing product structure, ownership,
 - [0026](decisions/0026-project-task-boards.md): Make the unit of work in Work a project task that carries its own conversation and goal; every stage stores a completion snapshot, and its flow policy selects automated hand-off or explicit human approval.
 - [0027](decisions/0027-project-flow-approval-authority.md): Make a Work stage's saved approval policy authoritative for its task run, and resume an approval-blocked task through an exact pending tool decision.
 - [0028](decisions/0028-response-scoped-capability-activation.md): Let discovery activate eligible native tools for the current response without changing saved settings or widening setup and project authority.
+- [0029](decisions/0029-agent-owning-scope.md): Give a saved agent an owning scope of user or workspace, keep `user_id` as the author, and publish to a workspace by copying rather than by reference.
 
 [context.md](context.md) holds the current domain vocabulary, workspace map, seams, and data flows.
 

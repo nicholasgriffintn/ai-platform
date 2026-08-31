@@ -4,6 +4,7 @@ import {
   createAgentSchema,
   updateAgentSchema,
   createChatCompletionsJsonSchema,
+  publishAgentToWorkspaceSchema,
   apiResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
@@ -24,6 +25,7 @@ import {
   deleteAgent,
   getAgentServers,
   createAgentCompletion,
+  publishAgentToWorkspace,
 } from "~/services/agents";
 import type { IEnv } from "~/types";
 
@@ -133,6 +135,20 @@ addRoute(app, "delete", "/:agentId", {
     await deleteAgent(serviceContext, params.agentId);
 
     return { message: "Agent deleted successfully" };
+  },
+});
+
+addRoute(app, "post", "/:agentId/publish/workspace", {
+  tags: ["agents"],
+  summary: "Publish an agent to a workspace",
+  description:
+    "Copy a personal agent into a workspace so the workspace owns it, keeping a link back to the source agent",
+  auth: true,
+  paramSchema: agentIdParamSchema,
+  bodySchema: publishAgentToWorkspaceSchema,
+  responses: { 200: { description: "Published agent", schema: agentResponseSchema } },
+  handler: async ({ serviceContext, params, body }) => {
+    return publishAgentToWorkspace(serviceContext, params.agentId, body.workspace_id);
   },
 });
 

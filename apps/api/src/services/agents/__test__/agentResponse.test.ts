@@ -8,6 +8,9 @@ function buildStoredAgent(overrides: Partial<Record<keyof Agent, unknown>> = {})
   return {
     id: "agent-1",
     user_id: 7,
+    owner_scope_type: "user",
+    owner_scope_id: "7",
+    derived_from_agent_id: null,
     name: "Researcher",
     description: "",
     avatar_url: null,

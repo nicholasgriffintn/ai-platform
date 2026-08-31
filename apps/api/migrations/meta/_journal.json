@@ -50,6 +50,20 @@
       "when": 1788174151031,
       "tag": "0006_next_whirlwind",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1788199738777,
+      "tag": "0007_fuzzy_hydra",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1788200699483,
+      "tag": "0008_backfill_agent_owner_scope",
+      "breakpoints": true
     }
   ]
 }
