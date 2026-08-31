@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { CHATS_QUERY_KEY } from "~/constants";
 import { GOAL_QUERY_KEY } from "~/hooks/useGoal";
 import { apiService } from "~/lib/api/api-service";
+import { createStreamProgressCoalescer } from "~/lib/chat/stream-progress-coalescer";
 import { getChatStreamLoadingMessage } from "~/lib/chat/stream-state";
 import { recoverDetachedTurn } from "~/lib/chat/turn-recovery";
 import { getLocalChatScope } from "~/lib/local/local-chat-scope";
@@ -310,6 +311,8 @@ export function useStreamingResponse(
         }
       };
 
+      const streamProgress = createStreamProgressCoalescer(handleMessageUpdate);
+
       try {
         if (isLocal) {
           const currentModel = normalizeSelectedModel(options?.model ?? model);
@@ -330,18 +333,22 @@ export function useStreamingResponse(
           const lastMessage = messages[messages.length - 1];
           const lastMessageContent = getMessageTextContent(lastMessage);
 
-          response = await webLLMService.generate(
-            String(conversationId),
-            lastMessageContent,
-            async (_chatId: string, content: any, _model: any, _mode: any, role: string) => {
-              if (role !== "user") {
-                handleMessageUpdate(content);
-              }
+          try {
+            response = await webLLMService.generate(
+              String(conversationId),
+              lastMessageContent,
+              async (_chatId: string, content: any, _model: any, _mode: any, role: string) => {
+                if (role !== "user") {
+                  streamProgress.handleUpdate(content);
+                }
 
-              return [];
-            },
-            handleProgress,
-          );
+                return [];
+              },
+              handleProgress,
+            );
+          } finally {
+            streamProgress.stop();
+          }
         } else {
           const shouldStore = storageMode.shouldSyncRemote;
 
@@ -415,25 +422,31 @@ export function useStreamingResponse(
             updateLoading("stream-response", undefined, msg);
           };
 
-          const assistantMessage = await apiService.streamChatCompletions({
-            chatSettings,
-            completionId: conversationId,
-            endpoint: chatMode === "agent" ? `/agents/${selectedAgentId}/completions` : undefined,
-            messages: normalizedMessages,
-            mode: chatMode,
-            model: modelToSend,
-            modelConfig: modelConfigToSend,
-            modelRouterMode: selectedModel ? undefined : autoMode,
-            models: modelsToSend?.length ? modelsToSend : undefined,
-            onProgress: handleMessageUpdate,
-            onStateChange: handleStateChange,
-            provider: providerToSend,
-            requestOptions: effectiveRequestOptions,
-            signal: requestSignal,
-            store: shouldStore,
-            streamingEnabled: true,
-            useMultiModel: modelsToSend && modelsToSend.length > 1 ? true : useMultiModel,
-          });
+          let assistantMessage: Message;
+
+          try {
+            assistantMessage = await apiService.streamChatCompletions({
+              chatSettings,
+              completionId: conversationId,
+              endpoint: chatMode === "agent" ? `/agents/${selectedAgentId}/completions` : undefined,
+              messages: normalizedMessages,
+              mode: chatMode,
+              model: modelToSend,
+              modelConfig: modelConfigToSend,
+              modelRouterMode: selectedModel ? undefined : autoMode,
+              models: modelsToSend?.length ? modelsToSend : undefined,
+              onProgress: streamProgress.handleUpdate,
+              onStateChange: handleStateChange,
+              provider: providerToSend,
+              requestOptions: effectiveRequestOptions,
+              signal: requestSignal,
+              store: shouldStore,
+              streamingEnabled: true,
+              useMultiModel: modelsToSend && modelsToSend.length > 1 ? true : useMultiModel,
+            });
+          } finally {
+            streamProgress.stop();
+          }
 
           if (shouldStore) {
             markConversationRemoteAvailable(conversationId);
