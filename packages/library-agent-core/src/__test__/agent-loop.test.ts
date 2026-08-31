@@ -318,6 +318,62 @@ describe("executeAgentLoop", () => {
     expect(result.summary).toBe("Done.");
   });
 
+  it("stops the loop when guardExecution signals cancellation", async () => {
+    const resolveTurn = vi.fn();
+
+    await expect(
+      executeAgentLoop({
+        initialMessages: [{ role: "user", content: "start" }],
+        initialPlan: "Plan",
+        shared: {},
+        state: { commandCount: 0 },
+        guardExecution: async () => {
+          throw new Error("Agent run cancelled during execution");
+        },
+        resolveTurn,
+        executeToolCalls: async () => {},
+      }),
+    ).rejects.toThrow("Agent run cancelled during execution");
+    expect(resolveTurn).not.toHaveBeenCalled();
+  });
+
+  it("propagates a turn error instead of entering recovery when shouldAbortOnTurnError allows it", async () => {
+    const resolveTurn = vi.fn(async () => {
+      throw new Error("Fatal provider error");
+    });
+    const executeToolCalls = vi.fn();
+
+    await expect(
+      executeAgentLoop({
+        initialMessages: [{ role: "user", content: "start" }],
+        initialPlan: "Plan",
+        shared: {},
+        state: { commandCount: 0 },
+        resolveTurn,
+        shouldAbortOnTurnError: () => true,
+        executeToolCalls,
+      }),
+    ).rejects.toThrow("Fatal provider error");
+    expect(resolveTurn).toHaveBeenCalledTimes(1);
+    expect(executeToolCalls).not.toHaveBeenCalled();
+  });
+
+  it("gives up once repeated recovery attempts exhaust the replan budget", async () => {
+    await expect(
+      executeAgentLoop({
+        initialMessages: [{ role: "user", content: "start" }],
+        initialPlan: "Plan",
+        shared: {},
+        state: { commandCount: 0 },
+        config: { maxConsecutiveTurnFailures: 1, maxRecoveryReplans: 0 },
+        resolveTurn: async () => {
+          throw new Error("Provider returned nothing usable");
+        },
+        executeToolCalls: async () => {},
+      }),
+    ).rejects.toThrow("Agent exhausted recovery replans (0)");
+  });
+
   it("throws once the step budget cannot be extended further", async () => {
     await expect(
       executeAgentLoop({
