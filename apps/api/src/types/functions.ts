@@ -10,6 +10,5 @@ export type ApiToolDefinition = Omit<
   execute: (input: any, context: ToolExecutionContext) => Promise<IFunctionResponse>;
   maxIdenticalCalls?: number;
   normaliseInput?: (input: unknown) => unknown;
-  /** Tools this one cannot be used without, activated alongside it by capability discovery. */
   companionTools?: readonly string[];
 };

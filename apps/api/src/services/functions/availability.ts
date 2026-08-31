@@ -7,10 +7,6 @@ import {
 import type { IUser } from "~/types";
 import { intersectEnabledTools } from "~/utils/enabledTools";
 
-/**
- * Discovery is how a managed turn reaches every other capability, so it stays enabled even when a
- * project curates a narrower list. Everything beyond this baseline is activated by discovery.
- */
 const DISCOVERY_FUNCTION_TOOLS = [CAPABILITY_DISCOVERY_TOOL_NAME, SKILL_LOAD_TOOL_NAME] as const;
 const SIGNED_IN_FUNCTION_TOOLS = ["web_search"] as const;
 
@@ -31,11 +27,6 @@ export function resolveEnabledFunctionToolNames(
   return new Set(resolveManagedFunctionToolNames({ isSignedIn: Boolean(user?.id) }));
 }
 
-/**
- * Managed selection is additive: a caller may still configure tools (an agent, a recipe launch, a
- * hosted model tool), and the server tops that up with the baseline it owns. A project stays
- * authoritative over everything except discovery.
- */
 export function resolveRequestFunctionToolNames(params: {
   projectTools?: readonly string[];
   requestedToolNames: readonly string[] | undefined;

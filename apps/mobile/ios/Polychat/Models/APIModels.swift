@@ -73,8 +73,6 @@ public struct ChatCompletionRequest: Encodable {
         self.reasoningEffort = settings?.reasoningEffort?.rawValue
         self.verbosity = settings?.verbosity?.rawValue
         self.enabledTools = settings?.enabledTools.isEmpty == false ? settings?.enabledTools : nil
-        // The app never picks everyday tools itself; the server owns that and capability discovery
-        // switches on whatever a turn actually needs.
         self.toolSelectionMode = "managed"
     }
 }

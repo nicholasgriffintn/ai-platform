@@ -4,10 +4,6 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface ToolsStore {
-  /**
-   * Hosted model tools the person switched on, plus any function tools a configured surface (an
-   * agent, a recipe launch, a suggestion) asked for. Everyday function tools are the server's job.
-   */
   selectedTools: string[];
   setSelectedTools: (toolIds: string[]) => void;
   toggleTool: (toolId: string) => void;
@@ -39,8 +35,6 @@ export const useToolsStore = create<ToolsStore>()(
     {
       name: "tools-store",
       version: 1,
-      // Selections made in the old tool picker are stale once the server owns function tools, so
-      // only the hosted model toggles survive the upgrade.
       migrate: (persistedState) => {
         const previous = persistedState as { selectedTools?: unknown } | undefined;
         const selectedTools = Array.isArray(previous?.selectedTools)

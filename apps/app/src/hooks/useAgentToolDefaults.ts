@@ -13,11 +13,6 @@ type AgentWithTools = {
 const areToolsEqual = (left: readonly string[], right: readonly string[]) =>
   left.length === right.length && left.every((toolId, index) => toolId === right[index]);
 
-/**
- * An agent that names its own tools is a configuration, so its selection is sent as-is instead of
- * being topped up by the server's managed baseline. Leaving that agent hands the choice back to
- * the server and keeps only the hosted model toggles the person set themselves.
- */
 export const useAgentToolDefaults = ({
   agents,
   selectedAgentId,

@@ -186,10 +186,6 @@ export const listFunctionTools = (options?: {
 export const resolveToolRepeatLimit = (functionName: string): number | undefined =>
   toolRepeatLimits.get(functionName);
 
-/**
- * Some tools are useless on their own — capability discovery activates their companions with them
- * so a managed turn does not end up holding half a workflow.
- */
 export const expandFunctionToolNames = (toolNames: readonly string[]): string[] => {
   const expanded = new Set<string>();
 

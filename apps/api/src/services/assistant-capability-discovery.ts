@@ -39,10 +39,6 @@ type CapabilityActivationAccess = Pick<
   "activatableToolIds" | "enabledToolIds"
 >;
 
-/**
- * A ready recipe or connector is useless unless the tool that runs it is switched on, so discovery
- * activates it for the rest of the response the same way it does a directly discovered tool.
- */
 function resolveAutoActivation(
   toolName: string,
   access: CapabilityActivationAccess,

@@ -10,10 +10,6 @@ import {
 import { expandFunctionToolNames } from "~/services/functions";
 import type { Message } from "~/types";
 
-/**
- * Only these tools may widen the turn's tool set. Anything else could be relaying data from an
- * external service, and a tool result is not a place to accept instructions from one.
- */
 const ACTIVATING_TOOL_NAMES = new Set<string>([
   CAPABILITY_DISCOVERY_TOOL_NAME,
   SKILL_LOAD_TOOL_NAME,
