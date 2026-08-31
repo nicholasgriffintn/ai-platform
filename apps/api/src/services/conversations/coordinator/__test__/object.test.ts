@@ -67,4 +67,25 @@ describe("ConversationCoordinator", () => {
 
     expect([first.acquired, second.acquired].filter(Boolean)).toHaveLength(1);
   });
+
+  it("frees the thread when the holder releases it", async () => {
+    const coordinator = createCoordinator();
+
+    await acquire(coordinator, "user_message");
+    await coordinator.fetch(new Request("https://coordinator/release", { method: "POST" }));
+
+    const second = await acquire(coordinator, "edit_messages").then((response: Response) =>
+      response.json(),
+    );
+
+    expect(second.acquired).toBe(true);
+  });
+
+  it("refuses an operation it does not recognise", async () => {
+    const coordinator = createCoordinator();
+
+    const response = await acquire(coordinator, "not_a_thread_operation");
+
+    expect(response.status).toBe(400);
+  });
 });

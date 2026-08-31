@@ -2,6 +2,7 @@ import { isAsyncInvocationPending } from "~/lib/async/asyncInvocation";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { hydrateConnectorApprovalMessageState } from "~/services/apps/connectors/approval-message-state";
+import { withThreadLockIfFree } from "~/services/conversations/coordinator/client";
 import type { Message } from "~/types";
 
 import { handleAsyncInvocation } from "./async/handler";
@@ -23,24 +24,30 @@ async function refreshPendingMessages(
   messages: Message[],
   user: ReturnType<ServiceContext["requireUser"]>,
 ): Promise<Message[]> {
-  return await Promise.all(
-    messages.map(async (message) => {
-      const asyncInvocation = getPendingAsyncInvocation(message);
+  const refreshed = await withThreadLockIfFree(
+    { env: context.env, conversationId: completionId, kind: "async_result" },
+    () =>
+      Promise.all(
+        messages.map(async (message) => {
+          const asyncInvocation = getPendingAsyncInvocation(message);
 
-      if (!asyncInvocation) {
-        return message;
-      }
+          if (!asyncInvocation) {
+            return message;
+          }
 
-      const result = await handleAsyncInvocation(asyncInvocation, message, {
-        conversationManager,
-        conversationId: completionId,
-        env: context.env,
-        user,
-      });
+          const result = await handleAsyncInvocation(asyncInvocation, message, {
+            conversationManager,
+            conversationId: completionId,
+            env: context.env,
+            user,
+          });
 
-      return result.message;
-    }),
+          return result.message;
+        }),
+      ),
   );
+
+  return refreshed ?? messages;
 }
 
 export const handleGetChatCompletion = async (
