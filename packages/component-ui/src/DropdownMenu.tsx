@@ -1,9 +1,11 @@
 import {
   cloneElement,
   isValidElement,
+  type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
   useEffect,
+  useId,
   useRef,
   useState,
 } from "react";
@@ -33,15 +35,21 @@ export function DropdownMenu({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuItemsRef = useRef<HTMLElement[]>([]);
   const [focusIndex, setFocusIndex] = useState(-1);
+  const triggerId = useId();
 
   useEffect(() => {
     if (!isOpen) {
+      setFocusIndex(-1);
+
       return;
     }
 
     menuItemsRef.current = Array.from(
-      menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [],
+      menuRef.current?.querySelectorAll<HTMLElement>(
+        '[role="menuitem"]:not([aria-disabled="true"]):not(:disabled)',
+      ) ?? [],
     );
+    setFocusIndex(menuItemsRef.current.length > 0 ? 0 : -1);
 
     const menuRoot = menuRef.current;
     const ownerDocument = menuRoot?.ownerDocument;
@@ -76,8 +84,51 @@ export function DropdownMenu({
 
   const toggleMenu = () => {
     setIsOpen((open) => !open);
+  };
+
+  /**
+   * The menu renders as a sibling of the trigger, so keys pressed while the
+   * trigger still holds focus only reach a handler on their shared wrapper.
+   */
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (!isOpen) {
-      setFocusIndex(-1);
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        setIsOpen(true);
+      }
+
+      return;
+    }
+
+    switch (event.key) {
+      case "ArrowDown":
+        event.preventDefault();
+        setFocusIndex((previous) =>
+          previous < menuItemsRef.current.length - 1 ? previous + 1 : 0,
+        );
+        break;
+      case "ArrowUp":
+        event.preventDefault();
+        setFocusIndex((previous) =>
+          previous > 0 ? previous - 1 : menuItemsRef.current.length - 1,
+        );
+        break;
+      case "Home":
+        event.preventDefault();
+        setFocusIndex(0);
+        break;
+      case "End":
+        event.preventDefault();
+        setFocusIndex(menuItemsRef.current.length - 1);
+        break;
+      case "Escape":
+        event.preventDefault();
+        setIsOpen(false);
+        triggerRef.current?.focus();
+        break;
+      case "Tab":
+        setIsOpen(false);
+        break;
     }
   };
 
@@ -85,6 +136,7 @@ export function DropdownMenu({
     <div
       className={`relative ${className}`}
       ref={menuRef}
+      onKeyDown={handleKeyDown}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) {
           setIsOpen(false);
@@ -94,6 +146,7 @@ export function DropdownMenu({
       {buttonProps ? (
         <Button
           {...buttonProps}
+          id={triggerId}
           onClick={toggleMenu}
           aria-haspopup="menu"
           aria-expanded={isOpen}
@@ -104,13 +157,8 @@ export function DropdownMenu({
       ) : (
         <button
           type="button"
+          id={triggerId}
           onClick={toggleMenu}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              toggleMenu();
-            }
-          }}
           aria-haspopup="menu"
           aria-expanded={isOpen}
           ref={triggerRef}
@@ -126,39 +174,7 @@ export function DropdownMenu({
           role="menu"
           tabIndex={-1}
           aria-orientation="vertical"
-          aria-labelledby={triggerRef.current?.id}
-          onKeyDown={(event) => {
-            switch (event.key) {
-              case "ArrowDown":
-                event.preventDefault();
-                setFocusIndex((previous) =>
-                  previous < menuItemsRef.current.length - 1 ? previous + 1 : 0,
-                );
-                break;
-              case "ArrowUp":
-                event.preventDefault();
-                setFocusIndex((previous) =>
-                  previous > 0 ? previous - 1 : menuItemsRef.current.length - 1,
-                );
-                break;
-              case "Home":
-                event.preventDefault();
-                setFocusIndex(0);
-                break;
-              case "End":
-                event.preventDefault();
-                setFocusIndex(menuItemsRef.current.length - 1);
-                break;
-              case "Escape":
-                event.preventDefault();
-                setIsOpen(false);
-                triggerRef.current?.focus();
-                break;
-              case "Tab":
-                setIsOpen(false);
-                break;
-            }
-          }}
+          aria-labelledby={triggerId}
         >
           <div className="py-1">{children}</div>
         </div>
