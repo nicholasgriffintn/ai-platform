@@ -43,6 +43,31 @@ Forward a configured non-default `reasoning_effort` as a top-level field only th
 
 Bedrock's Anthropic path carries reasoning in Converse `additionalModelRequestFields` and follows the catalogue's `thinkingApi` discriminator. An `adaptive` model takes `thinking: {type: "adaptive"}` with `output_config.effort`, and rejects sampling, so temperature and top-p are dropped from `inferenceConfig`. A `budget` model takes `thinking: {type: "enabled"}` with a `budget_tokens` value held below the request's max tokens. A Bedrock model without the discriminator gets no reasoning payload, which keeps the Anthropic body shape away from the other families Bedrock serves.
 
+## Plan entitlement, usage counters and billing state
+
+Plans are ranked, not compared for equality. `PLAN_RANKS` in `apps/api/src/constants/plans.ts` orders
+`free` below `pro` below `enterprise`, and `hasPlanEntitlement` in `apps/api/src/lib/plans.ts` is the only
+way to ask whether an account satisfies a requirement. `requirePlan("pro")` therefore admits an enterprise
+account. Use the same helper wherever a feature asks "is this person paid" so the check that admits a turn
+and the increment that bills it cannot disagree.
+
+Daily usage counters are written with relative SQL. `UserRepository.incrementUsageCounters` and
+`AnonymousUserRepository.incrementDailyCount` each apply a single `SET column = column + ?` statement whose
+`CASE` restarts the counter when the stored reset stamp is not today's UTC day. Never read a counter, add to
+it, and write the total back: concurrent requests all read the same value and a limit stops holding.
+
+Text-to-speech is reachable without an account, so `apps/api/src/lib/audio/access.ts` gates it. An anonymous
+caller may only use the platform-hosted provider and spends the anonymous daily message allowance; naming any
+paid third-party provider requires an account. Transcription requires an account outright. Signed-in callers
+keep the existing plan and provider-key checks in the speech and transcription services.
+
+Stripe webhooks map subscription **status** to entitlement, not just deletion.
+`resolvePlanForSubscriptionStatus` treats `active` and `trialing` as entitled and `past_due`, `unpaid`,
+`incomplete_expired`, `paused` and `canceled` as revoked; `invoice.payment_failed` revokes and
+`invoice.paid` restores. Every handler writes only when the stored state actually changes, so a redelivered
+event neither rewrites the row nor sends a second email. An account that outranks `pro` is never downgraded
+by a lapsed subscription, because enterprise entitlement is granted outside Stripe.
+
 ## Embedding API safety and lifecycle
 
 The authenticated `/apps/embeddings` API is personal-only. Derive the person from

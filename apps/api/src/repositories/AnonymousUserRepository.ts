@@ -1,4 +1,5 @@
 import type { AnonymousUser } from "~/types";
+import { formatUtcDateKey } from "~/utils/date";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
@@ -177,21 +178,26 @@ export class AnonymousUserRepository extends BaseRepository {
     };
   }
 
-  public async incrementDailyCount(id: string): Promise<void> {
-    const user = await this.getAnonymousUserById(id);
+  public async incrementDailyCount(id: string, occurredAt: Date = new Date()): Promise<void> {
+    const day = formatUtcDateKey(occurredAt);
+    const timestamp = occurredAt.toISOString();
 
-    if (!user) {
+    const result = await this.executeRun(
+      `UPDATE anonymous_user
+			 SET daily_message_count = CASE
+			       WHEN date(daily_reset) = ? THEN COALESCE(daily_message_count, 0) + 1
+			       ELSE 1
+			     END,
+			     daily_reset = CASE WHEN date(daily_reset) = ? THEN daily_reset ELSE ? END,
+			     last_active_at = ?,
+			     updated_at = datetime('now')
+			 WHERE id = ?`,
+      [day, day, timestamp, timestamp, id],
+    );
+
+    if (!result.meta?.changes) {
       throw new AssistantError("User not found", ErrorType.NOT_FOUND);
     }
-
-    const now = new Date();
-    const { count, isNewDay } = await this.checkAndResetDailyLimit(id);
-
-    await this.updateAnonymousUser(id, {
-      daily_message_count: count + 1,
-      last_active_at: now.toISOString(),
-      ...(isNewDay && { daily_reset: now.toISOString() }),
-    });
   }
 
   public async resetDailyUsage(resetAt: string): Promise<number> {
