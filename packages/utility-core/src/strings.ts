@@ -42,3 +42,17 @@ export function joinNonEmptyStrings(
     .filter((part): part is string => Boolean(part))
     .join(separator);
 }
+
+export function escapeHtml(value: string): string {
+  return value.replace(
+    /[&<>'"]/g,
+    (character) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "'": "&#39;",
+        '"': "&quot;",
+      })[character] ?? character,
+  );
+}

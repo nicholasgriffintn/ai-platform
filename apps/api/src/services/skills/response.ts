@@ -3,9 +3,9 @@ import {
   SKILL_LOAD_TOOL_NAME,
   type SkillResourceSummary,
 } from "@ngriffin_uk/polychat-schemas";
+import { escapeHtml } from "@ngriffin_uk/polychat-utility-core";
 
 import type { IFunctionResponse } from "~/types";
-import { escapeHtml } from "~/utils/html";
 
 import type { SkillContent, SkillResource, SkillResourceDescriptor } from "./types";
 

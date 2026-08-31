@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { ResponseView } from "./ResponseView";
+import { TemplateView } from "./TemplateView";
 import { CouncilMemberPickerView } from "./Views/CouncilMemberPickerView";
 
 describe("ResponseView", () => {
@@ -47,5 +48,33 @@ describe("ResponseView", () => {
     expect(screen.getByText("Operator")).toBeInTheDocument();
     expect(screen.queryByText("Architect")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Convene" })).not.toBeInTheDocument();
+  });
+
+  it("renders template markup while stripping anything scriptable from the template itself", () => {
+    const { container } = render(
+      <TemplateView
+        template={[
+          '<h2 class="title">{{name}}</h2>',
+          "<script>window.pwned = true;</script>",
+          '<img src="javascript:alert(1)" onerror="window.pwned = true" alt="logo">',
+          '<a href="https://example.com/report">Report</a>',
+          "<ul>{{#each tags}}<li>{{this}}</li>{{/each}}</ul>",
+        ].join("")}
+        data={{ name: "<b>Ada</b>", tags: ["alpha", "beta"] }}
+      />,
+    );
+
+    expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("<b>Ada</b>");
+    expect(container.querySelector("b")).toBeNull();
+    expect(container.querySelector("script")).toBeNull();
+    expect(container.innerHTML).not.toContain("window.pwned");
+    expect(container.querySelector("img")).not.toHaveAttribute("src");
+    expect(container.querySelector("img")).toHaveAttribute("alt", "logo");
+    expect(screen.getByRole("link", { name: "Report" })).toHaveAttribute(
+      "href",
+      "https://example.com/report",
+    );
+    expect(container.querySelectorAll("li")).toHaveLength(2);
+    expect(screen.getByRole("heading", { level: 2 })).toHaveClass("title");
   });
 });

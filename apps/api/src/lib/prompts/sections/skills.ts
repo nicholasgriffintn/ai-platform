@@ -1,6 +1,5 @@
 import { SKILL_LOAD_TOOL_NAME, type SkillAvailability } from "@ngriffin_uk/polychat-schemas";
-
-import { escapeHtml } from "~/utils/html";
+import { escapeHtml } from "@ngriffin_uk/polychat-utility-core";
 
 import { PromptBuilder } from "../builder";
 

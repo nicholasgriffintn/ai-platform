@@ -1,6 +1,8 @@
+import { escapeHtml } from "@ngriffin_uk/polychat-utility-core";
 import { memo, useEffect, useMemo, useRef } from "react";
 
-import { escapeHtml, markdownToHtml } from "./markdown-to-html";
+import { markdownToHtml } from "./markdown-to-html";
+import { createSanitisedFragment } from "./sanitise-html";
 
 interface TemplateViewProps {
   template?: string;
@@ -156,10 +158,10 @@ export const TemplateView = memo(({ template, data }: TemplateViewProps) => {
       return undefined;
     }
 
-    container.innerHTML = html;
+    container.replaceChildren(createSanitisedFragment(html, container.ownerDocument));
 
     return () => {
-      container.innerHTML = "";
+      container.replaceChildren();
     };
   }, [html]);
 
