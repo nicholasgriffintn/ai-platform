@@ -98,7 +98,11 @@ export function InviteMemberDialog({
               </div>
             </div>
           )}
-          {errorMessage && <p className="text-sm text-red-700">{errorMessage}</p>}
+          {errorMessage && (
+            <p role="alert" className="text-sm text-red-700">
+              {errorMessage}
+            </p>
+          )}
           <DialogFooter>
             {inviteUrl ? (
               <Button type="button" onClick={() => handleOpenChange(false)}>

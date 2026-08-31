@@ -64,7 +64,11 @@ export function CreateWorkspaceDialog({
             maxLength={500}
             placeholder="Describe this workspace"
           />
-          {errorMessage && <p className="text-sm text-red-700">{errorMessage}</p>}
+          {errorMessage && (
+            <p role="alert" className="text-sm text-red-700">
+              {errorMessage}
+            </p>
+          )}
           <DialogFooter>
             <Button type="submit" isLoading={isSubmitting}>
               Create workspace
@@ -146,7 +150,11 @@ export function CreateProjectDialog({
               placeholder="Add context, terminology, constraints, or working preferences."
             />
           </div>
-          {errorMessage && <p className="text-sm text-red-700">{errorMessage}</p>}
+          {errorMessage && (
+            <p role="alert" className="text-sm text-red-700">
+              {errorMessage}
+            </p>
+          )}
           <DialogFooter>
             <Button type="submit" isLoading={isSubmitting}>
               Create project

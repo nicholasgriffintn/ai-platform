@@ -156,3 +156,17 @@ a {
     text-decoration-thickness: 2px;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin {
+    animation-duration: 2s;
+  }
+
+  .animate-pulse {
+    animation-duration: 4s;
+  }
+
+  .animate-bounce {
+    animation: none;
+  }
+}

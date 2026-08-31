@@ -370,7 +370,11 @@ export function FlowEditorDialog({
             Add stage
           </Button>
 
-          {errorMessage ? <p className="text-sm text-red-600">{errorMessage}</p> : null}
+          {errorMessage ? (
+            <p role="alert" className="text-sm text-red-600">
+              {errorMessage}
+            </p>
+          ) : null}
 
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>

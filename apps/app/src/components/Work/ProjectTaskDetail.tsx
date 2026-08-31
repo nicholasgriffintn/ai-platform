@@ -46,7 +46,7 @@ export function ProjectTaskDetail({
       <PageShell.Content className="max-w-6xl">
         <BackLink href={`${basePath}/tasks`} label="Back to tasks" />
         <PageShell.Header title="Task" />
-        <p className="text-sm text-red-700 dark:text-red-400">
+        <p role="alert" className="text-sm text-red-700 dark:text-red-400">
           {error?.message ?? detailQuery.error?.message ?? "This task is no longer available."}
         </p>
       </PageShell.Content>
