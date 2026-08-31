@@ -29,6 +29,8 @@ import { SourceRepository } from "./SourceRepository";
 import { TaskRepository } from "./TaskRepository";
 import { TemplateRepository } from "./TemplateRepository";
 import { TrainingExampleRepository } from "./TrainingExampleRepository";
+import { UsageBalanceRepository } from "./UsageBalanceRepository";
+import { UsageEventRepository } from "./UsageEventRepository";
 import { UserPetRepository } from "./UserPetRepository";
 import { UserRepository } from "./UserRepository";
 import { UserSettingsRepository } from "./UserSettingsRepository";
@@ -62,6 +64,8 @@ export {
   UserPetRepository,
   UserRepository,
   UserSettingsRepository,
+  UsageBalanceRepository,
+  UsageEventRepository,
   WebAuthnRepository,
   PlanRepository,
   ProjectTaskRepository,
@@ -81,6 +85,8 @@ export class RepositoryManager {
   private anonymousUserRepo: AnonymousUserRepository;
   private sessionRepo: SessionRepository;
   private userSettingsRepo: UserSettingsRepository;
+  private usageEventRepo: UsageEventRepository;
+  private usageBalanceRepo: UsageBalanceRepository;
   private userPetRepo: UserPetRepository;
   private capabilityConfigurationRepo: CapabilityConfigurationRepository;
   private conversationRepo: ConversationRepository;
@@ -116,6 +122,8 @@ export class RepositoryManager {
     this.anonymousUserRepo = new AnonymousUserRepository(env);
     this.sessionRepo = new SessionRepository(env);
     this.userSettingsRepo = new UserSettingsRepository(env);
+    this.usageEventRepo = new UsageEventRepository(env);
+    this.usageBalanceRepo = new UsageBalanceRepository(env);
     this.userPetRepo = new UserPetRepository(env);
     this.capabilityConfigurationRepo = new CapabilityConfigurationRepository(env);
     this.conversationRepo = new ConversationRepository(env);
@@ -189,6 +197,14 @@ export class RepositoryManager {
 
   public get userSettings(): UserSettingsRepository {
     return this.userSettingsRepo;
+  }
+
+  public get usageEvents(): UsageEventRepository {
+    return this.usageEventRepo;
+  }
+
+  public get usageBalances(): UsageBalanceRepository {
+    return this.usageBalanceRepo;
   }
 
   public get userPets(): UserPetRepository {

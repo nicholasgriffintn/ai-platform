@@ -106,6 +106,13 @@
       "when": 1788205349091,
       "tag": "0014_gigantic_vapor",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1788215679562,
+      "tag": "0015_worried_zaladane",
+      "breakpoints": true
     }
   ]
 }

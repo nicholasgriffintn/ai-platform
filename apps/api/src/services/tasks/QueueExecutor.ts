@@ -2,6 +2,7 @@ import {
   PROJECT_TASK_RUN_TASK_TYPE,
   OCR_BATCH_POLLING_TASK_TYPE,
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
+  USAGE_ROLLUP_TASK_TYPE,
   type TaskType,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -22,6 +23,7 @@ import { ReplicatePollingHandler } from "./handlers/ReplicatePollingHandler";
 import { ResearchPollingHandler } from "./handlers/ResearchPollingHandler";
 import { SandboxRunDispatchHandler } from "./handlers/SandboxRunDispatchHandler";
 import { TrainingQualityHandler } from "./handlers/TrainingQualityHandler";
+import { UsageRollupHandler } from "./handlers/UsageRollupHandler";
 import { UsageUpdateHandler } from "./handlers/UsageUpdateHandler";
 import { TaskExecutor } from "./TaskExecutor";
 import type { TaskHandler } from "./TaskHandler";
@@ -46,6 +48,7 @@ export function createTaskHandlers(): Map<TaskType, TaskHandler> {
     [SANDBOX_RUN_DISPATCH_TASK_TYPE, new SandboxRunDispatchHandler()],
     [PROJECT_TASK_RUN_TASK_TYPE, new ProjectTaskRunHandler()],
     [OCR_BATCH_POLLING_TASK_TYPE, new OcrBatchPollingHandler()],
+    [USAGE_ROLLUP_TASK_TYPE, new UsageRollupHandler()],
   ]);
 }
 

@@ -52,6 +52,7 @@ export interface StreamedTurn {
   toolCalls: ToolCall[];
   citations: unknown[];
   usage: NormalisedTokenUsage | null;
+  rawUsage?: unknown;
   structuredData: unknown;
   refusal: string | null;
   annotations: unknown;
@@ -469,6 +470,7 @@ export async function consumeProviderStream(
       }
 
       turn.usage = mergedUsage;
+      turn.rawUsage = extractedUsage;
     }
 
     const extractedStructuredData = StreamingFormatter.extractStructuredData(data);
