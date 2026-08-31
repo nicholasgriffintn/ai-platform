@@ -2,9 +2,9 @@ import { NoteCardGrid } from "@ngriffin_uk/polychat-component-experiences/conten
 import {
   ButtonLink,
   CardGridLoadingSkeleton,
+  cn,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
-import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { NoteMetadata } from "@ngriffin_uk/polychat-schemas";
 import { NotebookPen, Plus } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
