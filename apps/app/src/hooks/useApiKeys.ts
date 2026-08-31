@@ -38,7 +38,7 @@ export function useApiKeys() {
 
   const deleteApiKeyMutation = useMutation<void, Error, { keyId: string }>({
     mutationFn: ({ keyId }) => apiService.deleteApiKey(keyId),
-    onSuccess: (_) => {
+    onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: API_KEY_QUERY_KEYS.all });
     },
   });
