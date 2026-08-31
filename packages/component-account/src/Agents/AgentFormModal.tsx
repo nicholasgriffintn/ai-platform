@@ -85,7 +85,7 @@ export function AgentFormModal({
   };
 
   const modelOptions = Object.entries(apiModels)
-    .filter(([_, model]) => model.supportsToolCalls)
+    .filter(([, model]) => model.supportsToolCalls)
     .map(([id, model]) => ({
       value: id,
       label: model.name || id,
