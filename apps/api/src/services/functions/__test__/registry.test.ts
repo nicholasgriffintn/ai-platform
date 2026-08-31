@@ -1,4 +1,5 @@
 import { CAPABILITY_DISCOVERY_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
+import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 import { describe, expect, it } from "vitest";
 import z from "zod/v4";
 
@@ -31,12 +32,14 @@ describe("functions tool registry", () => {
   });
 
   it("describes exactly the tools the registry can execute", () => {
-    const executable = listFunctionTools()
-      .map((tool) => tool.name)
-      .sort();
-    const described = listFunctionToolDefinitions()
-      .map((tool) => tool.name)
-      .sort();
+    const executable = sortCopy(
+      listFunctionTools().map((tool) => tool.name),
+      compareNaturalText,
+    );
+    const described = sortCopy(
+      listFunctionToolDefinitions().map((tool) => tool.name),
+      compareNaturalText,
+    );
 
     expect(described).toEqual(executable);
   });
