@@ -77,6 +77,7 @@ export interface StoredOutputFileResult {
 export interface GetPrivateAssetBlobOptions {
   allowedMimePrefixes?: string[];
   allowedMimeTypes?: string[];
+  maxBytes?: number;
 }
 
 export class StorageService {
@@ -341,6 +342,14 @@ export class StorageService {
 
     if (!object) {
       throw new AssistantError("Private asset object not found", ErrorType.NOT_FOUND, 404);
+    }
+
+    if (options?.maxBytes && object.size > options.maxBytes) {
+      throw new AssistantError(
+        "Private asset exceeds the allowed size",
+        ErrorType.PARAMS_ERROR,
+        413,
+      );
     }
 
     return new Blob([await object.arrayBuffer()], { type: asset.mime_type });

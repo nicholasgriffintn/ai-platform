@@ -38,18 +38,7 @@ export class MistralTranscriptionProvider extends BaseTranscriptionProvider {
       });
       const formData = new FormData();
 
-      if (
-        typeof audio === "string" &&
-        (audio.startsWith("http://") || audio.startsWith("https://"))
-      ) {
-        formData.append("file_url", audio);
-      } else {
-        if (!(audio instanceof Blob)) {
-          throw new AssistantError("Audio must be a Blob or a URL string", ErrorType.PARAMS_ERROR);
-        }
-
-        formData.append("file", audio, "audio.wav");
-      }
+      formData.append("file", audio.file, "audio");
 
       formData.append("model", "voxtral-mini-2507");
       formData.append("language", "en");
@@ -64,6 +53,7 @@ export class MistralTranscriptionProvider extends BaseTranscriptionProvider {
         method: "POST",
         headers: {
           "cf-aig-authorization": env.AI_GATEWAY_TOKEN,
+          "cf-aig-skip-cache": "true",
           Authorization: `Bearer ${apiKey}`,
         },
         body: formData,

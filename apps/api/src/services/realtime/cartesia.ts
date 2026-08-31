@@ -68,12 +68,14 @@ export async function createCartesiaRealtimeProxyResponse({
   user,
   model,
   language,
+  onSessionEnd,
 }: {
   context: Context;
   env: IEnv;
   user: IUser;
   model?: string;
   language?: string;
+  onSessionEnd?: () => void | Promise<void>;
 }): Promise<Response> {
   const provider = getRealtimeProvider("cartesia", { env, user });
   const apiKey = await provider.getApiKey?.({
@@ -104,6 +106,7 @@ export async function createCartesiaRealtimeProxyResponse({
       "X-API-Key": apiKey,
       "Cartesia-Version": "2025-04-16",
     },
+    onSessionEnd,
     toUpstreamMessage: toCartesiaUpstreamMessage,
     toClientMessage: toCartesiaClientMessage,
   });

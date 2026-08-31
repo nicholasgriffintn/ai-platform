@@ -10,7 +10,7 @@ import type {
   RealtimeSessionRequest,
   RealtimeTranscriptionDelay,
 } from "../index";
-import { buildRealtimeProxyUrl } from "./proxyUrl";
+import { buildGrantedRealtimeProxyUrl } from "./proxyUrl";
 
 const DEFAULT_TRANSCRIPTION_MODEL = getRealtimeLiveProviderManifestItem("cartesia").defaultModelId;
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
@@ -79,18 +79,29 @@ export class CartesiaRealtimeProvider implements RealtimeProvider {
 
     const model = await this.resolveModel(request);
     const delay = this.getTranscriptionDelay(request);
+    const sessionId = generateId();
+    const proxy = await buildGrantedRealtimeProxyUrl({
+      apiBaseUrl: request.apiBaseUrl ?? request.env.API_BASE_URL,
+      env: request.env,
+      model,
+      params: {
+        delay,
+        language: request.language,
+      },
+      path: CARTESIA_REALTIME_PROXY_PATH,
+      provider: this.name,
+      sessionId,
+      userId: request.user.id,
+    });
 
     return {
-      id: generateId(),
+      id: sessionId,
       object: "realtime.transcription.session",
       type: "transcription",
       provider: this.name,
       transport: "websocket",
-      url: buildRealtimeProxyUrl({
-        apiBaseUrl: request.apiBaseUrl ?? request.env.API_BASE_URL,
-        path: CARTESIA_REALTIME_PROXY_PATH,
-        params: { model, delay },
-      }),
+      url: proxy.url,
+      proxy_grant_expires_at: proxy.expiresAt,
       audio_format: this.buildAudioFormat(),
       input_audio_format: this.buildAudioFormat().encoding,
       input_audio_transcription: {

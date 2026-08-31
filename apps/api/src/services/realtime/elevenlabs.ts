@@ -160,12 +160,14 @@ export async function createElevenLabsRealtimeProxyResponse({
   user,
   model,
   language,
+  onSessionEnd,
 }: {
   context: Context;
   env: IEnv;
   user: IUser;
   model?: string;
   language?: string;
+  onSessionEnd?: () => void | Promise<void>;
 }): Promise<Response> {
   const provider = getRealtimeProvider("elevenlabs", { env, user });
   const apiKey = await provider.getApiKey?.({
@@ -192,6 +194,7 @@ export async function createElevenLabsRealtimeProxyResponse({
     providerLabel: "ElevenLabs",
     upstreamUrl,
     headers: { "xi-api-key": apiKey },
+    onSessionEnd,
     toUpstreamMessage: createElevenLabsUpstreamMessageMapper(),
     toClientMessage: createElevenLabsClientMessageMapper(),
   });

@@ -348,7 +348,7 @@ class ApiService {
 
   // ===== Upload Methods =====
 
-  transcribeAudio = (audioBlob: Blob): Promise<any> => {
+  transcribeAudio = (audioBlob: Blob): ReturnType<UploadService["transcribeAudio"]> => {
     return this.uploadService.transcribeAudio(audioBlob);
   };
 

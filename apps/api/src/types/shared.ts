@@ -40,6 +40,7 @@ export type IEnv = {
   TRAINING_WORKER_TOKEN?: string;
   SANDBOX_RUN_COORDINATOR?: DurableObjectNamespace;
   CONVERSATION_COORDINATOR?: DurableObjectNamespace;
+  REALTIME_PROXY_COORDINATOR?: DurableObjectNamespace;
   GROK_API_KEY?: string;
   HUGGINGFACE_TOKEN?: string;
   REPLICATE_API_TOKEN?: string;

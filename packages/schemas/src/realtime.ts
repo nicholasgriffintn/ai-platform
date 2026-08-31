@@ -24,6 +24,14 @@ export const realtimeModalitySchema = z.enum(realtimeModalities);
 export const realtimeOutputModalitySchema = z.enum(realtimeOutputModalities);
 export const realtimeTranscriptionDelaySchema = z.enum(realtimeTranscriptionDelays);
 
+export const realtimeProxyGrantQuerySchema = z.object({
+  grant: z.string().min(1),
+  session_id: z.string().min(1),
+  model: z.string().min(1),
+  delay: realtimeTranscriptionDelaySchema.optional(),
+  language: z.string().trim().min(1).optional(),
+});
+
 export const realtimeSessionResponseSchema = z
   .object({
     id: z.string(),
@@ -99,6 +107,7 @@ export const realtimeSessionResponseSchema = z
       })
       .optional(),
     target_streaming_delay_ms: z.number().optional(),
+    proxy_grant_expires_at: z.number().int().positive().optional(),
     client_secret: z
       .object({
         expires_at: z.number().optional(),

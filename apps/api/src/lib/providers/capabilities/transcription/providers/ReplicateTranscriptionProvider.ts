@@ -36,7 +36,7 @@ export class ReplicateTranscriptionProvider extends BaseTranscriptionProvider {
             role: "user",
             content: {
               // @ts-ignore - replicate format
-              file: audio,
+              file: audio.file,
               language: "en",
               transcript_output_format: "segments_only",
               group_segments: true,

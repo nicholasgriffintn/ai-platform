@@ -11,6 +11,8 @@ const createElevenLabsRealtimeProxyResponseMock = vi.hoisted(() => vi.fn());
 const createMistralRealtimeProxyResponseMock = vi.hoisted(() => vi.fn());
 const getDefaultModelMock = vi.hoisted(() => vi.fn());
 const listModelsMock = vi.hoisted(() => vi.fn());
+const assertRealtimeProxyGrantMock = vi.hoisted(() => vi.fn());
+const releaseReservationMock = vi.hoisted(() => vi.fn());
 
 vi.mock("~/lib/providers/capabilities/realtime", () => ({
   getRealtimeProvider: vi.fn(() => ({
@@ -25,6 +27,14 @@ vi.mock("~/lib/providers/capabilities/realtime", () => ({
 
 vi.mock("~/services/models", () => ({
   listModels: listModelsMock,
+}));
+
+vi.mock("~/lib/realtime/proxy-grant", () => ({
+  assertRealtimeProxyGrant: assertRealtimeProxyGrantMock,
+  connectReservedRealtimeProxy: (
+    reservation: { release: () => Promise<void> },
+    connect: (onSessionEnd: () => Promise<void>) => Promise<Response>,
+  ) => connect(reservation.release),
 }));
 
 vi.mock("~/services/realtime/mistral", () => ({
@@ -78,6 +88,43 @@ describe("realtime routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     getDefaultModelMock.mockReturnValue("gpt-realtime-2");
+    releaseReservationMock.mockResolvedValue(undefined);
+    assertRealtimeProxyGrantMock.mockResolvedValue({ release: releaseReservationMock });
+  });
+
+  it("requires and verifies a session-bound grant before opening a provider proxy", async () => {
+    createMistralRealtimeProxyResponseMock.mockResolvedValue(new Response("connected"));
+
+    const response = await createApp().request(
+      new Request(
+        "https://api.polychat.test/realtime/mistral/transcription?grant=signed&session_id=session-1&model=voxtral-mini-transcribe-realtime-2602&delay=low",
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store");
+    expect(assertRealtimeProxyGrantMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        grant: "signed",
+        model: "voxtral-mini-transcribe-realtime-2602",
+        provider: "mistral",
+        sessionId: "session-1",
+        user: testUser,
+      }),
+    );
+    expect(createMistralRealtimeProxyResponseMock).toHaveBeenCalledOnce();
+  });
+
+  it("rejects a proxy request without a grant before provider connection", async () => {
+    const response = await createApp().request(
+      new Request(
+        "https://api.polychat.test/realtime/mistral/transcription?session_id=session-1&model=voxtral-mini-transcribe-realtime-2602",
+      ),
+    );
+
+    expect(response.status).toBe(400);
+    expect(assertRealtimeProxyGrantMock).not.toHaveBeenCalled();
+    expect(createMistralRealtimeProxyResponseMock).not.toHaveBeenCalled();
   });
 
   it("blocks session creation when the user cannot access the realtime model", async () => {
