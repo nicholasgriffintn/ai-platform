@@ -381,7 +381,7 @@ describe("Subscription Service", () => {
         },
       };
 
-      const mockUser = { id: 1, email: "test@example.com" };
+      const mockUser = { id: 1, email: "test@example.com", plan_id: "free" };
 
       mockStripe.webhooks.constructEventAsync.mockResolvedValue(mockEvent);
       mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(mockUser);
@@ -389,12 +389,36 @@ describe("Subscription Service", () => {
       const result = await handleStripeWebhook(mockEnv, "test-signature", "test-payload");
 
       expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(1, {
-        stripe_customer_id: "cus_123",
         stripe_subscription_id: "sub_123",
         plan_id: "pro",
       });
       expect(mockSendSubscriptionEmail).toHaveBeenCalledWith(mockEnv, "test@example.com", "Pro");
       expect(result).toEqual({ received: true });
+    });
+
+    it("should not repeat the checkout side effects when the event is redelivered", async () => {
+      const mockEvent = {
+        type: "checkout.session.completed",
+        data: {
+          object: {
+            customer: "cus_123",
+            subscription: "sub_123",
+          },
+        },
+      };
+
+      mockStripe.webhooks.constructEventAsync.mockResolvedValue(mockEvent);
+      mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue({
+        id: 1,
+        email: "test@example.com",
+        plan_id: "pro",
+        stripe_subscription_id: "sub_123",
+      });
+
+      await handleStripeWebhook(mockEnv, "test-signature", "test-payload");
+
+      expect(mockRepositories.users.updateUser).not.toHaveBeenCalled();
+      expect(mockSendSubscriptionEmail).not.toHaveBeenCalled();
     });
 
     it("should handle customer.subscription.deleted event", async () => {
@@ -408,7 +432,12 @@ describe("Subscription Service", () => {
         },
       };
 
-      const mockUser = { id: 1, email: "test@example.com" };
+      const mockUser = {
+        id: 1,
+        email: "test@example.com",
+        plan_id: "pro",
+        stripe_subscription_id: "sub_123",
+      };
 
       mockStripe.webhooks.constructEventAsync.mockResolvedValue(mockEvent);
       mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(mockUser);
@@ -423,7 +452,7 @@ describe("Subscription Service", () => {
       expect(result).toEqual({ received: true });
     });
 
-    it("should handle invoice.payment_failed event", async () => {
+    it("should revoke pro access and notify on invoice.payment_failed", async () => {
       const mockEvent = {
         type: "invoice.payment_failed",
         data: {
@@ -433,15 +462,91 @@ describe("Subscription Service", () => {
         },
       };
 
-      const mockUser = { id: 1, email: "test@example.com" };
+      const mockUser = { id: 1, email: "test@example.com", plan_id: "pro" };
 
       mockStripe.webhooks.constructEventAsync.mockResolvedValue(mockEvent);
       mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(mockUser);
 
       const result = await handleStripeWebhook(mockEnv, "test-signature", "test-payload");
 
+      expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(1, { plan_id: "free" });
       expect(mockSendPaymentFailedEmail).toHaveBeenCalledWith(mockEnv, "test@example.com");
       expect(result).toEqual({ received: true });
+    });
+
+    it.each(["past_due", "unpaid", "incomplete_expired", "paused"])(
+      "should revoke pro access when a subscription becomes %s",
+      async (status) => {
+        mockStripe.webhooks.constructEventAsync.mockResolvedValue({
+          type: "customer.subscription.updated",
+          data: { object: { id: "sub_123", customer: "cus_123", status } },
+        });
+        mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue({
+          id: 1,
+          email: "test@example.com",
+          plan_id: "pro",
+          stripe_subscription_id: "sub_123",
+        });
+
+        await handleStripeWebhook(mockEnv, "test-signature", "test-payload");
+
+        expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(1, { plan_id: "free" });
+        expect(mockSendPaymentFailedEmail).toHaveBeenCalledWith(mockEnv, "test@example.com");
+      },
+    );
+
+    it("should restore pro access when the subscription recovers", async () => {
+      mockStripe.webhooks.constructEventAsync.mockResolvedValue({
+        type: "customer.subscription.updated",
+        data: { object: { id: "sub_123", customer: "cus_123", status: "active" } },
+      });
+      mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue({
+        id: 1,
+        email: "test@example.com",
+        plan_id: "free",
+        stripe_subscription_id: "sub_123",
+      });
+
+      await handleStripeWebhook(mockEnv, "test-signature", "test-payload");
+
+      expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(1, { plan_id: "pro" });
+      expect(mockSendPaymentFailedEmail).not.toHaveBeenCalled();
+    });
+
+    it("should not downgrade or notify twice when a past_due event is redelivered", async () => {
+      mockStripe.webhooks.constructEventAsync.mockResolvedValue({
+        type: "customer.subscription.updated",
+        data: { object: { id: "sub_123", customer: "cus_123", status: "past_due" } },
+      });
+      mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue({
+        id: 1,
+        email: "test@example.com",
+        plan_id: "free",
+        stripe_subscription_id: "sub_123",
+      });
+
+      await handleStripeWebhook(mockEnv, "test-signature", "test-payload");
+
+      expect(mockRepositories.users.updateUser).not.toHaveBeenCalled();
+      expect(mockSendPaymentFailedEmail).not.toHaveBeenCalled();
+    });
+
+    it("should leave an enterprise plan intact when a subscription lapses", async () => {
+      mockStripe.webhooks.constructEventAsync.mockResolvedValue({
+        type: "customer.subscription.updated",
+        data: { object: { id: "sub_123", customer: "cus_123", status: "unpaid" } },
+      });
+      mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue({
+        id: 1,
+        email: "test@example.com",
+        plan_id: "enterprise",
+        stripe_subscription_id: "sub_123",
+      });
+
+      await handleStripeWebhook(mockEnv, "test-signature", "test-payload");
+
+      expect(mockRepositories.users.updateUser).not.toHaveBeenCalled();
+      expect(mockSendPaymentFailedEmail).not.toHaveBeenCalled();
     });
 
     it("should throw error for invalid webhook signature", async () => {

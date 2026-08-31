@@ -39,3 +39,7 @@ export function extractPromptFromMessages(messages: Message[]): string {
     })
     .join("\n");
 }
+
+export function normaliseModelIdentifier(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}

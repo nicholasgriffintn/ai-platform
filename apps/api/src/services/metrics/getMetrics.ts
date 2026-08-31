@@ -1,6 +1,16 @@
+import {
+  ANALYTICS_ENGINE_BLOB_COLUMNS,
+  ANALYTICS_ENGINE_DATASET,
+  ANALYTICS_ENGINE_DOUBLE_COLUMNS,
+  ANALYTICS_ENGINE_STATUS_COLUMN,
+  ANALYTICS_ENGINE_TYPE_COLUMN,
+  analyticsEngineBlobColumn,
+  analyticsEngineDoubleColumn,
+} from "~/lib/analytics/dataset-layout";
 import type { IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { isSimpleSqlLiteral } from "~/utils/sql";
 
 const logger = getLogger({ prefix: "services/metrics/getMetrics" });
 
@@ -10,6 +20,18 @@ interface MetricsQueryOptions {
   timeframe?: string;
   type?: string;
   status?: string;
+}
+
+function buildMetricsFilter(column: string, value?: string): string {
+  if (!value) {
+    return "";
+  }
+
+  if (!isSimpleSqlLiteral(value)) {
+    throw new AssistantError(`Invalid metrics filter value: ${value}`, ErrorType.PARAMS_ERROR);
+  }
+
+  return ` AND ${column} = '${value}'`;
 }
 
 export const handleGetMetrics = async (
@@ -31,40 +53,36 @@ export const handleGetMetrics = async (
     timeframe: options.timeframe || "24",
   };
 
+  const projectedColumns = [
+    ...ANALYTICS_ENGINE_BLOB_COLUMNS.map((column) => analyticsEngineBlobColumn(column)),
+    ...ANALYTICS_ENGINE_DOUBLE_COLUMNS.map((column) => analyticsEngineDoubleColumn(column)),
+  ];
+  const selectedColumns = [
+    ...ANALYTICS_ENGINE_BLOB_COLUMNS.map(
+      (column) => `${analyticsEngineBlobColumn(column)} as ${column}`,
+    ),
+    ...ANALYTICS_ENGINE_DOUBLE_COLUMNS.map(
+      (column) => `${analyticsEngineDoubleColumn(column)} as ${column}`,
+    ),
+  ];
+
   const buildQuery = () => {
-    let baseQuery = `
-        SELECT 
-            blob1 as type,
-            blob2 as name,
-            blob3 as status,
-            blob4 as error,
-            blob5 as traceId,
-						blob6 as metadata,
-            double1 as value,
+    return `
+        SELECT
+            ${selectedColumns.join(",\n            ")},
             timestamp,
-						toStartOfInterval(timestamp, INTERVAL '${queryOptions.interval}' MINUTE) as truncated_time,
-						SUM(_sample_interval) as sampleCount
-        FROM assistant_analytics
-        WHERE timestamp > now() - INTERVAL '${queryOptions.timeframe}' HOUR
-        `;
-
-    if (options.type) {
-      baseQuery += ` AND blob1 = '${options.type}'`;
-    }
-
-    if (options.status) {
-      baseQuery += ` AND blob3 = '${options.status}'`;
-    }
-
-    baseQuery += `
-        GROUP BY 
-            blob1, blob2, blob3, blob4, blob5, blob6,
-            double1, timestamp
+            toStartOfInterval(timestamp, INTERVAL '${queryOptions.interval}' MINUTE) as truncated_time,
+            SUM(_sample_interval) as sampleCount
+        FROM ${ANALYTICS_ENGINE_DATASET}
+        WHERE timestamp > now() - INTERVAL '${queryOptions.timeframe}' HOUR${buildMetricsFilter(
+          analyticsEngineBlobColumn(ANALYTICS_ENGINE_TYPE_COLUMN),
+          options.type,
+        )}${buildMetricsFilter(analyticsEngineBlobColumn(ANALYTICS_ENGINE_STATUS_COLUMN), options.status)}
+        GROUP BY
+            ${projectedColumns.join(", ")}, timestamp
         ORDER BY timestamp DESC
         LIMIT ${queryOptions.limit}
         `;
-
-    return baseQuery;
   };
 
   const query = buildQuery();

@@ -1,4 +1,5 @@
 import type { User } from "~/types";
+import { formatUtcDateKey } from "~/utils/date";
 
 import { BaseRepository } from "./BaseRepository";
 
@@ -8,6 +9,28 @@ export interface DailyUsageResetResult {
   byok: number;
   total: number;
 }
+
+export type CumulativeUsageCounter = "message_count" | "byok_message_count";
+
+export type DailyUsageCounter =
+  | "daily_message_count"
+  | "daily_pro_message_count"
+  | "daily_byok_message_count";
+
+export type UsageCounterIncrements = Partial<
+  Record<CumulativeUsageCounter | DailyUsageCounter, number>
+>;
+
+const CUMULATIVE_USAGE_COUNTERS: readonly CumulativeUsageCounter[] = [
+  "message_count",
+  "byok_message_count",
+];
+
+const DAILY_USAGE_COUNTERS: readonly (readonly [DailyUsageCounter, string])[] = [
+  ["daily_message_count", "daily_reset"],
+  ["daily_pro_message_count", "daily_pro_reset"],
+  ["daily_byok_message_count", "daily_byok_reset"],
+];
 
 export class UserRepository extends BaseRepository {
   public async getUserByOauthAccount(
@@ -63,6 +86,58 @@ export class UserRepository extends BaseRepository {
     }
 
     await this.executeRun(result.query, result.values);
+  }
+
+  public async incrementUsageCounters(
+    userId: number,
+    increments: UsageCounterIncrements,
+    occurredAt: Date = new Date(),
+  ): Promise<User | null> {
+    const assignments: string[] = [];
+    const values: unknown[] = [];
+    const day = formatUtcDateKey(occurredAt);
+    const timestamp = occurredAt.toISOString();
+
+    for (const counter of CUMULATIVE_USAGE_COUNTERS) {
+      const amount = increments[counter];
+
+      if (!amount) {
+        continue;
+      }
+
+      assignments.push(`${counter} = COALESCE(${counter}, 0) + ?`);
+      values.push(amount);
+    }
+
+    for (const [counter, resetColumn] of DAILY_USAGE_COUNTERS) {
+      const amount = increments[counter];
+
+      if (!amount) {
+        continue;
+      }
+
+      assignments.push(
+        `${counter} = CASE WHEN date(${resetColumn}) = ? THEN COALESCE(${counter}, 0) + ? ELSE ? END`,
+      );
+      values.push(day, amount, amount);
+      assignments.push(
+        `${resetColumn} = CASE WHEN date(${resetColumn}) = ? THEN ${resetColumn} ELSE ? END`,
+      );
+      values.push(day, timestamp);
+    }
+
+    if (assignments.length === 0) {
+      return this.getUserById(userId);
+    }
+
+    assignments.push("last_active_at = ?", "updated_at = datetime('now')");
+    values.push(timestamp, userId);
+
+    return this.runQuery<User>(
+      `UPDATE user SET ${assignments.join(", ")} WHERE id = ? RETURNING *`,
+      values,
+      true,
+    );
   }
 
   public async resetDailyUsage(resetAt: string): Promise<DailyUsageResetResult> {

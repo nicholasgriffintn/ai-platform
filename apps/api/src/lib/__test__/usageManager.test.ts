@@ -56,10 +56,25 @@ function makeAnonymousUser(overrides: Partial<AnonymousUser> = {}): AnonymousUse
   };
 }
 
-function makeRepositories(overrides: Record<string, any> = {}): RepositoryManager {
+function makeRepositories(overrides: Record<string, any> = {}, user?: User): RepositoryManager {
+  const counters: Record<string, number> = {
+    message_count: user?.message_count ?? 0,
+    byok_message_count: user?.byok_message_count ?? 0,
+    daily_message_count: user?.daily_message_count ?? 0,
+    daily_pro_message_count: user?.daily_pro_message_count ?? 0,
+    daily_byok_message_count: user?.daily_byok_message_count ?? 0,
+  };
+
   return {
     users: {
       updateUser: vi.fn(async () => {}),
+      incrementUsageCounters: vi.fn(async (_userId: number, increments: Record<string, number>) => {
+        for (const [field, amount] of Object.entries(increments)) {
+          counters[field] = (counters[field] ?? 0) + amount;
+        }
+
+        return user ? { ...user, ...counters } : null;
+      }),
     },
     anonymousUsers: {
       checkAndResetDailyLimit: vi.fn(async (_id: string) => ({
@@ -131,14 +146,14 @@ describe("UsageManager", () => {
 
     it("writes the incremented count directly when there is no task queue", async () => {
       const user = makeUser({ message_count: 5, daily_message_count: 5 });
-      const repositories = makeRepositories();
+      const repositories = makeRepositories({}, user);
       const manager = new UsageManager(repositories, user, null);
 
       await manager.incrementUsage();
 
-      expect(repositories.users.updateUser).toHaveBeenCalledWith(
+      expect(repositories.users.incrementUsageCounters).toHaveBeenCalledWith(
         1,
-        expect.objectContaining({ message_count: 6, daily_message_count: 6 }),
+        expect.objectContaining({ message_count: 1, daily_message_count: 1 }),
       );
       await expect(manager.checkUsage()).resolves.toMatchObject({
         dailyCount: 6,
@@ -158,7 +173,7 @@ describe("UsageManager", () => {
       expect(enqueueUsageTask).toHaveBeenCalledWith(
         expect.objectContaining({ action: "increment_usage", userId: 1 }),
       );
-      expect(repositories.users.updateUser).not.toHaveBeenCalled();
+      expect(repositories.users.incrementUsageCounters).not.toHaveBeenCalled();
       await expect(manager.checkUsage()).resolves.toMatchObject({
         dailyCount: 6,
       });
@@ -176,9 +191,9 @@ describe("UsageManager", () => {
 
       await manager.incrementUsage();
 
-      expect(repositories.users.updateUser).toHaveBeenCalledWith(
+      expect(repositories.users.incrementUsageCounters).toHaveBeenCalledWith(
         1,
-        expect.objectContaining({ daily_message_count: 6 }),
+        expect.objectContaining({ daily_message_count: 1 }),
       );
     });
   });
@@ -298,11 +313,11 @@ describe("UsageManager", () => {
 
       await manager.incrementProUsage("expensive-model");
 
-      expect(repositories.users.updateUser).toHaveBeenCalledWith(
+      expect(repositories.users.incrementUsageCounters).toHaveBeenCalledWith(
         1,
         expect.objectContaining({
-          message_count: 11,
-          daily_pro_message_count: 6,
+          message_count: 1,
+          daily_pro_message_count: 3,
         }),
       );
     });
@@ -338,12 +353,12 @@ describe("UsageManager", () => {
 
       await manager.incrementByokUsage();
 
-      expect(repositories.users.updateUser).toHaveBeenCalledWith(
+      expect(repositories.users.incrementUsageCounters).toHaveBeenCalledWith(
         1,
         expect.objectContaining({
-          message_count: 2,
-          byok_message_count: 3,
-          daily_byok_message_count: 4,
+          message_count: 1,
+          byok_message_count: 1,
+          daily_byok_message_count: 1,
         }),
       );
     });
@@ -364,7 +379,7 @@ describe("UsageManager", () => {
         manager.checkUsageByModel("pro-model", false),
         ErrorType.AUTHENTICATION_ERROR,
       );
-      expect(repositories.users.updateUser).not.toHaveBeenCalled();
+      expect(repositories.users.incrementUsageCounters).not.toHaveBeenCalled();
     });
 
     it("routes a free model for an authenticated user to the free-tier check", async () => {
@@ -458,7 +473,7 @@ describe("UsageManager", () => {
       const manager = new UsageManager(makeRepositories(), makeUser(), null);
 
       await expect(manager.getModelUsageMultiplier("expensive-model")).resolves.toEqual({
-        multiplier: 2,
+        multiplier: 3,
         modelCostInfo: { inputCost: 0.005, outputCost: 0.02 },
       });
     });
