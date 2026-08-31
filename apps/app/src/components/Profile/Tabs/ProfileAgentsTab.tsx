@@ -21,7 +21,7 @@ import { SharedAgentsBrowser } from "./SharedAgentsBrowser";
 
 export function ProfileAgentsTab() {
   const {
-    groupedAgents,
+    agents,
     isLoadingAgents,
     createAgent,
     isCreatingAgent,
@@ -139,7 +139,7 @@ export function ProfileAgentsTab() {
       />
 
       <AgentsList
-        groupedAgents={groupedAgents}
+        agents={agents}
         isLoading={isLoadingAgents}
         onEdit={handleEditClick}
         onShare={handleShareClick}
@@ -163,7 +163,6 @@ export function ProfileAgentsTab() {
         onSubmit={handleFormSubmit}
         isSubmitting={isCreatingAgent || isUpdatingAgent}
         apiModels={apiModels}
-        groupedAgents={groupedAgents}
         agent={editingAgent}
         tools={tools}
         isLoadingTools={isLoadingTools}

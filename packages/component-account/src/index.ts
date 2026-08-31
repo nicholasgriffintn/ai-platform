@@ -7,7 +7,6 @@ export * from "./Agents/types";
 export * from "./Agents/SharedAgentCard";
 export * from "./Agents/SharedAgentsBrowser";
 export * from "./Agents/ShareAgentModal";
-export * from "./Agents/TeamCard";
 export * from "./ConfirmDeleteModal";
 export * from "./ConnectorApiKeyModal";
 export * from "./MemorySynthesisPanel";

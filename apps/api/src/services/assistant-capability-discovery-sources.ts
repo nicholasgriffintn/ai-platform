@@ -28,10 +28,7 @@ interface ProjectCapabilityReference {
 const INTERNAL_FUNCTION_TOOLS = new Set([
   "ask_user",
   "configure_recipe",
-  "delegate_to_team_member",
-  "delegate_to_team_member_by_role",
   "get_recipe",
-  "get_team_members",
   "load_skill",
   "request_approval",
   "search_pashi_tools",

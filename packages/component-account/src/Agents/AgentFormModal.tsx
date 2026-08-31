@@ -25,7 +25,7 @@ import {
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import React, { type FormEvent } from "react";
 
-import type { AgentFormData, GroupedAgents } from "./types";
+import type { AgentFormData } from "./types";
 import { useAgentForm } from "./useAgentForm";
 
 interface AgentFormModalProps {
@@ -34,7 +34,6 @@ interface AgentFormModalProps {
   onSubmit: (data: AgentFormData, isEdit: boolean, agentId: string | null) => Promise<void>;
   isSubmitting: boolean;
   apiModels: ModelConfig;
-  groupedAgents: GroupedAgents;
   agent?: AgentResponse | null;
   tools?: Tool[];
   isLoadingTools?: boolean;
@@ -46,7 +45,6 @@ export function AgentFormModal({
   onSubmit,
   isSubmitting,
   apiModels,
-  groupedAgents,
   agent,
   tools = [],
   isLoadingTools = false,
@@ -113,10 +111,9 @@ export function AgentFormModal({
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <Tabs value={form.activeTab} onValueChange={form.setActiveTab} className="w-full">
-            <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-5">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-4">
               <TabsTrigger value="basic">Basic</TabsTrigger>
               <TabsTrigger value="model">Model</TabsTrigger>
-              <TabsTrigger value="team">Team</TabsTrigger>
               <TabsTrigger value="servers">Servers</TabsTrigger>
               <TabsTrigger value="advanced">Advanced</TabsTrigger>
             </TabsList>
@@ -189,72 +186,6 @@ export function AgentFormModal({
                   placeholder="Enter a system prompt to customize the agent's behavior..."
                 />
               </div>
-            </TabsContent>
-
-            <TabsContent value="team" className="space-y-4 mt-6">
-              <div className="flex items-start gap-3 mb-4">
-                <Switch
-                  id="is-team-agent"
-                  checked={form.isTeamAgent}
-                  onChange={(e) => form.setIsTeamAgent(e.target.checked)}
-                />
-                <div className="space-y-1">
-                  <Label htmlFor="is-team-agent" className="text-sm font-medium">
-                    Team Agent
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    This agent is part of a team and can collaborate with other agents
-                  </p>
-                </div>
-              </div>
-
-              {form.isTeamAgent && (
-                <div className="space-y-4 mt-4">
-                  <div>
-                    <FormInput
-                      label="Team ID"
-                      value={form.teamId}
-                      onChange={(e) => form.setTeamId(e.target.value)}
-                      placeholder="e.g., dev-team, marketing-team"
-                      description="Unique identifier for the team this agent belongs to"
-                    />
-                    {Object.keys(groupedAgents.teams).length > 0 && (
-                      <div className="mt-2">
-                        <p className="text-xs text-muted-foreground mb-2">Existing teams:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {Object.keys(groupedAgents.teams).map((existingTeamId) => (
-                            <button
-                              key={existingTeamId}
-                              type="button"
-                              onClick={() => form.setTeamId(existingTeamId)}
-                              className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors font-mono"
-                            >
-                              {existingTeamId}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <FormSelect
-                    label="Team Role"
-                    value={form.teamRole}
-                    onChange={(e) => form.setTeamRole(e.target.value)}
-                    options={[
-                      { value: "", label: "Select role" },
-                      {
-                        value: "orchestrator",
-                        label: "Orchestrator (Team Lead)",
-                      },
-                      { value: "leader", label: "Leader" },
-                      { value: "specialist", label: "Specialist" },
-                      { value: "coordinator", label: "Coordinator" },
-                      { value: "member", label: "Member" },
-                    ]}
-                    description="The role this agent plays within the team"
-                  />
-                </div>
-              )}
             </TabsContent>
 
             <TabsContent value="servers" className="space-y-4 mt-6">

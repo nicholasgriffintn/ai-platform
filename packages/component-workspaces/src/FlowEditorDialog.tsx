@@ -17,6 +17,7 @@ import {
   type ProjectFlowStage,
   type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
+import { titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
 import { ArrowDown, ArrowUp, ExternalLink, Plus, Settings2, Trash2 } from "lucide-react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
@@ -38,8 +39,15 @@ const APPROVAL_OPTIONS: { permission: ToolPermission; label: string }[] = [
   { permission: "write", label: "Write" },
   { permission: "sandbox", label: "Sandbox" },
   { permission: "orchestration", label: "Orchestration" },
-  { permission: "delegate", label: "Delegation" },
 ];
+
+function approvalOptionsForStage(stage: ProjectFlowStage) {
+  const retired = stage.requiresApprovalFor
+    .filter((permission) => !APPROVAL_OPTIONS.some((option) => option.permission === permission))
+    .map((permission) => ({ permission, label: titleCaseSlug(permission) }));
+
+  return [...APPROVAL_OPTIONS, ...retired];
+}
 
 function newStage(): ProjectFlowStage {
   return {
@@ -331,7 +339,7 @@ export function FlowEditorDialog({
                         Require approval before
                       </legend>
                       <div className="mt-2 space-y-1.5">
-                        {APPROVAL_OPTIONS.map(({ permission, label }) => (
+                        {approvalOptionsForStage(stage).map(({ permission, label }) => (
                           <label
                             key={permission}
                             className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-white dark:hover:bg-zinc-800"

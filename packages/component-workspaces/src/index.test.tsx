@@ -456,6 +456,35 @@ describe("FlowEditorDialog", () => {
       }),
     );
   });
+
+  it("shows an approval gate a stage still carries after the option was retired", async () => {
+    const onSave = vi.fn(async () => undefined);
+
+    render(
+      <FlowEditorDialog
+        open
+        flow={{ stages: [{ ...flow.stages[0], requiresApprovalFor: ["delegate"] }] }}
+        agents={[]}
+        skills={[]}
+        capabilitiesHref="/projects/project-1/library"
+        agentsHref="/profile?tab=agents"
+        onOpenChange={vi.fn()}
+        onSave={onSave}
+      />,
+    );
+
+    const retired = screen.getByRole<HTMLInputElement>("checkbox", { name: "Delegate" });
+
+    expect(retired.checked).toBe(true);
+    fireEvent.click(retired);
+    fireEvent.click(screen.getByRole("button", { name: "Save pipeline" }));
+
+    await waitFor(() =>
+      expect(onSave).toHaveBeenCalledWith({
+        stages: [expect.objectContaining({ requiresApprovalFor: [] })],
+      }),
+    );
+  });
 });
 
 describe("CreateTaskDialog", () => {

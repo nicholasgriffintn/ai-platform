@@ -563,26 +563,6 @@ describe("resolveTaskRuntime", () => {
     );
   });
 
-  it("does not expose nested delegation inside a stage owned by the project flow", async () => {
-    const { context } = createContext({
-      capabilities: [
-        { kind: "tool", capability_id: "delegate_to_team_member" },
-        { kind: "tool", capability_id: "delegate_to_team_member_by_role" },
-        { kind: "tool", capability_id: "web_search" },
-      ],
-    });
-    const runtime = await resolveTaskRuntime({
-      context,
-      task: baseTask,
-      flow: null,
-    });
-
-    expect(runtime.enabledTools).toContain("web_search");
-    expect(runtime.enabledTools).not.toContain("delegate_to_team_member");
-    expect(runtime.enabledTools).not.toContain("delegate_to_team_member_by_role");
-    expect(runtime.enforceModeToolPolicy).toBe(false);
-  });
-
   it("keeps the runner model when the stage sets a mode", async () => {
     const { context } = createContext();
     const runtime = await resolveTaskRuntime({

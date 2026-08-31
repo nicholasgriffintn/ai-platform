@@ -11,8 +11,7 @@ import {
 import type { Agent } from "~/lib/database/schema";
 import { parseJsonArrayColumn } from "~/utils/json";
 
-export type StoredAgentRow = Omit<Agent, "is_team_agent" | "mode"> & {
-  is_team_agent: unknown;
+export type StoredAgentRow = Omit<Agent, "mode"> & {
   mode: unknown;
 };
 
@@ -31,6 +30,5 @@ export function normaliseAgentResponse(agent: StoredAgentRow): AgentResponse {
     skill_ids: readAgentSkillIds(agent.skill_ids),
     mode: agentModeSchema.safeParse(agent.mode).data ?? null,
     temperature: Number.isFinite(temperature) ? temperature : null,
-    is_team_agent: Boolean(agent.is_team_agent),
   });
 }

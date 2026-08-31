@@ -231,9 +231,6 @@ export class AgentService {
       system_prompt: data.system_prompt || undefined,
       few_shot_examples: data.few_shot_examples || undefined,
       enabled_tools: data.enabled_tools || undefined,
-      team_id: data.team_id || undefined,
-      team_role: data.team_role || undefined,
-      is_team_agent: data.is_team_agent ? data.is_team_agent : undefined,
     };
 
     const response = await fetchApi("/agents", {

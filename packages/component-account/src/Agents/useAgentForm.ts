@@ -40,9 +40,6 @@ export function useAgentForm() {
     { id: generateId(), input: "", output: "" },
   ]);
   const [enabledTools, setEnabledTools] = useState<string[]>([]);
-  const [teamId, setTeamId] = useState("");
-  const [teamRole, setTeamRole] = useState("");
-  const [isTeamAgent, setIsTeamAgent] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
 
   const resetForm = useCallback(() => {
@@ -60,9 +57,6 @@ export function useAgentForm() {
     setUseFewShotExamples(false);
     setFewShotExamples([{ id: generateId(), input: "", output: "" }]);
     setEnabledTools([]);
-    setTeamId("");
-    setTeamRole("");
-    setIsTeamAgent(false);
     setActiveTab("basic");
   }, []);
 
@@ -115,10 +109,6 @@ export function useAgentForm() {
     }
 
     setEnabledTools(agent.enabled_tools ?? []);
-
-    setTeamId(agent.team_id || "");
-    setTeamRole(agent.team_role || "");
-    setIsTeamAgent(agent.is_team_agent);
   }, []);
 
   const getFormData = useCallback((): AgentFormData => {
@@ -144,9 +134,6 @@ export function useAgentForm() {
         })),
       }),
       ...(normalisedEnabledTools.length > 0 && { enabled_tools: normalisedEnabledTools }),
-      ...(isTeamAgent && { is_team_agent: isTeamAgent }),
-      ...(teamId && { team_id: teamId }),
-      ...(teamRole && { team_role: teamRole }),
     };
   }, [
     name,
@@ -161,9 +148,6 @@ export function useAgentForm() {
     useFewShotExamples,
     fewShotExamples,
     enabledTools,
-    isTeamAgent,
-    teamId,
-    teamRole,
   ]);
 
   const validateForm = useCallback(() => {
@@ -196,9 +180,6 @@ export function useAgentForm() {
     useFewShotExamples,
     fewShotExamples,
     enabledTools,
-    teamId,
-    teamRole,
-    isTeamAgent,
     activeTab,
 
     setName,
@@ -213,9 +194,6 @@ export function useAgentForm() {
     setUseFewShotExamples,
     setFewShotExamples,
     setEnabledTools,
-    setTeamId,
-    setTeamRole,
-    setIsTeamAgent,
     setActiveTab,
 
     resetForm,
