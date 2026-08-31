@@ -32,6 +32,7 @@ describe("TaskService", () => {
       created: false,
       task: {
         id: "recipe_schedule_existing",
+        status: "completed",
         max_attempts: 3,
       },
     });
@@ -47,6 +48,44 @@ describe("TaskService", () => {
     expect(taskId).toBe("recipe_schedule_existing");
     expect(taskRepository.updateTask).not.toHaveBeenCalled();
     expect(send).not.toHaveBeenCalled();
+  });
+
+  it("re-sends the stored payload when a prior queue send died after persistence", async () => {
+    const send = vi.fn();
+
+    taskRepository.createTaskIfAbsent.mockResolvedValue({
+      created: false,
+      task: {
+        id: "project_dispatch_queued",
+        task_type: "project_task_run",
+        user_id: 7,
+        project_id: "project-1",
+        task_data: { taskId: "task-1", dispatchTaskId: "dispatch-1" },
+        priority: 4,
+        schedule_type: "immediate",
+        scheduled_at: null,
+        status: "queued",
+        max_attempts: 3,
+      },
+    });
+    const service = new TaskService({ TASK_QUEUE: { send } } as any, taskRepository as any);
+
+    await service.enqueueTask({
+      id: "project_dispatch_queued",
+      task_type: "project_task_run",
+      user_id: 999,
+      project_id: "wrong-project",
+      task_data: { taskId: "wrong-task" },
+    });
+
+    expect(send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        taskId: "project_dispatch_queued",
+        user_id: 7,
+        project_id: "project-1",
+        task_data: { taskId: "task-1", dispatchTaskId: "dispatch-1" },
+      }),
+    );
   });
 
   it("persists and queues first-class project scope", async () => {

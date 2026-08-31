@@ -22,6 +22,8 @@ The API provides a unified interface to multiple AI providers, following OpenAI'
 - **Real-time** - Streaming responses and WebSocket support
 - **Durable goal history** - Goal lifecycle markers remain in stored conversation timelines while
   staying out of model context
+- **Sandbox-backed project tasks** - Work can dispatch repository-native runs without turning them
+  into a second chat pipeline
 
 Use the skill's [local setup](../setup.md), [configuration](../configuration.md), and [deployment](../deployment.md) workflows rather than maintaining component-specific setup steps here.
 
@@ -39,6 +41,16 @@ Import supported reasoning effort levels from models.dev `reasoning_options`. Pr
 
 Forward a configured non-default `reasoning_effort` through Mistral, OpenRouter, and Requesty chat-completion adapters. Preserve Mistral thinking chunks separately from answer text while streaming and replay the complete thinking chunk in later Mistral turns; dropping it degrades multi-turn reasoning quality.
 
+## Lean proof project tasks
+
+Lean Proofs is a Pro, Work-only experience. Authenticated project members list, create, and inspect runs through `/projects/:projectId/lean-proofs`; creation also requires the `featured-lean-proofs` app to be enabled and a complete project coding environment.
+
+Treat the submitted body as proof intent, not execution authority. It contains repository-relative target paths, optional qualified declarations, an objective, acceptance criteria, and an optional token budget. The API derives the repository and GitHub installation from the project, fixes the model to `labs-leanstral-1-5`, revalidates the starting member's GitHub authority, and rejects direct Lean requests through the generic sandbox-run route.
+
+The project-task delivery claims one exact dispatch, creates a goal owned by one sandbox run, attaches the run to the task, and enqueues sandbox execution. Terminal sandbox delivery then matches the queue message, activity record, immutable run payload, project-task context, goal owner, and stored anchors before it changes the task. Duplicate delivery reuses the same terminal projection; stale or mismatched delivery cannot create another output or advance the task.
+
+Successful `compiled` and `kernel_checked` runs create an internal project output of kind `lean.proof` and stop in human review. `incomplete` results block with `verification_failed`, execution failures block with `run_failed`, and cancellation clears both task and sandbox execution. Model usage is added to `tokensSpent`, and retries receive only the remaining task budget.
+
 ## Runtime infrastructure
 
 The API runs on Cloudflare's global network with:
@@ -48,6 +60,8 @@ The API runs on Cloudflare's global network with:
 - R2 for media storage
 - Analytics Engine for metrics
 - Service bindings for sandbox and training Workers
+
+Lean proof tasks require the sandbox service binding to point at a deployment that includes the `LeanSandbox` Durable Object and standard-3 container. They also require migrations 0007 through 0009 for the run/output anchors, projection claim, idempotency key, and their unique indexes before the routes are exposed.
 
 ## Architecture
 

@@ -13,6 +13,7 @@
     "dev": "WRANGLER_BUILD_CONDITIONS=polychat-source,workerd,worker,browser wrangler dev src/index.ts",
     "start": "pnpm --filter @ngriffin_uk/polychat-schemas build && wrangler dev src/index.ts",
     "test": "vitest run",
+    "test:lean-integration": "vitest run --config vitest.lean-integration.config.ts",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },

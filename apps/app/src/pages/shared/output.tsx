@@ -9,10 +9,9 @@ import { FileQuestion, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
-import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import { PageShell } from "~/components/Core/PageShell";
+import { OutputContent } from "~/components/Experiences/OutputContent";
 import { API_BASE_URL } from "~/constants";
-import { useRunnableTool } from "~/hooks/useRunnableTools";
 import { getSharedOutput } from "~/lib/api/outputs";
 
 export function meta() {
@@ -26,7 +25,6 @@ export default function SharedOutputPage() {
   const { token } = useParams<{ token: string }>();
   const [output, setOutput] = useState<SharedOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { data: producingTool } = useRunnableTool(output?.capabilityId ?? null);
 
   useEffect(() => {
     if (!token) {
@@ -85,7 +83,11 @@ export default function SharedOutputPage() {
               Open {output.file.filename || "shared file"}
             </a>
           ) : null}
-          <ResponseRenderer app={producingTool ?? undefined} result={output.content} />
+          <OutputContent
+            capabilityId={output.capabilityId}
+            content={output.content}
+            kind={output.kind}
+          />
         </Card>
       </div>
     </PageShell>

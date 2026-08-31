@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { executeAgentLoop } from "../agent-loop";
+import { AgentTokenBudgetExceededError, executeAgentLoop } from "../agent-loop";
 import type { AgentToolCall, AgentTurn } from "../types";
 
 function toolCall(name: string, args: Record<string, unknown> = {}): AgentToolCall {
@@ -28,7 +28,95 @@ describe("executeAgentLoop", () => {
       commandCount: 0,
       stepsTaken: 1,
       goalOutcome: undefined,
+      usage: {
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+        cachedInputTokens: 0,
+        iterations: 1,
+      },
     });
+  });
+
+  it("aggregates provider usage and stops a run at its token budget", async () => {
+    const onTokenUsage = vi.fn();
+
+    await expect(
+      executeAgentLoop({
+        initialMessages: [{ role: "user", content: "start" }],
+        initialPlan: "Plan",
+        shared: {},
+        state: {},
+        tokenBudget: 10,
+        onTokenUsage,
+        resolveTurn: async () => ({
+          toolCalls: [toolCall("run_command", { command: "check" })],
+          usage: {
+            inputTokens: 7,
+            outputTokens: 3,
+            totalTokens: 10,
+            cachedInputTokens: 2,
+          },
+        }),
+        executeToolCalls: async () => {},
+      }),
+    ).rejects.toBeInstanceOf(AgentTokenBudgetExceededError);
+    expect(onTokenUsage).toHaveBeenCalledWith({
+      inputTokens: 7,
+      outputTokens: 3,
+      totalTokens: 10,
+      cachedInputTokens: 2,
+      iterations: 1,
+    });
+  });
+
+  it("exposes the remaining token budget before each provider turn", async () => {
+    const remainingBudgets: Array<number | undefined> = [];
+
+    const result = await executeAgentLoop({
+      initialMessages: [{ role: "user", content: "start" }],
+      initialPlan: "Plan",
+      shared: {},
+      state: {},
+      tokenBudget: 20,
+      resolveTurn: async ({ remainingTokenBudget, usage }) => {
+        remainingBudgets.push(remainingTokenBudget);
+
+        if (usage.iterations === 0) {
+          return {
+            toolCalls: [toolCall("run_command", { command: "check" })],
+            usage: { inputTokens: 6, outputTokens: 4, totalTokens: 10 },
+          };
+        }
+
+        return {
+          toolCalls: [toolCall("finish", { summary: "Done." })],
+          usage: { inputTokens: 5, outputTokens: 2, totalTokens: 7 },
+        };
+      },
+      executeToolCalls: async () => {},
+    });
+
+    expect(remainingBudgets).toEqual([20, 10]);
+    expect(result.usage.totalTokens).toBe(17);
+  });
+
+  it("does not request a provider turn when no token budget remains", async () => {
+    const resolveTurn = vi.fn();
+
+    await expect(
+      executeAgentLoop({
+        initialMessages: [{ role: "user", content: "start" }],
+        initialPlan: "Plan",
+        shared: {},
+        state: {},
+        tokenBudget: 0,
+        resolveTurn,
+        executeToolCalls: async () => {},
+      }),
+    ).rejects.toBeInstanceOf(AgentTokenBudgetExceededError);
+
+    expect(resolveTurn).not.toHaveBeenCalled();
   });
 
   it("finishes on a plain text turn so single-step chat needs no special path", async () => {

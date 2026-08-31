@@ -5,6 +5,7 @@ import {
   authoredSkillInputSchema,
   authoredSkillListResponseSchema,
   createProjectTaskSchema,
+  createLeanProofProjectTaskSchema,
   errorResponseSchema,
   projectDetailSchema,
   projectFlowResponseSchema,
@@ -12,6 +13,9 @@ import {
   projectTaskListResponseSchema,
   projectTaskDetailResponseSchema,
   projectTaskResponseSchema,
+  leanProofProjectTaskDetailResponseSchema,
+  leanProofProjectTaskListResponseSchema,
+  leanProofIdempotencyKeySchema,
   resolveProjectTaskToolApprovalSchema,
   setProjectFlowSchema,
   skillIdSchema,
@@ -24,10 +28,13 @@ import z from "zod/v4";
 import { addRoute } from "~/lib/http/routeBuilder";
 import {
   acceptProjectTask,
+  createAndStartLeanProofProjectTask,
   createProjectTask,
   deleteProjectTask,
   getProjectFlow,
   getProjectTask,
+  getLeanProofProjectTask,
+  listLeanProofProjectTasks,
   listProjectTasks,
   respondToProjectTaskQuestions,
   respondToProjectTaskToolApproval,
@@ -49,6 +56,7 @@ import {
   removeProjectCapability,
   updateProject,
 } from "~/services/workspaces";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
 const projectParams = z.object({ projectId: z.string().min(1) });
@@ -177,6 +185,68 @@ addRoute(app, "delete", "/:projectId/skills/:skillId", {
 });
 
 const projectTaskParams = projectParams.extend({ taskId: z.string().min(1) });
+
+addRoute(app, "get", "/:projectId/lean-proofs", {
+  auth: true,
+  tags: ["projects", "tasks", "lean-proofs"],
+  summary: "List Lean proof tasks",
+  paramSchema: projectParams,
+  responses: {
+    200: { description: "Lean proof tasks", schema: leanProofProjectTaskListResponseSchema },
+  },
+  handler: ({ serviceContext, params }) =>
+    listLeanProofProjectTasks(serviceContext, params.projectId),
+});
+
+addRoute(app, "post", "/:projectId/lean-proofs", {
+  auth: true,
+  tags: ["projects", "tasks", "lean-proofs"],
+  summary: "Create and start a Lean proof task",
+  description:
+    "Uses the project coding environment and the caller's GitHub authority; repository, installation and model are assigned by the server.",
+  paramSchema: projectParams,
+  bodySchema: createLeanProofProjectTaskSchema,
+  responses: {
+    200: { description: "The queued proof task", schema: projectTaskResponseSchema },
+    409: { description: "The project cannot start this proof task", schema: errorResponseSchema },
+  },
+  handler: ({ serviceContext, params, body, raw }) => {
+    const idempotencyKey = leanProofIdempotencyKeySchema.safeParse(
+      raw.req.header("Idempotency-Key"),
+    );
+
+    if (!idempotencyKey.success) {
+      throw new AssistantError(
+        "Provide a valid Idempotency-Key header",
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+
+    return createAndStartLeanProofProjectTask(
+      serviceContext,
+      params.projectId,
+      body,
+      idempotencyKey.data,
+    );
+  },
+});
+
+addRoute(app, "get", "/:projectId/lean-proofs/:taskId", {
+  auth: true,
+  tags: ["projects", "tasks", "lean-proofs"],
+  summary: "Get a Lean proof task and its evidence",
+  paramSchema: projectTaskParams,
+  responses: {
+    200: {
+      description: "The proof task, goal, output and structured result",
+      schema: leanProofProjectTaskDetailResponseSchema,
+    },
+    404: { description: "Proof task not found", schema: errorResponseSchema },
+  },
+  handler: ({ serviceContext, params }) =>
+    getLeanProofProjectTask(serviceContext, params.projectId, params.taskId),
+});
 
 addRoute(app, "get", "/:projectId/tasks", {
   auth: true,

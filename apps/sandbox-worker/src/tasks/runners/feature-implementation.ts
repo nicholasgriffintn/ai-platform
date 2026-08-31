@@ -385,6 +385,7 @@ export async function executeFeatureImplementation(
       diff,
       branchName,
       summary,
+      usage: loopResult.usage,
     };
   } catch (error) {
     console.error("Error during sandbox task execution:", error);

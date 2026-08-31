@@ -135,6 +135,31 @@ export class OutputRepository extends BaseRepository {
     return output;
   }
 
+  async createOutputOnce(input: CreateOutputRecord & { id: string }): Promise<OutputRecord> {
+    try {
+      return await this.createOutput(input);
+    } catch (error) {
+      const existing = await this.runQuery<OutputRecord>(
+        "SELECT * FROM output WHERE id = ?",
+        [input.id],
+        true,
+      );
+
+      if (
+        existing &&
+        existing.created_by_user_id === input.createdByUserId &&
+        existing.project_id === (input.projectId ?? null) &&
+        existing.capability_id === input.capabilityId &&
+        existing.group_id === (input.groupId ?? null) &&
+        existing.kind === input.kind
+      ) {
+        return existing;
+      }
+
+      throw error;
+    }
+  }
+
   async getOutput(outputId: string): Promise<OutputRecord | null> {
     const cacheKey = KVCache.createKey("output", outputId);
 

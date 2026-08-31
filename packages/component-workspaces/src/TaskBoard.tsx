@@ -147,7 +147,8 @@ function TaskRow({
   const stage =
     flow?.stages.find((candidate) => candidate.id === task.stageId) ??
     (task.status === "done" || task.status === "cancelled" ? null : flow?.stages[0]);
-  const agentId = stage?.agentId ?? task.runner?.agentId;
+  const agentId =
+    stage?.agentId ?? (task.runner?.kind === "conversation" ? task.runner.agentId : null);
   const agent = agents.find((candidate) => candidate.id === agentId);
   const canRetry = isProjectTaskRetryable(task);
   const needsInput = isProjectTaskAwaitingInput(task);

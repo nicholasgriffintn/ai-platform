@@ -1,4 +1,5 @@
 export { executeAgentLoop } from "./agent-loop";
+export { AgentTokenBudgetExceededError } from "./agent-loop";
 export {
   AGENT_CONTROL_TOOL_NAMES,
   controlToolResultContent,
@@ -26,6 +27,7 @@ export type {
   AgentLoopState,
   AgentMessage,
   AgentToolCall,
+  AgentTokenUsage,
   AgentToolCallExecutor,
   AgentTurn,
   AgentTurnContext,

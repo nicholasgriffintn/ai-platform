@@ -12,6 +12,7 @@ import type {
   AgentLoopState,
   AgentMessage,
   AgentToolCall,
+  AgentTokenUsage,
   ExecuteAgentLoopParams,
 } from "./types";
 import { truncateForModel } from "./utils";
@@ -23,6 +24,20 @@ const DEFAULT_CONFIG: AgentConfig = {
   maxConsecutiveTurnFailures: 3,
   maxObservationChars: 5000,
 };
+
+export class AgentTokenBudgetExceededError extends Error {
+  constructor(
+    public readonly usage: AgentTokenUsage,
+    public readonly tokenBudget: number,
+  ) {
+    super(`Agent exceeded maximum token budget (${tokenBudget})`);
+    this.name = "AgentTokenBudgetExceededError";
+  }
+}
+
+function nonNegativeInteger(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
+}
 
 function defaultGetCommandCount(state: AgentLoopState): number {
   return typeof state.commandCount === "number" ? state.commandCount : 0;
@@ -96,6 +111,13 @@ export async function executeAgentLoop<
   let recoveryReplans = 0;
   let requiresPlanRecovery = false;
   let recoveryReason: string | undefined;
+  const usage: AgentTokenUsage = {
+    inputTokens: 0,
+    outputTokens: 0,
+    totalTokens: 0,
+    cachedInputTokens: 0,
+    iterations: 0,
+  };
 
   const beginPlanRecovery = (reason: string) => {
     recoveryReplans += 1;
@@ -117,6 +139,11 @@ export async function executeAgentLoop<
   let maxSteps = config.maxSteps;
   let step = 1;
   let stepExtensions = 0;
+
+  const tokenBudget =
+    typeof params.tokenBudget === "number" && Number.isFinite(params.tokenBudget)
+      ? Math.max(0, Math.floor(params.tokenBudget))
+      : undefined;
 
   const tryExtendStepBudget = async (): Promise<boolean> => {
     if (
@@ -180,10 +207,24 @@ export async function executeAgentLoop<
       commandCount: getCommandCount(params.state),
       stepsTaken: step,
       goalOutcome: outcome,
+      usage: { ...usage },
     };
   };
 
   while (true) {
+    const remainingTokenBudget =
+      tokenBudget === undefined ? undefined : Math.max(0, tokenBudget - usage.totalTokens);
+
+    if (tokenBudget !== undefined && remainingTokenBudget === 0) {
+      await emit({
+        type: "agent_token_budget_exhausted",
+        agentStep: step,
+        usage: { ...usage },
+        tokenBudget,
+      });
+      throw new AgentTokenBudgetExceededError({ ...usage }, tokenBudget);
+    }
+
     if (step > maxSteps) {
       const extended = await tryExtendStepBudget();
 
@@ -208,6 +249,23 @@ export async function executeAgentLoop<
       commandCount: getCommandCount(params.state),
     });
 
+    const compactedMessages = await params.compactMessages?.({
+      step,
+      messages,
+      currentPlan,
+      shared: params.shared,
+      state: params.state,
+    });
+
+    if (compactedMessages && compactedMessages !== messages) {
+      messages.splice(0, messages.length, ...compactedMessages);
+      await emit({
+        type: "agent_context_compacted",
+        agentStep: step,
+        messageCount: messages.length,
+      });
+    }
+
     let turn: Awaited<ReturnType<typeof params.resolveTurn>>;
 
     try {
@@ -218,13 +276,50 @@ export async function executeAgentLoop<
         currentPlan,
         requiresPlanRecovery,
         recoveryReason,
+        usage: { ...usage },
+        remainingTokenBudget,
       });
+      const inputTokens = nonNegativeInteger(turn.usage?.inputTokens);
+      const outputTokens = nonNegativeInteger(turn.usage?.outputTokens);
+      const reportedTotal = nonNegativeInteger(turn.usage?.totalTokens);
+
+      usage.inputTokens += inputTokens;
+      usage.outputTokens += outputTokens;
+      usage.totalTokens += reportedTotal || inputTokens + outputTokens;
+      usage.cachedInputTokens += Math.min(
+        inputTokens,
+        nonNegativeInteger(turn.usage?.cachedInputTokens),
+      );
+      usage.iterations += 1;
+
+      await params.onTokenUsage?.({ ...usage });
+      await emit({
+        type: "agent_token_usage",
+        agentStep: step,
+        usage: { ...usage },
+        tokenDelta: {
+          inputTokens,
+          outputTokens,
+          totalTokens: reportedTotal || inputTokens + outputTokens,
+        },
+      });
+
+      if (tokenBudget !== undefined && usage.totalTokens > tokenBudget) {
+        await emit({
+          type: "agent_token_budget_exhausted",
+          agentStep: step,
+          usage: { ...usage },
+          tokenBudget,
+        });
+        throw new AgentTokenBudgetExceededError({ ...usage }, tokenBudget);
+      }
+
       consecutiveTurnFailures = 0;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to produce an agent turn";
 
-      if (shouldAbortOnTurnError(error)) {
+      if (error instanceof AgentTokenBudgetExceededError || shouldAbortOnTurnError(error)) {
         await emit({
           type: "agent_turn_failed",
           agentStep: step,
@@ -343,6 +438,7 @@ export async function executeAgentLoop<
         messages,
         shared: params.shared,
         state: params.state,
+        usage: { ...usage },
       })) ?? { allow: true };
 
       if (assessment.allow) {

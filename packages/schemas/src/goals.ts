@@ -117,11 +117,38 @@ export const recordGoalIterationRequestSchema = z.object({
   calledTool: z.boolean(),
   evidence: z.array(z.string().trim().min(1)).max(20).optional(),
   next: z.string().trim().max(2000).optional(),
+  tokens: z.number().int().nonnegative().max(10_000_000).optional(),
 });
+
+export const goalIterationOutcomeSchema = z.enum([
+  "continue",
+  "completed",
+  "cleared",
+  "blocked",
+  "stalled",
+  "limit_reached",
+  "paused",
+  "missing",
+]);
+
+export const goalContinuationReasonSchema = z.enum([
+  "continue",
+  "no-goal",
+  "not-active",
+  "aborted",
+  "awaiting-approval",
+  "queued-input",
+  "work-in-flight",
+  "usage-limits",
+  "stalled",
+]);
 
 export const recordGoalIterationResponseSchema = z.object({
   goal: goalSchema.nullable(),
   shouldContinue: z.boolean(),
+  status: goalStatusSchema.nullable(),
+  outcome: goalIterationOutcomeSchema,
+  reason: goalContinuationReasonSchema,
   instruction: z.string().optional(),
 });
 
@@ -145,16 +172,8 @@ export interface GoalContinuationInput {
   otherWorkInFlight: boolean;
 }
 
-export type GoalContinuationReason =
-  | "continue"
-  | "no-goal"
-  | "not-active"
-  | "aborted"
-  | "awaiting-approval"
-  | "queued-input"
-  | "work-in-flight"
-  | "usage-limits"
-  | "stalled";
+export type GoalIterationOutcome = z.infer<typeof goalIterationOutcomeSchema>;
+export type GoalContinuationReason = z.infer<typeof goalContinuationReasonSchema>;
 
 export interface GoalContinuationDecision {
   shouldContinue: boolean;

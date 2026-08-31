@@ -83,7 +83,8 @@ export async function resolveTaskRuntime(params: {
     task.projectId,
   );
   const projectTools = resolveProjectTools(capabilities).enabledTools;
-  const agentId = stage?.agentId ?? task.runner?.agentId ?? null;
+  const conversationRunner = task.runner?.kind === "conversation" ? task.runner : null;
+  const agentId = stage?.agentId ?? conversationRunner?.agentId ?? null;
   const agent = agentId ? await resolveProjectAgent(context, task.projectId, agentId) : null;
   const configuredTools = agent
     ? intersectEnabledTools(projectTools, agent.enabled_tools)
@@ -92,8 +93,8 @@ export async function resolveTaskRuntime(params: {
   return {
     stage,
     agent,
-    model: task.runner?.model ?? agent?.model ?? null,
-    mode: stage?.mode ?? task.runner?.mode ?? "agent",
+    model: conversationRunner?.model ?? agent?.model ?? null,
+    mode: stage?.mode ?? conversationRunner?.mode ?? "agent",
     enabledTools: withoutForbiddenTools(
       withoutFlowOwnedTools([...new Set([...configuredTools, ...PROJECT_TASK_TOOL_IDS])]),
       task.constraints?.forbiddenTools,

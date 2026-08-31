@@ -23,9 +23,23 @@ export interface ExperienceDefinition {
   type?: "normal" | "premium" | "byok";
   capabilityId?: string;
   href?: string;
+  scopes?: Array<"personal" | "project">;
 }
 
 export const EXPERIENCES: ExperienceDefinition[] = [
+  {
+    id: "lean-proofs",
+    runtime: "lean-proofs",
+    capabilityId: "featured-lean-proofs",
+    name: "Lean Proofs",
+    description: "Run repository-aware Lean proof work and review compiler and kernel evidence.",
+    icon: "sigma",
+    category: "Development",
+    theme: "cyan",
+    tags: ["lean", "proofs", "verification"],
+    type: "premium",
+    scopes: ["project"],
+  },
   {
     id: "responses",
     runtime: "responses",
@@ -189,8 +203,12 @@ export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
 
 export const getExperienceCatalog = (): ExperienceDefinition[] => EXPERIENCES;
 
-export const getProjectExperienceCatalog = (): ProjectExperienceDefinition[] =>
-  EXPERIENCES.map(
+export const getProjectExperienceCatalog = (
+  scope?: "personal" | "project",
+): ProjectExperienceDefinition[] =>
+  EXPERIENCES.filter(
+    (experience) => !scope || !experience.scopes || experience.scopes.includes(scope),
+  ).map(
     ({
       id,
       runtime,
@@ -203,6 +221,7 @@ export const getProjectExperienceCatalog = (): ProjectExperienceDefinition[] =>
       type,
       href,
       capabilityId,
+      scopes,
     }) => ({
       id,
       runtime,
@@ -217,5 +236,6 @@ export const getProjectExperienceCatalog = (): ProjectExperienceDefinition[] =>
       requirement: capabilityId
         ? { kind: "capability" as const, capabilityKind: "app" as const, capabilityId }
         : { kind: "capability_kind" as const, capabilityKind: "app" as const },
+      scopes,
     }),
   );

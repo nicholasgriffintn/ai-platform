@@ -36,7 +36,7 @@ vi.mock("~/services/tasks/TaskService", () => ({
 }));
 
 const mockCreateActivity = vi.fn();
-const mockUpdateActivity = vi.fn();
+const mockCompareAndSetActivity = vi.fn();
 const mockListPersonalActivities = vi.fn();
 
 const mockContext = {
@@ -44,7 +44,7 @@ const mockContext = {
   repositories: {
     activities: {
       createActivity: mockCreateActivity,
-      updateActivity: mockUpdateActivity,
+      compareAndSetActivity: mockCompareAndSetActivity,
       listRecentUserActivities: mockListPersonalActivities,
     },
   },
@@ -55,8 +55,24 @@ const mockUser = { id: 42 } as any;
 describe("executeSandboxRunStream", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCreateActivity.mockResolvedValue({ id: "record-1" });
-    mockUpdateActivity.mockResolvedValue(undefined);
+    mockCreateActivity.mockImplementation(async (input) => ({
+      id: input.id ?? "record-1",
+      created_by_user_id: input.createdByUserId,
+      project_id: input.projectId ?? null,
+      conversation_id: input.conversationId ?? null,
+      capability_id: input.capabilityId,
+      group_id: input.groupId ?? null,
+      kind: input.kind,
+      status: input.status,
+      summary: input.summary,
+      data: JSON.stringify(input.data ?? {}),
+      created_at: "2026-03-15T12:00:00.000Z",
+      updated_at: "2026-03-15T12:00:00.000Z",
+    }));
+    mockCompareAndSetActivity.mockImplementation(async (id, _statuses, updates) => ({
+      id,
+      data: updates.data,
+    }));
     mockListPersonalActivities.mockResolvedValue([]);
     mockEnqueueTask.mockResolvedValue("task-123");
     mockContext.env = { TASK_QUEUE: { send: vi.fn() } };
@@ -165,8 +181,9 @@ describe("executeSandboxRunStream", () => {
     expect(await response.json()).toEqual({
       error: "TASK_QUEUE binding is not configured for sandbox run dispatch",
     });
-    expect(mockUpdateActivity).toHaveBeenCalledWith(
+    expect(mockCompareAndSetActivity).toHaveBeenCalledWith(
       "record-1",
+      ["queued", "running", "waiting"],
       expect.objectContaining({
         status: "failed",
         data: expect.objectContaining({
@@ -181,6 +198,89 @@ describe("executeSandboxRunStream", () => {
         state: "cancelled",
       }),
     );
+  });
+
+  it("marks the activity as failed when coordinator initialisation fails", async () => {
+    vi.mocked(initRunCoordinatorControl).mockRejectedValueOnce(
+      new Error("coordinator initialisation failed"),
+    );
+    vi.mocked(updateRunCoordinatorControl).mockRejectedValueOnce(
+      new Error("coordinator cleanup failed"),
+    );
+
+    const response = await executeSandboxRunStream({
+      env: {} as any,
+      context: mockContext,
+      user: mockUser,
+      payload: {
+        installationId: 99,
+        repo: "owner/repo",
+        task: "Implement feature",
+      },
+    });
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: "coordinator initialisation failed" });
+    expect(mockCompareAndSetActivity).toHaveBeenCalledWith(
+      "record-1",
+      ["queued"],
+      expect.objectContaining({
+        status: "failed",
+        data: expect.objectContaining({
+          status: "failed",
+          workflowPhase: "failed",
+          error: "coordinator initialisation failed",
+        }),
+      }),
+    );
+    expect(updateRunCoordinatorControl).toHaveBeenCalledWith(
+      expect.objectContaining({
+        runId: "run-123",
+        state: "cancelled",
+        cancellationReason: "coordinator initialisation failed",
+      }),
+    );
+    expect(mockEnqueueTask).not.toHaveBeenCalled();
+  });
+
+  it("marks the activity as failed when the initial coordinator event cannot be appended", async () => {
+    vi.mocked(appendRunCoordinatorEvent).mockRejectedValueOnce(
+      new Error("coordinator event append failed"),
+    );
+
+    const response = await executeSandboxRunStream({
+      env: {} as any,
+      context: mockContext,
+      user: mockUser,
+      payload: {
+        installationId: 99,
+        repo: "owner/repo",
+        task: "Implement feature",
+      },
+    });
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: "coordinator event append failed" });
+    expect(mockCompareAndSetActivity).toHaveBeenCalledWith(
+      "record-1",
+      ["queued"],
+      expect.objectContaining({
+        status: "failed",
+        data: expect.objectContaining({
+          status: "failed",
+          workflowPhase: "failed",
+          error: "coordinator event append failed",
+        }),
+      }),
+    );
+    expect(updateRunCoordinatorControl).toHaveBeenCalledWith(
+      expect.objectContaining({
+        runId: "run-123",
+        state: "cancelled",
+        cancellationReason: "coordinator event append failed",
+      }),
+    );
+    expect(mockEnqueueTask).not.toHaveBeenCalled();
   });
 
   it("streams coordinator events until terminal and advances cursor", async () => {

@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import { hasUniqueValues } from "./collection-validation";
+
 export const USER_QUESTION_SET_MAX_QUESTIONS = 3;
 export const USER_QUESTION_MAX_OPTIONS = 5;
 
@@ -24,12 +26,9 @@ export const userQuestionsSchema = z
   .array(userQuestionSchema)
   .min(1)
   .max(USER_QUESTION_SET_MAX_QUESTIONS)
-  .refine(
-    (questions) => new Set(questions.map((question) => question.id)).size === questions.length,
-    {
-      error: "Question ids must be unique",
-    },
-  );
+  .refine((questions) => hasUniqueValues(questions.map((question) => question.id)), {
+    error: "Question ids must be unique",
+  });
 
 export const userQuestionSetSchema = z.object({
   interactionId: z.string().min(1),

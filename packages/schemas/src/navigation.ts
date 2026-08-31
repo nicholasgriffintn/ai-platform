@@ -1,12 +1,6 @@
 import z from "zod/v4";
 
-function hasControlCharacter(value: string): boolean {
-  return Array.from(value).some((character) => {
-    const codePoint = character.codePointAt(0);
-
-    return codePoint !== undefined && (codePoint <= 31 || codePoint === 127);
-  });
-}
+import { hasControlCharacter } from "./string-validation";
 
 export function isInternalNavigationPath(value: string): boolean {
   const path = value.trim();

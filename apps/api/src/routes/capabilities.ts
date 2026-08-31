@@ -6,6 +6,7 @@ import { addRoute } from "~/lib/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { getProjectExperienceCatalog, MODEL_TOOL_DEFINITIONS } from "~/services/experiences/config";
 import { listScopedSkillSummaries } from "~/services/skills";
+import { requireProjectAccess } from "~/services/workspaces/access";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("capabilities");
@@ -26,11 +27,17 @@ addRoute(app, "get", "/", {
   responses: {
     200: { description: "Capability catalogue", schema: capabilityCatalogResponseSchema },
   },
-  handler: async ({ query, serviceContext, user }) => ({
-    experiences: getProjectExperienceCatalog(),
-    modelTools: MODEL_TOOL_DEFINITIONS,
-    skills: await listScopedSkillSummaries(serviceContext, user?.id, query.projectId),
-  }),
+  handler: async ({ query, serviceContext, user }) => {
+    if (query.projectId) {
+      await requireProjectAccess(serviceContext, query.projectId);
+    }
+
+    return {
+      experiences: getProjectExperienceCatalog(query.projectId ? "project" : "personal"),
+      modelTools: MODEL_TOOL_DEFINITIONS,
+      skills: await listScopedSkillSummaries(serviceContext, user?.id, query.projectId),
+    };
+  },
 });
 
 export default app;

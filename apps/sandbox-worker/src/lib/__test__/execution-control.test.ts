@@ -111,4 +111,36 @@ describe("execution control", () => {
       control.checkpoint("Sandbox run cancelled during execution"),
     ).rejects.toBeInstanceOf(SandboxCancellationError);
   });
+
+  it.each([401, 403])(
+    "stops at the checkpoint when run authorisation is revoked with %s",
+    async (status) => {
+      const serviceFetchMock = vi.fn().mockResolvedValue(toJsonResponse({}, status));
+      const control = createExecutionControl({
+        runId: "run-1",
+        userToken: "revoked-token",
+        apiService: { fetch: serviceFetchMock },
+      });
+
+      await expect(control.checkpoint("Sandbox run cancelled before commit")).rejects.toMatchObject(
+        {
+          name: "SandboxCancellationError",
+          message: "Sandbox run authorisation was revoked",
+        },
+      );
+    },
+  );
+
+  it("does not treat a transient control-plane failure as revoked authorisation", async () => {
+    const serviceFetchMock = vi.fn().mockResolvedValue(toJsonResponse({}, 503));
+    const control = createExecutionControl({
+      runId: "run-1",
+      userToken: "token",
+      apiService: { fetch: serviceFetchMock },
+    });
+
+    await expect(
+      control.checkpoint("Sandbox run cancelled during execution"),
+    ).resolves.toBeUndefined();
+  });
 });

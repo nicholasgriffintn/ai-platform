@@ -1,56 +1,69 @@
 {
-	"name": "assistant-sandbox-worker",
-	"main": "src/index.ts",
-	"compatibility_date": "2026-06-16",
-	"compatibility_flags": ["nodejs_compat"],
-	"workers_dev": false,
-	"preview_urls": false,
-	"dev": {
-		"port": 8788
-	},
-	"vars": {
-		"SANDBOX_TRANSPORT": "rpc"
-	},
-	"placement": {
-		"mode": "smart"
-	},
-	"cache": {
-		"enabled": true
-	},
-	"observability": {
-		"enabled": true,
-		"head_sampling_rate": 0.1,
-		"logs": {
-			"enabled": true,
-			"head_sampling_rate": 0.1,
-			"invocation_logs": false
-		}
-	},
-	"services": [
-		{
-			"binding": "POLYCHAT_API",
-			"service": "assistant"
-		}
-	],
-	"containers": [
-		{
-			"class_name": "Sandbox",
-			"image": "./Dockerfile",
-			"instance_type": "basic"
-		}
-	],
-	"durable_objects": {
-		"bindings": [
-			{
-				"class_name": "Sandbox",
-				"name": "Sandbox"
-			}
-		]
-	},
-	"migrations": [
-		{
-			"tag": "v1",
-			"new_sqlite_classes": ["Sandbox"]
-		}
-	]
+  "name": "assistant-sandbox-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-06-16",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "dev": {
+    "port": 8788
+  },
+  "vars": {
+    "SANDBOX_TRANSPORT": "rpc"
+  },
+  "placement": {
+    "mode": "smart"
+  },
+  "cache": {
+    "enabled": true
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 0.1,
+      "invocation_logs": false
+    }
+  },
+  "services": [
+    {
+      "binding": "POLYCHAT_API",
+      "service": "assistant"
+    }
+  ],
+  "containers": [
+    {
+      "class_name": "Sandbox",
+      "image": "./Dockerfile",
+      "instance_type": "basic"
+    },
+    {
+      "class_name": "LeanSandbox",
+      "image": "./Dockerfile.lean",
+      "instance_type": "standard-3"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "class_name": "Sandbox",
+        "name": "Sandbox"
+      },
+      {
+        "class_name": "LeanSandbox",
+        "name": "LeanSandbox"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["Sandbox"]
+    },
+    {
+      "tag": "v2",
+      "new_sqlite_classes": ["LeanSandbox"]
+    }
+  ]
 }

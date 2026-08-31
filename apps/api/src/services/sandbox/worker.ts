@@ -1,5 +1,7 @@
 import type {
+  LeanProofRequest,
   SandboxPromptStrategy,
+  SandboxProjectTaskDispatchContext,
   SandboxTaskType,
   SandboxTrustLevel,
   SandboxModelSettings,
@@ -75,6 +77,9 @@ export interface ExecuteSandboxWorkerOptions {
   runId?: string;
   githubTokenOverride?: string;
   signal?: AbortSignal;
+  leanProof?: LeanProofRequest;
+  tokenBudget?: number;
+  projectTaskContext?: SandboxProjectTaskDispatchContext;
 }
 
 export function resolveApiBaseUrl(env: IEnv): string {
@@ -127,6 +132,20 @@ async function resolveGitHubToken(params: {
   });
 }
 
+export async function assertSandboxGitHubAuthority(params: {
+  context: ServiceContext;
+  userId: number;
+  repo: string;
+  installationId: number;
+}): Promise<void> {
+  await getGitHubAppConnectionForUserInstallation(
+    params.context,
+    params.userId,
+    params.installationId,
+    params.repo,
+  );
+}
+
 export async function executeSandboxWorker(
   options: ExecuteSandboxWorkerOptions,
 ): Promise<Response> {
@@ -147,6 +166,9 @@ export async function executeSandboxWorker(
     runId,
     githubTokenOverride,
     signal,
+    leanProof,
+    tokenBudget,
+    projectTaskContext,
   } = options;
 
   if (!env.SANDBOX_WORKER) {
@@ -182,13 +204,16 @@ export async function executeSandboxWorker(
     task,
     model,
     promptStrategy,
-    shouldCommit: Boolean(shouldCommit),
+    shouldCommit: shouldCommit ?? false,
     timeoutSeconds,
     trustLevel,
     modelSettings,
     polychatApiUrl: resolveApiBaseUrl(env),
     installationId,
     runId,
+    leanProof,
+    tokenBudget,
+    projectTaskContext,
   };
 
   const response = await env.SANDBOX_WORKER.fetch(

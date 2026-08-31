@@ -15,7 +15,7 @@ This allows for resource intensive tasks, workloads that require a full filesyst
 
 As it is serverless, this can also be done at a larger scale and with increased demand vs what our main API can handle.
 
-One agent runner now serves seven task types, from feature implementation through code review, tests, bug fixes, refactoring, documentation, and migrations. A new task type is a profile and a prompt strategy rather than a new runner.
+One general agent runner serves seven task types, from feature implementation through code review, tests, bug fixes, refactoring, documentation, and migrations. A new general coding task type is a profile and a prompt strategy rather than a new runner. Lean proof work uses a separate bounded runner because its editable paths, tools, compiler evidence, and terminal result are a stricter contract.
 
 Here's the current workflow:
 
@@ -26,6 +26,20 @@ Here's the current workflow:
 5. **Story Tracking** - For `prd.json` workflows, the worker selects the implemented story, updates `passes` based on quality-gate results, and appends a run entry to `progress.txt`.
 6. **Git Operations** - Changes can be committed to a feature branch for PR review using the Sandbox SDK. Commits are skipped when the quality gate fails.
 7. **Real-time Progress** - SSE events stream execution progress, command output, file changes, approvals, pause/resume state, and terminal run status to the UI.
+
+### Lean proof workflow
+
+Lean Proofs starts only from an authorised Work project task. The API supplies an exact project-task dispatch context, the repository and installation derived from the project's coding environment, the fixed `labs-leanstral-1-5` model, and the caller's remaining task budget.
+
+The dedicated runner uses the `LeanSandbox` standard-3 container and follows this boundary:
+
+1. Clone the authorised repository and require a checked-in `lean-toolchain`, `lakefile.lean` or `lakefile.toml`, and every requested `.lean` target.
+2. Let the model read, search, and make exact replacements only within those requested targets. Normalised path checks and resolved-path containment reject traversal and symlink escapes.
+3. Offer `lean-lsp-mcp` diagnostics as a read-only, 75-second advisory operation. The MCP server cannot run Lean code or build the project, and its failure does not decide the result.
+4. Run `lake env lean` over every target as the finish gate. If qualified declarations were supplied and source-policy checks are clean, run `#print axioms` and allow only Lean's configured foundational axioms.
+5. Return a structured `kernel_checked`, `compiled`, `incomplete`, or `failed` result with diagnostics, evidence, changed paths, and model usage. Commit and push requested target changes only when project settings allow it and every deterministic check passes.
+
+Long runs accumulate provider usage in `library-agent-core`, stop at the project-task token budget, and compact older message history once it exceeds the runner threshold. Lean execution is capped at 55 minutes so its one-hour API and GitHub credentials retain renewal margin. Compaction retains recent structured assistant tool calls and matching tool results; the compiler and axiom evidence remains the source of truth.
 
 ## Configuration
 
@@ -41,6 +55,7 @@ Here's the current workflow:
 | Binding        | Type            | Description                                      |
 | -------------- | --------------- | ------------------------------------------------ |
 | `Sandbox`      | Durable Object  | Cloudflare Sandbox SDK Durable Object binding.   |
+| `LeanSandbox`  | Durable Object  | Dedicated standard-3 Lean proof container.       |
 | `POLYCHAT_API` | Service binding | Internal API service used for model completions. |
 
 The worker name is `assistant-sandbox-worker` so the API service binding in `apps/api/wrangler.json` can target it directly.
@@ -49,7 +64,7 @@ The worker name is `assistant-sandbox-worker` so the API service binding in `app
 
 ### POST /execute
 
-Execute a feature implementation task.
+Execute a general coding task. Lean proof payloads are accepted only from the internal project-task dispatch path; the public API rejects direct Lean execution.
 
 **Headers:**
 
@@ -94,10 +109,12 @@ pnpm run deploy
 - Log truncation at 80,000 characters
 - Agent script execution uses the Sandbox code interpreter for Python, JavaScript, and TypeScript.
 - The worker still returns terminal results inline to the API, but the API persists logs, diffs, events, and result manifests to R2 when `ASSETS_BUCKET` is configured.
+- The Lean image pins the Cloudflare base image by digest, verifies the uv and elan downloads, and installs the LSP adapter from a hash-locked Python dependency set. It does not include a repository-specific toolchain or dependency cache. The first run for a toolchain or Lake dependency set needs outbound network access, can be materially slower than a warm run, and may exhaust its timeout or standard-3 capacity.
+- Local Loogle and Lean REPL modes stay disabled because their memory use is not predictable inside the standard-3 envelope.
 
 ## What is shipped
 
-The worker registers one agent runner across seven task types — `feature-implementation`, `code-review`, `test-suite`, `bug-fix`, `refactoring`, `documentation`, and `migration` — selected by `resolveSandboxTaskProfile`. The following are complete and are not open work:
+The worker registers one general agent runner across seven task types — `feature-implementation`, `code-review`, `test-suite`, `bug-fix`, `refactoring`, `documentation`, and `migration` — selected by `resolveSandboxTaskProfile`. It registers `lean-proof` with a dedicated runner and container. The following are complete and are not open work:
 
 - The iterative agent loop, plan refinement, mid-run file reads, the post-implementation quality gate, and commit gating on that gate.
 - Repository-aware planning, PRD support (`prd.json`, `tasks/prd-*.md`, with an `.implement` fallback), story progress tracking, and per-task prompt strategies.
@@ -105,6 +122,7 @@ The worker registers one agent runner across seven task types — `feature-imple
 - Client cancellation, per-task timeouts, pause and resume, per-user quotas and rate limiting, and per-command approval before execution.
 - GitHub `/implement`, `/review`, `/test`, and `/fix` commands from both issue and PR comments.
 - R2-backed terminal logs, diffs, events, and result manifests written by the API dispatcher.
+- Work-only Lean proof dispatch, bounded target editing, compiler and axiom validation, advisory LSP diagnostics, token-budget enforcement, message compaction, exact idempotent project-task projection, and project output persistence.
 
 ## Open work
 

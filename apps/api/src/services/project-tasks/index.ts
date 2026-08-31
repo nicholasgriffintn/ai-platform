@@ -3,7 +3,10 @@ import {
   isTerminalProjectTaskStatus,
   nextFlowStageId,
   PROJECT_TASK_DEFAULT_CONCURRENCY,
+  PROJECT_TASK_DEFAULT_TOKEN_BUDGET,
   type CreateProjectTaskInput,
+  type CreateLeanProofProjectTaskInput,
+  leanProofResultSchema,
   type AnswerUserQuestionsInput,
   type ProjectFlow,
   type ProjectTask,
@@ -16,7 +19,9 @@ import {
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ListProjectTaskFilters } from "~/repositories/ProjectTaskRepository";
+import { cancelSandboxRunForProjectTask } from "~/services/apps/sandbox/runs";
 import { GoalService } from "~/services/goals/GoalService";
+import { formatOutput } from "~/services/outputs";
 import { TaskService } from "~/services/tasks/TaskService";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { parseProjectFlow } from "~/services/workspaces/format";
@@ -26,8 +31,10 @@ import { getLogger } from "~/utils/logger";
 
 import { resolveProjectTaskToolApproval } from "./approvals";
 import { approveLatestProjectTaskCompletion } from "./completions";
+import { leanProofRequestsMatch } from "./lean-proof-request";
 import { answerProjectTaskQuestions, getPendingProjectTaskQuestions } from "./questions";
-import { queueProjectTaskRun } from "./runner";
+import { queueProjectTaskRun, reenqueueProjectTaskRun } from "./runner";
+import { assertLeanProofTaskConfiguration, isLeanProofTask } from "./sandbox-runner";
 import { assertProjectTaskTransition } from "./transitions";
 
 const POSITION_STEP = 1000;
@@ -66,6 +73,19 @@ async function settleCancelledTaskResources(
           });
         }
       })(),
+    );
+  }
+
+  if (task.sandboxRunId && task.runnerIdentityUserId) {
+    settlements.push(
+      cancelSandboxRunForProjectTask({
+        context,
+        taskId: task.id,
+        projectId: task.projectId,
+        sandboxRunId: task.sandboxRunId,
+        runnerIdentityUserId: task.runnerIdentityUserId,
+        reason: "The project task was cancelled.",
+      }),
     );
   }
 
@@ -211,6 +231,136 @@ export async function getProjectTask(context: ServiceContext, projectId: string,
   return { task, goal, pendingQuestions };
 }
 
+export async function listLeanProofProjectTasks(context: ServiceContext, projectId: string) {
+  await requireProjectAccess(context, projectId);
+  const tasks = await context.repositories.projectTasks.listProjectTasks(projectId, {
+    includeDone: true,
+  });
+
+  return { tasks: tasks.filter(isLeanProofTask) };
+}
+
+export async function getLeanProofProjectTask(
+  context: ServiceContext,
+  projectId: string,
+  taskId: string,
+) {
+  await requireProjectAccess(context, projectId);
+  const task = await requireTask(context, projectId, taskId);
+
+  if (!isLeanProofTask(task)) {
+    throw new AssistantError("Proof task not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  const [goal, outputRecord] = await Promise.all([
+    task.goalId ? context.repositories.goals.getGoalById(task.goalId) : null,
+    task.outputId ? context.repositories.outputs.getProjectOutput(projectId, task.outputId) : null,
+  ]);
+  const output = outputRecord ? formatOutput(outputRecord) : null;
+  const parsedResult = leanProofResultSchema.safeParse(output?.content);
+
+  return {
+    task,
+    goal,
+    output,
+    result: parsedResult.success ? parsedResult.data : null,
+  };
+}
+
+export async function createAndStartLeanProofProjectTask(
+  context: ServiceContext,
+  projectId: string,
+  input: CreateLeanProofProjectTaskInput,
+  idempotencyKey: string,
+) {
+  const user = context.requireUser();
+  const requestedTokenBudget = input.tokenBudget ?? PROJECT_TASK_DEFAULT_TOKEN_BUDGET;
+
+  await requireProjectAccess(context, projectId);
+  const findExisting = () =>
+    context.repositories.projectTasks.getTaskByIdempotencyKey({
+      projectId,
+      createdByUserId: user.id,
+      idempotencyKey,
+    });
+  const returnExisting = async (existing: ProjectTask) => {
+    const existingRequest =
+      existing.runner?.kind === "sandbox" && existing.runner.profile === "lean-proof"
+        ? existing.runner.request
+        : undefined;
+
+    if (
+      !leanProofRequestsMatch(existingRequest, input) ||
+      existing.tokenBudget !== requestedTokenBudget
+    ) {
+      throw new AssistantError(
+        "This idempotency key was already used for a different Lean proof request",
+        ErrorType.CONFLICT_ERROR,
+        409,
+      );
+    }
+
+    if (
+      existing.status === "backlog" ||
+      (existing.status === "blocked" && existing.blockedReason === "dispatch_failed")
+    ) {
+      return startProjectTask(context, projectId, existing.id);
+    }
+
+    return { task: existing };
+  };
+
+  const existing = await findExisting();
+
+  if (existing) {
+    return returnExisting(existing);
+  }
+
+  const active = await context.repositories.projectTasks.countActiveTasks(projectId);
+
+  if (active >= PROJECT_TASK_DEFAULT_CONCURRENCY) {
+    throw new AssistantError(
+      `This project already has ${PROJECT_TASK_DEFAULT_CONCURRENCY} tasks in flight. Wait for one to finish.`,
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  const request = {
+    targetPaths: input.targetPaths,
+    declarations: input.declarations,
+    objective: input.objective,
+    acceptanceCriteria: input.acceptanceCriteria,
+  };
+  let created: { task: ProjectTask };
+
+  try {
+    created = await createProjectTask(
+      context,
+      projectId,
+      {
+        objective: request.objective,
+        acceptanceCriteria: request.acceptanceCriteria.map((text) => ({ text })),
+        expectedOutput: "A Lean proof result backed by compiler and kernel evidence",
+        runner: { kind: "sandbox", profile: "lean-proof", request },
+        stageId: null,
+        tokenBudget: requestedTokenBudget,
+      },
+      { idempotencyKey },
+    );
+  } catch (error) {
+    const raced = await findExisting();
+
+    if (!raced) {
+      throw error;
+    }
+
+    return returnExisting(raced);
+  }
+
+  return startProjectTask(context, projectId, created.task.id);
+}
+
 export async function respondToProjectTaskQuestions(
   context: ServiceContext,
   projectId: string,
@@ -289,7 +439,7 @@ export async function createProjectTask(
   context: ServiceContext,
   projectId: string,
   input: CreateProjectTaskInput,
-  options: { source?: ProjectTaskSource } = {},
+  options: { source?: ProjectTaskSource; idempotencyKey?: string } = {},
 ) {
   const user = context.requireUser();
   const { project } = await requireProjectAccess(context, projectId);
@@ -298,6 +448,22 @@ export async function createProjectTask(
   await assertAssigneeIsMember(context, project.workspace_id, input.assigneeUserId);
   assertStageExists(flow, input.stageId);
   await assertDependenciesExist(context, projectId, null, input.dependsOnTaskIds);
+
+  if (input.runner?.kind === "sandbox") {
+    if (input.stageId) {
+      throw new AssistantError(
+        "Sandbox proof tasks do not use project flow stages",
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+
+    await assertLeanProofTaskConfiguration({
+      context,
+      project,
+      task: { runner: input.runner },
+    });
+  }
 
   const maxPosition = await context.repositories.projectTasks.getMaxPosition(projectId);
   const task = await context.repositories.projectTasks.createTask({
@@ -314,8 +480,14 @@ export async function createProjectTask(
     createdByUserId: user.id,
     assigneeUserId: input.assigneeUserId ?? null,
     runner: input.runner ?? null,
-    stageId: input.stageId ?? flow?.stages[0]?.id ?? null,
+    stageId:
+      input.stageId === undefined
+        ? input.runner?.kind === "sandbox"
+          ? null
+          : (flow?.stages[0]?.id ?? null)
+        : input.stageId,
     tokenBudget: input.tokenBudget ?? null,
+    idempotencyKey: options.idempotencyKey ?? null,
     position: maxPosition + POSITION_STEP,
   });
 
@@ -344,6 +516,42 @@ export async function updateProjectTask(
   const flow = parseProjectFlow(project.flow);
   const actor = options.actor ?? "user";
 
+  if (input.runner !== undefined && (task.status === "queued" || task.status === "running")) {
+    throw new AssistantError(
+      "Stop this task before changing its runner",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  const isActiveSandboxTask =
+    isLeanProofTask(task) && (task.status === "queued" || task.status === "running");
+
+  if (
+    isActiveSandboxTask &&
+    input.status !== undefined &&
+    input.status !== task.status &&
+    input.status !== "cancelled"
+  ) {
+    throw new AssistantError(
+      "Cancel this proof task before moving it out of active execution",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  if (input.runner?.kind === "sandbox") {
+    if (input.stageId ?? task.stageId) {
+      throw new AssistantError(
+        "Sandbox proof tasks do not use project flow stages",
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+
+    await assertLeanProofTaskConfiguration({ context, project, task: { runner: input.runner } });
+  }
+
   if (input.status !== undefined) {
     assertProjectTaskTransition({ actor, from: task.status, to: input.status });
   }
@@ -354,16 +562,33 @@ export async function updateProjectTask(
 
   const nextStatus = input.status ?? task.status;
   const isFinishing = isTerminalProjectTaskStatus(nextStatus) && nextStatus !== task.status;
-  const updated = await context.repositories.projectTasks.updateTask(taskId, {
-    ...input,
-    acceptanceCriteria: withCriterionIds(input.acceptanceCriteria),
-    ...(input.status !== undefined && input.status !== "blocked"
-      ? { blockedReason: null, blockedDetail: null }
-      : {}),
-    ...(isFinishing ? { completedAt: new Date().toISOString() } : {}),
-  });
+  const updated = await context.repositories.projectTasks.updateTask(
+    taskId,
+    {
+      ...input,
+      acceptanceCriteria: withCriterionIds(input.acceptanceCriteria),
+      ...(input.status !== undefined && input.status !== "blocked"
+        ? { blockedReason: null, blockedDetail: null }
+        : {}),
+      ...(isFinishing ? { completedAt: new Date().toISOString() } : {}),
+    },
+    isActiveSandboxTask
+      ? {
+          expectedStatuses: [task.status],
+          requireProjectionUnclaimed: input.status === "cancelled",
+        }
+      : {},
+  );
 
   if (!updated) {
+    if (isActiveSandboxTask) {
+      throw new AssistantError(
+        "This proof task changed while it was being updated. Refresh and try again.",
+        ErrorType.CONFLICT_ERROR,
+        409,
+      );
+    }
+
     throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
   }
 
@@ -379,7 +604,7 @@ export async function updateProjectTask(
   }
 
   if (input.status === "cancelled" && task.status !== "cancelled") {
-    await settleCancelledTaskResources(context, task);
+    await settleCancelledTaskResources(context, updated);
   }
 
   return { task: updated };
@@ -396,7 +621,13 @@ export async function startProjectTask(
   const task = await requireTask(context, projectId, taskId);
   const flow = parseProjectFlow(project.flow);
 
-  if (task.status === "running" || (task.status === "queued" && task.dispatchTaskId)) {
+  if (task.status === "running") {
+    return { task };
+  }
+
+  if (task.status === "queued" && task.dispatchTaskId) {
+    await reenqueueProjectTaskRun(context, task);
+
     return { task };
   }
 
@@ -435,7 +666,7 @@ export async function startProjectTask(
     );
   }
 
-  const active = await context.repositories.projectTasks.countActiveTasks(projectId);
+  const active = await context.repositories.projectTasks.countActiveTasks(projectId, task.id);
 
   if (active >= PROJECT_TASK_DEFAULT_CONCURRENCY) {
     throw new AssistantError(
@@ -449,7 +680,7 @@ export async function startProjectTask(
     context,
     task,
     runnerIdentityUserId: user.id,
-    stageId: task.stageId ?? flow?.stages[0]?.id ?? null,
+    stageId: isLeanProofTask(task) ? null : (task.stageId ?? flow?.stages[0]?.id ?? null),
     approvedTools: options.approvedTools,
   });
 
@@ -479,7 +710,7 @@ export async function acceptProjectTask(
   }
 
   const flow = parseProjectFlow(project.flow);
-  const nextStage = nextFlowStageId(flow, task.stageId);
+  const nextStage = isLeanProofTask(task) ? null : nextFlowStageId(flow, task.stageId);
   let updated: ProjectTask | null;
 
   if (nextStage) {
@@ -531,11 +762,20 @@ export async function deleteProjectTask(
   const { project } = await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
 
-  if (task.status === "running") {
-    throw new AssistantError("Stop this task before deleting it", ErrorType.CONFLICT_ERROR, 409);
+  if (task.status === "queued" || task.status === "running") {
+    throw new AssistantError("Cancel this task before deleting it", ErrorType.CONFLICT_ERROR, 409);
   }
 
-  await context.repositories.projectTasks.deleteTask(taskId);
+  const deleted = await context.repositories.projectTasks.deleteTask(taskId, task.status);
+
+  if (!deleted) {
+    throw new AssistantError(
+      "This task changed before it could be deleted. Refresh and try again.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
   await context.repositories.audit.createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,

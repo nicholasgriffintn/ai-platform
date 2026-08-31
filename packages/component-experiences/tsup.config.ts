@@ -2,6 +2,7 @@ import { defineConfig } from "tsup";
 export default defineConfig({
   entry: {
     content: "src/content/index.tsx",
+    development: "src/development/index.ts",
     media: "src/media/index.tsx",
     music: "src/music/index.tsx",
     training: "src/training/index.tsx",

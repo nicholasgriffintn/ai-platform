@@ -1,14 +1,15 @@
-import type {
-  ProjectTask,
-  ProjectTaskBlockedReason,
-  ProjectTaskCompletion,
-  ProjectTaskConstraints,
-  ProjectTaskContext,
-  ProjectTaskCriterion,
-  ProjectTaskRunner,
-  ProjectTaskSource,
-  ProjectTaskStatus,
-  ToolPermission,
+import {
+  PROJECT_TASK_DEFAULT_CONCURRENCY,
+  type ProjectTask,
+  type ProjectTaskBlockedReason,
+  type ProjectTaskCompletion,
+  type ProjectTaskConstraints,
+  type ProjectTaskContext,
+  type ProjectTaskCriterion,
+  type ProjectTaskRunner,
+  type ProjectTaskSource,
+  type ProjectTaskStatus,
+  type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ProjectTaskRow } from "~/lib/database/schema";
@@ -17,6 +18,8 @@ import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
 
 import { BaseRepository } from "./BaseRepository";
+
+const SANDBOX_PROJECTION_LEASE_MODIFIER = "-5 minutes";
 
 export interface CreateProjectTaskParams {
   projectId: string;
@@ -34,6 +37,7 @@ export interface CreateProjectTaskParams {
   runner?: ProjectTaskRunner | null;
   stageId?: string | null;
   tokenBudget?: number | null;
+  idempotencyKey?: string | null;
   position: number;
 }
 
@@ -55,6 +59,8 @@ export interface UpdateProjectTaskParams {
   conversationId?: string | null;
   goalId?: string | null;
   dispatchTaskId?: string | null;
+  sandboxRunId?: string | null;
+  outputId?: string | null;
   completions?: ProjectTaskCompletion[];
   position?: number;
   tokenBudget?: number | null;
@@ -101,6 +107,8 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
     conversationId: row.conversation_id,
     goalId: row.goal_id,
     dispatchTaskId: row.dispatch_task_id,
+    sandboxRunId: row.sandbox_run_id,
+    outputId: row.output_id,
     completions: parseJsonColumn<ProjectTaskCompletion[]>(row.completions) ?? [],
     position: row.position,
     tokenBudget: row.token_budget,
@@ -135,6 +143,7 @@ export class ProjectTaskRepository extends BaseRepository {
         runner: params.runner ?? null,
         stage_id: params.stageId ?? null,
         token_budget: params.tokenBudget ?? null,
+        idempotency_key: params.idempotencyKey ?? null,
         position: params.position,
       },
       {
@@ -168,6 +177,21 @@ export class ProjectTaskRepository extends BaseRepository {
     const row = await this.runQuery<ProjectTaskRow>(
       "SELECT * FROM project_task WHERE id = ?",
       [taskId],
+      true,
+    );
+
+    return row ? formatProjectTask(row) : null;
+  }
+
+  async getTaskByIdempotencyKey(params: {
+    projectId: string;
+    createdByUserId: number;
+    idempotencyKey: string;
+  }): Promise<ProjectTask | null> {
+    const row = await this.runQuery<ProjectTaskRow>(
+      `SELECT * FROM project_task
+       WHERE project_id = ? AND created_by_user_id = ? AND idempotency_key = ?`,
+      [params.projectId, params.createdByUserId, params.idempotencyKey],
       true,
     );
 
@@ -238,11 +262,13 @@ export class ProjectTaskRepository extends BaseRepository {
     return rows.map(formatProjectTask);
   }
 
-  async countActiveTasks(projectId: string): Promise<number> {
+  async countActiveTasks(projectId: string, excludeTaskId?: string): Promise<number> {
     const row = await this.runQuery<{ total: number }>(
       `SELECT COUNT(*) AS total FROM project_task
-       WHERE project_id = ? AND status IN ('queued', 'running')`,
-      [projectId],
+       WHERE project_id = ?
+         AND status IN ('queued', 'running')
+         AND (? IS NULL OR id != ?)`,
+      [projectId, excludeTaskId ?? null, excludeTaskId ?? null],
       true,
     );
 
@@ -259,7 +285,14 @@ export class ProjectTaskRepository extends BaseRepository {
     return row?.max_position ?? 0;
   }
 
-  async updateTask(taskId: string, updates: UpdateProjectTaskParams): Promise<ProjectTask | null> {
+  async updateTask(
+    taskId: string,
+    updates: UpdateProjectTaskParams,
+    options: {
+      expectedStatuses?: readonly ProjectTaskStatus[];
+      requireProjectionUnclaimed?: boolean;
+    } = {},
+  ): Promise<ProjectTask | null> {
     const columns: string[] = [];
     const values: unknown[] = [];
 
@@ -336,6 +369,14 @@ export class ProjectTaskRepository extends BaseRepository {
       set("dispatch_task_id", updates.dispatchTaskId);
     }
 
+    if (updates.sandboxRunId !== undefined) {
+      set("sandbox_run_id", updates.sandboxRunId);
+    }
+
+    if (updates.outputId !== undefined) {
+      set("output_id", updates.outputId);
+    }
+
     if (updates.completions !== undefined) {
       set("completions", JSON.stringify(updates.completions));
     }
@@ -360,6 +401,10 @@ export class ProjectTaskRepository extends BaseRepository {
       set("completed_at", updates.completedAt);
     }
 
+    if (updates.status === "cancelled" && options.requireProjectionUnclaimed) {
+      set("projection_claim_id", null);
+    }
+
     if (columns.length === 0) {
       return this.getTaskById(taskId);
     }
@@ -367,8 +412,23 @@ export class ProjectTaskRepository extends BaseRepository {
     columns.push("updated_at = CURRENT_TIMESTAMP");
     values.push(taskId);
 
+    if (options.expectedStatuses?.length) {
+      values.push(...options.expectedStatuses);
+    }
+
+    if (options.requireProjectionUnclaimed) {
+      values.push(SANDBOX_PROJECTION_LEASE_MODIFIER);
+    }
+
+    const expectedStatusClause = options.expectedStatuses?.length
+      ? ` AND status IN (${options.expectedStatuses.map(() => "?").join(", ")})`
+      : "";
+    const projectionClaimClause = options.requireProjectionUnclaimed
+      ? " AND (projection_claim_id IS NULL OR datetime(updated_at) <= datetime('now', ?))"
+      : "";
+
     const row = await this.runQuery<ProjectTaskRow>(
-      `UPDATE project_task SET ${columns.join(", ")} WHERE id = ? RETURNING *`,
+      `UPDATE project_task SET ${columns.join(", ")} WHERE id = ?${expectedStatusClause}${projectionClaimClause} RETURNING *`,
       values,
       true,
     );
@@ -392,23 +452,39 @@ export class ProjectTaskRepository extends BaseRepository {
            dispatch_task_id = ?,
            runner = ?,
            token_budget = ?,
-           stage_id = COALESCE(?, stage_id),
+           stage_id = ?,
            goal_id = NULL,
+           sandbox_run_id = NULL,
+           output_id = NULL,
+           projection_claim_id = NULL,
            blocked_reason = NULL,
            blocked_detail = NULL,
            updated_at = CURRENT_TIMESTAMP
        WHERE id = ?
          AND project_id = ?
-         AND status IN ('backlog', 'queued', 'blocked', 'review', 'running')
+         AND (
+           status IN ('backlog', 'blocked', 'review')
+           OR (status = 'queued' AND dispatch_task_id IS NULL)
+         )
+         AND (
+           SELECT COUNT(*)
+           FROM project_task AS active_task
+           WHERE active_task.project_id = ?
+             AND active_task.id != ?
+             AND active_task.status IN ('queued', 'running')
+         ) < ?
        RETURNING *`,
       [
         params.runnerIdentityUserId,
         params.dispatchTaskId,
         JSON.stringify(params.runner),
         params.tokenBudget,
-        params.stageId ?? null,
+        params.stageId === undefined ? null : params.stageId,
         params.taskId,
         params.projectId,
+        params.projectId,
+        params.taskId,
+        PROJECT_TASK_DEFAULT_CONCURRENCY,
       ],
       true,
     );
@@ -449,6 +525,190 @@ export class ProjectTaskRepository extends BaseRepository {
     return row ? formatProjectTask(row) : null;
   }
 
+  async attachSandboxRun(params: {
+    taskId: string;
+    projectId: string;
+    workspaceId: string;
+    runnerIdentityUserId: number;
+    dispatchTaskId: string;
+    sandboxRunId: string;
+    goalId: string;
+  }): Promise<ProjectTask | null> {
+    const row = await this.runQuery<ProjectTaskRow>(
+      `UPDATE project_task
+       SET sandbox_run_id = ?,
+           goal_id = ?,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?
+         AND project_id = ?
+         AND workspace_id = ?
+         AND runner_identity_user_id = ?
+         AND dispatch_task_id = ?
+         AND status = 'running'
+         AND sandbox_run_id IS NULL
+         AND output_id IS NULL
+       RETURNING *`,
+      [
+        params.sandboxRunId,
+        params.goalId,
+        params.taskId,
+        params.projectId,
+        params.workspaceId,
+        params.runnerIdentityUserId,
+        params.dispatchTaskId,
+      ],
+      true,
+    );
+
+    return row ? formatProjectTask(row) : null;
+  }
+
+  async projectSandboxRunResult(params: {
+    taskId: string;
+    projectId: string;
+    workspaceId: string;
+    runnerIdentityUserId: number;
+    dispatchTaskId: string;
+    sandboxRunId: string;
+    goalId: string;
+    outputId: string | null;
+    status: Extract<ProjectTaskStatus, "blocked" | "review" | "cancelled">;
+    blockedReason: ProjectTaskBlockedReason | null;
+    blockedDetail: string | null;
+    completions: ProjectTaskCompletion[];
+    tokensSpent: number;
+    completedAt?: string | null;
+    projectionClaimId: string;
+  }): Promise<ProjectTask | null> {
+    const row = await this.runQuery<ProjectTaskRow>(
+      `UPDATE project_task
+       SET status = ?,
+           blocked_reason = ?,
+           blocked_detail = ?,
+           output_id = ?,
+           completions = ?,
+           tokens_spent = ?,
+           completed_at = ?,
+           projection_claim_id = NULL,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?
+         AND project_id = ?
+         AND workspace_id = ?
+         AND runner_identity_user_id = ?
+         AND dispatch_task_id = ?
+         AND sandbox_run_id = ?
+         AND goal_id = ?
+         AND projection_claim_id = ?
+         AND status = 'running'
+         AND output_id IS NULL
+       RETURNING *`,
+      [
+        params.status,
+        params.blockedReason,
+        params.blockedDetail?.slice(0, 500) ?? null,
+        params.outputId,
+        JSON.stringify(params.completions),
+        params.tokensSpent,
+        params.completedAt ?? null,
+        params.taskId,
+        params.projectId,
+        params.workspaceId,
+        params.runnerIdentityUserId,
+        params.dispatchTaskId,
+        params.sandboxRunId,
+        params.goalId,
+        params.projectionClaimId,
+      ],
+      true,
+    );
+
+    return row ? formatProjectTask(row) : null;
+  }
+
+  async claimSandboxRunProjection(params: {
+    taskId: string;
+    projectId: string;
+    workspaceId: string;
+    runnerIdentityUserId: number;
+    dispatchTaskId: string;
+    sandboxRunId: string;
+    goalId: string;
+    projectionClaimId: string;
+  }): Promise<boolean> {
+    const row = await this.runQuery<{ id: string }>(
+      `UPDATE project_task
+       SET projection_claim_id = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?
+         AND project_id = ?
+         AND workspace_id = ?
+         AND runner_identity_user_id = ?
+         AND dispatch_task_id = ?
+         AND sandbox_run_id = ?
+         AND goal_id = ?
+         AND status = 'running'
+         AND output_id IS NULL
+         AND (
+           projection_claim_id IS NULL
+           OR datetime(updated_at) <= datetime('now', ?)
+         )
+       RETURNING id`,
+      [
+        params.projectionClaimId,
+        params.taskId,
+        params.projectId,
+        params.workspaceId,
+        params.runnerIdentityUserId,
+        params.dispatchTaskId,
+        params.sandboxRunId,
+        params.goalId,
+        SANDBOX_PROJECTION_LEASE_MODIFIER,
+      ],
+      true,
+    );
+
+    return Boolean(row);
+  }
+
+  async releaseSandboxRunProjection(params: {
+    taskId: string;
+    projectId: string;
+    workspaceId: string;
+    runnerIdentityUserId: number;
+    dispatchTaskId: string;
+    sandboxRunId: string;
+    goalId: string;
+    projectionClaimId: string;
+  }): Promise<boolean> {
+    const row = await this.runQuery<{ id: string }>(
+      `UPDATE project_task
+       SET projection_claim_id = NULL, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?
+         AND project_id = ?
+         AND workspace_id = ?
+         AND runner_identity_user_id = ?
+         AND dispatch_task_id = ?
+         AND sandbox_run_id = ?
+         AND goal_id = ?
+         AND projection_claim_id = ?
+         AND status = 'running'
+         AND output_id IS NULL
+       RETURNING id`,
+      [
+        params.taskId,
+        params.projectId,
+        params.workspaceId,
+        params.runnerIdentityUserId,
+        params.dispatchTaskId,
+        params.sandboxRunId,
+        params.goalId,
+        params.projectionClaimId,
+      ],
+      true,
+    );
+
+    return Boolean(row);
+  }
+
   async failDispatch(params: {
     taskId: string;
     projectId: string;
@@ -461,7 +721,7 @@ export class ProjectTaskRepository extends BaseRepository {
            blocked_reason = 'dispatch_failed',
            blocked_detail = ?,
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = ? AND project_id = ? AND dispatch_task_id = ?
+       WHERE id = ? AND project_id = ? AND dispatch_task_id = ? AND status = 'queued'
        RETURNING *`,
       [params.detail.slice(0, 500), params.taskId, params.projectId, params.dispatchTaskId],
       true,
@@ -470,7 +730,13 @@ export class ProjectTaskRepository extends BaseRepository {
     return row ? formatProjectTask(row) : null;
   }
 
-  async deleteTask(taskId: string): Promise<void> {
-    await this.executeRun("DELETE FROM project_task WHERE id = ?", [taskId]);
+  async deleteTask(taskId: string, expectedStatus: ProjectTaskStatus): Promise<boolean> {
+    const deleted = await this.runQuery<{ id: string }>(
+      "DELETE FROM project_task WHERE id = ? AND status = ? RETURNING id",
+      [taskId, expectedStatus],
+      true,
+    );
+
+    return Boolean(deleted);
   }
 }

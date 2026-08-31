@@ -14,6 +14,7 @@ export const SANDBOX_TASK_TYPES = [
   "refactoring",
   "documentation",
   "migration",
+  "lean-proof",
 ] as const;
 
 export const SANDBOX_TIMEOUT_MIN_SECONDS = 30;

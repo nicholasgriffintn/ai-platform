@@ -1,6 +1,8 @@
 import {
   sandboxRunControlSchema,
   sandboxRunInstructionEnvelopeSchema,
+  recordGoalIterationResponseSchema,
+  type RecordGoalIterationResponse,
   type SandboxRunControl,
   type SandboxRunInstruction,
   type SandboxRunInstructionEnvelope,
@@ -162,6 +164,15 @@ export class RunControlClient {
     }
 
     if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        return {
+          runId: this.runId,
+          state: "cancelled",
+          updatedAt: new Date().toISOString(),
+          cancellationReason: "Sandbox run authorisation was revoked",
+        };
+      }
+
       if (response.status === 404 || response.status === 410) {
         return {
           runId: this.runId,
@@ -278,11 +289,6 @@ export class RunControlClient {
     return mapApprovalInstructionToApproval(match?.instruction ?? null);
   }
 
-  /**
-   * Records the run's progress against its goal and asks whether it should keep
-   * working. A run that cannot reach its control plane keeps its old behaviour
-   * and finishes, rather than looping without oversight.
-   */
   public async recordGoalIteration(
     iteration: {
       summary: string;
@@ -290,49 +296,44 @@ export class RunControlClient {
       calledTool: boolean;
       evidence?: string[];
       next?: string;
+      tokens?: number;
     },
     signal?: AbortSignal,
-  ): Promise<{ shouldContinue: boolean; instruction?: string }> {
+  ): Promise<RecordGoalIterationResponse> {
     if (!this.runId) {
-      return { shouldContinue: false };
+      throw new Error("Cannot record goal iteration without a sandbox run ID");
     }
 
-    try {
-      const response = await fetchWithTimeout(
-        (timeoutSignal) =>
-          this.fetchApi(
-            `/apps/sandbox/runs/${encodeURIComponent(this.runId as string)}/goal/iteration`,
-            {
-              method: "POST",
-              headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${this.userToken}`,
-              },
-              body: JSON.stringify(iteration),
+    const response = await fetchWithTimeout(
+      (timeoutSignal) =>
+        this.fetchApi(
+          `/apps/sandbox/runs/${encodeURIComponent(this.runId as string)}/goal/iteration`,
+          {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${this.userToken}`,
             },
-            timeoutSignal,
-          ),
-        this.requestTimeoutMs,
-        signal,
-      );
+            body: JSON.stringify(iteration),
+          },
+          timeoutSignal,
+        ),
+      this.requestTimeoutMs,
+      signal,
+    );
 
-      if (!response.ok) {
-        return { shouldContinue: false };
-      }
-
-      const data = (await response.json()) as {
-        shouldContinue?: boolean;
-        instruction?: string;
-      };
-
-      return {
-        shouldContinue: data?.shouldContinue === true,
-        ...(typeof data?.instruction === "string" ? { instruction: data.instruction } : {}),
-      };
-    } catch {
-      return { shouldContinue: false };
+    if (!response.ok) {
+      throw new Error(`Sandbox goal control request failed (${response.status})`);
     }
+
+    const parsed = recordGoalIterationResponseSchema.safeParse(await response.json());
+
+    if (!parsed.success) {
+      throw new Error("Sandbox goal control returned an invalid response");
+    }
+
+    return parsed.data;
   }
 
   public async listInstructions(

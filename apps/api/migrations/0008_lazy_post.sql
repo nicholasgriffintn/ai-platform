@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX `project_task_sandbox_run_idx` ON `project_task` (`sandbox_run_id`) WHERE "project_task"."sandbox_run_id" IS NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX `project_task_output_idx` ON `project_task` (`output_id`) WHERE "project_task"."output_id" IS NOT NULL;

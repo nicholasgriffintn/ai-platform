@@ -203,6 +203,7 @@ const TASK_TYPE_DEFAULT_STRATEGY: Record<SandboxTaskType, ResolvedPromptStrategy
   refactoring: "refactor",
   documentation: "feature-delivery",
   migration: "refactor",
+  "lean-proof": "feature-delivery",
 };
 
 const TASK_KEYWORD_STRATEGY_RULES: Array<{

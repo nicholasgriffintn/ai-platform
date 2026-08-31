@@ -19,8 +19,11 @@ export function createProjectTaskCompletion(params: {
   return {
     id: generateId(),
     stageId: params.stage?.id ?? null,
+    runtime: "conversation",
     conversationId: params.conversationId,
     goalId: params.goal.id,
+    sandboxRunId: null,
+    outputId: null,
     output: params.output,
     evidence: params.goal.evidence ?? [],
     approval: {
@@ -28,6 +31,35 @@ export function createProjectTaskCompletion(params: {
       status: automated ? "approved" : "pending",
       reviewedByUserId: null,
       reviewedAt: automated ? (params.createdAt ?? new Date().toISOString()) : null,
+    },
+    createdAt: params.createdAt ?? new Date().toISOString(),
+  };
+}
+
+export function createSandboxProjectTaskCompletion(params: {
+  id: string;
+  sandboxRunId: string;
+  outputId: string;
+  goal: Goal;
+  output: string;
+  evidence?: ProjectTaskCompletion["evidence"];
+  createdAt?: string;
+}): ProjectTaskCompletion {
+  return {
+    id: params.id,
+    stageId: null,
+    runtime: "sandbox",
+    conversationId: null,
+    goalId: params.goal.id,
+    sandboxRunId: params.sandboxRunId,
+    outputId: params.outputId,
+    output: params.output,
+    evidence: params.evidence ?? params.goal.evidence ?? [],
+    approval: {
+      mode: "human",
+      status: "pending",
+      reviewedByUserId: null,
+      reviewedAt: null,
     },
     createdAt: params.createdAt ?? new Date().toISOString(),
   };

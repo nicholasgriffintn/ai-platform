@@ -7,6 +7,8 @@ This is Polychat's responsive web application and PWA, built with React, Tailwin
 - UI built with React and TailwindCSS
 - Responsive design that works on both desktop and mobile devices
 - Integration with the API backend for AI assistant capabilities
+- A Work-only Lean Proofs experience for repository-targeted proof runs, evidence review, retry,
+  approval, and saved project outputs
 - Local conversation storage with IndexedDB (falls back to LocalStorage)
 - Settings configuration for models and preferences
 - Leave max output tokens empty to use the API's workload-aware default. The settings control explains those defaults, accepts larger explicit overrides, and uses the model catalogue limit instead of a fixed client ceiling.
@@ -27,5 +29,17 @@ This is Polychat's responsive web application and PWA, built with React, Tailwin
 - The custom library has no authoring cap. Its API and settings UI use bounded server-backed pages, fetch an off-page selected pet directly, and defer each custom sprite sheet until its preview approaches the viewport. Presets remain immediately available.
 - "Let your pet follow you" is off by default. Off, the pet appears only on the new chat screen, where the logo used to be. On, it also perches above the composer inside conversations and animates into place when the route changes.
 - Pet animation is off by default. A person can enable expression and travel animations under Profile > Pets, while `prefers-reduced-motion: reduce` always leaves the pet on the first frame regardless of that setting.
+
+## Lean Proofs
+
+The `/capabilities` catalogue declares experience scope. Chat requests and renders personal experiences only; a Work project requests project experiences, and exposes Lean Proofs only after the project enables its app. Do not reproduce that scope policy in route components.
+
+Lean Proofs lives below `/work/:workspaceId/projects/:projectId/experiences/lean-proofs`. Its creation form accepts an objective, one or more repository-relative `.lean` targets, optional qualified declarations, optional acceptance criteria, and a token budget. When no project coding repository is configured, direct the member back to project configuration instead of accepting a repository or installation in the form.
+
+Creation starts the project task immediately. The project-scoped React Query hooks poll every two seconds while a run is queued or running, invalidate the task and output views after mutations, and stop polling at a terminal or review state. Detail views distinguish `kernel_checked`, `compiled`, `incomplete`, and `failed`, present compiler and kernel evidence separately from diagnostics, and offer retry only for retryable blocked states.
+
+A successful result stops in review until a person approves it. The same structured `lean.proof` output renderer serves the experience detail and the saved project-output route, so a stored result cannot silently fall back to generic JSON presentation.
+
+Native iOS does not launch or manage Lean Proofs in this decision. Mobile web continues to use the responsive Work experience; adding a native surface requires its own product and deployment decision.
 
 Use the skill's [local setup](../setup.md), [configuration](../configuration.md), [deployment](../deployment.md), and [validation](../validation.md) workflows for current commands and environment guidance.

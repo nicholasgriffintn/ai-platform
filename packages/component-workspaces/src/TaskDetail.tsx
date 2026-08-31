@@ -16,8 +16,8 @@ import {
   AlertTriangle,
   Check,
   Circle,
+  FileCheck2,
   Loader2,
-  MessageSquareText,
   Play,
   RotateCcw,
   Trash2,
@@ -33,7 +33,8 @@ export interface TaskDetailProps {
   members: { userId: number; name: string | null }[];
   agents: { id: string; name: string }[];
   blockedBy: ProjectTask[];
-  conversationHref: string | null;
+  resultHref: string | null;
+  resultLabel?: string;
   taskHref: (task: ProjectTask) => string;
   isBusy?: boolean;
   onRun: () => void;
@@ -86,7 +87,8 @@ export function TaskDetail({
   members,
   agents,
   blockedBy,
-  conversationHref,
+  resultHref,
+  resultLabel = "View result",
   taskHref,
   isBusy = false,
   onRun,
@@ -98,7 +100,8 @@ export function TaskDetail({
 }: TaskDetailProps) {
   const owner = members.find((member) => member.userId === task.assigneeUserId);
   const stage = flow?.stages.find((candidate) => candidate.id === task.stageId);
-  const agentId = stage?.agentId ?? task.runner?.agentId;
+  const agentId =
+    stage?.agentId ?? (task.runner?.kind === "conversation" ? task.runner.agentId : null);
   const agent = agents.find((candidate) => candidate.id === agentId);
   const isFinished = isTerminalProjectTaskStatus(task.status);
   const canRetry = isProjectTaskRetryable(task);
@@ -147,24 +150,24 @@ export function TaskDetail({
               Run again
             </Button>
           )}
-          {conversationHref && task.status === "done" ? (
+          {resultHref && task.status === "done" ? (
             <ButtonLink
-              href={conversationHref}
+              href={resultHref}
               variant="primary"
-              icon={<MessageSquareText size={14} />}
+              icon={<FileCheck2 size={14} />}
               className="no-underline hover:!no-underline"
             >
-              View result
+              {resultLabel}
             </ButtonLink>
           ) : null}
-          {conversationHref && task.status !== "done" ? (
+          {resultHref && task.status !== "done" ? (
             <ButtonLink
-              href={conversationHref}
+              href={resultHref}
               variant={needsInput ? "primary" : "outline"}
-              icon={<MessageSquareText size={14} />}
+              icon={<FileCheck2 size={14} />}
               className="no-underline hover:!no-underline"
             >
-              {needsInput ? "Answer questions" : "Open conversation"}
+              {needsInput ? "Answer questions" : resultLabel}
             </ButtonLink>
           ) : null}
         </div>
@@ -229,8 +232,8 @@ export function TaskDetail({
               </div>
             ) : (
               <p className="text-sm text-zinc-500">
-                This stage completed without a written result. Open the conversation to inspect its
-                tool evidence.
+                This stage completed without a written summary. Open the result to inspect its
+                recorded evidence.
               </p>
             )}
           </section>
@@ -425,7 +428,7 @@ export function TaskDetail({
                 <p className="text-xs text-zinc-500">
                   {isFinished
                     ? "Reopen returns this task to the backlog without removing its history."
-                    : "Cancel stops this task but keeps its conversation and history so it can be reopened."}
+                    : "Cancel stops this task but keeps its run history so it can be reopened."}
                 </p>
                 {isFinished ? (
                   <Button
@@ -452,8 +455,8 @@ export function TaskDetail({
               </div>
               <div className="border-t border-zinc-200 pt-3 dark:border-zinc-800">
                 <p className="text-xs text-zinc-500">
-                  Delete removes the task from this project. Its conversation remains in project
-                  history.
+                  Delete removes the task from this project. Any durable run output remains in
+                  project history.
                 </p>
                 <Button
                   variant="ghost"
@@ -461,7 +464,7 @@ export function TaskDetail({
                   icon={<Trash2 size={13} />}
                   className="mt-2 text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
                   onClick={onDelete}
-                  disabled={isBusy || task.status === "running"}
+                  disabled={isBusy || task.status === "queued" || task.status === "running"}
                 >
                   Delete task
                 </Button>

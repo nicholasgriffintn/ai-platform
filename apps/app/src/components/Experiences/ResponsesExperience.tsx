@@ -7,7 +7,6 @@ import {
 import { Puzzle } from "lucide-react";
 import { useRef, useState } from "react";
 
-import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import {
   useCreateOutputShare,
@@ -16,8 +15,9 @@ import {
   useOutputShares,
   useRevokeOutputShare,
 } from "~/hooks/useOutputs";
-import { useRunnableTool } from "~/hooks/useRunnableTools";
 import { isAuthenticationError } from "~/lib/errors";
+
+import { OutputContent } from "./OutputContent";
 
 export function ResponsesExperience({ basePath, projectId, subpath }: ExperienceProps) {
   const [copiedOutputId, setCopiedOutputId] = useState<string | null>(null);
@@ -39,7 +39,6 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
     isLoading: isOutputLoading,
     error: outputError,
   } = useOutput(outputId ?? null);
-  const { data: producingTool } = useRunnableTool(output?.capabilityId ?? null);
 
   if (outputId) {
     if (isOutputLoading) {
@@ -93,7 +92,11 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
             }
           }}
         />
-        <ResponseRenderer app={producingTool ?? undefined} result={output.content} />
+        <OutputContent
+          capabilityId={output.capabilityId}
+          content={output.content}
+          kind={output.kind}
+        />
         <ShareLinkList
           shares={shares ?? []}
           revokingShareId={revokeShare.isPending ? (revokeShare.variables?.shareId ?? null) : null}

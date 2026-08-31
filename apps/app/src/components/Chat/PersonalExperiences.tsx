@@ -15,13 +15,17 @@ import { useCapabilityCatalog } from "~/hooks/useCapabilityCatalog";
 import {
   getCapabilityLibraryPath,
   getExperiencePath,
+  isExperienceAvailableInScope,
   PERSONAL_SURFACE,
 } from "~/lib/capability-surfaces";
 import { isAuthenticationError } from "~/lib/errors";
 
 export function PersonalExperiences() {
   const { data: catalog, isLoading, error: pageError } = useCapabilityCatalog();
-  const experiences = catalog?.experiences ?? [];
+  const experiences =
+    catalog?.experiences.filter((experience) =>
+      isExperienceAvailableInScope(experience, "personal"),
+    ) ?? [];
   const libraryPath = getCapabilityLibraryPath(PERSONAL_SURFACE);
 
   return (

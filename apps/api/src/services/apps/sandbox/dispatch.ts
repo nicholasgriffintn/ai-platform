@@ -2,6 +2,7 @@ import {
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
   sandboxRunDispatchMessageSchema,
   sandboxRunEventSchema,
+  sandboxRunResultSchema,
   type SandboxRunDispatchMessage,
   type SandboxRunData,
   type SandboxRunEvent,
@@ -11,6 +12,11 @@ import {
 import { MAX_STORED_STREAM_EVENTS, SANDBOX_RUNS_APP_ID } from "~/constants/app";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { GoalService } from "~/services/goals/GoalService";
+import {
+  assertCurrentSandboxProjectTaskAuthority,
+  isSandboxProjectTaskDispatchCurrent,
+  projectSandboxRunToProjectTask,
+} from "~/services/project-tasks/sandbox-projector";
 import { executeSandboxWorker } from "~/services/sandbox/worker";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv, IUser } from "~/types";
@@ -18,7 +24,11 @@ import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 import { parseSseBuffer } from "~/utils/streaming";
 
-import { persistSandboxRunArtifact } from "./run-artifacts";
+import {
+  persistSandboxRunArtifact,
+  stripSandboxRunEventArtifactPayload,
+  stripSandboxRunEventArtifactPayloads,
+} from "./run-artifacts";
 import { appendRunCoordinatorEvent, updateRunCoordinatorControl } from "./run-coordinator";
 import {
   appendSandboxRunEvent,
@@ -72,6 +82,7 @@ export async function enqueueSandboxRunDispatchTask(params: {
   const taskService = new TaskService(context.env, context.repositories.tasks);
 
   return taskService.enqueueTask({
+    id: `sandbox_run_dispatch_${message.runId}`,
     task_type: SANDBOX_RUN_DISPATCH_TASK_TYPE,
     user_id: message.userId,
     project_id: projectId,
@@ -85,10 +96,7 @@ export async function enqueueSandboxRunDispatchTask(params: {
   });
 }
 
-async function loadRunData(params: {
-  env: IEnv;
-  recordId: string;
-}): Promise<PersistedSandboxRunData | null> {
+async function loadRunRecord(params: { env: IEnv; recordId: string }) {
   const context = createServiceContext({
     env: params.env,
   });
@@ -98,9 +106,11 @@ async function loadRunData(params: {
     return null;
   }
 
-  return parseSandboxRunData(
+  const run = parseSandboxRunData(
     typeof record.data === "string" ? safeParseJson(record.data) : record.data,
   );
+
+  return run ? { record, run } : null;
 }
 
 async function persistRunData(params: {
@@ -108,12 +118,23 @@ async function persistRunData(params: {
   recordId: string;
   userId: number;
   runData: PersistedSandboxRunData;
-}): Promise<PersistedSandboxRunData> {
+  expectedStatuses: readonly ("running" | "waiting")[];
+}): Promise<{ run: PersistedSandboxRunData; persisted: boolean }> {
   const context = createServiceContext({
     env: params.env,
   });
   const record = await context.repositories.activities.getActivityById(params.recordId);
   let runData = params.runData;
+
+  if (!record || !params.expectedStatuses.includes(record.status as "running" | "waiting")) {
+    const current = record?.data
+      ? parseSandboxRunData(
+          typeof record.data === "string" ? safeParseJson(record.data) : record.data,
+        )
+      : null;
+
+    return { run: current ?? runData, persisted: false };
+  }
 
   runData = await persistSandboxRunArtifact({
     serviceContext: context,
@@ -122,12 +143,117 @@ async function persistRunData(params: {
     conversationId: record?.conversation_id,
     run: runData,
   });
-  await context.repositories.activities.updateActivity(params.recordId, {
-    status: getSandboxActivityStatus(runData.status),
-    data: runData,
-  });
+  const updated = await context.repositories.activities.compareAndSetActivity(
+    params.recordId,
+    params.expectedStatuses,
+    {
+      status: getSandboxActivityStatus(runData.status),
+      data: runData,
+    },
+  );
 
-  return runData;
+  if (updated?.data) {
+    const persisted = parseSandboxRunData(
+      typeof updated.data === "string" ? safeParseJson(updated.data) : updated.data,
+    );
+
+    if (persisted) {
+      return { run: persisted, persisted: true };
+    }
+  }
+
+  const current = await context.repositories.activities.getActivityById(params.recordId);
+  const currentRun = current?.data
+    ? parseSandboxRunData(
+        typeof current.data === "string" ? safeParseJson(current.data) : current.data,
+      )
+    : null;
+
+  return { run: currentRun ?? runData, persisted: false };
+}
+
+function getDispatchFailureMessage(error: unknown): string {
+  const detail = error instanceof Error ? error.message : "Unknown dispatch failure";
+
+  return `Sandbox dispatch was interrupted after the run started: ${detail}`.slice(0, 1000);
+}
+
+async function failInterruptedSandboxRun(params: {
+  env: IEnv;
+  context: ServiceContext;
+  message: SandboxRunDispatchMessage;
+  run: PersistedSandboxRunData;
+  error: unknown;
+}): Promise<void> {
+  const { context, env, message } = params;
+  const completedAt = new Date().toISOString();
+  const errorMessage = getDispatchFailureMessage(params.error);
+  const failureEvent: SandboxRunEvent = {
+    type: "run_failed",
+    runId: message.runId,
+    error: errorMessage,
+    timestamp: completedAt,
+  };
+  const failedRun: PersistedSandboxRunData = {
+    ...params.run,
+    status: "failed",
+    result: undefined,
+    error: errorMessage,
+    events: appendSandboxRunEvent(
+      stripSandboxRunEventArtifactPayloads(params.run.events),
+      failureEvent,
+      MAX_STORED_STREAM_EVENTS,
+    ),
+    updatedAt: completedAt,
+    completedAt,
+    workflowPhase: "failed",
+  };
+  const failedRecord = await context.repositories.activities.compareAndSetActivity(
+    message.recordId,
+    ["running", "waiting"],
+    {
+      status: getSandboxActivityStatus(failedRun.status),
+      data: failedRun,
+    },
+  );
+
+  if (failedRecord) {
+    await Promise.allSettled([
+      appendRunCoordinatorEvent({
+        env,
+        runId: message.runId,
+        event: failureEvent,
+      }),
+      updateRunCoordinatorControl({
+        env,
+        runId: message.runId,
+        state: "cancelled",
+        updatedAt: completedAt,
+        cancellationReason: errorMessage,
+        timeoutSeconds: failedRun.timeoutSeconds,
+        timeoutAt: failedRun.timeoutAt,
+      }),
+    ]);
+    await projectSandboxRunToProjectTask({
+      context,
+      message,
+      record: failedRecord,
+      run: failedRun,
+    });
+
+    return;
+  }
+
+  const current = await loadRunRecord({ env, recordId: message.recordId });
+
+  if (current?.run && isTerminalStatus(current.run.status)) {
+    await projectSandboxRunToProjectTask({
+      context,
+      message,
+      record: current.record,
+      run: current.run,
+    });
+  }
 }
 
 async function ensureRunGoal(params: {
@@ -171,13 +297,16 @@ export async function processSandboxRunDispatch(params: {
     return;
   }
 
-  let runData =
-    (await loadRunData({
-      env,
-      recordId: message.recordId,
-    })) ?? null;
+  const loaded = await loadRunRecord({ env, recordId: message.recordId });
+  let runData = loaded?.run ?? null;
 
-  if (!runData) {
+  if (
+    !runData ||
+    !loaded ||
+    loaded.record.created_by_user_id !== message.userId ||
+    loaded.record.group_id !== message.runId ||
+    runData.runId !== message.runId
+  ) {
     logger.error("Skipping sandbox run dispatch: run record not found", {
       run_id: message.runId,
       record_id: message.recordId,
@@ -187,6 +316,29 @@ export async function processSandboxRunDispatch(params: {
   }
 
   if (isTerminalStatus(runData.status)) {
+    await projectSandboxRunToProjectTask({
+      context,
+      message,
+      record: loaded.record,
+      run: runData,
+    });
+
+    return;
+  }
+
+  if (
+    !(await isSandboxProjectTaskDispatchCurrent({
+      context,
+      message,
+      record: loaded.record,
+      run: runData,
+    }))
+  ) {
+    logger.warn("Skipping stale sandbox project task dispatch", {
+      run_id: message.runId,
+      record_id: message.recordId,
+    });
+
     return;
   }
 
@@ -199,325 +351,433 @@ export async function processSandboxRunDispatch(params: {
 
   const startedAt = new Date().toISOString();
 
-  runData = {
+  const startedRun: PersistedSandboxRunData = {
     ...runData,
     status: "running",
     updatedAt: startedAt,
     processingStartedAt: startedAt,
     workflowPhase: "executing",
   };
-  await context.repositories.activities.updateActivity(message.recordId, {
-    status: getSandboxActivityStatus(runData.status),
-    data: runData,
-  });
-  await updateRunCoordinatorControl({
-    env,
-    runId: message.runId,
-    state: "running",
-    updatedAt: startedAt,
-    timeoutSeconds: runData.timeoutSeconds,
-    timeoutAt: runData.timeoutAt,
-  });
+  const startedRecord = await context.repositories.activities.compareAndSetActivity(
+    message.recordId,
+    ["queued"],
+    {
+      status: getSandboxActivityStatus(startedRun.status),
+      data: startedRun,
+    },
+  );
 
-  let workerResponse: Response;
+  if (!startedRecord) {
+    const current = await loadRunRecord({ env, recordId: message.recordId });
 
+    if (current?.run && isTerminalStatus(current.run.status)) {
+      await projectSandboxRunToProjectTask({
+        context,
+        message,
+        record: current.record,
+        run: current.run,
+      });
+    } else if (
+      current?.run &&
+      (current.run.status === "running" || current.run.status === "paused")
+    ) {
+      await failInterruptedSandboxRun({
+        env,
+        context,
+        message,
+        run: current.run,
+        error: new Error("Recovered a previous delivery without a recorded outcome"),
+      });
+    }
+
+    return;
+  }
+
+  runData = startedRun;
   try {
-    workerResponse = await executeSandboxWorker({
+    await updateRunCoordinatorControl({
       env,
-      context,
-      user,
-      repo: message.payload.repo,
-      task: message.payload.task,
-      taskType: message.payload.taskType,
-      model: message.payload.model,
-      promptStrategy: message.payload.promptStrategy,
-      shouldCommit: message.payload.shouldCommit,
-      timeoutSeconds: message.payload.timeoutSeconds,
-      trustLevel: message.payload.trustLevel,
-      modelSettings: message.payload.modelSettings,
-      installationId: message.payload.installationId,
-      stream: true,
       runId: message.runId,
+      state: "running",
+      updatedAt: startedAt,
+      timeoutSeconds: runData.timeoutSeconds,
+      timeoutAt: runData.timeoutAt,
     });
-  } catch (error) {
-    const completedAt = new Date().toISOString();
-    const errorMessage = error instanceof Error ? error.message : "Failed to start sandbox worker";
-    const nextRun: PersistedSandboxRunData = {
-      ...runData,
-      status: "failed",
-      updatedAt: completedAt,
-      completedAt,
-      error: errorMessage,
-      events: appendSandboxRunEvent(
-        runData.events,
-        {
+
+    let workerResponse: Response;
+
+    try {
+      await assertCurrentSandboxProjectTaskAuthority({
+        context,
+        message,
+        record: startedRecord,
+        run: runData,
+        user,
+      });
+      workerResponse = await executeSandboxWorker({
+        env,
+        context,
+        user,
+        repo: message.payload.repo,
+        task: message.payload.task,
+        taskType: message.payload.taskType,
+        model: message.payload.model,
+        promptStrategy: message.payload.promptStrategy,
+        shouldCommit: message.payload.shouldCommit,
+        timeoutSeconds: message.payload.timeoutSeconds,
+        trustLevel: message.payload.trustLevel,
+        modelSettings: message.payload.modelSettings,
+        installationId: message.payload.installationId,
+        stream: true,
+        runId: message.runId,
+        leanProof: message.payload.leanProof,
+        tokenBudget: message.payload.tokenBudget,
+        projectTaskContext: message.payload.projectTaskContext,
+      });
+    } catch (error) {
+      const completedAt = new Date().toISOString();
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to start sandbox worker";
+      const nextRun: PersistedSandboxRunData = {
+        ...runData,
+        status: "failed",
+        updatedAt: completedAt,
+        completedAt,
+        error: errorMessage,
+        events: appendSandboxRunEvent(
+          runData.events,
+          {
+            type: "run_failed",
+            runId: message.runId,
+            error: errorMessage,
+            timestamp: completedAt,
+          },
+          MAX_STORED_STREAM_EVENTS,
+        ),
+        workflowPhase: "failed",
+      };
+
+      const persistence = await persistRunData({
+        env,
+        recordId: message.recordId,
+        userId: message.userId,
+        runData: nextRun,
+        expectedStatuses: ["running", "waiting"],
+      });
+
+      if (!persistence.persisted) {
+        await projectSandboxRunToProjectTask({
+          context,
+          message,
+          record: startedRecord,
+          run: persistence.run,
+        });
+
+        return;
+      }
+
+      await appendRunCoordinatorEvent({
+        env,
+        runId: message.runId,
+        event: {
           type: "run_failed",
           runId: message.runId,
           error: errorMessage,
           timestamp: completedAt,
         },
-        MAX_STORED_STREAM_EVENTS,
-      ),
-      workflowPhase: "failed",
+      });
+      await updateRunCoordinatorControl({
+        env,
+        runId: message.runId,
+        state: "cancelled",
+        updatedAt: completedAt,
+        cancellationReason: errorMessage,
+        timeoutSeconds: runData.timeoutSeconds,
+        timeoutAt: runData.timeoutAt,
+      });
+
+      await projectSandboxRunToProjectTask({
+        context,
+        message,
+        record: startedRecord,
+        run: persistence.run,
+      });
+
+      return;
+    }
+
+    let status: SandboxRunStatus = "running";
+    let completedAt: string | undefined;
+    let errorMessage: string | undefined;
+    let cancellationReason: string | undefined;
+    let result: SandboxRunData["result"];
+    let events = runData.events ?? [];
+    let pausedAt: string | undefined;
+    let resumedAt: string | undefined;
+    let pauseReason: string | undefined;
+    let resumeReason: string | undefined;
+    let promptStrategy = runData.promptStrategy;
+    const coordinatorWritePromises: Promise<void>[] = [];
+
+    const appendEvent = (event: SandboxRunEvent) => {
+      events = appendSandboxRunEvent(events, event, MAX_STORED_STREAM_EVENTS);
+      coordinatorWritePromises.push(
+        appendRunCoordinatorEvent({
+          env,
+          runId: message.runId,
+          event: stripSandboxRunEventArtifactPayload(event),
+        }),
+      );
     };
 
-    await appendRunCoordinatorEvent({
-      env,
-      runId: message.runId,
-      event: {
+    if (!workerResponse.ok) {
+      const failedAt = new Date().toISOString();
+      const responseError = (await workerResponse.text()).slice(0, 1000);
+
+      appendEvent({
+        type: "run_failed",
+        runId: message.runId,
+        error: responseError || "Sandbox worker returned an error response",
+        timestamp: failedAt,
+      });
+      status = "failed";
+      completedAt = failedAt;
+      errorMessage = responseError || "Sandbox worker returned an error response";
+    } else if (!workerResponse.body) {
+      const failedAt = new Date().toISOString();
+
+      appendEvent({
+        type: "run_failed",
+        runId: message.runId,
+        error: "Sandbox worker returned an empty response",
+        timestamp: failedAt,
+      });
+      status = "failed";
+      completedAt = failedAt;
+      errorMessage = "Sandbox worker returned an empty response";
+    } else {
+      const contentType = workerResponse.headers.get("content-type") || "";
+
+      if (!contentType.includes("text/event-stream")) {
+        const parsedPayload = sandboxRunResultSchema.safeParse(await workerResponse.json());
+        const now = new Date().toISOString();
+
+        if (!parsedPayload.success) {
+          status = "failed";
+          completedAt = now;
+          errorMessage = "Sandbox worker returned an invalid result";
+          appendEvent({
+            type: "run_failed",
+            runId: message.runId,
+            error: errorMessage,
+            timestamp: now,
+          });
+        } else {
+          const payload = parsedPayload.data;
+
+          status = payload.success ? "completed" : "failed";
+          completedAt = now;
+          errorMessage = typeof payload.error === "string" ? payload.error : undefined;
+          result = payload;
+          appendEvent({
+            type: status === "completed" ? "run_completed" : "run_failed",
+            runId: message.runId,
+            result,
+            error: errorMessage,
+            timestamp: now,
+          });
+        }
+      } else {
+        const reader = workerResponse.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+
+            if (done) {
+              break;
+            }
+
+            if (!value) {
+              continue;
+            }
+
+            buffer += decoder.decode(value, { stream: true });
+            buffer = parseSseBuffer(buffer, {
+              onEvent: (rawEvent) => {
+                const parsed = sandboxRunEventSchema.safeParse(rawEvent);
+
+                if (!parsed.success) {
+                  return;
+                }
+
+                const event = parsed.data;
+
+                appendEvent(event);
+
+                if (event.promptStrategy) {
+                  promptStrategy = event.promptStrategy;
+                }
+
+                if (event.type === "run_completed") {
+                  status = "completed";
+                  completedAt = new Date().toISOString();
+                  result = event.result;
+                  errorMessage = undefined;
+
+                  return;
+                }
+
+                if (event.type === "run_failed") {
+                  status = "failed";
+                  completedAt = new Date().toISOString();
+                  errorMessage =
+                    typeof event.error === "string" ? event.error : "Sandbox run failed";
+
+                  return;
+                }
+
+                if (event.type === "run_cancelled") {
+                  status = "cancelled";
+                  completedAt = new Date().toISOString();
+                  cancellationReason =
+                    typeof event.message === "string"
+                      ? event.message
+                      : typeof event.error === "string"
+                        ? event.error
+                        : "Run cancelled by user";
+                  errorMessage = undefined;
+
+                  return;
+                }
+
+                if (event.type === "run_paused") {
+                  status = "paused";
+                  pausedAt = new Date().toISOString();
+                  pauseReason = typeof event.message === "string" ? event.message : pauseReason;
+
+                  return;
+                }
+
+                if (event.type === "run_resumed") {
+                  status = "running";
+                  resumedAt = new Date().toISOString();
+                  resumeReason = typeof event.message === "string" ? event.message : resumeReason;
+                }
+              },
+              onError: (error) => {
+                logger.error("Failed to parse sandbox event payload", {
+                  run_id: message.runId,
+                  error_message: error.message,
+                });
+              },
+            });
+          }
+        } finally {
+          reader.releaseLock();
+        }
+      }
+    }
+
+    if (!isTerminalStatus(status)) {
+      status = "failed";
+      completedAt = new Date().toISOString();
+      errorMessage = "Sandbox run ended without a terminal event";
+      appendEvent({
         type: "run_failed",
         runId: message.runId,
         error: errorMessage,
         timestamp: completedAt,
-      },
+      });
+    }
+
+    await Promise.allSettled(coordinatorWritePromises);
+
+    const resolvedStatus = status as SandboxRunStatus;
+    const finalUpdatedAt = new Date().toISOString();
+    const nextRunData: PersistedSandboxRunData = {
+      ...runData,
+      status: resolvedStatus,
+      result,
+      error: resolvedStatus === "failed" ? errorMessage : undefined,
+      events,
+      promptStrategy,
+      updatedAt: finalUpdatedAt,
+      completedAt,
+      pausedAt,
+      resumedAt,
+      pauseReason,
+      resumeReason,
+      cancelRequestedAt:
+        resolvedStatus === "cancelled"
+          ? (runData.cancelRequestedAt ?? completedAt)
+          : runData.cancelRequestedAt,
+      cancellationReason:
+        resolvedStatus === "cancelled" ? cancellationReason : runData.cancellationReason,
+      workflowPhase:
+        resolvedStatus === "completed"
+          ? "completed"
+          : resolvedStatus === "failed"
+            ? "failed"
+            : resolvedStatus === "cancelled"
+              ? "cancelled"
+              : "finalizing",
+    };
+    const persistence = await persistRunData({
+      env,
+      recordId: message.recordId,
+      userId: message.userId,
+      runData: nextRunData,
+      expectedStatuses: ["running", "waiting"],
+    });
+
+    if (!persistence.persisted) {
+      await projectSandboxRunToProjectTask({
+        context,
+        message,
+        record: startedRecord,
+        run: persistence.run,
+      });
+
+      return;
+    }
+
+    const persisted = persistence.run;
+
+    await indexSandboxRunResult({
+      serviceContext: context,
+      userId: message.userId,
+      run: persisted,
     });
     await updateRunCoordinatorControl({
       env,
       runId: message.runId,
-      state: "cancelled",
-      updatedAt: completedAt,
-      cancellationReason: errorMessage,
-      timeoutSeconds: runData.timeoutSeconds,
-      timeoutAt: runData.timeoutAt,
+      state: toCoordinatorState(persisted.status),
+      updatedAt: persisted.updatedAt,
+      cancellationReason:
+        persisted.status === "cancelled" || persisted.status === "failed"
+          ? persisted.error || persisted.cancellationReason
+          : undefined,
+      timeoutSeconds: persisted.timeoutSeconds,
+      timeoutAt: persisted.timeoutAt,
     });
-    await persistRunData({
+    await projectSandboxRunToProjectTask({
+      context,
+      message,
+      record: loaded.record,
+      run: persisted,
+    });
+  } catch (error) {
+    await failInterruptedSandboxRun({
       env,
-      recordId: message.recordId,
-      userId: message.userId,
-      runData: nextRun,
-    });
-
-    return;
-  }
-
-  let status: SandboxRunStatus = "running";
-  let completedAt: string | undefined;
-  let errorMessage: string | undefined;
-  let cancellationReason: string | undefined;
-  let result: SandboxRunData["result"];
-  let events = runData.events ?? [];
-  let pausedAt: string | undefined;
-  let resumedAt: string | undefined;
-  let pauseReason: string | undefined;
-  let resumeReason: string | undefined;
-  let promptStrategy = runData.promptStrategy;
-  const coordinatorWritePromises: Promise<void>[] = [];
-
-  const appendEvent = (event: SandboxRunEvent) => {
-    events = appendSandboxRunEvent(events, event, MAX_STORED_STREAM_EVENTS);
-    coordinatorWritePromises.push(
-      appendRunCoordinatorEvent({
-        env,
-        runId: message.runId,
-        event,
-      }),
-    );
-  };
-
-  if (!workerResponse.ok) {
-    const failedAt = new Date().toISOString();
-    const responseError = (await workerResponse.text()).slice(0, 1000);
-
-    appendEvent({
-      type: "run_failed",
-      runId: message.runId,
-      error: responseError || "Sandbox worker returned an error response",
-      timestamp: failedAt,
-    });
-    status = "failed";
-    completedAt = failedAt;
-    errorMessage = responseError || "Sandbox worker returned an error response";
-  } else if (!workerResponse.body) {
-    const failedAt = new Date().toISOString();
-
-    appendEvent({
-      type: "run_failed",
-      runId: message.runId,
-      error: "Sandbox worker returned an empty response",
-      timestamp: failedAt,
-    });
-    status = "failed";
-    completedAt = failedAt;
-    errorMessage = "Sandbox worker returned an empty response";
-  } else {
-    const contentType = workerResponse.headers.get("content-type") || "";
-
-    if (!contentType.includes("text/event-stream")) {
-      const payload = (await workerResponse.json()) as Record<string, unknown>;
-      const now = new Date().toISOString();
-
-      status = payload.success ? "completed" : "failed";
-      completedAt = now;
-      errorMessage = typeof payload.error === "string" ? payload.error : undefined;
-      result = payload;
-      appendEvent({
-        type: status === "completed" ? "run_completed" : "run_failed",
-        runId: message.runId,
-        result,
-        error: errorMessage,
-        timestamp: now,
-      });
-    } else {
-      const reader = workerResponse.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-
-          if (done) {
-            break;
-          }
-
-          if (!value) {
-            continue;
-          }
-
-          buffer += decoder.decode(value, { stream: true });
-          buffer = parseSseBuffer(buffer, {
-            onEvent: (rawEvent) => {
-              const parsed = sandboxRunEventSchema.safeParse(rawEvent);
-
-              if (!parsed.success) {
-                return;
-              }
-
-              const event = parsed.data;
-
-              appendEvent(event);
-
-              if (event.promptStrategy) {
-                promptStrategy = event.promptStrategy;
-              }
-
-              if (event.type === "run_completed") {
-                status = "completed";
-                completedAt = new Date().toISOString();
-                result = event.result;
-                errorMessage = undefined;
-
-                return;
-              }
-
-              if (event.type === "run_failed") {
-                status = "failed";
-                completedAt = new Date().toISOString();
-                errorMessage = typeof event.error === "string" ? event.error : "Sandbox run failed";
-
-                return;
-              }
-
-              if (event.type === "run_cancelled") {
-                status = "cancelled";
-                completedAt = new Date().toISOString();
-                cancellationReason =
-                  typeof event.message === "string"
-                    ? event.message
-                    : typeof event.error === "string"
-                      ? event.error
-                      : "Run cancelled by user";
-                errorMessage = undefined;
-
-                return;
-              }
-
-              if (event.type === "run_paused") {
-                status = "paused";
-                pausedAt = new Date().toISOString();
-                pauseReason = typeof event.message === "string" ? event.message : pauseReason;
-
-                return;
-              }
-
-              if (event.type === "run_resumed") {
-                status = "running";
-                resumedAt = new Date().toISOString();
-                resumeReason = typeof event.message === "string" ? event.message : resumeReason;
-              }
-            },
-            onError: (error) => {
-              logger.error("Failed to parse sandbox event payload", {
-                run_id: message.runId,
-                error_message: error.message,
-              });
-            },
-          });
-        }
-      } finally {
-        reader.releaseLock();
-      }
-    }
-  }
-
-  if (!isTerminalStatus(status)) {
-    status = "failed";
-    completedAt = new Date().toISOString();
-    errorMessage = "Sandbox run ended without a terminal event";
-    appendEvent({
-      type: "run_failed",
-      runId: message.runId,
-      error: errorMessage,
-      timestamp: completedAt,
+      context,
+      message,
+      run: runData,
+      error,
     });
   }
-
-  await Promise.allSettled(coordinatorWritePromises);
-
-  const resolvedStatus = status as SandboxRunStatus;
-  const finalUpdatedAt = new Date().toISOString();
-  const nextRunData: PersistedSandboxRunData = {
-    ...runData,
-    status: resolvedStatus,
-    result,
-    error: resolvedStatus === "failed" ? errorMessage : undefined,
-    events,
-    promptStrategy,
-    updatedAt: finalUpdatedAt,
-    completedAt,
-    pausedAt,
-    resumedAt,
-    pauseReason,
-    resumeReason,
-    cancelRequestedAt:
-      resolvedStatus === "cancelled"
-        ? (runData.cancelRequestedAt ?? completedAt)
-        : runData.cancelRequestedAt,
-    cancellationReason:
-      resolvedStatus === "cancelled" ? cancellationReason : runData.cancellationReason,
-    workflowPhase:
-      resolvedStatus === "completed"
-        ? "completed"
-        : resolvedStatus === "failed"
-          ? "failed"
-          : resolvedStatus === "cancelled"
-            ? "cancelled"
-            : "finalizing",
-  };
-  const persisted = await persistRunData({
-    env,
-    recordId: message.recordId,
-    userId: message.userId,
-    runData: nextRunData,
-  });
-
-  await indexSandboxRunResult({
-    serviceContext: context,
-    userId: message.userId,
-    run: persisted,
-  });
-  await updateRunCoordinatorControl({
-    env,
-    runId: message.runId,
-    state: toCoordinatorState(persisted.status),
-    updatedAt: persisted.updatedAt,
-    cancellationReason:
-      persisted.status === "cancelled" || persisted.status === "failed"
-        ? persisted.error || persisted.cancellationReason
-        : undefined,
-    timeoutSeconds: persisted.timeoutSeconds,
-    timeoutAt: persisted.timeoutAt,
-  });
 }
 
 export function buildSandboxRunDispatchMessage(params: {

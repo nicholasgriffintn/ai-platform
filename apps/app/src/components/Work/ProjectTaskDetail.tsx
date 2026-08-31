@@ -54,6 +54,12 @@ export function ProjectTaskDetail({
   }
 
   const isBusy = start.isPending || accept.isPending || update.isPending || remove.isPending;
+  const isSandboxTask = task.runner?.kind === "sandbox";
+  const resultHref = isSandboxTask
+    ? `${basePath}/experiences/lean-proofs/${task.id}`
+    : task.conversationId
+      ? `${basePath}/chat?completion_id=${task.conversationId}`
+      : null;
   const run = async () => {
     try {
       await start.mutateAsync(task.id);
@@ -104,9 +110,8 @@ export function ProjectTaskDetail({
           members={workspaceQuery.data?.members ?? []}
           agents={agents}
           blockedBy={tasks.filter((candidate) => task.dependsOnTaskIds.includes(candidate.id))}
-          conversationHref={
-            task.conversationId ? `${basePath}/chat?completion_id=${task.conversationId}` : null
-          }
+          resultHref={resultHref}
+          resultLabel={isSandboxTask ? "View proof run" : "Open conversation"}
           taskHref={(candidate) => `${basePath}/tasks/${candidate.id}`}
           isBusy={isBusy}
           onRun={() => void run()}
@@ -124,7 +129,7 @@ export function ProjectTaskDetail({
         open={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
         title="Delete task?"
-        description="This removes the task from the project. Its conversation remains in project history. This cannot be undone."
+        description="This removes the task from the project. Any durable run output remains in project history. This cannot be undone."
         confirmText="Delete task"
         variant="destructive"
         isLoading={remove.isPending}

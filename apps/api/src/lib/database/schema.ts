@@ -1722,6 +1722,7 @@ export const projectTask = sqliteTable(
         "missing_capability",
         "dispatch_failed",
         "run_failed",
+        "verification_failed",
         "dependencies_unmet",
       ],
     }),
@@ -1737,6 +1738,10 @@ export const projectTask = sqliteTable(
       onDelete: "set null",
     }),
     goal_id: text(),
+    sandbox_run_id: text(),
+    output_id: text(),
+    projection_claim_id: text(),
+    idempotency_key: text(),
     dispatch_task_id: text(),
     completions: text({ mode: "json" }).$type<ProjectTaskCompletion[]>(),
     position: real().default(0).notNull(),
@@ -1765,6 +1770,15 @@ export const projectTask = sqliteTable(
     conversationIdx: uniqueIndex("project_task_conversation_idx")
       .on(table.conversation_id)
       .where(sql`${table.conversation_id} IS NOT NULL`),
+    sandboxRunIdx: uniqueIndex("project_task_sandbox_run_idx")
+      .on(table.sandbox_run_id)
+      .where(sql`${table.sandbox_run_id} IS NOT NULL`),
+    outputIdx: uniqueIndex("project_task_output_idx")
+      .on(table.output_id)
+      .where(sql`${table.output_id} IS NOT NULL`),
+    idempotencyIdx: uniqueIndex("project_task_idempotency_idx")
+      .on(table.project_id, table.created_by_user_id, table.idempotency_key)
+      .where(sql`${table.idempotency_key} IS NOT NULL`),
   }),
 );
 

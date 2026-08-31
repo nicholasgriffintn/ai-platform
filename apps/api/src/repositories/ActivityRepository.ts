@@ -28,6 +28,7 @@ export interface ActivityRecord {
 
 export class ActivityRepository extends BaseRepository {
   async createActivity(input: {
+    id?: string;
     createdByUserId: number;
     projectId?: string | null;
     conversationId?: string | null;
@@ -38,6 +39,34 @@ export class ActivityRepository extends BaseRepository {
     summary: string;
     data?: unknown;
   }): Promise<ActivityRecord> {
+    if (input.id) {
+      await this.executeRun(
+        `INSERT OR IGNORE INTO activity_record (
+           id, created_by_user_id, project_id, conversation_id, capability_id, group_id,
+           kind, status, summary, data
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          input.id,
+          input.createdByUserId,
+          input.projectId ?? null,
+          input.conversationId ?? null,
+          input.capabilityId,
+          input.groupId ?? null,
+          input.kind,
+          input.status,
+          input.summary,
+          JSON.stringify(input.data ?? {}),
+        ],
+      );
+      const existing = await this.getActivityById(input.id);
+
+      if (!existing) {
+        throw new AssistantError("Failed to create activity", ErrorType.DATABASE_ERROR);
+      }
+
+      return existing;
+    }
+
     const insert = this.buildInsertQuery(
       "activity_record",
       {
@@ -157,6 +186,48 @@ export class ActivityRepository extends BaseRepository {
     }
 
     return this.getActivityById(activityId);
+  }
+
+  async compareAndSetActivity(
+    activityId: string,
+    expectedStatuses: readonly ActivityStatus[],
+    updates: { status?: ActivityStatus; summary?: string; data?: unknown },
+  ): Promise<ActivityRecord | null> {
+    const columns: string[] = [];
+    const values: unknown[] = [];
+
+    if (updates.status !== undefined) {
+      columns.push("status = ?");
+      values.push(updates.status);
+    }
+
+    if (updates.summary !== undefined) {
+      columns.push("summary = ?");
+      values.push(updates.summary);
+    }
+
+    if (updates.data !== undefined) {
+      columns.push("data = ?");
+      values.push(JSON.stringify(updates.data));
+    }
+
+    if (columns.length === 0 || expectedStatuses.length === 0) {
+      return null;
+    }
+
+    const placeholders = expectedStatuses.map(() => "?").join(", ");
+
+    columns.push("updated_at = CURRENT_TIMESTAMP");
+    values.push(activityId, ...expectedStatuses);
+
+    return this.runQuery<ActivityRecord>(
+      `UPDATE activity_record
+       SET ${columns.join(", ")}
+       WHERE id = ? AND status IN (${placeholders})
+       RETURNING *`,
+      values,
+      true,
+    );
   }
 
   async cancelActiveActivitiesByGroup(capabilityId: string, groupId: string): Promise<void> {

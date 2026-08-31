@@ -1,4 +1,5 @@
 import { ContentLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
+import type { ProjectExperienceRuntime } from "@ngriffin_uk/polychat-schemas";
 import { lazy, Suspense } from "react";
 
 const ReplicateModelDetail = lazy(async () => {
@@ -51,6 +52,11 @@ const StrudelExperience = lazy(async () => {
 
   return { default: module.StrudelExperience };
 });
+const LeanProofExperience = lazy(async () => {
+  const module = await import("./LeanProofExperience");
+
+  return { default: module.LeanProofExperience };
+});
 
 function ReplicateExperience({
   basePath,
@@ -78,7 +84,14 @@ function ReplicateExperience({
   return <ReplicateModels basePath={basePath} projectId={projectId} />;
 }
 
-function ExperienceContent({ basePath, projectId, runtime, subpath }: ExperienceRendererProps) {
+function ExperienceContent({
+  basePath,
+  projectBasePath,
+  projectId,
+  repository,
+  runtime,
+  subpath,
+}: ExperienceRendererProps) {
   if (runtime === "replicate") {
     return <ReplicateExperience basePath={basePath} projectId={projectId} subpath={subpath} />;
   }
@@ -107,13 +120,36 @@ function ExperienceContent({ basePath, projectId, runtime, subpath }: Experience
     return <ResponsesExperience basePath={basePath} projectId={projectId} subpath={subpath} />;
   }
 
+  if (runtime === "lean-proofs") {
+    if (!projectId || !projectBasePath) {
+      return (
+        <EmptyState
+          title="Project required"
+          message="Lean Proofs is available from a Work project with a connected coding repository."
+        />
+      );
+    }
+
+    return (
+      <LeanProofExperience
+        basePath={basePath}
+        projectBasePath={projectBasePath}
+        projectId={projectId}
+        repository={repository ?? null}
+        subpath={subpath}
+      />
+    );
+  }
+
   return <EmptyState title="Experience unavailable" message="This experience is not supported." />;
 }
 
 interface ExperienceRendererProps {
   basePath: string;
+  projectBasePath?: string;
   projectId?: string;
-  runtime: string;
+  repository?: string | null;
+  runtime: ProjectExperienceRuntime;
   subpath: string;
 }
 

@@ -1,3 +1,4 @@
+import { Sandbox as CloudflareSandbox } from "@cloudflare/sandbox";
 import { sandboxWorkerExecuteRequestSchema, NO_STORE } from "@ngriffin_uk/polychat-schemas";
 
 import { verifySandboxJwt } from "./lib/auth";
@@ -252,4 +253,6 @@ export default {
   },
 };
 
-export { Sandbox } from "@cloudflare/sandbox";
+export class Sandbox extends CloudflareSandbox {}
+
+export class LeanSandbox extends CloudflareSandbox {}

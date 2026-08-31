@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { hasUniqueValues } from "./collection-validation";
 import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json";
 import { externalHttpUrlSchema } from "./navigation";
 import { outputSchema } from "./outputs";
@@ -455,12 +456,15 @@ export const capabilityThemeSchema = z.enum(capabilityThemes);
 export const projectExperienceRuntimeSchema = z.enum([
   "articles",
   "finetuning",
+  "lean-proofs",
   "notes",
   "podcasts",
   "replicate",
   "responses",
   "strudel",
 ]);
+
+export const projectExperienceScopeSchema = z.enum(["personal", "project"]);
 
 export const projectExperienceRequirementSchema = z.discriminatedUnion("kind", [
   z.object({
@@ -485,6 +489,14 @@ export const projectExperienceDefinitionSchema = z.object({
   tags: z.array(z.string()).optional(),
   type: toolFunctionTypeSchema.optional(),
   href: z.string().optional(),
+  scopes: z
+    .array(projectExperienceScopeSchema)
+    .min(1)
+    .max(2)
+    .refine(hasUniqueValues, {
+      error: "Experience scopes must be unique",
+    })
+    .optional(),
   requirement: projectExperienceRequirementSchema,
 });
 
@@ -621,6 +633,7 @@ export type ToolResponseSchemaType = z.infer<typeof toolResponseSchema>;
 export type RenderableTool = z.infer<typeof renderableToolSchema>;
 export type CapabilityCatalogItem = z.infer<typeof appInfoSchema>;
 export type ProjectExperienceRuntime = z.infer<typeof projectExperienceRuntimeSchema>;
+export type ProjectExperienceScope = z.infer<typeof projectExperienceScopeSchema>;
 export type ProjectExperienceRequirement = z.infer<typeof projectExperienceRequirementSchema>;
 export type ProjectExperienceDefinition = z.infer<typeof projectExperienceDefinitionSchema>;
 export type ModelToolId = z.infer<typeof modelToolIdSchema>;

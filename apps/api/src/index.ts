@@ -3,23 +3,16 @@ import { Scalar } from "@scalar/hono-api-reference";
 import { withSentry } from "@sentry/cloudflare";
 import { type Context, Hono } from "hono";
 import { openAPIRouteHandler } from "hono-openapi";
-import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
 import z from "zod/v4";
 
 import packageJson from "../package.json";
-import {
-  API_LOCAL_HOST,
-  API_PROD_HOST,
-  LOCAL_HOST,
-  PROD_HOST,
-  METRICS_LOCAL_HOST,
-  METRICS_PROD_HOST,
-} from "./constants/app";
+import { API_LOCAL_HOST, API_PROD_HOST } from "./constants/app";
 import { serviceContextMiddleware } from "./lib/context/serviceContext";
 import { ResponseFactory } from "./lib/http/ResponseFactory";
 import { addRoute } from "./lib/http/routeBuilder";
 import { authMiddleware } from "./middleware/auth";
+import { corsMiddleware, isAllowedOrigin } from "./middleware/cors";
 import { loggerMiddleware } from "./middleware/loggerMiddleware";
 import { rateLimit } from "./middleware/rateLimit";
 import { securityHeaders } from "./middleware/securityHeaders";
@@ -41,52 +34,14 @@ const app = new Hono<{
   Bindings: IEnv;
 }>();
 
-const getOriginHost = (origin: string) => {
-  try {
-    return new URL(origin).host;
-  } catch {
-    return "";
-  }
-};
-
-const isAllowedOrigin = (origin: string, environment: string) => {
-  const host = getOriginHost(origin);
-
-  if (!host) {
-    return false;
-  }
-
-  if (environment === "production") {
-    return host === PROD_HOST || host === METRICS_PROD_HOST;
-  }
-
-  if (environment === "development") {
-    return host === LOCAL_HOST || host === METRICS_LOCAL_HOST;
-  }
-
-  return false;
-};
-
-const corsOrigin = (origin: string, c: Context) =>
-  origin && isAllowedOrigin(origin, c.env.ENV) ? origin : "";
-
 const csrfOrigin = (origin: string, c: Context) =>
-  Boolean(origin && isAllowedOrigin(origin, c.env.ENV));
+  origin !== "" && isAllowedOrigin(origin, c.env.ENV);
 
 const csrfMiddleware = csrf({
   origin: csrfOrigin,
 });
 
-app.use(
-  "*",
-  cors({
-    origin: corsOrigin,
-    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization", "X-CSRF-Token", "x-captcha-token"],
-    credentials: true,
-    maxAge: 86400,
-  }),
-);
+app.use("*", corsMiddleware);
 
 app.use("*", (c, next) => {
   if (c.req.path.startsWith("/webhooks")) {

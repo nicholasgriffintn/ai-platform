@@ -1,11 +1,24 @@
 export interface AgentMessage {
-  role: "system" | "user" | "assistant" | "tool" | "developer";
-  content: string | null | Record<string, unknown> | unknown[];
+  role: "system" | "user" | "assistant" | "tool" | "developer" | "goal";
+  content?: string | null | Record<string, unknown> | unknown[];
   name?: string;
   tool_calls?: unknown[];
   tool_call_id?: string;
   tool_call_arguments?: string | Record<string, unknown>;
   status?: string;
+  parts?: unknown[];
+  refusal?: string;
+  data?: unknown;
+  reasoning?: unknown;
+  reasoning_content?: unknown;
+}
+
+export interface AgentTokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  cachedInputTokens: number;
+  iterations: number;
 }
 
 export interface AgentToolCall {
@@ -20,6 +33,7 @@ export interface AgentTurn {
   text?: string;
   assistantMessage?: AgentMessage;
   raw?: unknown;
+  usage?: Partial<Omit<AgentTokenUsage, "iterations">>;
 }
 
 export interface AgentFinishAssessment {
@@ -50,6 +64,8 @@ export interface AgentTurnContext<TShared = unknown> {
   currentPlan: string;
   requiresPlanRecovery: boolean;
   recoveryReason?: string;
+  usage: Readonly<AgentTokenUsage>;
+  remainingTokenBudget?: number;
 }
 
 export type AgentTurnResolver<TShared = unknown> = (
@@ -109,6 +125,7 @@ export interface ExecuteAgentLoopParams<
     messages: AgentMessage[];
     shared: TShared;
     state: TState;
+    usage: AgentTokenUsage;
   }) => Promise<AgentFinishAssessment> | AgentFinishAssessment;
   formatMissingToolCallMessage?: (errorMessage: string) => string;
   formatRecoveryRequiredMessage?: (recoveryReason: string) => string;
@@ -126,6 +143,15 @@ export interface ExecuteAgentLoopParams<
     | { extendBy: number; reason?: string }
     | null;
   onPlanRecovery?: (context: { reason: string; recoveryReplans: number; state: TState }) => void;
+  tokenBudget?: number;
+  onTokenUsage?: (usage: AgentTokenUsage) => Promise<void> | void;
+  compactMessages?: (context: {
+    step: number;
+    messages: AgentMessage[];
+    currentPlan: string;
+    shared: TShared;
+    state: TState;
+  }) => Promise<AgentMessage[] | void> | AgentMessage[] | void;
 }
 
 export interface AgentLoopResult {
@@ -134,4 +160,5 @@ export interface AgentLoopResult {
   commandCount: number;
   stepsTaken: number;
   goalOutcome?: AgentGoalOutcome;
+  usage: AgentTokenUsage;
 }

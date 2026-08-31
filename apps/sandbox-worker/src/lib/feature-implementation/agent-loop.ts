@@ -4,8 +4,10 @@ import {
   type AgentActionContext,
   type AgentLoopState,
   type AgentMessage,
+  type AgentGoalOutcome,
   type AgentToolCall,
 } from "@ngriffin_uk/polychat-library-agent-core";
+import type { RecordGoalIterationResponse } from "@ngriffin_uk/polychat-schemas";
 
 import { throwIfAborted } from "../cancellation";
 import { buildSummary } from "../commands";
@@ -58,6 +60,32 @@ interface SandboxAgentSharedContext {
   abortSignal?: AbortSignal;
 }
 
+export function mapTerminalGoalOutcome(
+  decision: RecordGoalIterationResponse,
+): AgentGoalOutcome | null {
+  if (decision.shouldContinue) {
+    return null;
+  }
+
+  switch (decision.outcome) {
+    case "completed":
+      return "satisfied";
+    case "blocked":
+      return "blocked";
+    case "stalled":
+      return "stalled";
+    case "cleared":
+    case "limit_reached":
+    case "paused":
+    case "missing":
+      return "unsatisfied";
+    case "continue":
+      throw new Error("Goal control returned a contradictory continuation decision");
+    default:
+      throw new Error("Goal control returned an unsupported terminal outcome");
+  }
+}
+
 function toSandboxActionContext(
   context: AgentActionContext<SandboxAgentSharedContext, SandboxAgentLoopState>,
 ) {
@@ -78,9 +106,41 @@ function toSandboxActionContext(
   };
 }
 
-export async function executeAgentLoop(
-  params: ExecuteAgentLoopParams,
-): Promise<{ commandCount: number; summary: string; finalPlan: string }> {
+function recordToolObservation(
+  messages: AgentMessage[],
+  firstObservationIndex: number,
+  toolCall: AgentToolCall,
+): void {
+  const observation = messages[firstObservationIndex];
+
+  if (!observation) {
+    messages.push({
+      role: "tool",
+      name: toolCall.name,
+      tool_call_id: toolCall.id,
+      tool_call_arguments: toolCall.arguments,
+      content: "Tool completed without an observation.",
+      status: "success",
+    });
+
+    return;
+  }
+
+  messages[firstObservationIndex] = {
+    ...observation,
+    role: "tool",
+    name: toolCall.name,
+    tool_call_id: toolCall.id,
+    tool_call_arguments: toolCall.arguments,
+  };
+}
+
+export async function executeAgentLoop(params: ExecuteAgentLoopParams): Promise<{
+  commandCount: number;
+  summary: string;
+  finalPlan: string;
+  usage: import("@ngriffin_uk/polychat-library-agent-core").AgentTokenUsage;
+}> {
   const {
     sandbox,
     client,
@@ -220,6 +280,7 @@ export async function executeAgentLoop(
 
   const agentTools = getSandboxAgentTools({ readOnlyCommands });
   let lastAuditedCommandCount = 0;
+  let lastAuditedTokens = 0;
 
   const result = await executeSharedAgentLoop({
     initialMessages: messages,
@@ -241,13 +302,7 @@ export async function executeAgentLoop(
 
       const completion = await client.chatCompletion(
         {
-          messages: currentMessages.map((message) => ({
-            role: message.role,
-            content:
-              typeof message.content === "string"
-                ? message.content
-                : JSON.stringify(message.content),
-          })),
+          messages: currentMessages,
           model,
           tools: agentTools,
           ...modelSettings,
@@ -269,25 +324,27 @@ export async function executeAgentLoop(
       return {
         toolCalls,
         text: completion.content,
-        assistantMessage: {
-          role: "assistant",
-          content: completion.content || JSON.stringify(completion.toolCalls),
-        },
+        assistantMessage: completion.message,
+        usage: completion.usage,
       };
     },
     executeToolCalls: async (toolCalls, context) => {
       const actionContext = toSandboxActionContext(context);
 
       for (const toolCall of toolCalls) {
+        const firstObservationIndex = context.messages.length;
+
         if (toolCall.name === READ_FILES_TOOL_NAME) {
           const action = parseReadFilesAction(toolCall.arguments);
 
           if (action.files.length === 1) {
             await handleReadFileAction(actionContext, action.files[0]);
+            recordToolObservation(context.messages, firstObservationIndex, toolCall);
             continue;
           }
 
           await handleReadFilesAction(actionContext, action);
+          recordToolObservation(context.messages, firstObservationIndex, toolCall);
           continue;
         }
 
@@ -296,25 +353,32 @@ export async function executeAgentLoop(
 
           if (action.commands.length === 1) {
             await handleRunCommandAction(actionContext, { command: action.commands[0] });
+            recordToolObservation(context.messages, firstObservationIndex, toolCall);
             continue;
           }
 
           await handleRunParallelAction(actionContext, { commands: action.commands });
+          recordToolObservation(context.messages, firstObservationIndex, toolCall);
           continue;
         }
 
         if (toolCall.name === RUN_SCRIPT_TOOL_NAME) {
           await handleRunScriptAction(actionContext, parseRunScriptAction(toolCall.arguments));
+          recordToolObservation(context.messages, firstObservationIndex, toolCall);
           continue;
         }
 
         context.messages.push({
-          role: "user",
+          role: "tool",
+          name: toolCall.name,
+          tool_call_id: toolCall.id,
+          tool_call_arguments: toolCall.arguments,
           content: `Unknown tool "${toolCall.name}". Use one of the provided tools.`,
+          status: "error",
         });
       }
     },
-    assessFinish: async ({ summary, state: runtimeState }) => {
+    assessFinish: async ({ summary, state: runtimeState, usage }) => {
       if (!approvalClient) {
         return { allow: true };
       }
@@ -328,12 +392,15 @@ export async function executeAgentLoop(
           summary,
           producedEvidence: progressed,
           calledTool: progressed,
+          tokens: Math.max(0, usage.totalTokens - lastAuditedTokens),
         },
         abortSignal,
       );
 
+      lastAuditedTokens = usage.totalTokens;
+
       if (!decision.shouldContinue) {
-        return { allow: true, outcome: "satisfied" };
+        return { allow: true, outcome: mapTerminalGoalOutcome(decision) ?? undefined };
       }
 
       await emit({
@@ -397,5 +464,6 @@ export async function executeAgentLoop(
     commandCount: result.commandCount,
     summary: result.summary,
     finalPlan: result.finalPlan,
+    usage: result.usage,
   };
 }

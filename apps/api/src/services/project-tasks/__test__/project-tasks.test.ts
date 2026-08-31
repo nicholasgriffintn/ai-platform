@@ -1,19 +1,24 @@
-import type {
-  ProjectFlow,
-  ProjectTaskSource,
-  ProjectTaskStatus,
-  ToolPermission,
+import {
+  PROJECT_TASK_DEFAULT_TOKEN_BUDGET,
+  type ProjectFlow,
+  type ProjectTaskSource,
+  type ProjectTaskStatus,
+  type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { cancelSandboxRunForProjectTask } from "~/services/apps/sandbox/runs";
 import { intersectEnabledTools } from "~/utils/enabledTools";
 
 import { resolveProjectTaskToolApproval } from "../approvals";
 import { resolveTaskRuntime } from "../flow";
 import {
   acceptProjectTask,
+  createAndStartLeanProofProjectTask,
   createProjectTask,
+  deleteProjectTask,
+  listLeanProofProjectTasks,
   setProjectFlow,
   startProjectTask,
   respondToProjectTaskToolApproval,
@@ -25,6 +30,7 @@ import {
   ensureProjectTaskConversation,
   projectTaskConversationId,
   queueProjectTaskRun,
+  reenqueueProjectTaskRun,
 } from "../runner";
 import { assertProjectTaskTransition, projectTaskStatusForGoal } from "../transitions";
 
@@ -51,6 +57,8 @@ const baseTask = {
   conversationId: null,
   goalId: null,
   dispatchTaskId: null,
+  sandboxRunId: null,
+  outputId: null,
   completions: [],
   position: 1000,
   tokenBudget: null,
@@ -70,6 +78,8 @@ function createContext(
     capabilities?: { kind: string; capability_id: string }[];
     activeCount?: number;
     boardTasks?: unknown[];
+    project?: Record<string, unknown>;
+    idempotentTask?: typeof baseTask | null;
   } = {},
 ) {
   const task = { ...baseTask, ...overrides.task };
@@ -106,6 +116,7 @@ function createContext(
             workspace_id: "workspace-1",
             name: "Pricing",
             flow: overrides.flow ?? null,
+            ...overrides.project,
           }),
           getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
           getMembership: vi.fn().mockImplementation(async (_workspaceId, userId: number) => {
@@ -118,10 +129,12 @@ function createContext(
         },
         projectTasks: {
           getTaskById: vi.fn().mockResolvedValue(task),
+          getTaskByIdempotencyKey: vi.fn().mockResolvedValue(overrides.idempotentTask ?? null),
           listProjectTasks: vi.fn().mockResolvedValue(overrides.boardTasks ?? [task]),
           getMaxPosition: vi.fn().mockResolvedValue(0),
           countActiveTasks: vi.fn().mockResolvedValue(overrides.activeCount ?? 0),
           createTask: vi.fn().mockResolvedValue(task),
+          deleteTask: vi.fn().mockResolvedValue(true),
           updateTask,
         },
         audit: { createRecord: vi.fn().mockResolvedValue(undefined) },
@@ -166,6 +179,7 @@ vi.mock("../runner", async (importOriginal) => {
           stageId: stageId ?? task.stageId,
         }),
       ),
+    reenqueueProjectTaskRun: vi.fn().mockResolvedValue(undefined),
   };
 });
 
@@ -173,8 +187,13 @@ vi.mock("../approvals", () => ({
   resolveProjectTaskToolApproval: vi.fn(),
 }));
 
+vi.mock("~/services/apps/sandbox/runs", () => ({
+  cancelSandboxRunForProjectTask: vi.fn(),
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(cancelSandboxRunForProjectTask).mockResolvedValue(undefined);
   vi.mocked(resolveProjectTaskToolApproval).mockResolvedValue({
     toolName: "use_recipe_connector",
     resolution: "approved",
@@ -300,6 +319,228 @@ describe("createProjectTask", () => {
       }),
     ).rejects.toMatchObject({ statusCode: 400 });
   });
+
+  it("preserves an explicit null stage instead of applying the first project stage", async () => {
+    const flow = JSON.stringify({
+      stages: [
+        {
+          id: "build",
+          name: "Build",
+          instructions: null,
+          agentId: null,
+          skillIds: [],
+          mode: null,
+          requiresApprovalFor: [],
+          advance: "on_human_accept",
+        },
+      ],
+    });
+    const { context } = createContext({ flow });
+
+    await createProjectTask(context, "project-1", {
+      objective: "Keep this outside the flow",
+      stageId: null,
+    });
+
+    expect(context.repositories.projectTasks.createTask).toHaveBeenCalledWith(
+      expect.objectContaining({ stageId: null }),
+    );
+  });
+
+  it("requires the Lean Proofs capability before storing a sandbox proof runner", async () => {
+    const { context } = createContext();
+
+    await expect(
+      createProjectTask(context, "project-1", {
+        objective: "Prove the target",
+        runner: {
+          kind: "sandbox",
+          profile: "lean-proof",
+          request: {
+            targetPaths: ["Main.lean"],
+            declarations: [],
+            objective: "Prove the target",
+            acceptanceCriteria: [],
+          },
+        },
+      }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+  });
+
+  it("requires a configured coding environment for an enabled Lean proof task", async () => {
+    const { context } = createContext({
+      capabilities: [{ kind: "app", capability_id: "featured-lean-proofs" }],
+    });
+
+    await expect(
+      createProjectTask(context, "project-1", {
+        objective: "Prove the target",
+        runner: {
+          kind: "sandbox",
+          profile: "lean-proof",
+          request: {
+            targetPaths: ["Main.lean"],
+            declarations: [],
+            objective: "Prove the target",
+            acceptanceCriteria: [],
+          },
+        },
+      }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+  });
+});
+
+describe("createAndStartLeanProofProjectTask", () => {
+  it("creates and queues one server-owned sandbox runner intent", async () => {
+    const request = {
+      targetPaths: ["Main.lean"],
+      declarations: ["Main.theorem"],
+      objective: "Prove Main.theorem",
+      acceptanceCriteria: ["Kernel check passes"],
+    };
+    const runner = { kind: "sandbox" as const, profile: "lean-proof" as const, request };
+    const { context } = createContext({
+      task: { runner },
+      capabilities: [{ kind: "app", capability_id: "featured-lean-proofs" }],
+      project: {
+        coding_enabled: 1,
+        coding_installation_id: 99,
+        coding_repository: "owner/repo",
+      },
+    });
+
+    await createAndStartLeanProofProjectTask(
+      context,
+      "project-1",
+      {
+        ...request,
+        tokenBudget: 2000,
+      },
+      "proof-request-1",
+    );
+
+    expect(context.repositories.projectTasks.createTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        runner,
+        tokenBudget: 2000,
+        stageId: null,
+        idempotencyKey: "proof-request-1",
+      }),
+    );
+    expect(queueProjectTaskRun).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns the same task for an exact idempotent retry", async () => {
+    const request = {
+      targetPaths: ["Main.lean"],
+      declarations: ["Main.theorem"],
+      objective: "Prove Main.theorem",
+      acceptanceCriteria: ["Kernel check passes"],
+    };
+    const existing = {
+      ...baseTask,
+      status: "queued" as const,
+      runner: { kind: "sandbox" as const, profile: "lean-proof" as const, request },
+      tokenBudget: 2000,
+    };
+    const { context } = createContext({ idempotentTask: existing });
+
+    await expect(
+      createAndStartLeanProofProjectTask(
+        context,
+        "project-1",
+        { ...request, tokenBudget: 2000 },
+        "proof-request-1",
+      ),
+    ).resolves.toEqual({ task: existing });
+    expect(context.repositories.projectTasks.createTask).not.toHaveBeenCalled();
+    expect(queueProjectTaskRun).not.toHaveBeenCalled();
+  });
+
+  it("persists the runtime default when a proof request omits its token budget", async () => {
+    const request = {
+      targetPaths: ["Main.lean"],
+      declarations: ["Main.theorem"],
+      objective: "Prove Main.theorem",
+      acceptanceCriteria: ["Kernel check passes"],
+    };
+    const { context } = createContext({
+      task: { runner: { kind: "sandbox", profile: "lean-proof", request } },
+      capabilities: [{ kind: "app", capability_id: "featured-lean-proofs" }],
+      project: {
+        coding_enabled: 1,
+        coding_installation_id: 99,
+        coding_repository: "owner/repo",
+      },
+    });
+
+    await createAndStartLeanProofProjectTask(context, "project-1", request, "proof-request-1");
+
+    expect(context.repositories.projectTasks.createTask).toHaveBeenCalledWith(
+      expect.objectContaining({ tokenBudget: PROJECT_TASK_DEFAULT_TOKEN_BUDGET }),
+    );
+  });
+
+  it("treats an omitted token budget as the stored runtime default on replay", async () => {
+    const request = {
+      targetPaths: ["Main.lean"],
+      declarations: ["Main.theorem"],
+      objective: "Prove Main.theorem",
+      acceptanceCriteria: ["Kernel check passes"],
+    };
+    const existing = {
+      ...baseTask,
+      status: "queued" as const,
+      runner: { kind: "sandbox" as const, profile: "lean-proof" as const, request },
+      tokenBudget: PROJECT_TASK_DEFAULT_TOKEN_BUDGET,
+    };
+    const { context } = createContext({ idempotentTask: existing });
+
+    await expect(
+      createAndStartLeanProofProjectTask(context, "project-1", request, "proof-request-1"),
+    ).resolves.toEqual({ task: existing });
+    expect(context.repositories.projectTasks.createTask).not.toHaveBeenCalled();
+    expect(queueProjectTaskRun).not.toHaveBeenCalled();
+  });
+
+  it("rejects idempotency key reuse for a different proof request", async () => {
+    const existingRequest = {
+      targetPaths: ["Main.lean"],
+      declarations: ["Main.theorem"],
+      objective: "Prove Main.theorem",
+      acceptanceCriteria: ["Kernel check passes"],
+    };
+    const { context } = createContext({
+      idempotentTask: {
+        ...baseTask,
+        runner: {
+          kind: "sandbox",
+          profile: "lean-proof",
+          request: existingRequest,
+        },
+      },
+    });
+
+    await expect(
+      createAndStartLeanProofProjectTask(
+        context,
+        "project-1",
+        { ...existingRequest, objective: "Prove a different theorem" },
+        "proof-request-1",
+      ),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(context.repositories.projectTasks.createTask).not.toHaveBeenCalled();
+  });
+});
+
+describe("listLeanProofProjectTasks", () => {
+  it("does not expose project proof tasks without workspace membership", async () => {
+    const { context } = createContext({ memberships: {} });
+
+    await expect(listLeanProofProjectTasks(context, "project-1")).rejects.toMatchObject({
+      statusCode: 404,
+    });
+  });
 });
 
 describe("updateProjectTask", () => {
@@ -337,9 +578,94 @@ describe("updateProjectTask", () => {
     );
     expect(runtime.cancelActiveActivitiesByGroup).toHaveBeenCalledWith("project_task", "task-1");
   });
+
+  it("cancels a sandbox run that attached while the cancellation CAS was in flight", async () => {
+    const request = {
+      targetPaths: ["Main.lean"],
+      declarations: [],
+      objective: "Prove the target",
+      acceptanceCriteria: [],
+    };
+    const runtime = createContext({
+      task: {
+        status: "running",
+        runnerIdentityUserId: 7,
+        dispatchTaskId: "dispatch-1",
+        runner: { kind: "sandbox", profile: "lean-proof", request },
+      },
+    });
+
+    runtime.updateTask.mockResolvedValueOnce({
+      ...baseTask,
+      status: "cancelled",
+      runnerIdentityUserId: 7,
+      dispatchTaskId: "dispatch-1",
+      sandboxRunId: "run-attached-during-cas",
+      runner: { kind: "sandbox", profile: "lean-proof", request },
+    });
+
+    await updateProjectTask(runtime.context, "project-1", "task-1", {
+      status: "cancelled",
+    });
+
+    expect(cancelSandboxRunForProjectTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        taskId: "task-1",
+        projectId: "project-1",
+        sandboxRunId: "run-attached-during-cas",
+        runnerIdentityUserId: 7,
+      }),
+    );
+  });
+
+  it("prevents replacing the runner while a task is active", async () => {
+    const { context } = createContext({ task: { status: "running" } });
+
+    await expect(
+      updateProjectTask(context, "project-1", "task-1", {
+        runner: { kind: "conversation", agentId: null, model: "gpt-5", mode: null },
+      }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+  });
+
+  it("only lets an active proof task leave execution through cancellation", async () => {
+    const request = {
+      targetPaths: ["Main.lean"],
+      declarations: [],
+      objective: "Prove the target",
+      acceptanceCriteria: [],
+    };
+    const { context } = createContext({
+      task: {
+        status: "running",
+        runner: { kind: "sandbox", profile: "lean-proof", request },
+      },
+    });
+
+    await expect(
+      updateProjectTask(context, "project-1", "task-1", { status: "review" }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(context.repositories.projectTasks.updateTask).not.toHaveBeenCalled();
+  });
 });
 
 describe("startProjectTask", () => {
+  it("re-sends the exact persisted dispatch when queue delivery may have been lost", async () => {
+    const queued = {
+      ...baseTask,
+      status: "queued" as const,
+      runnerIdentityUserId: 7,
+      dispatchTaskId: "dispatch-1",
+    };
+    const { context } = createContext({ task: queued });
+
+    await expect(startProjectTask(context, "project-1", "task-1")).resolves.toEqual({
+      task: queued,
+    });
+    expect(reenqueueProjectTaskRun).toHaveBeenCalledWith(context, queued);
+    expect(queueProjectTaskRun).not.toHaveBeenCalled();
+  });
+
   it("makes the caller the run identity rather than the assignee", async () => {
     const { context, updateTask } = createContext({
       task: { assigneeUserId: 12 },
@@ -413,6 +739,31 @@ describe("startProjectTask", () => {
     expect(queueProjectTaskRun).toHaveBeenCalledWith(
       expect.objectContaining({ approvedTools: ["use_recipe_connector"] }),
     );
+  });
+});
+
+describe("deleteProjectTask", () => {
+  it("requires queued work to be cancelled before deletion", async () => {
+    const { context } = createContext({
+      task: { status: "queued", dispatchTaskId: "dispatch-1" },
+    });
+
+    await expect(deleteProjectTask(context, "project-1", "task-1")).rejects.toMatchObject({
+      statusCode: 409,
+    });
+    expect(context.repositories.projectTasks.deleteTask).not.toHaveBeenCalled();
+  });
+
+  it("fails the delete CAS when a task becomes active after it was read", async () => {
+    const { context } = createContext({ task: { status: "backlog" } });
+
+    vi.mocked(context.repositories.projectTasks.deleteTask).mockResolvedValueOnce(false);
+
+    await expect(deleteProjectTask(context, "project-1", "task-1")).rejects.toMatchObject({
+      statusCode: 409,
+    });
+    expect(context.repositories.projectTasks.deleteTask).toHaveBeenCalledWith("task-1", "backlog");
+    expect(context.repositories.audit.createRecord).not.toHaveBeenCalled();
   });
 });
 

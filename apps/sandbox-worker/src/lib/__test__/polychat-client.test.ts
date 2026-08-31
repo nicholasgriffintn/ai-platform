@@ -34,7 +34,12 @@ describe("PolychatClient", () => {
       verbosity: "low",
     });
 
-    expect(result).toEqual({ content: "ok", toolCalls: [] });
+    expect(result).toEqual({
+      content: "ok",
+      toolCalls: [],
+      message: { content: "ok" },
+      usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, cachedInputTokens: 0 },
+    });
     expect(serviceFetchMock).toHaveBeenCalledTimes(1);
     const request = serviceFetchMock.mock.calls[0][0] as Request;
 
@@ -89,7 +94,7 @@ describe("PolychatClient", () => {
       },
     );
 
-    expect(result).toEqual({ content: "recovered", toolCalls: [] });
+    expect(result).toMatchObject({ content: "recovered", toolCalls: [] });
     expect(serviceFetchMock).toHaveBeenCalledTimes(2);
   });
 
@@ -147,6 +152,53 @@ describe("PolychatClient", () => {
       status: 429,
       retryable: true,
       retryAfterMs: 60_000,
+    });
+  });
+
+  it("preserves assistant reasoning and tool calls for exact multi-turn replay", async () => {
+    const assistantMessage = {
+      role: "assistant" as const,
+      content: null,
+      reasoning_content: "Inspect the goal before editing.",
+      tool_calls: [
+        {
+          id: "call-1",
+          type: "function",
+          function: { name: "read_lean_file", arguments: '{"path":"Main.lean"}' },
+        },
+      ],
+    };
+    const serviceFetchMock = vi.fn().mockResolvedValue(
+      Response.json({
+        choices: [{ message: assistantMessage }],
+        usage: {
+          prompt_tokens: 100,
+          completion_tokens: 20,
+          total_tokens: 120,
+          prompt_tokens_details: { cached_tokens: 40 },
+        },
+      }),
+    );
+    const client = new PolychatClient("token-123", { fetch: serviceFetchMock });
+    const messages = [
+      assistantMessage,
+      {
+        role: "tool" as const,
+        content: "1: theorem example := by",
+        tool_call_id: "call-1",
+        name: "read_lean_file",
+      },
+    ];
+    const result = await client.chatCompletion({ messages, model: "labs-leanstral-1-5" });
+    const request = serviceFetchMock.mock.calls[0][0] as Request;
+
+    await expect(request.json()).resolves.toMatchObject({ messages });
+    expect(result.message).toEqual(assistantMessage);
+    expect(result.usage).toEqual({
+      inputTokens: 100,
+      outputTokens: 20,
+      totalTokens: 120,
+      cachedInputTokens: 40,
     });
   });
 });

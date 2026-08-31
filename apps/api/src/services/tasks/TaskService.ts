@@ -73,25 +73,38 @@ export class TaskService {
       }
 
       if (!taskResult.created) {
-        logger.info("Task already exists, skipping duplicate enqueue", {
+        if (task.status !== "pending" && task.status !== "queued") {
+          logger.info("Task already left the enqueueable state, skipping duplicate enqueue", {
+            taskId: task.id,
+            taskType: taskDef.task_type,
+            status: task.status,
+          });
+
+          return task.id;
+        }
+
+        logger.info("Re-sending an existing queued task after an idempotent retry", {
           taskId: task.id,
           taskType: taskDef.task_type,
         });
-
-        return task.id;
       }
 
-      await this.taskRepository.updateTask(task.id, { status: "queued" });
+      if (task.status !== "queued") {
+        await this.taskRepository.updateTask(task.id, { status: "queued" });
+      }
+
+      const storedTaskData =
+        task.task_data && typeof task.task_data === "object" ? task.task_data : taskDef.task_data;
 
       const message: TaskMessage = {
         taskId: task.id,
-        task_type: taskDef.task_type,
-        user_id: taskDef.user_id,
-        project_id: taskDef.project_id,
-        task_data: taskDef.task_data,
-        priority: taskDef.priority ?? 5,
-        schedule_type: taskDef.schedule_type ?? "immediate",
-        scheduled_at: taskDef.scheduled_at,
+        task_type: task.task_type ?? taskDef.task_type,
+        user_id: task.user_id ?? taskDef.user_id,
+        project_id: task.project_id ?? taskDef.project_id,
+        task_data: storedTaskData,
+        priority: task.priority ?? taskDef.priority ?? 5,
+        schedule_type: task.schedule_type ?? taskDef.schedule_type ?? "immediate",
+        scheduled_at: task.scheduled_at ?? taskDef.scheduled_at,
         max_attempts: task.max_attempts ?? 3,
       };
 

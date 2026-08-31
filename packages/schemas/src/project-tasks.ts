@@ -1,7 +1,10 @@
 import z from "zod/v4";
 
 import { agentModeSchema, toolPermissionSchema } from "./agent-modes";
+import { hasUniqueValues } from "./collection-validation";
 import { goalEvidenceEntrySchema, goalSchema } from "./goals";
+import { leanProofRequestSchema, leanProofResultSchema } from "./lean-proofs";
+import { outputSchema } from "./outputs";
 import { answerUserQuestionsSchema, userQuestionSetSchema } from "./user-questions";
 
 export const projectTaskStatusSchema = z.enum([
@@ -32,7 +35,7 @@ export function isTerminalProjectTaskStatus(status: ProjectTaskStatus): boolean 
 export const projectTaskSourceSchema = z.enum(["user", "model"]);
 export type ProjectTaskSource = z.infer<typeof projectTaskSourceSchema>;
 
-export const projectTaskRunnerKindSchema = z.enum(["conversation"]);
+export const projectTaskRunnerKindSchema = z.enum(["conversation", "sandbox"]);
 export type ProjectTaskRunnerKind = z.infer<typeof projectTaskRunnerKindSchema>;
 
 export const projectTaskBlockedReasonSchema = z.enum([
@@ -44,6 +47,7 @@ export const projectTaskBlockedReasonSchema = z.enum([
   "missing_capability",
   "dispatch_failed",
   "run_failed",
+  "verification_failed",
   "dependencies_unmet",
 ]);
 
@@ -52,6 +56,7 @@ export type ProjectTaskBlockedReason = z.infer<typeof projectTaskBlockedReasonSc
 export const RETRYABLE_PROJECT_TASK_BLOCKED_REASONS: readonly ProjectTaskBlockedReason[] = [
   "dispatch_failed",
   "run_failed",
+  "verification_failed",
 ];
 
 export const projectTaskBlockedReasonLabels: Record<ProjectTaskBlockedReason, string> = {
@@ -63,6 +68,7 @@ export const projectTaskBlockedReasonLabels: Record<ProjectTaskBlockedReason, st
   missing_capability: "Needs a capability it does not have",
   dispatch_failed: "Could not start the agent run",
   run_failed: "The run failed",
+  verification_failed: "Proof checks did not pass",
   dependencies_unmet: "Waiting on another task",
 };
 
@@ -118,30 +124,78 @@ export const projectTaskConstraintsSchema = z.object({
 });
 export type ProjectTaskConstraints = z.infer<typeof projectTaskConstraintsSchema>;
 
-export const projectTaskRunnerSchema = z.object({
-  kind: projectTaskRunnerKindSchema,
-  agentId: z.string().min(1).nullable().default(null),
-  model: z.string().min(1).nullable().default(null),
-  mode: agentModeSchema.nullable().default(null),
-});
+export const projectTaskRunnerSchema = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("conversation"),
+      agentId: z.string().min(1).nullable().default(null),
+      model: z.string().min(1).nullable().default(null),
+      mode: agentModeSchema.nullable().default(null),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("sandbox"),
+      profile: z.literal("lean-proof"),
+      request: leanProofRequestSchema,
+    })
+    .strict(),
+]);
 
 export type ProjectTaskRunner = z.infer<typeof projectTaskRunnerSchema>;
 
-export const projectTaskCompletionSchema = z.object({
-  id: z.string().min(1),
-  stageId: z.string().min(1).nullable(),
-  conversationId: z.string().min(1),
-  goalId: z.string().min(1),
-  output: z.string(),
-  evidence: z.array(goalEvidenceEntrySchema).default([]),
-  approval: z.object({
-    mode: z.enum(["human", "automated"]),
-    status: z.enum(["pending", "approved", "rejected"]),
-    reviewedByUserId: z.number().int().positive().nullable(),
-    reviewedAt: z.string().nullable(),
-  }),
-  createdAt: z.string(),
-});
+export const projectTaskCompletionSchema = z
+  .object({
+    id: z.string().min(1),
+    stageId: z.string().min(1).nullable(),
+    runtime: projectTaskRunnerKindSchema.default("conversation"),
+    conversationId: z.string().min(1).nullable().default(null),
+    goalId: z.string().min(1).nullable().default(null),
+    sandboxRunId: z.string().min(1).nullable().default(null),
+    outputId: z.string().min(1).nullable().default(null),
+    output: z.string(),
+    evidence: z.array(goalEvidenceEntrySchema).default([]),
+    approval: z.object({
+      mode: z.enum(["human", "automated"]),
+      status: z.enum(["pending", "approved", "rejected"]),
+      reviewedByUserId: z.number().int().positive().nullable(),
+      reviewedAt: z.string().nullable(),
+    }),
+    createdAt: z.string(),
+  })
+  .superRefine((completion, context) => {
+    if (completion.runtime === "conversation") {
+      if (!completion.conversationId || !completion.goalId) {
+        context.addIssue({
+          code: "custom",
+          message: "Conversation completions require conversation and goal anchors",
+        });
+      }
+
+      if (completion.sandboxRunId || completion.outputId) {
+        context.addIssue({
+          code: "custom",
+          message: "Conversation completions cannot contain sandbox or output anchors",
+        });
+      }
+
+      return;
+    }
+
+    if (!completion.sandboxRunId || !completion.goalId || !completion.outputId) {
+      context.addIssue({
+        code: "custom",
+        message: "Sandbox completions require sandbox run, goal, and output anchors",
+      });
+    }
+
+    if (completion.conversationId) {
+      context.addIssue({
+        code: "custom",
+        message: "Sandbox completions cannot contain a conversation anchor",
+      });
+    }
+  });
 
 export type ProjectTaskCompletion = z.infer<typeof projectTaskCompletionSchema>;
 
@@ -167,6 +221,8 @@ export const projectTaskSchema = z.object({
   runnerIdentityUserId: z.number().int().positive().nullable(),
   conversationId: z.string().nullable(),
   goalId: z.string().nullable(),
+  sandboxRunId: z.string().nullable(),
+  outputId: z.string().nullable(),
   dispatchTaskId: z.string().nullable(),
   completions: z.array(projectTaskCompletionSchema).default([]),
   position: z.number(),
@@ -216,7 +272,7 @@ export const projectFlowStageSchema = z
     requiresApprovalFor: z.array(toolPermissionSchema).default([]),
     advance: z.enum(["on_goal_complete", "on_human_accept"]),
   })
-  .refine((stage) => new Set(stage.skillIds).size === stage.skillIds.length, {
+  .refine((stage) => hasUniqueValues(stage.skillIds), {
     error: "Stage skills must be unique",
     path: ["skillIds"],
   });
@@ -229,7 +285,7 @@ export const projectFlowSchema = z
   .object({
     stages: z.array(projectFlowStageSchema).min(1).max(PROJECT_FLOW_MAX_STAGES),
   })
-  .refine((flow) => new Set(flow.stages.map((stage) => stage.id)).size === flow.stages.length, {
+  .refine((flow) => hasUniqueValues(flow.stages.map((stage) => stage.id)), {
     error: "Stage ids must be unique",
   });
 
@@ -347,6 +403,23 @@ export const projectTaskDetailResponseSchema = z.object({
   goal: goalSchema.nullable(),
   pendingQuestions: userQuestionSetSchema.nullable(),
 });
+
+export const leanProofProjectTaskListResponseSchema = z.object({
+  tasks: z.array(projectTaskSchema),
+});
+export type LeanProofProjectTaskListResponse = z.infer<
+  typeof leanProofProjectTaskListResponseSchema
+>;
+
+export const leanProofProjectTaskDetailResponseSchema = z.object({
+  task: projectTaskSchema,
+  goal: goalSchema.nullable(),
+  output: outputSchema.nullable(),
+  result: leanProofResultSchema.nullable(),
+});
+export type LeanProofProjectTaskDetailResponse = z.infer<
+  typeof leanProofProjectTaskDetailResponseSchema
+>;
 
 export type ProjectTaskDetailResponse = z.infer<typeof projectTaskDetailResponseSchema>;
 

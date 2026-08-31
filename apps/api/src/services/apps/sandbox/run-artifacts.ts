@@ -1,4 +1,8 @@
-import type { SandboxRunData } from "@ngriffin_uk/polychat-schemas";
+import type {
+  SandboxRunData,
+  SandboxRunEvent,
+  SandboxRunResult,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { StorageService } from "~/lib/storage";
@@ -22,6 +26,58 @@ interface RunArtifactManifest {
   updatedAt: string;
   completedAt?: string;
   items: RunArtifactDescriptor[];
+}
+
+export function stripSandboxRunEventArtifactPayload(event: SandboxRunEvent): SandboxRunEvent {
+  if (!event.result) {
+    return event;
+  }
+
+  const { logs: _logs, diff: _diff, ...boundedResult } = event.result;
+
+  return Object.assign({}, event, { result: boundedResult });
+}
+
+export function stripSandboxRunEventArtifactPayloads(
+  events: SandboxRunEvent[] | undefined,
+): SandboxRunEvent[] {
+  return (events ?? []).map(stripSandboxRunEventArtifactPayload);
+}
+
+function toArtifactReferencedResult(params: {
+  result: SandboxRunResult;
+  items: RunArtifactDescriptor[];
+  manifest: RunArtifactDescriptor;
+}): SandboxRunResult {
+  const { logs: _logs, diff: _diff, ...boundedResult } = params.result;
+  const logsArtifact = params.items.find((item) => item.name === "logs.txt");
+
+  return {
+    ...boundedResult,
+    logsArtifactKey: logsArtifact?.key ?? params.manifest.key,
+    logsArtifactUrl: logsArtifact?.url ?? params.manifest.url,
+    artifactManifestKey: params.manifest.key,
+    artifactManifestUrl: params.manifest.url,
+    artifactItems: params.items,
+  };
+}
+
+function toArtifactReferencedEvents(params: {
+  events: SandboxRunEvent[];
+  items: RunArtifactDescriptor[];
+  manifest: RunArtifactDescriptor;
+}): SandboxRunEvent[] {
+  return stripSandboxRunEventArtifactPayloads(params.events).map((event) =>
+    event.result
+      ? Object.assign({}, event, {
+          result: toArtifactReferencedResult({
+            result: event.result,
+            items: params.items,
+            manifest: params.manifest,
+          }),
+        })
+      : event,
+  );
 }
 
 function toSafeRunId(runId: string): string {
@@ -179,23 +235,13 @@ export async function persistSandboxRunArtifact(params: {
     content: JSON.stringify(manifest, null, 2),
   });
 
-  const logsArtifact = items.find((item) => item.name === "logs.txt");
-
   return {
     ...run,
     artifactKey: manifestArtifact.key,
     artifactUrl: manifestArtifact.url,
+    events: toArtifactReferencedEvents({ events, items, manifest: manifestArtifact }),
     result: run.result
-      ? {
-          ...run.result,
-          logs: undefined,
-          diff: undefined,
-          logsArtifactKey: logsArtifact?.key ?? manifestArtifact.key,
-          logsArtifactUrl: logsArtifact?.url ?? manifestArtifact.url,
-          artifactManifestKey: manifestArtifact.key,
-          artifactManifestUrl: manifestArtifact.url,
-          artifactItems: items,
-        }
+      ? toArtifactReferencedResult({ result: run.result, items, manifest: manifestArtifact })
       : {
           success: run.status === "completed",
           artifactManifestKey: manifestArtifact.key,

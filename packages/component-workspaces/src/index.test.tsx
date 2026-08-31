@@ -92,6 +92,8 @@ const task: ProjectTask = {
   runnerIdentityUserId: 1,
   conversationId: null,
   goalId: null,
+  sandboxRunId: null,
+  outputId: null,
   dispatchTaskId: null,
   completions: [],
   position: 1000,
@@ -348,7 +350,7 @@ describe("TaskDetail", () => {
         members={[]}
         agents={[]}
         blockedBy={[]}
-        conversationHref={null}
+        resultHref={null}
         taskHref={() => "/tasks/task-1"}
         onRun={vi.fn()}
         onAccept={vi.fn()}
@@ -405,7 +407,7 @@ describe("TaskDetail", () => {
         members={[]}
         agents={[]}
         blockedBy={[]}
-        conversationHref="/chat?completion_id=conversation-2"
+        resultHref="/chat?completion_id=conversation-2"
         taskHref={() => "/tasks/task-1"}
         onRun={vi.fn()}
         onAccept={vi.fn()}
@@ -420,6 +422,70 @@ describe("TaskDetail", () => {
     expect(screen.getByRole("button", { name: "Reopen task" })).toBeTruthy();
     expect(screen.getByLabelText(`Met: ${criterion}`)).toBeTruthy();
     expect(screen.getByText("Confirmed").getAttribute("data-slot")).toBe("badge");
+  });
+
+  it("uses proof-run wording and links for sandbox-backed tasks", () => {
+    render(
+      <TaskDetail
+        task={{
+          ...task,
+          status: "done",
+          runner: {
+            kind: "sandbox",
+            profile: "lean-proof",
+            request: {
+              objective: "Prove the theorem",
+              targetPaths: ["Proof.lean"],
+              declarations: ["Proof.main"],
+              acceptanceCriteria: [],
+            },
+          },
+          sandboxRunId: "run-1",
+          outputId: "output-1",
+        }}
+        goal={null}
+        flow={null}
+        members={[]}
+        agents={[]}
+        blockedBy={[]}
+        resultHref="/work/w1/projects/p1/experiences/lean-proofs/task-1"
+        resultLabel="View proof run"
+        taskHref={() => "/tasks/task-1"}
+        onRun={vi.fn()}
+        onAccept={vi.fn()}
+        onCancel={vi.fn()}
+        onReopen={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("link", { name: "View proof run" }).getAttribute("href")).toBe(
+      "/work/w1/projects/p1/experiences/lean-proofs/task-1",
+    );
+    expect(screen.queryByText(/conversation remains/i)).toBeNull();
+    expect(screen.getByText(/durable run output remains/i)).toBeTruthy();
+  });
+
+  it("does not offer deletion while a task is queued for execution", () => {
+    render(
+      <TaskDetail
+        task={{ ...task, status: "queued", dispatchTaskId: "dispatch-1" }}
+        goal={null}
+        flow={null}
+        members={[]}
+        agents={[]}
+        blockedBy={[]}
+        resultHref={null}
+        taskHref={() => "/tasks/task-1"}
+        onRun={vi.fn()}
+        onAccept={vi.fn()}
+        onCancel={vi.fn()}
+        onReopen={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Delete task" }).hasAttribute("disabled")).toBe(true);
   });
 });
 

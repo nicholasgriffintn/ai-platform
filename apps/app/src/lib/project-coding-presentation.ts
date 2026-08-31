@@ -9,7 +9,9 @@ export interface ProjectCodingPresentation {
   suggestions: ChatSuggestion[];
 }
 
-const presentations: Record<SandboxTaskType, ProjectCodingPresentation> = {
+export type ProjectConversationCodingTaskType = Exclude<SandboxTaskType, "lean-proof">;
+
+const presentations: Record<ProjectConversationCodingTaskType, ProjectCodingPresentation> = {
   "feature-implementation": {
     title: "What should we build?",
     description: "Describe a change for the project repository.",
@@ -205,6 +207,8 @@ function question(id: string, label: string, prompt: string): ChatSuggestion {
   return { id, label, prompt, category: "engineering" };
 }
 
-export function getProjectCodingPresentation(taskType: SandboxTaskType): ProjectCodingPresentation {
+export function getProjectCodingPresentation(
+  taskType: ProjectConversationCodingTaskType,
+): ProjectCodingPresentation {
   return presentations[taskType];
 }

@@ -1,0 +1,6 @@
+name = "polychat_lean_fixture"
+version = "0.1.0"
+defaultTargets = ["PolychatLeanFixture"]
+
+[[lean_lib]]
+name = "PolychatLeanFixture"

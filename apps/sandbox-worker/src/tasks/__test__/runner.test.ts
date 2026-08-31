@@ -27,6 +27,17 @@ vi.mock("../runners/feature-implementation-runner", () => ({
   },
 }));
 
+vi.mock("../runners/lean-proof-runner", () => ({
+  LeanProofTaskRunner: class {
+    readonly taskType = "lean-proof";
+    readonly execute = vi.fn();
+
+    constructor() {
+      runnerInstances.push({ taskType: this.taskType, execute: this.execute });
+    }
+  },
+}));
+
 import { executeSandboxTask } from "../index";
 import { resolveSandboxTaskProfile } from "../task-profile";
 
@@ -89,5 +100,36 @@ describe("sandbox task runners", () => {
     expect(() => registry.resolve("bug-fix")).toThrow(
       "No sandbox task runner registered for bug-fix",
     );
+  });
+
+  it("dispatches Lean proof tasks to the dedicated runner", async () => {
+    const leanRunner = runnerInstances.find((runner) => runner.taskType === "lean-proof");
+
+    vi.mocked(resolveSandboxTaskProfile).mockReturnValue({
+      taskType: "lean-proof",
+      task: "Prove the target",
+      shouldCommit: false,
+      readOnlyCommands: false,
+    });
+    leanRunner?.execute.mockResolvedValueOnce({ success: true, logs: "" });
+
+    await executeSandboxTask(
+      {
+        repo: "owner/repo",
+        task: "Prove the target",
+        taskType: "lean-proof",
+        leanProof: {
+          targetPaths: ["Proof.lean"],
+          declarations: [],
+          objective: "Complete the proof",
+          acceptanceCriteria: [],
+        },
+        polychatApiUrl: "https://api.example.com",
+      } as any,
+      { userToken: "token" },
+      {} as any,
+    );
+
+    expect(leanRunner?.execute).toHaveBeenCalledOnce();
   });
 });

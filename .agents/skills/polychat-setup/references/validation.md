@@ -30,12 +30,18 @@ Run relevant Vitest suites for behaviour changes. Use the root `pnpm typecheck`,
 
 ```sh
 pnpm --filter @assistant/sandbox-worker typecheck
+pnpm --filter @assistant/sandbox-worker test
+pnpm --filter @ngriffin_uk/polychat-library-agent-core build
+pnpm --filter @ngriffin_uk/polychat-library-agent-core typecheck
+pnpm --filter @ngriffin_uk/polychat-library-agent-core test
 pnpm --filter @assistant/training typecheck
 pnpm exec oxlint apps/sandbox-worker/src apps/training/src
 pnpm test:mobile
 ```
 
 Run only checks for selected or changed components. iOS validation requires Xcode and appropriate local tooling.
+
+For Lean Proofs, also build the `Dockerfile.lean` image for the deployment architecture and verify the pinned Python, elan, and `lean-lsp-mcp` executables inside it. Compiler correctness remains independent of the advisory MCP process. Apply the generated D1 migrations only to an isolated local database during validation unless remote migration authority is explicit; never use a deploy command as a build check.
 
 ## White-label validation
 

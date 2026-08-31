@@ -1,3 +1,4 @@
+import type { AgentMessage, AgentTokenUsage } from "@ngriffin_uk/polychat-library-agent-core";
 import {
   parseRetryAfterBodyMs,
   parseRetryAfterHeaderMs,
@@ -13,7 +14,7 @@ const DEFAULT_BASE_DELAY_MS = 400;
 const DEFAULT_MAX_DELAY_MS = 3000;
 
 interface PolychatChatCompletionParams extends SandboxModelSettings {
-  messages: Array<{ role: string; content: string }>;
+  messages: AgentMessage[];
   model: string;
   stream?: boolean;
   tools?: unknown[];
@@ -34,6 +35,25 @@ export interface PolychatToolCall {
 export interface PolychatCompletionMessage {
   content: string;
   toolCalls: PolychatToolCall[];
+  message: AgentMessage;
+  usage: Omit<AgentTokenUsage, "iterations">;
+}
+
+function readTokenCount(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
+}
+
+function isPolychatToolCall(value: unknown): value is PolychatToolCall {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as PolychatToolCall;
+
+  return (
+    typeof candidate.name === "string" ||
+    (candidate.function !== undefined && typeof candidate.function.name === "string")
+  );
 }
 
 export class PolychatApiError extends Error {
@@ -117,22 +137,58 @@ export class PolychatClient {
 
     const data = (await response.json()) as {
       choices: Array<{
-        message: {
-          content: string | null;
-          tool_calls?: PolychatToolCall[];
-        };
+        message: AgentMessage;
       }>;
+      usage?: {
+        prompt_tokens?: number;
+        completion_tokens?: number;
+        total_tokens?: number;
+        input_tokens?: number;
+        output_tokens?: number;
+        cached_input_tokens?: number;
+        prompt_tokens_details?: { cached_tokens?: number };
+      };
     };
 
     const message = data.choices?.[0]?.message;
-    const toolCalls = Array.isArray(message?.tool_calls) ? message.tool_calls : [];
+
+    if (!message || typeof message !== "object") {
+      throw new Error("Polychat API returned a completion without an assistant message");
+    }
+
+    const toolCalls = Array.isArray(message.tool_calls)
+      ? message.tool_calls.filter(isPolychatToolCall)
+      : [];
     const content = typeof message?.content === "string" ? message.content : "";
 
     if (!content && toolCalls.length === 0) {
       throw new Error("Polychat API returned an empty completion response");
     }
 
-    return { content, toolCalls };
+    const reportedTotal = readTokenCount(data.usage?.total_tokens);
+    const reportedInput = readTokenCount(data.usage?.input_tokens ?? data.usage?.prompt_tokens);
+    const reportedOutput = readTokenCount(
+      data.usage?.output_tokens ?? data.usage?.completion_tokens,
+    );
+    const inputTokens = reportedInput || (reportedOutput === 0 ? reportedTotal : 0);
+    const outputTokens = reportedOutput;
+
+    return {
+      content,
+      toolCalls,
+      message,
+      usage: {
+        inputTokens,
+        outputTokens,
+        totalTokens: inputTokens + outputTokens,
+        cachedInputTokens: Math.min(
+          inputTokens,
+          readTokenCount(
+            data.usage?.cached_input_tokens ?? data.usage?.prompt_tokens_details?.cached_tokens,
+          ),
+        ),
+      },
+    };
   }
 
   async chatCompletion(

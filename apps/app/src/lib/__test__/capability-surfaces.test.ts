@@ -10,6 +10,7 @@ import {
   getEnabledExperiences,
   getExperiencePath,
   getProjectSurface,
+  isExperienceAvailableInScope,
   PERSONAL_SURFACE,
   type EnabledCapability,
 } from "../capability-surfaces";
@@ -28,6 +29,19 @@ const savedOutputs: ProjectExperienceDefinition = {
   name: "Saved outputs",
   description: "Review outputs",
   requirement: { kind: "capability_kind", capabilityKind: "app" },
+};
+
+const leanProofs: ProjectExperienceDefinition = {
+  id: "lean-proofs",
+  runtime: "lean-proofs",
+  name: "Lean Proofs",
+  description: "Develop and verify Lean proofs",
+  scopes: ["project"],
+  requirement: {
+    kind: "capability",
+    capabilityKind: "app",
+    capabilityId: "featured-lean-proofs",
+  },
 };
 
 function capability(overrides: Partial<EnabledCapability> = {}): EnabledCapability {
@@ -56,6 +70,16 @@ describe("capability surfaces", () => {
   it("keeps a capability-kind experience available whenever any app is enabled", () => {
     expect(getEnabledExperiences([capability()], [savedOutputs])).toEqual([savedOutputs]);
     expect(getEnabledExperiences([], [savedOutputs])).toEqual([]);
+  });
+
+  it("does not leak project-only experiences into personal discovery", () => {
+    const enabledLeanProofs = capability({ capabilityId: "featured-lean-proofs" });
+
+    expect(isExperienceAvailableInScope(leanProofs, "personal")).toBe(false);
+    expect(getEnabledExperiences([enabledLeanProofs], [leanProofs], "personal")).toEqual([]);
+    expect(getEnabledExperiences([enabledLeanProofs], [leanProofs], "project")).toEqual([
+      leanProofs,
+    ]);
   });
 
   it("steps back one level rather than jumping to the hub", () => {

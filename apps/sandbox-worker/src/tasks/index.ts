@@ -1,6 +1,7 @@
 import type { Env, TaskEventEmitter, TaskParams, TaskResult, TaskSecrets } from "../types";
 import { SandboxTaskRunnerRegistry } from "./runner";
 import { AgentTaskRunner } from "./runners/feature-implementation-runner";
+import { LeanProofTaskRunner } from "./runners/lean-proof-runner";
 import { resolveSandboxTaskProfile } from "./task-profile";
 
 const runnerRegistry = new SandboxTaskRunnerRegistry();
@@ -16,6 +17,8 @@ for (const taskType of [
 ] as const) {
   runnerRegistry.register(new AgentTaskRunner(taskType));
 }
+
+runnerRegistry.register(new LeanProofTaskRunner());
 
 export async function executeSandboxTask(
   params: TaskParams,

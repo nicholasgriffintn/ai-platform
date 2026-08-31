@@ -1,5 +1,11 @@
 import z from "zod/v4";
 
+import {
+  LEAN_PROOF_MAX_TOKEN_BUDGET,
+  leanProofRequestSchema,
+  leanProofResultSchema,
+  leanProofUsageSchema,
+} from "./lean-proofs";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
 export * from "./sandbox-constants";
 import {
@@ -42,36 +48,90 @@ export const sandboxModelSettingsSchema = z.object({
   verbosity: z.enum(["low", "medium", "high", "caveman"]).optional(),
 });
 
-export const executeSandboxRunSchema = z.object({
-  installationId: z.number().int().positive(),
-  repo: sandboxRepoSchema,
-  task: z.string().trim().min(1),
-  taskType: z.enum(SANDBOX_TASK_TYPES).optional(),
-  model: z.string().trim().min(1).optional(),
-  promptStrategy: z.enum(SANDBOX_PROMPT_STRATEGIES).optional(),
-  shouldCommit: z.boolean().optional(),
-  timeoutSeconds: z
-    .number()
-    .int()
-    .min(SANDBOX_TIMEOUT_MIN_SECONDS)
-    .max(SANDBOX_TIMEOUT_MAX_SECONDS)
-    .optional(),
-  trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
-  modelSettings: sandboxModelSettingsSchema.optional(),
-});
+export const sandboxProjectTaskDispatchContextSchema = z
+  .object({
+    dispatchTaskId: z.string().trim().min(1),
+    taskId: z.string().trim().min(1),
+    projectId: z.string().trim().min(1),
+    workspaceId: z.string().trim().min(1),
+    runnerIdentityUserId: z.number().int().positive(),
+  })
+  .strict();
 
-export const sandboxRunDispatchPayloadSchema = z.object({
-  installationId: z.number().int().positive(),
-  repo: sandboxRepoSchema,
-  task: z.string().trim().min(1),
-  taskType: z.enum(SANDBOX_TASK_TYPES).optional(),
-  model: z.string().trim().min(1).optional(),
-  promptStrategy: z.enum(SANDBOX_PROMPT_STRATEGIES).optional(),
-  shouldCommit: z.boolean(),
-  timeoutSeconds: z.number().int().positive().optional(),
-  trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
-  modelSettings: sandboxModelSettingsSchema.optional(),
-});
+export const sandboxTokenUsageSchema = leanProofUsageSchema;
+
+export const executeSandboxRunSchema = z
+  .object({
+    installationId: z.number().int().positive(),
+    repo: sandboxRepoSchema,
+    task: z.string().trim().min(1),
+    taskType: z.enum(SANDBOX_TASK_TYPES).optional(),
+    model: z.string().trim().min(1).optional(),
+    promptStrategy: z.enum(SANDBOX_PROMPT_STRATEGIES).optional(),
+    shouldCommit: z.boolean().optional(),
+    timeoutSeconds: z
+      .number()
+      .int()
+      .min(SANDBOX_TIMEOUT_MIN_SECONDS)
+      .max(SANDBOX_TIMEOUT_MAX_SECONDS)
+      .optional(),
+    trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
+    modelSettings: sandboxModelSettingsSchema.optional(),
+    leanProof: leanProofRequestSchema.optional(),
+    tokenBudget: z.number().int().positive().max(LEAN_PROOF_MAX_TOKEN_BUDGET).optional(),
+    projectTaskContext: sandboxProjectTaskDispatchContextSchema.optional(),
+  })
+  .superRefine((input, context) => {
+    if (input.taskType === "lean-proof" && !input.leanProof) {
+      context.addIssue({
+        code: "custom",
+        message: "Lean proof runs require a leanProof request",
+        path: ["leanProof"],
+      });
+    }
+
+    if (input.taskType !== "lean-proof" && input.leanProof) {
+      context.addIssue({
+        code: "custom",
+        message: "leanProof is only valid for lean-proof runs",
+        path: ["leanProof"],
+      });
+    }
+  });
+
+export const sandboxRunDispatchPayloadSchema = z
+  .object({
+    installationId: z.number().int().positive(),
+    repo: sandboxRepoSchema,
+    task: z.string().trim().min(1),
+    taskType: z.enum(SANDBOX_TASK_TYPES).optional(),
+    model: z.string().trim().min(1).optional(),
+    promptStrategy: z.enum(SANDBOX_PROMPT_STRATEGIES).optional(),
+    shouldCommit: z.boolean(),
+    timeoutSeconds: z.number().int().positive().optional(),
+    trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
+    modelSettings: sandboxModelSettingsSchema.optional(),
+    leanProof: leanProofRequestSchema.optional(),
+    tokenBudget: z.number().int().positive().max(LEAN_PROOF_MAX_TOKEN_BUDGET).optional(),
+    projectTaskContext: sandboxProjectTaskDispatchContextSchema.optional(),
+  })
+  .superRefine((input, context) => {
+    if (input.taskType === "lean-proof" && !input.leanProof) {
+      context.addIssue({
+        code: "custom",
+        message: "Lean proof runs require a leanProof request",
+        path: ["leanProof"],
+      });
+    }
+
+    if (input.taskType !== "lean-proof" && input.leanProof) {
+      context.addIssue({
+        code: "custom",
+        message: "leanProof is only valid for lean-proof runs",
+        path: ["leanProof"],
+      });
+    }
+  });
 
 export const sandboxRunDispatchMessageSchema = z.object({
   kind: z.literal(SANDBOX_RUN_DISPATCH_TASK_TYPE),
@@ -153,6 +213,8 @@ export const sandboxRunResultSchema = z
     errorType: z.string().optional(),
     retryable: z.boolean().optional(),
     branchName: z.string().optional(),
+    usage: sandboxTokenUsageSchema.optional(),
+    leanProof: leanProofResultSchema.optional(),
   })
   .catchall(z.unknown());
 
@@ -165,6 +227,8 @@ export const sandboxTaskResultSchema = z
     error: z.string().optional(),
     errorType: z.string().optional(),
     branchName: z.string().optional(),
+    usage: sandboxTokenUsageSchema.optional(),
+    leanProof: leanProofResultSchema.optional(),
   })
   .catchall(z.unknown());
 
@@ -219,42 +283,74 @@ export const sandboxRunEventSchema = z
     repeatCount: z.number().int().positive().optional(),
     maxSteps: z.number().int().positive().optional(),
     extendedBy: z.number().int().positive().optional(),
+    usage: sandboxTokenUsageSchema.optional(),
+    leanProof: leanProofResultSchema.optional(),
+    projectTaskContext: sandboxProjectTaskDispatchContextSchema.optional(),
   })
   .catchall(z.unknown());
 
-export const sandboxRunDataSchema = z.object({
-  runId: z.string().trim().min(1),
-  installationId: z.number().int().positive(),
-  repo: sandboxRepoSchema,
-  task: z.string().trim().min(1),
-  taskType: z.enum(SANDBOX_TASK_TYPES).optional(),
-  model: z.string().trim().min(1),
-  trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
-  promptStrategy: sandboxPromptStrategySchema.optional(),
-  shouldCommit: z.boolean(),
-  status: sandboxRunStatusSchema,
-  startedAt: z.string().trim().min(1),
-  updatedAt: z.string().trim().min(1),
-  completedAt: z.string().optional(),
-  error: z.string().optional(),
-  events: z.array(sandboxRunEventSchema).optional(),
-  result: sandboxRunResultSchema.optional(),
-  cancelRequestedAt: z.string().optional(),
-  cancellationReason: z.string().optional(),
-  timeoutSeconds: z.number().int().positive().optional(),
-  timeoutAt: z.string().optional(),
-  pausedAt: z.string().optional(),
-  resumedAt: z.string().optional(),
-  pauseReason: z.string().optional(),
-  resumeReason: z.string().optional(),
-  artifactKey: z.string().optional(),
-  artifactUrl: z.string().optional(),
-  workflowPhase: z
-    .enum(["queued", "dispatching", "executing", "finalizing", "completed", "failed", "cancelled"])
-    .optional(),
-  queueDispatchedAt: z.string().optional(),
-  processingStartedAt: z.string().optional(),
-});
+export const sandboxRunDataSchema = z
+  .object({
+    runId: z.string().trim().min(1),
+    installationId: z.number().int().positive(),
+    repo: sandboxRepoSchema,
+    task: z.string().trim().min(1),
+    taskType: z.enum(SANDBOX_TASK_TYPES).optional(),
+    model: z.string().trim().min(1),
+    trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
+    promptStrategy: sandboxPromptStrategySchema.optional(),
+    shouldCommit: z.boolean(),
+    status: sandboxRunStatusSchema,
+    startedAt: z.string().trim().min(1),
+    updatedAt: z.string().trim().min(1),
+    completedAt: z.string().optional(),
+    error: z.string().optional(),
+    events: z.array(sandboxRunEventSchema).optional(),
+    result: sandboxRunResultSchema.optional(),
+    cancelRequestedAt: z.string().optional(),
+    cancellationReason: z.string().optional(),
+    timeoutSeconds: z.number().int().positive().optional(),
+    timeoutAt: z.string().optional(),
+    pausedAt: z.string().optional(),
+    resumedAt: z.string().optional(),
+    pauseReason: z.string().optional(),
+    resumeReason: z.string().optional(),
+    artifactKey: z.string().optional(),
+    artifactUrl: z.string().optional(),
+    workflowPhase: z
+      .enum([
+        "queued",
+        "dispatching",
+        "executing",
+        "finalizing",
+        "completed",
+        "failed",
+        "cancelled",
+      ])
+      .optional(),
+    queueDispatchedAt: z.string().optional(),
+    processingStartedAt: z.string().optional(),
+    leanProof: leanProofRequestSchema.optional(),
+    tokenBudget: z.number().int().positive().max(LEAN_PROOF_MAX_TOKEN_BUDGET).optional(),
+    projectTaskContext: sandboxProjectTaskDispatchContextSchema.optional(),
+  })
+  .superRefine((run, context) => {
+    if (run.taskType === "lean-proof" && !run.leanProof) {
+      context.addIssue({
+        code: "custom",
+        message: "Lean proof runs require a leanProof request",
+        path: ["leanProof"],
+      });
+    }
+
+    if (run.taskType !== "lean-proof" && run.leanProof) {
+      context.addIssue({
+        code: "custom",
+        message: "leanProof is only valid for lean-proof runs",
+        path: ["leanProof"],
+      });
+    }
+  });
 
 export const sandboxTaskTypeSchema = z.enum(SANDBOX_TASK_TYPES);
 export const sandboxTrustLevelSchema = z.enum(SANDBOX_TRUST_LEVELS);
@@ -271,6 +367,9 @@ export const sandboxRequestOptionsSchema = z
     timeoutSeconds: z.number().int().positive().optional(),
     maxSteps: z.number().int().positive().optional(),
     modelSettings: sandboxModelSettingsSchema.optional(),
+    leanProof: leanProofRequestSchema.optional(),
+    tokenBudget: z.number().int().positive().max(LEAN_PROOF_MAX_TOKEN_BUDGET).optional(),
+    projectTaskContext: sandboxProjectTaskDispatchContextSchema.optional(),
   })
   .passthrough();
 
@@ -313,26 +412,47 @@ export const sandboxRunInstructionEnvelopeSchema = z.object({
   instruction: sandboxRunInstructionSchema,
 });
 
-export const sandboxWorkerExecuteRequestSchema = z.object({
-  userId: z.number().int().positive(),
-  taskType: sandboxTaskTypeSchema.optional(),
-  repo: sandboxRepoSchema,
-  task: z.string().trim().min(1),
-  model: z.string().trim().min(1).optional(),
-  promptStrategy: sandboxPromptStrategySchema.optional(),
-  shouldCommit: z.boolean().optional(),
-  timeoutSeconds: z
-    .number()
-    .int()
-    .min(SANDBOX_TIMEOUT_MIN_SECONDS)
-    .max(SANDBOX_TIMEOUT_MAX_SECONDS)
-    .optional(),
-  trustLevel: sandboxTrustLevelSchema.optional(),
-  polychatApiUrl: z.url(),
-  installationId: z.number().int().positive().optional(),
-  runId: z.string().trim().min(1).optional(),
-  modelSettings: sandboxModelSettingsSchema.optional(),
-});
+export const sandboxWorkerExecuteRequestSchema = z
+  .object({
+    userId: z.number().int().positive(),
+    taskType: sandboxTaskTypeSchema.optional(),
+    repo: sandboxRepoSchema,
+    task: z.string().trim().min(1),
+    model: z.string().trim().min(1).optional(),
+    promptStrategy: sandboxPromptStrategySchema.optional(),
+    shouldCommit: z.boolean().optional(),
+    timeoutSeconds: z
+      .number()
+      .int()
+      .min(SANDBOX_TIMEOUT_MIN_SECONDS)
+      .max(SANDBOX_TIMEOUT_MAX_SECONDS)
+      .optional(),
+    trustLevel: sandboxTrustLevelSchema.optional(),
+    polychatApiUrl: z.url(),
+    installationId: z.number().int().positive().optional(),
+    runId: z.string().trim().min(1).optional(),
+    modelSettings: sandboxModelSettingsSchema.optional(),
+    leanProof: leanProofRequestSchema.optional(),
+    tokenBudget: z.number().int().positive().max(LEAN_PROOF_MAX_TOKEN_BUDGET).optional(),
+    projectTaskContext: sandboxProjectTaskDispatchContextSchema.optional(),
+  })
+  .superRefine((input, context) => {
+    if (input.taskType === "lean-proof" && !input.leanProof) {
+      context.addIssue({
+        code: "custom",
+        message: "Lean proof runs require a leanProof request",
+        path: ["leanProof"],
+      });
+    }
+
+    if (input.taskType !== "lean-proof" && input.leanProof) {
+      context.addIssue({
+        code: "custom",
+        message: "leanProof is only valid for lean-proof runs",
+        path: ["leanProof"],
+      });
+    }
+  });
 
 export type GitHubConnectionPayload = z.infer<typeof githubConnectionSchema>;
 export type ExecuteSandboxRunPayload = z.infer<typeof executeSandboxRunSchema>;
@@ -361,6 +481,10 @@ export type SandboxRunInstructionKind = z.infer<typeof sandboxRunInstructionKind
 export type SandboxRunInstruction = z.infer<typeof sandboxRunInstructionSchema>;
 export type SandboxRunInstructionEnvelope = z.infer<typeof sandboxRunInstructionEnvelopeSchema>;
 export type SandboxWorkerExecuteRequest = z.infer<typeof sandboxWorkerExecuteRequestSchema>;
+export type SandboxProjectTaskDispatchContext = z.infer<
+  typeof sandboxProjectTaskDispatchContextSchema
+>;
+export type SandboxTokenUsage = z.infer<typeof sandboxTokenUsageSchema>;
 
 export type CreateSandboxConnectionInput = GitHubConnectionPayload;
 export type ConnectSandboxInstallationInput = AutoConnectPayload;

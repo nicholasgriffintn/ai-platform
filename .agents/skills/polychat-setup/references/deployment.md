@@ -20,6 +20,14 @@ pnpm --filter @assistant/api db:migrate:prod
 
 Remote migrations are state-changing operations. Inspect the target and migration set, explain risk, and obtain explicit authority before applying preview or production migrations.
 
+Lean Proofs adds generated project-task migrations for `sandbox_run_id`, `output_id`, `projection_claim_id`, and `idempotency_key`, plus unique indexes for run, output, and creator-scoped request identity. Apply migrations 0007 through 0009 in order before exposing its API routes; do not hand-edit or skip the generated snapshots.
+
+## Provision Lean Proofs
+
+Lean Proofs requires the sandbox Worker manifest's `LeanSandbox` Durable Object and its dedicated `standard-3` container built from `apps/sandbox-worker/Dockerfile.lean`. Keep the generic `Sandbox` binding on its existing basic container. Deploy the sandbox Worker before the API and web consumers that advertise the experience.
+
+The Lean image pins the Cloudflare base by digest, verifies the uv and elan downloads, and installs `lean-lsp-mcp` from the hash-locked `container/lean-lsp-mcp.requirements.txt`. Regenerate that lock from `container/lean-lsp-mcp.in` when upgrading the adapter. The checked-in repository still chooses its own Lean toolchain and Lake dependencies, so a repository's first run needs outbound package access and may be materially slower than a warm run. Lean proof execution is capped at 55 minutes so API and GitHub credentials retain renewal margin. Monitor standard-3 container spend, queue concurrency, first-run download failures, and timeouts; local Loogle and Lean REPL remain disabled.
+
 ## Deploy in dependency order
 
 1. Build and validate `@ngriffin_uk/polychat-schemas` and affected consumers.

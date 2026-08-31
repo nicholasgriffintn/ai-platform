@@ -1,22 +1,39 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { executeAgentLoop } from "../feature-implementation/agent-loop";
+import { executeAgentLoop, mapTerminalGoalOutcome } from "../feature-implementation/agent-loop";
 import { PolychatApiError } from "../polychat-client";
 
 function toolCallResponse(name: string, args: Record<string, unknown>) {
+  const toolCalls = [
+    {
+      id: `call-${name}`,
+      type: "function",
+      function: { name, arguments: JSON.stringify(args) },
+    },
+  ];
+
   return {
     content: "",
-    toolCalls: [
-      {
-        id: `call-${name}`,
-        type: "function",
-        function: { name, arguments: JSON.stringify(args) },
-      },
-    ],
+    toolCalls,
+    message: { role: "assistant", content: null, tool_calls: toolCalls },
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, cachedInputTokens: 0 },
   };
 }
 
 describe("executeAgentLoop", () => {
+  it("maps terminal goal control states without turning blockers into success", () => {
+    const base = {
+      goal: null,
+      shouldContinue: false,
+      status: null,
+      reason: "not-active" as const,
+    };
+
+    expect(mapTerminalGoalOutcome({ ...base, outcome: "completed" })).toBe("satisfied");
+    expect(mapTerminalGoalOutcome({ ...base, outcome: "blocked" })).toBe("blocked");
+    expect(mapTerminalGoalOutcome({ ...base, outcome: "stalled" })).toBe("stalled");
+    expect(mapTerminalGoalOutcome({ ...base, outcome: "limit_reached" })).toBe("unsatisfied");
+  });
   it("stops when the model provider is unavailable instead of recording invalid decisions", async () => {
     const emitted: Array<Record<string, unknown>> = [];
     const chatCompletion = vi
@@ -80,9 +97,17 @@ describe("executeAgentLoop", () => {
       .fn()
       .mockResolvedValueOnce({
         shouldContinue: true,
+        outcome: "continue",
+        status: "active",
+        reason: "continue",
         instruction: "The objective is not satisfied yet.",
       })
-      .mockResolvedValueOnce({ shouldContinue: false });
+      .mockResolvedValueOnce({
+        shouldContinue: false,
+        outcome: "completed",
+        status: "completed",
+        reason: "not-active",
+      });
 
     const result = await executeAgentLoop({
       sandbox: {
@@ -130,6 +155,57 @@ describe("executeAgentLoop", () => {
     expect(recordGoalIteration).toHaveBeenCalledTimes(2);
     expect(result.summary).toBe("actually done");
     expect(emitted.some((event) => event.type === "run_goal_continued")).toBe(true);
+    expect(chatCompletion.mock.calls[1]?.[0]?.messages).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          role: "assistant",
+          tool_calls: expect.arrayContaining([expect.objectContaining({ id: "call-run_command" })]),
+        }),
+        expect.objectContaining({
+          role: "tool",
+          tool_call_id: "call-run_command",
+          name: "run_command",
+        }),
+      ]),
+    );
+  });
+
+  it("fails the run when goal control cannot authoritatively resolve finish", async () => {
+    const chatCompletion = vi
+      .fn()
+      .mockResolvedValueOnce(toolCallResponse("finish", { summary: "done" }));
+
+    await expect(
+      executeAgentLoop({
+        sandbox: { exec: vi.fn() } as any,
+        client: { chatCompletion } as any,
+        approvalClient: {
+          recordGoalIteration: vi.fn().mockRejectedValue(new Error("goal control unavailable")),
+          listInstructions: vi.fn().mockResolvedValue([]),
+        } as any,
+        model: "test-model",
+        repoDisplayName: "owner/repo",
+        repoTargetDir: "repo",
+        task: "test",
+        taskType: "feature-implementation",
+        promptStrategy: {
+          strategy: "feature-delivery",
+          definition: {
+            strategy: "feature-delivery",
+            label: "Feature delivery",
+            planningFocus: ["focus"],
+            executionFocus: ["focus"],
+            examples: [],
+          },
+          reason: "test",
+          source: "explicit",
+        },
+        initialPlan: "plan",
+        repoContext: { topLevelEntries: [], files: [], taskInstructionSource: "none" },
+        executionLogs: [],
+        emit: vi.fn(),
+      }),
+    ).rejects.toThrow("goal control unavailable");
   });
 
   it("finishes normally when the run has no goal control plane", async () => {
@@ -632,7 +708,12 @@ describe("executeAgentLoop", () => {
       .fn()
       .mockResolvedValue(toolCallResponse("finish", { summary: "done" }));
     const approvalClient = {
-      recordGoalIteration: vi.fn().mockResolvedValue({ shouldContinue: false }),
+      recordGoalIteration: vi.fn().mockResolvedValue({
+        shouldContinue: false,
+        outcome: "completed",
+        status: "completed",
+        reason: "not-active",
+      }),
       listInstructions: vi
         .fn()
         .mockResolvedValueOnce([

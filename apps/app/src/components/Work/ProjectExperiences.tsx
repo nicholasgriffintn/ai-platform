@@ -34,10 +34,11 @@ export function ProjectExperiences({
     data: catalog,
     isLoading: isCatalogLoading,
     error: catalogError,
-  } = useCapabilityCatalog();
+  } = useCapabilityCatalog(projectId);
   const experiences = getEnabledExperiences(
     project?.capabilities ?? [],
     catalog?.experiences ?? [],
+    "project",
   );
   const libraryPath = `/work/${workspaceId}/projects/${projectId}/library`;
   const pageError = error ?? catalogError;

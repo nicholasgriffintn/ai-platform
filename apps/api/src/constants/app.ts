@@ -39,4 +39,5 @@ export const MAX_PROVIDER_STREAM_EVENT_LENGTH = 20 * 1024 * 1024; // 20MB
 
 export const SANDBOX_RUNS_APP_ID = "sandbox_runs";
 export const SANDBOX_RUN_ITEM_TYPE = "sandbox_run";
+export const LEAN_PROOF_APP_ID = "featured-lean-proofs";
 export const MAX_STORED_STREAM_EVENTS = 500;

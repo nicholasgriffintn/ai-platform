@@ -2,6 +2,7 @@ import type {
   AssistantActionItem,
   ProjectCapabilityKind,
   ProjectExperienceDefinition,
+  ProjectExperienceScope,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { createRecipeManagementActionPath } from "./assistant-action-launch";
@@ -148,10 +149,20 @@ export function getCapabilityOpenPath(
 export function getEnabledExperiences(
   capabilities: EnabledCapability[],
   experiences: ProjectExperienceDefinition[],
+  scope?: ProjectExperienceScope,
 ): ProjectExperienceDefinition[] {
-  return experiences.filter((experience) =>
-    capabilities.some((capability) => capabilityEnablesExperience(capability, experience)),
+  return experiences.filter(
+    (experience) =>
+      (!scope || isExperienceAvailableInScope(experience, scope)) &&
+      capabilities.some((capability) => capabilityEnablesExperience(capability, experience)),
   );
+}
+
+export function isExperienceAvailableInScope(
+  experience: ProjectExperienceDefinition,
+  scope: ProjectExperienceScope,
+): boolean {
+  return (experience.scopes ?? ["personal", "project"]).includes(scope);
 }
 
 export function isExperienceEnabled(

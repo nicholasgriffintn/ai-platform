@@ -16,6 +16,11 @@
       "types": "./dist/content.d.ts",
       "import": "./dist/content.js"
     },
+    "./development": {
+      "polychat-source": "./src/development/index.ts",
+      "types": "./dist/development.d.ts",
+      "import": "./dist/development.js"
+    },
     "./media": {
       "polychat-source": "./src/media/index.tsx",
       "types": "./dist/media.d.ts",

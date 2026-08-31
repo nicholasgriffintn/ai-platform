@@ -71,6 +71,17 @@ export function resolveSandboxTaskProfile(params: TaskParams): ResolvedSandboxTa
   }
 
   switch (taskType) {
+    case "lean-proof":
+      if (!params.leanProof) {
+        throw new Error("Lean proof task configuration is required");
+      }
+
+      return {
+        taskType,
+        task: trimmedTask,
+        shouldCommit: Boolean(params.shouldCommit),
+        readOnlyCommands: false,
+      };
     case "code-review":
       return {
         taskType,

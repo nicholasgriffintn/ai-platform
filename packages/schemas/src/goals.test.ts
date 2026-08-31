@@ -4,6 +4,8 @@ import {
   evaluateGoalContinuation,
   GOAL_STALL_THRESHOLD,
   isTerminalGoalStatus,
+  recordGoalIterationRequestSchema,
+  recordGoalIterationResponseSchema,
   type GoalContinuationInput,
 } from "./goals";
 
@@ -155,5 +157,35 @@ describe("isTerminalGoalStatus", () => {
     ).toBe(true);
     expect(isTerminalGoalStatus("active")).toBe(false);
     expect(isTerminalGoalStatus("paused")).toBe(false);
+  });
+});
+
+describe("goal iteration wire contract", () => {
+  it("accepts a bounded token delta and exposes why a run stopped", () => {
+    expect(
+      recordGoalIterationRequestSchema.safeParse({
+        summary: "Lean compiled the target declaration.",
+        producedEvidence: true,
+        calledTool: true,
+        tokens: 450,
+      }).success,
+    ).toBe(true);
+
+    expect(
+      recordGoalIterationResponseSchema.safeParse({
+        goal: null,
+        shouldContinue: false,
+        status: "stalled",
+        outcome: "stalled",
+        reason: "stalled",
+      }).success,
+    ).toBe(true);
+
+    expect(
+      recordGoalIterationResponseSchema.safeParse({
+        goal: null,
+        shouldContinue: false,
+      }).success,
+    ).toBe(false);
   });
 });

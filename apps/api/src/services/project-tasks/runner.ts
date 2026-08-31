@@ -24,6 +24,7 @@ import { getPendingProjectTaskToolApproval } from "./approvals";
 import { createProjectTaskCompletion, projectTaskStatusAfterCompletedGoal } from "./completions";
 import { buildStageInstructions, resolveTaskRuntime } from "./flow";
 import { getPendingProjectTaskQuestions } from "./questions";
+import { dispatchLeanProofProjectTask, isLeanProofTask } from "./sandbox-runner";
 import { projectTaskStatusForGoal } from "./transitions";
 
 const logger = getLogger({ prefix: "services/project-tasks/runner" });
@@ -57,6 +58,27 @@ export async function enqueueProjectTaskRun(
       approvedTools,
     },
   });
+}
+
+export async function reenqueueProjectTaskRun(
+  context: ServiceContext,
+  task: ProjectTask,
+): Promise<void> {
+  if (!task.runnerIdentityUserId || !task.dispatchTaskId) {
+    throw new AssistantError(
+      "The queued project task is missing its exact dispatch identity",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  await enqueueProjectTaskRun(
+    context,
+    task,
+    task.runnerIdentityUserId,
+    task.dispatchTaskId,
+    isLeanProofTask(task) ? null : task.conversationId,
+  );
 }
 
 export async function queueProjectTaskRun(params: {
@@ -252,11 +274,15 @@ async function blockTask(
   reason: ProjectTaskBlockedReason,
   detail: string,
 ): Promise<void> {
-  await context.repositories.projectTasks.updateTask(taskId, {
-    status: "blocked",
-    blockedReason: reason,
-    blockedDetail: detail.slice(0, 500),
-  });
+  await context.repositories.projectTasks.updateTask(
+    taskId,
+    {
+      status: "blocked",
+      blockedReason: reason,
+      blockedDetail: detail.slice(0, 500),
+    },
+    { expectedStatuses: ["queued", "running"] },
+  );
 }
 
 export async function runProjectTaskDispatch(params: {
@@ -323,6 +349,31 @@ export async function runProjectTaskDispatch(params: {
     );
 
     return { status: "blocked", detail: "Token budget exhausted" };
+  }
+
+  if (isLeanProofTask(claimed)) {
+    try {
+      await dispatchLeanProofProjectTask({ context, user, task: claimed, project });
+
+      return { status: "completed", detail: "Proof run dispatched" };
+    } catch (error) {
+      const detail = getErrorMessage(error);
+      const reason =
+        error instanceof AssistantError &&
+        (error.type === ErrorType.CONFIGURATION_ERROR ||
+          error.type === ErrorType.NOT_FOUND ||
+          error.type === ErrorType.FORBIDDEN)
+          ? "missing_capability"
+          : error instanceof AssistantError &&
+              (error.type === ErrorType.RATE_LIMIT_ERROR ||
+                error.type === ErrorType.USAGE_LIMIT_ERROR)
+            ? "token_budget"
+            : "dispatch_failed";
+
+      await blockTask(context, taskId, reason, detail);
+
+      return { status: "blocked", detail };
+    }
   }
 
   const conversationId =

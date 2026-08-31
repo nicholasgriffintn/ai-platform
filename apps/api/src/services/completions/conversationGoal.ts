@@ -2,6 +2,9 @@ import {
   goalResponseSchema,
   recordGoalIterationResponseSchema,
   type GoalResponse,
+  type Goal,
+  type GoalContinuationReason,
+  type GoalIterationOutcome,
   type RecordGoalIterationRequest,
   type RecordGoalIterationResponse,
   type UpdateGoalRequest,
@@ -10,7 +13,10 @@ import {
 import { GOAL_UNSATISFIED_INSTRUCTION } from "~/lib/chat/agent/goal-gate";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
-import { getSandboxRunRecordForUser } from "~/services/apps/sandbox/runs";
+import {
+  getSandboxRunRecordForUser,
+  requireSandboxRunWriteAuthority,
+} from "~/services/apps/sandbox/runs";
 import {
   requireConversationAccess,
   requireOwnConversationForWrite,
@@ -51,7 +57,7 @@ export async function handleSetRunGoal(
   const user = context.requireUser();
   const service = createService(context);
 
-  await getSandboxRunRecordForUser({ context, userId: user.id, runId });
+  await requireSandboxRunWriteAuthority({ context, userId: user.id, runId });
 
   const goal = await service.setGoal({
     owner: { sandboxRunId: runId },
@@ -73,7 +79,7 @@ export async function handleUpdateRunGoal(
 
   service.assertPro(user);
 
-  await getSandboxRunRecordForUser({ context, userId: user.id, runId });
+  await requireSandboxRunWriteAuthority({ context, userId: user.id, runId });
 
   const active = await service.getActiveGoal({ sandboxRunId: runId });
 
@@ -100,12 +106,19 @@ export async function handleRecordRunGoalIteration(
 
   service.assertPro(user);
 
-  await getSandboxRunRecordForUser({ context, userId: user.id, runId });
+  await requireSandboxRunWriteAuthority({ context, userId: user.id, runId });
 
   const active = await service.getActiveGoal({ sandboxRunId: runId });
 
   if (!active || active.status !== "active") {
-    return recordGoalIterationResponseSchema.parse({ goal: active, shouldContinue: false });
+    const current =
+      active ?? (await context.repositories.goals.listGoals({ sandboxRunId: runId }, 1))[0] ?? null;
+
+    return recordGoalIterationResponseSchema.parse({
+      goal: current,
+      shouldContinue: false,
+      ...describeGoalIteration(current, false),
+    });
   }
 
   const { goal, shouldContinue } = await service.recordIteration({
@@ -117,14 +130,48 @@ export async function handleRecordRunGoalIteration(
       next: iteration.next,
       producedEvidence: iteration.producedEvidence,
       calledTool: iteration.calledTool,
+      tokens: iteration.tokens,
     },
   });
 
   return recordGoalIterationResponseSchema.parse({
     goal,
     shouldContinue,
+    ...describeGoalIteration(goal, shouldContinue),
     ...(shouldContinue ? { instruction: GOAL_UNSATISFIED_INSTRUCTION } : {}),
   });
+}
+
+function describeGoalIteration(
+  goal: Goal | null,
+  shouldContinue: boolean,
+): {
+  status: Goal["status"] | null;
+  outcome: GoalIterationOutcome;
+  reason: GoalContinuationReason;
+} {
+  if (!goal) {
+    return { status: null, outcome: "missing", reason: "no-goal" };
+  }
+
+  if (goal.status === "active") {
+    return {
+      status: goal.status,
+      outcome: "continue",
+      reason: shouldContinue ? "continue" : "not-active",
+    };
+  }
+
+  const byStatus = {
+    paused: { outcome: "paused", reason: "not-active" },
+    completed: { outcome: "completed", reason: "not-active" },
+    cleared: { outcome: "cleared", reason: "not-active" },
+    blocked: { outcome: "blocked", reason: "awaiting-approval" },
+    stalled: { outcome: "stalled", reason: "stalled" },
+    limit_reached: { outcome: "limit_reached", reason: "usage-limits" },
+  } as const;
+
+  return { status: goal.status, ...byStatus[goal.status] };
 }
 
 export async function handleGetConversationGoal(

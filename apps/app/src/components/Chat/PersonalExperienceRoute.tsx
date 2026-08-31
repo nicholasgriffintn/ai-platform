@@ -7,6 +7,7 @@ import { useCapabilityCatalog } from "~/hooks/useCapabilityCatalog";
 import {
   getExperienceBackLink,
   getExperiencePath,
+  isExperienceAvailableInScope,
   PERSONAL_SURFACE,
 } from "~/lib/capability-surfaces";
 import { isAuthenticationError } from "~/lib/errors";
@@ -19,7 +20,9 @@ export function PersonalExperienceRoute({
   subpath?: string;
 }) {
   const { data: catalog, isLoading, error: pageError } = useCapabilityCatalog();
-  const definition = catalog?.experiences.find((item) => item.id === experienceId);
+  const definition = catalog?.experiences.find(
+    (item) => item.id === experienceId && isExperienceAvailableInScope(item, "personal"),
+  );
   const title = definition?.name;
   const backLink = getExperienceBackLink(PERSONAL_SURFACE, experienceId, subpath, title);
   const basePath = getExperiencePath(PERSONAL_SURFACE, experienceId);

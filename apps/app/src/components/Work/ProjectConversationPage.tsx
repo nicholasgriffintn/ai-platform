@@ -2,7 +2,6 @@ import {
   getModelInteractionCapabilities,
   answerUserQuestionsSchema,
   resolveProjectTaskToolApprovalSchema,
-  type SandboxTaskType,
   sandboxTaskTypeSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
@@ -19,7 +18,10 @@ import { useProjectTask, useProjectTasks } from "~/hooks/useProjectTasks";
 import { projectQueryKey } from "~/hooks/useWorkspaces";
 import { getCapabilityLibraryPath, getProjectSurface } from "~/lib/capability-surfaces";
 import { getErrorMessage } from "~/lib/errors";
-import { getProjectCodingPresentation } from "~/lib/project-coding-presentation";
+import {
+  getProjectCodingPresentation,
+  type ProjectConversationCodingTaskType,
+} from "~/lib/project-coding-presentation";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 
@@ -82,9 +84,10 @@ export function ProjectConversationPage({
   const capabilities =
     project?.capabilities.map(({ kind, capabilityId }) => ({ kind, capabilityId })) ?? [];
   const codingEnvironment = project?.codingEnvironment;
-  const [draftTaskType, setDraftTaskType] = useState<SandboxTaskType>("feature-implementation");
+  const [draftTaskType, setDraftTaskType] =
+    useState<ProjectConversationCodingTaskType>("feature-implementation");
   const [taskTypesByConversation, setTaskTypesByConversation] = useState<
-    Record<string, SandboxTaskType>
+    Record<string, ProjectConversationCodingTaskType>
   >({});
   const previousConversationIdRef = useRef<string | null>(null);
   const taskType = currentConversationId
@@ -188,7 +191,7 @@ export function ProjectConversationPage({
       .map((message) => sandboxTaskTypeSchema.safeParse(message.data?.codingTaskType))
       .find((result) => result.success)?.data;
 
-    if (!persistedTaskType) {
+    if (!persistedTaskType || persistedTaskType === "lean-proof") {
       return;
     }
 
@@ -198,7 +201,7 @@ export function ProjectConversationPage({
     }));
   }, [currentConversation, currentConversationId]);
 
-  const handleTaskTypeChange = (nextTaskType: SandboxTaskType) => {
+  const handleTaskTypeChange = (nextTaskType: ProjectConversationCodingTaskType) => {
     if (currentConversationId) {
       setTaskTypesByConversation((current) => ({
         ...current,
