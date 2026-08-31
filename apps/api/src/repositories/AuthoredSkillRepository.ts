@@ -1,10 +1,21 @@
 import { and, asc, eq, isNull, sql } from "drizzle-orm";
 
-import { authoredSkill, authoredSkillRevision } from "~/lib/database/schema";
+import {
+  authoredSkill,
+  authoredSkillRevision,
+  capabilityConfiguration,
+  projectCapability,
+  workspaceAuditRecord,
+} from "~/lib/database/schema";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
+import {
+  buildWorkspaceAuditRecordValues,
+  type CreateWorkspaceAuditRecordInput,
+} from "./AuditRepository";
 import { BaseRepository } from "./BaseRepository";
+import { buildCapabilityConfigurationValues } from "./CapabilityConfigurationRepository";
 
 export interface AuthoredSkillScope {
   type: "personal" | "project";
@@ -54,6 +65,10 @@ export interface CreateAuthoredSkillInput {
     skillId: string;
     revisionId: string;
   } | null;
+  projectPublication?: {
+    projectId: string;
+    audit: CreateWorkspaceAuditRecordInput;
+  };
 }
 
 export interface AppendAuthoredSkillRevisionInput {
@@ -67,11 +82,23 @@ export interface AppendAuthoredSkillRevisionInput {
   createdByUserId: number;
   changeNote?: string | null;
   activate?: boolean;
+  source?: {
+    skillId: string;
+    revisionId: string;
+  } | null;
+  audit?: CreateWorkspaceAuditRecordInput;
 }
 
 export interface AuthoredSkillWithRevision {
   skill: AuthoredSkillRecord;
   revision: AuthoredSkillRevisionRecord;
+}
+
+function auditMetadata(
+  audit: CreateWorkspaceAuditRecordInput,
+  revisionId: string,
+): Record<string, unknown> {
+  return { ...audit.metadata, revisionId };
 }
 
 const mapSkill = (record: typeof authoredSkill.$inferSelect): AuthoredSkillRecord => ({
@@ -122,44 +149,155 @@ export class AuthoredSkillRepository extends BaseRepository {
     const revisionId = generateId();
     const now = new Date().toISOString();
 
+    if (input.projectPublication && input.scope.type !== "project") {
+      throw new AssistantError(
+        "Project publication requires a project skill scope",
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+
+    if (input.projectPublication && String(input.scope.id) !== input.projectPublication.projectId) {
+      throw new AssistantError(
+        "Project publication does not match the skill scope",
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+
     try {
-      const [skillRecords, revisionRecords] = await this.database.batch([
-        this.database
-          .insert(authoredSkill)
-          .values({
-            id,
-            scope_type: input.scope.type,
-            scope_id: String(input.scope.id),
-            name: input.name,
-            created_by: input.createdByUserId,
-            draft_revision_id: revisionId,
-            stable_revision_id: revisionId,
-            state_version: 1,
-            archived_at: null,
-            created_at: now,
-            updated_at: now,
-          })
-          .returning(),
-        this.database
-          .insert(authoredSkillRevision)
-          .values({
-            id: revisionId,
-            skill_id: id,
-            revision: 1,
-            description: input.description,
-            change_note: input.changeNote ?? null,
-            digest: input.digest,
-            storage_key: input.storageKey,
-            size: input.size,
-            source_skill_id: input.source?.skillId ?? null,
-            source_revision_id: input.source?.revisionId ?? null,
-            created_by: input.createdByUserId,
-            created_at: now,
-          })
-          .returning(),
-      ]);
-      const [skillRecord] = skillRecords;
-      const [revisionRecord] = revisionRecords;
+      const skillInsert = this.database
+        .insert(authoredSkill)
+        .values({
+          id,
+          scope_type: input.scope.type,
+          scope_id: String(input.scope.id),
+          name: input.name,
+          created_by: input.createdByUserId,
+          draft_revision_id: revisionId,
+          stable_revision_id: revisionId,
+          state_version: 1,
+          archived_at: null,
+          created_at: now,
+          updated_at: now,
+        })
+        .returning();
+      const revisionInsert = this.database
+        .insert(authoredSkillRevision)
+        .values({
+          id: revisionId,
+          skill_id: id,
+          revision: 1,
+          description: input.description,
+          change_note: input.changeNote ?? null,
+          digest: input.digest,
+          storage_key: input.storageKey,
+          size: input.size,
+          source_skill_id: input.source?.skillId ?? null,
+          source_revision_id: input.source?.revisionId ?? null,
+          created_by: input.createdByUserId,
+          created_at: now,
+        })
+        .returning();
+      let skillRecord: typeof authoredSkill.$inferSelect | undefined;
+      let revisionRecord: typeof authoredSkillRevision.$inferSelect | undefined;
+
+      if (input.scope.type === "personal") {
+        const configuration = buildCapabilityConfigurationValues({
+          scope: { type: "user", id: Number(input.scope.id) },
+          capabilityKind: "skill",
+          capabilityId: input.name,
+          configuration: { enabled: true },
+        });
+        const [skillRecords, revisionRecords, configurationRecords] = await this.database.batch([
+          skillInsert,
+          revisionInsert,
+          this.database
+            .insert(capabilityConfiguration)
+            .values(configuration)
+            .onConflictDoUpdate({
+              target: [
+                capabilityConfiguration.scope_type,
+                capabilityConfiguration.scope_id,
+                capabilityConfiguration.capability_kind,
+                capabilityConfiguration.capability_id,
+              ],
+              set: { configuration: configuration.configuration, updated_at: now },
+            })
+            .returning(),
+        ]);
+
+        [skillRecord] = skillRecords;
+        [revisionRecord] = revisionRecords;
+
+        if (!configurationRecords[0]) {
+          throw new AssistantError("Failed to enable authored skill", ErrorType.DATABASE_ERROR);
+        }
+      } else if (input.projectPublication) {
+        const configuration = buildCapabilityConfigurationValues({
+          scope: { type: "project", id: input.projectPublication.projectId },
+          capabilityKind: "skill",
+          capabilityId: input.name,
+          configuration: {},
+        });
+        const audit = buildWorkspaceAuditRecordValues({
+          ...input.projectPublication.audit,
+          metadata: auditMetadata(input.projectPublication.audit, revisionId),
+        });
+        const [
+          skillRecords,
+          revisionRecords,
+          capabilityRecords,
+          configurationRecords,
+          auditRecords,
+        ] = await this.database.batch([
+          skillInsert,
+          revisionInsert,
+          this.database
+            .insert(projectCapability)
+            .values({
+              id: generateId(),
+              project_id: input.projectPublication.projectId,
+              kind: "skill",
+              capability_id: input.name,
+              configuration: {},
+              created_by: input.createdByUserId,
+            })
+            .returning(),
+          this.database
+            .insert(capabilityConfiguration)
+            .values(configuration)
+            .onConflictDoUpdate({
+              target: [
+                capabilityConfiguration.scope_type,
+                capabilityConfiguration.scope_id,
+                capabilityConfiguration.capability_kind,
+                capabilityConfiguration.capability_id,
+              ],
+              set: { configuration: configuration.configuration, updated_at: now },
+            })
+            .returning(),
+          this.database.insert(workspaceAuditRecord).values(audit).returning(),
+        ]);
+
+        [skillRecord] = skillRecords;
+        [revisionRecord] = revisionRecords;
+
+        if (!capabilityRecords[0] || !configurationRecords[0] || !auditRecords[0]) {
+          throw new AssistantError(
+            "Failed to publish imported project skill",
+            ErrorType.DATABASE_ERROR,
+          );
+        }
+      } else {
+        const [skillRecords, revisionRecords] = await this.database.batch([
+          skillInsert,
+          revisionInsert,
+        ]);
+
+        [skillRecord] = skillRecords;
+        [revisionRecord] = revisionRecords;
+      }
 
       if (!skillRecord || !revisionRecord) {
         throw new AssistantError(
@@ -329,6 +467,17 @@ export class AuthoredSkillRepository extends BaseRepository {
   async appendRevision(
     input: AppendAuthoredSkillRevisionInput,
   ): Promise<AuthoredSkillWithRevision | null> {
+    if (input.source) {
+      const sourceRevision = await this.getRevisionForSkill(
+        input.source.skillId,
+        input.source.revisionId,
+      );
+
+      if (!sourceRevision) {
+        throw new AssistantError("Source skill revision is invalid", ErrorType.PARAMS_ERROR, 400);
+      }
+    }
+
     const current = await this.getById(input.skillId);
 
     if (
@@ -355,54 +504,109 @@ export class AuthoredSkillRepository extends BaseRepository {
     const now = new Date().toISOString();
 
     try {
-      const [updatedRecords, revisionRecords] = await this.database.batch([
-        this.database
-          .update(authoredSkill)
-          .set({
-            draft_revision_id: revisionId,
-            stable_revision_id: input.activate ? revisionId : current.stableRevisionId,
-            state_version: current.stateVersion + 1,
-            updated_at: now,
-          })
-          .where(
-            and(
-              eq(authoredSkill.id, input.skillId),
-              eq(authoredSkill.state_version, input.expectedStateVersion),
-              eq(authoredSkill.draft_revision_id, input.expectedDraftRevisionId),
-              isNull(authoredSkill.archived_at),
-            ),
-          )
-          .returning(),
-        this.database
-          .insert(authoredSkillRevision)
-          .select(
-            this.database
-              .select({
-                id: sql<string>`${revisionId}`.as("id"),
-                skill_id: authoredSkill.id,
-                revision: sql<number>`${nextRevision}`.as("revision"),
-                description: sql<string>`${input.description}`.as("description"),
-                change_note: sql<string | null>`${input.changeNote ?? null}`.as("change_note"),
-                digest: sql<string>`${input.digest}`.as("digest"),
-                storage_key: sql<string>`${input.storageKey}`.as("storage_key"),
-                size: sql<number>`${input.size}`.as("size"),
-                source_skill_id: sql<string | null>`NULL`.as("source_skill_id"),
-                source_revision_id: sql<string | null>`NULL`.as("source_revision_id"),
-                created_by: sql<number>`${input.createdByUserId}`.as("created_by"),
-                created_at: sql<string>`${now}`.as("created_at"),
-              })
-              .from(authoredSkill)
-              .where(
-                and(
-                  eq(authoredSkill.id, input.skillId),
-                  eq(authoredSkill.draft_revision_id, revisionId),
-                  eq(authoredSkill.state_version, current.stateVersion + 1),
-                  isNull(authoredSkill.archived_at),
-                ),
+      const updatedSkillInsert = this.database
+        .update(authoredSkill)
+        .set({
+          draft_revision_id: revisionId,
+          stable_revision_id: input.activate ? revisionId : current.stableRevisionId,
+          state_version: current.stateVersion + 1,
+          updated_at: now,
+        })
+        .where(
+          and(
+            eq(authoredSkill.id, input.skillId),
+            eq(authoredSkill.state_version, input.expectedStateVersion),
+            eq(authoredSkill.draft_revision_id, input.expectedDraftRevisionId),
+            isNull(authoredSkill.archived_at),
+          ),
+        )
+        .returning();
+      const revisionInsert = this.database
+        .insert(authoredSkillRevision)
+        .select(
+          this.database
+            .select({
+              id: sql<string>`${revisionId}`.as("id"),
+              skill_id: authoredSkill.id,
+              revision: sql<number>`${nextRevision}`.as("revision"),
+              description: sql<string>`${input.description}`.as("description"),
+              change_note: sql<string | null>`${input.changeNote ?? null}`.as("change_note"),
+              digest: sql<string>`${input.digest}`.as("digest"),
+              storage_key: sql<string>`${input.storageKey}`.as("storage_key"),
+              size: sql<number>`${input.size}`.as("size"),
+              source_skill_id: sql<string | null>`${input.source?.skillId ?? null}`.as(
+                "source_skill_id",
               ),
-          )
-          .returning(),
-      ]);
+              source_revision_id: sql<string | null>`${input.source?.revisionId ?? null}`.as(
+                "source_revision_id",
+              ),
+              created_by: sql<number>`${input.createdByUserId}`.as("created_by"),
+              created_at: sql<string>`${now}`.as("created_at"),
+            })
+            .from(authoredSkill)
+            .where(
+              and(
+                eq(authoredSkill.id, input.skillId),
+                eq(authoredSkill.draft_revision_id, revisionId),
+                eq(authoredSkill.state_version, current.stateVersion + 1),
+                isNull(authoredSkill.archived_at),
+              ),
+            ),
+        )
+        .returning();
+      let updatedRecords: (typeof authoredSkill.$inferSelect)[];
+      let revisionRecords: (typeof authoredSkillRevision.$inferSelect)[];
+
+      if (input.audit) {
+        const audit = buildWorkspaceAuditRecordValues({
+          ...input.audit,
+          metadata: auditMetadata(input.audit, revisionId),
+        });
+        const [updated, revisions, audits] = await this.database.batch([
+          updatedSkillInsert,
+          revisionInsert,
+          this.database
+            .insert(workspaceAuditRecord)
+            .select(
+              this.database
+                .select({
+                  id: sql<string>`${audit.id}`.as("id"),
+                  workspace_id: sql<string>`${audit.workspace_id}`.as("workspace_id"),
+                  actor_user_id: sql<number | null>`${audit.actor_user_id}`.as("actor_user_id"),
+                  action: sql<string>`${audit.action}`.as("action"),
+                  target_type: sql<string>`${audit.target_type}`.as("target_type"),
+                  target_id: sql<string | null>`${audit.target_id}`.as("target_id"),
+                  metadata: sql<Record<string, unknown>>`${JSON.stringify(audit.metadata)}`.as(
+                    "metadata",
+                  ),
+                  created_at: sql<string>`${now}`.as("created_at"),
+                })
+                .from(authoredSkill)
+                .where(
+                  and(
+                    eq(authoredSkill.id, input.skillId),
+                    eq(authoredSkill.draft_revision_id, revisionId),
+                    eq(authoredSkill.state_version, current.stateVersion + 1),
+                    isNull(authoredSkill.archived_at),
+                  ),
+                ),
+            )
+            .returning(),
+        ]);
+
+        updatedRecords = updated;
+        revisionRecords = revisions;
+
+        if (updated[0] && revisionRecords[0] && !audits[0]) {
+          throw new AssistantError("Failed to audit skill revision", ErrorType.DATABASE_ERROR);
+        }
+      } else {
+        [updatedRecords, revisionRecords] = await this.database.batch([
+          updatedSkillInsert,
+          revisionInsert,
+        ]);
+      }
+
       const [updated] = updatedRecords;
       const [revisionRecord] = revisionRecords;
 
@@ -420,6 +624,79 @@ export class AuthoredSkillRepository extends BaseRepository {
 
       throw error;
     }
+  }
+
+  async promoteDraft(
+    skillId: string,
+    draftRevisionId: string,
+    expectedStateVersion: number,
+    audit?: CreateWorkspaceAuditRecordInput,
+  ): Promise<AuthoredSkillRecord | null> {
+    const now = new Date().toISOString();
+    const promotion = this.database
+      .update(authoredSkill)
+      .set({
+        stable_revision_id: draftRevisionId,
+        state_version: expectedStateVersion + 1,
+        updated_at: now,
+      })
+      .where(
+        and(
+          eq(authoredSkill.id, skillId),
+          eq(authoredSkill.draft_revision_id, draftRevisionId),
+          sql`${authoredSkill.stable_revision_id} <> ${draftRevisionId}`,
+          eq(authoredSkill.state_version, expectedStateVersion),
+          isNull(authoredSkill.archived_at),
+        ),
+      )
+      .returning();
+    let promotedRecords: (typeof authoredSkill.$inferSelect)[];
+
+    if (audit) {
+      const values = buildWorkspaceAuditRecordValues({
+        ...audit,
+        metadata: auditMetadata(audit, draftRevisionId),
+      });
+      const [, records] = await this.database.batch([
+        this.database
+          .insert(workspaceAuditRecord)
+          .select(
+            this.database
+              .select({
+                id: sql<string>`${values.id}`.as("id"),
+                workspace_id: sql<string>`${values.workspace_id}`.as("workspace_id"),
+                actor_user_id: sql<number | null>`${values.actor_user_id}`.as("actor_user_id"),
+                action: sql<string>`${values.action}`.as("action"),
+                target_type: sql<string>`${values.target_type}`.as("target_type"),
+                target_id: sql<string | null>`${values.target_id}`.as("target_id"),
+                metadata: sql<Record<string, unknown>>`${JSON.stringify(values.metadata)}`.as(
+                  "metadata",
+                ),
+                created_at: sql<string>`${now}`.as("created_at"),
+              })
+              .from(authoredSkill)
+              .where(
+                and(
+                  eq(authoredSkill.id, skillId),
+                  eq(authoredSkill.draft_revision_id, draftRevisionId),
+                  sql`${authoredSkill.stable_revision_id} <> ${draftRevisionId}`,
+                  eq(authoredSkill.state_version, expectedStateVersion),
+                  isNull(authoredSkill.archived_at),
+                ),
+              ),
+          )
+          .returning(),
+        promotion,
+      ]);
+
+      promotedRecords = records;
+    } else {
+      promotedRecords = await promotion;
+    }
+
+    const [promoted] = promotedRecords;
+
+    return promoted ? mapSkill(promoted) : null;
   }
 
   async archive(
