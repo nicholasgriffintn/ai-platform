@@ -1,3 +1,5 @@
+import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
+
 import type {
   ConversationActivityWindow,
   ConversationListOptions,
@@ -75,13 +77,7 @@ export function compareConversationsBySort(
   sortBy: ConversationSortBy,
 ): number {
   if (sortBy === "title") {
-    return (a.title || UNTITLED_CONVERSATION).localeCompare(
-      b.title || UNTITLED_CONVERSATION,
-      undefined,
-      {
-        sensitivity: "base",
-      },
-    );
+    return compareNaturalText(a.title || UNTITLED_CONVERSATION, b.title || UNTITLED_CONVERSATION);
   }
 
   return getConversationDate(b, sortBy) - getConversationDate(a, sortBy);
@@ -97,8 +93,8 @@ export function filterConversationsByListOptions<T extends ConversationSummary>(
   const sortBy = options.sortBy ?? "updated";
   const activityCutoff = conversationActivityCutoff(options.activity, now)?.getTime() ?? null;
 
-  return conversations
-    .filter((conversation) => {
+  return sortCopy(
+    conversations.filter((conversation) => {
       if (archiveFilter === "active" && conversation.is_archived) {
         return false;
       }
@@ -116,8 +112,9 @@ export function filterConversationsByListOptions<T extends ConversationSummary>(
       }
 
       return (conversation.title || UNTITLED_CONVERSATION).toLowerCase().includes(query);
-    })
-    .sort((a, b) => compareConversationsBySort(a, b, sortBy));
+    }),
+    (a, b) => compareConversationsBySort(a, b, sortBy),
+  );
 }
 
 function hasRenderableMessagePayload(message: ConversationMessage): boolean {

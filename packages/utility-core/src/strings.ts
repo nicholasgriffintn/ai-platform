@@ -2,6 +2,15 @@ export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+const naturalTextCollator = new Intl.Collator(undefined, {
+  numeric: true,
+  sensitivity: "base",
+});
+
+export function compareNaturalText(left: string, right: string): number {
+  return naturalTextCollator.compare(left, right);
+}
+
 export function parseCommaSeparatedList(value: string): string[] {
   return value
     .split(",")

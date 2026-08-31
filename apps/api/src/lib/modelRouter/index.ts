@@ -108,7 +108,7 @@ export class ModelRouter {
     options?: { preferredProvider?: string },
   ): string {
     const models = getModels({ shouldUseCache: false });
-    const editModels = Object.entries(models).filter(([_, config]) =>
+    const editModels = Object.entries(models).filter(([, config]) =>
       capability === "supportsNextEdit" ? config.supportsNextEdit : config.supportsApplyEdit,
     );
 

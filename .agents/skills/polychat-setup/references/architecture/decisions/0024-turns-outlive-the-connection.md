@@ -42,6 +42,6 @@ Abandoned turns now cost money that abandoned turns used to save. Closing the ta
 
 `finaliseReadableStream` is gone entirely. Its cleanup hook fired on cancellation, which is precisely the moment that must no longer be treated as the end of the turn. Anything the turn holds is released through `onTurnEnd`, which `createChatTurnStream` and `createModelEnsembleStream` call from the run's own `finally` — the conversation thread lock above all, since releasing that on disconnect would let a second turn interleave with the first while it is still writing. The hook runs before the stream closes, so a follow-up sent the moment the client sees `done` cannot race the release.
 
-iOS inherits durability without changing: it parses the same stream, ignores `: ping` as an SSE comment, and has no stop control to break. It also has no equivalent of `recoverDetachedTurn`, so a dropped stream there still waits for the next conversation fetch rather than recovering in place.
+iOS inherits durability without changing: it parses the same stream, ignores `: ping` as an SSE comment, and has no stop control to break. It has since gained its own `recoverDetachedTurn` in `apps/mobile/ios/Polychat/Services/TurnRecovery.swift`, so a dropped stream there recovers in place rather than waiting for the next conversation fetch.
 
 Removing background mode is a breaking change for anyone who bookmarked `?mode=background` or has a conversation tagged with it. Those conversations load as ordinary chat.

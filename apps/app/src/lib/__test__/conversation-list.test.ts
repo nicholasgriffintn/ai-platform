@@ -77,12 +77,21 @@ describe("filterConversationsByListOptions", () => {
   });
 
   it("sorts by title without regard to case when title sort is selected", () => {
-    const result = filterConversationsByListOptions(conversations, {
-      archived: "all",
-      sortBy: "title",
-    });
+    const result = filterConversationsByListOptions(
+      [
+        ...conversations,
+        { id: "numbered-ten", title: "10. Web search", messages: [] },
+        { id: "numbered-two", title: "2. React artifacts", messages: [] },
+      ],
+      {
+        archived: "all",
+        sortBy: "title",
+      },
+    );
 
     expect(result.map((conversation) => conversation.title)).toEqual([
+      "2. React artifacts",
+      "10. Web search",
       "Design archive",
       "Design review",
       "Quarterly planning",

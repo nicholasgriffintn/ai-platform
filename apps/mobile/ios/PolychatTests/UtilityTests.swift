@@ -157,4 +157,110 @@ struct UtilityTests {
 
         #expect(events == [.conversationTitle("Durable Object concurrency")])
     }
+
+    @Test func chatStreamParserTypesToolCallLifecycle() throws {
+        let start = try ChatStreamEventParser.events(
+            from: #"{"type":"tool_use_start","tool_id":"call-1","tool_name":"web_search"}"#
+        )
+        let delta = try ChatStreamEventParser.events(
+            from: #"{"type":"tool_use_delta","tool_id":"call-1","parameters":"{\"query\":\"polychat\"}"}"#
+        )
+        let stop = try ChatStreamEventParser.events(from: #"{"type":"tool_use_stop","tool_id":"call-1"}"#)
+
+        #expect(start == [.toolUseStart(ChatToolCallEvent(toolCallId: "call-1", name: "web_search"))])
+        #expect(delta == [.toolUseDelta(
+            ChatToolCallEvent(
+                toolCallId: "call-1",
+                parameters: .object(["query": .string("polychat")])
+            )
+        )])
+        #expect(stop == [.toolUseStop("call-1")])
+    }
+
+    @Test func chatStreamParserReadsToolResponseResult() throws {
+        let events = try ChatStreamEventParser.events(from: """
+        {
+            "type": "tool_response",
+            "tool_id": "message-1",
+            "result": {
+                "role": "tool",
+                "id": "message-1",
+                "name": "web_search",
+                "status": "success",
+                "content": "Three results",
+                "tool_call_id": "call-1",
+                "log_id": "log-1",
+                "timestamp": 1774000000
+            }
+        }
+        """)
+
+        guard case .toolResult(let result) = events.first else {
+            Issue.record("Expected tool result stream event")
+            return
+        }
+
+        #expect(events.count == 1)
+        #expect(result.id == "message-1")
+        #expect(result.toolCallId == "call-1")
+        #expect(result.name == "web_search")
+        #expect(result.status == "success")
+        #expect(result.content == .string("Three results"))
+        #expect(result.logId == "log-1")
+    }
+
+    @Test func streamingToolActivityShowsToolCallThenReplacesItWithTheResult() throws {
+        var activity = StreamingToolActivity()
+        activity.start(ChatToolCallEvent(toolCallId: "call-1", name: "web_search"))
+        activity.applyDelta(ChatToolCallEvent(
+            toolCallId: "call-1",
+            parameters: .object(["query": .string("polychat")])
+        ))
+
+        let startUpdate = activity.stop(toolCallId: "call-1", completionId: "conversation-1")
+        let started = try #require(startUpdate)
+        let toolUsePart = try #require(started.message.parts?.first)
+
+        #expect(started.replacingMessageId == nil)
+        #expect(started.message.role == "tool")
+        #expect(toolUsePart.type == "tool_use")
+        #expect(toolUsePart.name == "web_search")
+        #expect(toolUsePart.input == .object(["query": .string("polychat")]))
+        #expect(activity.interimMessageIds == [started.message.id])
+
+        let resolveUpdate = activity.resolve(
+            ChatToolResultEvent(
+                id: "tool-message-1",
+                toolCallId: "call-1",
+                name: "web_search",
+                status: "success",
+                content: .string("Three results"),
+                data: nil,
+                logId: nil,
+                model: nil,
+                timestamp: nil
+            ),
+            completionId: "conversation-1"
+        )
+        let resolved = try #require(resolveUpdate)
+
+        #expect(resolved.replacingMessageId == started.message.id)
+        #expect(resolved.message.id == "tool-message-1")
+        #expect(resolved.message.parts?.first?.type == "tool_result")
+        #expect(activity.interimMessageIds.isEmpty)
+    }
+
+    @Test func chatStreamParserReadsUsageLimits() throws {
+        let events = try ChatStreamEventParser.events(
+            from: #"{"type":"usage_limits","usage_limits":{"daily":{"used":5,"limit":50}}}"#
+        )
+
+        #expect(events == [.usageLimits(
+            ChatUsageLimits(
+                daily: ChatUsageLimits.Allowance(used: 5, limit: 50),
+                pro: nil,
+                byok: nil
+            )
+        )])
+    }
 }

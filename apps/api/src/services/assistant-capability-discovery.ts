@@ -12,6 +12,10 @@ export interface DiscoverableFunctionTool {
   name: string;
   description: string;
   type: "normal" | "premium" | "byok";
+  activation: {
+    allowed: boolean;
+    reason?: string;
+  };
 }
 
 export interface CapabilityDiscoverySources {
@@ -44,11 +48,14 @@ function createToolItem(
     (tool.type === "premium" && access.isPro) ||
     (tool.type === "byok" && access.isSignedIn);
   const enabled = access.enabledToolIds.has(tool.id);
-  const ready = available && enabled;
+  const autoActivate = available && !enabled && tool.activation.allowed;
+  const ready = available && tool.activation.allowed && (enabled || autoActivate);
   const unavailableReason =
-    tool.type === "premium"
-      ? "This tool requires a Pro plan."
-      : "This tool requires a signed-in account with provider credentials.";
+    available && !tool.activation.allowed
+      ? tool.activation.reason || "This tool is blocked by the current tool policy."
+      : tool.type === "premium"
+        ? "This tool requires a Pro plan."
+        : "This tool requires a signed-in account with provider credentials.";
 
   return {
     id: `tool:${tool.id}`,
@@ -58,19 +65,18 @@ function createToolItem(
     configured: available,
     state: ready ? "ready" : "unavailable",
     reason: ready
-      ? "This tool is enabled and ready to use."
-      : available
-        ? `This tool exists but is not enabled in the current conversation. Enable ${tool.id} before using it.`
-        : unavailableReason,
+      ? autoActivate
+        ? "This tool will be enabled automatically for this response."
+        : "This tool is enabled and ready to use."
+      : unavailableReason,
     tags: ["tool", tool.type],
     invocation: {
       toolName: tool.id,
       availableNow: ready,
+      ...(autoActivate ? { autoActivate: true } : {}),
       instruction: ready
         ? `Call ${tool.id} using its declared parameter schema.`
-        : available
-          ? `Do not invent a replacement tool call. Ask the user to enable ${tool.id}, then call that exact tool using its declared schema.`
-          : `Do not call ${tool.id}. ${unavailableReason}`,
+        : `Do not call ${tool.id}. ${unavailableReason}`,
     },
   };
 }
