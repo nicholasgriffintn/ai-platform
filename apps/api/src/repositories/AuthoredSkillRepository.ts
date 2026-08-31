@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 
 import { authoredSkill, authoredSkillRevision } from "~/lib/database/schema";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -49,8 +49,6 @@ export interface CreateAuthoredSkillInput {
   storageKey: string;
   size: number;
   createdByUserId: number;
-  createdAt?: string;
-  updatedAt?: string | null;
   changeNote?: string | null;
   source?: {
     skillId: string;
@@ -123,9 +121,6 @@ export class AuthoredSkillRepository extends BaseRepository {
     const id = input.id ?? generateId();
     const revisionId = generateId();
     const now = new Date().toISOString();
-    const createdAt = input.createdAt ?? now;
-    const updatedAt = input.updatedAt ?? createdAt;
-    const revisionCreatedAt = input.updatedAt ?? createdAt;
 
     try {
       const [skillRecords, revisionRecords] = await this.database.batch([
@@ -141,8 +136,8 @@ export class AuthoredSkillRepository extends BaseRepository {
             stable_revision_id: revisionId,
             state_version: 1,
             archived_at: null,
-            created_at: createdAt,
-            updated_at: updatedAt,
+            created_at: now,
+            updated_at: now,
           })
           .returning(),
         this.database
@@ -159,7 +154,7 @@ export class AuthoredSkillRepository extends BaseRepository {
             source_skill_id: input.source?.skillId ?? null,
             source_revision_id: input.source?.revisionId ?? null,
             created_by: input.createdByUserId,
-            created_at: revisionCreatedAt,
+            created_at: now,
           })
           .returning(),
       ]);
@@ -217,26 +212,6 @@ export class AuthoredSkillRepository extends BaseRepository {
           isNull(authoredSkill.archived_at),
         ),
       )
-      .limit(1);
-
-    return record ? mapSkill(record) : null;
-  }
-
-  async getLatestByScopeAndName(
-    scope: AuthoredSkillScope,
-    name: string,
-  ): Promise<AuthoredSkillRecord | null> {
-    const [record] = await this.database
-      .select()
-      .from(authoredSkill)
-      .where(
-        and(
-          eq(authoredSkill.scope_type, scope.type),
-          eq(authoredSkill.scope_id, String(scope.id)),
-          eq(authoredSkill.name, name),
-        ),
-      )
-      .orderBy(desc(authoredSkill.created_at))
       .limit(1);
 
     return record ? mapSkill(record) : null;

@@ -5,6 +5,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { AuthoredSkillScope } from "~/repositories/AuthoredSkillRepository";
 import { recordProjectAudit } from "~/services/audit";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -22,10 +23,12 @@ import {
   saveStoredSkillDraft,
 } from "./persistence";
 import { SKILL_CAPABILITY_KIND } from "./scope";
-import type { SkillStorageScope } from "./storage";
 
-const personalScope = (userId: number): SkillStorageScope => ({ type: "personal", id: userId });
-const projectScope = (projectId: string): SkillStorageScope => ({ type: "project", id: projectId });
+const personalScope = (userId: number): AuthoredSkillScope => ({ type: "personal", id: userId });
+const projectScope = (projectId: string): AuthoredSkillScope => ({
+  type: "project",
+  id: projectId,
+});
 
 function parseAuthoredSkillDocument(content: string) {
   try {

@@ -14,16 +14,13 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
 import { createSkillBundle, type SkillRevisionBundle } from "./bundle";
-import { parseUserSkillDocument } from "./document";
-import { SkillDocumentStorage } from "./storage";
+import { SkillRevisionStorage } from "./storage";
 
 interface RevisionContentInput {
   content: string;
   resources?: readonly AuthoredSkillResource[];
   description: string;
   createdByUserId: number;
-  createdAt?: string;
-  updatedAt?: string | null;
   changeNote?: string | null;
   source?: { skillId: string; revisionId: string } | null;
 }
@@ -100,7 +97,7 @@ async function reconcileStoredRevision(
 
 async function cleanFailedRevision(
   context: ServiceContext,
-  storage: SkillDocumentStorage,
+  storage: SkillRevisionStorage,
   storageKey: string,
 ): Promise<void> {
   try {
@@ -127,7 +124,7 @@ async function readRevision(
     );
   }
 
-  const bundle = await new SkillDocumentStorage(context).getRevision(revision.storageKey, {
+  const bundle = await new SkillRevisionStorage(context).getRevision(revision.storageKey, {
     digest: revision.digest,
     sizeBytes: revision.size,
   });
@@ -144,12 +141,11 @@ async function createRevisionedSkill(
   scope: AuthoredSkillScope,
   name: string,
   input: RevisionContentInput,
-  preparedBundle?: SkillRevisionBundle,
 ): Promise<StoredSkillCreation> {
-  const bundle = preparedBundle ?? (await createSkillBundle(input.content, input.resources));
+  const bundle = await createSkillBundle(input.content, input.resources);
   const skillId = generateId();
   const objectId = generateId();
-  const storage = new SkillDocumentStorage(context);
+  const storage = new SkillRevisionStorage(context);
   const storageKey = await storage.writeRevision(skillId, objectId, bundle);
 
   try {
@@ -162,8 +158,6 @@ async function createRevisionedSkill(
       storageKey,
       size: bundle.sizeBytes,
       createdByUserId: input.createdByUserId,
-      createdAt: input.createdAt,
-      updatedAt: input.updatedAt,
       changeNote: input.changeNote,
       source: input.source,
     });
@@ -200,117 +194,6 @@ async function createRevisionedSkill(
   }
 }
 
-async function importLegacySkill(
-  context: ServiceContext,
-  scope: AuthoredSkillScope,
-  legacy: AuthoredSkillDocument,
-): Promise<AuthoredSkillRecord> {
-  const existing = await repository(context).getByScopeAndName(scope, legacy.name);
-
-  if (existing) {
-    return existing;
-  }
-
-  if (await repository(context).getLatestByScopeAndName(scope, legacy.name)) {
-    throw new AssistantError("Legacy skill has already been archived", ErrorType.NOT_FOUND, 404);
-  }
-
-  let parsed: ReturnType<typeof parseUserSkillDocument>;
-  let bundle: SkillRevisionBundle;
-
-  try {
-    parsed = parseUserSkillDocument(legacy.content);
-    bundle = await createSkillBundle(legacy.content, legacy.resources);
-  } catch (error) {
-    throw new AssistantError(
-      `Legacy authored skill ${legacy.name} is invalid in storage`,
-      ErrorType.STORAGE_ERROR,
-      500,
-      { originalError: error instanceof Error ? error.message : "Unknown validation error" },
-    );
-  }
-
-  if (parsed.frontmatter.name !== legacy.name) {
-    throw new AssistantError(
-      "Legacy skill name does not match its document",
-      ErrorType.STORAGE_ERROR,
-    );
-  }
-
-  try {
-    const created = await createRevisionedSkill(
-      context,
-      scope,
-      legacy.name,
-      {
-        content: legacy.content,
-        resources: legacy.resources,
-        description: parsed.frontmatter.description,
-        createdByUserId: legacy.createdByUserId,
-        createdAt: legacy.createdAt,
-        updatedAt: legacy.updatedAt,
-        changeNote: "Imported from legacy storage",
-      },
-      bundle,
-    );
-    const imported = await repository(context).getByScopeAndName(scope, created.document.name);
-
-    if (!imported) {
-      throw new AssistantError("Imported skill identity is missing", ErrorType.DATABASE_ERROR);
-    }
-
-    return imported;
-  } catch (error) {
-    if (error instanceof AssistantError && error.type === ErrorType.CONFLICT_ERROR) {
-      const winner = await repository(context).getByScopeAndName(scope, legacy.name);
-
-      if (winner) {
-        return winner;
-      }
-    }
-
-    throw error;
-  }
-}
-
-async function importLegacyScope(
-  context: ServiceContext,
-  scope: AuthoredSkillScope,
-): Promise<void> {
-  const storage = new SkillDocumentStorage(context);
-  const legacy = await storage.list(scope);
-
-  await Promise.all(
-    legacy.map(async (summary) => {
-      if (await repository(context).getLatestByScopeAndName(scope, summary.name)) {
-        return;
-      }
-
-      const document = await storage.get(scope, summary.name);
-
-      if (document) {
-        try {
-          await importLegacySkill(context, scope, document);
-        } catch (error) {
-          if (error instanceof AssistantError && error.type === ErrorType.STORAGE_ERROR) {
-            context
-              .getLogger({ prefix: "services/skills" })
-              .error("Skipped an invalid legacy authored skill during migration", {
-                error,
-                scope,
-                name: summary.name,
-              });
-
-            return;
-          }
-
-          throw error;
-        }
-      }
-    }),
-  );
-}
-
 export async function createStoredSkill(
   context: ServiceContext,
   scope: AuthoredSkillScope,
@@ -327,18 +210,6 @@ export async function createStoredSkill(
     );
   }
 
-  if (!(await repository(context).getLatestByScopeAndName(scope, name))) {
-    const legacy = await new SkillDocumentStorage(context).get(scope, name);
-
-    if (legacy) {
-      throw new AssistantError(
-        `A skill named ${name} already exists in this scope`,
-        ErrorType.CONFLICT_ERROR,
-        409,
-      );
-    }
-  }
-
   return createRevisionedSkill(context, scope, name, input);
 }
 
@@ -348,30 +219,15 @@ export async function getStoredSkill(
   name: string,
   pointer: "draft" | "stable" = "draft",
 ): Promise<AuthoredSkillDocument | null> {
-  let skill = await repository(context).getByScopeAndName(scope, name);
+  const skill = await repository(context).getByScopeAndName(scope, name);
 
-  if (!skill) {
-    if (await repository(context).getLatestByScopeAndName(scope, name)) {
-      return null;
-    }
-
-    const legacy = await new SkillDocumentStorage(context).get(scope, name);
-
-    if (!legacy) {
-      return null;
-    }
-
-    skill = await importLegacySkill(context, scope, legacy);
-  }
-
-  return readRevision(context, skill, pointer);
+  return skill ? readRevision(context, skill, pointer) : null;
 }
 
 export async function listStoredSkills(
   context: ServiceContext,
   scope: AuthoredSkillScope,
 ): Promise<AuthoredSkill[]> {
-  await importLegacyScope(context, scope);
   const skills = await repository(context).listByScope(scope);
 
   return Promise.all(
@@ -394,7 +250,6 @@ export async function listStoredStableSkillDocuments(
   context: ServiceContext,
   scope: AuthoredSkillScope,
 ): Promise<AuthoredSkillDocument[]> {
-  await importLegacyScope(context, scope);
   const skills = await repository(context).listByScope(scope);
 
   return Promise.all(skills.map((skill) => readRevision(context, skill, "stable")));
@@ -407,20 +262,10 @@ export async function saveStoredSkillDraft(
   input: RevisionContentInput,
   options: { activate?: boolean } = {},
 ): Promise<AuthoredSkillDocument | null> {
-  let skill = await repository(context).getByScopeAndName(scope, name);
+  const skill = await repository(context).getByScopeAndName(scope, name);
 
   if (!skill) {
-    if (await repository(context).getLatestByScopeAndName(scope, name)) {
-      return null;
-    }
-
-    const legacy = await new SkillDocumentStorage(context).get(scope, name);
-
-    if (!legacy) {
-      return null;
-    }
-
-    skill = await importLegacySkill(context, scope, legacy);
+    return null;
   }
 
   const bundle = await createSkillBundle(input.content, input.resources);
@@ -434,7 +279,7 @@ export async function saveStoredSkillDraft(
     return readRevision(context, skill, "draft");
   }
 
-  const storage = new SkillDocumentStorage(context);
+  const storage = new SkillRevisionStorage(context);
   const storageKey = await storage.writeRevision(skill.id, generateId(), bundle);
 
   let updated: { skill: AuthoredSkillRecord; revision: AuthoredSkillRevisionRecord } | null;
@@ -490,20 +335,7 @@ export async function archiveStoredSkill(
   const skill = await repository(context).getByScopeAndName(scope, name);
 
   if (!skill) {
-    if (await repository(context).getLatestByScopeAndName(scope, name)) {
-      return false;
-    }
-
-    const storage = new SkillDocumentStorage(context);
-    const legacy = (await storage.list(scope)).some((summary) => summary.name === name);
-
-    if (!legacy) {
-      return false;
-    }
-
-    await storage.delete(scope, name);
-
-    return true;
+    return false;
   }
 
   const archived = await repository(context).archive(skill.id, skill.stateVersion);
@@ -514,14 +346,6 @@ export async function archiveStoredSkill(
       ErrorType.CONFLICT_ERROR,
       409,
     );
-  }
-
-  try {
-    await new SkillDocumentStorage(context).delete(scope, name);
-  } catch (error) {
-    context
-      .getLogger({ prefix: "services/skills" })
-      .error("Failed to remove a legacy authored skill object", { error, scope, name });
   }
 
   return true;
@@ -538,7 +362,7 @@ export async function purgeStoredSkillAfterFailedCreate(
   );
 
   if (purged) {
-    await cleanFailedRevision(context, new SkillDocumentStorage(context), creation.storageKey);
+    await cleanFailedRevision(context, new SkillRevisionStorage(context), creation.storageKey);
   }
 
   return purged;

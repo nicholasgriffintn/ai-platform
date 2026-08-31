@@ -137,23 +137,6 @@ describe("AuthoredSkillRepository", () => {
     ).resolves.toEqual(created.revision);
   });
 
-  it("maps imported creation timestamps onto the skill and first revision", async () => {
-    const repository = createRepository();
-
-    const created = await repository.create(
-      personalSkill({
-        createdAt: "2026-07-01T09:00:00.000Z",
-        updatedAt: "2026-07-03T11:30:00.000Z",
-      }),
-    );
-
-    expect(created.skill).toMatchObject({
-      createdAt: "2026-07-01T09:00:00.000Z",
-      updatedAt: "2026-07-03T11:30:00.000Z",
-    });
-    expect(created.revision.createdAt).toBe("2026-07-03T11:30:00.000Z");
-  });
-
   it("enforces unique names within a scope while allowing the name in another scope", async () => {
     const repository = createRepository();
 

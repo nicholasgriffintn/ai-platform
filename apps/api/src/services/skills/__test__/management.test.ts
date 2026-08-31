@@ -16,7 +16,6 @@ import {
   createPersonalSkill,
   deletePersonalSkill,
   deleteProjectSkill,
-  listPersonalSkills,
   publishProjectSkill,
   updatePersonalSkill,
   updateProjectSkill,
@@ -94,11 +93,6 @@ function createAuthoredSkillsRepository() {
         (skill) => !skill.archivedAt && scopeMatches(skill, scope) && skill.name === name,
       ) ?? null,
   );
-  const getLatestByScopeAndName = vi.fn(
-    async (scope: AuthoredSkillScope, name: string) =>
-      [...skills.values()].find((skill) => scopeMatches(skill, scope) && skill.name === name) ??
-      null,
-  );
   const create = vi.fn(async (input: CreateAuthoredSkillInput) => {
     if (await getByScopeAndName(input.scope, input.name)) {
       throw new AssistantError("Skill already exists", ErrorType.CONFLICT_ERROR, 409);
@@ -107,8 +101,6 @@ function createAuthoredSkillsRepository() {
     const id = input.id ?? `skill-${nextId++}`;
     const revisionId = `revision-${nextId++}`;
     const now = "2026-08-16T10:00:00.000Z";
-    const createdAt = input.createdAt ?? now;
-    const updatedAt = input.updatedAt ?? createdAt;
     const skill: AuthoredSkillRecord = {
       id,
       scopeType: input.scope.type,
@@ -119,8 +111,8 @@ function createAuthoredSkillsRepository() {
       stableRevisionId: revisionId,
       stateVersion: 1,
       archivedAt: null,
-      createdAt,
-      updatedAt,
+      createdAt: now,
+      updatedAt: now,
     };
     const revision: AuthoredSkillRevisionRecord = {
       id: revisionId,
@@ -134,7 +126,7 @@ function createAuthoredSkillsRepository() {
       sourceSkillId: input.source?.skillId ?? null,
       sourceRevisionId: input.source?.revisionId ?? null,
       createdByUserId: input.createdByUserId,
-      createdAt: input.updatedAt ?? createdAt,
+      createdAt: now,
     };
 
     skills.set(id, skill);
@@ -259,7 +251,6 @@ function createAuthoredSkillsRepository() {
     getById,
     getByScopeAndName,
     getCurrentRevision,
-    getLatestByScopeAndName,
     getRevision,
     getRevisionByStorageKey,
     listByScope,
@@ -563,14 +554,15 @@ describe("personal skill management", () => {
     );
   });
 
-  it("deletes a personal skill from its authenticated R2 scope", async () => {
+  it("archives a personal skill while preserving its immutable revision", async () => {
     const { bucket, context } = createContext();
 
     await createPersonalSkill(context, 42, { content });
 
     await deletePersonalSkill(context, 42, "meeting-notes");
 
-    expect(bucket.delete).toHaveBeenCalledWith("skills/users/42/meeting-notes/SKILL.md");
+    expect(bucket.delete).not.toHaveBeenCalled();
+    expect([...bucket.objects.keys()]).toHaveLength(1);
     expect(await listScopedSkillSummaries(context, 42)).not.toContainEqual(
       expect.objectContaining({ id: "meeting-notes" }),
     );
@@ -585,167 +577,6 @@ describe("personal skill management", () => {
     await expect(createPersonalSkill(context, 42, { content })).resolves.toMatchObject({
       name: "meeting-notes",
     });
-  });
-
-  it("imports a legacy R2-only skill once when its scope is read", async () => {
-    const { authoredSkills, bucket, context } = createContext();
-
-    bucket.objects.set("skills/users/42/meeting-notes/SKILL.md", {
-      key: "skills/users/42/meeting-notes/SKILL.md",
-      content,
-      customMetadata: {
-        description: "Turn rough meeting notes into clear decisions and actions.",
-        createdByUserId: "42",
-        createdAt: "2026-08-01T10:00:00.000Z",
-      },
-      uploaded: new Date("2026-08-01T10:00:00.000Z"),
-    });
-
-    await listPersonalSkills(context, 42);
-    await listPersonalSkills(context, 42);
-
-    expect(authoredSkills.create).toHaveBeenCalledOnce();
-    expect(
-      [...bucket.objects.keys()].filter((key) => key.startsWith("skills/authored/")),
-    ).toHaveLength(1);
-  });
-
-  it("preserves legacy creation and update timestamps when importing", async () => {
-    const { bucket, context } = createContext();
-
-    bucket.objects.set("skills/users/42/meeting-notes/SKILL.md", {
-      key: "skills/users/42/meeting-notes/SKILL.md",
-      content,
-      customMetadata: {
-        description: "Turn rough meeting notes into clear decisions and actions.",
-        createdByUserId: "42",
-        createdAt: "2026-08-01T10:00:00.000Z",
-        updatedAt: "2026-08-03T14:30:00.000Z",
-      },
-      uploaded: new Date("2026-08-03T14:30:00.000Z"),
-    });
-
-    await expect(listPersonalSkills(context, 42)).resolves.toEqual({
-      skills: [
-        expect.objectContaining({
-          name: "meeting-notes",
-          createdAt: "2026-08-01T10:00:00.000Z",
-          updatedAt: "2026-08-03T14:30:00.000Z",
-        }),
-      ],
-    });
-  });
-
-  it("skips an invalid legacy resource during bulk listing and catalogue resolution", async () => {
-    const { authoredSkills, bucket, context, logger } = createContext();
-    const validContent = content.replaceAll("meeting-notes", "valid-skill");
-    const invalidContent = content.replaceAll("meeting-notes", "invalid-skill");
-
-    bucket.objects.set("skills/users/42/valid-skill/SKILL.md", {
-      key: "skills/users/42/valid-skill/SKILL.md",
-      content: validContent,
-      customMetadata: {
-        description: "Turn rough meeting notes into clear decisions and actions.",
-        createdByUserId: "42",
-      },
-      uploaded: new Date("2026-08-01T10:00:00.000Z"),
-    });
-    bucket.objects.set("skills/users/42/invalid-skill/SKILL.md", {
-      key: "skills/users/42/invalid-skill/SKILL.md",
-      content: invalidContent,
-      customMetadata: {
-        description: "Turn rough meeting notes into clear decisions and actions.",
-        createdByUserId: "42",
-      },
-      uploaded: new Date("2026-08-01T10:00:00.000Z"),
-    });
-    bucket.objects.set("skills/users/42/invalid-skill/legacy/guide.md", {
-      key: "skills/users/42/invalid-skill/legacy/guide.md",
-      content: "Legacy guide",
-      uploaded: new Date("2026-08-01T10:00:00.000Z"),
-    });
-
-    await expect(listPersonalSkills(context, 42)).resolves.toEqual({
-      skills: [expect.objectContaining({ name: "valid-skill" })],
-    });
-    await expect(resolveSkillCatalog(context, { type: "personal", id: 42 })).resolves.toMatchObject(
-      { load: expect.any(Function) },
-    );
-    expect(authoredSkills.create).toHaveBeenCalledOnce();
-    expect(logger.error).toHaveBeenCalledWith(
-      "Skipped an invalid legacy authored skill during migration",
-      expect.objectContaining({ name: "invalid-skill", scope: { type: "personal", id: 42 } }),
-    );
-  });
-
-  it("reports an invalid legacy resource as a storage error on direct reads and updates", async () => {
-    const { bucket, context } = createContext();
-
-    bucket.objects.set("skills/users/42/meeting-notes/SKILL.md", {
-      key: "skills/users/42/meeting-notes/SKILL.md",
-      content,
-      customMetadata: {
-        description: "Turn rough meeting notes into clear decisions and actions.",
-        createdByUserId: "42",
-      },
-      uploaded: new Date("2026-08-01T10:00:00.000Z"),
-    });
-    bucket.objects.set("skills/users/42/meeting-notes/legacy/guide.md", {
-      key: "skills/users/42/meeting-notes/legacy/guide.md",
-      content: "Legacy guide",
-      uploaded: new Date("2026-08-01T10:00:00.000Z"),
-    });
-
-    await expect(
-      getStoredSkill(context, { type: "personal", id: 42 }, "meeting-notes"),
-    ).rejects.toMatchObject({ type: ErrorType.STORAGE_ERROR, statusCode: 500 });
-    await expect(
-      updatePersonalSkill(context, 42, "meeting-notes", { content }),
-    ).rejects.toMatchObject({ type: ErrorType.STORAGE_ERROR, statusCode: 500 });
-  });
-
-  it("deletes an invalid legacy skill without importing it", async () => {
-    const { authoredSkills, bucket, context } = createContext();
-
-    bucket.objects.set("skills/users/42/meeting-notes/SKILL.md", {
-      key: "skills/users/42/meeting-notes/SKILL.md",
-      content,
-      customMetadata: {
-        description: "Turn rough meeting notes into clear decisions and actions.",
-        createdByUserId: "42",
-      },
-      uploaded: new Date("2026-08-01T10:00:00.000Z"),
-    });
-    bucket.objects.set("skills/users/42/meeting-notes/legacy/guide.md", {
-      key: "skills/users/42/meeting-notes/legacy/guide.md",
-      content: "Legacy guide",
-      uploaded: new Date("2026-08-01T10:00:00.000Z"),
-    });
-
-    await expect(deletePersonalSkill(context, 42, "meeting-notes")).resolves.toBeUndefined();
-    expect(authoredSkills.create).not.toHaveBeenCalled();
-    expect(bucket.objects.has("skills/users/42/meeting-notes/SKILL.md")).toBe(false);
-    expect(bucket.objects.has("skills/users/42/meeting-notes/legacy/guide.md")).toBe(false);
-  });
-
-  it("does not resurrect an imported legacy skill when deleting its old object fails", async () => {
-    const { bucket, context } = createContext();
-
-    bucket.objects.set("skills/users/42/meeting-notes/SKILL.md", {
-      key: "skills/users/42/meeting-notes/SKILL.md",
-      content,
-      customMetadata: {
-        description: "Turn rough meeting notes into clear decisions and actions.",
-        createdByUserId: "42",
-      },
-      uploaded: new Date("2026-08-01T10:00:00.000Z"),
-    });
-    await listPersonalSkills(context, 42);
-    bucket.delete.mockRejectedValueOnce(new Error("R2 unavailable"));
-
-    await deletePersonalSkill(context, 42, "meeting-notes");
-
-    await expect(listPersonalSkills(context, 42)).resolves.toEqual({ skills: [] });
   });
 
   it("rejects unsafe authored resource paths before storing a revision", async () => {
@@ -834,57 +665,6 @@ describe("project skill publishing", () => {
       configuration: {},
       createdBy: 42,
     });
-  });
-
-  it("keeps the legacy document when resource deletion fails before restoring its capability", async () => {
-    const { bucket, context, workspaces } = createContext();
-    const documentKey = "skills/projects/project-1/meeting-notes/SKILL.md";
-    const resourceKey = "skills/projects/project-1/meeting-notes/legacy/guide.md";
-
-    bucket.objects.set(documentKey, {
-      key: documentKey,
-      content,
-      customMetadata: {
-        description: "Turn rough meeting notes into clear decisions and actions.",
-        createdByUserId: "42",
-      },
-      uploaded: new Date("2026-08-01T10:00:00.000Z"),
-    });
-    bucket.objects.set(resourceKey, {
-      key: resourceKey,
-      content: "Legacy guide",
-      uploaded: new Date("2026-08-01T10:00:00.000Z"),
-    });
-    workspaces.listProjectCapabilities.mockResolvedValue([
-      {
-        id: "capability-1",
-        project_id: "project-1",
-        kind: "skill",
-        capability_id: "meeting-notes",
-        configuration: {},
-        created_by: 42,
-      },
-    ]);
-    bucket.delete.mockImplementation(async (key) => {
-      if (key === resourceKey) {
-        throw new Error("resource deletion failed");
-      }
-
-      bucket.objects.delete(key);
-    });
-
-    await expect(deleteProjectSkill(context, 42, "project-1", "meeting-notes")).rejects.toThrow(
-      "resource deletion failed",
-    );
-    expect(workspaces.addProjectCapability).toHaveBeenCalledWith({
-      id: "capability-1",
-      projectId: "project-1",
-      kind: "skill",
-      capabilityId: "meeting-notes",
-      configuration: {},
-      createdBy: 42,
-    });
-    expect(bucket.objects.has(documentKey)).toBe(true);
   });
 
   it("attributes a project revision to the administrator who made the edit", async () => {
