@@ -34,6 +34,7 @@ Read the relevant accepted records before changing product structure, ownership,
 - [0033](decisions/0033-separate-embedding-runtime-and-retrieval-policy.md): Separate embedding generation and vector storage, persist exact vector-space provenance, and keep retrieval model-driven.
 - [0034](decisions/0034-agent-owning-scope.md): Give a saved agent an owning scope of user or workspace, keep `user_id` as the author, and publish to a workspace by copying rather than by reference.
 - [0035](decisions/0035-tool-catalogue-split-from-tool-implementations.md): Split tool descriptors from tool implementations so the provider layer reads the catalogue as data and never imports the provider registry.
+- [0038](decisions/0038-provider-surface-model-lifecycle.md): Scope lifecycle to a provider surface and model, keep deprecated execution explicit and time-bounded, and reject retired or catalogue-only models through the server-owned policy seam.
 
 [context.md](context.md) holds the current domain vocabulary, workspace map, seams, and data flows.
 
