@@ -18,7 +18,12 @@ interface CouncilMemberPickerData {
   reason?: string;
   maxSelection?: number;
   resolved?: boolean;
+  resolution?: {
+    memberIds?: string[];
+  };
 }
+
+const EMPTY_MEMBERS: CouncilMemberOption[] = [];
 
 function isMemberOption(value: unknown): value is CouncilMemberOption {
   return (
@@ -50,17 +55,21 @@ export function CouncilMemberPickerView({
   embedded: boolean;
   onToolInteraction?: ToolInteractionHandler;
 }) {
-  const picker = readPickerData(data);
-  const members = picker.members ?? [];
+  const picker = useMemo(() => readPickerData(data), [data]);
+  const members = picker.members ?? EMPTY_MEMBERS;
   const maxSelection = picker.maxSelection ?? 6;
   const memberIds = useMemo(() => new Set(members.map((member) => member.id)), [members]);
   const [selected, setSelected] = useState<string[]>(() =>
     (picker.recommended ?? []).filter((id) => memberIds.has(id)).slice(0, maxSelection),
   );
-  const [submitted, setSubmitted] = useState(false);
+  const [submittedSelection, setSubmittedSelection] = useState<string[] | null>(null);
   const selectedSet = useMemo(() => new Set(selected), [selected]);
   const atLimit = selected.length >= maxSelection;
-  const isResolved = submitted || picker.resolved === true;
+  const persistedSelection = Array.isArray(picker.resolution?.memberIds)
+    ? picker.resolution.memberIds.filter((id) => memberIds.has(id))
+    : null;
+  const resolvedSelection = submittedSelection ?? persistedSelection;
+  const isResolved = resolvedSelection !== null || picker.resolved === true;
 
   if (members.length === 0) {
     return null;
@@ -85,12 +94,47 @@ export function CouncilMemberPickerView({
 
     const names = selected.map((id) => members.find((member) => member.id === id)?.name ?? id);
 
-    setSubmitted(true);
+    setSubmittedSelection(selected);
     onToolInteraction(TOOL_NAME, "submitPrompt", {
       input: `Convene the council with these members: ${names.join(", ")}.`,
       memberIds: selected,
     });
   };
+
+  if (isResolved) {
+    const selectedMembers = resolvedSelection
+      ? resolvedSelection.flatMap((id) => {
+          const member = members.find((candidate) => candidate.id === id);
+
+          return member ? [member] : [];
+        })
+      : [];
+
+    return (
+      <section className="space-y-2" aria-label="Council convened">
+        <div className="flex items-center gap-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">
+          <UsersRound className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>Council convened</span>
+        </div>
+        {selectedMembers.length > 0 ? (
+          <ul className="flex flex-wrap gap-2" aria-label="Selected council members">
+            {selectedMembers.map((member) => (
+              <li
+                key={member.id}
+                className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+              >
+                {member.name}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            The selected members have been submitted.
+          </p>
+        )}
+      </section>
+    );
+  }
 
   return (
     <div className="space-y-3">
@@ -149,11 +193,9 @@ export function CouncilMemberPickerView({
 
       <div className="flex items-center justify-between gap-3">
         <span className="text-xs text-zinc-500 dark:text-zinc-400">
-          {isResolved
-            ? "Council convened."
-            : selected.length === 0
-              ? "Pick at least one member."
-              : "Members debate in the order the chamber decides."}
+          {selected.length === 0
+            ? "Pick at least one member."
+            : "Members debate in the order the chamber decides."}
         </span>
         <Button size="xs" onClick={convene} disabled={isResolved || selected.length === 0}>
           Convene

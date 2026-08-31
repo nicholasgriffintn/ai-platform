@@ -171,7 +171,13 @@ export function useChatManager(
           startNewConversation(conversationId);
         }
 
-        const userMessage = prepareUserMessage(input, attachments, currentModel, conversationMode);
+        const userMessage = prepareUserMessage(
+          input,
+          attachments,
+          currentModel,
+          conversationMode,
+          overrideRequestOptions?.options?.toolInteraction,
+        );
 
         await cancelConversationQueries(conversationId);
         await addMessageToConversation(conversationId, userMessage);

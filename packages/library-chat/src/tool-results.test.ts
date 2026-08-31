@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { Message } from "./conversation-types";
 import {
+  applyToolInteractionResolutions,
   getResolvedToolUseIndexes,
   resolveToolMessageDisplay,
   resolveToolResultPartDisplay,
@@ -126,6 +127,106 @@ describe("resolveToolMessageDisplay", () => {
       icon: "cloud",
       renderer: "weather",
       status: "success",
+    });
+  });
+});
+
+describe("applyToolInteractionResolutions", () => {
+  it("projects a durable council selection onto the pending tool result", () => {
+    const messages = [
+      {
+        id: "tool-1",
+        role: "tool",
+        name: "select_council_members",
+        status: "pending",
+        content: "Waiting for the user to choose the council.",
+        data: {
+          renderer: "council_member_picker",
+          humanInTheLoop: {
+            type: "selection",
+            status: "pending",
+            requires_user_action: true,
+          },
+        },
+        parts: [
+          {
+            type: "tool_result",
+            name: "select_council_members",
+            status: "pending",
+            content: "Waiting for the user to choose the council.",
+            data: { renderer: "council_member_picker" },
+          },
+        ],
+      },
+      {
+        id: "user-1",
+        role: "user",
+        content: "Convene the council with these members: Sceptic, Operator.",
+        data: {
+          toolInteraction: {
+            toolName: "select_council_members",
+            response: { memberIds: ["sceptic", "operator"] },
+          },
+        },
+      },
+    ] as Message[];
+
+    const [resolved] = applyToolInteractionResolutions(messages);
+
+    expect(resolved).toMatchObject({
+      status: "completed",
+      data: {
+        resolved: true,
+        resolution: { memberIds: ["sceptic", "operator"] },
+        humanInTheLoop: {
+          type: "selection",
+          status: "resolved",
+          requires_user_action: false,
+        },
+      },
+      parts: [
+        {
+          type: "tool_result",
+          status: "completed",
+          data: {
+            resolved: true,
+            resolution: { memberIds: ["sceptic", "operator"] },
+          },
+        },
+      ],
+    });
+    expect(messages[0].status).toBe("pending");
+  });
+
+  it("recovers the selection stored by council conversations created before structured resolutions", () => {
+    const messages = [
+      {
+        id: "tool-1",
+        role: "tool",
+        name: "select_council_members",
+        status: "pending",
+        content: "Waiting for the user to choose the council.",
+        data: {
+          members: [
+            { id: "strategist", name: "Strategist" },
+            { id: "critic", name: "Critic" },
+            { id: "joker", name: "Joker" },
+          ],
+        },
+      },
+      {
+        id: "user-1",
+        role: "user",
+        content: "Convene the council with these members: Strategist, Critic, Joker.",
+      },
+    ] as Message[];
+
+    expect(applyToolInteractionResolutions(messages)[0]).toMatchObject({
+      status: "completed",
+      data: {
+        resolved: true,
+        resolution: { memberIds: ["strategist", "critic", "joker"] },
+      },
     });
   });
 });
