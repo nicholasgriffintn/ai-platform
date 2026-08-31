@@ -33,6 +33,7 @@ The most common defect here is a change that is correct on the path you edited a
 - **Both scopes.** Personal and project scope share components, so a capability change usually lands in Chat and Work together.
 - **Reverse states.** If you added a way in, add the way out and the way to see it. Enable needs disable, invite needs revoke. A one-way door is a bug.
 - **Docs.** Behaviour a user would notice belongs in `references/`. New load-bearing vocabulary, module responsibilities, or cross-app seams belong in `references/architecture/context.md` in the same patch. A durable, hard-to-reverse, or likely-to-be-relitigated decision belongs in a numbered ADR under `references/architecture/decisions/` with `decisions.md` updated — not routine implementation details or choices obvious from local code.
+- **Verification.** Behaviour a person has to check by hand belongs in a `.agents/verification/pending/` item in the same patch: what changed, what an operator must do first, and the steps to confirm it. Static checks do not cover it, and the person deploying did not watch you work. Follow `references/verification.md`.
 
 ### Models, providers, and icons
 
@@ -106,4 +107,5 @@ pnpm --filter @assistant/api test <path>
 - Every surface above was considered, and the ones that applied were changed.
 - New models and providers resolve to an icon.
 - The narrowest useful validation ran, or the blocker is stated.
+- A verification item was recorded for behaviour only a human can confirm, or the change demonstrably needed none.
 - Residual risk, assumptions, and follow-ups are stated briefly.

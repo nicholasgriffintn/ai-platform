@@ -8,6 +8,7 @@ The skill is the single setup and decision-guidance entry point. Use these deepe
 - [White-labelling](white-labelling.md)
 - [Deployment](deployment.md)
 - [Validation](validation.md)
+- [Release verification](verification.md)
 - [Architecture context](architecture/context.md)
 - [Architecture records](architecture/decisions.md)
 - [API Worker](components/api.md)
@@ -23,6 +24,7 @@ The skill is the single setup and decision-guidance entry point. Use these deepe
 Resources that deliberately remain outside the skill:
 
 - Root `AGENTS.md`: always-on engineering and validation contract.
+- `.agents/verification/`: the live queue of unverified changes and the archive of checked ones. The process lives in [verification.md](verification.md); the queue itself is working state, not documentation.
 - Package READMEs under `packages/*`: consumer-facing API documentation.
 - `.github/CONTRIBUTING.md` and `.github/CODE_OF_CONDUCT.md`: community contribution policy.
 - Live OpenAPI reference at <https://api.polychat.app/openapi>.
