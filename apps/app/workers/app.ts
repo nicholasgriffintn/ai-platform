@@ -1,5 +1,7 @@
 import { createRequestHandler, RouterContextProvider } from "react-router";
 
+import { applySecurityHeaders } from "~/lib/security-headers";
+
 declare global {
   interface CloudflareEnvironment extends Env {}
 }
@@ -10,7 +12,16 @@ const requestHandler = createRequestHandler(
 );
 
 export default {
-  fetch(request) {
-    return requestHandler(request, new RouterContextProvider());
+  async fetch(request) {
+    const response = await requestHandler(request, new RouterContextProvider());
+    const headers = new Headers(response.headers);
+
+    applySecurityHeaders(headers, request.url);
+
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
   },
 } satisfies ExportedHandler<CloudflareEnvironment>;
