@@ -123,4 +123,83 @@ describe("agent capability card", () => {
     expect(screen.queryByRole("button", { name: "Start chat" })).toBeNull();
     expect(screen.getByText("These tools are not available here: sandbox.")).toBeTruthy();
   });
+
+  it("lets an owner edit and delete the agent from the library card", () => {
+    const onEdit = vi.fn();
+    const onDelete = vi.fn();
+
+    render(
+      <CapabilityCard
+        item={agentItem("available", "Agent is ready to run.")}
+        kind="agent"
+        onOpen={vi.fn()}
+        authoredCapability={{ canManage: true, isDeleting: false, onDelete, onEdit }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "More actions" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Edit agent" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Delete agent" }));
+
+    expect(onEdit).toHaveBeenCalledTimes(1);
+    expect(onDelete).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers marketplace sharing only when the agent supplies a share action", () => {
+    const onShare = vi.fn();
+
+    render(
+      <CapabilityCard
+        item={agentItem("available", "Agent is ready to run.")}
+        kind="agent"
+        onOpen={vi.fn()}
+        authoredCapability={{ canManage: true, isDeleting: false, onDelete: vi.fn(), onShare }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "More actions" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Share agent" }));
+
+    expect(onShare).toHaveBeenCalledTimes(1);
+  });
+
+  it("hides sharing for an agent the viewer manages but cannot publish", () => {
+    render(
+      <CapabilityCard
+        item={agentItem("available", "Agent is ready to run.")}
+        kind="agent"
+        onOpen={vi.fn()}
+        authoredCapability={{
+          canManage: true,
+          isDeleting: false,
+          onDelete: vi.fn(),
+          onEdit: vi.fn(),
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "More actions" }));
+
+    expect(screen.getByRole("menuitem", { name: "Edit agent" })).toBeTruthy();
+    expect(screen.queryByRole("menuitem", { name: "Share agent" })).toBeNull();
+  });
+
+  it("withholds edit and delete from a viewer who cannot manage the agent", () => {
+    render(
+      <CapabilityCard
+        item={agentItem("available", "Agent is ready to run.")}
+        kind="agent"
+        onOpen={vi.fn()}
+        authoredCapability={{
+          canManage: false,
+          isDeleting: false,
+          onDelete: vi.fn(),
+          onEdit: vi.fn(),
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Start chat" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "More actions" })).toBeNull();
+  });
 });

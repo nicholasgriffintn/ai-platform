@@ -1,6 +1,7 @@
 import type { CreateAgentInput, UpdateAgentInput } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { requireWorkspaceAccess } from "~/services/workspaces/access";
 import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -26,13 +27,27 @@ export async function getAgentById(context: ServiceContext, agentId: string, use
   return normaliseAgentResponse(await requireAgentAccess(context, agentId, "read", userId));
 }
 
+async function resolveNewAgentOwnerScope(
+  context: ServiceContext,
+  userId: number,
+  workspaceId: string | undefined,
+) {
+  if (!workspaceId) {
+    return agentOwnerScopeForUser(userId);
+  }
+
+  await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
+
+  return { ownerScopeType: "workspace" as const, ownerScopeId: workspaceId };
+}
+
 export async function createAgent(context: ServiceContext, params: CreateAgentInput, user?: IUser) {
   context.ensureDatabase();
   const currentUser = user ?? context.requireUser();
 
   const agent = await context.repositories.agents.createAgent({
     userId: currentUser.id,
-    ...agentOwnerScopeForUser(currentUser.id),
+    ...(await resolveNewAgentOwnerScope(context, currentUser.id, params.workspace_id)),
     name: params.name,
     description: params.description ?? "",
     avatarUrl: params.avatar_url || null,

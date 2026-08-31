@@ -60,13 +60,21 @@ export const createAgentSchema = z.object({
   mode: agentModeSchema.nullable().optional().meta({
     description: "Agent mode this agent runs in; null lets the caller's mode win",
   }),
+  workspace_id: z.string().min(1).optional().meta({
+    description:
+      "Workspace that will own the agent; omit to create it in the caller's personal scope",
+  }),
 });
 
 export const updateAgentSchema = z
   .object({
     name: z.string().optional().meta({ description: "New agent name" }),
     description: z.string().optional().meta({ description: "New agent description" }),
-    avatar_url: z.url().optional().meta({ description: "New avatar URL" }).optional(),
+    avatar_url: z
+      .url()
+      .nullable()
+      .optional()
+      .meta({ description: "New avatar URL, or null to remove the existing one" }),
     servers: z.array(mcpServerSchema).optional().meta({ description: "Updated MCP servers list" }),
     model: z.string().optional().meta({ description: "Model ID to use with this agent" }),
     temperature: z

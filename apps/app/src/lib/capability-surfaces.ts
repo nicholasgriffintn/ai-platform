@@ -17,6 +17,7 @@ import {
 export interface CapabilitySurface {
   basePath: string;
   projectId?: string;
+  workspaceId?: string;
 }
 
 /**
@@ -36,7 +37,11 @@ export interface EnabledCapability {
 export const PERSONAL_SURFACE: CapabilitySurface = { basePath: "/chat" };
 
 export function getProjectSurface(workspaceId: string, projectId: string): CapabilitySurface {
-  return { basePath: `/work/${workspaceId}/projects/${projectId}`, projectId };
+  return { basePath: `/work/${workspaceId}/projects/${projectId}`, projectId, workspaceId };
+}
+
+export function getAgentEditorPath(surface: CapabilitySurface, agentId: string): string {
+  return `${surface.basePath}/agents/${agentId}`;
 }
 
 export function getConversationPath(surface: CapabilitySurface): string {

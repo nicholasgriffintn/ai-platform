@@ -437,7 +437,7 @@ describe("FlowEditorDialog", () => {
           { id: "fact-checking", name: "Fact checking" },
         ]}
         capabilitiesHref="/projects/project-1/library"
-        agentsHref="/profile?tab=agents"
+        createAgentHref="/work/workspace-1/projects/project-1/agents/new"
         onOpenChange={vi.fn()}
         onSave={onSave}
       />,
@@ -467,7 +467,7 @@ describe("FlowEditorDialog", () => {
         agents={[]}
         skills={[]}
         capabilitiesHref="/projects/project-1/library"
-        agentsHref="/profile?tab=agents"
+        createAgentHref="/work/workspace-1/projects/project-1/agents/new"
         onOpenChange={vi.fn()}
         onSave={onSave}
       />,

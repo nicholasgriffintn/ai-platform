@@ -1,4 +1,5 @@
-import { updateUserSettingsSchema } from "@ngriffin_uk/polychat-schemas";
+import type { AgentResponse } from "@ngriffin_uk/polychat-schemas";
+import { AGENT_MODE_CONFIGS, updateUserSettingsSchema } from "@ngriffin_uk/polychat-schemas";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -6,6 +7,8 @@ import {
   AccountNavigation,
   AccountPrompt,
   type AccountSection,
+  AgentEditor,
+  type AgentFormData,
   SandboxConnectionList,
   prepareUserSettingsPayload,
 } from "./index";
@@ -104,5 +107,121 @@ describe("sandbox connection list", () => {
 
     fireEvent.click(other);
     expect(onDelete).toHaveBeenCalledExactlyOnceWith(2);
+  });
+});
+
+describe("agent editor", () => {
+  const personalAgent: AgentResponse = {
+    id: "agent-1",
+    user_id: 7,
+    owner_scope_type: "user",
+    owner_scope_id: "7",
+    derived_from_agent_id: null,
+    name: "Researcher",
+    description: "Finds things",
+    avatar_url: null,
+    servers: [],
+    model: null,
+    temperature: null,
+    max_steps: null,
+    system_prompt: null,
+    few_shot_examples: null,
+    enabled_tools: null,
+    skill_ids: [],
+    mode: null,
+    created_at: "2026-01-01T00:00:00.000Z",
+    updated_at: null,
+  };
+  const workspaceAgent: AgentResponse = {
+    ...personalAgent,
+    id: "agent-2",
+    owner_scope_type: "workspace",
+    owner_scope_id: "workspace-1",
+  };
+  const publish = {
+    workspaces: [{ id: "workspace-1", name: "Aviary" }],
+    isPublishing: false,
+    error: null,
+    onPublish: vi.fn(),
+  };
+
+  function renderEditor(overrides: Partial<Parameters<typeof AgentEditor>[0]> = {}) {
+    const onSubmit = vi.fn<(data: AgentFormData) => void>();
+
+    render(
+      <AgentEditor
+        agent={personalAgent}
+        models={{}}
+        tools={[]}
+        skills={[]}
+        canManage
+        isSaving={false}
+        ownerLabel="you"
+        onSubmit={onSubmit}
+        onCancel={vi.fn()}
+        onDelete={vi.fn()}
+        {...overrides}
+      />,
+    );
+
+    return onSubmit;
+  }
+
+  it("withholds saving and deleting from a viewer who cannot manage the agent", () => {
+    renderEditor({
+      agent: workspaceAgent,
+      canManage: false,
+      cannotManageReason: "Aviary owns this agent.",
+      ownerLabel: "Aviary",
+    });
+
+    expect(screen.queryByRole("button", { name: "Save agent" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Delete agent" })).toBeNull();
+    expect(screen.getByText("Aviary owns this agent.")).toBeTruthy();
+    expect(screen.getByLabelText("Name").hasAttribute("disabled")).toBe(true);
+  });
+
+  it("offers every agent mode and describes it from the mode configuration", () => {
+    renderEditor();
+
+    for (const mode of ["Chat", "Plan", "Build", "Explore"]) {
+      expect(screen.getByRole("radio", { name: new RegExp(`^${mode}`) })).toBeTruthy();
+    }
+
+    expect(screen.getByRole("radio", { name: /^Plan/ }).closest("label")?.textContent).toContain(
+      `${AGENT_MODE_CONFIGS.plan.maxSteps} steps`,
+    );
+  });
+
+  it("offers publishing only while the agent is still personally owned", () => {
+    renderEditor({ agent: workspaceAgent, ownerLabel: "Aviary", publish });
+
+    expect(screen.queryByLabelText("Publish to a workspace")).toBeNull();
+
+    cleanup();
+    renderEditor({ publish });
+
+    expect(screen.getByLabelText("Publish to a workspace")).toBeTruthy();
+  });
+
+  it("reports the chosen mode and identity when the form is submitted", () => {
+    const onSubmit = renderEditor({ agent: null });
+
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Scout" } });
+    fireEvent.click(screen.getByRole("radio", { name: /^Plan/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Create agent" }));
+
+    expect(onSubmit).toHaveBeenCalledOnce();
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ name: "Scout", mode: "plan" });
+  });
+
+  it("refuses a name that is only whitespace", () => {
+    const onSubmit = renderEditor({ agent: null });
+
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "   " } });
+    fireEvent.click(screen.getByRole("button", { name: "Create agent" }));
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert").textContent).toContain("name");
   });
 });

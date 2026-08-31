@@ -205,14 +205,16 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
 
   useRecipeActionRequest(catalog.recipes, installationByRecipeId, recipeWorkflows.actions);
 
-  const addItem = (item: AssistantActionItem, itemKind: ProjectCapabilityKind) => {
+  const addCapability = async (itemKind: ProjectCapabilityKind, capabilityId: string) => {
     if (!scope.requiresExplicitEnablement) {
       return;
     }
 
-    void scope
-      .add({ kind: itemKind, capabilityId: item.capability.id, configuration: {} })
-      .catch(() => undefined);
+    await scope.add({ kind: itemKind, capabilityId, configuration: {} });
+  };
+
+  const addItem = (item: AssistantActionItem, itemKind: ProjectCapabilityKind) => {
+    void addCapability(itemKind, item.capability.id).catch(() => undefined);
   };
 
   const removeCapability = (capability: EnabledCapability & { id: string }) => {
@@ -291,7 +293,7 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
       reset: deleteSkill.reset,
     },
     projectActions: scope.requiresExplicitEnablement
-      ? { canManage: scope.canManage, addItem, removeCapability }
+      ? { canManage: scope.canManage, addCapability, addItem, removeCapability }
       : undefined,
   };
 }
