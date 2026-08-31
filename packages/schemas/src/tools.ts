@@ -6,10 +6,10 @@ import {
   toolResponseSchema,
   capabilityThemeSchema,
 } from "./apps";
+import { toolIdSchema, toolIdsSchema } from "./tool-ids";
 
 export { mergeToolIds, normaliseToolIds, readToolIds } from "./tool-ids";
-
-const TOOL_ID_PATTERN = /^[a-zA-Z0-9_:-]+$/;
+export { toolIdSchema, toolIdsSchema };
 
 export const toolCategories = [
   "Research",
@@ -30,9 +30,6 @@ export const toolSchema = z.object({
   category: toolCategorySchema,
   isDefault: z.boolean().optional(),
 });
-
-export const toolIdSchema = z.string().regex(TOOL_ID_PATTERN);
-export const toolIdsSchema = z.array(toolIdSchema);
 
 export const toolSelectionModeSchema = z.enum(["managed", "explicit"]);
 

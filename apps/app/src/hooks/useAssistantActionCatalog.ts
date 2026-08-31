@@ -5,7 +5,6 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMemo } from "react";
 
-import { toAssistantActionAgentSources } from "~/lib/agents/assistant-action-agents";
 import { useChatStore } from "~/state/stores/chatStore";
 
 import { useAgents } from "./useAgents";
@@ -23,7 +22,7 @@ export function useAssistantActionCatalog({
   modelTools?: readonly ModelToolDefinition[];
   projectId?: string;
 } = {}): AssistantActionCatalog {
-  const { chatAgents } = useAgents({ enabled: includeAgents });
+  const { teamMemberAgentIds } = useAgents({ enabled: includeAgents });
   const { data: recipesData } = useAssistantRecipes();
   const { data: installationsData } = useRecipeInstallations(projectId);
   const { data: connectorsData } = useRecipeConnectors();
@@ -53,10 +52,20 @@ export function useAssistantActionCatalog({
     projectId,
   ]);
 
+  const individuallyRunnableAgents = useMemo(() => {
+    if (!includeAgents) {
+      return [];
+    }
+
+    return (capabilityCatalog.data?.agents ?? []).filter(
+      (agent) => !teamMemberAgentIds.has(agent.id),
+    );
+  }, [capabilityCatalog.data?.agents, includeAgents, teamMemberAgentIds]);
+
   return useMemo(
     () =>
       buildAssistantActionCatalog({
-        agents: includeAgents ? toAssistantActionAgentSources(chatAgents) : [],
+        agents: individuallyRunnableAgents,
         connectors: connectorsData?.connectors ?? [],
         installations: installationsData?.installations ?? [],
         modelTools,
@@ -64,9 +73,8 @@ export function useAssistantActionCatalog({
         skills,
       }),
     [
-      chatAgents,
       connectorsData?.connectors,
-      includeAgents,
+      individuallyRunnableAgents,
       installationsData?.installations,
       modelTools,
       recipesData?.recipes,

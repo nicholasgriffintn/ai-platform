@@ -8,6 +8,7 @@ import {
   loadAssistantActionRequestOptions,
   parseAssistantActionLaunchState,
   createRecipeAssistantActionLaunch,
+  readAgentConversationLaunchIntent,
   readRecipeConversationLaunchIntent,
   removeConsumedAssistantActionLaunchParams,
 } from "~/lib/assistant-action-launch";
@@ -28,8 +29,14 @@ export function useConversationLaunchModeConfig(
   pathConversationId?: string,
 ): ConversationThreadModeConfig | undefined {
   const location = useLocation();
-  const { clearCurrentConversation, initializeStore, setChatInput, startNewConversation } =
-    useChatStore();
+  const {
+    clearCurrentConversation,
+    initializeStore,
+    setChatInput,
+    setChatMode,
+    setSelectedAgentId,
+    startNewConversation,
+  } = useChatStore();
   const { setSelectedTools } = useToolsStore();
   const installRecipe = useInstallAssistantRecipe();
   const invokeRecipe = useInvokeAssistantRecipe();
@@ -43,6 +50,7 @@ export function useConversationLaunchModeConfig(
       const completionId = resolvePersonalConversationId(pathConversationId, location.search);
       const urlLaunch = parseAssistantActionLaunchState(location.search);
       const recipeIntent = readRecipeConversationLaunchIntent(location.search);
+      const launchAgentId = readAgentConversationLaunchIntent(location.search);
 
       if (!completionId) {
         clearCurrentConversation();
@@ -51,6 +59,11 @@ export function useConversationLaunchModeConfig(
       await initializeStore(completionId || undefined);
       if (initialiseSequenceRef.current !== sequence) {
         return;
+      }
+
+      if (launchAgentId) {
+        setSelectedAgentId(launchAgentId);
+        setChatMode("agent");
       }
 
       let recipeLaunch: ReturnType<typeof createRecipeAssistantActionLaunch> | undefined;
@@ -100,7 +113,7 @@ export function useConversationLaunchModeConfig(
           recipeLaunch?.requestOptions ?? loadAssistantActionRequestOptions(urlLaunch),
       });
 
-      if (recipeLaunch || urlLaunch.autoSubmit) {
+      if (recipeLaunch || urlLaunch.autoSubmit || launchAgentId) {
         const query = removeConsumedAssistantActionLaunchParams(location.search);
         const historyState =
           window.history.state && typeof window.history.state === "object"
@@ -132,6 +145,8 @@ export function useConversationLaunchModeConfig(
     modeConfig?.requestOptions?.metadata?.project_id,
     pathConversationId,
     setChatInput,
+    setChatMode,
+    setSelectedAgentId,
     setSelectedTools,
     startNewConversation,
     invokeRecipe.mutateAsync,

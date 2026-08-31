@@ -2,7 +2,7 @@ import z from "zod/v4";
 
 import { agentModeSchema } from "./agent-modes";
 import { skillIdSchema } from "./skills";
-import { toolIdsSchema } from "./tools";
+import { toolIdsSchema } from "./tool-ids";
 
 const agentSkillIdsSchema = z.array(skillIdSchema);
 
@@ -145,6 +145,23 @@ export const agentResponseSchema = z.object({
 
 export const agentListResponseSchema = z.array(agentResponseSchema);
 
+export const agentSummarySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  avatarUrl: z.string().nullable(),
+  model: z.string().nullable(),
+  modelAvailable: z.boolean(),
+  mode: agentModeSchema.nullable(),
+  ownerScopeType: agentOwnerScopeTypeSchema,
+  skillIds: agentSkillIdsSchema,
+  toolIds: toolIdsSchema,
+  unavailableSkillIds: agentSkillIdsSchema,
+  unavailableToolIds: toolIdsSchema,
+});
+
+export const agentSummaryListResponseSchema = z.array(agentSummarySchema);
+
 export type AgentMcpServer = z.input<typeof mcpServerSchema>;
 export type AgentFewShotExample = z.input<typeof fewShotExampleSchema>;
 export type CreateAgentInput = z.input<typeof createAgentSchema>;
@@ -152,3 +169,4 @@ export type UpdateAgentInput = z.input<typeof updateAgentSchema>;
 export type PublishAgentToWorkspaceInput = z.input<typeof publishAgentToWorkspaceSchema>;
 export type AgentOwnerScopeType = z.infer<typeof agentOwnerScopeTypeSchema>;
 export type AgentResponse = z.infer<typeof agentResponseSchema>;
+export type AgentSummary = z.infer<typeof agentSummarySchema>;

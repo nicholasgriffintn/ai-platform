@@ -4,17 +4,23 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError } from "~/utils/errors";
 
 import { deleteAgent, getAgentById, getUserAgents, updateAgent } from "../agentCrud";
+import { listScopedAgentSummaries } from "../listing";
 import { publishAgentToWorkspace } from "../publishAgent";
 
 const OWNER_ID = 7;
 const OTHER_ID = 9;
 const AGENT_ID = "agent-1";
 const WORKSPACE_ID = "workspace-1";
+const PROJECT_ID = "project-1";
 
 function buildStoredAgent(
   overrides: {
+    id?: string;
+    enabled_tools?: string[] | null;
+    model?: string | null;
     owner_scope_type?: "user" | "workspace";
     owner_scope_id?: string;
+    skill_ids?: string[] | null;
     user_id?: number;
   } = {},
 ) {
@@ -34,6 +40,8 @@ function buildStoredAgent(
     system_prompt: null,
     few_shot_examples: null,
     enabled_tools: null,
+    skill_ids: null,
+    mode: null,
     is_team_agent: false,
     team_id: null,
     team_role: null,
@@ -54,6 +62,9 @@ function createContext(
     flowProjects?: { id: string; name: string }[];
     listing?: { id: string; user_id: number } | null;
     install?: { id: string } | null;
+    departedAuthorIds?: number[];
+    projectAgents?: ReturnType<typeof buildStoredAgent>[];
+    projectCapabilities?: { kind: string; capability_id: string; configuration: null }[];
   } = {},
 ) {
   const agent = overrides.agent === undefined ? buildStoredAgent() : overrides.agent;
@@ -61,6 +72,7 @@ function createContext(
   const repositories = {
     agents: {
       getAgentById: vi.fn(async () => agent),
+      getAgentsByIds: vi.fn(async () => overrides.projectAgents ?? []),
       getAgentsForScopes: vi.fn(async () => overrides.scopedAgents ?? []),
       createAgent: vi.fn(async (record: Record<string, unknown>) => ({
         ...buildStoredAgent(),
@@ -72,9 +84,20 @@ function createContext(
       updateAgent: vi.fn(async () => undefined),
       deleteAgent: vi.fn(async () => undefined),
     },
+    authoredSkills: {
+      listByScope: vi.fn(async () => []),
+    },
     workspaces: {
       getWorkspace: vi.fn(async () => ({ id: WORKSPACE_ID })),
-      getMembership: vi.fn(async () => (overrides.role ? { role: overrides.role } : null)),
+      getMembership: vi.fn(async (_workspaceId: string, memberId: number) => {
+        if (overrides.departedAuthorIds?.includes(memberId)) {
+          return null;
+        }
+
+        return overrides.role ? { role: overrides.role } : null;
+      }),
+      getProject: vi.fn(async () => ({ id: PROJECT_ID, workspace_id: WORKSPACE_ID })),
+      listProjectCapabilities: vi.fn(async () => overrides.projectCapabilities ?? []),
       listWorkspaces: vi.fn(async () => overrides.workspaces ?? []),
       listProjectsWithCapability: vi.fn(async () => overrides.attachedProjects ?? []),
       listProjectsWithFlowStageAgent: vi.fn(async () => overrides.flowProjects ?? []),
@@ -179,6 +202,94 @@ describe("agent scope authorisation", () => {
       "workspace-2",
     ]);
     expect(agents).toHaveLength(2);
+  });
+});
+
+describe("listScopedAgentSummaries", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns nothing to an anonymous caller", async () => {
+    const { context, repositories } = createContext({});
+
+    await expect(listScopedAgentSummaries(context)).resolves.toEqual([]);
+    expect(repositories.agents.getAgentsForScopes).not.toHaveBeenCalled();
+  });
+
+  it("returns the caller's own agents alongside the workspace agents they can read", async () => {
+    const { context } = createContext({
+      workspaces: [{ id: WORKSPACE_ID }],
+      scopedAgents: [
+        buildStoredAgent(),
+        buildStoredAgent({
+          id: "agent-2",
+          owner_scope_type: "workspace",
+          owner_scope_id: WORKSPACE_ID,
+        }),
+      ],
+    });
+
+    const summaries = await listScopedAgentSummaries(context, OWNER_ID);
+
+    expect(summaries.map((summary) => [summary.id, summary.ownerScopeType])).toEqual([
+      [AGENT_ID, "user"],
+      ["agent-2", "workspace"],
+    ]);
+  });
+
+  it("returns only the agents a project has attached", async () => {
+    const { context, repositories } = createContext({
+      role: "member",
+      projectCapabilities: [
+        { kind: "skill", capability_id: "artifacts", configuration: null },
+        { kind: "agent", capability_id: "agent-2", configuration: null },
+      ],
+      projectAgents: [
+        buildStoredAgent({
+          id: "agent-2",
+          owner_scope_type: "workspace",
+          owner_scope_id: WORKSPACE_ID,
+        }),
+      ],
+    });
+
+    const summaries = await listScopedAgentSummaries(context, OWNER_ID, PROJECT_ID);
+
+    expect(repositories.agents.getAgentsByIds).toHaveBeenCalledWith(["agent-2"]);
+    expect(summaries.map((summary) => summary.id)).toEqual(["agent-2"]);
+  });
+
+  it("drops a project agent whose author has left the workspace", async () => {
+    const { context } = createContext({
+      role: "member",
+      departedAuthorIds: [OTHER_ID],
+      projectCapabilities: [{ kind: "agent", capability_id: AGENT_ID, configuration: null }],
+      projectAgents: [buildStoredAgent({ user_id: OTHER_ID })],
+    });
+
+    await expect(listScopedAgentSummaries(context, OWNER_ID, PROJECT_ID)).resolves.toEqual([]);
+  });
+
+  it("reports the model, skills and tools an agent names that this scope cannot run", async () => {
+    const { context } = createContext({
+      workspaces: [],
+      scopedAgents: [
+        buildStoredAgent({
+          model: "retired-model-9000",
+          skill_ids: ["artifacts", "not-a-real-skill"],
+          enabled_tools: ["not_a_real_tool"],
+        }),
+      ],
+    });
+
+    const [summary] = await listScopedAgentSummaries(context, OWNER_ID);
+
+    expect(summary).toMatchObject({
+      modelAvailable: false,
+      unavailableSkillIds: ["not-a-real-skill"],
+      unavailableToolIds: ["not_a_real_tool"],
+    });
   });
 });
 

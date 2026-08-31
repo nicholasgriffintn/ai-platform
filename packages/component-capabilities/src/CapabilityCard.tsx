@@ -6,8 +6,10 @@ import type {
   ModelToolDefinition,
 } from "@ngriffin_uk/polychat-schemas";
 import {
+  Bot,
   Ellipsis,
   ExternalLink,
+  MessageSquare,
   Play,
   Plus,
   Puzzle,
@@ -66,46 +68,58 @@ export function CapabilityCard({
 }: CapabilityCardProps) {
   const appIcon = app ? getIcon(app.icon, app.theme) : null;
   const isRunnableTool = kind === "tool" && Boolean(item.metadata?.toolRunnable);
+  const isUnavailable = item.capability.availability === "unavailable";
   const canManage = projectActions?.canManage ?? true;
   const requiresExplicitEnablement = Boolean(projectActions);
   const isAlwaysOnSkill = kind === "skill" && !item.capability.savedState.supported;
   const isIncluded =
     !requiresExplicitEnablement || Boolean(isEnabled) || Boolean(tool) || isAlwaysOnSkill;
-  const showSkillToggle = Boolean(skill) && !requiresExplicitEnablement;
-  const primaryAction = onConfigure
-    ? {
-        icon: <Settings2 size={15} />,
-        label: "Configure",
-        onClick: onConfigure,
-        requiresManagement: true,
-      }
-    : onOpen
+  const showSkillToggle = Boolean(skill) && !requiresExplicitEnablement && !isUnavailable;
+  const openAction = isRunnableTool
+    ? { icon: <Play size={15} />, label: "Run" }
+    : kind === "agent"
+      ? { icon: <MessageSquare size={15} />, label: "Start chat" }
+      : { icon: <ExternalLink size={15} />, label: "Open" };
+  const primaryAction = isUnavailable
+    ? null
+    : onConfigure
       ? {
-          icon: isRunnableTool ? <Play size={15} /> : <ExternalLink size={15} />,
-          label: isRunnableTool ? "Run" : "Open",
-          onClick: onOpen,
-          requiresManagement: false,
+          icon: <Settings2 size={15} />,
+          label: "Configure",
+          onClick: onConfigure,
+          requiresManagement: true,
         }
-      : null;
-  const statusLabel = isAlwaysOnSkill
-    ? "Always on"
-    : skill
-      ? skill.alwaysOn
-        ? "Always on"
-        : skill.enabled
-          ? "On"
-          : "Off"
-      : kind === "tool" && tool?.requiresConfiguration
-        ? isConfigured
-          ? "Configured"
-          : "Configuration required"
-        : !requiresExplicitEnablement
-          ? "Available"
-          : kind === "tool"
-            ? isEnabled
-              ? "Enabled"
-              : "Included"
-            : "Enabled";
+      : onOpen
+        ? {
+            ...openAction,
+            onClick: onOpen,
+            requiresManagement: false,
+          }
+        : null;
+  const description = isUnavailable
+    ? (item.capability.availabilityReason ?? item.description ?? item.capability.description)
+    : item.description || item.capability.description;
+  const statusLabel = isUnavailable
+    ? "Unavailable"
+    : isAlwaysOnSkill
+      ? "Always on"
+      : skill
+        ? skill.alwaysOn
+          ? "Always on"
+          : skill.enabled
+            ? "On"
+            : "Off"
+        : kind === "tool" && tool?.requiresConfiguration
+          ? isConfigured
+            ? "Configured"
+            : "Configuration required"
+          : !requiresExplicitEnablement
+            ? "Available"
+            : kind === "tool"
+              ? isEnabled
+                ? "Enabled"
+                : "Included"
+              : "Enabled";
 
   return (
     <Card className="justify-between p-5 shadow-none">
@@ -122,6 +136,8 @@ export function CapabilityCard({
               <Wrench size={18} />
             ) : kind === "skill" ? (
               <Sparkles size={18} />
+            ) : kind === "agent" ? (
+              <Bot size={18} />
             ) : (
               <Puzzle size={18} />
             )}
@@ -133,9 +149,7 @@ export function CapabilityCard({
           )}
         </div>
         <h4 className="font-semibold">{item.label}</h4>
-        <p className="mt-2 min-h-12 text-sm leading-6 text-zinc-500">
-          {item.description || item.capability.description}
-        </p>
+        <p className="mt-2 min-h-12 text-sm leading-6 text-zinc-500">{description}</p>
       </div>
       {showSkillToggle && skill ? (
         <div className="flex gap-2">

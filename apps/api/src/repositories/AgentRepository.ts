@@ -98,6 +98,21 @@ export class AgentRepository extends BaseRepository {
     );
   }
 
+  public async getAgentsByIds(agentIds: string[]): Promise<Agent[]> {
+    const uniqueIds = [...new Set(agentIds)];
+
+    if (uniqueIds.length === 0) {
+      return [];
+    }
+
+    return this.runQuery<Agent>(
+      `SELECT * FROM agents
+			 WHERE id IN (${uniqueIds.map(() => "?").join(", ")})
+			 ORDER BY created_at DESC`,
+      uniqueIds,
+    );
+  }
+
   public async getAgentById(agentId: string): Promise<Agent | null> {
     const { query, values } = this.buildSelectQuery("agents", { id: agentId });
 
