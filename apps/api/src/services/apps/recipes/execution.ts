@@ -63,6 +63,7 @@ export async function recordRecipeInvocationFailure(params: {
     repositories: params.context.repositories,
     user: params.user,
     model: defaultModel.model,
+    provider: defaultModel.provider,
     platform: "api",
     store: true,
     env: params.env,
