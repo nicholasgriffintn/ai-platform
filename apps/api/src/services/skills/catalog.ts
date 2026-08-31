@@ -1,10 +1,15 @@
-import { skillSummarySchema, type SkillSummary } from "@ngriffin_uk/polychat-schemas";
+import {
+  skillSummarySchema,
+  type AuthoredSkillProvenance,
+  type SkillSummary,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { builtInSkillDocuments } from "~/data-model/skills";
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { AuthoredSkillScope } from "~/repositories/AuthoredSkillRepository";
 
 import { parseSkillDocument, parseUserSkillDocument, validateSkillResourcePath } from "./document";
-import { SkillDocumentStorage, type SkillStorageScope } from "./storage";
+import { listStoredStableSkillDocuments } from "./persistence";
 import {
   toSkillDefinition,
   toSkillSummary,
@@ -20,6 +25,23 @@ interface IndexedSkill {
   definition: SkillDefinition;
   content: SkillContent;
   resources: Map<string, SkillResource>;
+  runtime?: AuthoredSkillRuntime;
+}
+
+export interface AuthoredSkillRuntimeAuthorisation {
+  scopeId: string;
+  skillId: string;
+}
+
+export interface AuthoredSkillRuntime {
+  provenance: AuthoredSkillProvenance;
+  authorisation: AuthoredSkillRuntimeAuthorisation;
+}
+
+export interface LoadedSkillRuntime {
+  content: SkillContent;
+  provenance?: AuthoredSkillProvenance;
+  authorisation?: AuthoredSkillRuntimeAuthorisation;
 }
 
 export interface SkillCatalogDocument {
@@ -30,6 +52,13 @@ export interface SkillCatalogDocument {
     path: string;
     content: string;
   }[];
+  authored?: {
+    scope: "personal" | "project";
+    scopeId: string;
+    skillId: string;
+    revisionId: string;
+    revision: number;
+  };
 }
 
 function cloneDefinition(skill: SkillDefinition): SkillDefinition {
@@ -150,6 +179,23 @@ export class SkillCatalog {
           resources: [...resources.values()].map(withoutContent),
         },
         resources,
+        ...(entry.authored
+          ? {
+              runtime: {
+                provenance: {
+                  source: "user-authored",
+                  scope: entry.authored.scope,
+                  skill: definition.id,
+                  revisionId: entry.authored.revisionId,
+                  revision: entry.authored.revision,
+                },
+                authorisation: {
+                  scopeId: entry.authored.scopeId,
+                  skillId: entry.authored.skillId,
+                },
+              },
+            }
+          : {}),
       });
     }
   }
@@ -172,6 +218,24 @@ export class SkillCatalog {
     return content ? cloneContent(content) : null;
   }
 
+  loadRuntime(skillId: string): LoadedSkillRuntime | null {
+    const skill = this.index.get(skillId);
+
+    if (!skill) {
+      return null;
+    }
+
+    return {
+      content: cloneContent(skill.content),
+      ...(skill.runtime
+        ? {
+            provenance: { ...skill.runtime.provenance },
+            authorisation: { ...skill.runtime.authorisation },
+          }
+        : {}),
+    };
+  }
+
   readResource(skillId: string, path: string): SkillResource | null {
     if (validateSkillResourcePath(path)) {
       return null;
@@ -191,34 +255,29 @@ const skillCatalog = new SkillCatalog(builtInSkillDocuments);
 
 export async function resolveSkillCatalog(
   context: ServiceContext,
-  scope: SkillStorageScope,
+  scope: AuthoredSkillScope,
   enabledNames?: ReadonlySet<string>,
 ): Promise<SkillCatalog> {
-  const storage = new SkillDocumentStorage(context);
-  const stored = await storage.list(scope);
+  const stored = await listStoredStableSkillDocuments(context, scope);
   const builtInNames = new Set(skillCatalog.listDefinitions().map((skill) => skill.id));
   const selected = stored.filter(
     (skill) => !builtInNames.has(skill.name) && (!enabledNames || enabledNames.has(skill.name)),
   );
-  const documents = await Promise.all(
-    selected.map(async (skill): Promise<SkillCatalogDocument | null> => {
-      const document = await storage.get(scope, skill.name);
+  const documents = selected.map((document): SkillCatalogDocument => ({
+    directory: document.name,
+    rawContent: document.content,
+    trust: "user-authored",
+    resources: document.resources,
+    authored: {
+      scope: scope.type,
+      scopeId: String(scope.id),
+      skillId: document.revision.skillId,
+      revisionId: document.revision.id,
+      revision: document.revision.revision,
+    },
+  }));
 
-      return document
-        ? {
-            directory: skill.name,
-            rawContent: document.content,
-            trust: "user-authored",
-            resources: document.resources,
-          }
-        : null;
-    }),
-  );
-
-  return new SkillCatalog([
-    ...builtInSkillDocuments,
-    ...documents.filter((document): document is SkillCatalogDocument => document !== null),
-  ]);
+  return new SkillCatalog([...builtInSkillDocuments, ...documents]);
 }
 
 export async function listSkillDefinitions(): Promise<SkillDefinition[]> {

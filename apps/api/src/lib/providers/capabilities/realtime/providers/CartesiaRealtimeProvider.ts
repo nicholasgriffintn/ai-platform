@@ -1,4 +1,4 @@
-import { getRealtimeLiveProviderManifestItem } from "@ngriffin_uk/polychat-schemas";
+import type { RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schemas";
 
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
@@ -10,9 +10,26 @@ import type {
   RealtimeSessionRequest,
   RealtimeTranscriptionDelay,
 } from "../index";
-import { buildRealtimeProxyUrl } from "./proxyUrl";
+import { buildGrantedRealtimeProxyUrl } from "./proxyUrl";
 
-const DEFAULT_TRANSCRIPTION_MODEL = getRealtimeLiveProviderManifestItem("cartesia").defaultModelId;
+export const CARTESIA_REALTIME_DESCRIPTOR = {
+  id: "cartesia",
+  order: 4,
+  label: "Cartesia Ink 2 Realtime",
+  shortLabel: "Cartesia",
+  liveMode: "composed",
+  transport: "websocket",
+  sessionType: "transcription",
+  defaultDelay: "low",
+  inputModalities: ["audio"],
+  outputModalities: ["text"],
+  description: "Ink 2 semantic turn detection and streaming speech-to-text",
+  defaultModelId: "ink-2",
+  composeWith: { reasoning: true, speech: true },
+} satisfies RealtimeLiveProviderDescriptor;
+
+const DEFAULT_TRANSCRIPTION_MODEL = CARTESIA_REALTIME_DESCRIPTOR.defaultModelId;
+const API_KEY_ENVIRONMENT_VARIABLE = "CARTESIA_API_KEY";
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
   realtime: [],
   translation: [],
@@ -23,14 +40,20 @@ const CARTESIA_REALTIME_PROXY_PATH = "/realtime/cartesia/transcription";
 
 export class CartesiaRealtimeProvider implements RealtimeProvider {
   name = "cartesia";
+  descriptor = CARTESIA_REALTIME_DESCRIPTOR;
+  configuration = {
+    acceptsUserApiKey: true,
+    environmentVariables: [API_KEY_ENVIRONMENT_VARIABLE],
+  };
   models = SESSION_MODELS_BY_TYPE.transcription;
 
   async getApiKey(request: RealtimeSessionRequest): Promise<string> {
     return resolveProviderApiKey({
       env: request.env,
       providerName: this.name,
-      envKeyName: "CARTESIA_API_KEY",
+      envKeyName: API_KEY_ENVIRONMENT_VARIABLE,
       userId: request.user.id,
+      credentialAuthority: request.credentialAuthority,
     });
   }
 
@@ -79,23 +102,32 @@ export class CartesiaRealtimeProvider implements RealtimeProvider {
 
     const model = await this.resolveModel(request);
     const delay = this.getTranscriptionDelay(request);
+    const sessionId = generateId();
+    const proxy = await buildGrantedRealtimeProxyUrl({
+      apiBaseUrl: request.apiBaseUrl ?? request.env.API_BASE_URL,
+      env: request.env,
+      model,
+      params: {
+        delay,
+      },
+      path: CARTESIA_REALTIME_PROXY_PATH,
+      provider: this.name,
+      sessionId,
+      userId: request.user.id,
+    });
 
     return {
-      id: generateId(),
+      id: sessionId,
       object: "realtime.transcription.session",
       type: "transcription",
       provider: this.name,
       transport: "websocket",
-      url: buildRealtimeProxyUrl({
-        apiBaseUrl: request.apiBaseUrl ?? request.env.API_BASE_URL,
-        path: CARTESIA_REALTIME_PROXY_PATH,
-        params: { model, delay },
-      }),
+      url: proxy.url,
+      proxy_grant_expires_at: proxy.expiresAt,
       audio_format: this.buildAudioFormat(),
       input_audio_format: this.buildAudioFormat().encoding,
       input_audio_transcription: {
         model,
-        ...(request.language ? { language: request.language } : {}),
       },
     };
   }

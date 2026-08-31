@@ -1,7 +1,9 @@
+import { agentModeSchema, skillIdSchema } from "@ngriffin_uk/polychat-schemas";
+
 import type { Agent, AgentInstall, AgentRating, SharedAgent } from "~/lib/database/schema";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { safeParseJson } from "~/utils/json";
+import { parseJsonArrayColumn, safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 
 import { BaseRepository } from "./BaseRepository";
@@ -72,6 +74,8 @@ export class SharedAgentRepository extends BaseRepository {
         ? safeParseJson(agent.few_shot_examples as string)
         : [],
       enabled_tools: agent.enabled_tools ? safeParseJson(agent.enabled_tools as string) : [],
+      skill_ids: parseJsonArrayColumn(agent.skill_ids, skillIdSchema) ?? [],
+      mode: agent.mode,
     };
 
     await this.executeRun(
@@ -305,23 +309,19 @@ export class SharedAgentRepository extends BaseRepository {
       throw new AssistantError("Error parsing template data", ErrorType.PARAMS_ERROR);
     }
 
-    if (templateData.team_id) {
-      throw new AssistantError(
-        "Team agents are not supported for sharing yet. Please contact support.",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-
     const agentId = generateId();
     const installId = generateId();
+    const installedSkillIds = parseJsonArrayColumn(templateData.skill_ids, skillIdSchema) ?? [];
+    const installedMode = agentModeSchema.safeParse(templateData.mode).data ?? null;
 
     await this.executeRun(
-      `INSERT INTO agents 
-       (id, user_id, name, description, avatar_url, servers, model, temperature, max_steps, system_prompt, few_shot_examples, enabled_tools) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO agents
+       (id, user_id, owner_scope_type, owner_scope_id, name, description, avatar_url, servers, model, temperature, max_steps, system_prompt, few_shot_examples, enabled_tools, skill_ids, mode)
+       VALUES (?, ?, 'user', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         agentId,
         userId,
+        String(userId),
         templateData.name,
         templateData.description,
         templateData.avatar_url,
@@ -332,6 +332,8 @@ export class SharedAgentRepository extends BaseRepository {
         templateData.system_prompt,
         JSON.stringify(templateData.few_shot_examples),
         JSON.stringify(templateData.enabled_tools ?? []),
+        JSON.stringify(installedSkillIds),
+        installedMode,
       ],
     );
 
@@ -348,6 +350,9 @@ export class SharedAgentRepository extends BaseRepository {
     const agent: Agent = {
       id: agentId,
       user_id: userId,
+      owner_scope_type: "user",
+      owner_scope_id: String(userId),
+      derived_from_agent_id: null,
       name: templateData.name,
       description: templateData.description,
       avatar_url: templateData.avatar_url,
@@ -358,9 +363,8 @@ export class SharedAgentRepository extends BaseRepository {
       system_prompt: templateData.system_prompt,
       few_shot_examples: JSON.stringify(templateData.few_shot_examples),
       enabled_tools: JSON.stringify(templateData.enabled_tools ?? []),
-      is_team_agent: false,
-      team_id: null,
-      team_role: null,
+      skill_ids: JSON.stringify(installedSkillIds),
+      mode: installedMode,
       created_at: now,
       updated_at: now,
     };
@@ -374,6 +378,14 @@ export class SharedAgentRepository extends BaseRepository {
     };
 
     return { agent, install };
+  }
+
+  public async getInstallByAgentId(userId: number, agentId: string): Promise<AgentInstall | null> {
+    return this.runQuery<AgentInstall>(
+      "SELECT * FROM agent_installs WHERE agent_id = ? AND user_id = ?",
+      [agentId, userId],
+      true,
+    );
   }
 
   public async uninstallAgent(userId: number, agentId: string): Promise<void> {

@@ -4,8 +4,15 @@ import type {
   RealtimeModality,
   RealtimeSession,
 } from "@ngriffin_uk/polychat-library-realtime";
+import type { RealtimeLiveProviderCatalogueResponse } from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApiOrThrow } from "./fetch-wrapper";
+
+export async function fetchRealtimeLiveProviders(): Promise<RealtimeLiveProviderCatalogueResponse> {
+  const response = await fetchApiOrThrow("/realtime/providers");
+
+  return returnFetchedData<RealtimeLiveProviderCatalogueResponse>(response);
+}
 
 function appendParam(params: URLSearchParams, key: string, value?: string): void {
   if (value) {

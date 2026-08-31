@@ -1,28 +1,13 @@
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+  CardGridLoadingSkeleton,
   EmptyState,
   FormSelect,
-  Input,
+  SearchInput,
 } from "@ngriffin_uk/polychat-component-ui";
-import { Filter, Loader2, Search, Star } from "lucide-react";
+import type { SharedAgentSummary } from "@ngriffin_uk/polychat-schemas";
+import { SearchX, Star } from "lucide-react";
 
 import { SharedAgentCard } from "./SharedAgentCard";
-
-export interface SharedAgentSummary {
-  id: string;
-  name: string;
-  description?: string;
-  avatar_url?: string;
-  category?: string;
-  tags?: string[];
-  rating_average?: number;
-  rating_count?: number;
-  usage_count?: number;
-}
 
 export interface SharedAgentsBrowserProps {
   searchTerm: string;
@@ -37,7 +22,8 @@ export interface SharedAgentsBrowserProps {
   featuredAgents: SharedAgentSummary[];
   isLoadingSharedAgents: boolean;
   isLoadingFeaturedAgents: boolean;
-  onInstall: (agentId: string) => Promise<unknown>;
+  onInstall: (sharedAgentId: string) => void;
+  installingAgentId?: string;
   isInstalling: boolean;
 }
 
@@ -55,111 +41,90 @@ export function SharedAgentsBrowser({
   isLoadingSharedAgents,
   isLoadingFeaturedAgents,
   onInstall,
+  installingAgentId,
   isInstalling,
 }: SharedAgentsBrowserProps) {
+  const isFiltering = Boolean(searchTerm || selectedCategory || selectedTag);
+  const showFeatured = !isFiltering && (isLoadingFeaturedAgents || featuredAgents.length > 0);
+
+  const renderCard = (agent: SharedAgentSummary) => (
+    <SharedAgentCard
+      key={agent.id}
+      agent={agent}
+      onInstall={onInstall}
+      isInstalling={isInstalling && installingAgentId === agent.id}
+    />
+  );
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Search className="h-5 w-5" />
-          Browse Agents
-        </CardTitle>
-        <CardDescription>Search and filter community-shared agents</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Featured Agents Section */}
-        {isLoadingFeaturedAgents ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            <span className="ml-2 text-muted-foreground">Loading featured agents...</span>
-          </div>
-        ) : featuredAgents.length === 0 ? (
-          <EmptyState
-            title="No Featured Agents"
-            message="Check back later for featured agents from the community"
-            icon={<Star className="h-5 w-5 text-yellow-500" />}
+    <div className="space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <SearchInput
+          aria-label="Search shared agents"
+          className="flex-1"
+          placeholder="Search shared agents..."
+          value={searchTerm}
+          onChange={onSearchTermChange}
+        />
+        <div className="flex gap-2">
+          <FormSelect
+            aria-label="Filter shared agents by category"
+            className="h-10 min-w-36 bg-white dark:bg-zinc-900"
+            value={selectedCategory}
+            onChange={(event) => onSelectedCategoryChange(event.target.value)}
+            options={[
+              { value: "", label: "All categories" },
+              ...categories.map((category) => ({ value: category, label: category })),
+            ]}
           />
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-yellow-500" />
-                Featured
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {featuredAgents.map((agent: any) => (
-                  <SharedAgentCard
-                    key={agent.id}
-                    agent={agent}
-                    onInstall={onInstall}
-                    isInstalling={isInstalling}
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Search and Filter Controls */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by name or description..."
-              value={searchTerm}
-              onChange={(e) => onSearchTermChange(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <div className="flex gap-2">
-            <FormSelect
-              value={selectedCategory}
-              onChange={(e) => onSelectedCategoryChange(e.target.value)}
-              options={[
-                { value: "", label: "All categories" },
-                ...categories.map((c) => ({ value: c, label: c })),
-              ]}
-              className="min-w-40"
-            />
-            <FormSelect
-              value={selectedTag}
-              onChange={(e) => onSelectedTagChange(e.target.value)}
-              options={[
-                { value: "", label: "All tags" },
-                ...tags.map((t) => ({ value: t, label: t })),
-              ]}
-              className="min-w-32"
-            />
-          </div>
+          <FormSelect
+            aria-label="Filter shared agents by tag"
+            className="h-10 min-w-32 bg-white dark:bg-zinc-900"
+            value={selectedTag}
+            onChange={(event) => onSelectedTagChange(event.target.value)}
+            options={[
+              { value: "", label: "All tags" },
+              ...tags.map((tag) => ({ value: tag, label: tag })),
+            ]}
+          />
         </div>
+      </div>
 
-        {/* Search Results */}
+      {showFeatured && (
+        <section className="space-y-3">
+          <h3 className="flex items-center gap-1.5 text-sm font-semibold text-zinc-600 dark:text-zinc-300">
+            <Star size={14} className="fill-amber-400 text-amber-400" />
+            Featured
+          </h3>
+          {isLoadingFeaturedAgents ? (
+            <CardGridLoadingSkeleton count={3} label="Loading featured agents" />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {featuredAgents.map(renderCard)}
+            </div>
+          )}
+        </section>
+      )}
+
+      <section className="space-y-3">
+        <h3 className="text-sm font-semibold text-zinc-600 dark:text-zinc-300">
+          {isFiltering ? "Results" : "All shared agents"}
+        </h3>
         {isLoadingSharedAgents ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            <span className="ml-2 text-muted-foreground">Searching agents...</span>
-          </div>
+          <CardGridLoadingSkeleton count={3} label="Loading shared agents" />
         ) : sharedAgents.length === 0 ? (
           <EmptyState
-            title="No Agents Found"
-            message="Try adjusting your search terms or filters to find more agents"
-            icon={<Filter className="h-5 w-5" />}
+            icon={<SearchX size={24} className="text-zinc-400" />}
+            title="No shared agents found"
+            message="Try another search, category, or tag."
+            className="min-h-[200px]"
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sharedAgents.map((agent: any) => (
-              <SharedAgentCard
-                key={agent.id}
-                agent={agent}
-                onInstall={onInstall}
-                isInstalling={isInstalling}
-              />
-            ))}
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {sharedAgents.map(renderCard)}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </section>
+    </div>
   );
 }

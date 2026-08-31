@@ -1,3 +1,5 @@
+import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
+
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getModelConfigByModel } from "~/lib/providers/models";
@@ -8,7 +10,7 @@ import { omitNullishValues } from "~/utils/objects";
 
 import type { SpeechGenerationRequest, SpeechGenerationResult, SpeechProvider } from "../index";
 
-const DEFAULT_MODEL = "replicate-chatterbox-turbo";
+const DEFAULT_MODEL = MODEL_DEFAULTS.speech.replicate.model;
 
 export class ReplicateSpeechProvider implements SpeechProvider {
   name = "replicate";

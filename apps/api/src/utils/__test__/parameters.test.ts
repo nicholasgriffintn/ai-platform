@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 
+import type { ChatCompletionParameters, IEnv } from "~/types";
+
 import {
   calculateReasoningBudget,
+  createCommonParameters,
+  createSamplingParameters,
   getEffectiveMaxTokens,
   getToolsForProvider,
   resolveEffectiveMaxTokens,
@@ -9,6 +13,10 @@ import {
 } from "../parameters";
 
 const modelConfig = { supportsToolCalls: true, supportsToolChoice: false };
+
+function createTestEnv(): IEnv {
+  return Object.assign(Object.create(null), {});
+}
 
 function toolNames(tools: unknown[] | undefined): string[] {
   return (tools ?? []).map((tool) => (tool as { function: { name: string } }).function.name);
@@ -18,7 +26,7 @@ function paramsForMode(mode: string): Parameters<typeof getToolsForProvider>[0] 
   return {
     model: "gpt-5",
     mode,
-    enabled_tools: ["get_weather", "delegate_to_team_member"],
+    enabled_tools: ["get_weather", "call_api"],
   };
 }
 
@@ -45,7 +53,7 @@ describe("getToolsForProvider", () => {
       getToolsForProvider(paramsForMode("plan"), modelConfig, "openai").tools,
     );
 
-    expect(names).not.toContain("delegate_to_team_member");
+    expect(names).not.toContain("call_api");
     expect(names).toContain("get_weather");
   });
 
@@ -70,7 +78,7 @@ describe("getToolsForProvider", () => {
         {
           ...paramsForMode("plan"),
           conversation_type: "task",
-          enabled_tools: ["delegate_to_team_member"],
+          enabled_tools: ["call_api"],
           enforce_mode_tool_policy: false,
         },
         modelConfig,
@@ -78,7 +86,7 @@ describe("getToolsForProvider", () => {
       ).tools,
     );
 
-    expect(names).toContain("delegate_to_team_member");
+    expect(names).toContain("call_api");
     expect(names).toContain("update_plan");
     expect(names).not.toContain("finish");
   });
@@ -165,20 +173,82 @@ describe("shouldEnableStreaming", () => {
 });
 
 describe("calculateReasoningBudget", () => {
-  it("allocates the full output budget for maximum reasoning", () => {
+  const budgetModel = {
+    matchingModel: "gpt-5.6",
+    provider: "openai",
+    maxTokens: 10_000,
+  };
+
+  it("keeps the maximum budget strictly below the output allowance", () => {
     expect(
-      calculateReasoningBudget(
-        {
-          reasoning_effort: "max",
-          max_tokens: 10_000,
-        },
-        {
-          matchingModel: "gpt-5.6",
-          provider: "openai",
-          maxTokens: 10_000,
-        },
-      ),
-    ).toBe(10_000);
+      calculateReasoningBudget({ reasoning_effort: "max", max_tokens: 10_000 }, budgetModel),
+    ).toBe(9_999);
+    expect(
+      calculateReasoningBudget({ reasoning_effort: "xhigh", max_tokens: 10_000 }, budgetModel),
+    ).toBe(9_999);
+  });
+
+  it("never drops below the provider minimum, even for a tiny output allowance", () => {
+    expect(
+      calculateReasoningBudget({ reasoning_effort: "minimal", max_tokens: 1_200 }, budgetModel),
+    ).toBe(1_024);
+  });
+
+  it("scales the budget with the requested effort", () => {
+    expect(
+      calculateReasoningBudget({ reasoning_effort: "low", max_tokens: 10_000 }, budgetModel),
+    ).toBe(5_000);
+    expect(
+      calculateReasoningBudget({ reasoning_effort: "high", max_tokens: 10_000 }, budgetModel),
+    ).toBe(9_000);
+  });
+});
+
+describe("createCommonParameters", () => {
+  const hybridModel = {
+    matchingModel: "mistral-small-latest",
+    provider: "mistral",
+    modalities: { input: ["text"], output: ["text"] },
+    reasoningConfig: {
+      supportedEffortLevels: ["none", "high"],
+      defaultEffort: "none",
+    },
+  };
+
+  it.each([
+    "azure-openai",
+    "cortecs",
+    "deepinfra",
+    "github-copilot",
+    "github-models",
+    "mistral",
+    "opencode",
+    "opencode-go",
+    "openrouter",
+    "requesty",
+    "vercel",
+  ])("forwards configured reasoning effort through %s", (provider) => {
+    const params: ChatCompletionParameters = {
+      model: "mistral-small",
+      env: createTestEnv(),
+      messages: [{ role: "user", content: "hello" }],
+      reasoning_effort: "high",
+    };
+    const body = createCommonParameters(params, hybridModel, provider);
+
+    expect(body.reasoning_effort).toBe("high");
+  });
+
+  it("does not forward an effort the model does not advertise", () => {
+    const params: ChatCompletionParameters = {
+      model: "mistral-small",
+      env: createTestEnv(),
+      messages: [{ role: "user", content: "hello" }],
+      reasoning_effort: "medium",
+    };
+    const body = createCommonParameters(params, hybridModel, "mistral");
+
+    expect(body).not.toHaveProperty("reasoning_effort");
   });
 });
 
@@ -227,5 +297,63 @@ describe("resolveEffectiveMaxTokens", () => {
   it("allows explicit values above the defaults and clamps only to the model limit", () => {
     expect(resolveEffectiveMaxTokens({ max_tokens: 131_072 }, capableModel)).toBe(131_072);
     expect(getEffectiveMaxTokens(524_288, capableModel.maxTokens, 8_192)).toBe(262_144);
+  });
+});
+
+describe("createSamplingParameters", () => {
+  it("sends nothing when the caller leaves sampling on automatic", () => {
+    expect(createSamplingParameters({}, { provider: "openai" })).toEqual({});
+  });
+
+  it("sends both temperature and top_p when the model does not restrict the pair", () => {
+    expect(
+      createSamplingParameters({ temperature: 0.4, top_p: 0.6 }, { provider: "openai" }),
+    ).toEqual({ temperature: 0.4, top_p: 0.6 });
+  });
+
+  it("drops top_p only for models that restrict the combination", () => {
+    expect(
+      createSamplingParameters(
+        { temperature: 0.4, top_p: 0.6 },
+        { provider: "anthropic", restrictsCombinedTopPAndTemperature: true },
+      ),
+    ).toEqual({ temperature: 0.4 });
+  });
+
+  it("keeps top_p on a restricting model when no temperature is set", () => {
+    expect(
+      createSamplingParameters(
+        { top_p: 0.6 },
+        { provider: "anthropic", restrictsCombinedTopPAndTemperature: true },
+      ),
+    ).toEqual({ top_p: 0.6 });
+  });
+
+  it("drops both parameters the model declares unsupported", () => {
+    expect(
+      createSamplingParameters(
+        { temperature: 0.4, top_p: 0.6 },
+        { provider: "openai", supportsTemperature: false, supportsTopP: false },
+      ),
+    ).toEqual({});
+  });
+
+  it("clamps temperature to the Anthropic range", () => {
+    expect(
+      createSamplingParameters({ temperature: 1.8 }, { provider: "anthropic" }).temperature,
+    ).toBe(1);
+    expect(
+      createSamplingParameters({ temperature: 1.8 }, { provider: "bedrock", family: "claude-opus" })
+        .temperature,
+    ).toBe(1);
+    expect(createSamplingParameters({ temperature: 1.8 }, { provider: "openai" }).temperature).toBe(
+      1.8,
+    );
+  });
+
+  it("withholds top_p while provider thinking is active", () => {
+    expect(
+      createSamplingParameters({ top_p: 0.6, should_think: true }, { provider: "openai" }),
+    ).toEqual({});
   });
 });

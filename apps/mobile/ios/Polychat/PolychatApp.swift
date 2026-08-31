@@ -6,7 +6,6 @@ struct PolychatApp: App {
     @StateObject private var conversationManager = ConversationManager()
     @StateObject private var apiClient = APIClient.shared
     @StateObject private var modelsStore = ModelsStore()
-    @StateObject private var toolsStore = ToolsStore()
     
     var body: some Scene {
         WindowGroup {
@@ -15,7 +14,6 @@ struct PolychatApp: App {
                 .environmentObject(conversationManager)
                 .environmentObject(apiClient)
                 .environmentObject(modelsStore)
-                .environmentObject(toolsStore)
                 .onAppear {
                     authManager.configure(apiClient: apiClient)
                     conversationManager.configure(apiClient: apiClient, modelsStore: modelsStore)

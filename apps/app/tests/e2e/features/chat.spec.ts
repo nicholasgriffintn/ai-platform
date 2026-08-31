@@ -2,7 +2,7 @@ import { expect, test } from "../fixtures/polychat-test";
 import { createSilentWavFixture, TEXT_MESSAGE_CASES } from "../fixtures/test-data";
 import { captureVisualSnapshots, DEFAULT_VISUAL_CHECKPOINTS } from "../support/visual-cloud";
 
-const TEXT_MODEL = "Compound Mini";
+const TEXT_MODEL = "GPT OSS 120B";
 
 for (const persona of ["logged-out", "free", "pro"] as const) {
   test.describe(`Chat as ${persona}`, () => {
@@ -141,17 +141,33 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
       });
     });
 
-    test("moves between Live and Canvas surfaces", async ({ externalServices, homePage, page }) => {
-      await externalServices.mockGeminiLiveWebSocket();
+    test("cleans up a muted Live session before opening Canvas", async ({
+      externalServices,
+      homePage,
+      page,
+    }) => {
+      const liveSocket = await externalServices.mockGeminiLiveWebSocket();
+
       await homePage.navigate("/chat");
       await homePage.waitForPersonaReady(persona);
 
       await homePage.selectChatMode("Live");
       await expect(page).toHaveURL(/\/chat\?mode=live$/);
       await expect(page.getByRole("heading", { name: "Start a live session" })).toBeVisible();
-      expect(await homePage.startAndStopMutedLiveSession()).toBe(
-        persona === "logged-out" ? 401 : 200,
-      );
+      const sessionStatus = await homePage.startAndStopMutedLiveSession();
+
+      expect(sessionStatus).toBe(persona === "logged-out" ? 401 : 200);
+      if (persona === "logged-out") {
+        expect(liveSocket.opens).toBe(0);
+      } else {
+        await expect.poll(() => liveSocket.opens).toBe(1);
+        await expect.poll(() => liveSocket.setupMessages.length).toBe(1);
+        expect(liveSocket.setupMessages[0]).toMatchObject({
+          model: "models/gemini-3.1-flash-live-preview",
+        });
+        await expect.poll(() => liveSocket.closes.length).toBe(1);
+      }
+
       await captureVisualSnapshots(page, "release-chat-mode-live", {
         ...DEFAULT_VISUAL_CHECKPOINTS,
         viewports: [{ name: "desktop", width: 1280, height: 720 }],
@@ -327,10 +343,10 @@ test.describe("Response controls as pro", () => {
     });
   });
 
-  test("applies detailed generation and retrieval settings", async ({ homePage, page }) => {
+  test("applies detailed generation settings", async ({ homePage, page }) => {
     await homePage.navigate("/chat");
     await homePage.selectModel(TEXT_MODEL);
-    await homePage.configureDetailedChatSettings();
+    await homePage.configureDetailedGenerationSettings();
     const request = await homePage.sendMessageAndReadCompletionRequest(
       "Use the detailed settings for this release check",
     );
@@ -340,15 +356,8 @@ test.describe("Response controls as pro", () => {
       frequency_penalty: -0.3,
       max_tokens: 1024,
       presence_penalty: 0.4,
-      rag_options: {
-        include_metadata: true,
-        namespace: "release-docs",
-        score_threshold: 0.65,
-        top_k: 6,
-      },
       temperature: 0.4,
       top_p: 0.75,
-      use_rag: true,
     });
     await homePage.waitForChatResponse(0);
     await homePage.waitForResponseText(/E2E response:/);

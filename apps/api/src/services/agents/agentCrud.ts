@@ -1,70 +1,66 @@
 import type { CreateAgentInput, UpdateAgentInput } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { requireWorkspaceAccess } from "~/services/workspaces/access";
 import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+import { agentOwnerScopeForUser, requireAgentAccess } from "./access";
 import { normaliseAgentResponse } from "./agentResponse";
 
 export async function getUserAgents(context: ServiceContext, userId?: number) {
   context.ensureDatabase();
   const id = userId ?? context.requireUser().id;
+  const workspaces = await context.repositories.workspaces.listWorkspaces(id);
 
-  return (await context.repositories.agents.getAgentsByUser(id)).map(normaliseAgentResponse);
-}
-
-export async function getUserTeamAgents(context: ServiceContext, userId?: number) {
-  context.ensureDatabase();
-  const id = userId ?? context.requireUser().id;
-
-  return (await context.repositories.agents.getTeamAgents(id)).map(normaliseAgentResponse);
-}
-
-export async function getAgentsByTeam(context: ServiceContext, teamId: string, userId?: number) {
-  context.ensureDatabase();
-  const id = userId ?? context.requireUser().id;
-
-  return (await context.repositories.agents.getAgentsByTeamAndUser(teamId, id)).map(
-    normaliseAgentResponse,
-  );
+  return (
+    await context.repositories.agents.getAgentsForScopes(
+      id,
+      workspaces.map((workspace) => workspace.id),
+    )
+  ).map(normaliseAgentResponse);
 }
 
 export async function getAgentById(context: ServiceContext, agentId: string, userId?: number) {
   context.ensureDatabase();
-  const id = userId ?? context.requireUser().id;
-  const agent = await context.repositories.agents.getAgentById(agentId);
 
-  if (!agent) {
-    throw new AssistantError("Agent not found", ErrorType.NOT_FOUND);
+  return normaliseAgentResponse(await requireAgentAccess(context, agentId, "read", userId));
+}
+
+async function resolveNewAgentOwnerScope(
+  context: ServiceContext,
+  userId: number,
+  workspaceId: string | undefined,
+) {
+  if (!workspaceId) {
+    return agentOwnerScopeForUser(userId);
   }
 
-  if (agent.user_id !== id) {
-    throw new AssistantError("Forbidden", ErrorType.AUTHENTICATION_ERROR);
-  }
+  await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
 
-  return normaliseAgentResponse(agent);
+  return { ownerScopeType: "workspace" as const, ownerScopeId: workspaceId };
 }
 
 export async function createAgent(context: ServiceContext, params: CreateAgentInput, user?: IUser) {
   context.ensureDatabase();
   const currentUser = user ?? context.requireUser();
 
-  const agent = await context.repositories.agents.createAgent(
-    currentUser.id,
-    params.name,
-    params.description ?? "",
-    params.avatar_url || null,
-    params.servers || [],
-    params.model,
-    params.temperature,
-    params.max_steps,
-    params.system_prompt,
-    params.few_shot_examples,
-    params.enabled_tools,
-    params.team_id,
-    params.team_role,
-    params.is_team_agent,
-  );
+  const agent = await context.repositories.agents.createAgent({
+    userId: currentUser.id,
+    ...(await resolveNewAgentOwnerScope(context, currentUser.id, params.workspace_id)),
+    name: params.name,
+    description: params.description ?? "",
+    avatarUrl: params.avatar_url || null,
+    servers: params.servers || [],
+    model: params.model,
+    temperature: params.temperature,
+    maxSteps: params.max_steps,
+    systemPrompt: params.system_prompt,
+    fewShotExamples: params.few_shot_examples,
+    enabledTools: params.enabled_tools,
+    skillIds: params.skill_ids,
+    mode: params.mode,
+  });
 
   return normaliseAgentResponse(agent);
 }
@@ -78,18 +74,56 @@ export async function updateAgent(
   context.ensureDatabase();
   const id = userId ?? context.requireUser().id;
 
-  await getAgentById(context, agentId, id);
-
+  await requireAgentAccess(context, agentId, "write", id);
   await context.repositories.agents.updateAgent(agentId, updates);
 
   return getAgentById(context, agentId, id);
+}
+
+async function findProjectsUsingAgent(context: ServiceContext, agentId: string) {
+  const [attached, inFlows] = await Promise.all([
+    context.repositories.workspaces.listProjectsWithCapability("agent", agentId),
+    context.repositories.workspaces.listProjectsWithFlowStageAgent(agentId),
+  ]);
+
+  return [...new Map([...attached, ...inFlows].map((project) => [project.id, project])).values()];
+}
+
+async function unpublishSharedAgent(context: ServiceContext, agentId: string, userId: number) {
+  const listing = await context.repositories.sharedAgents.getSharedAgentByAgentId(agentId);
+
+  if (listing) {
+    await context.repositories.sharedAgents.deleteSharedAgent(userId, listing.id);
+  }
+
+  const install = await context.repositories.sharedAgents.getInstallByAgentId(userId, agentId);
+
+  if (install) {
+    await context.repositories.sharedAgents.uninstallAgent(userId, agentId);
+  }
 }
 
 export async function deleteAgent(context: ServiceContext, agentId: string, userId?: number) {
   context.ensureDatabase();
   const id = userId ?? context.requireUser().id;
 
-  await getAgentById(context, agentId, id);
+  await requireAgentAccess(context, agentId, "write", id);
+
+  const projects = await findProjectsUsingAgent(context, agentId);
+
+  if (projects.length > 0) {
+    throw new AssistantError(
+      `This agent is still used by ${projects.length} project${projects.length === 1 ? "" : "s"}: ${projects
+        .map((project) => project.name)
+        .join(
+          ", ",
+        )}. Detach it from each project, and remove it from any flow stage, before deleting it.`,
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  await unpublishSharedAgent(context, agentId, id);
   await context.repositories.agents.deleteAgent(agentId);
 
   return { success: true };

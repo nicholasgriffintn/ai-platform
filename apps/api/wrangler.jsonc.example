@@ -88,6 +88,10 @@
 			{
 				"name": "SANDBOX_RUN_COORDINATOR",
 				"class_name": "SandboxRunCoordinator"
+			},
+			{
+				"name": "REALTIME_PROXY_COORDINATOR",
+				"class_name": "RealtimeProxyCoordinator"
 			}
 		]
 	},
@@ -96,6 +100,12 @@
 			"tag": "v2",
 			"new_sqlite_classes": [
 				"SandboxRunCoordinator"
+			]
+		},
+		{
+			"tag": "v3",
+			"new_sqlite_classes": [
+				"RealtimeProxyCoordinator"
 			]
 		}
 	],

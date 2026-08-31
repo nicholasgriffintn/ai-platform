@@ -4,6 +4,17 @@ import type { VerbosityLevel } from "~/types";
 
 const PROVIDER_VERBOSITY_LEVELS = new Set<VerbosityLevel>(["low", "medium", "high"]);
 
+export function isConfiguredVerbosity(
+  modelConfig: ModelConfigItem | undefined,
+  verbosity: VerbosityLevel | undefined,
+): verbosity is VerbosityLevel {
+  if (!verbosity) {
+    return false;
+  }
+
+  return modelConfig?.verbosityConfig?.supportedVerbosityLevels?.includes(verbosity) ?? false;
+}
+
 export function shouldSendProviderVerbosity(
   modelConfig: ModelConfigItem | undefined,
   verbosity: VerbosityLevel | undefined,
@@ -12,5 +23,5 @@ export function shouldSendProviderVerbosity(
     return false;
   }
 
-  return modelConfig?.verbosityConfig?.supportedVerbosityLevels?.includes(verbosity) ?? false;
+  return isConfiguredVerbosity(modelConfig, verbosity);
 }

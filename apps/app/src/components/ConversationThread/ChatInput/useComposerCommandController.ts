@@ -56,10 +56,10 @@ export function useComposerCommandController({
     selectedAssistantAction,
   } = useChatStore();
   const includeAgents = assistantActionCatalog?.includeAgents !== false;
-  const { chatAgents } = useAgents({ enabled: includeAgents });
+  const { agents } = useAgents({ enabled: includeAgents });
   const [textareaCursorPosition, setTextareaCursorPosition] = useState(0);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
-  const selectedAgent = chatAgents.find((agent) => agent.id === selectedAgentId);
+  const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
   const ignoredDirectiveRanges = useMemo(() => {
     const ranges: ComposerDirectiveIgnoredRange[] = [];
 
@@ -108,7 +108,7 @@ export function useComposerCommandController({
   });
 
   useAgentToolDefaults({
-    agents: chatAgents,
+    agents,
     selectedAgentId,
     chatMode,
   });

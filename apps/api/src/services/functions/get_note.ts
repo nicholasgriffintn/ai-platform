@@ -1,27 +1,22 @@
 import { queryEmbeddings } from "~/services/apps/embeddings/query";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 import type { ApiToolDefinition } from "../../types/functions";
-import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import { get_note as get_noteDescriptor } from "./definitions/get_note";
+import { resolveRequestProjectId } from "./request-context";
 
 export const get_note: ApiToolDefinition = {
-  name: "get_note",
-  description:
-    "Retrieves previously saved notes based on title, tags, or content search. Use when users reference earlier information, need to continue work on a project, or want to review saved material.",
-  inputSchema: jsonSchemaToZod({
-    type: "object",
-    properties: {
-      query: {
-        type: "string",
-        description: "The query to search for",
-      },
-    },
-    required: ["query"],
-  }),
-  type: "premium",
-  costPerCall: 0,
-  permissions: ["read"],
+  ...get_noteDescriptor,
   execute: async (args, context) => {
     const req = context.request;
+
+    if (resolveRequestProjectId(req)) {
+      throw new AssistantError(
+        "Project document retrieval is not available yet",
+        ErrorType.CONFIGURATION_ERROR,
+        501,
+      );
+    }
 
     if (!args.query) {
       return {
@@ -34,11 +29,10 @@ export const get_note: ApiToolDefinition = {
 
     const response = await queryEmbeddings({
       request: {
-        query: {
-          query: args.query,
-          type: "note",
-        },
+        query: String(args.query),
+        type: "note",
       },
+      context: req.context,
       env: req.env,
       user: req.user,
     });

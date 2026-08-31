@@ -1,4 +1,12 @@
-import type { PetModelOverrides } from "@ngriffin_uk/polychat-schemas";
+import {
+  guardrailsProviderIds,
+  type GuardrailsProviderId,
+  type PetModelOverrides,
+} from "@ngriffin_uk/polychat-schemas";
+
+export function resolveGuardrailsProviderId(value: string): GuardrailsProviderId {
+  return guardrailsProviderIds.find((provider) => provider === value) ?? "llamaguard";
+}
 
 export interface UserSettings {
   id: string;
@@ -8,7 +16,7 @@ export interface UserSettings {
   preferences: string;
   tracking_enabled?: boolean;
   guardrails_enabled?: boolean;
-  guardrails_provider?: string;
+  guardrails_provider?: GuardrailsProviderId;
   bedrock_guardrail_id?: string;
   bedrock_guardrail_version?: string;
   embedding_provider?: string;
@@ -32,4 +40,16 @@ export interface UserSettings {
   pet_travel_enabled?: boolean;
   pet_animation_enabled?: boolean;
   pet_model_overrides?: PetModelOverrides;
+}
+
+export function prepareUserSettingsPayload(settings: Partial<UserSettings>): Partial<UserSettings> {
+  const payload = { ...settings };
+
+  if (payload.embedding_provider !== "s3vectors") {
+    delete payload.s3vectors_bucket_name;
+    delete payload.s3vectors_index_name;
+    delete payload.s3vectors_region;
+  }
+
+  return payload;
 }

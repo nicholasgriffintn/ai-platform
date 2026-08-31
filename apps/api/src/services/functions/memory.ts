@@ -8,7 +8,10 @@ import type { IUserSettings } from "~/types";
 import { sanitiseInput } from "~/utils/sanitise";
 
 import type { ApiToolDefinition } from "../../types/functions";
-import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import {
+  search_memories as search_memoriesDescriptor,
+  store_memory as store_memoryDescriptor,
+} from "./definitions/memory";
 
 async function getMemoryToolSettings(
   context: Parameters<ApiToolDefinition["execute"]>[1],
@@ -47,29 +50,7 @@ function errorResponse(name: string, content: string) {
 }
 
 export const search_memories: ApiToolDefinition = {
-  name: MEMORY_SEARCH_TOOL_NAME,
-  maxIdenticalCalls: 1,
-  description:
-    "Searches long-term memory in the current personal or workspace-project scope. Use when durable context would improve the answer and memory is enabled.",
-  inputSchema: jsonSchemaToZod({
-    type: "object",
-    properties: {
-      query: {
-        type: "string",
-        description: "The specific memory search query.",
-      },
-      top_k: {
-        type: "integer",
-        description: "The maximum number of memories to return.",
-        minimum: 1,
-        maximum: 10,
-      },
-    },
-    required: ["query"],
-  }),
-  type: "premium",
-  costPerCall: 0,
-  permissions: ["read"],
+  ...search_memoriesDescriptor,
   execute: async (args, context) => {
     const { userSettings, error } = await getMemoryToolSettings(context, MEMORY_SEARCH_TOOL_NAME);
 
@@ -113,26 +94,7 @@ export const search_memories: ApiToolDefinition = {
 };
 
 export const store_memory: ApiToolDefinition = {
-  name: MEMORY_STORE_TOOL_NAME,
-  description:
-    "Stores concise, durable context in the current personal or workspace-project scope. Use only for stable facts, preferences, schedules, or important context that should be remembered in future conversations.",
-  inputSchema: jsonSchemaToZod({
-    type: "object",
-    properties: {
-      text: {
-        type: "string",
-        description: "A concise memory to store.",
-      },
-      category: {
-        type: "string",
-        description: "Optional memory category such as preference, fact, schedule, or general.",
-      },
-    },
-    required: ["text"],
-  }),
-  type: "premium",
-  costPerCall: 0,
-  permissions: ["write"],
+  ...store_memoryDescriptor,
   execute: async (args, context) => {
     const { userSettings, error } = await getMemoryToolSettings(context, MEMORY_STORE_TOOL_NAME);
 

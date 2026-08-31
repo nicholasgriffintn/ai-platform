@@ -16,12 +16,8 @@ import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatSettings as ChatSettingsType, ReasoningEffort, VerbosityLevel } from "~/types";
 
-import { ToolSelector } from "./ToolSelector";
-
 interface ChatSettingsProps {
   isDisabled?: boolean;
-  supportsToolCalls?: boolean;
-  toolSelectionLocked?: boolean;
 }
 
 type NumericChatSettingKey =
@@ -37,21 +33,9 @@ function isChatCompactionMode(value: string): value is ChatCompactionMode {
   return value === "auto" || value === "off";
 }
 
-export const ChatSettings = ({
-  isDisabled = false,
-  supportsToolCalls = false,
-  toolSelectionLocked = false,
-}: ChatSettingsProps) => {
-  const {
-    chatMode,
-    chatSettings,
-    isAuthenticated,
-    isPro,
-    model,
-    setChatSettings,
-    setUseMultiModel,
-    useMultiModel,
-  } = useChatStore();
+export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
+  const { chatMode, chatSettings, isPro, model, setChatSettings, setUseMultiModel, useMultiModel } =
+    useChatStore();
   const [showSettings, setShowSettings] = useState(false);
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
   const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
@@ -68,14 +52,12 @@ export const ChatSettings = ({
   const verbosityOptions = getVerbosityOptions(selectedModelConfig);
   const defaultVerbosity = getDefaultVerbosity(selectedModelConfig);
   const showMultiModelToggle = isPro && !model && chatMode === "remote";
-  const showToolSelector =
-    isAuthenticated && (supportsToolCalls || (!model && chatMode === "remote"));
 
   const handleNumericSettingChange = (key: NumericChatSettingKey, value: string) => {
-    if (key === "max_tokens" && value.trim() === "") {
+    if (value.trim() === "") {
       const nextSettings = { ...chatSettings };
 
-      delete nextSettings.max_tokens;
+      delete nextSettings[key];
       setChatSettings(nextSettings);
 
       return;
@@ -159,9 +141,6 @@ export const ChatSettings = ({
       showMultiModelToggle={showMultiModelToggle}
       useMultiModel={useMultiModel}
       onUseMultiModelChange={setUseMultiModel}
-      showToolSelector={showToolSelector}
-      toolSelectionLocked={toolSelectionLocked}
-      toolSelectorSlot={<ToolSelector isDisabled={isDisabled} />}
       onNumericSettingChange={(key, value) =>
         handleNumericSettingChange(key as NumericChatSettingKey, value)
       }

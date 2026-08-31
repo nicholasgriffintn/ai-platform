@@ -125,6 +125,8 @@ export interface AgentLoopExecutionParams {
   context?: ServiceContext;
   userSettings?: IUserSettings;
   requestOptions?: ChatRequestOptions;
+  guardrailPrompt?: string;
+  deferOutputUntilValidated?: boolean;
   emit?: (event: AgentEvent) => Promise<void>;
   shouldStop?: () => boolean;
   assessFinish?: (context: {
@@ -188,6 +190,7 @@ export async function runAgentLoop(
     userId: params.context?.user?.id,
     serviceContext: params.context,
     shouldStop: params.shouldStop,
+    deferOutputUntilValidated: params.deferOutputUntilValidated,
   };
 
   const finalise = async (turn: TurnOutput) => {
@@ -206,6 +209,8 @@ export async function runAgentLoop(
       context: params.context,
       userSettings: params.userSettings,
       requestOptions: params.requestOptions,
+      guardrailPrompt: params.guardrailPrompt,
+      deferOutputUntilValidated: params.deferOutputUntilValidated,
     });
 
     guardrailsPassed = finalised.guardrailsPassed;
@@ -218,7 +223,7 @@ export async function runAgentLoop(
   const closingTurn = async (text: string, status?: string) => {
     finalStatus = status;
 
-    if (params.transport.streams && text) {
+    if (params.transport.streams && text && !params.deferOutputUntilValidated) {
       await sink.writeEvent("content_block_delta", { content: text });
     }
 
@@ -402,6 +407,18 @@ export async function runAgentLoop(
       }
 
       const message = await finalise(turn);
+
+      if (!guardrailsPassed) {
+        return {
+          toolCalls: [],
+          text: typeof message.content === "string" ? message.content : "",
+          assistantMessage: {
+            role: "assistant",
+            content: message.content,
+          },
+        };
+      }
+
       const hasToolCalls = turn.toolCalls.length > 0;
 
       steps.push({

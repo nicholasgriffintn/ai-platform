@@ -265,7 +265,7 @@ export function PetsPanel() {
         onDelete={(option) => void handleDelete(option)}
         onUpload={() => setIsUploadOpen(true)}
         onGenerate={() => setIsGenerateOpen(true)}
-        renderPreview={(option) => {
+        renderPreview={(option, size = 64) => {
           const url =
             option.source === "preset"
               ? resolvePetPreset(option.id).sheetUrl
@@ -276,7 +276,7 @@ export function PetsPanel() {
               sheetUrl={url}
               label={option.name}
               layout={option.layout}
-              size={64}
+              size={size}
               paused={!userSettings?.pet_animation_enabled}
               deferLoading={option.source === "custom"}
             />

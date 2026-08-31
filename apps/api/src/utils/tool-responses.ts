@@ -4,7 +4,6 @@ import {
   formatFunctionName,
   getFunctionIcon,
   getFunctionRenderer,
-  getFunctionResponseDisplay,
   getFunctionResponseType,
 } from "./functions";
 
@@ -17,7 +16,6 @@ export const formatToolResponse = (
   data: Record<string, any>;
 } => {
   const responseType = data?.responseType ?? getFunctionResponseType(toolName);
-  const responseDisplay = data?.responseDisplay ?? getFunctionResponseDisplay(toolName);
   const renderer = data?.renderer ?? getFunctionRenderer(toolName);
   const icon = data?.icon ?? getFunctionIcon(toolName);
   const formattedName = data?.formattedName ?? formatFunctionName(toolName);
@@ -27,7 +25,6 @@ export const formatToolResponse = (
     data: {
       ...data,
       ...(responseType ? { responseType } : {}),
-      ...(responseDisplay ? { responseDisplay } : {}),
       ...(renderer ? { renderer } : {}),
       icon,
       formattedName,

@@ -23,6 +23,29 @@ describe("UploadService", () => {
     mocks.returnFetchedData.mockResolvedValue({ sourceId: "source-1" });
   });
 
+  it("uploads dictation as an authenticated file form", async () => {
+    const service = new UploadService(async () => ({ Authorization: "Bearer token" }));
+    const audio = new Blob(["audio"], { type: "audio/webm" });
+
+    mocks.returnFetchedData.mockResolvedValue({
+      response: { status: "success", content: "Hello" },
+    });
+
+    await expect(service.transcribeAudio(audio)).resolves.toEqual({
+      response: { status: "success", content: "Hello" },
+    });
+
+    const requestInit = mocks.fetchApi.mock.calls[0]?.[1];
+
+    expect(requestInit?.headers).toEqual({ Authorization: "Bearer token" });
+    expect(requestInit?.body).toBeInstanceOf(FormData);
+    if (!(requestInit?.body instanceof FormData)) {
+      throw new Error("Expected transcription body to be FormData");
+    }
+
+    expect(requestInit.body.get("audio")).toBeInstanceOf(File);
+  });
+
   it("includes the project scope in file uploads", async () => {
     const service = new UploadService(async () => ({ Authorization: "Bearer token" }));
 

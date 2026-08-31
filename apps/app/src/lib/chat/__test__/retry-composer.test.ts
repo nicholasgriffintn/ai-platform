@@ -12,6 +12,14 @@ describe("getComposerDraftAfterRetry", () => {
     ).toBe("");
   });
 
+  it("preserves the draft when the history holds no user message to retry", () => {
+    expect(
+      getComposerDraftAfterRetry("A new thought", [
+        { role: "assistant", content: "Earlier response" },
+      ]),
+    ).toBe("A new thought");
+  });
+
   it("preserves a different draft the user started after the failed message", () => {
     expect(
       getComposerDraftAfterRetry("A new thought", [

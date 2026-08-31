@@ -1,49 +1,64 @@
+import type {
+  AgentFewShotExample,
+  AgentMcpServer,
+  AgentMode,
+  AgentOwnerScopeType,
+} from "@ngriffin_uk/polychat-schemas";
+
 import type { Agent } from "~/lib/database/schema";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
 import { BaseRepository } from "./BaseRepository";
 
+export interface CreateAgentRecord {
+  userId: number;
+  ownerScopeType: AgentOwnerScopeType;
+  ownerScopeId: string;
+  derivedFromAgentId?: string | null;
+  name: string;
+  description: string;
+  avatarUrl: string | null;
+  servers?: AgentMcpServer[];
+  model?: string | null;
+  temperature?: number | null;
+  maxSteps?: number | null;
+  systemPrompt?: string | null;
+  fewShotExamples?: AgentFewShotExample[] | null;
+  enabledTools?: string[] | null;
+  skillIds?: string[] | null;
+  mode?: AgentMode | null;
+}
+
 export class AgentRepository extends BaseRepository {
-  public async createAgent(
-    userId: number,
-    name: string,
-    description: string,
-    avatarUrl: string | null,
-    servers?: any[],
-    model?: string,
-    temperature?: number,
-    maxSteps?: number,
-    systemPrompt?: string,
-    fewShotExamples?: any[],
-    enabledTools?: string[],
-    teamId?: string | null,
-    teamRole?: string | null,
-    isTeamAgent?: boolean,
-  ): Promise<Agent> {
+  public async createAgent(record: CreateAgentRecord): Promise<Agent> {
     const id = generateId();
     const insert = this.buildInsertQuery(
       "agents",
       {
         id,
-        user_id: userId,
-        name,
-        description,
-        avatar_url: avatarUrl ?? null,
-        servers: servers ?? null,
-        model: model ?? null,
+        user_id: record.userId,
+        owner_scope_type: record.ownerScopeType,
+        owner_scope_id: record.ownerScopeId,
+        derived_from_agent_id: record.derivedFromAgentId ?? null,
+        name: record.name,
+        description: record.description,
+        avatar_url: record.avatarUrl ?? null,
+        servers: record.servers ?? null,
+        model: record.model ?? null,
         temperature:
-          temperature !== undefined && temperature !== null ? temperature.toString() : null,
-        max_steps: maxSteps ?? null,
-        system_prompt: systemPrompt ?? null,
-        few_shot_examples: fewShotExamples ?? null,
-        enabled_tools: enabledTools ?? null,
-        team_id: teamId ?? null,
-        team_role: teamRole ?? null,
-        is_team_agent: isTeamAgent ? 1 : 0,
+          record.temperature !== undefined && record.temperature !== null
+            ? record.temperature.toString()
+            : null,
+        max_steps: record.maxSteps ?? null,
+        system_prompt: record.systemPrompt ?? null,
+        few_shot_examples: record.fewShotExamples ?? null,
+        enabled_tools: record.enabledTools ?? null,
+        skill_ids: record.skillIds ?? null,
+        mode: record.mode ?? null,
       },
       {
-        jsonFields: ["servers", "few_shot_examples", "enabled_tools"],
+        jsonFields: ["servers", "few_shot_examples", "enabled_tools", "skill_ids"],
         returning: "*",
       },
     );
@@ -61,14 +76,35 @@ export class AgentRepository extends BaseRepository {
     return created;
   }
 
-  public async getAgentsByUser(userId: number): Promise<Agent[]> {
-    const { query, values } = this.buildSelectQuery(
-      "agents",
-      { user_id: userId },
-      { orderBy: "created_at DESC" },
-    );
+  public async getAgentsForScopes(userId: number, workspaceIds: string[]): Promise<Agent[]> {
+    const uniqueWorkspaceIds = [...new Set(workspaceIds)];
+    const workspaceClause = uniqueWorkspaceIds.length
+      ? ` OR (owner_scope_type = 'workspace' AND owner_scope_id IN (${uniqueWorkspaceIds
+          .map(() => "?")
+          .join(", ")}))`
+      : "";
 
-    return this.runQuery<Agent>(query, values);
+    return this.runQuery<Agent>(
+      `SELECT * FROM agents
+			 WHERE (owner_scope_type = 'user' AND owner_scope_id = ?)${workspaceClause}
+			 ORDER BY created_at DESC`,
+      [String(userId), ...uniqueWorkspaceIds],
+    );
+  }
+
+  public async getAgentsByIds(agentIds: string[]): Promise<Agent[]> {
+    const uniqueIds = [...new Set(agentIds)];
+
+    if (uniqueIds.length === 0) {
+      return [];
+    }
+
+    return this.runQuery<Agent>(
+      `SELECT * FROM agents
+			 WHERE id IN (${uniqueIds.map(() => "?").join(", ")})
+			 ORDER BY created_at DESC`,
+      uniqueIds,
+    );
   }
 
   public async getAgentById(agentId: string): Promise<Agent | null> {
@@ -82,17 +118,16 @@ export class AgentRepository extends BaseRepository {
     data: Partial<{
       name: string;
       description: string;
-      avatar_url: string;
-      servers: any[];
+      avatar_url: string | null;
+      servers: AgentMcpServer[];
       model: string;
       temperature: number;
       max_steps: number;
       system_prompt: string;
-      few_shot_examples: any[];
+      few_shot_examples: AgentFewShotExample[];
       enabled_tools: string[];
-      team_id: string;
-      team_role: string;
-      is_team_agent: boolean;
+      skill_ids: string[];
+      mode: AgentMode | null;
     }>,
   ): Promise<void> {
     const allowedFields = [
@@ -106,20 +141,15 @@ export class AgentRepository extends BaseRepository {
       "system_prompt",
       "few_shot_examples",
       "enabled_tools",
-      "team_id",
-      "team_role",
-      "is_team_agent",
+      "skill_ids",
+      "mode",
     ];
 
     const result = this.buildUpdateQuery("agents", data, allowedFields, "id = ?", [agentId], {
-      jsonFields: ["servers", "few_shot_examples", "enabled_tools"],
+      jsonFields: ["servers", "few_shot_examples", "enabled_tools", "skill_ids"],
       transformer: (field, value) => {
         if (field === "temperature" && value !== undefined && value !== null) {
           return value.toString();
-        }
-
-        if (field === "is_team_agent" && typeof value === "boolean") {
-          return value ? 1 : 0;
         }
 
         return value;
@@ -146,67 +176,5 @@ export class AgentRepository extends BaseRepository {
     }
 
     await this.executeRun(query, values);
-  }
-
-  public async createTeamAgent(
-    userId: number,
-    teamId: string,
-    teamRole: string,
-    name: string,
-    description: string,
-    avatarUrl: string | null,
-    servers?: any[],
-    model?: string,
-    temperature?: number,
-    maxSteps?: number,
-    systemPrompt?: string,
-    fewShotExamples?: any[],
-  ): Promise<Agent> {
-    return this.createAgent(
-      userId,
-      name,
-      description,
-      avatarUrl,
-      servers,
-      model,
-      temperature,
-      maxSteps,
-      systemPrompt,
-      fewShotExamples,
-      undefined,
-      teamId,
-      teamRole,
-      true,
-    );
-  }
-
-  public async getTeamAgents(userId: number): Promise<Agent[]> {
-    const { query, values } = this.buildSelectQuery(
-      "agents",
-      { user_id: userId, is_team_agent: 1 },
-      { orderBy: "created_at DESC" },
-    );
-
-    return this.runQuery<Agent>(query, values);
-  }
-
-  public async getAgentsByTeam(teamId: string): Promise<Agent[]> {
-    const { query, values } = this.buildSelectQuery(
-      "agents",
-      { team_id: teamId },
-      { orderBy: "created_at DESC" },
-    );
-
-    return this.runQuery<Agent>(query, values);
-  }
-
-  public async getAgentsByTeamAndUser(teamId: string, userId: number): Promise<Agent[]> {
-    const { query, values } = this.buildSelectQuery(
-      "agents",
-      { team_id: teamId, user_id: userId },
-      { orderBy: "created_at DESC" },
-    );
-
-    return this.runQuery<Agent>(query, values);
   }
 }

@@ -101,9 +101,6 @@ class ChatExecutionRequest {
       current_step: chatOptions.current_step,
       max_steps: resolvedMaxSteps,
       options: prepared.requestOptions || {},
-      current_agent_id: chatOptions.current_agent_id,
-      delegation_stack: chatOptions.delegation_stack,
-      max_delegation_depth: chatOptions.max_delegation_depth,
     };
   }
 }

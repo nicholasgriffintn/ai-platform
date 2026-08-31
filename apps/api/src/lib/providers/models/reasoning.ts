@@ -13,6 +13,25 @@ const PROVIDER_REASONING_EFFORTS = new Set<ReasoningEffortLevel>([
 ]);
 const PROMPT_ONLY_REASONING_EFFORTS = new Set<ReasoningEffortLevel>(["none", "simulated-thinking"]);
 
+export type AdaptiveThinkingEffort = Extract<
+  ReasoningEffortLevel,
+  "low" | "medium" | "high" | "xhigh" | "max"
+>;
+
+const ADAPTIVE_THINKING_EFFORTS: readonly ReasoningEffortLevel[] = [
+  "low",
+  "medium",
+  "high",
+  "xhigh",
+  "max",
+];
+
+function isAdaptiveThinkingEffort(
+  reasoningEffort: ReasoningEffortLevel,
+): reasoningEffort is AdaptiveThinkingEffort {
+  return ADAPTIVE_THINKING_EFFORTS.includes(reasoningEffort);
+}
+
 export function isConfiguredReasoningEffort(
   modelConfig: ModelConfigItem | undefined,
   reasoningEffort: ReasoningEffortLevel | undefined,
@@ -52,6 +71,25 @@ export function shouldEnableProviderThinking(
     !PROMPT_ONLY_REASONING_EFFORTS.has(reasoningEffort) &&
     isConfiguredReasoningEffort(modelConfig, reasoningEffort)
   );
+}
+
+export function usesAdaptiveThinkingApi(modelConfig: ModelConfigItem | undefined): boolean {
+  return modelConfig?.reasoningConfig?.thinkingApi === "adaptive";
+}
+
+export function usesBudgetThinkingApi(modelConfig: ModelConfigItem | undefined): boolean {
+  return modelConfig?.reasoningConfig?.thinkingApi === "budget";
+}
+
+export function resolveAdaptiveThinkingEffort(
+  modelConfig: ModelConfigItem | undefined,
+  reasoningEffort: ReasoningEffortLevel | undefined,
+): AdaptiveThinkingEffort | undefined {
+  if (!reasoningEffort || !isAdaptiveThinkingEffort(reasoningEffort)) {
+    return undefined;
+  }
+
+  return isConfiguredReasoningEffort(modelConfig, reasoningEffort) ? reasoningEffort : undefined;
 }
 
 export function resolveReasoningModel(

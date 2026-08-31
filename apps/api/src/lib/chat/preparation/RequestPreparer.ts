@@ -16,7 +16,10 @@ import {
   getConnectedRecipeConnectorProviders,
   listRecipeConnectors,
 } from "~/services/apps/connectors";
-import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
+import {
+  resolveEnabledFunctionToolNames,
+  resolveRequestFunctionToolNames,
+} from "~/services/functions/availability";
 import {
   buildSkillAvailabilityInput,
   listSkillAvailability,
@@ -34,7 +37,6 @@ import {
   type ProjectChatContext,
 } from "~/services/workspaces/chatContext";
 import type { ChatMode, CoreChatOptions, MemoryScope, Message, Platform } from "~/types";
-import { intersectEnabledTools } from "~/utils/enabledTools";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { memoizeRequest } from "~/utils/requestCache";
@@ -151,12 +153,21 @@ export class RequestPreparer {
     );
   }
 
+  private resolveRequestTools(scope: RequestScope) {
+    return resolveRequestFunctionToolNames({
+      projectTools: scope.projectContext?.enabledTools,
+      requestedToolNames: scope.options.enabled_tools,
+      toolSelectionMode: scope.options.tool_selection_mode,
+      user: scope.user,
+    });
+  }
+
   private resolveConnectedConnectorProviders(scope: RequestScope) {
     const { options, user, projectContext } = scope;
-    const requestedTools = projectContext
-      ? intersectEnabledTools(projectContext.enabledTools, options.enabled_tools)
-      : options.enabled_tools;
-    const enabledFunctionTools = resolveEnabledFunctionToolNames(requestedTools, user);
+    const enabledFunctionTools = resolveEnabledFunctionToolNames(
+      this.resolveRequestTools(scope),
+      user,
+    );
 
     if (!user?.id || !options.context || !enabledFunctionTools.has("use_recipe_connector")) {
       return Promise.resolve(undefined);
@@ -277,6 +288,7 @@ export class RequestPreparer {
       user: user || undefined,
       anonymousUser: scope.options.anonymousUser,
       model: primaryModel,
+      provider: primaryProvider,
       platform,
       store: scope.options.store,
       env: this.env,
@@ -302,9 +314,7 @@ export class RequestPreparer {
       skillScopePromise,
       scopedSkillCatalogPromise,
     ]);
-    const enabledTools = projectContext
-      ? intersectEnabledTools(projectContext.enabledTools, scope.options.enabled_tools)
-      : scope.options.enabled_tools;
+    const enabledTools = this.resolveRequestTools(scope);
     const skills: readonly SkillAvailability[] = await listSkillAvailability(
       buildSkillAvailabilityInput({
         skillScope,

@@ -22,31 +22,53 @@ function getStub(env: IEnv | undefined, conversationId: string): DurableObjectSt
   return env.CONVERSATION_COORDINATOR.get(id);
 }
 
-async function call<T>(
+type CoordinatorOutcome<T> =
+  | { status: "ok"; data: T }
+  | { status: "unavailable" }
+  | { status: "failed" };
+
+async function callCoordinator<T>(
   env: IEnv | undefined,
   conversationId: string,
   path: string,
   init?: RequestInit,
-): Promise<T | null> {
+): Promise<CoordinatorOutcome<T>> {
   const stub = getStub(env, conversationId);
 
   if (!stub) {
-    return null;
+    return { status: "unavailable" };
   }
 
   try {
     const response = await stub.fetch(`${COORDINATOR_ORIGIN}${path}`, init);
 
     if (!response.ok) {
-      return null;
+      logger.error("Conversation coordinator refused a call", {
+        conversationId,
+        path,
+        status: response.status,
+      });
+
+      return { status: "failed" };
     }
 
-    return (await response.json()) as T;
+    return { status: "ok", data: (await response.json()) as T };
   } catch (error) {
     logger.error("Conversation coordinator call failed", { error, path, conversationId });
 
-    return null;
+    return { status: "failed" };
   }
+}
+
+async function call<T>(
+  env: IEnv | undefined,
+  conversationId: string,
+  path: string,
+  init?: RequestInit,
+): Promise<T | null> {
+  const outcome = await callCoordinator<T>(env, conversationId, path, init);
+
+  return outcome.status === "ok" ? outcome.data : null;
 }
 
 export async function enqueueThreadInstruction(params: {
@@ -89,34 +111,38 @@ export async function claimThreadInstruction(params: {
 /**
  * Takes the thread for a synchronous operation. Returns false when another
  * operation already holds it, so the caller can refuse rather than race.
- * When the coordinator binding is absent the thread is treated as free, so a
- * deployment without the Durable Object behaves exactly as it did before.
+ * A deployment without the Durable Object treats the thread as free, exactly
+ * as it did before the coordinator existed. A coordinator that is configured
+ * but unreachable refuses instead: granting a lock we could not take would
+ * let two turns interleave writes to the same conversation, and the caller
+ * can retry a refusal.
  */
 export async function acquireThread(params: {
   env: IEnv | undefined;
   conversationId: string;
   kind: SubmitThreadInstruction["kind"];
 }): Promise<{ acquired: boolean; currentOperation?: string | null }> {
-  if (!params.env?.CONVERSATION_COORDINATOR) {
+  const outcome = await callCoordinator<{
+    acquired?: boolean;
+    currentOperation?: string | null;
+  }>(params.env, params.conversationId, "/acquire", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind: params.kind }),
+  });
+
+  if (outcome.status === "unavailable") {
     return { acquired: true };
   }
 
-  const result = await call<{ acquired?: boolean; currentOperation?: string | null }>(
-    params.env,
-    params.conversationId,
-    "/acquire",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kind: params.kind }),
-    },
-  );
-
-  if (!result) {
-    return { acquired: true };
+  if (outcome.status === "failed") {
+    return { acquired: false, currentOperation: null };
   }
 
-  return { acquired: result.acquired === true, currentOperation: result.currentOperation };
+  return {
+    acquired: outcome.data.acquired === true,
+    currentOperation: outcome.data.currentOperation,
+  };
 }
 
 export async function releaseThread(params: {

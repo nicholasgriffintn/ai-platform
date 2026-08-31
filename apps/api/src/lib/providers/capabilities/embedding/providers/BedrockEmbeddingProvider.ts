@@ -11,9 +11,10 @@ import type {
   EmbeddingProvider,
   EmbeddingQueryResult,
   EmbeddingVector,
+  EmbeddingWriteOptions,
   IEnv,
   IUser,
-  RagOptions,
+  ManagedKnowledgeBaseQueryOptions,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -69,7 +70,7 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
     type: string,
     content: string,
     id: string,
-    metadata: Record<string, any>,
+    metadata: Record<string, unknown>,
   ): Promise<EmbeddingVector[]> {
     try {
       if (!type || !content || !id) {
@@ -83,11 +84,11 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
         {
           id,
           values: [],
-          metadata: { ...metadata, type, content },
+          metadata: { ...metadata, type },
         },
       ];
     } catch (error) {
-      logger.error("Bedrock Embedding API error:", { error });
+      logger.error("Bedrock embedding generation failed");
       throw error;
     }
   }
@@ -107,8 +108,8 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
           accessKeyId = credentials.accessKey;
           secretAccessKey = credentials.secretKey;
         }
-      } catch (error) {
-        logger.warn("Failed to get user API key for bedrock:", { error });
+      } catch {
+        logger.warn("Failed to load Bedrock credentials");
       }
     }
 
@@ -128,7 +129,7 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 
   async insert(
     embeddings: EmbeddingVector[],
-    options: RagOptions = {},
+    options: EmbeddingWriteOptions = {},
   ): Promise<EmbeddingMutationResult> {
     logger.debug("Inserting embeddings into Bedrock Knowledge Base", {
       count: embeddings.length,
@@ -162,7 +163,7 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
                 : {
                     type: "TEXT",
                     textContent: {
-                      data: metadata.content || "",
+                      data: embedding.content || metadata.content || "",
                     },
                   },
             },
@@ -200,21 +201,8 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
       );
     }
 
-    let responseData: unknown = null;
-
-    if (typeof response.json === "function") {
-      try {
-        responseData = await response.json();
-      } catch (error) {
-        logger.warn("Failed to parse Bedrock response JSON", { error });
-      }
-    } else if (typeof response.text === "function") {
-      responseData = await response.text();
-    }
-
     logger.debug("Bedrock Knowledge Base API response", {
       status: response.status,
-      data: responseData,
     });
 
     return {
@@ -224,10 +212,11 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
   }
 
   async delete(_ids: string[]): Promise<{ status: string; error: string | null }> {
-    return {
-      status: "error",
-      error: "Not implemented",
-    };
+    throw new AssistantError(
+      "Bedrock embedding lifecycle is not available",
+      ErrorType.CONFIGURATION_ERROR,
+      503,
+    );
   }
 
   async getQuery(query: string): Promise<{ data: any; status: { success: boolean } }> {
@@ -237,15 +226,15 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
     };
   }
 
-  private buildVectorSearchConfiguration(options: RagOptions) {
+  private buildVectorSearchConfiguration(options: ManagedKnowledgeBaseQueryOptions) {
     const vectorSearchConfiguration: Record<string, unknown> = {};
 
     if (typeof options.topK === "number" && Number.isFinite(options.topK) && options.topK > 0) {
       vectorSearchConfiguration.numberOfResults = Math.trunc(options.topK);
     }
 
-    if (options.type && typeof options.type === "string") {
-      const overrideSearchType = options.type.trim().toUpperCase();
+    if (options.searchType) {
+      const overrideSearchType = options.searchType.trim().toUpperCase();
 
       if (overrideSearchType.length > 0) {
         vectorSearchConfiguration.overrideSearchType = overrideSearchType;
@@ -261,7 +250,10 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
     return Object.keys(vectorSearchConfiguration).length ? vectorSearchConfiguration : null;
   }
 
-  async getMatches(queryVector: string, options: RagOptions = {}): Promise<EmbeddingQueryResult> {
+  async getMatches(
+    queryVector: string,
+    options: ManagedKnowledgeBaseQueryOptions = {},
+  ): Promise<EmbeddingQueryResult> {
     const url = `${this.agentRuntimeEndpoint}/knowledgebases/${this.knowledgeBaseId}/retrieve`;
 
     const vectorSearchConfiguration = this.buildVectorSearchConfiguration(options);
@@ -322,21 +314,5 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
       })),
       count: data.retrievalResults.length,
     };
-  }
-
-  async searchSimilar(query: string, options: RagOptions = {}) {
-    const matchesResponse = await this.getMatches(query, options);
-
-    if (!matchesResponse.matches.length) {
-      throw new AssistantError("No matches found", ErrorType.NOT_FOUND);
-    }
-
-    return matchesResponse.matches.map((match) => ({
-      title: match.title || match.metadata?.title || "",
-      content: match.content || match.metadata?.content || "",
-      metadata: match.metadata || {},
-      score: match.score,
-      type: match.metadata?.type || "text",
-    }));
   }
 }

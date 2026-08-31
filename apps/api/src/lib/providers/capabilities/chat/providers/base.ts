@@ -132,6 +132,7 @@ export abstract class BaseProvider implements AIProvider {
       providerName: this.name,
       envKeyName: this.getProviderKeyName(),
       userId,
+      credentialAuthority: params.credentialAuthority,
       logger,
     });
   }

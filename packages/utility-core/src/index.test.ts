@@ -4,6 +4,7 @@ import {
   areUserIdsEqual,
   clampPercentage,
   compareNaturalText,
+  escapeHtml,
   formatRelativeTime,
   formatUnknownValue,
   joinNonEmptyStrings,
@@ -65,5 +66,12 @@ describe("utility-core", () => {
     expect(formatRelativeTime("2026-08-30 12:30:00", new Date("2026-08-30T12:31:00Z"))).toBe(
       "1 minute ago",
     );
+  });
+
+  it("escapes every character that could break out of markup or an attribute", () => {
+    expect(escapeHtml(`<img src="x" onerror='alert(1)'>&`)).toBe(
+      "&lt;img src=&quot;x&quot; onerror=&#39;alert(1)&#39;&gt;&amp;",
+    );
+    expect(escapeHtml("&lt;")).toBe("&amp;lt;");
   });
 });

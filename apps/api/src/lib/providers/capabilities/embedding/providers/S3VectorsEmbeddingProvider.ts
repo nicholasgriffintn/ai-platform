@@ -2,25 +2,34 @@ import type { Ai } from "@cloudflare/workers-types";
 import { AwsClient } from "aws4fetch";
 
 import { gatewayId } from "~/constants/app";
+import { WORKERS_EMBEDDING_MODEL } from "~/lib/providers/capabilities/embedding/constants";
 import {
   buildS3VectorsMetadataFilter,
+  getEmbeddingCredentialFingerprint,
+  requireEmbeddingScopeTag,
   withEmbeddingScopeMetadata,
 } from "~/lib/providers/capabilities/embedding/utils/scope";
 import { formatProviderError } from "~/lib/providers/utils/errors";
+import { parseAwsCredentials } from "~/lib/providers/utils/helpers";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type {
   EmbeddingMutationResult,
   EmbeddingProvider,
+  EmbeddingQueryOptions,
   EmbeddingQueryResult,
   EmbeddingVector,
+  EmbeddingWriteOptions,
   IEnv,
   IUser,
-  RagOptions,
+  NumericEmbeddingQuery,
 } from "~/types";
+import { paginate } from "~/utils/arrays";
+import { parseEmbeddingVectors } from "~/utils/embeddings";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/embedding/s3vectors" });
+const MAX_S3_VECTOR_DELETE_KEYS = 500;
 
 export interface S3VectorsEmbeddingProviderConfig {
   bucketName: string;
@@ -28,6 +37,7 @@ export interface S3VectorsEmbeddingProviderConfig {
   region?: string;
   accessKeyId: string;
   secretAccessKey: string;
+  expectedCredentialFingerprint?: string;
   ai: Ai;
 }
 
@@ -40,6 +50,7 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
   private user?: IUser;
   private defaultAccessKeyId: string;
   private defaultSecretAccessKey: string;
+  private expectedCredentialFingerprint?: string;
   private ai: Ai;
 
   constructor(config: S3VectorsEmbeddingProviderConfig, env: IEnv, user?: IUser) {
@@ -51,28 +62,15 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
     this.user = user;
     this.defaultAccessKeyId = config.accessKeyId || "";
     this.defaultSecretAccessKey = config.secretAccessKey || "";
+    this.expectedCredentialFingerprint = config.expectedCredentialFingerprint;
     this.ai = config.ai;
-  }
-
-  private parseAwsCredentials(apiKey: string): {
-    accessKey: string;
-    secretKey: string;
-  } {
-    const delimiter = "::@@::";
-    const parts = apiKey.split(delimiter);
-
-    if (parts.length !== 2) {
-      throw new AssistantError("Invalid AWS credentials format", ErrorType.CONFIGURATION_ERROR);
-    }
-
-    return { accessKey: parts[0], secretKey: parts[1] };
   }
 
   async generate(
     type: string,
     content: string,
     id: string,
-    metadata: Record<string, any>,
+    metadata: Record<string, unknown>,
   ): Promise<EmbeddingVector[]> {
     try {
       if (!type || !content || !id) {
@@ -82,10 +80,10 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
         );
       }
 
-      logger.debug("Generating embeddings with S3 Vectors", { type, id });
+      logger.debug("Generating embeddings with S3 Vectors", { type });
 
       const response = await this.ai.run(
-        "@cf/baai/bge-large-en-v1.5",
+        WORKERS_EMBEDDING_MODEL,
         { text: [content] },
         {
           gateway: {
@@ -96,47 +94,71 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
         },
       );
 
-      // @ts-ignore
-      if (!response.data) {
-        throw new AssistantError("No data returned from embedding model");
-      }
+      logger.debug("S3 Vectors embedding generation completed");
 
-      logger.debug("S3 Vectors embedding generation result", {
-        id,
-        metadata: { ...metadata, type, content },
-      });
-
-      // @ts-ignore
-      return response.data.map((vector: number[]) => ({
-        id,
-        values: vector,
-        metadata: { ...metadata, type, content },
-      }));
+      return parseEmbeddingVectors(response, "No data returned from embedding model").map(
+        (vector) => ({
+          id,
+          values: vector,
+          metadata: { ...metadata, type },
+        }),
+      );
     } catch (error) {
-      logger.error("S3 Vectors Embedding API error:", { error });
+      logger.error("S3 Vectors embedding generation failed");
       throw error;
     }
   }
 
   async getAwsClient() {
-    let accessKeyId = this.defaultAccessKeyId;
-    let secretAccessKey = this.defaultSecretAccessKey;
+    if (this.user?.id) {
+      if (!this.env.DB) {
+        throw new AssistantError(
+          "S3 Vectors user credentials are unavailable",
+          ErrorType.CONFIGURATION_ERROR,
+        );
+      }
 
-    if (this.user?.id && this.env.DB) {
       try {
         const userSettingsRepo = new UserSettingsRepository(this.env);
-        const userApiKey = await userSettingsRepo.getProviderApiKey(this.user.id, "bedrock");
+        const userApiKey = await userSettingsRepo.getProviderApiKey(this.user.id, "s3vectors");
 
-        if (userApiKey) {
-          const credentials = this.parseAwsCredentials(userApiKey);
-
-          accessKeyId = credentials.accessKey;
-          secretAccessKey = credentials.secretKey;
+        if (!userApiKey) {
+          throw new AssistantError(
+            "S3 Vectors user credentials are not configured",
+            ErrorType.CONFIGURATION_ERROR,
+          );
         }
-      } catch (error) {
-        logger.warn("Failed to get user API key for s3vectors:", { error });
+
+        const credentials = parseAwsCredentials(userApiKey);
+
+        if (
+          this.expectedCredentialFingerprint &&
+          (await getEmbeddingCredentialFingerprint(this.env.EMBEDDING_SCOPE_SECRET, userApiKey)) !==
+            this.expectedCredentialFingerprint
+        ) {
+          throw new AssistantError(
+            "S3 Vectors credentials changed after the target was recorded",
+            ErrorType.CONFIGURATION_ERROR,
+          );
+        }
+
+        return new AwsClient({
+          accessKeyId: credentials.accessKey,
+          secretAccessKey: credentials.secretKey,
+          region: this.region,
+          service: "s3vectors",
+        });
+      } catch {
+        logger.warn("Failed to load S3 Vectors credentials");
+        throw new AssistantError(
+          "S3 Vectors user credentials are invalid or unavailable",
+          ErrorType.CONFIGURATION_ERROR,
+        );
       }
     }
+
+    const accessKeyId = this.defaultAccessKeyId;
+    const secretAccessKey = this.defaultSecretAccessKey;
 
     if (!accessKeyId || !secretAccessKey) {
       throw new AssistantError("No valid credentials found", ErrorType.CONFIGURATION_ERROR);
@@ -154,8 +176,9 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 
   async insert(
     embeddings: EmbeddingVector[],
-    options: RagOptions = {},
+    options: EmbeddingWriteOptions = {},
   ): Promise<EmbeddingMutationResult> {
+    requireEmbeddingScopeTag(options);
     logger.debug("Inserting embeddings into S3 Vectors", {
       count: embeddings.length,
     });
@@ -203,31 +226,33 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 
   async delete(ids: string[]): Promise<{ status: string; error: string | null }> {
     try {
-      logger.debug("Deleting embeddings from S3 Vectors", { ids });
+      logger.debug("Deleting embeddings from S3 Vectors", { count: ids.length });
       const url = `${this.endpoint}/DeleteVectors`;
-
-      const body = JSON.stringify({
-        vectorBucketName: this.bucketName,
-        indexName: this.indexName,
-        keys: ids,
-      });
-
       const aws = await this.getAwsClient();
-      const response = await aws.fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body,
-      });
 
-      if (!response.ok) {
-        throw new AssistantError(
-          await formatProviderError(response, "S3 Vectors API error"),
-          ErrorType.PROVIDER_ERROR,
-          response.status,
-        );
-      }
+      await Promise.all(
+        paginate(ids, MAX_S3_VECTOR_DELETE_KEYS).map(async (keys) => {
+          const response = await aws.fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              vectorBucketName: this.bucketName,
+              indexName: this.indexName,
+              keys,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new AssistantError(
+              await formatProviderError(response, "S3 Vectors API error"),
+              ErrorType.PROVIDER_ERROR,
+              response.status,
+            );
+          }
+        }),
+      );
 
       logger.debug("S3 Vectors delete response", { status: "success" });
 
@@ -235,12 +260,12 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
         status: "success",
         error: null,
       };
-    } catch (error) {
-      logger.error("S3 Vectors delete error:", { error });
+    } catch {
+      logger.error("S3 Vectors delete failed");
 
       return {
         status: "error",
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: "S3 Vectors delete failed",
       };
     }
   }
@@ -253,10 +278,10 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
       );
     }
 
-    logger.debug("Generating embeddings with S3 Vectors", { query });
+    logger.debug("Generating query embedding with S3 Vectors");
 
     const response = await this.ai.run(
-      "@cf/baai/bge-large-en-v1.5",
+      WORKERS_EMBEDDING_MODEL,
       { text: [query] },
       {
         gateway: {
@@ -267,31 +292,36 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
       },
     );
 
-    // @ts-ignore
-    if (!response.data) {
-      throw new AssistantError("No data returned from embedding model");
-    }
+    const vectors = parseEmbeddingVectors(response, "No data returned from embedding model");
 
     logger.debug("S3 Vectors query embedding result");
 
     return {
-      // @ts-ignore
-      data: response.data,
+      data: vectors,
       status: { success: true },
     };
   }
 
-  async getMatches(queryVector: number[], options: RagOptions = {}): Promise<EmbeddingQueryResult> {
-    logger.debug("Querying S3 Vectors", { options });
+  async getMatches(
+    queryVector: NumericEmbeddingQuery,
+    options: EmbeddingQueryOptions = {},
+  ): Promise<EmbeddingQueryResult> {
+    requireEmbeddingScopeTag(options);
+    logger.debug("Querying S3 Vectors");
     const url = `${this.endpoint}/QueryVectors`;
+    const float32 = Array.from(queryVector);
+
+    if (float32.length === 0 || float32.some((value) => !Number.isFinite(value))) {
+      throw new AssistantError("Invalid query vector", ErrorType.PARAMS_ERROR, 400);
+    }
 
     const request: Record<string, any> = {
       vectorBucketName: this.bucketName,
       topK: options.topK ?? 15,
       returnDistance: true,
-      returnMetadata: true,
+      returnMetadata: options.returnMetadata !== undefined && options.returnMetadata !== "none",
       queryVector: {
-        float32: queryVector,
+        float32,
       },
     };
 
@@ -326,7 +356,7 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 
     const data = (await response.json()) as any;
 
-    logger.debug("S3 Vectors query result", { data });
+    logger.debug("S3 Vectors query completed", { count: data.vectors?.length || 0 });
 
     return {
       matches:
@@ -339,27 +369,5 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
         })) || [],
       count: data.vectors?.length || 0,
     };
-  }
-
-  async searchSimilar(query: string, options: RagOptions = {}) {
-    const queryVector = await this.getQuery(query);
-
-    if (!queryVector.data) {
-      throw new AssistantError("No embedding data found", ErrorType.NOT_FOUND);
-    }
-
-    const matchesResponse = await this.getMatches(queryVector.data[0], options);
-
-    if (!matchesResponse.matches.length) {
-      throw new AssistantError("No matches found", ErrorType.NOT_FOUND);
-    }
-
-    return matchesResponse.matches.map((match) => ({
-      title: match.title || match.metadata?.title || "",
-      content: match.content || match.metadata?.content || "",
-      metadata: match.metadata || {},
-      score: match.score,
-      type: match.metadata?.type || "text",
-    }));
   }
 }

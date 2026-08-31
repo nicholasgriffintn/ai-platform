@@ -40,3 +40,33 @@ describe("OpenAI Responses history formatting", () => {
     ]);
   });
 });
+
+describe("Mistral reasoning history formatting", () => {
+  it("replays thinking chunks in Mistral's nested content shape", () => {
+    expect(
+      MessageFormatter.formatMessages(
+        [
+          {
+            role: "assistant",
+            content: [
+              { type: "thinking", thinking: "Preserved reasoning" },
+              { type: "text", text: "Final answer" },
+            ],
+          },
+        ],
+        { provider: "mistral" },
+      ),
+    ).toEqual([
+      {
+        role: "assistant",
+        content: [
+          {
+            type: "thinking",
+            thinking: [{ type: "text", text: "Preserved reasoning" }],
+          },
+          { type: "text", text: "Final answer" },
+        ],
+      },
+    ]);
+  });
+});

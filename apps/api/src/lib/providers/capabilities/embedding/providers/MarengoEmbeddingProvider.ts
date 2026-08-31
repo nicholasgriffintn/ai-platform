@@ -1,17 +1,23 @@
 import type { Vectorize } from "@cloudflare/workers-types";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
-import { withEmbeddingScopeMetadata } from "~/lib/providers/capabilities/embedding/utils/scope";
+import {
+  requireEmbeddingScopeTag,
+  withEmbeddingScopeMetadata,
+} from "~/lib/providers/capabilities/embedding/utils/scope";
 import { getModelConfig } from "~/lib/providers/models";
 import type {
   EmbeddingMutationResult,
   EmbeddingProvider,
+  EmbeddingQueryOptions,
   EmbeddingQueryResult,
   EmbeddingVector,
+  EmbeddingWriteOptions,
   IEnv,
   IUser,
-  RagOptions,
+  NumericEmbeddingQuery,
 } from "~/types";
+import { paginate } from "~/utils/arrays";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
@@ -19,6 +25,7 @@ import { getLogger } from "~/utils/logger";
 import { getChatProvider } from "../../chat";
 
 const logger = getLogger({ prefix: "lib/embedding/marengo" });
+const MAX_VECTORIZE_DELETE_IDS = 500;
 
 export interface MarengoEmbeddingProviderConfig {
   vector_db: Vectorize;
@@ -46,7 +53,7 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
     type: string,
     content: string,
     id: string,
-    metadata: Record<string, any>,
+    metadata: Record<string, unknown>,
   ): Promise<EmbeddingVector[]> {
     try {
       if (!type || !content || !id) {
@@ -56,7 +63,7 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
         );
       }
 
-      logger.debug("Generating embeddings with Marengo", { type, id });
+      logger.debug("Generating embeddings with Marengo", { type });
 
       const marengoModelName = "marengo-embed";
       const marengoModelConfig = await getModelConfig(marengoModelName);
@@ -119,17 +126,9 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
       const mergedMetadata = {
         ...metadata,
         type,
-        source: "marengo",
-        startSec: marengoResponse.startSec,
-        endSec: marengoResponse.endSec,
-        embeddingOption: marengoResponse.embeddingOption,
       };
 
-      logger.debug("Marengo embedding generation result", {
-        id,
-        values: marengoResponse.embedding,
-        metadata: mergedMetadata,
-      });
+      logger.debug("Marengo embedding generation completed");
 
       return [
         {
@@ -139,20 +138,19 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
         },
       ];
     } catch (error) {
-      logger.error("Marengo Embedding API error:", { error });
+      logger.error("Marengo embedding generation failed");
       throw error instanceof AssistantError
         ? error
-        : new AssistantError(
-            `Marengo embedding generation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-            ErrorType.EXTERNAL_API_ERROR,
-          );
+        : new AssistantError("Marengo embedding generation failed", ErrorType.EXTERNAL_API_ERROR);
     }
   }
 
   async insert(
     embeddings: EmbeddingVector[],
-    options: RagOptions = {},
+    options: EmbeddingWriteOptions = {},
   ): Promise<EmbeddingMutationResult> {
+    const scopeTag = requireEmbeddingScopeTag(options);
+
     try {
       logger.debug("Inserting embeddings into Marengo Vector DB", {
         count: embeddings.length,
@@ -162,7 +160,7 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
           id: embedding.id,
           values: embedding.values,
           metadata: withEmbeddingScopeMetadata(embedding.metadata, options),
-          namespace: options.namespace || "assistant-embeddings",
+          namespace: scopeTag,
         })),
       );
 
@@ -174,30 +172,32 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
         status: "success",
         error: null,
       };
-    } catch (error) {
-      logger.error("Failed to insert embeddings:", { error });
+    } catch {
+      logger.error("Failed to insert Marengo embeddings");
 
       return {
         status: "error",
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: "Marengo vector insert failed",
       };
     }
   }
 
   async delete(ids: string[]): Promise<EmbeddingMutationResult> {
     try {
-      await this.vector_db.deleteByIds(ids);
+      await Promise.all(
+        paginate(ids, MAX_VECTORIZE_DELETE_IDS).map((page) => this.vector_db.deleteByIds(page)),
+      );
 
       return {
         status: "success",
         error: null,
       };
-    } catch (error) {
-      logger.error("Failed to delete embeddings:", { error, ids });
+    } catch {
+      logger.error("Failed to delete Marengo embeddings");
 
       return {
         status: "error",
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: "Marengo vector delete failed",
       };
     }
   }
@@ -209,27 +209,12 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
     );
   }
 
-  async getMatches(_queryVector: any, _options: RagOptions = {}): Promise<EmbeddingQueryResult> {
+  async getMatches(
+    _queryVector: NumericEmbeddingQuery,
+    _options: EmbeddingQueryOptions = {},
+  ): Promise<EmbeddingQueryResult> {
     throw new AssistantError(
       "Match operation not supported by Marengo provider",
-      ErrorType.NOT_FOUND,
-    );
-  }
-
-  async searchSimilar(
-    _query: string,
-    _options?: RagOptions,
-  ): Promise<
-    {
-      title: string;
-      content: string;
-      metadata: Record<string, any>;
-      score: number;
-      type: string;
-    }[]
-  > {
-    throw new AssistantError(
-      "Search operation not supported by Marengo provider",
       ErrorType.NOT_FOUND,
     );
   }

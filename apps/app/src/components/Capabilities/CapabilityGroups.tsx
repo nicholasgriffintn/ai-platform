@@ -2,6 +2,7 @@ import {
   CapabilityCard,
   CapabilityCategoryGroup,
   CapabilityGroupSection,
+  type AuthoredCapabilityCardState,
 } from "@ngriffin_uk/polychat-component-capabilities";
 import { parseModelToolConfiguration } from "@ngriffin_uk/polychat-schemas";
 import type {
@@ -49,10 +50,57 @@ interface CapabilityGroupsProps {
   toolById: Map<string, ModelToolDefinition>;
   toolConfigurationById: Map<string, Record<string, unknown>>;
   surface: CapabilitySurface;
-  authoredSkillActions: {
-    canDelete: boolean;
-    onDelete: (skillId: string, label: string) => void;
-    pendingSkillId?: string;
+  authoredSkillActions: AuthoredSkillActions;
+  agentActions: AgentCardActions;
+}
+
+export interface AuthoredSkillActions {
+  canDelete: boolean;
+  onDelete: (skillId: string, label: string) => void;
+  pendingSkillId?: string;
+}
+
+export interface AgentCardActions {
+  canManage: (agentId: string) => boolean;
+  canShare: (agentId: string) => boolean;
+  onDelete: (agentId: string, label: string) => void;
+  onEdit: (agentId: string) => void;
+  onShare: (agentId: string) => void;
+  pendingAgentId?: string;
+}
+
+function resolveAuthoredCapability(
+  item: AssistantActionItem,
+  itemKind: ProjectCapabilityKind,
+  agentActions: AgentCardActions,
+  authoredSkillActions: AuthoredSkillActions,
+): AuthoredCapabilityCardState | undefined {
+  const capabilityId = item.capability.id;
+
+  if (itemKind === "agent") {
+    if (!agentActions.canManage(capabilityId)) {
+      return undefined;
+    }
+
+    return {
+      canManage: true,
+      isDeleting: agentActions.pendingAgentId === capabilityId,
+      onDelete: () => agentActions.onDelete(capabilityId, item.label),
+      onEdit: () => agentActions.onEdit(capabilityId),
+      onShare: agentActions.canShare(capabilityId)
+        ? () => agentActions.onShare(capabilityId)
+        : undefined,
+    };
+  }
+
+  if (item.metadata?.skillSource !== "user-authored") {
+    return undefined;
+  }
+
+  return {
+    canManage: authoredSkillActions.canDelete,
+    isDeleting: authoredSkillActions.pendingSkillId === capabilityId,
+    onDelete: () => authoredSkillActions.onDelete(capabilityId, item.label),
   };
 }
 
@@ -74,6 +122,7 @@ export function CapabilityGroups({
   toolConfigurationById,
   surface,
   authoredSkillActions,
+  agentActions,
 }: CapabilityGroupsProps) {
   const navigate = useNavigate();
 
@@ -181,17 +230,12 @@ export function CapabilityGroups({
                           : undefined
                       }
                       tool={tool}
-                      authoredSkill={
-                        item.metadata?.skillSource === "user-authored"
-                          ? {
-                              canDelete: authoredSkillActions.canDelete,
-                              isDeleting:
-                                authoredSkillActions.pendingSkillId === item.capability.id,
-                              onDelete: () =>
-                                authoredSkillActions.onDelete(item.capability.id, item.label),
-                            }
-                          : undefined
-                      }
+                      authoredCapability={resolveAuthoredCapability(
+                        item,
+                        itemKind,
+                        agentActions,
+                        authoredSkillActions,
+                      )}
                       skill={
                         skillState && {
                           alwaysOn: skillState.alwaysOn,

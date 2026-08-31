@@ -12,6 +12,7 @@ import {
   RECIPE_LOOKUP_TOOL,
   RECIPE_SETUP_TOOL,
 } from "~/services/apps/recipes/catalog";
+import { resolveProjectSkillGrants } from "~/services/skills/scope";
 import type { CoreChatOptions } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -132,9 +133,7 @@ export async function resolveProjectChatContext(
     projectId,
     instructions: project.instructions,
     enabledTools: [...new Set(toolIds)],
-    enabledSkillIds: capabilities
-      .filter((capability) => capability.kind === "skill")
-      .map((capability) => capability.capability_id),
+    enabledSkillIds: resolveProjectSkillGrants(capabilities),
     connectorProviders: resolveProjectRecipeConnectorScope(capabilities).providers,
     toolOptions: projectTools.toolOptions,
     sandboxOptions:

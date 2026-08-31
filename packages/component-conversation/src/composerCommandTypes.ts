@@ -15,11 +15,10 @@ export interface ComposerActionCatalogConfig {
 export interface ComposerAgentOption {
   id: string;
   name: string;
-  description?: string;
-  avatar_url?: string;
-  model?: string;
-  enabled_tools?: string[];
-  is_team_agent?: boolean;
+  description?: string | null;
+  avatar_url?: string | null;
+  model?: string | null;
+  enabled_tools?: string[] | null;
 }
 
 export interface ComposerCommandAction {

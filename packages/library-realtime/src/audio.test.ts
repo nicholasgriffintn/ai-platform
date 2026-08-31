@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { decodePcm16Audio, startPcm16MicrophoneStream } from "./audio";
+import {
+  decodePcm16Audio,
+  requestRealtimeAudioStream,
+  requestRealtimeVideoStream,
+  startPcm16MicrophoneStream,
+} from "./audio";
 
 class FakeAudioNode {
   disconnect = vi.fn();
@@ -151,6 +156,35 @@ describe("realtime audio helpers", () => {
 
     expect(worklet.port.postMessage).toHaveBeenCalledWith({ type: "stop" });
     expect(audioContext.close).toHaveBeenCalled();
+  });
+
+  it("requests deterministic realtime capture constraints from the browser", async () => {
+    const audioStream = { id: "audio-stream" };
+    const videoStream = { id: "video-stream" };
+    const getUserMedia = vi
+      .fn()
+      .mockResolvedValueOnce(audioStream)
+      .mockResolvedValueOnce(videoStream);
+
+    vi.stubGlobal("navigator", { mediaDevices: { getUserMedia } });
+
+    await expect(requestRealtimeAudioStream()).resolves.toBe(audioStream);
+    await expect(requestRealtimeVideoStream("camera-fixture")).resolves.toBe(videoStream);
+    expect(getUserMedia).toHaveBeenNthCalledWith(1, {
+      audio: {
+        autoGainControl: false,
+        echoCancellation: true,
+        noiseSuppression: true,
+      },
+    });
+    expect(getUserMedia).toHaveBeenNthCalledWith(2, {
+      video: {
+        deviceId: { exact: "camera-fixture" },
+        frameRate: { ideal: 1, max: 2 },
+        height: { ideal: 360 },
+        width: { ideal: 640 },
+      },
+    });
   });
 
   it("closes the audio context when the AudioWorklet module fails to load", async () => {

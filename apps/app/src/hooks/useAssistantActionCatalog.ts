@@ -7,7 +7,6 @@ import { useMemo } from "react";
 
 import { useChatStore } from "~/state/stores/chatStore";
 
-import { useAgents } from "./useAgents";
 import { useCapabilityCatalog } from "./useCapabilityCatalog";
 import { useRecipeConnectors } from "./useConnectors";
 import { useAssistantRecipes, useRecipeInstallations } from "./useRecipes";
@@ -22,7 +21,6 @@ export function useAssistantActionCatalog({
   modelTools?: readonly ModelToolDefinition[];
   projectId?: string;
 } = {}): AssistantActionCatalog {
-  const { chatAgents } = useAgents({ enabled: includeAgents });
   const { data: recipesData } = useAssistantRecipes();
   const { data: installationsData } = useRecipeInstallations(projectId);
   const { data: connectorsData } = useRecipeConnectors();
@@ -52,10 +50,15 @@ export function useAssistantActionCatalog({
     projectId,
   ]);
 
+  const agents = useMemo(
+    () => (includeAgents ? (capabilityCatalog.data?.agents ?? []) : []),
+    [capabilityCatalog.data?.agents, includeAgents],
+  );
+
   return useMemo(
     () =>
       buildAssistantActionCatalog({
-        agents: includeAgents ? chatAgents : [],
+        agents,
         connectors: connectorsData?.connectors ?? [],
         installations: installationsData?.installations ?? [],
         modelTools,
@@ -63,9 +66,8 @@ export function useAssistantActionCatalog({
         skills,
       }),
     [
-      chatAgents,
+      agents,
       connectorsData?.connectors,
-      includeAgents,
       installationsData?.installations,
       modelTools,
       recipesData?.recipes,

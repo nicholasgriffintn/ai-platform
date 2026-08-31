@@ -89,6 +89,7 @@ export const handleCreateChatCompletions = async (req: {
       repositories: serviceContext.repositories,
       user,
       model: chatRequest.model,
+      provider: chatRequest.provider,
       platform: chatRequest.platform,
       store: true,
       env,

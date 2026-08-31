@@ -30,16 +30,23 @@ describe("url utilities", () => {
     expect(isPrivateHostname("localhost")).toBe(true);
     expect(isPrivateHostname("localhost.")).toBe(true);
     expect(isPrivateHostname("service.internal")).toBe(true);
+    expect(isPrivateHostname("service.localhost")).toBe(true);
+    expect(isPrivateHostname("router.home.arpa")).toBe(true);
     expect(isPrivateHostname("printer.local")).toBe(true);
     expect(isPrivateHostname("10.0.0.1")).toBe(true);
     expect(isPrivateHostname("172.16.0.1")).toBe(true);
     expect(isPrivateHostname("192.168.1.10")).toBe(true);
     expect(isPrivateHostname("169.254.1.1")).toBe(true);
     expect(isPrivateHostname("100.64.0.1")).toBe(true);
+    expect(isPrivateHostname("100.127.255.255")).toBe(true);
+    expect(isPrivateHostname("198.51.100.10")).toBe(true);
+    expect(isPrivateHostname("224.0.0.1")).toBe(true);
     expect(isPrivateHostname("[::1]")).toBe(true);
     expect(isPrivateHostname("[fe80::1]")).toBe(true);
+    expect(isPrivateHostname("[febf::1]")).toBe(true);
     expect(isPrivateHostname("[fd00::1]")).toBe(true);
     expect(isPrivateHostname("[::ffff:7f00:1]")).toBe(true);
+    expect(isPrivateHostname("[::ffff:6440:1]")).toBe(true);
   });
 
   it("allows public hostnames", () => {

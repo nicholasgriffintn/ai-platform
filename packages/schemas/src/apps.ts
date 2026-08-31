@@ -1,38 +1,10 @@
 import z from "zod/v4";
 
+import { agentSummarySchema } from "./agents";
 import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json";
 import { externalHttpUrlSchema } from "./navigation";
 import { outputSchema } from "./outputs";
 import { skillSummarySchema } from "./skills";
-
-export const insertEmbeddingSchema = z.object({
-  type: z.string(),
-  content: z.string().optional(),
-  file: z
-    .object({
-      data: z.any(),
-      mimeType: z.string(),
-    })
-    .optional(),
-  id: z.string().optional(),
-  metadata: z.record(z.string(), z.any()).optional(),
-  title: z.string().optional(),
-  rag_options: z
-    .object({
-      namespace: z.string().optional(),
-    })
-    .optional(),
-});
-
-export const queryEmbeddingsSchema = z.object({
-  query: z.string(),
-  namespace: z.string().optional(),
-  type: z.string().optional(),
-});
-
-export const deleteEmbeddingSchema = z.object({
-  ids: z.array(z.string()),
-});
 
 export const weatherQuerySchema = z.object({
   longitude: z.string().regex(/^-?\d+(\.\d+)?$/, "Must be a valid number"),
@@ -121,7 +93,7 @@ export const generateArticlesReportSchema = z.object({
 });
 
 export const contentExtractSchema = z.object({
-  urls: z.array(z.url()),
+  urls: z.array(z.url()).min(1).max(10),
   extract_depth: z.enum(["basic", "advanced"]).optional(),
   include_images: z.boolean().optional(),
   should_vectorize: z.boolean().optional(),
@@ -203,33 +175,6 @@ export const captureScreenshotSchema = z.object({
       }),
     )
     .optional(),
-});
-
-export const ocrSchema = z.object({
-  provider: z.enum(["mistral"]).optional(),
-  model: z.enum(["mistral-ocr-latest"]).optional(),
-  document: z.object({
-    type: z.enum(["document_url"]).optional(),
-    document_url: z.string(),
-    document_name: z.string().optional(),
-  }),
-  id: z.string().optional(),
-  pages: z.array(z.number()).optional().meta({
-    description:
-      "Specific pages user wants to process in various formats: single number, range, or list of both. Starts from 0",
-  }),
-  include_image_base64: z.boolean().optional().meta({
-    description: "Whether to include the images in a base64 format in the response",
-  }),
-  image_limit: z.number().optional().meta({
-    description: "Limit the number of images to extract",
-  }),
-  image_min_size: z.number().optional().meta({
-    description: "Minimum height and width of image to extract",
-  }),
-  output_format: z.enum(["json", "html", "markdown"]).optional().meta({
-    description: "Output format of the response",
-  }),
 });
 
 export const speechGenerationSchema = z.object({
@@ -429,23 +374,15 @@ export const toolFormFieldTypes = [
   "textarea",
 ] as const;
 
-export const toolResponseDisplayTypes = [
-  "table",
-  "json",
-  "text",
-  "template",
-  "custom",
-  "hidden",
-] as const;
+export const toolResponseTypes = ["table", "json", "text", "custom", "hidden"] as const;
 
-export const ResponseDisplayType = {
+export const ToolResponseType = {
   TABLE: "table",
   JSON: "json",
   TEXT: "text",
-  TEMPLATE: "template",
   CUSTOM: "custom",
   HIDDEN: "hidden",
-} satisfies Record<string, (typeof toolResponseDisplayTypes)[number]>;
+} satisfies Record<string, (typeof toolResponseTypes)[number]>;
 
 export const FieldType = {
   TEXT: "text",
@@ -530,7 +467,7 @@ export const modelToolDefinitionSchema = z.object({
 });
 
 export const toolFormFieldTypeSchema = z.enum(toolFormFieldTypes);
-export const toolResponseDisplayTypeSchema = z.enum(toolResponseDisplayTypes);
+export const toolResponseTypeSchema = z.enum(toolResponseTypes);
 
 export const toolFormFieldSchema = z.object({
   id: z.string(),
@@ -570,20 +507,8 @@ export const toolFormSchema = z.object({
   steps: z.array(toolFormStepSchema),
 });
 
-export const toolResponseFieldSchema = z.object({
-  key: z.string(),
-  label: z.string(),
-  format: z.string().optional(),
-});
-
-export const toolResponseDisplaySchema = z.object({
-  fields: z.array(toolResponseFieldSchema).optional(),
-  template: z.string().optional(),
-});
-
 export const toolResponseSchema = z.object({
-  type: toolResponseDisplayTypeSchema,
-  display: toolResponseDisplaySchema,
+  type: toolResponseTypeSchema.optional(),
 });
 
 export const renderableToolSchema = z.object({
@@ -604,6 +529,7 @@ export const renderableToolSchema = z.object({
 });
 
 export const capabilityCatalogResponseSchema = z.object({
+  agents: z.array(agentSummarySchema),
   experiences: z.array(projectExperienceDefinitionSchema),
   modelTools: z.array(modelToolDefinitionSchema),
   skills: z.array(skillSummarySchema),
@@ -636,11 +562,7 @@ export type FieldType = z.infer<typeof toolFormFieldTypeSchema>;
 export type ToolFormField = z.infer<typeof toolFormFieldSchema>;
 export type ToolFormStep = z.infer<typeof toolFormStepSchema>;
 export type ToolFormSchema = z.infer<typeof toolFormSchema>;
-export type ToolResponseField = z.infer<typeof toolResponseFieldSchema>;
-export type ToolResponseDisplay = z.infer<typeof toolResponseDisplaySchema>;
-export type ResponseDisplayType = z.infer<typeof toolResponseDisplayTypeSchema>;
-export type ResponseField = ToolResponseField;
-export type ResponseDisplay = ToolResponseDisplay;
+export type ToolResponseType = z.infer<typeof toolResponseTypeSchema>;
 export type ToolResponseSchemaType = z.infer<typeof toolResponseSchema>;
 export type RenderableTool = z.infer<typeof renderableToolSchema>;
 export type CapabilityCatalogItem = z.infer<typeof appInfoSchema>;
@@ -757,6 +679,8 @@ function getDynamicAppFieldError(field: ToolFormField, value: unknown): string |
     case "file":
       return value === undefined ? `${field.label} must have a file` : undefined;
   }
+
+  return undefined;
 }
 
 export function getToolFormStepErrors(step: ToolFormStep, formData: ToolFormData): ToolFormErrors {
@@ -1057,9 +981,7 @@ export const generateNotesFromMediaSchema = z.object({
     .boolean()
     .optional()
     .default(false)
-    .describe(
-      "Generate video embeddings with Twelve Labs Marengo for semantic search capabilities.",
-    ),
+    .describe("Reserved for multimodal retrieval. Requests that enable it currently return 501."),
 });
 
 export const generateNotesFromMediaResponseSchema = z.object({

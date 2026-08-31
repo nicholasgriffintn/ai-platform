@@ -8,6 +8,7 @@ import {
 } from "~/lib/async/asyncInvocation";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
+import { buildBedrockReasoningRequest } from "~/lib/providers/utils/bedrockReasoning";
 import { formatProviderError } from "~/lib/providers/utils/errors";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
@@ -439,15 +440,20 @@ export class BedrockProvider extends BaseProvider {
           ? { system: [{ text: params.system_prompt }] }
           : {};
 
+    const reasoning = buildBedrockReasoningRequest(params, modelConfig);
+
     return {
       ...systemPromptConfig,
       messages: bedrockMessages,
       inferenceConfig: {
-        temperature: commonParams.temperature,
+        temperature: reasoning.allowsSampling ? commonParams.temperature : undefined,
         maxTokens: commonParams.max_tokens,
-        topP: commonParams.top_p,
+        topP: reasoning.allowsSampling ? commonParams.top_p : undefined,
       },
       ...toolConfig,
+      ...(reasoning.additionalModelRequestFields
+        ? { additionalModelRequestFields: reasoning.additionalModelRequestFields }
+        : {}),
     };
   }
 

@@ -2,11 +2,19 @@ import type { Ai } from "@cloudflare/workers-types";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getAuxiliaryGuardrailsModel } from "~/lib/providers/models";
-import type { GuardrailResult, GuardrailsProvider, IEnv, IUser } from "~/types";
+import type {
+  GuardrailInput,
+  GuardrailResult,
+  GuardrailsProvider,
+  GuardrailSource,
+  IEnv,
+  IUser,
+} from "~/types";
 import { getLogger } from "~/utils/logger";
 
-import { AssistantError } from "../../../../../utils/errors";
+import { AssistantError, ErrorType } from "../../../../../utils/errors";
 import { getChatProvider } from "../../chat";
+import { normaliseGuardrailInput } from "../content";
 
 const logger = getLogger({ prefix: "lib/guardrails/llamaguard" });
 
@@ -23,9 +31,10 @@ export class LlamaGuardProvider implements GuardrailsProvider {
     this.config = config;
   }
 
-  async validateContent(content: string, source: "INPUT" | "OUTPUT"): Promise<GuardrailResult> {
+  async validateContent(input: GuardrailInput, source: GuardrailSource): Promise<GuardrailResult> {
     try {
       logger.debug("Validating content with Llama Guard");
+      const content = normaliseGuardrailInput(input).text;
       const unsafeCategories = `<BEGIN UNSAFE CONTENT CATEGORIES>
 S1: Violent Crimes. 
 S2: Non-Violent Crimes. 
@@ -86,7 +95,8 @@ Provide your safety assessment for ONLY THE LAST ${role} in the above conversati
       );
 
       const responseText = response.response.toLowerCase().trim();
-      const isValid = responseText.startsWith("safe") || responseText.includes("allowed");
+      const [verdict] = responseText.split(/\s|\n/, 1);
+      const isValid = verdict === "safe";
       const violations = isValid ? [] : [response.response];
 
       logger.debug("Llama Guard validation result", {
@@ -106,6 +116,10 @@ Provide your safety assessment for ONLY THE LAST ${role} in the above conversati
       }
 
       logger.error("LLamaGuard API error:", { error });
+      throw AssistantError.fromError(
+        error instanceof Error ? error : new Error("LlamaGuard validation failed"),
+        ErrorType.PROVIDER_ERROR,
+      );
     }
   }
 }

@@ -7,6 +7,8 @@ import { bufferToBase64 } from "~/utils/base64";
 
 import { UserSettingsRepository } from "../UserSettingsRepository";
 
+const CONFIGURABLE_PROVIDER_IDS = ["openai", "anthropic", "groq"];
+
 const OVER_RSA_OAEP_LIMIT_PROVIDER_KEY = `synthetic-provider-key:${"a".repeat(320)}`;
 
 function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
@@ -41,7 +43,51 @@ async function encryptPrivateKey(
   });
 }
 
+function createProvisioningRepository(existingProviders: string[]) {
+  const all = vi.fn().mockResolvedValue({
+    results: existingProviders.map((provider_id) => ({ provider_id })),
+  });
+  const first = vi.fn().mockResolvedValue(null);
+  const run = vi.fn().mockResolvedValue({ success: true });
+  const bind = vi.fn().mockReturnValue({ all, first, run });
+  const prepare = vi.fn().mockReturnValue({ bind, all, first, run });
+  const batch = vi.fn().mockResolvedValue([]);
+
+  const repository = new UserSettingsRepository({
+    DB: { batch, prepare },
+    ALWAYS_ENABLED_PROVIDERS: "",
+  } as unknown as IEnv);
+
+  return { batch, prepare, repository };
+}
+
 describe("UserSettingsRepository", () => {
+  it("provisions provider settings with one read and one batched write", async () => {
+    const { batch, prepare, repository } = createProvisioningRepository([]);
+
+    await repository.createUserProviderSettings(1, CONFIGURABLE_PROVIDER_IDS);
+
+    const selects = prepare.mock.calls.filter(([query]) => (query as string).startsWith("SELECT"));
+
+    expect(selects).toHaveLength(1);
+    expect(batch).toHaveBeenCalledTimes(1);
+    expect(batch.mock.calls[0][0].length).toBeGreaterThan(1);
+  });
+
+  it("skips providers the user already has", async () => {
+    const { batch, repository } = createProvisioningRepository([]);
+
+    await repository.createUserProviderSettings(1, CONFIGURABLE_PROVIDER_IDS);
+
+    const provisioned = batch.mock.calls[0][0].length;
+
+    const second = createProvisioningRepository(["openai"]);
+
+    await second.repository.createUserProviderSettings(1, CONFIGURABLE_PROVIDER_IDS);
+
+    expect(second.batch.mock.calls[0][0].length).toBe(provisioned - 1);
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();

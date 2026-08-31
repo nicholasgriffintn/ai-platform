@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  extractRealtimeGoAwayNotice,
   extractRealtimeErrorMessage,
   extractRealtimeEvent,
   extractRealtimeEventLabel,
   extractInlineAudioChunks,
+  extractRealtimeSessionResumptionUpdate,
   extractRealtimeTranscript,
   isRealtimeSetupCompleteMessage,
   parseRealtimeJsonMessage,
@@ -101,6 +103,52 @@ describe("realtime message helpers", () => {
       isFinal: true,
       source: "input",
     });
+  });
+
+  it("treats Cartesia turn updates as cumulative input transcript snapshots", () => {
+    expect(
+      extractRealtimeTranscript({
+        type: "turn.update",
+        transcript: "Book the",
+        request_id: "request-1",
+      }),
+    ).toEqual({
+      text: "Book the",
+      isDelta: false,
+      isFinal: false,
+      source: "input",
+    });
+
+    expect(
+      extractRealtimeTranscript({
+        type: "turn.eager_end",
+        transcript: "Book the train",
+        request_id: "request-1",
+      }),
+    ).toEqual({
+      text: "Book the train",
+      isDelta: false,
+      isFinal: false,
+      source: "input",
+    });
+  });
+
+  it("finalizes Cartesia input only when the semantic turn ends", () => {
+    expect(
+      extractRealtimeTranscript({
+        type: "turn.end",
+        transcript: "Book the train for noon.",
+        request_id: "request-1",
+      }),
+    ).toEqual({
+      text: "Book the train for noon.",
+      isDelta: false,
+      isFinal: true,
+      source: "input",
+    });
+
+    expect(extractRealtimeEventLabel({ type: "turn.start" })).toBe("Listening");
+    expect(extractRealtimeEventLabel({ type: "turn.resume" })).toBe("Listening");
   });
 
   it("extracts realtime event ids for live turn correlation", () => {
@@ -267,5 +315,25 @@ describe("realtime message helpers", () => {
     expect(isRealtimeSetupCompleteMessage({ setupComplete: {} })).toBe(true);
     expect(isRealtimeSetupCompleteMessage({ setup_complete: {} })).toBe(true);
     expect(isRealtimeSetupCompleteMessage({ serverContent: {} })).toBe(false);
+  });
+
+  it("extracts resumable Gemini session handles", () => {
+    expect(
+      extractRealtimeSessionResumptionUpdate({
+        sessionResumptionUpdate: { resumable: true, newHandle: "session-handle" },
+      }),
+    ).toEqual({ handle: "session-handle", resumable: true });
+    expect(
+      extractRealtimeSessionResumptionUpdate({
+        sessionResumptionUpdate: { resumable: false, newHandle: "stale-handle" },
+      }),
+    ).toEqual({ resumable: false });
+  });
+
+  it("detects Gemini GoAway messages", () => {
+    expect(extractRealtimeGoAwayNotice({ goAway: { timeLeft: "10s" } })).toEqual({
+      timeLeft: "10s",
+    });
+    expect(extractRealtimeGoAwayNotice({ serverContent: {} })).toBeUndefined();
   });
 });

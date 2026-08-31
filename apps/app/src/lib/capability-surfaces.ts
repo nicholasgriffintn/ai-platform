@@ -4,7 +4,10 @@ import type {
   ProjectExperienceDefinition,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { createRecipeManagementActionPath } from "./assistant-action-launch";
+import {
+  createAgentConversationActionPath,
+  createRecipeManagementActionPath,
+} from "./assistant-action-launch";
 
 /**
  * Where a set of capability surfaces lives. Work nests them under a project; Chat nests them
@@ -14,6 +17,7 @@ import { createRecipeManagementActionPath } from "./assistant-action-launch";
 export interface CapabilitySurface {
   basePath: string;
   projectId?: string;
+  workspaceId?: string;
 }
 
 /**
@@ -33,7 +37,15 @@ export interface EnabledCapability {
 export const PERSONAL_SURFACE: CapabilitySurface = { basePath: "/chat" };
 
 export function getProjectSurface(workspaceId: string, projectId: string): CapabilitySurface {
-  return { basePath: `/work/${workspaceId}/projects/${projectId}`, projectId };
+  return { basePath: `/work/${workspaceId}/projects/${projectId}`, projectId, workspaceId };
+}
+
+export function getAgentEditorPath(surface: CapabilitySurface, agentId: string): string {
+  return `${surface.basePath}/agents/${agentId}`;
+}
+
+export function getConversationPath(surface: CapabilitySurface): string {
+  return surface.projectId ? `${surface.basePath}/chat` : surface.basePath;
 }
 
 export function getExperiencesPath(surface: CapabilitySurface): string {
@@ -124,6 +136,14 @@ export function getCapabilityOpenPath(
   surface: CapabilitySurface,
   experiences: ProjectExperienceDefinition[],
 ): string | null {
+  if (item.capability.availability === "unavailable") {
+    return null;
+  }
+
+  if (item.kind === "agent") {
+    return createAgentConversationActionPath(getConversationPath(surface), item.capability.id);
+  }
+
   if (item.kind === "recipe" || item.kind === "installed_recipe") {
     const recipeId = item.metadata?.recipeId ?? item.capability.id;
 

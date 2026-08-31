@@ -5,7 +5,6 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMemo } from "react";
 
-import { useAgents } from "./useAgents";
 import { useCapabilityCatalog } from "./useCapabilityCatalog";
 import { useAssistantRecipes } from "./useRecipes";
 import { useTools } from "./useTools";
@@ -36,7 +35,6 @@ function toEnableableApp(experience: ProjectExperienceDefinition) {
 
 export function useProjectCapabilityCatalog(projectId?: string) {
   const catalogQuery = useCapabilityCatalog(projectId);
-  const agentsQuery = useAgents();
   const recipesQuery = useAssistantRecipes();
   const toolsQuery = useTools();
   const callableTools = useMemo(() => toolsQuery.data ?? [], [toolsQuery.data]);
@@ -54,11 +52,12 @@ export function useProjectCapabilityCatalog(projectId?: string) {
     [catalogQuery.data?.modelTools],
   );
   const skills = useMemo(() => catalogQuery.data?.skills ?? [], [catalogQuery.data?.skills]);
+  const agents = useMemo(() => catalogQuery.data?.agents ?? [], [catalogQuery.data?.agents]);
 
   const items = useMemo(() => {
     const baseCatalog = buildAssistantActionCatalog({
+      agents,
       apps,
-      agents: agentsQuery.agents,
       modelTools,
       skills,
       tools: callableTools,
@@ -68,17 +67,13 @@ export function useProjectCapabilityCatalog(projectId?: string) {
       ...baseCatalog.items,
       ...recipes.map((recipe) => createRecipeAssistantActionItem(recipe)),
     ];
-  }, [agentsQuery.agents, apps, callableTools, recipes, modelTools, skills]);
+  }, [agents, apps, callableTools, recipes, modelTools, skills]);
 
   return {
     apps,
-    error: catalogQuery.error ?? agentsQuery.errorAgents ?? recipesQuery.error ?? toolsQuery.error,
+    error: catalogQuery.error ?? recipesQuery.error ?? toolsQuery.error,
     experiences,
-    isLoading:
-      catalogQuery.isLoading ||
-      agentsQuery.isLoadingAgents ||
-      recipesQuery.isLoading ||
-      toolsQuery.isLoading,
+    isLoading: catalogQuery.isLoading || recipesQuery.isLoading || toolsQuery.isLoading,
     items,
     recipes,
     skills,

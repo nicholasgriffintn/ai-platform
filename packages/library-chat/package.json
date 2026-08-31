@@ -161,12 +161,6 @@
       "import": "./dist/textarea-selection-position.js",
       "require": "./dist/textarea-selection-position.cjs"
     },
-    "./tool-filters": {
-      "polychat-source": "./src/tool-filters.ts",
-      "types": "./dist/tool-filters.d.ts",
-      "import": "./dist/tool-filters.js",
-      "require": "./dist/tool-filters.cjs"
-    },
     "./tool-results": {
       "polychat-source": "./src/tool-results.ts",
       "types": "./dist/tool-results.d.ts",

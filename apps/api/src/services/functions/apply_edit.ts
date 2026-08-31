@@ -1,30 +1,10 @@
 import { handleCreateApplyEditCompletions } from "~/services/completions/createApplyEditCompletions";
 
 import type { ApiToolDefinition } from "../../types/functions";
-import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import { apply_edit_completion as apply_edit_completionDescriptor } from "./definitions/apply_edit";
 
 export const apply_edit_completion: ApiToolDefinition = {
-  name: "apply_edit_completion",
-  description: "Apply a code snippet update using Mercury Coder's apply-edit capability.",
-  type: "premium",
-  costPerCall: 0,
-  permissions: ["network"],
-  inputSchema: jsonSchemaToZod({
-    type: "object",
-    properties: {
-      prompt: {
-        type: "string",
-        description:
-          "Structured prompt containing the original code block and the update snippet to apply.",
-      },
-      model: {
-        type: "string",
-        description:
-          "Optional Mercury model to use for applying the edit (defaults to the best available).",
-      },
-    },
-    required: ["prompt"],
-  }),
+  ...apply_edit_completionDescriptor,
   execute: async (args, context) => {
     const req = context.request;
 
