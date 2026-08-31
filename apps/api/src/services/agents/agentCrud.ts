@@ -4,13 +4,20 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+import { agentOwnerScopeForUser, requireAgentAccess } from "./access";
 import { normaliseAgentResponse } from "./agentResponse";
 
 export async function getUserAgents(context: ServiceContext, userId?: number) {
   context.ensureDatabase();
   const id = userId ?? context.requireUser().id;
+  const workspaces = await context.repositories.workspaces.listWorkspaces(id);
 
-  return (await context.repositories.agents.getAgentsByUser(id)).map(normaliseAgentResponse);
+  return (
+    await context.repositories.agents.getAgentsForScopes(
+      id,
+      workspaces.map((workspace) => workspace.id),
+    )
+  ).map(normaliseAgentResponse);
 }
 
 export async function getUserTeamAgents(context: ServiceContext, userId?: number) {
@@ -31,40 +38,31 @@ export async function getAgentsByTeam(context: ServiceContext, teamId: string, u
 
 export async function getAgentById(context: ServiceContext, agentId: string, userId?: number) {
   context.ensureDatabase();
-  const id = userId ?? context.requireUser().id;
-  const agent = await context.repositories.agents.getAgentById(agentId);
 
-  if (!agent) {
-    throw new AssistantError("Agent not found", ErrorType.NOT_FOUND);
-  }
-
-  if (agent.user_id !== id) {
-    throw new AssistantError("Forbidden", ErrorType.AUTHENTICATION_ERROR);
-  }
-
-  return normaliseAgentResponse(agent);
+  return normaliseAgentResponse(await requireAgentAccess(context, agentId, "read", userId));
 }
 
 export async function createAgent(context: ServiceContext, params: CreateAgentInput, user?: IUser) {
   context.ensureDatabase();
   const currentUser = user ?? context.requireUser();
 
-  const agent = await context.repositories.agents.createAgent(
-    currentUser.id,
-    params.name,
-    params.description ?? "",
-    params.avatar_url || null,
-    params.servers || [],
-    params.model,
-    params.temperature,
-    params.max_steps,
-    params.system_prompt,
-    params.few_shot_examples,
-    params.enabled_tools,
-    params.team_id,
-    params.team_role,
-    params.is_team_agent,
-  );
+  const agent = await context.repositories.agents.createAgent({
+    userId: currentUser.id,
+    ...agentOwnerScopeForUser(currentUser.id),
+    name: params.name,
+    description: params.description ?? "",
+    avatarUrl: params.avatar_url || null,
+    servers: params.servers || [],
+    model: params.model,
+    temperature: params.temperature,
+    maxSteps: params.max_steps,
+    systemPrompt: params.system_prompt,
+    fewShotExamples: params.few_shot_examples,
+    enabledTools: params.enabled_tools,
+    teamId: params.team_id,
+    teamRole: params.team_role,
+    isTeamAgent: params.is_team_agent,
+  });
 
   return normaliseAgentResponse(agent);
 }
@@ -78,8 +76,7 @@ export async function updateAgent(
   context.ensureDatabase();
   const id = userId ?? context.requireUser().id;
 
-  await getAgentById(context, agentId, id);
-
+  await requireAgentAccess(context, agentId, "write", id);
   await context.repositories.agents.updateAgent(agentId, updates);
 
   return getAgentById(context, agentId, id);
@@ -112,7 +109,7 @@ export async function deleteAgent(context: ServiceContext, agentId: string, user
   context.ensureDatabase();
   const id = userId ?? context.requireUser().id;
 
-  await getAgentById(context, agentId, id);
+  await requireAgentAccess(context, agentId, "write", id);
 
   const projects = await findProjectsUsingAgent(context, agentId);
 

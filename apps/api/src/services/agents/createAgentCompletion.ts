@@ -8,6 +8,7 @@ import { handleCreateChatCompletions } from "~/services/completions/createChatCo
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+import { requireAgentAccess } from "./access";
 import { prepareAgentCompletionRequest } from "./completion-request";
 import { buildAgentCompletionTools, buildAgentPersona } from "./completion-tools";
 
@@ -39,7 +40,7 @@ export async function createAgentCompletion({
 
   serviceContext.ensureDatabase();
 
-  const agent = await getValidatedAgent(serviceContext, agentId, user?.id);
+  const agent = await requireAgentAccess(serviceContext, agentId, "read", user?.id);
 
   const functionSchemas = await buildAgentCompletionTools(agent, serviceContext);
 
@@ -71,19 +72,4 @@ export async function createAgentCompletion({
   });
 
   return response;
-}
-
-async function getValidatedAgent(context: ServiceContext, agentId: string, userId?: number) {
-  const repo = context.repositories.agents;
-  const agent = await repo.getAgentById(agentId);
-
-  if (!agent) {
-    throw new AssistantError("Agent not found", ErrorType.NOT_FOUND);
-  }
-
-  if (userId && agent.user_id !== userId) {
-    throw new AssistantError("Forbidden", ErrorType.AUTHENTICATION_ERROR);
-  }
-
-  return agent;
 }

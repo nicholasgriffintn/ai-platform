@@ -32,6 +32,7 @@ Read the relevant accepted records before changing product structure, ownership,
 - [0031](decisions/0031-registry-owned-realtime-provider-catalogue.md): Derive realtime provider discovery and readiness from registered backend adapters while keeping one non-ready browser fallback.
 - [0032](decisions/0032-version-authored-skills-with-d1-state-and-r2-bundles.md): Give authored skills D1 identity and draft/stable state while storing complete immutable revisions in private R2.
 - [0033](decisions/0033-separate-embedding-runtime-and-retrieval-policy.md): Separate embedding generation and vector storage, persist exact vector-space provenance, and keep retrieval model-driven.
+- [0034](decisions/0034-agent-owning-scope.md): Give a saved agent an owning scope of user or workspace, keep `user_id` as the author, and publish to a workspace by copying rather than by reference.
 
 [context.md](context.md) holds the current domain vocabulary, workspace map, seams, and data flows.
 

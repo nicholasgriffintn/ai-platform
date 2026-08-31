@@ -68,6 +68,7 @@ function createContext(
     role?: string;
     memberships?: Record<number, boolean>;
     capabilities?: { kind: string; capability_id: string }[];
+    agent?: Record<string, unknown> | null;
     activeCount?: number;
     boardTasks?: unknown[];
   } = {},
@@ -115,6 +116,9 @@ function createContext(
           }),
           listProjectCapabilities: vi.fn().mockResolvedValue(overrides.capabilities ?? []),
           updateProject: vi.fn().mockResolvedValue(undefined),
+        },
+        agents: {
+          getAgentById: vi.fn().mockResolvedValue(overrides.agent ?? null),
         },
         projectTasks: {
           getTaskById: vi.fn().mockResolvedValue(task),
@@ -599,6 +603,80 @@ describe("resolveTaskRuntime", () => {
     const runtime = await resolveTaskRuntime({ context, task: baseTask, flow: null });
 
     expect(runtime.requireApprovalFor).toEqual([]);
+  });
+
+  it("runs an attached agent the project's workspace owns", async () => {
+    const { context } = createContext({
+      capabilities: [{ kind: "agent", capability_id: "agent-1" }],
+      agent: {
+        id: "agent-1",
+        user_id: 7,
+        owner_scope_type: "workspace",
+        owner_scope_id: "workspace-1",
+        enabled_tools: null,
+        model: "gpt-5",
+      },
+    });
+
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: {
+        ...baseTask,
+        runner: { kind: "conversation", agentId: "agent-1", model: null, mode: null },
+      },
+      flow: null,
+    });
+
+    expect(runtime.agent?.id).toBe("agent-1");
+  });
+
+  it("refuses an attached agent that now belongs to another workspace", async () => {
+    const { context } = createContext({
+      capabilities: [{ kind: "agent", capability_id: "agent-1" }],
+      agent: {
+        id: "agent-1",
+        user_id: 7,
+        owner_scope_type: "workspace",
+        owner_scope_id: "workspace-2",
+        enabled_tools: null,
+      },
+    });
+
+    await expect(
+      resolveTaskRuntime({
+        context,
+        task: {
+          ...baseTask,
+          runner: { kind: "conversation", agentId: "agent-1", model: null, mode: null },
+        },
+        flow: null,
+      }),
+    ).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it("refuses a personal attached agent whose author left the workspace", async () => {
+    const { context } = createContext({
+      capabilities: [{ kind: "agent", capability_id: "agent-1" }],
+      memberships: {},
+      agent: {
+        id: "agent-1",
+        user_id: 7,
+        owner_scope_type: "user",
+        owner_scope_id: "7",
+        enabled_tools: null,
+      },
+    });
+
+    await expect(
+      resolveTaskRuntime({
+        context,
+        task: {
+          ...baseTask,
+          runner: { kind: "conversation", agentId: "agent-1", model: null, mode: null },
+        },
+        flow: null,
+      }),
+    ).rejects.toMatchObject({ statusCode: 403 });
   });
 });
 

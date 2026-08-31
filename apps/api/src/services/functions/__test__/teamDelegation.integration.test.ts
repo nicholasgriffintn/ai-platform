@@ -192,12 +192,16 @@ describe("Team Delegation Integration", () => {
         id: "agent-123",
         name: "Test Agent",
         user_id: "user-123",
+        owner_scope_type: "user",
+        owner_scope_id: "user-123",
       };
 
       const mockTargetAgent = {
         id: "agent-456",
         name: "Target Agent",
         user_id: "user-123",
+        owner_scope_type: "user",
+        owner_scope_id: "user-123",
       };
 
       const mockDelegationResponse: Message[] = [
@@ -283,6 +287,8 @@ describe("Team Delegation Integration", () => {
         id: "agent-123",
         name: "Test Agent",
         user_id: "user-123",
+        owner_scope_type: "user",
+        owner_scope_id: "user-123",
       };
 
       const mockTargetAgent = {
@@ -392,12 +398,16 @@ describe("Team Delegation Integration", () => {
         id: "agent-123",
         name: "Main Agent",
         user_id: "user-123",
+        owner_scope_type: "user",
+        owner_scope_id: "user-123",
       };
 
       const mockTargetAgent = {
         id: "agent-456",
         name: "Specialist Agent",
         user_id: "user-123",
+        owner_scope_type: "user",
+        owner_scope_id: "user-123",
       };
 
       const mockDelegationResponse: Message[] = [
