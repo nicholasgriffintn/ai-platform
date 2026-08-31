@@ -41,11 +41,20 @@ describe("buildConversationGroups", () => {
   });
 
   it("returns a single untitled section when grouping is switched off", () => {
-    const groups = buildConversationGroups(conversations, { groupBy: "none", sortBy: "title" });
+    const groups = buildConversationGroups(
+      [
+        ...conversations,
+        { id: "numbered-ten", type: "chat", title: "10. Web search" },
+        { id: "numbered-two", type: "chat", title: "2. React artifacts" },
+      ],
+      { groupBy: "none", sortBy: "title" },
+    );
 
     expect(groups).toHaveLength(1);
     expect(groups[0].title).toBeUndefined();
     expect(groups[0].conversations.map((conversation) => conversation.id)).toEqual([
+      "numbered-two",
+      "numbered-ten",
       "recent",
       "stale",
     ]);

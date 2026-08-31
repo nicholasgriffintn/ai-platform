@@ -238,8 +238,24 @@ async function mergeStoredAnswer({
 
   try {
     const conversation = await params.conversationManager.get(params.completionId);
-    const replaced = conversation.map((message) =>
-      message.id && message.id === primaryMessage?.id ? merged : message,
+    const primaryMessageId = primaryMessage?.id;
+    const targetIndex = primaryMessageId
+      ? conversation.findIndex((message) => message.id === primaryMessageId)
+      : -1;
+
+    if (targetIndex === -1) {
+      logger.error("Could not find the primary message to merge the combined model answers into", {
+        completionId: params.completionId,
+        primaryMessageId: primaryMessageId ?? null,
+        storedMessages: conversation.length,
+        secondaryModels: secondaryModels.map((modelConfig) => modelConfig.model),
+      });
+
+      return merged;
+    }
+
+    const replaced = conversation.map((message, index) =>
+      index === targetIndex ? merged : message,
     );
 
     await params.conversationManager.update(params.completionId, replaced);

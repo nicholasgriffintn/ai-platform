@@ -3,7 +3,7 @@ import type {
   ConversationGroupBy,
 } from "@ngriffin_uk/polychat-component-navigation";
 import type { ConversationType } from "@ngriffin_uk/polychat-schemas";
-import { sortCopy } from "@ngriffin_uk/polychat-utility-core";
+import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ConversationSortBy } from "~/types";
 
@@ -71,10 +71,9 @@ function sortConversations(
 ): ConversationGroupSource[] {
   return sortCopy(conversations, (left, right) => {
     if (sortBy === "title") {
-      return (left.title || "New conversation").localeCompare(
+      return compareNaturalText(
+        left.title || "New conversation",
         right.title || "New conversation",
-        undefined,
-        { sensitivity: "base" },
       );
     }
 

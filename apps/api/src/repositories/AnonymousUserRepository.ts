@@ -89,7 +89,7 @@ export class AnonymousUserRepository extends BaseRepository {
     }
 
     const filteredUserData = Object.fromEntries(
-      Object.entries(userData).filter(([_, value]) => value !== undefined && value !== null),
+      Object.entries(userData).filter(([, value]) => value !== undefined && value !== null),
     ) as Partial<AnonymousUser>;
 
     const fieldsToUpdate = Object.keys(filteredUserData).filter((key) => key !== "id");

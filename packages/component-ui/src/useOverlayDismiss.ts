@@ -17,11 +17,6 @@ export interface OverlayDismissOptions {
   autoFocus?: boolean;
 }
 
-/**
- * Wires the focus and Escape behaviour every transient overlay owes a keyboard user:
- * focus moves in on open, Tab cycles within it, Escape closes, and focus returns to
- * whatever opened it. Returns the ref to place on the overlay container.
- */
 export function useOverlayDismiss<T extends HTMLElement>({
   open,
   onClose,
