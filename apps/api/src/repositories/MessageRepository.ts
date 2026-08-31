@@ -98,6 +98,96 @@ export class MessageRepository extends BaseRepository {
     ]);
   }
 
+  /**
+   * Swaps a conversation's message set in one D1 transaction. Doing the delete,
+   * the upserts and the conversation counter separately lets a mid-sequence
+   * failure leave the conversation with a permanent gap in its history.
+   */
+  public async replaceConversationMessages(
+    conversationId: string,
+    messages: Array<{
+      id: string;
+      role: string;
+      content: string | Record<string, unknown>;
+      data?: Partial<Message>;
+    }>,
+    conversation: {
+      last_message_id: string | null;
+      last_message_at: string | null;
+      message_count: number;
+    },
+  ): Promise<boolean> {
+    const database = this.env.DB;
+
+    if (!database) {
+      throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
+    }
+
+    const columns = MESSAGE_INSERT_COLUMNS.join(", ");
+    const placeholders = MESSAGE_INSERT_COLUMNS.map(() => "?").join(", ");
+    const updateClause = MESSAGE_UPSERT_UPDATE_COLUMNS.map(
+      (column) => `${column} = excluded.${column}`,
+    ).join(", ");
+    const upsertSql = `INSERT INTO message (
+         ${columns},
+         created_at,
+         updated_at
+       )
+       VALUES (${placeholders}, datetime('now'), datetime('now'))
+       ON CONFLICT(id) DO UPDATE SET
+         ${updateClause},
+         updated_at = datetime('now')
+       WHERE message.conversation_id = excluded.conversation_id
+       RETURNING id`;
+
+    const keptIds = Array.from(new Set(messages.map((message) => message.id).filter(Boolean)));
+    const deleteStatement = keptIds.length
+      ? database
+          .prepare(
+            `DELETE FROM message
+             WHERE conversation_id = ?
+               AND id NOT IN (${keptIds.map(() => "?").join(", ")})`,
+          )
+          .bind(conversationId, ...keptIds)
+      : database.prepare("DELETE FROM message WHERE conversation_id = ?").bind(conversationId);
+
+    const results = await database.batch<{ id: string }>([
+      deleteStatement,
+      ...messages.map((message) =>
+        database
+          .prepare(upsertSql)
+          .bind(
+            ...this.buildMessageValues(
+              message.id,
+              conversationId,
+              message.role,
+              message.content,
+              message.data,
+            ),
+          ),
+      ),
+      database
+        .prepare(
+          `UPDATE conversation
+					 SET last_message_id = ?,
+					     last_message_at = ?,
+					     message_count = ?,
+					     updated_at = datetime('now')
+					 WHERE id = ?`,
+        )
+        .bind(
+          conversation.last_message_id,
+          conversation.last_message_at,
+          conversation.message_count,
+          conversationId,
+        ),
+    ]);
+
+    const upsertResults = results.slice(1, 1 + messages.length);
+
+    return upsertResults.every((result) => (result.results?.length ?? 0) > 0);
+  }
+
   private buildMessageValues(
     messageId: string,
     conversationId: string,
@@ -155,38 +245,6 @@ export class MessageRepository extends BaseRepository {
          updated_at
        )
        VALUES (${placeholders}, datetime('now'), datetime('now'))
-       RETURNING *`,
-      this.buildMessageValues(messageId, conversationId, role, content, messageData),
-      true,
-    );
-
-    return result;
-  }
-
-  public async upsertMessage(
-    messageId: string,
-    conversationId: string,
-    role: string,
-    content: string | Record<string, unknown>,
-    messageData: Partial<Message> = {},
-  ): Promise<Record<string, unknown> | null> {
-    const columns = MESSAGE_INSERT_COLUMNS.join(", ");
-    const placeholders = MESSAGE_INSERT_COLUMNS.map(() => "?").join(", ");
-    const updateClause = MESSAGE_UPSERT_UPDATE_COLUMNS.map(
-      (column) => `${column} = excluded.${column}`,
-    ).join(", ");
-
-    const result = this.runQuery<Record<string, unknown>>(
-      `INSERT INTO message (
-         ${columns},
-         created_at,
-         updated_at
-       )
-       VALUES (${placeholders}, datetime('now'), datetime('now'))
-       ON CONFLICT(id) DO UPDATE SET
-         ${updateClause},
-         updated_at = datetime('now')
-       WHERE message.conversation_id = excluded.conversation_id
        RETURNING *`,
       this.buildMessageValues(messageId, conversationId, role, content, messageData),
       true,
@@ -441,18 +499,6 @@ export class MessageRepository extends BaseRepository {
     };
   }
 
-  public async deleteAllMessages(conversationId: string): Promise<void> {
-    const { query, values } = this.buildDeleteQuery("message", {
-      conversation_id: conversationId,
-    });
-
-    if (!query) {
-      return;
-    }
-
-    await this.executeRun(query, values);
-  }
-
   public async countMessagesOwnedByOtherConversations(
     conversationId: string,
     messageIds: string[],
@@ -474,25 +520,6 @@ export class MessageRepository extends BaseRepository {
     );
 
     return Number(result?.foreign_count ?? 0);
-  }
-
-  public async deleteMessagesExcept(conversationId: string, messageIds: string[]): Promise<void> {
-    const uniqueMessageIds = Array.from(new Set(messageIds.filter(Boolean)));
-
-    if (uniqueMessageIds.length === 0) {
-      await this.deleteAllMessages(conversationId);
-
-      return;
-    }
-
-    const placeholders = uniqueMessageIds.map(() => "?").join(", ");
-
-    await this.executeRun(
-      `DELETE FROM message
-			 WHERE conversation_id = ?
-			   AND id NOT IN (${placeholders})`,
-      [conversationId, ...uniqueMessageIds],
-    );
   }
 
   public async getChildMessages(

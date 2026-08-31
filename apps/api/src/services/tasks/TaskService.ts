@@ -3,7 +3,9 @@ import type { TaskType, ScheduleType } from "@ngriffin_uk/polychat-schemas";
 import type { Task } from "~/lib/database/schema";
 import type { TaskRepository } from "~/repositories/TaskRepository";
 import type { IEnv } from "~/types";
+import { normaliseIsoDateTime } from "~/utils/date";
 import { getLogger } from "~/utils/logger";
+import { isRecord } from "~/utils/objects";
 
 const logger = getLogger({ prefix: "services/tasks" });
 
@@ -46,6 +48,9 @@ export class TaskService {
   public async enqueueTask(taskDef: TaskDefinition): Promise<string> {
     try {
       const createdBy: "system" | "user" = taskDef.user_id ? "user" : "system";
+      const scheduledAt = taskDef.scheduled_at
+        ? normaliseIsoDateTime(taskDef.scheduled_at)
+        : undefined;
       const taskParams = {
         id: taskDef.id,
         task_type: taskDef.task_type,
@@ -53,7 +58,7 @@ export class TaskService {
         project_id: taskDef.project_id,
         task_data: taskDef.task_data,
         schedule_type: taskDef.schedule_type ?? "immediate",
-        scheduled_at: taskDef.scheduled_at,
+        scheduled_at: scheduledAt,
         cron_expression: taskDef.cron_expression,
         priority: taskDef.priority ?? 5,
         metadata: taskDef.metadata,
@@ -72,13 +77,22 @@ export class TaskService {
         throw new Error("Failed to create task record");
       }
 
-      if (!taskResult.created) {
+      if (!taskResult.created && task.status !== "pending" && task.status !== "queued") {
         logger.info("Task already exists, skipping duplicate enqueue", {
           taskId: task.id,
           taskType: taskDef.task_type,
         });
 
         return task.id;
+      }
+
+      if (
+        !taskResult.created &&
+        (task.task_type !== taskDef.task_type ||
+          task.user_id !== (taskDef.user_id ?? null) ||
+          task.project_id !== (taskDef.project_id ?? null))
+      ) {
+        throw new Error(`Task ${task.id} conflicts with an existing task definition`);
       }
 
       await this.taskRepository.updateTask(task.id, { status: "queued" });
@@ -91,36 +105,15 @@ export class TaskService {
         task_data: taskDef.task_data,
         priority: taskDef.priority ?? 5,
         schedule_type: taskDef.schedule_type ?? "immediate",
-        scheduled_at: taskDef.scheduled_at,
+        scheduled_at: scheduledAt,
         max_attempts: task.max_attempts ?? 3,
       };
 
       if (!this.env.TASK_QUEUE) {
-        logger.warn("TASK_QUEUE binding not available, task will remain in queued status");
-        logger.info(`Task ${task.id} created but not sent to queue`);
-
-        return task.id;
+        throw new Error("TASK_QUEUE binding is not available; task remains queued for recovery");
       }
 
-      let delaySeconds: number | undefined;
-
-      if (message.schedule_type === "scheduled" && message.scheduled_at) {
-        const scheduledAtMs = Date.parse(message.scheduled_at);
-
-        if (Number.isFinite(scheduledAtMs)) {
-          const delayMs = scheduledAtMs - Date.now();
-
-          if (delayMs > 0) {
-            delaySeconds = Math.min(MAX_QUEUE_DELAY_SECONDS, Math.ceil(delayMs / 1000));
-          }
-        }
-      }
-
-      if (delaySeconds) {
-        await this.env.TASK_QUEUE.send(message, { delaySeconds });
-      } else {
-        await this.env.TASK_QUEUE.send(message);
-      }
+      await this.sendMessage(message);
 
       logger.info("Task enqueued successfully", {
         taskId: task.id,
@@ -134,6 +127,38 @@ export class TaskService {
       logger.error("Failed to enqueue task:", error);
       throw error;
     }
+  }
+
+  public async dispatchPendingTasks(limit = 100): Promise<number> {
+    if (!this.env.TASK_QUEUE) {
+      throw new Error("TASK_QUEUE binding is not available; pending tasks cannot be recovered");
+    }
+
+    const tasks = await this.taskRepository.getPendingTasks(limit);
+    let dispatched = 0;
+
+    for (const task of tasks) {
+      const message: TaskMessage = {
+        taskId: task.id,
+        task_type: task.task_type,
+        user_id: task.user_id ?? undefined,
+        project_id: task.project_id ?? undefined,
+        task_data: isRecord(task.task_data) ? task.task_data : {},
+        priority: task.priority ?? 5,
+        schedule_type: task.schedule_type,
+        scheduled_at: task.scheduled_at ?? undefined,
+        max_attempts: task.max_attempts ?? 3,
+      };
+
+      // A duplicate delivery is safe because the consumer atomically claims the durable task.
+      // eslint-disable-next-line no-await-in-loop
+      await this.sendMessage(message);
+      // eslint-disable-next-line no-await-in-loop
+      await this.taskRepository.updateTask(task.id, { status: "queued" });
+      dispatched++;
+    }
+
+    return dispatched;
   }
 
   public async scheduleRecurringTask(
@@ -183,5 +208,31 @@ export class TaskService {
     await this.taskRepository.updateTask(taskId, { status: "cancelled" });
 
     return true;
+  }
+
+  private async sendMessage(message: TaskMessage): Promise<void> {
+    if (!this.env.TASK_QUEUE) {
+      throw new Error("TASK_QUEUE binding is not available");
+    }
+
+    let delaySeconds: number | undefined;
+
+    if (message.schedule_type === "scheduled" && message.scheduled_at) {
+      const scheduledAtMs = Date.parse(message.scheduled_at);
+
+      if (Number.isFinite(scheduledAtMs)) {
+        const delayMs = scheduledAtMs - Date.now();
+
+        if (delayMs > 0) {
+          delaySeconds = Math.min(MAX_QUEUE_DELAY_SECONDS, Math.ceil(delayMs / 1000));
+        }
+      }
+    }
+
+    if (delaySeconds) {
+      await this.env.TASK_QUEUE.send(message, { delaySeconds });
+    } else {
+      await this.env.TASK_QUEUE.send(message);
+    }
   }
 }

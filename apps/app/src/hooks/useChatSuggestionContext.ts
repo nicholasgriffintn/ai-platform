@@ -1,5 +1,5 @@
 import type { ComposerCommandAction } from "@ngriffin_uk/polychat-component-conversation";
-import type { ModelConfigItem, Tool } from "@ngriffin_uk/polychat-schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { useMemo } from "react";
 
 import { isSelectableHomeChatModeId } from "~/components/Home/chatModes";
@@ -44,7 +44,6 @@ export function useChatSuggestionContext({
 }: ChatSuggestionContextOptions): {
   context: ChatSuggestionContext;
   isLoading: boolean;
-  tools: Tool[] | undefined;
 } {
   const wantsCapabilities = enabled && includeCapabilities;
   const userSettings = useChatStore((state) => state.userSettings);
@@ -117,7 +116,6 @@ export function useChatSuggestionContext({
 
   return {
     context,
-    tools: toolsData,
     isLoading:
       wantsCapabilities &&
       (isLoadingTools || isLoadingConnectors || isLoadingInstallations || isLoadingRecipes),

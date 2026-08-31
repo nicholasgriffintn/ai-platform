@@ -8,6 +8,8 @@ import { APP_KEYBOARD_SHORTCUT_SECTIONS } from "~/lib/keyboard-shortcuts";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 
+export const MAIN_CONTENT_ID = "main-content";
+
 const LoginModal = lazy(() =>
   import("~/components/Models/LoginModal").then((mod) => ({
     default: mod.LoginModal,
@@ -67,6 +69,13 @@ export function SidebarLayout({
           bgClassName ?? "bg-off-white dark:bg-zinc-900",
         )}
       >
+        <a
+          href={`#${MAIN_CONTENT_ID}`}
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[90] focus:rounded-md focus:bg-off-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-zinc-900 focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:bg-zinc-800 dark:focus:text-zinc-50 dark:focus:ring-zinc-50"
+        >
+          Skip to main content
+        </a>
+
         <div className="flex flex-row w-full overflow-hidden relative">
           {sidebarContent && (
             <div className="pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]">
@@ -78,7 +87,7 @@ export function SidebarLayout({
             {displayNavBar && (
               <ChatNavbar showSidebarToggle={showSidebarToggleInNavbar && !sidebarVisible} />
             )}
-            <div className="flex-1 overflow-auto w-full">
+            <main id={MAIN_CONTENT_ID} tabIndex={-1} className="flex-1 overflow-auto w-full">
               {children}
               {showLoginModal && (
                 <Suspense fallback={null}>
@@ -89,7 +98,7 @@ export function SidebarLayout({
                   />
                 </Suspense>
               )}
-            </div>
+            </main>
           </div>
         </div>
       </div>

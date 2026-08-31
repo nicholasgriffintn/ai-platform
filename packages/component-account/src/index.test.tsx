@@ -1,4 +1,5 @@
 import type { AgentResponse } from "@ngriffin_uk/polychat-schemas";
+import { updateUserSettingsSchema } from "@ngriffin_uk/polychat-schemas";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -8,6 +9,7 @@ import {
   type AccountSection,
   SandboxConnectionList,
   TeamCard,
+  prepareUserSettingsPayload,
 } from "./index";
 
 afterEach(cleanup);
@@ -34,6 +36,18 @@ function buildAgent(overrides: Partial<AgentResponse> & Pick<AgentResponse, "id"
 }
 
 describe("account controls", () => {
+  it("omits inactive S3 fields from the default Vectorize settings payload", () => {
+    const payload = prepareUserSettingsPayload({
+      embedding_provider: "vectorize",
+      s3vectors_bucket_name: "",
+      s3vectors_index_name: "",
+      s3vectors_region: "us-east-1",
+    });
+
+    expect(payload).toEqual({ embedding_provider: "vectorize" });
+    expect(updateUserSettingsSchema.safeParse(payload).success).toBe(true);
+  });
+
   it("reports enabled navigation choices while explaining unavailable ones", () => {
     const onSelect = vi.fn<(section: AccountSection) => void>();
     const sections = [

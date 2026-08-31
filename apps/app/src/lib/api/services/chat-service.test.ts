@@ -754,6 +754,7 @@ describe("ChatService streaming", () => {
       signal: new AbortController().signal,
       store: true,
       streamingEnabled: true,
+      toolSelectionMode: "managed",
       useMultiModel: false,
     });
 
@@ -765,6 +766,7 @@ describe("ChatService streaming", () => {
       size: "1024x1024",
     });
     expect(body.enabled_tools).toEqual(["image_generation"]);
+    expect(body.tool_selection_mode).toBe("managed");
     expect(body.models).toEqual(["gpt-5", "claude-opus"]);
     expect(body.provider).toBe("openai");
   });
@@ -807,12 +809,14 @@ describe("ChatService streaming", () => {
       selectedTools: ["image_generation"],
       signal: new AbortController().signal,
       streamingEnabled: true,
+      toolSelectionMode: "managed",
     });
 
     const [, request] = fetchMock.mock.calls[0];
     const body = JSON.parse(String(request?.body));
 
     expect(body.enabled_tools).toBeUndefined();
+    expect(body.tool_selection_mode).toBeUndefined();
     expect(body.approved_tools).toBeUndefined();
     expect(body.tool_options).toBeUndefined();
     expect(body.max_steps).toBeUndefined();
@@ -915,7 +919,6 @@ describe("ChatService streaming", () => {
 
     await service.streamChatCompletions({
       chatSettings: {
-        rag_options: {},
         tool_options: {},
       },
       completionId: "conversation-1",
@@ -931,7 +934,6 @@ describe("ChatService streaming", () => {
     const [, request] = fetchMock.mock.calls[0];
     const body = JSON.parse(String(request?.body));
 
-    expect(body.rag_options).toBeUndefined();
     expect(body.tool_options).toBeUndefined();
   });
 

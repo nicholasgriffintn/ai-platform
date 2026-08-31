@@ -52,6 +52,7 @@ interface ConversationWriteOptions {
 export class ConversationManager {
   private database: Database;
   private model?: string;
+  private provider?: string;
   private platform?: Platform;
   private store?: boolean = true;
   private user?: User | null;
@@ -67,6 +68,7 @@ export class ConversationManager {
     user?: User | null,
     anonymousUser?: AnonymousUser | null,
     model?: string,
+    provider?: string,
     platform?: Platform,
     store?: boolean,
     env?: IEnv,
@@ -77,6 +79,7 @@ export class ConversationManager {
     this.user = user;
     this.anonymousUser = anonymousUser;
     this.model = model;
+    this.provider = provider;
     this.platform = platform || "api";
     this.store = store ?? true;
     this.env = env;
@@ -116,6 +119,7 @@ export class ConversationManager {
     user,
     anonymousUser,
     model,
+    provider,
     platform,
     store,
     env,
@@ -126,6 +130,7 @@ export class ConversationManager {
     user?: User | null;
     anonymousUser?: AnonymousUser | null;
     model?: string;
+    provider?: string;
     platform?: Platform;
     store?: boolean;
     env?: IEnv;
@@ -137,6 +142,7 @@ export class ConversationManager {
       user,
       anonymousUser,
       model,
+      provider,
       platform,
       store ?? true,
       env,
@@ -202,9 +208,10 @@ export class ConversationManager {
       ) {
         try {
           const modelUsed = message.model || this.model;
+          const providerUsed = message.provider || this.provider;
 
           if (modelUsed) {
-            await this.usageManager.incrementUsageByModel(modelUsed, true);
+            await this.usageManager.incrementUsageByModel(modelUsed, true, providerUsed);
             break;
           }
         } catch (error) {
@@ -383,15 +390,19 @@ export class ConversationManager {
 
   /**
    * Check usage limits for the current user before generating a response
-   * @param isPro Whether the user is on the pro plan
    * @param modelId The model ID to check usage for
+   * @param provider The provider that owns the selected model configuration
    */
-  async checkUsageLimits(modelId?: string): Promise<void> {
+  async checkUsageLimits(modelId?: string, provider?: string): Promise<void> {
     if ((this.user || this.anonymousUser) && this.usageManager) {
       const model = modelId || this.model;
 
       if (model) {
-        await this.usageManager.checkUsageByModel(model, this.user?.plan_id === "pro");
+        await this.usageManager.checkUsageByModel(
+          model,
+          this.user?.plan_id === "pro",
+          provider ?? this.provider,
+        );
       }
     }
   }
@@ -520,34 +531,29 @@ export class ConversationManager {
       );
     }
 
-    await this.database.repositories.messages.deleteMessagesExcept(conversation_id, messageIds);
+    const lastMessage = normalisedMessages.at(-1);
 
-    const upsertedMessages = await Promise.all(
-      normalisedMessages.map((message) =>
-        this.database.repositories.messages.upsertMessage(
-          message.id,
-          conversation_id,
-          message.role,
-          this.serializeMessageContent(message.content),
-          message,
-        ),
-      ),
+    const replaced = await this.database.repositories.messages.replaceConversationMessages(
+      conversation_id,
+      normalisedMessages.map((message) => ({
+        id: message.id,
+        role: message.role,
+        content: this.serializeMessageContent(message.content),
+        data: message,
+      })),
+      {
+        last_message_id: lastMessage?.id ?? null,
+        last_message_at: lastMessage ? new Date().toISOString() : null,
+        message_count: normalisedMessages.length,
+      },
     );
 
-    if (upsertedMessages.some((message) => !message)) {
+    if (!replaced) {
       throw new AssistantError(
         "Unable to replace messages because one or more message IDs already belong to another conversation",
         ErrorType.PARAMS_ERROR,
       );
     }
-
-    const lastMessage = normalisedMessages.at(-1);
-
-    await this.database.repositories.conversations.updateConversation(conversation_id, {
-      last_message_id: lastMessage?.id ?? null,
-      last_message_at: lastMessage ? new Date().toISOString() : null,
-      message_count: normalisedMessages.length,
-    });
 
     await this.enqueueAsyncInvocationTasks(conversation_id, normalisedMessages);
 

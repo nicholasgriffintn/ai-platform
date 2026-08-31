@@ -108,6 +108,7 @@ export type RegisteredFunctionTool = ApiToolDefinition;
 export const toolRegistry = new ToolRegistry();
 
 const toolRepeatLimits = new Map<string, number>();
+const toolCompanions = new Map<string, readonly string[]>();
 
 for (const fn of functionDefinitions) {
   if (!fn) {
@@ -116,6 +117,10 @@ for (const fn of functionDefinitions) {
 
   if (typeof fn.maxIdenticalCalls === "number") {
     toolRepeatLimits.set(fn.name, fn.maxIdenticalCalls);
+  }
+
+  if (fn.companionTools?.length) {
+    toolCompanions.set(fn.name, fn.companionTools);
   }
 
   const resolvedPermissions = resolveToolPermissions(fn.name, fn.permissions);
@@ -132,7 +137,6 @@ for (const fn of functionDefinitions) {
     metadata: {
       type: fn.type,
       costPerCall: fn.costPerCall,
-      isDefault: fn.isDefault ?? false,
     },
     create: () => ({
       ...fn,
@@ -181,6 +185,20 @@ export const listFunctionTools = (options?: {
 
 export const resolveToolRepeatLimit = (functionName: string): number | undefined =>
   toolRepeatLimits.get(functionName);
+
+export const expandFunctionToolNames = (toolNames: readonly string[]): string[] => {
+  const expanded = new Set<string>();
+
+  for (const toolName of toolNames) {
+    expanded.add(toolName);
+
+    for (const companion of toolCompanions.get(toolName) ?? []) {
+      expanded.add(companion);
+    }
+  }
+
+  return [...expanded];
+};
 
 export const resolveFunctionTool = (functionName: string): RegisteredFunctionTool =>
   toolRegistry.resolve(FUNCTIONS_TOOL_CATEGORY, functionName) as RegisteredFunctionTool;

@@ -1,9 +1,10 @@
 import {
   errorResponseSchema,
-  REALTIME_LIVE_PROVIDER_MANIFEST,
-  realtimeLiveProviderManifestResponseSchema,
+  NO_STORE,
+  realtimeLiveProviderCatalogueResponseSchema,
   realtimePipelineSessionCreateSchema,
   realtimePipelineSessionResponseSchema,
+  realtimeProxyGrantQuerySchema,
   realtimeSessionResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
@@ -17,9 +18,11 @@ import {
   parseRealtimeTranscriptionDelay,
   parseRealtimeTransport,
 } from "~/lib/providers/capabilities/realtime";
+import { assertRealtimeProxyGrant, connectReservedRealtimeProxy } from "~/lib/realtime/proxy-grant";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { userCanAccessRealtimeModel } from "~/services/realtime/access";
+import { getAccessibleRealtimeModel } from "~/services/realtime/access";
 import { createCartesiaRealtimeProxyResponse } from "~/services/realtime/cartesia";
+import { listRealtimeLiveProviders } from "~/services/realtime/catalogue";
 import { createElevenLabsRealtimeProxyResponse } from "~/services/realtime/elevenlabs";
 import { createMistralRealtimeProxyResponse } from "~/services/realtime/mistral";
 import { createRealtimePipelineSession } from "~/services/realtime/pipeline";
@@ -33,23 +36,26 @@ const app = new Hono<{
 }>();
 const routeLogger = createRouteLogger("realtime");
 
-app.use("/*", (c, next) => {
+app.use("/*", async (c, next) => {
   routeLogger.info(`Processing realtime route: ${c.req.path}`);
+  c.header("Cache-Control", NO_STORE);
 
-  return next();
+  await next();
+  c.res.headers.set("Cache-Control", NO_STORE);
 });
 
 addRoute(app, "get", "/providers", {
   tags: ["realtime"],
   summary: "List realtime live providers",
+  auth: true,
   responses: {
     200: {
-      description: "Realtime live provider manifest",
-      schema: realtimeLiveProviderManifestResponseSchema,
+      description: "Realtime live provider catalogue with current readiness",
+      schema: realtimeLiveProviderCatalogueResponseSchema,
     },
   },
-  handler: async () => ({
-    providers: REALTIME_LIVE_PROVIDER_MANIFEST,
+  handler: async ({ serviceContext }) => ({
+    providers: await listRealtimeLiveProviders(serviceContext),
   }),
 });
 
@@ -110,13 +116,14 @@ addRoute(app, "post", "/session/:type", {
       }
     }
 
-    if (
-      !(await userCanAccessRealtimeModel({
-        env,
-        userId: user.id,
-        model: requestedModel,
-      }))
-    ) {
+    const accessibleModel = await getAccessibleRealtimeModel({
+      env,
+      user,
+      model: requestedModel,
+      provider: providerName,
+    });
+
+    if (!accessibleModel) {
       return ResponseFactory.error(raw, "Model not found or user does not have access", 403);
     }
 
@@ -127,8 +134,9 @@ addRoute(app, "post", "/session/:type", {
     const session = await provider.createSession({
       env,
       user,
+      credentialAuthority: accessibleModel.credentialAuthority,
       type,
-      model,
+      model: accessibleModel.id,
       language,
       sourceLanguage,
       targetLanguage,
@@ -179,58 +187,91 @@ addRoute(app, "post", "/pipeline/session", {
   },
 });
 
-app.get("/mistral/transcription", async (c) => {
-  const env = c.env;
-  const user = c.get("user");
+addRoute(app, "get", "/mistral/transcription", {
+  tags: ["realtime"],
+  summary: "Connect to Mistral realtime transcription",
+  auth: true,
+  querySchema: realtimeProxyGrantQuerySchema,
+  handler: async ({ query, raw, serviceContext, user }) => {
+    const reservation = await assertRealtimeProxyGrant({
+      env: serviceContext.env,
+      grant: query.grant,
+      model: query.model,
+      provider: "mistral",
+      request: raw.req.raw,
+      sessionId: query.session_id,
+      user,
+    });
 
-  if (!user?.id) {
-    return ResponseFactory.error(c, "Unauthorized", 401);
-  }
-
-  const model = c.req.query("model");
-  const delay = parseRealtimeTranscriptionDelay(c.req.query("delay"));
-
-  return createMistralRealtimeProxyResponse({
-    context: c,
-    delay,
-    env,
-    user,
-    model,
-  });
+    return connectReservedRealtimeProxy(reservation, (onSessionEnd) =>
+      createMistralRealtimeProxyResponse({
+        context: raw,
+        delay: query.delay,
+        env: serviceContext.env,
+        user,
+        model: query.model,
+        onSessionEnd,
+      }),
+    );
+  },
 });
 
-app.get("/elevenlabs/transcription", async (c) => {
-  const env = c.env;
-  const user = c.get("user");
+addRoute(app, "get", "/elevenlabs/transcription", {
+  tags: ["realtime"],
+  summary: "Connect to ElevenLabs realtime transcription",
+  auth: true,
+  querySchema: realtimeProxyGrantQuerySchema,
+  handler: async ({ query, raw, serviceContext, user }) => {
+    const reservation = await assertRealtimeProxyGrant({
+      env: serviceContext.env,
+      grant: query.grant,
+      model: query.model,
+      provider: "elevenlabs",
+      request: raw.req.raw,
+      sessionId: query.session_id,
+      user,
+    });
 
-  if (!user?.id) {
-    return ResponseFactory.error(c, "Unauthorized", 401);
-  }
-
-  return createElevenLabsRealtimeProxyResponse({
-    context: c,
-    env,
-    user,
-    model: c.req.query("model"),
-    language: c.req.query("language"),
-  });
+    return connectReservedRealtimeProxy(reservation, (onSessionEnd) =>
+      createElevenLabsRealtimeProxyResponse({
+        context: raw,
+        env: serviceContext.env,
+        user,
+        model: query.model,
+        language: query.language,
+        onSessionEnd,
+      }),
+    );
+  },
 });
 
-app.get("/cartesia/transcription", async (c) => {
-  const env = c.env;
-  const user = c.get("user");
+addRoute(app, "get", "/cartesia/transcription", {
+  tags: ["realtime"],
+  summary: "Connect to Cartesia realtime transcription",
+  auth: true,
+  querySchema: realtimeProxyGrantQuerySchema,
+  handler: async ({ query, raw, serviceContext, user }) => {
+    const reservation = await assertRealtimeProxyGrant({
+      env: serviceContext.env,
+      grant: query.grant,
+      model: query.model,
+      provider: "cartesia",
+      request: raw.req.raw,
+      sessionId: query.session_id,
+      user,
+    });
 
-  if (!user?.id) {
-    return ResponseFactory.error(c, "Unauthorized", 401);
-  }
-
-  return createCartesiaRealtimeProxyResponse({
-    context: c,
-    env,
-    user,
-    model: c.req.query("model"),
-    language: c.req.query("language"),
-  });
+    return connectReservedRealtimeProxy(reservation, (onSessionEnd) =>
+      createCartesiaRealtimeProxyResponse({
+        context: raw,
+        delay: query.delay,
+        env: serviceContext.env,
+        user,
+        model: query.model,
+        onSessionEnd,
+      }),
+    );
+  },
 });
 
 export default app;

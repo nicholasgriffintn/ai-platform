@@ -1,4 +1,7 @@
+import type { SourceStatus } from "@ngriffin_uk/polychat-schemas";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { EmbeddingProviderTarget } from "~/lib/providers/capabilities/embedding/helpers";
 import { fetchProviderJson } from "~/lib/providers/lib/fetch";
 import { SourceRepository, type SourceRecord } from "~/repositories/SourceRepository";
 import { getRecipeConnectorAccessToken } from "~/services/apps/connectors";
@@ -105,6 +108,8 @@ export abstract class BaseMemoryProvider implements MemoryProvider {
   protected async createLocalMemory(
     input: MemoryStoreInput,
     vectorId: string,
+    embeddingTarget?: EmbeddingProviderTarget,
+    status: SourceStatus = "available",
   ): Promise<string | null> {
     if (!this.config.user?.id) {
       return null;
@@ -117,6 +122,7 @@ export abstract class BaseMemoryProvider implements MemoryProvider {
       conversationId: input.conversationId,
       kind: "memory",
       title: input.text.slice(0, 120) || "Memory",
+      status,
       content: input.text,
       provider: this.name,
       vectorId,
@@ -125,6 +131,7 @@ export abstract class BaseMemoryProvider implements MemoryProvider {
         category: input.metadata.category || "general",
         memory_provider: this.name,
         external_id: vectorId,
+        ...(embeddingTarget ? { embedding_provider_target: embeddingTarget } : {}),
         stored_at: Date.now().toString(),
       },
     });
@@ -156,14 +163,107 @@ export abstract class BaseMemoryProvider implements MemoryProvider {
 
     const metadata =
       typeof memory.metadata === "string" ? safeParseJson(memory.metadata) : memory.metadata;
-    const vectorId =
-      typeof memory.vector_id === "string" && memory.vector_id
-        ? memory.vector_id
-        : isRecord(metadata) && typeof metadata.external_id === "string"
-          ? metadata.external_id
-          : undefined;
+    const vectorId = this.getLocalMemoryVectorId(memory, metadata);
 
     return { memory, vectorId };
+  }
+
+  protected async getScopedLocalMemoryByVectorId(vectorId: string): Promise<SourceRecord | null> {
+    const memory = await this.getSourceRepository().getSourceByVectorId(vectorId);
+    const belongsToScope =
+      this.memoryScope.type === "project"
+        ? memory?.project_id === this.memoryScope.projectId
+        : memory?.created_by_user_id === this.config.user?.id && !memory?.project_id;
+
+    return memory?.kind === "memory" && memory.status === "available" && belongsToScope
+      ? memory
+      : null;
+  }
+
+  protected async listActiveScopedLocalMemories(): Promise<SourceRecord[]> {
+    if (!this.config.user?.id) {
+      throw new AssistantError(
+        "User ID is required to retrieve memories",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    const repository = this.getSourceRepository();
+    const memories =
+      this.memoryScope.type === "project"
+        ? await repository.listProjectSources(this.memoryScope.projectId, "memory")
+        : await repository.listPersonalSources(this.config.user.id, "memory");
+
+    return memories.filter((memory) => memory.kind === "memory" && memory.status === "available");
+  }
+
+  protected getLocalMemoryVectorId(
+    memory: SourceRecord,
+    parsedMetadata?: unknown,
+  ): string | undefined {
+    if (typeof memory.vector_id === "string" && memory.vector_id) {
+      return memory.vector_id;
+    }
+
+    const metadata =
+      parsedMetadata ??
+      (typeof memory.metadata === "string" ? safeParseJson(memory.metadata) : memory.metadata);
+
+    return isRecord(metadata) && typeof metadata.external_id === "string"
+      ? metadata.external_id
+      : undefined;
+  }
+
+  protected getLocalMemoryEmbeddingTarget(memory: SourceRecord): EmbeddingProviderTarget | null {
+    const metadata =
+      typeof memory.metadata === "string" ? safeParseJson(memory.metadata) : memory.metadata;
+
+    if (!isRecord(metadata) || metadata.embedding_provider_target === undefined) {
+      return null;
+    }
+
+    if (!isRecord(metadata.embedding_provider_target)) {
+      throw new AssistantError(
+        "Stored memory embedding target is invalid",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    const target = metadata.embedding_provider_target;
+
+    if (
+      typeof target.provider !== "string" ||
+      typeof target.target !== "string" ||
+      typeof target.model !== "string" ||
+      typeof target.vectorSpace !== "string" ||
+      typeof target.vectorSpaceVersion !== "string" ||
+      !target.provider ||
+      !target.target ||
+      !target.model ||
+      !target.vectorSpace ||
+      !target.vectorSpaceVersion
+    ) {
+      throw new AssistantError(
+        "Stored memory embedding target is invalid",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    return {
+      provider: target.provider,
+      target: target.target,
+      model: target.model,
+      vectorSpace: target.vectorSpace,
+      vectorSpaceVersion: target.vectorSpaceVersion,
+    };
+  }
+
+  protected async transitionLocalMemoryStatus(
+    memoryId: string,
+    expectedStatuses: SourceStatus[],
+    status: SourceStatus,
+  ): Promise<boolean> {
+    return this.getSourceRepository().transitionSourceStatus(memoryId, expectedStatuses, status);
   }
 
   protected async removeLocalMemory(memoryId: string): Promise<void> {
@@ -173,7 +273,7 @@ export abstract class BaseMemoryProvider implements MemoryProvider {
     await repository.deleteSource(memoryId);
   }
 
-  private getSourceRepository(): SourceRepository {
+  protected getSourceRepository(): SourceRepository {
     return (
       this.config.serviceContext?.repositories.sources ?? new SourceRepository(this.config.env)
     );

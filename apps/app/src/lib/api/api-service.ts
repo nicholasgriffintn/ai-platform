@@ -154,13 +154,17 @@ class ApiService {
   streamChatCompletions = async ({
     onProgress,
     ...params
-  }: Omit<StreamChatCompletionsParams, "selectedTools">): Promise<Message> => {
-    const { selectedTools } = useToolsStore.getState();
+  }: Omit<
+    StreamChatCompletionsParams,
+    "selectedTools" | "toolSelectionMode"
+  >): Promise<Message> => {
+    const { selectedTools, toolSelectionMode } = useToolsStore.getState();
     const { isAuthenticated } = useChatStore.getState();
 
     const assistantMessage = await this.chatService.streamChatCompletions({
       ...params,
       allowTools: isAuthenticated,
+      toolSelectionMode,
       onProgress: (text, reasoning, toolResponses, done, streamedAssistantMessage) => {
         onProgress(text, reasoning, toolResponses, done, streamedAssistantMessage);
       },
@@ -346,7 +350,7 @@ class ApiService {
 
   // ===== Upload Methods =====
 
-  transcribeAudio = (audioBlob: Blob): Promise<any> => {
+  transcribeAudio = (audioBlob: Blob): ReturnType<UploadService["transcribeAudio"]> => {
     return this.uploadService.transcribeAudio(audioBlob);
   };
 

@@ -27,7 +27,8 @@ struct ViewPresentationTests {
         let models = [
             makeModel(id: "gpt-4o", name: "GPT-4o", provider: "openai", description: "Vision model", strengths: ["Vision"], isFeatured: true, isDeprecated: false),
             makeModel(id: "old-gpt", name: "Old GPT", provider: "openai", description: "Legacy", strengths: ["Chat"], isFeatured: true, isDeprecated: true),
-            makeModel(id: "mistral", name: "Mistral", provider: "mistral", description: "Fast", strengths: ["Code"], isFeatured: false, isDeprecated: false)
+            makeModel(id: "mistral", name: "Mistral", provider: "mistral", description: "Fast", strengths: ["Code"], isFeatured: false, isDeprecated: false),
+            makeModel(id: "unavailable", name: "Unavailable", provider: "openai", isFeatured: true, isExecutable: false)
         ]
 
         let featuredFilter = ModelSelectionFilter(searchText: "", showsFeaturedOnly: true, showsDeprecated: false, selectedProvider: nil)
@@ -38,6 +39,8 @@ struct ViewPresentationTests {
 
         let deprecatedFilter = ModelSelectionFilter(searchText: "legacy", showsFeaturedOnly: true, showsDeprecated: true, selectedProvider: nil)
         #expect(deprecatedFilter.apply(to: models).map(\.id) == ["old-gpt"])
+        #expect(ModelSelectionFilter(searchText: "unavailable", showsFeaturedOnly: false, showsDeprecated: true).apply(to: models).isEmpty)
+        #expect(models[1].isAvailableForSelection == false)
         #expect(ModelSelectionFilter.availableProviders(in: models) == ["mistral", "openai"])
     }
 

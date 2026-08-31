@@ -1,3 +1,5 @@
+import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
+
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { imagePrompts } from "~/lib/prompts/image";
 import { getImageProvider } from "~/lib/providers/capabilities/image";
@@ -26,7 +28,7 @@ export interface ImageResponse {
   data: any;
 }
 
-const DEFAULT_PROVIDER = "workers-ai";
+const DEFAULT_PROVIDER = MODEL_DEFAULTS.image.workersAi.provider;
 
 export async function generateImage({
   completion_id,

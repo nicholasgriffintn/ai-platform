@@ -1,6 +1,7 @@
+import { escapeHtml } from "@ngriffin_uk/polychat-utility-core";
+
 import { sendEmail } from "~/services/email";
 import type { IEnv } from "~/types";
-import { escapeHtml } from "~/utils/html";
 
 export async function sendWorkspaceInvitationEmail(
   env: IEnv,

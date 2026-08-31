@@ -17,13 +17,13 @@ export interface GeneratedAudioResponseData {
   audioUrl: string;
 }
 
-export interface ResponseDisplayField {
+export interface TableHeader {
   key: string;
   label: string;
 }
 
 export interface TableResponseData {
-  headers: ResponseDisplayField[];
+  headers: TableHeader[];
   rows: Record<string, unknown>[];
 }
 
@@ -79,27 +79,13 @@ export function resolveJsonResponseData(responseData: unknown): Record<string, u
   return isRecord(responseData) ? responseData : { value: responseData };
 }
 
-export function resolveTemplateResponseData(responseData: unknown): Record<string, unknown> {
-  return isRecord(responseData) ? responseData : {};
-}
-
-export function resolveTableResponseData(
-  responseData: unknown,
-  fields?: ResponseDisplayField[],
-): TableResponseData {
-  if (fields && Array.isArray(responseData)) {
-    return {
-      headers: fields,
-      rows: responseData.filter(isRecord),
-    };
-  }
-
+export function resolveTableResponseData(responseData: unknown): TableResponseData {
   if (!isRecord(responseData)) {
     return { headers: [], rows: [] };
   }
 
   const headers = Array.isArray(responseData.headers)
-    ? responseData.headers.filter(isResponseDisplayField)
+    ? responseData.headers.filter(isTableHeader)
     : [];
   const rows = Array.isArray(responseData.rows) ? responseData.rows.filter(isRecord) : [];
 
@@ -282,6 +268,6 @@ function resolveGeneratedAudioTitle(
   return label.includes("music") ? "Generated Music" : "Generated Audio";
 }
 
-function isResponseDisplayField(value: unknown): value is ResponseDisplayField {
+function isTableHeader(value: unknown): value is TableHeader {
   return isRecord(value) && typeof value.key === "string" && typeof value.label === "string";
 }

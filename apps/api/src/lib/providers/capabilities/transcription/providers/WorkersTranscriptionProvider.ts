@@ -6,19 +6,15 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseTranscriptionProvider } from "../base";
 import type { TranscriptionRequest, TranscriptionResult } from "../index";
 
-async function getAudioForProvider(model: string, res: Response | Blob) {
+async function getAudioForProvider(model: string, file: Blob) {
   if (model === "@cf/deepgram/nova-3") {
-    if (res instanceof Blob) {
-      throw new AssistantError("Blobs not supported with nova-3", ErrorType.PARAMS_ERROR);
-    }
-
-    return res.body;
+    return file.stream();
   }
 
   if (model === "@cf/openai/whisper-large-v3-turbo") {
     throw new AssistantError("Not implemented", ErrorType.CONFIGURATION_ERROR);
   } else {
-    const audioData = await res.arrayBuffer();
+    const audioData = await file.arrayBuffer();
 
     return [...new Uint8Array(audioData)];
   }
@@ -55,58 +51,29 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
     try {
       const body: Record<string, any> = {};
 
-      if (
-        typeof audio === "string" &&
-        (audio.startsWith("http://") || audio.startsWith("https://"))
-      ) {
-        const res = await fetch(audio);
-
-        if (!res.ok) {
-          throw new AssistantError(
-            `Failed to fetch audio from URL: ${res.status} ${res.statusText}`,
-            ErrorType.PARAMS_ERROR,
-          );
-        }
-
-        const contentLength = res.headers.get("content-length");
-
-        if (contentLength) {
-          const fileSizeBytes = parseInt(contentLength);
-          const MAX_SIZE = 25 * 1024 * 1024;
-
-          if (fileSizeBytes > MAX_SIZE) {
-            throw new AssistantError(
-              `File too large for Workers AI (${Math.round(fileSizeBytes / 1024 / 1024)}MB > 25MB). Use a different transcription provider for larger files.`,
-              ErrorType.PARAMS_ERROR,
-            );
-          }
-        }
-
-        body.audio = await getAudioForProvider(modelToUse, res);
-      } else if (audio instanceof Blob) {
+      if (audio.kind === "file") {
         const MAX_SIZE = 25 * 1024 * 1024;
 
-        if (audio.size > MAX_SIZE) {
+        if (audio.file.size > MAX_SIZE) {
           throw new AssistantError(
-            `File too large for Workers AI (${Math.round(audio.size / 1024 / 1024)}MB > 25MB). Use a different transcription provider for larger files.`,
+            `File too large for Workers AI (${Math.round(audio.file.size / 1024 / 1024)}MB > 25MB). Use a different transcription provider for larger files.`,
             ErrorType.PARAMS_ERROR,
           );
         }
 
-        body.audio = await getAudioForProvider(modelToUse, audio);
+        body.audio = await getAudioForProvider(modelToUse, audio.file);
       } else {
-        throw new AssistantError("Audio must be a Blob or a URL string", ErrorType.PARAMS_ERROR);
+        throw new AssistantError(
+          "Workers AI does not accept remote transcription URLs",
+          ErrorType.PARAMS_ERROR,
+        );
       }
 
       // @ts-ignore – Workers AI types require literal model keys but we use dynamic config strings.
       const response = await env.AI.run(modelToUse, body, {
         gateway: {
           id: gatewayId,
-          skipCache: false,
-          cacheTtl: 3360,
-          metadata: {
-            email: user?.email,
-          },
+          skipCache: true,
         },
       });
 

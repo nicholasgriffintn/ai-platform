@@ -289,7 +289,7 @@ test.describe("Chat history controls", () => {
 
     test("deletes local conversation history", async ({ homePage, page, profilePage }) => {
       await homePage.navigate("/chat");
-      await homePage.selectModel("Compound Mini");
+      await homePage.selectModel("GPT OSS 120B");
       await homePage.sendMessage("Delete this Free release conversation");
       await homePage.waitForChatResponse(0);
       const title = /Delete this Free release conve|Release validation chat/;
@@ -317,7 +317,7 @@ test.describe("Chat history controls", () => {
       const message = "Export this Pro release conversation";
 
       await homePage.navigate("/chat");
-      await homePage.selectModel("Compound Mini");
+      await homePage.selectModel("GPT OSS 120B");
       await homePage.sendMessage(message);
       await homePage.waitForChatResponse(0);
       const title = /Export this Pro release conv|Release validation chat/;

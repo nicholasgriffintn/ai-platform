@@ -49,6 +49,7 @@ export async function validatePetSettingsUpdate(
     selections.push(
       ...Object.values(overrides.data.families),
       ...Object.values(overrides.data.providers),
+      ...Object.values(overrides.data.makers),
     );
   }
 

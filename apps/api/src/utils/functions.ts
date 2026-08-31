@@ -1,10 +1,9 @@
-import { type ResponseDisplay, ResponseDisplayType } from "@ngriffin_uk/polychat-schemas";
+import { ToolResponseType } from "@ngriffin_uk/polychat-schemas";
 
 export interface ToolPresentation {
   renderer?: string;
   icon?: string;
-  responseType?: ResponseDisplayType;
-  responseDisplay?: ResponseDisplay;
+  responseType?: ToolResponseType;
 }
 
 export const formatFunctionName = (name: string): string => {
@@ -20,7 +19,7 @@ const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   get_weather: { renderer: "weather", icon: "cloud" },
   web_search: { renderer: "web_search", icon: "search" },
   search_documents: { renderer: "document_search", icon: "search" },
-  search_memories: { icon: "search", responseType: ResponseDisplayType.HIDDEN },
+  search_memories: { icon: "search", responseType: ToolResponseType.HIDDEN },
   store_memory: { icon: "plus-circle" },
   discover_capabilities: { renderer: "capability_discovery", icon: "sparkles" },
   research: { renderer: "research", icon: "search" },
@@ -43,14 +42,14 @@ const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   extract_content: { icon: "file-text" },
   extract_text_from_document: { icon: "file-text" },
   get_hacker_news_stories: { icon: "globe" },
-  call_api: { icon: "braces", responseType: ResponseDisplayType.JSON },
+  call_api: { icon: "braces", responseType: ToolResponseType.JSON },
   get_task_status: { icon: "terminal" },
   create_task: { icon: "list-checks" },
   list_tasks: { icon: "list-checks" },
   update_task: { icon: "list-checks" },
   load_skill: { icon: "sparkles" },
-  set_goal: { icon: "target", responseType: ResponseDisplayType.HIDDEN },
-  complete_goal: { icon: "target", responseType: ResponseDisplayType.HIDDEN },
+  set_goal: { icon: "target", responseType: ToolResponseType.HIDDEN },
+  complete_goal: { icon: "target", responseType: ToolResponseType.HIDDEN },
 };
 
 export const getToolPresentation = (name: string): ToolPresentation => {
@@ -70,11 +69,8 @@ export const getToolPresentation = (name: string): ToolPresentation => {
 export const getFunctionIcon = (name: string): string =>
   getToolPresentation(name).icon ?? DEFAULT_ICON;
 
-export const getFunctionResponseType = (name: string): ResponseDisplayType | undefined =>
+export const getFunctionResponseType = (name: string): ToolResponseType | undefined =>
   getToolPresentation(name).responseType;
 
 export const getFunctionRenderer = (name: string): string | undefined =>
   getToolPresentation(name).renderer;
-
-export const getFunctionResponseDisplay = (name: string): ResponseDisplay | undefined =>
-  getToolPresentation(name).responseDisplay;

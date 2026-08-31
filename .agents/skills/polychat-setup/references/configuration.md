@@ -16,7 +16,20 @@ Never copy real secret values into tracked examples.
 
 ### Core web and API
 
-Set matching `APP_BASE_URL` and `API_BASE_URL`, a strong `JWT_SECRET`, and the Cloudflare resources used by the API: D1, KV, R2, Vectorize, Analytics Engine, queues, and Durable Objects. Confirm the web API and WebSocket URLs point to the same API environment.
+Set matching `APP_BASE_URL` and `API_BASE_URL`, a strong `JWT_SECRET`, and a separate stable
+`EMBEDDING_SCOPE_SECRET` of at least 32 characters. The embedding secret derives opaque personal
+scope tags and must remain stable across JWT rotations; changing it requires a deliberate vector
+reindex. The same secret fingerprints user-owned S3 Vectors credentials. Rotating an S3 credential
+makes its historical targets unavailable until the previous credential is restored or an operator
+safely reconciles and reindexes them.
+
+For managed embeddings, bind Workers AI and Vectorize when using Vectorize. When using S3 Vectors,
+set the bucket, index, and region together and store the person's S3 credential; partial S3 settings
+are rejected. Bedrock is not available for the managed document or built-in memory lifecycle.
+
+Configure the Cloudflare resources used by the API: D1, KV, R2, Vectorize, Analytics Engine,
+queues, and Durable Objects. Confirm the web API and WebSocket URLs point to the same API
+environment.
 
 Select at least one usable model provider. Cloudflare Workers AI can be bound through Wrangler; external providers use the corresponding secret from the API example file. Do not promise a provider is available merely because its adapter exists.
 
@@ -43,6 +56,16 @@ Use a shared `TRAINING_WORKER_TOKEN` in the API and training worker. Add AWS cre
 ### Billing, analytics, messaging, and safety
 
 Treat Stripe, PostHog, Beacon, email, SMS, guardrails, and captcha as independent capabilities. Disable their user interface or runtime path when credentials are intentionally absent; do not fill placeholders with dummy production values.
+
+Shieldstral is an optional, self-hosted guardrail rather than a Mistral API model. Set
+`SHIELDSTRAL_BASE_URL` to the root of an OpenAI-compatible vLLM, llama.cpp, or SGLang endpoint and
+set `SHIELDSTRAL_API_KEY` when that endpoint requires bearer authentication. Pin the deployed
+checkpoint with `SHIELDSTRAL_MODEL`; the default is `mistralai/Shieldstral-1.0-3B`.
+
+Keep `SHIELDSTRAL_POLICY` server-owned and record policy changes through
+`SHIELDSTRAL_POLICY_VERSION`. `SHIELDSTRAL_THRESHOLD` accepts a value from 0 to 1 and defaults to
+`0.5`. Enabling Shieldstral without a valid endpoint fails closed rather than allowing unchecked
+content.
 
 ## Configuration review
 

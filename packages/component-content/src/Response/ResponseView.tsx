@@ -11,23 +11,15 @@ import {
   resolveJsonResponseData,
   resolveResponseData,
   resolveTableResponseData,
-  resolveTemplateResponseData,
   resolveTextResponseData,
 } from "./response-data";
 import { TableView } from "./TableView";
-import { TemplateView } from "./TemplateView";
 import { TextView } from "./TextView";
 import { ToolErrorView } from "./ToolErrorView";
-
-export interface ResponseDisplay {
-  fields?: { key: string; label: string; format?: string }[];
-  template?: string;
-}
 
 export interface ResponseViewProps {
   result: Record<string, any>;
   responseType?: string;
-  responseDisplay?: ResponseDisplay;
   renderer?: string;
   hasToolSchema?: boolean;
   embedded?: boolean;
@@ -81,7 +73,6 @@ const readErrorMessage = (result: Record<string, any>): string => {
 export function ResponseView({
   result,
   responseType,
-  responseDisplay,
   renderer,
   hasToolSchema = false,
   embedded = false,
@@ -132,21 +123,13 @@ export function ResponseView({
       return null;
 
     case "table":
-      return <TableView data={resolveTableResponseData(responseData, responseDisplay?.fields)} />;
+      return <TableView data={resolveTableResponseData(responseData)} />;
 
     case "json":
       return <JsonView data={resolveJsonResponseData(responseData)} />;
 
     case "text":
       return <TextView data={resolveTextResponseData(result, responseData)} />;
-
-    case "template":
-      return (
-        <TemplateView
-          template={responseDisplay?.template}
-          data={resolveTemplateResponseData(responseData)}
-        />
-      );
 
     default:
       return customView;

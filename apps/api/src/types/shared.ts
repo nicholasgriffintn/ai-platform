@@ -15,6 +15,8 @@ export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<T, Exclu
     [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>;
   }[Keys];
 
+export type CredentialAuthority = "byok" | "platform";
+
 type WorkerCacheFetcher<Props> = {
   fetch(input: RequestInfo | URL, init?: RequestInit & { props?: Props }): Promise<Response>;
 };
@@ -40,12 +42,19 @@ export type IEnv = {
   TRAINING_WORKER_TOKEN?: string;
   SANDBOX_RUN_COORDINATOR?: DurableObjectNamespace;
   CONVERSATION_COORDINATOR?: DurableObjectNamespace;
+  REALTIME_PROXY_COORDINATOR?: DurableObjectNamespace;
   GROK_API_KEY?: string;
   HUGGINGFACE_TOKEN?: string;
   REPLICATE_API_TOKEN?: string;
   ASSETS_BUCKET_ACCESS_KEY_ID: string;
   ASSETS_BUCKET_SECRET_ACCESS_KEY: string;
   MISTRAL_API_KEY?: string;
+  SHIELDSTRAL_BASE_URL?: string;
+  SHIELDSTRAL_API_KEY?: string;
+  SHIELDSTRAL_MODEL?: string;
+  SHIELDSTRAL_POLICY?: string;
+  SHIELDSTRAL_POLICY_VERSION?: string;
+  SHIELDSTRAL_THRESHOLD?: string;
   OPENROUTER_API_KEY?: string;
   FAL_KEY?: string;
   IDEOGRAM_API_KEY?: string;
@@ -129,6 +138,7 @@ export type IEnv = {
   SANDBOX_ALLOWED_MODELS?: string;
   SANDBOX_BLOCKED_MODELS?: string;
   JWT_SECRET?: string;
+  EMBEDDING_SCOPE_SECRET?: string;
   CARTESIA_API_KEY?: string;
   ELEVENLABS_API_KEY?: string;
   TOGETHER_AI_API_KEY?: string;

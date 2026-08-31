@@ -272,7 +272,7 @@ export async function consumeProviderStream(
         : { handled: false, text: "" };
     const contentDelta = googleStreamParts.handled
       ? googleStreamParts.text
-      : data.choices?.[0]?.delta?.content !== undefined
+      : typeof data.choices?.[0]?.delta?.content === "string"
         ? data.choices[0].delta.content
         : StreamingFormatter.extractContentFromChunk(formattedData, currentEventType);
 

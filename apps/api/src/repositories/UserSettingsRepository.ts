@@ -678,34 +678,43 @@ export class UserSettingsRepository extends BaseRepository {
     const alwaysEnabledProviders = this.env.ALWAYS_ENABLED_PROVIDERS || "";
     const defaultProviders = alwaysEnabledProviders?.split(",") || [];
 
-    await Promise.all(
-      providers.map(async (provider) => {
-        const { query, values } = this.buildSelectQuery(
-          "provider_settings",
-          { user_id: userId, provider_id: provider },
-          { columns: ["id"] },
-        );
-        const existingSettings = await this.runQuery<{ id: string }>(query, values, true);
+    const existingQuery = this.buildSelectQuery(
+      "provider_settings",
+      { user_id: userId },
+      { columns: ["provider_id"] },
+    );
+    const existingRows = await this.runQuery<{ provider_id: string }>(
+      existingQuery.query,
+      existingQuery.values,
+    );
+    const existingProviders = new Set(
+      (Array.isArray(existingRows) ? existingRows : []).map((row) => row.provider_id),
+    );
 
-        if (existingSettings) {
-          return;
-        }
-
-        const providerSettingsId = generateId();
-
-        const isEnabled = defaultProviders.includes(provider);
-
-        const insert = this.buildInsertQuery("provider_settings", {
-          id: providerSettingsId,
+    const inserts = providers
+      .filter((provider) => !existingProviders.has(provider))
+      .map((provider) =>
+        this.buildInsertQuery("provider_settings", {
+          id: generateId(),
           user_id: userId,
           provider_id: provider,
-          enabled: isEnabled ? 1 : 0,
-        });
+          enabled: defaultProviders.includes(provider) ? 1 : 0,
+        }),
+      )
+      .filter((insert): insert is { query: string; values: unknown[] } => Boolean(insert));
 
-        if (insert) {
-          await this.executeRun(insert.query, insert.values);
-        }
-      }),
+    if (inserts.length === 0) {
+      return;
+    }
+
+    const database = this.env.DB;
+
+    if (!database) {
+      throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
+    }
+
+    await database.batch(
+      inserts.map((insert) => database.prepare(insert.query).bind(...insert.values)),
     );
   }
 

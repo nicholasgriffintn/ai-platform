@@ -25,9 +25,17 @@ export const AppCard = ({
 
   return (
     <Card
+      role="button"
       tabIndex={isDisabled ? -1 : 0}
       onClick={isDisabled ? undefined : onSelect}
-      onKeyDown={(e) => !isDisabled && e.key === "Enter" && onSelect()}
+      onKeyDown={(event) => {
+        if (isDisabled || (event.key !== "Enter" && event.key !== " ")) {
+          return;
+        }
+
+        event.preventDefault();
+        onSelect();
+      }}
       aria-label={`Open ${app.name}${isPremium ? " (Premium)" : ""}${requiresSignIn ? " (Sign in required)" : ""}`}
       aria-disabled={isDisabled}
       className={cn(

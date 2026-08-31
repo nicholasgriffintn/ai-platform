@@ -18,6 +18,8 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { isRecord } from "~/utils/objects";
 
+import { extractReasoningContentBlocks } from "./content-blocks";
+
 interface ResponseFormatOptions {
   model?: string;
   modalities?: ModelModalities;
@@ -362,9 +364,23 @@ export class ResponseFormatter {
 
     if (data.choices?.[0]) {
       if (data.choices[0].message?.content) {
-        textContent = data.choices[0].message.content;
+        const message = data.choices[0].message;
+        const contentBlocks = extractReasoningContentBlocks(message.content);
+
+        textContent = contentBlocks.text;
+        thinkingContent =
+          contentBlocks.thinking ||
+          (typeof message.reasoning === "string" ? message.reasoning : "") ||
+          (typeof message.reasoning_content === "string" ? message.reasoning_content : "");
       } else if (data.choices[0].delta?.content !== undefined) {
-        textContent = data.choices[0].delta.content;
+        const delta = data.choices[0].delta;
+        const contentBlocks = extractReasoningContentBlocks(delta.content);
+
+        textContent = contentBlocks.text;
+        thinkingContent =
+          contentBlocks.thinking ||
+          (typeof delta.reasoning === "string" ? delta.reasoning : "") ||
+          (typeof delta.reasoning_content === "string" ? delta.reasoning_content : "");
       } else if (data.choices[0].text) {
         textContent = data.choices[0].text;
       }
@@ -561,7 +577,12 @@ export class ResponseFormatter {
       };
     }
 
-    const textContent = message?.content || "";
+    const contentBlocks = extractReasoningContentBlocks(message?.content);
+    const textContent = contentBlocks.text;
+    const thinkingContent =
+      contentBlocks.thinking ||
+      (typeof message?.reasoning === "string" ? message.reasoning : "") ||
+      (typeof message?.reasoning_content === "string" ? message.reasoning_content : "");
 
     const processedTextContent = !options.is_streaming
       ? preprocessQwQResponse(textContent, options.model || data.model || "")
@@ -578,7 +599,12 @@ export class ResponseFormatter {
       return audioResponse;
     }
 
-    return { ...data, response: processedTextContent, ...message };
+    return {
+      ...data,
+      response: processedTextContent,
+      ...(thinkingContent ? { thinking: thinkingContent } : {}),
+      ...message,
+    };
   }
 
   private static extractOpenAIResponsesText(output: any): string {
@@ -667,10 +693,17 @@ export class ResponseFormatter {
   private static formatOpenRouterResponse(data: any): any {
     const message = data.choices?.[0]?.message;
     const content = message?.content || "";
+    const thinking =
+      typeof message?.reasoning === "string"
+        ? message.reasoning
+        : typeof message?.reasoning_content === "string"
+          ? message.reasoning_content
+          : "";
 
     return {
       ...data,
       response: content,
+      ...(thinking ? { thinking } : {}),
     };
   }
 

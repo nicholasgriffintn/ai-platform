@@ -4,9 +4,9 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { createRecipeChatRequestOptions } from "@ngriffin_uk/polychat-schemas";
 
-import { defaultModel } from "~/constants/models";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
+import { getDefaultChatModel } from "~/lib/providers/models";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import type { CreateChatCompletionsResponse, IEnv, IUser, Message } from "~/types";
 import type { ChatRequestOptions } from "~/types/chat";
@@ -57,11 +57,13 @@ export async function recordRecipeInvocationFailure(params: {
   projectId?: string;
   error: unknown;
 }): Promise<string> {
+  const defaultModel = await getDefaultChatModel(params.env, params.user);
   const conversationManager = ConversationManager.getInstance({
     database: params.context.database,
     repositories: params.context.repositories,
     user: params.user,
-    model: defaultModel,
+    model: defaultModel.model,
+    provider: defaultModel.provider,
     platform: "api",
     store: true,
     env: params.env,
@@ -135,7 +137,7 @@ export async function executeRecipeInvocationChat(params: {
           content: params.invocation.conversationStarter,
         },
       ],
-      model: defaultModel,
+      model_router_mode: "auto",
       mode: "agent",
       stream: false,
       store: true,
