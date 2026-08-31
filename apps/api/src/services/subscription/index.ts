@@ -1,6 +1,9 @@
 import Stripe from "stripe";
 
 import { FREE_TRIAL_DAYS } from "~/constants/app";
+import type { PlanId } from "~/constants/plans";
+import { resolvePlanForSubscriptionStatus } from "~/lib/billing/subscriptionStatus";
+import { hasPlanEntitlement, resolvePlanId } from "~/lib/plans";
 import { RepositoryManager } from "~/repositories";
 import {
   sendPaymentFailedEmail,
@@ -236,6 +239,43 @@ export async function reactivateSubscription(
   }
 }
 
+interface SubscriptionStateChange {
+  planId?: PlanId | null;
+  subscriptionId?: string | null;
+}
+
+async function applySubscriptionState(
+  repositories: RepositoryManager,
+  user: IUser,
+  change: SubscriptionStateChange,
+): Promise<{ planChanged: boolean }> {
+  const updates: Record<string, unknown> = {};
+
+  if (
+    change.subscriptionId !== undefined &&
+    change.subscriptionId !== user.stripe_subscription_id
+  ) {
+    updates.stripe_subscription_id = change.subscriptionId;
+  }
+
+  const planChanged =
+    Boolean(change.planId) &&
+    change.planId !== resolvePlanId(user.plan_id) &&
+    !hasPlanEntitlement(user.plan_id, "enterprise");
+
+  if (planChanged) {
+    updates.plan_id = change.planId;
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return { planChanged: false };
+  }
+
+  await repositories.users.updateUser(user.id, updates);
+
+  return { planChanged };
+}
+
 export async function handleStripeWebhook(
   env: IEnv,
   signature: string,
@@ -277,12 +317,12 @@ export async function handleStripeWebhook(
           const user = await repositories.users.getUserByStripeCustomerId(customerId);
 
           if (user?.id) {
-            await repositories.users.updateUser(user.id, {
-              stripe_customer_id: customerId,
-              stripe_subscription_id: subscriptionId,
-              plan_id: "pro",
+            const { planChanged } = await applySubscriptionState(repositories, user, {
+              planId: "pro",
+              subscriptionId,
             });
-            if (user.email) {
+
+            if (planChanged && user.email) {
               try {
                 await sendSubscriptionEmail(env, user.email, "Pro");
               } catch (e: any) {
@@ -301,9 +341,25 @@ export async function handleStripeWebhook(
         const user = await repositories.users.getUserByStripeCustomerId(customerId);
 
         if (user?.id) {
-          await repositories.users.updateUser(user.id, {
-            stripe_subscription_id: subscription.id,
+          const planId = resolvePlanForSubscriptionStatus(subscription.status);
+          const { planChanged } = await applySubscriptionState(repositories, user, {
+            planId,
+            subscriptionId: subscription.id,
           });
+
+          if (planChanged) {
+            logger.info(
+              `Subscription ${subscription.status} moved user ${user.id} to the ${planId} plan`,
+            );
+          }
+
+          if (planChanged && planId === "free" && user.email) {
+            try {
+              await sendPaymentFailedEmail(env, user.email);
+            } catch (e: any) {
+              logger.error(`Failed to send payment failed email: ${e.message}`);
+            }
+          }
         }
 
         break;
@@ -315,9 +371,9 @@ export async function handleStripeWebhook(
         const user = await repositories.users.getUserByStripeCustomerId(customerId);
 
         if (user?.id) {
-          await repositories.users.updateUser(user.id, {
-            stripe_subscription_id: null,
-            plan_id: "free",
+          await applySubscriptionState(repositories, user, {
+            planId: "free",
+            subscriptionId: null,
           });
           if (user.email) {
             try {
@@ -336,11 +392,35 @@ export async function handleStripeWebhook(
         const customerId = invoice.customer as string;
         const user = await repositories.users.getUserByStripeCustomerId(customerId);
 
-        if (user?.id && user.email) {
-          try {
-            await sendPaymentFailedEmail(env, user.email);
-          } catch (e: any) {
-            logger.error(`Failed to send payment failed email: ${e.message}`);
+        if (user?.id) {
+          const { planChanged } = await applySubscriptionState(repositories, user, {
+            planId: "free",
+          });
+
+          if (planChanged && user.email) {
+            try {
+              await sendPaymentFailedEmail(env, user.email);
+            } catch (e: any) {
+              logger.error(`Failed to send payment failed email: ${e.message}`);
+            }
+          }
+        }
+
+        break;
+      }
+
+      case "invoice.paid": {
+        const invoice = event.data.object;
+        const customerId = invoice.customer as string;
+        const user = await repositories.users.getUserByStripeCustomerId(customerId);
+
+        if (user?.id && user.stripe_subscription_id) {
+          const { planChanged } = await applySubscriptionState(repositories, user, {
+            planId: "pro",
+          });
+
+          if (planChanged) {
+            logger.info(`Recovered payment restored the pro plan for user ${user.id}`);
           }
         }
 

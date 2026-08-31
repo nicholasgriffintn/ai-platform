@@ -122,6 +122,8 @@ export * from "./tool-registry";
 export * from "./tools";
 export * from "./tool-configurations";
 export * from "./uploads";
+export * from "./usage";
+export * from "./pricing";
 export * from "./user";
 export * from "./webhooks";
 export * from "./training";

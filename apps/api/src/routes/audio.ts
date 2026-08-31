@@ -9,6 +9,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 
+import { checkSpeechAccess, recordSpeechUsage } from "~/lib/audio/access";
 import { addRoute } from "~/lib/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleTextToSpeech } from "~/services/audio/speech";
@@ -80,7 +81,14 @@ addRoute(app, "post", "/speech", {
       schema: errorResponseSchema,
     },
   },
-  handler: async ({ body, serviceContext, user }) => {
+  handler: async ({ body, serviceContext, user, anonymousUser }) => {
+    await checkSpeechAccess({
+      repositories: serviceContext.repositories,
+      user,
+      anonymousUser,
+      provider: body.provider,
+    });
+
     const response = await handleTextToSpeech({
       env: serviceContext.env,
       input: body.input,
@@ -93,6 +101,12 @@ addRoute(app, "post", "/speech", {
       response_format: body.response_format,
       user,
       context: serviceContext,
+    });
+
+    await recordSpeechUsage({
+      repositories: serviceContext.repositories,
+      user,
+      anonymousUser,
     });
 
     return { response };

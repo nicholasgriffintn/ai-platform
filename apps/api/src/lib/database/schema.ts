@@ -26,6 +26,10 @@ export const plans = sqliteTable("plans", {
   description: text(),
   price: integer(),
   stripe_price_id: text(),
+  included_credits: integer(),
+  grace_credits: integer(),
+  stripe_meter_id: text(),
+  overage_price_id: text(),
   created_at: text()
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
@@ -1598,6 +1602,10 @@ export const tasks = sqliteTable(
         "inbound_message",
         "project_task_run",
         "ocr_batch_polling",
+        "usage_rollup",
+        "realtime_reconciliation",
+        "infra_reconciliation",
+        "stripe_usage_sync",
       ],
     }).notNull(),
     status: text({
@@ -1947,3 +1955,135 @@ export const projectTask = sqliteTable(
 );
 
 export type ProjectTaskRow = typeof projectTask.$inferSelect;
+
+export const usageEvent = sqliteTable(
+  "usage_event",
+  {
+    id: text().primaryKey(),
+    idempotency_key: text().notNull().unique(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    workspace_id: text().references(() => workspace.id),
+    project_id: text().references(() => project.id),
+    conversation_id: text().references(() => conversation.id, { onDelete: "set null" }),
+    message_id: text(),
+    activity_id: text(),
+    completion_id: text(),
+    occurred_at: text().notNull(),
+    period: text().notNull(),
+    source: text({
+      enum: ["model", "hosted_tool", "capability", "infrastructure"],
+    }).notNull(),
+    vendor: text().notNull(),
+    resource: text().notNull(),
+    unit: text().notNull(),
+    quantity: real().notNull(),
+    rate_version: text(),
+    unit_cost_micros: real(),
+    cost_micros: integer().notNull().default(0),
+    credit_micros: integer().notNull().default(0),
+    billable: integer({ mode: "boolean" }).notNull().default(true),
+    byok: integer({ mode: "boolean" }).notNull().default(false),
+    estimated: integer({ mode: "boolean" }).notNull().default(false),
+    raw: text({ mode: "json" }),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    userPeriodIdx: index("usage_event_user_period_idx").on(table.user_id, table.period),
+    periodSourceIdx: index("usage_event_period_source_idx").on(table.period, table.source),
+    conversationIdx: index("usage_event_conversation_idx").on(table.conversation_id),
+    workspacePeriodIdx: index("usage_event_workspace_period_idx").on(
+      table.workspace_id,
+      table.period,
+    ),
+  }),
+);
+
+export type UsageEventRow = typeof usageEvent.$inferSelect;
+
+export const usageBalance = sqliteTable(
+  "usage_balance",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    period: text().notNull(),
+    plan_id: text(),
+    included_credit_micros: integer().notNull().default(0),
+    grace_credit_micros: integer().notNull().default(0),
+    spent_credit_micros: integer().notNull().default(0),
+    reserved_credit_micros: integer().notNull().default(0),
+    overrun_credit_micros: integer().notNull().default(0),
+    overage_credit_micros: integer().notNull().default(0),
+    overage_enabled: integer({ mode: "boolean" }).notNull().default(false),
+    last_event_at: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    userPeriodIdx: uniqueIndex("usage_balance_user_period_idx").on(table.user_id, table.period),
+  }),
+);
+
+export type UsageBalanceRow = typeof usageBalance.$inferSelect;
+
+export const usageReservation = sqliteTable(
+  "usage_reservation",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    period: text().notNull(),
+    kind: text({ enum: ["realtime", "sandbox"] }).notNull(),
+    ref_id: text().notNull(),
+    credit_micros: integer().notNull(),
+    status: text({ enum: ["held", "settled", "released"] }).notNull(),
+    expires_at: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    kindRefIdx: uniqueIndex("usage_reservation_kind_ref_idx").on(table.kind, table.ref_id),
+    userPeriodIdx: index("usage_reservation_user_period_idx").on(table.user_id, table.period),
+  }),
+);
+
+export type UsageReservationRow = typeof usageReservation.$inferSelect;
+
+export const infraCostDaily = sqliteTable(
+  "infra_cost_daily",
+  {
+    id: text().primaryKey(),
+    day: text().notNull(),
+    resource: text().notNull(),
+    unit: text().notNull(),
+    quantity: real().notNull().default(0),
+    cost_micros: integer().notNull().default(0),
+    attributed_cost_micros: integer().notNull().default(0),
+    source: text().notNull().default("graphql"),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    dayIdx: index("infra_cost_daily_day_idx").on(table.day),
+  }),
+);
+
+export type InfraCostDailyRow = typeof infraCostDaily.$inferSelect;

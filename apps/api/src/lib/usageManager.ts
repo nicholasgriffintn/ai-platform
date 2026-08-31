@@ -3,6 +3,7 @@ import type { FunctionType, ModelConfigItem } from "@ngriffin_uk/polychat-schema
 import { USAGE_CONFIG } from "~/constants/app";
 import { findModelConfig } from "~/lib/providers/models";
 import type { RepositoryManager } from "~/repositories";
+import type { UsageCounterIncrements } from "~/repositories/UserRepository";
 import type { AnonymousUser, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -245,9 +246,10 @@ export class UsageManager {
         return 1;
       }
 
-      const inputMultiplier = (config.costPer1kInputTokens || 0) / USAGE_CONFIG.BASELINE_INPUT_COST;
+      const inputMultiplier =
+        (config.costPer1kInputTokens || 0) / USAGE_CONFIG.MULTIPLIER_BASELINE_INPUT_COST_PER_1K;
       const outputMultiplier =
-        (config.costPer1kOutputTokens || 0) / USAGE_CONFIG.BASELINE_OUTPUT_COST;
+        (config.costPer1kOutputTokens || 0) / USAGE_CONFIG.MULTIPLIER_BASELINE_OUTPUT_COST_PER_1K;
       const avgMultiplier = (inputMultiplier + outputMultiplier) / 2;
       const finalMultiplier = Math.ceil(avgMultiplier);
 
@@ -735,32 +737,30 @@ export class UsageManager {
     return Boolean(this.enqueueUsageTask && this.asyncUsageUpdates);
   }
 
+  private static async applyUsageCounterIncrements(
+    repositories: RepositoryManager,
+    user: User,
+    increments: UsageCounterIncrements,
+  ): Promise<User> {
+    const updatedUser = await repositories.users.incrementUsageCounters(user.id, increments);
+
+    if (!updatedUser) {
+      logger.warn("Usage counters were not applied: user row missing", { userId: user.id });
+
+      return user;
+    }
+
+    return updatedUser;
+  }
+
   public static async applyAuthenticatedUsageUpdate(
     repositories: RepositoryManager,
     user: User,
   ): Promise<User> {
-    const now = new Date();
-    const lastReset = user.daily_reset ? new Date(user.daily_reset) : null;
-    const isNewDay =
-      !lastReset ||
-      now.getUTCFullYear() !== lastReset.getUTCFullYear() ||
-      now.getUTCMonth() !== lastReset.getUTCMonth() ||
-      now.getUTCDate() !== lastReset.getUTCDate();
-
-    const currentDailyCount = isNewDay ? 0 : (user.daily_message_count ?? 0);
-    const updates: Partial<User> & Record<string, any> = {
-      message_count: (user.message_count ?? 0) + 1,
-      daily_message_count: currentDailyCount + 1,
-      last_active_at: now.toISOString(),
-      ...(isNewDay && { daily_reset: now.toISOString() }),
-    };
-
-    await repositories.users.updateUser(user.id, updates);
-
-    return {
-      ...user,
-      ...updates,
-    };
+    return UsageManager.applyUsageCounterIncrements(repositories, user, {
+      message_count: 1,
+      daily_message_count: 1,
+    });
   }
 
   public static async applyProUsageUpdate(
@@ -768,59 +768,21 @@ export class UsageManager {
     user: User,
     usageMultiplier: number,
   ): Promise<User> {
-    const now = new Date();
-    const lastReset = user.daily_pro_reset ? new Date(user.daily_pro_reset) : null;
-    const isNewDay =
-      !lastReset ||
-      now.getUTCFullYear() !== lastReset.getUTCFullYear() ||
-      now.getUTCMonth() !== lastReset.getUTCMonth() ||
-      now.getUTCDate() !== lastReset.getUTCDate();
-
-    const currentDailyCount = isNewDay ? 0 : (user.daily_pro_message_count ?? 0);
-
-    const updates: Partial<User> & Record<string, any> = {
-      message_count: (user.message_count ?? 0) + 1,
-      daily_pro_message_count: currentDailyCount + usageMultiplier,
-      last_active_at: now.toISOString(),
-      ...(isNewDay && { daily_pro_reset: now.toISOString() }),
-    };
-
-    await repositories.users.updateUser(user.id, updates);
-
-    return {
-      ...user,
-      ...updates,
-    };
+    return UsageManager.applyUsageCounterIncrements(repositories, user, {
+      message_count: 1,
+      daily_pro_message_count: usageMultiplier,
+    });
   }
 
   public static async applyByokUsageUpdate(
     repositories: RepositoryManager,
     user: User,
   ): Promise<User> {
-    const now = new Date();
-    const lastReset = user.daily_byok_reset ? new Date(user.daily_byok_reset) : null;
-    const isNewDay =
-      !lastReset ||
-      now.getUTCFullYear() !== lastReset.getUTCFullYear() ||
-      now.getUTCMonth() !== lastReset.getUTCMonth() ||
-      now.getUTCDate() !== lastReset.getUTCDate();
-
-    const currentDailyCount = isNewDay ? 0 : (user.daily_byok_message_count ?? 0);
-
-    const updates: Partial<User> & Record<string, any> = {
-      message_count: (user.message_count ?? 0) + 1,
-      byok_message_count: (user.byok_message_count ?? 0) + 1,
-      daily_byok_message_count: currentDailyCount + 1,
-      last_active_at: now.toISOString(),
-      ...(isNewDay && { daily_byok_reset: now.toISOString() }),
-    };
-
-    await repositories.users.updateUser(user.id, updates);
-
-    return {
-      ...user,
-      ...updates,
-    };
+    return UsageManager.applyUsageCounterIncrements(repositories, user, {
+      message_count: 1,
+      byok_message_count: 1,
+      daily_byok_message_count: 1,
+    });
   }
 
   public static async applyAnonymousUsageUpdate(
@@ -846,21 +808,12 @@ export class UsageManager {
       );
     }
 
-    const updates: Partial<User> & Record<string, any> = {
-      daily_message_count: (user.daily_message_count ?? 0) + 1,
-      message_count: (user.message_count ?? 0) + 1,
-      last_active_at: new Date().toISOString(),
-    };
-
-    if (options.functionType === "premium") {
-      updates.daily_pro_message_count = (user.daily_pro_message_count ?? 0) + options.costPerCall;
-    }
-
-    await repositories.users.updateUser(user.id, updates);
-
-    return {
-      ...user,
-      ...updates,
-    };
+    return UsageManager.applyUsageCounterIncrements(repositories, user, {
+      message_count: 1,
+      daily_message_count: 1,
+      ...(options.functionType === "premium"
+        ? { daily_pro_message_count: options.costPerCall }
+        : {}),
+    });
   }
 }

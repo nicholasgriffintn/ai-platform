@@ -6,6 +6,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { trackTokenUsage } from "~/lib/monitoring";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
+import { recordModelTurnUsage } from "~/lib/usage/modelUsage";
 import type { NormalisedTokenUsage } from "~/lib/usage/tokenUsage";
 import type {
   ChatMode,
@@ -28,6 +29,7 @@ export interface TurnOutput {
   toolCalls: ToolCall[];
   citations?: unknown;
   usage?: NormalisedTokenUsage | null;
+  rawUsage?: unknown;
   structuredData?: unknown;
   refusal?: string | null;
   annotations?: unknown;
@@ -152,6 +154,19 @@ export async function finaliseAssistantTurn(
   };
 
   await params.conversationManager.add(completionId, message);
+
+  await recordModelTurnUsage({
+    env,
+    repositories: context?.repositories,
+    userId: user?.id,
+    usage: auditedUsage,
+    rawUsage: turn.rawUsage,
+    model,
+    provider: params.provider,
+    completionId,
+    messageId: message.id,
+    conversationId: completionId,
+  });
 
   await sink.writeEvent("message_delta", {
     id: completionId,

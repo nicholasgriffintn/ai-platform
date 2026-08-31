@@ -71,3 +71,31 @@ export function readNumberFieldAlias(
 
   return undefined;
 }
+
+export function findNumericFieldDeep(
+  value: unknown,
+  fieldNames: readonly string[],
+  maxDepth = 3,
+): number | undefined {
+  if (!isRecord(value) || maxDepth < 0) {
+    return undefined;
+  }
+
+  for (const fieldName of fieldNames) {
+    const field = readNumericField(value, fieldName);
+
+    if (field !== undefined) {
+      return field;
+    }
+  }
+
+  for (const nested of Object.values(value)) {
+    const found = findNumericFieldDeep(nested, fieldNames, maxDepth - 1);
+
+    if (found !== undefined) {
+      return found;
+    }
+  }
+
+  return undefined;
+}
