@@ -1,9 +1,36 @@
 import { deriveArtificialAnalysisScores } from "~/lib/artificial-analysis/scoring";
+import type { ArtificialAnalysisModelRecord } from "~/lib/artificial-analysis/types";
+import { detectModelPriceDrift } from "~/lib/pricing/modelPriceDrift";
+import { getModels } from "~/lib/providers/models";
 import { RepositoryManager } from "~/repositories";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv } from "~/types";
+import { getLogger } from "~/utils/logger";
 
 import { fetchArtificialAnalysisModels } from "./artificialAnalysis";
+
+const logger = getLogger({ prefix: "services/model-analysis/workflow" });
+
+function reportModelPriceDrift(references: readonly ArtificialAnalysisModelRecord[]): number {
+  const report = detectModelPriceDrift(getModels(), references);
+
+  if (report.drifted.length === 0) {
+    logger.info("Model catalogue prices agree with Artificial Analysis", {
+      compared: report.compared,
+      matched: report.matched,
+    });
+
+    return 0;
+  }
+
+  logger.warn("Model catalogue prices diverge from Artificial Analysis", {
+    compared: report.compared,
+    matched: report.matched,
+    drifted: report.drifted,
+  });
+
+  return report.drifted.length;
+}
 
 export async function ingestArtificialAnalysisModels({
   env,
@@ -15,7 +42,7 @@ export async function ingestArtificialAnalysisModels({
   fetchImpl?: typeof fetch;
   now?: Date;
   sourceTaskId: string;
-}): Promise<{ storedModels: number; scoringTaskId: string }> {
+}): Promise<{ storedModels: number; scoringTaskId: string; driftedModelPrices: number }> {
   if (!env.ARTIFICIAL_ANALYSIS_API_KEY) {
     throw new Error("ARTIFICIAL_ANALYSIS_API_KEY is not configured");
   }
@@ -29,6 +56,7 @@ export async function ingestArtificialAnalysisModels({
     ingested_at: ingestedAt,
   }));
   const storedModels = await repositories.artificialAnalysis.upsertMany(records);
+  const driftedModelPrices = reportModelPriceDrift(records);
   const scheduledAt = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
   const scoringTaskId = await taskService.enqueueTask({
     id: `artificial-analysis-scoring:${sourceTaskId}`,
@@ -42,7 +70,7 @@ export async function ingestArtificialAnalysisModels({
     priority: 6,
   });
 
-  return { storedModels, scoringTaskId };
+  return { storedModels, scoringTaskId, driftedModelPrices };
 }
 
 export async function scoreArtificialAnalysisModels({

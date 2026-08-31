@@ -1,3 +1,7 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
+export { isRecord };
+
 export function isPlainObject(value: unknown): value is Record<string, unknown> {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     return false;
@@ -8,16 +12,8 @@ export function isPlainObject(value: unknown): value is Record<string, unknown> 
   return prototype === Object.prototype || prototype === null;
 }
 
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
 export function isObjectOrArray(value: unknown): value is Record<string, unknown> | unknown[] {
   return isRecord(value) || Array.isArray(value);
-}
-
-export function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === "string");
 }
 
 export function coerceStringArray(value: unknown): string[] {

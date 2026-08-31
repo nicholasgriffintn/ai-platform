@@ -2,7 +2,7 @@ import type { ChatHostedToolSettings } from "@ngriffin_uk/polychat-schemas";
 
 import type { ProjectCapabilityRow } from "~/repositories/WorkspaceRepository";
 import { MODEL_TOOL_DEFINITIONS } from "~/services/experiences/config";
-import { listFunctionTools } from "~/services/functions";
+import { listFunctionToolDefinitions } from "~/services/functions/definitions";
 import {
   getModelToolDefinition,
   resolveModelToolConfigurations,
@@ -16,7 +16,7 @@ interface ResolvedProjectTools {
 }
 
 function getCallableToolIds(): Set<string> {
-  return new Set(listFunctionTools().map((tool) => tool.name));
+  return new Set(listFunctionToolDefinitions().map((tool) => tool.name));
 }
 
 export function validateProjectToolConfiguration(

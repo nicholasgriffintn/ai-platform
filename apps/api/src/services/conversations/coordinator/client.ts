@@ -1,26 +1,12 @@
-import {
-  threadCoordinatorStateSchema,
-  threadInstructionSchema,
-  type SubmitThreadInstruction,
-  type ThreadCoordinatorState,
-  type ThreadInstruction,
-} from "@ngriffin_uk/polychat-schemas";
+import type { ThreadOperation } from "@ngriffin_uk/polychat-schemas";
 
+import { getDurableObjectStub, postDurableObjectJson } from "~/lib/durable-objects/client";
 import type { IEnv } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/conversations/coordinator/client" });
 const COORDINATOR_ORIGIN = "https://conversation-coordinator";
-
-function getStub(env: IEnv | undefined, conversationId: string): DurableObjectStub | null {
-  if (!env?.CONVERSATION_COORDINATOR) {
-    return null;
-  }
-
-  const id = env.CONVERSATION_COORDINATOR.idFromName(conversationId);
-
-  return env.CONVERSATION_COORDINATOR.get(id);
-}
 
 type CoordinatorOutcome<T> =
   | { status: "ok"; data: T }
@@ -31,16 +17,16 @@ async function callCoordinator<T>(
   env: IEnv | undefined,
   conversationId: string,
   path: string,
-  init?: RequestInit,
+  body?: unknown,
 ): Promise<CoordinatorOutcome<T>> {
-  const stub = getStub(env, conversationId);
+  const stub = getDurableObjectStub(env?.CONVERSATION_COORDINATOR, conversationId);
 
   if (!stub) {
     return { status: "unavailable" };
   }
 
   try {
-    const response = await stub.fetch(`${COORDINATOR_ORIGIN}${path}`, init);
+    const response = await postDurableObjectJson(stub, `${COORDINATOR_ORIGIN}${path}`, body);
 
     if (!response.ok) {
       logger.error("Conversation coordinator refused a call", {
@@ -60,54 +46,6 @@ async function callCoordinator<T>(
   }
 }
 
-async function call<T>(
-  env: IEnv | undefined,
-  conversationId: string,
-  path: string,
-  init?: RequestInit,
-): Promise<T | null> {
-  const outcome = await callCoordinator<T>(env, conversationId, path, init);
-
-  return outcome.status === "ok" ? outcome.data : null;
-}
-
-export async function enqueueThreadInstruction(params: {
-  env: IEnv | undefined;
-  conversationId: string;
-  instruction: SubmitThreadInstruction;
-}): Promise<ThreadInstruction | null> {
-  const result = await call<{ instruction: unknown }>(
-    params.env,
-    params.conversationId,
-    "/instructions",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(params.instruction),
-    },
-  );
-  const parsed = threadInstructionSchema.safeParse(result?.instruction);
-
-  return parsed.success ? parsed.data : null;
-}
-
-/**
- * Takes the next instruction the thread should run, marking the thread busy.
- * Returns null when another operation holds the thread or when the queue has
- * nothing that should run now.
- */
-export async function claimThreadInstruction(params: {
-  env: IEnv | undefined;
-  conversationId: string;
-}): Promise<ThreadInstruction | null> {
-  const result = await call<{ instruction: unknown }>(params.env, params.conversationId, "/claim", {
-    method: "POST",
-  });
-  const parsed = threadInstructionSchema.safeParse(result?.instruction);
-
-  return parsed.success ? parsed.data : null;
-}
-
 /**
  * Takes the thread for a synchronous operation. Returns false when another
  * operation already holds it, so the caller can refuse rather than race.
@@ -120,16 +58,12 @@ export async function claimThreadInstruction(params: {
 export async function acquireThread(params: {
   env: IEnv | undefined;
   conversationId: string;
-  kind: SubmitThreadInstruction["kind"];
+  kind: ThreadOperation;
 }): Promise<{ acquired: boolean; currentOperation?: string | null }> {
   const outcome = await callCoordinator<{
     acquired?: boolean;
     currentOperation?: string | null;
-  }>(params.env, params.conversationId, "/acquire", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ kind: params.kind }),
-  });
+  }>(params.env, params.conversationId, "/acquire", { kind: params.kind });
 
   if (outcome.status === "unavailable") {
     return { acquired: true };
@@ -149,24 +83,54 @@ export async function releaseThread(params: {
   env: IEnv | undefined;
   conversationId: string;
 }): Promise<void> {
-  await call(params.env, params.conversationId, "/release", { method: "POST" });
+  await callCoordinator(params.env, params.conversationId, "/release");
 }
 
-export async function getThreadCoordinatorState(params: {
-  env: IEnv | undefined;
-  conversationId: string;
-}): Promise<ThreadCoordinatorState | null> {
-  const result = await call<unknown>(params.env, params.conversationId, "/state");
-  const parsed = threadCoordinatorStateSchema.safeParse(result);
-
-  return parsed.success ? parsed.data : null;
+export function threadBusyError(currentOperation?: string | null): AssistantError {
+  return new AssistantError(
+    currentOperation
+      ? `This conversation is already working on something (${currentOperation}). Try again once it finishes.`
+      : "This conversation is already working on something. Try again once it finishes.",
+    ErrorType.CONFLICT_ERROR,
+  );
 }
 
-export async function countQueuedInstructions(params: {
+export interface ThreadLockRequest {
   env: IEnv | undefined;
   conversationId: string;
-}): Promise<number> {
-  const state = await getThreadCoordinatorState(params);
+  kind: ThreadOperation;
+}
 
-  return state?.queue.length ?? 0;
+export async function withThreadLock<T>(
+  params: ThreadLockRequest,
+  run: () => Promise<T>,
+): Promise<T> {
+  const lock = await acquireThread(params);
+
+  if (!lock.acquired) {
+    throw threadBusyError(lock.currentOperation);
+  }
+
+  try {
+    return await run();
+  } finally {
+    await releaseThread({ env: params.env, conversationId: params.conversationId });
+  }
+}
+
+export async function withThreadLockIfFree<T>(
+  params: ThreadLockRequest,
+  run: () => Promise<T>,
+): Promise<T | null> {
+  const lock = await acquireThread(params);
+
+  if (!lock.acquired) {
+    return null;
+  }
+
+  try {
+    return await run();
+  } finally {
+    await releaseThread({ env: params.env, conversationId: params.conversationId });
+  }
 }

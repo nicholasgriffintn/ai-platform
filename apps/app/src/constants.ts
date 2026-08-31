@@ -5,7 +5,6 @@ export const BUILD_MODE = import.meta.env.MODE;
 const IS_E2E_BUILD = BUILD_MODE === "e2e";
 
 export const APP_NAME = "Polychat";
-export const APP_TAGLINE = "AI Assistant";
 export const CONTACT_LINK = "https://nicholasgriffin.dev/contact";
 export const SOURCE_CODE_URL = "https://github.com/nicholasgriffintn/personal-ai-assistant";
 export const JURISDICTION = "United Kingdom";
@@ -118,10 +117,6 @@ const CSP = {
   ...COMMON_CSP,
   scriptSrc: SCRIPT_SRC,
 } as const;
-
-export const BEACON_ALLOWED_ORIGINS = IS_PRODUCTION
-  ? ["https://beacon.polychat.app"]
-  : ["https://beacon.polychat.app", "http://localhost:5173"];
 
 /**
  * Generates the Content Security Policy string from the CSP configuration

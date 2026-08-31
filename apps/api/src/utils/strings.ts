@@ -8,14 +8,6 @@ export function trimTemplateWhitespace(str: string): string {
     .replace(/\n{3,}/g, "\n\n");
 }
 
-export function compactNonEmptyStrings(values: Array<string | null | undefined>): string[] {
-  return values.map((value) => value?.trim()).filter((value): value is string => Boolean(value));
-}
-
-export function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 export function getUtf8ByteLength(value: string): number {
   return new TextEncoder().encode(value).byteLength;
 }

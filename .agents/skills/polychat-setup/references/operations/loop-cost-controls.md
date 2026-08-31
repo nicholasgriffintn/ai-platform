@@ -5,13 +5,14 @@ removes a bound is visible as a change to this file rather than as a bill.
 
 ## Every loop and what stops it
 
-| Loop                  | Bound                                                                                                                                                                                                | Enforced in                                           |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| Chat turn steps       | the request's own ceiling, the recipe and connector defaults, and `AGENT_MODE_CONFIGS[mode].maxSteps`; a turn under an active goal is raised to `GOAL_TURN_MAX_STEPS` unless the request set its own | `resolveTurnStepBudget`, `resolveModeMaxSteps`        |
-| Agent loop steps      | that budget, extended once so a turn that hits it is asked for a final answer rather than cut off                                                                                                    | `executeAgentLoop`, `runAgentLoop`                    |
-| Goal continuation     | `evaluateGoalContinuation`: stalls after two evidence-free turns, plus blocked, paused, and usage states                                                                                             | `packages/schemas/src/goals.ts`                       |
-| Sandbox run loop      | `MAX_AGENT_STEPS`, `MAX_COMMANDS`, run timeout, and the run goal's own stall rule                                                                                                                    | sandbox worker constants, run goal iteration endpoint |
-| Inbound channel turns | channel profile `maxSteps`, and one turn at a time per conversation                                                                                                                                  | `channels.ts`, `ConversationCoordinator`              |
+| Loop                        | Bound                                                                                                                                                                                                | Enforced in                                           |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Chat turn steps             | the request's own ceiling, the recipe and connector defaults, and `AGENT_MODE_CONFIGS[mode].maxSteps`; a turn under an active goal is raised to `GOAL_TURN_MAX_STEPS` unless the request set its own | `resolveTurnStepBudget`, `resolveModeMaxSteps`        |
+| Agent loop steps            | that budget, extended once so a turn that hits it is asked for a final answer rather than cut off                                                                                                    | `executeAgentLoop`, `runAgentLoop`                    |
+| Goal continuation           | `evaluateGoalContinuation`: stalls after two evidence-free turns, plus blocked, paused, and usage states                                                                                             | `packages/schemas/src/goals.ts`                       |
+| Sandbox run loop            | `MAX_AGENT_STEPS`, `MAX_COMMANDS`, run timeout, and the run goal's own stall rule                                                                                                                    | sandbox worker constants, run goal iteration endpoint |
+| Inbound channel turns       | channel profile `maxSteps`, and one turn at a time per conversation                                                                                                                                  | `channels.ts`, `ConversationCoordinator`              |
+| Detached turn cancel checks | the turn's own lifetime: one KV read a second for the first thirty seconds a turn is detached, then one every five seconds until it ends                                                             | `watchDetachedTurnCancellation`                       |
 
 Streaming is a transport, not a loop of its own (ADR 0022). A streamed turn and a buffered one draw the
 same budget through the same loop, so there is one place to change a bound and one place it can be lost.
@@ -33,6 +34,17 @@ against the allowance rather than the whole loop counting as one.
 An unreadable limit is treated as **not** exhausted, so a storage blip cannot lock a paying user out.
 The throwing check at the request boundary still applies.
 
+## Counters are incremented relatively, never read-modify-written
+
+A bound is only real if the counter behind it survives parallel requests. Every usage increment is one
+statement that adds to the stored value and rolls the day over in the same `CASE`, so ten simultaneous
+turns record ten. The repository owns that SQL — `UserRepository.incrementUsageCounters` and
+`AnonymousUserRepository.incrementDailyCount` — and `UsageManager` only describes which counters move.
+
+The plan a turn is billed against comes from `hasPlanEntitlement`, both when the turn is admitted and when
+it is counted. Passing a hard-coded entitlement at increment time bills a free account at pro rates and lets
+it past the pro gate.
+
 ## Durable Object cost
 
 `ConversationCoordinator` is called **twice per turn** (acquire, release) and twice per compaction.
@@ -50,6 +62,6 @@ a detached turn outlives — so a long tool chain is still two DO calls in total
 
 1. Give it a bound that does not depend on the model behaving.
 2. Re-check usage before each unit of spend.
-3. Make sure the work increments usage, not just the request.
+3. Make sure the work increments usage, not just the request, through a relative counter update.
 4. If it holds the conversation, release it when the work actually finishes — a streaming response is
    still writing after its handler returns.

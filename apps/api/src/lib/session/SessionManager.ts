@@ -4,6 +4,7 @@ import { createServiceContext } from "~/lib/context/serviceContext";
 import { getSummarisePrompt } from "~/lib/prompts/summarise";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getAuxiliaryModel } from "~/lib/providers/models";
+import { withThreadLockIfFree } from "~/services/conversations/coordinator/client";
 import type { ChatMode, IEnv, Message, IUser } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
@@ -231,12 +232,17 @@ export class SessionManager {
       .filter((id): id is string => typeof id === "string" && id.length > 0);
 
     try {
-      await this.conversationManager.add(completionId, snapshotMessage);
-      await this.conversationManager.add(completionId, compactionMessage);
-      await this.conversationManager.archiveMessages(completionId, [
-        ...archiveIds,
-        compactionMessage.id,
-      ]);
+      await withThreadLockIfFree(
+        { env: this.env, conversationId: completionId, kind: "session_compaction" },
+        async () => {
+          await this.conversationManager.add(completionId, snapshotMessage);
+          await this.conversationManager.add(completionId, compactionMessage);
+          await this.conversationManager.archiveMessages(completionId, [
+            ...archiveIds,
+            compactionMessage.id,
+          ]);
+        },
+      );
     } catch (error) {
       logger.warn("Failed to persist session compaction", {
         error,

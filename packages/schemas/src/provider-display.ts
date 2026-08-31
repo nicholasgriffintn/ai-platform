@@ -1,11 +1,9 @@
+import { capitaliseFirst, titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
+
 const UPPERCASE_MODEL_SEGMENTS = new Set(["gpt", "glm", "oss", "tts", "ai", "o", "qvq", "mai"]);
 
 export function formatProviderLabel(provider: string) {
-  return provider
-    .split(/[-_]/g)
-    .filter(Boolean)
-    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-    .join(" ");
+  return titleCaseSlug(provider);
 }
 
 export function formatModelFamilyLabel(family: string) {
@@ -15,7 +13,7 @@ export function formatModelFamilyLabel(family: string) {
     .map((segment) =>
       UPPERCASE_MODEL_SEGMENTS.has(segment.toLowerCase())
         ? segment.toUpperCase()
-        : segment.charAt(0).toUpperCase() + segment.slice(1),
+        : capitaliseFirst(segment),
     )
     .join(" ");
 }

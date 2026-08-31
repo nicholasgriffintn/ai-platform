@@ -38,6 +38,8 @@ Read the relevant accepted records before changing product structure, ownership,
 - [0037](decisions/0037-retire-team-agents-for-project-flows.md): Retire team agents and their delegation tools, since project flows already sequence multi-agent work with approval gates and durable stage snapshots.
 - [0038](decisions/0038-provider-surface-model-lifecycle.md): Scope lifecycle to a provider surface and model, keep deprecated execution explicit and time-bounded, and reject retired or catalogue-only models through the server-owned policy seam.
 - [0039](decisions/0039-usage-metering-and-credits.md): Meter work in vendor units and bill it in credits, with a write-once ledger, additive balances, and rates derived from the model catalogue.
+- [0039](decisions/0039-provider-execution-governance-policy.md): Resolve provider execution governance from authenticated scope policy and reviewed operation profiles before provider I/O, while keeping credentials and connection variants separate.
+- [0039](decisions/0039-conversation-coordinator-is-a-lock.md): Make the conversation coordinator a lock that every history-mutating entry point takes, choose refusal or skip by what the caller can retry, and retire the instruction queue whose work later decisions moved elsewhere.
 
 [context.md](context.md) holds the current domain vocabulary, workspace map, seams, and data flows.
 

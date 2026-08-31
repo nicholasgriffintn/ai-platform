@@ -182,33 +182,3 @@ export function extractGeneratedAsset(response: AssetResponseShape): AssetRefere
 
   return {};
 }
-
-/**
- * Normalizes async operation status strings to standard values
- * @param status - Raw status string from provider
- * @returns Normalized status
- */
-export function normalizeAsyncStatus(
-  status: string | undefined,
-): "in_progress" | "completed" | "failed" {
-  if (!status) {
-    return "in_progress";
-  }
-
-  const normalized = status.toString().toUpperCase();
-
-  if (normalized === "SUCCEEDED" || normalized === "SUCCESS" || normalized === "COMPLETED") {
-    return "completed";
-  }
-
-  if (
-    normalized === "FAILED" ||
-    normalized === "ERROR" ||
-    normalized === "CANCELLED" ||
-    normalized === "TIMED_OUT"
-  ) {
-    return "failed";
-  }
-
-  return "in_progress";
-}

@@ -309,14 +309,6 @@ export async function getModelConfigByModel(model: string, env?: IEnv) {
   return withCache(env, "model-by-model", [model], () => model && modelConfig[model]);
 }
 
-export async function getMatchingModel(model: string, env?: IEnv) {
-  return withCache(env, "matching-model", [model], async () => {
-    const config = await getModelConfig(model, env);
-
-    return config?.matchingModel;
-  });
-}
-
 export async function getModelConfigByMatchingModel(
   matchingModel: string,
   env?: IEnv,

@@ -8,8 +8,8 @@ import { CAPABILITY_DISCOVERY_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
 import { PermissionChecker } from "~/lib/permissions/PermissionChecker";
 import { listRecipeConnectors } from "~/services/apps/connectors";
 import { listAssistantRecipes, listRecipeInstallations } from "~/services/apps/recipes";
-import { listFunctionTools } from "~/services/functions";
 import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
+import { listFunctionToolDefinitions } from "~/services/functions/definitions";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { resolveProjectTools } from "~/services/workspaces/projectTools";
 import type { IRequest } from "~/types";
@@ -71,7 +71,7 @@ export async function loadCapabilityDiscoverySources(
   const user = request.user;
   const context = request.context;
   const mode = request.request?.tool_policy_mode || request.request?.mode || request.mode;
-  const catalogue = listFunctionTools().map((tool) => ({
+  const catalogue = listFunctionToolDefinitions().map((tool) => ({
     tool,
     activation: permissionChecker.checkToolAccess({
       toolName: tool.name,

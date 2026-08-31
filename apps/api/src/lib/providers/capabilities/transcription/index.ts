@@ -36,18 +36,3 @@ export function getTranscriptionProvider(
 ): TranscriptionProvider {
   return providerLibrary.transcription(providerName, context);
 }
-
-/**
- * List registered transcription providers (including aliases).
- */
-export function listTranscriptionProviders(): string[] {
-  const summaries = providerLibrary.list("transcription");
-  const names = new Set<string>();
-
-  for (const summary of summaries) {
-    names.add(summary.name);
-    summary.aliases?.forEach((alias) => names.add(alias));
-  }
-
-  return Array.from(names).sort();
-}
