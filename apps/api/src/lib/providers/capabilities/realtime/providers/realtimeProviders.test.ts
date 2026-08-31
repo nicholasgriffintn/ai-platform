@@ -93,6 +93,7 @@ describe("realtime provider session contracts", () => {
             url.searchParams.set(key, String(value));
           }
         }
+
         url.searchParams.set("grant", "grant-fixture");
         url.searchParams.set("model", model);
         url.searchParams.set("session_id", sessionId);
