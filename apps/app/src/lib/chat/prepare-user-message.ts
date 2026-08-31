@@ -1,6 +1,9 @@
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { normalizeMessage } from "@ngriffin_uk/polychat-library-chat/messages";
-import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ConversationModeMetadata,
+  ToolInteractionResolution,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { MessageContent } from "~/types";
 
@@ -9,8 +12,15 @@ export function prepareUserMessage(
   attachments: readonly AttachmentData[] | undefined,
   model?: string,
   conversationMode?: ConversationModeMetadata,
+  toolInteraction?: ToolInteractionResolution,
 ) {
-  const data = conversationMode ? { conversationMode } : undefined;
+  const data =
+    conversationMode || toolInteraction
+      ? {
+          ...(conversationMode ? { conversationMode } : {}),
+          ...(toolInteraction ? { toolInteraction } : {}),
+        }
+      : undefined;
 
   if (!attachments?.length) {
     return normalizeMessage({

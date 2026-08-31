@@ -15,6 +15,7 @@ export {
   chatToolChoiceSchema,
   connectorApprovalIdSchema,
   modelRouterModeSchema,
+  toolInteractionResolutionSchema,
   partialChatCompletionsJsonSchema,
   createChatCompletionsResponseSchema,
   createChatCompletionsJsonSchema,
@@ -28,6 +29,7 @@ export type {
   ChatRequestOptions,
   ModelRouterMode,
   ParsedChatCompletionRequestBody,
+  ToolInteractionResolution,
 } from "./chat-completions";
 
 export const chatCompletionResponseSchema = z.object({

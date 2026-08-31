@@ -313,6 +313,13 @@ export const connectorChatRequestOptionsSchema = z
   })
   .strict();
 
+export const toolInteractionResolutionSchema = z
+  .object({
+    toolName: z.string().min(1).describe("Tool whose pending interaction this user turn resolves."),
+    response: recordSchema.describe("Structured response submitted through the tool view."),
+  })
+  .strict();
+
 export const chatRequestOptionsSchema = z
   .object({
     source: z.string().optional().describe("Request source marker for server-created flows."),
@@ -331,6 +338,9 @@ export const chatRequestOptionsSchema = z
     sandbox: sandboxRequestOptionsSchema
       .optional()
       .describe("Settings for sandbox execution in a project coding conversation."),
+    toolInteraction: toolInteractionResolutionSchema
+      .optional()
+      .describe("Structured resolution for a pending human-in-the-loop tool result."),
   })
   .strict();
 
@@ -730,6 +740,7 @@ export const createChatCompletionsResponseSchema = z
 export type ChatCompletionResponseBody = z.input<typeof createChatCompletionsResponseSchema>;
 export type ChatHostedToolSettings = z.input<typeof chatHostedToolSettingsSchema>;
 export type ChatRequestOptions = z.input<typeof chatRequestOptionsSchema>;
+export type ToolInteractionResolution = z.input<typeof toolInteractionResolutionSchema>;
 
 export function parseChatRequestOptions(options: unknown): ChatRequestOptions | undefined {
   const parsed = chatRequestOptionsSchema.safeParse(options);
