@@ -2,6 +2,7 @@ import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import {
   buildGoogleStudioGenerationConfig,
   buildGoogleStudioSystemInstruction,
+  buildGoogleStudioToolConfig,
   buildGoogleStudioTools,
   formatGoogleStudioContents,
   GOOGLE_STUDIO_SAFETY_SETTINGS,
@@ -77,6 +78,7 @@ export class GoogleStudioProvider extends BaseProvider {
       model: params.model,
       contents: formatGoogleStudioContents(providerParams),
       tools: buildGoogleStudioTools(providerParams, modelConfig),
+      toolConfig: buildGoogleStudioToolConfig(providerParams, modelConfig),
       systemInstruction: buildGoogleStudioSystemInstruction(providerParams.system_prompt),
       safetySettings: GOOGLE_STUDIO_SAFETY_SETTINGS,
       generationConfig: buildGoogleStudioGenerationConfig(providerParams, modelConfig),

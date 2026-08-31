@@ -3,9 +3,13 @@ import { describe, expect, it } from "vitest";
 import { googleAiStudioModelConfig } from "~/data-model/models/google-ai-studio";
 import { MessageFormatter } from "~/lib/formatter";
 import { GoogleStudioProvider } from "~/lib/providers/capabilities/chat/providers/googlestudio";
-import type { ChatCompletionParameters } from "~/types";
+import type { ChatCompletionParameters, IEnv } from "~/types";
 
 import { buildGoogleStudioTools, formatGoogleStudioContents } from "./googleStudio";
+
+function createTestEnv(): IEnv {
+  return Object.assign(Object.create(null), {});
+}
 
 describe("formatGoogleStudioContents", () => {
   it("converts shared function-call history to Google's model and user parts", () => {
@@ -164,6 +168,9 @@ describe("buildGoogleStudioTools", () => {
 
 describe("Google AI Studio native tool capabilities", () => {
   it.each([
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-pro",
     "gemini-flash-latest",
     "gemini-flash-lite-latest",
     "gemini-3.5-flash",
@@ -185,7 +192,7 @@ describe("GoogleStudioProvider", () => {
     const params: ChatCompletionParameters = {
       model: "gemini-flash-latest",
       provider: "google-ai-studio",
-      env: {},
+      env: createTestEnv(),
       messages: [{ role: "user", content: "Find the latest Gemini update." }],
       enabled_tools: ["search_grounding"],
       stream: true,
@@ -194,13 +201,14 @@ describe("GoogleStudioProvider", () => {
     const payload = await new GoogleStudioProvider().mapParameters(params);
 
     expect(payload.tools).toEqual([{ google_search: {} }]);
+    expect(payload.toolConfig).toEqual({ includeServerSideToolInvocations: true });
   });
 
   it("does not overwrite native search when cross-model functions are present", async () => {
     const params: ChatCompletionParameters = {
       model: "gemini-flash-latest",
       provider: "google-ai-studio",
-      env: {},
+      env: createTestEnv(),
       messages: [{ role: "user", content: "Find the latest Gemini update." }],
       enabled_tools: ["search_grounding", "get_weather"],
       stream: true,
@@ -216,5 +224,22 @@ describe("GoogleStudioProvider", () => {
         ]),
       },
     ]);
+    expect(payload.toolConfig).toEqual({ includeServerSideToolInvocations: true });
+  });
+
+  it("does not send function declarations beside native tools to Gemini 2.5", async () => {
+    const params: ChatCompletionParameters = {
+      model: "gemini-2.5-flash",
+      provider: "google-ai-studio",
+      env: createTestEnv(),
+      messages: [{ role: "user", content: "Calculate it with Python." }],
+      enabled_tools: ["code_execution", "get_weather"],
+      stream: true,
+    };
+
+    const payload = await new GoogleStudioProvider().mapParameters(params);
+
+    expect(payload.tools).toEqual([{ code_execution: {} }]);
+    expect(payload.toolConfig).toBeUndefined();
   });
 });

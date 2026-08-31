@@ -90,7 +90,8 @@ export class GoogleCodeExecutionCollector {
     timestamp: number,
   ): void {
     if (!this.current || this.current.toolResultPart) {
-      const toolCallId = `google-code-execution-${++this.executionCount}`;
+      const providerToolCallId = typeof payload.id === "string" ? payload.id.trim() : "";
+      const toolCallId = providerToolCallId || `google-code-execution-${++this.executionCount}`;
       const language =
         typeof payload.language === "string" ? payload.language.toLowerCase() : "code";
       const toolUsePart: Extract<MessagePart, { type: "tool_use" }> = {
@@ -126,10 +127,14 @@ export class GoogleCodeExecutionCollector {
     timestamp: number,
   ): void {
     if (!this.current) {
-      this.collectCode({}, messageParts, timestamp);
+      this.collectCode(payload, messageParts, timestamp);
     }
 
-    const execution = this.current!;
+    const execution = this.current;
+
+    if (!execution) {
+      return;
+    }
     const output = typeof payload.output === "string" ? payload.output : "";
     const outcome = typeof payload.outcome === "string" ? payload.outcome : execution.outcome;
 

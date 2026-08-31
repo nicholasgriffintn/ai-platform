@@ -130,6 +130,35 @@ export function buildGoogleStudioTools(
   return new GoogleStudioToolBuilder(params, modelConfig).build();
 }
 
+export function buildGoogleStudioToolConfig(
+  params: GoogleStudioToolParameters,
+  modelConfig: ModelConfigItem,
+): Record<string, unknown> | undefined {
+  return hasGoogleServerSideTool(params, modelConfig) &&
+    supportsGoogleToolContextCirculation(modelConfig)
+    ? { includeServerSideToolInvocations: true }
+    : undefined;
+}
+
+function hasGoogleServerSideTool(
+  params: GoogleStudioToolParameters,
+  modelConfig: ModelConfigItem,
+): boolean {
+  const enabledTools = params.enabled_tools ?? [];
+
+  return (
+    (modelConfig.supportsCodeExecution && enabledTools.includes("code_execution")) ||
+    (modelConfig.supportsSearchGrounding && enabledTools.includes("search_grounding")) ||
+    (modelConfig.supportsUrlContext && hasAnyEnabledTool(enabledTools, "web_fetch", "url_context"))
+  );
+}
+
+function supportsGoogleToolContextCirculation(modelConfig: ModelConfigItem): boolean {
+  const model = modelConfig.matchingModel.toLowerCase();
+
+  return model.startsWith("gemini-3") || model.endsWith("-latest");
+}
+
 class GoogleStudioToolBuilder {
   private readonly enabledTools: readonly string[];
   private readonly tools: Record<string, unknown>[] = [];
@@ -170,6 +199,13 @@ class GoogleStudioToolBuilder {
 
   private addFunctionDeclarations() {
     if (!this.modelConfig.supportsToolCalls || !this.params.tools?.length) {
+      return;
+    }
+
+    if (
+      hasGoogleServerSideTool(this.params, this.modelConfig) &&
+      !supportsGoogleToolContextCirculation(this.modelConfig)
+    ) {
       return;
     }
 

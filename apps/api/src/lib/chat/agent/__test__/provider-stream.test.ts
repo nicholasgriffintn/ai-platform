@@ -36,6 +36,10 @@ function textDelta(content: string): string {
   return `data: ${JSON.stringify({ choices: [{ delta: { content } }] })}\n\n`;
 }
 
+function googleEvent(parts: unknown[]): string {
+  return `data: ${JSON.stringify({ candidates: [{ content: { role: "model", parts } }] })}\n\n`;
+}
+
 function createSink() {
   const events: { type: string; payload: unknown }[] = [];
 
@@ -284,17 +288,31 @@ describe("consumeProviderStream", () => {
 
   it("assembles Google code execution chunks into real tool parts", async () => {
     const { sink, events } = createSink();
-    const googleEvent = (parts: unknown[]) =>
-      `data: ${JSON.stringify({ candidates: [{ content: { role: "model", parts } }] })}\n\n`;
 
     const turn = await consumeProviderStream(
       providerStream([
         googleEvent([{ text: "I will calculate it." }]),
         googleEvent([
-          { executableCode: { language: "PYTHON", code: "def answer():\n    return " } },
+          {
+            executableCode: {
+              language: "PYTHON",
+              code: "def answer():\n    return ",
+              id: "call_google_1",
+            },
+          },
         ]),
-        googleEvent([{ executableCode: { language: "PYTHON", code: "5117\n" } }]),
-        googleEvent([{ codeExecutionResult: { outcome: "OUTCOME_OK", output: "5117\n" } }]),
+        googleEvent([
+          { executableCode: { language: "PYTHON", code: "5117\n", id: "call_google_1" } },
+        ]),
+        googleEvent([
+          {
+            codeExecutionResult: {
+              outcome: "OUTCOME_OK",
+              output: "5117\n",
+              id: "call_google_1",
+            },
+          },
+        ]),
       ]),
       sink,
       { ...context, provider: "google-ai-studio", model: "gemini-flash-latest" },
@@ -307,13 +325,13 @@ describe("consumeProviderStream", () => {
       expect.objectContaining({
         type: "tool_use",
         name: "code_execution",
-        toolCallId: "google-code-execution-1",
+        toolCallId: "call_google_1",
         input: { code: "def answer():\n    return 5117\n", language: "python" },
       }),
       expect.objectContaining({
         type: "tool_result",
         name: "code_execution",
-        toolCallId: "google-code-execution-1",
+        toolCallId: "call_google_1",
         status: "completed",
         content: "5117\n",
         data: {
@@ -323,6 +341,53 @@ describe("consumeProviderStream", () => {
       }),
     ]);
     expect(events.filter((event) => event.type === "content_block_delta")).toHaveLength(1);
+  });
+
+  it("preserves Google Search grounding metadata from server-side tool streams", async () => {
+    const { sink } = createSink();
+    const groundingMetadata = {
+      groundingChunks: [
+        { web: { uri: "https://ai.google.dev/gemini-api/docs/changelog", title: "Release notes" } },
+      ],
+      webSearchQueries: ["latest Gemini API release notes"],
+    };
+    const turn = await consumeProviderStream(
+      providerStream([
+        googleEvent([
+          {
+            toolCall: {
+              id: "server-search-1",
+              name: "google_search",
+              args: { query: "latest Gemini API release notes" },
+            },
+          },
+        ]),
+        `data: ${JSON.stringify({
+          candidates: [
+            {
+              content: {
+                role: "model",
+                parts: [{ text: "The latest release is dated 2026-08-26." }],
+              },
+              groundingMetadata,
+              finishReason: "STOP",
+            },
+          ],
+        })}\n\n`,
+      ]),
+      sink,
+      { ...context, provider: "google-ai-studio", model: "gemini-3.6-flash" },
+    );
+
+    const expectedGrounding = {
+      ...groundingMetadata,
+      searchEntryPoint: {},
+      groundingSupports: {},
+    };
+
+    expect(turn.content).toBe("The latest release is dated 2026-08-26.");
+    expect(turn.structuredData).toEqual({ searchGrounding: expectedGrounding });
+    expect(turn.citations).toEqual([{ searchGrounding: expectedGrounding }]);
   });
 
   it("persists a completed streamed image response as a file part", async () => {
