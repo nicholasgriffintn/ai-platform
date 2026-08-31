@@ -399,6 +399,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
+      thinkingApi: "budget",
       defaultEffort: "none",
     },
     family: "claude-sonnet",
@@ -1139,6 +1140,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
+      thinkingApi: "budget",
       defaultEffort: "none",
     },
     family: "claude-haiku",
@@ -1211,6 +1213,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high"],
+    	thinkingApi: "budget",
     	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
@@ -1247,6 +1250,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
@@ -1303,6 +1307,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
+      thinkingApi: "budget",
       defaultEffort: "none",
     },
     family: "claude-sonnet",
@@ -1456,6 +1461,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
+      thinkingApi: "budget",
       defaultEffort: "none",
     },
     family: "claude-haiku",
@@ -1482,6 +1488,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high"],
+    	thinkingApi: "budget",
     	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
@@ -1518,6 +1525,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
@@ -1574,6 +1582,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
+      thinkingApi: "budget",
       defaultEffort: "none",
     },
     family: "claude-sonnet",
@@ -1600,6 +1609,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
+      thinkingApi: "budget",
       defaultEffort: "none",
     },
     family: "claude-haiku",
@@ -1626,6 +1636,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high"],
+    	thinkingApi: "budget",
     	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
@@ -1662,6 +1673,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
@@ -1718,6 +1730,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
+      thinkingApi: "budget",
       defaultEffort: "none",
     },
     family: "claude-sonnet",
@@ -2489,6 +2502,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
+      thinkingApi: "budget",
       defaultEffort: "none",
     },
     family: "claude-haiku",
@@ -2515,6 +2529,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high"],
+    	thinkingApi: "budget",
     	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
@@ -2551,6 +2566,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
@@ -2657,6 +2673,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -2693,6 +2710,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -2729,6 +2747,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.005,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
+      thinkingApi: "budget",
       defaultEffort: "none",
     },
     family: "claude-haiku",
@@ -2755,6 +2774,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.0825,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     family: "claude-opus",
@@ -2781,6 +2801,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
+      thinkingApi: "budget",
       defaultEffort: "none",
     },
     family: "claude-sonnet",
@@ -2807,6 +2828,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.0165,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     family: "claude-sonnet",
@@ -2867,6 +2889,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.0275,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -2903,6 +2926,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.0165,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -2938,6 +2962,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -2974,6 +2999,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -3009,6 +3035,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -3045,6 +3072,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
+      thinkingApi: "budget",
       defaultEffort: "none",
     },
     family: "claude-sonnet",
@@ -3071,6 +3099,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -3384,6 +3413,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -3420,6 +3450,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -3614,6 +3645,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -3649,6 +3681,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -3684,6 +3717,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.0275,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -3719,6 +3753,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -3754,6 +3789,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -3789,6 +3825,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -3965,6 +4002,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.055,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -3999,6 +4037,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.05,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -4033,6 +4072,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.05,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -4103,6 +4143,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
   }),
@@ -4129,6 +4170,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
   }),
@@ -4155,6 +4197,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.011,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
   }),
@@ -4181,6 +4224,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
   }),
@@ -4207,6 +4251,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
   }),
@@ -4233,6 +4278,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
   }),
@@ -4260,6 +4306,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
     artificialAnalysis: {
@@ -4291,6 +4338,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.005,
     reasoningConfig: {
       supportedEffortLevels: ["none", "thinking"],
+      thinkingApi: "budget",
       defaultEffort: "none",
     },
   }),
@@ -4392,6 +4440,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
   }),
@@ -4417,6 +4466,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
   }),
@@ -4442,6 +4492,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.0275,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
   }),
@@ -4467,6 +4518,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
   }),
@@ -4492,6 +4544,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
   }),
@@ -4517,6 +4570,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	thinkingApi: "adaptive",
     	defaultEffort: "low",
     },
   }),
