@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
+import type { ChatCompletionParameters, IEnv } from "~/types";
+
 import {
   calculateReasoningBudget,
+  createCommonParameters,
   getEffectiveMaxTokens,
   getToolsForProvider,
   resolveEffectiveMaxTokens,
@@ -9,6 +12,10 @@ import {
 } from "../parameters";
 
 const modelConfig = { supportsToolCalls: true, supportsToolChoice: false };
+
+function createTestEnv(): IEnv {
+  return Object.assign(Object.create(null), {});
+}
 
 function toolNames(tools: unknown[] | undefined): string[] {
   return (tools ?? []).map((tool) => (tool as { function: { name: string } }).function.name);
@@ -193,6 +200,45 @@ describe("calculateReasoningBudget", () => {
     expect(
       calculateReasoningBudget({ reasoning_effort: "high", max_tokens: 10_000 }, budgetModel),
     ).toBe(9_000);
+  });
+});
+
+describe("createCommonParameters", () => {
+  const hybridModel = {
+    matchingModel: "mistral-small-latest",
+    provider: "mistral",
+    modalities: { input: ["text"], output: ["text"] },
+    reasoningConfig: {
+      supportedEffortLevels: ["none", "high"],
+      defaultEffort: "none",
+    },
+  };
+
+  it.each(["mistral", "openrouter", "requesty"])(
+    "forwards configured reasoning effort through %s",
+    (provider) => {
+      const params: ChatCompletionParameters = {
+        model: "mistral-small",
+        env: createTestEnv(),
+        messages: [{ role: "user", content: "hello" }],
+        reasoning_effort: "high",
+      };
+      const body = createCommonParameters(params, hybridModel, provider);
+
+      expect(body.reasoning_effort).toBe("high");
+    },
+  );
+
+  it("does not forward an effort the model does not advertise", () => {
+    const params: ChatCompletionParameters = {
+      model: "mistral-small",
+      env: createTestEnv(),
+      messages: [{ role: "user", content: "hello" }],
+      reasoning_effort: "medium",
+    };
+    const body = createCommonParameters(params, hybridModel, "mistral");
+
+    expect(body).not.toHaveProperty("reasoning_effort");
   });
 });
 

@@ -33,12 +33,12 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
   }),
 
   createModelConfig("leanstral", PROVIDER, {
-    name: "Leanstral",
-    matchingModel: "labs-leanstral-2603",
+    name: "Leanstral 1.5",
+    matchingModel: "labs-leanstral-1-5",
     description:
-      "Open-source code agent designed for Lean 4 and formal proof engineering in realistic repositories.",
-    releaseDate: "March 16, 2026",
-    lastUpdated: "March 16, 2026",
+      "Open-weight code agent for Lean 4 formal proof engineering, automated theorem proving, and autoformalisation.",
+    releaseDate: "June 30, 2026",
+    lastUpdated: "June 30, 2026",
     modalities: {
       input: ["text"],
       output: ["text"],
@@ -46,9 +46,9 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     supportsAttachments: false,
     supportsTemperature: true,
     supportsToolCalls: true,
-    card: "https://docs.mistral.ai/models/model-cards/leanstral-26-03",
+    card: "https://docs.mistral.ai/models/leanstral-1-5",
     contextWindow: 256000,
-    maxTokens: 256000,
+    maxTokens: 128000,
     costPer1kInputTokens: 0,
     costPer1kOutputTokens: 0,
     strengths: ["coding", "reasoning", "academic", "agents"],
@@ -57,6 +57,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     speed: 3,
     isFree: true,
     supportsResponseFormat: true,
+    family: "leanstral",
+    openWeights: true,
   }),
 
   createModelConfig("magistral-small", PROVIDER, {

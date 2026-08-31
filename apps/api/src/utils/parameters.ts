@@ -18,9 +18,11 @@ import { formatToolCalls } from "../lib/chat/tools/execution";
 import {
   hasProviderReasoningOptions,
   resolveReasoningModel,
+  shouldSendProviderReasoningEffort,
 } from "../lib/providers/models/reasoning";
 
 const permissionChecker = new PermissionChecker();
+const FLAT_REASONING_EFFORT_PROVIDERS = new Set(["mistral", "openrouter", "requesty"]);
 
 /**
  * Restricts max_tokens to the model's configured maximum
@@ -274,6 +276,13 @@ export function createCommonParameters(
     messages: params.messages,
   };
   const samplingParameters = createSamplingParameters(params, modelConfig);
+
+  if (
+    FLAT_REASONING_EFFORT_PROVIDERS.has(providerName) &&
+    shouldSendProviderReasoningEffort(modelConfig, params.reasoning_effort)
+  ) {
+    commonParams.reasoning_effort = params.reasoning_effort;
+  }
 
   if (samplingParameters.temperature !== undefined) {
     commonParams.temperature = samplingParameters.temperature;

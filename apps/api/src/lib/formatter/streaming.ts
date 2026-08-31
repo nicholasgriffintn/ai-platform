@@ -2,6 +2,8 @@ import { readGoogleThoughtSignature } from "~/lib/providers/utils/googleThoughtS
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
 import { generateId } from "~/utils/id";
 
+import { extractReasoningContentBlocks } from "./content-blocks";
+
 /**
  * Formats streaming responses
  * Handles specific streaming event types and partial content
@@ -16,7 +18,7 @@ export class StreamingFormatter {
   static extractContentFromChunk(data: any, currentEventType = "") {
     // OpenAI-like streaming streaming format
     if (data.choices?.[0]?.delta?.content !== undefined) {
-      return data.choices[0].delta.content || "";
+      return extractReasoningContentBlocks(data.choices[0].delta.content).text;
     }
 
     // OpenAI Responses API streaming text delta
@@ -131,6 +133,16 @@ export class StreamingFormatter {
 
     if (data.choices?.[0]?.delta?.reasoning_content !== undefined) {
       return data.choices[0].delta.reasoning_content || "";
+    }
+
+    if (data.choices?.[0]?.delta?.reasoning !== undefined) {
+      return data.choices[0].delta.reasoning || "";
+    }
+
+    const reasoningBlocks = extractReasoningContentBlocks(data.choices?.[0]?.delta?.content);
+
+    if (reasoningBlocks.thinking) {
+      return reasoningBlocks.thinking;
     }
 
     if (data.type === "content-delta" && data.delta?.message?.content?.thinking) {

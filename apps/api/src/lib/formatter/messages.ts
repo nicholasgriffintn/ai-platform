@@ -403,6 +403,24 @@ export class MessageFormatter {
         return content
           .filter((item) => item.type !== "markdown_document" && item.type !== "thinking")
           .map((item) => MessageFormatter.formatOpenAIChatContent(item));
+      case "mistral":
+        return content
+          .filter((item) => item.type !== "markdown_document")
+          .map((item) => {
+            if (item.type === "thinking" && item.thinking) {
+              return {
+                type: "thinking",
+                thinking: [{ type: "text", text: item.thinking }],
+              };
+            }
+
+            return item.type === "artifact_selection"
+              ? {
+                  type: "text",
+                  text: MessageFormatter.formatArtifactSelectionText(item),
+                }
+              : item;
+          });
       case "workers-ai":
       case "ollama":
       case "github-models": {
