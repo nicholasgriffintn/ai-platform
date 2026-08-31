@@ -36,6 +36,7 @@ Read the relevant accepted records before changing product structure, ownership,
 - [0035](decisions/0035-tool-catalogue-split-from-tool-implementations.md): Split tool descriptors from tool implementations so the provider layer reads the catalogue as data and never imports the provider registry.
 - [0036](decisions/0036-agents-composed-from-platform-capabilities.md): Let a saved agent name skills and a mode, treating each as a request checked at run time rather than a grant, and leave connectors and sources out until a request seam carries them.
 - [0037](decisions/0037-retire-team-agents-for-project-flows.md): Retire team agents and their delegation tools, since project flows already sequence multi-agent work with approval gates and durable stage snapshots.
+- [0038](decisions/0038-provider-surface-model-lifecycle.md): Scope lifecycle to a provider surface and model, keep deprecated execution explicit and time-bounded, and reject retired or catalogue-only models through the server-owned policy seam.
 
 [context.md](context.md) holds the current domain vocabulary, workspace map, seams, and data flows.
 
