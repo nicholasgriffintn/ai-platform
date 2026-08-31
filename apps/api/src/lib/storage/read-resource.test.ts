@@ -1,6 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import { getPrivateFileAccessScope, getPrivateFileResponse } from "./read-resource";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+
+import {
+  getPrivateFileAccessScope,
+  getPrivateFileResponse,
+  readPrivateFile,
+} from "./read-resource";
 
 const personalFile = {
   created_by_user_id: 12,
@@ -36,6 +42,26 @@ describe("private file access", () => {
         conversation_id: "conversation-1",
       }),
     ).toBe("denied");
+  });
+
+  it("hides output files while durable deletion is pending", async () => {
+    const bucketGet = vi.fn();
+    const context = {
+      env: { PRIVATE_ASSETS_BUCKET: { get: bucketGet } },
+      repositories: {
+        outputs: {
+          getOutput: vi.fn().mockResolvedValue({
+            ...personalFile,
+            content: JSON.stringify({ deletionPending: true }),
+          }),
+        },
+      },
+    } as unknown as ServiceContext;
+
+    await expect(
+      readPrivateFile({ context, kind: "output", resourceId: "output-1", userId: 12 }),
+    ).rejects.toMatchObject({ statusCode: 404 });
+    expect(bucketGet).not.toHaveBeenCalled();
   });
 });
 

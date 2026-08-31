@@ -1,7 +1,6 @@
 import {
   PROJECT_TASK_RUN_TASK_TYPE,
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
-  type TaskType,
 } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -29,10 +28,10 @@ vi.mock("~/repositories/TaskRepository", () => ({
   },
 }));
 
-function createTaskMessage(taskType: TaskType | string): TaskMessage {
+function createTaskMessage(taskType: string): TaskMessage {
   return {
     taskId: "task-1",
-    task_type: taskType as TaskType,
+    task_type: taskType as TaskMessage["task_type"],
     task_data: {},
     priority: 5,
   };
@@ -165,6 +164,33 @@ describe("TaskExecutor", () => {
         status: "cancelled",
         error_message: "Unknown task type: invalid_type",
       }),
+    );
+  });
+
+  it("does not terminalise a task when final-failure reconciliation fails", async () => {
+    const handler: TaskHandler = {
+      handle: vi.fn().mockRejectedValue(new Error("provider failed")),
+      onFinalFailure: vi.fn().mockRejectedValue(new Error("reconciliation failed")),
+    };
+
+    mockTaskRepository.getTaskById.mockResolvedValue({
+      id: "task-1",
+      attempts: 2,
+      max_attempts: 3,
+    });
+    const executor = new TaskExecutor(
+      {} as any,
+      new Map([[SANDBOX_RUN_DISPATCH_TASK_TYPE, handler]]),
+    );
+
+    await expect(
+      executor.execute(createTaskMessage(SANDBOX_RUN_DISPATCH_TASK_TYPE)),
+    ).rejects.toThrow("reconciliation failed");
+
+    expect(handler.onFinalFailure).toHaveBeenCalledOnce();
+    expect(mockTaskRepository.updateTask).not.toHaveBeenCalledWith(
+      "task-1",
+      expect.objectContaining({ status: "failed" }),
     );
   });
 });

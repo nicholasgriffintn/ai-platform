@@ -205,33 +205,6 @@ export const captureScreenshotSchema = z.object({
     .optional(),
 });
 
-export const ocrSchema = z.object({
-  provider: z.enum(["mistral"]).optional(),
-  model: z.enum(["mistral-ocr-latest"]).optional(),
-  document: z.object({
-    type: z.enum(["document_url"]).optional(),
-    document_url: z.string(),
-    document_name: z.string().optional(),
-  }),
-  id: z.string().optional(),
-  pages: z.array(z.number()).optional().meta({
-    description:
-      "Specific pages user wants to process in various formats: single number, range, or list of both. Starts from 0",
-  }),
-  include_image_base64: z.boolean().optional().meta({
-    description: "Whether to include the images in a base64 format in the response",
-  }),
-  image_limit: z.number().optional().meta({
-    description: "Limit the number of images to extract",
-  }),
-  image_min_size: z.number().optional().meta({
-    description: "Minimum height and width of image to extract",
-  }),
-  output_format: z.enum(["json", "html", "markdown"]).optional().meta({
-    description: "Output format of the response",
-  }),
-});
-
 export const speechGenerationSchema = z.object({
   prompt: z.string(),
   lang: z.string().optional(),
