@@ -142,10 +142,16 @@ export async function consumeProviderStream(
   const anthropicSearchQueries = new Map<string, string>();
   const googleCodeExecution = new GoogleCodeExecutionCollector();
 
+  const hasIncompleteToolCall = () =>
+    Object.values(partialToolCalls).some(
+      (toolCall) => isRecord(toolCall) && toolCall.isComplete === false,
+    );
+
   const markInterrupted = (error: unknown, source: "error_event" | "stream_read"): boolean => {
     const partialContent = content.toString();
+    const incompleteToolCall = hasIncompleteToolCall();
 
-    if (!partialContent) {
+    if (!partialContent && !incompleteToolCall) {
       return false;
     }
 
@@ -155,15 +161,20 @@ export async function consumeProviderStream(
       source,
       completion_id: completionId,
       contentLength: partialContent.length,
+      incompleteToolCall,
     });
 
     return true;
   };
 
   const finaliseToolCalls = () => {
-    if (turn.toolCalls.length === 0 && Object.keys(partialToolCalls).length > 0) {
-      turn.toolCalls = Object.values(partialToolCalls);
+    if (turn.toolCalls.length > 0) {
+      return;
     }
+
+    turn.toolCalls = Object.values(partialToolCalls).filter(
+      (toolCall) => isRecord(toolCall) && isRecord(toolCall.function),
+    );
   };
 
   const appendCompletedResponseAssets = async (data: unknown) => {
@@ -495,6 +506,13 @@ export async function consumeProviderStream(
       const { done, value } = await reader.read();
 
       if (done) {
+        if (hasIncompleteToolCall()) {
+          markInterrupted(
+            new Error("Provider stream ended before tool call input was complete"),
+            "stream_read",
+          );
+        }
+
         break;
       }
 
