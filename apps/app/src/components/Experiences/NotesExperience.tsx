@@ -2,6 +2,7 @@ import { NoteCardGrid } from "@ngriffin_uk/polychat-component-experiences/conten
 import {
   ButtonLink,
   CardGridLoadingSkeleton,
+  cn,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
 import type { NoteMetadata } from "@ngriffin_uk/polychat-schemas";
@@ -19,7 +20,6 @@ import {
   useUpdateNote,
 } from "~/hooks/useNotes";
 import { isAuthenticationError } from "~/lib/errors";
-import { cn } from "~/lib/utils";
 
 export function NotesExperience({ basePath, projectId, subpath }: ExperienceProps) {
   const navigate = useNavigate();

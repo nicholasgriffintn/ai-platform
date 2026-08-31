@@ -1,4 +1,5 @@
 import type { IRequest } from "~/types";
+import { sleep } from "~/utils/delay";
 
 import type { ContentExtractParams, ExtractedContentPayload } from "../../types/content-extract";
 
@@ -28,10 +29,6 @@ type CloudflareCrawlResult = {
   records?: CloudflareCrawlRecord[];
   cursor?: string | number | null;
 };
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 function toUrlList(urls: string | string[]): string[] {
   return Array.isArray(urls) ? urls : [urls];

@@ -29,8 +29,8 @@ export const perplexityModelConfig: ModelConfig = {
     contextWindow: 128000,
     maxTokens: 32768,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
     openWeights: false,
   },
@@ -68,8 +68,8 @@ export const perplexityModelConfig: ModelConfig = {
     contextWindow: 128000,
     maxTokens: 4096,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "minimal",
     },
     artificialAnalysis: {
       intelligenceIndex: 17.8,

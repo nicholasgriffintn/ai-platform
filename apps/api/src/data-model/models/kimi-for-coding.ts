@@ -54,8 +54,8 @@ export const kimiForCodingModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0,
   	costPer1kOutputTokens: 0,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   }),
   createModelConfig("k3-256k", PROVIDER, {
@@ -78,8 +78,8 @@ export const kimiForCodingModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0,
   	costPer1kOutputTokens: 0,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   }),
 

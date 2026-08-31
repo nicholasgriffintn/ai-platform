@@ -57,8 +57,8 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     releaseDate: "February 4, 2026",
     lastUpdated: "March 13, 2026",
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 43.7,
@@ -307,8 +307,8 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -346,8 +346,8 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -385,8 +385,8 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.003,
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -439,8 +439,8 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     supportsDocuments: true,
     supportsTokenCounting: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 55.7,
@@ -491,8 +491,8 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     supportsDocuments: true,
     supportsTokenCounting: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 59.9,
@@ -527,8 +527,8 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
     supportsResponseFormat: true,
   }),
@@ -556,8 +556,8 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "low",
     },
   }),
 ]);

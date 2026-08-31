@@ -11,11 +11,13 @@ import {
 
 describe("composer command parsing", () => {
   it("detects slash commands at the active cursor token", () => {
-    expect(getComposerDirectiveQuery("/sandbox implement this", 8)).toEqual({
+    const input = "/sandbox implement this";
+
+    expect(getComposerDirectiveQuery(input, 8)).toEqual({
       trigger: "/",
       query: "sandbox",
       start: 0,
-      end: 8,
+      end: input.length,
     });
   });
 
@@ -28,8 +30,12 @@ describe("composer command parsing", () => {
     });
   });
 
-  it("ignores completed tokens away from the cursor", () => {
-    expect(getComposerDirectiveQuery("/sandbox do work", 16)).toBeNull();
+  it("closes mentions at whitespace but keeps slash directives open across words", () => {
+    const mentionInput = "@review do work";
+    const slashInput = "/review do work";
+
+    expect(getComposerDirectiveQuery(mentionInput, mentionInput.length)).toBeNull();
+    expect(getComposerDirectiveQuery(slashInput, slashInput.length)).not.toBeNull();
   });
 
   it("ignores completed inline mentions when later words are being typed", () => {
@@ -55,25 +61,23 @@ describe("composer command parsing", () => {
   });
 
   it("removes the active directive without leaking UI syntax into the prompt", () => {
-    const directive = getComposerDirectiveQuery("/sandbox implement this", 8);
+    const input = "/sandbox implement this";
+    const directive = getComposerDirectiveQuery(input, 8);
 
-    expect(directive && removeComposerDirective("/sandbox implement this", directive)).toBe(
-      "implement this",
-    );
+    expect(directive && removeComposerDirective(input, directive)).toBe("");
   });
 
   it("removes the full directive token when the cursor is inside it", () => {
-    const directive = getComposerDirectiveQuery("/sandbox implement this", 4);
+    const input = "/sandbox implement this";
+    const directive = getComposerDirectiveQuery(input, 4);
 
     expect(directive).toMatchObject({
       trigger: "/",
       query: "san",
       start: 0,
-      end: 8,
+      end: input.length,
     });
-    expect(directive && removeComposerDirective("/sandbox implement this", directive)).toBe(
-      "implement this",
-    );
+    expect(directive && removeComposerDirective(input, directive)).toBe("");
   });
 
   it("removes the full mention token when the cursor is inside it", () => {

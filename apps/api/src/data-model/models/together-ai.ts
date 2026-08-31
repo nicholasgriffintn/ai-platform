@@ -281,8 +281,8 @@ export const togetherAiModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00015,
     costPer1kOutputTokens: 0.0006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["tool_use"],
     contextComplexity: 4,
@@ -406,8 +406,8 @@ export const togetherAiModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00174,
     costPer1kOutputTokens: 0.00348,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high", "max"],
+    	defaultEffort: "high",
     },
     strengths: ["tool_use"],
     contextComplexity: 4,
@@ -753,8 +753,8 @@ export const togetherAiModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00005,
     costPer1kOutputTokens: 0.0002,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["tool_use"],
     contextComplexity: 4,
@@ -947,8 +947,8 @@ export const togetherAiModelConfig: ModelConfig = {
     reliability: 3,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high", "max"],
+    	defaultEffort: "high",
     },
     artificialAnalysis: {
       intelligenceIndex: 51.1,
@@ -978,8 +978,8 @@ export const togetherAiModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.001,
     costPer1kOutputTokens: 0.00405,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["max", "xhigh", "high", "medium", "low", "none"],
+    	defaultEffort: "none",
     },
   },
   "moonshotai/Kimi-K3": {
@@ -1003,8 +1003,8 @@ export const togetherAiModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.003,
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "high", "max"],
+    	defaultEffort: "low",
     },
   },
   "deepseek-ai/DeepSeek-V4-Flash-0731": {
@@ -1029,8 +1029,8 @@ export const togetherAiModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00014,
     costPer1kOutputTokens: 0.00028,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high", "max"],
+    	defaultEffort: "high",
     },
   },
   "zai-org/GLM-5.3": {
@@ -1038,7 +1038,7 @@ export const togetherAiModelConfig: ModelConfig = {
   	matchingModel: "zai-org/GLM-5.3",
   	provider: "together-ai",
   	family: "glm",
-  	openWeights: false,
+  	openWeights: true,
   	releaseDate: "August 14, 2026",
   	lastUpdated: "August 14, 2026",
   	modalities: {
@@ -1054,8 +1054,8 @@ export const togetherAiModelConfig: ModelConfig = {
   	costPer1kInputTokens: 0.0014,
   	costPer1kOutputTokens: 0.0044,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   },
 
@@ -1080,8 +1080,8 @@ export const togetherAiModelConfig: ModelConfig = {
   	costPer1kInputTokens: 0.00015,
   	costPer1kOutputTokens: 0.0005,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   },
 };

@@ -21,8 +21,8 @@ export const thinkingMachinesModelConfig: ModelConfig = createModelConfigObject(
   	costPer1kInputTokens: 0.00187,
   	costPer1kOutputTokens: 0.00468,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+  		defaultEffort: "low",
   	},
   }),
   createModelConfig("thinkingmachines/Inkling:peft:262144", PROVIDER, {
@@ -44,8 +44,8 @@ export const thinkingMachinesModelConfig: ModelConfig = createModelConfigObject(
   	costPer1kInputTokens: 0.00374,
   	costPer1kOutputTokens: 0.00936,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+  		defaultEffort: "low",
   	},
   }),
 ]);
