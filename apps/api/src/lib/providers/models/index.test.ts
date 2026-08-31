@@ -21,6 +21,31 @@ describe("featured model catalogue", () => {
   });
 });
 
+describe("Claude sampling metadata", () => {
+  it("keeps xhigh-capable Claude entries free of sampling parameters", () => {
+    const models = getModels({ shouldUseCache: false });
+    let checked = 0;
+
+    for (const [modelId, model] of Object.entries(models)) {
+      const effortLevels = model.reasoningConfig?.supportedEffortLevels;
+      const isClaude = /claude/i.test(
+        `${model.family ?? ""} ${model.matchingModel ?? ""} ${model.name ?? ""}`,
+      );
+
+      if (!isClaude || !effortLevels?.includes("xhigh")) {
+        continue;
+      }
+
+      checked += 1;
+      expect(model.supportsTemperature, `${modelId} advertises temperature`).toBe(false);
+      expect(model.supportsTopP, `${modelId} advertises top-p`).not.toBe(true);
+      expect(effortLevels, `${modelId} offers xhigh without max`).toContain("max");
+    }
+
+    expect(checked).toBeGreaterThan(0);
+  });
+});
+
 describe("model tool capabilities", () => {
   it("exposes Anthropic hosted tools for Claude 5 models", () => {
     const models = getModels({ shouldUseCache: false });
