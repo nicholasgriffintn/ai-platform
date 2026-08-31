@@ -258,33 +258,31 @@ export class StorageService {
       throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
     }
 
-    const output = await context.repositories.outputs.createOutput(
-      {
-        id: outputId,
-        createdByUserId,
-        projectId,
-        conversationId,
-        parentOutputId,
-        capabilityId,
-        groupId,
-        kind,
-        title,
-        content,
-        storageKey: key,
-        mimeType,
-        filename,
-        byteSize,
-      },
-      project
-        ? {
-            workspaceId: project.workspace_id,
-            actorUserId: createdByUserId,
-            action: "output.created",
-            outputId,
-            metadata: { capabilityId, kind },
-          }
-        : undefined,
-    );
+    const outputRecord = {
+      id: outputId,
+      createdByUserId,
+      projectId,
+      conversationId,
+      parentOutputId,
+      capabilityId,
+      groupId,
+      kind,
+      title,
+      content,
+      storageKey: key,
+      mimeType,
+      filename,
+      byteSize,
+    };
+    const output = project
+      ? await context.repositories.outputs.createOutput(outputRecord, {
+          workspaceId: project.workspace_id,
+          actorUserId: createdByUserId,
+          action: "output.created",
+          outputId,
+          metadata: { capabilityId, kind },
+        })
+      : await context.repositories.outputs.createOutput(outputRecord);
 
     return {
       outputId: output.id,
