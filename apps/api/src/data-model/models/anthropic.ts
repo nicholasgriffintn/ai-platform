@@ -59,6 +59,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "max"],
     	defaultEffort: "low",
+    	thinkingApi: "adaptive",
     },
     artificialAnalysis: {
       intelligenceIndex: 43.7,
@@ -338,6 +339,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     },
     supportsAttachments: true,
     supportsTemperature: false,
+    supportsTopP: false,
     supportsToolCalls: true,
     ...anthropicLatestHostedTools,
     isFeatured: false,
@@ -348,6 +350,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "low",
+    	thinkingApi: "adaptive",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -387,6 +390,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "max"],
     	defaultEffort: "low",
+    	thinkingApi: "adaptive",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
     contextComplexity: 5,
@@ -441,6 +445,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "low",
+    	thinkingApi: "adaptive",
     },
     artificialAnalysis: {
       intelligenceIndex: 55.7,
@@ -493,6 +498,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "low",
+    	thinkingApi: "adaptive",
     },
     artificialAnalysis: {
       intelligenceIndex: 59.9,
@@ -519,6 +525,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     },
     supportsAttachments: true,
     supportsTemperature: false,
+    supportsTopP: false,
     supportsToolCalls: true,
     ...anthropicLatestHostedTools,
     isFeatured: true,
@@ -529,6 +536,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "low",
+    	thinkingApi: "adaptive",
     },
     supportsResponseFormat: true,
   }),
@@ -547,6 +555,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     },
     supportsAttachments: true,
     supportsTemperature: false,
+    supportsTopP: false,
     supportsToolCalls: true,
     ...anthropicLatestHostedTools,
     supportsResponseFormat: true,
@@ -558,6 +567,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
     reasoningConfig: {
     	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "low",
+    	thinkingApi: "adaptive",
     },
   }),
 ]);

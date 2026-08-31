@@ -1,5 +1,11 @@
 import Foundation
 
+extension ModelConfigItem {
+    var isAvailableForSelection: Bool {
+        isDeprecated != true && status != "deprecated" && isExecutable != false
+    }
+}
+
 enum ModelSearch {
     static func filter(_ models: [ModelConfigItem], query: String) -> [ModelConfigItem] {
         let normalizedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -30,13 +36,14 @@ struct ModelSelectionFilter {
 
     func apply(to models: [ModelConfigItem]) -> [ModelConfigItem] {
         var filtered = ModelSearch.filter(models, query: searchText)
+            .filter { $0.isExecutable != false }
 
         if showsFeaturedOnly {
             filtered = filtered.filter { $0.isFeatured == true }
         }
 
         if !showsDeprecated {
-            filtered = filtered.filter { $0.isDeprecated != true }
+            filtered = filtered.filter { $0.isAvailableForSelection }
         }
 
         if let selectedProvider {

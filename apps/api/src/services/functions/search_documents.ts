@@ -1,11 +1,10 @@
 import z from "zod/v4";
 
-import {
-  getEmbeddingProvider,
-  searchDocuments as searchEmbeddedDocuments,
-} from "~/lib/providers/capabilities/embedding/helpers";
+import { queryEmbeddings } from "~/services/apps/embeddings/query";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 import type { ApiToolDefinition } from "../../types/functions";
+import { resolveRequestProjectId } from "./request-context";
 
 export const search_documents: ApiToolDefinition = {
   name: "search_documents",
@@ -35,18 +34,25 @@ export const search_documents: ApiToolDefinition = {
   }),
   execute: async (args, context) => {
     const request = context.request;
-    const provider = getEmbeddingProvider(request.env, request.user, undefined);
-    const documents = await searchEmbeddedDocuments({
-      provider,
-      query: String(args.query),
-      options: {
-        top_k: args.top_k as number | undefined,
-        type: args.type as string | undefined,
-        ...request.rag_options,
-      },
+
+    if (resolveRequestProjectId(request)) {
+      throw new AssistantError(
+        "Project document retrieval is not available yet",
+        ErrorType.CONFIGURATION_ERROR,
+        501,
+      );
+    }
+
+    const response = await queryEmbeddings({
+      context: request.context,
       env: request.env,
       user: request.user,
+      request: {
+        query: String(args.query),
+        type: args.type as string | undefined,
+      },
     });
+    const documents = response.data.slice(0, (args.top_k as number | undefined) ?? 3);
 
     if (documents.length === 0) {
       return {

@@ -14,6 +14,15 @@ export interface RealtimeEventResult {
   type: string;
 }
 
+export interface RealtimeGoAwayNotice {
+  timeLeft?: string;
+}
+
+export interface RealtimeSessionResumptionUpdate {
+  handle?: string;
+  resumable: boolean;
+}
+
 const REALTIME_EVENT_LABELS: Record<string, string> = {
   "session.created": "Realtime session ready",
   "session.updated": "Realtime session configured",
@@ -27,6 +36,12 @@ const REALTIME_EVENT_LABELS: Record<string, string> = {
   "response.output_audio.done": "Assistant audio complete",
   "response.interrupted": "Assistant interrupted",
   "response.done": "Assistant response complete",
+  connected: "Realtime transcription connected",
+  "turn.start": "Listening",
+  "turn.update": "Transcribing speech",
+  "turn.eager_end": "Checking whether speech is complete",
+  "turn.resume": "Listening",
+  "turn.end": "Speech captured",
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -98,6 +113,10 @@ function getTranscriptSource(value: Record<string, unknown>): RealtimeTranscript
   }
 
   if (type.startsWith("transcription.")) {
+    return "input";
+  }
+
+  if (type.startsWith("turn.")) {
     return "input";
   }
 
@@ -309,6 +328,15 @@ export function extractRealtimeTranscript(payload: unknown): RealtimeTranscriptR
 
   const type = getString(payload.type)?.toLowerCase() ?? "";
 
+  if (type === "turn.update" || type === "turn.eager_end" || type === "turn.end") {
+    return {
+      text: directTranscript,
+      isDelta: false,
+      isFinal: type === "turn.end",
+      source: "input",
+    };
+  }
+
   if (type === "transcription.done" && !directTranscript) {
     return undefined;
   }
@@ -355,4 +383,36 @@ export function isRealtimeSetupCompleteMessage(payload: unknown): boolean {
   }
 
   return isRecord(payload.setupComplete) || isRecord(payload.setup_complete);
+}
+
+export function extractRealtimeSessionResumptionUpdate(
+  payload: unknown,
+): RealtimeSessionResumptionUpdate | undefined {
+  const update =
+    getNestedRecord(payload, "sessionResumptionUpdate") ??
+    getNestedRecord(payload, "session_resumption_update");
+
+  if (!update) {
+    return undefined;
+  }
+
+  const resumable = getBoolean(update.resumable);
+  const handle = getString(update.newHandle) ?? getString(update.new_handle);
+
+  return {
+    ...(resumable && handle ? { handle } : {}),
+    resumable,
+  };
+}
+
+export function extractRealtimeGoAwayNotice(payload: unknown): RealtimeGoAwayNotice | undefined {
+  const notice = getNestedRecord(payload, "goAway") ?? getNestedRecord(payload, "go_away");
+
+  if (!notice) {
+    return undefined;
+  }
+
+  const timeLeft = getString(notice.timeLeft) ?? getString(notice.time_left);
+
+  return timeLeft ? { timeLeft } : {};
 }

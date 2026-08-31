@@ -1,10 +1,10 @@
 import Foundation
 public struct ChatSettings: Codable, Equatable {
-    public var temperature: Double
-    public var topP: Double
+    public var temperature: Double?
+    public var topP: Double?
     public var maxTokens: Int?
-    public var presencePenalty: Double
-    public var frequencyPenalty: Double
+    public var presencePenalty: Double?
+    public var frequencyPenalty: Double?
     public var useRag: Bool
     public var ragOptions: RagOptions
     public var reasoningEffort: ReasoningEffort?
@@ -27,9 +27,9 @@ public struct ChatSettings: Codable, Equatable {
         public var displayName: String {
             switch self {
             case .none:
-                return "None"
+                return "Instant"
             case .simulatedThinking:
-                return "Thinking"
+                return "Simulated"
             case .thinking:
                 return "Thinking"
             case .default:
@@ -48,6 +48,15 @@ public struct ChatSettings: Codable, Equatable {
                 return "Max"
             }
         }
+
+        public static let defaultSupportedLevels: [ReasoningEffort] = [.none, .simulatedThinking]
+
+        public static func supportedLevels(for model: ModelConfigItem?) -> [ReasoningEffort] {
+            let configured = (model?.reasoningConfig?.supportedEffortLevels ?? [])
+                .compactMap(ReasoningEffort.init(rawValue:))
+
+            return configured.isEmpty ? defaultSupportedLevels : configured
+        }
     }
 
     public enum VerbosityLevel: String, Codable, CaseIterable {
@@ -62,11 +71,11 @@ public struct ChatSettings: Codable, Equatable {
     }
 
     public static let `default` = ChatSettings(
-        temperature: 0.7,
-        topP: 0.8,
+        temperature: nil,
+        topP: nil,
         maxTokens: nil,
-        presencePenalty: 0,
-        frequencyPenalty: 0,
+        presencePenalty: nil,
+        frequencyPenalty: nil,
         useRag: false,
         ragOptions: .default,
         reasoningEffort: nil,
@@ -76,11 +85,11 @@ public struct ChatSettings: Codable, Equatable {
     )
 
     public init(
-        temperature: Double = 0.7,
-        topP: Double = 0.8,
+        temperature: Double? = nil,
+        topP: Double? = nil,
         maxTokens: Int? = nil,
-        presencePenalty: Double = 0,
-        frequencyPenalty: Double = 0,
+        presencePenalty: Double? = nil,
+        frequencyPenalty: Double? = nil,
         useRag: Bool = false,
         ragOptions: RagOptions = .default,
         reasoningEffort: ReasoningEffort? = nil,

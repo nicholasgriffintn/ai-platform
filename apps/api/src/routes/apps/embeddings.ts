@@ -41,11 +41,10 @@ addRoute(app, "post", "/insert", {
     },
   },
   middleware: [requirePlan("pro")],
-  handler: async ({ body, serviceContext, user }) => {
+  handler: async ({ body, serviceContext }) => {
     const response = await insertEmbedding({
       request: body,
-      env: serviceContext.env,
-      user,
+      context: serviceContext,
     });
 
     if (response.status === "error") {
@@ -75,11 +74,10 @@ addRoute(app, "get", "/query", {
     },
   },
   middleware: [requirePlan("pro")],
-  handler: async ({ query, serviceContext, user }) => {
+  handler: async ({ query, serviceContext }) => {
     const response = await queryEmbeddings({
-      env: serviceContext.env,
-      request: { query },
-      user,
+      context: serviceContext,
+      request: query,
     });
 
     if (response.status === "error") {
@@ -109,11 +107,10 @@ addRoute(app, "post", "/delete", {
     },
   },
   middleware: [requirePlan("pro")],
-  handler: async ({ body, serviceContext, user }) => {
+  handler: async ({ body, serviceContext }) => {
     const response = await deleteEmbedding({
-      env: serviceContext.env,
+      context: serviceContext,
       request: body,
-      user,
     });
 
     if (response.status === "error") {

@@ -13,9 +13,7 @@ export interface InvitationAcceptViewProps {
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
-  return (
-    <main className="mx-auto flex min-h-full max-w-xl items-center px-6 py-16">{children}</main>
-  );
+  return <div className="mx-auto flex min-h-full max-w-xl items-center px-6 py-16">{children}</div>;
 }
 
 export function InvitationAcceptView({

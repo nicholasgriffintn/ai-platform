@@ -44,7 +44,7 @@ describe("acquireThread", () => {
     ).resolves.toEqual({ acquired: true });
   });
 
-  it("does not block work when the coordinator cannot be reached", async () => {
+  it("refuses rather than granting a lock it could not take", async () => {
     const env = {
       CONVERSATION_COORDINATOR: {
         idFromName: (name: string) => name,
@@ -58,7 +58,22 @@ describe("acquireThread", () => {
 
     await expect(
       acquireThread({ env, conversationId: "conversation-1", kind: "compact" }),
-    ).resolves.toEqual({ acquired: true });
+    ).resolves.toEqual({ acquired: false, currentOperation: null });
+  });
+
+  it("refuses when the coordinator answers with an error status", async () => {
+    const env = {
+      CONVERSATION_COORDINATOR: {
+        idFromName: (name: string) => name,
+        get: () => ({
+          fetch: vi.fn(async () => new Response("boom", { status: 500 })),
+        }),
+      },
+    } as any;
+
+    await expect(
+      acquireThread({ env, conversationId: "conversation-1", kind: "compact" }),
+    ).resolves.toEqual({ acquired: false, currentOperation: null });
   });
 
   it("releases without throwing when the coordinator is absent", async () => {

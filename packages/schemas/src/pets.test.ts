@@ -19,6 +19,9 @@ const overrides: PetModelOverrides = {
   providers: {
     anthropic: { pet_source: "preset", pet_id: "kea" },
   },
+  makers: {
+    anthropic: { pet_source: "preset", pet_id: "moss" },
+  },
 };
 
 describe("model-aware pet selection", () => {
@@ -47,6 +50,15 @@ describe("model-aware pet selection", () => {
     ).toEqual(defaultSelection);
   });
 
+  it("falls back to the maker when a model is served by another provider", () => {
+    expect(
+      resolvePetSelectionForModel(defaultSelection, overrides, {
+        family: "claude-opus",
+        provider: "openrouter",
+      }),
+    ).toEqual({ pet_source: "preset", pet_id: "moss" });
+  });
+
   it("uses the default selection when no model is selected", () => {
     expect(resolvePetSelectionForModel(defaultSelection, EMPTY_PET_MODEL_OVERRIDES, null)).toEqual(
       defaultSelection,
@@ -59,6 +71,7 @@ describe("model-aware pet selection", () => {
       providers: {
         openai: { pet_source: "custom", pet_id: "missing" },
       },
+      makers: {},
     };
 
     expect(
@@ -82,6 +95,7 @@ describe("model-aware pet selection", () => {
       providers: {
         openai: { pet_source: "custom", pet_id: customPet.id },
       },
+      makers: {},
     };
 
     expect(
@@ -101,12 +115,16 @@ describe("model-aware pet selection", () => {
             openai: { pet_source: "custom", pet_id: "pet-1" },
             anthropic: { pet_source: "custom", pet_id: "pet-2" },
           },
+          makers: {
+            openai: { pet_source: "custom", pet_id: "pet-1" },
+          },
         },
         "pet-1",
       ),
     ).toEqual({
       families: { claude: { pet_source: "preset", pet_id: "pet-1" } },
       providers: { anthropic: { pet_source: "custom", pet_id: "pet-2" } },
+      makers: {},
     });
   });
 });

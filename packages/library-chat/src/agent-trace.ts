@@ -1,3 +1,10 @@
+import {
+  SKILL_LOAD_TOOL_NAME,
+  authoredSkillProvenanceSchema,
+  type AuthoredSkillProvenance,
+} from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 import type { Message, MessageUsage } from "./conversation-types";
 
 export type AgentTraceEntryType =
@@ -27,6 +34,21 @@ export interface AgentTraceEntry {
   latencyMs?: number;
   usage?: AgentTraceUsage;
   detail?: string;
+  provenance?: AuthoredSkillProvenance;
+}
+
+function readAuthoredSkillProvenance(
+  toolName: string | undefined,
+  status: string | undefined,
+  data: unknown,
+): AuthoredSkillProvenance | undefined {
+  if (toolName !== SKILL_LOAD_TOOL_NAME || status !== "success" || !isRecord(data)) {
+    return undefined;
+  }
+
+  const parsed = authoredSkillProvenanceSchema.safeParse(data.provenance);
+
+  return parsed.success ? parsed.data : undefined;
 }
 
 function truncateTraceText(value: string, maxLength = 96): string {
@@ -247,6 +269,7 @@ export function buildAgentTraceEntries(messages: readonly Message[]): AgentTrace
           label: part.name ?? "Tool result",
           status: part.status,
           detail: typeof part.content === "string" ? part.content : JSON.stringify(part.content),
+          provenance: readAuthoredSkillProvenance(part.name, part.status, part.data),
         });
       }
     }
@@ -258,6 +281,7 @@ export function buildAgentTraceEntries(messages: readonly Message[]): AgentTrace
         label: message.name ?? "Tool result",
         status: message.status,
         detail: textContent,
+        provenance: readAuthoredSkillProvenance(message.name, message.status, message.data),
       });
 
       if (hasApprovalRequest(message)) {

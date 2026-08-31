@@ -8,11 +8,11 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { UsageManager } from "../usageManager";
 
 const mocks = vi.hoisted(() => ({
-  getModelConfigByMatchingModel: vi.fn(),
+  findModelConfig: vi.fn(),
 }));
 
 vi.mock("~/lib/providers/models", () => ({
-  getModelConfigByMatchingModel: mocks.getModelConfigByMatchingModel,
+  findModelConfig: mocks.findModelConfig,
 }));
 
 function makeUser(overrides: Partial<User> = {}): User {
@@ -83,7 +83,7 @@ async function expectAssistantError(promise: Promise<unknown>, type: ErrorType) 
 describe("UsageManager", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.getModelConfigByMatchingModel.mockResolvedValue(undefined);
+    mocks.findModelConfig.mockResolvedValue(undefined);
   });
 
   describe("checkUsage", () => {
@@ -286,7 +286,7 @@ describe("UsageManager", () => {
 
   describe("incrementProUsage", () => {
     it("increments the pro count by the model's usage multiplier, not by one", async () => {
-      mocks.getModelConfigByMatchingModel.mockResolvedValue({
+      mocks.findModelConfig.mockResolvedValue({
         matchingModel: "expensive-model",
         provider: "test",
         costPer1kInputTokens: 0.005,
@@ -351,7 +351,7 @@ describe("UsageManager", () => {
 
   describe("checkUsageByModel", () => {
     it("blocks a non-pro user from a pro model without touching their free quota", async () => {
-      mocks.getModelConfigByMatchingModel.mockResolvedValue({
+      mocks.findModelConfig.mockResolvedValue({
         matchingModel: "pro-model",
         provider: "test",
         isFree: false,
@@ -368,7 +368,7 @@ describe("UsageManager", () => {
     });
 
     it("routes a free model for an authenticated user to the free-tier check", async () => {
-      mocks.getModelConfigByMatchingModel.mockResolvedValue({
+      mocks.findModelConfig.mockResolvedValue({
         matchingModel: "free-model",
         provider: "test",
         isFree: true,
@@ -379,6 +379,23 @@ describe("UsageManager", () => {
       await expect(manager.checkUsageByModel("free-model", false)).resolves.toMatchObject({
         dailyCount: 3,
       });
+    });
+
+    it("preserves provider identity when matching model IDs are shared", async () => {
+      mocks.findModelConfig.mockImplementation(
+        async (_modelId: string, _env: unknown, provider?: string) => ({
+          matchingModel: "openai/gpt-oss-120b",
+          provider: provider ?? "paid-provider",
+          isFree: provider === "groq",
+        }),
+      );
+      const user = makeUser({ daily_message_count: 3 });
+      const manager = new UsageManager(makeRepositories(), user, null);
+
+      await expect(
+        manager.checkUsageByModel("openai/gpt-oss-120b", false, "groq"),
+      ).resolves.toMatchObject({ dailyCount: 3 });
+      expect(mocks.findModelConfig).toHaveBeenCalledWith("openai/gpt-oss-120b", undefined, "groq");
     });
   });
 
@@ -432,7 +449,7 @@ describe("UsageManager", () => {
 
   describe("getModelUsageMultiplier", () => {
     it("returns the calculated multiplier for a model with cost data", async () => {
-      mocks.getModelConfigByMatchingModel.mockResolvedValue({
+      mocks.findModelConfig.mockResolvedValue({
         matchingModel: "expensive-model",
         provider: "test",
         costPer1kInputTokens: 0.005,
@@ -447,7 +464,7 @@ describe("UsageManager", () => {
     });
 
     it("defaults to a multiplier of 1 for a model with no known config", async () => {
-      mocks.getModelConfigByMatchingModel.mockResolvedValue(undefined);
+      mocks.findModelConfig.mockResolvedValue(undefined);
       const manager = new UsageManager(makeRepositories(), makeUser(), null);
 
       await expect(manager.getModelUsageMultiplier("unknown-model")).resolves.toEqual({

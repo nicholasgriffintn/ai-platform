@@ -91,6 +91,23 @@ describe("ConversationRepository", () => {
     expect(result.totalPages).toBe(2);
   });
 
+  it("carries the natural title order across the page boundary", async () => {
+    const { db } = createMockD1([
+      { id: "ten", title: "10. Web search" },
+      { id: "two", title: "2. React artifacts" },
+      { id: "one", title: "1. Ask user" },
+    ]);
+    const repository = new ConversationRepository({ DB: db } as any);
+
+    const result = await repository.getUserConversations(123, {
+      limit: 2,
+      page: 2,
+      sortBy: "title",
+    });
+
+    expect(result.conversations.map((conversation) => conversation.id)).toEqual(["ten"]);
+  });
+
   it("leaves the activity clause out when no cutoff is supplied", async () => {
     const { calls, db } = createMockD1();
     const repository = new ConversationRepository({ DB: db } as any);

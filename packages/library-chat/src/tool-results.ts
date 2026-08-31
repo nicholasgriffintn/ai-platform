@@ -1,4 +1,4 @@
-import { ResponseDisplayType } from "@ngriffin_uk/polychat-schemas";
+import { ToolResponseType } from "@ngriffin_uk/polychat-schemas";
 import { isRecord, readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message } from "./conversation-types";
@@ -14,7 +14,6 @@ export interface ToolResultDisplay {
   icon?: string;
   status?: string;
   responseType?: string;
-  responseDisplay?: unknown;
   renderer?: string;
   result?: Record<string, unknown>;
 }
@@ -23,12 +22,12 @@ export function isHiddenToolResponse(message: Message): boolean {
   return (
     message.role === "tool" &&
     isRecord(message.data) &&
-    message.data.responseType === ResponseDisplayType.HIDDEN
+    message.data.responseType === ToolResponseType.HIDDEN
   );
 }
 
 export function isHiddenToolResultPart(part: ToolResultPart): boolean {
-  return isRecord(part.data) && part.data.responseType === ResponseDisplayType.HIDDEN;
+  return isRecord(part.data) && part.data.responseType === ToolResponseType.HIDDEN;
 }
 
 export function getResolvedToolUseIndexes(
@@ -103,7 +102,6 @@ const buildDisplay = ({
     icon: readOptionalString(data?.icon),
     status,
     responseType: readOptionalString(data?.responseType),
-    responseDisplay: data?.responseDisplay,
     renderer: readOptionalString(data?.renderer),
     result: {
       status: status ?? "success",

@@ -1,11 +1,15 @@
 export type ParsedNumberInput = number | "";
 
-export function clampPercentage(value: number): number {
+export function clampNumber(value: number, min: number, max: number): number {
   if (!Number.isFinite(value)) {
-    return 0;
+    return min;
   }
 
-  return Math.min(100, Math.max(0, value));
+  return Math.min(max, Math.max(min, value));
+}
+
+export function clampPercentage(value: number): number {
+  return clampNumber(value, 0, 100);
 }
 
 export function getBoundedPercentage(value: number, total: number): number {

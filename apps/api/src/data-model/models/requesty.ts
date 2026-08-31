@@ -1320,6 +1320,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     },
     supportsAttachments: true,
     supportsTemperature: false,
+    supportsTopP: false,
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1000000,
@@ -1330,7 +1331,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     contextComplexity: 5,
     reliability: 3,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "none",
     },
     artificialAnalysis: {
@@ -1362,7 +1363,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.001,
     costPer1kOutputTokens: 0.005,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "thinking"],
     	defaultEffort: "none",
     },
   }),
@@ -1388,7 +1389,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0011,
     costPer1kOutputTokens: 0.0055,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "thinking"],
     	defaultEffort: "none",
     },
   }),
@@ -1414,7 +1415,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.015,
     costPer1kOutputTokens: 0.075,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "thinking"],
     	defaultEffort: "none",
     },
   }),
@@ -1444,7 +1445,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 3,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "low", "medium", "high"],
     	defaultEffort: "none",
     },
     artificialAnalysis: {
@@ -1480,7 +1481,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 3,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "low", "medium", "high"],
     	defaultEffort: "none",
     },
     artificialAnalysis: {
@@ -1577,6 +1578,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     },
     supportsAttachments: true,
     supportsTemperature: false,
+    supportsTopP: false,
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1000000,
@@ -1588,7 +1590,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 2,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "none",
     },
     artificialAnalysis: {
@@ -1613,6 +1615,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     },
     supportsAttachments: true,
     supportsTemperature: false,
+    supportsTopP: false,
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1000000,
@@ -1624,7 +1627,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 2,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "none",
     },
     artificialAnalysis: {
@@ -1649,6 +1652,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     },
     supportsAttachments: true,
     supportsTemperature: false,
+    supportsTopP: false,
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1000000,
@@ -1660,7 +1664,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 2,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "none",
     },
     artificialAnalysis: {
@@ -1685,6 +1689,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     },
     supportsAttachments: true,
     supportsTemperature: false,
+    supportsTopP: false,
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1000000,
@@ -1696,7 +1701,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 2,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "none",
     },
     artificialAnalysis: {
@@ -1721,6 +1726,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     },
     supportsAttachments: true,
     supportsTemperature: false,
+    supportsTopP: false,
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1000000,
@@ -1728,7 +1734,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "none",
     },
   }),
@@ -1747,6 +1753,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     },
     supportsAttachments: true,
     supportsTemperature: false,
+    supportsTopP: false,
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1000000,
@@ -1754,7 +1761,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0055,
     costPer1kOutputTokens: 0.0275,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "none",
     },
   }),
@@ -1780,7 +1787,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.003,
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "thinking"],
     	defaultEffort: "none",
     },
   }),
@@ -1806,7 +1813,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0033,
     costPer1kOutputTokens: 0.0165,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "thinking"],
     	defaultEffort: "none",
     },
   }),
@@ -1904,7 +1911,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.003,
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "thinking"],
     	defaultEffort: "none",
     },
   }),
@@ -1923,6 +1930,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     },
     supportsAttachments: true,
     supportsTemperature: false,
+    supportsTopP: false,
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1000000,
@@ -1930,7 +1938,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "none",
     },
   }),
@@ -1949,6 +1957,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     },
     supportsAttachments: true,
     supportsTemperature: false,
+    supportsTopP: false,
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1000000,
@@ -1956,7 +1965,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0022,
     costPer1kOutputTokens: 0.011,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "none",
     },
   }),
@@ -2814,6 +2823,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     },
     supportsAttachments: true,
     supportsTemperature: false,
+    supportsTopP: false,
     supportsToolCalls: true,
     supportsResponseFormat: true,
     contextWindow: 1000000,
@@ -2824,7 +2834,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     contextComplexity: 5,
     reliability: 3,
     reasoningConfig: {
-    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "none",
     },
     artificialAnalysis: {

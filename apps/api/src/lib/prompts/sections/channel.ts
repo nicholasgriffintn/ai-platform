@@ -1,6 +1,7 @@
+import { escapeHtml } from "@ngriffin_uk/polychat-utility-core";
+
 import { getInboundChannelProfile } from "~/lib/chat/policy/channels";
 import type { ChatRequestOptions } from "~/types";
-import { escapeHtml } from "~/utils/html";
 
 export function buildChannelSection(channel: ChatRequestOptions["channel"]): string {
   if (!channel) {

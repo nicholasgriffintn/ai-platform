@@ -16,6 +16,7 @@ import {
   orderLiveMessages,
   type LiveTurn,
 } from "~/lib/realtime/live-turn-messages";
+import { mergeRealtimeTranscriptText } from "~/lib/realtime/transcript-text";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Conversation, Message } from "~/types";
 
@@ -54,17 +55,6 @@ function resolveRole(source: RealtimeTranscriptResult["source"]): "user" | "assi
   }
 
   return undefined;
-}
-
-function appendOrReplaceTranscriptText(
-  currentText: string,
-  transcript: Pick<RealtimeTranscriptResult, "isDelta" | "text">,
-): string {
-  if (transcript.isDelta) {
-    return `${currentText}${transcript.text}`;
-  }
-
-  return transcript.text;
 }
 
 function isDefaultTitle(title?: string): boolean {
@@ -515,7 +505,7 @@ export function useLiveConversationMessages({
           role === "user" ? inputMessageByTurnRef.current : outputMessageByTurnRef.current;
         const activeMessage = activeMessages.get(turn.id);
         const wasInputFinal = turn.inputFinal;
-        const nextText = appendOrReplaceTranscriptText(activeMessage?.text ?? "", transcript);
+        const nextText = mergeRealtimeTranscriptText(activeMessage?.text ?? "", transcript);
         const message = buildMessageForTurn({
           activeMessage,
           content: nextText,

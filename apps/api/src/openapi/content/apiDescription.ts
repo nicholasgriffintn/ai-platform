@@ -47,7 +47,7 @@ Store personal or project source material, retrieve relevant context with vector
 
 ### Guardrails
 
-Built-in content safety with Llamaguard and AWS Bedrock Guardrails.
+Built-in content safety with LlamaGuard, Mistral Moderation, Shieldstral, and AWS Bedrock Guardrails.
 
 ## Resources
 

@@ -3,7 +3,7 @@ import type {
   SandboxRunResult,
   SandboxTaskType,
 } from "@ngriffin_uk/polychat-schemas";
-import { ResponseDisplayType } from "@ngriffin_uk/polychat-schemas";
+import { ToolResponseType } from "@ngriffin_uk/polychat-schemas";
 
 import type { IFunctionResponse } from "~/types";
 
@@ -165,7 +165,7 @@ export function buildSandboxPlanToolResponse(params: {
       formattedName: "Sandbox plan",
       renderer: "sandbox_plan",
       icon: "terminal",
-      responseType: ResponseDisplayType.CUSTOM,
+      responseType: ToolResponseType.CUSTOM,
       modelContext: false,
       result: {
         name: "sandbox_plan",
@@ -191,7 +191,7 @@ export function buildSandboxEventToolResponse(event: SandboxRunEvent): IFunction
       formattedName: formatSandboxEventName(event.type),
       renderer: "sandbox_event",
       icon: "terminal",
-      responseType: ResponseDisplayType.CUSTOM,
+      responseType: ToolResponseType.CUSTOM,
       modelContext: false,
       result: {
         name: "sandbox_event",
@@ -216,7 +216,7 @@ export function buildSandboxResultToolResponse(run: SandboxRunSummary): IFunctio
       formattedName: "Sandbox result",
       renderer: "sandbox_result",
       icon: "terminal",
-      responseType: ResponseDisplayType.CUSTOM,
+      responseType: ToolResponseType.CUSTOM,
       result: {
         name: "sandbox_result",
         data: {

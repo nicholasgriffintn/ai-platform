@@ -1,5 +1,6 @@
+import { escapeHtml } from "@ngriffin_uk/polychat-utility-core";
+
 import type { ChatMode, Platform, VerbosityLevel } from "~/types";
-import { escapeHtml } from "~/utils/html";
 
 import { PromptBuilder } from "../builder";
 

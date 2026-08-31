@@ -36,7 +36,7 @@ export abstract class BaseTranscriptionProvider implements TranscriptionProvider
    * Validates the transcription request
    */
   protected validateRequest(request: TranscriptionRequest): void {
-    if (!request.audio) {
+    if (!request.audio?.file) {
       throw new AssistantError("Missing audio", ErrorType.PARAMS_ERROR);
     }
 

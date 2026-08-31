@@ -54,15 +54,36 @@
     {
       "idx": 7,
       "version": "6",
-      "when": 1788199738777,
-      "tag": "0007_fuzzy_hydra",
+      "when": 1788188456014,
+      "tag": "0007_foamy_harpoon",
       "breakpoints": true
     },
     {
       "idx": 8,
       "version": "6",
-      "when": 1788200699483,
-      "tag": "0008_backfill_agent_owner_scope",
+      "when": 1788195394861,
+      "tag": "0008_organic_spacker_dave",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1788195406310,
+      "tag": "0009_backfill_scoped_embeddings",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1788200888459,
+      "tag": "0010_lively_fenris",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1788200893902,
+      "tag": "0011_backfill_agent_owner_scope",
       "breakpoints": true
     }
   ]

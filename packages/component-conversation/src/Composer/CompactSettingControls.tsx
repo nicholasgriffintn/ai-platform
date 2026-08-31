@@ -110,6 +110,8 @@ export function CompactSettingNumber({
 }
 
 interface CompactSettingRangeProps {
+  automaticLabel?: string;
+  automaticValue?: number;
   disabled?: boolean;
   description?: string;
   id: string;
@@ -118,11 +120,14 @@ interface CompactSettingRangeProps {
   max: number;
   min: number;
   onChange: (value: string) => void;
+  onReset?: () => void;
   step: number;
-  value: number;
+  value?: number;
 }
 
 export function CompactSettingRange({
+  automaticLabel = "Automatic",
+  automaticValue,
   description,
   disabled,
   id,
@@ -131,10 +136,13 @@ export function CompactSettingRange({
   max,
   min,
   onChange,
+  onReset,
   step,
   value,
 }: CompactSettingRangeProps) {
-  const rawPercentage = ((value - min) / (max - min)) * 100;
+  const isAutomatic = value === undefined;
+  const resolvedValue = value ?? automaticValue ?? min;
+  const rawPercentage = ((resolvedValue - min) / (max - min)) * 100;
   const percentage = clampPercentage(rawPercentage);
   const descriptionId = description ? `${id}-description` : undefined;
 
@@ -144,7 +152,21 @@ export function CompactSettingRange({
         <label htmlFor={id} className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
           {label}
         </label>
-        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{value}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            {isAutomatic ? automaticLabel : value}
+          </span>
+          {onReset && !isAutomatic && (
+            <button
+              type="button"
+              onClick={onReset}
+              disabled={disabled}
+              className="text-[11px] font-medium text-blue-600 underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:opacity-60 dark:text-blue-400"
+            >
+              Reset
+            </button>
+          )}
+        </div>
       </div>
       <div className="relative">
         <input
@@ -153,14 +175,17 @@ export function CompactSettingRange({
           min={min}
           max={max}
           step={step}
-          value={value}
+          value={resolvedValue}
           disabled={disabled}
           onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
           aria-describedby={descriptionId}
           className="h-4 w-full appearance-none bg-transparent disabled:cursor-not-allowed disabled:opacity-60 [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-zinc-200 dark:[&::-webkit-slider-runnable-track]:bg-zinc-700 [&::-webkit-slider-thumb]:mt-[-5px] [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow"
         />
         <div
-          className="pointer-events-none absolute left-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-blue-500"
+          className={cn(
+            "pointer-events-none absolute left-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-blue-500",
+            isAutomatic && "opacity-40",
+          )}
           style={{ width: `${percentage}%` }}
           aria-hidden="true"
         />

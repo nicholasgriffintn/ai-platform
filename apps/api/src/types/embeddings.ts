@@ -4,6 +4,7 @@ export type EmbeddingVector = {
   id: string;
   values: number[] | Float32Array;
   metadata: Record<string, any>;
+  content?: string;
 };
 
 export type EmbeddingMatch = {

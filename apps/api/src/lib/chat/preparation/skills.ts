@@ -5,6 +5,7 @@ import {
   resolveSkillCatalog,
   type RequestSkillScope,
 } from "~/services/skills";
+import { seedRequestSkillRuntime } from "~/services/skills/runtime-state";
 import type { ProjectChatContext } from "~/services/workspaces/chatContext";
 import type { CoreChatOptions } from "~/types";
 import { getLogger } from "~/utils/logger";
@@ -44,13 +45,17 @@ export async function resolveScopedSkillCatalog(
   }
 
   try {
-    return await resolveSkillCatalog(
+    const catalog = await resolveSkillCatalog(
       options.context,
       projectContext
         ? { type: "project", id: projectContext.projectId }
         : { type: "personal", id: user.id },
       projectContext ? new Set(projectContext.enabledSkillIds) : undefined,
     );
+
+    seedRequestSkillRuntime(options.context.requestCache, catalog);
+
+    return catalog;
   } catch (error) {
     logger.warn("Failed to load authored skills", {
       error,

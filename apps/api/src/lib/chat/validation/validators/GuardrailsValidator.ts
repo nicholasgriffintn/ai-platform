@@ -1,3 +1,4 @@
+import { getAllAttachments } from "~/lib/chat/messages/attachments";
 import type {
   ValidationContext,
   Validator,
@@ -44,9 +45,18 @@ export class GuardrailsValidator implements Validator {
       }
 
       const guardrails = new Guardrails(env, user, userSettings);
+      const lastMessageContent = Array.isArray(context.lastMessage?.content)
+        ? context.lastMessage.content
+        : [];
+      const images = getAllAttachments(lastMessageContent).imageAttachments.flatMap((image) =>
+        image.url ? [{ url: image.url, detail: image.detail }] : [],
+      );
 
       const inputValidation = await guardrails.validateInput(
-        context.messageWithContext,
+        {
+          text: context.messageWithContext,
+          ...(images.length > 0 ? { images } : {}),
+        },
         user?.id,
         completion_id,
       );

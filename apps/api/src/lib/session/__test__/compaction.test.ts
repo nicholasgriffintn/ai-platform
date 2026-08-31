@@ -289,6 +289,65 @@ describe("session compaction planning", () => {
     expect(plan.messagesToArchive.map((message) => message.id)).toEqual(["user-1", "assistant-1"]);
     expect(plan.messagesToKeep).toEqual([malformedCompactionMessage]);
   });
+
+  it("compacts a million-token context window at the absolute cap, not the ratio", () => {
+    const messages = Array.from({ length: 30 }, (_, index) =>
+      createMessage(`m-${index}`, `${"x".repeat(40000)}-${index}`),
+    );
+    const estimatedTokens = estimateConversationTokens(messages);
+
+    expect(estimatedTokens).toBeGreaterThan(200000);
+    expect(estimatedTokens).toBeLessThan(1000000 * 0.7);
+
+    const plan = buildCompactionPlan(messages, {
+      contextWindow: 1000000,
+    });
+
+    expect(plan.shouldCompact).toBe(true);
+    expect(plan.messagesToKeep).toHaveLength(8);
+  });
+
+  it("still applies the ratio for context windows below the absolute cap", () => {
+    const messages = Array.from({ length: 12 }, (_, index) =>
+      createMessage(`m-${index}`, `${"x".repeat(10000)}-${index}`),
+    );
+    const estimatedTokens = estimateConversationTokens(messages);
+
+    expect(estimatedTokens).toBeGreaterThan(32000 * 0.7);
+    expect(estimatedTokens).toBeLessThan(200000);
+
+    expect(buildCompactionPlan(messages, { contextWindow: 32000 }).shouldCompact).toBe(true);
+    expect(buildCompactionPlan(messages, { contextWindow: 1000000 }).shouldCompact).toBe(false);
+  });
+
+  it("respects a maxTriggerTokens override", () => {
+    const messages = Array.from({ length: 12 }, (_, index) =>
+      createMessage(`m-${index}`, `${"x".repeat(10000)}-${index}`),
+    );
+
+    const plan = buildCompactionPlan(messages, {
+      contextWindow: 1000000,
+      maxTriggerTokens: 20000,
+    });
+
+    expect(plan.shouldCompact).toBe(true);
+  });
+
+  it("leaves off and manual modes unaffected by the absolute cap", () => {
+    const messages = Array.from({ length: 30 }, (_, index) =>
+      createMessage(`m-${index}`, `${"x".repeat(40000)}-${index}`),
+    );
+
+    expect(
+      buildCompactionPlan(messages, { mode: "off", contextWindow: 1000000 }).shouldCompact,
+    ).toBe(false);
+
+    const manualPlan = buildCompactionPlan(messages, { mode: "manual", contextWindow: 1000000 });
+
+    expect(manualPlan.shouldCompact).toBe(true);
+    expect(manualPlan.messagesToArchive).toHaveLength(30);
+    expect(manualPlan.messagesToKeep).toEqual([]);
+  });
 });
 
 describe("token estimation", () => {

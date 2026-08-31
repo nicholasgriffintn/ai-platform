@@ -4,11 +4,16 @@ import Testing
 
 struct ServiceStoreTests {
     @MainActor
-    @Test func modelsStoreFetchesModelsSelectsFirstAndPersistsSelection() async throws {
+    @Test func modelsStoreFetchesModelsSelectsServerDefaultAndPersistsSelection() async throws {
         let defaults = try makeIsolatedUserDefaults()
         let client = ModelsAPIClientStub(result: .success([
             "gpt-4o": makeModel(id: "", name: "GPT-4o", provider: "openai"),
-            "mistral-small": makeModel(id: "", name: "Mistral Small", provider: "mistral")
+            "mistral-small": makeModel(
+                id: "",
+                name: "Mistral Small",
+                provider: "mistral",
+                isDefault: true
+            )
         ]))
         let store = ModelsStore(apiClient: client, userDefaults: defaults)
 
@@ -16,10 +21,58 @@ struct ServiceStoreTests {
 
         #expect(store.error == nil)
         #expect(store.models.map(\.id).sorted() == ["gpt-4o", "mistral-small"])
-        #expect(store.selectedModelId != nil)
+        #expect(store.selectedModelId == "mistral-small")
+        #expect(defaults.string(forKey: "selectedModelId") == "mistral-small")
 
         store.selectModel("gpt-4o")
         #expect(defaults.string(forKey: "selectedModelId") == "gpt-4o")
+    }
+
+    @MainActor
+    @Test func modelsStoreRepairsPersistedDeprecatedSelection() async throws {
+        let defaults = try makeIsolatedUserDefaults()
+        defaults.set("retired-model", forKey: "selectedModelId")
+        let client = ModelsAPIClientStub(result: .success([
+            "retired-model": makeModel(id: "", isDeprecated: true),
+            "active-model": makeModel(id: "", isDefault: true)
+        ]))
+        let store = ModelsStore(apiClient: client, userDefaults: defaults)
+
+        await store.fetchModels()
+
+        #expect(store.selectedModelId == "active-model")
+        #expect(defaults.string(forKey: "selectedModelId") == "active-model")
+    }
+
+    @MainActor
+    @Test func modelsStoreRepairsPersistedInaccessibleSelection() async throws {
+        let defaults = try makeIsolatedUserDefaults()
+        defaults.set("pro-model", forKey: "selectedModelId")
+        let client = ModelsAPIClientStub(result: .success([
+            "pro-model": makeModel(id: "", isExecutable: false),
+            "free-model": makeModel(id: "", isDefault: true, isExecutable: true)
+        ]))
+        let store = ModelsStore(apiClient: client, userDefaults: defaults)
+
+        await store.fetchModels()
+
+        #expect(store.selectedModelId == "free-model")
+        #expect(defaults.string(forKey: "selectedModelId") == "free-model")
+    }
+
+    @MainActor
+    @Test func modelsStoreUsesAutomaticRoutingWhenTheCatalogueHasNoDefault() async throws {
+        let defaults = try makeIsolatedUserDefaults()
+        defaults.set("retired-model", forKey: "selectedModelId")
+        let client = ModelsAPIClientStub(result: .success([
+            "active-model": makeModel(id: "", isExecutable: true)
+        ]))
+        let store = ModelsStore(apiClient: client, userDefaults: defaults)
+
+        await store.fetchModels()
+
+        #expect(store.selectedModelId == nil)
+        #expect(defaults.string(forKey: "selectedModelId") == nil)
     }
 
     @MainActor
@@ -33,25 +86,6 @@ struct ServiceStoreTests {
         #expect(store.models.map(\.id) == ["existing"])
         #expect(store.error?.contains("Failed to fetch models") == true)
         #expect(!store.isLoading)
-    }
-
-    @MainActor
-    @Test func toolsStoreFetchesToolsAndReportsErrors() async {
-        let tool = ToolDefinition(id: "web", name: "Web", description: "Search", isDefault: true)
-        let store = ToolsStore(apiClient: ToolsAPIClientStub(result: .success([tool])))
-
-        await store.fetchTools()
-
-        #expect(store.tools == [tool])
-        #expect(store.error == nil)
-        #expect(!store.isLoading)
-
-        let failingStore = ToolsStore(apiClient: ToolsAPIClientStub(result: .failure(TestFailure.forced)))
-        await failingStore.fetchTools()
-
-        #expect(failingStore.tools.isEmpty)
-        #expect(failingStore.error?.contains("Failed to fetch tools") == true)
-        #expect(!failingStore.isLoading)
     }
 
     @MainActor
@@ -101,6 +135,33 @@ struct ServiceStoreTests {
         #expect(manager.currentConversation?.messages.last?.logId == "log-1")
         #expect(manager.currentConversation?.messages.last?.created == 1_774_000_000)
         #expect(manager.currentConversation?.title == "Generated title")
+    }
+
+    @MainActor
+    @Test func conversationManagerRepairsAStaleConversationModelBeforeStreaming() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.streamEvents = [.content("Hello"), .done]
+        let defaults = try makeIsolatedUserDefaults()
+        let modelsStore = ModelsStore(
+            apiClient: ModelsAPIClientStub(result: .success([:])),
+            userDefaults: defaults
+        )
+        modelsStore.models = [
+            makeModel(id: "compound", provider: "groq", isDeprecated: true, isExecutable: false),
+            makeModel(id: "active-model", provider: "workers-ai", isDefault: true, isExecutable: true)
+        ]
+        modelsStore.selectModel("active-model")
+
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient, modelsStore: modelsStore)
+        var conversation = manager.startNewConversation()
+        conversation.modelId = "compound"
+        manager.currentConversation = conversation
+        manager.conversations = [conversation]
+
+        try await manager.addMessage(ChatMessage(role: "user", content: "Hi"))
+
+        #expect(apiClient.streamedModelId == "active-model")
     }
 
     @MainActor

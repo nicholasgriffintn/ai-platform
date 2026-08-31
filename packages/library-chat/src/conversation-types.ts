@@ -4,7 +4,7 @@ import type {
   ConversationSortBy as SchemaConversationSortBy,
   ConversationType as SchemaConversationType,
   MessagePart as SchemaMessagePart,
-  ResponseDisplayType as SchemaResponseDisplayType,
+  ToolResponseType,
   SandboxTaskType,
   ChatCompletionRequestBody as SchemaChatCompletionRequestBody,
   ChatHostedToolSettings as SchemaHostedToolSettings,
@@ -30,16 +30,8 @@ export interface ChatSettings {
   presence_penalty?: number;
   frequency_penalty?: number;
   compaction?: SchemaChatCompletionRequestBody["compaction"];
-  use_rag?: boolean;
   localOnly?: boolean;
   enabled_tools?: string[];
-  rag_options?: {
-    topK?: number;
-    scoreThreshold?: number;
-    includeMetadata?: boolean;
-    type?: string;
-    namespace?: string;
-  };
   reasoning?: ChatReasoningSettings;
   verbosity?: VerbosityLevel;
   tool_options?: HostedToolSettings;
@@ -115,14 +107,7 @@ export interface Attachment {
 export interface MessageData {
   conversationMode?: ConversationModeMetadata;
   codingTaskType?: SandboxTaskType;
-  responseType?: SchemaResponseDisplayType;
-  responseDisplay?: {
-    fields?: {
-      key: string;
-      label: string;
-    }[];
-    template?: string;
-  };
+  responseType?: ToolResponseType;
   icon?: string;
   formattedName?: string;
   attachments?: Attachment[];

@@ -185,6 +185,50 @@ describe("runAgentLoop", () => {
     expect(result.response.response).toBe("Here is your QR code.");
   });
 
+  it("activates the tools a loaded skill needs, companions included", async () => {
+    const { params, runTurn } = createParams([
+      toolTurn("load_skill", "skill-call"),
+      textTurn("Done."),
+    ]);
+
+    mocks.handleToolCalls.mockResolvedValueOnce([
+      {
+        role: "tool",
+        name: "load_skill",
+        content: "Skill instructions.",
+        status: "success",
+        data: { activatedTools: ["run_pashi_tools"] },
+      },
+    ]);
+
+    await runAgentLoop(params);
+
+    expect(runTurn.mock.calls[1][0].request.enabled_tools).toEqual(
+      expect.arrayContaining(["run_pashi_tools", "search_pashi_tools"]),
+    );
+  });
+
+  it("ignores an activation marker from a tool that relays external data", async () => {
+    const { params, runTurn } = createParams([
+      toolTurn("use_recipe_connector", "connector-call"),
+      textTurn("Done."),
+    ]);
+
+    mocks.handleToolCalls.mockResolvedValueOnce([
+      {
+        role: "tool",
+        name: "use_recipe_connector",
+        content: "Connector output.",
+        status: "success",
+        data: { activatedTools: ["run_sandbox_task"] },
+      },
+    ]);
+
+    await runAgentLoop(params);
+
+    expect(runTurn.mock.calls[1][0].request.enabled_tools).not.toContain("run_sandbox_task");
+  });
+
   it("keeps working after a tool fails rather than ending the turn", async () => {
     const { params } = createParams([toolTurn("get_weather"), textTurn("I could not check.")]);
 

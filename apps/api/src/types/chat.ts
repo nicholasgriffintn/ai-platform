@@ -14,7 +14,7 @@ import type {
 import type { ServiceContext } from "../lib/context/serviceContext";
 import type { AnonymousUser } from "./anonymous-user";
 import type { MemoryScope } from "./memory";
-import type { IEnv, ReasoningEffortLevel, VerbosityLevel } from "./shared";
+import type { CredentialAuthority, IEnv, ReasoningEffortLevel, VerbosityLevel } from "./shared";
 import type { IUser } from "./user";
 
 export type Platform = string;
@@ -215,6 +215,7 @@ export type RagOptions = {
   scoreThreshold?: number;
   includeMetadata?: boolean;
   namespace?: string;
+  scopeTag?: string;
   type?: string;
   contentType?: string;
   embeddingType?: string;
@@ -240,6 +241,8 @@ export interface IRequest {
 }
 
 type InternalExecutionParams = {
+  // Credential source authorised by the account model policy for this execution.
+  credentialAuthority?: CredentialAuthority;
   // Durable product classification chosen by trusted task and recipe entry points.
   conversation_type?: ConversationType;
   // The persona layered into the generated system prompt, for saved agents.

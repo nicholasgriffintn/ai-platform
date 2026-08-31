@@ -11,7 +11,7 @@ const ocrProviders: ProviderRegistration<OcrProvider>[] = [
     metadata: {
       vendor: "Mistral",
       categories: ["ocr"],
-      models: [DEFAULT_OCR_MODEL],
+      models: [DEFAULT_OCR_MODEL, "mistral-ocr-4-1"],
       defaultModel: DEFAULT_OCR_MODEL,
     },
   },

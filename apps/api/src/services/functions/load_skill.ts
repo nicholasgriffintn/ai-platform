@@ -8,6 +8,11 @@ import {
   MAX_SKILL_RESOURCE_CONTENT_BYTES,
   toSkillResourceSummary,
 } from "~/services/skills/response";
+import {
+  getRequestSkillRuntime,
+  isPinnedAuthoredSkillAuthorised,
+  resolvePinnedRequestSkillState,
+} from "~/services/skills/runtime-state";
 import type { ApiToolDefinition } from "~/types/functions";
 
 export const load_skill: ApiToolDefinition = {
@@ -16,17 +21,27 @@ export const load_skill: ApiToolDefinition = {
     "Load the full SKILL.md instructions for one of the skills listed in available_skills, or one relative resource path listed by that skill. Call this before starting work the skill covers, and follow what it returns.",
   type: "normal",
   costPerCall: 0,
-  isDefault: true,
   maxIdenticalCalls: 1,
   permissions: ["read"],
   inputSchema: loadSkillInputSchema,
   execute: async (args, toolContext) => {
     const skillId = String(args.skill).trim();
-    const { catalog, skills: available } = await resolveRequestSkillState(toolContext.request);
-    const requested = catalog ? catalog.load(skillId) : await loadSkill(skillId);
+    const pinned = getRequestSkillRuntime(toolContext.request.context?.requestCache);
+    const { catalog, skills: available } = pinned
+      ? await resolvePinnedRequestSkillState(toolContext.request, pinned)
+      : await resolveRequestSkillState(toolContext.request);
+    const loaded = catalog?.loadRuntime(skillId) ?? null;
+    const requested = loaded?.content ?? (catalog ? null : await loadSkill(skillId));
     const readyIds = new Set(
       available.filter((skill) => skill.state === "ready").map((skill) => skill.id),
     );
+
+    if (
+      loaded?.provenance &&
+      !(await isPinnedAuthoredSkillAuthorised(toolContext.request, loaded))
+    ) {
+      readyIds.delete(skillId);
+    }
 
     if (!requested || !readyIds.has(skillId)) {
       return {
@@ -67,9 +82,16 @@ export const load_skill: ApiToolDefinition = {
         };
       }
 
-      return createSkillResourceResponse(skillId, resource, resources);
+      return createSkillResourceResponse(skillId, resource, resources, loaded?.provenance);
     }
 
-    return createSkillInstructionsResponse(requested, resources);
+    const requirement = available.find((skill) => skill.id === skillId)?.requirement;
+
+    return createSkillInstructionsResponse(
+      requested,
+      resources,
+      [...(requirement?.tools ?? []), ...(requirement?.suggestedTools ?? [])],
+      loaded?.provenance,
+    );
   },
 };

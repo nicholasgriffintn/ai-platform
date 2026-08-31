@@ -3,12 +3,7 @@ import z from "zod/v4";
 
 import { listFunctionTools } from "~/services/functions";
 import { getToolCategory } from "~/services/tools/toolCategories";
-import {
-  formatFunctionName,
-  getFunctionIcon,
-  getFunctionResponseDisplay,
-  getFunctionResponseType,
-} from "~/utils/functions";
+import { formatFunctionName, getFunctionIcon, getFunctionResponseType } from "~/utils/functions";
 
 type FunctionTool = ReturnType<typeof listFunctionTools>[number];
 type JsonSchemaProperty = {
@@ -109,12 +104,10 @@ export const buildRunnableTool = (tool: FunctionTool): RunnableTool => ({
   category: getToolCategory(tool.name),
   icon: getFunctionIcon(tool.name),
   costPerCall: tool.costPerCall,
-  isDefault: tool.isDefault || false,
   type: tool.type,
   formSchema: buildFormSchema(tool),
   responseSchema: {
     type: getFunctionResponseType(tool.name),
-    display: getFunctionResponseDisplay(tool.name),
   },
 });
 

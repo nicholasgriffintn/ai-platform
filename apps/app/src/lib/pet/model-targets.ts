@@ -1,44 +1,86 @@
 import type { PetModelTargetOption } from "@ngriffin_uk/polychat-component-account";
-import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
+import {
+  findModelMaker,
+  formatModelFamilyLabel,
+  formatProviderLabel,
+  resolveModelMakerId,
+  type ModelConfig,
+  type ModelConfigItem,
+} from "@ngriffin_uk/polychat-schemas";
 
-function collectTargets(
-  values: Array<string | undefined>,
-  kind: PetModelTargetOption["kind"],
-): PetModelTargetOption[] {
-  const targets = new Map<string, string>();
+const KIND_ORDER: Record<PetModelTargetOption["kind"], number> = {
+  maker: 0,
+  provider: 1,
+  family: 2,
+};
 
-  for (const rawValue of values) {
-    const value = rawValue?.trim();
+type CountedTarget = PetModelTargetOption & { modelCount: number };
 
-    if (!value) {
-      continue;
-    }
+function countTarget(
+  targets: Map<string, CountedTarget>,
+  option: Omit<PetModelTargetOption, "modelCount">,
+) {
+  const existing = targets.get(option.value);
 
-    const normalised = value.toLowerCase();
+  if (existing) {
+    existing.modelCount += 1;
 
-    if (!targets.has(normalised)) {
-      targets.set(normalised, value);
-    }
+    return;
   }
 
-  const options = [...targets.entries()].map(([value, label]) => ({ kind, value, label }));
+  targets.set(option.value, { ...option, modelCount: 1 });
+}
 
-  // ES2022 lacks toSorted; options is a new array and is safe to order in place.
-  // oxlint-disable-next-line unicorn/no-array-sort
-  return options.sort((left, right) => left.label.localeCompare(right.label));
+function modelIconName(model: ModelConfigItem): string {
+  return model.name ?? model.matchingModel ?? "";
 }
 
 export function getPetModelTargetOptions(models: ModelConfig): PetModelTargetOption[] {
-  const entries = Object.values(models);
+  const makers = new Map<string, CountedTarget>();
+  const providers = new Map<string, CountedTarget>();
+  const families = new Map<string, CountedTarget>();
 
-  return [
-    ...collectTargets(
-      entries.map((model) => model.provider),
-      "provider",
-    ),
-    ...collectTargets(
-      entries.map((model) => model.family),
-      "family",
-    ),
-  ];
+  for (const model of Object.values(models)) {
+    const provider = model.provider?.trim().toLowerCase();
+    const family = model.family?.trim().toLowerCase();
+    const makerId = resolveModelMakerId(model);
+
+    if (makerId) {
+      countTarget(makers, {
+        kind: "maker",
+        value: makerId,
+        label: findModelMaker(makerId)?.label ?? makerId,
+        iconModelName: modelIconName(model),
+        iconProvider: provider,
+      });
+    }
+
+    if (provider) {
+      countTarget(providers, {
+        kind: "provider",
+        value: provider,
+        label: formatProviderLabel(provider),
+        iconModelName: formatProviderLabel(provider),
+        iconProvider: provider,
+      });
+    }
+
+    if (family) {
+      countTarget(families, {
+        kind: "family",
+        value: family,
+        label: formatModelFamilyLabel(family),
+        iconModelName: modelIconName(model),
+        iconProvider: provider,
+      });
+    }
+  }
+
+  const options = [...makers.values(), ...providers.values(), ...families.values()];
+
+  // oxlint-disable-next-line unicorn/no-array-sort
+  return options.sort(
+    (left, right) =>
+      KIND_ORDER[left.kind] - KIND_ORDER[right.kind] || left.label.localeCompare(right.label),
+  );
 }

@@ -28,6 +28,8 @@ public struct ChatCompletionRequest: Encodable {
     let reasoningEffort: String?
     let verbosity: String?
     let enabledTools: [String]?
+    let toolSelectionMode: String
+    let modelRouterMode: String?
 
     enum CodingKeys: String, CodingKey {
         case messages, model, provider, platform, mode, store, stream, temperature, reasoning, verbosity, options
@@ -40,6 +42,8 @@ public struct ChatCompletionRequest: Encodable {
         case ragOptions = "rag_options"
         case reasoningEffort = "reasoning_effort"
         case enabledTools = "enabled_tools"
+        case toolSelectionMode = "tool_selection_mode"
+        case modelRouterMode = "model_router_mode"
     }
 
     public init(
@@ -71,6 +75,8 @@ public struct ChatCompletionRequest: Encodable {
         self.reasoningEffort = settings?.reasoningEffort?.rawValue
         self.verbosity = settings?.verbosity?.rawValue
         self.enabledTools = settings?.enabledTools.isEmpty == false ? settings?.enabledTools : nil
+        self.toolSelectionMode = "managed"
+        self.modelRouterMode = model == nil ? "auto" : nil
     }
 }
 
@@ -190,6 +196,18 @@ public struct ModelConfigItem: Codable, Identifiable {
     public let multimodal: Bool?
     public let isFeatured: Bool?
     public let isDeprecated: Bool?
+    public let isDefault: Bool?
+    public let isExecutable: Bool?
+    public let status: String?
+    public let reasoningConfig: ReasoningConfig?
+    
+    public struct ReasoningConfig: Codable {
+        public let supportedEffortLevels: [String]?
+
+        public init(supportedEffortLevels: [String]?) {
+            self.supportedEffortLevels = supportedEffortLevels
+        }
+    }
     
     public struct ModelPricing: Codable {
         public let costPer1kInputTokens: Double?
@@ -203,8 +221,9 @@ public struct ModelConfigItem: Codable, Identifiable {
     
     enum CodingKeys: String, CodingKey {
         case name, provider, description, strengths, contextWindow, pricing, modalities, supportsFunctions, multimodal
-        case isFeatured, featured
+        case isFeatured, featured, isDefault, isExecutable, status
         case isDeprecated, deprecated
+        case reasoningConfig
     }
     
     public init(
@@ -219,7 +238,11 @@ public struct ModelConfigItem: Codable, Identifiable {
         supportsFunctions: Bool?,
         multimodal: Bool?,
         isFeatured: Bool? = nil,
-        isDeprecated: Bool? = nil
+        isDeprecated: Bool? = nil,
+        isDefault: Bool? = nil,
+        isExecutable: Bool? = nil,
+        status: String? = nil,
+        reasoningConfig: ReasoningConfig? = nil
     ) {
         self.id = id
         self.name = name
@@ -233,6 +256,10 @@ public struct ModelConfigItem: Codable, Identifiable {
         self.multimodal = multimodal
         self.isFeatured = isFeatured
         self.isDeprecated = isDeprecated
+        self.isDefault = isDefault
+        self.isExecutable = isExecutable
+        self.status = status
+        self.reasoningConfig = reasoningConfig
     }
 
     public init(from decoder: Decoder) throws {
@@ -251,6 +278,10 @@ public struct ModelConfigItem: Codable, Identifiable {
             ?? container.decodeIfPresent(Bool.self, forKey: .featured)
         isDeprecated = try container.decodeIfPresent(Bool.self, forKey: .isDeprecated)
             ?? container.decodeIfPresent(Bool.self, forKey: .deprecated)
+        isDefault = try container.decodeIfPresent(Bool.self, forKey: .isDefault)
+        isExecutable = try container.decodeIfPresent(Bool.self, forKey: .isExecutable)
+        status = try container.decodeIfPresent(String.self, forKey: .status)
+        reasoningConfig = try container.decodeIfPresent(ReasoningConfig.self, forKey: .reasoningConfig)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -267,18 +298,14 @@ public struct ModelConfigItem: Codable, Identifiable {
         try container.encodeIfPresent(multimodal, forKey: .multimodal)
         try container.encodeIfPresent(isFeatured, forKey: .isFeatured)
         try container.encodeIfPresent(isDeprecated, forKey: .isDeprecated)
+        try container.encodeIfPresent(isDefault, forKey: .isDefault)
+        try container.encodeIfPresent(isExecutable, forKey: .isExecutable)
+        try container.encodeIfPresent(status, forKey: .status)
+        try container.encodeIfPresent(reasoningConfig, forKey: .reasoningConfig)
     }
 }
 
 public typealias ModelsResponse = [String: ModelConfigItem]
-
-public struct ToolDefinition: Codable, Identifiable, Equatable {
-    public let id: String
-    public let name: String
-    public let description: String
-    public let isDefault: Bool?
-}
-
 
 public struct AssistantRecipesResponse: Codable {
     public let recipes: [AssistantRecipe]

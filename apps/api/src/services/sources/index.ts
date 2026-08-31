@@ -10,7 +10,11 @@ import type {
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { MemoryManager } from "~/lib/memory";
 import { isMemoryProviderId } from "~/lib/providers/capabilities/memory/helpers";
-import type { SourceCollectionRecord, SourceRecord } from "~/repositories/SourceRepository";
+import type {
+  SourceCollectionRecord,
+  SourceRecord,
+  SourceSummaryRecord,
+} from "~/repositories/SourceRepository";
 import { recordProjectAudit } from "~/services/audit";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -30,6 +34,12 @@ function formatFile(record: SourceRecord): Source["file"] {
 }
 
 export function formatSource(record: SourceRecord): Source {
+  const metadata = safeParseJson<Record<string, unknown>>(record.metadata) ?? {};
+
+  if (record.kind === "memory") {
+    delete metadata.embedding_provider_target;
+  }
+
   return {
     id: record.id,
     createdByUserId: record.created_by_user_id,
@@ -43,15 +53,15 @@ export function formatSource(record: SourceRecord): Source {
     provider: record.provider,
     externalUri: record.external_uri,
     vectorId: record.vector_id,
-    metadata: safeParseJson<Record<string, unknown>>(record.metadata) ?? {},
+    metadata,
     file: formatFile(record),
     createdAt: record.created_at,
     updatedAt: record.updated_at,
   };
 }
 
-function formatSourceSummary(record: SourceRecord): SourceSummary {
-  const { content: _content, ...summary } = formatSource(record);
+function formatSourceSummary(record: SourceSummaryRecord): SourceSummary {
+  const { content: _content, ...summary } = formatSource({ ...record, content: null });
 
   return summary;
 }
@@ -246,8 +256,11 @@ export async function listSources(
 ): Promise<{ sources: SourceSummary[] }> {
   const records = filters.projectId
     ? (await requireProjectAccess(context, filters.projectId),
-      await context.repositories.sources.listProjectSources(filters.projectId, filters.kind))
-    : await context.repositories.sources.listPersonalSources(userId, filters.kind);
+      await context.repositories.sources.listProjectSourceSummaries(
+        filters.projectId,
+        filters.kind,
+      ))
+    : await context.repositories.sources.listPersonalSourceSummaries(userId, filters.kind);
 
   return { sources: records.map(formatSourceSummary) };
 }
@@ -259,6 +272,17 @@ export async function updateSource(
   input: UpdateSourceInput,
 ): Promise<Source> {
   const existing = await requireSourceAccess(context, userId, sourceId, true);
+
+  if (
+    existing.kind === "memory" &&
+    (input.status !== undefined || input.content !== undefined || input.metadata !== undefined)
+  ) {
+    throw new AssistantError(
+      "Memory content, lifecycle, and provider metadata are managed by the memory service",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
 
   await context.repositories.sources.updateSource(sourceId, input);
   const updated = await context.repositories.sources.getSource(sourceId);

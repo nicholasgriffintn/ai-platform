@@ -22,7 +22,6 @@ describe("resolveToolResultPartDisplay", () => {
         icon: "search",
         formattedName: "Linear issues",
         responseType: "table",
-        responseDisplay: { fields: [{ key: "id", label: "ID" }] },
         issues: [],
       },
     } as unknown as ToolResultPart;

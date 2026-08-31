@@ -1,7 +1,8 @@
 import {
   getComposedRealtimeReasoningModelId,
-  getDefaultLiveModelId,
+  getFirstReadyRealtimeLiveProviderOption,
   getRealtimeLiveProviderIdForModel,
+  getRealtimeLiveProviderOption,
   isComposedRealtimeLiveProvider,
   supportsRealtimeLiveVideoInput,
   waitsForRealtimeLiveProviderFinalEventOnStop,
@@ -25,6 +26,7 @@ import {
 } from "~/hooks/useLiveConversationMessages";
 import { useModels } from "~/hooks/useModels";
 import { useRealtimeLiveSession } from "~/hooks/useRealtimeLiveSession";
+import { useRealtimeProviders } from "~/hooks/useRealtimeProviders";
 import {
   buildConversationModeMetadata,
   getConversationModeMetadata,
@@ -55,6 +57,8 @@ export function useHomeChatModeConfig(): {
   } = useChatStore();
   const { data: currentConversation } = useChat(currentConversationId);
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
+  const { data: realtimeProviderOptions = [], isLoading: isLoadingRealtimeProviders } =
+    useRealtimeProviders();
   const conversationModeMetadata = useMemo(
     () => getConversationModeMetadata(currentConversation),
     [currentConversation],
@@ -68,7 +72,10 @@ export function useHomeChatModeConfig(): {
     () => getComposedRealtimeReasoningModelId(apiModels, selectedModel),
     [apiModels, selectedModel],
   );
-  const selectedModelLiveProvider = getRealtimeLiveProviderIdForModel(selectedModelConfig);
+  const selectedModelLiveProvider = getRealtimeLiveProviderIdForModel(
+    selectedModelConfig,
+    realtimeProviderOptions,
+  );
   const [activeModeId, setActiveModeId] = useState<HomeChatModeId>(() =>
     resolveHomeChatModeId(searchParams.has("mode") ? searchParams.get("mode") : homeChatMode),
   );
@@ -87,7 +94,7 @@ export function useHomeChatModeConfig(): {
     ({ assistantMessageData, conversationId }: FinalLiveInputTranscript) => {
       const provider = effectiveLiveProviderRef.current;
 
-      if (!provider || !isComposedRealtimeLiveProvider(provider)) {
+      if (!provider || !isComposedRealtimeLiveProvider(provider, realtimeProviderOptions)) {
         return;
       }
 
@@ -100,7 +107,7 @@ export function useHomeChatModeConfig(): {
         model: composedReasoningModel,
       });
     },
-    [composedReasoningModel, respondToExistingConversation],
+    [composedReasoningModel, realtimeProviderOptions, respondToExistingConversation],
   );
   const {
     flushLiveMessages,
@@ -115,6 +122,7 @@ export function useHomeChatModeConfig(): {
     model: selectedModel,
     onEvent: handleLiveRealtimeEvent,
     onTranscript: handleLiveTranscript,
+    providers: realtimeProviderOptions,
   });
   const {
     error: liveError,
@@ -138,7 +146,10 @@ export function useHomeChatModeConfig(): {
   } = liveSession;
   const stopLiveSessionAndFlush = useCallback(() => {
     if (
-      waitsForRealtimeLiveProviderFinalEventOnStop(effectiveLiveProviderRef.current ?? liveProvider)
+      waitsForRealtimeLiveProviderFinalEventOnStop(
+        effectiveLiveProviderRef.current ?? liveProvider ?? "",
+        realtimeProviderOptions,
+      )
     ) {
       stopLiveSession();
 
@@ -147,23 +158,73 @@ export function useHomeChatModeConfig(): {
 
     flushLiveMessages();
     stopLiveSession();
-  }, [flushLiveMessages, liveProvider, stopLiveSession]);
+  }, [flushLiveMessages, liveProvider, realtimeProviderOptions, stopLiveSession]);
   const effectiveLiveProvider = selectedModelLiveProvider ?? liveProvider;
 
-  effectiveLiveProviderRef.current = effectiveLiveProvider;
-  const forceLiveResponseAudio = isComposedRealtimeLiveProvider(effectiveLiveProvider);
+  effectiveLiveProviderRef.current = effectiveLiveProvider ?? undefined;
+  const forceLiveResponseAudio = isComposedRealtimeLiveProvider(
+    effectiveLiveProvider ?? "",
+    realtimeProviderOptions,
+  );
+
+  const selectLiveProviderAndModel = useCallback(
+    (providerId: RealtimeLiveProviderId): boolean => {
+      const option = getRealtimeLiveProviderOption(providerId, realtimeProviderOptions);
+
+      if (option?.readiness !== "ready") {
+        return false;
+      }
+
+      setLiveProvider(option.id);
+      setModel(option.defaultModelId);
+
+      return true;
+    },
+    [realtimeProviderOptions, setLiveProvider, setModel],
+  );
 
   useEffect(() => {
-    if (
-      effectiveActiveModeId !== "live" ||
-      !selectedModelLiveProvider ||
-      selectedModelLiveProvider === liveProvider
-    ) {
+    if (effectiveActiveModeId !== "live" || isLoadingRealtimeProviders) {
       return;
     }
 
-    setLiveProvider(selectedModelLiveProvider);
-  }, [effectiveActiveModeId, liveProvider, selectedModelLiveProvider, setLiveProvider]);
+    if (selectedModelLiveProvider) {
+      if (selectedModelLiveProvider !== liveProvider) {
+        setLiveProvider(selectedModelLiveProvider);
+      }
+
+      return;
+    }
+
+    const currentProvider = getRealtimeLiveProviderOption(
+      liveProvider ?? "",
+      realtimeProviderOptions,
+    );
+
+    if (currentProvider?.readiness === "ready") {
+      if (selectedModel !== currentProvider.defaultModelId) {
+        setModel(currentProvider.defaultModelId);
+      }
+
+      return;
+    }
+
+    const firstReadyProvider = getFirstReadyRealtimeLiveProviderOption(realtimeProviderOptions);
+
+    if (firstReadyProvider) {
+      selectLiveProviderAndModel(firstReadyProvider.id);
+    }
+  }, [
+    effectiveActiveModeId,
+    isLoadingRealtimeProviders,
+    liveProvider,
+    realtimeProviderOptions,
+    selectLiveProviderAndModel,
+    selectedModel,
+    selectedModelLiveProvider,
+    setLiveProvider,
+    setModel,
+  ]);
 
   useEffect(() => {
     if (currentConversationId && conversationModeMetadata) {
@@ -214,11 +275,21 @@ export function useHomeChatModeConfig(): {
       }
 
       if (modeId === "live") {
-        const nextLiveProvider = selectedModelLiveProvider ?? liveProvider;
+        if (selectedModelLiveProvider) {
+          setLiveProvider(selectedModelLiveProvider);
+        } else {
+          const currentProvider = getRealtimeLiveProviderOption(
+            liveProvider ?? "",
+            realtimeProviderOptions,
+          );
+          const nextProvider =
+            currentProvider?.readiness === "ready"
+              ? currentProvider
+              : getFirstReadyRealtimeLiveProviderOption(realtimeProviderOptions);
 
-        setLiveProvider(nextLiveProvider);
-        if (!selectedModelLiveProvider) {
-          setModel(getDefaultLiveModelId(nextLiveProvider));
+          if (nextProvider) {
+            selectLiveProviderAndModel(nextProvider.id);
+          }
         }
       } else if (effectiveActiveModeId === "live") {
         stopLiveSessionAndFlush();
@@ -229,12 +300,13 @@ export function useHomeChatModeConfig(): {
     [
       effectiveActiveModeId,
       liveProvider,
+      realtimeProviderOptions,
+      selectLiveProviderAndModel,
       searchParams,
       selectedModelLiveProvider,
       setChatMode,
       setHomeChatMode,
       setLiveProvider,
-      setModel,
       setSearchParams,
       setSelectedAgentId,
       stopLiveSessionAndFlush,
@@ -242,18 +314,21 @@ export function useHomeChatModeConfig(): {
   );
   const handleLiveProviderChange = useCallback(
     (provider: RealtimeLiveProviderId) => {
-      setLiveProvider(provider);
-      setModel(getDefaultLiveModelId(provider));
+      selectLiveProviderAndModel(provider);
     },
-    [setLiveProvider, setModel],
+    [selectLiveProviderAndModel],
   );
   const handleModelChange = useCallback<ModelSelectionChangeHandler>(
     (modelId, modelConfig) => {
       const selectedConfig = modelConfig ?? getModelByReference(modelReferences, modelId);
-      const nextLiveProvider = getRealtimeLiveProviderIdForModel(selectedConfig);
+      const nextLiveProvider = getRealtimeLiveProviderIdForModel(
+        selectedConfig,
+        realtimeProviderOptions,
+      );
       const next = new URLSearchParams(searchParams);
 
       if (nextLiveProvider) {
+        setModel(modelId);
         setActiveModeId("live");
         setHomeChatMode("live");
         setSelectedAgentId(null);
@@ -279,10 +354,12 @@ export function useHomeChatModeConfig(): {
     [
       effectiveActiveModeId,
       modelReferences,
+      realtimeProviderOptions,
       searchParams,
       setChatMode,
       setHomeChatMode,
       setLiveProvider,
+      setModel,
       setSearchParams,
       setSelectedAgentId,
       stopLiveSessionAndFlush,
@@ -303,10 +380,12 @@ export function useHomeChatModeConfig(): {
         onCameraDeviceChange={setLiveCameraDeviceId}
         onProviderChange={handleLiveProviderChange}
         onMicrophoneEnabledChange={setLiveMicrophoneEnabled}
-        onStart={() => void startLiveSession(effectiveLiveProvider, selectedModel)}
+        onStart={() => void startLiveSession(effectiveLiveProvider ?? undefined, selectedModel)}
         onStop={stopLiveSessionAndFlush}
         onVideoEnabledChange={setLiveVideoEnabled}
-        provider={effectiveLiveProvider}
+        options={realtimeProviderOptions}
+        isLoadingProviders={isLoadingRealtimeProviders}
+        provider={effectiveLiveProvider ?? ""}
         showHeader={effectiveActiveModeId !== "live"}
         showSessionControls={effectiveActiveModeId !== "live"}
         status={liveStatus}
@@ -325,7 +404,7 @@ export function useHomeChatModeConfig(): {
         microphoneEnabled={liveMicrophoneEnabled}
         onCameraDeviceChange={setLiveCameraDeviceId}
         onMicrophoneEnabledChange={setLiveMicrophoneEnabled}
-        onStart={() => void startLiveSession(effectiveLiveProvider, selectedModel)}
+        onStart={() => void startLiveSession(effectiveLiveProvider ?? undefined, selectedModel)}
         onStop={stopLiveSessionAndFlush}
         onVideoEnabledChange={setLiveVideoEnabled}
         outputAudioLevel={liveOutputAudioLevel}
@@ -333,7 +412,10 @@ export function useHomeChatModeConfig(): {
         status={liveStatus}
         videoEnabled={liveVideoEnabled}
         videoPreviewStream={liveVideoPreviewStream}
-        videoSupported={supportsRealtimeLiveVideoInput(effectiveLiveProvider)}
+        videoSupported={supportsRealtimeLiveVideoInput(
+          effectiveLiveProvider ?? "",
+          realtimeProviderOptions,
+        )}
       />
     );
     const activeModeControls = effectiveActiveModeId === "live" ? liveControls : undefined;
@@ -410,15 +492,14 @@ export function useHomeChatModeConfig(): {
     liveLastEvent,
     liveLastTranscript,
     liveOutputAudioLevel,
-    liveProvider,
     liveSelectedCameraDeviceId,
     liveVideoPreviewStream,
+    realtimeProviderOptions,
+    isLoadingRealtimeProviders,
     effectiveLiveProvider,
-    composedReasoningModel,
     forceLiveResponseAudio,
     liveStatus,
     liveConversationMode,
-    handleFinalLiveInputTranscript,
     setLiveCameraDeviceId,
     setLiveMicrophoneEnabled,
     setLiveVideoEnabled,

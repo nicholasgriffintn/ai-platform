@@ -1,7 +1,7 @@
 import type { TurnOutput } from "~/lib/chat/agent/assistant-turn";
 import { createAgentProviderIO } from "~/lib/chat/agent/provider-io";
 import { consumeProviderStream } from "~/lib/chat/agent/provider-stream";
-import type { ChatEventSink } from "~/lib/chat/streaming/emitter";
+import { DISCARDING_EVENT_SINK, type ChatEventSink } from "~/lib/chat/streaming/emitter";
 import { getAIResponse } from "~/lib/chat/streaming/responses";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
@@ -17,6 +17,7 @@ export interface TurnTransportContext {
   userId?: number;
   serviceContext?: ServiceContext;
   shouldStop?: () => boolean;
+  deferOutputUntilValidated?: boolean;
 }
 
 export interface ChatTurnTransport {
@@ -78,15 +79,19 @@ export function createStreamingTurnTransport(): ChatTurnTransport {
         return formatBufferedTurn(providerResponse);
       }
 
-      const streamed = await consumeProviderStream(providerResponse, sink, {
-        env: context.env,
-        model: context.model,
-        provider: context.provider,
-        completionId: context.completionId,
-        userId: context.userId,
-        serviceContext: context.serviceContext,
-        shouldStop: context.shouldStop,
-      });
+      const streamed = await consumeProviderStream(
+        providerResponse,
+        context.deferOutputUntilValidated ? DISCARDING_EVENT_SINK : sink,
+        {
+          env: context.env,
+          model: context.model,
+          provider: context.provider,
+          completionId: context.completionId,
+          userId: context.userId,
+          serviceContext: context.serviceContext,
+          shouldStop: context.shouldStop,
+        },
+      );
 
       if (
         !streamed.content &&

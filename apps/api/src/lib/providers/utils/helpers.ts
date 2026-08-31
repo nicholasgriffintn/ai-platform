@@ -75,6 +75,24 @@ export function parseDelimitedCredentials(
   return parts;
 }
 
+export function parseAwsCredentials(credentialString: string): {
+  accessKey: string;
+  secretKey: string;
+} {
+  const [accessKey, secretKey] = parseDelimitedCredentials(
+    credentialString,
+    "::@@::",
+    2,
+    "Invalid AWS credentials format",
+  ).map((part) => part.trim());
+
+  if (!accessKey || !secretKey) {
+    throw new AssistantError("Invalid AWS credentials format", ErrorType.CONFIGURATION_ERROR);
+  }
+
+  return { accessKey, secretKey };
+}
+
 /**
  * Safely parses JSON from a response with error handling
  * @param response - The fetch response
