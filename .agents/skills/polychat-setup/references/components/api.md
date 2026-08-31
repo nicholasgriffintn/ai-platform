@@ -41,6 +41,8 @@ Import supported reasoning effort levels from models.dev `reasoning_options`. Pr
 
 Forward a configured non-default `reasoning_effort` through Mistral, OpenRouter, and Requesty chat-completion adapters. Preserve Mistral thinking chunks separately from answer text while streaming and replay the complete thinking chunk in later Mistral turns; dropping it degrades multi-turn reasoning quality.
 
+Bedrock's Anthropic path carries reasoning in Converse `additionalModelRequestFields` and follows the catalogue's `thinkingApi` discriminator. An `adaptive` model takes `thinking: {type: "adaptive"}` with `output_config.effort`, and rejects sampling, so temperature and top-p are dropped from `inferenceConfig`. A `budget` model takes `thinking: {type: "enabled"}` with a `budget_tokens` value held below the request's max tokens. A Bedrock model without the discriminator gets no reasoning payload, which keeps the Anthropic body shape away from the other families Bedrock serves.
+
 ## Embedding API safety and lifecycle
 
 The authenticated `/apps/embeddings` API is personal-only. Derive the person from
