@@ -11,6 +11,7 @@ import {
   readRecipeConversationLaunchIntent,
   removeConsumedAssistantActionLaunchParams,
 } from "~/lib/assistant-action-launch";
+import { resolvePersonalConversationId } from "~/lib/conversation-route";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
 import type { ChatRequestOptions } from "~/types";
@@ -24,6 +25,7 @@ interface ResolvedConversationLaunch {
 
 export function useConversationLaunchModeConfig(
   modeConfig?: ConversationThreadModeConfig,
+  pathConversationId?: string,
 ): ConversationThreadModeConfig | undefined {
   const location = useLocation();
   const { clearCurrentConversation, initializeStore, setChatInput, startNewConversation } =
@@ -38,8 +40,7 @@ export function useConversationLaunchModeConfig(
     const locationKey = `${location.key}:${location.pathname}${location.search}`;
     const sequence = ++initialiseSequenceRef.current;
     const initialise = async () => {
-      const params = new URLSearchParams(location.search);
-      const completionId = params.get("completion_id");
+      const completionId = resolvePersonalConversationId(pathConversationId, location.search);
       const urlLaunch = parseAssistantActionLaunchState(location.search);
       const recipeIntent = readRecipeConversationLaunchIntent(location.search);
 
@@ -129,6 +130,7 @@ export function useConversationLaunchModeConfig(
     location.pathname,
     location.search,
     modeConfig?.requestOptions?.metadata?.project_id,
+    pathConversationId,
     setChatInput,
     setSelectedTools,
     startNewConversation,

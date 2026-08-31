@@ -15,7 +15,12 @@ export function getSkillSuggestedToolNames(
 export function mergeSkillSuggestedToolNames(params: {
   enabledTools?: readonly string[];
   skills?: readonly SkillAvailability[];
+  deferSuggestedTools?: boolean;
 }): string[] {
+  if (params.deferSuggestedTools) {
+    return Array.from(new Set(params.enabledTools ?? []));
+  }
+
   return Array.from(
     new Set([...(params.enabledTools ?? []), ...getSkillSuggestedToolNames(params.skills)]),
   );

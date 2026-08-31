@@ -1,7 +1,9 @@
 import type { ModelModalities } from "@ngriffin_uk/polychat-schemas";
 
+import { buildOpenAIResponseOutputParts } from "~/lib/chat/messages/openai-response-parts";
 import { preprocessQwQResponse } from "~/lib/chat/messages/unterminated-thinking";
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { readGoogleThoughtSignature } from "~/lib/providers/utils/googleThoughtSignatures";
 import {
   hasPrivateAssetStorage,
   persistBase64GeneratedImages,
@@ -13,6 +15,8 @@ import {
 import type { IEnv } from "~/types";
 import { base64ToBuffer } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
+import { isRecord } from "~/utils/objects";
 
 interface ResponseFormatOptions {
   model?: string;
@@ -422,6 +426,11 @@ export class ResponseFormatter {
       const base64Images = ResponseFormatter.extractOpenAIResponsesImages(data.output);
       const annotations = ResponseFormatter.extractOpenAIResponsesAnnotations(data.output);
       const toolCalls = ResponseFormatter.extractOpenAIResponsesToolCalls(data.output);
+      const parts = buildOpenAIResponseOutputParts(data.output, Date.now());
+      const thinking = parts
+        .filter((part) => part.type === "reasoning")
+        .map((part) => part.text)
+        .join("\n");
       const processedTextContent = !options.is_streaming
         ? preprocessQwQResponse(outputText, options.model || data.model || "")
         : outputText;
@@ -440,10 +449,12 @@ export class ResponseFormatter {
           ...data,
           response: imagesContent,
           ...(toolCalls.length ? { tool_calls: toolCalls } : {}),
+          ...(thinking ? { thinking } : {}),
+          ...(parts.length ? { parts } : {}),
           annotations,
           data: {
             openai_response_id: data.id,
-            output: data.output,
+            output: ResponseFormatter.sanitiseOpenAIResponsesOutput(data.output),
             assets: uploads.metadata,
           },
         };
@@ -453,6 +464,8 @@ export class ResponseFormatter {
         ...data,
         response: processedTextContent,
         ...(toolCalls.length ? { tool_calls: toolCalls } : {}),
+        ...(thinking ? { thinking } : {}),
+        ...(parts.length ? { parts } : {}),
         annotations,
         data: {
           ...data.data,
@@ -602,6 +615,22 @@ export class ResponseFormatter {
       .map((item: any) => item.result);
   }
 
+  private static sanitiseOpenAIResponsesOutput(output: unknown): unknown {
+    if (!Array.isArray(output)) {
+      return output;
+    }
+
+    return output.map((item) => {
+      if (!isRecord(item) || item.type !== "image_generation_call") {
+        return item;
+      }
+
+      const { result: _base64Image, ...sanitisedItem } = item;
+
+      return sanitisedItem;
+    });
+  }
+
   private static extractOpenAIResponsesToolCalls(output: any): any[] {
     if (!Array.isArray(output)) {
       return [];
@@ -732,7 +761,17 @@ export class ResponseFormatter {
       } else if (part.functionCall) {
         const fc = part.functionCall;
 
-        toolCalls.push({ name: fc.name, arguments: fc.args });
+        toolCalls.push({
+          id: typeof fc.id === "string" && fc.id ? fc.id : `call_${generateId()}`,
+          type: "function",
+          ...(readGoogleThoughtSignature(part)
+            ? { thought_signature: readGoogleThoughtSignature(part) }
+            : {}),
+          function: {
+            name: fc.name,
+            arguments: JSON.stringify(fc.args ?? {}),
+          },
+        });
       } else if (part.executableCode) {
         const code = part.executableCode;
         const language = code.language?.toLowerCase() || "code";

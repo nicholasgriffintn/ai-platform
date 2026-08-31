@@ -64,13 +64,7 @@ export class GoogleVertexProvider extends BaseProvider {
       );
     }
 
-    const functionToolParams = {
-      ...params,
-      enabled_tools: (params.enabled_tools || []).filter(
-        (tool) => !(tool === "web_search" && modelConfig.supportsSearchGrounding),
-      ),
-    };
-    const toolsParams = getToolsForProvider(functionToolParams, modelConfig, this.name);
+    const toolsParams = getToolsForProvider(params, modelConfig, this.name);
     const providerParams = {
       ...params,
       tools: toolsParams.tools ?? params.tools,

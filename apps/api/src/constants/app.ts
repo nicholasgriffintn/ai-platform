@@ -35,7 +35,7 @@ export const MAGIC_LINK_EXPIRATION_MINUTES = 15;
 
 export const MAX_CONTENT_LENGTH = 1000000; // 1MB
 export const MAX_THINKING_LENGTH = 500000; // 500KB
-export const MAX_BUFFER_LENGTH = 100000; // 100KB
+export const MAX_PROVIDER_STREAM_EVENT_LENGTH = 20 * 1024 * 1024; // 20MB
 
 export const SANDBOX_RUNS_APP_ID = "sandbox_runs";
 export const SANDBOX_RUN_ITEM_TYPE = "sandbox_run";

@@ -1,7 +1,26 @@
-import { MAX_BUFFER_LENGTH, MAX_CONTENT_LENGTH, MAX_THINKING_LENGTH } from "~/constants/app";
-import { appendReasoningPart, appendTextPart } from "~/lib/chat/messages/parts";
+import {
+  MAX_CONTENT_LENGTH,
+  MAX_PROVIDER_STREAM_EVENT_LENGTH,
+  MAX_THINKING_LENGTH,
+} from "~/constants/app";
+import {
+  buildAnthropicSearchGrounding,
+  buildAnthropicHostedToolResultPart,
+  buildAnthropicHostedToolUsePart,
+  mergeAnthropicSearchGrounding,
+  readAnthropicHostedToolStart,
+  type AnthropicHostedToolState,
+} from "~/lib/chat/messages/anthropic-response-parts";
+import { GoogleCodeExecutionCollector } from "~/lib/chat/messages/google-response-parts";
+import {
+  buildOpenAIHostedToolParts,
+  extractOpenAIReasoningSummary,
+} from "~/lib/chat/messages/openai-response-parts";
+import { appendReasoningPart, appendTextPart, buildMessageParts } from "~/lib/chat/messages/parts";
 import { modelEmitsUnterminatedThinking } from "~/lib/chat/messages/unterminated-thinking";
 import type { ChatEventSink } from "~/lib/chat/streaming/emitter";
+import { SseLineBuffer } from "~/lib/chat/streaming/sse-line-buffer";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ResponseFormatter, StreamingFormatter } from "~/lib/formatter";
 import { findModelConfig } from "~/lib/providers/models";
 import {
@@ -12,6 +31,7 @@ import {
 import type { IEnv, MessagePart, ToolCall } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
+import { isRecord } from "~/utils/objects";
 
 const logger = getLogger({ prefix: "lib/chat/agent/provider-stream" });
 
@@ -21,6 +41,7 @@ export interface ProviderStreamContext {
   provider: string;
   completionId: string;
   userId?: number;
+  serviceContext?: ServiceContext;
   shouldStop?: () => boolean;
 }
 
@@ -92,7 +113,7 @@ export async function consumeProviderStream(
   const modelConfig = await findModelConfig(model, env, provider, context.userId);
   const content = new BoundedText(MAX_CONTENT_LENGTH, "Content", completionId);
   const thinking = new BoundedText(MAX_THINKING_LENGTH, "Thinking", completionId);
-  const buffer = new BoundedText(MAX_BUFFER_LENGTH, "Buffer", completionId);
+  const buffer = new SseLineBuffer(MAX_PROVIDER_STREAM_EVENT_LENGTH);
 
   const turn: StreamedTurn = {
     content: "",
@@ -113,6 +134,13 @@ export async function consumeProviderStream(
   let isFirstContentChunk = true;
   let openedThinkTag = false;
   let completed = false;
+  const handledReasoningItems = new Set<string>();
+  const completedHostedToolItems = new Set<string>();
+  const pendingHostedToolCallIds = new Map<string, string[]>();
+  const anthropicHostedTools = new Map<number, AnthropicHostedToolState>();
+  const anthropicHostedToolNames = new Map<string, string>();
+  const anthropicSearchQueries = new Map<string, string>();
+  const googleCodeExecution = new GoogleCodeExecutionCollector();
 
   const markInterrupted = (error: unknown, source: "error_event" | "stream_read"): boolean => {
     const partialContent = content.toString();
@@ -135,6 +163,47 @@ export async function consumeProviderStream(
   const finaliseToolCalls = () => {
     if (turn.toolCalls.length === 0 && Object.keys(partialToolCalls).length > 0) {
       turn.toolCalls = Object.values(partialToolCalls);
+    }
+  };
+
+  const appendCompletedResponseAssets = async (data: unknown) => {
+    if (!isRecord(data) || data.type !== "response.completed" || !isRecord(data.response)) {
+      return;
+    }
+
+    let formattedResponse: any;
+
+    try {
+      formattedResponse = await ResponseFormatter.formatResponse(data.response, provider, {
+        model,
+        modalities: modelConfig?.modalities,
+        env,
+        context: context.serviceContext,
+        completion_id: completionId,
+        is_streaming: false,
+        userId: context.userId,
+      });
+    } catch (error) {
+      turn.error = error;
+      throw error;
+    }
+
+    if (!Array.isArray(formattedResponse.response)) {
+      return;
+    }
+
+    const assetParts = buildMessageParts({
+      role: "assistant",
+      content: formattedResponse.response,
+      timestamp: Date.now(),
+    })?.filter((part) => part.type === "file");
+
+    if (assetParts?.length) {
+      turn.parts.push(...assetParts);
+    }
+
+    if (formattedResponse.data) {
+      turn.structuredData = formattedResponse.data;
     }
   };
 
@@ -186,8 +255,13 @@ export async function consumeProviderStream(
       userId: context.userId,
     });
 
-    const contentDelta =
-      data.choices?.[0]?.delta?.content !== undefined
+    const googleStreamParts =
+      provider === "google-ai-studio" || provider === "google-vertex"
+        ? googleCodeExecution.collect(data, turn.parts, Date.now())
+        : { handled: false, text: "" };
+    const contentDelta = googleStreamParts.handled
+      ? googleStreamParts.text
+      : data.choices?.[0]?.delta?.content !== undefined
         ? data.choices[0].delta.content
         : StreamingFormatter.extractContentFromChunk(formattedData, currentEventType);
 
@@ -213,12 +287,121 @@ export async function consumeProviderStream(
     const thinkingData = StreamingFormatter.extractThinkingFromChunk(data, currentEventType);
 
     if (typeof thinkingData === "string") {
+      if (
+        data.type === "response.reasoning_summary_text.delta" &&
+        typeof data.item_id === "string"
+      ) {
+        handledReasoningItems.add(data.item_id);
+      }
+
       thinking.add(thinkingData);
       appendReasoningPart(turn.parts, thinkingData, Date.now());
       await sink.writeEvent("thinking_delta", { thinking: thinkingData });
     } else if (thinkingData?.type === "signature") {
       turn.signature = thinkingData.signature;
       await sink.writeEvent("signature_delta", { signature: thinkingData.signature });
+    }
+
+    const responseOutputItems =
+      data.type === "response.output_item.done" && isRecord(data.item)
+        ? [data.item]
+        : data.type === "response.completed" && Array.isArray(data.response?.output)
+          ? data.response.output
+          : [];
+
+    for (const item of responseOutputItems) {
+      if (!isRecord(item)) {
+        continue;
+      }
+
+      const itemId = typeof item.id === "string" ? item.id : undefined;
+      const reasoningSummary = extractOpenAIReasoningSummary(item);
+
+      if (reasoningSummary && (!itemId || !handledReasoningItems.has(itemId))) {
+        thinking.add(reasoningSummary);
+        appendReasoningPart(turn.parts, reasoningSummary, Date.now());
+        await sink.writeEvent("thinking_delta", { thinking: reasoningSummary });
+
+        if (itemId) {
+          handledReasoningItems.add(itemId);
+        }
+      }
+
+      if (itemId && completedHostedToolItems.has(itemId)) {
+        continue;
+      }
+
+      let hostedToolParts = buildOpenAIHostedToolParts(item, Date.now());
+      const hostedToolUse = hostedToolParts.find((part) => part.type === "tool_use");
+      const hostedToolResult = hostedToolParts.find((part) => part.type === "tool_result");
+
+      if (hostedToolUse && !hostedToolResult && hostedToolUse.toolCallId) {
+        const pendingIds = pendingHostedToolCallIds.get(hostedToolUse.name) ?? [];
+
+        pendingIds.push(hostedToolUse.toolCallId);
+        pendingHostedToolCallIds.set(hostedToolUse.name, pendingIds);
+      }
+
+      if (!hostedToolUse && hostedToolResult?.name) {
+        const pendingIds = pendingHostedToolCallIds.get(hostedToolResult.name);
+        const pendingId = pendingIds?.shift();
+
+        if (pendingId) {
+          hostedToolParts = buildOpenAIHostedToolParts(item, Date.now(), pendingId);
+        }
+      }
+
+      if (hostedToolParts.length > 0) {
+        turn.parts.push(...hostedToolParts);
+
+        if (itemId) {
+          completedHostedToolItems.add(itemId);
+        }
+      }
+    }
+
+    await appendCompletedResponseAssets(data);
+
+    if (provider === "anthropic" && currentEventType === "content_block_start") {
+      const hostedTool = readAnthropicHostedToolStart(data.content_block);
+
+      if (hostedTool && typeof data.index === "number") {
+        anthropicHostedTools.set(data.index, hostedTool);
+        anthropicHostedToolNames.set(hostedTool.id, hostedTool.name);
+      }
+
+      const toolUseId = isRecord(data.content_block) ? data.content_block.tool_use_id : undefined;
+      const searchGrounding = buildAnthropicSearchGrounding(
+        data.content_block,
+        typeof toolUseId === "string" ? anthropicSearchQueries.get(toolUseId) : undefined,
+      );
+
+      if (searchGrounding) {
+        turn.structuredData = mergeAnthropicSearchGrounding(turn.structuredData, searchGrounding);
+      } else {
+        const hostedToolResult = buildAnthropicHostedToolResultPart(
+          data.content_block,
+          anthropicHostedToolNames,
+          Date.now(),
+        );
+
+        if (hostedToolResult) {
+          turn.parts.push(hostedToolResult);
+        }
+      }
+    }
+
+    if (
+      provider === "anthropic" &&
+      currentEventType === "content_block_delta" &&
+      data.delta?.type === "input_json_delta" &&
+      typeof data.index === "number"
+    ) {
+      const hostedTool = anthropicHostedTools.get(data.index);
+
+      if (hostedTool && typeof data.delta.partial_json === "string") {
+        hostedTool.inputJson += data.delta.partial_json;
+      }
     }
 
     collectToolCallDelta(
@@ -232,6 +415,26 @@ export async function consumeProviderStream(
     }
 
     if (currentEventType === "content_block_stop") {
+      if (provider === "anthropic" && typeof data.index === "number") {
+        const hostedTool = anthropicHostedTools.get(data.index);
+
+        if (hostedTool) {
+          const hostedToolUse = buildAnthropicHostedToolUsePart(hostedTool, Date.now());
+
+          if (hostedToolUse.type === "tool_use" && hostedToolUse.name === "search_grounding") {
+            const query = isRecord(hostedToolUse.input) ? hostedToolUse.input.query : undefined;
+
+            if (typeof query === "string") {
+              anthropicSearchQueries.set(hostedTool.id, query);
+            }
+          } else {
+            turn.parts.push(hostedToolUse);
+          }
+
+          anthropicHostedTools.delete(data.index);
+        }
+      }
+
       const completedToolCall = closeAnthropicToolCall(data, partialToolCalls);
 
       if (completedToolCall) {
@@ -295,11 +498,7 @@ export async function consumeProviderStream(
         break;
       }
 
-      buffer.add(decoder.decode(value, { stream: true }));
-
-      const lines = buffer.toString().split("\n");
-
-      buffer.replace(lines.pop() || "");
+      const lines = buffer.append(decoder.decode(value, { stream: true }));
 
       for (const line of lines) {
         try {

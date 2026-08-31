@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import type { Message } from "./conversation-types";
-import { resolveToolMessageDisplay, resolveToolResultPartDisplay } from "./tool-results";
+import {
+  getResolvedToolUseIndexes,
+  resolveToolMessageDisplay,
+  resolveToolResultPartDisplay,
+} from "./tool-results";
 
 type ToolResultPart = Extract<NonNullable<Message["parts"]>[number], { type: "tool_result" }>;
 
@@ -53,6 +57,55 @@ describe("resolveToolResultPartDisplay", () => {
     } as unknown as ToolResultPart;
 
     expect(resolveToolResultPartDisplay(part).result?.content).toBe('{\n  "ok": true\n}');
+  });
+
+  it("renders historical tool search results as readable text", () => {
+    const part = {
+      type: "tool_result",
+      name: "tool_search",
+      content: [
+        {
+          name: "assistant_tools_4",
+          description: "Assistant application tools",
+        },
+      ],
+    } as unknown as ToolResultPart;
+
+    expect(resolveToolResultPartDisplay(part)).toMatchObject({
+      responseType: "text",
+      result: { content: "assistant_tools_4 — Assistant application tools" },
+    });
+  });
+});
+
+describe("getResolvedToolUseIndexes", () => {
+  it("pairs a provider tool result by name when its nullable call id was replaced", () => {
+    const parts = [
+      {
+        type: "tool_use" as const,
+        name: "tool_search",
+        toolCallId: "tsc_1",
+        input: { query: "news" },
+      },
+      {
+        type: "tool_result" as const,
+        name: "tool_search",
+        toolCallId: "tso_1",
+        status: "completed",
+        content: "get_hacker_news_stories",
+      },
+    ];
+
+    expect([...getResolvedToolUseIndexes(parts)]).toEqual([0]);
+  });
+
+  it("does not hide an unmatched pending call", () => {
+    const parts = [
+      { type: "tool_use" as const, name: "tool_search", toolCallId: "tsc_1" },
+      { type: "tool_result" as const, name: "hosted_shell", toolCallId: "call_2" },
+    ];
+
+    expect([...getResolvedToolUseIndexes(parts)]).toEqual([]);
   });
 });
 

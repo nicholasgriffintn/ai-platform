@@ -368,6 +368,10 @@ export class RequestPreparer {
           isProUser: scope.isProUser,
         }),
         skills,
+        deferSuggestedTools:
+          enabledTools !== undefined ||
+          (Boolean(primaryModelConfig.supportsToolSearch) &&
+            Boolean(enabledTools?.includes("tool_search"))),
       }),
       activeGoal,
       toolOptions: this.resolveToolOptions(scope, savedToolConfigurations, enabledTools),

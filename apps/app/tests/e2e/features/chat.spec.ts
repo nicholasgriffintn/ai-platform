@@ -183,9 +183,9 @@ for (const persona of ["logged-out", "free"] as const) {
       const conversationTitle = new RegExp(`Persist this ${persona}|Release validation chat`);
 
       await homePage.waitForConversationInHistory(conversationTitle);
-
-      await homePage.reload();
       await homePage.openConversation(conversationTitle);
+      await expect(page).toHaveURL(/\/chat\/[^/?]+$/);
+      await homePage.reload();
       await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
       await captureVisualSnapshots(page, "release-chat-local-history", {
         ...DEFAULT_VISUAL_CHECKPOINTS,

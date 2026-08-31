@@ -20,6 +20,14 @@ export function getToolDefinitionName(
   return undefined;
 }
 
+export function getCatalogueToolName(
+  tool: ToolDefinitionLike | null | undefined,
+): string | undefined {
+  const name = getToolDefinitionName(tool);
+
+  return name?.startsWith("default_api:") ? name.slice("default_api:".length) : name;
+}
+
 export function mergeToolDefinitionsByName<Tool extends ToolDefinitionLike>(
   ...toolGroups: ReadonlyArray<ReadonlyArray<Tool>>
 ): Tool[] {

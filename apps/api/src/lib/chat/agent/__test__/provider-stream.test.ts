@@ -4,6 +4,18 @@ vi.mock("~/lib/providers/models", () => ({
   findModelConfig: vi.fn(async () => ({ modalities: { input: ["text"], output: ["text"] } })),
 }));
 
+vi.mock("~/lib/storage/generated-media", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("~/lib/storage/generated-media")>();
+
+  return {
+    ...actual,
+    persistBase64GeneratedImages: vi.fn(async (_context: unknown, images: string[]) => ({
+      urls: images.map((_image, index) => `https://assets.test/${index}.png`),
+      metadata: [],
+    })),
+  };
+});
+
 import { consumeProviderStream } from "../provider-stream";
 
 function providerStream(chunks: string[]): ReadableStream<Uint8Array> {
@@ -218,6 +230,149 @@ describe("consumeProviderStream", () => {
     ]);
   });
 
+  it("keeps OpenAI hosted tool results and reasoning summaries in message parts", async () => {
+    const { sink, events } = createSink();
+    const reasoningItem = {
+      id: "reasoning-1",
+      type: "reasoning",
+      summary: [{ type: "summary_text", text: "Checked the arithmetic." }],
+    };
+    const codeItem = {
+      id: "code-1",
+      type: "code_interpreter_call",
+      status: "completed",
+      code: "print(2 + 2)",
+      outputs: [{ type: "logs", logs: "4\n" }],
+    };
+
+    const turn = await consumeProviderStream(
+      providerStream([
+        `data: ${JSON.stringify({
+          type: "response.reasoning_summary_text.delta",
+          item_id: "reasoning-1",
+          delta: "Checked the arithmetic.",
+        })}\n\n`,
+        `data: ${JSON.stringify({ type: "response.output_item.done", item: reasoningItem })}\n\n`,
+        `data: ${JSON.stringify({ type: "response.output_item.done", item: codeItem })}\n\n`,
+        `data: ${JSON.stringify({
+          type: "response.completed",
+          response: { output: [reasoningItem, codeItem] },
+        })}\n\n`,
+      ]),
+      sink,
+      context,
+    );
+
+    expect(turn.thinking).toBe("Checked the arithmetic.");
+    expect(turn.parts).toEqual([
+      expect.objectContaining({ type: "reasoning", text: "Checked the arithmetic." }),
+      expect.objectContaining({
+        type: "tool_use",
+        name: "code_execution",
+        toolCallId: "code-1",
+        input: { code: "print(2 + 2)" },
+      }),
+      expect.objectContaining({
+        type: "tool_result",
+        name: "code_execution",
+        toolCallId: "code-1",
+        content: "4\n",
+      }),
+    ]);
+    expect(events.filter((event) => event.type === "thinking_delta")).toHaveLength(1);
+  });
+
+  it("assembles Google code execution chunks into real tool parts", async () => {
+    const { sink, events } = createSink();
+    const googleEvent = (parts: unknown[]) =>
+      `data: ${JSON.stringify({ candidates: [{ content: { role: "model", parts } }] })}\n\n`;
+
+    const turn = await consumeProviderStream(
+      providerStream([
+        googleEvent([{ text: "I will calculate it." }]),
+        googleEvent([
+          { executableCode: { language: "PYTHON", code: "def answer():\n    return " } },
+        ]),
+        googleEvent([{ executableCode: { language: "PYTHON", code: "5117\n" } }]),
+        googleEvent([{ codeExecutionResult: { outcome: "OUTCOME_OK", output: "5117\n" } }]),
+      ]),
+      sink,
+      { ...context, provider: "google-ai-studio", model: "gemini-flash-latest" },
+    );
+
+    expect(turn.content).toBe("I will calculate it.");
+    expect(turn.content).not.toContain("<artifact");
+    expect(turn.parts).toEqual([
+      expect.objectContaining({ type: "text", text: "I will calculate it." }),
+      expect.objectContaining({
+        type: "tool_use",
+        name: "code_execution",
+        toolCallId: "google-code-execution-1",
+        input: { code: "def answer():\n    return 5117\n", language: "python" },
+      }),
+      expect.objectContaining({
+        type: "tool_result",
+        name: "code_execution",
+        toolCallId: "google-code-execution-1",
+        status: "completed",
+        content: "5117\n",
+        data: {
+          responseType: "text",
+          providerResult: { outcome: "OUTCOME_OK", output: "5117\n" },
+        },
+      }),
+    ]);
+    expect(events.filter((event) => event.type === "content_block_delta")).toHaveLength(1);
+  });
+
+  it("persists a completed streamed image response as a file part", async () => {
+    const { sink } = createSink();
+    const imageBase64 = "a".repeat(120_000);
+    const imageItem = {
+      id: "image-1",
+      type: "image_generation_call",
+      status: "completed",
+      result: imageBase64,
+    };
+    const completedEvent = `data: ${JSON.stringify({
+      type: "response.completed",
+      response: { id: "response-1", object: "response", output: [imageItem] },
+    })}\n\n`;
+    const eventSplit = Math.floor(completedEvent.length / 2);
+
+    const turn = await consumeProviderStream(
+      providerStream([
+        `data: ${JSON.stringify({ type: "response.output_item.done", item: imageItem })}\n\n`,
+        completedEvent.slice(0, eventSplit),
+        completedEvent.slice(eventSplit),
+      ]),
+      sink,
+      context,
+    );
+
+    expect(turn.parts).toEqual([
+      expect.objectContaining({
+        type: "tool_use",
+        name: "image_generation",
+        toolCallId: "image-1",
+      }),
+      expect.objectContaining({
+        type: "tool_result",
+        name: "image_generation",
+        content: "Image generated.",
+      }),
+      expect.objectContaining({
+        type: "file",
+        url: "https://assets.test/0.png",
+        mimeType: "image/*",
+      }),
+    ]);
+    expect(turn.structuredData).toMatchObject({
+      openai_response_id: "response-1",
+      output: [expect.not.objectContaining({ result: imageBase64 })],
+    });
+  });
+
   it("waits for Anthropic tool input deltas before completing the call", async () => {
     const { sink } = createSink();
 
@@ -239,6 +394,72 @@ describe("consumeProviderStream", () => {
         type: "function",
         function: { name: "load_skill", arguments: '{"skill":"artifacts"}' },
       },
+    ]);
+  });
+
+  it("persists Anthropic hosted results through their established presentation contracts", async () => {
+    const { sink } = createSink();
+
+    const turn = await consumeProviderStream(
+      providerStream([
+        'event: content_block_start\ndata: {"type":"content_block_start","index":0,"content_block":{"type":"server_tool_use","id":"srvtoolu-search","name":"web_search","input":{"query":"Polychat"}}}\n\n',
+        'event: content_block_stop\ndata: {"type":"content_block_stop","index":0}\n\n',
+        'event: content_block_start\ndata: {"type":"content_block_start","index":1,"content_block":{"type":"web_search_tool_result","tool_use_id":"srvtoolu-search","content":[{"type":"web_search_result","url":"https://polychat.example","title":"Polychat","page_age":null,"encrypted_content":"encrypted"}]}}\n\n',
+        'event: content_block_stop\ndata: {"type":"content_block_stop","index":1}\n\n',
+        'event: content_block_start\ndata: {"type":"content_block_start","index":2,"content_block":{"type":"server_tool_use","id":"srvtoolu-fetch","name":"web_fetch","input":{"url":"https://example.com"}}}\n\n',
+        'event: content_block_stop\ndata: {"type":"content_block_stop","index":2}\n\n',
+        'event: content_block_start\ndata: {"type":"content_block_start","index":3,"content_block":{"type":"web_fetch_tool_result","tool_use_id":"srvtoolu-fetch","content":{"type":"web_fetch_result","url":"https://example.com","retrieved_at":"2026-08-31T00:00:00Z","content":{"type":"document","source":{"type":"text","media_type":"text/plain","data":"---\\ntitle: Example Domain\\n---\\n\\n# Example Domain"},"title":"Example Domain"}}}}\n\n',
+        'event: content_block_stop\ndata: {"type":"content_block_stop","index":3}\n\n',
+        'event: content_block_start\ndata: {"type":"content_block_start","index":4,"content_block":{"type":"server_tool_use","id":"srvtoolu-code","name":"code_execution","input":{"code":"print(6 * 7)"}}}\n\n',
+        'event: content_block_stop\ndata: {"type":"content_block_stop","index":4}\n\n',
+        'event: content_block_start\ndata: {"type":"content_block_start","index":5,"content_block":{"type":"code_execution_tool_result","tool_use_id":"srvtoolu-code","content":{"type":"code_execution_result","stdout":"42\\n","stderr":"","return_code":0,"content":[]}}}\n\n',
+        'event: content_block_stop\ndata: {"type":"content_block_stop","index":5}\n\n',
+        'event: message_stop\ndata: {"type":"message_stop"}\n\n',
+      ]),
+      sink,
+      { ...context, provider: "anthropic", model: "claude-opus-5" },
+    );
+
+    expect(turn.toolCalls).toEqual([]);
+    expect(turn.structuredData).toEqual({
+      searchGrounding: {
+        groundingChunks: [{ web: { uri: "https://polychat.example", title: "Polychat" } }],
+        webSearchQueries: ["Polychat"],
+      },
+    });
+    expect(turn.parts).toEqual([
+      expect.objectContaining({
+        type: "tool_use",
+        name: "web_fetch",
+        toolCallId: "srvtoolu-fetch",
+        input: { url: "https://example.com" },
+      }),
+      expect.objectContaining({
+        type: "tool_result",
+        name: "web_fetch",
+        toolCallId: "srvtoolu-fetch",
+        content: "# Example Domain\n\n[Source](https://example.com)",
+        data: expect.objectContaining({
+          responseType: "text",
+          providerResult: expect.objectContaining({ url: "https://example.com" }),
+        }),
+      }),
+      expect.objectContaining({
+        type: "tool_use",
+        name: "code_execution",
+        toolCallId: "srvtoolu-code",
+        input: { code: "print(6 * 7)" },
+      }),
+      expect.objectContaining({
+        type: "tool_result",
+        name: "code_execution",
+        toolCallId: "srvtoolu-code",
+        content: "**Standard output**\n\n```text\n42\n```\n\nExit code: 0",
+        data: expect.objectContaining({
+          responseType: "text",
+          providerResult: expect.objectContaining({ stdout: "42\n", return_code: 0 }),
+        }),
+      }),
     ]);
   });
 });

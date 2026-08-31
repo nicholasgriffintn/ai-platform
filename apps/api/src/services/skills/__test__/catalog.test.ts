@@ -28,7 +28,7 @@ import {
   isSkillResourceWithinLoadLimit,
   MAX_SKILL_RESOURCE_CONTENT_BYTES,
 } from "../response";
-import { getSkillSuggestedToolNames } from "../suggested-tools";
+import { getSkillSuggestedToolNames, mergeSkillSuggestedToolNames } from "../suggested-tools";
 
 const skillsRoot = new URL("../../../data-model/skills/", import.meta.url);
 
@@ -276,5 +276,35 @@ describe("built-in skill catalogue", () => {
 
     expect(getSkillSuggestedToolNames(skills)).toContain("web_search");
     expect(getSkillSuggestedToolNames(skills)).not.toContain("run_council");
+  });
+
+  it("defers skill tools when the provider can search for them", async () => {
+    const skills = await listSkillAvailability({
+      scope: "personal",
+      modelCapabilities: { supportsToolCalls: true },
+    });
+
+    expect(
+      mergeSkillSuggestedToolNames({
+        enabledTools: ["load_skill", "tool_search"],
+        skills,
+        deferSuggestedTools: true,
+      }),
+    ).toEqual(["load_skill", "tool_search"]);
+  });
+
+  it("does not let skill suggestions override an explicit tool selection", async () => {
+    const skills = await listSkillAvailability({
+      scope: "personal",
+      modelCapabilities: { supportsToolCalls: true },
+    });
+
+    expect(
+      mergeSkillSuggestedToolNames({
+        enabledTools: ["search_grounding"],
+        skills,
+        deferSuggestedTools: true,
+      }),
+    ).toEqual(["search_grounding"]);
   });
 });

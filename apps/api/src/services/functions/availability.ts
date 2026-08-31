@@ -15,7 +15,11 @@ export function resolveEnabledFunctionToolNames(
   requestedToolNames: readonly string[] | undefined,
   user: Pick<IUser, "id" | "plan_id"> | undefined,
 ): Set<string> {
-  const enabledToolNames = new Set(requestedToolNames ?? []);
+  if (requestedToolNames !== undefined) {
+    return new Set(requestedToolNames);
+  }
+
+  const enabledToolNames = new Set<string>();
 
   for (const toolName of ALWAYS_ENABLED_FUNCTION_TOOLS) {
     enabledToolNames.add(toolName);

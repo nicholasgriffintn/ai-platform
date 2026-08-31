@@ -953,7 +953,7 @@ describe("ChatService streaming", () => {
       model: "gpt-5",
       onProgress: () => {},
       onStateChange: () => {},
-      selectedTools: ["web_fetch", "bad tool", "web_fetch"],
+      selectedTools: ["web_fetch", "code_execution", "tool_search", "bad tool", "web_fetch"],
       signal: new AbortController().signal,
       streamingEnabled: true,
     });
@@ -961,7 +961,7 @@ describe("ChatService streaming", () => {
     const [, request] = fetchMock.mock.calls[0];
     const body = JSON.parse(String(request?.body));
 
-    expect(body.enabled_tools).toEqual(["web_fetch"]);
+    expect(body.enabled_tools).toEqual(["web_fetch", "code_execution", "tool_search"]);
     expect(body.options?.enabled_tools).toBeUndefined();
   });
 

@@ -4,6 +4,7 @@ import z from "zod/v4";
 
 import { formatToolCalls } from "~/lib/chat/tools/execution";
 import { listFunctionTools, resolveFunctionTool, toolRegistry } from "~/services/functions";
+import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
 
 describe("functions tool registry", () => {
   it("registers every function in the tool registry", () => {
@@ -46,6 +47,18 @@ describe("functions tool registry", () => {
     expect(discovery.permissions).toEqual(["read"]);
     expect(names).not.toContain("search_functions");
     expect(names).not.toContain("get_function_schema");
+  });
+
+  it("keeps an explicit tool selection authoritative", () => {
+    const enabled = resolveEnabledFunctionToolNames(["search_grounding"], {
+      id: 1,
+      plan_id: "pro",
+    });
+
+    expect([...enabled]).toEqual(["search_grounding"]);
+    expect(enabled.has(CAPABILITY_DISCOVERY_TOOL_NAME)).toBe(false);
+    expect(enabled.has("load_skill")).toBe(false);
+    expect(enabled.has("trigger_recipe")).toBe(false);
   });
 
   it("registers exact task lookup as a read-only project tool", () => {

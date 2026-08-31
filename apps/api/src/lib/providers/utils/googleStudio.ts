@@ -1,14 +1,20 @@
+import { parseToolCallArguments } from "@ngriffin_uk/polychat-library-agent-core";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
 import type { ChatCompletionParameters, ReasoningEffortLevel } from "~/types";
+import { hasAnyEnabledTool } from "~/utils/enabledTools";
 import { coerceStringArray, isRecord, omitUndefinedValues } from "~/utils/objects";
 import { readOptionBag, readRecordOption } from "~/utils/options";
 import { createSamplingParameters, getEffectiveMaxTokens } from "~/utils/parameters";
+
+import { readGoogleThoughtSignature } from "./googleThoughtSignatures";
 
 const DEFAULT_TTS_VOICE = "Kore";
 const GEMINI_THINKING_LEVELS = new Set<ReasoningEffortLevel>(["low", "medium", "high"]);
 
 type GoogleResponseModality = "TEXT" | "IMAGE" | "AUDIO";
+type GoogleStudioContentParameters = Pick<ChatCompletionParameters, "messages">;
+type GoogleStudioToolParameters = Pick<ChatCompletionParameters, "enabled_tools" | "tools">;
 
 export const GOOGLE_STUDIO_SAFETY_SETTINGS = [
   {
@@ -31,11 +37,73 @@ export function formatGoogleStudioModelResource(model: string): string {
   return `models/${model}`;
 }
 
-export function formatGoogleStudioContents(params: ChatCompletionParameters): any[] {
-  return params.messages.map((message) => ({
-    role: message.role === "assistant" ? "model" : message.role,
-    parts: message.parts,
-  }));
+export function formatGoogleStudioContents(params: GoogleStudioContentParameters): any[] {
+  return (params.messages || []).map((message) => {
+    if (message.role === "tool") {
+      const output =
+        typeof message.content === "string" ? message.content : JSON.stringify(message.content);
+
+      if (!message.name) {
+        return {
+          role: "user",
+          parts: [{ text: output }],
+        };
+      }
+
+      return {
+        role: "user",
+        parts: [
+          {
+            functionResponse: omitUndefinedValues({
+              id: message.tool_call_id,
+              name: message.name,
+              response: { output },
+            }),
+          },
+        ],
+      };
+    }
+
+    const parts = [...(message.parts || [])];
+
+    if (message.role === "assistant") {
+      const functionCallParts = (message.tool_calls || []).flatMap((toolCall) => {
+        const call = isRecord(toolCall.function) ? toolCall.function : undefined;
+        const name = call && typeof call.name === "string" ? call.name : undefined;
+
+        if (!name) {
+          return [];
+        }
+
+        return [
+          {
+            ...omitUndefinedValues({
+              thoughtSignature: readGoogleThoughtSignature(toolCall),
+            }),
+            functionCall: omitUndefinedValues({
+              id: typeof toolCall.id === "string" ? toolCall.id : undefined,
+              name,
+              args: parseToolCallArguments(call.arguments),
+            }),
+          },
+        ];
+      });
+
+      if (functionCallParts.length > 0) {
+        const nonEmptyParts = parts.filter((part) => !(isRecord(part) && part.text === ""));
+
+        return {
+          role: "model",
+          parts: [...nonEmptyParts, ...functionCallParts],
+        };
+      }
+    }
+
+    return {
+      role: message.role === "assistant" ? "model" : "user",
+      parts,
+    };
+  });
 }
 
 export function buildGoogleStudioSystemInstruction(
@@ -56,7 +124,7 @@ export function buildGoogleStudioSystemInstruction(
 }
 
 export function buildGoogleStudioTools(
-  params: ChatCompletionParameters,
+  params: GoogleStudioToolParameters,
   modelConfig: ModelConfigItem,
 ): Record<string, unknown>[] | undefined {
   return new GoogleStudioToolBuilder(params, modelConfig).build();
@@ -67,12 +135,10 @@ class GoogleStudioToolBuilder {
   private readonly tools: Record<string, unknown>[] = [];
 
   constructor(
-    private readonly params: ChatCompletionParameters,
+    private readonly params: GoogleStudioToolParameters,
     private readonly modelConfig: ModelConfigItem,
   ) {
-    this.enabledTools = (params.enabled_tools || []).filter(
-      (tool) => !(tool === "web_search" && modelConfig.supportsSearchGrounding),
-    );
+    this.enabledTools = params.enabled_tools || [];
   }
 
   build(): Record<string, unknown>[] | undefined {
@@ -94,7 +160,10 @@ class GoogleStudioToolBuilder {
       this.tools.push({ google_search: {} });
     }
 
-    if (this.modelConfig.supportsUrlContext && this.enabledTools.includes("url_context")) {
+    if (
+      this.modelConfig.supportsUrlContext &&
+      hasAnyEnabledTool(this.enabledTools, "web_fetch", "url_context")
+    ) {
       this.tools.push({ url_context: {} });
     }
   }
@@ -108,11 +177,12 @@ class GoogleStudioToolBuilder {
       functionDeclarations: this.params.tools.map((tool) => ({
         name: tool.function.name,
         description: tool.function.description,
-        parameters: omitUndefinedValues({
-          type: tool.function.parameters?.type,
-          properties: tool.function.parameters?.properties,
-          required: tool.function.parameters?.required ?? tool.function.required,
-        }),
+        parametersJsonSchema: tool.function.parameters
+          ? omitUndefinedValues({
+              ...tool.function.parameters,
+              required: tool.function.parameters.required ?? tool.function.required,
+            })
+          : undefined,
       })),
     });
   }

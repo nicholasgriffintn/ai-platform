@@ -93,12 +93,13 @@ export function ResponseView({
   });
 
   if (typeof result.status === "string" && FAILURE_STATUSES.has(result.status.toLowerCase())) {
-    const hasPayload = responseData !== null && responseData !== undefined;
+    const hasStructuredPayload =
+      responseData !== null && responseData !== undefined && typeof responseData !== "string";
 
     return (
       <ToolErrorView
         message={readErrorMessage(result)}
-        details={hasPayload ? <JsonView data={responseData} /> : undefined}
+        details={hasStructuredPayload ? <JsonView data={responseData} /> : undefined}
       />
     );
   }

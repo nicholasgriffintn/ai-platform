@@ -22,7 +22,15 @@ function MenuToggleButton({
     <button
       type="button"
       disabled={isDisabled}
-      onClick={onToggle}
+      onPointerDown={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onToggle();
+      }}
       aria-label={label}
       className={cn(
         "flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors",

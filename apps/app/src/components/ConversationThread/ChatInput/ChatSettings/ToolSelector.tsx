@@ -2,6 +2,7 @@ import { ToolSelectorPopover } from "@ngriffin_uk/polychat-component-conversatio
 import {
   filterTools,
   getAvailableToolCategories,
+  getSelectedCatalogToolIds,
   type ToolCategoryFilter,
 } from "@ngriffin_uk/polychat-library-chat/tool-filters";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -18,16 +19,20 @@ export const ToolSelector = ({ isDisabled = false }: { isDisabled?: boolean }) =
     useToolsStore();
   const hasInitialisedDefaultTools = useRef(defaultTools.length > 0);
 
-  const tools = toolsData || [];
+  const tools = useMemo(() => toolsData || [], [toolsData]);
   const categories = useMemo(() => getAvailableToolCategories(tools), [tools]);
+  const selectedCatalogTools = useMemo(
+    () => getSelectedCatalogToolIds(tools, selectedTools),
+    [selectedTools, tools],
+  );
   const visibleTools = useMemo(
     () =>
       filterTools(tools, {
         category,
         query,
-        selectedToolIds: selectedTools,
+        selectedToolIds: selectedCatalogTools,
       }),
-    [category, query, selectedTools, tools],
+    [category, query, selectedCatalogTools, tools],
   );
 
   useEffect(() => {
@@ -66,7 +71,7 @@ export const ToolSelector = ({ isDisabled = false }: { isDisabled?: boolean }) =
       query={query}
       onQueryChange={setQuery}
       onResetFilters={resetFilters}
-      selectedTools={selectedTools}
+      selectedTools={selectedCatalogTools}
       defaultTools={defaultTools}
       onToggleTool={toggleTool}
       onResetToDefaults={resetToDefaults}

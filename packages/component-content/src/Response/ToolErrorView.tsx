@@ -1,6 +1,8 @@
 import { AlertTriangle } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { MemoizedMarkdown } from "../markdown";
+
 interface ToolErrorViewProps {
   message: string;
   details?: ReactNode;
@@ -17,7 +19,9 @@ export function ToolErrorView({ message, details }: ToolErrorViewProps) {
           className="mt-0.5 h-4 w-4 shrink-0 text-red-600 dark:text-red-400"
           aria-hidden="true"
         />
-        <p className="min-w-0 break-words text-red-800 dark:text-red-200">{message}</p>
+        <MemoizedMarkdown className="min-w-0 break-words text-red-800 dark:text-red-200">
+          {message}
+        </MemoizedMarkdown>
       </div>
       {details && (
         <details className="pl-6">

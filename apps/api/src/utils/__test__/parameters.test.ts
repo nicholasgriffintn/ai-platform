@@ -80,6 +80,69 @@ describe("getToolsForProvider", () => {
     expect(names).toContain("update_plan");
     expect(names).not.toContain("finish");
   });
+
+  it("does not re-add disabled catalogue tools from the supplied definitions", () => {
+    const names = toolNames(
+      getToolsForProvider(
+        {
+          model: "gemini-flash-latest",
+          mode: "normal",
+          enabled_tools: ["get_weather"],
+          tools: [
+            {
+              type: "function",
+              function: {
+                name: "get_weather",
+                description: "Get weather",
+                parameters: { type: "object", properties: {} },
+              },
+            },
+            {
+              type: "function",
+              function: {
+                name: "default_api:web_search",
+                description: "Search the web",
+                parameters: { type: "object", properties: {} },
+              },
+            },
+          ],
+        },
+        modelConfig,
+        "google-ai-studio",
+      ).tools,
+    );
+
+    expect(names.filter((name) => name === "get_weather")).toHaveLength(1);
+    expect(names).not.toContain("web_search");
+    expect(names).not.toContain("default_api:web_search");
+  });
+
+  it("keeps first-party web search independent from native search grounding", () => {
+    const names = toolNames(
+      getToolsForProvider(
+        {
+          model: "third-party-model",
+          mode: "normal",
+          enabled_tools: ["web_search"],
+          tools: [
+            {
+              type: "function",
+              function: {
+                name: "default_api:web_search",
+                description: "Search the web",
+                parameters: { type: "object", properties: {} },
+              },
+            },
+          ],
+        },
+        modelConfig,
+        "openai",
+      ).tools,
+    );
+
+    expect(names).toContain("web_search");
+    expect(names).not.toContain("default_api:web_search");
+  });
 });
 
 describe("shouldEnableStreaming", () => {

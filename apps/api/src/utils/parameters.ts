@@ -12,6 +12,7 @@ import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { omitNullishValues } from "~/utils/objects";
 import { resolveRequestUser } from "~/utils/requestUser";
+import { getCatalogueToolName } from "~/utils/toolNames";
 
 import { formatToolCalls } from "../lib/chat/tools/execution";
 import { resolveReasoningModel } from "../lib/providers/models/reasoning";
@@ -312,6 +313,12 @@ export function getToolsForProvider(
 
     if (params.tools) {
       const providedTools = params.tools;
+      const catalogueToolNames = new Set(availableTools.map((tool) => tool.name));
+      const providedCustomTools = providedTools.filter((tool) => {
+        const name = getCatalogueToolName(tool);
+
+        return !name || !catalogueToolNames.has(name);
+      });
       const filteredFunctions = availableTools
         .filter((func) => enabledTools.has(func.name))
         .filter(
@@ -325,13 +332,10 @@ export function getToolsForProvider(
               requireApprovalFor: params.require_approval_for,
               enforceModePolicy: params.enforce_mode_tool_policy,
             }).allowed,
-        )
-        .filter(
-          (func) => func.name !== "web_search" || Boolean(modelConfig?.supportsSearchGrounding),
         );
       const availableToolDeclarations = formatToolCalls(providerName, filteredFunctions);
 
-      tools = [...availableToolDeclarations, ...providedTools];
+      tools = [...availableToolDeclarations, ...providedCustomTools];
     } else {
       const filteredFunctions = availableTools
         .filter((func) => enabledTools.has(func.name))

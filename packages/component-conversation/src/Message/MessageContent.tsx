@@ -20,6 +20,7 @@ import {
 } from "@ngriffin_uk/polychat-library-chat/message-utils";
 import { formattedMessageContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import {
+  getResolvedToolUseIndexes,
   isHiddenToolResultPart,
   resolveToolResultPartDisplay,
 } from "@ngriffin_uk/polychat-library-chat/tool-results";
@@ -381,15 +382,14 @@ export const MessageContent = memo((props: MessageContentProps) => {
 
     const messageParts = Array.isArray(message.parts) ? message.parts : [];
     const toolInputsByCallId = new Map<string, unknown>();
-    const resolvedToolCallIds = new Set<string>();
+    const resolvedToolUseIndexes = getResolvedToolUseIndexes(
+      messageParts,
+      conversationResolvedToolCallIds,
+    );
 
     for (const part of messageParts) {
       if (part.type === "tool_use" && part.toolCallId) {
         toolInputsByCallId.set(part.toolCallId, part.input);
-      }
-
-      if (part.type === "tool_result" && part.toolCallId) {
-        resolvedToolCallIds.add(part.toolCallId);
       }
     }
 
@@ -448,12 +448,9 @@ export const MessageContent = memo((props: MessageContentProps) => {
             }
 
             if (part.type === "tool_use") {
-              const resolved =
-                part.toolCallId &&
-                (resolvedToolCallIds.has(part.toolCallId) ||
-                  conversationResolvedToolCallIds.has(part.toolCallId));
-
-              return resolved ? null : renderPendingToolUsePart(part, index);
+              return resolvedToolUseIndexes.has(index)
+                ? null
+                : renderPendingToolUsePart(part, index);
             }
 
             if (part.type === "tool_result") {

@@ -14,6 +14,15 @@ export function getAvailableToolCategories(tools: readonly Tool[]): ToolCategory
   return toolCategories.filter((category) => availableCategories.has(category));
 }
 
+export function getSelectedCatalogToolIds(
+  tools: readonly Tool[],
+  selectedToolIds: readonly string[],
+): string[] {
+  const catalogToolIds = new Set(tools.map((tool) => tool.id));
+
+  return selectedToolIds.filter((toolId) => catalogToolIds.has(toolId));
+}
+
 export function filterTools(
   tools: readonly Tool[],
   { category, query, selectedToolIds }: ToolFilterOptions,

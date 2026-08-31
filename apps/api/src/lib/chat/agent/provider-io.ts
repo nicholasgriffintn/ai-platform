@@ -4,6 +4,7 @@ import {
   type AgentToolCall,
 } from "@ngriffin_uk/polychat-library-agent-core";
 
+import { normaliseMessageParts } from "~/lib/chat/messages/parts";
 import type { Message, MessageContent } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -24,6 +25,8 @@ export interface AgentModelToolCall {
 
 export interface AgentModelResponse {
   response?: string;
+  thinking?: string;
+  parts?: Message["parts"];
   tool_calls?: AgentModelToolCall[];
   citations?: string[] | null;
   data?: unknown;
@@ -127,6 +130,8 @@ class AgentProviderIO {
 
     return {
       response: resolveModelResponseText(value.response),
+      thinking: typeof value.thinking === "string" ? value.thinking : undefined,
+      parts: normaliseMessageParts(value.parts),
       tool_calls: toolCalls,
       citations,
       data: value.data,

@@ -21,7 +21,7 @@ import {
   SquarePen,
 } from "lucide-react";
 import { useCallback, useState } from "react";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 
 import type { CanvasStudioState } from "~/components/Canvas/useCanvasStudio";
 import { useTrackEvent } from "~/hooks/use-track-event";
@@ -32,6 +32,10 @@ import {
   useUpdateChatTitle,
 } from "~/hooks/useChat";
 import { buildConversationGroups } from "~/lib/conversation-groups";
+import {
+  getPersonalConversationPath,
+  resolvePersonalConversationId,
+} from "~/lib/conversation-route";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import { useUIStore } from "~/state/stores/uiStore";
@@ -52,8 +56,10 @@ export const ChatSidebar = ({
 }: ChatSidebarProps) => {
   const { trackEvent } = useTrackEvent();
   const navigate = useNavigate();
-  const { pathname } = useLocation();
-  const isConversationRoute = pathname === "/" || pathname === "/chat";
+  const { pathname, search } = useLocation();
+  const { completionId } = useParams<"completionId">();
+  const routedConversationId = resolvePersonalConversationId(completionId, search);
+  const isConversationRoute = pathname === "/" || pathname === "/chat" || Boolean(completionId);
   const {
     sidebarVisible,
     setSidebarVisible,
@@ -113,7 +119,7 @@ export const ChatSidebar = ({
   const handleNewChatClick = () => {
     clearCurrentConversation();
 
-    if (!isConversationRoute) {
+    if (routedConversationId || !isConversationRoute) {
       void navigate("/chat");
     }
 
@@ -129,10 +135,7 @@ export const ChatSidebar = ({
 
   const handleConversationClick = (id: string | undefined) => {
     setCurrentConversationId(id);
-
-    if (!isConversationRoute) {
-      void navigate(id ? `/chat?completion_id=${encodeURIComponent(id)}` : "/chat");
-    }
+    void navigate(id ? getPersonalConversationPath(id) : "/chat");
 
     trackEvent({
       name: "conversation_click",

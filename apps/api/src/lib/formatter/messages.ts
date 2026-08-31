@@ -176,7 +176,7 @@ export class MessageFormatter {
 
         const toolResultContent = `[Tool Response: ${
           message.name || "unknown"
-        }] ${typeof content === "string" ? content : JSON.stringify(content)} ${
+        }] ${typeof content === "string" ? content : JSON.stringify(content)}${
           stringifiedData ? `\n\nData: ${stringifiedData}` : ""
         }`;
 
@@ -214,6 +214,7 @@ export class MessageFormatter {
 
         const toolMessage: Message = {
           role: "tool",
+          name: message.name,
           content: toolResultContent,
         };
 
@@ -633,12 +634,17 @@ export class MessageFormatter {
 
   private static formatOpenAIResponsesMessagePart(
     part: MessageContent,
+    role: Message["role"],
   ): OpenAIResponsesInputItem | null {
     if (part.type === "text" && part.text) {
       return {
-        type: "input_text",
+        type: role === "assistant" ? "output_text" : "input_text",
         text: part.text,
       };
+    }
+
+    if (role === "assistant") {
+      return null;
     }
 
     if (part.type === "image_url" && part.image_url?.url) {
@@ -778,8 +784,12 @@ export class MessageFormatter {
 
     if (Array.isArray(message.content)) {
       const content = message.content
-        .map((part) => MessageFormatter.formatOpenAIResponsesMessagePart(part))
+        .map((part) => MessageFormatter.formatOpenAIResponsesMessagePart(part, message.role))
         .filter((part): part is OpenAIResponsesInputItem => part !== null);
+
+      if (content.length === 0) {
+        return null;
+      }
 
       return {
         type: "message",

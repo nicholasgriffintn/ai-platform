@@ -113,4 +113,34 @@ describe("current OpenAI model capabilities", () => {
     expect(openaiModelConfig["gpt-5.5-pro"].supportsComputerUse).toBeUndefined();
     expect(openaiModelConfig["gpt-5.5-pro"].supportsToolSearch).toBeUndefined();
   });
+
+  it("requests Luna reasoning summaries and code interpreter outputs by default", () => {
+    const body = buildOpenAIResponsesBody(
+      {
+        ...baseParams,
+        enabled_tools: ["code_execution"],
+        reasoning_effort: "medium",
+      },
+      openaiModelConfig["gpt-5.6-luna"],
+    );
+
+    expect(body.reasoning).toEqual({ effort: "medium", summary: "auto" });
+    expect(body.include).toContain("code_interpreter_call.outputs");
+  });
+
+  it("honours explicit Responses output and reasoning overrides", () => {
+    const body = buildOpenAIResponsesBody(
+      {
+        ...baseParams,
+        enabled_tools: ["code_execution"],
+        include_defaults: false,
+        reasoning_effort: "medium",
+        tool_options: { reasoning: { summary: "detailed" } },
+      },
+      openaiModelConfig["gpt-5.6-luna"],
+    );
+
+    expect(body.reasoning).toEqual({ effort: "medium", summary: "detailed" });
+    expect(body.include).toBeUndefined();
+  });
 });

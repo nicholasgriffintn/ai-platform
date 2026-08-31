@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router";
 
 import { ConversationThread } from "~/components/ConversationThread";
 import type { ConversationThreadModeConfig } from "~/components/ConversationThread";
@@ -12,7 +13,8 @@ interface HomeConversationThreadProps {
 }
 
 export function HomeConversationThread({ urlModeConfig }: HomeConversationThreadProps) {
-  const modeConfig = useConversationLaunchModeConfig(urlModeConfig);
+  const { completionId } = useParams<"completionId">();
+  const modeConfig = useConversationLaunchModeConfig(urlModeConfig, completionId);
   const user = useChatStore((state) => state.user);
   const userSettings = useChatStore((state) => state.userSettings);
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);

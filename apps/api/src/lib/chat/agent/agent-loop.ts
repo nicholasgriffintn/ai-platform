@@ -183,6 +183,7 @@ export async function runAgentLoop(
     model: params.model,
     provider: params.provider,
     userId: params.context?.user?.id,
+    serviceContext: params.context,
     shouldStop: params.shouldStop,
   };
 

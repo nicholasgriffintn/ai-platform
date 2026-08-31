@@ -200,14 +200,21 @@ function buildResponsesReasoningParams(
   modelConfig: ModelConfigItem,
   options: OptionBag,
 ): Record<string, any> {
-  const reasoningOptions = readRecordOption(options, "reasoning");
-  const reasoningEffort = params.reasoning_effort;
+  const { effort: _toolEffort, ...toolReasoningOptions } = readRecordOption(options, "reasoning");
+  const { effort: _requestEffort, ...requestReasoningOptions } = params.reasoning ?? {};
+  const reasoningEffort = params.reasoning_effort ?? params.reasoning?.effort;
   const effort = shouldSendProviderReasoningEffort(modelConfig, reasoningEffort)
     ? reasoningEffort
     : undefined;
   const reasoning = {
-    ...reasoningOptions,
+    ...toolReasoningOptions,
+    ...requestReasoningOptions,
     ...(effort ? { effort } : {}),
+    ...(effort &&
+    toolReasoningOptions.summary === undefined &&
+    toolReasoningOptions.generate_summary === undefined
+      ? { summary: "auto" }
+      : {}),
   };
 
   return Object.keys(reasoning).length ? { reasoning } : {};
@@ -249,7 +256,7 @@ function buildResponsesInclude(
   tools: any[],
 ): string[] | undefined {
   const include = new Set(coerceStringArray(params.include));
-  const includeDefaults = params.include_defaults;
+  const includeDefaults = params.include_defaults !== false;
   const store = getResponsesStoreValue(params, options);
 
   if (

@@ -3,11 +3,11 @@ import { type RouteConfig, index, route } from "@react-router/dev/routes";
 export default [
   index("pages/home.tsx"),
   route("/chat", "pages/chat/layout.tsx", [
-    index("pages/chat/index.tsx"),
     route("capabilities", "pages/chat/capabilities.tsx"),
     route("experiences", "pages/chat/experiences.tsx"),
     route("experiences/:experienceId/*", "pages/chat/experience.tsx"),
     route("tools/:toolId", "pages/chat/tool.tsx"),
+    route(":completionId?", "pages/chat/index.tsx"),
   ]),
   route("/work", "pages/work/layout.tsx", [
     index("pages/work/index.tsx"),

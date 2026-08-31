@@ -154,13 +154,13 @@ class ApiService {
     ...params
   }: Omit<StreamChatCompletionsParams, "selectedTools">): Promise<Message> => {
     const { selectedTools } = useToolsStore.getState();
-    const { isPro } = useChatStore.getState();
+    const { isAuthenticated } = useChatStore.getState();
 
     const assistantMessage = await this.chatService.streamChatCompletions({
       ...params,
-      allowTools: isPro,
-      onProgress: (text, reasoning, toolResponses, done, assistantMessage) => {
-        onProgress(text, reasoning, toolResponses, done, assistantMessage);
+      allowTools: isAuthenticated,
+      onProgress: (text, reasoning, toolResponses, done, streamedAssistantMessage) => {
+        onProgress(text, reasoning, toolResponses, done, streamedAssistantMessage);
       },
       selectedTools,
     });

@@ -1,3 +1,4 @@
+import { readGoogleThoughtSignature } from "~/lib/providers/utils/googleThoughtSignatures";
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
 import { generateId } from "~/utils/id";
 
@@ -105,6 +106,10 @@ export class StreamingFormatter {
    * @returns The extracted thinking
    */
   static extractThinkingFromChunk(data: any, currentEventType = "") {
+    if (data.type === "response.reasoning_summary_text.delta" && typeof data.delta === "string") {
+      return data.delta;
+    }
+
     if (
       currentEventType === "content_block_delta" &&
       data.delta?.type === "thinking_delta" &&
@@ -220,8 +225,11 @@ export class StreamingFormatter {
       const toolCalls = parts
         .filter((part: any) => part.functionCall)
         .map((part: any) => ({
-          id: `call_${generateId()}`,
+          id: part.functionCall.id || `call_${generateId()}`,
           type: "function",
+          ...(readGoogleThoughtSignature(part)
+            ? { thought_signature: readGoogleThoughtSignature(part) }
+            : {}),
           function: {
             name: part.functionCall.name,
             arguments: JSON.stringify(part.functionCall.args || {}),
