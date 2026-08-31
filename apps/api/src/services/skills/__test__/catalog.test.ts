@@ -111,7 +111,7 @@ describe("built-in skill catalogue", () => {
     }
 
     const resources = skill.resources ?? [];
-    const skillResponse = createSkillInstructionsResponse(skill, resources);
+    const skillResponse = createSkillInstructionsResponse(skill, resources, ["create_image"]);
     const resourceResponse = createSkillResourceResponse("artifacts", resource, resources);
 
     expect(skillResponse.content).toContain('<skill_content name="artifacts">');
@@ -120,6 +120,7 @@ describe("built-in skill catalogue", () => {
       responseType: "hidden",
       skill: "artifacts",
       resources,
+      activatedTools: ["create_image"],
     });
     expect(resourceResponse.data).toEqual({
       responseType: "hidden",

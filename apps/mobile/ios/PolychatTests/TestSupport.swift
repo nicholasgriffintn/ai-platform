@@ -94,18 +94,6 @@ final class ModelsAPIClientStub: ModelsAPIClient {
     }
 }
 
-final class ToolsAPIClientStub: ToolsAPIClient {
-    var result: Result<[ToolDefinition], Error>
-
-    init(result: Result<[ToolDefinition], Error>) {
-        self.result = result
-    }
-
-    func fetchTools() async throws -> [ToolDefinition] {
-        try result.get()
-    }
-}
-
 final class ConversationAPIClientStub: ConversationAPIClient {
     var streamEvents: [ChatStreamEvent] = []
     var streamedMessages: [ChatMessage] = []

@@ -1,11 +1,14 @@
 import type { Tool } from "@ngriffin_uk/polychat-schemas";
 
 import { listFunctionTools } from "~/services/functions";
+import { resolveManagedFunctionToolNames } from "~/services/functions/availability";
 import { formatFunctionName } from "~/utils/functions";
 
 import { getToolCategory } from "./toolCategories";
 
 export function getAvailableTools(isPro = false, isSignedIn = false): Tool[] {
+  const managedToolNames = new Set(resolveManagedFunctionToolNames({ isSignedIn }));
+
   return listFunctionTools()
     .filter((tool) => {
       if (tool.type === "premium" && !isPro) {
@@ -23,6 +26,6 @@ export function getAvailableTools(isPro = false, isSignedIn = false): Tool[] {
       name: formatFunctionName(tool.name),
       description: tool.description,
       category: getToolCategory(tool.name),
-      isDefault: isPro ? tool.isDefault || false : false,
+      isDefault: managedToolNames.has(tool.name),
     }));
 }

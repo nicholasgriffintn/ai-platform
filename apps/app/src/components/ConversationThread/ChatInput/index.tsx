@@ -854,11 +854,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
           }
           footerEnd={
             hideDefaultControls || hideChatSettings ? undefined : (
-              <ChatSettingsComponent
-                isDisabled={isLoading}
-                toolSelectionLocked={isToolSelectionLocked}
-                supportsToolCalls={supportsToolCalls}
-              />
+              <ChatSettingsComponent isDisabled={isLoading} />
             )
           }
         />

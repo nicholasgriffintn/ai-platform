@@ -19,6 +19,8 @@ export interface DiscoverableFunctionTool {
 }
 
 export interface CapabilityDiscoverySources {
+  /** Function tools the current tool policy would let this turn activate, internal ones included. */
+  activatableToolIds: ReadonlySet<string>;
   connectors: readonly RecipeConnectorManifest[];
   enabledToolIds: ReadonlySet<string>;
   installations: readonly RecipeInstallation[];
@@ -31,6 +33,24 @@ export interface CapabilityDiscoverySources {
 
 const RECIPE_TRIGGER_TOOL_NAME = "trigger_recipe";
 const CONNECTOR_EXECUTION_TOOL_NAME = "use_recipe_connector";
+
+type CapabilityActivationAccess = Pick<
+  CapabilityDiscoverySources,
+  "activatableToolIds" | "enabledToolIds"
+>;
+
+/**
+ * A ready recipe or connector is useless unless the tool that runs it is switched on, so discovery
+ * activates it for the rest of the response the same way it does a directly discovered tool.
+ */
+function resolveAutoActivation(
+  toolName: string,
+  access: CapabilityActivationAccess,
+): { autoActivate: true } | Record<string, never> {
+  return !access.enabledToolIds.has(toolName) && access.activatableToolIds.has(toolName)
+    ? { autoActivate: true }
+    : {};
+}
 
 export interface CapabilityDiscoveryFilters {
   configured?: boolean;
@@ -84,6 +104,7 @@ function createToolItem(
 function createConnectorItem(
   connector: RecipeConnectorManifest,
   isPro: boolean,
+  access: CapabilityActivationAccess,
 ): CapabilityDiscoveryItem {
   const tags = [
     "connector",
@@ -122,6 +143,7 @@ function createConnectorItem(
       invocation: {
         toolName: CONNECTOR_EXECUTION_TOOL_NAME,
         availableNow: true,
+        ...resolveAutoActivation(CONNECTOR_EXECUTION_TOOL_NAME, access),
         instruction: `Call ${CONNECTOR_EXECUTION_TOOL_NAME} with provider "${connector.id}" and a useCase first, then call it again with the returned operation and sessionId.`,
       },
     };
@@ -164,6 +186,7 @@ function createConnectorItem(
 }
 
 function createRecipeItem(params: {
+  access: CapabilityActivationAccess;
   recipe: AssistantRecipe;
   installation?: RecipeInstallation;
   isPro: boolean;
@@ -228,6 +251,7 @@ function createRecipeItem(params: {
       invocation: {
         toolName: RECIPE_TRIGGER_TOOL_NAME,
         availableNow: true,
+        ...resolveAutoActivation(RECIPE_TRIGGER_TOOL_NAME, params.access),
         instruction: `Call ${RECIPE_TRIGGER_TOOL_NAME} with recipeId "${recipe.id}" and pass the user's request as input.`,
       },
     };
@@ -305,12 +329,15 @@ export function discoverAssistantCapabilities(
     ...sources.tools.map((tool) => createToolItem(tool, sources)),
     ...sources.recipes.map((recipe) =>
       createRecipeItem({
+        access: sources,
         recipe,
         installation: ownInstallations.get(recipe.id),
         isPro: sources.isPro,
       }),
     ),
-    ...sources.connectors.map((connector) => createConnectorItem(connector, sources.isPro)),
+    ...sources.connectors.map((connector) =>
+      createConnectorItem(connector, sources.isPro, sources),
+    ),
   ];
   const allowedKinds = filters.kinds?.length ? new Set(filters.kinds) : null;
   const matches = items

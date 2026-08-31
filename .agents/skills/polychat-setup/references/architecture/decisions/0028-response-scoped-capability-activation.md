@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted. Extended by [ADR 0029](0029-server-managed-tool-selection.md).
 
 ## Context
 

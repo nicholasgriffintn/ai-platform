@@ -28,6 +28,7 @@ public struct ChatCompletionRequest: Encodable {
     let reasoningEffort: String?
     let verbosity: String?
     let enabledTools: [String]?
+    let toolSelectionMode: String
 
     enum CodingKeys: String, CodingKey {
         case messages, model, provider, platform, mode, store, stream, temperature, reasoning, verbosity, options
@@ -40,6 +41,7 @@ public struct ChatCompletionRequest: Encodable {
         case ragOptions = "rag_options"
         case reasoningEffort = "reasoning_effort"
         case enabledTools = "enabled_tools"
+        case toolSelectionMode = "tool_selection_mode"
     }
 
     public init(
@@ -71,6 +73,9 @@ public struct ChatCompletionRequest: Encodable {
         self.reasoningEffort = settings?.reasoningEffort?.rawValue
         self.verbosity = settings?.verbosity?.rawValue
         self.enabledTools = settings?.enabledTools.isEmpty == false ? settings?.enabledTools : nil
+        // The app never picks everyday tools itself; the server owns that and capability discovery
+        // switches on whatever a turn actually needs.
+        self.toolSelectionMode = "managed"
     }
 }
 
@@ -271,14 +276,6 @@ public struct ModelConfigItem: Codable, Identifiable {
 }
 
 public typealias ModelsResponse = [String: ModelConfigItem]
-
-public struct ToolDefinition: Codable, Identifiable, Equatable {
-    public let id: String
-    public let name: String
-    public let description: String
-    public let isDefault: Bool?
-}
-
 
 public struct AssistantRecipesResponse: Codable {
     public let recipes: [AssistantRecipe]

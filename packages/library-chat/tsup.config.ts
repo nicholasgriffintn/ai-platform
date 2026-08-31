@@ -18,7 +18,6 @@ export default defineConfig({
     "src/composer-commands.ts",
     "src/tool-results.ts",
     "src/weather.ts",
-    "src/tool-filters.ts",
     "src/message-utils.ts",
     "src/markdown-editor.ts",
     "src/agent-trace.ts",

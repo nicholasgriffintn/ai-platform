@@ -35,6 +35,13 @@ export const toolIdSchema = z.string().regex(TOOL_ID_PATTERN);
 export const toolIdsSchema = z.array(toolIdSchema);
 
 /**
+ * Managed selection lets the server own which function tools a turn starts with, so a surface
+ * without a tool picker still gets discovery plus the everyday baseline. Explicit selection keeps
+ * the caller's list exactly as sent.
+ */
+export const toolSelectionModeSchema = z.enum(["managed", "explicit"]);
+
+/**
  * A tool a person can run directly from the interface, rather than waiting for a model to
  * call it. The form is derived from the tool's own input schema, so it stays in step with
  * what the model sees.
@@ -70,5 +77,6 @@ export const toolsResponseSchema = z.object({
 export type Tool = z.infer<typeof toolSchema>;
 export type ToolCategory = z.infer<typeof toolCategorySchema>;
 export type ToolId = z.infer<typeof toolIdSchema>;
+export type ToolSelectionMode = z.infer<typeof toolSelectionModeSchema>;
 export type RunnableTool = z.infer<typeof runnableToolSchema>;
 export type RunnableToolResponse = z.infer<typeof runnableToolResponseSchema>;

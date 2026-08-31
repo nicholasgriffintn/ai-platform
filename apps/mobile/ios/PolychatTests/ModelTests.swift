@@ -286,6 +286,7 @@ struct ModelTests {
         #expect(json["use_rag"] == nil)
         #expect(json["rag_options"] == nil)
         #expect(json["enabled_tools"] == nil)
+        #expect(json["tool_selection_mode"] as? String == "managed")
     }
 
     @Test func chatCompletionRequestExcludesCompactionMarkers() throws {

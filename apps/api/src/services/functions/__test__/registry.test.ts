@@ -3,8 +3,17 @@ import { describe, expect, it } from "vitest";
 import z from "zod/v4";
 
 import { formatToolCalls } from "~/lib/chat/tools/execution";
-import { listFunctionTools, resolveFunctionTool, toolRegistry } from "~/services/functions";
-import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
+import {
+  expandFunctionToolNames,
+  listFunctionTools,
+  resolveFunctionTool,
+  toolRegistry,
+} from "~/services/functions";
+import {
+  resolveEnabledFunctionToolNames,
+  resolveManagedFunctionToolNames,
+  resolveRequestFunctionToolNames,
+} from "~/services/functions/availability";
 
 describe("functions tool registry", () => {
   it("registers every function in the tool registry", () => {
@@ -39,14 +48,74 @@ describe("functions tool registry", () => {
     expect(names.some((name) => name.startsWith("zeplin_"))).toBe(false);
   });
 
-  it("registers capability discovery as a default read-only tool", () => {
+  it("registers capability discovery as a read-only tool", () => {
     const discovery = resolveFunctionTool(CAPABILITY_DISCOVERY_TOOL_NAME);
     const names = listFunctionTools().map((tool) => tool.name);
 
-    expect(discovery.isDefault).toBe(true);
     expect(discovery.permissions).toEqual(["read"]);
     expect(names).not.toContain("search_functions");
     expect(names).not.toContain("get_function_schema");
+  });
+
+  it("keeps the managed baseline to discovery plus everyday tools", () => {
+    const signedOut = resolveManagedFunctionToolNames({ isSignedIn: false });
+    const signedIn = resolveManagedFunctionToolNames({ isSignedIn: true });
+
+    expect(signedOut).toEqual([CAPABILITY_DISCOVERY_TOOL_NAME, "load_skill"]);
+    expect(signedIn).toEqual([CAPABILITY_DISCOVERY_TOOL_NAME, "load_skill", "web_search"]);
+    expect(signedIn).not.toContain("trigger_recipe");
+  });
+
+  it("tops a managed request up with the baseline without dropping configured tools", () => {
+    const enabled = resolveRequestFunctionToolNames({
+      requestedToolNames: ["code_execution", "run_council"],
+      toolSelectionMode: "managed",
+      user: { id: 1, plan_id: "pro" },
+    });
+
+    expect(enabled).toEqual([
+      "code_execution",
+      "run_council",
+      CAPABILITY_DISCOVERY_TOOL_NAME,
+      "load_skill",
+      "web_search",
+    ]);
+  });
+
+  it("keeps a project authoritative over everything but discovery", () => {
+    const enabled = resolveRequestFunctionToolNames({
+      projectTools: ["create_note", "load_skill"],
+      requestedToolNames: ["create_note", "run_council"],
+      toolSelectionMode: "managed",
+      user: { id: 1, plan_id: "pro" },
+    });
+
+    expect(enabled).toEqual(["create_note", CAPABILITY_DISCOVERY_TOOL_NAME, "load_skill"]);
+  });
+
+  it("leaves an explicit request untouched", () => {
+    expect(
+      resolveRequestFunctionToolNames({
+        requestedToolNames: ["run_council"],
+        toolSelectionMode: "explicit",
+        user: { id: 1, plan_id: "pro" },
+      }),
+    ).toEqual(["run_council"]);
+    expect(
+      resolveRequestFunctionToolNames({
+        requestedToolNames: undefined,
+        toolSelectionMode: undefined,
+        user: { id: 1, plan_id: "pro" },
+      }),
+    ).toBeUndefined();
+  });
+
+  it("activates companion tools alongside a discovered tool", () => {
+    expect(expandFunctionToolNames(["run_pashi_tools"])).toEqual([
+      "run_pashi_tools",
+      "search_pashi_tools",
+    ]);
+    expect(expandFunctionToolNames(["web_search"])).toEqual(["web_search"]);
   });
 
   it("keeps an explicit tool selection authoritative", () => {

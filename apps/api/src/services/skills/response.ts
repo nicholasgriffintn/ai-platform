@@ -1,4 +1,5 @@
 import {
+  RESPONSE_TOOL_ACTIVATION_DATA_KEY,
   ResponseDisplayType,
   SKILL_LOAD_TOOL_NAME,
   type SkillResourceSummary,
@@ -48,6 +49,7 @@ export function formatSkillResource(skillName: string, resource: SkillResource):
 export function createSkillInstructionsResponse(
   skill: SkillContent,
   resources: SkillResourceSummary[],
+  activatedTools: readonly string[] = [],
 ): IFunctionResponse {
   return {
     status: "success",
@@ -57,6 +59,7 @@ export function createSkillInstructionsResponse(
       responseType: ResponseDisplayType.HIDDEN,
       skill: skill.name,
       resources,
+      [RESPONSE_TOOL_ACTIVATION_DATA_KEY]: [...activatedTools],
     },
   };
 }

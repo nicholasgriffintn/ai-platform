@@ -36,25 +36,6 @@ struct ServiceStoreTests {
     }
 
     @MainActor
-    @Test func toolsStoreFetchesToolsAndReportsErrors() async {
-        let tool = ToolDefinition(id: "web", name: "Web", description: "Search", isDefault: true)
-        let store = ToolsStore(apiClient: ToolsAPIClientStub(result: .success([tool])))
-
-        await store.fetchTools()
-
-        #expect(store.tools == [tool])
-        #expect(store.error == nil)
-        #expect(!store.isLoading)
-
-        let failingStore = ToolsStore(apiClient: ToolsAPIClientStub(result: .failure(TestFailure.forced)))
-        await failingStore.fetchTools()
-
-        #expect(failingStore.tools.isEmpty)
-        #expect(failingStore.error?.contains("Failed to fetch tools") == true)
-        #expect(!failingStore.isLoading)
-    }
-
-    @MainActor
     @Test func conversationManagerStreamsAssistantMessageAndGeneratesTitle() async throws {
         let apiClient = ConversationAPIClientStub()
         apiClient.streamEvents = [
