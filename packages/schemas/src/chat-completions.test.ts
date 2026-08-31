@@ -25,28 +25,6 @@ describe("chat completions schema", () => {
     });
   });
 
-  it("accepts a structured tool interaction resolution", () => {
-    expect(
-      createChatCompletionsJsonSchema.parse({
-        model: "gpt-5",
-        messages,
-        options: {
-          toolInteraction: {
-            toolName: "select_council_members",
-            response: { memberIds: ["sceptic", "operator"] },
-          },
-        },
-      }),
-    ).toMatchObject({
-      options: {
-        toolInteraction: {
-          toolName: "select_council_members",
-          response: { memberIds: ["sceptic", "operator"] },
-        },
-      },
-    });
-  });
-
   it("rejects automatic router mode with an explicit model", () => {
     const result = createChatCompletionsJsonSchema.safeParse({
       model: "gpt-5",

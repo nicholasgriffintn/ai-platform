@@ -607,20 +607,12 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         if (typeof data.input === "string" && data.input.trim()) {
           const approvedToolName =
             typeof data.approvedToolName === "string" ? data.approvedToolName : null;
-          const interactionRequestOptions = mergeChatRequestOptions(modeConfig?.requestOptions, {
-            options: {
-              toolInteraction: {
-                toolName,
-                response: data,
-              },
-            },
-          });
           const requestOptions = approvedToolName
             ? {
-                ...interactionRequestOptions,
+                ...modeConfig?.requestOptions,
                 approved_tools: [approvedToolName],
               }
-            : interactionRequestOptions;
+            : modeConfig?.requestOptions;
 
           void sendMessage(data.input, undefined, requestOptions);
         }

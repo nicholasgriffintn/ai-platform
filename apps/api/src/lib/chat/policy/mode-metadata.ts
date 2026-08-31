@@ -36,16 +36,14 @@ export function buildUserMessageData(
 ): Record<string, unknown> | undefined {
   const conversationMode = buildConversationModeMetadataFromRequestOptions(options);
   const codingTaskType = options?.sandbox?.enabled ? options.sandbox.taskType : undefined;
-  const toolInteraction = options?.toolInteraction;
 
-  if (!conversationMode && !codingTaskType && !toolInteraction) {
+  if (!conversationMode && !codingTaskType) {
     return undefined;
   }
 
   return {
     ...(conversationMode ? { conversationMode } : {}),
     ...(codingTaskType ? { codingTaskType } : {}),
-    ...(toolInteraction ? { toolInteraction } : {}),
   };
 }
 

@@ -18,10 +18,7 @@ import {
   isCompactionLoadingMessage,
 } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
 import { getGoalMessageMarker } from "@ngriffin_uk/polychat-library-chat/message-goal-status";
-import {
-  applyToolInteractionResolutions,
-  isHiddenToolResponse,
-} from "@ngriffin_uk/polychat-library-chat/tool-results";
+import { isHiddenToolResponse } from "@ngriffin_uk/polychat-library-chat/tool-results";
 import {
   createModelReferenceMap,
   EMPTY_MODEL_CONFIG,
@@ -47,8 +44,6 @@ import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { Message } from "~/types";
 
 import { ChatMessage } from "./ChatMessage";
-
-const EMPTY_MESSAGES: Message[] = [];
 
 interface MessageListProps {
   onToolInteraction?: ToolInteractionHandler;
@@ -109,8 +104,7 @@ export const MessageList = ({
     stopEditingMessage,
   } = useChatManager();
 
-  const sourceMessages = propMessages ?? conversation?.messages ?? EMPTY_MESSAGES;
-  const messages = useMemo(() => applyToolInteractionResolutions(sourceMessages), [sourceMessages]);
+  const messages = propMessages || conversation?.messages || [];
   const resolvedToolCallIds = useMemo(() => collectResolvedToolCallIds(messages), [messages]);
   const availableModels = useMemo(
     () => getAvailableModels(apiModels, chatMode === "local", webLLMModels),

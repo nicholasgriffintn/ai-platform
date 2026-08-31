@@ -506,17 +506,7 @@ test.describe("Pro message attachments", () => {
     await homePage.conveneCouncil();
 
     await homePage.waitForResponseText(/E2E response:/);
-    await expect(page.getByText("Council convened", { exact: true })).toBeVisible();
-
-    await homePage.reload();
-    await homePage.openConversation(/Convene a council on the safes/);
-    const selectedMembers = page.getByRole("list", { name: "Selected council members" });
-
-    await expect(page.getByText("Council convened", { exact: true })).toBeVisible();
-    await expect(selectedMembers.getByText("Sceptic", { exact: true })).toBeVisible();
-    await expect(selectedMembers.getByText("Architect", { exact: true })).toBeVisible();
-    await expect(selectedMembers.getByText("Operator", { exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Convene", exact: true })).toHaveCount(0);
+    await expect(page.getByText("Council convened.")).toBeVisible();
     await captureVisualSnapshots(page, "release-chat-council-picker", {
       ...DEFAULT_VISUAL_CHECKPOINTS,
       viewports: [{ name: "desktop", width: 1280, height: 720 }],

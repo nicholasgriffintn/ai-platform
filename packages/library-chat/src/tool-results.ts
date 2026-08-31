@@ -3,8 +3,6 @@ import { isRecord, readOptionalString } from "@ngriffin_uk/polychat-utility-core
 
 import type { Message } from "./conversation-types";
 
-export { applyToolInteractionResolutions } from "./tool-interaction-resolutions";
-
 type ToolResultPart = Extract<NonNullable<Message["parts"]>[number], { type: "tool_result" }>;
 type MessagePart = NonNullable<Message["parts"]>[number];
 

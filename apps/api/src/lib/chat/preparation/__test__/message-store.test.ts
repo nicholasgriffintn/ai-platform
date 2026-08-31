@@ -86,31 +86,6 @@ describe("storeUserTurn", () => {
     expect(storedMessages[0].content).toBe("hello");
   });
 
-  it("stores the tool interaction that resolved the pending result", async () => {
-    const conversationManager = createConversationManager([]);
-
-    await run(
-      conversationManager,
-      baseOptions({
-        options: {
-          toolInteraction: {
-            toolName: "select_council_members",
-            response: { memberIds: ["sceptic", "operator"] },
-          },
-        },
-      }),
-    );
-
-    const [, storedMessages] = conversationManager.addBatch.mock.calls[0];
-
-    expect(storedMessages[0].data).toEqual({
-      toolInteraction: {
-        toolName: "select_council_members",
-        response: { memberIds: ["sceptic", "operator"] },
-      },
-    });
-  });
-
   it("stores attachments as a second message", async () => {
     const conversationManager = createConversationManager([]);
     const lastMessage = userMessage("", {
