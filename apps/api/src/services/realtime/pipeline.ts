@@ -28,20 +28,14 @@ async function validatePipelineStage({
   const accessibleModel = await getAccessibleRealtimeModel({
     env,
     model,
-    userId: user.id,
+    provider,
+    user,
   });
 
   if (!accessibleModel) {
     return {
       message: `${name} model not found or user does not have access`,
       status: 403,
-    };
-  }
-
-  if (accessibleModel.provider !== provider) {
-    return {
-      message: `${name} model does not belong to ${provider}`,
-      status: 400,
     };
   }
 
@@ -87,10 +81,22 @@ export async function createRealtimePipelineSession({
     return { ok: false, message: stageError.message, status: stageError.status };
   }
 
+  const accessibleInputModel = await getAccessibleRealtimeModel({
+    env,
+    model: request.input.model,
+    provider: request.input.provider,
+    user,
+  });
+
+  if (!accessibleInputModel) {
+    return { ok: false, message: "Input model access changed", status: 403 };
+  }
+
   const realtimeProvider = getRealtimeProvider(request.input.provider, { env, user });
   const rawInputSession = await realtimeProvider.createSession({
     delay: request.delay,
     env,
+    credentialAuthority: accessibleInputModel.credentialAuthority,
     language: request.language,
     model: request.input.model,
     outputModalities: ["text"],

@@ -1,3 +1,5 @@
+import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
+
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getTextToImageSystemPrompt, imagePrompts } from "~/lib/prompts/image";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
@@ -8,7 +10,7 @@ import { buildInputSchemaInput } from "~/utils/inputSchema";
 
 import type { ImageGenerationRequest, ImageGenerationResult, ImageProvider } from "../index";
 
-const DEFAULT_MODEL = "@cf/black-forest-labs/flux-2-dev";
+const DEFAULT_MODEL = MODEL_DEFAULTS.image.workersAi.model;
 
 function resolveStylePrompt(style?: string): string {
   const styleKey =

@@ -50,6 +50,8 @@ export interface FinaliseAssistantTurnParams {
   context?: ServiceContext;
   userSettings?: IUserSettings;
   requestOptions?: ChatRequestOptions;
+  guardrailPrompt?: string;
+  deferOutputUntilValidated?: boolean;
 }
 
 export interface FinalisedAssistantTurn {
@@ -65,6 +67,24 @@ export async function finaliseAssistantTurn(
   const user = context?.user;
 
   const guardrailResult = await validateOutput(params);
+  const visibleTurn = guardrailResult.passed
+    ? turn
+    : {
+        ...turn,
+        content: "Response blocked by safety checks.",
+        thinking: undefined,
+        signature: undefined,
+        toolCalls: [],
+        citations: [],
+        structuredData: undefined,
+        refusal: null,
+        annotations: null,
+        parts: [],
+      };
+
+  if (params.deferOutputUntilValidated && visibleTurn.content) {
+    await sink.writeEvent("content_block_delta", { content: visibleTurn.content });
+  }
 
   await sink.writeEvent("content_block_stop", {});
 
@@ -80,13 +100,13 @@ export async function finaliseAssistantTurn(
   });
 
   const assistantMessage = formatAssistantMessage({
-    content: turn.content,
-    thinking: turn.thinking ?? "",
-    signature: turn.signature ?? "",
-    citations: (turn.citations as string[]) ?? [],
-    tool_calls: turn.toolCalls,
+    content: visibleTurn.content,
+    thinking: visibleTurn.thinking ?? "",
+    signature: visibleTurn.signature ?? "",
+    citations: (visibleTurn.citations as string[]) ?? [],
+    tool_calls: visibleTurn.toolCalls,
     usage: auditedUsage,
-    data: buildAssistantMessageData({ responseData: turn.structuredData }),
+    data: buildAssistantMessageData({ responseData: visibleTurn.structuredData }),
     guardrails: {
       passed: guardrailResult.passed,
       error: guardrailResult.error,
@@ -97,19 +117,19 @@ export async function finaliseAssistantTurn(
     platform: params.platform,
     timestamp: Date.now(),
     mode: params.mode,
-    finish_reason: turn.toolCalls.length > 0 ? "tool_calls" : "stop",
-    refusal: turn.refusal ?? null,
-    annotations: turn.annotations ?? null,
+    finish_reason: visibleTurn.toolCalls.length > 0 ? "tool_calls" : "stop",
+    refusal: visibleTurn.refusal ?? null,
+    annotations: visibleTurn.annotations ?? null,
   });
 
   const derivedParts = buildMessageParts({
     role: "assistant",
-    content: assistantMessage.content || turn.content,
+    content: assistantMessage.content || visibleTurn.content,
     tool_calls: assistantMessage.tool_calls,
     data: assistantMessage.data,
     timestamp: assistantMessage.timestamp,
   });
-  const parts = mergeMessageParts(turn.parts ?? [], derivedParts);
+  const parts = mergeMessageParts(visibleTurn.parts ?? [], derivedParts);
 
   const message: Message = {
     role: "assistant",
@@ -167,13 +187,33 @@ async function validateOutput(params: FinaliseAssistantTurnParams): Promise<{
   error: string;
   violations: unknown[];
 }> {
-  if (!params.turn.content) {
+  const images = (params.turn.parts ?? []).flatMap((part) =>
+    part.type === "file" && part.url && part.mimeType?.startsWith("image/")
+      ? [{ url: part.url }]
+      : [],
+  );
+  const toolCalls = params.turn.toolCalls.length
+    ? `\n\n[Tool calls]\n${JSON.stringify(params.turn.toolCalls)}`
+    : "";
+  const reasoning = params.turn.thinking ? `[Reasoning]\n${params.turn.thinking}\n\n` : "";
+  const text = `${reasoning}[Response]\n${params.turn.content}${toolCalls}`;
+
+  if (
+    !params.turn.content &&
+    !params.turn.thinking &&
+    !params.turn.toolCalls.length &&
+    !images.length
+  ) {
     return { passed: true, error: "", violations: [] };
   }
 
   const guardrails = new Guardrails(params.env, params.context?.user, params.userSettings);
   const validation = await guardrails.validateOutput(
-    params.turn.content,
+    {
+      text,
+      prompt: params.guardrailPrompt,
+      ...(images.length > 0 ? { images } : {}),
+    },
     params.context?.user?.id,
     params.completionId,
   );
@@ -184,7 +224,10 @@ async function validateOutput(params: FinaliseAssistantTurnParams): Promise<{
 
   return {
     passed: false,
-    error: validation?.rawResponse || "Content failed validation checks",
+    error:
+      typeof validation?.rawResponse?.blockedResponse === "string"
+        ? validation.rawResponse.blockedResponse
+        : "Content failed validation checks",
     violations: validation?.violations || [],
   };
 }

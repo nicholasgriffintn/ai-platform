@@ -99,13 +99,14 @@ export class KVCache {
     try {
       logger.debug("Deleting value from cache", { key });
       await this.kv.delete(key);
-      KVCache.memoryCache.delete(key);
 
       return true;
     } catch (error) {
       logger.error("Failed to delete value from cache", { key, error });
 
       return false;
+    } finally {
+      KVCache.memoryCache.delete(key);
     }
   }
 
@@ -174,10 +175,14 @@ export class KVCache {
       const userModelKey = KVCache.createKey("user-models", userId);
       const providerSettingsKey = KVCache.createKey("user-provider-settings", userId);
 
-      await Promise.all([this.kv.delete(userModelKey), this.kv.delete(providerSettingsKey)]);
+      const results = await Promise.all([
+        this.delete(userModelKey),
+        this.delete(providerSettingsKey),
+      ]);
+
       logger.debug("Cleared user model cache", { userId, key: userModelKey });
 
-      return true;
+      return results.every(Boolean);
     } catch (error) {
       logger.error("Failed to clear user model cache", { userId, error });
 

@@ -1,3 +1,8 @@
+import {
+  isActiveModel,
+  MODEL_POLICY_REFERENCES,
+  REALTIME_LIVE_PROVIDER_MANIFEST,
+} from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import { getFeaturedModels, getModels } from ".";
@@ -28,5 +33,63 @@ describe("model tool capabilities", () => {
         supportsWebFetch: true,
       });
     }
+  });
+});
+
+describe("central model policy catalogue", () => {
+  it("resolves every policy reference to an active model from the expected provider", () => {
+    const models = getModels({ shouldUseCache: false });
+    const references = MODEL_POLICY_REFERENCES;
+
+    expect(references.length).toBeGreaterThan(0);
+
+    for (const reference of references) {
+      const entry = models[reference.model];
+
+      if (!entry) {
+        throw new Error(`${reference.provider}:${reference.model} is absent from the catalogue`);
+      }
+
+      expect(entry.provider, reference.model).toBe(reference.provider);
+      expect(isActiveModel(entry), `${reference.model} is inactive`).toBe(true);
+    }
+  });
+
+  it("resolves every realtime default to an active model from the expected provider", () => {
+    const models = getModels({ shouldUseCache: false });
+
+    for (const reference of REALTIME_LIVE_PROVIDER_MANIFEST) {
+      const entry = models[reference.defaultModelId];
+
+      if (!entry) {
+        throw new Error(`${reference.id}:${reference.defaultModelId} is absent from the catalogue`);
+      }
+
+      expect(entry.provider, reference.defaultModelId).toBe(reference.id);
+      expect(isActiveModel(entry), `${reference.defaultModelId} is inactive`).toBe(true);
+    }
+  });
+
+  it.each([
+    ["groq/compound", "groq-openai-gpt-oss-120b", "groq"],
+    ["groq/compound-mini", "groq-openai-gpt-oss-20b", "groq"],
+    ["gpt-realtime-2", "gpt-realtime-2.1", "openai"],
+  ])("deprecates %s with an active replacement", (modelId, replacementId, provider) => {
+    const models = getModels({ shouldUseCache: false });
+    const retiredModel = models[modelId];
+    const replacement = models[replacementId];
+
+    expect(retiredModel).toMatchObject({
+      deprecated: true,
+      provider,
+      replacementModel: replacementId,
+    });
+
+    if (!replacement) {
+      throw new Error(`${replacementId} is absent from the catalogue`);
+    }
+
+    expect(replacement.provider).toBe(provider);
+    expect(isActiveModel(replacement)).toBe(true);
   });
 });

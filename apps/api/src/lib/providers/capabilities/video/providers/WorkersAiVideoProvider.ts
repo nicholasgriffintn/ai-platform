@@ -1,3 +1,5 @@
+import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
+
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getModelConfigByModel } from "~/lib/providers/models";
@@ -7,7 +9,7 @@ import { buildInputSchemaInput } from "~/utils/inputSchema";
 
 import type { VideoGenerationRequest, VideoGenerationResult, VideoProvider } from "../index";
 
-const DEFAULT_MODEL = "workers-ai-google-veo-3-fast";
+const DEFAULT_MODEL = MODEL_DEFAULTS.video.workersAi.model;
 
 export class WorkersAiVideoProvider implements VideoProvider {
   name = "workers-ai";

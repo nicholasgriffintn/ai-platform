@@ -37,6 +37,7 @@ Native iOS client for the Polychat AI platform.
 ## Features
 
 - Chat with AI assistant
+- Use the API catalogue's `isExecutable` marker to repair a saved selection the account can no longer run, then use `isDefault` for the automatic model; omit the model in favour of automatic routing when there is no explicit executable choice
 - Live tool activity: `tool_use_*` and `tool_response` events render as tool call and tool result cards while the turn runs
 - Turn recovery: a dropped connection polls `GET /chat/completions/:id` for the answer the server kept generating, rather than failing the message. A real API error still surfaces as an error
 - Conversation history

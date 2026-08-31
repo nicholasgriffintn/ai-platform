@@ -1877,6 +1877,9 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     matchingModel: "gpt-realtime-2",
     description:
       "OpenAI's most capable realtime voice model, with speech-to-speech interactions, configurable reasoning effort, stronger instruction following, and more reliable tool use.",
+    deprecated: true,
+    deprecationMessage: "GPT Realtime 2 is being retired. Use GPT Realtime 2.1 instead.",
+    replacementModel: "gpt-realtime-2.1",
     knowledgeCutoffDate: "September 30, 2024",
     modalities: {
       input: ["text", "audio", "image"],
@@ -1935,6 +1938,9 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     matchingModel: "gpt-realtime-mini",
     description:
       "Cost-efficient realtime model for responding to audio and text inputs over WebRTC, WebSocket, or SIP connections.",
+    deprecated: true,
+    deprecationMessage: "GPT Realtime Mini is being retired. Use GPT Realtime 2.1 instead.",
+    replacementModel: "gpt-realtime-2.1",
     knowledgeCutoffDate: "October 1, 2023",
     modalities: {
       input: ["text", "image", "audio"],
@@ -2244,6 +2250,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     supportsAttachments: true,
     supportsTemperature: false,
     supportsToolCalls: true,
+    supportsRealtimeSession: true,
     supportsResponseFormat: false,
     contextWindow: 128000,
     maxTokens: 32000,

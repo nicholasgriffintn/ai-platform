@@ -1,6 +1,6 @@
 import type { RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schemas";
 
-import type { IEnv, IUser } from "~/types";
+import type { CredentialAuthority, IEnv, IUser } from "~/types";
 
 import { providerLibrary } from "../../library";
 import type { ProviderFactoryContext } from "../../registry/types";
@@ -27,6 +27,7 @@ export function parseRealtimeTranscriptionDelay(
 export interface RealtimeSessionRequest {
   env: IEnv;
   user: IUser;
+  credentialAuthority?: CredentialAuthority;
   type: RealtimeSessionType;
   apiBaseUrl?: string;
   model?: string;

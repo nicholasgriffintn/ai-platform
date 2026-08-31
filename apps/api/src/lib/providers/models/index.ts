@@ -1,12 +1,12 @@
+import { MODEL_DEFAULTS, isActiveRouterModel } from "@ngriffin_uk/polychat-schemas";
 import type {
   ModelConfig,
   ModelConfigItem,
   ModelModalities,
   ModelModality,
 } from "@ngriffin_uk/polychat-schemas";
-import { isActiveRouterModel } from "@ngriffin_uk/polychat-schemas";
 
-import { type availableModalities, defaultModel, defaultProvider } from "~/constants/models";
+import type { availableModalities } from "~/constants/models";
 import { alibabaModelConfig } from "~/data-model/models/alibaba";
 import { anthropicModelConfig } from "~/data-model/models/anthropic";
 import { azureModelConfig } from "~/data-model/models/azure";
@@ -74,6 +74,11 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 import {
+  getExecutableModelsForAccount,
+  resolveDefaultChatModel,
+  resolvePolicyModel,
+} from "./policy";
+import {
   findTrainingDeploymentModelConfig,
   getTrainingDeploymentModelConfigs,
 } from "./trainingDeployments";
@@ -105,10 +110,10 @@ const modelConfig: ModelConfig = mergeModelConfigs(
   anthropicModelConfig,
   mistralModelConfig,
   morphModelConfig,
-  ollamaModelConfig,
   bedrockModelConfig,
   deepinfraModelConfig,
   deepseekModelConfig,
+  ollamaModelConfig,
   azureModelConfig,
   githubModelsConfig,
   xaiModelConfig,
@@ -271,8 +276,12 @@ export async function getModelConfig(
   provider?: string,
   userId?: number,
 ) {
-  const key = model || defaultModel;
-  const resolvedProvider = provider ?? (key === defaultModel ? defaultProvider : undefined);
+  if (!model) {
+    return undefined;
+  }
+
+  const key = model;
+  const resolvedProvider = provider;
   const cacheParts = resolvedProvider ? [key, resolvedProvider] : [key];
 
   const staticConfig = await withCache(env, "model-config", cacheParts, () => {
@@ -300,7 +309,7 @@ export async function getModelConfigByModel(model: string, env?: IEnv) {
   return withCache(env, "model-by-model", [model], () => model && modelConfig[model]);
 }
 
-export async function getMatchingModel(model: string = defaultModel, env?: IEnv) {
+export async function getMatchingModel(model: string, env?: IEnv) {
   return withCache(env, "matching-model", [model], async () => {
     const config = await getModelConfig(model, env);
 
@@ -314,8 +323,7 @@ export async function getModelConfigByMatchingModel(
   provider?: string,
   userId?: number,
 ) {
-  const resolvedProvider =
-    provider ?? (matchingModel === defaultModel ? defaultProvider : undefined);
+  const resolvedProvider = provider;
   const cacheParts = resolvedProvider ? [matchingModel, resolvedProvider] : [matchingModel];
   const staticConfig = await withCache(
     env,
@@ -454,7 +462,7 @@ export function getFeaturedModels(
 
   cachedFeaturedModels = Object.entries(modelConfig).reduce(
     (acc, [key, model]) => {
-      if (model.isFeatured) {
+      if (model.isFeatured && !model.deprecated && model.status !== "deprecated") {
         acc[key] = model;
       }
 
@@ -508,20 +516,34 @@ export function getIncludedInRouterFreeModels(
 
 export async function getIncludedInRouterModelsForUser(
   env: IEnv,
-  userId?: number,
+  user?: IUser,
   options: ModelsOptions = {
     shouldUseCache: true,
   },
 ): Promise<Record<string, ModelConfigItem>> {
-  if (!userId) {
+  if (!user?.id) {
     const freeModels = getIncludedInRouterFreeModels(options);
+    const visibleModels = await filterModelsForUserAccess(freeModels, env, undefined, options);
 
-    return await filterModelsForUserAccess(freeModels, env, userId, options);
+    return getExecutableModelsForAccount(visibleModels, user);
   }
 
   const allRouterModels = getIncludedInRouterModels(options);
+  const visibleModels = await filterModelsForUserAccess(allRouterModels, env, user.id, options);
 
-  return await filterModelsForUserAccess(allRouterModels, env, userId, options);
+  return getExecutableModelsForAccount(visibleModels, user);
+}
+
+export async function getDefaultChatModel(
+  env: IEnv,
+  user?: IUser,
+): Promise<{ model: string; provider: string }> {
+  const availableModels = await getIncludedInRouterModelsForUser(env, user, {
+    shouldUseCache: false,
+  });
+  const selected = resolveDefaultChatModel(availableModels, user);
+
+  return { model: selected.id, provider: selected.config.provider };
 }
 
 export function getModelsByCapability(capability: string) {
@@ -592,7 +614,10 @@ export async function filterModelsForUserAccess(
   if (!userId) {
     for (const modelId in allModels) {
       if (freeModelIds.has(modelId) || alwaysEnabledProviders.has(allModels[modelId].provider)) {
-        filteredModels[modelId] = allModels[modelId];
+        filteredModels[modelId] = {
+          ...allModels[modelId],
+          isPlatformEnabled: true,
+        };
       }
     }
 
@@ -616,12 +641,14 @@ export async function filterModelsForUserAccess(
       const model = allModels[modelId];
       const isFree = freeModelIds.has(modelId);
       const userProvider = enabledProviders.get(model.provider);
-      const isEnabled = alwaysEnabledProviders.has(model.provider) || Boolean(userProvider);
+      const isPlatformEnabled = alwaysEnabledProviders.has(model.provider);
+      const isEnabled = isPlatformEnabled || Boolean(userProvider);
 
       if (isFree || isEnabled) {
         filteredModels[modelId] = {
           ...model,
           isByokEnabled: Boolean(userProvider?.hasApiKey),
+          isPlatformEnabled,
         };
       }
     }
@@ -630,7 +657,11 @@ export async function filterModelsForUserAccess(
   } catch (error) {
     logger.error(`Error during model filtering for user ${userId}`, { error });
 
-    return freeModels;
+    return Object.fromEntries(
+      Object.entries(allModels).filter(([modelId, model]) => {
+        return freeModelIds.has(modelId) && alwaysEnabledProviders.has(model.provider);
+      }),
+    );
   }
 }
 
@@ -645,60 +676,37 @@ export async function getAuxiliaryModel(
   env: IEnv,
   user?: IUser,
 ): Promise<{ model: string; provider: string }> {
-  let modelToUse = "@cf/zai-org/glm-4.7-flash";
+  const availableModels = await getIncludedInRouterModelsForUser(env, user);
+  const selected =
+    resolvePolicyModel(availableModels, MODEL_DEFAULTS.auxiliary, user) ??
+    resolveDefaultChatModel(availableModels, user);
 
-  const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
-
-  const hasGroqModel = Object.keys(availableModels).some(
-    (model) => availableModels[model].provider === "groq",
-  );
-
-  if (hasGroqModel) {
-    modelToUse = "groq/compound-mini";
-  }
-
-  const modelConfig = await getModelConfig(modelToUse, env);
-
-  return { model: modelConfig.matchingModel, provider: modelConfig.provider };
+  return { model: selected.config.matchingModel, provider: selected.config.provider };
 }
 
 export const getAuxiliaryModelForRetrieval = async (env: IEnv, user?: IUser) => {
-  let modelToUse = "@cf/zai-org/glm-4.7-flash";
+  const availableModels = await getIncludedInRouterModelsForUser(env, user);
+  const selected =
+    resolvePolicyModel(availableModels, MODEL_DEFAULTS.retrieval, user) ??
+    resolveDefaultChatModel(availableModels, user);
 
-  const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
-
-  const hasPerplexityModel = Object.keys(availableModels).some(
-    (model) => availableModels[model].provider === "perplexity-ai",
-  );
-
-  if (hasPerplexityModel) {
-    modelToUse = "sonar";
-  }
-
-  const modelConfig = await getModelConfig(modelToUse, env);
-
-  return { model: modelConfig.matchingModel, provider: modelConfig.provider };
+  return { model: selected.config.matchingModel, provider: selected.config.provider };
 };
 
 export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
-  let modelToUse = "@cf/meta/llama-guard-3-8b";
+  const visibleModels = await filterModelsForUserAccess(getModels(), env, user?.id, {
+    shouldUseCache: false,
+  });
+  const selected = resolvePolicyModel(visibleModels, MODEL_DEFAULTS.guardrails, user);
 
-  const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
-
-  const hasGroqModel = Object.keys(availableModels).some(
-    (model) => availableModels[model].provider === "groq",
-  );
-
-  if (hasGroqModel) {
-    modelToUse = "meta-llama/llama-guard-4-12b";
-
-    return { model: modelToUse, provider: "groq" };
+  if (!selected) {
+    throw new AssistantError(
+      "No active guardrails model is available for this account",
+      ErrorType.CONFIGURATION_ERROR,
+    );
   }
 
-  const modelConfig = await getModelConfig(modelToUse, env);
-  const provider = modelConfig.provider;
-
-  return { model: modelToUse, provider };
+  return { model: selected.config.matchingModel, provider: selected.config.provider };
 };
 
 export const getAuxiliarySearchProvider = async (
@@ -836,4 +844,4 @@ export const getAuxiliarySpeechModel = async (
   };
 };
 
-export { availableModalities, defaultModel, defaultProvider } from "~/constants/models";
+export { availableModalities } from "~/constants/models";

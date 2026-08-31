@@ -184,7 +184,7 @@ test.describe("Work experience", () => {
       await workPage.openWorkspace("Release Workspace");
       await workPage.openProject("Release Project");
       await workPage.openNewProjectConversation();
-      await homePage.selectModel("Compound Mini");
+      await homePage.selectModel("GPT OSS 120B");
       await homePage.uploadFile({
         name: "release-work-context.md",
         mimeType: "text/markdown",

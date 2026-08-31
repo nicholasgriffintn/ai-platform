@@ -4,6 +4,7 @@ import {
   formatProviderLabel,
   getModelDisplayName,
   getSelectedRegionalModelId,
+  isActiveModel,
   isModelSelectableForAccount,
   isRegionalModelEntrySelected,
   type RegionalModelListEntry,
@@ -242,7 +243,11 @@ export function ModelsList({
     const modelItem = modelEntry.model;
     const selectedRegionModelId = getSelectedRegionalModelId(modelEntry, selectedId);
     const selectedRegionModel = modelsById[selectedRegionModelId] || modelItem;
-    const disabledOption = isDisabled || !isModelSelectableForAccount(modelItem, isPro) || disabled;
+    const disabledOption =
+      isDisabled ||
+      !isActiveModel(modelItem) ||
+      !(modelItem.isExecutable ?? isModelSelectableForAccount(modelItem, isPro)) ||
+      disabled;
 
     return (
       <ModelOption

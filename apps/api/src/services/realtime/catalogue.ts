@@ -17,7 +17,7 @@ function hasConfiguredEnvironmentVariable(env: object, name: string): boolean {
 }
 
 function hasAccessibleDefaultModel(
-  models: ModelConfig,
+  models: Record<string, Pick<ModelConfig[string], "matchingModel" | "name">>,
   descriptor: RealtimeLiveProviderDescriptor,
 ): boolean {
   return Object.entries(models).some(
@@ -64,7 +64,7 @@ export async function listRealtimeLiveProviders(
   context: ServiceContext,
 ): Promise<RealtimeLiveProviderCatalogueItem[]> {
   const user = context.requireUser();
-  const models = await listModels(context.env, user.id);
+  const models = await listModels(context.env, user);
   const logger = context.getLogger({ prefix: "realtime-provider-catalogue" });
   const providers = await Promise.all(
     providerLibrary.list("realtime").map(async ({ name }) => {
