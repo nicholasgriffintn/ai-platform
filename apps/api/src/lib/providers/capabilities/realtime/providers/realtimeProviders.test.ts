@@ -332,10 +332,10 @@ describe("realtime provider session contracts", () => {
       type: "transcription",
       provider: "cartesia",
       transport: "websocket",
-      url: "wss://api.polychat.test/realtime/cartesia/transcription?model=ink-whisper&delay=low",
+      url: "wss://api.polychat.test/realtime/cartesia/transcription?model=ink-2&delay=low",
       audio_format: { encoding: "pcm_s16le", sample_rate: 16000 },
       input_audio_format: "pcm_s16le",
-      input_audio_transcription: { model: "ink-whisper", language: "en" },
+      input_audio_transcription: { model: "ink-2", language: "en" },
     });
   });
 });
