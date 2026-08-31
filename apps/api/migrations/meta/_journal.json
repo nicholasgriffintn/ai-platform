@@ -43,6 +43,13 @@
       "when": 1788128725943,
       "tag": "0005_woozy_meteorite",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1788174151031,
+      "tag": "0006_next_whirlwind",
+      "breakpoints": true
     }
   ]
 }

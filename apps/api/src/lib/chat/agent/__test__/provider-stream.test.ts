@@ -113,6 +113,25 @@ describe("createStreamingTurnTransport", () => {
       toolCalls: [],
     });
   });
+
+  it("reports status incomplete instead of a malformed tool call when a tool-call stream is truncated", async () => {
+    getAIResponseMock.mockResolvedValueOnce(
+      providerStream([
+        'event: content_block_start\ndata: {"type":"content_block_start","index":0,"content_block":{"type":"tool_use","id":"toolu-1","name":"load_skill","input":{}}}\n\n',
+        'event: content_block_delta\ndata: {"type":"content_block_delta","index":0,"delta":{"type":"input_json_delta","partial_json":"{\\"skill\\":\\"arti"}}\n\n',
+      ]),
+    );
+    const { sink } = createSink();
+
+    const turn = await createStreamingTurnTransport().runTurn({
+      request: { env: context.env, model: "claude-opus-5", messages: [] } as never,
+      sink,
+      context: { ...context, model: "claude-opus-5", provider: "anthropic" },
+    });
+
+    expect(turn.status).toBe("incomplete");
+    expect(turn.toolCalls).toEqual([]);
+  });
 });
 
 describe("consumeProviderStream", () => {
@@ -515,6 +534,43 @@ describe("consumeProviderStream", () => {
         function: { name: "load_skill", arguments: '{"skill":"artifacts"}' },
       },
     ]);
+  });
+
+  it("marks the turn interrupted, not a malformed tool call, when the stream ends mid tool-call input", async () => {
+    const { sink } = createSink();
+
+    const turn = await consumeProviderStream(
+      providerStream([
+        'event: content_block_start\ndata: {"type":"content_block_start","index":0,"content_block":{"type":"text"}}\n\n',
+        'event: content_block_delta\ndata: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Let me check that."}}\n\n',
+        'event: content_block_stop\ndata: {"type":"content_block_stop","index":0}\n\n',
+        'event: content_block_start\ndata: {"type":"content_block_start","index":1,"content_block":{"type":"tool_use","id":"toolu-1","name":"load_skill","input":{}}}\n\n',
+        'event: content_block_delta\ndata: {"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":"{\\"skill\\":\\"arti"}}\n\n',
+      ]),
+      sink,
+      { ...context, provider: "anthropic", model: "claude-opus-5" },
+    );
+
+    expect(turn.content).toBe("Let me check that.");
+    expect(turn.interrupted).toBe(true);
+    expect(turn.toolCalls).toEqual([]);
+  });
+
+  it("marks the turn interrupted on a truncated tool call even when no text preceded it", async () => {
+    const { sink } = createSink();
+
+    const turn = await consumeProviderStream(
+      providerStream([
+        'event: content_block_start\ndata: {"type":"content_block_start","index":0,"content_block":{"type":"tool_use","id":"toolu-1","name":"load_skill","input":{}}}\n\n',
+        'event: content_block_delta\ndata: {"type":"content_block_delta","index":0,"delta":{"type":"input_json_delta","partial_json":"{\\"skill\\""}}\n\n',
+      ]),
+      sink,
+      { ...context, provider: "anthropic", model: "claude-opus-5" },
+    );
+
+    expect(turn.content).toBe("");
+    expect(turn.interrupted).toBe(true);
+    expect(turn.toolCalls).toEqual([]);
   });
 
   it("persists Anthropic hosted results through their established presentation contracts", async () => {

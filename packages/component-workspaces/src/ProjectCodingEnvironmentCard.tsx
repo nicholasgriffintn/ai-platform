@@ -133,7 +133,11 @@ export function ProjectCodingEnvironmentCard({
             />
             Create a commit when changes are ready
           </label>
-          {errorMessage && <p className="text-sm text-red-700">{errorMessage}</p>}
+          {errorMessage && (
+            <p role="alert" className="text-sm text-red-700">
+              {errorMessage}
+            </p>
+          )}
           <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setIsEditing(false)}>
               Cancel

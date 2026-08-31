@@ -410,7 +410,7 @@ export class HomePage extends BasePage {
 
   async openConversation(title: string | RegExp) {
     await this.clickElement(this.page.getByRole("button").filter({ hasText: title }).first());
-    await this.page.getByRole("log", { name: "Conversation messages" }).waitFor();
+    await this.page.getByRole("region", { name: "Conversation messages" }).waitFor();
   }
 
   async waitForConversationInHistory(title: string | RegExp) {
@@ -418,7 +418,7 @@ export class HomePage extends BasePage {
   }
 
   private conversationItem(title: string | RegExp) {
-    return this.page.getByRole("button").filter({ hasText: title }).first();
+    return this.page.getByRole("listitem").filter({ hasText: title }).first();
   }
 
   async hoverConversation(title: string | RegExp) {
@@ -772,6 +772,6 @@ export class HomePage extends BasePage {
     await this.page
       .getByRole("button", { name: "Go to original conversation", exact: true })
       .click();
-    await this.page.getByRole("log", { name: "Conversation messages" }).waitFor();
+    await this.page.getByRole("region", { name: "Conversation messages" }).waitFor();
   }
 }

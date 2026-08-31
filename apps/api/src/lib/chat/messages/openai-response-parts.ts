@@ -287,6 +287,7 @@ export function buildOpenAIResponseOutputParts(output: unknown, timestamp?: numb
 
     if (toolUse && !toolResult && toolUse.toolCallId) {
       const ids = pendingToolCallIds.get(toolUse.name) ?? [];
+
       ids.push(toolUse.toolCallId);
       pendingToolCallIds.set(toolUse.name, ids);
     }

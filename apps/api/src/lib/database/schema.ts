@@ -391,6 +391,12 @@ export const conversation = sqliteTable(
     ),
     parentMessageIdIdx: index("conversation_parent_message_id_idx").on(table.parent_message_id),
     projectIdIdx: index("conversation_project_id_idx").on(table.project_id),
+    userProjectArchivedUpdatedIdx: index("conversation_user_project_archived_updated_idx").on(
+      table.user_id,
+      table.project_id,
+      table.is_archived,
+      table.updated_at,
+    ),
   }),
 );
 

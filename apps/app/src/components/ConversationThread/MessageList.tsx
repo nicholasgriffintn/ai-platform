@@ -47,6 +47,7 @@ import { useStreamActivityStore } from "~/state/stores/streamActivityStore";
 import type { Message } from "~/types";
 
 import { ChatMessage } from "./ChatMessage";
+import { useStreamAnnouncement } from "./useStreamAnnouncement";
 
 const EMPTY_MESSAGES: Message[] = [];
 
@@ -188,6 +189,11 @@ export const MessageList = ({
     [hideInlineUserQuestions, messages, resolvedToolCallIds],
   );
 
+  const streamAnnouncement = useStreamAnnouncement({
+    messages,
+    isStreaming: !isSharedView && (isStreamLoading || streamStarted),
+  });
+
   const virtualRef = useRef<VListHandle>(null);
   const prevCount = useRef(0);
   const isNearBottomRef = useRef(true);
@@ -234,11 +240,12 @@ export const MessageList = ({
       <div
         className="relative flex flex-1 flex-col"
         data-conversation-id={currentConversationId || undefined}
-        role="log"
-        aria-live="polite"
+        role="region"
         aria-label="Conversation messages"
-        aria-atomic="false"
       >
+        <span className="sr-only" role="status" aria-live="polite">
+          {streamAnnouncement}
+        </span>
         <VList
           ref={virtualRef}
           data-header-scroll-source

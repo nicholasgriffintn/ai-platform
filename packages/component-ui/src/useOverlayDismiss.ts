@@ -19,8 +19,8 @@ export interface OverlayDismissOptions {
 
 /**
  * Wires the focus and Escape behaviour every transient overlay owes a keyboard user:
- * focus moves in on open, Escape closes, and focus returns to whatever opened it.
- * Returns the ref to place on the overlay container.
+ * focus moves in on open, Tab cycles within it, Escape closes, and focus returns to
+ * whatever opened it. Returns the ref to place on the overlay container.
  */
 export function useOverlayDismiss<T extends HTMLElement>({
   open,
@@ -48,6 +48,46 @@ export function useOverlayDismiss<T extends HTMLElement>({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         onCloseRef.current();
+
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const container = containerRef.current;
+
+      if (!container) {
+        return;
+      }
+
+      const focusable = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+
+      if (focusable.length === 0) {
+        event.preventDefault();
+        container.focus();
+
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = ownerDocument.activeElement;
+      const outside = !active || !container.contains(active);
+
+      if (event.shiftKey) {
+        if (outside || active === first || active === container) {
+          event.preventDefault();
+          last.focus();
+        }
+
+        return;
+      }
+
+      if (outside || active === last) {
+        event.preventDefault();
+        first.focus();
       }
     };
 

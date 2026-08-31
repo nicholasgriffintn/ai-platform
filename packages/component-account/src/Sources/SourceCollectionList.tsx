@@ -75,7 +75,7 @@ export function SourceCollectionList({
             size="icon"
             icon={<Trash2 size={14} />}
             aria-label={`Delete ${collection.title}`}
-            className="shrink-0 md:opacity-0 md:group-hover:opacity-100"
+            className="shrink-0 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
             onClick={() => onDeleteCollection(collection.id)}
           />
         </div>

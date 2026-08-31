@@ -3,8 +3,9 @@ import { getLogger } from "~/utils/logger";
 
 const CANCELLATION_KEY_PREFIX = "chat-turn-cancel:";
 const CANCELLATION_TTL_SECONDS = 120;
-const DETACHED_CHECK_INTERVAL_MS = 1_000;
-const DETACHED_CHECK_LIMIT = 5;
+const DETACHED_FAST_POLL_INTERVAL_MS = 1_000;
+const DETACHED_FAST_POLL_WINDOW_MS = 30_000;
+const DETACHED_SLOW_POLL_INTERVAL_MS = 5_000;
 
 const logger = getLogger({ prefix: "lib/chat/streaming/turn-cancellation" });
 
@@ -55,28 +56,51 @@ export function watchDetachedTurnCancellation(params: {
   const { env, completionId, isDetached } = params;
   const startedAt = Date.now();
   let stopRequested = false;
-  let checksRemaining = DETACHED_CHECK_LIMIT;
-  let checking = false;
+  let stopped = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
 
-  const timer = setInterval(() => {
-    if (stopRequested || checking || checksRemaining <= 0 || !isDetached()) {
+  const nextIntervalMs = () =>
+    Date.now() - startedAt < DETACHED_FAST_POLL_WINDOW_MS
+      ? DETACHED_FAST_POLL_INTERVAL_MS
+      : DETACHED_SLOW_POLL_INTERVAL_MS;
+
+  const scheduleNext = () => {
+    if (stopped) {
       return;
     }
 
-    checking = true;
-    checksRemaining -= 1;
+    timer = setTimeout(tick, nextIntervalMs());
+  };
+
+  const tick = () => {
+    if (stopped) {
+      return;
+    }
+
+    if (!isDetached()) {
+      scheduleNext();
+
+      return;
+    }
 
     void isTurnCancellationRequested(env, completionId, startedAt)
       .then((cancelled) => {
         stopRequested ||= cancelled;
       })
       .finally(() => {
-        checking = false;
+        if (!stopRequested) {
+          scheduleNext();
+        }
       });
-  }, DETACHED_CHECK_INTERVAL_MS);
+  };
+
+  scheduleNext();
 
   return {
     shouldStop: () => stopRequested,
-    stop: () => clearInterval(timer),
+    stop: () => {
+      stopped = true;
+      clearTimeout(timer);
+    },
   };
 }
