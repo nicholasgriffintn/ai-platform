@@ -339,6 +339,31 @@ export class ModelRouter {
     return modelScoresNormalized.sort((a, b) => b.normalizedScore - a.normalizedScore);
   }
 
+  private static async rankSuitableModels(
+    availableModels: Record<string, ModelConfigItem>,
+    requirements: PromptRequirements,
+    routerMode: ModelRouterMode,
+  ): Promise<ModelScore[]> {
+    const preferredModels = filterModelsByRouterMode(availableModels, routerMode);
+    const preferredScores = await ModelRouter.rankModels(preferredModels, requirements);
+    const suitablePreferredModels = preferredScores.filter((model) => model.score > 0);
+
+    if (suitablePreferredModels.length > 0 || routerMode === "auto") {
+      return suitablePreferredModels;
+    }
+
+    const fallbackScores = await ModelRouter.rankModels(availableModels, requirements);
+    const suitableFallbackModels = fallbackScores.filter((model) => model.score > 0);
+
+    if (suitableFallbackModels.length > 0) {
+      logger.warn("Preferred automatic mode had no suitable models. Using the accessible pool.", {
+        routerMode,
+      });
+    }
+
+    return suitableFallbackModels;
+  }
+
   private static selectBestModel(
     modelScores: ModelScore[],
     options: { fallbackModel?: string; routerMode?: ModelRouterMode } = {},
@@ -407,7 +432,6 @@ export class ModelRouter {
     return trackModelRoutingMetrics(
       async () => {
         const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
-        const routedModels = filterModelsByRouterMode(availableModels, routerMode);
 
         const requirements = await PromptAnalyzer.analyzePrompt(
           env,
@@ -417,9 +441,11 @@ export class ModelRouter {
           user,
         );
 
-        const modelScores = await ModelRouter.rankModels(routedModels, requirements);
-
-        const suitableModels = modelScores.filter((model) => model.score > 0);
+        const suitableModels = await ModelRouter.rankSuitableModels(
+          availableModels,
+          requirements,
+          routerMode,
+        );
 
         return ModelRouter.selectBestModel(suitableModels, {
           fallbackModel: routerMode === "auto" ? defaultModel : undefined,
@@ -452,7 +478,6 @@ export class ModelRouter {
     return trackModelRoutingMetrics(
       async () => {
         const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
-        const routedModels = filterModelsByRouterMode(availableModels, routerMode);
 
         const requirements = await PromptAnalyzer.analyzePrompt(
           env,
@@ -462,9 +487,20 @@ export class ModelRouter {
           user,
         );
 
-        const modelScores = await ModelRouter.rankModels(routedModels, requirements);
+        const suitableModels = await ModelRouter.rankSuitableModels(
+          availableModels,
+          requirements,
+          routerMode,
+        );
 
-        const suitableModels = modelScores.filter((model) => model.score > 0);
+        if (suitableModels.length === 0) {
+          return [
+            ModelRouter.selectBestModel(suitableModels, {
+              fallbackModel: routerMode === "auto" ? defaultModel : undefined,
+              routerMode,
+            }),
+          ];
+        }
 
         const doesComplexityRequireComparison = ModelRouter.shouldCompareModels(requirements);
 
