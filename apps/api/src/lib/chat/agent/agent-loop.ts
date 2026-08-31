@@ -21,6 +21,7 @@ import {
   isArtifactMarkupToolName,
 } from "~/lib/chat/tools/artifact-markup";
 import { createToolCallLedger, type ToolCallLedger } from "~/lib/chat/tools/call-ledger";
+import { getResponseScopedCapabilityToolNames } from "~/lib/chat/tools/capability-activation";
 import { isSuccessfulToolStatus } from "~/lib/chat/tools/continuation";
 import { getToolEventPayload } from "~/lib/chat/tools/events";
 import { handleToolCalls } from "~/lib/chat/tools/execution";
@@ -66,6 +67,7 @@ function shouldAbortAgentTurnError(error: unknown): boolean {
 
 interface ChatAgentLoopState extends AgentLoopState {
   commandCount: number;
+  enabledToolNames: Set<string>;
   unknownToolRecoveryUsed: boolean;
   toolCallLedger: ToolCallLedger;
   pendingUserAction?: { message: string; kind: "approval" | "question" };
@@ -164,6 +166,7 @@ export async function runAgentLoop(
 
   const state: ChatAgentLoopState = {
     commandCount: 0,
+    enabledToolNames: new Set(params.requestParams.enabled_tools ?? []),
     unknownToolRecoveryUsed: false,
     toolCallLedger: createToolCallLedger(),
   };
@@ -354,14 +357,20 @@ export async function runAgentLoop(
           ? {
               ...params.requestParams,
               messages: [...providerMessages, { role: "user", content: goalFinalisationNotice }],
+              enabled_tools: [...state.enabledToolNames],
             }
           : finalAnswerNotice
             ? {
                 ...params.requestParams,
                 messages: [...providerMessages, { role: "user", content: finalAnswerNotice }],
                 disable_functions: true,
+                enabled_tools: [...state.enabledToolNames],
               }
-            : { ...params.requestParams, messages: providerMessages },
+            : {
+                ...params.requestParams,
+                messages: providerMessages,
+                enabled_tools: [...state.enabledToolNames],
+              },
         sink,
         context: transportContext,
       });
@@ -463,6 +472,18 @@ export async function runAgentLoop(
 
       if (toolResults.some((message) => message.data?.errorCode === "REPEATED_TOOL_CALL")) {
         context.state.finalAnswerNotice ??= REPEATED_TOOL_CALL_NOTICE;
+      }
+
+      const activatedToolNames = getResponseScopedCapabilityToolNames(toolResults);
+
+      for (const toolName of activatedToolNames) {
+        context.state.enabledToolNames.add(toolName);
+      }
+
+      if (activatedToolNames.length > 0 && context.shared.toolRequestContext.request) {
+        context.shared.toolRequestContext.request.enabled_tools = [
+          ...context.state.enabledToolNames,
+        ];
       }
 
       context.state.commandCount += toolResults.filter((message) =>

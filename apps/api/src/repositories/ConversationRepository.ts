@@ -3,6 +3,7 @@ import type {
   ConversationSortBy,
   ConversationType,
 } from "@ngriffin_uk/polychat-schemas";
+import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
 import { PaginationHelper } from "~/lib/database/PaginationHelper";
 import { escapeSqlLikePattern } from "~/utils/sql";
@@ -153,10 +154,7 @@ export class ConversationRepository extends BaseRepository {
     }
 
     const whereClause = whereClauses.join(" AND ");
-    const orderByClause =
-      sortBy === "title"
-        ? "c.title COLLATE NOCASE ASC, c.id DESC"
-        : `${sortBy === "created" ? "c.created_at" : "c.updated_at"} DESC, c.id DESC`;
+    const orderByClause = `${sortBy === "created" ? "c.created_at" : "c.updated_at"} DESC, c.id DESC`;
 
     const countQuery = `SELECT COUNT(*) as total FROM conversation c WHERE ${whereClause}`;
 
@@ -165,7 +163,14 @@ export class ConversationRepository extends BaseRepository {
     const total = countResult?.total || 0;
     const totalPages = Math.ceil(total / safeLimit);
 
-    const listQuery = `
+    const listQuery =
+      sortBy === "title"
+        ? `
+        SELECT c.*
+        FROM conversation c
+        WHERE ${whereClause}
+      `
+        : `
         SELECT c.*
         FROM conversation c
         WHERE ${whereClause}
@@ -173,11 +178,19 @@ export class ConversationRepository extends BaseRepository {
         LIMIT ? OFFSET ?
       `;
 
-    const conversations = await this.runQuery<Record<string, unknown>>(listQuery, [
-      ...values,
-      safeLimit,
-      offset,
-    ]);
+    const queryValues = sortBy === "title" ? values : [...values, safeLimit, offset];
+    const results = await this.runQuery<Record<string, unknown>>(listQuery, queryValues);
+    const conversations =
+      sortBy === "title"
+        ? sortCopy(results, (left, right) => {
+            const leftTitle = typeof left.title === "string" ? left.title : "New conversation";
+            const rightTitle = typeof right.title === "string" ? right.title : "New conversation";
+            const leftId = typeof left.id === "string" ? left.id : "";
+            const rightId = typeof right.id === "string" ? right.id : "";
+
+            return compareNaturalText(leftTitle, rightTitle) || compareNaturalText(rightId, leftId);
+          }).slice(offset, offset + safeLimit)
+        : results;
 
     return {
       conversations,

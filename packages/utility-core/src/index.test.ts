@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   areUserIdsEqual,
   clampPercentage,
+  compareNaturalText,
   formatRelativeTime,
   formatUnknownValue,
   joinNonEmptyStrings,
@@ -25,6 +26,17 @@ describe("utility-core", () => {
   it("normalises common string collections", () => {
     expect(parseCommaSeparatedList(" alpha, , beta ")).toEqual(["alpha", "beta"]);
     expect(joinNonEmptyStrings([" alpha ", undefined, "beta"])).toBe("alpha beta");
+  });
+
+  it("sorts digit sequences by their numeric value", () => {
+    const values = ["11. Search", "2. React", "10. Web", "1. Ask"];
+
+    expect(sortCopy(values, compareNaturalText)).toEqual([
+      "1. Ask",
+      "2. React",
+      "10. Web",
+      "11. Search",
+    ]);
   });
 
   it("copies collections before sorting or reversing them", () => {

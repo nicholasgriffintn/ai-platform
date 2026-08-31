@@ -162,6 +162,9 @@ importers:
       '@ngriffin_uk/polychat-schemas':
         specifier: workspace:^
         version: link:../../packages/schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../../packages/utility-core
       '@scalar/hono-api-reference':
         specifier: 0.11.16
         version: 0.11.16(hono@4.13.4)
