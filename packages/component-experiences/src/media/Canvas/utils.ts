@@ -1,3 +1,5 @@
+import { titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
+
 import type { CanvasInputField, CanvasMode, CanvasModel } from "./types";
 
 interface MediaPreview {
@@ -149,11 +151,7 @@ export function collectCanvasModelOptionFields(
 }
 
 export function formatCanvasFieldLabel(fieldName: string): string {
-  return fieldName
-    .split("_")
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+  return titleCaseSlug(fieldName);
 }
 
 export function buildCanvasModelOptions(

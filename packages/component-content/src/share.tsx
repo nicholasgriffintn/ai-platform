@@ -7,6 +7,7 @@ import {
   type ButtonCollapse,
   type ButtonVariant,
 } from "@ngriffin_uk/polychat-component-ui";
+import { capitaliseFirst } from "@ngriffin_uk/polychat-utility-core";
 import { Check, Copy, Share2 } from "lucide-react";
 
 export type ShareableContentType =
@@ -63,7 +64,7 @@ export function ShareDialog({
   onUnshare,
   onCopy,
 }: ShareDialogProps) {
-  const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+  const typeLabel = capitaliseFirst(type);
   const finalLabels = {
     share: "Share",
     manage: "Manage",

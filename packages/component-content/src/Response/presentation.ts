@@ -1,4 +1,9 @@
-import { hasUrlExtension, isRecord, readOptionalString } from "@ngriffin_uk/polychat-utility-core";
+import {
+  capitaliseFirst,
+  hasUrlExtension,
+  isRecord,
+  readOptionalString,
+} from "@ngriffin_uk/polychat-utility-core";
 
 import {
   resolveGeneratedAudioResponseData,
@@ -303,5 +308,5 @@ export function humanise(key: string): string {
     return key;
   }
 
-  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+  return capitaliseFirst(spaced);
 }

@@ -5,7 +5,7 @@ import { KeywordFilter } from "~/lib/keywords";
 import { estimateTextTokens } from "~/lib/messageTokens";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getAuxiliaryModel, getAvailableStrengths } from "~/lib/providers/models";
-import { listFunctionTools } from "~/services/functions";
+import { listFunctionToolDefinitions } from "~/services/functions/definitions";
 import type { Attachment, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";
@@ -108,7 +108,7 @@ export class PromptAnalyzer {
   }
 
   private static summarizeAvailableFunctions(): string {
-    const tools = listFunctionTools();
+    const tools = listFunctionToolDefinitions();
     const summaries: string[] = [];
     let usedCharacters = 0;
 

@@ -1,3 +1,4 @@
+import { getDurableObjectStub, postDurableObjectJson } from "~/lib/durable-objects/client";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -24,24 +25,20 @@ export async function reserveRealtimeProxySession({
   sessionId: string;
   userId: number;
 }): Promise<RealtimeProxyReservation> {
-  if (!env.REALTIME_PROXY_COORDINATOR) {
+  const stub = getDurableObjectStub(env.REALTIME_PROXY_COORDINATOR, String(userId));
+
+  if (!stub) {
     throw new AssistantError(
       "Realtime proxy coordinator is not configured",
       ErrorType.CONFIGURATION_ERROR,
     );
   }
 
-  const id = env.REALTIME_PROXY_COORDINATOR.idFromName(String(userId));
-  const stub = env.REALTIME_PROXY_COORDINATOR.get(id);
-  const response = await stub.fetch(`${COORDINATOR_ORIGIN}/consume`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      expiresAt: expiresAt * 1000,
-      jti,
-      sessionExpiresAt: Date.now() + REALTIME_PROXY_LIMITS.sessionDurationMs,
-      sessionId,
-    }),
+  const response = await postDurableObjectJson(stub, `${COORDINATOR_ORIGIN}/consume`, {
+    expiresAt: expiresAt * 1000,
+    jti,
+    sessionExpiresAt: Date.now() + REALTIME_PROXY_LIMITS.sessionDurationMs,
+    sessionId,
   });
 
   if (!response.ok) {
@@ -75,10 +72,8 @@ export async function reserveRealtimeProxySession({
       released = true;
 
       try {
-        const releaseResponse = await stub.fetch(`${COORDINATOR_ORIGIN}/release`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ jti }),
+        const releaseResponse = await postDurableObjectJson(stub, `${COORDINATOR_ORIGIN}/release`, {
+          jti,
         });
 
         if (!releaseResponse.ok) {

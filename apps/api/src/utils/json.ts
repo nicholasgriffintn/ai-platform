@@ -1,3 +1,4 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import type { ZodType } from "zod/v4";
 
 export function safeParseJson<T = any>(jsonString: string): T | null {
@@ -8,34 +9,10 @@ export function safeParseJson<T = any>(jsonString: string): T | null {
   }
 }
 
-export interface StoredJsonCodec<T> {
-  parse(value: string): T;
-  stringify(value: T): string;
-}
-
-export function createStoredJsonCodec<T>(context: string): StoredJsonCodec<T> {
-  return {
-    parse(value) {
-      try {
-        return JSON.parse(value) as T;
-      } catch (cause) {
-        throw new Error(`Invalid stored JSON for ${context}`, { cause });
-      }
-    },
-    stringify(value) {
-      return JSON.stringify(value);
-    },
-  };
-}
-
-export function isJsonRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
 export function parseJsonRecord(value: string | null | undefined): Record<string, unknown> {
   const parsed = value ? safeParseJson<unknown>(value) : {};
 
-  return isJsonRecord(parsed) ? parsed : {};
+  return isRecord(parsed) ? parsed : {};
 }
 
 export function parseJsonStringArray(value: string | null | undefined): string[] | undefined {

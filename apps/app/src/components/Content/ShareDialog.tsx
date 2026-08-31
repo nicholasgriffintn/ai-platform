@@ -4,6 +4,7 @@ import {
   type ShareableContentType,
 } from "@ngriffin_uk/polychat-component-content";
 import type { ButtonCollapse } from "@ngriffin_uk/polychat-component-ui";
+import { capitaliseFirst } from "@ngriffin_uk/polychat-utility-core";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -96,5 +97,5 @@ export function ShareDialog({
 }
 
 function labelFor(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1);
+  return capitaliseFirst(value);
 }

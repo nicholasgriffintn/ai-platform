@@ -14,6 +14,7 @@ import {
   resolveManagedFunctionToolNames,
   resolveRequestFunctionToolNames,
 } from "~/services/functions/availability";
+import { listFunctionToolDefinitions } from "~/services/functions/definitions";
 
 describe("functions tool registry", () => {
   it("registers every function in the tool registry", () => {
@@ -27,6 +28,17 @@ describe("functions tool registry", () => {
     for (const fn of functionTools) {
       expect(registeredNames.has(fn.name)).toBe(true);
     }
+  });
+
+  it("describes exactly the tools the registry can execute", () => {
+    const executable = listFunctionTools()
+      .map((tool) => tool.name)
+      .sort();
+    const described = listFunctionToolDefinitions()
+      .map((tool) => tool.name)
+      .sort();
+
+    expect(described).toEqual(executable);
   });
 
   it("resolves tool definitions for every available function", () => {

@@ -1,4 +1,4 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { capitaliseFirst, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export type RecipeTriggerConfigurationValue = string | boolean;
 
@@ -24,7 +24,7 @@ export function formatRecipeTriggerIdentifier(value: string): string {
     .trim()
     .toLowerCase();
 
-  return words ? words.charAt(0).toUpperCase() + words.slice(1) : "Event";
+  return words ? capitaliseFirst(words) : "Event";
 }
 
 function readFieldLabel(key: string, schema: Record<string, unknown>): string {

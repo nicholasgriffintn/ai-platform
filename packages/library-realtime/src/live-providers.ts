@@ -55,13 +55,6 @@ export function getFirstReadyRealtimeLiveProviderOption(
   return options.find((option) => option.readiness === "ready");
 }
 
-export function isRealtimeLiveProviderId(
-  provider?: string | null,
-  options: RealtimeLiveProviderOption[] = [],
-): provider is RealtimeLiveProviderId {
-  return options.some((option) => option.id === provider);
-}
-
 export function getRealtimeLiveProviderIdForModel(
   model?: { provider?: string; supportsRealtimeSession?: boolean } | null,
   options: RealtimeLiveProviderOption[] = [],

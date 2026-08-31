@@ -1,9 +1,9 @@
-import { escapeHtml } from "@ngriffin_uk/polychat-utility-core";
+import { escapeHtml, escapeRegExp } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { StorageService } from "~/lib/storage";
 import { convertMarkdownToHtml } from "~/utils/markdown";
-import { escapeRegExp, getUtf8ByteLength } from "~/utils/strings";
+import { getUtf8ByteLength } from "~/utils/strings";
 
 import type {
   OcrBlock,
