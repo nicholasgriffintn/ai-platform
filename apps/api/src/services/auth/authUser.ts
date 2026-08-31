@@ -1,6 +1,7 @@
 import type { AuthUserWithEmail, UserStore } from "@ngriffin_uk/auth-core";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { listConfigurableUserProviderIds } from "~/lib/providers/userConfigurableProviders";
 import type { User } from "~/types";
 
 export interface AssistantAuthUser extends AuthUserWithEmail {
@@ -51,7 +52,10 @@ export async function initialiseAssistantUser(
 ): Promise<void> {
   await Promise.allSettled([
     context.repositories.userSettings.createUserSettings(userId),
-    context.repositories.userSettings.createUserProviderSettings(userId),
+    context.repositories.userSettings.createUserProviderSettings(
+      userId,
+      listConfigurableUserProviderIds(),
+    ),
   ]);
 }
 

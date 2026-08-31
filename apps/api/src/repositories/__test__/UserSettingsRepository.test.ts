@@ -7,6 +7,8 @@ import { bufferToBase64 } from "~/utils/base64";
 
 import { UserSettingsRepository } from "../UserSettingsRepository";
 
+const CONFIGURABLE_PROVIDER_IDS = ["openai", "anthropic", "groq"];
+
 const OVER_RSA_OAEP_LIMIT_PROVIDER_KEY = `synthetic-provider-key:${"a".repeat(320)}`;
 
 function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
@@ -63,7 +65,7 @@ describe("UserSettingsRepository", () => {
   it("provisions provider settings with one read and one batched write", async () => {
     const { batch, prepare, repository } = createProvisioningRepository([]);
 
-    await repository.createUserProviderSettings(1);
+    await repository.createUserProviderSettings(1, CONFIGURABLE_PROVIDER_IDS);
 
     const selects = prepare.mock.calls.filter(([query]) => (query as string).startsWith("SELECT"));
 
@@ -75,13 +77,13 @@ describe("UserSettingsRepository", () => {
   it("skips providers the user already has", async () => {
     const { batch, repository } = createProvisioningRepository([]);
 
-    await repository.createUserProviderSettings(1);
+    await repository.createUserProviderSettings(1, CONFIGURABLE_PROVIDER_IDS);
 
     const provisioned = batch.mock.calls[0][0].length;
 
     const second = createProvisioningRepository(["openai"]);
 
-    await second.repository.createUserProviderSettings(1);
+    await second.repository.createUserProviderSettings(1, CONFIGURABLE_PROVIDER_IDS);
 
     expect(second.batch.mock.calls[0][0].length).toBe(provisioned - 1);
   });
