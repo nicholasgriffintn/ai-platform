@@ -1,4 +1,4 @@
-import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { Button, cn } from "@ngriffin_uk/polychat-component-ui";
 import { fixMarkdown } from "@ngriffin_uk/polychat-utility-core";
 import { useCopyToClipboard } from "@ngriffin_uk/polychat-utility-react";
 import { Check, Copy } from "lucide-react";
@@ -72,7 +72,13 @@ const CodeBlock = ({ children, ...props }: PreProps) => {
           {copied ? "Copied" : "Copy"}
         </Button>
       </div>
-      <pre {...props} className="!my-0 overflow-x-auto !rounded-none !border-0 p-3 text-sm">
+      <pre
+        {...props}
+        className={cn(
+          "!my-0 overflow-x-auto !rounded-none !border-0 p-3 text-sm",
+          !language && "hljs",
+        )}
+      >
         {children}
       </pre>
     </div>
@@ -90,7 +96,7 @@ const components = {
   ),
 };
 
-const rehypePlugins = [() => rehypeHighlight({ detect: true })];
+const rehypePlugins = [() => rehypeHighlight({ detect: false })];
 const remarkPlugins = [remarkGfm];
 
 export interface MarkdownProps {
