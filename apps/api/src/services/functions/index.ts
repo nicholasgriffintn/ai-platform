@@ -1,7 +1,5 @@
-import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
-
 import type { ConversationManager } from "~/lib/conversationManager";
-import { PermissionChecker, resolveToolPermissions } from "~/lib/permissions/PermissionChecker";
+import { PermissionChecker } from "~/lib/permissions/PermissionChecker";
 import { ToolRegistry } from "~/lib/tools/ToolRegistry";
 import type { IFunctionResponse, IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -12,6 +10,11 @@ import { call_api } from "./api_call";
 import { apply_edit_completion } from "./apply_edit";
 import { run_council, select_council_members } from "./council";
 import { create_note } from "./create_note";
+import {
+  applyConnectorScope,
+  requireToolPermissions,
+  type FunctionToolCatalogueOptions,
+} from "./definitions";
 import { discover_capabilities } from "./discover_capabilities";
 import { extract_content } from "./extract_content";
 import { fill_in_middle_completion } from "./fill_in_middle";
@@ -32,10 +35,7 @@ import { create_qr_code } from "./qr";
 import { configure_recipe } from "./recipes/configure_recipe";
 import { get_recipe } from "./recipes/get_recipe";
 import { trigger_recipe } from "./recipes/trigger_recipe";
-import {
-  createUseRecipeConnectorInputSchema,
-  use_recipe_connector,
-} from "./recipes/use_recipe_connector";
+import { use_recipe_connector } from "./recipes/use_recipe_connector";
 import { applyFunctionRequestContext } from "./request-context";
 import { research } from "./research";
 import { run_sandbox_task } from "./sandbox";
@@ -119,14 +119,7 @@ for (const fn of functionDefinitions) {
     toolCompanions.set(fn.name, fn.companionTools);
   }
 
-  const resolvedPermissions = resolveToolPermissions(fn.name, fn.permissions);
-
-  if (resolvedPermissions.length === 0) {
-    throw new AssistantError(
-      `Tool "${fn.name}" is missing explicit permissions`,
-      ErrorType.CONFIGURATION_ERROR,
-    );
-  }
+  const resolvedPermissions = requireToolPermissions(fn.name, fn.permissions);
 
   toolRegistry.register(FUNCTIONS_TOOL_CATEGORY, {
     name: fn.name,
@@ -141,43 +134,13 @@ for (const fn of functionDefinitions) {
   });
 }
 
-export const listFunctionTools = (options?: {
-  connectedConnectorProviders?: readonly RecipeConnectorProvider[];
-  selectedConnectorProvider?: RecipeConnectorProvider;
-}): RegisteredFunctionTool[] => {
-  const definitions = toolRegistry.listDefinitions(
-    FUNCTIONS_TOOL_CATEGORY,
-  ) as RegisteredFunctionTool[];
-
-  if (!options?.connectedConnectorProviders && !options?.selectedConnectorProvider) {
-    return definitions;
-  }
-
-  const connectedConnectorProviders = options.connectedConnectorProviders;
-  const connectorProviders = options.selectedConnectorProvider
-    ? !connectedConnectorProviders ||
-      connectedConnectorProviders.includes(options.selectedConnectorProvider)
-      ? [options.selectedConnectorProvider]
-      : []
-    : [...(connectedConnectorProviders ?? [])];
-
-  return definitions.flatMap((definition) => {
-    if (definition.name !== use_recipe_connector.name) {
-      return [definition];
-    }
-
-    if (connectorProviders.length === 0) {
-      return [];
-    }
-
-    return [
-      {
-        ...definition,
-        inputSchema: createUseRecipeConnectorInputSchema(connectorProviders),
-      },
-    ];
-  });
-};
+export const listFunctionTools = (
+  options?: FunctionToolCatalogueOptions,
+): RegisteredFunctionTool[] =>
+  applyConnectorScope(
+    toolRegistry.listDefinitions(FUNCTIONS_TOOL_CATEGORY) as RegisteredFunctionTool[],
+    options,
+  );
 
 export const resolveToolRepeatLimit = (functionName: string): number | undefined =>
   toolRepeatLimits.get(functionName);

@@ -60,7 +60,7 @@ import { useAssistantActionCatalog } from "~/hooks/useAssistantActionCatalog";
 import { useModels } from "~/hooks/useModels";
 import { useModelToolOptions } from "~/hooks/useModelTools";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
-import { applyModelResponseDefaults } from "~/lib/chat-settings";
+import { clearModelResponseSettings } from "~/lib/chat-settings";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
 import type { ChatSettings, ReasoningEffort } from "~/types";
@@ -203,11 +203,9 @@ export function useComposerCommandActions({
   const selectModelWithDefaults = useCallback(
     (nextModel: string | null, settings: ChatSettings = chatSettings) => {
       setModel(nextModel);
-      setChatSettings(
-        applyModelResponseDefaults(settings, nextModel ? apiModels[nextModel] : undefined),
-      );
+      setChatSettings(clearModelResponseSettings(settings));
     },
-    [apiModels, chatSettings, setChatSettings, setModel],
+    [chatSettings, setChatSettings, setModel],
   );
 
   const consumeDirective = useCallback(() => {

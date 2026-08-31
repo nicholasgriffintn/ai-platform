@@ -1,4 +1,4 @@
-# ADR 0036: Retire team agents in favour of project flows
+# ADR 0037: Retire team agents in favour of project flows
 
 ## Status
 

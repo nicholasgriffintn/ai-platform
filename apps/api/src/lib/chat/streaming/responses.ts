@@ -1,6 +1,7 @@
 import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
 import { resolveExecutableModelForRequest } from "~/lib/chat/policy/model-access";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { applyModelResponseDefaults } from "~/lib/providers/models/responseDefaults";
 import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 import { StorageService } from "~/lib/storage";
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
@@ -124,7 +125,7 @@ export async function getAIResponse(request: ChatCompletionParameters) {
 
   try {
     parameters = mergeParametersWithDefaults({
-      ...params,
+      ...applyModelResponseDefaults(params, modelConfig),
       model: resolvedModel,
       provider: modelConfig.provider,
       messages: formattedMessages,

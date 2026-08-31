@@ -1,5 +1,5 @@
 import { gatewayId } from "~/constants/app";
-import { listFunctionTools } from "~/services/functions";
+import { listFunctionToolDefinitions } from "~/services/functions/definitions";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import {
@@ -83,7 +83,7 @@ export async function fetchAIResponse<
   const isFormData = body instanceof FormData;
   const isStreaming = isFormData ? false : detectStreaming(body, endpointOrUrl);
 
-  const tools = provider === "tool-use" ? listFunctionTools() : undefined;
+  const tools = provider === "tool-use" ? listFunctionToolDefinitions() : undefined;
   const bodyWithTools = isFormData ? body : tools ? { ...body, tools } : body;
   const requestBody = isFormData ? bodyWithTools : omitUndefinedValues(bodyWithTools);
 
