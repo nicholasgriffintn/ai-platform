@@ -26,6 +26,7 @@ import {
 import { createInitialConversationTitle } from "./conversation/title-source";
 import { loadVisibleConversationMessagePage } from "./conversation/visibleMessagePagination";
 import type { Database } from "./database";
+import { hasPlanEntitlement } from "./plans";
 import { type UsageLimits, UsageManager, type UsageUpdateTaskPayload } from "./usageManager";
 
 const logger = getLogger({ prefix: "lib/conversationManager" });
@@ -204,7 +205,10 @@ export class ConversationManager {
           const modelUsed = message.model || this.model;
 
           if (modelUsed) {
-            await this.usageManager.incrementUsageByModel(modelUsed, true);
+            await this.usageManager.incrementUsageByModel(
+              modelUsed,
+              hasPlanEntitlement(this.user?.plan_id, "pro"),
+            );
             break;
           }
         } catch (error) {
@@ -310,7 +314,7 @@ export class ConversationManager {
       return conversation.user_id === this.user.id;
     }
 
-    if (this.user.plan_id !== "pro") {
+    if (!hasPlanEntitlement(this.user.plan_id, "pro")) {
       return false;
     }
 
@@ -391,7 +395,10 @@ export class ConversationManager {
       const model = modelId || this.model;
 
       if (model) {
-        await this.usageManager.checkUsageByModel(model, this.user?.plan_id === "pro");
+        await this.usageManager.checkUsageByModel(
+          model,
+          hasPlanEntitlement(this.user?.plan_id, "pro"),
+        );
       }
     }
   }

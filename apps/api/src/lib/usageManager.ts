@@ -242,9 +242,10 @@ export class UsageManager {
         return 1;
       }
 
-      const inputMultiplier = (config.costPer1kInputTokens || 0) / USAGE_CONFIG.BASELINE_INPUT_COST;
+      const inputMultiplier =
+        (config.costPer1kInputTokens || 0) / USAGE_CONFIG.MULTIPLIER_BASELINE_INPUT_COST_PER_1K;
       const outputMultiplier =
-        (config.costPer1kOutputTokens || 0) / USAGE_CONFIG.BASELINE_OUTPUT_COST;
+        (config.costPer1kOutputTokens || 0) / USAGE_CONFIG.MULTIPLIER_BASELINE_OUTPUT_COST_PER_1K;
       const avgMultiplier = (inputMultiplier + outputMultiplier) / 2;
       const finalMultiplier = Math.ceil(avgMultiplier);
 

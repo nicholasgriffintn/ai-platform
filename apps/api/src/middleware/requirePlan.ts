@@ -1,9 +1,11 @@
 import type { Context, Next } from "hono";
 
+import type { PlanId } from "~/constants/plans";
+import { hasPlanEntitlement, resolvePlanId } from "~/lib/plans";
 import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-export type PlanType = "free" | "pro" | "enterprise";
+export type PlanType = PlanId;
 
 export function requirePlan(requiredPlan: PlanType) {
   return async (context: Context, next: Next) => {
@@ -13,9 +15,9 @@ export function requirePlan(requiredPlan: PlanType) {
       throw new AssistantError("User not authenticated", ErrorType.AUTHENTICATION_ERROR);
     }
 
-    if (user.plan_id !== requiredPlan) {
+    if (!hasPlanEntitlement(user.plan_id, requiredPlan)) {
       throw new AssistantError(
-        `This feature requires a ${requiredPlan} plan. Your current plan is ${user.plan_id || "free"}.`,
+        `This feature requires a ${requiredPlan} plan. Your current plan is ${resolvePlanId(user.plan_id)}.`,
         ErrorType.AUTHORISATION_ERROR,
       );
     }
