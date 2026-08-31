@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { IEnv, IUser } from "~/types";
+import { AssistantError } from "~/utils/errors";
 
 import realtimeRoutes from "../realtime";
 
@@ -12,6 +13,7 @@ const createElevenLabsRealtimeProxyResponseMock = vi.hoisted(() => vi.fn());
 const createMistralRealtimeProxyResponseMock = vi.hoisted(() => vi.fn());
 const filterModelsForUserAccessMock = vi.hoisted(() => vi.fn());
 const getDefaultModelMock = vi.hoisted(() => vi.fn());
+const listRealtimeLiveProvidersMock = vi.hoisted(() => vi.fn());
 const getModelsMock = vi.hoisted(() => vi.fn());
 
 vi.mock("~/lib/providers/capabilities/realtime", () => ({
@@ -28,6 +30,10 @@ vi.mock("~/lib/providers/capabilities/realtime", () => ({
 vi.mock("~/lib/providers/models", () => ({
   filterModelsForUserAccess: filterModelsForUserAccessMock,
   getModels: getModelsMock,
+}));
+
+vi.mock("~/services/realtime/catalogue", () => ({
+  listRealtimeLiveProviders: listRealtimeLiveProvidersMock,
 }));
 
 vi.mock("~/services/realtime/mistral", () => ({
@@ -78,7 +84,7 @@ function makeModel(
   };
 }
 
-function createApp(user: IUser = testUser) {
+function createApp(user: IUser | null = testUser) {
   const app = new Hono<{
     Variables: {
       user: IUser;
@@ -86,11 +92,21 @@ function createApp(user: IUser = testUser) {
   }>();
 
   app.use("/realtime/*", async (c, next) => {
-    c.set("user", user);
+    if (user) {
+      c.set("user", user);
+    }
+
     await next();
   });
 
   app.route("/realtime", realtimeRoutes);
+  app.onError((error, c) => {
+    if (error instanceof AssistantError && error.statusCode === 401) {
+      return c.json({ status: "error", message: error.message }, 401);
+    }
+
+    throw error;
+  });
 
   return app;
 }
@@ -104,6 +120,46 @@ describe("realtime routes", () => {
     vi.clearAllMocks();
     getDefaultModelMock.mockReturnValue("gpt-realtime-2");
     filterModelsForUserAccessMock.mockImplementation(async (models) => models);
+  });
+
+  it("returns the registry-owned realtime provider catalogue", async () => {
+    listRealtimeLiveProvidersMock.mockResolvedValue([
+      {
+        id: "openai",
+        order: 0,
+        label: "OpenAI Realtime",
+        shortLabel: "OpenAI",
+        liveMode: "native",
+        transport: "webrtc",
+        sessionType: "realtime",
+        inputModalities: ["audio"],
+        outputModalities: ["audio"],
+        description: "WebRTC voice agent",
+        defaultModelId: "gpt-realtime-2",
+        available: true,
+        readiness: "ready",
+        availabilityReason: "OpenAI is ready.",
+      },
+    ]);
+
+    const response = await createApp().request(
+      new Request("https://api.polychat.test/realtime/providers"),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      providers: [expect.objectContaining({ id: "openai", readiness: "ready" })],
+    });
+    expect(listRealtimeLiveProvidersMock).toHaveBeenCalledOnce();
+  });
+
+  it("rejects anonymous provider readiness requests", async () => {
+    const response = await createApp(null).request(
+      new Request("https://api.polychat.test/realtime/providers"),
+    );
+
+    expect(response.status).toBe(401);
+    expect(listRealtimeLiveProvidersMock).not.toHaveBeenCalled();
   });
 
   it("blocks session creation when the user cannot access the realtime model", async () => {

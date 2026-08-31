@@ -1,4 +1,4 @@
-import { getRealtimeLiveProviderManifestItem } from "@ngriffin_uk/polychat-schemas";
+import type { RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schemas";
 
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
@@ -18,7 +18,22 @@ import {
   type RealtimeTransport,
 } from "../modalities";
 
-const DEFAULT_REALTIME_MODEL = getRealtimeLiveProviderManifestItem("openai").defaultModelId;
+export const OPENAI_REALTIME_DESCRIPTOR = {
+  id: "openai",
+  order: 0,
+  label: "OpenAI Realtime",
+  shortLabel: "OpenAI",
+  liveMode: "native",
+  transport: "webrtc",
+  sessionType: "realtime",
+  inputModalities: ["audio"],
+  outputModalities: ["audio"],
+  description: "WebRTC voice agent",
+  defaultModelId: "gpt-realtime-2",
+} satisfies RealtimeLiveProviderDescriptor;
+
+const DEFAULT_REALTIME_MODEL = OPENAI_REALTIME_DESCRIPTOR.defaultModelId;
+const API_KEY_ENVIRONMENT_VARIABLE = "OPENAI_API_KEY";
 const DEFAULT_TRANSLATION_MODEL = "gpt-realtime-translate";
 const DEFAULT_TRANSCRIPTION_MODEL = "gpt-realtime-whisper";
 const DEFAULT_REALTIME_INPUT_TRANSCRIPTION_MODEL = "gpt-4o-mini-transcribe";
@@ -94,6 +109,11 @@ interface OpenAIRealtimeClientSecretResponse {
 
 export class OpenAIRealtimeProvider implements RealtimeProvider {
   name = "openai";
+  descriptor = OPENAI_REALTIME_DESCRIPTOR;
+  configuration = {
+    acceptsUserApiKey: true,
+    environmentVariables: [API_KEY_ENVIRONMENT_VARIABLE],
+  };
   models = [
     DEFAULT_REALTIME_MODEL,
     DEFAULT_TRANSLATION_MODEL,
@@ -105,7 +125,7 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
   ];
 
   private getProviderKeyName(): string {
-    return "OPENAI_API_KEY";
+    return API_KEY_ENVIRONMENT_VARIABLE;
   }
 
   async getApiKey(request: RealtimeSessionRequest): Promise<string> {

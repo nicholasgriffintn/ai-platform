@@ -2,8 +2,7 @@ import {
   getDefaultModelId,
   isRealtimeSessionModel,
   isTextInputChatModel,
-  REALTIME_LIVE_PROVIDER_MANIFEST,
-  type RealtimeLiveProviderManifestItem,
+  type RealtimeLiveProviderCatalogueItem,
   type ModelConfig,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -13,54 +12,92 @@ import {
   type RealtimeLiveWebSocketConfig,
 } from "./websocket-protocols";
 
-export type RealtimeLiveProviderId = RealtimeLiveProviderManifestItem["id"];
+export type RealtimeLiveProviderId = RealtimeLiveProviderCatalogueItem["id"];
 
-export interface RealtimeLiveProviderOption extends RealtimeLiveProviderManifestItem {
+export interface RealtimeLiveProviderOption extends RealtimeLiveProviderCatalogueItem {
   transport: RealtimeTransport;
   defaultDelay?: CreateRealtimeSessionOptions["delay"];
   websocket?: RealtimeLiveWebSocketConfig;
 }
 
-export const REALTIME_LIVE_PROVIDER_OPTIONS: RealtimeLiveProviderOption[] =
-  REALTIME_LIVE_PROVIDER_MANIFEST.map((provider) => ({
-    ...provider,
-    websocket: REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG[provider.id],
-  }));
+export function createRealtimeLiveProviderOptions(
+  providers: RealtimeLiveProviderCatalogueItem[],
+  websocketConfigs: Partial<
+    Record<RealtimeLiveProviderId, RealtimeLiveWebSocketConfig>
+  > = REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG,
+): RealtimeLiveProviderOption[] {
+  return providers.map((provider) => {
+    const websocket = websocketConfigs[provider.id];
 
-export function getRealtimeLiveProviderOption(provider: string): RealtimeLiveProviderOption {
-  return (
-    REALTIME_LIVE_PROVIDER_OPTIONS.find((option) => option.id === provider) ??
-    REALTIME_LIVE_PROVIDER_OPTIONS[0]
-  );
+    if (provider.transport === "websocket" && !websocket) {
+      return {
+        ...provider,
+        available: false,
+        readiness: "unavailable",
+        availabilityReason: `${provider.shortLabel} is not supported by this browser client.`,
+      };
+    }
+
+    return { ...provider, websocket };
+  });
+}
+
+export function getRealtimeLiveProviderOption(
+  provider: string,
+  options: RealtimeLiveProviderOption[] = [],
+): RealtimeLiveProviderOption | undefined {
+  return options.find((option) => option.id === provider);
+}
+
+export function getFirstReadyRealtimeLiveProviderOption(
+  options: RealtimeLiveProviderOption[],
+): RealtimeLiveProviderOption | undefined {
+  return options.find((option) => option.readiness === "ready");
 }
 
 export function isRealtimeLiveProviderId(
   provider?: string | null,
+  options: RealtimeLiveProviderOption[] = [],
 ): provider is RealtimeLiveProviderId {
-  return REALTIME_LIVE_PROVIDER_OPTIONS.some((option) => option.id === provider);
+  return options.some((option) => option.id === provider);
 }
 
 export function getRealtimeLiveProviderIdForModel(
   model?: { provider?: string; supportsRealtimeSession?: boolean } | null,
+  options: RealtimeLiveProviderOption[] = [],
 ): RealtimeLiveProviderId | undefined {
-  if (!model?.supportsRealtimeSession || !isRealtimeLiveProviderId(model.provider)) {
+  const provider = model?.provider
+    ? getRealtimeLiveProviderOption(model.provider, options)
+    : undefined;
+
+  if (!model?.supportsRealtimeSession || provider?.readiness !== "ready") {
     return undefined;
   }
 
-  return model.provider;
+  return provider.id;
 }
 
-export function getDefaultLiveModelId(provider: string): string {
-  return getRealtimeLiveProviderOption(provider).defaultModelId;
+export function getDefaultLiveModelId(
+  provider: string,
+  options: RealtimeLiveProviderOption[] = [],
+): string | undefined {
+  return getRealtimeLiveProviderOption(provider, options)?.defaultModelId;
 }
 
-export function isComposedRealtimeLiveProvider(provider: string): boolean {
-  return getRealtimeLiveProviderOption(provider).liveMode === "composed";
+export function isComposedRealtimeLiveProvider(
+  provider: string,
+  options: RealtimeLiveProviderOption[] = [],
+): boolean {
+  return getRealtimeLiveProviderOption(provider, options)?.liveMode === "composed";
 }
 
-export function waitsForRealtimeLiveProviderFinalEventOnStop(provider: string): boolean {
+export function waitsForRealtimeLiveProviderFinalEventOnStop(
+  provider: string,
+  options: RealtimeLiveProviderOption[] = [],
+): boolean {
   return Boolean(
-    getRealtimeLiveProviderOption(provider).websocket?.audioInput?.waitForFinalEventTypeOnStop,
+    getRealtimeLiveProviderOption(provider, options)?.websocket?.audioInput
+      ?.waitForFinalEventTypeOnStop,
   );
 }
 
@@ -92,8 +129,11 @@ export function getComposedRealtimeReasoningModelId(
   return undefined;
 }
 
-export function supportsRealtimeLiveVideoInput(provider: string): boolean {
-  return Boolean(getRealtimeLiveProviderOption(provider).websocket?.videoInput);
+export function supportsRealtimeLiveVideoInput(
+  provider: string,
+  options: RealtimeLiveProviderOption[] = [],
+): boolean {
+  return Boolean(getRealtimeLiveProviderOption(provider, options)?.websocket?.videoInput);
 }
 
 export type RealtimeLiveStatus = "idle" | "connecting" | "active" | "error";

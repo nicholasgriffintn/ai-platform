@@ -1,7 +1,6 @@
 import {
   errorResponseSchema,
-  REALTIME_LIVE_PROVIDER_MANIFEST,
-  realtimeLiveProviderManifestResponseSchema,
+  realtimeLiveProviderCatalogueResponseSchema,
   realtimePipelineSessionCreateSchema,
   realtimePipelineSessionResponseSchema,
   realtimeSessionResponseSchema,
@@ -20,6 +19,7 @@ import {
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { getAccessibleRealtimeModel } from "~/services/realtime/access";
 import { createCartesiaRealtimeProxyResponse } from "~/services/realtime/cartesia";
+import { listRealtimeLiveProviders } from "~/services/realtime/catalogue";
 import { createElevenLabsRealtimeProxyResponse } from "~/services/realtime/elevenlabs";
 import { createMistralRealtimeProxyResponse } from "~/services/realtime/mistral";
 import { createRealtimePipelineSession } from "~/services/realtime/pipeline";
@@ -42,14 +42,15 @@ app.use("/*", (c, next) => {
 addRoute(app, "get", "/providers", {
   tags: ["realtime"],
   summary: "List realtime live providers",
+  auth: true,
   responses: {
     200: {
-      description: "Realtime live provider manifest",
-      schema: realtimeLiveProviderManifestResponseSchema,
+      description: "Realtime live provider catalogue with current readiness",
+      schema: realtimeLiveProviderCatalogueResponseSchema,
     },
   },
-  handler: async () => ({
-    providers: REALTIME_LIVE_PROVIDER_MANIFEST,
+  handler: async ({ serviceContext }) => ({
+    providers: await listRealtimeLiveProviders(serviceContext),
   }),
 });
 

@@ -1,10 +1,10 @@
-import type { RealtimeLiveProviderManifestItem } from "@ngriffin_uk/polychat-schemas";
+import type { RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schemas";
 
 import type { AudioCommitGateConfig } from "./audio-commit-gate";
 import { extractInlineAudioChunks, isRealtimeSetupCompleteMessage } from "./messages";
 import type { RealtimeSession } from "./types";
 
-type RealtimeLiveProviderId = RealtimeLiveProviderManifestItem["id"];
+type RealtimeLiveProviderId = RealtimeLiveProviderDescriptor["id"];
 
 export interface RealtimeLiveWebSocketAudioInputConfig {
   buildAppendMessage: (base64Audio: string) => unknown;

@@ -20,6 +20,11 @@ export const realtimeSessionTypeSchema = z.enum(realtimeSessionTypes);
 export const realtimeLiveSessionTypeSchema = z.enum(realtimeLiveSessionTypes);
 export const realtimeLiveModeSchema = z.enum(["native", "composed"]);
 export const realtimeLiveModes = realtimeLiveModeSchema.options;
+export const realtimeLiveProviderReadinessSchema = z.enum([
+  "ready",
+  "setup_required",
+  "unavailable",
+]);
 export const realtimeModalitySchema = z.enum(realtimeModalities);
 export const realtimeOutputModalitySchema = z.enum(realtimeOutputModalities);
 export const realtimeTranscriptionDelaySchema = z.enum(realtimeTranscriptionDelays);
@@ -172,6 +177,20 @@ export const realtimeLiveProviderManifestItemSchema = z.object({
   supportsVideoInput: z.boolean().optional(),
 });
 
+export const realtimeLiveProviderDescriptorSchema = realtimeLiveProviderManifestItemSchema.extend({
+  order: z.number().int().nonnegative(),
+});
+
+export const realtimeLiveProviderCatalogueItemSchema = realtimeLiveProviderDescriptorSchema.extend({
+  available: z.boolean(),
+  readiness: realtimeLiveProviderReadinessSchema,
+  availabilityReason: z.string(),
+});
+
+export const realtimeLiveProviderCatalogueResponseSchema = z.object({
+  providers: z.array(realtimeLiveProviderCatalogueItemSchema),
+});
+
 export const realtimeLiveProviderManifestResponseSchema = z.object({
   providers: z.array(realtimeLiveProviderManifestItemSchema),
 });
@@ -181,6 +200,7 @@ export type RealtimeTransport = z.infer<typeof realtimeTransportSchema>;
 export type RealtimeSessionType = z.infer<typeof realtimeSessionTypeSchema>;
 export type RealtimeLiveSessionType = z.infer<typeof realtimeLiveSessionTypeSchema>;
 export type RealtimeLiveMode = z.infer<typeof realtimeLiveModeSchema>;
+export type RealtimeLiveProviderReadiness = z.infer<typeof realtimeLiveProviderReadinessSchema>;
 export type RealtimeModality = z.infer<typeof realtimeModalitySchema>;
 export type RealtimeOutputModality = z.infer<typeof realtimeOutputModalitySchema>;
 export type RealtimeTranscriptionDelay = z.infer<typeof realtimeTranscriptionDelaySchema>;
@@ -190,7 +210,14 @@ export type RealtimePipelineSessionResponse = z.infer<typeof realtimePipelineSes
 export type RealtimeLiveProviderManifestItem = z.infer<
   typeof realtimeLiveProviderManifestItemSchema
 >;
-
+export type RealtimeLiveProviderDescriptor = z.infer<typeof realtimeLiveProviderDescriptorSchema>;
+export type RealtimeLiveProviderCatalogueItem = z.infer<
+  typeof realtimeLiveProviderCatalogueItemSchema
+>;
+export type RealtimeLiveProviderCatalogueResponse = z.infer<
+  typeof realtimeLiveProviderCatalogueResponseSchema
+>;
+/** @deprecated Runtime clients should read the authenticated realtime provider catalogue. */
 export const REALTIME_LIVE_PROVIDER_MANIFEST: RealtimeLiveProviderManifestItem[] = [
   {
     id: "openai",
@@ -261,8 +288,10 @@ export const REALTIME_LIVE_PROVIDER_MANIFEST: RealtimeLiveProviderManifestItem[]
   },
 ];
 
+/** @deprecated Runtime clients should select from the authenticated realtime provider catalogue. */
 export const DEFAULT_REALTIME_LIVE_PROVIDER_ID = REALTIME_LIVE_PROVIDER_MANIFEST[0].id;
 
+/** @deprecated Runtime clients should read the authenticated realtime provider catalogue. */
 export function getRealtimeLiveProviderManifestItem(
   providerId: RealtimeProviderId,
 ): RealtimeLiveProviderManifestItem {

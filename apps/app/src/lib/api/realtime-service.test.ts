@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { buildRealtimeSessionPath, createRealtimeSession } from "./realtime-service";
+import {
+  buildRealtimeSessionPath,
+  createRealtimeSession,
+  fetchRealtimeLiveProviders,
+} from "./realtime-service";
 
 describe("realtime-service", () => {
   afterEach(() => {
@@ -58,5 +62,38 @@ describe("realtime-service", () => {
       method: "POST",
       credentials: "include",
     });
+  });
+
+  it("fetches the runtime realtime provider catalogue", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+      Response.json({
+        providers: [
+          {
+            id: "openai",
+            order: 0,
+            label: "OpenAI Realtime",
+            shortLabel: "OpenAI",
+            liveMode: "native",
+            transport: "webrtc",
+            sessionType: "realtime",
+            inputModalities: ["audio"],
+            outputModalities: ["audio"],
+            description: "WebRTC voice agent",
+            defaultModelId: "gpt-realtime-2",
+            available: true,
+            readiness: "ready",
+            availabilityReason: "OpenAI is ready.",
+          },
+        ],
+      }),
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(fetchRealtimeLiveProviders()).resolves.toMatchObject({
+      providers: [{ id: "openai", readiness: "ready" }],
+    });
+    expect(String(fetchMock.mock.calls[0][0])).toContain("/realtime/providers");
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({ credentials: "include" });
   });
 });

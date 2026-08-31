@@ -35,6 +35,7 @@ import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState }
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
+import { useRealtimeProviders } from "~/hooks/useRealtimeProviders";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import { applyModelResponseDefaults } from "~/lib/chat-settings";
 import {
@@ -125,6 +126,8 @@ export const ModelSelector = ({
   };
 
   const { data: apiModels = EMPTY_MODEL_CONFIG, isLoading: isLoadingModels } = useModels();
+  const { data: realtimeProviderOptions = [], isLoading: isLoadingRealtimeProviders } =
+    useRealtimeProviders();
   const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
   const isModelLoading = useIsLoading("model-init");
   const modelLoadingProgress = useLoadingProgress("model-init");
@@ -236,6 +239,10 @@ export const ModelSelector = ({
       return;
     }
 
+    if (isLiveScope && isLoadingRealtimeProviders) {
+      return;
+    }
+
     if (chatMode === "agent") {
       setChatMode("remote");
       setSelectedAgentId(null);
@@ -257,7 +264,7 @@ export const ModelSelector = ({
 
     const defaultScopedModel =
       isLiveScope && modelProviderFilter
-        ? getDefaultLiveModelId(modelProviderFilter)
+        ? getDefaultLiveModelId(modelProviderFilter, realtimeProviderOptions)
         : defaultModelId;
     const fallbackModel =
       defaultScopedModel && filteredModels[defaultScopedModel]
@@ -277,11 +284,13 @@ export const ModelSelector = ({
     filteredModels,
     filteredModelReferences,
     isLiveScope,
+    isLoadingRealtimeProviders,
     isModelListOnlyScope,
     isPro,
     model,
     modelProviderFilter,
     modelListChatMode,
+    realtimeProviderOptions,
     selectModelWithDefaults,
     selectedTab,
     setChatMode,
@@ -448,7 +457,7 @@ export const ModelSelector = ({
     }
   }, [currentAgentModel, model, selectModelWithDefaults, chatMode]);
 
-  if (isLoadingModels) {
+  if (isLoadingModels || (isLiveScope && isLoadingRealtimeProviders)) {
     return (
       <div className="flex items-center gap-2 text-sm text-zinc-500">
         <Loader2 className="h-4 w-4 animate-spin" />

@@ -2,10 +2,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiService } from "~/lib/api/api-service";
 
+import { MODELS_QUERY_KEY } from "./useModels";
+import { REALTIME_PROVIDERS_QUERY_KEY } from "./useRealtimeProviders";
+
 export const USER_QUERY_KEYS = {
   providerSettings: ["user", "provider-settings"],
   providerSyncStatus: ["user", "provider-sync-status"],
 } as const;
+
+function invalidateProviderReadiness(queryClient: ReturnType<typeof useQueryClient>): void {
+  void queryClient.invalidateQueries({ queryKey: [MODELS_QUERY_KEY] });
+  void queryClient.invalidateQueries({ queryKey: REALTIME_PROVIDERS_QUERY_KEY });
+}
 
 export function useUser(options?: { enabled?: boolean }) {
   const queryClient = useQueryClient();
@@ -39,6 +47,7 @@ export function useUser(options?: { enabled?: boolean }) {
       void queryClient.invalidateQueries({
         queryKey: USER_QUERY_KEYS.providerSettings,
       });
+      invalidateProviderReadiness(queryClient);
     },
   });
 
@@ -50,6 +59,7 @@ export function useUser(options?: { enabled?: boolean }) {
       void queryClient.invalidateQueries({
         queryKey: USER_QUERY_KEYS.providerSettings,
       });
+      invalidateProviderReadiness(queryClient);
       void queryClient.invalidateQueries({
         queryKey: USER_QUERY_KEYS.providerSyncStatus,
       });
@@ -64,6 +74,7 @@ export function useUser(options?: { enabled?: boolean }) {
       void queryClient.invalidateQueries({
         queryKey: USER_QUERY_KEYS.providerSettings,
       });
+      invalidateProviderReadiness(queryClient);
     },
   });
 
