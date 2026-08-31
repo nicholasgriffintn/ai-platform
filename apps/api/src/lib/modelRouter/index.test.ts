@@ -45,6 +45,7 @@ function makeModel(id: string, overrides: Partial<ModelConfigItem> = {}): ModelC
     reliability: 4,
     speed: 3,
     strengths: ["chat"],
+    isFree: true,
     ...overrides,
   };
 }

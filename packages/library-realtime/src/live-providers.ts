@@ -1,5 +1,5 @@
 import {
-  defaultModel,
+  getDefaultModelId,
   isRealtimeSessionModel,
   isTextInputChatModel,
   type RealtimeLiveProviderCatalogueItem,
@@ -115,20 +115,18 @@ export function getComposedRealtimeReasoningModelId(
     return selectedModelId ?? undefined;
   }
 
-  const defaultChatModel = models[defaultModel];
+  const defaultModelId = getDefaultModelId(models);
+  const defaultChatModel = defaultModelId ? models[defaultModelId] : undefined;
 
   if (
     defaultChatModel &&
     !isRealtimeSessionModel(defaultChatModel) &&
     isTextInputChatModel(defaultChatModel)
   ) {
-    return defaultModel;
+    return defaultModelId;
   }
 
-  return Object.entries(models).find(
-    ([, model]) =>
-      !model.hiddenFromDefaultList && !isRealtimeSessionModel(model) && isTextInputChatModel(model),
-  )?.[0];
+  return undefined;
 }
 
 export function supportsRealtimeLiveVideoInput(

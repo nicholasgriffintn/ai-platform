@@ -1,4 +1,4 @@
-import type { ModelConfig, RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schemas";
+import type { RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schemas";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -67,13 +67,15 @@ describe("realtime provider catalogue", () => {
 
   it("projects registered providers using account model and credential readiness", async () => {
     const registrations = providerLibrary.list("realtime");
-    const models: ModelConfig = Object.fromEntries(
+    const models: Awaited<ReturnType<typeof modelsService.listModels>> = Object.fromEntries(
       registrations.map(({ name }) => {
         const providerDescriptor = providerLibrary.realtime(name).descriptor;
 
         return [
           providerDescriptor.defaultModelId,
           {
+            isDefault: false,
+            isExecutable: true,
             matchingModel: providerDescriptor.defaultModelId,
             provider: providerDescriptor.id,
           },
@@ -101,13 +103,15 @@ describe("realtime provider catalogue", () => {
 
   it("fails one provider closed without hiding other registered providers", async () => {
     const registrations = providerLibrary.list("realtime");
-    const models: ModelConfig = Object.fromEntries(
+    const models: Awaited<ReturnType<typeof modelsService.listModels>> = Object.fromEntries(
       registrations.map(({ name }) => {
         const providerDescriptor = providerLibrary.realtime(name).descriptor;
 
         return [
           providerDescriptor.defaultModelId,
           {
+            isDefault: false,
+            isExecutable: true,
             matchingModel: providerDescriptor.defaultModelId,
             provider: providerDescriptor.id,
           },

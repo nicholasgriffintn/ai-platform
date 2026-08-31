@@ -42,7 +42,7 @@ const MODEL_ALIASES: Record<string, string> = {
   whisper: "openai-whisper",
 };
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
-  realtime: [DEFAULT_REALTIME_MODEL, "gpt-realtime-mini"],
+  realtime: [DEFAULT_REALTIME_MODEL],
   translation: [DEFAULT_TRANSLATION_MODEL],
   transcription: [
     DEFAULT_TRANSCRIPTION_MODEL,
@@ -116,7 +116,6 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
   };
   models = [
     DEFAULT_REALTIME_MODEL,
-    "gpt-realtime-mini",
     DEFAULT_TRANSLATION_MODEL,
     DEFAULT_TRANSCRIPTION_MODEL,
     "gpt-4o-transcribe",
@@ -135,6 +134,7 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
       providerName: this.name,
       envKeyName: this.getProviderKeyName(),
       userId: request.user.id,
+      credentialAuthority: request.credentialAuthority,
     });
   }
 

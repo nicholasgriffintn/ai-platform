@@ -19,7 +19,10 @@ func makeModel(
     supportsFunctions: Bool? = nil,
     multimodal: Bool? = nil,
     isFeatured: Bool? = true,
-    isDeprecated: Bool? = false
+    isDeprecated: Bool? = false,
+    isDefault: Bool? = nil,
+    isExecutable: Bool? = nil,
+    status: String? = nil
 ) -> ModelConfigItem {
     ModelConfigItem(
         id: id,
@@ -33,7 +36,10 @@ func makeModel(
         supportsFunctions: supportsFunctions,
         multimodal: multimodal,
         isFeatured: isFeatured,
-        isDeprecated: isDeprecated
+        isDeprecated: isDeprecated,
+        isDefault: isDefault,
+        isExecutable: isExecutable,
+        status: status
     )
 }
 

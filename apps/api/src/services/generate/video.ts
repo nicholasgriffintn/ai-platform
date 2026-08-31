@@ -1,3 +1,5 @@
+import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
+
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { generateWithProviderFallback } from "~/lib/providers/capabilities/utils";
 import { getVideoProvider } from "~/lib/providers/capabilities/video";
@@ -27,7 +29,7 @@ export interface VideoResponse {
   data: any;
 }
 
-const DEFAULT_PROVIDER = "replicate";
+const DEFAULT_PROVIDER = MODEL_DEFAULTS.video.replicate.provider;
 
 export async function generateVideo({
   completion_id,

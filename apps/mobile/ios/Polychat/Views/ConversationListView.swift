@@ -344,8 +344,8 @@ private enum ConversationListPreviewData {
         let store = ModelsStore()
         store.models = [
             ModelConfigItem(
-                id: "deepseek-chat",
-                name: "DeepSeek Chat",
+                id: "deepseek-v4-flash",
+                name: "DeepSeek V4 Flash",
                 provider: "deepseek",
                 description: "General purpose chat model.",
                 strengths: ["Reasoning", "Code"],
@@ -370,7 +370,7 @@ private enum ConversationListPreviewData {
                 isFeatured: true
             )
         ]
-        store.selectModel("deepseek-chat")
+        store.selectModel("deepseek-v4-flash")
         return store
     }
 
@@ -525,7 +525,7 @@ private enum ConversationListPreviewData {
 
     ```json
     {
-      "model": "deepseek-chat",
+      "model": "deepseek-v4-flash",
       "stream": true,
       "messages": [
         { "role": "user", "content": "Preview markdown rendering" }
@@ -605,7 +605,7 @@ private enum ConversationListPreviewData {
             title: title,
             messages: messages,
             createdAt: lastMessageAt ?? Date(),
-            modelId: "deepseek-chat",
+            modelId: "deepseek-v4-flash",
             isLoadedFromAPI: false,
             lastMessageAt: lastMessageAt,
             messageCount: messages.count

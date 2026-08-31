@@ -1,7 +1,7 @@
 import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
+import { resolveExecutableModelForRequest } from "~/lib/chat/policy/model-access";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { resolveModelConfig } from "~/lib/providers/models";
 import type { ChatCompletionParameters, ChatRole, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -64,12 +64,13 @@ export async function handleCreateEditCompletions(
   }
 
   const selectedModel = model ?? options.defaultModel();
-
-  const modelConfig = await resolveModelConfig(selectedModel, env, requestedProvider);
-
-  if (!modelConfig[options.capability]) {
-    throw new AssistantError(options.unsupportedMessage(selectedModel), ErrorType.PARAMS_ERROR);
-  }
+  const { config: modelConfig, credentialAuthority } = await resolveExecutableModelForRequest({
+    env,
+    user,
+    model: selectedModel,
+    provider: requestedProvider,
+    capability: options.capability,
+  });
 
   const provider = getChatProvider(modelConfig.provider, { env, user });
   const context = createServiceContext({ env, user });
@@ -77,6 +78,7 @@ export async function handleCreateEditCompletions(
   const editRequest: ChatCompletionParameters = {
     env,
     context,
+    credentialAuthority,
     model: modelConfig.matchingModel,
     provider: modelConfig.provider,
     messages: normalizeCompletionMessages(messages),

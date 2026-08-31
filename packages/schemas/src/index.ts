@@ -90,6 +90,7 @@ export * from "./model-makers";
 export * from "./model-region-variants";
 export * from "./model-router-modes";
 export * from "./model-selection";
+export * from "./model-defaults";
 export * from "./model-tool-configuration";
 export * from "./provider-display";
 export * from "./recipe-presentation";

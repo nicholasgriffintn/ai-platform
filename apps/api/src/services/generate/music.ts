@@ -1,3 +1,5 @@
+import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
+
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { getMusicProvider } from "~/lib/providers/capabilities/music";
 import { generateWithProviderFallback } from "~/lib/providers/capabilities/utils";
@@ -22,7 +24,7 @@ export interface MusicResponse {
   data: any;
 }
 
-const DEFAULT_PROVIDER = "replicate";
+const DEFAULT_PROVIDER = MODEL_DEFAULTS.music.replicate.provider;
 
 export async function generateMusic({
   completion_id,

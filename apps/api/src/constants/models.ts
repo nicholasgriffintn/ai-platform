@@ -30,6 +30,3 @@ export const availableModalities = [
   "ocr",
   "transcription",
 ] as const;
-
-export const defaultModel = "deepseek-v4-flash";
-export const defaultProvider = "deepseek";

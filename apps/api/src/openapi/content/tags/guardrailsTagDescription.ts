@@ -3,14 +3,16 @@ import { md } from "~/utils/markdown.js";
 export const guardrailsTagDescription = md`
 # Guardrails
 
-Content safety and moderation using Llamaguard and AWS Bedrock Guardrails.
+Content safety and moderation using LlamaGuard, Mistral Moderation, Shieldstral, and AWS Bedrock Guardrails.
 
 ## Overview
 
-Guardrails protect your application by validating content for safety violations. The system supports two providers:
+Guardrails protect your application by validating content for safety violations. The system supports four providers:
 
-- **Llamaguard** - Meta's content moderation model (default, free)
+- **LlamaGuard** - Meta's content moderation model (default, free)
 - **AWS Bedrock Guardrails** - Enterprise-grade filtering (requires AWS setup)
+- **Mistral Moderation** - Hosted category-based moderation
+- **Shieldstral** - Self-hosted, policy-adaptive moderation for text and images
 
 ## How It Works
 
@@ -26,7 +28,7 @@ Guardrails protect your application by validating content for safety violations.
 Guardrails are configured per-user via settings:
 
 - \`guardrails_enabled\` (boolean) - Enable/disable guardrails
-- \`guardrails_provider\` (string) - \`"llamaguard"\` or \`"bedrock"\`
+- \`guardrails_provider\` (string) - \`"llamaguard"\`, \`"bedrock"\`, \`"mistral"\`, or \`"shieldstral"\`
 
 ### Bedrock Settings
 
@@ -37,7 +39,7 @@ If using Bedrock, also configure:
 
 ## Providers
 
-### Llamaguard
+### LlamaGuard
 
 Meta's Llama Guard model for content moderation.
 
@@ -97,6 +99,22 @@ Amazon's enterprise guardrails service.
 - Topic policy violations
 - Content filter violations
 - PII entity detections
+
+### Mistral Moderation
+
+Mistral's hosted Moderation 2 API provides category-level text classification, including
+jailbreak detection, without additional inference infrastructure.
+
+### Shieldstral
+
+Mistral's open-weight, policy-adaptive safety classifier. Polychat sends text, image, and
+prompt-response inputs to an operator-managed OpenAI-compatible inference endpoint and derives a
+continuous unsafe score from the model's \`yes\` and \`no\` token probabilities.
+
+Configure \`SHIELDSTRAL_BASE_URL\` and, when the endpoint requires it,
+\`SHIELDSTRAL_API_KEY\`. Optional \`SHIELDSTRAL_MODEL\`, \`SHIELDSTRAL_POLICY\`,
+\`SHIELDSTRAL_POLICY_VERSION\`, and \`SHIELDSTRAL_THRESHOLD\` values control the pinned checkpoint,
+server-owned policy, audit version, and enforcement threshold.
 
 ## Validation
 
@@ -184,7 +202,7 @@ Violations are automatically tracked to Cloudflare Analytics Engine with:
 
 ## Limitations
 
-- **No custom policies** - Cannot define custom word filters or regex patterns
+- **Operator-owned policies** - Shieldstral policy changes require deployment configuration
 - **No per-request configuration** - Settings are user-level only
 - **No dedicated endpoint** - Only \`/v1/chat/completions/{id}/check\` exists
 - **No bypass rules** - Cannot configure exemptions
@@ -211,7 +229,7 @@ Guardrails must be enabled via user settings. There's no per-request parameter t
 ## Best Practices
 
 1. **Enable for Production** - Use guardrails for user-facing applications
-2. **Choose Provider** - Llamaguard for speed/cost, Bedrock for accuracy
+2. **Choose Provider** - Match the provider to the required policy, modality, and deployment model
 3. **Monitor Violations** - Track violations in analytics
 4. **Handle Failures** - Implement fallbacks if guardrail validation fails
 5. **Test Thoroughly** - Test with various content types before deployment

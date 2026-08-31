@@ -1,3 +1,5 @@
+import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
+
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getModelConfigByModel } from "~/lib/providers/models";
@@ -8,7 +10,7 @@ import { omitNullishValues } from "~/utils/objects";
 
 import type { MusicGenerationRequest, MusicGenerationResult, MusicProvider } from "../index";
 
-const DEFAULT_MODEL = "replicate-stable-audio";
+const DEFAULT_MODEL = MODEL_DEFAULTS.music.replicate.model;
 
 export class ReplicateMusicProvider implements MusicProvider {
   name = "replicate";

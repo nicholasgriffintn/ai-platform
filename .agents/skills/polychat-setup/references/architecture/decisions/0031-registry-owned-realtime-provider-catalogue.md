@@ -1,4 +1,4 @@
-# ADR 0030: Registry-owned realtime provider catalogue
+# ADR 0031: Registry-owned realtime provider catalogue
 
 ## Status
 

@@ -287,6 +287,21 @@ struct ModelTests {
         #expect(json["rag_options"] == nil)
         #expect(json["enabled_tools"] == nil)
         #expect(json["tool_selection_mode"] as? String == "managed")
+        #expect(json["model_router_mode"] == nil)
+    }
+
+    @Test func chatCompletionRequestUsesAutomaticRoutingWithoutAModel() throws {
+        let request = ChatCompletionRequest(
+            messages: [ChatMessage(role: "user", content: "Hi")],
+            model: nil
+        )
+
+        let data = try JSONEncoder().encode(request)
+        let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        #expect(json["model"] == nil)
+        #expect(json["provider"] == nil)
+        #expect(json["model_router_mode"] as? String == "auto")
     }
 
     @Test func chatCompletionRequestExcludesCompactionMarkers() throws {

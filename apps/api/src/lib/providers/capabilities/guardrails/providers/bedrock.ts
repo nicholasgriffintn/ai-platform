@@ -2,9 +2,18 @@ import { AwsClient } from "aws4fetch";
 
 import { formatProviderError } from "~/lib/providers/utils/errors";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
-import type { GuardrailResult, GuardrailsProvider, IEnv, IUser } from "~/types";
+import type {
+  GuardrailInput,
+  GuardrailResult,
+  GuardrailsProvider,
+  GuardrailSource,
+  IEnv,
+  IUser,
+} from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+
+import { normaliseGuardrailInput } from "../content";
 
 const logger = getLogger({ prefix: "lib/guardrails/bedrock" });
 
@@ -52,9 +61,10 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
     return { accessKey: parts[0], secretKey: parts[1] };
   }
 
-  async validateContent(content: string, source: "INPUT" | "OUTPUT"): Promise<GuardrailResult> {
+  async validateContent(input: GuardrailInput, source: GuardrailSource): Promise<GuardrailResult> {
     try {
       logger.debug("Validating content with Bedrock Guardrails");
+      const content = normaliseGuardrailInput(input).text;
       let accessKeyId = this.defaultAccessKeyId;
       let secretAccessKey = this.defaultSecretAccessKey;
 
@@ -167,6 +177,10 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
       logger.error("Error validating content with Bedrock Guardrails:", {
         error,
       });
+      throw AssistantError.fromError(
+        error instanceof Error ? error : new Error("Bedrock Guardrails validation failed"),
+        ErrorType.PROVIDER_ERROR,
+      );
     }
   }
 }
