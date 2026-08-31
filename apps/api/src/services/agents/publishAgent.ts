@@ -42,6 +42,8 @@ export async function publishAgentToWorkspace(
     systemPrompt: source.system_prompt,
     fewShotExamples: source.few_shot_examples,
     enabledTools: source.enabled_tools,
+    skillIds: source.skill_ids,
+    mode: source.mode,
   });
 
   return normaliseAgentResponse(published);

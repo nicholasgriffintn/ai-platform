@@ -1,7 +1,9 @@
+import { agentModeSchema, skillIdSchema } from "@ngriffin_uk/polychat-schemas";
+
 import type { Agent, AgentInstall, AgentRating, SharedAgent } from "~/lib/database/schema";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { safeParseJson } from "~/utils/json";
+import { parseJsonArrayColumn, safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 
 import { BaseRepository } from "./BaseRepository";
@@ -72,6 +74,8 @@ export class SharedAgentRepository extends BaseRepository {
         ? safeParseJson(agent.few_shot_examples as string)
         : [],
       enabled_tools: agent.enabled_tools ? safeParseJson(agent.enabled_tools as string) : [],
+      skill_ids: parseJsonArrayColumn(agent.skill_ids, skillIdSchema) ?? [],
+      mode: agent.mode,
     };
 
     await this.executeRun(
@@ -314,11 +318,13 @@ export class SharedAgentRepository extends BaseRepository {
 
     const agentId = generateId();
     const installId = generateId();
+    const installedSkillIds = parseJsonArrayColumn(templateData.skill_ids, skillIdSchema) ?? [];
+    const installedMode = agentModeSchema.safeParse(templateData.mode).data ?? null;
 
     await this.executeRun(
       `INSERT INTO agents
-       (id, user_id, owner_scope_type, owner_scope_id, name, description, avatar_url, servers, model, temperature, max_steps, system_prompt, few_shot_examples, enabled_tools)
-       VALUES (?, ?, 'user', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, user_id, owner_scope_type, owner_scope_id, name, description, avatar_url, servers, model, temperature, max_steps, system_prompt, few_shot_examples, enabled_tools, skill_ids, mode)
+       VALUES (?, ?, 'user', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         agentId,
         userId,
@@ -333,6 +339,8 @@ export class SharedAgentRepository extends BaseRepository {
         templateData.system_prompt,
         JSON.stringify(templateData.few_shot_examples),
         JSON.stringify(templateData.enabled_tools ?? []),
+        JSON.stringify(installedSkillIds),
+        installedMode,
       ],
     );
 
@@ -362,6 +370,8 @@ export class SharedAgentRepository extends BaseRepository {
       system_prompt: templateData.system_prompt,
       few_shot_examples: JSON.stringify(templateData.few_shot_examples),
       enabled_tools: JSON.stringify(templateData.enabled_tools ?? []),
+      skill_ids: JSON.stringify(installedSkillIds),
+      mode: installedMode,
       is_team_agent: false,
       team_id: null,
       team_role: null,

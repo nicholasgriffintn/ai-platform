@@ -1,6 +1,7 @@
 import type {
   AgentFewShotExample,
   AgentMcpServer,
+  AgentMode,
   AgentOwnerScopeType,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -25,6 +26,8 @@ export interface CreateAgentRecord {
   systemPrompt?: string | null;
   fewShotExamples?: AgentFewShotExample[] | null;
   enabledTools?: string[] | null;
+  skillIds?: string[] | null;
+  mode?: AgentMode | null;
   teamId?: string | null;
   teamRole?: string | null;
   isTeamAgent?: boolean;
@@ -54,12 +57,14 @@ export class AgentRepository extends BaseRepository {
         system_prompt: record.systemPrompt ?? null,
         few_shot_examples: record.fewShotExamples ?? null,
         enabled_tools: record.enabledTools ?? null,
+        skill_ids: record.skillIds ?? null,
+        mode: record.mode ?? null,
         team_id: record.teamId ?? null,
         team_role: record.teamRole ?? null,
         is_team_agent: record.isTeamAgent ? 1 : 0,
       },
       {
-        jsonFields: ["servers", "few_shot_examples", "enabled_tools"],
+        jsonFields: ["servers", "few_shot_examples", "enabled_tools", "skill_ids"],
         returning: "*",
       },
     );
@@ -112,6 +117,8 @@ export class AgentRepository extends BaseRepository {
       system_prompt: string;
       few_shot_examples: any[];
       enabled_tools: string[];
+      skill_ids: string[];
+      mode: AgentMode | null;
       team_id: string;
       team_role: string;
       is_team_agent: boolean;
@@ -128,13 +135,15 @@ export class AgentRepository extends BaseRepository {
       "system_prompt",
       "few_shot_examples",
       "enabled_tools",
+      "skill_ids",
+      "mode",
       "team_id",
       "team_role",
       "is_team_agent",
     ];
 
     const result = this.buildUpdateQuery("agents", data, allowedFields, "id = ?", [agentId], {
-      jsonFields: ["servers", "few_shot_examples", "enabled_tools"],
+      jsonFields: ["servers", "few_shot_examples", "enabled_tools", "skill_ids"],
       transformer: (field, value) => {
         if (field === "temperature" && value !== undefined && value !== null) {
           return value.toString();

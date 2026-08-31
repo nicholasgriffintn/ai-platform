@@ -59,6 +59,8 @@ export async function createAgent(context: ServiceContext, params: CreateAgentIn
     systemPrompt: params.system_prompt,
     fewShotExamples: params.few_shot_examples,
     enabledTools: params.enabled_tools,
+    skillIds: params.skill_ids,
+    mode: params.mode,
     teamId: params.team_id,
     teamRole: params.team_role,
     isTeamAgent: params.is_team_agent,

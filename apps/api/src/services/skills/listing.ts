@@ -4,7 +4,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { requireProjectAccess } from "~/services/workspaces/access";
 
 import { listSkillSummaries, resolveSkillCatalog } from "./catalog";
-import { SKILL_CAPABILITY_KIND } from "./scope";
+import { resolveProjectSkillGrants } from "./scope";
 
 export async function listScopedSkillSummaries(
   context: ServiceContext,
@@ -14,11 +14,7 @@ export async function listScopedSkillSummaries(
   if (projectId) {
     await requireProjectAccess(context, projectId);
     const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
-    const enabledNames = new Set(
-      capabilities
-        .filter((capability) => capability.kind === SKILL_CAPABILITY_KIND)
-        .map((capability) => capability.capability_id),
-    );
+    const enabledNames = new Set(resolveProjectSkillGrants(capabilities));
 
     return (
       await resolveSkillCatalog(context, { type: "project", id: projectId }, enabledNames)

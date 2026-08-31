@@ -1415,6 +1415,8 @@ export const agents = sqliteTable(
     system_prompt: text(),
     few_shot_examples: text({ mode: "json" }),
     enabled_tools: text({ mode: "json" }),
+    skill_ids: text({ mode: "json" }),
+    mode: text({ enum: ["chat", "plan", "build", "explore"] }),
     team_id: text(),
     team_role: text(),
     is_team_agent: integer({ mode: "boolean" }).default(false),

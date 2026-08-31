@@ -1,6 +1,10 @@
 import z from "zod/v4";
 
+import { agentModeSchema } from "./agent-modes";
+import { skillIdSchema } from "./skills";
 import { toolIdsSchema } from "./tools";
+
+const agentSkillIdsSchema = z.array(skillIdSchema);
 
 export const mcpServerSchema = z.object({
   url: z.url().meta({
@@ -50,6 +54,12 @@ export const createAgentSchema = z.object({
   enabled_tools: toolIdsSchema.optional().meta({
     description: "Tools enabled by default for this agent",
   }),
+  skill_ids: agentSkillIdsSchema.optional().meta({
+    description: "Skills this agent loads, named as the skill catalogue names them",
+  }),
+  mode: agentModeSchema.nullable().optional().meta({
+    description: "Agent mode this agent runs in; null lets the caller's mode win",
+  }),
   team_id: z.string().optional().meta({ description: "Team ID this agent belongs to" }),
   team_role: z.string().optional().meta({ description: "Role of this agent within the team" }),
   is_team_agent: z
@@ -85,6 +95,12 @@ export const updateAgentSchema = z
     enabled_tools: toolIdsSchema.optional().meta({
       description: "Tools enabled by default for this agent",
     }),
+    skill_ids: agentSkillIdsSchema.optional().meta({
+      description: "Updated skills this agent loads",
+    }),
+    mode: agentModeSchema.nullable().optional().meta({
+      description: "Updated agent mode; null lets the caller's mode win",
+    }),
     team_id: z.string().optional().meta({ description: "Team ID this agent belongs to" }),
     team_role: z.string().optional().meta({ description: "Role of this agent within the team" }),
     is_team_agent: z.boolean().optional().meta({ description: "Whether this is a team agent" }),
@@ -118,6 +134,8 @@ export const agentResponseSchema = z.object({
   system_prompt: z.string().nullable(),
   few_shot_examples: z.array(fewShotExampleSchema).nullable(),
   enabled_tools: toolIdsSchema.nullable(),
+  skill_ids: agentSkillIdsSchema,
+  mode: agentModeSchema.nullable(),
   team_id: z.string().nullable(),
   team_role: z.string().nullable(),
   is_team_agent: z.boolean(),
