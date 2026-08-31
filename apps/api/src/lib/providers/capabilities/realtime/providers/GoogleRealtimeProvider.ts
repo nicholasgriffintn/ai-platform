@@ -25,8 +25,8 @@ const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> =
   transcription: [],
 };
 const LIVE_WEBSOCKET_URL =
-  "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained";
-const AUTH_TOKEN_ENDPOINT = "https://generativelanguage.googleapis.com/v1alpha/auth_tokens";
+  "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained";
+const AUTH_TOKEN_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/auth_tokens";
 const DEFAULT_VOICE = "Kore";
 const DEFAULT_TRANSPORT: RealtimeTransport = "websocket";
 
@@ -195,24 +195,18 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
     };
   }
 
-  private buildTokenRequestBody(
-    request: RealtimeSessionRequest,
-    model: string,
-    inputModalities: RealtimeModality[],
-    outputModalities: RealtimeModality[],
-  ): Record<string, unknown> {
+  private buildTokenRequestBody(setup: Record<string, unknown>): Record<string, unknown> {
     const now = Date.now();
+    const { model, ...config } = setup;
 
     return {
       uses: 1,
       expireTime: new Date(now + 30 * 60 * 1000).toISOString(),
       newSessionExpireTime: new Date(now + 60 * 1000).toISOString(),
-      bidiGenerateContentSetup: this.buildLiveSetup({
-        request,
+      liveConnectConstraints: {
         model,
-        inputModalities,
-        outputModalities,
-      }),
+        config,
+      },
     };
   }
 
@@ -240,7 +234,7 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
       inputModalities,
       outputModalities,
     });
-    const body = this.buildTokenRequestBody(request, model, inputModalities, outputModalities);
+    const body = this.buildTokenRequestBody(setup);
 
     const response = await fetch(AUTH_TOKEN_ENDPOINT, {
       method: "POST",

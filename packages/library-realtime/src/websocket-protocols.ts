@@ -138,7 +138,7 @@ export const REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG: Partial<
         type: "input_audio.append",
         audio: base64Audio,
       }),
-      endMessages: [{ type: "input_audio.flush" }, { type: "input_audio.end" }],
+      endMessages: [{ type: "input_audio.end" }],
       waitForFinalEventTypeOnStop: "transcription.done",
     },
     closeErrorLabel: "Cartesia realtime transcription",

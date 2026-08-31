@@ -5,10 +5,10 @@ import { createModelConfig, createModelConfigObject } from "~/lib/providers/mode
 const PROVIDER = "cartesia";
 
 export const cartesiaModelConfig: ModelConfig = createModelConfigObject([
-  createModelConfig("ink-whisper", PROVIDER, {
-    name: "Ink Whisper",
-    matchingModel: "ink-whisper",
-    description: "Cartesia streaming speech-to-text model for realtime voice transcription.",
+  createModelConfig("ink-2", PROVIDER, {
+    name: "Ink 2",
+    matchingModel: "ink-2",
+    description: "Cartesia realtime speech-to-text model with built-in turn detection.",
     modalities: {
       input: ["audio"],
       output: ["text"],

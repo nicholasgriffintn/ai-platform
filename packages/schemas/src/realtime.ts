@@ -256,7 +256,7 @@ export const REALTIME_LIVE_PROVIDER_MANIFEST: RealtimeLiveProviderManifestItem[]
     inputModalities: ["audio"],
     outputModalities: ["text"],
     description: "Ink streaming speech-to-text",
-    defaultModelId: "ink-whisper",
+    defaultModelId: "ink-2",
     composeWith: { reasoning: true, speech: true },
   },
 ];
