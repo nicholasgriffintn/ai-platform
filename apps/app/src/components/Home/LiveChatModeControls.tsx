@@ -9,8 +9,8 @@ import {
   getStatusCopy,
 } from "@ngriffin_uk/polychat-component-conversation";
 import {
-  REALTIME_LIVE_PROVIDER_OPTIONS,
   type RealtimeLiveProviderId,
+  type RealtimeLiveProviderOption,
   supportsRealtimeLiveVideoInput,
 } from "@ngriffin_uk/polychat-library-realtime/live-providers";
 import { useState } from "react";
@@ -19,6 +19,7 @@ import type { RealtimeCameraDevice, RealtimeLiveStatus } from "~/hooks/useRealti
 
 interface LiveChatModeControlsProps {
   error?: string | null;
+  isLoadingProviders: boolean;
   lastEvent: string;
   lastTranscript?: string | null;
   microphoneEnabled: boolean;
@@ -29,7 +30,8 @@ interface LiveChatModeControlsProps {
   onStart: () => void;
   onStop: () => void;
   onVideoEnabledChange: (enabled: boolean) => void;
-  provider: RealtimeLiveProviderId;
+  options: RealtimeLiveProviderOption[];
+  provider: string;
   showHeader?: boolean;
   showSessionControls?: boolean;
   status: RealtimeLiveStatus;
@@ -153,6 +155,7 @@ export function LiveSessionComposerControls(props: Omit<LiveSessionControlsProps
 export function LiveChatModeControls({
   cameraDevices,
   error,
+  isLoadingProviders,
   lastEvent,
   lastTranscript,
   microphoneEnabled,
@@ -162,6 +165,7 @@ export function LiveChatModeControls({
   onStart,
   onStop,
   onVideoEnabledChange,
+  options,
   provider,
   showHeader = true,
   showSessionControls = true,
@@ -178,10 +182,11 @@ export function LiveChatModeControls({
     <div className="space-y-2">
       {showHeader && <LiveStatusHeader status={status} statusCopy={statusCopy} />}
       <LiveProviderPicker
-        options={REALTIME_LIVE_PROVIDER_OPTIONS}
+        options={options}
         provider={provider}
-        onProviderChange={(providerId) => onProviderChange(providerId as RealtimeLiveProviderId)}
+        onProviderChange={onProviderChange}
         isLocked={isActive || isConnecting}
+        isLoading={isLoadingProviders}
       />
       {showSessionControls && (
         <LiveSessionControls
@@ -199,7 +204,7 @@ export function LiveChatModeControls({
           status={status}
           videoEnabled={videoEnabled}
           videoPreviewStream={videoPreviewStream}
-          videoSupported={supportsRealtimeLiveVideoInput(provider)}
+          videoSupported={supportsRealtimeLiveVideoInput(provider, options)}
         />
       )}
     </div>

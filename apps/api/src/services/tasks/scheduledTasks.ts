@@ -10,6 +10,18 @@ const logger = getLogger({ prefix: "services/tasks/scheduled" });
 
 const MIN_NEW_MEMORIES_FOR_SYNTHESIS = 5;
 
+export async function redispatchPendingTasks(env: IEnv): Promise<number> {
+  const repositories = RepositoryManager.getInstance(env);
+  const taskService = new TaskService(env, repositories.tasks);
+  const dispatched = await taskService.dispatchPendingTasks();
+
+  if (dispatched > 0) {
+    logger.info("Recovered pending task queue deliveries", { dispatched });
+  }
+
+  return dispatched;
+}
+
 export async function scheduleDailyUsageReset(env: IEnv, now = new Date()): Promise<void> {
   try {
     const repositories = RepositoryManager.getInstance(env);

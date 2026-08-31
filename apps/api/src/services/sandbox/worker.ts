@@ -7,9 +7,12 @@ import type {
   SandboxModelSettings,
   SandboxWorkerExecuteRequest,
 } from "@ngriffin_uk/polychat-schemas";
+import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getGitHubAppInstallationToken } from "~/lib/github";
+import { filterModelsForUserAccess, getModels } from "~/lib/providers/models";
+import { getExecutableModelsForAccount, resolvePolicyModel } from "~/lib/providers/models/policy";
 import { generateJwtToken } from "~/services/auth/jwt";
 import {
   getGitHubAppConnectionForUserInstallation,
@@ -19,7 +22,6 @@ import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 const SANDBOX_TOKEN_EXPIRATION_SECONDS = 60 * 60;
-const DEFAULT_SANDBOX_MODEL = "mistral-large";
 
 function parseModelPolicyList(input: string | undefined): Set<string> {
   if (!input?.trim()) {
@@ -90,22 +92,43 @@ export function resolveApiBaseUrl(env: IEnv): string {
 
 export async function resolveSandboxModel(params: {
   context: ServiceContext;
-  userId: number;
+  user: IUser;
   model?: string;
 }): Promise<string> {
-  const { context, userId, model } = params;
+  const { context, user, model } = params;
+  const settings = await context.repositories.userSettings.getUserSettings(user.id);
+  const requestedModel = model?.trim() || settings?.sandbox_model?.trim();
+  const visibleModels = await filterModelsForUserAccess(getModels(), context.env, user.id, {
+    shouldUseCache: false,
+  });
+  const executableModels = getExecutableModelsForAccount(visibleModels, user);
 
-  if (model?.trim()) {
-    return enforceSandboxModelPolicy(context.env, model.trim());
+  if (requestedModel) {
+    const selected = Object.entries(executableModels).find(
+      ([modelId, config]) => modelId === requestedModel || config.matchingModel === requestedModel,
+    );
+
+    if (!selected) {
+      throw new AssistantError(
+        `Sandbox model "${requestedModel}" is not available for this account`,
+        ErrorType.AUTHORISATION_ERROR,
+        403,
+      );
+    }
+
+    return enforceSandboxModelPolicy(context.env, selected[0]);
   }
 
-  const settings = await context.repositories.userSettings.getUserSettings(userId);
+  const selected = resolvePolicyModel(executableModels, MODEL_DEFAULTS.sandbox, user);
 
-  if (settings?.sandbox_model?.trim()) {
-    return enforceSandboxModelPolicy(context.env, settings.sandbox_model.trim());
+  if (!selected) {
+    throw new AssistantError(
+      "No active sandbox model is available for this account",
+      ErrorType.CONFIGURATION_ERROR,
+    );
   }
 
-  return enforceSandboxModelPolicy(context.env, DEFAULT_SANDBOX_MODEL);
+  return enforceSandboxModelPolicy(context.env, selected.id);
 }
 
 async function resolveGitHubToken(params: {
@@ -181,7 +204,7 @@ export async function executeSandboxWorker(
 
   const model = await resolveSandboxModel({
     context,
-    userId: user.id,
+    user,
     model: options.model,
   });
   const sandboxToken = await generateJwtToken(

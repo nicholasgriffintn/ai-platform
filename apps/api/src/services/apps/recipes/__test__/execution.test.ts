@@ -91,7 +91,7 @@ describe("executeRecipeInvocationChat", () => {
       request: expect.objectContaining({
         completion_id: "recipe_generated-id",
         conversation_type: "task",
-        model: "deepseek-v4-flash",
+        model_router_mode: "auto",
         mode: "agent",
         stream: false,
         store: true,
@@ -125,6 +125,7 @@ describe("executeRecipeInvocationChat", () => {
 
     const request = mocks.handleCreateChatCompletions.mock.calls[0]?.[0].request;
 
+    expect(request).not.toHaveProperty("model");
     expect(request).not.toHaveProperty("max_steps");
   });
 

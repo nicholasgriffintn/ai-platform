@@ -1,3 +1,5 @@
+import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
+
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getModelConfigByModel } from "~/lib/providers/models";
@@ -8,7 +10,7 @@ import { omitNullishValues } from "~/utils/objects";
 
 import type { VideoGenerationRequest, VideoGenerationResult, VideoProvider } from "../index";
 
-const DEFAULT_MODEL = "replicate-google-veo-3-1-fast";
+const DEFAULT_MODEL = MODEL_DEFAULTS.video.replicate.model;
 
 export class ReplicateVideoProvider implements VideoProvider {
   name = "replicate";

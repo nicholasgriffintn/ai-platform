@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3b61c486-7773-499b-9a98-a81de6ee6ea5",
+  "id": "1ff390ec-b3f3-4311-a8ae-7603db9dd6ab",
   "prevId": "2dac5d26-400a-4f64-b2dc-70e3067dd66f",
   "tables": {
     "activity_record": {
@@ -854,6 +854,260 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
+    },
+    "authored_skill": {
+      "name": "authored_skill",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "scope_type": {
+          "name": "scope_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "scope_id": {
+          "name": "scope_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "draft_revision_id": {
+          "name": "draft_revision_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "stable_revision_id": {
+          "name": "stable_revision_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "state_version": {
+          "name": "state_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "archived_at": {
+          "name": "archived_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "authored_skill_scope_name_idx": {
+          "name": "authored_skill_scope_name_idx",
+          "columns": ["scope_type", "scope_id", "name"],
+          "isUnique": true,
+          "where": "\"authored_skill\".\"archived_at\" IS NULL"
+        }
+      },
+      "foreignKeys": {
+        "authored_skill_created_by_user_id_fk": {
+          "name": "authored_skill_created_by_user_id_fk",
+          "tableFrom": "authored_skill",
+          "tableTo": "user",
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "authored_skill_scope_type_check": {
+          "name": "authored_skill_scope_type_check",
+          "value": "\"authored_skill\".\"scope_type\" IN ('personal', 'project')"
+        },
+        "authored_skill_state_version_check": {
+          "name": "authored_skill_state_version_check",
+          "value": "\"authored_skill\".\"state_version\" >= 1"
+        }
+      }
+    },
+    "authored_skill_revision": {
+      "name": "authored_skill_revision",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "skill_id": {
+          "name": "skill_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "change_note": {
+          "name": "change_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "digest": {
+          "name": "digest",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "storage_key": {
+          "name": "storage_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "size": {
+          "name": "size",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_skill_id": {
+          "name": "source_skill_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "source_revision_id": {
+          "name": "source_revision_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "authored_skill_revision_storage_key_unique": {
+          "name": "authored_skill_revision_storage_key_unique",
+          "columns": ["storage_key"],
+          "isUnique": true
+        },
+        "authored_skill_revision_skill_revision_idx": {
+          "name": "authored_skill_revision_skill_revision_idx",
+          "columns": ["skill_id", "revision"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "authored_skill_revision_skill_id_authored_skill_id_fk": {
+          "name": "authored_skill_revision_skill_id_authored_skill_id_fk",
+          "tableFrom": "authored_skill_revision",
+          "tableTo": "authored_skill",
+          "columnsFrom": ["skill_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "authored_skill_revision_created_by_user_id_fk": {
+          "name": "authored_skill_revision_created_by_user_id_fk",
+          "tableFrom": "authored_skill_revision",
+          "tableTo": "user",
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "authored_skill_revision_number_check": {
+          "name": "authored_skill_revision_number_check",
+          "value": "\"authored_skill_revision\".\"revision\" >= 1"
+        },
+        "authored_skill_revision_size_check": {
+          "name": "authored_skill_revision_size_check",
+          "value": "\"authored_skill_revision\".\"size\" >= 0"
+        },
+        "authored_skill_revision_source_check": {
+          "name": "authored_skill_revision_source_check",
+          "value": "(\"authored_skill_revision\".\"source_skill_id\" IS NULL AND \"authored_skill_revision\".\"source_revision_id\" IS NULL) OR (\"authored_skill_revision\".\"source_skill_id\" IS NOT NULL AND \"authored_skill_revision\".\"source_revision_id\" IS NOT NULL)"
+        }
+      }
     },
     "capability_configuration": {
       "name": "capability_configuration",
@@ -3414,20 +3668,6 @@
         },
         "goal_id": {
           "name": "goal_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "sandbox_run_id": {
-          "name": "sandbox_run_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "output_id": {
-          "name": "output_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false,

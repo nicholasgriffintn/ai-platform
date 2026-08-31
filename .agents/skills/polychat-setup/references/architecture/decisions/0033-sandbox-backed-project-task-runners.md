@@ -1,4 +1,4 @@
-# ADR 0030: Sandbox-backed project task runners
+# ADR 0033: Sandbox-backed project task runners
 
 ## Status
 

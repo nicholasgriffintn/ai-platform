@@ -17,7 +17,7 @@ The API provides a unified interface to multiple AI providers, following OpenAI'
 - **Skills** - Specialised instructions the model loads on demand instead of carrying in every prompt
 - **RAG & Memories** - Vector-based context with Cloudflare Vectorize
 - **Training Control Plane** - A training and fine-tuning execution service
-- **Content Safety** - Llamaguard and AWS Bedrock Guardrails
+- **Content Safety** - LlamaGuard, Mistral Moderation, self-hosted Shieldstral, and AWS Bedrock Guardrails
 - **Flexible Auth** - OAuth, API keys, JWT, magic links, passkeys
 - **Real-time** - Streaming responses and WebSocket support
 - **Durable goal history** - Goal lifecycle markers remain in stored conversation timelines while
@@ -32,6 +32,8 @@ Document research is a loadable skill over the read-only `search_documents` tool
 The local API uses `http://localhost:8787` by default. The chat completion route is `/chat/completions`; use the generated OpenAPI reference for the current request contract.
 
 Automatic routing modes prefer their matching model tier. If that tier has no model which is both accessible to the person and suitable for the prompt's capabilities, route through the broader accessible automatic pool instead of failing the turn.
+
+The server owns model selection policy. Provider configuration determines the visible catalogue, then active status and Free, Pro, or BYOK entitlement determine the executable subset. `/models` marks every entry with account-specific `isExecutable` and the effective automatic chat choice with `isDefault`. Clients must repair a persisted selection when `isExecutable` is false. Omitted models with `model_router_mode: auto` use the same policy, while explicit model requests are rejected unless the account may execute them. Central auxiliary and capability references must resolve to active catalogue models and do not bypass these checks.
 
 When a chat request omits its output-token limit, resolve a workload-aware default before calling the provider: 2,048 for structured JSON, 8,192 for ordinary chat, 16,384 for agent or coding work, and 32,768 for reasoning models. An explicit `max_tokens`, `max_completion_tokens`, or `max_output_tokens` value overrides that default and is clamped only to the selected model's catalogue limit.
 

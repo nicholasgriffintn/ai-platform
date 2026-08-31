@@ -1,4 +1,12 @@
-import type { PetModelOverrides } from "@ngriffin_uk/polychat-schemas";
+import {
+  guardrailsProviderIds,
+  type GuardrailsProviderId,
+  type PetModelOverrides,
+} from "@ngriffin_uk/polychat-schemas";
+
+export function resolveGuardrailsProviderId(value: string): GuardrailsProviderId {
+  return guardrailsProviderIds.find((provider) => provider === value) ?? "llamaguard";
+}
 
 export interface UserSettings {
   id: string;
@@ -8,7 +16,7 @@ export interface UserSettings {
   preferences: string;
   tracking_enabled?: boolean;
   guardrails_enabled?: boolean;
-  guardrails_provider?: string;
+  guardrails_provider?: GuardrailsProviderId;
   bedrock_guardrail_id?: string;
   bedrock_guardrail_version?: string;
   embedding_provider?: string;

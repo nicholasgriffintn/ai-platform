@@ -3,6 +3,7 @@ import {
   EMPTY_MODEL_CONFIG,
   getAvailableModels,
   getFeaturedModels,
+  isActiveModel,
   getModelsByMode,
   modelHasOutputModality,
   searchModelList,
@@ -64,7 +65,11 @@ export function useConversationModelOptions({
   );
   const isSelectableModel = useCallback(
     (modelItem: ModelConfigItem) => {
-      if (modelItem.deprecated || isModelExcluded(modelItem)) {
+      if (
+        !isActiveModel(modelItem) ||
+        modelItem.isExecutable === false ||
+        isModelExcluded(modelItem)
+      ) {
         return false;
       }
 

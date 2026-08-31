@@ -2,6 +2,11 @@ import * as z from "zod/v4";
 
 import { petModelOverridesSchema } from "../pets";
 
+export const guardrailsProviderIds = ["llamaguard", "bedrock", "mistral", "shieldstral"] as const;
+
+export const guardrailsProviderSchema = z.enum(guardrailsProviderIds);
+export type GuardrailsProviderId = z.infer<typeof guardrailsProviderSchema>;
+
 export const updateUserSettingsResponseSchema = z.object({
   success: z.boolean(),
   message: z.string(),
@@ -14,7 +19,7 @@ export const updateUserSettingsSchema = z.object({
   preferences: z.string().nullable().optional(),
   tracking_enabled: z.boolean().optional(),
   guardrails_enabled: z.boolean().optional(),
-  guardrails_provider: z.string().optional(),
+  guardrails_provider: guardrailsProviderSchema.optional(),
   bedrock_guardrail_id: z.string().optional(),
   bedrock_guardrail_version: z.string().optional(),
   embedding_provider: z.string().optional(),

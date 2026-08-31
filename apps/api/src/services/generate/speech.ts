@@ -1,3 +1,5 @@
+import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
+
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { getSpeechProvider } from "~/lib/providers/capabilities/speech";
 import { generateWithProviderFallback } from "~/lib/providers/capabilities/utils";
@@ -22,7 +24,7 @@ export interface SpeechResponse {
   data: any;
 }
 
-const DEFAULT_PROVIDER = "workers-ai";
+const DEFAULT_PROVIDER = MODEL_DEFAULTS.speech.workersAi.provider;
 
 export async function generateSpeech({
   completion_id,

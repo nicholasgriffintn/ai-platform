@@ -17,7 +17,7 @@ Read the relevant accepted records before changing product structure, ownership,
 - [0016](decisions/0016-personal-capabilities-and-experiences.md): Nest personal capabilities and experiences under Chat, make scope a parameter rather than a fork, and stop publishing function tools as apps.
 - [0017](decisions/0017-scope-capability-configuration.md): Store capability configuration against an explicit scope without coupling it to enablement or one capability family.
 - [0018](decisions/0018-skills-as-loadable-instructions.md): Move specialised instructions into portable Agent Skills documents the model loads on demand, and drop the per-model artifact flag.
-- [0019](decisions/0019-store-authored-skills-as-r2-documents.md): Keep user-authored skills as scope-keyed private R2 documents, using project capabilities and audit records for Work governance instead of adding a skill table.
+- [0019](decisions/0019-store-authored-skills-as-r2-documents.md): Keep user-authored skills as scope-keyed private R2 documents, using project capabilities and audit records for Work governance instead of adding a skill table. Its mutable storage decision is superseded by ADR 0030.
 - [0020](decisions/0020-backend-shared-package-boundaries.md): Extract a backend package only where a second consumer already exists; judge candidates by duplication and coupling rather than module size.
 - [0021](decisions/0021-prompt-behaviour-belongs-in-skills.md): Move prompt-shaped tooling — prompt coaching, tutoring, reasoning steps, orchestration helpers, and council — into skills, add skill-suggested tools, and replace the client council loop and its chat mode with a server-side panel tool.
 - [0022](decisions/0022-one-turn-engine.md): Run every chat turn through the shared agent loop, with streaming as a transport rather than a pipeline of its own.
@@ -28,7 +28,10 @@ Read the relevant accepted records before changing product structure, ownership,
 - [0027](decisions/0027-project-flow-approval-authority.md): Make a Work stage's saved approval policy authoritative for its task run, and resume an approval-blocked task through an exact pending tool decision.
 - [0028](decisions/0028-response-scoped-capability-activation.md): Let discovery activate eligible native tools for the current response without changing saved settings or widening setup and project authority.
 - [0029](decisions/0029-server-managed-tool-selection.md): Let the server own function tool selection for Chat and iOS through a managed request mode, keep explicit selection for the API and agents, and drop the composer tool picker.
-- [0030](decisions/0030-sandbox-backed-project-task-runners.md): Let project tasks dispatch bounded sandbox profiles asynchronously, anchor terminal projection to one exact run, and ship Lean Proofs as a Work-only compiler-authoritative runner.
+- [0030](decisions/0030-version-authored-skills-with-d1-state-and-r2-bundles.md): Give authored skills D1 identity and draft/stable state while storing complete immutable revisions in private R2.
+- [0031](decisions/0031-server-owned-model-selection-policy.md): Let the server own executable-model policy and plan-, provider-, and BYOK-aware defaults while clients consume the resolved catalogue default or automatic routing.
+- [0032](decisions/0032-registry-owned-realtime-provider-catalogue.md): Derive realtime provider discovery and readiness from registered backend adapters while keeping one non-ready browser fallback.
+- [0033](decisions/0033-sandbox-backed-project-task-runners.md): Let project tasks dispatch bounded sandbox profiles asynchronously, anchor terminal projection to one exact run, and ship Lean Proofs as a Work-only compiler-authoritative runner.
 
 [context.md](context.md) holds the current domain vocabulary, workspace map, seams, and data flows.
 

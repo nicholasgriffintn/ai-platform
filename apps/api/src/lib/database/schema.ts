@@ -324,6 +324,84 @@ export const project = sqliteTable(
 
 export type Project = typeof project.$inferSelect;
 
+export const authoredSkill = sqliteTable(
+  "authored_skill",
+  {
+    id: text().primaryKey(),
+    scope_type: text({ enum: ["personal", "project"] }).notNull(),
+    scope_id: text().notNull(),
+    name: text().notNull(),
+    created_by: integer()
+      .notNull()
+      .references(() => user.id),
+    draft_revision_id: text().notNull(),
+    stable_revision_id: text().notNull(),
+    state_version: integer().default(1).notNull(),
+    archived_at: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    scopeNameIdx: uniqueIndex("authored_skill_scope_name_idx")
+      .on(table.scope_type, table.scope_id, table.name)
+      .where(sql`${table.archived_at} IS NULL`),
+    scopeTypeCheck: check(
+      "authored_skill_scope_type_check",
+      sql`${table.scope_type} IN ('personal', 'project')`,
+    ),
+    stateVersionCheck: check(
+      "authored_skill_state_version_check",
+      sql`${table.state_version} >= 1`,
+    ),
+  }),
+);
+
+export type AuthoredSkill = typeof authoredSkill.$inferSelect;
+
+export const authoredSkillRevision = sqliteTable(
+  "authored_skill_revision",
+  {
+    id: text().primaryKey(),
+    skill_id: text()
+      .notNull()
+      .references(() => authoredSkill.id, { onDelete: "cascade" }),
+    revision: integer().notNull(),
+    description: text().notNull(),
+    change_note: text(),
+    digest: text().notNull(),
+    storage_key: text().notNull().unique(),
+    size: integer().notNull(),
+    // Keep lineage readable even when the originating personal skill is later purged.
+    source_skill_id: text(),
+    source_revision_id: text(),
+    created_by: integer()
+      .notNull()
+      .references(() => user.id),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    skillRevisionIdx: uniqueIndex("authored_skill_revision_skill_revision_idx").on(
+      table.skill_id,
+      table.revision,
+    ),
+    revisionCheck: check("authored_skill_revision_number_check", sql`${table.revision} >= 1`),
+    sizeCheck: check("authored_skill_revision_size_check", sql`${table.size} >= 0`),
+    sourceCheck: check(
+      "authored_skill_revision_source_check",
+      sql`(${table.source_skill_id} IS NULL AND ${table.source_revision_id} IS NULL) OR (${table.source_skill_id} IS NOT NULL AND ${table.source_revision_id} IS NOT NULL)`,
+    ),
+  }),
+);
+
+export type AuthoredSkillRevision = typeof authoredSkillRevision.$inferSelect;
+
 export const projectCapability = sqliteTable(
   "project_capability",
   {
@@ -532,7 +610,7 @@ export const userSettings = sqliteTable(
     preferences: text(),
     guardrails_enabled: integer({ mode: "boolean" }).default(false),
     guardrails_provider: text({
-      enum: ["bedrock", "llamaguard"],
+      enum: ["bedrock", "llamaguard", "mistral", "shieldstral"],
     }).default("llamaguard"),
     bedrock_guardrail_id: text(),
     bedrock_guardrail_version: text(),
@@ -1420,6 +1498,7 @@ export const tasks = sqliteTable(
         "artificial_analysis_scoring",
         "inbound_message",
         "project_task_run",
+        "ocr_batch_polling",
       ],
     }).notNull(),
     status: text({

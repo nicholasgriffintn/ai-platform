@@ -44,6 +44,16 @@ Use a shared `TRAINING_WORKER_TOKEN` in the API and training worker. Add AWS cre
 
 Treat Stripe, PostHog, Beacon, email, SMS, guardrails, and captcha as independent capabilities. Disable their user interface or runtime path when credentials are intentionally absent; do not fill placeholders with dummy production values.
 
+Shieldstral is an optional, self-hosted guardrail rather than a Mistral API model. Set
+`SHIELDSTRAL_BASE_URL` to the root of an OpenAI-compatible vLLM, llama.cpp, or SGLang endpoint and
+set `SHIELDSTRAL_API_KEY` when that endpoint requires bearer authentication. Pin the deployed
+checkpoint with `SHIELDSTRAL_MODEL`; the default is `mistralai/Shieldstral-1.0-3B`.
+
+Keep `SHIELDSTRAL_POLICY` server-owned and record policy changes through
+`SHIELDSTRAL_POLICY_VERSION`. `SHIELDSTRAL_THRESHOLD` accepts a value from 0 to 1 and defaults to
+`0.5`. Enabling Shieldstral without a valid endpoint fails closed rather than allowing unchecked
+content.
+
 ## Configuration review
 
 Before validation, check that:

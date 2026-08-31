@@ -8,10 +8,12 @@ import type {
 } from "@cloudflare/workers-types";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { isOutputDeletionPending } from "~/lib/outputs/deletion";
 import { RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
 import { buildPrivateFileUrl, getPrivateFileResourceFromUrl } from "./resource-urls";
@@ -37,9 +39,11 @@ export interface StoreSourceFileRequest extends StorePrivateFileRequest {
 }
 
 export interface StoreOutputFileRequest extends StorePrivateFileRequest {
+  outputId?: string;
   createdByUserId: number;
   projectId?: string | null;
   conversationId?: string | null;
+  parentOutputId?: string | null;
   capabilityId: string;
   groupId?: string | null;
   kind: string;
@@ -48,10 +52,12 @@ export interface StoreOutputFileRequest extends StorePrivateFileRequest {
 }
 
 export interface RecordOutputFileRequest {
+  outputId?: string;
   key: string;
   createdByUserId: number;
   projectId?: string | null;
   conversationId?: string | null;
+  parentOutputId?: string | null;
   capabilityId: string;
   groupId?: string | null;
   kind: string;
@@ -191,18 +197,51 @@ export class StorageService {
   }
 
   async storeOutputFile(input: StoreOutputFileRequest): Promise<StoredOutputFileResult> {
+    const outputId = input.outputId ?? generateId();
+
     await this.uploadObject(input.key, input.data, {
       httpMetadata: { contentType: input.mimeType },
     });
 
-    return this.recordOutputFile(input);
+    try {
+      return await this.recordOutputFile({ ...input, outputId });
+    } catch (error) {
+      const context = this.requireResourceContext();
+      let persistedOutput;
+
+      try {
+        persistedOutput = await context.repositories.outputs.getOutputIncludingDeleting(outputId);
+      } catch {
+        // Preserve the object when commit state is unknown; an orphan is safer than a dangling Output.
+        throw error;
+      }
+
+      if (
+        persistedOutput?.storage_key === input.key &&
+        persistedOutput.created_by_user_id === input.createdByUserId
+      ) {
+        return {
+          outputId,
+          key: input.key,
+          url: buildPrivateFileUrl(context.env, "output", outputId),
+        };
+      }
+
+      if (!persistedOutput) {
+        await this.deleteObject(input.key).catch(() => undefined);
+      }
+
+      throw error;
+    }
   }
 
   async recordOutputFile({
+    outputId = generateId(),
     key,
     createdByUserId,
     projectId,
     conversationId,
+    parentOutputId,
     capabilityId,
     groupId,
     kind,
@@ -213,10 +252,18 @@ export class StorageService {
     byteSize,
   }: RecordOutputFileRequest): Promise<StoredOutputFileResult> {
     const context = this.requireResourceContext();
-    const output = await context.repositories.outputs.createOutput({
+    const project = projectId ? await context.repositories.workspaces.getProject(projectId) : null;
+
+    if (projectId && !project) {
+      throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
+    }
+
+    const outputRecord = {
+      id: outputId,
       createdByUserId,
       projectId,
       conversationId,
+      parentOutputId,
       capabilityId,
       groupId,
       kind,
@@ -226,7 +273,16 @@ export class StorageService {
       mimeType,
       filename,
       byteSize,
-    });
+    };
+    const output = project
+      ? await context.repositories.outputs.createOutput(outputRecord, {
+          workspaceId: project.workspace_id,
+          actorUserId: createdByUserId,
+          action: "output.created",
+          outputId,
+          metadata: { capabilityId, kind },
+        })
+      : await context.repositories.outputs.createOutput(outputRecord);
 
     return {
       outputId: output.id,
@@ -386,7 +442,12 @@ export class StorageService {
         ? await repositories.sources.getSource(resource.id)
         : await repositories.outputs.getOutput(resource.id);
 
-    if (!record || !record.storage_key || !record.mime_type) {
+    if (
+      !record ||
+      (resource.kind === "output" && isOutputDeletionPending(record)) ||
+      !record.storage_key ||
+      !record.mime_type
+    ) {
       throw new AssistantError("Private asset not found", ErrorType.NOT_FOUND, 404);
     }
 

@@ -89,6 +89,8 @@ Execute a general coding task. Lean proof payloads are accepted only from the in
 
 **Response:** JSON for standard requests, or an SSE stream with execution events when the request includes `Accept: text/event-stream`.
 
+The API validates an explicit sandbox model against the account's executable catalogue. When `model` is omitted, it resolves the first active, accessible sandbox preference from the shared model policy; the worker's direct-call fallback consumes that shared preference rather than owning another model ID.
+
 ## Development
 
 ```bash

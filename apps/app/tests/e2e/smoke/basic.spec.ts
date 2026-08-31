@@ -5,7 +5,7 @@ import {
   DEFAULT_VISUAL_CHECKPOINTS,
 } from "../support/visual-cloud";
 
-const TEXT_MODEL = "Compound Mini";
+const TEXT_MODEL = "GPT OSS 120B";
 
 test.describe("Release smoke as logged out", () => {
   test.use({ persona: "logged-out" });

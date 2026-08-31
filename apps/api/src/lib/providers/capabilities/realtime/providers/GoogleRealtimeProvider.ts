@@ -1,4 +1,4 @@
-import { getRealtimeLiveProviderManifestItem } from "@ngriffin_uk/polychat-schemas";
+import type { RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schemas";
 
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
@@ -13,8 +13,23 @@ import {
   type RealtimeTransport,
 } from "../modalities";
 
-const DEFAULT_REALTIME_MODEL =
-  getRealtimeLiveProviderManifestItem("google-ai-studio").defaultModelId;
+export const GOOGLE_REALTIME_DESCRIPTOR = {
+  id: "google-ai-studio",
+  order: 1,
+  label: "Gemini Live",
+  shortLabel: "Gemini",
+  liveMode: "native",
+  transport: "websocket",
+  sessionType: "realtime",
+  inputModalities: ["audio", "video"],
+  outputModalities: ["audio"],
+  description: "WebSocket voice and vision",
+  defaultModelId: "gemini-3.1-flash-live-preview",
+  supportsVideoInput: true,
+} satisfies RealtimeLiveProviderDescriptor;
+
+const DEFAULT_REALTIME_MODEL = GOOGLE_REALTIME_DESCRIPTOR.defaultModelId;
+const API_KEY_ENVIRONMENT_VARIABLE = "GOOGLE_STUDIO_API_KEY";
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
   realtime: [
     DEFAULT_REALTIME_MODEL,
@@ -62,10 +77,15 @@ interface GoogleAuthTokenResponse {
 
 export class GoogleRealtimeProvider implements RealtimeProvider {
   name = "google-ai-studio";
+  descriptor = GOOGLE_REALTIME_DESCRIPTOR;
+  configuration = {
+    acceptsUserApiKey: true,
+    environmentVariables: [API_KEY_ENVIRONMENT_VARIABLE],
+  };
   models = SESSION_MODELS_BY_TYPE.realtime;
 
   private getProviderKeyName(): string {
-    return "GOOGLE_STUDIO_API_KEY";
+    return API_KEY_ENVIRONMENT_VARIABLE;
   }
 
   async getApiKey(request: RealtimeSessionRequest): Promise<string> {
@@ -74,6 +94,7 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
       providerName: this.name,
       envKeyName: this.getProviderKeyName(),
       userId: request.user.id,
+      credentialAuthority: request.credentialAuthority,
     });
   }
 

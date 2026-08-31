@@ -240,7 +240,7 @@ describe("ChatOrchestrator", () => {
         });
 
         mockPreparer.prepare.mockImplementation(async (options: CoreChatOptions) => ({
-          modelConfigs: [{ model: "test-model" }],
+          modelConfigs: [{ model: "test-model", provider: "test-provider" }],
           primaryModel: "test-model",
           primaryProvider: "test-provider",
           conversationManager: mockConversationManager,
@@ -268,8 +268,18 @@ describe("ChatOrchestrator", () => {
         const result = await orchestrator.process(mockOptions);
 
         expect(mockValidator.validate).toHaveBeenCalledWith(mockOptions);
-        expect(mockConversationManager.checkUsageLimits).toHaveBeenCalledWith("test-model");
-        expect(mockGuardrails.validateOutput).toHaveBeenCalled();
+        expect(mockConversationManager.checkUsageLimits).toHaveBeenCalledWith(
+          "test-model",
+          "test-provider",
+        );
+        expect(mockGuardrails.validateOutput).toHaveBeenCalledWith(
+          expect.objectContaining({
+            prompt: "Hello with context",
+            text: expect.stringContaining("[Response]\nTest response"),
+          }),
+          undefined,
+          "test-completion-id",
+        );
         expect(mockConversationManager.add).toHaveBeenCalled();
         expect(result).toEqual({
           response: expect.objectContaining({
@@ -875,6 +885,68 @@ describe("ChatOrchestrator", () => {
           error: "Response did not pass safety checks",
           violations: ["inappropriate"],
         });
+        expect(mockConversationManager.add).toHaveBeenCalledWith(
+          "test-completion-id",
+          expect.objectContaining({ content: "Response blocked by safety checks." }),
+        );
+        expect(mockConversationManager.add).not.toHaveBeenCalledWith(
+          "test-completion-id",
+          expect.objectContaining({ content: "Inappropriate response" }),
+        );
+      });
+
+      it("withholds guarded streams and stops blocked tool calls before execution", async () => {
+        mockPreparer.prepare.mockResolvedValue({
+          modelConfigs: [{ model: "test-model" }],
+          primaryModel: "test-model",
+          primaryProvider: "test-provider",
+          conversationManager: mockConversationManager,
+          messages: [{ role: "user", content: "Hello" }],
+          systemPrompt: "Test system prompt",
+          messageWithContext: "Hello with context",
+          userSettings: { guardrails_enabled: true },
+          currentMode: "chat",
+        });
+        mockGetAIResponse.mockResolvedValue(new ReadableStream());
+        mockConsumeProviderStream.mockImplementation(async (_stream: unknown, sink: any) => {
+          await sink.writeEvent("content_block_delta", { content: "unsafe streamed output" });
+
+          return {
+            content: "unsafe streamed output",
+            toolCalls: [
+              {
+                id: "call-1",
+                type: "function",
+                function: { name: "dangerous_tool", arguments: "{}" },
+              },
+            ],
+            parts: [],
+            error: null,
+          };
+        });
+        mockGuardrails.validateOutput.mockResolvedValue({
+          isValid: false,
+          violations: ["unsafe_response"],
+        });
+
+        const result = await orchestrator.process({ ...mockOptions, stream: true });
+
+        if (!("stream" in result)) {
+          throw new Error("Expected streamed result");
+        }
+
+        const streamOutput = await readStream(result.stream);
+
+        expect(streamOutput).not.toContain("unsafe streamed output");
+        expect(streamOutput).toContain("Response blocked by safety checks.");
+        expect(mockHandleToolCalls).not.toHaveBeenCalled();
+        expect(mockConversationManager.add).toHaveBeenCalledWith(
+          "test-completion-id",
+          expect.objectContaining({
+            content: "Response blocked by safety checks.",
+            tool_calls: null,
+          }),
+        );
       });
 
       it("holds the conversation until a streaming response actually finishes", async () => {
