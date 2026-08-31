@@ -386,8 +386,8 @@ importers:
         specifier: 0.4.6
         version: 0.4.6(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       posthog-js:
-        specifier: 1.418.10
-        version: 1.418.10
+        specifier: 1.418.12
+        version: 1.418.12
       react:
         specifier: 'catalog:'
         version: 19.2.8
@@ -6673,8 +6673,8 @@ packages:
     resolution: {integrity: sha512-u82N74LFzG8ca+dD8puPnplTXoGH4fTPpVGuIbt36G3qvNlkvfD0lEAZSxaly3KX8TS/L1A1gsCEmvKmBcVbkQ==}
     engines: {node: ^10 || ^12 || >=14}
 
-  posthog-js@1.418.10:
-    resolution: {integrity: sha512-XMvmmnuFoesSPjFo+wvzXkvuzYqIho8CVqxugG1Wt768offFARYNZDd1/xWfm9vk/pJTJ4RhUEHRzLpggmGx9Q==}
+  posthog-js@1.418.12:
+    resolution: {integrity: sha512-O8bXEl9+qOffIdyUJqM85q7Ke99ZzRW0M5iaQO82b0sH0/v1AMJmxetMEp/frZ2rh8xC4aZDinqNjujFpgzOug==}
 
   posthog-node@5.51.1:
     resolution: {integrity: sha512-uEGB5OQvYl9f8Fy2t4FolhcBBlYB8sZM6/4Us517M5dcg/d00yyCusm0HydZFwbPQtPntlpr3gNAmv8TTbWuaA==}
@@ -12760,7 +12760,7 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  posthog-js@1.418.10:
+  posthog-js@1.418.12:
     dependencies:
       '@posthog/browser-common': 0.5.1
       '@posthog/core': 1.48.10
