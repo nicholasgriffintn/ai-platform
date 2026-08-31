@@ -240,7 +240,7 @@ describe("ChatOrchestrator", () => {
         });
 
         mockPreparer.prepare.mockImplementation(async (options: CoreChatOptions) => ({
-          modelConfigs: [{ model: "test-model" }],
+          modelConfigs: [{ model: "test-model", provider: "test-provider" }],
           primaryModel: "test-model",
           primaryProvider: "test-provider",
           conversationManager: mockConversationManager,
@@ -268,7 +268,10 @@ describe("ChatOrchestrator", () => {
         const result = await orchestrator.process(mockOptions);
 
         expect(mockValidator.validate).toHaveBeenCalledWith(mockOptions);
-        expect(mockConversationManager.checkUsageLimits).toHaveBeenCalledWith("test-model");
+        expect(mockConversationManager.checkUsageLimits).toHaveBeenCalledWith(
+          "test-model",
+          "test-provider",
+        );
         expect(mockGuardrails.validateOutput).toHaveBeenCalledWith(
           expect.objectContaining({
             prompt: "Hello with context",
