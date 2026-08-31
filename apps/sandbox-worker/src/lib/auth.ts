@@ -95,11 +95,13 @@ export async function verifySandboxJwt(
     throw new Error("JWT is not active yet");
   }
 
-  if (payload.iss && payload.iss !== "assistant") {
+  // The API Worker is the only issuer of sandbox tokens and always sets both
+  // claims, so a token missing either was not minted for this audience.
+  if (payload.iss !== "assistant") {
     throw new Error("JWT issuer is invalid");
   }
 
-  if (payload.aud && payload.aud !== "assistant") {
+  if (payload.aud !== "assistant") {
     throw new Error("JWT audience is invalid");
   }
 
