@@ -29,11 +29,6 @@ export interface SourceRecord {
   updated_at: string | null;
 }
 
-/**
- * Everything a source summary renders. `content` is the extracted body text of
- * a file, page or memory, and listing endpoints drop it, so reading it costs a
- * D1 transfer of the whole corpus for nothing.
- */
 export const SOURCE_SUMMARY_COLUMNS = [
   "id",
   "created_by_user_id",
