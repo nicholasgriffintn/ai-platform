@@ -51,7 +51,6 @@ import {
   type RealtimeEventResult,
   type RealtimeTranscriptResult,
 } from "@ngriffin_uk/polychat-library-realtime/messages";
-import { DEFAULT_REALTIME_LIVE_PROVIDER_ID } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -69,14 +68,24 @@ interface UseRealtimeLiveSessionOptions {
   model?: string | null;
   onEvent?: (event: RealtimeEventResult) => void;
   onTranscript?: (transcript: RealtimeTranscriptResult) => void;
+  providers?: RealtimeLiveProviderOption[];
 }
 
 interface CleanupOptions {
   closeConnection?: boolean;
 }
 
-function getConnectionProviderOption(connection: RealtimeConnection): RealtimeLiveProviderOption {
-  return getRealtimeLiveProviderOption(connection.session.provider ?? "");
+function getConnectionProviderOption(
+  connection: RealtimeConnection,
+  providers: RealtimeLiveProviderOption[],
+): RealtimeLiveProviderOption {
+  const provider = getRealtimeLiveProviderOption(connection.session.provider ?? "", providers);
+
+  if (!provider) {
+    throw new Error("The realtime provider is no longer available in this client.");
+  }
+
+  return provider;
 }
 
 function createCameraDeviceOption(device: MediaDeviceInfo, index: number): RealtimeCameraDevice {
@@ -88,9 +97,10 @@ function createCameraDeviceOption(device: MediaDeviceInfo, index: number): Realt
 
 function sendConfiguredAudioEnd(
   connection: RealtimeWebSocketConnection,
+  providers: RealtimeLiveProviderOption[],
   options: { forMicrophonePause?: boolean } = {},
 ): void {
-  const audioInput = getConnectionProviderOption(connection).websocket?.audioInput;
+  const audioInput = getConnectionProviderOption(connection, providers).websocket?.audioInput;
 
   if (!audioInput || (options.forMicrophonePause && !audioInput.endOnMicrophonePause)) {
     return;
@@ -101,8 +111,11 @@ function sendConfiguredAudioEnd(
   }
 }
 
-function sendConfiguredAudioCommit(connection: RealtimeWebSocketConnection): void {
-  const audioInput = getConnectionProviderOption(connection).websocket?.audioInput;
+function sendConfiguredAudioCommit(
+  connection: RealtimeWebSocketConnection,
+  providers: RealtimeLiveProviderOption[],
+): void {
+  const audioInput = getConnectionProviderOption(connection, providers).websocket?.audioInput;
 
   if (!audioInput) {
     return;
@@ -113,18 +126,23 @@ function sendConfiguredAudioCommit(connection: RealtimeWebSocketConnection): voi
   }
 }
 
-function shouldWaitForConfiguredAudioEndEvent(connection: RealtimeWebSocketConnection): boolean {
+function shouldWaitForConfiguredAudioEndEvent(
+  connection: RealtimeWebSocketConnection,
+  providers: RealtimeLiveProviderOption[],
+): boolean {
   return Boolean(
-    getConnectionProviderOption(connection).websocket?.audioInput?.waitForFinalEventTypeOnStop,
+    getConnectionProviderOption(connection, providers).websocket?.audioInput
+      ?.waitForFinalEventTypeOnStop,
   );
 }
 
 function isConfiguredAudioEndEvent(
   connection: RealtimeWebSocketConnection,
   payload: unknown,
+  providers: RealtimeLiveProviderOption[],
 ): boolean {
-  const eventType =
-    getConnectionProviderOption(connection).websocket?.audioInput?.waitForFinalEventTypeOnStop;
+  const eventType = getConnectionProviderOption(connection, providers).websocket?.audioInput
+    ?.waitForFinalEventTypeOnStop;
 
   return Boolean(eventType && extractRealtimeEventType(payload) === eventType);
 }
@@ -133,10 +151,10 @@ export function useRealtimeLiveSession({
   model,
   onEvent,
   onTranscript,
+  providers = [],
 }: UseRealtimeLiveSessionOptions = {}) {
-  const [provider, setProvider] = useState<RealtimeLiveProviderId>(
-    DEFAULT_REALTIME_LIVE_PROVIDER_ID,
-  );
+  const providerOptions = providers;
+  const [provider, setProvider] = useState<RealtimeLiveProviderId | null>(null);
   const [status, setStatus] = useState<RealtimeLiveStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [lastEvent, setLastEvent] = useState("Idle");
@@ -165,6 +183,7 @@ export function useRealtimeLiveSession({
   const selectedCameraDeviceIdRef = useRef("");
   const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
   const statusRef = useRef(status);
+  const providerOptionsRef = useRef(providerOptions);
   const stoppingRef = useRef(false);
   const [isMicrophoneEnabled, setIsMicrophoneEnabledState] = useState(true);
   const [isVideoEnabled, setIsVideoEnabledState] = useState(false);
@@ -270,7 +289,8 @@ export function useRealtimeLiveSession({
 
   const maybeCommitAudioAfterSilence = useCallback(
     (connection: RealtimeWebSocketConnection, chunk: ArrayBuffer) => {
-      const config = getConnectionProviderOption(connection).websocket?.audioInput?.commitOnSilence;
+      const config = getConnectionProviderOption(connection, providerOptionsRef.current).websocket
+        ?.audioInput?.commitOnSilence;
 
       if (!config || stoppingRef.current || !microphoneEnabledRef.current) {
         return;
@@ -300,7 +320,7 @@ export function useRealtimeLiveSession({
           return;
         }
 
-        sendConfiguredAudioCommit(connection);
+        sendConfiguredAudioCommit(connection, providerOptionsRef.current);
       }, config.silenceMs);
     },
     [clearSilenceCommitTimer],
@@ -360,7 +380,9 @@ export function useRealtimeLiveSession({
       const connection = connectionRef.current;
 
       if (notifyProvider && isRealtimeWebSocketConnection(connection)) {
-        sendConfiguredAudioEnd(connection, { forMicrophonePause: true });
+        sendConfiguredAudioEnd(connection, providerOptionsRef.current, {
+          forMicrophonePause: true,
+        });
       }
 
       if (connection?.session.transport === "webrtc") {
@@ -402,7 +424,8 @@ export function useRealtimeLiveSession({
         return;
       }
 
-      const audioInput = getConnectionProviderOption(connection).websocket?.audioInput;
+      const audioInput = getConnectionProviderOption(connection, providerOptionsRef.current)
+        .websocket?.audioInput;
 
       if (!audioInput) {
         return;
@@ -437,12 +460,13 @@ export function useRealtimeLiveSession({
       if (
         inputVideoControllerRef.current ||
         !videoEnabledRef.current ||
-        !getConnectionProviderOption(connection).websocket?.videoInput
+        !getConnectionProviderOption(connection, providerOptionsRef.current).websocket?.videoInput
       ) {
         return;
       }
 
-      const videoInput = getConnectionProviderOption(connection).websocket?.videoInput;
+      const videoInput = getConnectionProviderOption(connection, providerOptionsRef.current)
+        .websocket?.videoInput;
 
       if (!videoInput) {
         return;
@@ -485,7 +509,7 @@ export function useRealtimeLiveSession({
       stopOutputAudioMeter();
 
       if (isRealtimeWebSocketConnection(connectionRef.current)) {
-        sendConfiguredAudioEnd(connectionRef.current);
+        sendConfiguredAudioEnd(connectionRef.current, providerOptionsRef.current);
       }
 
       if (closeConnection) {
@@ -731,7 +755,7 @@ export function useRealtimeLiveSession({
               handleOutputAudioChunk(chunk);
             }
 
-            if (isConfiguredAudioEndEvent(connection, payload)) {
+            if (isConfiguredAudioEndEvent(connection, payload, providerOptionsRef.current)) {
               completePendingFinalization(connection);
             }
           });
@@ -780,10 +804,21 @@ export function useRealtimeLiveSession({
       const abortController = new AbortController();
 
       abortControllerRef.current = abortController;
-      const selectedProvider = getRealtimeLiveProviderOption(providerOverride ?? provider);
+      const selectedProvider = getRealtimeLiveProviderOption(
+        providerOverride ?? provider ?? "",
+        providerOptions,
+      );
       const selectedModel = modelOverride ?? model;
 
       try {
+        if (!selectedProvider) {
+          throw new Error("Select an available realtime provider before starting.");
+        }
+
+        if (selectedProvider.readiness !== "ready") {
+          throw new Error(selectedProvider.availabilityReason);
+        }
+
         if (selectedProvider.transport === "webrtc") {
           await startWebRTCProvider(selectedProvider, abortController.signal, selectedModel);
         } else {
@@ -797,7 +832,15 @@ export function useRealtimeLiveSession({
         failSession(getErrorMessage(startError, "Failed to start live session"));
       }
     },
-    [cleanup, failSession, model, provider, startWebRTCProvider, startWebSocketProvider],
+    [
+      cleanup,
+      failSession,
+      model,
+      provider,
+      providerOptions,
+      startWebRTCProvider,
+      startWebSocketProvider,
+    ],
   );
 
   const stop = useCallback(() => {
@@ -805,7 +848,7 @@ export function useRealtimeLiveSession({
 
     if (
       isRealtimeWebSocketConnection(connection) &&
-      shouldWaitForConfiguredAudioEndEvent(connection)
+      shouldWaitForConfiguredAudioEndEvent(connection, providerOptionsRef.current)
     ) {
       finalizingConnectionRef.current = connection;
       cleanup("idle", true, { closeConnection: false });
@@ -858,7 +901,8 @@ export function useRealtimeLiveSession({
 
   const setVideoEnabled = useCallback(
     (enabled: boolean) => {
-      const nextEnabled = supportsRealtimeLiveVideoInput(provider) && enabled;
+      const nextEnabled =
+        supportsRealtimeLiveVideoInput(provider ?? "", providerOptionsRef.current) && enabled;
 
       videoEnabledRef.current = nextEnabled;
       setIsVideoEnabledState(nextEnabled);
@@ -873,7 +917,7 @@ export function useRealtimeLiveSession({
 
       if (
         !isRealtimeWebSocketConnection(connection) ||
-        !getConnectionProviderOption(connection).websocket?.videoInput
+        !getConnectionProviderOption(connection, providerOptionsRef.current).websocket?.videoInput
       ) {
         void ensureVideoStream().catch((toggleError) => {
           videoEnabledRef.current = false;
@@ -910,7 +954,7 @@ export function useRealtimeLiveSession({
 
       if (
         isRealtimeWebSocketConnection(connection) &&
-        getConnectionProviderOption(connection).websocket?.videoInput
+        getConnectionProviderOption(connection, providerOptionsRef.current).websocket?.videoInput
       ) {
         void startInputVideo(connection).catch((toggleError) => {
           failSession(getErrorMessage(toggleError, "Failed to switch camera"));
@@ -943,6 +987,10 @@ export function useRealtimeLiveSession({
     },
     [setVideoEnabled],
   );
+
+  useEffect(() => {
+    providerOptionsRef.current = providerOptions;
+  }, [providerOptions]);
 
   useEffect(() => {
     void refreshCameraDevices();

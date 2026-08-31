@@ -1,3 +1,5 @@
+import type { RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schemas";
+
 import type { IEnv, IUser } from "~/types";
 
 import { providerLibrary } from "../../library";
@@ -41,6 +43,11 @@ export interface RealtimeSessionRequest {
 
 export interface RealtimeProvider {
   name: string;
+  readonly descriptor: RealtimeLiveProviderDescriptor;
+  readonly configuration: {
+    readonly acceptsUserApiKey: boolean;
+    readonly environmentVariables: readonly string[];
+  };
   models?: string[];
   getApiKey?: (request: RealtimeSessionRequest) => Promise<string>;
   getDefaultModel: (type: RealtimeSessionRequest["type"]) => string;
