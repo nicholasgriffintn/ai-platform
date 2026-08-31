@@ -6,6 +6,7 @@ import { getErrorMessage } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 import {
+  redispatchPendingTasks,
   scheduleDailyUsageReset,
   scheduleDailySynthesis,
   scheduleRecipeExecutions,
@@ -16,6 +17,12 @@ const logger = getLogger({ prefix: "services/tasks/schedule-executor" });
 
 export class ScheduleExecutor {
   public static async respondToCronSchedules(env: IEnv, event: ScheduledController): Promise<void> {
+    try {
+      await redispatchPendingTasks(env);
+    } catch (error) {
+      logger.warn("Pending task recovery failed", { error: getErrorMessage(error) });
+    }
+
     switch (event.cron) {
       case SCHEDULES.USAGE_RESET:
         logger.info(`Starting daily usage reset scheduling`);

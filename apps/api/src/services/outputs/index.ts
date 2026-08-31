@@ -9,6 +9,10 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import {
+  isOutputDeletionPending,
+  parseOutputContent as parseContent,
+} from "~/lib/outputs/deletion";
 import type {
   OutputRecord,
   OutputRevisionRecord,
@@ -19,13 +23,9 @@ import { requireProjectAccess } from "~/services/workspaces/access";
 import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId, randomHex } from "~/utils/id";
-import { safeParseJson } from "~/utils/json";
 
-import { requireConversationScope, requireOutputAccess } from "./access";
-
-function parseContent(value: string): Record<string, unknown> {
-  return safeParseJson<Record<string, unknown>>(value) ?? {};
-}
+import { requireConversationScope, requireOutputAccess, requireOutputRecordAccess } from "./access";
+import { deleteOutputResources } from "./delete-resources";
 
 function formatFile(record: OutputRecord): Output["file"] {
   if (!record.storage_key || !record.mime_type) {
@@ -117,9 +117,17 @@ export async function createOutput(
   context: ServiceContext,
   userId: number,
   input: CreateOutputInput,
+  options: { id?: string } = {},
 ): Promise<Output> {
+  let workspaceId: string | undefined;
+
   if (input.projectId) {
     await requireProjectAccess(context, input.projectId);
+    workspaceId = (await context.repositories.workspaces.getProject(input.projectId))?.workspace_id;
+
+    if (!workspaceId) {
+      throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
+    }
   }
 
   if (input.conversationId) {
@@ -134,33 +142,36 @@ export async function createOutput(
     }
   }
 
-  const created = await context.repositories.outputs.createOutput({
-    createdByUserId: userId,
-    projectId: input.projectId,
-    conversationId: input.conversationId,
-    parentOutputId: input.parentOutputId,
-    capabilityId: input.capabilityId,
-    groupId: input.groupId,
-    kind: input.kind,
-    title: input.title,
-    status: input.status,
-    sensitivity: input.sensitivity,
-    content: input.content,
-    storageKey: input.file?.key,
-    mimeType: input.file?.mimeType,
-    filename: input.file?.filename,
-    byteSize: input.file?.byteSize,
-  });
-
-  if (created.project_id) {
-    await recordProjectAudit(context, created.project_id, {
-      actorUserId: userId,
-      action: "output.created",
-      targetType: "output",
-      targetId: created.id,
-      metadata: { capabilityId: created.capability_id, kind: created.kind },
-    });
-  }
+  const outputId = options.id ?? generateId();
+  const created = await context.repositories.outputs.createOutput(
+    {
+      id: outputId,
+      createdByUserId: userId,
+      projectId: input.projectId,
+      conversationId: input.conversationId,
+      parentOutputId: input.parentOutputId,
+      capabilityId: input.capabilityId,
+      groupId: input.groupId,
+      kind: input.kind,
+      title: input.title,
+      status: input.status,
+      sensitivity: input.sensitivity,
+      content: input.content,
+      storageKey: input.file?.key,
+      mimeType: input.file?.mimeType,
+      filename: input.file?.filename,
+      byteSize: input.file?.byteSize,
+    },
+    workspaceId
+      ? {
+          workspaceId,
+          actorUserId: userId,
+          action: "output.created",
+          outputId,
+          metadata: { capabilityId: input.capabilityId, kind: input.kind },
+        }
+      : undefined,
+  );
 
   return formatOutput(created);
 }
@@ -171,6 +182,22 @@ export async function getOutput(
   outputId: string,
 ): Promise<Output> {
   return formatOutput(await requireOutputAccess(context, userId, outputId));
+}
+
+export async function getOutputIncludingDeleting(
+  context: ServiceContext,
+  userId: number,
+  outputId: string,
+): Promise<Output> {
+  const output = await context.repositories.outputs.getOutputIncludingDeleting(outputId);
+
+  if (!output) {
+    throw new AssistantError("Output not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  await requireOutputRecordAccess(context, userId, output);
+
+  return formatOutput(output);
 }
 
 export async function listOutputs(
@@ -203,7 +230,7 @@ export async function listOutputs(
       );
 
   return {
-    outputs: records.map(formatOutputSummary),
+    outputs: records.filter((record) => !isOutputDeletionPending(record)).map(formatOutputSummary),
   };
 }
 
@@ -214,20 +241,30 @@ export async function updateOutput(
   input: UpdateOutputInput,
 ): Promise<Output> {
   const existing = await requireOutputAccess(context, userId, outputId, true);
-  const updated = await context.repositories.outputs.updateOutput(outputId, {
-    ...input,
-    updatedByUserId: userId,
-  });
+  const project = existing.project_id
+    ? await context.repositories.workspaces.getProject(existing.project_id)
+    : null;
 
-  if (existing.project_id) {
-    await recordProjectAudit(context, existing.project_id, {
-      actorUserId: userId,
-      action: "output.updated",
-      targetType: "output",
-      targetId: outputId,
-      metadata: { revision: updated.revision },
-    });
+  if (existing.project_id && !project) {
+    throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
   }
+
+  const updated = await context.repositories.outputs.updateOutput(
+    outputId,
+    {
+      ...input,
+      updatedByUserId: userId,
+    },
+    project
+      ? {
+          workspaceId: project.workspace_id,
+          actorUserId: userId,
+          action: "output.updated",
+          outputId,
+          metadata: { revision: existing.revision + 1 },
+        }
+      : undefined,
+  );
 
   return formatOutput(updated);
 }
@@ -237,17 +274,7 @@ export async function deleteOutput(
   userId: number,
   outputId: string,
 ): Promise<void> {
-  const existing = await requireOutputAccess(context, userId, outputId, true);
-
-  await context.repositories.outputs.deleteOutput(outputId);
-  if (existing.project_id) {
-    await recordProjectAudit(context, existing.project_id, {
-      actorUserId: userId,
-      action: "output.deleted",
-      targetType: "output",
-      targetId: outputId,
-    });
-  }
+  await deleteOutputResources(context, userId, outputId);
 }
 
 export async function listOutputRevisions(
@@ -349,7 +376,7 @@ export async function getSharedOutputRecord(
 
   const output = await context.repositories.outputs.getOutput(share.output_id);
 
-  if (!output || output.status === "archived") {
+  if (!output || output.status === "archived" || isOutputDeletionPending(output)) {
     throw new AssistantError("Shared output not found", ErrorType.NOT_FOUND, 404);
   }
 

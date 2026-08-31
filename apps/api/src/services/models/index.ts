@@ -10,8 +10,12 @@ import {
   getModelsByModality,
   getModelsByOutputModality,
 } from "~/lib/providers/models";
+import {
+  getExecutableModelsForAccount,
+  tryResolveDefaultChatModel,
+} from "~/lib/providers/models/policy";
 import { RepositoryManager } from "~/repositories";
-import type { IEnv } from "~/types";
+import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 function includeModelIds(models: ModelConfig): ModelConfig {
@@ -30,7 +34,7 @@ function includeModelIds(models: ModelConfig): ModelConfig {
 /**
  * List all models available to the user.
  */
-export async function listModels(env: IEnv, userId?: number) {
+export async function listModels(env: IEnv, user?: IUser) {
   const allModels = getModels({
     shouldUseCache: false,
     excludeModalities: [
@@ -41,11 +45,24 @@ export async function listModels(env: IEnv, userId?: number) {
       "speech",
     ],
   });
-  const filteredModels = await filterModelsForUserAccess(allModels, env, userId, {
+  const filteredModels = await filterModelsForUserAccess(allModels, env, user?.id, {
     shouldUseCache: false,
   });
+  const executableModelIds = new Set(
+    Object.keys(getExecutableModelsForAccount(filteredModels, user)),
+  );
+  const defaultModel = tryResolveDefaultChatModel(filteredModels, user)?.id;
 
-  return includeModelIds(filteredModels);
+  return Object.fromEntries(
+    Object.entries(includeModelIds(filteredModels)).map(([id, model]) => [
+      id,
+      {
+        ...model,
+        isDefault: id === defaultModel,
+        isExecutable: executableModelIds.has(id),
+      },
+    ]),
+  );
 }
 
 /**

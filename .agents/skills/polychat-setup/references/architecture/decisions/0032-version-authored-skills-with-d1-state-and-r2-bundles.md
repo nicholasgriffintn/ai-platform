@@ -1,4 +1,4 @@
-# ADR 0030: Version authored skills with D1 state and R2 bundles
+# ADR 0032: Version authored skills with D1 state and R2 bundles
 
 ## Status
 

@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  extractRealtimeGoAwayNotice,
   extractRealtimeErrorMessage,
   extractRealtimeEvent,
   extractRealtimeEventLabel,
   extractInlineAudioChunks,
+  extractRealtimeSessionResumptionUpdate,
   extractRealtimeTranscript,
   isRealtimeSetupCompleteMessage,
   parseRealtimeJsonMessage,
@@ -267,5 +269,25 @@ describe("realtime message helpers", () => {
     expect(isRealtimeSetupCompleteMessage({ setupComplete: {} })).toBe(true);
     expect(isRealtimeSetupCompleteMessage({ setup_complete: {} })).toBe(true);
     expect(isRealtimeSetupCompleteMessage({ serverContent: {} })).toBe(false);
+  });
+
+  it("extracts resumable Gemini session handles", () => {
+    expect(
+      extractRealtimeSessionResumptionUpdate({
+        sessionResumptionUpdate: { resumable: true, newHandle: "session-handle" },
+      }),
+    ).toEqual({ handle: "session-handle", resumable: true });
+    expect(
+      extractRealtimeSessionResumptionUpdate({
+        sessionResumptionUpdate: { resumable: false, newHandle: "stale-handle" },
+      }),
+    ).toEqual({ resumable: false });
+  });
+
+  it("detects Gemini GoAway messages", () => {
+    expect(extractRealtimeGoAwayNotice({ goAway: { timeLeft: "10s" } })).toEqual({
+      timeLeft: "10s",
+    });
+    expect(extractRealtimeGoAwayNotice({ serverContent: {} })).toBeUndefined();
   });
 });

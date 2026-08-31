@@ -1421,4 +1421,34 @@ export const workersAiModelConfig: ModelConfig = {
   		defaultEffort: "none",
   	},
   },
+  "workers-ai-google-veo-3-1-fast": {
+    name: "Google Veo 3.1 Fast",
+    description:
+      "Google's faster Veo 3.1 model for lower-latency video generation with video and audio output.",
+    matchingModel: "google/veo-3.1-fast",
+    provider: "workers-ai",
+    family: "veo",
+    modalities: {
+      input: ["text", "image"],
+      output: ["video"],
+    },
+    supportsAttachments: true,
+    supportsTemperature: false,
+    supportsToolCalls: false,
+  },
+  "workers-ai-minimax-music-2-6": {
+    name: "MiniMax Music 2.6",
+    description:
+      "MiniMax's music model for full-length vocal or instrumental tracks from prompts and lyrics.",
+    matchingModel: "minimax/music-2.6",
+    provider: "workers-ai",
+    family: "minimax-music",
+    modalities: {
+      input: ["text", "audio"],
+      output: ["audio"],
+    },
+    supportsAttachments: true,
+    supportsTemperature: false,
+    supportsToolCalls: false,
+  },
 };

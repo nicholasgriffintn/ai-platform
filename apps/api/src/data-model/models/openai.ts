@@ -1876,7 +1876,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     name: "GPT Realtime 2",
     matchingModel: "gpt-realtime-2",
     description:
-      "OpenAI's most capable realtime voice model, with speech-to-speech interactions, configurable reasoning effort, stronger instruction following, and more reliable tool use.",
+      "Reasoning model for realtime voice interactions with speech-to-speech output, configurable reasoning effort, and tool use.",
     knowledgeCutoffDate: "September 30, 2024",
     modalities: {
       input: ["text", "audio", "image"],
@@ -1935,6 +1935,9 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     matchingModel: "gpt-realtime-mini",
     description:
       "Cost-efficient realtime model for responding to audio and text inputs over WebRTC, WebSocket, or SIP connections.",
+    deprecated: true,
+    deprecationMessage: "GPT Realtime Mini is being retired. Use GPT Realtime 2.1 Mini instead.",
+    replacementModel: "gpt-realtime-2.1-mini",
     knowledgeCutoffDate: "October 1, 2023",
     modalities: {
       input: ["text", "image", "audio"],
@@ -2042,6 +2045,44 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     description:
       "Streaming speech-to-text model for low-latency realtime transcription with transcript deltas.",
     knowledgeCutoffDate: "September 2024",
+    modalities: {
+      input: ["audio", "text"],
+      output: ["text"],
+    },
+    strengths: ["transcription"],
+    contextWindow: 16000,
+    maxTokens: 2000,
+    supportsAttachments: false,
+    supportsTemperature: false,
+    supportsToolCalls: false,
+    supportsStreaming: true,
+    hiddenFromDefaultList: true,
+  }),
+
+  createModelConfig("gpt-live-transcribe", PROVIDER, {
+    name: "GPT Live Transcribe",
+    matchingModel: "gpt-live-transcribe",
+    description:
+      "Low-latency streaming speech-to-text model with transcript deltas and tunable latency.",
+    modalities: {
+      input: ["audio", "text"],
+      output: ["text"],
+    },
+    strengths: ["transcription"],
+    contextWindow: 16000,
+    maxTokens: 2000,
+    supportsAttachments: false,
+    supportsTemperature: false,
+    supportsToolCalls: false,
+    supportsStreaming: true,
+    hiddenFromDefaultList: true,
+  }),
+
+  createModelConfig("gpt-transcribe", PROVIDER, {
+    name: "GPT Transcribe",
+    matchingModel: "gpt-transcribe",
+    description:
+      "High-accuracy speech-to-text model for files, streamed transcripts, and committed realtime turns.",
     modalities: {
       input: ["audio", "text"],
       output: ["text"],
@@ -2244,14 +2285,47 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     supportsAttachments: true,
     supportsTemperature: false,
     supportsToolCalls: true,
+    supportsRealtimeSession: true,
     supportsResponseFormat: false,
     contextWindow: 128000,
     maxTokens: 32000,
     costPer1kInputTokens: 0.004,
     costPer1kOutputTokens: 0.024,
     reasoningConfig: {
-    	supportedEffortLevels: ["minimal", "low", "medium", "high", "xhigh"],
-    	defaultEffort: "minimal",
+      supportedEffortLevels: ["minimal", "low", "medium", "high", "xhigh"],
+      defaultEffort: "minimal",
+    },
+  }),
+
+  createModelConfig("gpt-realtime-2.1-mini", PROVIDER, {
+    name: "GPT Realtime 2.1 Mini",
+    matchingModel: "gpt-realtime-2.1-mini",
+    description:
+      "Faster, lower-cost reasoning model for realtime voice interactions over WebRTC, WebSocket, or SIP.",
+    family: "gpt",
+    openWeights: false,
+    knowledgeCutoffDate: "September 30, 2024",
+    modalities: {
+      input: ["text", "audio", "image"],
+      output: ["text", "audio"],
+    },
+    supportsAttachments: true,
+    supportsTemperature: false,
+    supportsToolCalls: true,
+    supportsRealtimeSession: true,
+    supportsResponseFormat: false,
+    contextWindow: 128000,
+    maxTokens: 32000,
+    costPer1kInputTokens: 0.0006,
+    costPer1kOutputTokens: 0.0024,
+    strengths: ["audio", "chat", "reasoning", "vision"],
+    contextComplexity: 4,
+    reliability: 5,
+    speed: 5,
+    multimodal: true,
+    reasoningConfig: {
+      supportedEffortLevels: ["minimal", "low", "medium", "high", "xhigh"],
+      defaultEffort: "minimal",
     },
   }),
 ]);

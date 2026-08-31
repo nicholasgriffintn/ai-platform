@@ -1,4 +1,4 @@
-import { getRealtimeLiveProviderManifestItem } from "@ngriffin_uk/polychat-schemas";
+import type { RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schemas";
 
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
@@ -12,8 +12,24 @@ import type {
 } from "../index";
 import { buildRealtimeProxyUrl } from "./proxyUrl";
 
-const DEFAULT_TRANSCRIPTION_MODEL =
-  getRealtimeLiveProviderManifestItem("elevenlabs").defaultModelId;
+export const ELEVENLABS_REALTIME_DESCRIPTOR = {
+  id: "elevenlabs",
+  order: 3,
+  label: "ElevenLabs Scribe Realtime",
+  shortLabel: "ElevenLabs",
+  liveMode: "composed",
+  transport: "websocket",
+  sessionType: "transcription",
+  defaultDelay: "minimal",
+  inputModalities: ["audio"],
+  outputModalities: ["text"],
+  description: "Scribe realtime speech-to-text",
+  defaultModelId: "scribe_v2_realtime",
+  composeWith: { reasoning: true, speech: true },
+} satisfies RealtimeLiveProviderDescriptor;
+
+const DEFAULT_TRANSCRIPTION_MODEL = ELEVENLABS_REALTIME_DESCRIPTOR.defaultModelId;
+const API_KEY_ENVIRONMENT_VARIABLE = "ELEVENLABS_API_KEY";
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
   realtime: [],
   translation: [],
@@ -24,14 +40,20 @@ const ELEVENLABS_REALTIME_PROXY_PATH = "/realtime/elevenlabs/transcription";
 
 export class ElevenLabsRealtimeProvider implements RealtimeProvider {
   name = "elevenlabs";
+  descriptor = ELEVENLABS_REALTIME_DESCRIPTOR;
+  configuration = {
+    acceptsUserApiKey: true,
+    environmentVariables: [API_KEY_ENVIRONMENT_VARIABLE],
+  };
   models = SESSION_MODELS_BY_TYPE.transcription;
 
   async getApiKey(request: RealtimeSessionRequest): Promise<string> {
     return resolveProviderApiKey({
       env: request.env,
       providerName: this.name,
-      envKeyName: "ELEVENLABS_API_KEY",
+      envKeyName: API_KEY_ENVIRONMENT_VARIABLE,
       userId: request.user.id,
+      credentialAuthority: request.credentialAuthority,
     });
   }
 

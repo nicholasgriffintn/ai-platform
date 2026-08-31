@@ -3,6 +3,11 @@ import z from "zod/v4";
 export const markdownDescriptionLanguageSchema = z.enum(["en", "it", "de", "es", "fr", "pt"]);
 
 export const markdownConversionOptionsSchema = z.object({
+  output: z
+    .object({
+      format: z.enum(["markdown", "text"]).optional(),
+    })
+    .optional(),
   image: z
     .object({
       descriptionLanguage: markdownDescriptionLanguageSchema.optional(),

@@ -1498,6 +1498,7 @@ export const tasks = sqliteTable(
         "artificial_analysis_scoring",
         "inbound_message",
         "project_task_run",
+        "ocr_batch_polling",
       ],
     }).notNull(),
     status: text({
