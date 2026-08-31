@@ -1,12 +1,14 @@
 import {
   isActiveModel,
   MODEL_POLICY_REFERENCES,
+  type ModelConfigItem,
   REALTIME_LIVE_PROVIDER_MANIFEST,
 } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import { getFeaturedModels, getModels } from ".";
 import { getExecutableModelsForAccount } from "./policy";
+import { applyModelResponseDefaults, type ModelResponseSettings } from "./responseDefaults";
 
 describe("featured model catalogue", () => {
   it("contains only active models with descriptions", () => {
@@ -59,6 +61,53 @@ describe("model tool capabilities", () => {
         supportsWebFetch: true,
       });
     }
+  });
+});
+
+describe("model response defaults", () => {
+  const modelConfig: ModelConfigItem = {
+    matchingModel: "test-model",
+    provider: "test-provider",
+    reasoningConfig: {
+      supportedEffortLevels: ["none", "low", "high"],
+      defaultEffort: "low",
+    },
+    verbosityConfig: {
+      supportedVerbosityLevels: ["low", "medium", "high"],
+      defaultVerbosity: "medium",
+    },
+  };
+  const emptyRequest: ModelResponseSettings = {};
+
+  it("fills in the declared defaults when the request omits them", () => {
+    expect(applyModelResponseDefaults(emptyRequest, modelConfig)).toEqual({
+      reasoning_effort: "low",
+      verbosity: "medium",
+    });
+  });
+
+  it("never overrides an explicitly requested effort or verbosity", () => {
+    expect(
+      applyModelResponseDefaults({ reasoning_effort: "none", verbosity: "high" }, modelConfig),
+    ).toEqual({ reasoning_effort: "none", verbosity: "high" });
+  });
+
+  it("ignores declared defaults the model does not list as supported", () => {
+    expect(
+      applyModelResponseDefaults(emptyRequest, {
+        ...modelConfig,
+        reasoningConfig: { supportedEffortLevels: ["none"], defaultEffort: "high" },
+        verbosityConfig: { supportedVerbosityLevels: ["low"], defaultVerbosity: "high" },
+      }),
+    ).toEqual({});
+  });
+
+  it("applies the catalogue default of the model actually being called", () => {
+    const models = getModels({ shouldUseCache: false });
+
+    expect(applyModelResponseDefaults(emptyRequest, models["claude-opus-5"])).toMatchObject({
+      reasoning_effort: "low",
+    });
   });
 });
 
