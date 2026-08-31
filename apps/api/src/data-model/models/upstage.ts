@@ -55,8 +55,8 @@ export const upstageModelConfig: ModelConfig = createModelConfigObject([
     speed: 4,
     isFeatured: false,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "high"],
+    	defaultEffort: "minimal",
     },
     family: "solar-pro",
     openWeights: false,
@@ -79,8 +79,8 @@ export const upstageModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00025,
     costPer1kOutputTokens: 0.00025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     family: "solar-pro",
     openWeights: false,
@@ -106,8 +106,8 @@ export const upstageModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0003,
     costPer1kOutputTokens: 0.0012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+    	defaultEffort: "none",
     },
   }),
 ]);

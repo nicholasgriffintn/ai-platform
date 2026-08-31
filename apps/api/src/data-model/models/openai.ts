@@ -137,8 +137,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     supportsTemperature: false,
     supportsParallelToolCalls: false,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 30.4,
@@ -470,8 +470,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     deprecated: true,
 
     reasoningConfig: {
-      supportedEffortLevels: ["none", "low", "medium", "high"],
-      defaultEffort: "medium",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "medium",
     },
     verbosityConfig: {
       supportedVerbosityLevels: ["low", "medium", "high"],
@@ -526,8 +526,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     deprecated: true,
 
     reasoningConfig: {
-      supportedEffortLevels: ["none", "low", "medium", "high"],
-      defaultEffort: "medium",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "medium",
     },
     verbosityConfig: {
       supportedVerbosityLevels: ["low", "medium", "high"],
@@ -574,8 +574,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     deprecated: true,
 
     reasoningConfig: {
-      supportedEffortLevels: ["none", "low", "medium", "high"],
-      defaultEffort: "medium",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high"],
+    	defaultEffort: "medium",
     },
     verbosityConfig: {
       supportedVerbosityLevels: ["low", "medium", "high"],
@@ -629,8 +629,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
     deprecated: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "low", "medium", "high"],
-      defaultEffort: "medium",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "medium",
     },
     verbosityConfig: {
       supportedVerbosityLevels: ["low", "medium", "high"],
@@ -675,8 +675,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     supportsResponseFormat: true,
 
     reasoningConfig: {
-      supportedEffortLevels: ["none", "low", "medium", "high"],
-      defaultEffort: "medium",
+    	supportedEffortLevels: ["medium"],
+    	defaultEffort: "medium",
     },
     verbosityConfig: {
       supportedVerbosityLevels: ["low", "medium", "high"],
@@ -1040,8 +1040,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.12,
 
     reasoningConfig: {
-      supportedEffortLevels: ["none", "low", "medium", "high"],
-      defaultEffort: "medium",
+    	supportedEffortLevels: ["high"],
+    	defaultEffort: "high",
     },
     verbosityConfig: {
       supportedVerbosityLevels: ["low", "medium", "high"],
@@ -1230,8 +1230,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.168,
 
     reasoningConfig: {
-      supportedEffortLevels: ["none", "low", "medium", "high"],
-      defaultEffort: "medium",
+    	supportedEffortLevels: ["medium", "high", "xhigh"],
+    	defaultEffort: "medium",
     },
     verbosityConfig: {
       supportedVerbosityLevels: ["low", "medium", "high"],
@@ -1266,8 +1266,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.014,
 
     reasoningConfig: {
-      supportedEffortLevels: ["none", "low", "medium", "high"],
-      defaultEffort: "medium",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "medium",
     },
     verbosityConfig: {
       supportedVerbosityLevels: ["low", "medium", "high"],
@@ -1313,8 +1313,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     costPer1kOutputTokens: 0.014,
 
     reasoningConfig: {
-      supportedEffortLevels: ["none", "low", "medium", "high"],
-      defaultEffort: "medium",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "medium",
     },
     verbosityConfig: {
       supportedVerbosityLevels: ["low", "medium", "high"],
@@ -1372,8 +1372,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.02,
     costPer1kOutputTokens: 0.08,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -2250,8 +2250,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.004,
     costPer1kOutputTokens: 0.024,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["minimal", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "minimal",
     },
   }),
 ]);

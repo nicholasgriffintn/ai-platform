@@ -21,8 +21,8 @@ export const regoloModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.001,
   	costPer1kOutputTokens: 0.0042,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high"],
+  		defaultEffort: "low",
   	},
   	strengths: ["tool_use"],
   	contextComplexity: 3,
@@ -207,8 +207,8 @@ export const regoloModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.00231,
   	costPer1kOutputTokens: 0.006,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["high", "max"],
+  		defaultEffort: "high",
   	},
   	strengths: ["coding", "tool_use"],
   	contextComplexity: 4,
@@ -241,8 +241,8 @@ export const regoloModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.0004,
   	costPer1kOutputTokens: 0.0018,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high"],
+  		defaultEffort: "low",
   	},
   	strengths: ["tool_use"],
   	contextComplexity: 3,

@@ -418,7 +418,7 @@ export class HomePage extends BasePage {
   }
 
   private conversationItem(title: string | RegExp) {
-    return this.page.getByRole("button").filter({ hasText: title }).first();
+    return this.page.getByRole("listitem").filter({ hasText: title }).first();
   }
 
   async hoverConversation(title: string | RegExp) {

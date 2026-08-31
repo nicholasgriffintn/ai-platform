@@ -380,8 +380,8 @@ export const fireworksModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00015,
     costPer1kOutputTokens: 0.0006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["tool_use"],
     contextComplexity: 3,
@@ -919,8 +919,8 @@ export const fireworksModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0003,
     costPer1kOutputTokens: 0.0012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     strengths: ["document", "tool_use"],
     contextComplexity: 4,
@@ -954,8 +954,8 @@ export const fireworksModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0004,
     costPer1kOutputTokens: 0.0016,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     family: "qwen",
     openWeights: false,
@@ -1005,8 +1005,8 @@ export const fireworksModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0014,
     costPer1kOutputTokens: 0.0044,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high", "max"],
+    	defaultEffort: "high",
     },
     strengths: ["coding", "tool_use"],
     contextComplexity: 5,
@@ -1041,8 +1041,8 @@ export const fireworksModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0021,
     costPer1kOutputTokens: 0.0066,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high", "max"],
+    	defaultEffort: "high",
     },
   },
   "accounts/fireworks/models/kimi-k3": {
@@ -1066,8 +1066,8 @@ export const fireworksModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.003,
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	defaultEffort: "low",
     },
   },
 
@@ -1092,8 +1092,8 @@ export const fireworksModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0045,
     costPer1kOutputTokens: 0.0225,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "max"],
+    	defaultEffort: "low",
     },
   },
   "accounts/fireworks/models/inkling": {
@@ -1143,8 +1143,8 @@ export const fireworksModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00035,
     costPer1kOutputTokens: 0.0015,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	defaultEffort: "low",
     },
   },
 
@@ -1255,8 +1255,8 @@ export const fireworksModelConfig: ModelConfig = {
   	costPer1kInputTokens: 0.00014,
   	costPer1kOutputTokens: 0.00028,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   },
 
@@ -1281,8 +1281,8 @@ export const fireworksModelConfig: ModelConfig = {
   	costPer1kInputTokens: 0.00132,
   	costPer1kOutputTokens: 0.00396,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["high", "max"],
+  		defaultEffort: "high",
   	},
   },
 
@@ -1291,7 +1291,7 @@ export const fireworksModelConfig: ModelConfig = {
   	matchingModel: "accounts/fireworks/models/glm-5p3",
   	provider: "fireworks",
   	family: "glm",
-  	openWeights: false,
+  	openWeights: true,
   	releaseDate: "August 14, 2026",
   	lastUpdated: "August 28, 2026",
   	modalities: {
@@ -1307,8 +1307,8 @@ export const fireworksModelConfig: ModelConfig = {
   	costPer1kInputTokens: 0.0014,
   	costPer1kOutputTokens: 0.0044,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["high", "max"],
+  		defaultEffort: "high",
   	},
   },
   "accounts/fireworks/models/glm-5p3-flash": {
@@ -1332,8 +1332,8 @@ export const fireworksModelConfig: ModelConfig = {
   	costPer1kInputTokens: 0.00015,
   	costPer1kOutputTokens: 0.0005,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["high", "max"],
+  		defaultEffort: "high",
   	},
   },
 };

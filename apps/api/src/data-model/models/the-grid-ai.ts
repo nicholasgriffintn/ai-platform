@@ -20,8 +20,8 @@ export const theGridModelConfig: ModelConfig = createModelConfigObject([
   	contextWindow: 196608,
   	maxTokens: 30000,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high"],
+  		defaultEffort: "low",
   	},
   }),
   createModelConfig("code-prime", PROVIDER, {
@@ -39,8 +39,8 @@ export const theGridModelConfig: ModelConfig = createModelConfigObject([
   	contextWindow: 196608,
   	maxTokens: 30000,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high"],
+  		defaultEffort: "low",
   	},
   }),
   createModelConfig("agent-max", PROVIDER, {
@@ -61,8 +61,8 @@ export const theGridModelConfig: ModelConfig = createModelConfigObject([
   	contextWindow: 1000000,
   	maxTokens: 128000,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+  		defaultEffort: "low",
   	},
   }),
 
@@ -84,8 +84,8 @@ export const theGridModelConfig: ModelConfig = createModelConfigObject([
   	contextWindow: 128000,
   	maxTokens: 16000,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high"],
+  		defaultEffort: "low",
   	},
   }),
 
@@ -107,8 +107,8 @@ export const theGridModelConfig: ModelConfig = createModelConfigObject([
   	contextWindow: 1000000,
   	maxTokens: 128000,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+  		defaultEffort: "low",
   	},
   }),
 
@@ -130,8 +130,8 @@ export const theGridModelConfig: ModelConfig = createModelConfigObject([
   	contextWindow: 128000,
   	maxTokens: 16000,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high"],
+  		defaultEffort: "low",
   	},
   }),
 
@@ -152,8 +152,8 @@ export const theGridModelConfig: ModelConfig = createModelConfigObject([
   	contextWindow: 1000000,
   	maxTokens: 128000,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
+  		defaultEffort: "low",
   	},
   }),
 
@@ -174,8 +174,8 @@ export const theGridModelConfig: ModelConfig = createModelConfigObject([
   	contextWindow: 196608,
   	maxTokens: 30000,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high"],
+  		defaultEffort: "low",
   	},
   }),
 
@@ -196,8 +196,8 @@ export const theGridModelConfig: ModelConfig = createModelConfigObject([
   	contextWindow: 128000,
   	maxTokens: 16000,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high"],
+  		defaultEffort: "low",
   	},
   }),
 ]);

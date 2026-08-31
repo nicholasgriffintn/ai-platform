@@ -687,8 +687,8 @@ export const xaiModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00125,
     costPer1kOutputTokens: 0.0025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	defaultEffort: "low",
     },
     supportsResponseFormat: true,
     family: "grok",
@@ -713,8 +713,8 @@ export const xaiModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00125,
     costPer1kOutputTokens: 0.0025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high"],
+    	defaultEffort: "none",
     },
     supportsResponseFormat: true,
     strengths: ["vision", "document", "tool_use"],
@@ -890,8 +890,8 @@ export const xaiModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   },
   "grok-imagine-video-1.5": {
@@ -937,8 +937,8 @@ export const xaiModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	defaultEffort: "low",
     },
   },
   "grok-imagine-image-2.0": {

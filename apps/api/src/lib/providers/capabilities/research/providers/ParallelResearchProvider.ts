@@ -15,6 +15,7 @@ import type {
   ResearchTaskHandle,
 } from "~/types";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
+import { sleep } from "~/utils/delay";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 type ParallelResultPayload = {
@@ -151,10 +152,6 @@ export class ParallelResearchProvider implements ResearchProvider {
     }
 
     return Object.keys(normalised).length > 0 ? normalised : undefined;
-  }
-
-  private sleep(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   async createResearchTask(
@@ -358,7 +355,7 @@ export class ParallelResearchProvider implements ResearchProvider {
       }
 
       if (attempt < maxAttempts) {
-        await this.sleep(interval);
+        await sleep(interval);
       }
     }
 

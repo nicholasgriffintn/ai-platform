@@ -229,4 +229,34 @@ describe("applyToolInteractionResolutions", () => {
       },
     });
   });
+
+  it("leaves the tool result pending when a legacy selection names an unknown council member", () => {
+    const messages = [
+      {
+        id: "tool-1",
+        role: "tool",
+        name: "select_council_members",
+        status: "pending",
+        content: "Waiting for the user to choose the council.",
+        data: {
+          members: [
+            { id: "strategist", name: "Strategist" },
+            { id: "critic", name: "Critic" },
+            { id: "joker", name: "Joker" },
+          ],
+        },
+      },
+      {
+        id: "user-1",
+        role: "user",
+        content: "Convene the council with these members: Strategist, Nobody, Joker.",
+      },
+    ] as Message[];
+
+    const [resolved] = applyToolInteractionResolutions(messages);
+
+    expect(resolved).toMatchObject({ status: "pending" });
+    expect(resolved.data).not.toHaveProperty("resolved");
+    expect(resolved.data).not.toHaveProperty("resolution");
+  });
 });

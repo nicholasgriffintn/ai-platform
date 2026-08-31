@@ -11,6 +11,7 @@ import type {
   ResearchResultError,
   ResearchTaskHandle,
 } from "~/types";
+import { sleep } from "~/utils/delay";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 type ExaResultPayload = {
@@ -110,10 +111,6 @@ export class ExaResearchProvider implements ResearchProvider {
       Accept: "application/json",
       "x-api-key": apiKey,
     };
-  }
-
-  private sleep(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   async createResearchTask(
@@ -338,7 +335,7 @@ export class ExaResearchProvider implements ResearchProvider {
       }
 
       if (attempt < maxAttempts) {
-        await this.sleep(interval);
+        await sleep(interval);
       }
     }
 
