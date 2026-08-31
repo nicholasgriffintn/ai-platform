@@ -71,7 +71,10 @@ export function ArticleAnalysisForm({ session, onReportGenerated }: ArticleAnaly
 
       <div className="mx-auto max-w-3xl">
         {session.processingError && (
-          <div className="mb-6 rounded-md border border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-900/30">
+          <div
+            role="alert"
+            className="mb-6 rounded-md border border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-900/30"
+          >
             <p className="font-semibold text-red-800 dark:text-red-200">Error</p>
             <p className="mt-1 text-sm text-red-700 dark:text-red-300">{session.processingError}</p>
           </div>

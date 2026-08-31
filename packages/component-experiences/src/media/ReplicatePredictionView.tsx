@@ -121,7 +121,9 @@ export function ReplicatePredictionView({
       {prediction.status === "failed" && prediction.error && (
         <Card className="p-6 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
           <h3 className="font-semibold text-red-800 dark:text-red-200 mb-2">Prediction Failed</h3>
-          <p className="text-sm text-red-700 dark:text-red-300">{prediction.error}</p>
+          <p role="alert" className="text-sm text-red-700 dark:text-red-300">
+            {prediction.error}
+          </p>
         </Card>
       )}
 

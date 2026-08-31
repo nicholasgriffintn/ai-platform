@@ -57,7 +57,7 @@ export interface MessageActionsProps {
 }
 
 const messageActionButtonClassName =
-  "flex size-6 min-h-0 min-w-0 shrink-0 cursor-pointer items-center justify-center rounded-lg p-1 text-zinc-500 transition-colors duration-200 hover:bg-zinc-200/50 dark:text-zinc-400 dark:hover:bg-zinc-600/50";
+  "flex size-8 min-h-0 min-w-0 shrink-0 cursor-pointer items-center justify-center rounded-lg p-1.5 text-zinc-500 transition-colors duration-200 hover:bg-zinc-200/50 dark:text-zinc-400 dark:hover:bg-zinc-600/50";
 
 export const MessageActions = ({
   message,

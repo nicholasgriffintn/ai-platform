@@ -46,7 +46,9 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
 
   if (error || !workspace) {
     return (
-      <div className="p-10 text-sm text-red-700">{error?.message ?? "Workspace not found"}</div>
+      <div role="alert" className="p-10 text-sm text-red-700">
+        {error?.message ?? "Workspace not found"}
+      </div>
     );
   }
 

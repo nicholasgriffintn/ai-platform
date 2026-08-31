@@ -351,7 +351,11 @@ export function CreateTaskDialog({
             </div>
           ) : null}
 
-          {errorMessage ? <p className="text-sm text-red-600">{errorMessage}</p> : null}
+          {errorMessage ? (
+            <p role="alert" className="text-sm text-red-600">
+              {errorMessage}
+            </p>
+          ) : null}
 
           <DialogFooter className="gap-2 sm:justify-between">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>

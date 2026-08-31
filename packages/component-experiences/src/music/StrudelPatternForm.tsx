@@ -116,7 +116,11 @@ export function StrudelPatternForm({
           onSignIn={onSignIn}
         />
       ) : (
-        errorMessage && <p className="text-sm text-red-700">{errorMessage}</p>
+        errorMessage && (
+          <p role="alert" className="text-sm text-red-700">
+            {errorMessage}
+          </p>
+        )
       )}
       <div className="flex gap-2">
         <Button
