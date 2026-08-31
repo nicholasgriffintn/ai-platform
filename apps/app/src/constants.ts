@@ -41,6 +41,10 @@ export const ENABLE_CAPTCHA_IN_DEV = false;
 
 const COMMON_CSP = {
   defaultSrc: ["'self'"],
+  baseUri: ["'self'"],
+  objectSrc: ["'none'"],
+  frameAncestors: ["'none'"],
+  formAction: ["'self'", API_BASE_URL],
   frameSrc: [
     "https://appleid.apple.com",
     "https://hcaptcha.com",
