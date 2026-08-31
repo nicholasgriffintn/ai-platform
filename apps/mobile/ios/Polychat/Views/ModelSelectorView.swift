@@ -82,10 +82,12 @@ struct ModelSelectorView: View {
                                                 model: model,
                                                 isSelected: model.id == modelsStore.selectedModelId
                                             ) {
+                                                guard model.isAvailableForSelection else { return }
                                                 modelsStore.selectModel(model.id)
                                                 onSelectModel?(model.id)
                                                 dismiss()
                                             }
+                                            .disabled(!model.isAvailableForSelection)
                                         }
                                     } header: {
                                         HStack {

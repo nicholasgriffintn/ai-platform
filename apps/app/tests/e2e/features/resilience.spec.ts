@@ -20,7 +20,7 @@ test.describe("Recovery and unavailable states", () => {
 
     test("reports the failure and accepts the next message", async ({ homePage, page }) => {
       await homePage.navigate("/chat");
-      await homePage.selectModel("Compound Mini");
+      await homePage.selectModel("GPT OSS 120B");
       await homePage.sendMessage("Trigger an error");
       await expect(
         page.getByText("External service temporarily unavailable").first(),

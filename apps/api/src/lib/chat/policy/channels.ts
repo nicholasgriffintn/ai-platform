@@ -1,12 +1,9 @@
 import type { InboundChannelId } from "@ngriffin_uk/polychat-schemas";
 
-import { defaultModel } from "~/constants/models";
-
 export interface InboundChannelProfile {
   id: InboundChannelId;
   label: string;
   conversationPrefix: string;
-  model: string;
   tools: string[];
   maxSteps: number;
   historyLimit: number;
@@ -17,7 +14,6 @@ const SMS_CHANNEL_PROFILE: InboundChannelProfile = {
   id: "sms",
   label: "SMS",
   conversationPrefix: "sms",
-  model: defaultModel,
   tools: ["trigger_recipe", "get_task_status", "get_weather"],
   maxSteps: 3,
   historyLimit: 8,

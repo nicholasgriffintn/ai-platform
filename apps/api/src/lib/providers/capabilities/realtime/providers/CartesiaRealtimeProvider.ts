@@ -31,6 +31,7 @@ export class CartesiaRealtimeProvider implements RealtimeProvider {
       providerName: this.name,
       envKeyName: "CARTESIA_API_KEY",
       userId: request.user.id,
+      credentialAuthority: request.credentialAuthority,
     });
   }
 

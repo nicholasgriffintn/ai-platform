@@ -29,6 +29,7 @@ Read the relevant accepted records before changing product structure, ownership,
 - [0028](decisions/0028-response-scoped-capability-activation.md): Let discovery activate eligible native tools for the current response without changing saved settings or widening setup and project authority.
 - [0029](decisions/0029-server-managed-tool-selection.md): Let the server own function tool selection for Chat and iOS through a managed request mode, keep explicit selection for the API and agents, and drop the composer tool picker.
 - [0030](decisions/0030-version-authored-skills-with-d1-state-and-r2-bundles.md): Give authored skills D1 identity and draft/stable state while storing complete immutable revisions in private R2.
+- [0030](decisions/0030-server-owned-model-selection-policy.md): Let the server own executable-model policy and plan-, provider-, and BYOK-aware defaults while clients consume the resolved catalogue default or automatic routing.
 
 [context.md](context.md) holds the current domain vocabulary, workspace map, seams, and data flows.
 

@@ -371,11 +371,13 @@ class ConversationManager: ObservableObject {
 
         do {
             let currentSelectedModelId = await MainActor.run { modelsStore?.selectedModelId }
-            let modelToUse = conversation.modelId ??
-                           selectedModelId ??
-                           currentSelectedModelId ??
-                           "mistral-small"
-            let providerToUse = modelsStore?.model(withId: modelToUse)?.provider
+            let requestedModelIds = [conversation.modelId, selectedModelId, currentSelectedModelId]
+                .compactMap { $0 }
+            let selectedModel = requestedModelIds
+                .compactMap { modelsStore?.model(withId: $0) }
+                .first { $0.isAvailableForSelection }
+            let modelToUse = selectedModel?.id
+            let providerToUse = selectedModel?.provider
 
             guard let apiClient else {
                 throw NSError(domain: "com.polychat.app", code: 1,
@@ -391,7 +393,7 @@ class ConversationManager: ObservableObject {
             )
 
             var streamedReasoning = ""
-            var responseModelId = modelToUse
+            var responseModelId = modelToUse ?? "auto"
 
             for try await event in stream {
                 didReceiveStreamEvent = true

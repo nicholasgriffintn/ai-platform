@@ -1,7 +1,9 @@
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
+import { resolveExecutableModelForRequest } from "~/lib/chat/policy/model-access";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { OutputRepository } from "~/repositories/OutputRepository";
 import { TaskRepository } from "~/repositories/TaskRepository";
+import { UserRepository } from "~/repositories/UserRepository";
 import type { IEnv } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
@@ -88,6 +90,22 @@ export class ReplicatePollingHandler implements TaskHandler {
         };
       }
 
+      const user = await new UserRepository(env).getUserById(data.userId);
+
+      if (!user) {
+        return {
+          status: "error",
+          message: `User ${data.userId} not found`,
+        };
+      }
+
+      const resolvedModel = await resolveExecutableModelForRequest({
+        env,
+        user,
+        model: data.modelId || asyncInvocation.context?.version || "",
+        provider: asyncInvocation.provider || "replicate",
+      });
+
       const result = await provider.getAsyncInvocationStatus(
         asyncInvocation,
         {
@@ -95,6 +113,7 @@ export class ReplicatePollingHandler implements TaskHandler {
           env,
           messages: [],
           completion_id: data.predictionId,
+          credentialAuthority: resolvedModel.credentialAuthority,
         },
         data.userId,
       );

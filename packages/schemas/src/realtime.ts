@@ -202,7 +202,7 @@ export const REALTIME_LIVE_PROVIDER_MANIFEST: RealtimeLiveProviderManifestItem[]
     inputModalities: ["audio"],
     outputModalities: ["audio"],
     description: "WebRTC voice agent",
-    defaultModelId: "gpt-realtime-2",
+    defaultModelId: "gpt-realtime-2.1",
   },
   {
     id: "google-ai-studio",

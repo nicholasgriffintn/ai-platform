@@ -7,6 +7,7 @@ import type {
 } from "~/lib/chat/validation/ValidationPipeline";
 import { findModelConfig } from "~/lib/providers/models";
 import type { CoreChatOptions } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { resolveRequestUser } from "~/utils/requestUser";
 
@@ -107,6 +108,16 @@ export class ModelConfigValidator implements Validator {
         },
       };
     } catch (error: any) {
+      if (
+        error instanceof AssistantError &&
+        (error.type === ErrorType.AUTHENTICATION_ERROR ||
+          error.type === ErrorType.AUTHORISATION_ERROR ||
+          error.type === ErrorType.FORBIDDEN ||
+          error.type === ErrorType.UNAUTHORIZED)
+      ) {
+        throw error;
+      }
+
       return {
         validation: {
           isValid: false,

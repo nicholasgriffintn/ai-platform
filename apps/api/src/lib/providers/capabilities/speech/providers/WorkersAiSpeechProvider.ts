@@ -1,3 +1,5 @@
+import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
+
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getModelConfigByModel } from "~/lib/providers/models";
@@ -7,7 +9,7 @@ import { buildInputSchemaInput } from "~/utils/inputSchema";
 
 import type { SpeechGenerationRequest, SpeechGenerationResult, SpeechProvider } from "../index";
 
-const DEFAULT_MODEL = "@cf/myshell-ai/melotts";
+const DEFAULT_MODEL = MODEL_DEFAULTS.speech.workersAi.model;
 
 export class WorkersAiSpeechProvider implements SpeechProvider {
   name = "workers-ai";

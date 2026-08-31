@@ -44,7 +44,7 @@ export async function executeSandboxRunStream(
 
   const model = await resolveSandboxModel({
     context: serviceContext,
-    userId: user.id,
+    user,
     model: payload.model,
   });
   const timeoutConfig = buildSandboxTimeoutConfig({

@@ -15,6 +15,8 @@ export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<T, Exclu
     [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>;
   }[Keys];
 
+export type CredentialAuthority = "byok" | "platform";
+
 type WorkerCacheFetcher<Props> = {
   fetch(input: RequestInfo | URL, init?: RequestInit & { props?: Props }): Promise<Response>;
 };

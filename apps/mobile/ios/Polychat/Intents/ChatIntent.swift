@@ -18,7 +18,7 @@ struct ChatIntent: AppIntent {
         
         let response = try await apiClient.createChatCompletion(messages: [
             ChatMessage(role: "user", content: prompt)
-        ], modelId: "mistral-small")
+        ], modelId: nil)
         
         guard let answer = response.choices.first?.message.content.textValue else {
             throw NSError(domain: "com.polychat.app", code: 1, userInfo: [NSLocalizedDescriptionKey: "No response from AI"])
