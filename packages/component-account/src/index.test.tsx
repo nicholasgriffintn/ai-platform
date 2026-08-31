@@ -17,6 +17,9 @@ afterEach(cleanup);
 function buildAgent(overrides: Partial<AgentResponse> & Pick<AgentResponse, "id" | "name">) {
   return {
     user_id: 1,
+    owner_scope_type: "user",
+    owner_scope_id: "1",
+    derived_from_agent_id: null,
     description: "",
     avatar_url: null,
     servers: [],
