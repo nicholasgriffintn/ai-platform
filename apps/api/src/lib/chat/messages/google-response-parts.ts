@@ -135,6 +135,7 @@ export class GoogleCodeExecutionCollector {
     if (!execution) {
       return;
     }
+
     const output = typeof payload.output === "string" ? payload.output : "";
     const outcome = typeof payload.outcome === "string" ? payload.outcome : execution.outcome;
 
