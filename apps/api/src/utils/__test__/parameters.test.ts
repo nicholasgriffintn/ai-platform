@@ -165,20 +165,34 @@ describe("shouldEnableStreaming", () => {
 });
 
 describe("calculateReasoningBudget", () => {
-  it("allocates the full output budget for maximum reasoning", () => {
+  const budgetModel = {
+    matchingModel: "gpt-5.6",
+    provider: "openai",
+    maxTokens: 10_000,
+  };
+
+  it("keeps the maximum budget strictly below the output allowance", () => {
     expect(
-      calculateReasoningBudget(
-        {
-          reasoning_effort: "max",
-          max_tokens: 10_000,
-        },
-        {
-          matchingModel: "gpt-5.6",
-          provider: "openai",
-          maxTokens: 10_000,
-        },
-      ),
-    ).toBe(10_000);
+      calculateReasoningBudget({ reasoning_effort: "max", max_tokens: 10_000 }, budgetModel),
+    ).toBe(9_999);
+    expect(
+      calculateReasoningBudget({ reasoning_effort: "xhigh", max_tokens: 10_000 }, budgetModel),
+    ).toBe(9_999);
+  });
+
+  it("never drops below the provider minimum, even for a tiny output allowance", () => {
+    expect(
+      calculateReasoningBudget({ reasoning_effort: "minimal", max_tokens: 1_200 }, budgetModel),
+    ).toBe(1_024);
+  });
+
+  it("scales the budget with the requested effort", () => {
+    expect(
+      calculateReasoningBudget({ reasoning_effort: "low", max_tokens: 10_000 }, budgetModel),
+    ).toBe(5_000);
+    expect(
+      calculateReasoningBudget({ reasoning_effort: "high", max_tokens: 10_000 }, budgetModel),
+    ).toBe(9_000);
   });
 });
 
