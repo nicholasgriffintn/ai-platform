@@ -76,6 +76,30 @@ describe("requirePlan", () => {
     });
   });
 
+  it("allows a higher-ranked plan to satisfy a lower requirement", async () => {
+    const app = createApp(createUser("enterprise"));
+
+    app.get("/pro", requirePlan("pro"), (context) => context.json({ ok: true }));
+
+    const response = await app.request("/pro");
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ ok: true });
+  });
+
+  it("rejects a lower-ranked plan against a higher requirement", async () => {
+    const app = createApp(createUser("pro"));
+
+    app.get("/enterprise", requirePlan("enterprise"), (context) => context.json({ ok: true }));
+
+    const response = await app.request("/enterprise");
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      error: "This feature requires a enterprise plan. Your current plan is pro.",
+    });
+  });
+
   it("rejects users whose current plan does not satisfy the required plan", async () => {
     const app = createApp(createUser(null));
 
