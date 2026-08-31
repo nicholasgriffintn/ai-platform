@@ -288,6 +288,7 @@ export class RequestPreparer {
       user: user || undefined,
       anonymousUser: scope.options.anonymousUser,
       model: primaryModel,
+      provider: primaryProvider,
       platform,
       store: scope.options.store,
       env: this.env,
