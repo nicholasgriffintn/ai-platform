@@ -4,7 +4,7 @@ import type {
   ConversationSortBy as SchemaConversationSortBy,
   ConversationType as SchemaConversationType,
   MessagePart as SchemaMessagePart,
-  ResponseDisplayType as SchemaResponseDisplayType,
+  ToolResponseType,
   SandboxTaskType,
   ChatCompletionRequestBody as SchemaChatCompletionRequestBody,
   ChatHostedToolSettings as SchemaHostedToolSettings,
@@ -115,14 +115,7 @@ export interface Attachment {
 export interface MessageData {
   conversationMode?: ConversationModeMetadata;
   codingTaskType?: SandboxTaskType;
-  responseType?: SchemaResponseDisplayType;
-  responseDisplay?: {
-    fields?: {
-      key: string;
-      label: string;
-    }[];
-    template?: string;
-  };
+  responseType?: ToolResponseType;
   icon?: string;
   formattedName?: string;
   attachments?: Attachment[];

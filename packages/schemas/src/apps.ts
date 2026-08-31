@@ -429,23 +429,15 @@ export const toolFormFieldTypes = [
   "textarea",
 ] as const;
 
-export const toolResponseDisplayTypes = [
-  "table",
-  "json",
-  "text",
-  "template",
-  "custom",
-  "hidden",
-] as const;
+export const toolResponseTypes = ["table", "json", "text", "custom", "hidden"] as const;
 
-export const ResponseDisplayType = {
+export const ToolResponseType = {
   TABLE: "table",
   JSON: "json",
   TEXT: "text",
-  TEMPLATE: "template",
   CUSTOM: "custom",
   HIDDEN: "hidden",
-} satisfies Record<string, (typeof toolResponseDisplayTypes)[number]>;
+} satisfies Record<string, (typeof toolResponseTypes)[number]>;
 
 export const FieldType = {
   TEXT: "text",
@@ -530,7 +522,7 @@ export const modelToolDefinitionSchema = z.object({
 });
 
 export const toolFormFieldTypeSchema = z.enum(toolFormFieldTypes);
-export const toolResponseDisplayTypeSchema = z.enum(toolResponseDisplayTypes);
+export const toolResponseTypeSchema = z.enum(toolResponseTypes);
 
 export const toolFormFieldSchema = z.object({
   id: z.string(),
@@ -570,20 +562,8 @@ export const toolFormSchema = z.object({
   steps: z.array(toolFormStepSchema),
 });
 
-export const toolResponseFieldSchema = z.object({
-  key: z.string(),
-  label: z.string(),
-  format: z.string().optional(),
-});
-
-export const toolResponseDisplaySchema = z.object({
-  fields: z.array(toolResponseFieldSchema).optional(),
-  template: z.string().optional(),
-});
-
 export const toolResponseSchema = z.object({
-  type: toolResponseDisplayTypeSchema,
-  display: toolResponseDisplaySchema,
+  type: toolResponseTypeSchema.optional(),
 });
 
 export const renderableToolSchema = z.object({
@@ -636,11 +616,7 @@ export type FieldType = z.infer<typeof toolFormFieldTypeSchema>;
 export type ToolFormField = z.infer<typeof toolFormFieldSchema>;
 export type ToolFormStep = z.infer<typeof toolFormStepSchema>;
 export type ToolFormSchema = z.infer<typeof toolFormSchema>;
-export type ToolResponseField = z.infer<typeof toolResponseFieldSchema>;
-export type ToolResponseDisplay = z.infer<typeof toolResponseDisplaySchema>;
-export type ResponseDisplayType = z.infer<typeof toolResponseDisplayTypeSchema>;
-export type ResponseField = ToolResponseField;
-export type ResponseDisplay = ToolResponseDisplay;
+export type ToolResponseType = z.infer<typeof toolResponseTypeSchema>;
 export type ToolResponseSchemaType = z.infer<typeof toolResponseSchema>;
 export type RenderableTool = z.infer<typeof renderableToolSchema>;
 export type CapabilityCatalogItem = z.infer<typeof appInfoSchema>;

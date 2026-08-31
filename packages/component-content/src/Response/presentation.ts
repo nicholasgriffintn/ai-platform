@@ -5,7 +5,7 @@ import {
   resolveGeneratedImageResponseData,
   type GeneratedAudioResponseData,
   type GeneratedImageResponseData,
-  type ResponseDisplayField,
+  type TableHeader,
 } from "./response-data";
 
 export interface SourceRecord {
@@ -25,7 +25,7 @@ export type ResponsePresentation =
   | { kind: "audio"; data: GeneratedAudioResponseData }
   | { kind: "video"; url: string; title: string; content: string }
   | { kind: "sources"; sources: SourceRecord[] }
-  | { kind: "table"; headers: ResponseDisplayField[]; rows: Record<string, unknown>[] }
+  | { kind: "table"; headers: TableHeader[]; rows: Record<string, unknown>[] }
   | { kind: "markdown"; content: string }
   | { kind: "definitions"; entries: DefinitionEntry[] }
   | { kind: "json"; data: unknown };
@@ -39,7 +39,6 @@ const PRESENTATION_KEYS = new Set([
   "modelContext",
   "name",
   "renderer",
-  "responseDisplay",
   "responseType",
 ]);
 
@@ -61,7 +60,7 @@ const VIDEO_EXTENSIONS = new Set(["mp4", "webm", "mov", "m4v", "ogv"]);
 
 export function resolveResponsePresentation(
   payload: unknown,
-  options?: { content?: string; fields?: ResponseDisplayField[] },
+  options?: { content?: string },
 ): ResponsePresentation {
   const image = resolveGeneratedImageResponseData(payload);
 
@@ -90,7 +89,7 @@ export function resolveResponsePresentation(
       return { kind: "sources", sources };
     }
 
-    const table = resolveTable(records, options?.fields);
+    const table = resolveTable(records);
 
     if (table) {
       return table;
@@ -219,14 +218,7 @@ function resolveSources(records: Record<string, unknown>[]): SourceRecord[] | nu
   return sources.length > 0 ? sources : null;
 }
 
-function resolveTable(
-  records: Record<string, unknown>[],
-  fields?: ResponseDisplayField[],
-): ResponsePresentation | null {
-  if (fields && fields.length > 0) {
-    return { kind: "table", headers: fields, rows: records };
-  }
-
+function resolveTable(records: Record<string, unknown>[]): ResponsePresentation | null {
   if (records.length < MIN_INFERRED_TABLE_ROWS) {
     return null;
   }

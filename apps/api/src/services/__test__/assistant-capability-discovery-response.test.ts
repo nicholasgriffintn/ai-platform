@@ -1,6 +1,6 @@
 import {
   CAPABILITY_DISCOVERY_DATA_KEY,
-  ResponseDisplayType,
+  ToolResponseType,
   type CapabilityDiscoveryResult,
 } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
@@ -42,7 +42,7 @@ describe("createCapabilityDiscoveryResponse", () => {
     expect(response).toMatchObject({
       status: "pending",
       data: {
-        responseType: ResponseDisplayType.CUSTOM,
+        responseType: ToolResponseType.CUSTOM,
         [CAPABILITY_DISCOVERY_DATA_KEY]: result,
       },
     });
@@ -72,7 +72,7 @@ describe("createCapabilityDiscoveryResponse", () => {
 
     expect(response).toMatchObject({
       status: "success",
-      data: { responseType: ResponseDisplayType.HIDDEN },
+      data: { responseType: ToolResponseType.HIDDEN },
     });
     expect(response.content).toContain(
       "Call create_scheduled_task using its declared parameter schema.",

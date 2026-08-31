@@ -139,7 +139,6 @@ public struct ChatMessagePart: Codable, Equatable, Identifiable {
 public struct ChatMessageData: Codable, Equatable {
     public let formattedName: String?
     public let responseType: String?
-    public let responseDisplay: JSONValue?
     public let attachments: [ChatAttachment]?
     public let searchGrounding: SearchGrounding?
     public let asyncInvocation: AsyncInvocation?

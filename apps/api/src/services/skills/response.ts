@@ -1,5 +1,5 @@
 import {
-  ResponseDisplayType,
+  ToolResponseType,
   SKILL_LOAD_TOOL_NAME,
   type SkillResourceSummary,
 } from "@ngriffin_uk/polychat-schemas";
@@ -54,7 +54,7 @@ export function createSkillInstructionsResponse(
     name: SKILL_LOAD_TOOL_NAME,
     content: formatSkillContent(skill),
     data: {
-      responseType: ResponseDisplayType.HIDDEN,
+      responseType: ToolResponseType.HIDDEN,
       skill: skill.name,
       resources,
     },
@@ -71,7 +71,7 @@ export function createSkillResourceResponse(
     name: SKILL_LOAD_TOOL_NAME,
     content: formatSkillResource(skillName, resource),
     data: {
-      responseType: ResponseDisplayType.HIDDEN,
+      responseType: ToolResponseType.HIDDEN,
       skill: skillName,
       resource: resource.path,
       resources,

@@ -1,7 +1,5 @@
 import { escapeHtml } from "@ngriffin_uk/polychat-utility-core";
 
-import { isSafeLinkUrl } from "./safe-url";
-
 export function markdownToHtml(markdown: string): string {
   const lines = markdown.split("\n");
   let html = "";
@@ -98,7 +96,7 @@ function processInlineMarkdown(text: string): string {
   newText = newText.replace(
     /!\[([^\]]*)\]\(((?:[^)(]|\([^)]*\))*)\)/g,
     (_match, alt: string, url: string) => {
-      if (!isSafeLinkUrl(url)) {
+      if (!isSafeMarkdownUrl(url)) {
         return alt;
       }
 
@@ -108,7 +106,7 @@ function processInlineMarkdown(text: string): string {
   newText = newText.replace(
     /\[([^\]]+)\]\(((?:[^)(]|\([^)]*\))*)\)/g,
     (_match, label: string, url: string) => {
-      if (!isSafeLinkUrl(url)) {
+      if (!isSafeMarkdownUrl(url)) {
         return label;
       }
 
@@ -129,4 +127,24 @@ function processInlineMarkdown(text: string): string {
 
 function escapeAttribute(value: string): string {
   return escapeHtml(value);
+}
+
+function isSafeMarkdownUrl(value: string): boolean {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return false;
+  }
+
+  if (trimmed.startsWith("/") || trimmed.startsWith("#")) {
+    return true;
+  }
+
+  try {
+    const url = new URL(trimmed);
+
+    return url.protocol === "http:" || url.protocol === "https:" || url.protocol === "mailto:";
+  } catch {
+    return false;
+  }
 }

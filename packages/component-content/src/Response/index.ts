@@ -10,7 +10,6 @@ export * from "./response-data";
 export * from "./ResponseView";
 export * from "./SourceListView";
 export * from "./TableView";
-export * from "./TemplateView";
 export * from "./TextView";
 export * from "./ToolErrorView";
 export * from "./Views/ApprovalRequestView";
