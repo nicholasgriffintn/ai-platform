@@ -9,13 +9,20 @@ class ConversationManager: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var loadingConversationID: String?
     @Published var error: String?
+    @Published var usageLimits: ChatUsageLimits?
 
     private var apiClient: (any ConversationAPIClient)?
     private var modelsStore: ModelsStore?
+    private var turnRecoveryPolicy = TurnRecoveryPolicy()
 
-    func configure(apiClient: any ConversationAPIClient, modelsStore: ModelsStore? = nil) {
+    func configure(
+        apiClient: any ConversationAPIClient,
+        modelsStore: ModelsStore? = nil,
+        turnRecoveryPolicy: TurnRecoveryPolicy = TurnRecoveryPolicy()
+    ) {
         self.apiClient = apiClient
         self.modelsStore = modelsStore
+        self.turnRecoveryPolicy = turnRecoveryPolicy
     }
 
     func reset() {
@@ -25,6 +32,7 @@ class ConversationManager: ObservableObject {
         isLoading = false
         loadingConversationID = nil
         error = nil
+        usageLimits = nil
     }
 
     func loadConversations() async {
@@ -344,6 +352,9 @@ class ConversationManager: ObservableObject {
             return
         }
 
+        let knownMessageIds = Set(conversation.messages.map(\.id))
+        var toolActivity = StreamingToolActivity()
+
         let assistantMessageId = UUID().uuidString
         let loadingMessage = ChatMessage(id: assistantMessageId, role: "assistant", content: "")
         conversation.messages.append(loadingMessage)
@@ -356,6 +367,7 @@ class ConversationManager: ObservableObject {
 
         var finalMessageId = assistantMessageId
         var didReceiveStreamEvent = false
+        var streamedContent = ""
 
         do {
             let currentSelectedModelId = await MainActor.run { modelsStore?.selectedModelId }
@@ -378,7 +390,6 @@ class ConversationManager: ObservableObject {
                 settings: settings
             )
 
-            var streamedContent = ""
             var streamedReasoning = ""
             var responseModelId = modelToUse
 
@@ -414,6 +425,28 @@ class ConversationManager: ObservableObject {
                             beforeMessageId: assistantMessageId
                         )
                     }
+                case .toolUseStart(let toolCall):
+                    toolActivity.start(toolCall)
+                case .toolUseDelta(let toolCall):
+                    toolActivity.applyDelta(toolCall)
+                case .toolUseStop(let toolCallId):
+                    if let update = toolActivity.stop(toolCallId: toolCallId, completionId: conversationId) {
+                        applyToolActivityUpdate(
+                            update,
+                            conversationId: conversationId,
+                            beforeMessageId: assistantMessageId
+                        )
+                    }
+                case .toolResult(let result):
+                    if let update = toolActivity.resolve(result, completionId: conversationId) {
+                        applyToolActivityUpdate(
+                            update,
+                            conversationId: conversationId,
+                            beforeMessageId: assistantMessageId
+                        )
+                    }
+                case .usageLimits(let limits):
+                    usageLimits = limits
                 case .conversationTitle(let title):
                     applyConversationTitle(conversationId, title: title)
                 case .compaction(let message):
@@ -447,6 +480,7 @@ class ConversationManager: ObservableObject {
             }
 
             completePendingCompactionMessage(conversationId: conversationId)
+            removeMessages(conversationId: conversationId, ids: toolActivity.interimMessageIds)
 
             if streamedContent.isEmpty {
                 streamedContent = streamedReasoning.isEmpty ? "No response" : "<think>\n\(streamedReasoning)"
@@ -466,6 +500,27 @@ class ConversationManager: ObservableObject {
             }
         } catch {
             removePendingCompactionMessages(conversationId: conversationId)
+            removeMessages(conversationId: conversationId, ids: toolActivity.interimMessageIds)
+
+            let recovered = await recoverDetachedTurn(
+                error: error,
+                conversationId: conversationId,
+                knownMessageIds: knownMessageIds.union(toolActivity.knownMessageIds),
+                assistantMessageId: finalMessageId,
+                fallbackMessageId: assistantMessageId,
+                modelId: conversation.modelId,
+                streamedContent: streamedContent
+            )
+
+            if recovered {
+                if generateTitle,
+                   let updatedConversation = currentConversation,
+                   updatedConversation.id == conversationId {
+                    await generateTitleIfNeeded(for: updatedConversation)
+                }
+                return
+            }
+
             updateAssistantMessage(
                 conversationId: conversationId,
                 messageId: finalMessageId,
@@ -474,6 +529,143 @@ class ConversationManager: ObservableObject {
                 fallbackMessageId: assistantMessageId,
                 markLoadedFromAPI: didReceiveStreamEvent
             )
+        }
+    }
+
+    private func recoverDetachedTurn(
+        error: Error,
+        conversationId: String,
+        knownMessageIds: Set<String>,
+        assistantMessageId: String,
+        fallbackMessageId: String,
+        modelId: String?,
+        streamedContent: String
+    ) async -> Bool {
+        guard StreamFailureClassifier.classify(error) == .transport, let apiClient else {
+            return false
+        }
+
+        updateAssistantMessage(
+            conversationId: conversationId,
+            messageId: assistantMessageId,
+            content: streamedContent.isEmpty
+                ? TurnRecoveryStatus.reconnecting
+                : streamedContent + TurnRecoveryStatus.reconnectingNotice,
+            modelId: modelId,
+            fallbackMessageId: fallbackMessageId,
+            markLoadedFromAPI: false
+        )
+
+        let recoveredMessages = await TurnRecovery.recoverDetachedTurn(
+            completionId: conversationId,
+            knownMessageIds: knownMessageIds,
+            policy: turnRecoveryPolicy
+        ) { completionId in
+            try await apiClient.fetchConversation(id: completionId).messages
+        }
+
+        return applyRecoveredTurn(
+            conversationId: conversationId,
+            messages: recoveredMessages,
+            assistantMessageId: assistantMessageId,
+            fallbackMessageId: fallbackMessageId
+        )
+    }
+
+    private func applyRecoveredTurn(
+        conversationId: String,
+        messages: [ChatMessage],
+        assistantMessageId: String,
+        fallbackMessageId: String
+    ) -> Bool {
+        guard !messages.isEmpty,
+              let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
+            return false
+        }
+
+        var conversation = conversations[index]
+        guard let messageIndex = assistantMessageIndex(
+            in: conversation,
+            messageId: assistantMessageId,
+            fallbackMessageId: fallbackMessageId
+        ) else {
+            return false
+        }
+
+        let existingMessageIds = Set(conversation.messages.map(\.id))
+        let placeholderId = conversation.messages[messageIndex].id
+        let replacements = messages.filter { message in
+            message.id == placeholderId || !existingMessageIds.contains(message.id)
+        }
+
+        guard replacements.contains(where: { $0.role == "assistant" }) else {
+            return false
+        }
+
+        conversation.messages.replaceSubrange(messageIndex...messageIndex, with: replacements)
+        conversation.isLoadedFromAPI = true
+        conversation.messageCount = conversation.messages.count
+        conversation.lastMessageAt = Date()
+        conversations[index] = conversation
+
+        if currentConversation?.id == conversationId {
+            currentConversation = conversation
+        }
+
+        return true
+    }
+
+    private func applyToolActivityUpdate(
+        _ update: StreamingToolActivity.Update,
+        conversationId: String,
+        beforeMessageId: String
+    ) {
+        guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
+            return
+        }
+
+        var conversation = conversations[index]
+        let replacedIndex = update.replacingMessageId.flatMap { replacingMessageId in
+            conversation.messages.firstIndex { $0.id == replacingMessageId }
+        } ?? conversation.messages.firstIndex { $0.id == update.message.id }
+
+        if let replacedIndex {
+            conversation.messages[replacedIndex] = update.message
+        } else {
+            let insertionIndex = conversation.messages.firstIndex { $0.id == beforeMessageId }
+                ?? conversation.messages.count
+            conversation.messages.insert(update.message, at: insertionIndex)
+        }
+
+        conversation.messageCount = conversation.messages.count
+        conversation.lastMessageAt = Date()
+        conversations[index] = conversation
+
+        if currentConversation?.id == conversationId {
+            currentConversation = conversation
+        }
+    }
+
+    private func removeMessages(conversationId: String, ids: [String]) {
+        guard !ids.isEmpty,
+              let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
+            return
+        }
+
+        let removableIds = Set(ids)
+        var conversation = conversations[index]
+        let originalCount = conversation.messages.count
+        conversation.messages.removeAll { removableIds.contains($0.id) }
+
+        guard conversation.messages.count != originalCount else {
+            return
+        }
+
+        conversation.messageCount = conversation.messages.count
+        conversations[index] = conversation
+
+        if currentConversation?.id == conversationId {
+            currentConversation = conversation
         }
     }
 
