@@ -25,6 +25,8 @@ The API provides a unified interface to multiple AI providers, following OpenAI'
 
 Use the skill's [local setup](../setup.md), [configuration](../configuration.md), and [deployment](../deployment.md) workflows rather than maintaining component-specific setup steps here.
 
+Document research is a loadable skill over the read-only `search_documents` tool. It teaches the shared agent loop to refine searches and reconcile evidence from authorised personal or project material. Keep it separate from the `research` tool, which delegates paid deep-web research to an external provider; private document passages must not cross into that provider.
+
 The local API uses `http://localhost:8787` by default. The chat completion route is `/chat/completions`; use the generated OpenAPI reference for the current request contract.
 
 Automatic routing modes prefer their matching model tier. If that tier has no model which is both accessible to the person and suitable for the prompt's capabilities, route through the broader accessible automatic pool instead of failing the turn.

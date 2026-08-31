@@ -51,6 +51,7 @@ const BUILT_IN_SKILL_IDS = [
   "article-analysis",
   "artifacts",
   "council",
+  "document-research",
   "hacker-news",
   "prompt-craft",
   "recipes",
