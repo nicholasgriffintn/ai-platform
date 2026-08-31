@@ -4,6 +4,7 @@ import {
   captureScreenshotSchema,
   contentExtractSchema,
   ocrSchema,
+  ocrResultSchema,
   weatherQuerySchema,
   weatherResponseSchema,
   deepWebSearchSchema,
@@ -15,8 +16,6 @@ import z from "zod/v4";
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { addRoute } from "~/lib/http/routeBuilder";
-import { getOcrProvider, resolveOcrProviderName } from "~/lib/providers/capabilities/ocr/index";
-import type { OcrExtractionRequest } from "~/lib/providers/capabilities/ocr/types";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requirePlan } from "~/middleware/requirePlan";
 import {
@@ -27,6 +26,7 @@ import {
   analyseHackerNewsStories,
   retrieveHackerNewsTopStories,
 } from "~/services/apps/retrieval/hackernews";
+import { performOcr } from "~/services/apps/retrieval/ocr";
 import {
   type CaptureScreenshotParams,
   captureScreenshot,
@@ -37,6 +37,7 @@ import {
   performDeepWebSearch,
 } from "~/services/apps/retrieval/web-search";
 import { getResearchTaskStatus, startResearchTask } from "~/services/research/task";
+import { projectScopeQuerySchema } from "~/services/workspaces/access";
 import type { IEnv, IUser, ResearchProviderName } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -64,8 +65,6 @@ const hackerNewsQuerySchema = z.object({
 });
 
 type DeepResearchBody = z.infer<typeof deepResearchSchema>;
-type OcrRequestBody = Omit<OcrExtractionRequest, "env" | "user" | "storage">;
-
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing apps route: ${c.req.path}`);
 
@@ -165,51 +164,25 @@ addRoute(app, "post", "/ocr", {
   summary: "Perform OCR on an image",
   description: "Extract text from a document or image using an OCR provider",
   bodySchema: ocrSchema,
+  querySchema: projectScopeQuerySchema,
+  auth: true,
   responses: {
     200: {
       description: "OCR result with extracted text",
-      schema: z.object({
-        status: z.string(),
-        data: z.object({
-          model: z.string(),
-          key: z.string(),
-          url: z.string(),
-          outputFormat: z.enum(["json", "html", "markdown"]),
-        }),
-        error: z.string().optional(),
-      }),
+      schema: ocrResultSchema,
     },
     400: {
       description: "Bad request or validation error",
       schema: errorResponseSchema,
     },
   },
-  handler: async ({ raw }) =>
-    (async (context: Context) => {
-      const body = context.req.valid("json" as never) as OcrRequestBody;
-      const env = context.env as IEnv;
-      const user = context.get("user") as IUser;
-      const providerName = await resolveOcrProviderName({
-        env,
-        model: body.model,
-        provider: body.provider,
-      });
-      const provider = getOcrProvider(providerName, {
-        env,
-        user,
-      });
-      const result = await provider.extractText({
-        ...body,
-        provider: providerName,
-        env,
-        user,
-      });
-
-      return ResponseFactory.success(context, {
-        status: "success",
-        data: result,
-      });
-    })(raw),
+  handler: ({ body, query, serviceContext, user }) =>
+    performOcr({
+      context: serviceContext,
+      userId: user.id,
+      projectId: query.projectId,
+      request: body,
+    }),
 });
 
 addRoute(app, "get", "/weather", {

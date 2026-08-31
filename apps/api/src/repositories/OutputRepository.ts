@@ -1,6 +1,7 @@
 import type { OutputSensitivity, OutputStatus } from "@ngriffin_uk/polychat-schemas";
 
 import { KVCache } from "~/lib/cache";
+import { isOutputDeletionPending } from "~/lib/outputs/deletion";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -57,6 +58,14 @@ export interface UpdateOutputRecord {
   updatedByUserId: number;
 }
 
+export interface OutputAuditRecord {
+  workspaceId: string;
+  actorUserId: number;
+  action: "output.created" | "output.updated" | "output.deleted";
+  outputId: string;
+  metadata: Record<string, unknown>;
+}
+
 export interface OutputShareRecord {
   id: string;
   output_id: string;
@@ -97,7 +106,7 @@ export class OutputRepository extends BaseRepository {
     }
   }
 
-  async createOutput(input: CreateOutputRecord): Promise<OutputRecord> {
+  async createOutput(input: CreateOutputRecord, audit?: OutputAuditRecord): Promise<OutputRecord> {
     const id = input.id ?? generateId();
     const insert = this.buildInsertQuery(
       "output",
@@ -126,7 +135,47 @@ export class OutputRepository extends BaseRepository {
       throw new AssistantError("Failed to build output insert query", ErrorType.INTERNAL_ERROR);
     }
 
-    const output = await this.runQuery<OutputRecord>(insert.query, insert.values, true);
+    if (audit) {
+      if (!this.env.DB) {
+        throw new AssistantError("Database is not configured", ErrorType.CONFIGURATION_ERROR);
+      }
+
+      const auditInsert = this.buildInsertQuery(
+        "workspace_audit_record",
+        {
+          id: generateId(),
+          workspace_id: audit.workspaceId,
+          actor_user_id: audit.actorUserId,
+          action: audit.action,
+          target_type: "output",
+          target_id: audit.outputId,
+          metadata: audit.metadata,
+        },
+        { jsonFields: ["metadata"] },
+      );
+
+      if (!auditInsert) {
+        throw new AssistantError("Failed to build output audit query", ErrorType.INTERNAL_ERROR);
+      }
+
+      const results = await this.env.DB.batch([
+        this.env.DB.prepare(insert.query).bind(...insert.values),
+        this.env.DB.prepare(auditInsert.query).bind(...auditInsert.values),
+      ]);
+
+      if (!results.every((result) => result.success)) {
+        throw new AssistantError("Failed to create output", ErrorType.DATABASE_ERROR);
+      }
+    } else {
+      const output = await this.runQuery<OutputRecord>(insert.query, insert.values, true);
+
+      if (!output) {
+        throw new AssistantError("Failed to create output", ErrorType.DATABASE_ERROR);
+      }
+    }
+
+    await this.cache?.delete(KVCache.createKey("output", id));
+    const output = await this.getOutput(id);
 
     if (!output) {
       throw new AssistantError("Failed to create output", ErrorType.DATABASE_ERROR);
@@ -135,7 +184,7 @@ export class OutputRepository extends BaseRepository {
     return output;
   }
 
-  async getOutput(outputId: string): Promise<OutputRecord | null> {
+  async getOutputIncludingDeleting(outputId: string): Promise<OutputRecord | null> {
     const cacheKey = KVCache.createKey("output", outputId);
 
     if (this.cache) {
@@ -147,16 +196,32 @@ export class OutputRepository extends BaseRepository {
     return this.selectOne({ id: outputId });
   }
 
+  async getOutput(outputId: string): Promise<OutputRecord | null> {
+    const output = await this.getOutputIncludingDeleting(outputId);
+
+    return output && !isOutputDeletionPending(output) ? output : null;
+  }
+
   async getPersonalOutput(userId: number, outputId: string): Promise<OutputRecord | null> {
-    return this.selectOne({ id: outputId, created_by_user_id: userId, project_id: null });
+    const output = await this.selectOne({
+      id: outputId,
+      created_by_user_id: userId,
+      project_id: null,
+    });
+
+    return output && !isOutputDeletionPending(output) ? output : null;
   }
 
   async getProjectOutput(projectId: string, outputId: string): Promise<OutputRecord | null> {
-    return this.selectOne({ id: outputId, project_id: projectId });
+    const output = await this.selectOne({ id: outputId, project_id: projectId });
+
+    return output && !isOutputDeletionPending(output) ? output : null;
   }
 
   async getOutputByGroupId(groupId: string): Promise<OutputRecord | null> {
-    return this.selectOne({ group_id: groupId });
+    const output = await this.selectOne({ group_id: groupId });
+
+    return output && !isOutputDeletionPending(output) ? output : null;
   }
 
   async getPersonalOutputByGroup(
@@ -164,19 +229,55 @@ export class OutputRepository extends BaseRepository {
     groupId: string,
     kind?: string,
   ): Promise<OutputRecord | null> {
-    return this.selectOne({
+    const output = await this.selectOne({
       created_by_user_id: userId,
       project_id: null,
       group_id: groupId,
       kind,
     });
+
+    return output && !isOutputDeletionPending(output) ? output : null;
   }
 
   async getOutputByCapabilityAndGroup(
     capabilityId: string,
     groupId: string,
   ): Promise<OutputRecord | null> {
-    return this.selectOne({ capability_id: capabilityId, group_id: groupId });
+    const output = await this.selectOne({ capability_id: capabilityId, group_id: groupId });
+
+    return output && !isOutputDeletionPending(output) ? output : null;
+  }
+
+  async listOutputDescendants(parentOutputId: string): Promise<OutputRecord[]> {
+    return this.runQuery<OutputRecord>(
+      `WITH RECURSIVE descendants AS (
+         SELECT * FROM output WHERE parent_output_id = ?
+         UNION ALL
+         SELECT child.*
+         FROM output child
+         INNER JOIN descendants parent ON child.parent_output_id = parent.id
+       )
+       SELECT * FROM descendants`,
+      [parentOutputId],
+      false,
+    );
+  }
+
+  async listWorkspaceOutputRoots(workspaceId: string): Promise<OutputRecord[]> {
+    return this.runQuery<OutputRecord>(
+      `SELECT child.*
+       FROM output child
+       INNER JOIN project ON project.id = child.project_id
+       WHERE project.workspace_id = ?
+         AND NOT EXISTS (
+           SELECT 1 FROM output parent
+           WHERE parent.id = child.parent_output_id
+             AND parent.project_id = child.project_id
+         )
+       ORDER BY child.created_at ASC`,
+      [workspaceId],
+      false,
+    );
   }
 
   async listPersonalOutputs(
@@ -224,11 +325,13 @@ export class OutputRepository extends BaseRepository {
 
     values.push(limit, offset);
 
-    return this.runQuery<OutputRecord>(
+    const outputs = await this.runQuery<OutputRecord>(
       `SELECT * FROM output WHERE ${conditions.join(" AND ")} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
       values,
       false,
     );
+
+    return outputs.filter((output) => !isOutputDeletionPending(output));
   }
 
   async listPersonalOutputGroup(
@@ -237,13 +340,15 @@ export class OutputRepository extends BaseRepository {
     groupId: string,
     kind?: string,
   ): Promise<OutputRecord[]> {
-    return this.selectMany({
+    const outputs = await this.selectMany({
       created_by_user_id: userId,
       project_id: null,
       capability_id: capabilityId,
       group_id: groupId,
       kind,
     });
+
+    return outputs.filter((output) => !isOutputDeletionPending(output));
   }
 
   async listProjectOutputGroup(
@@ -252,16 +357,22 @@ export class OutputRepository extends BaseRepository {
     groupId: string,
     kind?: string,
   ): Promise<OutputRecord[]> {
-    return this.selectMany({
+    const outputs = await this.selectMany({
       project_id: projectId,
       capability_id: capabilityId,
       group_id: groupId,
       kind,
     });
+
+    return outputs.filter((output) => !isOutputDeletionPending(output));
   }
 
-  async updateOutput(outputId: string, input: UpdateOutputRecord): Promise<OutputRecord> {
-    const existing = await this.getOutput(outputId);
+  async updateOutput(
+    outputId: string,
+    input: UpdateOutputRecord,
+    audit?: OutputAuditRecord,
+  ): Promise<OutputRecord> {
+    const existing = await this.getOutputIncludingDeleting(outputId);
 
     if (!existing) {
       throw new AssistantError("Output not found", ErrorType.NOT_FOUND, 404);
@@ -305,14 +416,38 @@ export class OutputRepository extends BaseRepository {
       input.updatedByUserId,
     );
     const updateStatement = this.env.DB.prepare(update.query).bind(...update.values);
-    const results = await this.env.DB.batch([revisionInsert, updateStatement]);
+    const statements = [revisionInsert, updateStatement];
+
+    if (audit) {
+      const auditInsert = this.buildInsertQuery(
+        "workspace_audit_record",
+        {
+          id: generateId(),
+          workspace_id: audit.workspaceId,
+          actor_user_id: audit.actorUserId,
+          action: audit.action,
+          target_type: "output",
+          target_id: audit.outputId,
+          metadata: audit.metadata,
+        },
+        { jsonFields: ["metadata"] },
+      );
+
+      if (!auditInsert) {
+        throw new AssistantError("Failed to build output audit query", ErrorType.INTERNAL_ERROR);
+      }
+
+      statements.push(this.env.DB.prepare(auditInsert.query).bind(...auditInsert.values));
+    }
+
+    const results = await this.env.DB.batch(statements);
 
     if (!results.every((result) => result.success)) {
       throw new AssistantError("Failed to update output", ErrorType.DATABASE_ERROR);
     }
 
     await this.cache?.delete(KVCache.createKey("output", outputId));
-    const updated = await this.getOutput(outputId);
+    const updated = await this.getOutputIncludingDeleting(outputId);
 
     if (!updated || updated.revision !== nextRevision) {
       throw new AssistantError("Output update conflicted", ErrorType.CONFLICT_ERROR, 409);
@@ -326,6 +461,54 @@ export class OutputRepository extends BaseRepository {
 
     await this.executeRun(query, values);
     await this.cache?.delete(KVCache.createKey("output", outputId));
+  }
+
+  async deleteOutputs(outputIds: string[], audit?: OutputAuditRecord): Promise<void> {
+    if (outputIds.length === 0) {
+      return;
+    }
+
+    const placeholders = outputIds.map(() => "?").join(", ");
+    const deleteQuery = `DELETE FROM output WHERE id IN (${placeholders})`;
+
+    if (audit) {
+      if (!this.env.DB) {
+        throw new AssistantError("Database is not configured", ErrorType.CONFIGURATION_ERROR);
+      }
+
+      const auditInsert = this.buildInsertQuery(
+        "workspace_audit_record",
+        {
+          id: generateId(),
+          workspace_id: audit.workspaceId,
+          actor_user_id: audit.actorUserId,
+          action: audit.action,
+          target_type: "output",
+          target_id: audit.outputId,
+          metadata: audit.metadata,
+        },
+        { jsonFields: ["metadata"] },
+      );
+
+      if (!auditInsert) {
+        throw new AssistantError("Failed to build output audit query", ErrorType.INTERNAL_ERROR);
+      }
+
+      const results = await this.env.DB.batch([
+        this.env.DB.prepare(deleteQuery).bind(...outputIds),
+        this.env.DB.prepare(auditInsert.query).bind(...auditInsert.values),
+      ]);
+
+      if (!results.every((result) => result.success)) {
+        throw new AssistantError("Failed to delete outputs", ErrorType.DATABASE_ERROR);
+      }
+    } else {
+      await this.executeRun(deleteQuery, outputIds);
+    }
+
+    await Promise.all(
+      outputIds.map((outputId) => this.cache?.delete(KVCache.createKey("output", outputId))),
+    );
   }
 
   async deletePersonalOutputGroup(

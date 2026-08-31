@@ -29,30 +29,40 @@ export const OPENAI_REALTIME_DESCRIPTOR = {
   inputModalities: ["audio"],
   outputModalities: ["audio"],
   description: "WebRTC voice agent",
-  defaultModelId: "gpt-realtime-2",
+  defaultModelId: "gpt-realtime-2.1",
 } satisfies RealtimeLiveProviderDescriptor;
 
 const DEFAULT_REALTIME_MODEL = OPENAI_REALTIME_DESCRIPTOR.defaultModelId;
 const API_KEY_ENVIRONMENT_VARIABLE = "OPENAI_API_KEY";
 const DEFAULT_TRANSLATION_MODEL = "gpt-realtime-translate";
-const DEFAULT_TRANSCRIPTION_MODEL = "gpt-realtime-whisper";
-const DEFAULT_REALTIME_INPUT_TRANSCRIPTION_MODEL = "gpt-4o-mini-transcribe";
+const DEFAULT_TRANSCRIPTION_MODEL = "gpt-live-transcribe";
+const DEFAULT_REALTIME_INPUT_TRANSCRIPTION_MODEL = "gpt-live-transcribe";
 const OPENAI_WEBRTC_CALL_URL = "https://api.openai.com/v1/realtime/calls";
+const DEFAULT_MODELS_BY_TYPE = {
+  realtime: DEFAULT_REALTIME_MODEL,
+  translation: DEFAULT_TRANSLATION_MODEL,
+  transcription: DEFAULT_TRANSCRIPTION_MODEL,
+} satisfies Record<RealtimeSessionRequest["type"], string>;
 const MODEL_ALIASES: Record<string, string> = {
   whisper: "openai-whisper",
 };
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
-  realtime: [DEFAULT_REALTIME_MODEL],
+  realtime: [DEFAULT_REALTIME_MODEL, "gpt-realtime-2.1-mini", "gpt-realtime-2"],
   translation: [DEFAULT_TRANSLATION_MODEL],
   transcription: [
     DEFAULT_TRANSCRIPTION_MODEL,
+    "gpt-transcribe",
+    "gpt-realtime-whisper",
     "gpt-4o-transcribe",
     "gpt-4o-mini-transcribe",
     "openai-whisper",
     "whisper",
   ],
 };
-const REALTIME_WHISPER_MODEL = "gpt-realtime-whisper";
+const STREAMING_TRANSCRIPTION_MODELS = new Set([
+  DEFAULT_TRANSCRIPTION_MODEL,
+  "gpt-realtime-whisper",
+]);
 const DEFAULT_VOICE = "marin";
 const DEFAULT_TRANSPORT: RealtimeTransport = "webrtc";
 const DEFAULT_TRANSCRIPTION_DELAY: RealtimeTranscriptionDelay = "low";
@@ -115,13 +125,9 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
     environmentVariables: [API_KEY_ENVIRONMENT_VARIABLE],
   };
   models = [
-    DEFAULT_REALTIME_MODEL,
+    ...SESSION_MODELS_BY_TYPE.realtime,
     DEFAULT_TRANSLATION_MODEL,
-    DEFAULT_TRANSCRIPTION_MODEL,
-    "gpt-4o-transcribe",
-    "gpt-4o-mini-transcribe",
-    "openai-whisper",
-    "whisper",
+    ...SESSION_MODELS_BY_TYPE.transcription,
   ];
 
   private getProviderKeyName(): string {
@@ -143,14 +149,7 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
   }
 
   getDefaultModel(type: RealtimeSessionRequest["type"]): string {
-    switch (type) {
-      case "realtime":
-        return DEFAULT_REALTIME_MODEL;
-      case "translation":
-        return DEFAULT_TRANSLATION_MODEL;
-      case "transcription":
-        return DEFAULT_TRANSCRIPTION_MODEL;
-    }
+    return DEFAULT_MODELS_BY_TYPE[type];
   }
 
   private async resolveModel(request: RealtimeSessionRequest): Promise<string> {
@@ -238,17 +237,17 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
     request: RealtimeSessionRequest,
   ): Promise<Record<string, unknown>> {
     const model = await this.resolveModel(request);
-    const transcription =
-      model === REALTIME_WHISPER_MODEL
-        ? {
-            model,
-            language: request.language ?? "en",
-            delay: this.getTranscriptionDelay(request),
-          }
-        : {
-            model,
-            language: request.language ?? "en",
-          };
+    const isStreamingModel = STREAMING_TRANSCRIPTION_MODELS.has(model);
+    const transcription = isStreamingModel
+      ? {
+          model,
+          language: request.language ?? "en",
+          delay: this.getTranscriptionDelay(request),
+        }
+      : {
+          model,
+          language: request.language ?? "en",
+        };
 
     return {
       session: {
@@ -259,7 +258,7 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
               ...this.buildAudioFormat(),
             },
             transcription,
-            turn_detection: model === REALTIME_WHISPER_MODEL ? null : TRANSCRIPTION_TURN_DETECTION,
+            turn_detection: isStreamingModel ? null : TRANSCRIPTION_TURN_DETECTION,
           },
         },
       },

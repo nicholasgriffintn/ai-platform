@@ -120,17 +120,17 @@ export class TaskRepository extends BaseRepository {
     return Array.isArray(result) ? result.map((task) => this.parseTask(task)) : [];
   }
 
-  public async getPendingTasks(limit = 10): Promise<Task[]> {
+  public async getPendingTasks(limit = 10, now = new Date()): Promise<Task[]> {
     const result = await this.runQuery<Task>(
       `SELECT * FROM tasks
        WHERE status IN ('pending', 'queued')
-         AND (scheduled_at IS NULL OR scheduled_at <= datetime('now'))
+         AND (scheduled_at IS NULL OR datetime(scheduled_at) <= datetime(?))
        ORDER BY priority DESC, created_at ASC
        LIMIT ?`,
-      [limit],
+      [now.toISOString(), limit],
     );
 
-    return result || [];
+    return result ? result.map((task) => this.parseTask(task)) : [];
   }
 
   public async updateTask(taskId: string, params: UpdateTaskParams): Promise<Task | null> {

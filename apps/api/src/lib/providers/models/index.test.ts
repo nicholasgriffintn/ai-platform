@@ -6,6 +6,7 @@ import {
 import { describe, expect, it } from "vitest";
 
 import { getFeaturedModels, getModels } from ".";
+import { getExecutableModelsForAccount } from "./policy";
 
 describe("featured model catalogue", () => {
   it("contains only active models with descriptions", () => {
@@ -73,7 +74,7 @@ describe("central model policy catalogue", () => {
   it.each([
     ["groq/compound", "groq-openai-gpt-oss-120b", "groq"],
     ["groq/compound-mini", "groq-openai-gpt-oss-20b", "groq"],
-    ["gpt-realtime-2", "gpt-realtime-2.1", "openai"],
+    ["gpt-realtime-mini", "gpt-realtime-2.1-mini", "openai"],
   ])("deprecates %s with an active replacement", (modelId, replacementId, provider) => {
     const models = getModels({ shouldUseCache: false });
     const retiredModel = models[modelId];
@@ -91,5 +92,16 @@ describe("central model policy catalogue", () => {
 
     expect(replacement.provider).toBe(provider);
     expect(isActiveModel(replacement)).toBe(true);
+  });
+
+  it("keeps the current OpenAI realtime family active", () => {
+    const models = getModels({ shouldUseCache: false });
+    const executableModels = getExecutableModelsForAccount(models, { plan_id: "pro" });
+
+    for (const modelId of ["gpt-realtime-2", "gpt-realtime-2.1", "gpt-realtime-2.1-mini"]) {
+      expect(models[modelId]?.provider, modelId).toBe("openai");
+      expect(isActiveModel(models[modelId]), `${modelId} is inactive`).toBe(true);
+      expect(executableModels[modelId], `${modelId} is not executable`).toBeDefined();
+    }
   });
 });

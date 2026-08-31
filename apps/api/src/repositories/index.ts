@@ -7,6 +7,7 @@ import { ApiKeyRepository } from "./ApiKeyRepository";
 import { ArtificialAnalysisRepository } from "./ArtificialAnalysisRepository";
 import { AuditRepository } from "./AuditRepository";
 import { AuthChallengeRepository } from "./AuthChallengeRepository";
+import { AuthoredSkillRepository } from "./AuthoredSkillRepository";
 import { BaseRepository } from "./BaseRepository";
 import { CapabilityConfigurationRepository } from "./CapabilityConfigurationRepository";
 import { ComposioConnectorSessionRepository } from "./ComposioConnectorSessionRepository";
@@ -41,6 +42,7 @@ export {
   ApiKeyRepository,
   ArtificialAnalysisRepository,
   AuthChallengeRepository,
+  AuthoredSkillRepository,
   AuditRepository,
   BaseRepository,
   ConversationRepository,
@@ -91,6 +93,7 @@ export class RepositoryManager {
   private apiKeyRepo: ApiKeyRepository;
   private artificialAnalysisRepo: ArtificialAnalysisRepository;
   private authChallengeRepo: AuthChallengeRepository;
+  private authoredSkillRepo: AuthoredSkillRepository;
   private auditRepo: AuditRepository;
   private oauthStateRepo: OAuthStateRepository;
   private outputRepo: OutputRepository;
@@ -125,6 +128,7 @@ export class RepositoryManager {
     this.apiKeyRepo = new ApiKeyRepository(env);
     this.artificialAnalysisRepo = new ArtificialAnalysisRepository(env);
     this.authChallengeRepo = new AuthChallengeRepository(env);
+    this.authoredSkillRepo = new AuthoredSkillRepository(env);
     this.auditRepo = new AuditRepository(env);
     this.oauthStateRepo = new OAuthStateRepository(env);
     this.outputRepo = new OutputRepository(env);
@@ -169,6 +173,10 @@ export class RepositoryManager {
 
   public get authChallenges(): AuthChallengeRepository {
     return this.authChallengeRepo;
+  }
+
+  public get authoredSkills(): AuthoredSkillRepository {
+    return this.authoredSkillRepo;
   }
 
   public get audit(): AuditRepository {
