@@ -59,6 +59,42 @@ describe("realtime websocket clients", () => {
     expect((connection.socket as unknown as FakeWebSocket).closed).toBe(true);
   });
 
+  it("forwards WebSocket lifecycle events and requested subprotocols", () => {
+    vi.stubGlobal("WebSocket", FakeWebSocket);
+    const onOpen = vi.fn();
+    const onMessage = vi.fn();
+    const onError = vi.fn();
+    const onClose = vi.fn();
+
+    const connection = connectRealtimeWebSocket({
+      session: {
+        transport: "websocket",
+        url: "wss://example.test/live",
+      },
+      protocols: ["realtime", "session-token"],
+      onOpen,
+      onMessage,
+      onError,
+      onClose,
+    });
+    const socket = connection.socket as unknown as FakeWebSocket;
+    const openEvent = new Event("open");
+    const messageEvent = new MessageEvent("message", { data: '{"type":"session.created"}' });
+    const errorEvent = new Event("error");
+    const closeEvent = new Event("close");
+
+    socket.dispatchEvent(openEvent);
+    socket.dispatchEvent(messageEvent);
+    socket.dispatchEvent(errorEvent);
+    socket.dispatchEvent(closeEvent);
+
+    expect(socket.protocols).toEqual(["realtime", "session-token"]);
+    expect(onOpen).toHaveBeenCalledWith(openEvent);
+    expect(onMessage).toHaveBeenCalledWith(messageEvent);
+    expect(onError).toHaveBeenCalledWith(errorEvent);
+    expect(onClose).toHaveBeenCalledWith(closeEvent);
+  });
+
   it("identifies WebSocket connections and sends only while open", () => {
     vi.stubGlobal("WebSocket", FakeWebSocket);
 

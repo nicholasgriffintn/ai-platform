@@ -1,7 +1,8 @@
 import type { SandboxRunData } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { getEmbeddingProvider } from "~/lib/providers/capabilities/embedding/helpers";
+import { insertEmbedding } from "~/services/apps/embeddings/insert";
+import { getErrorMessage } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/apps/sandbox/run-indexing" });
@@ -29,10 +30,6 @@ function toIndexableContent(run: SandboxRunData): string {
   }
 
   return `${base.slice(0, MAX_INDEXED_CHARS)}\n\n[truncated]`;
-}
-
-function toSandboxRunNamespace(userId: number): string {
-  return `sandbox_runs_user_${userId}`;
 }
 
 export async function indexSandboxRunResult(params: {
@@ -63,32 +60,28 @@ export async function indexSandboxRunResult(params: {
       return;
     }
 
-    const userSettings = await serviceContext.repositories.userSettings.getUserSettings(userId);
-    const embeddingProvider = getEmbeddingProvider(
-      serviceContext.env,
+    await insertEmbedding({
+      env: serviceContext.env,
       user,
-      userSettings ?? undefined,
-    );
-    const embeddingId = `sandbox-run-${run.runId}`;
-    const embeddings = await embeddingProvider.generate("sandbox_run", content, embeddingId, {
-      runId: run.runId,
-      repo: run.repo,
-      status: run.status,
-      startedAt: run.startedAt,
-      completedAt: run.completedAt ?? "",
-    });
-
-    await embeddingProvider.insert(embeddings, {
-      namespace: toSandboxRunNamespace(userId),
-      topK: 10,
-      returnMetadata: "none",
-      userId,
+      request: {
+        id: `sandbox-run-${run.runId}`,
+        type: "sandbox_run",
+        title: `Sandbox run ${run.runId}`,
+        content,
+        metadata: {
+          runId: run.runId,
+          repo: run.repo,
+          status: run.status,
+          startedAt: run.startedAt,
+          completedAt: run.completedAt ?? "",
+        },
+      },
     });
   } catch (error) {
     logger.warn("Sandbox run indexing failed", {
       run_id: run.runId,
       user_id: userId,
-      error_message: error instanceof Error ? error.message : String(error),
+      error_message: getErrorMessage(error),
     });
   }
 }

@@ -1,7 +1,9 @@
 import { queryEmbeddings } from "~/services/apps/embeddings/query";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 import type { ApiToolDefinition } from "../../types/functions";
 import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import { resolveRequestProjectId } from "./request-context";
 
 export const get_note: ApiToolDefinition = {
   name: "get_note",
@@ -23,6 +25,14 @@ export const get_note: ApiToolDefinition = {
   execute: async (args, context) => {
     const req = context.request;
 
+    if (resolveRequestProjectId(req)) {
+      throw new AssistantError(
+        "Project document retrieval is not available yet",
+        ErrorType.CONFIGURATION_ERROR,
+        501,
+      );
+    }
+
     if (!args.query) {
       return {
         status: "error",
@@ -34,11 +44,10 @@ export const get_note: ApiToolDefinition = {
 
     const response = await queryEmbeddings({
       request: {
-        query: {
-          query: args.query,
-          type: "note",
-        },
+        query: String(args.query),
+        type: "note",
       },
+      context: req.context,
       env: req.env,
       user: req.user,
     });

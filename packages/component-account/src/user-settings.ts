@@ -41,3 +41,15 @@ export interface UserSettings {
   pet_animation_enabled?: boolean;
   pet_model_overrides?: PetModelOverrides;
 }
+
+export function prepareUserSettingsPayload(settings: Partial<UserSettings>): Partial<UserSettings> {
+  const payload = { ...settings };
+
+  if (payload.embedding_provider !== "s3vectors") {
+    delete payload.s3vectors_bucket_name;
+    delete payload.s3vectors_index_name;
+    delete payload.s3vectors_region;
+  }
+
+  return payload;
+}

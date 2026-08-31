@@ -6,68 +6,18 @@ import {
   getRealtimeProvider,
   type RealtimeTranscriptionDelay,
 } from "~/lib/providers/capabilities/realtime";
-import { getMistralTargetStreamingDelayMs } from "~/lib/providers/capabilities/realtime/providers";
+import {
+  getMistralTargetStreamingDelayMs,
+  resolveMistralRealtimeProxyModel,
+} from "~/lib/providers/capabilities/realtime/providers";
 import { formatProviderError } from "~/lib/providers/utils/errors";
 import type { IEnv, IUser } from "~/types";
-import { bufferToBase64 } from "~/utils/base64";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+
+import { isMistralSessionCreatedMessage, toMistralUpstreamMessage } from "./mistralProtocol";
 
 const logger = getLogger({ prefix: "services/realtime/mistral" });
 const MISTRAL_REALTIME_USER_AGENT = "polychat-mistral-realtime-proxy/1.0";
-
-function sanitizeMistralClientMessage(data: string): string {
-  let payload: unknown;
-
-  try {
-    payload = JSON.parse(data);
-  } catch {
-    throw new AssistantError("Invalid realtime message", ErrorType.PARAMS_ERROR);
-  }
-
-  if (!payload || typeof payload !== "object") {
-    throw new AssistantError("Invalid realtime message", ErrorType.PARAMS_ERROR);
-  }
-
-  const message = payload as Record<string, unknown>;
-  const type = message.type;
-  const MISTRAL_CLIENT_MESSAGE_TYPES = new Set([
-    "input_audio.append",
-    "input_audio.flush",
-    "input_audio.end",
-  ]);
-
-  if (typeof type !== "string" || !MISTRAL_CLIENT_MESSAGE_TYPES.has(type)) {
-    throw new AssistantError("Unsupported realtime message type", ErrorType.PARAMS_ERROR);
-  }
-
-  if (type === "input_audio.append") {
-    const audio = message.audio;
-    const BASE64_PATTERN = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
-
-    if (typeof audio !== "string" || !BASE64_PATTERN.test(audio)) {
-      throw new AssistantError("Invalid realtime audio payload", ErrorType.PARAMS_ERROR);
-    }
-
-    return JSON.stringify({ type, audio });
-  }
-
-  return JSON.stringify({ type });
-}
-
-function isMistralSessionCreatedMessage(data: unknown): boolean {
-  if (typeof data !== "string") {
-    return false;
-  }
-
-  try {
-    const payload = JSON.parse(data) as { type?: unknown };
-
-    return payload.type === "session.created";
-  } catch {
-    return false;
-  }
-}
 
 function closeSocket(socket: WebSocket, code = 1000, reason = ""): void {
   try {
@@ -77,21 +27,6 @@ function closeSocket(socket: WebSocket, code = 1000, reason = ""): void {
   } catch {
     // close can race with the peer closing first.
   }
-}
-
-function normaliseClientMessage(data: unknown): string {
-  if (typeof data === "string") {
-    return sanitizeMistralClientMessage(data);
-  }
-
-  if (data instanceof ArrayBuffer) {
-    return JSON.stringify({
-      type: "input_audio.append",
-      audio: bufferToBase64(data),
-    });
-  }
-
-  throw new TypeError("Unsupported realtime message payload");
 }
 
 function getMistralProxyFailureStatus(providerStatus: number): 400 | 401 | 403 | 404 | 429 | 502 {
@@ -127,7 +62,7 @@ function bridgeMistralRealtimeSockets({
 
   client.addEventListener("message", (event) => {
     try {
-      const message = normaliseClientMessage(event.data);
+      const message = toMistralUpstreamMessage(event.data);
 
       if (!hasSentSessionUpdate) {
         const MISTRAL_PENDING_MESSAGE_LIMIT = 64;
@@ -203,6 +138,11 @@ export async function createMistralRealtimeProxyResponse({
   }
 
   const provider = getRealtimeProvider("mistral", context);
+  const modelToUse = resolveMistralRealtimeProxyModel(model);
+
+  if (!modelToUse) {
+    return ResponseFactory.error(context, "Invalid model specified", 400);
+  }
 
   const apiKey = await provider.getApiKey?.({
     env,
@@ -214,15 +154,9 @@ export async function createMistralRealtimeProxyResponse({
     return ResponseFactory.error(context, "Failed to resolve API key for Mistral provider", 500);
   }
 
-  const modelToUse = model || provider.getDefaultModel("transcription");
-
-  if (!modelToUse) {
-    return ResponseFactory.error(context, "Failed to resolve model for Mistral provider", 500);
-  }
-
   const url = new URL("/v1/audio/transcriptions/realtime", "https://api.mistral.ai");
 
-  url.searchParams.set("model", encodeURIComponent("voxtral-mini-transcribe-realtime-2602"));
+  url.searchParams.set("model", modelToUse);
 
   const upstreamResponse = await fetch(url, {
     headers: {

@@ -29,6 +29,7 @@ export const MISTRAL_REALTIME_DESCRIPTOR = {
 } satisfies RealtimeLiveProviderDescriptor;
 
 export const DEFAULT_TRANSCRIPTION_MODEL = MISTRAL_REALTIME_DESCRIPTOR.defaultModelId;
+export const MISTRAL_REALTIME_MODEL_ID = "voxtral-mini-transcribe-realtime-2602";
 const API_KEY_ENVIRONMENT_VARIABLE = "MISTRAL_API_KEY";
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
   realtime: [],
@@ -52,6 +53,19 @@ export function getMistralTargetStreamingDelayMs(
   return delay ? MISTRAL_TARGET_DELAY_MS_BY_DELAY[delay] : undefined;
 }
 
+export function resolveMistralRealtimeProxyModel(model?: string): string | undefined {
+  const requestedModel = model ?? DEFAULT_TRANSCRIPTION_MODEL;
+
+  if (
+    requestedModel !== DEFAULT_TRANSCRIPTION_MODEL &&
+    requestedModel !== MISTRAL_REALTIME_MODEL_ID
+  ) {
+    return undefined;
+  }
+
+  return MISTRAL_REALTIME_MODEL_ID;
+}
+
 export class MistralRealtimeProvider implements RealtimeProvider {
   name = "mistral";
   descriptor = MISTRAL_REALTIME_DESCRIPTOR;
@@ -59,6 +73,7 @@ export class MistralRealtimeProvider implements RealtimeProvider {
     acceptsUserApiKey: true,
     environmentVariables: [API_KEY_ENVIRONMENT_VARIABLE],
   };
+  models = SESSION_MODELS_BY_TYPE.transcription;
 
   private getProviderKeyName(): string {
     return API_KEY_ENVIRONMENT_VARIABLE;

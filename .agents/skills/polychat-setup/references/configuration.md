@@ -16,7 +16,20 @@ Never copy real secret values into tracked examples.
 
 ### Core web and API
 
-Set matching `APP_BASE_URL` and `API_BASE_URL`, a strong `JWT_SECRET`, and the Cloudflare resources used by the API: D1, KV, R2, Vectorize, Analytics Engine, queues, and Durable Objects. Confirm the web API and WebSocket URLs point to the same API environment.
+Set matching `APP_BASE_URL` and `API_BASE_URL`, a strong `JWT_SECRET`, and a separate stable
+`EMBEDDING_SCOPE_SECRET` of at least 32 characters. The embedding secret derives opaque personal
+scope tags and must remain stable across JWT rotations; changing it requires a deliberate vector
+reindex. The same secret fingerprints user-owned S3 Vectors credentials. Rotating an S3 credential
+makes its historical targets unavailable until the previous credential is restored or an operator
+safely reconciles and reindexes them.
+
+For managed embeddings, bind Workers AI and Vectorize when using Vectorize. When using S3 Vectors,
+set the bucket, index, and region together and store the person's S3 credential; partial S3 settings
+are rejected. Bedrock is not available for the managed document or built-in memory lifecycle.
+
+Configure the Cloudflare resources used by the API: D1, KV, R2, Vectorize, Analytics Engine,
+queues, and Durable Objects. Confirm the web API and WebSocket URLs point to the same API
+environment.
 
 Select at least one usable model provider. Cloudflare Workers AI can be bound through Wrangler; external providers use the corresponding secret from the API example file. Do not promise a provider is available merely because its adapter exists.
 

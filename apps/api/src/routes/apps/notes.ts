@@ -366,6 +366,7 @@ addRoute(app, "post", "/generate-from-media", {
         timestamps: body.timestamps,
         useVideoAnalysis: body.useVideoAnalysis,
         enableVideoSearch: body.enableVideoSearch,
+        projectId: query.projectId,
       });
 
       return { content: result.content };
