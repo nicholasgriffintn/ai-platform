@@ -77,27 +77,6 @@ struct ChatSettingsView: View {
                     }
                 }
 
-                Section(header: Text("Retrieval")) {
-                    Toggle("Enable RAG", isOn: $settings.useRag)
-
-                    if settings.useRag {
-                        Stepper("Top K: \(settings.ragOptions.topK)", value: $settings.ragOptions.topK, in: 1...20)
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text("Score Threshold")
-                                Spacer()
-                                Text(String(format: "%.2f", settings.ragOptions.scoreThreshold))
-                                    .foregroundColor(.secondary)
-                            }
-                            Slider(value: $settings.ragOptions.scoreThreshold, in: 0...1, step: 0.05)
-                        }
-                        Toggle("Include Metadata", isOn: $settings.ragOptions.includeMetadata)
-                        TextField("Namespace", text: $settings.ragOptions.namespace)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                    }
-                }
-
                 Section {
                     Button("Reset to Defaults", role: .destructive) {
                         settings = .default

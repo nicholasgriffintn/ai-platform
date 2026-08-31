@@ -17,12 +17,6 @@ const defaultSettings: ChatSettings = {
   presence_penalty: 0,
   frequency_penalty: 0,
   enabled_tools: [],
-  rag_options: {
-    topK: 3,
-    scoreThreshold: 0.5,
-    includeMetadata: false,
-    namespace: "",
-  },
   tool_options: {
     shell: {
       environment: {

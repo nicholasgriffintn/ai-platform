@@ -22,8 +22,6 @@ public struct ChatCompletionRequest: Encodable {
     let maxTokens: Int?
     let presencePenalty: Double?
     let frequencyPenalty: Double?
-    let useRag: Bool?
-    let ragOptions: RagOptions?
     let reasoning: ReasoningSettings?
     let reasoningEffort: String?
     let verbosity: String?
@@ -38,8 +36,6 @@ public struct ChatCompletionRequest: Encodable {
         case maxTokens = "max_tokens"
         case presencePenalty = "presence_penalty"
         case frequencyPenalty = "frequency_penalty"
-        case useRag = "use_rag"
-        case ragOptions = "rag_options"
         case reasoningEffort = "reasoning_effort"
         case enabledTools = "enabled_tools"
         case toolSelectionMode = "tool_selection_mode"
@@ -69,8 +65,6 @@ public struct ChatCompletionRequest: Encodable {
         self.maxTokens = settings?.maxTokens
         self.presencePenalty = settings?.presencePenalty
         self.frequencyPenalty = settings?.frequencyPenalty
-        self.useRag = settings?.useRag == true ? true : nil
-        self.ragOptions = settings?.useRag == true ? settings?.ragOptions : nil
         self.reasoning = settings?.reasoningEffort.map { ReasoningSettings(effort: $0.rawValue) }
         self.reasoningEffort = settings?.reasoningEffort?.rawValue
         self.verbosity = settings?.verbosity?.rawValue
@@ -82,20 +76,6 @@ public struct ChatCompletionRequest: Encodable {
 
 public struct ReasoningSettings: Codable, Equatable {
     public let effort: String
-}
-
-public struct RagOptions: Codable, Equatable {
-    public var topK: Int
-    public var scoreThreshold: Double
-    public var includeMetadata: Bool
-    public var namespace: String
-
-    public static let `default` = RagOptions(
-        topK: 3,
-        scoreThreshold: 0.5,
-        includeMetadata: false,
-        namespace: ""
-    )
 }
 
 public struct TranscriptionResponse: Codable {

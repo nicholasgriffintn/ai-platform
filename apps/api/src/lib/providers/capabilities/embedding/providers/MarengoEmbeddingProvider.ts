@@ -9,11 +9,13 @@ import { getModelConfig } from "~/lib/providers/models";
 import type {
   EmbeddingMutationResult,
   EmbeddingProvider,
+  EmbeddingQueryOptions,
   EmbeddingQueryResult,
   EmbeddingVector,
+  EmbeddingWriteOptions,
   IEnv,
   IUser,
-  RagOptions,
+  NumericEmbeddingQuery,
 } from "~/types";
 import { paginate } from "~/utils/arrays";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -51,7 +53,7 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
     type: string,
     content: string,
     id: string,
-    metadata: Record<string, any>,
+    metadata: Record<string, unknown>,
   ): Promise<EmbeddingVector[]> {
     try {
       if (!type || !content || !id) {
@@ -145,7 +147,7 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
 
   async insert(
     embeddings: EmbeddingVector[],
-    options: RagOptions = {},
+    options: EmbeddingWriteOptions = {},
   ): Promise<EmbeddingMutationResult> {
     const scopeTag = requireEmbeddingScopeTag(options);
 
@@ -207,27 +209,12 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
     );
   }
 
-  async getMatches(_queryVector: any, _options: RagOptions = {}): Promise<EmbeddingQueryResult> {
+  async getMatches(
+    _queryVector: NumericEmbeddingQuery,
+    _options: EmbeddingQueryOptions = {},
+  ): Promise<EmbeddingQueryResult> {
     throw new AssistantError(
       "Match operation not supported by Marengo provider",
-      ErrorType.NOT_FOUND,
-    );
-  }
-
-  async searchSimilar(
-    _query: string,
-    _options?: RagOptions,
-  ): Promise<
-    {
-      title: string;
-      content: string;
-      metadata: Record<string, any>;
-      score: number;
-      type: string;
-    }[]
-  > {
-    throw new AssistantError(
-      "Search operation not supported by Marengo provider",
       ErrorType.NOT_FOUND,
     );
   }

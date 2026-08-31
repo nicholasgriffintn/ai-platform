@@ -327,10 +327,10 @@ test.describe("Response controls as pro", () => {
     });
   });
 
-  test("applies detailed generation and retrieval settings", async ({ homePage, page }) => {
+  test("applies detailed generation settings", async ({ homePage, page }) => {
     await homePage.navigate("/chat");
     await homePage.selectModel(TEXT_MODEL);
-    await homePage.configureDetailedChatSettings();
+    await homePage.configureDetailedGenerationSettings();
     const request = await homePage.sendMessageAndReadCompletionRequest(
       "Use the detailed settings for this release check",
     );
@@ -340,15 +340,8 @@ test.describe("Response controls as pro", () => {
       frequency_penalty: -0.3,
       max_tokens: 1024,
       presence_penalty: 0.4,
-      rag_options: {
-        include_metadata: true,
-        namespace: "release-docs",
-        score_threshold: 0.65,
-        top_k: 6,
-      },
       temperature: 0.4,
       top_p: 0.75,
-      use_rag: true,
     });
     await homePage.waitForChatResponse(0);
     await homePage.waitForResponseText(/E2E response:/);

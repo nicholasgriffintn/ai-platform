@@ -5,8 +5,6 @@ public struct ChatSettings: Codable, Equatable {
     public var maxTokens: Int?
     public var presencePenalty: Double
     public var frequencyPenalty: Double
-    public var useRag: Bool
-    public var ragOptions: RagOptions
     public var reasoningEffort: ReasoningEffort?
     public var verbosity: VerbosityLevel?
     public var enabledTools: [String]
@@ -67,8 +65,6 @@ public struct ChatSettings: Codable, Equatable {
         maxTokens: nil,
         presencePenalty: 0,
         frequencyPenalty: 0,
-        useRag: false,
-        ragOptions: .default,
         reasoningEffort: nil,
         verbosity: nil,
         enabledTools: [],
@@ -81,8 +77,6 @@ public struct ChatSettings: Codable, Equatable {
         maxTokens: Int? = nil,
         presencePenalty: Double = 0,
         frequencyPenalty: Double = 0,
-        useRag: Bool = false,
-        ragOptions: RagOptions = .default,
         reasoningEffort: ReasoningEffort? = nil,
         verbosity: VerbosityLevel? = nil,
         enabledTools: [String] = [],
@@ -93,8 +87,6 @@ public struct ChatSettings: Codable, Equatable {
         self.maxTokens = maxTokens
         self.presencePenalty = presencePenalty
         self.frequencyPenalty = frequencyPenalty
-        self.useRag = useRag
-        self.ragOptions = ragOptions
         self.reasoningEffort = reasoningEffort
         self.verbosity = verbosity
         self.enabledTools = enabledTools

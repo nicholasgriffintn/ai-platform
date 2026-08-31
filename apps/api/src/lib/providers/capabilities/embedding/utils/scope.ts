@@ -1,4 +1,4 @@
-import type { RagOptions } from "~/types";
+import type { EmbeddingScopeOptions } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 const hasKeys = (value: unknown): value is Record<string, unknown> =>
@@ -15,8 +15,7 @@ const isProviderMetadataValue = (value: unknown): value is ProviderMetadataValue
   typeof value === "boolean" ||
   (Array.isArray(value) && value.every((item) => typeof item === "string"));
 
-export const getEmbeddingContentType = (options: RagOptions) =>
-  options.contentType ?? options.embeddingType ?? options.type;
+export const getEmbeddingContentType = (options: EmbeddingScopeOptions) => options.contentType;
 
 const bytesToHex = (bytes: ArrayBuffer) =>
   Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, "0")).join("");
@@ -58,7 +57,7 @@ export const getEmbeddingCredentialFingerprint = async (
   return `${EMBEDDING_CREDENTIAL_FINGERPRINT_PREFIX}${tag.slice("scope_v1_".length)}`;
 };
 
-export const requireEmbeddingScopeTag = (options: RagOptions): string => {
+export const requireEmbeddingScopeTag = (options: EmbeddingScopeOptions): string => {
   if (!options.scopeTag || !EMBEDDING_SCOPE_TAG_PATTERN.test(options.scopeTag)) {
     throw new AssistantError(
       "Embedding operation requires an authorised scope",
@@ -72,7 +71,7 @@ export const requireEmbeddingScopeTag = (options: RagOptions): string => {
 
 export const withEmbeddingScopeMetadata = (
   metadata: Record<string, unknown>,
-  options: RagOptions,
+  options: EmbeddingScopeOptions,
 ): Record<string, ProviderMetadataValue> => {
   const scopeTag = requireEmbeddingScopeTag(options);
   const internalMetadata: Record<string, ProviderMetadataValue> = {};
@@ -89,7 +88,7 @@ export const withEmbeddingScopeMetadata = (
   };
 };
 
-export const buildVectorizeMetadataFilter = (options: RagOptions) => {
+export const buildVectorizeMetadataFilter = (options: EmbeddingScopeOptions) => {
   const scopeTag = requireEmbeddingScopeTag(options);
   const contentType = getEmbeddingContentType(options);
   const filter = {
@@ -101,7 +100,7 @@ export const buildVectorizeMetadataFilter = (options: RagOptions) => {
   return hasKeys(filter) ? filter : undefined;
 };
 
-export const buildS3VectorsMetadataFilter = (options: RagOptions) => {
+export const buildS3VectorsMetadataFilter = (options: EmbeddingScopeOptions) => {
   const scopeTag = requireEmbeddingScopeTag(options);
   const filters: Record<string, unknown>[] = [];
   const contentType = getEmbeddingContentType(options);
@@ -123,10 +122,10 @@ export const buildS3VectorsMetadataFilter = (options: RagOptions) => {
   return filters.length === 1 ? filters[0] : { $and: filters };
 };
 
-export const buildBedrockRetrievalFilter = (options: RagOptions) => {
+export const buildBedrockRetrievalFilter = (options: EmbeddingScopeOptions) => {
   const scopeTag = requireEmbeddingScopeTag(options);
   const filters: Record<string, unknown>[] = [];
-  const contentType = options.contentType ?? options.embeddingType;
+  const contentType = options.contentType;
 
   if (hasKeys(options.filter)) {
     filters.push(options.filter);

@@ -122,10 +122,6 @@ export function mergeParametersWithDefaults(
   return {
     ...defaults,
     ...params,
-    rag_options: {
-      ...defaults.rag_options,
-      ...params.rag_options,
-    },
   } as ChatCompletionParameters;
 }
 

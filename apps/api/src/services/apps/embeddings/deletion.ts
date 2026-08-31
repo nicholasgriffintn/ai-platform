@@ -1,8 +1,10 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import {
-  getEmbeddingProviderForTarget,
+  getEmbeddingRuntimeForTarget,
+  getEmbeddingRuntimeTargetKey,
   isQuarantinedEmbeddingProviderTarget,
-  type EmbeddingProviderTarget,
+  toEmbeddingProviderTarget,
+  type EmbeddingRuntimeTarget,
 } from "~/lib/providers/capabilities/embedding/helpers";
 import type { EmbeddingDocumentDeletionTarget } from "~/repositories/EmbeddingRepository";
 import type { IUser, IUserSettings } from "~/types";
@@ -11,7 +13,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 
 type DocumentsByProviderTarget = {
   documents: EmbeddingDocumentDeletionTarget[];
-  target: EmbeddingProviderTarget;
+  target: EmbeddingRuntimeTarget;
 };
 const PROVIDER_DELETE_CONCURRENCY = 4;
 
@@ -22,13 +24,16 @@ const groupDocumentsByProviderTarget = (
 
   for (const document of documents) {
     const target = {
-      provider: document.provider,
-      target: document.providerTarget,
+      embeddingProvider: document.provider,
+      providerTarget: document.providerTarget,
       model: document.embeddingModel,
+      dimensions: document.embeddingDimensions,
+      distanceMetric: document.distanceMetric,
+      taskMode: document.taskMode,
       vectorSpace: document.vectorSpace,
       vectorSpaceVersion: document.vectorSpaceVersion,
     };
-    const targetKey = JSON.stringify(target);
+    const targetKey = getEmbeddingRuntimeTargetKey(target);
     const group = groups.get(targetKey) ?? { documents: [], target };
 
     group.documents.push(document);
@@ -53,11 +58,11 @@ export const deleteProviderDocuments = async ({
     groupDocumentsByProviderTarget(documents),
     PROVIDER_DELETE_CONCURRENCY,
     async ({ documents: group, target }) => {
-      if (isQuarantinedEmbeddingProviderTarget(target)) {
+      if (isQuarantinedEmbeddingProviderTarget(toEmbeddingProviderTarget(target))) {
         return;
       }
 
-      const provider = getEmbeddingProviderForTarget(context.env, user, userSettings, target);
+      const runtime = getEmbeddingRuntimeForTarget(context.env, user, userSettings, target);
       const vectorIds = group.flatMap((document) => document.vectorIds);
 
       if (vectorIds.length === 0) {
@@ -67,7 +72,7 @@ export const deleteProviderDocuments = async ({
       let result;
 
       try {
-        result = await provider.delete(vectorIds);
+        result = await runtime.vectorStore.delete(vectorIds);
       } catch (error) {
         if (error instanceof AssistantError) {
           throw error;
