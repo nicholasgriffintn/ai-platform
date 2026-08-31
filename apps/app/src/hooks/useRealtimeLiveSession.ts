@@ -1,6 +1,5 @@
 import {
   connectRealtimeWebRTC,
-  connectRealtimeWebSocket,
   isRealtimeWebSocketConnection,
   preferOpusAudioCodec,
   sendJsonWhenOpen,
@@ -47,7 +46,6 @@ import {
   extractRealtimeEventType,
   extractRealtimeTranscript,
   parseRealtimeJsonMessage,
-  parseRealtimeMessageData,
   type RealtimeEventResult,
   type RealtimeTranscriptResult,
 } from "@ngriffin_uk/polychat-library-realtime/messages";
@@ -60,6 +58,7 @@ import {
   createRealtimeSessionController,
   type RealtimeSessionLease,
 } from "~/lib/realtime/live-session-controller";
+import { connectRealtimeLiveWebSocket } from "~/lib/realtime/live-websocket-connection";
 
 export type { RealtimeLiveStatus } from "@ngriffin_uk/polychat-library-realtime/live-providers";
 
@@ -470,10 +469,12 @@ export function useRealtimeLiveSession({
         stoppingRef.current ||
         !microphoneEnabledRef.current
       ) {
-        stopMediaStream(stream);
-        if (audioStreamRef.current === stream) {
-          audioStreamRef.current = null;
-          stopInputAudioMeter();
+        if (mediaGenerationRef.current === mediaGeneration) {
+          stopMediaStream(stream);
+          if (audioStreamRef.current === stream) {
+            audioStreamRef.current = null;
+            stopInputAudioMeter();
+          }
         }
 
         return;
@@ -494,10 +495,12 @@ export function useRealtimeLiveSession({
         !microphoneEnabledRef.current
       ) {
         controller.stop();
-        stopMediaStream(stream);
-        if (audioStreamRef.current === stream) {
-          audioStreamRef.current = null;
-          stopInputAudioMeter();
+        if (mediaGenerationRef.current === mediaGeneration) {
+          stopMediaStream(stream);
+          if (audioStreamRef.current === stream) {
+            audioStreamRef.current = null;
+            stopInputAudioMeter();
+          }
         }
 
         return;
@@ -535,10 +538,12 @@ export function useRealtimeLiveSession({
         stoppingRef.current ||
         !videoEnabledRef.current
       ) {
-        stopMediaStream(stream);
-        if (videoStreamRef.current === stream) {
-          videoStreamRef.current = null;
-          setVideoPreviewStream(null);
+        if (mediaGenerationRef.current === mediaGeneration) {
+          stopMediaStream(stream);
+          if (videoStreamRef.current === stream) {
+            videoStreamRef.current = null;
+            setVideoPreviewStream(null);
+          }
         }
 
         return;
@@ -556,10 +561,12 @@ export function useRealtimeLiveSession({
         !videoEnabledRef.current
       ) {
         controller.stop();
-        stopMediaStream(stream);
-        if (videoStreamRef.current === stream) {
-          videoStreamRef.current = null;
-          setVideoPreviewStream(null);
+        if (mediaGenerationRef.current === mediaGeneration) {
+          stopMediaStream(stream);
+          if (videoStreamRef.current === stream) {
+            videoStreamRef.current = null;
+            setVideoPreviewStream(null);
+          }
         }
 
         return;
@@ -807,15 +814,22 @@ export function useRealtimeLiveSession({
         });
       }
 
-      // oxlint-disable-next-line prefer-const
-      let connection: RealtimeWebSocketConnection;
-      let hasStartedMedia = false;
-      const startWebSocketMedia = async () => {
-        if (hasStartedMedia || !sessionController.isCurrent(lease)) {
+      const stopWebSocketInputControllers = () => {
+        mediaGenerationRef.current += 1;
+        inputAudioControllerRef.current?.stop();
+        inputAudioControllerRef.current = null;
+        inputVideoControllerRef.current?.stop();
+        inputVideoControllerRef.current = null;
+        resetAudioTurnDetection();
+      };
+
+      const startedMediaConnections = new WeakSet<RealtimeWebSocketConnection>();
+      const startWebSocketMedia = async (connection: RealtimeWebSocketConnection) => {
+        if (startedMediaConnections.has(connection) || !sessionController.isCurrent(lease)) {
           return;
         }
 
-        hasStartedMedia = true;
+        startedMediaConnections.add(connection);
         const mediaGeneration = mediaGenerationRef.current;
 
         try {
@@ -824,6 +838,15 @@ export function useRealtimeLiveSession({
               websocketConfig.startingMediaEventLabel,
           );
           await startInputAudio(connection);
+
+          if (
+            mediaGenerationRef.current !== mediaGeneration ||
+            connectionRef.current !== connection ||
+            !sessionController.isCurrent(lease)
+          ) {
+            return;
+          }
+
           await startInputVideo(connection);
 
           if (
@@ -849,9 +872,11 @@ export function useRealtimeLiveSession({
         }
       };
 
-      connection = connectRealtimeWebSocket({
-        session,
-        onClose: (event) => {
+      connectRealtimeLiveWebSocket({
+        config: websocketConfig,
+        isSessionCurrent: () => sessionController.isCurrent(lease) && !stoppingRef.current,
+        onBeforeReconnect: stopWebSocketInputControllers,
+        onClose: (connection, event) => {
           if (finalizingConnectionRef.current?.connection === connection) {
             sessionController.complete(lease);
             finalizingConnectionRef.current = null;
@@ -863,104 +888,49 @@ export function useRealtimeLiveSession({
             return;
           }
 
-          if (
-            sessionController.isCurrent(lease) &&
-            connectionRef.current === connection &&
-            !stoppingRef.current
-          ) {
-            failSession(formatRealtimeWebSocketCloseError(websocketConfig.closeErrorLabel, event));
-          }
+          failSession(formatRealtimeWebSocketCloseError(websocketConfig.closeErrorLabel, event));
         },
-        onError: () => {
-          if (finalizingConnectionRef.current?.connection === connection) {
-            return;
-          }
-
-          if (
-            sessionController.isCurrent(lease) &&
-            connectionRef.current === connection &&
-            !stoppingRef.current
-          ) {
+        onConnected: (connection) => {
+          connectionRef.current = connection;
+          connectionLeaseRef.current = lease;
+        },
+        onError: (connection) => {
+          if (finalizingConnectionRef.current?.connection !== connection) {
             failSession(websocketConfig.connectionFailedMessage);
           }
         },
-        onMessage: (event) => {
-          void parseRealtimeMessageData(event.data).then((payload) => {
-            if (
-              !sessionController.isCurrent(lease) ||
-              connectionRef.current !== connection ||
-              stoppingRef.current
-            ) {
-              return;
-            }
+        onEventLabel: setLastEvent,
+        onPayload: (connection, payload) => {
+          const eventType = extractRealtimeEventType(payload);
 
-            const eventType = extractRealtimeEventType(payload);
-
-            if (websocketConfig.setup?.isCompleteMessage(payload)) {
-              void startWebSocketMedia();
-            }
-
-            if (eventType === "response.interrupted" && websocketConfig.audioOutput) {
-              audioPlayerRef.current?.stop();
-              audioPlayerRef.current = createPcm16AudioPlayer({
-                sampleRate: websocketConfig.audioOutput.sampleRate,
-              });
-              setOutputAudioLevel(0);
-            }
-
-            handleRealtimePayload(payload);
-            for (const chunk of websocketConfig.audioOutput?.extractChunks(payload) ?? []) {
-              audioPlayerRef.current?.playBase64(chunk);
-              handleOutputAudioChunk(chunk);
-            }
-
-            if (isConfiguredAudioEndEvent(connection, payload, providerOptionsRef.current)) {
-              completePendingFinalization(connection, lease);
-            }
-          });
-        },
-        onOpen: () => {
-          if (!sessionController.isCurrent(lease)) {
-            connection.close();
-
-            return;
+          if (eventType === "response.interrupted" && websocketConfig.audioOutput) {
+            audioPlayerRef.current?.stop();
+            audioPlayerRef.current = createPcm16AudioPlayer({
+              sampleRate: websocketConfig.audioOutput.sampleRate,
+            });
+            setOutputAudioLevel(0);
           }
 
-          try {
-            if (websocketConfig.setup) {
-              connection.sendJson(websocketConfig.setup.buildMessage(session));
-              setLastEvent(websocketConfig.setup.waitingEventLabel);
+          handleRealtimePayload(payload);
+          for (const chunk of websocketConfig.audioOutput?.extractChunks(payload) ?? []) {
+            audioPlayerRef.current?.playBase64(chunk);
+            handleOutputAudioChunk(chunk);
+          }
 
-              return;
-            }
-
-            void startWebSocketMedia();
-          } catch (openError) {
-            if (
-              sessionController.isCurrent(lease) &&
-              connectionRef.current === connection &&
-              !stoppingRef.current
-            ) {
-              failSession(getErrorMessage(openError, websocketConfig.mediaStartFailedMessage));
-            }
+          if (isConfiguredAudioEndEvent(connection, payload, providerOptionsRef.current)) {
+            completePendingFinalization(connection, lease);
           }
         },
+        onReady: (connection) => void startWebSocketMedia(connection),
+        session,
       });
-
-      if (!sessionController.isCurrent(lease)) {
-        connection.close();
-
-        return;
-      }
-
-      connectionRef.current = connection;
-      connectionLeaseRef.current = lease;
     },
     [
       completePendingFinalization,
       failSession,
       handleOutputAudioChunk,
       handleRealtimePayload,
+      resetAudioTurnDetection,
       sessionController,
       setLiveStatus,
       startInputAudio,

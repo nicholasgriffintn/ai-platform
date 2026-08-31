@@ -40,10 +40,14 @@ const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> =
   transcription: [],
 };
 const LIVE_WEBSOCKET_URL =
-  "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained";
-const AUTH_TOKEN_ENDPOINT = "https://generativelanguage.googleapis.com/v1alpha/auth_tokens";
+  "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained";
+const AUTH_TOKEN_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/auth_tokens";
 const DEFAULT_VOICE = "Kore";
 const DEFAULT_TRANSPORT: RealtimeTransport = "websocket";
+// Keep one token usable across multiple socket rotations while bounding exposure
+// with a two-hour expiry, one use, a one-minute start window, and locked config.
+const TOKEN_LIFETIME_MS = 2 * 60 * 60 * 1000;
+const NEW_SESSION_LIFETIME_MS = 60 * 1000;
 
 const SUPPORTED_INPUT_MODALITIES_BY_TYPE: Record<RealtimeSessionType, RealtimeModality[]> = {
   realtime: ["text", "audio", "image", "video"],
@@ -175,14 +179,12 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
     };
   }
 
-  private buildLiveSetup({
+  private buildLiveConfig({
     request,
-    model,
     inputModalities,
     outputModalities,
   }: {
     request: RealtimeSessionRequest;
-    model: string;
     inputModalities: RealtimeModality[];
     outputModalities: RealtimeModality[];
   }): Record<string, unknown> {
@@ -190,21 +192,18 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
     const realtimeInputConfig = this.buildRealtimeInputConfig(inputModalities);
 
     return {
-      model: formatGoogleStudioModelResource(model),
-      generationConfig: {
-        responseModalities,
-        ...(outputModalities.includes("audio")
-          ? {
-              speechConfig: {
-                voiceConfig: {
-                  prebuiltVoiceConfig: {
-                    voiceName: request.voice ?? DEFAULT_VOICE,
-                  },
+      responseModalities,
+      ...(outputModalities.includes("audio")
+        ? {
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: {
+                  voiceName: request.voice ?? DEFAULT_VOICE,
                 },
               },
-            }
-          : {}),
-      },
+            },
+          }
+        : {}),
       ...(realtimeInputConfig ? { realtimeInputConfig } : {}),
       ...(request.instructions
         ? {
@@ -213,6 +212,23 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
             },
           }
         : {}),
+      sessionResumption: {},
+      contextWindowCompression: { slidingWindow: {} },
+      inputAudioTranscription: {},
+      outputAudioTranscription: {},
+    };
+  }
+
+  private buildLiveSetup(model: string, config: Record<string, unknown>): Record<string, unknown> {
+    const { responseModalities, speechConfig, ...setupConfig } = config;
+
+    return {
+      model: formatGoogleStudioModelResource(model),
+      generationConfig: {
+        responseModalities,
+        ...(speechConfig ? { speechConfig } : {}),
+      },
+      ...setupConfig,
     };
   }
 
@@ -223,17 +239,16 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
     outputModalities: RealtimeModality[],
   ): Record<string, unknown> {
     const now = Date.now();
+    const config = this.buildLiveConfig({ request, inputModalities, outputModalities });
 
     return {
       uses: 1,
-      expireTime: new Date(now + 30 * 60 * 1000).toISOString(),
-      newSessionExpireTime: new Date(now + 60 * 1000).toISOString(),
-      bidiGenerateContentSetup: this.buildLiveSetup({
-        request,
-        model,
-        inputModalities,
-        outputModalities,
-      }),
+      expireTime: new Date(now + TOKEN_LIFETIME_MS).toISOString(),
+      newSessionExpireTime: new Date(now + NEW_SESSION_LIFETIME_MS).toISOString(),
+      liveConnectConstraints: {
+        model: formatGoogleStudioModelResource(model),
+        config,
+      },
     };
   }
 
@@ -255,12 +270,8 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
     const outputModalities = this.getOutputModalities(request);
     const model = await this.resolveModel(request);
     const apiKey = await this.getApiKey(request);
-    const setup = this.buildLiveSetup({
-      request,
-      model,
-      inputModalities,
-      outputModalities,
-    });
+    const config = this.buildLiveConfig({ request, inputModalities, outputModalities });
+    const setup = this.buildLiveSetup(model, config);
     const body = this.buildTokenRequestBody(request, model, inputModalities, outputModalities);
 
     const response = await fetch(AUTH_TOKEN_ENDPOINT, {
