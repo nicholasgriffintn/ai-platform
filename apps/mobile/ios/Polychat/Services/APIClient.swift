@@ -133,10 +133,6 @@ final class APIClient: ObservableObject {
         try await send(path: "/models", method: "GET")
     }
 
-    func fetchTools() async throws -> [ToolDefinition] {
-        try await send(path: "/tools", method: "GET")
-    }
-
     func fetchAssistantRecipes() async throws -> AssistantRecipesResponse {
         try await send(path: "/apps/recipes", method: "GET")
     }

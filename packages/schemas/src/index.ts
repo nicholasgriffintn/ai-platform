@@ -86,6 +86,7 @@ export * from "./article-reports";
 export * from "./chat-modes";
 export * from "./connector-approval";
 export * from "./model-formatting";
+export * from "./model-makers";
 export * from "./model-region-variants";
 export * from "./model-router-modes";
 export * from "./model-selection";

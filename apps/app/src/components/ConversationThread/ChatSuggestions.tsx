@@ -32,15 +32,9 @@ export const ChatSuggestions = ({
   const { isMobileLoading } = useUIStore();
   const toggleTool = useToolsStore((state) => state.toggleTool);
   const isToolEnabled = useToolsStore((state) => state.isToolEnabled);
-  const selectedTools = useToolsStore((state) => state.selectedTools);
-  const setDefaultTools = useToolsStore((state) => state.setDefaultTools);
 
   const hasOverride = suggestionsOverride !== undefined;
-  const {
-    context,
-    isLoading: isLoadingContext,
-    tools,
-  } = useChatSuggestionContext({
+  const { context, isLoading: isLoadingContext } = useChatSuggestionContext({
     enabled: !hasOverride,
     includeCapabilities,
     modeCommands,
@@ -90,10 +84,6 @@ export const ChatSuggestions = ({
       }
 
       if (action?.type === "tool") {
-        if (tools && selectedTools.length === 0) {
-          setDefaultTools(tools);
-        }
-
         for (const toolId of action.toolIds) {
           if (!isToolEnabled(toolId)) {
             toggleTool(toolId);
@@ -105,16 +95,7 @@ export const ChatSuggestions = ({
         setInput(suggestion.prompt);
       }
     },
-    [
-      isToolEnabled,
-      modeCommands,
-      selectedTools,
-      setDefaultTools,
-      setInput,
-      toggleTool,
-      tools,
-      trackEvent,
-    ],
+    [isToolEnabled, modeCommands, setInput, toggleTool, trackEvent],
   );
 
   if (suggestionsOverride === null || (hasOverride && suggestions.length === 0)) {

@@ -7,6 +7,7 @@ import {
 
 function sources(overrides: Partial<CapabilityDiscoverySources> = {}): CapabilityDiscoverySources {
   return {
+    activatableToolIds: new Set(["trigger_recipe", "use_recipe_connector"]),
     connectors: [],
     enabledToolIds: new Set(),
     installations: [],
@@ -73,6 +74,58 @@ describe("discoverAssistantCapabilities", () => {
       reason: 'Tool "create_note" is not allowed in plan mode',
       invocation: { availableNow: false },
     });
+    expect(result.items[0]?.invocation.autoActivate).toBeUndefined();
+  });
+
+  it("activates the connector runner for a connected connector", () => {
+    const result = discoverAssistantCapabilities(
+      sources({
+        connectors: [
+          {
+            id: "gmail",
+            name: "Gmail",
+            description: "Read and send Gmail messages.",
+            categories: [],
+            authType: "composio",
+            status: "connected",
+            scopes: [],
+            toolCount: 4,
+            readToolCount: 3,
+            writeToolCount: 1,
+          },
+        ],
+      }),
+      { query: "gmail", limit: 8 },
+    );
+
+    expect(result.items[0]).toMatchObject({
+      state: "ready",
+      invocation: { toolName: "use_recipe_connector", availableNow: true, autoActivate: true },
+    });
+  });
+
+  it("leaves an already enabled connector runner alone", () => {
+    const result = discoverAssistantCapabilities(
+      sources({
+        connectors: [
+          {
+            id: "gmail",
+            name: "Gmail",
+            description: "Read and send Gmail messages.",
+            categories: [],
+            authType: "composio",
+            status: "connected",
+            scopes: [],
+            toolCount: 4,
+            readToolCount: 3,
+            writeToolCount: 1,
+          },
+        ],
+        enabledToolIds: new Set(["use_recipe_connector"]),
+      }),
+      { query: "gmail", limit: 8 },
+    );
+
     expect(result.items[0]?.invocation.autoActivate).toBeUndefined();
   });
 });

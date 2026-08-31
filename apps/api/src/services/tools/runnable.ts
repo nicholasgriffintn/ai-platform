@@ -104,7 +104,6 @@ export const buildRunnableTool = (tool: FunctionTool): RunnableTool => ({
   category: getToolCategory(tool.name),
   icon: getFunctionIcon(tool.name),
   costPerCall: tool.costPerCall,
-  isDefault: tool.isDefault || false,
   type: tool.type,
   formSchema: buildFormSchema(tool),
   responseSchema: {

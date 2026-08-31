@@ -520,34 +520,29 @@ export class ConversationManager {
       );
     }
 
-    await this.database.repositories.messages.deleteMessagesExcept(conversation_id, messageIds);
+    const lastMessage = normalisedMessages.at(-1);
 
-    const upsertedMessages = await Promise.all(
-      normalisedMessages.map((message) =>
-        this.database.repositories.messages.upsertMessage(
-          message.id,
-          conversation_id,
-          message.role,
-          this.serializeMessageContent(message.content),
-          message,
-        ),
-      ),
+    const replaced = await this.database.repositories.messages.replaceConversationMessages(
+      conversation_id,
+      normalisedMessages.map((message) => ({
+        id: message.id,
+        role: message.role,
+        content: this.serializeMessageContent(message.content),
+        data: message,
+      })),
+      {
+        last_message_id: lastMessage?.id ?? null,
+        last_message_at: lastMessage ? new Date().toISOString() : null,
+        message_count: normalisedMessages.length,
+      },
     );
 
-    if (upsertedMessages.some((message) => !message)) {
+    if (!replaced) {
       throw new AssistantError(
         "Unable to replace messages because one or more message IDs already belong to another conversation",
         ErrorType.PARAMS_ERROR,
       );
     }
-
-    const lastMessage = normalisedMessages.at(-1);
-
-    await this.database.repositories.conversations.updateConversation(conversation_id, {
-      last_message_id: lastMessage?.id ?? null,
-      last_message_at: lastMessage ? new Date().toISOString() : null,
-      message_count: normalisedMessages.length,
-    });
 
     await this.enqueueAsyncInvocationTasks(conversation_id, normalisedMessages);
 

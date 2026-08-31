@@ -1,7 +1,13 @@
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+
 import { gatewayId } from "~/constants/app";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
-import { shouldEnableProviderThinking } from "~/lib/providers/models/reasoning";
+import {
+  resolveAdaptiveThinkingEffort,
+  shouldEnableProviderThinking,
+  usesAdaptiveThinkingApi,
+} from "~/lib/providers/models/reasoning";
 import { limitAnthropicCacheControlBlocks } from "~/lib/providers/utils/anthropicCacheControl";
 import { buildAnthropicHostedTools } from "~/lib/providers/utils/anthropicTools";
 import { formatProviderError } from "~/lib/providers/utils/errors";
@@ -10,6 +16,7 @@ import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { omitKeys } from "~/utils/objects";
 import {
   calculateReasoningBudget,
   createCommonParameters,
@@ -19,6 +26,50 @@ import {
 import { mergeToolDefinitionsByName } from "~/utils/toolNames";
 
 import { BaseProvider } from "./base";
+
+const ANTHROPIC_SAMPLING_PARAMETERS = ["temperature", "top_p", "top_k"] as const;
+const ANTHROPIC_MINIMUM_THINKING_MAX_TOKENS = 1025;
+
+interface AnthropicThinkingParameters {
+  params: Record<string, unknown>;
+  omitSamplingParameters: boolean;
+}
+
+function buildAnthropicThinkingParameters(
+  params: ChatCompletionParameters,
+  modelConfig: ModelConfigItem,
+  effectiveMaxTokens: number,
+): AnthropicThinkingParameters {
+  if (!shouldEnableProviderThinking(modelConfig, params.reasoning_effort)) {
+    return { params: {}, omitSamplingParameters: false };
+  }
+
+  if (usesAdaptiveThinkingApi(modelConfig)) {
+    const effort = resolveAdaptiveThinkingEffort(modelConfig, params.reasoning_effort);
+
+    return {
+      params: {
+        thinking: { type: "adaptive" },
+        ...(effort ? { output_config: { effort } } : {}),
+        max_tokens: effectiveMaxTokens,
+      },
+      omitSamplingParameters: true,
+    };
+  }
+
+  return {
+    params: {
+      thinking: {
+        type: "enabled",
+        budget_tokens: calculateReasoningBudget(params, modelConfig),
+      },
+      top_p: undefined,
+      temperature: 1,
+      max_tokens: Math.max(effectiveMaxTokens, ANTHROPIC_MINIMUM_THINKING_MAX_TOKENS),
+    },
+    omitSamplingParameters: false,
+  };
+}
 
 export class AnthropicProvider extends BaseProvider {
   name = "anthropic";
@@ -98,21 +149,11 @@ export class AnthropicProvider extends BaseProvider {
     const anthropicSpecificTools =
       modelConfig?.supportsToolCalls && allTools.length > 0 ? { tools: allTools } : {};
 
-    const shouldEnableThinking = shouldEnableProviderThinking(
+    const thinking = buildAnthropicThinkingParameters(
+      providerParams,
       modelConfig,
-      providerParams.reasoning_effort,
+      commonParams.max_tokens,
     );
-    const thinkingParams = shouldEnableThinking
-      ? {
-          thinking: {
-            type: "enabled",
-            budget_tokens: calculateReasoningBudget(params, modelConfig),
-          },
-          top_p: undefined,
-          temperature: 1,
-          max_tokens: Math.max(commonParams.max_tokens, 1025),
-        }
-      : {};
 
     const systemPromptParams = providerParams.system_prompt
       ? {
@@ -126,15 +167,19 @@ export class AnthropicProvider extends BaseProvider {
         }
       : {};
 
-    return limitAnthropicCacheControlBlocks({
+    const payload: Record<string, any> = {
       ...commonParams,
       ...streamingParams,
       ...toolsParams,
       ...anthropicSpecificTools,
-      ...thinkingParams,
+      ...thinking.params,
       ...systemPromptParams,
       stop_sequences: providerParams.stop,
-    });
+    };
+
+    return limitAnthropicCacheControlBlocks(
+      thinking.omitSamplingParameters ? omitKeys(payload, ANTHROPIC_SAMPLING_PARAMETERS) : payload,
+    );
   }
 
   async countTokens(

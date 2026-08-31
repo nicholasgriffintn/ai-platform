@@ -1,5 +1,7 @@
 import * as z from "zod/v4";
 
+import { resolveModelMakerId } from "./model-makers";
+
 export const PET_FRAME_WIDTH = 192;
 export const PET_FRAME_HEIGHT = 208;
 export const PET_SHEET_COLUMNS = 8;
@@ -270,10 +272,12 @@ export const petModelOverridesSchema = z
   .object({
     families: petModelSelectionMapSchema.default({}),
     providers: petModelSelectionMapSchema.default({}),
+    makers: petModelSelectionMapSchema.default({}),
   })
   .transform((overrides) => ({
     families: normalisePetModelSelectionMap(overrides.families),
     providers: normalisePetModelSelectionMap(overrides.providers),
+    makers: normalisePetModelSelectionMap(overrides.makers),
   }));
 
 export type PetSource = z.infer<typeof petSourceSchema>;
@@ -283,10 +287,12 @@ export type UserPetsPage = z.infer<typeof userPetsResponseSchema>;
 export type GenerateUserPetInput = z.infer<typeof generateUserPetSchema>;
 export type PetSelection = z.infer<typeof petSelectionSchema>;
 export type PetModelOverrides = z.infer<typeof petModelOverridesSchema>;
+export type StoredPetModelOverrides = z.input<typeof petModelOverridesSchema>;
 
 export const EMPTY_PET_MODEL_OVERRIDES: PetModelOverrides = {
   families: {},
   providers: {},
+  makers: {},
 };
 
 export interface ResolvedPet {
@@ -306,7 +312,7 @@ function normalisePetModelTarget(value: string | null | undefined): string | und
 export function parsePetModelOverrides(value: unknown): PetModelOverrides {
   const parsed = petModelOverridesSchema.safeParse(value);
 
-  return parsed.success ? parsed.data : { families: {}, providers: {} };
+  return parsed.success ? parsed.data : { families: {}, providers: {}, makers: {} };
 }
 
 export function resolvePetSelectionForModel(
@@ -316,10 +322,12 @@ export function resolvePetSelectionForModel(
 ): PetSelection {
   const family = normalisePetModelTarget(model?.family);
   const provider = normalisePetModelTarget(model?.provider);
+  const maker = resolveModelMakerId(model);
 
   return (
     (family ? overrides?.families[family] : undefined) ??
     (provider ? overrides?.providers[provider] : undefined) ??
+    (maker ? overrides?.makers[maker] : undefined) ??
     selection
   );
 }
@@ -334,6 +342,7 @@ export function removeCustomPetFromModelOverrides(
   return {
     families: Object.fromEntries(Object.entries(overrides.families).filter(keepSelection)),
     providers: Object.fromEntries(Object.entries(overrides.providers).filter(keepSelection)),
+    makers: Object.fromEntries(Object.entries(overrides.makers).filter(keepSelection)),
   };
 }
 

@@ -72,6 +72,14 @@ export function omitUndefinedValues<T>(value: T): T {
   return Object.fromEntries(entries) as T;
 }
 
+export function omitKeys<T extends Record<string, unknown>>(value: T, keys: readonly string[]): T {
+  const omitted = new Set<string>(keys);
+
+  return Object.fromEntries(
+    Object.entries(value).filter(([entryKey]) => !omitted.has(entryKey)),
+  ) as T;
+}
+
 export function omitNullishValues<T extends Record<string, unknown>>(
   value: T,
 ): Record<string, Exclude<T[keyof T], null | undefined>> {

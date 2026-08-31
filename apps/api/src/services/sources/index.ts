@@ -10,7 +10,11 @@ import type {
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { MemoryManager } from "~/lib/memory";
 import { isMemoryProviderId } from "~/lib/providers/capabilities/memory/helpers";
-import type { SourceCollectionRecord, SourceRecord } from "~/repositories/SourceRepository";
+import type {
+  SourceCollectionRecord,
+  SourceRecord,
+  SourceSummaryRecord,
+} from "~/repositories/SourceRepository";
 import { recordProjectAudit } from "~/services/audit";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -50,8 +54,8 @@ export function formatSource(record: SourceRecord): Source {
   };
 }
 
-function formatSourceSummary(record: SourceRecord): SourceSummary {
-  const { content: _content, ...summary } = formatSource(record);
+function formatSourceSummary(record: SourceSummaryRecord): SourceSummary {
+  const { content: _content, ...summary } = formatSource({ ...record, content: null });
 
   return summary;
 }
@@ -246,8 +250,11 @@ export async function listSources(
 ): Promise<{ sources: SourceSummary[] }> {
   const records = filters.projectId
     ? (await requireProjectAccess(context, filters.projectId),
-      await context.repositories.sources.listProjectSources(filters.projectId, filters.kind))
-    : await context.repositories.sources.listPersonalSources(userId, filters.kind);
+      await context.repositories.sources.listProjectSourceSummaries(
+        filters.projectId,
+        filters.kind,
+      ))
+    : await context.repositories.sources.listPersonalSourceSummaries(userId, filters.kind);
 
   return { sources: records.map(formatSourceSummary) };
 }
