@@ -7,6 +7,21 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 
 export type AgentAccessAction = "read" | "write";
 
+export const AGENT_CAPABILITY_KIND = "agent";
+
+interface ProjectCapabilityGrant {
+  kind: string;
+  capability_id: string;
+}
+
+export function resolveProjectAgentGrants(
+  capabilities: readonly ProjectCapabilityGrant[],
+): string[] {
+  return capabilities
+    .filter((capability) => capability.kind === AGENT_CAPABILITY_KIND)
+    .map((capability) => capability.capability_id);
+}
+
 const AGENT_READ_ROLES: readonly WorkspaceRole[] = ["owner", "admin", "member"];
 const AGENT_WRITE_ROLES: readonly WorkspaceRole[] = ["owner", "admin"];
 
@@ -109,5 +124,23 @@ export async function assertAgentAvailableToWorkspace(
       ErrorType.FORBIDDEN,
       403,
     );
+  }
+}
+
+export async function isAgentAvailableToWorkspace(
+  context: ServiceContext,
+  agent: Pick<Agent, "owner_scope_type" | "owner_scope_id" | "user_id">,
+  workspaceId: string,
+): Promise<boolean> {
+  try {
+    await assertAgentAvailableToWorkspace(context, agent, workspaceId);
+
+    return true;
+  } catch (error) {
+    if (error instanceof AssistantError) {
+      return false;
+    }
+
+    throw error;
   }
 }

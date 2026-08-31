@@ -22,6 +22,7 @@ import { useAddProjectCapability, useRemoveProjectCapability } from "~/hooks/use
 import {
   type CapabilitySurface,
   type EnabledCapability,
+  getConversationPath,
   getProjectSurface,
   PERSONAL_SURFACE,
 } from "~/lib/capability-surfaces";
@@ -307,7 +308,7 @@ export function usePersonalCapabilityScope(): CapabilityLibraryScope {
     surface: PERSONAL_SURFACE,
     requiresExplicitEnablement: false,
     capabilities: [],
-    conversationPath: "/chat",
+    conversationPath: getConversationPath(PERSONAL_SURFACE),
     isLoading: configurations.query.isLoading || skills.query.isLoading,
     error: configurations.query.error ?? skills.query.error,
     toolConfigurations: configurations.query.data?.configurations ?? [],
@@ -341,13 +342,14 @@ export function useProjectCapabilityScope(
 ): CapabilityLibraryScope {
   const add = useAddProjectCapability();
   const remove = useRemoveProjectCapability();
+  const surface = getProjectSurface(workspaceId, projectId);
 
   return {
-    surface: getProjectSurface(workspaceId, projectId),
+    surface,
     canManage: role === "owner" || role === "admin",
     requiresExplicitEnablement: true,
     capabilities: project?.capabilities ?? [],
-    conversationPath: `/work/${workspaceId}/projects/${projectId}/chat`,
+    conversationPath: getConversationPath(surface),
     error: projectError,
     isLoading,
     name: project?.name,

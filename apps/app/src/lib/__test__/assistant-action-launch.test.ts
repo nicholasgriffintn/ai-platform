@@ -9,6 +9,8 @@ import {
   createRecipeAssistantActionLaunch,
   loadAssistantActionRequestOptions,
   parseAssistantActionLaunchState,
+  createAgentConversationActionPath,
+  readAgentConversationLaunchIntent,
   readRecipeConversationLaunchIntent,
   removeConsumedAssistantActionLaunchParams,
 } from "../assistant-action-launch";
@@ -47,12 +49,21 @@ describe("assistant action launch URL contract", () => {
       recipe_context: "{}",
       action: "setup",
       recipe: "morning-briefing",
+      agent: "researcher",
       view: "compact",
     }).toString();
 
     expect(removeConsumedAssistantActionLaunchParams(search)).toBe(
       "completion_id=conversation-1&view=compact",
     );
+  });
+
+  it("carries an agent into a conversation and reads it back", () => {
+    const path = createAgentConversationActionPath("/work/w1/projects/p1/chat", "researcher");
+
+    expect(path).toBe("/work/w1/projects/p1/chat?agent=researcher");
+    expect(readAgentConversationLaunchIntent(path.split("?")[1])).toBe("researcher");
+    expect(readAgentConversationLaunchIntent("agent=%20")).toBe(undefined);
   });
 
   it("reads only valid compact recipe actions", () => {

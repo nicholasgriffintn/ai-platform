@@ -48,9 +48,19 @@ export function useAgents({ enabled = true }: { enabled?: boolean } = {}) {
     },
   });
 
-  const chatAgents = useMemo(
-    () => agents.filter((agent) => !agent.is_team_agent || agent.team_role === "orchestrator"),
+  const teamMemberAgentIds = useMemo(
+    () =>
+      new Set(
+        agents
+          .filter((agent) => agent.is_team_agent && agent.team_role !== "orchestrator")
+          .map((agent) => agent.id),
+      ),
     [agents],
+  );
+
+  const chatAgents = useMemo(
+    () => agents.filter((agent) => !teamMemberAgentIds.has(agent.id)),
+    [agents, teamMemberAgentIds],
   );
 
   const groupedAgents = useMemo(() => groupAgents(agents), [agents]);
@@ -59,6 +69,7 @@ export function useAgents({ enabled = true }: { enabled?: boolean } = {}) {
     agents,
     chatAgents,
     groupedAgents,
+    teamMemberAgentIds,
     isLoadingAgents: canAccessProFeatures && enabled ? agentsQuery.isLoading : false,
     errorAgents: canAccessProFeatures && enabled ? agentsQuery.error : null,
     createAgent: createMutation.mutateAsync,
