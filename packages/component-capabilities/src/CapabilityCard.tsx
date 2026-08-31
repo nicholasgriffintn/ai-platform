@@ -10,10 +10,12 @@ import {
   Ellipsis,
   ExternalLink,
   MessageSquare,
+  Pencil,
   Play,
   Plus,
   Puzzle,
   Settings2,
+  Share2,
   Sparkles,
   Trash2,
   Wrench,
@@ -36,7 +38,7 @@ export interface CapabilityCardProps {
   };
   tool?: ModelToolDefinition;
   skill?: SkillCardState;
-  authoredSkill?: AuthoredSkillCardState;
+  authoredCapability?: AuthoredCapabilityCardState;
   onOpen?: () => void;
 }
 
@@ -47,10 +49,12 @@ export interface SkillCardState {
   onToggle: (enabled: boolean) => void;
 }
 
-export interface AuthoredSkillCardState {
-  canDelete: boolean;
+export interface AuthoredCapabilityCardState {
+  canManage: boolean;
   isDeleting: boolean;
   onDelete: () => void;
+  onEdit?: () => void;
+  onShare?: () => void;
 }
 
 export function CapabilityCard({
@@ -63,7 +67,7 @@ export function CapabilityCard({
   projectActions,
   tool,
   skill,
-  authoredSkill,
+  authoredCapability,
   onOpen,
 }: CapabilityCardProps) {
   const appIcon = app ? getIcon(app.icon, app.theme) : null;
@@ -75,6 +79,11 @@ export function CapabilityCard({
   const isIncluded =
     !requiresExplicitEnablement || Boolean(isEnabled) || Boolean(tool) || isAlwaysOnSkill;
   const showSkillToggle = Boolean(skill) && !requiresExplicitEnablement && !isUnavailable;
+  const ownerActions = authoredCapability?.canManage ? authoredCapability : undefined;
+  const detachAction =
+    isEnabled && projectActions && canManage && (kind !== "tool" || !tool)
+      ? projectActions
+      : undefined;
   const openAction = isRunnableTool
     ? { icon: <Play size={15} />, label: "Run" }
     : kind === "agent"
@@ -156,13 +165,18 @@ export function CapabilityCard({
           <Button
             className="flex-1"
             variant={skill.enabled ? "outline" : "primary"}
-            disabled={skill.alwaysOn || authoredSkill?.isDeleting}
+            disabled={skill.alwaysOn || authoredCapability?.isDeleting}
             isLoading={skill.isPending}
             onClick={() => skill.onToggle(!skill.enabled)}
           >
             {skill.alwaysOn ? "Always on" : skill.enabled ? "Turn off" : "Turn on"}
           </Button>
-          {authoredSkill?.canDelete && <SkillDeleteMenu authoredSkill={authoredSkill} />}
+          <CapabilityActionsMenu
+            detach={detachAction}
+            detachLabel={requiresExplicitEnablement ? "Remove from project" : "Remove"}
+            kind={kind}
+            owner={ownerActions}
+          />
         </div>
       ) : isIncluded ? (
         <div className="flex gap-2">
@@ -177,34 +191,12 @@ export function CapabilityCard({
               {primaryAction.label}
             </Button>
           )}
-          {authoredSkill?.canDelete ? (
-            <SkillDeleteMenu authoredSkill={authoredSkill} />
-          ) : (
-            isEnabled &&
-            projectActions &&
-            !authoredSkill &&
-            (kind !== "tool" || !tool) && (
-              <DropdownMenu
-                position="top"
-                buttonProps={{
-                  "aria-label": "More actions",
-                  disabled: !canManage || projectActions.isRemoving,
-                  isLoading: projectActions.isRemoving,
-                  size: "md",
-                  variant: "outline",
-                }}
-                trigger={<Ellipsis size={16} />}
-              >
-                <DropdownMenuItem
-                  className="text-red-700 dark:text-red-300"
-                  icon={<Trash2 size={15} />}
-                  onClick={projectActions.onRemove}
-                >
-                  {requiresExplicitEnablement ? "Remove from project" : "Remove"}
-                </DropdownMenuItem>
-              </DropdownMenu>
-            )
-          )}
+          <CapabilityActionsMenu
+            detach={detachAction}
+            detachLabel={requiresExplicitEnablement ? "Remove from project" : "Remove"}
+            kind={kind}
+            owner={ownerActions}
+          />
         </div>
       ) : projectActions ? (
         <Button
@@ -221,26 +213,60 @@ export function CapabilityCard({
   );
 }
 
-function SkillDeleteMenu({ authoredSkill }: { authoredSkill: AuthoredSkillCardState }) {
+interface CapabilityActionsMenuProps {
+  detach?: { isRemoving: boolean; onRemove: () => void };
+  detachLabel: string;
+  kind: ProjectCapabilityKind;
+  owner?: AuthoredCapabilityCardState;
+}
+
+function CapabilityActionsMenu({ detach, detachLabel, kind, owner }: CapabilityActionsMenuProps) {
+  if (!detach && !owner) {
+    return null;
+  }
+
+  const isBusy = Boolean(owner?.isDeleting) || Boolean(detach?.isRemoving);
+
   return (
     <DropdownMenu
       position="top"
       buttonProps={{
         "aria-label": "More actions",
-        disabled: authoredSkill.isDeleting,
-        isLoading: authoredSkill.isDeleting,
+        disabled: isBusy,
+        isLoading: isBusy,
         size: "md",
         variant: "outline",
       }}
       trigger={<Ellipsis size={16} />}
     >
-      <DropdownMenuItem
-        className="text-red-700 dark:text-red-300"
-        icon={<Trash2 size={15} />}
-        onClick={authoredSkill.onDelete}
-      >
-        Delete skill
-      </DropdownMenuItem>
+      {owner?.onEdit && (
+        <DropdownMenuItem icon={<Pencil size={15} />} onClick={owner.onEdit}>
+          Edit {kind}
+        </DropdownMenuItem>
+      )}
+      {owner?.onShare && (
+        <DropdownMenuItem icon={<Share2 size={15} />} onClick={owner.onShare}>
+          Share {kind}
+        </DropdownMenuItem>
+      )}
+      {detach && (
+        <DropdownMenuItem
+          className="text-red-700 dark:text-red-300"
+          icon={<Trash2 size={15} />}
+          onClick={detach.onRemove}
+        >
+          {detachLabel}
+        </DropdownMenuItem>
+      )}
+      {owner && (
+        <DropdownMenuItem
+          className="text-red-700 dark:text-red-300"
+          icon={<Trash2 size={15} />}
+          onClick={owner.onDelete}
+        >
+          Delete {kind}
+        </DropdownMenuItem>
+      )}
     </DropdownMenu>
   );
 }

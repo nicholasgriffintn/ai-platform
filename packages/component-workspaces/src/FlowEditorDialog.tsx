@@ -18,7 +18,7 @@ import {
   type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 import { titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
-import { ArrowDown, ArrowUp, ExternalLink, Plus, Settings2, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Plus, Settings2, Trash2 } from "lucide-react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
 export interface FlowEditorDialogProps {
@@ -27,7 +27,7 @@ export interface FlowEditorDialogProps {
   agents: { id: string; name: string }[];
   skills: { id: string; name: string }[];
   capabilitiesHref: string;
-  agentsHref: string;
+  createAgentHref: string;
   isSaving?: boolean;
   errorMessage?: string;
   onOpenChange: (open: boolean) => void;
@@ -68,7 +68,7 @@ export function FlowEditorDialog({
   agents,
   skills,
   capabilitiesHref,
-  agentsHref,
+  createAgentHref,
   isSaving = false,
   errorMessage,
   onOpenChange,
@@ -143,19 +143,19 @@ export function FlowEditorDialog({
                 attached skill{skills.length === 1 ? "" : "s"}
               </p>
               <p className="mt-0.5 text-xs text-zinc-500">
-                Add agents and skills through project Capabilities. Create or edit personal agents
-                in Account.
+                Add agents and skills through project Capabilities, where you can also build a new
+                agent for this project.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <ButtonLink
-                href={agentsHref}
+                href={createAgentHref}
                 variant="ghost"
                 size="sm"
-                icon={<ExternalLink size={13} />}
+                icon={<Plus size={13} />}
                 className="no-underline hover:!no-underline"
               >
-                Edit agents
+                New agent
               </ButtonLink>
               <ButtonLink
                 href={capabilitiesHref}

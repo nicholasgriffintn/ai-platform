@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError } from "~/utils/errors";
 
-import { deleteAgent, getAgentById, getUserAgents, updateAgent } from "../agentCrud";
+import { createAgent, deleteAgent, getAgentById, getUserAgents, updateAgent } from "../agentCrud";
 import { listScopedAgentSummaries } from "../listing";
 import { publishAgentToWorkspace } from "../publishAgent";
 
@@ -76,7 +76,7 @@ function createContext(
         id: "agent-copy",
         owner_scope_type: record.ownerScopeType,
         owner_scope_id: record.ownerScopeId,
-        derived_from_agent_id: record.derivedFromAgentId,
+        derived_from_agent_id: record.derivedFromAgentId ?? null,
       })),
       updateAgent: vi.fn(async () => undefined),
       deleteAgent: vi.fn(async () => undefined),
@@ -329,6 +329,44 @@ describe("publishAgentToWorkspace", () => {
     const error = await publishAgentToWorkspace(context, AGENT_ID, WORKSPACE_ID).catch(
       (thrown: unknown) => thrown,
     );
+
+    expect((error as AssistantError).statusCode).toBe(403);
+    expect(repositories.agents.createAgent).not.toHaveBeenCalled();
+  });
+});
+
+describe("createAgent", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("creates a personal agent when no workspace is named", async () => {
+    const { context, repositories } = createContext({});
+
+    await createAgent(context, { name: "Researcher" });
+
+    expect(repositories.agents.createAgent).toHaveBeenCalledWith(
+      expect.objectContaining({ ownerScopeType: "user", ownerScopeId: String(OWNER_ID) }),
+    );
+  });
+
+  it("creates a workspace agent for an administrator of that workspace", async () => {
+    const { context, repositories } = createContext({ role: "admin" });
+
+    await createAgent(context, { name: "Researcher", workspace_id: WORKSPACE_ID });
+
+    expect(repositories.agents.createAgent).toHaveBeenCalledWith(
+      expect.objectContaining({ ownerScopeType: "workspace", ownerScopeId: WORKSPACE_ID }),
+    );
+  });
+
+  it("refuses a plain member creating an agent the workspace would own", async () => {
+    const { context, repositories } = createContext({ role: "member" });
+
+    const error = await createAgent(context, {
+      name: "Researcher",
+      workspace_id: WORKSPACE_ID,
+    }).catch((thrown: unknown) => thrown);
 
     expect((error as AssistantError).statusCode).toBe(403);
     expect(repositories.agents.createAgent).not.toHaveBeenCalled();

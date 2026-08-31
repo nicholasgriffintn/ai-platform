@@ -118,13 +118,13 @@ export class AgentRepository extends BaseRepository {
     data: Partial<{
       name: string;
       description: string;
-      avatar_url: string;
-      servers: any[];
+      avatar_url: string | null;
+      servers: AgentMcpServer[];
       model: string;
       temperature: number;
       max_steps: number;
       system_prompt: string;
-      few_shot_examples: any[];
+      few_shot_examples: AgentFewShotExample[];
       enabled_tools: string[];
       skill_ids: string[];
       mode: AgentMode | null;
