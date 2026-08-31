@@ -369,8 +369,8 @@ export const cohereModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "high"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 20.6,

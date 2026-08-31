@@ -238,8 +238,8 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.003,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["minimal", "low", "medium", "high"],
+			defaultEffort: "minimal",
 		},
 		strengths: ["vision", "document", "audio", "video", "tool_use"],
 		contextComplexity: 4,
@@ -315,8 +315,8 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.06,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["minimal", "high"],
+			defaultEffort: "minimal",
 		},
 		strengths: ["vision", "document", "video", "image", "creative"],
 		contextComplexity: 3,
@@ -358,8 +358,8 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.0015,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["minimal", "low", "medium", "high"],
+			defaultEffort: "minimal",
 		},
 		strengths: ["vision", "document", "audio", "video", "tool_use"],
 		contextComplexity: 4,
@@ -394,8 +394,8 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["low", "medium", "high"],
+			defaultEffort: "low",
 		},
 		strengths: ["coding", "vision", "document", "audio", "video", "tool_use"],
 		contextComplexity: 4,
@@ -430,8 +430,8 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["low", "medium", "high"],
+			defaultEffort: "low",
 		},
 	}),
 
@@ -456,8 +456,8 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0015,
 		costPer1kOutputTokens: 0.009,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["minimal", "low", "medium", "high"],
+			defaultEffort: "minimal",
 		},
 		strengths: ["coding", "vision", "document", "audio", "video", "tool_use"],
 		contextComplexity: 4,
@@ -492,8 +492,8 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["minimal", "low", "medium", "high"],
+			defaultEffort: "minimal",
 		},
 	}),
 
@@ -518,8 +518,8 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.00375,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["minimal", "low", "medium", "high"],
+			defaultEffort: "minimal",
 		},
 	}),
 
@@ -544,8 +544,8 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.00375,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["low", "medium", "high"],
+			defaultEffort: "low",
 		},
 	}),
 
@@ -591,8 +591,8 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0015,
 		costPer1kOutputTokens: 0.009,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["minimal", "low", "medium", "high"],
+			defaultEffort: "minimal",
 		},
 	}),
 
@@ -616,8 +616,8 @@ export const googleVertexModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.0015,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["minimal", "low", "medium", "high"],
+			defaultEffort: "minimal",
 		},
 	}),
 ]);

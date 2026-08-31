@@ -1330,8 +1330,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     contextComplexity: 5,
     reliability: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 59.9,
@@ -1362,8 +1362,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.001,
     costPer1kOutputTokens: 0.005,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -1388,8 +1388,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0011,
     costPer1kOutputTokens: 0.0055,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -1414,8 +1414,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.015,
     costPer1kOutputTokens: 0.075,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -1444,8 +1444,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 34.7,
@@ -1480,8 +1480,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 34.7,
@@ -1516,8 +1516,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 2,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 43.7,
@@ -1552,8 +1552,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 2,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 43.7,
@@ -1588,8 +1588,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 2,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 53.5,
@@ -1624,8 +1624,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 2,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 53.5,
@@ -1660,8 +1660,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 2,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 55.7,
@@ -1696,8 +1696,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 2,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 55.7,
@@ -1728,8 +1728,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -1754,8 +1754,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0055,
     costPer1kOutputTokens: 0.0275,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -1780,8 +1780,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.003,
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -1806,8 +1806,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0033,
     costPer1kOutputTokens: 0.0165,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -1836,8 +1836,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 2,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 47.2,
@@ -1872,8 +1872,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 2,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 47.2,
@@ -1904,8 +1904,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.003,
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -1930,8 +1930,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -1956,8 +1956,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0022,
     costPer1kOutputTokens: 0.011,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -1982,8 +1982,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00014,
     costPer1kOutputTokens: 0.00028,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -2012,8 +2012,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 5,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 14.1,
@@ -2048,8 +2048,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 25,
@@ -2080,8 +2080,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0003,
     costPer1kOutputTokens: 0.0025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -2110,8 +2110,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 50.2,
@@ -2142,8 +2142,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0015,
     costPer1kOutputTokens: 0.007,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -2171,8 +2171,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 51.1,
@@ -2206,8 +2206,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 51.1,
@@ -2370,8 +2370,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 2,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 33,
@@ -2406,8 +2406,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 19.9,
@@ -2442,8 +2442,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 20.4,
@@ -2478,8 +2478,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 27.7,
@@ -2514,8 +2514,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 35.4,
@@ -2546,8 +2546,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00022,
     costPer1kOutputTokens: 0.00132,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -2572,8 +2572,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0055,
     costPer1kOutputTokens: 0.033,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -2598,8 +2598,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0022,
     costPer1kOutputTokens: 0.0132,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -2628,8 +2628,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 15.3,
@@ -2659,8 +2659,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -2684,8 +2684,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00225,
     costPer1kOutputTokens: 0.01125,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -2709,8 +2709,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00225,
     costPer1kOutputTokens: 0.01125,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -2739,8 +2739,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 25.6,
@@ -2770,8 +2770,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00075,
     costPer1kOutputTokens: 0.00375,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -2796,8 +2796,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.000825,
     costPer1kOutputTokens: 0.004125,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
   createModelConfig("claude-fable-5@eu", PROVIDER, {
@@ -2824,8 +2824,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     contextComplexity: 5,
     reliability: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 59.9,
@@ -2892,8 +2892,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 31.2,
@@ -2928,8 +2928,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 31.2,
@@ -3024,8 +3024,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     contextComplexity: 4,
     reliability: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: null,
@@ -3069,8 +3069,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     contextComplexity: 4,
     reliability: 5,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: null,
@@ -3115,8 +3115,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 25,
@@ -3151,8 +3151,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 46.5,
@@ -3187,8 +3187,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 50.2,
@@ -3219,8 +3219,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00033,
     costPer1kOutputTokens: 0.00275,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -3244,8 +3244,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00007,
     costPer1kOutputTokens: 0.00034,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -3269,8 +3269,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0,
     costPer1kOutputTokens: 0,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -3298,8 +3298,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 35.4,
@@ -3333,8 +3333,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 35.4,
@@ -3363,8 +3363,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0021,
     costPer1kOutputTokens: 0.0066,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -3372,7 +3372,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     name: "GLM-5.3",
     matchingModel: "glm-5.3",
     family: "glm",
-    openWeights: false,
+    openWeights: true,
     releaseDate: "August 14, 2026",
     lastUpdated: "August 14, 2026",
     modalities: {
@@ -3388,8 +3388,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0014,
     costPer1kOutputTokens: 0.0044,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -3442,8 +3442,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 2,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 44.3,
@@ -3478,8 +3478,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 27.7,
@@ -3514,8 +3514,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 16.6,
@@ -3550,8 +3550,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 17.6,
@@ -3584,8 +3584,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 5,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: null,
@@ -3620,8 +3620,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 35.4,
@@ -3654,8 +3654,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 5,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: null,
@@ -3686,8 +3686,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0002,
     costPer1kOutputTokens: 0.0012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -3712,8 +3712,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.004,
     costPer1kOutputTokens: 0.02,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -3738,8 +3738,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.012,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -3762,8 +3762,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -3791,8 +3791,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 24.8,
@@ -3823,8 +3823,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -3873,8 +3873,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 33.6,
@@ -3904,8 +3904,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00187,
     costPer1kOutputTokens: 0.00468,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -3927,8 +3927,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00187,
     costPer1kOutputTokens: 0.00468,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -3977,8 +3977,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 42.8,
@@ -4013,8 +4013,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 42.8,
@@ -4049,8 +4049,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 41.9,
@@ -4085,8 +4085,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 41.9,
@@ -4116,8 +4116,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0,
     costPer1kOutputTokens: 0,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -4141,8 +4141,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0,
     costPer1kOutputTokens: 0,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -4261,8 +4261,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0,
     costPer1kOutputTokens: 0,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -4354,8 +4354,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 2,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 38.1,
@@ -4385,8 +4385,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0006,
     costPer1kOutputTokens: 0.0024,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -4414,8 +4414,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 44.4,
@@ -4449,8 +4449,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 44.4,
@@ -4483,8 +4483,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 29.9,
@@ -4513,8 +4513,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00165,
     costPer1kOutputTokens: 0.00825,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -4605,8 +4605,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 12.4,
@@ -4641,8 +4641,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 12.4,
@@ -4673,8 +4673,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0,
     costPer1kOutputTokens: 0,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -4697,8 +4697,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00006,
     costPer1kOutputTokens: 0.00024,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -4726,8 +4726,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 14.9,
@@ -4756,8 +4756,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00006,
     costPer1kOutputTokens: 0.00024,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -4781,8 +4781,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0,
     costPer1kOutputTokens: 0,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -4810,8 +4810,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 37.8,
@@ -4840,8 +4840,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0006,
     costPer1kOutputTokens: 0.0024,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -4865,8 +4865,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0,
     costPer1kOutputTokens: 0,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -4889,8 +4889,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0,
     costPer1kOutputTokens: 0,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -4913,8 +4913,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00005,
     costPer1kOutputTokens: 0.0002,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -4941,8 +4941,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 25.4,
@@ -4971,8 +4971,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0005,
     costPer1kOutputTokens: 0.0025,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -5000,8 +5000,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 29.3,
@@ -5034,8 +5034,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 8.8,
@@ -5069,8 +5069,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 23.4,
@@ -5105,8 +5105,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 39.6,
@@ -5140,8 +5140,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 4,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 46,
@@ -5176,8 +5176,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 2,
     speed: 2,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 39,
@@ -5207,8 +5207,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -5232,8 +5232,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.006,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -5260,8 +5260,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 30.6,
@@ -5290,8 +5290,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.00025,
     costPer1kOutputTokens: 0.002,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -5315,8 +5315,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0005,
     costPer1kOutputTokens: 0.003,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -5340,8 +5340,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0001,
     costPer1kOutputTokens: 0.0004,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -5365,8 +5365,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0005,
     costPer1kOutputTokens: 0.003,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -5394,8 +5394,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     reliability: 1,
     speed: 5,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 29.7,
@@ -5424,8 +5424,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0004,
     costPer1kOutputTokens: 0.003,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
 
@@ -5448,8 +5448,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.0004,
     costPer1kOutputTokens: 0.003,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "max"],
+    	defaultEffort: "none",
     },
   }),
   createModelConfig("glm-5.3-flash", PROVIDER, {
@@ -5472,7 +5472,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.00015,
   	costPer1kOutputTokens: 0.0005,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "low", "medium", "high", "max"],
   		defaultEffort: "none",
   	},
   }),
@@ -5506,7 +5506,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
   	name: "GLM-5.3 (EU)",
   	matchingModel: "glm-5.3@eu",
   	family: "glm",
-  	openWeights: false,
+  	openWeights: true,
   	releaseDate: "August 14, 2026",
   	lastUpdated: "August 14, 2026",
   	modalities: {
@@ -5522,7 +5522,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.00175,
   	costPer1kOutputTokens: 0.0045,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "low", "medium", "high", "max"],
   		defaultEffort: "none",
   	},
   }),

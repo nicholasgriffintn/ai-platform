@@ -588,8 +588,8 @@ export const huggingfaceModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.000435,
     costPer1kOutputTokens: 0.00087,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["high"],
+    	defaultEffort: "high",
     },
     strengths: ["tool_use"],
     contextComplexity: 5,
@@ -763,8 +763,8 @@ export const huggingfaceModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0006,
     costPer1kOutputTokens: 0.0036,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high"],
+    	defaultEffort: "none",
     },
     strengths: ["vision", "document", "tool_use"],
     contextComplexity: 4,
@@ -1557,8 +1557,8 @@ export const huggingfaceModelConfig: ModelConfig = {
     reliability: 1,
     speed: 5,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 29.7,
@@ -1593,8 +1593,8 @@ export const huggingfaceModelConfig: ModelConfig = {
     reliability: 2,
     speed: 2,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 42.2,
@@ -1630,8 +1630,8 @@ export const huggingfaceModelConfig: ModelConfig = {
     reliability: 1,
     speed: 5,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 23.8,
@@ -1665,8 +1665,8 @@ export const huggingfaceModelConfig: ModelConfig = {
     reliability: 1,
     speed: 5,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 14.9,
@@ -1701,8 +1701,8 @@ export const huggingfaceModelConfig: ModelConfig = {
     reliability: 2,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 40.1,
@@ -1732,8 +1732,8 @@ export const huggingfaceModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.003,
     costPer1kOutputTokens: 0.015,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "high", "max"],
+    	defaultEffort: "low",
     },
   },
   "tencent/Hy3": {
@@ -1761,8 +1761,8 @@ export const huggingfaceModelConfig: ModelConfig = {
     reliability: 1,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "low", "high"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 33.6,
@@ -1793,8 +1793,8 @@ export const huggingfaceModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.001,
     costPer1kOutputTokens: 0.00405,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   },
   "thinkingmachines/Inkling-Small": {
@@ -2028,8 +2028,8 @@ export const huggingfaceModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.0025,
     costPer1kOutputTokens: 0.00625,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "xhigh"],
+    	defaultEffort: "low",
     },
   },
   "Qwen/Qwen3-VL-235B-A22B-Instruct": {
@@ -2087,8 +2087,8 @@ export const huggingfaceModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.00098,
     costPer1kOutputTokens: 0.00395,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
   },
   "zai-org/GLM-4.6V-Flash": {
@@ -2136,8 +2136,8 @@ export const huggingfaceModelConfig: ModelConfig = {
   	costPer1kInputTokens: 0.0004,
   	costPer1kOutputTokens: 0.003,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "xhigh"],
+  		defaultEffort: "low",
   	},
   },
 
@@ -2162,8 +2162,8 @@ export const huggingfaceModelConfig: ModelConfig = {
   	costPer1kInputTokens: 0.0014,
   	costPer1kOutputTokens: 0.0044,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   },
 
@@ -2188,8 +2188,8 @@ export const huggingfaceModelConfig: ModelConfig = {
   	costPer1kInputTokens: 0.00015,
   	costPer1kOutputTokens: 0.0005,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "high", "max"],
+  		defaultEffort: "low",
   	},
   },
 };

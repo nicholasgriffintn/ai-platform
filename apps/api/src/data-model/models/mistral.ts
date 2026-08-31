@@ -270,8 +270,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     isFeatured: true,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "high"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 3.6,
@@ -402,8 +402,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
     multimodal: true,
     isFeatured: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "high"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 3.6,
@@ -724,8 +724,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
   	reliability: 3,
   	speed: 4,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["high", "max"],
+  		defaultEffort: "high",
   	},
   	artificialAnalysis: {
   		intelligenceIndex: 51.1,
