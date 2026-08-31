@@ -103,6 +103,36 @@ describe("built-in skill catalogue", () => {
     expect(formatSkillContent(skill)).toContain("- references/types.md (reference)");
   });
 
+  it("preserves an authored skill's exact stable revision and internal identity", () => {
+    const catalog = new SkillCatalog([
+      {
+        ...skillDocument("release-checklist"),
+        trust: "user-authored",
+        authored: {
+          scope: "project",
+          scopeId: "project-1",
+          skillId: "internal-skill-1",
+          revisionId: "revision-7",
+          revision: 7,
+        },
+      },
+    ]);
+
+    expect(catalog.loadRuntime("release-checklist")).toMatchObject({
+      provenance: {
+        source: "user-authored",
+        scope: "project",
+        skill: "release-checklist",
+        revisionId: "revision-7",
+        revision: 7,
+      },
+      authorisation: {
+        scopeId: "project-1",
+        skillId: "internal-skill-1",
+      },
+    });
+  });
+
   it("keeps loaded instructions in model content without displaying them in chat", async () => {
     const skill = await loadSkill("artifacts");
     const resource = await getSkillResource("artifacts", "references/types.md");

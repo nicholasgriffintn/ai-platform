@@ -364,7 +364,7 @@ export async function listStoredSkills(
 export async function listStoredStableSkillDocuments(
   context: ServiceContext,
   scope: AuthoredSkillScope,
-): Promise<AuthoredSkillDocument[]> {
+): Promise<AuthoredSkillVersionedDocument[]> {
   const skills = await repository(context).listByScope(scope);
 
   return Promise.all(skills.map((skill) => readRevision(context, skill, "stable")));

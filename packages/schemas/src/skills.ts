@@ -21,6 +21,16 @@ export const skillRequirementSchema = z.object({
 
 export const skillSourceSchema = z.enum(["built-in", "user-authored"]);
 
+export const authoredSkillProvenanceSchema = z
+  .object({
+    source: z.literal("user-authored"),
+    scope: z.enum(["personal", "project"]),
+    skill: z.string().min(1),
+    revisionId: z.string().min(1),
+    revision: z.number().int().positive(),
+  })
+  .strict();
+
 export const skillIdSchema = z
   .string()
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Skill ids are kebab-case")
@@ -189,6 +199,7 @@ export const loadSkillInputSchema = z.object({
 export type SkillCategory = z.infer<typeof skillCategorySchema>;
 export type SkillRequirement = z.infer<typeof skillRequirementSchema>;
 export type SkillSource = z.infer<typeof skillSourceSchema>;
+export type AuthoredSkillProvenance = z.infer<typeof authoredSkillProvenanceSchema>;
 export type SkillResourceSummary = z.infer<typeof skillResourceSummarySchema>;
 export type SkillSummary = z.infer<typeof skillSummarySchema>;
 export type SkillAvailabilityState = z.infer<typeof skillAvailabilityStateSchema>;

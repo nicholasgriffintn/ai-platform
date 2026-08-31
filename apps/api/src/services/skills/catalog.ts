@@ -1,4 +1,8 @@
-import { skillSummarySchema, type SkillSummary } from "@ngriffin_uk/polychat-schemas";
+import {
+  skillSummarySchema,
+  type AuthoredSkillProvenance,
+  type SkillSummary,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { builtInSkillDocuments } from "~/data-model/skills";
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -21,6 +25,23 @@ interface IndexedSkill {
   definition: SkillDefinition;
   content: SkillContent;
   resources: Map<string, SkillResource>;
+  runtime?: AuthoredSkillRuntime;
+}
+
+export interface AuthoredSkillRuntimeAuthorisation {
+  scopeId: string;
+  skillId: string;
+}
+
+export interface AuthoredSkillRuntime {
+  provenance: AuthoredSkillProvenance;
+  authorisation: AuthoredSkillRuntimeAuthorisation;
+}
+
+export interface LoadedSkillRuntime {
+  content: SkillContent;
+  provenance?: AuthoredSkillProvenance;
+  authorisation?: AuthoredSkillRuntimeAuthorisation;
 }
 
 export interface SkillCatalogDocument {
@@ -31,6 +52,13 @@ export interface SkillCatalogDocument {
     path: string;
     content: string;
   }[];
+  authored?: {
+    scope: "personal" | "project";
+    scopeId: string;
+    skillId: string;
+    revisionId: string;
+    revision: number;
+  };
 }
 
 function cloneDefinition(skill: SkillDefinition): SkillDefinition {
@@ -151,6 +179,23 @@ export class SkillCatalog {
           resources: [...resources.values()].map(withoutContent),
         },
         resources,
+        ...(entry.authored
+          ? {
+              runtime: {
+                provenance: {
+                  source: "user-authored",
+                  scope: entry.authored.scope,
+                  skill: definition.id,
+                  revisionId: entry.authored.revisionId,
+                  revision: entry.authored.revision,
+                },
+                authorisation: {
+                  scopeId: entry.authored.scopeId,
+                  skillId: entry.authored.skillId,
+                },
+              },
+            }
+          : {}),
       });
     }
   }
@@ -171,6 +216,24 @@ export class SkillCatalog {
     const content = this.index.get(skillId)?.content;
 
     return content ? cloneContent(content) : null;
+  }
+
+  loadRuntime(skillId: string): LoadedSkillRuntime | null {
+    const skill = this.index.get(skillId);
+
+    if (!skill) {
+      return null;
+    }
+
+    return {
+      content: cloneContent(skill.content),
+      ...(skill.runtime
+        ? {
+            provenance: { ...skill.runtime.provenance },
+            authorisation: { ...skill.runtime.authorisation },
+          }
+        : {}),
+    };
   }
 
   readResource(skillId: string, path: string): SkillResource | null {
@@ -205,6 +268,13 @@ export async function resolveSkillCatalog(
     rawContent: document.content,
     trust: "user-authored",
     resources: document.resources,
+    authored: {
+      scope: scope.type,
+      scopeId: String(scope.id),
+      skillId: document.revision.skillId,
+      revisionId: document.revision.id,
+      revision: document.revision.revision,
+    },
   }));
 
   return new SkillCatalog([...builtInSkillDocuments, ...documents]);
