@@ -2,10 +2,10 @@ import { skillSummarySchema, type SkillSummary } from "@ngriffin_uk/polychat-sch
 
 import { builtInSkillDocuments } from "~/data-model/skills";
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { AuthoredSkillScope } from "~/repositories/AuthoredSkillRepository";
 
 import { parseSkillDocument, parseUserSkillDocument, validateSkillResourcePath } from "./document";
 import { listStoredStableSkillDocuments } from "./persistence";
-import type { SkillStorageScope } from "./storage";
 import {
   toSkillDefinition,
   toSkillSummary,
@@ -192,7 +192,7 @@ const skillCatalog = new SkillCatalog(builtInSkillDocuments);
 
 export async function resolveSkillCatalog(
   context: ServiceContext,
-  scope: SkillStorageScope,
+  scope: AuthoredSkillScope,
   enabledNames?: ReadonlySet<string>,
 ): Promise<SkillCatalog> {
   const stored = await listStoredStableSkillDocuments(context, scope);
