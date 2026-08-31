@@ -1,4 +1,4 @@
-import { getRealtimeLiveProviderManifestItem } from "@ngriffin_uk/polychat-schemas";
+import type { RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schemas";
 
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
@@ -12,7 +12,24 @@ import type {
 } from "../index";
 import { buildGrantedRealtimeProxyUrl } from "./proxyUrl";
 
-const DEFAULT_TRANSCRIPTION_MODEL = getRealtimeLiveProviderManifestItem("cartesia").defaultModelId;
+export const CARTESIA_REALTIME_DESCRIPTOR = {
+  id: "cartesia",
+  order: 4,
+  label: "Cartesia Ink Realtime",
+  shortLabel: "Cartesia",
+  liveMode: "composed",
+  transport: "websocket",
+  sessionType: "transcription",
+  defaultDelay: "low",
+  inputModalities: ["audio"],
+  outputModalities: ["text"],
+  description: "Ink streaming speech-to-text",
+  defaultModelId: "ink-whisper",
+  composeWith: { reasoning: true, speech: true },
+} satisfies RealtimeLiveProviderDescriptor;
+
+const DEFAULT_TRANSCRIPTION_MODEL = CARTESIA_REALTIME_DESCRIPTOR.defaultModelId;
+const API_KEY_ENVIRONMENT_VARIABLE = "CARTESIA_API_KEY";
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
   realtime: [],
   translation: [],
@@ -23,14 +40,20 @@ const CARTESIA_REALTIME_PROXY_PATH = "/realtime/cartesia/transcription";
 
 export class CartesiaRealtimeProvider implements RealtimeProvider {
   name = "cartesia";
+  descriptor = CARTESIA_REALTIME_DESCRIPTOR;
+  configuration = {
+    acceptsUserApiKey: true,
+    environmentVariables: [API_KEY_ENVIRONMENT_VARIABLE],
+  };
   models = SESSION_MODELS_BY_TYPE.transcription;
 
   async getApiKey(request: RealtimeSessionRequest): Promise<string> {
     return resolveProviderApiKey({
       env: request.env,
       providerName: this.name,
-      envKeyName: "CARTESIA_API_KEY",
+      envKeyName: API_KEY_ENVIRONMENT_VARIABLE,
       userId: request.user.id,
+      credentialAuthority: request.credentialAuthority,
     });
   }
 

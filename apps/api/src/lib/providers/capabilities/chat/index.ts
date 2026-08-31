@@ -16,11 +16,7 @@ export function getChatProvider(
   providerName: string,
   context?: ProviderFactoryContext,
 ): AIProvider {
-  try {
-    return providerLibrary.chat(providerName, context);
-  } catch {
-    return providerLibrary.chat("workers", context);
-  }
+  return providerLibrary.chat(providerName, context);
 }
 
 /**

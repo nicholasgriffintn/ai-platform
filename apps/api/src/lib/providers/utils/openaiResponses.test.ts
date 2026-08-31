@@ -29,6 +29,30 @@ describe("shouldUseOpenAIResponsesApi", () => {
     );
   });
 
+  it("uses the responses API when a message contains a document", () => {
+    const modelConfig = openaiModelConfig["gpt-5.6"];
+    const params: ChatCompletionParameters = {
+      ...baseParams,
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Summarise this document" },
+            {
+              type: "document_url",
+              document_url: {
+                url: "data:application/pdf;base64,JVBERi0xLjQ=",
+                name: "brief.pdf",
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    expect(shouldUseOpenAIResponsesApi(params, modelConfig)).toBe(true);
+  });
+
   it("uses the responses API for hosted tools", () => {
     const modelConfig = openaiModelConfig["gpt-5.4"];
 

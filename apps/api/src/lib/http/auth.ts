@@ -10,6 +10,7 @@ export function requireAuthenticatedUser(ctx: Context): IUser {
     throw new AssistantError(
       "This endpoint requires authentication. Please provide a valid access token.",
       ErrorType.AUTHENTICATION_ERROR,
+      401,
     );
   }
 
@@ -27,6 +28,7 @@ export function requireAuthenticatedUserOrAnonymous(ctx: Context): {
     throw new AssistantError(
       "This endpoint requires authentication. Please provide a valid access token.",
       ErrorType.AUTHENTICATION_ERROR,
+      401,
     );
   }
 

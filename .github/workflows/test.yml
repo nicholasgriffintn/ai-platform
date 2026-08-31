@@ -65,8 +65,37 @@ jobs:
             fi
           done
 
+  e2e-changes:
+    name: Detect E2E changes
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.filter.outputs.run }}
+    steps:
+      - name: Select E2E-relevant changes
+        id: filter
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          changed_files="$(gh api --paginate \
+            "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" \
+            --jq '.[].filename')"
+
+          if printf '%s\n' "$changed_files" | grep -Eq '^(apps/(api|app|training)/|packages/|\.github/workflows/test\.yml$|package\.json$|playwright\.config\.ts$|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|tsconfig\.playwright\.json$)'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
   e2e:
     name: E2E (${{ github.event_name == 'pull_request' && format('{0}/2', matrix.shard) || 'smoke' }})
+    if: needs.e2e-changes.outputs.run == 'true'
+    needs: e2e-changes
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -112,3 +141,17 @@ jobs:
             playwright-report
             test-results
           retention-days: 7
+
+  e2e-gate:
+    name: E2E gate
+    if: always()
+    needs: [e2e-changes, e2e]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check end-to-end result
+        env:
+          CHANGES_RESULT: ${{ needs.e2e-changes.result }}
+          E2E_RESULT: ${{ needs.e2e.result }}
+        run: |
+          test "$CHANGES_RESULT" = "success"
+          test "$E2E_RESULT" = "success" || test "$E2E_RESULT" = "skipped"

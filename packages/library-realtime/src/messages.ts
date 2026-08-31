@@ -14,6 +14,15 @@ export interface RealtimeEventResult {
   type: string;
 }
 
+export interface RealtimeGoAwayNotice {
+  timeLeft?: string;
+}
+
+export interface RealtimeSessionResumptionUpdate {
+  handle?: string;
+  resumable: boolean;
+}
+
 const REALTIME_EVENT_LABELS: Record<string, string> = {
   "session.created": "Realtime session ready",
   "session.updated": "Realtime session configured",
@@ -355,4 +364,36 @@ export function isRealtimeSetupCompleteMessage(payload: unknown): boolean {
   }
 
   return isRecord(payload.setupComplete) || isRecord(payload.setup_complete);
+}
+
+export function extractRealtimeSessionResumptionUpdate(
+  payload: unknown,
+): RealtimeSessionResumptionUpdate | undefined {
+  const update =
+    getNestedRecord(payload, "sessionResumptionUpdate") ??
+    getNestedRecord(payload, "session_resumption_update");
+
+  if (!update) {
+    return undefined;
+  }
+
+  const resumable = getBoolean(update.resumable);
+  const handle = getString(update.newHandle) ?? getString(update.new_handle);
+
+  return {
+    ...(resumable && handle ? { handle } : {}),
+    resumable,
+  };
+}
+
+export function extractRealtimeGoAwayNotice(payload: unknown): RealtimeGoAwayNotice | undefined {
+  const notice = getNestedRecord(payload, "goAway") ?? getNestedRecord(payload, "go_away");
+
+  if (!notice) {
+    return undefined;
+  }
+
+  const timeLeft = getString(notice.timeLeft) ?? getString(notice.time_left);
+
+  return timeLeft ? { timeLeft } : {};
 }

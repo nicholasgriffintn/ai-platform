@@ -1,5 +1,6 @@
 import {
   PROJECT_TASK_RUN_TASK_TYPE,
+  OCR_BATCH_POLLING_TASK_TYPE,
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
   type TaskType,
 } from "@ngriffin_uk/polychat-schemas";
@@ -13,6 +14,7 @@ import { ArtificialAnalysisScoringHandler } from "./handlers/ArtificialAnalysisS
 import { AsyncMessagePollingHandler } from "./handlers/AsyncMessagePollingHandler";
 import { InboundMessageHandler } from "./handlers/InboundMessageHandler";
 import { MemorySynthesisHandler } from "./handlers/MemorySynthesisHandler";
+import { OcrBatchPollingHandler } from "./handlers/OcrBatchPollingHandler";
 import { PodcastTranscriptionPollingHandler } from "./handlers/PodcastTranscriptionPollingHandler";
 import { ProjectTaskRunHandler } from "./handlers/ProjectTaskRunHandler";
 import { RecipeExecutionHandler } from "./handlers/RecipeExecutionHandler";
@@ -43,6 +45,7 @@ export function createTaskHandlers(): Map<TaskType, TaskHandler> {
     ["artificial_analysis_scoring", new ArtificialAnalysisScoringHandler()],
     [SANDBOX_RUN_DISPATCH_TASK_TYPE, new SandboxRunDispatchHandler()],
     [PROJECT_TASK_RUN_TASK_TYPE, new ProjectTaskRunHandler()],
+    [OCR_BATCH_POLLING_TASK_TYPE, new OcrBatchPollingHandler()],
   ]);
 }
 

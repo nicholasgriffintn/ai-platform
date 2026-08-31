@@ -1,4 +1,5 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { isOutputDeletionPending } from "~/lib/outputs/deletion";
 import { StorageService } from "~/lib/storage";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -12,6 +13,7 @@ interface PrivateFileRecord {
   storage_key: string | null;
   mime_type: string | null;
   filename: string | null;
+  content?: string | Record<string, unknown> | null;
 }
 
 export type PrivateFileAccessScope = "project" | "owner" | "public-conversation" | "denied";
@@ -88,7 +90,12 @@ export async function readPrivateFile(params: {
       ? await params.context.repositories.sources.getSource(params.resourceId)
       : await params.context.repositories.outputs.getOutput(params.resourceId);
 
-  if (!record || !record.storage_key || !record.mime_type) {
+  if (
+    !record ||
+    (params.kind === "output" && isOutputDeletionPending(record)) ||
+    !record.storage_key ||
+    !record.mime_type
+  ) {
     throw new AssistantError("File not found", ErrorType.NOT_FOUND, 404);
   }
 

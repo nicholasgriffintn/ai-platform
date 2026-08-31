@@ -1,9 +1,8 @@
+import { resolveExecutableModelForRequest } from "~/lib/chat/policy/model-access";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { ModelRouter } from "~/lib/modelRouter";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { resolveModelConfig } from "~/lib/providers/models";
 import type { IEnv, IUser, ChatCompletionParameters } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface HandleCreateFimCompletionsRequest {
   env: IEnv;
@@ -35,15 +34,13 @@ export const handleCreateFimCompletions = async ({
   user,
 }: HandleCreateFimCompletionsRequest) => {
   const selectedModel = model ?? ModelRouter.selectFimModel();
-
-  const modelConfig = await resolveModelConfig(selectedModel, env, requestedProvider);
-
-  if (!modelConfig.supportsFim) {
-    throw new AssistantError(
-      `Model ${selectedModel} does not support Fill-in-the-Middle completions`,
-      ErrorType.PARAMS_ERROR,
-    );
-  }
+  const { config: modelConfig, credentialAuthority } = await resolveExecutableModelForRequest({
+    env,
+    user,
+    model: selectedModel,
+    provider: requestedProvider,
+    capability: "supportsFim",
+  });
 
   const provider = getChatProvider(modelConfig.provider, { env, user });
   const context = createServiceContext({ env, user });
@@ -51,6 +48,7 @@ export const handleCreateFimCompletions = async ({
   const fimRequest: ChatCompletionParameters = {
     env,
     context,
+    credentialAuthority,
     model: modelConfig.matchingModel,
     provider: modelConfig.provider,
     message: prompt,
@@ -65,7 +63,7 @@ export const handleCreateFimCompletions = async ({
     stop,
   };
 
-  const response = await provider.getResponse(fimRequest);
+  const response = await provider.getResponse(fimRequest, user?.id);
 
   return response;
 };
