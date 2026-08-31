@@ -171,6 +171,14 @@ export function createTextGenerationParameters(
   });
 }
 
+const MINIMUM_REASONING_BUDGET = 1024;
+
+function clampReasoningBudget(budget: number, effectiveMaxTokens: number): number {
+  const ceiling = Math.max(effectiveMaxTokens - 1, MINIMUM_REASONING_BUDGET);
+
+  return Math.min(Math.max(Math.floor(budget), MINIMUM_REASONING_BUDGET), ceiling);
+}
+
 export function calculateReasoningBudget(
   params: Pick<ChatCompletionParameters, "max_tokens" | "reasoning_effort">,
   modelConfig?: ModelConfigItem,
@@ -184,25 +192,25 @@ export function calculateReasoningBudget(
   const effectiveMaxTokens = resolveEffectiveMaxTokens(params, modelConfig);
 
   if (!effectiveMaxTokens) {
-    return 1024;
+    return MINIMUM_REASONING_BUDGET;
   }
 
   switch (reasoningEffort) {
     case "minimal":
-      return Math.max(Math.floor(effectiveMaxTokens * 0.25), 1024);
+      return clampReasoningBudget(effectiveMaxTokens * 0.25, effectiveMaxTokens);
     case "low":
-      return Math.max(Math.floor(effectiveMaxTokens * 0.5), 1024);
+      return clampReasoningBudget(effectiveMaxTokens * 0.5, effectiveMaxTokens);
     case "default":
     case "medium":
     case "thinking":
-      return Math.max(Math.floor(effectiveMaxTokens * 0.75), 1024);
+      return clampReasoningBudget(effectiveMaxTokens * 0.75, effectiveMaxTokens);
     case "high":
-      return Math.max(Math.floor(effectiveMaxTokens * 0.9), 1024);
+      return clampReasoningBudget(effectiveMaxTokens * 0.9, effectiveMaxTokens);
     case "xhigh":
     case "max":
-      return effectiveMaxTokens;
+      return clampReasoningBudget(effectiveMaxTokens, effectiveMaxTokens);
     default:
-      return Math.max(Math.floor(effectiveMaxTokens * 0.75), 1024);
+      return clampReasoningBudget(effectiveMaxTokens * 0.75, effectiveMaxTokens);
   }
 }
 
