@@ -1,5 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 
+const { getAIResponseMock } = vi.hoisted(() => ({
+  getAIResponseMock: vi.fn(),
+}));
+
+vi.mock("~/lib/chat/streaming/responses", () => ({
+  getAIResponse: getAIResponseMock,
+}));
+
 vi.mock("~/lib/providers/models", () => ({
   findModelConfig: vi.fn(async () => ({ modalities: { input: ["text"], output: ["text"] } })),
 }));
@@ -17,6 +25,7 @@ vi.mock("~/lib/storage/generated-media", async (importOriginal) => {
 });
 
 import { consumeProviderStream } from "../provider-stream";
+import { createStreamingTurnTransport } from "../turn-transport";
 
 function providerStream(chunks: string[]): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
@@ -59,6 +68,52 @@ const context = {
   provider: "openai",
   completionId: "completion-1",
 };
+
+describe("createStreamingTurnTransport", () => {
+  it("completes a streamed chat turn when an image model returns a buffered response", async () => {
+    getAIResponseMock.mockResolvedValueOnce({
+      response: "Image Generated.",
+      data: {
+        attachments: [
+          {
+            type: "image",
+            outputId: "output-1",
+            url: "https://api.polychat.test/outputs/output-1/content",
+          },
+        ],
+      },
+    });
+    const { sink } = createSink();
+
+    const turn = await createStreamingTurnTransport().runTurn({
+      request: {
+        env: context.env,
+        model: "@cf/black-forest-labs/flux-2-dev",
+        messages: [{ role: "user", content: "Generate an image" }],
+      } as never,
+      sink,
+      context: {
+        ...context,
+        model: "@cf/black-forest-labs/flux-2-dev",
+        provider: "workers-ai",
+      },
+    });
+
+    expect(getAIResponseMock).toHaveBeenCalledWith(expect.objectContaining({ stream: true }));
+    expect(turn).toMatchObject({
+      content: "Image Generated.",
+      structuredData: {
+        attachments: [
+          expect.objectContaining({
+            type: "image",
+            outputId: "output-1",
+          }),
+        ],
+      },
+      toolCalls: [],
+    });
+  });
+});
 
 describe("consumeProviderStream", () => {
   it("forwards each delta and returns the assembled text", async () => {
