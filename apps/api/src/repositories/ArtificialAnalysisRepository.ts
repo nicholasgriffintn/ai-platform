@@ -3,6 +3,7 @@ import type {
   ArtificialAnalysisScoreResult,
 } from "~/lib/artificial-analysis/types";
 import { PaginationHelper } from "~/lib/database/PaginationHelper";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { parseJsonRecord, parseJsonStringArray } from "~/utils/json";
 
 import { BaseRepository } from "./BaseRepository";
@@ -27,13 +28,9 @@ function parseModelRow(row: ArtificialAnalysisModelRow): ArtificialAnalysisModel
   };
 }
 
-export class ArtificialAnalysisRepository extends BaseRepository {
-  public async upsertMany(records: ArtificialAnalysisModelRecord[]): Promise<number> {
-    let stored = 0;
+const UPSERT_BATCH_SIZE = 50;
 
-    for (const record of records) {
-      await this.executeRun(
-        `INSERT INTO artificial_analysis_models (
+const UPSERT_SQL = `INSERT INTO artificial_analysis_models (
 					id, name, slug, creator_id, creator_name, creator_slug,
 					evaluations, pricing, intelligence_index, coding_index, agentic_index,
 					intelligence_index_version, price_1m_blended_3_to_1, price_1m_input_tokens,
@@ -69,36 +66,56 @@ export class ArtificialAnalysisRepository extends BaseRepository {
 					source = excluded.source,
 					source_url = excluded.source_url,
 					ingested_at = excluded.ingested_at,
-					updated_at = datetime('now')`,
-        [
-          record.id,
-          record.name,
-          record.slug ?? null,
-          record.creator_id ?? null,
-          record.creator_name ?? null,
-          record.creator_slug ?? null,
-          JSON.stringify(record.evaluations),
-          JSON.stringify(record.pricing),
-          record.intelligence_index ?? null,
-          record.coding_index ?? null,
-          record.agentic_index ?? null,
-          record.intelligence_index_version ?? null,
-          record.price_1m_blended_3_to_1 ?? null,
-          record.price_1m_input_tokens ?? null,
-          record.price_1m_output_tokens ?? null,
-          record.median_output_tokens_per_second ?? null,
-          record.median_time_to_first_token_seconds ?? null,
-          record.median_time_to_first_answer_token_seconds ?? null,
-          record.median_end_to_end_response_time_seconds ?? null,
-          record.source,
-          record.source_url,
-          record.ingested_at,
-        ],
-      );
-      stored += 1;
+					updated_at = datetime('now')`;
+
+function buildUpsertValues(record: ArtificialAnalysisModelRecord): unknown[] {
+  return [
+    record.id,
+    record.name,
+    record.slug ?? null,
+    record.creator_id ?? null,
+    record.creator_name ?? null,
+    record.creator_slug ?? null,
+    JSON.stringify(record.evaluations),
+    JSON.stringify(record.pricing),
+    record.intelligence_index ?? null,
+    record.coding_index ?? null,
+    record.agentic_index ?? null,
+    record.intelligence_index_version ?? null,
+    record.price_1m_blended_3_to_1 ?? null,
+    record.price_1m_input_tokens ?? null,
+    record.price_1m_output_tokens ?? null,
+    record.median_output_tokens_per_second ?? null,
+    record.median_time_to_first_token_seconds ?? null,
+    record.median_time_to_first_answer_token_seconds ?? null,
+    record.median_end_to_end_response_time_seconds ?? null,
+    record.source,
+    record.source_url,
+    record.ingested_at,
+  ];
+}
+
+export class ArtificialAnalysisRepository extends BaseRepository {
+  public async upsertMany(records: ArtificialAnalysisModelRecord[]): Promise<number> {
+    if (records.length === 0) {
+      return 0;
     }
 
-    return stored;
+    const database = this.env.DB;
+
+    if (!database) {
+      throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
+    }
+
+    for (let start = 0; start < records.length; start += UPSERT_BATCH_SIZE) {
+      const chunk = records.slice(start, start + UPSERT_BATCH_SIZE);
+
+      await database.batch(
+        chunk.map((record) => database.prepare(UPSERT_SQL).bind(...buildUpsertValues(record))),
+      );
+    }
+
+    return records.length;
   }
 
   public async listAll(): Promise<ArtificialAnalysisModelRecord[]> {
