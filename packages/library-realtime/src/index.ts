@@ -21,6 +21,7 @@ export {
   connectGeminiLiveWebSocket,
   connectRealtimeWebSocket,
   isRealtimeWebSocketConnection,
+  sendBinaryWhenOpen,
   sendJsonWhenOpen,
   type ConnectRealtimeWebSocketOptions,
   type RealtimeWebSocketConnection,

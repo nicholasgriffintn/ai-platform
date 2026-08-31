@@ -141,17 +141,33 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
       });
     });
 
-    test("moves between Live and Canvas surfaces", async ({ externalServices, homePage, page }) => {
-      await externalServices.mockGeminiLiveWebSocket();
+    test("cleans up a muted Live session before opening Canvas", async ({
+      externalServices,
+      homePage,
+      page,
+    }) => {
+      const liveSocket = await externalServices.mockGeminiLiveWebSocket();
+
       await homePage.navigate("/chat");
       await homePage.waitForPersonaReady(persona);
 
       await homePage.selectChatMode("Live");
       await expect(page).toHaveURL(/\/chat\?mode=live$/);
       await expect(page.getByRole("heading", { name: "Start a live session" })).toBeVisible();
-      expect(await homePage.startAndStopMutedLiveSession()).toBe(
-        persona === "logged-out" ? 401 : 200,
-      );
+      const sessionStatus = await homePage.startAndStopMutedLiveSession();
+
+      expect(sessionStatus).toBe(persona === "logged-out" ? 401 : 200);
+      if (persona === "logged-out") {
+        expect(liveSocket.opens).toBe(0);
+      } else {
+        await expect.poll(() => liveSocket.opens).toBe(1);
+        await expect.poll(() => liveSocket.setupMessages.length).toBe(1);
+        expect(liveSocket.setupMessages[0]).toMatchObject({
+          model: "models/gemini-3.1-flash-live-preview",
+        });
+        await expect.poll(() => liveSocket.closes.length).toBe(1);
+      }
+
       await captureVisualSnapshots(page, "release-chat-mode-live", {
         ...DEFAULT_VISUAL_CHECKPOINTS,
         viewports: [{ name: "desktop", width: 1280, height: 720 }],

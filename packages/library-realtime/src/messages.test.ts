@@ -105,6 +105,52 @@ describe("realtime message helpers", () => {
     });
   });
 
+  it("treats Cartesia turn updates as cumulative input transcript snapshots", () => {
+    expect(
+      extractRealtimeTranscript({
+        type: "turn.update",
+        transcript: "Book the",
+        request_id: "request-1",
+      }),
+    ).toEqual({
+      text: "Book the",
+      isDelta: false,
+      isFinal: false,
+      source: "input",
+    });
+
+    expect(
+      extractRealtimeTranscript({
+        type: "turn.eager_end",
+        transcript: "Book the train",
+        request_id: "request-1",
+      }),
+    ).toEqual({
+      text: "Book the train",
+      isDelta: false,
+      isFinal: false,
+      source: "input",
+    });
+  });
+
+  it("finalizes Cartesia input only when the semantic turn ends", () => {
+    expect(
+      extractRealtimeTranscript({
+        type: "turn.end",
+        transcript: "Book the train for noon.",
+        request_id: "request-1",
+      }),
+    ).toEqual({
+      text: "Book the train for noon.",
+      isDelta: false,
+      isFinal: true,
+      source: "input",
+    });
+
+    expect(extractRealtimeEventLabel({ type: "turn.start" })).toBe("Listening");
+    expect(extractRealtimeEventLabel({ type: "turn.resume" })).toBe("Listening");
+  });
+
   it("extracts realtime event ids for live turn correlation", () => {
     expect(
       extractRealtimeEvent({

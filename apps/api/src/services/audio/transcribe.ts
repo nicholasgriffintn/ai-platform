@@ -1,27 +1,34 @@
+import type { TranscriptionResult } from "@ngriffin_uk/polychat-schemas";
+
 import { getTranscriptionProvider } from "~/lib/providers/capabilities/transcription";
 import { getAuxiliarySpeechModel } from "~/lib/providers/models";
 import { hasUserProviderApiKey } from "~/lib/providers/utils/apiKeys";
 import { RepositoryManager } from "~/repositories";
-import type { IEnv, IFunctionResponse, IUser } from "~/types";
+import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+
+import { assertValidTranscriptionFile, type TranscriptionAudioSource } from "./transcription-input";
 
 export type TranscriptionProvider = "workers" | "mistral" | "replicate";
 
 type TranscribeRequest = {
   env: IEnv;
-  audio: File | Blob | string;
+  audio: TranscriptionAudioSource;
   user: IUser;
+  allowVideo?: boolean;
   provider?: TranscriptionProvider;
   timestamps?: boolean;
 };
 
-export const handleTranscribe = async (
-  req: TranscribeRequest,
-): Promise<IFunctionResponse | IFunctionResponse[]> => {
-  const { audio, env, user, provider, timestamps = false } = req;
+export const handleTranscribe = async (req: TranscribeRequest): Promise<TranscriptionResult> => {
+  const { allowVideo = false, audio, env, user, provider, timestamps = false } = req;
 
   if (!audio) {
     throw new AssistantError("Missing audio", ErrorType.PARAMS_ERROR);
+  }
+
+  if (audio.kind === "file") {
+    await assertValidTranscriptionFile(audio.file, { allowVideo });
   }
 
   try {
@@ -35,7 +42,14 @@ export const handleTranscribe = async (
 
       const speechModel = await getAuxiliarySpeechModel(env, userSettings);
 
-      selectedProvider = speechModel.transcriptionProvider as TranscriptionProvider;
+      if (!isTranscriptionProvider(speechModel.transcriptionProvider)) {
+        throw new AssistantError(
+          "Configured transcription provider is not supported",
+          ErrorType.CONFIGURATION_ERROR,
+        );
+      }
+
+      selectedProvider = speechModel.transcriptionProvider;
     }
 
     const resolvedProvider = selectedProvider || "workers";
@@ -66,7 +80,6 @@ export const handleTranscribe = async (
     return {
       status: "success",
       content: result.text,
-      data: result.data,
     };
   } catch (error) {
     if (error instanceof AssistantError) {
@@ -79,3 +92,7 @@ export const handleTranscribe = async (
     );
   }
 };
+
+function isTranscriptionProvider(value: string | undefined): value is TranscriptionProvider {
+  return value === "workers" || value === "mistral" || value === "replicate";
+}

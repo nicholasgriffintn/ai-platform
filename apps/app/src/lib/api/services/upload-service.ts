@@ -1,5 +1,8 @@
 import { returnFetchedData } from "@ngriffin_uk/polychat-library-client";
-import type { MarkdownConversionOptions } from "@ngriffin_uk/polychat-schemas";
+import type {
+  MarkdownConversionOptions,
+  TranscriptionResponse,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApi } from "../fetch-wrapper";
 
@@ -12,14 +15,8 @@ export interface UploadFileOptions {
 export class UploadService {
   constructor(private getHeaders: () => Promise<Record<string, string>>) {}
 
-  async transcribeAudio(audioBlob: Blob): Promise<any> {
-    let headers = {};
-
-    try {
-      headers = await this.getHeaders();
-    } catch (error) {
-      console.error("Error transcribing audio:", error);
-    }
+  async transcribeAudio(audioBlob: Blob): Promise<TranscriptionResponse> {
+    const headers = await this.getHeaders();
 
     const formData = new FormData();
 
@@ -35,7 +32,7 @@ export class UploadService {
       throw new Error(`Failed to transcribe audio: ${response.statusText}`);
     }
 
-    return await returnFetchedData<any>(response);
+    return await returnFetchedData<TranscriptionResponse>(response);
   }
 
   async uploadFile(

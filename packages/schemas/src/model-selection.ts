@@ -330,6 +330,51 @@ export function getDefaultReasoningEffort(modelConfig?: ModelConfigItem): Reason
   return modelConfig?.reasoningConfig?.defaultEffort ?? "none";
 }
 
+const DEFAULT_MAX_TEMPERATURE = 2;
+const ANTHROPIC_MAX_TEMPERATURE = 1;
+
+export type ModelSamplingConfig = Partial<
+  Pick<
+    ModelConfigItem,
+    | "family"
+    | "provider"
+    | "restrictsCombinedTopPAndTemperature"
+    | "supportsFrequencyPenalty"
+    | "supportsPresencePenalty"
+    | "supportsTemperature"
+    | "supportsTopP"
+  >
+>;
+
+export interface ModelSamplingCapabilities {
+  maxTemperature: number;
+  restrictsCombinedTopPAndTemperature: boolean;
+  supportsFrequencyPenalty: boolean;
+  supportsPresencePenalty: boolean;
+  supportsTemperature: boolean;
+  supportsTopP: boolean;
+}
+
+function getMaxTemperature(modelConfig?: ModelSamplingConfig): number {
+  const isAnthropicFamily =
+    modelConfig?.provider === "anthropic" || modelConfig?.family?.startsWith("claude") === true;
+
+  return isAnthropicFamily ? ANTHROPIC_MAX_TEMPERATURE : DEFAULT_MAX_TEMPERATURE;
+}
+
+export function getModelSamplingCapabilities(
+  modelConfig?: ModelSamplingConfig,
+): ModelSamplingCapabilities {
+  return {
+    maxTemperature: getMaxTemperature(modelConfig),
+    restrictsCombinedTopPAndTemperature: modelConfig?.restrictsCombinedTopPAndTemperature === true,
+    supportsFrequencyPenalty: modelConfig?.supportsFrequencyPenalty !== false,
+    supportsPresencePenalty: modelConfig?.supportsPresencePenalty !== false,
+    supportsTemperature: modelConfig?.supportsTemperature !== false,
+    supportsTopP: modelConfig?.supportsTopP !== false,
+  };
+}
+
 export function hasProviderReasoningOptions(modelConfig?: ModelConfigItem): boolean {
   return (
     modelConfig?.reasoningConfig?.supportedEffortLevels?.some(

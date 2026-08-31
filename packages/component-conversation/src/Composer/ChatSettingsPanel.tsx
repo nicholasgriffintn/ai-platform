@@ -11,7 +11,11 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import type { VerbosityLevel } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { formatVerbosityLabel } from "@ngriffin_uk/polychat-library-chat/verbosity";
-import { formatReasoningLabel, type ReasoningEffort } from "@ngriffin_uk/polychat-schemas";
+import {
+  formatReasoningLabel,
+  getModelSamplingCapabilities,
+  type ReasoningEffort,
+} from "@ngriffin_uk/polychat-schemas";
 import { Settings } from "lucide-react";
 
 import {
@@ -63,6 +67,12 @@ export function ChatSettingsPanel({
   onVerbosityChange,
   onChatSettingsChange,
 }: ChatSettingsPanelProps) {
+  const samplingCapabilities = getModelSamplingCapabilities(selectedModelConfig);
+  const resetNumericSetting = (key: string) => onNumericSettingChange(key, "");
+  const topPIsOverridden =
+    samplingCapabilities.restrictsCombinedTopPAndTemperature &&
+    chatSettings.temperature !== undefined;
+
   return (
     <Popover open={showSettings} onOpenChange={onShowSettingsChange}>
       <ShortcutTooltip keys={["/settings"]} label="Settings">
@@ -122,18 +132,22 @@ export function ChatSettingsPanel({
                 description="Adjusts how detailed or concise the response should be."
               />
 
-              <CompactSettingRange
-                id="temperature"
-                label="Temperature"
-                min={0}
-                max={2}
-                step={0.1}
-                value={chatSettings.temperature ?? 0.7}
-                disabled={isDisabled}
-                onChange={(value) => onNumericSettingChange("temperature", value)}
-                markers={["Precise", "Neutral", "Creative"]}
-                description="Controls randomness in responses."
-              />
+              {samplingCapabilities.supportsTemperature && (
+                <CompactSettingRange
+                  id="temperature"
+                  label="Temperature"
+                  min={0}
+                  max={samplingCapabilities.maxTemperature}
+                  step={0.1}
+                  value={chatSettings.temperature}
+                  automaticValue={samplingCapabilities.maxTemperature / 2}
+                  disabled={isDisabled}
+                  onChange={(value) => onNumericSettingChange("temperature", value)}
+                  onReset={() => resetNumericSetting("temperature")}
+                  markers={["Precise", "Neutral", "Creative"]}
+                  description="Automatic leaves this to the model's own default. Move the slider to override it."
+                />
+              )}
 
               {showMultiModelToggle && (
                 <CompactSettingSwitch
@@ -150,7 +164,8 @@ export function ChatSettingsPanel({
                 </summary>
                 <p className="mt-1 px-2 text-xs text-zinc-500 dark:text-zinc-400">
                   Temperature controls randomness. Lower values are more deterministic; higher
-                  values are more varied.
+                  values are more varied. On Automatic nothing is sent and the model uses its own
+                  default. The range follows the model: 0–1 for Claude, 0–2 elsewhere.
                 </p>
               </details>
             </TabsContent>
@@ -168,17 +183,25 @@ export function ChatSettingsPanel({
                 description="Controls whether stored context is compacted near the model limit."
               />
 
-              <CompactSettingRange
-                id="top_p"
-                label="Top P"
-                min={0}
-                max={1}
-                step={0.05}
-                value={chatSettings.top_p ?? 0.8}
-                disabled={isDisabled}
-                onChange={(value) => onNumericSettingChange("top_p", value)}
-                description="Controls diversity via nucleus sampling."
-              />
+              {samplingCapabilities.supportsTopP && (
+                <CompactSettingRange
+                  id="top_p"
+                  label="Top P"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={chatSettings.top_p}
+                  automaticValue={0.8}
+                  disabled={isDisabled}
+                  onChange={(value) => onNumericSettingChange("top_p", value)}
+                  onReset={() => resetNumericSetting("top_p")}
+                  description={
+                    topPIsOverridden
+                      ? "This model accepts either temperature or Top P, not both, so Top P is ignored while a temperature is set."
+                      : "Controls diversity via nucleus sampling. Automatic leaves it to the model."
+                  }
+                />
+              )}
 
               <CompactSettingNumber
                 id="max_tokens"
@@ -192,29 +215,37 @@ export function ChatSettingsPanel({
                 description="Automatic uses 2,048 for structured JSON, 8,192 for normal chat, 16,384 for agent or coding work, and 32,768 for reasoning. Enter a value to override it; the model's own limit still applies."
               />
 
-              <CompactSettingRange
-                id="presence_penalty"
-                label="Presence penalty"
-                min={-2}
-                max={2}
-                step={0.1}
-                value={chatSettings.presence_penalty ?? 0}
-                disabled={isDisabled}
-                onChange={(value) => onNumericSettingChange("presence_penalty", value)}
-                markers={["-2", "0", "+2"]}
-              />
+              {samplingCapabilities.supportsPresencePenalty && (
+                <CompactSettingRange
+                  id="presence_penalty"
+                  label="Presence penalty"
+                  min={-2}
+                  max={2}
+                  step={0.1}
+                  value={chatSettings.presence_penalty}
+                  automaticValue={0}
+                  disabled={isDisabled}
+                  onChange={(value) => onNumericSettingChange("presence_penalty", value)}
+                  onReset={() => resetNumericSetting("presence_penalty")}
+                  markers={["-2", "0", "+2"]}
+                />
+              )}
 
-              <CompactSettingRange
-                id="frequency_penalty"
-                label="Frequency penalty"
-                min={-2}
-                max={2}
-                step={0.1}
-                value={chatSettings.frequency_penalty ?? 0}
-                disabled={isDisabled}
-                onChange={(value) => onNumericSettingChange("frequency_penalty", value)}
-                markers={["-2", "0", "+2"]}
-              />
+              {samplingCapabilities.supportsFrequencyPenalty && (
+                <CompactSettingRange
+                  id="frequency_penalty"
+                  label="Frequency penalty"
+                  min={-2}
+                  max={2}
+                  step={0.1}
+                  value={chatSettings.frequency_penalty}
+                  automaticValue={0}
+                  disabled={isDisabled}
+                  onChange={(value) => onNumericSettingChange("frequency_penalty", value)}
+                  onReset={() => resetNumericSetting("frequency_penalty")}
+                  markers={["-2", "0", "+2"]}
+                />
+              )}
 
               <details>
                 <summary className="cursor-pointer px-2 text-xs text-zinc-500 dark:text-zinc-400">
@@ -222,14 +253,21 @@ export function ChatSettingsPanel({
                 </summary>
                 <div className="mt-1 space-y-1 px-2 text-xs text-zinc-500 dark:text-zinc-400">
                   <p>
-                    <strong>Top P:</strong> controls sampling diversity.
+                    <strong>Top P:</strong> controls sampling diversity. Some models accept either
+                    temperature or Top P, not both.
                   </p>
                   <p>
                     <strong>Max output tokens:</strong> limits response length. Leave it empty to
                     use the workload-aware default.
                   </p>
                   <p>
-                    <strong>Penalties:</strong> tune repetition.
+                    <strong>Penalties:</strong> tune repetition. On Automatic nothing is sent, so
+                    the model applies no penalty of its own.
+                  </p>
+                  <p>
+                    Every slider here starts on Automatic and is only sent once you move it. Use
+                    Reset to hand it back to the model. Controls the model does not accept are
+                    hidden.
                   </p>
                 </div>
               </details>

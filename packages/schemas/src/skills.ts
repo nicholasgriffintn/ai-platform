@@ -21,6 +21,16 @@ export const skillRequirementSchema = z.object({
 
 export const skillSourceSchema = z.enum(["built-in", "user-authored"]);
 
+export const authoredSkillProvenanceSchema = z
+  .object({
+    source: z.literal("user-authored"),
+    scope: z.enum(["personal", "project"]),
+    skill: z.string().min(1),
+    revisionId: z.string().min(1),
+    revision: z.number().int().positive(),
+  })
+  .strict();
+
 export const skillIdSchema = z
   .string()
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Skill ids are kebab-case")
@@ -97,6 +107,13 @@ export const authoredSkillInputSchema = z.object({
   resources: z.array(authoredSkillResourceSchema).max(32).optional(),
 });
 
+export const authoredSkillChangeNoteSchema = z.string().trim().min(1).max(1024);
+
+export const authoredSkillDraftInputSchema = authoredSkillInputSchema.extend({
+  expectedStateVersion: z.number().int().positive(),
+  changeNote: authoredSkillChangeNoteSchema.optional(),
+});
+
 export const authoredSkillScopeSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("personal") }),
   z.object({ type: z.literal("project"), projectId: z.string().min(1) }),
@@ -137,6 +154,34 @@ export const authoredSkillDocumentSchema = authoredSkillSchema.extend({
   resources: z.array(authoredSkillResourceSchema).default([]),
 });
 
+export const authoredSkillVersionedDocumentSchema = authoredSkillDocumentSchema.extend({
+  revision: authoredSkillRevisionSchema,
+  state: authoredSkillStateSchema,
+});
+
+export const authoredSkillHistoryResponseSchema = z.object({
+  skill: authoredSkillSchema,
+  state: authoredSkillStateSchema,
+  revisions: z.array(authoredSkillRevisionSchema),
+});
+
+export const authoredSkillPromotionInputSchema = z.object({
+  revisionId: z.string().min(1),
+  expectedStateVersion: z.number().int().positive(),
+});
+
+export const authoredSkillRollbackInputSchema = authoredSkillPromotionInputSchema.extend({
+  changeNote: authoredSkillChangeNoteSchema.optional(),
+});
+
+export const authoredSkillImportInputSchema = z.object({
+  source: z.object({
+    scope: authoredSkillScopeSchema,
+    skillId: skillIdSchema,
+    revisionId: z.string().min(1),
+  }),
+});
+
 export const authoredSkillListResponseSchema = z.object({
   skills: z.array(authoredSkillSchema),
 });
@@ -154,6 +199,7 @@ export const loadSkillInputSchema = z.object({
 export type SkillCategory = z.infer<typeof skillCategorySchema>;
 export type SkillRequirement = z.infer<typeof skillRequirementSchema>;
 export type SkillSource = z.infer<typeof skillSourceSchema>;
+export type AuthoredSkillProvenance = z.infer<typeof authoredSkillProvenanceSchema>;
 export type SkillResourceSummary = z.infer<typeof skillResourceSummarySchema>;
 export type SkillSummary = z.infer<typeof skillSummarySchema>;
 export type SkillAvailabilityState = z.infer<typeof skillAvailabilityStateSchema>;
@@ -161,10 +207,16 @@ export type SkillAvailability = z.infer<typeof skillAvailabilitySchema>;
 export type SkillAvailabilityResponse = z.infer<typeof skillAvailabilityResponseSchema>;
 export type SetSkillEnabledInput = z.infer<typeof setSkillEnabledSchema>;
 export type AuthoredSkillInput = z.infer<typeof authoredSkillInputSchema>;
+export type AuthoredSkillDraftInput = z.infer<typeof authoredSkillDraftInputSchema>;
 export type AuthoredSkillResource = z.infer<typeof authoredSkillResourceSchema>;
 export type AuthoredSkillScope = z.infer<typeof authoredSkillScopeSchema>;
 export type AuthoredSkill = z.infer<typeof authoredSkillSchema>;
 export type AuthoredSkillRevision = z.infer<typeof authoredSkillRevisionSchema>;
 export type AuthoredSkillState = z.infer<typeof authoredSkillStateSchema>;
 export type AuthoredSkillDocument = z.infer<typeof authoredSkillDocumentSchema>;
+export type AuthoredSkillVersionedDocument = z.infer<typeof authoredSkillVersionedDocumentSchema>;
+export type AuthoredSkillHistoryResponse = z.infer<typeof authoredSkillHistoryResponseSchema>;
+export type AuthoredSkillPromotionInput = z.infer<typeof authoredSkillPromotionInputSchema>;
+export type AuthoredSkillRollbackInput = z.infer<typeof authoredSkillRollbackInputSchema>;
+export type AuthoredSkillImportInput = z.infer<typeof authoredSkillImportInputSchema>;
 export type LoadSkillInput = z.infer<typeof loadSkillInputSchema>;

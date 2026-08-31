@@ -10,7 +10,7 @@ import type {
   RealtimeSessionRequest,
   RealtimeTranscriptionDelay,
 } from "../index";
-import { buildRealtimeProxyUrl } from "./proxyUrl";
+import { buildGrantedRealtimeProxyUrl } from "./proxyUrl";
 
 export const MISTRAL_REALTIME_DESCRIPTOR = {
   id: "mistral",
@@ -29,6 +29,7 @@ export const MISTRAL_REALTIME_DESCRIPTOR = {
 } satisfies RealtimeLiveProviderDescriptor;
 
 export const DEFAULT_TRANSCRIPTION_MODEL = MISTRAL_REALTIME_DESCRIPTOR.defaultModelId;
+export const MISTRAL_REALTIME_MODEL_ID = "voxtral-mini-transcribe-realtime-2602";
 const API_KEY_ENVIRONMENT_VARIABLE = "MISTRAL_API_KEY";
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
   realtime: [],
@@ -52,6 +53,19 @@ export function getMistralTargetStreamingDelayMs(
   return delay ? MISTRAL_TARGET_DELAY_MS_BY_DELAY[delay] : undefined;
 }
 
+export function resolveMistralRealtimeProxyModel(model?: string): string | undefined {
+  const requestedModel = model ?? DEFAULT_TRANSCRIPTION_MODEL;
+
+  if (
+    requestedModel !== DEFAULT_TRANSCRIPTION_MODEL &&
+    requestedModel !== MISTRAL_REALTIME_MODEL_ID
+  ) {
+    return undefined;
+  }
+
+  return MISTRAL_REALTIME_MODEL_ID;
+}
+
 export class MistralRealtimeProvider implements RealtimeProvider {
   name = "mistral";
   descriptor = MISTRAL_REALTIME_DESCRIPTOR;
@@ -59,6 +73,7 @@ export class MistralRealtimeProvider implements RealtimeProvider {
     acceptsUserApiKey: true,
     environmentVariables: [API_KEY_ENVIRONMENT_VARIABLE],
   };
+  models = SESSION_MODELS_BY_TYPE.transcription;
 
   private getProviderKeyName(): string {
     return API_KEY_ENVIRONMENT_VARIABLE;
@@ -138,18 +153,26 @@ export class MistralRealtimeProvider implements RealtimeProvider {
     const targetStreamingDelayMs = getMistralTargetStreamingDelayMs(
       this.getTranscriptionDelay(request),
     );
+    const sessionId = generateId();
+    const proxy = await buildGrantedRealtimeProxyUrl({
+      apiBaseUrl: request.apiBaseUrl ?? request.env.API_BASE_URL,
+      env: request.env,
+      model,
+      params: { delay: request.delay },
+      path: MISTRAL_REALTIME_PROXY_PATH,
+      provider: this.name,
+      sessionId,
+      userId: request.user.id,
+    });
 
     return {
-      id: generateId(),
+      id: sessionId,
       object: "realtime.transcription.session",
       type: "transcription",
       provider: this.name,
       transport: "websocket",
-      url: buildRealtimeProxyUrl({
-        apiBaseUrl: request.apiBaseUrl ?? request.env.API_BASE_URL,
-        path: MISTRAL_REALTIME_PROXY_PATH,
-        params: { model, delay: request.delay },
-      }),
+      url: proxy.url,
+      proxy_grant_expires_at: proxy.expiresAt,
       audio_format: this.buildAudioFormat(),
       input_audio_format: this.buildAudioFormat().encoding,
       input_audio_transcription: {

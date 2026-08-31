@@ -10,12 +10,12 @@ import type {
   RealtimeSessionRequest,
   RealtimeTranscriptionDelay,
 } from "../index";
-import { buildRealtimeProxyUrl } from "./proxyUrl";
+import { buildGrantedRealtimeProxyUrl } from "./proxyUrl";
 
 export const CARTESIA_REALTIME_DESCRIPTOR = {
   id: "cartesia",
   order: 4,
-  label: "Cartesia Ink Realtime",
+  label: "Cartesia Ink 2 Realtime",
   shortLabel: "Cartesia",
   liveMode: "composed",
   transport: "websocket",
@@ -23,8 +23,8 @@ export const CARTESIA_REALTIME_DESCRIPTOR = {
   defaultDelay: "low",
   inputModalities: ["audio"],
   outputModalities: ["text"],
-  description: "Ink streaming speech-to-text",
-  defaultModelId: "ink-whisper",
+  description: "Ink 2 semantic turn detection and streaming speech-to-text",
+  defaultModelId: "ink-2",
   composeWith: { reasoning: true, speech: true },
 } satisfies RealtimeLiveProviderDescriptor;
 
@@ -102,23 +102,32 @@ export class CartesiaRealtimeProvider implements RealtimeProvider {
 
     const model = await this.resolveModel(request);
     const delay = this.getTranscriptionDelay(request);
+    const sessionId = generateId();
+    const proxy = await buildGrantedRealtimeProxyUrl({
+      apiBaseUrl: request.apiBaseUrl ?? request.env.API_BASE_URL,
+      env: request.env,
+      model,
+      params: {
+        delay,
+      },
+      path: CARTESIA_REALTIME_PROXY_PATH,
+      provider: this.name,
+      sessionId,
+      userId: request.user.id,
+    });
 
     return {
-      id: generateId(),
+      id: sessionId,
       object: "realtime.transcription.session",
       type: "transcription",
       provider: this.name,
       transport: "websocket",
-      url: buildRealtimeProxyUrl({
-        apiBaseUrl: request.apiBaseUrl ?? request.env.API_BASE_URL,
-        path: CARTESIA_REALTIME_PROXY_PATH,
-        params: { model, delay },
-      }),
+      url: proxy.url,
+      proxy_grant_expires_at: proxy.expiresAt,
       audio_format: this.buildAudioFormat(),
       input_audio_format: this.buildAudioFormat().encoding,
       input_audio_transcription: {
         model,
-        ...(request.language ? { language: request.language } : {}),
       },
     };
   }

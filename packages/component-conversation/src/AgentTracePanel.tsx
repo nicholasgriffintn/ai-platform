@@ -86,6 +86,11 @@ export function AgentTracePanel({ entries }: AgentTracePanelProps) {
                   </span>
                   <span className="truncate">{entry.label}</span>
                 </div>
+                {entry.provenance ? (
+                  <div className="truncate text-zinc-500 dark:text-zinc-400">
+                    {entry.provenance.skill} · r{entry.provenance.revision}
+                  </div>
+                ) : null}
                 {entry.provider || entry.status ? (
                   <div className="truncate text-zinc-500 dark:text-zinc-400">
                     {[entry.provider, entry.status].filter(Boolean).join(" · ")}

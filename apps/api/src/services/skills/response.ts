@@ -3,6 +3,7 @@ import {
   ToolResponseType,
   SKILL_LOAD_TOOL_NAME,
   type SkillResourceSummary,
+  type AuthoredSkillProvenance,
 } from "@ngriffin_uk/polychat-schemas";
 import { escapeHtml } from "@ngriffin_uk/polychat-utility-core";
 
@@ -50,6 +51,7 @@ export function createSkillInstructionsResponse(
   skill: SkillContent,
   resources: SkillResourceSummary[],
   activatedTools: readonly string[] = [],
+  provenance?: AuthoredSkillProvenance,
 ): IFunctionResponse {
   return {
     status: "success",
@@ -60,6 +62,7 @@ export function createSkillInstructionsResponse(
       skill: skill.name,
       resources,
       [RESPONSE_TOOL_ACTIVATION_DATA_KEY]: [...activatedTools],
+      ...(provenance ? { provenance } : {}),
     },
   };
 }
@@ -68,6 +71,7 @@ export function createSkillResourceResponse(
   skillName: string,
   resource: SkillResource,
   resources: SkillResourceSummary[],
+  provenance?: AuthoredSkillProvenance,
 ): IFunctionResponse {
   return {
     status: "success",
@@ -78,6 +82,7 @@ export function createSkillResourceResponse(
       skill: skillName,
       resource: resource.path,
       resources,
+      ...(provenance ? { provenance } : {}),
     },
   };
 }

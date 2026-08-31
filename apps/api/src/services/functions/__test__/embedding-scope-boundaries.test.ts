@@ -19,7 +19,7 @@ import { search_documents } from "../search_documents";
 const projectRequest = {
   env: {},
   user: { id: 42 },
-  context: {},
+  context: { env: {} },
   memoryScope: { type: "project", projectId: "project-1" },
 } as any;
 
@@ -206,8 +206,8 @@ describe("unsupported project embedding paths", () => {
     async (projectId) => {
       await expect(
         generateNotesFromMedia({
-          env: {} as any,
-          user: { id: 42 } as any,
+          context: projectRequest.context,
+          user: projectRequest.user,
           url: "https://example.com/video.mp4",
           outputs: ["concise_summary"],
           noteType: "general",

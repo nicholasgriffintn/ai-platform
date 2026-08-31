@@ -5,6 +5,7 @@ import type { ChatCompletionParameters, IEnv } from "~/types";
 import {
   calculateReasoningBudget,
   createCommonParameters,
+  createSamplingParameters,
   getEffectiveMaxTokens,
   getToolsForProvider,
   resolveEffectiveMaxTokens,
@@ -287,5 +288,63 @@ describe("resolveEffectiveMaxTokens", () => {
   it("allows explicit values above the defaults and clamps only to the model limit", () => {
     expect(resolveEffectiveMaxTokens({ max_tokens: 131_072 }, capableModel)).toBe(131_072);
     expect(getEffectiveMaxTokens(524_288, capableModel.maxTokens, 8_192)).toBe(262_144);
+  });
+});
+
+describe("createSamplingParameters", () => {
+  it("sends nothing when the caller leaves sampling on automatic", () => {
+    expect(createSamplingParameters({}, { provider: "openai" })).toEqual({});
+  });
+
+  it("sends both temperature and top_p when the model does not restrict the pair", () => {
+    expect(
+      createSamplingParameters({ temperature: 0.4, top_p: 0.6 }, { provider: "openai" }),
+    ).toEqual({ temperature: 0.4, top_p: 0.6 });
+  });
+
+  it("drops top_p only for models that restrict the combination", () => {
+    expect(
+      createSamplingParameters(
+        { temperature: 0.4, top_p: 0.6 },
+        { provider: "anthropic", restrictsCombinedTopPAndTemperature: true },
+      ),
+    ).toEqual({ temperature: 0.4 });
+  });
+
+  it("keeps top_p on a restricting model when no temperature is set", () => {
+    expect(
+      createSamplingParameters(
+        { top_p: 0.6 },
+        { provider: "anthropic", restrictsCombinedTopPAndTemperature: true },
+      ),
+    ).toEqual({ top_p: 0.6 });
+  });
+
+  it("drops both parameters the model declares unsupported", () => {
+    expect(
+      createSamplingParameters(
+        { temperature: 0.4, top_p: 0.6 },
+        { provider: "openai", supportsTemperature: false, supportsTopP: false },
+      ),
+    ).toEqual({});
+  });
+
+  it("clamps temperature to the Anthropic range", () => {
+    expect(
+      createSamplingParameters({ temperature: 1.8 }, { provider: "anthropic" }).temperature,
+    ).toBe(1);
+    expect(
+      createSamplingParameters({ temperature: 1.8 }, { provider: "bedrock", family: "claude-opus" })
+        .temperature,
+    ).toBe(1);
+    expect(createSamplingParameters({ temperature: 1.8 }, { provider: "openai" }).temperature).toBe(
+      1.8,
+    );
+  });
+
+  it("withholds top_p while provider thinking is active", () => {
+    expect(
+      createSamplingParameters({ top_p: 0.6, should_think: true }, { provider: "openai" }),
+    ).toEqual({});
   });
 });

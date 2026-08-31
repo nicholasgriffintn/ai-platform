@@ -1,9 +1,9 @@
-import type { ParsedChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
+import { readToolIds, type ParsedChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
 
 import type { Agent } from "~/lib/database/schema";
 import type { AssistantPersona, ChatCompletionParameters, Message } from "~/types";
 
-type CompletionAgent = Pick<Agent, "id" | "model" | "temperature" | "max_steps">;
+type CompletionAgent = Pick<Agent, "id" | "model" | "temperature" | "max_steps" | "enabled_tools">;
 
 export interface AgentCompletionRequestInput {
   agent: CompletionAgent;
@@ -38,7 +38,7 @@ class AgentCompletionRequestPreparer {
       model: this.input.agent.model || this.input.body.model,
       provider: this.input.agent.model ? this.input.modelProvider : this.input.body.provider,
       tools: this.input.formattedTools,
-      stream: false,
+      stream: this.input.body.stream,
       mode: "agent",
       tool_policy_mode: "chat",
       max_steps: this.input.agent.max_steps || this.input.body.max_steps || 20,
@@ -49,7 +49,8 @@ class AgentCompletionRequestPreparer {
       current_agent_id: this.input.agent.id,
       platform: requestPlatform === "obsidian" ? "api" : requestPlatform,
       stop: requestStop ? (Array.isArray(requestStop) ? requestStop : [requestStop]) : undefined,
-      enabled_tools: this.input.body.enabled_tools,
+      enabled_tools:
+        this.input.body.enabled_tools ?? readToolIds(this.input.agent.enabled_tools) ?? undefined,
       approved_tools: this.input.body.approved_tools,
       use_multi_model: this.input.body.use_multi_model,
       models: this.input.body.models,

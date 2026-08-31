@@ -56,7 +56,14 @@ const isPrivateIpv4Parts = (parts: number[]): boolean => {
     return true;
   }
 
-  if (a === 192 && b === 168) {
+  if (
+    (a === 192 && b === 168) ||
+    (a === 192 && b === 0) ||
+    (a === 192 && b === 0 && parts[2] === 2) ||
+    (a === 198 && (b === 18 || b === 19 || b === 51)) ||
+    (a === 203 && b === 0 && parts[2] === 113) ||
+    a >= 224
+  ) {
     return true;
   }
 
@@ -112,11 +119,15 @@ const isPrivateIpv6Hostname = (hostname: string): boolean => {
     return true;
   }
 
-  if (hostname === "0:0:0:0:0:0:0:1" || hostname.startsWith("fe80:")) {
+  if (hostname === "0:0:0:0:0:0:0:1") {
     return true;
   }
 
   const firstSegment = Number.parseInt(hostname.split(":")[0] || "", 16);
+
+  if (!Number.isNaN(firstSegment) && firstSegment >= 0xfe80 && firstSegment <= 0xfebf) {
+    return true;
+  }
 
   if (!Number.isNaN(firstSegment) && firstSegment >= 0xfc00 && firstSegment <= 0xfdff) {
     return true;
@@ -136,8 +147,10 @@ export function isPrivateHostname(hostname: string): boolean {
 
   if (
     normalized === "localhost" ||
+    normalized.endsWith(".localhost") ||
     normalized.endsWith(".local") ||
-    normalized.endsWith(".internal")
+    normalized.endsWith(".internal") ||
+    normalized.endsWith(".home.arpa")
   ) {
     return true;
   }

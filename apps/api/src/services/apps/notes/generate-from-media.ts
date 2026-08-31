@@ -1,13 +1,14 @@
-import { createServiceContext } from "~/lib/context/serviceContext";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { getAuxiliaryModel, getModelConfig } from "~/lib/providers/models";
+import { getAuxiliaryModel } from "~/lib/providers/models";
 import type { TranscriptionProvider } from "~/services/audio/transcribe";
 import { handleTranscribe } from "~/services/audio/transcribe";
-import type { IEnv, IUser } from "~/types";
+import { resolveAuthorisedTranscriptionSource } from "~/services/audio/transcription-input";
+import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export async function generateNotesFromMedia({
-  env,
+  context,
   user,
   url,
   outputs,
@@ -17,7 +18,7 @@ export async function generateNotesFromMedia({
   useVideoAnalysis = false,
   enableVideoSearch = false,
 }: {
-  env: IEnv;
+  context: ServiceContext;
   user: IUser;
   url: string;
   outputs: (
@@ -38,6 +39,8 @@ export async function generateNotesFromMedia({
   enableVideoSearch?: boolean;
   projectId?: string;
 }): Promise<{ content: string }> {
+  const env = context.env;
+
   if (!url) {
     throw new AssistantError("Missing media URL", ErrorType.PARAMS_ERROR);
   }
@@ -102,67 +105,26 @@ ${baseGuidelines}
 ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 
     if (useVideoAnalysis) {
-      const pegasusModelName = "pegasus-video";
-      const pegasusModelConfig = await getModelConfig(pegasusModelName);
-      const pegasusProvider = getChatProvider(pegasusModelConfig.provider, {
-        env,
-        user,
-      });
-      const context = createServiceContext({ env, user });
-
-      const videoResult = await pegasusProvider.getResponse(
-        {
-          model: pegasusModelConfig.matchingModel,
-          env,
-          context,
-          messages: [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: notePrompt },
-                { type: "video_url", video_url: { url } },
-              ],
-            },
-          ],
-          temperature: 0.3,
-          max_tokens: 3000,
-        },
-        user.id,
+      throw new AssistantError(
+        "Video analysis by remote URL is disabled",
+        ErrorType.PARAMS_ERROR,
+        400,
       );
-
-      return { content: videoResult.response };
     }
 
-    const isS3Url = url.startsWith("s3://");
     let transcriptText = "";
 
-    if (isS3Url) {
-      throw new AssistantError(
-        "S3 URLs are not supported for transcription",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-
-    let contentLengthBytes = 0;
-
-    try {
-      const head = await fetch(url, { method: "HEAD" });
-      const len = head.headers.get("content-length");
-
-      contentLengthBytes = len ? Number(len) : 0;
-    } catch {
-      // Do nothing
-    }
-
-    if (contentLengthBytes === 0) {
-      throw new AssistantError("Empty file", ErrorType.PARAMS_ERROR);
-    }
+    const audio = await resolveAuthorisedTranscriptionSource({
+      context,
+      url,
+      userId: user.id,
+    });
 
     const TWENTY_MB = 20 * 1024 * 1024;
 
     let transcriptionProviderToUse: TranscriptionProvider;
 
-    if (contentLengthBytes <= TWENTY_MB) {
+    if (audio.file.size <= TWENTY_MB) {
       transcriptionProviderToUse = "mistral";
     } else {
       transcriptionProviderToUse = "replicate";
@@ -175,14 +137,13 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
     const transcription = await handleTranscribe({
       env,
       user,
-      audio: url,
+      audio,
+      allowVideo: true,
       provider: transcriptionProviderToUse,
       timestamps,
     });
 
-    const response = Array.isArray(transcription) ? transcription[0] : transcription;
-
-    transcriptText = typeof response?.content === "string" ? response.content : "";
+    transcriptText = transcription.content;
 
     if (!transcriptText) {
       throw new AssistantError("Empty transcript returned", ErrorType.EXTERNAL_API_ERROR);
@@ -191,8 +152,6 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
     const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
 
     const provider = getChatProvider(providerToUse, { env, user });
-    const context = createServiceContext({ env, user });
-
     const userPrompt = `${extraPrompt ? `${extraPrompt}\n\n` : ""}Transcript:\n\n${transcriptText}`;
 
     const aiResult = await provider.getResponse(

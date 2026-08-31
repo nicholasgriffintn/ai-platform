@@ -179,6 +179,15 @@ public struct ModelConfigItem: Codable, Identifiable {
     public let isDefault: Bool?
     public let isExecutable: Bool?
     public let status: String?
+    public let reasoningConfig: ReasoningConfig?
+    
+    public struct ReasoningConfig: Codable {
+        public let supportedEffortLevels: [String]?
+
+        public init(supportedEffortLevels: [String]?) {
+            self.supportedEffortLevels = supportedEffortLevels
+        }
+    }
     
     public struct ModelPricing: Codable {
         public let costPer1kInputTokens: Double?
@@ -194,6 +203,7 @@ public struct ModelConfigItem: Codable, Identifiable {
         case name, provider, description, strengths, contextWindow, pricing, modalities, supportsFunctions, multimodal
         case isFeatured, featured, isDefault, isExecutable, status
         case isDeprecated, deprecated
+        case reasoningConfig
     }
     
     public init(
@@ -211,7 +221,8 @@ public struct ModelConfigItem: Codable, Identifiable {
         isDeprecated: Bool? = nil,
         isDefault: Bool? = nil,
         isExecutable: Bool? = nil,
-        status: String? = nil
+        status: String? = nil,
+        reasoningConfig: ReasoningConfig? = nil
     ) {
         self.id = id
         self.name = name
@@ -228,6 +239,7 @@ public struct ModelConfigItem: Codable, Identifiable {
         self.isDefault = isDefault
         self.isExecutable = isExecutable
         self.status = status
+        self.reasoningConfig = reasoningConfig
     }
 
     public init(from decoder: Decoder) throws {
@@ -249,6 +261,7 @@ public struct ModelConfigItem: Codable, Identifiable {
         isDefault = try container.decodeIfPresent(Bool.self, forKey: .isDefault)
         isExecutable = try container.decodeIfPresent(Bool.self, forKey: .isExecutable)
         status = try container.decodeIfPresent(String.self, forKey: .status)
+        reasoningConfig = try container.decodeIfPresent(ReasoningConfig.self, forKey: .reasoningConfig)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -268,6 +281,7 @@ public struct ModelConfigItem: Codable, Identifiable {
         try container.encodeIfPresent(isDefault, forKey: .isDefault)
         try container.encodeIfPresent(isExecutable, forKey: .isExecutable)
         try container.encodeIfPresent(status, forKey: .status)
+        try container.encodeIfPresent(reasoningConfig, forKey: .reasoningConfig)
     }
 }
 
