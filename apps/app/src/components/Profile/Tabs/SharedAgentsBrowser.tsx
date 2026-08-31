@@ -4,7 +4,7 @@ import { useAgentFilters } from "~/hooks/useAgentFilters";
 import { useSharedAgents } from "~/hooks/useSharedAgents";
 
 interface SharedAgentsBrowserProps {
-  onInstall: (agentId: string) => Promise<any>;
+  onInstall: (agentId: string) => Promise<unknown>;
   isInstalling: boolean;
 }
 

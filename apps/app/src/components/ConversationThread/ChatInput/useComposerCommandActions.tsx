@@ -1,6 +1,7 @@
 import {
   getComposerCommandMenuState,
   type ComposerActionCatalogConfig,
+  type ComposerAgentOption,
   type ComposerAssistantActionCapability,
   type ComposerCommandAction,
 } from "@ngriffin_uk/polychat-component-conversation";
@@ -85,16 +86,6 @@ const MODEL_TOOL_ICONS: Record<ModelToolId, LucideIcon> = {
   web_fetch: Link,
 };
 
-export interface AgentCommand {
-  id: string;
-  name: string;
-  description?: string;
-  avatar_url?: string;
-  model?: string;
-  enabled_tools?: string[];
-  is_team_agent?: boolean;
-}
-
 export function useComposerCommandActions({
   allowedAssistantActionCapabilities,
   assistantActionCatalog,
@@ -140,7 +131,7 @@ export function useComposerCommandActions({
   const setComposingGoal = useChatStore((state) => state.setComposingGoal);
   const includeAgents = assistantActionCatalog?.includeAgents !== false;
   const { chatAgents, isLoadingAgents } = useAgents({ enabled: includeAgents });
-  const agents = chatAgents as AgentCommand[];
+  const agents = chatAgents;
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
   const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
   const selectedTools = useToolsStore((state) => state.selectedTools);
@@ -616,7 +607,7 @@ export function useComposerCommandActions({
   const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
 
   const selectAgent = useCallback(
-    (agent: AgentCommand) => {
+    (agent: ComposerAgentOption) => {
       if (!canUseAgents) {
         return undefined;
       }

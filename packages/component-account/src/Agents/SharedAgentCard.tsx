@@ -1,8 +1,16 @@
 import { Button, Card, CardContent, Badge } from "@ngriffin_uk/polychat-component-ui";
+import type { SharedAgentSummary } from "@ngriffin_uk/polychat-schemas";
+import { parseStringArrayValue } from "@ngriffin_uk/polychat-utility-core";
 import { Plus, Star } from "lucide-react";
 
-export function SharedAgentCard({ agent, onInstall, isInstalling }: any) {
-  const tagsList = agent.tags ? JSON.parse(agent.tags) : [];
+export interface SharedAgentCardProps {
+  agent: SharedAgentSummary;
+  onInstall: (agentId: string) => void;
+  isInstalling?: boolean;
+}
+
+export function SharedAgentCard({ agent, onInstall, isInstalling = false }: SharedAgentCardProps) {
+  const tagsList = parseStringArrayValue(agent.tags);
 
   return (
     <Card className="group hover:shadow-md transition-all duration-200">
@@ -31,7 +39,7 @@ export function SharedAgentCard({ agent, onInstall, isInstalling }: any) {
                   {agent.category}
                 </Badge>
               )}
-              {tagsList.slice(0, 3).map((tag: string) => (
+              {tagsList.slice(0, 3).map((tag) => (
                 <Badge key={tag} variant="outline" className="text-xs">
                   {tag}
                 </Badge>

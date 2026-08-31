@@ -376,6 +376,14 @@ export class SharedAgentRepository extends BaseRepository {
     return { agent, install };
   }
 
+  public async getInstallByAgentId(userId: number, agentId: string): Promise<AgentInstall | null> {
+    return this.runQuery<AgentInstall>(
+      "SELECT * FROM agent_installs WHERE agent_id = ? AND user_id = ?",
+      [agentId, userId],
+      true,
+    );
+  }
+
   public async uninstallAgent(userId: number, agentId: string): Promise<void> {
     const install = await this.runQuery<AgentInstall>(
       "SELECT * FROM agent_installs WHERE agent_id = ? AND user_id = ?",

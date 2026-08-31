@@ -1,3 +1,4 @@
+import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { ParsedChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
 
 import { formatToolCalls } from "~/lib/chat/tools/execution";
@@ -17,6 +18,8 @@ export async function createAgentCompletion({
   agentId,
   user,
   anonymousUser,
+  executionCtx,
+  signal,
 }: {
   env: IEnv;
   context?: ServiceContext;
@@ -24,6 +27,8 @@ export async function createAgentCompletion({
   agentId: string;
   user: IUser | undefined;
   anonymousUser: any;
+  executionCtx?: ExecutionContext;
+  signal?: AbortSignal;
 }) {
   const serviceContext =
     context ??
@@ -61,6 +66,8 @@ export async function createAgentCompletion({
     user,
     anonymousUser,
     context: serviceContext,
+    executionCtx,
+    signal,
   });
 
   return response;

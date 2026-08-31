@@ -15,14 +15,6 @@ export const mcpServerSchema = z.object({
   args: z.array(z.string()).optional().meta({
     description: "Arguments for stdio transports",
   }),
-  env: z
-    .array(z.object({ key: z.string(), value: z.string() }))
-    .optional()
-    .meta({ description: "Environment variables for the MCP process" }),
-  headers: z
-    .array(z.object({ key: z.string(), value: z.string() }))
-    .optional()
-    .meta({ description: "HTTP headers for SSE transports" }),
 });
 
 export const fewShotExampleSchema = z.object({
@@ -101,5 +93,28 @@ export const updateAgentSchema = z
     error: "At least one field must be provided",
   });
 
+export const agentResponseSchema = z.object({
+  id: z.string(),
+  user_id: z.number().int(),
+  name: z.string(),
+  description: z.string(),
+  avatar_url: z.string().nullable(),
+  servers: z.array(mcpServerSchema),
+  model: z.string().nullable(),
+  temperature: z.number().nullable(),
+  max_steps: z.number().int().nullable(),
+  system_prompt: z.string().nullable(),
+  few_shot_examples: z.array(fewShotExampleSchema).nullable(),
+  enabled_tools: toolIdsSchema.nullable(),
+  team_id: z.string().nullable(),
+  team_role: z.string().nullable(),
+  is_team_agent: z.boolean(),
+  created_at: z.string(),
+  updated_at: z.string().nullable(),
+});
+
+export const agentListResponseSchema = z.array(agentResponseSchema);
+
 export type CreateAgentInput = z.input<typeof createAgentSchema>;
 export type UpdateAgentInput = z.input<typeof updateAgentSchema>;
+export type AgentResponse = z.infer<typeof agentResponseSchema>;

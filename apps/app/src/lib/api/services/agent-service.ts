@@ -2,14 +2,19 @@ import {
   createApiErrorFromResponse,
   returnFetchedData,
 } from "@ngriffin_uk/polychat-library-client";
-import type { CreateAgentInput, UpdateAgentInput } from "@ngriffin_uk/polychat-schemas";
+import type {
+  AgentResponse,
+  CreateAgentInput,
+  SharedAgentSummary,
+  UpdateAgentInput,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApi } from "../fetch-wrapper";
 
 export class AgentService {
   constructor(private getHeaders: () => Promise<Record<string, string>>) {}
 
-  async listAgents(): Promise<any[]> {
+  async listAgents(): Promise<AgentResponse[]> {
     let headers: Record<string, string> = {};
 
     try {
@@ -27,7 +32,7 @@ export class AgentService {
       );
     }
 
-    const responseData = await returnFetchedData<any>(response);
+    const responseData = await returnFetchedData<AgentResponse[]>(response);
 
     return responseData || [];
   }
@@ -48,7 +53,7 @@ export class AgentService {
     limit?: number;
     offset?: number;
     sort_by?: string;
-  } = {}): Promise<any[]> {
+  } = {}): Promise<SharedAgentSummary[]> {
     const params = new URLSearchParams();
 
     if (category) {
@@ -87,12 +92,12 @@ export class AgentService {
       throw new Error(`Failed to list shared agents: ${response.statusText}`);
     }
 
-    const responseData = await returnFetchedData<any>(response);
+    const responseData = await returnFetchedData<SharedAgentSummary[]>(response);
 
     return responseData || [];
   }
 
-  async listFeaturedSharedAgents(limit = 10): Promise<any[]> {
+  async listFeaturedSharedAgents(limit = 10): Promise<SharedAgentSummary[]> {
     const params = new URLSearchParams();
 
     params.append("limit", String(limit));
@@ -104,12 +109,12 @@ export class AgentService {
       throw new Error(`Failed to list featured agents: ${response.statusText}`);
     }
 
-    const responseData = await returnFetchedData<any>(response);
+    const responseData = await returnFetchedData<SharedAgentSummary[]>(response);
 
     return responseData || [];
   }
 
-  async installSharedAgent(agentId: string): Promise<any> {
+  async installSharedAgent(agentId: string): Promise<unknown> {
     const response = await fetchApi(`/agents/shared/${agentId}/install`, {
       method: "POST",
     });
@@ -118,9 +123,7 @@ export class AgentService {
       throw new Error(`Failed to install shared agent: ${response.statusText}`);
     }
 
-    const responseData = await returnFetchedData<any>(response);
-
-    return responseData || [];
+    return returnFetchedData<unknown>(response);
   }
 
   async shareAgent(
@@ -130,7 +133,7 @@ export class AgentService {
     avatarUrl?: string | null,
     category?: string | null,
     tags?: string[] | null,
-  ): Promise<any> {
+  ): Promise<unknown> {
     const body = {
       agent_id: agentId,
       name,
@@ -148,12 +151,10 @@ export class AgentService {
       throw new Error(`Failed to share agent: ${response.statusText}`);
     }
 
-    const responseData = await returnFetchedData<any>(response);
-
-    return responseData || [];
+    return returnFetchedData<unknown>(response);
   }
 
-  async rateSharedAgent(agentId: string, rating: number, review?: string): Promise<any> {
+  async rateSharedAgent(agentId: string, rating: number, review?: string): Promise<unknown> {
     const body = { rating, review };
     const response = await fetchApi(`/agents/shared/${agentId}/rate`, {
       method: "POST",
@@ -164,12 +165,10 @@ export class AgentService {
       throw new Error(`Failed to rate shared agent: ${response.statusText}`);
     }
 
-    const responseData = await returnFetchedData<any>(response);
-
-    return responseData || [];
+    return returnFetchedData<unknown>(response);
   }
 
-  async getAgentRatings(agentId: string, limit = 10): Promise<any[]> {
+  async getAgentRatings(agentId: string, limit = 10): Promise<unknown[]> {
     const params = new URLSearchParams();
 
     params.append("limit", String(limit));
@@ -181,7 +180,7 @@ export class AgentService {
       throw new Error(`Failed to get agent ratings: ${response.statusText}`);
     }
 
-    const responseData = await returnFetchedData<any>(response);
+    const responseData = await returnFetchedData<unknown[]>(response);
 
     return responseData || [];
   }
@@ -195,7 +194,7 @@ export class AgentService {
       throw new Error(`Failed to get shared agent categories: ${response.statusText}`);
     }
 
-    const responseData = await returnFetchedData<any>(response);
+    const responseData = await returnFetchedData<string[]>(response);
 
     return responseData || [];
   }
@@ -207,12 +206,12 @@ export class AgentService {
       throw new Error(`Failed to get shared agent tags: ${response.statusText}`);
     }
 
-    const responseData = await returnFetchedData<any>(response);
+    const responseData = await returnFetchedData<string[]>(response);
 
     return responseData || [];
   }
 
-  async createAgent(data: CreateAgentInput): Promise<any> {
+  async createAgent(data: CreateAgentInput): Promise<AgentResponse> {
     let headers: Record<string, string> = {};
 
     try {
@@ -247,12 +246,10 @@ export class AgentService {
       throw new Error(`Failed to create agent: ${response.statusText}`);
     }
 
-    const responseData = await returnFetchedData<any>(response);
-
-    return responseData || [];
+    return returnFetchedData<AgentResponse>(response);
   }
 
-  async updateAgent(agentId: string, data: UpdateAgentInput): Promise<void> {
+  async updateAgent(agentId: string, data: UpdateAgentInput): Promise<AgentResponse> {
     let headers: Record<string, string> = {};
 
     try {
@@ -284,9 +281,7 @@ export class AgentService {
       throw new Error(`Failed to update agent: ${response.statusText}`);
     }
 
-    const responseData = await returnFetchedData<any>(response);
-
-    return responseData || [];
+    return returnFetchedData<AgentResponse>(response);
   }
 
   async deleteAgent(agentId: string): Promise<void> {
@@ -307,8 +302,6 @@ export class AgentService {
       throw new Error(`Failed to delete agent: ${response.statusText}`);
     }
 
-    const responseData = await returnFetchedData<any>(response);
-
-    return responseData || [];
+    await returnFetchedData<unknown>(response);
   }
 }
