@@ -40,6 +40,28 @@ export interface SaveCapabilityConfigurationParams {
   configuration: Record<string, unknown>;
 }
 
+export interface CapabilityConfigurationInsertValues {
+  id: string;
+  scope_type: CapabilityConfigurationScope["type"];
+  scope_id: string;
+  capability_kind: CapabilityConfigurationKind;
+  capability_id: string;
+  configuration: string;
+}
+
+export function buildCapabilityConfigurationValues(
+  params: SaveCapabilityConfigurationParams,
+): CapabilityConfigurationInsertValues {
+  return {
+    id: generateId(),
+    scope_type: params.scope.type,
+    scope_id: String(params.scope.id),
+    capability_kind: params.capabilityKind,
+    capability_id: params.capabilityId,
+    configuration: JSON.stringify(params.configuration),
+  };
+}
+
 interface CapabilityConfigurationUpsertCondition {
   sql: string;
   values: unknown[];
@@ -49,13 +71,14 @@ function createCapabilityConfigurationUpsert(
   params: SaveCapabilityConfigurationParams,
   condition?: CapabilityConfigurationUpsertCondition,
 ): { query: string; values: unknown[] } {
+  const insert = buildCapabilityConfigurationValues(params);
   const values: unknown[] = [
-    generateId(),
-    params.scope.type,
-    String(params.scope.id),
-    params.capabilityKind,
-    params.capabilityId,
-    JSON.stringify(params.configuration),
+    insert.id,
+    insert.scope_type,
+    insert.scope_id,
+    insert.capability_kind,
+    insert.capability_id,
+    insert.configuration,
   ];
   const insertSource = condition
     ? `SELECT ?, ?, ?, ?, ?, ? WHERE ${condition.sql}`

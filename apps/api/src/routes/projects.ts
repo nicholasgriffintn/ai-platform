@@ -2,8 +2,14 @@ import {
   addProjectCapabilitySchema,
   answerProjectTaskQuestionsSchema,
   authoredSkillDocumentSchema,
+  authoredSkillDraftInputSchema,
+  authoredSkillHistoryResponseSchema,
+  authoredSkillImportInputSchema,
   authoredSkillInputSchema,
   authoredSkillListResponseSchema,
+  authoredSkillPromotionInputSchema,
+  authoredSkillRollbackInputSchema,
+  authoredSkillVersionedDocumentSchema,
   createProjectTaskSchema,
   errorResponseSchema,
   projectDetailSchema,
@@ -38,8 +44,14 @@ import {
 import {
   deleteProjectSkill,
   getProjectSkill,
+  getProjectSkillHistory,
+  getProjectSkillVersion,
+  importProjectSkill,
   listProjectSkills,
+  promoteProjectSkillDraft,
   publishProjectSkill,
+  rollbackProjectSkill,
+  saveProjectSkillDraft,
   updateProjectSkill,
 } from "~/services/skills";
 import {
@@ -129,6 +141,22 @@ addRoute(app, "post", "/:projectId/skills", {
     publishProjectSkill(serviceContext, user.id, params.projectId, body),
 });
 
+addRoute(app, "post", "/:projectId/skills/import", {
+  auth: true,
+  tags: ["projects", "skills"],
+  summary: "Import an authorised skill revision into a project",
+  paramSchema: projectParams,
+  bodySchema: authoredSkillImportInputSchema,
+  responses: {
+    200: { description: "Imported skill revision", schema: authoredSkillVersionedDocumentSchema },
+    403: { description: "Project admin access required", schema: errorResponseSchema },
+    404: { description: "Source skill revision not found", schema: errorResponseSchema },
+    409: { description: "Skill name already exists", schema: errorResponseSchema },
+  },
+  handler: ({ body, params, serviceContext, user }) =>
+    importProjectSkill(serviceContext, user.id, params.projectId, body),
+});
+
 const projectSkillParams = projectParams.extend({ skillId: skillIdSchema });
 
 addRoute(app, "get", "/:projectId/skills/:skillId", {
@@ -158,6 +186,83 @@ addRoute(app, "put", "/:projectId/skills/:skillId", {
   },
   handler: ({ body, params, serviceContext, user }) =>
     updateProjectSkill(serviceContext, user.id, params.projectId, params.skillId, body),
+});
+
+addRoute(app, "get", "/:projectId/skills/:skillId/history", {
+  auth: true,
+  tags: ["projects", "skills"],
+  summary: "List project skill revision history",
+  paramSchema: projectSkillParams,
+  responses: {
+    200: { description: "Skill revision history", schema: authoredSkillHistoryResponseSchema },
+    403: { description: "Project admin access required", schema: errorResponseSchema },
+    404: { description: "Skill not found", schema: errorResponseSchema },
+  },
+  handler: ({ params, serviceContext }) =>
+    getProjectSkillHistory(serviceContext, params.projectId, params.skillId),
+});
+
+addRoute(app, "get", "/:projectId/skills/:skillId/revisions/:revisionId", {
+  auth: true,
+  tags: ["projects", "skills"],
+  summary: "Get one project skill revision",
+  paramSchema: projectSkillParams.extend({ revisionId: z.string().min(1) }),
+  responses: {
+    200: { description: "Skill revision", schema: authoredSkillVersionedDocumentSchema },
+    403: { description: "Project admin access required", schema: errorResponseSchema },
+    404: { description: "Skill revision not found", schema: errorResponseSchema },
+  },
+  handler: ({ params, serviceContext }) =>
+    getProjectSkillVersion(serviceContext, params.projectId, params.skillId, params.revisionId),
+});
+
+addRoute(app, "put", "/:projectId/skills/:skillId/draft", {
+  auth: true,
+  tags: ["projects", "skills"],
+  summary: "Save a project skill draft without activating it",
+  paramSchema: projectSkillParams,
+  bodySchema: authoredSkillDraftInputSchema,
+  responses: {
+    200: { description: "Saved draft", schema: authoredSkillVersionedDocumentSchema },
+    400: { description: "Invalid skill document", schema: errorResponseSchema },
+    403: { description: "Project admin access required", schema: errorResponseSchema },
+    404: { description: "Skill not found", schema: errorResponseSchema },
+    409: { description: "Skill changed concurrently", schema: errorResponseSchema },
+  },
+  handler: ({ body, params, serviceContext, user }) =>
+    saveProjectSkillDraft(serviceContext, user.id, params.projectId, params.skillId, body),
+});
+
+addRoute(app, "post", "/:projectId/skills/:skillId/promote", {
+  auth: true,
+  tags: ["projects", "skills"],
+  summary: "Promote the current project skill draft",
+  paramSchema: projectSkillParams,
+  bodySchema: authoredSkillPromotionInputSchema,
+  responses: {
+    200: { description: "Promoted revision", schema: authoredSkillVersionedDocumentSchema },
+    403: { description: "Project admin access required", schema: errorResponseSchema },
+    404: { description: "Skill not found", schema: errorResponseSchema },
+    409: { description: "Skill changed concurrently", schema: errorResponseSchema },
+  },
+  handler: ({ body, params, serviceContext, user }) =>
+    promoteProjectSkillDraft(serviceContext, user.id, params.projectId, params.skillId, body),
+});
+
+addRoute(app, "post", "/:projectId/skills/:skillId/rollback", {
+  auth: true,
+  tags: ["projects", "skills"],
+  summary: "Roll a project skill back through a new immutable revision",
+  paramSchema: projectSkillParams,
+  bodySchema: authoredSkillRollbackInputSchema,
+  responses: {
+    200: { description: "Rollback revision", schema: authoredSkillVersionedDocumentSchema },
+    403: { description: "Project admin access required", schema: errorResponseSchema },
+    404: { description: "Skill revision not found", schema: errorResponseSchema },
+    409: { description: "Skill changed concurrently", schema: errorResponseSchema },
+  },
+  handler: ({ body, params, serviceContext, user }) =>
+    rollbackProjectSkill(serviceContext, user.id, params.projectId, params.skillId, body),
 });
 
 addRoute(app, "delete", "/:projectId/skills/:skillId", {

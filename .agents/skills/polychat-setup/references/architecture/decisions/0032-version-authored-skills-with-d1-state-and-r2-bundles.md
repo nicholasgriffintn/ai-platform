@@ -1,4 +1,4 @@
-# ADR 0030: Version authored skills with D1 state and R2 bundles
+# ADR 0032: Version authored skills with D1 state and R2 bundles
 
 ## Status
 
@@ -20,13 +20,17 @@ Write the R2 revision before its D1 metadata and pointer change. Commit the iden
 
 Archive an authored skill by marking its D1 identity inactive while preserving its revision metadata and immutable R2 bundles. The partial unique index applies only to active identities, so the same scope-local name can be created again without treating archived records as tombstones.
 
+Expose explicit draft, history, exact-revision, promotion, rollback, and import operations. Draft saves and promotions require the caller's expected state version; promotion can move stable only to the current draft. Rollback copies the selected historical content into a new active revision and records its lineage instead of moving a pointer backwards. Import copies one exact authorised revision into a new scope-local identity with the same lineage. Existing immediate-update operations retain their activation semantics; callers that need governed drafts use the explicit lifecycle.
+
+Personal revisions are visible only inside the authenticated person's scope. Project members consume only the stable document and stable summary; project owners and administrators may read history and drafts, save, promote, rollback, or import. Project lifecycle mutations retain the existing workspace audit boundary and include revision identifiers in their metadata.
+
 Do not read, import, update, or delete deterministic R2 documents from ADR 0019. An authored skill exists only when D1 records an active identity and revision pointers. Existing R2-only skills are ignored and must be republished manually into the revisioned format.
 
 Project capability rows continue to grant a skill by its immutable scope-local name. Workspace membership and owner/administrator checks remain outside storage in the existing management seam.
 
 ## Consequences
 
-D1 becomes the authority for authored-skill identity and active state, while R2 remains the authority for revision content. Listing no longer depends on R2 object metadata. Runtime catalogue resolution uses stable revisions; draft content cannot affect a conversation until promoted.
+D1 becomes the authority for authored-skill identity and active state, while R2 remains the authority for revision content. Listing no longer depends on R2 object metadata. Runtime catalogue resolution and member-facing project reads use stable revisions; draft content cannot affect a conversation or leak to a non-administrator before promotion.
 
 The model supports exact provenance and rollback without copying document bodies into D1. It also introduces cross-store orphan cleanup as an operational concern and adds one D1 lookup plus one R2 read when authored instructions are loaded. Deliberately omitting legacy discovery keeps the runtime and storage seam small, at the cost of manually republishing any skills that exist only under deterministic R2 keys.
 
