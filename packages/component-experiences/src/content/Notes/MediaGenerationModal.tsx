@@ -68,7 +68,6 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
   const [extraPrompt, setExtraPrompt] = useState<string>("");
   const [withTimestamps, setWithTimestamps] = useState<boolean>(false);
   const [useVideoAnalysis, setUseVideoAnalysis] = useState<boolean>(false);
-  const [enableVideoSearch, setEnableVideoSearch] = useState<boolean>(false);
 
   const handleGenerate = async () => {
     if (!mediaUrl || selectedOutputs.length === 0) {
@@ -84,7 +83,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
       extraPrompt,
       timestamps: withTimestamps,
       useVideoAnalysis,
-      enableVideoSearch,
+      enableVideoSearch: false,
     });
 
     if (content === undefined) {
@@ -244,7 +243,6 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
                                 ),
                             ),
                           );
-                          setEnableVideoSearch(false);
                         }
                       }}
                     />
@@ -262,17 +260,11 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
                       !useVideoAnalysis ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
-                    <input
-                      id="video-search"
-                      type="checkbox"
-                      checked={enableVideoSearch}
-                      disabled={!useVideoAnalysis}
-                      onChange={(e) => setEnableVideoSearch(e.target.checked)}
-                    />
+                    <input id="video-search" type="checkbox" checked={false} disabled readOnly />
                     <div>
-                      <span className="font-medium">Enable video search</span>
+                      <span className="font-medium">Video search unavailable</span>
                       <p className="text-xs text-gray-600 dark:text-gray-400">
-                        Generate embeddings for semantic search across video content
+                        Multimodal retrieval is being upgraded before this can be enabled safely
                       </p>
                     </div>
                   </label>

@@ -78,6 +78,7 @@ export * from "./cron";
 export * from "./goals";
 export * from "./thread-instructions";
 export * from "./edit";
+export * from "./embeddings";
 export * from "./fim";
 export * from "./magicLink";
 export * from "./message-parts";

@@ -5,35 +5,6 @@ import { externalHttpUrlSchema } from "./navigation";
 import { outputSchema } from "./outputs";
 import { skillSummarySchema } from "./skills";
 
-export const insertEmbeddingSchema = z.object({
-  type: z.string(),
-  content: z.string().optional(),
-  file: z
-    .object({
-      data: z.any(),
-      mimeType: z.string(),
-    })
-    .optional(),
-  id: z.string().optional(),
-  metadata: z.record(z.string(), z.any()).optional(),
-  title: z.string().optional(),
-  rag_options: z
-    .object({
-      namespace: z.string().optional(),
-    })
-    .optional(),
-});
-
-export const queryEmbeddingsSchema = z.object({
-  query: z.string(),
-  namespace: z.string().optional(),
-  type: z.string().optional(),
-});
-
-export const deleteEmbeddingSchema = z.object({
-  ids: z.array(z.string()),
-});
-
 export const weatherQuerySchema = z.object({
   longitude: z.string().regex(/^-?\d+(\.\d+)?$/, "Must be a valid number"),
   latitude: z.string().regex(/^-?\d+(\.\d+)?$/, "Must be a valid number"),
@@ -121,7 +92,7 @@ export const generateArticlesReportSchema = z.object({
 });
 
 export const contentExtractSchema = z.object({
-  urls: z.array(z.url()),
+  urls: z.array(z.url()).min(1).max(10),
   extract_depth: z.enum(["basic", "advanced"]).optional(),
   include_images: z.boolean().optional(),
   should_vectorize: z.boolean().optional(),
@@ -706,6 +677,8 @@ function getDynamicAppFieldError(field: ToolFormField, value: unknown): string |
     case "file":
       return value === undefined ? `${field.label} must have a file` : undefined;
   }
+
+  return undefined;
 }
 
 export function getToolFormStepErrors(step: ToolFormStep, formData: ToolFormData): ToolFormErrors {
@@ -1006,9 +979,7 @@ export const generateNotesFromMediaSchema = z.object({
     .boolean()
     .optional()
     .default(false)
-    .describe(
-      "Generate video embeddings with Twelve Labs Marengo for semantic search capabilities.",
-    ),
+    .describe("Reserved for multimodal retrieval. Requests that enable it currently return 501."),
 });
 
 export const generateNotesFromMediaResponseSchema = z.object({

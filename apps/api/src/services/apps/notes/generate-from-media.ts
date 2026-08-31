@@ -16,6 +16,7 @@ export async function generateNotesFromMedia({
   extraPrompt,
   timestamps,
   useVideoAnalysis = false,
+  enableVideoSearch = false,
 }: {
   context: ServiceContext;
   user: IUser;
@@ -36,11 +37,20 @@ export async function generateNotesFromMedia({
   timestamps?: boolean;
   useVideoAnalysis?: boolean;
   enableVideoSearch?: boolean;
+  projectId?: string;
 }): Promise<{ content: string }> {
   const env = context.env;
 
   if (!url) {
     throw new AssistantError("Missing media URL", ErrorType.PARAMS_ERROR);
+  }
+
+  if (enableVideoSearch) {
+    throw new AssistantError(
+      "Multimodal video search is not available while its retrieval index is being upgraded",
+      ErrorType.CONFIGURATION_ERROR,
+      501,
+    );
   }
 
   try {

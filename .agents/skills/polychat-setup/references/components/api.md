@@ -41,6 +41,93 @@ Import supported reasoning effort levels from models.dev `reasoning_options`. Pr
 
 Forward a configured non-default `reasoning_effort` through Mistral, OpenRouter, and Requesty chat-completion adapters. Preserve Mistral thinking chunks separately from answer text while streaming and replay the complete thinking chunk in later Mistral turns; dropping it degrades multi-turn reasoning quality.
 
+## Embedding API safety and lifecycle
+
+The authenticated `/apps/embeddings` API is personal-only. Derive the person from
+`ServiceContext` and use a versioned, opaque HMAC scope tag generated from the stable
+`EMBEDDING_SCOPE_SECRET`; never accept a user ID, namespace, provider target, vector-space
+identifier, or provider metadata from the request. Reject project retrieval through this API until
+project-scoped storage and server-side membership authorisation exist.
+
+Apply these limits at the public schema boundary:
+
+| Input                        | Limit                                                                    |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| Document content             | Non-empty and no more than 256 KiB when UTF-8 encoded                    |
+| Document title               | 200 characters                                                           |
+| Document type                | 1–64 safe identifier characters                                          |
+| Optional logical document ID | 1–128 safe identifier characters                                         |
+| Query                        | 1–1,000 characters                                                       |
+| Delete request               | 1–100 unique logical document IDs                                        |
+| User metadata                | 8 KiB of JSON, four levels deep, at most 64 keys and 128 items per array |
+
+Metadata keys must use the supported identifier shape and must not collide with internal scope,
+document, chunk, lifecycle, provider, or vector-space fields. Reject unknown request fields so a
+caller cannot restore the former client-selected namespace or file-payload behaviour.
+
+D1 is authoritative for embedding documents, their chunks, user-visible metadata, lifecycle,
+and provider provenance. Treat provider indexes as retrieval accelerators rather than an
+authorisation or public-metadata source. A query may use provider scores to rank candidates, but
+return a candidate only after its vector ID hydrates to an active D1 chunk owned by the
+authenticated person. Never return provider metadata or a vector match that D1 cannot authorise.
+
+Keep document and chunk lifecycle changes explicit:
+
+- `pending` records reserve the logical ID before provider writes. They are not queryable. Remove
+  them only when no provider write occurred or compensation is confirmed; retain uncertain writes
+  for reconciliation. Before retrying a retained logical ID, delete its vectors from the exact
+  stored target and release the pending record only after that deletion succeeds.
+- `active` records are the only records eligible for retrieval.
+- `delete_pending` records become unqueryable before provider deletion. Delete D1 records only
+  after the stored provider confirms deletion; otherwise retain the state so the same logical IDs
+  can be retried safely.
+
+Capture the provider and vector-space target when a document is created and treat that provenance
+as immutable. Changing a person's current provider setting must not redirect deletion,
+compensation, or reconciliation for an existing document. Query every distinct active stored
+target for that person with bounded concurrency, then merge and hydrate the results through D1.
+Search at most eight historical targets, continue when one target is unavailable, and use
+reciprocal-rank fusion when combining rankings whose provider scores are not directly comparable.
+Fail the search when no stored target is reachable, and require target consolidation before
+searching more than eight targets. Apply the same immutable-target, partial-failure, target-limit,
+ranking, and post-query D1 hydration rules to built-in memories.
+
+Support the managed lifecycle only for Vectorize and S3 Vectors. Fail closed when Bedrock or an
+unknown provider is selected instead of writing data that the lifecycle cannot subsequently
+delete. An authenticated person using S3 Vectors must supply their own stored S3 credential;
+never fall back to platform AWS credentials for a person-selected bucket, index, or region.
+Fingerprint the validated credential into immutable target provenance. A credential rotation must
+fail closed for historical targets until the old credential is restored or an operator safely
+reconciles and reindexes them; never redirect an existing target to the replacement credential.
+
+Bound provider work to protect both the API and upstream services. Generate embeddings with at
+most eight concurrent model calls, and delete provider vectors in pages of at most 500. Insert a
+maximum-sized document into D1 as one document statement and one set-based chunk statement so the
+transaction stays within D1's statement limits.
+
+Treat content extraction as a write operation. Require write permission, store at most ten
+extracted results per request, and compensate for earlier provider writes if a later result fails
+so partial content does not become queryable.
+
+Keep media video-search enrichment disabled in both schema-backed clients and the service. Reject
+`enableVideoSearch: true` with a clear `501` response until a supported multimodal retrieval path
+exists.
+
+Apply the same lifecycle discipline to built-in memory. Create its source as `processing`, expose
+only an `available` source after the provider write succeeds, and mark it `archived` before
+provider deletion. Retain non-available source state when provider outcomes are uncertain so the
+operation can be reconciled or retried safely. Treat lifecycle status, content, and embedding
+target metadata as service-managed fields: reject public updates to them, and never expose the
+stored target in public source metadata.
+
+Quarantine ambiguous legacy data rather than guessing authority. Backfill only rows whose stored
+user ID agrees with their exact `user_kb_<user-id>` namespace. Group a legacy chunk with a parent
+only when its canonical non-negative `chunkIndex`, matching ID suffix, parent row, user, and
+namespace all agree; leave every other unscoped or ambiguous row outside the public query and
+provider-delete paths. Allow an authorised retry or delete to release quarantined D1 records
+without guessing an external provider target. Archive targetless legacy memories and retain their
+local record rather than searching or deleting through the person's current provider.
+
 ## Runtime infrastructure
 
 The API runs on Cloudflare's global network with:

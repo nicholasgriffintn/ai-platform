@@ -19,7 +19,11 @@ import {
   transcriptionProviderOptions,
   type TranscriptionProviderId,
 } from "./transcription-settings";
-import { resolveGuardrailsProviderId, type UserSettings } from "./user-settings";
+import {
+  prepareUserSettingsPayload,
+  resolveGuardrailsProviderId,
+  type UserSettings,
+} from "./user-settings";
 
 export interface UserSettingsFormProps {
   userSettings: UserSettings | null;
@@ -50,7 +54,8 @@ function buildUserSettingsFormData(userSettings: UserSettings | null) {
     guardrails_provider: userSettings?.guardrails_provider || "llamaguard",
     bedrock_guardrail_id: userSettings?.bedrock_guardrail_id || "",
     bedrock_guardrail_version: userSettings?.bedrock_guardrail_version || "1",
-    embedding_provider: userSettings?.embedding_provider || "vectorize",
+    embedding_provider:
+      userSettings?.embedding_provider === "s3vectors" ? "s3vectors" : "vectorize",
     bedrock_knowledge_base_id: userSettings?.bedrock_knowledge_base_id || "",
     bedrock_knowledge_base_custom_data_source_id:
       userSettings?.bedrock_knowledge_base_custom_data_source_id || "",
@@ -205,36 +210,38 @@ export function UserSettingsForm({
     });
 
     try {
-      const settingsPayload = isPro
-        ? formData
-        : {
-            nickname: formData.nickname,
-            job_role: formData.job_role,
-            traits: formData.traits,
-            preferences: formData.preferences,
-            guardrails_enabled: formData.guardrails_enabled,
-            guardrails_provider: formData.guardrails_provider,
-            bedrock_guardrail_id: formData.bedrock_guardrail_id,
-            bedrock_guardrail_version: formData.bedrock_guardrail_version,
-            embedding_provider: formData.embedding_provider,
-            bedrock_knowledge_base_id: formData.bedrock_knowledge_base_id,
-            bedrock_knowledge_base_custom_data_source_id:
-              formData.bedrock_knowledge_base_custom_data_source_id,
-            s3vectors_bucket_name: formData.s3vectors_bucket_name,
-            s3vectors_index_name: formData.s3vectors_index_name,
-            s3vectors_region: formData.s3vectors_region,
-            memories_save_enabled: formData.memories_save_enabled,
-            memories_chat_history_enabled: formData.memories_chat_history_enabled,
-            temporary_chats_default: formData.temporary_chats_default,
-            memory_provider: formData.memory_provider,
-            tracking_enabled: formData.tracking_enabled,
-            transcription_provider: formData.transcription_provider,
-            transcription_model: formData.transcription_model,
-            speech_provider: formData.speech_provider,
-            speech_model: formData.speech_model,
-            search_provider: formData.search_provider,
-            sandbox_model: formData.sandbox_model,
-          };
+      const settingsPayload = prepareUserSettingsPayload(
+        isPro
+          ? formData
+          : {
+              nickname: formData.nickname,
+              job_role: formData.job_role,
+              traits: formData.traits,
+              preferences: formData.preferences,
+              guardrails_enabled: formData.guardrails_enabled,
+              guardrails_provider: formData.guardrails_provider,
+              bedrock_guardrail_id: formData.bedrock_guardrail_id,
+              bedrock_guardrail_version: formData.bedrock_guardrail_version,
+              embedding_provider: formData.embedding_provider,
+              bedrock_knowledge_base_id: formData.bedrock_knowledge_base_id,
+              bedrock_knowledge_base_custom_data_source_id:
+                formData.bedrock_knowledge_base_custom_data_source_id,
+              s3vectors_bucket_name: formData.s3vectors_bucket_name,
+              s3vectors_index_name: formData.s3vectors_index_name,
+              s3vectors_region: formData.s3vectors_region,
+              memories_save_enabled: formData.memories_save_enabled,
+              memories_chat_history_enabled: formData.memories_chat_history_enabled,
+              temporary_chats_default: formData.temporary_chats_default,
+              memory_provider: formData.memory_provider,
+              tracking_enabled: formData.tracking_enabled,
+              transcription_provider: formData.transcription_provider,
+              transcription_model: formData.transcription_model,
+              speech_provider: formData.speech_provider,
+              speech_model: formData.speech_model,
+              search_provider: formData.search_provider,
+              sandbox_model: formData.sandbox_model,
+            },
+      );
 
       await onSave(settingsPayload);
       setPendingSavedFormData(formData);
@@ -502,51 +509,9 @@ export function UserSettingsForm({
             }
           >
             <option value="vectorize">Vectorize</option>
-            <option value="bedrock">Bedrock</option>
-            <option value="mistral">Mistral</option>
             <option value="s3vectors">S3 Vectors</option>
           </FormSelect>
         </div>
-        {formData.embedding_provider === "bedrock" && (
-          <>
-            <div>
-              <label
-                htmlFor="bedrock_knowledge_base_id"
-                className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
-              >
-                Knowledge Base ID
-              </label>
-              <FormInput
-                id="bedrock_knowledge_base_id"
-                name="bedrock_knowledge_base_id"
-                value={formData.bedrock_knowledge_base_id}
-                onChange={handleChange}
-                placeholder="Enter the knowledge base ID"
-                className="w-full"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="bedrock_knowledge_base_custom_data_source_id"
-                className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
-              >
-                Custom Data Source ID
-              </label>
-              <FormInput
-                id="bedrock_knowledge_base_custom_data_source_id"
-                name="bedrock_knowledge_base_custom_data_source_id"
-                value={formData.bedrock_knowledge_base_custom_data_source_id}
-                onChange={handleChange}
-                placeholder="Enter the custom data source ID"
-                className="w-full"
-              />
-            </div>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Please note that you will also need to configure the api key for Bedrock in the
-              providers section for this to work.
-            </p>
-          </>
-        )}
         {formData.embedding_provider === "s3vectors" && (
           <>
             <div>
@@ -571,15 +536,16 @@ export function UserSettingsForm({
                 htmlFor="s3vectors_index_name"
                 className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
               >
-                Index Name (Optional)
+                Index Name *
               </label>
               <FormInput
                 id="s3vectors_index_name"
                 name="s3vectors_index_name"
                 value={formData.s3vectors_index_name}
                 onChange={handleChange}
-                placeholder="Enter the index name (optional)"
+                placeholder="Enter the index name"
                 className="w-full"
+                required
               />
             </div>
             <div>

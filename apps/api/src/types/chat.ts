@@ -215,6 +215,7 @@ export type RagOptions = {
   scoreThreshold?: number;
   includeMetadata?: boolean;
   namespace?: string;
+  scopeTag?: string;
   type?: string;
   contentType?: string;
   embeddingType?: string;

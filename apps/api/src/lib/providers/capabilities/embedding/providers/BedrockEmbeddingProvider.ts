@@ -83,11 +83,11 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
         {
           id,
           values: [],
-          metadata: { ...metadata, type, content },
+          metadata: { ...metadata, type },
         },
       ];
     } catch (error) {
-      logger.error("Bedrock Embedding API error:", { error });
+      logger.error("Bedrock embedding generation failed");
       throw error;
     }
   }
@@ -107,8 +107,8 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
           accessKeyId = credentials.accessKey;
           secretAccessKey = credentials.secretKey;
         }
-      } catch (error) {
-        logger.warn("Failed to get user API key for bedrock:", { error });
+      } catch {
+        logger.warn("Failed to load Bedrock credentials");
       }
     }
 
@@ -162,7 +162,7 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
                 : {
                     type: "TEXT",
                     textContent: {
-                      data: metadata.content || "",
+                      data: embedding.content || metadata.content || "",
                     },
                   },
             },
@@ -200,21 +200,8 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
       );
     }
 
-    let responseData: unknown = null;
-
-    if (typeof response.json === "function") {
-      try {
-        responseData = await response.json();
-      } catch (error) {
-        logger.warn("Failed to parse Bedrock response JSON", { error });
-      }
-    } else if (typeof response.text === "function") {
-      responseData = await response.text();
-    }
-
     logger.debug("Bedrock Knowledge Base API response", {
       status: response.status,
-      data: responseData,
     });
 
     return {
@@ -224,10 +211,11 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
   }
 
   async delete(_ids: string[]): Promise<{ status: string; error: string | null }> {
-    return {
-      status: "error",
-      error: "Not implemented",
-    };
+    throw new AssistantError(
+      "Bedrock embedding lifecycle is not available",
+      ErrorType.CONFIGURATION_ERROR,
+      503,
+    );
   }
 
   async getQuery(query: string): Promise<{ data: any; status: { success: boolean } }> {
