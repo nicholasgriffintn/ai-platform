@@ -6,12 +6,27 @@ import {
 
 import { RepositoryManager } from "~/repositories";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
-import type { EmbeddingProvider, IEnv, IUser, IUserSettings } from "~/types";
+import type {
+  EmbeddingProvider,
+  IEnv,
+  IUser,
+  IUserSettings,
+  ResolvedEmbeddingRuntime,
+  VectorEmbeddingRuntime,
+} from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { providerLibrary } from "../../library";
 import { parseAwsCredentials } from "../../utils/helpers";
 import { EMBEDDING_VECTOR_SPACE_VERSION, WORKERS_EMBEDDING_MODEL } from "./constants";
+import { adaptVectorEmbeddingProvider } from "./runtime";
+import {
+  type EmbeddingProviderTarget,
+  type EmbeddingRuntimeTarget,
+  embeddingRuntimeTargetsEqual,
+  toEmbeddingProviderTarget,
+  toEmbeddingRuntimeTarget,
+} from "./target";
 import { getEmbeddingCredentialFingerprint } from "./utils/scope";
 
 const S3_CREDENTIAL_FINGERPRINT_PATTERN = /^credential_v1_[a-f0-9]{32}$/;
@@ -57,14 +72,6 @@ const parseS3VectorTarget = (
     credentialFingerprint: parsed.credentialFingerprint,
   };
 };
-
-export interface EmbeddingProviderTarget {
-  provider: string;
-  target: string;
-  model: string;
-  vectorSpace: string;
-  vectorSpaceVersion: string;
-}
 
 export const isQuarantinedEmbeddingProviderTarget = (target: EmbeddingProviderTarget) =>
   target.provider === "quarantined" &&
@@ -220,6 +227,48 @@ export function getEmbeddingProviderForTarget(
     embedding_provider: "vectorize",
   });
 }
+
+export const resolveEmbeddingRuntimeTarget = async (
+  env: IEnv,
+  user: IUser,
+  userSettings: IUserSettings,
+): Promise<EmbeddingRuntimeTarget> =>
+  toEmbeddingRuntimeTarget(await resolveEmbeddingProviderTarget(env, user, userSettings));
+
+export const getEmbeddingRuntimeForTarget = (
+  env: IEnv,
+  user: IUser,
+  userSettings: IUserSettings,
+  target: EmbeddingProviderTarget | EmbeddingRuntimeTarget,
+): VectorEmbeddingRuntime => {
+  const runtimeTarget = "embeddingProvider" in target ? target : toEmbeddingRuntimeTarget(target);
+  const providerTarget = toEmbeddingProviderTarget(runtimeTarget);
+
+  if (!embeddingRuntimeTargetsEqual(runtimeTarget, toEmbeddingRuntimeTarget(providerTarget))) {
+    throw new AssistantError(
+      "Embedding runtime target is not supported",
+      ErrorType.CONFIGURATION_ERROR,
+      503,
+    );
+  }
+
+  const provider = getEmbeddingProviderForTarget(env, user, userSettings, providerTarget);
+
+  return adaptVectorEmbeddingProvider(provider);
+};
+
+export const resolveEmbeddingRuntime = async (
+  env: IEnv,
+  user: IUser,
+  userSettings: IUserSettings,
+): Promise<ResolvedEmbeddingRuntime> => {
+  const target = await resolveEmbeddingRuntimeTarget(env, user, userSettings);
+
+  return {
+    target,
+    runtime: getEmbeddingRuntimeForTarget(env, user, userSettings, target),
+  };
+};
 
 export function getEmbeddingProvider(
   env: IEnv,

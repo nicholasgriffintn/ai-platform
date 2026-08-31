@@ -4,13 +4,15 @@ import {
   ConfirmDeleteModal,
   ShareAgentModal,
 } from "@ngriffin_uk/polychat-component-account";
+import type { AgentFormData } from "@ngriffin_uk/polychat-component-account";
+import type { AgentResponse } from "@ngriffin_uk/polychat-schemas";
 import { EMPTY_MODEL_CONFIG } from "@ngriffin_uk/polychat-schemas";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { PageShell } from "~/components/Core/PageShell";
-import { type AgentData, useAgents } from "~/hooks/useAgents";
+import { useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
 import { useSharedAgents } from "~/hooks/useSharedAgents";
 import { useTools } from "~/hooks/useTools";
@@ -34,17 +36,12 @@ export function ProfileAgentsTab() {
   const { installSharedAgent, isInstalling, shareAgent, isSharing, categories } = useSharedAgents();
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingAgent, setEditingAgent] = useState<any>(null);
+  const [editingAgent, setEditingAgent] = useState<AgentResponse | null>(null);
   const [agentToDelete, setAgentToDelete] = useState<{
     id: string;
     name: string;
   } | null>(null);
-  const [agentToShare, setAgentToShare] = useState<{
-    id: string;
-    name: string;
-    description?: string;
-    avatar_url?: string;
-  } | null>(null);
+  const [agentToShare, setAgentToShare] = useState<AgentResponse | null>(null);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const { data: tools, isLoading: isLoadingTools } = useTools();
 
@@ -53,7 +50,7 @@ export function ProfileAgentsTab() {
     setModalOpen(true);
   };
 
-  const handleEditClick = (agent: any) => {
+  const handleEditClick = (agent: AgentResponse) => {
     setEditingAgent(agent);
     setModalOpen(true);
   };
@@ -62,13 +59,13 @@ export function ProfileAgentsTab() {
     setAgentToDelete({ id: agentId, name: agentName });
   };
 
-  const handleShareClick = (agent: any) => {
+  const handleShareClick = (agent: AgentResponse) => {
     setAgentToShare(agent);
     setShareModalOpen(true);
   };
 
   const handleFormSubmit = async (
-    agentData: AgentData,
+    agentData: AgentFormData,
     isEdit: boolean,
     agentId: string | null,
   ) => {

@@ -215,20 +215,29 @@ describe("createCommonParameters", () => {
     },
   };
 
-  it.each(["mistral", "openrouter", "requesty"])(
-    "forwards configured reasoning effort through %s",
-    (provider) => {
-      const params: ChatCompletionParameters = {
-        model: "mistral-small",
-        env: createTestEnv(),
-        messages: [{ role: "user", content: "hello" }],
-        reasoning_effort: "high",
-      };
-      const body = createCommonParameters(params, hybridModel, provider);
+  it.each([
+    "azure-openai",
+    "cortecs",
+    "deepinfra",
+    "github-copilot",
+    "github-models",
+    "mistral",
+    "opencode",
+    "opencode-go",
+    "openrouter",
+    "requesty",
+    "vercel",
+  ])("forwards configured reasoning effort through %s", (provider) => {
+    const params: ChatCompletionParameters = {
+      model: "mistral-small",
+      env: createTestEnv(),
+      messages: [{ role: "user", content: "hello" }],
+      reasoning_effort: "high",
+    };
+    const body = createCommonParameters(params, hybridModel, provider);
 
-      expect(body.reasoning_effort).toBe("high");
-    },
-  );
+    expect(body.reasoning_effort).toBe("high");
+  });
 
   it("does not forward an effort the model does not advertise", () => {
     const params: ChatCompletionParameters = {

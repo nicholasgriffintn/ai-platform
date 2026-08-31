@@ -6,16 +6,18 @@ import {
   CardTitle,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
+import type { AgentResponse } from "@ngriffin_uk/polychat-schemas";
 import { Loader2, User } from "lucide-react";
 
 import { AgentCard } from "./AgentCard";
 import { TeamCard } from "./TeamCard";
+import type { GroupedAgents } from "./types";
 
 interface AgentsListProps {
-  groupedAgents: any;
+  groupedAgents: GroupedAgents;
   isLoading: boolean;
-  onEdit: (agent: any) => void;
-  onShare: (agent: any) => void;
+  onEdit: (agent: AgentResponse) => void;
+  onShare: (agent: AgentResponse) => void;
   onDelete: (agentId: string, agentName: string) => void;
   isUpdating: boolean;
   isSharing: boolean;
@@ -62,8 +64,9 @@ export function AgentsList({
     );
   }
 
-  const hasTeams = groupedAgents.teams && Object.values(groupedAgents.teams).length > 0;
-  const hasIndividual = groupedAgents.individual && groupedAgents.individual.length > 0;
+  const teams = Object.values(groupedAgents.teams);
+  const hasTeams = teams.length > 0;
+  const hasIndividual = groupedAgents.individual.length > 0;
 
   if (!hasTeams && !hasIndividual) {
     return (
@@ -112,7 +115,7 @@ export function AgentsList({
                 Agent Teams
               </h3>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {Object.values(groupedAgents.teams).map((team: any) => (
+                {teams.map((team) => (
                   <TeamCard
                     key={team.id}
                     team={team}
@@ -135,7 +138,7 @@ export function AgentsList({
                 Individual Agents
               </h3>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {groupedAgents.individual.map((agent: any) => (
+                {groupedAgents.individual.map((agent) => (
                   <AgentCard
                     key={agent.id}
                     agent={agent}

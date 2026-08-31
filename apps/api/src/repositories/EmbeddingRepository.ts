@@ -53,8 +53,8 @@ export class EmbeddingRepository extends BaseRepository {
           `INSERT INTO embedding_document
              (id, scope_type, user_id, logical_id, type, title, metadata,
               lifecycle_status, provider, provider_target, embedding_model, vector_space,
-              vector_space_version)
-           VALUES (?, 'personal', ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)`,
+              vector_space_version, embedding_dimensions, distance_metric, task_mode)
+           VALUES (?, 'personal', ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
           document.id,
@@ -68,16 +68,19 @@ export class EmbeddingRepository extends BaseRepository {
           document.embeddingModel,
           document.vectorSpace,
           document.vectorSpaceVersion,
+          document.embeddingDimensions,
+          document.distanceMetric,
+          document.taskMode,
         ),
       database
         .prepare(
           `INSERT INTO embedding_chunk
              (id, document_id, vector_id, chunk_index, content, metadata,
               lifecycle_status, provider, provider_target, embedding_model, vector_space,
-              vector_space_version)
+              vector_space_version, embedding_dimensions, distance_metric, task_mode)
            SELECT json_extract(value, '$.id'), ?, json_extract(value, '$.vectorId'),
                   json_extract(value, '$.index'), json_extract(value, '$.content'),
-                  json_extract(value, '$.metadata'), 'pending', ?, ?, ?, ?, ?
+                  json_extract(value, '$.metadata'), 'pending', ?, ?, ?, ?, ?, ?, ?, ?
              FROM json_each(?)`,
         )
         .bind(
@@ -87,6 +90,9 @@ export class EmbeddingRepository extends BaseRepository {
           document.embeddingModel,
           document.vectorSpace,
           document.vectorSpaceVersion,
+          document.embeddingDimensions,
+          document.distanceMetric,
+          document.taskMode,
           JSON.stringify(
             document.chunks.map((chunk) => ({
               ...chunk,
@@ -126,6 +132,8 @@ export class EmbeddingRepository extends BaseRepository {
       await Promise.all(
         pages.map((page) =>
           this.runQuery<{
+            chunk_id: string;
+            chunk_index: number;
             vector_id: string;
             logical_id: string;
             title: string;
@@ -135,12 +143,17 @@ export class EmbeddingRepository extends BaseRepository {
             provider: string;
             provider_target: string;
             embedding_model: string;
+            embedding_dimensions: number;
+            distance_metric: ActiveEmbeddingChunk["distanceMetric"];
+            task_mode: ActiveEmbeddingChunk["taskMode"];
             vector_space: string;
             vector_space_version: string;
           }>(
-            `SELECT c.vector_id, d.logical_id, d.title, c.content, d.type, d.metadata,
+            `SELECT c.id AS chunk_id, c.chunk_index, c.vector_id, d.logical_id,
+                    d.title, c.content, d.type, d.metadata,
                     d.provider, d.provider_target, d.embedding_model, d.vector_space,
-                    d.vector_space_version
+                    d.vector_space_version, d.embedding_dimensions, d.distance_metric,
+                    d.task_mode
          FROM embedding_chunk c
          JOIN embedding_document d ON d.id = c.document_id
         WHERE d.user_id = ?
@@ -156,6 +169,8 @@ export class EmbeddingRepository extends BaseRepository {
     ).flat();
 
     return rows.map((row) => ({
+      chunkId: row.chunk_id,
+      chunkIndex: row.chunk_index,
       vectorId: row.vector_id,
       logicalId: row.logical_id,
       title: row.title,
@@ -165,6 +180,9 @@ export class EmbeddingRepository extends BaseRepository {
       provider: row.provider,
       providerTarget: row.provider_target,
       embeddingModel: row.embedding_model,
+      embeddingDimensions: row.embedding_dimensions,
+      distanceMetric: row.distance_metric,
+      taskMode: row.task_mode,
       vectorSpace: row.vector_space,
       vectorSpaceVersion: row.vector_space_version,
     }));
@@ -178,11 +196,14 @@ export class EmbeddingRepository extends BaseRepository {
       provider: string;
       provider_target: string;
       embedding_model: string;
+      embedding_dimensions: number;
+      distance_metric: EmbeddingDocumentProviderTarget["distanceMetric"];
+      task_mode: EmbeddingDocumentProviderTarget["taskMode"];
       vector_space: string;
       vector_space_version: string;
     }>(
-      `SELECT DISTINCT provider, provider_target, embedding_model, vector_space,
-                       vector_space_version
+      `SELECT DISTINCT provider, provider_target, embedding_model, embedding_dimensions,
+                       distance_metric, task_mode, vector_space, vector_space_version
          FROM embedding_document
         WHERE user_id = ?
           AND scope_type = 'personal'
@@ -195,6 +216,9 @@ export class EmbeddingRepository extends BaseRepository {
       provider: row.provider,
       providerTarget: row.provider_target,
       embeddingModel: row.embedding_model,
+      embeddingDimensions: row.embedding_dimensions,
+      distanceMetric: row.distance_metric,
+      taskMode: row.task_mode,
       vectorSpace: row.vector_space,
       vectorSpaceVersion: row.vector_space_version,
     }));
@@ -206,7 +230,8 @@ export class EmbeddingRepository extends BaseRepository {
   ): Promise<EmbeddingDocumentDeletionTarget | null> {
     const rows = await this.runQuery<EmbeddingDeletionRow>(
       `SELECT d.id, d.logical_id, d.provider, d.provider_target, d.embedding_model,
-              d.vector_space, d.vector_space_version, c.vector_id
+              d.embedding_dimensions, d.distance_metric, d.task_mode, d.vector_space,
+              d.vector_space_version, c.vector_id
          FROM embedding_document d
          LEFT JOIN embedding_chunk c ON c.document_id = d.id
         WHERE d.user_id = ?
@@ -292,7 +317,8 @@ export class EmbeddingRepository extends BaseRepository {
         pages.map((page) =>
           this.runQuery<EmbeddingDeletionRow>(
             `SELECT d.id, d.logical_id, d.provider, d.provider_target, d.embedding_model,
-                    d.vector_space, d.vector_space_version, c.vector_id
+                    d.embedding_dimensions, d.distance_metric, d.task_mode, d.vector_space,
+                    d.vector_space_version, c.vector_id
                FROM embedding_document d
                LEFT JOIN embedding_chunk c ON c.document_id = d.id
               WHERE d.user_id = ?

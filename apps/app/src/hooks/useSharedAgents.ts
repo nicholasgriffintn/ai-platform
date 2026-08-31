@@ -1,3 +1,4 @@
+import type { SharedAgentSummary } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -23,19 +24,23 @@ export function useSharedAgents(filters?: {
 }) {
   const queryClient = useQueryClient();
 
-  const { data: sharedAgents = [], isLoading: isLoadingSharedAgents } = useQuery<any[]>({
+  const { data: sharedAgents = [], isLoading: isLoadingSharedAgents } = useQuery<
+    SharedAgentSummary[]
+  >({
     queryKey: [...SHARED_AGENTS_QUERY_KEYS.all, filters],
     queryFn: () => apiService.listSharedAgents(filters),
     staleTime: 1000 * 60,
   });
 
-  const { data: featuredAgents = [], isLoading: isLoadingFeaturedAgents } = useQuery<any[]>({
+  const { data: featuredAgents = [], isLoading: isLoadingFeaturedAgents } = useQuery<
+    SharedAgentSummary[]
+  >({
     queryKey: SHARED_AGENTS_QUERY_KEYS.featured,
     queryFn: () => apiService.listFeaturedSharedAgents(filters?.limit),
     staleTime: 1000 * 60,
   });
 
-  const installMutation = useMutation<any, Error, string>({
+  const installMutation = useMutation<unknown, Error, string>({
     mutationFn: (agentId) => apiService.installSharedAgent(agentId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: AGENTS_QUERY_KEYS.all });
@@ -47,7 +52,7 @@ export function useSharedAgents(filters?: {
   });
 
   const rateMutation = useMutation<
-    any,
+    unknown,
     Error,
     { agentId: string; rating: number; review?: string }
   >({
@@ -63,7 +68,7 @@ export function useSharedAgents(filters?: {
   });
 
   const shareMutation = useMutation<
-    any,
+    unknown,
     Error,
     {
       agentId: string;

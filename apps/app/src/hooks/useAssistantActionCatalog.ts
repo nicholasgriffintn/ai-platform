@@ -5,6 +5,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMemo } from "react";
 
+import { toAssistantActionAgentSources } from "~/lib/agents/assistant-action-agents";
 import { useChatStore } from "~/state/stores/chatStore";
 
 import { useAgents } from "./useAgents";
@@ -55,7 +56,7 @@ export function useAssistantActionCatalog({
   return useMemo(
     () =>
       buildAssistantActionCatalog({
-        agents: includeAgents ? chatAgents : [],
+        agents: includeAgents ? toAssistantActionAgentSources(chatAgents) : [],
         connectors: connectorsData?.connectors ?? [],
         installations: installationsData?.installations ?? [],
         modelTools,

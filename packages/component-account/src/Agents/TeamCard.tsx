@@ -9,6 +9,8 @@ import {
   DropdownMenuItem,
   cn,
 } from "@ngriffin_uk/polychat-component-ui";
+import type { AgentResponse } from "@ngriffin_uk/polychat-schemas";
+import { capitaliseFirst } from "@ngriffin_uk/polychat-utility-core";
 import {
   ChevronDown,
   ChevronRight,
@@ -20,15 +22,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import type { AgentTeam } from "./types";
+
 interface TeamCardProps {
-  team: {
-    id: string;
-    name: string;
-    orchestrator: any;
-    members: any[];
-  };
-  onEdit: (agent: any) => void;
-  onShare: (agent: any) => void;
+  team: AgentTeam;
+  onEdit: (agent: AgentResponse) => void;
+  onShare: (agent: AgentResponse) => void;
   onDelete: (agentId: string, agentName: string) => void;
   isUpdating?: boolean;
   isSharing?: boolean;
@@ -61,7 +60,7 @@ export function TeamCard({
     }));
   };
 
-  const renderDescription = (agent: any) => {
+  const renderDescription = (agent: AgentResponse) => {
     if (!agent.description) {
       return null;
     }
@@ -254,8 +253,7 @@ export function TeamCard({
                           "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400",
                       )}
                     >
-                      {member.team_role?.charAt(0).toUpperCase() + member.team_role?.slice(1) ||
-                        "Member"}
+                      {capitaliseFirst(member.team_role ?? "") || "Member"}
                     </span>
                   </div>
                   {renderDescription(member)}
