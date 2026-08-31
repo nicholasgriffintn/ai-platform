@@ -1,7 +1,14 @@
 import type { RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schemas";
 
 import type { AudioCommitGateConfig } from "./audio-commit-gate";
-import { extractInlineAudioChunks, isRealtimeSetupCompleteMessage } from "./messages";
+import {
+  extractRealtimeGoAwayNotice,
+  extractInlineAudioChunks,
+  extractRealtimeSessionResumptionUpdate,
+  isRealtimeSetupCompleteMessage,
+  type RealtimeGoAwayNotice,
+  type RealtimeSessionResumptionUpdate,
+} from "./messages";
 import type { RealtimeSession } from "./types";
 
 type RealtimeLiveProviderId = RealtimeLiveProviderDescriptor["id"];
@@ -21,11 +28,17 @@ export interface RealtimeLiveWebSocketAudioOutputConfig {
 }
 
 export interface RealtimeLiveWebSocketSetupConfig {
-  buildMessage: (session: RealtimeSession) => unknown;
+  buildMessage: (session: RealtimeSession, resumptionHandle?: string) => unknown;
   connectedEventLabel: string;
   isCompleteMessage: (payload: unknown) => boolean;
   startingMediaEventLabel: string;
   waitingEventLabel: string;
+}
+
+export interface RealtimeLiveWebSocketResumptionConfig {
+  extractReconnectNotice: (payload: unknown) => RealtimeGoAwayNotice | undefined;
+  extractUpdate: (payload: unknown) => RealtimeSessionResumptionUpdate | undefined;
+  reconnectingEventLabel: string;
 }
 
 export interface RealtimeLiveWebSocketVideoInputConfig {
@@ -39,6 +52,7 @@ export interface RealtimeLiveWebSocketConfig {
   connectedEventLabel: string;
   connectionFailedMessage: string;
   mediaStartFailedMessage: string;
+  resumption?: RealtimeLiveWebSocketResumptionConfig;
   setup?: RealtimeLiveWebSocketSetupConfig;
   startingMediaEventLabel: string;
   videoInput?: RealtimeLiveWebSocketVideoInputConfig;
@@ -69,17 +83,27 @@ export const REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG: Partial<
     connectionFailedMessage: "Gemini Live connection failed",
     mediaStartFailedMessage: "Failed to start Gemini Live media",
     setup: {
-      buildMessage: (session) => {
+      buildMessage: (session, resumptionHandle) => {
         if (!session.setup) {
           throw new Error("Gemini Live session setup missing");
         }
 
-        return { setup: session.setup };
+        return {
+          setup: {
+            ...session.setup,
+            sessionResumption: resumptionHandle ? { handle: resumptionHandle } : {},
+          },
+        };
       },
       connectedEventLabel: "Gemini Live connected",
       isCompleteMessage: isRealtimeSetupCompleteMessage,
       startingMediaEventLabel: "Starting Gemini Live media",
       waitingEventLabel: "Waiting for Gemini Live setup",
+    },
+    resumption: {
+      extractReconnectNotice: extractRealtimeGoAwayNotice,
+      extractUpdate: extractRealtimeSessionResumptionUpdate,
+      reconnectingEventLabel: "Reconnecting Gemini Live",
     },
     startingMediaEventLabel: "Starting Gemini Live media",
     videoInput: {
