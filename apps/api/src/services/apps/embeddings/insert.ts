@@ -1,8 +1,5 @@
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import {
-  getEmbeddingProviderForTarget,
-  resolveEmbeddingProviderTarget,
-} from "~/lib/providers/capabilities/embedding/helpers";
+import { resolveEmbeddingRuntime } from "~/lib/providers/capabilities/embedding/helpers";
 import { getPersonalEmbeddingScopeTag } from "~/lib/providers/capabilities/embedding/utils/scope";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -31,16 +28,10 @@ export const insertEmbedding = async ({ request, context, env, user }: InsertEmb
     throw new AssistantError("User settings not found", ErrorType.NOT_FOUND, 404);
   }
 
-  const providerTarget = await resolveEmbeddingProviderTarget(
+  const { runtime, target } = await resolveEmbeddingRuntime(
     serviceContext.env,
     authenticatedUser,
     userSettings,
-  );
-  const provider = getEmbeddingProviderForTarget(
-    serviceContext.env,
-    authenticatedUser,
-    userSettings,
-    providerTarget,
   );
   const scopeTag = await getPersonalEmbeddingScopeTag(
     serviceContext.env.EMBEDDING_SCOPE_SECRET,
@@ -77,24 +68,27 @@ export const insertEmbedding = async ({ request, context, env, user }: InsertEmb
       type: input.type,
       title: document.title,
       metadata: input.metadata ?? {},
-      provider: providerTarget.provider,
-      providerTarget: providerTarget.target,
-      embeddingModel: providerTarget.model,
-      vectorSpace: providerTarget.vectorSpace,
-      vectorSpaceVersion: providerTarget.vectorSpaceVersion,
+      provider: target.embeddingProvider,
+      providerTarget: target.providerTarget,
+      embeddingModel: target.model,
+      embeddingDimensions: target.dimensions,
+      distanceMetric: target.distanceMetric,
+      taskMode: target.taskMode,
+      vectorSpace: target.vectorSpace,
+      vectorSpaceVersion: target.vectorSpaceVersion,
       chunks: document.chunks,
     });
     documentCreated = true;
 
     const generated = await generateEmbeddingVectors(
-      provider,
+      runtime.embedder,
       document.documentId,
       input.type,
       document.chunks,
     );
 
     providerWriteAttempted = true;
-    const inserted = await provider.insert(generated, {
+    const inserted = await runtime.vectorStore.insert(generated, {
       scopeTag,
       contentType: input.type,
     });
@@ -155,7 +149,7 @@ export const insertEmbedding = async ({ request, context, env, user }: InsertEmb
     if (documentCreated && compensationIsSafe) {
       await cleanupPendingEmbeddingDocument({
         context: serviceContext,
-        provider,
+        vectorStore: runtime.vectorStore,
         providerWriteAttempted,
         userId: authenticatedUser.id,
         documentId: document.documentId,

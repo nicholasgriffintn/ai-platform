@@ -25,6 +25,24 @@ describe("chat completions schema", () => {
     });
   });
 
+  it("accepts and strips retired request-level retrieval settings during rollout", () => {
+    const parsed = createChatCompletionsJsonSchema.parse({
+      model: "gpt-5",
+      messages,
+      use_rag: true,
+      rag_options: { top_k: 8 },
+    });
+
+    expect(parsed).not.toHaveProperty("use_rag");
+    expect(parsed).not.toHaveProperty("rag_options");
+  });
+
+  it("continues to reject unknown request fields", () => {
+    expect(() =>
+      createChatCompletionsJsonSchema.parse({ model: "gpt-5", messages, unknown_setting: true }),
+    ).toThrow();
+  });
+
   it("accepts a structured tool interaction resolution", () => {
     expect(
       createChatCompletionsJsonSchema.parse({

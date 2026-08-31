@@ -71,6 +71,13 @@
       "when": 1788195406310,
       "tag": "0009_backfill_scoped_embeddings",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1788198781909,
+      "tag": "0010_careless_blade",
+      "breakpoints": true
     }
   ]
 }

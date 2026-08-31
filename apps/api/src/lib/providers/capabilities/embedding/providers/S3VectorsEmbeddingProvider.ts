@@ -15,11 +15,13 @@ import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type {
   EmbeddingMutationResult,
   EmbeddingProvider,
+  EmbeddingQueryOptions,
   EmbeddingQueryResult,
   EmbeddingVector,
+  EmbeddingWriteOptions,
   IEnv,
   IUser,
-  RagOptions,
+  NumericEmbeddingQuery,
 } from "~/types";
 import { paginate } from "~/utils/arrays";
 import { parseEmbeddingVectors } from "~/utils/embeddings";
@@ -68,7 +70,7 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
     type: string,
     content: string,
     id: string,
-    metadata: Record<string, any>,
+    metadata: Record<string, unknown>,
   ): Promise<EmbeddingVector[]> {
     try {
       if (!type || !content || !id) {
@@ -174,7 +176,7 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 
   async insert(
     embeddings: EmbeddingVector[],
-    options: RagOptions = {},
+    options: EmbeddingWriteOptions = {},
   ): Promise<EmbeddingMutationResult> {
     requireEmbeddingScopeTag(options);
     logger.debug("Inserting embeddings into S3 Vectors", {
@@ -301,8 +303,8 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
   }
 
   async getMatches(
-    queryVector: ArrayLike<number>,
-    options: RagOptions = {},
+    queryVector: NumericEmbeddingQuery,
+    options: EmbeddingQueryOptions = {},
   ): Promise<EmbeddingQueryResult> {
     requireEmbeddingScopeTag(options);
     logger.debug("Querying S3 Vectors");
@@ -367,27 +369,5 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
         })) || [],
       count: data.vectors?.length || 0,
     };
-  }
-
-  async searchSimilar(query: string, options: RagOptions = {}) {
-    const queryVector = await this.getQuery(query);
-
-    if (!queryVector.data) {
-      throw new AssistantError("No embedding data found", ErrorType.NOT_FOUND);
-    }
-
-    const matchesResponse = await this.getMatches(queryVector.data[0], options);
-
-    if (!matchesResponse.matches.length) {
-      throw new AssistantError("No matches found", ErrorType.NOT_FOUND);
-    }
-
-    return matchesResponse.matches.map((match) => ({
-      title: match.title || match.metadata?.title || "",
-      content: match.content || match.metadata?.content || "",
-      metadata: match.metadata || {},
-      score: match.score,
-      type: match.metadata?.type || "text",
-    }));
   }
 }
