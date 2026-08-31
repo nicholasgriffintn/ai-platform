@@ -1,7 +1,6 @@
-import type { PageHeaderAction } from "@ngriffin_uk/polychat-component-ui";
 import type { AgentResponse, ProjectCapabilityKind } from "@ngriffin_uk/polychat-schemas";
 import { Bot, Link2, Plus, Store } from "lucide-react";
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
 import type {
@@ -35,6 +34,13 @@ export interface CapabilityAuthoringInput {
   surface: CapabilitySurface;
 }
 
+export interface CapabilityAddChoice {
+  description: string;
+  icon: ReactNode;
+  label: string;
+  onSelect: () => void;
+}
+
 export interface SharedAgentAuthoring {
   agent: { id: string; name: string; description?: string | null } | null;
   close: () => void;
@@ -62,7 +68,7 @@ export interface CapabilityAuthoring {
     isPending: boolean;
     pending: PendingCapabilityDeletion | null;
   };
-  headerActions?: PageHeaderAction[];
+  addChoices: CapabilityAddChoice[];
 }
 
 export function useCapabilityAuthoring({
@@ -89,41 +95,40 @@ export function useCapabilityAuthoring({
     [capabilities],
   );
   const agents = useAgentCapabilityActions(surface, attachedAgentIds);
-  const headerActions = useMemo(() => {
+  const addChoices = useMemo<CapabilityAddChoice[]>(() => {
     if (!canAuthor) {
-      return undefined;
+      return [];
     }
 
-    const actions: PageHeaderAction[] = [
+    return [
       {
-        label: "Add skill",
-        icon: <Plus className="h-4 w-4" />,
-        onClick: () => setAddSkillOpen(true),
-      },
-      {
-        label: "Add agent",
+        label: "New agent",
+        description: "Configure a persona, its model, tools and skills",
         icon: <Bot className="h-4 w-4" />,
-        onClick: () => {
+        onSelect: () => {
           void navigate(agents.createPath);
         },
       },
+      projectId
+        ? {
+            label: "Attach an agent",
+            description: "Bring in an agent this workspace already owns",
+            icon: <Link2 className="h-4 w-4" />,
+            onSelect: () => setAttachAgentOpen(true),
+          }
+        : {
+            label: "Browse shared agents",
+            description: "Install an agent someone has published",
+            icon: <Store className="h-4 w-4" />,
+            onSelect: () => setBrowseSharedOpen(true),
+          },
+      {
+        label: "Add a skill",
+        description: "Upload an Agent Skills document",
+        icon: <Plus className="h-4 w-4" />,
+        onSelect: () => setAddSkillOpen(true),
+      },
     ];
-
-    if (projectId) {
-      actions.push({
-        label: "Attach agent",
-        icon: <Link2 className="h-4 w-4" />,
-        onClick: () => setAttachAgentOpen(true),
-      });
-    } else {
-      actions.push({
-        label: "Browse shared agents",
-        icon: <Store className="h-4 w-4" />,
-        onClick: () => setBrowseSharedOpen(true),
-      });
-    }
-
-    return actions;
   }, [agents.createPath, canAuthor, navigate, projectId]);
 
   const isDeletingAgent = pendingDeletion?.kind === "agent";
@@ -203,6 +208,6 @@ export function useCapabilityAuthoring({
       isPending: isDeletingAgent ? agents.isDeleting : skillDeletion.isPending,
       pending: pendingDeletion,
     },
-    headerActions,
+    addChoices,
   };
 }

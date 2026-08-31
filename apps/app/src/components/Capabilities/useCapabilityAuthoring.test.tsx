@@ -110,11 +110,11 @@ function renderAuthoring(overrides: Partial<CapabilityAuthoringInput> = {}) {
   return renderHook(() => useCapabilityAuthoring(authoringInput(overrides)), { wrapper });
 }
 
-function headerAction(
+function addChoice(
   result: ReturnType<typeof renderAuthoring>["result"],
   label: string,
 ): (() => void) | undefined {
-  return result.current.headerActions?.find((action) => action.label === label)?.onClick;
+  return result.current.addChoices.find((choice) => choice.label === label)?.onSelect;
 }
 
 beforeEach(() => {
@@ -127,10 +127,11 @@ describe("capability library agent authoring", () => {
   it("opens the personal agent editor from the library's add-agent action", () => {
     const { result } = renderAuthoring();
 
-    headerAction(result, "Add agent")?.();
+    addChoice(result, "New agent")?.();
 
     expect(navigate).toHaveBeenCalledWith("/chat/agents/new");
-    expect(headerAction(result, "Attach agent")).toBeUndefined();
+    expect(addChoice(result, "Attach an agent")).toBeUndefined();
+    expect(addChoice(result, "Browse shared agents")).toBeDefined();
   });
 
   it("opens the project agent editor and offers attachment inside a project", () => {
@@ -139,10 +140,11 @@ describe("capability library agent authoring", () => {
       surface: getProjectSurface("workspace-1", "project-1"),
     });
 
-    headerAction(result, "Add agent")?.();
+    addChoice(result, "New agent")?.();
 
     expect(navigate).toHaveBeenCalledWith("/work/workspace-1/projects/project-1/agents/new");
-    expect(headerAction(result, "Attach agent")).toBeDefined();
+    expect(addChoice(result, "Attach an agent")).toBeDefined();
+    expect(addChoice(result, "Browse shared agents")).toBeUndefined();
   });
 
   it("withholds authoring actions from a project member who cannot manage capabilities", () => {
@@ -151,7 +153,7 @@ describe("capability library agent authoring", () => {
       surface: getProjectSurface("workspace-1", "project-1"),
     });
 
-    expect(result.current.headerActions).toBeUndefined();
+    expect(result.current.addChoices).toEqual([]);
   });
 
   it("only lets a viewer manage the agents they own or administer", () => {
@@ -213,14 +215,14 @@ describe("capability library agent authoring", () => {
   it("offers shared-agent browsing personally but not inside a project", () => {
     const personal = renderAuthoring();
 
-    expect(headerAction(personal.result, "Browse shared agents")).toBeDefined();
+    expect(addChoice(personal.result, "Browse shared agents")).toBeDefined();
 
     const project = renderAuthoring({
       projectActions: { addCapability: vi.fn(async () => undefined), canManage: true },
       surface: getProjectSurface("workspace-1", "project-1"),
     });
 
-    expect(headerAction(project.result, "Browse shared agents")).toBeUndefined();
+    expect(addChoice(project.result, "Browse shared agents")).toBeUndefined();
   });
 
   it("offers only the workspace agents a project has not already attached", () => {

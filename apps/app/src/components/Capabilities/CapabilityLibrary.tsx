@@ -13,6 +13,7 @@ import { SearchX } from "lucide-react";
 
 import { AddSkillDialog } from "~/components/Capabilities/AddSkillDialog";
 import { AttachAgentDialog } from "~/components/Capabilities/AttachAgentDialog";
+import { CapabilityAddMenu } from "~/components/Capabilities/CapabilityAddMenu";
 import { CapabilityGroups } from "~/components/Capabilities/CapabilityGroups";
 import { ShareAgentDialog } from "~/components/Capabilities/ShareAgentDialog";
 import { SharedAgentsDialog } from "~/components/Capabilities/SharedAgentsDialog";
@@ -58,7 +59,10 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
   return (
     <>
       <PageShell.Content className="max-w-6xl">
-        <PageShell.Header title={title} actions={authoring.headerActions} />
+        <PageShell.Header
+          title={title}
+          actionContent={<CapabilityAddMenu choices={authoring.addChoices} />}
+        />
         <p className="mb-6 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">{subtitle}</p>
         <CapabilityFilters
           categories={controller.filters.categories}
