@@ -27,7 +27,19 @@ import {
 } from "../lib/providers/models/reasoning";
 
 const permissionChecker = new PermissionChecker();
-const FLAT_REASONING_EFFORT_PROVIDERS = new Set(["mistral", "openrouter", "requesty"]);
+const FLAT_REASONING_EFFORT_PROVIDERS = new Set([
+  "azure-openai",
+  "cortecs",
+  "deepinfra",
+  "github-copilot",
+  "github-models",
+  "mistral",
+  "opencode",
+  "opencode-go",
+  "openrouter",
+  "requesty",
+  "vercel",
+]);
 
 /**
  * Restricts max_tokens to the model's configured maximum
