@@ -1,9 +1,11 @@
 import {
+  apiResponseSchema,
   textToSpeechSchema,
   transcribeFormSchema,
   transcribeQuerySchema,
-  apiResponseSchema,
+  transcriptionResponseSchema,
   errorResponseSchema,
+  NO_STORE,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 
@@ -16,23 +18,31 @@ const app = new Hono();
 
 const routeLogger = createRouteLogger("audio");
 
-app.use("/*", (c, next) => {
+app.use("/*", async (c, next) => {
   routeLogger.info(`Processing audio route: ${c.req.path}`);
 
-  return next();
+  if (c.req.path.endsWith("/transcribe")) {
+    c.header("Cache-Control", NO_STORE);
+  }
+
+  await next();
+
+  if (c.req.path.endsWith("/transcribe")) {
+    c.res.headers.set("Cache-Control", NO_STORE);
+  }
 });
 
 addRoute(app, "post", "/transcribe", {
   tags: ["audio"],
   summary: "Create transcription",
   description: "Transcribes audio into the input language.",
-  auth: "user-or-anonymous",
+  auth: true,
   formSchema: transcribeFormSchema,
   querySchema: transcribeQuerySchema,
   responses: {
     200: {
       description: "Transcription result with extracted text",
-      schema: apiResponseSchema,
+      schema: transcriptionResponseSchema,
     },
     400: {
       description: "Bad request or validation error",
@@ -40,13 +50,11 @@ addRoute(app, "post", "/transcribe", {
     },
   },
   handler: async ({ query, raw, serviceContext, user }) => {
-    const { audio } = raw.req.valid("form" as never) as {
-      audio: File | Blob | string;
-    };
+    const { audio } = transcribeFormSchema.parse(raw.req.valid("form" as never));
 
     const response = await handleTranscribe({
       env: serviceContext.env,
-      audio,
+      audio: { kind: "file", file: audio },
       provider: query.provider,
       timestamps: query.timestamps,
       user,

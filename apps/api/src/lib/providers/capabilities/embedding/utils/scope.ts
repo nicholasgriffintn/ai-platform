@@ -1,65 +1,118 @@
-import type { RagOptions } from "~/types";
+import type { EmbeddingScopeOptions } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
-const hasKeys = (value: unknown): value is Record<string, any> =>
+const hasKeys = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === "object" && Object.keys(value).length > 0;
+const PROVIDER_METADATA_KEYS = new Set(["chunkId", "chunkIndex", "documentId", "type"]);
+const EMBEDDING_SCOPE_TAG_PATTERN = /^scope_v1_[a-f0-9]{32}$/;
+const EMBEDDING_CREDENTIAL_FINGERPRINT_PREFIX = "credential_v1_";
 
-export const getEmbeddingContentType = (options: RagOptions) =>
-  options.contentType ?? options.embeddingType ?? options.type;
+type ProviderMetadataValue = string | number | boolean | string[];
 
-const getUserId = (options: RagOptions) =>
-  options.userId === undefined || options.userId === null ? undefined : String(options.userId);
+const isProviderMetadataValue = (value: unknown): value is ProviderMetadataValue =>
+  typeof value === "string" ||
+  typeof value === "number" ||
+  typeof value === "boolean" ||
+  (Array.isArray(value) && value.every((item) => typeof item === "string"));
 
-const isOwnedUserNamespace = (namespace: string | undefined, userId: string | undefined) =>
-  !!namespace &&
-  !!userId &&
-  [`user_kb_${userId}`, `memory_user_${userId}`, `sandbox_runs_user_${userId}`].includes(namespace);
+export const getEmbeddingContentType = (options: EmbeddingScopeOptions) => options.contentType;
 
-const getMetadataUserIdFilter = (options: RagOptions) => {
-  const userId = getUserId(options);
+const bytesToHex = (bytes: ArrayBuffer) =>
+  Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, "0")).join("");
 
-  return isOwnedUserNamespace(options.namespace, userId) ? undefined : userId;
+const getEmbeddingScopeTag = async (secret: string | undefined, scope: string) => {
+  if (!secret || secret.length < 32) {
+    throw new AssistantError(
+      "A stable embedding scope secret of at least 32 characters is required",
+      ErrorType.CONFIGURATION_ERROR,
+      500,
+    );
+  }
+
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(scope));
+
+  return `scope_v1_${bytesToHex(signature).slice(0, 32)}`;
+};
+
+export const getPersonalEmbeddingScopeTag = (secret: string | undefined, userId: number) =>
+  getEmbeddingScopeTag(secret, `personal:${userId}`);
+
+export const getProjectEmbeddingScopeTag = (secret: string | undefined, projectId: string) =>
+  getEmbeddingScopeTag(secret, `project:${projectId}`);
+
+export const getEmbeddingCredentialFingerprint = async (
+  secret: string | undefined,
+  credential: string,
+) => {
+  const tag = await getEmbeddingScopeTag(secret, `credential:${credential}`);
+
+  return `${EMBEDDING_CREDENTIAL_FINGERPRINT_PREFIX}${tag.slice("scope_v1_".length)}`;
+};
+
+export const requireEmbeddingScopeTag = (options: EmbeddingScopeOptions): string => {
+  if (!options.scopeTag || !EMBEDDING_SCOPE_TAG_PATTERN.test(options.scopeTag)) {
+    throw new AssistantError(
+      "Embedding operation requires an authorised scope",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
+  return options.scopeTag;
 };
 
 export const withEmbeddingScopeMetadata = (
-  metadata: Record<string, any>,
-  options: RagOptions,
-): Record<string, any> => ({
-  ...metadata,
-  ...(options.namespace && { namespace: options.namespace }),
-  ...(getUserId(options) && { userId: getUserId(options) }),
-});
+  metadata: Record<string, unknown>,
+  options: EmbeddingScopeOptions,
+): Record<string, ProviderMetadataValue> => {
+  const scopeTag = requireEmbeddingScopeTag(options);
+  const internalMetadata: Record<string, ProviderMetadataValue> = {};
 
-export const buildVectorizeMetadataFilter = (options: RagOptions) => {
+  for (const [key, value] of Object.entries(metadata)) {
+    if (PROVIDER_METADATA_KEYS.has(key) && isProviderMetadataValue(value)) {
+      internalMetadata[key] = value;
+    }
+  }
+
+  return {
+    ...internalMetadata,
+    scopeTag,
+  };
+};
+
+export const buildVectorizeMetadataFilter = (options: EmbeddingScopeOptions) => {
+  const scopeTag = requireEmbeddingScopeTag(options);
   const contentType = getEmbeddingContentType(options);
-  const userId = getMetadataUserIdFilter(options);
   const filter = {
     ...(hasKeys(options.filter) ? options.filter : {}),
     ...(contentType && { type: contentType }),
-    ...(userId && { userId }),
+    scopeTag,
   };
 
   return hasKeys(filter) ? filter : undefined;
 };
 
-export const buildS3VectorsMetadataFilter = (options: RagOptions) => {
-  const filters: Record<string, any>[] = [];
+export const buildS3VectorsMetadataFilter = (options: EmbeddingScopeOptions) => {
+  const scopeTag = requireEmbeddingScopeTag(options);
+  const filters: Record<string, unknown>[] = [];
   const contentType = getEmbeddingContentType(options);
-  const userId = getMetadataUserIdFilter(options);
 
   if (hasKeys(options.filter)) {
     filters.push(options.filter);
   }
 
-  if (options.namespace) {
-    filters.push({ namespace: { $eq: options.namespace } });
-  }
+  filters.push({ scopeTag: { $eq: scopeTag } });
 
   if (contentType) {
     filters.push({ type: { $eq: contentType } });
-  }
-
-  if (userId) {
-    filters.push({ userId: { $eq: userId } });
   }
 
   if (filters.length === 0) {
@@ -69,25 +122,19 @@ export const buildS3VectorsMetadataFilter = (options: RagOptions) => {
   return filters.length === 1 ? filters[0] : { $and: filters };
 };
 
-export const buildBedrockRetrievalFilter = (options: RagOptions) => {
+export const buildBedrockRetrievalFilter = (options: EmbeddingScopeOptions) => {
+  const scopeTag = requireEmbeddingScopeTag(options);
   const filters: Record<string, unknown>[] = [];
-  const contentType = options.contentType ?? options.embeddingType;
-  const userId = getMetadataUserIdFilter(options);
+  const contentType = options.contentType;
 
   if (hasKeys(options.filter)) {
     filters.push(options.filter);
   }
 
-  if (options.namespace) {
-    filters.push({ equals: { key: "namespace", value: options.namespace } });
-  }
+  filters.push({ equals: { key: "scopeTag", value: scopeTag } });
 
   if (contentType) {
     filters.push({ equals: { key: "type", value: contentType } });
-  }
-
-  if (userId) {
-    filters.push({ equals: { key: "userId", value: userId } });
   }
 
   if (filters.length === 0) {

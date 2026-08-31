@@ -1,5 +1,21 @@
 import z from "zod/v4";
 
+export const sharedAgentSummarySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().nullish(),
+  avatar_url: z.string().nullish(),
+  category: z.string().nullish(),
+  tags: z.union([z.string(), z.array(z.string())]).nullish(),
+  rating_average: z.union([z.string(), z.number()]).nullish(),
+  rating_count: z.number().nullish(),
+  usage_count: z.number().nullish(),
+  author_name: z.string().nullish(),
+  author_avatar_url: z.string().nullish(),
+});
+
+export type SharedAgentSummary = z.infer<typeof sharedAgentSummarySchema>;
+
 export const shareAgentSchema = z.object({
   agent_id: z.string().meta({ description: "ID of the agent to share" }),
   name: z.string().meta({ description: "Public name for the shared agent" }),

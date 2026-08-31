@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { headersToRecord, parseBearerToken, readHttpResponseBody, setDefaultHeader } from "../http";
+import {
+  headersToRecord,
+  parseBearerToken,
+  readHttpResponseBody,
+  readResponseTextWithinLimit,
+  setDefaultHeader,
+} from "../http";
 
 describe("parseBearerToken", () => {
   it("accepts a single Bearer token", () => {
@@ -61,5 +67,18 @@ describe("http utilities", () => {
       parsed: null,
       raw: "not json",
     });
+  });
+
+  it("bounds streamed response bodies by encoded bytes", async () => {
+    await expect(readResponseTextWithinLimit(new Response("café"), 5)).resolves.toBe("café");
+    await expect(readResponseTextWithinLimit(new Response("too large"), 3)).rejects.toThrow(
+      "3-byte limit",
+    );
+  });
+
+  it("rejects an oversized declared content length before reading", async () => {
+    const response = new Response("small", { headers: { "content-length": "100" } });
+
+    await expect(readResponseTextWithinLimit(response, 10)).rejects.toThrow("10-byte limit");
   });
 });

@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-A tool result reached the conversation through two unrelated renderings. A `role: "tool"` message went to `ToolMessage` and the full `ResponseView`. The same result carried as a `tool_result` part on an assistant turn went to a local fallback that dropped `responseType`, `responseDisplay`, and `onToolInteraction`, and whose result resolver whitelisted `get_weather` by name. Every fix applied to one path silently missed the other, which is how the parts path fell as far behind as it did.
+A tool result reached the conversation through two unrelated renderings. A `role: "tool"` message went to `ToolMessage` and the full `ResponseView`. The same result carried as a `tool_result` part on an assistant turn went to a local fallback that dropped presentation metadata and `onToolInteraction`, and whose result resolver whitelisted `get_weather` by name. Every fix applied to one path silently missed the other, which is how the parts path fell as far behind as it did.
 
 Presentation was also inferred rather than declared. The API matched substrings against the tool name — `name.includes("search")`, `name.includes("video")` — in an order-dependent ladder. `search_memories` was typed as a web search, `create_video` resolved to a template that did not exist and rendered "No response is available.", and `capture_screenshot` was typed `template` while an earlier media probe made that branch unreachable. Separately, `responseType` was carrying view names — `council_turn`, `document_search`, `second_opinion` — that the six-value schema enum does not permit; they passed only because `message.data` is untyped on the wire.
 
@@ -24,7 +24,9 @@ Resolve anything undeclared from the payload. `resolveResponsePresentation` read
 
 Check status before shape. A result whose `status` is a failure renders as an error with its payload folded away, so a broken tool cannot pass for a working one by borrowing a successful tool's presentation.
 
-Human-in-the-loop tools get real views. `ask_user` and `request_approval` previously shipped server-authored HTML templates containing an input and buttons that `TemplateView` inserted with `innerHTML` and no event handlers attached; their Tailwind classes also sat outside the app's `@source` glob and were never compiled. Both are now React views wired through `onToolInteraction`.
+Human-in-the-loop tools get real views. `ask_user` and `request_approval` previously shipped server-authored HTML containing an input and buttons with no event handlers attached; their Tailwind classes also sat outside the app's `@source` glob and were never compiled. Both are now React views wired through `onToolInteraction`.
+
+Do not accept server-authored response markup or presentation configuration. No tool declared it, table columns are inferred from payload shape, and specialised presentation already belongs in registered React views. The unused metadata created an unvalidated route from tool results to an HTML sink, so the contract and renderer were removed rather than retained behind validation or a compatibility path.
 
 ## Trade-offs
 

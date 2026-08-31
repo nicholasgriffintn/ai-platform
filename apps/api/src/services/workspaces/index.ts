@@ -13,6 +13,7 @@ import { deriveProjectColour } from "@ngriffin_uk/polychat-schemas";
 import { validateCapabilityReference } from "~/lib/capabilities";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getGitHubAppConnectionForUserInstallation } from "~/services/github/connections";
+import { deleteOutput } from "~/services/outputs";
 import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId, randomHex } from "~/utils/id";
@@ -268,6 +269,14 @@ export async function deleteWorkspace(context: ServiceContext, workspaceId: stri
     targetType: "workspace",
     targetId: workspaceId,
   });
+  const outputRoots = await context.repositories.outputs.listWorkspaceOutputRoots(workspaceId);
+
+  for (const output of outputRoots) {
+    // Delete through the capability-aware path before workspace cascades discard provider and R2 IDs.
+    // eslint-disable-next-line no-await-in-loop
+    await deleteOutput(context, user.id, output.id);
+  }
+
   await context.repositories.workspaces.deleteWorkspace(workspaceId);
 
   return { success: true };

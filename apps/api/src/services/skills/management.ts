@@ -9,26 +9,40 @@ import { recordProjectAudit } from "~/services/audit";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { safeParseJson } from "~/utils/json";
 
 import { getSkillDefinition } from "./catalog";
-import { parseUserSkillDocument, SkillDocumentError } from "./document";
+import {
+  getPublishedSkillCapability,
+  parseAuthoredSkillDocument,
+  personalSkillScope,
+  projectSkillScope,
+  requirePublishedProjectSkill,
+} from "./management-policy";
+import {
+  archiveStoredSkill,
+  createStoredSkill,
+  getStoredSkill,
+  listStoredSkills,
+  purgeStoredSkillAfterFailedCreate,
+  saveStoredSkillDraft,
+} from "./persistence";
 import { SKILL_CAPABILITY_KIND } from "./scope";
-import { SkillDocumentStorage, type SkillStorageScope } from "./storage";
 
-const personalScope = (userId: number): SkillStorageScope => ({ type: "personal", id: userId });
-const projectScope = (projectId: string): SkillStorageScope => ({ type: "project", id: projectId });
-
-function parseAuthoredSkillDocument(content: string) {
-  try {
-    return parseUserSkillDocument(content);
-  } catch (error) {
-    if (error instanceof SkillDocumentError) {
-      throw new AssistantError(error.message, ErrorType.PARAMS_ERROR, 400);
-    }
-
-    throw error;
-  }
-}
+export {
+  getPersonalSkillHistory,
+  getPersonalSkillVersion,
+  getProjectSkillHistory,
+  getProjectSkillVersion,
+  importPersonalSkill,
+  importProjectSkill,
+  promotePersonalSkillDraft,
+  promoteProjectSkillDraft,
+  rollbackPersonalSkill,
+  rollbackProjectSkill,
+  savePersonalSkillDraft,
+  saveProjectSkillDraft,
+} from "./lifecycle";
 
 async function parseAvailableName(input: AuthoredSkillInput) {
   const document = parseAuthoredSkillDocument(input.content);
@@ -44,10 +58,12 @@ async function parseAvailableName(input: AuthoredSkillInput) {
   return document;
 }
 
-async function getPublishedCapability(context: ServiceContext, projectId: string, name: string) {
-  return (await context.repositories.workspaces.listProjectCapabilities(projectId)).find(
-    (capability) => capability.kind === SKILL_CAPABILITY_KIND && capability.capability_id === name,
-  );
+function readCapabilityConfiguration(value: string | Record<string, unknown> | null) {
+  if (typeof value === "string") {
+    return safeParseJson<Record<string, unknown>>(value) ?? {};
+  }
+
+  return value ?? {};
 }
 
 export async function createPersonalSkill(
@@ -56,29 +72,22 @@ export async function createPersonalSkill(
   input: AuthoredSkillInput,
 ): Promise<AuthoredSkillDocument> {
   const document = await parseAvailableName(input);
-  const skill = await new SkillDocumentStorage(context).write(personalScope(userId), {
-    name: document.frontmatter.name,
+  const scope = personalSkillScope(userId);
+  const created = await createStoredSkill(context, scope, document.frontmatter.name, {
     description: document.frontmatter.description,
     content: input.content,
     resources: input.resources,
     createdByUserId: userId,
   });
 
-  await context.repositories.capabilityConfigurations.save({
-    scope: { type: "user", id: userId },
-    capabilityKind: SKILL_CAPABILITY_KIND,
-    capabilityId: skill.name,
-    configuration: { enabled: true },
-  });
-
-  return skill;
+  return created.document;
 }
 
 export async function listPersonalSkills(
   context: ServiceContext,
   userId: number,
 ): Promise<{ skills: AuthoredSkill[] }> {
-  return { skills: await new SkillDocumentStorage(context).list(personalScope(userId)) };
+  return { skills: await listStoredSkills(context, personalSkillScope(userId)) };
 }
 
 export async function getPersonalSkill(
@@ -86,7 +95,7 @@ export async function getPersonalSkill(
   userId: number,
   skillId: string,
 ): Promise<AuthoredSkillDocument> {
-  const skill = await new SkillDocumentStorage(context).get(personalScope(userId), skillId);
+  const skill = await getStoredSkill(context, personalSkillScope(userId), skillId);
 
   if (!skill) {
     throw new AssistantError("Skill not found", ErrorType.NOT_FOUND, 404);
@@ -101,8 +110,8 @@ export async function updatePersonalSkill(
   skillId: string,
   input: AuthoredSkillInput,
 ): Promise<AuthoredSkillDocument> {
-  const storage = new SkillDocumentStorage(context);
-  const existing = await storage.get(personalScope(userId), skillId);
+  const scope = personalSkillScope(userId);
+  const existing = await getStoredSkill(context, scope, skillId);
 
   if (!existing) {
     throw new AssistantError("Skill not found", ErrorType.NOT_FOUND, 404);
@@ -118,14 +127,24 @@ export async function updatePersonalSkill(
     );
   }
 
-  return storage.write(personalScope(userId), {
-    name: skillId,
-    description: document.frontmatter.description,
-    content: input.content,
-    resources: input.resources,
-    createdByUserId: existing.createdByUserId,
-    overwrite: true,
-  });
+  const saved = await saveStoredSkillDraft(
+    context,
+    scope,
+    skillId,
+    {
+      description: document.frontmatter.description,
+      content: input.content,
+      resources: input.resources,
+      createdByUserId: existing.createdByUserId,
+    },
+    { activate: true },
+  );
+
+  if (!saved) {
+    throw new AssistantError("Skill not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  return saved;
 }
 
 export async function deletePersonalSkill(
@@ -133,8 +152,9 @@ export async function deletePersonalSkill(
   userId: number,
   skillId: string,
 ): Promise<void> {
-  await getPersonalSkill(context, userId, skillId);
-  await new SkillDocumentStorage(context).delete(personalScope(userId), skillId);
+  if (!(await archiveStoredSkill(context, personalSkillScope(userId), skillId))) {
+    throw new AssistantError("Skill not found", ErrorType.NOT_FOUND, 404);
+  }
 }
 
 export async function publishProjectSkill(
@@ -145,14 +165,14 @@ export async function publishProjectSkill(
 ): Promise<AuthoredSkillDocument> {
   await requireProjectAccess(context, projectId, ["owner", "admin"]);
   const document = await parseAvailableName(input);
-  const storage = new SkillDocumentStorage(context);
-  const skill = await storage.write(projectScope(projectId), {
-    name: document.frontmatter.name,
+  const scope = projectSkillScope(projectId);
+  const created = await createStoredSkill(context, scope, document.frontmatter.name, {
     description: document.frontmatter.description,
     content: input.content,
     resources: input.resources,
     createdByUserId: userId,
   });
+  const skill = created.document;
 
   try {
     await context.repositories.workspaces.addProjectCapability({
@@ -164,7 +184,7 @@ export async function publishProjectSkill(
       createdBy: userId,
     });
   } catch (error) {
-    await storage.delete(projectScope(projectId), skill.name);
+    await purgeStoredSkillAfterFailedCreate(context, created);
     throw error;
   }
 
@@ -185,7 +205,7 @@ export async function listProjectSkills(
 ): Promise<{ skills: AuthoredSkill[] }> {
   await requireProjectAccess(context, projectId);
   const [stored, capabilities] = await Promise.all([
-    new SkillDocumentStorage(context).list(projectScope(projectId)),
+    listStoredSkills(context, projectSkillScope(projectId), "stable"),
     context.repositories.workspaces.listProjectCapabilities(projectId),
   ]);
   const publishedNames = new Set(
@@ -203,13 +223,9 @@ export async function getProjectSkill(
   skillId: string,
 ): Promise<AuthoredSkillDocument> {
   await requireProjectAccess(context, projectId);
-  const capability = await getPublishedCapability(context, projectId, skillId);
+  await requirePublishedProjectSkill(context, projectId, skillId);
 
-  if (!capability) {
-    throw new AssistantError("Skill not found", ErrorType.NOT_FOUND, 404);
-  }
-
-  const skill = await new SkillDocumentStorage(context).get(projectScope(projectId), skillId);
+  const skill = await getStoredSkill(context, projectSkillScope(projectId), skillId, "stable");
 
   if (!skill) {
     throw new AssistantError("Skill not found", ErrorType.NOT_FOUND, 404);
@@ -226,7 +242,7 @@ export async function updateProjectSkill(
   input: AuthoredSkillInput,
 ): Promise<AuthoredSkillDocument> {
   await requireProjectAccess(context, projectId, ["owner", "admin"]);
-  const existing = await getProjectSkill(context, projectId, skillId);
+  await getProjectSkill(context, projectId, skillId);
   const document = parseAuthoredSkillDocument(input.content);
 
   if (document.frontmatter.name !== skillId) {
@@ -237,14 +253,22 @@ export async function updateProjectSkill(
     );
   }
 
-  const skill = await new SkillDocumentStorage(context).write(projectScope(projectId), {
-    name: skillId,
-    description: document.frontmatter.description,
-    content: input.content,
-    resources: input.resources,
-    createdByUserId: existing.createdByUserId,
-    overwrite: true,
-  });
+  const skill = await saveStoredSkillDraft(
+    context,
+    projectSkillScope(projectId),
+    skillId,
+    {
+      description: document.frontmatter.description,
+      content: input.content,
+      resources: input.resources,
+      createdByUserId: userId,
+    },
+    { activate: true },
+  );
+
+  if (!skill) {
+    throw new AssistantError("Skill not found", ErrorType.NOT_FOUND, 404);
+  }
 
   await recordProjectAudit(context, projectId, {
     actorUserId: userId,
@@ -264,21 +288,39 @@ export async function deleteProjectSkill(
   skillId: string,
 ): Promise<void> {
   await requireProjectAccess(context, projectId, ["owner", "admin"]);
-  const capability = await getPublishedCapability(context, projectId, skillId);
+  const capability = await getPublishedSkillCapability(context, projectId, skillId);
 
   if (!capability) {
     throw new AssistantError("Skill not found", ErrorType.NOT_FOUND, 404);
   }
 
   await context.repositories.workspaces.removeProjectCapability(projectId, capability.id);
+
   try {
-    await new SkillDocumentStorage(context).delete(projectScope(projectId), skillId);
+    if (!(await archiveStoredSkill(context, projectSkillScope(projectId), skillId))) {
+      throw new AssistantError("Skill not found", ErrorType.NOT_FOUND, 404);
+    }
   } catch (error) {
-    context.getLogger({ prefix: "services/skills" }).error("Failed to remove skill object", {
-      error,
-      projectId,
-      skillId,
-    });
+    try {
+      await context.repositories.workspaces.addProjectCapability({
+        id: capability.id,
+        projectId,
+        kind: SKILL_CAPABILITY_KIND,
+        capabilityId: skillId,
+        configuration: readCapabilityConfiguration(capability.configuration),
+        createdBy: capability.created_by,
+      });
+    } catch (restoreError) {
+      context
+        .getLogger({ prefix: "services/skills" })
+        .error("Failed to restore project skill capability after archival failure", {
+          restoreError,
+          projectId,
+          skillId,
+        });
+    }
+
+    throw error;
   }
 
   await recordProjectAudit(context, projectId, {

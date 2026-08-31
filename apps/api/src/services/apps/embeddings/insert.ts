@@ -1,200 +1,166 @@
-import {
-  getEmbeddingProvider,
-  getEmbeddingNamespace,
-} from "~/lib/providers/capabilities/embedding/helpers";
-import { RepositoryManager } from "~/repositories";
-import type { EmbeddingInsertRecord } from "~/repositories/EmbeddingRepository";
-import type { EmbeddingProvider, EmbeddingVector, IRequest, RagOptions } from "~/types";
-import { chunkText } from "~/utils/embeddings";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { resolveEmbeddingRuntime } from "~/lib/providers/capabilities/embedding/helpers";
+import { getPersonalEmbeddingScopeTag } from "~/lib/providers/capabilities/embedding/utils/scope";
+import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { getLogger } from "~/utils/logger";
-import { sanitiseInput } from "~/utils/sanitise";
 
-const logger = getLogger({ prefix: "services/apps/embeddings/insert" });
+import { deleteProviderDocuments } from "./deletion";
+import { prepareEmbeddingDocument } from "./document";
+import { cleanupPendingEmbeddingDocument, generateEmbeddingVectors } from "./lifecycle";
+import { parseInsertEmbeddingRequest } from "./requests";
 
-// @ts-ignore
-export interface IInsertEmbeddingRequest extends IRequest {
-  request: {
-    type: string;
-    content?: string;
-    file?: {
-      data: any;
-      mimeType: string;
-    };
-    id?: string;
-    metadata?: Record<string, any>;
-    title?: string;
-    rag_options?: RagOptions;
-  };
+interface InsertEmbeddingRequest {
+  request: unknown;
+  context?: ServiceContext;
+  env?: IEnv;
+  user?: IUser;
 }
 
-export const insertEmbedding = async (req: IInsertEmbeddingRequest): Promise<any> => {
+export const insertEmbedding = async ({ request, context, env, user }: InsertEmbeddingRequest) => {
+  const serviceContext = resolveServiceContext({ context, env, user });
+  const authenticatedUser = serviceContext.requireUser();
+  const input = parseInsertEmbeddingRequest(request);
+  const document = prepareEmbeddingDocument(input);
+
+  const userSettings = await serviceContext.getUserSettings();
+
+  if (!userSettings) {
+    throw new AssistantError("User settings not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  const { runtime, target } = await resolveEmbeddingRuntime(
+    serviceContext.env,
+    authenticatedUser,
+    userSettings,
+  );
+  const scopeTag = await getPersonalEmbeddingScopeTag(
+    serviceContext.env.EMBEDDING_SCOPE_SECRET,
+    authenticatedUser.id,
+  );
+  const vectorIds = document.chunks.map((chunk) => chunk.vectorId);
+  let documentCreated = false;
+  let providerWriteAttempted = false;
+  let compensationIsSafe = true;
+
   try {
-    const { request, env } = req;
+    const pendingDocument = await serviceContext.repositories.embeddings.getPendingDocumentForRetry(
+      authenticatedUser.id,
+      document.logicalId,
+    );
 
-    const {
-      type,
-      content: requestContent,
-      file,
-      id,
-      metadata,
-      title: requestTitle,
-      rag_options = {},
-    } = request;
-
-    let content: string;
-
-    if (requestContent) {
-      content = sanitiseInput(requestContent);
-    }
-
-    const title = requestTitle ? sanitiseInput(requestTitle) : "";
-
-    if (!type) {
-      throw new AssistantError("Missing type from request", ErrorType.PARAMS_ERROR);
-    }
-
-    if (!content) {
-      throw new AssistantError("Missing content from request", ErrorType.PARAMS_ERROR);
-    }
-
-    const repositories = new RepositoryManager(env);
-    const userSettings = req.user?.id
-      ? await repositories.userSettings.getUserSettings(req.user.id)
-      : null;
-
-    if (!userSettings) {
-      throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
-    }
-
-    const finalNamespace = getEmbeddingNamespace(req.user, {
-      namespace: rag_options?.namespace,
-    });
-    const embeddingScope = {
-      namespace: finalNamespace,
-      userId: req.user?.id,
-    };
-    const requestMetadata = metadata ?? {};
-    const scopedMetadata = {
-      ...requestMetadata,
-      title,
-      namespace: finalNamespace,
-      ...(req.user?.id && { userId: req.user.id.toString() }),
-    };
-
-    let uniqueId;
-    const newMetadata = {
-      ...scopedMetadata,
-      ...(file && { fileData: file.data, mimeType: file.mimeType }),
-    };
-
-    const pendingDbRecords: EmbeddingInsertRecord[] = [];
-
-    if (type === "blog") {
-      const blogExists = await repositories.embeddings.getEmbeddingIdByType(id, "blog");
-
-      if (!blogExists) {
-        throw new AssistantError(
-          "Blog does not exist. You can only insert blog embeddings for existing blogs.",
-          ErrorType.NOT_FOUND,
-        );
-      }
-
-      uniqueId = id;
-    } else {
-      uniqueId = id || `${Date.now()}-${generateId()}`;
-      pendingDbRecords.push({
-        id: uniqueId,
-        metadata: newMetadata,
-        title,
-        content,
-        type,
+    if (pendingDocument) {
+      await deleteProviderDocuments({
+        context: serviceContext,
+        user: authenticatedUser,
+        userSettings,
+        documents: [pendingDocument],
       });
+      await serviceContext.repositories.embeddings.removePendingDocument(
+        authenticatedUser.id,
+        pendingDocument.id,
+      );
     }
 
-    if (!uniqueId) {
-      throw new AssistantError("No unique ID found");
-    }
+    await serviceContext.repositories.embeddings.createDocument({
+      id: document.documentId,
+      logicalId: document.logicalId,
+      userId: authenticatedUser.id,
+      type: input.type,
+      title: document.title,
+      metadata: input.metadata ?? {},
+      provider: target.embeddingProvider,
+      providerTarget: target.providerTarget,
+      embeddingModel: target.model,
+      embeddingDimensions: target.dimensions,
+      distanceMetric: target.distanceMetric,
+      taskMode: target.taskMode,
+      vectorSpace: target.vectorSpace,
+      vectorSpaceVersion: target.vectorSpaceVersion,
+      chunks: document.chunks,
+    });
+    documentCreated = true;
 
-    const embedding = getEmbeddingProvider(env, req.user, userSettings);
+    const generated = await generateEmbeddingVectors(
+      runtime.embedder,
+      document.documentId,
+      input.type,
+      document.chunks,
+    );
 
-    const maxChars = rag_options?.chunkSize || 2000;
-    const chunks = chunkText(content, maxChars);
-    let allGenerated: EmbeddingVector[] = [];
+    providerWriteAttempted = true;
+    const inserted = await runtime.vectorStore.insert(generated, {
+      scopeTag,
+      contentType: input.type,
+    });
 
-    if (chunks.length > 1) {
-      for (let i = 0; i < chunks.length; i++) {
-        const chunk = chunks[i];
-        const chunkId = `${id || uniqueId}-${i}`;
-        const chunkMeta = { ...scopedMetadata, chunkIndex: i.toString() };
-
-        pendingDbRecords.push({
-          id: chunkId,
-          metadata: chunkMeta,
-          title: `${title} (chunk ${i})`,
-          content: chunk,
-          type,
-        });
-
-        const vecs = await embedding.generate(type, chunk, chunkId, chunkMeta);
-
-        allGenerated.push(...vecs);
-      }
-    } else {
-      allGenerated = await embedding.generate(type, content, id || uniqueId, newMetadata);
-    }
-
-    const finalRagOptions = { ...rag_options, namespace: finalNamespace, userId: req.user?.id };
-    const inserted = await embedding.insert(allGenerated, finalRagOptions);
-
-    // @ts-ignore
-    if (inserted.status !== "success" && !inserted.documentDetails) {
-      logger.error("Embedding insertion failed", inserted);
-      throw new AssistantError("Embedding insertion failed");
+    if (inserted.status !== "success") {
+      throw new AssistantError(
+        "Embedding provider rejected the document",
+        ErrorType.PROVIDER_ERROR,
+        502,
+      );
     }
 
     try {
-      await repositories.embeddings.insertEmbeddings(pendingDbRecords, embeddingScope);
+      await serviceContext.repositories.embeddings.activateDocument(
+        authenticatedUser.id,
+        document.documentId,
+      );
     } catch (error) {
-      await cleanupInsertedVectors(embedding, allGenerated);
+      try {
+        const lifecycleStatus =
+          await serviceContext.repositories.embeddings.getDocumentLifecycleStatus(
+            authenticatedUser.id,
+            document.documentId,
+          );
+
+        if (lifecycleStatus === "active") {
+          return {
+            status: "success",
+            data: {
+              id: document.logicalId,
+              metadata: input.metadata ?? {},
+              title: document.title,
+              content: document.content,
+              type: input.type,
+            },
+          };
+        }
+
+        compensationIsSafe = lifecycleStatus !== undefined;
+      } catch {
+        compensationIsSafe = false;
+      }
+
       throw error;
     }
 
     return {
       status: "success",
       data: {
-        id: uniqueId,
-        metadata: { ...requestMetadata, title },
-        title,
-        content,
-        type,
+        id: document.logicalId,
+        metadata: input.metadata ?? {},
+        title: document.title,
+        content: document.content,
+        type: input.type,
       },
     };
   } catch (error) {
-    logger.error("Error inserting embedding", {
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-      errorObject: error,
-    });
+    if (documentCreated && compensationIsSafe) {
+      await cleanupPendingEmbeddingDocument({
+        context: serviceContext,
+        vectorStore: runtime.vectorStore,
+        providerWriteAttempted,
+        userId: authenticatedUser.id,
+        documentId: document.documentId,
+        vectorIds,
+      });
+    }
 
-    throw new AssistantError("Error inserting embedding");
+    if (error instanceof AssistantError && error.type === ErrorType.CONFLICT_ERROR) {
+      throw error;
+    }
+
+    throw new AssistantError("Failed to insert embedding document", ErrorType.PROVIDER_ERROR, 502);
   }
 };
-
-async function cleanupInsertedVectors(embedding: EmbeddingProvider, vectors: EmbeddingVector[]) {
-  const ids = vectors.map((vector) => vector.id);
-
-  if (ids.length === 0) {
-    return;
-  }
-
-  try {
-    await embedding.delete(ids);
-  } catch (error) {
-    logger.warn("Failed to clean up inserted vectors after database insert failure", {
-      ids,
-      error,
-    });
-  }
-}

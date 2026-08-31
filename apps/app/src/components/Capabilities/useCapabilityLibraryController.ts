@@ -22,6 +22,7 @@ import { useAddProjectCapability, useRemoveProjectCapability } from "~/hooks/use
 import {
   type CapabilitySurface,
   type EnabledCapability,
+  getConversationPath,
   getProjectSurface,
   PERSONAL_SURFACE,
 } from "~/lib/capability-surfaces";
@@ -204,14 +205,16 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
 
   useRecipeActionRequest(catalog.recipes, installationByRecipeId, recipeWorkflows.actions);
 
-  const addItem = (item: AssistantActionItem, itemKind: ProjectCapabilityKind) => {
+  const addCapability = async (itemKind: ProjectCapabilityKind, capabilityId: string) => {
     if (!scope.requiresExplicitEnablement) {
       return;
     }
 
-    void scope
-      .add({ kind: itemKind, capabilityId: item.capability.id, configuration: {} })
-      .catch(() => undefined);
+    await scope.add({ kind: itemKind, capabilityId, configuration: {} });
+  };
+
+  const addItem = (item: AssistantActionItem, itemKind: ProjectCapabilityKind) => {
+    void addCapability(itemKind, item.capability.id).catch(() => undefined);
   };
 
   const removeCapability = (capability: EnabledCapability & { id: string }) => {
@@ -290,7 +293,7 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
       reset: deleteSkill.reset,
     },
     projectActions: scope.requiresExplicitEnablement
-      ? { canManage: scope.canManage, addItem, removeCapability }
+      ? { canManage: scope.canManage, addCapability, addItem, removeCapability }
       : undefined,
   };
 }
@@ -307,7 +310,7 @@ export function usePersonalCapabilityScope(): CapabilityLibraryScope {
     surface: PERSONAL_SURFACE,
     requiresExplicitEnablement: false,
     capabilities: [],
-    conversationPath: "/chat",
+    conversationPath: getConversationPath(PERSONAL_SURFACE),
     isLoading: configurations.query.isLoading || skills.query.isLoading,
     error: configurations.query.error ?? skills.query.error,
     toolConfigurations: configurations.query.data?.configurations ?? [],
@@ -341,13 +344,14 @@ export function useProjectCapabilityScope(
 ): CapabilityLibraryScope {
   const add = useAddProjectCapability();
   const remove = useRemoveProjectCapability();
+  const surface = getProjectSurface(workspaceId, projectId);
 
   return {
-    surface: getProjectSurface(workspaceId, projectId),
+    surface,
     canManage: role === "owner" || role === "admin",
     requiresExplicitEnablement: true,
     capabilities: project?.capabilities ?? [],
-    conversationPath: `/work/${workspaceId}/projects/${projectId}/chat`,
+    conversationPath: getConversationPath(surface),
     error: projectError,
     isLoading,
     name: project?.name,

@@ -36,6 +36,24 @@ export function formatUnknownValue(value: unknown): string {
   }
 }
 
+function toStringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+}
+
+export function parseStringArrayValue(value: unknown): string[] {
+  if (typeof value !== "string") {
+    return toStringArray(value);
+  }
+
+  try {
+    return toStringArray(JSON.parse(value));
+  } catch {
+    return [];
+  }
+}
+
 export function parseRecordValue(value: unknown): Record<string, unknown> {
   if (isRecord(value)) {
     return value;

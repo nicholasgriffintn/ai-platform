@@ -1,7 +1,4 @@
-import type {
-  ResponseDisplay,
-  ToolInteractionHandler,
-} from "@ngriffin_uk/polychat-component-content";
+import type { ToolInteractionHandler } from "@ngriffin_uk/polychat-component-content";
 import { ResponseView } from "@ngriffin_uk/polychat-component-content";
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { ToolResultDisplay } from "@ngriffin_uk/polychat-library-chat/tool-results";
@@ -93,7 +90,6 @@ export const ToolResultView = ({
           <ResponseView
             result={display.result}
             responseType={display.responseType}
-            responseDisplay={display.responseDisplay as ResponseDisplay | undefined}
             renderer={display.renderer}
             embedded
             onToolInteraction={onToolInteraction}

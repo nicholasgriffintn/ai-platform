@@ -37,12 +37,22 @@ class ModelsStore: ObservableObject {
                     supportsFunctions: model.supportsFunctions,
                     multimodal: model.multimodal,
                     isFeatured: model.isFeatured,
-                    isDeprecated: model.isDeprecated
+                    isDeprecated: model.isDeprecated,
+                    isDefault: model.isDefault,
+                    isExecutable: model.isExecutable,
+                    status: model.status
                 )
             }
-            
-            if selectedModelId == nil && !models.isEmpty {
-                selectModel(models[0].id)
+
+            let selectedModel = selectedModelId.flatMap { model(withId: $0) }
+            let selectedModelIsUsable = selectedModel?.isAvailableForSelection ?? false
+
+            if !selectedModelIsUsable {
+                let defaultModel = models.first {
+                    $0.isDefault == true &&
+                    $0.isAvailableForSelection
+                }
+                selectModel(defaultModel?.id)
             }
         } catch {
             self.error = "Failed to fetch models: \(error.localizedDescription)"
@@ -51,7 +61,7 @@ class ModelsStore: ObservableObject {
         isLoading = false
     }
     
-    func selectModel(_ modelId: String) {
+    func selectModel(_ modelId: String?) {
         selectedModelId = modelId
         saveSelectedModel()
     }

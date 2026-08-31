@@ -1,3 +1,4 @@
+import type { TranscriptionAudioSource } from "~/services/audio/transcription-input";
 import type { IEnv, IUser } from "~/types";
 
 import { providerLibrary } from "../../library";
@@ -5,7 +6,7 @@ import type { ProviderFactoryContext } from "../../registry/types";
 
 export interface TranscriptionRequest {
   env: IEnv;
-  audio: Blob | string;
+  audio: TranscriptionAudioSource;
   user: IUser;
   provider?: string;
   timestamps?: boolean;

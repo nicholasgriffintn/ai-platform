@@ -357,7 +357,7 @@ addRoute(app, "post", "/generate-from-media", {
       }
 
       const result = await generateNotesFromMedia({
-        env: serviceContext.env,
+        context: serviceContext,
         user,
         url: body.url,
         outputs: body.outputs,
@@ -366,6 +366,7 @@ addRoute(app, "post", "/generate-from-media", {
         timestamps: body.timestamps,
         useVideoAnalysis: body.useVideoAnalysis,
         enableVideoSearch: body.enableVideoSearch,
+        projectId: query.projectId,
       });
 
       return { content: result.content };

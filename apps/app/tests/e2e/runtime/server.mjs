@@ -360,8 +360,14 @@ async function mockExternalRequest(request) {
   if (
     request.method === "POST" &&
     url.hostname === "generativelanguage.googleapis.com" &&
-    url.pathname === "/v1alpha/auth_tokens"
+    url.pathname === "/v1beta/auth_tokens"
   ) {
+    const tokenRequest = await request.clone().json();
+
+    if (tokenRequest.liveConnectConstraints?.model !== "models/gemini-3.1-flash-live-preview") {
+      throw new Error("Gemini Live token request is missing the constrained model");
+    }
+
     return Response.json({
       name: "e2e-gemini-live-token",
       expireTime: "2099-01-01T00:00:00.000Z",

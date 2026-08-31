@@ -1,4 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("~/lib/providers/models", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("~/lib/providers/models")>();
+
+  return {
+    ...actual,
+    filterModelsForUserAccess: async (models: ReturnType<typeof actual.getModels>) => models,
+  };
+});
 
 import { resolveApiBaseUrl, resolveSandboxModel } from "../worker";
 
@@ -33,7 +42,7 @@ describe("resolveSandboxModel", () => {
 
     const model = await resolveSandboxModel({
       context,
-      userId: 1,
+      user: { id: 1, plan_id: "pro" } as any,
       model: "mistral-large",
     });
 
@@ -55,7 +64,7 @@ describe("resolveSandboxModel", () => {
     await expect(
       resolveSandboxModel({
         context,
-        userId: 1,
+        user: { id: 1, plan_id: "pro" } as any,
         model: "mistral-large",
       }),
     ).rejects.toThrow(/blocked by policy/);

@@ -10,7 +10,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { intersectEnabledTools } from "~/utils/enabledTools";
 
 import { resolveProjectTaskToolApproval } from "../approvals";
-import { resolveTaskRuntime } from "../flow";
+import { buildStageInstructions, resolveTaskRuntime } from "../flow";
 import {
   acceptProjectTask,
   createProjectTask,
@@ -68,6 +68,7 @@ function createContext(
     role?: string;
     memberships?: Record<number, boolean>;
     capabilities?: { kind: string; capability_id: string }[];
+    agent?: Record<string, unknown> | null;
     activeCount?: number;
     boardTasks?: unknown[];
   } = {},
@@ -115,6 +116,9 @@ function createContext(
           }),
           listProjectCapabilities: vi.fn().mockResolvedValue(overrides.capabilities ?? []),
           updateProject: vi.fn().mockResolvedValue(undefined),
+        },
+        agents: {
+          getAgentById: vi.fn().mockResolvedValue(overrides.agent ?? null),
         },
         projectTasks: {
           getTaskById: vi.fn().mockResolvedValue(task),
@@ -559,26 +563,6 @@ describe("resolveTaskRuntime", () => {
     );
   });
 
-  it("does not expose nested delegation inside a stage owned by the project flow", async () => {
-    const { context } = createContext({
-      capabilities: [
-        { kind: "tool", capability_id: "delegate_to_team_member" },
-        { kind: "tool", capability_id: "delegate_to_team_member_by_role" },
-        { kind: "tool", capability_id: "web_search" },
-      ],
-    });
-    const runtime = await resolveTaskRuntime({
-      context,
-      task: baseTask,
-      flow: null,
-    });
-
-    expect(runtime.enabledTools).toContain("web_search");
-    expect(runtime.enabledTools).not.toContain("delegate_to_team_member");
-    expect(runtime.enabledTools).not.toContain("delegate_to_team_member_by_role");
-    expect(runtime.enforceModeToolPolicy).toBe(false);
-  });
-
   it("keeps the runner model when the stage sets a mode", async () => {
     const { context } = createContext();
     const runtime = await resolveTaskRuntime({
@@ -599,6 +583,175 @@ describe("resolveTaskRuntime", () => {
     const runtime = await resolveTaskRuntime({ context, task: baseTask, flow: null });
 
     expect(runtime.requireApprovalFor).toEqual([]);
+  });
+
+  it("runs an attached agent the project's workspace owns", async () => {
+    const { context } = createContext({
+      capabilities: [{ kind: "agent", capability_id: "agent-1" }],
+      agent: {
+        id: "agent-1",
+        user_id: 7,
+        owner_scope_type: "workspace",
+        owner_scope_id: "workspace-1",
+        enabled_tools: null,
+        model: "gpt-5",
+      },
+    });
+
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: {
+        ...baseTask,
+        runner: { kind: "conversation", agentId: "agent-1", model: null, mode: null },
+      },
+      flow: null,
+    });
+
+    expect(runtime.agent?.id).toBe("agent-1");
+  });
+
+  it("refuses an attached agent that now belongs to another workspace", async () => {
+    const { context } = createContext({
+      capabilities: [{ kind: "agent", capability_id: "agent-1" }],
+      agent: {
+        id: "agent-1",
+        user_id: 7,
+        owner_scope_type: "workspace",
+        owner_scope_id: "workspace-2",
+        enabled_tools: null,
+      },
+    });
+
+    await expect(
+      resolveTaskRuntime({
+        context,
+        task: {
+          ...baseTask,
+          runner: { kind: "conversation", agentId: "agent-1", model: null, mode: null },
+        },
+        flow: null,
+      }),
+    ).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  const workspaceAgent = {
+    id: "agent-1",
+    user_id: 7,
+    owner_scope_type: "workspace",
+    owner_scope_id: "workspace-1",
+    enabled_tools: null,
+  };
+  const agentRunner = {
+    kind: "conversation" as const,
+    agentId: "agent-1",
+    model: null,
+    mode: null,
+  };
+
+  it("withholds a skill the agent asks for but the project has not attached", async () => {
+    const { context } = createContext({
+      capabilities: [
+        { kind: "agent", capability_id: "agent-1" },
+        { kind: "skill", capability_id: "research" },
+      ],
+      agent: { ...workspaceAgent, skill_ids: ["research", "payroll-export"] },
+    });
+
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: { ...baseTask, runner: agentRunner },
+      flow: null,
+    });
+
+    expect(runtime.skillIds).toEqual(["research"]);
+  });
+
+  it("combines the stage's skills with the agent's inside the project grant", async () => {
+    const { context } = createContext({
+      capabilities: [
+        { kind: "agent", capability_id: "agent-1" },
+        { kind: "skill", capability_id: "research" },
+        { kind: "skill", capability_id: "fact-checking" },
+      ],
+      agent: { ...workspaceAgent, skill_ids: ["fact-checking", "payroll-export"] },
+    });
+
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: { ...baseTask, stageId: "research", runner: agentRunner },
+      flow: {
+        stages: [
+          {
+            id: "research",
+            name: "Research",
+            instructions: null,
+            agentId: null,
+            skillIds: ["research"],
+            mode: "explore",
+            requiresApprovalFor: [],
+            advance: "on_goal_complete",
+          },
+        ],
+      },
+    });
+
+    expect(runtime.skillIds).toEqual(["research", "fact-checking"]);
+    expect(buildStageInstructions(runtime)).toContain("research, fact-checking");
+  });
+
+  it("lets the stage mode beat the agent's saved mode", async () => {
+    const { context } = createContext({
+      capabilities: [{ kind: "agent", capability_id: "agent-1" }],
+      agent: { ...workspaceAgent, mode: "plan" },
+    });
+
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: { ...baseTask, stageId: "build", runner: agentRunner },
+      flow,
+    });
+
+    expect(runtime.mode).toBe("build");
+  });
+
+  it("falls back to the agent's saved mode when neither the stage nor the runner sets one", async () => {
+    const { context } = createContext({
+      capabilities: [{ kind: "agent", capability_id: "agent-1" }],
+      agent: { ...workspaceAgent, mode: "plan" },
+    });
+
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: { ...baseTask, runner: agentRunner },
+      flow: null,
+    });
+
+    expect(runtime.mode).toBe("plan");
+  });
+
+  it("refuses a personal attached agent whose author left the workspace", async () => {
+    const { context } = createContext({
+      capabilities: [{ kind: "agent", capability_id: "agent-1" }],
+      memberships: {},
+      agent: {
+        id: "agent-1",
+        user_id: 7,
+        owner_scope_type: "user",
+        owner_scope_id: "7",
+        enabled_tools: null,
+      },
+    });
+
+    await expect(
+      resolveTaskRuntime({
+        context,
+        task: {
+          ...baseTask,
+          runner: { kind: "conversation", agentId: "agent-1", model: null, mode: null },
+        },
+        flow: null,
+      }),
+    ).rejects.toMatchObject({ statusCode: 403 });
   });
 });
 

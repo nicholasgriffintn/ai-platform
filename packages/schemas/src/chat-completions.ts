@@ -11,7 +11,7 @@ import { hasCompactionPart, messagePartsSchema } from "./message-parts";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
 import { sandboxRequestOptionsSchema } from "./sandbox";
 import { messageSchema } from "./shared";
-import { toolIdsSchema } from "./tools";
+import { toolIdsSchema, toolSelectionModeSchema } from "./tools";
 
 const recordSchema = z.record(z.string(), z.unknown());
 
@@ -54,22 +54,6 @@ export const chatHostedToolSettingsSchema = z
       .array(recordSchema)
       .optional()
       .describe("Raw OpenAI Responses tool definitions."),
-  })
-  .passthrough();
-
-export const chatRagOptionsSchema = z
-  .object({
-    top_k: z.number().optional().describe("Maximum number of retrieval results to include."),
-    score_threshold: z
-      .number()
-      .optional()
-      .describe("Minimum retrieval score required for an item."),
-    include_metadata: z
-      .boolean()
-      .optional()
-      .describe("Whether retrieved item metadata should be included."),
-    type: z.string().optional().describe("Retrieval backend or strategy type."),
-    namespace: z.string().optional().describe("Retrieval namespace to search."),
   })
   .passthrough();
 
@@ -472,6 +456,11 @@ export const chatCompletionsRequestFieldsSchema = z.object({
     .optional()
     .describe("Optional budget constraint for model routing."),
   enabled_tools: toolIdsSchema.optional().describe("Tool IDs enabled for this request."),
+  tool_selection_mode: toolSelectionModeSchema
+    .optional()
+    .describe(
+      "How function tools are chosen. Managed lets the server add its baseline and capability discovery activations to enabled_tools; explicit (the default) uses enabled_tools as sent.",
+    ),
   approved_tools: toolIdsSchema
     .optional()
     .describe("Tool IDs pre-approved for approval-gated modes."),
@@ -498,8 +487,6 @@ export const chatCompletionsRequestFieldsSchema = z.object({
   response_format: chatResponseFormatSchema
     .optional()
     .describe("OpenAI-compatible response format."),
-  use_rag: z.boolean().optional().describe("Whether retrieval augmented generation is enabled."),
-  rag_options: chatRagOptionsSchema.optional().describe("Retrieval augmented generation settings."),
   replicate_wait_seconds: z
     .number()
     .optional()
@@ -570,12 +557,29 @@ export const chatCompletionsRequestFieldsSchema = z.object({
     .describe("Grouped feature settings that are not model generation controls."),
 });
 
+const retiredChatRetrievalFields = {
+  use_rag: z.boolean().optional().describe("Deprecated compatibility field; ignored."),
+  rag_options: recordSchema.optional().describe("Deprecated compatibility field; ignored."),
+};
+
+const stripRetiredChatRetrievalFields = <
+  T extends { use_rag?: boolean; rag_options?: Record<string, unknown> },
+>({
+  use_rag: _useRag,
+  rag_options: _ragOptions,
+  ...request
+}: T) => request;
+
 export const partialChatCompletionsJsonSchema = chatCompletionsRequestFieldsSchema
   .partial()
-  .strict();
+  .extend(retiredChatRetrievalFields)
+  .strict()
+  .transform(stripRetiredChatRetrievalFields);
 
 export const createChatCompletionsJsonSchema = chatCompletionsRequestFieldsSchema
+  .extend(retiredChatRetrievalFields)
   .strict()
+  .transform(stripRetiredChatRetrievalFields)
   .superRefine((request, ctx) => {
     if (!request.model && !request.models?.length && !request.model_router_mode) {
       ctx.addIssue({

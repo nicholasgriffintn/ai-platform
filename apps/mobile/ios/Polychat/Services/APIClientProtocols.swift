@@ -4,10 +4,6 @@ protocol ModelsAPIClient {
     func fetchModels() async throws -> ModelsResponse
 }
 
-protocol ToolsAPIClient {
-    func fetchTools() async throws -> [ToolDefinition]
-}
-
 protocol RecipesAPIClient {
     func fetchAssistantRecipes() async throws -> AssistantRecipesResponse
     func installAssistantRecipe(
@@ -58,4 +54,4 @@ extension ConversationAPIClient {
     }
 }
 
-extension APIClient: ModelsAPIClient, ToolsAPIClient, RecipesAPIClient, ConversationAPIClient {}
+extension APIClient: ModelsAPIClient, RecipesAPIClient, ConversationAPIClient {}

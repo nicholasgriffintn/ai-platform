@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const SANDBOX_RUN_DISPATCH_TASK_TYPE = "sandbox_run_dispatch";
 export const PROJECT_TASK_RUN_TASK_TYPE = "project_task_run";
+export const OCR_BATCH_POLLING_TASK_TYPE = "ocr_batch_polling";
 
 export const TASK_TYPES = [
   "memory_synthesis",
@@ -17,6 +18,7 @@ export const TASK_TYPES = [
   "artificial_analysis_scoring",
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
   PROJECT_TASK_RUN_TASK_TYPE,
+  OCR_BATCH_POLLING_TASK_TYPE,
 ] as const;
 
 export const PUBLIC_TASK_TYPES = ["memory_synthesis"] as const;
@@ -89,11 +91,15 @@ export const memorySynthesisSchema = z.object({
   updated_at: z.string().optional(),
 });
 
+const scheduledAtSchema = z.iso
+  .datetime({ offset: true })
+  .transform((value) => new Date(value).toISOString());
+
 export const createTaskRequestSchema = z.object({
   task_type: taskTypeSchema,
   task_data: z.record(z.string(), z.any()),
   schedule_type: scheduleTypeSchema.optional(),
-  scheduled_at: z.string().optional(),
+  scheduled_at: scheduledAtSchema.optional(),
   priority: z.number().min(1).max(10).optional(),
   metadata: z.record(z.string(), z.any()).optional(),
 });
@@ -104,7 +110,7 @@ export const createPublicTaskRequestSchema = z.object({
   task_type: publicTaskTypeSchema,
   task_data: z.record(z.string(), z.any()),
   schedule_type: scheduleTypeSchema.optional(),
-  scheduled_at: z.string().optional(),
+  scheduled_at: scheduledAtSchema.optional(),
   priority: z.number().min(1).max(10).optional(),
   metadata: z.record(z.string(), z.any()).optional(),
 });

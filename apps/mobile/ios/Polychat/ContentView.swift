@@ -4,7 +4,6 @@ struct ContentView: View {
     @EnvironmentObject var authManager: AuthenticationManager
     @EnvironmentObject var conversationManager: ConversationManager
     @EnvironmentObject var modelsStore: ModelsStore
-    @EnvironmentObject var toolsStore: ToolsStore
     @State private var columnVisibility = NavigationSplitViewVisibility.doubleColumn
     @State private var selectedConversationID: String?
     @State private var showingSettings = false
@@ -57,7 +56,6 @@ struct ContentView: View {
                     if authManager.isAuthenticated {
                         await conversationManager.loadConversations()
                         await modelsStore.fetchModels()
-                        await toolsStore.fetchTools()
                     } else {
                         conversationManager.reset()
                         selectedConversationID = nil
@@ -165,5 +163,4 @@ private struct EmptyConversationView: View {
         .environmentObject(AuthenticationManager())
         .environmentObject(ConversationManager())
         .environmentObject(ModelsStore())
-        .environmentObject(ToolsStore())
 }

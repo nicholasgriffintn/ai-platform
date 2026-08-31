@@ -13,16 +13,17 @@ import { ShortcutTooltip } from "@ngriffin_uk/polychat-component-ui";
 import { getDefaultLiveModelId } from "@ngriffin_uk/polychat-library-realtime/live-providers";
 import {
   createModelReferenceMap,
-  defaultModel,
   EMPTY_MODEL_CONFIG,
   getAutoRouterModeDefinition,
   getAvailableModels,
   getChatAndRealtimeModelsByMode,
   getFeaturedModelIds,
+  getDefaultModelId,
   getModelByReference,
   getModelsByMode,
   getRealtimeSessionModelsByProvider,
   getToolCallModels,
+  isActiveModel,
   isModelSelectableForAccount,
   isTextInputChatModel,
 } from "@ngriffin_uk/polychat-schemas";
@@ -34,8 +35,9 @@ import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState }
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
+import { useRealtimeProviders } from "~/hooks/useRealtimeProviders";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
-import { applyModelResponseDefaults } from "~/lib/chat-settings";
+import { clearModelResponseSettings } from "~/lib/chat-settings";
 import {
   useIsLoading,
   useLoadingMessage,
@@ -86,7 +88,7 @@ export const ModelSelector = ({
     selectedAgentId,
     setSelectedAgentId,
   } = useChatStore();
-  const { chatAgents: agents } = useAgents();
+  const { agents } = useAgents();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCapability, setSelectedCapability] = useState<ModelModality | null>(null);
@@ -124,6 +126,8 @@ export const ModelSelector = ({
   };
 
   const { data: apiModels = EMPTY_MODEL_CONFIG, isLoading: isLoadingModels } = useModels();
+  const { data: realtimeProviderOptions = [], isLoading: isLoadingRealtimeProviders } =
+    useRealtimeProviders();
   const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
   const isModelLoading = useIsLoading("model-init");
   const modelLoadingProgress = useLoadingProgress("model-init");
@@ -174,6 +178,7 @@ export const ModelSelector = ({
     () => createModelReferenceMap(filteredModels),
     [filteredModels],
   );
+  const defaultModelId = useMemo(() => getDefaultModelId(filteredModels), [filteredModels]);
   const selectedAutoMode = getAutoRouterModeDefinition(autoMode);
   const SelectedAutoModeIcon = getAutoRouterModeIcon(selectedAutoMode.id);
   const selectedAutoModeDisplayName =
@@ -215,22 +220,20 @@ export const ModelSelector = ({
     [availableModels, isPro],
   );
 
-  const getSettingsForModel = useCallback(
-    (nextModel: string | null, settings: ChatSettings) =>
-      applyModelResponseDefaults(settings, nextModel ? availableModels[nextModel] : undefined),
-    [availableModels],
-  );
-
   const selectModelWithDefaults = useCallback(
     (nextModel: string | null, settings: ChatSettings = chatSettings) => {
       setModel(nextModel);
-      setChatSettings(getSettingsForModel(nextModel, settings));
+      setChatSettings(clearModelResponseSettings(settings));
     },
-    [chatSettings, getSettingsForModel, setChatSettings, setModel],
+    [chatSettings, setChatSettings, setModel],
   );
 
   useEffect(() => {
     if (!isModelListOnlyScope) {
+      return;
+    }
+
+    if (isLiveScope && isLoadingRealtimeProviders) {
       return;
     }
 
@@ -243,19 +246,24 @@ export const ModelSelector = ({
       setSelectedTab("models");
     }
 
-    if (model && getModelByReference(filteredModelReferences, model)) {
+    const currentModel = model ? getModelByReference(filteredModelReferences, model) : undefined;
+
+    if (
+      currentModel &&
+      isActiveModel(currentModel) &&
+      (currentModel.isExecutable ?? isModelSelectableForAccount(currentModel, isPro))
+    ) {
       return;
     }
 
     const defaultScopedModel =
       isLiveScope && modelProviderFilter
-        ? getDefaultLiveModelId(modelProviderFilter)
-        : defaultModel;
-    const fallbackModel = filteredModels[defaultScopedModel]
-      ? defaultScopedModel
-      : filteredModels[defaultModel]
-        ? defaultModel
-        : Object.keys(filteredModels)[0];
+        ? getDefaultLiveModelId(modelProviderFilter, realtimeProviderOptions)
+        : defaultModelId;
+    const fallbackModel =
+      defaultScopedModel && filteredModels[defaultScopedModel]
+        ? defaultScopedModel
+        : defaultModelId;
 
     if (fallbackModel) {
       selectModelWithDefaults(fallbackModel, {
@@ -266,17 +274,47 @@ export const ModelSelector = ({
   }, [
     chatMode,
     chatSettings,
+    defaultModelId,
     filteredModels,
     filteredModelReferences,
     isLiveScope,
+    isLoadingRealtimeProviders,
     isModelListOnlyScope,
+    isPro,
     model,
     modelProviderFilter,
     modelListChatMode,
+    realtimeProviderOptions,
     selectModelWithDefaults,
     selectedTab,
     setChatMode,
     setSelectedAgentId,
+  ]);
+
+  useEffect(() => {
+    if (isModelListOnlyScope || chatMode !== "remote" || model === null) {
+      return;
+    }
+
+    const currentModel = getModelByReference(filteredModelReferences, model);
+
+    if (
+      currentModel &&
+      isActiveModel(currentModel) &&
+      (currentModel.isExecutable ?? isModelSelectableForAccount(currentModel, isPro))
+    ) {
+      return;
+    }
+
+    selectModelWithDefaults(defaultModelId ?? null);
+  }, [
+    chatMode,
+    defaultModelId,
+    filteredModelReferences,
+    isModelListOnlyScope,
+    isPro,
+    model,
+    selectModelWithDefaults,
   ]);
 
   const clearHoverPreview = useCallback(() => setHoverPreview(null), []);
@@ -385,7 +423,7 @@ export const ModelSelector = ({
         localOnly: false,
       };
 
-      selectModelWithDefaults(defaultModel, nextSettings);
+      selectModelWithDefaults(defaultModelId ?? null, nextSettings);
     }
 
     if (newChatMode !== "agent") {
@@ -413,7 +451,7 @@ export const ModelSelector = ({
     }
   }, [currentAgentModel, model, selectModelWithDefaults, chatMode]);
 
-  if (isLoadingModels) {
+  if (isLoadingModels || (isLiveScope && isLoadingRealtimeProviders)) {
     return (
       <div className="flex items-center gap-2 text-sm text-zinc-500">
         <Loader2 className="h-4 w-4 animate-spin" />
@@ -496,7 +534,7 @@ export const ModelSelector = ({
     } else if (tab === "models" && model === null) {
       setChatMode("remote");
       setSelectedAgentId(null);
-      selectModelWithDefaults(defaultModel, {
+      selectModelWithDefaults(defaultModelId ?? null, {
         ...chatSettings,
         localOnly: false,
       });

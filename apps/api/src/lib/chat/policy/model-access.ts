@@ -1,8 +1,12 @@
 import type { ModelConfigItem, ModelRouterMode } from "@ngriffin_uk/polychat-schemas";
 
 import { ModelRouter } from "~/lib/modelRouter";
-import { filterModelsForUserAccess, findModelConfig, getModels } from "~/lib/providers/models";
-import type { Attachment, IEnv, IUser } from "~/types";
+import { filterModelsForUserAccess, getModels } from "~/lib/providers/models";
+import {
+  getExecutableModelsForAccount,
+  getModelCredentialAuthority,
+} from "~/lib/providers/models/policy";
+import type { Attachment, CredentialAuthority, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 function normaliseExplicitModels(requestedModels?: string[]): string[] {
@@ -13,21 +17,75 @@ function normaliseExplicitModels(requestedModels?: string[]): string[] {
   return explicitModels?.length ? [...new Set(explicitModels)] : [];
 }
 
-function hasAccessibleModelConfig(
+type ExecutableModelCapability =
+  | "supportsApplyEdit"
+  | "supportsFim"
+  | "supportsNextEdit"
+  | "supportsTokenCounting";
+
+interface ResolveExecutableModelRequest {
+  env: IEnv;
+  user?: IUser;
+  model: string;
+  provider?: string;
+  capability?: ExecutableModelCapability;
+}
+
+function resolveExecutableModelFromCatalogue(
   accessibleModels: Record<string, ModelConfigItem>,
   requestedModel: string,
-  requestedConfig: ModelConfigItem,
-): boolean {
-  return Object.entries(accessibleModels).some(([modelId, config]) => {
-    if (modelId === requestedModel) {
-      return true;
-    }
+  requestedProvider?: string,
+): { id: string; config: ModelConfigItem } | null {
+  const directMatch = accessibleModels[requestedModel];
 
-    return (
-      config.provider === requestedConfig.provider &&
-      config.matchingModel === requestedConfig.matchingModel
+  if (directMatch && (!requestedProvider || directMatch.provider === requestedProvider)) {
+    return { id: requestedModel, config: directMatch };
+  }
+
+  const matchingEntries = Object.entries(accessibleModels).filter(
+    ([, config]) =>
+      config.matchingModel === requestedModel &&
+      (!requestedProvider || config.provider === requestedProvider),
+  );
+
+  // An upstream identifier shared by providers is not an authorisation identity.
+  return matchingEntries.length === 1
+    ? { id: matchingEntries[0][0], config: matchingEntries[0][1] }
+    : null;
+}
+
+export async function resolveExecutableModelForRequest({
+  env,
+  user,
+  model,
+  provider,
+  capability,
+}: ResolveExecutableModelRequest): Promise<{
+  id: string;
+  config: ModelConfigItem;
+  credentialAuthority: CredentialAuthority;
+}> {
+  const visibleModels = await filterModelsForUserAccess(
+    getModels({ shouldUseCache: false }),
+    env,
+    user?.id,
+    { shouldUseCache: false },
+  );
+  const executableModels = getExecutableModelsForAccount(visibleModels, user);
+  const resolved = resolveExecutableModelFromCatalogue(executableModels, model, provider);
+
+  if (!resolved || (capability && !resolved.config[capability])) {
+    throw new AssistantError(
+      `Model not found or user does not have access: ${model}`,
+      user ? ErrorType.AUTHORISATION_ERROR : ErrorType.AUTHENTICATION_ERROR,
+      403,
     );
-  });
+  }
+
+  return {
+    ...resolved,
+    credentialAuthority: getModelCredentialAuthority(resolved.config, user),
+  };
 }
 
 async function assertExplicitModelsAccessible(
@@ -36,30 +94,16 @@ async function assertExplicitModelsAccessible(
   explicitModels: string[],
   requestedProvider?: string,
 ): Promise<void> {
-  const allModels = getModels({ shouldUseCache: false });
-  const accessibleModels = await filterModelsForUserAccess(allModels, env, user?.id, {
-    shouldUseCache: false,
-  });
-  const inaccessibleModels: string[] = [];
-
-  for (const requestedModel of explicitModels) {
-    const requestedConfig = await findModelConfig(requestedModel, env, requestedProvider, user?.id);
-
-    if (
-      !requestedConfig ||
-      !hasAccessibleModelConfig(accessibleModels, requestedModel, requestedConfig)
-    ) {
-      inaccessibleModels.push(requestedModel);
-    }
-  }
-
-  if (inaccessibleModels.length > 0) {
-    throw new AssistantError(
-      `Model not found or user does not have access: ${inaccessibleModels.join(", ")}`,
-      ErrorType.AUTHENTICATION_ERROR,
-      403,
-    );
-  }
+  await Promise.all(
+    explicitModels.map((model) =>
+      resolveExecutableModelForRequest({
+        env,
+        user,
+        model,
+        provider: requestedProvider,
+      }),
+    ),
+  );
 }
 
 /**
@@ -98,6 +142,12 @@ export async function selectModels(
     return explicitModels;
   }
 
+  if (requestedModel) {
+    await assertExplicitModelsAccessible(env, user, [requestedModel], requestedProvider);
+
+    return [requestedModel];
+  }
+
   if (use_multi_model && !requestedModel) {
     return ModelRouter.selectMultipleModels(
       env,
@@ -110,17 +160,15 @@ export async function selectModels(
     );
   }
 
-  const model =
-    requestedModel ||
-    (await ModelRouter.selectModel(
-      env,
-      lastMessageText,
-      attachments,
-      budgetConstraint,
-      user,
-      completionId,
-      routerMode,
-    ));
+  const model = await ModelRouter.selectModel(
+    env,
+    lastMessageText,
+    attachments,
+    budgetConstraint,
+    user,
+    completionId,
+    routerMode,
+  );
 
   return [model];
 }

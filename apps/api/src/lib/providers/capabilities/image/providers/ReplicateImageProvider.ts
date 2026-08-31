@@ -1,3 +1,5 @@
+import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
+
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getTextToImageSystemPrompt, imagePrompts } from "~/lib/prompts/image";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
@@ -9,7 +11,7 @@ import { omitNullishValues } from "~/utils/objects";
 
 import type { ImageGenerationRequest, ImageGenerationResult, ImageProvider } from "../index";
 
-const DEFAULT_MODEL = "replicate-flux-2-pro";
+const DEFAULT_MODEL = MODEL_DEFAULTS.image.replicate.model;
 
 function resolveStylePrompt(style?: string): string {
   const styleKey =

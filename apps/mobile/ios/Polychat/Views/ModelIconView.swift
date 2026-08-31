@@ -126,6 +126,7 @@ private struct ModelIconDefinition {
         ("devstral", "mistral"),
         ("magistral", "mistral"),
         ("ministral", "mistral"),
+        ("leanstral", "mistral"),
         ("qwen", "qwen"),
         ("gpt-", "openai"),
         ("o1", "openai"),
@@ -222,4 +223,3 @@ private struct ModelIconDefinition {
         "xai": "xAI"
     ]
 }
-

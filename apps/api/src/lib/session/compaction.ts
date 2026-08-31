@@ -11,6 +11,7 @@ export interface CompactionWindowConfig {
   contextWindow?: number;
   mode?: CompactionMode;
   triggerRatio?: number;
+  maxTriggerTokens?: number;
   keepRecentMessages?: number;
 }
 
@@ -28,6 +29,8 @@ export interface CompactionPlan<TMessage extends CompactionPlanMessage = Message
 const DEFAULT_CONTEXT_WINDOW = 32000;
 const DEFAULT_TRIGGER_RATIO = 0.7;
 const DEFAULT_KEEP_RECENT_MESSAGES = 8;
+
+const DEFAULT_MAX_TRIGGER_TOKENS = 200000;
 
 export { estimateConversationTokens, estimateMessageTokens };
 
@@ -47,6 +50,14 @@ function canArchiveDuringCompaction(message: CompactionPlanMessage): boolean {
   return true;
 }
 
+function resolveMaxTriggerTokens(configured: number | undefined): number {
+  if (configured === undefined || !Number.isFinite(configured) || configured <= 0) {
+    return DEFAULT_MAX_TRIGGER_TOKENS;
+  }
+
+  return Math.floor(configured);
+}
+
 export function buildCompactionPlan<TMessage extends CompactionPlanMessage>(
   messages: TMessage[],
   config: CompactionWindowConfig = {},
@@ -54,6 +65,7 @@ export function buildCompactionPlan<TMessage extends CompactionPlanMessage>(
   const mode = config.mode ?? "auto";
   const contextWindow = config.contextWindow ?? DEFAULT_CONTEXT_WINDOW;
   const triggerRatio = config.triggerRatio ?? DEFAULT_TRIGGER_RATIO;
+  const maxTriggerTokens = resolveMaxTriggerTokens(config.maxTriggerTokens);
   const keepRecentMessages = config.keepRecentMessages ?? DEFAULT_KEEP_RECENT_MESSAGES;
 
   if (mode === "off") {
@@ -69,7 +81,10 @@ export function buildCompactionPlan<TMessage extends CompactionPlanMessage>(
     const estimatedTokens = estimateConversationTokens(
       messages.filter(countsTowardCompactionPressure),
     );
-    const compactionThreshold = Math.floor(contextWindow * triggerRatio);
+    const compactionThreshold = Math.min(
+      Math.floor(contextWindow * triggerRatio),
+      maxTriggerTokens,
+    );
 
     if (estimatedTokens < compactionThreshold) {
       return {

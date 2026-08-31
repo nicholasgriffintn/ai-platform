@@ -1,6 +1,7 @@
 import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
+import { resolveExecutableModelForRequest } from "~/lib/chat/policy/model-access";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { findModelConfig } from "~/lib/providers/models";
+import { applyModelResponseDefaults } from "~/lib/providers/models/responseDefaults";
 import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 import { StorageService } from "~/lib/storage";
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
@@ -56,23 +57,12 @@ export async function getAIResponse(request: ChatCompletionParameters) {
     user: user?.id,
   });
 
-  let modelConfig;
-
-  try {
-    modelConfig = await findModelConfig(requestedModel, env, requestedProvider, user?.id);
-    if (!modelConfig) {
-      throw new AssistantError(
-        `Model configuration not found for ${requestedModel}`,
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-  } catch (error: any) {
-    logger.error("Failed to get model configuration", { model: requestedModel, error });
-    throw new AssistantError(
-      `Invalid model configuration for ${requestedModel}: ${error.message}`,
-      ErrorType.PARAMS_ERROR,
-    );
-  }
+  const { config: modelConfig, credentialAuthority } = await resolveExecutableModelForRequest({
+    env,
+    user,
+    model: requestedModel,
+    provider: requestedProvider,
+  });
 
   let provider;
 
@@ -135,7 +125,7 @@ export async function getAIResponse(request: ChatCompletionParameters) {
 
   try {
     parameters = mergeParametersWithDefaults({
-      ...params,
+      ...applyModelResponseDefaults(params, modelConfig),
       model: resolvedModel,
       provider: modelConfig.provider,
       messages: formattedMessages,
@@ -145,6 +135,7 @@ export async function getAIResponse(request: ChatCompletionParameters) {
       system_prompt,
       env,
       context,
+      credentialAuthority,
       stream: shouldStream,
       enabled_tools,
       tools,

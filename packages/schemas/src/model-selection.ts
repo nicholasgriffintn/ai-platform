@@ -2,7 +2,6 @@ import type { ChatMode } from "./chat-modes";
 import type { ModelCatalogItem, ModelConfig, ModelConfigItem, ModelModality } from "./models";
 import type { ReasoningEffort } from "./reasoning";
 
-export const defaultModel = "deepseek-v4-flash";
 export const EMPTY_MODEL_CONFIG: ModelConfig = {};
 const LOCAL_MODEL_PROVIDER = "web-llm";
 const DEFAULT_MODALITIES: ModelModality[] = ["text"];
@@ -45,7 +44,7 @@ export function getAvailableModels(
 
 export function getFeaturedModelIds(models: ModelConfig) {
   return Object.entries(models).reduce<Record<string, ModelCatalogItem>>((acc, [key, model]) => {
-    if (model.isFeatured) {
+    if (model.isFeatured && isActiveModel(model)) {
       acc[key] = {
         ...model,
         id: key,
@@ -101,7 +100,7 @@ export function sortModelsByDisplayName<T extends Pick<ModelConfigItem, "matchin
 export function getFeaturedModels(models: ModelConfig) {
   return sortModelsByDisplayName(
     Object.entries(models).reduce<ModelCatalogItem[]>((acc, [key, model]) => {
-      if (model.isFeatured) {
+      if (model.isFeatured && isActiveModel(model)) {
         acc.push({
           ...model,
           id: key,
@@ -167,6 +166,14 @@ export function isModelSelectableForAccount(
   isPro: boolean,
 ) {
   return isPro || Boolean(model.isFree) || Boolean(model.isByokEnabled);
+}
+
+export function isActiveModel(model: Pick<ModelConfigItem, "deprecated" | "status">): boolean {
+  return !model.deprecated && model.status !== "deprecated";
+}
+
+export function getDefaultModelId(models: ModelConfig): string | undefined {
+  return Object.entries(models).find(([, model]) => model.isDefault && isActiveModel(model))?.[0];
 }
 
 export function isImageGenerationOutputModel(model?: Pick<ModelConfigItem, "modalities">) {
@@ -321,6 +328,51 @@ export function getReasoningOptions(modelConfig?: ModelConfigItem): ReasoningEff
 
 export function getDefaultReasoningEffort(modelConfig?: ModelConfigItem): ReasoningEffort {
   return modelConfig?.reasoningConfig?.defaultEffort ?? "none";
+}
+
+const DEFAULT_MAX_TEMPERATURE = 2;
+const ANTHROPIC_MAX_TEMPERATURE = 1;
+
+export type ModelSamplingConfig = Partial<
+  Pick<
+    ModelConfigItem,
+    | "family"
+    | "provider"
+    | "restrictsCombinedTopPAndTemperature"
+    | "supportsFrequencyPenalty"
+    | "supportsPresencePenalty"
+    | "supportsTemperature"
+    | "supportsTopP"
+  >
+>;
+
+export interface ModelSamplingCapabilities {
+  maxTemperature: number;
+  restrictsCombinedTopPAndTemperature: boolean;
+  supportsFrequencyPenalty: boolean;
+  supportsPresencePenalty: boolean;
+  supportsTemperature: boolean;
+  supportsTopP: boolean;
+}
+
+function getMaxTemperature(modelConfig?: ModelSamplingConfig): number {
+  const isAnthropicFamily =
+    modelConfig?.provider === "anthropic" || modelConfig?.family?.startsWith("claude") === true;
+
+  return isAnthropicFamily ? ANTHROPIC_MAX_TEMPERATURE : DEFAULT_MAX_TEMPERATURE;
+}
+
+export function getModelSamplingCapabilities(
+  modelConfig?: ModelSamplingConfig,
+): ModelSamplingCapabilities {
+  return {
+    maxTemperature: getMaxTemperature(modelConfig),
+    restrictsCombinedTopPAndTemperature: modelConfig?.restrictsCombinedTopPAndTemperature === true,
+    supportsFrequencyPenalty: modelConfig?.supportsFrequencyPenalty !== false,
+    supportsPresencePenalty: modelConfig?.supportsPresencePenalty !== false,
+    supportsTemperature: modelConfig?.supportsTemperature !== false,
+    supportsTopP: modelConfig?.supportsTopP !== false,
+  };
 }
 
 export function hasProviderReasoningOptions(modelConfig?: ModelConfigItem): boolean {

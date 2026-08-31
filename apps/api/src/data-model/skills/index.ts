@@ -3,6 +3,7 @@ import artifactDesign from "./artifacts/references/design.md";
 import artifactTypes from "./artifacts/references/types.md";
 import artifacts from "./artifacts/SKILL.md";
 import council from "./council/SKILL.md";
+import documentResearch from "./document-research/SKILL.md";
 import hackerNews from "./hacker-news/SKILL.md";
 import promptCraft from "./prompt-craft/SKILL.md";
 import recipes from "./recipes/SKILL.md";
@@ -29,6 +30,11 @@ export const builtInSkillDocuments = [
   {
     directory: "council",
     rawContent: council,
+    resources: [],
+  },
+  {
+    directory: "document-research",
+    rawContent: documentResearch,
     resources: [],
   },
   {

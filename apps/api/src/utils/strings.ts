@@ -16,6 +16,10 @@ export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+export function getUtf8ByteLength(value: string): number {
+  return new TextEncoder().encode(value).byteLength;
+}
+
 export function stripSurroundingQuotes(value: string): string {
   const trimmed = value.trim();
   const isQuoted =

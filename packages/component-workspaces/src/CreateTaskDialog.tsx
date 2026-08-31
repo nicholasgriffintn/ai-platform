@@ -44,7 +44,6 @@ const APPROVAL_OPTIONS: { permission: ToolPermission; label: string }[] = [
   { permission: "write", label: "Write actions" },
   { permission: "sandbox", label: "Sandbox execution" },
   { permission: "orchestration", label: "Orchestration" },
-  { permission: "delegate", label: "Delegation" },
 ];
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {

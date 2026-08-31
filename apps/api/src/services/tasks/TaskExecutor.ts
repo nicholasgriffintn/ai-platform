@@ -111,6 +111,9 @@ export class TaskExecutor {
           const newAttempts = (task.attempts || 0) + 1;
 
           if (newAttempts >= (task.max_attempts || 3)) {
+            // Keep the task claim retryable until its handler has durably reconciled external state.
+            await handler.onFinalFailure?.(message, this.env, error as Error);
+
             await this.taskRepository.updateTask(message.taskId, {
               status: "failed",
               attempts: newAttempts,

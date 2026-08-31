@@ -26,6 +26,6 @@ describe("InvitationAcceptPage", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole("button", { name: "Sign in" })).toHaveClass("bg-blue-600");
+    expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
   });
 });

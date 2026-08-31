@@ -1,87 +1,88 @@
-import { Button, Card, CardContent, Badge } from "@ngriffin_uk/polychat-component-ui";
-import { Plus, Star } from "lucide-react";
+import { Badge, Button, Card } from "@ngriffin_uk/polychat-component-ui";
+import type { SharedAgentSummary } from "@ngriffin_uk/polychat-schemas";
+import { parseStringArrayValue } from "@ngriffin_uk/polychat-utility-core";
+import { Bot, Download, Star } from "lucide-react";
 
-export function SharedAgentCard({ agent, onInstall, isInstalling }: any) {
-  const tagsList = agent.tags ? JSON.parse(agent.tags) : [];
+export interface SharedAgentCardProps {
+  agent: SharedAgentSummary;
+  onInstall: (sharedAgentId: string) => void;
+  isInstalling?: boolean;
+}
+
+export function SharedAgentCard({ agent, onInstall, isInstalling = false }: SharedAgentCardProps) {
+  const tagsList = parseStringArrayValue(agent.tags);
 
   return (
-    <Card className="group hover:shadow-md transition-all duration-200">
-      <CardContent className="p-6">
-        <div className="flex items-start gap-4">
-          {agent.avatar_url && (
-            <img
-              src={agent.avatar_url || "/placeholder.svg"}
-              alt={agent.name}
-              className="w-10 h-10 rounded-full object-cover"
-            />
-          )}
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-4">
-              <h3 className="font-semibold text-foreground truncate">{agent.name}</h3>
-            </div>
-
-            {agent.description && (
-              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{agent.description}</p>
+    <Card className="justify-between p-5 shadow-none">
+      <div>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800">
+            {agent.avatar_url ? (
+              <img
+                src={agent.avatar_url}
+                alt=""
+                className="h-full w-full object-cover"
+                decoding="async"
+                loading="lazy"
+              />
+            ) : (
+              <Bot size={18} />
             )}
-
-            <div className="flex flex-wrap gap-1.5 mt-3">
-              {agent.category && (
-                <Badge variant="secondary" className="text-xs">
-                  {agent.category}
-                </Badge>
-              )}
-              {tagsList.slice(0, 3).map((tag: string) => (
-                <Badge key={tag} variant="outline" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
-              {tagsList.length > 3 && (
-                <Badge variant="outline" className="text-xs">
-                  +{tagsList.length - 3}
-                </Badge>
-              )}
-            </div>
-          </div>
+          </span>
+          <span className="flex items-center gap-1 text-xs text-zinc-500">
+            <Star size={13} className="fill-amber-400 text-amber-400" />
+            {agent.rating_average ?? 0} ({agent.rating_count ?? 0})
+          </span>
         </div>
-
-        <hr className="my-4" />
-
-        <div className="flex items-center justify-between mt-4 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-            <span>
-              {agent.rating_average} ({agent.rating_count})
-            </span>
+        <h4 className="font-semibold">{agent.name}</h4>
+        <p className="mt-2 min-h-12 text-sm leading-6 text-zinc-500">{agent.description}</p>
+        {(agent.category || tagsList.length > 0) && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {agent.category && (
+              <Badge variant="secondary" className="text-xs">
+                {agent.category}
+              </Badge>
+            )}
+            {tagsList.slice(0, 3).map((tag) => (
+              <Badge key={tag} variant="outline" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+            {tagsList.length > 3 && (
+              <Badge variant="outline" className="text-xs">
+                +{tagsList.length - 3}
+              </Badge>
+            )}
           </div>
-
-          {agent.author_name && (
-            <div className="flex items-center gap-1.5">
-              {agent.author_avatar_url && (
-                <img
-                  src={agent.author_avatar_url || "/placeholder.svg"}
-                  alt={agent.author_name}
-                  className="w-4 h-4 rounded-full"
-                  decoding="async"
-                  loading="lazy"
-                />
-              )}
-              <span className="truncate max-w-20">{agent.author_name}</span>
-            </div>
-          )}
-
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={() => onInstall(agent.id)}
-            disabled={isInstalling}
-            className="shrink-0"
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            Install
-          </Button>
-        </div>
-      </CardContent>
+        )}
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-3">
+        {agent.author_name ? (
+          <span className="flex min-w-0 items-center gap-1.5 text-xs text-zinc-500">
+            {agent.author_avatar_url && (
+              <img
+                src={agent.author_avatar_url}
+                alt=""
+                className="h-4 w-4 rounded-full"
+                decoding="async"
+                loading="lazy"
+              />
+            )}
+            <span className="truncate">{agent.author_name}</span>
+          </span>
+        ) : (
+          <span />
+        )}
+        <Button
+          variant="primary"
+          icon={<Download size={15} />}
+          isLoading={isInstalling}
+          disabled={isInstalling}
+          onClick={() => onInstall(agent.id)}
+        >
+          Install
+        </Button>
+      </div>
     </Card>
   );
 }

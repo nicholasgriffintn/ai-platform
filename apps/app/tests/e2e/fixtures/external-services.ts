@@ -5,6 +5,12 @@ const ONE_PIXEL_PNG = Buffer.from(
   "base64",
 );
 
+export interface GeminiLiveWebSocketActivity {
+  opens: number;
+  setupMessages: Array<Record<string, unknown>>;
+  closes: Array<{ code?: number; reason?: string }>;
+}
+
 export class ExternalServices {
   constructor(private readonly page: Page) {}
 
@@ -44,9 +50,16 @@ export class ExternalServices {
   }
 
   async mockGeminiLiveWebSocket() {
+    const activity: GeminiLiveWebSocketActivity = {
+      opens: 0,
+      setupMessages: [],
+      closes: [],
+    };
+
     await this.page.routeWebSocket(
-      /^wss:\/\/generativelanguage\.googleapis\.com\/ws\//,
+      /^wss:\/\/generativelanguage\.googleapis\.com\/ws\/google\.ai\.generativelanguage\.v1beta\.GenerativeService\.BidiGenerateContentConstrained\?/,
       (webSocket) => {
+        activity.opens += 1;
         webSocket.onMessage((message) => {
           if (typeof message !== "string") {
             return;
@@ -55,10 +68,16 @@ export class ExternalServices {
           const payload = JSON.parse(message) as { setup?: unknown };
 
           if (payload.setup) {
+            activity.setupMessages.push(payload.setup as Record<string, unknown>);
             webSocket.send(JSON.stringify({ setupComplete: {} }));
           }
         });
+        webSocket.onClose((code, reason) => {
+          activity.closes.push({ code, reason });
+        });
       },
     );
+
+    return activity;
   }
 }

@@ -211,7 +211,7 @@ export async function handleInboundChannelMessage(params: {
     user: params.user,
     request: {
       completion_id: conversationId,
-      model: profile.model,
+      model_router_mode: "auto",
       stream: false,
       store: true,
       mode: "agent",

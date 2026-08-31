@@ -50,6 +50,62 @@
       "when": 1788174151031,
       "tag": "0006_next_whirlwind",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1788188456014,
+      "tag": "0007_foamy_harpoon",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1788195394861,
+      "tag": "0008_organic_spacker_dave",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1788195406310,
+      "tag": "0009_backfill_scoped_embeddings",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1788198781909,
+      "tag": "0010_careless_blade",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1788202701725,
+      "tag": "0011_remarkable_jamie_braddock",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1788202702200,
+      "tag": "0012_backfill_agent_owner_scope",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1788202817005,
+      "tag": "0013_quick_spyke",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1788205349091,
+      "tag": "0014_gigantic_vapor",
+      "breakpoints": true
     }
   ]
 }

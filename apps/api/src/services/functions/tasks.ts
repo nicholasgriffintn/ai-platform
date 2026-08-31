@@ -1,8 +1,7 @@
 import type { ApiToolDefinition } from "../../types/functions";
-import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import { get_task_status as get_task_statusDescriptor, MAX_TASK_LIMIT } from "./definitions/tasks";
 
 const DEFAULT_TASK_LIMIT = 3;
-const MAX_TASK_LIMIT = 10;
 
 function formatTaskStatus(task: {
   id: string;
@@ -19,26 +18,7 @@ function formatTaskStatus(task: {
 }
 
 export const get_task_status: ApiToolDefinition = {
-  name: "get_task_status",
-  description:
-    "Report the status of the user's background tasks, such as queued recipe runs. Pass taskId for one specific task, or omit it to list the most recent tasks.",
-  type: "normal",
-  costPerCall: 0,
-  permissions: ["read"],
-  inputSchema: jsonSchemaToZod({
-    type: "object",
-    properties: {
-      taskId: {
-        type: "string",
-        description: "Optional id of a single task to report on.",
-      },
-      limit: {
-        type: "number",
-        description: `Optional number of recent tasks to list, up to ${MAX_TASK_LIMIT}.`,
-      },
-    },
-    additionalProperties: false,
-  }),
+  ...get_task_statusDescriptor,
   execute: async (args, toolContext) => {
     const request = toolContext.request;
     const userId = request.user?.id;

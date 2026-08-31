@@ -1,126 +1,100 @@
-import {
-  DEFAULT_OCR_MODEL,
-  DEFAULT_OCR_PROVIDER,
-} from "~/lib/providers/capabilities/ocr/constants";
-import { getOcrProvider, resolveOcrProviderName } from "~/lib/providers/capabilities/ocr/index";
-import type { OcrExtractionRequest } from "~/lib/providers/capabilities/ocr/types";
+import type { OcrInput, OcrRequest } from "@ngriffin_uk/polychat-schemas";
+
+import { resolveServiceContext } from "~/lib/context/serviceContext";
+import { DEFAULT_OCR_PROVIDER } from "~/lib/providers/capabilities/ocr/constants";
+import { performOcr } from "~/services/apps/retrieval/ocr";
+import { resolveRequestProjectId } from "~/services/functions/request-context";
 
 import type { ApiToolDefinition } from "../../types/functions";
-import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import { extract_text_from_document as extract_text_from_documentDescriptor } from "./definitions/ocr";
 
-type OcrToolRequest = Omit<OcrExtractionRequest, "env" | "user" | "storage">;
+function resolveToolInput(args: Record<string, any>): OcrInput {
+  const inputs = [args.document_url, args.image_url, args.source_id, args.output_id].filter(
+    (value) => typeof value === "string" && value.trim(),
+  );
+
+  if (inputs.length !== 1) {
+    throw new Error("Provide exactly one document_url, image_url, source_id, or output_id");
+  }
+
+  if (args.source_id) {
+    return { type: "source", source_id: args.source_id };
+  }
+
+  if (args.output_id) {
+    return { type: "output", output_id: args.output_id };
+  }
+
+  if (args.image_url) {
+    return {
+      type: "image_url",
+      image_url: args.image_url,
+    };
+  }
+
+  return {
+    type: "document_url",
+    document_url: args.document_url,
+    document_name: args.document_name,
+  };
+}
 
 export const extract_text_from_document: ApiToolDefinition = {
-  name: "extract_text_from_document",
-  description:
-    "Extracts text content from documents and images using OCR (Optical Character Recognition). Supports PDF files, scanned documents, and images containing text. Returns the extracted content in various formats (JSON, HTML, or Markdown).",
-  inputSchema: jsonSchemaToZod({
-    type: "object",
-    properties: {
-      document_url: {
-        type: "string",
-        description: "The URL of the document or image to extract text from",
-      },
-      document_name: {
-        type: "string",
-        description: "The name of the document being processed",
-      },
-      model: {
-        type: "string",
-        description: "The OCR model to use",
-        enum: [DEFAULT_OCR_MODEL],
-        default: DEFAULT_OCR_MODEL,
-      },
-      provider: {
-        type: "string",
-        description: "OCR provider",
-        enum: [DEFAULT_OCR_PROVIDER],
-        default: DEFAULT_OCR_PROVIDER,
-      },
-      pages: {
-        type: "array",
-        description:
-          "Specific page numbers to process (optional). If not provided, all pages will be processed",
-        items: {
-          type: "integer",
-        },
-      },
-      include_image_base64: {
-        type: "boolean",
-        description: "Whether to include base64-encoded images in the output. Defaults to true",
-        default: true,
-      },
-      image_limit: {
-        type: "integer",
-        description: "Maximum number of images to extract from the document",
-      },
-      image_min_size: {
-        type: "integer",
-        description: "Minimum size (in pixels) for images to be extracted",
-      },
-      output_format: {
-        type: "string",
-        description:
-          "Output format for the extracted content. Options: 'json', 'html', 'markdown'. Defaults to 'markdown'",
-        enum: ["json", "html", "markdown"],
-        default: "markdown",
-      },
-    },
-    required: ["document_url", "document_name"],
-  }),
-  type: "byok",
-  costPerCall: 2,
-  permissions: ["read"],
+  ...extract_text_from_documentDescriptor,
   execute: async (args, context) => {
-    const req = context.request;
-    const completion_id = context.completionId;
+    const request = context.request;
+    const user = request.user;
 
-    if (!args.document_url || !args.document_name) {
-      throw new Error("document_url and document_name are required parameters");
+    if (!user?.id) {
+      throw new Error("OCR requires an authenticated user");
     }
 
-    const ocrParams: OcrToolRequest = {
+    const serviceContext = resolveServiceContext({
+      context: request.context,
+      env: request.env,
+      user,
+    });
+    const ocrRequest: OcrRequest = {
+      document: resolveToolInput(args),
       provider: args.provider,
-      document: {
-        type: "document_url",
-        document_url: args.document_url,
-        document_name: args.document_name,
-      },
-      id: completion_id,
       model: args.model,
       pages: args.pages,
       include_image_base64: args.include_image_base64,
       image_limit: args.image_limit,
       image_min_size: args.image_min_size,
+      include_blocks: args.include_blocks,
+      confidence_scores_granularity: args.confidence_scores_granularity,
+      table_format: args.table_format,
+      extract_header: args.extract_header,
+      extract_footer: args.extract_footer,
+      document_annotation_format: args.document_annotation_format,
+      bbox_annotation_format: args.bbox_annotation_format,
+      document_annotation_prompt: args.document_annotation_prompt,
       output_format: args.output_format,
     };
-
-    const providerName = await resolveOcrProviderName({
-      env: req.env,
-      model: ocrParams.model,
-      provider: ocrParams.provider,
+    const provider = ocrRequest.provider ?? DEFAULT_OCR_PROVIDER;
+    const response = await performOcr({
+      context: serviceContext,
+      userId: user.id,
+      projectId: resolveRequestProjectId(request) ?? undefined,
+      conversationId: request.request?.completion_id,
+      request: ocrRequest,
     });
-    const provider = getOcrProvider(providerName, {
-      env: req.env,
-      user: req.user,
-    });
-    const response = await provider.extractText({
-      ...ocrParams,
-      provider: providerName,
-      env: req.env,
-      user: req.user,
-    });
+    const title = args.document_name || args.source_id || args.output_id || "document";
+    const extractedText = response.extractedText.trim() || "No text was detected.";
 
     return {
       status: "success",
       name: "extract_text_from_document",
-      content: `Extracted text from document ${args.document_name}, you can [download it here](${response.url}).`,
+      content: `OCR completed for ${title}. Full result: [download](${response.url})\n\n${extractedText}`,
       data: {
         model: response.model,
-        provider: providerName,
+        provider,
+        outputId: response.outputId,
         url: response.url,
         key: response.key,
         outputFormat: response.outputFormat,
+        usage: response.response.usage,
       },
       role: "tool",
     };

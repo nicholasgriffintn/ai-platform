@@ -1,6 +1,7 @@
 import {
   getComposerCommandMenuState,
   type ComposerActionCatalogConfig,
+  type ComposerAgentOption,
   type ComposerAssistantActionCapability,
   type ComposerCommandAction,
 } from "@ngriffin_uk/polychat-component-conversation";
@@ -21,12 +22,14 @@ import {
   getVerbosityOptions,
 } from "@ngriffin_uk/polychat-library-chat/verbosity";
 import {
-  defaultModel,
   EMPTY_MODEL_CONFIG,
+  getDefaultModelId,
   formatReasoningLabel,
   getAvailableModels,
   getDefaultReasoningEffort,
   getReasoningOptions,
+  isActiveModel,
+  isModelSelectableForAccount,
 } from "@ngriffin_uk/polychat-schemas";
 import type {
   AssistantActionItem,
@@ -57,7 +60,7 @@ import { useAssistantActionCatalog } from "~/hooks/useAssistantActionCatalog";
 import { useModels } from "~/hooks/useModels";
 import { useModelToolOptions } from "~/hooks/useModelTools";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
-import { applyModelResponseDefaults } from "~/lib/chat-settings";
+import { clearModelResponseSettings } from "~/lib/chat-settings";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
 import type { ChatSettings, ReasoningEffort } from "~/types";
@@ -82,16 +85,6 @@ const MODEL_TOOL_ICONS: Record<ModelToolId, LucideIcon> = {
   tool_search: ListFilter,
   web_fetch: Link,
 };
-
-export interface AgentCommand {
-  id: string;
-  name: string;
-  description?: string;
-  avatar_url?: string;
-  model?: string;
-  enabled_tools?: string[];
-  is_team_agent?: boolean;
-}
 
 export function useComposerCommandActions({
   allowedAssistantActionCapabilities,
@@ -137,8 +130,7 @@ export function useComposerCommandActions({
   const isComposingGoal = useChatStore((state) => state.isComposingGoal);
   const setComposingGoal = useChatStore((state) => state.setComposingGoal);
   const includeAgents = assistantActionCatalog?.includeAgents !== false;
-  const { chatAgents, isLoadingAgents } = useAgents({ enabled: includeAgents });
-  const agents = chatAgents as AgentCommand[];
+  const { agents, isLoadingAgents } = useAgents({ enabled: includeAgents });
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
   const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
   const selectedTools = useToolsStore((state) => state.selectedTools);
@@ -148,6 +140,7 @@ export function useComposerCommandActions({
     () => getAvailableModels(apiModels, chatMode === "local", webLLMModels),
     [apiModels, chatMode, webLLMModels],
   );
+  const defaultModelId = useMemo(() => getDefaultModelId(availableModels), [availableModels]);
   const selectedModelConfig = model ? availableModels[model] : undefined;
   const modelCapabilities = model ? apiModels[model] : undefined;
   const reasoningOptions = useMemo(
@@ -210,11 +203,9 @@ export function useComposerCommandActions({
   const selectModelWithDefaults = useCallback(
     (nextModel: string | null, settings: ChatSettings = chatSettings) => {
       setModel(nextModel);
-      setChatSettings(
-        applyModelResponseDefaults(settings, nextModel ? apiModels[nextModel] : undefined),
-      );
+      setChatSettings(clearModelResponseSettings(settings));
     },
-    [apiModels, chatSettings, setChatSettings, setModel],
+    [chatSettings, setChatSettings, setModel],
   );
 
   const consumeDirective = useCallback(() => {
@@ -239,7 +230,12 @@ export function useComposerCommandActions({
         onSelect: () => selectModelWithDefaults(null),
       },
       ...Object.entries(availableModels)
-        .filter(([modelId]) => modelId !== "auto")
+        .filter(
+          ([modelId, modelConfig]) =>
+            modelId !== "auto" &&
+            isActiveModel(modelConfig) &&
+            (modelConfig.isExecutable ?? isModelSelectableForAccount(modelConfig, isPro)),
+        )
         .map(([modelId, modelConfig]) => ({
           id: `model-${modelId}`,
           label: `Model: ${modelConfig.name}`,
@@ -252,7 +248,7 @@ export function useComposerCommandActions({
           onSelect: () => selectModelWithDefaults(modelId),
         })),
     ],
-    [availableModels, model, selectModelWithDefaults, selectedAgentId],
+    [availableModels, isPro, model, selectModelWithDefaults, selectedAgentId],
   );
   const modelCommand = useMemo<ComposerCommandAction>(
     () => ({
@@ -273,7 +269,7 @@ export function useComposerCommandActions({
     setSelectedAgentTokenPosition(null);
     if (chatMode === "agent") {
       setChatMode("remote");
-      selectModelWithDefaults(defaultModel, {
+      selectModelWithDefaults(defaultModelId ?? null, {
         ...chatSettings,
         localOnly: false,
       });
@@ -281,6 +277,7 @@ export function useComposerCommandActions({
   }, [
     chatMode,
     chatSettings,
+    defaultModelId,
     selectModelWithDefaults,
     setChatMode,
     setSelectedAgentId,
@@ -607,7 +604,7 @@ export function useComposerCommandActions({
   const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
 
   const selectAgent = useCallback(
-    (agent: AgentCommand) => {
+    (agent: ComposerAgentOption) => {
       if (!canUseAgents) {
         return undefined;
       }
@@ -621,7 +618,7 @@ export function useComposerCommandActions({
 
       setSelectedAgentTokenPosition(selection.replacementStart);
       setChatMode("agent");
-      selectModelWithDefaults(agent.model ?? defaultModel, {
+      selectModelWithDefaults(agent.model ?? defaultModelId ?? null, {
         ...chatSettings,
         localOnly: false,
       });
@@ -634,6 +631,7 @@ export function useComposerCommandActions({
       chatInput,
       chatSettings,
       directive,
+      defaultModelId,
       selectModelWithDefaults,
       setChatMode,
       setChatInput,

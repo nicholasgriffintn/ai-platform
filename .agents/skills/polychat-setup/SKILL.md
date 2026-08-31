@@ -1,6 +1,6 @@
 ---
 name: polychat-setup
-description: Guide and implement Polychat orientation, local setup, Cloudflare configuration, optional integrations, deployment, white-labelling, and architecture decisions. Use when someone wants to understand Polychat, configure or self-host this repository, choose which capabilities to run, rebrand a fork, or change a load-bearing product or technical decision.
+description: Guide and implement Polychat orientation, local setup, Cloudflare configuration, optional integrations, deployment, release verification, white-labelling, and architecture decisions. Use when someone wants to understand Polychat, configure or self-host this repository, choose which capabilities to run, record or rebuild the manual verification checklist for a deploy, rebrand a fork, or change a load-bearing product or technical decision.
 ---
 
 # Polychat setup
@@ -16,6 +16,7 @@ Read [product.md](references/product.md) before guiding a new adopter. Then read
 - Cloudflare or production rollout: [deployment.md](references/deployment.md)
 - Architecture or product decisions: [decisions.md](references/architecture/decisions.md), then the relevant accepted decision and [context.md](references/architecture/context.md)
 - Validation: [validation.md](references/validation.md)
+- Recording work a human must check, or rebuilding that checklist from the last deployment: [verification.md](references/verification.md)
 - Detailed component or operator behaviour: [documentation-map.md](references/documentation-map.md)
 
 Read each selected reference completely before acting. Prefer current code, package scripts, example environment files, and deployment manifests over copied values in prose when they disagree.
@@ -28,7 +29,8 @@ Read each selected reference completely before acting. Prefer current code, pack
 4. **Inspect before editing.** Confirm current scripts, example variables, Cloudflare bindings, hard-coded brand surfaces, and accepted decisions. Do not assume an old guide is current.
 5. **Make one coherent stage at a time.** Present the recommended choice and trade-off, collect feedback when it materially changes the result, then make the agreed edits. Keep a short list of unresolved external actions.
 6. **Validate continuously.** Run the narrowest meaningful static checks after each stage. Do not start development servers unless runtime behaviour requires it or the user explicitly asks.
-7. **Hand off clearly.** Summarise what is configured, what remains external, what secrets the user still needs to set, commands validated, and residual risks.
+7. **Record what only a human can check.** Add a `.agents/verification/pending/` item for behaviour, data movement, or operator action that static checks cannot prove, following [verification.md](references/verification.md). Never tick a box on the user's behalf.
+8. **Hand off clearly.** Summarise what is configured, what remains external, what secrets the user still needs to set, commands validated, and residual risks.
 
 ## Decision rules
 
@@ -50,4 +52,5 @@ Before claiming completion, confirm:
 - Brand and domain changes are consistent across chosen clients and services.
 - Required schemas, bindings, migrations, callbacks, and external resources are accounted for.
 - Relevant checks from [validation.md](references/validation.md) pass, or the blocker is stated.
+- Behaviour a human must confirm has a verification item, or the change demonstrably needed none.
 - The user has a short list of manual or external follow-ups.

@@ -1,7 +1,5 @@
-import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
-
 import type { ConversationManager } from "~/lib/conversationManager";
-import { PermissionChecker, resolveToolPermissions } from "~/lib/permissions/PermissionChecker";
+import { PermissionChecker } from "~/lib/permissions/PermissionChecker";
 import { ToolRegistry } from "~/lib/tools/ToolRegistry";
 import type { IFunctionResponse, IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -12,6 +10,11 @@ import { call_api } from "./api_call";
 import { apply_edit_completion } from "./apply_edit";
 import { run_council, select_council_members } from "./council";
 import { create_note } from "./create_note";
+import {
+  applyConnectorScope,
+  requireToolPermissions,
+  type FunctionToolCatalogueOptions,
+} from "./definitions";
 import { discover_capabilities } from "./discover_capabilities";
 import { extract_content } from "./extract_content";
 import { fill_in_middle_completion } from "./fill_in_middle";
@@ -32,10 +35,7 @@ import { create_qr_code } from "./qr";
 import { configure_recipe } from "./recipes/configure_recipe";
 import { get_recipe } from "./recipes/get_recipe";
 import { trigger_recipe } from "./recipes/trigger_recipe";
-import {
-  createUseRecipeConnectorInputSchema,
-  use_recipe_connector,
-} from "./recipes/use_recipe_connector";
+import { use_recipe_connector } from "./recipes/use_recipe_connector";
 import { applyFunctionRequestContext } from "./request-context";
 import { research } from "./research";
 import { run_sandbox_task } from "./sandbox";
@@ -44,7 +44,6 @@ import { search_documents } from "./search_documents";
 import { second_opinion } from "./second_opinion";
 import { create_speech } from "./speech";
 import { get_task_status } from "./tasks";
-import { delegateToTeamMember, delegateToTeamMemberByRole, getTeamMembers } from "./teamDelegation";
 import { v0_code_generation } from "./v0_code_generation";
 import { create_video } from "./video";
 import { get_weather } from "./weather";
@@ -87,9 +86,6 @@ const functionDefinitions: ApiToolDefinition[] = [
   capture_screenshot,
   create_speech,
   v0_code_generation,
-  delegateToTeamMember,
-  delegateToTeamMemberByRole,
-  getTeamMembers,
   discover_capabilities,
   set_goal,
   complete_goal,
@@ -108,6 +104,7 @@ export type RegisteredFunctionTool = ApiToolDefinition;
 export const toolRegistry = new ToolRegistry();
 
 const toolRepeatLimits = new Map<string, number>();
+const toolCompanions = new Map<string, readonly string[]>();
 
 for (const fn of functionDefinitions) {
   if (!fn) {
@@ -118,21 +115,17 @@ for (const fn of functionDefinitions) {
     toolRepeatLimits.set(fn.name, fn.maxIdenticalCalls);
   }
 
-  const resolvedPermissions = resolveToolPermissions(fn.name, fn.permissions);
-
-  if (resolvedPermissions.length === 0) {
-    throw new AssistantError(
-      `Tool "${fn.name}" is missing explicit permissions`,
-      ErrorType.CONFIGURATION_ERROR,
-    );
+  if (fn.companionTools?.length) {
+    toolCompanions.set(fn.name, fn.companionTools);
   }
+
+  const resolvedPermissions = requireToolPermissions(fn.name, fn.permissions);
 
   toolRegistry.register(FUNCTIONS_TOOL_CATEGORY, {
     name: fn.name,
     metadata: {
       type: fn.type,
       costPerCall: fn.costPerCall,
-      isDefault: fn.isDefault ?? false,
     },
     create: () => ({
       ...fn,
@@ -141,46 +134,30 @@ for (const fn of functionDefinitions) {
   });
 }
 
-export const listFunctionTools = (options?: {
-  connectedConnectorProviders?: readonly RecipeConnectorProvider[];
-  selectedConnectorProvider?: RecipeConnectorProvider;
-}): RegisteredFunctionTool[] => {
-  const definitions = toolRegistry.listDefinitions(
-    FUNCTIONS_TOOL_CATEGORY,
-  ) as RegisteredFunctionTool[];
-
-  if (!options?.connectedConnectorProviders && !options?.selectedConnectorProvider) {
-    return definitions;
-  }
-
-  const connectedConnectorProviders = options.connectedConnectorProviders;
-  const connectorProviders = options.selectedConnectorProvider
-    ? !connectedConnectorProviders ||
-      connectedConnectorProviders.includes(options.selectedConnectorProvider)
-      ? [options.selectedConnectorProvider]
-      : []
-    : [...(connectedConnectorProviders ?? [])];
-
-  return definitions.flatMap((definition) => {
-    if (definition.name !== use_recipe_connector.name) {
-      return [definition];
-    }
-
-    if (connectorProviders.length === 0) {
-      return [];
-    }
-
-    return [
-      {
-        ...definition,
-        inputSchema: createUseRecipeConnectorInputSchema(connectorProviders),
-      },
-    ];
-  });
-};
+export const listFunctionTools = (
+  options?: FunctionToolCatalogueOptions,
+): RegisteredFunctionTool[] =>
+  applyConnectorScope(
+    toolRegistry.listDefinitions(FUNCTIONS_TOOL_CATEGORY) as RegisteredFunctionTool[],
+    options,
+  );
 
 export const resolveToolRepeatLimit = (functionName: string): number | undefined =>
   toolRepeatLimits.get(functionName);
+
+export const expandFunctionToolNames = (toolNames: readonly string[]): string[] => {
+  const expanded = new Set<string>();
+
+  for (const toolName of toolNames) {
+    expanded.add(toolName);
+
+    for (const companion of toolCompanions.get(toolName) ?? []) {
+      expanded.add(companion);
+    }
+  }
+
+  return [...expanded];
+};
 
 export const resolveFunctionTool = (functionName: string): RegisteredFunctionTool =>
   toolRegistry.resolve(FUNCTIONS_TOOL_CATEGORY, functionName) as RegisteredFunctionTool;

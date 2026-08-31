@@ -2,8 +2,12 @@ import SwiftUI
 
 struct ChatSettingsView: View {
     @Binding var settings: ChatSettings
-    @EnvironmentObject var toolsStore: ToolsStore
+    var modelConfig: ModelConfigItem?
     @Environment(\.dismiss) private var dismiss
+
+    private var reasoningOptions: [ChatSettings.ReasoningEffort] {
+        ChatSettings.ReasoningEffort.supportedLevels(for: modelConfig)
+    }
 
     var body: some View {
         NavigationView {
@@ -11,7 +15,7 @@ struct ChatSettingsView: View {
                 Section(header: Text("Response")) {
                     Picker("Reasoning", selection: reasoningSelection) {
                         Text("Default").tag("")
-                        ForEach(ChatSettings.ReasoningEffort.allCases, id: \.rawValue) { effort in
+                        ForEach(reasoningOptions, id: \.rawValue) { effort in
                             Text(effort.displayName).tag(effort.rawValue)
                         }
                     }
@@ -23,27 +27,25 @@ struct ChatSettingsView: View {
                         }
                     }
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Temperature")
-                            Spacer()
-                            Text(String(format: "%.1f", settings.temperature))
-                                .foregroundColor(.secondary)
-                        }
-                        Slider(value: $settings.temperature, in: 0...2, step: 0.1)
-                    }
+                    automaticSlider(
+                        title: "Temperature",
+                        value: $settings.temperature,
+                        range: 0...2,
+                        step: 0.1,
+                        overrideValue: 1,
+                        format: "%.1f"
+                    )
                 }
 
                 Section(header: Text("Advanced")) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Top P")
-                            Spacer()
-                            Text(String(format: "%.2f", settings.topP))
-                                .foregroundColor(.secondary)
-                        }
-                        Slider(value: $settings.topP, in: 0...1, step: 0.05)
-                    }
+                    automaticSlider(
+                        title: "Top P",
+                        value: $settings.topP,
+                        range: 0...1,
+                        step: 0.05,
+                        overrideValue: 0.8,
+                        format: "%.2f"
+                    )
 
                     Toggle("Limit Max Tokens", isOn: Binding(
                         get: { settings.maxTokens != nil },
@@ -57,67 +59,23 @@ struct ChatSettingsView: View {
                         ), in: 256...Int.max, step: 256)
                     }
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Presence Penalty")
-                            Spacer()
-                            Text(String(format: "%.1f", settings.presencePenalty))
-                                .foregroundColor(.secondary)
-                        }
-                        Slider(value: $settings.presencePenalty, in: -2...2, step: 0.1)
-                    }
+                    automaticSlider(
+                        title: "Presence Penalty",
+                        value: $settings.presencePenalty,
+                        range: -2...2,
+                        step: 0.1,
+                        overrideValue: 0,
+                        format: "%.1f"
+                    )
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Frequency Penalty")
-                            Spacer()
-                            Text(String(format: "%.1f", settings.frequencyPenalty))
-                                .foregroundColor(.secondary)
-                        }
-                        Slider(value: $settings.frequencyPenalty, in: -2...2, step: 0.1)
-                    }
-                }
-
-                Section(header: Text("Retrieval")) {
-                    Toggle("Enable RAG", isOn: $settings.useRag)
-
-                    if settings.useRag {
-                        Stepper("Top K: \(settings.ragOptions.topK)", value: $settings.ragOptions.topK, in: 1...20)
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text("Score Threshold")
-                                Spacer()
-                                Text(String(format: "%.2f", settings.ragOptions.scoreThreshold))
-                                    .foregroundColor(.secondary)
-                            }
-                            Slider(value: $settings.ragOptions.scoreThreshold, in: 0...1, step: 0.05)
-                        }
-                        Toggle("Include Metadata", isOn: $settings.ragOptions.includeMetadata)
-                        TextField("Namespace", text: $settings.ragOptions.namespace)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                    }
-                }
-
-                Section(header: Text("Tools")) {
-                    if toolsStore.isLoading {
-                        ProgressView("Loading tools...")
-                    } else if toolsStore.tools.isEmpty {
-                        Text("No tools available")
-                            .foregroundColor(.secondary)
-                    } else {
-                        ForEach(toolsStore.tools) { tool in
-                            Toggle(isOn: toolBinding(tool.id)) {
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text(tool.name)
-                                    Text(tool.description)
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                        .lineLimit(2)
-                                }
-                            }
-                        }
-                    }
+                    automaticSlider(
+                        title: "Frequency Penalty",
+                        value: $settings.frequencyPenalty,
+                        range: -2...2,
+                        step: 0.1,
+                        overrideValue: 0,
+                        format: "%.1f"
+                    )
                 }
 
                 Section {
@@ -135,10 +93,39 @@ struct ChatSettingsView: View {
                     }
                 }
             }
-            .task {
-                if toolsStore.tools.isEmpty {
-                    await toolsStore.fetchTools()
+        }
+    }
+
+    @ViewBuilder
+    private func automaticSlider(
+        title: String,
+        value: Binding<Double?>,
+        range: ClosedRange<Double>,
+        step: Double,
+        overrideValue: Double,
+        format: String
+    ) -> some View {
+        Toggle("Set \(title)", isOn: Binding(
+            get: { value.wrappedValue != nil },
+            set: { enabled in value.wrappedValue = enabled ? overrideValue : nil }
+        ))
+
+        if let current = value.wrappedValue {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(title)
+                    Spacer()
+                    Text(String(format: format, current))
+                        .foregroundColor(.secondary)
                 }
+                Slider(
+                    value: Binding(
+                        get: { value.wrappedValue ?? overrideValue },
+                        set: { value.wrappedValue = $0 }
+                    ),
+                    in: range,
+                    step: step
+                )
             }
         }
     }
@@ -160,24 +147,8 @@ struct ChatSettingsView: View {
             }
         )
     }
-
-    private func toolBinding(_ toolId: String) -> Binding<Bool> {
-        Binding(
-            get: { settings.enabledTools.contains(toolId) },
-            set: { enabled in
-                if enabled {
-                    if !settings.enabledTools.contains(toolId) {
-                        settings.enabledTools.append(toolId)
-                    }
-                } else {
-                    settings.enabledTools.removeAll { $0 == toolId }
-                }
-            }
-        )
-    }
 }
 
 #Preview {
     ChatSettingsView(settings: .constant(.default))
-        .environmentObject(ToolsStore())
 }

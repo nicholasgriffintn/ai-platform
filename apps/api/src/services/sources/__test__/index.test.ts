@@ -10,6 +10,7 @@ import {
   deleteSourceCollection,
   listProjectConversationSources,
   setProjectContextSources,
+  updateSource,
 } from "..";
 
 const deleteMemoryMock = vi.hoisted(() => vi.fn());
@@ -150,6 +151,54 @@ describe("source deletion", () => {
       "project-1",
       expect.objectContaining({ action: "source.deleted", targetId: projectMemory.id }),
     );
+  });
+});
+
+describe("memory source updates", () => {
+  it("rejects public mutation of managed memory lifecycle and provenance", async () => {
+    const updateSourceRow = vi.fn();
+    const context = {
+      repositories: {
+        sources: {
+          getSource: vi.fn().mockResolvedValue(memory),
+          updateSource: updateSourceRow,
+        },
+      },
+    } as unknown as ServiceContext;
+
+    await expect(
+      updateSource(context, 42, memory.id, {
+        status: "available",
+        metadata: { embedding_provider_target: { provider: "s3vectors" } },
+      }),
+    ).rejects.toMatchObject({ type: "PARAMS_ERROR", statusCode: 400 });
+
+    expect(updateSourceRow).not.toHaveBeenCalled();
+  });
+
+  it("keeps memory titles editable without exposing internal target provenance", async () => {
+    const updated = {
+      ...memory,
+      title: "Concise answers",
+      metadata: JSON.stringify({
+        memory_provider: "built-in",
+        embedding_provider_target: { provider: "vectorize" },
+      }),
+    };
+    const updateSourceRow = vi.fn().mockResolvedValue(undefined);
+    const context = {
+      repositories: {
+        sources: {
+          getSource: vi.fn().mockResolvedValueOnce(memory).mockResolvedValueOnce(updated),
+          updateSource: updateSourceRow,
+        },
+      },
+    } as unknown as ServiceContext;
+
+    const result = await updateSource(context, 42, memory.id, { title: "Concise answers" });
+
+    expect(updateSourceRow).toHaveBeenCalledWith(memory.id, { title: "Concise answers" });
+    expect(result.metadata).toEqual({ memory_provider: "built-in" });
   });
 });
 

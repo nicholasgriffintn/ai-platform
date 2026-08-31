@@ -1,3 +1,5 @@
+import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
+
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getModelConfigByModel } from "~/lib/providers/models";
@@ -7,7 +9,7 @@ import { buildInputSchemaInput } from "~/utils/inputSchema";
 
 import type { MusicGenerationRequest, MusicGenerationResult, MusicProvider } from "../index";
 
-const DEFAULT_MODEL = "workers-ai-minimax-music-2-6";
+const DEFAULT_MODEL = MODEL_DEFAULTS.music.workersAi.model;
 
 export class WorkersAiMusicProvider implements MusicProvider {
   name = "workers-ai";

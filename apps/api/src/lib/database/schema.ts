@@ -5,7 +5,7 @@ import type {
   ProjectTaskContext,
   ProjectTaskCriterion,
   ProjectTaskRunner,
-  PetModelOverrides,
+  StoredPetModelOverrides,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 import { sql } from "drizzle-orm";
@@ -199,6 +199,101 @@ export const embedding = sqliteTable(
 
 export type Embedding = typeof embedding.$inferSelect;
 
+export const embeddingDocument = sqliteTable(
+  "embedding_document",
+  {
+    id: text().primaryKey(),
+    scope_type: text().default("personal").notNull(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    logical_id: text().notNull(),
+    type: text().notNull(),
+    title: text().default("").notNull(),
+    metadata: text({ mode: "json" }).$type<Readonly<Record<string, unknown>>>().notNull(),
+    lifecycle_status: text().default("pending").notNull(),
+    provider: text().notNull(),
+    provider_target: text().default("quarantined-legacy").notNull(),
+    embedding_model: text().default("unknown-legacy").notNull(),
+    embedding_dimensions: integer().default(1).notNull(),
+    distance_metric: text().default("unknown").notNull(),
+    task_mode: text().default("unknown").notNull(),
+    vector_space: text().notNull(),
+    vector_space_version: text().default("legacy").notNull(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    lifecycleCheck: check(
+      "embedding_document_lifecycle_check",
+      sql`${table.lifecycle_status} IN ('pending', 'active', 'delete_pending')`,
+    ),
+    personalScopeCheck: check(
+      "embedding_document_personal_scope_check",
+      sql`${table.scope_type} = 'personal'`,
+    ),
+    userLogicalIdIdx: uniqueIndex("embedding_document_user_logical_id_idx").on(
+      table.user_id,
+      table.logical_id,
+    ),
+    userLifecycleIdx: index("embedding_document_user_lifecycle_idx").on(
+      table.user_id,
+      table.lifecycle_status,
+    ),
+  }),
+);
+
+export const embeddingChunk = sqliteTable(
+  "embedding_chunk",
+  {
+    id: text().primaryKey(),
+    document_id: text()
+      .notNull()
+      .references(() => embeddingDocument.id, { onDelete: "cascade" }),
+    vector_id: text().notNull(),
+    chunk_index: integer().notNull(),
+    content: text().notNull(),
+    metadata: text({ mode: "json" }).$type<Readonly<Record<string, unknown>>>().notNull(),
+    lifecycle_status: text().default("pending").notNull(),
+    provider: text().notNull(),
+    provider_target: text().default("quarantined-legacy").notNull(),
+    embedding_model: text().default("unknown-legacy").notNull(),
+    embedding_dimensions: integer().default(1).notNull(),
+    distance_metric: text().default("unknown").notNull(),
+    task_mode: text().default("unknown").notNull(),
+    vector_space: text().notNull(),
+    vector_space_version: text().default("legacy").notNull(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    lifecycleCheck: check(
+      "embedding_chunk_lifecycle_check",
+      sql`${table.lifecycle_status} IN ('pending', 'active', 'delete_pending')`,
+    ),
+    documentChunkIdx: uniqueIndex("embedding_chunk_document_index_idx").on(
+      table.document_id,
+      table.chunk_index,
+    ),
+    vectorIdIdx: uniqueIndex("embedding_chunk_vector_id_idx").on(table.vector_id),
+    documentLifecycleIdx: index("embedding_chunk_document_lifecycle_idx").on(
+      table.document_id,
+      table.lifecycle_status,
+    ),
+  }),
+);
+
+export type EmbeddingDocument = typeof embeddingDocument.$inferSelect;
+export type EmbeddingChunk = typeof embeddingChunk.$inferSelect;
+
 export const workspace = sqliteTable(
   "workspace",
   {
@@ -323,6 +418,84 @@ export const project = sqliteTable(
 );
 
 export type Project = typeof project.$inferSelect;
+
+export const authoredSkill = sqliteTable(
+  "authored_skill",
+  {
+    id: text().primaryKey(),
+    scope_type: text({ enum: ["personal", "project"] }).notNull(),
+    scope_id: text().notNull(),
+    name: text().notNull(),
+    created_by: integer()
+      .notNull()
+      .references(() => user.id),
+    draft_revision_id: text().notNull(),
+    stable_revision_id: text().notNull(),
+    state_version: integer().default(1).notNull(),
+    archived_at: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    scopeNameIdx: uniqueIndex("authored_skill_scope_name_idx")
+      .on(table.scope_type, table.scope_id, table.name)
+      .where(sql`${table.archived_at} IS NULL`),
+    scopeTypeCheck: check(
+      "authored_skill_scope_type_check",
+      sql`${table.scope_type} IN ('personal', 'project')`,
+    ),
+    stateVersionCheck: check(
+      "authored_skill_state_version_check",
+      sql`${table.state_version} >= 1`,
+    ),
+  }),
+);
+
+export type AuthoredSkill = typeof authoredSkill.$inferSelect;
+
+export const authoredSkillRevision = sqliteTable(
+  "authored_skill_revision",
+  {
+    id: text().primaryKey(),
+    skill_id: text()
+      .notNull()
+      .references(() => authoredSkill.id, { onDelete: "cascade" }),
+    revision: integer().notNull(),
+    description: text().notNull(),
+    change_note: text(),
+    digest: text().notNull(),
+    storage_key: text().notNull().unique(),
+    size: integer().notNull(),
+    // Keep lineage readable even when the originating personal skill is later purged.
+    source_skill_id: text(),
+    source_revision_id: text(),
+    created_by: integer()
+      .notNull()
+      .references(() => user.id),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    skillRevisionIdx: uniqueIndex("authored_skill_revision_skill_revision_idx").on(
+      table.skill_id,
+      table.revision,
+    ),
+    revisionCheck: check("authored_skill_revision_number_check", sql`${table.revision} >= 1`),
+    sizeCheck: check("authored_skill_revision_size_check", sql`${table.size} >= 0`),
+    sourceCheck: check(
+      "authored_skill_revision_source_check",
+      sql`(${table.source_skill_id} IS NULL AND ${table.source_revision_id} IS NULL) OR (${table.source_skill_id} IS NOT NULL AND ${table.source_revision_id} IS NOT NULL)`,
+    ),
+  }),
+);
+
+export type AuthoredSkillRevision = typeof authoredSkillRevision.$inferSelect;
 
 export const projectCapability = sqliteTable(
   "project_capability",
@@ -532,7 +705,7 @@ export const userSettings = sqliteTable(
     preferences: text(),
     guardrails_enabled: integer({ mode: "boolean" }).default(false),
     guardrails_provider: text({
-      enum: ["bedrock", "llamaguard"],
+      enum: ["bedrock", "llamaguard", "mistral", "shieldstral"],
     }).default("llamaguard"),
     bedrock_guardrail_id: text(),
     bedrock_guardrail_version: text(),
@@ -569,7 +742,7 @@ export const userSettings = sqliteTable(
     pet_travel_enabled: integer({ mode: "boolean" }).default(false),
     pet_animation_enabled: integer({ mode: "boolean" }).default(false),
     pet_model_overrides: text({ mode: "json" })
-      .$type<PetModelOverrides>()
+      .$type<StoredPetModelOverrides>()
       .default({ families: {}, providers: {} })
       .notNull(),
     tracking_enabled: integer({ mode: "boolean" }).default(true),
@@ -1233,6 +1406,11 @@ export const agents = sqliteTable(
     user_id: integer()
       .notNull()
       .references(() => user.id),
+    owner_scope_type: text({ enum: ["user", "workspace"] })
+      .default("user")
+      .notNull(),
+    owner_scope_id: text().default("").notNull(),
+    derived_from_agent_id: text(),
     name: text().notNull(),
     description: text().default("").notNull(),
     avatar_url: text(),
@@ -1243,9 +1421,8 @@ export const agents = sqliteTable(
     system_prompt: text(),
     few_shot_examples: text({ mode: "json" }),
     enabled_tools: text({ mode: "json" }),
-    team_id: text(),
-    team_role: text(),
-    is_team_agent: integer({ mode: "boolean" }).default(false),
+    skill_ids: text({ mode: "json" }),
+    mode: text({ enum: ["chat", "plan", "build", "explore"] }),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
@@ -1255,7 +1432,7 @@ export const agents = sqliteTable(
   },
   (table) => ({
     userIdIdx: index("agents_user_id_idx").on(table.user_id),
-    teamIdIdx: index("agents_team_id_idx").on(table.team_id),
+    ownerScopeIdx: index("agents_owner_scope_idx").on(table.owner_scope_type, table.owner_scope_id),
   }),
 );
 
@@ -1420,6 +1597,7 @@ export const tasks = sqliteTable(
         "artificial_analysis_scoring",
         "inbound_message",
         "project_task_run",
+        "ocr_batch_polling",
       ],
     }).notNull(),
     status: text({

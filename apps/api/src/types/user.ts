@@ -1,4 +1,4 @@
-import type { PetModelOverrides } from "@ngriffin_uk/polychat-schemas";
+import type { GuardrailsProviderId, PetModelOverrides } from "@ngriffin_uk/polychat-schemas";
 
 export interface User {
   id: number;
@@ -37,7 +37,7 @@ export interface IUser extends User {
 
 export interface IUserSettings {
   guardrails_enabled: boolean;
-  guardrails_provider: string;
+  guardrails_provider: GuardrailsProviderId;
   bedrock_guardrail_id: string | null;
   bedrock_guardrail_version: string | null;
   embedding_provider: string;

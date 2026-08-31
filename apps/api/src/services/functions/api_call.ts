@@ -5,7 +5,7 @@ import { coerceStringRecord, isPlainObject } from "~/utils/objects";
 import { appendQueryParams, isPrivateHostname } from "~/utils/urls";
 
 import type { ApiToolDefinition } from "../../types/functions";
-import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import { call_api as call_apiDescriptor } from "./definitions/api_call";
 
 const logger = getLogger({ prefix: "services/functions/api_call" });
 
@@ -13,66 +13,7 @@ const DEFAULT_TIMEOUT_MS = 15000;
 const MAX_TIMEOUT_MS = 60000;
 
 export const call_api: ApiToolDefinition = {
-  name: "call_api",
-  description:
-    "Calls a REST or GraphQL API and returns a structured response. Use this when you need to fetch data from external APIs.",
-  type: "normal",
-  costPerCall: 0,
-  permissions: ["network"],
-  isDefault: true,
-  inputSchema: jsonSchemaToZod({
-    type: "object",
-    properties: {
-      request_type: {
-        type: "string",
-        description: "The request type: 'rest' or 'graphql'",
-        enum: ["rest", "graphql"],
-        default: "rest",
-      },
-      url: {
-        type: "string",
-        description: "The full URL of the API endpoint",
-      },
-      method: {
-        type: "string",
-        description:
-          "HTTP method for REST requests (defaults to GET or POST when a body is supplied)",
-        enum: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-      },
-      headers: {
-        type: "object",
-        description:
-          'Optional headers to include in the request (example: {"Authorization":"Bearer <token>","Accept":"application/json"})',
-      },
-      query_params: {
-        type: "object",
-        description:
-          'Optional query parameters as key-value pairs (example: {"q":"search term","page":2})',
-      },
-      body: {
-        type: "object",
-        description: 'JSON body for REST requests (example: {"id":123,"name":"Ada"})',
-      },
-      graphql_query: {
-        type: "string",
-        description: "GraphQL query string (required for graphql)",
-      },
-      graphql_variables: {
-        type: "object",
-        description: "GraphQL variables object (optional)",
-      },
-      graphql_operation_name: {
-        type: "string",
-        description: "GraphQL operation name (optional)",
-      },
-      timeout_ms: {
-        type: "number",
-        description: "Timeout in milliseconds (max 60000)",
-        minimum: 1000,
-      },
-    },
-    required: ["url"],
-  }),
+  ...call_apiDescriptor,
   execute: async (args, _context) => {
     const urlInput = typeof args?.url === "string" ? args.url.trim() : "";
 

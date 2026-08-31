@@ -1,8 +1,14 @@
 import { gatewayId } from "~/constants/app";
-import { listFunctionTools } from "~/services/functions";
+import { listFunctionToolDefinitions } from "~/services/functions/definitions";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { readHttpResponseBody, setDefaultHeader } from "~/utils/http";
+import {
+  readHttpResponseBody,
+  readResponseTextWithinLimit,
+  ResponseBodyTooLargeError,
+  setDefaultHeader,
+} from "~/utils/http";
+import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 import { omitUndefinedValues } from "~/utils/objects";
 import {
@@ -17,12 +23,16 @@ import { appendUrlPath } from "~/utils/urls";
 
 const logger = getLogger({ prefix: "lib/providers/fetch" });
 
+const DEFAULT_REQUEST_TIMEOUT_MS = 100000;
+const MAX_PROVIDER_ERROR_BODY_BYTES = 64 * 1024;
+
 export interface FetchAIResponseOptions {
   requestTimeout?: number;
   retryDelay?: number;
   maxAttempts?: number;
   backoff?: "exponential" | "linear";
   responseType?: "json" | "raw";
+  maxResponseBytes?: number;
 }
 
 export interface FetchProviderJsonOptions {
@@ -73,43 +83,60 @@ export async function fetchAIResponse<
   const isFormData = body instanceof FormData;
   const isStreaming = isFormData ? false : detectStreaming(body, endpointOrUrl);
 
-  const tools = provider === "tool-use" ? listFunctionTools() : undefined;
+  const tools = provider === "tool-use" ? listFunctionToolDefinitions() : undefined;
   const bodyWithTools = isFormData ? body : tools ? { ...body, tools } : body;
   const requestBody = isFormData ? bodyWithTools : omitUndefinedValues(bodyWithTools);
 
   let response: Response;
 
-  if (!isUrl) {
-    if (isFormData) {
-      throw new AssistantError(
-        "FormData requests are not supported through Cloudflare AI Gateway. Use direct URL endpoints for image edits.",
-        ErrorType.PARAMS_ERROR,
-      );
+  /**
+   * Bounds how long we wait for response headers without capping the stream
+   * that follows, so a provider that accepts the connection and then goes
+   * quiet cannot hold a turn (and its conversation lock) open indefinitely.
+   */
+  const controller = new AbortController();
+  const headersTimeout = setTimeout(
+    () => controller.abort(),
+    options.requestTimeout ?? DEFAULT_REQUEST_TIMEOUT_MS,
+  );
+
+  try {
+    if (!isUrl) {
+      if (isFormData) {
+        throw new AssistantError(
+          "FormData requests are not supported through Cloudflare AI Gateway. Use direct URL endpoints for image edits.",
+          ErrorType.PARAMS_ERROR,
+        );
+      }
+
+      if (!env?.AI) {
+        throw new AssistantError(
+          "AI binding is required to fetch gateway responses",
+          ErrorType.PARAMS_ERROR,
+        );
+      }
+
+      const gateway = env.AI.gateway(gatewayId);
+
+      const providerName = isOpenAiCompatible ? "compat" : provider;
+      const providerBaseUrl = await gateway.getUrl(providerName);
+
+      response = await fetch(appendUrlPath(providerBaseUrl, endpointOrUrl), {
+        method: "POST",
+        headers: getAiGatewayRequestHeaders(headers, options),
+        body: JSON.stringify(requestBody),
+        signal: controller.signal,
+      });
+    } else {
+      response = await fetch(endpointOrUrl, {
+        method: "POST",
+        headers,
+        body: isFormData ? (requestBody as FormData) : JSON.stringify(requestBody),
+        signal: controller.signal,
+      });
     }
-
-    if (!env?.AI) {
-      throw new AssistantError(
-        "AI binding is required to fetch gateway responses",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-
-    const gateway = env.AI.gateway(gatewayId);
-
-    const providerName = isOpenAiCompatible ? "compat" : provider;
-    const providerBaseUrl = await gateway.getUrl(providerName);
-
-    response = await fetch(appendUrlPath(providerBaseUrl, endpointOrUrl), {
-      method: "POST",
-      headers: getAiGatewayRequestHeaders(headers, options),
-      body: JSON.stringify(requestBody),
-    });
-  } else {
-    response = await fetch(endpointOrUrl, {
-      method: "POST",
-      headers,
-      body: isFormData ? (requestBody as FormData) : JSON.stringify(requestBody),
-    });
+  } finally {
+    clearTimeout(headersTimeout);
   }
 
   const requestId =
@@ -122,19 +149,23 @@ export async function fetchAIResponse<
     let responseText: string;
 
     try {
-      responseText = await response.text();
+      responseText = await readResponseTextWithinLimit(response, MAX_PROVIDER_ERROR_BODY_BYTES);
     } catch (textError) {
-      logger.error(`Failed to read response body for ${provider} from ${endpointOrUrl}:`, {
-        error: textError,
-        status: response.status,
-        statusText: response.statusText,
-      });
-      throw new AssistantError(
-        `Failed to get response for ${provider} from ${endpointOrUrl}: ${response.statusText}`,
-        ErrorType.PROVIDER_ERROR,
-        response.status,
-        { requestId },
-      );
+      if (textError instanceof ResponseBodyTooLargeError) {
+        responseText = "[provider error body exceeded limit]";
+      } else {
+        logger.error(`Failed to read response body for ${provider} from ${endpointOrUrl}:`, {
+          error: textError,
+          status: response.status,
+          statusText: response.statusText,
+        });
+        throw new AssistantError(
+          `Failed to get response for ${provider} from ${endpointOrUrl}: ${response.statusText}`,
+          ErrorType.PROVIDER_ERROR,
+          response.status,
+          { requestId },
+        );
+      }
     }
 
     const errorDetails = buildProviderResponseErrorDetails({
@@ -177,17 +208,43 @@ export async function fetchAIResponse<
   }
 
   let data: Record<string, any>;
-  const responseForLogging = response.clone();
+  let boundedResponseText: string | undefined;
+  const responseForLogging = options.maxResponseBytes ? undefined : response.clone();
 
   try {
-    data = (await response.json()) as Record<string, any>;
-  } catch (jsonError) {
-    let responseText = "[unavailable]";
+    if (options.maxResponseBytes) {
+      boundedResponseText = await readResponseTextWithinLimit(response, options.maxResponseBytes);
+      const parsed = safeParseJson<Record<string, any>>(boundedResponseText);
 
-    try {
-      responseText = await responseForLogging.text();
-    } catch {
-      // Ignore secondary body read errors in logging path.
+      if (!parsed) {
+        throw new SyntaxError("Response is not a JSON object");
+      }
+
+      data = parsed;
+    } else {
+      data = (await response.json()) as Record<string, any>;
+    }
+  } catch (jsonError) {
+    if (jsonError instanceof ResponseBodyTooLargeError) {
+      throw new AssistantError(
+        `${provider} returned a response larger than the configured limit`,
+        ErrorType.PROVIDER_ERROR,
+        502,
+        { requestId },
+      );
+    }
+
+    let responseText = boundedResponseText ?? "[unavailable]";
+
+    if (responseForLogging) {
+      try {
+        responseText = await readResponseTextWithinLimit(
+          responseForLogging,
+          MAX_PROVIDER_ERROR_BODY_BYTES,
+        );
+      } catch {
+        // Ignore secondary body read errors in logging path.
+      }
     }
 
     logger.error(`Failed to parse JSON response from ${provider}`, {

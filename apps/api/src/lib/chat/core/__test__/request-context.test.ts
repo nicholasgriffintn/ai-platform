@@ -19,7 +19,7 @@ describe("chat request context helpers", () => {
     });
   });
 
-  it("preserves chat, delegation, and tool context for tool execution", () => {
+  it("preserves chat and tool context for tool execution", () => {
     const context = buildToolRequestContext({
       chatOptions: {
         env: { AI: {} },
@@ -35,9 +35,6 @@ describe("chat request context helpers", () => {
         enabled_tools: ["sandbox", "discover_capabilities"],
         tools: [{ name: "sandbox", permissions: ["sandbox:write"] }],
         options: { sandbox: { enabled: true } },
-        current_agent_id: "agent-1",
-        delegation_stack: ["agent-0"],
-        max_delegation_depth: 2,
         enforce_mode_tool_policy: false,
       } as any,
       input: "hello with context",
@@ -64,9 +61,6 @@ describe("chat request context helpers", () => {
           sandbox: ["sandbox:write"],
         },
         options: { sandbox: { enabled: true } },
-        current_agent_id: "agent-1",
-        delegation_stack: ["agent-0"],
-        max_delegation_depth: 2,
         enforce_mode_tool_policy: false,
       },
     });

@@ -1,6 +1,8 @@
 import { formatMessageContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import type {
+  AgentResponse,
   CreateAgentInput,
+  SharedAgentSummary,
   ModelConfig,
   Tool,
   UpdateAgentInput,
@@ -152,13 +154,17 @@ class ApiService {
   streamChatCompletions = async ({
     onProgress,
     ...params
-  }: Omit<StreamChatCompletionsParams, "selectedTools">): Promise<Message> => {
-    const { selectedTools } = useToolsStore.getState();
+  }: Omit<
+    StreamChatCompletionsParams,
+    "selectedTools" | "toolSelectionMode"
+  >): Promise<Message> => {
+    const { selectedTools, toolSelectionMode } = useToolsStore.getState();
     const { isAuthenticated } = useChatStore.getState();
 
     const assistantMessage = await this.chatService.streamChatCompletions({
       ...params,
       allowTools: isAuthenticated,
+      toolSelectionMode,
       onProgress: (text, reasoning, toolResponses, done, streamedAssistantMessage) => {
         onProgress(text, reasoning, toolResponses, done, streamedAssistantMessage);
       },
@@ -193,8 +199,16 @@ class ApiService {
 
   // ===== Agent Methods =====
 
-  listAgents = (): Promise<any[]> => {
+  listAgents = (): Promise<AgentResponse[]> => {
     return this.agentService.listAgents();
+  };
+
+  getAgent = (agentId: string): Promise<AgentResponse> => {
+    return this.agentService.getAgent(agentId);
+  };
+
+  publishAgentToWorkspace = (agentId: string, workspaceId: string): Promise<AgentResponse> => {
+    return this.agentService.publishAgentToWorkspace(agentId, workspaceId);
   };
 
   listSharedAgents = (params?: {
@@ -205,16 +219,20 @@ class ApiService {
     limit?: number;
     offset?: number;
     sort_by?: string;
-  }): Promise<any[]> => {
+  }): Promise<SharedAgentSummary[]> => {
     return this.agentService.listSharedAgents(params);
   };
 
-  listFeaturedSharedAgents = (limit = 10): Promise<any[]> => {
+  listFeaturedSharedAgents = (limit = 10): Promise<SharedAgentSummary[]> => {
     return this.agentService.listFeaturedSharedAgents(limit);
   };
 
-  installSharedAgent = (agentId: string): Promise<any> => {
-    return this.agentService.installSharedAgent(agentId);
+  installSharedAgent = (sharedAgentId: string): Promise<unknown> => {
+    return this.agentService.installSharedAgent(sharedAgentId);
+  };
+
+  getSharedAgentListingForAgent = (agentId: string): Promise<SharedAgentSummary | null> => {
+    return this.agentService.getSharedAgentListingForAgent(agentId);
   };
 
   shareAgent = (
@@ -224,16 +242,12 @@ class ApiService {
     avatarUrl?: string | null,
     category?: string | null,
     tags?: string[] | null,
-  ): Promise<any> => {
+  ): Promise<unknown> => {
     return this.agentService.shareAgent(agentId, name, description, avatarUrl, category, tags);
   };
 
-  rateSharedAgent = (agentId: string, rating: number, review?: string): Promise<any> => {
-    return this.agentService.rateSharedAgent(agentId, rating, review);
-  };
-
-  getAgentRatings = (agentId: string, limit = 10): Promise<any[]> => {
-    return this.agentService.getAgentRatings(agentId, limit);
+  unshareAgent = (sharedAgentId: string): Promise<void> => {
+    return this.agentService.unshareAgent(sharedAgentId);
   };
 
   getSharedCategories = (): Promise<string[]> => {
@@ -244,11 +258,11 @@ class ApiService {
     return this.agentService.getSharedTags();
   };
 
-  createAgent = (data: CreateAgentInput): Promise<any> => {
+  createAgent = (data: CreateAgentInput): Promise<AgentResponse> => {
     return this.agentService.createAgent(data);
   };
 
-  updateAgent = (agentId: string, data: UpdateAgentInput): Promise<void> => {
+  updateAgent = (agentId: string, data: UpdateAgentInput): Promise<AgentResponse> => {
     return this.agentService.updateAgent(agentId, data);
   };
 
@@ -344,7 +358,7 @@ class ApiService {
 
   // ===== Upload Methods =====
 
-  transcribeAudio = (audioBlob: Blob): Promise<any> => {
+  transcribeAudio = (audioBlob: Blob): ReturnType<UploadService["transcribeAudio"]> => {
     return this.uploadService.transcribeAudio(audioBlob);
   };
 

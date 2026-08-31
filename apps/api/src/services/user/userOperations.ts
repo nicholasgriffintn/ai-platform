@@ -1,6 +1,11 @@
 import { KVCache } from "~/lib/cache";
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import {
+  getUserConfigurableProviderMetadata,
+  listConfigurableUserProviderIds,
+} from "~/lib/providers/userConfigurableProviders";
 import { validatePetSettingsUpdate } from "~/services/pets/settings";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/user/operations" });
@@ -25,6 +30,36 @@ const ensureRepo = (context: ServiceContext) => {
   return context.repositories.userSettings;
 };
 
+async function invalidateUserModelCache(
+  context: ServiceContext,
+  userId: number,
+  operation: string,
+  providerId?: string,
+): Promise<void> {
+  const cache = getUserCache(context.env);
+
+  if (!cache) {
+    return;
+  }
+
+  const invalidated = await cache.clearUserModelCache(userId.toString());
+
+  if (invalidated) {
+    return;
+  }
+
+  logger.error("Failed to invalidate user model access cache", {
+    userId,
+    providerId,
+    operation,
+  });
+
+  throw new AssistantError(
+    "The change was saved, but model access could not be refreshed",
+    ErrorType.INTERNAL_ERROR,
+  );
+}
+
 export async function updateUserSettings(
   context: ServiceContext,
   settings: any,
@@ -35,19 +70,7 @@ export async function updateUserSettings(
   const validatedSettings = await validatePetSettingsUpdate(context, id, settings);
 
   await repo.updateUserSettings(id, validatedSettings);
-
-  const cache = getUserCache(context.env);
-
-  if (cache) {
-    try {
-      await cache.clearUserModelCache(id.toString());
-    } catch (error) {
-      logger.error("Failed to clear user model cache after settings update", {
-        userId: id,
-        error,
-      });
-    }
-  }
+  await invalidateUserModelCache(context, id, "update-user-settings");
 
   return {
     success: true,
@@ -78,20 +101,7 @@ export async function storeProviderApiKey(
   const id = userId ?? context.requireUser().id;
 
   await repo.storeProviderApiKey(id, providerId, apiKey, secretKey, configuration);
-
-  const cache = getUserCache(context.env);
-
-  if (cache) {
-    try {
-      await cache.clearUserModelCache(id.toString());
-    } catch (error) {
-      logger.error("Failed to clear user caches after provider API key update", {
-        userId: id,
-        providerId,
-        error,
-      });
-    }
-  }
+  await invalidateUserModelCache(context, id, "store-provider-api-key", providerId);
 
   return {
     success: true,
@@ -108,20 +118,7 @@ export async function deleteProviderApiKey(
   const id = userId ?? context.requireUser().id;
 
   await repo.deleteProviderApiKey(id, providerId);
-
-  const cache = getUserCache(context.env);
-
-  if (cache) {
-    try {
-      await cache.clearUserModelCache(id.toString());
-    } catch (error) {
-      logger.error("Failed to clear user caches after provider API key deletion", {
-        userId: id,
-        providerId,
-        error,
-      });
-    }
-  }
+  await invalidateUserModelCache(context, id, "delete-provider-api-key", providerId);
 
   return {
     success: true,
@@ -136,14 +133,26 @@ export async function getUserProviderSettings(
   const repo = ensureRepo(context);
   const id = userId ?? context.requireUser().id;
 
-  return repo.getUserProviderSettings(id);
+  const settings = await repo.getUserProviderSettings(id);
+
+  return settings.map((setting) => {
+    const metadata = getUserConfigurableProviderMetadata(setting.provider_id as string);
+
+    return {
+      ...setting,
+      type: metadata.type,
+      name: metadata.name,
+      description: metadata.description,
+      configurationFields: metadata.configurationFields,
+    };
+  });
 }
 
 export async function getUserProviderSyncStatus(context: ServiceContext, userId?: number) {
   const repo = ensureRepo(context);
   const id = userId ?? context.requireUser().id;
 
-  return repo.getProviderSyncStatus(id);
+  return repo.getProviderSyncStatus(id, listConfigurableUserProviderIds());
 }
 
 export async function syncUserProviders(
@@ -153,20 +162,8 @@ export async function syncUserProviders(
   const repo = ensureRepo(context);
   const id = userId ?? context.requireUser().id;
 
-  await repo.createUserProviderSettings(id);
-
-  const cache = getUserCache(context.env);
-
-  if (cache) {
-    try {
-      await cache.clearUserModelCache(id.toString());
-    } catch (error) {
-      logger.error("Failed to clear user caches after provider sync", {
-        userId: id,
-        error,
-      });
-    }
-  }
+  await repo.createUserProviderSettings(id, listConfigurableUserProviderIds());
+  await invalidateUserModelCache(context, id, "sync-user-providers");
 
   return {
     success: true,

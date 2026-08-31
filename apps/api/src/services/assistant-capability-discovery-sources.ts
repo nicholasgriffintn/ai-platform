@@ -28,10 +28,7 @@ interface ProjectCapabilityReference {
 const INTERNAL_FUNCTION_TOOLS = new Set([
   "ask_user",
   "configure_recipe",
-  "delegate_to_team_member",
-  "delegate_to_team_member_by_role",
   "get_recipe",
-  "get_team_members",
   "load_skill",
   "request_approval",
   "search_pashi_tools",
@@ -74,33 +71,36 @@ export async function loadCapabilityDiscoverySources(
   const user = request.user;
   const context = request.context;
   const mode = request.request?.tool_policy_mode || request.request?.mode || request.mode;
-  let tools: DiscoverableFunctionTool[] = listFunctionTools()
+  const catalogue = listFunctionTools().map((tool) => ({
+    tool,
+    activation: permissionChecker.checkToolAccess({
+      toolName: tool.name,
+      mode,
+      user,
+      toolType: tool.type,
+      toolPermissions: tool.permissions,
+      requireApprovalFor: request.request?.require_approval_for,
+      enforceModePolicy: request.request?.enforce_mode_tool_policy,
+    }),
+  }));
+  const activatableToolIds = new Set(
+    catalogue.filter((entry) => entry.activation.allowed).map((entry) => entry.tool.name),
+  );
+  let tools: DiscoverableFunctionTool[] = catalogue
     .filter(
-      (tool) =>
+      ({ tool }) =>
         tool.name !== CAPABILITY_DISCOVERY_TOOL_NAME && !INTERNAL_FUNCTION_TOOLS.has(tool.name),
     )
-    .map((tool) => {
-      const activation = permissionChecker.checkToolAccess({
-        toolName: tool.name,
-        mode,
-        user,
-        toolType: tool.type,
-        toolPermissions: tool.permissions,
-        requireApprovalFor: request.request?.require_approval_for,
-        enforceModePolicy: request.request?.enforce_mode_tool_policy,
-      });
-
-      return {
-        id: tool.name,
-        name: formatFunctionName(tool.name),
-        description: tool.description,
-        type: tool.type,
-        activation: {
-          allowed: activation.allowed,
-          ...(activation.reason ? { reason: activation.reason } : {}),
-        },
-      };
-    });
+    .map(({ tool, activation }) => ({
+      id: tool.name,
+      name: formatFunctionName(tool.name),
+      description: tool.description,
+      type: tool.type,
+      activation: {
+        allowed: activation.allowed,
+        ...(activation.reason ? { reason: activation.reason } : {}),
+      },
+    }));
   let recipes: AssistantRecipe[] = [];
   let connectors: RecipeConnectorManifest[] = [];
   let installations: RecipeInstallation[] = [];
@@ -155,6 +155,7 @@ export async function loadCapabilityDiscoverySources(
   }
 
   return {
+    activatableToolIds,
     connectors,
     enabledToolIds: resolveEnabledFunctionToolNames(request.request?.enabled_tools, user),
     installations,

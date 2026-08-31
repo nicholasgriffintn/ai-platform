@@ -107,3 +107,32 @@ describe("StreamingFormatter Google AI Studio tool calls", () => {
     expect(content).toContain("5117");
   });
 });
+
+describe("Mistral reasoning content", () => {
+  const content = [
+    {
+      type: "thinking",
+      thinking: [{ type: "text", text: "Working it through" }],
+    },
+    { type: "text", text: "Final answer" },
+  ];
+
+  it("normalises buffered thinking chunks", async () => {
+    const response = await ResponseFormatter.formatResponse(
+      {
+        choices: [{ message: { role: "assistant", content } }],
+      },
+      "mistral",
+    );
+
+    expect(response.response).toBe("Final answer");
+    expect(response.thinking).toBe("Working it through");
+  });
+
+  it("separates streamed thinking from answer text", () => {
+    const chunk = { choices: [{ delta: { content } }] };
+
+    expect(StreamingFormatter.extractContentFromChunk(chunk)).toBe("Final answer");
+    expect(StreamingFormatter.extractThinkingFromChunk(chunk)).toBe("Working it through");
+  });
+});

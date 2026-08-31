@@ -1,7 +1,7 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
-import { formatToolCalls } from "~/lib/chat/tools/execution";
-import { listFunctionTools } from "~/services/functions";
+import { formatToolCalls } from "~/lib/chat/tools/provider-tool-definitions";
+import { listFunctionToolDefinitions } from "~/services/functions/definitions";
 import type { ChatCompletionParameters } from "~/types";
 import { hasAnyEnabledTool } from "~/utils/enabledTools";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -264,7 +264,7 @@ class OpenAIResponsesToolBuilder {
         .map((tool) => getToolDefinitionName(tool))
         .filter((name): name is string => typeof name === "string"),
     );
-    const deferredFunctions = listFunctionTools({
+    const deferredFunctions = listFunctionToolDefinitions({
       connectedConnectorProviders: this.params.connectedConnectorProviders,
       selectedConnectorProvider: this.params.options?.connector?.provider,
     }).filter((tool) => !immediateNames.has(tool.name));

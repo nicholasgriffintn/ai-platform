@@ -74,10 +74,13 @@ const inputSchemaDescriptorSchema = z.object({
   reference: z.string().optional(),
 });
 
+const modelThinkingApiSchema = z.enum(["adaptive", "budget"]);
+
 const modelReasoningConfigSchema = z.object({
   supportedEffortLevels: z.array(reasoningEffortSchema).optional(),
   defaultEffort: reasoningEffortSchema.optional(),
   modelOverrides: z.partialRecord(reasoningEffortSchema, z.string()).optional(),
+  thinkingApi: modelThinkingApiSchema.optional(),
 });
 
 const modelVerbosityConfigSchema = z.object({
@@ -138,6 +141,9 @@ export const modelConfigItemSchema = z.object({
   speed: modelRankingSchema.optional(),
   multimodal: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
+  isDefault: z.boolean().optional(),
+  isExecutable: z.boolean().optional(),
+  isPlatformEnabled: z.boolean().optional(),
   isByokEnabled: z.boolean().optional(),
   hiddenFromDefaultList: z.boolean().optional(),
   deprecated: z.boolean().optional(),

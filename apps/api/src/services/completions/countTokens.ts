@@ -1,6 +1,6 @@
+import { resolveExecutableModelForRequest } from "~/lib/chat/policy/model-access";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { findModelConfig } from "~/lib/providers/models";
 import type { ChatCompletionParameters, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -30,25 +30,13 @@ export async function handleCountTokens(
 
   logger.info("Processing token count request", { model });
 
-  const modelConfig = await findModelConfig(model, env, requestedProvider);
-
-  if (!modelConfig) {
-    return {
-      status: "error",
-      message: `Model ${model} not found`,
-      inputTokens: 0,
-      model,
-    };
-  }
-
-  if (!modelConfig.supportsTokenCounting) {
-    return {
-      status: "error",
-      message: `Token counting is not supported for the model ${model}`,
-      inputTokens: 0,
-      model,
-    };
-  }
+  const { config: modelConfig, credentialAuthority } = await resolveExecutableModelForRequest({
+    env,
+    user,
+    model,
+    provider: requestedProvider,
+    capability: "supportsTokenCounting",
+  });
 
   const provider = getChatProvider(modelConfig.provider, { env, user });
 
@@ -75,6 +63,7 @@ export async function handleCountTokens(
   const params: ChatCompletionParameters = {
     model: matchingModel,
     provider: modelConfig.provider,
+    credentialAuthority,
     messages,
     system_prompt,
     env,
