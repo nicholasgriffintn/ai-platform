@@ -125,11 +125,13 @@ describe("embedding lifecycle migrations", () => {
 
     applyMigration(db, "0008_organic_spacker_dave.sql");
     applyMigration(db, "0009_backfill_scoped_embeddings.sql");
+    applyMigration(db, "0010_careless_blade.sql");
 
     const documents = db
       .prepare(
         `SELECT logical_id, metadata, lifecycle_status, provider, provider_target,
-                embedding_model, vector_space, vector_space_version
+                embedding_model, embedding_dimensions, distance_metric, task_mode,
+                vector_space, vector_space_version
          FROM embedding_document
          ORDER BY logical_id`,
       )
@@ -137,7 +139,8 @@ describe("embedding lifecycle migrations", () => {
     const chunks = db
       .prepare(
         `SELECT d.logical_id, c.vector_id, c.chunk_index, c.content, c.lifecycle_status,
-                c.provider, c.provider_target, c.embedding_model, c.vector_space_version
+                c.provider, c.provider_target, c.embedding_model, c.embedding_dimensions,
+                c.distance_metric, c.task_mode, c.vector_space_version
          FROM embedding_chunk c
          JOIN embedding_document d ON d.id = c.document_id
          ORDER BY c.vector_id`,
@@ -166,6 +169,9 @@ describe("embedding lifecycle migrations", () => {
     expect(documents.every(({ embedding_model }) => embedding_model === "unknown-legacy")).toBe(
       true,
     );
+    expect(documents.every(({ embedding_dimensions }) => embedding_dimensions === 1)).toBe(true);
+    expect(documents.every(({ distance_metric }) => distance_metric === "unknown")).toBe(true);
+    expect(documents.every(({ task_mode }) => task_mode === "unknown")).toBe(true);
     expect(documents.every(({ vector_space }) => vector_space === "legacy-unresolved")).toBe(true);
     expect(documents.every(({ vector_space_version }) => vector_space_version === "legacy")).toBe(
       true,
@@ -201,8 +207,59 @@ describe("embedding lifecycle migrations", () => {
       true,
     );
     expect(chunks.every(({ embedding_model }) => embedding_model === "unknown-legacy")).toBe(true);
+    expect(chunks.every(({ embedding_dimensions }) => embedding_dimensions === 1)).toBe(true);
+    expect(chunks.every(({ distance_metric }) => distance_metric === "unknown")).toBe(true);
+    expect(chunks.every(({ task_mode }) => task_mode === "unknown")).toBe(true);
     expect(chunks.every(({ vector_space_version }) => vector_space_version === "legacy")).toBe(
       true,
     );
+  });
+
+  it("backfills exact runtime provenance for Phase 1 Workers BGE vectors", () => {
+    db = new Database(":memory:");
+    db.exec(`
+      PRAGMA foreign_keys = ON;
+      CREATE TABLE user (id INTEGER PRIMARY KEY NOT NULL);
+      INSERT INTO user (id) VALUES (42);
+    `);
+    applyMigration(db, "0008_organic_spacker_dave.sql");
+    db.exec(`
+      INSERT INTO embedding_document (
+        id, scope_type, user_id, logical_id, type, title, metadata, lifecycle_status,
+        provider, provider_target, embedding_model, vector_space, vector_space_version
+      ) VALUES (
+        'document-1', 'personal', 42, 'note-1', 'note', 'Title', '{}', 'active',
+        'vectorize', 'vectorize-binding', '@cf/baai/bge-large-en-v1.5', 'default', 'v1'
+      );
+      INSERT INTO embedding_chunk (
+        id, document_id, vector_id, chunk_index, content, metadata, lifecycle_status,
+        provider, provider_target, embedding_model, vector_space, vector_space_version
+      ) VALUES (
+        'chunk-1', 'document-1', 'vector-1', 0, 'Content', '{}', 'active',
+        'vectorize', 'vectorize-binding', '@cf/baai/bge-large-en-v1.5', 'default', 'v1'
+      );
+    `);
+
+    applyMigration(db, "0010_careless_blade.sql");
+
+    const document = db
+      .prepare(
+        `SELECT embedding_dimensions, distance_metric, task_mode
+           FROM embedding_document WHERE id = 'document-1'`,
+      )
+      .get();
+    const chunk = db
+      .prepare(
+        `SELECT embedding_dimensions, distance_metric, task_mode
+           FROM embedding_chunk WHERE id = 'chunk-1'`,
+      )
+      .get();
+
+    expect(document).toEqual({
+      embedding_dimensions: 1024,
+      distance_metric: "provider-configured",
+      task_mode: "symmetric",
+    });
+    expect(chunk).toEqual(document);
   });
 });

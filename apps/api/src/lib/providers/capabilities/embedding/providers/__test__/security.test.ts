@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { WORKERS_EMBEDDING_MODEL } from "../../constants";
+
 const logger = vi.hoisted(() => ({
   debug: vi.fn(),
   error: vi.fn(),
@@ -15,7 +17,11 @@ vi.mock("~/repositories/UserSettingsRepository", () => ({
   },
 }));
 
-import { getEmbeddingProviderForTarget, resolveEmbeddingProviderTarget } from "../../helpers";
+import {
+  getEmbeddingProviderForTarget,
+  resolveEmbeddingProviderTarget,
+  resolveEmbeddingRuntimeTarget,
+} from "../../helpers";
 import {
   getEmbeddingCredentialFingerprint,
   getPersonalEmbeddingScopeTag,
@@ -66,7 +72,7 @@ describe("embedding provider security boundaries", () => {
           },
         },
       ],
-      { scopeTag: VALID_SCOPE_TAG, namespace: "user_kb_42", userId: 42 },
+      { scopeTag: VALID_SCOPE_TAG },
     );
     await provider.getQuery(querySentinel);
     await provider.getMatches(new Float32Array([987654.321]), { scopeTag: VALID_SCOPE_TAG });
@@ -155,6 +161,41 @@ describe("embedding provider security boundaries", () => {
         } as any,
       ),
     ).rejects.toMatchObject({ type: "CONFIGURATION_ERROR" });
+  });
+
+  it("retains the exact S3 credential target in the complete runtime identity", async () => {
+    const credential = "access::@@::secret";
+    const scopeSecret = "test-s3-credential-scope-secret-at-least-32-chars";
+
+    getProviderApiKey.mockResolvedValue(credential);
+
+    const target = await resolveEmbeddingRuntimeTarget(
+      { EMBEDDING_SCOPE_SECRET: scopeSecret } as any,
+      { id: 42 } as any,
+      {
+        embedding_provider: "s3vectors",
+        s3vectors_bucket_name: "bucket",
+        s3vectors_index_name: "index",
+        s3vectors_region: "us-east-1",
+      } as any,
+    );
+
+    expect(target).toMatchObject({
+      embeddingProvider: "s3vectors",
+      model: WORKERS_EMBEDDING_MODEL,
+      dimensions: 1024,
+      distanceMetric: "provider-configured",
+      taskMode: "symmetric",
+      vectorSpace: "index",
+      vectorSpaceVersion: "v1",
+    });
+    expect(JSON.parse(target.providerTarget)).toEqual({
+      bucketName: "bucket",
+      indexName: "index",
+      region: "us-east-1",
+      credentialFingerprint: await getEmbeddingCredentialFingerprint(scopeSecret, credential),
+    });
+    expect(target.providerTarget).not.toContain(credential);
   });
 
   it.each([

@@ -6,7 +6,7 @@ export const search_documents: FunctionToolDescriptor = {
   name: "search_documents",
   description:
     "Search the user's own uploaded documents and saved content for passages relevant to a query. Returns the passages, not an answer; ground what you say in them and cite them by title. Use when the answer depends on the user's material rather than on general knowledge.",
-  type: "normal",
+  type: "premium",
   costPerCall: 0,
   permissions: ["read"],
   inputSchema: z.object({

@@ -57,22 +57,6 @@ export const chatHostedToolSettingsSchema = z
   })
   .passthrough();
 
-export const chatRagOptionsSchema = z
-  .object({
-    top_k: z.number().optional().describe("Maximum number of retrieval results to include."),
-    score_threshold: z
-      .number()
-      .optional()
-      .describe("Minimum retrieval score required for an item."),
-    include_metadata: z
-      .boolean()
-      .optional()
-      .describe("Whether retrieved item metadata should be included."),
-    type: z.string().optional().describe("Retrieval backend or strategy type."),
-    namespace: z.string().optional().describe("Retrieval namespace to search."),
-  })
-  .passthrough();
-
 export const chatMessageContentPartSchema = z
   .object({
     type: z
@@ -503,8 +487,6 @@ export const chatCompletionsRequestFieldsSchema = z.object({
   response_format: chatResponseFormatSchema
     .optional()
     .describe("OpenAI-compatible response format."),
-  use_rag: z.boolean().optional().describe("Whether retrieval augmented generation is enabled."),
-  rag_options: chatRagOptionsSchema.optional().describe("Retrieval augmented generation settings."),
   replicate_wait_seconds: z
     .number()
     .optional()
@@ -575,12 +557,29 @@ export const chatCompletionsRequestFieldsSchema = z.object({
     .describe("Grouped feature settings that are not model generation controls."),
 });
 
+const retiredChatRetrievalFields = {
+  use_rag: z.boolean().optional().describe("Deprecated compatibility field; ignored."),
+  rag_options: recordSchema.optional().describe("Deprecated compatibility field; ignored."),
+};
+
+const stripRetiredChatRetrievalFields = <
+  T extends { use_rag?: boolean; rag_options?: Record<string, unknown> },
+>({
+  use_rag: _useRag,
+  rag_options: _ragOptions,
+  ...request
+}: T) => request;
+
 export const partialChatCompletionsJsonSchema = chatCompletionsRequestFieldsSchema
   .partial()
-  .strict();
+  .extend(retiredChatRetrievalFields)
+  .strict()
+  .transform(stripRetiredChatRetrievalFields);
 
 export const createChatCompletionsJsonSchema = chatCompletionsRequestFieldsSchema
+  .extend(retiredChatRetrievalFields)
   .strict()
+  .transform(stripRetiredChatRetrievalFields)
   .superRefine((request, ctx) => {
     if (!request.model && !request.models?.length && !request.model_router_mode) {
       ctx.addIssue({

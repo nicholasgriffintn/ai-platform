@@ -1,4 +1,4 @@
-# ADR 0033: Tool catalogue split from tool implementations
+# ADR 0034: Tool catalogue split from tool implementations
 
 ## Status
 

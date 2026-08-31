@@ -1,10 +1,9 @@
-import type { Ai, VectorFloatArray, Vectorize } from "@cloudflare/workers-types";
+import type { Ai, Vectorize } from "@cloudflare/workers-types";
 
 import { gatewayId } from "~/constants/app";
 import { WORKERS_EMBEDDING_MODEL } from "~/lib/providers/capabilities/embedding/constants";
 import {
   buildVectorizeMetadataFilter,
-  getEmbeddingContentType,
   requireEmbeddingScopeTag,
   withEmbeddingScopeMetadata,
 } from "~/lib/providers/capabilities/embedding/utils/scope";
@@ -12,9 +11,11 @@ import type { RepositoryManager } from "~/repositories";
 import type {
   EmbeddingMutationResult,
   EmbeddingProvider,
+  EmbeddingQueryOptions,
   EmbeddingQueryResult,
   EmbeddingVector,
-  RagOptions,
+  EmbeddingWriteOptions,
+  NumericEmbeddingQuery,
 } from "~/types";
 import { paginate } from "~/utils/arrays";
 import { parseEmbeddingVectors } from "~/utils/embeddings";
@@ -33,11 +34,9 @@ export interface VectorizeEmbeddingProviderConfig {
 export class VectorizeEmbeddingProvider implements EmbeddingProvider {
   private ai: Ai;
   private vector_db: Vectorize;
-  private repositories: RepositoryManager;
 
   constructor(config: VectorizeEmbeddingProviderConfig) {
     this.ai = config.ai;
-    this.repositories = config.repositories;
     this.vector_db = config.vector_db;
   }
 
@@ -45,7 +44,7 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
     type: string,
     content: string,
     id: string,
-    metadata: Record<string, string>,
+    metadata: Record<string, unknown>,
   ): Promise<EmbeddingVector[]> {
     try {
       if (!type || !content || !id) {
@@ -89,7 +88,7 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 
   async insert(
     embeddings: EmbeddingVector[],
-    options: RagOptions = {},
+    options: EmbeddingWriteOptions = {},
   ): Promise<EmbeddingMutationResult> {
     const scopeTag = requireEmbeddingScopeTag(options);
 
@@ -163,8 +162,8 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
   }
 
   async getMatches(
-    queryVector: VectorFloatArray,
-    options: RagOptions = {},
+    queryVector: NumericEmbeddingQuery,
+    options: EmbeddingQueryOptions = {},
   ): Promise<EmbeddingQueryResult> {
     logger.debug("Querying Vectorize Vector DB");
     const scopeTag = requireEmbeddingScopeTag(options);
@@ -176,7 +175,7 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
       namespace: scopeTag,
       ...(metadataFilter && { filter: metadataFilter }),
     };
-    const matches = await this.vector_db.query(queryVector, queryOptions);
+    const matches = await this.vector_db.query(Array.from(queryVector), queryOptions);
 
     logger.debug("Vectorize Vector DB query completed", { count: matches.matches?.length || 0 });
 
@@ -189,71 +188,5 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
         })) || [],
       count: matches.matches?.length || 0,
     };
-  }
-
-  async searchSimilar(query: string, options: RagOptions = {}) {
-    logger.debug("Searching for similar embeddings in Vectorize");
-    const scopeTag = requireEmbeddingScopeTag(options);
-    const queryVector = await this.getQuery(query);
-
-    if (!queryVector.data) {
-      throw new AssistantError("No embedding data found", ErrorType.NOT_FOUND);
-    }
-
-    const metadataFilter = buildVectorizeMetadataFilter(options);
-    const queryOptions = {
-      topK: options.topK ?? 15,
-      returnValues: options.returnValues ?? false,
-      returnMetadata: options.returnMetadata ?? "none",
-      namespace: scopeTag,
-      ...(metadataFilter && { filter: metadataFilter }),
-    };
-    const matches = await this.vector_db.query(queryVector.data[0], queryOptions);
-
-    if (!matches.matches?.length) {
-      throw new AssistantError("No matches found", ErrorType.NOT_FOUND);
-    }
-
-    const filteredMatches = matches.matches
-      .filter((match) => match.score >= (options.scoreThreshold || 0))
-      .slice(0, options.topK || 3);
-
-    const matchesWithContent = await Promise.all(
-      filteredMatches.map(async (match) => {
-        if (!options.namespace || options.userId === undefined || options.userId === null) {
-          throw new AssistantError(
-            "Embedding search requires an authorised scope",
-            ErrorType.PARAMS_ERROR,
-          );
-        }
-
-        const record = await this.repositories.embeddings.getEmbedding(match.id, {
-          type: getEmbeddingContentType(options),
-          namespace: options.namespace,
-          userId: options.userId,
-        });
-
-        if (!record) {
-          return null;
-        }
-
-        return {
-          match_id: match.id,
-          id: record?.id as string,
-          title: record?.title as string,
-          content: record?.content as string,
-          metadata: {
-            ...match.metadata,
-            ...(record?.metadata as Record<string, any>),
-          },
-          score: match.score || 0,
-          type: (record?.type as string) || (match.metadata?.type as string),
-        };
-      }),
-    );
-
-    logger.debug("Vectorize search completed", { count: matchesWithContent.length });
-
-    return matchesWithContent.filter(Boolean);
   }
 }

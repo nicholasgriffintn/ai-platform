@@ -1,3 +1,5 @@
+import type { EmbeddingDistanceMetric, EmbeddingTaskMode } from "~/types";
+
 export type EmbeddingInsertRecord = {
   id: string;
   metadata: Record<string, unknown>;
@@ -16,6 +18,9 @@ export type CreateEmbeddingDocument = {
   provider: string;
   providerTarget: string;
   embeddingModel: string;
+  embeddingDimensions: number;
+  distanceMetric: EmbeddingDistanceMetric;
+  taskMode: EmbeddingTaskMode;
   vectorSpace: string;
   vectorSpaceVersion: string;
   chunks: {
@@ -28,6 +33,8 @@ export type CreateEmbeddingDocument = {
 };
 
 export type ActiveEmbeddingChunk = {
+  chunkId: string;
+  chunkIndex: number;
   vectorId: string;
   logicalId: string;
   title: string;
@@ -37,6 +44,9 @@ export type ActiveEmbeddingChunk = {
   provider: string;
   providerTarget: string;
   embeddingModel: string;
+  embeddingDimensions: number;
+  distanceMetric: EmbeddingDistanceMetric;
+  taskMode: EmbeddingTaskMode;
   vectorSpace: string;
   vectorSpaceVersion: string;
 };
@@ -47,6 +57,9 @@ export type EmbeddingDocumentDeletionTarget = {
   provider: string;
   providerTarget: string;
   embeddingModel: string;
+  embeddingDimensions: number;
+  distanceMetric: EmbeddingDistanceMetric;
+  taskMode: EmbeddingTaskMode;
   vectorSpace: string;
   vectorSpaceVersion: string;
   vectorIds: string[];
@@ -72,6 +85,9 @@ export type EmbeddingDeletionRow = {
   provider: string;
   provider_target: string;
   embedding_model: string;
+  embedding_dimensions: number;
+  distance_metric: EmbeddingDistanceMetric;
+  task_mode: EmbeddingTaskMode;
   vector_space: string;
   vector_space_version: string;
   vector_id: string | null;
@@ -89,6 +105,9 @@ export const collectEmbeddingDeletionTargets = (
       provider: row.provider,
       providerTarget: row.provider_target,
       embeddingModel: row.embedding_model,
+      embeddingDimensions: row.embedding_dimensions,
+      distanceMetric: row.distance_metric,
+      taskMode: row.task_mode,
       vectorSpace: row.vector_space,
       vectorSpaceVersion: row.vector_space_version,
       vectorIds: [],

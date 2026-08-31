@@ -9,7 +9,6 @@ export {
   chatCompletionToolSchema,
   chatHostedToolSettingsSchema,
   chatMessageContentPartSchema,
-  chatRagOptionsSchema,
   chatRequestOptionsSchema,
   chatResponseFormatSchema,
   chatToolChoiceSchema,

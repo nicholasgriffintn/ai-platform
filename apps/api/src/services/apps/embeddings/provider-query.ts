@@ -1,19 +1,21 @@
-import type { EmbeddingProvider, EmbeddingQueryResult } from "~/types";
+import type { Embedder, EmbeddingQueryResult, VectorStore } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-export const queryEmbeddingProvider = async ({
-  provider,
+export const queryEmbeddingRuntime = async ({
+  embedder,
+  vectorStore,
   query,
   type,
   scopeTag,
 }: {
-  provider: EmbeddingProvider;
+  embedder: Embedder;
+  vectorStore: VectorStore;
   query: string;
   type?: string;
   scopeTag: string;
 }): Promise<EmbeddingQueryResult> => {
   try {
-    const queryVector = await provider.getQuery(query);
+    const queryVector = await embedder.getQuery(query);
 
     if (
       !queryVector.status.success ||
@@ -29,7 +31,7 @@ export const queryEmbeddingProvider = async ({
 
     const providerQuery = Array.isArray(queryVector.data) ? queryVector.data[0] : queryVector.data;
 
-    return await provider.getMatches(providerQuery, {
+    return await vectorStore.getMatches(providerQuery, {
       scopeTag,
       contentType: type,
       topK: 15,

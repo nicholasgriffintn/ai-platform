@@ -8,23 +8,42 @@ const provider = vi.hoisted(() => ({
   getMatches: vi.fn(),
   getQuery: vi.fn(),
   insert: vi.fn(),
-  searchSimilar: vi.fn(),
 }));
 
-vi.mock("~/lib/providers/capabilities/embedding/helpers", () => ({
-  getEmbeddingProvider: vi.fn(() => provider),
-  getEmbeddingProviderForTarget: vi.fn(() => provider),
-  isQuarantinedEmbeddingProviderTarget: vi.fn(
-    (target: { provider: string }) => target.provider === "quarantined",
-  ),
-  resolveEmbeddingProviderTarget: vi.fn(() => ({
-    provider: "vectorize",
-    target: "vectorize-binding",
+vi.mock("~/lib/providers/capabilities/embedding/helpers", () => {
+  const runtime = {
+    kind: "vector",
+    embedder: provider,
+    vectorStore: provider,
+    ...provider,
+  };
+  const target = {
+    embeddingProvider: "vectorize",
+    providerTarget: "vectorize-binding",
     model: "@cf/baai/bge-large-en-v1.5",
+    dimensions: 1024,
+    distanceMetric: "provider-configured",
+    taskMode: "symmetric",
     vectorSpace: "default",
     vectorSpaceVersion: "v1",
-  })),
-}));
+  };
+
+  return {
+    getEmbeddingRuntimeForTarget: vi.fn(() => runtime),
+    getEmbeddingRuntimeTargetKey: vi.fn((value) => JSON.stringify(value)),
+    isQuarantinedEmbeddingProviderTarget: vi.fn(
+      (value: { provider: string }) => value.provider === "quarantined",
+    ),
+    resolveEmbeddingRuntime: vi.fn(() => ({ runtime, target })),
+    toEmbeddingProviderTarget: vi.fn((value) => ({
+      provider: value.embeddingProvider,
+      target: value.providerTarget,
+      model: value.model,
+      vectorSpace: value.vectorSpace,
+      vectorSpaceVersion: value.vectorSpaceVersion,
+    })),
+  };
+});
 
 vi.mock("~/lib/context/serviceContext", () => ({
   resolveServiceContext: vi.fn(({ context }) => context),
@@ -45,6 +64,9 @@ const createContext = (userId: number, embeddings: Record<string, ReturnType<typ
             provider: "vectorize",
             providerTarget: "vectorize-binding",
             embeddingModel: "@cf/baai/bge-large-en-v1.5",
+            embeddingDimensions: 1024,
+            distanceMetric: "provider-configured",
+            taskMode: "symmetric",
             vectorSpace: "default",
             vectorSpaceVersion: "v1",
           },
@@ -291,6 +313,8 @@ describe("personal embedding services", () => {
       getActiveChunksByVectorIds: vi.fn().mockResolvedValue([
         {
           vectorId: "trusted-vector",
+          chunkId: "chunk-1",
+          chunkIndex: 0,
           logicalId: "note-1",
           title: "Trusted title",
           content: "Authoritative content",
@@ -299,6 +323,9 @@ describe("personal embedding services", () => {
           provider: "vectorize",
           providerTarget: "vectorize-binding",
           embeddingModel: "@cf/baai/bge-large-en-v1.5",
+          embeddingDimensions: 1024,
+          distanceMetric: "provider-configured",
+          taskMode: "symmetric",
           vectorSpace: "default",
           vectorSpaceVersion: "v1",
         },
@@ -313,17 +340,89 @@ describe("personal embedding services", () => {
     expect(result.data).toEqual([
       {
         id: "note-1",
+        chunkId: "chunk-1",
+        chunkIndex: 0,
         title: "Trusted title",
         content: "Authoritative content",
         type: "note",
         metadata: { tag: "trusted" },
         score: 0.91,
+        rankingMethod: "provider-score",
+        provenance: {
+          embeddingProvider: "vectorize",
+          model: "@cf/baai/bge-large-en-v1.5",
+          dimensions: 1024,
+          distanceMetric: "provider-configured",
+          taskMode: "symmetric",
+          vectorSpaceVersion: "v1",
+        },
       },
     ]);
+    expect(result.data[0]?.provenance).not.toHaveProperty("providerTarget");
+    expect(result.data[0]?.provenance).not.toHaveProperty("vectorSpace");
     expect(repository.getActiveChunksByVectorIds).toHaveBeenCalledWith(
       42,
       ["foreign-vector", "trusted-vector"],
       "note",
+    );
+  });
+
+  it("returns stable passage identities when one document contributes multiple chunks", async () => {
+    provider.getQuery.mockResolvedValue({ data: [[0.2]], status: { success: true } });
+    provider.getMatches.mockResolvedValue({
+      count: 2,
+      matches: [
+        { id: "vector-1", score: 0.92, metadata: {} },
+        { id: "vector-2", score: 0.88, metadata: {} },
+      ],
+    });
+    const provenance = {
+      provider: "vectorize",
+      providerTarget: "vectorize-binding",
+      embeddingModel: "@cf/baai/bge-large-en-v1.5",
+      embeddingDimensions: 1024,
+      distanceMetric: "provider-configured",
+      taskMode: "symmetric",
+      vectorSpace: "default",
+      vectorSpaceVersion: "v1",
+    };
+    const repository = {
+      getActiveChunksByVectorIds: vi.fn().mockResolvedValue([
+        {
+          chunkId: "chunk-1",
+          chunkIndex: 0,
+          vectorId: "vector-1",
+          logicalId: "document-1",
+          title: "Long document",
+          content: "First passage",
+          type: "document",
+          metadata: {},
+          ...provenance,
+        },
+        {
+          chunkId: "chunk-2",
+          chunkIndex: 1,
+          vectorId: "vector-2",
+          logicalId: "document-1",
+          title: "Long document",
+          content: "Second passage",
+          type: "document",
+          metadata: {},
+          ...provenance,
+        },
+      ]),
+    };
+
+    const result = await queryEmbeddings({
+      context: createContext(42, repository),
+      request: { query: "two passages" },
+    });
+
+    expect(result.data.map(({ id, chunkId, chunkIndex }) => ({ id, chunkId, chunkIndex }))).toEqual(
+      [
+        { id: "document-1", chunkId: "chunk-1", chunkIndex: 0 },
+        { id: "document-1", chunkId: "chunk-2", chunkIndex: 1 },
+      ],
     );
   });
 
@@ -344,6 +443,9 @@ describe("personal embedding services", () => {
           provider: "vectorize",
           providerTarget: "vectorize-binding",
           embeddingModel: "@cf/baai/bge-large-en-v1.5",
+          embeddingDimensions: 1024,
+          distanceMetric: "provider-configured",
+          taskMode: "symmetric",
           vectorSpace: "default",
           vectorSpaceVersion: "v1",
         },
@@ -355,6 +457,9 @@ describe("personal embedding services", () => {
             region: "eu-west-2",
           }),
           embeddingModel: "@cf/baai/bge-large-en-v1.5",
+          embeddingDimensions: 1024,
+          distanceMetric: "provider-configured",
+          taskMode: "symmetric",
           vectorSpace: "notes",
           vectorSpaceVersion: "v1",
         },
@@ -370,6 +475,9 @@ describe("personal embedding services", () => {
           provider: "vectorize",
           providerTarget: "vectorize-binding",
           embeddingModel: "@cf/baai/bge-large-en-v1.5",
+          embeddingDimensions: 1024,
+          distanceMetric: "provider-configured",
+          taskMode: "symmetric",
           vectorSpace: "default",
           vectorSpaceVersion: "v1",
         },
@@ -387,6 +495,9 @@ describe("personal embedding services", () => {
             region: "eu-west-2",
           }),
           embeddingModel: "@cf/baai/bge-large-en-v1.5",
+          embeddingDimensions: 1024,
+          distanceMetric: "provider-configured",
+          taskMode: "symmetric",
           vectorSpace: "notes",
           vectorSpaceVersion: "v1",
         },
@@ -402,6 +513,9 @@ describe("personal embedding services", () => {
     expect(provider.getMatches).toHaveBeenCalledTimes(2);
     expect(result.data.map((match) => match.id)).toEqual(["old", "new"]);
     expect(result.data.every((match) => match.score === 1 / 61)).toBe(true);
+    expect(result.data.every((match) => match.rankingMethod === "reciprocal-rank-fusion")).toBe(
+      true,
+    );
   });
 
   it("cleans a retained pending write before retrying the same logical ID", async () => {
@@ -415,6 +529,9 @@ describe("personal embedding services", () => {
         provider: "vectorize",
         providerTarget: "vectorize-binding",
         embeddingModel: "@cf/baai/bge-large-en-v1.5",
+        embeddingDimensions: 1024,
+        distanceMetric: "provider-configured",
+        taskMode: "symmetric",
         vectorSpace: "default",
         vectorSpaceVersion: "v1",
         vectorIds: ["uncertain-vector"],
@@ -445,6 +562,9 @@ describe("personal embedding services", () => {
         provider: "quarantined",
         providerTarget: "quarantined-legacy",
         embeddingModel: "unknown-legacy",
+        embeddingDimensions: 1,
+        distanceMetric: "unknown",
+        taskMode: "unknown",
         vectorSpace: "legacy-unresolved",
         vectorSpaceVersion: "legacy",
         vectorIds: ["legacy-vector"],
@@ -581,6 +701,9 @@ describe("personal embedding services", () => {
           provider: "vectorize",
           providerTarget: "vectorize-binding",
           embeddingModel: "@cf/baai/bge-large-en-v1.5",
+          embeddingDimensions: 1024,
+          distanceMetric: "provider-configured",
+          taskMode: "symmetric",
           vectorSpace: "default",
           vectorSpaceVersion: "v1",
         },
@@ -594,6 +717,9 @@ describe("personal embedding services", () => {
           provider: "vectorize",
           providerTarget: "vectorize-binding",
           embeddingModel: "@cf/baai/bge-large-en-v1.5",
+          embeddingDimensions: 1024,
+          distanceMetric: "provider-configured",
+          taskMode: "symmetric",
           vectorSpace: "default",
           vectorSpaceVersion: "v1",
         },
@@ -630,6 +756,9 @@ describe("personal embedding services", () => {
             region: "eu-west-2",
           }),
           embeddingModel: "@cf/baai/bge-large-en-v1.5",
+          embeddingDimensions: 1024,
+          distanceMetric: "provider-configured",
+          taskMode: "symmetric",
           vectorSpace: "notes",
           vectorSpaceVersion: "v1",
         },
@@ -653,6 +782,9 @@ describe("personal embedding services", () => {
         region: "eu-west-2",
       }),
       embeddingModel: "@cf/baai/bge-large-en-v1.5",
+      embeddingDimensions: 1024,
+      distanceMetric: "provider-configured",
+      taskMode: "symmetric",
       vectorSpace: "notes",
       vectorSpaceVersion: "v1",
     };
@@ -670,6 +802,9 @@ describe("personal embedding services", () => {
           provider: "vectorize",
           providerTarget: "vectorize-binding",
           embeddingModel: "@cf/baai/bge-large-en-v1.5",
+          embeddingDimensions: 1024,
+          distanceMetric: "provider-configured",
+          taskMode: "symmetric",
           vectorSpace: "default",
           vectorSpaceVersion: "v1",
         },
@@ -703,6 +838,9 @@ describe("personal embedding services", () => {
           provider: "vectorize",
           providerTarget: `vectorize-binding-${index}`,
           embeddingModel: "@cf/baai/bge-large-en-v1.5",
+          embeddingDimensions: 1024,
+          distanceMetric: "provider-configured",
+          taskMode: "symmetric",
           vectorSpace: `space-${index}`,
           vectorSpaceVersion: "v1",
         })),
@@ -791,6 +929,9 @@ describe("personal embedding services", () => {
           provider: "vectorize",
           providerTarget: "vectorize-binding",
           embeddingModel: "@cf/baai/bge-large-en-v1.5",
+          embeddingDimensions: 1024,
+          distanceMetric: "provider-configured",
+          taskMode: "symmetric",
           vectorSpace: "default",
           vectorSpaceVersion: "v1",
           vectorIds: ["vector-1"],
@@ -824,6 +965,9 @@ describe("personal embedding services", () => {
           provider: "vectorize",
           providerTarget: "vectorize-binding",
           embeddingModel: "@cf/baai/bge-large-en-v1.5",
+          embeddingDimensions: 1024,
+          distanceMetric: "provider-configured",
+          taskMode: "symmetric",
           vectorSpace: "default",
           vectorSpaceVersion: "v1",
           vectorIds: ["vector-1", "vector-2"],
@@ -855,6 +999,9 @@ describe("personal embedding services", () => {
           provider: "vectorize",
           providerTarget: "vectorize-binding",
           embeddingModel: "@cf/baai/bge-large-en-v1.5",
+          embeddingDimensions: 1024,
+          distanceMetric: "provider-configured",
+          taskMode: "symmetric",
           vectorSpace: "default",
           vectorSpaceVersion: "v1",
           vectorIds: ["vector-1"],

@@ -1,5 +1,9 @@
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { getEmbeddingProviderForTarget } from "~/lib/providers/capabilities/embedding/helpers";
+import {
+  getEmbeddingRuntimeForTarget,
+  getEmbeddingRuntimeTargetKey,
+  type EmbeddingRuntimeTarget,
+} from "~/lib/providers/capabilities/embedding/helpers";
 import { getPersonalEmbeddingScopeTag } from "~/lib/providers/capabilities/embedding/utils/scope";
 import type {
   ActiveEmbeddingChunk,
@@ -9,7 +13,7 @@ import type { IEnv, IUser } from "~/types";
 import { mapWithConcurrency } from "~/utils/async";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-import { queryEmbeddingProvider } from "./provider-query";
+import { queryEmbeddingRuntime } from "./provider-query";
 import { parseQueryEmbeddingsRequest } from "./requests";
 
 const PROVIDER_QUERY_CONCURRENCY = 4;
@@ -30,14 +34,19 @@ type TargetedMatch = {
   target: EmbeddingDocumentProviderTarget;
 };
 
+const toRuntimeTarget = (target: EmbeddingDocumentProviderTarget): EmbeddingRuntimeTarget => ({
+  embeddingProvider: target.provider,
+  providerTarget: target.providerTarget,
+  model: target.embeddingModel,
+  dimensions: target.embeddingDimensions,
+  distanceMetric: target.distanceMetric,
+  taskMode: target.taskMode,
+  vectorSpace: target.vectorSpace,
+  vectorSpaceVersion: target.vectorSpaceVersion,
+});
+
 const targetKey = (target: EmbeddingDocumentProviderTarget) =>
-  JSON.stringify([
-    target.provider,
-    target.providerTarget,
-    target.embeddingModel,
-    target.vectorSpace,
-    target.vectorSpaceVersion,
-  ]);
+  getEmbeddingRuntimeTargetKey(toRuntimeTarget(target));
 
 const recordMatchesTarget = (
   record: ActiveEmbeddingChunk,
@@ -46,6 +55,9 @@ const recordMatchesTarget = (
   record.provider === target.provider &&
   record.providerTarget === target.providerTarget &&
   record.embeddingModel === target.embeddingModel &&
+  record.embeddingDimensions === target.embeddingDimensions &&
+  record.distanceMetric === target.distanceMetric &&
+  record.taskMode === target.taskMode &&
   record.vectorSpace === target.vectorSpace &&
   record.vectorSpaceVersion === target.vectorSpaceVersion;
 
@@ -86,21 +98,16 @@ const queryStoredTargets = async (
     PROVIDER_QUERY_CONCURRENCY,
     async (storedTarget) => {
       try {
-        const provider = getEmbeddingProviderForTarget(
+        const runtime = getEmbeddingRuntimeForTarget(
           serviceContext.env,
           authenticatedUser,
           userSettings,
-          {
-            provider: storedTarget.provider,
-            target: storedTarget.providerTarget,
-            model: storedTarget.embeddingModel,
-            vectorSpace: storedTarget.vectorSpace,
-            vectorSpaceVersion: storedTarget.vectorSpaceVersion,
-          },
+          toRuntimeTarget(storedTarget),
         );
 
-        const result = await queryEmbeddingProvider({
-          provider,
+        const result = await queryEmbeddingRuntime({
+          embedder: runtime.embedder,
+          vectorStore: runtime.vectorStore,
           query: input.query,
           type: input.type,
           scopeTag,
@@ -124,6 +131,7 @@ const queryStoredTargets = async (
 
   const matchesByTargetAndVectorId = new Map<string, TargetedMatch>();
   const useRankFusion = successfulProviderResults.length > 1;
+  const rankingMethod = useRankFusion ? "reciprocal-rank-fusion" : "provider-score";
 
   for (const { matches, target } of successfulProviderResults) {
     // ES2022 Workers do not expose Array#toSorted, and this copied array is safe to mutate.
@@ -171,10 +179,21 @@ const queryStoredTargets = async (
 
         return {
           id: record.logicalId,
+          chunkId: record.chunkId,
+          chunkIndex: record.chunkIndex,
           title: record.title,
           content: record.content,
           metadata: record.metadata,
           score: match.score,
+          rankingMethod,
+          provenance: {
+            embeddingProvider: record.provider,
+            model: record.embeddingModel,
+            dimensions: record.embeddingDimensions,
+            distanceMetric: record.distanceMetric,
+            taskMode: record.taskMode,
+            vectorSpaceVersion: record.vectorSpaceVersion,
+          },
           type: record.type,
         };
       })

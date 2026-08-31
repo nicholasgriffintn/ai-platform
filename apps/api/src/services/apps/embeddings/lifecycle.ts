@@ -1,5 +1,5 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { EmbeddingProvider, EmbeddingVector } from "~/types";
+import type { Embedder, EmbeddingVector, VectorStore } from "~/types";
 import { mapWithConcurrency } from "~/utils/async";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -8,7 +8,7 @@ import type { PendingEmbeddingChunk } from "./document";
 const EMBEDDING_GENERATION_CONCURRENCY = 8;
 
 export const generateEmbeddingVectors = async (
-  provider: EmbeddingProvider,
+  embedder: Embedder,
   documentId: string,
   type: string,
   chunks: PendingEmbeddingChunk[],
@@ -20,7 +20,7 @@ export const generateEmbeddingVectors = async (
       chunkIndex: chunk.index,
       type,
     };
-    const vectors = await provider.generate(type, chunk.content, chunk.vectorId, trustedMetadata);
+    const vectors = await embedder.generate(type, chunk.content, chunk.vectorId, trustedMetadata);
 
     if (vectors.length !== 1 || !vectors[0]?.values) {
       throw new AssistantError(
@@ -39,7 +39,7 @@ export const generateEmbeddingVectors = async (
   });
 
 const removeInsertedVectors = async (
-  provider: EmbeddingProvider,
+  vectorStore: VectorStore,
   vectorIds: string[],
 ): Promise<boolean> => {
   if (vectorIds.length === 0) {
@@ -47,7 +47,7 @@ const removeInsertedVectors = async (
   }
 
   try {
-    const result = await provider.delete(vectorIds);
+    const result = await vectorStore.delete(vectorIds);
 
     return result.status === "success";
   } catch {
@@ -58,20 +58,20 @@ const removeInsertedVectors = async (
 
 export const cleanupPendingEmbeddingDocument = async ({
   context,
-  provider,
+  vectorStore,
   providerWriteAttempted,
   userId,
   documentId,
   vectorIds,
 }: {
   context: ServiceContext;
-  provider: EmbeddingProvider;
+  vectorStore: VectorStore;
   providerWriteAttempted: boolean;
   userId: number;
   documentId: string;
   vectorIds: string[];
 }): Promise<void> => {
-  if (providerWriteAttempted && !(await removeInsertedVectors(provider, vectorIds))) {
+  if (providerWriteAttempted && !(await removeInsertedVectors(vectorStore, vectorIds))) {
     return;
   }
 
