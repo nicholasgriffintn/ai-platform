@@ -1,7 +1,10 @@
-import { normaliseToolIds, readToolIds } from "@ngriffin_uk/polychat-schemas";
+import type { AgentResponse, ModelConfig } from "@ngriffin_uk/polychat-schemas";
+import { normaliseToolIds } from "@ngriffin_uk/polychat-schemas";
 import type { ParsedNumberInput } from "@ngriffin_uk/polychat-utility-core";
 import { getFiniteNumberOrFallback, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useState, useCallback } from "react";
+
+import type { AgentFormData } from "./types";
 
 interface FewShotExample {
   id: string;
@@ -63,34 +66,22 @@ export function useAgentForm() {
     setActiveTab("basic");
   }, []);
 
-  const loadAgentData = useCallback((agent: any, apiModels: Record<string, any>) => {
+  const loadAgentData = useCallback((agent: AgentResponse, apiModels: ModelConfig) => {
     setIsEditMode(true);
     setCurrentAgentId(agent.id);
     setName(agent.name || "");
     setDescription(agent.description || "");
     setAvatarUrl(agent.avatar_url || "");
 
-    if (agent.servers) {
-      try {
-        const parsedServers = JSON.parse(agent.servers);
-
-        if (Array.isArray(parsedServers) && parsedServers.length > 0) {
-          setUseServers(true);
-          setServers(
-            parsedServers.map((s: any) => ({
-              id: generateId(),
-              url: s.url || "",
-              type: s.type || "sse",
-            })),
-          );
-        } else {
-          setUseServers(false);
-          setServers([{ id: generateId(), url: "", type: "sse" }]);
-        }
-      } catch {
-        setUseServers(false);
-        setServers([{ id: generateId(), url: "", type: "sse" }]);
-      }
+    if (agent.servers.length > 0) {
+      setUseServers(true);
+      setServers(
+        agent.servers.map((server) => ({
+          id: generateId(),
+          url: server.url,
+          type: server.type ?? "sse",
+        })),
+      );
     } else {
       setUseServers(false);
       setServers([{ id: generateId(), url: "", type: "sse" }]);
@@ -109,45 +100,30 @@ export function useAgentForm() {
     setMaxSteps(loadedMaxSteps > 0 ? loadedMaxSteps : 20);
     setSystemPrompt(agent.system_prompt || "");
 
-    if (agent.few_shot_examples) {
-      try {
-        const parsedExamples = JSON.parse(agent.few_shot_examples);
-
-        if (Array.isArray(parsedExamples) && parsedExamples.length > 0) {
-          setUseFewShotExamples(true);
-          setFewShotExamples(
-            parsedExamples.map((ex: any) => ({
-              id: generateId(),
-              input: ex.input || "",
-              output: ex.output || "",
-            })),
-          );
-        } else {
-          setUseFewShotExamples(false);
-          setFewShotExamples([{ id: generateId(), input: "", output: "" }]);
-        }
-      } catch {
-        setUseFewShotExamples(false);
-        setFewShotExamples([{ id: generateId(), input: "", output: "" }]);
-      }
+    if (agent.few_shot_examples && agent.few_shot_examples.length > 0) {
+      setUseFewShotExamples(true);
+      setFewShotExamples(
+        agent.few_shot_examples.map((example) => ({
+          id: generateId(),
+          input: example.input,
+          output: example.output,
+        })),
+      );
     } else {
       setUseFewShotExamples(false);
       setFewShotExamples([{ id: generateId(), input: "", output: "" }]);
     }
 
-    if (agent.enabled_tools) {
-      setEnabledTools(readToolIds(agent.enabled_tools) ?? []);
-    } else {
-      setEnabledTools([]);
-    }
+    setEnabledTools(agent.enabled_tools ?? []);
 
     setTeamId(agent.team_id || "");
     setTeamRole(agent.team_role || "");
-    setIsTeamAgent(agent.is_team_agent || false);
+    setIsTeamAgent(agent.is_team_agent);
   }, []);
 
-  const getFormData = useCallback(() => {
+  const getFormData = useCallback((): AgentFormData => {
     const normalisedEnabledTools = normaliseToolIds(enabledTools);
+    const finiteTemperature = getFiniteNumberOrFallback(temperature, 0.7);
     const finiteMaxSteps = getFiniteNumberOrFallback(maxSteps, 20);
 
     return {
@@ -158,7 +134,7 @@ export function useAgentForm() {
         servers: servers.map((s) => ({ url: s.url, type: s.type })),
       }),
       ...(selectedModel && { model: selectedModel }),
-      ...(temperature !== 0.7 && { temperature }),
+      ...(finiteTemperature !== 0.7 && { temperature: finiteTemperature }),
       ...(finiteMaxSteps !== 20 && { max_steps: finiteMaxSteps }),
       ...(systemPrompt && { system_prompt: systemPrompt }),
       ...(useFewShotExamples && {

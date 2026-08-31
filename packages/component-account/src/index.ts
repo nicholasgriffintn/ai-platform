@@ -3,6 +3,7 @@ export * from "./AccountPrompt";
 export * from "./AccountSidebarShell";
 export * from "./Agents/AgentCard";
 export * from "./Agents/AgentsList";
+export * from "./Agents/types";
 export * from "./Agents/SharedAgentCard";
 export * from "./Agents/SharedAgentsBrowser";
 export * from "./Agents/ShareAgentModal";

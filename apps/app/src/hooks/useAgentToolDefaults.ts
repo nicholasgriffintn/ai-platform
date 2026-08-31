@@ -1,4 +1,3 @@
-import { readToolIds } from "@ngriffin_uk/polychat-schemas";
 import { useEffect, useRef } from "react";
 
 import { useToolsStore } from "~/state/stores/toolsStore";
@@ -6,7 +5,7 @@ import type { ChatMode } from "~/types";
 
 type AgentWithTools = {
   id: string;
-  enabled_tools?: string[] | string | null;
+  enabled_tools: string[] | null;
 };
 
 export const useAgentToolDefaults = ({
@@ -43,7 +42,7 @@ export const useAgentToolDefaults = ({
     if (isAgentMode) {
       pendingResetRef.current = false;
       const agent = agents.find((a) => a.id === selectedAgentId);
-      const agentTools = readToolIds(agent?.enabled_tools);
+      const agentTools = agent?.enabled_tools;
 
       if (agentTools && agentTools.length > 0) {
         if (!arraysEqual(selectedTools, agentTools)) {

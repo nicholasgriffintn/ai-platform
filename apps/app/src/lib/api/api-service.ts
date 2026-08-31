@@ -1,6 +1,8 @@
 import { formatMessageContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import type {
+  AgentResponse,
   CreateAgentInput,
+  SharedAgentSummary,
   ModelConfig,
   Tool,
   UpdateAgentInput,
@@ -193,7 +195,7 @@ class ApiService {
 
   // ===== Agent Methods =====
 
-  listAgents = (): Promise<any[]> => {
+  listAgents = (): Promise<AgentResponse[]> => {
     return this.agentService.listAgents();
   };
 
@@ -205,15 +207,15 @@ class ApiService {
     limit?: number;
     offset?: number;
     sort_by?: string;
-  }): Promise<any[]> => {
+  }): Promise<SharedAgentSummary[]> => {
     return this.agentService.listSharedAgents(params);
   };
 
-  listFeaturedSharedAgents = (limit = 10): Promise<any[]> => {
+  listFeaturedSharedAgents = (limit = 10): Promise<SharedAgentSummary[]> => {
     return this.agentService.listFeaturedSharedAgents(limit);
   };
 
-  installSharedAgent = (agentId: string): Promise<any> => {
+  installSharedAgent = (agentId: string): Promise<unknown> => {
     return this.agentService.installSharedAgent(agentId);
   };
 
@@ -224,15 +226,15 @@ class ApiService {
     avatarUrl?: string | null,
     category?: string | null,
     tags?: string[] | null,
-  ): Promise<any> => {
+  ): Promise<unknown> => {
     return this.agentService.shareAgent(agentId, name, description, avatarUrl, category, tags);
   };
 
-  rateSharedAgent = (agentId: string, rating: number, review?: string): Promise<any> => {
+  rateSharedAgent = (agentId: string, rating: number, review?: string): Promise<unknown> => {
     return this.agentService.rateSharedAgent(agentId, rating, review);
   };
 
-  getAgentRatings = (agentId: string, limit = 10): Promise<any[]> => {
+  getAgentRatings = (agentId: string, limit = 10): Promise<unknown[]> => {
     return this.agentService.getAgentRatings(agentId, limit);
   };
 
@@ -244,11 +246,11 @@ class ApiService {
     return this.agentService.getSharedTags();
   };
 
-  createAgent = (data: CreateAgentInput): Promise<any> => {
+  createAgent = (data: CreateAgentInput): Promise<AgentResponse> => {
     return this.agentService.createAgent(data);
   };
 
-  updateAgent = (agentId: string, data: UpdateAgentInput): Promise<void> => {
+  updateAgent = (agentId: string, data: UpdateAgentInput): Promise<AgentResponse> => {
     return this.agentService.updateAgent(agentId, data);
   };
 

@@ -5,6 +5,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMemo } from "react";
 
+import { toAssistantActionAgentSources } from "~/lib/agents/assistant-action-agents";
+
 import { useAgents } from "./useAgents";
 import { useCapabilityCatalog } from "./useCapabilityCatalog";
 import { useAssistantRecipes } from "./useRecipes";
@@ -58,7 +60,7 @@ export function useProjectCapabilityCatalog(projectId?: string) {
   const items = useMemo(() => {
     const baseCatalog = buildAssistantActionCatalog({
       apps,
-      agents: agentsQuery.agents,
+      agents: toAssistantActionAgentSources(agentsQuery.agents),
       modelTools,
       skills,
       tools: callableTools,
