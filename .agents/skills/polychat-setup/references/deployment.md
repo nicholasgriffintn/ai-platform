@@ -46,6 +46,12 @@ The root `deploy` script deploys the API and web app, not every optional worker.
 
 When deploying Composio, follow [composio-connectors.md](operations/composio-connectors.md). Its migration ordering, signed webhook, catalogue synchronisation, exact-action approval, private file bridge, rollback, and reconciliation rules are security requirements.
 
+## Verify what shipped
+
+`.agents/verification/pending/` holds the changes nobody has checked by hand yet. Read it before deploying: its prerequisites item names the migrations, secrets, and bindings that must exist first, and skipping one turns a working deploy into a broken product.
+
+Work through the remaining items against the deployed product after step 8, then archive them as [verification.md](verification.md) describes. If the queue is empty but the tree has moved on, rebuild it from the last Cloudflare deployment rather than assuming there is nothing to check.
+
 ## Handoff
 
 Record deployed component versions, resource names, domains, applied migrations, namespace choices, external callback state, and deliberately deferred capabilities. Never record secret values.
