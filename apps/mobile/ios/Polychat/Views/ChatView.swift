@@ -27,20 +27,24 @@ struct ChatView: View {
         modelsStore.selectedModelId
     }
 
+    private var activeModelConfig: ModelConfigItem? {
+        guard let activeModelId else {
+            return nil
+        }
+
+        return modelsStore.model(withId: activeModelId)
+    }
+
     private var activeModelName: String {
         guard let activeModelId else {
             return "Select model"
         }
 
-        return modelsStore.model(withId: activeModelId)?.name ?? activeModelId
+        return activeModelConfig?.name ?? activeModelId
     }
 
     private var activeModelProvider: String? {
-        guard let activeModelId else {
-            return nil
-        }
-
-        return modelsStore.model(withId: activeModelId)?.provider
+        activeModelConfig?.provider
     }
 
     private var allArtifacts: [Artifact] {
@@ -125,7 +129,7 @@ struct ChatView: View {
             }
         }
         .sheet(isPresented: $showingChatSettings) {
-            ChatSettingsView(settings: $chatSettings)
+            ChatSettingsView(settings: $chatSettings, modelConfig: activeModelConfig)
         }
         .sheet(isPresented: $showingArtifacts) {
             ArtifactsView(artifacts: allArtifacts)

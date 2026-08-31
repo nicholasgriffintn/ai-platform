@@ -27,9 +27,9 @@ public struct ChatSettings: Codable, Equatable {
         public var displayName: String {
             switch self {
             case .none:
-                return "None"
+                return "Instant"
             case .simulatedThinking:
-                return "Thinking"
+                return "Simulated"
             case .thinking:
                 return "Thinking"
             case .default:
@@ -47,6 +47,15 @@ public struct ChatSettings: Codable, Equatable {
             case .max:
                 return "Max"
             }
+        }
+
+        public static let defaultSupportedLevels: [ReasoningEffort] = [.none, .simulatedThinking]
+
+        public static func supportedLevels(for model: ModelConfigItem?) -> [ReasoningEffort] {
+            let configured = (model?.reasoningConfig?.supportedEffortLevels ?? [])
+                .compactMap(ReasoningEffort.init(rawValue:))
+
+            return configured.isEmpty ? defaultSupportedLevels : configured
         }
     }
 

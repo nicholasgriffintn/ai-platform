@@ -653,17 +653,12 @@ export class HomePage extends BasePage {
     const settings = this.page.getByRole("dialog", { name: "Chat settings" });
 
     await settings.getByLabel("Temperature", { exact: true }).fill("0.4");
-    await settings.getByLabel("Enable RAG", { exact: true }).check();
     await settings.getByRole("tab", { name: "Advanced", exact: true }).click();
     await settings.getByLabel("Context compaction", { exact: true }).selectOption("off");
     await settings.getByLabel("Top P", { exact: true }).fill("0.75");
     await settings.getByLabel("Max Tokens", { exact: true }).fill("1024");
     await settings.getByLabel("Presence penalty", { exact: true }).fill("0.4");
     await settings.getByLabel("Frequency penalty", { exact: true }).fill("-0.3");
-    await settings.getByLabel("Top K Results", { exact: true }).fill("6");
-    await settings.getByLabel("Score Threshold", { exact: true }).fill("0.65");
-    await settings.getByLabel("Include Metadata", { exact: true }).check();
-    await settings.getByLabel("Namespace", { exact: true }).fill("release-docs");
     await settings.getByRole("button", { name: "Done", exact: true }).click();
     await settings.waitFor({ state: "hidden" });
   }

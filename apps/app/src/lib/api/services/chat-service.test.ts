@@ -919,7 +919,6 @@ describe("ChatService streaming", () => {
 
     await service.streamChatCompletions({
       chatSettings: {
-        rag_options: {},
         tool_options: {},
       },
       completionId: "conversation-1",
@@ -935,7 +934,6 @@ describe("ChatService streaming", () => {
     const [, request] = fetchMock.mock.calls[0];
     const body = JSON.parse(String(request?.body));
 
-    expect(body.rag_options).toBeUndefined();
     expect(body.tool_options).toBeUndefined();
   });
 

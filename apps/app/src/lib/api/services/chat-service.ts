@@ -607,7 +607,6 @@ export class ChatService {
       enabledTools: settingsEnabledTools,
       generationSettings,
       hostedToolOptions,
-      ragOptions: requestRagOptions,
     } = projectChatRequestSettings(chatSettings);
     const enabledTools = allowTools ? (requestEnabledTools ?? settingsEnabledTools) : undefined;
     const { options: featureOptions, ...requestOptionFields } = requestOptions ?? {};
@@ -625,7 +624,6 @@ export class ChatService {
       mode,
       use_multi_model: useMultiModel,
       max_steps: sandboxOptions?.maxSteps ?? (sandboxOptions ? 2 : undefined),
-      rag_options: requestRagOptions,
       enabled_tools: enabledTools,
       tool_selection_mode: allowTools ? toolSelectionMode : undefined,
       approved_tools: allowTools ? requestApprovedTools : undefined,

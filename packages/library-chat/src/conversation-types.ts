@@ -30,16 +30,8 @@ export interface ChatSettings {
   presence_penalty?: number;
   frequency_penalty?: number;
   compaction?: SchemaChatCompletionRequestBody["compaction"];
-  use_rag?: boolean;
   localOnly?: boolean;
   enabled_tools?: string[];
-  rag_options?: {
-    topK?: number;
-    scoreThreshold?: number;
-    includeMetadata?: boolean;
-    type?: string;
-    namespace?: string;
-  };
   reasoning?: ChatReasoningSettings;
   verbosity?: VerbosityLevel;
   tool_options?: HostedToolSettings;
