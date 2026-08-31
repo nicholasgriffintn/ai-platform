@@ -3,7 +3,8 @@ import type { PetModelOverrides, PetSheetLayout, PetSource } from "@ngriffin_uk/
 import { ArrowRight, Sparkles, Trash2, Upload } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { PetModelAssignments, type PetModelTargetOption } from "./PetModelAssignments";
+import { PetModelAssignments } from "./PetModelAssignments";
+import { petKey, type PetModelTargetOption } from "./petModelTargets";
 
 export interface PetSettingsOption {
   id: string;
@@ -28,7 +29,7 @@ export interface PetSettingsProps {
   hasNextCustomPets: boolean;
   isBusy?: boolean;
   error?: string | null;
-  renderPreview: (option: PetSettingsOption) => ReactNode;
+  renderPreview: (option: PetSettingsOption, size?: number) => ReactNode;
   onSelect: (option: PetSettingsOption) => void;
   onTravelChange: (enabled: boolean) => void;
   onAnimationChange: (enabled: boolean) => void;
@@ -64,6 +65,8 @@ export function PetSettings({
   onUpload,
   onGenerate,
 }: PetSettingsProps) {
+  const selectedOption = options.find((option) => option.id === selectedId);
+
   return (
     <div className="space-y-8">
       <section className="space-y-4">
@@ -187,7 +190,9 @@ export function PetSettings({
         targets={modelTargets}
         pets={options}
         overrides={modelOverrides}
+        defaultPetKey={selectedOption ? petKey(selectedOption) : undefined}
         disabled={isBusy}
+        renderPreview={renderPreview}
         onChange={onModelOverridesChange}
       />
 
