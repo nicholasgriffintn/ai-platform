@@ -1,4 +1,4 @@
-import type { KeyboardEvent, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { cn } from "./utils";
 
@@ -42,36 +42,42 @@ export function ListItem({
     onClick ? "cursor-pointer" : "cursor-default",
     className,
   );
-  const interactiveProps = onClick
-    ? {
-        role: "button" as const,
-        tabIndex: 0,
-        onClick,
-        onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
-          if (event.key === "Enter" || event.key === " ") {
-            onClick();
-          }
-        },
-      }
-    : {};
+  const labelClassName = "whitespace-nowrap overflow-hidden text-ellipsis block";
 
   return (
-    <div
+    <li
       data-id={dataId}
       className={containerClassName}
-      aria-current={isActive ? "page" : undefined}
-      {...interactiveProps}
+      aria-current={isActive && !onClick ? "page" : undefined}
     >
       <div
         className={cn(
           "overflow-hidden pr-1 transition-all duration-200 flex items-center",
-          actions ? "md:w-full md:group-hover:w-[calc(100%-60px)] w-[calc(100%-60px)]" : "w-full",
+          actions
+            ? "md:w-full md:group-hover:w-[calc(100%-60px)] md:group-focus-within:w-[calc(100%-60px)] w-[calc(100%-60px)]"
+            : "w-full",
         )}
       >
         {icon && <span className="mr-2 flex-shrink-0">{icon}</span>}
-        {badge && <span className="mr-2 flex-shrink-0">{badge}</span>}
+        {badge && <span className="relative z-10 mr-2 flex-shrink-0">{badge}</span>}
         <div className="flex-1 min-w-0">
-          <span className="whitespace-nowrap overflow-hidden text-ellipsis block">{label}</span>
+          {onClick ? (
+            <button
+              type="button"
+              aria-current={isActive ? "page" : undefined}
+              className={cn(
+                labelClassName,
+                "w-full text-left cursor-pointer",
+                "after:absolute after:inset-0 after:content-['']",
+                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 focus:outline-none",
+              )}
+              onClick={onClick}
+            >
+              {label}
+            </button>
+          ) : (
+            <span className={labelClassName}>{label}</span>
+          )}
           {sublabel && (
             <span className="text-xs text-zinc-500 dark:text-zinc-400 whitespace-nowrap overflow-hidden text-ellipsis block">
               {sublabel}
@@ -80,6 +86,6 @@ export function ListItem({
         </div>
       </div>
       {actions}
-    </div>
+    </li>
   );
 }
