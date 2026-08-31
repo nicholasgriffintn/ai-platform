@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { resolveScopedSkillCatalog } from "~/lib/chat/preparation/skills";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type {
   AppendAuthoredSkillRevisionInput,
@@ -8,6 +9,7 @@ import type {
   AuthoredSkillScope,
   CreateAuthoredSkillInput,
 } from "~/repositories/AuthoredSkillRepository";
+import { load_skill } from "~/services/functions/load_skill";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { resolveSkillCatalog } from "../catalog";
@@ -314,11 +316,18 @@ function createContext() {
     listProjectCapabilities: vi.fn().mockResolvedValue([]),
     removeProjectCapability: vi.fn().mockResolvedValue(undefined),
   };
-  const capabilityConfigurations = { save: vi.fn().mockResolvedValue(undefined) };
+  const capabilityConfigurations = {
+    list: vi.fn().mockResolvedValue([]),
+    save: vi.fn().mockResolvedValue(undefined),
+  };
   const logger = { error: vi.fn() };
+  const user = { id: 42, plan_id: "pro" };
   const context = {
     env: { PRIVATE_ASSETS_BUCKET: bucket },
+    user,
+    requestCache: new Map<string, unknown>(),
     repositories: { authoredSkills, workspaces, capabilityConfigurations },
+    requireUser: () => user,
     getLogger: () => logger,
   } as unknown as ServiceContext;
 
@@ -575,6 +584,53 @@ describe("personal skill management", () => {
     expect(formatSkillContent(loaded)).toContain(
       '<skill_content name="meeting-notes" source="user-authored">',
     );
+  });
+
+  it("attaches the exact stable revision to a resolved personal runtime catalogue", async () => {
+    const { authoredSkills, context } = createContext();
+
+    await createPersonalSkill(context, 42, { content });
+    const [stored] = [...authoredSkills.skills.values()];
+    const catalog = await resolveSkillCatalog(context, { type: "personal", id: 42 });
+
+    expect(catalog.loadRuntime("meeting-notes")).toMatchObject({
+      provenance: {
+        source: "user-authored",
+        scope: "personal",
+        skill: "meeting-notes",
+        revisionId: stored?.stableRevisionId,
+        revision: 1,
+      },
+      authorisation: { scopeId: "42", skillId: stored?.id },
+    });
+  });
+
+  it("keeps prompt discovery and tool loading on one pinned revision", async () => {
+    const { context } = createContext();
+
+    await createPersonalSkill(context, 42, { content });
+
+    const promptCatalog = await resolveScopedSkillCatalog({ env: context.env, context }, null);
+
+    await updatePersonalSkill(context, 42, "meeting-notes", {
+      content: content.replace("Extract decisions and actions.", "A promoted replacement."),
+    });
+
+    const result = await load_skill.execute({ skill: "meeting-notes" }, {
+      request: {
+        context,
+        user: context.user,
+        memoryScope: { type: "personal" },
+        request: { enabled_tools: ["load_skill"] },
+      },
+    } as never);
+
+    expect(promptCatalog?.getDefinition("meeting-notes")).toBeDefined();
+    expect(result).toMatchObject({
+      status: "success",
+      content: expect.stringContaining("Extract decisions and actions."),
+      data: { provenance: { revision: 1 } },
+    });
   });
 
   it("includes an authored skill in the existing personal capability catalogue", async () => {
