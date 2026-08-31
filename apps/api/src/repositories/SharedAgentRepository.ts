@@ -316,12 +316,13 @@ export class SharedAgentRepository extends BaseRepository {
     const installId = generateId();
 
     await this.executeRun(
-      `INSERT INTO agents 
-       (id, user_id, name, description, avatar_url, servers, model, temperature, max_steps, system_prompt, few_shot_examples, enabled_tools) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO agents
+       (id, user_id, owner_scope_type, owner_scope_id, name, description, avatar_url, servers, model, temperature, max_steps, system_prompt, few_shot_examples, enabled_tools)
+       VALUES (?, ?, 'user', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         agentId,
         userId,
+        String(userId),
         templateData.name,
         templateData.description,
         templateData.avatar_url,
@@ -348,6 +349,9 @@ export class SharedAgentRepository extends BaseRepository {
     const agent: Agent = {
       id: agentId,
       user_id: userId,
+      owner_scope_type: "user",
+      owner_scope_id: String(userId),
+      derived_from_agent_id: null,
       name: templateData.name,
       description: templateData.description,
       avatar_url: templateData.avatar_url,

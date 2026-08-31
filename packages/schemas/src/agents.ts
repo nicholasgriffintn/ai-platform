@@ -93,9 +93,21 @@ export const updateAgentSchema = z
     error: "At least one field must be provided",
   });
 
+export const agentOwnerScopeTypeSchema = z.enum(["user", "workspace"]);
+
+export const publishAgentToWorkspaceSchema = z.object({
+  workspace_id: z
+    .string()
+    .min(1)
+    .meta({ description: "Workspace that will own the published copy of the agent" }),
+});
+
 export const agentResponseSchema = z.object({
   id: z.string(),
   user_id: z.number().int(),
+  owner_scope_type: agentOwnerScopeTypeSchema,
+  owner_scope_id: z.string(),
+  derived_from_agent_id: z.string().nullable(),
   name: z.string(),
   description: z.string(),
   avatar_url: z.string().nullable(),
@@ -115,6 +127,10 @@ export const agentResponseSchema = z.object({
 
 export const agentListResponseSchema = z.array(agentResponseSchema);
 
+export type AgentMcpServer = z.input<typeof mcpServerSchema>;
+export type AgentFewShotExample = z.input<typeof fewShotExampleSchema>;
 export type CreateAgentInput = z.input<typeof createAgentSchema>;
 export type UpdateAgentInput = z.input<typeof updateAgentSchema>;
+export type PublishAgentToWorkspaceInput = z.input<typeof publishAgentToWorkspaceSchema>;
+export type AgentOwnerScopeType = z.infer<typeof agentOwnerScopeTypeSchema>;
 export type AgentResponse = z.infer<typeof agentResponseSchema>;

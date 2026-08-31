@@ -1,5 +1,6 @@
 import { TeamDelegation } from "~/lib/agents/team/TeamDelegation";
 import { resolveServiceContext, createServiceContext } from "~/lib/context/serviceContext";
+import { canAccessAgent } from "~/services/agents/access";
 import type { Message } from "~/types";
 import { getLogger } from "~/utils/logger";
 
@@ -62,10 +63,15 @@ export const delegateToTeamMember: ApiToolDefinition = {
         };
       }
 
-      if (targetAgent.user_id !== req.user?.id) {
+      const delegatingUserId = req.user?.id;
+
+      if (
+        !delegatingUserId ||
+        !(await canAccessAgent(serviceContext, targetAgent, "read", delegatingUserId))
+      ) {
         return {
           status: "error",
-          content: `Team delegation failed: Access denied to agent '${targetAgent.name}' (${args.agent_id}). You can only delegate to agents you own.`,
+          content: `Team delegation failed: Access denied to agent '${targetAgent.name}' (${args.agent_id}). You can only delegate to agents you can access.`,
           role: "tool",
         };
       }

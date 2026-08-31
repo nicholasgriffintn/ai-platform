@@ -1,4 +1,4 @@
-# ADR 0034: Tool catalogue split from tool implementations
+# ADR 0035: Tool catalogue split from tool implementations
 
 ## Status
 
@@ -32,4 +32,4 @@ The rule this establishes: nothing reachable from a provider implementation may 
 - The provider layer no longer loads tool implementations, so importing a chat provider no longer boots the registry, the tool layer, and the repositories.
 - Provider behaviour can be unit tested directly. `moduleGraph.test.ts` imports a leaf provider as its first import and calls `defaultMapParameters`; it fails with the original error if any of these edges is reintroduced.
 - `getUserProviderSettings` on the repository no longer carries `type`, `name`, `description`, or `configurationFields`. Consumers that only needed enablement are unaffected; the settings route gets the same shape through `userOperations`.
-- `Database.createUser` now requires the configurable provider ids. It has no callers, so this only constrains future ones.
+- Provisioning provider settings now takes the configurable provider ids as an argument, so the caller decides which catalogue applies rather than the repository reaching for one.

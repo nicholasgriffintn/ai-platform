@@ -1406,6 +1406,11 @@ export const agents = sqliteTable(
     user_id: integer()
       .notNull()
       .references(() => user.id),
+    owner_scope_type: text({ enum: ["user", "workspace"] })
+      .default("user")
+      .notNull(),
+    owner_scope_id: text().default("").notNull(),
+    derived_from_agent_id: text(),
     name: text().notNull(),
     description: text().default("").notNull(),
     avatar_url: text(),
@@ -1429,6 +1434,7 @@ export const agents = sqliteTable(
   (table) => ({
     userIdIdx: index("agents_user_id_idx").on(table.user_id),
     teamIdIdx: index("agents_team_id_idx").on(table.team_id),
+    ownerScopeIdx: index("agents_owner_scope_idx").on(table.owner_scope_type, table.owner_scope_id),
   }),
 );
 

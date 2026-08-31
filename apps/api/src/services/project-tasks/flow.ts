@@ -9,6 +9,7 @@ import {
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { Agent } from "~/lib/database/schema";
+import { assertAgentAvailableToWorkspace } from "~/services/agents/access";
 import { resolveProjectTools } from "~/services/workspaces/projectTools";
 import { intersectEnabledTools } from "~/utils/enabledTools";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -51,6 +52,14 @@ async function resolveProjectAgent(
   if (!agent) {
     throw new AssistantError("Agent not found", ErrorType.NOT_FOUND, 404);
   }
+
+  const project = await context.repositories.workspaces.getProject(projectId);
+
+  if (!project) {
+    throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  await assertAgentAvailableToWorkspace(context, agent, project.workspace_id);
 
   return agent;
 }

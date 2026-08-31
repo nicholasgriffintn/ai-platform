@@ -1,8 +1,7 @@
 import type { D1Database } from "@cloudflare/workers-types";
 
 import { RepositoryManager } from "~/repositories";
-import type { IEnv, User } from "~/types";
-import { logError } from "~/utils/errorLogger";
+import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export * as schema from "./schema";
@@ -44,48 +43,5 @@ export class Database {
 
   public get connection(): D1Database {
     return this.env.DB;
-  }
-
-  public async createUser(
-    userData: Record<string, unknown>,
-    configurableProviderIds: readonly string[],
-  ): Promise<User | null> {
-    try {
-      const user = await this._repositories.users.createUser(userData);
-
-      if (user) {
-        try {
-          await this._repositories.userSettings.createUserSettings(user.id);
-        } catch (settingsError) {
-          logError("Failed to create user settings during user creation", settingsError, {
-            operation: "createUserSettings",
-          });
-        }
-
-        try {
-          await this._repositories.userSettings.createUserProviderSettings(
-            user.id,
-            configurableProviderIds,
-          );
-        } catch (providerSettingsError) {
-          logError(
-            "Failed to create user provider settings during user creation",
-            providerSettingsError,
-            {
-              operation: "createUserProviderSettings",
-            },
-          );
-        }
-      }
-
-      return user;
-    } catch (error) {
-      logError("Failed to create user", error, {
-        operation: "createUser",
-        userData: { ...userData, password: "REDACTED" },
-      });
-
-      throw new AssistantError("Unable to create user account", ErrorType.DATABASE_ERROR, 500);
-    }
   }
 }
