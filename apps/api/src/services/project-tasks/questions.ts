@@ -9,6 +9,7 @@ import {
 import { buildMessageParts } from "~/lib/chat/messages/parts";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
+import { withThreadLock } from "~/services/conversations/coordinator/client";
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -157,17 +158,21 @@ export async function answerProjectTaskQuestions(params: {
   });
   const content = formatAnswers(pending.questions, input);
 
-  await conversationManager.add(task.conversationId, {
-    id: generateId(),
-    role: "user",
-    content,
-    data: {
-      userQuestionResponse: {
-        interactionId: input.interactionId,
-        answers: input.answers,
-      },
-    },
-    timestamp: Date.now(),
-    platform: "web",
-  });
+  await withThreadLock(
+    { env: context.env, conversationId: task.conversationId, kind: "human_response" },
+    () =>
+      conversationManager.add(task.conversationId, {
+        id: generateId(),
+        role: "user",
+        content,
+        data: {
+          userQuestionResponse: {
+            interactionId: input.interactionId,
+            answers: input.answers,
+          },
+        },
+        timestamp: Date.now(),
+        platform: "web",
+      }),
+  );
 }

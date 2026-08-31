@@ -1,7 +1,8 @@
-import type { ThreadInstructionKind } from "@ngriffin_uk/polychat-schemas";
+import type { ThreadOperation } from "@ngriffin_uk/polychat-schemas";
 
 import { getDurableObjectStub, postDurableObjectJson } from "~/lib/durable-objects/client";
 import type { IEnv } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/conversations/coordinator/client" });
@@ -57,7 +58,7 @@ async function callCoordinator<T>(
 export async function acquireThread(params: {
   env: IEnv | undefined;
   conversationId: string;
-  kind: ThreadInstructionKind;
+  kind: ThreadOperation;
 }): Promise<{ acquired: boolean; currentOperation?: string | null }> {
   const outcome = await callCoordinator<{
     acquired?: boolean;
@@ -83,4 +84,53 @@ export async function releaseThread(params: {
   conversationId: string;
 }): Promise<void> {
   await callCoordinator(params.env, params.conversationId, "/release");
+}
+
+export function threadBusyError(currentOperation?: string | null): AssistantError {
+  return new AssistantError(
+    currentOperation
+      ? `This conversation is already working on something (${currentOperation}). Try again once it finishes.`
+      : "This conversation is already working on something. Try again once it finishes.",
+    ErrorType.CONFLICT_ERROR,
+  );
+}
+
+export interface ThreadLockRequest {
+  env: IEnv | undefined;
+  conversationId: string;
+  kind: ThreadOperation;
+}
+
+export async function withThreadLock<T>(
+  params: ThreadLockRequest,
+  run: () => Promise<T>,
+): Promise<T> {
+  const lock = await acquireThread(params);
+
+  if (!lock.acquired) {
+    throw threadBusyError(lock.currentOperation);
+  }
+
+  try {
+    return await run();
+  } finally {
+    await releaseThread({ env: params.env, conversationId: params.conversationId });
+  }
+}
+
+export async function withThreadLockIfFree<T>(
+  params: ThreadLockRequest,
+  run: () => Promise<T>,
+): Promise<T | null> {
+  const lock = await acquireThread(params);
+
+  if (!lock.acquired) {
+    return null;
+  }
+
+  try {
+    return await run();
+  } finally {
+    await releaseThread({ env: params.env, conversationId: params.conversationId });
+  }
 }

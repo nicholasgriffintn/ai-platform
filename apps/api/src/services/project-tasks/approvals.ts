@@ -9,6 +9,7 @@ import {
 import { buildMessageParts } from "~/lib/chat/messages/parts";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
+import { withThreadLock } from "~/services/conversations/coordinator/client";
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -139,23 +140,27 @@ export async function resolveProjectTaskToolApproval(params: {
     store: true,
   });
 
-  await conversationManager.add(task.conversationId, {
-    id: generateId(),
-    role: "user",
-    content:
-      input.resolution === "approved"
-        ? `Approved access to ${pending.approval.toolName}. Continue the task.`
-        : `Rejected access to ${pending.approval.toolName}. Continue without it.`,
-    data: {
-      toolApprovalResponse: {
-        interactionId: input.interactionId,
-        resolution: input.resolution,
-        toolName: pending.approval.toolName,
-      },
-    },
-    timestamp: Date.now(),
-    platform: "web",
-  });
+  await withThreadLock(
+    { env: context.env, conversationId: task.conversationId, kind: "human_response" },
+    () =>
+      conversationManager.add(task.conversationId, {
+        id: generateId(),
+        role: "user",
+        content:
+          input.resolution === "approved"
+            ? `Approved access to ${pending.approval.toolName}. Continue the task.`
+            : `Rejected access to ${pending.approval.toolName}. Continue without it.`,
+        data: {
+          toolApprovalResponse: {
+            interactionId: input.interactionId,
+            resolution: input.resolution,
+            toolName: pending.approval.toolName,
+          },
+        },
+        timestamp: Date.now(),
+        platform: "web",
+      }),
+  );
 
   return { toolName: pending.approval.toolName, resolution: input.resolution };
 }
