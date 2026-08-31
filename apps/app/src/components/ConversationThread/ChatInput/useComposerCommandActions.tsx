@@ -130,8 +130,7 @@ export function useComposerCommandActions({
   const isComposingGoal = useChatStore((state) => state.isComposingGoal);
   const setComposingGoal = useChatStore((state) => state.setComposingGoal);
   const includeAgents = assistantActionCatalog?.includeAgents !== false;
-  const { chatAgents, isLoadingAgents } = useAgents({ enabled: includeAgents });
-  const agents = chatAgents;
+  const { agents, isLoadingAgents } = useAgents({ enabled: includeAgents });
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
   const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
   const selectedTools = useToolsStore((state) => state.selectedTools);

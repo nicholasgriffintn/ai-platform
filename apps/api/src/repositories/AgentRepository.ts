@@ -28,9 +28,6 @@ export interface CreateAgentRecord {
   enabledTools?: string[] | null;
   skillIds?: string[] | null;
   mode?: AgentMode | null;
-  teamId?: string | null;
-  teamRole?: string | null;
-  isTeamAgent?: boolean;
 }
 
 export class AgentRepository extends BaseRepository {
@@ -59,9 +56,6 @@ export class AgentRepository extends BaseRepository {
         enabled_tools: record.enabledTools ?? null,
         skill_ids: record.skillIds ?? null,
         mode: record.mode ?? null,
-        team_id: record.teamId ?? null,
-        team_role: record.teamRole ?? null,
-        is_team_agent: record.isTeamAgent ? 1 : 0,
       },
       {
         jsonFields: ["servers", "few_shot_examples", "enabled_tools", "skill_ids"],
@@ -134,9 +128,6 @@ export class AgentRepository extends BaseRepository {
       enabled_tools: string[];
       skill_ids: string[];
       mode: AgentMode | null;
-      team_id: string;
-      team_role: string;
-      is_team_agent: boolean;
     }>,
   ): Promise<void> {
     const allowedFields = [
@@ -152,9 +143,6 @@ export class AgentRepository extends BaseRepository {
       "enabled_tools",
       "skill_ids",
       "mode",
-      "team_id",
-      "team_role",
-      "is_team_agent",
     ];
 
     const result = this.buildUpdateQuery("agents", data, allowedFields, "id = ?", [agentId], {
@@ -162,10 +150,6 @@ export class AgentRepository extends BaseRepository {
       transformer: (field, value) => {
         if (field === "temperature" && value !== undefined && value !== null) {
           return value.toString();
-        }
-
-        if (field === "is_team_agent" && typeof value === "boolean") {
-          return value ? 1 : 0;
         }
 
         return value;
@@ -192,35 +176,5 @@ export class AgentRepository extends BaseRepository {
     }
 
     await this.executeRun(query, values);
-  }
-
-  public async getTeamAgents(userId: number): Promise<Agent[]> {
-    const { query, values } = this.buildSelectQuery(
-      "agents",
-      { user_id: userId, is_team_agent: 1 },
-      { orderBy: "created_at DESC" },
-    );
-
-    return this.runQuery<Agent>(query, values);
-  }
-
-  public async getAgentsByTeam(teamId: string): Promise<Agent[]> {
-    const { query, values } = this.buildSelectQuery(
-      "agents",
-      { team_id: teamId },
-      { orderBy: "created_at DESC" },
-    );
-
-    return this.runQuery<Agent>(query, values);
-  }
-
-  public async getAgentsByTeamAndUser(teamId: string, userId: number): Promise<Agent[]> {
-    const { query, values } = this.buildSelectQuery(
-      "agents",
-      { team_id: teamId, user_id: userId },
-      { orderBy: "created_at DESC" },
-    );
-
-    return this.runQuery<Agent>(query, values);
   }
 }

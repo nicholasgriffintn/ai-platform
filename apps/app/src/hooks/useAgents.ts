@@ -3,7 +3,6 @@ import type { AgentResponse, UpdateAgentInput } from "@ngriffin_uk/polychat-sche
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { groupAgents } from "~/lib/agents/group-agents";
 import { apiService } from "~/lib/api/api-service";
 
 import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
@@ -48,28 +47,8 @@ export function useAgents({ enabled = true }: { enabled?: boolean } = {}) {
     },
   });
 
-  const teamMemberAgentIds = useMemo(
-    () =>
-      new Set(
-        agents
-          .filter((agent) => agent.is_team_agent && agent.team_role !== "orchestrator")
-          .map((agent) => agent.id),
-      ),
-    [agents],
-  );
-
-  const chatAgents = useMemo(
-    () => agents.filter((agent) => !teamMemberAgentIds.has(agent.id)),
-    [agents, teamMemberAgentIds],
-  );
-
-  const groupedAgents = useMemo(() => groupAgents(agents), [agents]);
-
   return {
     agents,
-    chatAgents,
-    groupedAgents,
-    teamMemberAgentIds,
     isLoadingAgents: canAccessProFeatures && enabled ? agentsQuery.isLoading : false,
     errorAgents: canAccessProFeatures && enabled ? agentsQuery.error : null,
     createAgent: createMutation.mutateAsync,

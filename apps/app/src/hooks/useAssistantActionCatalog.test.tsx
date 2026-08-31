@@ -6,11 +6,6 @@ import { useAssistantActionCatalog } from "./useAssistantActionCatalog";
 
 const mocks = vi.hoisted(() => ({
   agents: [] as AgentSummary[],
-  teamMemberAgentIds: new Set<string>(),
-}));
-
-vi.mock("./useAgents", () => ({
-  useAgents: () => ({ teamMemberAgentIds: mocks.teamMemberAgentIds }),
 }));
 
 vi.mock("./useCapabilityCatalog", () => ({
@@ -57,7 +52,6 @@ function agentSummary(overrides: Partial<AgentSummary> & { id: string }): AgentS
 describe("assistant action catalogue agents", () => {
   beforeEach(() => {
     mocks.agents = [];
-    mocks.teamMemberAgentIds = new Set();
   });
 
   it("offers the scoped agents the server listed, keyed so the composer can resolve them", () => {
@@ -72,17 +66,6 @@ describe("assistant action catalogue agents", () => {
     expect(agentItems.map((item) => item.id)).toEqual(["agent:researcher", "agent:planner"]);
     expect(agentItems.map((item) => item.metadata?.agentId)).toEqual(["researcher", "planner"]);
     expect(agentItems.map((item) => item.metadata?.category)).toEqual(["Workspace", "Personal"]);
-  });
-
-  it("keeps a team's members out of the composer, leaving the orchestrator", () => {
-    mocks.agents = [agentSummary({ id: "orchestrator" }), agentSummary({ id: "member" })];
-    mocks.teamMemberAgentIds = new Set(["member"]);
-
-    const { result } = renderHook(() => useAssistantActionCatalog());
-
-    expect(
-      result.current.items.filter((item) => item.kind === "agent").map((item) => item.id),
-    ).toEqual(["agent:orchestrator"]);
   });
 
   it("offers no agents at all when the surface excludes them", () => {

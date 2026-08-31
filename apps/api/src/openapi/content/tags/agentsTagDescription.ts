@@ -13,7 +13,6 @@ Agents are configurable AI assistants that can:
 - Connect to MCP servers for extended capabilities
 - Access specific models with custom parameters
 - Maintain their own configuration
-- Be organized into teams
 - Use few-shot examples for better performance
 
 ## Using Agents
@@ -131,18 +130,6 @@ Provide example inputs/outputs to guide behavior:
       "output": "Here's how to sort a list in Python:\\n\`\`\`python\\nmy_list.sort()\\n\`\`\`"
     }
   ]
-}
-~~~
-
-### Team Configuration
-
-Organize agents into teams:
-
-~~~json
-{
-  "team_id": "team_xyz789",
-  "team_role": "researcher",
-  "is_team_agent": true
 }
 ~~~
 

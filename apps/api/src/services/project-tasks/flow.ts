@@ -16,11 +16,6 @@ import { toStringArray } from "~/utils/arrays";
 import { intersectEnabledTools, intersectGrantedIds } from "~/utils/enabledTools";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-const PROJECT_TASK_FLOW_OWNED_TOOLS = new Set([
-  "delegate_to_team_member",
-  "delegate_to_team_member_by_role",
-]);
-
 const DEFAULT_TASK_MODE = "agent";
 
 export interface ResolvedTaskRuntime {
@@ -82,10 +77,6 @@ export function withoutForbiddenTools(
   return tools.filter((tool) => !denied.has(tool));
 }
 
-function withoutFlowOwnedTools(tools: string[]): string[] {
-  return tools.filter((tool) => !PROJECT_TASK_FLOW_OWNED_TOOLS.has(tool));
-}
-
 function resolveRequestedSkillIds(stage: ProjectFlowStage | null, agent: Agent | null): string[] {
   return [...new Set([...(stage?.skillIds ?? []), ...toStringArray(agent?.skill_ids)])];
 }
@@ -114,7 +105,7 @@ export async function resolveTaskRuntime(params: {
     model: task.runner?.model ?? agent?.model ?? null,
     mode: stage?.mode ?? task.runner?.mode ?? agent?.mode ?? DEFAULT_TASK_MODE,
     enabledTools: withoutForbiddenTools(
-      withoutFlowOwnedTools([...new Set([...configuredTools, ...PROJECT_TASK_TOOL_IDS])]),
+      [...new Set([...configuredTools, ...PROJECT_TASK_TOOL_IDS])],
       task.constraints?.forbiddenTools,
     ),
     skillIds: intersectGrantedIds(projectSkillIds, resolveRequestedSkillIds(stage, agent)),

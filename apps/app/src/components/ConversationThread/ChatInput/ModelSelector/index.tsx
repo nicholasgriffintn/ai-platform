@@ -88,7 +88,7 @@ export const ModelSelector = ({
     selectedAgentId,
     setSelectedAgentId,
   } = useChatStore();
-  const { chatAgents: agents } = useAgents();
+  const { agents } = useAgents();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCapability, setSelectedCapability] = useState<ModelModality | null>(null);

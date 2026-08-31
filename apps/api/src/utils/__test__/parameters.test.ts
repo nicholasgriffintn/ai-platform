@@ -26,7 +26,7 @@ function paramsForMode(mode: string): Parameters<typeof getToolsForProvider>[0] 
   return {
     model: "gpt-5",
     mode,
-    enabled_tools: ["get_weather", "delegate_to_team_member"],
+    enabled_tools: ["get_weather", "call_api"],
   };
 }
 
@@ -53,7 +53,7 @@ describe("getToolsForProvider", () => {
       getToolsForProvider(paramsForMode("plan"), modelConfig, "openai").tools,
     );
 
-    expect(names).not.toContain("delegate_to_team_member");
+    expect(names).not.toContain("call_api");
     expect(names).toContain("get_weather");
   });
 
@@ -78,7 +78,7 @@ describe("getToolsForProvider", () => {
         {
           ...paramsForMode("plan"),
           conversation_type: "task",
-          enabled_tools: ["delegate_to_team_member"],
+          enabled_tools: ["call_api"],
           enforce_mode_tool_policy: false,
         },
         modelConfig,
@@ -86,7 +86,7 @@ describe("getToolsForProvider", () => {
       ).tools,
     );
 
-    expect(names).toContain("delegate_to_team_member");
+    expect(names).toContain("call_api");
     expect(names).toContain("update_plan");
     expect(names).not.toContain("finish");
   });

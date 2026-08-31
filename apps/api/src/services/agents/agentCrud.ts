@@ -20,22 +20,6 @@ export async function getUserAgents(context: ServiceContext, userId?: number) {
   ).map(normaliseAgentResponse);
 }
 
-export async function getUserTeamAgents(context: ServiceContext, userId?: number) {
-  context.ensureDatabase();
-  const id = userId ?? context.requireUser().id;
-
-  return (await context.repositories.agents.getTeamAgents(id)).map(normaliseAgentResponse);
-}
-
-export async function getAgentsByTeam(context: ServiceContext, teamId: string, userId?: number) {
-  context.ensureDatabase();
-  const id = userId ?? context.requireUser().id;
-
-  return (await context.repositories.agents.getAgentsByTeamAndUser(teamId, id)).map(
-    normaliseAgentResponse,
-  );
-}
-
 export async function getAgentById(context: ServiceContext, agentId: string, userId?: number) {
   context.ensureDatabase();
 
@@ -61,9 +45,6 @@ export async function createAgent(context: ServiceContext, params: CreateAgentIn
     enabledTools: params.enabled_tools,
     skillIds: params.skill_ids,
     mode: params.mode,
-    teamId: params.team_id,
-    teamRole: params.team_role,
-    isTeamAgent: params.is_team_agent,
   });
 
   return normaliseAgentResponse(agent);

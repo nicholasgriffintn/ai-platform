@@ -1,4 +1,3 @@
-import type { AgentResponse } from "@ngriffin_uk/polychat-schemas";
 import { updateUserSettingsSchema } from "@ngriffin_uk/polychat-schemas";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -8,32 +7,10 @@ import {
   AccountPrompt,
   type AccountSection,
   SandboxConnectionList,
-  TeamCard,
   prepareUserSettingsPayload,
 } from "./index";
 
 afterEach(cleanup);
-
-function buildAgent(overrides: Partial<AgentResponse> & Pick<AgentResponse, "id" | "name">) {
-  return {
-    user_id: 1,
-    description: "",
-    avatar_url: null,
-    servers: [],
-    model: null,
-    temperature: null,
-    max_steps: null,
-    system_prompt: null,
-    few_shot_examples: null,
-    enabled_tools: null,
-    team_id: null,
-    team_role: null,
-    is_team_agent: false,
-    created_at: "2026-01-01T00:00:00.000Z",
-    updated_at: null,
-    ...overrides,
-  } satisfies AgentResponse;
-}
 
 describe("account controls", () => {
   it("omits inactive S3 fields from the default Vectorize settings payload", () => {
@@ -89,29 +66,6 @@ describe("account controls", () => {
     expect(screen.getByText("Contact the workspace owner")).toBeTruthy();
     fireEvent.click(action);
     expect(onAction).not.toHaveBeenCalled();
-  });
-
-  it("names every icon-only team action for screen readers", () => {
-    const team = {
-      id: "team-1",
-      name: "Research",
-      orchestrator: buildAgent({ id: "lead-1", name: "Kea" }),
-      members: [buildAgent({ id: "member-1", name: "Macaw", team_role: "specialist" })],
-    };
-
-    render(<TeamCard team={team} onEdit={vi.fn()} onShare={vi.fn()} onDelete={vi.fn()} />);
-
-    const expand = screen.getByRole("button", {
-      name: "Show Research members",
-    });
-
-    expect(screen.getByRole("button", { name: "More actions for team Research" })).toBeTruthy();
-
-    fireEvent.click(expand);
-
-    expect(screen.getByRole("button", { name: "Hide Research members" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "More actions for Kea" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "More actions for Macaw" })).toBeTruthy();
   });
 });
 

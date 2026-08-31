@@ -10,11 +10,9 @@ import type { AgentResponse } from "@ngriffin_uk/polychat-schemas";
 import { Loader2, User } from "lucide-react";
 
 import { AgentCard } from "./AgentCard";
-import { TeamCard } from "./TeamCard";
-import type { GroupedAgents } from "./types";
 
 interface AgentsListProps {
-  groupedAgents: GroupedAgents;
+  agents: AgentResponse[];
   isLoading: boolean;
   onEdit: (agent: AgentResponse) => void;
   onShare: (agent: AgentResponse) => void;
@@ -28,7 +26,7 @@ interface AgentsListProps {
 }
 
 export function AgentsList({
-  groupedAgents,
+  agents,
   isLoading,
   onEdit,
   onShare,
@@ -64,11 +62,7 @@ export function AgentsList({
     );
   }
 
-  const teams = Object.values(groupedAgents.teams);
-  const hasTeams = teams.length > 0;
-  const hasIndividual = groupedAgents.individual.length > 0;
-
-  if (!hasTeams && !hasIndividual) {
+  if (agents.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -107,52 +101,19 @@ export function AgentsList({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
-          {/* Team Agents */}
-          {hasTeams && (
-            <div>
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
-                Agent Teams
-              </h3>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {teams.map((team) => (
-                  <TeamCard
-                    key={team.id}
-                    team={team}
-                    onEdit={onEdit}
-                    onShare={onShare}
-                    onDelete={onDelete}
-                    isUpdating={isUpdating && currentAgentId === team.orchestrator?.id}
-                    isSharing={isSharing && agentToShare?.id === team.orchestrator?.id}
-                    isDeleting={isDeleting && agentToDelete?.id === team.orchestrator?.id}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Individual Agents */}
-          {hasIndividual && (
-            <div>
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
-                Individual Agents
-              </h3>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {groupedAgents.individual.map((agent) => (
-                  <AgentCard
-                    key={agent.id}
-                    agent={agent}
-                    onEdit={onEdit}
-                    onShare={onShare}
-                    onDelete={onDelete}
-                    isUpdating={isUpdating && currentAgentId === agent.id}
-                    isSharing={isSharing && agentToShare?.id === agent.id}
-                    isDeleting={isDeleting && agentToDelete?.id === agent.id}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {agents.map((agent) => (
+            <AgentCard
+              key={agent.id}
+              agent={agent}
+              onEdit={onEdit}
+              onShare={onShare}
+              onDelete={onDelete}
+              isUpdating={isUpdating && currentAgentId === agent.id}
+              isSharing={isSharing && agentToShare?.id === agent.id}
+              isDeleting={isDeleting && agentToDelete?.id === agent.id}
+            />
+          ))}
         </div>
       </CardContent>
     </Card>

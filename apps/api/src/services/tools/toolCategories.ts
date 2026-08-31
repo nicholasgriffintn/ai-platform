@@ -35,15 +35,7 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "use_recipe_connector",
   ],
   Automation: ["call_api", "discover_capabilities", "run_pashi_tools", "search_pashi_tools"],
-  Collaboration: [
-    "ask_user",
-    "run_council",
-    "select_council_members",
-    "delegate_to_team_member",
-    "delegate_to_team_member_by_role",
-    "get_team_members",
-    "request_approval",
-  ],
+  Collaboration: ["ask_user", "run_council", "select_council_members", "request_approval"],
 };
 
 export function getToolCategory(toolId: string): ToolCategory {

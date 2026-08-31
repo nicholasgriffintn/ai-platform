@@ -17,8 +17,6 @@ import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
   getUserAgents,
-  getUserTeamAgents,
-  getAgentsByTeam,
   getAgentById,
   createAgent,
   updateAgent,
@@ -41,7 +39,6 @@ app.use("/*", async (ctx, next) => {
 });
 
 const agentIdParamSchema = z.object({ agentId: z.string().min(1) });
-const teamIdParamSchema = z.object({ teamId: z.string().min(1) });
 
 addRoute(app, "get", "/", {
   tags: ["agents"],
@@ -63,29 +60,6 @@ addRoute(app, "post", "/", {
   responses: { 200: { description: "Created agent", schema: agentResponseSchema } },
   handler: async ({ serviceContext, body }) => {
     return createAgent(serviceContext, body);
-  },
-});
-
-addRoute(app, "get", "/teams", {
-  tags: ["agents"],
-  summary: "Get team agents",
-  description: "Get all team agents for the current user",
-  auth: true,
-  responses: { 200: { description: "Team agents", schema: agentListResponseSchema } },
-  handler: async ({ serviceContext }) => {
-    return getUserTeamAgents(serviceContext);
-  },
-});
-
-addRoute(app, "get", "/teams/:teamId", {
-  tags: ["agents"],
-  summary: "Get agents by team ID",
-  description: "Get all agents belonging to a specific team for the current user",
-  auth: true,
-  paramSchema: teamIdParamSchema,
-  responses: { 200: { description: "Team agents", schema: agentListResponseSchema } },
-  handler: async ({ serviceContext, params }) => {
-    return getAgentsByTeam(serviceContext, params.teamId);
   },
 });
 

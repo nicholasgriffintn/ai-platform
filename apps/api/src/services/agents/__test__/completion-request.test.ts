@@ -9,7 +9,7 @@ describe("prepareAgentCompletionRequest", () => {
   it("uses the Chat tool policy for saved-agent Chat runs", () => {
     const body = createChatCompletionsJsonSchema.parse({
       model: "mistral-large-latest",
-      messages: [{ role: "user", content: "Delegate this to the team" }],
+      messages: [{ role: "user", content: "Convene a council" }],
     });
 
     const request = prepareAgentCompletionRequest({
@@ -37,9 +37,9 @@ describe("prepareAgentCompletionRequest", () => {
 
     expect(
       new PermissionChecker().checkToolAccess({
-        toolName: "delegate_to_team_member",
+        toolName: "run_council",
         mode: Reflect.get(request, "tool_policy_mode"),
-        toolPermissions: ["delegate"],
+        toolPermissions: ["orchestration"],
       }),
     ).toMatchObject({ allowed: true, requiresApproval: false });
   });
@@ -183,7 +183,6 @@ describe("prepareAgentCompletionRequest", () => {
       servers: null,
       system_prompt: "Answer carefully.",
       few_shot_examples: null,
-      team_role: null,
     };
     const body = createChatCompletionsJsonSchema.parse({
       model: "mistral-large-latest",

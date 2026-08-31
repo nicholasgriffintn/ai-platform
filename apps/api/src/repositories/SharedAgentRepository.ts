@@ -309,13 +309,6 @@ export class SharedAgentRepository extends BaseRepository {
       throw new AssistantError("Error parsing template data", ErrorType.PARAMS_ERROR);
     }
 
-    if (templateData.team_id) {
-      throw new AssistantError(
-        "Team agents are not supported for sharing yet. Please contact support.",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-
     const agentId = generateId();
     const installId = generateId();
     const installedSkillIds = parseJsonArrayColumn(templateData.skill_ids, skillIdSchema) ?? [];
@@ -372,9 +365,6 @@ export class SharedAgentRepository extends BaseRepository {
       enabled_tools: JSON.stringify(templateData.enabled_tools ?? []),
       skill_ids: JSON.stringify(installedSkillIds),
       mode: installedMode,
-      is_team_agent: false,
-      team_id: null,
-      team_role: null,
       created_at: now,
       updated_at: now,
     };

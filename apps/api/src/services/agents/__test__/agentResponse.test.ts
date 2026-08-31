@@ -23,9 +23,6 @@ function buildStoredAgent(overrides: Partial<Record<keyof Agent, unknown>> = {})
     enabled_tools: null,
     skill_ids: null,
     mode: null,
-    team_id: null,
-    team_role: null,
-    is_team_agent: 0,
     created_at: "2026-01-01T00:00:00.000Z",
     updated_at: null,
     ...overrides,
@@ -93,13 +90,6 @@ describe("normaliseAgentResponse", () => {
       normaliseAgentResponse(buildStoredAgent({ temperature: "warm" })).temperature,
     ).toBeNull();
     expect(normaliseAgentResponse(buildStoredAgent({ temperature: null })).temperature).toBeNull();
-  });
-
-  it("coerces the stored team flag integer to a boolean", () => {
-    expect(normaliseAgentResponse(buildStoredAgent({ is_team_agent: 1 })).is_team_agent).toBe(true);
-    expect(normaliseAgentResponse(buildStoredAgent({ is_team_agent: 0 })).is_team_agent).toBe(
-      false,
-    );
   });
 
   it("round-trips the composed capability columns", () => {
