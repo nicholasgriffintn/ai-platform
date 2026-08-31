@@ -15,7 +15,7 @@ import { buildGrantedRealtimeProxyUrl } from "./proxyUrl";
 export const CARTESIA_REALTIME_DESCRIPTOR = {
   id: "cartesia",
   order: 4,
-  label: "Cartesia Ink Realtime",
+  label: "Cartesia Ink 2 Realtime",
   shortLabel: "Cartesia",
   liveMode: "composed",
   transport: "websocket",
@@ -23,8 +23,8 @@ export const CARTESIA_REALTIME_DESCRIPTOR = {
   defaultDelay: "low",
   inputModalities: ["audio"],
   outputModalities: ["text"],
-  description: "Ink streaming speech-to-text",
-  defaultModelId: "ink-whisper",
+  description: "Ink 2 semantic turn detection and streaming speech-to-text",
+  defaultModelId: "ink-2",
   composeWith: { reasoning: true, speech: true },
 } satisfies RealtimeLiveProviderDescriptor;
 
@@ -109,7 +109,6 @@ export class CartesiaRealtimeProvider implements RealtimeProvider {
       model,
       params: {
         delay,
-        language: request.language,
       },
       path: CARTESIA_REALTIME_PROXY_PATH,
       provider: this.name,
@@ -129,7 +128,6 @@ export class CartesiaRealtimeProvider implements RealtimeProvider {
       input_audio_format: this.buildAudioFormat().encoding,
       input_audio_transcription: {
         model,
-        ...(request.language ? { language: request.language } : {}),
       },
     };
   }

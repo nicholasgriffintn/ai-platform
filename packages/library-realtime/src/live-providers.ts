@@ -95,10 +95,9 @@ export function waitsForRealtimeLiveProviderFinalEventOnStop(
   provider: string,
   options: RealtimeLiveProviderOption[] = [],
 ): boolean {
-  return Boolean(
-    getRealtimeLiveProviderOption(provider, options)?.websocket?.audioInput
-      ?.waitForFinalEventTypeOnStop,
-  );
+  const audioInput = getRealtimeLiveProviderOption(provider, options)?.websocket?.audioInput;
+
+  return Boolean(audioInput?.waitForFinalEventTypeOnStop || audioInput?.waitForSocketCloseOnStop);
 }
 
 export function getComposedRealtimeReasoningModelId(

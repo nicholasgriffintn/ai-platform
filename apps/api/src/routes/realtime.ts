@@ -264,10 +264,10 @@ addRoute(app, "get", "/cartesia/transcription", {
     return connectReservedRealtimeProxy(reservation, (onSessionEnd) =>
       createCartesiaRealtimeProxyResponse({
         context: raw,
+        delay: query.delay,
         env: serviceContext.env,
         user,
         model: query.model,
-        language: query.language,
         onSessionEnd,
       }),
     );

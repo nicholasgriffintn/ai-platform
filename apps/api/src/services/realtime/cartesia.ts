@@ -1,7 +1,10 @@
 import type { Context } from "hono";
 
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
-import { getRealtimeProvider } from "~/lib/providers/capabilities/realtime";
+import {
+  getRealtimeProvider,
+  type RealtimeTranscriptionDelay,
+} from "~/lib/providers/capabilities/realtime";
 import type { IEnv, IUser } from "~/types";
 
 import {
@@ -12,16 +15,49 @@ import {
 
 export function toCartesiaUpstreamMessage(
   message: NormalizedClientRealtimeMessage,
-): string | ArrayBuffer {
+): string | ArrayBuffer | null {
   if (message.type === "input_audio.flush") {
-    return "finalize";
+    return null;
   }
 
   if (message.type === "input_audio.end") {
-    return "done";
+    return JSON.stringify({ type: "close" });
   }
 
   return base64AudioToBuffer(message.audio);
+}
+
+export const CARTESIA_STT_API_VERSION = "2026-08-14";
+const CARTESIA_TURN_END_TIMEOUT_MS_BY_DELAY: Record<RealtimeTranscriptionDelay, number> = {
+  minimal: 640,
+  low: 1600,
+  medium: 3200,
+  high: 5600,
+  xhigh: 8000,
+};
+
+export function buildCartesiaRealtimeUpstreamUrl({
+  delay,
+  model,
+}: {
+  delay?: RealtimeTranscriptionDelay;
+  model: string;
+}): URL {
+  const upstreamUrl = new URL("/stt/turns/websocket", "https://api.cartesia.ai");
+
+  upstreamUrl.searchParams.set("model", model);
+  upstreamUrl.searchParams.set("encoding", "pcm_s16le");
+  upstreamUrl.searchParams.set("sample_rate", "16000");
+  upstreamUrl.searchParams.set("cartesia_version", CARTESIA_STT_API_VERSION);
+
+  if (delay) {
+    upstreamUrl.searchParams.set(
+      "turn_end_timeout_ms",
+      String(CARTESIA_TURN_END_TIMEOUT_MS_BY_DELAY[delay]),
+    );
+  }
+
+  return upstreamUrl;
 }
 
 function getString(value: unknown): string | undefined {
@@ -67,14 +103,14 @@ export async function createCartesiaRealtimeProxyResponse({
   env,
   user,
   model,
-  language,
+  delay,
   onSessionEnd,
 }: {
   context: Context;
   env: IEnv;
   user: IUser;
   model?: string;
-  language?: string;
+  delay?: RealtimeTranscriptionDelay;
   onSessionEnd?: () => void | Promise<void>;
 }): Promise<Response> {
   const provider = getRealtimeProvider("cartesia", { env, user });
@@ -89,14 +125,12 @@ export async function createCartesiaRealtimeProxyResponse({
   }
 
   const modelToUse = model || provider.getDefaultModel("transcription");
-  const upstreamUrl = new URL("/stt/websocket", "https://api.cartesia.ai");
 
-  upstreamUrl.searchParams.set("model", modelToUse);
-  upstreamUrl.searchParams.set("encoding", "pcm_s16le");
-  upstreamUrl.searchParams.set("sample_rate", "16000");
-  if (language) {
-    upstreamUrl.searchParams.set("language", language);
+  if (!provider.models?.includes(modelToUse)) {
+    return ResponseFactory.error(context, "Invalid Cartesia realtime model", 400);
   }
+
+  const upstreamUrl = buildCartesiaRealtimeUpstreamUrl({ delay, model: modelToUse });
 
   return createRealtimeTranscriptionProxyResponse({
     context,
@@ -104,7 +138,7 @@ export async function createCartesiaRealtimeProxyResponse({
     upstreamUrl,
     headers: {
       "X-API-Key": apiKey,
-      "Cartesia-Version": "2025-04-16",
+      "Cartesia-Version": CARTESIA_STT_API_VERSION,
     },
     onSessionEnd,
     toUpstreamMessage: toCartesiaUpstreamMessage,

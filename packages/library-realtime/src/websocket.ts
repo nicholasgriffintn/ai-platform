@@ -45,6 +45,15 @@ export function sendJsonWhenOpen(connection: RealtimeWebSocketConnection, payloa
   }
 }
 
+export function sendBinaryWhenOpen(
+  connection: RealtimeWebSocketConnection,
+  payload: ArrayBuffer,
+): void {
+  if (connection.socket.readyState === WebSocket.OPEN) {
+    connection.socket.send(payload);
+  }
+}
+
 export function connectRealtimeWebSocket({
   session,
   protocols,
