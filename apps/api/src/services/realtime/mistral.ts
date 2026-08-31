@@ -7,53 +7,19 @@ import {
   type RealtimeTranscriptionDelay,
 } from "~/lib/providers/capabilities/realtime";
 import { getMistralTargetStreamingDelayMs } from "~/lib/providers/capabilities/realtime/providers";
-import { formatProviderError } from "~/lib/providers/utils/errors";
 import type { IEnv, IUser } from "~/types";
-import { bufferToBase64 } from "~/utils/base64";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "services/realtime/mistral" });
+import {
+  normalizeClientRealtimeMessage,
+  createRealtimeProxySessionEnd,
+  createRealtimeProxyHandshakeFailure,
+  REALTIME_PROXY_LIMITS,
+  RealtimeProxyLimitError,
+  RealtimeProxySessionLimits,
+  serializeNormalizedClientRealtimeMessage,
+} from "./transcriptionProxy";
+
 const MISTRAL_REALTIME_USER_AGENT = "polychat-mistral-realtime-proxy/1.0";
-
-function sanitizeMistralClientMessage(data: string): string {
-  let payload: unknown;
-
-  try {
-    payload = JSON.parse(data);
-  } catch {
-    throw new AssistantError("Invalid realtime message", ErrorType.PARAMS_ERROR);
-  }
-
-  if (!payload || typeof payload !== "object") {
-    throw new AssistantError("Invalid realtime message", ErrorType.PARAMS_ERROR);
-  }
-
-  const message = payload as Record<string, unknown>;
-  const type = message.type;
-  const MISTRAL_CLIENT_MESSAGE_TYPES = new Set([
-    "input_audio.append",
-    "input_audio.flush",
-    "input_audio.end",
-  ]);
-
-  if (typeof type !== "string" || !MISTRAL_CLIENT_MESSAGE_TYPES.has(type)) {
-    throw new AssistantError("Unsupported realtime message type", ErrorType.PARAMS_ERROR);
-  }
-
-  if (type === "input_audio.append") {
-    const audio = message.audio;
-    const BASE64_PATTERN = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
-
-    if (typeof audio !== "string" || !BASE64_PATTERN.test(audio)) {
-      throw new AssistantError("Invalid realtime audio payload", ErrorType.PARAMS_ERROR);
-    }
-
-    return JSON.stringify({ type, audio });
-  }
-
-  return JSON.stringify({ type });
-}
 
 function isMistralSessionCreatedMessage(data: unknown): boolean {
   if (typeof data !== "string") {
@@ -79,70 +45,54 @@ function closeSocket(socket: WebSocket, code = 1000, reason = ""): void {
   }
 }
 
-function normaliseClientMessage(data: unknown): string {
-  if (typeof data === "string") {
-    return sanitizeMistralClientMessage(data);
-  }
-
-  if (data instanceof ArrayBuffer) {
-    return JSON.stringify({
-      type: "input_audio.append",
-      audio: bufferToBase64(data),
-    });
-  }
-
-  throw new TypeError("Unsupported realtime message payload");
-}
-
-function getMistralProxyFailureStatus(providerStatus: number): 400 | 401 | 403 | 404 | 429 | 502 {
-  switch (providerStatus) {
-    case 400:
-    case 401:
-    case 403:
-    case 404:
-    case 429:
-      return providerStatus;
-    default:
-      return 502;
-  }
-}
-
 function bridgeMistralRealtimeSockets({
   client,
   upstream,
   sessionUpdateMessage,
+  onSessionEnd,
 }: {
   client: WebSocket;
   upstream: WebSocket;
   sessionUpdateMessage: string;
+  onSessionEnd?: () => void | Promise<void>;
 }): void {
   let hasSentSessionUpdate = false;
   const pendingClientMessages: string[] = [];
+  const limits = new RealtimeProxySessionLimits();
+  const endSession = createRealtimeProxySessionEnd(onSessionEnd);
+  const sessionTimer = setTimeout(() => {
+    closeSocket(client, 1008, "Realtime session duration limit reached");
+    closeSocket(upstream, 1008, "Realtime session duration limit reached");
+    endSession();
+  }, REALTIME_PROXY_LIMITS.sessionDurationMs);
+  const clearSessionTimer = () => clearTimeout(sessionTimer);
 
   const flushPendingClientMessages = () => {
     while (pendingClientMessages.length > 0 && upstream.readyState === WebSocket.OPEN) {
-      upstream.send(pendingClientMessages.shift());
+      const message = pendingClientMessages.shift();
+
+      if (message) {
+        limits.releasePendingFrame(message);
+        upstream.send(message);
+      }
     }
   };
 
   client.addEventListener("message", (event) => {
     try {
-      const message = normaliseClientMessage(event.data);
+      const message = serializeNormalizedClientRealtimeMessage(
+        normalizeClientRealtimeMessage(event.data, limits),
+      );
 
       if (!hasSentSessionUpdate) {
-        const MISTRAL_PENDING_MESSAGE_LIMIT = 64;
-
-        if (pendingClientMessages.length >= MISTRAL_PENDING_MESSAGE_LIMIT) {
-          throw new Error("Upstream session is not ready");
-        }
-
+        limits.addPendingFrame(message);
         pendingClientMessages.push(message);
 
         return;
       }
 
       upstream.send(message);
-    } catch {
+    } catch (error) {
       if (client.readyState !== WebSocket.OPEN) {
         return;
       }
@@ -156,27 +106,60 @@ function bridgeMistralRealtimeSockets({
           },
         }),
       );
-      closeSocket(client, 1003, "Invalid realtime message");
-      closeSocket(upstream, 1003, "Invalid realtime message");
+      const code = error instanceof RealtimeProxyLimitError ? error.closeCode : 1003;
+      const reason =
+        error instanceof RealtimeProxyLimitError ? error.message : "Invalid realtime message";
+
+      closeSocket(client, code, reason);
+      closeSocket(upstream, code, reason);
+      endSession();
     }
   });
 
   upstream.addEventListener("message", (event) => {
-    if (!hasSentSessionUpdate && isMistralSessionCreatedMessage(event.data)) {
-      upstream.send(sessionUpdateMessage);
-      hasSentSessionUpdate = true;
-      flushPendingClientMessages();
-    }
+    try {
+      limits.assertUpstreamFrame(event.data);
 
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(event.data);
+      if (!hasSentSessionUpdate && isMistralSessionCreatedMessage(event.data)) {
+        upstream.send(sessionUpdateMessage);
+        hasSentSessionUpdate = true;
+        flushPendingClientMessages();
+      }
+
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(event.data);
+      }
+    } catch (error) {
+      const code = error instanceof RealtimeProxyLimitError ? error.closeCode : 1011;
+      const reason =
+        error instanceof RealtimeProxyLimitError ? error.message : "Invalid provider message";
+
+      closeSocket(client, code, reason);
+      closeSocket(upstream, code, reason);
+      endSession();
     }
   });
 
-  client.addEventListener("close", () => closeSocket(upstream));
-  client.addEventListener("error", () => closeSocket(upstream, 1011, "Client socket error"));
-  upstream.addEventListener("close", (event) => closeSocket(client, event.code, event.reason));
-  upstream.addEventListener("error", () => closeSocket(client, 1011, "Upstream socket error"));
+  client.addEventListener("close", () => {
+    clearSessionTimer();
+    closeSocket(upstream);
+    endSession();
+  });
+  client.addEventListener("error", () => {
+    clearSessionTimer();
+    closeSocket(upstream, 1011, "Client socket error");
+    endSession();
+  });
+  upstream.addEventListener("close", (event) => {
+    clearSessionTimer();
+    closeSocket(client, event.code, event.reason);
+    endSession();
+  });
+  upstream.addEventListener("error", () => {
+    clearSessionTimer();
+    closeSocket(client, 1011, "Upstream socket error");
+    endSession();
+  });
 }
 
 export async function createMistralRealtimeProxyResponse({
@@ -185,12 +168,14 @@ export async function createMistralRealtimeProxyResponse({
   env,
   user,
   model,
+  onSessionEnd,
 }: {
   context: Context;
   delay?: RealtimeTranscriptionDelay;
   env: IEnv;
   user: IUser;
   model?: string;
+  onSessionEnd?: () => void | Promise<void>;
 }): Promise<Response> {
   const request = context.req.raw;
   const isWebSocketUpgrade = request.headers.get("Upgrade")?.toLowerCase() === "websocket";
@@ -222,7 +207,7 @@ export async function createMistralRealtimeProxyResponse({
 
   const url = new URL("/v1/audio/transcriptions/realtime", "https://api.mistral.ai");
 
-  url.searchParams.set("model", encodeURIComponent("voxtral-mini-transcribe-realtime-2602"));
+  url.searchParams.set("model", modelToUse);
 
   const upstreamResponse = await fetch(url, {
     headers: {
@@ -233,27 +218,7 @@ export async function createMistralRealtimeProxyResponse({
   });
 
   if (upstreamResponse.status !== 101 || !upstreamResponse.webSocket) {
-    const providerError = await formatProviderError(
-      upstreamResponse,
-      "Failed to connect to Mistral realtime",
-    );
-    const status = getMistralProxyFailureStatus(upstreamResponse.status);
-    const correlationId =
-      upstreamResponse.headers.get("mistral-correlation-id") ??
-      upstreamResponse.headers.get("x-kong-request-id");
-
-    logger.error("Mistral realtime handshake failed", {
-      model: modelToUse,
-      providerStatus: upstreamResponse.status,
-      providerStatusText: upstreamResponse.statusText,
-      providerResponse: providerError,
-      providerCorrelationId: correlationId,
-    });
-    const details = [providerError, correlationId ? `correlation_id=${correlationId}` : ""]
-      .filter(Boolean)
-      .join(" - ");
-
-    return ResponseFactory.error(context, details, status);
+    return createRealtimeProxyHandshakeFailure(context, "Mistral", upstreamResponse);
   }
 
   const pair = new WebSocketPair();
@@ -276,6 +241,7 @@ export async function createMistralRealtimeProxyResponse({
 
   bridgeMistralRealtimeSockets({
     client: serverSocket,
+    onSessionEnd,
     upstream: upstreamResponse.webSocket,
     sessionUpdateMessage: JSON.stringify({
       type: "session.update",

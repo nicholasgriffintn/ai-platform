@@ -6,11 +6,23 @@ export const transcribeQuerySchema = z.object({
 });
 
 export const transcribeFormSchema = z.object({
-  audio: z.any().meta({
-    description:
-      "The audio file to transcribe. Can be a File, Blob, or a URL string. If a URL, it must start with http:// or https://.",
-  }),
+  audio: z.custom<File>(
+    (value) => typeof File !== "undefined" && value instanceof File,
+    "An audio file is required",
+  ),
 });
+
+export const transcriptionResultSchema = z.object({
+  status: z.literal("success"),
+  content: z.string(),
+});
+
+export const transcriptionResponseSchema = z.object({
+  response: transcriptionResultSchema,
+});
+
+export type TranscriptionResult = z.infer<typeof transcriptionResultSchema>;
+export type TranscriptionResponse = z.infer<typeof transcriptionResponseSchema>;
 
 export const textToSpeechSchema = z.object({
   input: z.string().meta({

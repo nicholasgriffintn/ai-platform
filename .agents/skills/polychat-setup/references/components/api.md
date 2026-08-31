@@ -62,3 +62,10 @@ The API runs on Cloudflare's global network with:
 - **Training:** API model catalog plus `TRAINING_WORKER` service binding and shared `TRAINING_WORKER_TOKEN` for provider job execution
 
 Repository development rules remain in the root `AGENTS.md`. The workspace uses TypeScript, Vitest, oxfmt, and oxlint.
+
+Batch transcription is an authenticated file-upload boundary. It validates the actual file size,
+declared audio MIME type, and container signature before provider execution, does not accept remote
+URLs, and returns `Cache-Control: private, no-store`. Authenticated Notes workflows resolve private
+Source and Output media through the storage authorisation seam. Provider-side remote URL ingestion,
+including video-analysis URLs, is disabled because Polychat cannot enforce the provider's egress
+destination after DNS resolution.
