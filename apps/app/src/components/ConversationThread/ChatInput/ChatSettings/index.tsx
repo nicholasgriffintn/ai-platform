@@ -54,10 +54,10 @@ export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
   const showMultiModelToggle = isPro && !model && chatMode === "remote";
 
   const handleNumericSettingChange = (key: NumericChatSettingKey, value: string) => {
-    if (key === "max_tokens" && value.trim() === "") {
+    if (value.trim() === "") {
       const nextSettings = { ...chatSettings };
 
-      delete nextSettings.max_tokens;
+      delete nextSettings[key];
       setChatSettings(nextSettings);
 
       return;

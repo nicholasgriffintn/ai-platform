@@ -2,7 +2,12 @@ import {
   agentControlToolDefinitions,
   FINISH_TOOL_NAME,
 } from "@ngriffin_uk/polychat-library-tool-runtime";
-import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import {
+  getModelSamplingCapabilities,
+  type ModelConfigItem,
+  type ModelSamplingConfig,
+} from "@ngriffin_uk/polychat-schemas";
+import { clampNumber } from "@ngriffin_uk/polychat-utility-core";
 
 import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
 import { PermissionChecker } from "~/lib/permissions/PermissionChecker";
@@ -129,17 +134,31 @@ export function mergeParametersWithDefaults(
   } as ChatCompletionParameters;
 }
 
+export function resolveEffectiveTemperature(
+  requestedTemperature: number | undefined,
+  modelConfig?: ModelSamplingConfig,
+): number | undefined {
+  const { maxTemperature, supportsTemperature } = getModelSamplingCapabilities(modelConfig);
+
+  if (!supportsTemperature || requestedTemperature === undefined) {
+    return undefined;
+  }
+
+  return clampNumber(requestedTemperature, 0, maxTemperature);
+}
+
 export function createSamplingParameters(
   params: Pick<ChatCompletionParameters, "temperature" | "top_p" | "should_think">,
-  modelConfig: Pick<ModelConfigItem, "supportsTemperature" | "supportsTopP">,
+  modelConfig: ModelSamplingConfig,
 ): { temperature?: number; top_p?: number } {
-  const temperature = modelConfig.supportsTemperature ? params.temperature : undefined;
-  const topP =
-    temperature === undefined && modelConfig.supportsTopP && !params.should_think
-      ? params.top_p
-      : undefined;
+  const capabilities = getModelSamplingCapabilities(modelConfig);
+  const temperature = resolveEffectiveTemperature(params.temperature, modelConfig);
+  const allowsTopP =
+    capabilities.supportsTopP &&
+    !params.should_think &&
+    !(capabilities.restrictsCombinedTopPAndTemperature && temperature !== undefined);
 
-  return omitNullishValues({ temperature, top_p: topP });
+  return omitNullishValues({ temperature, top_p: allowsTopP ? params.top_p : undefined });
 }
 
 export function isFimCompletionRequest(
@@ -276,6 +295,7 @@ export function createCommonParameters(
     messages: params.messages,
   };
   const samplingParameters = createSamplingParameters(params, modelConfig);
+  const samplingCapabilities = getModelSamplingCapabilities(modelConfig);
 
   if (
     FLAT_REASONING_EFFORT_PROVIDERS.has(providerName) &&
@@ -294,26 +314,24 @@ export function createCommonParameters(
 
   if (providerName !== "anthropic") {
     commonParams.seed = params.seed;
-    if (providerName !== "cohere" && modelConfig.supportsRepetitionPenalty !== false) {
-      commonParams.repetition_penalty = returnValidatedPenalty(
-        "repetition_penalty",
-        params.repetition_penalty,
-      );
-    }
 
-    if (modelConfig.supportsFrequencyPenalty !== false) {
-      commonParams.frequency_penalty = returnValidatedPenalty(
-        "frequency_penalty",
-        params.frequency_penalty,
-      );
-    }
+    const supportsRepetitionPenalty =
+      providerName !== "cohere" && modelConfig.supportsRepetitionPenalty !== false;
 
-    if (modelConfig.supportsPresencePenalty !== false) {
-      commonParams.presence_penalty = returnValidatedPenalty(
-        "presence_penalty",
-        params.presence_penalty,
-      );
-    }
+    Object.assign(
+      commonParams,
+      omitNullishValues({
+        repetition_penalty: supportsRepetitionPenalty
+          ? returnValidatedPenalty("repetition_penalty", params.repetition_penalty)
+          : undefined,
+        frequency_penalty: samplingCapabilities.supportsFrequencyPenalty
+          ? returnValidatedPenalty("frequency_penalty", params.frequency_penalty)
+          : undefined,
+        presence_penalty: samplingCapabilities.supportsPresencePenalty
+          ? returnValidatedPenalty("presence_penalty", params.presence_penalty)
+          : undefined,
+      }),
+    );
   }
 
   if (providerName === "openai" && params.metadata) {
