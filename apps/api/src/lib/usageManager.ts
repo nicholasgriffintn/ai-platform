@@ -1,7 +1,7 @@
 import type { FunctionType, ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
 import { USAGE_CONFIG } from "~/constants/app";
-import { getModelConfigByMatchingModel } from "~/lib/providers/models";
+import { findModelConfig } from "~/lib/providers/models";
 import type { RepositoryManager } from "~/repositories";
 import type { AnonymousUser, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -197,25 +197,28 @@ export class UsageManager {
     return memoizeRequest(this.requestCache, key, factory);
   }
 
-  private async getModelConfig(modelId: string): Promise<ModelConfigItem | undefined> {
-    return this.memoize(`usage:model-config:${modelId}`, () =>
-      getModelConfigByMatchingModel(modelId),
+  private async getModelConfig(
+    modelId: string,
+    provider?: string,
+  ): Promise<ModelConfigItem | null> {
+    return this.memoize(`usage:model-config:${provider ?? "any"}:${modelId}`, () =>
+      findModelConfig(modelId, undefined, provider),
     );
   }
 
-  private async isProModel(modelId: string): Promise<boolean> {
-    const config = await this.getModelConfig(modelId);
+  private async isProModel(modelId: string, provider?: string): Promise<boolean> {
+    const config = await this.getModelConfig(modelId, provider);
 
     return !!config && !config.isFree;
   }
 
-  private async isByokRequest(modelId: string): Promise<boolean> {
+  private async isByokRequest(modelId: string, provider?: string): Promise<boolean> {
     if (!this.user?.id) {
       return false;
     }
 
-    return this.memoize(`usage:byok:${this.user.id}:${modelId}`, async () => {
-      const config = await this.getModelConfig(modelId);
+    return this.memoize(`usage:byok:${this.user.id}:${provider ?? "any"}:${modelId}`, async () => {
+      const config = await this.getModelConfig(modelId, provider);
 
       if (!config?.provider) {
         return false;
@@ -225,10 +228,10 @@ export class UsageManager {
     });
   }
 
-  private async calculateUsageMultiplier(modelId: string): Promise<number> {
-    return this.memoize(`usage:model-multiplier:${modelId}`, async () => {
+  private async calculateUsageMultiplier(modelId: string, provider?: string): Promise<number> {
+    return this.memoize(`usage:model-multiplier:${provider ?? "any"}:${modelId}`, async () => {
       logger.debug("Calculating function usage multiplier", { modelId });
-      const config = await this.getModelConfig(modelId);
+      const config = await this.getModelConfig(modelId, provider);
 
       if (!config) {
         logger.warn(`No config found for model: ${modelId}, using default multiplier: 1`);
@@ -380,18 +383,18 @@ export class UsageManager {
     });
   }
 
-  async checkProUsage(modelId: string) {
+  async checkProUsage(modelId: string, provider?: string) {
     logger.debug("Checking pro usage", { modelId });
 
     const snapshot = this.getProUsageSnapshot();
-    const usageMultiplier = await this.calculateUsageMultiplier(modelId);
+    const usageMultiplier = await this.calculateUsageMultiplier(modelId, provider);
     const dailyProCount = snapshot.dailyCount;
 
     if (dailyProCount >= snapshot.limit) {
       throw new AssistantError("Daily Pro model limit reached.", ErrorType.USAGE_LIMIT_ERROR);
     }
 
-    const modelConfig = await this.getModelConfig(modelId);
+    const modelConfig = await this.getModelConfig(modelId, provider);
 
     logger.debug("Pro usage checked", { userId: this.user.id });
 
@@ -406,14 +409,14 @@ export class UsageManager {
     };
   }
 
-  async incrementProUsage(modelId: string) {
+  async incrementProUsage(modelId: string, provider?: string) {
     if (!this.user?.id) {
       throw new AssistantError("User required to increment pro usage", ErrorType.PARAMS_ERROR);
     }
 
     logger.debug("Incrementing pro usage", { userId: this.user.id });
 
-    const usageMultiplier = await this.calculateUsageMultiplier(modelId);
+    const usageMultiplier = await this.calculateUsageMultiplier(modelId, provider);
 
     if (
       await this.tryEnqueueUsageTask({
@@ -482,13 +485,13 @@ export class UsageManager {
     logger.debug("BYOK usage incremented", { userId: this.user.id });
   }
 
-  async checkUsageByModel(modelId: string, isPro: boolean) {
+  async checkUsageByModel(modelId: string, isPro: boolean, provider?: string) {
     logger.debug("Checking usage by model", { modelId, isPro });
-    if (await this.isByokRequest(modelId)) {
+    if (await this.isByokRequest(modelId, provider)) {
       return await this.checkByokUsage();
     }
 
-    const modelIsPro = await this.isProModel(modelId);
+    const modelIsPro = await this.isProModel(modelId, provider);
 
     if (modelIsPro) {
       if (!isPro) {
@@ -498,7 +501,7 @@ export class UsageManager {
         );
       }
 
-      return await this.checkProUsage(modelId);
+      return await this.checkProUsage(modelId, provider);
     }
 
     if (this.user?.id) {
@@ -515,19 +518,19 @@ export class UsageManager {
     );
   }
 
-  async incrementUsageByModel(modelId: string, isPro: boolean) {
+  async incrementUsageByModel(modelId: string, isPro: boolean, provider?: string) {
     logger.debug("Incrementing usage by model", { modelId, isPro });
-    if (await this.isByokRequest(modelId)) {
+    if (await this.isByokRequest(modelId, provider)) {
       await this.incrementByokUsage();
 
       return;
     }
 
-    const modelIsPro = await this.isProModel(modelId);
+    const modelIsPro = await this.isProModel(modelId, provider);
 
     if (modelIsPro) {
       if (isPro) {
-        await this.incrementProUsage(modelId);
+        await this.incrementProUsage(modelId, provider);
       } else {
         throw new AssistantError(
           "You are not a paid user. Please upgrade to a paid plan to use this model.",
@@ -603,7 +606,10 @@ export class UsageManager {
    * @param modelId The ID of the model to check
    * @returns The cost multiplier for the model
    */
-  async getModelUsageMultiplier(modelId: string): Promise<{
+  async getModelUsageMultiplier(
+    modelId: string,
+    provider?: string,
+  ): Promise<{
     multiplier: number;
     modelCostInfo: {
       inputCost: number;
@@ -611,8 +617,8 @@ export class UsageManager {
     };
   }> {
     logger.debug("Getting model usage multiplier", { modelId });
-    const usageMultiplier = await this.calculateUsageMultiplier(modelId);
-    const modelConfig = await this.getModelConfig(modelId);
+    const usageMultiplier = await this.calculateUsageMultiplier(modelId, provider);
+    const modelConfig = await this.getModelConfig(modelId, provider);
 
     logger.debug("Model config fetched", { modelId, modelConfig });
 
