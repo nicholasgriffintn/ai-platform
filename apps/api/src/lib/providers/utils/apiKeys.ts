@@ -1,5 +1,5 @@
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
-import type { IEnv, IUser } from "~/types";
+import type { CredentialAuthority, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface ProviderApiKeyLogger {
@@ -11,6 +11,7 @@ interface ResolveProviderApiKeyOptions {
   providerName: string;
   envKeyName: string;
   userId?: number;
+  credentialAuthority?: CredentialAuthority;
   logger?: ProviderApiKeyLogger;
 }
 
@@ -39,27 +40,45 @@ export async function resolveProviderApiKey({
   providerName,
   envKeyName,
   userId,
+  credentialAuthority,
   logger,
 }: ResolveProviderApiKeyOptions): Promise<string> {
   if (userId && env.DB) {
     const userSettingsRepo = new UserSettingsRepository(env);
+    const hasUserApiKey = await userSettingsRepo.hasProviderApiKey(userId, providerName);
 
-    try {
-      const apiKey = await userSettingsRepo.getProviderApiKey(userId, providerName);
+    if (hasUserApiKey) {
+      try {
+        const apiKey = await userSettingsRepo.getProviderApiKey(userId, providerName);
 
-      if (apiKey) {
+        if (!apiKey) {
+          throw new AssistantError(
+            `Stored provider API key is unavailable for ${providerName}`,
+            ErrorType.CONFIGURATION_ERROR,
+          );
+        }
+
         return apiKey;
-      }
-    } catch (error) {
-      if (
-        !(
-          error instanceof AssistantError &&
-          (error.type === ErrorType.NOT_FOUND || error.type === ErrorType.PARAMS_ERROR)
-        )
-      ) {
+      } catch (error) {
         logger?.error(`Failed to get user API key for ${providerName}:`, { error });
+
+        throw error;
       }
     }
+
+    if (credentialAuthority === "byok") {
+      throw new AssistantError(
+        `A user API key is required for ${providerName}`,
+        ErrorType.AUTHORISATION_ERROR,
+        403,
+      );
+    }
+  } else if (credentialAuthority === "byok") {
+    throw new AssistantError(
+      `A user API key is required for ${providerName}`,
+      ErrorType.AUTHORISATION_ERROR,
+      403,
+    );
   }
 
   const envValue = (env as Record<string, unknown>)[envKeyName];

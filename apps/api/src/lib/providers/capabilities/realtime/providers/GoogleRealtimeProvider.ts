@@ -74,6 +74,7 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
       providerName: this.name,
       envKeyName: this.getProviderKeyName(),
       userId: request.user.id,
+      credentialAuthority: request.credentialAuthority,
     });
   }
 

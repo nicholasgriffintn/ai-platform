@@ -1,7 +1,11 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
-import { listModels } from "~/services/models";
-import type { IEnv } from "~/types";
+import { filterModelsForUserAccess, getModels } from "~/lib/providers/models";
+import {
+  getExecutableModelsForAccount,
+  getModelCredentialAuthority,
+} from "~/lib/providers/models/policy";
+import type { CredentialAuthority, IEnv, IUser } from "~/types";
 
 function matchesRequestedModel(
   requestedModel: string,
@@ -11,37 +15,65 @@ function matchesRequestedModel(
     name?: string;
   },
 ): boolean {
-  return (
-    modelId === requestedModel ||
-    model.matchingModel === requestedModel ||
-    model.name === requestedModel
-  );
+  return modelId === requestedModel || model.matchingModel === requestedModel;
 }
 
 export async function userCanAccessRealtimeModel({
   env,
-  userId,
+  user,
   model,
+  provider,
 }: {
   env: IEnv;
-  userId: number;
+  user: IUser;
   model: string;
+  provider: string;
 }): Promise<boolean> {
-  return Boolean(await getAccessibleRealtimeModel({ env, userId, model }));
+  return Boolean(await getAccessibleRealtimeModel({ env, user, model, provider }));
 }
 
 export async function getAccessibleRealtimeModel({
   env,
-  userId,
+  user,
   model,
+  provider,
 }: {
   env: IEnv;
-  userId: number;
+  user: IUser;
   model: string;
-}): Promise<ModelConfigItem | undefined> {
-  const accessibleModels = await listModels(env, userId);
+  provider: string;
+}): Promise<
+  { id: string; config: ModelConfigItem; credentialAuthority: CredentialAuthority } | undefined
+> {
+  const visibleModels = await filterModelsForUserAccess(getModels(), env, user.id, {
+    shouldUseCache: false,
+  });
+  const accessibleModels = getExecutableModelsForAccount(visibleModels, user);
 
-  return Object.entries(accessibleModels).find(([modelId, config]) =>
-    matchesRequestedModel(model, modelId, config),
-  )?.[1];
+  const directMatch = accessibleModels[model];
+
+  if (directMatch?.provider === provider) {
+    return {
+      id: model,
+      config: directMatch,
+      credentialAuthority: getModelCredentialAuthority(directMatch, user),
+    };
+  }
+
+  const matchingEntries = Object.entries(accessibleModels).filter(
+    ([modelId, config]) =>
+      config.provider === provider && matchesRequestedModel(model, modelId, config),
+  );
+
+  if (matchingEntries.length !== 1) {
+    return undefined;
+  }
+
+  const [id, config] = matchingEntries[0];
+
+  return {
+    id,
+    config,
+    credentialAuthority: getModelCredentialAuthority(config, user),
+  };
 }

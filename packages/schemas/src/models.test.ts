@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { getDefaultModelId } from "./model-selection";
 import {
   artificialAnalysisModelsQuerySchema,
   artificialAnalysisModelsResponseSchema,
@@ -85,5 +86,42 @@ describe("model schemas", () => {
       status: "alpha",
       openWeights: false,
     });
+  });
+
+  it("uses only the server-published active default", () => {
+    expect(
+      getDefaultModelId({
+        first: {
+          matchingModel: "first",
+          provider: "test",
+        },
+        selected: {
+          matchingModel: "selected",
+          provider: "test",
+          isDefault: true,
+          isExecutable: true,
+        },
+      }),
+    ).toBe("selected");
+
+    expect(
+      getDefaultModelId({
+        first: {
+          matchingModel: "first",
+          provider: "test",
+        },
+      }),
+    ).toBeUndefined();
+
+    expect(
+      getDefaultModelId({
+        retired: {
+          matchingModel: "retired",
+          provider: "test",
+          deprecated: true,
+          isDefault: true,
+        },
+      }),
+    ).toBeUndefined();
   });
 });

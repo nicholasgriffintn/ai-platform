@@ -21,12 +21,14 @@ import {
   getVerbosityOptions,
 } from "@ngriffin_uk/polychat-library-chat/verbosity";
 import {
-  defaultModel,
   EMPTY_MODEL_CONFIG,
+  getDefaultModelId,
   formatReasoningLabel,
   getAvailableModels,
   getDefaultReasoningEffort,
   getReasoningOptions,
+  isActiveModel,
+  isModelSelectableForAccount,
 } from "@ngriffin_uk/polychat-schemas";
 import type {
   AssistantActionItem,
@@ -148,6 +150,7 @@ export function useComposerCommandActions({
     () => getAvailableModels(apiModels, chatMode === "local", webLLMModels),
     [apiModels, chatMode, webLLMModels],
   );
+  const defaultModelId = useMemo(() => getDefaultModelId(availableModels), [availableModels]);
   const selectedModelConfig = model ? availableModels[model] : undefined;
   const modelCapabilities = model ? apiModels[model] : undefined;
   const reasoningOptions = useMemo(
@@ -239,7 +242,12 @@ export function useComposerCommandActions({
         onSelect: () => selectModelWithDefaults(null),
       },
       ...Object.entries(availableModels)
-        .filter(([modelId]) => modelId !== "auto")
+        .filter(
+          ([modelId, modelConfig]) =>
+            modelId !== "auto" &&
+            isActiveModel(modelConfig) &&
+            (modelConfig.isExecutable ?? isModelSelectableForAccount(modelConfig, isPro)),
+        )
         .map(([modelId, modelConfig]) => ({
           id: `model-${modelId}`,
           label: `Model: ${modelConfig.name}`,
@@ -252,7 +260,7 @@ export function useComposerCommandActions({
           onSelect: () => selectModelWithDefaults(modelId),
         })),
     ],
-    [availableModels, model, selectModelWithDefaults, selectedAgentId],
+    [availableModels, isPro, model, selectModelWithDefaults, selectedAgentId],
   );
   const modelCommand = useMemo<ComposerCommandAction>(
     () => ({
@@ -273,7 +281,7 @@ export function useComposerCommandActions({
     setSelectedAgentTokenPosition(null);
     if (chatMode === "agent") {
       setChatMode("remote");
-      selectModelWithDefaults(defaultModel, {
+      selectModelWithDefaults(defaultModelId ?? null, {
         ...chatSettings,
         localOnly: false,
       });
@@ -281,6 +289,7 @@ export function useComposerCommandActions({
   }, [
     chatMode,
     chatSettings,
+    defaultModelId,
     selectModelWithDefaults,
     setChatMode,
     setSelectedAgentId,
@@ -621,7 +630,7 @@ export function useComposerCommandActions({
 
       setSelectedAgentTokenPosition(selection.replacementStart);
       setChatMode("agent");
-      selectModelWithDefaults(agent.model ?? defaultModel, {
+      selectModelWithDefaults(agent.model ?? defaultModelId ?? null, {
         ...chatSettings,
         localOnly: false,
       });
@@ -634,6 +643,7 @@ export function useComposerCommandActions({
       chatInput,
       chatSettings,
       directive,
+      defaultModelId,
       selectModelWithDefaults,
       setChatMode,
       setChatInput,
