@@ -3,6 +3,7 @@ import type {
   ConnectRealtimeWebSocketOptions,
 } from "@ngriffin_uk/polychat-library-realtime";
 import type { RealtimeLiveProviderOption } from "@ngriffin_uk/polychat-library-realtime/live-providers";
+import { REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG } from "@ngriffin_uk/polychat-library-realtime/websocket-protocols";
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -100,6 +101,15 @@ function fakeAudioStream() {
   return { stop, stream, track };
 }
 
+function fakeVideoStream() {
+  const stop = vi.fn();
+  const stream = {
+    getTracks: () => [{ enabled: true, stop }],
+  } as unknown as MediaStream;
+
+  return { stop, stream };
+}
+
 function provider(
   id: "cartesia" | "openai" | "mistral",
   transport: "webrtc" | "websocket",
@@ -141,6 +151,40 @@ function provider(
             startingMediaEventLabel: "Starting media",
           }
         : undefined,
+  };
+}
+
+function googleProvider(): RealtimeLiveProviderOption {
+  return {
+    id: "google-ai-studio",
+    label: "Google AI Studio",
+    shortLabel: "Google",
+    order: 1,
+    liveMode: "native",
+    transport: "websocket",
+    sessionType: "realtime",
+    inputModalities: ["audio", "text", "image"],
+    outputModalities: ["audio", "text"],
+    description: "Test provider",
+    defaultModelId: "gemini-live-model",
+    available: true,
+    readiness: "ready",
+    availabilityReason: "Google is ready",
+    websocket: REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG["google-ai-studio"],
+  };
+}
+
+function googleSession() {
+  return {
+    provider: "google-ai-studio",
+    transport: "websocket",
+    protocol: "gemini-live",
+    url: "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained",
+    setup: {
+      model: "models/gemini-live-model",
+      sessionResumption: {},
+      contextWindowCompression: { slidingWindow: {} },
+    },
   };
 }
 
@@ -306,6 +350,7 @@ describe("useRealtimeLiveSession lifecycle", () => {
 
   it("streams raw PCM to Cartesia and drains until the server closes", async () => {
     const audio = fakeAudioStream();
+    const onTranscript = vi.fn();
 
     mocks.requestAudioStream.mockResolvedValue(audio.stream);
     mocks.createRealtimeSession.mockResolvedValue({
@@ -314,7 +359,7 @@ describe("useRealtimeLiveSession lifecycle", () => {
       url: "wss://api.polychat.test/realtime",
     });
     const providers = [provider("cartesia", "websocket")];
-    const { result } = renderHook(() => useRealtimeLiveSession({ providers }));
+    const { result } = renderHook(() => useRealtimeLiveSession({ onTranscript, providers }));
 
     await act(async () => result.current.start("cartesia"));
     await act(async () => {
@@ -327,11 +372,29 @@ describe("useRealtimeLiveSession lifecycle", () => {
     act(() => mocks.startPcm16MicrophoneStream.mock.calls[0][0].onChunk(chunk));
     expect(mocks.webSocketConnections[0].socket.send).toHaveBeenCalledWith(chunk);
 
+    await act(async () => {
+      mocks.webSocketConnections[0].options.onMessage?.(
+        new MessageEvent("message", {
+          data: JSON.stringify({ type: "turn.update", transcript: "Book the" }),
+        }),
+      );
+      await flushMicrotasks();
+    });
+
     act(() => result.current.stop());
     expect(mocks.webSocketConnections[0].sendJson).toHaveBeenCalledWith({
       type: "input_audio.end",
     });
     expect(mocks.webSocketConnections[0].close).not.toHaveBeenCalled();
+
+    await act(async () => {
+      mocks.webSocketConnections[0].options.onMessage?.(
+        new MessageEvent("message", {
+          data: JSON.stringify({ type: "turn.end", transcript: "Book the train." }),
+        }),
+      );
+      await flushMicrotasks();
+    });
 
     act(() => {
       mocks.webSocketConnections[0].options.onClose?.(
@@ -341,6 +404,10 @@ describe("useRealtimeLiveSession lifecycle", () => {
 
     expect(result.current.status).toBe("idle");
     expect(mocks.toastError).not.toHaveBeenCalled();
+    expect(onTranscript.mock.calls.map(([transcript]) => transcript)).toEqual([
+      expect.objectContaining({ text: "Book the", isFinal: false }),
+      expect.objectContaining({ text: "Book the train.", isFinal: true }),
+    ]);
   });
 
   it("keeps Cartesia audio flowing as silence while the microphone is muted", async () => {
@@ -370,6 +437,350 @@ describe("useRealtimeLiveSession lifecycle", () => {
     act(() => result.current.setMicrophoneEnabled(true));
     expect(mocks.setMediaStreamTrackEnabled).toHaveBeenCalledWith(audio.stream, "audio", true);
     expect(mocks.startPcm16MicrophoneStream).toHaveBeenCalledOnce();
+  });
+
+  it("does not duplicate Cartesia microphone startup across a rapid mute toggle", async () => {
+    const audio = fakeAudioStream();
+    const pendingController = deferred<{ stop: ReturnType<typeof vi.fn> }>();
+    const mediaController = { stop: vi.fn() };
+
+    mocks.startPcm16MicrophoneStream.mockReturnValue(pendingController.promise);
+    mocks.requestAudioStream.mockResolvedValue(audio.stream);
+    mocks.createRealtimeSession.mockResolvedValue({
+      provider: "cartesia",
+      transport: "websocket",
+      url: "wss://api.polychat.test/realtime",
+    });
+    const providers = [provider("cartesia", "websocket")];
+    const { result } = renderHook(() => useRealtimeLiveSession({ providers }));
+
+    await act(async () => result.current.start("cartesia"));
+    act(() => mocks.webSocketConnections[0].options.onOpen?.(new Event("open")));
+    await act(flushMicrotasks);
+
+    act(() => result.current.setMicrophoneEnabled(false));
+    act(() => result.current.setMicrophoneEnabled(true));
+
+    expect(mocks.setMediaStreamTrackEnabled).toHaveBeenCalledWith(audio.stream, "audio", false);
+    expect(mocks.setMediaStreamTrackEnabled).toHaveBeenCalledWith(audio.stream, "audio", true);
+    expect(mocks.startPcm16MicrophoneStream).toHaveBeenCalledOnce();
+
+    await act(async () => {
+      pendingController.resolve(mediaController);
+      await flushMicrotasks();
+    });
+
+    expect(mediaController.stop).not.toHaveBeenCalled();
+    expect(result.current.status).toBe("active");
+  });
+
+  it("resumes Gemini Live after GoAway without reacquiring microphone media", async () => {
+    const audio = fakeAudioStream();
+
+    mocks.requestAudioStream.mockResolvedValue(audio.stream);
+    mocks.createRealtimeSession.mockResolvedValue(googleSession());
+    const providers = [googleProvider()];
+    const { result } = renderHook(() => useRealtimeLiveSession({ providers }));
+
+    await act(async () => result.current.start("google-ai-studio"));
+    act(() => mocks.webSocketConnections[0].options.onOpen?.(new Event("open")));
+
+    expect(mocks.webSocketConnections[0].sendJson).toHaveBeenCalledWith({
+      setup: expect.objectContaining({ sessionResumption: {} }),
+    });
+
+    await act(async () => {
+      mocks.webSocketConnections[0].options.onMessage?.(
+        new MessageEvent("message", {
+          data: JSON.stringify({ setupComplete: {} }),
+        }),
+      );
+      await flushMicrotasks();
+    });
+    await act(async () => {
+      mocks.webSocketConnections[0].options.onMessage?.(
+        new MessageEvent("message", {
+          data: JSON.stringify({
+            sessionResumptionUpdate: { resumable: true, newHandle: "resume-handle" },
+          }),
+        }),
+      );
+      mocks.webSocketConnections[0].options.onMessage?.(
+        new MessageEvent("message", {
+          data: JSON.stringify({ goAway: { timeLeft: "10s" } }),
+        }),
+      );
+      await flushMicrotasks();
+    });
+
+    expect(mocks.webSocketConnections).toHaveLength(2);
+    expect(mocks.webSocketConnections[0].close).toHaveBeenCalledOnce();
+    expect(mocks.requestAudioStream).toHaveBeenCalledOnce();
+
+    act(() => mocks.webSocketConnections[1].options.onOpen?.(new Event("open")));
+    expect(mocks.webSocketConnections[1].sendJson).toHaveBeenCalledWith({
+      setup: expect.objectContaining({
+        sessionResumption: { handle: "resume-handle" },
+      }),
+    });
+
+    await act(async () => {
+      mocks.webSocketConnections[1].options.onMessage?.(
+        new MessageEvent("message", {
+          data: JSON.stringify({ setupComplete: {} }),
+        }),
+      );
+      await flushMicrotasks();
+    });
+
+    expect(result.current.status).toBe("active");
+    expect(mocks.requestAudioStream).toHaveBeenCalledOnce();
+    expect(mocks.startPcm16MicrophoneStream).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps resumed Gemini media alive when the old publisher finishes starting late", async () => {
+    const audio = fakeAudioStream();
+    const pendingController = deferred<{ stop: ReturnType<typeof vi.fn> }>();
+    const staleController = { stop: vi.fn() };
+
+    mocks.requestAudioStream.mockResolvedValue(audio.stream);
+    mocks.startPcm16MicrophoneStream
+      .mockReturnValueOnce(pendingController.promise)
+      .mockResolvedValueOnce({ stop: vi.fn() });
+    mocks.createRealtimeSession.mockResolvedValue(googleSession());
+    const providers = [googleProvider()];
+    const { result } = renderHook(() => useRealtimeLiveSession({ providers }));
+
+    await act(async () => result.current.start("google-ai-studio"));
+    act(() => mocks.webSocketConnections[0].options.onOpen?.(new Event("open")));
+    await act(async () => {
+      mocks.webSocketConnections[0].options.onMessage?.(
+        new MessageEvent("message", { data: JSON.stringify({ setupComplete: {} }) }),
+      );
+      await flushMicrotasks();
+    });
+    await act(async () => {
+      mocks.webSocketConnections[0].options.onMessage?.(
+        new MessageEvent("message", {
+          data: JSON.stringify({
+            sessionResumptionUpdate: { resumable: true, newHandle: "resume-handle" },
+          }),
+        }),
+      );
+      mocks.webSocketConnections[0].options.onMessage?.(
+        new MessageEvent("message", {
+          data: JSON.stringify({ goAway: { timeLeft: "10s" } }),
+        }),
+      );
+      await flushMicrotasks();
+    });
+    act(() => mocks.webSocketConnections[1].options.onOpen?.(new Event("open")));
+    await act(async () => {
+      mocks.webSocketConnections[1].options.onMessage?.(
+        new MessageEvent("message", { data: JSON.stringify({ setupComplete: {} }) }),
+      );
+      await flushMicrotasks();
+    });
+    await act(async () => {
+      pendingController.resolve(staleController);
+      await flushMicrotasks();
+    });
+
+    expect(staleController.stop).toHaveBeenCalledOnce();
+    expect(audio.stop).not.toHaveBeenCalled();
+    expect(mocks.requestAudioStream).toHaveBeenCalledOnce();
+    expect(result.current.status).toBe("active");
+  });
+
+  it("keeps resumed Gemini video alive when the old frame publisher starts late", async () => {
+    const audio = fakeAudioStream();
+    const preview = fakeVideoStream();
+    const video = fakeVideoStream();
+    const pendingController = deferred<{ stop: ReturnType<typeof vi.fn> }>();
+    const staleController = { stop: vi.fn() };
+
+    mocks.requestAudioStream.mockResolvedValue(audio.stream);
+    mocks.requestVideoStream
+      .mockResolvedValueOnce(preview.stream)
+      .mockResolvedValueOnce(video.stream);
+    mocks.startJpegFrameStream
+      .mockReturnValueOnce(pendingController.promise)
+      .mockResolvedValueOnce({ stop: vi.fn() });
+    mocks.createRealtimeSession.mockResolvedValue(googleSession());
+    const providers = [googleProvider()];
+    const { result } = renderHook(() => useRealtimeLiveSession({ providers }));
+
+    act(() => result.current.setProvider("google-ai-studio"));
+    await act(async () => {
+      result.current.setVideoEnabled(true);
+      await flushMicrotasks();
+    });
+    await act(async () => result.current.start("google-ai-studio"));
+    act(() => mocks.webSocketConnections[0].options.onOpen?.(new Event("open")));
+    await act(async () => {
+      mocks.webSocketConnections[0].options.onMessage?.(
+        new MessageEvent("message", { data: JSON.stringify({ setupComplete: {} }) }),
+      );
+      await flushMicrotasks();
+    });
+    await act(async () => {
+      mocks.webSocketConnections[0].options.onMessage?.(
+        new MessageEvent("message", {
+          data: JSON.stringify({
+            sessionResumptionUpdate: { resumable: true, newHandle: "resume-handle" },
+          }),
+        }),
+      );
+      mocks.webSocketConnections[0].options.onMessage?.(
+        new MessageEvent("message", {
+          data: JSON.stringify({ goAway: { timeLeft: "10s" } }),
+        }),
+      );
+      await flushMicrotasks();
+    });
+    act(() => mocks.webSocketConnections[1].options.onOpen?.(new Event("open")));
+    await act(async () => {
+      mocks.webSocketConnections[1].options.onMessage?.(
+        new MessageEvent("message", { data: JSON.stringify({ setupComplete: {} }) }),
+      );
+      await flushMicrotasks();
+    });
+    await act(async () => {
+      pendingController.resolve(staleController);
+      await flushMicrotasks();
+    });
+
+    expect(staleController.stop).toHaveBeenCalledOnce();
+    expect(preview.stop).toHaveBeenCalledOnce();
+    expect(video.stop).not.toHaveBeenCalled();
+    expect(mocks.requestVideoStream).toHaveBeenCalledTimes(2);
+    expect(result.current.status).toBe("active");
+  });
+
+  it("does not let delayed audio startup interfere with replacement video startup", async () => {
+    const audio = fakeAudioStream();
+    const preview = fakeVideoStream();
+    const video = fakeVideoStream();
+    const pendingOldAudio = deferred<{ stop: ReturnType<typeof vi.fn> }>();
+    const pendingReplacementVideo = deferred<{ stop: ReturnType<typeof vi.fn> }>();
+    const staleAudioController = { stop: vi.fn() };
+
+    mocks.requestAudioStream.mockResolvedValue(audio.stream);
+    mocks.requestVideoStream
+      .mockResolvedValueOnce(preview.stream)
+      .mockResolvedValueOnce(video.stream);
+    mocks.startPcm16MicrophoneStream
+      .mockReturnValueOnce(pendingOldAudio.promise)
+      .mockResolvedValueOnce({ stop: vi.fn() });
+    mocks.startJpegFrameStream.mockReturnValueOnce(pendingReplacementVideo.promise);
+    mocks.createRealtimeSession.mockResolvedValue(googleSession());
+    const providers = [googleProvider()];
+    const { result } = renderHook(() => useRealtimeLiveSession({ providers }));
+
+    act(() => result.current.setProvider("google-ai-studio"));
+    await act(async () => {
+      result.current.setVideoEnabled(true);
+      await flushMicrotasks();
+    });
+    await act(async () => result.current.start("google-ai-studio"));
+    act(() => mocks.webSocketConnections[0].options.onOpen?.(new Event("open")));
+    await act(async () => {
+      mocks.webSocketConnections[0].options.onMessage?.(
+        new MessageEvent("message", { data: JSON.stringify({ setupComplete: {} }) }),
+      );
+      await flushMicrotasks();
+    });
+    await act(async () => {
+      mocks.webSocketConnections[0].options.onMessage?.(
+        new MessageEvent("message", {
+          data: JSON.stringify({
+            sessionResumptionUpdate: { resumable: true, newHandle: "resume-handle" },
+          }),
+        }),
+      );
+      mocks.webSocketConnections[0].options.onMessage?.(
+        new MessageEvent("message", {
+          data: JSON.stringify({ goAway: { timeLeft: "10s" } }),
+        }),
+      );
+      await flushMicrotasks();
+    });
+    act(() => mocks.webSocketConnections[1].options.onOpen?.(new Event("open")));
+    await act(async () => {
+      mocks.webSocketConnections[1].options.onMessage?.(
+        new MessageEvent("message", { data: JSON.stringify({ setupComplete: {} }) }),
+      );
+      await flushMicrotasks();
+    });
+
+    expect(mocks.startJpegFrameStream).toHaveBeenCalledOnce();
+
+    await act(async () => {
+      pendingOldAudio.resolve(staleAudioController);
+      await flushMicrotasks();
+    });
+
+    expect(staleAudioController.stop).toHaveBeenCalledOnce();
+    expect(mocks.startJpegFrameStream).toHaveBeenCalledOnce();
+    expect(video.stop).not.toHaveBeenCalled();
+
+    await act(async () => {
+      pendingReplacementVideo.resolve({ stop: vi.fn() });
+      await flushMicrotasks();
+    });
+
+    expect(result.current.status).toBe("active");
+  });
+
+  it("waits for a fresh Gemini resumption handle after GoAway", async () => {
+    mocks.createRealtimeSession.mockResolvedValue(googleSession());
+    const providers = [googleProvider()];
+    const { result } = renderHook(() => useRealtimeLiveSession({ providers }));
+
+    await act(async () => result.current.start("google-ai-studio"));
+    act(() => mocks.webSocketConnections[0].options.onOpen?.(new Event("open")));
+    await act(async () => {
+      for (const sessionResumptionUpdate of [
+        { resumable: true, newHandle: "stale-handle" },
+        { resumable: false },
+      ]) {
+        mocks.webSocketConnections[0].options.onMessage?.(
+          new MessageEvent("message", {
+            data: JSON.stringify({ sessionResumptionUpdate }),
+          }),
+        );
+      }
+
+      mocks.webSocketConnections[0].options.onMessage?.(
+        new MessageEvent("message", {
+          data: JSON.stringify({ goAway: { timeLeft: "10s" } }),
+        }),
+      );
+      await flushMicrotasks();
+    });
+
+    expect(mocks.webSocketConnections).toHaveLength(1);
+    expect(mocks.webSocketConnections[0].close).not.toHaveBeenCalled();
+
+    await act(async () => {
+      mocks.webSocketConnections[0].options.onMessage?.(
+        new MessageEvent("message", {
+          data: JSON.stringify({
+            sessionResumptionUpdate: { resumable: true, newHandle: "fresh-handle" },
+          }),
+        }),
+      );
+      await flushMicrotasks();
+    });
+
+    expect(mocks.webSocketConnections).toHaveLength(2);
+    expect(mocks.webSocketConnections[0].close).toHaveBeenCalledOnce();
+    act(() => mocks.webSocketConnections[1].options.onOpen?.(new Event("open")));
+    expect(mocks.webSocketConnections[1].sendJson).toHaveBeenCalledWith({
+      setup: expect.objectContaining({
+        sessionResumption: { handle: "fresh-handle" },
+      }),
+    });
   });
 
   it("releases media and closes the socket when the active provider leaves the catalogue", async () => {
