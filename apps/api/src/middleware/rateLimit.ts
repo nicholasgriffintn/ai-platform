@@ -11,8 +11,7 @@ export async function rateLimit(context: Context, next: Next) {
     throw new AssistantError("Rate limiter not configured", ErrorType.CONFIGURATION_ERROR);
   }
 
-  const url = context.req.url;
-  const pathname = new URL(url).pathname;
+  const pathname = context.req.path;
 
   if (pathname === "/status" || pathname === "/openapi") {
     return next();

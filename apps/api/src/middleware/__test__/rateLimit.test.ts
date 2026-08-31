@@ -22,6 +22,7 @@ function createMockContext(overrides: any = {}): Context {
   const mockContext = {
     req: {
       url: "http://example.com/chat/completions",
+      path: "/chat/completions",
       header: vi.fn().mockReturnValue(undefined),
     },
     env: {
@@ -196,6 +197,7 @@ describe("Rate Limit Middleware", () => {
       const context = createMockContext({
         req: {
           url: "http://example.com/chat/audio/speech",
+          path: "/chat/audio/speech",
           header: vi.fn().mockReturnValue("203.0.113.10"),
         },
       });
