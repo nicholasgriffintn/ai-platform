@@ -15,6 +15,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { sseResponse } from "~/lib/http/streaming";
 import { replayApprovedConnectorOperation } from "~/services/apps/connectors/approved-operation-replay";
+import { withThreadLock } from "~/services/conversations/coordinator/client";
 import type {
   AnonymousUser,
   ChatCompletionParameters,
@@ -96,15 +97,19 @@ export const handleCreateChatCompletions = async (req: {
       requestCache: serviceContext.requestCache,
     });
 
-    connectorReplay = await replayApprovedConnectorOperation({
-      approval,
-      context: serviceContext,
-      conversationManager,
-      user,
-      model: chatRequest.model,
-      appUrl: app_url,
-      signal,
-    });
+    connectorReplay = await withThreadLock(
+      { env, conversationId: completionIdWithFallback, kind: "connector_replay" },
+      () =>
+        replayApprovedConnectorOperation({
+          approval,
+          context: serviceContext,
+          conversationManager,
+          user,
+          model: chatRequest.model,
+          appUrl: app_url,
+          signal,
+        }),
+    );
     providerMessages = toProviderMessages(connectorReplay.summaryMessages);
   }
 

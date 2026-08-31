@@ -5,6 +5,7 @@ import { Database } from "~/lib/database";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { UserRepository } from "~/repositories/UserRepository";
 import { handleAsyncInvocation } from "~/services/completions/async/handler";
+import { withThreadLockIfFree } from "~/services/conversations/coordinator/client";
 import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
 
@@ -83,14 +84,18 @@ export class AsyncMessagePollingHandler implements TaskHandler {
         };
       }
 
-      const result = await handleAsyncInvocation(data.asyncInvocation, targetMessage, {
-        conversationManager,
-        conversationId: data.conversationId,
-        env,
-        user,
-      });
+      const result = await withThreadLockIfFree(
+        { env, conversationId: data.conversationId, kind: "async_result" },
+        () =>
+          handleAsyncInvocation(data.asyncInvocation, targetMessage, {
+            conversationManager,
+            conversationId: data.conversationId,
+            env,
+            user,
+          }),
+      );
 
-      if (result.status === "completed" || result.status === "failed") {
+      if (result && (result.status === "completed" || result.status === "failed")) {
         logger.info(`Async invocation for message ${data.messageId} ${result.status}`);
 
         return {

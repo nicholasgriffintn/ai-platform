@@ -1,7 +1,4 @@
-import {
-  threadInstructionKindSchema,
-  type ThreadInstructionKind,
-} from "@ngriffin_uk/polychat-schemas";
+import { threadOperationSchema, type ThreadOperation } from "@ngriffin_uk/polychat-schemas";
 import { Agent } from "agents";
 
 import type { IEnv } from "~/types";
@@ -12,7 +9,7 @@ const LOCK_LEASE_MS = 5 * 60 * 1000;
 
 interface StoredStatus {
   status: "idle" | "running";
-  currentOperation: ThreadInstructionKind | null;
+  currentOperation: ThreadOperation | null;
   updatedAt: string;
   expiresAt?: string;
 }
@@ -52,7 +49,7 @@ export class ConversationCoordinator extends Agent<IEnv> {
 
     if (pathname === "/acquire" && request.method === "POST") {
       const body = (await request.json()) as { kind?: unknown };
-      const parsed = threadInstructionKindSchema.safeParse(body?.kind);
+      const parsed = threadOperationSchema.safeParse(body?.kind);
 
       if (!parsed.success) {
         return Response.json({ error: "Invalid thread operation" }, { status: 400 });
