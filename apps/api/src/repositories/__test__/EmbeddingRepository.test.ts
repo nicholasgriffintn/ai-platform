@@ -3,11 +3,310 @@ import { describe, expect, it, vi } from "vitest";
 import { EmbeddingRepository } from "../EmbeddingRepository";
 
 describe("EmbeddingRepository", () => {
-  it("falls back to namespace-scoped legacy rows before fully unscoped rows", async () => {
-    const first = vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce({
+  it("creates one pending scoped document with all of its chunks", async () => {
+    const statements: { params: unknown[]; query: string }[] = [];
+    const batch = vi.fn().mockResolvedValue([{ meta: { changes: 1 } }, { meta: { changes: 2 } }]);
+    const prepare = vi.fn((query: string) => ({
+      bind: (...params: unknown[]) => {
+        const statement = { params, query };
+
+        statements.push(statement);
+
+        return statement;
+      },
+    }));
+    const repository = new EmbeddingRepository({ DB: { batch, prepare } } as any);
+
+    await repository.createDocument({
+      id: "document-internal",
+      logicalId: "shared-logical-id",
+      userId: 42,
+      type: "note",
+      title: "Scoped note",
+      metadata: { tag: "private" },
+      provider: "vectorize",
+      providerTarget: "vectorize-binding",
+      embeddingModel: "@cf/baai/bge-large-en-v1.5",
+      vectorSpace: "default",
+      vectorSpaceVersion: "v1",
+      chunks: Array.from({ length: 128 }, (_, index) => ({
+        id: `chunk-${index}`,
+        vectorId: `vector-${index}`,
+        index,
+        content: `Chunk ${index}`,
+      })),
+    });
+
+    expect(batch).toHaveBeenCalledOnce();
+    expect(statements).toHaveLength(2);
+    expect(statements[0]?.query).toContain("INSERT INTO embedding_document");
+    expect(statements[0]?.params).toContain(42);
+    expect(statements[1]?.query).toContain("FROM json_each(?)");
+    expect(JSON.parse(String(statements[1]?.params.at(-1)))).toHaveLength(128);
+    expect(batch.mock.calls[0]?.[0]).toHaveLength(2);
+  });
+
+  it("hydrates matches only through active chunks in the authenticated personal scope", async () => {
+    const calls: { params: unknown[]; query: string }[] = [];
+    const prepare = vi.fn((query: string) => ({
+      bind: (...params: unknown[]) => {
+        calls.push({ params, query });
+
+        return {
+          all: vi.fn().mockResolvedValue({
+            results: [
+              {
+                vector_id: "vector-1",
+                logical_id: "note-1",
+                title: "Private",
+                content: "Authoritative content",
+                type: "note",
+                metadata: '{"tag":"trusted"}',
+                provider: "vectorize",
+                provider_target: "vectorize-binding",
+                embedding_model: "@cf/baai/bge-large-en-v1.5",
+                vector_space: "default",
+                vector_space_version: "v1",
+              },
+            ],
+          }),
+        };
+      },
+    }));
+    const repository = new EmbeddingRepository({ DB: { prepare } } as any);
+
+    const result = await repository.getActiveChunksByVectorIds(42, ["vector-1"], "note");
+
+    expect(result).toEqual([
+      {
+        vectorId: "vector-1",
+        logicalId: "note-1",
+        title: "Private",
+        content: "Authoritative content",
+        type: "note",
+        metadata: { tag: "trusted" },
+        provider: "vectorize",
+        providerTarget: "vectorize-binding",
+        embeddingModel: "@cf/baai/bge-large-en-v1.5",
+        vectorSpace: "default",
+        vectorSpaceVersion: "v1",
+      },
+    ]);
+    expect(calls[0]?.query).toContain("d.user_id = ?");
+    expect(calls[0]?.query).toContain("d.lifecycle_status = 'active'");
+    expect(calls[0]?.query).toContain("c.lifecycle_status = 'active'");
+    expect(calls[0]?.params).toEqual([42, "note", "vector-1"]);
+  });
+
+  it("pages provider match hydration below the D1 parameter ceiling", async () => {
+    const calls: { params: unknown[]; query: string }[] = [];
+    const prepare = vi.fn((query: string) => ({
+      bind: (...params: unknown[]) => {
+        calls.push({ params, query });
+
+        return { all: vi.fn().mockResolvedValue({ results: [] }) };
+      },
+    }));
+    const repository = new EmbeddingRepository({ DB: { prepare } } as any);
+
+    await repository.getActiveChunksByVectorIds(
+      42,
+      Array.from({ length: 100 }, (_, index) => `vector-${index}`),
+      "note",
+    );
+
+    expect(calls).toHaveLength(2);
+    expect(calls.every(({ params }) => params.length <= 100)).toBe(true);
+  });
+
+  it("lists immutable provider targets only for active personal documents", async () => {
+    const calls: { params: unknown[]; query: string }[] = [];
+    const prepare = vi.fn((query: string) => ({
+      bind: (...params: unknown[]) => {
+        calls.push({ params, query });
+
+        return {
+          all: vi.fn().mockResolvedValue({
+            results: [
+              {
+                provider: "vectorize",
+                provider_target: "vectorize-binding",
+                embedding_model: "@cf/baai/bge-large-en-v1.5",
+                vector_space: "default",
+                vector_space_version: "v1",
+              },
+            ],
+          }),
+        };
+      },
+    }));
+    const repository = new EmbeddingRepository({ DB: { prepare } } as any);
+
+    await expect(repository.getActiveProviderTargets(42)).resolves.toEqual([
+      {
+        provider: "vectorize",
+        providerTarget: "vectorize-binding",
+        embeddingModel: "@cf/baai/bge-large-en-v1.5",
+        vectorSpace: "default",
+        vectorSpaceVersion: "v1",
+      },
+    ]);
+    expect(calls[0]?.query).toContain("SELECT DISTINCT provider");
+    expect(calls[0]?.query).toContain("lifecycle_status = 'active'");
+    expect(calls[0]?.params).toEqual([42]);
+  });
+
+  it("exposes retained pending documents for exact provider cleanup on retry", async () => {
+    const prepare = vi.fn((query: string) => ({
+      bind: (..._params: unknown[]) => ({
+        all: vi.fn().mockResolvedValue({
+          results: [
+            {
+              id: "document-1",
+              logical_id: "note-1",
+              provider: "vectorize",
+              provider_target: "vectorize-binding",
+              embedding_model: "@cf/baai/bge-large-en-v1.5",
+              vector_space: "default",
+              vector_space_version: "v1",
+              vector_id: "vector-1",
+            },
+          ],
+        }),
+        query,
+      }),
+    }));
+    const repository = new EmbeddingRepository({ DB: { prepare } } as any);
+
+    await expect(repository.getPendingDocumentForRetry(42, "note-1")).resolves.toEqual({
+      id: "document-1",
+      logicalId: "note-1",
+      provider: "vectorize",
+      providerTarget: "vectorize-binding",
+      embeddingModel: "@cf/baai/bge-large-en-v1.5",
+      vectorSpace: "default",
+      vectorSpaceVersion: "v1",
+      vectorIds: ["vector-1"],
+    });
+    expect(prepare.mock.calls[0]?.[0]).toContain("lifecycle_status = 'pending'");
+  });
+
+  it("activates a personal document and its chunks together", async () => {
+    const statements: { params: unknown[]; query: string }[] = [];
+    const batch = vi.fn().mockResolvedValue([{ meta: { changes: 1 } }, { meta: { changes: 2 } }]);
+    const prepare = vi.fn((query: string) => ({
+      bind: (...params: unknown[]) => {
+        const statement = { params, query };
+
+        statements.push(statement);
+
+        return statement;
+      },
+    }));
+    const repository = new EmbeddingRepository({ DB: { batch, prepare } } as any);
+
+    await repository.activateDocument(42, "document-1");
+
+    expect(batch).toHaveBeenCalledOnce();
+    expect(statements).toHaveLength(2);
+    expect(statements[0]?.query).toContain("UPDATE embedding_document");
+    expect(statements[0]?.query).toContain("user_id = ?");
+    expect(statements[0]?.params).toEqual([42, "document-1"]);
+    expect(statements[1]?.query).toContain("UPDATE embedding_chunk");
+  });
+
+  it("rejects activation when the pending lifecycle changed concurrently", async () => {
+    const batch = vi.fn().mockResolvedValue([{ meta: { changes: 0 } }, { meta: { changes: 0 } }]);
+    const prepare = vi.fn((query: string) => ({
+      bind: (...params: unknown[]) => ({ params, query }),
+    }));
+    const repository = new EmbeddingRepository({ DB: { batch, prepare } } as any);
+
+    await expect(repository.activateDocument(42, "document-1")).rejects.toMatchObject({
+      type: "CONFLICT_ERROR",
+      statusCode: 409,
+    });
+  });
+
+  it("resolves deletion targets by logical ID only within the personal scope", async () => {
+    const calls: { params: unknown[]; query: string }[] = [];
+    const prepare = vi.fn((query: string) => ({
+      bind: (...params: unknown[]) => {
+        calls.push({ params, query });
+
+        return {
+          all: vi.fn().mockResolvedValue({
+            results: [
+              {
+                id: "document-1",
+                logical_id: "note-1",
+                provider: "vectorize",
+                provider_target: "vectorize-binding",
+                embedding_model: "@cf/baai/bge-large-en-v1.5",
+                vector_space: "default",
+                vector_space_version: "v1",
+                vector_id: "vector-1",
+              },
+              {
+                id: "document-1",
+                logical_id: "note-1",
+                provider: "vectorize",
+                provider_target: "vectorize-binding",
+                embedding_model: "@cf/baai/bge-large-en-v1.5",
+                vector_space: "default",
+                vector_space_version: "v1",
+                vector_id: "vector-2",
+              },
+            ],
+          }),
+        };
+      },
+    }));
+    const repository = new EmbeddingRepository({ DB: { prepare } } as any);
+
+    const result = await repository.getDocumentsForDeletion(42, ["note-1"]);
+
+    expect(result).toEqual([
+      {
+        id: "document-1",
+        logicalId: "note-1",
+        provider: "vectorize",
+        providerTarget: "vectorize-binding",
+        embeddingModel: "@cf/baai/bge-large-en-v1.5",
+        vectorSpace: "default",
+        vectorSpaceVersion: "v1",
+        vectorIds: ["vector-1", "vector-2"],
+      },
+    ]);
+    expect(calls[0]?.query).toContain("d.user_id = ?");
+    expect(calls[0]?.params).toEqual([42, "note-1"]);
+  });
+
+  it("pages exactly 100 deletion IDs below the D1 parameter ceiling", async () => {
+    const calls: { params: unknown[]; query: string }[] = [];
+    const prepare = vi.fn((query: string) => ({
+      bind: (...params: unknown[]) => {
+        calls.push({ params, query });
+
+        return { all: vi.fn().mockResolvedValue({ results: [] }) };
+      },
+    }));
+    const repository = new EmbeddingRepository({ DB: { prepare } } as any);
+
+    await repository.getDocumentsForDeletion(
+      42,
+      Array.from({ length: 100 }, (_, index) => `document-${index}`),
+    );
+
+    expect(calls).toHaveLength(2);
+    expect(calls.every((call) => call.params.length <= 99)).toBe(true);
+  });
+
+  it("does not fall back from an explicitly scoped legacy lookup", async () => {
+    const first = vi.fn().mockResolvedValueOnce({
       id: "embedding-1",
       namespace: "user_kb_42",
-      user_id: null,
+      user_id: 42,
     });
     const bind = vi.fn((..._values: unknown[]) => ({ first }));
     const prepare = vi.fn((_query: string) => ({ bind }));
@@ -20,18 +319,17 @@ describe("EmbeddingRepository", () => {
       type: "note",
       namespace: "user_kb_42",
       userId: 42,
-      allowUnscopedFallback: true,
     });
 
     expect(result).toEqual({
       id: "embedding-1",
       namespace: "user_kb_42",
-      user_id: null,
+      user_id: 42,
     });
-    expect(prepare).toHaveBeenCalledTimes(2);
-    expect(prepare.mock.calls[1][0]).toContain("namespace = ?");
-    expect(prepare.mock.calls[1][0]).toContain("user_id IS NULL");
-    expect(bind.mock.calls[1]).toEqual(["embedding-1", "note", "user_kb_42"]);
+    expect(prepare).toHaveBeenCalledOnce();
+    expect(prepare.mock.calls[0][0]).toContain("namespace = ?");
+    expect(prepare.mock.calls[0][0]).toContain("user_id = ?");
+    expect(bind.mock.calls[0]).toEqual(["embedding-1", "note", "user_kb_42", 42]);
   });
 
   it("splits a large insert into multiple batches so no single batch exceeds the statement cap", async () => {
@@ -166,7 +464,7 @@ describe("EmbeddingRepository", () => {
       { id: "embedding-119", metadata: {}, title: "T119", content: "C119", type: "note" },
     ];
 
-    await repository.insertEmbeddings(records);
+    await repository.insertEmbeddings(records, { namespace: "user_kb_42", userId: 42 });
 
     // 120 records at 50 per batch means 3 batches: 50, 50, 20.
     expect(batch).toHaveBeenCalledTimes(3);
@@ -182,13 +480,14 @@ describe("EmbeddingRepository", () => {
     const batch = vi
       .fn()
       .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(undefined)
       .mockRejectedValueOnce(new Error("d1 batch failed"));
 
     const repository = new EmbeddingRepository({
       DB: { prepare, batch },
     } as any);
 
-    const records = Array.from({ length: 60 }, (_, i) => ({
+    const records = Array.from({ length: 120 }, (_, i) => ({
       id: `embedding-${i}`,
       metadata: {},
       title: `T${i}`,
@@ -196,13 +495,16 @@ describe("EmbeddingRepository", () => {
       type: "note",
     }));
 
-    await expect(repository.insertEmbeddings(records)).rejects.toThrow("d1 batch failed");
+    await expect(
+      repository.insertEmbeddings(records, { namespace: "user_kb_42", userId: 42 }),
+    ).rejects.toThrow("d1 batch failed");
 
-    // Only the first, successfully committed batch (50 ids) should be cleaned up,
-    // in a single DELETE since 50 ids fits under the bound-parameter cap.
-    expect(run).toHaveBeenCalledTimes(1);
-    const deleteCall = bind.mock.calls.find((call) => call.length === 50);
+    // The first 100 committed IDs are compensated in pages of 98 and 2, leaving room for
+    // the user and namespace parameters in D1's 100-parameter ceiling.
+    expect(run).toHaveBeenCalledTimes(2);
+    const deleteCalls = bind.mock.calls.filter((call) => call[0] === 42);
 
-    expect(deleteCall).toBeDefined();
+    expect(deleteCalls.map((call) => call.length)).toEqual([100, 4]);
+    expect(deleteCalls.every((call) => call.length <= 100)).toBe(true);
   });
 });

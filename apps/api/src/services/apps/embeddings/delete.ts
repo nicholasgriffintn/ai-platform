@@ -1,53 +1,51 @@
-import { getEmbeddingProvider } from "~/lib/providers/capabilities/embedding/helpers";
-import { RepositoryManager } from "~/repositories";
-import type { IRequest } from "~/types";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
-const logger = getLogger({ prefix: "services/apps/embeddings/delete" });
+import { deleteProviderDocuments } from "./deletion";
+import { parseDeleteEmbeddingRequest } from "./requests";
 
-// @ts-ignore
-export interface IDeleteEmbeddingRequest extends IRequest {
-  request: {
-    ids: string[];
-  };
+interface DeleteEmbeddingRequest {
+  request: unknown;
+  context?: ServiceContext;
+  env?: IEnv;
+  user?: IUser;
 }
 
-export const deleteEmbedding = async (req: IDeleteEmbeddingRequest): Promise<any> => {
-  try {
-    const { request, env } = req;
+export const deleteEmbedding = async ({ request, context, env, user }: DeleteEmbeddingRequest) => {
+  const serviceContext = resolveServiceContext({ context, env, user });
+  const authenticatedUser = serviceContext.requireUser();
+  const input = parseDeleteEmbeddingRequest(request);
+  const documents = await serviceContext.repositories.embeddings.getDocumentsForDeletion(
+    authenticatedUser.id,
+    input.ids,
+  );
 
-    const { ids } = request;
-
-    if (!ids) {
-      throw new AssistantError("Missing ids from request", ErrorType.PARAMS_ERROR);
-    }
-
-    const repositories = new RepositoryManager(env);
-    const userSettings = req.user?.id
-      ? await repositories.userSettings.getUserSettings(req.user.id)
-      : null;
-
-    if (!userSettings) {
-      throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
-    }
-
-    const embedding = getEmbeddingProvider(env, req.user, userSettings);
-
-    const result = await embedding.delete(ids);
-
-    if (result.status !== "success") {
-      throw new AssistantError("Error deleting embedding");
-    }
-
-    return {
-      status: "success",
-      data: {
-        ids,
-      },
-    };
-  } catch (error) {
-    logger.error("Error deleting embedding", { error });
-    throw new AssistantError("Error deleting embedding");
+  if (documents.length === 0) {
+    return { status: "success", data: { ids: input.ids } };
   }
+
+  const documentIds = documents.map((document) => document.id);
+
+  await serviceContext.repositories.embeddings.markDocumentsDeletePending(
+    authenticatedUser.id,
+    documentIds,
+  );
+
+  const userSettings = await serviceContext.getUserSettings();
+
+  if (!userSettings) {
+    throw new AssistantError("User settings not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  await deleteProviderDocuments({
+    context: serviceContext,
+    user: authenticatedUser,
+    userSettings,
+    documents,
+  });
+
+  await serviceContext.repositories.embeddings.deleteDocuments(authenticatedUser.id, documentIds);
+
+  return { status: "success", data: { ids: input.ids } };
 };

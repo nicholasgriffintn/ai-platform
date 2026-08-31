@@ -209,6 +209,25 @@ export class SourceRepository extends BaseRepository {
     }
   }
 
+  async transitionSourceStatus(
+    sourceId: string,
+    expectedStatuses: SourceStatus[],
+    status: SourceStatus,
+  ): Promise<boolean> {
+    if (expectedStatuses.length === 0) {
+      return false;
+    }
+
+    const result = await this.executeRun(
+      `UPDATE source
+          SET status = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ? AND status IN (${expectedStatuses.map(() => "?").join(", ")})`,
+      [status, sourceId, ...expectedStatuses],
+    );
+
+    return result.meta.changes === 1;
+  }
+
   async updateCollection(
     collectionId: string,
     updates: { title?: string; description?: string | null },

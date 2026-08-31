@@ -34,10 +34,6 @@ export const extract_content: ApiToolDefinition = {
         description: "Whether to store the content in the vector database for future reference",
         default: false,
       },
-      namespace: {
-        type: "string",
-        description: "Optional namespace for vector storage",
-      },
       provider: {
         type: "string",
         enum: ["auto", "tavily", "cloudflare"],
@@ -71,7 +67,7 @@ export const extract_content: ApiToolDefinition = {
   }),
   type: "premium",
   costPerCall: 0.5,
-  permissions: ["read"],
+  permissions: ["read", "write"],
   execute: async (args, context) => {
     const req = context.request;
     const completion_id = context.completionId;
@@ -79,9 +75,19 @@ export const extract_content: ApiToolDefinition = {
     const env = context.env ?? req.env;
     const user = context.user ?? req.user;
 
-    const urls = args.urls.includes(",")
-      ? args.urls.split(",").map((u: string) => u.trim())
-      : args.urls;
+    const urls = args.urls
+      .split(",")
+      .map((url: string) => url.trim())
+      .filter(Boolean);
+
+    if (urls.length === 0 || urls.length > 10) {
+      return {
+        status: "error",
+        name: "extract_content",
+        content: "Provide between 1 and 10 URLs",
+        data: {},
+      };
+    }
 
     const result = await extractContent(
       {
@@ -89,7 +95,6 @@ export const extract_content: ApiToolDefinition = {
         extract_depth: args.extract_depth,
         include_images: args.include_images,
         should_vectorize: args.should_vectorize,
-        namespace: args.namespace,
         provider: args.provider,
         cloudflareFormat: args.cloudflareFormat,
         cloudflareJsonOptions: args.cloudflareJsonOptions,
@@ -138,7 +143,7 @@ export const extract_content: ApiToolDefinition = {
       context: serviceContext,
       env,
       messages,
-      message: `Summarize content from ${typeof urls === "string" ? urls : urls.join(", ")}`,
+      message: `Summarize content from ${urls.join(", ")}`,
       provider: providerToUse,
       model: modelToUse,
     });

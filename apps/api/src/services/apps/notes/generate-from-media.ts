@@ -1,13 +1,10 @@
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { getEmbeddingProvider } from "~/lib/providers/capabilities/embedding/helpers";
 import { getAuxiliaryModel, getModelConfig } from "~/lib/providers/models";
-import { RepositoryManager } from "~/repositories";
 import type { TranscriptionProvider } from "~/services/audio/transcribe";
 import { handleTranscribe } from "~/services/audio/transcribe";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 
 export async function generateNotesFromMedia({
   env,
@@ -39,9 +36,18 @@ export async function generateNotesFromMedia({
   timestamps?: boolean;
   useVideoAnalysis?: boolean;
   enableVideoSearch?: boolean;
+  projectId?: string;
 }): Promise<{ content: string }> {
   if (!url) {
     throw new AssistantError("Missing media URL", ErrorType.PARAMS_ERROR);
+  }
+
+  if (enableVideoSearch) {
+    throw new AssistantError(
+      "Multimodal video search is not available while its retrieval index is being upgraded",
+      ErrorType.CONFIGURATION_ERROR,
+      501,
+    );
   }
 
   try {
@@ -124,55 +130,6 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
         user.id,
       );
 
-      if (enableVideoSearch) {
-        try {
-          const repositories = new RepositoryManager(env);
-          const userSettings = user?.id
-            ? await repositories.userSettings.getUserSettings(user.id)
-            : null;
-
-          if (!userSettings) {
-            throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
-          }
-
-          const embedding = getEmbeddingProvider(env, user, userSettings);
-
-          const videoId = `video-${Date.now()}-${generateId()}`;
-          const namespace = `user_kb_${user.id}`;
-          const metadata = {
-            url,
-            type: "video",
-            timestamp: new Date().toISOString(),
-            userId: user.id.toString(),
-            namespace,
-          };
-
-          const embeddings = await embedding.generate(
-            "video",
-            `Video content from ${url}`,
-            videoId,
-            metadata,
-          );
-
-          await embedding.insert(embeddings, {
-            namespace,
-            type: "video",
-            userId: user.id,
-          });
-
-          await repositories.embeddings.insertEmbedding(
-            videoId,
-            metadata,
-            `Video: ${url}`,
-            `Video content from ${url}`,
-            "video",
-            { namespace, userId: user.id },
-          );
-        } catch (error) {
-          console.warn("Video embedding generation failed:", error);
-        }
-      }
-
       return { content: videoResult.response };
     }
 
@@ -220,7 +177,7 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
       user,
       audio: url,
       provider: transcriptionProviderToUse,
-      timestamps: !!timestamps,
+      timestamps,
     });
 
     const response = Array.isArray(transcription) ? transcription[0] : transcription;
