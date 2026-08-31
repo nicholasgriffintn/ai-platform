@@ -42,7 +42,7 @@ export function StrudelCreateStudio({ basePath, projectId }: StrudelCreateStudio
     const availableModels = getAvailableModels(apiModels, false);
 
     return Object.entries(availableModels)
-      .filter(([_, model]) => {
+      .filter(([, model]) => {
         const inputs = model.modalities?.input ?? ["text"];
         const outputs = model.modalities?.output ?? inputs;
         const supportsOnlyText =

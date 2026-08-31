@@ -2,7 +2,15 @@ import { describe, expect, it, vi } from "vitest";
 
 import { ConversationRepository } from "../ConversationRepository";
 
-function createMockD1() {
+function createMockD1(
+  results: Record<string, unknown>[] = [
+    {
+      id: "conversation-1",
+      title: "50%_plan",
+      messages: "message-1",
+    },
+  ],
+) {
   const calls: { params: unknown[]; query: string }[] = [];
   const batch = vi.fn(async () => []);
 
@@ -13,17 +21,9 @@ function createMockD1() {
         calls.push({ query, params });
 
         return {
-          first: vi.fn(async () => ({ allowed: 1, total: 1 })),
+          first: vi.fn(async () => ({ allowed: 1, total: results.length })),
           run: vi.fn(async () => ({ success: true, meta: { changes: 2 } })),
-          all: vi.fn(async () => ({
-            results: [
-              {
-                id: "conversation-1",
-                title: "50%_plan",
-                messages: "message-1",
-              },
-            ],
-          })),
+          all: vi.fn(async () => ({ results })),
         };
       },
     })),
@@ -66,12 +66,16 @@ describe("ConversationRepository", () => {
     expect(calls[1]?.params).toEqual([123, "%50\\%\\_plan%", 10, 10]);
   });
 
-  it("normalises both sides of the activity cutoff and sorts titles case-insensitively", async () => {
-    const { calls, db } = createMockD1();
+  it("normalises the activity cutoff and naturally sorts titles before pagination", async () => {
+    const { calls, db } = createMockD1([
+      { id: "ten", title: "10. Web search" },
+      { id: "two", title: "2. React artifacts" },
+      { id: "one", title: "1. Ask user" },
+    ]);
     const repository = new ConversationRepository({ DB: db } as any);
 
-    await repository.getUserConversations(123, {
-      limit: 10,
+    const result = await repository.getUserConversations(123, {
+      limit: 2,
       page: 1,
       sortBy: "title",
       updatedAfter: "2026-06-01T00:00:00.000Z",
@@ -81,8 +85,10 @@ describe("ConversationRepository", () => {
       "datetime(COALESCE(c.updated_at, c.last_message_at, c.created_at)) >= datetime(?)",
     );
     expect(calls[0]?.params).toEqual([123, "2026-06-01T00:00:00.000Z"]);
-    expect(calls[1]?.query).toContain("ORDER BY c.title COLLATE NOCASE ASC, c.id DESC");
-    expect(calls[1]?.params).toEqual([123, "2026-06-01T00:00:00.000Z", 10, 0]);
+    expect(calls[1]?.params).toEqual([123, "2026-06-01T00:00:00.000Z"]);
+    expect(result.conversations.map((conversation) => conversation.id)).toEqual(["one", "two"]);
+    expect(result.total).toBe(3);
+    expect(result.totalPages).toBe(2);
   });
 
   it("leaves the activity clause out when no cutoff is supplied", async () => {

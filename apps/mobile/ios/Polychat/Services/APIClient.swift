@@ -525,33 +525,3 @@ enum APIClientError: LocalizedError {
         }
     }
 }
-
-enum ChatStreamEvent: Equatable {
-    case content(String)
-    case reasoning(String)
-    case state(String)
-    case conversationTitle(String)
-    case compaction(ChatMessage)
-    case metadata(ChatStreamMetadata)
-    case done
-}
-
-struct ChatStreamMetadata: Decodable, Equatable {
-    let messageId: String?
-    let content: String?
-    let model: String?
-    let parts: [ChatMessagePart]?
-    let reasoning: ChatReasoning?
-    let citations: [ChatCitation]?
-    let data: ChatMessageData?
-    let name: String?
-    let status: String?
-    let logId: String?
-    let created: Double?
-
-    enum CodingKeys: String, CodingKey {
-        case content, model, parts, reasoning, citations, data, name, status, created
-        case messageId = "message_id"
-        case logId = "log_id"
-    }
-}

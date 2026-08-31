@@ -3,6 +3,7 @@ import {
   TRAINING_WORKER_USER_ID_HEADER,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { constantTimeEqual } from "./crypto.js";
 import { HttpError } from "./http.js";
 
 interface InternalAuthEnv {
@@ -16,7 +17,7 @@ export function assertInternalRequest(request: Request, env: InternalAuthEnv): v
 
   const token = request.headers.get(TRAINING_WORKER_TOKEN_HEADER);
 
-  if (token !== env.TRAINING_WORKER_TOKEN) {
+  if (!token || !constantTimeEqual(token, env.TRAINING_WORKER_TOKEN)) {
     throw new HttpError("Unauthorized", 401);
   }
 }

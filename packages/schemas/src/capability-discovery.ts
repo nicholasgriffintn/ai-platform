@@ -11,6 +11,7 @@ export const capabilityDiscoveryStateSchema = z.enum(["ready", "setup_required",
 export const capabilityDiscoveryInvocationSchema = z.object({
   toolName: z.string().min(1),
   availableNow: z.boolean(),
+  autoActivate: z.boolean().optional(),
   instruction: z.string().min(1),
 });
 

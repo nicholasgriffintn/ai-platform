@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
+import { getComposerDraftAfterRetry } from "~/lib/chat/retry-composer";
 import { createConversationId } from "~/lib/conversations";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -38,8 +39,15 @@ export function useConversationActions(
   requestOptions?: ChatRequestOptions,
 ) {
   const queryClient = useQueryClient();
-  const { currentConversationId, model, isAuthenticated, isPro, setCurrentConversationId } =
-    useChatStore();
+  const {
+    chatInput,
+    currentConversationId,
+    model,
+    isAuthenticated,
+    isPro,
+    setChatInput,
+    setCurrentConversationId,
+  } = useChatStore();
 
   const { determineStorageMode, updateConversation } = useConversationStorage(requestOptions);
   const { startLoading, stopLoading } = useLoadingActions();
@@ -99,6 +107,8 @@ export function useConversationActions(
         messagesToRetry = conversation.messages.slice(0, messageIndex + 1);
       }
 
+      setChatInput(getComposerDraftAfterRetry(chatInput, messagesToRetry));
+
       try {
         await updateConversation(currentConversationId, (prev) => ({
           ...prev!,
@@ -115,7 +125,14 @@ export function useConversationActions(
         toast.error("Failed to retry message");
       }
     },
-    [queryClient, currentConversationId, updateConversation, generateResponseWithLoading],
+    [
+      queryClient,
+      currentConversationId,
+      updateConversation,
+      generateResponseWithLoading,
+      chatInput,
+      setChatInput,
+    ],
   );
 
   const updateUserMessage = useCallback(

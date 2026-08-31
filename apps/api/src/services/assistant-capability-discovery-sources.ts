@@ -5,6 +5,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { CAPABILITY_DISCOVERY_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
 
+import { PermissionChecker } from "~/lib/permissions/PermissionChecker";
 import { listRecipeConnectors } from "~/services/apps/connectors";
 import { listAssistantRecipes, listRecipeInstallations } from "~/services/apps/recipes";
 import { listFunctionTools } from "~/services/functions";
@@ -37,6 +38,7 @@ const INTERNAL_FUNCTION_TOOLS = new Set([
   "trigger_recipe",
   "use_recipe_connector",
 ]);
+const permissionChecker = new PermissionChecker();
 
 export function scopeCapabilityDiscoverySourcesToProject(params: {
   connectors: readonly RecipeConnectorManifest[];
@@ -71,17 +73,34 @@ export async function loadCapabilityDiscoverySources(
 ): Promise<CapabilityDiscoverySources> {
   const user = request.user;
   const context = request.context;
+  const mode = request.request?.tool_policy_mode || request.request?.mode || request.mode;
   let tools: DiscoverableFunctionTool[] = listFunctionTools()
     .filter(
       (tool) =>
         tool.name !== CAPABILITY_DISCOVERY_TOOL_NAME && !INTERNAL_FUNCTION_TOOLS.has(tool.name),
     )
-    .map((tool) => ({
-      id: tool.name,
-      name: formatFunctionName(tool.name),
-      description: tool.description,
-      type: tool.type,
-    }));
+    .map((tool) => {
+      const activation = permissionChecker.checkToolAccess({
+        toolName: tool.name,
+        mode,
+        user,
+        toolType: tool.type,
+        toolPermissions: tool.permissions,
+        requireApprovalFor: request.request?.require_approval_for,
+        enforceModePolicy: request.request?.enforce_mode_tool_policy,
+      });
+
+      return {
+        id: tool.name,
+        name: formatFunctionName(tool.name),
+        description: tool.description,
+        type: tool.type,
+        activation: {
+          allowed: activation.allowed,
+          ...(activation.reason ? { reason: activation.reason } : {}),
+        },
+      };
+    });
   let recipes: AssistantRecipe[] = [];
   let connectors: RecipeConnectorManifest[] = [];
   let installations: RecipeInstallation[] = [];

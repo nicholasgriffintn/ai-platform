@@ -1,3 +1,4 @@
+import { CAPABILITY_DISCOVERY_DATA_KEY } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -79,7 +80,7 @@ function createParams(turns: TurnOutput[], maxSteps = 8) {
         checkUsageLimits: vi.fn(),
         getUsageLimits: vi.fn(async () => ({ daily: { used: 1, limit: 100 } })),
       } as any,
-      toolRequestContext: { env: { AI: {} } } as any,
+      toolRequestContext: { env: { AI: {} }, request: { enabled_tools: [] } } as any,
       transport,
       maxSteps,
       env: { AI: {} } as any,
@@ -132,6 +133,56 @@ describe("runAgentLoop", () => {
     expect(runTurn).toHaveBeenCalledTimes(2);
     expect(result.response.response).toBe("It is sunny.");
     expect(result.toolResponses).toHaveLength(1);
+  });
+
+  it("activates a discovered native tool for the rest of the response", async () => {
+    const { params, runTurn } = createParams([
+      toolTurn("discover_capabilities", "discover-call"),
+      toolTurn("create_qr_code", "qr-call"),
+      textTurn("Here is your QR code."),
+    ]);
+
+    mocks.handleToolCalls
+      .mockResolvedValueOnce([
+        {
+          role: "tool",
+          name: "discover_capabilities",
+          content: "Create QR code is ready to use.",
+          status: "success",
+          data: {
+            [CAPABILITY_DISCOVERY_DATA_KEY]: {
+              query: "create a QR code",
+              total: 1,
+              items: [
+                {
+                  id: "tool:create_qr_code",
+                  kind: "tool",
+                  name: "Create QR code",
+                  configured: true,
+                  state: "ready",
+                  reason: "This tool will be enabled automatically for this response.",
+                  tags: ["tool", "normal"],
+                  invocation: {
+                    toolName: "create_qr_code",
+                    availableNow: true,
+                    autoActivate: true,
+                    instruction: "Call create_qr_code using its declared parameter schema.",
+                  },
+                },
+              ],
+            },
+          },
+        },
+      ])
+      .mockResolvedValueOnce([
+        { role: "tool", name: "create_qr_code", content: "created", status: "success" },
+      ]);
+
+    const result = await runAgentLoop(params);
+
+    expect(runTurn.mock.calls[1][0].request.enabled_tools).toContain("create_qr_code");
+    expect(params.toolRequestContext.request.enabled_tools).toContain("create_qr_code");
+    expect(result.response.response).toBe("Here is your QR code.");
   });
 
   it("keeps working after a tool fails rather than ending the turn", async () => {

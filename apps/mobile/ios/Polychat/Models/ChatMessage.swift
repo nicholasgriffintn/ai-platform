@@ -238,6 +238,14 @@ public enum JSONValue: Codable, Equatable {
         return nil
     }
 
+    public func merging(_ other: JSONValue) -> JSONValue {
+        guard case .object(let base) = self, case .object(let overlay) = other else {
+            return other
+        }
+
+        return .object(base.merging(overlay) { _, overlayValue in overlayValue })
+    }
+
     public var prettyString: String {
         switch self {
         case .string(let value):

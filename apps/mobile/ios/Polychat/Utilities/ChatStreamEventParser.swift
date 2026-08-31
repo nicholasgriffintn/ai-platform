@@ -64,10 +64,28 @@ enum ChatStreamEventParser {
         case "signature_delta", "content_block_start", "content_block_stop", "message_start":
             return []
         case "tool_use_start":
-            return [.state("tool_use_start")]
+            guard let toolCallId = object["tool_id"] as? String,
+                  let name = object["tool_name"] as? String else {
+                return []
+            }
+            return [.toolUseStart(ChatToolCallEvent(toolCallId: toolCallId, name: name))]
+        case "tool_use_delta":
+            guard let toolCallId = object["tool_id"] as? String else {
+                return []
+            }
+            return [.toolUseDelta(
+                ChatToolCallEvent(
+                    toolCallId: toolCallId,
+                    parameters: toolCallParameters(from: object["parameters"])
+                )
+            )]
         case "tool_use_stop":
-            return [.state("tool_use_stop")]
-        case "tool_response", "tool_response_start", "tool_response_end", "tool_use_delta":
+            return (object["tool_id"] as? String).map { [.toolUseStop($0)] } ?? []
+        case "tool_response":
+            return extractToolResult(from: object).map { [.toolResult($0)] } ?? []
+        case "usage_limits":
+            return extractUsageLimits(from: object).map { [.usageLimits($0)] } ?? []
+        case "tool_response_start", "tool_response_end":
             return []
         case "state":
             if object["state"] as? String == "compaction",
@@ -87,6 +105,38 @@ enum ChatStreamEventParser {
         default:
             return []
         }
+    }
+
+    private static func toolCallParameters(from value: Any?) -> JSONValue? {
+        guard let value else {
+            return nil
+        }
+
+        if let encoded = value as? String {
+            return JSONObjectDecoding.decode(JSONValue.self, fromJSONString: encoded)
+        }
+
+        return JSONObjectDecoding.decode(JSONValue.self, from: value)
+    }
+
+    private static func extractToolResult(from object: [String: Any]) -> ChatToolResultEvent? {
+        guard var result = object["result"] as? [String: Any] else {
+            return nil
+        }
+
+        if result["id"] == nil, let toolId = object["tool_id"] {
+            result["id"] = toolId
+        }
+
+        return JSONObjectDecoding.decode(ChatToolResultEvent.self, from: result)
+    }
+
+    private static func extractUsageLimits(from object: [String: Any]) -> ChatUsageLimits? {
+        guard let limits = object["usage_limits"] as? [String: Any] else {
+            return nil
+        }
+
+        return JSONObjectDecoding.decode(ChatUsageLimits.self, from: limits)
     }
 
     private static func extractContentDelta(from object: [String: Any]) -> String? {

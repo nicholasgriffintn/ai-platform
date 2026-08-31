@@ -25,6 +25,22 @@ describe("internal worker auth", () => {
     ).toThrow("Unauthorized");
   });
 
+  it("rejects requests with an incorrect shared token of the same length", () => {
+    const request = createInternalRequest({ [TRAINING_WORKER_TOKEN_HEADER]: "worker-tokem" });
+
+    expect(() => assertInternalRequest(request, { TRAINING_WORKER_TOKEN: token })).toThrow(
+      "Unauthorized",
+    );
+  });
+
+  it("rejects requests with a shared token of a different length", () => {
+    const request = createInternalRequest({ [TRAINING_WORKER_TOKEN_HEADER]: "worker" });
+
+    expect(() => assertInternalRequest(request, { TRAINING_WORKER_TOKEN: token })).toThrow(
+      "Unauthorized",
+    );
+  });
+
   it("accepts requests with the shared token and internal user context", () => {
     const request = createInternalRequest({
       [TRAINING_WORKER_TOKEN_HEADER]: token,

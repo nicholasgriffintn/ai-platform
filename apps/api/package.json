@@ -44,6 +44,7 @@
     "@ngriffin_uk/polychat-library-registry": "workspace:^",
     "@ngriffin_uk/polychat-library-tool-runtime": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "@scalar/hono-api-reference": "0.11.16",
     "@sentry/cloudflare": "10.70.0",
     "@tsndr/cloudflare-worker-jwt": "3.2.3",
