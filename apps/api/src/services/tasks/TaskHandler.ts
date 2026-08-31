@@ -15,4 +15,5 @@ export interface TaskExecutionContext {
 
 export interface TaskHandler {
   handle(message: TaskMessage, env: IEnv, context: TaskExecutionContext): Promise<TaskResult>;
+  onFinalFailure?(message: TaskMessage, env: IEnv, error: Error): Promise<void>;
 }

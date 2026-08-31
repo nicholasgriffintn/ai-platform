@@ -1,4 +1,5 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { isOutputDeletionPending } from "~/lib/outputs/deletion";
 import type { OutputRecord } from "~/repositories/OutputRepository";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -36,7 +37,7 @@ export async function requireOutputAccess(
 ): Promise<OutputRecord> {
   const output = await context.repositories.outputs.getOutput(outputId);
 
-  if (!output) {
+  if (!output || isOutputDeletionPending(output)) {
     throw new AssistantError("Output not found", ErrorType.NOT_FOUND, 404);
   }
 

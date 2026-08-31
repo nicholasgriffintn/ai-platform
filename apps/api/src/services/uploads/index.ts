@@ -163,7 +163,7 @@ export async function handleFileUpload(
   const inferredExtension = nameParts.length > 1 ? nameParts.pop().toLowerCase() : "";
 
   const allowedMimeTypes: Record<string, string[]> = {
-    image: ["image/jpeg", "image/png", "image/gif", "image/webp"],
+    image: ["image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml", "image/bmp"],
     document: [
       "text/markdown",
       "application/pdf",
@@ -173,7 +173,9 @@ export async function handleFileUpload(
       "application/vnd.ms-excel.sheet.macroenabled.12",
       "application/vnd.ms-excel.sheet.binary.macroenabled.12",
       "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "application/vnd.oasis.opendocument.spreadsheet",
+      "application/vnd.oasis.opendocument.text",
       "text/csv",
       "application/vnd.apple.numbers",
     ],

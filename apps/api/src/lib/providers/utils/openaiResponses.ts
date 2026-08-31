@@ -69,6 +69,14 @@ function requestsFunctionToolsWithReasoning(params: ChatCompletionParameters): b
   return hasEnabledFunctionTool || isAgentExecutionMode(params.mode);
 }
 
+function containsDocumentInput(params: ChatCompletionParameters): boolean {
+  return (params.messages || []).some(
+    (message) =>
+      Array.isArray(message.content) &&
+      message.content.some((part) => isRecord(part) && part.type === "document_url"),
+  );
+}
+
 export function shouldUseOpenAIResponsesApi(
   params: ChatCompletionParameters,
   modelConfig: ModelConfigItem,
@@ -83,6 +91,7 @@ export function shouldUseOpenAIResponsesApi(
 
   return (
     params.use_responses === true ||
+    containsDocumentInput(params) ||
     requestsSupportedHostedTool(params, modelConfig) ||
     requestsFunctionToolsWithReasoning(params)
   );
