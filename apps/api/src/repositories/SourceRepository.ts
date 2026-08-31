@@ -29,6 +29,29 @@ export interface SourceRecord {
   updated_at: string | null;
 }
 
+export const SOURCE_SUMMARY_COLUMNS = [
+  "id",
+  "created_by_user_id",
+  "project_id",
+  "conversation_id",
+  "connection_id",
+  "kind",
+  "title",
+  "status",
+  "provider",
+  "external_uri",
+  "vector_id",
+  "metadata",
+  "storage_key",
+  "mime_type",
+  "filename",
+  "byte_size",
+  "created_at",
+  "updated_at",
+] as const;
+
+export type SourceSummaryRecord = Omit<SourceRecord, "content">;
+
 export interface CreateSourceRecord {
   id?: string;
   createdByUserId: number;
@@ -147,6 +170,20 @@ export class SourceRepository extends BaseRepository {
 
   async listProjectSources(projectId: string, kind?: SourceKind): Promise<SourceRecord[]> {
     return this.selectMany({ project_id: projectId, kind });
+  }
+
+  async listPersonalSourceSummaries(
+    userId: number,
+    kind?: SourceKind,
+  ): Promise<SourceSummaryRecord[]> {
+    return this.selectSummaries({ created_by_user_id: userId, project_id: null, kind });
+  }
+
+  async listProjectSourceSummaries(
+    projectId: string,
+    kind?: SourceKind,
+  ): Promise<SourceSummaryRecord[]> {
+    return this.selectSummaries({ project_id: projectId, kind });
   }
 
   async updateSource(
@@ -348,6 +385,17 @@ export class SourceRepository extends BaseRepository {
     });
 
     return this.runQuery<SourceRecord>(query, values);
+  }
+
+  private async selectSummaries(
+    conditions: Record<string, unknown>,
+  ): Promise<SourceSummaryRecord[]> {
+    const { query, values } = this.buildSelectQuery("source", conditions, {
+      columns: [...SOURCE_SUMMARY_COLUMNS],
+      orderBy: "updated_at DESC, created_at DESC",
+    });
+
+    return this.runQuery<SourceSummaryRecord>(query, values);
   }
 
   private async listCollections(
