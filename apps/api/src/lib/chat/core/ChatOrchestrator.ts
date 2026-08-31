@@ -301,6 +301,8 @@ export class ChatOrchestrator {
       context: chatOptions.context,
       userSettings,
       requestOptions: prepared.requestOptions,
+      guardrailPrompt: messageWithContext,
+      deferOutputUntilValidated: Boolean(stream && userSettings?.guardrails_enabled),
       assessFinish: goalFinishGate
         ? (finishContext) => goalFinishGate.assessFinish(finishContext)
         : undefined,
