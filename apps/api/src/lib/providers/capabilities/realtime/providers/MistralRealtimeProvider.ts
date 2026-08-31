@@ -1,4 +1,4 @@
-import { getRealtimeLiveProviderManifestItem } from "@ngriffin_uk/polychat-schemas";
+import type { RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schemas";
 
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
@@ -12,9 +12,25 @@ import type {
 } from "../index";
 import { buildRealtimeProxyUrl } from "./proxyUrl";
 
-export const DEFAULT_TRANSCRIPTION_MODEL =
-  getRealtimeLiveProviderManifestItem("mistral").defaultModelId;
+export const MISTRAL_REALTIME_DESCRIPTOR = {
+  id: "mistral",
+  order: 2,
+  label: "Mistral Realtime",
+  shortLabel: "Mistral",
+  liveMode: "composed",
+  transport: "websocket",
+  sessionType: "transcription",
+  defaultDelay: "low",
+  inputModalities: ["audio"],
+  outputModalities: ["text"],
+  description: "Streaming speech-to-text",
+  defaultModelId: "voxtral-mini-transcribe-realtime",
+  composeWith: { reasoning: true, speech: true },
+} satisfies RealtimeLiveProviderDescriptor;
+
+export const DEFAULT_TRANSCRIPTION_MODEL = MISTRAL_REALTIME_DESCRIPTOR.defaultModelId;
 export const MISTRAL_REALTIME_MODEL_ID = "voxtral-mini-transcribe-realtime-2602";
+const API_KEY_ENVIRONMENT_VARIABLE = "MISTRAL_API_KEY";
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
   realtime: [],
   translation: [],
@@ -52,10 +68,15 @@ export function resolveMistralRealtimeProxyModel(model?: string): string | undef
 
 export class MistralRealtimeProvider implements RealtimeProvider {
   name = "mistral";
+  descriptor = MISTRAL_REALTIME_DESCRIPTOR;
+  configuration = {
+    acceptsUserApiKey: true,
+    environmentVariables: [API_KEY_ENVIRONMENT_VARIABLE],
+  };
   models = SESSION_MODELS_BY_TYPE.transcription;
 
   private getProviderKeyName(): string {
-    return "MISTRAL_API_KEY";
+    return API_KEY_ENVIRONMENT_VARIABLE;
   }
 
   async getApiKey(request: RealtimeSessionRequest): Promise<string> {
@@ -64,6 +85,7 @@ export class MistralRealtimeProvider implements RealtimeProvider {
       providerName: this.name,
       envKeyName: this.getProviderKeyName(),
       userId: request.user.id,
+      credentialAuthority: request.credentialAuthority,
     });
   }
 

@@ -1,3 +1,4 @@
+import { isNormalisedSkillResourcePath } from "@ngriffin_uk/polychat-schemas";
 import { parse as parseYaml } from "yaml";
 import z from "zod/v4";
 
@@ -39,20 +40,7 @@ export class SkillDocumentError extends Error {
 }
 
 export function validateSkillResourcePath(path: string): string | null {
-  if (path.length > 512) {
-    return "Skill resource path must be 512 characters or fewer";
-  }
-
-  if (/\p{Cc}/u.test(path)) {
-    return "Skill resource path must not contain control characters";
-  }
-
-  if (
-    path.startsWith("/") ||
-    path.includes("\\") ||
-    path.includes("\0") ||
-    path.split("/").some((part) => part === "" || part === "." || part === "..")
-  ) {
+  if (!isNormalisedSkillResourcePath(path)) {
     return `Skill resource path must be a normalised relative path: ${path}`;
   }
 

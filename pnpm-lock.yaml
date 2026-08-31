@@ -422,8 +422,8 @@ importers:
         specifier: 1.4.0
         version: 1.4.0
       virtua:
-        specifier: 0.50.4
-        version: 0.50.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: 0.50.5
+        version: 0.50.5(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       zustand:
         specifier: 5.0.15
         version: 5.0.15(@types/react@19.2.18)(react@19.2.8)
@@ -518,8 +518,8 @@ importers:
   apps/sandbox-worker:
     dependencies:
       '@cloudflare/sandbox':
-        specifier: 0.12.7
-        version: 0.12.7
+        specifier: 0.12.8
+        version: 0.12.8
       '@ngriffin_uk/polychat-library-agent-core':
         specifier: workspace:^
         version: link:../../packages/library-agent-core
@@ -1888,8 +1888,8 @@ packages:
     resolution: {integrity: sha512-jxQYkj8dSIzc0cD6cMMNdOc1UVjqSqu8BZdor5s8cGjW2I8BjODt/kWPVdY+u9zj3ms75Q5qaZgnxUad83+eAg==}
     engines: {node: '>=22.0.0'}
 
-  '@cloudflare/sandbox@0.12.7':
-    resolution: {integrity: sha512-7nDEiqrxZfBuUc2y1RxWJMTPe+5q5+QZlZ5k+KXaQRv/Tgimdu4XyFGzMQuQYuI9IFXiPJVfMMPLKUmPg0VWpA==}
+  '@cloudflare/sandbox@0.12.8':
+    resolution: {integrity: sha512-xrmVqqfCBN6jNIRthICs/AwF2uUL9eH4yavjXHr9cFWpKalcPFsZY85CGddAG58Anx5WcEWTKHcM9w7Imf1eKA==}
     peerDependencies:
       '@openai/agents': ^0.3.3
       '@opencode-ai/sdk': ^1.1.40
@@ -7375,8 +7375,8 @@ packages:
   vfile@6.0.3:
     resolution: {integrity: sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q==}
 
-  virtua@0.50.4:
-    resolution: {integrity: sha512-UwzHG57CrHT0A83t6jo2OKuA7spmM9qBaF30OQE4OXvbXC6xYpbkIWN14t/ZQTngJnu3aflg7NTDhUqlxqB+Xw==}
+  virtua@0.50.5:
+    resolution: {integrity: sha512-dhr2b3fiK8jWlXzTZr1lICU6gIjF+Q9ftzlDR9KoAbW4vgusx0hEsNwdhxrEVVnm7ZpB+40jgGtJH8/BSsfrZg==}
     peerDependencies:
       '@angular/common': '>=20.0.0'
       '@angular/core': '>=20.0.0'
@@ -8345,7 +8345,7 @@ snapshots:
 
   '@cloudflare/kv-asset-handler@0.5.0': {}
 
-  '@cloudflare/sandbox@0.12.7':
+  '@cloudflare/sandbox@0.12.8':
     dependencies:
       '@cloudflare/containers': 0.3.7
       aws4fetch: 1.0.20
@@ -13536,7 +13536,7 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  virtua@0.50.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  virtua@0.50.5(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     optionalDependencies:
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)

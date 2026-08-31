@@ -2,6 +2,63 @@ import { safeParseJson } from "./json";
 
 const BEARER_CREDENTIAL = /^Bearer +([A-Za-z0-9._~+/-]+=*)$/i;
 
+export class ResponseBodyTooLargeError extends Error {
+  constructor(maxBytes: number) {
+    super(`Response body exceeds the ${maxBytes}-byte limit`);
+    this.name = "ResponseBodyTooLargeError";
+  }
+}
+
+export async function readResponseTextWithinLimit(
+  response: Response,
+  maxBytes: number,
+): Promise<string> {
+  const declaredLength = Number(response.headers.get("content-length"));
+
+  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
+    throw new ResponseBodyTooLargeError(maxBytes);
+  }
+
+  if (!response.body) {
+    const text = await response.text();
+
+    if (new TextEncoder().encode(text).byteLength > maxBytes) {
+      throw new ResponseBodyTooLargeError(maxBytes);
+    }
+
+    return text;
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let byteLength = 0;
+  let text = "";
+
+  try {
+    while (true) {
+      // Stream chunks must be consumed in order to enforce a cumulative byte limit.
+      // eslint-disable-next-line no-await-in-loop
+      const { done, value } = await reader.read();
+
+      if (done) {
+        return text + decoder.decode();
+      }
+
+      byteLength += value.byteLength;
+
+      if (byteLength > maxBytes) {
+        // eslint-disable-next-line no-await-in-loop
+        await reader.cancel();
+        throw new ResponseBodyTooLargeError(maxBytes);
+      }
+
+      text += decoder.decode(value, { stream: true });
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
+
 export function parseBearerToken(value: string | undefined): string | undefined {
   return value ? BEARER_CREDENTIAL.exec(value)?.[1] : undefined;
 }
@@ -34,7 +91,7 @@ export function setDefaultHeader(
 
 export async function readHttpResponseBody(
   response: Response,
-): Promise<{ parsed: unknown | null; raw: string; body: unknown; format: "json" | "text" }> {
+): Promise<{ parsed: unknown; raw: string; body: unknown; format: "json" | "text" }> {
   const raw = await response.text();
 
   if (!raw) {

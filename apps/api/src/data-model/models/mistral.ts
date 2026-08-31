@@ -19,10 +19,24 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
   }),
 
   createModelConfig("mistral-ocr-latest", PROVIDER, {
-    name: "Mistral OCR",
+    name: "Mistral OCR 4.1 (Latest)",
     matchingModel: "mistral-ocr-latest",
     description:
-      "A document OCR (Optical Character Recognition) processor that works with PDFs and images.",
+      "Mistral's current OCR 4.1 document processor for structured extraction from PDFs and images.",
+    modalities: {
+      input: ["document", "image"],
+      output: ["text"],
+    },
+    strengths: ["ocr", "vision"],
+    supportsDocuments: true,
+    hiddenFromDefaultList: true,
+  }),
+
+  createModelConfig("mistral-ocr-4-1", PROVIDER, {
+    name: "Mistral OCR 4.1",
+    matchingModel: "mistral-ocr-4-1",
+    description:
+      "The pinned Mistral OCR 4.1 model for reproducible structured extraction from PDFs and images.",
     modalities: {
       input: ["document", "image"],
       output: ["text"],

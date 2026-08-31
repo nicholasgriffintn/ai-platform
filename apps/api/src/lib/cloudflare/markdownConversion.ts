@@ -3,16 +3,20 @@ import type { MarkdownConversionOptions } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "~/utils/objects";
 
 export interface ToMarkdownSuccessResult {
+  id?: string;
   name: string;
-  mimeType: string;
+  mimetype?: string;
+  mimeType?: string;
   tokens?: number;
   data: string;
-  format?: "markdown";
+  format?: "markdown" | "text";
 }
 
 export interface ToMarkdownErrorResult {
+  id?: string;
   name: string;
-  mimeType: string;
+  mimetype?: string;
+  mimeType?: string;
   format: "error";
   error: string;
 }
@@ -57,17 +61,16 @@ export function isToMarkdownResult(value: unknown): value is ToMarkdownResult {
     return false;
   }
 
+  const hasMimeType = typeof value.mimetype === "string" || typeof value.mimeType === "string";
+
   if (value.format === "error") {
-    return (
-      typeof value.name === "string" &&
-      typeof value.mimeType === "string" &&
-      typeof value.error === "string"
-    );
+    return typeof value.name === "string" && hasMimeType && typeof value.error === "string";
   }
 
   return (
     typeof value.name === "string" &&
-    typeof value.mimeType === "string" &&
+    hasMimeType &&
+    (value.format === undefined || value.format === "markdown" || value.format === "text") &&
     typeof value.data === "string"
   );
 }

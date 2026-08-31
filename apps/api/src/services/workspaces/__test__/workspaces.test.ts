@@ -100,13 +100,14 @@ function createHarness(params?: {
     listProjectConversations: vi.fn().mockResolvedValue([]),
   };
   const audit = { createRecord: vi.fn().mockResolvedValue(undefined) };
+  const outputs = { listWorkspaceOutputRoots: vi.fn().mockResolvedValue([]) };
   const context = {
     env: { APP_BASE_URL: "https://work.polychat.test/" },
     requireUser: vi.fn().mockReturnValue(user),
-    repositories: { workspaces: repositories, audit },
+    repositories: { workspaces: repositories, audit, outputs },
   } as unknown as ServiceContext;
 
-  return { context, repositories, audit };
+  return { context, repositories, audit, outputs };
 }
 
 describe("Work entitlement", () => {
@@ -122,7 +123,7 @@ describe("Work entitlement", () => {
 
 describe("workspace deletion", () => {
   it("records the deletion request before removing the workspace", async () => {
-    const { context, repositories, audit } = createHarness();
+    const { context, repositories, audit, outputs } = createHarness();
 
     await deleteWorkspace(context, WORKSPACE_ID);
 
@@ -134,6 +135,7 @@ describe("workspace deletion", () => {
       targetId: WORKSPACE_ID,
     });
     expect(repositories.deleteWorkspace).toHaveBeenCalledWith(WORKSPACE_ID);
+    expect(outputs.listWorkspaceOutputRoots).toHaveBeenCalledWith(WORKSPACE_ID);
     expect(audit.createRecord.mock.invocationCallOrder[0]).toBeLessThan(
       repositories.deleteWorkspace.mock.invocationCallOrder[0],
     );

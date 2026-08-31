@@ -2,11 +2,19 @@ import type { Ai } from "@cloudflare/workers-types";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getModelConfig } from "~/lib/providers/models";
-import type { GuardrailResult, GuardrailsProvider, IEnv, IUser } from "~/types";
+import type {
+  GuardrailInput,
+  GuardrailResult,
+  GuardrailsProvider,
+  GuardrailSource,
+  IEnv,
+  IUser,
+} from "~/types";
 import { getLogger } from "~/utils/logger";
 
-import { AssistantError } from "../../../../../utils/errors";
+import { AssistantError, ErrorType } from "../../../../../utils/errors";
 import { getChatProvider } from "../../chat";
+import { normaliseGuardrailInput } from "../content";
 
 const logger = getLogger({ prefix: "lib/guardrails/mistral" });
 
@@ -23,9 +31,10 @@ export class MistralGuardProvider implements GuardrailsProvider {
     this.config = config;
   }
 
-  async validateContent(content: string, _source: "INPUT" | "OUTPUT"): Promise<GuardrailResult> {
+  async validateContent(input: GuardrailInput, _source: GuardrailSource): Promise<GuardrailResult> {
     try {
       logger.debug("Validating content with Mistral Guard");
+      const content = normaliseGuardrailInput(input).text;
 
       const model = "mistral-moderation-latest";
       const modelConfig = await getModelConfig(model);
@@ -75,7 +84,11 @@ export class MistralGuardProvider implements GuardrailsProvider {
         throw error;
       }
 
-      logger.error("LLamaGuard API error:", { error });
+      logger.error("Mistral Guard API error", { error });
+      throw AssistantError.fromError(
+        error instanceof Error ? error : new Error("Mistral Guard validation failed"),
+        ErrorType.PROVIDER_ERROR,
+      );
     }
   }
 }

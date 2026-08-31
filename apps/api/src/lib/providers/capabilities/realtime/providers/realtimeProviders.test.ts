@@ -154,13 +154,13 @@ describe("realtime provider session contracts", () => {
     expect(JSON.parse(init.body)).toEqual({
       session: {
         type: "realtime",
-        model: "gpt-realtime-2",
+        model: "gpt-realtime-2.1",
         output_modalities: ["audio"],
         instructions: "Answer concisely.",
         audio: {
           input: {
             format: { type: "audio/pcm", rate: 24000 },
-            transcription: { model: "gpt-4o-mini-transcribe", language: "en" },
+            transcription: { model: "gpt-live-transcribe", language: "en" },
             turn_detection: {
               type: "semantic_vad",
               eagerness: "auto",
@@ -232,6 +232,10 @@ describe("realtime provider session contracts", () => {
         systemInstruction: {
           parts: [{ text: "Describe only relevant visual changes." }],
         },
+        sessionResumption: {},
+        contextWindowCompression: { slidingWindow: {} },
+        inputAudioTranscription: {},
+        outputAudioTranscription: {},
       },
     });
 
@@ -244,16 +248,14 @@ describe("realtime provider session contracts", () => {
     });
     expect(JSON.parse(init.body)).toEqual({
       uses: 1,
-      expireTime: "2026-08-31T09:30:00.000Z",
+      expireTime: "2026-08-31T11:00:00.000Z",
       newSessionExpireTime: "2026-08-31T09:01:00.000Z",
       liveConnectConstraints: {
         model: "models/gemini-3.1-flash-live-preview",
         config: {
-          generationConfig: {
-            responseModalities: ["AUDIO"],
-            speechConfig: {
-              voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } },
-            },
+          responseModalities: ["AUDIO"],
+          speechConfig: {
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } },
           },
           realtimeInputConfig: {
             turnCoverage: "TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO",
@@ -261,6 +263,10 @@ describe("realtime provider session contracts", () => {
           systemInstruction: {
             parts: [{ text: "Describe only relevant visual changes." }],
           },
+          sessionResumption: {},
+          contextWindowCompression: { slidingWindow: {} },
+          inputAudioTranscription: {},
+          outputAudioTranscription: {},
         },
       },
     });
@@ -326,10 +332,10 @@ describe("realtime provider session contracts", () => {
       type: "transcription",
       provider: "cartesia",
       transport: "websocket",
-      url: "wss://api.polychat.test/realtime/cartesia/transcription?model=ink-2&delay=low",
+      url: "wss://api.polychat.test/realtime/cartesia/transcription?model=ink-whisper&delay=low",
       audio_format: { encoding: "pcm_s16le", sample_rate: 16000 },
       input_audio_format: "pcm_s16le",
-      input_audio_transcription: { model: "ink-2", language: "en" },
+      input_audio_transcription: { model: "ink-whisper", language: "en" },
     });
   });
 });

@@ -219,11 +219,11 @@ export class ChatOrchestrator {
     } = prepared;
     const enabled_tools = enabledTools;
 
-    const modelsToCheck = new Set(modelConfigs.map((config) => config.model));
-
-    for (const modelToCheck of modelsToCheck) {
-      await conversationManager.checkUsageLimits(modelToCheck);
-    }
+    await Promise.all(
+      modelConfigs.map((modelConfig) =>
+        conversationManager.checkUsageLimits(modelConfig.model, modelConfig.provider),
+      ),
+    );
 
     let messages = preparedMessages;
     let didCompact = false;
@@ -301,6 +301,8 @@ export class ChatOrchestrator {
       context: chatOptions.context,
       userSettings,
       requestOptions: prepared.requestOptions,
+      guardrailPrompt: messageWithContext,
+      deferOutputUntilValidated: Boolean(stream && userSettings?.guardrails_enabled),
       assessFinish: goalFinishGate
         ? (finishContext) => goalFinishGate.assessFinish(finishContext)
         : undefined,

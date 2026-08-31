@@ -19,7 +19,7 @@ import {
   transcriptionProviderOptions,
   type TranscriptionProviderId,
 } from "./transcription-settings";
-import type { UserSettings } from "./user-settings";
+import { resolveGuardrailsProviderId, type UserSettings } from "./user-settings";
 
 export interface UserSettingsFormProps {
   userSettings: UserSettings | null;
@@ -420,15 +420,21 @@ export function UserSettingsForm({
             onChange={(e) =>
               updateFormData((prev) => ({
                 ...prev,
-                guardrails_provider: e.target.value,
+                guardrails_provider: resolveGuardrailsProviderId(e.target.value),
               }))
             }
           >
             <option value="llamaguard">LlamaGuard</option>
             <option value="bedrock">Bedrock</option>
             <option value="mistral">Mistral</option>
+            <option value="shieldstral">Shieldstral (self-hosted)</option>
           </FormSelect>
         </div>
+        {formData.guardrails_provider === "shieldstral" && (
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            Shieldstral uses the policy and inference endpoint configured by your Polychat operator.
+          </p>
+        )}
         {formData.guardrails_provider === "bedrock" && (
           <>
             <div>

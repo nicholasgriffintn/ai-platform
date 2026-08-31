@@ -48,7 +48,7 @@ addRoute(app, "get", "/", {
     },
     500: { description: "Server error", schema: errorResponseSchema },
   },
-  handler: async ({ serviceContext, user }) => listModels(serviceContext.env, user?.id),
+  handler: async ({ serviceContext, user }) => listModels(serviceContext.env, user),
 });
 
 addRoute(app, "get", "/capabilities", {

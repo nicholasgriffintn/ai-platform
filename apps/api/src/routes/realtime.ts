@@ -1,7 +1,6 @@
 import {
   errorResponseSchema,
-  REALTIME_LIVE_PROVIDER_MANIFEST,
-  realtimeLiveProviderManifestResponseSchema,
+  realtimeLiveProviderCatalogueResponseSchema,
   realtimePipelineSessionCreateSchema,
   realtimePipelineSessionResponseSchema,
   realtimeSessionResponseSchema,
@@ -18,8 +17,9 @@ import {
   parseRealtimeTransport,
 } from "~/lib/providers/capabilities/realtime";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { userCanAccessRealtimeModel } from "~/services/realtime/access";
+import { getAccessibleRealtimeModel } from "~/services/realtime/access";
 import { createCartesiaRealtimeProxyResponse } from "~/services/realtime/cartesia";
+import { listRealtimeLiveProviders } from "~/services/realtime/catalogue";
 import { createElevenLabsRealtimeProxyResponse } from "~/services/realtime/elevenlabs";
 import { createMistralRealtimeProxyResponse } from "~/services/realtime/mistral";
 import { createRealtimePipelineSession } from "~/services/realtime/pipeline";
@@ -42,14 +42,15 @@ app.use("/*", (c, next) => {
 addRoute(app, "get", "/providers", {
   tags: ["realtime"],
   summary: "List realtime live providers",
+  auth: true,
   responses: {
     200: {
-      description: "Realtime live provider manifest",
-      schema: realtimeLiveProviderManifestResponseSchema,
+      description: "Realtime live provider catalogue with current readiness",
+      schema: realtimeLiveProviderCatalogueResponseSchema,
     },
   },
-  handler: async () => ({
-    providers: REALTIME_LIVE_PROVIDER_MANIFEST,
+  handler: async ({ serviceContext }) => ({
+    providers: await listRealtimeLiveProviders(serviceContext),
   }),
 });
 
@@ -110,13 +111,14 @@ addRoute(app, "post", "/session/:type", {
       }
     }
 
-    if (
-      !(await userCanAccessRealtimeModel({
-        env,
-        userId: user.id,
-        model: requestedModel,
-      }))
-    ) {
+    const accessibleModel = await getAccessibleRealtimeModel({
+      env,
+      user,
+      model: requestedModel,
+      provider: providerName,
+    });
+
+    if (!accessibleModel) {
       return ResponseFactory.error(raw, "Model not found or user does not have access", 403);
     }
 
@@ -127,8 +129,9 @@ addRoute(app, "post", "/session/:type", {
     const session = await provider.createSession({
       env,
       user,
+      credentialAuthority: accessibleModel.credentialAuthority,
       type,
-      model,
+      model: accessibleModel.id,
       language,
       sourceLanguage,
       targetLanguage,
