@@ -7,7 +7,8 @@ import { filterModelsByRouterMode } from "@ngriffin_uk/polychat-schemas";
 
 import { PromptAnalyzer } from "~/lib/modelRouter/promptAnalyser";
 import { trackModelRoutingMetrics } from "~/lib/monitoring";
-import { defaultModel, getIncludedInRouterModelsForUser, getModels } from "~/lib/providers/models";
+import { getIncludedInRouterModelsForUser, getModels } from "~/lib/providers/models";
+import { resolveDefaultChatModel } from "~/lib/providers/models/policy";
 import type { Attachment, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -397,9 +398,12 @@ export class ModelRouter {
     );
   }
 
-  private static async selectModelsForComparison(modelScores: ModelScore[]): Promise<string[]> {
+  private static async selectModelsForComparison(
+    modelScores: ModelScore[],
+    fallbackModel: string,
+  ): Promise<string[]> {
     if (modelScores.length <= 1) {
-      return modelScores.length === 1 ? [modelScores[0].model] : [defaultModel];
+      return modelScores.length === 1 ? [modelScores[0].model] : [fallbackModel];
     }
 
     const topRawScore = modelScores[0].score;
@@ -429,10 +433,11 @@ export class ModelRouter {
     completion_id?: string,
     routerMode: ModelRouterMode = "auto",
   ): Promise<string> {
+    const availableModels = await getIncludedInRouterModelsForUser(env, user);
+    const fallbackModel = resolveDefaultChatModel(availableModels, user).id;
+
     return trackModelRoutingMetrics(
       async () => {
-        const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
-
         const requirements = await PromptAnalyzer.analyzePrompt(
           env,
           prompt,
@@ -448,7 +453,7 @@ export class ModelRouter {
         );
 
         return ModelRouter.selectBestModel(suitableModels, {
-          fallbackModel: routerMode === "auto" ? defaultModel : undefined,
+          fallbackModel: routerMode === "auto" ? fallbackModel : undefined,
           routerMode,
         });
       },
@@ -462,7 +467,7 @@ export class ModelRouter {
         throw error;
       }
 
-      return defaultModel;
+      return fallbackModel;
     });
   }
 
@@ -475,10 +480,11 @@ export class ModelRouter {
     completion_id?: string,
     routerMode: ModelRouterMode = "auto",
   ): Promise<string[]> {
+    const availableModels = await getIncludedInRouterModelsForUser(env, user);
+    const fallbackModel = resolveDefaultChatModel(availableModels, user).id;
+
     return trackModelRoutingMetrics(
       async () => {
-        const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
-
         const requirements = await PromptAnalyzer.analyzePrompt(
           env,
           prompt,
@@ -496,7 +502,7 @@ export class ModelRouter {
         if (suitableModels.length === 0) {
           return [
             ModelRouter.selectBestModel(suitableModels, {
-              fallbackModel: routerMode === "auto" ? defaultModel : undefined,
+              fallbackModel: routerMode === "auto" ? fallbackModel : undefined,
               routerMode,
             }),
           ];
@@ -505,12 +511,12 @@ export class ModelRouter {
         const doesComplexityRequireComparison = ModelRouter.shouldCompareModels(requirements);
 
         if (doesComplexityRequireComparison) {
-          return await ModelRouter.selectModelsForComparison(suitableModels);
+          return await ModelRouter.selectModelsForComparison(suitableModels, fallbackModel);
         }
 
         return [
           ModelRouter.selectBestModel(suitableModels, {
-            fallbackModel: routerMode === "auto" ? defaultModel : undefined,
+            fallbackModel: routerMode === "auto" ? fallbackModel : undefined,
             routerMode,
           }),
         ];
@@ -525,7 +531,7 @@ export class ModelRouter {
         throw error;
       }
 
-      return [defaultModel];
+      return [fallbackModel];
     });
   }
 }

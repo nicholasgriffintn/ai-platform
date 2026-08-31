@@ -18,7 +18,7 @@ import {
   parseRealtimeTransport,
 } from "~/lib/providers/capabilities/realtime";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { userCanAccessRealtimeModel } from "~/services/realtime/access";
+import { getAccessibleRealtimeModel } from "~/services/realtime/access";
 import { createCartesiaRealtimeProxyResponse } from "~/services/realtime/cartesia";
 import { createElevenLabsRealtimeProxyResponse } from "~/services/realtime/elevenlabs";
 import { createMistralRealtimeProxyResponse } from "~/services/realtime/mistral";
@@ -110,13 +110,14 @@ addRoute(app, "post", "/session/:type", {
       }
     }
 
-    if (
-      !(await userCanAccessRealtimeModel({
-        env,
-        userId: user.id,
-        model: requestedModel,
-      }))
-    ) {
+    const accessibleModel = await getAccessibleRealtimeModel({
+      env,
+      user,
+      model: requestedModel,
+      provider: providerName,
+    });
+
+    if (!accessibleModel) {
       return ResponseFactory.error(raw, "Model not found or user does not have access", 403);
     }
 
@@ -127,8 +128,9 @@ addRoute(app, "post", "/session/:type", {
     const session = await provider.createSession({
       env,
       user,
+      credentialAuthority: accessibleModel.credentialAuthority,
       type,
-      model,
+      model: accessibleModel.id,
       language,
       sourceLanguage,
       targetLanguage,

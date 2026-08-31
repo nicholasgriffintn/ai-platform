@@ -32,6 +32,7 @@ export class ElevenLabsRealtimeProvider implements RealtimeProvider {
       providerName: this.name,
       envKeyName: "ELEVENLABS_API_KEY",
       userId: request.user.id,
+      credentialAuthority: request.credentialAuthority,
     });
   }
 

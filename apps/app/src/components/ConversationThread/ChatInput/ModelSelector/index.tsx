@@ -13,16 +13,17 @@ import { ShortcutTooltip } from "@ngriffin_uk/polychat-component-ui";
 import { getDefaultLiveModelId } from "@ngriffin_uk/polychat-library-realtime/live-providers";
 import {
   createModelReferenceMap,
-  defaultModel,
   EMPTY_MODEL_CONFIG,
   getAutoRouterModeDefinition,
   getAvailableModels,
   getChatAndRealtimeModelsByMode,
   getFeaturedModelIds,
+  getDefaultModelId,
   getModelByReference,
   getModelsByMode,
   getRealtimeSessionModelsByProvider,
   getToolCallModels,
+  isActiveModel,
   isModelSelectableForAccount,
   isTextInputChatModel,
 } from "@ngriffin_uk/polychat-schemas";
@@ -174,6 +175,7 @@ export const ModelSelector = ({
     () => createModelReferenceMap(filteredModels),
     [filteredModels],
   );
+  const defaultModelId = useMemo(() => getDefaultModelId(filteredModels), [filteredModels]);
   const selectedAutoMode = getAutoRouterModeDefinition(autoMode);
   const SelectedAutoModeIcon = getAutoRouterModeIcon(selectedAutoMode.id);
   const selectedAutoModeDisplayName =
@@ -243,19 +245,24 @@ export const ModelSelector = ({
       setSelectedTab("models");
     }
 
-    if (model && getModelByReference(filteredModelReferences, model)) {
+    const currentModel = model ? getModelByReference(filteredModelReferences, model) : undefined;
+
+    if (
+      currentModel &&
+      isActiveModel(currentModel) &&
+      (currentModel.isExecutable ?? isModelSelectableForAccount(currentModel, isPro))
+    ) {
       return;
     }
 
     const defaultScopedModel =
       isLiveScope && modelProviderFilter
         ? getDefaultLiveModelId(modelProviderFilter)
-        : defaultModel;
-    const fallbackModel = filteredModels[defaultScopedModel]
-      ? defaultScopedModel
-      : filteredModels[defaultModel]
-        ? defaultModel
-        : Object.keys(filteredModels)[0];
+        : defaultModelId;
+    const fallbackModel =
+      defaultScopedModel && filteredModels[defaultScopedModel]
+        ? defaultScopedModel
+        : defaultModelId;
 
     if (fallbackModel) {
       selectModelWithDefaults(fallbackModel, {
@@ -266,10 +273,12 @@ export const ModelSelector = ({
   }, [
     chatMode,
     chatSettings,
+    defaultModelId,
     filteredModels,
     filteredModelReferences,
     isLiveScope,
     isModelListOnlyScope,
+    isPro,
     model,
     modelProviderFilter,
     modelListChatMode,
@@ -277,6 +286,32 @@ export const ModelSelector = ({
     selectedTab,
     setChatMode,
     setSelectedAgentId,
+  ]);
+
+  useEffect(() => {
+    if (isModelListOnlyScope || chatMode !== "remote" || model === null) {
+      return;
+    }
+
+    const currentModel = getModelByReference(filteredModelReferences, model);
+
+    if (
+      currentModel &&
+      isActiveModel(currentModel) &&
+      (currentModel.isExecutable ?? isModelSelectableForAccount(currentModel, isPro))
+    ) {
+      return;
+    }
+
+    selectModelWithDefaults(defaultModelId ?? null);
+  }, [
+    chatMode,
+    defaultModelId,
+    filteredModelReferences,
+    isModelListOnlyScope,
+    isPro,
+    model,
+    selectModelWithDefaults,
   ]);
 
   const clearHoverPreview = useCallback(() => setHoverPreview(null), []);
@@ -385,7 +420,7 @@ export const ModelSelector = ({
         localOnly: false,
       };
 
-      selectModelWithDefaults(defaultModel, nextSettings);
+      selectModelWithDefaults(defaultModelId ?? null, nextSettings);
     }
 
     if (newChatMode !== "agent") {
@@ -496,7 +531,7 @@ export const ModelSelector = ({
     } else if (tab === "models" && model === null) {
       setChatMode("remote");
       setSelectedAgentId(null);
-      selectModelWithDefaults(defaultModel, {
+      selectModelWithDefaults(defaultModelId ?? null, {
         ...chatSettings,
         localOnly: false,
       });

@@ -4,6 +4,7 @@ import {
 } from "~/lib/async/asyncInvocation";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { buildMessageParts } from "~/lib/chat/messages/parts";
+import { resolveExecutableModelForRequest } from "~/lib/chat/policy/model-access";
 import { getChatProvider, listChatProviders } from "~/lib/providers/capabilities/chat";
 import type { ChatCompletionParameters, Message } from "~/types";
 import { getLogger } from "~/utils/logger";
@@ -14,12 +15,25 @@ const logger = getLogger({
   prefix: "services/completions/async/handler",
 });
 
-function buildBaseParams(message: Message, context: AsyncRefreshContext): ChatCompletionParameters {
+async function buildBaseParams(
+  metadata: AsyncInvocationMetadata,
+  message: Message,
+  context: AsyncRefreshContext,
+): Promise<ChatCompletionParameters> {
+  const model = message.model || metadata.context?.version;
+  const resolved = await resolveExecutableModelForRequest({
+    env: context.env,
+    user: context.user,
+    model,
+    provider: metadata.provider,
+  });
+
   return {
-    model: message.model,
+    model,
     env: context.env,
     messages: [],
     completion_id: context.conversationId,
+    credentialAuthority: resolved.credentialAuthority,
   };
 }
 
@@ -203,9 +217,8 @@ export const handleAsyncInvocation: AsyncInvocationHandler = async (
     );
   }
 
-  const params = buildBaseParams(message, context);
-
   try {
+    const params = await buildBaseParams(metadata, message, context);
     const result = await provider.getAsyncInvocationStatus(metadata, params, context.user?.id);
 
     if (result.status === "completed" && result.result) {

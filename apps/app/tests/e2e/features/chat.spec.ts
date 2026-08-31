@@ -2,7 +2,7 @@ import { expect, test } from "../fixtures/polychat-test";
 import { createSilentWavFixture, TEXT_MESSAGE_CASES } from "../fixtures/test-data";
 import { captureVisualSnapshots, DEFAULT_VISUAL_CHECKPOINTS } from "../support/visual-cloud";
 
-const TEXT_MODEL = "Compound Mini";
+const TEXT_MODEL = "GPT OSS 120B";
 
 for (const persona of ["logged-out", "free", "pro"] as const) {
   test.describe(`Chat as ${persona}`, () => {
