@@ -297,8 +297,8 @@ export const groqModelConfig: ModelConfig = {
     speed: 5,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 14.9,
@@ -336,8 +336,8 @@ export const groqModelConfig: ModelConfig = {
     isFeatured: true,
     supportsResponseFormat: true,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     artificialAnalysis: {
       intelligenceIndex: 23.8,
@@ -572,8 +572,8 @@ export const groqModelConfig: ModelConfig = {
     costPer1kInputTokens: 0.000075,
     costPer1kOutputTokens: 0.0003,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["low", "medium", "high"],
+    	defaultEffort: "low",
     },
     supportsResponseFormat: true,
     family: "gpt-oss",
@@ -649,8 +649,8 @@ export const groqModelConfig: ModelConfig = {
     reliability: 1,
     speed: 3,
     reasoningConfig: {
-      supportedEffortLevels: ["none", "thinking"],
-      defaultEffort: "none",
+    	supportedEffortLevels: ["none", "default"],
+    	defaultEffort: "none",
     },
     artificialAnalysis: {
       intelligenceIndex: 29.3,

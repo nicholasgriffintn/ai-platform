@@ -24,8 +24,8 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 		contextWindow: 131072,
 		maxTokens: 32768,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["low", "medium", "high"],
+			defaultEffort: "low",
 		},
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
@@ -55,8 +55,8 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 		contextWindow: 131072,
 		maxTokens: 32768,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["low", "medium", "high"],
+			defaultEffort: "low",
 		},
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.0002,
@@ -86,8 +86,8 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 		contextWindow: 1048576,
 		maxTokens: 1048576,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["high", "max"],
+			defaultEffort: "high",
 		},
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0.00028,
@@ -119,8 +119,8 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 		contextWindow: 1048576,
 		maxTokens: 1048576,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["high", "max"],
+			defaultEffort: "high",
 		},
 		costPer1kInputTokens: 0.00043,
 		costPer1kOutputTokens: 0.00087,
@@ -209,8 +209,8 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 		contextWindow: 976000,
 		maxTokens: 131072,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["high", "max"],
+			defaultEffort: "high",
 		},
 		costPer1kInputTokens: 0.0014,
 		costPer1kOutputTokens: 0.0044,
@@ -244,8 +244,8 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 		contextWindow: 1000000,
 		maxTokens: 131072,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["low", "high", "max"],
+			defaultEffort: "low",
 		},
 	}),
 
@@ -369,8 +369,8 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 		contextWindow: 1048576,
 		maxTokens: 131072,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["low", "high", "max"],
+			defaultEffort: "low",
 		},
 	}),
 
@@ -459,8 +459,8 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 		contextWindow: 512000,
 		maxTokens: 131072,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["low", "medium", "high", "max"],
+			defaultEffort: "low",
 		},
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
@@ -597,8 +597,8 @@ export const ollamaCloudModelConfig: ModelConfig = createModelConfigObject([
 		contextWindow: 1048576,
 		maxTokens: 131072,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
+			supportedEffortLevels: ["low", "high", "max"],
+			defaultEffort: "low",
 		},
 	}),
 ]);

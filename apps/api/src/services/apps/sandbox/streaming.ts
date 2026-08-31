@@ -1,3 +1,5 @@
+import { sleep } from "~/utils/delay";
+
 interface EventEnvelopeLike {
   index: number;
   event: {
@@ -28,10 +30,6 @@ export function toSsePingChunk(): Uint8Array {
 
 export function toSseDoneChunk(): Uint8Array {
   return new TextEncoder().encode("data: [DONE]\n\n");
-}
-
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function parseEnvelopeFromSocketMessage(data: unknown): EventEnvelopeLike | null {

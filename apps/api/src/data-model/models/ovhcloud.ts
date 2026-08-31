@@ -21,8 +21,8 @@ export const ovhCloudModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.00009,
   	costPer1kOutputTokens: 0.00047,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high"],
+  		defaultEffort: "low",
   	},
   	strengths: ["tool_use"],
   	contextComplexity: 4,
@@ -83,8 +83,8 @@ export const ovhCloudModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.00005,
   	costPer1kOutputTokens: 0.00018,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
-  		defaultEffort: "none",
+  		supportedEffortLevels: ["low", "medium", "high"],
+  		defaultEffort: "low",
   	},
   	strengths: ["tool_use"],
   	contextComplexity: 4,
@@ -247,7 +247,7 @@ export const ovhCloudModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.00071,
   	costPer1kOutputTokens: 0.00425,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   	strengths: ["vision", "document", "tool_use"],
@@ -281,7 +281,7 @@ export const ovhCloudModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.00012,
   	costPer1kOutputTokens: 0.00018,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   	strengths: ["vision", "document", "tool_use"],
@@ -314,7 +314,7 @@ export const ovhCloudModelConfig: ModelConfig = createModelConfigObject([
   	costPer1kInputTokens: 0.00047,
   	costPer1kOutputTokens: 0.00319,
   	reasoningConfig: {
-  		supportedEffortLevels: ["none", "thinking"],
+  		supportedEffortLevels: ["none", "minimal", "low", "medium", "high"],
   		defaultEffort: "none",
   	},
   	strengths: ["vision", "document", "tool_use"],
