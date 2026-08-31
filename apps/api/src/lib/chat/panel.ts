@@ -183,6 +183,7 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
       messages,
       temperature: 0.7,
       max_tokens: 900,
+      disable_functions: true,
       stream: false,
       store: false,
       env: params.env,
