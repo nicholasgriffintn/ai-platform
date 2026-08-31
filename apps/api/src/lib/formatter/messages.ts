@@ -1,6 +1,7 @@
+import { escapeHtml } from "@ngriffin_uk/polychat-utility-core";
+
 import { estimateMessageTokens } from "~/lib/messageTokens";
 import type { ContentType, Message, MessageContent } from "~/types";
-import { escapeHtml } from "~/utils/html";
 import { safeParseJson } from "~/utils/json";
 import { isRecord } from "~/utils/objects";
 import { hasToolCalls } from "~/utils/toolCalls";

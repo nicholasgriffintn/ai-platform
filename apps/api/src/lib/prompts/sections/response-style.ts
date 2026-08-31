@@ -1,4 +1,4 @@
-import { escapeHtml } from "~/utils/html";
+import { escapeHtml } from "@ngriffin_uk/polychat-utility-core";
 
 import { PromptBuilder } from "../builder";
 import type { ResponseStyle } from "../utils";

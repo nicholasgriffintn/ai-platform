@@ -1,7 +1,7 @@
 import {
   CAPABILITY_DISCOVERY_DATA_KEY,
   CAPABILITY_DISCOVERY_TOOL_NAME,
-  ResponseDisplayType,
+  ToolResponseType,
   type CapabilityDiscoveryItem,
   type CapabilityDiscoveryResult,
 } from "@ngriffin_uk/polychat-schemas";
@@ -55,7 +55,7 @@ export function createCapabilityDiscoveryResponse(
       formattedName: "Capability discovery",
       renderer: "capability_discovery",
       icon: "sparkles",
-      responseType: requiresSetup ? ResponseDisplayType.CUSTOM : ResponseDisplayType.HIDDEN,
+      responseType: requiresSetup ? ToolResponseType.CUSTOM : ToolResponseType.HIDDEN,
       [CAPABILITY_DISCOVERY_DATA_KEY]: result,
     },
   };

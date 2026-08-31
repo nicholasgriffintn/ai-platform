@@ -1,12 +1,12 @@
 import {
   RESPONSE_TOOL_ACTIVATION_DATA_KEY,
-  ResponseDisplayType,
+  ToolResponseType,
   SKILL_LOAD_TOOL_NAME,
   type SkillResourceSummary,
 } from "@ngriffin_uk/polychat-schemas";
+import { escapeHtml } from "@ngriffin_uk/polychat-utility-core";
 
 import type { IFunctionResponse } from "~/types";
-import { escapeHtml } from "~/utils/html";
 
 import type { SkillContent, SkillResource, SkillResourceDescriptor } from "./types";
 
@@ -56,7 +56,7 @@ export function createSkillInstructionsResponse(
     name: SKILL_LOAD_TOOL_NAME,
     content: formatSkillContent(skill),
     data: {
-      responseType: ResponseDisplayType.HIDDEN,
+      responseType: ToolResponseType.HIDDEN,
       skill: skill.name,
       resources,
       [RESPONSE_TOOL_ACTIVATION_DATA_KEY]: [...activatedTools],
@@ -74,7 +74,7 @@ export function createSkillResourceResponse(
     name: SKILL_LOAD_TOOL_NAME,
     content: formatSkillResource(skillName, resource),
     data: {
-      responseType: ResponseDisplayType.HIDDEN,
+      responseType: ToolResponseType.HIDDEN,
       skill: skillName,
       resource: resource.path,
       resources,
