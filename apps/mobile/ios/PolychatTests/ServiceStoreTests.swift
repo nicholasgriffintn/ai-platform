@@ -177,6 +177,103 @@ struct ServiceStoreTests {
     }
 
     @MainActor
+    @Test func conversationManagerShowsToolResultsBeforeAssistantReply() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.streamEvents = [
+            .toolUseStart(ChatToolCallEvent(toolCallId: "call-1", name: "web_search")),
+            .toolUseDelta(ChatToolCallEvent(
+                toolCallId: "call-1",
+                parameters: .object(["query": .string("polychat")])
+            )),
+            .toolUseStop("call-1"),
+            .toolResult(ChatToolResultEvent(
+                id: "tool-message-1",
+                toolCallId: "call-1",
+                name: "web_search",
+                status: "success",
+                content: .string("Three results"),
+                data: nil,
+                logId: "log-1",
+                model: nil,
+                timestamp: 1_774_000_000
+            )),
+            .usageLimits(ChatUsageLimits(
+                daily: ChatUsageLimits.Allowance(used: 5, limit: 50),
+                pro: nil,
+                byok: nil
+            )),
+            .content("Found three results"),
+            .done
+        ]
+
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        _ = manager.startNewConversation()
+
+        try await manager.addMessage(ChatMessage(role: "user", content: "Search please"))
+
+        let messages = try #require(manager.currentConversation?.messages)
+        #expect(messages.map(\.role) == ["user", "tool", "assistant"])
+        #expect(messages[1].id == "tool-message-1")
+        #expect(messages[1].parts?.map(\.type) == ["tool_result"])
+        #expect(messages[1].parts?.first?.name == "web_search")
+        #expect(messages[1].parts?.first?.content == .string("Three results"))
+        #expect(messages.last?.textContent == "Found three results")
+        #expect(manager.usageLimits?.daily?.used == 5)
+    }
+
+    @MainActor
+    @Test func conversationManagerRecoversDetachedTurnAfterTransportFailure() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.streamError = URLError(.networkConnectionLost)
+        apiClient.conversationDetail = try makeConversationDetail(id: "conversation-1", messagesJSON: """
+        {"id": "user-1", "role": "user", "content": "Search please"},
+        {
+            "id": "tool-1",
+            "role": "tool",
+            "content": "",
+            "parts": [{"type": "tool_result", "name": "web_search", "content": "Three results"}]
+        },
+        {"id": "assistant-1", "role": "assistant", "content": "Recovered answer", "model": "gpt-4o"}
+        """)
+
+        let manager = ConversationManager()
+        manager.configure(
+            apiClient: apiClient,
+            turnRecoveryPolicy: makeInstantTurnRecoveryPolicy()
+        )
+        _ = manager.startNewConversation()
+
+        try await manager.addMessage(ChatMessage(role: "user", content: "Search please"))
+
+        let messages = try #require(manager.currentConversation?.messages)
+        #expect(apiClient.fetchConversationCallCount >= 1)
+        #expect(messages.map(\.role) == ["user", "tool", "assistant"])
+        #expect(messages.last?.id == "assistant-1")
+        #expect(messages.last?.textContent == "Recovered answer")
+        #expect(manager.currentConversation?.isLoadedFromAPI == true)
+    }
+
+    @MainActor
+    @Test func conversationManagerSurfacesAPIErrorsWithoutRecovery() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.streamError = APIClientError.httpStatus(500, "Model unavailable")
+
+        let manager = ConversationManager()
+        manager.configure(
+            apiClient: apiClient,
+            turnRecoveryPolicy: makeInstantTurnRecoveryPolicy()
+        )
+        _ = manager.startNewConversation()
+
+        try await manager.addMessage(ChatMessage(role: "user", content: "Hi"))
+
+        #expect(apiClient.fetchConversationCallCount == 0)
+        #expect(manager.currentConversation?.messages.map(\.role) == ["user", "assistant"])
+        #expect(manager.currentConversation?.messages.last?.textContent == "Error: API returned 500: Model unavailable")
+    }
+
+    @MainActor
     @Test func conversationManagerReplacesLoadingMessageWhenAPIClientIsMissing() async throws {
         let manager = ConversationManager()
         _ = manager.startNewConversation()

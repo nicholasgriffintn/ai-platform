@@ -57,6 +57,24 @@ func makeConversation(
     )
 }
 
+func makeConversationDetail(id: String, messagesJSON: String) throws -> ConversationDetailResponse {
+    let json = """
+    {
+        "id": "\(id)",
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z",
+        "is_archived": false,
+        "messages": [\(messagesJSON)]
+    }
+    """
+
+    return try JSONDecoder().decode(ConversationDetailResponse.self, from: Data(json.utf8))
+}
+
+func makeInstantTurnRecoveryPolicy() -> TurnRecoveryPolicy {
+    TurnRecoveryPolicy(pollInterval: .zero, maxWait: .seconds(2), sleep: { _ in })
+}
+
 func makeIsolatedUserDefaults() throws -> UserDefaults {
     let suiteName = "PolychatTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suiteName))
@@ -99,13 +117,21 @@ final class ConversationAPIClientStub: ConversationAPIClient {
     var updatedConversationPayloads: [(id: String, title: String?, messages: [ChatMessage]?, parentConversationId: String?, parentMessageId: String?)] = []
     var deletedConversationIds: [String] = []
     var generatedTitle = "Generated title"
+    var conversationDetail: ConversationDetailResponse?
+    var fetchConversationCallCount = 0
 
     func fetchConversations(limit: Int, page: Int, includeArchived: Bool) async throws -> ConversationListResponse {
         throw TestFailure.unexpectedCall
     }
 
     func fetchConversation(id: String, refreshPending: Bool) async throws -> ConversationDetailResponse {
-        throw TestFailure.unexpectedCall
+        fetchConversationCallCount += 1
+
+        guard let conversationDetail else {
+            throw TestFailure.unexpectedCall
+        }
+
+        return conversationDetail
     }
 
     func streamChatCompletion(
