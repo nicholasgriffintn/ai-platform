@@ -27,7 +27,7 @@ import { getToolEventPayload } from "~/lib/chat/tools/events";
 import { handleToolCalls } from "~/lib/chat/tools/execution";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
-import { isUsageExhausted, USAGE_LIMIT_NOTICE } from "~/lib/usage/limitState";
+import { shouldStopTurnForUsage, USAGE_LIMIT_NOTICE } from "~/lib/usage/limitState";
 import { sumTokenUsage, type NormalisedTokenUsage } from "~/lib/usage/tokenUsage";
 import {
   StreamState,
@@ -324,7 +324,7 @@ export async function runAgentLoop(
       return results;
     },
     resolveTurn: async ({ messages, step }) => {
-      if (step > 1 && (await isUsageExhausted(params.conversationManager))) {
+      if (step > 1 && (await shouldStopTurnForUsage(params.conversationManager))) {
         state.stoppedForUsageLimit = true;
 
         return closingTurn(USAGE_LIMIT_NOTICE, "usage_limit_reached");

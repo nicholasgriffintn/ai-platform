@@ -22,17 +22,33 @@ this file claims.
 Streaming is a transport, not a loop of its own (ADR 0022). A streamed turn and a buffered one draw the
 same budget through the same loop, so there is one place to change a bound and one place it can be lost.
 
-## Admission is checked once; spend is metered per provider call
+## A turn is admitted once, then never killed for balance
 
-`checkUsageLimits` at the request boundary protects the anonymous and Free daily message allowance. It does
-not stop a paid turn and does not re-check between model steps. A top-level assistant response records one
-message-counter increment after it is stored, so an agent loop cannot truncate itself halfway through useful
-work.
+`checkUsageLimits` at the request boundary still throws for spent daily message counts — those survive
+as the abuse guard for anonymous and Free accounts. For a plan with `included_credits` configured,
+`ConversationManager.admitTurn` runs once at that same boundary: it estimates the turn from the prompt
+tokens at the model's input rate plus an output allowance (the model's `maxTokens`, capped at 8k
+tokens' worth), admits it if the estimate fits `included + grace - spent - reserved` or overage is
+enabled, and reserves the estimate on the usage balance. A BYOK turn skips admission entirely. The
+reservation is released when the turn's real spend lands (next to `recordModelTurnUsage` in
+`assistant-turn.ts`), and again defensively in the streaming, ensemble, and non-stream `finally`
+paths; the release is idempotent, so every call site is safe.
 
 Every provider completion inside a loop still records its own vendor units through
 `recordModelTurnUsage`. The ordinary agent transport, model-ensemble secondaries, and panel member and
-conclusion calls use that seam. Step budgets remain the hard in-turn cost bound; the monthly credit balance
-is accounting state until a separate admission/reservation decision is implemented.
+conclusion calls use that seam. Step budgets remain the hard in-turn cost bound.
+
+- **Agent loop**: `runAgentLoop` still re-checks before every step after the first, but the check is a
+  runaway guard, not a balance check. An admitted turn stops only when the period's credit spend passes
+  `included + grace + OVERRUN_CAP`, where `OVERRUN_CAP = max(25% of grace, 25 credits)`. The stop keeps
+  the graceful close — `USAGE_LIMIT_NOTICE`, a `usage_limit_reached` finish reason, the finish gate
+  allowed — so the user gets an answer explaining the stop rather than an error. Spend past the reserve
+  inside an admitted turn accrues to `overrun_credit_micros` and is forgiven: a measurement, not a
+  debt. While the plan has no credits configured, the per-step check falls back to the message-count
+  behaviour unchanged.
+- **Goals**: `readUsageLimitState` feeds `usageLimitsExhausted` into the continuation policy. With
+  credits configured a goal stops at `exhausted` — past the reserve with no overage — never at
+  `reserve`, and ends as `limit_reached` rather than erroring.
 
 ## The abuse guard and ledger both update atomically
 

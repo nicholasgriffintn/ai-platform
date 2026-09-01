@@ -79,6 +79,7 @@ function createParams(turns: TurnOutput[], maxSteps = 8) {
         get: vi.fn(async () => []),
         checkUsageLimits: vi.fn(),
         getUsageLimits: vi.fn(async () => ({ daily: { used: 1, limit: 100 } })),
+        releaseTurnReservation: vi.fn(),
       } as any,
       toolRequestContext: { env: { AI: {} }, request: { enabled_tools: [] } } as any,
       transport,
@@ -349,6 +350,60 @@ describe("runAgentLoop", () => {
     expect(result.response.status).toBe("usage_limit_reached");
     expect(result.response.response).toContain("reached your usage limit");
     expect(result.toolResponses).toHaveLength(1);
+    expect(runTurn).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps an admitted turn running through the reserve even when message counts are spent", async () => {
+    const { params, runTurn } = createParams([toolTurn("get_weather"), textTurn("Done.")]);
+
+    mocks.handleToolCalls.mockResolvedValueOnce([
+      { role: "tool", name: "get_weather", content: "sunny", status: "success" },
+    ]);
+    params.conversationManager.getUsageLimits = vi.fn(async () => ({
+      daily: { used: 100, limit: 100 },
+      credits: {
+        included: 100,
+        used: 110,
+        reserved: 0,
+        grace: 20,
+        overrun: 0,
+        overage: 0,
+        overage_enabled: false,
+        state: "reserve",
+      },
+    }));
+
+    const result = await runAgentLoop(params);
+
+    expect(result.response.status).not.toBe("usage_limit_reached");
+    expect(result.response.response).toBe("Done.");
+    expect(runTurn).toHaveBeenCalledTimes(2);
+  });
+
+  it("stops an admitted turn only at the runaway ceiling", async () => {
+    const { params, runTurn } = createParams([toolTurn("get_weather")]);
+
+    mocks.handleToolCalls.mockResolvedValue([
+      { role: "tool", name: "get_weather", content: "sunny", status: "success" },
+    ]);
+    params.conversationManager.getUsageLimits = vi.fn(async () => ({
+      daily: { used: 0, limit: 100 },
+      credits: {
+        included: 100,
+        used: 146,
+        reserved: 0,
+        grace: 20,
+        overrun: 0,
+        overage: 0,
+        overage_enabled: false,
+        state: "exhausted",
+      },
+    }));
+
+    const result = await runAgentLoop(params);
+
+    expect(result.response.status).toBe("usage_limit_reached");
+    expect(result.response.response).toContain("reached your usage limit");
     expect(runTurn).toHaveBeenCalledTimes(1);
   });
 

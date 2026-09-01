@@ -114,6 +114,7 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
     } finally {
       stopHeartbeat();
       stopSignal.stop();
+      await params.conversationManager.releaseTurnReservation();
       await closeRunResources();
 
       try {

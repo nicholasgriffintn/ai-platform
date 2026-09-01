@@ -10,6 +10,7 @@ import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
 
 import { billableTokenQuantities } from "./billableUnits";
+import { isByokTurn } from "./byok";
 import { emitUsageEvents, resolveUsageAttribution, type UsageEventDraft } from "./ledger";
 import type { NormalisedTokenUsage } from "./tokenUsage";
 
@@ -28,20 +29,6 @@ export interface RecordModelTurnUsageParams {
   conversationId?: string | null;
   occurredAt?: string;
   tier?: string;
-}
-
-async function isByokTurn(
-  repositories: RepositoryManager,
-  userId: number,
-  provider: string,
-): Promise<boolean> {
-  try {
-    return await repositories.userSettings.hasProviderApiKey(userId, provider);
-  } catch (error) {
-    logger.warn("Failed to resolve BYOK state for a usage event", { error, userId, provider });
-
-    return false;
-  }
 }
 
 function hasRateFor(rates: readonly RateEntry[], unit: RateEntry["unit"]): boolean {

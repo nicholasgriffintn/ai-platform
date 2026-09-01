@@ -35,6 +35,8 @@ const {
   },
   mockConversationManager: {
     checkUsageLimits: vi.fn(),
+    admitTurn: vi.fn(),
+    releaseTurnReservation: vi.fn(),
     add: vi.fn(),
     get: vi.fn(async () => []),
     getUsageLimits: vi.fn(async () => null),

@@ -8,6 +8,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { hasPlanEntitlement } from "./plans";
 import { resolveUsageBalanceSnapshot } from "./usage/balanceSnapshot";
 import { usageCreditsFromBalance } from "./usage/creditSummary";
+import { creditsAreEnforced } from "./usage/planSeed";
 
 export interface UsageLimits {
   daily: {
@@ -184,6 +185,10 @@ export class UsageManager {
       this.user.id,
       usagePeriodFromDate(),
     );
+
+    if (!creditsAreEnforced({ includedCreditMicros: balance.included_credit_micros })) {
+      return { daily };
+    }
 
     return { daily, credits: usageCreditsFromBalance(balance) };
   }
