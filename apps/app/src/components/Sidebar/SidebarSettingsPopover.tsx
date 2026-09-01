@@ -8,6 +8,7 @@ import { SOURCE_CODE_URL } from "~/constants";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { useIsHydrated } from "~/hooks/useIsHydrated";
 import { useTheme } from "~/hooks/useTheme";
+import { useUsageBalance } from "~/hooks/useUsage";
 import { getSidebarUsageItems } from "~/lib/sidebar-usage";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
@@ -28,6 +29,9 @@ export function SidebarSettingsPopover() {
   const { user, isLoading } = useAuthStatus();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const usageLimits = useUsageStore((state) => state.usageLimits);
+  const planId: string | null | undefined = user?.plan_id;
+  const hasPaidPlan = planId === "pro" || planId === "enterprise";
+  const usageBalance = useUsageBalance(isAuthenticated && hasPaidPlan);
   const [theme, setTheme] = useTheme();
   const isHydrated = useIsHydrated();
 
@@ -38,16 +42,17 @@ export function SidebarSettingsPopover() {
           ? {
               name: user.name,
               avatarUrl: user.avatar_url,
-              planLabel: user.plan_id === "pro" ? "Pro" : "Free",
+              planLabel: planId === "enterprise" ? "Enterprise" : hasPaidPlan ? "Pro" : "Free",
             }
           : null
       }
       isAuthenticated={isAuthenticated}
       isLoading={isLoading}
+      isUsageLoading={isLoading || (hasPaidPlan && usageBalance.isLoading)}
       links={links}
       sourceCodeIcon={<ProviderGlyph name="github" size={16} />}
       theme={isHydrated ? theme : undefined}
-      usage={getSidebarUsageItems(usageLimits)}
+      usage={getSidebarUsageItems(usageLimits, usageBalance.data?.credits)}
       onShowKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
       onSignIn={() => setShowLoginModal(true)}
       onThemeChange={setTheme}

@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   AccountNavigation,
+  AccountOverview,
   AccountPrompt,
   type AccountSection,
   AgentEditor,
@@ -16,6 +17,43 @@ import {
 afterEach(cleanup);
 
 describe("account controls", () => {
+  it("presents metered credits without a false zero allowance", () => {
+    render(
+      <AccountOverview
+        user={{ plan_id: "pro", message_count: 1 }}
+        isAuthenticated
+        usageBalance={{
+          period: "2026-09",
+          resets_at: "2026-10-01T00:00:00.000Z",
+          plan_id: "pro",
+          credits: {
+            included: 0,
+            used: 0.1706,
+            reserved: 0,
+            grace: 0,
+            overrun: 0.1706,
+            overage: 0,
+            overage_enabled: false,
+            state: "exhausted",
+          },
+          credit_micros: {
+            included: 0,
+            spent: 170_600,
+            reserved: 0,
+            grace: 0,
+            overrun: 170_600,
+            overage: 0,
+          },
+          last_event_at: "2026-09-01T12:00:00.000Z",
+        }}
+        onSignIn={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("0.1706 used")).toBeTruthy();
+    expect(screen.queryByText("0.1706 / 0")).toBeNull();
+  });
+
   it("omits inactive S3 fields from the default Vectorize settings payload", () => {
     const payload = prepareUserSettingsPayload({
       embedding_provider: "vectorize",

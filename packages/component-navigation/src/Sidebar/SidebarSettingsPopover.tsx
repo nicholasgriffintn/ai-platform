@@ -58,7 +58,13 @@ const usageToneClasses: Record<SidebarUsageMeter["tone"], string> = {
   amber: "bg-amber-500",
 };
 
-function SidebarUsageSummary({ usage }: { usage: SidebarUsageMeter[] }) {
+function SidebarUsageSummary({
+  usage,
+  isLoading,
+}: {
+  usage: SidebarUsageMeter[];
+  isLoading: boolean;
+}) {
   return (
     <section className="p-3 border-b border-zinc-200 dark:border-zinc-700">
       <div className="mb-3 flex items-center justify-between gap-3">
@@ -69,7 +75,7 @@ function SidebarUsageSummary({ usage }: { usage: SidebarUsageMeter[] }) {
 
       {usage.length === 0 ? (
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Usage appears after Polychat sees your first message.
+          {isLoading ? "Loading usage…" : "Usage is temporarily unavailable."}
         </p>
       ) : (
         <div className="space-y-3">
@@ -82,7 +88,7 @@ function SidebarUsageSummary({ usage }: { usage: SidebarUsageMeter[] }) {
               {item.percentage === null ? (
                 <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                   <span className={cn("h-1.5 w-1.5 rounded-full", usageToneClasses[item.tone])} />
-                  <span>Unlimited usage</span>
+                  <span>{item.assistiveLabel}</span>
                 </div>
               ) : (
                 <div
@@ -166,6 +172,7 @@ export interface SidebarSettingsPopoverProps {
   account: SidebarAccountSummary | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isUsageLoading?: boolean;
   links: SidebarSettingsLinks;
   sourceCodeIcon: ReactNode;
   theme?: ThemePreference;
@@ -179,6 +186,7 @@ export function SidebarSettingsPopover({
   account,
   isAuthenticated,
   isLoading,
+  isUsageLoading = false,
   links,
   sourceCodeIcon,
   theme,
@@ -233,7 +241,7 @@ export function SidebarSettingsPopover({
         className="w-[calc(var(--radix-popover-trigger-width)-1rem)] max-w-[calc(var(--radix-popover-trigger-width)-1rem)] border-zinc-200 bg-off-white p-3 shadow-xl dark:border-zinc-700 dark:bg-zinc-900"
       >
         <div className="space-y-3">
-          <SidebarUsageSummary usage={usage} />
+          <SidebarUsageSummary usage={usage} isLoading={isUsageLoading} />
 
           <div className="space-y-1">
             {isAuthenticated ? (

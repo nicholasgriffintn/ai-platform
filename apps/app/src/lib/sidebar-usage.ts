@@ -1,3 +1,4 @@
+import type { UsageCreditsSummary } from "@ngriffin_uk/polychat-schemas";
 import { getBoundedPercentage } from "@ngriffin_uk/polychat-utility-core";
 
 import type { UsageLimits } from "~/state/stores/usageStore";
@@ -15,14 +16,17 @@ export function getBoundedUsagePercentage(used: number, limit: number) {
   return getBoundedPercentage(used, limit);
 }
 
-export function getSidebarUsageItems(usageLimits: UsageLimits | null): SidebarUsageItem[] {
-  if (!usageLimits) {
+export function getSidebarUsageItems(
+  usageLimits: UsageLimits | null,
+  balanceCredits?: UsageCreditsSummary,
+): SidebarUsageItem[] {
+  if (!usageLimits && !balanceCredits) {
     return [];
   }
 
   const items: SidebarUsageItem[] = [];
 
-  if (typeof usageLimits.daily.limit === "number") {
+  if (typeof usageLimits?.daily.limit === "number") {
     items.push({
       id: "standard",
       label: "Standard lane",
@@ -33,16 +37,20 @@ export function getSidebarUsageItems(usageLimits: UsageLimits | null): SidebarUs
     });
   }
 
-  if (usageLimits.credits) {
-    const allowance = usageLimits.credits.included + usageLimits.credits.grace;
+  const credits = balanceCredits ?? usageLimits?.credits;
+
+  if (credits) {
+    const allowance = credits.included + credits.grace;
+    const hasAllowance = allowance > 0;
 
     items.push({
       id: "credits",
       label: "Credits",
-      value: `${usageLimits.credits.used} / ${allowance}`,
-      assistiveLabel: `${usageLimits.credits.used} of ${allowance} credits used this month`,
-      percentage:
-        allowance > 0 ? getBoundedUsagePercentage(usageLimits.credits.used, allowance) : 0,
+      value: hasAllowance ? `${credits.used} / ${allowance}` : `${credits.used} used`,
+      assistiveLabel: hasAllowance
+        ? `${credits.used} of ${allowance} credits used this month`
+        : `${credits.used} credits used this month`,
+      percentage: hasAllowance ? getBoundedUsagePercentage(credits.used, allowance) : null,
       tone: "amber",
     });
   }

@@ -9,9 +9,64 @@ import {
   ConversationListControls,
   DEFAULT_CONVERSATION_LIST_FILTERS,
   ProductModeSwitch,
+  SidebarSettingsPopover,
 } from "./index";
 
 afterEach(cleanup);
+
+const sidebarSettingsProps = {
+  account: { name: "N", planLabel: "Pro" },
+  isAuthenticated: true,
+  isLoading: false,
+  links: {
+    account: "/profile",
+    customisation: "/profile?tab=customisation",
+    providers: "/profile?tab=providers",
+    billing: "/profile?tab=billing",
+    terms: "/terms",
+    privacy: "/privacy",
+    sourceCode: "https://example.com/source",
+  },
+  sourceCodeIcon: <span />,
+  usage: [],
+  onShowKeyboardShortcuts: vi.fn(),
+  onSignIn: vi.fn(),
+  onThemeChange: vi.fn(),
+};
+
+describe("SidebarSettingsPopover", () => {
+  it("shows a loading state instead of waiting for a first message", async () => {
+    render(<SidebarSettingsPopover {...sidebarSettingsProps} isUsageLoading />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Open settings and configuration" }));
+
+    expect(await screen.findByText("Loading usage…")).toBeTruthy();
+    expect(screen.queryByText(/first message/i)).toBeNull();
+  });
+
+  it("describes usage without a denominator as tracked rather than unlimited", async () => {
+    render(
+      <SidebarSettingsPopover
+        {...sidebarSettingsProps}
+        usage={[
+          {
+            id: "credits",
+            label: "Credits",
+            value: "0.1706 used",
+            assistiveLabel: "0.1706 credits used this month",
+            percentage: null,
+            tone: "amber",
+          },
+        ]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Open settings and configuration" }));
+
+    expect(await screen.findByText("0.1706 credits used this month")).toBeTruthy();
+    expect(screen.queryByText(/unlimited usage/i)).toBeNull();
+  });
+});
 
 describe("ProductModeSwitch", () => {
   it("marks the active mode and links to host-resolved destinations", () => {

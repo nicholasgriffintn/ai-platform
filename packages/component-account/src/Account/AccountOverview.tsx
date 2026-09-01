@@ -115,7 +115,7 @@ function UsageCard({
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <div className="font-medium text-zinc-900 dark:text-zinc-100">{title}</div>
         <div className="text-sm tabular-nums text-zinc-600 dark:text-zinc-300">
-          {limit !== undefined ? `${used} / ${limit}` : `${used}`}
+          {limit !== undefined ? `${used} / ${limit}` : `${used} used`}
         </div>
       </div>
 
@@ -317,7 +317,7 @@ export function AccountOverview({
               title="Credits"
               tone="purple"
               used={usageBalance.credits.used}
-              limit={creditAllowance}
+              limit={creditAllowance > 0 ? creditAllowance : undefined}
               description="Usage across models and metered capabilities this month"
               resets={formatDate(usageBalance.resets_at)}
             />

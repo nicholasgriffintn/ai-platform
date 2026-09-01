@@ -14,6 +14,7 @@ import { toast } from "sonner";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { GOAL_QUERY_KEY } from "~/hooks/useGoal";
+import { USAGE_QUERY_KEYS } from "~/hooks/useUsage";
 import { apiService } from "~/lib/api/api-service";
 import { createStreamProgressCoalescer } from "~/lib/chat/stream-progress-coalescer";
 import { getChatStreamLoadingMessage } from "~/lib/chat/stream-state";
@@ -489,6 +490,9 @@ export function useStreamingResponse(
         }
 
         await queryClient.invalidateQueries({ queryKey: [GOAL_QUERY_KEY, conversationId] });
+        if (isAuthenticated && !isLocal) {
+          await queryClient.invalidateQueries({ queryKey: USAGE_QUERY_KEYS.balance });
+        }
 
         return {
           status: "success",
@@ -541,6 +545,9 @@ export function useStreamingResponse(
         );
         await queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY, conversationId] });
         await queryClient.invalidateQueries({ queryKey: [GOAL_QUERY_KEY, conversationId] });
+        if (isAuthenticated) {
+          await queryClient.invalidateQueries({ queryKey: USAGE_QUERY_KEYS.balance });
+        }
 
         return {
           status: "success",

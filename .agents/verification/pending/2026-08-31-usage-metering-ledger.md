@@ -16,7 +16,7 @@
 - [ ] Run a two-model ensemble and confirm a distinct event set exists for the secondary model. Run Council or Second Opinion twice and confirm every panel member completion plus the conclusion has its own stable `panel:<tool-call>:<index>` message scope without colliding with the second invocation.
 - [ ] `GET /user/usage/balance` and confirm `credits.used` moved by roughly the sum of the events, and that `period` and `resets_at` name the current month.
 - [ ] Redeliver one `usage_rollup` payload and confirm its events remain singletons and `usage_balance.spent_credit_micros` does not move. Force a D1 batch failure in a non-production environment and confirm neither the event nor its balance increment commits.
-- [ ] In the web app, confirm a paid account shows monthly credits in Account and the sidebar while a Free account shows its daily allowance. Complete a streamed turn and confirm the credit snapshot refreshes without disabling the composer.
+- [ ] In the web app, confirm a paid account shows the same monthly credits in Account and the Sidebar before sending a message. A configured allowance shows `used / allowance`; a zero or missing allowance shows `used` without `/ 0` or "Unlimited usage". A Free account still shows its daily allowance. Complete a streamed turn and confirm the balance refreshes without disabling the composer, then trigger an auth refresh and confirm the Sidebar does not fall back to first-message copy. Leave Account open across a monthly reset and confirm it moves to the new period without a reload.
 - [ ] In iOS, complete a streamed turn whose `usage_limits` includes `credits` and confirm decoding succeeds without changing the existing daily-limit behaviour.
 - [ ] Sanity-check the scale against the published rates: a short Haiku reply should be a small fraction of one credit, not tens of credits. A number three orders of magnitude out means the micro-USD to micro-credit conversion is wrong, not the token count.
 - [ ] Confirm `GET /user/usage/events` returns only your own rows when signed in as another account.
@@ -25,4 +25,4 @@
 
 ## Notes
 
-`included_credit_micros` and `grace_credit_micros` are seeded from the plan's `included_credits` and `grace_credits` columns. A plan with null values reports a zero allowance; configure those values before treating the account display as customer-ready. Legacy counter columns remain in D1 for rolling compatibility but no active path writes them. Credit exhaustion still does not enforce admission or stop an in-flight turn.
+`included_credit_micros` and `grace_credit_micros` are seeded from the plan's `included_credits` and `grace_credits` columns. A plan with null values has no displayed denominator; configure those values before treating the allowance as customer-ready. Legacy counter columns remain in D1 for rolling compatibility but no active path writes them. Credit exhaustion still does not enforce admission or stop an in-flight turn.

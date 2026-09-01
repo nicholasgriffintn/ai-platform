@@ -64,7 +64,11 @@ ordinary and agent turns, model-ensemble secondary answers, and every panel turn
 the monthly balance in one D1 batch. Never insert a billable event through another repository method or
 derive cost from a message/function multiplier. `/user/usage`, `/user/usage/events`, and
 `/user/usage/breakdown` publish the shared credit contract; credits are visible accounting, not admission or
-mid-turn enforcement. See [ADR 0041](../architecture/decisions/0041-usage-metering-and-credits.md).
+mid-turn enforcement. A missing or zero plan allowance is shown as usage without a denominator rather than
+as `used / 0` or "unlimited". Web Account and Sidebar share the balance query, invalidate it after a remote
+turn, and refresh it at the monthly boundary; the stream payload supplements rather than replaces that
+authoritative read. See
+[ADR 0041](../architecture/decisions/0041-usage-metering-and-credits.md).
 
 Text-to-speech is reachable without an account, so `apps/api/src/lib/audio/access.ts` gates it. An anonymous
 caller may only use the platform-hosted provider and spends the anonymous daily message allowance; naming any
