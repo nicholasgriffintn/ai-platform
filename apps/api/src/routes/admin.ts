@@ -3,6 +3,8 @@ import {
   moderateAgentSchema,
   apiResponseSchema,
   createTaskResponseSchema,
+  planCreditsUpdateSchema,
+  planParamsSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import { z } from "zod/v4";
@@ -16,6 +18,7 @@ import {
   moderateAgent,
   getAllSharedAgentsForAdmin,
 } from "~/services/admin/sharedAgents";
+import { updatePlanCredits } from "~/services/plans";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv } from "~/types";
 
@@ -71,6 +74,22 @@ addRoute(app, "post", "/model-analysis/sync-completed", {
       message: "Artificial Analysis ingestion task queued",
     };
   },
+});
+
+addRoute(app, "put", "/plans/:id/credits", {
+  tags: ["admin"],
+  summary: "Set plan credits and Stripe metering configuration",
+  description:
+    "Set included credits, grace credits, the Stripe meter event name, and the overage price for a plan (admin only)",
+  bodySchema: planCreditsUpdateSchema,
+  paramSchema: planParamsSchema,
+  auth: true,
+  middleware: [requireStrictAdmin],
+  responses: {
+    "200": { description: "Plan updated", schema: apiResponseSchema },
+  },
+  handler: async ({ body, params, serviceContext }) =>
+    updatePlanCredits(serviceContext.env, params.id, body),
 });
 
 addRoute(app, "put", "/shared-agents/:id/featured", {

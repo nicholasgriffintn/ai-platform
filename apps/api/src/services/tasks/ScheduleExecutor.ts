@@ -10,6 +10,7 @@ import {
   scheduleDailyUsageReset,
   scheduleDailySynthesis,
   scheduleRecipeExecutions,
+  scheduleStripeUsageSync,
   scheduleTrainingQualityScoring,
 } from "./scheduledTasks";
 
@@ -60,6 +61,18 @@ export class ScheduleExecutor {
         logger.info(`Training quality scoring task completed`);
         break;
       case SCHEDULES.RECIPE_EXECUTION:
+        const invocation = new Date(event.scheduledTime);
+
+        if (invocation.getUTCMinutes() === 0) {
+          try {
+            await scheduleStripeUsageSync(env, invocation);
+          } catch (error) {
+            logger.warn("Stripe usage sync scheduling failed", {
+              error: getErrorMessage(error),
+            });
+          }
+        }
+
         logger.info(`Starting due recipe execution scheduling`);
         await runRecipeScheduleAndConnectorMaintenance(env);
         logger.info(`Due recipe execution scheduling completed`);

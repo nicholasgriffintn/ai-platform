@@ -57,6 +57,20 @@ Use a shared `TRAINING_WORKER_TOKEN` in the API and training worker. Add AWS cre
 
 Treat Stripe, PostHog, Beacon, email, SMS, guardrails, and captcha as independent capabilities. Disable their user interface or runtime path when credentials are intentionally absent; do not fill placeholders with dummy production values.
 
+Stripe overage billing meters credits through Billing Meters rather than per-request charges. To
+enable it for a plan, do the dashboard work first, then record the identifiers on the plan row:
+
+- Create a Billing Meter in Stripe with an event name (for example `polychat_overage_credits`),
+  the default customer mapping (`stripe_customer_id`) and the default value key (`value`).
+- Create a recurring metered price on the subscription product that bills from that meter.
+- Set the plan's columns through `PUT /admin/plans/:id/credits` (strict admin): `included_credits`,
+  `grace_credits`, `stripe_meter_id` (the meter's **event name**) and `overage_price_id`. Leave
+  them null until the Stripe objects exist; a plan without `stripe_meter_id` is skipped by the
+  hourly sync, and one without `overage_price_id` refuses the overage opt-in.
+
+`APP_BASE_URL` must be set for checkout and the billing portal: `success_url`, `cancel_url` and
+`return_url` are all validated against that origin, so a missing value rejects every redirect.
+
 Shieldstral is an optional, self-hosted guardrail rather than a Mistral API model. Set
 `SHIELDSTRAL_BASE_URL` to the root of an OpenAI-compatible vLLM, llama.cpp, or SGLang endpoint and
 set `SHIELDSTRAL_API_KEY` when that endpoint requires bearer authentication. Pin the deployed

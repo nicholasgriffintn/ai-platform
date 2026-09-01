@@ -66,7 +66,28 @@ Stripe webhooks map subscription **status** to entitlement, not just deletion.
 `incomplete_expired`, `paused` and `canceled` as revoked; `invoice.payment_failed` revokes and
 `invoice.paid` restores. Every handler writes only when the stored state actually changes, so a redelivered
 event neither rewrites the row nor sends a second email. An account that outranks `pro` is never downgraded
-by a lapsed subscription, because enterprise entitlement is granted outside Stripe.
+by a lapsed subscription, because enterprise entitlement is granted outside Stripe. A plan change also
+reflects into the current period's `usage_balance`: entitlement columns (`included_credit_micros`,
+`grace_credit_micros`, `plan_id`) are set from the plan row — the one legitimate absolute write on the
+balance, and it never touches spend columns — and a downgrade to `free` switches `overage_enabled` off.
+When a plan has no `grace_credits`, the grace allowance defaults to 10% of included credits with a
+50-credit floor.
+
+Overage reaches Stripe through Billing Meters, never one event per usage event. An hourly
+`stripe_usage_sync` task (queued from the quarter-hour cron on its top-of-hour invocation) compares each
+opted-in customer's `overage_credit_micros` against the `stripe_synced_overage_credit_micros` high-water
+mark, rounds the pending amount **down** to whole credits, and sends one
+`billing.meterEvents.create` per customer with identifier `${customerId}:${hourIso}`. The sub-credit
+remainder stays pending for a later hour, so nothing is lost and nothing is double-sent. A duplicate
+identifier means an earlier attempt in the same hour already delivered the event, so the amount is marked
+synced; any other failure leaves it pending for the next hour. Plans without a `stripe_meter_id` are
+skipped with a debug log.
+
+`POST /stripe/overage` opts a user in or out: it requires an entitled subscription and a payment method,
+adds or removes the plan's `overage_price_id` as a metered subscription item (idempotently in both
+directions), and mirrors the flag onto the current period's balance. `POST /stripe/portal` creates a
+billing-portal session. Its `return_url`, and checkout's `success_url`/`cancel_url`, must sit exactly on
+the `APP_BASE_URL` origin — anything else is rejected before Stripe is called.
 
 ## Embedding API safety and lifecycle
 

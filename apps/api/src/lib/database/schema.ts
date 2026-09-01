@@ -2019,6 +2019,7 @@ export const usageBalance = sqliteTable(
     reserved_credit_micros: integer().notNull().default(0),
     overrun_credit_micros: integer().notNull().default(0),
     overage_credit_micros: integer().notNull().default(0),
+    stripe_synced_overage_credit_micros: integer().notNull().default(0),
     overage_enabled: integer({ mode: "boolean" }).notNull().default(false),
     last_event_at: text(),
     created_at: text()

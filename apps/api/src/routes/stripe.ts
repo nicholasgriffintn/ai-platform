@@ -1,13 +1,22 @@
-import { errorResponseSchema, checkoutSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  billingPortalResponseSchema,
+  billingPortalSchema,
+  checkoutSchema,
+  errorResponseSchema,
+  overageStatusResponseSchema,
+  overageUpdateSchema,
+} from "@ngriffin_uk/polychat-schemas";
 import { type Context, Hono } from "hono";
 
 import { addRoute } from "~/lib/http/routeBuilder";
 import {
   cancelSubscription,
+  createBillingPortalSession,
   createCheckoutSession,
   getSubscriptionStatus,
   handleStripeWebhook,
   reactivateSubscription,
+  setOverageBilling,
 } from "~/services/subscription";
 
 import { createRouteLogger } from "../middleware/loggerMiddleware";
@@ -40,6 +49,40 @@ addRoute(app, "post", "/checkout", {
       body.success_url,
       body.cancel_url,
     ),
+});
+
+addRoute(app, "post", "/portal", {
+  tags: ["stripe"],
+  summary: "Create a Stripe billing portal session",
+  bodySchema: billingPortalSchema,
+  responses: {
+    200: { description: "Billing portal session created", schema: billingPortalResponseSchema },
+    400: { description: "Invalid return URL", schema: errorResponseSchema },
+    404: { description: "No billing account", schema: errorResponseSchema },
+    500: { description: "Server error", schema: errorResponseSchema },
+  },
+  auth: true,
+  handler: async ({ body, serviceContext, user }) =>
+    createBillingPortalSession(serviceContext.env, user, body.return_url),
+});
+
+addRoute(app, "post", "/overage", {
+  tags: ["stripe"],
+  summary: "Enable or disable metered overage billing",
+  bodySchema: overageUpdateSchema,
+  responses: {
+    200: { description: "Overage billing updated", schema: overageStatusResponseSchema },
+    400: { description: "Missing payment method", schema: errorResponseSchema },
+    404: { description: "No active subscription", schema: errorResponseSchema },
+    409: {
+      description: "Subscription or plan does not allow overage",
+      schema: errorResponseSchema,
+    },
+    500: { description: "Server error", schema: errorResponseSchema },
+  },
+  auth: true,
+  handler: async ({ body, serviceContext, user }) =>
+    setOverageBilling(serviceContext.env, user, body.enabled),
 });
 
 addRoute(app, "get", "/subscription", {

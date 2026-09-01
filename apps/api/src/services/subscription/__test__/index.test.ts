@@ -4,19 +4,31 @@ import type { IEnv, IUser } from "~/types";
 
 import {
   cancelSubscription,
+  createBillingPortalSession,
   createCheckoutSession,
   getSubscriptionStatus,
   handleStripeWebhook,
   reactivateSubscription,
+  setOverageBilling,
 } from "../index";
 
 const mockStripe = {
   customers: {
     create: vi.fn(),
+    listPaymentMethods: vi.fn(),
   },
   subscriptions: {
     retrieve: vi.fn(),
     update: vi.fn(),
+  },
+  subscriptionItems: {
+    create: vi.fn(),
+    del: vi.fn(),
+  },
+  billingPortal: {
+    sessions: {
+      create: vi.fn(),
+    },
   },
   checkout: {
     sessions: {
@@ -35,6 +47,11 @@ const mockRepositories = {
   users: {
     updateUser: vi.fn(),
     getUserByStripeCustomerId: vi.fn(),
+  },
+  usageBalances: {
+    ensureBalance: vi.fn(),
+    setOverageEnabled: vi.fn(),
+    setPlanEntitlement: vi.fn(),
   },
 };
 
@@ -73,6 +90,7 @@ const mockEnv: IEnv = {
   DB: {} as any,
   STRIPE_SECRET_KEY: "sk_test_123",
   STRIPE_WEBHOOK_SECRET: "whsec_test_123",
+  APP_BASE_URL: "https://app.example.com",
 } as IEnv;
 
 const mockUser: IUser = {
@@ -111,8 +129,8 @@ describe("Subscription Service", () => {
         mockEnv,
         mockUser,
         "plan-123",
-        "https://success.com",
-        "https://cancel.com",
+        "https://app.example.com/success",
+        "https://app.example.com/cancel",
       );
 
       expect(mockRepositories.plans.getPlanById).toHaveBeenCalledWith("plan-123");
@@ -144,8 +162,8 @@ describe("Subscription Service", () => {
           mockEnv,
           userWithSubscription,
           "plan-123",
-          "https://success.com",
-          "https://cancel.com",
+          "https://app.example.com/success",
+          "https://app.example.com/cancel",
         ),
       ).rejects.toThrow("User already has an active subscription");
     });
@@ -158,8 +176,8 @@ describe("Subscription Service", () => {
           mockEnv,
           mockUser,
           "nonexistent-plan",
-          "https://success.com",
-          "https://cancel.com",
+          "https://app.example.com/success",
+          "https://app.example.com/cancel",
         ),
       ).rejects.toThrow("Plan not found");
     });
@@ -175,8 +193,8 @@ describe("Subscription Service", () => {
           envWithoutKey,
           mockUser,
           "plan-123",
-          "https://success.com",
-          "https://cancel.com",
+          "https://app.example.com/success",
+          "https://app.example.com/cancel",
         ),
       ).rejects.toThrow("Stripe secret key not configured");
     });
@@ -369,6 +387,215 @@ describe("Subscription Service", () => {
     });
   });
 
+  describe("createBillingPortalSession", () => {
+    const customerUser = { ...mockUser, stripe_customer_id: "cus_123" } as IUser;
+
+    it("creates a portal session for the customer", async () => {
+      mockStripe.billingPortal.sessions.create.mockResolvedValue({
+        url: "https://billing.stripe.com/session/xyz",
+      });
+
+      const result = await createBillingPortalSession(
+        mockEnv,
+        customerUser,
+        "https://app.example.com/account",
+      );
+
+      expect(mockStripe.billingPortal.sessions.create).toHaveBeenCalledWith({
+        customer: "cus_123",
+        return_url: "https://app.example.com/account",
+      });
+      expect(result).toEqual({ url: "https://billing.stripe.com/session/xyz" });
+    });
+
+    it("rejects a return URL on a foreign origin", async () => {
+      await expect(
+        createBillingPortalSession(
+          mockEnv,
+          customerUser,
+          "https://app.example.com.evil.net/account",
+        ),
+      ).rejects.toThrow("return_url must be a URL on the application origin");
+      expect(mockStripe.billingPortal.sessions.create).not.toHaveBeenCalled();
+    });
+
+    it("rejects when the user has no billing account", async () => {
+      await expect(
+        createBillingPortalSession(mockEnv, mockUser, "https://app.example.com/account"),
+      ).rejects.toThrow("No billing account");
+    });
+  });
+
+  describe("createCheckoutSession redirect validation", () => {
+    it("rejects redirect URLs on a foreign origin", async () => {
+      await expect(
+        createCheckoutSession(
+          mockEnv,
+          mockUser,
+          "plan-123",
+          "https://evil.example.net/success",
+          "https://app.example.com/cancel",
+        ),
+      ).rejects.toThrow("success_url must be a URL on the application origin");
+      expect(mockStripe.checkout.sessions.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("setOverageBilling", () => {
+    const currentPeriod = new Date().toISOString().slice(0, 7);
+    const overageUser = {
+      ...mockUser,
+      plan_id: "pro",
+      stripe_customer_id: "cus_123",
+      stripe_subscription_id: "sub_123",
+    } as IUser;
+
+    const activeSubscription = (items: Array<{ id: string; price: { id: string } }>) => ({
+      status: "active",
+      customer: "cus_123",
+      default_payment_method: "pm_1",
+      items: { data: items },
+    });
+
+    beforeEach(() => {
+      mockRepositories.plans.getPlanById.mockResolvedValue({
+        id: "pro",
+        overage_price_id: "price_overage",
+      });
+    });
+
+    it("adds the metered item and enables the flag", async () => {
+      mockStripe.subscriptions.retrieve.mockResolvedValue(
+        activeSubscription([{ id: "si_base", price: { id: "price_base" } }]),
+      );
+
+      const result = await setOverageBilling(mockEnv, overageUser, true);
+
+      expect(mockStripe.subscriptionItems.create).toHaveBeenCalledWith({
+        subscription: "sub_123",
+        price: "price_overage",
+      });
+      expect(mockRepositories.usageBalances.setOverageEnabled).toHaveBeenCalledWith(
+        1,
+        currentPeriod,
+        true,
+      );
+      expect(result).toEqual({ overage_enabled: true });
+    });
+
+    it("does not add a second item when the metered item already exists", async () => {
+      mockStripe.subscriptions.retrieve.mockResolvedValue(
+        activeSubscription([
+          { id: "si_base", price: { id: "price_base" } },
+          { id: "si_overage", price: { id: "price_overage" } },
+        ]),
+      );
+
+      await setOverageBilling(mockEnv, overageUser, true);
+
+      expect(mockStripe.subscriptionItems.create).not.toHaveBeenCalled();
+      expect(mockRepositories.usageBalances.setOverageEnabled).toHaveBeenCalledWith(
+        1,
+        currentPeriod,
+        true,
+      );
+    });
+
+    it("treats a Stripe already-exists rejection as success", async () => {
+      mockStripe.subscriptions.retrieve.mockResolvedValue(
+        activeSubscription([{ id: "si_base", price: { id: "price_base" } }]),
+      );
+      mockStripe.subscriptionItems.create.mockRejectedValue(
+        new Error("The subscription is already using that price."),
+      );
+
+      const result = await setOverageBilling(mockEnv, overageUser, true);
+
+      expect(result).toEqual({ overage_enabled: true });
+      expect(mockRepositories.usageBalances.setOverageEnabled).toHaveBeenCalledWith(
+        1,
+        currentPeriod,
+        true,
+      );
+    });
+
+    it("removes the metered item and disables the flag", async () => {
+      mockStripe.subscriptions.retrieve.mockResolvedValue(
+        activeSubscription([
+          { id: "si_base", price: { id: "price_base" } },
+          { id: "si_overage", price: { id: "price_overage" } },
+        ]),
+      );
+
+      const result = await setOverageBilling(mockEnv, overageUser, false);
+
+      expect(mockStripe.subscriptionItems.del).toHaveBeenCalledWith("si_overage");
+      expect(mockRepositories.usageBalances.setOverageEnabled).toHaveBeenCalledWith(
+        1,
+        currentPeriod,
+        false,
+      );
+      expect(result).toEqual({ overage_enabled: false });
+    });
+
+    it("disables the flag without a Stripe call when no metered item exists", async () => {
+      mockStripe.subscriptions.retrieve.mockResolvedValue(
+        activeSubscription([{ id: "si_base", price: { id: "price_base" } }]),
+      );
+
+      await setOverageBilling(mockEnv, overageUser, false);
+
+      expect(mockStripe.subscriptionItems.del).not.toHaveBeenCalled();
+      expect(mockRepositories.usageBalances.setOverageEnabled).toHaveBeenCalledWith(
+        1,
+        currentPeriod,
+        false,
+      );
+    });
+
+    it("refuses when the subscription is not active", async () => {
+      mockStripe.subscriptions.retrieve.mockResolvedValue({
+        ...activeSubscription([]),
+        status: "past_due",
+      });
+
+      await expect(setOverageBilling(mockEnv, overageUser, true)).rejects.toThrow(
+        "Overage billing requires an active subscription",
+      );
+      expect(mockRepositories.usageBalances.setOverageEnabled).not.toHaveBeenCalled();
+    });
+
+    it("refuses to enable without a payment method", async () => {
+      mockStripe.subscriptions.retrieve.mockResolvedValue({
+        ...activeSubscription([{ id: "si_base", price: { id: "price_base" } }]),
+        default_payment_method: null,
+      });
+      mockStripe.customers.listPaymentMethods.mockResolvedValue({ data: [] });
+
+      await expect(setOverageBilling(mockEnv, overageUser, true)).rejects.toThrow(
+        "A payment method is required to enable overage billing",
+      );
+      expect(mockStripe.subscriptionItems.create).not.toHaveBeenCalled();
+    });
+
+    it("refuses when the plan has no overage price", async () => {
+      mockRepositories.plans.getPlanById.mockResolvedValue({ id: "pro" });
+      mockStripe.subscriptions.retrieve.mockResolvedValue(
+        activeSubscription([{ id: "si_base", price: { id: "price_base" } }]),
+      );
+
+      await expect(setOverageBilling(mockEnv, overageUser, true)).rejects.toThrow(
+        "This plan does not support overage billing",
+      );
+    });
+
+    it("refuses without a subscription", async () => {
+      await expect(setOverageBilling(mockEnv, mockUser, true)).rejects.toThrow(
+        "No active subscription",
+      );
+    });
+  });
+
   describe("handleStripeWebhook", () => {
     it("should handle checkout.session.completed event", async () => {
       const mockEvent = {
@@ -547,6 +774,70 @@ describe("Subscription Service", () => {
 
       expect(mockRepositories.users.updateUser).not.toHaveBeenCalled();
       expect(mockSendPaymentFailedEmail).not.toHaveBeenCalled();
+    });
+
+    it("disables overage and resets entitlement when a subscription lapses", async () => {
+      const currentPeriod = new Date().toISOString().slice(0, 7);
+
+      mockStripe.webhooks.constructEventAsync.mockResolvedValue({
+        type: "customer.subscription.updated",
+        data: { object: { id: "sub_123", customer: "cus_123", status: "past_due" } },
+      });
+      mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue({
+        id: 1,
+        email: "test@example.com",
+        plan_id: "pro",
+        stripe_subscription_id: "sub_123",
+      });
+      mockRepositories.plans.getPlanById.mockResolvedValue({
+        id: "free",
+        included_credits: 0,
+        grace_credits: 0,
+      });
+
+      await handleStripeWebhook(mockEnv, "test-signature", "test-payload");
+
+      expect(mockRepositories.usageBalances.setPlanEntitlement).toHaveBeenCalledWith({
+        userId: 1,
+        period: currentPeriod,
+        planId: "free",
+        includedCreditMicros: 0,
+        graceCreditMicros: 0,
+      });
+      expect(mockRepositories.usageBalances.setOverageEnabled).toHaveBeenCalledWith(
+        1,
+        currentPeriod,
+        false,
+      );
+    });
+
+    it("seeds entitlement from the plan when checkout completes", async () => {
+      const currentPeriod = new Date().toISOString().slice(0, 7);
+
+      mockStripe.webhooks.constructEventAsync.mockResolvedValue({
+        type: "checkout.session.completed",
+        data: { object: { customer: "cus_123", subscription: "sub_123" } },
+      });
+      mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue({
+        id: 1,
+        email: "test@example.com",
+        plan_id: "free",
+      });
+      mockRepositories.plans.getPlanById.mockResolvedValue({
+        id: "pro",
+        included_credits: 1000,
+      });
+
+      await handleStripeWebhook(mockEnv, "test-signature", "test-payload");
+
+      expect(mockRepositories.usageBalances.setPlanEntitlement).toHaveBeenCalledWith({
+        userId: 1,
+        period: currentPeriod,
+        planId: "pro",
+        includedCreditMicros: 1_000_000_000,
+        graceCreditMicros: 100_000_000,
+      });
+      expect(mockRepositories.usageBalances.setOverageEnabled).not.toHaveBeenCalled();
     });
 
     it("should throw error for invalid webhook signature", async () => {
