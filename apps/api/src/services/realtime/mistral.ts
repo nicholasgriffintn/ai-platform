@@ -10,6 +10,7 @@ import {
   getMistralTargetStreamingDelayMs,
   resolveMistralRealtimeProxyModel,
 } from "~/lib/providers/capabilities/realtime/providers";
+import { resolveRealtimeMaxSessionSeconds } from "~/lib/realtime/sessionLimits";
 import type { IEnv, IUser } from "~/types";
 
 import { isMistralSessionCreatedMessage, toMistralUpstreamMessage } from "./mistralProtocol";
@@ -40,11 +41,13 @@ function bridgeMistralRealtimeSockets({
   upstream,
   sessionUpdateMessage,
   onSessionEnd,
+  maxSessionDurationMs,
 }: {
   client: WebSocket;
   upstream: WebSocket;
   sessionUpdateMessage: string;
   onSessionEnd?: () => void | Promise<void>;
+  maxSessionDurationMs?: number;
 }): void {
   let hasSentSessionUpdate = false;
   const pendingClientMessages: string[] = [];
@@ -54,7 +57,7 @@ function bridgeMistralRealtimeSockets({
     closeSocket(client, 1008, "Realtime session duration limit reached");
     closeSocket(upstream, 1008, "Realtime session duration limit reached");
     endSession();
-  }, REALTIME_PROXY_LIMITS.sessionDurationMs);
+  }, maxSessionDurationMs ?? REALTIME_PROXY_LIMITS.sessionDurationMs);
   const clearSessionTimer = () => clearTimeout(sessionTimer);
 
   const flushPendingClientMessages = () => {
@@ -240,6 +243,7 @@ export async function createMistralRealtimeProxyResponse({
         ...(targetStreamingDelayMs ? { target_streaming_delay_ms: targetStreamingDelayMs } : {}),
       },
     }),
+    maxSessionDurationMs: resolveRealtimeMaxSessionSeconds(env) * 1000,
   });
 
   return new Response(null, {

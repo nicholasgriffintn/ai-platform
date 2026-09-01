@@ -2,6 +2,7 @@ import type { Context } from "hono";
 
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { getRealtimeProvider } from "~/lib/providers/capabilities/realtime";
+import { resolveRealtimeMaxSessionSeconds } from "~/lib/realtime/sessionLimits";
 import type { IEnv, IUser } from "~/types";
 import { base64ToBuffer } from "~/utils/base64";
 import { generateId } from "~/utils/id";
@@ -182,6 +183,7 @@ export async function createElevenLabsRealtimeProxyResponse({
   return createRealtimeTranscriptionProxyResponse({
     context,
     providerLabel: "ElevenLabs",
+    maxSessionDurationMs: resolveRealtimeMaxSessionSeconds(env) * 1000,
     upstreamUrl,
     headers: { "xi-api-key": apiKey },
     onSessionEnd,

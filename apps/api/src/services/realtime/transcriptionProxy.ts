@@ -130,6 +130,7 @@ export interface RealtimeTranscriptionProxyOptions {
   toUpstreamMessage: (message: NormalizedClientRealtimeMessage) => string | ArrayBuffer | null;
   toClientMessage: (message: unknown) => string | string[] | undefined;
   onSessionEnd?: () => void | Promise<void>;
+  maxSessionDurationMs?: number;
 }
 
 export type NormalizedClientRealtimeMessage =
@@ -292,12 +293,14 @@ export function bridgeRealtimeTranscriptionSockets({
   upstream,
   toUpstreamMessage,
   toClientMessage,
+  maxSessionDurationMs,
 }: {
   client: WebSocket;
   upstream: WebSocket;
   toUpstreamMessage: RealtimeTranscriptionProxyOptions["toUpstreamMessage"];
   toClientMessage: RealtimeTranscriptionProxyOptions["toClientMessage"];
   onSessionEnd?: RealtimeTranscriptionProxyOptions["onSessionEnd"];
+  maxSessionDurationMs?: number;
 }): void {
   const limits = new RealtimeProxySessionLimits();
   const endSession = createRealtimeProxySessionEnd(onSessionEnd);
@@ -305,7 +308,7 @@ export function bridgeRealtimeTranscriptionSockets({
     closeSocket(client, 1008, "Realtime session duration limit reached");
     closeSocket(upstream, 1008, "Realtime session duration limit reached");
     endSession();
-  }, REALTIME_PROXY_LIMITS.sessionDurationMs);
+  }, maxSessionDurationMs ?? REALTIME_PROXY_LIMITS.sessionDurationMs);
   const clearSessionTimer = () => clearTimeout(sessionTimer);
 
   client.addEventListener("message", (event) => {
@@ -398,6 +401,7 @@ export async function createRealtimeTranscriptionProxyResponse({
   toClientMessage,
   toUpstreamMessage,
   upstreamUrl,
+  maxSessionDurationMs,
 }: RealtimeTranscriptionProxyOptions): Promise<Response> {
   const request = context.req.raw;
   const isWebSocketUpgrade = request.headers.get("Upgrade")?.toLowerCase() === "websocket";
@@ -432,6 +436,7 @@ export async function createRealtimeTranscriptionProxyResponse({
     upstream: upstreamResponse.webSocket,
     toClientMessage,
     toUpstreamMessage,
+    maxSessionDurationMs,
   });
 
   return new Response(null, {

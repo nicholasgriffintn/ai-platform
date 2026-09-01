@@ -15,6 +15,7 @@ import { ConnectorOperationApprovalRepository } from "./ConnectorOperationApprov
 import { ConversationRepository } from "./ConversationRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
 import { GoalRepository } from "./GoalRepository";
+import { InfraCostDailyRepository } from "./InfraCostDailyRepository";
 import { MemorySynthesisRepository } from "./MemorySynthesisRepository";
 import { MessageRepository } from "./MessageRepository";
 import { OAuthStateRepository } from "./OAuthStateRepository";
@@ -31,6 +32,7 @@ import { TemplateRepository } from "./TemplateRepository";
 import { TrainingExampleRepository } from "./TrainingExampleRepository";
 import { UsageBalanceRepository } from "./UsageBalanceRepository";
 import { UsageEventRepository } from "./UsageEventRepository";
+import { UsageReservationRepository } from "./UsageReservationRepository";
 import { UserPetRepository } from "./UserPetRepository";
 import { UserRepository } from "./UserRepository";
 import { UserSettingsRepository } from "./UserSettingsRepository";
@@ -53,6 +55,7 @@ export {
   ConnectorOperationApprovalRepository,
   EmbeddingRepository,
   GoalRepository,
+  InfraCostDailyRepository,
   MemorySynthesisRepository,
   MessageRepository,
   OAuthStateRepository,
@@ -66,6 +69,7 @@ export {
   UserSettingsRepository,
   UsageBalanceRepository,
   UsageEventRepository,
+  UsageReservationRepository,
   WebAuthnRepository,
   PlanRepository,
   ProjectTaskRepository,
@@ -87,6 +91,8 @@ export class RepositoryManager {
   private userSettingsRepo: UserSettingsRepository;
   private usageEventRepo: UsageEventRepository;
   private usageBalanceRepo: UsageBalanceRepository;
+  private usageReservationRepo: UsageReservationRepository;
+  private infraCostDailyRepo: InfraCostDailyRepository;
   private userPetRepo: UserPetRepository;
   private capabilityConfigurationRepo: CapabilityConfigurationRepository;
   private conversationRepo: ConversationRepository;
@@ -124,6 +130,8 @@ export class RepositoryManager {
     this.userSettingsRepo = new UserSettingsRepository(env);
     this.usageEventRepo = new UsageEventRepository(env);
     this.usageBalanceRepo = new UsageBalanceRepository(env);
+    this.usageReservationRepo = new UsageReservationRepository(env);
+    this.infraCostDailyRepo = new InfraCostDailyRepository(env);
     this.userPetRepo = new UserPetRepository(env);
     this.capabilityConfigurationRepo = new CapabilityConfigurationRepository(env);
     this.conversationRepo = new ConversationRepository(env);
@@ -205,6 +213,14 @@ export class RepositoryManager {
 
   public get usageBalances(): UsageBalanceRepository {
     return this.usageBalanceRepo;
+  }
+
+  public get usageReservations(): UsageReservationRepository {
+    return this.usageReservationRepo;
+  }
+
+  public get infraCostDaily(): InfraCostDailyRepository {
+    return this.infraCostDailyRepo;
   }
 
   public get userPets(): UserPetRepository {

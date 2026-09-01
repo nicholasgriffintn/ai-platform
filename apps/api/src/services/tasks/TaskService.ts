@@ -1,6 +1,7 @@
 import type { TaskType, ScheduleType } from "@ngriffin_uk/polychat-schemas";
 
 import type { Task } from "~/lib/database/schema";
+import { addInfraUsage } from "~/lib/usage/requestMeter";
 import type { TaskRepository } from "~/repositories/TaskRepository";
 import type { IEnv } from "~/types";
 import { normaliseIsoDateTime } from "~/utils/date";
@@ -234,5 +235,7 @@ export class TaskService {
     } else {
       await this.env.TASK_QUEUE.send(message);
     }
+
+    addInfraUsage("queue_operations", 1);
   }
 }

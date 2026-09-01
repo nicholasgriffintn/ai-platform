@@ -8,6 +8,7 @@ import { getLogger } from "~/utils/logger";
 import {
   redispatchPendingTasks,
   scheduleDailySynthesis,
+  scheduleInfraReconciliation,
   scheduleRecipeExecutions,
   scheduleTrainingQualityScoring,
 } from "./scheduledTasks";
@@ -23,6 +24,11 @@ export class ScheduleExecutor {
     }
 
     switch (event.cron) {
+      case SCHEDULES.INFRA_RECONCILIATION:
+        logger.info(`Starting nightly infrastructure cost reconciliation`);
+        await scheduleInfraReconciliation(env);
+        logger.info(`Nightly infrastructure cost reconciliation completed`);
+        break;
       case SCHEDULES.MEMORIES_SYNTHESIS:
         const isMemorySynthesisEnabled = env.MEMORY_SYNTHESIS_ENABLED === "true";
 

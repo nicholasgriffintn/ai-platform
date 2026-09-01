@@ -1,3 +1,5 @@
+import { withCapabilityMetering } from "~/lib/usage/capabilityMetering";
+
 import { ProviderRegistry } from "./registry/ProviderRegistry";
 import { registerAudioProviders } from "./registry/registrations/audio";
 import { registerChatProviders } from "./registry/registrations/chat";
@@ -86,7 +88,12 @@ export class ProviderLibrary {
   ): CategoryProviderMap[TCategory] {
     this.ensureBootstrapped(category);
 
-    return this.registry.resolve(category, providerName, context);
+    return withCapabilityMetering(
+      category,
+      providerName,
+      this.registry.resolve(category, providerName, context),
+      context,
+    );
   }
 
   chat(providerName: string, context?: ProviderFactoryContext) {
