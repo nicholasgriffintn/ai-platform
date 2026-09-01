@@ -31,19 +31,33 @@ Here's the current workflow:
 
 ### Environment Variables
 
-| Variable            | Description                                                                                            |
-| ------------------- | ------------------------------------------------------------------------------------------------------ |
-| `JWT_SECRET`        | Secret for JWT token verification. This must match API.                                                |
-| `SANDBOX_TRANSPORT` | Set to `rpc` so long-running agent runs can multiplex Sandbox SDK calls over one persistent transport. |
+| Variable                | Description                                                                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `JWT_SECRET`            | Secret for JWT token verification. This must match API.                                                                                    |
+| `SANDBOX_TRANSPORT`     | Set to `rpc` so long-running agent runs can multiplex Sandbox SDK calls over one persistent transport.                                     |
+| `SANDBOX_INSTANCE_TYPE` | The container instance type reported for billing. Mirror `containers[0].instance_type` in `wrangler.json`; defaults to `basic` when unset. |
 
 ### Bindings
 
-| Binding        | Type            | Description                                      |
-| -------------- | --------------- | ------------------------------------------------ |
-| `Sandbox`      | Durable Object  | Cloudflare Sandbox SDK Durable Object binding.   |
-| `POLYCHAT_API` | Service binding | Internal API service used for model completions. |
+| Binding        | Type            | Description                                                          |
+| -------------- | --------------- | -------------------------------------------------------------------- |
+| `Sandbox`      | Durable Object  | Cloudflare Sandbox SDK Durable Object binding.                       |
+| `POLYCHAT_API` | Service binding | Internal API service used for model completions and usage reporting. |
 
 The worker name is `assistant-sandbox-worker` so the API service binding in `apps/api/wrangler.json` can target it directly.
+
+### Container-second reporting
+
+Sandbox is priced on container-seconds, so the worker measures wall-clock around the run and reports
+`{ runId, userId, instanceType, startedAt, endedAt, durationSeconds }` to
+`POST /apps/sandbox/runs/:runId/usage` over the `POLYCHAT_API` service binding, authenticated with the
+same run JWT it already carries. The report is sent from a `finally`, so it covers every terminal path —
+success, failure, timeout, and cancellation. A run that ends without a report is a bug.
+
+The API multiplies the duration by `CONTAINER_INSTANCE_TYPES[instanceType]` into
+`container_vcpu_seconds`, `container_gib_seconds`, and `container_disk_gb_seconds` usage events, then
+settles the reservation taken at dispatch. `maxRunsPerDay` and `maxConcurrentRuns` remain abuse guards
+and no longer stand in for the price.
 
 ## API Endpoint
 

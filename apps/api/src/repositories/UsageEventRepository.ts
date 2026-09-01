@@ -163,4 +163,19 @@ export class UsageEventRepository extends BaseRepository {
       [userId, period],
     );
   }
+
+  async summariseInfrastructureDay(
+    day: string,
+  ): Promise<Array<{ resource: string; unit: UsageUnit; quantity: number; cost_micros: number }>> {
+    return this.runQuery(
+      `SELECT resource, unit,
+			        COALESCE(SUM(quantity), 0) AS quantity,
+			        COALESCE(SUM(cost_micros), 0) AS cost_micros
+			 FROM usage_event
+			 WHERE source = 'infrastructure'
+			   AND occurred_at >= ? AND occurred_at <= ?
+			 GROUP BY resource, unit`,
+      [`${day}T00:00:00.000Z`, `${day}T23:59:59.999Z`],
+    );
+  }
 }

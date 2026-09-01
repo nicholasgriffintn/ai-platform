@@ -42,6 +42,7 @@ export const realtimeSessionResponseSchema = z
     id: z.string(),
     object: z.string(),
     type: z.string().optional(),
+    max_session_seconds: z.number().optional(),
     provider: z.string().optional(),
     transport: z.enum(["webrtc", "websocket"]).optional(),
     protocol: z.string().optional(),

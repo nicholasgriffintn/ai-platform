@@ -9,6 +9,7 @@ import {
   redispatchPendingTasks,
   scheduleDailyUsageReset,
   scheduleDailySynthesis,
+  scheduleInfraReconciliation,
   scheduleRecipeExecutions,
   scheduleTrainingQualityScoring,
 } from "./scheduledTasks";
@@ -27,6 +28,7 @@ export class ScheduleExecutor {
       case SCHEDULES.USAGE_RESET:
         logger.info(`Starting daily usage reset scheduling`);
         await scheduleDailyUsageReset(env);
+        await scheduleInfraReconciliation(env);
         logger.info(`Daily usage reset scheduling completed`);
         break;
       case SCHEDULES.MEMORIES_SYNTHESIS:

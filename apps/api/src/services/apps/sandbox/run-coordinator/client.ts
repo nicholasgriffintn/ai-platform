@@ -9,6 +9,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import type { StartFiberResult } from "agents";
 
+import { addInfraUsage } from "~/lib/usage/requestMeter";
 import type { IEnv } from "~/types";
 
 import { isStartFiberResult } from "./fibers";
@@ -20,6 +21,8 @@ function getCoordinatorStub(env: IEnv | undefined, runId: string): DurableObject
   }
 
   const id = env.SANDBOX_RUN_COORDINATOR.idFromName(runId);
+
+  addInfraUsage("do_requests", 1);
 
   return env.SANDBOX_RUN_COORDINATOR.get(id);
 }

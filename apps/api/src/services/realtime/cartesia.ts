@@ -5,6 +5,7 @@ import {
   getRealtimeProvider,
   type RealtimeTranscriptionDelay,
 } from "~/lib/providers/capabilities/realtime";
+import { resolveRealtimeMaxSessionSeconds } from "~/lib/realtime/sessionLimits";
 import type { IEnv, IUser } from "~/types";
 
 import {
@@ -135,6 +136,7 @@ export async function createCartesiaRealtimeProxyResponse({
   return createRealtimeTranscriptionProxyResponse({
     context,
     providerLabel: "Cartesia",
+    maxSessionDurationMs: resolveRealtimeMaxSessionSeconds(env) * 1000,
     upstreamUrl,
     headers: {
       "X-API-Key": apiKey,

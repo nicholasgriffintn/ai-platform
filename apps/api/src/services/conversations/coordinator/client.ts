@@ -6,6 +6,7 @@ import {
   type ThreadInstruction,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { addInfraUsage } from "~/lib/usage/requestMeter";
 import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
 
@@ -40,6 +41,8 @@ async function callCoordinator<T>(
   }
 
   try {
+    addInfraUsage("do_requests", 1);
+
     const response = await stub.fetch(`${COORDINATOR_ORIGIN}${path}`, init);
 
     if (!response.ok) {

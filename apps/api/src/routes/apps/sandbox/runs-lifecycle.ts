@@ -1,6 +1,7 @@
 import {
   listRunInstructionsQuerySchema,
   sandboxRunParamsSchema,
+  sandboxRunUsageReportSchema,
   recordGoalIterationRequestSchema,
   setGoalRequestSchema,
   submitRunInstructionSchema,
@@ -14,12 +15,14 @@ import {
   listSandboxRunInstructionsForUser,
   requestSandboxRunInstruction,
 } from "~/services/apps/sandbox/runs";
+import { recordSandboxRunUsage } from "~/services/apps/sandbox/usage";
 import {
   handleGetRunGoal,
   handleRecordRunGoalIteration,
   handleSetRunGoal,
   handleUpdateRunGoal,
 } from "~/services/completions/conversationGoal";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 export function registerSandboxRunLifecycleRoutes(app: Hono): void {
   addRoute(app, "get", "/runs/:runId/goal", {
@@ -114,6 +117,33 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
       });
 
       return { instruction };
+    },
+  });
+
+  addRoute(app, "post", "/runs/:runId/usage", {
+    tags: ["apps"],
+    description: "Record the measured container usage for a finished sandbox run",
+    auth: true,
+    bodySchema: sandboxRunUsageReportSchema,
+    paramSchema: sandboxRunParamsSchema,
+    responses: {
+      200: { description: "Usage recorded" },
+    },
+    handler: async ({ body, params, serviceContext, user }) => {
+      if (body.runId !== params.runId) {
+        throw new AssistantError("Usage report does not match the run", ErrorType.PARAMS_ERROR);
+      }
+
+      if (body.userId !== user.id) {
+        throw new AssistantError("Usage report does not match the run", ErrorType.PARAMS_ERROR);
+      }
+
+      return recordSandboxRunUsage({
+        context: serviceContext,
+        userId: user.id,
+        runId: params.runId,
+        report: body,
+      });
     },
   });
 

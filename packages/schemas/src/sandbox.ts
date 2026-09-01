@@ -334,6 +334,17 @@ export const sandboxWorkerExecuteRequestSchema = z.object({
   modelSettings: sandboxModelSettingsSchema.optional(),
 });
 
+export const sandboxRunUsageReportSchema = z.object({
+  runId: z.string().trim().min(1),
+  userId: z.number().int().positive(),
+  instanceType: z.string().trim().min(1),
+  startedAt: z.string().trim().min(1),
+  endedAt: z.string().trim().min(1),
+  durationSeconds: z.number().min(0),
+});
+
+export type SandboxRunUsageReport = z.infer<typeof sandboxRunUsageReportSchema>;
+
 export type GitHubConnectionPayload = z.infer<typeof githubConnectionSchema>;
 export type ExecuteSandboxRunPayload = z.infer<typeof executeSandboxRunSchema>;
 export type SandboxRunDispatchPayload = z.infer<typeof sandboxRunDispatchPayloadSchema>;
