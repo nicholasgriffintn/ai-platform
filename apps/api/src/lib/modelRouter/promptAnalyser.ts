@@ -18,6 +18,58 @@ const ANALYSIS_PROMPT_SAMPLE_MAX_CHARS = 3600;
 const FUNCTION_DESCRIPTION_MAX_CHARS = 120;
 const FUNCTION_SUMMARY_MAX_CHARS = 2400;
 
+function getPromptRequirementsResponseFormat() {
+  const strengths = getAvailableStrengths();
+
+  return {
+    type: "json_schema" as const,
+    json_schema: {
+      name: "prompt_requirements",
+      strict: true,
+      schema: {
+        type: "object",
+        properties: {
+          expectedComplexity: {
+            type: "integer",
+            minimum: 1,
+            maximum: 5,
+          },
+          requiredStrengths: {
+            type: "array",
+            items: { type: "string", enum: strengths },
+          },
+          criticalStrengths: {
+            type: "array",
+            items: { type: "string", enum: strengths },
+          },
+          estimatedInputTokens: {
+            type: "integer",
+            minimum: 0,
+          },
+          estimatedOutputTokens: {
+            type: "integer",
+            minimum: 0,
+          },
+          needsFunctions: { type: "boolean" },
+          benefitsFromMultipleModels: { type: "boolean" },
+          modelComparisonReason: { type: "string" },
+        },
+        required: [
+          "expectedComplexity",
+          "requiredStrengths",
+          "criticalStrengths",
+          "estimatedInputTokens",
+          "estimatedOutputTokens",
+          "needsFunctions",
+          "benefitsFromMultipleModels",
+          "modelComparisonReason",
+        ],
+        additionalProperties: false,
+      },
+    },
+  };
+}
+
 export class PromptAnalyzer {
   private static readonly FILTERS = {
     coding: new KeywordFilter(KeywordFilter.getAllCodingKeywords()),
@@ -70,7 +122,7 @@ export class PromptAnalyzer {
         },
         { role: "user", content: analysisPrompt },
       ],
-      response_format: { type: "json_object" },
+      response_format: getPromptRequirementsResponseFormat(),
     });
   }
 

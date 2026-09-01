@@ -3,6 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { validateCaptcha } from "../captchaMiddleware";
 
+const mocks = vi.hoisted(() => ({
+  loggerError: vi.fn(),
+}));
 const mockVerifyCaptchaToken = vi.fn();
 const mockRepositoryManager = {
   anonymousUsers: {
@@ -24,7 +27,7 @@ vi.mock("~/repositories", () => ({
 vi.mock("~/utils/logger", () => ({
   getLogger: vi.fn(() => ({
     debug: vi.fn(),
-    error: vi.fn(),
+    error: mocks.loggerError,
   })),
 }));
 
@@ -99,7 +102,26 @@ describe("Captcha Middleware", () => {
       expect(mockVerifyCaptchaToken).not.toHaveBeenCalled();
     });
 
-    it("should skip captcha verification when environment variables are missing", async () => {
+    it("should treat an explicit false value as disabled", async () => {
+      const context = createMockContext({
+        env: {
+          REQUIRE_CAPTCHA_SECRET_KEY: "false",
+          HCAPTCHA_SECRET_KEY: undefined,
+          HCAPTCHA_SITE_KEY: undefined,
+        },
+      });
+
+      // @ts-expect-error - mock implementation
+      context.get.mockReturnValue(null);
+
+      await validateCaptcha(context, mockNext);
+
+      expect(mockNext).toHaveBeenCalled();
+      expect(mockVerifyCaptchaToken).not.toHaveBeenCalled();
+      expect(mocks.loggerError).not.toHaveBeenCalled();
+    });
+
+    it("should fail closed when captcha is enabled without credentials", async () => {
       const context = createMockContext({
         env: {
           REQUIRE_CAPTCHA_SECRET_KEY: "true",
@@ -113,7 +135,15 @@ describe("Captcha Middleware", () => {
 
       await validateCaptcha(context, mockNext);
 
-      expect(mockNext).toHaveBeenCalled();
+      expect(context.json).toHaveBeenCalledWith(
+        {
+          error: {
+            message: "Captcha verification unavailable",
+          },
+        },
+        503,
+      );
+      expect(mockNext).not.toHaveBeenCalled();
       expect(mockVerifyCaptchaToken).not.toHaveBeenCalled();
     });
 
@@ -342,7 +372,7 @@ describe("Captcha Middleware", () => {
       expect(mockNext).toHaveBeenCalled();
     });
 
-    it("should handle captcha verification errors gracefully", async () => {
+    it("should fail closed when captcha verification is unavailable", async () => {
       const context = createMockContext();
       const mockAnonymousUser = { id: "anon-123", captcha_verified: 0 };
 
@@ -380,7 +410,15 @@ describe("Captcha Middleware", () => {
 
       await validateCaptcha(context, mockNext);
 
-      expect(mockNext).toHaveBeenCalled();
+      expect(context.json).toHaveBeenCalledWith(
+        {
+          error: {
+            message: "Captcha verification unavailable",
+          },
+        },
+        503,
+      );
+      expect(mockNext).not.toHaveBeenCalled();
     });
 
     it("should handle anonymous user creation errors gracefully", async () => {

@@ -57,6 +57,12 @@ Use a shared `TRAINING_WORKER_TOKEN` in the API and training worker. Add AWS cre
 
 Treat Stripe, PostHog, Beacon, email, SMS, guardrails, and captcha as independent capabilities. Disable their user interface or runtime path when credentials are intentionally absent; do not fill placeholders with dummy production values.
 
+Enable captcha enforcement with `REQUIRE_CAPTCHA_SECRET_KEY=true` only when the API has both
+`HCAPTCHA_SECRET_KEY` and `HCAPTCHA_SITE_KEY`, and the web app uses the same site key through
+`VITE_CAPTCHA_SITE_KEY`. Set the enforcement flag to `false` or omit it when captcha is disabled.
+The API fails closed with a service-unavailable response if enforcement is enabled without the
+required keys.
+
 Stripe billing also needs a recurring Price for each paid plan and that Price ID stored on the matching
 `plans.stripe_price_id` row in D1. Keep test Price IDs with test secret keys and live Price IDs with live
 secret keys. A Stripe secret alone does not configure Checkout. Follow the
