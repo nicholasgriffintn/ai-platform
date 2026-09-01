@@ -3,11 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   admitTurn,
-  defaultGraceCreditMicros,
   estimateTurnCreditMicros,
   overrunCapCreditMicros,
   shouldStopRunaway,
 } from "../credits";
+import { defaultGraceCreditMicros } from "../planSeed";
 
 function createRepositories(
   options: {
@@ -16,16 +16,14 @@ function createRepositories(
   } = {},
 ) {
   const applyDeltas = vi.fn(async (_params: Record<string, unknown>) => {});
-  const ensureBalance = vi.fn(async (_params: Record<string, unknown>) => {});
   const getBalance = vi.fn(async () => options.balance ?? null);
 
   return {
     applyDeltas,
-    ensureBalance,
     getBalance,
     repositories: {
       plans: { getPlanById: vi.fn(async () => options.plan ?? null) },
-      usageBalances: { applyDeltas, ensureBalance, getBalance },
+      usageBalances: { applyDeltas, getBalance },
     } as any,
   };
 }
@@ -105,7 +103,7 @@ describe("admitTurn", () => {
   const configuredPlan = { included_credits: 100, grace_credits: null };
 
   it("admits a turn that fits and reserves its estimate", async () => {
-    const { applyDeltas, ensureBalance, repositories } = createRepositories({
+    const { applyDeltas, repositories } = createRepositories({
       plan: configuredPlan,
     });
 
@@ -118,9 +116,10 @@ describe("admitTurn", () => {
 
     expect(admission.admitted).toBe(true);
     expect(admission.admitted && admission.reservation).toBeTruthy();
-    expect(ensureBalance).toHaveBeenCalled();
     expect(applyDeltas.mock.calls[0][0]).toMatchObject({
       userId: 7,
+      includedCreditMicros: 100_000_000,
+      graceCreditMicros: 50_000_000,
       deltas: { reserved_credit_micros: 10_000_000 },
     });
   });
@@ -142,7 +141,7 @@ describe("admitTurn", () => {
   });
 
   it("refuses a turn that does not fit and writes nothing", async () => {
-    const { applyDeltas, ensureBalance, repositories } = createRepositories({
+    const { applyDeltas, repositories } = createRepositories({
       plan: configuredPlan,
       balance: { spent_credit_micros: 145_000_000 },
     });
@@ -155,7 +154,6 @@ describe("admitTurn", () => {
     });
 
     expect(admission.admitted).toBe(false);
-    expect(ensureBalance).not.toHaveBeenCalled();
     expect(applyDeltas).not.toHaveBeenCalled();
   });
 
@@ -177,7 +175,7 @@ describe("admitTurn", () => {
   });
 
   it("admits everything while the plan has no credits configured", async () => {
-    const { applyDeltas, ensureBalance, repositories } = createRepositories({
+    const { applyDeltas, getBalance, repositories } = createRepositories({
       plan: { included_credits: null },
     });
 
@@ -190,7 +188,7 @@ describe("admitTurn", () => {
 
     expect(admission.admitted).toBe(true);
     expect(admission.admitted && admission.reservation).toBeNull();
-    expect(ensureBalance).not.toHaveBeenCalled();
+    expect(getBalance).not.toHaveBeenCalled();
     expect(applyDeltas).not.toHaveBeenCalled();
   });
 

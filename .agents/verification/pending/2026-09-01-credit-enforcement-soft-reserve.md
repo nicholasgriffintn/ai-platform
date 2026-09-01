@@ -1,13 +1,13 @@
 # Credit enforcement admits turns up front and never cuts one off mid-thought
 
-- **Change:** Chat turns are now admitted against the credit balance once, at turn start, with the estimate reserved on the balance until real spend lands. The per-step check inside the agent loop is now a runaway guard only: an admitted turn keeps going through `reserve` and `exhausted` and stops gracefully only past `included + grace + max(25% of grace, 25 credits)`. Goals stop at `exhausted`, not at `reserve`. The `usage_limits` stream metadata gains an optional `credits` object. Everything ships dark: while a plan's `included_credits` is null, every turn is admitted and today's message-count behaviour is unchanged.
+- **Change:** Chat turns are now admitted against the credit balance once, at turn start, with the estimate reserved on the balance until real spend lands. The per-step check inside the agent loop is now a runaway guard only: an admitted turn keeps going through `reserve` and `exhausted` and stops gracefully only past `included + grace + max(25% of grace, 25 credits)`. Goals stop at `exhausted`, not at `reserve`. Spend past the ceiling is routed to `overrun_credit_micros`, or to `overage_credit_micros` when the user opted in, inside the same transactional batch that records the event. The `usage_limits` stream metadata gains an optional `credits` object. Everything ships dark: while a plan's `included_credits` is null, every turn is admitted, no `credits` object is emitted, and today's message-count behaviour is unchanged.
 - **Surfaces:** API
 - **Prerequisites:** the PR2 ledger migration (`0015_worried_zaladane`) applied; to see enforcement at all, set `included_credits` on a plan (leave `grace_credits` null to get the default of `max(10% of included, 50)`).
 - **Risk if wrong:** the two failure directions are opposite. Too strict and paying users are refused turns they can afford, or a turn dies mid-answer — the exact thing this phase exists to prevent. Too loose and a runaway agent loop spends without bound. A leaked reservation (worker death between admission and settlement) quietly shrinks a user's headroom until the period resets.
 
 ## Verify
 
-- [ ] With `included_credits` still null on your plan: chat behaves exactly as before this deploy — daily and pro message counts still gate, no `credits` object appears in the `usage_limits` stream event.
+- [ ] With `included_credits` still null on your plan: chat behaves exactly as before this deploy — the daily message count still gates a Free account, and no `credits` object appears in the `usage_limits` stream event.
 - [ ] Set `included_credits` to a small value (for example 1) on your plan, spend past it, and send another message. Expect the turn to be admitted and to finish while the balance is inside the grace reserve, and the `usage_limits` event to carry `credits.state: "reserve"`.
 - [ ] Spend past included plus grace with overage off. Expect the next turn to be refused at the request boundary with a calm message about credits being spent — not an error mid-stream — and `credits.state: "exhausted"`.
 - [ ] While a long agent turn is running, confirm it is not truncated at the reserve boundary: the answer completes, and spend past the ceiling appears in `usage_balance.overrun_credit_micros` rather than blocking anything.
@@ -16,6 +16,7 @@
 - [ ] Set `overage_enabled` on the balance row, spend past the reserve, and confirm turns are still admitted with `credits.state: "overage"` and spend accruing to `overage_credit_micros`.
 - [ ] With a BYOK key stored for the model's provider, confirm turns neither reserve nor spend credits for model usage.
 - [ ] Signed out, confirm anonymous daily message limits still refuse exactly as before.
+- [ ] Mint a realtime session and confirm it still succeeds, returns `max_session_seconds`, and enqueues a scheduled `realtime_reconciliation` task — the task type was missing from the shared enum until this change.
 
 **Stop and report if:** any admitted turn is cut off mid-stream for balance, or a user with credits remaining is refused a turn. Both invert the product promise this phase implements.
 

@@ -270,9 +270,9 @@ describe("ChatOrchestrator", () => {
         const result = await orchestrator.process(mockOptions);
 
         expect(mockValidator.validate).toHaveBeenCalledWith(mockOptions);
-        expect(mockConversationManager.checkUsageLimits).toHaveBeenCalledWith(
-          "test-model",
-          "test-provider",
+        expect(mockConversationManager.checkUsageLimits).toHaveBeenCalledWith();
+        expect(mockConversationManager.admitTurn).toHaveBeenCalledWith(
+          expect.objectContaining({ messages: expect.any(Array) }),
         );
         expect(mockGuardrails.validateOutput).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -451,9 +451,8 @@ describe("ChatOrchestrator", () => {
 
         await readStream(result.stream);
 
-        expect(mockConversationManager.checkUsageLimits.mock.calls.map(([model]) => model)).toEqual(
-          ["model-1", "model-2"],
-        );
+        expect(mockConversationManager.checkUsageLimits).toHaveBeenCalledOnce();
+        expect(mockConversationManager.admitTurn).toHaveBeenCalledOnce();
         expect(mockConsumeProviderStream).toHaveBeenCalled();
         expect(result).toMatchObject({
           stream: expect.any(ReadableStream),

@@ -99,7 +99,7 @@ export async function createRealtimePipelineSession({
     return { ok: false, message: "Input model access changed", status: 403 };
   }
 
-  const repositories = new RepositoryManager(env);
+  const repositories = env?.DB ? new RepositoryManager(env) : null;
   const pricing = priceRealtimeReservation(
     accessibleInputModel.config,
     request.input.provider,

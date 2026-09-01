@@ -33,6 +33,12 @@ export interface ServiceContext {
   getLogger(options?: LoggerOptions): ReturnType<typeof getLogger>;
 }
 
+export function optionalRepositories(
+  context: Pick<ServiceContext, "env" | "repositories">,
+): RepositoryManager | null {
+  return context.env?.DB ? context.repositories : null;
+}
+
 export const createServiceContext = ({
   env,
   user = null,

@@ -1602,6 +1602,8 @@ export const tasks = sqliteTable(
         "project_task_run",
         "ocr_batch_polling",
         "usage_rollup",
+        "realtime_reconciliation",
+        "infra_reconciliation",
       ],
     }).notNull(),
     status: text({

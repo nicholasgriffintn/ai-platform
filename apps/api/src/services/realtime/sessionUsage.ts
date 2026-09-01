@@ -76,10 +76,14 @@ export function priceRealtimeReservation(
 }
 
 export async function admitRealtimeSession(params: {
-  repositories: RepositoryManager;
+  repositories: RepositoryManager | null;
   userId: number;
   creditMicros: number;
 }): Promise<boolean> {
+  if (!params.repositories) {
+    return true;
+  }
+
   try {
     const period = usagePeriodFromDate();
     const balance = await params.repositories.usageBalances.getBalance(params.userId, period);
@@ -108,7 +112,7 @@ export async function admitRealtimeSession(params: {
 
 export async function registerRealtimeSessionUsage(params: {
   env: IEnv;
-  repositories: RepositoryManager;
+  repositories: RepositoryManager | null;
   userId: number;
   sessionId: string;
   model: string;
@@ -117,12 +121,18 @@ export async function registerRealtimeSessionUsage(params: {
   pricing: RealtimeReservationPricing;
   maxSessionSeconds: number;
 }): Promise<void> {
+  const repositories = params.repositories;
+
+  if (!repositories) {
+    return;
+  }
+
   const reconcileDelaySeconds = params.maxSessionSeconds + REALTIME_RECONCILIATION_BUFFER_SECONDS;
   const reconcileAt = new Date(Date.now() + reconcileDelaySeconds * 1000).toISOString();
 
   try {
     await holdUsageReservation({
-      repositories: params.repositories,
+      repositories,
       userId: params.userId,
       kind: "realtime",
       refId: params.sessionId,
@@ -138,7 +148,7 @@ export async function registerRealtimeSessionUsage(params: {
   }
 
   try {
-    const taskService = new TaskService(params.env, params.repositories.tasks);
+    const taskService = new TaskService(params.env, repositories.tasks);
 
     await taskService.enqueueTask({
       task_type: REALTIME_RECONCILIATION_TASK_TYPE,

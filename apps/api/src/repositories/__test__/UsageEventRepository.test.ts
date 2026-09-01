@@ -64,7 +64,49 @@ describe("UsageEventRepository", () => {
       "spent_credit_micros = spent_credit_micros + ?",
     );
     expect(statements[2]?.query).toContain("changes() = 1");
-    expect(statements[2]?.values).toEqual([30_000, "2026-09-01T12:00:00.000Z", 7, "2026-09"]);
+    expect(statements[2]?.values).toEqual([
+      30_000,
+      30_000,
+      30_000,
+      "2026-09-01T12:00:00.000Z",
+      7,
+      "2026-09",
+    ]);
+  });
+
+  it("routes spend past the ceiling to overrun, or to overage when the user opted in", async () => {
+    const statements: Array<{ query: string; values: unknown[] }> = [];
+    const prepare = vi.fn((query: string) => ({
+      bind: (...values: unknown[]) => ({ query, values }),
+    }));
+    const batch = vi.fn(async (bound: Array<{ query: string; values: unknown[] }>) => {
+      statements.push(...bound);
+
+      return [
+        { success: true, meta: { changes: 0 } },
+        { success: true, meta: { changes: 1 } },
+        { success: true, meta: { changes: 1 } },
+      ];
+    });
+    const repository = new UsageEventRepository({ DB: { prepare, batch } } as never);
+
+    await repository.insertEventAndApplyBalance(event(), {
+      planId: "pro",
+      includedCreditMicros: 500_000_000,
+      graceCreditMicros: 50_000_000,
+    });
+
+    const update = statements[2]?.query.replace(/\s+/g, " ") ?? "";
+
+    expect(update).toContain(
+      "overrun_credit_micros = overrun_credit_micros + CASE WHEN included_credit_micros > 0 AND overage_enabled = 0",
+    );
+    expect(update).toContain(
+      "overage_credit_micros = overage_credit_micros + CASE WHEN included_credit_micros > 0 AND overage_enabled = 1",
+    );
+    expect(update).toContain(
+      "MAX(0, spent_credit_micros + ? - MAX(spent_credit_micros, included_credit_micros + grace_credit_micros))",
+    );
   });
 
   it("reports a replay without moving the balance", async () => {

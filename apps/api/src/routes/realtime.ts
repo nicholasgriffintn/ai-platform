@@ -9,6 +9,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 
+import { optionalRepositories } from "~/lib/context/serviceContext";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { addRoute } from "~/lib/http/routeBuilder";
 import {
@@ -145,7 +146,7 @@ addRoute(app, "post", "/session/:type", {
       accessibleModel.id,
     );
     const admitted = await admitRealtimeSession({
-      repositories: serviceContext.repositories,
+      repositories: optionalRepositories(serviceContext),
       userId: user.id,
       creditMicros: pricing.creditMicros,
     });
@@ -186,7 +187,7 @@ addRoute(app, "post", "/session/:type", {
 
     await registerRealtimeSessionUsage({
       env,
-      repositories: serviceContext.repositories,
+      repositories: optionalRepositories(serviceContext),
       userId: user.id,
       sessionId,
       model: accessibleModel.id,
