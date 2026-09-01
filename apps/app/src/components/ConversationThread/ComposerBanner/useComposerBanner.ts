@@ -6,14 +6,14 @@ import { useRecipeConnectors } from "~/hooks/useConnectors";
 import { useUser } from "~/hooks/useUser";
 import { useWorkspaces } from "~/hooks/useWorkspaces";
 import { useChatStore } from "~/state/stores/chatStore";
-import { type UsageLimits, useUsageStore } from "~/state/stores/usageStore";
+import { useUsageStore } from "~/state/stores/usageStore";
 
 import { isDismissed, useComposerBannerDismissals } from "./dismissal";
+import { buildUsageBanner } from "./usage-banner";
 
 export const STEALTH_MODEL_WARNING =
   "Note: Prompts and completions may be logged by the provider and used to improve the model.";
 
-const USAGE_WARNING_THRESHOLD = 0.2;
 const CONNECTOR_SUGGESTION_MIN_MESSAGES = 10;
 const WORK_SUGGESTION_MIN_MESSAGES = 20;
 
@@ -115,7 +115,7 @@ export function useComposerBanner({ model, hideSuggestions }: ComposerBannerOpti
             title: "Work comes with Pro",
             message:
               "Shared workspaces, projects, and a place for everything they produce. Included with Pro.",
-            action: { label: "See plans", to: "/profile?tab=billing" },
+            action: { label: "See plans", to: "/pricing" },
             dismissal: { scope: "forever", suggestion: true },
           });
         }
@@ -155,67 +155,4 @@ export function useComposerBanner({ model, hideSuggestions }: ComposerBannerOpti
   }, [banner, storeDismiss]);
 
   return { banner, dismiss };
-}
-
-function buildUsageBanner(
-  usageLimits: UsageLimits | null,
-  isPro: boolean,
-): ComposerBannerDescriptor | null {
-  if (!usageLimits) {
-    return null;
-  }
-
-  const { daily, pro } = usageLimits;
-  const dailyRemaining = daily.limit - daily.used;
-
-  if (dailyRemaining <= 0) {
-    return {
-      id: "usage-daily-exhausted",
-      tone: "critical",
-      title: "Out of messages for today",
-      message: isPro
-        ? "Your daily allowance has run dry. Your own provider keys still work, if you have them configured."
-        : "Your daily allowance has run dry. Upgrade to Pro or add your own provider keys to keep going.",
-      action: isPro
-        ? { label: "Open Providers", to: "/profile?tab=providers" }
-        : { label: "See plans", to: "/profile?tab=billing" },
-    };
-  }
-
-  if (isPro && pro) {
-    const proRemaining = pro.limit - pro.used;
-
-    if (proRemaining <= 0) {
-      return {
-        id: "usage-pro-exhausted",
-        tone: "warning",
-        message:
-          "That was the last of today's Pro messages. Standard models are still on the perch.",
-        dismissal: { scope: "day" },
-      };
-    }
-
-    if (proRemaining / pro.limit <= USAGE_WARNING_THRESHOLD) {
-      return {
-        id: "usage-pro-low",
-        tone: "warning",
-        message: `You have ${proRemaining} Pro ${proRemaining === 1 ? "message" : "messages"} left today.`,
-        dismissal: { scope: "day" },
-      };
-    }
-  }
-
-  if (daily.limit > 0 && dailyRemaining / daily.limit <= USAGE_WARNING_THRESHOLD) {
-    return {
-      id: "usage-daily-low",
-      tone: "warning",
-      message: isPro
-        ? `You have ${dailyRemaining} standard ${dailyRemaining === 1 ? "message" : "messages"} left today.`
-        : `You have ${dailyRemaining} ${dailyRemaining === 1 ? "message" : "messages"} left today. Pro raises the ceiling, and your own keys remove it.`,
-      action: isPro ? undefined : { label: "See plans", to: "/profile?tab=billing" },
-      dismissal: { scope: "day" },
-    };
-  }
-
-  return null;
 }

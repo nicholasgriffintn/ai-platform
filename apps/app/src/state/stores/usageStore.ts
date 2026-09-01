@@ -1,3 +1,4 @@
+import type { UsageCreditsSummary } from "@ngriffin_uk/polychat-schemas";
 import { create } from "zustand";
 
 export interface UsageLimits {
@@ -13,6 +14,7 @@ export interface UsageLimits {
     used: number;
     limit: null;
   };
+  credits?: UsageCreditsSummary;
 }
 
 interface UsageStore {

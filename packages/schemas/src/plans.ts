@@ -6,6 +6,8 @@ export const planSchema = z.object({
   description: z.string().nullable(),
   price: z.number(),
   stripe_price_id: z.string(),
+  included_credits: z.number().nullable().optional(),
+  grace_credits: z.number().nullable().optional(),
 });
 
 export const plansResponseSchema = z.object({
@@ -19,3 +21,5 @@ export const planResponseSchema = z.object({
 });
 
 export const planParamsSchema = z.object({ id: z.string() });
+
+export type Plan = z.infer<typeof planSchema>;

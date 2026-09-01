@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 
 export type ComposerBannerTone = "info" | "warning" | "critical";
 
-export type ComposerBannerDismissalScope = "day" | "forever";
+export type ComposerBannerDismissalScope = "session" | "day" | "forever";
 
 export interface ComposerBannerDescriptor {
   id: string;

@@ -20,6 +20,40 @@ export function getBoundedPercentage(value: number, total: number): number {
   return clampPercentage((value / total) * 100);
 }
 
+export function formatCredits(credits: number): string {
+  if (!Number.isFinite(credits) || credits === 0) {
+    return "0";
+  }
+
+  const abs = Math.abs(credits);
+
+  if (abs < 0.01) {
+    return "< 0.01";
+  }
+
+  if (abs >= 1000) {
+    return Math.round(credits).toLocaleString("en-GB");
+  }
+
+  return credits.toLocaleString("en-GB", {
+    maximumFractionDigits: abs >= 10 ? 0 : 2,
+  });
+}
+
+export function formatUsdFromMicros(usdMicros: number): string {
+  if (!Number.isFinite(usdMicros) || usdMicros === 0) {
+    return "$0.00";
+  }
+
+  const usd = usdMicros / 1_000_000;
+
+  if (Math.abs(usd) < 0.01) {
+    return "< $0.01";
+  }
+
+  return `$${usd.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
 export function parseNumberInputValue(
   value: string,
   { integer = false }: { integer?: boolean } = {},
