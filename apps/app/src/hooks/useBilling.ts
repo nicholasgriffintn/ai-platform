@@ -1,11 +1,78 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { USAGE_BALANCE_QUERY_KEY } from "~/hooks/useUsage";
 import { apiService } from "~/lib/api/api-service";
+import { createBillingPortalSession, listPlans, setOverageEnabled } from "~/lib/api/usage";
+
+const PORTAL_AVAILABILITY_KEY = ["stripe", "portal-available"] as const;
+const OVERAGE_AVAILABILITY_KEY = ["stripe", "overage-available"] as const;
 
 export function useSubscription() {
   return useQuery<any | null>({
     queryKey: ["subscription"],
     queryFn: () => apiService.getSubscription(),
+  });
+}
+
+export function usePlans() {
+  return useQuery({
+    queryKey: ["plans"],
+    queryFn: () => listPlans(),
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+function useStripeFeatureAvailability(key: readonly string[]) {
+  const { data } = useQuery({
+    queryKey: key,
+    queryFn: () => true,
+    enabled: false,
+    initialData: true,
+    staleTime: Number.POSITIVE_INFINITY,
+  });
+
+  return data;
+}
+
+export function useBillingPortalAvailability() {
+  return useStripeFeatureAvailability(PORTAL_AVAILABILITY_KEY);
+}
+
+export function useOverageAvailability() {
+  return useStripeFeatureAvailability(OVERAGE_AVAILABILITY_KEY);
+}
+
+export function useOpenBillingPortal() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => createBillingPortalSession(window.location.href),
+    onSuccess: (session) => {
+      if (!session) {
+        queryClient.setQueryData(PORTAL_AVAILABILITY_KEY, false);
+
+        return;
+      }
+
+      window.location.href = session.url;
+    },
+  });
+}
+
+export function useSetOverage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (enabled: boolean) => setOverageEnabled(enabled),
+    onSuccess: (result) => {
+      if (!result) {
+        queryClient.setQueryData(OVERAGE_AVAILABILITY_KEY, false);
+
+        return;
+      }
+
+      void queryClient.invalidateQueries({ queryKey: USAGE_BALANCE_QUERY_KEY });
+    },
   });
 }
 

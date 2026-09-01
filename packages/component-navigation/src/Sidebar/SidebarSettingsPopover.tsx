@@ -33,7 +33,9 @@ export interface SidebarUsageMeter {
   value: string;
   assistiveLabel: string;
   percentage: number | null;
-  tone: "blue" | "emerald" | "amber";
+  tone: "blue" | "emerald" | "amber" | "violet";
+  reserveStartPercentage?: number;
+  caption?: string;
 }
 
 export interface SidebarAccountSummary {
@@ -56,7 +58,54 @@ const usageToneClasses: Record<SidebarUsageMeter["tone"], string> = {
   blue: "bg-blue-500",
   emerald: "bg-emerald-500",
   amber: "bg-amber-500",
+  violet: "bg-violet-500",
 };
+
+function UsageMeterTrack({ item }: { item: SidebarUsageMeter }) {
+  if (item.percentage === null) {
+    return (
+      <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+        <span className={cn("h-1.5 w-1.5 rounded-full", usageToneClasses[item.tone])} />
+        <span>Unlimited usage</span>
+      </div>
+    );
+  }
+
+  const reserveStart = item.reserveStartPercentage;
+  const hasReserve = typeof reserveStart === "number" && reserveStart < 100;
+  const fillWidth = hasReserve ? Math.min(item.percentage, reserveStart) : item.percentage;
+  const reserveWidth = hasReserve ? Math.max(item.percentage - reserveStart, 0) : 0;
+
+  return (
+    <div
+      className="relative h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800"
+      role="meter"
+      aria-label={item.assistiveLabel}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(item.percentage)}
+    >
+      <div className="absolute inset-y-0 left-0 flex w-full">
+        <div
+          className={cn("h-full rounded-full", usageToneClasses[item.tone])}
+          style={{ width: `${fillWidth}%` }}
+        />
+        {reserveWidth > 0 && (
+          <div
+            className="h-full rounded-r-full bg-amber-400/80 motion-safe:animate-pulse dark:bg-amber-500/70"
+            style={{ width: `${reserveWidth}%` }}
+          />
+        )}
+      </div>
+      {hasReserve && (
+        <div
+          className="absolute inset-y-0 w-px bg-white/80 dark:bg-zinc-950/80"
+          style={{ left: `${reserveStart}%` }}
+        />
+      )}
+    </div>
+  );
+}
 
 function SidebarUsageSummary({ usage }: { usage: SidebarUsageMeter[] }) {
   return (
@@ -79,25 +128,9 @@ function SidebarUsageSummary({ usage }: { usage: SidebarUsageMeter[] }) {
                 <span className="font-medium text-zinc-700 dark:text-zinc-200">{item.label}</span>
                 <span className="text-zinc-500 dark:text-zinc-400">{item.value}</span>
               </div>
-              {item.percentage === null ? (
-                <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                  <span className={cn("h-1.5 w-1.5 rounded-full", usageToneClasses[item.tone])} />
-                  <span>Unlimited usage</span>
-                </div>
-              ) : (
-                <div
-                  className="h-2 rounded-full bg-zinc-200 dark:bg-zinc-800"
-                  role="meter"
-                  aria-label={item.assistiveLabel}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={Math.round(item.percentage)}
-                >
-                  <div
-                    className={cn("h-full rounded-full", usageToneClasses[item.tone])}
-                    style={{ width: `${item.percentage}%` }}
-                  />
-                </div>
+              <UsageMeterTrack item={item} />
+              {item.caption && (
+                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{item.caption}</p>
               )}
             </div>
           ))}

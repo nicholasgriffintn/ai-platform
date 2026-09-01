@@ -53,10 +53,11 @@ export const useComposerBannerDismissals = create<ComposerBannerDismissalStore>(
   cooldownUntil: readCooldownUntil(),
   dismiss: (id, scope, suggestion) =>
     set((state) => {
-      const value = scope === "forever" ? "forever" : todayStamp();
+      const value =
+        scope === "forever" ? "forever" : scope === "session" ? "session" : todayStamp();
       let cooldownUntil = state.cooldownUntil;
 
-      if (typeof window !== "undefined") {
+      if (scope !== "session" && typeof window !== "undefined") {
         window.localStorage.setItem(dismissalKey(id), value);
       }
 
@@ -85,7 +86,7 @@ export function isDismissed(
     return false;
   }
 
-  if (value === "forever") {
+  if (value === "forever" || value === "session") {
     return true;
   }
 

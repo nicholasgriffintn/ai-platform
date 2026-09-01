@@ -1,3 +1,5 @@
+import { usageCreditsSummarySchema, type UsageCreditsSummary } from "@ngriffin_uk/polychat-schemas";
+
 import type { UsageLimits } from "~/state/stores/usageStore";
 import type { AnonymousUser, User } from "~/types";
 
@@ -53,7 +55,19 @@ export function normaliseUsageLimits(value: unknown): UsageLimits | null {
     }
   }
 
+  const credits = usageCreditsSummarySchema.safeParse(record.credits);
+
+  if (credits.success) {
+    usageLimits.credits = credits.data;
+  }
+
   return usageLimits;
+}
+
+export function isCreditsConfigured(
+  credits: UsageCreditsSummary | undefined | null,
+): credits is UsageCreditsSummary {
+  return Boolean(credits && credits.included > 0);
 }
 
 export function getUsageLimitsFromUser(user: User | null): UsageLimits | null {
