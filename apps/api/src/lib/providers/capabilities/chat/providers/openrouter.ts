@@ -1,3 +1,4 @@
+import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
 
 import { BaseProvider } from "./base";
@@ -9,6 +10,19 @@ export class OpenRouterProvider extends BaseProvider {
 
   protected getProviderKeyName(): string {
     return "OPENROUTER_API_KEY";
+  }
+
+  async mapParameters(
+    params: ChatCompletionParameters,
+    storageService?: StorageService,
+    assetsUrl?: string,
+  ): Promise<Record<string, any>> {
+    const body = await this.defaultMapParameters(params, storageService, assetsUrl);
+
+    return {
+      ...body,
+      usage: { include: true },
+    };
   }
 
   protected validateParams(params: ChatCompletionParameters): void {

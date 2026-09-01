@@ -12,6 +12,21 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+export function deepMergeRecords(
+  base: Record<string, unknown>,
+  next: Record<string, unknown>,
+): Record<string, unknown> {
+  const merged: Record<string, unknown> = { ...base };
+
+  for (const [key, value] of Object.entries(next)) {
+    const existing = merged[key];
+
+    merged[key] = isRecord(existing) && isRecord(value) ? deepMergeRecords(existing, value) : value;
+  }
+
+  return merged;
+}
+
 export function isObjectOrArray(value: unknown): value is Record<string, unknown> | unknown[] {
   return isRecord(value) || Array.isArray(value);
 }
