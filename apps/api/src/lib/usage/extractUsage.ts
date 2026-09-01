@@ -40,3 +40,27 @@ export function extractUsagePayload(data: unknown): Record<string, unknown> | nu
 
   return null;
 }
+
+export function extractPredictionMetricsPayload(data: unknown): Record<string, unknown> | null {
+  if (!isRecord(data) || !isRecord(data.metrics)) {
+    return null;
+  }
+
+  return { metrics: data.metrics };
+}
+
+export function readServiceTier(data: unknown): string | undefined {
+  if (!isRecord(data)) {
+    return undefined;
+  }
+
+  if (typeof data.service_tier === "string" && data.service_tier) {
+    return data.service_tier;
+  }
+
+  const response = isRecord(data.response) ? data.response : undefined;
+
+  return typeof response?.service_tier === "string" && response.service_tier
+    ? response.service_tier
+    : undefined;
+}

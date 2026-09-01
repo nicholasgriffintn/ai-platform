@@ -23,6 +23,7 @@ import { SseLineBuffer } from "~/lib/chat/streaming/sse-line-buffer";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ResponseFormatter, StreamingFormatter } from "~/lib/formatter";
 import { findModelConfig } from "~/lib/providers/models";
+import { readServiceTier } from "~/lib/usage/extractUsage";
 import {
   hasTokenUsageChanged,
   mergeStreamedTokenUsage,
@@ -31,7 +32,7 @@ import {
 import type { IEnv, MessagePart, ToolCall } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
-import { isRecord } from "~/utils/objects";
+import { deepMergeRecords, isRecord } from "~/utils/objects";
 
 const logger = getLogger({ prefix: "lib/chat/agent/provider-stream" });
 
@@ -53,6 +54,7 @@ export interface StreamedTurn {
   citations: unknown[];
   usage: NormalisedTokenUsage | null;
   rawUsage?: unknown;
+  serviceTier?: string;
   structuredData: unknown;
   refusal: string | null;
   annotations: unknown;
@@ -470,7 +472,16 @@ export async function consumeProviderStream(
       }
 
       turn.usage = mergedUsage;
-      turn.rawUsage = extractedUsage;
+      turn.rawUsage =
+        isRecord(turn.rawUsage) && isRecord(extractedUsage)
+          ? deepMergeRecords(turn.rawUsage, extractedUsage)
+          : extractedUsage;
+    }
+
+    const serviceTier = readServiceTier(data);
+
+    if (serviceTier) {
+      turn.serviceTier = serviceTier;
     }
 
     const extractedStructuredData = StreamingFormatter.extractStructuredData(data);

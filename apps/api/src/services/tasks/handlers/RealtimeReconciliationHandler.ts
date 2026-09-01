@@ -1,6 +1,7 @@
 import { rateEntriesFromModelConfig } from "@ngriffin_uk/polychat-schemas";
 
 import { getModelConfig } from "~/lib/providers/models";
+import { userCreditActor } from "~/lib/usage/creditActor";
 import { emitUsageEvents, type UsageEventDraft } from "~/lib/usage/ledger";
 import { finishUsageReservation } from "~/lib/usage/reservations";
 import { RepositoryManager } from "~/repositories";
@@ -69,7 +70,7 @@ export class RealtimeReconciliationHandler implements TaskHandler {
 
       const draft: UsageEventDraft = {
         idempotencyKey: `realtime:${payload.sessionId}:settlement`,
-        userId: payload.userId,
+        actor: userCreditActor(payload.userId),
         source: "capability",
         vendor: payload.pricing.vendor,
         resource: payload.pricing.resource,

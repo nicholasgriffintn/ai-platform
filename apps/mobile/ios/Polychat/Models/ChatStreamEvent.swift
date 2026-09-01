@@ -46,11 +46,6 @@ struct ChatToolResultEvent: Decodable, Equatable {
 }
 
 struct ChatUsageLimits: Decodable, Equatable {
-    struct Allowance: Decodable, Equatable {
-        let used: Int?
-        let limit: Int?
-    }
-
     struct Credits: Decodable, Equatable {
         let included: Double
         let used: Double
@@ -67,14 +62,9 @@ struct ChatUsageLimits: Decodable, Equatable {
         }
     }
 
-    let daily: Allowance?
     let credits: Credits?
 
-    init(
-        daily: Allowance?,
-        credits: Credits? = nil
-    ) {
-        self.daily = daily
+    init(credits: Credits? = nil) {
         self.credits = credits
     }
 }

@@ -1,4 +1,4 @@
-import { creditMicrosFromCredits } from "@ngriffin_uk/polychat-schemas";
+import { creditMicrosFromCredits, creditsFromCreditMicros } from "@ngriffin_uk/polychat-schemas";
 
 import type { RepositoryManager } from "~/repositories";
 import { getLogger } from "~/utils/logger";
@@ -6,7 +6,27 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "lib/usage/plan-seed" });
 
 const GRACE_INCLUDED_FRACTION = 0.1;
+const GRACE_CEILING_FRACTION = 0.5;
 const GRACE_FLOOR_CREDIT_MICROS = creditMicrosFromCredits(50);
+
+export const ANONYMOUS_PLAN_ID = "anonymous";
+
+const PLANS_WITHOUT_GRACE = new Set([ANONYMOUS_PLAN_ID, "free"]);
+
+export function planEarnsGrace(planId: string): boolean {
+  return !PLANS_WITHOUT_GRACE.has(planId);
+}
+
+export const DEFAULT_PLAN_INCLUDED_CREDITS: Record<string, number> = {
+  anonymous: 20,
+  free: 100,
+  pro: 500,
+  enterprise: 5000,
+};
+
+function fallbackIncludedCredits(planId: string): number | undefined {
+  return DEFAULT_PLAN_INCLUDED_CREDITS[planId];
+}
 
 export interface UsagePlanSeed {
   planId: string | null;
@@ -17,14 +37,48 @@ export interface UsagePlanSeed {
 const UNCONFIGURED_ALLOWANCE = { includedCreditMicros: 0, graceCreditMicros: 0 } as const;
 
 export function defaultGraceCreditMicros(includedCreditMicros: number): number {
-  return Math.max(
-    Math.round(includedCreditMicros * GRACE_INCLUDED_FRACTION),
-    GRACE_FLOOR_CREDIT_MICROS,
+  return Math.min(
+    Math.max(Math.round(includedCreditMicros * GRACE_INCLUDED_FRACTION), GRACE_FLOOR_CREDIT_MICROS),
+    Math.round(includedCreditMicros * GRACE_CEILING_FRACTION),
   );
 }
 
 export function creditsAreEnforced(seed: Pick<UsagePlanSeed, "includedCreditMicros">): boolean {
   return seed.includedCreditMicros > 0;
+}
+
+export interface PlanAllowanceCredits {
+  includedCredits: number;
+  graceCredits: number;
+}
+
+export function resolvePlanAllowanceCredits(
+  planId: string,
+  configuredIncludedCredits?: unknown,
+  configuredGraceCredits?: unknown,
+): PlanAllowanceCredits | null {
+  const includedCredits =
+    typeof configuredIncludedCredits === "number" && configuredIncludedCredits > 0
+      ? configuredIncludedCredits
+      : fallbackIncludedCredits(planId);
+
+  if (typeof includedCredits !== "number" || includedCredits <= 0) {
+    return null;
+  }
+
+  if (!planEarnsGrace(planId)) {
+    return { includedCredits, graceCredits: 0 };
+  }
+
+  return {
+    includedCredits,
+    graceCredits:
+      typeof configuredGraceCredits === "number"
+        ? configuredGraceCredits
+        : creditsFromCreditMicros(
+            defaultGraceCreditMicros(creditMicrosFromCredits(includedCredits)),
+          ),
+  };
 }
 
 export async function resolvePlanCreditAllowance(
@@ -36,22 +90,20 @@ export async function resolvePlanCreditAllowance(
   }
 
   const plan = await repositories.plans.getPlanById(planId);
-  const includedCredits = plan?.included_credits;
+  const allowance = resolvePlanAllowanceCredits(
+    planId,
+    plan?.included_credits,
+    plan?.grace_credits,
+  );
 
-  if (typeof includedCredits !== "number" || includedCredits <= 0) {
+  if (!allowance) {
     return { planId, ...UNCONFIGURED_ALLOWANCE };
   }
 
-  const includedCreditMicros = creditMicrosFromCredits(includedCredits);
-  const graceCredits = plan?.grace_credits;
-
   return {
     planId,
-    includedCreditMicros,
-    graceCreditMicros:
-      typeof graceCredits === "number"
-        ? creditMicrosFromCredits(graceCredits)
-        : defaultGraceCreditMicros(includedCreditMicros),
+    includedCreditMicros: creditMicrosFromCredits(allowance.includedCredits),
+    graceCreditMicros: creditMicrosFromCredits(allowance.graceCredits),
   };
 }
 

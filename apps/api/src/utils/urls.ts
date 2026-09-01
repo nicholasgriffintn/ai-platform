@@ -22,6 +22,26 @@ export function normaliseHttpOrigin(value: string | undefined): string | null {
   }
 }
 
+export function isUrlWithinOrigin(candidate: string, allowedOrigin: string | undefined): boolean {
+  const origin = normaliseHttpOrigin(allowedOrigin);
+
+  if (!origin) {
+    return false;
+  }
+
+  try {
+    const url = new URL(candidate);
+
+    if (url.protocol !== "https:" && url.protocol !== "http:") {
+      return false;
+    }
+
+    return url.origin === origin;
+  } catch {
+    return false;
+  }
+}
+
 const normalizeHostname = (hostname: string): string =>
   hostname
     .trim()

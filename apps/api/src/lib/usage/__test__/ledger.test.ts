@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { UsageEventInsert } from "~/repositories/UsageEventRepository";
 
 import { billableTokenQuantities } from "../billableUnits";
+import { userCreditActor } from "../creditActor";
 import { resolveCreditState } from "../creditState";
 import { applyUsageRollup, buildUsageEventRow, emitUsageEvents } from "../ledger";
 import type { NormalisedTokenUsage } from "../tokenUsage";
@@ -30,7 +31,7 @@ const MODEL_RATES: RateEntry[] = [
 function draft(overrides: Record<string, unknown> = {}) {
   return {
     idempotencyKey: "model:message-1:input_tokens",
-    userId: 7,
+    actor: userCreditActor(7),
     source: "model" as const,
     vendor: "anthropic",
     resource: "claude-4.6-opus",

@@ -59,7 +59,6 @@ function createConversationManager(messages: unknown[]) {
   return {
     getAllMessages: vi.fn().mockResolvedValue(messages),
     add: vi.fn(),
-    checkUsageLimits: vi.fn(),
   };
 }
 

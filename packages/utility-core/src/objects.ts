@@ -2,6 +2,21 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
+export function deepMergeRecords(
+  base: Record<string, unknown>,
+  next: Record<string, unknown>,
+): Record<string, unknown> {
+  const merged: Record<string, unknown> = { ...base };
+
+  for (const [key, value] of Object.entries(next)) {
+    const existing = merged[key];
+
+    merged[key] = isRecord(existing) && isRecord(value) ? deepMergeRecords(existing, value) : value;
+  }
+
+  return merged;
+}
+
 export function readOptionalString(value: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;
 }

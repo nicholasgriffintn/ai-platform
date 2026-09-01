@@ -10,6 +10,7 @@ import {
 } from "~/lib/chat/streaming/emitter";
 import { getAIResponse } from "~/lib/chat/streaming/responses";
 import { watchDetachedTurnCancellation } from "~/lib/chat/streaming/turn-cancellation";
+import { userCreditActor } from "~/lib/usage/creditActor";
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
 import { recordModelTurnUsage } from "~/lib/usage/modelUsage";
 import { normaliseTokenUsage } from "~/lib/usage/tokenUsage";
@@ -175,7 +176,7 @@ async function requestSecondaryAnswer(
     await recordModelTurnUsage({
       env: params.env,
       repositories: params.context?.repositories,
-      userId: params.context?.user?.id,
+      actor: params.context?.user?.id ? userCreditActor(params.context.user.id) : null,
       usage: normaliseTokenUsage(rawUsage),
       rawUsage,
       model: modelConfig.model,

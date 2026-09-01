@@ -13,9 +13,11 @@ import type { RepositoryManager } from "~/repositories";
 import type { UsageEventInsert } from "~/repositories/UsageEventRepository";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
+import { applyActorCreditDeltas, creditActorUserId, type CreditActor } from "./creditActor";
 import { resolveUsagePlanSeed, type UsagePlanSeed } from "./planSeed";
 
 const logger = getLogger({ prefix: "lib/usage/ledger" });
@@ -27,7 +29,7 @@ const BYOK_EXEMPT_SOURCES: ReadonlySet<UsageSource> = new Set<UsageSource>([
 
 export interface UsageEventDraft {
   idempotencyKey: string;
-  userId: number;
+  actor: CreditActor;
   source: UsageSource;
   vendor: string;
   resource: string;
@@ -56,7 +58,19 @@ export interface UsageAttribution {
   workspaceId: string | null;
 }
 
-export function buildUsageEventRow(draft: UsageEventDraft): UsageEventInsert {
+export interface PricedUsageDraft {
+  occurredAt: string;
+  period: string;
+  rateVersion: string | null;
+  unitCostMicros: number | null;
+  costMicros: number;
+  creditMicros: number;
+  billable: boolean;
+  byok: boolean;
+  estimated: boolean;
+}
+
+export function priceUsageDraft(draft: UsageEventDraft): PricedUsageDraft {
   const occurredAt = draft.occurredAt ?? new Date().toISOString();
   const priced = priceUsage(
     draft.rates ?? [],
@@ -85,17 +99,41 @@ export function buildUsageEventRow(draft: UsageEventDraft): UsageEventInsert {
   const costMicros = Math.round(priced.costMicros);
 
   return {
+    occurredAt,
+    period: usagePeriodFromDate(new Date(occurredAt)),
+    rateVersion: priced.rateVersion,
+    unitCostMicros: priced.unitCostMicros,
+    costMicros,
+    creditMicros: exemptFromCredits
+      ? 0
+      : creditMicrosFromCostMicros(costMicros, draft.margin ?? DEFAULT_MARGIN),
+    billable: !exemptFromCredits,
+    byok,
+    estimated: priced.estimated,
+  };
+}
+
+export function buildUsageEventRow(draft: UsageEventDraft): UsageEventInsert {
+  const userId = creditActorUserId(draft.actor);
+
+  if (userId === undefined) {
+    throw new AssistantError("Usage ledger rows require a signed-in user", ErrorType.PARAMS_ERROR);
+  }
+
+  const priced = priceUsageDraft(draft);
+
+  return {
     id: generateId(),
     idempotency_key: draft.idempotencyKey,
-    user_id: draft.userId,
+    user_id: userId,
     workspace_id: draft.workspaceId ?? null,
     project_id: draft.projectId ?? null,
     conversation_id: draft.conversationId ?? null,
     message_id: draft.messageId ?? null,
     activity_id: draft.activityId ?? null,
     completion_id: draft.completionId ?? null,
-    occurred_at: occurredAt,
-    period: usagePeriodFromDate(new Date(occurredAt)),
+    occurred_at: priced.occurredAt,
+    period: priced.period,
     source: draft.source,
     vendor: draft.vendor,
     resource: draft.resource,
@@ -103,12 +141,10 @@ export function buildUsageEventRow(draft: UsageEventDraft): UsageEventInsert {
     quantity: draft.quantity,
     rate_version: priced.rateVersion,
     unit_cost_micros: priced.unitCostMicros,
-    cost_micros: costMicros,
-    credit_micros: exemptFromCredits
-      ? 0
-      : creditMicrosFromCostMicros(costMicros, draft.margin ?? DEFAULT_MARGIN),
-    billable: !exemptFromCredits,
-    byok,
+    cost_micros: priced.costMicros,
+    credit_micros: priced.creditMicros,
+    billable: priced.billable,
+    byok: priced.byok,
     estimated: priced.estimated,
     raw: draft.raw === undefined ? null : JSON.stringify(draft.raw),
   };
@@ -175,6 +211,54 @@ export interface EmitUsageEventsParams {
 
 export type UsageEmissionOutcome = "queued" | "written" | "skipped" | "failed";
 
+async function commitAnonymousSpend(
+  repositories: RepositoryManager,
+  drafts: readonly UsageEventDraft[],
+): Promise<void> {
+  const totals = new Map<string, { actor: CreditActor; period: string; creditMicros: number }>();
+
+  for (const draft of drafts) {
+    let priced: PricedUsageDraft;
+
+    try {
+      priced = priceUsageDraft(draft);
+    } catch (error) {
+      logger.error("Failed to price an anonymous usage draft", { error });
+
+      continue;
+    }
+
+    if (!priced.billable || priced.creditMicros <= 0) {
+      continue;
+    }
+
+    const actor = draft.actor;
+    const key = `${actor.kind === "anonymous" ? actor.anonymousUserId : ""}:${priced.period}`;
+    const existing = totals.get(key);
+
+    if (existing) {
+      existing.creditMicros += priced.creditMicros;
+
+      continue;
+    }
+
+    totals.set(key, { actor, period: priced.period, creditMicros: priced.creditMicros });
+  }
+
+  for (const total of totals.values()) {
+    try {
+      await applyActorCreditDeltas({
+        repositories,
+        actor: total.actor,
+        period: total.period,
+        deltas: { spent_credit_micros: total.creditMicros },
+      });
+    } catch (error) {
+      logger.error("Failed to commit anonymous credit spend", { error });
+    }
+  }
+}
+
 export async function emitUsageEvents(
   params: EmitUsageEventsParams,
 ): Promise<UsageEmissionOutcome> {
@@ -184,10 +268,21 @@ export async function emitUsageEvents(
     return "skipped";
   }
 
+  const anonymousDrafts = drafts.filter((draft) => draft.actor.kind === "anonymous");
+  const userDrafts = drafts.filter((draft) => draft.actor.kind === "user");
+
+  if (anonymousDrafts.length > 0) {
+    await commitAnonymousSpend(repositories, anonymousDrafts);
+  }
+
+  if (userDrafts.length === 0) {
+    return "written";
+  }
+
   let events: UsageEventInsert[];
 
   try {
-    events = drafts.map(buildUsageEventRow);
+    events = userDrafts.map(buildUsageEventRow);
   } catch (error) {
     logger.error("Failed to build usage events", { error });
 

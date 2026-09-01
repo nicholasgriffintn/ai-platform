@@ -1,21 +1,12 @@
 import type { User } from "~/types";
-import { formatUtcDateKey } from "~/utils/date";
 
 import { BaseRepository } from "./BaseRepository";
 
 export type CumulativeUsageCounter = "message_count";
 
-export type DailyUsageCounter = "daily_message_count";
-
-export type UsageCounterIncrements = Partial<
-  Record<CumulativeUsageCounter | DailyUsageCounter, number>
->;
+export type UsageCounterIncrements = Partial<Record<CumulativeUsageCounter, number>>;
 
 const CUMULATIVE_USAGE_COUNTERS: readonly CumulativeUsageCounter[] = ["message_count"];
-
-const DAILY_USAGE_COUNTERS: readonly (readonly [DailyUsageCounter, string])[] = [
-  ["daily_message_count", "daily_reset"],
-];
 
 export class UserRepository extends BaseRepository {
   public async getUserByOauthAccount(
@@ -80,7 +71,6 @@ export class UserRepository extends BaseRepository {
   ): Promise<User | null> {
     const assignments: string[] = [];
     const values: unknown[] = [];
-    const day = formatUtcDateKey(occurredAt);
     const timestamp = occurredAt.toISOString();
 
     for (const counter of CUMULATIVE_USAGE_COUNTERS) {
@@ -92,23 +82,6 @@ export class UserRepository extends BaseRepository {
 
       assignments.push(`${counter} = COALESCE(${counter}, 0) + ?`);
       values.push(amount);
-    }
-
-    for (const [counter, resetColumn] of DAILY_USAGE_COUNTERS) {
-      const amount = increments[counter];
-
-      if (!amount) {
-        continue;
-      }
-
-      assignments.push(
-        `${counter} = CASE WHEN date(${resetColumn}) = ? THEN COALESCE(${counter}, 0) + ? ELSE ? END`,
-      );
-      values.push(day, amount, amount);
-      assignments.push(
-        `${resetColumn} = CASE WHEN date(${resetColumn}) = ? THEN ${resetColumn} ELSE ? END`,
-      );
-      values.push(day, timestamp);
     }
 
     if (assignments.length === 0) {

@@ -4,6 +4,7 @@ import {
   OCR_BATCH_POLLING_TASK_TYPE,
   REALTIME_RECONCILIATION_TASK_TYPE,
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
+  STRIPE_USAGE_SYNC_TASK_TYPE,
   USAGE_ROLLUP_TASK_TYPE,
   type TaskType,
 } from "@ngriffin_uk/polychat-schemas";
@@ -26,6 +27,7 @@ import { RecipeExecutionHandler } from "./handlers/RecipeExecutionHandler";
 import { ReplicatePollingHandler } from "./handlers/ReplicatePollingHandler";
 import { ResearchPollingHandler } from "./handlers/ResearchPollingHandler";
 import { SandboxRunDispatchHandler } from "./handlers/SandboxRunDispatchHandler";
+import { StripeUsageSyncHandler } from "./handlers/StripeUsageSyncHandler";
 import { TrainingQualityHandler } from "./handlers/TrainingQualityHandler";
 import { UsageRollupHandler } from "./handlers/UsageRollupHandler";
 import { TaskExecutor } from "./TaskExecutor";
@@ -53,6 +55,7 @@ export function createTaskHandlers(): Map<TaskType, TaskHandler> {
     [USAGE_ROLLUP_TASK_TYPE, new UsageRollupHandler()],
     [REALTIME_RECONCILIATION_TASK_TYPE, new RealtimeReconciliationHandler()],
     [INFRA_RECONCILIATION_TASK_TYPE, new InfraReconciliationHandler()],
+    [STRIPE_USAGE_SYNC_TASK_TYPE, new StripeUsageSyncHandler()],
   ]);
 }
 

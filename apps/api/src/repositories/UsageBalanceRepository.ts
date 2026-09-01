@@ -26,10 +26,28 @@ export interface UsageBalanceRow {
   reserved_credit_micros: number;
   overrun_credit_micros: number;
   overage_credit_micros: number;
+  stripe_synced_overage_credit_micros: number;
   overage_enabled: number;
   last_event_at: string | null;
   created_at: string;
   updated_at: string | null;
+}
+
+export interface OverageSyncCandidateRow {
+  user_id: number;
+  period: string;
+  overage_credit_micros: number;
+  stripe_synced_overage_credit_micros: number;
+  stripe_customer_id: string;
+  stripe_meter_id: string | null;
+}
+
+export interface PlanEntitlementParams {
+  userId: number;
+  period: string;
+  planId: string;
+  includedCreditMicros: number;
+  graceCreditMicros: number;
 }
 
 export interface EnsureBalanceParams {
@@ -126,6 +144,70 @@ export class UsageBalanceRepository extends BaseRepository {
 			 SET overage_enabled = ?, updated_at = CURRENT_TIMESTAMP
 			 WHERE user_id = ? AND period = ?`,
       [enabled ? 1 : 0, userId, period],
+    );
+  }
+
+  async listOverageSyncCandidates(period: string): Promise<OverageSyncCandidateRow[]> {
+    return this.runQuery<OverageSyncCandidateRow>(
+      `SELECT ub.user_id, ub.period, ub.overage_credit_micros,
+              ub.stripe_synced_overage_credit_micros,
+              u.stripe_customer_id,
+              p.stripe_meter_id
+       FROM usage_balance ub
+       INNER JOIN user u ON u.id = ub.user_id
+       LEFT JOIN plans p ON p.id = COALESCE(ub.plan_id, u.plan_id)
+       WHERE ub.period = ?
+         AND ub.overage_enabled = 1
+         AND ub.overage_credit_micros > ub.stripe_synced_overage_credit_micros
+         AND u.stripe_customer_id IS NOT NULL`,
+      [period],
+    );
+  }
+
+  async recordStripeSyncedOverage(
+    userId: number,
+    period: string,
+    deltaMicros: number,
+  ): Promise<void> {
+    if (!Number.isFinite(deltaMicros) || deltaMicros === 0) {
+      return;
+    }
+
+    await this.executeRun(
+      `UPDATE usage_balance
+       SET stripe_synced_overage_credit_micros = stripe_synced_overage_credit_micros + ?,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE user_id = ? AND period = ?`,
+      [Math.round(deltaMicros), userId, period],
+    );
+  }
+
+  async setPlanEntitlement(params: PlanEntitlementParams): Promise<void> {
+    if (
+      !Number.isFinite(params.includedCreditMicros) ||
+      !Number.isFinite(params.graceCreditMicros)
+    ) {
+      throw new AssistantError("Non-finite plan entitlement credits", ErrorType.PARAMS_ERROR);
+    }
+
+    await this.ensureBalance({
+      userId: params.userId,
+      period: params.period,
+      planId: params.planId,
+    });
+
+    await this.executeRun(
+      `UPDATE usage_balance
+       SET plan_id = ?, included_credit_micros = ?, grace_credit_micros = ?,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE user_id = ? AND period = ?`,
+      [
+        params.planId,
+        Math.round(params.includedCreditMicros),
+        Math.round(params.graceCreditMicros),
+        params.userId,
+        params.period,
+      ],
     );
   }
 }

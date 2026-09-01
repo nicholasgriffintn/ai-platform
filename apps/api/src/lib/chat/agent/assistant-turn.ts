@@ -30,6 +30,7 @@ export interface TurnOutput {
   citations?: unknown;
   usage?: NormalisedTokenUsage | null;
   rawUsage?: unknown;
+  serviceTier?: string;
   structuredData?: unknown;
   refusal?: string | null;
   annotations?: unknown;
@@ -158,9 +159,12 @@ export async function finaliseAssistantTurn(
   await recordModelTurnUsage({
     env,
     repositories: context?.repositories,
-    userId: user?.id,
+    actor: params.conversationManager.creditActor(),
     usage: auditedUsage,
     rawUsage: turn.rawUsage,
+    parts: turn.parts,
+    structuredData: turn.structuredData,
+    tier: turn.serviceTier,
     model,
     provider: params.provider,
     completionId,

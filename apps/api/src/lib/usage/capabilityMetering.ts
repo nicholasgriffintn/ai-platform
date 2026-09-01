@@ -13,6 +13,7 @@ import { getLogger } from "~/utils/logger";
 import { isRecord } from "~/utils/objects";
 import { findNumericFieldDeep, readNumericField, readStringField } from "~/utils/recordFields";
 
+import { userCreditActor } from "./creditActor";
 import { emitUsageEvents, resolveUsageAttribution, type UsageEventDraft } from "./ledger";
 
 const logger = getLogger({ prefix: "lib/usage/capability-metering" });
@@ -195,7 +196,7 @@ async function recordCapabilityCall(params: RecordCapabilityCallParams): Promise
 
     const draft: UsageEventDraft = {
       idempotencyKey: `capability:${params.category}:${generateId()}`,
-      userId: params.userId,
+      actor: userCreditActor(params.userId),
       source: "capability",
       vendor,
       resource,

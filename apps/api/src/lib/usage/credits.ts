@@ -11,6 +11,12 @@ import {
 import type { RepositoryManager } from "~/repositories";
 import { getLogger } from "~/utils/logger";
 
+import {
+  applyActorCreditDeltas,
+  defaultActorPlanId,
+  readActorCreditSpend,
+  type CreditActor,
+} from "./creditActor";
 import { resolveCreditState } from "./creditState";
 import { creditsAreEnforced, resolvePlanCreditAllowance } from "./planSeed";
 
@@ -86,7 +92,7 @@ export interface CreditPosition {
 
 export interface ReadCreditPositionParams {
   repositories: RepositoryManager;
-  userId: number;
+  actor: CreditActor;
   planId?: string | null;
   period?: string;
 }
@@ -95,7 +101,10 @@ export async function readCreditPosition(
   params: ReadCreditPositionParams,
 ): Promise<CreditPosition> {
   const period = params.period ?? usagePeriodFromDate();
-  const allowance = await resolvePlanCreditAllowance(params.repositories, params.planId);
+  const allowance = await resolvePlanCreditAllowance(
+    params.repositories,
+    defaultActorPlanId(params.actor, params.planId),
+  );
 
   if (!creditsAreEnforced(allowance)) {
     return {
@@ -111,10 +120,10 @@ export async function readCreditPosition(
     };
   }
 
-  const balance = await params.repositories.usageBalances.getBalance(params.userId, period);
-  const spentCreditMicros = balance?.spent_credit_micros ?? 0;
-  const reservedCreditMicros = balance?.reserved_credit_micros ?? 0;
-  const overageEnabled = Boolean(balance?.overage_enabled);
+  const spend = await readActorCreditSpend(params.repositories, params.actor, period);
+  const spentCreditMicros = spend.spentCreditMicros;
+  const reservedCreditMicros = spend.reservedCreditMicros;
+  const overageEnabled = spend.overageEnabled;
 
   return {
     enforced: true,
@@ -150,7 +159,7 @@ export interface AdmitTurnParams extends ReadCreditPositionParams {
 
 function createTurnReservation(
   repositories: RepositoryManager,
-  userId: number,
+  actor: CreditActor,
   period: string,
   creditMicros: number,
 ): TurnReservation {
@@ -166,13 +175,14 @@ function createTurnReservation(
       released = true;
 
       try {
-        await repositories.usageBalances.applyDeltas({
-          userId,
+        await applyActorCreditDeltas({
+          repositories,
+          actor,
           period,
           deltas: { reserved_credit_micros: -creditMicros },
         });
       } catch (error) {
-        logger.error("Failed to release a turn reservation", { error, userId, period });
+        logger.error("Failed to release a turn reservation", { error, actor, period });
       }
     },
   };
@@ -197,8 +207,9 @@ export async function admitTurn(params: AdmitTurnParams): Promise<TurnAdmission>
     return { admitted: true, position, reservation: null };
   }
 
-  await params.repositories.usageBalances.applyDeltas({
-    userId: params.userId,
+  await applyActorCreditDeltas({
+    repositories: params.repositories,
+    actor: params.actor,
     period: position.period,
     planId: position.planId,
     includedCreditMicros: position.includedCreditMicros,
@@ -211,7 +222,7 @@ export async function admitTurn(params: AdmitTurnParams): Promise<TurnAdmission>
     position,
     reservation: createTurnReservation(
       params.repositories,
-      params.userId,
+      params.actor,
       position.period,
       params.estimatedCreditMicros,
     ),

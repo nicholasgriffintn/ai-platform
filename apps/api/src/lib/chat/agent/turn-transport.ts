@@ -4,7 +4,11 @@ import { consumeProviderStream } from "~/lib/chat/agent/provider-stream";
 import { DISCARDING_EVENT_SINK, type ChatEventSink } from "~/lib/chat/streaming/emitter";
 import { getAIResponse } from "~/lib/chat/streaming/responses";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { extractUsagePayload } from "~/lib/usage/extractUsage";
+import {
+  extractPredictionMetricsPayload,
+  extractUsagePayload,
+  readServiceTier,
+} from "~/lib/usage/extractUsage";
 import { normaliseTokenUsage } from "~/lib/usage/tokenUsage";
 import type { ChatCompletionParameters, IEnv, ToolCall } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -43,7 +47,11 @@ function formatBufferedTurn(providerResponse: unknown): TurnOutput {
     toolCalls: (modelResponse.tool_calls ?? []) as ToolCall[],
     citations: modelResponse.citations ?? [],
     usage: normaliseTokenUsage(extractUsagePayload(providerResponse)),
-    rawUsage: extractUsagePayload(providerResponse),
+    rawUsage:
+      extractUsagePayload(providerResponse) ??
+      extractPredictionMetricsPayload(providerResponse) ??
+      undefined,
+    serviceTier: readServiceTier(providerResponse),
     structuredData: modelResponse.data,
     refusal: modelResponse.refusal ?? null,
     annotations: modelResponse.annotations ?? null,
@@ -113,6 +121,7 @@ export function createStreamingTurnTransport(): ChatTurnTransport {
         citations: streamed.citations,
         usage: streamed.usage,
         rawUsage: streamed.rawUsage,
+        serviceTier: streamed.serviceTier,
         structuredData: streamed.structuredData,
         refusal: streamed.refusal,
         annotations: streamed.annotations,

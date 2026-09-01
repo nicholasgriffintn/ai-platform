@@ -1,14 +1,11 @@
 import { useEffect } from "react";
 
-import { getBoundedUsagePercentage } from "~/lib/sidebar-usage";
 import { usePetStore } from "~/state/stores/petStore";
 import { useUsageStore } from "~/state/stores/usageStore";
 
 const USAGE_NUDGE_ID = "usage-close-to-limit";
 const GOAL_NUDGE_ID = "goal-stopped";
 const QUESTION_NUDGE_ID = "pending-question";
-
-const USAGE_THRESHOLD = 90;
 
 export interface PetNudgeSources {
   goalStatus?: string | null;
@@ -26,26 +23,23 @@ export function usePetNudgeSources({
   const retractNudge = usePetStore((state) => state.retractNudge);
 
   useEffect(() => {
-    const daily = usageLimits?.daily;
+    const credits = usageLimits?.credits;
 
-    if (!daily || typeof daily.limit !== "number" || daily.limit <= 0) {
+    if (!credits || credits.state === "ok") {
       retractNudge(USAGE_NUDGE_ID);
 
       return;
     }
 
-    if (getBoundedUsagePercentage(daily.used, daily.limit) >= USAGE_THRESHOLD) {
-      pushNudge({
-        id: USAGE_NUDGE_ID,
-        message: "You are close to today's message limit.",
-        actionLabel: "See usage",
-        href: "/profile?tab=billing",
-      });
-
-      return;
-    }
-
-    retractNudge(USAGE_NUDGE_ID);
+    pushNudge({
+      id: USAGE_NUDGE_ID,
+      message:
+        credits.state === "exhausted"
+          ? "Your credits are spent for this period."
+          : "You are into your credit reserve.",
+      actionLabel: "See usage",
+      href: "/profile?tab=billing",
+    });
   }, [pushNudge, retractNudge, usageLimits]);
 
   useEffect(() => {

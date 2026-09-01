@@ -4,6 +4,10 @@ Polychat cannot create a Checkout Session from a Stripe secret alone. Each paid 
 Stripe Price, and the matching D1 `plans` row must hold that Price ID. Checkout fails closed before creating
 a Stripe Customer when this value is absent.
 
+Stripe buys entitlement and overage, not metering. Credit allowances apply whether or not Stripe is
+configured, and an account with overage off simply pauses at the end of its reserve until the calendar
+month resets. Without Stripe the billing portal and overage controls hide themselves rather than erroring.
+
 ## Configure an environment
 
 - Create or select the Pro product and its recurring Price in the matching Stripe test or live mode.
@@ -27,6 +31,20 @@ Stripe CLI listener against the same sandbox account and forward events to
 `STRIPE_WEBHOOK_SECRET`, then restart the API so it reads the value. The subscription-status route recovers
 an active or trialling subscription from Stripe when the Checkout completion webhook is delayed, but keep
 the listener running to exercise cancellation, invoice, and trial lifecycle events.
+
+## Meter overage
+
+Overage is opt-in and off by default. When a person turns it on, spend past the reserve accrues as overage
+credits and reaches Stripe through a Billing Meter — one hourly `stripe_usage_sync` batch per customer, never
+one event per usage event. Configure the meter, the metered price, and the plan's `stripe_meter_id` and
+`overage_price_id` before offering it; see [configuration.md](../configuration.md).
+
+- `POST /stripe/overage` requires an entitled subscription and a payment method, and adds or removes the
+  plan's metered subscription item in both directions.
+- A plan without `stripe_meter_id` is skipped by the sync, so its overage accrues in D1 and is never billed.
+  Check that first when an invoice looks short.
+- A downgrade to Free switches overage off. Confirm the flag on the current period's balance after a plan
+  change rather than assuming the subscription item alone governs it.
 
 ## Give staff ongoing Pro access
 

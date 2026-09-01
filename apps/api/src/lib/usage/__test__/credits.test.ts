@@ -1,13 +1,14 @@
 import type { UsageCreditsSummary } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
+import { userCreditActor } from "../creditActor";
 import {
   admitTurn,
   estimateTurnCreditMicros,
   overrunCapCreditMicros,
   shouldStopRunaway,
 } from "../credits";
-import { defaultGraceCreditMicros } from "../planSeed";
+import { defaultGraceCreditMicros, resolvePlanAllowanceCredits } from "../planSeed";
 
 function createRepositories(
   options: {
@@ -49,7 +50,11 @@ describe("defaultGraceCreditMicros", () => {
 
   it("never grants less than fifty credits", () => {
     expect(defaultGraceCreditMicros(100_000_000)).toBe(50_000_000);
-    expect(defaultGraceCreditMicros(0)).toBe(50_000_000);
+  });
+
+  it("never grants more than half the included credits", () => {
+    expect(defaultGraceCreditMicros(15_000_000)).toBe(7_500_000);
+    expect(defaultGraceCreditMicros(0)).toBe(0);
   });
 });
 
@@ -109,7 +114,7 @@ describe("admitTurn", () => {
 
     const admission = await admitTurn({
       repositories,
-      userId: 7,
+      actor: userCreditActor(7),
       planId: "pro",
       estimatedCreditMicros: 10_000_000,
     });
@@ -132,7 +137,7 @@ describe("admitTurn", () => {
 
     const admission = await admitTurn({
       repositories,
-      userId: 7,
+      actor: userCreditActor(7),
       planId: "pro",
       estimatedCreditMicros: 10_000_000,
     });
@@ -148,7 +153,7 @@ describe("admitTurn", () => {
 
     const admission = await admitTurn({
       repositories,
-      userId: 7,
+      actor: userCreditActor(7),
       planId: "pro",
       estimatedCreditMicros: 10_000_000,
     });
@@ -165,7 +170,7 @@ describe("admitTurn", () => {
 
     const admission = await admitTurn({
       repositories,
-      userId: 7,
+      actor: userCreditActor(7),
       planId: "pro",
       estimatedCreditMicros: 10_000_000,
     });
@@ -181,8 +186,8 @@ describe("admitTurn", () => {
 
     const admission = await admitTurn({
       repositories,
-      userId: 7,
-      planId: "free",
+      actor: userCreditActor(7),
+      planId: "bespoke-unmetered",
       estimatedCreditMicros: 999_000_000_000,
     });
 
@@ -197,7 +202,7 @@ describe("admitTurn", () => {
 
     const admission = await admitTurn({
       repositories,
-      userId: 7,
+      actor: userCreditActor(7),
       planId: "pro",
       estimatedCreditMicros: 10_000_000,
     });
@@ -216,5 +221,29 @@ describe("admitTurn", () => {
     );
 
     expect(releases).toHaveLength(1);
+  });
+});
+
+describe("resolvePlanAllowanceCredits", () => {
+  it("falls back to the built-in allowance when a plan row leaves credits unset", () => {
+    expect(resolvePlanAllowanceCredits("free", null, null)).toEqual({
+      includedCredits: 100,
+      graceCredits: 0,
+    });
+    expect(resolvePlanAllowanceCredits("anonymous", null, null)).toEqual({
+      includedCredits: 20,
+      graceCredits: 0,
+    });
+  });
+
+  it("lets a configured plan row override the built-in allowance", () => {
+    expect(resolvePlanAllowanceCredits("pro", 4000, 100)).toEqual({
+      includedCredits: 4000,
+      graceCredits: 100,
+    });
+  });
+
+  it("reports an unknown plan with no configured credits as unmetered", () => {
+    expect(resolvePlanAllowanceCredits("bespoke-unmetered", null, null)).toBeNull();
   });
 });

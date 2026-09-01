@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { authService } from "~/lib/api/auth-service";
-import { getUsageLimitsFromAnonymousUser, getUsageLimitsFromUser } from "~/lib/usage-limits";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUsageStore } from "~/state/stores/usageStore";
 import type { UserSettings } from "~/types";
@@ -29,7 +28,6 @@ export function useAuthStatus() {
       const isAuth = await authService.checkAuthStatus();
 
       const user = authService.getUser();
-      const anonymousUser = user ? null : (authService.getAnonymousUser() ?? null);
 
       if (isAuth) {
         const token = await authService.getToken();
@@ -44,11 +42,7 @@ export function useAuthStatus() {
         clearAuthenticatedUserConfiguration();
       }
 
-      useUsageStore
-        .getState()
-        .setUsageLimits(
-          getUsageLimitsFromUser(user) ?? getUsageLimitsFromAnonymousUser(anonymousUser),
-        );
+      useUsageStore.getState().setUsageLimits(null);
       setIsAuthenticationLoading(false);
 
       return isAuth;

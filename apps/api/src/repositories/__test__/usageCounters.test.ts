@@ -51,15 +51,14 @@ beforeEach(() => {
     CREATE TABLE user (
       id integer PRIMARY KEY,
       message_count integer DEFAULT 0,
-      daily_message_count integer DEFAULT 0,
-      daily_reset text,
       last_active_at text,
       updated_at text
     );
     CREATE TABLE anonymous_user (
       id text PRIMARY KEY,
-      daily_message_count integer DEFAULT 0,
-      daily_reset text,
+      credit_period text,
+      spent_credit_micros integer DEFAULT 0,
+      reserved_credit_micros integer DEFAULT 0,
       last_active_at text,
       updated_at text
     );
@@ -72,115 +71,94 @@ afterEach(() => {
 
 describe("UserRepository.incrementUsageCounters", () => {
   it("keeps every concurrent increment instead of losing all but one", async () => {
-    const occurredAt = new Date("2026-08-31T12:00:00.000Z");
-
-    sqlite
-      .prepare(
-        "INSERT INTO user (id, message_count, daily_message_count, daily_reset) VALUES (?, ?, ?, ?)",
-      )
-      .run(1, 0, 0, "2026-08-31T00:05:00.000Z");
+    sqlite.prepare("INSERT INTO user (id, message_count) VALUES (?, ?)").run(1, 0);
 
     const repository = new UserRepository(createEnv());
 
     await Promise.all(
-      Array.from({ length: 25 }, () =>
-        repository.incrementUsageCounters(
-          1,
-          { message_count: 1, daily_message_count: 1 },
-          occurredAt,
-        ),
-      ),
+      Array.from({ length: 25 }, () => repository.incrementUsageCounters(1, { message_count: 1 })),
     );
 
-    const user = readUser();
-
-    expect(user.daily_message_count).toBe(25);
-    expect(user.message_count).toBe(25);
-    expect(user.daily_reset).toBe("2026-08-31T00:05:00.000Z");
-  });
-
-  it("rolls the free-account counter over once on a new UTC day and accumulates the rest", async () => {
-    const occurredAt = new Date("2026-09-01T00:30:00.000Z");
-
-    sqlite
-      .prepare(
-        "INSERT INTO user (id, message_count, daily_message_count, daily_reset) VALUES (?, ?, ?, ?)",
-      )
-      .run(1, 40, 40, "2026-08-31T23:59:00.000Z");
-
-    const repository = new UserRepository(createEnv());
-
-    await Promise.all(
-      Array.from({ length: 5 }, () =>
-        repository.incrementUsageCounters(
-          1,
-          { message_count: 1, daily_message_count: 1 },
-          occurredAt,
-        ),
-      ),
-    );
-
-    const user = readUser();
-
-    expect(user.daily_message_count).toBe(5);
-    expect(user.message_count).toBe(45);
-    expect(user.daily_reset).toBe("2026-09-01T00:30:00.000Z");
+    expect(readUser().message_count).toBe(25);
   });
 
   it("returns the persisted row so callers see authoritative counters", async () => {
-    sqlite
-      .prepare(
-        "INSERT INTO user (id, message_count, daily_message_count, daily_reset) VALUES (?, ?, ?, ?)",
-      )
-      .run(1, 3, 3, "2026-08-31T00:00:00.000Z");
+    sqlite.prepare("INSERT INTO user (id, message_count) VALUES (?, ?)").run(1, 3);
 
     const repository = new UserRepository(createEnv());
-    const updated = await repository.incrementUsageCounters(
-      1,
-      { message_count: 1, daily_message_count: 1 },
-      new Date("2026-08-31T12:00:00.000Z"),
-    );
+    const updated = await repository.incrementUsageCounters(1, { message_count: 1 });
 
-    expect(updated?.daily_message_count).toBe(4);
     expect(updated?.message_count).toBe(4);
   });
 });
 
-describe("AnonymousUserRepository.incrementDailyCount", () => {
-  it("keeps every concurrent increment instead of losing all but one", async () => {
-    const occurredAt = new Date("2026-08-31T12:00:00.000Z");
-
+describe("AnonymousUserRepository.applyCreditDeltas", () => {
+  it("keeps every concurrent credit delta instead of losing all but one", async () => {
     sqlite
-      .prepare("INSERT INTO anonymous_user (id, daily_message_count, daily_reset) VALUES (?, ?, ?)")
-      .run("anon-1", 0, "2026-08-31T00:05:00.000Z");
+      .prepare(
+        "INSERT INTO anonymous_user (id, credit_period, spent_credit_micros) VALUES (?, ?, ?)",
+      )
+      .run("anon-1", "2026-08", 0);
 
     const repository = new AnonymousUserRepository(createEnv());
 
     await Promise.all(
-      Array.from({ length: 15 }, () => repository.incrementDailyCount("anon-1", occurredAt)),
+      Array.from({ length: 15 }, () =>
+        repository.applyCreditDeltas("anon-1", "2026-08", { spent_credit_micros: 1_000 }),
+      ),
     );
 
-    expect(readAnonymousUser().daily_message_count).toBe(15);
+    expect(readAnonymousUser().spent_credit_micros).toBe(15_000);
   });
 
-  it("restarts the counter on a new UTC day", async () => {
+  it("restarts the balance when the period rolls over", async () => {
     sqlite
-      .prepare("INSERT INTO anonymous_user (id, daily_message_count, daily_reset) VALUES (?, ?, ?)")
-      .run("anon-1", 9, "2026-08-30T22:00:00.000Z");
+      .prepare(
+        "INSERT INTO anonymous_user (id, credit_period, spent_credit_micros, reserved_credit_micros) VALUES (?, ?, ?, ?)",
+      )
+      .run("anon-1", "2026-08", 9_000, 500);
 
     const repository = new AnonymousUserRepository(createEnv());
 
-    await repository.incrementDailyCount("anon-1", new Date("2026-08-31T01:00:00.000Z"));
+    await repository.applyCreditDeltas("anon-1", "2026-09", { spent_credit_micros: 1_000 });
 
     const anonymousUser = readAnonymousUser();
 
-    expect(anonymousUser.daily_message_count).toBe(1);
-    expect(anonymousUser.daily_reset).toBe("2026-08-31T01:00:00.000Z");
+    expect(anonymousUser.spent_credit_micros).toBe(1_000);
+    expect(anonymousUser.reserved_credit_micros).toBe(0);
+    expect(anonymousUser.credit_period).toBe("2026-09");
   });
 
-  it("rejects an increment for an unknown anonymous user", async () => {
+  it("never drives a released reservation below zero", async () => {
+    sqlite
+      .prepare(
+        "INSERT INTO anonymous_user (id, credit_period, reserved_credit_micros) VALUES (?, ?, ?)",
+      )
+      .run("anon-1", "2026-08", 500);
+
     const repository = new AnonymousUserRepository(createEnv());
 
-    await expect(repository.incrementDailyCount("missing")).rejects.toThrow("User not found");
+    await repository.applyCreditDeltas("anon-1", "2026-08", { reserved_credit_micros: -2_000 });
+
+    expect(readAnonymousUser().reserved_credit_micros).toBe(0);
+  });
+
+  it("reports a fresh balance once the period has moved on", async () => {
+    sqlite
+      .prepare(
+        "INSERT INTO anonymous_user (id, credit_period, spent_credit_micros) VALUES (?, ?, ?)",
+      )
+      .run("anon-1", "2026-08", 9_000);
+
+    const repository = new AnonymousUserRepository(createEnv());
+
+    await expect(repository.getCreditSpend("anon-1", "2026-09")).resolves.toEqual({
+      spentCreditMicros: 0,
+      reservedCreditMicros: 0,
+    });
+    await expect(repository.getCreditSpend("anon-1", "2026-08")).resolves.toEqual({
+      spentCreditMicros: 9_000,
+      reservedCreditMicros: 0,
+    });
   });
 });

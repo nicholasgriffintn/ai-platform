@@ -5,9 +5,11 @@ import { createModelConfig, createModelConfigObject } from "~/lib/providers/mode
 const PROVIDER = "anthropic";
 const anthropicLatestSearchTool = {
   supportsSearchGrounding: true,
+  hostedToolCosts: { web_search: 0.01 },
 };
 const anthropicLatestCodeExecutionTool = {
   supportsCodeExecution: true,
+  costPerCodeExecutionHour: 0.05,
 };
 const anthropicLatestWebFetchTool = {
   supportsWebFetch: true,

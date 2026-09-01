@@ -1,7 +1,8 @@
 import type { RepositoryManager } from "~/repositories";
 import type { UsageBalanceRow } from "~/repositories/UsageBalanceRepository";
 
-import { resolveUsagePlanSeed } from "./planSeed";
+import { readActorCreditSpend, type CreditActor } from "./creditActor";
+import { resolvePlanCreditAllowance, resolveUsagePlanSeed, ANONYMOUS_PLAN_ID } from "./planSeed";
 
 export type UsageBalanceSnapshot = Pick<
   UsageBalanceRow,
@@ -16,18 +17,51 @@ export type UsageBalanceSnapshot = Pick<
   | "last_event_at"
 >;
 
-export async function resolveUsageBalanceSnapshot(
+async function resolveAnonymousSnapshot(
   repositories: RepositoryManager,
-  userId: number,
+  actor: CreditActor,
   period: string,
 ): Promise<UsageBalanceSnapshot> {
-  const balance = await repositories.usageBalances.getBalance(userId, period);
+  const [allowance, spend] = await Promise.all([
+    resolvePlanCreditAllowance(repositories, ANONYMOUS_PLAN_ID),
+    readActorCreditSpend(repositories, actor, period),
+  ]);
 
-  if (balance) {
-    return balance;
+  return {
+    plan_id: allowance.planId,
+    included_credit_micros: allowance.includedCreditMicros,
+    grace_credit_micros: allowance.graceCreditMicros,
+    spent_credit_micros: spend.spentCreditMicros,
+    reserved_credit_micros: spend.reservedCreditMicros,
+    overrun_credit_micros: 0,
+    overage_credit_micros: 0,
+    overage_enabled: 0,
+    last_event_at: spend.lastEventAt,
+  };
+}
+
+export async function resolveUsageBalanceSnapshot(
+  repositories: RepositoryManager,
+  actor: CreditActor,
+  period: string,
+): Promise<UsageBalanceSnapshot> {
+  if (actor.kind === "anonymous") {
+    return resolveAnonymousSnapshot(repositories, actor, period);
   }
 
-  const seed = await resolveUsagePlanSeed(repositories, userId);
+  const [balance, seed] = await Promise.all([
+    repositories.usageBalances.getBalance(actor.userId, period),
+    resolveUsagePlanSeed(repositories, actor.userId),
+  ]);
+
+  if (balance) {
+    return {
+      ...balance,
+      plan_id: seed.planId ?? balance.plan_id,
+      included_credit_micros: seed.includedCreditMicros,
+      grace_credit_micros: seed.graceCreditMicros,
+    };
+  }
 
   return {
     plan_id: seed.planId,

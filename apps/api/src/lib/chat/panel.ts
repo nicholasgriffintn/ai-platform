@@ -1,6 +1,7 @@
 import { getAIResponse } from "~/lib/chat/streaming/responses";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { getAuxiliaryModel } from "~/lib/providers/models";
+import { userCreditActor } from "~/lib/usage/creditActor";
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
 import { recordModelTurnUsage } from "~/lib/usage/modelUsage";
 import { normaliseTokenUsage } from "~/lib/usage/tokenUsage";
@@ -195,7 +196,7 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
     await recordModelTurnUsage({
       env: params.env,
       repositories: context.repositories,
-      userId: params.user?.id,
+      actor: params.user?.id ? userCreditActor(params.user.id) : null,
       usage: normaliseTokenUsage(rawUsage),
       rawUsage,
       model: selectedModel,

@@ -34,8 +34,8 @@ const {
     validateOutput: vi.fn(),
   },
   mockConversationManager: {
-    checkUsageLimits: vi.fn(),
     admitTurn: vi.fn(),
+    creditActor: vi.fn(() => null),
     releaseTurnReservation: vi.fn(),
     add: vi.fn(),
     get: vi.fn(async () => []),
@@ -253,8 +253,6 @@ describe("ChatOrchestrator", () => {
           currentMode: "chat",
           requestOptions: options.options,
         }));
-
-        mockConversationManager.checkUsageLimits.mockResolvedValue(undefined);
       });
 
       it("should process single model non-streaming request successfully", async () => {
@@ -270,7 +268,6 @@ describe("ChatOrchestrator", () => {
         const result = await orchestrator.process(mockOptions);
 
         expect(mockValidator.validate).toHaveBeenCalledWith(mockOptions);
-        expect(mockConversationManager.checkUsageLimits).toHaveBeenCalledWith();
         expect(mockConversationManager.admitTurn).toHaveBeenCalledWith(
           expect.objectContaining({ messages: expect.any(Array) }),
         );
@@ -451,7 +448,6 @@ describe("ChatOrchestrator", () => {
 
         await readStream(result.stream);
 
-        expect(mockConversationManager.checkUsageLimits).toHaveBeenCalledOnce();
         expect(mockConversationManager.admitTurn).toHaveBeenCalledOnce();
         expect(mockConsumeProviderStream).toHaveBeenCalled();
         expect(result).toMatchObject({
@@ -1024,7 +1020,6 @@ describe("ChatOrchestrator", () => {
           userSettings: {},
           currentMode: "chat",
         });
-        mockConversationManager.checkUsageLimits.mockResolvedValue(undefined);
         mockGetAIResponse.mockRejectedValue(new Error("Execution failed"));
 
         await expect(orchestrator.process(mockOptions)).rejects.toMatchObject({

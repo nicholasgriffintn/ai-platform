@@ -143,15 +143,23 @@ export class UsageEventRepository extends BaseRepository {
       throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
     }
 
-    const insert = this.buildInsert(event);
+    const inserted = await this.insertEvent(event);
 
-    const results = await database.batch([
+    if (!inserted) {
+      return false;
+    }
+
+    await database.batch([
       database
         .prepare(
           `INSERT INTO usage_balance (
 				id, user_id, period, plan_id, included_credit_micros, grace_credit_micros
 			 ) VALUES (?, ?, ?, ?, ?, ?)
-			 ON CONFLICT (user_id, period) DO NOTHING`,
+			 ON CONFLICT (user_id, period) DO UPDATE SET
+			   plan_id = excluded.plan_id,
+			   included_credit_micros = excluded.included_credit_micros,
+			   grace_credit_micros = excluded.grace_credit_micros,
+			   updated_at = CURRENT_TIMESTAMP`,
         )
         .bind(
           `${event.user_id}:${event.period}`,
@@ -161,7 +169,6 @@ export class UsageEventRepository extends BaseRepository {
           seed.includedCreditMicros,
           seed.graceCreditMicros,
         ),
-      database.prepare(insert.query).bind(...insert.values),
       database
         .prepare(
           `UPDATE usage_balance
@@ -172,7 +179,7 @@ export class UsageEventRepository extends BaseRepository {
 			       + CASE WHEN ${CREDITS_ENFORCED} AND overage_enabled = 1 THEN ${SPEND_PAST_CEILING} ELSE 0 END,
 			     last_event_at = MAX(COALESCE(last_event_at, ''), ?),
 			     updated_at = CURRENT_TIMESTAMP
-			 WHERE user_id = ? AND period = ? AND changes() = 1`,
+			 WHERE user_id = ? AND period = ?`,
         )
         .bind(
           event.credit_micros,
@@ -184,7 +191,7 @@ export class UsageEventRepository extends BaseRepository {
         ),
     ]);
 
-    return (results[1]?.meta?.changes ?? 0) > 0;
+    return true;
   }
 
   async listUserEvents(params: ListUsageEventsParams): Promise<UsageEventRecordRow[]> {

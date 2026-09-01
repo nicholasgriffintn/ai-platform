@@ -16,8 +16,6 @@ export interface User {
   github_url: string;
   bio: string;
   message_count?: number;
-  daily_message_count?: number;
-  daily_reset?: string | null;
   last_active_at?: string | null;
 }
 
@@ -25,8 +23,6 @@ export interface AnonymousUser {
   id: string;
   ip_address?: string;
   user_agent?: string;
-  daily_message_count?: number;
-  daily_reset?: string | null;
   created_at?: string;
   updated_at?: string;
   last_active_at?: string | null;

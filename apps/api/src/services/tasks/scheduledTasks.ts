@@ -1,5 +1,6 @@
 import { INFRA_RECONCILIATION_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 
+import { overageSyncHourIso } from "~/lib/billing/stripeOverageSync";
 import { RepositoryManager } from "~/repositories";
 import { scheduleDueRecipeExecutions } from "~/services/apps/recipes/scheduler";
 import { previousUtcDay } from "~/services/infra/reconciliation";
@@ -40,6 +41,28 @@ export async function scheduleInfraReconciliation(env: IEnv, now = new Date()): 
     logger.info("Infra reconciliation task scheduled", { day });
   } catch (error) {
     logger.error("Failed to schedule infra reconciliation:", error);
+  }
+}
+
+export async function scheduleStripeUsageSync(env: IEnv, now = new Date()): Promise<void> {
+  try {
+    const repositories = RepositoryManager.getInstance(env);
+    const taskService = new TaskService(env, repositories.tasks);
+    const hourIso = overageSyncHourIso(now);
+    const hourKey = hourIso.slice(0, 13).replace(/[-T]/g, "");
+
+    await taskService.enqueueTask({
+      id: `stripe_usage_sync_${hourKey}`,
+      task_type: "stripe_usage_sync",
+      task_data: { hourIso },
+      priority: 6,
+      metadata: { hourIso },
+    });
+
+    logger.info("Stripe usage sync task scheduled", { hourIso });
+  } catch (error) {
+    logger.error("Failed to schedule Stripe usage sync:", error);
+    throw error;
   }
 }
 

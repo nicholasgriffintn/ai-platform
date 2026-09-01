@@ -127,7 +127,7 @@ export const ModelSelector = ({
 
   const { data: apiModels = EMPTY_MODEL_CONFIG, isLoading: isLoadingModels } = useModels();
   const { data: realtimeProviderOptions = [], isLoading: isLoadingRealtimeProviders } =
-    useRealtimeProviders();
+    useRealtimeProviders(isPro);
   const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
   const isModelLoading = useIsLoading("model-init");
   const modelLoadingProgress = useLoadingProgress("model-init");

@@ -1,5 +1,5 @@
+import type { ActorCreditDeltas } from "~/lib/usage/creditActor";
 import type { AnonymousUser } from "~/types";
-import { formatUtcDateKey } from "~/utils/date";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
@@ -65,8 +65,6 @@ export class AnonymousUserRepository extends BaseRepository {
         id: userId,
         ip_address: hashedIp,
         user_agent: userAgent || null,
-        daily_message_count: 0,
-        daily_reset: now,
         created_at: now,
         updated_at: now,
         last_active_at: now,
@@ -123,16 +121,16 @@ export class AnonymousUserRepository extends BaseRepository {
 
       return this.runQuery<AnonymousUser>(
         `INSERT INTO anonymous_user (
-					id, ip_address, user_agent, daily_message_count, daily_reset,
+					id, ip_address, user_agent,
 					created_at, updated_at, last_active_at
-				) VALUES (?, ?, ?, 0, ?, ?, ?, ?)
+				) VALUES (?, ?, ?, ?, ?, ?)
 				ON CONFLICT(id) DO UPDATE SET
 					ip_address = excluded.ip_address,
 					user_agent = COALESCE(excluded.user_agent, anonymous_user.user_agent),
 					updated_at = excluded.updated_at,
 					last_active_at = excluded.last_active_at
 				RETURNING *`,
-        [deterministicId, hashedIp, userAgent || null, now, now, now, now],
+        [deterministicId, hashedIp, userAgent || null, now, now, now],
         true,
       );
     } catch (error) {
@@ -143,60 +141,65 @@ export class AnonymousUserRepository extends BaseRepository {
     }
   }
 
-  public async checkAndResetDailyLimit(id: string): Promise<{ count: number; isNewDay: boolean }> {
-    if (!id) {
-      throw new AssistantError("Invalid ID", ErrorType.PARAMS_ERROR);
+  public async getCreditSpend(
+    id: string,
+    period: string,
+  ): Promise<{ spentCreditMicros: number; reservedCreditMicros: number } | null> {
+    const row = await this.runQuery<{
+      credit_period: string | null;
+      spent_credit_micros: number | null;
+      reserved_credit_micros: number | null;
+    }>(
+      "SELECT credit_period, spent_credit_micros, reserved_credit_micros FROM anonymous_user WHERE id = ?",
+      [id],
+      true,
+    );
+
+    if (!row) {
+      return null;
     }
 
-    const user = await this.getAnonymousUserById(id);
-
-    if (!user) {
-      throw new AssistantError("User not found", ErrorType.NOT_FOUND);
-    }
-
-    const now = new Date();
-    const lastReset = user.daily_reset ? new Date(user.daily_reset) : null;
-
-    const isNewDay =
-      !lastReset ||
-      now.getUTCFullYear() !== lastReset.getUTCFullYear() ||
-      now.getUTCMonth() !== lastReset.getUTCMonth() ||
-      now.getUTCDate() !== lastReset.getUTCDate();
-
-    if (isNewDay) {
-      await this.updateAnonymousUser(id, {
-        daily_message_count: 0,
-        daily_reset: now.toISOString(),
-      });
-
-      return { count: 0, isNewDay: true };
+    if (row.credit_period !== period) {
+      return { spentCreditMicros: 0, reservedCreditMicros: 0 };
     }
 
     return {
-      count: user.daily_message_count || 0,
-      isNewDay: false,
+      spentCreditMicros: row.spent_credit_micros ?? 0,
+      reservedCreditMicros: row.reserved_credit_micros ?? 0,
     };
   }
 
-  public async incrementDailyCount(id: string, occurredAt: Date = new Date()): Promise<void> {
-    const day = formatUtcDateKey(occurredAt);
-    const timestamp = occurredAt.toISOString();
+  public async applyCreditDeltas(
+    id: string,
+    period: string,
+    deltas: ActorCreditDeltas,
+  ): Promise<void> {
+    const spent = Math.round(deltas.spent_credit_micros ?? 0);
+    const reserved = Math.round(deltas.reserved_credit_micros ?? 0);
 
-    const result = await this.executeRun(
-      `UPDATE anonymous_user
-			 SET daily_message_count = CASE
-			       WHEN date(daily_reset) = ? THEN COALESCE(daily_message_count, 0) + 1
-			       ELSE 1
-			     END,
-			     daily_reset = CASE WHEN date(daily_reset) = ? THEN daily_reset ELSE ? END,
-			     last_active_at = ?,
-			     updated_at = datetime('now')
-			 WHERE id = ?`,
-      [day, day, timestamp, timestamp, id],
-    );
-
-    if (!result.meta?.changes) {
-      throw new AssistantError("User not found", ErrorType.NOT_FOUND);
+    if (!Number.isFinite(spent) || !Number.isFinite(reserved)) {
+      throw new AssistantError("Non-finite anonymous credit delta", ErrorType.PARAMS_ERROR);
     }
+
+    if (spent === 0 && reserved === 0) {
+      return;
+    }
+
+    await this.executeRun(
+      `UPDATE anonymous_user
+             SET spent_credit_micros = MAX(
+                   0,
+                   CASE WHEN credit_period = ? THEN COALESCE(spent_credit_micros, 0) ELSE 0 END + ?
+                 ),
+                 reserved_credit_micros = MAX(
+                   0,
+                   CASE WHEN credit_period = ? THEN COALESCE(reserved_credit_micros, 0) ELSE 0 END + ?
+                 ),
+                 credit_period = ?,
+                 last_active_at = datetime('now'),
+                 updated_at = datetime('now')
+             WHERE id = ?`,
+      [period, spent, period, reserved, period, id],
+    );
   }
 }

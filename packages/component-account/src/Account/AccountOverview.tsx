@@ -4,8 +4,6 @@ import { formatDate, getBoundedPercentage } from "@ngriffin_uk/polychat-utility-
 import { ExternalLink } from "lucide-react";
 import type { ReactNode } from "react";
 
-const AUTH_DAILY_MESSAGE_LIMIT = 50;
-
 type UsageTone = "blue" | "purple";
 
 const usageToneClasses: Record<UsageTone, string> = {
@@ -27,8 +25,6 @@ export interface AccountUser {
   last_active_at?: string | null;
   plan_id?: string | null;
   message_count?: number | null;
-  daily_message_count?: number | null;
-  daily_reset?: string | null;
 }
 
 export interface AccountOverviewProps {
@@ -37,46 +33,6 @@ export interface AccountOverviewProps {
   isLoading?: boolean;
   usageBalance?: UsageBalanceResponse | null;
   onSignIn: () => void;
-}
-
-function formatResetCountdown(dateString: string | null | undefined) {
-  if (!dateString) {
-    return "N/A";
-  }
-
-  try {
-    const lastResetDate = new Date(dateString);
-    const nextResetDate = new Date(lastResetDate);
-
-    nextResetDate.setHours(nextResetDate.getHours() + 24);
-
-    const diffMs = nextResetDate.getTime() - Date.now();
-
-    if (diffMs < 0) {
-      return "any moment now";
-    }
-
-    const diffSecs = Math.floor(diffMs / 1000);
-    const diffMins = Math.floor(diffSecs / 60);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffDays > 0) {
-      return `in ${diffDays} day${diffDays > 1 ? "s" : ""}`;
-    }
-
-    if (diffHours > 0) {
-      return `in ${diffHours} hour${diffHours > 1 ? "s" : ""}`;
-    }
-
-    if (diffMins > 0) {
-      return `in ${diffMins} minute${diffMins > 1 ? "s" : ""}`;
-    }
-
-    return `in ${diffSecs} second${diffSecs !== 1 ? "s" : ""}`;
-  } catch {
-    return "unknown time";
-  }
 }
 
 function StatCard({ label, value, hint }: { label: string; value: string; hint: string }) {
@@ -312,7 +268,7 @@ export function AccountOverview({
         </div>
 
         <div className="grid gap-4">
-          {hasPaidPlan && usageBalance && creditAllowance !== null ? (
+          {usageBalance && creditAllowance !== null && (
             <UsageCard
               title="Credits"
               tone="purple"
@@ -320,15 +276,6 @@ export function AccountOverview({
               limit={creditAllowance > 0 ? creditAllowance : undefined}
               description="Usage across models and metered capabilities this month"
               resets={formatDate(usageBalance.resets_at)}
-            />
-          ) : (
-            <UsageCard
-              title="Standard usage"
-              tone="blue"
-              used={user?.daily_message_count || 0}
-              limit={AUTH_DAILY_MESSAGE_LIMIT}
-              description={`${AUTH_DAILY_MESSAGE_LIMIT} messages per day`}
-              resets={formatResetCountdown(user?.daily_reset)}
             />
           )}
         </div>

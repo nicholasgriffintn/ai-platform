@@ -29,6 +29,20 @@ function data(payload: unknown) {
   return `data: ${typeof payload === "string" ? payload : JSON.stringify(payload)}\n\n`;
 }
 
+function creditSummary(overrides: Record<string, unknown> = {}) {
+  return {
+    included: 150,
+    used: 12,
+    reserved: 0,
+    grace: 50,
+    overrun: 0,
+    overage: 0,
+    overage_enabled: false,
+    state: "ok",
+    ...overrides,
+  };
+}
+
 describe("ChatService streaming", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -525,7 +539,7 @@ describe("ChatService streaming", () => {
       vi.fn(async () =>
         createSseResponse([
           `data: {"state":"init","type":"state"}\r\n\r\n`,
-          `data: {"usage_limits":{"daily":{"used":0,"limit":50}},"type":"usage_limits"}\r\n\r\n`,
+          `data: {"usage_limits":{"credits":{"included":150,"used":12,"reserved":0,"grace":50,"overrun":0,"overage":0,"overage_enabled":false,"state":"ok"}},"type":"usage_limits"}\r\n\r\n`,
           `data: {"state":"thinking","type":"state"}\r\n\r\n`,
           `data: {"content":"<answer","type":"content_block_delta"}\r\n\r\n`,
           `data: {"content":">\\nI will check the weather for London W5 1EW at 09:00 today.","type":"content_block_delta"}`,
@@ -645,7 +659,10 @@ describe("ChatService streaming", () => {
             parts: [{ type: "text", text: "" }],
           }),
           data({ type: "message_stop" }),
-          data({ type: "usage_limits", usage_limits: { daily: { used: 5, limit: 10 } } }),
+          data({
+            type: "usage_limits",
+            usage_limits: { credits: creditSummary() },
+          }),
           data({ type: "state", state: "done" }),
           data("[DONE]"),
         ]),
@@ -684,12 +701,7 @@ describe("ChatService streaming", () => {
         createSseResponse([
           data({
             type: "usage_limits",
-            usage_limits: {
-              daily: {
-                used: 10,
-                limit: 10,
-              },
-            },
+            usage_limits: { credits: creditSummary({ used: 200, state: "exhausted" }) },
           }),
           data({ type: "state", state: "done" }),
           data("[DONE]"),
@@ -715,12 +727,7 @@ describe("ChatService streaming", () => {
 
     expect(stateUpdates).toContainEqual({
       state: "usage_limits",
-      data: {
-        daily: {
-          used: 10,
-          limit: 10,
-        },
-      },
+      data: { credits: creditSummary({ used: 200, state: "exhausted" }) },
     });
   });
 

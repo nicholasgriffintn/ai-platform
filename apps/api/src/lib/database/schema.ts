@@ -42,8 +42,9 @@ export const anonymousUser = sqliteTable("anonymous_user", {
   id: text().primaryKey(),
   ip_address: text().notNull(),
   user_agent: text(),
-  daily_message_count: integer("daily_message_count").default(0),
-  daily_reset: text("daily_reset"),
+  credit_period: text("credit_period"),
+  spent_credit_micros: integer("spent_credit_micros").notNull().default(0),
+  reserved_credit_micros: integer("reserved_credit_micros").notNull().default(0),
   created_at: text()
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
@@ -80,13 +81,6 @@ export const user = sqliteTable("user", {
     .references(() => plans.id)
     .default("free"),
   message_count: integer("message_count").default(0),
-  daily_message_count: integer("daily_message_count").default(0),
-  daily_reset: text("daily_reset"),
-  daily_pro_message_count: integer("daily_pro_message_count").default(0),
-  daily_pro_reset: text("daily_pro_reset"),
-  byok_message_count: integer("byok_message_count").default(0),
-  daily_byok_message_count: integer("daily_byok_message_count").default(0),
-  daily_byok_reset: text("daily_byok_reset"),
   last_active_at: text("last_active_at"),
   stripe_customer_id: text(),
   stripe_subscription_id: text(),
@@ -1604,6 +1598,7 @@ export const tasks = sqliteTable(
         "usage_rollup",
         "realtime_reconciliation",
         "infra_reconciliation",
+        "stripe_usage_sync",
       ],
     }).notNull(),
     status: text({
@@ -2017,6 +2012,7 @@ export const usageBalance = sqliteTable(
     reserved_credit_micros: integer().notNull().default(0),
     overrun_credit_micros: integer().notNull().default(0),
     overage_credit_micros: integer().notNull().default(0),
+    stripe_synced_overage_credit_micros: integer().notNull().default(0),
     overage_enabled: integer({ mode: "boolean" }).notNull().default(false),
     last_event_at: text(),
     created_at: text()

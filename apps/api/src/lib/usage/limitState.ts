@@ -12,12 +12,10 @@ export const USAGE_LIMIT_NOTICE =
 
 export interface UsageLimitState {
   exhausted: boolean;
-  used: number;
-  limit: number | null;
   credits?: UsageCreditsSummary;
 }
 
-const UNKNOWN_STATE: UsageLimitState = { exhausted: false, used: 0, limit: null };
+const UNKNOWN_STATE: UsageLimitState = { exhausted: false };
 
 export async function readUsageLimitState(
   conversationManager: Pick<ConversationManager, "getUsageLimits">,
@@ -25,31 +23,11 @@ export async function readUsageLimitState(
   try {
     const limits = await conversationManager.getUsageLimits();
 
-    if (!limits) {
+    if (!limits?.credits) {
       return UNKNOWN_STATE;
     }
 
-    const daily = limits.daily;
-    const credits = limits.credits;
-
-    if (credits) {
-      return {
-        exhausted: credits.state === "exhausted",
-        used: daily?.used ?? 0,
-        limit: typeof daily?.limit === "number" ? daily.limit : null,
-        credits,
-      };
-    }
-
-    if (!daily || typeof daily.limit !== "number") {
-      return UNKNOWN_STATE;
-    }
-
-    return {
-      exhausted: daily.used >= daily.limit,
-      used: daily.used,
-      limit: daily.limit,
-    };
+    return { exhausted: limits.credits.state === "exhausted", credits: limits.credits };
   } catch (error) {
     logger.error("Failed to read usage limits", { error });
 

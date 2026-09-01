@@ -31,7 +31,7 @@ export function SidebarSettingsPopover() {
   const usageLimits = useUsageStore((state) => state.usageLimits);
   const planId: string | null | undefined = user?.plan_id;
   const hasPaidPlan = planId === "pro" || planId === "enterprise";
-  const usageBalance = useUsageBalance(isAuthenticated && hasPaidPlan);
+  const usageBalance = useUsageBalance();
   const [theme, setTheme] = useTheme();
   const isHydrated = useIsHydrated();
 
@@ -48,7 +48,7 @@ export function SidebarSettingsPopover() {
       }
       isAuthenticated={isAuthenticated}
       isLoading={isLoading}
-      isUsageLoading={isLoading || (hasPaidPlan && usageBalance.isLoading)}
+      isUsageLoading={isLoading || (isAuthenticated && usageBalance.isLoading)}
       links={links}
       sourceCodeIcon={<ProviderGlyph name="github" size={16} />}
       theme={isHydrated ? theme : undefined}

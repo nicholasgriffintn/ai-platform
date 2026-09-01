@@ -67,6 +67,20 @@ function createTransport(turns: TurnOutput[]) {
   return { transport: { streams: false, runTurn } as ChatTurnTransport, runTurn };
 }
 
+function creditSummary(overrides: Record<string, unknown> = {}) {
+  return {
+    included: 100,
+    used: 1,
+    reserved: 0,
+    grace: 20,
+    overrun: 0,
+    overage: 0,
+    overage_enabled: false,
+    state: "ok",
+    ...overrides,
+  };
+}
+
 function createParams(turns: TurnOutput[], maxSteps = 8) {
   const { transport, runTurn } = createTransport(turns);
 
@@ -77,8 +91,8 @@ function createParams(turns: TurnOutput[], maxSteps = 8) {
       conversationManager: {
         add: vi.fn(),
         get: vi.fn(async () => []),
-        checkUsageLimits: vi.fn(),
-        getUsageLimits: vi.fn(async () => ({ daily: { used: 1, limit: 100 } })),
+        creditActor: vi.fn(() => ({ kind: "user", userId: 1 })),
+        getUsageLimits: vi.fn(async () => ({ credits: creditSummary() })),
         releaseTurnReservation: vi.fn(),
       } as any,
       toolRequestContext: { env: { AI: {} }, request: { enabled_tools: [] } } as any,
@@ -335,42 +349,14 @@ describe("runAgentLoop", () => {
     );
   });
 
-  it("ends with the work already done when the user runs out mid-run", async () => {
-    const { params, runTurn } = createParams([toolTurn("get_weather")]);
-
-    mocks.handleToolCalls.mockResolvedValue([
-      { role: "tool", name: "get_weather", content: "sunny", status: "success" },
-    ]);
-    params.conversationManager.getUsageLimits = vi.fn(async () => ({
-      daily: { used: 100, limit: 100 },
-    }));
-
-    const result = await runAgentLoop(params);
-
-    expect(result.response.status).toBe("usage_limit_reached");
-    expect(result.response.response).toContain("reached your usage limit");
-    expect(result.toolResponses).toHaveLength(1);
-    expect(runTurn).toHaveBeenCalledTimes(1);
-  });
-
-  it("keeps an admitted turn running through the reserve even when message counts are spent", async () => {
+  it("keeps an admitted turn running through the reserve", async () => {
     const { params, runTurn } = createParams([toolTurn("get_weather"), textTurn("Done.")]);
 
     mocks.handleToolCalls.mockResolvedValueOnce([
       { role: "tool", name: "get_weather", content: "sunny", status: "success" },
     ]);
     params.conversationManager.getUsageLimits = vi.fn(async () => ({
-      daily: { used: 100, limit: 100 },
-      credits: {
-        included: 100,
-        used: 110,
-        reserved: 0,
-        grace: 20,
-        overrun: 0,
-        overage: 0,
-        overage_enabled: false,
-        state: "reserve",
-      },
+      credits: creditSummary({ used: 110, state: "reserve" }),
     }));
 
     const result = await runAgentLoop(params);
@@ -387,17 +373,7 @@ describe("runAgentLoop", () => {
       { role: "tool", name: "get_weather", content: "sunny", status: "success" },
     ]);
     params.conversationManager.getUsageLimits = vi.fn(async () => ({
-      daily: { used: 0, limit: 100 },
-      credits: {
-        included: 100,
-        used: 146,
-        reserved: 0,
-        grace: 20,
-        overrun: 0,
-        overage: 0,
-        overage_enabled: false,
-        state: "exhausted",
-      },
+      credits: creditSummary({ used: 146, state: "exhausted" }),
     }));
 
     const result = await runAgentLoop(params);

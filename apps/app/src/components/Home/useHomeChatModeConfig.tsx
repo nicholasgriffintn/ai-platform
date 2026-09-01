@@ -54,11 +54,12 @@ export function useHomeChatModeConfig(): {
     setSelectedAgentId,
     model: selectedModel,
     setModel,
+    isPro,
   } = useChatStore();
   const { data: currentConversation } = useChat(currentConversationId);
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
   const { data: realtimeProviderOptions = [], isLoading: isLoadingRealtimeProviders } =
-    useRealtimeProviders();
+    useRealtimeProviders(isPro);
   const conversationModeMetadata = useMemo(
     () => getConversationModeMetadata(currentConversation),
     [currentConversation],
@@ -79,7 +80,7 @@ export function useHomeChatModeConfig(): {
   const [activeModeId, setActiveModeId] = useState<HomeChatModeId>(() =>
     resolveHomeChatModeId(searchParams.has("mode") ? searchParams.get("mode") : homeChatMode),
   );
-  const effectiveActiveModeId = activeModeId;
+  const effectiveActiveModeId = !isPro && activeModeId === "live" ? "chat" : activeModeId;
   const hydratedConversationIdRef = useRef<string | undefined>(undefined);
   const liveConversationMode = useMemo(
     () =>
@@ -421,7 +422,9 @@ export function useHomeChatModeConfig(): {
     const activeModeControls = effectiveActiveModeId === "live" ? liveControls : undefined;
     const modeControls = {
       activeModeControls,
-      commands: HOME_CHAT_MODE_OPTIONS.map((option) => {
+      commands: HOME_CHAT_MODE_OPTIONS.filter(
+        (option) => isPro || option.exclusiveGroup !== "chat-orchestration",
+      ).map((option) => {
         const availability = getHomeChatModeAvailability(option, effectiveActiveModeId);
         const Icon = option.icon;
 

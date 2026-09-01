@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { ModelConfigItem } from "../models";
 import { CLOUDFLARE_RATE_ENTRIES, CONTAINER_INSTANCE_TYPES } from "./cloudflare";
 import { creditMicrosFromCostMicros, creditsFromCreditMicros } from "./constants";
-import { rateEntriesFromModelConfig } from "./model-rates";
+import { hostedToolRateEntries, rateEntriesFromModelConfig } from "./model-rates";
 import { priceUsage, resolveRateEntry, type RateEntry } from "./rates";
 
 const OCCURRED_AT = "2026-08-31T12:00:00.000Z";
@@ -208,5 +208,40 @@ describe("model catalogue rate adapter", () => {
       10,
     );
     expect(resolveRateEntry(entries, query)?.perUnitMicros).toBeCloseTo(5, 10);
+  });
+});
+
+describe("hosted tool rate adapter", () => {
+  const model: ModelConfigItem = {
+    id: "claude-4.6-opus",
+    matchingModel: "claude-opus-4-6",
+    provider: "anthropic",
+    hostedToolCosts: { web_search: 0.01, code_interpreter: 0.03 },
+  };
+
+  it("publishes each tool under the unit its usage events are recorded in", () => {
+    const entries = hostedToolRateEntries(model);
+    const webSearch = entries.find((entry) => entry.resource === "web_search");
+    const codeInterpreter = entries.find((entry) => entry.resource === "code_interpreter");
+
+    expect(webSearch).toMatchObject({ unit: "web_search_requests", perUnitMicros: 10_000 });
+    expect(codeInterpreter).toMatchObject({ unit: "requests", perUnitMicros: 30_000 });
+  });
+
+  it("prices a captured search count end to end", () => {
+    const entries = hostedToolRateEntries(model);
+    const priced = priceUsage(
+      entries,
+      {
+        vendor: "anthropic",
+        resource: "web_search",
+        unit: "web_search_requests",
+        occurredAt: OCCURRED_AT,
+      },
+      3,
+    );
+
+    expect(priced.costMicros).toBe(30_000);
+    expect(priced.estimated).toBe(false);
   });
 });

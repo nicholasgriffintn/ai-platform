@@ -9,13 +9,14 @@ import {
 import { Hono } from "hono";
 
 import { addRoute } from "~/lib/http/routeBuilder";
+import { anonymousCreditActor, userCreditActor } from "~/lib/usage/creditActor";
 import { getUsageBalance, getUsageSummary, listUsageEvents } from "~/services/user/usage";
 
 const app = new Hono();
 
 addRoute(app, "get", "/balance", {
   tags: ["user"],
-  auth: true,
+  auth: "user-or-anonymous",
   summary: "Get the current credit balance",
   description: "Returns included, used, reserved and overage credits for the current period",
   querySchema: usageSummaryQuerySchema,
@@ -23,8 +24,12 @@ addRoute(app, "get", "/balance", {
     200: { description: "Credit balance", schema: usageBalanceResponseSchema },
     401: { description: "Authentication required", schema: errorResponseSchema },
   },
-  handler: ({ query, serviceContext, user }) =>
-    getUsageBalance(serviceContext, user.id, query.period),
+  handler: ({ query, serviceContext, user, anonymousUser }) =>
+    getUsageBalance(
+      serviceContext,
+      user?.id ? userCreditActor(user.id) : anonymousCreditActor(anonymousUser?.id as string),
+      query.period,
+    ),
 });
 
 addRoute(app, "get", "/summary", {

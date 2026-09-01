@@ -259,7 +259,16 @@ struct ServiceStoreTests {
                 timestamp: 1_774_000_000
             )),
             .usageLimits(ChatUsageLimits(
-                daily: ChatUsageLimits.Allowance(used: 5, limit: 50)
+                credits: ChatUsageLimits.Credits(
+                    included: 500,
+                    used: 125,
+                    reserved: 25,
+                    grace: 50,
+                    overrun: 0,
+                    overage: 0,
+                    overageEnabled: false,
+                    state: "ok"
+                )
             )),
             .content("Found three results"),
             .done
@@ -278,7 +287,7 @@ struct ServiceStoreTests {
         #expect(messages[1].parts?.first?.name == "web_search")
         #expect(messages[1].parts?.first?.content == .string("Three results"))
         #expect(messages.last?.textContent == "Found three results")
-        #expect(manager.usageLimits?.daily?.used == 5)
+        #expect(manager.usageLimits?.credits?.used == 125)
     }
 
     @MainActor

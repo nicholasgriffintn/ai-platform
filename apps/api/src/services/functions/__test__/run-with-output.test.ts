@@ -22,7 +22,6 @@ const outputRepository = {
 const anonymousUser = {
   id: "anon-123",
   ip_address: "127.0.0.1",
-  daily_message_count: 0,
   created_at: "2026-06-04T00:00:00.000Z",
   updated_at: "2026-06-04T00:00:00.000Z",
 };

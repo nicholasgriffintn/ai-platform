@@ -33,5 +33,6 @@ The normal starting scope is `apps/app` plus `apps/api`. Add other deployable co
 - Inputs are **sources** and durable results are **outputs**. They are personal without a project and collaborative with one.
 - Provider connections and recipe installations remain attributable to a person unless a future decision introduces workspace-owned credentials.
 - External writes require explicit, exact approval. Scheduled and event-triggered recipes cannot perform approval-gated writes.
+- Usage is metered in **credits** against a person's monthly allowance, never in messages. Project and workspace work is attributed to whoever ran it; there is no workspace-owned pot of credits.
 
 Read [context.md](architecture/context.md) for the complete vocabulary and seams. Read [decisions.md](architecture/decisions.md) before changing product hierarchy, authority, persistence, connectors, approvals, or cross-app responsibilities.

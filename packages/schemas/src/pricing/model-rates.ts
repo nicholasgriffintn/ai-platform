@@ -167,6 +167,21 @@ export function rateEntriesFromModelConfig(
   return entries;
 }
 
+export const HOSTED_TOOL_UNITS_BY_TOOL: Record<string, UsageUnit> = {
+  web_search: "web_search_requests",
+  web_fetch: "web_fetch_requests",
+  file_search: "file_search_requests",
+  image_generation: "image_generation_calls",
+  computer_use: "computer_use_requests",
+  grounding: "grounded_requests",
+  live_search: "search_sources",
+  search: "search_units",
+};
+
+export function hostedToolUsageUnit(tool: string): UsageUnit {
+  return HOSTED_TOOL_UNITS_BY_TOOL[tool] ?? "requests";
+}
+
 export function hostedToolRateEntries(
   model: ModelConfigItem,
   options: ModelRateOptions = {},
@@ -184,7 +199,7 @@ export function hostedToolRateEntries(
     .map(([tool, usdPerCall]) => ({
       vendor: model.provider,
       resource: tool,
-      unit: "requests" as UsageUnit,
+      unit: hostedToolUsageUnit(tool),
       perUnitMicros: usdToMicros(usdPerCall),
       effectiveFrom,
     }));

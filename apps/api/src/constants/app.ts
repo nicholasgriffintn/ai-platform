@@ -13,14 +13,6 @@ export const API_PROD_HOST = "api.polychat.app";
 
 export const gatewayId = "llm-assistant";
 
-const NON_AUTH_DAILY_MESSAGE_LIMIT = 10;
-const AUTH_DAILY_MESSAGE_LIMIT = 50;
-
-export const USAGE_CONFIG = {
-  NON_AUTH_DAILY_MESSAGE_LIMIT,
-  AUTH_DAILY_MESSAGE_LIMIT,
-};
-
 export const FREE_TRIAL_DAYS = 90;
 
 export const AUTH_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1_000;

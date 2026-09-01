@@ -69,6 +69,29 @@ secret keys. A Stripe secret alone does not configure Checkout. Follow the
 [Stripe billing runbook](operations/stripe-billing.md) for webhook events, local configuration, and
 staff access.
 
+Credits are the only metering currency, and they work without Stripe. Every plan, including the
+anonymous allowance, falls back to `DEFAULT_PLAN_INCLUDED_CREDITS` in
+`apps/api/src/lib/usage/planSeed.ts` (anonymous 15, free 150, pro 1500, enterprise 15000 per calendar
+month); `plans.included_credits` overrides that default rather than enabling metering. `GET /plans`
+serves the resulting allowances to the public pricing page, so never restate them in the client.
+
+Stripe overage billing meters credits through Billing Meters rather than per-request charges. Without
+Stripe, spend still meters and simply pauses at the end of the reserve; the billing portal and overage
+controls hide themselves rather than erroring. To enable overage for a plan, do the dashboard work
+first, then record the identifiers on the plan row:
+
+- Create a Billing Meter in Stripe with an event name (for example `polychat_overage_credits`),
+  the default customer mapping (`stripe_customer_id`) and the default value key (`value`).
+- Create a recurring metered price on the subscription product that bills from that meter.
+- Set the plan's columns through `PUT /admin/plans/:id/credits` (strict admin): `included_credits`,
+  `grace_credits` (the reserve, defaulting to 10% of included with a 50-credit floor and a 50% cap),
+  `stripe_meter_id` (the meter's **event name**) and `overage_price_id`. Leave the two Stripe columns
+  null until the Stripe objects exist; a plan without `stripe_meter_id` is skipped by the hourly sync,
+  and one without `overage_price_id` refuses the overage opt-in.
+
+`APP_BASE_URL` must be set for checkout and the billing portal: `success_url`, `cancel_url` and
+`return_url` are all validated against that origin, so a missing value rejects every redirect.
+
 Shieldstral is an optional, self-hosted guardrail rather than a Mistral API model. Set
 `SHIELDSTRAL_BASE_URL` to the root of an OpenAI-compatible vLLM, llama.cpp, or SGLang endpoint and
 set `SHIELDSTRAL_API_KEY` when that endpoint requires bearer authentication. Pin the deployed

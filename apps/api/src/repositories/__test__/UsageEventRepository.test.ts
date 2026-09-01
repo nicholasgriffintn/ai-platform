@@ -33,38 +33,55 @@ function event(overrides: Partial<UsageEventInsert> = {}): UsageEventInsert {
 }
 
 describe("UsageEventRepository", () => {
-  it("inserts a billable event and applies its balance in one D1 batch", async () => {
+  function harness(eventInserted: boolean) {
     const statements: Array<{ query: string; values: unknown[] }> = [];
+    const runs: Array<{ query: string; values: unknown[] }> = [];
     const prepare = vi.fn((query: string) => ({
-      bind: (...values: unknown[]) => ({ query, values }),
+      bind: (...values: unknown[]) => ({
+        query,
+        values,
+        run: async () => {
+          runs.push({ query, values });
+
+          return { success: true, meta: { changes: eventInserted ? 1 : 0 } };
+        },
+      }),
     }));
     const batch = vi.fn(async (bound: Array<{ query: string; values: unknown[] }>) => {
       statements.push(...bound);
 
-      return [
-        { success: true, meta: { changes: 0 } },
-        { success: true, meta: { changes: 1 } },
-        { success: true, meta: { changes: 1 } },
-      ];
+      return bound.map(() => ({ success: true, meta: { changes: 1 } }));
     });
-    const repository = new UsageEventRepository({ DB: { prepare, batch } } as never);
 
-    await expect(
-      repository.insertEventAndApplyBalance(event(), {
-        planId: "pro",
-        includedCreditMicros: 500_000_000,
-        graceCreditMicros: 50_000_000,
-      }),
-    ).resolves.toBe(true);
+    return {
+      statements,
+      runs,
+      batch,
+      repository: new UsageEventRepository({ DB: { prepare, batch } } as never),
+    };
+  }
 
-    expect(statements).toHaveLength(3);
+  const proSeed = {
+    planId: "pro",
+    includedCreditMicros: 500_000_000,
+    graceCreditMicros: 50_000_000,
+  };
+
+  it("inserts the event first, then upserts the allowance and applies spend", async () => {
+    const { repository, statements, runs } = harness(true);
+
+    await expect(repository.insertEventAndApplyBalance(event(), proSeed)).resolves.toBe(true);
+
+    expect(runs[0]?.query).toContain("INSERT INTO usage_event");
+    expect(statements).toHaveLength(2);
     expect(statements[0]?.query).toContain("INSERT INTO usage_balance");
-    expect(statements[1]?.query).toContain("INSERT INTO usage_event");
-    expect(statements[2]?.query.replace(/\s+/g, " ")).toContain(
+    expect(statements[0]?.query.replace(/\s+/g, " ")).toContain(
+      "ON CONFLICT (user_id, period) DO UPDATE SET",
+    );
+    expect(statements[1]?.query.replace(/\s+/g, " ")).toContain(
       "spent_credit_micros = spent_credit_micros + ?",
     );
-    expect(statements[2]?.query).toContain("changes() = 1");
-    expect(statements[2]?.values).toEqual([
+    expect(statements[1]?.values).toEqual([
       30_000,
       30_000,
       30_000,
@@ -74,29 +91,23 @@ describe("UsageEventRepository", () => {
     ]);
   });
 
+  it("refreshes a stale allowance on an existing balance row", async () => {
+    const { repository, statements } = harness(true);
+
+    await repository.insertEventAndApplyBalance(event(), proSeed);
+
+    const upsert = statements[0]?.query.replace(/\s+/g, " ") ?? "";
+
+    expect(upsert).toContain("included_credit_micros = excluded.included_credit_micros");
+    expect(upsert).toContain("grace_credit_micros = excluded.grace_credit_micros");
+  });
+
   it("routes spend past the ceiling to overrun, or to overage when the user opted in", async () => {
-    const statements: Array<{ query: string; values: unknown[] }> = [];
-    const prepare = vi.fn((query: string) => ({
-      bind: (...values: unknown[]) => ({ query, values }),
-    }));
-    const batch = vi.fn(async (bound: Array<{ query: string; values: unknown[] }>) => {
-      statements.push(...bound);
+    const { repository, statements } = harness(true);
 
-      return [
-        { success: true, meta: { changes: 0 } },
-        { success: true, meta: { changes: 1 } },
-        { success: true, meta: { changes: 1 } },
-      ];
-    });
-    const repository = new UsageEventRepository({ DB: { prepare, batch } } as never);
+    await repository.insertEventAndApplyBalance(event(), proSeed);
 
-    await repository.insertEventAndApplyBalance(event(), {
-      planId: "pro",
-      includedCreditMicros: 500_000_000,
-      graceCreditMicros: 50_000_000,
-    });
-
-    const update = statements[2]?.query.replace(/\s+/g, " ") ?? "";
+    const update = statements[1]?.query.replace(/\s+/g, " ") ?? "";
 
     expect(update).toContain(
       "overrun_credit_micros = overrun_credit_micros + CASE WHEN included_credit_micros > 0 AND overage_enabled = 0",
@@ -110,22 +121,10 @@ describe("UsageEventRepository", () => {
   });
 
   it("reports a replay without moving the balance", async () => {
-    const prepare = vi.fn((query: string) => ({
-      bind: (...values: unknown[]) => ({ query, values }),
-    }));
-    const batch = vi.fn(async () => [
-      { success: true, meta: { changes: 0 } },
-      { success: true, meta: { changes: 0 } },
-      { success: true, meta: { changes: 0 } },
-    ]);
-    const repository = new UsageEventRepository({ DB: { prepare, batch } } as never);
+    const { repository, batch } = harness(false);
 
-    await expect(
-      repository.insertEventAndApplyBalance(event(), {
-        planId: "pro",
-        includedCreditMicros: 0,
-        graceCreditMicros: 0,
-      }),
-    ).resolves.toBe(false);
+    await expect(repository.insertEventAndApplyBalance(event(), proSeed)).resolves.toBe(false);
+
+    expect(batch).not.toHaveBeenCalled();
   });
 });

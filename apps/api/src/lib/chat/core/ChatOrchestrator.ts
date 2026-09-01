@@ -212,7 +212,6 @@ export class ChatOrchestrator {
     } = prepared;
     const enabled_tools = enabledTools;
 
-    await conversationManager.checkUsageLimits();
     await conversationManager.admitTurn({
       modelConfig: primaryModelConfig,
       messages: preparedMessages,

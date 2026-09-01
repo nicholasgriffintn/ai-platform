@@ -143,14 +143,8 @@ export const usageEventsResponseSchema = z.object({
 
 export type UsageEventsResponse = z.infer<typeof usageEventsResponseSchema>;
 
-const usageCounterSchema = z.object({
-  used: z.number(),
-  limit: z.number().nullable(),
-});
-
 export const usageLimitsSchema = z.object({
-  daily: usageCounterSchema,
-  credits: usageCreditsSummarySchema.optional(),
+  credits: usageCreditsSummarySchema,
 });
 
 export type UsageLimitsPayload = z.infer<typeof usageLimitsSchema>;

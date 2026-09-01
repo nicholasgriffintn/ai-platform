@@ -1,4 +1,5 @@
 import {
+  hostedToolRateEntries,
   modelRateResource,
   rateEntriesFromModelConfig,
   type RateEntry,
@@ -6,12 +7,13 @@ import {
 
 import { getModelConfig } from "~/lib/providers/models";
 import { RepositoryManager } from "~/repositories";
-import type { IEnv } from "~/types";
+import type { IEnv, MessagePart } from "~/types";
 import { getLogger } from "~/utils/logger";
 
-import { billableTokenQuantities } from "./billableUnits";
 import { isByokTurn } from "./byok";
+import { creditActorUserId, type CreditActor } from "./creditActor";
 import { emitUsageEvents, resolveUsageAttribution, type UsageEventDraft } from "./ledger";
+import { extractProviderBillableUsage } from "./providerBillableUnits";
 import type { NormalisedTokenUsage } from "./tokenUsage";
 
 const logger = getLogger({ prefix: "lib/usage/model-usage" });
@@ -19,9 +21,11 @@ const logger = getLogger({ prefix: "lib/usage/model-usage" });
 export interface RecordModelTurnUsageParams {
   env: IEnv;
   repositories?: RepositoryManager;
-  userId?: number;
+  actor?: CreditActor | null;
   usage: NormalisedTokenUsage | null;
   rawUsage?: unknown;
+  parts?: readonly MessagePart[];
+  structuredData?: unknown;
   model: string;
   provider: string;
   completionId: string;
@@ -31,36 +35,45 @@ export interface RecordModelTurnUsageParams {
   tier?: string;
 }
 
-function hasRateFor(rates: readonly RateEntry[], unit: RateEntry["unit"]): boolean {
-  return rates.some((rate) => rate.unit === unit);
-}
-
 export async function recordModelTurnUsage(params: RecordModelTurnUsageParams): Promise<void> {
-  const { env, usage, userId } = params;
+  const { env, usage, actor } = params;
 
-  if (!userId || !usage || !env?.DB) {
+  if (!actor || !env?.DB || (!usage && params.rawUsage === undefined)) {
     return;
   }
+
+  const userId = creditActorUserId(actor);
 
   try {
     const repositories = params.repositories ?? new RepositoryManager(env);
     const modelConfig = await getModelConfig(params.model, env, params.provider, userId);
     const resource = modelConfig ? modelRateResource(modelConfig) : params.model;
     const vendor = modelConfig?.provider ?? params.provider;
-    const rates = modelConfig ? rateEntriesFromModelConfig(modelConfig, { resource }) : [];
+    const rates: RateEntry[] = modelConfig
+      ? [
+          ...rateEntriesFromModelConfig(modelConfig, { resource }),
+          ...hostedToolRateEntries(modelConfig),
+        ]
+      : [];
 
-    const quantities = billableTokenQuantities(usage, params.rawUsage ?? usage, {
-      hasReasoningRate: hasRateFor(rates, "reasoning_tokens"),
-      hasAudioRate:
-        hasRateFor(rates, "audio_input_tokens") || hasRateFor(rates, "audio_output_tokens"),
-    });
+    const extraction = extractProviderBillableUsage(
+      vendor,
+      {
+        usage,
+        raw: params.rawUsage ?? usage,
+        parts: params.parts,
+        structuredData: params.structuredData,
+        serviceTier: params.tier,
+      },
+      { hasRate: (unit) => rates.some((rate) => rate.unit === unit) },
+    );
 
-    if (quantities.length === 0) {
+    if (extraction.units.length === 0) {
       return;
     }
 
     const [byok, attribution] = await Promise.all([
-      isByokTurn(repositories, userId, vendor),
+      userId === undefined ? Promise.resolve(false) : isByokTurn(repositories, userId, vendor),
       resolveUsageAttribution(repositories, params.conversationId),
     ]);
 
@@ -68,10 +81,8 @@ export async function recordModelTurnUsage(params: RecordModelTurnUsageParams): 
     const eventScope = params.messageId ?? params.completionId;
 
     const shared = {
-      userId,
-      source: "model" as const,
+      actor,
       vendor,
-      resource,
       occurredAt,
       byok,
       conversationId: params.conversationId ?? null,
@@ -81,15 +92,21 @@ export async function recordModelTurnUsage(params: RecordModelTurnUsageParams): 
       workspaceId: attribution.workspaceId,
       rates,
       raw: params.rawUsage ?? usage,
-      ...(params.tier ? { tier: params.tier } : {}),
+      ...(extraction.tier ? { tier: extraction.tier } : {}),
     };
 
-    const drafts: UsageEventDraft[] = quantities.map(({ unit, quantity }) => ({
-      ...shared,
-      idempotencyKey: `model:${eventScope}:${unit}`,
-      unit,
-      quantity,
-    }));
+    const drafts: UsageEventDraft[] = extraction.units.map((unit) => {
+      const unitResource = unit.resource ?? resource;
+
+      return {
+        ...shared,
+        idempotencyKey: `${unit.source}:${eventScope}:${unitResource}:${unit.unit}`,
+        source: unit.source,
+        resource: unitResource,
+        unit: unit.unit,
+        quantity: unit.quantity,
+      };
+    });
 
     await emitUsageEvents({ env, repositories, drafts });
   } catch (error) {

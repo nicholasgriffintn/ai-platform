@@ -48,30 +48,42 @@ Bedrock's Anthropic path carries reasoning in Converse `additionalModelRequestFi
 Plans are ranked, not compared for equality. `PLAN_RANKS` in `apps/api/src/constants/plans.ts` orders
 `free` below `pro` below `enterprise`, and `hasPlanEntitlement` in `apps/api/src/lib/plans.ts` is the only
 way to ask whether an account satisfies a requirement. `requirePlan("pro")` therefore admits an enterprise
-account. Use the same helper wherever a feature asks "is this person paid" so admission and the Free-account
-abuse guard cannot disagree.
+account. Use the same helper wherever a feature asks "is this person paid" so admission and the surfaces
+gated on a paid plan cannot disagree.
 
-Daily message counters are only an abuse guard for anonymous and Free accounts. Record one increment after
-the top-level assistant response, using the relative SQL in `UserRepository.incrementUsageCounters` or
-`AnonymousUserRepository.incrementDailyCount`; do not count agent steps, BYOK, or function calls here. Paid
-accounts have no daily message limit, and the old multiplier counters and `usage_update` reset task do not
-return. A new UTC day is handled inside the same relative statement.
+Credits are the only allowance. There are no message counts or daily limits, and the deleted daily columns,
+multiplier counters and `usage_update` reset task do not return. `user.message_count` survives as a lifetime
+counter for product heuristics, never as a limit. Every actor is on credits: a signed-in user through
+`usage_balance`, and an anonymous visitor — identified by hashed IP — through the running totals on their
+`anonymous_user` row (`credit_period`, `spent_credit_micros`, `reserved_credit_micros`). Default allowances
+per period live in `DEFAULT_PLAN_INCLUDED_CREDITS` (anonymous 15, free 150, pro 1500, enterprise 15000), and a
+`plans.included_credits` value overrides them. The period is the calendar month and resets at the start of
+the next UTC month (`usagePeriodFromDate`, `usagePeriodResetsAt`).
+
+Admission happens once per turn in `ConversationManager.admitTurn`, which reserves the turn's estimated cost
+against the balance. `resolveCreditState` moves an actor from `ok` through `reserve` — headroom past the
+included allowance so a long turn is not cut off mid-thought — and then to `overage` when overage is enabled
+or `exhausted` when it is not. `exhausted` pauses new turns until the period resets or overage is switched
+on; work already running finishes, except past the runaway ceiling in `shouldStopRunaway` (included plus
+reserve plus an overrun cap), where an in-flight turn does stop.
 
 The vendor-unit ledger is the only cost record. Provider completions call `recordModelTurnUsage`, including
 ordinary and agent turns, model-ensemble secondary answers, and every panel turn and conclusion. A
 `usage_rollup` task or its inline fallback passes events through
 `UsageEventRepository.insertEventAndApplyBalance`, which inserts the idempotent event and conditionally moves
 the monthly balance in one D1 batch. Never insert a billable event through another repository method or
-derive cost from a message/function multiplier. `/user/usage`, `/user/usage/events`, and
-`/user/usage/breakdown` publish the shared credit contract; credits are visible accounting, not admission or
-mid-turn enforcement. A missing or zero plan allowance is shown as usage without a denominator rather than
-as `used / 0` or "unlimited". Web Account and Sidebar share the balance query, invalidate it after a remote
-turn, and refresh it at the monthly boundary; the stream payload supplements rather than replaces that
-authoritative read. See
+derive cost from a message/function multiplier. `/user/usage/balance`, `/user/usage/summary` and
+`/user/usage/events` publish the shared credit contract for a signed-in user; an anonymous visitor has no
+ledger, only the running total on their row. Model and hosted-tool usage on the person's own provider keys is
+priced at their vendor cost but recorded with `billable: false` and zero credits, while infrastructure such
+as sandbox runs stays metered and charged. A missing or zero plan allowance is shown as usage without a
+denominator rather than as `used / 0` or "unlimited". Web Account and Sidebar share the balance query,
+invalidate it after a remote turn, and refresh it at the monthly boundary; the stream payload supplements
+rather than replaces that authoritative read. See
 [ADR 0041](../architecture/decisions/0041-usage-metering-and-credits.md).
 
 Text-to-speech is reachable without an account, so `apps/api/src/lib/audio/access.ts` gates it. An anonymous
-caller may only use the platform-hosted provider and spends the anonymous daily message allowance; naming any
+caller may only use the platform-hosted provider and spends the anonymous credit allowance; naming any
 paid third-party provider requires an account. Transcription requires an account outright. Signed-in callers
 keep the existing plan and provider-key checks in the speech and transcription services.
 
@@ -80,7 +92,28 @@ Stripe webhooks map subscription **status** to entitlement, not just deletion.
 `incomplete_expired`, `paused` and `canceled` as revoked; `invoice.payment_failed` revokes and
 `invoice.paid` restores. Every handler writes only when the stored state actually changes, so a redelivered
 event neither rewrites the row nor sends a second email. An account that outranks `pro` is never downgraded
-by a lapsed subscription, because enterprise entitlement is granted outside Stripe.
+by a lapsed subscription, because enterprise entitlement is granted outside Stripe. A plan change also
+reflects into the current period's `usage_balance`: entitlement columns (`included_credit_micros`,
+`grace_credit_micros`, `plan_id`) are set from the plan row — the one legitimate absolute write on the
+balance, and it never touches spend columns — and a downgrade to `free` switches `overage_enabled` off.
+When a plan has no `grace_credits`, the reserve defaults to 10% of included credits, floored at 50 credits
+and capped at 50% of included (`defaultGraceCreditMicros`).
+
+Overage reaches Stripe through Billing Meters, never one event per usage event. An hourly
+`stripe_usage_sync` task (queued from the quarter-hour cron on its top-of-hour invocation) compares each
+opted-in customer's `overage_credit_micros` against the `stripe_synced_overage_credit_micros` high-water
+mark, rounds the pending amount **down** to whole credits, and sends one
+`billing.meterEvents.create` per customer with identifier `${customerId}:${hourIso}`. The sub-credit
+remainder stays pending for a later hour, so nothing is lost and nothing is double-sent. A duplicate
+identifier means an earlier attempt in the same hour already delivered the event, so the amount is marked
+synced; any other failure leaves it pending for the next hour. Plans without a `stripe_meter_id` are
+skipped with a debug log.
+
+`POST /stripe/overage` opts a user in or out: it requires an entitled subscription and a payment method,
+adds or removes the plan's `overage_price_id` as a metered subscription item (idempotently in both
+directions), and mirrors the flag onto the current period's balance. `POST /stripe/portal` creates a
+billing-portal session. Its `return_url`, and checkout's `success_url`/`cancel_url`, must sit exactly on
+the `APP_BASE_URL` origin — anything else is rejected before Stripe is called.
 
 Checkout validates that the selected plan has a non-empty Stripe Price ID before it creates a Stripe
 Customer, and it accepts only success and cancellation URLs on the configured app origin. It allows Stripe

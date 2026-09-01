@@ -11,6 +11,7 @@ import {
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { resolveUsageBalanceSnapshot } from "~/lib/usage/balanceSnapshot";
+import type { CreditActor } from "~/lib/usage/creditActor";
 import { usageCreditsFromBalance } from "~/lib/usage/creditSummary";
 import type { UsageEventGroupRow } from "~/repositories/UsageEventRepository";
 import { decodeCompositeCursor, encodeCompositeCursor } from "~/utils/cursor";
@@ -29,10 +30,10 @@ function toSummaryGroups(rows: UsageEventGroupRow[]) {
 
 export async function getUsageBalance(
   context: ServiceContext,
-  userId: number,
+  actor: CreditActor,
   period = usagePeriodFromDate(),
 ): Promise<UsageBalanceResponse> {
-  const balance = await resolveUsageBalanceSnapshot(context.repositories, userId, period);
+  const balance = await resolveUsageBalanceSnapshot(context.repositories, actor, period);
 
   const included = balance.included_credit_micros;
   const grace = balance.grace_credit_micros;

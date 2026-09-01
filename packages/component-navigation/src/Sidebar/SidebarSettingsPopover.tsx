@@ -33,7 +33,9 @@ export interface SidebarUsageMeter {
   value: string;
   assistiveLabel: string;
   percentage: number | null;
-  tone: "blue" | "emerald" | "amber";
+  tone: "blue" | "emerald" | "amber" | "violet";
+  reserveStartPercentage?: number;
+  caption?: string;
 }
 
 export interface SidebarAccountSummary {
@@ -56,6 +58,7 @@ const usageToneClasses: Record<SidebarUsageMeter["tone"], string> = {
   blue: "bg-blue-500",
   emerald: "bg-emerald-500",
   amber: "bg-amber-500",
+  violet: "bg-violet-500",
 };
 
 function SidebarUsageSummary({

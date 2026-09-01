@@ -1,4 +1,5 @@
-import { UsageManager } from "~/lib/usageManager";
+import { anonymousCreditActor } from "~/lib/usage/creditActor";
+import { readCreditPosition } from "~/lib/usage/credits";
 import type { RepositoryManager } from "~/repositories";
 import type { AnonymousUser, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -44,17 +45,15 @@ export async function checkSpeechAccess({
     );
   }
 
-  await new UsageManager(repositories, null, anonymousUser).checkAnonymousUsage();
-}
+  const position = await readCreditPosition({
+    repositories,
+    actor: anonymousCreditActor(anonymousUser.id),
+  });
 
-export async function recordSpeechUsage({
-  repositories,
-  user,
-  anonymousUser,
-}: Omit<SpeechAccessOptions, "provider">): Promise<void> {
-  if (user?.id || !anonymousUser?.id) {
-    return;
+  if (position.enforced && position.state === "exhausted") {
+    throw new AssistantError(
+      "This session's credits are spent. Sign in for a larger allowance.",
+      ErrorType.USAGE_LIMIT_ERROR,
+    );
   }
-
-  await new UsageManager(repositories, null, anonymousUser).incrementAnonymousUsage();
 }

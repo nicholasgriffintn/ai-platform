@@ -8,6 +8,7 @@ import { RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
 
+import { userCreditActor } from "./creditActor";
 import { emitUsageEvents, type UsageEventDraft } from "./ledger";
 
 const logger = getLogger({ prefix: "lib/usage/infra-usage" });
@@ -52,7 +53,7 @@ export function buildInfraUsageDrafts(params: {
     .filter((entry) => Number.isFinite(entry.quantity) && entry.quantity > 0)
     .map((entry) => ({
       idempotencyKey: `infra:${params.scopeKey}:${entry.unit}`,
-      userId: params.userId,
+      actor: userCreditActor(params.userId),
       source: "infrastructure" as const,
       vendor: CLOUDFLARE_VENDOR,
       resource: INFRA_UNIT_RESOURCES[entry.unit] ?? "workers",

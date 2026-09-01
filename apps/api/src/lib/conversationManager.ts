@@ -29,6 +29,7 @@ import type { Database } from "./database";
 import { estimateMessagesTokens } from "./messageTokens";
 import { hasPlanEntitlement } from "./plans";
 import { isByokTurn } from "./usage/byok";
+import { anonymousCreditActor, userCreditActor, type CreditActor } from "./usage/creditActor";
 import {
   admitTurn,
   estimateTurnCreditMicros,
@@ -380,31 +381,37 @@ export class ConversationManager {
     }
   }
 
-  /** Check the free-account abuse guard before starting provider work. */
-  async checkUsageLimits(): Promise<void> {
-    if ((this.user || this.anonymousUser) && this.usageManager) {
-      await this.usageManager.checkUsage();
+  creditActor(): CreditActor | null {
+    if (this.user?.id) {
+      return userCreditActor(this.user.id);
     }
+
+    if (this.anonymousUser?.id) {
+      return anonymousCreditActor(this.anonymousUser.id);
+    }
+
+    return null;
   }
 
   private async resolveTurnAdmission(params: TurnAdmissionRequest): Promise<TurnAdmission | null> {
-    const userId = this.user?.id;
+    const actor = this.creditActor();
     const repositories = this.repositories;
 
-    if (!userId || !repositories) {
+    if (!actor || !repositories) {
       return null;
     }
 
     try {
+      const userId = this.user?.id;
       const provider = params.modelConfig?.provider ?? this.provider;
 
-      if (provider && (await isByokTurn(repositories, userId, provider))) {
+      if (userId && provider && (await isByokTurn(repositories, userId, provider))) {
         return null;
       }
 
       return await admitTurn({
         repositories,
-        userId,
+        actor,
         planId: this.user?.plan_id ?? null,
         estimatedCreditMicros: estimateTurnCreditMicros({
           promptTokens: estimateMessagesTokens(params.messages),
@@ -412,7 +419,7 @@ export class ConversationManager {
         }),
       });
     } catch (error) {
-      logger.error("Failed to admit the turn against the credit balance", { error, userId });
+      logger.error("Failed to admit the turn against the credit balance", { error, actor });
 
       return null;
     }
