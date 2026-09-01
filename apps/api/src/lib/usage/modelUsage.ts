@@ -1,4 +1,5 @@
 import {
+  hostedToolRateEntries,
   modelRateResource,
   rateEntriesFromModelConfig,
   type RateEntry,
@@ -6,11 +7,11 @@ import {
 
 import { getModelConfig } from "~/lib/providers/models";
 import { RepositoryManager } from "~/repositories";
-import type { IEnv } from "~/types";
+import type { IEnv, MessagePart } from "~/types";
 import { getLogger } from "~/utils/logger";
 
-import { billableTokenQuantities } from "./billableUnits";
 import { emitUsageEvents, resolveUsageAttribution, type UsageEventDraft } from "./ledger";
+import { extractProviderBillableUsage } from "./providerBillableUnits";
 import type { NormalisedTokenUsage } from "./tokenUsage";
 
 const logger = getLogger({ prefix: "lib/usage/model-usage" });
@@ -21,6 +22,8 @@ export interface RecordModelTurnUsageParams {
   userId?: number;
   usage: NormalisedTokenUsage | null;
   rawUsage?: unknown;
+  parts?: readonly MessagePart[];
+  structuredData?: unknown;
   model: string;
   provider: string;
   completionId: string;
@@ -44,14 +47,10 @@ async function isByokTurn(
   }
 }
 
-function hasRateFor(rates: readonly RateEntry[], unit: RateEntry["unit"]): boolean {
-  return rates.some((rate) => rate.unit === unit);
-}
-
 export async function recordModelTurnUsage(params: RecordModelTurnUsageParams): Promise<void> {
   const { env, usage, userId } = params;
 
-  if (!userId || !usage || !env?.DB) {
+  if (!userId || !env?.DB || (!usage && params.rawUsage === undefined)) {
     return;
   }
 
@@ -60,15 +59,26 @@ export async function recordModelTurnUsage(params: RecordModelTurnUsageParams): 
     const modelConfig = await getModelConfig(params.model, env, params.provider, userId);
     const resource = modelConfig ? modelRateResource(modelConfig) : params.model;
     const vendor = modelConfig?.provider ?? params.provider;
-    const rates = modelConfig ? rateEntriesFromModelConfig(modelConfig, { resource }) : [];
+    const rates: RateEntry[] = modelConfig
+      ? [
+          ...rateEntriesFromModelConfig(modelConfig, { resource }),
+          ...hostedToolRateEntries(modelConfig),
+        ]
+      : [];
 
-    const quantities = billableTokenQuantities(usage, params.rawUsage ?? usage, {
-      hasReasoningRate: hasRateFor(rates, "reasoning_tokens"),
-      hasAudioRate:
-        hasRateFor(rates, "audio_input_tokens") || hasRateFor(rates, "audio_output_tokens"),
-    });
+    const extraction = extractProviderBillableUsage(
+      vendor,
+      {
+        usage,
+        raw: params.rawUsage ?? usage,
+        parts: params.parts,
+        structuredData: params.structuredData,
+        serviceTier: params.tier,
+      },
+      { hasRate: (unit) => rates.some((rate) => rate.unit === unit) },
+    );
 
-    if (quantities.length === 0) {
+    if (extraction.units.length === 0) {
       return;
     }
 
@@ -82,9 +92,7 @@ export async function recordModelTurnUsage(params: RecordModelTurnUsageParams): 
 
     const shared = {
       userId,
-      source: "model" as const,
       vendor,
-      resource,
       occurredAt,
       byok,
       conversationId: params.conversationId ?? null,
@@ -94,15 +102,21 @@ export async function recordModelTurnUsage(params: RecordModelTurnUsageParams): 
       workspaceId: attribution.workspaceId,
       rates,
       raw: params.rawUsage ?? usage,
-      ...(params.tier ? { tier: params.tier } : {}),
+      ...(extraction.tier ? { tier: extraction.tier } : {}),
     };
 
-    const drafts: UsageEventDraft[] = quantities.map(({ unit, quantity }) => ({
-      ...shared,
-      idempotencyKey: `model:${eventScope}:${unit}`,
-      unit,
-      quantity,
-    }));
+    const drafts: UsageEventDraft[] = extraction.units.map((unit) => {
+      const unitResource = unit.resource ?? resource;
+
+      return {
+        ...shared,
+        idempotencyKey: `${unit.source}:${eventScope}:${unitResource}:${unit.unit}`,
+        source: unit.source,
+        resource: unitResource,
+        unit: unit.unit,
+        quantity: unit.quantity,
+      };
+    });
 
     await emitUsageEvents({ env, repositories, drafts });
   } catch (error) {

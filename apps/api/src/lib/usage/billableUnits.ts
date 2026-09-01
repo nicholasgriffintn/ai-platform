@@ -1,6 +1,7 @@
 import type { UsageUnit } from "@ngriffin_uk/polychat-schemas";
 
-import { findNumericFieldDeep } from "~/utils/recordFields";
+import { isRecord } from "~/utils/objects";
+import { findNumericFieldDeep, readNumericField } from "~/utils/recordFields";
 
 import type { NormalisedTokenUsage } from "./tokenUsage";
 
@@ -32,6 +33,29 @@ function isSubsetReasoning(raw: unknown): boolean {
 
 function positive(value: number | undefined): number {
   return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+interface CacheWriteSplit {
+  fiveMinute: number;
+  oneHour: number;
+}
+
+function splitCacheWriteTiers(raw: unknown, totalCacheWrite: number): CacheWriteSplit {
+  if (!isRecord(raw) || !isRecord(raw.cache_creation)) {
+    return { fiveMinute: totalCacheWrite, oneHour: 0 };
+  }
+
+  const breakdown = raw.cache_creation;
+  const fiveMinute = positive(readNumericField(breakdown, "ephemeral_5m_input_tokens"));
+  const oneHour = positive(readNumericField(breakdown, "ephemeral_1h_input_tokens"));
+
+  if (fiveMinute === 0 && oneHour === 0) {
+    return { fiveMinute: totalCacheWrite, oneHour: 0 };
+  }
+
+  const unaccounted = Math.max(0, totalCacheWrite - fiveMinute - oneHour);
+
+  return { fiveMinute: fiveMinute + unaccounted, oneHour };
 }
 
 export function billableTokenQuantities(
@@ -73,10 +97,13 @@ export function billableTokenQuantities(
     }
   };
 
+  const cacheWriteSplit = splitCacheWriteTiers(raw, cacheWrite);
+
   push("input_tokens", inputTokens);
   push("output_tokens", outputTokens);
   push("cached_input_tokens", cachedInput);
-  push("cache_write_5m_tokens", cacheWrite);
+  push("cache_write_5m_tokens", cacheWriteSplit.fiveMinute);
+  push("cache_write_1h_tokens", cacheWriteSplit.oneHour);
 
   if (chargeReasoningSeparately) {
     push("reasoning_tokens", reasoning);

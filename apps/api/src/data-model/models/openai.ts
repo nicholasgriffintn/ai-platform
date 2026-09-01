@@ -83,6 +83,18 @@ const openaiResponsesHostedTools = {
   supportsFileSearch: true,
   supportsMcp: true,
   supportsImageGenerationTool: true,
+  hostedToolCosts: {
+    web_search: 0.01,
+    file_search: 0.0025,
+    code_interpreter: 0.03,
+  },
+};
+
+const openaiLegacyWebSearchCost = {
+  hostedToolCosts: {
+    ...openaiResponsesHostedTools.hostedToolCosts,
+    web_search: 0.025,
+  },
 };
 
 const openaiHostedShellTools = {
@@ -370,6 +382,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     card: "https://www.prompthub.us/models/gpt-4-1",
     supportsToolCalls: true,
     ...openaiResponsesHostedTools,
+    ...openaiLegacyWebSearchCost,
     maxTokens: 32768,
     contextWindow: 1047576,
     costPer1kInputTokens: 0.002,
@@ -408,6 +421,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
     card: "https://www.prompthub.us/models/gpt-4-1-mini",
     supportsToolCalls: true,
     ...openaiResponsesHostedTools,
+    ...openaiLegacyWebSearchCost,
     maxTokens: 32768,
     contextWindow: 1047576,
     costPer1kInputTokens: 0.0004,
