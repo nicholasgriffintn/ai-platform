@@ -1,7 +1,12 @@
-import type { FunctionType, ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import type {
+  FunctionType,
+  ModelConfigItem,
+  UsageCreditsSummary,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { USAGE_CONFIG } from "~/constants/app";
 import { findModelConfig } from "~/lib/providers/models";
+import { creditsSummary, readCreditSnapshot } from "~/lib/usage/credits";
 import type { RepositoryManager } from "~/repositories";
 import type { UsageCounterIncrements } from "~/repositories/UserRepository";
 import type { AnonymousUser, User } from "~/types";
@@ -61,6 +66,7 @@ export interface UsageLimits {
     used: number;
     limit: null;
   };
+  credits?: UsageCreditsSummary;
 }
 
 export class UsageManager {
@@ -211,6 +217,10 @@ export class UsageManager {
     const config = await this.getModelConfig(modelId, provider);
 
     return !!config && !config.isFree;
+  }
+
+  async isByokModelRequest(modelId: string, provider?: string): Promise<boolean> {
+    return this.isByokRequest(modelId, provider);
   }
 
   private async isByokRequest(modelId: string, provider?: string): Promise<boolean> {
@@ -596,6 +606,23 @@ export class UsageManager {
         used: proSnapshot.dailyCount,
         limit: proSnapshot.limit,
       };
+    }
+
+    try {
+      const creditSnapshot = await readCreditSnapshot({
+        repositories: this.repositories,
+        userId: this.user.id,
+        planId: this.user.plan_id ?? null,
+      });
+
+      if (creditSnapshot.configured) {
+        usageLimits.credits = creditsSummary(creditSnapshot);
+      }
+    } catch (error) {
+      logger.warn("Failed to read the credit balance for usage limits", {
+        error,
+        userId: this.user.id,
+      });
     }
 
     logger.debug("Usage limits fetched", { userId: this.user.id });

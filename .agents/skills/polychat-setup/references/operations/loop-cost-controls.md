@@ -16,16 +16,28 @@ removes a bound is visible as a change to this file rather than as a bill.
 Streaming is a transport, not a loop of its own (ADR 0022). A streamed turn and a buffered one draw the
 same budget through the same loop, so there is one place to change a bound and one place it can be lost.
 
-## Usage limits are checked as the work is spent, not once per request
+## A turn is admitted once, then never killed for balance
 
-`checkUsageLimits` at the request boundary only covers the first model call. Every loop that can spend
-more re-checks before spending the next one:
+`checkUsageLimits` at the request boundary still throws for spent daily message counts — those survive
+as the abuse guard for anonymous and free accounts. For a plan with `included_credits` configured,
+`ConversationManager.admitTurn` runs once at that same boundary: it estimates the turn from the prompt
+tokens at the model's input rate plus an output allowance (the model's `maxTokens`, capped at 8k
+tokens' worth), admits it if the estimate fits `included + grace - spent - reserved` or overage is
+enabled, and reserves the estimate on the usage balance. The reservation is released when the turn's
+real spend lands (next to `recordModelTurnUsage` in `assistant-turn.ts`), and again defensively when
+the stream closes; the release is idempotent, so both call sites are safe.
 
-- **Agent loop**: `runAgentLoop` re-checks before every step after the first. Exhaustion closes the turn
-  with `USAGE_LIMIT_NOTICE` and a `usage_limit_reached` finish reason, and allows the finish gate, so the
-  user gets an answer explaining the stop rather than an error.
-- **Goals**: `readUsageLimitState` feeds `usageLimitsExhausted` into the continuation policy, so a goal
-  ends as `limit_reached` rather than erroring.
+- **Agent loop**: `runAgentLoop` still re-checks before every step after the first, but the check is a
+  runaway guard, not a balance check. An admitted turn stops only when the period's credit spend passes
+  `included + grace + OVERRUN_CAP`, where `OVERRUN_CAP = max(25% of grace, 25 credits)`. The stop keeps
+  the graceful close — `USAGE_LIMIT_NOTICE`, a `usage_limit_reached` finish reason, the finish gate
+  allowed — so the user gets an answer explaining the stop rather than an error. Spend past the reserve
+  inside an admitted turn accrues to `overrun_credit_micros` and is forgiven: a measurement, not a
+  debt. While the plan has no credits configured, the per-step check falls back to the message-count
+  behaviour unchanged.
+- **Goals**: `readUsageLimitState` feeds `usageLimitsExhausted` into the continuation policy. With
+  credits configured a goal stops at `exhausted` — past the reserve with no overage — never at
+  `reserve`, and ends as `limit_reached` rather than erroring.
 
 Usage increments per stored assistant message (`ConversationManager.addBatch`), so each loop step counts
 against the allowance rather than the whole loop counting as one.

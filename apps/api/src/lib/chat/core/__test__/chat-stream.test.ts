@@ -17,7 +17,10 @@ const connectorContext = { requestId: "request-1" };
 function createParams() {
   return {
     completionId: "completion-1",
-    conversationManager: { getUsageLimits: vi.fn(async () => null) },
+    conversationManager: {
+      getUsageLimits: vi.fn(async () => null),
+      releaseTurnReservation: vi.fn(),
+    },
     toolRequestContext: { context: connectorContext },
     mode: "normal",
     env: {},

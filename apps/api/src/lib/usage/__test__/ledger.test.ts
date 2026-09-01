@@ -53,18 +53,30 @@ function tokenUsage(overrides: Partial<NormalisedTokenUsage> = {}): NormalisedTo
   };
 }
 
-function createRepositories(options: { insert?: (event: UsageEventInsert) => boolean } = {}) {
+function createRepositories(
+  options: {
+    insert?: (event: UsageEventInsert) => boolean;
+    plan?: Record<string, unknown> | null;
+    balance?: Record<string, unknown> | null;
+  } = {},
+) {
   const insertEvent = vi.fn(async (event: UsageEventInsert) => options.insert?.(event) ?? true);
   const applyDeltas = vi.fn(async (_params: Record<string, unknown>) => {});
+  const getBalance = vi.fn(async () => options.balance ?? null);
 
   return {
     insertEvent,
     applyDeltas,
+    getBalance,
     repositories: {
       usageEvents: { insertEvent },
-      usageBalances: { applyDeltas },
+      usageBalances: { applyDeltas, getBalance },
       users: { getUserById: vi.fn(async () => ({ plan_id: "pro" })) },
-      plans: { getPlanById: vi.fn(async () => ({ included_credits: 500, grace_credits: 50 })) },
+      plans: {
+        getPlanById: vi.fn(async () =>
+          options.plan !== undefined ? options.plan : { included_credits: 500, grace_credits: 50 },
+        ),
+      },
       tasks: {},
     } as any,
   };
@@ -175,6 +187,56 @@ describe("applyUsageRollup", () => {
     await applyUsageRollup(repositories, [buildUsageEventRow(draft({ byok: true }))]);
 
     expect(applyDeltas).not.toHaveBeenCalled();
+  });
+
+  it("defaults the grace seed to a tenth of the included credits with a fifty-credit floor", async () => {
+    const { applyDeltas, repositories } = createRepositories({
+      plan: { included_credits: 1000, grace_credits: null },
+    });
+
+    await applyUsageRollup(repositories, [buildUsageEventRow(draft())]);
+
+    expect(applyDeltas.mock.calls[0][0]).toMatchObject({
+      includedCreditMicros: 1_000_000_000,
+      graceCreditMicros: 100_000_000,
+    });
+  });
+
+  it("routes spend past the ceiling into overrun rather than treating it as a debt", async () => {
+    const { applyDeltas, repositories } = createRepositories({
+      balance: { spent_credit_micros: 549_999_000, overage_enabled: 0 },
+    });
+
+    await applyUsageRollup(repositories, [buildUsageEventRow(draft())]);
+
+    expect(applyDeltas.mock.calls[0][0]).toMatchObject({
+      deltas: { spent_credit_micros: 500_000, overrun_credit_micros: 499_000 },
+    });
+  });
+
+  it("routes spend past the ceiling into overage when the user opted in", async () => {
+    const { applyDeltas, repositories } = createRepositories({
+      balance: { spent_credit_micros: 550_000_000, overage_enabled: 1 },
+    });
+
+    await applyUsageRollup(repositories, [buildUsageEventRow(draft())]);
+
+    expect(applyDeltas.mock.calls[0][0]).toMatchObject({
+      deltas: { spent_credit_micros: 500_000, overage_credit_micros: 500_000 },
+    });
+  });
+
+  it("records plain spend while the plan has no credits configured", async () => {
+    const { applyDeltas, getBalance, repositories } = createRepositories({
+      plan: { included_credits: null },
+    });
+
+    await applyUsageRollup(repositories, [buildUsageEventRow(draft())]);
+
+    expect(getBalance).not.toHaveBeenCalled();
+    expect(applyDeltas.mock.calls[0][0]).toMatchObject({
+      deltas: { spent_credit_micros: 500_000 },
+    });
   });
 });
 

@@ -224,6 +224,11 @@ export class ChatOrchestrator {
         conversationManager.checkUsageLimits(modelConfig.model, modelConfig.provider),
       ),
     );
+    await conversationManager.admitTurn({
+      model: primaryModel,
+      modelConfig: primaryModelConfig,
+      messages: preparedMessages,
+    });
 
     let messages = preparedMessages;
     let didCompact = false;
@@ -336,6 +341,8 @@ export class ChatOrchestrator {
     try {
       runResult = await runAgentLoop(runParams);
     } finally {
+      await conversationManager.releaseTurnReservation();
+
       if (toolRequestContext.context) {
         try {
           await closeComposioConnectorRun(toolRequestContext.context);

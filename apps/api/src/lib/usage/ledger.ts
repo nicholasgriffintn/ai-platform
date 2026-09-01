@@ -1,6 +1,5 @@
 import {
   creditMicrosFromCostMicros,
-  creditMicrosFromCredits,
   DEFAULT_MARGIN,
   priceUsage,
   usagePeriodFromDate,
@@ -11,11 +10,14 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { RepositoryManager } from "~/repositories";
+import type { BalanceDeltas } from "~/repositories/UsageBalanceRepository";
 import type { UsageEventInsert } from "~/repositories/UsageEventRepository";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+
+import { readPlanCreditAllowance } from "./credits";
 
 const logger = getLogger({ prefix: "lib/usage/ledger" });
 
@@ -142,28 +144,27 @@ export async function resolveUsageAttribution(
 async function resolvePlanSeed(
   repositories: RepositoryManager,
   userId: number,
-): Promise<{ planId: string | null; includedCreditMicros: number; graceCreditMicros: number }> {
+): Promise<{
+  planId: string | null;
+  configured: boolean;
+  includedCreditMicros: number;
+  graceCreditMicros: number;
+}> {
   try {
     const user = await repositories.users.getUserById(userId);
     const planId = typeof user?.plan_id === "string" ? user.plan_id : null;
-
-    if (!planId) {
-      return { planId: null, includedCreditMicros: 0, graceCreditMicros: 0 };
-    }
-
-    const plan = await repositories.plans.getPlanById(planId);
-    const included = typeof plan?.included_credits === "number" ? plan.included_credits : 0;
-    const grace = typeof plan?.grace_credits === "number" ? plan.grace_credits : 0;
+    const allowance = await readPlanCreditAllowance(repositories, planId);
 
     return {
       planId,
-      includedCreditMicros: creditMicrosFromCredits(included),
-      graceCreditMicros: creditMicrosFromCredits(grace),
+      configured: allowance.configured,
+      includedCreditMicros: allowance.includedCreditMicros,
+      graceCreditMicros: allowance.graceCreditMicros,
     };
   } catch (error) {
     logger.warn("Failed to resolve plan seed for usage balance", { error, userId });
 
-    return { planId: null, includedCreditMicros: 0, graceCreditMicros: 0 };
+    return { planId: null, configured: false, includedCreditMicros: 0, graceCreditMicros: 0 };
   }
 }
 
@@ -210,6 +211,22 @@ export async function applyUsageRollup(
 
   for (const entry of spend.values()) {
     const seed = await resolvePlanSeed(repositories, entry.userId);
+    const deltas: BalanceDeltas = { spent_credit_micros: entry.creditMicros };
+
+    if (seed.configured) {
+      const balance = await repositories.usageBalances.getBalance(entry.userId, entry.period);
+      const ceiling = seed.includedCreditMicros + seed.graceCreditMicros;
+      const priorSpent = balance?.spent_credit_micros ?? 0;
+      const pastCeiling = priorSpent + entry.creditMicros - Math.max(priorSpent, ceiling);
+
+      if (pastCeiling > 0) {
+        if (balance?.overage_enabled) {
+          deltas.overage_credit_micros = pastCeiling;
+        } else {
+          deltas.overrun_credit_micros = pastCeiling;
+        }
+      }
+    }
 
     await repositories.usageBalances.applyDeltas({
       userId: entry.userId,
@@ -217,7 +234,7 @@ export async function applyUsageRollup(
       planId: seed.planId,
       includedCreditMicros: seed.includedCreditMicros,
       graceCreditMicros: seed.graceCreditMicros,
-      deltas: { spent_credit_micros: entry.creditMicros },
+      deltas,
       lastEventAt: entry.lastEventAt,
     });
   }

@@ -167,6 +167,7 @@ export async function finaliseAssistantTurn(
     messageId: message.id,
     conversationId: completionId,
   });
+  await params.conversationManager.releaseTurnReservation();
 
   await sink.writeEvent("message_delta", {
     id: completionId,

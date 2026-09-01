@@ -1,4 +1,8 @@
-import type { ConversationType, FunctionType } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ConversationType,
+  FunctionType,
+  ModelConfigItem,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { RepositoryManager } from "~/repositories";
 import type {
@@ -26,7 +30,14 @@ import {
 import { createInitialConversationTitle } from "./conversation/title-source";
 import { loadVisibleConversationMessagePage } from "./conversation/visibleMessagePagination";
 import type { Database } from "./database";
+import { estimateMessagesTokens } from "./messageTokens";
 import { hasPlanEntitlement } from "./plans";
+import {
+  admitTurn,
+  estimateTurnCreditMicros,
+  type TurnAdmission,
+  type TurnReservation,
+} from "./usage/credits";
 import { type UsageLimits, UsageManager, type UsageUpdateTaskPayload } from "./usageManager";
 
 const logger = getLogger({ prefix: "lib/conversationManager" });
@@ -63,6 +74,7 @@ export class ConversationManager {
   private requestCache?: Map<string, unknown>;
   private taskService?: TaskService;
   private repositories?: RepositoryManager;
+  private pendingTurnReservation?: TurnReservation;
 
   private constructor(
     database: Database,
@@ -410,6 +422,70 @@ export class ConversationManager {
         );
       }
     }
+  }
+
+  async admitTurn(params: {
+    model?: string;
+    modelConfig?: ModelConfigItem | null;
+    messages: Message[];
+  }): Promise<void> {
+    if (!this.user?.id || !this.repositories) {
+      return;
+    }
+
+    let admission: TurnAdmission;
+
+    try {
+      if (params.modelConfig && this.usageManager) {
+        const byok = await this.usageManager.isByokModelRequest(
+          params.model ?? params.modelConfig.matchingModel,
+          params.modelConfig.provider,
+        );
+
+        if (byok) {
+          return;
+        }
+      }
+
+      admission = await admitTurn({
+        repositories: this.repositories,
+        userId: this.user.id,
+        planId: this.user.plan_id ?? null,
+        estimatedCreditMicros: estimateTurnCreditMicros({
+          promptTokens: estimateMessagesTokens(params.messages),
+          modelConfig: params.modelConfig,
+        }),
+      });
+    } catch (error) {
+      logger.error("Failed to admit the turn against the credit balance", {
+        error,
+        userId: this.user.id,
+      });
+
+      return;
+    }
+
+    if (!admission.admitted) {
+      throw new AssistantError(
+        "This month's credits are fully spent, so new replies are paused until the balance resets. Enabling overage lifts the pause.",
+        ErrorType.USAGE_LIMIT_ERROR,
+      );
+    }
+
+    if (admission.reservation) {
+      this.pendingTurnReservation = admission.reservation;
+    }
+  }
+
+  async releaseTurnReservation(): Promise<void> {
+    const reservation = this.pendingTurnReservation;
+
+    if (!reservation) {
+      return;
+    }
+
+    this.pendingTurnReservation = undefined;
+    await reservation.release();
   }
 
   async incrementFunctionUsage(
