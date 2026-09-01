@@ -121,8 +121,8 @@ describe("UsageManager", () => {
     });
   });
 
-  it("gives an anonymous visitor the default anonymous credit allowance", async () => {
-    const repo = repositories({ plan: null });
+  it("gives an anonymous visitor the allowance on the anonymous plan row", async () => {
+    const repo = repositories({ includedCredits: 20, graceCredits: 0 });
     const manager = new UsageManager(repo.value as never, null, anonymousUser());
 
     await expect(manager.getUsageLimits()).resolves.toMatchObject({
@@ -131,7 +131,11 @@ describe("UsageManager", () => {
   });
 
   it("reports an anonymous visitor past its allowance and reserve as exhausted", async () => {
-    const repo = repositories({ plan: null, anonymousSpentCreditMicros: 30_000_000 });
+    const repo = repositories({
+      includedCredits: 20,
+      graceCredits: 0,
+      anonymousSpentCreditMicros: 30_000_000,
+    });
     const manager = new UsageManager(repo.value as never, null, anonymousUser());
 
     await expect(manager.getUsageLimits()).resolves.toMatchObject({

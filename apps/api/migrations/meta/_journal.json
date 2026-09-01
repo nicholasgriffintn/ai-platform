@@ -134,6 +134,13 @@
       "when": 1788295337387,
       "tag": "0018_pretty_lockjaw",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1788295338387,
+      "tag": "0019_seed_plan_credits",
+      "breakpoints": true
     }
   ]
 }

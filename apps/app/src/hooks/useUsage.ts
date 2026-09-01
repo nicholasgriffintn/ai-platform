@@ -46,14 +46,17 @@ export function useUsageSummary(options: { period?: string; enabled?: boolean } 
   });
 }
 
-export function useUsageEvents(options: { period?: string; enabled?: boolean } = {}) {
+export function useUsageEvents(
+  options: { period?: string; enabled?: boolean; source?: string } = {},
+) {
   return useInfiniteQuery({
-    queryKey: ["usage", "events", options.period ?? "current"],
+    queryKey: ["usage", "events", options.period ?? "current", options.source ?? "all"],
     queryFn: ({ pageParam }) =>
       listUsageEvents({
         period: options.period,
         cursor: pageParam,
         limit: USAGE_EVENTS_PAGE_SIZE,
+        source: options.source,
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: getNextUsageEventsPageParam,

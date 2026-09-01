@@ -1,5 +1,9 @@
 import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
-import type { UsageEventRecord } from "@ngriffin_uk/polychat-schemas";
+import {
+  USAGE_SOURCES,
+  type UsageEventRecord,
+  type UsageSource,
+} from "@ngriffin_uk/polychat-schemas";
 import { formatCredits, formatUsdFromMicros } from "@ngriffin_uk/polychat-utility-core";
 import { Loader2 } from "lucide-react";
 
@@ -11,7 +15,11 @@ export interface UsageLedgerTableProps {
   isLoading: boolean;
   isLoadingMore: boolean;
   onLoadMore: () => void;
+  source: UsageSource | "all";
+  onSourceChange: (source: UsageSource | "all") => void;
 }
+
+const LEDGER_FILTERS: Array<UsageSource | "all"> = [...USAGE_SOURCES, "all"];
 
 function formatEventDate(occurredAt: string): string {
   const date = new Date(occurredAt);
@@ -57,6 +65,8 @@ export function UsageLedgerTable({
   isLoading,
   isLoadingMore,
   onLoadMore,
+  source,
+  onSourceChange,
 }: UsageLedgerTableProps) {
   return (
     <Card className="p-5">
@@ -65,6 +75,24 @@ export function UsageLedgerTable({
         Every priced piece of work, line by line. Rows on your own keys show their cost but charge
         no credits.
       </p>
+
+      <div className="mt-3 flex flex-wrap gap-1" role="group" aria-label="Filter the ledger">
+        {LEDGER_FILTERS.map((filter) => (
+          <button
+            key={filter}
+            type="button"
+            aria-pressed={source === filter}
+            onClick={() => onSourceChange(filter)}
+            className={
+              source === filter
+                ? "rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+                : "rounded-full border border-zinc-200 px-3 py-1 text-xs text-zinc-600 hover:border-zinc-300 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600"
+            }
+          >
+            {filter === "all" ? "All" : humaniseUsageSource(filter)}
+          </button>
+        ))}
+      </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center py-8 text-zinc-500 dark:text-zinc-400">

@@ -111,6 +111,7 @@ export async function listUsageEvents(
     period,
     limit: limit + 1,
     cursor,
+    source: query.source ?? null,
   });
 
   const page = rows.slice(0, limit);

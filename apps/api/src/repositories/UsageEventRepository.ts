@@ -62,6 +62,7 @@ export interface ListUsageEventsParams {
   period: string;
   limit: number;
   cursor?: { occurredAt: string; id: string } | null;
+  source?: string | null;
 }
 
 export interface UsageBalanceSeed {
@@ -196,7 +197,13 @@ export class UsageEventRepository extends BaseRepository {
 
   async listUserEvents(params: ListUsageEventsParams): Promise<UsageEventRecordRow[]> {
     const values: unknown[] = [params.userId, params.period];
+    let sourceClause = "";
     let cursorClause = "";
+
+    if (params.source) {
+      sourceClause = " AND source = ?";
+      values.push(params.source);
+    }
 
     if (params.cursor) {
       cursorClause = " AND (occurred_at < ? OR (occurred_at = ? AND id < ?))";
@@ -208,7 +215,7 @@ export class UsageEventRepository extends BaseRepository {
     return this.runQuery<UsageEventRecordRow>(
       `SELECT ${RECORD_COLUMNS}
 			 FROM usage_event
-			 WHERE user_id = ? AND period = ?${cursorClause}
+			 WHERE user_id = ? AND period = ?${sourceClause}${cursorClause}
 			 ORDER BY occurred_at DESC, id DESC
 			 LIMIT ?`,
       values,

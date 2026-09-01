@@ -18,17 +18,6 @@ export function planEarnsGrace(planId: string): boolean {
   return !PLANS_WITHOUT_GRACE.has(planId);
 }
 
-export const DEFAULT_PLAN_INCLUDED_CREDITS: Record<string, number> = {
-  anonymous: 20,
-  free: 100,
-  pro: 500,
-  enterprise: 5000,
-};
-
-function fallbackIncludedCredits(planId: string): number | undefined {
-  return DEFAULT_PLAN_INCLUDED_CREDITS[planId];
-}
-
 export type UsagePlanResolution = "allowance" | "none" | "unavailable";
 
 export interface UsagePlanSeed {
@@ -72,11 +61,9 @@ export function resolvePlanAllowanceCredits(
   configuredGraceCredits?: unknown,
 ): PlanAllowanceCredits | null {
   const includedCredits =
-    typeof configuredIncludedCredits === "number" && configuredIncludedCredits > 0
-      ? configuredIncludedCredits
-      : fallbackIncludedCredits(planId);
+    typeof configuredIncludedCredits === "number" ? configuredIncludedCredits : null;
 
-  if (typeof includedCredits !== "number" || includedCredits <= 0) {
+  if (includedCredits === null || includedCredits <= 0) {
     return null;
   }
 

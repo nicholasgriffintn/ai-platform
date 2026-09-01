@@ -15,7 +15,9 @@ function makeRepositories(spentCreditMicros: number) {
           reservedCreditMicros: 0,
         })),
       },
-      plans: { getPlanById: vi.fn(async () => null) },
+      plans: {
+        getPlanById: vi.fn(async () => ({ included_credits: 20, grace_credits: 0 })),
+      },
     } as unknown as RepositoryManager,
   };
 }

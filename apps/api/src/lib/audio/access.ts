@@ -50,7 +50,7 @@ export async function checkSpeechAccess({
     actor: anonymousCreditActor(anonymousUser.id),
   });
 
-  if (position.enforced && position.state === "exhausted") {
+  if (position.state === "exhausted") {
     throw new AssistantError(
       "This session's credits are spent. Sign in for a larger allowance.",
       ErrorType.USAGE_LIMIT_ERROR,

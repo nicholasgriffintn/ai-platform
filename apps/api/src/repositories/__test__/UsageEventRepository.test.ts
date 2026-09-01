@@ -128,3 +128,57 @@ describe("UsageEventRepository", () => {
     expect(batch).not.toHaveBeenCalled();
   });
 });
+
+describe("listUserEvents filtering", () => {
+  function queryHarness() {
+    const queries: Array<{ query: string; values: unknown[] }> = [];
+    const prepare = vi.fn((query: string) => ({
+      bind: (...values: unknown[]) => ({
+        query,
+        values,
+        all: async () => {
+          queries.push({ query, values });
+
+          return { results: [] };
+        },
+      }),
+    }));
+
+    return {
+      queries,
+      repository: new UsageEventRepository({ DB: { prepare } } as never),
+    };
+  }
+
+  it("filters by source and keeps the cursor bindings in order", async () => {
+    const { repository, queries } = queryHarness();
+
+    await repository.listUserEvents({
+      userId: 7,
+      period: "2026-09",
+      limit: 10,
+      source: "model",
+      cursor: { occurredAt: "2026-09-01T00:00:00.000Z", id: "event-1" },
+    });
+
+    expect(queries[0]?.query.replace(/\s+/g, " ")).toContain("AND source = ?");
+    expect(queries[0]?.values).toEqual([
+      7,
+      "2026-09",
+      "model",
+      "2026-09-01T00:00:00.000Z",
+      "2026-09-01T00:00:00.000Z",
+      "event-1",
+      10,
+    ]);
+  });
+
+  it("omits the source clause when no filter is given", async () => {
+    const { repository, queries } = queryHarness();
+
+    await repository.listUserEvents({ userId: 7, period: "2026-09", limit: 10 });
+
+    expect(queries[0]?.query).not.toContain("source = ?");
+    expect(queries[0]?.values).toEqual([7, "2026-09", 10]);
+  });
+});

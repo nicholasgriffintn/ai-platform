@@ -1,6 +1,6 @@
 import type { PlanCreditsUpdate } from "@ngriffin_uk/polychat-schemas";
 
-import { resolvePlanAllowanceCredits } from "~/lib/usage/planSeed";
+import { ANONYMOUS_PLAN_ID, resolvePlanAllowanceCredits } from "~/lib/usage/planSeed";
 import { RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -28,7 +28,7 @@ export async function listPlans(env: IEnv) {
   const repositories = new RepositoryManager(env);
   const plans = await repositories.plans.getAllPlans();
 
-  return plans.map(toPublicPlan);
+  return plans.filter((plan) => plan.id !== ANONYMOUS_PLAN_ID).map(toPublicPlan);
 }
 
 export async function getPlanDetails(env: IEnv, id: string) {

@@ -37,6 +37,7 @@ export async function listUsageEvents(options: {
   period?: string;
   cursor?: string;
   limit?: number;
+  source?: string;
 }): Promise<UsageEventsResponse> {
   const params = new URLSearchParams();
 
@@ -50,6 +51,10 @@ export async function listUsageEvents(options: {
 
   if (options.limit) {
     params.set("limit", String(options.limit));
+  }
+
+  if (options.source) {
+    params.set("source", options.source);
   }
 
   const encoded = params.toString();

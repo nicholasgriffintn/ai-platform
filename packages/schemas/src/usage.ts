@@ -109,6 +109,7 @@ export const usageEventsQuerySchema = z.object({
   period: usagePeriodSchema.optional(),
   cursor: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(100).optional(),
+  source: usageSourceSchema.optional(),
 });
 
 export type UsageEventsQuery = z.infer<typeof usageEventsQuerySchema>;

@@ -229,18 +229,12 @@ describe("admitTurn", () => {
 });
 
 describe("resolvePlanAllowanceCredits", () => {
-  it("falls back to the built-in allowance when a plan row leaves credits unset", () => {
-    expect(resolvePlanAllowanceCredits("free", null, null)).toEqual({
-      includedCredits: 100,
-      graceCredits: 0,
-    });
-    expect(resolvePlanAllowanceCredits("anonymous", null, null)).toEqual({
-      includedCredits: 20,
-      graceCredits: 0,
-    });
+  it("reports a plan row with no configured credits as unmetered", () => {
+    expect(resolvePlanAllowanceCredits("free", null, null)).toBeNull();
+    expect(resolvePlanAllowanceCredits("anonymous", null, null)).toBeNull();
   });
 
-  it("lets a configured plan row override the built-in allowance", () => {
+  it("derives the reserve from the configured allowance for paid plans", () => {
     expect(resolvePlanAllowanceCredits("pro", 4000, 100)).toEqual({
       includedCredits: 4000,
       graceCredits: 100,
@@ -253,10 +247,11 @@ describe("resolvePlanAllowanceCredits", () => {
 });
 
 describe("plan defaults for signed-in accounts", () => {
-  it("treats a user with no plan as free rather than unmetered", async () => {
+  it("treats a user with no plan as free and reads that plan row", async () => {
+    const getPlanById = vi.fn(async () => ({ included_credits: 100, grace_credits: 0 }));
     const repositories = {
       users: { getUserById: async () => ({ id: 1, plan_id: null }) },
-      plans: { getPlanById: async () => null },
+      plans: { getPlanById },
     } as never;
 
     await expect(resolveUsagePlanSeed(repositories, 1)).resolves.toMatchObject({
@@ -264,6 +259,7 @@ describe("plan defaults for signed-in accounts", () => {
       includedCreditMicros: creditMicrosFromCredits(100),
       graceCreditMicros: 0,
     });
+    expect(getPlanById).toHaveBeenCalledWith("free");
   });
 });
 

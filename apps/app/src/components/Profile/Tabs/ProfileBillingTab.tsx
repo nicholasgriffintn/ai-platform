@@ -6,7 +6,9 @@ import {
   UsageSummaryCard,
 } from "@ngriffin_uk/polychat-component-account";
 import { EmptyState, SignInEmptyState } from "@ngriffin_uk/polychat-component-ui";
+import type { UsageSource } from "@ngriffin_uk/polychat-schemas";
 import { Loader2 } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
@@ -31,7 +33,10 @@ function CreditBillingView() {
   const navigate = useNavigate();
   const { data: balance } = useUsageBalance();
   const { data: summary } = useUsageSummary();
-  const events = useUsageEvents();
+  const [ledgerSource, setLedgerSource] = useState<UsageSource | "all">("model");
+  const events = useUsageEvents({
+    source: ledgerSource === "all" ? undefined : ledgerSource,
+  });
   const { data: sub } = useSubscription();
   const { data: plans } = usePlans();
 
@@ -58,7 +63,7 @@ function CreditBillingView() {
         planName={planName}
         overageEnabled={balance.credits.overage_enabled}
         showManageBilling={portalAvailable}
-        showOverageToggle={overageAvailable}
+        showOverageToggle={overageAvailable && plan?.overage_available === true}
         isCancelling={cancelStatus === "pending"}
         isReactivating={reactivateStatus === "pending"}
         isOpeningPortal={portalStatus === "pending"}
@@ -78,6 +83,8 @@ function CreditBillingView() {
         isLoading={events.isLoading}
         isLoadingMore={events.isFetchingNextPage}
         onLoadMore={() => void events.fetchNextPage()}
+        source={ledgerSource}
+        onSourceChange={setLedgerSource}
       />
     </div>
   );
