@@ -27,6 +27,7 @@ import {
   type SandboxRunData as PersistedSandboxRunData,
 } from "./run-data";
 import { indexSandboxRunResult } from "./run-indexing";
+import { releaseSandboxRunReservation, reserveSandboxRun } from "./usage";
 
 const logger = getLogger({ prefix: "services/apps/sandbox/dispatch" });
 
@@ -219,6 +220,14 @@ export async function processSandboxRunDispatch(params: {
     timeoutAt: runData.timeoutAt,
   });
 
+  await reserveSandboxRun({
+    env,
+    repositories: context.repositories,
+    userId: user.id,
+    runId: message.runId,
+    timeoutSeconds: runData.timeoutSeconds,
+  });
+
   let workerResponse: Response;
 
   try {
@@ -240,6 +249,11 @@ export async function processSandboxRunDispatch(params: {
       runId: message.runId,
     });
   } catch (error) {
+    await releaseSandboxRunReservation({
+      repositories: context.repositories,
+      runId: message.runId,
+    });
+
     const completedAt = new Date().toISOString();
     const errorMessage = error instanceof Error ? error.message : "Failed to start sandbox worker";
     const nextRun: PersistedSandboxRunData = {

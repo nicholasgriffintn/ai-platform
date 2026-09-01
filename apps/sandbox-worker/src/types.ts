@@ -17,6 +17,7 @@ export interface TaskSecrets {
 export interface Env {
   Sandbox: DurableObjectNamespace<import("./index").Sandbox>;
   SANDBOX_TRANSPORT?: "http" | "rpc";
+  SANDBOX_INSTANCE_TYPE?: string;
   JWT_SECRET?: string;
   POLYCHAT_API: Fetcher;
 }

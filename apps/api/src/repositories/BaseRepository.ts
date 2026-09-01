@@ -1,5 +1,6 @@
 import { createDatabaseClient, type DatabaseClient } from "~/lib/database/client";
 import { QueryBuilder } from "~/lib/database/QueryBuilder";
+import { recordD1ResultMeta } from "~/lib/usage/requestMeter";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -44,6 +45,8 @@ export abstract class BaseRepository {
 
       const result = await bound.all();
 
+      recordD1ResultMeta(result.meta);
+
       return result.results as T[];
     } catch (error: any) {
       logger.error("Database query error:", { error });
@@ -65,6 +68,8 @@ export abstract class BaseRepository {
       const stmt = this.env.DB.prepare(query);
       const bound = stmt.bind(...params);
       const result = await bound.run();
+
+      recordD1ResultMeta(result.meta);
 
       if (!result.success) {
         throw new AssistantError("Database operation failed", ErrorType.UNKNOWN_ERROR, 500, {

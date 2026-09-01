@@ -63,6 +63,7 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
     } finally {
       stopHeartbeat();
       stopSignal.stop();
+      await params.conversationManager.releaseTurnReservation();
       await closeRunResources();
 
       try {

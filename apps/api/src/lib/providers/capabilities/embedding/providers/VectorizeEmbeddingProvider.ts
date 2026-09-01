@@ -7,6 +7,7 @@ import {
   requireEmbeddingScopeTag,
   withEmbeddingScopeMetadata,
 } from "~/lib/providers/capabilities/embedding/utils/scope";
+import { addInfraUsage } from "~/lib/usage/requestMeter";
 import type { RepositoryManager } from "~/repositories";
 import type {
   EmbeddingMutationResult,
@@ -106,6 +107,11 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
         })),
       );
 
+      addInfraUsage(
+        "vectorize_stored_dimensions",
+        embeddings.reduce((total, embedding) => total + embedding.values.length, 0),
+      );
+
       logger.debug("Vectorize Vector DB upsert response", {
         status: "success",
       });
@@ -175,7 +181,10 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
       namespace: scopeTag,
       ...(metadataFilter && { filter: metadataFilter }),
     };
-    const matches = await this.vector_db.query(Array.from(queryVector), queryOptions);
+    const queryValues = Array.from(queryVector);
+    const matches = await this.vector_db.query(queryValues, queryOptions);
+
+    addInfraUsage("vectorize_queried_dimensions", queryValues.length * (1 + queryOptions.topK));
 
     logger.debug("Vectorize Vector DB query completed", { count: matches.matches?.length || 0 });
 

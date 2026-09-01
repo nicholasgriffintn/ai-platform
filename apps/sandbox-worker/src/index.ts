@@ -2,6 +2,7 @@ import { sandboxWorkerExecuteRequestSchema, NO_STORE } from "@ngriffin_uk/polych
 
 import { verifySandboxJwt } from "./lib/auth";
 import { SandboxCancellationError } from "./lib/cancellation";
+import { buildSandboxRunUsageReport, reportSandboxRunUsage } from "./lib/usage-report";
 import { executeSandboxTask } from "./tasks";
 import type { TaskEvent, TaskParams, TaskSecrets, Env } from "./types";
 
@@ -124,7 +125,25 @@ export default {
     }
 
     const executeTask = async (emitEvent?: (event: TaskEvent) => Promise<void> | void) => {
-      return executeSandboxTask(params, secrets, env, emitEvent, request.signal);
+      const startedAtMs = Date.now();
+
+      try {
+        return await executeSandboxTask(params, secrets, env, emitEvent, request.signal);
+      } finally {
+        if (params.runId) {
+          await reportSandboxRunUsage({
+            polychatApi: env.POLYCHAT_API,
+            userToken: secrets.userToken,
+            report: buildSandboxRunUsageReport({
+              runId: params.runId,
+              userId: tokenUserId,
+              instanceType: env.SANDBOX_INSTANCE_TYPE,
+              startedAtMs,
+              endedAtMs: Date.now(),
+            }),
+          });
+        }
+      }
     };
 
     const wantsStream = request.headers.get("accept")?.includes("text/event-stream");

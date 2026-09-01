@@ -1,5 +1,9 @@
+import type { UsageCreditsSummary } from "@ngriffin_uk/polychat-schemas";
+
 import type { ConversationManager } from "~/lib/conversationManager";
 import { getLogger } from "~/utils/logger";
+
+import { shouldStopRunaway } from "./credits";
 
 const logger = getLogger({ prefix: "lib/usage/limitState" });
 
@@ -10,6 +14,7 @@ export interface UsageLimitState {
   exhausted: boolean;
   used: number;
   limit: number | null;
+  credits?: UsageCreditsSummary;
 }
 
 const UNKNOWN_STATE: UsageLimitState = { exhausted: false, used: 0, limit: null };
@@ -25,6 +30,16 @@ export async function readUsageLimitState(
     }
 
     const daily = limits.daily;
+    const credits = limits.credits;
+
+    if (credits) {
+      return {
+        exhausted: credits.state === "exhausted",
+        used: daily?.used ?? 0,
+        limit: typeof daily?.limit === "number" ? daily.limit : null,
+        credits,
+      };
+    }
 
     if (!daily || typeof daily.limit !== "number") {
       return UNKNOWN_STATE;
@@ -46,4 +61,16 @@ export async function isUsageExhausted(
   conversationManager: Pick<ConversationManager, "getUsageLimits">,
 ): Promise<boolean> {
   return (await readUsageLimitState(conversationManager)).exhausted;
+}
+
+export async function shouldStopTurnForUsage(
+  conversationManager: Pick<ConversationManager, "getUsageLimits">,
+): Promise<boolean> {
+  const state = await readUsageLimitState(conversationManager);
+
+  if (state.credits) {
+    return shouldStopRunaway(state.credits);
+  }
+
+  return state.exhausted;
 }

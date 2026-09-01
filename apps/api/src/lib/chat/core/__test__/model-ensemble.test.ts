@@ -33,6 +33,7 @@ const primaryMessage: Message = {
 function createParams(conversation: Message[]) {
   const conversationManager = {
     getUsageLimits: vi.fn(async () => null),
+    releaseTurnReservation: vi.fn(),
     get: vi.fn(async () => conversation),
     update: vi.fn(async () => {}),
   };

@@ -249,6 +249,7 @@ describe("realtime routes", () => {
       id: "session_123",
       provider: "openai",
       transport: "webrtc",
+      max_session_seconds: 1800,
     });
     expect(createSessionMock).toHaveBeenCalledWith(
       expect.objectContaining({

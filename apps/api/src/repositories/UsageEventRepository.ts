@@ -100,6 +100,11 @@ const INSERT_COLUMNS = [
 const RECORD_COLUMNS = `id, occurred_at, period, source, vendor, resource, unit, quantity,
 	cost_micros, credit_micros, billable, byok, estimated, conversation_id, project_id, workspace_id`;
 
+const CREDITS_ENFORCED = "included_credit_micros > 0";
+
+const SPEND_PAST_CEILING = `MAX(0, spent_credit_micros + ?
+	- MAX(spent_credit_micros, included_credit_micros + grace_credit_micros))`;
+
 export class UsageEventRepository extends BaseRepository {
   private buildInsert(event: UsageEventInsert): { query: string; values: unknown[] } {
     const placeholders = INSERT_COLUMNS.map(() => "?").join(", ");
@@ -161,11 +166,22 @@ export class UsageEventRepository extends BaseRepository {
         .prepare(
           `UPDATE usage_balance
 			 SET spent_credit_micros = spent_credit_micros + ?,
+			     overrun_credit_micros = overrun_credit_micros
+			       + CASE WHEN ${CREDITS_ENFORCED} AND overage_enabled = 0 THEN ${SPEND_PAST_CEILING} ELSE 0 END,
+			     overage_credit_micros = overage_credit_micros
+			       + CASE WHEN ${CREDITS_ENFORCED} AND overage_enabled = 1 THEN ${SPEND_PAST_CEILING} ELSE 0 END,
 			     last_event_at = MAX(COALESCE(last_event_at, ''), ?),
 			     updated_at = CURRENT_TIMESTAMP
 			 WHERE user_id = ? AND period = ? AND changes() = 1`,
         )
-        .bind(event.credit_micros, event.occurred_at, event.user_id, event.period),
+        .bind(
+          event.credit_micros,
+          event.credit_micros,
+          event.credit_micros,
+          event.occurred_at,
+          event.user_id,
+          event.period,
+        ),
     ]);
 
     return (results[1]?.meta?.changes ?? 0) > 0;
@@ -209,6 +225,21 @@ export class UsageEventRepository extends BaseRepository {
 			 GROUP BY ${column}
 			 ORDER BY credit_micros DESC`,
       [userId, period],
+    );
+  }
+
+  async summariseInfrastructureDay(
+    day: string,
+  ): Promise<Array<{ resource: string; unit: UsageUnit; quantity: number; cost_micros: number }>> {
+    return this.runQuery(
+      `SELECT resource, unit,
+			        COALESCE(SUM(quantity), 0) AS quantity,
+			        COALESCE(SUM(cost_micros), 0) AS cost_micros
+			 FROM usage_event
+			 WHERE source = 'infrastructure'
+			   AND occurred_at >= ? AND occurred_at <= ?
+			 GROUP BY resource, unit`,
+      [`${day}T00:00:00.000Z`, `${day}T23:59:59.999Z`],
     );
   }
 }

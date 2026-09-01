@@ -5,10 +5,17 @@ import type {
 import { realtimeSessionResponseSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { getRealtimeProvider } from "~/lib/providers/capabilities/realtime";
+import { resolveRealtimeMaxSessionSeconds } from "~/lib/realtime/sessionLimits";
+import { RepositoryManager } from "~/repositories";
 import type { IEnv, IUser } from "~/types";
 import { generateId } from "~/utils/id";
 
 import { getAccessibleRealtimeModel } from "./access";
+import {
+  admitRealtimeSession,
+  priceRealtimeReservation,
+  registerRealtimeSessionUsage,
+} from "./sessionUsage";
 
 type PipelineStageName = "Input" | "Reasoning" | "Output";
 
@@ -92,6 +99,26 @@ export async function createRealtimePipelineSession({
     return { ok: false, message: "Input model access changed", status: 403 };
   }
 
+  const repositories = env?.DB ? new RepositoryManager(env) : null;
+  const pricing = priceRealtimeReservation(
+    accessibleInputModel.config,
+    request.input.provider,
+    accessibleInputModel.id,
+  );
+  const admitted = await admitRealtimeSession({
+    repositories,
+    userId: user.id,
+    creditMicros: pricing.creditMicros,
+  });
+
+  if (!admitted) {
+    return {
+      ok: false,
+      message: "Realtime session refused: usage allowance is exhausted",
+      status: 403,
+    };
+  }
+
   const realtimeProvider = getRealtimeProvider(request.input.provider, { env, user });
   const rawInputSession = await realtimeProvider.createSession({
     delay: request.delay,
@@ -106,6 +133,18 @@ export async function createRealtimePipelineSession({
     user,
   });
   const inputSession = realtimeSessionResponseSchema.parse(rawInputSession);
+
+  await registerRealtimeSessionUsage({
+    env,
+    repositories,
+    userId: user.id,
+    sessionId: inputSession.id,
+    model: accessibleInputModel.id,
+    provider: request.input.provider,
+    byok: accessibleInputModel.credentialAuthority === "byok",
+    pricing,
+    maxSessionSeconds: resolveRealtimeMaxSessionSeconds(env),
+  });
 
   return {
     ok: true,

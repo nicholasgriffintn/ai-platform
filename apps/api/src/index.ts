@@ -20,6 +20,7 @@ import { serviceContextMiddleware } from "./lib/context/serviceContext";
 import { ResponseFactory } from "./lib/http/ResponseFactory";
 import { addRoute } from "./lib/http/routeBuilder";
 import { authMiddleware } from "./middleware/auth";
+import { infraMeteringMiddleware } from "./middleware/infraMetering";
 import { loggerMiddleware } from "./middleware/loggerMiddleware";
 import { rateLimit } from "./middleware/rateLimit";
 import { securityHeaders } from "./middleware/securityHeaders";
@@ -100,6 +101,8 @@ app.use("*", (c, next) => {
 app.use(securityHeaders());
 
 app.use("*", loggerMiddleware);
+
+app.use("*", infraMeteringMiddleware);
 
 app.use("/status", async (_c, next) => next());
 app.use("/openapi", async (_c, next) => next());

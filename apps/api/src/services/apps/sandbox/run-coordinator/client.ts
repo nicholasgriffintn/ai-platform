@@ -14,6 +14,7 @@ import {
   postDurableObjectJson,
   readDurableObjectJson,
 } from "~/lib/durable-objects/client";
+import { addInfraUsage } from "~/lib/usage/requestMeter";
 import type { IEnv } from "~/types";
 
 import { isStartFiberResult } from "./fibers";
@@ -178,6 +179,9 @@ export async function openRunCoordinatorEventsSocket(params: {
   }
 
   const stub = getCoordinatorStub(params.env, params.runId);
+
+  addInfraUsage("do_requests", 1);
+
   const response = await stub.fetch("https://sandbox-run-coordinator/events/ws", {
     headers: {
       Upgrade: "websocket",

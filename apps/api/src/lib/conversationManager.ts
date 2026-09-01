@@ -1,4 +1,4 @@
-import type { ConversationType } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationType, ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
 import type { RepositoryManager } from "~/repositories";
 import type {
@@ -26,10 +26,23 @@ import {
 import { createInitialConversationTitle } from "./conversation/title-source";
 import { loadVisibleConversationMessagePage } from "./conversation/visibleMessagePagination";
 import type { Database } from "./database";
+import { estimateMessagesTokens } from "./messageTokens";
 import { hasPlanEntitlement } from "./plans";
+import { isByokTurn } from "./usage/byok";
+import {
+  admitTurn,
+  estimateTurnCreditMicros,
+  type TurnAdmission,
+  type TurnReservation,
+} from "./usage/credits";
 import { type UsageLimits, UsageManager } from "./usageManager";
 
 const logger = getLogger({ prefix: "lib/conversationManager" });
+
+export interface TurnAdmissionRequest {
+  modelConfig?: ModelConfigItem | null;
+  messages: Message[];
+}
 
 export interface ConversationListOptions {
   archiveFilter?: ConversationArchiveFilter;
@@ -63,6 +76,7 @@ export class ConversationManager {
   private requestCache?: Map<string, unknown>;
   private taskService?: TaskService;
   private repositories?: RepositoryManager;
+  private pendingTurnReservation?: TurnReservation;
 
   private constructor(
     database: Database,
@@ -371,6 +385,65 @@ export class ConversationManager {
     if ((this.user || this.anonymousUser) && this.usageManager) {
       await this.usageManager.checkUsage();
     }
+  }
+
+  private async resolveTurnAdmission(params: TurnAdmissionRequest): Promise<TurnAdmission | null> {
+    const userId = this.user?.id;
+    const repositories = this.repositories;
+
+    if (!userId || !repositories) {
+      return null;
+    }
+
+    try {
+      const provider = params.modelConfig?.provider ?? this.provider;
+
+      if (provider && (await isByokTurn(repositories, userId, provider))) {
+        return null;
+      }
+
+      return await admitTurn({
+        repositories,
+        userId,
+        planId: this.user?.plan_id ?? null,
+        estimatedCreditMicros: estimateTurnCreditMicros({
+          promptTokens: estimateMessagesTokens(params.messages),
+          modelConfig: params.modelConfig,
+        }),
+      });
+    } catch (error) {
+      logger.error("Failed to admit the turn against the credit balance", { error, userId });
+
+      return null;
+    }
+  }
+
+  async admitTurn(params: TurnAdmissionRequest): Promise<void> {
+    const admission = await this.resolveTurnAdmission(params);
+
+    if (!admission) {
+      return;
+    }
+
+    if (!admission.admitted) {
+      throw new AssistantError(
+        "This month's credits are fully spent, so new replies are paused until the balance resets. Enabling overage lifts the pause.",
+        ErrorType.USAGE_LIMIT_ERROR,
+      );
+    }
+
+    this.pendingTurnReservation = admission.reservation ?? undefined;
+  }
+
+  async releaseTurnReservation(): Promise<void> {
+    const reservation = this.pendingTurnReservation;
+
+    if (!reservation) {
+      return;
+    }
+
+    this.pendingTurnReservation = undefined;
+    await reservation.release();
   }
 
   /**

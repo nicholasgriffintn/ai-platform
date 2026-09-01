@@ -9,6 +9,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 
+import { optionalRepositories } from "~/lib/context/serviceContext";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { addRoute } from "~/lib/http/routeBuilder";
 import {
@@ -19,6 +20,7 @@ import {
   parseRealtimeTransport,
 } from "~/lib/providers/capabilities/realtime";
 import { assertRealtimeProxyGrant, connectReservedRealtimeProxy } from "~/lib/realtime/proxy-grant";
+import { resolveRealtimeMaxSessionSeconds } from "~/lib/realtime/sessionLimits";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { getAccessibleRealtimeModel } from "~/services/realtime/access";
 import { createCartesiaRealtimeProxyResponse } from "~/services/realtime/cartesia";
@@ -26,7 +28,14 @@ import { listRealtimeLiveProviders } from "~/services/realtime/catalogue";
 import { createElevenLabsRealtimeProxyResponse } from "~/services/realtime/elevenlabs";
 import { createMistralRealtimeProxyResponse } from "~/services/realtime/mistral";
 import { createRealtimePipelineSession } from "~/services/realtime/pipeline";
+import {
+  admitRealtimeSession,
+  priceRealtimeReservation,
+  registerRealtimeSessionUsage,
+} from "~/services/realtime/sessionUsage";
 import type { IEnv, IUser } from "~/types";
+import { generateId } from "~/utils/id";
+import { isRecord } from "~/utils/objects";
 
 const app = new Hono<{
   Bindings: IEnv;
@@ -131,6 +140,27 @@ addRoute(app, "post", "/session/:type", {
     const inputModalities = parseRealtimeModalities(inputModalitiesQuery);
     const outputModalities = parseRealtimeModalities(outputModalitiesQuery);
 
+    const pricing = priceRealtimeReservation(
+      accessibleModel.config,
+      providerName,
+      accessibleModel.id,
+    );
+    const admitted = await admitRealtimeSession({
+      repositories: optionalRepositories(serviceContext),
+      userId: user.id,
+      creditMicros: pricing.creditMicros,
+    });
+
+    if (!admitted) {
+      return ResponseFactory.error(
+        raw,
+        "Realtime session refused: usage allowance is exhausted",
+        403,
+      );
+    }
+
+    const maxSessionSeconds = resolveRealtimeMaxSessionSeconds(env);
+
     const session = await provider.createSession({
       env,
       user,
@@ -150,6 +180,25 @@ addRoute(app, "post", "/session/:type", {
 
     if (!session) {
       return ResponseFactory.error(raw, "Failed to create realtime session", 500);
+    }
+
+    const sessionId =
+      isRecord(session) && typeof session.id === "string" && session.id ? session.id : generateId();
+
+    await registerRealtimeSessionUsage({
+      env,
+      repositories: optionalRepositories(serviceContext),
+      userId: user.id,
+      sessionId,
+      model: accessibleModel.id,
+      provider: providerName,
+      byok: accessibleModel.credentialAuthority === "byok",
+      pricing,
+      maxSessionSeconds,
+    });
+
+    if (isRecord(session)) {
+      return { ...session, max_session_seconds: maxSessionSeconds };
     }
 
     return session;
