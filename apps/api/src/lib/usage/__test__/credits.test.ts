@@ -1,4 +1,4 @@
-import type { UsageCreditsSummary } from "@ngriffin_uk/polychat-schemas";
+import { creditMicrosFromCredits, type UsageCreditsSummary } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import { userCreditActor } from "../creditActor";
@@ -8,7 +8,11 @@ import {
   overrunCapCreditMicros,
   shouldStopRunaway,
 } from "../credits";
-import { defaultGraceCreditMicros, resolvePlanAllowanceCredits } from "../planSeed";
+import {
+  defaultGraceCreditMicros,
+  resolvePlanAllowanceCredits,
+  resolveUsagePlanSeed,
+} from "../planSeed";
 
 function createRepositories(
   options: {
@@ -179,7 +183,7 @@ describe("admitTurn", () => {
     expect(applyDeltas).toHaveBeenCalledTimes(1);
   });
 
-  it("admits everything while the plan has no credits configured", async () => {
+  it("refuses a plan that resolves to no allowance rather than letting it run free", async () => {
     const { applyDeltas, getBalance, repositories } = createRepositories({
       plan: { included_credits: null },
     });
@@ -188,11 +192,11 @@ describe("admitTurn", () => {
       repositories,
       actor: userCreditActor(7),
       planId: "bespoke-unmetered",
-      estimatedCreditMicros: 999_000_000_000,
+      estimatedCreditMicros: 1_000,
     });
 
-    expect(admission.admitted).toBe(true);
-    expect(admission.admitted && admission.reservation).toBeNull();
+    expect(admission.admitted).toBe(false);
+    expect(admission.position.state).toBe("exhausted");
     expect(getBalance).not.toHaveBeenCalled();
     expect(applyDeltas).not.toHaveBeenCalled();
   });
@@ -245,5 +249,52 @@ describe("resolvePlanAllowanceCredits", () => {
 
   it("reports an unknown plan with no configured credits as unmetered", () => {
     expect(resolvePlanAllowanceCredits("bespoke-unmetered", null, null)).toBeNull();
+  });
+});
+
+describe("plan defaults for signed-in accounts", () => {
+  it("treats a user with no plan as free rather than unmetered", async () => {
+    const repositories = {
+      users: { getUserById: async () => ({ id: 1, plan_id: null }) },
+      plans: { getPlanById: async () => null },
+    } as never;
+
+    await expect(resolveUsagePlanSeed(repositories, 1)).resolves.toMatchObject({
+      planId: "free",
+      includedCreditMicros: creditMicrosFromCredits(100),
+      graceCreditMicros: 0,
+    });
+  });
+});
+
+describe("unresolvable plans fail closed", () => {
+  it("marks an unreadable plan as unavailable rather than as a real allowance", async () => {
+    const repositories = {
+      users: {
+        getUserById: async () => {
+          throw new Error("database unavailable");
+        },
+      },
+      plans: { getPlanById: async () => null },
+    } as never;
+
+    await expect(resolveUsagePlanSeed(repositories, 7)).resolves.toMatchObject({
+      resolution: "unavailable",
+      includedCreditMicros: 0,
+    });
+  });
+
+  it("refuses a turn when no allowance resolves rather than spending freely", async () => {
+    const { repositories } = createRepositories({ plan: { included_credits: null } });
+
+    const admission = await admitTurn({
+      repositories,
+      actor: userCreditActor(7),
+      planId: "bespoke-unmetered",
+      estimatedCreditMicros: 1_000,
+    });
+
+    expect(admission.admitted).toBe(false);
+    expect(admission.position.state).toBe("exhausted");
   });
 });

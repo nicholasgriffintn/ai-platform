@@ -2,6 +2,17 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { normaliseHttpOrigin } from "~/utils/urls";
 
 export function requireStripePriceId(plan: Record<string, unknown>, planId: string): string {
+  const price = plan.price;
+
+  if (typeof price === "number" && price <= 0) {
+    throw new AssistantError(
+      `Plan ${planId} is free and cannot be checked out`,
+      ErrorType.PARAMS_ERROR,
+      400,
+      { planId },
+    );
+  }
+
   const priceId = plan.stripe_price_id;
 
   if (typeof priceId !== "string" || priceId.trim().length === 0) {

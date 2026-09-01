@@ -28,6 +28,7 @@ export function CreditBalanceCard({ balance }: CreditBalanceCardProps) {
   const inReserve = credits.state !== "ok";
   const reserveRemaining = Math.max(capacity - committed, 0);
   const includedRemaining = Math.max(credits.included - committed, 0);
+  const isMetered = credits.included > 0;
 
   return (
     <Card className="p-5">
@@ -38,7 +39,7 @@ export function CreditBalanceCard({ balance }: CreditBalanceCardProps) {
             {formatCredits(credits.used)}
             <span className="text-lg font-normal text-zinc-500 dark:text-zinc-400">
               {" "}
-              / {formatCredits(credits.included)} used
+              {isMetered ? `used of ${formatCredits(credits.included)}` : "used"}
             </span>
           </p>
         </div>
@@ -103,7 +104,9 @@ export function CreditBalanceCard({ balance }: CreditBalanceCardProps) {
       </div>
 
       <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
-        {CREDIT_STATE_DESCRIPTIONS[credits.state]}
+        {isMetered
+          ? CREDIT_STATE_DESCRIPTIONS[credits.state]
+          : "This plan has no credit allowance configured yet."}
       </p>
 
       {credits.overage > 0 && (

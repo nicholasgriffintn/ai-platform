@@ -10,6 +10,7 @@ const GRACE_CEILING_FRACTION = 0.5;
 const GRACE_FLOOR_CREDIT_MICROS = creditMicrosFromCredits(50);
 
 export const ANONYMOUS_PLAN_ID = "anonymous";
+export const DEFAULT_USER_PLAN_ID = "free";
 
 const PLANS_WITHOUT_GRACE = new Set([ANONYMOUS_PLAN_ID, "free"]);
 
@@ -28,13 +29,26 @@ function fallbackIncludedCredits(planId: string): number | undefined {
   return DEFAULT_PLAN_INCLUDED_CREDITS[planId];
 }
 
+export type UsagePlanResolution = "allowance" | "none" | "unavailable";
+
 export interface UsagePlanSeed {
   planId: string | null;
   includedCreditMicros: number;
   graceCreditMicros: number;
+  resolution: UsagePlanResolution;
 }
 
-const UNCONFIGURED_ALLOWANCE = { includedCreditMicros: 0, graceCreditMicros: 0 } as const;
+const NO_ALLOWANCE = {
+  includedCreditMicros: 0,
+  graceCreditMicros: 0,
+  resolution: "none",
+} as const;
+
+const ALLOWANCE_UNAVAILABLE = {
+  includedCreditMicros: 0,
+  graceCreditMicros: 0,
+  resolution: "unavailable",
+} as const;
 
 export function defaultGraceCreditMicros(includedCreditMicros: number): number {
   return Math.min(
@@ -86,7 +100,7 @@ export async function resolvePlanCreditAllowance(
   planId: string | null | undefined,
 ): Promise<UsagePlanSeed> {
   if (!planId) {
-    return { planId: null, ...UNCONFIGURED_ALLOWANCE };
+    return { planId: null, ...NO_ALLOWANCE };
   }
 
   const plan = await repositories.plans.getPlanById(planId);
@@ -97,13 +111,14 @@ export async function resolvePlanCreditAllowance(
   );
 
   if (!allowance) {
-    return { planId, ...UNCONFIGURED_ALLOWANCE };
+    return { planId, ...NO_ALLOWANCE };
   }
 
   return {
     planId,
     includedCreditMicros: creditMicrosFromCredits(allowance.includedCredits),
     graceCreditMicros: creditMicrosFromCredits(allowance.graceCredits),
+    resolution: "allowance",
   };
 }
 
@@ -116,11 +131,11 @@ export async function resolveUsagePlanSeed(
 
     return await resolvePlanCreditAllowance(
       repositories,
-      typeof user?.plan_id === "string" ? user.plan_id : null,
+      typeof user?.plan_id === "string" && user.plan_id ? user.plan_id : DEFAULT_USER_PLAN_ID,
     );
   } catch (error) {
     logger.warn("Failed to resolve plan seed for usage balance", { error, userId });
 
-    return { planId: null, ...UNCONFIGURED_ALLOWANCE };
+    return { planId: null, ...ALLOWANCE_UNAVAILABLE };
   }
 }

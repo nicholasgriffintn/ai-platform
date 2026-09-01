@@ -11,8 +11,28 @@ import { useUIStore } from "~/state/stores/uiStore";
 const CREDIT_EXAMPLES = [
   "a quick question ≈ 0.1 credits",
   "a couple of hours of sandboxed coding ≈ 6 credits",
-  "a long agent task ≈ 200 credits",
+  "a long agent task ≈ 100 credits",
 ];
+
+const PLAN_FEATURES: Record<string, string[]> = {
+  free: [
+    "everyday chat models",
+    "your own provider keys, with no credit cost for model usage",
+    "conversation history, sources and saved outputs",
+  ],
+  pro: [
+    "every frontier model in the catalogue",
+    "image, video, audio and music generation",
+    "live voice sessions",
+    "sandboxed coding runs and agents",
+    "Work: shared workspaces, projects and tasks",
+  ],
+  enterprise: ["everything in Pro", "a bespoke credit allowance", "priority support"],
+};
+
+function planFeatures(planId: string): string[] {
+  return PLAN_FEATURES[planId] ?? [];
+}
 
 const HOW_IT_WORKS = [
   {
@@ -20,8 +40,8 @@ const HOW_IT_WORKS = [
     body: "Each plan includes a monthly pot of credits. Everything you run draws from it at the vendor's actual rate, and the ledger on your billing page shows every line.",
   },
   {
-    title: "A reserve, not a cliff",
-    body: "Every plan carries a small reserve past its ceiling, so a long-running task finishes its thought rather than being cut off mid-sentence.",
+    title: "A reserve on paid plans",
+    body: "Paid plans carry a small reserve past their ceiling, so a long-running task finishes its thought rather than being cut off mid-sentence. Free and signed-out use stops at the ceiling.",
   },
   {
     title: "Your own keys",
@@ -29,9 +49,21 @@ const HOW_IT_WORKS = [
   },
   {
     title: "Overage is opt-in",
-    body: "Off by default. Leave it off and spending simply pauses at the end of the reserve until the month resets; switch it on and extra credits are billed at period end.",
+    body: "Off by default. Leave it off and new turns simply pause until the month resets; switch it on and extra credits are billed at period end.",
   },
 ];
+
+function formatPlanPrice(price: number): string {
+  return new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "GBP",
+    minimumFractionDigits: Number.isInteger(price) ? 0 : 2,
+  }).format(price);
+}
+
+function comparePlansByPrice(a: Plan, b: Plan): number {
+  return (a.price ?? 0) - (b.price ?? 0);
+}
 
 function describePlanAllowance(plan: Plan): string[] {
   const lines: string[] = [];
@@ -44,8 +76,7 @@ function describePlanAllowance(plan: Plan): string[] {
     }
   }
 
-  lines.push("model usage on your own provider keys costs no credits");
-  lines.push(...CREDIT_EXAMPLES);
+  lines.push(...planFeatures(plan.id));
 
   return lines;
 }
@@ -65,12 +96,16 @@ function PlanCard({
   onCheckout: (planId: string) => void;
   onSignIn: () => void;
 }) {
+  const isFreePlan = !plan.price || plan.price <= 0;
+
   return (
     <Card className="flex flex-col p-6">
       <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{plan.name}</h3>
       <p className="mt-2 text-4xl font-bold text-zinc-900 dark:text-zinc-100">
-        ${plan.price}
-        <span className="text-base font-normal text-zinc-500 dark:text-zinc-400">/month</span>
+        {plan.price > 0 ? formatPlanPrice(plan.price) : "Free"}
+        {plan.price > 0 && (
+          <span className="text-base font-normal text-zinc-500 dark:text-zinc-400">/month</span>
+        )}
       </p>
       {plan.description && (
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{plan.description}</p>
@@ -96,6 +131,16 @@ function PlanCard({
           <Button variant="secondary" fullWidth disabled>
             Your current plan
           </Button>
+        ) : isFreePlan ? (
+          isSignedIn ? (
+            <Button variant="secondary" fullWidth disabled>
+              Included with every account
+            </Button>
+          ) : (
+            <Button variant="primary" fullWidth onClick={onSignIn}>
+              Sign in to get started
+            </Button>
+          )
         ) : isSignedIn ? (
           <Button
             variant="primary"
@@ -152,7 +197,7 @@ export function PricingPage() {
         </div>
       ) : (
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {(plans ?? []).map((plan) => (
+          {[...(plans ?? [])].sort(comparePlansByPrice).map((plan) => (
             <PlanCard
               key={plan.id}
               plan={plan}
@@ -183,6 +228,14 @@ export function PricingPage() {
               <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{item.body}</p>
             </Card>
           ))}
+          <Card className="p-5">
+            <h3 className="font-medium text-zinc-900 dark:text-zinc-100">What a credit buys</h3>
+            <ul className="mt-2 space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
+              {CREDIT_EXAMPLES.map((example) => (
+                <li key={example}>{example}</li>
+              ))}
+            </ul>
+          </Card>
         </div>
       </section>
     </div>

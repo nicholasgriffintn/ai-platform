@@ -80,6 +80,7 @@ export function estimateTurnCreditMicros(params: EstimateTurnCreditMicrosParams)
 
 export interface CreditPosition {
   enforced: boolean;
+  allowanceMissing?: boolean;
   period: string;
   planId: string | null;
   includedCreditMicros: number;
@@ -109,6 +110,7 @@ export async function readCreditPosition(
   if (!creditsAreEnforced(allowance)) {
     return {
       enforced: false,
+      allowanceMissing: true,
       period,
       planId: allowance.planId,
       includedCreditMicros: 0,
@@ -116,7 +118,7 @@ export async function readCreditPosition(
       spentCreditMicros: 0,
       reservedCreditMicros: 0,
       overageEnabled: false,
-      state: "ok",
+      state: "exhausted",
     };
   }
 
@@ -127,6 +129,7 @@ export async function readCreditPosition(
 
   return {
     enforced: true,
+    allowanceMissing: false,
     period,
     planId: allowance.planId,
     includedCreditMicros: allowance.includedCreditMicros,
@@ -192,7 +195,7 @@ export async function admitTurn(params: AdmitTurnParams): Promise<TurnAdmission>
   const position = await readCreditPosition(params);
 
   if (!position.enforced) {
-    return { admitted: true, position, reservation: null };
+    return { admitted: false, position };
   }
 
   const committed = position.spentCreditMicros + position.reservedCreditMicros;

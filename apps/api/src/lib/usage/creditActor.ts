@@ -1,6 +1,6 @@
 import type { RepositoryManager } from "~/repositories";
 
-import { ANONYMOUS_PLAN_ID } from "./planSeed";
+import { ANONYMOUS_PLAN_ID, DEFAULT_USER_PLAN_ID } from "./planSeed";
 
 export type CreditActor =
   | { kind: "user"; userId: number }
@@ -46,7 +46,7 @@ export interface ActorCreditDeltas {
 }
 
 export function defaultActorPlanId(actor: CreditActor, userPlanId?: string | null): string | null {
-  return actor.kind === "anonymous" ? ANONYMOUS_PLAN_ID : (userPlanId ?? null);
+  return actor.kind === "anonymous" ? ANONYMOUS_PLAN_ID : userPlanId || DEFAULT_USER_PLAN_ID;
 }
 
 export async function readActorCreditSpend(

@@ -421,7 +421,10 @@ export class ConversationManager {
     } catch (error) {
       logger.error("Failed to admit the turn against the credit balance", { error, actor });
 
-      return null;
+      throw new AssistantError(
+        "Your plan could not be verified, so this reply was not started. Please try again shortly.",
+        ErrorType.USAGE_LIMIT_ERROR,
+      );
     }
   }
 

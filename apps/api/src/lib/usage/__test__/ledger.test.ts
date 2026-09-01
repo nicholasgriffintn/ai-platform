@@ -160,6 +160,7 @@ describe("applyUsageRollup", () => {
       planId: "pro",
       includedCreditMicros: 500_000_000,
       graceCreditMicros: 50_000_000,
+      resolution: "allowance",
     });
   });
 
