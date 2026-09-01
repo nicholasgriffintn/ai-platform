@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { appendQueryParams, appendUrlPath, isPrivateHostname } from "../urls";
+import { appendQueryParams, appendUrlPath, isPrivateHostname, isUrlWithinOrigin } from "../urls";
 
 describe("url utilities", () => {
   it("appends URL paths without duplicate slashes", () => {
@@ -24,6 +24,20 @@ describe("url utilities", () => {
     expect(url.toString()).toBe(
       "https://example.com/search?existing=true&empty=&page=2&q=test&tag=a&tag=b",
     );
+  });
+
+  it("accepts redirect URLs only on the exact allowed origin", () => {
+    const origin = "https://app.example.com";
+
+    expect(isUrlWithinOrigin("https://app.example.com/account", origin)).toBe(true);
+    expect(isUrlWithinOrigin("https://app.example.com.evil.net/account", origin)).toBe(false);
+    expect(isUrlWithinOrigin("https://evil.net/https://app.example.com", origin)).toBe(false);
+    expect(isUrlWithinOrigin("https://sub.app.example.com/account", origin)).toBe(false);
+    expect(isUrlWithinOrigin("http://app.example.com/account", origin)).toBe(false);
+    expect(isUrlWithinOrigin("https://app.example.com:8443/account", origin)).toBe(false);
+    expect(isUrlWithinOrigin("javascript:alert(1)", origin)).toBe(false);
+    expect(isUrlWithinOrigin("/account", origin)).toBe(false);
+    expect(isUrlWithinOrigin("https://app.example.com/account", undefined)).toBe(false);
   });
 
   it("detects private and local hostnames", () => {

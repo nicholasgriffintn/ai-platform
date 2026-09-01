@@ -113,6 +113,13 @@
       "when": 1788215679562,
       "tag": "0015_worried_zaladane",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1788217248868,
+      "tag": "0016_ordinary_obadiah_stane",
+      "breakpoints": true
     }
   ]
 }

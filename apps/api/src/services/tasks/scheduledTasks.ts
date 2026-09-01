@@ -1,3 +1,4 @@
+import { overageSyncHourIso } from "~/lib/billing/stripeOverageSync";
 import { RepositoryManager } from "~/repositories";
 import { scheduleDueRecipeExecutions } from "~/services/apps/recipes/scheduler";
 import type { IEnv } from "~/types";
@@ -45,6 +46,28 @@ export async function scheduleDailyUsageReset(env: IEnv, now = new Date()): Prom
     logger.info("Daily usage reset task scheduled", { resetDate });
   } catch (error) {
     logger.error("Failed to schedule daily usage reset:", error);
+    throw error;
+  }
+}
+
+export async function scheduleStripeUsageSync(env: IEnv, now = new Date()): Promise<void> {
+  try {
+    const repositories = RepositoryManager.getInstance(env);
+    const taskService = new TaskService(env, repositories.tasks);
+    const hourIso = overageSyncHourIso(now);
+    const hourKey = hourIso.slice(0, 13).replace(/[-T]/g, "");
+
+    await taskService.enqueueTask({
+      id: `stripe_usage_sync_${hourKey}`,
+      task_type: "stripe_usage_sync",
+      task_data: { hourIso },
+      priority: 6,
+      metadata: { hourIso },
+    });
+
+    logger.info("Stripe usage sync task scheduled", { hourIso });
+  } catch (error) {
+    logger.error("Failed to schedule Stripe usage sync:", error);
     throw error;
   }
 }

@@ -1,8 +1,14 @@
+import { usagePeriodFromDate } from "@ngriffin_uk/polychat-schemas";
 import Stripe from "stripe";
 
 import { FREE_TRIAL_DAYS } from "~/constants/app";
 import type { PlanId } from "~/constants/plans";
-import { resolvePlanForSubscriptionStatus } from "~/lib/billing/subscriptionStatus";
+import { resolvePlanEntitlementMicros } from "~/lib/billing/planCredits";
+import { isExistingSubscriptionItemError } from "~/lib/billing/stripeErrors";
+import {
+  ENTITLED_SUBSCRIPTION_STATUSES,
+  resolvePlanForSubscriptionStatus,
+} from "~/lib/billing/subscriptionStatus";
 import { hasPlanEntitlement, resolvePlanId } from "~/lib/plans";
 import { RepositoryManager } from "~/repositories";
 import {
@@ -15,8 +21,18 @@ import {
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { isUrlWithinOrigin } from "~/utils/urls";
 
 const logger = getLogger({ prefix: "services/subscription" });
+
+function assertRedirectUrlAllowed(env: IEnv, url: string, label: string): void {
+  if (!isUrlWithinOrigin(url, env.APP_BASE_URL)) {
+    throw new AssistantError(
+      `${label} must be a URL on the application origin`,
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+}
 
 function getStripeClient(env: IEnv): Stripe {
   const secret = env.STRIPE_SECRET_KEY;
@@ -35,6 +51,9 @@ export async function createCheckoutSession(
   successUrl: string,
   cancelUrl: string,
 ): Promise<{ session_id: string; url: string }> {
+  assertRedirectUrlAllowed(env, successUrl, "success_url");
+  assertRedirectUrlAllowed(env, cancelUrl, "cancel_url");
+
   const repositories = new RepositoryManager(env);
 
   if (user.stripe_subscription_id) {
@@ -239,6 +258,121 @@ export async function reactivateSubscription(
   }
 }
 
+export async function createBillingPortalSession(
+  env: IEnv,
+  user: IUser,
+  returnUrl: string,
+): Promise<{ url: string }> {
+  assertRedirectUrlAllowed(env, returnUrl, "return_url");
+
+  const customerId = user.stripe_customer_id;
+
+  if (!customerId) {
+    throw new AssistantError("No billing account for this user", ErrorType.NOT_FOUND);
+  }
+
+  const stripe = getStripeClient(env);
+  const session = await stripe.billingPortal.sessions.create({
+    customer: customerId,
+    return_url: returnUrl,
+  });
+
+  return { url: session.url };
+}
+
+async function ensureCustomerHasPaymentMethod(
+  stripe: Stripe,
+  subscription: Stripe.Subscription,
+  customerId: string,
+): Promise<void> {
+  if (subscription.default_payment_method) {
+    return;
+  }
+
+  const paymentMethods = await stripe.customers.listPaymentMethods(customerId, { limit: 1 });
+
+  if (paymentMethods.data.length === 0) {
+    throw new AssistantError(
+      "A payment method is required to enable overage billing",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+}
+
+export async function setOverageBilling(
+  env: IEnv,
+  user: IUser,
+  enabled: boolean,
+): Promise<{ overage_enabled: boolean }> {
+  const subscriptionId = user.stripe_subscription_id;
+
+  if (!subscriptionId) {
+    throw new AssistantError("No active subscription", ErrorType.NOT_FOUND);
+  }
+
+  const stripe = getStripeClient(env);
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+  if (!ENTITLED_SUBSCRIPTION_STATUSES.includes(subscription.status)) {
+    throw new AssistantError(
+      "Overage billing requires an active subscription",
+      ErrorType.CONFLICT_ERROR,
+    );
+  }
+
+  const repositories = new RepositoryManager(env);
+  const planId = resolvePlanId(user.plan_id);
+
+  if (!planId) {
+    throw new AssistantError("No plan found for this user", ErrorType.NOT_FOUND);
+  }
+
+  const plan = await repositories.plans.getPlanById(planId);
+  const overagePriceId = typeof plan?.overage_price_id === "string" ? plan.overage_price_id : null;
+
+  if (!overagePriceId) {
+    throw new AssistantError(
+      "This plan does not support overage billing",
+      ErrorType.CONFLICT_ERROR,
+    );
+  }
+
+  const customerId = user.stripe_customer_id ?? (subscription.customer as string);
+  const existingItem = subscription.items.data.find((item) => item.price?.id === overagePriceId);
+
+  if (enabled) {
+    await ensureCustomerHasPaymentMethod(stripe, subscription, customerId);
+
+    if (!existingItem) {
+      try {
+        await stripe.subscriptionItems.create({
+          subscription: subscriptionId,
+          price: overagePriceId,
+        });
+      } catch (error) {
+        if (!isExistingSubscriptionItemError(error)) {
+          throw error;
+        }
+
+        logger.info("Overage subscription item already present", { subscriptionId });
+      }
+    }
+  } else if (existingItem) {
+    await stripe.subscriptionItems.del(existingItem.id);
+  }
+
+  const period = usagePeriodFromDate();
+
+  await repositories.usageBalances.ensureBalance({
+    userId: user.id,
+    period,
+    planId,
+  });
+  await repositories.usageBalances.setOverageEnabled(user.id, period, enabled);
+
+  return { overage_enabled: enabled };
+}
+
 interface SubscriptionStateChange {
   planId?: PlanId | null;
   subscriptionId?: string | null;
@@ -273,7 +407,43 @@ async function applySubscriptionState(
 
   await repositories.users.updateUser(user.id, updates);
 
+  if (planChanged && change.planId) {
+    await reflectPlanChangeIntoBalance(repositories, user.id, change.planId);
+  }
+
   return { planChanged };
+}
+
+async function reflectPlanChangeIntoBalance(
+  repositories: RepositoryManager,
+  userId: number,
+  planId: PlanId,
+): Promise<void> {
+  try {
+    const period = usagePeriodFromDate();
+    const plan = await repositories.plans.getPlanById(planId);
+    const entitlement = resolvePlanEntitlementMicros(plan);
+
+    if (entitlement) {
+      await repositories.usageBalances.setPlanEntitlement({
+        userId,
+        period,
+        planId,
+        includedCreditMicros: entitlement.includedCreditMicros,
+        graceCreditMicros: entitlement.graceCreditMicros,
+      });
+    }
+
+    if (planId === "free") {
+      await repositories.usageBalances.setOverageEnabled(userId, period, false);
+    }
+  } catch (error) {
+    logger.error("Failed to reflect plan change into the usage balance", {
+      error,
+      userId,
+      planId,
+    });
+  }
 }
 
 export async function handleStripeWebhook(
