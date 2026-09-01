@@ -5137,7 +5137,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
       output: ["text"],
     },
     supportsAttachments: true,
-    supportsTemperature: true,
+    supportsTemperature: false,
     supportsTopP: false,
     supportsToolCalls: true,
     contextWindow: 1000000,
@@ -5145,7 +5145,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "low",
     },
     knowledgeCutoffDate: "January 31, 2026",
@@ -6784,7 +6784,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
       output: ["text"],
     },
     supportsAttachments: true,
-    supportsTemperature: true,
+    supportsTemperature: false,
     supportsTopP: false,
     supportsToolCalls: true,
     contextWindow: 1000000,
@@ -6792,7 +6792,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.005,
     costPer1kOutputTokens: 0.025,
     reasoningConfig: {
-    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "low",
     },
     strengths: ["coding", "vision", "document", "tool_use"],
@@ -8385,7 +8385,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.01,
     costPer1kOutputTokens: 0.05,
     reasoningConfig: {
-    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "low",
     },
     knowledgeCutoffDate: "January 31, 2026",
@@ -8997,7 +8997,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
     costPer1kInputTokens: 0.002,
     costPer1kOutputTokens: 0.01,
     reasoningConfig: {
-    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "low",
     },
   }),
@@ -9380,7 +9380,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
       output: ["text"],
     },
     supportsAttachments: true,
-    supportsTemperature: true,
+    supportsTemperature: false,
     supportsTopP: false,
     supportsToolCalls: true,
     contextWindow: 1000000,
@@ -9392,7 +9392,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
     reliability: 3,
     speed: 2,
     reasoningConfig: {
-    	supportedEffortLevels: ["low", "medium", "high", "xhigh"],
+    	supportedEffortLevels: ["low", "medium", "high", "xhigh", "max"],
     	defaultEffort: "low",
     },
     artificialAnalysis: {
