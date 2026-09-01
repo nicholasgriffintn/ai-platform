@@ -108,5 +108,7 @@ export async function setOverageEnabled(enabled: boolean): Promise<{ enabled: bo
     throw new Error(data.error || "Failed to update overage");
   }
 
-  return { enabled };
+  const data = await returnFetchedData<{ overage_enabled?: boolean }>(response);
+
+  return { enabled: data.overage_enabled ?? enabled };
 }

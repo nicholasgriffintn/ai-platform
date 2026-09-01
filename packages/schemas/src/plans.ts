@@ -8,6 +8,7 @@ export const planSchema = z.object({
   stripe_price_id: z.string(),
   included_credits: z.number().nullable().optional(),
   grace_credits: z.number().nullable().optional(),
+  overage_available: z.boolean().optional(),
 });
 
 export const plansResponseSchema = z.object({
