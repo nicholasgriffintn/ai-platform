@@ -4,6 +4,7 @@ export default [
   index("pages/home.tsx"),
   route("/chat", "pages/chat/layout.tsx", [
     route("capabilities", "pages/chat/capabilities.tsx"),
+    route("capabilities/skills/:skillId", "pages/chat/skill.tsx"),
     route("experiences", "pages/chat/experiences.tsx"),
     route("experiences/:experienceId/*", "pages/chat/experience.tsx"),
     route("tools/:toolId", "pages/chat/tool.tsx"),
@@ -24,6 +25,10 @@ export default [
       "pages/work/project-experience.tsx",
     ),
     route(":workspaceId/projects/:projectId/library", "pages/work/project-library.tsx"),
+    route(
+      ":workspaceId/projects/:projectId/library/skills/:skillId",
+      "pages/work/project-skill.tsx",
+    ),
     route(":workspaceId/projects/:projectId/sources", "pages/work/project-sources.tsx"),
     route(":workspaceId/projects/:projectId/tasks", "pages/work/project-tasks.tsx"),
     route(":workspaceId/projects/:projectId/tasks/:taskId", "pages/work/project-task.tsx"),

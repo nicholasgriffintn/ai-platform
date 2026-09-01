@@ -3,6 +3,12 @@ import {
   answerProjectTaskQuestionsSchema,
   authoredSkillDocumentSchema,
   authoredSkillDraftInputSchema,
+  authoredSkillEvaluationCaseInputSchema,
+  authoredSkillEvaluationCaseListSchema,
+  authoredSkillEvaluationCaseSchema,
+  authoredSkillEvaluationResultListSchema,
+  authoredSkillEvaluationResultSchema,
+  authoredSkillEvaluationRunInputSchema,
   authoredSkillHistoryResponseSchema,
   authoredSkillImportInputSchema,
   authoredSkillInputSchema,
@@ -43,14 +49,19 @@ import {
 } from "~/services/project-tasks";
 import {
   deleteProjectSkill,
+  createSkillEvaluationCase,
+  deleteSkillEvaluationCase,
   getProjectSkill,
   getProjectSkillHistory,
   getProjectSkillVersion,
   importProjectSkill,
   listProjectSkills,
+  listSkillEvaluationCases,
+  listSkillEvaluationResults,
   promoteProjectSkillDraft,
   publishProjectSkill,
   rollbackProjectSkill,
+  runSkillEvaluation,
   saveProjectSkillDraft,
   updateProjectSkill,
 } from "~/services/skills";
@@ -263,6 +274,80 @@ addRoute(app, "post", "/:projectId/skills/:skillId/rollback", {
   },
   handler: ({ body, params, serviceContext, user }) =>
     rollbackProjectSkill(serviceContext, user.id, params.projectId, params.skillId, body),
+});
+
+const projectEvaluationCaseParams = projectSkillParams.extend({ caseId: z.string().min(1) });
+
+addRoute(app, "get", "/:projectId/skills/:skillId/evaluation-cases", {
+  auth: true,
+  tags: ["projects", "skills"],
+  summary: "List saved evaluation cases for a project skill",
+  paramSchema: projectSkillParams,
+  responses: {
+    200: { description: "Evaluation cases", schema: authoredSkillEvaluationCaseListSchema },
+  },
+  handler: ({ params, serviceContext, user }) =>
+    listSkillEvaluationCases(serviceContext, user.id, params.skillId, {
+      projectId: params.projectId,
+    }),
+});
+
+addRoute(app, "post", "/:projectId/skills/:skillId/evaluation-cases", {
+  auth: true,
+  tags: ["projects", "skills"],
+  summary: "Save an evaluation case for a project skill",
+  paramSchema: projectSkillParams,
+  bodySchema: authoredSkillEvaluationCaseInputSchema,
+  responses: {
+    200: { description: "Saved evaluation case", schema: authoredSkillEvaluationCaseSchema },
+  },
+  handler: ({ body, params, serviceContext, user }) =>
+    createSkillEvaluationCase(serviceContext, user.id, params.skillId, body, {
+      projectId: params.projectId,
+    }),
+});
+
+addRoute(app, "delete", "/:projectId/skills/:skillId/evaluation-cases/:caseId", {
+  auth: true,
+  tags: ["projects", "skills"],
+  summary: "Delete a project skill evaluation case",
+  paramSchema: projectEvaluationCaseParams,
+  handler: async ({ params, serviceContext, user }) => {
+    await deleteSkillEvaluationCase(serviceContext, user.id, params.skillId, params.caseId, {
+      projectId: params.projectId,
+    });
+
+    return { success: true };
+  },
+});
+
+addRoute(app, "get", "/:projectId/skills/:skillId/evaluations", {
+  auth: true,
+  tags: ["projects", "skills"],
+  summary: "List project skill evaluation results",
+  paramSchema: projectSkillParams,
+  responses: {
+    200: { description: "Evaluation results", schema: authoredSkillEvaluationResultListSchema },
+  },
+  handler: ({ params, serviceContext, user }) =>
+    listSkillEvaluationResults(serviceContext, user.id, params.skillId, {
+      projectId: params.projectId,
+    }),
+});
+
+addRoute(app, "post", "/:projectId/skills/:skillId/evaluations", {
+  auth: true,
+  tags: ["projects", "skills"],
+  summary: "Run an isolated evaluation against one project skill revision",
+  paramSchema: projectSkillParams,
+  bodySchema: authoredSkillEvaluationRunInputSchema,
+  responses: {
+    200: { description: "Evaluation result", schema: authoredSkillEvaluationResultSchema },
+  },
+  handler: ({ body, params, serviceContext, user }) =>
+    runSkillEvaluation(serviceContext, user, params.skillId, body, {
+      projectId: params.projectId,
+    }),
 });
 
 addRoute(app, "delete", "/:projectId/skills/:skillId", {

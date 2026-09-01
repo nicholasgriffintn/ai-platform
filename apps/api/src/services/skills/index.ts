@@ -27,6 +27,13 @@ export {
 } from "./scope";
 export { getPersonalSkillAvailability, setPersonalSkillEnabled } from "./configuration";
 export { getSkillSuggestedToolNames, mergeSkillSuggestedToolNames } from "./suggested-tools";
+export {
+  createSkillEvaluationCase,
+  deleteSkillEvaluationCase,
+  listSkillEvaluationCases,
+  listSkillEvaluationResults,
+  runSkillEvaluation,
+} from "./evaluations";
 export { listScopedSkillSummaries } from "./listing";
 export {
   createPersonalSkill,
