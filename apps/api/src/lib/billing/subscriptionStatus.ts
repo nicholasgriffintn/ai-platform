@@ -2,7 +2,7 @@ import type { PlanId } from "~/constants/plans";
 
 export const ENTITLED_SUBSCRIPTION_STATUSES: readonly string[] = ["active", "trialing"];
 
-export const REVOKED_SUBSCRIPTION_STATUSES: readonly string[] = [
+const REVOKED_SUBSCRIPTION_STATUSES: readonly string[] = [
   "past_due",
   "unpaid",
   "incomplete_expired",

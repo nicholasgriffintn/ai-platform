@@ -70,7 +70,7 @@ export interface PricedUsageDraft {
   estimated: boolean;
 }
 
-export function priceUsageDraft(draft: UsageEventDraft): PricedUsageDraft {
+function priceUsageDraft(draft: UsageEventDraft): PricedUsageDraft {
   const occurredAt = draft.occurredAt ?? new Date().toISOString();
   const priced = priceUsage(
     draft.rates ?? [],
@@ -181,9 +181,26 @@ export async function applyUsageRollup(
   events: readonly UsageEventInsert[],
 ): Promise<{ inserted: number }> {
   const seeds = new Map<number, UsagePlanSeed>();
+  const knownUsers = new Map<number, boolean>();
   let inserted = 0;
 
   for (const event of events) {
+    let userExists = knownUsers.get(event.user_id);
+
+    if (userExists === undefined) {
+      userExists = Boolean(await repositories.users.getUserById(event.user_id));
+      knownUsers.set(event.user_id, userExists);
+    }
+
+    if (!userExists) {
+      logger.warn("Dropped a usage event for an account that no longer exists", {
+        userId: event.user_id,
+        idempotencyKey: event.idempotency_key,
+      });
+
+      continue;
+    }
+
     let seed = seeds.get(event.user_id);
 
     if (!seed) {

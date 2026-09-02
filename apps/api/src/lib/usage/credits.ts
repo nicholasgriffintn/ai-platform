@@ -25,7 +25,7 @@ const logger = getLogger({ prefix: "lib/usage/credits" });
 const OVERRUN_CAP_GRACE_FRACTION = 0.25;
 const OVERRUN_CAP_FLOOR_CREDIT_MICROS = creditMicrosFromCredits(25);
 
-export const TURN_OUTPUT_ALLOWANCE_MAX_TOKENS = 8192;
+const TURN_OUTPUT_ALLOWANCE_MAX_TOKENS = 8192;
 
 export function overrunCapCreditMicros(graceCreditMicros: number): number {
   return Math.max(

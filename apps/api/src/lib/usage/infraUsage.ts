@@ -13,7 +13,7 @@ import { emitUsageEvents, type UsageEventDraft } from "./ledger";
 
 const logger = getLogger({ prefix: "lib/usage/infra-usage" });
 
-export const INFRA_UNIT_RESOURCES: Partial<Record<UsageUnit, string>> = {
+const INFRA_UNIT_RESOURCES: Partial<Record<UsageUnit, string>> = {
   d1_rows_read: "d1",
   d1_rows_written: "d1",
   do_requests: "durable_objects",
@@ -40,7 +40,7 @@ export interface InfraUsageQuantity {
   quantity: number;
 }
 
-export function buildInfraUsageDrafts(params: {
+function buildInfraUsageDrafts(params: {
   userId: number;
   scopeKey: string;
   quantities: readonly InfraUsageQuantity[];

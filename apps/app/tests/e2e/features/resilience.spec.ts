@@ -18,13 +18,11 @@ test.describe("Recovery and unavailable states", () => {
   test.describe("provider failure", () => {
     test.use({ persona: "pro" });
 
-    test("reports the failure and accepts the next message", async ({ homePage, page }) => {
+    test("reports the failure and accepts the next message", async ({ appPage, homePage }) => {
       await homePage.navigate("/chat");
       await homePage.selectModel("GPT OSS 120B");
       await homePage.sendMessage("Trigger an error");
-      await expect(
-        page.getByText("External service temporarily unavailable").first(),
-      ).toBeVisible();
+      await expect(appPage.notification(/Deterministic provider failure/)).toBeVisible();
       await expect(homePage.chatInput).toBeEditable();
 
       const previousCount = await homePage.getAssistantMessageCount();

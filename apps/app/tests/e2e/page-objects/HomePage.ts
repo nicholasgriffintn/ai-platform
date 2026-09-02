@@ -59,9 +59,10 @@ export class HomePage extends BasePage {
     }
 
     await this.fillInput(this.page.getByRole("textbox", { name: "Search models" }), modelName);
-    const option = this.page.getByRole("option").filter({ hasText: modelName }).first();
+    const options = this.page.getByRole("option");
+    const candidate = options.filter({ hasText: modelName }).first();
 
-    if (!(await option.isVisible())) {
+    if (!(await candidate.isVisible())) {
       const showDeprecated = this.page.getByRole("button", { name: /Show deprecated models/ });
 
       if (await showDeprecated.isVisible()) {
@@ -69,17 +70,31 @@ export class HomePage extends BasePage {
       }
     }
 
-    await this.clickElement(option);
+    await this.waitForElement(candidate);
+    const named = options.filter({ has: this.page.getByText(modelName, { exact: true }) }).first();
+
+    await this.clickElement((await named.count()) > 0 ? named : candidate);
+  }
+
+  chatModeCommand(mode: "Chat" | "Live") {
+    return this.page.getByRole("button", { name: new RegExp(`^/${mode.toLowerCase()}`) });
+  }
+
+  async openChatModeCommands(mode: "Chat" | "Live") {
+    await this.fillInput(this.chatInput, `/${mode.toLowerCase()}`);
+
+    return this.chatModeCommand(mode);
   }
 
   async selectChatMode(mode: "Chat" | "Live") {
-    const command = `/${mode.toLowerCase()}`;
-
-    await this.chatInput.fill(command);
-    await this.page.getByRole("button", { name: new RegExp(`^${command}`) }).click();
+    await this.clickElement(await this.openChatModeCommands(mode));
     if (mode === "Live") {
       await this.page.keyboard.press("Escape");
     }
+  }
+
+  async clearComposer() {
+    await this.chatInput.fill("");
   }
 
   async setGoal(objective: string) {
@@ -107,7 +122,17 @@ export class HomePage extends BasePage {
   }
 
   goalCard() {
-    return this.page.getByRole("status").filter({ hasText: "Goal" });
+    return this.page
+      .getByRole("status")
+      .filter({ has: this.page.getByRole("button", { name: "Clear goal" }) });
+  }
+
+  goalMarker(label: string) {
+    return this.page.getByRole("status", { name: label, exact: true });
+  }
+
+  composerBanner(text: string | RegExp) {
+    return this.page.getByRole("status").filter({ hasText: text });
   }
 
   get councilMemberPicker() {
@@ -132,7 +157,7 @@ export class HomePage extends BasePage {
     await this.chatInput.fill(command.slice(0, -1));
     await this.page.getByRole("button", { name: new RegExp(`^${command}`) }).click();
     await this.chatInput.press("End");
-    await this.chatInput.pressSequentially(` ${message}`);
+    await this.chatInput.pressSequentially(message);
     const requestPromise = this.page.waitForRequest(
       (request) =>
         request.method() === "POST" &&
@@ -456,6 +481,10 @@ export class HomePage extends BasePage {
     await searchInput.fill(query);
   }
 
+  get globalSearchResults() {
+    return this.page.getByRole("dialog", { name: "Search Polychat" }).getByRole("listbox");
+  }
+
   async closeGlobalSearch() {
     await this.page.keyboard.press("Escape");
     await this.page.getByRole("textbox", { name: "Search Polychat" }).waitFor({ state: "hidden" });
@@ -597,8 +626,10 @@ export class HomePage extends BasePage {
   async copyLatestAssistantMessage(): Promise<string> {
     const assistantMessage = this.getLatestAssistantMessage();
 
+    const confirmation = assistantMessage.getByRole("button", { name: "Copied!" }).waitFor();
+
     await assistantMessage.getByRole("button", { name: "Copy message" }).click();
-    await assistantMessage.getByRole("button", { name: "Copied!" }).waitFor();
+    await confirmation;
 
     return this.page.evaluate(() => navigator.clipboard.readText());
   }
@@ -656,14 +687,26 @@ export class HomePage extends BasePage {
     await settings.getByRole("tab", { name: "Advanced", exact: true }).click();
     await settings.getByLabel("Context compaction", { exact: true }).selectOption("off");
     await settings.getByLabel("Top P", { exact: true }).fill("0.75");
-    await settings.getByLabel("Max Tokens", { exact: true }).fill("1024");
+    await settings.getByLabel("Max output tokens", { exact: true }).fill("1024");
     await settings.getByLabel("Presence penalty", { exact: true }).fill("0.4");
     await settings.getByLabel("Frequency penalty", { exact: true }).fill("-0.3");
     await settings.getByRole("button", { name: "Done", exact: true }).click();
     await settings.waitFor({ state: "hidden" });
   }
 
-  async sendMessageWithComposerActionAndReadCompletionRequest(message: string, action: string) {
+  async enableComposerTool(tool: { id: string; label: string }) {
+    await this.fillInput(this.chatInput, `/tools ${tool.id}`);
+    await this.clickElement(
+      this.page.getByRole("button", { name: new RegExp(`Enable ${tool.label}`) }).first(),
+    );
+    await this.chatInput.fill("");
+  }
+
+  async sendMessageWithComposerToolAndReadCompletionRequest(
+    message: string,
+    tool: { id: string; label: string },
+  ) {
+    await this.enableComposerTool(tool);
     await this.fillInput(this.chatInput, message);
     const requestPromise = this.page.waitForRequest(
       (request) =>
@@ -671,32 +714,17 @@ export class HomePage extends BasePage {
         new URL(request.url()).pathname.endsWith("/chat/completions"),
     );
 
-    await this.page.getByRole("button", { name: "Open commands" }).click();
-    await this.page
-      .getByRole("dialog")
-      .getByRole("button")
-      .filter({ hasText: action })
-      .first()
-      .click();
     await this.clickElement(this.sendButton);
 
     return (await requestPromise).postDataJSON() as Record<string, unknown>;
   }
 
-  async requestSecondOpinion(modelName: string, providerName: string) {
+  async requestSecondOpinion() {
     const responsePromise = this.waitForCompletionRequest();
 
-    await this.getLatestAssistantMessage()
-      .getByRole("button", { name: "Get second opinion" })
-      .click();
-    await this.page.getByPlaceholder("Search models").fill(modelName);
-    await this.page
-      .getByRole("button")
-      .filter({ hasText: modelName })
-      .filter({ hasText: providerName })
-      .first()
-      .click();
-    await this.page.getByRole("button", { name: "Ask for opinion", exact: true }).click();
+    await this.clickElement(
+      this.getLatestAssistantMessage().getByRole("button", { name: "Second opinion" }),
+    );
     const response = await responsePromise;
 
     if (!response.ok()) {
@@ -727,9 +755,7 @@ export class HomePage extends BasePage {
       );
     }
 
-    await this.page
-      .getByRole("button", { name: "Go to original conversation", exact: true })
-      .waitFor();
+    await this.originalConversationButton.waitFor();
   }
 
   async shareConversation() {
@@ -754,19 +780,21 @@ export class HomePage extends BasePage {
     await this.page.keyboard.press("Escape");
   }
 
+  get originalConversationButton() {
+    return this.page
+      .locator("#main-content")
+      .getByRole("button", { name: "Go to original conversation", exact: true });
+  }
+
   async branchFromLatestAssistantMessage() {
     await this.clickElement(
       this.getLatestAssistantMessage().getByRole("button", { name: "Branch conversation" }),
     );
-    await this.page
-      .getByRole("button", { name: "Go to original conversation", exact: true })
-      .waitFor();
+    await this.originalConversationButton.waitFor();
   }
 
   async returnToOriginalConversation() {
-    await this.page
-      .getByRole("button", { name: "Go to original conversation", exact: true })
-      .click();
+    await this.clickElement(this.originalConversationButton);
     await this.page.getByRole("region", { name: "Conversation messages" }).waitFor();
   }
 }

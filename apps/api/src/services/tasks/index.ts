@@ -7,9 +7,12 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { TaskService } from "./TaskService";
+import { isAccountVisibleTask } from "./taskVisibility";
 
 export async function listUserTasks(context: ServiceContext, userId: number) {
-  const tasks = await context.repositories.tasks.getTasksByUserId(userId);
+  const tasks = (await context.repositories.tasks.getTasksByUserId(userId)).filter(
+    isAccountVisibleTask,
+  );
 
   return { tasks, total: tasks.length };
 }

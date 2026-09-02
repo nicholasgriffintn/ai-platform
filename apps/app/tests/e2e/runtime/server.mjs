@@ -15,6 +15,45 @@ const trainingBuildDirectory = path.join(temporaryDirectory, "training");
 const compatibilityDate = "2026-08-08";
 const serverEncryptionKeyBytes = Buffer.alloc(32, 7);
 const composioAccounts = new Map();
+const stripeSecretKey = "sk_test_polychat_e2e";
+const stripeProPriceId = "price_e2e_pro";
+const stripeProOveragePriceId = "price_e2e_pro_overage";
+
+const E2E_PLANS = [
+  {
+    id: "anonymous",
+    name: "Signed out",
+    description: "Demo allowance for visitors who have not signed in",
+    price: 0,
+    includedCredits: 20,
+    graceCredits: 0,
+    stripePriceId: null,
+    stripeMeterId: null,
+    overagePriceId: null,
+  },
+  {
+    id: "free",
+    name: "Free",
+    description: "Default plan for signed in accounts",
+    price: 0,
+    includedCredits: 100,
+    graceCredits: 0,
+    stripePriceId: null,
+    stripeMeterId: null,
+    overagePriceId: null,
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    description: "Frontier models, generation, live voice, sandboxed runs and Work",
+    price: 8,
+    includedCredits: 500,
+    graceCredits: 50,
+    stripePriceId: stripeProPriceId,
+    stripeMeterId: "mtr_e2e_pro",
+    overagePriceId: stripeProOveragePriceId,
+  },
+];
 const composioAuthConfig = {
   id: "ac_XI46beTJeNlJ",
   name: "airtable",
@@ -350,11 +389,63 @@ async function mockComposioRequest(request, url) {
   throw new Error(`Unexpected Composio request during E2E: ${request.method} ${pathname}`);
 }
 
+function mockStripeSubscription(subscriptionId) {
+  const periodEnd = Math.floor(Date.UTC(2099, 0, 1) / 1000);
+
+  return {
+    id: subscriptionId,
+    object: "subscription",
+    status: "active",
+    currency: "gbp",
+    customer: "cus_e2e_pro",
+    cancel_at: null,
+    cancel_at_period_end: false,
+    days_until_due: null,
+    trial_end: null,
+    items: {
+      object: "list",
+      has_more: false,
+      url: `/v1/subscription_items?subscription=${subscriptionId}`,
+      data: [
+        {
+          id: "si_e2e_pro",
+          object: "subscription_item",
+          subscription: subscriptionId,
+          current_period_start: Math.floor(Date.UTC(2099, 0, 1) / 1000) - 2_592_000,
+          current_period_end: periodEnd,
+          price: {
+            id: stripeProPriceId,
+            object: "price",
+            active: true,
+            currency: "gbp",
+            unit_amount: 800,
+            recurring: { interval: "month", interval_count: 1 },
+          },
+        },
+      ],
+    },
+  };
+}
+
+function mockStripeRequest(request, url) {
+  const subscriptionMatch = /^\/v1\/subscriptions\/([^/]+)$/.exec(url.pathname);
+
+  if (request.method === "GET" && subscriptionMatch) {
+    return Response.json(mockStripeSubscription(decodeURIComponent(subscriptionMatch[1])));
+  }
+
+  throw new Error(`Unexpected Stripe request during E2E: ${request.method} ${url.pathname}`);
+}
+
 async function mockExternalRequest(request) {
   const url = new URL(request.url);
 
   if (url.hostname === "backend.composio.dev") {
     return mockComposioRequest(request, url);
+  }
+
+  if (url.hostname === "api.stripe.com") {
+    return mockStripeRequest(request, url);
   }
 
   if (
@@ -660,6 +751,7 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
           PRIVATE_KEY: serverEncryptionKeyBytes.toString("base64"),
           REPLICATE_API_TOKEN: "e2e-replicate-token",
           SES_EMAIL_FROM: "e2e@polychat.invalid",
+          STRIPE_SECRET_KEY: stripeSecretKey,
           TRAINING_WORKER_TOKEN: "polychat-e2e-training-worker-token",
         },
         d1Databases: { DB: "polychat-e2e" },
@@ -749,20 +841,106 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
 						return Number.parseInt(identity.slice(0, 12), 16);
 					}
 
+					const PERSONA_ALLOWANCE = {
+						anonymous: { included: 20, grace: 0 },
+						free: { included: 100, grace: 0 },
+						pro: { included: 500, grace: 50 },
+					};
+
+					function creditMicros(credits) {
+						return Math.round((typeof credits === "number" ? credits : 0) * 1000000);
+					}
+
+					function currentUsagePeriod() {
+						return new Date().toISOString().slice(0, 7);
+					}
+
+					function ledgerStatements(env, identity, userId, period, ledger) {
+						return ledger.map((entry, index) =>
+							env.DB.prepare(
+								"INSERT INTO usage_event (id, idempotency_key, user_id, occurred_at, period, source, vendor, resource, unit, quantity, cost_micros, credit_micros, billable, byok, estimated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, 0)"
+							).bind(
+								"e2e-usage-event-" + identity + "-" + index,
+								"e2e-usage-key-" + identity + "-" + index,
+								userId,
+								new Date(Date.now() - index * 60000).toISOString(),
+								period,
+								entry.source,
+								entry.vendor,
+								entry.resource,
+								entry.unit,
+								entry.quantity,
+								Math.round(entry.costMicros || 0),
+								creditMicros(entry.credits),
+								entry.byok ? 1 : 0,
+							),
+						);
+					}
+
+					function accountBillingStatements(env, identity, userId, persona, billing) {
+						const period = currentUsagePeriod();
+						const allowance = PERSONA_ALLOWANCE[persona];
+						const ledger = Array.isArray(billing.ledger) ? billing.ledger : [];
+						const statements = [
+							env.DB.prepare("DELETE FROM usage_event WHERE user_id = ?").bind(userId),
+							env.DB.prepare("DELETE FROM usage_balance WHERE user_id = ?").bind(userId),
+							env.DB.prepare(
+								"INSERT INTO usage_balance (id, user_id, period, plan_id, included_credit_micros, grace_credit_micros, spent_credit_micros, reserved_credit_micros, overrun_credit_micros, overage_credit_micros, overage_enabled, last_event_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+							).bind(
+								"e2e-balance-" + identity,
+								userId,
+								period,
+								persona,
+								creditMicros(allowance.included),
+								creditMicros(allowance.grace),
+								creditMicros(billing.spentCredits),
+								creditMicros(billing.reservedCredits),
+								creditMicros(billing.overrunCredits),
+								creditMicros(billing.overageCredits),
+								billing.overageEnabled ? 1 : 0,
+								ledger.length > 0 ? new Date().toISOString() : null,
+							),
+							...ledgerStatements(env, identity, userId, period, ledger),
+						];
+
+						statements.push(
+							env.DB.prepare(
+								"UPDATE user SET stripe_customer_id = ?, stripe_subscription_id = ? WHERE id = ?"
+							).bind(
+								billing.subscribed ? "cus_e2e_" + identity.slice(0, 16) : null,
+								billing.subscribed ? "sub_e2e_" + identity.slice(0, 16) : null,
+								userId,
+							),
+						);
+
+						return statements;
+					}
+
 	async function provisionPersona(request, env) {
-		const { identity, persona, sessionToken } = await request.json();
+		const { identity, persona, sessionToken, billing } = await request.json();
 		if (
 			typeof identity !== "string" ||
 			!/^[a-f0-9]{64}$/.test(identity) ||
 			(persona !== "logged-out" && persona !== "free" && persona !== "pro") ||
-			(persona !== "logged-out" && typeof sessionToken !== "string")
+			(persona !== "logged-out" && typeof sessionToken !== "string") ||
+			(billing !== undefined && billing !== null && typeof billing !== "object")
 		) {
 			return Response.json({ error: "Invalid persona setup request" }, { status: 400 });
 		}
+		const billingState = billing || {};
 		if (persona === "logged-out") {
+			const anonymousId = identity.slice(0, 36);
 			await env.DB.prepare(
-				"INSERT INTO anonymous_user (id, ip_address, user_agent, daily_reset) VALUES (?, ?, 'Playwright', CURRENT_TIMESTAMP)"
-			).bind(identity.slice(0, 36), identity).run();
+				"INSERT OR IGNORE INTO anonymous_user (id, ip_address, user_agent) VALUES (?, ?, 'Playwright')"
+			).bind(anonymousId, identity).run();
+			await env.DB.prepare(
+				"UPDATE anonymous_user SET credit_period = ?, spent_credit_micros = ?, reserved_credit_micros = ? WHERE id = ?"
+			).bind(
+				currentUsagePeriod(),
+				creditMicros(billingState.spentCredits),
+				creditMicros(billingState.reservedCredits),
+				anonymousId,
+			).run();
 			return new Response(null, { status: 204 });
 		}
 
@@ -812,6 +990,10 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
 								).bind("e2e-activity-" + identity, userId, projectId),
 							);
 						}
+
+						statements.push(
+							...accountBillingStatements(env, identity, userId, persona, billingState),
+						);
 
 						await env.DB.batch(statements);
 						return new Response(null, { status: 204 });
@@ -890,21 +1072,31 @@ async function seedPersonas(database, seedMaterial) {
   const { publicJwk, storedPrivateKey } = seedMaterial;
   const expiresAt = "2099-01-01T00:00:00.000Z";
 
-  await database
-    .prepare("INSERT INTO plans (id, name, description, price) VALUES (?, ?, ?, ?)")
-    .bind("free", "Free", "E2E free plan", 0)
-    .run();
-  await database
-    .prepare("INSERT INTO plans (id, name, description, price) VALUES (?, ?, ?, ?)")
-    .bind("pro", "Pro", "E2E pro plan", 1000)
-    .run();
+  for (const plan of E2E_PLANS) {
+    await database
+      .prepare(
+        "INSERT INTO plans (id, name, description, price, included_credits, grace_credits, stripe_price_id, stripe_meter_id, overage_price_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO UPDATE SET name = excluded.name, description = excluded.description, price = excluded.price, included_credits = excluded.included_credits, grace_credits = excluded.grace_credits, stripe_price_id = excluded.stripe_price_id, stripe_meter_id = excluded.stripe_meter_id, overage_price_id = excluded.overage_price_id",
+      )
+      .bind(
+        plan.id,
+        plan.name,
+        plan.description,
+        plan.price,
+        plan.includedCredits,
+        plan.graceCredits,
+        plan.stripePriceId,
+        plan.stripeMeterId,
+        plan.overagePriceId,
+      )
+      .run();
+  }
 
   for (const address of ["unknown", "127.0.0.1", "::1", "::ffff:127.0.0.1", "0.0.0.0"]) {
     const anonymousIp = createHash("sha256").update(address).digest("hex");
 
     await database
       .prepare(
-        "INSERT INTO anonymous_user (id, ip_address, user_agent, daily_reset) VALUES (?, ?, 'Playwright', CURRENT_TIMESTAMP)",
+        "INSERT INTO anonymous_user (id, ip_address, user_agent) VALUES (?, ?, 'Playwright')",
       )
       .bind(anonymousIp.slice(0, 36), anonymousIp)
       .run();

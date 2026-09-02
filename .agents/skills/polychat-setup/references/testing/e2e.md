@@ -10,6 +10,8 @@ Mock only outbound third-party services at their boundary. Do not intercept or r
 
 Disable browser telemetry and captcha in the E2E build because they are outbound third-party integrations, not part of the Polychat app/API boundary under release validation.
 
+A test can place its own persona at a point in the billing cycle with `test.use({ billing })`, and move it during a journey with the `billingState` fixture. Credit state is seeded per identity, so parallel tests do not share a balance.
+
 ## Release failures
 
 Treat a failed user journey as release evidence, not a reason to reduce coverage.
@@ -41,13 +43,15 @@ await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:"
 
 Treat a user-facing feature as incomplete until its E2E impact has been considered. Cover the relevant state transitions, not static copy.
 
-| Surface       | Logged out                                                | Free account                                    | Pro account                                                                           |
-| ------------- | --------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Chat          | Local history, messages, public navigation, sign-in entry | Local history, messages, account limits         | Synced history, messages, attachments, sharing and branching                          |
-| Work          | Sign-in boundaries on overview and deep links             | Pro entitlement and return to Chat              | Workspaces, projects, members, governance, project chat and every project sub-surface |
-| Account       | Every profile tab is protected                            | Every profile tab loads with Free billing state | Every profile tab loads with Pro billing state                                        |
-| Configuration | Sign-in entry                                             | AI and messaging provider lifecycles            | Connectors, API keys, sources and Work configuration lifecycles                       |
-| Recovery      | Missing routes and unavailable shared links               | Missing routes and unavailable shared links     | Provider failures, missing resources and continued use after failure                  |
+| Surface       | Logged out                                                | Free account                                     | Pro account                                                                           |
+| ------------- | --------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| Chat          | Local history, messages, public navigation, sign-in entry | Local history, messages, account limits          | Synced history, messages, attachments, sharing and branching                          |
+| Live          | Not offered                                               | Not offered                                      | Mode entry, a muted session, and its cleanup                                          |
+| Work          | Sign-in boundaries on overview and deep links             | Pro entitlement and return to Chat               | Workspaces, projects, members, governance, project chat and every project sub-surface |
+| Account       | Every profile tab is protected                            | Every profile tab loads with Free billing state  | Every profile tab loads with Pro billing state                                        |
+| Billing       | Public pricing and the signed-out credit allowance        | Balance, ledger and the hard stop at the ceiling | Reserve, overage and the pause past the reserve                                       |
+| Configuration | Sign-in entry                                             | AI and messaging provider lifecycles             | Connectors, API keys, sources and Work configuration lifecycles                       |
+| Recovery      | Missing routes and unavailable shared links               | Missing routes and unavailable shared links      | Provider failures, missing resources and continued use after failure                  |
 
 For messages, include representative plain text, multiline and Unicode, code and special characters, image, document/code, and audio inputs. Add another case when a new message or attachment type becomes user-facing.
 

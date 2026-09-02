@@ -10,7 +10,11 @@ import { RepositoryManager } from "~/repositories";
 import type { IEnv, IUser } from "~/types";
 import { generateId } from "~/utils/id";
 
-import { getAccessibleRealtimeModel } from "./access";
+import {
+  getAccessibleRealtimeModel,
+  lacksRealtimeEntitlement,
+  REALTIME_ENTITLEMENT_MESSAGE,
+} from "./access";
 import {
   admitRealtimeSession,
   priceRealtimeReservation,
@@ -32,6 +36,10 @@ async function validatePipelineStage({
   provider: string;
   user: IUser;
 }): Promise<{ message: string; status: 400 | 403 } | undefined> {
+  if (lacksRealtimeEntitlement(user)) {
+    return { message: REALTIME_ENTITLEMENT_MESSAGE, status: 403 };
+  }
+
   const accessibleModel = await getAccessibleRealtimeModel({
     env,
     model,

@@ -126,7 +126,7 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
       await homePage.searchPolychat(renamedTitle);
       await expect(page.getByRole("option").filter({ hasText: renamedTitle })).toBeVisible();
       await homePage.searchPolychat("missing release conversation");
-      await expect(page.getByText("No matches found")).toBeVisible();
+      await expect(homePage.globalSearchResults).toContainText("No matches found");
       await homePage.closeGlobalSearch();
       await homePage.deleteConversation(renamedTitle);
 
@@ -141,38 +141,9 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
       });
     });
 
-    test("cleans up a muted Live session before opening Canvas", async ({
-      externalServices,
-      homePage,
-      page,
-    }) => {
-      const liveSocket = await externalServices.mockGeminiLiveWebSocket();
-
+    test("moves between every Canvas surface and back to chat", async ({ homePage, page }) => {
       await homePage.navigate("/chat");
       await homePage.waitForPersonaReady(persona);
-
-      await homePage.selectChatMode("Live");
-      await expect(page).toHaveURL(/\/chat\?mode=live$/);
-      await expect(page.getByRole("heading", { name: "Start a live session" })).toBeVisible();
-      const sessionStatus = await homePage.startAndStopMutedLiveSession();
-
-      expect(sessionStatus).toBe(persona === "logged-out" ? 401 : 200);
-      if (persona === "logged-out") {
-        expect(liveSocket.opens).toBe(0);
-      } else {
-        await expect.poll(() => liveSocket.opens).toBe(1);
-        await expect.poll(() => liveSocket.setupMessages.length).toBe(1);
-        expect(liveSocket.setupMessages[0]).toMatchObject({
-          model: "models/gemini-3.1-flash-live-preview",
-        });
-        await expect.poll(() => liveSocket.closes.length).toBe(1);
-      }
-
-      await captureVisualSnapshots(page, "release-chat-mode-live", {
-        ...DEFAULT_VISUAL_CHECKPOINTS,
-        viewports: [{ name: "desktop", width: 1280, height: 720 }],
-      });
-      await homePage.clearChatMode("Live");
 
       await homePage.openCanvas();
       await captureVisualSnapshots(page, "release-chat-canvas-open", {
@@ -186,6 +157,60 @@ for (const persona of ["logged-out", "free", "pro"] as const) {
     });
   });
 }
+
+for (const persona of ["logged-out", "free"] as const) {
+  test.describe(`Live entitlement as ${persona}`, () => {
+    test.use({ persona });
+
+    test("does not offer Live without a pro plan", async ({ externalServices, homePage, page }) => {
+      const liveSocket = await externalServices.mockGeminiLiveWebSocket();
+
+      await homePage.navigate("/chat");
+      await homePage.waitForPersonaReady(persona);
+      await expect(await homePage.openChatModeCommands("Chat")).toBeVisible();
+      await expect(await homePage.openChatModeCommands("Live")).toHaveCount(0);
+      await homePage.clearComposer();
+
+      await homePage.navigate("/chat?mode=live");
+      await homePage.waitForPersonaReady(persona);
+      await expect(page.getByRole("heading", { name: "Start a live session" })).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "Start live session" })).toHaveCount(0);
+      await expect(homePage.chatInput).toBeEditable();
+      expect(liveSocket.opens).toBe(0);
+    });
+  });
+}
+
+test.describe("Live sessions as pro", () => {
+  test.use({ persona: "pro" });
+
+  test("cleans up a muted Live session", async ({ externalServices, homePage, page }) => {
+    const liveSocket = await externalServices.mockGeminiLiveWebSocket();
+
+    await homePage.navigate("/chat");
+    await homePage.waitForPersonaReady("pro");
+
+    await homePage.selectChatMode("Live");
+    await expect(page).toHaveURL(/\/chat\?mode=live$/);
+    await expect(page.getByRole("heading", { name: "Start a live session" })).toBeVisible();
+    const sessionStatus = await homePage.startAndStopMutedLiveSession();
+
+    expect(sessionStatus).toBe(200);
+    await expect.poll(() => liveSocket.opens).toBe(1);
+    await expect.poll(() => liveSocket.setupMessages.length).toBe(1);
+    expect(liveSocket.setupMessages[0]).toMatchObject({
+      model: "models/gemini-3.1-flash-live-preview",
+    });
+    await expect.poll(() => liveSocket.closes.length).toBe(1);
+
+    await captureVisualSnapshots(page, "release-chat-mode-live", {
+      ...DEFAULT_VISUAL_CHECKPOINTS,
+      viewports: [{ name: "desktop", width: 1280, height: 720 }],
+    });
+    await homePage.clearChatMode("Live");
+    await expect(homePage.chatInput).toBeEditable();
+  });
+});
 
 for (const persona of ["logged-out", "free"] as const) {
   test.describe(`Local history as ${persona}`, () => {
@@ -291,7 +316,7 @@ test.describe("Response controls as pro", () => {
 
   test("applies reasoning and verbosity settings to a message", async ({ homePage, page }) => {
     await homePage.navigate("/chat");
-    await homePage.selectModel("GPT-5.2");
+    await homePage.selectModel("GPT-5.5");
     await homePage.configureResponseControls("High", "Caveman");
     const request = await homePage.sendMessageAndReadCompletionRequest(
       "Use the selected response controls for this release check",
@@ -309,10 +334,10 @@ test.describe("Response controls as pro", () => {
 
   test("enables a hosted tool for a message", async ({ homePage, page }) => {
     await homePage.navigate("/chat");
-    await homePage.selectModel("GPT-5.2 Pro");
-    const request = await homePage.sendMessageWithComposerActionAndReadCompletionRequest(
+    await homePage.selectModel("GPT-5.4");
+    const request = await homePage.sendMessageWithComposerToolAndReadCompletionRequest(
       "Use code execution for this release check",
-      "Code execution",
+      { id: "code_execution", label: "Code execution" },
     );
 
     expect(request.enabled_tools).toContain("code_execution");
@@ -373,9 +398,11 @@ test.describe("Response controls as pro", () => {
     await homePage.sendMessage("Give the primary release recommendation");
     await homePage.waitForChatResponse(0);
 
-    const request = await homePage.requestSecondOpinion("Llama 4 Scout 17B", "Groq");
+    const request = await homePage.requestSecondOpinion();
 
-    expect(request.model).toBe("groq-llama-4-scout-17b");
+    expect(JSON.stringify(request.messages)).toContain(
+      "Get a second opinion on that answer from other models.",
+    );
     expect(request.models).toBeUndefined();
     expect(request.use_multi_model).toBe(false);
     await homePage.waitForChatResponse(1);
@@ -484,9 +511,7 @@ test.describe("Pro message attachments", () => {
     await expect(page.getByLabel("Share link")).toHaveValue(/\/s\//);
     await homePage.stopSharingConversation();
     await homePage.branchFromLatestAssistantMessage();
-    await expect(
-      page.getByRole("button", { name: "Go to original conversation", exact: true }),
-    ).toBeVisible();
+    await expect(homePage.originalConversationButton).toBeVisible();
 
     await homePage.returnToOriginalConversation();
     await homePage.branchFromLatestUserMessageWithModel("Llama 4 Scout 17B", "Groq");
@@ -546,7 +571,7 @@ test.describe("Goals as pro", () => {
     const setResponse = await homePage.setGoal(objective);
 
     expect(setResponse.status()).toBe(200);
-    await expect(page.getByRole("status", { name: "Goal started" })).toBeVisible();
+    await expect(homePage.goalMarker("Goal started")).toBeVisible();
     await expect(homePage.goalCard()).toContainText(objective);
     await expect(homePage.goalCard()).toContainText("Goal active");
 

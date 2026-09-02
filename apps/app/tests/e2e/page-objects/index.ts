@@ -2,5 +2,8 @@ export { BasePage } from "./BasePage";
 export { HomePage } from "./HomePage";
 export { AuthPage } from "./AuthPage";
 export { AppPage } from "./AppPage";
+export { BillingPage } from "./BillingPage";
+export { CapabilitiesPage } from "./CapabilitiesPage";
+export { PricingPage } from "./PricingPage";
 export { ProfilePage } from "./ProfilePage";
 export { WorkPage } from "./WorkPage";

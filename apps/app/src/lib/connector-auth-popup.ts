@@ -129,11 +129,7 @@ export function waitForConnectorAuthPopup(params: {
 }
 
 export function completeConnectorAuthPopup(searchParams: URLSearchParams): boolean {
-  if (
-    window.name !== CONNECTOR_AUTH_POPUP_NAME ||
-    !window.opener ||
-    searchParams.get("connected") !== "1"
-  ) {
+  if (!window.opener || searchParams.get("connected") !== "1") {
     return false;
   }
 

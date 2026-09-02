@@ -8,10 +8,10 @@ const PROFILE_TABS = [
   ["account", "Account"],
   ["passkeys", "Passkeys"],
   ["customisation", "Customise Chat"],
+  ["pets", "Your pet"],
   ["history", "Chat History"],
   ["providers", "Available Providers"],
   ["sandbox", "Sandbox"],
-  ["agents", "Agents"],
   ["billing", "Billing"],
   ["api-keys", "API Keys"],
   ["tasks", "Tasks"],
@@ -42,7 +42,11 @@ test.describe("Profile experience", () => {
     test.describe(`${persona} account`, () => {
       test.use({ persona });
 
-      test("opens every account configuration surface", async ({ page, profilePage }) => {
+      test("opens every account configuration surface", async ({
+        billingPage,
+        page,
+        profilePage,
+      }) => {
         await profilePage.openAccount();
         await expect(
           page.getByText(persona === "pro" ? "Pro plan" : "Free plan", { exact: true }),
@@ -67,7 +71,13 @@ test.describe("Profile experience", () => {
         }
 
         await profilePage.openTab("billing", "Billing");
-        await expect(page.getByText("Billing features are currently disabled.")).toBeVisible();
+        await expect(billingPage.creditsMeter).toHaveAttribute(
+          "aria-label",
+          persona === "pro"
+            ? /of 500 included credits used, 550 of reserve remaining$/
+            : /of 100 included credits used, 100 of reserve remaining$/,
+        );
+        await expect(billingPage.creditState).toHaveText("On track");
         await captureVisualSnapshots(page, `release-profile-${persona}-billing`, {
           ...DEFAULT_VISUAL_CHECKPOINTS,
           viewports: [{ name: "desktop", width: 1280, height: 720 }],
@@ -254,14 +264,35 @@ test.describe("Account-owned resources", () => {
     });
   });
 
-  test("creates, edits and deletes an agent", async ({ page, profilePage }) => {
-    const persistedSettings = await profilePage.createAndDeleteAgent(
-      "Release validation agent",
-      "Checks release readiness.",
+  test("creates, edits and deletes an agent", async ({ capabilitiesPage, page }) => {
+    const agentName = "Release validation agent";
+
+    await capabilitiesPage.open();
+    await capabilitiesPage.startNewAgent();
+    await capabilitiesPage.fillAgentEditor({
+      name: agentName,
+      description: "Checks release readiness.",
+      systemPrompt: "Answer release questions concisely.",
+      temperature: "0.2",
+      maxSteps: "7",
+    });
+    await capabilitiesPage.createAgent();
+    await expect(page).toHaveURL(/\/chat\/agents\/[^/]+$/);
+
+    await capabilitiesPage.reload();
+    expect(await capabilitiesPage.readAgentModelSettings()).toEqual({
+      temperature: "0.2",
+      maxSteps: "7",
+    });
+
+    await capabilitiesPage.updateAgentDescription("Checks release readiness. Updated.");
+    await capabilitiesPage.open();
+    await expect(capabilitiesPage.capabilityCard(agentName)).toContainText(
+      "Checks release readiness. Updated.",
     );
 
-    expect(persistedSettings).toEqual({ temperature: "0.2", maxSteps: "7" });
-    await expect(page.getByText("Release validation agent", { exact: true })).toHaveCount(0);
+    await capabilitiesPage.deleteAgentFromLibrary(agentName);
+    await expect(page.getByText(agentName, { exact: true })).toHaveCount(0);
   });
 
   test("registers and removes a passkey", async ({ page, profilePage }) => {

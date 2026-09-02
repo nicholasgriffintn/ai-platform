@@ -24,9 +24,9 @@ same budget through the same loop, so there is one place to change a bound and o
 
 ## A turn is admitted once, then never killed for balance
 
-`checkUsageLimits` at the request boundary still throws for spent daily message counts — those survive
-as the abuse guard for anonymous and Free accounts. For a plan with `included_credits` configured,
-`ConversationManager.admitTurn` runs once at that same boundary: it estimates the turn from the prompt
+Credits are the only allowance; the daily message counters are gone. Anonymous visitors carry their own
+plan row and allowance like everyone else. `ConversationManager.admitTurn` runs once at the request
+boundary: it estimates the turn from the prompt
 tokens at the model's input rate plus an output allowance (the model's `maxTokens`, capped at 8k
 tokens' worth), admits it if the estimate fits `included + grace - spent - reserved` or overage is
 enabled, and reserves the estimate on the usage balance. A BYOK turn skips admission entirely. The
@@ -111,7 +111,7 @@ between the two columns is the signal that attribution is drifting from the real
 
 1. Give it a bound that does not depend on the model behaving.
 2. Record every provider call through the vendor-unit ledger, including hidden synthesis and routing calls.
-3. Keep the daily message counter at one increment per top-level response; never use it to estimate cost.
+3. Refuse the work when no allowance resolves; an unreadable plan must never spend freely.
 4. If it holds the conversation, release it when the work actually finishes — a streaming response is
    still writing after its handler returns.
 5. If the work outlives its request, reserve at the start and settle idempotently at the end. A run that

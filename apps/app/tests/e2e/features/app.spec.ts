@@ -37,7 +37,7 @@ test.describe("Application experience", () => {
 
       await appPage.openSettings("Guest");
       await appPage.openKeyboardShortcuts();
-      await expect(page.getByRole("dialog")).toContainText("Toggle Sidebar");
+      await expect(page.getByRole("dialog")).toContainText("Toggle sidebar");
       await appPage.dismissDialog();
 
       await appPage.openSettings("Guest");

@@ -1,5 +1,6 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
+import { hasPlanEntitlement } from "~/lib/plans";
 import { filterModelsForUserAccess, getModels } from "~/lib/providers/models";
 import {
   getExecutableModelsForAccount,
@@ -16,6 +17,13 @@ function matchesRequestedModel(
   },
 ): boolean {
   return modelId === requestedModel || model.matchingModel === requestedModel;
+}
+
+export const REALTIME_ENTITLEMENT_MESSAGE =
+  "Live sessions are a Pro feature. Upgrade to start one.";
+
+export function lacksRealtimeEntitlement(user: IUser): boolean {
+  return !hasPlanEntitlement(user.plan_id, "pro");
 }
 
 export async function getAccessibleRealtimeModel({

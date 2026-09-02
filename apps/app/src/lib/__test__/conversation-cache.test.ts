@@ -58,6 +58,26 @@ describe("conversation cache helpers", () => {
     expect(remoteData?.pages[0].conversations.map((chat) => chat.id)).toEqual(["new", "existing"]);
   });
 
+  it("refetches the sidebar list when a conversation is created before the list has loaded", () => {
+    const queryClient = new QueryClient();
+    const remoteQueryKey = [
+      CHATS_QUERY_KEY,
+      "remote",
+      { archived: "active", limit: 30, sortBy: "updated" },
+    ];
+
+    queryClient.getQueryCache().build(queryClient, { queryKey: remoteQueryKey });
+
+    upsertConversationInChatCaches(queryClient, conversation("new", "New Conversation"), {
+      includeLocalList: false,
+      includeRemoteLists: true,
+    });
+
+    expect(
+      queryClient.getQueryCache().find({ queryKey: remoteQueryKey })?.state.isInvalidated,
+    ).toBe(true);
+  });
+
   it("updates generated titles in loaded sidebar infinite queries", () => {
     const queryClient = new QueryClient();
     const remoteQueryKey = [

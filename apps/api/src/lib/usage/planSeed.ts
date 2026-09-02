@@ -14,7 +14,7 @@ export const DEFAULT_USER_PLAN_ID = "free";
 
 const PLANS_WITHOUT_GRACE = new Set([ANONYMOUS_PLAN_ID, "free"]);
 
-export function planEarnsGrace(planId: string): boolean {
+function planEarnsGrace(planId: string): boolean {
   return !PLANS_WITHOUT_GRACE.has(planId);
 }
 

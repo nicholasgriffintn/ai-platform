@@ -73,7 +73,7 @@ const testUser: IUser = {
   updated_at: "2026-06-02T00:00:00.000Z",
   setup_at: null,
   terms_accepted_at: null,
-  plan_id: "free",
+  plan_id: "pro",
 };
 const testEnv = {
   ALWAYS_ENABLED_PROVIDERS: "workers-ai",
@@ -209,10 +209,27 @@ describe("realtime routes", () => {
     expect(listRealtimeLiveProvidersMock).not.toHaveBeenCalled();
   });
 
+  it("refuses a session for an account without a Pro entitlement", async () => {
+    getModelsMock.mockReturnValue({
+      "gpt-realtime-2": makeModel("gpt-realtime-2", "openai", { isFree: false }),
+    });
+
+    const response = await requestApp(
+      new Request("https://api.polychat.test/realtime/session/realtime?provider=openai", {
+        method: "POST",
+      }),
+      { ...testUser, plan_id: "free" },
+    );
+
+    expect(response.status).toBe(403);
+    expect(createSessionMock).not.toHaveBeenCalled();
+  });
+
   it("blocks session creation when the user cannot access the realtime model", async () => {
     getModelsMock.mockReturnValue({
       "gpt-realtime-2": makeModel("gpt-realtime-2", "openai", { isFree: false }),
     });
+    filterModelsForUserAccessMock.mockResolvedValue({});
 
     const response = await requestApp(
       new Request("https://api.polychat.test/realtime/session/realtime?provider=openai", {

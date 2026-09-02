@@ -18,10 +18,6 @@ export function creditActorUserId(actor: CreditActor): number | undefined {
   return actor.kind === "user" ? actor.userId : undefined;
 }
 
-export function creditActorKey(actor: CreditActor): string {
-  return actor.kind === "user" ? `user:${actor.userId}` : `anonymous:${actor.anonymousUserId}`;
-}
-
 export interface ActorCreditSpend {
   spentCreditMicros: number;
   reservedCreditMicros: number;

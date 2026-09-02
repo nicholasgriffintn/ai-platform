@@ -11,7 +11,7 @@ import {
 
 import type { InfraUsageQuantity } from "./infraUsage";
 
-export const DEFAULT_CONTAINER_INSTANCE_TYPE: ContainerInstanceType = "basic";
+const DEFAULT_CONTAINER_INSTANCE_TYPE: ContainerInstanceType = "basic";
 
 export function resolveContainerInstanceType(value: unknown): ContainerInstanceType {
   return isContainerInstanceType(value) ? value : DEFAULT_CONTAINER_INSTANCE_TYPE;

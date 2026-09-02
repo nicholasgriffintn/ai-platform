@@ -53,6 +53,11 @@ export class AuthPage extends BasePage {
     }
   }
 
+  async closeLoginModal() {
+    await this.page.keyboard.press("Escape");
+    await this.loginModal.waitFor({ state: "hidden" });
+  }
+
   async loginWithGitHub() {
     await this.waitForLoginModal();
     await this.clickElement(this.githubButton);

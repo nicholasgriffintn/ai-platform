@@ -46,6 +46,27 @@ describe("applySecurityHeaders", () => {
     expect(headers.get("Cross-Origin-Opener-Policy")).toBe("same-origin-allow-popups");
   });
 
+  it("keeps the opener attached when a connector popup returns to the callback", () => {
+    const headers = applySecurityHeaders(
+      new Headers(),
+      "https://polychat.app/profile?tab=providers&type=connector&connector=airtable&connected=1",
+    );
+
+    expect(headers.get("Cross-Origin-Opener-Policy")).toBe("unsafe-none");
+  });
+
+  it("does not relax the opener policy for profile routes that are not the callback", () => {
+    for (const url of [
+      "https://polychat.app/profile?tab=providers",
+      "https://polychat.app/profile?connected=1",
+      "https://polychat.app/chat?connector=airtable&connected=1",
+    ]) {
+      expect(applySecurityHeaders(new Headers(), url).get("Cross-Origin-Opener-Policy")).toBe(
+        "same-origin-allow-popups",
+      );
+    }
+  });
+
   it("only sends HSTS over https so local http development still works", () => {
     const secure = applySecurityHeaders(new Headers(), "https://polychat.app/");
     const local = applySecurityHeaders(new Headers(), "http://localhost:5173/");

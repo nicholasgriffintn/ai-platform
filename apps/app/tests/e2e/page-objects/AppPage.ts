@@ -4,16 +4,25 @@ import { BasePage } from "./BasePage";
 
 export class AppPage extends BasePage {
   readonly settingsButton: Locator;
+  readonly usageMeter: Locator;
 
   constructor(page: Page) {
     super(page);
     this.settingsButton = page.getByRole("button", {
       name: "Open settings and configuration",
     });
+    this.usageMeter = page.getByRole("meter", { name: /credits used this month/ });
   }
 
   private get settingsMenuItem() {
     return this.page.getByRole("button", { name: "Keyboard shortcuts" });
+  }
+
+  notification(text: string | RegExp) {
+    return this.page
+      .getByRole("region", { name: /^Notifications/ })
+      .getByRole("listitem")
+      .filter({ hasText: text });
   }
 
   /**
@@ -23,8 +32,20 @@ export class AppPage extends BasePage {
   async openSettings(plan: "Guest" | "Free" | "Pro") {
     await this.settingsButton.getByText(plan, { exact: true }).waitFor();
 
-    if (!(await this.settingsMenuItem.isVisible())) {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      if (await this.settingsMenuItem.isVisible()) {
+        return;
+      }
+
       await this.clickElement(this.settingsButton);
+
+      try {
+        await this.settingsMenuItem.waitFor({ timeout: 5_000 });
+
+        return;
+      } catch {
+        continue;
+      }
     }
 
     await this.waitForElement(this.settingsMenuItem);

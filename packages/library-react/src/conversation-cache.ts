@@ -89,8 +89,12 @@ export function upsertConversationInChatCaches<T extends ConversationSummary>(
     return;
   }
 
+  let hasUnloadedRemoteList = false;
+
   updateRemoteConversationLists<T>(queryClient, queryKeyRoot, (data, queryKey) => {
     if (!data?.pages.length) {
+      hasUnloadedRemoteList = true;
+
       return data;
     }
 
@@ -105,6 +109,10 @@ export function upsertConversationInChatCaches<T extends ConversationSummary>(
 
     return { ...data, pages };
   });
+
+  if (hasUnloadedRemoteList) {
+    void queryClient.invalidateQueries({ queryKey: [queryKeyRoot, "remote"] });
+  }
 }
 
 export function updateConversationInChatCaches<T extends ConversationSummary>(

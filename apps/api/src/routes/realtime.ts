@@ -22,7 +22,11 @@ import {
 import { assertRealtimeProxyGrant, connectReservedRealtimeProxy } from "~/lib/realtime/proxy-grant";
 import { resolveRealtimeMaxSessionSeconds } from "~/lib/realtime/sessionLimits";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { getAccessibleRealtimeModel } from "~/services/realtime/access";
+import {
+  getAccessibleRealtimeModel,
+  lacksRealtimeEntitlement,
+  REALTIME_ENTITLEMENT_MESSAGE,
+} from "~/services/realtime/access";
 import { createCartesiaRealtimeProxyResponse } from "~/services/realtime/cartesia";
 import { listRealtimeLiveProviders } from "~/services/realtime/catalogue";
 import { createElevenLabsRealtimeProxyResponse } from "~/services/realtime/elevenlabs";
@@ -123,6 +127,10 @@ addRoute(app, "post", "/session/:type", {
           400,
         );
       }
+    }
+
+    if (lacksRealtimeEntitlement(user)) {
+      return ResponseFactory.error(raw, REALTIME_ENTITLEMENT_MESSAGE, 403);
     }
 
     const accessibleModel = await getAccessibleRealtimeModel({
