@@ -518,8 +518,8 @@ importers:
   apps/sandbox-worker:
     dependencies:
       '@cloudflare/sandbox':
-        specifier: 0.12.8
-        version: 0.12.8
+        specifier: 0.12.9
+        version: 0.12.9
       '@ngriffin_uk/polychat-library-agent-core':
         specifier: workspace:^
         version: link:../../packages/library-agent-core
@@ -1895,8 +1895,8 @@ packages:
     resolution: {integrity: sha512-jxQYkj8dSIzc0cD6cMMNdOc1UVjqSqu8BZdor5s8cGjW2I8BjODt/kWPVdY+u9zj3ms75Q5qaZgnxUad83+eAg==}
     engines: {node: '>=22.0.0'}
 
-  '@cloudflare/sandbox@0.12.8':
-    resolution: {integrity: sha512-xrmVqqfCBN6jNIRthICs/AwF2uUL9eH4yavjXHr9cFWpKalcPFsZY85CGddAG58Anx5WcEWTKHcM9w7Imf1eKA==}
+  '@cloudflare/sandbox@0.12.9':
+    resolution: {integrity: sha512-JlCQ8adVaHT3TrZO13X6US2LJTyQ4YvoEZpfh5EewRqcxPfMHZNJPB/1dsRdiFqmtzpz+lMxGazSUa2H/g2IKg==}
     peerDependencies:
       '@openai/agents': ^0.3.3
       '@opencode-ai/sdk': ^1.1.40
@@ -8369,7 +8369,7 @@ snapshots:
 
   '@cloudflare/kv-asset-handler@0.5.0': {}
 
-  '@cloudflare/sandbox@0.12.8':
+  '@cloudflare/sandbox@0.12.9':
     dependencies:
       '@cloudflare/containers': 0.3.7
       aws4fetch: 1.0.20
