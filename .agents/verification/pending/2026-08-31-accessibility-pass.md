@@ -8,9 +8,9 @@
 
 ## Verify
 
-- [ ] Load the app and press Tab once. Confirm a skip link appears and jumps to the main content.
+- [x] Load the app and press Tab once. Confirm a skip link appears and jumps to the main content. _(Local release E2E: `Application experience > response policy and keyboard access`.)_
 - [ ] Navigate the conversation list with the keyboard alone. Confirm every row action is reachable, and that Escape closes an overlay and returns focus to where it was.
-- [ ] Open a dropdown menu with the keyboard. Confirm arrow keys move through it, Enter selects, Escape closes, and focus does not escape while it is open.
+- [x] Open a dropdown menu with the keyboard. Confirm arrow keys move through it, Enter selects, Escape closes, and focus does not escape while it is open. _(Local release E2E: `Work experience > pro > offers the complete project and personal capability authoring menus by keyboard`.)_
 - [ ] Turn on VoiceOver, send a message, and confirm the streaming and completion states are announced once each rather than repeatedly.
 - [ ] Do the same for a long-running action — a generation or an upload — and confirm progress and failure are both announced.
 - [ ] Tab through a conversation while a response streams. Confirm focus does not jump around as content arrives.

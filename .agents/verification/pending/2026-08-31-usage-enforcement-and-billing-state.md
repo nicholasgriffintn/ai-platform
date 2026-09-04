@@ -7,7 +7,7 @@
 
 ## Verify
 
-- [ ] Sign in as a free account and spend past its credit allowance and reserve. Confirm the refusal is the usage-limit message, not a 500.
+- [x] Sign in as a free account and spend past its credit allowance and reserve. Confirm the refusal is the usage-limit message, not a 500. _(Local release E2E: `Credit billing > free account > stops at the ceiling with no reserve and no overage`.)_
 - [ ] Send several chat requests in parallel from one anonymous session near its allowance and confirm `anonymous_user.spent_credit_micros` accumulates every turn rather than losing all but one.
 - [ ] Confirm the balance restarts in the next calendar month rather than continuing from last month's total.
 - [ ] Set an account's `plan_id` to `enterprise` and confirm it can reach a `requirePlan("pro")` route, for example the drawing or articles apps, and can select a pro model.

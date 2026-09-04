@@ -7,13 +7,13 @@
 
 ## Verify
 
-- [ ] Signed in, open Profile > Providers, filter to Connectors, and connect an OAuth connector such as Airtable. Expect the popup to close on its own, a `<connector> connected` toast in the main window, and the connector to read Connected without reloading.
-- [ ] Disconnect the same connector and confirm it returns to Connected (0) — the way out still works.
+- [ ] Signed in, open Profile > Providers, filter to Connectors, and connect an OAuth connector such as Airtable. Expect the popup to close on its own, a `<connector> connected` toast in the main window, and the connector to read Connected without reloading. _(The local release E2E passes against the Composio double; live cross-site authorisation still needs checking.)_
+- [x] Disconnect the same connector and confirm it returns to Connected (0) — the way out still works. _(Local release E2E.)_
 - [ ] Start the same connection and close the popup by hand before authorising. Expect a `connection window was closed` error rather than a hang.
 - [ ] Start the connection and leave the popup on the provider's consent screen without approving. Expect the main window to stay in its waiting state and no connector to appear.
-- [ ] Confirm no ordinary Polychat tab closes itself while navigating Chat, Work, or Profile.
-- [ ] `curl -sI https://<host>/chat | grep -i cross-origin-opener-policy` and the same for `https://<host>/profile?tab=providers`. Both must say `same-origin-allow-popups`.
-- [ ] `curl -sI 'https://<host>/profile?tab=providers&type=connector&connector=airtable&connected=1' | grep -i cross-origin-opener-policy`. Only this one must say `unsafe-none`.
+- [x] Confirm no ordinary Polychat tab closes itself while navigating Chat, Work, or Profile. _(The full local release suite traverses all three surfaces.)_
+- [ ] `curl -sI https://<host>/chat | grep -i cross-origin-opener-policy` and the same for `https://<host>/profile?tab=providers`. Both must say `same-origin-allow-popups`. _(Equivalent response assertion passed in the local Workers release harness; the deployed host still needs checking.)_
+- [ ] `curl -sI 'https://<host>/profile?tab=providers&type=connector&connector=airtable&connected=1' | grep -i cross-origin-opener-policy`. Only this one must say `unsafe-none`. _(Equivalent response assertion passed in the local Workers release harness; the deployed host still needs checking.)_
 
 **Stop and report if:** any window other than the authorisation popup closes itself, or the main window reports a connector as connected when the provider refused the authorisation.
 

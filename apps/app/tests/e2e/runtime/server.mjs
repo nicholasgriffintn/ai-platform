@@ -1096,7 +1096,7 @@ async function seedPersonas(database, seedMaterial) {
 
     await database
       .prepare(
-        "INSERT INTO anonymous_user (id, ip_address, user_agent) VALUES (?, ?, 'Playwright')",
+        "INSERT OR IGNORE INTO anonymous_user (id, ip_address, user_agent) VALUES (?, ?, 'Playwright')",
       )
       .bind(anonymousIp.slice(0, 36), anonymousIp)
       .run();

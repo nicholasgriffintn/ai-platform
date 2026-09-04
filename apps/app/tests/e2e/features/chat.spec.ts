@@ -558,6 +558,22 @@ test.describe("Pro message attachments", () => {
   });
 });
 
+test.describe("Cold conversation history as pro", () => {
+  test.use({ persona: "pro" });
+
+  test("shows an immediately-created first conversation exactly once", async ({ homePage }) => {
+    const title = /Start the cold sidebar check|Release validation chat/;
+
+    await homePage.navigate("/chat");
+    await homePage.selectModel(TEXT_MODEL);
+    await homePage.sendMessage("Start the cold sidebar check");
+    await homePage.waitForChatResponse(0);
+    await homePage.waitForConversationInHistory(title);
+
+    await expect.poll(() => homePage.conversationCountInHistory(title)).toBe(1);
+  });
+});
+
 test.describe("Goals as pro", () => {
   test.use({ persona: "pro" });
 

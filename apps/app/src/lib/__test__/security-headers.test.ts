@@ -40,6 +40,15 @@ describe("applySecurityHeaders", () => {
     expect(policy).toContain("geolocation=()");
   });
 
+  it("allows the exact connector icon origins exposed by the provider catalogue", () => {
+    const imageSources = parseCsp(
+      applySecurityHeaders(new Headers(), "https://polychat.app/profile?tab=providers"),
+    ).get("img-src");
+
+    expect(imageSources).toContain("https://ticktick.com");
+    expect(imageSources).toContain("https://www.cloudflare.com");
+  });
+
   it("allows sign-in popups to keep talking to their opener", () => {
     const headers = applySecurityHeaders(new Headers(), "https://polychat.app/");
 

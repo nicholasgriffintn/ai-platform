@@ -8,6 +8,8 @@
 
 ## Verify
 
+> Local evidence (4 September 2026): `pnpm test:mobile` built the app and passed 58 Swift tests plus 6 UI launch tests. The installed-build and live API journeys below remain manual.
+
 - [ ] Before deploying the API, open the currently shipped iOS build against the new API in preview. Confirm it still works, or note exactly what breaks — that is what your users will hit until they update.
 - [ ] Build and install the new app. Confirm sign-in, conversation list, and sending a message all work.
 - [ ] Send a message, background the app mid-response, and reopen it. Confirm the turn is recovered rather than lost or duplicated.

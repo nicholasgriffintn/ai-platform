@@ -8,7 +8,7 @@
 
 ## Verify
 
-- [ ] Load the deployed web app and check the response headers on both a document route and an asset route. Confirm the security headers are present on both.
+- [ ] Load the deployed web app and check the response headers on both a document route and an asset route. Confirm the security headers are present on both. _(The production build passes this check in the local Workers release harness; the deployed host still needs checking.)_
 - [ ] Watch the browser console through a full session — sign in, chat, upload, settings. Confirm no CSP violations, blocked scripts, or missing styles.
 - [ ] Run a tool whose result renders through a template — anything using the response renderer — and confirm it still displays correctly with links, tables, and images intact.
 - [ ] Confirm a link in a rendered result still opens, and that a hostile-looking URL scheme is refused rather than rendered.

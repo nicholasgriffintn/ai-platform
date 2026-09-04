@@ -7,8 +7,8 @@
 
 ## Verify
 
-- [ ] Sign in, browse a few Profile tabs and send a chat message, then open Profile > Tasks. Expect no `usage_rollup` rows.
-- [ ] On a brand new account that has only browsed, expect Profile > Tasks to show the empty state rather than a list.
+- [x] Sign in, browse a few Profile tabs and send a chat message, then open Profile > Tasks. Expect no `usage_rollup` rows. _(Local release E2E exercises both browsing and a metered chat turn.)_
+- [x] On a brand new account that has only browsed, expect Profile > Tasks to show the empty state rather than a list. _(Local release E2E for both Free and Pro personas.)_
 - [ ] Trigger a memory synthesis from Profile > Tasks and confirm it appears in the list and reaches a completed status — the filter must not hide the one task a person starts by hand.
 - [ ] Confirm `usage_rollup` rows are still being written: check the `tasks` table for recent rows of that type carrying a user id.
 

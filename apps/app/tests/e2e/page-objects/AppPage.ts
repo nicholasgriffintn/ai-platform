@@ -3,15 +3,45 @@ import type { Locator, Page } from "@playwright/test";
 import { BasePage } from "./BasePage";
 
 export class AppPage extends BasePage {
+  readonly mainContent: Locator;
   readonly settingsButton: Locator;
+  readonly skipLink: Locator;
   readonly usageMeter: Locator;
 
   constructor(page: Page) {
     super(page);
+    this.mainContent = page.locator("#main-content");
     this.settingsButton = page.getByRole("button", {
       name: "Open settings and configuration",
     });
+    this.skipLink = page.getByRole("link", { name: "Skip to main content" });
     this.usageMeter = page.getByRole("meter", { name: /credits used this month/ });
+  }
+
+  async followSkipLink() {
+    await this.page.keyboard.press("Tab");
+    await this.skipLink.press("Enter");
+  }
+
+  async readSecurityHeaders() {
+    const assetResponsePromise = this.page.waitForResponse((response) =>
+      new URL(response.url()).pathname.startsWith("/assets/"),
+    );
+    const documentResponse = await this.navigate("/chat");
+    const assetResponse = await assetResponsePromise;
+    const callbackResponse = await this.navigate(
+      "/profile?tab=providers&type=connector&connector=airtable&connected=1",
+    );
+
+    if (!documentResponse || !callbackResponse) {
+      throw new Error("Expected document responses while checking security headers");
+    }
+
+    return {
+      asset: assetResponse.headers(),
+      callback: callbackResponse.headers(),
+      document: documentResponse.headers(),
+    };
   }
 
   private get settingsMenuItem() {

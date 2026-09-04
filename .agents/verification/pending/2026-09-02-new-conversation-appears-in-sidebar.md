@@ -7,8 +7,8 @@
 
 ## Verify
 
-- [ ] Sign in as a Pro account with no conversations, open Chat, and send a first message immediately — before the sidebar has finished loading. Expect the conversation in the sidebar within a second or two of the answer completing, not after a two-minute wait.
-- [ ] Repeat on a warm load, where the sidebar list is already showing conversations. Expect the new conversation at the top of the list exactly once, with no duplicate row.
+- [x] Sign in as a Pro account with no conversations, open Chat, and send a first message immediately — before the sidebar has finished loading. Expect the conversation in the sidebar within a second or two of the answer completing, not after a two-minute wait. _(Local release E2E: `Cold conversation history as pro`.)_
+- [x] Repeat on a warm load, where the sidebar list is already showing conversations. Expect the new conversation at the top of the list exactly once, with no duplicate row. _(Local release E2E plus the existing warm-cache conversation journey.)_
 - [ ] With the network panel open, create a conversation on a warm load and confirm the sidebar list is not refetched — the cached list is updated in place, as before.
 - [ ] Create several conversations in quick succession on a cold load and confirm the list settles with all of them and no repeated refetching.
 

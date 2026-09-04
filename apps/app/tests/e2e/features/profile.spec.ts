@@ -47,6 +47,7 @@ test.describe("Profile experience", () => {
         page,
         profilePage,
       }) => {
+        test.slow();
         await profilePage.openAccount();
         await expect(
           page.getByText(persona === "pro" ? "Pro plan" : "Free plan", { exact: true }),
@@ -269,6 +270,9 @@ test.describe("Account-owned resources", () => {
 
     await capabilitiesPage.open();
     await capabilitiesPage.startNewAgent();
+    await expect(page.getByRole("tab", { name: "Team", exact: true })).toHaveCount(0);
+    await expect(page.getByText("Team agents", { exact: true })).toHaveCount(0);
+    expect(await capabilitiesPage.legacyTeamEndpointStatus()).toBe(404);
     await capabilitiesPage.fillAgentEditor({
       name: agentName,
       description: "Checks release readiness.",
@@ -293,6 +297,28 @@ test.describe("Account-owned resources", () => {
 
     await capabilitiesPage.deleteAgentFromLibrary(agentName);
     await expect(page.getByText(agentName, { exact: true })).toHaveCount(0);
+  });
+
+  test("keeps credit-accounting tasks out of the account task list", async ({
+    homePage,
+    page,
+    profilePage,
+  }) => {
+    await homePage.navigate("/chat");
+    await homePage.selectModel("GPT OSS 120B");
+    await homePage.sendMessageAndRequireCompletion("Create usage for the task-list check");
+    await homePage.waitForChatResponse(0);
+    await profilePage.openTab("tasks", "Tasks");
+
+    await expect(page.getByText(/usage_rollup/i)).toHaveCount(0);
+    await expect(page.getByText(/realtime_reconciliation/i)).toHaveCount(0);
+    await expect(page.getByText(/infra_reconciliation/i)).toHaveCount(0);
+    await expect(page.getByText(/stripe_usage_sync/i)).toHaveCount(0);
+    await expect(
+      page.getByText("No tasks found. Trigger a memory synthesis to get started!", {
+        exact: true,
+      }),
+    ).toBeVisible();
   });
 
   test("registers and removes a passkey", async ({ page, profilePage }) => {

@@ -10,10 +10,10 @@
 
 - [ ] Before applying migration `0014` to production, list the agents that carried a `team_id` and keep that list. It is the only record of what a team contained once the columns are gone.
 - [ ] After deploying, confirm the agents themselves survived — only the grouping and the delegation tools should have disappeared.
-- [ ] Open the agent form. Confirm there is no Team tab, no team cards, and no leftover empty section where they were.
-- [ ] Confirm `GET /v1/agents/teams` returns 404.
+- [x] Open the agent form. Confirm there is no Team tab, no team cards, and no leftover empty section where they were. _(Local release E2E.)_
+- [x] Confirm `GET /v1/agents/teams` returns 404. _(Local release E2E against the API Worker.)_
 - [ ] Rebuild any sequencing you actually relied on as a project flow, deciding the stages by hand.
-- [ ] Ask a chat to do something you would previously have delegated. Confirm `run_council` and `second_opinion` still work and return within the turn.
+- [x] Ask a chat to do something you would previously have delegated. Confirm `run_council` and `second_opinion` still work and return within the turn. _(Local release E2Es cover both journeys.)_
 - [ ] Confirm a saved flow stage that still carries the `delegate` permission renders it as a ticked, labelled option you can clear, rather than hiding it.
 
 **Stop and report if:** an agent record disappeared rather than just losing its team fields.

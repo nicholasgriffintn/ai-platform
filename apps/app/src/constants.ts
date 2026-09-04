@@ -61,6 +61,8 @@ const COMMON_CSP = {
     "https://logos.composio.dev",
     "https://giphy.com",
     "https://github.githubassets.com/images/modules/logos_page/",
+    "https://ticktick.com",
+    "https://www.cloudflare.com",
     "'self'",
     "data:",
     API_BASE_URL,

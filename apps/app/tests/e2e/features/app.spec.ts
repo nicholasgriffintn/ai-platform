@@ -2,6 +2,42 @@ import { expect, test } from "../fixtures/polychat-test";
 import { captureVisualSnapshots, DEFAULT_VISUAL_CHECKPOINTS } from "../support/visual-cloud";
 
 test.describe("Application experience", () => {
+  test.describe("response policy and keyboard access", () => {
+    test.use({ persona: "pro" });
+
+    test("serves security headers on documents and assets with a scoped OAuth exception", async ({
+      appPage,
+    }) => {
+      const headers = await appPage.readSecurityHeaders();
+      const expected = {
+        "content-security-policy": expect.any(String),
+        "cross-origin-opener-policy": "same-origin-allow-popups",
+        "permissions-policy": expect.any(String),
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-dns-prefetch-control": "off",
+        "x-frame-options": "DENY",
+      };
+
+      expect(headers.document).toMatchObject(expected);
+      expect(headers.asset).toMatchObject(expected);
+      expect(headers.callback).toMatchObject({
+        ...expected,
+        "cross-origin-opener-policy": "unsafe-none",
+      });
+    });
+
+    test("moves keyboard focus from the skip link to main content", async ({
+      appPage,
+      homePage,
+    }) => {
+      await homePage.navigate("/chat");
+      await appPage.followSkipLink();
+
+      await expect(appPage.mainContent).toBeFocused();
+    });
+  });
+
   test.describe("logged out", () => {
     test.use({ persona: "logged-out" });
 

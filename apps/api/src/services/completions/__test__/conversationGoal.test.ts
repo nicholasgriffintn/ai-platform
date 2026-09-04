@@ -153,6 +153,17 @@ describe("conversation goal authorisation", () => {
       expect(transition).not.toHaveBeenCalled();
     });
 
+    it("treats clearing an already-ended conversation goal as complete", async () => {
+      const context = createContext({
+        conversation: { id: "c-1", user_id: owner.id, project_id: null },
+      });
+
+      await expect(
+        handleUpdateConversationGoal(context, "c-1", { status: "cleared" }),
+      ).resolves.toEqual({ goal: null });
+      expect(transition).not.toHaveBeenCalled();
+    });
+
     it("refuses a project conversation when workspace membership is missing", async () => {
       requireProjectAccess.mockRejectedValueOnce(new Error("You do not have access"));
 

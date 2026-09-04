@@ -185,6 +185,26 @@ describe("applyUsageRollup", () => {
       expect.any(Object),
     );
   });
+
+  it("records spend after its attributed conversation has been deleted", async () => {
+    const { insertEventAndApplyBalance, repositories } = createRepositories();
+
+    repositories.conversations = { getConversation: vi.fn(async () => null) };
+    const event = buildUsageEventRow(
+      draft({
+        conversationId: "deleted-conversation",
+      }),
+    );
+
+    await applyUsageRollup(repositories, [event]);
+
+    expect(insertEventAndApplyBalance).toHaveBeenCalledWith(
+      expect.objectContaining({
+        conversation_id: null,
+      }),
+      expect.any(Object),
+    );
+  });
 });
 
 describe("emitUsageEvents", () => {

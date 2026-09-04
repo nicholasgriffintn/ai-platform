@@ -8,7 +8,7 @@
 
 ## Verify
 
-- [ ] Read the nine new migrations under `apps/api/migrations/` (`0006`–`0014`) before applying anything. `0009` and `0012` are backfills and `0014` is destructive.
+- [x] Read the nine new migrations under `apps/api/migrations/` (`0006`–`0014`) before applying anything. `0009` and `0012` are backfills and `0014` is destructive. _(Reviewed locally on 4 September 2026; no remote migration was run.)_
 - [ ] Confirm `0014_gigantic_vapor` is acceptable: it drops `team_id`, `team_role` and `is_team_agent` from `agents` and no re-run undoes it. See `2026-08-31-team-agents-retired.md` for what that removes.
 - [ ] Confirm `0009_backfill_scoped_embeddings` is acceptable: legacy embedding rows whose user and namespace do not independently agree stay inaccessible rather than regaining the old fallback. See `2026-08-31-embedding-lifecycle.md`.
 - [ ] Take a D1 export, or note the restore point you would use, before applying to production.

@@ -80,6 +80,45 @@ test.describe("Work experience", () => {
   test.describe("pro", () => {
     test.use({ persona: "pro" });
 
+    test("offers the complete project and personal capability authoring menus by keyboard", async ({
+      capabilitiesPage,
+      page,
+      workPage,
+    }) => {
+      await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
+      await workPage.openProjectSurface("Capabilities");
+      await capabilitiesPage.openAddMenuWithKeyboard();
+
+      await expect(capabilitiesPage.addMenuItem("New agent")).toContainText(
+        "Configure a persona, its model, tools and skills",
+      );
+      await expect(capabilitiesPage.addMenuItem("Attach an agent")).toContainText(
+        "Bring in an agent this workspace already owns",
+      );
+      await expect(capabilitiesPage.addMenuItem("Add a skill")).toContainText(
+        "Upload an Agent Skills document",
+      );
+      await expect(capabilitiesPage.addMenuItem("Browse shared agents")).toHaveCount(0);
+      await expect(capabilitiesPage.addMenuItem("New agent")).toBeFocused();
+
+      await capabilitiesPage.moveAddMenuSelection();
+      await expect(capabilitiesPage.addMenuItem("Attach an agent")).toBeFocused();
+      await capabilitiesPage.moveAddMenuSelection();
+      await expect(capabilitiesPage.addMenuItem("Add a skill")).toBeFocused();
+      await capabilitiesPage.selectAddMenuItemWithKeyboard();
+      await expect(page.getByRole("dialog", { name: "Add skill" })).toBeVisible();
+      await capabilitiesPage.dismissDialog();
+
+      await capabilitiesPage.open();
+      await capabilitiesPage.openAddMenuWithKeyboard();
+      await expect(capabilitiesPage.addMenuItem("Browse shared agents")).toContainText(
+        "Install an agent someone has published",
+      );
+      await expect(capabilitiesPage.addMenuItem("Attach an agent")).toHaveCount(0);
+      await capabilitiesPage.closeAddMenuWithKeyboard();
+      await expect(capabilitiesPage.addMenu).toBeFocused();
+    });
+
     test("navigates workspace, people, governance and every project surface", async ({
       page,
       workPage,

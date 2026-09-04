@@ -26,6 +26,37 @@ export class CapabilitiesPage extends BasePage {
       .filter({ has: this.page.getByRole("heading", { name, exact: true }) });
   }
 
+  addMenuItem(label: string) {
+    return this.page.getByRole("menuitem", { name: new RegExp(`^${label}`) });
+  }
+
+  async openAddMenuWithKeyboard() {
+    await this.addMenu.focus();
+    await this.addMenu.press("Enter");
+    await this.addMenuItem("New agent").waitFor();
+  }
+
+  async moveAddMenuSelection() {
+    await this.page.keyboard.press("ArrowDown");
+  }
+
+  async selectAddMenuItemWithKeyboard() {
+    await this.page.keyboard.press("Enter");
+  }
+
+  async dismissDialog() {
+    await this.page.keyboard.press("Escape");
+  }
+
+  async closeAddMenuWithKeyboard() {
+    await this.page.keyboard.press("Escape");
+    await this.addMenuItem("New agent").waitFor({ state: "hidden" });
+  }
+
+  async legacyTeamEndpointStatus() {
+    return (await this.page.request.get("http://localhost:8787/v1/agents/teams")).status();
+  }
+
   async startNewAgent() {
     await this.clickElement(this.addMenu);
     await this.clickElement(this.page.getByRole("menuitem", { name: /^New agent/ }));

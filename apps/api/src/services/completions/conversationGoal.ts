@@ -190,6 +190,10 @@ export async function handleUpdateConversationGoal(
   const active = await service.getActiveGoal({ conversationId: completionId });
 
   if (!active) {
+    if (update.status === "cleared") {
+      return goalResponseSchema.parse({ goal: null });
+    }
+
     throw new AssistantError("There is no goal on this conversation", ErrorType.NOT_FOUND);
   }
 

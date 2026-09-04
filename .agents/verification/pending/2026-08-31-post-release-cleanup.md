@@ -9,10 +9,10 @@
 ## Verify
 
 - [ ] Open the tools list in settings. Confirm every tool you expect is listed, with the same names and descriptions as before, and that Free versus Pro visibility is unchanged.
-- [ ] Open a project's tool configuration. Confirm the tool list matches, and that configuring one still saves.
+- [x] Open a project's tool configuration. Confirm the tool list matches, and that configuring one still saves. _(Local release E2Es configure both MCP and file search.)_
 - [ ] Ask a chat something that triggers capability discovery. Confirm discovered tools are still offered and activate.
 - [ ] Run a turn through the model router and confirm routing still picks a sensible model — the router summarises the tool catalogue and now reads it from a different list.
-- [ ] Run a tool from the tools UI (the runnable-tool form). Confirm the form fields still render from the tool's schema and the run succeeds.
+- [x] Run a tool from the tools UI (the runnable-tool form). Confirm the form fields still render from the tool's schema and the run succeeds. _(Local release E2E runs Create Qr Code and opens its saved Output.)_
 - [ ] Look at a rendered tool result and a sandbox event. Confirm the labels read as before, e.g. "Web Search", "Extract Text From Document".
 - [ ] Open a connector approval prompt and a recipe trigger. Confirm the labels are unchanged.
 - [ ] Run OCR on a document that contains images or tables and confirm the output still renders — the image and table placeholder rewriting now uses the shared `escapeRegExp`.

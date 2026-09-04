@@ -176,12 +176,34 @@ export async function resolveUsageAttribution(
   }
 }
 
+async function removeDeletedConversationAttribution(
+  repositories: RepositoryManager,
+  event: UsageEventInsert,
+  knownConversations: Map<string, boolean>,
+): Promise<UsageEventInsert> {
+  const conversationId = event.conversation_id;
+
+  if (!conversationId) {
+    return event;
+  }
+
+  let conversationExists = knownConversations.get(conversationId);
+
+  if (conversationExists === undefined) {
+    conversationExists = Boolean(await repositories.conversations.getConversation(conversationId));
+    knownConversations.set(conversationId, conversationExists);
+  }
+
+  return conversationExists ? event : { ...event, conversation_id: null };
+}
+
 export async function applyUsageRollup(
   repositories: RepositoryManager,
   events: readonly UsageEventInsert[],
 ): Promise<{ inserted: number }> {
   const seeds = new Map<number, UsagePlanSeed>();
   const knownUsers = new Map<number, boolean>();
+  const knownConversations = new Map<string, boolean>();
   let inserted = 0;
 
   for (const event of events) {
@@ -208,7 +230,15 @@ export async function applyUsageRollup(
       seeds.set(event.user_id, seed);
     }
 
-    const isNew = await repositories.usageEvents.insertEventAndApplyBalance(event, seed);
+    const eventWithValidAttribution = await removeDeletedConversationAttribution(
+      repositories,
+      event,
+      knownConversations,
+    );
+    const isNew = await repositories.usageEvents.insertEventAndApplyBalance(
+      eventWithValidAttribution,
+      seed,
+    );
 
     if (!isNew) {
       continue;

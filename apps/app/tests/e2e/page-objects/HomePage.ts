@@ -442,6 +442,10 @@ export class HomePage extends BasePage {
     await this.waitForElement(this.page.getByRole("button").filter({ hasText: title }).first());
   }
 
+  conversationCountInHistory(title: string | RegExp) {
+    return this.page.getByRole("listitem").filter({ hasText: title }).count();
+  }
+
   private conversationItem(title: string | RegExp) {
     return this.page.getByRole("listitem").filter({ hasText: title }).first();
   }

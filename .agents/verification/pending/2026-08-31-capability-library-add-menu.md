@@ -8,9 +8,9 @@
 
 ## Verify
 
-- [ ] Open a project capability library. Confirm the **Add** button opens a menu, and that every capability you can author is listed with a sensible description.
+- [x] Open a project capability library. Confirm the **Add** button opens a menu, and that every capability you can author is listed with a sensible description. _(Local release E2E covers New agent, Attach an agent, and Add a skill.)_
 - [ ] Create one of each kind from the menu. Confirm each lands in the library and nothing 404s on the way.
 - [ ] Repeat in personal scope. Confirm the choices differ where they should, and that the button is hidden entirely when you can author nothing.
-- [ ] Open the menu with the keyboard and confirm it is operable, since dropdown behaviour changed in the same release.
+- [x] Open the menu with the keyboard and confirm it is operable, since dropdown behaviour changed in the same release. _(Local release E2E covers focus, arrow keys, Enter, Escape, and focus return in project and personal scope.)_
 
 **Stop and report if:** a capability you could create before this release has no entry in the menu.

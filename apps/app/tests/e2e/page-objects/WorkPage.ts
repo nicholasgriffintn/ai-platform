@@ -641,6 +641,9 @@ export class WorkPage extends BasePage {
       );
     }
 
+    await this.page.mouse.move(0, 0);
+    await this.page.getByText("Pattern saved", { exact: true }).last().waitFor({ state: "hidden" });
+
     const deleteResponse = this.page.waitForResponse(
       (response) =>
         response.request().method() === "DELETE" && response.url().includes("/apps/strudel/"),
